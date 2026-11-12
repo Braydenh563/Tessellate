@@ -3,7 +3,7 @@
 makes goes on the app-wide undo stack as its tool event arrives, in Chat and
 in the agent panel, and the run's own Undo stays for the whole.
 
-The browser half was driven with `scratchpad/ui-sweeps/agentplan87.js`
+The browser half was driven with a one-off sweep (agentplan87.js, removed for the scratchpad cap)
 against the scripted fake model; these hold the wiring and the server half.
 """
 

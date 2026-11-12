@@ -12,6 +12,7 @@ in a node vm with a fixed clock; the wiring is checked in the source.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import re
 import shutil
@@ -19,11 +20,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-MENU = (JS / "companion-menu.js").read_text(encoding="utf-8")
-AV = (JS / "avatars.js").read_text(encoding="utf-8")
+MENU = unwrapped((JS / "companion-menu.js").read_text(encoding="utf-8"))
+AV = unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
 MIND = MENU[MENU.index("const NMB_MIND_ACTS") :]
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
@@ -65,8 +67,9 @@ def test_a_tab_switch_hides_the_cat_and_arms_nothing() -> None:
     body = AV[AV.index("function nameMarkBuddyTabChanged") :]
     body = body[: body.index("\n}\n")]
     assert "nmb-away" in body
-    #: The one timer is the look that its perch is still there; nothing is armed to follow.
-    assert body.count("setTimeout") == 1 and "nmbFollow.recheck = setTimeout(queueNameMarkBuddyCheck" in body
+    #: The one timer is the look that its perch is still there (a returning page, and a bar or hang
+    #: moving to a new page); nothing is armed to follow.
+    assert body.count("setTimeout") == 2 and body.count("nmbFollow.recheck = setTimeout(queueNameMarkBuddyCheck, 900)") == 2
     assert "nameMarkBuddyAppear(buddy)" in body and body.count("nameMarkBuddyAppear") == 1
     assert "nmb.absent = true" in body and "nmb.lonelyTouch(true)" in body
 
@@ -210,7 +213,7 @@ def test_the_two_switches_and_the_guide_say_what_the_cat_does() -> None:
     """Help moves with the UI (standing order 13): the switches exist and the topic no longer says it finds a spot on each page."""
     assert '["come", "Come over to you after a few minutes apart", ["come"]]' in AV
     assert '["afield", "Go out for a while now and then", ["afield"]]' in AV
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    topics = help_more_text()
     assert "finds a free spot on each page" not in topics and "Stay here on every page" in topics
     assert "goes out for a while" in topics and "Reduce actions on Normal" in topics
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")

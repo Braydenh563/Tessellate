@@ -12,8 +12,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-NOTE_CARDS = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "map-preview.js").read_text(
-    encoding="utf-8"
+from tests import _js_scope
+
+NOTE_CARDS = _js_scope.unwrapped(
+    (Path(__file__).resolve().parent.parent / "frontend" / "js" / "map-preview.js").read_text(encoding="utf-8")
 )
 
 

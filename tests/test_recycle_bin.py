@@ -327,7 +327,7 @@ def test_empty_bin_now(client):
 
 
 def test_expired_bin_entries_purged(client):
-    from tessellate.entry import manager
+    from tessellate.entry import manager_purge
 
     saved = client.post("/entries", json={"content": "ancient history"}).json()
     client.delete(f"/entries/{saved['id']}")
@@ -337,7 +337,7 @@ def test_expired_bin_entries_purged(client):
     try:
         session.get(Entry, saved["id"]).deleted_at = utcnow() - timedelta(days=40)
         session.commit()
-        assert manager.purge_expired_deleted(session, days=30) == 1
+        assert manager_purge.purge_expired_deleted(session, days=30) == 1
     finally:
         session.close()
 
@@ -362,7 +362,7 @@ def test_every_table_pointing_at_an_entry_is_handled_when_one_is_destroyed():
     import inspect
 
     from tessellate.core.database import Base
-    from tessellate.entry import manager
+    from tessellate.entry import manager_purge
 
     # Comments stripped first, and that is not fussiness: the first version
     # of this test searched the raw source, and the paragraph in
@@ -371,7 +371,14 @@ def test_every_table_pointing_at_an_entry_is_handled_when_one_is_destroyed():
     # A check that a name is mentioned is not a check that it is handled.
     source = "\n".join(
         line.split("#", 1)[0]
-        for line in inspect.getsource(manager._hard_delete).splitlines()
+        # `_hard_delete` and the three helpers it hands its work to (K25 split).
+        for fn in (
+            manager_purge._hard_delete,
+            manager_purge._delete_attachments_and_vectors,
+            manager_purge._delete_entry_dependents,
+            manager_purge._detach_board_contents,
+        )
+        for line in inspect.getsource(fn).splitlines()
     )
     unhandled = []
     for table in Base.metadata.tables.values():

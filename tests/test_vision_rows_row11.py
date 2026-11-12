@@ -8,6 +8,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from tests._app_js import app_js_text
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -132,7 +133,7 @@ def test_the_chart_route_counts_the_records(client):
 
 
 def test_the_ask_box_draws_the_chart_with_its_table_and_png():
-    chart_js = (ROOT / "frontend" / "js" / "ask-chart.js").read_text(encoding="utf-8")
+    chart_js = _js_scope.unwrapped((ROOT / "frontend" / "js" / "ask-chart.js").read_text(encoding="utf-8"))
     assert "function renderAskChart(" in chart_js
     assert "<table" not in chart_js and 'createElement("table")' in chart_js
     assert "toBlob" in chart_js

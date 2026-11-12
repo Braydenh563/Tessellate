@@ -43,6 +43,11 @@
    "count": 19
   },
   {
+   "key": "bpmn",
+   "name": "BPMN",
+   "count": 15
+  },
+  {
    "key": "c4",
    "name": "C4 and architecture",
    "count": 8
@@ -55,7 +60,17 @@
   {
    "key": "frames",
    "name": "Frames",
-   "count": 4
+   "count": 9
+  },
+  {
+   "key": "cloud-network",
+   "name": "Cloud and network",
+   "count": 24
+  },
+  {
+   "key": "devices-people",
+   "name": "Devices and people",
+   "count": 16
   },
   {
    "key": "icons",

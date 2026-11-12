@@ -43,8 +43,8 @@ def _drive_create_entry(session: Session, entry: Entry) -> None:
 
 
 def _drive_create_link(session: Session, entry: Entry) -> None:
-    manager = importlib.import_module("tessellate.entry.manager")
-    manager.create_link(session, entry, _scratch_entry(session, "link target"))
+    manager_links = importlib.import_module("tessellate.entry.manager_links")
+    manager_links.create_link(session, entry, _scratch_entry(session, "link target"))
 
 
 def _document_for(session: Session):
@@ -71,11 +71,12 @@ def _drive_unlink_document(session: Session, entry: Entry) -> None:
 
 def _drive_purge_entries(session: Session, entry: Entry) -> None:
     manager = importlib.import_module("tessellate.entry.manager")
+    manager_purge = importlib.import_module("tessellate.entry.manager_purge")
     doomed = [_scratch_entry(session, "purge me"), _scratch_entry(session, "purge me too")]
     with suppressed():
         for one in doomed:
             manager.soft_delete_entry(session, one)
-    manager.purge_entries(session, doomed)
+    manager_purge.purge_entries(session, doomed)
 
 
 def _drive_purge_expired_deleted(session: Session, entry: Entry) -> None:
@@ -84,12 +85,13 @@ def _drive_purge_expired_deleted(session: Session, entry: Entry) -> None:
     from tessellate.core.database import utcnow
 
     manager = importlib.import_module("tessellate.entry.manager")
+    manager_purge = importlib.import_module("tessellate.entry.manager_purge")
     expired = _scratch_entry(session, "binned long ago")
     with suppressed():
         manager.soft_delete_entry(session, expired)
         expired.deleted_at = utcnow() - timedelta(days=90)
         session.commit()
-    manager.purge_expired_deleted(session, days=30)
+    manager_purge.purge_expired_deleted(session, days=30)
 
 
 def _drive_record_dates(session: Session, entry: Entry) -> None:

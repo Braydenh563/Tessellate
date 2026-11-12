@@ -12,8 +12,9 @@ from __future__ import annotations
 from datetime import timedelta
 
 from tessellate.core.database import utcnow
-from tessellate.entry import manager
+from tessellate.entry import manager_text
 from tessellate.search import engine
+from tests import _js_scope
 
 NOTE = "---\nstatus: open\ntype: meeting\n---\n# Kiln plan\n\nFire on Thursday."
 UNTITLED = "---\nstatus: open\n---\nFire the kiln on Thursday."
@@ -25,7 +26,7 @@ def _no_block(text: str) -> None:
 
 
 def test_remove_title_reads_past_the_block():
-    out = manager.remove_title(NOTE)
+    out = manager_text.remove_title(NOTE)
     assert "# Kiln plan" not in out and "Fire on Thursday." in out
 
 
@@ -81,10 +82,10 @@ def test_a_documents_card_preview_has_no_block(client):
 
 
 def test_apply_title_puts_the_heading_after_the_block():
-    out = manager.apply_title(UNTITLED, "Kiln day")
+    out = manager_text.apply_title(UNTITLED, "Kiln day")
     assert out == "---\nstatus: open\n---\n# Kiln day\nFire the kiln on Thursday."
-    assert manager.apply_title(NOTE, "Kiln day").startswith("---\nstatus: open\ntype: meeting\n---\n# Kiln day\n")
-    assert manager.remove_title(out).endswith("---\nFire the kiln on Thursday.")
+    assert manager_text.apply_title(NOTE, "Kiln day").startswith("---\nstatus: open\ntype: meeting\n---\n# Kiln day\n")
+    assert manager_text.remove_title(out).endswith("---\nFire the kiln on Thursday.")
 
 
 def test_a_search_hit_is_titled_by_the_line_after_the_block(client, session):
@@ -115,7 +116,7 @@ def test_the_frontends_raw_content_clips_read_past_the_block():
         text = (root / f"{name}.js").read_text(encoding="utf-8")
         assert "stripFrontmatter(" in text, name
     assert "entry.content.slice(0, 60)" not in (root / "graph.js").read_text(encoding="utf-8")
-    assert "e.content.slice(0, 55)" not in (root / "app-palette.js").read_text(encoding="utf-8")
+    assert "e.content.slice(0, 55)" not in _js_scope.unwrapped((root / "app-palette.js").read_text(encoding="utf-8"))
 
 
 def test_a_contradictions_excerpt_has_no_block():

@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from tessellate.ai import composer_digest
+from tessellate.ai import composer_digest_sentences
 from tests._objmove_node import JS, needs_node, run
 from tessellate.entry import manager
 
@@ -42,12 +42,12 @@ def test_i3_a_words_only_search_never_claims_the_only_note(client, trip, questio
     assert got["mode"] == "keyword", got
     said = got["text"].lower()
     assert "only note" not in said and "just the one note" not in said, said
-    #: Worded in turn like the claim it replaces (INBOX 870 variants).
-    assert "those words" in said and "search by meaning" in said, said
+    #: The claim is left out and no stat line stands in its place (fable-composer-1110 F7.3).
+    assert "those words" not in said and "search by meaning" not in said, said
 
 
 def test_i3_every_voice_of_the_only_note_line_is_known():
-    lines = composer_digest.only_note_lines()
+    lines = composer_digest_sentences.only_note_lines()
     assert "So far this is your only note on it." in lines
     assert "This is the only note on that." in lines
     assert all(isinstance(line, str) and line for line in lines)

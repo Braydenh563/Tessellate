@@ -19,10 +19,13 @@ from typing import Annotated, Literal
 from urllib.parse import quote, urlencode
 
 from tessellate.ai import recognise as rec
+from tessellate.ai import recognise_reminders
 from tessellate.core import deps, ics_import, reminder_token
-from tessellate.core.database import Entry, utcnow
+from tessellate.core.database import PRIVATE_SPACES, Entry, utcnow
 from tessellate.core.deps import get_session
-from tessellate.entry.manager import extract_title, log_action, plain_label, readable_content
+from tessellate.entry import private_space
+from tessellate.entry.manager import log_action
+from tessellate.entry.manager_text import extract_title, plain_label, readable_content
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
@@ -43,7 +46,7 @@ Priority = Literal["low", "normal", "high"]
 #: every 2 weeks, the last Friday of the month: TIMELINE_PLAN 11 row 8).
 Recurring = Annotated[
     str,
-    Field(max_length=80, pattern=r"^(?:none|daily|weekly|monthly|" + rec.STORED_RULE.pattern + r")$"),
+    Field(max_length=80, pattern=r"^(?:none|daily|weekly|monthly|" + recognise_reminders.STORED_RULE.pattern + r")$"),
 ]
 #: Up to thirty days ahead, in minutes.
 AlertMinutes = Annotated[int, Field(ge=1, le=43200)]
@@ -143,6 +146,18 @@ def _target(session: Session, reminder) -> tuple[str | None, str | None]:
     return "note", title
 
 
+#: A private space's reminder in a notification (INBOX 1727); the desktop
+#: notifier says the same (`reminder_notifier.PRIVATE_REMINDER`).
+PRIVATE_REMINDER = "A private reminder"
+
+
+def _notice(session: Session, reminder) -> dict | None:  # noqa: ANN001
+    private = session.info.get(PRIVATE_SPACES)
+    if private is None:
+        private = private_space.private_space_ids(session)
+    return {"text": PRIVATE_REMINDER, "target_title": None} if reminder.workspace_id in private else None
+
+
 def _to_out(session: Session, reminder) -> dict:
     entry_preview = None
     #: About a private note: the lock screen's list (INBOX 1553) leaves such a reminder out.
@@ -168,6 +183,10 @@ def _to_out(session: Session, reminder) -> dict:
         "entry_id": reminder.entry_id,
         "entry_preview": entry_preview,
         "private": private,
+        #: Laid over the row where it is announced (a notification, the toast,
+        #: the centre): a private space's reminder without its words or what
+        #: it is about (INBOX 1727); null for any other.
+        "notice": _notice(session, reminder),
         "document_id": reminder.document_id,
         "target_kind": target_kind,
         "target_title": target_title,
@@ -275,6 +294,16 @@ def reminder_counts(
     for entry_id, count in found.items():
         counts[str(entry_id)] = count
     return {"counts": counts}
+
+
+@router.get("/due")
+def reminders_due(session: Session = Depends(get_session)) -> dict:
+    """The page's minute look, small: `open`, `next_due_at` and a `stamp` that
+    changes whenever the open list the page paints from does. The page asks
+    `GET /reminders` only when the stamp moved (audit 1028 K32), so an idle
+    notebook costs about a hundred bytes a minute instead of a page of rows.
+    A static path, declared before `/{reminder_id}`, as `/counts` is."""
+    return reminder_repo.open_stamp(session, REMINDERS_PAGE_SIZE)
 
 
 # --- .ics export (WORLD_CLASS_PLAN section 17, row 7) --------------------------
@@ -598,6 +627,7 @@ def suggest_reminder(body: SuggestBody) -> dict:
             "priority": found.get("priority", "normal"),
             "recurring": found.get("recurring", "none"),
             "alert_minutes": found.get("alert_minutes"),
+            "guess": bool(found.get("guess")),
         }
     }
 
@@ -647,9 +677,14 @@ def magic_add_reminder(body: MagicAddBody, session: Session = Depends(get_sessio
             raise HTTPException(
                 status_code=503,
                 detail=(
-                    "The local AI isn't running, and I couldn't read a time from "
-                    "that. Try “tomorrow at 5pm” or “in 20 minutes”, or use the form."
+                    "I couldn't read a time from that. "
+                    "Try “tomorrow at 5pm” or “in 20 minutes”, or use the form."
                 ),
+            )
+        if reminder_parser.says_no_time(body.text):
+            raise HTTPException(
+                status_code=422,
+                detail="I couldn't read a time from that. Try “tomorrow at 5pm” or “in 20 minutes”, or use the form.",
             )
         parsed = reminder_parser.parse_reminder(
             body.text, ollama, deps.get_model_manager(), local_now
@@ -727,10 +762,21 @@ def update_reminder(
     return _to_out(session, reminder)
 
 
+def _same_instant(text: str, stored: datetime) -> bool:
+    """Whether the sent time is the stored due time; an unreadable one is not (409, not a guess)."""
+    try:
+        sent = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    utc = lambda d: (d if d.tzinfo else d.replace(tzinfo=timezone.utc)).astimezone(timezone.utc)  # noqa: E731
+    return utc(sent) == utc(stored)
+
+
 @router.post("/{reminder_id}/complete")
 def complete_reminder(
     reminder_id: int,
     tz_offset_minutes: int = Query(default=0, ge=-840, le=840),
+    expected_due_at: str | None = Query(default=None, max_length=40),
     session: Session = Depends(get_session),
 ) -> dict:
     """Done, or for a repeating reminder its next time: the rule is rolled on
@@ -738,8 +784,12 @@ def complete_reminder(
     so a weekday reminder ticked on Friday lands on Monday. The rule's days
     are the person's (`tz_offset_minutes`, minutes east of UTC): 9am Monday
     in Auckland is Sunday evening in UTC. The answer keeps the time it was
-    due, for the undo."""
+    due, for the undo. `expected_due_at` is the occurrence the person saw: if
+    the rule has moved on since (a double-click, a second tab) the answer is
+    409 and nothing rolls, so one occurrence is never skipped."""
     reminder = _writable(session, reminder_id)
+    if expected_due_at and not _same_instant(expected_due_at, reminder.due_at):
+        raise HTTPException(status_code=409, detail="That reminder already moved on. Reload to see it.")
     was = reminder.due_at.isoformat()
     reminder_repo.complete(session, reminder, tz_offset_minutes)
     session.commit()

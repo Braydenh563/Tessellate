@@ -19,6 +19,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
@@ -110,20 +111,20 @@ def test_the_gather_stands_down_when_links_ignore_categories():
 
 
 def test_only_the_tabs_map_turns_the_ring_on():
-    canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    canvas = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
     assert 'orbit: s.size === "full",' in canvas
     worker = (JS / "graph-worker.js").read_text(encoding="utf-8")
     assert "orbit.on = Boolean(params && params.orbit === true);" in worker
 
 
 def test_the_size_scale_is_one_band_and_the_glow_is_calm():
-    canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    canvas = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
     assert "const GC_MIN_RADIUS = 5;" in canvas and "const GC_MAX_RADIUS = 15;" in canvas
     assert "hub ? 0.15 : 0.09" in canvas  # was 0.24 and 0.16
 
 
 def test_links_wear_their_category_and_curve_by_default():
-    canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    canvas = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
     assert "const GC_EDGE_TINTED" in canvas
     assert 'prefs.get("graph-curved", null) !== "0"' in canvas
     graph = (JS / "graph.js").read_text(encoding="utf-8")
@@ -163,7 +164,7 @@ def test_the_fit_glides_only_for_a_reader_who_has_not_asked_for_less_motion():
     ],
 )
 def test_a_name_is_cut_at_a_word_and_never_on_a_small_one(text, limit, expected):
-    canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    canvas = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
     clip = re.search(r"^function clipText\(text, limit\) \{.*?^\}", (JS / "shell-reminders.js").read_text(encoding="utf-8"), re.S | re.M)
     words = re.search(r"^const GC_LABEL_SMALL_WORDS = new Set\(\[.*?\]\);", canvas, re.S | re.M)
     cut = re.search(r"^function gcLabelCut\(text, limit\) \{.*?^\}", canvas, re.S | re.M)
@@ -176,7 +177,7 @@ def test_names_stand_on_a_plate_and_the_palette_is_calmer():
     """INBOX 493, the owner: "is there a way to make my graphed notes look
     nicer??" with labels in white over the lines. Measured with
     `scratchpad/ui-sweeps/graphlook.js` (labelOverEdge, labelsOnALine)."""
-    canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    canvas = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
     draw = canvas[canvas.index("function gcDrawLabels") :]
     draw = draw[: draw.index("\n}\n")]
     # A plate in the card's colour under each name, not a stroked halo
@@ -203,12 +204,15 @@ def test_label_backgrounds_are_a_switch_and_off_is_the_old_halo():
     assert 'id="graph-label-plates" checked' in fold
     for moved in ("graph-labels", "graph-curved", "graph-nebula"):
         assert f'id="{moved}"' in fold, moved
-    canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    canvas = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
     assert 'prefs.get("graph-label-plates", null) !== "0"' in canvas
     draw = canvas[canvas.index("function gcDrawLabels") :]
     draw = draw[: draw.index("\n}\n")]
     assert "const plates = gcLabelPlates(s);" in draw
-    assert "ctx.strokeText(draw.spot.text, x, y);" in draw and "ctx.lineWidth = 3 / k;" in draw
+    # The halo is drawn by `say` in screen pixels since 2026-11-10 (labels set
+    # at 12 screen px, not 12 / k under the zoom); the halo itself is unchanged.
+    assert "say(draw.spot.text, x, y, true);" in draw and "ctx.strokeText(text, 0, 0);" in draw
+    assert "ctx.lineWidth = 3 / k;" in draw
     graph = (JS / "graph.js").read_text(encoding="utf-8")
     assert '"graph-label-plates": true,' in graph
     assert 'prefs.set("graph-label-plates"' in graph

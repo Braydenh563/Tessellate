@@ -29,16 +29,21 @@ def ask(question: str, notes) -> dict:
     return result
 
 
-def test_an_untitled_note_is_never_named_by_its_first_words():
+def test_an_untitled_note_is_named_by_its_first_line_cut_at_six_words():
+    """Moved with the owner's decision of 2026-11-10 (it was "never named by its first words" and cited as
+    "[your note, <day>]"): a title-less note is named by its first line, about six words with an ellipsis, in quotes."""
     result = ask("What about the Lisbon hotel?", UNTITLED)
     text = result["text"]
-    #: Its words are quoted once, as the content, never used as its name.
-    assert not [p for p in result["parts"] if p[0] == "title"]
+    #: Moved with decision D25 (2026-11-10): no bracketed name follows a quote; the numbered mark and the Sources list name it.
+    assert "[“" not in text and "[**" not in text, text
+    names = [p[1] for p in result["parts"] if p[0] == "title"]
+    assert all(n.startswith("“") and n.endswith("”") and len(n.strip("“”…").split()) <= 7 for n in names), names
+    #: Its words are still quoted once as the content; the name adds the cut first line, never a second full copy.
     for note in UNTITLED:
-        assert text.count(" ".join(note["content"].split()[:4])) <= 1
+        assert text.count(note["content"].split(".")[0]) <= 1
     assert "**" not in text
     assert not re.search(r"\b(?:says|said): ", text)
-    assert "[your note, " in text
+    assert "[your note, " not in text
 
 
 def test_no_pile_of_also_or_furthermore():
@@ -46,16 +51,15 @@ def test_no_pile_of_also_or_furthermore():
     assert "furthermore" not in text and "also says" not in text and "also, in" not in text
 
 
-def test_a_titled_note_is_named_once_after_its_sentence():
+def test_a_titled_note_is_not_named_in_brackets_after_its_sentence():
+    """Moved with decision D25 (2026-11-10): it was "named once after its sentence" as "[**Lisbon trip**]"; the
+    numbered mark and the Sources list name the note now, so the sentence stands alone."""
     notes = [
         _note(1, "# Lisbon trip\n\nThe hotel is booked for May. The room has a balcony over the square.", 5),
         _note(2, "# Budget\n\nThe hotel costs 140 a night, breakfast included.", 3),
     ]
     text = ask("What about the hotel?", notes)["text"]
-    assert text.count("**Lisbon trip**") == 1 and text.count("**Budget**") == 1
-    assert "[**Lisbon trip**]" in text
-    #: The content comes before the name, not after "Your note ... says".
-    assert text.index("hotel is booked for May") < text.index("**Lisbon trip**")
+    assert "[**" not in text and "hotel is booked for May" in text and "hotel costs 140 a night" in text, text
 
 
 def test_a_lowered_quote_after_a_joiner_is_still_the_notes_own_words():

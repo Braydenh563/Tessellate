@@ -7,10 +7,13 @@ real database, and singletons are rebuilt between tests.
 from __future__ import annotations
 
 import os
+import re
 import importlib
+from contextvars import Context, ContextVar
 import shutil
 import sys
 from pathlib import Path
+from datetime import date
 
 import pytest
 from fastapi.testclient import TestClient
@@ -89,6 +92,42 @@ def _share_route_dependants() -> None:
 _share_route_dependants()
 
 
+# --- one simulated overlay hour per session, however many xdist workers ----------
+#
+# The overlay tests read the same seeded hours (2 to 20 s each) from several files, and every `-n auto` worker used
+# to simulate its own copy (the CI profile of 1109: up to four runs of one hour). The controller makes one folder, the
+# workers inherit the variable, and `tests/overlay_sim_1670.disk_memo` computes each hour once and shares it.
+
+def pytest_addoption(parser):
+    parser.addoption("--shard", default=None, help="i/n: run only the test files of leg i of n (tests/_shard.py), for parallel CI legs")
+
+
+def pytest_collection_modifyitems(config, items):
+    spec = config.getoption("--shard")
+    if spec:
+        from tests import _shard
+
+        kept, dropped = _shard.split(items, spec)
+        config.hook.pytest_deselected(items=dropped)
+        items[:] = kept
+
+
+def pytest_configure(config):
+    if os.environ.get("TESSELLATE_SIM_CACHE") or os.environ.get("PYTEST_XDIST_WORKER"):
+        return
+    import tempfile
+
+    os.environ["TESSELLATE_SIM_CACHE"] = tempfile.mkdtemp(prefix="tessellate-sim-")
+    config._tessellate_sim_cache = os.environ["TESSELLATE_SIM_CACHE"]
+
+
+def pytest_unconfigure(config):
+    folder = getattr(config, "_tessellate_sim_cache", None)
+    if folder:
+        shutil.rmtree(folder, ignore_errors=True)
+        os.environ.pop("TESSELLATE_SIM_CACHE", None)
+
+
 # --- one copy of each source file, however many test modules read it ----------
 #
 # About 145 test modules read a frontend file into a module-level constant
@@ -106,6 +145,8 @@ _share_route_dependants()
 # that reads with `errors="replace"` gets different text from one that does not.
 
 _REPO = Path(__file__).resolve().parents[1]
+_INDEX_HTML = _REPO / "frontend" / "index.html"
+_SURFACE_SCRIPT = re.compile(r'<script type="text/x-surface"([^>]*)>(.*?)</script>', re.S)
 _SHARED_PREFIXES = tuple(str(_REPO / d) + os.sep for d in ("frontend", "src", "docs", "tests"))
 _real_read_text = Path.read_text
 _shared_texts: dict[tuple, str] = {}
@@ -118,7 +159,17 @@ def _read_text_once(self, encoding=None, errors=None):
             key = (str(self), encoding, errors, st.st_mtime_ns, st.st_size)
             text = _shared_texts.get(key)
             if text is None:
-                text = _shared_texts[key] = _real_read_text(self, encoding, errors)
+                text = _real_read_text(self, encoding, errors)
+                if self.resolve() == _INDEX_HTML:
+                    # The page keeps each surface's markup as raw text in a
+                    # `<script type="text/x-surface">` so the parser makes no
+                    # nodes for it at boot (settings-body.js). The lints that
+                    # read it for ids, classes and structure see the markup
+                    # where it always was, a `<template data-surface>`, so
+                    # none of them loses a surface; the raw form is held by
+                    # tests/test_surface_scripts.py, which reads the file.
+                    text = _SURFACE_SCRIPT.sub(r"<template\1>\2</template>", text)
+                _shared_texts[key] = text
             return text
     except OSError:
         pass  # let the real call raise the error the test expects
@@ -145,6 +196,32 @@ def _own_run_folder(tmp_path, monkeypatch):
     (core/run_records.py); it goes to the test's folder, never the
     developer's own per-user one."""
     monkeypatch.setenv("TESSELLATE_RUN_DIR", str(tmp_path / "_run"))
+
+
+#: The suite's fixed day (a Saturday, the same day `_frozen_clock.FIXED_NOW` uses).
+SUITE_DAY = date(2026, 8, 1)
+
+
+@pytest.fixture(autouse=True)
+def _fixed_day(monkeypatch):
+    """No test reads the real calendar through `clock.today()` (CLAUDE.md
+    section 8: tests use a fixed clock). The chat reply seed carries the day,
+    so composer wording flipped between runs (1693 a, 8 failures on 2026-11-07).
+    A test that sets its own day with `monkeypatch.setattr(clock, "today", ...)`
+    runs after this fixture and wins."""
+    from tessellate.core import clock
+
+    monkeypatch.setattr(clock, "today", lambda: SUITE_DAY)
+
+
+@pytest.fixture(autouse=True)
+def _forget_the_reported_locale():
+    """A request's locale is kept in memory for readers that take none (`recognise.note_locale`); a test that
+    posted "en-US" must not make the next test's "3/4" month first."""
+    yield
+    from tessellate.ai import recognise
+
+    recognise._HEMISPHERE["reported"] = None  # noqa: SLF001
 
 
 @pytest.fixture(autouse=True)
@@ -272,7 +349,7 @@ def ai_client(app_state, fake_ollama, fake_embeddings):
 @pytest.fixture
 def capture_post(monkeypatch):
     """Swap `requests.post` inside the OpenAI client and record the payloads."""
-    from fakes_http import FakeResponse
+    from tests.fakes_http import FakeResponse
 
     sent: list[dict] = []
     queued: list = []
@@ -413,6 +490,19 @@ def _forget_the_docker_probe():
 
 
 @pytest.fixture(autouse=True)
+def _no_real_keyring():
+    """Secret settings (core/secrets_store.py) use the OS keyring when one is
+    present; a developer's machine must never have a test write into theirs.
+    Every test starts on a store with no keyring, so the owner-only file in the
+    test's own data dir is used; a test that wants a keyring sets a fake."""
+    from tessellate.core import pinstore
+
+    pinstore.set_store(pinstore.Store())
+    yield
+    pinstore.set_store(None)
+
+
+@pytest.fixture(autouse=True)
 def _forget_the_ocr_probe():
     """`/models/status` remembers the OCR reader question for thirty seconds
     (routes_models.ocr_probe); a test that fakes a reader must not leave its
@@ -502,3 +592,26 @@ def _release_fastapi_callable_caches():
             clear = getattr(value, "cache_clear", None)
             if callable(clear):
                 clear()
+
+
+@pytest.fixture(autouse=True)
+def _fresh_digest_context():
+    """The digest keeps its per-answer state in context variables. The public
+    entries run in a copy of the caller's context, but a helper called directly
+    (`_pattern` reaches `_next_gap`, which appends to the gap leads) writes to
+    the test's own context, and pytest runs every test of a worker in one. A
+    test then read the leads an earlier one had used, so "a day ago" came out
+    as another wording, depending on which tests shared the worker. Reset every
+    one to its default per test."""
+    from tessellate.ai import composer_digest, composer_digest_sentences
+
+    # The variables live in the layer module they were moved to (K24); each is reset where it is defined.
+    for module in (composer_digest, composer_digest_sentences):
+        for var in vars(module).values():
+            if isinstance(var, ContextVar):
+                try:
+                    var.set(Context().run(var.get))  # a fresh context answers with the variable's own default
+                except LookupError:
+                    # A variable with no default has nothing an earlier test could
+                    # have left behind, so there is nothing to reset.
+                    continue

@@ -24,7 +24,9 @@ needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 def _run(body: str) -> object:
     source = (JS_DIR / "model-menu.js").read_text(encoding="utf-8")
     pieces = [
-        re.search(rf"^function {name}\(.*?^\}}", source, re.S | re.M).group(0)
+        # Indent-aware: model-menu.js is wrapped whole (row 37a), so its functions sit two spaces in.
+        # The intent did not move: slice a function by its own head and its closing brace.
+        re.search(rf"^( *)function {name}\(.*?^\1\}}", source, re.S | re.M).group(0)
         for name in ("modelSource", "modelCountLabel")
     ]
     script = "\n".join(pieces) + f"\nprocess.stdout.write(JSON.stringify({body}));"

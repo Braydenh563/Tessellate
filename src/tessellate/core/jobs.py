@@ -148,7 +148,7 @@ KIND_LANES: dict[str, str] = {
     "pull": "download",
     "autonomous": "agent",
     #: A chosen folder of notes: a notebook-wide write, nothing a person
-    #: waits behind (`routes_settings._run_directory_import`).
+    #: waits behind (`routes_settings_transfer._run_directory_import`).
     "import": "batch",
 }
 

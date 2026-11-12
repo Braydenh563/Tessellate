@@ -92,6 +92,17 @@ def _upsert_scores(session: Session, fresh: list[dict]) -> None:
         )
 
 
+def _link_counts(session: Session) -> dict[int, int]:
+    """Links per note, counting both ends: one query a column, never one per note."""
+    links: dict[int, int] = {}
+    for column in (EntryLink.source_entry_id, EntryLink.target_entry_id):
+        for entry_id, count in session.execute(
+            select(column, func.count()).group_by(column)
+        ).all():
+            links[entry_id] = links.get(entry_id, 0) + int(count)
+    return links
+
+
 def compute_scores(session: Session) -> int:
     """Refresh every note's fading score. Returns how many rows were written.
 
@@ -117,12 +128,7 @@ def compute_scores(session: Session) -> int:
     if not entries:
         return 0
 
-    links: dict[int, int] = {}
-    for column in (EntryLink.source_entry_id, EntryLink.target_entry_id):
-        for entry_id, count in session.execute(
-            select(column, func.count()).group_by(column)
-        ).all():
-            links[entry_id] = links.get(entry_id, 0) + int(count)
+    links = _link_counts(session)
 
     existing = {row.entry_id: row for row in session.scalars(select(NoteScore)).all()}
     written = 0
@@ -240,6 +246,10 @@ def ranked(session: Session, limit: int = DAILY) -> list[Entry]:
             Entry.is_deleted.is_(False),
             Entry.is_draft.is_(False),
             Entry.archived_at.is_(None),
+            # A private note and a board are never quoted back in a card or a
+            # chat answer; the scores can lag a flag by a day, so it is read here.
+            Entry.is_private.is_(False),
+            Entry.is_board.is_(False),
         )
         .order_by(NoteScore.score.desc(), NoteScore.entry_id.desc())
         .limit(limit + len(dismissed))

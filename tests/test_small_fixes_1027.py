@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -41,7 +42,7 @@ def test_words_typed_before_the_palette_loaded_still_ask_for_their_notes():
     """E2E shell, 2026-10-27: Ctrl+K takes keys while app-palette.js loads,
     and the input listener that asks /search for matching notes is attached
     by that file, so the typed words got only the Search everything row."""
-    js = (ROOT / "frontend/js/app-palette.js").read_text(encoding="utf-8")
+    js = _js_scope.unwrapped((ROOT / "frontend/js/app-palette.js").read_text(encoding="utf-8"))
     body = js[js.index("async function openPalette()"):]
     body = body[: body.index("\n}\n")]
     assert body.index('paletteAskNotes($("palette-input").value);') > body.index('renderPalette($("palette-input").value);')
@@ -59,7 +60,8 @@ def test_a_lasting_toast_steps_aside_for_the_buttons_of_the_section_in_use():
     body = js[js.index("function toastYield(target = document.activeElement) {"):]
     body = body[: body.index("\n}\n")]
     assert 'const area = target.closest("form, section, [role=dialog]");' in body
-    assert 'area?.querySelectorAll("button:not(.panel-grip)")' in body  # INBOX 1548: not the resize grip
+    # INBOX 1548: not the resize grip; bt-compcomp-1109 item 24: nor Settings' own buttons (the toast faded behind them)
+    assert 'area?.querySelectorAll("button:not(.panel-grip, #settings-modal *)")' in body
     assert '(area?.role == "dialog" || !el.toastTimer) && work.some(' in body
     #: E2E import, 2026-11-02: the sheet's card re-centred after focus landed, so the
     #: check measured the old place of Import; openSheet runs it again once focus has settled.

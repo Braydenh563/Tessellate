@@ -26,6 +26,7 @@ import threading
 import time
 from pathlib import Path
 
+from tessellate.ai import presets
 from tessellate.ai.unreachable import server_unreachable
 from tessellate.ai.vision_ocr import cut_reading_loops
 from tessellate.core import jobs
@@ -135,7 +136,7 @@ def describe_document(text: str, model_manager, ollama) -> str:
     so the caller can leave the description unset rather than storing a
     sentence that admits it. Raises nothing of its own: an unreachable model
     raises out of `ollama.chat`, and the route turns that into a 409, the same
-    contract `summarize_meeting` follows.
+    contract `meeting_summary.summarise` follows.
     """
     body = (text or "").strip()
     if not body:
@@ -146,6 +147,7 @@ def describe_document(text: str, model_manager, ollama) -> str:
             {"role": "system", "content": DOCUMENT_PROMPT},
             {"role": "user", "content": body[:DOCUMENT_PROMPT_CHARS]},
         ],
+        mode=presets.BACKGROUND_MODE,
     )
     return (reply.get("content") or "").strip()
 
@@ -285,7 +287,7 @@ def caption_and_store(upload_id: int, image_path: Path, force: bool = False) -> 
             return None  # deleted (or its upload never committed) before this ran
         if upload.caption and not force:
             return upload.caption
-        original = upload.original_name
+        original, before = upload.original_name, (upload.caption, upload.caption_edited)
     model = deps.get_model_manager().resolve_vision_model(deps.get_ollama())
     if not model:
         # Not a failure worth a history entry, every upload on a
@@ -311,6 +313,9 @@ def caption_and_store(upload_id: int, image_path: Path, force: bool = False) -> 
         upload = session.get(MediaUpload, upload_id)
         if upload is None:
             return None  # deleted while it was being read
+        if (upload.caption, upload.caption_edited) != before:
+            #: Edited by hand while this ran: the person's words stand (sm-1111 row 9).
+            return upload.caption
         if not text:
             # A real attempt was made (a model was resolved) and produced
             # nothing: the actual failure the report was about: a caption

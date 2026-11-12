@@ -30,15 +30,26 @@ const FRAMES = [
   { name: "sit", pose: "sit", classes: [] },
   { name: "sleep", pose: "sit", classes: ["nmb-sleep"], at: 1.0 },
   { name: "wave", pose: "stand", classes: ["nmb-desk-wave"], at: 0.45 },
+  //: The wave's arm swing (INBOX 1696, the owner: one raised arm held still "looks liek a nazi salute"): six
+  //: frames out and back about the raised arm, drawn in turn by the engine (`engine.WAVE_FPS`).
+  ...[100, 112, 128, 140, 128, 112].map((deg, i) => ({ name: `wave${i}`, pose: "stand", classes: ["nmb-desk-wave"], at: 0.45, wave: deg })),
   { name: "held", pose: "stand", classes: ["nm-buddy-dragging"] },
   { name: "fall", pose: "stand", classes: ["nmb-act-startle"], at: 0.25 },
   { name: "land", pose: "stand", classes: ["nmb-act-land"], at: 0.1 },
   { name: "hop", pose: "stand", classes: ["nmb-act-hop"], at: 0.3 },
   //: The rig's own hanging pose: both arms raised to an edge above it.
   { name: "hang", pose: "hang", classes: [] },
-  //: A throw's mid-spin: the startled pose turned about its middle (the rig has
-  //: no tumble of its own, so this one is a transform of an existing pose).
-  { name: "tumble", pose: "stand", classes: ["nmb-act-startle"], at: 0.25, spin: 115 },
+  //: INBOX 1710 (W31 E2), the app's three acts the desk had no picture of: the lower wisp let down over an
+  //: edge and swung (`act.dangle`, `kick0` and `kick1` for `act.kick_legs`: the hem thrown forward and back,
+  //: the app's `atl-lower-flick`), and the hang with one hand let go (`act.hang_one_hand`, `nmb-act-onehand`:
+  //: the far arm released and waving). `lower` is [skewX deg, scaleY, scaleX] about the hips.
+  { name: "dangle", pose: "sit", classes: ["nmb-act-dangle"], at: 0.75, lower: [-8, 1.3, 0.9] },
+  { name: "kick0", pose: "sit", classes: ["nmb-act-dangle"], at: 0.75, lower: [-18, 1.15, 0.88] },
+  { name: "kick1", pose: "sit", classes: ["nmb-act-dangle"], at: 0.75, lower: [16, 1.15, 0.88] },
+  { name: "hang_one", pose: "hang", classes: ["nmb-act-onehand"], at: 0.35, upright: true },
+  //: W31 E1: the long sit with the eyes shut and the hands on the knees (`nmb-act-meditate`). Lounge and rest head
+  //: stay the keyed `sit` (the rig draws them as a 2 to 7 degree lean of it: no picture of their own is worth its bytes).
+  { name: "meditate", pose: "sit", classes: ["nmb-act-meditate"], at: 1.0 },
 ];
 //: The idle cycle (`idle0` to `idle23`, engine.IDLE_FRAMES): the rig's own standing
 //: motion sampled at fixed times, one full beat of the tail (`atlasTailBend` with
@@ -83,7 +94,7 @@ async function steadyShot(page, file, clip) {
 (async () => {
   const out = process.argv[2];
   if (!out) throw new Error("usage: node render_desk_frames.js <out dir>");
-  const { browser, page } = await boot({ viewport: { width: 700, height: 500 }, scale: 2 });
+  const { browser, page } = await boot({ viewport: { width: Number(process.env.VW) || 700, height: Number(process.env.VH) || 500 }, scale: 2 });
   const report = {};
   for (const look of LOOKS) {
     await page.evaluate((l) => {
@@ -165,6 +176,10 @@ async function steadyShot(page, file, clip) {
         //: Every frame from the same neutral start: the page's idle timer would
         //: otherwise make it drowsy (`data-feel`, a nightcap) part-way through.
         for (const name of b.getAttributeNames()) if (name.startsWith("data-") && !["data-gait", "data-seed", "data-atlas-variant"].includes(name)) b.removeAttribute(name);
+        //: The page's blink clock closes the eyes at any moment, and the freeze below then holds that blink:
+        //: a masculine `stand` shipped with shut eyes (INBOX 1696). No blink in any frame but the engine's own lids.
+        if (typeof atlasState !== "undefined") { clearTimeout(atlasState.blinkTimer); atlasState.blinkTimer = 0; }
+        for (const el of b.querySelectorAll(".atl-blinking, .atl-blinking-slow")) el.classList.remove("atl-blinking", "atl-blinking-slow");
         for (const el of b.querySelectorAll(".nm-buddy-char, .atl-lw-tail, .atl-lw-lower, .nm-atlas.atl-layer-lower")) { el.style.removeProperty("transform"); el.style.removeProperty("transform-origin"); }
         //: The page's own timers write `style.transform` (a plain write replaces the important
         //: one) and walk the figure to its home corner part-way through the run: every frame
@@ -193,6 +208,16 @@ async function steadyShot(page, file, clip) {
           if (a.transitionProperty) { a.finish(); continue; }
           a.pause();
           if (a.animationName && /neb|wisp|glint/.test(a.animationName)) { a.currentTime = 0; continue; } // the same moment in every frame and in the stream pass
+          //: The rig's own sways (`atl-lw-sway-*`, `atl-sway-body`) sit at one moment in every frame: `at` is the
+          //: act's moment (a blink, a look), and it also moved these, so stand, blink, look, wave and land came
+          //: out with a lower body 5 to 7 px apart (INBOX 1696 w, "framey"); stand's ran on at its live time.
+          //: A sway is held at the middle of its swing (no lean), so the walk frames' own swing (inline) is the only one.
+          if (a.animationName && /^atl-(lw-)?sway/.test(a.animationName)) {
+            a.effect.updateTiming({ delay: 0 });
+            a.currentTime = (a.effect.getComputedTiming().duration || 0) * 0.5;
+            continue;
+          }
+          if (a.animationName && !/^nmb-/.test(a.animationName)) { a.currentTime = 0; continue; }
           if (!a.animationName || (frame.phase === undefined && frame.at === undefined)) continue;
           const t = a.effect.getComputedTiming();
           const cycle = (t.duration || 0) * (String(t.direction).startsWith("alternate") ? 2 : 1);
@@ -205,30 +230,53 @@ async function steadyShot(page, file, clip) {
         const put = (el, t, origin) => { el.style.setProperty("transform", t, "important"); if (origin) el.style.setProperty("transform-origin", origin, "important"); };
         const char = b.querySelector(".nm-buddy-char");
         if (frame.spin) put(char, `rotate(${frame.spin}deg)`, "50% 45%");
-        if (frame.idle !== undefined) {
-          const w = frame.idle * 2 * Math.PI;
+        //: The desk's own hang pendulum swings the picture (`engine._hang_drag`): the rig's swing of the char is left out.
+        if (frame.upright) char.style.setProperty("rotate", "0deg", "important");
+        else char.style.removeProperty("rotate");
+        if (frame.wave !== undefined) b.style.setProperty("--desk-wave", `${frame.wave}deg`);
+        else b.style.removeProperty("--desk-wave");
+        //: Every frame's tail sits at one moment (the loop's start for a non-idle frame): the live
+        //: loop otherwise captured it anywhere, so stand's lowest row moved 17 px from idle's.
+        {
+          const w = (frame.idle || 0) * 2 * Math.PI;
           const box = [...b.querySelectorAll("*")].find((el) => el.atlasTail);
-          if (!box) throw new Error("no live tail to sample");
+          if (!box && frame.idle !== undefined) throw new Error("no live tail to sample");
+          if (box) {
           const tail = box.atlasTail;
           //: Stop the live loop and the compositor sway so nothing redraws over the sample.
           clearTimeout(tail.raf); cancelAnimationFrame(tail.raf); tail.raf = 0;
           if (tail.sway) { tail.sway.cancel(); tail.sway = null; }
           tail.svg.style.removeProperty("transform");
+          //: The page's own loop redraws the tail between the sample and the shot (INBOX 1683 e: four of the
+          //: 24 idle frames carried a tail from another moment, a seam of 5x an ordinary step at the wrap): its
+          //: draws are dropped while a frame is held, only this one's pass through.
+          const draw = window.__tailDraw || (window.__tailDraw = atlasTailDraw);
+          window.atlasTailDraw = (t, ...a) => (t === tail && window.__tailSample ? draw(t, ...a) : undefined);
+          window.__tailSample = false;
           const p = Object.fromEntries(Object.entries(ATLAS_TAIL_ACTS.sway).map(([k, v]) => [k, v]));
-          atlasTailDraw(tail, (s) => atlasTailBend(s, p, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
+          window.__tailSample = true;
+          draw(tail, (s) => atlasTailBend(s, p, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
+          window.__tailSample = false;
+          { // the breath and the lower wisp too: stand sat 5 px below idle with only the tail pinned
           const k = (1 - Math.cos(w)) / 2;
           for (const el of box.querySelectorAll(".atl-layer-body .nmb-torso")) el.style.setProperty("scale", `${(1 + ATLAS_BREATH_SWELL[0] * k).toFixed(4)} ${(1 + ATLAS_BREATH_SWELL[1] * k).toFixed(4)}`);
           const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
           for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(3 * Math.sin(w - 1.5)).toFixed(2)}deg)`, "50% 55%");
+          }
+          }
+        }
+        if (frame.lower) {
+          const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
+          for (const low of b.querySelectorAll(lower)) put(low, `skewX(${frame.lower[0]}deg) scale(${frame.lower[2]}, ${frame.lower[1]})`, "50% 20%");
         }
         if (frame.float !== undefined) {
           const w = frame.float * 2 * Math.PI;
           //: No translateY: the engine's slow bob (BOB_HZ) is the only vertical motion. This one
           //: baked 9.7 px at 1.33 Hz into the drift frames (INBOX 1670: "bobbing really fast").
           put(char, "rotate(4deg)", "50% 90%");
-          for (const tail of b.querySelectorAll(".atl-lw-tail")) put(tail, `rotate(${(11 * Math.sin(w - 1.0)).toFixed(2)}deg)`, "40% 35%");
+          for (const tail of b.querySelectorAll(".atl-lw-tail")) put(tail, `rotate(${(-7 + 2.5 * Math.sin(w - 1.0)).toFixed(2)}deg)`, "40% 35%");
           const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
-          for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(9 * Math.sin(w - 2.0)).toFixed(2)}deg)`, "50% 55%");
+          for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(6 * Math.sin(w - 2.0)).toFixed(2)}deg)`, "50% 55%");
         }
       }, f);
       await page.waitForTimeout(40);

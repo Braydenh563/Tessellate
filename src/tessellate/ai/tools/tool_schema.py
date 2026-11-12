@@ -332,9 +332,7 @@ def tool_catalog() -> list[dict]:
                 "online"
                 if spec.name in ("web_search", "read_url")
                 else "confirm"
-                if spec.destructive or spec.name in CHANGE_TOOLS
-                else "write"
-                if spec.name in WRITE_TOOLS
+                if spec.destructive or spec.name in CHANGE_TOOLS or spec.name in WRITE_TOOLS
                 else "read"
             ),
         }

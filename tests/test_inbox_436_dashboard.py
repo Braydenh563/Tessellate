@@ -108,7 +108,8 @@ def test_a_long_menu_is_grouped():
 
 def test_the_streak_still_reaches_atlas_and_the_companion():
     line = _function("renderDashSubmessage")
-    assert "atlasStreak(streak)" in line and "nameMarkBuddyStreak(streak)" in line
+    # intent unchanged: P7 passes the note count along as well (the milestone cheer)
+    assert "atlasStreak(streak)" in line and "nameMarkBuddyStreak(streak, stats.total_entries)" in line
 
 
 def test_edit_mode_is_a_line_above_the_grid_with_its_way_out():

@@ -84,8 +84,8 @@ const finderState = { corrected: "", notices: [], page: 1, more: false, timer: n
 const FINDER_OPEN = {
   note: (hit) => { switchTab("notes"); flashEntry(hit.id); },
   document: (hit) => { switchTab("documents"); openDocument(hit.id); },
-  board: (hit) => ensureModule("library").then(() => openLibraryItem({ kind: "board", id: hit.id })),
-  map: (hit) => ensureModule("library").then(() => openLibraryItem({ kind: "map", id: hit.id })),
+  board: (hit) => ensureModule("boards").then(() => openLibraryItem({ kind: "board", id: hit.id })),
+  map: (hit) => ensureModule("boards").then(() => openLibraryItem({ kind: "map", id: hit.id })),
   file: (hit) => flashLibraryItem("file", hit.id),
   bookmark: (hit) => flashLibraryItem("link", hit.id),
   reminder: () => switchTab("reminders"),
@@ -283,8 +283,10 @@ function finderRenderNothing(results) {
 
 function finderWhyNothing(query) {
   const kind = FINDER_KINDS.find((k) => k.key === finderKind);
-  if (kind) return `No ${kind.many} hold “${query}”.`;
-  return `No note, document, board, file, bookmark, reminder or chat holds “${query}”, and no part of the app is called that.`;
+  //: Private notes are never indexed, so an empty answer is not the whole truth when the notebook holds some (W6).
+  const sealed = (finderKind || "note") === "note" && allEntries.some((e) => e.is_private) ? " Private notes are not searched." : "";
+  if (kind) return `No ${kind.many} hold “${query}”.${sealed}`;
+  return `No note, document, board, file, bookmark, reminder or chat holds “${query}”, and no part of the app is called that.${sealed}`;
 }
 
 async function finderOffer(button, query) {

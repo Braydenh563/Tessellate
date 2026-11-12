@@ -134,6 +134,8 @@ _HELP_LINES = (
     "Gladly. I answer from the app's own help, so ask how, where or what about anything in it. A few to begin:",
 )
 
+_BARE_HELP = "Ask me where a feature lives, what a setting does or how to do something here. Three to start with:"
+
 _ATLAS_LEADS = (
     "In Chat, Atlas changes your notebook when you ask it to. It can {acts}.",
     "Atlas can make these changes from Chat: {acts}.",
@@ -233,7 +235,9 @@ def reply(question: str, tab: str | None, by_id: dict[str, dict]) -> dict | None
             "asks_to": "notes" if where == "notes" else "chat",
         }
     if kind == HELP:
-        return {"content": _pick(_HELP_LINES, question), "badges": [], "sources": [], "greeting": True}
+        #: A bare "help" asks nothing yes-or-no, so it gets no "Yes." (G5).
+        said = _BARE_HELP if question.strip().rstrip("?!. ").lower() == "help" else _pick(_HELP_LINES, question)
+        return {"content": said, "badges": [], "sources": [], "greeting": True}
     if kind == ATLAS:
         from tessellate.ai import act_registry
 

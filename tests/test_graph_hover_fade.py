@@ -18,9 +18,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
-CANVAS = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
@@ -50,7 +51,9 @@ def _run(body: str) -> dict:
             "let gcTokens = { font: 'x', card: '#fff', ink: '#000' };",
             "const drawn = [];",
             "const ctx = { set globalAlpha(v) { this.a = v; }, get globalAlpha() { return this.a; },",
-            "  beginPath() {}, roundRect() {}, fill() {}, fillText(text) { drawn.push([text, +this.a.toFixed(3)]); } };",
+            "  beginPath() {}, roundRect() {}, fill() {}, save() {}, restore() {}, translate() {}, scale() {}, setTransform() {},",
+            "  getTransform() { return { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }; },",
+            "  fillText(text) { drawn.push([text, +this.a.toFixed(3)]); } };",
             body,
         ]
     )

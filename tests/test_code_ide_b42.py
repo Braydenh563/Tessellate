@@ -7,8 +7,6 @@ run in node against the vendored bundle; the wiring is read from the source.
 
 from __future__ import annotations
 
-from tests._help_text import help_chat_text
-
 import json
 import re
 import shutil
@@ -16,6 +14,9 @@ import subprocess
 from pathlib import Path
 
 import pytest
+
+from tests import _js_scope
+from tests._help_text import help_chat_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -54,7 +55,8 @@ _EDITED = "one\nTWO\nthree\nfour\nnew\nfive\nsix\n"
 @node
 @pytest.mark.parametrize("index", [0, 1, 2])
 def test_reverting_one_hunk_restores_exactly_that_hunk(index: int) -> None:
-    ide = IDE_JS.read_text(encoding="utf-8")
+    #: documents-ide.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    ide = _js_scope.unwrapped(IDE_JS.read_text(encoding="utf-8"))
     got = _run_node(
         _function(ide, "docIdeChunks")
         + _function(ide, "docIdeRevertSpec")
@@ -77,7 +79,7 @@ def test_reverting_one_hunk_restores_exactly_that_hunk(index: int) -> None:
 
 
 def test_the_ide_file_is_lazy_and_mounted_from_the_code_tools() -> None:
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
     assert 'lazyScript("/js/documents-ide.js")' in docs
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "documents-ide.js" not in index, "lazy: not a boot script"
@@ -85,15 +87,23 @@ def test_the_ide_file_is_lazy_and_mounted_from_the_code_tools() -> None:
     assert "docIdeExtensions(CM, type)" in _function(code, "docCompletionExtras")
 
 
+def test_the_ide_file_waits_for_documents_js_before_it_is_fetched() -> None:
+    """The idle warm-up loads the bundle a file at a time, so a fetch started as documents-view.js runs executed
+    documents-ide.js before documents.js defined `docToolPref` (found driving the attach-to path, dec-1111-d2)."""
+    view = (JS / "documents-view.js").read_text(encoding="utf-8")
+    assert 'lazyScript("/js/documents.js").then(() => lazyScript("/js/documents-ide.js"))' in view
+    assert not re.search(r'^lazyScript\("/js/documents-ide\.js"\)', view, re.M), "a bare top-level fetch races documents.js"
+
+
 def test_the_minimap_is_off_by_default_and_a_view_toggle() -> None:
-    ide = IDE_JS.read_text(encoding="utf-8")
+    ide = _js_scope.unwrapped(IDE_JS.read_text(encoding="utf-8"))
     assert 'docToolPref("codeMinimap", false)' in ide
     index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="doc-minimap-row"' in index and 'id="doc-minimap"' in index
 
 
 def test_the_palette_rows_have_a_shortcut_or_say_none() -> None:
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
     table = docs[docs.index("// DOC-COMMANDS-BEGIN") : docs.index("// DOC-COMMANDS-END")]
     for cid, keys in [
         ("fold-all", "Ctrl+Alt+["),
@@ -119,7 +129,7 @@ def test_help_names_the_new_commands() -> None:
 
 
 def test_the_output_panel_has_the_sidebar_grip_with_keys_and_a_height_per_document() -> None:
-    ide = IDE_JS.read_text(encoding="utf-8")
+    ide = _js_scope.unwrapped(IDE_JS.read_text(encoding="utf-8"))
     grip = _function(ide, "docIdeRunGrip")
     assert '"sidebar-resize doc-run-resize"' in grip
     assert '"separator"' in grip and '"horizontal"' in grip and "tabindex" in grip
@@ -157,7 +167,7 @@ def test_no_class_is_written_onto_the_engines_own_dom() -> None:
         if bad.search(line)
     ]
     assert hits == [], f"a class written onto CodeMirror's own DOM: {hits}"
-    ide = (JS / "documents-ide.js").read_text(encoding="utf-8")
+    ide = _js_scope.unwrapped((JS / "documents-ide.js").read_text(encoding="utf-8"))
     assert 'editorAttributes.of({ class: "doc-content-code" })' in ide
-    sync = _function((JS / "documents.js").read_text(encoding="utf-8"), "syncDocFileType")
+    sync = _function((JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8"), "syncDocFileType")
     assert 'docBoxEl()?.classList.toggle("doc-content-code", code)' in sync

@@ -21,154 +21,78 @@ window.addEventListener("online", reflectOnlineState);
 reflectOnlineState();
 
 // --- writing room wiring ---
-$("draft-compose").addEventListener("click", composeDraft);
-$("draft-undo").addEventListener("click", undoDraft);
-$("draft-cancel").addEventListener("click", cancelDraft);
-$("draft-save").addEventListener("click", () => saveDraftAsNote());
-
-$("draft-title").addEventListener("click", suggestDraftTitle);
-// Refine is Draft with an instruction in hand: the same pass, so it runs the
-// same function rather than a second copy of it that could drift.
-$("draft-refine").addEventListener("click", () => {
-  if (!$("draft-instruction").value.trim()) {
-    setDraftStatus("Say what to change, then refine.", true);
-    $("draft-instruction").focus();
-    return;
-  }
-  composeDraft();
-});
-$("draft-instruction").addEventListener("keydown", (event) => {
-  if (event.key !== "Enter") return;
-  event.preventDefault();
-  $("draft-refine").click();
-});
-$("draft-copy").addEventListener("click", async (event) => {
-  const text = $("draft-text").value.trim();
-  if (!text) {
-    setDraftStatus("There's no draft to copy yet.", true);
-    return;
-  }
-  if (await copyToClipboard(text, event.currentTarget)) setDraftStatus("Draft copied.");
-});
-// `appendSelectionToNote` is the app's one "add this text to a note you
-// already have" path (the text-selection popup uses it): the same picker, the
-// same undo entry, the same flash on the note it landed in.
-$("draft-insert").addEventListener("click", () => {
-  const text = $("draft-text").value.trim();
-  if (!text) {
-    setDraftStatus("There's no draft to insert yet.", true);
-    return;
-  }
-  // The toast says it landed and offers the trip to it; the status line is
-  // not written here because this returns before the picker has been
-  // answered, and a line saying it was added is a lie until it was.
-  appendSelectionToNote(text, { jump: false });
-});
-$("draft-add-source").addEventListener("click", async () => {
-  if (draftSources.length >= DRAFT_MAX_SOURCES) {
-    setDraftStatus(`Six notes is the most one draft can be written from.`, true);
-    return;
-  }
-  const entry = await pickEntryDialog("Which note should Atlas write from?");
-  if (!entry) return;
-  if (draftSources.some((s) => s.id === entry.id)) return;
-  draftSources.push({
-    id: entry.id,
-    label: clipText(entry.title || notePreviewText(entry.content) || "Untitled note", 60),
-  });
-  renderDraftSources();
-  saveDraftLocally();
-});
-$("draft-continue-note").addEventListener("click", async () => {
-  const entry = await pickEntryDialog("Which note should Atlas carry on?");
-  if (!entry) return;
-  if ($("draft-text").value.trim()) pushDraftUndo();
-  $("draft-text").value = entry.content || "";
-  draftNoteId = entry.id;
-  draftNoteLabel = clipText(entry.title || notePreviewText(entry.content) || "a note", 40);
-  $("draft-kind").value = "continue";
-  window.markDraftQuickstart?.("continue");
-  renderDraftTarget();
-  // The note as it stands is version one, so the way back to what it said
-  // before Atlas touched it is the same chip row as every other pass.
-  rememberDraftVersion($("draft-text").value);
-  updateDraftCount();
-  saveDraftLocally();
-  setDraftStatus("That note is in the draft. Add a thought, then draft to carry it on.");
-  $("draft-thoughts").focus();
-});
-for (const id of ["draft-kind", "draft-tone", "draft-length"]) {
-  $(id).addEventListener("change", () => {
-    if (id === "draft-kind") {
-      const kind = $("draft-kind").value;
-      window.markDraftQuickstart?.(kind);
-      //: A chip's "needs a model" line is about that chip, not the next pass.
-      setDraftStatus("");
-      //: The Translate chip goes back to the last language picked here.
-      if (kind.startsWith("translate-")) {
-        try {
-          prefs.set("draft-translate", kind.slice("translate-".length));
-        } catch {
-          /* storage blocked: the chip keeps its default */
+onSurface("notes", () => ensureModule("notesLazy"));
+onSurface("notes", () => {
+  for (const id of ["draft-kind", "draft-tone", "draft-length"]) {
+    $(id).addEventListener("change", () => {
+      if (id === "draft-kind") {
+        const kind = $("draft-kind").value;
+        window.markDraftQuickstart?.(kind);
+        //: A chip's "needs a model" line is about that chip, not the next pass.
+        setDraftStatus("");
+        //: The Translate chip goes back to the last language picked here.
+        if (kind.startsWith("translate-")) {
+          try {
+            prefs.set("draft-translate", kind.slice("translate-".length));
+          } catch {
+            /* storage blocked: the chip keeps its default */
+          }
         }
       }
-    }
-    saveDraftLocally();
-  });
-}
-$("draft-extract").addEventListener("click", () => openExtractPreview($("draft-text").value));
+      saveDraftLocally();
+    });
+  }
+});
+onSurface("notes", () => {
+  $("draft-extract").addEventListener("click", () => openExtractPreview($("draft-text").value));
+});
 $("extract-close").addEventListener("click", closeExtractPreview);
 $("extract-cancel").addEventListener("click", closeExtractPreview);
 $("extract-commit").addEventListener("click", commitExtractPreview);
-$("draft-text").addEventListener("input", () => {
-  updateDraftCount();
-  saveDraftLocally();
-});
-//: One listener: the thoughts box keeps its draft and its word count (INBOX 63).
-$("draft-thoughts").addEventListener("input", () => {
-  saveDraftLocally();
-  updateDraftCount();
-});
-$("draft-tags").addEventListener("input", saveDraftLocally);
-// Ctrl/Cmd+Enter from the thoughts box drafts, matching the capture box.
-$("draft-thoughts").addEventListener("keydown", (event) => {
-  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-    event.preventDefault();
-    composeDraft();
-  }
-});
-$("draft-discard").addEventListener("click", async () => {
-  if (!$("draft-text").value.trim() && !$("draft-thoughts").value.trim()) return;
-  if (!(await confirmDialog("Discard this draft? It hasn't been saved as a note."))) return;
-  foldedThoughts = "";
-  $("draft-thoughts").value = "";
-  $("draft-text").value = "";
-  $("draft-tags").value = "";
-  $("draft-thinking").classList.add("hidden");
-  // The earlier versions and the notes it was being written from go with it:
-  // a desk that is cleared and still lists six sources and four old drafts
-  // has not been cleared.
-  draftSources = [];
-  draftVersions = [];
-  renderDraftSources();
-  renderDraftVersions();
-  clearDraftTarget();
-  setDraftStatus("");
-  $("draft-diagram").replaceChildren();
-  $("draft-diagram").classList.add("hidden");
-  updateDraftCount();
-  saveDraftLocally();
+onSurface("notes", () => {
+  $("draft-text").addEventListener("input", () => {
+    updateDraftCount();
+    saveDraftLocally();
+  });
+  //: One listener: the thoughts box keeps its draft and its word count (INBOX 63).
+  $("draft-thoughts").addEventListener("input", () => {
+    saveDraftLocally();
+    updateDraftCount();
+  });
+  $("draft-tags").addEventListener("input", saveDraftLocally);
+  // Ctrl/Cmd+Enter from the thoughts box drafts, matching the capture box.
+  $("draft-thoughts").addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      composeDraft();
+    }
+  });
+  $("draft-discard").addEventListener("click", async () => {
+    if (!$("draft-text").value.trim() && !$("draft-thoughts").value.trim()) return;
+    if (!(await confirmDialog("Discard this draft? It hasn't been saved as a note."))) return;
+    foldedThoughts = "";
+    $("draft-thoughts").value = "";
+    $("draft-text").value = "";
+    $("draft-tags").value = "";
+    $("draft-thinking").classList.add("hidden");
+    // The earlier versions and the notes it was being written from go with it:
+    // a desk that is cleared and still lists six sources and four old drafts
+    // has not been cleared.
+    draftSources = [];
+    draftVersions = [];
+    renderDraftSources();
+    renderDraftVersions();
+    clearDraftTarget();
+    setDraftStatus("");
+    $("draft-diagram").replaceChildren();
+    $("draft-diagram").classList.add("hidden");
+    updateDraftCount();
+    saveDraftLocally();
+  });
 });
 // --- one wiring for every "?" ----------------------------------------------
-// Every "?" is this wiring (tests/test_ui_recipes.py fails if a hand-wired
-// one comes back), so a new one is markup only:
-//   <button type="button" class="icon-only ghost small graph-help-toggle"
-//           data-help-for="thing-help" aria-controls="thing-help"
-//           aria-expanded="false" title="…" aria-label="…">
-//     <i class="ph ph-question" aria-hidden="true"></i></button>
-//   <div class="help-body hidden" id="thing-help" role="dialog" aria-label="…">…</div>
-// A `<button>` gives focus, Enter and Space for free; `wireHelpPopover` owns
-// Escape, outside click and a second click, and its own guard makes a second
+// Every "?" is this wiring (tests/test_ui_recipes.py; markup in docs/DESIGN.md `data-help-for`).
+// `wireHelpPopover` owns Escape, outside click and a second click; a second pass over a wired pair does nothing.
 // pass over a wired pair do nothing (Settings renders some sections lazily).
 //: **Every question the app offers to ask Atlas, in one table** (INBOX 224,
 //: the owner: "also make atlas more accessible and have suggestions to ask it
@@ -238,171 +162,159 @@ initHelpToggles();
 //: The Notes one is said shorter (the question sent is unchanged): the default
 //: label ("Ask Atlas: How does the app decide where a note goes?") took two
 //: lines at 390, 332x46, the shape Chat's offer was given a label to avoid.
-for (const [id, question, label] of [
-  ["empty-message", "How does the app decide where a note goes?", "Ask Atlas where notes go"],
-  ["library-empty", "What can I keep in the Library?", undefined],
+for (const [id, question, label, surface] of [
+  ["empty-message", "How does the app decide where a note goes?", "Ask Atlas where notes go", "notes"],
+  ["library-empty", "What can I keep in the Library?", undefined, "library"],
 ]) {
-  $(id)?.appendChild(atlasSuggestion(question, label));
+  onSurface(surface, () => $(id)?.appendChild(atlasSuggestion(question, label)));
 }
 
-//: **The concept-map door, in the tab people look for it in.** Reported: "the
-//: concept map feature is there in the graph but I have no clue how to use it,
-//: it isnt a labeled feature and is it even there actually??" It was real and
-//: it was three levels away -- Library, then a sub-tab called Boards & maps,
-//: then "+ Create", then "New concept map". This tab is already the map of
-//: your notes; the only difference is that this one is drawn for you. So the
-//: counterpart gets a labelled button here that lands on the maps themselves.
-//: Awaited: the sub-tab's handler is library.js's, fetched on the Library's
-//: first visit, and a press before it arrived landed on the All view
-//: (tests/test_new_document_opens_new.py).
-$("graph-concept-maps")?.addEventListener("click", async () => {
-  await switchTab("library");
-  document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
-  // The sub-tab click can leave the last board open on the canvas; a button
-  // called "Mind maps" has to arrive at the list of them.
-  wbShowBoardsLanding();
-});
-restoreDraftLocally();
+onSurface("notes", restoreDraftLocally);
 
 // --- note picker wiring ---
-$("attach-note").addEventListener("click", () => {
-  if (notePickerOpen()) closeNotePicker();
-  else openNotePicker();
-});
-$("note-picker-close").addEventListener("click", () => {
-  closeNotePicker();
-  $("attach-note").focus();
-});
-
-// --- image attachment wiring (vision-capable models) ---
-$("attach-image").addEventListener("click", () => $("chat-image-input").click());
-$("chat-image-input").addEventListener("change", async (e) => {
-  if (e.target.files.length) await attachChatFiles(e.target.files);
-  e.target.value = ""; // so choosing the same file twice still fires "change"
-});
-let notePickerSearchDebounceTimeout;
-$("note-picker-search").addEventListener("input", () => {
-  clearTimeout(notePickerSearchDebounceTimeout);
-  notePickerSearchDebounceTimeout = setTimeout(renderNotePickerList, 150);
-});
-for (const button of document.querySelectorAll("#note-picker-sources [data-picker-source]")) {
-  button.addEventListener("click", () => setNotePickerSource(button.dataset.pickerSource));
-}
-
-$("note-picker-done").addEventListener("click", () => {
-  closeNotePicker();
-  $("chat-input").focus();
-});
-$("note-picker-clear").addEventListener("click", () => {
-  //: Clear means clear. This emptied `attachedNoteIds` only, so pressing it
-  //: with three files and a map ticked left every one of them staged while the
-  //: count line under the button re-read "Nothing attached yet", the panel
-  //: contradicting itself in two places at once.
-  //:
-  //: Images too, now (INBOX 485: the count still read "1 image attached"
-  //: after Clear). A staged one holds a live object URL, revoked here exactly
-  //: as the send path revokes it, or its Blob leaks for the life of the tab.
-  for (const image of attachedImages) if (image.objectUrl) URL.revokeObjectURL(image.objectUrl);
-  attachedImages = [];
-  renderImageAttachments();
-  attachedNoteIds = [];
-  attachedDocuments = [];
-  attachedFiles = [];
-  attachedBoards = [];
-  renderAttachments();
-  renderDocumentAttachments();
-  renderFileAttachments();
-  renderBoardAttachments();
-  renderNotePickerList();
-});
-// Click-away and Escape close it, like every other popover in the app.
-document.addEventListener("click", (event) => {
-  if (!notePickerOpen()) return;
-  // `.action-menu` for the same reason the notifications panel needs it: a
-  // menu this panel owns is reparented to <body> while open, so a click on
-  // one of its options is not a descendant of the panel and would otherwise
-  // read as a click away. `.sheet-overlay` the same, on a phone
-  // (`openNotePicker`'s own sheet path, chat-attach.js): the panel moves
-  // out of `.note-picker` into the sheet's card, and the sheet already
-  // owns its own scrim-click and Escape dismissal, so this listener has
-  // nothing to add there and every click inside it, otherwise, closed the
-  // sheet the instant it was touched.
-  if (event.target.closest(".note-picker, .action-menu, .sheet-overlay")) return;
-  closeNotePicker();
-});
-$("note-picker-panel").addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    event.stopPropagation();
+onSurface("chat", () => {
+  $("attach-note").addEventListener("click", () => {
+    if (notePickerOpen()) closeNotePicker();
+    else openNotePicker();
+  });
+  $("note-picker-close").addEventListener("click", () => {
     closeNotePicker();
     $("attach-note").focus();
-    return;
-  }
-  notePickerKeydown(event);
-});
-
-// --- chat dock "more" disclosure wiring (§37C) ---
-$("chat-dock-more-btn").addEventListener("click", () => {
-  if (chatDockMoreOpen()) closeChatDockMore();
-  else openChatDockMore();
-});
-document.addEventListener("click", (event) => {
-  if (!chatDockMoreOpen()) return;
-  if (event.target.closest(".chat-dock-more, .action-menu, .select-menu, .sheet-overlay")) return;
-  closeChatDockMore();
-});
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || event.defaultPrevented || !chatDockMoreOpen()) return;
-  if (document.querySelector(".sheet-overlay:not(.hidden), .action-menu:not(.hidden)")) return;
-  closeChatDockMore();
-  $("chat-dock-more-btn").focus();
-});
-$("chat-stop").addEventListener("click", () => {
-  chatQueueState.held = true;
-  chatController?.abort();
-});
-//: **Escape stops the answer being written** (CHAT_PLAN section 6, the
-//: consistency rules: "Enter sends, Shift+Enter newline, Ctrl+K palette,
-//: Escape stops streaming"). Only Ctrl+. did (the shortcut table's
-//: `stopAI`); Escape mid-answer did nothing, measured by `chataudit.js`,
-//: part `keys`. On the document, not the tab, so it is heard from the box
-//: (open mid-answer for the queue, INBOX 1321), the Stop button or the page.
-//: Only while the Chat tab is on screen and an answer is streaming, and not
-//: while anything is open on top: a dialog, the note picker, a menu, each of
-//: which takes its own Escape first (they stop the key or prevent it).
-//: And only the answer on screen: a turn keeps streaming into the chat it
-//: was asked in while the reader opens another (`releaseChatComposer` hides
-//: Stop and gives the box back), and an Escape in the new chat's box used
-//: to stop that answer unseen (the review, 2026-09-27). Stop is shown
-//: exactly while the chat on screen is being answered, so Escape asks it.
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || event.defaultPrevented || !chatController) return;
-  if ($("tab-chat").classList.contains("hidden")) return;
-  if ($("chat-stop").classList.contains("hidden")) return;
-  if (document.querySelector(".modal-overlay:not(.hidden), .sheet-overlay:not(.hidden)")) return;
-  event.preventDefault();
-  chatQueueState.held = true;
-  chatController.abort();
-});
-$("chat-new").addEventListener("click", newChatConversation);
-$("chat-private-toggle").addEventListener("click", chatPrivateToggle);
-{
-  const sortSelect = $("chat-sidebar-sort");
-  sortSelect.value = prefs.get(CHAT_SIDEBAR_SORT_KEY, null) || "recent";
-  sortSelect.addEventListener("change", () => {
-    prefs.set(CHAT_SIDEBAR_SORT_KEY, sortSelect.value);
-    loadConversationList();
   });
-}
-//: E47: search the saved chats. A search field clears itself with its X (and Escape, where
-//: the browser does that) and says `input`, so one listener covers both.
-$("chat-sidebar-search").addEventListener("input", () => {
-  clearTimeout(loadConversationList.wait);
-  loadConversationList.wait = setTimeout(loadConversationList, 200);
-});
-$("persona-peek").addEventListener("click", togglePersonaPrompt);
-$("chat-tune-search").addEventListener("click", () => {
-  closeChatDockMore();
-  openSettingsModal("searchindex", "search-relevance-group");
+
+  // --- image attachment wiring (vision-capable models) ---
+  lazyScript("/js/attach-accept.js").then(() => { $("chat-image-input").accept = ATTACH_ACCEPT; });
+  $("attach-image").addEventListener("click", () => $("chat-image-input").click());
+  $("chat-image-input").addEventListener("change", async (e) => {
+    if (e.target.files.length) await attachChatFiles(e.target.files);
+    e.target.value = ""; // so choosing the same file twice still fires "change"
+  });
+  let notePickerSearchDebounceTimeout;
+  $("note-picker-search").addEventListener("input", () => {
+    clearTimeout(notePickerSearchDebounceTimeout);
+    notePickerSearchDebounceTimeout = setTimeout(renderNotePickerList, 150);
+  });
+  for (const button of document.querySelectorAll("#note-picker-sources [data-picker-source]")) {
+    button.addEventListener("click", () => setNotePickerSource(button.dataset.pickerSource));
+  }
+
+  $("note-picker-done").addEventListener("click", () => {
+    closeNotePicker();
+    $("chat-input").focus();
+  });
+  $("note-picker-clear").addEventListener("click", () => {
+    //: Clear means clear. This emptied `attachedNoteIds` only, so pressing it
+    //: with three files and a map ticked left every one of them staged while the
+    //: count line under the button re-read "Nothing attached yet", the panel
+    //: contradicting itself in two places at once.
+    //:
+    //: Images too, now (INBOX 485: the count still read "1 image attached"
+    //: after Clear). A staged one holds a live object URL, revoked here exactly
+    //: as the send path revokes it, or its Blob leaks for the life of the tab.
+    for (const image of attachedImages) if (image.objectUrl) URL.revokeObjectURL(image.objectUrl);
+    attachedImages = [];
+    renderImageAttachments();
+    attachedNoteIds = [];
+    attachedDocuments = [];
+    attachedFiles = [];
+    attachedBoards = [];
+    renderAttachments();
+    renderDocumentAttachments();
+    renderFileAttachments();
+    renderBoardAttachments();
+    renderNotePickerList();
+  });
+  // Click-away and Escape close it, like every other popover in the app.
+  document.addEventListener("click", (event) => {
+    if (!notePickerOpen()) return;
+    // `.action-menu` for the same reason the notifications panel needs it: a
+    // menu this panel owns is reparented to <body> while open, so a click on
+    // one of its options is not a descendant of the panel and would otherwise
+    // read as a click away. `.sheet-overlay` the same, on a phone
+    // (`openNotePicker`'s own sheet path, chat-attach.js): the panel moves
+    // out of `.note-picker` into the sheet's card, and the sheet already
+    // owns its own scrim-click and Escape dismissal, so this listener has
+    // nothing to add there and every click inside it, otherwise, closed the
+    // sheet the instant it was touched.
+    if (event.target.closest(".note-picker, .action-menu, .sheet-overlay")) return;
+    closeNotePicker();
+  });
+  $("note-picker-panel").addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      closeNotePicker();
+      $("attach-note").focus();
+      return;
+    }
+    notePickerKeydown(event);
+  });
+
+  // --- chat dock "more" disclosure wiring (§37C) ---
+  $("chat-dock-more-btn").addEventListener("click", () => {
+    if (chatDockMoreOpen()) closeChatDockMore();
+    else openChatDockMore();
+  });
+  document.addEventListener("click", (event) => {
+    if (!chatDockMoreOpen()) return;
+    if (event.target.closest(".chat-dock-more, .action-menu, .select-menu, .sheet-overlay")) return;
+    closeChatDockMore();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || event.defaultPrevented || !chatDockMoreOpen()) return;
+    if (document.querySelector(".sheet-overlay:not(.hidden), .action-menu:not(.hidden)")) return;
+    closeChatDockMore();
+    $("chat-dock-more-btn").focus();
+  });
+  //: Stop ends the answer and keeps the queue (owner, 2026-11-11): the hold stays set, so nothing
+  //: auto-sends, and the person's next Send runs the waiting messages in order (`sendChatMessage`).
+  $("chat-stop").addEventListener("click", () => {
+    chatQueue.held = true;
+    chatController?.abort();
+  });
+  //: **Escape stops the answer being written** (CHAT_PLAN section 6, the
+  //: consistency rules: "Enter sends, Shift+Enter newline, Ctrl+K palette,
+  //: Escape stops streaming"). Only Ctrl+. did (the shortcut table's
+  //: `stopAI`); Escape mid-answer did nothing, measured by `chataudit.js`,
+  //: part `keys`. On the document, not the tab, so it is heard from the box
+  //: (open mid-answer for the queue, INBOX 1321), the Stop button or the page.
+  //: Only while the Chat tab is on screen and an answer is streaming, and not
+  //: while anything is open on top: a dialog, the note picker, a menu, each of
+  //: which takes its own Escape first (they stop the key or prevent it).
+  //: And only the answer on screen: a turn keeps streaming into the chat it
+  //: was asked in while the reader opens another (`releaseChatComposer` hides
+  //: Stop and gives the box back), and an Escape in the new chat's box used
+  //: to stop that answer unseen (the review, 2026-09-27). Stop is shown
+  //: exactly while the chat on screen is being answered, so Escape asks it.
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || event.defaultPrevented || !chatController) return;
+    if ($("tab-chat").classList.contains("hidden")) return;
+    if ($("chat-stop").classList.contains("hidden")) return;
+    if (document.querySelector(".modal-overlay:not(.hidden), .sheet-overlay:not(.hidden)")) return;
+    event.preventDefault();
+    chatQueue.held = true;
+    chatController.abort();
+  });
+  $("chat-new").addEventListener("click", newChatConversation);
+  $("chat-private-toggle").addEventListener("click", chatPrivateToggle);
+  {
+    const sortSelect = $("chat-sidebar-sort");
+    sortSelect.value = prefs.get(CHAT_SIDEBAR_SORT_KEY, null) || "recent";
+    sortSelect.addEventListener("change", () => {
+      prefs.set(CHAT_SIDEBAR_SORT_KEY, sortSelect.value);
+      loadConversationList();
+    });
+  }
+  //: E47: search the saved chats. A search field clears itself with its X (and Escape, where
+  //: the browser does that) and says `input`, so one listener covers both.
+  $("chat-sidebar-search").addEventListener("input", () => {
+    clearTimeout(loadConversationList.wait);
+    loadConversationList.wait = setTimeout(loadConversationList, 200);
+  });
+  $("persona-peek").addEventListener("click", togglePersonaPrompt);
+  $("chat-tune-search").addEventListener("click", () => {
+    closeChatDockMore();
+    openSettingsModal("searchindex", "search-relevance-group");
+  });
 });
 // Searching your chats lives in the Library now (§36F): with the documents,
 // the files and the bin, and with sort beside it. This is the way there, said
@@ -668,40 +580,42 @@ window.addEventListener("tabSwitched", () => {
   if (!$("global-find-bar").classList.contains("hidden")) closeGlobalFind();
 });
 
-$("conv-browse-all").addEventListener("click", async () => {
-  //: Awaited: `libraryKind` is a `let` in library.js and the two renders are
-  //: its functions, so all three need that file present (A1). Without the
-  //: await the assignment would create a stray global that library.js then
-  //: shadows, and the Library would open unfiltered.
-  await switchTab("library");
-  libraryKind = "chat";
-  renderLibraryFilters();
-  renderLibrary();
-});
+onSurface("chat", () => {
+  $("conv-browse-all").addEventListener("click", async () => {
+    //: Awaited: `libraryKind` is a `let` in library.js and the two renders are
+    //: its functions, so all three need that file present (A1). Without the
+    //: await the assignment would create a stray global that library.js then
+    //: shadows, and the Library would open unfiltered.
+    await switchTab("library");
+    libraryKind = "chat";
+    renderLibraryFilters();
+    renderLibrary();
+  });
 
-//: **Fork: keep this thread, try another direction.** Asked for directly.
-//: The server copies (`POST /conversations/{id}/fork`) rather than branching: 
-//: see that route's docstring for why a tree with shared ancestry is the
-//: wrong size of machinery for one JSON blob per chat.
-//:
-//: Only meaningful once something has been said, so the button hides itself
-//: on an empty pane rather than offering to duplicate nothing.
-$("chat-fork").addEventListener("click", async () => {
-  if (!chatConv || chatConv.id === null) {
-    toast("Nothing to fork yet, ask something first.");
-    return;
-  }
-  try {
-    const fork = await apiJson(`/conversations/${chatConv.id}/fork`, {
-      method: "POST",
-      body: JSON.stringify({}),
-    });
-    await loadConversationList();
-    chatWriteRecord("chatForkUndo", fork);
-    toastAction(`Forked to “${fork.title}”.`, "Open it", () => openConversation(fork.id), { go: { open: "conversation", id: fork.id } });
-  } catch (error) {
-    toast(error.message || "Couldn't fork this conversation.", true);
-  }
+  //: **Fork: keep this thread, try another direction.** Asked for directly.
+  //: The server copies (`POST /conversations/{id}/fork`) rather than branching: 
+  //: see that route's docstring for why a tree with shared ancestry is the
+  //: wrong size of machinery for one JSON blob per chat.
+  //:
+  //: Only meaningful once something has been said, so the button hides itself
+  //: on an empty pane rather than offering to duplicate nothing.
+  $("chat-fork").addEventListener("click", async () => {
+    if (!chatConv || chatConv.id === null) {
+      toast("Nothing to fork yet, ask something first.");
+      return;
+    }
+    try {
+      const fork = await apiJson(`/conversations/${chatConv.id}/fork`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      await loadConversationList();
+      chatWriteRecord("chatForkUndo", fork);
+      toastAction(`Forked to “${fork.title}”.`, "Open it", () => openConversation(fork.id), { go: { open: "conversation", id: fork.id } });
+    } catch (error) {
+      toast(error.message || "Couldn't fork this conversation.", true);
+    }
+  });
 });
 
 //: Renaming, where the name is. It used to mean leaving the tab and finding
@@ -749,43 +663,47 @@ async function renameCurrentConversation() {
 
 //: Built once, at boot, the header's ⋯ is the same for every conversation,
 //: unlike a note card's, which is rebuilt per row.
-mountChatActionsMenu();
+onSurface("chat", () => {
+  mountChatActionsMenu();
 
-//: The context pill's popover is wired in usage-ledger.js, with its rows.
+  //: The context pill's popover is wired in usage-ledger.js, with its rows.
 
-$("chat-title").addEventListener("click", renameCurrentConversation);
-$("chat-title").addEventListener("keydown", (event) => {
-  //: Space and Enter, because this is a focusable `<h2>` and the browser
-  //: only gives those two keys to a real `<button>` for free.
-  if (event.key === "Enter" || event.key === " ") {
-    event.preventDefault();
-    renameCurrentConversation();
-  }
-});
-$("chat-compress").addEventListener("click", compressChatContext);
-$("chat-compress-apply").addEventListener("click", applyCompression);
-$("chat-compress-cancel").addEventListener("click", () =>
-  $("chat-compress-panel").classList.add("hidden")
-);
-$("chat-uncompress").addEventListener("click", () => {
-  // Undo is one assignment, because nothing was ever removed, the turns have
-  // been sitting there all along.
-  chatSummary = null;
-  renderCompressionState();
-  toast("Back to sending the real messages.");
+  $("chat-title").addEventListener("click", renameCurrentConversation);
+  $("chat-title").addEventListener("keydown", (event) => {
+    //: Space and Enter, because this is a focusable `<h2>` and the browser
+    //: only gives those two keys to a real `<button>` for free.
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      renameCurrentConversation();
+    }
+  });
+  $("chat-compress").addEventListener("click", compressChatContext);
+  $("chat-compress-apply").addEventListener("click", applyCompression);
+  $("chat-compress-cancel").addEventListener("click", () =>
+    $("chat-compress-panel").classList.add("hidden")
+  );
+  $("chat-uncompress").addEventListener("click", () => {
+    // Undo is one assignment, because nothing was ever removed, the turns have
+    // been sitting there all along.
+    chatSummary = null;
+    renderCompressionState();
+    toast("Back to sending the real messages.");
+  });
 });
 // Debounced, because the matcher walks every installed skill and this fires on
 // every keystroke. 250ms is under the pause between words, so the suggestion is
 // there by the time you stop typing to read it, and never mid-word.
 let chatNudgeTimer = null;
-$("chat-input").addEventListener("input", () => {
-  clearTimeout(chatNudgeTimer);
-  chatNudgeTimer = setTimeout(() => {
-    // Emptying the box by hand is the same event as sending, as far as the
-    // suggestions are concerned: the draft they were about is gone.
-    if (!$("chat-input").value.trim()) resetChatNudge();
-    else renderChatNudge();
-  }, 250);
+onSurface("chat", () => {
+  $("chat-input").addEventListener("input", () => {
+    clearTimeout(chatNudgeTimer);
+    chatNudgeTimer = setTimeout(() => {
+      // Emptying the box by hand is the same event as sending, as far as the
+      // suggestions are concerned: the draft they were about is gone.
+      if (!$("chat-input").value.trim()) resetChatNudge();
+      else renderChatNudge();
+    }, 250);
+  });
 });
 //: The composer's recall position: an index into the conversation's sent
 //: messages, or null when the box holds your own typing. `draft` is what was
@@ -818,43 +736,45 @@ function chatRecallStep(box, direction) {
   return true;
 }
 
-$("chat-input").addEventListener("keydown", (e) => {
-  // Enter sends, Shift+Enter (or Ctrl/Cmd+Enter) writes a newline. The box is
-  // a textarea now, so "send" has to be chosen rather than inherited.
-  if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-    e.preventDefault();
-    sendChatMessage();
-    return;
-  }
-  //: **ArrowUp and ArrowDown step through what you sent**, the way a terminal
-  //: or a chat app's composer does (the owner, 2026-09-24: "the small things
-  //: every user expects", then "include down arrow as well to toggle between
-  //: previous inputs"). Up from an empty box (or from a recalled message you
-  //: have not changed) fills the box with the one before; Down walks back to
-  //: the newest, then to what you had typed. A box you have typed into keeps
-  //: its arrows for moving the caret.
-  if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
-    if (chatRecallStep(e.target, e.key === "ArrowUp" ? -1 : 1)) e.preventDefault();
-  }
-});
-$("persona-select").addEventListener("change", async () => {
-  // Remember the choice so the Notes quick-ask uses the same persona.
-  const persona = $("persona-select").value;
-  await apiJson("/preferences", {
-    method: "PUT",
-    body: JSON.stringify({ active_persona: persona }),
-  }).catch(() => {});
-  // Update the local cache too, not just the server, renderChatEmptyState()
-  // and the Notes quick-ask both read prefsCache.active_persona directly,
-  // and neither reloads preferences on its own after this change.
-  if (prefsCache) prefsCache.active_persona = persona;
-  // If a fresh, empty chat is on screen right now, its greeting named the
-  // *previous* persona: redraw it rather than leaving it stale until the
-  // next "+ New" (ROADMAP Tier 3 §21).
-  if ($("chat-messages").querySelector(".chat-empty")) {
-    $("chat-messages").querySelector(".chat-empty").remove();
-    renderChatEmptyState();
-  }
+onSurface("chat", () => {
+  $("chat-input").addEventListener("keydown", (e) => {
+    // Enter sends, Shift+Enter (or Ctrl/Cmd+Enter) writes a newline. The box is
+    // a textarea now, so "send" has to be chosen rather than inherited.
+    if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      sendChatMessage();
+      return;
+    }
+    //: **ArrowUp and ArrowDown step through what you sent**, the way a terminal
+    //: or a chat app's composer does (the owner, 2026-09-24: "the small things
+    //: every user expects", then "include down arrow as well to toggle between
+    //: previous inputs"). Up from an empty box (or from a recalled message you
+    //: have not changed) fills the box with the one before; Down walks back to
+    //: the newest, then to what you had typed. A box you have typed into keeps
+    //: its arrows for moving the caret.
+    if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
+      if (chatRecallStep(e.target, e.key === "ArrowUp" ? -1 : 1)) e.preventDefault();
+    }
+  });
+  $("persona-select").addEventListener("change", async () => {
+    // Remember the choice so the Notes quick-ask uses the same persona.
+    const persona = $("persona-select").value;
+    await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ active_persona: persona }),
+    }).catch(() => {});
+    // Update the local cache too, not just the server, renderChatEmptyState()
+    // and the Notes quick-ask both read prefsCache.active_persona directly,
+    // and neither reloads preferences on its own after this change.
+    if (prefsCache) prefsCache.active_persona = persona;
+    // If a fresh, empty chat is on screen right now, its greeting named the
+    // *previous* persona: redraw it rather than leaving it stale until the
+    // next "+ New" (ROADMAP Tier 3 §21).
+    if ($("chat-messages").querySelector(".chat-empty")) {
+      $("chat-messages").querySelector(".chat-empty").remove();
+      renderChatEmptyState();
+    }
+  });
 });
 //: **Live or Source, never a separate Preview** (INBOX 430, the owner: "note
 //: forms use the live view with a source toggle, no Preview"). The note box
@@ -892,13 +812,15 @@ function setNoteSource(on) {
   syncNoteSourceButtons();
 }
 
-$("entry-preview-toggle")?.addEventListener("click", () => setNoteSource(!noteSourceOn()));
+onSurface("notes", () => {
+  $("entry-preview-toggle")?.addEventListener("click", () => setNoteSource(!noteSourceOn()));
+});
 syncNoteSourceButtons();
 
 //: The persona the greeting speaks as: the override, or Chat's own when the
 //: override is "Same as Chat", or the assistant's name when Chat has none.
 function dashboardGreetingPersona() {
-  return (prefsCache && prefsCache.dashboard_persona) || $("persona-select")?.value || aiNameNow();
+  return (prefsCache && prefsCache.dashboard_persona) || document.getElementById("persona-select")?.value || personaDisplayName(prefsCache?.active_persona);
 }
 
 //: Its face beside the picker (the owner: "I want the persona avatar to
@@ -908,7 +830,7 @@ function paintDashboardPersonaMark() {
 }
 
 for (const id of RESPONSE_MODE_SELECTS) {
-  $(id)?.addEventListener("change", (e) => setResponseMode(e.target.value));
+  onSurface(id === "ask-mode-select" ? "notes" : "chat", () => $(id).addEventListener("change", (e) => setResponseMode(e.target.value)));
 }
 // The AI status dot. Hover is CSS; these are the paths hover doesn't cover: 
 // touch, where there is no hover at all, and keyboards.
@@ -927,9 +849,11 @@ $("ai-status").addEventListener("keydown", (event) => {
 // The status bar (§36D). Every item goes somewhere: a count you cannot act on
 // is a number, and a number in permanent furniture is the decoration the
 // roadmap warned this bar would become if anything was added without a job.
-$("status-notes").addEventListener("click", () => {
-  switchTab("notes");
-  showNotesSection("browse"); // or you land on whichever sub-tab was last open
+onSurface("notes", () => {
+  $("status-notes").addEventListener("click", () => {
+    switchTab("notes");
+    showNotesSection("browse"); // or you land on whichever sub-tab was last open
+  });
 });
 $("status-reminders").addEventListener("click", () => switchTab("reminders"));
 //: A running job's slot opens Activity's Running tab, where it can stop
@@ -970,15 +894,6 @@ if (dashFind) {
 // rather than four boxes that pop into existence a second later.
 renderStatusBar();
 
-$("graph-refresh").addEventListener("click", () => {
-  graphHighlightIds = null; // a refresh clears any "similar notes" spotlight
-  renderGraph();
-});
-$("graph-export-png")?.addEventListener("click", exportGraphPng);
-$("graph-similarity").addEventListener("change", renderGraph);
-$("graph-entities")?.addEventListener("change", renderGraph);
-$("graph-documents")?.addEventListener("change", renderGraph);
-$("graph-maps")?.addEventListener("change", renderGraph);
 // The tuned-once controls, folded away. Remembered, because whether you want
 // physics sliders on screen is a property of how you use the map rather than
 // of one visit: and because a panel that reopens closed every time is one
@@ -1033,17 +948,6 @@ function setGraphOptionsOpen(open) {
 //: because this file's listeners and settings-panes.js read it.
 let graphSheetClose = null;
 
-$("graph-options-toggle").addEventListener("click", (event) => {
-  // The click must not reach the document listener below, which would read
-  // the panel it has just opened as a click outside it and close it again.
-  event.stopPropagation();
-  if (window.matchMedia(PHONE_TABS).matches) {
-    if (graphSheetClose) graphSheetClose();
-    else openGraphControlsSheet(event.currentTarget);
-    return;
-  }
-  setGraphOptionsOpen($("graph-options").classList.contains("hidden"));
-});
 //: A window dragged across the boundary with the sheet open would leave the
 //: map's controls in a dialog the desktop layout has no opener for, and the
 //: fold below 1100 moves one of the pieces the sheet borrowed. Closing puts
@@ -1055,7 +959,7 @@ window.matchMedia(PHONE_TABS).addEventListener("change", () => graphSheetClose?.
 // a panel anchored to a button that only that button can dismiss is the one
 // shape a menu never has.
 document.addEventListener("click", (event) => {
-  const panel = $("graph-options");
+  const panel = document.getElementById("graph-options");
   if (!panel || panel.classList.contains("hidden")) return;
   if (panel.contains(event.target) || $("graph-options-toggle").contains(event.target)) return;
   if (!event.target.isConnected) return;
@@ -1063,7 +967,7 @@ document.addEventListener("click", (event) => {
 });
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
-  const panel = $("graph-options");
+  const panel = document.getElementById("graph-options");
   if (!panel || panel.classList.contains("hidden")) return;
   // **The Escape is spent here.** The full-screen handler further down is on
   // the same target for the same key, and listener order alone does not stop
@@ -1074,130 +978,8 @@ document.addEventListener("keydown", (event) => {
   event.stopImmediatePropagation();
   setGraphOptionsOpen(false);
 });
-// Trace (§9), folded away the same way Options is (§37F): it is a mode you
-// step into to ask one question, not a strip worth drawing on every visit.
-// Closing it does not clear an active trace: the path stays drawn on the map
-// itself, the same as Options' sliders keep their values while hidden.
-$("graph-trace-toggle").addEventListener("click", () => {
-  const open = $("graph-trace").classList.contains("hidden");
-  setTracePanelOpen(open);
-  if (open && !graphSheetClose) setGraphOptionsOpen(false);
-});
-$("graph-focus-clear").addEventListener("click", () => {
-  graphFocusModeId = null;
-  recordTabVisit("graph", null);
-  $("graph-focus-clear").classList.add("hidden");
-  renderGraph();
-  toast("Exited Focus Mode.");
-});
-$("graph-highlight-clear").addEventListener("click", () => {
-  graphHighlightIds = null;
-  applyGraphHighlight();
-  toast("Highlight cleared.");
-});
-//: The trace strip's X leaves trace mode, strip and result both, the same
-//: as Escape: it used to be `clearTrace()`, which kept the mode on and only
-//: reset the two ends, under a tooltip that said it left (INBOX 421 d).
-$("graph-trace-clear").addEventListener("click", () => setTracePanelOpen(false));
-// The legend's own collapse: asked for twice: "the categories toggle line
-// needs to be collapsible or redesigned." A fixed row taken from the
-// canvas whether or not anyone reads it; collapsing it reclaims that row
-// entirely. Persisted like the graph's other view preferences
-// (graph-colour, right above) rather than reset every visit.
-(() => {
-  const row = document.querySelector(".graph-legend-row");
-  const toggle = $("graph-legend-toggle");
-  if (!row || !toggle) return;
-  const apply = (collapsed) => {
-    row.classList.toggle("legend-collapsed", collapsed);
-    toggle.setAttribute("aria-expanded", !collapsed);
-    toggle.title = collapsed ? "Show the legend" : "Hide the legend";
-    toggle.setAttribute("aria-label", toggle.title);
-    // A menu item, not the bare caret it was when it sat in the strip: the
-    // dock's View menu (Phase 8) names what each row does, and a row that is
-    // only an arrow names nothing.
-    setLabel(toggle, collapsed ? "ph:eye Show legend" : "ph:eye-slash Hide legend");
-  };
-  apply(prefs.get("graphLegendCollapsed", null) === "1");
-  toggle.addEventListener("click", () => {
-    const collapsed = !row.classList.contains("legend-collapsed");
-    apply(collapsed);
-    prefs.set("graphLegendCollapsed", collapsed ? "1" : "0");
-  });
-})();
-// What the colours mean, remembered like the layout is, it is a property of
-// how you read your notebook, not of one visit.
-$("graph-colour").addEventListener("change", (event) => {
-  prefs.set("graph-colour", event.target.value);
-  renderGraph();
-});
-// What the sizes mean (INBOX 430), remembered the same way.
-$("graph-size").addEventListener("change", (event) => {
-  prefs.set("graph-size", event.target.value);
-  renderGraph();
-});
-$("graph-hide-orphans").addEventListener("change", renderGraph);
-// Labels toggle just flips a class, no need to rebuild the whole map.
-$("graph-labels").addEventListener("change", (e) => {
-  $("graph-box").classList.toggle("graph-labels-hidden", !e.target.checked);
-  // The canvas renderer reads the tickbox in its own draw (a label is drawn or
-  // it is not: there is no layer to fade), so it needs one more frame.
-  if (typeof gcRequestDraw === "function") gcRequestDraw();
-  // The layer's positions are skipped while it is hidden (see graph.js's tick
-  // handler: it is one <g> per note, transformed ~300 times a settle, and
-  // moving something invisible is work nobody can see). A settled simulation
-  // has no further ticks, so turning them back on has to reposition them here
-  // or the names sit detached from their notes until something redraws.
-  graphCatchUpLabels();
-});
 //: The search box's own listener is in graph.js, with the match set it reads.
 
-// Physics sliders: persist, then rebuild the simulation with the new forces.
-for (const key of ["gravity", "spread", "link-force"]) {
-  const input = $(`graph-${key}`);
-  input.value = prefs.get(`graph-${key}`, null) ?? 50;
-  input.addEventListener("change", () => {
-    prefs.set(`graph-${key}`, input.value);
-    renderGraph();
-  });
-}
-
-// Node popup: edit a note in place on the map.
-$("graph-popup-close").addEventListener("click", () => closeGraphPopup());
-// Resizing the window changes the map's size, so an open popup needs re-clamping.
-// Only once the graph bundle has been asked for: placeGraphPopup is a stand-in
-// before that, and a bare listener made every window resize on a session that
-// never opened Graph fetch the whole bundle to clamp a popup that cannot exist.
-window.addEventListener(
-  "resize",
-  () => {
-    if (lazyModuleLoads.has("graph")) placeGraphPopup();
-  },
-  { passive: true }
-);
-$("graph-popup-save").addEventListener("click", () => saveGraphPopup());
-// Save is shown only once the note differs from what loaded (GRAPH_PLAN
-// Phase 6), so both fields have to tell the gate when they change.
-for (const id of ["graph-popup-content", "graph-popup-tags"]) {
-  $(id).addEventListener("input", syncGraphPopupSave);
-}
-// "Open in Notes" now lives in the popup's action row (renderGraphPopupActions).
-// Clicking empty canvas dismisses the popups.
-$("graph-svg").addEventListener("click", () => {
-  closeGraphPopup();
-  closeGraphNewNote();
-});
-// Grow the map: double-click empty space to add a note right there.
-$("graph-svg").addEventListener("dblclick", (event) => {
-  if (event.target.closest(".graph-node")) return; // node dblclick pins it
-  openGraphNewNote(event);
-});
-$("graph-add-node").addEventListener("click", () => openGraphNewNote(null));
-$("graph-new-close").addEventListener("click", closeGraphNewNote);
-$("graph-new-save").addEventListener("click", saveGraphNewNote);
-$("graph-new-content").addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) saveGraphNewNote();
-});
 
 //: The zoom strip's buttons and full screen are wired in graph.js, the
 //: graph's own bundle (2026-10-10, the boot script budget): nothing on the
@@ -1227,21 +1009,23 @@ function setFullscreenSurface(name, on) {
   else delete document.documentElement.dataset.fullscreen;
 }
 
-function watchFullscreenSurface(name, id, isUp) {
-  const el = $(id);
-  if (!el) return;
-  const sync = () => setFullscreenSurface(name, isUp(el) && !el.closest(".hidden"));
-  const watch = new MutationObserver(sync);
-  watch.observe(el, { attributes: true, attributeFilter: ["class"] });
-  //: A tab switched away from leaves its full screen class on, under `hidden`.
-  for (const page of document.querySelectorAll(".tab-page")) watch.observe(page, { attributes: true, attributeFilter: ["class"] });
-  sync();
+function watchFullscreenSurface(name, id, isUp, surface = "") {
+  onSurface(surface, () => {
+    const el = $(id);
+    if (!el) return;
+    const sync = () => setFullscreenSurface(name, isUp(el) && !el.closest(".hidden"));
+    const watch = new MutationObserver(sync);
+    watch.observe(el, { attributes: true, attributeFilter: ["class"] });
+    //: A tab switched away from leaves its full screen class on, under `hidden`.
+    for (const page of document.querySelectorAll(".tab-page")) watch.observe(page, { attributes: true, attributeFilter: ["class"] });
+    sync();
+  });
 }
 
-watchFullscreenSurface("graph", "graph-card", (el) => el.classList.contains("graph-fullscreen"));
+watchFullscreenSurface("graph", "graph-card", (el) => el.classList.contains("graph-fullscreen"), "graph");
 //: The board, a mind map (a board with a tree) and Present frames (which
 //: enters the same full screen first).
-watchFullscreenSurface("whiteboard", "library-view-whiteboard", (el) => el.classList.contains("wb-fullscreen"));
+watchFullscreenSurface("whiteboard", "library-view-whiteboard", (el) => el.classList.contains("wb-fullscreen"), "library");
 //: The document's focus mode, which is also the only caller of the browser's
 //: own `requestFullscreen` (documents.js), so that is covered by it.
 watchFullscreenSurface("documents", "tab-documents", (el) => el.classList.contains("doc-focus"));
@@ -1255,7 +1039,7 @@ watchFullscreenSurface("ocr", "ocr-workspace", (el) => !el.classList.contains("h
 // is asked below, rather than through a new `stopPropagation()` here.
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
-  if (!$("graph-card")?.classList.contains("graph-fullscreen")) return;
+  if (!document.getElementById("graph-card")?.classList.contains("graph-fullscreen")) return;
   if (activeOverlay() || event.helpPopoverSpent) return;
   toggleGraphFullscreen();
 });
@@ -1265,12 +1049,14 @@ document.addEventListener("keydown", (event) => {
 // subtab", every other list in the Library had one (`#library-refresh` and
 // its four siblings); the notebook's own front page did not. `loadEntries`
 // is the same reload every autosave and filter change already calls.
-$("notes-refresh")?.addEventListener("click", () => loadEntries());
-//: The Notes dock's primary (and the phone's floating +): Capture, with the
-//: box ready to type in. `showNotesSection`'s own `focus` lands on the
-//: sub-tab button, which is right for a keyboard moving between sections
-//: and wrong here, where the press meant "I want to write".
-$("notes-new-note").addEventListener("click", () => startNewNote());
+onSurface("notes", () => {
+  $("notes-refresh")?.addEventListener("click", () => loadEntries());
+  //: The Notes dock's primary (and the phone's floating +): Capture, with the
+  //: box ready to type in. `showNotesSection`'s own `focus` lands on the
+  //: sub-tab button, which is right for a keyboard moving between sections
+  //: and wrong here, where the press meant "I want to write".
+  $("notes-new-note").addEventListener("click", () => startNewNote());
+});
 
 //: **Every "new note" lands in the box, ready to type** (INBOX 434): the
 //: button, Ctrl+Shift+N, the dashboard's actions and the empty states all
@@ -1280,34 +1066,30 @@ $("notes-new-note").addEventListener("click", () => startNewNote());
 function startNewNote() {
   if ($("tab-notes").classList.contains("hidden")) switchTab("notes");
   showNotesSection("capture");
-  // The box is a live editor (documents.js `mountNoteSurface`) that mounts
-  // over the textarea the first time Capture shows, and the mount takes the
-  // focus a plain `focus()` had just set: measured in Chromium, the textarea
-  // was the active element 50ms after the press and nothing was at 750.
-  // Focusing the surface the mount resolves to lands on the editor whether
-  // this is its first showing or its fiftieth.
   const box = $("entry-content");
   box?.focus();
-  //: `mountNoteSurfaceNow` (app.js) fetches the editor's bundle when it is
-  //: not in yet; the bare `mountNoteSurface` is undefined until then, which
-  //: left the focus on the body on a fresh boot (INBOX 432, measured).
-  mountNoteSurfaceNow(box).then((surface) => surface?.focus()).catch(() => {});
+  //: A failed bundle fetch must not reject unhandled; the textarea has the focus.
+  mountNoteSurfaceNow(box).then((s) => !activeOverlay() && s?.focus()).catch(() => {});
 }
-$("select-btn").addEventListener("click", () =>
-  selectMode ? exitSelectMode() : enterSelectMode()
-);
-//: The Manage categories panel (notes-list.js), from the notes sidebar's
-//: Categories head and from Settings (INBOX 431 (e)).
-$("manage-categories-btn").addEventListener("click", () => openManageCategories());
-$("manage-categories-foot").addEventListener("click", () => openManageCategories());
-//: The tag manager (tag-manager.js, lazy): the Notes ⋯ menu and Settings
-//: (INBOX 447 (4)); the sidebar's Tags row and the palette open it too.
-//: Tidy (INBOX 691, tidy.js): fetched once the boot is done, so its count is on the dock.
-$("notes-tidy").addEventListener("click", () => openTidySheet());
+onSurface("notes", () => {
+  $("select-btn").addEventListener("click", () =>
+    selectMode ? exitSelectMode() : enterSelectMode()
+  );
+  //: The Manage categories panel (notes-list.js), from the notes sidebar's
+  //: Categories head and from Settings (INBOX 431 (e)).
+  $("manage-categories-btn").addEventListener("click", () => openManageCategories());
+  $("manage-categories-foot").addEventListener("click", () => openManageCategories());
+  //: The tag manager (tag-manager.js, lazy): the Notes ⋯ menu and Settings
+  //: (INBOX 447 (4)); the sidebar's Tags row and the palette open it too.
+  //: Tidy (INBOX 691, tidy.js): fetched once the boot is done, so its count is on the dock.
+  $("notes-tidy").addEventListener("click", () => openTidySheet());
+});
 setTimeout(() => ensureModule("tidy"), 4e3);
-$("notes-manage-tags").addEventListener("click", () => {
-  $("notes-more-menu")?.removeAttribute("open");
-  openTagsSheet();
+onSurface("notes", () => {
+  $("notes-manage-tags").addEventListener("click", () => {
+    $("notes-more-menu")?.removeAttribute("open");
+    openTagsSheet();
+  });
 });
 
 //: **Select all, as one toggle** (owner: "no select all option??"). Every
@@ -1324,7 +1106,9 @@ function toggleSelectAllRows(rows, repaint) {
   updateBatchCount();
   repaint();
 }
-$("batch-select-all").addEventListener("click", () => toggleSelectAllRows(libraryVisibleRows(), renderEntries));
+onSurface("notes", () => {
+  $("batch-select-all").addEventListener("click", () => toggleSelectAllRows(libraryVisibleRows(), renderEntries));
+});
 //: Notes and boards only, the rule `timelineRowEl` applies to its ticks: the
 //: bar's actions are actions on an Entry, and a document or reminder id in
 //: `selectedIds` would be handed to the wrong table (a delete of the wrong
@@ -1332,46 +1116,30 @@ $("batch-select-all").addEventListener("click", () => toggleSelectAllRows(librar
 function timelineSelectableRows() {
   return timelineVisibleRows().filter((row) => row.kind === "note" || row.kind === "board");
 }
-$("timeline-batch-select-all")?.addEventListener("click", () =>
-  toggleSelectAllRows(timelineSelectableRows(), paintTimeline)
-);
-
-$("batch-tag").addEventListener("click", batchTag);
-$("batch-delete").addEventListener("click", batchDelete);
-$("batch-cancel").addEventListener("click", exitSelectMode);
-
-$("tools-toggle").addEventListener("change", async () => {
-  // The pill reads from this checkbox, so anything else that flips it, a
-  // skill that needs tools, a restored preference, has to redraw the pair or
-  // the two disagree about which mode you are in.
-  renderChatModeSeg();
-  // Remember the choice so it survives restarts.
-  await apiJson("/preferences", {
-    method: "PUT",
-    body: JSON.stringify({ tools_enabled: $("tools-toggle").checked }),
-  }).catch(() => {});
+onSurface("timeline", () => {
+  $("timeline-batch-select-all").addEventListener("click", () => toggleSelectAllRows(timelineSelectableRows(), paintTimeline));
 });
 
-// In-chat web-search toggle: reflects and flips the web_search_enabled pref,
-// with a clear active state (it's the same setting as Settings, Web search).
-function renderWebSearchToggle() {
-  const on = Boolean(prefsCache && prefsCache.web_search_enabled);
-  const button = $("web-search-toggle");
-  button.classList.toggle("active", on);
-  button.setAttribute("aria-pressed", on ? "true" : "false");
-  //: **Web stays pressable with no model, and says what it does then** (the
-  //: owner, 2026-10-10: "Do plan and web search work with the composer??").
-  //: The answer from your notes never searches the web: a search is a tool
-  //: call, and tools need Agent mode. The button also opens the search panel,
-  //: which works with no model at all, so greying it would take browsing away
-  //: to say something a title can say.
-  button.dataset.enabledTitle ??= button.title;
-  button.title = !agentModeAvailable()
-    ? "Browse the web here. With no model, answers come from your notes only."
-    : on && !$("tools-toggle").checked
-      ? "Atlas searches in Agent mode, not Ask."
-      : button.dataset.enabledTitle;
-}
+onSurface("notes", () => {
+  $("batch-tag").addEventListener("click", batchTag);
+  $("batch-delete").addEventListener("click", batchDelete);
+  $("batch-cancel").addEventListener("click", exitSelectMode);
+});
+
+onSurface("chat", () => {
+  $("tools-toggle").addEventListener("change", async () => {
+    // The pill reads from this checkbox, so anything else that flips it, a
+    // skill that needs tools, a restored preference, has to redraw the pair or
+    // the two disagree about which mode you are in.
+    renderChatModeSeg();
+    // Remember the choice so it survives restarts.
+    await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ tools_enabled: $("tools-toggle").checked }),
+    }).catch(() => {});
+  });
+});
+
 // Plan Plan: send what is in the box as a request that must be planned first.
 //
 // The instruction is a sentence rather than a flag on the request because the
@@ -1412,26 +1180,28 @@ function renderPlanToggle() {
     : `Plan mode: plan the request first, ${aiNameNow()} draws the steps and shows them before it starts`;
 }
 
-$("chat-plan").addEventListener("click", async () => {
-  planModeOn = !planModeOn;
-  renderPlanToggle();
-  if (!planModeOn) {
-    toast("Plan mode off.");
-    return;
-  }
-  // A plan whose steps cannot be carried out is a list, so arming the mode
-  // arms what it needs. Announced rather than silent: a mode that changed
-  // under you and said so beats "why did nothing happen?".
-  if (!$("tools-toggle").checked) {
-    await setChatMode("agent");
-    toast("Plan mode on, and switched to Agent, a plan needs to be able to act.");
-  } else {
-    toast("Plan mode on: your next message gets planned first.");
-  }
-  $("chat-input").focus();
-});
+onSurface("chat", () => {
+  $("chat-plan").addEventListener("click", async () => {
+    planModeOn = !planModeOn;
+    renderPlanToggle();
+    if (!planModeOn) {
+      toast("Plan mode off.");
+      return;
+    }
+    // A plan whose steps cannot be carried out is a list, so arming the mode
+    // arms what it needs. Announced rather than silent: a mode that changed
+    // under you and said so beats "why did nothing happen?".
+    if (!$("tools-toggle").checked) {
+      await setChatMode("agent");
+      toast("Plan mode on, and switched to Agent, a plan needs to be able to act.");
+    } else {
+      toast("Plan mode on: your next message gets planned first.");
+    }
+    $("chat-input").focus();
+  });
 
-renderPlanToggle();
+  renderPlanToggle();
+});
 
 //: `openFirst` is the button's own click: with web on and the panel shut it opens the
 //: panel rather than turning web off. The palette and slash row pass nothing and always toggle.
@@ -1463,128 +1233,111 @@ async function toggleWebSearch({ openFirst = false } = {}) {
 }
 //: On with the panel shut, a click opens the panel rather than turning web off (the owner,
 //: 2026-10-26: it took off-then-on to see it). A click with the panel open turns web off.
-$("web-search-toggle").addEventListener("click", () => toggleWebSearch({ openFirst: true }));
-$("web-panel-close").addEventListener("click", () => toggleWebPanel(false));
-$("web-panel").addEventListener("keydown", (e) => {
-  if (e.key !== "Escape" || e.defaultPrevented) return;
-  toggleWebPanel(false);
-  $("web-search-toggle").focus();
-});
-//: Enter searches; there is no Search button to press. ArrowDown walks from
-//: the field into the results (and ArrowUp from the first result back to the
-//: field, below), which is how every search list the owner compares this to
-//: behaves. Skipped while an input method is composing, where Enter picks a
-//: candidate.
-$("web-query").addEventListener("keydown", (e) => {
-  if (e.isComposing) return;
-  if (e.key === "Enter") {
-    e.preventDefault();
-    runWebSearch();
-  } else if (e.key === "ArrowDown") {
-    const first = document.querySelector(
-      "#web-reader:not(.hidden) #web-reader-back, #web-results .web-result-title, #web-search-history:not(.hidden) .web-recent"
-    );
-    if (first) {
+onSurface("chat", () => {
+  $("web-search-toggle").addEventListener("click", () => toggleWebSearch({ openFirst: true }));
+  $("web-panel-close").addEventListener("click", () => toggleWebPanel(false));
+  $("web-panel").addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" || e.defaultPrevented) return;
+    toggleWebPanel(false);
+    $("web-search-toggle").focus();
+  });
+  //: Enter searches; there is no Search button to press. ArrowDown walks from
+  //: the field into the results (and ArrowUp from the first result back to the
+  //: field, below), which is how every search list the owner compares this to
+  //: behaves. Skipped while an input method is composing, where Enter picks a
+  //: candidate.
+  $("web-query").addEventListener("keydown", (e) => {
+    if (e.isComposing) return;
+    if (e.key === "Enter") {
       e.preventDefault();
-      first.focus();
+      runWebSearch();
+    } else if (e.key === "ArrowDown") {
+      const first = document.querySelector(
+        "#web-reader:not(.hidden) #web-reader-back, #web-results .web-result-title, #web-search-history:not(.hidden) .web-recent"
+      );
+      if (first) {
+        e.preventDefault();
+        first.focus();
+      }
+    } else if (e.key === "Escape" && webRequest) {
+      e.preventDefault();
+      e.stopPropagation();
+      stopWebRequest();
     }
-  } else if (e.key === "Escape" && webRequest) {
+  });
+  $("web-query").addEventListener("input", renderWebSearchHistory);
+  $("web-stop").addEventListener("click", stopWebRequest);
+  $("web-results").addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowUp" || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const first = $("web-results").querySelector(".web-result-title");
+    if (e.target !== first) return;
+    e.preventDefault();
+    $("web-query").focus();
+  });
+  //: The recent rows walk with the arrows too; they are a short vertical list,
+  //: so this is the plain previous/next rather than ARROW_NAV_LISTS's geometry.
+  $("web-search-history").addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    const rows = [...$("web-search-history").querySelectorAll(".web-recent")];
+    const at = rows.indexOf(e.target);
+    if (at < 0) return;
+    e.preventDefault();
+    const next = rows[at + (e.key === "ArrowDown" ? 1 : -1)];
+    (next || (e.key === "ArrowUp" ? $("web-query") : rows[at])).focus();
+  });
+  $("web-reader-back").addEventListener("click", closeWebReader);
+  //: Escape inside the reader goes back to the results, as a browser's Back
+  //: would; the find bar has its own Escape and stops it first.
+  $("web-reader").addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" || e.defaultPrevented) return;
     e.preventDefault();
     e.stopPropagation();
-    stopWebRequest();
-  }
+    closeWebReader();
+  });
+  $("web-reader-save").addEventListener("click", async () => {
+    await ensureModule("webClip");
+    saveWebPageAsNote();
+  });
+  //: Same act as the result row's own "Save as bookmark", from the other side
+  //: of the panel: you often only decide a page is worth keeping after reading
+  //: it, and until now that decision had nowhere to go from here.
+  $("web-reader-bookmark").addEventListener("click", async () => {
+    await ensureModule("webClip");
+    readerBookmark();
+  });
+  $("web-reader-ask").addEventListener("click", () => {
+    if (webReaderPage) askAboutPage(webReaderPage.url, webReaderPage.title);
+  });
+  $("web-reader-cite").addEventListener("click", () => {
+    if (webReaderPage) citeWebPage(webReaderPage);
+  });
+  $("web-reader-copy").addEventListener("click", (e) => {
+    if (webReaderPage) copyWebLink(webReaderPage.url, e.currentTarget);
+  });
+  $("web-reader-open").addEventListener("click", () => {
+    if (webReaderPage) openWebPageExternally(webReaderPage.url);
+  });
+  $("web-reader-find").addEventListener("click", () => openGlobalFind({ scope: "web-reader" }));
 });
-$("web-query").addEventListener("input", renderWebSearchHistory);
-$("web-stop").addEventListener("click", stopWebRequest);
-$("web-results").addEventListener("keydown", (e) => {
-  if (e.key !== "ArrowUp" || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-  const first = $("web-results").querySelector(".web-result-title");
-  if (e.target !== first) return;
-  e.preventDefault();
-  $("web-query").focus();
-});
-//: The recent rows walk with the arrows too; they are a short vertical list,
-//: so this is the plain previous/next rather than ARROW_NAV_LISTS's geometry.
-$("web-search-history").addEventListener("keydown", (e) => {
-  if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-  const rows = [...$("web-search-history").querySelectorAll(".web-recent")];
-  const at = rows.indexOf(e.target);
-  if (at < 0) return;
-  e.preventDefault();
-  const next = rows[at + (e.key === "ArrowDown" ? 1 : -1)];
-  (next || (e.key === "ArrowUp" ? $("web-query") : rows[at])).focus();
-});
-$("web-reader-back").addEventListener("click", closeWebReader);
-//: Escape inside the reader goes back to the results, as a browser's Back
-//: would; the find bar has its own Escape and stops it first.
-$("web-reader").addEventListener("keydown", (e) => {
-  if (e.key !== "Escape" || e.defaultPrevented) return;
-  e.preventDefault();
-  e.stopPropagation();
-  closeWebReader();
-});
-$("web-reader-save").addEventListener("click", async () => {
-  await ensureModule("webClip");
-  saveWebPageAsNote();
-});
-//: Same act as the result row's own "Save as bookmark", from the other side
-//: of the panel: you often only decide a page is worth keeping after reading
-//: it, and until now that decision had nowhere to go from here.
-$("web-reader-bookmark").addEventListener("click", async () => {
-  await ensureModule("webClip");
-  readerBookmark();
-});
-$("web-reader-ask").addEventListener("click", () => {
-  if (webReaderPage) askAboutPage(webReaderPage.url, webReaderPage.title);
-});
-$("web-reader-cite").addEventListener("click", () => {
-  if (webReaderPage) citeWebPage(webReaderPage);
-});
-$("web-reader-copy").addEventListener("click", async (e) => {
-  const button = e.currentTarget;
-  await ensureModule("webClip");
-  if (webReaderPage) copyWebLink(webReaderPage.url, button);
-});
-$("web-reader-open").addEventListener("click", async () => {
-  await ensureModule("webClip");
-  if (webReaderPage) openWebPageExternally(webReaderPage.url);
-});
-$("web-reader-find").addEventListener("click", () => openGlobalFind({ scope: "web-reader" }));
 
-// Reminders (Wave D). The dashboard's own wiring (dash-edit,
-// dash-widgets-open/search) moved to dashboard.js along with the code it
-// drives; this comment used to cover both.
-//: Enter adds it, the way a one-line "add" field works everywhere; a
-//: reminder had to be clicked in with the mouse after typing it. Skipped
-//: while an input method is composing, where Enter picks a candidate.
-//: Escape in the sentence box clears what was typed, and on an empty box leaves
-//: it, the way a search field behaves (WORLD_CLASS row 32: it did nothing). On a
-//: phone the form is a sheet whose own Escape closes it, so a press the sheet
-//: has taken is left alone.
-$("reminder-text")?.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !event.defaultPrevented && !event.isComposing) {
-    const box = event.currentTarget;
-    if (box.value) {
-      event.preventDefault();
-      event.stopPropagation();
-      box.value = "";
-    } else if (!document.querySelector(".sheet-overlay:not(.hidden)")) {
-      box.blur();
-    }
-    return;
-  }
-  if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
-  event.preventDefault();
-  $("reminder-add").click();
-});
-$("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
+//: `window.open` with `noopener`: in the desktop window pywebview hands a new-window request to the system
+//: browser, and in a browser tab it is a new tab. `safeHref` because the URL came from a third party.
+//: **Here, not in the web bundle** (INBOX 1716, the owner's log: `wiring.js BUTTON#web-reader-open.onclick 324ms`):
+//: the reader's Open press waited for `web-clip.js` and `web-results.js` to arrive and parse (151 to 206 ms from the
+//: press to the new tab at 4x CPU) to run one line. The bundle's result rows call it too, from the same scope.
+function openWebPageExternally(url) {
+  window.open(safeHref(url), "_blank", "noopener,noreferrer");
+}
 
+//: The reader's Copy link, here for the same reason: one clipboard write and a line for a screen reader.
+async function copyWebLink(url, button) {
+  if (await copyToClipboard(url, button)) announce("Link copied.");
+}
+
+//: Enter adds it; Escape clears the box, and on an empty one leaves it (a phone sheet's own Escape wins).
 // **What a phone comes to Reminders for is the list** (INBOX 392,
 // UI_MODERNISATION_PLAN Phase 11 item 12): what is due, and ticking it off.
-// Measured at 390 before: the add form (the sentence box, the text, date,
-// time, priority and repeat fields, the quick-set strip and a note) filled
-// the whole first screen and the list began at y=836 of 844; at 768x1024 the
-// form wrapped to 690px and the list began at y=752. Below 1100 (the width at
+// Measured at 390: the form filled the first screen. Below 1100 (the width at
 // which the rest of the app goes to one column) the form leaves the page and
 // the dock's "New reminder", floated as the + by `FAB_IDS` below 600, opens
 // it as a sheet: the form itself, moved in and put back on close, so its
@@ -1621,78 +1374,19 @@ function openReminderCompose() {
   field()?.focus();
 }
 
-$("reminders-new")?.addEventListener("click", openReminderCompose);
-$("reminder-clear-done").addEventListener("click", clearDoneReminders);
-$("reminders-page-size").value = remindersPageSize;
-$("reminders-page-size").addEventListener("change", (e) => {
-  remindersPageSize = e.target.value;
-  prefs.set("reminders-page-size", remindersPageSize);
-  remindersDonePage = 1;
-  loadReminders();
-});
-$("reminders-done-page-prev").addEventListener("click", () => {
-  if (remindersDonePage <= 1) return;
-  remindersDonePage -= 1;
-  loadReminders();
-});
-$("reminders-done-page-next").addEventListener("click", () => {
-  remindersDonePage += 1; // clamped back down inside paginateDoneReminders if this overshoots
-  loadReminders();
-});
-for (const button of document.querySelectorAll("#reminder-filter button")) {
-  button.addEventListener("click", () => {
-    reminderFilter = button.dataset.filter;
-    for (const b of document.querySelectorAll("#reminder-filter button")) {
-      setActiveChoice(b, b === button);
-    }
-    remindersDonePage = 1; // a filter switch can change what's even in Done
-    loadReminders();
-  });
-}
-//: **One calendar** (TIMELINE_PLAN decision 19, INBOX 768): Calendar opens
-//: the Timeline's calendar showing only reminders, where a reminder drags to
-//: another day; the month grid this tab drew beside its list went.
-$("reminder-view-calendar").addEventListener("click", () => {
-  switchTab("timeline");
-  timelineCalendarCall("timelineCalendarReminders");
-});
-$("reminder-magic-add").addEventListener("click", magicAddReminder);
-$("reminder-magic").addEventListener("keydown", (e) => {
-  // Now a textarea, so Enter has to be claimed explicitly to keep the
-  // one-line-and-go path. Shift+Enter is the escape hatch for a real newline.
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    magicAddReminder();
-  }
-});
-for (const button of document.querySelectorAll("#reminder-presets button")) {
-  button.addEventListener("click", () => {
-    setDue(toLocalInputValue(presetDate(button.dataset.preset).toISOString()));
-    if (!$("reminder-text").value.trim()) $("reminder-text").focus();
-  });
-}
 // Nudges: adjusting an existing time is far quicker than retyping one.
 //: Each nudge fades the readout in (`.stepper-fresh`), so the change is seen
 //: where it lands. Arrow keys on a focused stepper nudge too (DESIGN.md
 //: "Stepper"): up or right later, down or left earlier, by 15 minutes, and
 //: by a day with Shift.
-//: **Undo the nudges** (the owner at release: "is it possible to cancel or
-//: reset any adjustments made with the buttons in this reminders bar?").
-//: The steppers keep a running total; a Reset button beside them appears
-//: once it is non-zero and moves the time back by exactly that much. Typing
-//: a date or time, or saving, starts the total again.
+//: Nudges keep a running total; Reset (shown once it is non-zero) undoes exactly that. Typing or saving restarts it.
 let dueNudgeNet = 0;
 const dueNudgeReset = document.createElement("button");
 dueNudgeReset.type = "button";
 dueNudgeReset.className = "ghost small stepper-reset hidden";
 dueNudgeReset.title = "Put the time back to where it was before the steppers";
 setLabel(dueNudgeReset, "ph:arrow-counter-clockwise Reset");
-dueNudgeReset.addEventListener("click", () => {
-  if (dueNudgeNet) nudgeDue(-dueNudgeNet);
-  dueNudgeNet = 0;
-  dueNudgeReset.classList.add("hidden");
-});
-document.querySelector("#reminder-due-row .stepper-pair")?.after(dueNudgeReset);
+
 function clearDueNudges() {
   dueNudgeNet = 0;
   dueNudgeReset.classList.add("hidden");
@@ -1706,24 +1400,99 @@ function nudgeDueShown(minutes) {
   void readout.offsetWidth;
   readout.classList.add("stepper-fresh");
 }
-$("reminder-due-nudge-down").addEventListener("click", () => nudgeDueShown(-15));
-$("reminder-due-nudge-up").addEventListener("click", () => nudgeDueShown(15));
-$("reminder-due-day-down").addEventListener("click", () => nudgeDueShown(-60 * 24));
-$("reminder-due-day-up").addEventListener("click", () => nudgeDueShown(60 * 24));
-for (const stepper of document.querySelectorAll("#reminder-due-row .stepper")) {
-  stepper.addEventListener("keydown", (event) => {
-    const sign = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1 }[event.key];
-    if (!sign || event.altKey || event.ctrlKey || event.metaKey) return;
+onSurface("reminders", () => {
+  $("reminder-text")?.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !event.defaultPrevented && !event.isComposing) {
+      const box = event.currentTarget;
+      if (box.value) {
+        event.preventDefault();
+        event.stopPropagation();
+        box.value = "";
+      } else if (!document.querySelector(".sheet-overlay:not(.hidden)")) {
+        box.blur();
+      }
+      return;
+    }
+    if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
     event.preventDefault();
-    nudgeDueShown(sign * (event.shiftKey ? 60 * 24 : 15));
+    $("reminder-add").click();
   });
-}
-// The two visible fields drive the hidden value.
-$("reminder-date").addEventListener("input", () => { clearDueNudges(); syncDueFromParts(); });
-$("reminder-time").addEventListener("input", () => { clearDueNudges(); syncDueFromParts(); });
-//: Adding the reminder ends the nudging (delegated: #reminder-add has its own handler).
-$("reminder-add").parentElement.addEventListener("click", (event) => {
-  if (event.target.closest("#reminder-add")) clearDueNudges();
+  $("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
+  $("reminders-new")?.addEventListener("click", openReminderCompose);
+  $("reminder-clear-done").addEventListener("click", clearDoneReminders);
+  $("reminders-page-size").value = remindersPageSize;
+  $("reminders-page-size").addEventListener("change", (e) => {
+    remindersPageSize = e.target.value;
+    prefs.set("reminders-page-size", remindersPageSize);
+    remindersDonePage = 1;
+    loadReminders();
+  });
+  $("reminders-done-page-prev").addEventListener("click", () => {
+    if (remindersDonePage <= 1) return;
+    remindersDonePage -= 1;
+    loadReminders();
+  });
+  $("reminders-done-page-next").addEventListener("click", () => {
+    remindersDonePage += 1; // clamped back down inside paginateDoneReminders if this overshoots
+    loadReminders();
+  });
+  for (const button of document.querySelectorAll("#reminder-filter button")) {
+    button.addEventListener("click", () => {
+      reminderFilter = button.dataset.filter;
+      for (const b of document.querySelectorAll("#reminder-filter button")) {
+        setActiveChoice(b, b === button);
+      }
+      remindersDonePage = 1; // a filter switch can change what's even in Done
+      loadReminders();
+    });
+  }
+  //: **One calendar** (TIMELINE_PLAN decision 19, INBOX 768): Calendar opens
+  //: the Timeline's calendar showing only reminders, where a reminder drags to
+  //: another day; the month grid this tab drew beside its list went.
+  $("reminder-view-calendar").addEventListener("click", () => {
+    switchTab("timeline");
+    timelineCalendarCall("timelineCalendarReminders");
+  });
+  $("reminder-magic-add").addEventListener("click", magicAddReminder);
+  $("reminder-magic").addEventListener("keydown", (e) => {
+    // Now a textarea, so Enter has to be claimed explicitly to keep the
+    // one-line-and-go path. Shift+Enter is the escape hatch for a real newline.
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      magicAddReminder();
+    }
+  });
+  for (const button of document.querySelectorAll("#reminder-presets button")) {
+    button.addEventListener("click", () => {
+      setDue(toLocalInputValue(presetDate(button.dataset.preset).toISOString()));
+      if (!$("reminder-text").value.trim()) $("reminder-text").focus();
+    });
+  }
+  dueNudgeReset.addEventListener("click", () => {
+    if (dueNudgeNet) nudgeDue(-dueNudgeNet);
+    dueNudgeNet = 0;
+    dueNudgeReset.classList.add("hidden");
+  });
+  document.querySelector("#reminder-due-row .stepper-pair")?.after(dueNudgeReset);
+  $("reminder-due-nudge-down").addEventListener("click", () => nudgeDueShown(-15));
+  $("reminder-due-nudge-up").addEventListener("click", () => nudgeDueShown(15));
+  $("reminder-due-day-down").addEventListener("click", () => nudgeDueShown(-60 * 24));
+  $("reminder-due-day-up").addEventListener("click", () => nudgeDueShown(60 * 24));
+  for (const stepper of document.querySelectorAll("#reminder-due-row .stepper")) {
+    stepper.addEventListener("keydown", (event) => {
+      const sign = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1 }[event.key];
+      if (!sign || event.altKey || event.ctrlKey || event.metaKey) return;
+      event.preventDefault();
+      nudgeDueShown(sign * (event.shiftKey ? 60 * 24 : 15));
+    });
+  }
+  // The two visible fields drive the hidden value.
+  $("reminder-date").addEventListener("input", () => { clearDueNudges(); syncDueFromParts(); });
+  $("reminder-time").addEventListener("input", () => { clearDueNudges(); syncDueFromParts(); });
+  //: Adding the reminder ends the nudging (delegated: #reminder-add has its own handler).
+  $("reminder-add").parentElement.addEventListener("click", (event) => {
+    if (event.target.closest("#reminder-add")) clearDueNudges();
+  });
 });
 // --- duplicate tidy-up -----------------------------------------------------------
 // Finding is arithmetic and always available. Merging offers the AI when it's
@@ -1736,4 +1505,37 @@ document.addEventListener("focusin", function autocorrectDoor(event) {
   if (!event.target.closest?.("[data-autocorrect], .note-surface")) return;
   document.removeEventListener("focusin", autocorrectDoor);
   lazyScript("/js/autocorrect.js");
+});
+
+
+onSurface("graph", () => {
+  // Physics sliders: persist, then rebuild the simulation with the new forces.
+  for (const key of ["gravity", "spread", "link-force"]) {
+    const input = $(`graph-${key}`);
+    input.value = prefs.get(`graph-${key}`, null) ?? 50;
+    input.addEventListener("change", () => {
+      prefs.set(`graph-${key}`, input.value);
+      renderGraph();
+    });
+  }
+
+  // Resizing the window changes the map's size, so an open popup needs re-clamping.
+  // Only once the graph bundle has been asked for: placeGraphPopup is a stand-in
+  // before that, and a bare listener made every window resize on a session that
+  // never opened Graph fetch the whole bundle to clamp a popup that cannot exist.
+  window.addEventListener(
+    "resize",
+    () => {
+      if (lazyModuleLoads.has("graph")) placeGraphPopup();
+    },
+    { passive: true }
+  );
+});
+
+onSurface("graph", () => {
+  // Save is shown only once the note differs from what loaded (GRAPH_PLAN
+  // Phase 6), so both fields have to tell the gate when they change.
+  for (const id of ["graph-popup-content", "graph-popup-tags"]) {
+    $(id).addEventListener("input", syncGraphPopupSave);
+  }
 });

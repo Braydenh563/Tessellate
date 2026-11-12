@@ -6,13 +6,14 @@ See `repo/__init__.py` for the rules every repository keeps.
 
 from __future__ import annotations
 
+import hashlib
 from datetime import date, datetime, timedelta, timezone
 from typing import Callable
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import recognise as rec
+from tessellate.ai import recognise_reminders
 from tessellate.core.database import Reminder, utcnow
 from tessellate.entry.manager import log_action
 from tessellate.repo import Conflict, NotFound
@@ -77,6 +78,28 @@ def every(session: Session, *, include_done: bool = False, limit: int | None = N
     if limit is not None:
         statement = statement.limit(limit)
     return list(session.scalars(statement))
+
+
+def open_stamp(session: Session, limit: int) -> dict:
+    """What the page's once-a-minute look needs to know whether its list is
+    still true (audit 1028 K32): how many are open, the soonest, and a stamp
+    over the same first `limit` open rows `page` would answer, with the columns
+    the badge, the title count, the due timer and an announcement read. Columns
+    only, no row objects: this is the cheap question that spares the dear one."""
+    rows = session.execute(
+        select(
+            Reminder.id, Reminder.due_at, Reminder.text, Reminder.alert_minutes, Reminder.priority,
+            Reminder.recurring, Reminder.entry_id, Reminder.document_id,
+        )
+        .where(Reminder.done.is_(False))
+        .order_by(*ORDER)
+        .limit(limit)
+    ).all()
+    total = session.scalar(select(func.count(Reminder.id)).where(Reminder.done.is_(False))) or 0
+    digest = hashlib.sha1(usedforsecurity=False)
+    for row in rows:
+        digest.update(repr(tuple(row)).encode("utf-8"))
+    return {"open": total, "next_due_at": rows[0].due_at.isoformat() if rows else None, "stamp": digest.hexdigest()[:16]}
 
 
 def count(session: Session) -> int:
@@ -178,7 +201,7 @@ def complete(session: Session, reminder: Reminder, tz_offset_minutes: int) -> No
         # A 31st clamped to the 28th remembers it was a 31st (Brief 101b).
         anchor = reminder.repeat_day or due.day
         for _ in range(1000):
-            due = rec.next_occurrence(reminder.recurring, due, anchor)
+            due = recognise_reminders.next_occurrence(reminder.recurring, due, anchor)
             if due > now:
                 break
         reminder.repeat_day = anchor if anchor > 28 else None
@@ -191,6 +214,10 @@ def complete(session: Session, reminder: Reminder, tz_offset_minutes: int) -> No
 
 
 def snooze(session: Session, reminder: Reminder, by: timedelta) -> None:
+    """Later by `by`. A done reminder stays done: a notification left on screen after the tick
+    must not open it again (INBOX 1747, row 5)."""
+    if reminder.done:
+        return
     reminder.due_at = utcnow() + by
     reminder.done = False
     log_action(session, "edited", "reminder", reminder.id, "snoozed")

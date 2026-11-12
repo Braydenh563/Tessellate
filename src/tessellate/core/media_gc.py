@@ -25,8 +25,9 @@ import re
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from tessellate.core import reading_bin
 from tessellate.core.database import BoardLibraryItem, Conversation, Document, Entry, MediaUpload, WhiteboardObject
-from tessellate.entry import manager
+from tessellate.entry import manager_text
 
 # Same shape routes_whiteboard.py's own MEDIA_URL_RE validates on the way in, 
 # kept independent (not imported) since this only ever reads, never resolves
@@ -104,7 +105,7 @@ def _referenced_filenames(session: Session) -> tuple[set[str], bool]:
         if entry.is_private and crypto.is_encrypted(entry.content) and vault.key() is None:
             skipped_private = True
             continue
-        referenced.update(referenced_names(manager.readable_content(entry)))
+        referenced.update(referenced_names(manager_text.readable_content(entry)))
 
     return referenced, skipped_private
 
@@ -136,6 +137,62 @@ def _conversation_referenced_ids(session: Session) -> set[int]:
     return ids
 
 
+def _board_uses(session: Session, note) -> None:  # noqa: ANN001
+    #: Every object, for the reason `_referenced_filenames` gives above: a map
+    #: topic carrying a picture is a use of that upload, and a screen that says
+    #: "nothing points at this file" while a topic is drawing it is the screen
+    #: that offers to delete it.
+    for obj in session.scalars(select(WhiteboardObject).where(_could_name_a_file(WhiteboardObject.data))):
+        for name in referenced_names(obj.data):
+            note(name, "board", obj.board_id, "Whiteboard")
+
+    for entry in session.scalars(
+        select(Entry).where(Entry.is_deleted == False, _could_name_a_file(Entry.board_settings))  # noqa: E712
+    ):
+        for name in referenced_names(entry.board_settings or ""):
+            note(name, "board", entry.id, "Board background")
+
+    for item in session.scalars(select(BoardLibraryItem)):
+        for name in referenced_names(json.dumps(item.payload or {})):
+            note(name, "library", item.id, f"Board library: {item.name}")
+
+
+def _note_uses(session: Session, note) -> bool:  # noqa: ANN001
+    """Record each note's media uses; True when a locked private note was skipped."""
+    from tessellate.core import crypto, vault
+
+    skipped_private = False
+    for entry in session.scalars(
+        select(Entry).where(Entry.is_deleted == False, _could_name_a_file(Entry.content))  # noqa: E712
+    ):
+        if entry.is_private and crypto.is_encrypted(entry.content) and vault.key() is None:
+            skipped_private = True
+            continue
+        content = manager_text.readable_content(entry)
+        for name in referenced_names(content):
+            # **A private note contributes the link but never its words.**
+            # The label is rendered in the Library's file gallery, and the
+            # first line of a private note is exactly the kind of thing that
+            # must not appear on a wall of thumbnails anyone glancing at the
+            # screen can read. The app already has this convention: a
+            # document's linked-notes list (`routes_documents._linked_notes`)
+            # sends `is_private` and the UI draws a lock instead of the
+            # preview. Same answer here: the connection is still shown and
+            # still clickable, because knowing *that* a file is in use is what
+            # stops it being deleted; only the wording is withheld.
+            if entry.is_private:
+                note(name, "note", entry.id, "Private note")
+                # Notes made private before the flag existed are marked the
+                # first time they are read here with the vault open.
+                manager_text.flag_private_media(session, content)
+                continue
+            # `plain_label`, not the raw first line: a chip cannot render
+            # markdown, and one that tries shows `# Title ![alt](/media/…)`
+            # verbatim: reported exactly that way.
+            note(name, "note", entry.id, manager_text.plain_label(content))
+    return skipped_private
+
+
 def usage_map(session: Session) -> tuple[dict[str, list[dict]], bool]:
     """The reverse of `_referenced_filenames`: filename -> where it is used.
 
@@ -156,66 +213,18 @@ def usage_map(session: Session) -> tuple[dict[str, list[dict]], bool]:
     read, so the answer is incomplete rather than negative, and the UI says so
     instead of claiming a file is unused.
     """
-    from tessellate.core import crypto, vault
-
     used: dict[str, list[dict]] = {}
-    skipped_private = False
 
     def note(name: str, kind: str, ident, label: str) -> None:
         used.setdefault(name, []).append(
             {"kind": kind, "id": ident, "label": (label or "").strip()[:80] or "Untitled"}
         )
 
-    #: Every object, for the reason `_referenced_filenames` gives above: a map
-    #: topic carrying a picture is a use of that upload, and a screen that says
-    #: "nothing points at this file" while a topic is drawing it is the screen
-    #: that offers to delete it.
-    for obj in session.scalars(select(WhiteboardObject).where(_could_name_a_file(WhiteboardObject.data))):
-        for name in referenced_names(obj.data):
-            note(name, "board", obj.board_id, "Whiteboard")
-
-    for entry in session.scalars(
-        select(Entry).where(Entry.is_deleted == False, _could_name_a_file(Entry.board_settings))  # noqa: E712
-    ):
-        for name in referenced_names(entry.board_settings or ""):
-            note(name, "board", entry.id, "Board background")
-
-    for item in session.scalars(select(BoardLibraryItem)):
-        for name in referenced_names(json.dumps(item.payload or {})):
-            note(name, "library", item.id, f"Board library: {item.name}")
-
+    _board_uses(session, note)
     for doc in session.scalars(select(Document).where(_could_name_a_file(Document.content))):
         for name in referenced_names(doc.content):
             note(name, "document", doc.id, doc.title)
-
-    for entry in session.scalars(
-        select(Entry).where(Entry.is_deleted == False, _could_name_a_file(Entry.content))  # noqa: E712
-    ):
-        if entry.is_private and crypto.is_encrypted(entry.content) and vault.key() is None:
-            skipped_private = True
-            continue
-        content = manager.readable_content(entry)
-        for name in referenced_names(content):
-            # **A private note contributes the link but never its words.**
-            # The label is rendered in the Library's file gallery, and the
-            # first line of a private note is exactly the kind of thing that
-            # must not appear on a wall of thumbnails anyone glancing at the
-            # screen can read. The app already has this convention: a
-            # document's linked-notes list (`routes_documents._linked_notes`)
-            # sends `is_private` and the UI draws a lock instead of the
-            # preview. Same answer here: the connection is still shown and
-            # still clickable, because knowing *that* a file is in use is what
-            # stops it being deleted; only the wording is withheld.
-            if entry.is_private:
-                note(name, "note", entry.id, "Private note")
-                # Notes made private before the flag existed are marked the
-                # first time they are read here with the vault open.
-                manager.flag_private_media(session, content)
-                continue
-            # `plain_label`, not the raw first line: a chip cannot render
-            # markdown, and one that tries shows `# Title ![alt](/media/…)`
-            # verbatim: reported exactly that way.
-            note(name, "note", entry.id, manager.plain_label(content))
+    skipped_private = _note_uses(session, note)
 
     return used, skipped_private
 
@@ -264,6 +273,7 @@ def delete_orphaned_media(session: Session, media_dir) -> tuple[list[dict], bool
         if candidate.is_relative_to(media_dir):
             candidate.unlink(missing_ok=True)
         session.delete(upload)
+    reading_bin.forget_page_reads(session, "upload", [u["id"] for u in deleted])
     session.commit()
     return deleted, False
 

@@ -118,7 +118,7 @@ def empty(session: Session) -> int:
 
 def purge_expired(session: Session, days: int) -> int:
     """Drop documents and reminders binned more than `days` ago, the rule the
-    bin's notes follow (`manager.purge_expired_deleted`). Commits."""
+    bin's notes follow (`manager_purge.purge_expired_deleted`). Commits."""
     cutoff = utcnow() - timedelta(days=days)
     documents, reminders = binned(session)
     documents = [d for d in documents if d.deleted_at < cutoff]

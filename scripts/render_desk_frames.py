@@ -2,6 +2,8 @@
 
     PYTHONPATH=src BASE=http://127.0.0.1:8828 .venv/bin/python scripts/render_desk_frames.py
 
+`DESK_ADD=1` captures only the optional extra frames and adds them to the shipped set, registered to its canvas.
+
 Boots nothing itself: `BASE` is a running app (`bash scratchpad/ui-sweeps/serve.sh
 8828 <dir>`). `scripts/render_desk_frames.js` captures every frame of Atlas, both
 looks, with a transparent background at device scale 2; this script zeroes the
@@ -74,16 +76,15 @@ def with_stream(body: Image.Image, neb: Image.Image, stream: tuple[Image.Image, 
 
 
 def shared_stream(captured: dict[str, Image.Image], nebs: dict[str, Image.Image], names: list[str]) -> tuple[Image.Image, Image.Image]:
-    """The stream of the frame among `names` whose stream mass is the median: the one every
-    frame of the set then shows."""
-    streams = {n: stream_of(captured[n], nebs[n]) for n in names}
-    mass = {n: sum(i * c for i, c in enumerate(streams[n].histogram())) for n in names}
-    pick = sorted(names, key=lambda n: mass[n])[len(names) // 2]
-    return nebs[pick], streams[pick]
+    """The stream of the stand: the one every frame of the set then shows. (It was the median-mass one of the
+    set, a different capture each run, so the figure's right edge and the ring's lowest row moved 8 to 17 px
+    between renders and the tests that bound the cycle's edges passed or failed by the run.)"""
+    pick = "stand" if "stand" in names else names[0]
+    return nebs[pick], stream_of(captured[pick], nebs[pick])
 
 
 #: Frames that stand or drift in place, each showing the same stream.
-STREAM_SHARED = tuple(sprites.IDLE_FRAMES) + tuple(sprites.WALK_FRAMES) + ("stand", "blink", "look")
+STREAM_SHARED = tuple(sprites.IDLE_FRAMES) + tuple(sprites.WALK_FRAMES) + tuple(sprites.WAVE_FRAMES) + ("stand", "blink", "look", "wave", "held")
 
 
 def touches_edge(im: Image.Image) -> bool:
@@ -94,7 +95,10 @@ def touches_edge(im: Image.Image) -> bool:
     return box[0] <= 0 or box[2] >= im.width or box[3] >= im.height
 
 
-def crop_box(images: list[Image.Image]) -> tuple[int, int, int, int]:
+def crop_box(images: list[Image.Image], stand: Image.Image | None = None) -> tuple[int, int, int, int]:
+    """The union of every frame's drawn pixels plus PAD, widened on its narrower side so the stand sits in the
+    middle of the canvas: a mirrored figure then lands where it stood (the engine's `_flip_dx` is 0) and never
+    hangs a few px off a screen edge (INBOX 1696 hh, the 1107 handle flip: the stand was 8 to 17 px off centre)."""
     left = top = 10**9
     right = bottom = 0
     for im in images:
@@ -103,18 +107,27 @@ def crop_box(images: list[Image.Image]) -> tuple[int, int, int, int]:
             left, top = min(left, box[0]), min(top, box[1])
             right, bottom = max(right, box[2]), max(bottom, box[3])
     width, height = images[0].size
-    return max(0, left - PAD), max(0, top - PAD), min(width, right + PAD), min(height, bottom + PAD)
+    left, right = left - PAD, right + PAD
+    sb = stand.getchannel("A").point(lambda a: 255 if a >= sprites.ALPHA_FLOOR else 0).getbbox() if stand is not None else None
+    if sb:
+        mid = (sb[0] + sb[2]) / 2
+        half = max(mid - left, right - mid) + 1  # one px more on the right: the shift is never positive
+        left, right = int(mid - half), int(mid + half + 1)
+    return max(0, left), max(0, top - PAD), min(width, right), min(height, bottom + PAD)
 
 
 def clip_idle_tails(folder: Path) -> None:
-    """Clip an idle picture's tail tip to at most one source pixel below the stand's bottom (INBOX 1670,
-    16:40Z: the feminine idle bottom stepped 258 to 261 and the figure seemed to jitter). The tip is a few
-    near-transparent rows of the swish, so clipping it costs nothing a person can see."""
+    """Clip the stand, its blink and look and every idle picture to the same lowest row: that of the highest of them (the tail tip's
+    last two or three near-transparent rows). The engine registers the cycle to one rest line and its tests
+    bound a step of the drawn feet line; a tip that dipped 1 to 3 rows lower in some phases was a bob of the
+    window's feet at every wrap (INBOX 1670, 16:40Z: the feminine idle bottom stepped 258 to 261 and the figure
+    seemed to jitter), and pinning the tail left masculine's idle 2 rows above its stand. A person cannot see it."""
     def bottom(im: Image.Image) -> int:
-        return im.getchannel("A").point(lambda v: 255 if v >= 24 else 0).getbbox()[3]
+        return im.getchannel("A").point(lambda v: 255 if v >= sprites.ALPHA_FLOOR else 0).getbbox()[3]
 
-    limit = bottom(Image.open(folder / "stand.png").convert("RGBA")) + 1
-    for path in sorted(folder.glob("idle*.png")):
+    paths = [folder / f"{n}.png" for n in ("stand", "blink", "look")] + sorted(folder.glob("idle*.png"))
+    limit = min(bottom(Image.open(p).convert("RGBA")) for p in paths)
+    for path in paths:
         im = Image.open(path).convert("RGBA")
         if bottom(im) <= limit:
             continue
@@ -122,14 +135,92 @@ def clip_idle_tails(folder: Path) -> None:
         im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(path, optimize=True)
 
 
+def drawn(im: Image.Image) -> tuple[int, int, int, int]:
+    return im.getchannel("A").point(lambda a: 255 if a >= sprites.ALPHA_FLOOR else 0).getbbox()
+
+
+def solid_box(im: Image.Image) -> tuple[int, int, int, int]:
+    """The box of the fully opaque pixels: the body, not the nebula stream (which is at most 85 percent and differs by run)."""
+    return im.getchannel("A").point(lambda a: 255 if a >= 230 else 0).getbbox()
+
+
+def best_offset(captured: Image.Image, shipped: Image.Image, ox: int, oy: int, reach: int = 5) -> tuple[int, int]:
+    """The crop offset near (`ox`, `oy`) that lays the capture's opaque body over the shipped stand's with the fewest pixels
+    differing: the two renders' boxes agree to a few px only (the stream's mass and the tail's tip vary), the body does not."""
+    def mask(im: Image.Image) -> Image.Image:
+        return im.getchannel("A").point(lambda a: 255 if a >= 230 else 0)
+
+    want, have = mask(shipped), mask(captured)
+    best = (10**9, ox, oy)
+    for dy in range(oy - reach, oy + reach + 1):
+        for dx in range(ox - reach, ox + reach + 1):
+            cut = have.crop((dx, dy, dx + want.width, dy + want.height))
+            miss = sum(ImageChops.difference(cut, want).point(lambda a: 1 if a else 0).histogram()[1:])
+            best = min(best, (miss, dx, dy))
+    print(f"registration: offset ({best[1]}, {best[2]}), {best[0]} px differ; start ({ox}, {oy})")
+    return best[1], best[2]
+
+
+def add_extras(raw: str) -> int:
+    """`DESK_ADD=1`: capture only `sprites.EXTRA_FRAMES` (and the stand and the hang, to register them) and write them beside
+    the shipped frames, cropped to the SAME canvas as the shipped `stand` (found by matching the stand's opaque body), so
+    no shipped picture changes. A frame whose drawn pixels reach that canvas's edge is refused: it would be cut.
+    `hang_one` is the shipped `hang` with only what differs from a fresh capture of the hang (the let-go arm) patched in:
+    the rig draws the hem a few px longer than it did when `hang` was shipped, and a hang that changed its hem as one hand
+    let go would pop."""
+    out = ROOT / "frontend" / "img" / "desk"
+    for look in sprites.LOOKS:
+        names = ["stand", "hang", *sprites.EXTRA_FRAMES]
+        captured = {n: Image.open(Path(raw) / look / f"{n}.png").convert("RGBA") for n in names}
+        nebs = {n: Image.open(Path(raw) / look / f"{n}.neb.png").convert("RGBA") for n in names}
+        shipped = Image.open(out / look / "stand.png").convert("RGBA")
+        sb, hb = solid_box(with_stream(captured["stand"], nebs["stand"])), solid_box(shipped)
+        ox, oy = best_offset(with_stream(captured["stand"], nebs["stand"]), shipped, sb[0] - hb[0], sb[1] - hb[1])
+        box = (ox, oy, ox + shipped.width, oy + shipped.height)
+        for n in sprites.EXTRA_FRAMES:
+            if touches_edge(captured[n]):
+                raise SystemExit(f"{look}/{n}: the capture touches the clip edge; widen BOX in render_desk_frames.js")
+            im = with_stream(captured[n], nebs[n]).crop(box)
+            if n == "hang_one":
+                im = patched_hang(look, captured, nebs, out)
+            d = drawn(im)
+            if d[0] <= 0 or d[1] <= 0 or d[2] >= im.width or d[3] >= im.height:
+                raise SystemExit(f"{look}/{n}: drawn pixels {d} reach the shipped canvas {im.size}; the frame would be cut")
+            im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(out / look / f"{n}.png", optimize=True)
+            print(f"{look}/{n}: drawn {d} in {im.size}, {(out / look / f'{n}.png').stat().st_size} bytes")
+    return 0
+
+
+def patched_hang(look: str, captured: dict[str, Image.Image], nebs: dict[str, Image.Image], out: Path) -> Image.Image:
+    """The shipped hang with the let-go arm of a fresh capture pasted over the box where the fresh hang and hang_one differ."""
+    shipped = Image.open(out / look / "hang.png").convert("RGBA")
+    fresh, one = with_stream(captured["hang"], nebs["hang"]), with_stream(captured["hang_one"], nebs["hang_one"])
+    sb, hb = solid_box(fresh), solid_box(shipped)
+    ox, oy = best_offset(fresh, shipped, sb[0] - hb[0], sb[1] - hb[1], reach=10)
+    #: Only the upper part of the figure: the arms. The hem below differs a little between two captures (it sways).
+    arms = (0, 0, fresh.width, sb[1] + int(0.55 * (sb[3] - sb[1])))
+    changed = ImageChops.difference(fresh, one).convert("L").point(lambda v: 255 if v > 24 else 0).crop(arms).getbbox()
+    if changed is None:
+        raise SystemExit(f"{look}: hang_one is the same picture as hang")
+    print(f"{look}: hang_one differs from the hang in {changed}")
+    left, top, right, bottom = max(0, changed[0] - 6), max(0, changed[1] - 6), changed[2] + 6, changed[3] + 6
+    result = shipped.copy()
+    result.paste(one.crop((left, top, right, bottom)), (left - ox, top - oy))
+    return result
+
+
 def main() -> int:
     out = ROOT / "frontend" / "img" / "desk"
     with tempfile.TemporaryDirectory() as raw:
         env = {**os.environ, "BASE": os.environ.get("BASE", "http://127.0.0.1:8828"), "SCRATCH": raw}
         env.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/pw-browsers")
+        if os.environ.get("DESK_ADD"):
+            env["ONLY"] = ",".join(["stand", "hang", *sprites.EXTRA_FRAMES])
         if not os.environ.get("DESK_RAW"):  # DESK_RAW: reuse the captures of an earlier run (a folder of <look>/<frame>.png and .neb.png)
             subprocess.run(["node", str(ROOT / "scripts" / "render_desk_frames.js"), raw], check=True, env=env, cwd=ROOT)
         raw = os.environ.get("DESK_RAW") or raw
+        if os.environ.get("DESK_ADD"):
+            return add_extras(raw)
         total = 0
         for look in sprites.LOOKS:
             captured = {name: Image.open(Path(raw) / look / f"{name}.png").convert("RGBA") for name in sprites.FRAME_NAMES if name not in sprites.CARD_FRAMES}
@@ -146,7 +237,7 @@ def main() -> int:
             cut = [n for n, im in captured.items() if touches_edge(im)]
             if cut:
                 raise SystemExit(f"{look}: captures {cut} touch the clip edge; widen BOX in render_desk_frames.js")
-            box = crop_box(list(images.values()))
+            box = crop_box(list(images.values()), images.get("stand"))
             target = out / look
             if target.exists():
                 shutil.rmtree(target)

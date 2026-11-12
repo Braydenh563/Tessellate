@@ -46,7 +46,8 @@ def test_408_header_buttons_ring_fits_inside_the_window_top() -> None:
     (Tab-driven sweep at 1440: ring top -0.5 before, 0.5 after; Library sub-tab rings cut 0 top and bottom)."""
     css = _consistency()
     m = re.search(
-        r"header#top-bar :is\(\.header-cluster, \.notif-wrap, \.header-controls\) button:focus-visible,\s*"
+        # The panel grip left the bar rule (it keeps the panel's inset ring, 2026-11-11 zoom sweep); the bar's buttons are the same.
+        r"header#top-bar :is\(\.header-cluster, \.notif-wrap, \.header-controls\) button(?::not\(\.panel-grip\))?:focus-visible,\s*"
         r"header#top-bar button\.space-switcher-btn:focus-visible \{([^{}]*)\}",
         css,
     )

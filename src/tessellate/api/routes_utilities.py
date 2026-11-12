@@ -27,10 +27,10 @@ def work(q: str = "", session: Session = Depends(get_session)) -> dict:
 
 @router.get("/utilities/units")
 def units() -> dict:
-    from tessellate.ai import recognise, utilities
+    from tessellate.ai import recognise_units, utilities
 
     grouped: dict[str, list[str]] = {}
-    for dimension, _size, said in recognise.UNITS.values():
+    for dimension, _size, said in recognise_units.UNITS.values():
         names = grouped.setdefault(dimension, [])
         if said not in names:
             names.append(said)

@@ -232,7 +232,7 @@ function filedByText(saved) {
     //: UX-17 (audit 2026-10-05): with no model known to be running, the
     //: background filing is by the notes already filed, so it says so rather
     //: than promising the AI the status bar says is off.
-    return typeof modelStatus !== "undefined" && modelStatus?.ollama_running
+    return modelStatus?.ollama_running
       ? "Saved. Filing it in the background, keep writing."
       : "Saved. Filing it by your other notes, keep writing.";
   }
@@ -290,6 +290,7 @@ async function loadCaptureDocuments() {
   //: list-paging.md`). `apiPagedList` is one request at any realistic size.
   //: A failed read keeps the list already held (null) rather than emptying the picker.
   renderCaptureDocuments(await apiPagedList("/documents", 200).catch(() => null));
+  document.dispatchEvent(new Event("filing-options"));
 }
 
 // Ask for a title and start an empty document. Shared by the capture box and
@@ -390,6 +391,43 @@ function renderCaptureDocumentAdder() {
   slot.replaceChildren(adder);
 }
 
+//: Filing options (owner, 2026-11-11, decision 6): a kebabMenu by the Filing row for
+//: `ask_when_unsure`, the key Settings writes. A block of its own adds no shared name; wired
+//: once the Notes surface is built, so a document made elsewhere (documents.js calls
+//: `loadCaptureDocuments`) cannot build the Notes template just to fill this slot.
+onSurface("notes", () => {
+  async function render(on) {
+    const slot = $("capture-filing-options");
+    if (!slot) return;
+    if (typeof on !== "boolean") on = Boolean((await apiJson("/preferences").catch(() => null))?.ask_when_unsure);
+    const flip = async () => {
+      //: Read back: `setPreference` toasts a failed save, and the label must not flip then.
+      await setPreference("ask_when_unsure", !on);
+      render();
+    };
+    slot.replaceChildren(
+      kebabMenu(
+        [
+          {
+            ...makeMenuItem(`ph:${on ? "check-circle" : "circle"} Ask me when it is not sure: ${on ? "on" : "off"}`, "Unsure filings wait for you", flip),
+            group: "Filing",
+          },
+          {
+            ...makeMenuItem("ph:gear Filing settings", "In Settings, Background tasks", () => openSettingsModal("tasks", "pref-ask-when-unsure")),
+            group: "Settings",
+          },
+        ],
+        "Filing options",
+      ),
+    );
+  }
+  document.addEventListener("filing-options", () => render());
+  //: Delegated: `$()` on a Settings id would build it at load.
+  document.addEventListener("change", (e) => {
+    if (e.target?.id === "pref-ask-when-unsure") render(e.target.checked);
+  });
+});
+
 //: **Template variables** (WORLD_CLASS_PLAN 5 item 4). `{date}` was the one
 //: a note template had; `{{date}}` and `{{time}}` read the same way (one or
 //: two braces), `{{clipboard}}` is what is on the clipboard when the template
@@ -479,6 +517,7 @@ function resetCaptureForm(contentBox, titleBox) {
   autoGrow(contentBox); // the box shrinks back with its content
   // It's saved for real now: the words, the title and the tags.
   for (const key of ["captureDraft", "captureDraftTitle", "captureDraftTags"]) prefs.remove(key);
+  createNoteSafely.lock?.reset();
   $("entry-count").textContent = "0 words";
   $("entry-tags").value = "";
   $("entry-category").value = "";
@@ -558,12 +597,14 @@ function scheduleCaptureTagSuggestions() {
   }, 1200);
 }
 
-//: Wipes the composer's error line as soon as the person answers it. Bound
+//: Says an empty note cannot be saved, and wipes that line as soon as the person answers it. Bound
 //: once per complaint rather than at startup, so a composer that never
 //: errored carries no listener at all, and `{ once: true }` means the pair
 //: cannot accumulate over a session of near-misses.
-function clearCaptureStatusOnInput() {
+function captureNeedsWords() {
   const status = $("save-status");
+  status.textContent = "Write something first, then save.";
+  status.classList.add("error");
   const clear = () => {
     if (!status.classList.contains("error")) return;
     status.textContent = "";
@@ -579,7 +620,7 @@ function clearCaptureStatusOnInput() {
 async function heldOffline(error, body, contentBox, titleBox) {
   if (!(error instanceof TypeError)) return false;
   const status = $("save-status");
-  if (captureStagedImages.length || captureStagedFiles.length || !(await noteOutboxAdd({ ...body, inline_tags: true }))) {
+  if (captureStagedImages.length || captureStagedFiles.length || !(await noteOutboxAdd(body))) {
     status.textContent = "The server is not answering. Your note is kept here; save again when it is back.";
     status.classList.add("error");
     return true;
@@ -605,9 +646,7 @@ async function saveEntry() {
     //: so one press of Save (or of Ctrl+S, which reaches the same button) on
     //: an empty box left an error sitting under the composer for the rest of
     //: the session, long after it had stopped being true.
-    status.textContent = "Write something first, then save.";
-    status.classList.add("error");
-    clearCaptureStatusOnInput();
+    captureNeedsWords();
     return;
   }
   const tags = $("entry-tags").value.split(",").map((t) => t.trim()).filter(Boolean);
@@ -624,6 +663,7 @@ async function saveEntry() {
   // either way: there is nothing to wait for.
   const deferFiling = !category && (prefsCache?.background_filing ?? true);
 
+  const payload = { content, tags, category, document_ids: [...captureDocuments], defer_filing: deferFiling, inline_tags: true, ...createNoteSafely.lock?.ask() };
   button.disabled = true;
   status.classList.remove("error");
   //: Saving settles at once, so it stays words; the model's wait has the ring.
@@ -646,24 +686,28 @@ async function saveEntry() {
     //: saved with a dead `staged:` url in it would be a broken picture forever,
     //: and dropping the picture silently would be worse.
     const stagedUrls = await commitCaptureImages();
-    const body = rewriteStagedUrls(content, stagedUrls);
-    const saved = await apiJson("/entries", {
-      method: "POST",
-      body: JSON.stringify({
-        content: body,
-        tags,
-        category,
-        document_ids: [...captureDocuments],
-        defer_filing: deferFiling,
-        inline_tags: true,
-      }),
-    });
+    payload.content = rewriteStagedUrls(content, stagedUrls);
+    const saved = await apiJson("/entries", { method: "POST", body: JSON.stringify(payload) });
     clearStagedImages();
     status.textContent = filedByText(saved);
     //: Which note this line is about: three notes saved in a row each poll
     //: for their own filing, and the first answer used to overwrite the
     //: line the third save had just written (measured, INBOX 432).
     status.dataset.entryId = String(saved.id);
+    //: Undo is on the stack the moment the note exists, not after the list
+    //: refreshes below: Ctrl+Z pressed in that gap found an empty stack and did
+    //: nothing (e2e capture-filing "Undo takes a new note back").
+    pushUndo(
+      "Created a note",
+      async () => {
+        await api(`/entries/${saved.id}`, { method: "DELETE" });
+        await refreshEntries([saved.id]);
+      },
+      async () => {
+        await api(`/entries/${saved.id}/restore`, { method: "POST" });
+        await refreshEntries([saved.id]);
+      }
+    );
     if (saved.filing_state === "pending") watchFiling(saved);
     // The note finally has an id, which is the only thing the staged files
     // were ever waiting for. Not awaited: the composer is already clear and
@@ -681,17 +725,6 @@ async function saveEntry() {
     focusCaptureBox();
     await refreshEntries([saved.id]);
     loadSuggestions(); // new categories → fresher recommended questions
-    pushUndo(
-      "Created a note",
-      async () => {
-        await api(`/entries/${saved.id}`, { method: "DELETE" });
-        await refreshEntries([saved.id]);
-      },
-      async () => {
-        await api(`/entries/${saved.id}/restore`, { method: "POST" });
-        await refreshEntries([saved.id]);
-      }
-    );
     // Saving from Capture leaves you on Capture, with the note you just wrote
     // now somewhere in a list on another sub-tab. Offer to go to it rather
     // than making you switch tabs and hunt (user request). An offer, not a
@@ -699,8 +732,7 @@ async function saveEntry() {
     // teleporting away after each one would fight that.
     offerJumpToNewNote(saved, status);
   } catch (error) {
-    const body = { content, tags, category, document_ids: [...captureDocuments], defer_filing: deferFiling };
-    if (await heldOffline(error, body, contentBox, titleBox)) return;
+    if (await heldOffline(error, payload, contentBox, titleBox)) return;
     status.textContent = error.message;
     status.classList.add("error");
   } finally {
@@ -730,13 +762,12 @@ async function saveEntryAsDraft() {
     //: so one press of Save (or of Ctrl+S, which reaches the same button) on
     //: an empty box left an error sitting under the composer for the rest of
     //: the session, long after it had stopped being true.
-    status.textContent = "Write something first, then save.";
-    status.classList.add("error");
-    clearCaptureStatusOnInput();
+    captureNeedsWords();
     return;
   }
   const tags = $("entry-tags").value.split(",").map((t) => t.trim()).filter(Boolean);
 
+  const payload = { content, tags, document_ids: [...captureDocuments], is_draft: true, inline_tags: true, defer_filing: true, ...createNoteSafely.lock?.ask() };
   button.disabled = true;
   status.classList.remove("error");
   status.textContent = "Saving as draft…";
@@ -744,17 +775,8 @@ async function saveEntryAsDraft() {
     //: Same commit-then-write order as a full save, a draft is a note with
     //: an id, so its pictures are real from the same moment.
     const stagedUrls = await commitCaptureImages();
-    const saved = await apiJson("/entries", {
-      method: "POST",
-      body: JSON.stringify({
-        content: rewriteStagedUrls(content, stagedUrls),
-        tags,
-        document_ids: [...captureDocuments],
-        is_draft: true,
-        inline_tags: true,
-        defer_filing: true,
-      }),
-    });
+    payload.content = rewriteStagedUrls(content, stagedUrls);
+    const saved = await apiJson("/entries", { method: "POST", body: JSON.stringify(payload) });
     clearStagedImages();
     status.textContent = "Saved as a draft, find it later under Drafts in the sidebar.";
     resetCaptureForm(contentBox, titleBox);
@@ -767,7 +789,7 @@ async function saveEntryAsDraft() {
     pushEntryCreateUndo(saved, "Saved a draft note");
     await refreshEntries([saved.id]);
   } catch (error) {
-    if (await heldOffline(error, { content, tags, document_ids: [...captureDocuments], is_draft: true }, contentBox, titleBox)) return;
+    if (await heldOffline(error, payload, contentBox, titleBox)) return;
     status.textContent = error.message;
     status.classList.add("error");
   } finally {
@@ -977,7 +999,7 @@ async function flashReminder(id) {
   // not match whatever filter was last active, "open" is the default, and
   // completing one is exactly the case where it would just have vanished.
   reminderFilter = "all";
-  for (const b of document.querySelectorAll("#reminder-filter button")) {
+  for (const b of $("reminder-filter").querySelectorAll("button")) {
     setActiveChoice(b, b.dataset.filter === "all");
   }
   await loadReminders();
@@ -1135,49 +1157,6 @@ function clearAskAnswerFoot() {
 //: stack. Built on first use in ask-compose.js (lazy).
 let askKept = null;
 
-// Why a result showed up, as a badge, not a footnote. Reported directly:
-// the one existing explanation ("Link linked to a match") was a muted chip
-// easy to miss, and every *other* result, the actual matches, carried no
-// reason at all, so "why is this here?" only had an answer for the minority
-// of rows that arrived by connection rather than by matching. `match_info`
-// (search/search_manager.py's `_retrieve`) now carries real provenance for
-// the rest: a cosine similarity score for a semantic hit, the words that
-// matched for a keyword hit, both for a hybrid one.
-const MATCH_REASON_LABEL = {
-  // `info.reason` is the link's own reason, when whoever made the link gave
-  // one ("both about scheduling"), asked for directly: does a link's
-  // reason show up here too, not just on the graph and in Trace. It does
-  // now (search_manager.graph_expansion carries it through).
-  connected: (info) => ({
-    text: info.reason ? `ph:link Linked (${info.reason})` : "ph:link Linked to a match",
-    title: info.reason
-      ? `This note didn't match your question, it's here because it's linked to one that did: ${info.reason}.`
-      : "This note didn't match your question, it's here because it is linked to one that did.",
-  }),
-  // ROADMAP.md item 33: an opt-in second hop, linked to something linked
-  // to a match, not to the match itself. Real evidence, weaker evidence;
-  // its own badge text says so rather than reading identically to a direct
-  // connection, and `.result-connected-2hop` (style.css) renders it dimmer.
-  connected_2hop: (info) => ({
-    text: info.reason ? `ph:link Two steps away (${info.reason})` : "ph:link Two steps from a match",
-    title: info.reason
-      ? `This note is linked to a note that's linked to a match, not to the match itself: ${info.reason}.`
-      : "This note is linked to a note that's linked to a match, not to the match itself, weaker evidence than a direct connection.",
-  }),
-  semantic: (info) => ({
-    text: `ph:target ${Math.round(info.score * 100)}% similar`,
-    title: `Matched by meaning, not exact words, ${Math.round(info.score * 100)}% cosine similarity to your question.`,
-  }),
-  keyword: (info) => ({
-    text: `ph:magnifying-glass Matched “${info.terms.join("”, “")}”`,
-    title: `Matched the word(s) “${info.terms.join(", ")}” in your question.`,
-  }),
-  hybrid: (info) => ({
-    text: `ph:target ${Math.round(info.score * 100)}% similar · “${info.terms.join("”, “")}”`,
-    title: `Matched both by meaning (${Math.round(info.score * 100)}% similarity) and by the word(s) “${info.terms.join(", ")}”.`,
-  }),
-};
-
 // Longer than the backend's own 120s per-chunk Ollama timeout (see the
 // idle-read guard inside streamChat below) so a real "offline" answer from
 // that always has time to arrive first.
@@ -1320,9 +1299,9 @@ async function copyAnswer() {
 // --- suggested questions (Round 1) ----------------------------------------------
 
 async function loadSuggestions() {
-  const box = $("suggested-questions");
+  const box = document.getElementById("suggested-questions");
   // Only meaningful before the first answer of a conversation.
-  if (!$("chat-results").classList.contains("hidden")) return;
+  if (!box || !document.getElementById("chat-results").classList.contains("hidden")) return;
   const picks = await apiJson("/chat/suggestions").catch(() => []);
   box.replaceChildren();
   box.classList.toggle("hidden", picks.length === 0);
@@ -1350,7 +1329,7 @@ let askHistoryOpen = false;
 let askBadgeTotal = null;
 
 async function loadAskHistoryBadge() {
-  const badge = $("ask-history-badge");
+  const badge = document.getElementById("ask-history-badge");
   if (!badge) return;
   const stats = await apiJson("/ask-history/stats").catch(() => null);
   if (stats) askBadgeTotal = stats.total || 0;
@@ -1380,6 +1359,14 @@ for (const type of ["focusin", "input", "click"]) {
     else if (box.matches?.("input[data-search-scope]")) ensureModule("searchSuggest").then(() => openSearchSuggest(box));
   });
 }
+
+//: A press on Private before quick-note.js has loaded (it is preloaded 3 s after boot) loads it and flips the lock itself:
+//: its own listener is attached after this click has gone by. Once `lock` exists its listener takes every press.
+onSurface("notes", () => {
+  $("entry-private")?.addEventListener("click", async (event) => {
+    if (!createNoteSafely.lock && (await ensureModule("quickNote"))) createNoteSafely.lock.flip(event.target.closest("button"), "captureDraftPrivate");
+  });
+});
 
 //: Open questions (WORLD_CLASS_PLAN I3, row 7): the Notes, Questions view is
 //: questions-view.js, lazy (INBOX 688 moved it to make room for the Ask box's

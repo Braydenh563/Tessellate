@@ -6,15 +6,15 @@ attached got the note quoted, then "Oldest first:" with two unrelated notes).
 was written, when it was last changed and how long it is are facts the app
 holds for the note, so they are said from its record before any search: no
 other note is read for them. What it is about and "summarise this" stay the
-digest's (`composer_digest.about_this`), read from the attachment alone.
+digest's (`composer_digest_sentences.about_this`), read from the attachment alone.
 """
 
 from __future__ import annotations
 
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
-from tessellate.ai import realise, study
+from tessellate.ai import composer_frame, realise, study
 
 #: A question about the note itself, not a subject in it: the asking words,
 #: then "this", "it" or "this note" ("when did I make this note", "when was
@@ -54,19 +54,27 @@ def _day(moment: datetime | None, today: date) -> str:
 def _which(content: str) -> str:
     """The note named the way the person would know it: its heading, or the
     words it starts with."""
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
-    heading = manager.extract_title(content)
+    heading = manager_text.extract_title(content)
     if heading:
         return f"“{realise.cut_title(heading, 60)}”"
-    start = study.title_of(content, size=60)
-    #: Its first clause when that says enough: "I just missed the bus to uni today".
-    clause = re.split(r",\s", start, maxsplit=1)[0].rstrip("…")
-    return f"the note that starts “{clause if len(clause.split()) >= 4 else start}”"
+    return composer_frame.name_of({"content": content})
 
 
 def _words(content: str) -> int:
     return len(re.findall(r"[\w'’-]+", study.clean(content)))
+
+
+def local(now: datetime, *whens: datetime | None) -> list[datetime | None]:
+    """Stored UTC times said in the person's time."""
+    def one(when):  # noqa: ANN001, ANN202
+        if when is None:
+            return None
+        aware = when if when.tzinfo else when.replace(tzinfo=timezone.utc)
+        return aware.astimezone(now.tzinfo).replace(tzinfo=None) if now.tzinfo else aware.replace(tzinfo=None)
+
+    return [one(w) for w in whens]
 
 
 def answer(question: str, content: str, created: datetime | None, edited: datetime | None, today: date) -> str | None:

@@ -52,3 +52,12 @@ def test_escape_returns_focus_to_the_editor():
     menus = (ROOT / "frontend/js/menus.js").read_text(encoding="utf-8")
     assert "view.contentDOM);" in _fn(DOCUMENTS, "docEditorMenuAtPoint")
     assert menus.count("_returnFocusTo") >= 2
+
+
+def test_the_paste_modes_are_one_submenu():
+    """Owner, 2026-11-10: "I feel like paste should be a submenu". One "Paste as" row with `items`
+    (the menu helper's flyout), its rows without the repeated "Paste as a"."""
+    src = (ROOT / "frontend" / "js" / "documents-prose.js").read_text(encoding="utf-8")
+    body = src[src.index("function docEditorMenuItems(") :][:2000]
+    assert 'label: "Paste as"' in body and "items: DOC_PASTE_SPECIAL.map(" in body
+    assert 'group: "Paste special"' not in body

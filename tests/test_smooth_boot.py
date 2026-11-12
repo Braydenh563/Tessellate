@@ -29,10 +29,11 @@ import re
 
 from tests._app_js import app_js_text
 from tests._css_paths import CSS_DIR
+from tests._js_scope import unwrapped
 
 ROOT = CSS_DIR.parents[1]
 JS = app_js_text()
-AVATARS = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AVATARS = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 CSS = {p.name: p.read_text(encoding="utf-8") for p in sorted(CSS_DIR.glob("*.css"))}
 ALL_CSS = "\n".join(CSS.values())
 
@@ -90,7 +91,9 @@ def test_one_curtain_lifts_over_a_drawn_first_tab():
     curtain = _fn(JS, "curtainShell")
     assert "SHELL_CURTAIN_MAX_MS" in curtain and "hideBootSplash();" in curtain and "liftLockScreen();" in curtain
     # Every way the app starts lifts it: the stored token, sign-in off, a password.
-    for name in ("initAuth", "enterWithoutPassword", "submitLockForm"):
+    # A password or Windows Hello unlock lifts it in `lockOpened` (INBOX 1727).
+    assert "lockOpened(" in _fn(JS, "submitLockForm")
+    for name in ("initAuth", "enterWithoutPassword", "lockOpened"):
         assert "curtainShell(opening);" in _fn(JS, name), name
     assert "#lock-overlay.lock-leaving {" in CSS["08-consistency.css"]
 

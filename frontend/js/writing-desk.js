@@ -414,7 +414,7 @@ const DRAFT_QUICKSTARTS = [
 ];
 
 function renderDraftQuickstarts() {
-  const host = $("draft-quickstarts");
+  const host = document.getElementById("draft-quickstarts");
   if (!host) return;
   host.replaceChildren();
   const rule = aiIsOff();
@@ -476,10 +476,25 @@ function syncDraftGate() {
   const off = aiIsOff();
   if (off === draftGate.off) return;
   draftGate.off = off;
-  for (const id of ["draft-kind", "draft-tone", "draft-length"]) gateDraftSelect($(id), off);
+  for (const id of ["draft-kind", "draft-tone", "draft-length"]) gateDraftSelect(document.getElementById(id), off);
   renderDraftQuickstarts();
-  $("draft-rule-line")?.classList.toggle("hidden", !off);
+  document.getElementById("draft-rule-line")?.classList.toggle("hidden", !off);
 }
 
 document.addEventListener("mm-model-gate", syncDraftGate);
 syncDraftGate();
+onSurface("notes", () => { draftGate.off = null; syncDraftGate(); });
+
+//: A note the draft is written from: the adder and the Tray (INBOX 1696 n).
+//: Here, not at boot: a gesture in the open room reaches it (the stand-in loads it).
+function addDraftSource(entry) {
+  const id = Number(entry.id);
+  if (draftSources.some((s) => Number(s.id) === id)) return true;
+  if (draftSources.length >= DRAFT_MAX_SOURCES) return setDraftStatus(`Six notes is the most one draft can be written from.`, true), false;
+  const label = clipText(entry.title || notePreviewText(entry.content || "") || "Untitled note", 60);
+  draftSources.push({ id, label });
+  renderDraftSources();
+  saveDraftLocally();
+  setDraftStatus(`Writing from “${label}” too.`);
+  return true;
+}

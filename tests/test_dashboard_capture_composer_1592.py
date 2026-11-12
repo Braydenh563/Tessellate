@@ -12,8 +12,11 @@ tests-e2e/specs/capture-filing.spec.js.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import re
 from pathlib import Path
+
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -21,7 +24,8 @@ CSS = ROOT / "frontend" / "css"
 
 
 def _js(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    #: a lazy script like capture-card.js is one closure now (ranked row 37a); the tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    return _js_scope.unwrapped((JS / name).read_text(encoding="utf-8"))
 
 
 def _css(name: str) -> str:
@@ -95,12 +99,13 @@ def test_atlas_is_asked_to_step_aside_when_the_card_changes_its_box():
     for name in ("setCaptureMode", "closeCaptureCard"):
         assert "captureCard.settle()" in _function(card, name), name
     more = _js("capture-card-more.js")
-    for name in ("syncCaptureExtras", "renderCaptureThumbs", "renderCaptureSuggestions"):
+    for name in ("syncCaptureExtras", "renderCaptureSuggestions"):
         assert "captureCard.settle()" in _function(more, name), name
+    assert "captureCard.settle()" in _function(_js("capture-stage.js"), "renderCaptureStage")
 
 
 def test_the_guide_and_the_widget_list_say_what_the_card_is_now():
-    guide = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    guide = help_more_text()
     assert "same take-a-note bar as the top of" in guide
     assert "take-a-note bar" in _js("dashboard.js")
 

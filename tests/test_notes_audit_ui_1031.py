@@ -15,6 +15,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,7 +24,8 @@ NODE = shutil.which("node")
 
 
 def _function(path: str, name: str) -> str:
-    text = (JS / path).read_text()
+    #: quick-note.js is one closure now (ranked row 37a); the tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    text = _js_scope.unwrapped((JS / path).read_text())
     start = text.index(f"function {name}(")
     return text[start : text.index("\n}\n", start) + 3]
 

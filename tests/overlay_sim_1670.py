@@ -12,8 +12,14 @@ the two agree."""
 
 from __future__ import annotations
 
+import fcntl
+import functools
+import hashlib
+import os
+import pickle
 import random
 import statistics
+import tempfile
 from collections import Counter
 
 from tessellate.core.overlay import engine as eng
@@ -36,6 +42,16 @@ def home_at_edge(e: eng.Engine) -> None:
     e.last_x = e.x
 
 
+def skip_flow(e: eng.Engine) -> None:
+    """Leave the wisps' and streams' picture undrawn: a rate sim reads states, acts and positions, never the flow
+    view (it was 40 percent of an hour's cost, and the metrics came out identical to the last digit with it off).
+    The follow-through itself still steps, so the engine's settled and wake decisions are unchanged. The layered tail's
+    view is left undrawn the same way (about a seventh of an hour's cost; no sim reads `out.tail`, and the metrics of
+    five seeded hours came out equal with it off)."""
+    e._flow_view = lambda *_a, **_k: None
+    e._tail_view = lambda *_a, **_k: None
+
+
 def runs(seq: list[str]) -> int:
     """The longest run of one value in a row."""
     best = cur = 0
@@ -47,12 +63,70 @@ def runs(seq: list[str]) -> int:
     return best
 
 
+#: Set by tests/conftest.py to a folder made once per pytest session (the controller's, so every xdist worker inherits it).
+CACHE_ENV = "TESSELLATE_SIM_CACHE"
+
+
+def disk_memo(key: tuple, compute):
+    """One simulated hour is 2 to 20 s and the same (gait, seed, look) hour is read by several test files; under
+    `pytest -n auto` every worker used to simulate it again (up to four times in CI). With the session folder set, the first
+    worker to want an hour computes it under a file lock and writes it (pickle, atomic rename), the others read it back:
+    an identical result, since the engine is seeded and the clock fixed. Without the folder (a bare file run, a script)
+    it just computes."""
+    root = os.environ.get(CACHE_ENV)
+    if not root:
+        return compute()
+    name = hashlib.sha1(repr(key).encode()).hexdigest()[:24]
+    path = os.path.join(root, name + ".pkl")
+
+    def load():
+        try:
+            with open(path, "rb") as fh:
+                return True, pickle.load(fh)
+        except (OSError, EOFError, pickle.UnpicklingError):
+            return False, None
+
+    hit, value = load()
+    if hit:
+        return value
+    with open(path + ".lock", "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)  # a second worker waits for the first instead of repeating its hour
+        hit, value = load()
+        if hit:
+            return value
+        value = compute()
+        fd, tmp = tempfile.mkstemp(dir=root, suffix=".tmp")
+        with os.fdopen(fd, "wb") as fh:
+            pickle.dump(value, fh)
+        os.replace(tmp, path)
+        return value
+
+
+@functools.lru_cache(maxsize=None)
+def _plain_hour(gait: str, seed: int, secs: float, pointer: bool, look: str, awake: bool) -> dict:
+    """The same seeded hour is read by several test files (travel, modes, hang end): one run per session (disk) and one
+    read per worker (lru). Callers only read the result."""
+    return disk_memo(("plain", gait, seed, secs, pointer, look, awake), lambda: _simulate(gait, seed, secs, None, pointer, look, awake))
+
+
 def simulate(
     gait: str, seed: int, secs: float = 3600.0, setup=None, pointer: bool = True, look: str = "masculine",
-    awake: bool = True,
+    awake: bool = True, setup_key: str | None = None,
 ) -> dict:
     """One hour. `awake`: the person is about (the long-idle sit and sleep are off), which is the hard case
-    for stillness; with it off a quarter hour of no touch ends in a sit and then a sleep."""
+    for stillness; with it off a quarter hour of no touch ends in a sit and then a sleep. A `setup` that is the same
+    function every call names itself with `setup_key`, which lets the hour be shared across workers like the plain one."""
+    if setup is None:
+        return _plain_hour(gait, seed, secs, pointer, look, awake)
+    if setup_key is not None:
+        return disk_memo(
+            ("setup", setup_key, gait, seed, secs, pointer, look, awake),
+            lambda: _simulate(gait, seed, secs, setup, pointer, look, awake),
+        )
+    return _simulate(gait, seed, secs, setup, pointer, look, awake)
+
+
+def _simulate(gait, seed, secs, setup, pointer, look, awake) -> dict:
     saved = eng.IDLE_SIT, eng.IDLE_SLEEP
     if awake:
         eng.IDLE_SIT = eng.IDLE_SLEEP = float("inf")
@@ -64,6 +138,7 @@ def simulate(
 
 def _run(gait, seed, secs, setup, pointer, look) -> dict:
     e, _s = make(look, gait, seed)
+    skip_flow(e)
     home_at_edge(e)
     e.big_ready, e.trip_ready = 300.0, 120.0
     e.climb_ready = 0.0
@@ -72,6 +147,7 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
         setup(e)
     rng = random.Random(seed + 7)
     px, t = 400, 0.0
+    next_ptr = rng.expovariate(1 / 25.0)  # the pointer moves on its own clock, not once per wake: a faster wake must not reshuffle the hour
     out = e.update(0.0, (px, 600) if pointer else None)
 
     def feet(o) -> float:
@@ -98,8 +174,9 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
     while t < secs:
         step = min(max(0.016, (out.wake_ms or 1000) / 1000.0), 1.0)
         t += step
-        if pointer and rng.random() < step / 25.0:
+        if pointer and t >= next_ptr:
             px = rng.randint(200, 1700)
+            next_ptr = t + rng.expovariate(1 / 25.0)
         out = e.update(t, (px, 600) if pointer else None)
         wakes += 1
         s = e.state

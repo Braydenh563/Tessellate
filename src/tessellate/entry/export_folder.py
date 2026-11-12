@@ -130,11 +130,11 @@ def _readable(entry) -> tuple[str, bool]:  # noqa: ANN001
     with it locked its sealed text is carried as is, so nothing is lost and
     nothing is opened."""
     from tessellate.core import crypto, vault
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     if crypto.is_encrypted(entry.content) and vault.key() is None:
         return entry.content, True
-    return manager.readable_content(entry), False
+    return manager_text.readable_content(entry), False
 
 
 def _attachment_names(attachments: list) -> list[str]:
@@ -649,6 +649,7 @@ _ENTRY_SKIP = set(ENTRY_LEFT_OUT) | {"parent_id", "is_private"}
 def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
     from tessellate.core import vault
     from tessellate.entry import manager
+    from tessellate.entry import manager_private
 
     entry = manager.create_entry(session, record["content"], category_name=record.get("category") or manager.UNCATEGORISED,
                                  tags=record.get("tags") or [], ai_confidence=int(record.get("ai_confidence") or 0), commit=False,
@@ -658,9 +659,8 @@ def _make_entry(session, record: dict, said: list[str]):  # noqa: ANN001, ANN202
     if record.get("sealed"):
         entry.is_private = True
     elif record.get("is_private") and vault.key() is not None:
-        manager.set_private(session, entry, True)
-    elif record.get("is_private"):
-        said.append(f"{record.get('id')}: a private note came in unlocked; open the vault and mark it private again")
+        #: Locked, a readable private note never gets here: `import_app` refuses first (sm-1111 row 8).
+        manager_private.set_private(session, entry, True)
     if entry.created_at is not None:
         manager.record_dates(session, entry)
     return entry

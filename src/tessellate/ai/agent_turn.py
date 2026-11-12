@@ -38,27 +38,8 @@ from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
 
 
-def build_agent_messages(
-    question: str,
-    notes: list[dict],
-    style: str = "friendly",
-    profile: str = "",
-    history: list[dict] | None = None,
-    persona_prompt: str | None = None,
-    budget: "context.ContextBudget | None" = None,
-    mode: str | None = None,
-    images: list[str] | None = None,
-) -> list[dict]:
-    """Like librarian.build_messages, but the system prompt allows
-    acting, and each note shows its id so tools can target it.
-
-    `budget` trims the notes and the history to what the model can actually
-    hold. Optional so every existing caller keeps working untrimmed, the
-    agent loop passes one, having measured the window first.
-    """
-    style_hint = librarian.STYLE_HINTS.get(style, librarian.STYLE_HINTS["friendly"])
-    profile_hint = f" About the user: {profile.strip()}" if profile.strip() else ""
-    persona = (persona_prompt or librarian.DEFAULT_PERSONA).strip()
+def _now_hint() -> str:
+    """The date line of the agent system prompt: weekday, the week ahead, and the clock last."""
     # The model needs "now" to turn "in 10 minutes" into a real time.
     # The user's wall clock. This line is what "remind me in 10 minutes"
     # is computed from, so resolving it against the server's zone instead
@@ -114,34 +95,11 @@ def build_agent_messages(
         f" The current date and time is {local.replace(second=0, microsecond=0).isoformat()}"
         f" ({local.tzname() or 'local time'})."
     )
-    # **The clock goes last, and that ordering is the whole point.** A
-    # prefix cache (Ollama's, llama.cpp's, every backend that has one) keeps
-    # the tokens *before the first difference* and re-reads everything after
-    # it. Rounding to the minute above stops the clock changing between the
-    # rounds of one turn; putting it at the end of the message stops the
-    # minute it does change from invalidating anything ahead of it. Persona,
-    # grounding and the tools guide, by far the largest part of this prompt,
-    # and the part that is identical turn after turn, now sit in front of
-    # every volatile byte, so they are re-read from cache instead of
-    # re-processed. Asked for directly: "keep the system prompt + persona
-    # byte-identical turn to turn so the cache is reused."
-    #
-    # Everything between them is stable *within* a conversation: the style
-    # hint, the profile and the length hint only change when the user changes
-    # a setting or the mode, which is a new prefix either way.
-    messages = [
-        {
-            "role": "system",
-            "content": f"{persona} {AGENT_GROUNDING} "
-            f"{tools_guide(budget.window_tokens if budget else None)} "
-            f"{style_hint}{profile_hint}{librarian.length_hint(mode)}{now_hint}",
-        }
-    ]
-    past = librarian.history_messages(history)
-    if budget is not None:
-        past = context.fit_history(past, budget.history_chars)
-    messages.extend(past)
+    return now_hint
 
+
+def _notes_section(notes: list[dict], budget: "context.ContextBudget | None") -> str:
+    """The `My notes:` block of the agent user message, trimmed to the budget and honest about what was cut."""
     dropped_notes = 0
     if budget is not None:
         notes, dropped_notes = context.fit_notes(
@@ -190,6 +148,60 @@ def build_agent_messages(
             f"{'' if dropped_notes == 1 else 's'} did not fit: use search_notes "
             f"or get_note if you need them.)\n\n"
         )
+    return body
+
+
+def build_agent_messages(
+    question: str,
+    notes: list[dict],
+    style: str = "friendly",
+    profile: str = "",
+    history: list[dict] | None = None,
+    persona_prompt: str | None = None,
+    budget: "context.ContextBudget | None" = None,
+    mode: str | None = None,
+    images: list[str] | None = None,
+) -> list[dict]:
+    """Like librarian.build_messages, but the system prompt allows
+    acting, and each note shows its id so tools can target it.
+
+    `budget` trims the notes and the history to what the model can actually
+    hold. Optional so every existing caller keeps working untrimmed, the
+    agent loop passes one, having measured the window first.
+    """
+    style_hint = librarian.STYLE_HINTS.get(style, librarian.STYLE_HINTS["friendly"])
+    profile_hint = f" About the user: {profile.strip()}" if profile.strip() else ""
+    persona = (persona_prompt or librarian.DEFAULT_PERSONA).strip()
+    now_hint = _now_hint()
+    # **The clock goes last, and that ordering is the whole point.** A
+    # prefix cache (Ollama's, llama.cpp's, every backend that has one) keeps
+    # the tokens *before the first difference* and re-reads everything after
+    # it. Rounding to the minute above stops the clock changing between the
+    # rounds of one turn; putting it at the end of the message stops the
+    # minute it does change from invalidating anything ahead of it. Persona,
+    # grounding and the tools guide, by far the largest part of this prompt,
+    # and the part that is identical turn after turn, now sit in front of
+    # every volatile byte, so they are re-read from cache instead of
+    # re-processed. Asked for directly: "keep the system prompt + persona
+    # byte-identical turn to turn so the cache is reused."
+    #
+    # Everything between them is stable *within* a conversation: the style
+    # hint, the profile and the length hint only change when the user changes
+    # a setting or the mode, which is a new prefix either way.
+    messages = [
+        {
+            "role": "system",
+            "content": f"{persona} {AGENT_GROUNDING} "
+            f"{tools_guide(budget.window_tokens if budget else None)} "
+            f"{style_hint}{profile_hint}{librarian.length_hint(mode)}{now_hint}",
+        }
+    ]
+    past = librarian.history_messages(history)
+    if budget is not None:
+        past = context.fit_history(past, budget.history_chars)
+    messages.extend(past)
+
+    body = _notes_section(notes, budget)
     user_message = {
         "role": "user",
         "content": f"{librarian._app_help(question)}{body}My request: {question}",
@@ -771,6 +783,10 @@ class _TurnState:
     #: turn's searches returned (`_cleared_page`).
     named_hosts: set[str] = field(default_factory=set)
     result_pages: set[str] = field(default_factory=set)
+    #: E66: the question, and the registry's card for every note an "all"
+    #: delete names (worked out at the first delete; {} when there is none).
+    asked: str = ""
+    whole_card: dict | None = None
 
     def count_failure(self, tool_name: str) -> int:
         self.tool_failures[tool_name] = self.tool_failures.get(tool_name, 0) + 1
@@ -798,6 +814,21 @@ def _clip_strings(value, limit: int):
     return value
 
 
+def _shortened(result: dict, lists: list[str], limit: int, keep: int | None) -> dict:
+    """`result` with long text clipped to `limit` and each list in `lists` kept to its first `keep` items, and a note saying what was cut."""
+    shorter = _clip_strings(result, limit)
+    dropped = 0
+    if keep is not None:
+        for key in lists:
+            dropped += max(0, len(shorter[key]) - keep)
+            shorter[key] = shorter[key][:keep]
+    what = f"long text clipped to {limit} characters"
+    if dropped:
+        what += f", {dropped} item{'s' if dropped != 1 else ''} left out"
+    shorter["shortened"] = SHORTENED_NOTE.format(what=what)
+    return shorter
+
+
 def _fit_result(result: dict, name: str, room: int) -> str | None:
     """The result as the model will read it, shortened to `room` characters
     if it must be, or None when no honest shortening fits (INBOX 527).
@@ -819,17 +850,7 @@ def _fit_result(result: dict, name: str, room: int) -> str | None:
         for keep in (None, 10, 5, 3, 1):
             if keep is not None and not lists:
                 break
-            shorter = _clip_strings(result, limit)
-            dropped = 0
-            if keep is not None:
-                for key in lists:
-                    dropped += max(0, len(shorter[key]) - keep)
-                    shorter[key] = shorter[key][:keep]
-            what = f"long text clipped to {limit} characters"
-            if dropped:
-                what += f", {dropped} item{'s' if dropped != 1 else ''} left out"
-            shorter["shortened"] = SHORTENED_NOTE.format(what=what)
-            payload = json.dumps(fence.fence_result(shorter, name))
+            payload = json.dumps(fence.fence_result(_shortened(result, lists, limit, keep), name))
             if len(payload) <= room:
                 return payload
     return None
@@ -935,6 +956,23 @@ def _names_an_existing_category(session: Session, question: str) -> bool:
     )
 
 
+def _forced_round_keep(question: str, session: Session | None) -> set[str]:
+    """The tool names a forced first round keeps: the writes and the finders, less what the request makes wrong."""
+    keep = _WRITE_TOOLS | _LOCATING_TOOLS
+    #: "Put 'buy stamps' in my shopping note" names a note that exists:
+    #: forced, the 3B made a new one instead (2 of 2). The edit and the
+    #: finders stay; a new note is not what was asked.
+    if tools.adds_to_a_named_note(question):
+        keep = keep - {"create_note"}
+    #: Filing under a category that exists is an edit of the note: leave
+    #: out every tool that reshapes the category tree. The 3B picked
+    #: `create_category` once, and on 2026-10-05 `rename_category {"old":
+    #: "note 2", "new": "Health"}` (scratchpad/harness_probe.py).
+    if session is not None and _names_an_existing_category(session, question):
+        keep = keep - _CATEGORY_TREE_TOOLS
+    return keep
+
+
 def _first_round_tools(
     question: str,
     plan: "_TurnPlan",
@@ -963,18 +1001,7 @@ def _first_round_tools(
     if not plan.tier.narrow_toolbox or plan.permitted is not None:
         return offered
     if required:
-        keep = _WRITE_TOOLS | _LOCATING_TOOLS
-        #: "Put 'buy stamps' in my shopping note" names a note that exists:
-        #: forced, the 3B made a new one instead (2 of 2). The edit and the
-        #: finders stay; a new note is not what was asked.
-        if tools.adds_to_a_named_note(question):
-            keep = keep - {"create_note"}
-        #: Filing under a category that exists is an edit of the note: leave
-        #: out every tool that reshapes the category tree. The 3B picked
-        #: `create_category` once, and on 2026-10-05 `rename_category {"old":
-        #: "note 2", "new": "Health"}` (scratchpad/harness_probe.py).
-        if session is not None and _names_an_existing_category(session, question):
-            keep = keep - _CATEGORY_TREE_TOOLS
+        keep = _forced_round_keep(question, session)
         narrowed = [t for t in offered if t["function"]["name"] in keep]
     elif _INFORMATION_QUESTION.match(question or ""):
         narrowed = [t for t in offered if t["function"]["name"] not in _WRITE_TOOLS]
@@ -1090,6 +1117,53 @@ def _tool_events(event: dict, result: dict) -> Iterator[dict]:
         #: A model's act (`propose_act`, decision 53): the registry's own card,
         #: drawn as a typed act's is, waiting for Confirm; nothing ran.
         yield result["act_card"]
+
+
+def from_outside(notes: list[dict]) -> bool:
+    """SEC-02: a note retrieved for the question that was clipped from the web,
+    imported or pasted from mail is already in the prompt, so the turn starts tainted."""
+    return any(isinstance(n, dict) and n.get("from_outside") for n in notes or ())
+
+
+def _whole_card(session: Session, asked: str, now) -> dict:  # noqa: ANN001
+    """The registry's card for an "all" delete ("delete all notes about
+    gym"), when it names more than one note; {} otherwise."""
+    from tessellate.ai import act_registry
+
+    if not asked or act_registry.proposer is None:
+        return {}
+    parsed = act_registry.typed_reader(asked, now)
+    if not parsed or parsed.get("intent") != "delete" or parsed.get("single") is not False or not parsed.get("about"):
+        return {}
+    card = (act_registry.propose(session, asked, now) or {}).get("card") or {}
+    ids = {(s.get("arguments") or {}).get("note_id") for s in card.get("steps") or () if s.get("name") == "delete_note"} - {None}
+    return {"card": card, "ids": ids, "sent": False} if len(ids) > 1 else {}
+
+
+def all_it_names(session: Session, state: _TurnState, name: str, arguments: dict, now) -> tuple[dict, list[dict]] | None:  # noqa: ANN001
+    """**"Delete all" is every match, on one card** (audit 1028 E66). A model
+    asked to delete all notes about a thing queued the one best match, and the
+    rest were quietly left. A delete of a note the person's "all" names parks
+    the registry's own card for every match instead (Confirm, then Undo); a
+    second delete of one of them is already on it. `now` is the plan clock."""
+    if name != "delete_note":
+        return None
+    if state.whole_card is None:
+        state.whole_card = _whole_card(session, state.asked, now())
+    whole = state.whole_card
+    try:
+        note_id = int(arguments.get("note_id"))
+    except (TypeError, ValueError):
+        return None
+    if not whole or note_id not in whole["ids"]:
+        return None
+    if whole["sent"]:
+        return AWAITING_CONFIRMATION, []
+    whole["sent"] = True
+    state.did_write = True
+    state.ran_writes.add(name)
+    state.parked[name] = state.parked.get(name, 0) + 1
+    return AWAITING_CONFIRMATION, [whole["card"]]
 
 
 def _cleared_page(state: _TurnState, name: str, arguments: dict) -> bool:

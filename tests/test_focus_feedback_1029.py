@@ -13,6 +13,8 @@ import textwrap
 
 import pytest
 
+from tests import _js_scope
+
 from tests._app_js import frontend_text
 
 NODE = shutil.which("node")
@@ -89,7 +91,8 @@ def test_closing_the_graph_popup_keeps_the_keyboard_on_the_map():
     assert "returnFocus" in close
     assert '$("graph-box")?.focus(' in close
     wiring = frontend_text("settings-wiring.js")
-    esc = wiring[wiring.index('!$("graph-popup").classList.contains("hidden")'):][:120]
+    # The graph pane is built on first open (X15), so the popup is looked up, not `$`-required.
+    esc = wiring[wiring.index('document.getElementById("graph-popup")?.classList.contains("hidden") === false'):][:140]
     assert "closeGraphPopup(true)" in esc
     assert 'addEventListener("click", closeGraphPopup)' not in frontend_text("wiring.js"), (
         "a click handler would pass the event as the argument"
@@ -116,7 +119,8 @@ def test_one_failure_helper_marks_links_and_returns_focus():
         assert part in helper
     submit = _body(wiring, "async function submitLockForm(")
     assert "errorLine.textContent = error.message" not in submit
-    recovery = frontend_text("account-recovery.js")
+    #: account-recovery.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    recovery = _js_scope.unwrapped(frontend_text("account-recovery.js"))
     assert "lockFail(" in _body(recovery, "function forgotError(")
     # Two failures are about a button (print a code, open the logs): nothing to mark, the press stays focused.
     assert recovery.count("forgotError(error.message)") == 2

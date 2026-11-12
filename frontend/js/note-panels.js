@@ -364,6 +364,14 @@ function linkCancel() {
   renderEntries();
 }
 function beginOrCompleteLink(entry) {
+  //: A private note is not a link end by hand: the `[[` picker skips it and
+  //: the server refuses it while locked, so link mode says the same thing
+  //: rather than being the one door that works (W3 A11, audit 1031 N40).
+  if (entry.is_private) {
+    linkCancel();
+    toast("Private notes can't be linked by hand.", "info");
+    return;
+  }
   //: **A draft and a saved note cannot be connected**, asked for directly,
   //: and refused by `manager.create_link` whichever route asks. Caught here as
   //: well so the answer arrives before the click that would fail: starting a

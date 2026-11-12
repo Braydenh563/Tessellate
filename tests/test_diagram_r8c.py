@@ -116,3 +116,29 @@ def test_a_picked_block_shows_four_handles_one_a_side_that_keep_the_ghost_class_
     assert "color: var(--accent-text);" in rule and "border: 2px solid var(--accent);" in rule
     for side in ("top", "bottom", "left"):
         assert f'.dgm-handle[data-side="{side}"]' in CSS
+
+
+@needs_node
+def test_a_groups_border_and_title_strip_pick_it_and_its_empty_body_does_not():
+    # S1 is x 12 to 212, y 296 to 485 in picture units; the image maps a unit to a pixel (INBOX 2026-11-10, group selection).
+    def at(x, y):
+        return _run(f"o.clusterEdgeAt(hit, {IMG}, {x}, {y})")
+
+    assert at(13, 400) == "S1"  # the left border
+    assert at(8, 400) == "S1"  # 4 px outside it, inside the 6 px band
+    assert at(112, 300) == "S1"  # the title strip
+    assert at(112, 330) == ""  # 34 px down: neither strip nor border
+    assert at(112, 400) == ""  # the body is empty space
+    assert at(112, 484) == "S1"  # the bottom border
+    assert at(0, 400) == ""
+
+
+def test_a_groups_pick_uses_the_nodes_path_and_the_renames_use_the_same_hit():
+    pick = (JS / "diagram-edge-pick.js").read_text(encoding="utf-8")
+    overlay = (JS / "diagram-overlay.js").read_text(encoding="utf-8")
+    assert 'h.select(S, h.ops.key("g", gid), true)' in pick
+    assert "clusterEdgeAt" in EDGES and "renameGroup(group)" in EDGES and "STRIP" not in EDGES
+    assert "clusterEdgeAt" in CANVAS  # a press on a group's border is not "empty canvas"
+    assert 'openMenuAtPoint(h.items(S, key), "Group menu"' in pick
+    assert 'toggle("on", ids.has(`g:${id}`))' in overlay
+    assert ".dgm-box.dgm-cluster.on" in CSS

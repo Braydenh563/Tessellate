@@ -14,7 +14,7 @@ import shutil
 import subprocess
 
 import pytest
-from tessellate.entry.manager import strip_inline_markdown
+from tessellate.entry.manager_text import strip_inline_markdown
 from tests._app_js import JS_DIR, app_js_text
 
 

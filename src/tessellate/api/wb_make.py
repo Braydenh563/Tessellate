@@ -66,12 +66,12 @@ def _note_titles(db: Session, notes: list[Entry]) -> list[tuple[Entry, str, str]
     """`(entry, title, first line)` for each note, which is everything both
     the prompt and the fallback need and all either of them gets."""
     from tessellate.ai import librarian
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     out = []
     for entry in notes:
-        text = manager.readable_content(entry)
-        title = (manager.extract_title(text) or text.strip().split("\n")[0] or "Untitled")[:100]
+        text = manager_text.readable_content(entry)
+        title = (manager_text.extract_title(text) or text.strip().split("\n")[0] or "Untitled")[:100]
         body = " ".join(text.replace(title, "", 1).split())[: librarian.MAP_PROPOSAL_CHARS]
         out.append((entry, title, body))
     return out

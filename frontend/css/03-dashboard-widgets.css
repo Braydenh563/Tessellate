@@ -31,19 +31,23 @@
   gap: var(--space-1);
 }
 
-/* The kind of suggestion is one list (INBOX 670), its rows carrying the
-   counts: as wide as its longest row on a wide sheet, the sheet's width on a
-   phone. It was a well of four at every width. */
-.inbox-card > .select-shell {
+/* The kind of suggestion is one list (INBOX 670), its rows carrying the counts, in the head beside the title and its '?'
+   (INBOX 1714: it was alone on a row of its own under the title). On a phone it takes the room the title leaves. */
+.inbox-card .dialog-head > .select-shell {
   flex: 0 0 auto;
-  align-self: flex-start;
   min-width: 14rem;
-  margin-bottom: var(--space-3);
+  margin-inline: var(--space-2) auto;
+}
+
+.inbox-card .dialog-head > .sheet-title {
+  flex: 0 1 auto;
 }
 
 @media (max-width: 599.98px) {
-  .inbox-card > .select-shell {
-    align-self: stretch;
+  .inbox-card .dialog-head > .select-shell {
+    flex: 1 1 0;
+    min-width: 0;
+    margin-inline-end: var(--space-1);
   }
 }
 
@@ -294,11 +298,6 @@
 .emblem-mark:hover,
 .emblem-mark:is(:focus-visible, :has(:focus-visible)) {
   opacity: 1;
-}
-
-.emblem-mark .emblem-art {
-  width: 24px !important;
-  height: 24px !important;
 }
 
 /* The header is the first thing to run out of room; the mark is the first
@@ -1740,10 +1739,13 @@ header#top-bar select,
 }
 
 /* The menu sits inside the tile's right edge, where the hand already is, and
-   the tile keeps room for it so no hint runs under the glyph. */
+   the tile keeps room for it so no hint runs under the glyph. The room is the
+   button's own size (`--target-min`, 44px under touch) plus its inset and a
+   gap: a fixed `--space-9` (32px) left 17px of "Ask your notes" under the
+   44px button at 768 (2026-11-11 zoom sweep). */
 .quick-edit-tile > .quick-link {
   flex: 1 1 auto;
-  padding-right: var(--space-9);
+  padding-right: calc(var(--target-min) + 2 * var(--space-2));
   pointer-events: none;
 }
 
@@ -1916,6 +1918,9 @@ header#top-bar select,
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 0.25rem;
+  /* Opens at today with no script: a right-to-left scroll box starts at its right edge, and the
+     weeks are appended newest first (renderHeatmapWidget), so they still read oldest to newest. */
+  direction: rtl;
   /* Below the fold on a first visit: its 373 cells are skipped until it nears
      the window (INBOX 1508: 47% of the Dashboard reveal's elements). Already a
      scroll box, so nothing it paints is clipped that was not. */
@@ -2096,6 +2101,13 @@ header#top-bar select,
   font-size: var(--text-lg);
   line-height: 1.55;
 }
+/* Settings, Line spacing: 0.9 and 1.15 of the 1.55. */
+:root[data-read-leading="tight"] #entry-list .entry-content {
+  line-height: 1.4;
+}
+:root[data-read-leading="roomy"] #entry-list .entry-content {
+  line-height: 1.78;
+}
 
 /* Density (the owner, 1093x614: "at least 4 note cards must be above the
    fold" with realistic notes, scratchpad/ui-sweeps/notesdensity.js): 0.4rem
@@ -2200,19 +2212,8 @@ header#top-bar select,
   font-weight: 500;
 }
 
-/* A result that did not match, it is here because it is linked to one that
-   did. Quieter than a match, and labelled: showing a note about something else
-   with no explanation reads as the search having misfired, when in fact it is
-   the graph doing the one thing this app is for. */
-.result-connected {
-  opacity: 0.85;
-}
-
-/* One tier weaker again (ROADMAP.md item 33's second hop): linked to a note
-   that's linked to a match, not to the match itself. */
-.result-connected-2hop {
-  opacity: 0.65;
-}
+/* A link-only result carries its own label ("Linked", "Two steps away") on the
+   card; it is no dimmer than a match (owner, Matching records: one brightness). */
 
 /* Why a result showed up. Was a chip on the connected case alone
    (`.result-connected-chip`) and nothing at all on an ordinary match, the
@@ -3899,9 +3900,12 @@ button.answer-figure-open {
 
 /* The label half never shrinks below its words; the control half is the
    elastic one. A row whose name is squeezed to fit a slider is the failure
-   `.graph-temporal` was fixed for once already, one axis over. */
+   `.graph-temporal` was fixed for once already, one axis over.
+   `:not(.select-shell)`: a picker's shell is a span too, and this clip on it
+   cut its opener's whole focus ring (the shell's box is the opener's, so the
+   4px ring had nowhere to be painted: wrap/zoom sweep, every viewport). */
 .graph-option-row > label,
-.graph-option-row > span {
+.graph-option-row > span:not(.select-shell) {
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
@@ -4781,10 +4785,68 @@ button.answer-figure-open {
    answer, its marks in the theme's tokens so both themes hold, the numbers
    in a table under it. */
 .ask-chart {
+  position: relative;
   margin-block: var(--space-3);
   padding: var(--space-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+}
+
+/* Every chart answers the pointer and the keyboard (INBOX 1319, and in Chat
+   and Ask since the owner's 2026-11-12 "I cant interact with or see the
+   values"; ask-chart.js `askChartWire`): a point or bar is one
+   `.ask-chart-pt` with a transparent hit area the height of its slot, a
+   tooltip with the exact value, and a ring where the arrow keys have put the
+   focus. */
+.ask-chart-pt {
+  outline: none;
+}
+
+.ask-chart-pt[role="button"] {
+  cursor: pointer;
+}
+
+.ask-chart-hit {
+  fill: transparent;
+}
+
+.ask-chart-pt:hover .ask-chart-hit,
+.ask-chart-pt:focus .ask-chart-hit {
+  fill: var(--accent-soft);
+}
+
+.ask-chart-pt:focus-visible .ask-chart-hit {
+  stroke: var(--accent-text);
+  stroke-width: 2;
+}
+
+/* The group itself carries the ring too (UX audit 2026-10-19: a focusable
+   SVG `g` showed no outline, only the hit rect's stroke inside it). Inside
+   the slot, so the chart's own clip never cuts it. */
+.ask-chart-pt:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
+}
+
+.ask-chart-pt:hover .ask-chart-dot,
+.ask-chart-pt:focus .ask-chart-dot {
+  r: 5;
+}
+
+.ask-chart-tip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .ask-chart-head {

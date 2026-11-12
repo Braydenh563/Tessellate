@@ -48,11 +48,15 @@ CSS_FILES = [
     #: Not linked by index.html either: loaded with the icon picker (app.js
     #: `LAZY_MODULES.iconPicker`, MINDMAP_PLAN decision 43), on first open.
     CSS_DIR / "icon-picker.css",
+    #: The typeable number (value-field.js), loaded with the viewer, the diagram view and the Library bundle.
+    CSS_DIR / "value-field.css",
     #: Loaded with "Forgot your password?" and the recovery key
     #: (`LAZY_MODULES.accountRecovery`, INBOX 663).
     CSS_DIR / "recovery-lazy.css",
     #: Tidy's sheet (`LAZY_MODULES.tidy`, INBOX 691).
     CSS_DIR / "tidy-lazy.css",
+    #: The documents graph view (`LAZY_MODULES.docGraph`).
+    CSS_DIR / "doc-graph-lazy.css",
     #: The Graph tab's late styles (`LAZY_MODULES.graph`, 2026-10-10).
     CSS_DIR / "graph-lazy.css",
     #: The web reader's typography (`LAZY_MODULES` web reader, composer-1025).
@@ -91,6 +95,9 @@ CSS_FILES = [
     CSS_DIR / "meetings-lazy.css",
     #: What a click shows fades in and out (`LAZY_MODULES.uiReveal`, INBOX 1565).
     CSS_DIR / "ui-reveal-lazy.css",
+    #: The ```graph and ```base blocks of a document (`LAZY_MODULES.docGraph`, `LAZY_MODULES.docBase`).
+    CSS_DIR / "doc-graph-lazy.css",
+    CSS_DIR / "doc-base-lazy.css",
     #: The quoted span a source opens at (`LAZY_MODULES.reveal`, Brief 88).
     CSS_DIR / "reveal-lazy.css",
     #: The manual (manual.js loads it, WORLD_CLASS_PLAN 25c).
@@ -138,6 +145,8 @@ CSS_FILES = [
     CSS_DIR / "math-editor-lazy.css",
     #: Mermaid diagrams: the figure, its placeholder and the hidden frame (mermaid-draw.js).
     CSS_DIR / "mermaid-lazy.css",
+    #: Colour for a fenced code block (code-colour.js, lazy `codeColour`).
+    CSS_DIR / "code-colour-lazy.css",
     #: The block pane of a diagram (diagram-builder.js, `LAZY_MODULES.diagramBuilder`, 1546 P2).
     CSS_DIR / "diagram-lazy.css",
     #: The Writing room: the kind select's room and the diagram preview (lazy `writingDesk`, UX review 1031).

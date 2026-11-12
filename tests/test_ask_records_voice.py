@@ -32,16 +32,26 @@ def test_the_reason_is_a_fact_in_the_facts_line_not_a_row_of_its_own():
     assert "placeResultBadge(row, badge);" in ASK
     assert 'meta.insertBefore(badge, meta.querySelector(":scope > .entry-date"));' in ASK
     assert "row.appendChild(badge);" not in ASK
-    quiet = _rule("#raw-results .entry-meta > .result-reason-chip")
-    for decl in ("background: none;", "color: var(--muted);", "font-weight: 400;", "padding-inline: 0;"):
-        assert decl in quiet, decl
-    assert "color: var(--ok);" in _rule("#raw-results .entry-meta > .result-reason-chip > .ph")
+    # The chip's quiet rules (`#raw-results .entry-meta > .result-reason-chip`)
+    # went with the old facts line: `replyRecordCards` replaces that line with
+    # `.record-meta` on Ask and Chat alike, so the chip is never seen styled.
+    assert "#raw-results .entry-meta > .result-reason-chip" not in CSS
+    assert "#raw-results .entry-meta {" not in CSS
 
 
 def test_the_card_takes_the_notes_lists_inset_and_its_quiet_metadata():
     assert "padding-left: calc(var(--space-7) + var(--space-2));" in _rule("#raw-results > li[data-id]")
-    category = _rule("#raw-results .entry-meta.note-meta > .chip.category")
-    assert "color: var(--muted);" in category and "font-weight: 400;" in category
+    assert "#raw-results .entry-meta.note-meta > .chip.category" not in CSS
+    lazy = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
+    assert ":is(#raw-results, .records-cards) > li.record-card[data-id]" in lazy
+    meta = re.search(r"\n\.record-meta \{([^}]*)\}", lazy)
+    assert meta and "color: var(--muted);" in meta.group(1)
+
+
+def test_chat_draws_the_same_card_as_ask():
+    chat = with_pieces("chat-turn.js")
+    assert 'list.className = "entry-list records-cards";' in chat
+    assert "replyRecordCards(list, meta.raw_results, matchInfo, scored)" in chat
 
 
 def test_links_are_the_lists_outlined_pill_on_the_text_edge_and_one_line():

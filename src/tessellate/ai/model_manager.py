@@ -24,7 +24,8 @@ from sqlalchemy import delete, select
 from tessellate.ai.ollama_client import OllamaClient, OllamaError
 from tessellate.core.config import ConfigManager
 from tessellate.core import diskspace, jobruns, taskhistory
-from tessellate.core.database import DatabaseManager, EmbeddingRecord, Entry
+from tessellate.core.database import EmbeddingRecord, Entry
+from tessellate.core.database_manager import DatabaseManager
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry.manager import log_action
 

@@ -19,14 +19,15 @@ import subprocess
 import pytest
 
 from tests._app_js import JS_DIR
+from tests import _js_scope
 
-CAL = (JS_DIR / "timeline-calendar.js").read_text(encoding="utf-8")
+CAL = _js_scope.unwrapped((JS_DIR / "timeline-calendar.js").read_text(encoding="utf-8"))
 #: Its own lazy file: most visits to the calendar add nothing.
 ADD = (JS_DIR / "timeline-cal-add.js").read_text(encoding="utf-8")
 
 
 def _fn(name: str, text: str = ADD) -> str:
-    match = re.search(rf"^function {name}\(.*?^\}}", text, re.S | re.M)
+    match = re.search(rf"^( *)function {name}\(.*?^\1\}}", text, re.S | re.M)
     assert match, f"{name} is gone"
     return match.group(0)
 

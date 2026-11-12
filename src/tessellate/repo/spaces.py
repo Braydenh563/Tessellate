@@ -10,7 +10,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import Document, Entry, Space
-from tessellate.core.deps import impersonate_workspace
+from tessellate.core.database import impersonate_workspace
 
 
 def ids(session: Session) -> set[str]:

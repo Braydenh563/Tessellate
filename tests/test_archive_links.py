@@ -6,6 +6,10 @@ kept their `../` links, so 57 of them pointed at files that are not there
 (`../INBOX.md` from the archive is `archive/INBOX.md`). A file that moves
 again has the same failure, so this checks every Markdown link whose target is
 a relative path, in both directories.
+
+Both directories were retired on 2026-11-12 (INBOX 1784: their open items are
+LEDGER rows); the same failure now threatens the roadmap files that replaced
+them, so the check walks `docs/roadmap/` itself.
 """
 
 from __future__ import annotations
@@ -16,7 +20,7 @@ from pathlib import Path
 from tests._repo_files import repo_files
 
 ROADMAP = Path(__file__).resolve().parents[1] / "docs" / "roadmap"
-DIRS = (ROADMAP / "agent-remaining", ROADMAP / "archive")
+DIRS = (ROADMAP,)
 
 _FENCE = re.compile(r"```.*?```", re.S)
 _CODE_SPAN = re.compile(r"`[^`\n]*`")

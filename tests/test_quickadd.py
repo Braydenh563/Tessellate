@@ -18,15 +18,16 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-QUICKADD = JS / "quickadd.js"
+QUICKADD = _js_scope.unwrapped_copy(JS / "quickadd.js")
 FIXTURE = ROOT / "tests" / "fixtures" / "composer" / "quickadd_1010.json"
 
 
 def _text(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return _js_scope.unwrapped((JS / name).read_text(encoding="utf-8"))
 
 
 def test_quickadd_is_lazy_with_its_own_stylesheet():
@@ -56,7 +57,7 @@ def test_every_surface_reads_through_the_one_grammar():
     assert "quickAddSlots(quickNoteBox())" in _text("quick-note.js")
     meetings = _text("meetings.js")
     assert 'quickAddAttach(titleInput, "meeting"' in meetings and "quickAddSlots(titleInput)" in meetings
-    palette = _text("app-palette.js")
+    palette = _js_scope.unwrapped(_text("app-palette.js"))
     assert "quickAddPaletteRow(query)" in palette and 'quickAddAttach($("palette-input"), "palette")' in palette
     own = QUICKADD.read_text(encoding="utf-8")
     assert 'quickAddAttach($("reminder-magic"), "reminder"' in own
@@ -102,7 +103,7 @@ const fs = require("fs");
 const vm = require("vm");
 const ctx = { console, Date, Math, JSON, Number, String, Array, Set, Map, WeakMap, Promise, RegExp, Object,
   setTimeout: () => 0, clearTimeout, encodeURIComponent, $: () => null, document: {}, navigator: {},
-  authToken: () => "", apiJson: () => Promise.reject(new Error("no server here")) };
+  authToken: () => "", apiJson: () => Promise.reject(new Error("no server here")), onSurface: () => {} };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(process.argv[2], "utf8"), ctx);
 const span = (text, kind, phrase, value, extra = {}) => {

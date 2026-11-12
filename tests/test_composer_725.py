@@ -168,7 +168,7 @@ def test_a_second_note_on_the_subject_is_said_with_no_also():
     second = text.split("\n\n")[1]
     #: INBOX 741: the sentence itself, its note named after it, never
     #: "**Offline** also says:".
-    assert "Beta testers active in the forum did not know the app works offline. [**Offline**]" in second
+    assert "Beta testers active in the forum did not know the app works offline. From your **Offline** note." in second
     assert not second.startswith("**Offline**") and "says" not in second
 
 
@@ -300,7 +300,7 @@ def test_a_composed_answers_next_questions_are_drawn_as_its_chips():
     assert "renderAskFollowups(question, answerRaw, answerMeta?.composed ? composedNext : null);" in ask_js
     chat_js = with_pieces("chat-attach.js")
     assert "composedNext = Array.isArray(event.next) ? event.next : [];" in chat_js
-    assert "offerFollowups(bubble, question, answerRaw, meta?.composed ? composedNext : null);" in chat_js
+    assert "offerFollowups(bubble, question, answerRaw, t.meta?.composed ? t.composedNext : null);" in chat_js
     routes = Path("src/tessellate/api/routes_chat.py").read_text(encoding="utf-8")
     assert '"next": result["next"],' in routes
 
@@ -368,7 +368,7 @@ def test_days_until_a_day_a_note_names(question, lead):
 
     said = composer.compose(question, _DATED, today=date(2026, 10, 11))
     assert lead in said["text"], said["text"]
-    assert said["grounding"] and "[**" in said["text"], said["text"]
+    assert said["grounding"] and "From your **" in said["text"], said["text"]
 
 
 def test_days_until_something_no_note_dates_is_not_counted():

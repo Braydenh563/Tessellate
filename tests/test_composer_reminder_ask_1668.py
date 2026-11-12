@@ -13,9 +13,10 @@ import pytest
 
 from tessellate.ai import reminder_parser
 from tessellate.api import routes_chat
-from tessellate.core import config
+from tessellate.core import clock, config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._consent import confirmed
 
 NOW = datetime(2026, 11, 4, 10, 5)
 
@@ -43,6 +44,8 @@ INTRO = ("Atlas's assistant", "I read your notes", "I answer from your notes", "
 def notebook(session, monkeypatch):
     monkeypatch.setattr(config, "user_now", lambda _c: NOW)
     monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    # The reply seed carries the day (chat_said._reply_seed), so the real date picked the wording.
+    monkeypatch.setattr(clock, "today", lambda: NOW.date())
     manager.create_entry(session, "# Dentist\n\nCheck-up booked for the 21st.")
     session.commit()
 
@@ -56,8 +59,9 @@ def test_an_ask_for_a_reminder_asks_what_and_when(client, notebook, said):
 
 @pytest.mark.parametrize("said", BOTH)
 def test_an_ask_with_what_and_when_sets_it(client, notebook, said):
-    out = _ask(client, said)
-    assert out["text"].startswith("Done. I will remind you"), out["text"]
+    waiting = _ask(client, said)
+    assert "remind you" in waiting["text"].lower() and "onfirm" in waiting["text"], waiting["text"]  # waits (owner, 2026-11-10)
+    assert confirmed(client, waiting)["act"][0]["done"]
 
 
 @pytest.mark.parametrize("said", NO_TIME)

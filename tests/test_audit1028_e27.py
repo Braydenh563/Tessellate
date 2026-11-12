@@ -9,6 +9,7 @@ import pytest
 from tessellate.ai import composer_compose as compose
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._consent import confirmed
 
 
 # --- E27: an act's line starts a sentence with a capital -----------------------------
@@ -33,7 +34,7 @@ def test_an_act_run_through_chat_is_sentence_case_with_no_id_and_no_stale_notice
     manager.create_entry(session, "# Budget\n\nRent is 650 a month.", category_name="Personal")
     session.commit()
     for question in ("create a note called Shopping list", "make a note: buy milk", "pin the budget note"):
-        events = _ask(client, question, use_tools=False)
+        events = confirmed(client, _ask(client, question, use_tools=False))
         card = events["act"][0]
         assert card["done"] is True and card["notice"] == "", question
         assert not re.search(r"#\d", card["summary"]), card["summary"]

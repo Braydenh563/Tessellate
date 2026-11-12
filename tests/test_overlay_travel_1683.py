@@ -15,7 +15,7 @@ from tests.overlay_sim_1670 import simulate
 from tests.test_overlay_moves import FLOOR, make
 
 BODY = ("walk", "glide", "jump", "climb")  # a run is a walk leg here
-FLOURISH = ("puff", "portal", "edge", "fade")
+FLOURISH = ("puff", "portal", "edge", "fade", "blink", "cloud", "bubble")
 
 # --- (f) it travels by its body -----------------------------------------------------------------
 
@@ -31,9 +31,15 @@ def test_a_flourish_is_rare_whatever_the_leg(gait: str, long_leg: bool) -> None:
     flourish = sum(picks[m] for m in FLOURISH) / 4000
     # INBOX 1683 u (the owner: "it needs a lot of expansion"): portals and edge walks are now a fifth to two fifths of
     # the legs, so this bound moved from 0.22/0.12; the puff alone stays rare and a walk, glide or run still leads.
-    assert flourish <= (0.45 if long_leg else 0.25), picks
+    # Intent moved (INBOX 1692, the owner 00:50Z: "i dont see a portal or like magic ... float on a cloud, more life"):
+    # a sparkle blink, a cloud ride and a bubble drift joined the flourishes, so they are about a third of the short
+    # legs and well over half of the long ones (measured 0.36 and 0.57); the puff alone stays rare and a walk still
+    # leads the short legs.
+    assert flourish <= (0.62 if long_leg else 0.42), picks
     assert picks["puff"] / 4000 < 0.10, picks
-    assert sum(picks[m] for m in ("walk", "glide", "run", "swoop")) / 4000 >= 0.5, picks
+    # Intent moved (INBOX 1683 u, hops): a ground leg may be a chain of hops, a seen move by the body like a walk or a
+    # run, so it counts with them; measured walk, run and jump 0.62 (walk, run alone 0.38 on the short and long legs).
+    assert sum(picks[m] for m in ("walk", "glide", "run", "swoop", "jump")) / 4000 >= 0.4, picks
 
 
 def test_a_long_leg_across_the_middle_is_walked_not_puffed() -> None:
@@ -45,7 +51,8 @@ def test_a_long_leg_across_the_middle_is_walked_not_puffed() -> None:
         e._place_on_floor()
         e._go((1700.0, FLOOR), "stand", 1.0)
         walked += e.state in ("walk", "crouch")  # a long run starts with a crouch
-    assert walked >= 33, walked
+    # Intent moved (INBOX 1692): a blink, cloud or bubble is a legitimate way across; 33 of 40 became about 23.
+    assert walked >= 16, walked
 
 
 def test_the_walk_is_lively_and_a_long_leg_is_a_run() -> None:
@@ -73,7 +80,8 @@ def test_an_hour_is_mostly_walked_glided_jumped_or_climbed() -> None:
     total = sum(legs.values())
     body = sum(legs[m] for m in BODY)
     assert total >= 20, legs
-    assert body / total >= 0.8, legs  # measured 45 percent before (walk, glide, jump, climb), 55 percent puffs, portals, edges
+    # Intent moved (INBOX 1692, 00:50Z): the owner asked for portals, magic and a cloud to ride; measured 0.55.
+    assert body / total >= 0.45, legs  # measured 45 percent before (walk, glide, jump, climb), 55 percent puffs, portals, edges
 
 
 def test_a_window_across_the_middle_is_reached_on_foot() -> None:

@@ -89,3 +89,63 @@ def test_a_suggestion_makes_nothing_until_it_is_pressed(client):
     before = client.get("/reminders").json()
     client.post("/reminders/suggest", json={"text": "I need to call the dentist tomorrow", "tz_offset_minutes": 0})
     assert client.get("/reminders").json() == before
+
+
+@pytest.mark.parametrize(
+    "message, words, day",
+    [
+        ("must book the venue next week", "Book the venue", (2026, 11, 2)),
+        ("todo: submit the report by 5pm", "Submit the report", (2026, 10, 26)),
+        ("need to call the bank on Thursday", "Call the bank", (2026, 10, 29)),
+        ("call mum on sunday about christmas plans", None, (2026, 11, 1)),
+        ("take the bins out tonight", "Take the bins out", (2026, 10, 26)),
+        ("exam on 24 november at 9am", "Exam", (2026, 11, 24)),
+        ("the plumber is coming thursday between 8 and 10", "The plumber is coming", (2026, 10, 29)),
+        ("I have to renew my passport before 30 November", "Renew my passport", (2026, 11, 30)),
+    ],
+)
+def test_bare_must_todo_imperatives_and_dated_facts_are_offered(message, words, day):
+    """G10 (second composer audit): of 15 messages 2 were offered."""
+    found = reminder_suggest.suggest(message, NOW)
+    assert found is not None, message
+    if words:
+        assert found["text"] == words
+    assert (found["due_at"].year, found["due_at"].month, found["due_at"].day) == day
+
+
+def test_dont_forget_with_no_time_is_offered_as_a_marked_guess():
+    found = reminder_suggest.suggest("don't forget to buy milk", NOW)
+    assert found is not None and found["text"] == "Buy milk"
+    assert found["guess"] is True
+    assert found["due_at"] == datetime(2026, 10, 27, 9, 0)
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "I called mum on Friday at 3pm",
+        "the plumber was here on Thursday at 9am",
+        "call mum",
+        "must have been Thursday",
+        "need to know more",
+    ],
+)
+def test_the_wider_net_still_leaves_past_and_undated_talk_alone(message):
+    assert reminder_suggest.suggest(message, NOW) is None, message
+
+
+def test_the_route_marks_a_guess(client):
+    body = client.post("/reminders/suggest", json={"text": "don't forget to buy milk", "tz_offset_minutes": 0}).json()
+    assert body["suggestion"]["text"] == "Buy milk" and body["suggestion"]["guess"] is True
+
+
+def test_a_long_blank_run_is_tidied_in_linear_time():
+    """CodeQL 2134: the hanging-word trim is not rescanned from every blank."""
+    import time
+
+    from tessellate.ai.reminder_suggest import _tidy
+
+    started = time.perf_counter()
+    assert _tidy("x" + "\t" * 50000 + "y").endswith("y")
+    assert time.perf_counter() - started < 0.05
+    assert _tidy("pay rent, by") == "pay rent" and _tidy("online") == "online"

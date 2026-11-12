@@ -168,13 +168,13 @@ def test_a_chunk_does_not_outlive_its_note_vector(session, fake_embeddings):
 
 
 def test_making_a_note_private_deletes_its_paragraph_vectors(session, fake_embeddings, monkeypatch):
-    from tessellate.entry import manager
+    from tessellate.entry import manager_private
 
     long_note = _note(session, f"{SHOPPING}\n\n{JOKES}")
     fake_embeddings.store_for_entry(session, long_note)
     assert _chunk_count(session, long_note.id) == 2
     monkeypatch.setattr("tessellate.core.vault.key", lambda: b"k" * 32)
-    assert manager.set_private(session, long_note, True)
+    assert manager_private.set_private(session, long_note, True)
     session.commit()
     assert _chunk_count(session, long_note.id) == 0
 

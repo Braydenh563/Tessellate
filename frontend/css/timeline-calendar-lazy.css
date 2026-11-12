@@ -259,18 +259,23 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-/* The all-day row holds its head (the day page and dots) and two rows. */
+/* The all-day row is as tall as what it holds, up to two rows' room (the owner,
+   INBOX 1733: the Day view's band left about 70px empty under two notes,
+   144px fixed). `timelineCalFit` shows every chip that fits under the cap and
+   a "+n more" past it. */
 .timeline-cal-alldaycell {
-  height: var(--cal-allday);
+  height: auto;
+  min-height: calc(var(--cal-row) * 2);
+  max-height: var(--cal-allday);
 }
 /* The day has the room: its all-day row holds the day's written notes. */
 .timeline-cal-weekwrap.is-day .timeline-cal-alldaycell {
-  height: calc(var(--cal-allday) * 1.8);
+  max-height: calc(var(--cal-allday) * 1.8);
 }
 .timeline-cal-cell.timeline-cal-hourcell {
   height: var(--cal-hour);
   background: none;
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
   border-radius: 0;
 }
 

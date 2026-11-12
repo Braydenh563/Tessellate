@@ -43,7 +43,7 @@ def test_what_does_not_fit_folds_into_one_more_chip():
     assert "const noteMetaFit = new ResizeObserver(" in cards
     assert "noteMetaFit.observe(meta);" in cards
     assert "meta.appendChild(noteMetaMore(entry));" in cards
-    fit = cards[cards.index("function fitNoteMetas("):cards.index("async function publishDraft(")]
+    fit = cards[cards.index("function fitNoteMetas("):cards.index("async function showNoteInGraph(")]
     # Reset, read and fold in three passes over every line, so a long list
     # costs two layouts rather than one per card.
     assert fit.count("for (const") >= 3 and 'classList.add("is-measuring")' in fit

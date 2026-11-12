@@ -3,8 +3,41 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
+  //: Boards and maps (audit D22): the `library` files, then d3 and the nine whiteboard files (820 KB gzipped) a first
+  //: document open no longer pays for. A copy by spread so the lists cannot drift; tests/test_lazy_boards_split.py reads every name.
+  boards: [
+    ...LAZY_MODULES.library,
+    "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
+    "/js/whiteboard-map.js",
+    "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
+    "/js/whiteboard.js",
+    "/js/whiteboard-commands.js",
+    "/js/whiteboard-library.js",
+    //: The New board dialog and every template's picture (INBOX 715).
+    "/js/whiteboard-templates.js",
+    "/js/whiteboard-format.js",
+    "/js/whiteboard-label.js", //: After whiteboard-format.js: it joins that file's field lists and `wbFmtState`.
+    "/js/whiteboard-hints.js", //: The View switches for the arrow grips and the connection dots; needs only the page and `prefs`.
+    "/js/whiteboard-keys.js",
+    "/js/whiteboard-layers-more.js",
+    "/js/whiteboard-draw-more.js",
+    "/js/whiteboard-arrange-more.js", //: After whiteboard-draw-more.js: it reads that file's loop sides at run time.
+    "/js/whiteboard-shape-more.js", //: A table's row ports and the shape's points; names whiteboard.js and whiteboard-format.js at run time only.
+    "/js/whiteboard-library-more.js", //: The shape picker and Replace with a library shape; names whiteboard.js and whiteboard-library.js at run time only.
+    "/js/whiteboard-interchange.js",
+    "/js/whiteboard-history.js",
+  ],
+  //: A non-image file chosen in the chat: imported as a document, or kept in the Library (chat-docs.js).
+  chatDocs: ["/js/chat-docs.js"],
+  //: The offline studio's sheet and the natural voice's reading (studio.js's header; WORLD_CLASS_PLAN rows 35 and 37).
+  studio: ["/js/studio.js"],
+  //: Sync between computers through a folder, no server (sync-folder.js's header; WORLD_CLASS_PLAN row 36).
+  syncFolder: ["/js/sync-folder.js"],
   //: A space switch, in place (space-swap.js).
   spaceSwap: ["/js/space-swap.js"],
+  //: Unlocking, editing and leaving a private space (private-spaces.js's header; INBOX 1727).
+  //: hello-unlock.js: Windows Hello on the lock card and in Settings (its header).
+  privateSpaces: ["/js/private-spaces.js", "/js/hello-unlock.js"],
   //: What the companion says about the notebook now and then (companion-remark.js's header).
   companionRemark: ["/js/companion-remark.js"],
   //: The capture bar's card (capture-card.js; notes-list.js opens it on the first focus).
@@ -49,12 +82,14 @@ Object.assign(LAZY_MODULES, {
   mathField: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js"],
   //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16), on the same field.
   mathEditor: ["/css/key-grid-lazy.css", "/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
-  //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
+  //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save, dictation (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
   //: One chat turn (chat-turn.js): `sendChatMessage` awaits it; the chat box's focus warms it.
   chatTurn: ["/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/chat-turn.js"],
   //: A note card's ... menu rows (entry-menu.js): the first press awaits it, a pointer over a card warms it.
   entryMenu: ["/js/entry-menu.js"],
+  //: The Boards & maps gallery on its own (boards-gallery.js; INBOX 1772): it paints before the board code has run.
+  boardsGallery: [...LAZY_MODULES.libraryList, "/js/boards-gallery.js"],
   //: A board's miniature (map-preview.js): `mapPreview` returns the empty svg and draws into it once this is in.
   mapPreview: ["/js/map-preview.js"],
   //: The palette's rows (`paletteCommands`) and the dashboard's Quick access draw (app-features.js): `renderQuickLinks` is its stand-in.
@@ -68,6 +103,8 @@ Object.assign(LAZY_MODULES, {
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
   //: library is not here: it loads inside the hidden frame mermaid-draw.js creates.
   mermaid: ["/css/mermaid-lazy.css", "/js/mermaid-draw.js"],
+  //: Colour for a fenced code block that names a language (code-colour.js; the vendored CodeMirror parsers).
+  codeColour: ["/css/code-colour-lazy.css", "/js/code-colour.js"],
   //: Settings, Packages, with the package steps it shares with Settings, Tasks
   //: (task-steps.js); named here, not in app.js, whose gzip cap is tight.
   packages: ["/js/task-steps.js", "/js/settings-packages.js"],
@@ -80,13 +117,28 @@ Object.assign(LAZY_MODULES, {
   companionSettings: ["/js/companion-settings.js"],
   //: What a click, a hover or a focus brings onto the screen fades in, and out where it floats (INBOX 1565): ui-reveal-lazy.css.
   uiReveal: ["/css/ui-reveal-lazy.css"],
+  //: The ```graph and ```base blocks in a document (documents-graph.js, documents-base.js; documents-math.js asks by name),
+  //: and a synced block's edit box (documents-synced.js; documents-embeds.js asks on the pencil).
+  docGraph: ["/css/doc-graph-lazy.css", "/js/documents-graph.js"],
+  docBase: ["/css/doc-base-lazy.css", "/js/documents-base.js"],
+  docSynced: ["/js/documents-synced.js"],
+  docBoard: ["/js/documents-board.js"],
 });
 setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({
+  //: What the Library list, the documents and every surface that names a board call into the board code (D22).
+  //: Nobody reads a return value: a function whose answer is read (`wbCommandsLive`, `wbEditorSurfaceById`)
+  //: cannot be one, and its caller tests `typeof` instead, meaning "no board is open".
+  boards: ["createNewBoard", "openWhiteboardBoard", "wbMapFromDocument", "wbShowBoardsLanding", "wbBinBoard", "wbDeleteBoard", "addBoardToNote"],
+  //: The gallery's redraw, asked for by the Library list and the boards' own Reload (boards-gallery.js).
+  boardsGallery: ["renderLibraryBoardsGallery"],
   //: The lock card's offer of a backup when the notebook file is gone (INBOX 1573).
   accountRecovery: ["showRestoreOffer"],
   companionSettings: ["mountBuddyCustom", "mountBuddyActivities", "mountProfileLook", "nameMarkBuddyMakeIt", "nameMarkBuddyHide", "nameMarkBuddyToggle", "nameMarkBuddyCallBack", "nameMarkRepaintAll"],
   spaceSwap: ["swapSpace", "spaceEnterFor"],
+  studio: ["openStudio", "speakNatural"],
+  syncFolder: ["openFolderSync"],
+  privateSpaces: ["privateSpaces"],
   companionRemark: ["nameMarkBuddyRemark"],
   chatPrivate: ["chatPrivateStart", "chatPrivateToggle", "chatPrivateLeave"],
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],
@@ -100,7 +152,7 @@ installStandIns({
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
   mathField: ["openMathInPlace"],
-  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview"],
+  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview", "toggleDictation"],
   notesLazy: ["toggleRowExpanded", "fullEntry", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "loadSemanticEntries", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
   featureRows: ["renderQuickLinks"],
@@ -253,7 +305,7 @@ function onDomReady(fn) {
   else queueMicrotask(fn);
 }
 
-//: The library bundle (boards, documents, d3: 72 scripts, 4.9 MB decoded) is
+//: The library bundle (documents and the list; the boards, d3 and the whiteboard files are `boards`, fetched on a first board) is
 //: not fetched at boot at all (perf 1031 row 21, PF4: 103 scripts and 6.5 MB
 //: parsed in the first nine seconds on a tab that opened nothing). It is warmed
 //: after the person first touches the page, and only with four cores or more
@@ -263,7 +315,7 @@ function onDomReady(fn) {
 function warmLibraryAfterInput() {
   if (navigator.connection?.saveData || (navigator.hardwareConcurrency || 2) < 4) return;
   let calmAt = 0;
-  const files = [...LAZY_MODULES.graph, ...LAZY_MODULES.library];
+  const files = [...LAZY_MODULES.graph, ...LAZY_MODULES.library].filter((f) => f[1] > "c");
   const warmNext = () =>
     Date.now() < calmAt ? setTimeout(warmNext, 600) : files[0] && lazyScript(files.shift()).then(() => setTimeout(warmNext, 600));
   const warm = (event) => {
@@ -293,3 +345,9 @@ warmOnFirst("input", "#command-palette-input", "chatTurn");
 
 //: A note card's ... menu rows are fetched when the pointer first reaches a card, so the first press finds them in.
 warmOnFirst("pointerover", "li[data-id] .menu-wrap", "entryMenu");
+//: A slider fetches the value field on its first hover or focus (a keyboard-only reach too), so its readout becomes typeable (INBOX 1694 c, value-field.js). Range inputs only: a plain number box has no readout to upgrade.
+warmOnFirst("pointerover", "[type=range]", "vf");
+warmOnFirst("focusin", "[type=range]", "vf");
+//: The gallery and the miniature drawer are fetched when the pointer or focus first reaches the Boards & maps sub-tab, so the press finds them in (INBOX 1772). Not the board code: running 2.3 MB just before the press would delay the first card.
+for (const type of ["pointerover", "focusin"]) for (const bundle of ["boardsGallery", "mapPreview"]) warmOnFirst(type, '#library-subtabs [data-target="library-view-whiteboard"]', bundle);
+installStandIns({ chatDocs: ["importChatDocuments", "keepUnreadableChatFile"] });

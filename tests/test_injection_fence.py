@@ -219,7 +219,8 @@ def test_after_a_web_read_every_write_parks(monkeypatch, session):
     assert confirms == ["save_skill", "edit_note", "set_reminder"], confirms
 
 
-def test_a_write_with_nothing_outside_read_still_runs_without_a_card(monkeypatch, session):
+def test_a_write_with_nothing_outside_read_parks_too(monkeypatch, session):
+    """Intent moved (owner, 2026-11-10, "any and all actions need the user's consent"): it ran without a card."""
     from tessellate.entry import manager
 
     mine = manager.create_entry(session, "My own shopping list")
@@ -229,8 +230,8 @@ def test_a_write_with_nothing_outside_read_still_runs_without_a_card(monkeypatch
         [{"name": "create_note", "arguments": {"content": "Buy oat milk"}}],
         [],
     ])
-    assert ran == ["get_note", "create_note"], ran
-    assert confirms == [], confirms
+    assert ran == ["get_note"], ran
+    assert confirms == ["create_note"], confirms
 
 
 def test_the_confirm_card_names_a_write_in_words():

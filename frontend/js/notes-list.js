@@ -76,12 +76,17 @@ function focusNoteRow(id) {
 //: change does not pull focus into a hidden tab. Hidden counts as lost: the
 //: browser only moves focus off a node just hidden after this frame.
 function restoreFocusTo(target) {
-  requestAnimationFrame(() => {
+  const give = () => {
     const here = document.activeElement;
     if (here && here !== document.body && here.isConnected && here.checkVisibility?.() !== false) return;
     const el = target instanceof Node ? target : target();
-    if (el?.isConnected && el.checkVisibility?.() !== false) el.focus({ preventScroll: true });
-  });
+    if (!el?.isConnected || el.checkVisibility?.() === false) return;
+    restoreFocusTo.giving = true;
+    el.focus({ preventScroll: true });
+    restoreFocusTo.giving = false;
+  };
+  give(); //: 1682
+  requestAnimationFrame(give);
 }
 
 //: The control of a note's row that holds the keyboard, as classes (without
@@ -118,7 +123,7 @@ async function openNoteEditor(id, { focusTags = false } = {}) {
   //: lands here, but the form is drawn into the list, which is behind that
   //: sheet: Edit did nothing anyone could see (found by the deepflows sweep at
   //: 390 wide). The page closes, and the form is there to type in.
-  if (typeof notePageClose === "function") notePageClose();
+  notePageClose?.();
   //: The caret goes into the form (WCAG 2.4.3); it was left on <body>.
   if (focusTags) focusTagsAfterRender = id;
   else focusBodyAfterRender = id;
@@ -129,6 +134,7 @@ async function openNoteEditor(id, { focusTags = false } = {}) {
 
 // Category <select> shared by capture (guided mode) and the edit form.
 function fillCategoryOptions(select, selected) {
+  if (!select) return;
   select.replaceChildren();
   //: Every category, empty ones included, in the sidebar's order (INBOX 432).
   const names = [...new Set([...categoryMeta.keys(), ...allEntries.map((e) => e.category)])]
@@ -177,6 +183,8 @@ async function resolveCategoryChoice(select) {
 //   is:favourite        favourite (is:pinned too) / private / linked / untagged
 //   is:review           filings to check: unsure, or left in Uncategorised
 //   tags:<2             fewer than 2 tags, also <=, >, >=, = (or bare N)
+//   before:tuesday      made before / after a day: 2026-09-14, today, yesterday,
+//   after:2026-06       a weekday, a month name, or 7d, 2w, 3m ago (`parseNoteQuery.day`)
 //   -picnic             notes that do NOT mention "picnic"
 //   "exact phrase"      that phrase, verbatim
 //   type: prop: links: rel: entity:   the structure (GRAPH_PLAN KG7), asked
@@ -345,9 +353,10 @@ function parseNoteQuery(raw) {
     else if (lower.startsWith("cat:")) query.categories.push(lower.slice(4));
     else if (lower.startsWith("in:")) query.categories.push(lower.slice(3));
     else if (lower.startsWith("title:")) query.titles.push(lower.slice(6));
-    else if (/^(before|after):\d{4}-\d{2}(-\d{2})?$/.test(lower)) {
-      const [key, day] = lower.split(":");
-      query[key] = day.length === 7 ? `${day}-01` : day;
+    else if (/^(before|after):\S+$/.test(lower) && parseNoteQuery.day(lower.split(":")[1])) {
+      //: A span leaves its whole extent out: before March is before the 1st, after March is after the 31st (as Find anything does).
+      const [key, word] = lower.split(":");
+      query[key] = parseNoteQuery.day(word)[key === "before" ? "first" : "last"];
     }
     else if (lower.startsWith("is:")) query.flags.push(lower.slice(3));
     else if (tagCountMatch) {
@@ -357,6 +366,29 @@ function parseNoteQuery(raw) {
   }
   return query;
 }
+
+//: The day a `before:` or `after:` word names, as the first and last local day of its span (Find anything reads the same words, `search/query.py`): 2026-09 or 2026-09-14, today, yesterday, tomorrow, a weekday (the latest one up to today, today included), a month name (the latest one up to this month, the whole month), or 7d, 2w, 3m ago. Null for any other word, which stays a plain word.
+parseNoteQuery.day = function (word, now = new Date()) {
+  const NOTE_WEEKDAYS = "sunday monday tuesday wednesday thursday friday saturday".split(" ");
+  const NOTE_MONTHS = "january february march april may june july august september october november december".split(" ");
+  const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const shifted = (days) => new Date(today.getFullYear(), today.getMonth(), today.getDate() - days);
+  const single = (d) => ({ first: iso(d), last: iso(d) });
+  const stated = /^(\d{4})-(\d{2})(?:-(\d{2}))?$/.exec(word);
+  if (stated) return stated[3] ? single(new Date(+stated[1], +stated[2] - 1, +stated[3])) : { first: `${word}-01`, last: iso(new Date(+stated[1], +stated[2], 0)) };
+  const named = { today: 0, yesterday: 1, tomorrow: -1 };
+  if (Object.hasOwn(named, word)) return single(shifted(named[word]));
+  const ago = /^(\d{1,3})([dwm])$/.exec(word);
+  if (ago) return single(ago[2] === "m" ? new Date(today.getFullYear(), today.getMonth() - +ago[1], today.getDate()) : shifted(+ago[1] * (ago[2] === "w" ? 7 : 1)));
+  const prefix = (names) => (word.length >= 3 ? names.findIndex((n) => n.startsWith(word)) : -1);
+  const weekday = prefix(NOTE_WEEKDAYS);
+  if (weekday >= 0) return single(shifted((today.getDay() - weekday + 7) % 7));
+  const month = prefix(NOTE_MONTHS);
+  if (month < 0) return null;
+  const year = month > today.getMonth() ? today.getFullYear() - 1 : today.getFullYear();
+  return { first: iso(new Date(year, month, 1)), last: iso(new Date(year, month + 1, 0)) };
+};
 
 function noteQueryIsEmpty(query) {
   return (
@@ -527,70 +559,6 @@ function isRenderableUrl(url) {
   return /^https?:\/\//i.test(url) || (url.startsWith("/") && !url.startsWith("//"));
 }
 
-// A non-image attachment (handleFileUpload's link-syntax branch) previously
-// rendered as a bare link, indistinguishable at a glance from an ordinary
-// URL: BACKLOG §4's "genuinely still open" follow-up. Only applied to our
-// own /media/ uploads, not arbitrary external links, since a random web
-// page's URL extension says nothing reliable about its content.
-const ATTACHMENT_ICONS = {
-  pdf: "ph-file-pdf", doc: "ph-file-doc", docx: "ph-file-doc", rtf: "ph-file-doc",
-  xls: "ph-file-xls", xlsx: "ph-file-xls", csv: "ph-file-csv",
-  ppt: "ph-file-ppt", pptx: "ph-file-ppt",
-  zip: "ph-file-archive", rar: "ph-file-archive", "7z": "ph-file-archive",
-  mp3: "ph-file-audio", wav: "ph-file-audio", ogg: "ph-file-audio", m4a: "ph-file-audio", webm: "ph-file-audio",
-  mp4: "ph-file-video", mov: "ph-file-video",
-  txt: "ph-file-text", md: "ph-file-md", json: "ph-file-code",
-  png: "ph-file-image", jpg: "ph-file-image", jpeg: "ph-file-image",
-  gif: "ph-file-image", webp: "ph-file-image", heic: "ph-file-image", heif: "ph-file-image",
-};
-
-// `name` is optional and only matters for a `/files/{id}` URL: the
-// note-attachment download endpoint, opaque and extension-less by design
-// (unlike `/media/<filename>.ext`, which pasted/dropped inline images use).
-// Without it, a note's attached PDF/docx/etc. had no extension anywhere in
-// its URL to read a type from, so every non-image attachment fell through
-// to nothing rendering at all wherever a caller built the URL that way.
-function attachmentIconClass(url, name) {
-  const source = name || (url.startsWith("/media/") ? url : "");
-  if (!source) return null;
-  const ext = source.split(".").pop().split(/[?#]/)[0].toLowerCase();
-  return ATTACHMENT_ICONS[ext] || "ph-file";
-}
-
-//: Extensions the file card labels by name rather than by the generic
-//: "File", the type is the second most useful thing about a file after
-//: what it is called, and "PDF · Open" reads as a thing you can do where
-//: "myfile.pdf" alone reads as text that happens to end in .pdf.
-const FILE_KIND_LABELS = {
-  pdf: "PDF", doc: "Word", docx: "Word", odt: "Document", rtf: "Document",
-  xls: "Sheet", xlsx: "Sheet", ods: "Sheet", csv: "CSV",
-  ppt: "Slides", pptx: "Slides", odp: "Slides",
-  txt: "Text", md: "Markdown", markdown: "Markdown",
-  json: "JSON", xml: "XML", yaml: "YAML", yml: "YAML",
-  html: "HTML", htm: "HTML", css: "CSS",
-  js: "Code", ts: "Code", jsx: "Code", tsx: "Code", py: "Code", java: "Code",
-  c: "Code", h: "Code", cpp: "Code", hpp: "Code", cs: "Code", go: "Code",
-  rs: "Code", rb: "Code", php: "Code", sh: "Code", sql: "SQL",
-  swift: "Code", kt: "Code", vb: "Code", vbs: "Code", diff: "Code", patch: "Code",
-  zip: "Archive", mp3: "Audio", wav: "Audio", m4a: "Audio",
-  mp4: "Video", mov: "Video", webm: "Video",
-};
-
-function fileKindLabel(url, name) {
-  const source = name || url;
-  const ext = source.split(".").pop().split(/[?#]/)[0].toLowerCase();
-  return FILE_KIND_LABELS[ext] || "File";
-}
-
-/** The one-line form of the attachment card, for a surface too small for a card. */
-function fileChip(name, url) {
-  const label = name && name !== url ? name : url.split("/").pop();
-  const chipEl = document.createElement("span");
-  chipEl.className = "chip file-chip";
-  setLabel(chipEl, `${(attachmentIconClass(url, name) || "ph-file").replace("ph-", "ph:")} ${label}`);
-  chipEl.title = `${fileKindLabel(url, name)}: ${label}`;
-  return chipEl;
-}
 
 //: **One card for every file attached to anything** (INBOX 440 (2), DESIGN.md
 //: "A file attached to a note"). The owner: "all of the attachment cards ui
@@ -617,13 +585,6 @@ function fileChip(name, url) {
 //: `onChange` (a note's own file), `staged` (Capture, before Save).
 const ATT_KINDS = { pdf: "pdf", mp3: "audio", wav: "audio", ogg: "audio", m4a: "audio", flac: "audio", aac: "audio", opus: "audio", mp4: "video", mov: "video", webm: "video", mkv: "video", m4v: "video" };
 
-function attachmentExt(...sources) {
-  for (const source of sources) {
-    const match = /\.([a-z0-9]{1,5})(?:[?#].*)?$/i.exec(source || "");
-    if (match) return match[1].toLowerCase();
-  }
-  return "";
-}
 
 function attachmentKind(name, url) {
   const ext = attachmentExt(name, url);
@@ -727,6 +688,7 @@ function attachmentCard(spec) {
     add("caption", "ph:text-align-left Edit description…", "Type or change this file's description yourself", "edit");
   }
   if (kind === "image" && url) add("annotate", "ph:pencil-simple Annotate a copy", "Draw on a copy of this picture, saved as a new note", "edit");
+  if (kind === "image" && url) add("copy-image", "ph:image Copy image", "Put this picture on the clipboard", "share");
   if (stored) add("copy", "ph:link Copy as a link", "Copy the markdown that shows this file in a note or document", "share");
   if (editable) add("remove", "ph:trash Remove", spec.attachment ? `Delete “${label}” from this note` : `Take “${label}” out of this note`, "remove", { danger: true });
   const more = kebabMenu(items, `Actions for “${label}”`);
@@ -1343,7 +1305,7 @@ function boardEmbedTarget(ref) {
   if (!ref || !ref.id) return null;
   const byId = mapBoardById(ref.id);
   if (byId) return byId;
-  if (!ref.title || typeof mapBoardTitled !== "function") return null;
+  if (!ref.title) return null;
   return mapBoardTitled(ref.title.toLowerCase());
 }
 
@@ -1427,11 +1389,11 @@ function resolveWikiTarget(name) {
   //: "Nothing called A document yet" while the Live view of the same line,
   //: which resolves through documents.js's own `docs`, drew it: two views of
   //: one line disagreeing (found by `scratchpad/ui-sweeps/blockbar.js`).
-  const cached = typeof editorDocumentCache !== "undefined" && editorDocumentCache && editorDocumentCache.length
+  const cached = typeof editorDocumentCache !== "undefined" && editorDocumentCache?.length
     ? editorDocumentCache
     : null;
-  const documents = cached || (typeof docs !== "undefined" && Array.isArray(docs) ? docs : null);
-  const docList = documents || [];
+  const docList = cached || (typeof docs !== "undefined" && Array.isArray(docs) ? docs : []);
+  if (!docList.length) loadEmbedDocuments();
   const doc =
     docList.find((d) => (d.title || "").trim().toLowerCase() === needle) ||
     //: Reported directly: "still cant open note links from the document
@@ -1448,15 +1410,25 @@ function resolveWikiTarget(name) {
   return null;
 }
 
+//: **Documents for a note card's embeds, fetched once** (review 1107): on the Notes tab nothing had filled the documents list yet
+//: (`docs` is the Library's, `editorDocumentCache` the `[[` picker's), so a note holding `![[A diagram]]` drew "Nothing called
+//: ... yet" for a diagram that exists, also after a reload. The first miss asks for the list, then the cards are drawn again.
+let embedDocumentsAsked = false;
+function loadEmbedDocuments() {
+  if (embedDocumentsAsked) return;
+  embedDocumentsAsked = true;
+  apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
+    .then((list) => {
+      if (!list.length) return;
+      editorDocumentCache = list;
+      renderEntries();
+    })
+    .catch(() => {});
+}
+
 // A note card's text: block constructs first, then the inline pass.
-//
-// Notes deliberately do not go through renderMarkdown, this pass keeps
-// search-term highlighting, which that renderer has no concept of. So the two
-// block constructs the "/" menu can insert are handled here explicitly and
-// everything else falls through to exactly the inline rendering this function
-// always did. When a note contains neither, the DOM produced is identical to
-// before, which is why the fall-through appends to `element` directly rather
-// than wrapping runs in a container.
+// Not renderMarkdown: this pass keeps search-term highlighting. Block
+// constructs are handled here; the rest is inline, appended to `element`.
 function renderNoteText(element, text, terms, prose = (s) => s) {
   element.replaceChildren();
   const lines = String(text ?? "").replace(/\r\n/g, "\n").split("\n");
@@ -1517,9 +1489,7 @@ function renderNoteText(element, text, terms, prose = (s) => s) {
       i++;
       continue;
     }
-    //: A card's headings are not elements to jump to (the card is one
-    //: paragraph of text), so its contents block is the outline itself: the
-    //: note's headings, indented by level, as a list to read.
+    //: The contents block: the note's headings, indented by level.
     if (MD_TOC_LINE.test(line)) {
       flush();
       const toc = mdTocElement();
@@ -1595,6 +1565,18 @@ function renderNoteText(element, text, terms, prose = (s) => s) {
       item.appendChild(box);
       renderNoteInline(item, task[2], terms);
       element.appendChild(item);
+      buffer.push("");
+      i++;
+      continue;
+    }
+
+    //: A heading line is a span the Headings row of the ⋯ menu can scroll to
+    //: (S74); drawn as the text it always was, hashes off.
+    const heading = /^#{1,6}[ \t]+(\S.*?)(?:\s+#+)?\s*$/.exec(line);
+    if (heading) {
+      flush();
+      if (element.childNodes.length) element.append("\n");
+      renderNoteInline(element.appendChild(Object.assign(document.createElement("span"), { className: "note-heading" })), heading[1], terms);
       buffer.push("");
       i++;
       continue;
@@ -1775,13 +1757,6 @@ function highlightInto(element, text, terms) {
     element.appendChild(mark);
     cursor = bestAt + bestTerm.length;
   }
-}
-
-// The words worth highlighting in a result, operators aren't text to find.
-function searchHighlightTerms() {
-  if (!noteSearch) return [];
-  const query = parseNoteQuery(noteSearch);
-  return [...query.phrases, ...query.words].filter((t) => t.length > 1);
 }
 
 // "Why this result", in words rather than a number, from the three scores the
@@ -2212,9 +2187,11 @@ function setNotesViewMode(mode) {
 //: coming back to a tidy one.
 const expandedRows = new Set();
 
-$("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
-$("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
-$("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));
+onSurface("notes", () => {
+  $("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
+  $("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
+  $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));
+});
 //: The capture bar's card is the lazy capture-card.js (INBOX 1479), fetched on the first focus or click.
 //: Offline the file is not there (and the failed fetch is forgotten, app.js `lazyScript`), so the bar says
 //: so once and points at the Capture section, whose box is in the page already.
@@ -2239,7 +2216,7 @@ function captureBar(bar) {
   if (typeof captureCard !== "undefined") captureCard.adopt(bar);
   return bar;
 }
-if ($("capture-bar")) captureBar($("capture-bar"));
+onSurface("notes", () => { if ($("capture-bar")) captureBar($("capture-bar")); });
 
 //: **A map's topics live on their map** (audit 2026-10-05, UX-06). Each
 //: topic a concept map's Tab or Enter makes is a note (`map_topic`), and a
@@ -2348,15 +2325,14 @@ function resetNoteList(list) {
 //: The filter words outlive a reload in this tab (audit 1031 N44), read here at load
 //: because the first render runs before the later wiring files and would forget them.
 try {
-  noteEngine.remembered = sessionStorage.getItem("note-filter") || "";
-  if (noteEngine.remembered) {
-    $("note-search").value = noteEngine.remembered;
-    noteSearch = noteEngine.remembered;
-    $("save-search").classList.remove("hidden");
-  }
+  noteSearch = noteEngine.remembered = sessionStorage.getItem("note-filter") || "";
 } catch {
   /* storage blocked: an empty box, as before */
 }
+onSurface("notes", () => {
+  $("note-search").value = noteSearch;
+  $("save-search").classList.toggle("hidden", !noteSearch);
+});
 function rememberNoteFilter(words) {
   if (words === noteEngine.remembered) return;
   noteEngine.remembered = words;
@@ -2370,6 +2346,7 @@ function rememberNoteFilter(words) {
 
 //: `appendOnly` (a page arriving into a long list) draws nothing unless the rows can be added.
 function renderEntries(appendOnly = false) {
+  if (!$("tab-notes").classList.contains("hidden") && $("entry-list").dataset.stale) renderSidebar();
   //: A card is drawn by `entryItem` (entry-card.js: lazy, for the boot gzip ratchet), fetched
   //: when the app goes idle. A draw asked before it is in waits for it and happens once, whole,
   //: and the promise this returns settles after it (false when the file never came): a caller that
@@ -2654,6 +2631,15 @@ async function loadCategories() {
 }
 
 function renderSidebar() {
+  //: **Not for a tab nobody is on** (INBOX 1741, the owner's log: `notes-list.js Response.json.then 65ms`
+  //: on the dashboard: the first page of notes drew the Notes tab's category list, 11 and 29ms in its two
+  //: calls at 6x CPU, behind the page on screen). It is owed instead, with the list's own debt
+  //: (`data-stale`), and drawn when the tab is shown (`renderEntries` pays it).
+  if ($("tab-notes").classList.contains("hidden")) {
+    const list = document.getElementById("entry-list");
+    if (list) list.dataset.stale = "1";
+    return;
+  }
   // Categories + counts are derived from the loaded entries, the
   // simplest thing that works; no extra endpoint needed yet.
   // Drafts only belong in the Drafts row (user-reported: they were still
@@ -2766,22 +2752,10 @@ function renderSidebar() {
     renderEntries();
   };
 
-  // A drafts count, not a category, asked for directly: a Drafts filter
-  // findable in the same place categories are, so a note drafted with the
-  // AI (Writing Room) or captured from a selection isn't only markable one
-  // at a time via its own chip (entryItem). Always shown, even at 0, so it
-  // stays discoverable rather than appearing only once something lands in it.
+  // Drafts: a filter row beside the categories, always shown (even at 0) so it stays findable.
   filterRow("ph:pencil-simple-line Drafts", allEntries.filter((e) => e.is_draft).length, draftsOnly, "", toggleFilter(true));
 
-  // **Favourites.** Asked for as "a favourites folder or side parallel category
-  // that isnt an actual category but could be treated as one if toggled", so
-  // it is built exactly like Drafts directly above: a row where the categories
-  // are, a count, a toggle, and mutually exclusive with the other two filters.
-  // This app already has one pseudo-category, and a second that behaved
-  // differently would be a second sign for the same idea.
-  //
-  // The notes it collects are the pinned ones (see `favouritesOnly`), no new
-  // flag, no second place to star something.
+  // **Favourites**: built like Drafts, over the pinned notes (see `favouritesOnly`); no second place to star.
   filterRow(
     "ph:star Favourites",
     allEntries.filter((e) => e.pinned && noteListed(e)).length,
@@ -2795,13 +2769,11 @@ function renderSidebar() {
   //: `meeting` tag (`entry/meetings.py`), so the filter is `tag:meeting` in
   //: the box, visible and editable as a tag chip's is. Always shown, so it is
   //: there to find before the first meeting.
-  filterRow(
-    "ph:users-three Meetings",
-    allEntries.filter((e) => e.tags.includes("meeting") && noteListed(e)).length,
-    noteSearch === "tag:meeting" && !draftsOnly && !favouritesOnly,
-    "",
-    () => filterNotesByTag("meeting")
-  ).classList.add("category-meetings-row");
+  //: **Private** (INBOX 1695 c) is the same shape over `is:private`.
+  const queryRow = (label, keep, query, title) =>
+    filterRow(label, allEntries.filter((e) => keep(e) && noteListed(e)).length, noteSearch === query && !draftsOnly && !favouritesOnly, title, () => filterNotesBy(query));
+  queryRow("ph:users-three Meetings", (e) => e.tags.includes("meeting"), "tag:meeting", "").classList.add("category-meetings-row");
+  queryRow("ph:lock Private", (e) => e.is_private, "is:private", "");
   //: Tags, beside Drafts and Favourites (INBOX 432): a sheet of every tag
   //: (categories-panel.js `openTagsSheet`), not a second long list here.
   const tagRow = document.createElement("li");
@@ -2947,8 +2919,8 @@ function wireCategoryDropTarget(li, category) {
 // Loading skeletons (Wave I): shimmer placeholders instead of a blank
 // list on the very first load, so a slow disk never looks broken.
 function showEntrySkeletons() {
-  const list = $("entry-list");
-  if (list.children.length > 0) return; // only ever on a truly empty list
+  const list = document.getElementById("entry-list");
+  if (!list || list.children.length > 0) return; // only ever on a truly empty list
   for (let i = 0; i < 3; i++) {
     const li = document.createElement("li");
     li.className = "skeleton";
@@ -3015,9 +2987,10 @@ function clearSkeletons(container) {
   container.removeAttribute("aria-busy");
   const held = container.querySelectorAll(":scope > .skeleton");
   for (const el of held) el.remove();
-  //: The caller draws its rows right after this in the same task, so a
-  //: microtask sees them (K1; no observer or frame loop, test_frontend_wake_sources).
-  if (held.length && container.id) queueMicrotask(() => skeletonRemember(container));
+  //: The caller draws its rows right after this in the same task; a timer past the next frame sees them and reads
+  //: a clean page (K1; no observer or frame loop, test_frontend_wake_sources). The microtask this was read the
+  //: rows' layout inside the press: 96ms style and 55 layout at 4x on opening Logs, 677 elements (INBOX 1111).
+  if (held.length && container.id) setTimeout(skeletonRemember, 80, container);
   //: **What replaces them settles in** (the motion pass, 2026-10-05): the
   //: first rows fade up a step, staggered (`.ui-settle`, 08-consistency.css),
   //: instead of popping in where the skeletons were. Only on this first
@@ -3059,9 +3032,12 @@ function paintEntriesProgress(list = true) {
 //: the map index answering): drawn now if the tab is up, once on reveal if not.
 //: The debt is `data-stale` on the list itself, so it is no module state.
 function renderEntriesWhenShown(appendOnly = false) {
-  if ($("tab-notes").classList.contains("hidden")) $("entry-list").dataset.stale = "1";
-  else renderEntries(appendOnly);
+  if ($("tab-notes").classList.contains("hidden")) {
+    const list = document.getElementById("entry-list");
+    if (list) list.dataset.stale = "1";
+  } else renderEntries(appendOnly);
 }
+onSurface("notes", () => { $("entry-list").dataset.stale = "1"; fillCategoryOptions($("entry-category"), null); });
 
 //: **Past this many rows a page that is not the last repaints the count, not
 //: the list** (perf-1031 item 3). `renderEntries` rebuilds every row, so a
@@ -3083,7 +3059,7 @@ async function loadEntries() {
   //: on screen: "Your notebook is empty" is a claim about the person's own
   //: notes that a failed GET is no basis for. See `surfaceFailed`.
   const held = heldNoteControl();
-  const result = await loadSurface($("empty-message"), "your notes", _loadEntries);
+  const result = await loadSurface(document.getElementById("empty-message"), "your notes", _loadEntries);
   restoreNoteControl(held);
   return result;
 }
@@ -3097,7 +3073,7 @@ async function _loadEntries() {
   noteEngine.body.q = noteEngine.body.pending = "";
   showEntrySkeletons();
 
-  const isSemantic = $("semantic-search-toggle")?.checked;
+  const isSemantic = document.getElementById("semantic-search-toggle")?.checked;
   //: The Semantic toggle asks the engine, in notes-lazy.js (`loadSemanticEntries`).
   if (isSemantic && noteSearch) return loadSemanticEntries(noteSearch, generation);
 
@@ -3123,7 +3099,12 @@ async function _loadEntries() {
   let cursor = "";
   while (offset < total) {
     const after = cursor ? `&cursor=${encodeURIComponent(cursor)}` : "";
-    const response = await api(`/entries?limit=${ENTRIES_PAGE_SIZE}${after}&preview=300`);
+    //: **The rest in one request, not page by page** (perf audit 1108 P10: 500 notes were three `/entries` fetches
+    //: of 200, 1.1 to 1.4 s each on a loaded host). The first page stays small for the first paint; the first
+    //: response's total says how much is left, so one more request (up to the server's own page, 1000) fetches
+    //: it. A notebook past 1,200 still pages, in thousands.
+    const want = first ? ENTRIES_PAGE_SIZE : Math.min(1000, Math.max(ENTRIES_PAGE_SIZE, total - offset));
+    const response = await api(`/entries?limit=${want}${after}&preview=300`);
     const page = await response.json();
     if (generation !== _entriesLoadGeneration) return; // superseded mid-load
 
@@ -3157,7 +3138,7 @@ async function _loadEntries() {
       // Deliberately not awaited: the list renders now and the controls
       // light up a moment later.
       loadCategories();
-      fillCategoryOptions($("entry-category"), null);
+      fillCategoryOptions(document.getElementById("entry-category"), null);
     }
     first = false;
     if (page.length === 0) break; // safety: never loop forever on a stale total
@@ -3239,7 +3220,7 @@ async function refreshEntries(ids) {
   restoreNoteControl(held);
   //: Categories the AI filed into since the last read need their ids.
   loadCategories();
-  fillCategoryOptions($("entry-category"), null);
+  fillCategoryOptions(document.getElementById("entry-category"), null);
 }
 
 //: **A change made on another device shows here** (INBOX 881, the owner
@@ -3276,7 +3257,7 @@ async function followNoteChanges() {
     noteChanges.quiet = body.ids.length ? 0 : noteChanges.quiet + 1;
     if (!ids.length) return;
     await refreshEntries(ids);
-    if (typeof refreshNotePage === "function") refreshNotePage(ids);
+    refreshNotePage(ids);
   } catch {
     /* offline or locked: the next tick asks again */
   } finally {
@@ -3419,7 +3400,7 @@ function noteTopicChip(entry) {
   //: Why it is there: the topic is the cluster of notes this one is linked into,
   //: named by the words most of them share (INBOX 1620).
   const why = (topic.terms || []).length ? ` Named from the words ${topic.terms.join(", ")}, shared by the notes linked to this one.` : "";
-  mark.title = `In the topic ${topic.name}, ${nounCount(topic.size, "note")}.${why} Open it on the graph, where it can be renamed`;
+  mark.title = `In the topic ${topic.name}, ${nounCount(topic.size, "note")}.${why} To rename it, use the graph. A topic follows note links: remove the links to take this note out`;
   return mark;
 }
 
@@ -3693,72 +3674,72 @@ function setNotesRailHidden(hidden) {
   renderNotesRail();
 }
 
-(function wireNotesRail() {
-  const rail = $("notes-rail");
-  const list = $("entry-list");
-  if (!rail || !list) return;
-  //: Selecting a row is focusing it: a click on a card's body focuses its
-  //: `<li>` (the list's roving tabindex), and so does every arrow key.
-  list.addEventListener("focusin", (event) => {
-    const li = event.target.closest?.("li[data-id]");
-    if (!li || li.parentElement !== list) return;
-    //: **Not a card's menu.** Its ⋯ is a button inside the row, so pressing it
-    //: is focus in the row, and the rail opened 120ms later: the column takes
-    //: 318px from the list and its dock wraps to two lines, so the row moved
-    //: 318px left and 44px down under a menu already placed beside where the
-    //: ⋯ had been (the review, 2026-09-27, `anchorsmotion.js`: 118px from its
-    //: opener at 1440x600, over the rail). A menu acts on a note; it does not
-    //: choose one to read.
-    if (event.target.closest?.(".menu-wrap, .action-menu")) return;
-    //: INBOX 571: a card chosen by hand is the subject (it is pinned in
-    //: notes-rail-spy.js); the rail is already drawn, so nothing moves.
-    const id = Number(li.dataset.id);
-    if (!Number.isFinite(id) || id === notesRailId) return;
-    notesRailId = id;
-    scheduleNotesRail();
-  });
-  $("notes-rail-close")?.addEventListener("click", () => {
-    notesRailFocusSubject();
-    setNotesRailHidden(true);
-    toast("Connections hidden. The notes list's More menu brings them back.");
-  });
-  $("notes-rail-toggle")?.addEventListener("click", () => {
-    setNotesRailHidden(!notesRailHiddenByChoice());
-    $("notes-more-menu")?.removeAttribute("open");
-  });
-  //: The keys every list here keeps (WORLD_CLASS_PLAN 1.6): arrows walk the
-  //: rows, Enter opens one (they are buttons), Escape goes back to the list.
-  rail.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-      notesRailFocusSubject();
-      return;
-    }
-    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
-    const rows = [...rail.querySelectorAll("button.connection-row")];
-    const at = rows.indexOf(document.activeElement);
-    if (at < 0) return;
-    event.preventDefault();
-    const next = rows[Math.min(rows.length - 1, Math.max(0, at + (event.key === "ArrowDown" ? 1 : -1)))];
-    next?.focus();
-  });
-  notesRailWide.addEventListener("change", renderNotesRail);
-  //: A sidebar dragged wider or narrower, or collapsed, changes the room the
-  //: list has, which is what decides whether the rail fits. Observed on the
-  //: sidebar itself rather than on the window, because the window does not
-  //: change when the sidebar is dragged.
-  if (typeof ResizeObserver === "function" && $("sidebar")) {
-    let last = 0;
-    new ResizeObserver((entries) => {
-      const w = Math.round(entries[0].contentRect.width);
-      if (w === last) return;
-      last = w;
+onSurface("notes", () => {
+    const rail = $("notes-rail");
+    const list = $("entry-list");
+    if (!rail || !list) return;
+    //: Selecting a row is focusing it: a click on a card's body focuses its
+    //: `<li>` (the list's roving tabindex), and so does every arrow key.
+    list.addEventListener("focusin", (event) => {
+      const li = event.target.closest?.("li[data-id]");
+      if (!li || li.parentElement !== list) return;
+      //: **Not a card's menu.** Its ⋯ is a button inside the row, so pressing it
+      //: is focus in the row, and the rail opened 120ms later: the column takes
+      //: 318px from the list and its dock wraps to two lines, so the row moved
+      //: 318px left and 44px down under a menu already placed beside where the
+      //: ⋯ had been (the review, 2026-09-27, `anchorsmotion.js`: 118px from its
+      //: opener at 1440x600, over the rail). A menu acts on a note; it does not
+      //: choose one to read.
+      if (event.target.closest?.(".menu-wrap, .action-menu")) return;
+      //: INBOX 571: a card chosen by hand is the subject (it is pinned in
+      //: notes-rail-spy.js); the rail is already drawn, so nothing moves.
+      const id = Number(li.dataset.id);
+      if (!Number.isFinite(id) || id === notesRailId) return;
+      notesRailId = id;
       scheduleNotesRail();
-    }).observe($("sidebar"));
-  }
-  syncNotesRailToggle();
-})();
+    });
+    $("notes-rail-close")?.addEventListener("click", () => {
+      notesRailFocusSubject();
+      setNotesRailHidden(true);
+      toast("Connections hidden. The notes list's More menu brings them back.");
+    });
+    $("notes-rail-toggle")?.addEventListener("click", () => {
+      setNotesRailHidden(!notesRailHiddenByChoice());
+      $("notes-more-menu")?.removeAttribute("open");
+    });
+    //: The keys every list here keeps (WORLD_CLASS_PLAN 1.6): arrows walk the
+    //: rows, Enter opens one (they are buttons), Escape goes back to the list.
+    rail.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        notesRailFocusSubject();
+        return;
+      }
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+      const rows = [...rail.querySelectorAll("button.connection-row")];
+      const at = rows.indexOf(document.activeElement);
+      if (at < 0) return;
+      event.preventDefault();
+      const next = rows[Math.min(rows.length - 1, Math.max(0, at + (event.key === "ArrowDown" ? 1 : -1)))];
+      next?.focus();
+    });
+    notesRailWide.addEventListener("change", renderNotesRail);
+    //: A sidebar dragged wider or narrower, or collapsed, changes the room the
+    //: list has, which is what decides whether the rail fits. Observed on the
+    //: sidebar itself rather than on the window, because the window does not
+    //: change when the sidebar is dragged.
+    if (typeof ResizeObserver === "function" && $("sidebar")) {
+      let last = 0;
+      new ResizeObserver((entries) => {
+        const w = Math.round(entries[0].contentRect.width);
+        if (w === last) return;
+        last = w;
+        scheduleNotesRail();
+      }).observe($("sidebar"));
+    }
+    syncNotesRailToggle();
+});
 
 //: GRAPH_PLAN 518: a save that renamed a note while other notes still write
 //: its old [[name]] offers to rewrite them as the new one.

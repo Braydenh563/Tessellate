@@ -187,17 +187,17 @@ def test_agent_runs_tool_then_answers(ai_client, fake_ollama):
 
     events = _stream_events(ai_client, "save a note to buy milk")
 
-    tool_events = [e for e in events if e["type"] == "tool"]
-    assert len(tool_events) == 1
-    assert tool_events[0]["ok"] is True
-    assert "Created “buy milk”" in tool_events[0]["label"]  # by title, not id (audit 1029 C47)
-    answer = "".join(e["delta"] for e in events if e["type"] == "answer")
-    assert answer == "Done: I saved that to Shopping."
+    #: Every write parks for a Confirm card (owner, 2026-11-10, "any and all actions need the
+    #: user's consent"): the model proposes, nothing is created until the person confirms.
+    confirms = [e for e in events if e["type"] == "confirm"]
+    assert len(confirms) == 1 and confirms[0]["name"] == "create_note"
+    assert not any(e["content"] == "buy milk" for e in ai_client.get("/entries").json())
     assert events[-1]["type"] == "done"
 
-    # The note really exists now.
-    entries = ai_client.get("/entries").json()
-    assert any(e["content"] == "buy milk" for e in entries)
+    # Confirm (the card's button, or a typed yes) runs it.
+    ran = ai_client.post("/chat/tools/execute", json={"name": confirms[0]["name"], "arguments": confirms[0]["arguments"]})
+    assert ran.status_code == 200
+    assert any(e["content"] == "buy milk" for e in ai_client.get("/entries").json())
 
 
 def test_agent_feeds_tool_results_back_to_model(ai_client, fake_ollama):
@@ -294,7 +294,9 @@ def test_agent_works_on_an_empty_notebook(ai_client, fake_ollama):
         [{"name": "create_note", "arguments": {"content": "first ever note"}}]
     ]
     events = _stream_events(ai_client, "save my first note")
-    assert [e for e in events if e["type"] == "tool"]
+    confirm = next(e for e in events if e["type"] == "confirm")  # parked for consent (owner, 2026-11-10)
+    assert not ai_client.get("/entries").json()
+    ai_client.post("/chat/tools/execute", json={"name": confirm["name"], "arguments": confirm["arguments"]})
     assert any(e["content"] == "first ever note" for e in ai_client.get("/entries").json())
 
 
@@ -396,9 +398,10 @@ def test_agent_recovers_text_emitted_tool_call(ai_client, fake_ollama):
         '<tool_call>{"name": "create_note", "arguments": '
         '{"content": "recovered note"}}</tool_call>'
     )
-    _stream_events(ai_client, "save a note that says recovered note")
-    entries = ai_client.get("/entries").json()
-    assert any(e["content"] == "recovered note" for e in entries)
+    events = _stream_events(ai_client, "save a note that says recovered note")
+    confirm = next(e for e in events if e["type"] == "confirm")  # recovered, then parked for consent (owner, 2026-11-10)
+    assert confirm["name"] == "create_note" and confirm["arguments"]["content"] == "recovered note"
+    assert not any(e["content"] == "recovered note" for e in ai_client.get("/entries").json())
 
 
 def test_agent_warns_on_hallucinated_write(ai_client, fake_ollama):
@@ -617,3 +620,36 @@ def test_undo_of_a_change_to_several_notes_runs_through_execute(ai_client):
     # A batch only carries registry tools, never another batch.
     nested = ai_client.post("/chat/tools/execute", json={"name": "batch", "steps": [{"tool": "batch", "steps": []}]})
     assert nested.status_code == 404
+
+
+def test_set_reminder_offers_and_keeps_a_repeat(ai_client, session):
+    """Review 5834144051 item 3: planners pass `recurring`; the model can too."""
+    from tessellate.ai import tool_say
+    from tessellate.ai.tools.tool_table import TOOLS
+
+    prop = TOOLS["set_reminder"].parameters["properties"]["recurring"]
+    assert prop["enum"] == ["none", "daily", "weekly", "monthly"]
+    args = {"text": "water the plants", "due_at": "2030-01-02T09:00", "recurring": "weekly"}
+    made = tools.execute_tool(session, "set_reminder", args)
+    assert session.get(Reminder, made["id"]).recurring == "weekly"
+    assert "weekly" in made["label"]
+    assert "every week" in tool_say.say("set_reminder", made, args)["text"]
+    plain = tools.execute_tool(session, "set_reminder", {"text": "other", "due_at": "2030-01-03T09:00"})
+    assert session.get(Reminder, plain["id"]).recurring == "none" and "repeating" not in plain["label"]
+
+
+def test_list_notes_names_the_categories_when_the_one_asked_for_does_not_exist(ai_client, session):
+    """B69, measured on a 1.5B model: it asked for `category: "notes"`, got an
+    empty list with no reason, and gave up on a notebook that had eight loose
+    ends. An empty list caused by a name that is not a category says so and
+    names the ones that exist, like the category tools do."""
+    _save(ai_client, "bare note", category="Work")
+    _save(ai_client, "other note", category="Life")
+
+    listed = tools.execute_tool(session, "list_notes", {"category": "notes"})
+    assert listed["total_matching"] == 0
+    assert "no category called" in listed["note_to_model"].lower()
+    assert "Work" in listed["note_to_model"] and "Life" in listed["note_to_model"]
+
+    # A real category with nothing in it, and a real one with notes, say nothing.
+    assert "note_to_model" not in tools.execute_tool(session, "list_notes", {"category": "Work"})

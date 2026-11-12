@@ -102,7 +102,7 @@ function chatPositions() {
 }
 
 function noteChatPosition(element, atEnd) {
-  const id = typeof chatConv !== "undefined" && chatConv && chatConv.id;
+  const id = chatConv?.id;
   if (!id || (typeof chatStreaming !== "undefined" && chatStreaming)) return;
   clearTimeout(chatPositionTimer);
   chatPositionTimer = setTimeout(() => {
@@ -156,12 +156,16 @@ function syncChatJumpLatest() {
   //: overflow it was added for.
   const transcript = pane.parentElement;
   const hasMessages = Boolean(pane.querySelector(".msg"));
-  if (transcript && transcript.classList.contains("chat-transcript")) {
+  if (transcript?.classList.contains("chat-transcript")) {
     const had = transcript.classList.contains("has-jump-gap");
     const spare = pane.scrollHeight - pane.clientHeight; // read before the strip changes the pane's height
     if (!had) transcript.classList.add("has-jump-gap");
     const gap = parseFloat(getComputedStyle(transcript).paddingBottom) || 0;
-    const needed = hasMessages && spare + (had ? 0 : gap) > SCROLL_STICK_SLACK;
+    //: **`spare > 0` first (INBOX 1696, "spasm up and down really fast").** A pane never reports a scrollHeight
+    //: under its clientHeight, so a thread that fits reads a spare of 0 and `0 + gap` beat the slack on every
+    //: other call: the strip went on, off, on, off at each stream delta, resizing the pane by 45px each time
+    //: (69 reversals in 3.5s at 4x). A strip is only for a thread that really overflows.
+    const needed = hasMessages && spare > 0 && spare + (had ? 0 : gap) > SCROLL_STICK_SLACK;
     if (!needed) transcript.classList.remove("has-jump-gap");
     //: A pane that was following the end keeps following it through the resize.
     if (needed !== had && pane.dataset.stuck !== "0") pane.scrollTop = pane.scrollHeight;
@@ -240,7 +244,7 @@ function notebookCard(item, extra = {}) {
 
 //: The seed for the person's own mark: their profile name, or "You".
 function userMarkSeed() {
-  return ((prefsCache && prefsCache.display_name) || "").trim() || "You";
+  return (prefsCache?.display_name || "").trim() || "You";
 }
 
 //: **Every mark of the person on screen, redrawn at once** (DESIGN.md's
@@ -255,11 +259,16 @@ function paintUserMarks() {
   //: The faces come after the page (`afterCharacters`, lazy-entries.js).
   afterCharacters(() => {
     for (const holder of document.querySelectorAll("[data-user-mark]")) {
-      holder.replaceChildren(nameMark(seed, Number(holder.dataset.userMark) || 18));
+      //: A face drawn from this name stays; the Settings preview replaces it (B47).
+      const size = +holder.dataset.userMark || 18;
+      if (holder.firstChild?.key === seed + size) continue;
+      const face = nameMark(seed, size);
+      face.key = seed + size;
+      holder.replaceChildren(face);
     }
   });
   const head = document.getElementById("profile-head-name");
-  if (head) head.textContent = ((prefsCache && prefsCache.display_name) || "").trim() || "Your profile";
+  if (head) head.textContent = (prefsCache?.display_name || "").trim() || "Your profile";
   //: The companion, when it is you (INBOX 426 d, the owner: "I changed my
   //: name but the companion which was me didnt update"): it redraws when
   //: the name it is drawn from has changed, and does nothing otherwise.
@@ -456,7 +465,7 @@ function changeRow(change, options = {}) {
             steps: change.undo.steps,
           }),
         });
-        if (result && result.error) throw new Error(result.error);
+        if (result?.error) throw new Error(result.error);
         const action = agentUndoActions.get(JSON.stringify(change.undo));
         if (action) settleUndoFromToast(action);
         row.classList.add("skill-change-undone");
@@ -778,6 +787,7 @@ const MAX_DRAFT_VERSIONS = 12;
 //: actually binds: this only stops the picker offering a seventh.
 const DRAFT_MAX_SOURCES = 6;
 
+
 function saveDraftLocally() {
   try {
     prefs.set(
@@ -831,28 +841,6 @@ function restoreDraftLocally() {
   }
 }
 
-//: **Translate a note from where it is read** (INBOX 405). Writing room
-//: already translates; this takes the note there, loaded and set to the last
-//: language picked, rather than asking the reader to copy it across. Nothing
-//: runs until Draft is pressed, like every other starting point on the desk,
-//: and a desk that already holds writing is asked about before it is
-//: replaced.
-async function translateNoteInDesk(entry) {
-  entry = await fullEntry(entry.id).catch(() => entry); // the list holds a preview (INBOX 1525)
-  if (entry.content_truncated) return;
-  const busy = $("draft-thoughts").value.trim() || $("draft-text").value.trim();
-  if (busy && !(await confirmDialog("Replace what is in the Writing room with this note?"))) return;
-  switchTab("notes");
-  showNotesSection("writing-room");
-  $("draft-thoughts").value = entry.content || "";
-  $("draft-text").value = "";
-  $("draft-kind").value = draftTranslateKind();
-  $("draft-kind").dispatchEvent(new Event("change"));
-  saveDraftLocally();
-  toast("Pick the language in the menu beside Draft, then press Draft.");
-  $("draft-kind").closest(".select-shell")?.querySelector("button")?.focus();
-}
-
 function draftTranslateKind() {
   let code = "es";
   try {
@@ -868,7 +856,7 @@ function renderDraftSources() {
   const count = $("draft-sources-count");
   if (!host) return;
   host.replaceChildren();
-  host.classList.toggle("hidden", draftSources.length === 0);
+  host.classList.toggle("hidden", !draftSources.length);
   count.textContent = draftSources.length
     ? `${nounCount(draftSources.length, "note")} to write from`
     : "";
@@ -950,7 +938,7 @@ function renderDraftTarget() {
   chip.classList.toggle("hidden", draftNoteId === null);
   chip.textContent = draftNoteId === null ? "" : `Carrying on: ${draftNoteLabel}`;
   chip.title = draftNoteId === null ? "" : `Saving writes back to "${draftNoteLabel}"`;
-  setLabel(save, draftNoteId === null ? "ph:floppy-disk Save as note" : "ph:floppy-disk Save to that note");
+  setLabel(save, draftNoteId === null ? "ph:floppy-disk Save as note" : "ph:floppy-disk Save to note");
   $("draft-save-menu-slot")?.classList.toggle("hidden", draftNoteId !== null);
   save.title = draftNoteId === null
     ? ""
@@ -1040,24 +1028,10 @@ function updateDraftUndoButton() {
   // button came back to life half way through a stream and an Undo pressed
   // there would restore the old draft while the new one was still arriving
   // over the top of it.
-  button.disabled = !!draftController || draftUndoStack.length === 0;
+  button.disabled = !!draftController || !draftUndoStack.length;
   button.title = draftUndoStack.length
     ? `Go back to the version before the last AI pass (${draftUndoStack.length} available)`
     : "Nothing to undo yet";
-}
-
-function undoDraft() {
-  const previous = draftUndoStack.pop();
-  if (!previous) return;
-  //: The same entry the status bar holds, run from the pane's own button, so
-  //: its redo knows what the pass had written.
-  if (previous.action) {
-    settleUndoFromToast(previous.action);
-    previous.action.undo();
-  } else putDraftBack(previous);
-  $("draft-status").classList.remove("error");
-  $("draft-status").textContent = "Went back to the previous version.";
-  announce("Restored the draft from before the last AI pass.");
 }
 
 // One-shot AI calls (drafting, document edits) had no way out: press the
@@ -1065,10 +1039,6 @@ function undoDraft() {
 // reloading the page. Each now runs against an AbortController so it can be
 // cancelled, and shows that it's working while it does.
 let draftController = null;
-
-function cancelDraft() {
-  draftController?.abort();
-}
 
 // What was last folded into the draft. Kept so a second pass doesn't resend
 // thoughts the model has already used, which is the problem clearing the box

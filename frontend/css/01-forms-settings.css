@@ -373,6 +373,11 @@ select {
 select option {
   padding: var(--space-2) var(--space-3);
 }
+/* A disabled row reads as unavailable in both themes: some popups drew it in
+   the same ink as the others (the owner, 2026-11-11). */
+select option:disabled {
+  color: var(--muted);
+}
 /* Firefox draws its own focus ring inside the control on top of the painted
    arrow otherwise. */
 select:-moz-focusring {
@@ -585,6 +590,25 @@ button.ghost:not(.icon-only, .icon-button) > .ph-lead {
    Library button). The icon takes the label's colour, whatever paints it. */
 button.ghost:is(.active, .is-on, [aria-pressed="true"], [aria-expanded="true"]):not(.icon-only, .icon-button) > .ph-lead {
   color: inherit;
+}
+/* **A lock toggle** (INBOX 1736, the owner: "there is no active state to the
+   private buttons"): the Private button on every new-note surface (the note
+   editor foot, Capture, the quick note, the capture card, the graph's New
+   note). Off it is a quiet ghost; on it is the accent fill (`--accent-surface`
+   under `--on-accent`, the pair a `.seg` segment uses), a bolder label that
+   reads "Private on" and the closed lock (quick-note.js `createNoteSafely.lock`
+   sets all three with `aria-pressed`). The ring is the page's own, drawn here
+   too so a pressed button never loses it. */
+button.ghost.lock-toggle[aria-pressed="true"],
+button.ghost.lock-toggle[aria-pressed="true"]:is(:hover, :active, :focus-visible) {
+  background: var(--accent-surface);
+  border-color: var(--accent-surface);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+button.lock-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 /* Not on a destructive one: Stop's square was accent blue beside red text,
    and sat off the text's centre line (release). A danger button's icon takes
@@ -1283,6 +1307,14 @@ progress {
   list-style: none;
   margin-left: -1.1rem;
 }
+/* The marker a list is written with (mdList in markdown.js names it in the list's class; the HTML export
+   carries the same rules in DOC_EXPORT_CSS). Dots and numbers are the browser's own. */
+.md-ul-circle { list-style-type: circle; }
+.md-ul-square { list-style-type: square; }
+.md-ul-dash { list-style-type: "\2013  "; }
+.md-ol-a-dot { list-style-type: lower-alpha; }
+.md-ol-i-dot { list-style-type: lower-roman; }
+.md-ol-1-paren > li::marker { content: counter(list-item) ") "; }
 .md-task input {
   width: auto;
   margin-right: 0.4rem;
@@ -1678,6 +1710,13 @@ input.md-task-inline:disabled,
 .entry-list:not(.is-rows) .entry-content {
   max-width: 84ch;
 }
+/* Settings, Line width: 0.85 and 1.2 of the 84ch. */
+:root[data-read-measure="narrow"] .entry-list:not(.is-rows) .entry-content {
+  max-width: 71ch;
+}
+:root[data-read-measure="wide"] .entry-list:not(.is-rows) .entry-content {
+  max-width: 101ch;
+}
 /* The AI Skills panel's own log rows (`renderSkillLogs`, library.js): 
    `#skills-logs-list` is a plain `<div class="entry-list">`, not a `<ul>`
    (it holds status text on the empty-state path too), so its rows are
@@ -2062,10 +2101,21 @@ button:not(.ghost) > .spinner {
 .lock-overlay.lock-prompt {
   z-index: 1045;
 }
-.lock-card #lock-cancel {
+.lock-card #lock-cancel,
+.lock-card #lock-hello {
   width: 100%;
   justify-content: center;
   margin-top: var(--space-2);
+}
+/* Windows Hello (hello-unlock.js, INBOX 1727): shown by the card's mode, not
+   by a watcher, so another prompt over the card never offers it. */
+.lock-card #lock-hello {
+  display: none;
+}
+.lock-overlay[data-mode="unlock"] #lock-hello.for-lock,
+.lock-overlay[data-mode="prompt"] #lock-hello.for-space {
+  display: inline-flex;
+  min-height: var(--target-min);
 }
 /* "Forgot your password?" (INBOX 663) as a quiet link under Unlock (the
    owner: "subtle but accessible ... a small hyperlink below the unlock
@@ -2649,6 +2699,20 @@ button:not(.ghost) > .spinner {
 .settings-row-spaced-6 {
   margin-top: var(--space-6);
 }
+/* Sync, the paired computer's line: a certificate fingerprint is 95
+   characters with no space, so it breaks anywhere rather than widening the
+   Settings column at 360 px. */
+/* Two ids: the Settings row rule above (`.row > input:is(...)`) out-ranks one,
+   and without the cap the password box ran 649px wide on its own line at 1440. */
+#settings-modal #sync-pair-row > input {
+  max-width: 18rem;
+}
+.sync-paired {
+  overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1 1 16rem;
+  margin: 0;
+}
 /* Recent exports (Settings, Import & export): one row per file, the name
    taking the room and truncating, the size and age beside it, a download
    button at the end. Same shape as the backups list above it. */
@@ -2878,7 +2942,7 @@ li.link-source {
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--card-bg);
+  background: var(--card);
   cursor: pointer;
 }
 .ask-history-item:hover,
@@ -3905,6 +3969,28 @@ html.modal-open body {
 }
 .dash-widget h2 {
   margin: 0;
+}
+/* **Edit layout keeps a widget's head on one line** (owner, 2026-11-11, zoom
+   and resolution). The card head row wraps by design (above), so five edit
+   controls at 293px dropped under the title on 34 of 35 widgets from 1280
+   to 2560 and at every zoom (head 32 -> 66px at 1366, 78 at 768). Now the
+   Remove glyph, the head's ⋯ (Wide, Move earlier, Move later) and the grip
+   (84px at 1366); the actions never shrink and a long title gives way with
+   an ellipsis, whole in its title (1 of 35 at 1366). */
+.dash-widget > .row.space-between:has(> .dash-edit-actions) {
+  flex-wrap: nowrap;
+}
+.dash-widget > .row:has(> .dash-edit-actions) > h2 {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+.dash-edit-actions {
+  flex: none;
+  align-items: center;
 }
 .dash-body {
   display: flex;
@@ -5767,7 +5853,13 @@ select {
   font-size: var(--text-sm);
   font-weight: 500;
   text-align: left;
-  white-space: normal;
+  /* One line, as the other links are (wrapzoom 2026-11-11: "Use these tools
+     from another app" ran to two in its 212px, at every viewport). The words
+     end in an ellipsis and the link's title says them whole. */
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 #settings-nav .settings-nav-group:hover,
 #settings-nav .settings-nav-group:is(:focus-visible, :has(:focus-visible)) {
@@ -6084,7 +6176,7 @@ select {
   content: "";
   position: absolute;
   inset-block: var(--space-2);
-  inset-inline-start: calc(-2 * var(--space-3));
+  inset-inline-start: calc(-1 * var(--setting-bar-inset));
   width: 2px;
   border-radius: var(--radius-pill);
   background: var(--accent-text);

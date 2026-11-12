@@ -258,26 +258,42 @@ def _run_list_flight(client, key: tuple[str, str], flight: _ListFlight) -> None:
 #: before the download (CI on PR 212). A name no longer among the pulls is forgotten, so a second download of it
 #: waits again.
 _pull_done_seen: dict[str, float] = {}
+#: How long after a download finishes a poll that still does not list it asks the runner again.
+PULL_LIST_RETRY_SECONDS = 10.0
 
 
-def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]) -> list[dict]:  # noqa: ANN001
+def _recent_pulls(pulls: dict[str, dict], now: float) -> tuple[list[str], list[str], float]:
+    """`(new, recent, since)`: downloads first seen finishing on this poll, all those seen in the last
+    `PULL_LIST_RETRY_SECONDS`, and when the earliest of those finished."""
     with _installed_lock:
         for name in [n for n in _pull_done_seen if pulls.get(n, {}).get("status") != "success"]:
             del _pull_done_seen[name]
-        now = time.monotonic()
-        fresh = [n for n, job in pulls.items() if job.get("status") == "success" and n not in _pull_done_seen]
-        _pull_done_seen.update(dict.fromkeys(fresh, now))
-    if all(_name_matches(name, installed) for name in fresh):
+        new = [n for n, job in pulls.items() if job.get("status") == "success" and n not in _pull_done_seen]
+        _pull_done_seen.update(dict.fromkeys(new, now))
+        #: A download seen finishing in the last few seconds and still not listed is asked about again by the
+        #: next poll too: on a busy machine the first poll's wait ran out before the list came back, and every
+        #: poll after it served the list from before the download (CI on PR 216, 3.11).
+        recent = [n for n in pulls if n in _pull_done_seen and now - _pull_done_seen[n] < PULL_LIST_RETRY_SECONDS]
+        return new, recent, min((_pull_done_seen[n] for n in recent), default=now)
+
+
+def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]) -> list[dict]:  # noqa: ANN001
+    now = time.monotonic()
+    new, recent, since = _recent_pulls(pulls, now)
+    fresh = [n for n in recent if not _name_matches(n, installed)]
+    if not fresh:
         return installed
     key = _flight_key(client)
-    deadline = now + INSTALLED_COLD_BUDGET
+    #: The poll that first sees the download finish waits the cold budget; the retries after it only the short
+    #: one, so a model the runner never lists (a renamed tag) cannot slow every poll for the whole window.
+    deadline = now + (INSTALLED_COLD_BUDGET if any(n in new for n in fresh) else INSTALLED_REFRESH_BUDGET)
     while time.monotonic() < deadline:
         with _installed_lock:
             flight = _installed_flights.get(key) or _start_flight(client, key)
         flight.done.wait(max(0.0, deadline - time.monotonic()))
         if not flight.done.is_set():
             break
-        if flight.started >= now:  # asked after the download finished: its answer, or what was known
+        if flight.started >= since:  # asked after the download finished: its answer, or what was known
             return flight.result if flight.error is None and flight.result is not None else installed
     return installed
 
@@ -482,49 +498,11 @@ def _overridden_count(manager) -> int:  # noqa: ANN001
     return sum(1 for row in manager.feature_rows() if row["overridden"])
 
 
-@router.get("/status")
-def status(session: Session = Depends(get_session)) -> dict:
-    """One call that tells the UI everything: is Ollama up, what's
-    installed, what's active, and whether any job is running."""
-    ollama = _CachedCapabilities(deps.get_ollama())
-    manager = deps.get_model_manager()
-    embeddings = deps.get_embeddings()
-
-    # is_running() and list_models() both hit Ollama's own /api/tags: 
-    # calling both in sequence (as this used to) can take up to 7s (2s + 5s)
-    # for one poll, which used to be longer than the frontend's
-    # AbortSignal.timeout on this exact call (app.js refreshModelStatus): 
-    # since raised from 5s to 8s, but still worth beating rather than
-    # trusting that margin. That mismatch read as "AI unavailable" on a
-    # backend that is genuinely up but momentarily slow to answer, one
-    # round-trip now serves both purposes.
-    known, checking = _installed_state(ollama)
-    installed = known if known is not None else []
-    running = known is not None
-    pulls = jobs.pull_statuses()
-    if running:
-        installed = _installed_after_pulls(ollama, installed, pulls)
-    chat_model = manager.chat_model()
-    utility_resolved, utility_reason = manager.utility_resolution()
-    # Resolved once. It walks the installed models asking each whether it can
-    # see, which is an HTTP call per model on a cold cache.
-    resolved_vision = manager.resolve_vision_model(ollama, installed) if running else None
-
-    config = deps.get_config()
-    semantic_offer = _semantic_offer(embeddings, config)
-    provider = str(config.get_preference("llm_provider", "ollama") or "ollama")
-    # Judged on every status poll, not only when the address is changed. A
-    # warning that appears once and vanishes on the next reload is a warning
-    # about a condition that has not gone away, and this one is about notes
-    # leaving the machine, which is the app's central promise.
-    local_only = bool(config.get_preference("local_only_ai", True))
-    _, privacy_note, is_local = security.check_backend_url(ollama.base_url)
-
-    #: Section 21 row 12: nothing answered, at an address the person set.
-    #: The default address unanswered is a server not started ("isn't
-    #: running"); a custom one is as likely a typo, so the line names it.
-    busy, unreachable_hint = _unreachable_state(ollama, provider, running, checking)
-
+def _status_chat_fields(  # noqa: ANN001
+    *, ollama, manager, running, installed, checking, busy, unreachable_hint, provider,
+    chat_model, is_local, privacy_note, local_only, utility_resolved, utility_reason, resolved_vision,
+) -> dict:
+    """The chat backend half of /status: reachability, privacy, and the models in use."""
     return {
         # Named for Ollama because the whole UI is, and it means "the chat
         # backend is answering", which is the question the pill asks whoever
@@ -611,6 +589,12 @@ def status(session: Session = Depends(get_session)) -> dict:
             if running
             else None
         ),
+    }
+
+
+def _status_search_fields(session, manager, embeddings, running, semantic_offer, pulls) -> dict:  # noqa: ANN001
+    """The feature models, embeddings, index and OCR half of /status."""
+    return {
         # One row per feature that may run on a model of its own, resolved:
         # the name in use and whether that is this feature's own choice or the
         # role's. Carried on the poll that already runs rather than in a
@@ -680,6 +664,64 @@ def status(session: Session = Depends(get_session)) -> dict:
         #: `ocr.engine`); the key keeps the name the frontend reads.
         "tesseract_available": ocr_probe()[0],
         "ocr_engine": ocr_probe()[1],
+    }
+
+
+@router.get("/status")
+def status(session: Session = Depends(get_session)) -> dict:
+    """One call that tells the UI everything: is Ollama up, what's
+    installed, what's active, and whether any job is running."""
+    ollama = _CachedCapabilities(deps.get_ollama())
+    manager = deps.get_model_manager()
+    embeddings = deps.get_embeddings()
+
+    # is_running() and list_models() both hit Ollama's own /api/tags: 
+    # calling both in sequence (as this used to) can take up to 7s (2s + 5s)
+    # for one poll, which used to be longer than the frontend's
+    # AbortSignal.timeout on this exact call (app.js refreshModelStatus): 
+    # since raised from 5s to 8s, but still worth beating rather than
+    # trusting that margin. That mismatch read as "AI unavailable" on a
+    # backend that is genuinely up but momentarily slow to answer, one
+    # round-trip now serves both purposes.
+    known, checking = _installed_state(ollama)
+    installed = known if known is not None else []
+    running = known is not None
+    if running:
+        #: Seen online: drop the refused and silent marks now (Q11).
+        ollama_client.note_online(ollama.base_url)
+    pulls = jobs.pull_statuses()
+    if running:
+        installed = _installed_after_pulls(ollama, installed, pulls)
+    chat_model = manager.chat_model()
+    utility_resolved, utility_reason = manager.utility_resolution()
+    # Resolved once. It walks the installed models asking each whether it can
+    # see, which is an HTTP call per model on a cold cache.
+    resolved_vision = manager.resolve_vision_model(ollama, installed) if running else None
+
+    config = deps.get_config()
+    semantic_offer = _semantic_offer(embeddings, config)
+    provider = str(config.get_preference("llm_provider", "ollama") or "ollama")
+    # Judged on every status poll, not only when the address is changed. A
+    # warning that appears once and vanishes on the next reload is a warning
+    # about a condition that has not gone away, and this one is about notes
+    # leaving the machine, which is the app's central promise.
+    local_only = bool(config.get_preference("local_only_ai", True))
+    _, privacy_note, is_local = security.check_backend_url(ollama.base_url)
+
+    #: Section 21 row 12: nothing answered, at an address the person set.
+    #: The default address unanswered is a server not started ("isn't
+    #: running"); a custom one is as likely a typo, so the line names it.
+    busy, unreachable_hint = _unreachable_state(ollama, provider, running, checking)
+
+    return {
+        **_status_chat_fields(
+            ollama=ollama, manager=manager, running=running, installed=installed,
+            checking=checking, busy=busy, unreachable_hint=unreachable_hint, provider=provider,
+            chat_model=chat_model, is_local=is_local, privacy_note=privacy_note,
+            local_only=local_only, utility_resolved=utility_resolved,
+            utility_reason=utility_reason, resolved_vision=resolved_vision,
+        ),
+        **_status_search_fields(session, manager, embeddings, running, semantic_offer, pulls),
     }
 
 

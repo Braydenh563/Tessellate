@@ -73,13 +73,20 @@ function fillEntryMenu(menu, entry) {
       title: `Now in ${entry.category || "Uncategorised"}; choose another`,
       run: () => chooseNoteCategory([entry.id], entry.category),
     },
-    {
-      label: entry.is_private ? "ph:lock-open Make readable" : "ph:lock Make private",
-      title: entry.is_private
-        ? "Decrypt this note so search and Atlas can use it again"
-        : "Encrypt this note at rest, and keep it out of search and Atlas",
-      run: () => toggleEntryPrivacy(entry),
-    },
+    //: A note with three or more headings gets a way to jump to one (S74).
+    ...(fillEntryMenu.headingCount(entry) >= 3
+      ? [{ label: "ph:list-dashes Headings", title: "Jump to a heading in this note", run: () => fillEntryMenu.headings(entry) }]
+      : []),
+    //: Inside a private space the switch is locked on: no per-note opt-out (INBOX 1727).
+    spacesCache.find((space) => space.id === entry.workspace_id)?.is_private
+      ? { label: "ph:lock Private in this space", title: "Move it out of this space to share it", disabled: true, run: () => toast("Move it out of this space to share it.") }
+      : {
+          label: entry.is_private ? "ph:lock-open Make readable" : "ph:lock Make private",
+          title: entry.is_private
+            ? "Decrypt this note so search and Atlas can use it again"
+            : "Encrypt this note at rest, and keep it out of search and Atlas",
+          run: () => toggleEntryPrivacy(entry),
+        },
     {
       // Sits above History because it is the more common question by far:
       // "what else is this about?" is asked of a note every time it is
@@ -384,4 +391,175 @@ function fillEntryMenu(menu, entry) {
   menu.appendChild(rule());
   menu.appendChild(buildMenuItemButton(archive));
   menu.appendChild(buildMenuItemButton(danger));
+}
+
+//: **Headings (S74).** The card draws the text after its title line, so the title's own heading is not one to jump to.
+//: A clipped row carries the server's count of the whole text (`heading_count`); a whole row is counted here.
+fillEntryMenu.headingCount = function (entry) {
+  const titled = entry.title ? 1 : 0;
+  if (entry.content_truncated) return Math.max(0, (entry.heading_count ?? 0) - titled);
+  return mdTocEntries(entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content)).length;
+};
+
+//: Contents recipe (`mdTocElement`) in a sheet: a link per heading, indented by level; a press closes the sheet and
+//: brings that heading to the top of the card, opened out (the card is one paragraph of text, so each heading line is
+//: a `.note-heading` span, notes-list.js).
+fillEntryMenu.headings = async function (entry) {
+  let whole;
+  try {
+    whole = await fullEntry(entry.id);
+  } catch (error) {
+    toast(error.message || "Couldn't read that note.", true);
+    return;
+  }
+  const entries = mdTocEntries(whole.title ? bodyWithoutTitleLine(whole.content) : stripFrontmatter(whole.content));
+  openSheet({
+    label: "Headings",
+    sub: entry.title || noteNamePlain(whole.content, 80),
+    name: "note-headings",
+    build: (card, close) => {
+      const toc = mdTocElement();
+      toc.querySelector(".md-toc-head").remove();
+      const list = toc.querySelector(".md-toc-list");
+      const top = entries.length ? Math.min(...entries.map((e) => e.level)) : 1;
+      entries.forEach((heading, index) => {
+        const item = document.createElement("li");
+        item.className = `md-toc-item md-toc-depth-${Math.min(3, heading.level - top)}`;
+        const link = document.createElement("a");
+        link.href = "#";
+        link.textContent = heading.text;
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          close();
+          fillEntryMenu.jump(entry.id, index, entries.length, heading.text);
+        });
+        item.appendChild(link);
+        list.appendChild(item);
+      });
+      card.appendChild(toc);
+    },
+  });
+};
+
+fillEntryMenu.jump = async function (id, index, total, text) {
+  const row = document.querySelector(`li[data-id="${id}"]`);
+  const content = row?.querySelector(".entry-content");
+  if (!content) return;
+  const more = row.querySelector(".entry-more");
+  if (more && more.textContent === "Show more") more.click();
+  await content.fillWhole?.();
+  const spans = [...content.querySelectorAll(".note-heading")];
+  //: By place when the card drew every heading the text holds; by words when markup (a table, a column) shifted them.
+  const target = spans.length === total ? spans[index] : spans.find((s) => s.textContent.trim() === text.trim());
+  target?.scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
+};
+
+// Moved here from menus.js with the rows that call them (gzip budget, laglist-1108).
+async function toggleEntryPrivacy(entry) {
+  const makingPrivate = !entry.is_private;
+  if (makingPrivate) {
+    const ok = (await confirmDialog(
+      "Make this note private?\n\n" +
+        "It gets encrypted with a key derived from your password, so it stays " +
+        "unreadable in the database, in backups, and to anyone without that " +
+        "password.\n\n" +
+        "It also stops appearing in search and stops being given to Atlas.\n\n" +
+        "There is no recovery: if you forget your password this note is gone."
+    ));
+    if (!ok) return;
+  }
+  // Both directions need the key, which a session without a password lacks.
+  if (!(await ensureVaultOpen())) return;
+  try {
+    await apiJson(`/entries/${entry.id}/privacy`, {
+      method: "POST",
+      body: JSON.stringify({ private: makingPrivate }),
+    });
+    const setPrivacy = (value) => async () => {
+      await apiJson(`/entries/${entry.id}/privacy`, { method: "POST", body: JSON.stringify({ private: value }) });
+      await refreshEntries([entry.id]);
+    };
+    pushUndo(makingPrivate ? "Made a note private" : "Made a note readable", setPrivacy(!makingPrivate), setPrivacy(makingPrivate));
+    toast(makingPrivate ? "Note encrypted." : "Note is readable again.");
+    await refreshEntries([entry.id]);
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+// Reported: no popup shows when a title is regenerated.
+//
+// There WAS a toast, and it was being swallowed. `toast()` drops anything
+// that is not an error while notifications are muted, which is right for
+// background chatter and wrong here: this is the result of a button the user
+// just pressed, and a direct action that reports nothing reads as a broken
+// button. Muting is about noise you did not ask for.
+//
+// The "Generating…" toast is also worth keeping distinct from the settled one:
+// this call waits on the model, so it can take seconds, and a control that
+// looks inert for seconds gets pressed again.
+async function generateEntryTitle(entry) {
+  const regenerating = Boolean(entry.title);
+  try {
+    toast(regenerating ? "Regenerating the title…" : "Generating a title…", false, {
+      exempt: true,
+    });
+    const was = (await fullEntry(entry.id)).content; // the undo puts back the whole text, not a list row's first 300 characters
+    const updated = await apiJson(`/entries/${entry.id}/generate-title`, { method: "POST" });
+    if (updated?.content) pushEntryPutUndo(entry.id, "Titled a note", { content: was }, { content: updated.content });
+    await refreshEntries([entry.id]);
+    flashEntry(entry.id);
+    const title = updated && updated.title;
+    toast(title ? `Titled “${title}”.` : "Titled.", false, { exempt: true });
+    // And in the notification centre, so the result survives the 5.5 seconds
+    // the toast lives for, the model can finish while you are on another tab.
+    recordNotification({
+      kind: "task",
+      title: regenerating ? "Title regenerated" : "Title generated",
+      detail: title ? `“${title}”` : `Note #${entry.id}`,
+    });
+  } catch (error) {
+    toast(error.message || "Couldn't generate a title.", true);
+  }
+}
+
+async function removeEntryTitle(entry) {
+  try {
+    const was = (await fullEntry(entry.id)).content;
+    const updated = await apiJson(`/entries/${entry.id}/remove-title`, { method: "POST" });
+    if (updated?.content) pushEntryPutUndo(entry.id, "Removed a title", { content: was }, { content: updated.content });
+    await refreshEntries([entry.id]);
+    flashEntry(entry.id);
+    // Said out loud: it was silent.
+    toast("Title removed.", false, { exempt: true });
+  } catch (error) {
+    toast(error.message || "Couldn't remove the title.", true);
+  }
+}
+
+//: Moved here from the boot files (W27): only this file calls them.
+function inlineActionIs(id, kind) {
+  return inlineAction && inlineAction.id === id && inlineAction.kind === kind;
+}
+
+//: **Translate a note from where it is read** (INBOX 405). Writing room
+//: already translates; this takes the note there, loaded and set to the last
+//: language picked, rather than asking the reader to copy it across. Nothing
+//: runs until Draft is pressed, like every other starting point on the desk,
+//: and a desk that already holds writing is asked about before it is
+//: replaced.
+async function translateNoteInDesk(entry) {
+  entry = await fullEntry(entry.id).catch(() => entry); // the list holds a preview (INBOX 1525)
+  if (entry.content_truncated) return;
+  const busy = $("draft-thoughts").value.trim() || $("draft-text").value.trim();
+  if (busy && !(await confirmDialog("Replace what is in the Writing room with this note?"))) return;
+  switchTab("notes");
+  showNotesSection("writing-room");
+  $("draft-thoughts").value = entry.content || "";
+  $("draft-text").value = "";
+  $("draft-kind").value = draftTranslateKind();
+  $("draft-kind").dispatchEvent(new Event("change"));
+  saveDraftLocally();
+  toast("Pick the language in the menu beside Draft, then press Draft.");
+  $("draft-kind").closest(".select-shell")?.querySelector("button")?.focus();
 }

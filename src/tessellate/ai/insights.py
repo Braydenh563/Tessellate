@@ -85,8 +85,13 @@ def _day(day: date, today: date) -> str:
 
 
 def _count_word(n: int) -> str:
-    words = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
+    words = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve")
     return words[n] if 0 <= n < len(words) else str(n)
+
+
+def _capital(subject: object) -> str:
+    said = str(subject)
+    return said[:1].upper() + said[1:]
 
 
 def _written(note: dict) -> date | None:
@@ -108,8 +113,52 @@ def _week(day: date) -> tuple[int, int]:
     return iso[0], iso[1]
 
 
+#: "want to see Kyoto and Nara" is a verb phrase; "no later note picks up want to see ..." reads broken (audit 1030 Z7).
+_PLAN_LEAD = re.compile(r"^(?:(?:i|we)(?:'m|'re| am| are)?\s+)?(?:(?:want|wants|wanted|plan|plans|planned|hope|hopes|hoped|intend|intends)\s+to|(?:am |are |is )?going to)\s+(?=\S)", re.I)
+
+
+def _plan_phrase(plan: str, shown: str) -> str:
+    """The plan as a noun phrase ("your plan to see Kyoto and Nara"); anything else, or words quoted as
+    typed, keeps its words after "this plan:"."""
+    lead = _PLAN_LEAD.match(plan)
+    return f"your plan to {plan[lead.end():]}" if lead and shown == plan else f"this plan: {shown}"
+
+
+def _shown(rule: str, slots: dict) -> dict:
+    """The slots as the sentence says them: a recurrence's subject with its capital and its count in
+    words (G12), the slot values themselves staying typed for the lint and Confirm."""
+    if rule != "recurrence":
+        from tessellate.ai import composer_story
+
+        shown = {k: composer_story.quoted_if_slang(v) if composer_tables.INSIGHT_SLOTS.get(k) == "span" else v for k, v in slots.items()}
+        return {**shown, "plan": _plan_phrase(str(slots["plan"]), str(shown["plan"]))} if rule == "drift" else shown
+    return {**slots, "subject": _capital(slots["subject"]), "count": _count_word(int(slots["count"]))}
+
+
 def _fill(rule: str, slots: dict) -> str:
-    return composer_tables.INSIGHT_TEMPLATES[rule].format(**{k: v for k, v in slots.items()})
+    return composer_tables.INSIGHT_TEMPLATES[rule].format(**_shown(rule, slots))
+
+
+def shown(rule: str, slots: dict) -> dict:
+    """`_shown` for the eval, which fills the template from a row's own numbers."""
+    return _shown(rule, slots)
+
+
+def listed(found: list["Insight"]) -> list[str]:
+    """The sentences of a list of insights, each recurrence's hedge said once: the same "that keeps
+    coming up" three times in a row reads as a stamp (G12)."""
+    said: set[str] = set()
+    lines = []
+    for item in found:
+        hedge = str(item.slots.get("hedge") or "")
+        tail = f"; {hedge}."
+        if item.rule == "recurrence" and hedge in said and item.text.endswith(tail):
+            lines.append(f"{item.text[: -len(tail)]}.")
+            continue
+        if item.rule == "recurrence":
+            said.add(hedge)
+        lines.append(item.text)
+    return lines
 
 
 def _leisure(notes: list[dict]) -> bool:
@@ -172,6 +221,18 @@ def _own_plan(note: dict, fact) -> bool:  # noqa: ANN001
     return not _OTHERS_PLAN.search(str(note.get("content") or "")[: fact.start])
 
 
+def _followed_up(notes: list[dict], note: dict, written: date, words: list[str]) -> bool:
+    """Whether a later note mentions at least half of the plan's words."""
+    need = (len(words) + 1) // 2
+    for other in notes:
+        if other is note or not (day := _written(other)) or day <= written:
+            continue
+        content = str(other.get("content") or "").lower()
+        if sum(1 for w in words if re.search(rf"\b{w}", content)) >= need:
+            return True
+    return False
+
+
 def drift(notes: list[dict], today: date) -> list[Insight]:
     """Plans at least `DRIFT_DAYS` old that no later note follows up: the
     plan's own words, quoted, and the day it was written."""
@@ -188,11 +249,7 @@ def drift(notes: list[dict], today: date) -> list[Insight]:
             words = [w for w in re.findall(r"[a-z]{4,}", fact.attrs.get("object", "").lower()) if w not in _PLAIN]
             if not words:
                 continue
-            later = [
-                n for n in notes
-                if n is not note and (d := _written(n)) and d > written and sum(1 for w in words if re.search(rf"\b{w}", str(n.get("content") or "").lower())) >= (len(words) + 1) // 2
-            ]
-            if later:
+            if _followed_up(notes, note, written, words):
                 continue
             slots = {"plan": fact.text, "since": _day(written, today)}
             out.append(Insight("drift", _fill("drift", slots), [note["id"]], slots))
@@ -268,9 +325,10 @@ def for_subject(subject: str, notes: list[dict], today: date, question: str = ""
 def short(insight: Insight) -> str:
     slots = insight.slots
     if insight.rule == "recurrence":
-        return f"{slots['subject']} came up {slots['count']} times since {slots['since']}"
+        #: The subject with its capital and the count in words (G12).
+        return f"{_capital(slots['subject'])} came up {_count_word(int(slots['count']))} times since {slots['since']}"
     if insight.rule == "streak":
-        return f"{slots['subject']} every week for {slots['weeks']} weeks"
+        return f"{_capital(slots['subject'])} every week for {_count_word(int(slots['weeks']))} weeks"
     if insight.rule == "drift":
         return f"a plan from {slots['since']} still open"
     if insight.rule == "contrast":
@@ -282,12 +340,13 @@ def after_lead(insight: Insight) -> str:
     """A recurrence said after a lead that gave its count and dates ("At least
     four of your notes mention golf, from 5 to 30 September"): only what the
     lead did not say (CHAT_PLAN decision 52, one fact once). "Three of them
-    after work; that may be a hobby forming." or "That keeps coming up."."""
+    after work; that may be a hobby forming."; "" when there is nothing new, since "That keeps coming up."
+    only said the count again (fable-composer-1110 F7.3)."""
     hedge = str(insight.slots.get("hedge") or "")
     after = str(insight.slots.get("after") or "").lstrip(", ")
     if after:
         return f"{after[:1].upper()}{after[1:]}; {hedge}."
-    return f"{hedge[:1].upper()}{hedge[1:]}."
+    return "" if hedge == composer_tables.INSIGHT_HEDGES["recurs"] else f"{hedge[:1].upper()}{hedge[1:]}."
 
 
 #: How many of the newest notes the Patterns line reads: the patterns worth a
@@ -392,23 +451,47 @@ CONFIRMED_KIND = "confirmed"
 def memory(session) -> Memory:  # noqa: ANN001
     """The confirmations (`derived_facts`, kind "confirmed", not deleted) and
     the dismissals (`learning`, "dismiss_insight") of this notebook."""
-    import json
-
-    from sqlalchemy import select
-
     from tessellate.ai import learning
-    from tessellate.core.database import DerivedFact
 
     dismissed = {str(c.subject.get("key") or "") for c in learning.corrections(session, "dismiss_insight")}
     confirmed: dict[str, dict] = {}
-    for row in session.scalars(select(DerivedFact).where(DerivedFact.kind == CONFIRMED_KIND, DerivedFact.deleted_at.is_(None))):
-        try:
-            payload = json.loads(row.payload or "{}")
-        except ValueError:
-            continue
+    for row in shown_confirmed(session):
+        payload = _payload(row)
         if payload.get("key"):
-            confirmed[payload["key"]] = {"line": _said_now(row.text), "id": row.id, "measured": payload.get("measured", ""), "note_ids": payload.get("note_ids") or []}
+            info = {"line": _said_now(row.text), "id": row.id, "measured": payload.get("measured", ""), "note_ids": payload.get("note_ids") or [],
+                    "subject": payload.get("subject", "")}
+            #: A subject the person renamed (B9) answers under its new word
+            #: too; newest first, so the newest row holds a shared key.
+            for the_key in _keys(payload):
+                confirmed.setdefault(the_key, info)
     return Memory(frozenset(dismissed - set(confirmed)), confirmed)
+
+
+def _keys(payload: dict) -> list[str]:
+    """Every key a confirmed fact answers under: its own and the subject it was renamed to."""
+    return [k for k in (payload.get("key"), *payload.get("aliases", [])) if k]
+
+
+def _confirmed_rows(session, *, removed: bool = False, fact_id: int | None = None) -> list:  # noqa: ANN001
+    """Confirmed facts (or removed ones) the person can open, newest first:
+    at least one note the pattern rests on is not binned, not private and in
+    this space (the workspace filter rides on `Entry`). Any one, not the
+    newest (`entry_id`): binning one golf note of four keeps its
+    confirmation (review of B9). All of them hidden
+    takes the pattern with them (`facts._visible`'s rule)."""
+    from sqlalchemy import select
+
+    from tessellate.core.database import DerivedFact, Entry
+
+    gone = DerivedFact.deleted_at.is_not(None) if removed else DerivedFact.deleted_at.is_(None)
+    query = select(DerivedFact).where(DerivedFact.kind == CONFIRMED_KIND, gone)
+    if fact_id is not None:
+        query = query.where(DerivedFact.id == fact_id)
+    rows = list(session.scalars(query.order_by(DerivedFact.computed_at.desc(), DerivedFact.id.desc())))
+    rests_on = {row.id: {int(i) for i in _payload(row).get("note_ids") or []} | {row.entry_id} for row in rows}
+    wanted = set().union(*rests_on.values()) if rows else set()
+    can_open = set(session.scalars(select(Entry.id).where(Entry.id.in_(wanted), Entry.is_deleted.is_(False), Entry.is_private.is_(False)))) if wanted else set()
+    return [row for row in rows if rests_on[row.id] & can_open]
 
 
 def _from_payload(body: dict) -> Insight:
@@ -426,11 +509,18 @@ def confirm(session, body: dict, today: date) -> dict:  # noqa: ANN001
     insight = _from_payload(body)
     if not insight.note_ids or not insight.rule:
         raise ValueError("That insight names no notes, so there is nothing to confirm.")
-    line = confirmed_line(_said(insight), today)
     the_key = key(insight)
+    #: A second Confirm on a pattern already confirmed is that fact, not a
+    #: copy of it (two identical rows in What it learned, the review of B9).
+    known = memory(session).confirmed.get(the_key)
+    if known:
+        return {"id": known["id"], "key": the_key, "line": known["line"]}
+    line = confirmed_line(_said(insight), today)
+    #: Not an edit: the sentence is the person's own from the start, so Reset
+    #: (offered only once they edit it in Settings) puts this sentence back,
+    #: never the measurement, which the payload keeps.
     row = DerivedFact(
         entry_id=max(insight.note_ids), kind=CONFIRMED_KIND, text=line, model="you", confidence=1.0,
-        edited_by_user=True, original_text=insight.text,
         payload=json.dumps({"key": the_key, "rule": insight.rule, "measured": insight.text, "note_ids": insight.note_ids,
                             "source": f"confirmed by you, {today.isoformat()}"}),
     )
@@ -505,13 +595,143 @@ def retire_followed(session, notes: list[dict], today: date) -> int:  # noqa: AN
 
 def as_row(insight: Insight, known: Memory | None = None) -> dict:
     """An insight for a page: its line, its key, and whether it is confirmed
-    (then its line is the confirmed one, and it carries no buttons)."""
+    (then its line is the confirmed one, and its menu is Edit, Remove and
+    Not right on `confirmed_id`, B9)."""
     the_key = key(insight)
     confirmed = known.confirmed.get(the_key) if known else None
     return {
         "rule": insight.rule, "key": the_key, "text": confirmed["line"] if confirmed else insight.text,
         "short": short(insight), "note_ids": insight.note_ids, "slots": insight.slots, "confirmed": bool(confirmed),
+        "confirmed_id": confirmed["id"] if confirmed else None, "confirmed_subject": confirmed.get("subject", "") if confirmed else "",
     }
+
+
+# --- Managing what was confirmed (CHAT_PLAN B9) -------------------------------------------
+
+#: A confirmed line's tail, as `confirmed_line` writes it.
+_TOLD = re.compile(r"^(?P<said>.*), as you told me on (?P<on>\d{1,2} [A-Z][a-z]+)\.$", re.S)
+#: The rules whose key is a subject the person may rename.
+SUBJECT_RULES = ("recurrence", "streak")
+#: That tail typed into Edit (any case, after a comma or a stop): the day is
+#: the one it was first confirmed, said once.
+_TOLD_TYPED = re.compile(r"[\s,.;]*as you told me on \d{1,2} [A-Za-z]+[\s.]*$", re.I)
+
+
+def _payload(row) -> dict:  # noqa: ANN001
+    import json
+
+    try:
+        return json.loads(row.payload or "{}") or {}
+    except ValueError:
+        return {}
+
+
+def shown_confirmed(session, fact_id: int | None = None) -> list:  # noqa: ANN001
+    """The confirmed facts the person can open, newest first (or the one)."""
+    return _confirmed_rows(session, fact_id=fact_id)
+
+
+def removed_confirmed(session, fact_id: int):  # noqa: ANN001, ANN201
+    """A removed confirmed fact on a note the person can still open: Undo's way back."""
+    found = _confirmed_rows(session, removed=True, fact_id=fact_id)
+    return found[0] if found else None
+
+
+def restore_confirmed(session, row) -> list[int]:  # noqa: ANN001
+    """Undo of Remove or Not right: the fact is back. A row confirmed again
+    in between under the same key goes (soft delete), so the pattern is
+    listed once and keeps the wording it had; their ids are returned."""
+    from tessellate.core.database import utcnow
+
+    keys = set(_keys(_payload(row)))
+    newer = [other for other in shown_confirmed(session) if keys & set(_keys(_payload(other)))]
+    for other in newer:
+        other.deleted_at = utcnow()
+    row.deleted_at = None
+    session.flush()
+    return [other.id for other in newer]
+
+
+def confirmed_json(session, row) -> dict:  # noqa: ANN001
+    """One confirmed pattern for What it remembers: its sentence, the day it
+    was confirmed, its subject and the notes behind it (only those the
+    person can open: private, binned and other spaces' notes are left out)."""
+    payload = _payload(row)
+    line = _said_now(row.text)
+    told = _TOLD.match(line)
+    rule = str(payload.get("rule") or str(payload.get("key") or ":").split(":", 1)[0])
+    named = str(payload.get("key", "")).split(":", 1)[-1] if rule in SUBJECT_RULES else ""
+    return {
+        "id": row.id, "line": line, "sentence": told["said"] if told else line.rstrip("."), "confirmed_on": _confirmed_on(row, payload),
+        "rule": rule, "key": payload.get("key", ""), "subject": payload.get("subject") or named, "measured": payload.get("measured", ""),
+        "notes": _notes_behind(session, payload.get("note_ids") or []),
+    }
+
+
+def _confirmed_on(row, payload: dict) -> str:  # noqa: ANN001
+    """The day it was confirmed, as Confirm stored it ("confirmed by you, 2026-10-06")."""
+    source = str(payload.get("source") or "")
+    if source.startswith("confirmed by you, "):
+        return source.rsplit(", ", 1)[-1]
+    return row.computed_at.date().isoformat() if row.computed_at else ""
+
+
+def _notes_behind(session, ids: list) -> list[dict]:  # noqa: ANN001
+    """The notes a pattern rests on, oldest first, by title; only the ones the
+    person can open (the workspace filter rides on `Entry`)."""
+    from sqlalchemy import select
+
+    from tessellate.core.database import Entry
+    from tessellate.entry import link_wording
+
+    ids = [int(i) for i in ids][:200]
+    if not ids:
+        return []
+    notes = session.scalars(select(Entry).where(Entry.id.in_(ids), Entry.is_deleted.is_(False), Entry.is_private.is_(False)).order_by(Entry.created_at))
+    return [{"id": e.id, "title": link_wording.title(e.content or "", limit=48) or "Untitled note"} for e in notes]
+
+
+def edit_confirmed(session, row, sentence: str | None = None, subject: str | None = None) -> None:  # noqa: ANN001
+    """Edit: the person's own wording (said as it is, with the day it was
+    first confirmed) or what it is about. A new subject replaces the one
+    before (review of B9: three renames left all three answering while
+    Settings named one); the tag it was found under keeps answering, since
+    its Patterns line is measured under that key. Their word:
+    `edited_by_user` stays set, so no run rewrites it."""
+    import json
+
+    payload = _payload(row)
+    sentence = _TOLD_TYPED.sub("", " ".join(str(sentence or "").split())).rstrip(" .,")
+    subject = " ".join(str(subject or "").split())
+    if not sentence and not subject:
+        raise ValueError("Say what it should say, or what it is about.")
+    if subject:
+        rule = str(payload.get("rule") or "")
+        if rule not in SUBJECT_RULES:
+            raise ValueError("Only a pattern about a subject can be given another one.")
+        alias = f"{rule}:{_stems(subject)}"
+        payload["subject"] = subject
+        payload["aliases"] = [alias] if alias != payload.get("key") else []
+        row.payload = json.dumps(payload)
+    if sentence:
+        told = _TOLD.match(_said_now(row.text))
+        row.text = f"{sentence}, as you told me on {told['on']}." if told else f"{sentence}."
+    row.edited_by_user = True
+    session.flush()
+
+
+def dismiss_confirmed(session, row) -> list[int]:  # noqa: ANN001
+    """Not right on a confirmed pattern: the fact goes (soft delete) and the
+    pattern, with its near-variants, is not shown again. The corrections'
+    ids are the Undo's way back (`DELETE /learned/corrections/{id}`)."""
+    from tessellate.ai import learning
+    from tessellate.core.database import utcnow
+
+    payload = _payload(row)
+    row.deleted_at = utcnow()
+    ids = [learning.record(session, kind="dismiss_insight", subject={"key": k}, from_value=row.text, excerpt=row.text).id for k in _keys(payload)]
+    session.flush()
+    return ids
 
 
 def notebook(notes: list[dict], today: date, limit: int = 3) -> list[Insight]:

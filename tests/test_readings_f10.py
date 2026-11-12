@@ -4,7 +4,7 @@ A file's text could be in five places (three columns on two tables, and
 `page_reads`); the search index read three of them for an attachment and two
 for an upload, so the vision model's reading of an upload and every page read
 in the OCR workspace could not be found by their words. `core/readings.py`
-puts the five behind one `readings` view, one route and one indexing rule.
+puts the five behind one `readings` view and one indexing rule.
 """
 
 from __future__ import annotations
@@ -40,25 +40,6 @@ def _files(client):
         session.close()
 
 
-def test_one_route_returns_every_reading_in_one_shape(client):
-    att_id, upload_id = _files(client)
-    routes_files._remember_page_read(
-        ("upload", upload_id),
-        SimpleNamespace(page=2, text="page two says marmalade", model="tiny-vision"),
-        "vision",
-    )
-    att = client.get(f"/files/readings?source=attachment&id={att_id}").json()["readings"]
-    assert [(r["kind"], r["page"]) for r in att] == [("caption", 0), ("ocr", 0)]
-    upload = client.get(f"/files/readings?source=upload&id={upload_id}").json()["readings"]
-    assert [(r["kind"], r["page"], r["text"]) for r in upload] == [
-        ("vision", 0, "quarterly heliotrope plan"),
-        ("page", 2, "page two says marmalade"),
-    ]
-    assert upload[0]["model"] == "tiny-vision"
-    for row in upload:
-        assert set(row) == {"kind", "page", "text", "model", "at"}
-
-
 def test_the_view_is_one_table_to_sql(client):
     _att_id, upload_id = _files(client)
     session = deps.get_db().session()
@@ -85,18 +66,3 @@ def test_a_vision_reading_and_a_page_reading_are_findable(client):
     )
     hits = client.get("/search?q=xylograph&hybrid=false").json()["hits"]
     assert any(h.get("source") == "media" and h.get("id") == upload_id for h in hits), hits
-
-
-def test_a_private_notes_file_is_not_read_out(client):
-    att_id, _upload_id = _files(client)
-    session = deps.get_db().session()
-    try:
-        from tessellate.core.database import Entry
-
-        att = session.get(Attachment, att_id)
-        session.get(Entry, att.entry_id).is_private = True
-        session.commit()
-    finally:
-        session.close()
-    assert client.get(f"/files/readings?source=attachment&id={att_id}").status_code == 404
-    assert client.get("/files/readings?source=nope&id=1").status_code == 422

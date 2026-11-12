@@ -31,7 +31,7 @@ def _contents(client):
 
 
 def test_import_is_a_named_durable_kind_on_the_batch_lane():
-    assert jobstore.HANDLERS["import"] == "tessellate.api.routes_settings:_run_directory_import"
+    assert jobstore.HANDLERS["import"] == "tessellate.api.routes_settings_transfer:_run_directory_import"
     assert jobs.KIND_LANES["import"] == "batch"
     assert "import" in jobs.OWN_RUN_KINDS
     assert jobs.LABELS["import"]

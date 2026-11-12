@@ -269,6 +269,7 @@
      long document printed as one blank page. The main is kept and its other
      children go. */
   body.printing-doc>*:not(#tab-documents):not(#app-main),
+  body.printing-doc ~ #nm-buddy-band,
   body.printing-doc #app-main>*:not(#tab-documents),
   body.printing-doc #tab-bar,
   body.printing-doc .doc-sidebar,
@@ -279,7 +280,7 @@
   body.printing-doc #doc-status,
   body.printing-doc .scroll-top,
   body.printing-doc #bg-art {
-    display: none !important;
+    display: none;
   }
   /* The shell's own window-high, scroll-inside boxes, let go, so the
      document runs on to as many pages as it needs. */
@@ -288,9 +289,9 @@
   body.printing-doc #tab-documents,
   body.printing-doc .doc-panes {
     display: block !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
   body.printing-doc .doc-layout {
     display: block;
@@ -1683,7 +1684,7 @@ math .math-xcancel {
 }
 .board-embed-open:hover,
 .board-embed-open:focus-visible {
-  background: var(--card-bg-hover);
+  background: var(--inner);
 }
 .board-embed-open .note-embed-head {
   display: flex;
@@ -2613,7 +2614,16 @@ body.resizing-sidebar {
   padding: 0.25rem 0.4rem 0.25rem 0.8rem;
   border-bottom: 1px solid var(--border);
 }
+/* **The bar is one line** (wrap/zoom sweep, 2026-11-11): in a 331px chat
+   bubble (1280 with the web panel open) "table · header and 1 row" took two
+   lines and the actions wrapped under each other, an 81px head over a
+   two-row table. The label is what gives way, ellipsised (its title holds
+   the rest, table-block.js); the actions keep their row. */
 .code-lang {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: var(--text-sm);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2631,8 +2641,9 @@ body.resizing-sidebar {
    head rather than as four chips dropped on it. */
 .code-actions {
   display: inline-flex;
+  flex: none;
   align-items: stretch;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0;
   padding: 2px;
   border-radius: var(--radius-pill);
@@ -2842,10 +2853,11 @@ body.resizing-sidebar {
 }
 #doc-attach-bookmark {
   margin-top: var(--space-2);
-  /* A `.doc-outline-wrap` is a flex column, so a button in it was stretched
-     to the full width of the sidebar: 226px of ghost button, the heaviest
-     control on the panel, for two words. It is as wide as what it says. */
-  align-self: flex-start;
+  /* The full width of the sidebar, its words centred (the owner, 2026-11-11:
+     "attach a bookmark should be ... the full width of the sidebar and
+     centered"). It stays a ghost, so the width is a target, not weight. */
+  align-self: stretch;
+  justify-content: center;
 }
 /* **An empty section does not reserve a heading and a button.** Measured with
    no references attached: `#doc-bookmarks-wrap` was 69.4px of column for a
@@ -3136,13 +3148,18 @@ button.outline-twist:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  align-self: flex-start;
+  /* The sidebar's footer (the owner, 2026-11-11: "should sit at the bottom
+     of the sidebar like a footer"), full width and centred: the section is a
+     flex column as tall as the sidebar, so `margin-top: auto` takes the
+     space above it, and a long outline keeps --space-5 by the padding. */
+  align-self: stretch;
+  justify-content: center;
   width: auto;
   max-width: 100%;
-  margin-top: var(--space-5);
-  padding: var(--space-2) 0;
+  margin-top: auto;
+  padding: var(--space-5) 0 var(--space-2);
   font-size: var(--text-base);
-  text-align: left;
+  text-align: center;
   color: var(--muted);
   text-decoration: none;
 }
@@ -6186,3 +6203,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 }
 /* The Tags sheet's rows (categories-panel.js `openTagsSheet`): the sheet row
    takes the width, its two small buttons sit at its end. */
+/* Atlas's feminine look a shade deeper on a light page (INBOX 1696 r, ff):
+   she melted into it, forehead 1.15:1 off the page; with the outline in
+   atlas-lazy.css, 1.32. Still lilac, her rim unchanged. */
+:root:not([data-mode="dark"]) .nm-atlas[data-atlas-look="feminine"] { --atl-hi: #e3e4fb; --atl-lt: #cfd1f6; --atl-md: #b4b3ec; --atl-dp: #968fd6; }

@@ -187,7 +187,7 @@ def test_an_insight_closes_a_broad_answer_over_four_notes_in_five_weeks():
     insight = [m for m in _measures(result) if "hobby forming" in m or "keeps coming up" in m]
     assert insight, _measures(result)
     #: The count is said once (decision 52): by the lead, or by the line.
-    assert "four" in _measures(result) or "4 times" in insight[0]
+    assert "four" in _measures(result) or "four times" in insight[0]
 
 
 def test_no_insight_on_two_notes():
@@ -319,7 +319,7 @@ def test_parse_a_reminder_command():
     cmd = commands.parse("remind me to call Sam on Friday", NOW)
     assert (cmd.verb, cmd.object) == ("remind", "call Sam")
     assert cmd.when.date() == date(2026, 10, 9)
-    assert cmd.confirm is False
+    assert cmd.confirm is True  # every act waits (owner, 2026-11-10)
 
 
 def test_delete_requires_confirmation():

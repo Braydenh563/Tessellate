@@ -12,10 +12,11 @@ from __future__ import annotations
 import functools
 import re
 
-from tessellate.ai import composer_tables, recognise as rec
+from tessellate.ai import composer_frame, composer_tables, recognise as rec
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _alternatives, _holds, _stem, _stem_plain
 from tessellate.ai.composer_read import NoteView
+from tessellate.core.lazyre import lazy_compile
 
 
 #: Words too short or too common to report as missing: a two-letter word
@@ -49,6 +50,9 @@ def _seen(term: str, found: set[str]) -> bool:
     factgraph._tables()
     if any(factgraph._PAST.get(word) == stem for word in found):
         return True
+    #: The agent of a verb ("teaches" in "Teacher is Lucía", R9-2).
+    if len(stem) >= 5 and any(word in (stem + "er", stem + "r", stem + "or") for word in found):
+        return True
     return len(stem) >= 4 and any(_one_edit(stem, word) for word in found if word[:1] == stem[:1])
 
 
@@ -65,9 +69,18 @@ _INSTRUCTION_STEMS = frozenset(
 )
 
 
+#: Function words of the other languages a notebook is written in, which are
+#: never a topic the notes could be missing: "que sé sobre Tokyo" is not
+#: missing "sobre" (round 2 E26). Words that are also English are left out.
+_FOREIGN = frozenset(
+    """sobre que qué sé de del la las el los por para sin como cómo ist wie der das über und mit ein eine les des une dans pour
+    mein meine dein avec qui est sul della dei che nel não uma com dos mes sur""".split()
+)
+
+
 #: An adverb says how, not what: "what did I personally think", "is it
 #: actually recorded" are never missing their "personally" (stress run 2026-10-30).
-_MANNER = re.compile(r"(?:ally|ely|ently|antly|ously|ively|edly|icitly)$|^(?:simply|merely|basically|honestly|truly|mostly|mainly|barely|nearly|hardly)$", re.I)
+_MANNER = lazy_compile(r"(?:ally|ely|ently|antly|ously|ively|edly|icitly)$|^(?:simply|merely|basically|honestly|truly|mostly|mainly|barely|nearly|hardly)$", re.I)
 
 
 def _quoted_words(out: _Answer, views: list[NoteView]) -> set[str]:
@@ -99,7 +112,7 @@ def _said_by_shape(term: str, quoted_text: str) -> bool:
 #: ("do I turn", "have I seen"), and aggregate, pronoun and comparison words.
 #: Named as "not mentioned" they told the person a note was missing a word
 #: no note would hold (audit 1030 Z16: "turn", "seen", "total", "him").
-_FRAME_SHAPES = re.compile(
+_FRAME_SHAPES = lazy_compile(
     r"\bhow (?!to\b)(\w+)"
     r"|\b(?:do|does|did|can|could|should|would|will|have|has|had|am|is|are|was|were) (?:i|we|you) (?:\w+ly )?(?!a\b|an\b|the\b)(\w+)"
     r"|\b(?:i|we)(?:'ve|'d|'ll| have| had| will)? (?!have\b|had\b|am\b|was\b)(\w+)"
@@ -115,7 +128,8 @@ _FRAME_SHAPES = re.compile(
 _FRAME_WORDS = frozenset(
     _stem_plain(w)
     for w in """total sum plus overall whole altogether notebook theme themes him her them myself yourself ourselves
-    more less sooner later further farther right now ingredient ingredients contents details information""".split()
+    more less sooner later further farther right now ingredient ingredients contents details information
+    new brief valid name schedule appointment""".split()
 )
 
 
@@ -123,13 +137,13 @@ _FRAME_WORDS = frozenset(
 #: table", "in two snippets", "the top three memos", and after an order verb
 #: "in a haiku", "with a timeline". No list of formats: the position names it
 #: (audit 1029 C37; a bare "in a hotel" with no order verb stays a topic).
-_SHAPE_ASKED = re.compile(
+_SHAPE_ASKED = lazy_compile(
     r"\bas (?:a |an |the )?(\w+)"
     r"|\bin (?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|a few|a couple of) (\w+)"
     r"|\b(?:top|first|last|best|worst|latest|newest|oldest)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(\w+)",
     re.I,
 )
-_ORDER_SHAPE = re.compile(
+_ORDER_SHAPE = lazy_compile(
     r"^\s*(?:please\s+|(?:can|could|would) you\s+(?:please\s+)?)?(?:summari[sz]e|give|write|draft|explain|describe|show|tell|list|put|format|turn|sum)\b"
     r"(?:(?!\b(?:what|which|who|where|when|how|about|my|our)\b).)*?\b(?:in|with) (?:a|an) (\w+)",
     re.I,
@@ -144,12 +158,32 @@ def _frame_stems(question: str) -> frozenset[str]:
     return frozenset(_stem(w) for w in said) | _FRAME_WORDS
 
 
+#: A word that is no thing the notes could hold: a manner, a feeling, a verb form or a small
+#: everyday word ("very", "stressed", "stops", "good", "minus"). Calling it missing is a tail a
+#: person would not say (fable-composer-1110 F7.1); only a noun-like word is.
+_NOT_A_NOUN = lazy_compile(r"(?:ed|ing|ly|ful|less|ish)$", re.I)
+_SMALL_WORDS = frozenset(
+    "very good bad far well sure fine nice great big small minus plus those these turn turns stop stops start starts "
+    "helpful stressed worried tired happy sad more most less least much many some any again still just really quite".split()
+)
+
+
+#: A verb of the thing is not the thing: "Stay one night at a quinta" is an
+#: instruction, so it does not stand in for the "hotel" someone asked which they
+#: booked (the blind panel's Q10). The synonym group still finds notes.
+_VERB_SYNONYMS = frozenset({"stay", "staying", "stayed"})
+
+
 def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str], quoted_text: str = "") -> bool:
+    if term.lower() in _SMALL_WORDS or _NOT_A_NOUN.search(term) or re.fullmatch(r"(?=.*[.,$%£€])[\d.,$%£€]+", term):
+        return False
     if len(term) < _MISSING_MIN or _stem(term) in _INSTRUCTION_STEMS or _MANNER.search(term) or _seen(term, found):
+        return False
+    if term.lower() in _FOREIGN:
         return False
     if _stem(term) in _frame_stems(out.question or ""):
         return False
-    if _alternatives(_stem(term)) & quoted or _said_by_shape(term, quoted_text):
+    if (_alternatives(_stem(term)) - _VERB_SYNONYMS) & quoted or _said_by_shape(term, quoted_text):
         return False
     return not out.question or term.lower() in out.question.lower()
 
@@ -176,6 +210,13 @@ def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
     measured."""
     missing = _unfound_terms(out, terms, views)
     if not missing or len(missing) == len(terms):
+        return
+    #: The one note the answer quoted is only its title ("Thai green curry"): that is what it has, not that
+    #: its words are missing (R9-15).
+    quoted = [v for v in views if any(s.key in out.cited for s in v.sentences)]
+    only = composer_frame.own_title(str(quoted[0].note.get("content") or "").strip()) if len(quoted) == 1 else ""
+    if only:
+        out.t("para", "bare_a", "open_quote").asked(only).t("close_quote", "bare_b")
         return
     out.t("para", "missing")
     for i, word in enumerate(missing[:3]):

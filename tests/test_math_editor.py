@@ -24,6 +24,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -166,7 +167,7 @@ def test_every_surface_is_a_thin_caller() -> None:
 
 def test_its_help_is_the_dialogs_head_popover_and_a_guide_topic() -> None:
     #: One '?' for the dialog, in its head (INBOX 1530 g M6), not one per tab.
-    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
     assert 'setAttribute("data-help-for", helpId)' in kit and "Equation: click a dotted box" in kit
     assert "mathEditorHelp" not in EDITOR
     from tessellate.ai import help_topics_more

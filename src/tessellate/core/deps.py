@@ -26,9 +26,11 @@ from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
 from tessellate.ai.openai_client import OpenAICompatClient
 from tessellate.ai.provider import Provider
-from tessellate.core import embedmodels, jobruns
+from tessellate.core import embedmodels, jobruns, spacelock
 from tessellate.core.config import ConfigManager
-from tessellate.core.database import DatabaseManager, Entry
+from tessellate.core import board_thumbs
+from tessellate.core.database import Entry
+from tessellate.core.database_manager import DatabaseManager
 
 _ModelT = TypeVar("_ModelT")
 
@@ -329,6 +331,10 @@ def get_config() -> ConfigManager:
     return _config
 
 
+spacelock.config_source = get_config
+board_thumbs.data_dir_source = lambda: get_config().data_dir
+
+
 def get_db() -> DatabaseManager:
     init_app_state()
     assert _db is not None
@@ -432,6 +438,64 @@ def _space_known(session: Session, workspace_id: str) -> bool:
     return workspace_id in ids
 
 
+#: Paths that act on the private spaces themselves, or on the sign-in, and
+#: so must reach a locked one: unlocking it is a POST that names it.
+_UNSEALED_PATHS = ("/auth/", "/spaces", "/private-spaces/")
+#: The chat and the model's other readers: a private space is out of them
+#: unless the chat is opened inside it (INBOX 1727).
+_AI_PATHS = ("/chat", "/insights", "/questions", "/help/", "/night", "/editor")
+
+
+def _still_sealed(session: Session, request: Request, workspace_id: str | None, private: list[str]) -> list[str]:
+    """Which private spaces stay out of this request's reads."""
+    from tessellate.core import private_turn
+
+    # Idle is the person's, not the app's polls: only their own activity
+    # (`/private-spaces/touch`) keeps the private spaces open.
+    if not spacelock.opened(request.headers.get("X-Auth-Token")):
+        return private
+    path = request.url.path
+    if path.startswith(_AI_PATHS):
+        # The AI reads a private space only from a chat opened inside it,
+        # and that turn keeps nothing (`private_turn.route`).
+        if workspace_id in private:
+            session.info[private_turn.IN_PRIVATE_SPACE] = True
+        return [space for space in private if space != workspace_id]
+    # An export leaves them out unless they are open and the person said so.
+    if path.startswith("/export") and request.query_params.get("include_private_spaces") != "1":
+        return private
+    return []
+
+
+def _seal_private_spaces(session: Session, request: Request, workspace_id: str | None) -> None:
+    """INBOX 1727: a private space's rows are out of every read of this
+    request until its session opened them (`core/spacelock.py`) with the
+    vault key loaded. `database._add_workspace_filter` reads the ids; a write
+    that names a locked private space is refused here, before it can land a
+    row nothing could seal."""
+    from tessellate.core.database import PRIVATE_SPACES, Space
+
+    private = [row[0] for row in session.query(Space.id).filter(Space.is_private.is_(True)).all()]
+    # Read once per request: the sealing hook and the reminders' notice reuse it.
+    session.info[PRIVATE_SPACES] = private
+    if not private:
+        return
+    private = _still_sealed(session, request, workspace_id, private)
+    if not private:
+        return
+    session.info["sealed_workspaces"] = private
+    if (
+        workspace_id in private
+        and request.method not in ("GET", "HEAD", "OPTIONS")
+        and not request.url.path.startswith(_UNSEALED_PATHS)
+    ):
+        session.close()
+        raise HTTPException(
+            status_code=423,
+            detail={"detail": "This private space is locked. Unlock it first.", "code": "private_space_locked", "hint": None},
+        )
+
+
 def _refuse_unknown_space(workspace_id: str) -> HTTPException:
     return HTTPException(
         status_code=422,
@@ -510,22 +574,27 @@ def requests_in_flight() -> int:
 def get_session(request: Request = None) -> Iterator[Session]:
     """FastAPI dependency: one session per request, always closed, counted
     while it is held (`_RequestGate`)."""
+    yield from _counted_session(request)
+
+
+def _counted_session(request: Request | None, *, seal: bool = True) -> Iterator[Session]:
     with _gate.request(request):
-        yield from _open_session(request)
+        yield from _open_session(request, seal=seal)
 
 
 @contextmanager
 def brief_session(request: Request | None = None) -> Iterator[Session]:
     """`get_session` for a check that reads and lets go before the handler
-    runs, so a long poll behind it is not counted as in flight."""
-    held = get_session(request)
+    runs, so a long poll behind it is not counted as in flight. It reads the
+    sign-in only, so it skips the private spaces' read (`_seal_private_spaces`)."""
+    held = _counted_session(request, seal=False)
     try:
         yield next(held)
     finally:
         held.close()
 
 
-def _open_session(request: Request | None) -> Iterator[Session]:
+def _open_session(request: Request | None, *, seal: bool = True) -> Iterator[Session]:
     """One session per request, always closed.
 
     The `X-Workspace-ID` header scopes every query, so it must name a space
@@ -552,6 +621,8 @@ def _open_session(request: Request | None) -> Iterator[Session]:
                     .filter(Space.hidden_from_all.is_(True))
                     .all()
                 ]
+        if seal:
+            _seal_private_spaces(session, request, workspace_id)
     try:
         yield session
     finally:
@@ -647,20 +718,6 @@ def clear_index_stale() -> None:
 
 def index_stale_notes() -> int:
     return int(get_config().get_preference("index_stale_notes", 0) or 0)
-
-
-@contextmanager
-def impersonate_workspace(session: Session, workspace_id: str):
-    """Run a block of code as if in a specific workspace."""
-    old = session.info.get("workspace_id")
-    session.info["workspace_id"] = workspace_id
-    try:
-        yield
-    finally:
-        if old is None:
-            del session.info["workspace_id"]
-        else:
-            session.info["workspace_id"] = old
 
 
 #: Handed to the model manager so its durable jobs can find the running app's

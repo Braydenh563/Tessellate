@@ -16,6 +16,22 @@
 /* A picture fills its box and keeps its aspect (K16/K19): without this it drew
    at its natural size, so a pasted image shrunk to the view overflowed a
    smaller selection box and a resize changed the box but not the picture. */
+/* K18: a saved picture's caption, one muted line under it (Show captions). */
+.wb-object-caption {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.75;
+  pointer-events: none;
+}
 .wb-object-image > img {
   display: block;
   width: 100%;
@@ -24,6 +40,41 @@
   border-radius: inherit;
   pointer-events: none;
 }
+/* Crop on picture: a box and eight grips drawn in the picture's own (turned) frame; the dim outside is the
+   box's own shadow, so nothing needs a blur. */
+.wb-crop-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+}
+#whiteboard-container[data-current-tool] .wb-object.wb-object-image.wb-selected:has(> .wb-crop-frame) .wb-resize-handle { display: none; }
+.wb-crop-rect {
+  position: absolute;
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--bg) 55%, transparent);
+}
+.wb-crop-grip {
+  position: absolute;
+  inline-size: 12px;
+  block-size: 12px;
+  padding: 0;
+  background: var(--accent);
+  border: 1px solid var(--card);
+  border-radius: var(--radius-sm);
+  pointer-events: auto;
+  touch-action: none;
+  transform: translate(-50%, -50%);
+}
+.wb-crop-grip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wb-crop-grip[data-grip^="n"] { top: 0; }
+.wb-crop-grip[data-grip^="s"] { top: 100%; }
+.wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { top: 50%; }
+.wb-crop-grip[data-grip$="w"] { left: 0; }
+.wb-crop-grip[data-grip$="e"] { left: 100%; }
+.wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { left: 50%; }
+.wb-crop-grip[data-grip="n"], .wb-crop-grip[data-grip="s"] { cursor: ns-resize; }
+.wb-crop-grip[data-grip="e"], .wb-crop-grip[data-grip="w"] { cursor: ew-resize; }
 /* A frame (WHITEBOARD_PLAN decision 14): an edge and a title with nothing in
    between, so the shapes on the drawing layer below the card layer show
    through it. Its inside lets the pointer through to the board, so a press
@@ -98,6 +149,13 @@
   bottom: var(--space-5);
   transform: translateX(-50%);
   max-width: calc(100% - 2 * var(--space-4));
+}
+/* The typeable page number before the picker (value-field.js, INBOX 1694 b). */
+.wb-present-page {
+  flex: none;
+  display: inline-flex;
+  font-size: var(--text-sm);
+  color: var(--text);
 }
 .wb-present-count {
   /* Fixed, so the arrows beside it never move between pages (INBOX K32). */
@@ -265,7 +323,7 @@
   width: 10px;
   height: 10px;
   background: var(--accent);
-  border: 1px solid var(--card-bg);
+  border: 1px solid var(--card);
   border-radius: var(--radius-sm);
   z-index: 5;
   opacity: 0;
@@ -349,7 +407,7 @@
   height: 12px;
   border-radius: var(--radius-pill);
   background: var(--accent);
-  border: 1px solid var(--card-bg);
+  border: 1px solid var(--card);
   /* A curved-arrow rotate cursor, not a plain grab hand, asked for
      directly ("cursor changing to the rotate icon when hovering over or
      using the rotate nodes"). Same inline-SVG-as-cursor technique
@@ -521,10 +579,22 @@
 .sidebar-collapsed .sidebar-collapse-toggle .icon-collapsed {
   display: block;
 }
+/* **The rail's width and overflow win by the id, not by `!important`.** The
+   four resizable sidebars carry id rules for their open shape (the phone
+   sheet's `width: min(20rem, 84vw)` and its `overflow-y`, `#tab-notes
+   #sidebar`'s scroll), and an id outranks a class. `:is()` takes its most
+   specific argument, so the rail rule reads at (1,1,0), above each of those
+   and below the focus-mode panel's (1,3,0). Only these two properties are
+   raised: the rest of the rail (shadow, border, transition) still yields to
+   the sidebar's own id rules, as it always did. */
+.sidebar-collapsed,
+:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar).sidebar-collapsed,
+#tab-notes #sidebar.sidebar-collapsed {
+  width: 48px;
+  overflow: hidden;
+}
 .sidebar-collapsed {
-  width: 48px !important;
   white-space: nowrap;
-  overflow: hidden !important;
   /* No width transition: the grid track the sidebar sits in is set
      instantly by applySidebarWidth, so animating the aside's own width
      only made it lag its track. Opacity and transform are the only
@@ -555,13 +625,17 @@
 /* Hover-peek */
 .layout-sidebar-collapsed>.sidebar-collapsed:hover,
 .layout-sidebar-collapsed>.sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) {
-  width: var(--saved-width) !important;
   box-shadow: var(--glass-shadow);
   z-index: 100;
   position: absolute;
   /* absolute on hover so it pops over */
   height: calc(100% - var(--space-6));
   /* keep it within the layout */
+}
+/* The peeked width, above the rail's (1,1,0) by the same id list. */
+.layout-sidebar-collapsed>:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar, .sidebar-collapsed).sidebar-collapsed:hover,
+.layout-sidebar-collapsed>:is(#sidebar, #chat-sidebar, #doc-sidebar, #skills-sidebar, .sidebar-collapsed).sidebar-collapsed:is(:focus-visible, :has(:focus-visible)) {
+  width: var(--saved-width);
 }
 /* `right: 1rem`, the pinned-open position, not the 1.25rem it had: the head's
    reserve (--sidebar-toggle-lane) is measured from the pinned spot, and the
@@ -883,7 +957,7 @@
 }
 textarea.drag-over {
   border-color: var(--accent);
-  background-color: var(--card-bg-hover);
+  background-color: var(--inner);
   outline: 2px dashed var(--accent);
   outline-offset: -2px;
 }
@@ -1181,7 +1255,7 @@ body.has-agent-monitor #timeline-scroll {
      same content starts in the settings sheet, the meeting recorder or the
      sketch pad. The token also carries the responsive step for free. */
   padding: var(--space-4) var(--card-pad-x);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--glass-border);
 }
 /* The popup agent's staged files: the card's own inset, a strip of
    `attachmentChip`s (DESIGN.md "A file waiting on the next message"). */
@@ -1397,51 +1471,44 @@ body.has-agent-monitor #timeline-scroll {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--card-pad-x);
-  /* `--border-light`, the same hairline the bar above draws. One card drew its
+  /* `--glass-border`, the same hairline the bar above draws. One card drew its
      two internal rules in two different weights, which is the kind of thing
      that reads as "not quite right" without ever being seen. */
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
 }
-/* The status pushes the buttons right; Stop takes Start-over's place while
-   a turn is running, so the row never changes length. */
-.command-palette-foot > #command-palette-status {
-  margin-right: auto;
+/* **Nothing in the foot is cut** (INBOX 1778 a; it supersedes INBOX 208's one
+   line). The toggle names the open note, which can be called anything, and the
+   status is a sentence the agent writes mid-run ("Done, 1 step, last: ..."): both
+   ellipsised, and the status measured 0px wide at every viewport, so it never
+   showed. Now the row wraps: a long toggle takes a line of its own and wraps its
+   caption, the status takes the rest of the second line, and Stop and the menu
+   keep their size. scrollWidth equals clientWidth on each, 360 to 2560 wide. */
+.command-palette-foot {
+  flex-wrap: wrap;
 }
-/* **The row is one control high, whatever is in it** (INBOX 208). The toggle
-   is the only thing here whose text is variable (it names the open note, and
-   a note can be called anything), so it is the one thing that has to be told
-   it may not grow the row: it takes the space that is left and ellipsises,
-   rather than wrapping to two lines at 1440 and three at 390 and pushing
-   "Start over" out of line with the checkbox. The status is a `role="status"`
-   that the agent writes a sentence into mid-run, so it is held to one line for
-   the same reason. Measured: 75px at 1440 and 124px at 390, now 51px at both. */
 .command-palette-foot > #command-palette-use-note-label {
   min-width: 0;
   flex: 0 1 auto;
-  /* `.row` wraps at phone widths, which put the checkbox on one line and its
-     caption on the next and took the row back to 76px at 390 even with the
-     caption ellipsised. This one never wraps: the caption gives characters
-     instead, which is what the ellipsis is for. */
+  max-width: 100%;
   flex-wrap: nowrap;
 }
 .command-palette-foot > #command-palette-use-note-label > #command-palette-use-note-text,
 .command-palette-foot > #command-palette-status {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
-/* The status gives first: it is a progress line, the toggle is a control you
-   are about to press. A zero basis that grows lets it take the slack and hand
-   it back before the label loses a character. */
 .command-palette-foot > #command-palette-status {
-  flex: 1 1 0;
+  flex: 1 1 8rem;
+}
+.command-palette-foot > :is(#command-palette-stop, #command-palette-menu) {
+  flex: none;
+  white-space: nowrap;
 }
 /* The agent activity monitor. */
 #agent-monitor .monitor-header {
   margin: 0;
   padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--glass-border);
 }
 /* The identity takes the width the icon group leaves and ellipsises in it;
    the group is pushed to the right edge, where the run rows' state pills
@@ -1991,7 +2058,7 @@ body.scroll-top-visible .skills-split > .tab-main {
   margin: var(--space-3) 0;
   padding: var(--space-3);
   overflow-y: auto;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   background: var(--inner);
   font-family: ui-monospace, Consolas, monospace;
@@ -2173,6 +2240,15 @@ body.scroll-top-visible .skills-split > .tab-main {
   flex: 1;
   min-width: 0;
   margin-bottom: 0;
+}
+/* At 200% zoom on a 360px phone the viewport is 180 CSS px and the pane's
+   group content box is 54px: the "Remember this" label (99px, centred in an
+   88px button) overran the pane by 5px because Settings buttons are nowrap
+   on purpose, and the "Confirmed patterns" subhead by 6px (it now breaks
+   anywhere). The button may wrap here; `:not(#_)` adds one id of weight to
+   beat the long nowrap selector in 01-forms-settings.css. */
+#settings-modal .memory-add button:not(#_) {
+  white-space: normal;
 }
 /* --- the documents sidebar's vertical budget (§41) ----------------------------
    Reported as "the documents list on the side gets crushed", and it was: the
@@ -2582,6 +2658,10 @@ body.scroll-top-visible .skills-split > .tab-main {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* A private space's lock (INBOX 1727). */
+.space-option .space-option-lock {
+  color: var(--muted);
+}
 /* Rename/delete for a space, revealed on hover or keyboard focus. Kept in the
    flow with opacity rather than display:none so the row does not change width
    when they appear. */
@@ -2655,9 +2735,14 @@ dialog::backdrop {
      shared `.card` rule every other card still needs. */
   margin: auto;
 }
+/* A bottom margin of its own: with none the label's last line sat on the
+   field's top edge, and the 2px focus ring at a 2px offset drew through the
+   word "Name" (the owner, 2026-11-10, New space: "the border clashes with the
+   name title"; measured gap 0). */
 .space-dialog label {
   display: block;
   margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
   font-size: var(--text-sm);
   color: var(--muted);
 }
@@ -2692,9 +2777,12 @@ dialog::backdrop {
 /* Picking an icon from a grid rather than typing "ph-briefcase" into a text
    box, which is what the first version asked for and which nobody outside
    this repo could possibly know how to fill in. */
+/* The track is never narrower than a button's touch floor: at 768 the floor
+   is 44px and the 2.25rem tracks were 39.8px, so the square buttons ran 4px
+   out of the picker (wrapzoom 2026-11-11). */
 .space-icon-picker {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(2.25rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(max(2.25rem, var(--target-min)), 1fr));
   gap: var(--space-2);
   margin-top: var(--space-2);
 }
@@ -3184,10 +3272,15 @@ dialog::backdrop {
    bare selector here lost to it while typing, the field took its full width
    (flex-basis auto, width 100%), and pressing Ask blurred it and pulled the
    button 65px up between press and release, so the click missed. */
+/* 12rem, not the 14rem other fields take: at 768 the controls are 391px
+   (the touch floor makes the two icons 44px) and the field had 214px of a
+   638px composer, so the whole group dropped under it (wrapzoom sweep). 12rem
+   still holds the placeholder; a phone's composer, narrower still, moves the
+   controls down as a group, as below. */
 .ask-composer > #question,
 .ask-composer > #question:focus,
 .ask-composer > #question:focus-visible {
-  flex: 1 1 14rem;
+  flex: 1 1 12rem;
 }
 /* The controls are one flex item, so a row that cannot hold them beside a
    field worth typing in moves them down as a group. */
@@ -3409,15 +3502,9 @@ dialog::backdrop {
    control-height section is about: "the segmented control brought its own
    padding and stood four pixels taller than the selects beside it… the row
    reads as assembled rather than designed."
-   `.whiteboard-floating-panel input[type="color"].wb-color-picker` already
-   declares 2.25rem and loses to something later at equal weight, so this
-   states it once more at a weight nothing in the panel can outrank. Same
-   value, not a new one, the point is that it wins, not that it changes. */
-.whiteboard-floating-panel input[type="color"].wb-color-picker,
-.whiteboard-floating-panel input.wb-color-picker[type="color"] {
-  height: 2.25rem !important;
-  width: 2.25rem !important;
-}
+   The colour input is the rail's ink swatch, `#wb-rail-ink`, which says
+   `--control-h-body` (2.25rem) itself (below, with its ring): a panel rule restating it with
+   `!important` was only there to outrank that id rule. */
 /* The slider is the documented exception to matching the strip, DESIGN.md
    says so for `.graph-options`: "forcing a slider thumb to a button's
    hit-box height would misrepresent it as clickable chrome rather than a
@@ -4482,6 +4569,7 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
   font-size: var(--text-md);
   font-weight: 600;
   color: var(--ink);
+  overflow-wrap: anywhere;
 }
 .setting-subhead:first-of-type {
   margin-top: var(--space-2);
@@ -4915,6 +5003,49 @@ rect.board-minimap-card,
   align-items: center;
   gap: var(--space-2);
 }
+/* **One line beside a window's width** (the wrapzoom sweep: 78px and two
+   lines at 768, 86px at 960 at 200%, Save dropped onto the Tags label under
+   the sticky foot). The hint gives way first: it ends in an ellipsis with
+   the whole sentence on its title (`updateCaptureSpaceLabel`), and the
+   commit controls keep their words. A phone's row is narrower than the
+   controls alone, so there the hint keeps its own line. */
+@media (min-width: 600px) {
+  .capture-commit-row {
+    flex-wrap: nowrap;
+  }
+  .capture-commit-row > .capture-space-hint {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .capture-commit-row > :not(.capture-space-hint) {
+    flex: 0 0 auto;
+  }
+}
+/* On a phone the hint is a line of its own and the three controls the
+   next; Private keeps its lock and its pressed state, its word clipped
+   (`.toolbar-word`'s recipe), so the three share that line at 390 (Save
+   was a third line, 121px of row). */
+@media (max-width: 599.98px) {
+  .capture-commit-row > .capture-space-hint {
+    flex-basis: 100%;
+  }
+  .capture-commit-row > #entry-private .lock-toggle-label {
+    position: absolute;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .capture-commit-row > #entry-private {
+    width: var(--control-h);
+    padding-inline: 0;
+    justify-content: center;
+  }
+  .capture-commit-row > #entry-private > .ph-lead {
+    margin-inline-end: 0;
+    translate: none;
+  }
+}
 /* The mic was the one control in the panel with an icon and no label, in a
    row where every other button had both, so it read as a decoration rather
    than as "dictate". It has a word now, which also stops it being the one
@@ -5086,7 +5217,7 @@ rect.board-minimap-card,
 .library-image-tile:has(> .library-image-frame):hover > .library-tile-tick,
 .library-image-tile:has(> .library-image-frame):focus-within > .library-tile-tick,
 .library-image-tile:has(> .library-image-frame) > .library-tile-tick:checked,
-body:has(#library-media-selectbar:not(.hidden))
+body.library-media-selecting
   .library-image-tile:has(> .library-image-frame) > .library-tile-tick {
   opacity: 1;
 }
@@ -6292,8 +6423,8 @@ button.connection-row:is(:hover, :focus-visible) {
    column, held to 40vw so the page keeps the larger share; the sidebar's own
    grip and fold toggle mean nothing in a panel that opens and closes from the
    dock, so neither is offered, and a sidebar folded to its rail on the page
-   still opens whole here (the `!important` is the one the rail's own rule
-   carries). On a phone it is the window's width less its gutters, over the
+   still opens whole here (this chain reads (1,3,0), above the rail's
+   (1,1,0)). On a phone it is the window's width less its gutters, over the
    page. */
 #tab-documents.doc-focus {
   --doc-focus-sidebar-w: min(20rem, 40vw);
@@ -6305,7 +6436,7 @@ button.connection-row:is(:hover, :focus-visible) {
   left: var(--space-4);
   bottom: var(--space-4);
   z-index: 2;
-  width: var(--doc-focus-sidebar-w) !important;
+  width: var(--doc-focus-sidebar-w);
   height: auto;
   max-height: none;
   margin: 0;
@@ -6338,7 +6469,7 @@ button.connection-row:is(:hover, :focus-visible) {
 @media (max-width: 819.98px) {
   #tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar {
     right: var(--space-4);
-    width: auto !important;
+    width: auto;
   }
 }
 @media (min-width: 820px) {
@@ -7835,6 +7966,16 @@ header#top-bar:not(.tabs-wrapped):not(.tabs-centred) > #tab-bar {
 header#top-bar:not(.tabs-wrapped):not(.tabs-centred) > .header-controls {
   margin-left: 0;
 }
+/* **On a phone nothing shares the gap, so the controls take it** (the owner,
+   2026-09-27: "top bar not centred at small widths"). The strip lives in the
+   phone dock below 600, so the rule above left the controls with no auto
+   margin to pair with and the whole bar packed left (measured at 390: the
+   controls ended at x=318 of 390, 72px empty on the right, 10px on the left). */
+@media (max-width: 599.98px) {
+  header#top-bar:not(.tabs-wrapped):not(.tabs-centred) > .header-controls {
+    margin-left: auto;
+  }
+}
 @media (min-width: 600px) {
   header#top-bar.tabs-centred:not(.tabs-wrapped) > #tab-bar {
     position: absolute;
@@ -8616,7 +8757,7 @@ input[type="file"] {
   position: absolute;
   inset: 7px;
   background: var(--wb-branch);
-  border: 1px solid var(--card-bg);
+  border: 1px solid var(--card);
   border-radius: var(--radius-sm);
 }
 /* The focus ring is the app's own (every button has it). */
@@ -9369,7 +9510,7 @@ input[type="file"] {
    library toolbar states, repeated here because a dock may hold controls
    that never sat in one. Checkboxes and radios are excluded for the reason
    that rule gives: stretching a tick box makes an oval. */
-.dock input:not([type="checkbox"]):not([type="radio"]):not(.search-field-input),
+.dock input:not([type="checkbox"]):not([type="radio"]):not(.search-field-input, .value-field-input),
 .dock select,
 .dock .seg,
 .dock .segmented-control,
@@ -9573,10 +9714,14 @@ input[type="file"] {
 /* A switch inside a dock menu: a row you can read and tick, at the menu
    item's own padding, that does not close the menu when ticked, a person
    setting Semantic and Include bin together is making one visit. */
+/* `.checkbox-label` rides along on these rows only for its pill switch (the
+   platform box at the 28px floor was reported as "massive", 2026-11-10); its
+   chip border is not wanted in a menu row. */
 .dock-menu-check {
   display: flex;
   align-items: center;
   padding: var(--space-2) var(--space-3);
+  border: 0;
   border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;
@@ -9598,23 +9743,6 @@ input[type="file"] {
 .dock-menu > summary.is-on {
   color: var(--accent-surface);
   background: var(--accent-soft);
-}
-/* A native control a dock keeps only as the value its handlers read (the
-   Timeline's view select, driven by the icon segment beside it). Out of
-   flow, out of the tab order, out of the pointer's reach: and `!important`
-   for the same reason `.select-native-hidden` needs it: an id rule for the
-   control's old visible shape outranks a class. */
-.dock-native-hidden {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  clip-path: inset(50%);
-  opacity: 0;
-  pointer-events: none;
 }
 .dock-menu-section .timeline-custom-range {
   margin: var(--space-2) 0 0;
@@ -9713,10 +9841,11 @@ input[type="file"] {
 /* --- 1. touch targets, one step, one block -------------------------------
    Below 820 the pointer is a finger. 2.75rem is 44px at the default root
    size: the figure both Apple's and Google's guidance give, and the one
-   `touch.js` asserts against every dock control on Notes, Library and Chat. */
+   `touch.js` asserts against every dock control on Notes, Library and Chat.
+   max() with 44px because Small text (14.5px root) made 2.75rem 39.9px. */
 @media (max-width: 819.98px), (pointer: coarse) {
   :root {
-    --target-min: 2.75rem;
+    --target-min: max(2.75rem, 44px);
     --control-h-dense: var(--control-h-touch);
   }
   /* A dialog's own buttons and a dock menu's rows meet the floor too. Measured
@@ -10514,9 +10643,6 @@ header#top-bar {
     min-width: 0;
     min-height: var(--target-min);
   }
-  #settings-modal h3.jump-echo {
-    display: none;
-  }
   .modal-nav input[type="search"] {
     flex: 1 1 8rem;
     min-width: 0;
@@ -10713,8 +10839,8 @@ header#top-bar {
      a second surface inside the rail and nothing but a UA default. The sweep
      counts painted backgrounds in the rail for exactly that reason. */
   background: transparent;
-  width: var(--target-min);
-  height: var(--target-min);
+  width: var(--control-h-body);
+  height: var(--control-h-body);
   min-width: var(--target-min);
   min-height: var(--target-min);
   padding: 0;
@@ -10827,6 +10953,11 @@ header#top-bar {
   font-size: var(--text-md);
   user-select: none;
 }
+/* The chip: a wide halo in the card colour behind the words, round-cornered. */
+.wb-link-label.wb-link-label-chip {
+  stroke-width: 12;
+  stroke-linejoin: round;
+}
 /* --- Find anything -----------------------------------------------------------
    The universal search dialog (app.js, `openFinder`). INBOX 270. It shares the
    agent palette's shape deliberately: the same `.lock-overlay` and `.card.glass`
@@ -10846,7 +10977,7 @@ header#top-bar {
 }
 .finder-head {
   padding: var(--space-4) var(--card-pad-x);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--glass-border);
 }
 /* **The bar is the field, on the Ask composer's own recipe.** Reported: "the
    search icon isnt aligned with the text bar and it is hard to see the text
@@ -11586,6 +11717,11 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   padding: var(--space-1);
   max-width: calc(100% - 1rem);
   max-height: none;
+  /* A short window (640x400, a laptop at 200%) leaves nothing between the
+     top bar's and the tool rail's clearances: the panel was 8px tall with
+     its menu running off the screen. A floor keeps it a panel; the rail may
+     overlap its foot there, which is the lesser fault. */
+  min-height: min(14rem, 60%);
 }
 /* **Beside a side dock, not over it** (INBOX 596: the dock "clashes with
    the side panel"). Docked at the side, the tools are a column at the left
@@ -11667,12 +11803,18 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   min-width: 0;
   margin: 0;
 }
+/* A section scrolls when its rows outrun the panel (wrapzoom 2026-11-11: at
+   960x540 and 200 % the map tab's facts and actions were 263px tall in 197,
+   so they ran out of the panel, over the tool shelf, and were cut by the
+   board's edge). A list inside keeps its own scroller: it shrinks first. */
 .wb-side-section {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .wb-side-section[hidden] {
   display: none;
@@ -11723,6 +11865,37 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
     width: 100%;
     border-left: none;
     padding: 0 var(--space-1);
+  }
+}
+/* **A short window at tablet width** (640x400: a laptop at 200 percent, a
+   phone on its side). The top bar and the tool rail take every pixel the
+   sidebar's column of four 44px tabs needs, so its last two were clipped by
+   the board. The tabs go in a row over the panel, as the phone sheet has
+   them, and the foot is the board's, not the rail's (the rail may overlap
+   it: a floating panel opened on purpose is the one to see). */
+@media (min-width: 600px) and (max-height: 520px) {
+  .wb-sidebar {
+    bottom: var(--space-2);
+    flex-direction: column;
+  }
+  .wb-sidebar .wb-sidebar-rail {
+    flex-direction: row;
+  }
+  .wb-sidebar .wb-sidebar-panel {
+    border-left: none;
+    padding: 0 var(--space-1);
+    /* The panel is a few rows tall here: it scrolls as one, its lists no
+       longer each keeping a share of room that is not there. */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .wb-sidebar .wb-side-section,
+  .wb-sidebar .wb-lib-list,
+  .wb-sidebar .wb-side-section .wb-library-list,
+  .wb-sidebar .wb-layers-tree,
+  .wb-sidebar .wb-outline-tree {
+    flex: none;
+    overflow-y: visible;
   }
 }
 /* The rows' own list gap, the list-row recipe's other half (`--row-gap`). */

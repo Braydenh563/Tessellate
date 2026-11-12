@@ -16,6 +16,7 @@ function featureCatalog() {
       { name: "Voice note", desc: "A voice memo, kept in Library, Recordings.", reveal: "voice-note" },
       { name: "Dictation", desc: "Speak a note into Capture; the Voice notes add-on types it.", reveal: "notes-dictation" },
       { name: "Recordings", desc: "Every recording kept: play at 0.5 to 2x, the waveform, markers, trim.", reveal: "recordings" },
+      { name: "Audio overview", desc: "Your notes, or a brief before a meeting, read aloud in a natural voice and saved as a recording; needs the Natural voice package.", reveal: "studio" },
       { name: "Live captions", desc: "Write what the microphone hears as you go, on this computer; run it again to stop and save a note.", act: () => toggleLiveCaptions() },
     ] },
     { group: "Capture & notes", items: [
@@ -58,7 +59,7 @@ function featureCatalog() {
       { name: "Attach to a message", desc: "Point a message at notes, documents, files, images or a map you already have.", reveal: "chat-attach" },
       { name: "Saved conversations", desc: "Every chat is kept, searchable, and can be picked up later.", reveal: "chat-conversations" },
       { name: "Personas", desc: "Change the voice Atlas writes in: its own, Coach, Analyst, or yours.", reveal: "settings:personas" },
-      { name: "Skills", desc: "One-click requests like “Summarise my week”; can act on your notes.", reveal: "settings:skills" },
+      { name: "Run a skill", desc: "One-click requests like “Summarise my week”; can act on your notes.", reveal: "settings:skills" },
       { name: "Agent mode", desc: "Let Atlas use its tools, search your notes, open a page, create, tag, link and organise.", reveal: "chat-agent-mode" },
       // The popup agent has the same capability as Chat's agent mode and is
       // reachable from every tab, which is exactly why it needs a row: a chord
@@ -122,7 +123,7 @@ function featureCatalog() {
       { name: "Images", desc: "Every picture in the notebook, with its caption and where it is used.", reveal: "library-images" },
       { name: "Files", desc: "PDFs and other files, with a first-page preview and what has been read from them.", reveal: "library-files" },
       { name: "Bookmarks", desc: "Bookmarks, grouped, with the page's own title and description.", reveal: "library-links" },
-      { name: "AI skills", desc: "The skills you can run, what each one does, and how to add your own.", reveal: "library-skills" },
+      { name: "Skills", desc: "The skills you can run, what each one does, and how to add your own.", reveal: "library-skills" },
       { name: "Contents", desc: "A table of contents for the whole notebook, by category and tag.", reveal: "library-contents" },
       { name: "Where a file is used", desc: "Every file says which notes, documents and boards reference it.", reveal: "library-files" },
     ]},
@@ -184,6 +185,7 @@ function featureCatalog() {
       { name: "Export", desc: "Download everything as JSON, Markdown or CSV.", reveal: "set-export" },
       { name: "Import markdown", desc: "Bring in notes from an Obsidian-style vault.", reveal: "set-import-md" },
       { name: "Backups", desc: "Snapshot your notebook and restore it later.", reveal: "set-backups" },
+      { name: "Sync between computers", desc: "Over the home network or through a folder you choose; a change made on both keeps the other words in History.", reveal: "sync-group" },
       { name: "Models", desc: "Choose the chat, utility, vision and reading models, and download more.", reveal: "settings:models" },
       { name: "Search and index", desc: "The search engine, the index it builds, and how strict a match must be.", reveal: "settings:searchindex" },
       { name: "AI tool permissions", desc: "Decide exactly what Atlas is allowed to do.", reveal: "settings:tools" },
@@ -363,6 +365,7 @@ function paletteCommands() {
     { label: "ph:lightning Quick note", about: "A note saved without leaving this page.", chord: "quickNote", act: () => openQuickNote() },
     { label: "ph:clipboard-text Paste as a note", about: "What you copied, saved as a new note.", chord: "pasteNote", act: () => pasteClipboardAsNote() },
     { label: "ph:file-text New document", reveal: "doc-new", chord: "newDocument" },
+    { label: "ph:flow-arrow New diagram", about: "A flowchart, sequence, mind map or timeline built from blocks.", act: () => lazyScript("/js/documents-mermaid.js").then(() => diagramModel.door({ doc: true })) },
     { label: "ph:code New code file", act: () => ensureModule("library").then(() => LIBRARY_CREATE_BY_KIND.code.run()) },
     { label: "ph:sparkle Write a note from rough thoughts", reveal: "writing-room" },
     { label: "ph:sparkle New chat", reveal: "chat-new", chord: "newChat" },
@@ -391,6 +394,8 @@ function paletteCommands() {
     { label: "ph:microphone-stage Voice note", reveal: "voice-note" },
     { label: "ph:microphone Dictate a note", reveal: "notes-dictation" },
     { label: "ph:waveform Recordings", reveal: "recordings" },
+    { label: "ph:arrows-clockwise Sync between computers", reveal: "sync-group", keywords: "sync folder usb syncthing two computers merge devices pair network", about: "Keep two computers level, over the home network or through a folder." },
+    { label: "ph:waveform Make an audio overview", reveal: "studio", about: "Your notes read aloud in a natural voice, saved as a recording." },
     {
       // The same ask about the page reader, in the same words: "I want an
       // easier and more accessible way to access the ocr workspace as a proper
@@ -526,6 +531,8 @@ function paletteCommands() {
     { label: "ph:smiley Emoji", keywords: "emoji emoticon smiley sticker kaomoji face insert", about: "Pick an emoji; it goes where you were writing, or is copied.", keys: "Ctrl+;", act: () => popupToolMaths.glyph("emoji") },
     { label: "ph:shapes Icons", keywords: "icon icons glyph phosphor insert shortcode", about: "Pick an icon; it goes where you were writing as :ph-name:, or is copied.", keys: "Ctrl+Shift+;", act: () => popupToolMaths.glyph("icon") },
     { label: "ph:pi Symbols", keywords: "symbol symbols arrow greek currency euro degree copyright maths character insert", about: "Arrows, maths, Greek, currency and writing marks; one goes where you were writing, or is copied.", keys: "Ctrl+'", act: () => popupToolMaths.glyph("symbol") },
+    //: Over a note, Chat or a board's text; an open document has its own "Insert an equation" row (docPaletteCommands), so this one steps aside there.
+    ...(editor.some((c) => /equation/i.test(c.label)) ? [] : [{ label: "ph:function Insert equation", keywords: "equation formula maths math latex fraction root integral matrix insert write", about: "The equation editor, over the box you were writing in: Insert puts it there as TeX, or Copy takes it.", keys: "Alt+=", act: () => openMathEditor({ target: popupToolMaths.box(paletteCaughtNow().target) }) }]),
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
     { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("utilities").then(() => countSelection(caught)); } },
     { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
@@ -542,6 +549,7 @@ function paletteCommands() {
     //: INBOX 430: also in Find anything, which lists these same commands;
     //: the row says which it will do, since this list is built per query.
     { label: nameMarkBuddyShowing() ? "ph:eye-slash Hide companion" : "ph:person-simple Show companion", chord: "toggleCompanion", act: () => nameMarkBuddyToggle() },
+    ...(nameMarkBuddyShowing() ? [{ label: "ph:crosshair Focus companion", keywords: "companion atlas keyboard tab reach arrow keys menu", about: "Put the keyboard on it: arrow keys move it, Enter says hello, Shift+F10 opens its menu.", act: () => setTimeout(() => document.querySelector("#nm-buddy .nm-buddy-face")?.focus(), 150) }] : []),
     { label: "ph:keyboard Keyboard shortcuts", reveal: "shortcuts", chord: "help" },
     //: INBOX 896: the status bar's wifi icon, by name, from anywhere.
     { label: "ph:wifi-high Other devices", keywords: "lan network wifi phone open close trusted networks address", about: "Whether a phone on this network can open the app, with the switch and the trusted networks.", chord: "lanPanel", act: () => openLanPanel() },
@@ -551,6 +559,7 @@ function paletteCommands() {
     //: The one way in to private notes was a chip on a card (audit 1031 N49).
     { label: "ph:lock-key Unlock private notes", keywords: "unlock private notes vault password open", about: "Enter your password to read your private notes.", act: () => unlockPrivateNotes() },
     { label: "ph:lock Lock Tessellate", about: "Close the notebook until the password is typed again.", act: lockNow },
+    { label: "ph:clock-counter-clockwise Where you left off", keywords: "unsaved typed draft recent resume pick up", about: "Every box that holds words you typed and have not saved, one press to jump back to it.", act: () => typedWords("open") },
     //: The top bar's other controls, so each is in the palette too (ledger 1410).
     { label: "ph:gear Open Settings", chord: "settings", act: () => openSettingsModal() },
     { label: "ph:bell Open notifications", keywords: "bell", act: () => openNotifications() },
@@ -568,7 +577,7 @@ function paletteCommands() {
 //: one line it already says about itself, so nothing here is a second list of
 //: what the app can do. A key that no longer names a command is dropped, and a
 //: list that resolves to nothing is the default five.
-function quickCatalogue() {
+function quickCatalogue(only = null) {
   const out = new Map();
   const abouts = paletteAbouts();
   let rows = [];
@@ -581,6 +590,9 @@ function quickCatalogue() {
     //: A row that is an act (no tab, no reveal) is a tile only when it says so
     //: with `quick`, a short stable name: Live captions is one (libr-1011 1220).
     const key = row.keys && !row.quick ? "" : row.tab ? `tab:${row.tab}` : row.reveal ? `reveal:${row.reveal}` : row.quick ? `act:${row.quick}` : "";
+    //: `only`: the ids a caller will look up. The parts of the other ~300 rows are not built (5 to 19 ms at 4x
+    //: on every return to the dashboard, which asked for five tiles; INBOX 1778 d).
+    if (only && !only.has(key)) continue;
     const parts = key && paletteRowParts(row, abouts);
     if (parts && parts.about && !out.has(key)) out.set(key, { id: key, icon: parts.icon.replace(/^(ph:)?/, "ph:"), label: parts.label, hint: parts.about, run: row.run });
   }
@@ -597,7 +609,8 @@ function quickAccessItems(saved, catalogue) {
 }
 
 function quickAccessCurrent() {
-  return quickAccessItems(prefsCache?.dashboard_quick_access, quickCatalogue());
+  const saved = prefsCache?.dashboard_quick_access;
+  return quickAccessItems(saved, quickCatalogue(new Set(Array.isArray(saved) ? saved : [])));
 }
 
 function renderQuickLinks() {

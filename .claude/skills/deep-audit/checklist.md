@@ -15,7 +15,7 @@ the case. Read-only: no repo edits except your one findings file.
    menu item, shortcut, drag, gesture, empty, loading, error and offline
    state, at 1440x900 and 390x844, light and dark, mouse, keyboard only and
    touch emulation.
-3. Skip what `docs/roadmap/agent-remaining/audit-*-ranked.md`,
+3. Skip what `docs/roadmap/LEDGER.md`,
    `docs/roadmap/INBOX.md` and the plans already hold, unless it is still
    broken on this head (then say "still open, re-verified").
 
@@ -71,7 +71,7 @@ the case. Read-only: no repo edits except your one findings file.
 
 ## Output
 
-One file: `docs/roadmap/agent-remaining/audit-<date>-<surface>.md`.
+Findings are LEDGER rows (`python scripts/ledger.py add`, one per finding, plan = your surface), with these fields in the row text:
 
 1. Coverage table counts (rows checked, driven, not reached).
 2. Findings table: `| id | sev | kind | finding | evidence (file:line or selector, the number) | verified | fix (the class) | effort |`.

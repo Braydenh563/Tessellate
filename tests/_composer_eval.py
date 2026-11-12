@@ -161,7 +161,8 @@ def trace_failures(result: dict, question: str, notes: list[dict], on: date, ask
                 failures.append(problem)
         elif kind == "title":
             first = re.sub(r"[*_`#]", "", by_id[part[2]]["content"].split("\n", 1)[0]).strip()
-            if not first.startswith(text.rstrip("…")):
+            #: A title-less note is named by its first line cut at about six words and quoted (owner 2026-11-10).
+            if not first.startswith(text.strip("“”").rstrip("…").rstrip()):
                 failures.append(f"not note {part[2]}'s name: {text!r}")
         elif kind == "filed":
             note = by_id[part[2]]
@@ -179,7 +180,12 @@ def trace_failures(result: dict, question: str, notes: list[dict], on: date, ask
         elif kind == "term":
             #: A word of the notes as written there, naming a thread or a
             #: name that links them (INBOX 787's overview).
-            if not re.search(rf"\b{re.escape(text)}\b", by_id[part[2]]["content"]):
+            #: A title-less note's name is its own first words in quotes (`composer_frame.name_of`, R3-15):
+            #: checked against the note's own words, never against the function that wrote it.
+            words = by_id[part[2]]["content"]
+            inner = text[1:-1].removesuffix("…") if text.startswith("“") and text.endswith("”") else ""
+            quoted = bool(inner) and " ".join(inner.split()) in " ".join(re.sub(r"[#*>\[\]]|^\s*(?:[-+]|\d+[.)])\s", "", words, flags=re.M).split())
+            if not quoted and not re.search(rf"\b{re.escape(text)}\b", words):
                 failures.append(f"not a word of note {part[2]}: {text!r}")
         elif kind == "asked":
             if text.lower() not in f"{question} {asked_from}".lower():
@@ -209,6 +215,11 @@ def trace_failures(result: dict, question: str, notes: list[dict], on: date, ask
             again = [t for k, t in (utilities.answer(question, salt=result.get("salt", "")) or []) if k == "computed"]
             if text not in again and not text.startswith(("It is ", "Today is ")):
                 failures.append(f"not computed from the question: {text!r}")
+        elif kind == "corrected":
+            #: "Did you mean X?" offers a word the notes hold, never one it made up (typo repair).
+            held = {w.lower() for n in notes for w in re.findall(r"[\w'-]+", str(n.get("content") or ""))}
+            if text.lower() not in held:
+                failures.append(f"a corrected word no note holds: {text!r}")
         else:
             failures.append(f"unknown part kind {kind!r}")
     for row in result["grounding"]:
@@ -591,7 +602,9 @@ def run_voice(module=composer) -> list[dict]:  # noqa: ANN001
                 "lead_in_repeats": lead_in_repeats(result),
                 #: The owner's complaint, counted: a note with no heading named
                 #: by its first words.
-                "named_by_first_words": sum(1 for p in result["parts"] if p[0] == "title" and p[2] in untitled_ids),
+                #: Since 2026-11-10 that is the rule: a title-less note is named by its first line, quoted and cut at about
+                #: six words. What the owner complained of, and this counts, is a first-words name that is neither.
+                "named_by_first_words": sum(1 for p in result["parts"] if p[0] == "title" and p[2] in untitled_ids and not (p[1].startswith("“") and p[1].endswith("”") and len(p[1].strip("“”…").split()) <= 7)),
                 "says_colon": len(re.findall(r"\b(?:says|said): ", result["text"])),
             }
         )
@@ -795,15 +808,18 @@ def run_insights() -> list[dict]:
         if expect and row["rule"] == "recurrence":
             after = f", {_count_word(expect['after'])} of them after work" if expect["after"] >= 3 else ""
             wanted = composer_tables.INSIGHT_TEMPLATES["recurrence"].format(
-                subject=row["subject"], count=expect["count"], since=expect["since"], after=after, hedge=expect["hedge"])
+                **insights.shown("recurrence", {"subject": row["subject"], "count": expect["count"], "since": expect["since"], "after": after, "hedge": expect["hedge"]}))
             tail = after.lstrip(", ")
-            short = f"{tail[:1].upper()}{tail[1:]}; {expect['hedge']}." if tail else f"{expect['hedge'][:1].upper()}{expect['hedge'][1:]}."
+            #: A bare "That keeps coming up." only restated the count the lead
+            #: gave, so it is not said at all (`insights.after_lead`, F7.3): the
+            #: row's short form is then empty and the row is right when nothing is.
+            short = f"{tail[:1].upper()}{tail[1:]}; {expect['hedge']}." if tail else ("" if expect["hedge"] == composer_tables.INSIGHT_HEDGES["recurs"] else f"{expect['hedge'][:1].upper()}{expect['hedge'][1:]}.")
         elif expect and row["rule"] == "streak":
             wanted = composer_tables.INSIGHT_TEMPLATES["streak"].format(subject=row["subject"], weeks=expect["weeks"])
         elif expect and row["rule"] == "drift":
-            wanted = composer_tables.INSIGHT_TEMPLATES["drift"].format(plan=expect["plan"], since=expect["since"])
+            wanted = composer_tables.INSIGHT_TEMPLATES["drift"].format(**insights.shown("drift", {"plan": expect["plan"], "since": expect["since"]}))
         out.append({"id": row["id"], "positive": row["positive"], "said": said, "wanted": wanted, "short": short,
-                    "right": (wanted in said or (short is not None and short in said)) if row["positive"] else not said})
+                    "right": (wanted in said or (short is not None and short in said) or (short == "" and not said)) if row["positive"] else not said})
     return out
 
 

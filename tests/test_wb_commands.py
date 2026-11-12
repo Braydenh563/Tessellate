@@ -62,7 +62,9 @@ def test_the_arrange_menu_has_what_arranging_means() -> None:
 
 
 def test_the_bundle_loads_the_table_after_the_board() -> None:
-    library = APP[APP.index("library: [") : APP.index("],", APP.index("library: ["))]
+    #: The `boards` bundle (lazy-entries.js) since D22, 2026-11-11; the whiteboard files were `library`'s in app.js.
+    entries = (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    library = entries[entries.index("  boards: [") : entries.index("],", entries.index("  boards: ["))]
     assert library.index("/js/whiteboard.js") < library.index("/js/whiteboard-commands.js")
 
 

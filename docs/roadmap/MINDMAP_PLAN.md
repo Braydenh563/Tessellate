@@ -2,7 +2,7 @@
 
 > Companions: [ROADMAP.md](../ROADMAP.md) · [HANDOVER.md](HANDOVER.md) ·
 > [UI_MODERNISATION_PLAN.md](UI_MODERNISATION_PLAN.md) ·
-> [AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md) · [PLAN.md](PLAN.md) ·
+> the retired agent-skills plan · the retired plan doc ·
 > [../ARCHITECTURE.md](../ARCHITECTURE.md) · [../DESIGN.md](../DESIGN.md)
 >
 > **Note for Fable: this plan is a first pass and is meant to be extended and
@@ -36,7 +36,7 @@ export, `.mm` import), **Kumu** (attributes, perspectives, focus mode, signed
 edges), **XMind** (output quality, structure templates) and **Obsidian Canvas
 Mindmap** (the keyboard set). They also named **Lucidchart** as a reference,
 "but that's more for the whiteboard", its smart connectors, containers,
-alignment tools and shape libraries map onto PLAN.md W1–W5, not this plan.
+alignment tools and shape libraries map onto the retired plan doc W1–W5, not this plan.
 
 **The scope call in §4 is made: option B** (confirmed by the user in the same
 exchange). Everything from §5 on assumes it.
@@ -155,87 +155,7 @@ Recorded because Coggle is the reference the user actually meant:
 
 ## 5. The feature set, in build order
 
-### Phase 1: the map object (foundation)
-1. **`type` and `layout` on the board entry.** `type: "board" | "map"`;
-   `layout: "free" | "tree-right" | "tree-down" | "radial"`. Stored on the
-   board's own `Entry` (a JSON settings column or a dedicated table,
-   `WhiteboardObject`'s `kind` discriminator is the precedent for not adding a
-   table per idea).
-2. **A parent edge for nodes.** Mindmaps are trees; the whiteboard's links are
-   a general graph. Add `parent_id` to whatever carries a map node, and keep the
-   existing free links for cross-branch connections (which every serious
-   mindmapper supports and calls a "relationship" or "cross-link").
-3. **Node kinds**, on the existing discriminator: `topic` (text), `note` (a real
-   `Entry`, this is `WhiteboardNode` today), `document`, `file`, `image`,
-   `link`. A node that *is* a note keeps its identity: editing it edits the note.
-4. **Containment is real.** "any and all text boxes and things that are in the
-   map stay bundled within the map", enforce it: deleting a map deletes its
-   `topic` nodes (they exist only there) and *unlinks* its `note`/`document`/
-   `file` nodes (those live in the library and must survive). Write the test
-   first; this is the rule most likely to be got wrong.
-
-### Phase 2: editing that feels like a mindmap
-5. **Keyboard-first**: Tab = child, Enter = sibling, Shift+Tab = outdent,
-   arrows = navigate, F2/double-click = rename, Delete = subtree with confirm.
-   Copy Obsidian Canvas Mindmap's set; it is the de-facto standard.
-6. **Auto-layout** via Reingold–Tilford with variable node sizes (d3-flextree's
-   algorithm, implemented locally: **no CDN, the app is offline-first**;
-   `frontend/js/graph.js` already hand-rolls layout, so this is a sibling of
-   existing code, not a new dependency).
-7. **Collapse/expand a branch**, with a count badge on the collapsed node.
-8. **Styling that carries meaning, not decoration**: per-node colour, shape and
-   icon; per-edge colour and thickness; inherit-from-parent by default.
-9. **Cross-links** (non-tree edges) rendered distinctly, dashed, per the
-   systems-map convention: and optionally **signed/directional** for causal
-   loop diagrams (Kumu's model).
-
-### Phase 3: the map as a citizen of the app
-10. **Library**: maps live in **Boards & maps** with a Maps filter chip (the
-    user's stated preference), with the existing board preview upgraded to
-    render map structure.
-11. **Attachable and referenceable**: a map can be attached to a note, a
-    document and a chat message, exactly as a file can today
-    (`routes_chat.py`'s `file_ids` is the pattern to copy), and referenced
-    inline with the existing `@` picker.
-12. **Rendered previews and chips** everywhere the user listed: note bodies,
-    the chat transcript, dashboard widgets, the timeline and the graph. One
-    `mapChip()` and one `mapPreview()`, used by all of them, the app's
-    recurring failure is the same object drawn five ways.
-13. **Graph integration**: a map is a node in the graph; its note-nodes are
-    edges from the map to those notes. This is the "decide once" call from
-    §3.3: a map's *membership* is a link, a node's *position* is not.
-
-### Phase 4: AI and export
-14. **The AI can read a map.** A `read_mindmap` tool returning an indented
-    outline (title, then the tree, with each node's kind and any note id), which
-    is the form a small model handles best. Plus `create_mindmap`,
-    `add_map_node`, `link_map_nodes`, gated behind the tool toggles, and
-    written to the *contract* shape the skills reform (Phase A of
-    [AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md)) defines, so they are
-    usable by a 4B model.
-15. **AI generation**: "make a map of these notes", the agent proposes a tree,
-    the user accepts or edits it. Every mainstream tool now has this; the
-    differentiator here is that the nodes are *the user's real notes*, not
-    invented text.
-16. **Export**: PNG and SVG from the existing canvas render, and PDF via the
-    same path the app already uses for "Print or save as PDF" in the documents
-    kebab. Also **Markdown outline**, **OPML** and **FreeMind `.mm`**, the
-    interchange formats every mindmapper (Coggle included) reads: cheap, and
-    it makes the feature not a lock-in.
-17. **Import**: OPML, FreeMind `.mm` and indented Markdown, so an existing map
-    can come in.
-
-### Phase 5: utility
-18. **Focus mode** (Kumu): start at one node, reveal the network step by step.
-19. **Filter/perspective**: colour or hide by tag, category, age, or "has a
-    note behind it", reusing the notebook's own metadata, which is the thing
-    a general mindmapper cannot do.
-20. **Map metrics** where they are honest: node count, depth, orphan branches,
-    and, for cross-linked maps, the centrality measures the graph tab already
-    computes.
-21. **Templates**: a few starting shapes (brainstorm, decision tree, project
-    breakdown, cause-and-effect), because an empty canvas is the main reason
-    mindmap features go unused.
+Phases 1 to 5 (items 1 to 21: the map object, editing, the map as a citizen of the app, AI and export, utility) are built; sections 9 to 11 and the Phase 3 record in HISTORY.md carry the history. Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: MINDMAP_PLAN)".
 
 ## 6. Files this will touch
 
@@ -544,7 +464,7 @@ radials are used is confusing and doesnt feel clean", and "I want more and
 better ways to differentiate core idea nodes in the mindmap".
 
 The audit that this is written from is in
-[`archive/agent-remaining/mindmap.md`](archive/agent-remaining/mindmap.md), measured by
+`mindmap.md` (git history), measured by
 `scratchpad/ui-sweeps/mapaudit.js` on a map of twelve topics: **112 controls
 across six surfaces**, add-a-child reachable from five places, a fold from
 four, a colour from four, six actions reachable only from a ring nobody finds
@@ -1092,8 +1012,9 @@ topic: a control that wide has nowhere to go.
    it closes (Escape, a press elsewhere, Ctrl+Enter), an emptied note is no
    note, one undo step. Not a new surface and nothing new on the strip, the
    ring or the dock (decision 5, §12.5). Not on a note node: it already has
-   the notebook's note behind it, and showing that note's text here,
-   editable both ways, is item 5's second half, still open. Markdown writes
+   the notebook's note behind it, and that note's text edits in the same
+   shell from the topic menu (item 5's second half, built 2026-11-10, HISTORY.md
+   "s9c-1110 part 3"). Markdown writes
    the note as an indented paragraph under its bullet (a reader draws a
    paragraph inside the item; a line that would read as a bullet or a
    heading is escaped with a backslash), and the import reads any text
@@ -1597,7 +1518,7 @@ Built; moved whole to HISTORY.md ("Moved from the plans, 2026-10-03", "From MIND
      the main sections needs to be wayyy more fast, intuitive, guided,
      assisted, automated, easy manually, and smooth to use." And: "there have
      obviously been a lot of bugs that have been missed if something as big
-     as filing a note was very broken so I'm worried."
+     as filing a note was very broken so I'm worried." **Per part, s58left3-1110 (ledger and code, not re-driven):** (a) (b) (e) built and recorded above; (f) the dialog head is DESIGN.md's recipe; (g) docs/screenshots exist; (c) (d) companion motion, props and states are built across the CHANGELOG's Atlas lines (the tools/avatar-lab.html test page is there); the 2026-09-28 addendum's perch z-order, the whiteboard and mind map minimap-fit drag lag and the popup agent's unanswered prompts are not re-checked and stay open for a driven pass.
      Same day, also open: the graph's default layout "looks messy and is
      distributed wierdly"; the slash menu's Link card and Web link render the
      same on a line of their own (a lone link is a card, CHAT_PLAN decision
@@ -1831,11 +1752,11 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 ## Placed from INBOX, 2026-10-10 (the owner on feature depth)
 
-- INBOX 797, the owner 2026-10-10 23:02Z: "Also I feel like the mindmap and whiteboard are still missing a lot of features and options and stuff that draw.io and other things like the craft repos have :(" Owner: an Opus brief (canvasdepth), next Opus slot: re-audit the mind map against draw.io, designcraft and the other craft references in ANALYSIS.md ("Whiteboard, against draw.io and designcraft", "Mind map, against designcraft's canvas"), plus tldraw, Excalidraw, XMind and MindNode; rank every gap by how often a person meets it; build the top ones measured (connection points, the shape library at scale, named layers with visibility, swimlanes, more Mermaid kinds, and for maps: themes, branch styles, relationship lines, boundaries, summaries, outline import and export, presentation mode), each a commit with a test.
+- INBOX 797, the owner 2026-10-10 23:02Z: "Also I feel like the mindmap and whiteboard are still missing a lot of features and options and stuff that draw.io and other things like the craft repos have :(" Owner: an Opus brief (canvasdepth), next Opus slot: re-audit the mind map against draw.io, designcraft and the other craft references in the retired analysis doc ("Whiteboard, against draw.io and designcraft", "Mind map, against designcraft's canvas"), plus tldraw, Excalidraw, XMind and MindNode; rank every gap by how often a person meets it; build the top ones measured (connection points, the shape library at scale, named layers with visibility, swimlanes, more Mermaid kinds, and for maps: themes, branch styles, relationship lines, boundaries, summaries, outline import and export, presentation mode), each a commit with a test.
 
 ### canvasdepth, ranked by how often a person meets the gap (2026-10-10)
 
-From ANALYSIS.md "Mind map, against designcraft's canvas", re-read against
+From the retired analysis doc "Mind map, against designcraft's canvas", re-read against
 XMind and MindNode. The brief's list (themes, branch styles, relationship
 lines, boundaries, summaries, outline in and out, presentation, Tab, Enter
 and F2) is built; what is open:
@@ -1870,15 +1791,15 @@ Read from the code against XMind, MindManager and Miro mind maps. Sizes S, M, L;
 
 1. Sort a topic's branches A to Z or Z to A, numbers as numbers (XMind "Sort") - S, built.
 2. Import a .xmind file (the map already reads OPML, FreeMind and Markdown) - M.
-3. A Gantt view of the topics that have dates (XMind) - L.
-4. Audio notes on a topic, recorded and kept with the board - M.
+3. ~~A Gantt view of the topics that have dates (XMind) - L.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 4").
+4. ~~Audio notes on a topic, recorded and kept with the board - M.~~ Built 2026-11-10 as a link to an existing recording, not raw audio (HISTORY.md, "s9c-1110 part 4").
 5. A brainstorm timer on the map bar (XMind "Brainstorming") - S.
 6. Copy the shape of a branch (layout and look together) to another branch - S.
 7. Topic templates for one topic (a pros and cons topic from the topic's menu) - S.
 8. Topic image from a link, fetched and kept - M.
 9. Export a branch only, as PNG, PDF or Markdown - S.
-10. Rainbow branches as a theme option for every branch, not only first level - S.
-11. A legend for markers and colours, drawn on the map - M.
+10. ~~Rainbow branches as a theme option for every branch, not only first level - S.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 3").
+11. ~~A legend for markers and colours, drawn on the map - M.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 3").
 12. A second root on one map, joined by a labelled link (floating topics exist; named roots do not) - M.
 13. Search inside topics' notes from the map's find bar - S.
 14. Fisheye and focus dimming of everything but the selected branch - S.
@@ -1897,8 +1818,9 @@ Exists (no work): fold or unfold one branch (C), show N levels (Alt+1 to 9, Alt+
 
 The three taken first (drag to reorder siblings, copy or export one branch, dim all but the selected branch) are built: HISTORY.md, "Moved from the plans, 2026-10-25 (wb2)".
 
-Left: search inside topics' notes (10-19 item 13), rainbow every level (item 10), a legend (item 11), audio notes (item 4), Gantt (item 3).
+Gantt, audio notes (as a recording link), rainbow every level and the legend are built (HISTORY.md, "s9c-1110 parts 3 and 4").
 
 ## Placed from INBOX, 2026-11-04
 
 1686. **Owner, 2026-11-05 (screenshot: Atlas on the central node of a mind map with a dozen branch nodes), verbatim:** "also the companion cant sit on any other mindmap nodes other than the central one". Recommendation (taken): every drawn node of a board, mind map and diagram is a perch (its top edge, in screen space, after pan and zoom), picked by the same perch list the companion uses for other ledges, re-measured on pan, zoom and layout; a branch node too narrow for it is a lean or a hang instead. **Fixed bfe5f81.** Cause: the Outline look (and any plain or underline shape) draws no box, and `nmb.boardEdges` skipped `data-shape="none"`, so only the pill centre registered. Plain and underlined nodes now perch at the top of their words (`tests/test_companion_node_perch_1686.py`); measured, 13 topics in Outline: 0 to 12 perches, 9 of 10 on-screen nodes seated (the rest blocked by neighbours), seat within 0.4px of the words' top through zoom 118 to 260px wide. Classic: 12 perches before and after. Add, collapse and pan re-measure already (edges rebuilt on mutation; cached nodes 0 off by more than 1.5px after zoom and pan). Not verified: touch, phone width, and the diagram builder's block outline (a different surface, walked as ordinary DOM).
+

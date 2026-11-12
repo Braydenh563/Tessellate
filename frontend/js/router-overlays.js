@@ -12,6 +12,9 @@
 //: The manual and Statistics are places too (INBOX 1335): overlays that push an
 //: entry on open, as Settings does; their own close steps back off it.
 const OVERLAY_TABS = { Manual: 1, Statistics: 1 };
+//: They read as `#/Manual` and `#/Statistics` while open (B43), and a pasted one
+//: opens them at load: both are routes in router.js (`ROUTE_TABS`, `routeEntry`,
+//: `routerRestore`), so they hold in the first seconds, before this file loads.
 const routerBack = { swallow: 0, timer: 0 };
 
 //: The top overlay, closed the way its own Escape closes it. True when one was
@@ -25,9 +28,26 @@ function routerCloseTopOverlay() {
   const call = (name) => {
     if (typeof window[name] === "function") window[name]();
   };
+  //: Each modal overlay and the button that closes it (W12: Back stepped the tab and left these open).
+  const OVERLAY_CLOSE_BUTTONS = {
+    "history-overlay": "history-close",
+    "connections-overlay": "connections-close",
+    "binned-overlay": "binned-close",
+    "skill-run-overlay": "skill-run-cancel",
+    "wb-help-overlay": "wb-help-close",
+    "meeting-overlay": "meeting-close",
+    "extract-panel": "extract-close",
+    "ocr-workspace": "ocr-close",
+    "doc-ai-panel": "doc-ai-close",
+    "features-overlay": "features-close",
+  };
   const sheets = document.querySelectorAll(".sheet-overlay:not(.sheet-leaving):not(.hidden)");
   if (sheets.length) {
-    sheets[sheets.length - 1].querySelector(".sheet-close")?.click();
+    //: A dialog the phone shows as a sheet (PHONE_SHEET_DIALOGS, the OCR reader) keeps its own X and has no `.sheet-close`: Back pressed nothing and kept the step (W12 at 390, 8 of 9).
+    const top = sheets[sheets.length - 1];
+    const own = document.getElementById(OVERLAY_CLOSE_BUTTONS[top.id]);
+    (top.querySelector(".sheet-close") || own)?.click();
+    if (own && !top.classList.contains("hidden") && !top.querySelector(".sheet-close")) top.classList.add("hidden");
     return true;
   }
   const dialog = document.querySelector("dialog[open]");
@@ -55,6 +75,15 @@ function routerCloseTopOverlay() {
   for (const [id, name] of closers) {
     if (!shown(id)) continue;
     call(name);
+    return true;
+  }
+  //: The other modal overlays close on their own X (a closer that also puts focus back).
+  for (const [overlay, button] of Object.entries(OVERLAY_CLOSE_BUTTONS)) {
+    if (!shown(overlay)) continue;
+    document.getElementById(button)?.click();
+    //: A closer not wired yet (its lazy bundle not loaded) must not leave it open under a Back that was spent on it.
+    const el = document.getElementById(overlay);
+    if (!el.classList.contains("hidden")) el.classList.add("hidden");
     return true;
   }
   //: The agent's palette has no closer of its own: hiding it is what its Escape does.

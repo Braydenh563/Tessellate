@@ -243,7 +243,11 @@ function renderEditForm(li, entry) {
   titleInput.setAttribute("aria-label", "Title: becomes the note's leading heading");
   titleInput.value = draft ? draft.title : parts.title;
   titleInput.addEventListener("input", () => { noteFormDirty = true; });
+  //: A private note's text sits in these two while the form is open: the lock empties them
+  //: wherever the form is drawn (`purgeLockedContent`, INBOX 1747 row 26).
+  titleInput.dataset.holdsNotebook = "";
   const textarea = document.createElement("textarea");
+  textarea.dataset.holdsNotebook = "";
   textarea.rows = 3;
   textarea.setAttribute("aria-label", "Note text"); // its editor takes this name (noteSurfaceName)
   textarea.value = draft ? draft.content : parts.body;
@@ -309,7 +313,8 @@ function renderEditForm(li, entry) {
     //: next key or press in the field, rather than opening every tag over Save.
     tagEntry.dataset.tagged = "1";
   };
-  for (const type of ["focus", "pointerdown"]) tagEntry.addEventListener(type, () => delete tagEntry.dataset.tagged);
+  //: The app giving focus back after a redraw is no press (1682).
+  for (const type of ["focus", "pointerdown"]) tagEntry.addEventListener(type, (e) => (e.type === "focus" && restoreFocusTo.giving) || delete tagEntry.dataset.tagged);
   function drawTagChips() {
     for (const old of tagField.querySelectorAll(".chip")) old.remove();
     for (const tag of tagList()) {
@@ -424,12 +429,14 @@ function renderEditForm(li, entry) {
           toast("A note needs some text. To remove it, use Move to bin in its menu.", "info");
           return;
         }
-        const before = { content: entry.content, category: entry.category, tags: entry.tags };
-        const after = {
-          content: written,
-          category,
-          tags: tagsInput.value.split(",").map((t) => t.trim()).filter(Boolean),
-        };
+        const before = { content: entry.content };
+        const after = { content: written };
+        //: Only what this form changed is sent: tags or a category filed by
+        //: the AI (or another tab) while it was open stay, where the form's
+        //: unchanged copy had put the old ones back (sm-1111 row 6).
+        const tags = tagsInput.value.split(",").map((t) => t.trim()).filter(Boolean);
+        if (category !== entry.category) [before.category, after.category] = [entry.category, category];
+        if (tags.join("\n") !== (entry.tags || []).join("\n")) [before.tags, after.tags] = [entry.tags, tags];
         //: `base_hash`: the text this form opened on, so a save over a
         //: newer text from another window is refused rather than silently
         //: replacing it (WORLD_CLASS_PLAN 22.1 item 5); the prompt then
@@ -544,7 +551,20 @@ ${textarea.value}`));
   for (const field of [titleInput, textarea]) field.addEventListener("input", recount);
   const foot = document.createElement("div");
   foot.className = "note-edit-foot";
-  foot.append(count, row);
+  //: The margin reader, the note half (WORLD_CLASS_PLAN I2): one switch with
+  //: the document editor's, its column under the text (margin-reader.js).
+  const marginBtn = document.createElement("button");
+  marginBtn.type = "button";
+  marginBtn.className = "ghost small icon-only note-edit-margin-toggle";
+  marginBtn.setAttribute("aria-pressed", "false");
+  marginBtn.setAttribute("aria-label", "Margin reader");
+  marginBtn.title = "Show notes of yours about the paragraph you are writing, under the text";
+  marginBtn.innerHTML = '<i class="ph ph-notepad" aria-hidden="true"></i>';
+  const marginHost = document.createElement("aside");
+  marginHost.className = "doc-margin note-edit-margin hidden";
+  marginHost.setAttribute("aria-label", "Margin reader");
+  marginHost.setAttribute("aria-live", "polite");
+  foot.append(count, marginBtn, row);
   const toolbarEl = noteEditToolbar(textarea.id);
   //: Preview: reported: "there is no preview", then, once there was one,
   //: "if the formatting bar was the same, the preview button would be in
@@ -574,7 +594,7 @@ ${textarea.value}`));
   const surface = document.createElement("div");
   surface.className = "note-composer note-edit-surface";
   surface.append(titleInput, meta, toolbarEl, textarea);
-  li.append(surface, chipsHost, foot);
+  li.append(surface, marginHost, chipsHost, foot);
   //: The editor's offers (quickadd.js `noteOffersAttach`): a form
   //: opened before the bundle loads has none rather than an error.
   if (typeof noteOffersAttach === "function") noteOffersAttach(textarea, { after: surface, category: categorySelect, entryId: entry.id });
@@ -592,7 +612,8 @@ ${textarea.value}`));
   //: drawn: the owner's "the first time I try editing a note after a restart,
   //: the notes page goes blank". The mount is awaited so the strip exists
   //: when the pressed state is set.
-  Promise.resolve(mountGutterFor(textarea)).then(() => requestAnimationFrame(() => applyDocGutter()));
+  //: The same wait mounts the margin reader (the bundle holds it; margin-reader.js).
+  Promise.resolve(mountGutterFor(textarea)).then(() => requestAnimationFrame(() => { applyDocGutter(); document.dispatchEvent(new CustomEvent("note-margin-mount", { detail: { textarea, host: marginHost, button: marginBtn, entryId: entry.id } })); }));
   renderEntryAttachmentChips(textarea, chipsHost);
   textarea.addEventListener("input", () => renderEntryAttachmentChips(textarea, chipsHost, { paced: true }));
   renderRelatedWhileEditing(li, entry);

@@ -103,6 +103,7 @@ LINKS = [
 def seed(session, *, filler: int = 0) -> dict[str, int]:
     """Create the notes in the audit's order, dated as it dated them; returns key -> id."""
     from tessellate.entry import manager
+    from tessellate.entry import manager_links
 
     ids: dict[str, int] = {}
     entries = {}
@@ -112,7 +113,7 @@ def seed(session, *, filler: int = 0) -> dict[str, int]:
         ids[key], entries[key] = entry.id, entry
     session.commit()
     for source, target, reason in LINKS:
-        manager.create_link(session, entries[source], entries[target], reason)
+        manager_links.create_link(session, entries[source], entries[target], reason)
     words = "garden dentist budget recipe travel project meeting reading health idea invoice plan holiday workout summary draft lecture essay bike coffee".split()
     cats = ["Work", "Health", "Ideas", "Reading", "Travel", "Recipes", "Garden"]
     rnd = random.Random(7)

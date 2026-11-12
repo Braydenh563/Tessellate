@@ -16,6 +16,7 @@ import textwrap
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = (ROOT / "frontend" / "js" / "update-dialogs.js").read_text(encoding="utf-8")
@@ -57,7 +58,7 @@ def test_the_switch_is_wired_everywhere():
     rows = (ROOT / "frontend" / "js" / "settings-rows.js").read_text(encoding="utf-8")
     assert '{ key: "show_update_bar", id: "pref-update-bar" }' in rows
     assert "show_update_bar" in (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
-    assert "show_update_bar" in (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    assert "show_update_bar" in unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
 
 
 def test_the_preference_defaults_on_and_round_trips(client, app_state):

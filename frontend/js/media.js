@@ -78,7 +78,7 @@ function sketchHost() {
     highlighter: HIGHLIGHTER_STYLE,
     menu: (items, label) => kebabMenu(items, label),
     wireHelp: (button, panel) => wireHelpPopover(button, panel),
-    singleKeys: () => (typeof singleKeysOn === "function" ? singleKeysOn() : true),
+    singleKeys: () => singleKeysOn(),
     close: hideSketchOverlay,
   };
   return sketchHostObject;
@@ -154,9 +154,9 @@ async function saveSketch(blob, caption) {
 
 // --- Wave H: voice capture (local Whisper) ------------------------------------------
 
-let voiceStatus = null; // cached /voice/status
-let recorder = null; // the active MediaRecorder, if any
-let recorderTarget = null; // which input gets the transcript
+//: Cached /voice/status; meetings.js reads it too. Dictation itself
+//: (`toggleDictation`) is in the lazy gesture-kit.js: only a mic click reaches it.
+let voiceStatus = null;
 
 // Live mic-level ring on a recording button, driven off the same MediaStream
 // the recorder already opened, no extra permission, no extra stream.
@@ -284,79 +284,18 @@ function startMicLevelMeter(stream, button) {
   };
 }
 
-async function toggleDictation(button, targetInput) {
-  if (recorder) {
-    recorder.stop(); // second press = stop → transcribe
-    return;
-  }
-  if (voiceStatus === null) {
-    voiceStatus = await apiJson("/voice/status").catch(() => ({ available: false }));
-  }
-  if (!voiceStatus.available) {
-    toast(voiceStatus.hint || "Voice capture isn't available.");
-    return;
-  }
-  let stream;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: micAudioConstraints() });
-  } catch {
-    toast("Microphone access was blocked, allow it in your browser.", "info");
-    return;
-  }
-  //: **The button's resting label, read once and kept.** Reported: the word
-  //: "Dictate" disappears the first time you record and never comes back.
-  //: `setLabel` replaces every child of the button, so the two calls below
-  //: were swapping the glyph and dropping the word with it; the stop handler
-  //: then restored a bare microphone, which is the state the report describes.
-  //:
-  //: Read here rather than inside the stop handler because by then the only
-  //: label on the button is "Stop", and kept on the element rather than in a
-  //: closure because a second recording starts a new one. The chat mic
-  //: (`#mic-chat`) is `icon-only` and has no `.ph-text` at all: it reads as an
-  //: empty string and must stay that way, or it gains a word and stops being
-  //: square.
-  if (button.dataset.restLabel === undefined) {
-    button.dataset.restLabel = button.querySelector(".ph-text")?.textContent?.trim() || "";
-  }
-  const resting = button.dataset.restLabel;
-  const chunks = [];
-  recorder = new MediaRecorder(stream);
-  recorderTarget = targetInput;
-  let stopLevelMeter = () => {};
-  recorder.addEventListener("dataavailable", (e) => chunks.push(e.data));
-  recorder.addEventListener("stop", async () => {
-    stream.getTracks().forEach((t) => t.stop());
-    stopLevelMeter();
-    button.classList.remove("recording");
-    setLabel(button, resting ? `ph:microphone ${resting}` : "ph:microphone");
-    recorder = null;
-    const blob = new Blob(chunks, { type: chunks[0]?.type || "audio/webm" });
-    const form = new FormData();
-    form.append("file", blob, "clip.webm");
-    toast("Transcribing…");
-    try {
-      // `api.upload` (F5); a refusal throws the server's sentence.
-      const body = await (await api.upload("/voice/transcribe", form)).json();
-      const box = recorderTarget;
-      box.value = box.value ? `${box.value.trimEnd()} ${body.text}` : body.text;
-      box.focus();
-    } catch (error) {
-      toast(error.message, true);
-    }
-  });
-  recorder.start();
-  button.classList.add("recording");
-  setLabel(button, resting ? "ph:stop Stop" : "ph:stop");
-  // Appended after setLabel, not before: setLabel's replaceChildren() wipes
-  // every child on the button, and the bar meter startMicLevelMeter() builds
-  // is one: appending it earlier just got it discarded a line later.
-  stopLevelMeter = startMicLevelMeter(stream, button);
-}
 
 // --- Wave H: read-aloud (the browser's local voices) --------------------------------
 
 //: `button` shows a stop icon and `aria-pressed` while it speaks (INBOX 1423).
 function speakText(text, button = null) {
+  //: The natural voice, once chosen in Settings, Read aloud and installed (studio.js, lazy: a stand-in fetches it on the first press).
+  //: The caller follows the returned object's onstart and onend, as it does an utterance.
+  if (text.trim() && prefs.get("read-aloud-voice", "browser") === "natural") {
+    const handle = { onstart: null, onend: null, onerror: null };
+    speakNatural(text, button, handle);
+    return handle;
+  }
   if (!("speechSynthesis" in window)) {
     toast("This browser has no text-to-speech voices.", "info");
     return;

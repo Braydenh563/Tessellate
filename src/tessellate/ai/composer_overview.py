@@ -20,53 +20,87 @@ from __future__ import annotations
 import re
 from collections import Counter
 from collections.abc import Callable, Iterable
+from contextvars import ContextVar
+from tessellate.core.lazyre import lazy_compile
 
 #: The frames that ask about a subject as a whole. "games notes", "ideas for
 #: projects", "what did I write about uni", "summarise my uni notes", "what do
 #: I know about X", "tell me about my X", "who is Jake".
 _ASKS = (
-    re.compile(
+    lazy_compile(
         r"^\s*(?:what|which)\s+(?:did|have)\s+i\s+(?:write|written|note|noted|say|said|jot|jotted|save|saved|got|keep|kept|store|stored|record|recorded|log|logged|collect|collected)(?:\s+down)?\s+(?:about|on)\s+(?:my\s+)?(?P<t>.+?)\s*\??$",
         re.I,
     ),
-    re.compile(r"^\s*what\s+do\s+i\s+(?:know|have)(?:\s+written)?\s+(?:about|on)\s+(?P<t>.+?)\s*\??$", re.I),
+    lazy_compile(r"^\s*what\s+do\s+i\s+(?:know|have)(?:\s+written)?\s+(?:about|on)\s+(?P<t>.+?)\s*\??$", re.I),
     #: "what do my notes say about university": the same ask, in the notes' words.
-    re.compile(r"^\s*what\s+(?:do|does|did)\s+(?:my|the)\s+(?:notes|entries)\s+(?:say|tell\s+me|have|mention|know|cover)\s+(?:about|on|for)\s+(?:my\s+)?(?P<t>.+?)\s*\??$", re.I),
-    re.compile(r"^\s*(?:summari[sz]e|sum\s+up|go\s+over|tell\s+me\s+about|(?:show|give|get)(?:\s+me)?|bring\s+up|pull\s+up)\s+(?:all\s+)?(?:of\s+)?my\s+(?P<t>.+?)\s*\??$", re.I),
+    lazy_compile(r"^\s*what\s+(?:do|does|did)\s+(?:my|the)\s+(?:notes|entries)\s+(?:say|tell\s+me|have|mention|know|cover)\s+(?:about|on|for)\s+(?:my\s+)?(?P<t>.+?)\s*\??$", re.I),
+    lazy_compile(r"^\s*(?:summari[sz]e|sum\s+up|go\s+over|tell\s+me\s+about|(?:show|give|get)(?:\s+me)?|bring\s+up|pull\s+up)\s+(?:all\s+)?(?:of\s+)?my\s+(?P<t>.+?)\s*\??$", re.I),
     #: The owner's own words (decision 70: "What have I saved about courses
     #: & study?") and their kin: a topic asked about as a whole, so it is
     #: counted from every note on it, not the five a search ranked first.
-    re.compile(r"^\s*tell\s+me\s+about\s+(?:my\s+)?(?P<t>.+?)\s*\??$", re.I),
-    re.compile(r"^\s*(?:what(?:'s|\s+is)\s+there|is\s+there\s+anything)\s+(?:about|on)\s+(?:my\s+)?(?P<t>.+?)\s*\??$", re.I),
-    re.compile(r"^\s*(?:what\s+are\s+)?(?:my\s+|some\s+|any\s+)?(?P<t>ideas\s+(?:for|about)\s+.+?)\s*\??$", re.I),
+    lazy_compile(r"^\s*tell\s+me\s+about\s+(?:my\s+)?(?P<t>.+?)\s*\??$", re.I),
+    lazy_compile(r"^\s*(?:what(?:'s|\s+is)\s+there|is\s+there\s+anything)\s+(?:about|on)\s+(?:my\s+)?(?P<t>.+?)\s*\??$", re.I),
+    lazy_compile(r"^\s*(?:what\s+are\s+)?(?:my\s+|some\s+|any\s+)?(?P<t>ideas\s+(?:for|about)\s+.+?)\s*\??$", re.I),
     #: "what are my sketch notes" is about sketch: its frame was once the
     #: subject ("There are two notes on what are my sketch").
-    re.compile(
+    lazy_compile(
         r"^\s*(?:(?:what|which|where)\s+(?:are|is)\s+|(?:list|find|see|read)\s+)?(?:all\s+)?(?:of\s+)?(?:my\s+|the\s+)?"
         r"(?P<t>[\w'][\w' -]{1,40}?)\s+notes\s*\??$",
         re.I,
     ),
     #: "what is there about X" (decision 64): the overview, not one quoted line.
-    re.compile(
+    lazy_compile(
         r"^\s*(?:what(?:'s|\s+is|s)\s+there|(?:is\s+there\s+)?anything|what\s+have\s+i\s+got)\s+(?:in\s+my\s+notes\s+)?(?:about|on)\s+(?:my\s+)?(?P<t>.+?)\s*\??$",
         re.I,
     ),
-    re.compile(r"^\s*(?:who\s+is|who's)\s+(?P<t>[A-Z][\w'-]+)\s*\??$"),
-    re.compile(r"^\s*what\s+(?:did|does|has)\s+(?P<t>[A-Z][\w'-]+)\s+(?:say|said|want|think|thinks?|tell\s+me)\b.{0,30}?\??$"),
-    re.compile(r"^\s*how\s+many\s+(?:of\s+my\s+)?notes\s+(?:are\s+|do\s+i\s+have\s+)?(?:about|on|mention(?:ing)?)\s+(?P<t>.+?)\s*\??$", re.I),
-    re.compile(r"^\s*what\s+are\s+my\s+(?P<t>[\w' -]{2,40}?)\s*\??$", re.I),
+    lazy_compile(r"^\s*(?:who\s+is|who's)\s+(?P<t>[A-Z][\w'-]+)\s*\??$"),
+    lazy_compile(r"^\s*what\s+(?:did|does|has)\s+(?P<t>[A-Z][\w'-]+)\s+(?:say|said|want|think|thinks?|tell\s+me)\b.{0,30}?\??$"),
+    #: "number of notes about X" and "count notes about X" ask what "how many notes about X" asks (R3-6):
+    #: one opener list, so the five likest notes never stand for the count.
+    lazy_compile(
+        r"^\s*(?:how\s+many|(?:the\s+)?(?:number|count|total|tally)\s+of|count|total|tally)\s+(?:of\s+)?(?:my\s+|the\s+|all\s+)?(?:notes|entries)\s+"
+        r"(?:are\s+|do\s+i\s+have\s+)?(?:about|on|mention(?:ing)?)\s+(?P<t>.+?)\s*\??$",
+        re.I,
+    ),
+    lazy_compile(r"^\s*what\s+are\s+my\s+(?P<t>[\w' -]{2,40}?)\s*\??$", re.I),
 )
 #: "What am I working on": the notes that say so, newest last.
 DOING = "working on"
-_DOING = re.compile(r"^\s*what\s+am\s+i\s+(?:working\s+on|doing|up\s+to|busy\s+with)(?:\s+(?:at\s+the\s+moment|now|right\s+now|these\s+days|lately))?\s*\??$", re.I)
+_DOING = lazy_compile(r"^\s*what\s+am\s+i\s+(?:working\s+on|doing|up\s+to|busy\s+with)(?:\s+(?:at\s+the\s+moment|now|right\s+now|these\s+days|lately))?\s*\??$", re.I)
 #: A subject that is itself an asking frame is no subject ("my notes").
-_NOT_TOPIC = re.compile(r"^(?:my|all|the|recent|latest|new|old|last|these|those|other|some|any|what|which)$", re.I)
+_NOT_TOPIC = lazy_compile(r"^(?:my|all|the|recent|latest|new|old|last|these|those|other|some|any|what|which)$", re.I)
 #: A subject that starts as a question is a frame read as a subject.
-_ASKING = re.compile(r"^(?:what|which|where|when|why|how|who|whose|are|is|do|does|did|can|could)\b", re.I)
-_TRAILING_NOTES = re.compile(r"\s+notes?$", re.I)
+_ASKING = lazy_compile(r"^(?:what|which|where|when|why|how|who|whose|are|is|do|does|did|can|could)\b", re.I)
+_TRAILING_NOTES = lazy_compile(r"\s+notes?$", re.I)
 #: "what are my notes about sourdough" is about sourdough: the subject was
 #: once "notes about sourdough" ("There are two notes on notes about ...").
-_LEADING_NOTES = re.compile(r"^(?:notes?|entries|entry)\s+(?:about|on|for|of|abt|re|regarding)\s+", re.I)
+_LEADING_NOTES = lazy_compile(r"^(?:notes?|entries|entry)\s+(?:about|on|for|of|abt|re|regarding)\s+", re.I)
+
+
+#: (the notes that match, the notes read) for a turn whose overview pool was
+#: cut at `chat_pool.OVERVIEW_LIMIT`. The cap stays; the lead says how many
+#: notes there are, not how many were read (comp1743 leftover).
+_POOL: ContextVar[tuple[int, int]] = ContextVar("overview_pool", default=(0, 0))
+
+
+def set_pool(total: int, read: int) -> None:
+    """Record, for this turn, that `read` of `total` matching notes were read; (0, 0) clears it."""
+    _POOL.set((total, read) if total > read else (0, 0))
+
+
+def read_pool(notes: list[dict] | None) -> None:
+    """Take the pool's size from the notes of this turn (`chat_pool._chat_payload`
+    marks the first), for the context the answer is composed in: a context set
+    while retrieving does not reach it, the stream steps run in separate ones."""
+    mark = next((n["overview_pool"] for n in notes or () if n.get("overview_pool")), (0, 0))
+    set_pool(*mark)
+
+
+def pooled(read: int) -> int:
+    """The honest count for an overview that read `read` notes: the whole
+    topic when `read` is the cut pool, else `read`."""
+    total, size = _POOL.get()
+    return total if size and read == size else read
 
 
 def topic(question: str) -> str | None:
@@ -124,8 +158,8 @@ def _wider(stems: set[str], every: list, head: str) -> set[str]:
 
 #: A capitalised word after a lower-case one: a name, never a sentence's
 #: first word ("League" in "for our League team", "COMP1511" in "for COMP1511").
-_NAMED = re.compile(r"(?<=[a-z,] )([A-Z][A-Za-z]{2,}(?: [A-Z][A-Za-z]+)*|[A-Z]{2,}\d{2,})\b")
-_ANY_CASE_CODE = re.compile(r"\b([A-Z]{2,}\d{2,})\b")
+_NAMED = lazy_compile(r"(?<=[a-z,] )([A-Z][A-Za-z]{2,}(?: [A-Z][A-Za-z]+)*|[A-Z]{2,}\d{2,})\b")
+_ANY_CASE_CODE = lazy_compile(r"\b([A-Z]{2,}\d{2,})\b")
 #: Capitalised words that name no thread: days, months, the person.
 _PLAIN = frozenset(
     "monday tuesday wednesday thursday friday saturday sunday january february march april may june july "
@@ -219,7 +253,7 @@ def shared_names(views: list, skip: set[str], known: list | None = None, least: 
 #: and two lines together under this many.
 LINE_WORDS = 24
 PAIR_WORDS = 30
-_ENDS = re.compile(r"[.!?…:;\"”’)\]]\s*$")
+_ENDS = lazy_compile(r"[.!?…:;\"”’)\]]\s*$")
 
 
 def _prose_line(units: list, stems: set[str]) -> list:

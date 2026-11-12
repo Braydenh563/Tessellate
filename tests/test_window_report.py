@@ -21,7 +21,7 @@ import pytest
 
 from tessellate.ai.ollama_client import OllamaClient
 
-from fakes_http import FakeResponse, sse
+from tests.fakes_http import FakeResponse, sse
 
 
 # --- the window travels with the counts -------------------------------------

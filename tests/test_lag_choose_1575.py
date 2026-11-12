@@ -52,7 +52,7 @@ def test_the_sampled_share_stops_at_three_covered_points() -> None:
 
 def test_the_search_has_a_budget_the_same_on_every_machine() -> None:
     choose = _fn("nameMarkBuddyChoose")
-    assert "budget: { ms: 250, hits: 360, fitMs: 120, fitHits: 160," in AV
+    assert "budget: { ms: 100, hits: 180, fitMs: 50, fitHits: 80," in AV
     assert "if (!nmb.fitting) {" in choose and "nmb.budget.left = nmb.budget.hits;" in choose
     assert "if (scored > 0 && (nmb.budget.left <= 0 || performance.now() > nmb.budget.until)) break;" in choose
     # The retry at the smaller size has its own, smaller, budget; it is set before the recursion.

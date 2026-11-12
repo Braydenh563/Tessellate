@@ -58,7 +58,7 @@ def test_jokes_get_no_staleness_line():
 
 
 def test_the_wording_varies_with_the_question():
-    from tessellate.ai.composer_digest import _BASE
+    from tessellate.ai.composer_digest_sentences import _BASE
 
     assert all(isinstance(_BASE[k], tuple) and len(_BASE[k]) >= 2 for k in ("gap", "stale", "burst", "cadence", "landed"))
 

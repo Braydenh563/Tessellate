@@ -133,6 +133,19 @@ check("display when asked", docMathTree("x", true).attrs.display === "block", ""
 // An equation number: \tag{n} leaves the formula and rides on the tree, display only.
 check("tag is taken off a display formula", sketch(docMathTree("a \\tag{1}", true)) === sketch(docMathTree("a", true)) && docMathTree("a \\tag{1}", true).label === "1", docMathTree("a \\tag{1}", true).label);
 check("no tag inline", docMathTree("a \\tag{1}", false).label === "", "");
+
+// Labels and references (OPEN F1): `\label{k}` takes the next number or its own `\tag`, `\eqref{k}` is that number in parentheses.
+const doc = "See \\eqref{b}.\n$$a = 1 \\label{a}$$\n$$b = 2 \\label{b} \\tag{A}$$\n$$c = 3 \\label{c}$$\n";
+const index = docMathIndex(doc);
+check("a label takes the next number, a tag is its own and uses none up", index.get("a") === "1" && index.get("b") === "A" && index.get("c") === "2", JSON.stringify([...index]));
+docMathUse(index);
+check("a labelled display shows its number and never the label", docMathTree("c = 3 \\label{c}", true).label === "2" && !sketch(docMathTree("c = 3 \\label{c}", true)).includes("label"), sketch(docMathTree("c = 3 \\label{c}", true)));
+check("a tag wins over the label's number", docMathTree("b \\label{b} \\tag{A}", true).label === "A", "");
+check("eqref is the number in parentheses, before or after the equation", sketch(docMathTree("\\eqref{a}")).includes("(1)") && sketch(docMathTree("\\ref{b}")).includes("(A)"), sketch(docMathTree("\\eqref{a}")));
+check("an unknown key reads (?)", sketch(docMathTree("\\eqref{zz}")).includes("(?)"), "");
+check("an inline label draws nothing and has no number", docMathTree("x \\label{a}", false).label === "", "");
+docMathUse(new Map());
+check("with no index the number is empty and eqref says (?)", docMathTree("a \\label{a}", true).label === "" && sketch(docMathTree("\\eqref{a}")).includes("(?)"), "");
 check("no inline styles",JSON.stringify(docMathTree("\\mathbf{a}")).includes("mathvariant"), "");
 
 // **What is math and what is a price.**
@@ -180,3 +193,36 @@ def test_the_renderer_runs_without_a_browser(math_checks: list[dict]) -> None:
 def test_the_tex_subset_renders_as_the_mathml_it_claims(math_checks: list[dict]) -> None:
     failed = [c for c in math_checks if not c["ok"]]
     assert not failed, "\n".join(f"{c['name']}: {c['detail']}" for c in failed[:20])
+
+
+_HELD_PROBE = r"""
+const vm = require("vm"), fs = require("fs");
+const el = () => ({ kids: [], text: "", setAttribute() {}, appendChild(k) { this.kids.push(k); }, append(...k) { this.kids.push(...k); }, set textContent(v) { this.text = v; } });
+const doc = { createElementNS: el, createElement: el };
+const win = {};
+vm.runInNewContext(fs.readFileSync(process.argv[1], "utf8"), { window: win, document: doc });
+const flat = (n) => (n.text || "") + n.kids.map(flat).join("");
+const labels = win.docMathRender.labels;
+labels.use(labels.index("$$a = 1 \\label{a}$$"));
+labels.held = true;
+labels.page("\\eqref{a}");
+const held = flat(win.docMathRender("\\eqref{a}"));
+labels.held = false;
+labels.page("\\eqref{a}");
+const free = flat(win.docMathRender("\\eqref{a}"));
+process.stdout.write(JSON.stringify({ held, free }));
+"""
+
+
+def test_a_column_piece_keeps_the_pages_equation_numbers() -> None:
+    """`\\eqref` in one column to a `\\label` in another read (?): each piece re-indexed its own text.
+
+    documents.js holds the index (`labels.held`) while the pieces render; the whole file runs here against a stub DOM.
+    """
+    if shutil.which("node") is None:
+        pytest.skip("node is not installed")
+    out = subprocess.run(["node", "-e", _HELD_PROBE, str(DOCUMENTS_JS)], capture_output=True, text=True, timeout=60)
+    assert out.returncode == 0, out.stderr
+    got = json.loads(out.stdout)
+    assert "(1)" in got["held"], got
+    assert "(?)" in got["free"], got

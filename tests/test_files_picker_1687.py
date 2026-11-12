@@ -12,7 +12,7 @@ from tests._objmove_node import JS, needs_node, run
 def _rows_source() -> str:
     """The shared list's source, `pickLibraryItemDialog.fileRows = async ... };`."""
     text = (JS / "library-pick.js").read_text(encoding="utf-8")
-    match = re.search(r"^pickLibraryItemDialog\.fileRows = .*?^\};\n", text, re.S | re.M)
+    match = re.search(r"^ *pickLibraryItemDialog\.fileRows = .*?^ *\};\n", text, re.S | re.M)
     assert match
     return "var pickLibraryItemDialog = {};\n" + match.group(0)
 
@@ -20,7 +20,7 @@ def _rows_source() -> str:
 def _function(file: str, name: str) -> str:
     """Source of one top-level function, up to its closing brace at column 0."""
     text = (JS / file).read_text(encoding="utf-8")
-    match = re.search(rf"^(?:async )?function {name}\b.*?^\}}\n", text, re.S | re.M)
+    match = re.search(rf"^( *)(?:async )?function {name}\b.*?^\1\}}\n", text, re.S | re.M)
     assert match, name
     return match.group(0)
 

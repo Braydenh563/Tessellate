@@ -72,14 +72,15 @@ def test_a_drag_on_a_picture_that_fits_says_why_nothing_moved():
 KINDBAR = (JS / "diagram-kindbar.js").read_text(encoding="utf-8")
 
 
-def test_the_kinds_are_four_worded_buttons_mounted_by_both_toolbars():
+def test_the_kinds_are_four_worded_rows_mounted_by_both_toolbars():
     # Before: a sequence diagram, mind map or timeline was only reachable through Suggest's templates.
+    # 1661 k moved the four from a row of buttons to one Kind menu (tests/test_diagram_1661klm.py).
     for word in ('"Flowchart"', '"Sequence"', '"Mind map"', '"Timeline"', '"sequenceDiagram"'):
         assert word in KINDBAR, word
-    assert "diagramModel.kindbar?.mount(S, h)" in (JS / "diagram-bar.js").read_text(encoding="utf-8")
+    assert "diagramModel.kindbar?.mount(S, h, bar)" in (JS / "diagram-bar.js").read_text(encoding="utf-8")
     assert "diagramModel.kindbar?.mount(S, kit)" in (JS / "diagram-kinds.js").read_text(encoding="utf-8")
     assert 'diagramKindbar: ["/js/diagram-kindbar.js"]' in (JS / "documents-mermaid.js").read_text(encoding="utf-8")
-    assert 'ensureModule("diagramKindbar")' in BUILDER and ".dgm-kinds" in CSS
+    assert 'ensureModule("diagramKindbar")' in BUILDER and ".dgm-kindbtn" in CSS
     assert "Undo, Ctrl+Z" in KINDBAR
 
 
@@ -102,7 +103,7 @@ def test_a_new_kind_starts_from_its_header_and_keeps_the_front_matter():
 def test_a_block_can_be_boxed_from_its_menu_and_the_bar_says_box_them():
     assert "Box this block" in BUILDER and "diagramModel.outline.box(S, helpers, key)" in BUILDER
     assert "function box(S, h, key)" in (JS / "diagram-outline.js").read_text(encoding="utf-8")
-    assert "ph:stack Box them" in (JS / "diagram-multi.js").read_text(encoding="utf-8")
+    assert ('tool("stack", "Box them"') in (JS / "diagram-multi.js").read_text(encoding="utf-8")
 
 
 def test_a_sequence_diagram_adds_parallel_critical_and_break_boxes():
@@ -112,14 +113,40 @@ def test_a_sequence_diagram_adds_parallel_critical_and_break_boxes():
     from tessellate.ai.help_chat import HELP_TOPICS
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
-    assert "parallel, critical and break (A, P, M, R, Y, X, T, L, G, O, U, C and B)" in body and "Sequence, Mind map and Timeline buttons" in body
+    assert "parallel, critical and break (A, P, M, R, Y, X, T, L, G, O, U, C and B)" in body and "Sequence, Mind map and Timeline, each with a small picture" in body
 
 
 def test_the_kind_switcher_hides_for_a_source_blocks_cannot_draw_and_never_calls_it_blank():
     # Reviewer: a Gantt showed Flowchart pressed, and Sequence wiped it with no Undo line (S.m is empty for it).
-    assert ".dgm-plain .dgm-kinds" in CSS and "display: none" in CSS.split(".dgm-plain .dgm-kinds")[1][:40]
+    assert ".dgm-plain .dgm-kindbtn" in CSS and "display: none" in CSS.split(".dgm-plain .dgm-kindbtn")[1][:120]
     assert "S.plain ? false" in KINDBAR
 
 
-def test_the_kind_switcher_buttons_share_one_row_on_a_phone():
-    assert ".dgm-kinds button" in CSS and "flex: 1 1 0" in CSS.split(".dgm-kinds button")[1][:120]
+def test_the_kind_switcher_takes_no_row_of_its_own_on_a_phone():
+    # Its intent moved with 1661 k: the four buttons kept one row at 390; now there is one button in the Title row.
+    assert ".dgm-kinds" not in CSS and ".dgm-kindword {" in CSS
+
+
+def test_the_dialogs_kind_bar_redraws_the_pane_when_the_kind_changes():
+    # DD-1 (1107): the dialog's io.set stored history and the textarea but never called show(), so a press on Sequence
+    # rewrote the source and left a flowchart pane with Flowchart pressed. The page's io.set re-shows through the document.
+    embed = (JS / "diagram-embed.js").read_text(encoding="utf-8")
+    start = embed.index("const io = {")
+    body = embed[start : embed.index("undo:", start)]
+    assert "if (diagramModel.builder.kindOf(next) !== kind) show();" in body
+
+
+def test_a_drawing_error_keeps_the_last_good_picture_dimmed_and_says_the_line_once():
+    # DD-4 (1107): `D[Oops --> A` replaced the picture with the sentence, left the "tall for this pane" offer beside it and
+    # announced nothing. Now the image stays at 40% under the message, the offer hides, the message is an alert the first
+    # time a given error shows (a status on a redraw of the same one) and names its line for a button that puts the caret there.
+    start = BUILDER.index("function drawPicture")
+    assert "diagramModel.picture.failure(S, result, source, smallButton)" in BUILDER[start : BUILDER.index("// --- the tree", start)]
+    # Review 1107: the builder is at its size cap, so the failure view lives in diagram-picture.js; the assertions are unchanged.
+    picture = (JS / "diagram-picture.js").read_text(encoding="utf-8")
+    body = picture[picture.index("function failure(") :]
+    assert 'S.fig.querySelector(":scope > .md-mermaid-img")' in body and "dgm-picture-stale" in body
+    assert 'setAttribute("role", fresh ? "alert" : "status")' in body
+    assert "S.sideways?.classList.add(\"hidden\")" in body
+    assert "dataset.line" in body and "setSelectionRange" in body
+    assert ".dgm-picture-stale > .md-mermaid-img" in CSS and "opacity: 0.4" in CSS.split(".dgm-picture-stale > .md-mermaid-img {", 1)[1].split("}", 1)[0]

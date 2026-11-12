@@ -13,7 +13,7 @@
 
 function hiddenStatusSlots() {
   // `prefsCache` is a global `let`, not on `window`: read it bare.
-  const stored = typeof prefsCache === "object" && prefsCache ? prefsCache.status_bar_hidden : null;
+  const stored = prefsCache ? prefsCache.status_bar_hidden : null;
   return new Set(Array.isArray(stored) ? stored : []);
 }
 
@@ -241,7 +241,7 @@ function spaceIconPicker(container, hiddenInput) {
 //: the space (`menuitemradio`) and, as its SIBLINGS, the row's actions
 //: (`menuitem`), so nothing interactive sits inside another. The arrows
 //: walk every item (the delegated menu keys in navigation.js).
-function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
+function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll, isPrivate }) {
   const row = document.createElement("div");
   row.className = "space-option";
   row.setAttribute("role", "none");
@@ -262,6 +262,14 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
   label.textContent = name;
 
   option.append(glyph, label);
+  //: A private space shows its name behind a lock; nothing of what is in it (INBOX 1727).
+  if (isPrivate) {
+    const lock = document.createElement("i");
+    lock.className = "ph ph-lock-simple space-option-lock";
+    lock.setAttribute("aria-hidden", "true");
+    option.appendChild(lock);
+    option.title = `${name}, a private space`;
+  }
   option.addEventListener("click", () => setActiveSpace(id));
   row.appendChild(option);
 
@@ -278,7 +286,7 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
         hiddenFromAll ? `${name} is hidden from All spaces, show it there again` : `Hide ${name} from All spaces`,
         () => toggleSpaceHidden(id, !hiddenFromAll),
       ],
-      ["ph-pencil-simple", `Rename ${name}`, () => openSpaceEdit(id, name, icon)],
+      ["ph-pencil-simple", `Rename ${name}`, () => privateSpaces("edit", id)],
       ["ph-trash", `Delete ${name}`, () => rmSpace(id)],
     ]) {
       const action = document.createElement("button");
@@ -357,6 +365,7 @@ function renderSpaceMenu() {
       // deleted: the server refuses it too, but offering a button that always
       // errors is not a UI.
       hiddenFromAll: Boolean(space.hidden_from_all),
+      isPrivate: Boolean(space.is_private),
       deletable: space.id !== "default",
     }));
   }
@@ -415,20 +424,10 @@ function openSpaceCreate() {
   $("space-create-name").value = "";
   $("space-create-icon").value = "ph-folder";
   $("space-create-error").textContent = "";
+  privateSpaces("mount", "space-create");
   spaceIconPicker($("space-create-icon-picker"), $("space-create-icon"));
   $("space-create-dialog").showModal();
   $("space-create-name").focus();
-}
-
-function openSpaceEdit(id, name, icon) {
-  $("space-edit-id").value = id;
-  $("space-edit-name").value = name;
-  $("space-edit-icon").value = icon;
-  $("space-edit-dialog").dataset.was = JSON.stringify({ name, icon });
-  $("space-edit-error").textContent = "";
-  spaceIconPicker($("space-edit-icon-picker"), $("space-edit-icon"));
-  $("space-edit-dialog").showModal();
-  $("space-edit-name").focus();
 }
 
 async function loadSpaces() {
@@ -443,13 +442,15 @@ async function loadSpaces() {
   }
   renderSpaceMenu();
   updateCaptureSpaceLabel();
+  //: A private space open on screen asks for the vault password once it is locked (INBOX 1727).
+  if (spacesCache.find((space) => space.id === activeSpaceId())?.is_private) privateSpaces("enter", activeSpaceId());
   //: The other half of the guard on the note card's space chip: the list is
   //: drawn before this request comes back, and every card that drew while the
   //: cache was empty is now missing the chip it should carry. Re-rendered only
   //: when there is something on screen to re-render and the cache actually has
   //: something in it, so this costs a fresh notebook nothing and cannot loop
   //: (nothing in `renderEntries` calls back into here).
-  if (wasEmpty && spacesCache.length && $("entry-list")?.children.length) renderEntriesWhenShown();
+  if (wasEmpty && spacesCache.length && document.getElementById("entry-list")?.children.length) renderEntriesWhenShown();
 }
 
 //: INBOX 1a/38: says which space the capture form actually files into,
@@ -461,7 +462,7 @@ async function loadSpaces() {
 //: Space). Read that off the same rule rather than re-deciding it here, so
 //: this label and the server's own behaviour cannot drift apart.
 function updateCaptureSpaceLabel() {
-  const label = $("capture-space-hint");
+  const label = document.getElementById("capture-space-hint");
   if (!label) return;
   const active = activeSpaceId();
   const filingId = active === SPACE_ALL ? "default" : active;
@@ -471,7 +472,12 @@ function updateCaptureSpaceLabel() {
     active === SPACE_ALL
       ? `Filing into ${name} (pick a space above to file there instead).`
       : `Filing into ${name}.`;
+  //: The row keeps one line beside a window's width and the hint takes the
+  //: ellipsis (07-whiteboard-misc.css), so the whole sentence is its title.
+  label.title = label.textContent;
 }
+
+onSurface("notes", updateCaptureSpaceLabel);
 
 function initSpaceSwitcher() {
   const button = $("space-switcher-btn");
@@ -496,12 +502,18 @@ function initSpaceSwitcher() {
   // refuses outright, so every one of them was dead markup.
   for (const closer of document.querySelectorAll("[data-close-dialog]")) {
     closer.addEventListener("click", () => {
-      document.getElementById(closer.dataset.closeDialog)?.close();
+      $(closer.dataset.closeDialog)?.close();
     });
   }
 
   //: The forms are empty shells that give Enter something to submit; the click handlers below do the work.
   for (const id of ["space-create-form", "space-edit-form"]) $(id)?.addEventListener("submit", (event) => event.preventDefault());
+  //: The Edit space dialog's Save is private-spaces.js's `save`; the field marking is the lock card's.
+  $("space-edit-submit")?.addEventListener("click", () => {
+    const error = $("space-edit-error");
+    const fail = (message) => lockFail(message, $("space-edit-name"), error);
+    privateSpaces("save", fail);
+  });
 
   $("space-create-submit")?.addEventListener("click", async () => {
     const name = $("space-create-name").value.trim();
@@ -511,19 +523,17 @@ function initSpaceSwitcher() {
     const fail = (message) => lockFail(message, $("space-create-name"), error);
     error.textContent = "";
     $("space-create-name").removeAttribute("aria-invalid");
-    if (!name) {
-      fail("Give the space a name.");
-      return;
-    }
+    if (!name) return fail("Give the space a name.");
+    const icon = $("space-create-icon").value;
     try {
       const space = await apiJson("/spaces", {
         method: "POST",
-        body: JSON.stringify({ name, icon: $("space-create-icon").value }),
+        body: JSON.stringify({ name, icon, is_private: $("space-create-private")?.checked === true }),
       });
       $("space-create-dialog").close();
       //: Undo moves anything put in it meanwhile to the default space, then
       //: removes it; Redo makes it again under the id the server gives next.
-      const made = { name, icon: $("space-create-icon").value };
+      const made = { name, icon };
       let live = space;
       pushUndo(
         `Made the space “${name}”`,
@@ -539,32 +549,6 @@ function initSpaceSwitcher() {
       );
       await loadSpaces();
       toastAction(`Made the space “${name}”.`, "Open it", () => setActiveSpace(live.id));
-    } catch (err) {
-      fail(err.message);
-    }
-  });
-
-  $("space-edit-submit")?.addEventListener("click", async () => {
-    const id = $("space-edit-id").value;
-    const name = $("space-edit-name").value.trim();
-    const error = $("space-edit-error");
-    const fail = (message) => lockFail(message, $("space-edit-name"), error);
-    error.textContent = "";
-    $("space-edit-name").removeAttribute("aria-invalid");
-    if (!name) {
-      fail("Give the space a name.");
-      return;
-    }
-    try {
-      const now = { name, icon: $("space-edit-icon").value };
-      await apiJson(`/spaces/${encodeURIComponent(id)}`, {
-        method: "PUT",
-        body: JSON.stringify(now),
-      });
-      pushRequestUndo(`Renamed the space to “${name}”`, `/spaces/${encodeURIComponent(id)}`, "PUT", JSON.parse($("space-edit-dialog").dataset.was || "{}"), now, loadSpaces);
-      $("space-edit-dialog").close();
-      await loadSpaces();
-      toast(`Renamed to “${name}”.`);
     } catch (err) {
       fail(err.message);
     }
@@ -609,7 +593,7 @@ let editingTemplateName = null;
 // The saved list as stored: the person's own templates and the edited
 // built-ins together, which is what every PUT writes back.
 function customTemplates() {
-  return (prefsCache && prefsCache.custom_templates) || [];
+  return prefsCache?.custom_templates || [];
 }
 
 function startEditingTemplate(template) {
@@ -714,13 +698,13 @@ watchForSelects();
 //: Clicking it does the one thing its name promises, and hands the pane back
 //: to the follow logic by landing at the bottom, the next `scroll` event sets
 //: `data-stuck` to "1" and the stream resumes carrying the view with it.
-$("chat-jump-latest")?.addEventListener("click", () => {
+onSurface("chat", () => $("chat-jump-latest")?.addEventListener("click", () => {
   const pane = $("chat-messages");
   if (!pane) return;
   pane.scrollTo({ top: pane.scrollHeight, behavior: reducedMotionWanted() ? "auto" : "smooth" });
   pane.dataset.stuck = "1";
   syncChatJumpLatest();
-});
+}));
 
 //: The panel-wide half of "mark as unread": one gesture that puts every row
 //: back to read, overrides included. See `forcedUnreadIds`.
@@ -752,7 +736,7 @@ $("notif-mark-all-read")?.addEventListener("click", () => {
 //: every piece has been declared (appjs-split.md hazard 1). What ran after
 //: them in the old order is declarations and listeners, none of which read
 //: what they set up.
-initNotesSubtabs();
+onSurface("notes", initNotesSubtabs);
 //: A timer left running across a reload: load the module that restores it.
 if (prefs.has("utility-clocks")) ensureModule("utilities");
 initAuth();

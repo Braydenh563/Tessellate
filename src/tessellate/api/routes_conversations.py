@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.exceptions import RequestValidationError
@@ -21,7 +22,9 @@ from tessellate.core import deps
 from tessellate.core.database import LIKE_ESCAPE, Conversation, like_escape, utcnow
 from tessellate.repo import uploads as uploads_repo
 from tessellate.core.deps import get_session
-from tessellate.ai.grounding import support as grounding_support
+from tessellate.ai import consent_store
+from tessellate.api.schemas import TurnFrame
+from tessellate.ai.grounding import composed_support, support as grounding_support
 from tessellate.entry.manager import log_action
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
@@ -83,6 +86,10 @@ class TurnBody(BaseModel):
     # above, reported separately: reopening a chat, or just leaving the
     # tab, dropped the sources line because nothing here ever stored it.
     sentence_grounding: list[dict] | None = None
+    #: A composed answer's own support as the live stream sent it (digest, shape,
+    #: figure, offer), so a reopened chat draws the same foot and notice (INBOX
+    #: 1706). Read only when `by.composed`; a model answer's is recounted below.
+    support: dict | None = None
     # Which MediaUpload ids this turn actually attached, asked for
     # directly, and load-bearing beyond just redisplaying them on reopen:
     # media_gc.py's orphan scan can only see `/media/…` references inside
@@ -157,6 +164,31 @@ class TurnBody(BaseModel):
     picture_alts: dict[str, str] | None = Field(default=None, max_length=40)
     #: Their [width, height] (INBOX 526), so a reopened figure holds its space.
     picture_sizes: dict[str, list[int]] | None = Field(default=None, max_length=40)
+    #: Who wrote the reply (`{composed, model}`), so a reopened chat draws
+    #: the same badge, note card and timing line the live answer did (INBOX 1693).
+    by: dict | None = None
+    #: The Why this answer trail's lines, kept for the same reload.
+    why: list | None = Field(default=None, max_length=40)
+    #: Stopped before it finished, and changed the notebook (W1): a reopened
+    #: chat says Stopped on the meta line, and Regenerate asks before a
+    #: write runs again (audit 1028 E2). Kept only when true.
+    stopped: bool | None = None
+    wrote: bool | None = None
+    #: The act cards the turn showed (Confirm and Cancel, or Undo), so a reopened chat draws them
+    #: again instead of an answer that says "Confirm or Cancel below" over nothing. The state is
+    #: never saved here, it is read from the server's parked card on the way out (`_act_state`).
+    acts: list[dict] | None = None
+    #: What the answer showed (`composer_dialogue.turn_frame`) and the notes it named, so a reopened
+    #: chat binds "and the other one" as the live one did instead of falling back to the text
+    #: reading (O4). Bounded by the same model the live request uses.
+    frame: TurnFrame | None = None
+    objects: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=8)
+
+    @field_validator("acts", mode="before")
+    @classmethod
+    def _few_acts(cls, value: object) -> object:
+        """Cut, never refused: a turn with many cards must still save (`MAX_ACTS`)."""
+        return value[:MAX_ACTS] if isinstance(value, list) else value
 
 
 class RenameBody(BaseModel):
@@ -197,6 +229,137 @@ def _user_message(turn: TurnBody, asked: datetime) -> dict:
     return user
 
 
+def _saved_support(turn: TurnBody) -> dict:
+    """The notice's numbers for a saved turn, always recounted here from the
+    sentence rows, never trusted from the client. A composed answer
+    (`by.composed`, built only from notes, so never the model-draft warning;
+    INBOX 1706) takes `composed_support`'s base-less count; the page's own
+    `support` contributes only the digest display keys, type-checked, and can
+    never clear `by_model`."""
+    if not (turn.by or {}).get("composed"):
+        return grounding_support(turn.answer, turn.sentence_grounding)
+    saved = composed_support(None, turn.sentence_grounding)
+    sent = turn.support if isinstance(turn.support, dict) else {}
+    if sent.get("digest") is True:
+        saved["digest"] = True
+    for key in ("shape", "figure"):
+        if isinstance(sent.get(key), str) and len(sent[key]) <= 24:
+            saved[key] = sent[key]
+    return saved
+
+
+MAX_ACTS = 6
+EXPIRED = "This offer has expired. Ask again to redo it."
+_ACT_KEYS = ("type", "label", "notice", "summary", "consent_id", "ask_label", "name")
+_OFFER_KINDS = ("note", "checklist", "reminder")
+
+
+def _saved_offer(offer: object) -> dict | None:
+    """A note, checklist or reminder offer as a redraw needs it (words only; what runs is the page's own call)."""
+    if not isinstance(offer, dict) or offer.get("kind") not in _OFFER_KINDS:
+        return None
+    kept: dict = {k: str(offer[k])[:4000] for k in ("kind", "label", "line", "text", "surface") if isinstance(offer.get(k), str)}
+    kept["items"] = [str(i)[:400] for i in offer["items"][:60]] if isinstance(offer.get("items"), list) else []
+    return kept
+
+
+def _saved_offer_card(act: dict, card: dict) -> bool:
+    """Fill an offer card from its offer; False when the offer is not one to keep."""
+    offer = _saved_offer(act.get("offer"))
+    if offer is None:
+        return False
+    card["offer"] = offer
+    card["consent_id"] = str((act.get("offer") or {}).get("offer_id") or act.get("consent_id") or "")[:40]
+    card["label"] = offer.get("label", "")
+    return True
+
+
+def _saved_act_extras(kind: str, act: dict, card: dict) -> None:
+    """The per-kind parts of a card: a confirm's arguments, an act's steps, skipped, undo and done."""
+    if kind == "confirm":
+        args = act.get("arguments")
+        if isinstance(args, dict) and len(json.dumps(args)) <= 20_000:
+            card["arguments"] = args
+        else:
+            card["lost"] = True  # too large to keep: it reads as expired, never as something to press
+    if kind != "act":
+        return
+    for key in ("steps", "skipped", "undo"):
+        if isinstance(act.get(key), list) and len(act[key]) <= 60:
+            card[key] = [step for step in act[key] if isinstance(step, dict)]
+    if act.get("done") is True:
+        card["done"] = True
+
+
+def _saved_acts(acts: list[dict]) -> list[dict]:
+    """The cards a turn drew (an act's, an agent's tool confirm, a note offer), cut to what a redraw
+    needs: words, what the card showed, the undo it offered, whether it had already run. None of it
+    runs anything: Confirm runs what the server parked under `consent_id`, never these."""
+    kept = []
+    for act in acts[:MAX_ACTS]:
+        kind = act.get("type") if isinstance(act, dict) else None
+        if kind not in ("act", "confirm", "offer"):
+            continue
+        card: dict = {k: str(act[k])[:600] for k in _ACT_KEYS if isinstance(act.get(k), str) and act[k]}
+        if kind == "offer" and not _saved_offer_card(act, card):
+            continue
+        _saved_act_extras(kind, act, card)
+        kept.append(card)
+    return kept
+
+
+def _act_state(act: dict) -> str:
+    """Where a saved card stands now, read from the server: its recorded outcome, else done while it
+    ran at once or its press left a result, waiting while the server still holds it, done when it
+    was spent elsewhere (a typed yes), else expired. A note offer with no parked id waits until pressed."""
+    if act.get("outcome") in ("done", "cancelled", "undone"):
+        return act["outcome"]
+    if act.get("done"):
+        return "done"
+    if act.get("lost"):
+        return "expired"
+    key = act.get("consent_id")
+    if consent_store.was_declined(key):
+        return "cancelled"
+    if consent_store.peek(key):
+        return "pending"
+    if consent_store.was_spent(key):
+        return "done"
+    return "pending" if act.get("type") == "offer" and not key else "expired"
+
+
+def _acts_field(turn: TurnBody) -> dict:
+    """`{"acts": [...]}` when the turn drew cards worth keeping, else nothing."""
+    acts = _saved_acts(turn.acts) if turn.acts else []
+    return {"acts": acts} if acts else {}
+
+
+def _hydrate_act(message: dict, slot: int, act: dict) -> None:
+    act["state"] = _act_state(act)
+    act["act_slot"] = slot
+    act["notice"] = {"expired": EXPIRED, "undone": "Undone.", "cancelled": "Cancelled: nothing was changed."}.get(act["state"], act.get("notice", ""))
+    if act.get("type") == "offer" and isinstance(message.get("support"), dict):
+        #: Back in the answer's support, where the page draws the offer from, with its place in `acts`.
+        message["support"] = {**message["support"], "offer": {**act["offer"], "offer_id": act.get("consent_id", ""), "state": act["state"], "notice": act["notice"] if act["state"] != "done" else "", "summary": act.get("summary", ""), "act_slot": slot}}
+    result = consent_store.result_of(act.get("consent_id")) if act["state"] == "done" and not act.get("outcome") else None
+    if result:
+        act["summary"] = str(result.get("summary") or result.get("label") or act.get("label") or "")[:600]
+        act["undo"] = [step for step in (result.get("undo") or []) if isinstance(step, dict)]
+
+
+def _hydrate_acts(messages: list[dict]) -> None:
+    """Each saved card gets its state, and a pressed one the summary and Undo the server kept; a note offer goes back into the turn's support."""
+    for message in messages:
+        for slot, act in enumerate(message.get("acts") or []):
+            _hydrate_act(message, slot, act)
+
+
+def _frame_fields(turn: TurnBody) -> dict:
+    """What the next turn leans on, kept only when the answer had any (O4)."""
+    frame = turn.frame.model_dump() if turn.frame else {}
+    return {k: v for k, v in (("frame", frame if any(frame.values()) else None), ("objects", turn.objects)) if v}
+
+
 def _turn_messages(turn: TurnBody) -> list[dict]:
     # Stamped here, not by the page: the turn is saved when the answer ends,
     # so the answer's time is now and the question's is now minus the
@@ -205,16 +368,8 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
     now = utcnow()
     asked = now - timedelta(milliseconds=max(0, min(turn.elapsed_ms or 0, 86_400_000)))
     assistant = {"role": "assistant", "content": turn.answer, "thinking": turn.thinking, "at": now.isoformat()}
-    if turn.tools:
-        assistant["tools"] = turn.tools
-    if turn.steps:
-        assistant["steps"] = turn.steps
-    if turn.resume:
-        assistant["resume"] = turn.resume
-    if turn.tokens:
-        assistant["tokens"] = turn.tokens
-    if turn.stats:
-        assistant["stats"] = turn.stats
+    #: Kept only when the turn has them, so an old reader sees the same message shape.
+    assistant.update({k: getattr(turn, k) for k in ("tools", "steps", "resume", "tokens", "stats", "why", "stopped", "wrote") if getattr(turn, k)})
     if turn.elapsed_ms is not None:
         assistant["elapsed_ms"] = turn.elapsed_ms
     if turn.raw_results:
@@ -239,12 +394,19 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
         #: the notice it had (CHAT_PLAN Phase 1's last line). Computed here
         #: rather than trusted from the client: the answer and its marks are
         #: both on the turn, and the frontend must not grow a second counter.
-        assistant["support"] = grounding_support(turn.answer, turn.sentence_grounding)
+        assistant["support"] = _saved_support(turn)
     if turn.used_tools is not None:
         assistant["used_tools"] = turn.used_tools
     persona = (turn.persona or "").strip()
     if persona:
         assistant["persona"] = persona
+    assistant.update(_acts_field(turn))
+    assistant.update(_frame_fields(turn))
+    if turn.by:
+        assistant["by"] = {
+            "composed": bool(turn.by.get("composed")),
+            "model": str(turn.by.get("model") or "")[:120],
+        }
     return [_user_message(turn, asked), assistant]
 
 
@@ -542,7 +704,7 @@ def _entry_cards(session: Session, note_ids: set, board_ids: set) -> tuple[dict,
     in a conversation would put it back on screen in the one place the
     private-notebook rule cannot reach. A map is held to the same."""
     from tessellate.core.database import Entry
-    from tessellate.entry import manager as entry_manager
+    from tessellate.entry import manager_text
     from tessellate.entry.properties import strip as strip_properties
 
     notes: dict = {}
@@ -560,7 +722,7 @@ def _entry_cards(session: Session, note_ids: set, board_ids: set) -> tuple[dict,
             lines = [ln.strip() for ln in strip_properties(entry.content or "").splitlines() if ln.strip()]
             notes[entry.id] = {"id": entry.id, "kind": "note", "name": lines[0][:400] if lines else ""}
         if entry.id in board_ids:
-            maps[entry.id] = {"id": entry.id, "kind": "map", "name": entry_manager.extract_title(entry.content) or "Mind map"}
+            maps[entry.id] = {"id": entry.id, "kind": "map", "name": manager_text.extract_title(entry.content) or "Mind map"}
     return notes, maps
 
 
@@ -570,7 +732,13 @@ def get_conversation(
 ) -> dict:
     conversation = _existing(session, conversation_id)
     messages = json.loads(conversation.messages)
+    #: Chats saved before the composed rule above kept the model counter's
+    #: notice on a notes-only answer; mended on the way out (INBOX 1706).
+    for message in messages:
+        if (message.get("by") or {}).get("composed") and message.get("sentence_grounding") and (message.get("support") or {}).get("by_model") is not False:
+            message["support"] = composed_support(None, message["sentence_grounding"])
     _hydrate_attachments(session, messages)
+    _hydrate_acts(messages)
     return {**_summary(conversation), "messages": messages}
 
 
@@ -801,6 +969,9 @@ class ForkBody(BaseModel):
     #: duplicate case.
     up_to: int | None = Field(default=None, le=bounds.HISTORY_MAX_TURNS * 100)
     title: str | None = Field(default=None, max_length=120)
+    #: Words after the chat's own title, "Planning (before the edit)" (audit 1028
+    #: E48): the chat client holds no title, so it cannot build one. A `title` wins.
+    suffix: str | None = Field(default=None, max_length=40)
 
 
 @router.post("/{conversation_id}/fork", status_code=201)
@@ -838,7 +1009,7 @@ def fork_conversation(
         messages = messages[: max(0, (body.up_to + 1) * 2)]
     #: The name says where it came from, because a Library listing two
     #: identically-named chats is the thing that makes forking unusable.
-    title = (body.title or "").strip() or f"{conversation.title} (fork)"
+    title = (body.title or "").strip() or f"{conversation.title} ({(body.suffix or '').strip() or 'fork'})"
     fork = Conversation(
         title=title[:120],
         messages=json.dumps(messages),
@@ -909,6 +1080,76 @@ def set_turn_followups(
     )
     session.commit()
     return {"saved": True, "followups": cleaned}
+
+
+class ActOutcomeBody(BaseModel):
+    outcome: str = Field(pattern="^(done|cancelled|undone)$")
+    #: Which card this is for, checked against the one stored at (turn, slot): the page counts its
+    #: bubbles, and a bubble that never saved shifts the count, so the index alone is not trusted.
+    consent_id: str = Field(default="", max_length=40)
+    label: str = Field(default="", max_length=600)
+    #: A note offer's own words (the page made the note; only an offer takes this).
+    summary: str = Field(default="", max_length=600)
+
+
+def _may_become(card: dict, outcome: str) -> bool:
+    """The only moves a card makes: done once (a card the server saw pressed; an offer from the page),
+    cancelled once while it waits, undone only from done; an offer may be pressed again after its Undo."""
+    state = _act_state(card)
+    key = card.get("consent_id") or ""
+    if outcome == "undone":
+        return state == "done"
+    if card.get("type") == "offer":
+        return outcome == "done" and state in ("pending", "undone")
+    if outcome == "cancelled":
+        return state == "cancelled" or (state in ("pending", "expired") and not consent_store.was_spent(key))
+    return state == "done" and not card.get("outcome") and not card.get("done")
+
+
+def _apply_outcome(card: dict, body: ActOutcomeBody) -> None:
+    """The server-side effect of an outcome: spend the offer's id, keep the result and Undo, or decline the parked card."""
+    key = card.get("consent_id") or ""
+    if body.outcome == "done" and card.get("type") == "offer":
+        consent_store.take(key)
+        card["summary"] = body.summary
+    elif body.outcome == "done":
+        result = consent_store.result_of(key) or {}
+        card["summary"] = str(result.get("summary") or result.get("label") or card.get("label") or "")[:600]
+        card["undo"] = [step for step in (result.get("undo") or []) if isinstance(step, dict)]
+    elif body.outcome == "cancelled":
+        consent_store.decline(key)
+
+
+@router.put("/{conversation_id}/turns/{index}/acts/{n}")
+def set_turn_act_outcome(
+    conversation_id: int, index: int, n: int, body: ActOutcomeBody, session: Session = Depends(get_session)
+) -> dict:
+    """Remember how a card of a saved turn was answered, so the chat reopens with it settled.
+
+    Nothing here is taken on the page's word: the card at (turn, slot) must carry the given id and
+    label; Done needs the press the server saw (its kept result gives the summary and Undo, a note
+    offer's press spends its id); Cancel spends the parked card, so one drawn again cannot run. A turn
+    or card that is gone is a no-op. `updated_at` is held, as for follow-ups: a press is not a message."""
+    conversation = _existing(session, conversation_id)
+    messages = json.loads(conversation.messages)
+    position = index * 2 + 1
+    acts = messages[position].get("acts") if 0 <= position < len(messages) else None
+    if not acts or not 0 <= n < len(acts):
+        return {"saved": False}
+    card = acts[n]
+    if (card.get("consent_id") or "") != body.consent_id or (card.get("label") or "") != body.label:
+        raise HTTPException(status_code=409, detail="That is not the card saved there.")
+    if card.get("outcome") == body.outcome:
+        return {"saved": True, "state": body.outcome}
+    if not _may_become(card, body.outcome):
+        raise HTTPException(status_code=409, detail="That card was already answered.")
+    _apply_outcome(card, body)
+    card["outcome"] = body.outcome
+    session.execute(
+        update(Conversation).where(Conversation.id == conversation.id).values(messages=json.dumps(messages), updated_at=conversation.updated_at)
+    )
+    session.commit()
+    return {"saved": True, "state": body.outcome}
 
 
 class AnswerBody(BaseModel):

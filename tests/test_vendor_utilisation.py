@@ -30,7 +30,8 @@ pytestmark = pytest.mark.skipif(
 
 #: Called counts on 2026-10-10. Never lowered to make a change fit.
 CALLED_FLOOR = {
-    "codemirror": 102,
+    #: 123 since the fenced-block colouring (code-colour.js: highlight.highlightTree, classHighlighter).
+    "codemirror": 123,
     "emmet": 10,
     #: 4 since ledger 1565: a selection formatted at its first line's indent.
     "jsbeautify": 4,
@@ -43,6 +44,8 @@ CALLED_FLOOR = {
     "harper": 17,
     "phosphor": 260,
     "wordlist": 2,
+    #: INBOX 1731: check, suggest, both dictionaries, frequency ranking, own words.
+    "spelling": 6,
     #: Completions after `module.` and the hover card (documents-code.js).
     "pystdlib": 2,
     #: Every face shipped is declared by an @font-face (row 1595).

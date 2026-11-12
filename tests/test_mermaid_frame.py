@@ -19,6 +19,7 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
 from tests._app_js import app_js_files
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -89,7 +90,8 @@ def _run_region(path: Path, begin: str, end: str, body: str):
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
-    text = path.read_text(encoding="utf-8")
+    #: mermaid-draw.js is one closure now (ranked row 37a); the tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    text = _js_scope.unwrapped(path.read_text(encoding="utf-8"))
     region = text[text.index(begin) : text.index(end)]
     assert "document." not in region and "window." not in region
     with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as handle:

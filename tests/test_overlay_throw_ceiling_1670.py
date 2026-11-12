@@ -32,7 +32,9 @@ def test_a_uniform_spread_of_throws_rarely_ends_hanging(gait: str) -> None:
 
 @pytest.mark.parametrize("gait", ["float", "walk"])
 def test_a_hard_throw_straight_up_still_hangs_from_the_top(gait: str) -> None:
-    assert throw_once(gait, "masculine", 1, UP, eng.THROW_MAX * 0.9, (900, 300)) == "hang"
+    # INBOX 1719 (a): past `CEIL_LEAVE` it leaves through the top instead (tests/test_overlay_throw_leave_1719.py), so the
+    # hang is the hard throw between the two lines.
+    assert throw_once(gait, "masculine", 1, UP, eng.CEIL_LEAVE * 0.95, (900, 300)) == "hang"
 
 
 @pytest.mark.parametrize("gait", ["float", "walk"])

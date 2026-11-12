@@ -11,6 +11,7 @@ Nodes are non-deleted entries; edges come from three places:
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import re
 import threading
@@ -26,11 +27,14 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
 from tessellate.api import bounds
-from tessellate.core import cjk
+from tessellate.core import cjk, companion_events
 from tessellate.core import deps
 from tessellate.core.database import Attachment, EmbeddingRecord, Entry, NoteType
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
+from tessellate.entry import manager_wiki
+from tessellate.entry import manager_links
+from tessellate.entry import manager_text
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import properties as properties_repo
 from tessellate.repo import categories as categories_repo
@@ -167,14 +171,14 @@ def _label(entry: Entry, length: int = 40) -> str:
     map, its words do not (INBOX 1437)."""
     if manager.note_is_sealed(entry.is_private):
         return SEALED_LABEL
-    return _preview(manager.readable_content(entry), length)
+    return _preview(manager_text.readable_content(entry), length)
 
 
 def _words(entry: Entry) -> int:
     """A node's length in words; nothing to count while the note is sealed."""
     if manager.note_is_sealed(entry.is_private):
         return 0
-    return _word_count(manager.readable_content(entry))
+    return _word_count(manager_text.readable_content(entry))
 
 
 def _note_texts(entries: list) -> dict[int, tuple[str, int]]:
@@ -193,7 +197,7 @@ def _note_texts(entries: list) -> dict[int, tuple[str, int]]:
             if manager.note_is_sealed(e.is_private):
                 out[e.id] = (SEALED_LABEL, 0)
             else:  # one read for both numbers
-                text = manager.readable_content(e)
+                text = manager_text.readable_content(e)
                 out[e.id] = (_preview(text), _word_count(text))
             if not e.is_private:
                 fresh[key] = (e.updated_at, out[e.id])
@@ -243,7 +247,7 @@ def _preview(text: str, length: int = 40) -> str:
     from tessellate.entry.properties import strip as strip_properties
 
     #: KG4: a note's properties block is never its label.
-    for line in manager.strip_bidi(strip_properties(text)).splitlines():
+    for line in manager_text.strip_bidi(strip_properties(text)).splitlines():
         words = _preview_line(line)
         if words:
             return words if len(words) <= length else words[: length - 1] + "…"
@@ -254,8 +258,8 @@ def _preview_line(line: str) -> str:
     """One line as plain words: the marker stripping `_preview` applies."""
     line = _HEADING_MD.sub("", line)
     line = _CALLOUT_MD.sub("", line)
-    line = _WIKI_LINK.sub(lambda m: manager.wiki_shown(m.group(1)), line)
-    line = manager.strip_inline_markdown(line)
+    line = _WIKI_LINK.sub(lambda m: manager_text.wiki_shown(m.group(1)), line)
+    line = manager_text.strip_inline_markdown(line)
     return " ".join(line.split())
 
 
@@ -515,67 +519,80 @@ def _add_map_edges(
     `taken` is the route's own pair ledger, passed in so a map edge cannot
     duplicate a link edge the note already had.
     """
-    from tessellate.api.routes_whiteboard import _board_settings
-    from tessellate.core.database import WhiteboardObject
-
     board_ids = {e.id for e in entries if getattr(e, "is_board", False)}
     if board_ids:
-        by_id = {n["id"]: n for n in nodes}
-        maps: set[int] = set()
-        for entry in entries:
-            if entry.id not in board_ids:
-                continue
-            board_type, _layout = _board_settings(entry)
-            node = by_id.get(entry.id)
-            if node is None:
-                continue
-            # `board` and `map` both, because the graph's own reason for
-            # marking these is that a board of any kind is not a note the
-            # way every other node here is, and a whiteboard that says so
-            # is more honest than one drawn as a note with a heading.
-            node["type"] = board_type
-            if board_type == "map":
-                maps.add(entry.id)
+        maps = _mark_board_nodes(entries, nodes, board_ids)
         if maps:
-            #: **`kind == "note"` only, and this is not a tidiness
-            #: preference.** The first version queried every
-            #: `MAP_REFERENCE_KINDS` row and filtered on `ref_id in
-            #: node_ids` afterwards, reasoning that a document/file/
-            #: bookmark id simply would not be an entry id. It is: these
-            #: are four independent autoincrement sequences, so document 1
-            #: and note 1 both exist in any notebook with one of each.
-            #: `tests/test_mindmap.py` caught it emitting `{source: 1,
-            #: target: 1}`, a map joined to *itself* through a document
-            #: node: on the second row it was ever given. An id is only
-            #: meaningful with its table, and the kind is the table.
-            rows = session.execute(
-                select(WhiteboardObject.board_id, WhiteboardObject.data).where(
-                    WhiteboardObject.board_id.in_(maps),
-                    WhiteboardObject.kind == "note",
-                )
-            )
-            for board_id, raw in rows:
-                try:
-                    ref_id = (json.loads(raw or "{}") or {}).get("ref_id")
-                except (TypeError, ValueError):
-                    # A row edited by hand, or written before `data` was
-                    # JSON. A map node nobody can read points at nothing.
-                    continue
-                # A note that has since been deleted, or a private one the
-                # caller's `entries` query never returned: an edge naming a
-                # node the client did not receive is silently dropped by
-                # d3, which is an invisible failure rather than a visible
-                # one.
-                if not isinstance(ref_id, int) or ref_id not in node_ids:
-                    continue
-                # A map that somehow points at itself is not a connection.
-                if ref_id == board_id:
-                    continue
-                pair = frozenset((board_id, ref_id))
-                if pair in taken:
-                    continue
-                taken.add(pair)
-                edges.append({"source": board_id, "target": ref_id, "kind": "map"})
+            _add_map_member_edges(session, maps, edges, node_ids, taken)
+
+
+def _mark_board_nodes(entries: list, nodes: list[dict], board_ids: set[int]) -> set[int]:
+    """Type each board's node, and return the ids of the ones that are maps."""
+    from tessellate.api.routes_whiteboard import _board_settings
+
+    by_id = {n["id"]: n for n in nodes}
+    maps: set[int] = set()
+    for entry in entries:
+        if entry.id not in board_ids:
+            continue
+        board_type, _layout = _board_settings(entry)
+        node = by_id.get(entry.id)
+        if node is None:
+            continue
+        # `board` and `map` both, because the graph's own reason for
+        # marking these is that a board of any kind is not a note the
+        # way every other node here is, and a whiteboard that says so
+        # is more honest than one drawn as a note with a heading.
+        node["type"] = board_type
+        if board_type == "map":
+            maps.add(entry.id)
+    return maps
+
+
+def _add_map_member_edges(
+    session: Session, maps: set[int], edges: list[dict], node_ids: set[int], taken: set[frozenset[int]]
+) -> None:
+    from tessellate.core.database import WhiteboardObject
+
+    #: **`kind == "note"` only, and this is not a tidiness
+    #: preference.** The first version queried every
+    #: `MAP_REFERENCE_KINDS` row and filtered on `ref_id in
+    #: node_ids` afterwards, reasoning that a document/file/
+    #: bookmark id simply would not be an entry id. It is: these
+    #: are four independent autoincrement sequences, so document 1
+    #: and note 1 both exist in any notebook with one of each.
+    #: `tests/test_mindmap.py` caught it emitting `{source: 1,
+    #: target: 1}`, a map joined to *itself* through a document
+    #: node: on the second row it was ever given. An id is only
+    #: meaningful with its table, and the kind is the table.
+    rows = session.execute(
+        select(WhiteboardObject.board_id, WhiteboardObject.data).where(
+            WhiteboardObject.board_id.in_(maps),
+            WhiteboardObject.kind == "note",
+        )
+    )
+    for board_id, raw in rows:
+        try:
+            ref_id = (json.loads(raw or "{}") or {}).get("ref_id")
+        except (TypeError, ValueError):
+            # A row edited by hand, or written before `data` was
+            # JSON. A map node nobody can read points at nothing.
+            continue
+        # A note that has since been deleted, or a private one the
+        # caller's `entries` query never returned: an edge naming a
+        # node the client did not receive is silently dropped by
+        # d3, which is an invisible failure rather than a visible
+        # one.
+        if not isinstance(ref_id, int) or ref_id not in node_ids:
+            continue
+        # A map that somehow points at itself is not a connection.
+        if ref_id == board_id:
+            continue
+        pair = frozenset((board_id, ref_id))
+        if pair in taken:
+            continue
+        taken.add(pair)
+        edges.append({"source": board_id, "target": ref_id, "kind": "map"})
 
 
 def _add_tag_nodes(nodes: list[dict], edges: list[dict]) -> None:
@@ -610,7 +627,7 @@ def _add_unresolved_nodes(
             Entry.is_deleted == False, Entry.is_private == False  # noqa: E712
         )
     ).all()
-    openings = sorted(manager.wiki_opening(content) for content, _ in live)
+    openings = sorted(manager_wiki.wiki_opening(content) for content, _ in live)
     stems = {
         (path or "").rsplit("/", 1)[-1].lower().removesuffix(".md").removesuffix(".markdown")
         for _, path in live
@@ -618,7 +635,7 @@ def _add_unresolved_nodes(
     }
     ghosts: dict[str, dict] = {}
     for entry in entries:
-        for name in manager.wiki_link_targets(manager.readable_content(entry)):
+        for name in manager_wiki.wiki_link_targets(manager_text.readable_content(entry)):
             wanted = name.strip().lower()
             at = bisect_left(openings, wanted)
             if wanted in stems or (at < len(openings) and openings[at].startswith(wanted)):
@@ -748,6 +765,8 @@ def _payload_key(session: Session, similarity: bool, include_maps: bool, include
         # A private note's label is its text while this request may read it,
         # a placeholder otherwise; a new key reads differently again.
         hashlib.blake2b(vault_key, digest_size=8).hexdigest() if vault_key else None,
+        # Which private spaces this request may not read (INBOX 1727).
+        tuple(sorted(session.info.get("sealed_workspaces") or ())),
     )
 
 
@@ -782,9 +801,11 @@ def graph(
         session=session,
     ).body
     if include_entities or include_documents or include_unresolved or include_attachments:
+        companion_events.record("graph_laid")
         return Response(content=build(), media_type="application/json")
     key = _payload_key(session, similarity, include_maps, include_tags)
     body = _cached(f"payload:{bool(similarity)}:{include_maps}:{include_tags}:{slim}", key, build)
+    companion_events.record("graph_laid")  # the graph tab drawing (a kind and a time for the desk companion, W31)
     return Response(content=body, media_type="application/json")
 
 
@@ -977,7 +998,7 @@ def _link_edges(session: Session, node_ids: set[int], taken: set[frozenset[int]]
                         "link_type": link.link_type,
                         # INBOX 693: no arrow on a link that runs both ways
                         # (its own choice, else its type's direction).
-                        "two_way": manager.is_two_way_link(link.two_way, link.link_type, types),
+                        "two_way": manager_links.is_two_way_link(link.two_way, link.link_type, types),
                     }
                 )
                 #: KG3: a typed link carries its name and inverse, for the
@@ -987,6 +1008,23 @@ def _link_edges(session: Session, node_ids: set[int], taken: set[frozenset[int]]
                     edges[-1]["type_name"] = kind["name"]
                     edges[-1]["type_inverse"] = kind["inverse"]
     return edges
+
+
+def _add_sealed_link_nodes(session: Session, nodes: list[dict], edges: list[dict], node_ids: set[int]) -> None:
+    """INBOX 1727: a link from a note here to one in a locked private space
+    draws "A private note" at its far end, with no title, reason or id to
+    open; the note's own node is out of this read."""
+    far = {}
+    for link in relations_repo.columns(session):
+        ends = (link.source_entry_id, link.target_entry_id)
+        if (ends[0] in node_ids) != (ends[1] in node_ids):
+            near, other = ends if ends[0] in node_ids else ends[::-1]
+            far.setdefault(other, set()).add(near)
+    stand_ins = manager.sealed_stand_ins(session, set(far))
+    for other in sorted(stand_ins):
+        key = f"private:{other}"
+        nodes.append({"id": key, "type": "private", "preview": manager.PRIVATE_SPACE_NOTE, "category": "Private"})
+        edges.extend({"source": near, "target": key, "kind": "link"} for near in sorted(far[other]))
 
 
 def _thread_edges(entries: list, node_ids: set[int], taken: set[frozenset[int]]) -> list[dict]:
@@ -1121,6 +1159,7 @@ def _build_graph(
         "attachments": include_attachments,
     }
     _add_optional_layers(session, entries, nodes, edges, node_ids, taken, flags)
+    _add_sealed_link_nodes(session, nodes, edges, node_ids)
     #: A type's own colour, so "Note type" paints a Person the colour the
     #: person gave Person rather than the next one in the scheme.
     type_colours = {row.name: row.colour for row in session.scalars(select(NoteType)) if row.colour}
@@ -1174,19 +1213,22 @@ _NOTE_DEFAULTS = {
 _LINK_DEFAULTS = ("reason", "reason_confidence", "link_type")
 
 
+def _slim_note(node: dict) -> None:
+    for key, default in _NOTE_DEFAULTS.items():
+        if key in node and node[key] == default and type(node[key]) is type(default):
+            del node[key]
+    for key in ("created_at", "updated_at", "edited_at"):
+        if isinstance(node.get(key), str) and "." in node[key]:
+            head, _, tail = node[key].partition(".")
+            node[key] = head + tail.lstrip("0123456789")
+    if isinstance(node.get("centrality"), float):
+        node["centrality"] = float(f"{node['centrality']:.6g}")
+
+
 def _slim(nodes: list[dict], edges: list[dict]) -> None:
     for node in nodes:
-        if node.get("kind") != "note":
-            continue
-        for key, default in _NOTE_DEFAULTS.items():
-            if key in node and node[key] == default and type(node[key]) is type(default):
-                del node[key]
-        for key in ("created_at", "updated_at", "edited_at"):
-            if isinstance(node.get(key), str) and "." in node[key]:
-                head, _, tail = node[key].partition(".")
-                node[key] = head + tail.lstrip("0123456789")
-        if isinstance(node.get("centrality"), float):
-            node["centrality"] = float(f"{node['centrality']:.6g}")
+        if node.get("kind") == "note":
+            _slim_note(node)
     for edge in edges:
         if edge.get("kind") == "link":
             for key in _LINK_DEFAULTS:
@@ -1247,30 +1289,30 @@ def _local_topology(session: Session, similarity: bool) -> tuple[paths.Connectio
     return _cached(f"local_topology_{use_similarity}", key, build)
 
 
-@router.get("/graph/local/{entry_id}")
-def graph_local(
-    entry_id: int,
-    # Unbounded before this: `?depth=999999999` ran the BFS loop below that
-    # many times on a bare Python range(), no per-note work once the
-    # frontier empties, but the loop itself still costs real wall-clock time
-    # per iteration, and this server is single-worker (deps.py), so it stalls
-    # every other request for however long that takes. 6 hops covers any
-    # notebook a "local neighbourhood" view is meant for; Focus Mode never
-    # asks for more than 2-3 today.
-    depth: int = Query(default=2, ge=1, le=6),
-    similarity: bool = False,
-    # GRAPH_PLAN 514 (1), Obsidian's local graph switches: follow links into
-    # the note, out of it, and draw the lines between notes at one distance.
-    incoming: bool = True,
-    outgoing: bool = True,
-    neighbours: bool = True,
-    session: Session = Depends(get_session)
-) -> dict:
-    """Focus Mode API: Gets the local neighborhood up to N degrees."""
-    index, directed, _with_similarity = _local_topology(session, similarity)
+def _ring_edges(index: paths.Connections, oriented, distance: dict[int, int], taken: set) -> list[dict]:
+    """The lines between notes at one distance that the walk never crossed (two notes on the outer ring),
+    whichever way they run."""
+    found = []
+    for n in set(distance):
+        for neighbor, step in index.neighbours(n).items():
+            pair = frozenset((n, neighbor))
+            if neighbor in distance and pair not in taken and distance[n] == distance[neighbor]:
+                taken.add(pair)
+                ends = oriented(n, neighbor, step.kind)
+                found.append({"source": ends[0], "target": ends[1], "kind": step.kind})
+    return found
 
-    if entry_id not in index.entries:
-        raise HTTPException(status_code=404, detail="No such note.")
+
+def _local_walk(
+    index: paths.Connections,
+    directed: dict,
+    entry_id: int,
+    depth: int,
+    incoming: bool,
+    outgoing: bool,
+    neighbours: bool,
+) -> tuple[dict[int, int], list[dict]]:
+    """The local graph's walk: each reachable note's distance from `entry_id`, and the edges drawn."""
 
     def oriented(a: int, b: int, kind: str) -> tuple[int, int]:
         if kind not in ("link", "thread"):
@@ -1306,19 +1348,40 @@ def graph_local(
         if not queue:
             break  # nothing left to expand, further iterations would be no-ops
 
-    visited = set(distance)
     if neighbours:
-        # The lines between notes at one distance that the walk never crossed
-        # (two notes on the outer ring), whichever way they run.
-        for n in visited:
-            for neighbor, step in index.neighbours(n).items():
-                pair = frozenset((n, neighbor))
-                if neighbor in visited and pair not in taken and distance[n] == distance[neighbor]:
-                    taken.add(pair)
-                    ends = oriented(n, neighbor, step.kind)
-                    edges.append({"source": ends[0], "target": ends[1], "kind": step.kind})
+        edges += _ring_edges(index, oriented, distance, taken)
     else:
         edges = [e for e in edges if distance[e["source"]] != distance[e["target"]]]
+    return distance, edges
+
+
+@router.get("/graph/local/{entry_id}")
+def graph_local(
+    entry_id: int,
+    # Unbounded before this: `?depth=999999999` ran the BFS loop below that
+    # many times on a bare Python range(), no per-note work once the
+    # frontier empties, but the loop itself still costs real wall-clock time
+    # per iteration, and this server is single-worker (deps.py), so it stalls
+    # every other request for however long that takes. 6 hops covers any
+    # notebook a "local neighbourhood" view is meant for; Focus Mode never
+    # asks for more than 2-3 today.
+    depth: int = Query(default=2, ge=1, le=6),
+    similarity: bool = False,
+    # GRAPH_PLAN 514 (1), Obsidian's local graph switches: follow links into
+    # the note, out of it, and draw the lines between notes at one distance.
+    incoming: bool = True,
+    outgoing: bool = True,
+    neighbours: bool = True,
+    session: Session = Depends(get_session)
+) -> dict:
+    """Focus Mode API: Gets the local neighborhood up to N degrees."""
+    index, directed, _with_similarity = _local_topology(session, similarity)
+
+    if entry_id not in index.entries:
+        raise HTTPException(status_code=404, detail="No such note.")
+
+    distance, edges = _local_walk(index, directed, entry_id, depth, incoming, outgoing, neighbours)
+    visited = set(distance)
 
     # The only notes read in full: the ones drawn (the index holds columns,
     # not text).
@@ -1475,7 +1538,7 @@ def _extractive_summary(session: Session, rows: list, readable: list, terms: lis
     if readable:
         index = paths.build_light(session)
         ranked = sorted(readable, key=lambda e: (-paths.degree(index, e.id), e.id))
-        leads = [manager.plain_label(e.content, 60) for e in ranked[:2]]
+        leads = [manager_text.plain_label(e.content, 60) for e in ranked[:2]]
     return topic_finder.extractive_sentence(
         len(rows), terms, min(stamps) if stamps else None, max(stamps) if stamps else None, leads
     )
@@ -1509,7 +1572,7 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
         return {"summary": _extractive_summary(session, rows, readable, body.terms), "source": "terms", "cached": False}
     lines = []
     for entry in readable[: topic_finder.SUMMARY_NOTES]:
-        text = " ".join(manager.readable_content(entry).split())
+        text = " ".join(manager_text.readable_content(entry).split())
         lines.append(f"- {text[: topic_finder.SUMMARY_CHARS]}")
     hint = f"They share: {', '.join(body.terms[:5])}.\n" if body.terms else ""
     try:
@@ -1520,7 +1583,8 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
                 {"role": "user", "content": f"{hint}The notes:\n" + "\n".join(lines)},
             ],
         )
-        summary = " ".join(str(reply.get("content") or "").split()).strip("\"' ")
+        # Small local models write `&#39;` and `&amp;` (B71, Qwen2.5-1.5B): shown as the characters meant.
+        summary = " ".join(html.unescape(str(reply.get("content") or "")).split()).strip("\"' ")
     except Exception:  # noqa: BLE001  # any model failure reads as "no model"
         summary = ""
     if not summary:
@@ -1550,7 +1614,7 @@ def _build_topics(session: Session) -> dict:
         if entry.is_private:
             continue
         terms = {("tag", tag.lower()) for tag in _tags_of(entry)}
-        titles[entry.id] = manager.plain_label(entry.content, 80)
+        titles[entry.id] = manager_text.plain_label(entry.content, 80)
         for word in _TITLE_WORD.findall(titles[entry.id].lower()):
             if word not in STOPWORDS:
                 terms.add(("word", word))
@@ -1651,27 +1715,9 @@ def graph_path(
         extra_edges = _similarity_edges(session, node_ids, set())
 
     index = paths.build(session, extra_edges=extra_edges)
-    missing = [
-        note_id for note_id in (source, target) if note_id not in index.entries
-    ]
-    if missing:
-        return {
-            "found": False,
-            "source": source,
-            "target": target,
-            "reason": (
-                "That note isn't in the map, it may have been deleted."
-                if len(missing) == 1
-                else "Neither note is in the map."
-            ),
-        }
-    if source == target:
-        return {
-            "found": False,
-            "source": source,
-            "target": target,
-            "reason": "Those are the same note.",
-        }
+    refused = _path_refusal(index, source, target)
+    if refused:
+        return {"found": False, "source": source, "target": target, "reason": refused}
 
     #: Asked for directly: "allow for multiple paths to be displayed if they
     #: exist." `find_many`'s first entry *is* `find`'s answer: they share one
@@ -1682,34 +1728,11 @@ def graph_path(
     chains = paths.find_many(index, source, target, limit=wanted)
     chain = chains[0] if chains else None
     if chain is None:
-        ends = [
-            (note_id, paths.degree(index, note_id)) for note_id in (source, target)
-        ]
-        lonely = [note_id for note_id, count in ends if count == 0]
-        if lonely:
-            reason = (
-                "Neither note is connected to anything yet."
-                if len(lonely) == 2
-                else "One of these notes isn't connected to anything yet."
-            )
-        else:
-            reason = (
-                "They're both connected to other notes, but there's no route "
-                f"between them within {paths.MAX_PATH_HOPS} steps."
-            )
-        if index.hub_tags:
-            # Said plainly, because otherwise this reads as a wrong answer: the
-            # two notes may well share a tag and still get "no path" back.
-            listed = ", ".join("#" + tag for tag in index.hub_tags[:3])
-            reason += (
-                f" Tags on more than {paths.HUB_TAG_NOTES} notes ({listed}) are "
-                "treated as filing rather than as a connection."
-            )
         return {
             "found": False,
             "source": source,
             "target": target,
-            "reason": reason,
+            "reason": _no_route_reason(index, source, target),
         }
 
     #: Every note on *any* of the routes, named once. `bulk_category_names` is
@@ -1764,6 +1787,43 @@ def graph_path(
     }
 
 
+def _path_refusal(index: paths.Connections, source: int, target: int) -> str | None:
+    """Why a path is not even asked for: an end is not in the map, or both ends are one note."""
+    missing = [note_id for note_id in (source, target) if note_id not in index.entries]
+    if missing:
+        return (
+            "That note isn't in the map, it may have been deleted."
+            if len(missing) == 1
+            else "Neither note is in the map."
+        )
+    return "Those are the same note." if source == target else None
+
+
+def _no_route_reason(index: paths.Connections, source: int, target: int) -> str:
+    """Why two notes in the map have no route between them, so "no" says what to do about it."""
+    lonely = [note_id for note_id in (source, target) if paths.degree(index, note_id) == 0]
+    if lonely:
+        reason = (
+            "Neither note is connected to anything yet."
+            if len(lonely) == 2
+            else "One of these notes isn't connected to anything yet."
+        )
+    else:
+        reason = (
+            "They're both connected to other notes, but there's no route "
+            f"between them within {paths.MAX_PATH_HOPS} steps."
+        )
+    if index.hub_tags:
+        # Said plainly, because otherwise this reads as a wrong answer: the
+        # two notes may well share a tag and still get "no path" back.
+        listed = ", ".join("#" + tag for tag in index.hub_tags[:3])
+        reason += (
+            f" Tags on more than {paths.HUB_TAG_NOTES} notes ({listed}) are "
+            "treated as filing rather than as a connection."
+        )
+    return reason
+
+
 def _hop_reasons(session: Session, index: paths.Connections, pairs: list[tuple[int, int]]) -> dict:
     """GRAPH_PLAN KG8: every structural reason each hop's two notes relate,
     beside the edge the route took (`relations.explain_pair`, the sentences
@@ -1780,7 +1840,7 @@ def _hop_reasons(session: Session, index: paths.Connections, pairs: list[tuple[i
         return {}
     notes = {
         node: relations.NoteFacts(
-            label=manager.plain_label(entry.content, 40) or "Untitled note",
+            label=manager_text.plain_label(entry.content, 40) or "Untitled note",
             tags=frozenset(tag.lower() for tag in _tags_of(entry)),
         )
         for node, entry in readable.items()

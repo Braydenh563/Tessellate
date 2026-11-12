@@ -118,6 +118,15 @@ def test_an_unknown_id_is_still_a_failure():
     assert extras.install_blocking(["no-such-extra"]) == 1
 
 
+def test_a_failed_install_says_why_on_stderr(capsys):
+    """The packaged wizard's stderr is the data folder's desktop-stdio.log:
+    a failure that only went to the logger left that file empty, so the
+    package check (and a support bundle) showed "exited 1" and no reason."""
+    assert extras.install_blocking(["no-such-extra"]) == 1
+    err = capsys.readouterr().err
+    assert "no-such-extra" in err and "not installed" in err
+
+
 # --- the Documents box -----------------------------------------------------
 
 

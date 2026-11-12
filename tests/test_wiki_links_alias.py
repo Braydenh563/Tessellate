@@ -11,7 +11,8 @@ readers, three answers for the same text.
 
 from __future__ import annotations
 
-from tessellate.entry import manager
+from tessellate.entry import manager_wiki
+from tessellate.entry import manager_text
 
 
 def _note(client, content):
@@ -25,17 +26,17 @@ def _document(client, title, content=""):
 
 
 def test_the_target_is_the_part_before_the_bar():
-    assert manager.wiki_link_targets("see [[bread proving|the dough note]]") == ["bread proving"]
+    assert manager_wiki.wiki_link_targets("see [[bread proving|the dough note]]") == ["bread proving"]
 
 
 def test_a_target_named_with_and_without_an_alias_is_one_target():
-    found = manager.wiki_link_targets("[[bread]] then [[Bread|loaf]] then [[bread | toast]]")
+    found = manager_wiki.wiki_link_targets("[[bread]] then [[Bread|loaf]] then [[bread | toast]]")
     assert found == ["bread"]
 
 
 def test_an_empty_target_or_an_empty_alias_is_handled():
-    assert manager.wiki_link_targets("[[|only shown]]") == []
-    assert manager.wiki_link_targets("[[bread|]]") == ["bread"]
+    assert manager_wiki.wiki_link_targets("[[|only shown]]") == []
+    assert manager_wiki.wiki_link_targets("[[bread|]]") == ["bread"]
 
 
 def test_an_aliased_link_creates_a_real_link(client):
@@ -47,7 +48,7 @@ def test_an_aliased_link_creates_a_real_link(client):
 
 def test_find_by_wiki_name_reads_an_alias_the_same_way(client, session):
     target = _note(client, "kayaking trip in March")
-    found = manager.find_by_wiki_name(session, "kayaking trip|the paddle")
+    found = manager_wiki.find_by_wiki_name(session, "kayaking trip|the paddle")
     assert found is not None and found.id == target["id"]
 
 
@@ -67,17 +68,17 @@ def test_a_note_reference_row_says_links_to_it_for_an_aliased_link(client):
 
 
 def test_links_to_reads_the_target_only():
-    from tessellate.api import routes_entries
+    from tessellate.api import routes_entries_refs
 
-    assert routes_entries._links_to("x [[The roof quote|the builder]]", "the roof quote")
-    assert not routes_entries._links_to("x [[The roof quote and more|y]]", "the roof quote")
+    assert routes_entries_refs._links_to("x [[The roof quote|the builder]]", "the roof quote")
+    assert not routes_entries_refs._links_to("x [[The roof quote and more|y]]", "the roof quote")
 
 
 def test_the_shown_part_is_what_a_label_reads():
-    assert manager.plain_label("see [[Bread proving|the dough note]] today") == "see the dough note today"
-    assert manager.plain_label("[[Roadmap]] first") == "Roadmap first"
-    assert manager.wiki_plain("a [[A|B]] and [[C]]") == "a B and C"
-    assert manager.wiki_plain("[[A|]]") == "A"
+    assert manager_text.plain_label("see [[Bread proving|the dough note]] today") == "see the dough note today"
+    assert manager_text.plain_label("[[Roadmap]] first") == "Roadmap first"
+    assert manager_text.wiki_plain("a [[A|B]] and [[C]]") == "a B and C"
+    assert manager_text.wiki_plain("[[A|]]") == "A"
 
 
 def test_previews_show_the_shown_text():

@@ -171,7 +171,7 @@ def test_new_board_and_new_mind_map_wait_for_the_boards_code(kind, button):
     source = (JS / "library.js").read_text(encoding="utf-8")
     start = source.index(f"  {kind}: {{\n")
     row = source[start : source.index("\n  },", start)]
-    wait = row.find('await ensureModule("library")')
+    wait = row.find('await ensureModule("boards")')
     press = row.find(button)
     assert 0 <= wait < press, row
 
@@ -210,8 +210,9 @@ def test_a_press_on_a_boards_button_from_outside_waits_for_the_boards_code():
     library.js alone, so a `$("wb-...").click()` from a file outside the
     boards' bundle reached a button with no listener on a first visit and did
     nothing. v0.3.32 loaded the whole bundle with the tab and these worked.
-    Every such press waits for `ensureModule("library")` in the lines before
-    it."""
+    Every such press waits for `ensureModule("boards")` in the lines before
+    it. Since D22 (2026-11-11) that is the `boards` bundle, which carries the
+    whiteboard files; `library` no longer does."""
     bundle = {
         "documents.js", "documents-code.js", "documents-prose.js", "margin-reader.js",
         "whiteboard.js", "whiteboard-map.js", "whiteboard-library.js", "whiteboard-commands.js",
@@ -226,6 +227,6 @@ def test_a_press_on_a_boards_button_from_outside_waits_for_the_boards_code():
         for i, line in enumerate(lines):
             if '$("wb-boards-new' in line and ".click()" in line:
                 before = "\n".join(lines[max(0, i - 6) : i])
-                if 'ensureModule("library")' not in before:
+                if 'ensureModule("boards")' not in before:
                     offenders.append(f"{path.name}:{i + 1}")
     assert not offenders, offenders

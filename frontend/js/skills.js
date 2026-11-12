@@ -42,10 +42,6 @@ let editingSkillName = null;
 
 // Steps and inputs are edited as one-per-line text, which is the shape people
 // already write a list in. An input is "name" or "name: the question to ask".
-function stepsToText(steps) {
-  return (steps || []).join("\n");
-}
-
 function inputsToText(inputs) {
   return (inputs || [])
     .map((item) => (item.label && item.label !== `${item.name}?` ? `${item.name}: ${item.label}` : item.name))
@@ -60,7 +56,7 @@ function startEditingSkill(skill) {
   $("skill-name").value = skill.name;
   $("skill-prompt").value = skill.prompt;
   $("skill-description").value = skill.description || "";
-  $("skill-steps").value = stepsToText(skill.steps);
+  $("skill-steps").value = (skill.steps || []).join("\n");
   $("skill-inputs").value = inputsToText(skill.inputs);
   renderSkillToolPicker(skill.tools || []);
   renderSkillVerifyPicker(skill.verify || null);
@@ -363,6 +359,10 @@ async function loadChatSkills() {
   trigger.addEventListener("click", () => {
     // Runs before the toggle below, so "true" here means it is closing.
     if (trigger.getAttribute("aria-expanded") === "true") return;
+    //: Filled from the cache first, so the list and its "Greyed skills" note
+    //: are right as the menu opens; the fetch then refills it (the owner,
+    //: 2026-11-12: the note took a second to appear).
+    fillSkillSelect(select);
     loadSkills().then(() => fillSkillSelect(select));
   });
   buildSkillsPanel(box, label, select, run, trigger);
@@ -380,6 +380,7 @@ function fillSkillSelect(select) {
 
   //: "Edits notes" is a group, not a suffix: a suffix wrapped long names onto two lines.
   const groups = {};
+  let blocked = 0;
   for (const skill of allSkills()) (groups[`${skill.builtin ? "Built-in" : "Yours"}, ${skill.changes ? "edits notes" : "read only"}`] ||= []).push(skill);
   for (const [key, list] of Object.entries(groups).sort()) {
     const group = document.createElement("optgroup");
@@ -394,8 +395,9 @@ function fillSkillSelect(select) {
       //: notes says so and waits; the ones it runs stay open.
       if (aiIsOff() && !skill.composer) {
         option.textContent += "  (needs a model)";
-        option.title = "Needs a model: this skill writes in its own words. Connect one in Settings, Models.";
+        option.title = "Unavailable while no model is connected: this skill writes in its own words. Connect one in Settings, Models.";
         option.disabled = true;
+        blocked += 1;
       } else if (skill.needs_larger_model) {
         option.textContent += "  (needs a larger model)";
         option.title = skill.needs_larger_model;
@@ -418,6 +420,8 @@ function fillSkillSelect(select) {
   select.appendChild(manageGroup);
 
   if ([...select.options].some((option) => option.value === chosen)) select.value = chosen;
+  //: Each open refills the list, so the note under it follows (INBOX 1780).
+  select.closest(".chat-skills-panel")?.querySelector(".chat-skills-note")?.classList.toggle("hidden", !blocked);
 }
 
 //: The Skills menu around the select: built once per `loadChatSkills`.
@@ -452,7 +456,11 @@ function buildSkillsPanel(box, label, select, run, trigger) {
   runRow.className = "chat-skills-run";
   runRow.appendChild(run);
 
-  panel.append(pickRow, paceRow, runRow);
+  const note = document.createElement("p");
+  note.className = "muted small chat-skills-note hidden";
+  note.textContent = "Greyed skills need a model.";
+
+  panel.append(pickRow, note, paceRow, runRow);
 
   //: `refocus`: Escape or Run, with the focus inside, hands it back to the
   //: trigger; hidden with the focus in it, it fell to the page (WCAG 2.4.3).
@@ -741,95 +749,6 @@ async function saveSkillList(skills) {
   await loadSkills();
   renderSkillSettings();
   loadChatSkills();
-}
-
-function skillRow(skill) {
-  const li = document.createElement("li");
-  const row = document.createElement("div");
-  row.className = "entry-meta skill-row";
-  //: A title, a label and facts, not six pills of one weight (owner: "there
-  //: is still missing distinguishing between titles that used to be
-  //: badges"). The recipe is `.item-title`, `.item-label` and `.item-fact`
-  //: in 08-consistency.css, shared with the personas.
-  row.appendChild(chip(skill.name, "item-title"));
-  if (skill.builtin) row.appendChild(chip("Built-in", "item-label"));
-  if (skill.folder) {
-    const from = chip("From the skills folder", "item-label");
-    from.title = `The file ${skill.file}; edit or delete it there`;
-    row.appendChild(from);
-  }
-  if (skill.changes) row.appendChild(chip("ph:pencil-simple Changes notes", "item-fact item-writes"));
-  if (skill.needs_larger_model) {
-    const larger = chip("Needs a larger model", "item-fact");
-    larger.title = skill.needs_larger_model;
-    row.appendChild(larger);
-  }
-  if ((skill.steps || []).length) {
-    row.appendChild(chip(nounCount(skill.steps.length, "step"), "item-fact"));
-  }
-  if ((skill.tools || []).length) {
-    row.appendChild(chip(`${skill.tools.length} tools`, "item-fact"));
-  }
-  for (const item of skill.inputs || []) row.appendChild(chip(`Asks for ${item.name}`, "item-fact"));
-  // Its own class, not `persona-preview`. That one is `white-space: nowrap`
-  // with an ellipsis, which is right for a persona (one line of voice) and
-  // wrong here: a skill's description is the only thing that says what it
-  // *does*, and clipping it to the width left over after five chips showed
-  // three words. Reported twice. It wraps onto its own line now.
-  const note = document.createElement("span");
-  note.className = "muted skill-blurb";
-  note.textContent = skill.description || skill.prompt;
-  row.appendChild(note);
-  if (!skill.builtin && !skill.folder) {
-    const actions = document.createElement("span");
-    actions.className = "entry-actions";
-    actions.appendChild(
-      smallButton("Edit", "Edit this skill", () => startEditingSkill(skill))
-    );
-    actions.appendChild(
-      smallButton("Delete", "Remove this skill", async () => {
-        if (!(await confirmDialog(`Delete the “${skill.name}” skill?`))) return;
-        await saveSkillList(customSkills().filter((s) => s.name !== skill.name));
-      })
-    );
-    li.append(row, actions);
-  } else {
-    li.appendChild(row);
-  }
-  return li;
-}
-
-async function renderSkillSettings() {
-  const list = $("skill-list");
-  showSkeletons(list, 3, "li");
-  try {
-    await loadSkills();
-  } finally {
-    clearSkeletons(list);
-  }
-  list.replaceChildren();
-  for (const skill of allSkills()) list.appendChild(skillRow(skill));
-  $("skills-count").textContent = String(allSkills().length);
-  renderSkillFolderLine();
-  if (!$("skill-tool-list").children.length) renderSkillToolPicker([]);
-  if (!$("skill-verify-tool").children.length) renderSkillVerifyPicker(null);
-}
-
-//: Where the skills folder is and which of its files did not load (B8): a file
-//: that is not in the list says why here rather than being silently absent.
-function renderSkillFolderLine() {
-  const line = $("skill-folder-line");
-  if (!line) return;
-  const folder = skillsState.folder || {};
-  line.textContent = folder.path
-    ? `Skills folder: ${folder.path}. A Markdown file saved there is listed here without a restart.`
-    : "";
-  for (const problem of folder.problems || []) {
-    const item = document.createElement("span");
-    item.className = "skill-folder-problem";
-    item.textContent = problem.file ? `${problem.file}: ${problem.message}.` : `${problem.message}.`;
-    line.append(document.createElement("br"), item);
-  }
 }
 
 // --- Wave M: share skills/personas as JSON ------------------------------------------

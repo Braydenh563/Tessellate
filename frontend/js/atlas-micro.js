@@ -89,6 +89,9 @@ function atlasMicroMay(box) {
   if (!box.isConnected || !buddy || document.hidden || document.documentElement.hasAttribute("data-atlas-hidden") || !atlasMotionOK(box)) return false;
   if (box.classList.contains("atl-off") || nameMarkBuddyMenuOpen() || /^(lie|curl)/.test(buddy.dataset.pose || "")) return false;
   for (const c of buddy.classList) if (c.startsWith("nmb-act-") || c === "nmb-sleep" || c === "nmb-walking" || c === "nm-buddy-dragging") return false;
+  //: Not at rest (owner decision Q10): a glance or a tilt on an SVG head is ten to thirty layouts, and two seconds from
+  //: the last input the drawn loops stop (`atlasTailCalm.rest`, atlas-life.js); the clock goes on, the next input ends the rest.
+  if (globalThis.atlasTailCalm?.rest.on) return false;
   return true;
 }
 //: Plays `frames` on `el`, in place of whatever else moves that property
@@ -202,6 +205,13 @@ atlasMicroDo.rare = function (kind, box, sign) {
     const sink = (y) => ({ translate: `0px ${y}px` });
     atlasMicroPlay(box.querySelector(".atl-lw-body"), [sink(0), { ...sink(0.9), offset: 0.45 }, { ...sink(0.9), offset: 0.6 }, sink(0)], 2200 + Math.random() * 600);
   }
+};
+//: The breath let out after a startle: the shoulders sink two pixels over about a second and a half and come
+//: back, deeper than the rare settle and not rationed by it; skipped if the figure has begun something else.
+atlasMicroDo.exhale = function (box) {
+  if (!box || !atlasMicroMay(box)) return;
+  const sink = (y) => ({ translate: `0px ${y}px` });
+  atlasMicroPlay(box.querySelector(".atl-lw-body"), [sink(0), { ...sink(2), offset: 0.4 }, { ...sink(2), offset: 0.55 }, sink(0)], 1500);
 };
 function atlasMicroDo(kind, box) {
   const sign = Math.random() < 0.5 ? -1 : 1;

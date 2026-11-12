@@ -12,6 +12,7 @@ the desktop and the phone, is `scratchpad/ui-sweeps/throw.js`.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import re
 import shutil
@@ -19,12 +20,16 @@ import subprocess
 
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 import pytest
+
+from tests.test_companion_landing_1683k import landing_js
 
 ROOT = Path(__file__).resolve().parents[1]
 #: The companion's code: the throw itself moved to the lazy companion-throw.js (INBOX 1301 D6).
-AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-throw.js"))
-HELP = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8")) for n in ("avatars.js", "companion-throw.js"))
+HELP = help_more_text()
 
 
 def _fn(name: str) -> str:
@@ -35,12 +40,13 @@ def _fn(name: str) -> str:
 def _run(body: str):
     consts = re.search(r"^const NMB_THROW = .*;$", AV, re.M).group(0)
     src = "\n".join(_fn(n) for n in ("nameMarkBuddyReleaseVelocity", "nameMarkBuddyFlightStep", "nameMarkBuddyThrowFeel"))
+    src = landing_js(AV) + "\n" + src  # INBOX 1683 k: the step lands by outcome (companion-throw.js)
     world = "const W = { left: 0, right: 1376, top: 48, floor: 780, ledges: [] };"
     fly = (
         "function fly(vx, vy, x = 200, y = 400, world = W, k = NMB_THROW) {"
         " let s = { x, y, vx, vy, rot: 0, t: 0, on: null, rest: false }; let steps = 0; let peak = 0; let bounces = 0; let walls = 0;"
         " while (!s.rest && steps < 500) { const was = s.vx; s = nameMarkBuddyFlightStep(s, 16, world, k); steps += 1;"
-        " peak = Math.max(peak, Math.abs(s.rot)); if (s.hit > 0.35) bounces += 1; if (Math.sign(was) !== Math.sign(s.vx) && was) walls += 1; }"
+        " if (!s.roll) peak = Math.max(peak, Math.abs(s.rot)); if (s.hit > 0.35) bounces += 1; if (Math.sign(was) !== Math.sign(s.vx) && was) walls += 1; }"
         " return { x: Math.round(s.x), y: Math.round(s.y), t: s.t, on: s.on === 'floor' ? 'floor' : s.on ? 'ledge' : null, rot: Math.round(s.rot), peak: Math.round(peak), bounces, walls }; }"
     )
     script = "\n".join([consts, src, world, fly, f"console.log(JSON.stringify({body}));"])
@@ -129,7 +135,7 @@ def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> Non
     # place, drawn by `nameMarkBuddyPut` (a transform) and a rotate.
     assert throw.count("requestAnimationFrame(") == 1
     assert "Math.min(32, Math.max(0, now - then))" in throw
-    assert "nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y));" in throw
+    assert "nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y + (s.sink || 0)));" in throw  # INBOX 1683 k: a body lying down is drawn on the floor, not above it
     assert ".style.left" not in throw and ".style.top" not in throw
     # Reduce motion: the same flight worked out at once, then a crossfade.
     assert "const still = nameMarkBuddyNoTravel();" in _fn("companionThrowPlan") and "if (plan.still) {" in throw

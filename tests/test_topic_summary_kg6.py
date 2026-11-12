@@ -124,3 +124,13 @@ def test_the_extractive_sentence_is_pure_and_names_only_what_the_notes_hold():
     assert topics.extractive_sentence(1, [], a, a, []) == (
         "1 notes that link to each other more than to the rest. Written 2026-03-01."
     )
+
+
+def test_html_entities_in_the_models_sentence_are_read_as_their_characters(client, monkeypatch):
+    """B71 on Qwen2.5-1.5B wrote `&#39;` and `&amp;` into the topic sentence; the person sees the characters."""
+    monkeypatch.setattr(deps, "get_ollama", _Ollama)
+    monkeypatch.setattr(deps, "get_model_manager", _Models)
+    monkeypatch.setattr(_Ollama, "reply", "Sam&#39;s glaze tests &amp; kiln logs.")
+    ids = _notes(client, "# Glaze C\n\ntenmoku", "# Glaze D\n\nash", "# Kiln two\n\ncone 10")
+    answered = _ask(client, ids)
+    assert answered.json()["summary"] == "Sam's glaze tests & kiln logs."

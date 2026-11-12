@@ -9,6 +9,7 @@ import re
 import pytest
 
 import tests._seed_1031c as seed_c
+from tests._consent import confirmed
 
 @pytest.fixture(autouse=True)
 def _a_fixed_day(monkeypatch):
@@ -276,9 +277,9 @@ def test_a_note_name_no_title_holds_falls_to_the_search(notebook, question):
     ("Snowed all morning.", "it snowed all morning."),
 ])
 def test_a_weather_verb_takes_it_not_you(line, said):
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    assert composer_digest._second_person(line) == said
+    assert composer_digest_sentences._second_person(line) == said
 
 
 @pytest.mark.parametrize("question", [
@@ -358,7 +359,8 @@ def test_when_did_i_leads_with_the_sentence_that_says_the_doing(notebook, questi
 @pytest.mark.parametrize("question", ["how long do I bake banana bread", "how long should I bake banana bread", "how long does banana bread bake"])
 def test_how_long_leads_with_the_length(notebook, question):
     said, _ = notebook(question)
-    assert said.lstrip().startswith("Bake at 175C for 55 minutes"), said
+    #: The voice pass (F7) names the source first ("Your notes say 55 minutes, in ..."); the length still leads.
+    assert "55 minutes" in said.lstrip().split(",")[0] and "Bake at 175C for 55 minutes" in said, said
 
 
 @pytest.mark.parametrize("word, stem", [("baked", "bake"), ("liked", "like"), ("named", "name"), ("hoped", "hope"), ("hated", "hate")])
@@ -431,9 +433,9 @@ def test_the_opening_count_and_the_times_line_agree(notebook, question):
     said, _ = notebook(question)
     words = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
     opening = re.search(r"\b(?:have|are|is|there are)?\s*(one|two|three|four|five|six|seven|eight|nine|ten) notes? about", said, re.I)
-    times = re.search(r"written about \w+ (\d+) times", said)
+    times = re.search(r"\w+ has come up (\w+) times", said)
     if opening and times:
-        assert words[opening.group(1).lower()] == int(times.group(1)), said
+        assert words[opening.group(1).lower()] == words[times.group(1).lower()], said
 
 
 # INBOX 1495. A Japanese line is never "1 word"; a long line is named by a short form; the head's dot.
@@ -475,7 +477,7 @@ def test_the_greeting_names_a_japanese_note_by_a_short_form(client, session, mon
 
     session.add(Entry(content="考え：仕事を済ませてから、練習としてゴルフを数球打った（笑）", created_at=seed_c.NOW))
     session.commit()
-    said = seed_c.asker(client, monkeypatch)("hey")[0]
+    said = seed_c.asker(client, monkeypatch)("hello")[0]
     assert "考え：仕事を済ませてから…" in said and "ゴルフ" not in said, said
 
 
@@ -689,15 +691,16 @@ def test_a_quoted_line_keeps_the_note_s_own_words_and_gives_the_date_outside(not
     said, _ = notebook(question)
     assert "“Tuesday 5 km easy. Saturday 3 October long run”" not in said, said
     if "Saturday long run" in said:
-        assert "“Tuesday 5 km easy. Saturday long run”, the Saturday being 3 October" in said, said
+        #: A quote is verbatim and contiguous (bt-compcomp-1109 item 4): "Thursday intervals" sits between the two, so each is quoted alone.
+        assert "“Tuesday 5 km easy. Saturday long run”" not in said and "“Saturday long run”, the Saturday being 3 October" in said, said
 
 
 def test_a_pinned_weekday_leaves_the_quotation_and_is_said_after_it():
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_lines
 
-    assert composer_digest._unpinned("Tuesday 5 km easy. Saturday 3 October long run") == (
+    assert composer_digest_lines._unpinned("Tuesday 5 km easy. Saturday 3 October long run") == (
         "Tuesday 5 km easy. Saturday long run", ", the Saturday being 3 October")
-    assert composer_digest._unpinned("Bake on Sunday") == ("Bake on Sunday", "")
+    assert composer_digest_lines._unpinned("Bake on Sunday") == ("Bake on Sunday", "")
 
 
 @pytest.mark.parametrize("question", ["when did I last run", "when did I run", "what day did I last run"])
@@ -716,9 +719,9 @@ def test_a_day_is_said_once_in_a_when_answer(notebook, question):
 def test_a_fact_that_names_the_day_is_not_given_it_again(text, said):
     from datetime import date
 
-    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_digest_sentences
 
-    assert composer_digest._says_day(text, date(2026, 10, 25), date(2026, 10, 31)) is said
+    assert composer_digest_sentences._says_day(text, date(2026, 10, 25), date(2026, 10, 31)) is said
 
 
 # C20. A derived line is said only of what the question asked about.
@@ -886,10 +889,10 @@ def test_a_streak_note_gives_the_day_it_began_not_the_day_it_was_counted(noteboo
 
 
 def test_a_start_word_is_not_a_subject_of_a_when_ask():
-    from tessellate.ai import composer_digest as d
+    from tessellate.ai import composer_digest_lines
 
-    assert "start" not in d._subject("when did I start learning Spanish")
-    assert "start" in d._subject("what do I know about the start")
+    assert "start" not in composer_digest_lines._subject("when did I start learning Spanish")
+    assert "start" in composer_digest_lines._subject("what do I know about the start")
 
 
 # "How far in total" sums, in every wording of a total.
@@ -973,7 +976,8 @@ def test_my_social_notes_summarises_every_note_filed_under_social_connections(no
 def test_a_summary_does_not_show_emphasis_asterisks_in_the_note_s_words(notebook, question):
 
     said, _ = notebook(question)
-    body = re.sub(r"\[\*\*[^\]]*\*\*\]", "", said)
+    #: The note's name is bold by design: "From your **X** note." and "(**X**)" (D25, fc7-1110), as "[**X**]" was.
+    body = re.sub(r"\[\*\*[^\]]*\*\*\]|From your (?:note )?\*\*[^*]*\*\*(?: note)?\.|\(\*\*[^)]*\*\*\)", "", said)
     body = re.sub(r"^- \*\*[^*]+\*\*:", "-", body, flags=re.M)
     assert "**" not in body, said
 
@@ -1092,7 +1096,7 @@ def test_c46_a_joke_is_the_one_you_saved(notebook, question):
 def test_c31_a_one_line_label_note_in_a_list_is_never_untitled(notebook, question):
     said, _ = notebook(question)
     assert "Untitled" not in said, said
-    assert "[the note that starts “Idea: a podcast about local history”](#/notes/" in said, said
+    assert "[“Idea: a podcast about local history”](#/notes/" in said, said
     assert said.count("a podcast about local history") == 1, said
 
 
@@ -1115,7 +1119,8 @@ def test_c31_a_pronoun_line_names_the_note_it_was_about(notebook, question):
 def test_c32_a_list_says_whose_it_is_and_never_that_you_said_it(notebook, question):
     said, _ = notebook(question)
     assert not re.search(r"(?i)you (?:mentioned|noted|wrote|said)[^.\n]*questions to ask", said), said
-    assert "Your Ice Breakers note lists three questions to ask:" in said or "social" not in question, said
+    #: 1743: a woven overview says it mid-sentence ("Soon after, your Ice Breakers note lists ..."), so the capital is not asked.
+    assert "your ice breakers note lists three questions to ask:" in said.lower().replace("\n", " ") or "social" not in question, said
 
 
 @pytest.mark.parametrize("question", ["what do I know about the dentist", "tell me about the Lisbon trip", "what do I know about Lisbon", "what have I written about the dentist"])
@@ -1154,7 +1159,8 @@ def test_c40_citations_in_one_answer_share_a_style(notebook, question):
 
 def test_c40_a_titled_citation_beside_a_day_named_one_makes_both_bold(notebook):
     said, _ = notebook("what are the three gates")
-    assert re.search(r" \[\*\*[^\]]*\*\*\]", said) and not re.search(r" \[your note, [^\]]*\]", said), said
+    #: D25 (fc7-1110) took the bracketed name off the quote: the intent left is one style, and no day-named bracket.
+    assert not re.search(r" \[(?:your note, |\*\*)[^\]]*\]", said), said
 
 
 # C41. Acts name things as the app does and say what they did not read.
@@ -1187,9 +1193,10 @@ def test_c41_a_ticked_item_is_said_to_be_ticked_not_missing(chat_notebook, quest
 
 
 @pytest.mark.parametrize("question", ["tick off the charger", "mark charger done", "check off the charger"])
-def test_c41_a_second_tick_says_it_is_already_ticked(chat_notebook, question):
-    first, _ = chat_notebook(question)
-    assert "ticked off" in first, first
+def test_c41_a_second_tick_says_it_is_already_ticked(chat_notebook, client, question):
+    first, events = chat_notebook(question)
+    assert "mark" in first.lower() and "confirm" in first.lower(), first  # waits (owner, 2026-11-10)
+    confirmed(client, list(events))
     said, _ = chat_notebook(question)
     assert "already ticked" in said and "found no" not in said, said
 

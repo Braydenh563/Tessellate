@@ -46,7 +46,7 @@ def _yields(buttons: list[dict], toast: list[int]) -> bool:
         const area = {
           role: "dialog",
           querySelectorAll: (selector) => cfg.buttons
-            .filter((b) => !(selector.includes(":not(.panel-grip)") && b.grip))
+            .filter((b) => !(selector.includes(":not(.panel-grip") && b.grip))
             .map((b) => ({ checkVisibility: () => true, getBoundingClientRect: () => rect(b.rect) })),
         };
         const target = { closest: () => area, getBoundingClientRect: () => rect([20, 20, 30, 30]) };

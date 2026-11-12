@@ -19,6 +19,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 
+from tessellate.core import secrets_store
 from tessellate.core.atomic_io import atomic_write_json
 
 # Defaults for every user-changeable preference. Stored as data in one
@@ -62,6 +63,9 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     # than something inferred from whether a SearXNG address happens to be
     # filled in. See `search/websearch.PROVIDERS`.
     "web_search_enabled": False,
+    # Pages read in a chat are kept here for a week, on this computer only
+    # (search/webstore.py); off keeps nothing new.
+    "web_store_enabled": True,
     # Asked for directly, alongside the Windows installer: since a release
     # only ships when someone remembers to tag one, nothing ever told a
     # person running an installed build that a newer version existed. The
@@ -125,6 +129,12 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     # pick, "north" or "south" (ai/recognise.py `configure_hemisphere`).
     "season_hemisphere": "auto",
     "season_locale": "",
+    # `before:` in a search leaves its own day out unless this is on (Q25;
+    # search/query.py `configure_before`).
+    "before_includes_day": False,
+    # The order "3/4" is read in: "auto" follows the browser's language and
+    # region, "day" or "month" is the person's pick (ai/recognise.py `configure_date_order`).
+    "date_order": "auto",
     # Whisper's options (ai/voice.py `options_from`, Brief 87 step 2): skip
     # the silence and hum around a clip (Silero VAD, no download); a language
     # ("" detects it); names and terms to expect, as Whisper's prompt.
@@ -145,6 +155,9 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     # Only ever needed by a hosted gateway; local servers ignore it. Kept out
     # of the support bundle by the same redaction that hides other secrets.
     "llm_api_key": "",
+    # Q22: the outside tool server's token (a secret setting, kept in the keyring or an owner-only file) and its write switch.
+    "mcp_token": "",
+    "mcp_writes_enabled": False,
     # How much effort a chat turn is worth by default (§11): "quick", "normal"
     # or "detailed". One dial over the reply cap, the temperature, the thinking
     # toggle and a length hint, see `ai/presets.py`. "normal" reproduces the
@@ -197,6 +210,8 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     "show_update_bar": True,
     # How long a session can be idle before the user must log in again.
     "session_idle_ttl_minutes": 720,
+    #: INBOX 1727: the private spaces lock after this many idle minutes.
+    "private_space_idle_minutes": 10,
     #: The desktop launcher's console window (start.bat/start-desktop.bat
     #: open one; the packaged installer's build has none to show at all).
     #: "Dev view" (console visible, True) is the default a fresh install
@@ -384,6 +399,28 @@ class ConfigManager:
         self.ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
         self._preferences = self._load_preferences()
+        #: The settings kept out of `preferences.json` (secrets_store). Not named
+        #: "secrets": CodeQL's sensitive-data check goes by name, not key, and a
+        #: secret-looking name read in `get_preference` made every setting's log
+        #: line a clear-text-logging alert (tests/test_codeql_shapes.py).
+        self._kept_apart = self._load_kept_apart()
+
+    def _load_kept_apart(self) -> dict[str, str]:
+        """Secret settings (`secrets_store.SECRET_FILES`) read from their
+        keyring or owner-only file, and moved there from `preferences.json` if
+        an older version left one in plain text (audit 1028 K11). The file is
+        only blanked after the value is stored, so a failed store loses nothing."""
+        held: dict[str, str] = {}
+        moved = False
+        for name in secrets_store.SECRET_FILES:
+            old = str(self._preferences.get(name) or "")
+            if old and secrets_store.write(self.data_dir, name, old):
+                self._preferences[name] = ""
+                moved = True
+            held[name] = secrets_store.read(self.data_dir, name) or (old if self._preferences.get(name) else "")
+        if moved:
+            atomic_write_json(self.preferences_path, self._preferences)
+        return held
 
     def _load_preferences(self) -> dict[str, Any]:
         """Merge saved preferences over the defaults.
@@ -429,6 +466,8 @@ class ConfigManager:
         selfcheck.note(f"preferences.json could not be read, so it was kept as {kept.name} and the defaults used.")
 
     def get_preference(self, key: str, default: Any = None) -> Any:
+        if key in self._kept_apart:
+            return self._kept_apart[key] or default
         return self._preferences.get(key, default)
 
     def all_preferences(self) -> dict[str, Any]:
@@ -437,17 +476,22 @@ class ConfigManager:
         A copy rather than the live dict: a caller that only means to read
         should not be able to edit the app's settings by accident.
         """
-        return dict(self._preferences)
+        return {**self._preferences, **self._kept_apart}
 
     def merge_preferences(self, values: dict[str, Any]) -> None:
         """Set many settings with one atomic write (a restored backup's)."""
         if not values:
             return
+        values = self._set_apart(values)
         self._preferences.update(values)
         atomic_write_json(self.preferences_path, self._preferences)
 
     def unset_preference(self, key: str) -> None:
         """Put a setting back to never set, so its default applies again."""
+        for name in secrets_store.SECRET_FILES:
+            if name == key:  # the loop's own literal reaches the store, never `key`
+                secrets_store.write(self.data_dir, name, "")
+                self._kept_apart[name] = ""
         if key in self._preferences:
             del self._preferences[key]
             atomic_write_json(self.preferences_path, self._preferences)
@@ -462,8 +506,24 @@ class ConfigManager:
         plain truncate-and-write here is the one place in the app where a
         `kill -9` or power loss mid-write could corrupt live state.
         """
-        self._preferences[key] = value
-        atomic_write_json(self.preferences_path, self._preferences)
+        self.merge_preferences({key: value})
+
+    def _set_apart(self, values: dict[str, Any]) -> dict[str, Any]:
+        """`values` with each secret setting stored away and blanked. A secret
+        that could not be stored stays in the file: losing it is worse."""
+        out = dict(values)
+        #: Walks the fixed list and asks `out` for each, rather than taking the
+        #: names from `out`: a key that arrived in a request never reaches a path.
+        for name in secrets_store.SECRET_FILES:
+            if name not in out:
+                continue
+            text = str(out[name] or "")
+            if secrets_store.write(self.data_dir, name, text):
+                self._kept_apart[name] = text
+                out[name] = ""
+            else:
+                self._kept_apart[name] = text
+        return out
 
 
 def days_from_today(day, today) -> str:  # noqa: ANN001

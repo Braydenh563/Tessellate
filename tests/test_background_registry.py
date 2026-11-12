@@ -50,9 +50,9 @@ api/app.py::_start_searxng_if_asked::thread::1
 api/routes_backups.py::export_bundle::request-task::1
 api/routes_chat.py::_stop_when_gone::task::1
 api/routes_import.py::export_notebook_folder::request-task::1
-api/routes_settings.py::export_backup::request-task::1
 api/routes_settings.py::restart_app::request-task::1
 api/routes_settings.py::set_console_mode::request-task::1
+api/routes_settings_transfer.py::export_backup::request-task::1
 api/routes_update.py::apply_update::thread::1
 api/routes_update.py::apply_update::thread::2
 core/embedmodels.py::_spawn_download::thread::1
@@ -85,6 +85,17 @@ core/lanserve.py::serve::task::2
     """
 core/deadline.py::guard::timer::1
 core/deadline.py::guard::task::1
+""".strip().splitlines()
+) | frozenset(
+    #: Registered 2026-11-11 with the live-captions helper (INBOX 1777): the
+    #: pump that reads the child process's stdout ends when that process
+    #: does, the idle timer is cancelled by `stop()` and re-armed per
+    #: session, and `captions_helper.main` runs in the helper's own process
+    #: (not the app's), where its stdin watcher is what makes it exit with
+    #: the app.
+    """
+ai/captions_helper.py::main::thread::1
+ai/captions_process.py::session_ended::timer::1
 """.strip().splitlines()
 )
 

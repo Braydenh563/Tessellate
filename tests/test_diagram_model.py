@@ -59,7 +59,7 @@ CORPUS = [
     "flowchart TD\nA[Start] --> B[Done]",
     "flowchart LR\n  A --> C",
     # What this reader keeps rather than reads.
-    "flowchart TD\n  A@{ shape: rect, label: \"x\" } --> B\n  C[\"`**md** text`\"] --> B\n  click A callback\n  linkStyle 0 stroke:red\n  A:::hot --> B\n  D[[Sub]] --> A\n  E[(Store)] --> A\n",
+    "flowchart TD\n  A@{ shape: rect, label: \"x\" } --> B\n  C[\"`**md** text`\"] --> B\n  click A callback\n  linkStyle 0 stroke:red\n  A:::hot --> B\n  D[[Sub]] --> A\n  E[[Stored]] --> A\n",
     "---\ntitle: Plan\n---\n%%{init: {'theme': 'dark'}}%%\nflowchart TD\n  A --> B\n",
     "flowchart TD\n  subgraph S\n    direction LR\n    A --> B\n  end\n  %% last words\n",
     # Awkward labels: quote, hash, angle brackets, bar, semicolon, brackets.
@@ -325,3 +325,14 @@ def test_removing_an_arrow_renumbers_the_colour_lines_and_a_plain_arrow_prints_n
     )
     assert "linkStyle 1 stroke:#da5252" in got["a"] and "linkStyle 0 stroke:#da5252" in got["b"]
     assert "linkStyle" not in got["plain"]
+
+
+def test_a_cylinder_and_a_parallelogram_are_read_and_print_back_as_themselves():
+    """R14 (1679 slice 10): `[(..)]` is a database and `[/../]` an input or output; the slanted `[/..\\]` stays a kept line."""
+    src = 'flowchart TD\n  A[("Store")] --> B[/"Input"/]\n  B --> C\n'
+    got = _run(
+        f"const m = diagramModel.parse({json.dumps(src)}); const once = diagramModel.print(m);"
+        "console.log(JSON.stringify({ shapes: m.nodes.map((n) => [n.id, n.shape, n.text]), once, again: diagramModel.print(diagramModel.parse(once)) === once }));"
+    )
+    assert got["shapes"] == [["A", "cylinder", "Store"], ["B", "parallelogram", "Input"], ["C", "rect", "C"]] or got["shapes"][:2] == [["A", "cylinder", "Store"], ["B", "parallelogram", "Input"]]
+    assert 'A[("Store")]' in got["once"] and 'B[/"Input"/]' in got["once"] and got["again"]

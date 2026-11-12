@@ -146,7 +146,26 @@ PIECE_CAP = 32_000
 #: 2026-11-04, +20 (INBOX 1679 review): a dialog opened over a sheet (the diagram's Connect
 #: to… picker over the Blocks list) takes the Escape, so one Escape no longer closes both;
 #: one test in phone-shell.js's sheet handler; same win-back item.
-TOTAL_CAP = 260_820
+#: 2026-11-05, +40 (BACKLOG 1682): a list redraw gives the keyboard back in its own task
+#: and flags that focus as the app's (restoreFocusTo), so a key typed meanwhile is kept
+#: and the tags field does not take it for a press; same win-back item.
+#: 2026-11-08, -8,880 (260,860 to 251,980): leading indentation is stripped from served JS
+#: and CSS (asset_strip.py, STRIP_VERSION 4, newlines kept); measured 260,814 to 251,949.
+#: 2026-11-10, -1,214 (251,980 to 250,766): the note card's review actions, favourite
+#: button, attachment cards and meta menu moved into the lazy entry-card.js, the
+#: embedding apply into settings-controls.js and the history actor label into
+#: note-history.js (each had no caller at boot); measured 252,137 to 250,466.
+#: 2026-11-11, W27, -520 (250,954 to 250,434): nine settings helpers (applyHarmony,
+#: applyContrast, resetThemeOnly, copyLogs, clearManualOverrides, nearLogBottom, the embedding
+#: latch and model check) into settings-controls.js, inlineActionIs and translateNoteInDesk
+#: into entry-menu.js, searchHighlightTerms and notesSpanSpaces into entry-card.js: each has
+#: one caller, in the lazy file it moved to.
+#: 2026-11-11, -586 (250,563 to 249,977): dictation (`toggleDictation`) from media.js into
+#: the lazy gesture-kit.js behind a stand-in; only a mic click reaches it.
+#: 2026-11-11, +15 (250,431 to 250,446): a reopened chat redraws its saved act, offer and tool-confirm
+#: cards; the loop lives in the lazy answer-kit.js (`renderToolConfirm.saved`), sheets-selects.js
+#: only calls it. The cap did not move.
+TOTAL_CAP = 250_450
 
 
 def _served_gzip_size(client, name: str) -> int:

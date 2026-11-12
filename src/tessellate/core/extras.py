@@ -40,9 +40,10 @@ import tempfile
 import threading
 import time
 from dataclasses import dataclass, field
+from collections.abc import Callable
 from pathlib import Path
 
-from tessellate.core import extra_downloads, jobs, ocr
+from tessellate.core import extra_downloads, jobs, languagetool_files, ocr
 from tessellate.core.extra_downloads import Download
 from tessellate.core.subproc import NO_WINDOW
 
@@ -330,6 +331,34 @@ NO_PYTHON_FOUND_MESSAGE = (
 )
 
 
+#: Where `pywhispercpp` 1.5.1 has a wheel (checked per platform, 2026-11-11):
+#: no macOS x86_64, Windows arm64 or musl Linux.
+_CAPTIONS_PLATFORMS = ("windows-x86_64", "linux-x86_64", "linux-aarch64", "macos-arm64")
+CAPTIONS_MODEL_FILE = "ggml-tiny.en-q5_1.bin"
+#: The two rows the captions helper reads; changing either stops the helper
+#: first (`_release_captions_helper`).
+CAPTIONS_IDS = ("captions", "captionmodel")
+VOICE_IDS = ("naturalvoice", "naturalvoice-voice")
+CAPTIONS_MODEL_VERSION = "hf-5359861-tiny.en-q5_1"
+_CAPTIONS_NO_BUILD = (
+    "No whisper.cpp build for this computer yet. Captions use the Voice notes "
+    "engine when it is installed."
+)
+#: The sentence for an `Extra.platforms` miss, by extra id.
+_VOICE_NO_BUILD = "No Piper build for this computer yet. Your browser's own voices keep reading aloud."
+NO_BUILD_REASON = {
+    "captions": _CAPTIONS_NO_BUILD,
+    "captionmodel": _CAPTIONS_NO_BUILD,
+    "naturalvoice": _VOICE_NO_BUILD,
+    "naturalvoice-voice": _VOICE_NO_BUILD,
+}
+#: The wheels `piper-tts` 1.8.0 publishes (abi3: any CPython 3.9 or later).
+_VOICE_PLATFORMS = ("windows-x86_64", "linux-x86_64", "linux-aarch64", "macos-arm64", "macos-x86_64")
+#: The voice, from rhasspy/piper-voices at a commit (never `main`); both files are kept as named.
+_PIPER_VOICES = "https://huggingface.co/rhasspy/piper-voices/resolve/cf910fb59f1d79ab3b625a63993a108751c6c25d/"
+NATURAL_VOICE_VERSION = "ljspeech-medium-cf910fb"
+
+
 @dataclass(frozen=True)
 class Extra:
     """One optional dependency, and the honest description of what it buys."""
@@ -380,6 +409,61 @@ class Extra:
     licence: str = ""
     #: The name in a progress line ("Downloading Pyodide: 3.1 of 6.8 MB").
     short_label: str = ""
+    #: `extra_downloads.platform_key()` values this can be installed on; empty
+    #: means anywhere. A row with no build for this computer is greyed with
+    #: `NO_BUILD_REASON` and refused by `start()`, like `unavailable`.
+    platforms: tuple[str, ...] = ()
+
+
+#: **Spelling packs (D30, owner decision 2026-11-11).** A Hunspell word list for another
+#: language, fetched on an Install click and never vendored: these lists are MPL, LGPL or GPL,
+#: and the repo takes AGPL or MIT code only. Each is the npm tarball of the `dictionary-<lang>`
+#: package (wooorm/dictionaries, a version never re-published, so the hash cannot move); only
+#: the two Hunspell files and the licence text are kept, as `<lang>.aff`, `<lang>.dic` and
+#: `LICENSE.txt`. The page loads one lazily, in the Harper worker, when a document's `lang`
+#: matches (`frontend/js/documents-spell.js`). **To add a language:** take its package's
+#: tarball URL and `dist.size` from registry.npmjs.org, write its `sha256sum`, and name the
+#: language in `core/spellpacks.py`. Rows: (lang, name, package version, licence, sha256, bytes).
+_SPELL_PACKS = (
+    ("fr", "French", "3.0.0", "MPL-2.0", "b20ab69249881bc36b1dcdfbfd2df226660a7cecc95f2cf122714008b491c78e", 342850),
+    ("de", "German", "3.0.0", "GPL-2.0 OR GPL-3.0", "50b5640b33c276a49cc15f426f2d31ee5faf397f4a27e92b1678e77f43f8d14a", 341743),
+    ("es", "Spanish", "4.0.0", "GPL-3.0 OR LGPL-3.0 OR MPL-1.1", "b46986527b23ff1a578d601db7f1e6dc80cc36b728fdcb6044b5212e12e202d5", 236981),
+)
+
+
+def _spell_pack_extras() -> tuple[Extra, ...]:
+    return tuple(
+        Extra(
+            id=f"spell-{lang}",
+            label=f"{name} spelling (Hunspell)",
+            short_label=f"{name} spelling",
+            enables=f"Spelling checks for documents written in {name} (a document whose language "
+            "is set to it), from a Hunspell dictionary kept and read on this computer. "
+            "Nothing you write leaves it.",
+            packages=(f"dictionary-{lang} {version}",),
+            module="",
+            size=f"~{round(size / 1000)} KB",
+            caveat="Checks spelling only; grammar checks stay English."
+            + (" A long compound word the list lacks is flagged: add it to your dictionary." if lang == "de" else ""),
+            kind="download",
+            version=version,
+            licence=licence,
+            downloads=(
+                Download(
+                    url=f"https://registry.npmjs.org/dictionary-{lang}/-/dictionary-{lang}-{version}.tgz",
+                    sha256=sha,
+                    size=size,
+                    unpack="tar",
+                    members=(
+                        ("package/index.aff", f"{lang}.aff"),
+                        ("package/index.dic", f"{lang}.dic"),
+                        ("package/license", "LICENSE.txt"),
+                    ),
+                ),
+            ),
+        )
+        for lang, name, version, licence, sha, size in _SPELL_PACKS
+    )
 
 
 #: The allowlist. Adding an entry here is the only way to make something
@@ -490,7 +574,9 @@ EXTRAS: tuple[Extra, ...] = (
         "Tesseract stays the reader whenever it is.",
         packages=("rapidocr_onnxruntime",),
         module="rapidocr_onnxruntime",
-        size="~60 MB",
+        #: Measured 2026-11-11 (`pip download rapidocr_onnxruntime`, cp313):
+        #: 138 MB downloaded, about 113 MB of it new beside what the app ships.
+        size="~140 MB, about 113 MB new",
         caveat="Its models read English and Chinese; the language chosen for "
         "Tesseract doesn't apply to it.",
     ),
@@ -548,6 +634,43 @@ EXTRAS: tuple[Extra, ...] = (
             ),
         ),
     ),
+    #: **LanguageTool (INBOX 1731 (f)).** The owner, 2026-11-10: "can we like
+    #: incorporate all of it or whatever you suggest??". A second grammar
+    #: checker, a separate Java program (LGPL-2.1, so it is run, never linked):
+    #: `core/languagetool.py` starts it on 127.0.0.1 when the person's
+    #: document is checked and the page merges its findings with Harper's.
+    #: Only the jars are kept (`core/languagetool_files.py`). It needs a Java
+    #: runtime this app does not ship, said on the card and enforced in
+    #: `unavailable_reason`. **To bump:** take the newest
+    #: `LanguageTool-<n>.zip` from languagetool.org/download, write its
+    #: size and `sha256sum` here and regenerate the member names.
+    Extra(
+        id="languagetool",
+        label="A second grammar checker (LanguageTool)",
+        short_label="LanguageTool",
+        enables="A second opinion on grammar and style in documents and notes, "
+        "run by a local program on this computer and merged with the built-in "
+        "checker's findings. Nothing you write leaves this computer, and it "
+        "is only started while you are writing.",
+        packages=("LanguageTool 6.6",),
+        module="",
+        size="~252 MB download, ~190 MB on disk",
+        caveat="Needs Java 17 or newer already installed (java on the path); "
+        "this app does not install it. Off until you install it here.",
+        kind="download",
+        version="6.6",
+        licence="LGPL-2.1",
+        downloads=(
+            Download(
+                url="https://languagetool.org/download/LanguageTool-6.6.zip",
+                sha256="53600506b399bb5ffe1e4c8dec794fd378212f14aaf38ccef9b6f89314d11631",
+                size=251998221,
+                unpack="zip",
+                members=languagetool_files.MEMBERS,
+            ),
+        ),
+    ),
+    *_spell_pack_extras(),
     #: **needle (INBOX 302).** The owner, 2026-09-24: "Yes, as an extra"
     #: (opt-in, telemetry forced off). A 121M-parameter tool-calling model
     #: from Cactus Compute: `ai/needle_provider.py` drives its engine through
@@ -737,30 +860,170 @@ EXTRAS: tuple[Extra, ...] = (
         "owning model load/unload, for a capability llama-server already "
         "gives you today.",
     ),
-    #: **Live captions (WORLD_CLASS_PLAN 28.5 row 9, Brief 82).** whisper.cpp's
-    #: `whisper-server` (MIT), a separate executable, never a Python import.
-    #: The captions code in `ai/captions.py` already speaks to it through
-    #: `TESSELLATE_CAPTIONS_URL`; what is missing is the pinned download. A
-    #: `Download` needs a URL, a sha256 and a byte size read from a release
-    #: asset, and the release page was not readable when this was written
-    #: (caption82-1010.md), so a guessed pin would be a fabricated checksum.
-    #: Listed so Settings, Packages names the feature and says what is left.
-    #: Not `kind="download"` until then: a download row is a pinned version
-    #: and files (test_extras_download.py), and this one has neither.
+    #: **Speaker labels by voice (BACKLOG 102 item 8, gap 12; the owner,
+    #: 2026-11-11).** Two entries, one bundle: the engine (sherpa-onnx, which
+    #: carries onnxruntime; no torch) and the two pinned model files it reads.
+    #: `ai/diarize.py` is the only caller. Licences, read 2026-11-11: sherpa-onnx
+    #: Apache-2.0; the pyannote segmentation 3.0 model MIT (the licence file
+    #: ships in the archive and is kept); the WeSpeaker ResNet34 embedding
+    #: model Apache-2.0 (its Hugging Face card).
+    #:
+    #: Measured 2026-11-11 on Linux x86_64, Python 3.13: the sherpa-onnx 2.0.1
+    #: wheel is 4.3 MB with its core library; the models are 7.0 MB and 26.5 MB.
+    Extra(
+        id="speakers",
+        label="Speaker labels, engine (sherpa-onnx)",
+        enables="Tells voices apart in a recording, on this computer, so a "
+        "transcript reads Speaker 1, Speaker 2 and so on. Needs the speaker "
+        "models below as well; the Speakers bundle installs both.",
+        packages=("sherpa-onnx",),
+        module="sherpa_onnx",
+        size="~5 MB: ONNX Runtime, no PyTorch",
+    ),
+    #: **To bump:** the segmentation archive is on
+    #: github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-segmentation-models, the
+    #: embedding file on `.../speaker-recongition-models` (sic); `sha256sum`
+    #: each and write its size here. The marker records the version.
+    Extra(
+        id="speakermodels",
+        label="Speaker labels, models (pyannote and WeSpeaker)",
+        short_label="Speaker models",
+        enables="The two small models that tell voices apart. They are read "
+        "from this computer's data folder; nothing is sent anywhere after the "
+        "download.",
+        packages=("pyannote-segmentation 3.0", "wespeaker-resnet34 en"),
+        module="",
+        size="~34 MB download",
+        caveat="Good for a few people taking turns in clear audio; overlapping "
+        "talk and similar voices can be merged or split wrongly. Rename a label "
+        "once and it stays for that recording.",
+        kind="download",
+        version="seg3.0-wespeaker-en-1",
+        licence="MIT and Apache-2.0",
+        downloads=(
+            Download(
+                url="https://github.com/k2-fsa/sherpa-onnx/releases/download/"
+                "speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2",
+                sha256="24615ee884c897d9d2ba09bb4d30da6bb1b15e685065962db5b02e76e4996488",
+                size=6958444,
+                unpack="tar",
+                members=(
+                    ("sherpa-onnx-pyannote-segmentation-3-0/model.onnx", "segmentation.onnx"),
+                    ("sherpa-onnx-pyannote-segmentation-3-0/LICENSE", "LICENSE-segmentation"),
+                ),
+            ),
+            Download(
+                url="https://github.com/k2-fsa/sherpa-onnx/releases/download/"
+                "speaker-recongition-models/wespeaker_en_voxceleb_resnet34.onnx",
+                sha256="5ef208a9da1453335308a6b6f4e6dfbd7e183a38b604de0a57664f45d257fe94",
+                size=26534365,
+                unpack="file",
+                members=(("", "embedding.onnx"),),
+            ),
+        ),
+    ),
+    #: **Live captions (WORLD_CLASS_PLAN 28.5 row 9, Brief 82b; INBOX 1777)**,
+    #: two rows in the speaker-labels shape. The engine is `pywhispercpp`
+    #: (whisper.cpp 1.8.5 compiled in, MIT), whose wheels bundle their own C++
+    #: runtimes; the app never imports it, `ai/captions_helper.py` does, as a
+    #: child process (`ai/captions_process.py`). **Wheels exist for** Windows
+    #: x86_64, Linux x86_64 and aarch64 (glibc) and macOS arm64, hence
+    #: `platforms`; elsewhere the row says so and captions use the Voice notes
+    #: engine. **To bump:** `pip download pywhispercpp==X --no-deps` per
+    #: platform to check a wheel exists, bump the pin here.
     Extra(
         id="captions",
-        label="Live captions (whisper.cpp)",
-        short_label="Live captions",
-        enables="Live captions over any screen: what the microphone hears, "
-        "written as you speak and saved as a note, on this computer.",
-        packages=("whisper.cpp server",),
-        module="",
-        size="~35 MB for the helper and the tiny.en model",
+        label="Live captions, engine (whisper.cpp)",
+        short_label="Live captions engine",
+        enables="Turns what the microphone hears into text as you speak, on "
+        "this computer. Needs the caption model below as well; the Live "
+        "captions bundle installs both.",
+        packages=("pywhispercpp==1.5.1",),
+        module="pywhispercpp",
+        size="~5 MB, plus NumPy if it is not here yet",
         licence="MIT",
-        unavailable="The helper isn't packaged for one-click install yet. To "
-        "try captions now, run whisper.cpp's whisper-server on this computer "
-        "and start Tessellate with TESSELLATE_CAPTIONS_URL set to its address "
-        "(for example http://127.0.0.1:8080).",
+        platforms=_CAPTIONS_PLATFORMS,
+    ),
+    #: **To bump the model:** a Hugging Face `resolve/<commit>/` URL (a commit,
+    #: never `main`, so the bytes cannot move), `sha256sum` and the byte size
+    #: of the file, written here; the marker records the version. Full-precision
+    #: tiny.en is 77,704,715 bytes (sha256 921e4cf8…0b1f), the q5_1 file is
+    #: smaller and was chosen for the download.
+    Extra(
+        id="captionmodel",
+        label="Live captions, model (tiny.en)",
+        short_label="Live captions model",
+        enables="The small English speech model the caption engine reads. It "
+        "is read from this computer's data folder; nothing is sent anywhere "
+        "after the download.",
+        packages=("whisper.cpp tiny.en q5_1",),
+        module="",
+        size="~32 MB download",
+        caveat="English only, and quick rather than exact: names and rare "
+        "words can come out wrong.",
+        kind="download",
+        version=CAPTIONS_MODEL_VERSION,
+        licence="MIT",
+        platforms=_CAPTIONS_PLATFORMS,
+        downloads=(
+            Download(
+                url="https://huggingface.co/ggerganov/whisper.cpp/resolve/"
+                "5359861c739e955e79d9a303bcbc70fb988958b1/ggml-tiny.en-q5_1.bin",
+                sha256="c77c5766f1cef09b6b7d47f21b546cbddd4157886b3b5d6d4f709e91e66c7c2b",
+                size=32166155,
+                unpack="file",
+                members=(("", CAPTIONS_MODEL_FILE),),
+            ),
+        ),
+    ),
+    #: **Natural voice (Q34, WORLD_CLASS rows 35 and 37).** Piper from OHF-Voice/piper1-gpl
+    #: (GPL-3.0-or-later, which combines into this AGPL-3.0 app; the MIT rhasspy/piper is archived),
+    #: a pip extra, and one voice as a pinned download. The voice is `en_US-ljspeech-medium`
+    #: (MODEL_CARD: "License: public domain", the LJ Speech data). **To add a voice:** read its
+    #: MODEL_CARD licence, take both files at the same commit, write each `sha256sum` and byte size.
+    Extra(
+        id="naturalvoice",
+        label="Natural voice, engine (Piper)",
+        short_label="Natural voice engine",
+        enables="Reads notes, answers and audio overviews aloud in a natural voice, made on this "
+        "computer. Needs the voice below as well; the Natural voice bundle installs both.",
+        packages=("piper-tts==1.8.0",),
+        module="piper",
+        size="~34 MB, plus onnxruntime if it is not here yet",
+        licence="GPL-3.0-or-later",
+        platforms=_VOICE_PLATFORMS,
+    ),
+    Extra(
+        id="naturalvoice-voice",
+        label="Natural voice, English (LJ Speech)",
+        short_label="Natural voice",
+        enables="The US English voice the engine speaks with. It is read from this computer's data "
+        "folder; nothing is sent anywhere after the download.",
+        packages=("Piper voice en_US-ljspeech-medium",),
+        module="",
+        size="~64 MB download",
+        caveat="English only. About five times faster than real time on one core (measured "
+        "4.9 s of speech in 1.1 s).",
+        kind="download",
+        version=NATURAL_VOICE_VERSION,
+        licence="Public domain",
+        platforms=_VOICE_PLATFORMS,
+        downloads=(
+            Download(
+                url=_PIPER_VOICES + "en/en_US/ljspeech/medium/en_US-ljspeech-medium.onnx",
+                sha256="6f52a751e2349abe7a76735eb09dc1875298c77ea2342ffd2fef79ff81b87f22",
+                size=63531379,
+                unpack="file",
+                members=(("", "en_US-ljspeech-medium.onnx"),),
+            ),
+            Download(
+                url=_PIPER_VOICES + "en/en_US/ljspeech/medium/en_US-ljspeech-medium.onnx.json",
+                sha256="141d612cc0a95ed7efc1ca936b845c2364967f2e9217c5dbfcf69fc4d6c65860",
+                size=4972,
+                unpack="file",
+                members=(("", "en_US-ljspeech-medium.onnx.json"),),
+            ),
+        ),
     ),
 )
 
@@ -835,10 +1098,22 @@ BUNDLES: tuple[Bundle, ...] = (
         extras=("voice",),
     ),
     Bundle(
+        id="speakers",
+        label="Speakers",
+        about="Label who speaks in a transcript by their voice, on this computer.",
+        extras=("speakers", "speakermodels"),
+    ),
+    Bundle(
         id="captions",
         label="Live captions",
         about="Captions over any screen as you speak, written on this computer.",
-        extras=("captions",),
+        extras=("captions", "captionmodel"),
+    ),
+    Bundle(
+        id="naturalvoice",
+        label="Natural voice",
+        about="Read aloud and audio overviews in a natural voice, made on this computer.",
+        extras=("naturalvoice", "naturalvoice-voice"),
     ),
     Bundle(
         id="desktop",
@@ -849,8 +1124,8 @@ BUNDLES: tuple[Bundle, ...] = (
     Bundle(
         id="languages",
         label="Languages",
-        about="Translate a passage into Spanish on this computer, with no model.",
-        extras=("translate",),
+        about="Translate a passage into Spanish, check grammar a second way, and spell-check French, German and Spanish, on this computer.",
+        extras=("translate", "languagetool", "spell-fr", "spell-de", "spell-es"),
     ),
     Bundle(
         id="code",
@@ -1000,6 +1275,9 @@ def _status_row(extra: Extra) -> dict:
         #: can read, it is noise under a green "Installed".
         "caveat": "" if extra.id == "ocr" and is_installed(extra) else extra.caveat,
         "unavailable": unavailable_reason(extra),
+        #: No build for this computer, which waiting will not change (the
+        #: chip says "Not for this computer", not "Not ready yet").
+        "no_build": _no_build(extra),
         #: Whether Settings may offer Remove: a packaged build is its own
         #: desktop window, so that one is kept (INBOX 904 B27).
         "removable": not removal_locked(extra),
@@ -1128,12 +1406,22 @@ def removal_locked(extra: Extra) -> str:
     return ""
 
 
+def _no_build(extra: Extra) -> bool:
+    return bool(extra.platforms) and extra_downloads.platform_key() not in extra.platforms
+
+
 def unavailable_reason(extra: Extra) -> str:
     """Why this cannot be installed here, or "": the entry's own reason, or
     for a download extra with per-platform files, none built for this
     computer (`extra_downloads.platform_reason`)."""
     if extra.unavailable:
         return extra.unavailable
+    if _no_build(extra):
+        return NO_BUILD_REASON.get(extra.id, "There is no build of this for your computer yet.")
+    if extra.id == "languagetool":
+        from tessellate.core import languagetool_files
+
+        return languagetool_files.java_reason()
     if extra.kind == "download":
         return extra_downloads.platform_reason(extra)
     return ""
@@ -1176,6 +1464,13 @@ def cancel(_name: str = "") -> tuple[bool, str]:
         _state.cancelled = True
         _state.step = "Stopping…"
         return True, "Stopping the download."
+    if _state.running and process is None:
+        #: Pip is not launched yet (the command is being built): the flag alone
+        #: is the stop, and `_run_install` ends pip the moment it starts. The
+        #: notice's Undo is pressable in this window.
+        _state.cancelled = True
+        _state.step = "Stopping…"
+        return True, "Stopping the install."
     if not _state.running or process is None:
         if _bulk.running:
             return True, "Stopping before the next package."
@@ -1433,6 +1728,74 @@ def _roll_back(before: set[str]) -> None:
         _logger.warning("Couldn't remove a stopped install's packages", exc_info=True)
 
 
+def _install_ocr_binary(extra: Extra) -> None:
+    # The one extra with a system-binary half pip can't touch: 
+    # asked for directly ("automate it if possible"). Best-effort:
+    # a failed *binary* install never flips this extra's own
+    # outcome to "failed", the pip packages are genuinely
+    # installed and useful (ocr.py degrades cleanly without the
+    # binary), so the honest outcome is still "completed", just
+    # with the binary attempt's own result folded into the message.
+    _state.step = "Installing the Tesseract program…"
+    #: The wrapper was installed by a child process a moment ago; the
+    #: import system caches directory listings, so without this the
+    #: next `find_spec` can still say it is missing.
+    importlib.invalidate_caches()
+    installed, binary_message = ocr.attempt_binary_install()
+    ocr.clear_language_cache()
+    _state.log.append(binary_message)
+    #: Said as it is (INBOX 443 (3)): this used to say "installed:
+    #: restart Tessellate to use it" even when the program was missing
+    #: and a restart would change nothing. The reader imports lazily,
+    #: so a ready engine needs no restart.
+    _state.step = (
+        f"{extra.label} is ready. {binary_message}"
+        if installed
+        else f"The Python part is installed, but the Tesseract program is not. {binary_message}"
+    )
+
+
+def _install_cleanup(extra: Extra, pip_tmp: Path, before, constraints_copy: Path | None) -> None:  # noqa: ANN001
+    #: `running` stays true until `_run_install`'s finally: a client that waits for
+    #: idle (the notice's Undo) must not see a stopped install's files before the
+    #: roll-back has taken them out.
+    _state.process = None
+    if _state.cancelled:
+        # Terminating pip mid-download makes it exit non-zero, which the
+        # branches above have already written up as a failure. It wasn't
+        # one, someone pressed Quit, and a task history full of
+        # "Installing X failed" for things nobody wanted is how a history
+        # stops being read.
+        _state.outcome = "cancelled"
+        _state.step = "Stopped before it finished."
+        _roll_back(before)
+        importlib.invalidate_caches()
+    shutil.rmtree(pip_tmp, ignore_errors=True)
+    # See the module docstring's numbered note above `_logger`: this call
+    # was missing entirely until now, which is the actual reason a failed
+    # *install* never reached Settings, Logs, `_run_uninstall` had it,
+    # this function did not.
+    if _state.outcome == "failed":
+        _logger.error(
+            "Installing %s failed: %s\n%s",
+            extra.label,
+            _state.step,
+            "\n".join(_state.log[-40:]),
+        )
+    else:
+        _logger.info("Installed %s.", extra.label)
+    from tessellate.core import taskhistory
+    taskhistory.record(
+        "extra",
+        f"Installing {extra.label}",
+        _state.outcome,
+        _state.step,
+        duration_ms=(time.time() - _state.started) * 1000 if _state.started else None,
+    )
+    if constraints_copy is not None:
+        constraints_copy.unlink(missing_ok=True)
+
+
 def _run_install(extra: Extra, reinstall: bool = False) -> None:
     """pip, in a worker thread, with its output kept for the panel."""
     constraints_copy: Path | None = None
@@ -1486,6 +1849,9 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
             env={**os.environ, "TMPDIR": str(pip_tmp), "TEMP": str(pip_tmp), "TMP": str(pip_tmp)},
         )
         _state.process = process
+        if _state.cancelled:
+            #: Stopped while pip was being launched (`cancel`'s no-process branch).
+            process.terminate()
         for line in process.stdout or []:
             line = line.rstrip()
             if not line:
@@ -1498,30 +1864,7 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
         if code != 0:
             _state.step = _pip_reason(_state.log, f"pip exited with code {code}")
         elif extra.id == "ocr":
-            # The one extra with a system-binary half pip can't touch: 
-            # asked for directly ("automate it if possible"). Best-effort:
-            # a failed *binary* install never flips this extra's own
-            # outcome to "failed", the pip packages are genuinely
-            # installed and useful (ocr.py degrades cleanly without the
-            # binary), so the honest outcome is still "completed", just
-            # with the binary attempt's own result folded into the message.
-            _state.step = "Installing the Tesseract program…"
-            #: The wrapper was installed by a child process a moment ago; the
-            #: import system caches directory listings, so without this the
-            #: next `find_spec` can still say it is missing.
-            importlib.invalidate_caches()
-            installed, binary_message = ocr.attempt_binary_install()
-            ocr.clear_language_cache()
-            _state.log.append(binary_message)
-            #: Said as it is (INBOX 443 (3)): this used to say "installed:
-            #: restart Tessellate to use it" even when the program was missing
-            #: and a restart would change nothing. The reader imports lazily,
-            #: so a ready engine needs no restart.
-            _state.step = (
-                f"{extra.label} is ready. {binary_message}"
-                if installed
-                else f"The Python part is installed, but the Tesseract program is not. {binary_message}"
-            )
+            _install_ocr_binary(extra)
         else:
             _state.step = f"{extra.label} installed: restart Tessellate to use it."
         if code == 0:
@@ -1534,41 +1877,7 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
         _state.outcome = "failed"
         _state.step = "Couldn't run pip: see Settings, Logs for why."
     finally:
-        _state.running = False
-        _state.process = None
-        if _state.cancelled:
-            # Terminating pip mid-download makes it exit non-zero, which the
-            # branches above have already written up as a failure. It wasn't
-            # one, someone pressed Quit, and a task history full of
-            # "Installing X failed" for things nobody wanted is how a history
-            # stops being read.
-            _state.outcome = "cancelled"
-            _state.step = "Stopped before it finished."
-            _roll_back(before)
-        shutil.rmtree(pip_tmp, ignore_errors=True)
-        # See the module docstring's numbered note above `_logger`: this call
-        # was missing entirely until now, which is the actual reason a failed
-        # *install* never reached Settings, Logs, `_run_uninstall` had it,
-        # this function did not.
-        if _state.outcome == "failed":
-            _logger.error(
-                "Installing %s failed: %s\n%s",
-                extra.label,
-                _state.step,
-                "\n".join(_state.log[-40:]),
-            )
-        else:
-            _logger.info("Installed %s.", extra.label)
-        from tessellate.core import taskhistory
-        taskhistory.record(
-            "extra",
-            f"Installing {extra.label}",
-            _state.outcome,
-            _state.step,
-            duration_ms=(time.time() - _state.started) * 1000 if _state.started else None,
-        )
-        if constraints_copy is not None:
-            constraints_copy.unlink(missing_ok=True)
+        _install_cleanup(extra, pip_tmp, before, constraints_copy)
         # Last, after the history row: a reader that waits for "not running"
         # (the Packages poll, a test) must find the row already written.
         _state.running = False
@@ -1692,6 +2001,7 @@ def start(extra_id: str, reinstall: bool = False, auto: bool = False) -> tuple[b
     refused = _install_refusal(extra, reinstall)
     if refused:
         return False, refused
+    _release_captions_helper(extra)
     with _lock:
         if _busy():
             return False, "Another install is already running."
@@ -1702,6 +2012,28 @@ def start(extra_id: str, reinstall: bool = False, auto: bool = False) -> tuple[b
     worker = _run_download_install if extra.kind == "download" else _run_install
     _dispatch(_run_single, worker, extra, reinstall, name=extra.label)
     return True, f"{'Reinstalling' if reinstall else 'Installing'} {extra.label}."
+
+
+#: What to stop before an extra's files are replaced, by extra id. The modules that
+#: hold the files open register themselves (`on_release`) when they load, so this
+#: module never imports them (a statement or an `importlib` call here is a cycle,
+#: tests/test_no_import_cycles.py and tests/test_import_module_cycles.py); a
+#: module that was never loaded holds nothing.
+_RELEASE_HOOKS: dict[str, list[Callable[[], None]]] = {}
+
+
+def on_release(ids: tuple[str, ...], hook: Callable[[], None]) -> None:
+    """Run `hook` before any of the extras `ids` is installed over."""
+    for extra_id in ids:
+        _RELEASE_HOOKS.setdefault(extra_id, []).append(hook)
+
+
+def _release_captions_helper(extra: Extra) -> None:
+    """Stop what holds the extra's files open (the captions helper holds the
+    model, the natural voice holds the voice file, which Windows cannot replace)
+    before they are replaced or removed. It starts again on the next use."""
+    for hook in _RELEASE_HOOKS.get(extra.id, ()):
+        hook()
 
 
 def _install_refusal(extra: Extra, reinstall: bool) -> str:
@@ -1730,6 +2062,7 @@ def remove(extra_id: str) -> tuple[bool, str]:
     blocked = removal_locked(extra) or _loaded_in_process_reason(extra)
     if blocked:
         return False, blocked
+    _release_captions_helper(extra)
     with _lock:
         if _busy():
             return False, "Another install is already running."
@@ -1869,33 +2202,40 @@ def _uninstall_skip(extra, installed: bool) -> str:  # noqa: ANN001
     return removal_locked(extra) or ""
 
 
-def _run_bulk_item(item: dict) -> None:
-    """One package of a bulk action, with the guards its own button has."""
-    extra = EXTRAS_BY_ID[item["id"]]
-    action = _bulk.action
-    installed = is_installed(extra)
-    reinstall = action == "reinstall" and installed
+def _bulk_refusal(item: dict, extra: Extra, action: str, installed: bool, reinstall: bool) -> bool:
+    """Write the outcome of an item that is skipped or refused; True when it was."""
     if action == "uninstall":
         skipped = _uninstall_skip(extra, installed)
         if skipped:
             item["outcome"], item["message"] = "skipped", skipped
-            return
+            return True
         refused = _loaded_in_process_reason(extra)
     else:
         if action == "install" and installed:
             item["outcome"] = "skipped"
             item["message"] = "Already installed."
-            return
+            return True
         refused = _install_refusal(extra, reinstall)
         if refused and (extra.unavailable or unavailable_reason(extra)):
             #: Not a failure: the row says this before anyone presses
             #: anything, and a bundle that names it is still worth the rest.
             item["outcome"] = "skipped"
             item["message"] = refused
-            return
+            return True
     if refused:
         item["outcome"] = "failed"
         item["message"] = refused
+        return True
+    return False
+
+
+def _run_bulk_item(item: dict) -> None:
+    """One package of a bulk action, with the guards its own button has."""
+    extra = EXTRAS_BY_ID[item["id"]]
+    action = _bulk.action
+    installed = is_installed(extra)
+    reinstall = action == "reinstall" and installed
+    if _bulk_refusal(item, extra, action, installed, reinstall):
         return
     removing = action == "uninstall"
     with _lock:
@@ -1979,6 +2319,14 @@ def _loaded_in_process_reason(extra: Extra) -> str:
                 "is in use: a restart releases it."
             )
         return ""
+    if extra.id in CAPTIONS_IDS:
+        # The helper is a child process of ours, not a mapped library, but a
+        # run in progress is using both files.
+        # Asked through `sys.modules`, like the needle engine above: captions that
+        # were never imported are not running, and an import here is a cycle
+        # (ai.captions reaches this module through captions_process and core.deps).
+        captions = sys.modules.get("tessellate.ai.captions")
+        return "Stop live captions first. They are using it." if captions is not None and captions.running() else ""
     if extra.id != "voice":
         return ""
     from tessellate.ai import voice
@@ -2017,15 +2365,27 @@ def install_blocking(extra_ids: list[str]) -> int:
             continue
         started, message = start(extra_id)
         if not started:
-            _logger.warning("extra %s not installed: %s", extra_id, message)
+            _blocking_failure(f"extra {extra_id} not installed: {message}")
             failed += 1
             continue
         while current().running:
             time.sleep(0.5)
         if current().outcome != "completed":
-            _logger.warning("extra %s failed: %s", extra_id, current().step)
+            _blocking_failure(f"extra {extra_id} failed: {current().step}")
             failed += 1
     return failed
+
+
+def _blocking_failure(line: str) -> None:
+    """Why the wizard's install failed, in the log and on stderr. A windowed
+    build's stderr is `logs/desktop-stdio.log` (`_ensure_std_streams`), the
+    file the wizard's support text and the package check read; the logger
+    alone left that file empty when `--install-extras` exited 1, so neither
+    could say which package or which step had failed."""
+    _logger.warning("%s", line)
+    if sys.stderr is not None:
+        sys.stderr.write(line + "\n")
+        sys.stderr.flush()
 
 
 def download_ready(extra_id: str) -> Path | None:

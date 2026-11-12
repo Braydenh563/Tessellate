@@ -10,7 +10,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests import _js_scope
 from tests._app_js import app_js_text
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = app_js_text()
@@ -27,7 +29,7 @@ def test_paste_as_note_is_a_chord_left_to_the_browser_in_a_text_box():
     wiring = (JS / "settings-wiring.js").read_text(encoding="utf-8")
     assert 'pasteNote: { keys: "Ctrl+Shift+V"' in wiring
     assert 'id === "pasteNote") && inTextField) continue;' in wiring
-    paste = _body((JS / "quick-note.js").read_text(encoding="utf-8"), "pasteClipboardAsNote")
+    paste = _body(_js_scope.unwrapped((JS / "quick-note.js").read_text(encoding="utf-8")), "pasteClipboardAsNote")
     assert "navigator.clipboard.readText()" in paste and "createNoteSafely(" in paste
     assert "pushUndo(" in paste
     panes = (JS / "settings-panes.js").read_text(encoding="utf-8") + (JS / "app-features.js").read_text(encoding="utf-8")
@@ -48,7 +50,7 @@ def test_the_ai_dot_says_how_the_last_answer_went():
 
 
 def test_a_suggested_link_is_two_chips_a_bar_and_a_reason_on_request():
-    inbox = (JS / "suggestions-inbox.js").read_text(encoding="utf-8")
+    inbox = _js_scope.unwrapped((JS / "suggestions-inbox.js").read_text(encoding="utf-8"))
     row = _body(inbox, "inboxLinkRow")
     assert "link-suggestion-note" in row and "ph-arrows-left-right" in row
     assert "Add a reason" in row and 'reason.classList.add("hidden")' in row
@@ -59,7 +61,7 @@ def test_a_suggested_link_is_two_chips_a_bar_and_a_reason_on_request():
 def test_the_vault_rekey_has_a_button():
     assert 'id="account-rekey"' in HTML and 'id="account-rekey-password"' not in HTML
     assert 'data-help-for="rekey-help"' in HTML
-    controls = (JS / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
     assert '"/auth/rotate-vault-key"' in controls
     #: The password on the lock card's prompt, not a second password field.
     assert "askPasswordPrompt({" in controls[controls.index('$("account-rekey")') :][:1200]

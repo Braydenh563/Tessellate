@@ -71,7 +71,11 @@ def test_a_subject_no_note_holds_whole_is_led_by_the_words_that_are_held(client,
     said, _ = _go(client, monkeypatch)("what did I write about plumber 9988")
     lead = said.split("\n", 1)[0]
     assert "9988" not in lead and "plumber" in lead, lead
-    assert said.count("9988") == 1, said
+    #: N36's close ("do not talk about 9988") was dropped for a bare number by
+    #: fc7-1110 F7 (9b5cf7429, `_is_unfound`: only noun-like words are named
+    #: missing). The stated intent, that 9988 is never both subject and close,
+    #: becomes: it appears at most once.
+    assert said.count("9988") <= 1, said
 
 
 def test_a_vague_pick_is_one_note_and_filler_is_never_a_subject(client, session, monkeypatch):

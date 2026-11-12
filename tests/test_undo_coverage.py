@@ -33,6 +33,7 @@ import os
 import re
 from functools import lru_cache
 from pathlib import Path
+from tests import _js_scope
 from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
@@ -273,14 +274,18 @@ def _call_end(m: str, start: int) -> int:
     return i
 
 
-def _parents(funcs) -> list[int]:
-    """Index of each function's enclosing function (-1 at the top)."""
+def _parents(funcs, wrapped: bool = False) -> list[int]:
+    """Index of each function's enclosing function (-1 at the top). A script
+    wrapped whole in one closure (ranked row 37a) has that closure as the root:
+    its functions are the file's top level, as they were before the wrap."""
     parent, stack = [], []
     for idx, f in enumerate(funcs):
         while stack and funcs[stack[-1]][1] < f[0]:
             stack.pop()
         parent.append(stack[-1] if stack else -1)
         stack.append(idx)
+    if wrapped and funcs:
+        parent = [-1 if p <= 0 else p for p in parent]
     return parent
 
 
@@ -292,7 +297,7 @@ def analyse():
         src = path.read_text(encoding="utf-8")
         m = mask(src)
         funcs = functions(m)
-        files[path.name] = (src, m, funcs, _parents(funcs), [f[0] for f in funcs])
+        files[path.name] = (src, m, funcs, _parents(funcs, _js_scope.is_wrapped(src)), [f[0] for f in funcs])
     direct = {}
     by_name: dict[str, set[str]] = collections.defaultdict(set)
     for fn, (src, m, funcs, _, _) in files.items():
@@ -401,7 +406,10 @@ def analyse():
         for hit in ident.finditer(m):
             if hit.group(1) in wanted:
                 before = m[max(0, hit.start() - 9):hit.start()]
-                if not before.endswith(("function ", "function*", "const ", "let ", "var ")):
+                #: A wrapped script's export foot lists names; it is not a use.
+                foot = m.rfind("\n", 0, hit.start()) + 1
+                listed = m.startswith("  Object.assign(window,", foot)
+                if not before.endswith(("function ", "function*", "const ", "let ", "var ")) and not listed:
                     found[hit.group(1)].append(hit.start())
         where[fn] = found
     callers_ok: dict[tuple[str, int], bool] = {}
@@ -448,12 +456,37 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "answer-kit.js:send": "job: remembers how a card was answered (Confirm, Cancel, Undo); the card has its own Undo and no note is changed",
+    "settings-rows.js:syncPair": "job: pairs with another computer; Unpair undoes it and no note is changed",
+    "settings-rows.js:syncUnpair": "job: forgets the pairing; Pair again restores it and no note is changed",
+    "settings-rows.js:syncReset": "job: a new sync id for this notebook, after a confirm; the other computers pair again and no note is changed",
+    "settings-controls.js:saveAddressNames": "settings: a setting with its own Reset or the settings history",
+    "studio.js:speakNatural": "read: speaks a note aloud; nothing is written",
+    "studio.js:follow": "job: stops a studio run; deletes no user data",
+    "studio.js:start": "job: starts a studio run that saves a new recording the person can delete; changes no existing note",
+    "sync-folder.js:build": "send: a sync keeps the older text of any note it replaces in that note's History, and a note it binned is in the recycle bin",
+    "answer-kit.js:toolChip": "send: Fetch again refreshes the kept copy of a web page from the web; nothing the person wrote changes",
+    "answer-kit.js:keptPagesRow": "read: asks how old the kept web pages are; its Fetch again refreshes a kept copy, nothing the person wrote changes",
+    "settings-controls.js:(anonymous /websearch/stored)": "send: clears the cache of fetched web pages; each fetches again when next asked, nothing the person wrote is lost",
+    "whiteboard-format.js:(anonymous /media/${meta.id}/library)": "send: files a board picture into the Library on request (K18); deleting it from the Library takes it out again, the board keeps it",
+    "extra-notice.js:extraNoticeInstall": "job: installs an optional package; the notice turns to Undo, which stops or removes it",
+    "extra-notice.js:extraNoticeUndo": "inverse: the Undo of extraNoticeInstall, stops the download or removes the package it installed",
+    "vault-unlock.js:keepTypedWords": "auth: seals the words typed and not saved at a lock; no note changes",
+    "vault-unlock.js:restoreTypedWords": "auth: puts the sealed typed words back at unlock and drops the seal; no note changes",
+    "origin-bridge.js:(anonymous path)": "send: the one-time carry of saved settings from 127.0.0.1 to localhost (routes_origin_handoff); it writes nothing the person made and runs once before the app opens",
     "settings-health.js:renderRunningCopies": "send: asks another running copy to quit (Shut down); a quit cannot be undone, and the row names the copy and port",
     "capture-card-more.js:askCaptureSuggestions": "read: asks for tag suggestions for the capture card's words (/entries/suggest-tags); writes nothing",
-    "capture-card-more.js:uploadCapturePictures": "send: part of saving the capture card; stores the pictures the new note links; the note's own Undo (announceSavedNote) takes the note back",
+    "capture-stage.js:uploadCapturePictures": "send: part of saving the capture card; stores the pictures the new note links; the note's own Undo (announceSavedNote) takes the note back",
+    "capture-stage.js:attachCaptureFiles": "send: part of saving the capture card; attaches the staged files to the note just made; the note's own Undo (announceSavedNote) takes the note and its files back",
     "quick-note.js:createNoteSafely": "inverse: the one door for saving a new note; each caller offers the saved note's Undo (announceSavedNote, pushEntryCreateUndo, the paste toast's Bin); a held note is not on the server yet",
     "chat-turn.js:offerReminder": "read: reads a reminder out of the message (/reminders/suggest); the chip that makes one pushes Undo",
     "lightbox-view.js:openLightbox": "auth: a two-minute link to one file for the system browser; no user data",
+    "diagram-ai.js:ask": "read: asks /drafts/diagram-ask for a change to show as a preview; nothing is written until Apply",
+    "diagram-ai.js:applyPreview": "board: the change goes in through the builder's own history (h.commit, Ctrl+Z); the POST only names the saved version",
+    "private-spaces.js:unlock": "auth: sign-in, recovery or lock; no user data",
+    "private-spaces.js:report": "auth: sign-in, recovery or lock; no user data",
+    "private-spaces.js:(anonymous /private-spaces/lock)": "auth: sign-in, recovery or lock; no user data",
+    "hello-unlock.js:helloPost": "auth: Windows Hello's enrol, unlock and remove; no user data",
     "diagram-suggest.js:compose": "read: asks /drafts/compose for a diagram to show as ghosts; nothing is saved until a block is placed, which the builder's own Undo takes back",
     "account-recovery.js:onclick": "inverse: restoring a backup on the lock screen snapshots the empty notebook first (POST /backups/restore), and that snapshot is the way back; there is no session to hold an Undo",
     "settings-health.js:onclick": "job: the data folder check only makes missing folders again and lists missing files; it deletes and overwrites nothing",
@@ -478,7 +511,7 @@ EXEMPT: dict[str, str] = {
     "wiring.js:(anonymous /preferences)": "settings: a setting with its own Reset or the settings history",
     "graph.js:graphUnpinAllNow": "inverse: the one door for Unpin all; its callers (Reset, the More menu) offer Undo, which writes the released rows back",
     "lag-watch.js:lagFlush": "telemetry: sends lag reports to this app's own log file; nothing of the person's",
-    "chat-attach.js:keepUnreadableChatFile": "send: keeps a dropped file the chat cannot read in Library > Files, which says so in its toast; deleting it there is the way back",
+    "chat-docs.js:keepUnreadableChatFile": "send: keeps a dropped file the chat cannot read in Library > Files, which says so in its toast; deleting it there is the way back",
     "documents.js:docDropIfUntouched": "purge: bins only a document never written in, so there is nothing to restore",
     "wiring.js:toggleWebSearch": "settings: the Web switch is its own on/off and toasts the new state; clicking again undoes it",
     "palette.js:agentCommitFiles": "send: stages files for the popup agent's turn, deleting them again if the send fails",
@@ -487,6 +520,7 @@ EXEMPT: dict[str, str] = {
     "settings-controls.js:(anonymous /models/sampling)": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:(anonymous /debug/health/integrity)": "telemetry: telemetry or a background warm-up; no user data",
     "settings-data.js:(anonymous /suggestions/dismissed/clear)": "settings: clears the dismissed-suggestions list, a preference",
+    "settings-data.js:dismissedRestore": "settings: restores one dismissed suggestion, a preference; its Undo is settingsClearDone's (offerUndo and Recent changes)",
     "settings-controls.js:(anonymous /websearch/searxng/stop)": "job: starts or stops work or a model; deletes no user data",
     "settings-controls.js:(anonymous /websearch/searxng/reinstall)": "job: starts or stops work or a model; deletes no user data",
     "settings-controls.js:(anonymous /websearch/detect-searxng${query})": "job: starts or stops work or a model; deletes no user data",
@@ -518,6 +552,7 @@ EXEMPT: dict[str, str] = {
     "whiteboard.js:initWhiteboard": "board: the background image is set through wbSetBackground, which pushes the board step; the file stays in the Library",
     "whiteboard-map.js:wbMapTakePicture": "board: the picture is set on the topic through wbMapSetNodeStyle, which pushes the board step; the file stays in the Library",
     "tidy.js:tidyRunLinkReasons": "job: starts a background pass",
+    "meetings.js:recordingMenu": "job: Label speakers by voice is a background run on the card, asked first when it would replace names",
     "meetings.js:nameRecordingSpeakers": "read: asks the model to name speakers, shown for review",
     "library.js:ocrRunRegion": "read: reads a region of a picture, shows the text for review",
     "chat-edit.js:chatTooLong": "send: saves an over-long message as a note on the person's own click so it can be asked about; deleting it in Notes is the way back",
@@ -527,13 +562,16 @@ EXEMPT: dict[str, str] = {
     "whiteboard.js:wbRestoreLinks": "inverse: draws a deleted item's links again for the board history's own Undo",
     "whiteboard-map.js:wbMapRestoreRows": "inverse: puts back a deleted branch for the board history's own Undo and Redo",
     "whiteboard-map.js:wbMapAdoptProvisional": "board: gives a topic already on the board's history (its create step is remapped to the server id)",
-    "settings-wiring.js:commitCaptureImages": "send: uploads the pictures of a note being saved; the save is the step (Undo bins the note)",
+    #: The note's create step is now pushed before the staged files go (INBOX e2e "Undo takes a new note back"), so the
+    #: pictures uploaded first sit inside the step and the files attached after it are the exempt send.
+    "settings-wiring.js:uploadStagedFiles": "send: attaches the staged files to the note just saved; the save is the step (Undo bins the note with them)",
+    "settings-rows.js:syncNow": "job: pulls the paired computer's changes (WORLD_CLASS_PLAN B6); an Undo would be pulled back by the next sync, each note keeps its own history",
     "library.js:noteRead": "telemetry: opening a saved link marks it read, as visiting a page does; reading is not an edit",
     "chat-undo.js:chatPut": "inverse: the chat undo helpers' own PUT",
     "batch-space.js:batchSpaceRequest": "inverse: the move request itself; batchMoveToSpace pushes the step with the answer's old places",
     "settings-controls.js:restoreFullBackup": "job: a confirmed restore that snapshots the current notebook first; the snapshot is the way back",
     "meetings.js:meetingTakeFlush": "job: uploads the audio chunks of a take in progress; Discard is the take's own undo",
-    "media.js:toggleDictation": "read: transcribes speech into the box being typed in",
+    "gesture-kit.js:toggleDictation": "read: transcribes speech into the box being typed in",
     "documents.js:docImageUpload": "send: uploads the picked image; the embed it writes is in the document's own undo (Ctrl+Z takes it out)",
     "documents.js:docAiReview": "read: asks the model to check a document, shows a result",
     "answer-kit.js:streamChatEvents": "send: streams the Ask box's answer; the question is kept in Ask history",
@@ -547,7 +585,7 @@ EXEMPT: dict[str, str] = {
     "activity-panel.js:stopActivityJob": "job: starts or stops work or a model; deletes no user data",
     "activity-panel.js:stopActivityModel": "job: starts or stops work or a model; deletes no user data",
     "activity-panel.js:stopAllActivity": "job: starts or stops work or a model; deletes no user data",
-    "ai-tools.js:applyEmbeddingBackend": "settings: a setting with its own Reset or the settings history",
+    "settings-controls.js:applyEmbeddingBackend": "settings: a setting with its own Reset or the settings history",
     "ai-tools.js:applyFeatureModel": "settings: a setting with its own Reset or the settings history",
     "chat-tasks.js:renderTasks": "job: starts or stops work or a model; deletes no user data",
     "improve-panel.js:runImprove": "read: reads or asks the model; shows a result, writes nothing",
@@ -575,6 +613,7 @@ EXEMPT: dict[str, str] = {
     "chat-attach.js:openExtractPreview": "read: reads or asks the model; shows a result, writes nothing",
     "chat-turn.js:saveFollowups": "telemetry: stores suggested follow-up chips",
     "chat-turn.js:writeCheckpoint": "send: a chat message, kept by the chat's own turn history",
+    "chat-turn.js:persist": "send: a chat message, kept by the chat's own turn history (its Undo word case went to `ask` in the E44 split)",
     "chat.js:setResponseMode": "settings: a setting with its own Reset or the settings history",
     "web-results.js:setWebSearxngRunning": "job: starts or stops work or a model; deletes no user data",
     "web-results.js:startSearxng": "job: starts or stops work or a model; deletes no user data",
@@ -627,6 +666,7 @@ EXEMPT: dict[str, str] = {
     "ocr-engine.js:ocrEngineStartInstall": "job: starts or stops work or a model; deletes no user data",
     "onboarding.js:maybeShowConsoleViewIntro": "settings: a setting with its own Reset or the settings history",
     "onboarding.js:renderOnboardingActions": "job: starts or stops work or a model; deletes no user data",
+    "onboarding.js:renderPrefs": "settings: a setting with its own Reset or the settings history",
     "phone-shell.js:clearAppCache": "job: starts or stops work or a model; deletes no user data",
     "notifications.js:openExportsFromNotification": "job: starts or stops work or a model; deletes no user data",
     "phone-shell.js:quitApp": "auth: sign-in, recovery or lock; no user data",
@@ -665,7 +705,7 @@ EXEMPT: dict[str, str] = {
     "settings-controls.js:changePassword": "auth: sign-in, recovery or lock; no user data",
     "settings-panes.js:reportTimezone": "settings: a setting with its own Reset or the settings history",
     "settings-panes.js:savePrefs": "settings: a setting with its own Reset or the settings history",
-    "settings-panes.js:saveSearchProvider": "settings: a setting with its own Reset or the settings history",
+    "settings-prefs.js:saveSearchProvider": "settings: a setting with its own Reset or the settings history",
     "settings-panes.js:setPreference": "settings: a setting with its own Reset or the settings history",
     "settings-wiring.js:persistSavedSearches": "settings: a setting with its own Reset or the settings history",
     "settings-wiring.js:lockRequest": "auth: sign-in, recovery or lock; no user data",
@@ -709,6 +749,8 @@ EXEMPT: dict[str, str] = {
     "whiteboard.js:wbSaveNode": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard.js:wbSaveObject": "board: low-level board save; its callers push wbPushUndo",
     "whiteboard.js:wbSaveSketchProps": "board: low-level board save; its callers push wbPushUndo",
+    "documents-languagetool.js:ask": "read: sends a document's paragraphs to the local grammar checker; shows matches, writes nothing",
+    "whiteboard-format.js:(anonymous /media/upload)": "board: Replace picture uploads the file; the address swap is wbFmtApply's one board Undo step",
     "answer-kit.js:applyPendingChatTitle": "send: names a chat as its first message creates it; renaming a chat afterwards has Undo",
 }
 

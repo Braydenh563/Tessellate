@@ -7,12 +7,16 @@ fixes, each measured or reasoned in its comment.
 
 from __future__ import annotations
 
+import re
+
 from pathlib import Path
+from tests import _js_scope
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 LIGHTBOX = (ROOT / "frontend" / "js" / "lightbox-view.js").read_text(encoding="utf-8")
-CATEGORIES = (ROOT / "frontend" / "js" / "categories-panel.js").read_text(encoding="utf-8")
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+CATEGORIES = _js_scope.unwrapped((ROOT / "frontend" / "js" / "categories-panel.js").read_text(encoding="utf-8"))
+AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 
 
 def _fn(src: str, name: str) -> str:
@@ -49,7 +53,8 @@ def test_a_companion_shown_again_starts_fresh() -> None:
     # The click's poke is a closure now (INBOX 443: a double-click is not
     # two pokes), one level deeper.
     #: Brief 34: a rub meanwhile has made up already, so the pout is skipped then too.
-    assert "if (!buddy.isConnected || (nmb.rubbedAt || 0) > now) return;\n          buddy.classList.remove(\"nmb-grumpy\");" in AV
+    #: Matched across whitespace: the click reaction became a `react` closure (buddyrev-1108), indenting it again.
+    assert re.search(r"if \(!buddy\.isConnected \|\| \(nmb\.rubbedAt \|\| 0\) > now\) return;\s*\n\s*buddy\.classList\.remove\(\"nmb-grumpy\"\);", AV)
     assert "nmb.visit = null;" in gone
 
 

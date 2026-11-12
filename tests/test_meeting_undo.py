@@ -6,8 +6,9 @@ as a document) each push onto the undo bar. Driven in a browser by
 from __future__ import annotations
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
-JS = (Path(__file__).resolve().parents[1] / "frontend/js/meetings.js").read_text(encoding="utf-8")
+JS = unwrapped((Path(__file__).resolve().parents[1] / "frontend/js/meetings.js").read_text(encoding="utf-8"))
 
 
 def _block(head: str) -> str:

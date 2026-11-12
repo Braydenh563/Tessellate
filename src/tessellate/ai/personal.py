@@ -139,7 +139,7 @@ _ASKS: tuple[tuple[str, re.Pattern], ...] = (
     #: Every learn question one verb stem: "what am I learning", "what have I
     #: been studying", "what do I want to learn" (audit 1030 Z59).
     ("learning", re.compile(r"^what (?:\w+ )?(?:am i|have i been|do i want to|i'?m) (?:learn|study)(?:ing)?\b")),
-    ("profile", re.compile(r"^(?:what do you know about me|do you (?:remember|know) me|tell me about (?:me|myself)|who am i|"
+    ("profile", re.compile(r"^(?:what do you know about me|do you (?:remember|know) me|tell me about (?:me|myself)|who am i(?=\s*$)|"
                            r"what have i told you about (?:me|myself))\b")),
     ("advice", re.compile(r"^(?:what|which) should i (eat|watch|listen to|read|cook)\b")),
 )
@@ -382,18 +382,26 @@ _GENERAL = re.compile(r"^(?:what|who|where|when|why|how|which)(?:'s| is| are| wa
 #: are looked in and the thing named), not a question about the world.
 _TOPIC_NUDGE = re.compile(r"^(?:(?:and|so|hmm+|um+|well|ok(?:ay)?) )*(?:what|how) about\b")
 _PERSONAL = re.compile(r"\b(?:i|i'm|im|i've|me|my|mine|myself|we|our|us)\b")
+#: "the table number", "my booking number": a number only the person's own notes could hold, so a
+#: miss is theirs to hear ("None of your notes give ..."), not "general knowledge".
+_OWN_NUMBER = re.compile(r"\b(?:table|room|seat|booking|reservation|confirmation|reference|flight|ticket|locker|order|account|policy|membership|invoice|tracking)\s+(?:number|no\.?)(?!\w)")
 #: "Who is Sam": a bare name is someone the notes may name, not the world's
 #: (the engine probe's P1 says "I found nothing about “Sam”").
 _WHO_NAME = re.compile(r"^who(?:'s| is| was) (?!the |a |an )\w+(?: \w+)?[?.]*$")
+
+
+#: "how long until the tax return": a countdown to something the notes may date, so a miss says no note
+#: gives the day, never "general knowledge" (the composer's `_until`).
+_COUNTDOWN = re.compile(r"^how (?:long|many (?:days|weeks|months)) (?:is it |is there |left )?(?:until|till|before)\b")
 
 
 def general(question: str) -> bool:
     """A question about the world, not the person or their notes ("what's
     the capital of France"): with nothing found it is said as such."""
     q = _clean(question)
-    if _WHO_NAME.match(q) or _TOPIC_NUDGE.match(q):
+    if _WHO_NAME.match(q) or _TOPIC_NUDGE.match(q) or _COUNTDOWN.match(q):
         return False
-    return bool(_GENERAL.match(q)) and not _PERSONAL.search(q) and not re.search(r"\b(?:you|your|note|notes)\b", q)
+    return bool(_GENERAL.match(q)) and not _PERSONAL.search(q) and not _OWN_NUMBER.search(q) and not re.search(r"\b(?:you|your|note|notes)\b", q)
 
 
 _OWN_NOTES = re.compile(
@@ -450,6 +458,8 @@ def general_reply(web_on: bool, *, web_pref: bool = False, by_choice: bool = Fal
     if web_pref:
         return ("That's general knowledge rather than something in your notes. Web search is on, but it runs in Agent mode in Chat, "
                 "not in Ask, so this answer comes from your notes only.")
-    why = "you chose to answer from your notes only" if by_choice else "with no model running I only know what your notes say"
-    return (f"That's general knowledge, and {why}, and none of them covers it. "
+    if not by_choice:
+        return ("That's general knowledge rather than something in your notes. "
+                "Turn on web search in [Settings](#/settings/websearch) to look it up.")
+    return ("That's general knowledge, and you chose to answer from your notes only, and none of them covers it. "
             "Turn on web search in [Settings](#/settings/websearch) to look it up.")

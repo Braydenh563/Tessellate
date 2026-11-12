@@ -66,7 +66,8 @@ def test_a_phone_keeps_the_picture_and_opens_the_blocks_list_as_a_sheet_once_the
     assert "home.insertBefore(S.pane, before)" in TOUCH and "dgm-listbtn" in TOUCH and "dgm-phonelist" in TOUCH
     steps = (JS / "diagram-steps.js").read_text(encoding="utf-8")
     assert 'S.root.classList.toggle("dgm-listless", m.edges.length > 0)' in steps
-    rule = CSS[CSS.index(".dgm-phonelist.dgm-listless .dgm-body > .dgm-pane") :].split("}", 1)[0]
+    # The pane sits in a .dgm-listcol since 1738, so the child combinator alone stopped matching and the list lay over the picture at 390.
+    rule = CSS[CSS.index(".dgm-phonelist.dgm-listless .dgm-body > :is(.dgm-pane, .dgm-listcol)") :].split("}", 1)[0]
     assert "display: none" in rule
     assert ".dgm-phonelist.dgm-listless .dgm-body {" in CSS and "grid-template-rows: minmax(0, 1fr)" in CSS and ".sheet-card > .dgm-pane" in CSS
 

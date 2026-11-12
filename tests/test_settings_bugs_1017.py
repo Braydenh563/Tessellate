@@ -12,6 +12,8 @@ from pathlib import Path
 
 from tests._css_paths import CSS_FILES
 from tests._app_js import with_pieces
+from tests import _js_scope
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -44,7 +46,7 @@ def test_b60_ocr_language_picker_centres_its_caption_in_settings():
 
 
 def _fn(js_name: str, name: str) -> str:
-    text = (ROOT / "frontend" / "js" / js_name).read_text(encoding="utf-8")
+    text = unwrapped((ROOT / "frontend" / "js" / js_name).read_text(encoding="utf-8"))
     start = text.index(f"function {name}(")
     end = text.index("\n}\n", start)
     return text[start:end]
@@ -74,7 +76,7 @@ def test_b56_every_auto_choice_says_what_it_resolved_to():
     # needs no `typeof` guard on a function that may not exist yet.
     assert "settingsReadouts.auto?.()" in text.split("function renderAppearance", 1)[1]
     assert "settingsReadouts.auto?.()" in text.split("DENSITY_SHORT.addEventListener", 1)[1][:400]
-    controls = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
     assert "settingsReadouts.auto = renderAutoChoices;" in controls
 
 
@@ -97,7 +99,7 @@ def _run_node(script: str) -> str:
 
 
 def _js_function(path: str, name: str) -> str:
-    src = (ROOT / "frontend" / "js" / path).read_text(encoding="utf-8")
+    src = unwrapped((ROOT / "frontend" / "js" / path).read_text(encoding="utf-8"))
     start = src.index(f"function {name}(")
     if src[max(0, start - 6) : start] == "async ":
         start -= 6
@@ -157,7 +159,7 @@ def test_b68_the_gemma4_26b_card_says_it_is_a4b():
     entry = next(m for m in SUGGESTED_MODELS["moe"] if m["name"] == "gemma4:26b")
     assert entry["label"] == "gemma4:26b (a4b)"
     assert "a4b" in entry["purpose"] and "12B-class" not in entry["purpose"]
-    cards = (ROOT / "frontend" / "js" / "settings-models.js").read_text(encoding="utf-8")
+    cards = unwrapped((ROOT / "frontend" / "js" / "settings-models.js").read_text(encoding="utf-8"))
     assert "model.label ||" in cards
 
 
@@ -201,6 +203,8 @@ def test_b55_the_web_menu_still_offers_to_start_searxng_on_duckduckgo():
         "const calls = { menu: [], dot: [] };\n"
         "let prefsCache = { search_provider: 'duckduckgo', web_search_enabled: true };\n"
         "let webSearxngTimer = null, webEngineInfo = null;\n"
+        "const prefs = { setJSON() {} };\n"
+        "async function ensureModule() { return true; }\n"
         "async function apiJson() { return { backend: 'source', state: 'stopped', responding: false, installing: false }; }\n"
         "function setWebEngineDot(state, provider) { calls.dot.push(state); }\n"
         "function renderWebPanelMenu(engine) { calls.menu.push(engine); }\n"
@@ -217,7 +221,7 @@ def test_b55_the_web_menu_still_offers_to_start_searxng_on_duckduckgo():
 # bookmarklet in the palette now offers a row that opens it. A redesign of the
 # clipper's flow is not done.
 def test_b55_the_palette_finds_the_web_clipper():
-    palette = (ROOT / "frontend" / "js" / "app-palette.js").read_text(encoding="utf-8")
+    palette = _js_scope.unwrapped((ROOT / "frontend" / "js" / "app-palette.js").read_text(encoding="utf-8"))
     assert "Web clipper" in palette and 'openSettingsModal("data", "web-clip-box")' in palette
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="web-clip-box"' in html

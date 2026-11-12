@@ -35,22 +35,23 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import note_recency, reminder_parser, task_acts, when
-from tessellate.ai import act_registry
+from tessellate.ai import address, find_topic, note_recency, object_acts, parity_acts, reminder_parser, task_acts, when
+from tessellate.ai import act_registry, act_steps
+from tessellate.ai import composer_calendar
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.act_registry import CONFIRM_INTENTS
 from tessellate.ai.filed_name import filed_listing
 
 #: The verbs of the grammar (decision 38), as said in `Command.verb`.
-VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rename", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
+VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rename", "restore", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
 #: The intents `read` gives, each with its verb.
 _VERB_OF = {
-    "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "pin": "pin",
+    "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "create_category": "create", "delete_category": "delete", "merge_categories": "rename", "delete_tag": "delete", "edit_text": "rename", "to_reminders": "remind", "run_skill": "open", "restore": "restore", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
-    "meeting": "create", "append": "add", "complete": "complete", "cancel": "cancel", "snooze": "snooze", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
+    "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "set_name": "rename", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
 }
 #: The intents that write: each is shown as a card.
-WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "cancel", "snooze"})
+WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze", "set_name"})
 #: Read only: answered at once, nothing to confirm.
 READ_INTENTS = frozenset({"find", "open", "navigate", "summarise"})
 #: The writes that wait for Confirm: anything that removes, renames, moves or
@@ -71,8 +72,8 @@ def __getattr__(name: str) -> str:
 #: Steps a command card may run. The registry tools are the agent's; the two
 #: others are this module's own, for what no registry tool does.
 RUNNABLE = frozenset(
-    {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note",
-     "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder"}
+    {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "move_notes",
+     "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder", "set_display_name"}
 )
 
 _MAX_TEXT = 300
@@ -320,6 +321,11 @@ def _bare_reminder(head: str) -> dict | None:
     return {"intent": "reminder", "text": "", "said": "", "due_at": None, "time_given": False, "no_subject": ""}
 
 
+def _repeat_of(parsed: dict | None) -> dict:
+    """The stored repeat a reminder sentence said ("every day at 8"), as the key it travels under."""
+    return {"recurring": parsed["recurring"]} if parsed and parsed.get("recurring") else {}
+
+
 def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | None:
     text, head = _reminder_head(text)
     if head is None:
@@ -355,6 +361,7 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     return {
         "intent": "reminder", "text": words[:500], "said": said_words[:500], "due_at": due, "time_given": said and _ahead(due, now),
         "clock_unsaid": bool(parsed and parsed.get("clock_unsaid")),
+        **_repeat_of(parsed),
     }
 
 
@@ -490,6 +497,27 @@ _MOVE_VERBS = {
 _BIN_WORDS = {"bin", "the bin", "trash", "the trash", "recycle bin", "the recycle bin"}
 
 
+#: The daily note said as a place: the starter acts' append, never a category named so.
+_DAILY_NOTE = re.compile(r"^(?:(?:today'?s|the|my|the day'?s) daily|today'?s|the day'?s) (?:note|journal)$|^my (?:journal|diary)$")
+
+
+def _move_category(category: str) -> str:
+    """The category a move names, cleaned, or "" when it names none (the bin,
+    the daily note, a sentence)."""
+    said = category.strip().lower()
+    category = _drop_article(category.strip())
+    low_cat = category.lower()
+    if _DAILY_NOTE.match(low_cat) or _DAILY_NOTE.match(said):
+        return ""  # "put it in today's note" appends to the daily note (starter acts), it is no category
+    for tail in (" category", " folder"):
+        if low_cat.endswith(tail):
+            category = category[: -len(tail)]
+    if category.lower().startswith("category "):
+        category = category[len("category "):]
+    category = category.strip(" '\"")
+    return "" if not category or category.lower() in _BIN_WORDS or len(category) > 120 else category
+
+
 def _move(text: str) -> dict | None:
     low = text.lower()
     verb = next((v for v in _MOVE_VERBS if low.startswith(v)), None)
@@ -502,15 +530,8 @@ def _move(text: str) -> dict | None:
     found = _target(target) or (_bare_target(target) if _MOVE_VERBS[verb] else None)
     if not found or category.lower() in ("top", "the top"):
         return None
-    category = _drop_article(category.strip())
-    low_cat = category.lower()
-    for tail in (" category", " folder"):
-        if low_cat.endswith(tail):
-            category = category[: -len(tail)]
-    if category.lower().startswith("category "):
-        category = category[len("category "):]
-    category = category.strip(" '\"")
-    if not category or category.lower() in _BIN_WORDS or len(category) > 120:
+    category = _move_category(category)
+    if not category:
         return None
     return {"intent": "move", **found, "category": category}
 
@@ -530,7 +551,9 @@ _NAMED = ("called ", "titled ", "named ")
 #: "titled X saying Y", "named X that says Y", "called X: Y" (audit 1028 E25).
 _JOIN = r"(?:with|saying|containing|including|that says|which says|that reads|reading|having|and (?:say|says|put|write|writes))"
 _QUOTED_NAME = re.compile(r"^[\"“‘'](?P<name>.{1,120}?)[\"”’'](?P<tail>.*)$", re.S)
-_PLAIN_NAME = re.compile(rf"^(?P<name>.+?)(?:\s+{_JOIN}\s+|\s*:\s*)(?P<tail>.+)$", re.I | re.S)
+#: A name that is not quoted runs to the end of what was said ("called Shopping with milk, eggs and bread" is
+#: titled that, the owner's Q5), unless a word that can only introduce text ("saying", "that says") or a colon follows it.
+_PLAIN_NAME = re.compile(rf"^(?P<name>.+?)(?:\s+{_JOIN.replace('(?:with|', '(?:')}\s+|\s*:\s*)(?P<tail>.+)$", re.I | re.S)
 _BODY_LEAD = re.compile(rf"^\s*(?:{_JOIN}\s+|[:,;-]\s*)", re.I)
 
 
@@ -567,6 +590,21 @@ _BARE_NOTE = frozenset({
 })
 
 
+#: What "make a note ..." can be followed by that is a setting of a note, not its words.
+_NOTE_SETTINGS = frozenset({"private", "public", "locked", "secret", "hidden", "pinned", "archived"})
+
+
+def _wordless_note(head: str, rest: str) -> dict | None | bool:
+    """A "note ..." with nothing to write (G2): None for a look-up or a setting ("note about
+    suica", "make a note private" are never a new note), the ask for its words for "make a
+    note about suica", False when `rest` carries words to save."""
+    if rest.lower().strip(" .") in _NOTE_SETTINGS:
+        return None
+    if rest.lower().startswith("about ") and ":" not in rest:
+        return {"intent": "new_note", "content": "", "no_subject": True} if head != "note" else None
+    return False
+
+
 def _note_lead(rest: str) -> tuple[str, bool]:
     """`rest` without its "that", "saying", "called" ...; whether that was a name."""
     for lead in ("that ", "saying ", "of ", "about ", "to say ", *_NAMED):
@@ -588,6 +626,8 @@ def _new_note(text: str) -> dict | None:
         if needs_colon and not rest.startswith(":") and not rest.lower().startswith((*_NAMED, "about ")):
             return None
         rest = rest.lstrip(" :-")
+        if (wordless := _wordless_note(head, rest)) is not False:
+            return wordless
         rest, named = _note_lead(rest)
         if named:
             said = _name_and_words(rest)
@@ -749,6 +789,7 @@ def _found_object(intent: str, head: str, rest: str) -> dict | None:
     free find ("find dentist") its topic."""
     #: A name the app cut short ("I had work today…", a chip's label).
     rest = _NOTES_SCOPE.sub("", rest).rstrip("…").rstrip()
+    rest = find_topic.topic(rest) if intent == "find" else rest
     number = re.fullmatch(r"(?:(?:note|entry) )?#?(\d{1,9})", rest, re.IGNORECASE)
     if number and (rest.startswith("#") or not rest.isdigit()):
         return {"intent": intent, "note_id": int(number.group(1))}
@@ -757,6 +798,7 @@ def _found_object(intent: str, head: str, rest: str) -> dict | None:
         return {"intent": intent, "about": found["about"]}
     if intent == "find" and head in _FREE_FIND and rest and _note_topic(rest):
         about = _drop_article(_TOPIC_FILLER.sub("", _NOTES_SCOPE.sub("", rest), count=1)) or _drop_article(rest)
+        about = find_topic.topic(about)  # "similar to my dentist one you know" searches "dentist" (B27)
         return {"intent": "find", "about": about} if about else None
     return None
 
@@ -792,6 +834,32 @@ _SURFACES = {
 }
 
 
+_CLOCK_UNIT = r"(?:hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)"
+_CLOCK = re.compile(
+    r"^(?:please )?(?:(?P<verb>set|start|begin|run|make|open|show)(?: me| up)?(?: a| an| the| my)?|(?=countdown|timer))"
+    rf"(?: (?P<n1>\d+(?:\.\d+)?) ?(?P<u1>{_CLOCK_UNIT}))? ?(?P<kind>timer|countdown|pomodoro|stopwatch|clock)"
+    rf"(?:(?: for| of)? (?P<n2>\d+(?:\.\d+)?) ?(?P<u2>{_CLOCK_UNIT}))?$")
+
+
+def _clock_ask(text: str) -> dict | None:
+    """"set a timer for 25 minutes", "start a pomodoro", "start a stopwatch": the Clock window
+    opened on the right tab with the length ready. It starts nothing: Start is the person's press."""
+    found = _CLOCK.match(text.strip(" .!").lower())
+    if not found:
+        return None
+    kind = found.group("kind")
+    if not found.group("verb") and not (found.group("n1") or found.group("n2")):
+        return None  # a bare "timer" or "countdown" is a word to look up (1334, 1357 class B), not the Clock
+    n, unit = (found.group("n1"), found.group("u1")) if found.group("n1") else (found.group("n2"), found.group("u2"))
+    minutes = None
+    if n is not None:
+        minutes = round(float(n) * {"h": 60, "m": 1, "s": 1 / 60}[unit[0]], 3)
+        minutes = int(minutes) if minutes == int(minutes) else minutes
+    elif kind == "pomodoro":
+        minutes = 25
+    return {"intent": "navigate", "surface": "clock", "minutes": minutes, "tab": "stopwatch" if kind == "stopwatch" else "timer"}
+
+
 def _navigate(text: str) -> dict | None:
     """"open settings", "go to the graph": a place in the app, not a note."""
     low = text.lower()
@@ -802,6 +870,24 @@ def _navigate(text: str) -> dict | None:
             if rest in _SURFACES:
                 return {"intent": "navigate", "surface": _SURFACES[rest]}
     return None
+
+
+def _plan_navigate(parsed: dict) -> dict:
+    if parsed["surface"] == "clock":
+        return _plan_clock(parsed)
+    return {"line": f"Opening {parsed['surface']}.", "navigate": parsed["surface"]}
+
+
+def _plan_clock(parsed: dict) -> dict:
+    minutes = parsed.get("minutes")
+    if parsed["tab"] == "stopwatch":
+        line = "Opening the Clock on the stopwatch. Press Start when you are ready."
+    elif minutes:
+        say = f"{minutes:g} minute" + ("" if minutes == 1 else "s")
+        line = f"Opening the Clock with {say} ready. Press Start to begin."
+    else:
+        line = "Opening the Clock. Pick a length and press Start."
+    return {"line": line, "navigate": "clock", "minutes": minutes, "tab": parsed["tab"]}
 
 
 def _one_target(text: str, *, bare: bool = False) -> dict | None:
@@ -827,7 +913,9 @@ def _delete(text: str) -> dict | None:
     rest = text[len(verb):].strip()
     if re.match(r"(?:the |a |my )?(?:tags?|labels?|reminders?|categor(?:y|ies)|board|map|document)\b", rest, re.I):
         return None
-    found = _one_target(rest, bare=True)
+    found = _one_target(rest)
+    if found is None and (found := _bare_target(rest)):
+        found = {**found, "bare": True}  # a title alone named it: it must be the title (F3)
     return {"intent": "delete", **found} if found else None
 
 
@@ -984,6 +1072,13 @@ def _append_parts(verb: str, body: str) -> tuple[str, str] | None:
     return (split[0], split[1]) if split else None
 
 
+def _starter_place(found: dict | None, target: str) -> bool:
+    """The daily note, and "my journal" (a note called that, else today's): the
+    composer's own (starter acts), not an append to a note found by name."""
+    about = str((found or {}).get("about", "")).lower()
+    return bool(re.fullmatch(r"(?:my )?(?:journal|diary)", target.strip().lower()) or about.startswith(("today", "yesterday", "tomorrow", "daily")))
+
+
 def _append(text: str) -> dict | None:
     low = text.lower()
     verb, _, body = text.partition(" ")
@@ -996,10 +1091,12 @@ def _append(text: str) -> dict | None:
     words, target = parts
     #: "add milk to my shopping list": a thing that is theirs (my, our) or a
     #: list-like name is a title, though it says no "note".
-    named = target.lower().startswith(("my ", "our ")) or target.lower().split(" ")[-1] in _LISTISH
+    #: "add to the Q4 report: words" names its note by the colon (R9-12).
+    colon = bool(re.match(r"(?:to|onto|on to) [^:]+: ", body, re.I))
+    named = colon or target.lower().startswith(("my ", "our ")) or target.lower().split(" ")[-1] in _LISTISH
     found = _one_target(target.strip(), bare=named)
-    if found and str(found.get("about", "")).lower().startswith(("today", "yesterday", "tomorrow")):
-        return None  # the daily note is the composer's (starter acts)
+    if _starter_place(found, target):
+        return None
     if needs_list and not (found and (named or target.lower().rstrip().endswith(("note", "entry")))):
         return None
     words = words.strip(" '\"“”")
@@ -1032,17 +1129,57 @@ def _summarise(text: str) -> dict | None:
 
 
 #: Arguments of an act that are the person's own words (never respelt).
-OWN_WORDS = ("content", "title", "tags", "text", "said")
+OWN_WORDS = ("content", "title", "tags", "text", "said", "old", "new")
 
 
-def _about_as_typed(found: dict, text: str, now: datetime, locale: str | None) -> dict:
-    """Only slang spelled out, no misspelling put right: the notes a command
-    names keep the person's own word ("delete notes about uni" is their
-    category Uni, not "university"; audit 1028 E9)."""
-    typed = read(text, now, locale)
-    if typed is not None and typed.get("intent") == found.get("intent") and "about" in typed:
-        return {**found, "about": typed["about"]}
-    return found
+#: What an act names keeps slang as typed but a misspelling put right (the
+#: lookup is helped by it); what it writes keeps every word as typed.
+_KEYS_NAMED = ("about", "asked")
+_WRITTEN = (*OWN_WORDS, "on_list")
+_WORD = re.compile(r"[^\W_]+(?:['’][^\W_]+)*")
+
+
+def _respellings(text: str, fixed: str, fixes: list) -> list[tuple[str, str, bool]]:
+    """Each word the speller changed one for one, as (chosen, typed, slang).
+    A chosen word the person also typed somewhere is left out: "at" put back
+    as "oat" would undo their own "at"."""
+    from difflib import SequenceMatcher
+
+    typed, read_as = _WORD.findall(text.lower()), _WORD.findall(fixed.lower())
+    put_right = {(str(a).lower(), str(b).lower()) for a, b in fixes}
+    pairs = []
+    for op, i1, i2, j1, j2 in SequenceMatcher(None, typed, read_as, autojunk=False).get_opcodes():
+        if op == "replace" and i2 - i1 == j2 - j1:
+            pairs += [(b, a, (a, b) not in put_right) for a, b in zip(typed[i1:i2], read_as[j1:j2]) if b not in typed]
+    return pairs
+
+
+def _put_back(value, pairs: list[tuple[str, str, bool]]):  # noqa: ANN001, ANN202
+    if isinstance(value, list):
+        return [_put_back(v, pairs) for v in value]
+    if not isinstance(value, str):
+        return value
+    for chosen, typed, _ in pairs:
+        value = re.sub(rf"\b{re.escape(chosen)}\b", lambda m, t=typed: t[:1].upper() + t[1:] if m.group(0)[:1].isupper() else t, value, flags=re.I)
+    return value
+
+
+def _as_typed(found: dict, text: str, fixed: str, fixes: list) -> dict:
+    """The person's own words back in the act (audit 1028 E9, 1029 C40):
+    "delte my uni note" names their category Uni, not "university", and "add
+    uni fees to the todo list" writes "Uni fees". The speller served the verb."""
+    pairs = _respellings(text, fixed, fixes)
+    if not pairs:
+        return found
+    slang = [p for p in pairs if p[2]]
+    out = dict(found)
+    for key in _WRITTEN:
+        if key in out:
+            out[key] = _put_back(out[key], pairs)
+    for key in _KEYS_NAMED:
+        if key in out and slang:
+            out[key] = _put_back(out[key], slang)
+    return out
 
 
 def _words_as_typed(found: dict, text: str, now: datetime, locale: str | None) -> dict:
@@ -1071,16 +1208,23 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
     #: The words an act writes are the person's own, never spell-corrected
     #: ("add oat milk to the packing list" must not write "At milk"); the
     #: speller only serves the verb and the target (audit 1029 C40).
-    if found is not None and "about" in found and fixed != text and not fixes:
-        found = _about_as_typed(found, text, now, locale)
     if found is not None and fixed != text:
-        found = _words_as_typed(found, text, now, locale)
+        found = _as_typed(_words_as_typed(found, text, now, locale), text, fixed, fixes)
     if found is not None or not text:
         return found
     #: One word a slip from a word the commands read ("pin the dentist noe",
     #: "unlnk the gym note"), read so when that makes it a command (O3).
-    guided = question_noise.guided(question_noise.tidy(text), lambda t: read(t, now, locale) is not None)
-    return read(guided, now, locale) if guided else None
+    tidy, takes = question_noise.tidy(text), lambda t: read(t, now, locale) is not None
+    #: A slip that lands on another word ("remiders" is "re" and "mid" and "ers", "skull") is read as the
+    #: command word only when the commands then take the sentence.
+    guided = question_noise.guided(tidy, takes)
+    if guided:
+        return read(guided, now, locale)
+    #: A real word swapped for another ("oven" for "open", "last" for "list") is kept only when it makes one of the
+    #: parity acts' own sentences; "oven timer" and "my last three notes" are questions, not the Clock or a list.
+    real = question_noise.guided(tidy, takes, real_to=parity_acts.words())
+    parsed = read(real, now, locale) if real else None
+    return parsed if parsed and parsed.get("intent") in parity_acts.INTENTS | {"untag"} else None
 
 
 #: Intent reads the typed commands through the leaf (act_registry.py says why).
@@ -1102,8 +1246,9 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     """The command `text` is, as {"intent", ...arguments}, or None. `locale`
     orders a numeric date in a reminder ("3/4"); none reads day first."""
     command, question, polite, urgent = _fold_urgent(text)
-    if not command:
+    if not command or composer_calendar.bulk(command):
         return None
+    command = composer_calendar.restate(command)
     #: "move the lentil soup note to the bin" says delete in other words.
     binned = _TO_THE_BIN.match(" ".join(command.split()))
     if binned:
@@ -1118,9 +1263,31 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     return found
 
 
+#: "call Anna": a bare imperative to a person, a task not a search. A name as typed (capitalised), a kin
+#: word, "the dentist" or "my boss", and for the phone verbs a name in lower case ("call anna", B25).
+_KIN = r"mum|mom|dad|nan|nana|gran|granny|grandma|grandpa|auntie|aunty|uncle"
+_BARE_CALL = re.compile(
+    rf"^(?i:(?P<verb>call|ring|phone|text|email|message|ping|whatsapp))\s+(?P<who>(?:[A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?)|(?i:{_KIN})|(?i:(?:the|my|our) [a-z]+))(?P<more>\s+(?i:(?:on|at|by|about|for|tomorrow|tonight|today|this|next|in)\b).+)?$"
+    rf"|^(?i:(?P<verb2>call|ring|phone))\s+(?P<who2>[a-z][a-z'’-]{{1,20}})$"
+)
+#: What a lower-case "call X" is not a person: a pronoun, a time or a place.
+_NOT_A_PERSON = frozenset({"me", "it", "us", "back", "them", "him", "her", "you", "again", "later", "now", "today", "tomorrow", "tonight", "home", "off", "out", "up", "down", "in", "over", "this", "that", "these", "those", "ahead", "away"})
+
+
+def _bare_call(text: str, now: datetime, locale: str | None) -> dict | None:
+    """"call Anna" is "remind me to call Anna": the same reminder, asking when (composer-r8)."""
+    found = _BARE_CALL.match(text)
+    who = found and (found.group("who") or found.group("who2"))
+    if not found or who.lower() in _NOT_A_PERSON:
+        return None
+    if found.group("who2"):  # "call anna": the name is said with its capital
+        text = f"{found.group('verb2')} {who[:1].upper()}{who[1:]}"
+    return _reminder(f"remind me to {text}", now, locale)
+
+
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
-    for reader in (_meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
-                   task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), _new_note, _untag, _tag, _move, _delete, _pin, _link, _rename,
+    for reader in (address.read_set, object_acts.read_make, lambda t: parity_acts.read(t, _one_target, lambda w: _time_of(w, now, locale)), task_acts.read_checklist_note, _meeting, _clock_ask, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
+                   task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
         if found is None:
@@ -1164,6 +1331,14 @@ def parse(text: str, now: datetime) -> Command | None:
         obj = found.get("title") or "meeting"
     elif intent == "navigate":
         obj = found["surface"]
+    elif intent in ("rename_tag", "rename_category"):
+        obj = found["old"]
+    elif intent in ("set_name", "create_category", "delete_category", "delete_tag", "run_skill"):
+        obj = found["name"]
+    elif intent == "merge_categories":
+        obj = found["from"]
+    elif intent == "to_reminders":
+        obj = found["source"]
     elif found.get("note_id") is not None:
         obj = f"note {found['note_id']}"
     else:
@@ -1259,7 +1434,10 @@ def _which(parsed: dict, session: Session, note_ids: list[int] | None) -> tuple[
 
 #: What the card says under its label: the person decides, nothing has run.
 CONFIRM_NOTICE = "Nothing changes until you confirm, and Undo takes it back."
-_SKIP_REASONS = {"private": "it is private", "binned": "it is in the bin", "failed": "it could not be changed"}
+_SKIP_REASONS = {
+    "private": "it is private", "binned": "it is in the bin", "failed": "it could not be changed", "stale": "it changed since the card was made",
+    "unfound": "no open task or reminder has that name", "unclear": "more than one fits, so say it with more of its name",
+}
 
 
 def _card(label: str, steps: list[dict], skipped: list[dict] | None = None, items: list[str] | None = None) -> dict:
@@ -1276,11 +1454,19 @@ def _card(label: str, steps: list[dict], skipped: list[dict] | None = None, item
     }
 
 
+def _skipped_said(skip: dict) -> str:
+    """One skipped row as `not_done` says it: a note by its number, a task by its name."""
+    why = _SKIP_REASONS.get(skip.get("reason"), "it could not be changed")
+    if skip.get("id"):
+        return f"note {skip['id']} ({why})"
+    return f"“{skip['name']}” ({why})" if skip.get("name") else _SKIP_REASONS.get(skip.get("reason"), "a step failed")
+
+
 def not_done(skipped: list[dict]) -> str:
     """"Not done: note 12 (it is private)." for the notes a change left."""
     if not skipped:
         return ""
-    said = [f"note {s['id']} ({_SKIP_REASONS.get(s.get('reason'), 'it could not be changed')})" if s.get("id") else _SKIP_REASONS.get(s.get("reason"), "a step failed") for s in skipped]
+    said = [_skipped_said(s) for s in skipped]
     return "Not done: " + ", ".join(said) + "."
 
 
@@ -1373,6 +1559,9 @@ def _reminder_note(session: Session, said: str, note_ids: list[int] | None):  # 
 def _task_into_note(session: Session, parsed: dict, note_ids: list[int] | None) -> dict | None:
     """The plan that appends a task to a note called that ("add milk to my
     to-do list"), or None when no note is."""
+    if parsed.get("on_list") and not parsed.get("time_given"):
+        #: "add buy stamps to my todo": a line on the note called that, or one offered (R3-33).
+        return task_acts.plan_task_line(session, parsed, _card, lambda note: note_title(note.content, size=48), _confirm)
     #: "add milk to my to-do list" when a note is called that: the note
     #: gets the line, as before tasks were acts (E10).
     #: `_fold` reads "to-do" as "to do"; a title keeps its hyphen.
@@ -1395,7 +1584,13 @@ def _plan_task(session: Session, parsed: dict) -> dict:
 
         now = user_now(deps.get_config()).replace(tzinfo=None)
         return task_acts.plan_snooze(session, parsed, _card, title, lambda due: reminder_when(due, now), now)
+    if intent == "uncomplete":
+        return task_acts.plan_uncomplete(session, parsed, _card, title)
     return task_acts.plan_complete(session, parsed, _card, title)
+
+
+#: How a stored repeat is said after the first time (R9-12).
+_REPEAT_WORDS = {"daily": "every day", "weekly": "every week", "monthly": "every month"}
 
 
 def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
@@ -1417,8 +1612,9 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
         "" if parsed.get("time_given") else " (no time was said)"
     )
     said = parsed.get("said") or parsed["text"]
-    label = f"{'Add a task due' if parsed.get('task') else 'Remind you'} {when_said}: {said}"
-    arguments = {"text": parsed["text"], "due_at": due.isoformat()}
+    again = _REPEAT_WORDS.get(parsed.get("recurring") or "")
+    label = f"{'Add a task due' if parsed.get('task') else 'Remind you'} {when_said}{f', then {again}' if again else ''}: {said}"
+    arguments = {"text": parsed["text"], "due_at": due.isoformat(), **({"recurring": parsed["recurring"]} if again else {})}
     note = _reminder_note(session, said, note_ids)
     if note is not None:
         arguments["note_id"] = note.id
@@ -1429,13 +1625,13 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
         return {"line": f"You already have a reminder “{_clip(parsed['text'], 60)}” {when_said}."}
     if _has_open_reminder(session, parsed["text"]):
         return _add_another(f"a reminder “{_clip(parsed['text'], 60)}”", card)
-    return {"line": f"{label}.", "card": card, "run": True}
+    return {"line": f"{label}.", "card": card}
 
 
 def _add_another(what: str, card: dict) -> dict:
     """The same act twice is asked, not repeated: the card waits for Confirm
     (audit 1029 C48), so a double send never makes two."""
-    return {"line": f"You already have {what}. Add another? Confirm below and I'll add it.", "card": card}
+    return {"line": f"You already have {what}. Add another? Confirm below and I'll add it.", "card": card, "duplicate": True}
 
 
 def _has_note_saying(session: Session, content: str) -> bool:
@@ -1482,6 +1678,8 @@ def _plan_tag_or_move(session: Session, parsed: dict, note_ids: list[int] | None
     ok, skipped = _split_allowed(entries)
     items = [_item(e) for e in ok]
     count = f"{len(ok)} note{'' if len(ok) == 1 else 's'}"
+    if len(ok) == 1:  # the note is named by its title, never "1 note about “Car”" (B24)
+        count, which = "the note", f"“{note_title(ok[0].content, size=48)}”"
     if intent == "tag":
         tags = " ".join(f"#{t}" for t in parsed["tags"])
         steps = [{"name": "tag_note", "arguments": {"note_ids": [e.id for e in ok], "add": parsed["tags"]}}] if ok else []
@@ -1502,15 +1700,19 @@ def _plan_tag_or_move(session: Session, parsed: dict, note_ids: list[int] | None
 def _plan_new_note(session: Session, parsed: dict) -> dict:
     if parsed.get("no_subject"):
         return {"line": "What should the note say? Send it as “make a note: …” and I'll save it."}
+    into = task_acts.plan_into_list(session, parsed, _card) if parsed.get("checklist") else None
+    if into is not None:
+        return into
     steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
     #: A named note ("called X with Y") has a title line and a body: said as
     #: `“X”: Y`, never with the line break in the sentence.
     title, _, body = parsed["content"].partition("\n")
+    title = title.lstrip("# ")
     label = f"Make a new note “{_clip(title, 50)}”: {_clip(body.strip(), 50)}" if body.strip() else f"Make a new note: “{_clip(title, 80)}”"
     card = _card(label, steps)
     if _has_note_saying(session, parsed["content"]):
         return _add_another(f"a note “{_clip(title, 60)}”", card)
-    return {"line": f"{label}.", "card": card, "run": True}
+    return {"line": f"{label}.", "card": card}
 
 
 def _plan_meeting(parsed: dict) -> dict:
@@ -1520,7 +1722,6 @@ def _plan_meeting(parsed: dict) -> dict:
     return {
         "line": f"Start a meeting{named}.",
         "card": _card(f"Start a meeting{named}", steps),
-        "run": True,
     }
 
 
@@ -1535,8 +1736,34 @@ def _plan_untag(session: Session, parsed: dict, note_ids: list[int] | None) -> d
     return {"line": _confirm(label), "card": _card(label, steps, skipped, [_item(e) for e in ok])}
 
 
+def _already_there(session: Session, parsed: dict, note_ids: list[int] | None) -> str:
+    """"Oat milk is already on your Shopping list." when the line to add is an open item of that note (R9-12), else ""."""
+    entry = _resolve_one(session, parsed.get("about"), note_ids, bool(parsed.get("these")), parsed.get("note_id"))[0]
+    if entry is None or not act_steps.already_open(entry.content or "", parsed["content"]):
+        return ""
+    return f"{parsed['content'].rstrip('.')} is already on your {note_title(entry.content, size=48)}."
+
+
 def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> dict:
     """What the command would do: {"line", "card"?, "tool"?}. Writes nothing."""
+    if parsed["intent"] == "rename" and parsed.get("alts"):
+        parsed = object_acts.pick_note_split(parsed, lambda about: bool(_notes_about(session, about, False)))
+    said = _already_there(session, parsed, note_ids) if parsed["intent"] == "append" else ""
+    if said:
+        return {"line": said}
+    planned = _plan_intent(session, parsed, note_ids)
+    card = planned.get("card")
+    if card and planned.get("line") in (card["label"], f"{card['label']}."):
+        #: The owner's order (2026-11-10): no act runs at once. A plan that says only
+        #: its label is a card that waits for Confirm or a typed yes, said as one.
+        planned["line"] = _confirm(card["label"])
+    if parsed.get("leftover") and planned.get("card"):
+        #: A second request on the end of a rename is said back, not done or dropped.
+        planned = {**planned, "line": f"{planned['line']} Then say “{parsed['leftover']}” and I will plan that next."}
+    return planned
+
+
+def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
     intent = parsed["intent"]
     if parsed.get("task") and parsed.get("asked"):
         into_note = _task_into_note(session, parsed, note_ids)
@@ -1544,7 +1771,7 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
             return into_note
     if intent == "reminder":
         return _plan_reminder(session, parsed, note_ids)
-    if intent in ("complete", "cancel", "snooze"):
+    if intent in ("complete", "uncomplete", "cancel", "snooze"):
         return _plan_task(session, parsed)
     if intent == "new_note":
         return _plan_new_note(session, parsed)
@@ -1552,6 +1779,8 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
         return _plan_meeting(parsed)
     if intent in ("tag", "move"):
         return _plan_tag_or_move(session, parsed, note_ids, intent)
+    if intent in _OBJECT_INTENTS:
+        return _plan_object(session, parsed, note_ids)
     if _deletes_all(parsed):
         return _plan_delete_all(session, parsed["about"])
     if intent in ("delete", "pin", "unpin", "rename", "append", "link", "unlink"):
@@ -1559,10 +1788,33 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
     if intent == "untag":
         return _plan_untag(session, parsed, note_ids)
     if intent == "navigate":
-        return {"line": f"Opening {parsed['surface']}.", "navigate": parsed["surface"]}
+        return _plan_navigate(parsed)
     if intent in READ_INTENTS:
         return _plan_read(session, parsed)
     raise ValueError(intent)
+
+
+_OBJECT_INTENTS = frozenset({"rename_tag", "rename_category", "create_category", "restore", "set_name"}) | parity_acts.INTENTS
+
+
+def _plan_object(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
+    """The acts on a kind of thing (a tag, a category, a note's text): `object_acts` and `parity_acts`."""
+    if parsed["intent"] in parity_acts.INTENTS:
+        return parity_acts.plan(session, parsed, note_ids, _parity_helpers(), _now_for_plan())
+    return object_acts.plan(session, parsed, object_acts.Helpers(_card, _confirm, _item, note_title, summarise_done))
+
+
+def _now_for_plan() -> datetime:
+    from tessellate.core import deps
+    from tessellate.core.config import user_now
+
+    return user_now(deps.get_config()).replace(tzinfo=None)
+
+
+def _parity_helpers() -> dict:
+    """What `parity_acts` borrows: the card, the Confirm line, the note helpers and the time words."""
+    return {"card": _card, "confirm": _confirm, "item": _item, "note_title": note_title, "summarise_done": summarise_done, "clip": _clip,
+            "resolve_one": _resolve_one, "split_allowed": _split_allowed, "when_words": lambda due, now: reminder_when(due, now, False)}
 
 
 def _voice() -> str:
@@ -1639,6 +1891,26 @@ def _said(line: str) -> str:
     return line
 
 
+def _the_titled(found: list, about: str) -> object | None:
+    """The one note whose title is what was named: exactly, else the only one it starts. A title that is
+    exactly the name wins over longer titles that start the same way: "pin the Gym note" with "Gym plan"
+    beside it (audit D2)."""
+    said = about.strip().lower()
+    titles = [(e, note_title(e.content, size=48).strip().lower()) for e in found]
+    for same in (lambda t: t == said, lambda t: t.startswith(said)):
+        hit = [e for e, t in titles if same(t)]
+        if len(hit) == 1:
+            return hit[0]
+    return None
+
+
+def _title_holds(entry, about: str) -> bool:  # noqa: ANN001
+    """Whether the note's title carries every word of `about` (singular or plural)."""
+    title = {w.rstrip("s") for w in re.findall(r"[\w'’-]+", note_title(entry.content, size=120).lower())}
+    wanted = [w.rstrip("s") for w in re.findall(r"[\w'’-]+", about.lower())]
+    return bool(wanted) and all(w in title for w in wanted)
+
+
 def _resolve_one(session: Session, about: str | None, note_ids: list[int] | None, these: bool, number: int | None = None) -> tuple[object | None, str]:
     """The one note a single-note act names, or None and the question to ask
     (decision 24's shape: one question, the candidates named). `number`: the
@@ -1655,17 +1927,12 @@ def _resolve_one(session: Session, about: str | None, note_ids: list[int] | None
     if not found:
         return None, _which_note(about or "")
     if len(found) > 1:
-        titled = [e for e in found if note_title(e.content, size=48).lower().startswith((about or "").lower())]
-        if len(titled) == 1:
-            return titled[0], ""
+        titled = _the_titled(found, about or "")
+        if titled:
+            return titled, ""
         names = " or ".join(f"“{note_title(e.content, size=48)}”" for e in found[:3])
         return None, f"Which note about “{about}”: {names}?"
     return found[0], ""
-
-
-_CHECK_LINE = re.compile(r"^\s*[-*+]\s+\[[ xX]\]\s")
-_BULLET_LINE = re.compile(r"^\s*[-*+]\s+(?!\[)")
-_ITEM_LEAD = re.compile(r"^\s*(?:[-*+]\s+)?(?:\[[ xX]\]\s+)?")
 
 
 def retitled(content: str, title: str) -> str:
@@ -1678,20 +1945,6 @@ def retitled(content: str, title: str) -> str:
         return f"# {title}\n"
     lines[at] = f"# {title}"
     return "\n".join(lines)
-
-
-def appended(content: str, text: str) -> str:
-    """`content` with `text` added at the end in the note's own shape: an item
-    after a checklist is `- [ ] item`, after bullets `- item`, else a new
-    paragraph (audit 1029 C42). One helper, so every add keeps the structure."""
-    body = content.rstrip()
-    last = next((line for line in reversed(body.split("\n")) if line.strip()), "")
-    item = _ITEM_LEAD.sub("", text.strip(), count=1) or text.strip()
-    if _CHECK_LINE.match(last):
-        return f"{body}\n- [ ] {item}"
-    if _BULLET_LINE.match(last):
-        return f"{body}\n- {item}"
-    return f"{body}\n\n{text}"
 
 
 def _deletes_all(parsed: dict) -> bool:
@@ -1716,16 +1969,8 @@ def _plan_delete_all(session: Session, about: str) -> dict:
     return {"line": _confirm(label), "card": _card(label, steps, skipped, [_item(e) for e in ok])}
 
 
-def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
-    """Delete, pin, rename, add to, link: one note, named or attached."""
-    intent = parsed["intent"]
-    entry, question = _resolve_one(session, parsed.get("about"), note_ids, bool(parsed.get("these")), parsed.get("note_id"))
-    if entry is None:
-        return {"line": question}
-    ok, skipped = _split_allowed([entry])
-    if not ok:
-        return {"line": summarise_done([], skipped)}
-    name = f"“{note_title(entry.content, size=48)}”"
+def _one_steps(session: Session, intent: str, parsed: dict, entry, name: str) -> dict:  # noqa: ANN001
+    """`{"steps", "label"}` for one named note's act, or `{"line"}` when the other note is not found."""
     if intent == "delete":
         steps = [{"name": "delete_note", "arguments": {"note_id": entry.id}}]
         label = f"Move the note {name} to the bin"
@@ -1738,7 +1983,7 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new_content}}]
         label = f"Rename the note {name} to “{parsed['title']}”"
     elif intent == "append":
-        new_content = appended(entry.content or "", parsed["content"])
+        new_content = act_steps.appended(entry.content or "", parsed["content"])
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new_content}}]
         label = f"Add “{_clip(parsed['content'], 80)}” to the end of {name}"
     else:
@@ -1750,10 +1995,62 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
         tool = "link_notes" if intent == "link" else "unlink_notes"
         steps = [{"name": tool, "arguments": {"note_id": entry.id, "other_note_id": other.id}}]
         label = f"{'Link' if intent == 'link' else 'Unlink'} {name} {'and' if intent == 'link' else 'from'} “{note_title(other.content, size=48)}”"
+    return {"steps": steps, "label": label}
+
+
+def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
+    """Delete, pin, rename, add to, link: one note, named or attached."""
+    intent = parsed["intent"]
+    entry, question = _resolve_one(session, parsed.get("about"), note_ids, bool(parsed.get("these")), parsed.get("note_id"))
+    if entry is None and intent == "append":
+        entry, question = _the_list_note(session, parsed, note_ids, question)
+        if entry is None:
+            return _new_list_offer(session, parsed) or {"line": question}
+    if entry is None:
+        return {"line": question}
+    ok, skipped = _split_allowed([entry])
+    if not ok:
+        return {"line": summarise_done([], skipped)}
+    name = f"“{note_title(entry.content, size=48)}”"
+    if intent == "delete" and parsed.get("bare") and not _title_holds(entry, parsed.get("about") or ""):
+        #: "remove milk" after a shopping list names a thing on the list, not the note that holds the word (F3).
+        return {"line": f"“{parsed.get('about')}” is not the name of a note, but {name} holds it. To bin that note, say: delete the {note_title(entry.content, size=48)} note."}
+    built = _one_steps(session, intent, parsed, entry, name)
+    if "line" in built:
+        return built
+    steps, label = built["steps"], built["label"]
     card = _card(label, steps, skipped, [_item(entry)])
     if intent in CONFIRM_INTENTS:
         return {"line": _confirm(label), "card": card}
-    return {"line": label, "card": card, "run": True}
+    return {"line": label, "card": card}
+
+
+#: A place a thing is added to that reads as a list the person keeps ("the packing list", "my groceries").
+_LIST_NAME = re.compile(r"^(?:my |the |our )?(?P<name>[a-z][a-z' -]{1,40}? list|groceries|shopping)$", re.I)
+
+
+def _the_list_note(session: Session, parsed: dict, note_ids: list[int] | None, question: str) -> tuple:
+    """"the shopping list" is the note called Shopping: the add finds it by its name without "list"."""
+    listed = _LIST_NAME.match((parsed.get("about") or "").strip())
+    bare = re.sub(r"\s+list$", "", listed.group("name"), flags=re.I) if listed else ""
+    if not bare or bare.lower() == listed.group("name").lower() or not _notes_about(session, bare, False):
+        return None, question
+    return _resolve_one(session, bare, note_ids, False, parsed.get("note_id"))
+
+
+def _new_list_offer(session: Session, parsed: dict) -> dict | None:
+    """One rule for every list add (the owner's Q6): it asks first. "add milk to the shopping list" with no such
+    note offers to make that note with the item on it, as a missing todo note does (`task_acts.plan_task_line`);
+    None when the place is no list or some note answers to it (the question of which one stands)."""
+    listed = _LIST_NAME.match((parsed.get("about") or "").strip())
+    if not listed or _notes_about(session, parsed["about"], False):
+        return None
+    title = _cap(listed.group("name").strip())
+    item = _cap(str(parsed.get("content") or "").strip())
+    if not item:
+        return None
+    label = f"Make a note “{title}” with “{item}” on it"
+    return {"line": f"You have no {title.lower()} note yet. {_confirm(label)}", "card": _card(label, [{"name": "create_note", "arguments": {"content": f"# {title}\n\n- [ ] {item}"}}])}
 
 
 def _item(entry) -> str:  # noqa: ANN001
@@ -1801,8 +2098,10 @@ def _plan_read(session: Session, parsed: dict) -> dict:
             result = {**result, "notes": result["notes"][:1]}
         name, args = "search_notes", {"query": about}
         said = tool_say.say("search_notes", result, {"query": about})
+        #: An exact title is the note itself, not the closest one (F13 c, 1110): "open it" after Kyoto ideas.
+        exact = bool(result["notes"]) and note_title(str(result["notes"][0].get("content") or ""), size=60).lower() == about.strip().lower()
         line = (
-            f"The closest note about “{about}” is {said['body'].lstrip('- ').strip()}"
+            f"{'Here it is:' if exact else f'The closest note about “{about}” is'} {said['body'].lstrip('- ').strip()}"
             if parsed["intent"] == "open"
             else f"{said['lead']}\n\n{said['body']}"
         )
@@ -1863,6 +2162,13 @@ def _step_undo(name: str, args: dict, result: dict):  # noqa: ANN202
     return step_undo
 
 
+def _failure_reason(error: str) -> str:
+    """The skip reason a tool's refusal stands for."""
+    if "is private" in error:
+        return "private"
+    return "stale" if "changed since" in error else "failed"
+
+
 def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: ANN001
     """One step's result: the composer's own steps first, then the tool table."""
     if name == "start_meeting":
@@ -1871,6 +2177,12 @@ def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: A
         return _bin_reminder(session, args)
     if name in task_acts.OWN_STEPS:
         return task_acts.run_step(session, name, args)
+    if name == "set_display_name":
+        from tessellate.core import deps
+
+        return address.run_step(deps.get_config(), args)
+    if name in ("rename_tag", "rename_category", "restore_note", "delete_tag") and (refusal := object_acts.guard(session, name, args)):
+        return {"error": refusal}
     return tools.execute_tool(session, name, args)
 
 
@@ -1893,13 +2205,14 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
         if name not in RUNNABLE:
             failed.append({"id": None, "reason": "failed"})
             continue
+        name, args = act_steps.settle_step(session, name, args)
         result = _run_one(session, name, args, tools)
         if "error" in result:
-            reason = "private" if "is private" in str(result["error"]) else "failed"
+            reason = _failure_reason(str(result["error"]))
             failed.append({"id": args.get("note_id"), "reason": reason})
             continue
         done.append((name, args, result))
-        step_undo = _step_undo(name, args, result)
+        step_undo = act_steps.lock_undo(session, name, args, _step_undo(name, args, result))
         if isinstance(step_undo, dict):
             undo.extend(step_undo["steps"] if step_undo.get("tool") == "batch" else [step_undo])
         opened = result.get("open") or opened

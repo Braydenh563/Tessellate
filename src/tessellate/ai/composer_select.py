@@ -19,6 +19,7 @@ from collections import Counter
 from tessellate.ai import realise
 from tessellate.ai.composer_ask import SYNONYM_WEIGHT, _alternatives, _holds, _stem, _words
 from tessellate.ai.composer_read import NoteView, Sentence, _cue
+from tessellate.core.lazyre import lazy_compile
 
 
 #: At most this many quoted points in one answer. Six is about what reads as an
@@ -121,8 +122,8 @@ def _heading_hits(view: NoteView, stems: list[str], term_weight: dict[str, float
 #: Words a note uses when it changes what an older one said: "Moved the
 #: dentist appointment from 3 November to 4 November", "These replace the
 #: dates from 6 October".
-CORRECTS = re.compile(
-    r"\b(?:moved|rescheduled|postponed|brought\s+forward|changed|revised|replaces?|replaced|instead\s+of|cancel+ed|no\s+longer|new\s+plan|dropped|is\s+now|are\s+now)\b",
+CORRECTS = lazy_compile(
+    r"\b(?:moved|rescheduled|postponed|slips?|slipped|slipping|pushed\s+back|delayed|brought\s+forward|changed|revised|replaces?|replaced|instead\s+of|cancel+ed|no\s+longer|new\s+plan|dropped|is\s+now|are\s+now)\b",
     re.I,
 )
 
@@ -229,12 +230,15 @@ class _Scorer:
         relevance = self.relevance(s, view)
         if self.stems and relevance <= 0:
             return 0.0
-        score = relevance + _cue(self.shape, s.text) + 0.4 / (1 + s.rank)
+        cue = _cue(self.shape, s.text)
+        score = relevance + cue + 0.4 / (1 + s.rank)
         #: A sentence that only names the subject ("Store listing copy", a
         #: task on someone's checklist) says nothing about it: measured on
         #: the voice eval, it led "what did I decide about the store
-        #: listing" over the note called "Store listing".
-        if len(self.stems) >= 2 and len([w for w in s.words if w not in self.stems]) <= 1:
+        #: listing" over the note called "Store listing". Not one that has
+        #: what the shape asks for ("Due in March." for a "when is it due",
+        #: which the blind panel found left out).
+        if not cue and len(self.stems) >= 2 and len([w for w in s.words if w not in self.stems]) <= 1:
             score *= 0.5
         if self.shape == "status":
             score += self.recency.get(s.note_id, 0.0)
@@ -432,14 +436,14 @@ def centrality(sentences: list[Sentence], meaning: _Meaning, rounds: int = 30) -
 
 # --- disagreement -----------------------------------------------------------------
 
-_NEGATION = re.compile(
+_NEGATION = lazy_compile(
     r"\b(not|no|never|none|nobody|cannot|can't|won't|don't|doesn't|didn't|isn't|aren't|wasn't|"
     r"cancel(?:led|ed)?|dropped)\b",
     re.I,
 )
 
 
-_FIGURE = re.compile(r"\d+(?:[.,]\d+)?")
+_FIGURE = lazy_compile(r"\d+(?:[.,]\d+)?")
 
 
 def disagree(a: Sentence, b: Sentence) -> bool:

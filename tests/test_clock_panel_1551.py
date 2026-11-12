@@ -18,6 +18,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend/js"
@@ -134,7 +135,7 @@ def test_chat_s_slash_menu_runs_the_row_and_says_it_opens_a_panel():
 
 
 def test_the_palette_timer_rows_open_the_panel_too():
-    palette = (JS / "app-palette.js").read_text(encoding="utf-8")
+    palette = _js_scope.unwrapped((JS / "app-palette.js").read_text(encoding="utf-8"))
     row = palette[palette.index("function utilityPaletteRows"):][:1800]
     assert "openClockPanel" in row and "startUtilityTimer(minutes)" in row, "a typed length starts that timer and shows it"
     assert "opens the Clock" in row.split("run:")[0], "the row says where the timer shows"

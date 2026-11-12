@@ -5,6 +5,7 @@ the dpi under a point. Windows itself cannot run here."""
 from __future__ import annotations
 
 import os
+import random
 from typing import Any
 
 import pytest
@@ -13,6 +14,7 @@ pytest.importorskip("PIL")
 
 from tessellate.core.overlay import engine as eng  # noqa: E402
 from tessellate.core.overlay import perches  # noqa: E402
+from tessellate.core.overlay import screenwatch  # noqa: E402
 from tessellate.core.overlay import win32 as k  # noqa: E402
 from tessellate.core.overlay import runner  # noqa: E402
 from tests._overlay_fake import FakeWin32  # noqa: E402
@@ -27,6 +29,11 @@ def started(fake: FakeWin32 | None = None, **kw: Any):
     r.show()
     assert wait_for(lambda: r.host.visible)
     r.paused = True  # the test drives ticks itself
+    # A tick the overlay's own thread began before the pause can still be running and would interleave with the
+    # test's ticks (react_1700 failed one test a CI job, a different one each): a command sent through the
+    # thread's queue is taken only after that tick has returned.
+    r.host.wake(60_000)
+    assert wait_for(lambda: r.host._queue.empty())
     r._resume = False  # the first tick after a show would reset the engine's idle clock
     return r, fake, clock, clicks
 
@@ -50,6 +57,7 @@ def due(r, clock) -> None:
 def test_window_tops_are_read_at_most_once_a_second_and_given_to_the_engine() -> None:
     r, fake, clock, _ = started()
     fake.window_list = {5: {"rect": (300, 400, 1100, 900), "title": "Notes"}}
+    r.engine.rng = random.Random(4)  # unseeded, 1 run in 20 sent it on a trip that warps (a warping figure wants no scan): 1 scan in 2.5 s
     due(r, clock)
     before = scans(fake)
     tick(r, clock, 0.1, 25)  # 2.5 s of ticks
@@ -115,8 +123,14 @@ def test_nothing_is_read_when_a_climb_cannot_happen(why: str) -> None:
         r.set_roam(False)
     before = len(fake.calls)
     tick(r, clock, 0.5, minute)
-    assert scans(fake) == 0
     calls = [fn for _d, fn, _a in fake.calls[before:]]
+    if why == "not_due":
+        # INBOX 1700: an awake figure reads the list for the screen's news (a window opening, closing, dragged) at the
+        # events' own pace, no more, and the climb scan (edges handed over) still waits for a climb.
+        assert scans(fake) <= 1 + int(minute * 0.5 // screenwatch.EVERY) and r.engine.windows == []
+        r.stop()
+        return
+    assert scans(fake) == 0
     assert not any(fn in ("EnumWindows", "IsWindowVisible") for fn in calls)
     #: 1670 13:22Z added one read while typing: the foreground window's frame, for the text band an app
     #: with no caret leaves bare. It is not a climb read, and it is kept per window, so a typing minute
@@ -134,6 +148,8 @@ def test_an_idle_minute_costs_at_most_one_scan_a_second_and_its_window_calls() -
     r.engine.next_ambient = 1e9
     r.engine.state_until = 1e9
     r.engine.trip_ready = clock.t  # due, but nothing picks it: the test only counts reads
+    r.engine.relocate_at = None  # (home is in the middle third: its move to an edge is not an idle minute)
+    r.engine.eager_ready = 1e9  # seven windows are all new: going to the first within seconds (INBOX 1692 n) is not an idle minute
     r.engine.big_ready = 1e9
     start = len(fake.calls)
     for _ in range(600):  # ten ticks a second for a minute

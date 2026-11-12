@@ -20,12 +20,12 @@ ROOT = Path(__file__).resolve().parents[1] / "src" / "tessellate"
 #: Lines per file when the split landed. Lower a number when the file
 #: shrinks; never raise one.
 CAPS = {
-    "ai/composer.py": 962,
-    "api/routes_chat.py": 2474,
+    "ai/composer.py": 958,
+    "api/routes_chat.py": 2465,
     #: The routes and models moved out whole to the wb_*.py layers; this module only includes them (gods-2).
     "api/routes_whiteboard.py": 64,
     #: The table moved out whole to help_topics_core.py (audit AI23): 3,740 lines before.
-    "ai/help_chat.py": 1370,
+    "ai/help_chat.py": 1360,
     #: The rules and the turn plan moved out whole to agent_policy.py and agent_turn.py (audit AI23).
     "ai/agent.py": 1228,
     #: The registry and the tools moved out whole to tool_*.py layers by tool family; `__init__` only re-exports (gods3-1102): 5,282 lines before.
@@ -33,8 +33,8 @@ CAPS = {
     "ai/tools/tool_focus.py": 179,
     "ai/tools/tool_handoff.py": 126,
     "ai/tools/tool_learn.py": 229,
-    "ai/tools/tool_read.py": 1038,
-    "ai/tools/tool_run.py": 420,
+    "ai/tools/tool_read.py": 952,
+    "ai/tools/tool_run.py": 304,
     "ai/tools/tool_schema.py": 342,
     "ai/tools/tool_sets.py": 366,
     "ai/tools/tool_skills.py": 153,
@@ -42,6 +42,17 @@ CAPS = {
     "ai/tools/tool_turn.py": 346,
     "ai/tools/tool_web.py": 157,
     "ai/tools/tool_write.py": 539,
+    #: The overlay engine's constants and its method groups moved out whole to engine_*.py (audit K24): 4,845 lines before. `Engine` inherits the four mixins.
+    "core/overlay/engine.py": 2910,
+    "core/overlay/engine_consts.py": 600,
+    "core/overlay/engine_flight.py": 490,
+    "core/overlay/engine_frames.py": 308,
+    "core/overlay/engine_input.py": 325,
+    "core/overlay/engine_roam.py": 426,
+    #: The digest's words and sentence rules, then its facts and lines, moved out whole in two layers (audit K24): 6,230 lines before.
+    "ai/composer_digest.py": 2341,
+    "ai/composer_digest_lines.py": 2729,
+    "ai/composer_digest_sentences.py": 1291,
 }
 #: How far under its cap a file may fall before the cap must come down.
 SLACK = 50

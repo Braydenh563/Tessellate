@@ -98,8 +98,26 @@ def _client(notes: list[dict]):
     return TestClient(create_app()), ids
 
 
+#: What a person would type into a skill's required boxes. The route answers
+#: 422 for a missing one (`_resolve_skill`), which this harness used to send,
+#: so every skill with an input failed before the model saw it (B69).
+SAMPLE_INPUTS = {"topic": "the dentist", "tag": "work", "to": "Priya", "about": "the lease"}
+
+
+def _inputs_for(skill: str) -> dict[str, str]:
+    from tessellate.ai import skills
+
+    found = next((s for s in skills.BUILTIN_SKILLS if s["name"] == skill), None)
+    return {
+        item["name"]: SAMPLE_INPUTS.get(item["name"], "my notes")
+        for item in (found or {}).get("inputs") or []
+        if item.get("required")
+    }
+
+
 def _run(client, skill: str) -> list[dict]:
-    with client.stream("POST", "/chat/stream", json={"question": skill, "skill": skill}) as response:
+    body = {"question": skill, "skill": skill, "skill_inputs": _inputs_for(skill)}
+    with client.stream("POST", "/chat/stream", json=body) as response:
         assert response.status_code == 200
         return [json.loads(line) for line in response.iter_lines() if line]
 

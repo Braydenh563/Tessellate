@@ -852,9 +852,11 @@ function docCodeTools(CM) {
     //: a code file followed within ~100ms by opening a markdown one fired
     //: the old timer into a state with no completion field, which throws
     //: "Field is not present in this state" (found by the code editor pass).
-    //: No sources and no typing trigger, so prose behaves exactly as before.
+    //: Plain text has no sources and no typing trigger. Markdown has one, the
+    //: `#tag` list (`docPairInput.tagSource`), which answers null unless a `#word` is
+    //: being typed, so the rest of the typing is as before.
     //: A CSV keeps the output panel, which is where its table is shown.
-    return [CM.autocomplete.autocompletion({ override: [], activateOnTyping: false }), type.ext === "csv" ? docRunExtension(CM) : []];
+    return [CM.autocomplete.autocompletion({ override: type.ext === "md" ? [docPairInput.tagSource(CM), docPairInput.refSource(CM), docPairInput.fenceSource(CM)] : [], activateOnTyping: type.ext === "md" }), type.ext === "csv" ? docRunExtension(CM) : []];
   }
   const native = ["js", "ts", "py", "css", "html"].includes(type.ext);
   return [
@@ -2940,9 +2942,16 @@ async function docRunSyncAvailability(type) {
   //: Another document opened while that was asked: its own call decides.
   if (docFileType().ext !== type.ext) return;
   if (python && ready) docPyWarm();
+  //: The one optional-package notice (extra-notice.js), on the document card.
+  const card = document.querySelector(".doc-main");
+  if (python && !ready) extraNoticeMount(card, "pyodide", { fresh: true });
+  else card?.querySelector(':scope > .extra-notice[data-extra="pyodide"]')?.remove();
   run.disabled = !ready;
   run.title = ready ? (type.ext === "csv" ? "Show this file as a table (Ctrl+Shift+Enter)" : "Run this file in a sandbox and show its output (Ctrl+Shift+Enter)") : "Running Python needs the Python package: install it in Settings, Packages";
   why.classList.toggle("hidden", ready || !docRunnable(type));
+  const showWhy = !why.classList.contains("hidden");
+  //: A class the dock wears while the line shows, so its CSS needs no `:has()`.
+  why.closest(".doc-dock")?.classList.toggle("doc-run-why", showWhy);
 }
 
 //: Settings, Packages, with the Python row in view and its button focused.

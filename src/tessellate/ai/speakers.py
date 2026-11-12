@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import re
 
+from tessellate.ai import presets
 from tessellate.core import transcript
 
 #: About twenty minutes of speech; past that the last turns go unlabelled
@@ -74,6 +75,7 @@ def label(segments: list[dict], people: list[str], model_manager, ollama) -> lis
     reply = ollama.chat(
         model_manager.utility_model(),
         [{"role": "system", "content": SYSTEM}, {"role": "user", "content": _prompt(segments, groups, people)}],
+        mode=presets.BACKGROUND_MODE,
     )
     names = parse_names(reply.get("content", ""), len(groups))
     if len(names) * 2 < len(groups):

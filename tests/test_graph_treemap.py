@@ -104,5 +104,5 @@ def test_the_picker_the_layout_list_and_the_drawing_know_the_treemap() -> None:
 
 def test_the_help_names_the_treemap() -> None:
     chat = help_chat_text()
-    assert "Force, Tree, Radial, Arc or Treemap" in chat
+    assert "Force, Tree, Radial, Arc, Treemap or Tessellation" in chat
     assert "Treemap" in HTML[HTML.index('id="graph-help-panel"') :][:2600]

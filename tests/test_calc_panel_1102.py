@@ -16,13 +16,14 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 CSS = ROOT / "frontend" / "css"
-KIT = (JS / "reply-kit.js").read_text(encoding="utf-8")
+KIT = _js_scope.unwrapped((JS / "reply-kit.js").read_text(encoding="utf-8"))
 EDITOR = (JS / "math-editor.js").read_text(encoding="utf-8")
-FIELD = (JS / "math-field.js").read_text(encoding="utf-8")
+FIELD = _js_scope.unwrapped((JS / "math-field.js").read_text(encoding="utf-8"))
 KIT_CSS = (CSS / "reply-kit-lazy.css").read_text(encoding="utf-8")
 EDITOR_CSS = (CSS / "math-editor-lazy.css").read_text(encoding="utf-8")
 

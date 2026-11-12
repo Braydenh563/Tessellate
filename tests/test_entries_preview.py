@@ -72,3 +72,13 @@ def test_tag_reasons_are_remembered_per_text():
     assert first == again
     assert routes_entries._cached_reasons.cache_info().hits == 1
     assert routes_entries._tag_reasons("", ["running"]) == {}
+
+
+def test_a_preview_row_counts_the_headings_of_the_whole_text_outside_code_fences(client):
+    """S74: the note card Headings row needs the count of a text it holds only the start of."""
+    text = "# Plan\n\n## One\n\n```\n# not a heading\n```\n\n### Two\n\n#nospace\n\n" + " ".join(["filler"] * 300)
+    made = client.post("/entries", json={"content": text, "defer_filing": True}).json()
+    row = next(r for r in client.get("/entries?preview=60").json() if r["id"] == made["id"])
+    assert row["heading_count"] == 3
+    whole = next(r for r in client.get("/entries").json() if r["id"] == made["id"])
+    assert whole["heading_count"] is None

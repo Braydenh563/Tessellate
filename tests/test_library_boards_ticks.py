@@ -28,7 +28,7 @@ def _body(text: str, signature: str) -> str:
 
 
 def test_gallery_and_tick_sync_narrow_through_one_function() -> None:
-    whiteboard = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    whiteboard = (JS / "boards-gallery.js").read_text(encoding="utf-8")
 
     assert "window.wbBoardsOfTypeFilter = function" in whiteboard
 
@@ -47,7 +47,7 @@ def test_tick_sync_reads_the_card_and_fetches_nothing() -> None:
 
 
 def test_a_rearrangement_redraws_without_a_request() -> None:
-    whiteboard = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    whiteboard = (JS / "boards-gallery.js").read_text(encoding="utf-8")
     assert '$("library-boards-search")?.addEventListener("input", redrawLibraryBoardsGallery)' in whiteboard
     sort = whiteboard[whiteboard.index("prefs.set(BOARD_SORT_KEY, select.value);"):][:120]
     assert "redrawLibraryBoardsGallery()" in sort

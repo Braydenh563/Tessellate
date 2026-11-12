@@ -189,7 +189,7 @@ function wbMapThemeDefault(field, node = wbSelectedMapNode()) {
 
 //: The two theme keys that are not a look a topic can take: the preset's name
 //: and the per-level overrides. Never merged onto a topic's data.
-const WB_MAP_THEME_META = new Set(["hierarchy", "levels", "spacing"]);
+const WB_MAP_THEME_META = new Set(["hierarchy", "levels", "spacing", "rainbow", "legend"]);
 
 //: The seven fields a level can set (the server's `MAP_LEVEL_FIELDS`). `fill`
 //: here is `solid`, `tint` or `none`: a level's fill, read by the paint pass
@@ -594,7 +594,8 @@ function wbRenderMapLegend(passed = null) {
   const box = document.getElementById("wb-map-legend");
   if (!box) return;
   const perspective = wbMapPerspective();
-  if (!wbIsMap() || perspective === "branch") {
+  const own = perspective === "branch" && wbMapTheme().legend;
+  if (!wbIsMap() || (perspective === "branch" && !own)) {
     box.hidden = true;
     box.replaceChildren();
     return;
@@ -603,8 +604,38 @@ function wbRenderMapLegend(passed = null) {
   const facets = wbMapFacets();
   const palette = wbMapPalette();
   const quiet = wbMapQuietColour();
+  //: **The map's own legend** (MINDMAP_PLAN gap 11): the colour of each main
+  //: branch, named by its topic, and each marker the map actually uses (a
+  //: priority, a flag, a progress pie, each icon) with the words it carries
+  //: elsewhere. Only what is on the map is listed, so a legend never explains a
+  //: mark nobody can see. Branch rows are capped at ten.
+  const ownRows = () => {
+    const colors = wbMapColors(index);
+    const out = [];
+    const branches = index.nodes.filter((n) => n.parent_id != null && index.byId.get(n.parent_id)?.parent_id == null);
+    for (const node of branches.slice(0, 10)) {
+      const colour = colors.get(node.id);
+      if (colour) out.push({ label: wbMapLabel(node) || "Untitled", colour });
+    }
+    if (branches.length > 10) out.push({ label: `${branches.length - 10} more branches`, colour: quiet });
+    const used = { priority: false, progress: false, flag: false, icons: new Set() };
+    for (const node of index.nodes) {
+      const parts = wbMapMarkerParts(node.data);
+      used.priority ||= parts.priority != null;
+      used.progress ||= parts.progress != null;
+      used.flag ||= parts.flag;
+      parts.icons.forEach((icon) => used.icons.add(icon));
+    }
+    if (used.priority) out.push({ marker: { priority: 1 }, label: "Priority, 1 is first" });
+    if (used.progress) out.push({ marker: { progress: 50 }, label: "How far along" });
+    if (used.flag) out.push({ marker: { flag: true }, label: "Flagged" });
+    for (const icon of used.icons) out.push({ marker: { markers: [icon] }, label: WB_MAP_MARKER_ICON_NAMES.get(icon) || icon });
+    return out;
+  };
   const rows = [];
-  if (perspective === "notes") {
+  if (own) {
+    rows.push(...ownRows());
+  } else if (perspective === "notes") {
     rows.push({ label: "Stands for a note", colour: palette[0] });
     rows.push({ label: "A topic of its own", colour: quiet });
   } else if (perspective === "age") {
@@ -626,7 +657,8 @@ function wbRenderMapLegend(passed = null) {
 
   const title = document.createElement("span");
   title.className = "wb-map-legend-title";
-  title.textContent = `Colour: ${WB_MAP_PERSPECTIVES.find((p) => p.key === perspective)?.label || perspective}`;
+  title.textContent = own ? "Legend" : `Colour: ${WB_MAP_PERSPECTIVES.find((p) => p.key === perspective)?.label || perspective}`;
+  box.dataset.own = own ? "1" : "";
   const list = document.createElement("div");
   list.className = "wb-map-legend-rows";
   for (const row of rows) {
@@ -637,10 +669,17 @@ function wbRenderMapLegend(passed = null) {
     swatch.setAttribute("aria-hidden", "true");
     // Through the CSSOM, not an inline `style` attribute in markup: the CSP
     // drops those (CLAUDE.md, "a policy silently refusing the work").
-    swatch.style.background = row.colour;
+    if (!row.marker) swatch.style.background = row.colour;
     const text = document.createElement("span");
     text.textContent = row.label;
-    line.append(swatch, text);
+    let lead = swatch;
+    if (row.marker) {
+      lead = document.createElement("span");
+      lead.className = "wb-map-markers wb-map-legend-mark";
+      lead.setAttribute("aria-hidden", "true");
+      wbMapPaintMarkers(lead, row.marker);
+    }
+    line.append(lead, text);
     list.appendChild(line);
   }
   box.replaceChildren(title, list);
@@ -722,6 +761,8 @@ function wbMapConcealed(index) {
   for (const id of wbMapFocusHidden(index)) concealed.add(id);
   //: Study's hidden answers (decision 36), a view like focus.
   if (wbStudy.on) for (const id of wbStudy.hidden) concealed.add(id);
+  //: Build up's not-yet-shown topics (INBOX 1774), the same kind of view.
+  if (wbMapBuild.on) for (const id of wbMapBuild.hidden) concealed.add(id);
   return concealed;
 }
 
@@ -854,6 +895,8 @@ const WB_MAP_THEME_GROUPS = [
       { key: "spacing", label: "Spacing", kind: "select", options: [
         ["", "Normal"], ["compact", "Compact"], ["roomy", "Roomy"],
       ] },
+      { key: "rainbow", label: "Colour every level", kind: "check" },
+      { key: "legend", label: "Show a legend", kind: "check" },
     ],
   },
   {
@@ -1582,6 +1625,14 @@ function wbMapSubtree(index, id) {
 //: once per node to learn what a single walk already knew.
 function wbMapColors(index) {
   const palette = wbMapPalette();
+  const rainbow = !!wbMapTheme().rainbow;
+  //: **Rainbow every level**: the `slot`th colour of the palette that is not the
+  //: parent's (`_rainbow_pick` in wb_preview.py is the thumbnail's copy).
+  const rainbowPick = (slot, inherited) => {
+    const choices = palette.filter((c) => c !== inherited);
+    const from = choices.length ? choices : palette;
+    return from[slot % from.length];
+  };
   const colors = new Map();
   const seen = new Set();
   let branch = 0;
@@ -1600,24 +1651,25 @@ function wbMapColors(index) {
     oldest.set(node.id, min);
     return min;
   };
-  const walk = (node, inherited) => {
+  const walk = (node, inherited, slot = 0, depth = 0) => {
     if (seen.has(node.id)) return;
     seen.add(node.id);
-    const own = node.data?.color || inherited || null;
+    const picked = !node.data?.color && rainbow && depth > 1 && palette.length ? rainbowPick(slot, inherited) : null;
+    const own = node.data?.color || picked || inherited || null;
     colors.set(node.id, own);
     //: Creation order, not sibling order: a branch keeps its colour when it
     //: is moved up or down (INBOX 445), and the Library's thumbnail, which
     //: hands out `MAP_BRANCH_PALETTE` by id on the server, keeps agreeing.
     const kids = [...(index.childrenOf.get(node.id) || [])].sort((a, b) => ageOf(a) - ageOf(b) || a.id - b.id);
-    for (const child of kids) {
+    kids.forEach((child, at) => {
       // `inherited == null` is true for exactly one generation, the roots'
       // own children, which *are* the first-level topics. Starting the colours
       // at the root instead would give every branch on the map the same
       // colour, which is the one thing branch colour exists not to do.
       const next = child.data?.color
         || (inherited == null && palette.length ? palette[branch++ % palette.length] : own);
-      walk(child, next);
-    }
+      walk(child, next, at, depth + 1);
+    });
   };
   for (const root of [...index.roots].sort((a, b) => a.id - b.id)) walk(root, null);
   return colors;
@@ -2392,7 +2444,10 @@ let wbMapNoteState = null;
 
 function wbMapOpenNote(id, anchor) {
   const node = (wbState.objects || []).find((o) => o.id === id);
-  if (!node || WB_MAP_REFERENCE_KINDS.has(node.kind)) return;
+  //: A note node (MINDMAP_PLAN 12.2 item 5, second half) opens the same shell on the
+  //: notebook's own text; every other reference kind has no note of its own.
+  const entryId = node?.kind === "note" && Number.isInteger(node.data?.ref_id) ? node.data.ref_id : null;
+  if (!node || (WB_MAP_REFERENCE_KINDS.has(node.kind) && entryId == null)) return;
   //: The mark is a toggle: pressed again while its note is open, it closes
   //: (and saves) it, as the help popover's own '?' does.
   if (wbMapNoteState?.id === id) {
@@ -2409,17 +2464,18 @@ function wbMapOpenNote(id, anchor) {
   panel.id = "wb-map-note-peek";
   panel.setAttribute("role", "dialog");
   const label = wbMapLabel(node) || "this topic";
-  panel.setAttribute("aria-label", `The note behind ${label}`);
+  const said = entryId == null ? `The note behind ${label}` : `The text of ${label}`;
+  panel.setAttribute("aria-label", said);
   const box = document.createElement("textarea");
   box.className = "wb-map-note-text";
   box.rows = 6;
-  box.maxLength = 10000;
+  box.maxLength = entryId == null ? 10000 : 200000;
   box.value = typeof node.data?.note === "string" ? node.data.note : "";
   box.placeholder = "Write what this topic needs saying";
-  box.setAttribute("aria-label", `The note behind ${label}`);
+  box.setAttribute("aria-label", said);
   const hint = document.createElement("p");
   hint.className = "muted wb-map-note-hint";
-  hint.textContent = "Saved when you close it. Esc closes.";
+  hint.textContent = entryId == null ? "Saved when you close it. Esc closes." : "Saved to the note when you close it. Esc closes.";
   panel.append(box, hint);
   //: Every key typed here is the note's: Tab, Enter and Delete are map
   //: gestures on the canvas, and Escape would also deselect the topic.
@@ -2436,11 +2492,53 @@ function wbMapOpenNote(id, anchor) {
   };
   document.addEventListener("pointerdown", outside, true);
   document.body.appendChild(panel);
-  wbMapNoteState = { id, panel, anchor: target, outside, before: box.value };
+  wbMapNoteState = { id, panel, anchor: target, outside, before: box.value, entryId, loaded: entryId == null };
   if (target.classList.contains("wb-map-note")) target.setAttribute("aria-expanded", "true");
   placeHelpPopover(panel, target);
   box.focus({ preventScroll: true });
+  if (entryId != null) wbMapOpenNote.load(wbMapNoteState, box);
 }
+
+//: A note node's text, read from the notebook (never the clipped list row) and put
+//: in the box; until it arrives the box is read-only so nothing typed is lost.
+wbMapOpenNote.load = async (state, box) => {
+  box.readOnly = true;
+  box.placeholder = "Loading the note…";
+  try {
+    const entry = await apiJson(`/entries/${state.entryId}`);
+    if (wbMapNoteState !== state) return;
+    box.value = String(entry.content || "");
+    state.before = box.value;
+    state.loaded = true;
+    box.readOnly = false;
+    box.placeholder = "";
+  } catch (err) {
+    state.panel.remove();
+    document.removeEventListener("pointerdown", state.outside, true);
+    wbMapNoteState = null;
+    toast(err.message || "That note could not be opened here.", true);
+  }
+};
+
+//: Save a note node's text to the notebook: one Undo step on the notebook's
+//: history, the cards refreshed, and the map's labels re-read so the node
+//: carries the note's new first line.
+wbMapOpenNote.save = async (entryId, before, after) => {
+  //: On the board's own history, where Ctrl+Z is read while a board is open.
+  const write = (content) => async () => {
+    await apiJson(`/entries/${entryId}`, { method: "PUT", body: JSON.stringify({ content }) });
+    await refreshEntries([entryId]);
+    await wbRefreshMapState();
+    renderWhiteboardNow();
+  };
+  try {
+    await write(after)();
+    wbPushCall("Edited a note from the map", write(before), write(after));
+    wbAnnounce("Note saved.");
+  } catch (err) {
+    toast(err.message || "That note could not be saved.", true);
+  }
+};
 
 function wbMapCloseNote({ restoreFocus = false } = {}) {
   const state = wbMapNoteState;
@@ -2452,7 +2550,10 @@ function wbMapCloseNote({ restoreFocus = false } = {}) {
   if (state.anchor.classList.contains("wb-map-note")) state.anchor.setAttribute("aria-expanded", "false");
   const node = (wbState.objects || []).find((o) => o.id === state.id);
   const next = value.trim();
-  if (node && next !== state.before.trim()) {
+  if (state.entryId != null) {
+    //: A note's own text keeps its spacing; an emptied one is left (a note is not deleted from here).
+    if (node && state.loaded && value !== state.before && value.trim()) wbMapOpenNote.save(state.entryId, state.before, value);
+  } else if (node && next !== state.before.trim()) {
     wbMapSetNodeStyle(node, { note: next || null }).then(() => {
       renderWhiteboardNow();
       wbAnnounce(next ? "Note saved." : "Note removed.");
@@ -2610,6 +2711,7 @@ function wbPaintMapNodeStyle(node, d) {
   }
 
   wbMapPaintExtras(node, d.data || {});
+  wbMapLazy.paintAudio(node, d.data || {});
   //: A note (decision 18): read off the topic's own data, never the theme's.
   const noteMark = node.querySelector(".wb-map-note");
   if (noteMark) {
@@ -2774,9 +2876,32 @@ async function wbMapExpandAll() {
 //: step (`WB_RECORDED`, whiteboard.js).
 async function wbMapFoldToLevel(level) {
   if (!wbIsMap()) return;
-  const want = Math.max(1, Math.min(9, Math.round(Number(level) || 1)));
   const index = wbMapIndex();
   const changed = [];
+  //: **One more or one less level** (INBOX 1774): `{ by: 1 }` opens the
+  //: shallowest ring of folded topics, `{ by: -1 }` folds the deepest ring
+  //: of open ones, so a ragged map is never re-levelled and a branch opened
+  //: by hand is never shut by "more".
+  if (level && typeof level === "object") {
+    const by = Number(level.by) < 0 ? -1 : 1;
+    const ring = wbMapBuild.ring(index, wbMapHidden(index), by);
+    if (!ring.ids.length) {
+      toast(by > 0 ? "Every level is showing." : "Only the centre is showing.");
+      return;
+    }
+    for (const id of ring.ids) {
+      const node = index.byId.get(id);
+      node.data = { ...node.data, collapsed: ring.fold };
+      changed.push(node);
+    }
+    await wbSaveMany(changed.map((item) => ({ kind: "object", item })));
+    renderWhiteboardNow();
+    wbSyncMapToolState();
+    const shown = wbMapBuild.levels(index, wbMapHidden(index));
+    toast(shown === 1 ? "Showing the trunks only." : `Showing ${shown} levels.`);
+    return;
+  }
+  const want = Math.max(1, Math.min(9, Math.round(Number(level) || 1)));
   const seen = new Set();
   const stack = index.roots.map((root) => [root, 1]);
   while (stack.length) {
@@ -2797,8 +2922,32 @@ async function wbMapFoldToLevel(level) {
     renderWhiteboardNow();
     wbSyncMapToolState();
   }
-  toast(want === 1 ? "Showing the trunks only." : `Showing ${want} levels.`);
+  if (want === 1) toast(changed.length ? `Folded ${changed.length} branch${changed.length === 1 ? "" : "es"}.` : "Every branch is already folded.");
+  else toast(`Showing ${want} levels.`);
 }
+
+//: **Fold every branch** (INBOX 1773) is `wbMapFoldToLevel(1)`, the twin of
+//: Open every folded branch. `open` counts the topics with a branch under
+//: them that are open (what a level-1 fold would change); `sync` enables the
+//: two twins only when they would change something. Properties, not globals.
+wbMapFoldToLevel.open = function foldOpen(index) {
+  const map = index || wbMapIndex();
+  return map.nodes.filter((n) => !n.data?.collapsed && (map.childrenOf.get(n.id) || []).length).length;
+};
+wbMapFoldToLevel.sync = function foldSync() {
+  if (!wbIsMap()) return;
+  const index = wbMapIndex();
+  const open = wbMapFoldToLevel.open(index);
+  const folded = index.nodes.filter((n) => n.data?.collapsed).length;
+  for (const id of ["wb-map-fold-all", "wb-side-map-fold"]) {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !open;
+  }
+  for (const id of ["wb-map-expand-all", "wb-side-map-expand"]) {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !folded;
+  }
+};
 
 //: --- drag a branch onto a new parent (MINDMAP_PLAN.md §12.1 item 8) --------
 //:
@@ -3307,9 +3456,29 @@ function wbClearMapNodeSizeCache() {
 //: First element wins, matching what `wbMapNodeSize`'s own `querySelector`
 //: would have returned had two layers ever carried the same id. Only real
 //: measurements are kept, for the reason `wbMapNodeSize` gives.
-function wbIndexMapNodeElements() {
+//:
+//: `linkEndsOnly` measures just the objects a connector ends on, through the item index with no walk
+//: of the page: a board's connectors need their ends' boxes and nothing else (W30).
+function wbIndexMapNodeElements(linkEndsOnly = false) {
   const byId = new Map();
   if (!wbMapNodeSizeCache) wbMapNodeSizeCache = new Map();
+  if (linkEndsOnly) {
+    const ends = new Set();
+    for (const sketch of wbState.sketches || []) {
+      if (typeof sketch.data !== "string" || !sketch.data.includes("link-")) continue;
+      try {
+        const parsed = JSON.parse(sketch.data);
+        if (parsed.sourceKind === "object") ends.add(Number(parsed.sourceId));
+        if (parsed.targetKind === "object") ends.add(Number(parsed.targetId));
+      } catch { /* not a link */ }
+    }
+    for (const id of ends) {
+      const el = wbItemElement("object", id);
+      if (!el || wbMapNodeSizeCache.has(id) || !el.offsetHeight) continue;
+      wbMapNodeSizeCache.set(id, { w: el.offsetWidth, h: el.offsetHeight });
+    }
+    return byId;
+  }
   for (const el of document.querySelectorAll(".wb-object[data-id]")) {
     const id = Number(el.dataset.id);
     if (byId.has(id)) continue;
@@ -4967,6 +5136,11 @@ function mapPaletteCommands() {
     row("This topic", "ph:caret-down Fold or unfold the branch", () => wbMapToggleCollapse(node.id), "C");
     row("This topic", "ph:crosshair Focus on this branch", () => wbMapSetFocus(node.id));
     row("This topic", "ph:flag Markers on this topic…", () => wbMapOpenMarkers(node.id));
+    row("This topic", "ph:microphone Audio note: pick a recording…", () => wbMapLazy.pickAudio(node));
+    if (node.data?.recording) {
+      row("This topic", "ph:play Play the audio note", () => wbMapLazy.playAudio(node.id, document.querySelector(`.wb-object[data-id="${node.id}"] .wb-map-audio`) || document.getElementById("whiteboard-container")));
+      row("This topic", "ph:microphone-slash Remove the audio note", () => wbMapLazy.removeAudio(node));
+    }
     row("This topic", "ph:eyedropper Copy this topic's style", () => wbCopySelectedStyle(), "Ctrl+Alt+C");
     row("This topic", "ph:paint-bucket Paste style onto this topic", () => wbPasteCopiedStyle(), "Ctrl+Alt+V");
     row("This topic", "ph:stack Use this look for its level", () => wbMapUseLookForLevel(node.id));
@@ -4979,7 +5153,15 @@ function mapPaletteCommands() {
   row("This map", "ph:plus-circle Add a top-level topic", () => wbMapAddChild(null));
   row("This map", "ph:broom Tidy the map", () => wbMapTidy());
   row("This map", "ph:arrows-out-simple Open every folded branch", () => wbMapExpandAll());
+  row("This map", "ph:arrows-in-line-vertical Fold every branch", () => wbMapFoldToLevel(1), "Alt+1");
   row("This map", "ph:list-dashes Show two levels", () => wbMapFoldToLevel(2), "Alt+2");
+  {
+    //: Only when they change something (INBOX 1774, the rule of 1773).
+    const index = wbMapIndex();
+    const folded = wbMapHidden(index);
+    if (wbMapBuild.ring(index, folded, 1).ids.length) row("This map", "ph:plus-circle Show one more level", () => wbMapFoldToLevel({ by: 1 }), "Alt+=");
+    if (wbMapBuild.ring(index, folded, -1).ids.length) row("This map", "ph:minus-circle Show one less level", () => wbMapFoldToLevel({ by: -1 }), "Alt+-");
+  }
   if (wbMapFocusState) {
     row("This map", "ph:x-circle Show the whole map again", () => wbMapClearFocus());
   }
@@ -4988,7 +5170,9 @@ function mapPaletteCommands() {
   row("This map", numbered ? "ph:list-bullets Stop numbering the topics" : "ph:list-numbers Number the topics", () => wbMapSetNumbered(!numbered));
   row("This map", "ph:chart-bar What this map is made of", () => wbShowMapStats());
   row("This map", "ph:presentation Present branches", () => wbStartPresenting());
+  row("This map", "ph:steps Build up branch by branch", () => wbMapBuild.start());
   row("This map", "ph:student Study the map", () => wbMapStartStudy());
+  row("This map", "ph:chart-bar-horizontal Gantt chart of the dated topics", () => wbMapLazy.openGantt());
   row("This map", "ph:funnel Filter by marker…", () => wbMapChooseMarkerFilter());
   if (wbMarkerUi.filter) row("This map", "ph:x-circle Stop filtering by marker", () => wbMapSetMarkerFilter(null));
   row("This map", wbOutlineShowing() ? "ph:list-dashes Hide the outline" : "ph:list-dashes Show the map as an outline", () => wbOutlineToggle());
@@ -6294,7 +6478,11 @@ function wbMapLayoutPositions(index, layout) {
     }
     return node;
   };
-  const virtual = wrap(null, null, 0, -1);
+  //: **Radial with several top-level topics puts them on the first ring**
+  //: (boardfix-1108): they were all depth 0, so radius 0, and sat on one
+  //: another (measured: four roots, 6 overlapping pairs of 10 boxes). The
+  //: virtual root takes the centre instead; one root still stands on it.
+  const virtual = wrap(null, null, 0, radial && index.roots.length > 1 ? 0 : -1);
 
   wbTidyFirstWalk(virtual, breadthOf, gap);
 
@@ -6646,10 +6834,29 @@ function wbMapCrossLinkLook(parsed) {
   if (!source || !target || !WB_MAP_KINDS.has(source.kind) || !WB_MAP_KINDS.has(target.kind)) return null;
   if (!wbMapCrossLinkMemo) {
     const index = wbMapIndex();
-    wbMapCrossLinkMemo = { index, colors: wbMapNodeColors(index), layout: wbMapLayout() };
+    wbMapCrossLinkMemo = { index, colors: wbMapNodeColors(index), layout: wbMapLayout(), looks: new Map() };
     queueMicrotask(() => { wbMapCrossLinkMemo = null; });
   }
   const { index, colors, layout } = wbMapCrossLinkMemo;
+  //: **Found once per link per pass** (W30 D26). One render asked for the same link's look three times
+  //: (the path, the hand-drawn check, the label), 300 links at 4x CPU were about 640 ms of it. Keyed on
+  //: everything the drawing reads from its two ends, so a node moved between two asks in one task is
+  //: never answered with the old line; a branch laid out as a block (`_bl`) is not kept at all.
+  const sz = (item) => (item._block ? null : wbMapNodeSize(item));
+  const sourceBox = sz(source);
+  const targetBox = sz(target);
+  const kept = !source._bl && !target._bl && target._blTop == null && !source._block && !target._block;
+  const stamp = kept
+    ? `${parsed.type}|${source.id}|${target.id}|${source.x},${source.y},${source.parent_id}|${target.x},${target.y},${target.parent_id}|${sourceBox.w}x${sourceBox.h}|${targetBox.w}x${targetBox.h}|${parsed.bend ? `${parsed.bend.x},${parsed.bend.y}` : ""}|${JSON.stringify(parsed.sourceAnchor || 0)}${JSON.stringify(parsed.targetAnchor || 0)}`
+    : "";
+  const held = stamp ? wbMapCrossLinkMemo.looks.get(stamp) : undefined;
+  if (held !== undefined) return held;
+  const found = wbMapCrossLinkLook.built(parsed, source, target, index, colors, layout);
+  if (stamp) wbMapCrossLinkMemo.looks.set(stamp, found);
+  return found;
+}
+
+wbMapCrossLinkLook.built = function (parsed, source, target, index, colors, layout) {
   //: A leaf has no colour of its own (null in the map): it wears its
   //: branch's, so the nearest coloured ancestor is the one its line has.
   //: A root has none at all, so a link from one takes the target's branch,
@@ -6689,7 +6896,7 @@ function wbMapCrossLinkLook(parsed) {
     colour,
     width: 3 * wbMapEdgeWeight(ghost),
   };
-}
+};
 
 //: Where a drawn line starts and ends, read off its own path: the first
 //: `M x y` and the last pair of numbers, which is the end point in every
@@ -7702,6 +7909,7 @@ async function wbMapTakePicture(file) {
   try {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("board", "true");
     // The same request `wbPlaceUploadedImage` makes, header and all: the
     // token goes in `X-Auth-Token` because the body is a FormData and
     // `apiJson` leaves the content type to the browser for one.
@@ -8323,7 +8531,7 @@ const WB_MAP_STYLE_KEYS = [
 //: And a boundary and a summary (decisions 19, 20): what the map says.
 const WB_MAP_CONTENT_KEYS = [
   "image", "task", "note", "boundary", "boundary_label", "summary", "summary_span",
-  "priority", "progress", "flag", "markers", "due", "branch_layout", "callout", "labels", "stamps", "stamped",
+  "priority", "progress", "flag", "markers", "due", "start", "recording", "branch_layout", "callout", "labels", "stamps", "stamped",
 ];
 
 //: **Reaction stamps and votes** (Miro; MINDMAP_PLAN 14.4): six Phosphor
@@ -9327,6 +9535,8 @@ function wbSyncMapChrome() {
   if (statsRow) statsRow.hidden = !isMap;
   const expandRow = document.getElementById("wb-map-expand-all");
   if (expandRow) expandRow.hidden = !isMap;
+  const foldRow = document.getElementById("wb-map-fold-all");
+  if (foldRow) foldRow.hidden = !isMap;
   const themeRow = document.getElementById("wb-map-theme-item");
   if (themeRow) themeRow.hidden = !isMap;
   //: The numbering switch (decision 17) says what the map does now.
@@ -9679,6 +9889,185 @@ function wbMapPresentSteps() {
   return steps;
 }
 
+// --- Build up branch by branch (INBOX 1774, MINDMAP_PLAN 2026-11-11) -------
+//
+//: **Presenting a map from the centre out**, a branch and a level at a time:
+//: the central topic(s) alone, then for each branch in the order Present
+//: branches walks, the branch topic, then its next level, to its last visible
+//: level, then the whole map. A folded branch stays out, so folding first
+//: trims the talk. What step i shows is everything revealed in steps 0 to i,
+//: worked out from the map, so Home, End, a typed page and the page picker
+//: all land right, and Previous hides exactly one step's part. Hidden is a
+//: view like Study's (decision 36): nothing is folded, saved or put on the
+//: Undo list, so the map is as it was after Escape and a shared map works.
+//: Outer to inner is the same steps backwards (End, then Previous).
+//: `plan`, `hiddenAt`, `ring`, `depths` and `levels` are pure, so the whole
+//: object is the marked region, run in node by
+//: `tests/test_map_build_up_1774.py` (the other methods read the board only
+//: when called). `run` is the plan being presented.
+// WB-MAP-BUILD-BEGIN
+const wbMapBuild = {
+  on: false,
+  hidden: new Set(),
+  steps: [],
+  run: [],
+  //: `folded` is what `wbMapHidden` answers: topics under a folded one.
+  plan(index, folded) {
+    const out = [];
+    const seen = new Set();
+    const roots = index.roots.filter((r) => !folded.has(r.id));
+    for (const r of roots) seen.add(r.id);
+    out.push({ kind: "centre", id: null, root: null, level: 0, reveal: roots.map((r) => r.id) });
+    for (const root of roots) {
+      for (const branch of index.childrenOf.get(root.id) || []) {
+        if (folded.has(branch.id) || seen.has(branch.id)) continue;
+        let ring = [branch];
+        for (let level = 1; ring.length; level += 1) {
+          ring = ring.filter((n) => !seen.has(n.id));
+          if (!ring.length) break;
+          for (const n of ring) seen.add(n.id);
+          out.push({ kind: "branch", id: branch.id, root: root.id, level, reveal: ring.map((n) => n.id) });
+          ring = ring.flatMap((n) => (index.childrenOf.get(n.id) || []).filter((k) => !folded.has(k.id)));
+        }
+      }
+    }
+    //: Anything the walk did not reach still ends on a whole map.
+    const left = index.nodes.filter((n) => !folded.has(n.id) && !seen.has(n.id)).map((n) => n.id);
+    out.push({ kind: "whole", id: null, root: null, level: 0, reveal: left });
+    return out;
+  },
+  //: Everything shown at step `at` is the union of steps 0 to `at`; this is
+  //: what is not.
+  hiddenAt(plan, at) {
+    const hidden = new Set(plan.flatMap((s) => s.reveal));
+    for (const s of plan.slice(0, at + 1)) for (const id of s.reveal) hidden.delete(id);
+    return hidden;
+  },
+  //: The ring one more or one less level changes: every visible folded
+  //: topic at the shallowest depth (`fold` false), or every visible open
+  //: topic with a branch at the deepest (`fold` true). A trunk is depth 1.
+  ring(index, folded, dir) {
+    const depth = wbMapBuild.depths(index);
+    const want = dir < 0;
+    let best = null;
+    let ids = [];
+    for (const node of index.nodes) {
+      if (folded.has(node.id) || !(index.childrenOf.get(node.id) || []).length) continue;
+      if (Boolean(node.data?.collapsed) === want) continue;
+      const d = depth.get(node.id);
+      if (d === undefined) continue;
+      if (best === null || (want ? d > best : d < best)) {
+        best = d;
+        ids = [];
+      }
+      if (d === best) ids.push(node.id);
+    }
+    return { ids, fold: want };
+  },
+  depths(index) {
+    const depth = new Map();
+    const queue = index.roots.map((r) => [r, 1]);
+    while (queue.length) {
+      const [node, d] = queue.shift();
+      if (depth.has(node.id)) continue;
+      depth.set(node.id, d);
+      for (const kid of index.childrenOf.get(node.id) || []) queue.push([kid, d + 1]);
+    }
+    return depth;
+  },
+  //: How many levels are showing now.
+  levels(index, folded) {
+    let most = 0;
+    for (const [id, d] of wbMapBuild.depths(index)) if (!folded.has(id)) most = Math.max(most, d);
+    return most;
+  },
+  //: The box a step fits: the trunk's topic plus what of the branch is showing.
+  box(at) {
+    const step = wbMapBuild.run[at];
+    const now = wbMapIndex();
+    const pad = 24;
+    let ids;
+    if (step.kind === "branch") {
+      const shown = new Set(wbMapBuild.run.slice(0, at + 1).flatMap((s) => s.reveal));
+      ids = [step.root, ...wbMapSubtree(now, step.id).map((n) => n.id).filter((id) => shown.has(id))];
+    } else if (step.kind === "centre") {
+      ids = step.reveal;
+    } else {
+      const b = wbContentBounds();
+      return b && Number.isFinite(b.minX) ? { x: b.minX - pad, y: b.minY - pad, w: b.maxX - b.minX + pad * 2, h: b.maxY - b.minY + pad * 2 } : null;
+    }
+    let box = null;
+    for (const id of ids) {
+      const node = now.byId.get(id);
+      if (!node) continue;
+      const size = wbMapNodeSize(node);
+      const r = { minX: node.x, minY: node.y, maxX: node.x + size.w, maxY: node.y + size.h };
+      box = box ? { minX: Math.min(box.minX, r.minX), minY: Math.min(box.minY, r.minY), maxX: Math.max(box.maxX, r.maxX), maxY: Math.max(box.maxY, r.maxY) } : r;
+    }
+    return box ? { x: box.minX - pad, y: box.minY - pad, w: box.maxX - box.minX + pad * 2, h: box.maxY - box.minY + pad * 2 } : null;
+  },
+  title(at) {
+    const step = wbMapBuild.run[at];
+    const name = (id) => wbMapLabel(wbMapIndex().byId.get(id) || {}) || "Topic";
+    if (step.kind === "centre") {
+      const roots = wbMapIndex().roots;
+      return roots.length === 1 ? name(roots[0].id) : "The central topics";
+    }
+    if (step.kind === "whole") return "The whole map";
+    return step.level === 1 ? name(step.id) : `${name(step.id)}, level ${step.level}`;
+  },
+  start() {
+    //: One presentation at a time: a second start would take the camera it already holds.
+    if (wbPresent) return;
+    const index = wbMapIndex();
+    const plan = wbMapBuild.plan(index, wbMapHidden(index));
+    if (!plan.some((s) => s.kind === "branch")) {
+      toast("Nothing to build up yet: add a branch first.");
+      return;
+    }
+    wbMapBuild.run = plan;
+    wbMapBuild.steps = plan.map((s, i) => ({
+      title: () => wbMapBuild.title(i),
+      box: () => wbMapBuild.box(i),
+      reveal: s.reveal,
+      enter: () => wbMapBuild.enter(i),
+    }));
+    wbMapBuild.on = true;
+    wbMapBuild.hidden = wbMapBuild.hiddenAt(plan, 0);
+    renderWhiteboardNow();
+    wbStartPresenting();
+    //: The shell could not open (no board to present on): put the map back whole.
+    if (!wbPresent) wbMapBuild.end();
+  },
+  //: The shell calls this as step `at` is shown: set what is hidden from the
+  //: step alone, so any jump lands right, and ring what just appeared.
+  enter(at) {
+    if (!wbMapBuild.on || !wbMapBuild.run[at]) return;
+    wbMapBuild.hidden = wbMapBuild.hiddenAt(wbMapBuild.run, at);
+    renderWhiteboardNow();
+    wbMapBuild.unring();
+    if (wbMapBuild.run[at].kind === "whole") return;
+    const stage = document.getElementById("whiteboard-container");
+    for (const id of wbMapBuild.run[at].reveal) {
+      stage?.querySelector(`.wb-object[data-id="${id}"]`)?.classList.add("flash-target", "flash");
+    }
+  },
+  unring() {
+    for (const el of document.querySelectorAll(".wb-object.flash-target")) el.classList.remove("flash-target", "flash");
+  },
+  //: Called by `wbStopPresenting`: the map draws whole again.
+  end() {
+    if (!wbMapBuild.on) return;
+    wbMapBuild.on = false;
+    wbMapBuild.hidden = new Set();
+    wbMapBuild.steps = [];
+    wbMapBuild.run = [];
+    wbMapBuild.unring();
+    renderWhiteboardNow();
+  },
+};
+// WB-MAP-BUILD-END
+
 // --- Study the map (MINDMAP_PLAN §12.3 item 5, decision 36) ----------------
 //
 //: **Presenting, with each branch's topics hidden until recalled.** The
@@ -9689,7 +10078,24 @@ function wbMapPresentSteps() {
 //: or written. The marks are kept per map on this device (`wbStudy:<id>`),
 //: and a branch missed last time says so in its step.
 //: `revealed` holds the note questions whose answer has been shown.
-const wbStudy = { on: false, hidden: new Set(), revealed: new Set(), steps: [], marks: {}, boardId: null };
+const wbStudy = {
+  on: false, hidden: new Set(), revealed: new Set(), steps: [], marks: {}, boardId: null,
+  key() {
+    return `wbStudy:${wbStudy.boardId}`;
+  },
+  //: Through the one door to saved settings (prefs.js), which already
+  //: survives blocked storage and an unreadable value.
+  load() {
+    return prefs.json(wbStudy.key(), {}) || {};
+  },
+  save() {
+    try {
+      prefs.set(wbStudy.key(), JSON.stringify(wbStudy.marks));
+    } catch {
+      // storage blocked (a private window): the run still works, unremembered
+    }
+  },
+};
 
 // WB-MAP-STUDY-BEGIN
 //: The questions: each trunk's children with a branch under them, in sibling
@@ -9743,24 +10149,6 @@ function wbMapStudyTally(questions, marks) {
 }
 // WB-MAP-STUDY-END
 
-function wbMapStudyKey() {
-  return `wbStudy:${wbStudy.boardId}`;
-}
-
-function wbMapStudyLoad() {
-  //: Through the one door to saved settings (prefs.js), which already
-  //: survives blocked storage and an unreadable value.
-  return prefs.json(wbMapStudyKey(), {}) || {};
-}
-
-function wbMapStudySave() {
-  try {
-    prefs.set(wbMapStudyKey(), JSON.stringify(wbStudy.marks));
-  } catch {
-    // storage blocked (a private window): the run still works, unremembered
-  }
-}
-
 //: The steps the presenting shell walks: one per question, fitted to what
 //: is showing of the branch (the question alone, then the answer).
 function wbMapStudySteps() {
@@ -9799,7 +10187,7 @@ function wbMapStartStudy() {
   wbStudy.steps = questions;
   wbStudy.hidden = new Set(questions.flatMap((q) => q.hides));
   wbStudy.revealed = new Set();
-  wbStudy.marks = wbMapStudyLoad();
+  wbStudy.marks = wbStudy.load();
   renderWhiteboardNow();
   wbStartPresenting();
   wbMapStudySyncBar();
@@ -9832,7 +10220,7 @@ function wbMapStudyMark(knew) {
   if (!step) return;
   const was = wbStudy.marks[step.id] || { knew: 0, missed: 0 };
   wbStudy.marks[step.id] = { ...was, [knew ? "knew" : "missed"]: (was[knew ? "knew" : "missed"] || 0) + 1, last: knew ? "knew" : "missed" };
-  wbMapStudySave();
+  wbStudy.save();
   if (wbPresent.at < wbStudy.steps.length - 1) {
     wbPresentShow(wbPresent.at + 1);
     wbMapStudySyncBar();
@@ -10154,79 +10542,82 @@ function wbOutlineStep(field, by) {
   if (to) wbOutlineFocus(to._node);
 }
 
-document.getElementById("wb-outline-tree")?.addEventListener("input", (event) => {
-  const row = event.target.closest(".wb-outline-row");
-  if (row && row._node.kind === "topic" && wbOutlineEditing(row)) wbOutlineMirror(row._node, event.target.value);
-});
+//: The outline panel is part of the board canvas, built when a board first opens (row 21).
+onSurface("board", () => {
+  document.getElementById("wb-outline-tree")?.addEventListener("input", (event) => {
+    const row = event.target.closest(".wb-outline-row");
+    if (row && row._node.kind === "topic" && wbOutlineEditing(row)) wbOutlineMirror(row._node, event.target.value);
+  });
 
-document.getElementById("wb-outline-tree")?.addEventListener("dblclick", (event) => {
-  const row = event.target.closest(".wb-outline-row");
-  if (row && event.target.matches(".wb-outline-text")) wbOutlineEdit(row);
-});
+  document.getElementById("wb-outline-tree")?.addEventListener("dblclick", (event) => {
+    const row = event.target.closest(".wb-outline-row");
+    if (row && event.target.matches(".wb-outline-text")) wbOutlineEdit(row);
+  });
 
-document.getElementById("wb-outline-tree")?.addEventListener("click", (event) => {
-  const pencil = event.target.closest(".wb-outline-edit");
-  if (pencil) wbOutlineEdit(pencil.closest(".wb-outline-row"), { select: true });
-});
+  document.getElementById("wb-outline-tree")?.addEventListener("click", (event) => {
+    const pencil = event.target.closest(".wb-outline-edit");
+    if (pencil) wbOutlineEdit(pencil.closest(".wb-outline-row"), { select: true });
+  });
 
-document.getElementById("wb-outline-tree")?.addEventListener("focusin", (event) => {
-  const row = event.target.closest(".wb-outline-row");
-  if (!row || row._node.id < 0) return;
-  if (wbSelectedItem?.kind !== "object" || wbSelectedItem.id !== row._node.id) selectWbItem("object", row._node.id);
-  for (const other of row.parentElement.children) other.setAttribute("aria-selected", String(other === row));
-});
+  document.getElementById("wb-outline-tree")?.addEventListener("focusin", (event) => {
+    const row = event.target.closest(".wb-outline-row");
+    if (!row || row._node.id < 0) return;
+    if (wbSelectedItem?.kind !== "object" || wbSelectedItem.id !== row._node.id) selectWbItem("object", row._node.id);
+    for (const other of row.parentElement.children) other.setAttribute("aria-selected", String(other === row));
+  });
 
-document.getElementById("wb-outline-tree")?.addEventListener("focusout", (event) => {
-  const row = event.target.closest(".wb-outline-row");
-  if (!row || !event.target.matches(".wb-outline-text")) return;
-  if (wbOutlineEditing(row)) wbOutlineStopEdit(row);
-  wbOutlineCommit(row._node, event.target);
-});
+  document.getElementById("wb-outline-tree")?.addEventListener("focusout", (event) => {
+    const row = event.target.closest(".wb-outline-row");
+    if (!row || !event.target.matches(".wb-outline-text")) return;
+    if (wbOutlineEditing(row)) wbOutlineStopEdit(row);
+    wbOutlineCommit(row._node, event.target);
+  });
 
-document.getElementById("wb-outline-tree")?.addEventListener("keydown", (event) => {
-  const field = event.target;
-  const row = field.closest?.(".wb-outline-row");
-  if (!row || event.ctrlKey || event.metaKey || event.altKey) return;
-  if (!field.matches(".wb-outline-text")) return;
-  const node = row._node;
-  const editing = wbOutlineEditing(row);
-  const done = () => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-  if (event.key === "F2" && !editing) {
-    done();
-    wbOutlineEdit(row);
-  } else if (event.key === "Enter" && event.shiftKey) {
-    done();
-    wbOutlineAddAfter(node, field);
-  } else if (event.key === "Enter") {
-    done();
-    if (editing) {
-      wbOutlineStopEdit(row);
-      wbOutlineCommit(node, field);
-    } else wbOutlineEdit(row);
-  } else if (event.key === "Tab") {
-    done();
-    if (event.shiftKey) wbOutlineOutdent(node, field);
-    else wbOutlineIndent(node, field);
-  } else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-    done();
-    wbOutlineStep(field, event.key === "ArrowUp" ? -1 : 1);
-  } else if (event.key === "Backspace" && editing && field.value === "" && node.kind === "topic") {
-    done();
-    wbOutlineRemoveEmpty(node);
-  } else if (event.key === "Escape") {
-    done();
-    if (editing) {
-      wbOutlineStopEdit(row, { cancel: true });
-      return;
+  document.getElementById("wb-outline-tree")?.addEventListener("keydown", (event) => {
+    const field = event.target;
+    const row = field.closest?.(".wb-outline-row");
+    if (!row || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (!field.matches(".wb-outline-text")) return;
+    const node = row._node;
+    const editing = wbOutlineEditing(row);
+    const done = () => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    if (event.key === "F2" && !editing) {
+      done();
+      wbOutlineEdit(row);
+    } else if (event.key === "Enter" && event.shiftKey) {
+      done();
+      wbOutlineAddAfter(node, field);
+    } else if (event.key === "Enter") {
+      done();
+      if (editing) {
+        wbOutlineStopEdit(row);
+        wbOutlineCommit(node, field);
+      } else wbOutlineEdit(row);
+    } else if (event.key === "Tab") {
+      done();
+      if (event.shiftKey) wbOutlineOutdent(node, field);
+      else wbOutlineIndent(node, field);
+    } else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      done();
+      wbOutlineStep(field, event.key === "ArrowUp" ? -1 : 1);
+    } else if (event.key === "Backspace" && editing && field.value === "" && node.kind === "topic") {
+      done();
+      wbOutlineRemoveEmpty(node);
+    } else if (event.key === "Escape") {
+      done();
+      if (editing) {
+        wbOutlineStopEdit(row, { cancel: true });
+        return;
+      }
+      document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
     }
-    document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
-  }
-});
+  });
 
-document.getElementById("wb-panel-outline")?.addEventListener("change", (event) => wbOutlineToggle(event.target.checked));
+  document.getElementById("wb-panel-outline")?.addEventListener("change", (event) => wbOutlineToggle(event.target.checked));
+});
 
 // --- Markers (MINDMAP_PLAN §12.2 item 4, the audit's M4) --------------------
 //
@@ -10254,23 +10645,25 @@ function wbMapMarkerParts(data) {
     : [];
   //: A due day (decision 37), checked as the server checks it.
   const due = typeof data?.due === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.due) ? data.due : null;
-  return { priority, progress, flag, icons, due };
+  //: A start day (the Gantt view), the same shape; a bar needs both.
+  const start = typeof data?.start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.start) ? data.start : null;
+  return { priority, progress, flag, icons, due, start };
 }
 
 //: "12 Oct", and whether that day has gone (local midnight to midnight).
-function wbMapDueWords(due) {
-  const [y, m, d] = due.split("-").map(Number);
-  const day = new Date(y, m - 1, d);
+//: With a `start` too, "5 Oct to 12 Oct"; a `start` alone (no due day), "from 5 Oct".
+function wbMapDueWords(due, start = null) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const words = day.toLocaleDateString(undefined, { day: "numeric", month: "short", ...(y !== today.getFullYear() ? { year: "numeric" } : {}) });
-  return { words, past: day < today };
-}
-
-function wbMapProgressWords(progress) {
-  if (progress === 100) return "done";
-  if (progress === 0) return "not started";
-  return `${progress}% done`;
+  const say = (text) => {
+    const [y, m, d] = text.split("-").map(Number);
+    const day = new Date(y, m - 1, d);
+    return { day, words: day.toLocaleDateString(undefined, { day: "numeric", month: "short", ...(y !== today.getFullYear() ? { year: "numeric" } : {}) }) };
+  };
+  const end = say(due || start);
+  const from = due && start ? say(start).words : null;
+  const words = from ? `${from} to ${end.words}` : due ? end.words : `from ${end.words}`;
+  return { words, past: Boolean(due) && end.day < today };
 }
 
 //: What the row says to a screen reader and in its tooltip, in the order it
@@ -10278,12 +10671,13 @@ function wbMapProgressWords(progress) {
 function wbMapMarkerWords(parts) {
   const words = [];
   if (parts.priority) words.push(`priority ${parts.priority}`);
-  if (parts.progress != null) words.push(wbMapProgressWords(parts.progress));
+  if (parts.progress != null) words.push(parts.progress === 100 ? "done" : parts.progress === 0 ? "not started" : `${parts.progress}% done`);
   if (parts.flag) words.push("flagged");
   if (parts.due) {
     const due = wbMapDueWords(parts.due);
     words.push(due.past ? `was due ${due.words}` : `due ${due.words}`);
   }
+  if (parts.start) words.push(`starts ${wbMapDueWords(parts.start).words}`);
   for (const icon of parts.icons) words.push((WB_MAP_MARKER_ICON_NAMES.get(icon) || icon).toLowerCase());
   const text = words.join(", ");
   return text ? text[0].toUpperCase() + text.slice(1) : "";
@@ -10293,7 +10687,7 @@ function wbMapMarkerWords(parts) {
 //: render of an unchanged map writes nothing here.
 function wbMapPaintMarkers(host, data) {
   const parts = wbMapMarkerParts(data);
-  const key = `${parts.priority}|${parts.progress}|${parts.flag}|${parts.icons.join(",")}|${parts.due}`;
+  const key = `${parts.priority}|${parts.progress}|${parts.flag}|${parts.icons.join(",")}|${parts.due}|${parts.start}`;
   if (host.dataset.key === key) return;
   host.dataset.key = key;
   host.replaceChildren();
@@ -10327,58 +10721,64 @@ function wbMapPaintMarkers(host, data) {
     host.appendChild(i);
   };
   if (parts.flag) glyph("flag", " wb-map-mark-flag");
-  if (parts.due) {
-    const due = wbMapDueWords(parts.due);
+  if (parts.due || parts.start) {
+    const when = wbMapDueWords(parts.due, parts.start);
     const chip = document.createElement("span");
-    chip.className = `wb-map-mark wb-map-mark-due${due.past ? " is-past" : ""}`;
-    chip.textContent = due.words;
+    chip.className = `wb-map-mark wb-map-mark-due${when.past ? " is-past" : ""}`;
+    chip.textContent = when.words;
     host.appendChild(chip);
   }
   for (const icon of parts.icons) glyph(icon);
 }
 
-//: The Due row (decision 37): the browser's own date field, Clear, and
-//: Remind me, which makes an ordinary reminder at 9:00 that day.
-function wbMapDueRow(node, parts, set) {
+//: The Due and Start rows (decision 37; the Gantt view): the browser's own
+//: date field and Clear; Due also has Remind me. Each field stops at the
+//: other's day (`min` and `max`), so the pair cannot be set backwards here.
+function wbMapDateRow(node, parts, set, label, key) {
   const wrap = document.createElement("div");
   wrap.className = "wb-map-markers-row";
   const name = document.createElement("span");
   name.className = "wb-map-markers-label";
-  name.textContent = "Due";
+  name.textContent = label;
   const field = document.createElement("input");
   field.type = "date";
-  field.value = parts.due || "";
-  field.setAttribute("aria-label", "Due date");
-  field.addEventListener("change", () => set({ due: field.value || null }));
+  field.value = parts[key] || "";
+  if (key === "start" && parts.due) field.max = parts.due;
+  if (key === "due" && parts.start) field.min = parts.start;
+  field.setAttribute("aria-label", `${label} date`);
+  field.addEventListener("change", () => set({ [key]: field.value || null }));
   wrap.append(name, field);
-  if (parts.due) {
-    const clear = document.createElement("button");
-    clear.type = "button";
-    clear.className = "ghost small";
-    clear.textContent = "Clear";
-    clear.addEventListener("click", () => set({ due: null }));
-    const remind = document.createElement("button");
-    remind.type = "button";
-    remind.className = "ghost small";
-    remind.textContent = "Remind me";
-    remind.title = "A reminder at 9:00 on the due day, in Reminders";
-    remind.addEventListener("click", async () => {
-      const [y, m, d] = parts.due.split("-").map(Number);
-      const at = new Date(y, m - 1, d, 9, 0, 0);
-      if (at < new Date()) {
-        toast("That day has gone: pick a later due date for a reminder.", "info");
-        return;
-      }
-      try {
-        const made = await apiJson("/reminders", { method: "POST", body: JSON.stringify({ text: wbMapLabel(node) || "Map topic", due_at: at.toISOString() }) });
-        reminderMadeUndo(made);
-        toast(`Reminder set for ${wbMapDueWords(parts.due).words}, 9:00.`);
-      } catch (error) {
-        toast(error.message || voiceLine("failed", { what: "set that reminder" }), true);
-      }
-    });
-    wrap.append(clear, remind);
-  }
+  if (!parts[key]) return wrap;
+  const clear = document.createElement("button");
+  clear.type = "button";
+  clear.className = "ghost small";
+  clear.textContent = "Clear";
+  clear.setAttribute("aria-label", `Clear ${label.toLowerCase()} date`);
+  clear.addEventListener("click", () => set({ [key]: null }));
+  wrap.append(clear);
+  if (key !== "due") return wrap;
+  //: Remind me makes an ordinary reminder at 9:00 on the due day.
+  const remind = document.createElement("button");
+  remind.type = "button";
+  remind.className = "ghost small";
+  remind.textContent = "Remind me";
+  remind.title = "A reminder at 9:00 on the due day, in Reminders";
+  remind.addEventListener("click", async () => {
+    const [y, m, d] = parts.due.split("-").map(Number);
+    const at = new Date(y, m - 1, d, 9, 0, 0);
+    if (at < new Date()) {
+      toast("That day has gone: pick a later due date for a reminder.", "info");
+      return;
+    }
+    try {
+      const made = await apiJson("/reminders", { method: "POST", body: JSON.stringify({ text: wbMapLabel(node) || "Map topic", due_at: at.toISOString() }) });
+      reminderMadeUndo(made);
+      toast(`Reminder set for ${wbMapDueWords(parts.due).words}, 9:00.`);
+    } catch (error) {
+      toast(error.message || voiceLine("failed", { what: "set that reminder" }), true);
+    }
+  });
+  wrap.append(remind);
   return wrap;
 }
 
@@ -10540,7 +10940,8 @@ function wbMapOpenMarkers(id, anchor = null) {
       wbMapMarkerSeg("Progress", [[null, "None"], [0, "0%"], [25, "25%"], [50, "50%"], [75, "75%"], [100, "Done"]],
         parts.progress, (value) => set({ progress: value })),
       wbMapMarkerToggle("Flag", Boolean(parts.flag), (value) => set({ flag: value || null })),
-      wbMapDueRow(live, parts, set),
+      wbMapDateRow(live, parts, set, "Start", "start"),
+      wbMapDateRow(live, parts, set, "Due", "due"),
       iconRow,
       hint,
     );
@@ -10694,8 +11095,11 @@ function wbMapAfterRender() {
   }
 }
 
-document.getElementById("wb-map-filter-clear")?.addEventListener("click", () => wbMapSetMarkerFilter(null));
-document.getElementById("wb-map-filter-item")?.addEventListener("click", () => wbMapChooseMarkerFilter());
+onSurface("board", () => {
+  document.getElementById("wb-map-filter-clear")?.addEventListener("click", () => wbMapSetMarkerFilter(null));
+  document.getElementById("wb-map-filter-item")?.addEventListener("click", () => wbMapChooseMarkerFilter());
+  document.getElementById("wb-map-gantt-item")?.addEventListener("click", () => wbMapLazy.openGantt());
+});
 
 // --- A document's headings as a map (the audit's M5, second half) ---------
 //

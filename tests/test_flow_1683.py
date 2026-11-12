@@ -196,7 +196,8 @@ def test_a_flow_is_never_asked_of_a_spin_frame():
 # --- the engine ---------------------------------------------------------------------------------------------
 
 
-def _at_rest(look: str = "masculine", seconds: float = 12.0, state: str | None = None) -> list[eng.Output]:
+def _at_rest(look: str = "masculine", seconds: float = 12.0, state: str | None = None, spells: list | None = None) -> list[eng.Output]:
+    """The engine run at rest; `spells`, when given, gets one flag per output: was a spell act drawing."""
     e, _ = make(look)
     out, t = [], 1.0
     if state:
@@ -204,24 +205,38 @@ def _at_rest(look: str = "masculine", seconds: float = 12.0, state: str | None =
     while t < 1.0 + seconds:
         o = e.update(t)
         out.append(o)
+        if spells is not None:
+            spells.append(e.state == "act" and e.spell is not None and e.act == e.spell["act"])
         t += max(0.03, (o.wake_ms or 1000) / 1000.0)
     return out
 
 
 @pytest.mark.parametrize("state", [None, "sit", "sleep"])
 def test_the_engine_redraws_at_rest_so_the_streams_never_stop(state):
-    out = _at_rest(state=state)
-    assert all(o.wake_ms is not None and o.wake_ms <= (eng.FLOW_SLEEP_MS if state == "sleep" else eng.FLOW_TICK_MS) for o in out), "a wake is never later than the streams' tick"
-    views = [o.flow for o in out]
+    spells: list[bool] = []
+    out = _at_rest(state=state, spells=spells)
+    # Intent moved (deskframes-1108): a spell act (a drawn rune, `FLOW_SPELL_MS`) ticks at its own 300 ms, and with the new
+    # frame sizes the seeded run reaches one. Only those pictures get the spell's bound; every other one keeps the
+    # streams' own tick (review: one 300 ms bound for all would let the rest tick slow unseen).
+    assert any(spells) or state is not None, "the seeded run reaches a spell, so the spell bound is exercised"
+    for o, spell in zip(out, spells):
+        bound = eng.FLOW_SLEEP_MS if state == "sleep" else eng.FLOW_SPELL_MS if spell else eng.FLOW_TICK_MS
+        assert o.wake_ms is not None and o.wake_ms <= bound, ("a wake is never later than the streams' tick", o.wake_ms, spell)
+    # Intent moved (deskframes-1108): a warp's picture is an effect (`Output.fx`) that takes no flow by design (the seeded
+    # run now reaches one at 7.4 s), so the streams are asked of every other picture.
+    # Stamped on the whole run first, so dropping the warp's pictures leaves a gap in time rather than closing it up.
+    stamped, t = [], 1.0
+    for o in out:
+        stamped.append((t, o))
+        t += max(0.03, (o.wake_ms or 1000) / 1000.0)
+    stamps = [s for s, o in stamped if o.fx is None]
+    views = [o.flow for s, o in stamped if o.fx is None]
     assert all(v is not None for v in views)
     # a 1 s window always holds more than one distinct picture of the streams
-    stamps, t = [], 1.0
-    for o in out:
-        stamps.append(t)
-        t += max(0.03, (o.wake_ms or 1000) / 1000.0)
+    warps = [s for s, o in stamped if o.fx is not None]
     for k, t0 in enumerate(stamps):
         window = {v for v, t1 in zip(views[k:], stamps[k:]) if t1 < t0 + 1.0}
-        if t0 + 1.0 <= stamps[-1]:
+        if t0 + 1.0 <= stamps[-1] and not any(t0 <= w < t0 + 1.0 for w in warps):
             assert len(window) > 1, t0
 
 
@@ -283,3 +298,18 @@ def test_a_drag_and_a_throw_keep_one_flow_so_no_warp_is_built_a_frame(look):
     assert in_motion, "the drag or the throw drew no motion frame"
     assert len({o.flow for o in in_motion}) <= 2, "a flowed picture per frame is a warp per frame"
     assert not [o for o in airborne if o.frame.startswith("spin") and o.flow is not None]
+
+
+def test_a_settled_flow_costs_nothing_and_stays_where_it_is() -> None:
+    """cispeed D1: springs with nothing pushing them fall to denormals and stall there, never to 0.0; below 1e-200
+    the step snaps them to zero and returns, and a push wakes them as before. Fixed inputs, no clock."""
+    flow = bh.Flow(5)
+    flow.step(0.3, 200.0, 0.0)
+    for _ in range(30000):
+        flow.step(0.3, 0.0, 0.0)
+    assert not any(map(any, flow.pos)) and not any(map(any, flow.vel))
+    before = flow.view(10.0)
+    flow.step(0.3, 0.0, 0.0)
+    assert flow.view(10.0) == before
+    flow.step(0.3, 120.0, 0.0)
+    assert any(map(any, flow.pos)) and any(map(any, flow.vel))

@@ -300,6 +300,27 @@ def _changed(session: Session) -> list:
     return [*session.new, *(obj for obj in session.dirty if not _only_bookkeeping(obj))]
 
 
+def _flush_work(session: Session) -> list[tuple[Source, int, Row | None]]:
+    """Every index row this flush has to write or remove, boards included."""
+    work: list[tuple[Source, int, Row | None]] = []
+    for obj in list(session.deleted):
+        for source in _BY_MODEL.get(type(obj), ()):
+            ref_id = getattr(obj, "id", None)
+            if ref_id is not None:
+                work.append((source, ref_id, None))
+    for obj in _changed(session):
+        for source in _BY_MODEL.get(type(obj), ()):
+            ref_id = getattr(obj, "id", None)
+            if ref_id is None:
+                continue
+            try:
+                work.append((source, ref_id, source.read(obj)))
+            except Exception:  # noqa: BLE001  # see the docstring
+                logger.warning("could not index %s %s", source.name, ref_id, exc_info=True)
+    work.extend(_boards_touched_by_objects(session, {(s.name, ref) for s, ref, _ in work}))
+    return work
+
+
 @event.listens_for(Session, "after_flush")
 def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
     """Keep the index in step with whatever just changed, in the same
@@ -321,22 +342,7 @@ def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
         return
     if _table_missing(session):
         return
-    work: list[tuple[Source, int, Row | None]] = []
-    for obj in list(session.deleted):
-        for source in _BY_MODEL.get(type(obj), ()):
-            ref_id = getattr(obj, "id", None)
-            if ref_id is not None:
-                work.append((source, ref_id, None))
-    for obj in _changed(session):
-        for source in _BY_MODEL.get(type(obj), ()):
-            ref_id = getattr(obj, "id", None)
-            if ref_id is None:
-                continue
-            try:
-                work.append((source, ref_id, source.read(obj)))
-            except Exception:  # noqa: BLE001  # see the docstring
-                logger.warning("could not index %s %s", source.name, ref_id, exc_info=True)
-    work.extend(_boards_touched_by_objects(session, {(s.name, ref) for s, ref, _ in work}))
+    work = _flush_work(session)
     if not work:
         return
     connection = session.connection()
@@ -347,19 +353,8 @@ def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
             logger.warning("could not write index row for %s %s", source.name, ref_id, exc_info=True)
 
 
-def _boards_touched_by_objects(
-    session: Session, done: set[tuple[str, int]]
-) -> list[tuple[Source, int, Row | None]]:
-    """The board and map rows a whiteboard object's write changed.
-
-    A topic is not a row of its own; its words are part of its board's row
-    (`_board_words`), so adding, editing or deleting one has to re-read that
-    board. A dirty object whose `data` and `board_id` did not change (a node
-    dragged, a colour picked) says nothing new and is skipped: a drag saves
-    on every drop, and each would otherwise rewrite the board's row for
-    nothing. `done` is what the entry pass already wrote this flush.
-    """
-    from tessellate.core.database import Entry, WhiteboardObject
+def _touched_board_ids(session: Session) -> set[int]:
+    from tessellate.core.database import WhiteboardObject
 
     board_ids: set[int] = set()
     for obj in [*session.new, *session.deleted]:
@@ -375,6 +370,24 @@ def _boards_touched_by_objects(
         for board_id in [*(moved.deleted or ()), obj.board_id]:
             if board_id is not None:
                 board_ids.add(int(board_id))
+    return board_ids
+
+
+def _boards_touched_by_objects(
+    session: Session, done: set[tuple[str, int]]
+) -> list[tuple[Source, int, Row | None]]:
+    """The board and map rows a whiteboard object's write changed.
+
+    A topic is not a row of its own; its words are part of its board's row
+    (`_board_words`), so adding, editing or deleting one has to re-read that
+    board. A dirty object whose `data` and `board_id` did not change (a node
+    dragged, a colour picked) says nothing new and is skipped: a drag saves
+    on every drop, and each would otherwise rewrite the board's row for
+    nothing. `done` is what the entry pass already wrote this flush.
+    """
+    from tessellate.core.database import Entry
+
+    board_ids = _touched_board_ids(session)
     if not board_ids:
         return []
     out: list[tuple[Source, int, Row | None]] = []
@@ -453,7 +466,7 @@ def forget(session: Session, model: type, ids: Iterable[int]) -> int:
     """Take rows out for things a bulk statement is about to delete, or has.
 
     `touch` above re-reads one object; this is its bulk half, for the deletes
-    that never reach the flush hook: emptying the bin (`manager._hard_delete`
+    that never reach the flush hook: emptying the bin (`manager_purge._hard_delete`
     runs `DELETE FROM entries WHERE id IN (...)`) and deleting a space (every
     table in `routes_spaces.delete_space` goes by a query-level delete). Both
     left their rows here for good, measured: a purged note stayed findable
@@ -572,7 +585,7 @@ def _written(value: datetime | date | None) -> str:
 def _entry_kind(entry) -> str:  # noqa: ANN001
     """"note", "board" or "map" for one row of the entries table.
 
-    The same read as `entry.manager.board_type_of`, repeated rather than
+    The same read as `entry.manager_purge.board_type_of`, repeated rather than
     imported for the reason this module imports nothing from above it: the
     index sits under the entry layer. Tolerant of every shape a JSON text
     column can hold: a bad value is an ordinary board, never an exception in
@@ -817,8 +830,9 @@ def _register_all() -> None:
 
 
 def _document_row(doc) -> Row | None:  # noqa: ANN001
-    #: A binned document is out of search until it is restored (5 item 10).
-    if doc is None or getattr(doc, "deleted_at", None) is not None:
+    #: A binned document is out of search until it is restored (5 item 10),
+    #: and a private one (INBOX 1727) never is in, as a private note is not.
+    if doc is None or getattr(doc, "deleted_at", None) is not None or getattr(doc, "is_private", False):
         return None
     flags = ["archived"] if getattr(doc, "archived_at", None) else []
     return Row(
@@ -859,7 +873,8 @@ def _attachment_row(att) -> Row | None:  # noqa: ANN001
 
 
 def _media_row(media) -> Row | None:  # noqa: ANN001
-    if media is None:
+    #: A picture only a board uses is not searchable until Save to Library (K18).
+    if media is None or getattr(media, "board_only", False):
         return None
     from tessellate.core import readings
 
@@ -880,15 +895,30 @@ def _bookmark_row(mark) -> Row | None:  # noqa: ANN001
     return Row(
         title=mark.title or mark.url or "",
         body="\n".join(part for part in (mark.url, mark.note) if part),
-        tags=getattr(mark, "group_name", "") or "",
+        tags=" ".join(part for part in (getattr(mark, "group_name", ""), (getattr(mark, "tags", "") or "").replace(",", " ")) if part),
         space=getattr(mark, "workspace_id", "default") or "default",
         flags=" ".join(flags),
         written=_written(getattr(mark, "created_at", None)),
     )
 
 
+def _in_private_space(obj) -> bool:  # noqa: ANN001
+    """A chat, an Ask turn or a reminder of a private space is sealed
+    (INBOX 1727) and so never indexed, like a private note. Raw SQL on the
+    flush's own connection: this runs inside a flush."""
+    from sqlalchemy import text
+    from sqlalchemy.orm import object_session
+
+    session = object_session(obj)
+    space = getattr(obj, "workspace_id", None)
+    if session is None or not space:
+        return False
+    found = session.connection().execute(text("SELECT 1 FROM spaces WHERE id = :id AND is_private = 1"), {"id": space})
+    return found.first() is not None
+
+
 def _reminder_row(rem) -> Row | None:  # noqa: ANN001
-    if rem is None or getattr(rem, "deleted_at", None) is not None:
+    if rem is None or getattr(rem, "deleted_at", None) is not None or _in_private_space(rem):
         return None
     flags = ["done"] if getattr(rem, "done", False) else ["open"]
     if getattr(rem, "priority", "") == "high":
@@ -908,7 +938,7 @@ def _conversation_row(conv) -> Row | None:  # noqa: ANN001
     One row per chat rather than per message: the rowid is the chat's id
     (`_rowid`), and a hit opens the chat, which is where its turns are read.
     """
-    if conv is None:
+    if conv is None or _in_private_space(conv):
         return None
     try:
         messages = json.loads(conv.messages or "[]")
@@ -935,7 +965,7 @@ def _conversation_row(conv) -> Row | None:  # noqa: ANN001
 
 def _ask_turn_row(turn) -> Row | None:  # noqa: ANN001
     """One question asked in the Ask box, with its answer."""
-    if turn is None:
+    if turn is None or _in_private_space(turn):
         return None
     return Row(
         title=turn.question or "",

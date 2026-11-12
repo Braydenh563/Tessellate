@@ -29,6 +29,7 @@ from tessellate.api import routes_auth
 from tessellate.api.this_computer import REFUSAL
 from tessellate.core import egress, lancert, lanlive, lanserve, lantrust, netbind, netid, origin, vault
 from tests._app_js import app_js_text
+from tests._js_scope import unwrapped
 
 
 # The Windows firewall line: Settings, Other devices shows the one-line netsh command when the switch is on, for the private profile only.
@@ -67,7 +68,7 @@ def test_describe_carries_the_hint_only_where_it_applies(app_state, monkeypatch)
 def test_settings_draws_the_line_with_a_copy_button():
     root = Path(__file__).resolve().parents[1]
     html = (root / "frontend" / "index.html").read_text(encoding="utf-8")
-    js = (root / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    js = unwrapped((root / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8"))
     assert 'id="account-lan-firewall"' in html
     assert "state.firewall" in js and "account-lan-firewall" in js
 
@@ -475,7 +476,9 @@ def test_the_watch_paints_the_icon_and_keeps_going_while_lan_mode_is_off():
     assert "lanNoticeSwitchedOff(state.switched_off)" in once
     # The recipes: the help popover on a desktop, the sheet without a box.
     assert "wireHelpPopover(button, panel)" in watch and "openSheet({" in watch
-    assert "stopImmediatePropagation()" in watch and "getBoundingClientRect().width" in watch
+    # A boxless button opens the sheet: now a `_instead` hook the shared popover listener calls (INBOX 1742), since a
+    # capture listener on the button never ran once that listener stopped the press first.
+    assert "panel._instead = () => !button.getBoundingClientRect().width && (lanOpenSheet(), true)" in watch
     # One switch and one set of network rows, shared with Settings.
     assert "lanSwitch(!state.allow_lan)" in watch and "lanNetworkRows(state, paint)" in watch
     assert 'shortcutTitle(`Other devices. ${look.words}`, "lanPanel")' in watch
@@ -2271,12 +2274,14 @@ def test_a_phone_cannot_allow_the_network_it_is_on(trust_lan_app):
 def test_local_name_opens_a_localhost_name(monkeypatch):
     from tessellate import __main__ as entry
 
+    # Pages open at localhost now (owner, 2026-11-10, "Localhost everywhere");
+    # the name still wins and a bad one is still refused.
     monkeypatch.delenv("TESSELLATE_LOCAL_NAME", raising=False)
-    assert entry.page_host() == "127.0.0.1"
+    assert entry.window_host() == "localhost"
     monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "Tessellate")
-    assert entry.page_host() == "tessellate.localhost"
+    assert entry.window_host() == "tessellate.localhost"
     monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "evil.example/x")
-    assert entry.page_host() == "127.0.0.1"
+    assert entry.window_host() == "localhost"
 
 
 # --- idle cost (INBOX 1351): the watch waits on the change, not on a timer -----

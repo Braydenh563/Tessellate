@@ -9,9 +9,15 @@
 
 let chatConv = { id: null, turns: [] }; // the open conversation
 let chatController = null;
-//: Messages sent while an answer streams, oldest first (INBOX 1321).
-const chatQueue = [];
-const chatQueueState = { held: false };
+//: Chat's composer queue (CHAT_PLAN B3), made one by palette.js's `composerQueue`, off the boot bytes.
+const chatQueue = {
+  input: () => $("chat-input"),
+  //: Also the save after the stream (Stop is already hidden): a send then made a second conversation (sm-1111 row 25).
+  finishing: new Set(),
+  busy: () => !$("chat-stop").classList.contains("hidden") || chatQueue.finishing.has(chatConv),
+  send: (text) => sendChatMessage(text, { keepBox: true }),
+  before: () => $("chat-input").parentElement,
+};
 let lastChatQuestion = ""; // powers Regenerate / Edit & resend
 // Set while an `ask` card (renderAgentQuestion) is on screen waiting for a
 // reply. Covers typing a free-text answer into the composer, not just
@@ -181,7 +187,7 @@ async function copyToClipboard(text, button) {
 //: newest. Everything after the question is removed first, an answer
 //: regenerated in the middle of a thread that keeps the turns built on the old
 //: one is a transcript that contradicts itself.
-const regenerateFromBubble = (bubble) => lazyScript("/js/chat-edit.js").then(() => regenerateFrom(bubble));
+const regenerateFromBubble = (bubble, opts) => lazyScript("/js/chat-edit.js").then(() => regenerateFrom(bubble, opts));
 
 //: How many times the last question has been asked again (`retries`, kept on
 //: the function, not a top-level let): sent as `attempt`, so an answer
@@ -462,6 +468,8 @@ function toggleWebPanel(force) {
     //: The "..." is drawn with the head, from what was last known; the
     //: status call below (seconds while Docker answers) only updates it.
     renderWebPanelMenu(webEngineInfo);
+    //: Private web search needs SearXNG: the optional-package notice (extra-notice.js).
+    if (prefsCache && prefsCache.web_search_enabled && prefsCache.search_provider !== "duckduckgo") extraNoticeMount(panel, "searxng");
     refreshWebSearxngStrip();
     renderWebSearchHistory();
     //: The page you were reading is still there when the panel comes back.
@@ -484,27 +492,6 @@ function toggleWebPanel(force) {
 // "is it on", as a dot in the head, and "turn it on or off", in the kebab
 // beside it.
 let webSearxngTimer = null;
-
-//: What the dot says, word for word, in its title and its accessible name.
-//: "Stopped" means two different things by provider: under Automatic a search
-//: falls back to DuckDuckGo, and under SearXNG only it does not (websearch.py,
-//: `search_web`), so the sentence names which.
-function webEngineWords(state, provider) {
-  const words = {
-    off: "Web access is off",
-    remote: "Searching with DuckDuckGo: your queries leave this machine",
-    running: "SearXNG is running: your searches stay on this machine",
-    starting: "SearXNG is starting",
-    installing: "SearXNG is installing",
-    stopped:
-      provider === "searxng"
-        ? "SearXNG is stopped, so searches will fail until you start it"
-        : "SearXNG is stopped, so searches go to DuckDuckGo",
-    absent: "SearXNG is not installed, so searches go to DuckDuckGo",
-    unknown: "Search engine: checking",
-  };
-  return words[state] || words.unknown;
-}
 
 function setWebEngineDot(state, provider) {
   const dot = $("web-engine-dot");
@@ -569,9 +556,16 @@ function renderWebPanelMenu(engine) {
   host.replaceChildren(kebabMenu(items, "Web search options"));
 }
 
-let webEngineInfo = null;
+//: **The engine's last known state, so the menu is not empty while Docker
+//: answers** (the owner, 2026-10-10: "the start searxng button doesnt appear
+//: for a while"; driven with the status call held 4000 ms: the control came
+//: at 4017 ms). A fresh page has no answer yet and the call can take seconds,
+//: so the settled one is kept under `webEngine` and drawn first; the call
+//: still has the last word.
+let webEngineInfo = prefs.json("webEngine");
 
 async function refreshWebSearxngStrip() {
+  await ensureModule("webClip");
   const provider = (prefsCache && prefsCache.search_provider) || "auto";
   clearTimeout(webSearxngTimer);
   if (prefsCache && !prefsCache.web_search_enabled) {
@@ -596,12 +590,9 @@ async function refreshWebSearxngStrip() {
     ? "installing"
     : running
       ? "running"
-      : info.state === "running"
-        ? "starting"
-        : info.state === "absent"
-          ? "absent"
-          : "stopped";
+      : { running: "starting", absent: "absent" }[info.state] || "stopped";
   webEngineInfo = { state, running };
+  prefs.setJSON("webEngine", webEngineInfo);
   if (!prefsCache || prefsCache.web_search_enabled) setWebEngineDot(provider === "duckduckgo" ? "remote" : state, provider);
   renderWebPanelMenu(webEngineInfo);
   // Keep polling while it settles, same as Settings' own richer view:
@@ -792,7 +783,9 @@ function renderModelContextBox(modelName, spec) {
   //: identical in an empty box.
   note.textContent = set > 0
     ? `Running ${modelContextModel} at ${set.toLocaleString()} tokens. Clear the box for auto.`
-    : usable
+    : spec && spec.context_reason
+      ? `Auto: ${spec.context_reason}`
+      : usable
       ? `Auto: ${Number(usable).toLocaleString()} tokens, from the model.`
       : "Auto: the app uses the model's own window.";
 }
@@ -906,25 +899,32 @@ const RESPONSE_MODE_SELECTS = ["response-mode-select", "ask-mode-select"];
 
 // The response presets, fetched once. Served by /chat/modes rather than
 // listed here so adding a fourth is a change to `ai/presets.py` alone (§11).
-async function loadResponseModes() {
-  const selects = RESPONSE_MODE_SELECTS.map((id) => $(id)).filter(Boolean);
-  if (!selects.length) return;
-  const body = await apiJson("/chat/modes", { silent: true }).catch(() => null);
-  if (!body || !body.modes) return;
-  const active = body.modes.find((m) => m.id === body.active);
-  for (const select of selects) {
-    select.replaceChildren();
-    for (const mode of body.modes) {
-      const option = document.createElement("option");
-      option.value = mode.id;
-      option.textContent = mode.label;
-      option.title = mode.description;
-      if (mode.id === body.active) option.selected = true;
-      select.appendChild(option);
+//: The answer is read once and painted again when the Chat pane is built.
+const loadResponseModes = (() => {
+  let body = null;
+  const paint = () => {
+    const selects = RESPONSE_MODE_SELECTS.map((id) => document.getElementById(id)).filter(Boolean);
+    if (!selects.length || !body || !body.modes) return;
+    const active = body.modes.find((m) => m.id === body.active);
+    for (const select of selects) {
+      select.replaceChildren();
+      for (const mode of body.modes) {
+        const option = document.createElement("option");
+        option.value = mode.id;
+        option.textContent = mode.label;
+        option.title = mode.description;
+        if (mode.id === body.active) option.selected = true;
+        select.appendChild(option);
+      }
+      if (active) select.title = active.description;
     }
-    if (active) select.title = active.description;
-  }
-}
+  };
+  onSurface("chat", paint);
+  return async () => {
+    body = await apiJson("/chat/modes", { silent: true }).catch(() => null);
+    paint();
+  };
+})();
 
 // Picking in one picker moves the other. Without this the two would drift
 // apart the moment either was touched, and the one you weren't looking at
@@ -1260,9 +1260,7 @@ function renderCompressionState() {
 //: same one every cross-file reading in this app carries, since a picture
 //: can start before the preferences have landed.
 function batteryModeOn() {
-  return Boolean(
-    typeof prefsCache !== "undefined" && prefsCache && prefsCache.battery_efficient_mode
-  );
+  return Boolean(prefsCache && prefsCache.battery_efficient_mode);
 }
 
 // `label` is the reduced-motion fallback: with animations off the dots can't

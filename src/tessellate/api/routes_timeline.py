@@ -40,6 +40,7 @@ from tessellate.repo import reminders as reminder_repo
 from tessellate.repo.documents import Document
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
+from tessellate.entry import manager_text
 from tessellate.entry import properties as note_properties
 
 router = APIRouter(prefix="/timeline", tags=["timeline"])
@@ -209,7 +210,7 @@ def _place_notes(
         #: The property block is the note's metadata, not its words: a row
         #: titled "---" over "type: Meeting date: ..." was the preview of
         #: every note of a type (meetings-644 audit, item 5).
-        text = note_properties.strip(manager.readable_content(entry)).lstrip("\n")
+        text = note_properties.strip(manager_text.readable_content(entry)).lstrip("\n")
         #: **A mentioned day is a day, not an instant** (audit 2026-10-05,
         #: UX-02). `EntryDate.at` is the writer's own calendar day (and the
         #: clock they said with it, if any), with no zone. Served as
@@ -493,6 +494,11 @@ def timeline(
         # whatever bucket it is drawing: the scale is the reader's choice and
         # can change without asking again.
         "density": density,
+        #: **How many rows the whole range holds**, so a header can say
+        #: "40 of 1,200" and not "40+". Every row is one tick in `density`
+        #: (a note, document or reminder on its day), so the sum is the total;
+        #: only the first page has the strip, and a later page leaves it out.
+        "total": None if cursor else sum(density.values()),
         "next_cursor": next_cursor,
         "has_more": has_more,
     }

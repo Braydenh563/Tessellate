@@ -6,11 +6,14 @@ with the act and its Undo."""
 from __future__ import annotations
 
 import json
+from datetime import date
 
 import pytest
 
 from tessellate.ai import composer_suggest
+from tessellate.core import clock
 from tessellate.entry import manager
+from tests._consent import confirmed
 
 NOTES = ["# Interesting bean\n\nAn interesting bean from the market.", "# Conversation starters\n\nAsk something interesting.", "# Lisbon trip\n\nFlights."]
 
@@ -34,7 +37,9 @@ def _said(events):
 
 
 @pytest.fixture
-def notebook(client, session):
+def notebook(client, session, monkeypatch):
+    #: A fixed day: the reply seed reads it (`chat_said._reply_seed`), so the confirmation's phrasing moved with the real date.
+    monkeypatch.setattr(clock, "today", lambda: date(2026, 11, 7))
     for content in NOTES:
         manager.create_entry(session, content)
     session.commit()
@@ -44,6 +49,7 @@ def notebook(client, session):
         events = _run(client, {"question": reply, "answer_from": "notes", "use_tools": False, "history": [{"question": first, "answer": asked}]})
         return asked, events
 
+    converse.confirmed = lambda events: confirmed(client, events)
     return converse
 
 
@@ -65,8 +71,9 @@ def test_filler_and_pointers_name_nothing(reply):
 def test_the_reply_to_pin_a_note_pins_it_with_undo(notebook, reply):
     asked, events = notebook("Pin a note", reply)
     assert "Which note" in asked
+    assert "Interesting bean" in _said(events) and "did not catch" not in _said(events), _said(events)
+    events = notebook.confirmed(events)
     said = _said(events)
-    assert "Interesting bean" in said and "did not catch" not in said, said
     assert said.startswith("Done") and any(e["type"] == "act" for e in events), (said, [e["type"] for e in events])
 
 
@@ -76,9 +83,11 @@ def test_the_reply_to_pin_a_note_pins_it_with_undo(notebook, reply):
 @pytest.mark.parametrize("reply", REPLIES[:4])
 def test_every_pin_act_fills_its_slot(notebook, first, done, reply):
     _asked, events = notebook(first, reply)
+    #: The card names the change and waits; Confirm does it and the run says Done (owner, 2026-11-10).
+    assert "favourites" in _said(events).lower() and "onfirm" in _said(events), _said(events)
     #: Any case: the confirmation's phrasing (`act_done`) is picked per reply, and
     #: "Done: {what}." or "I have {what}." carries the label lower-cased.
-    assert done.lower() in _said(events).lower(), _said(events)
+    assert done.lower() in _said(notebook.confirmed(events)).lower(), _said(notebook.confirmed(events))
 
 
 @pytest.mark.parametrize("reply", REPLIES[:4])

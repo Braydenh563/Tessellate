@@ -58,6 +58,9 @@ community pass) and `/graph/path`. The dock is on the Phase 8 grammar.
    timeline scrub with a *play*; no local-graph pane beside an open note;
    no export of the picture that matches the screen.
 
+- `clearanceForce` (2,000 notes, 3,999 links) costs 28 ms a call: the corridor walk and tests take 11 ms and the hits 17 ms. A coarser corridor cannot cut the hits, and fewer hits needs an owner quality decision (a long line's push every other tick was tried and reverted). (from `gr1b-1101.md` (git history))
+- The board's remaining layers: 138 at rest come from Chrome's sparsity rule, which will not merge far-apart cards into one layer. A transparent backdrop measured 54 layers, but it relies on an internal heuristic, so it was left. (from `graph-wb-0926.md` (git history))
+
 ## 3. The target, in one paragraph
 
 A full-tab canvas graph that renders 5,000 nodes at 60 fps, where notes
@@ -171,33 +174,7 @@ Moved to HISTORY.md ("Moved from the plans, 2026-09-09", GRAPH_PLAN.md) on 2026-
 
 The owner's reports this plan owns, moved whole from INBOX.md with their numbers (never reused). Each becomes a phase row when its phase is written; until then this list is the phase.
 
-41. **(the panel: fixed, 5724587 and dbff8f0; the clean-up is Phase 4)**
-    **Graph display options belong on the dock, and the options panel
-    needs a redesign**; the graph needs a utility, UI and interaction
-    clean-up. Owner: GRAPH Phase 2 remainder (gear button, INBOX 21) and
-    Phase 4; the panel on the popover shell with the dock-menu sections.
-78. **Graph minimap UX and utility**: Phase 6b, **built 2026-09-13**. The
-    draggable viewport rectangle, click-to-jump, wheel zoom about the pointer
-    and cluster-coloured dots landed earlier; this pass added the last two,
-    the size toggle and the fade when the whole graph already fits. Size is a
-    Small/Large select beside Position in the dock's Minimap section (the map
-    itself is `aria-hidden` decoration that happens to be draggable, so a
-    focusable control inside it would be one no screen reader could reach),
-    and Large is the same picture at 1.5x, scaled on the element so the
-    projection and the drag keep working off the rendered width they already
-    measure. The fade is on the viewport rectangle's own area against the box,
-    not on the zoom scale: "everything fits" is a fact about this graph's
-    extent at this window size. Measured
-    (`scratchpad/ui-sweeps/minimap6b.js`, 1440x950, 297 notes): fit-to-screen
-    at k 0.56 gives a 168x112 rectangle, redundant true, opacity 0.12; at k
-    1.6 the rectangle is 78.5x45.3, redundant false, opacity 0.45; Large
-    renders 252x168 with the projection intact.
-59. **Graph node popup panel redesign** (screenshot, 00:50; the owner:
-    "include redesigning the graph node popup panels in the graph redesign
-    plan"): title, five meta chips at one weight, a file card, a tall
-    content editor, tags, Save, then a 3x3 grid of nine equal action
-    buttons (Favourite, Grow, Focus, Similar, Link, Trace, Remind, Open,
-    Bin). Placed as GRAPH_PLAN Phase 6. Owner: Opus, now.
+INBOX 41 (display options on the dock), 78 (the minimap: size toggle and fade, built 2026-09-13) and 59 (the node popup panel, Phase 6) are built. Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: GRAPH_PLAN)".
 
 ## Placed from INBOX, 2026-09-09 (the owner's evening batch)
 
@@ -206,7 +183,7 @@ on 2026-09-20, with the measurement of each: a plan holds open work only.
 
 ## Decision made, 2026-09-20: three of the six options sections are folds
 
-The recommendation on record (archive/agent-remaining/graph.md, "Open, found
+The recommendation on record (`graph.md` (git history), "Open, found
 and not fixed") was that Groups and Minimap become one collapsed `details`
 each. Taken, and measured: it is no longer enough. The panel had grown from
 the 587px that recommendation was written against to 655px of list in a 488px
@@ -529,7 +506,8 @@ block. What stays here is the standing decisions and what is still open.
 ### Still open after KG1 to KG9
 
 - A real local model's `name|kind` entity extraction and a topic's sentence
-  were never run here (no model in the sandbox); both fall back cleanly.
+  were run once, on a 1.5B (2026-11-11): recall 17 of 22, 4 junk names, topic
+  sentence usable 4 of 4, HTML entities in the output; a 3B is not measured.
 - `/graph` at 5,000 notes: the map's read is slim (`slim=1`, 1,767 KB from
   3,145; built, HISTORY.md "Moved from the plans, 2026-10-05 (op3-1005)").
   The generic encoder is skipped and the PageRank's links are read as
@@ -607,18 +585,18 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 ## Placed from INBOX, 2026-10-10 (the owner on the graph, again)
 
-- INBOX 798, the owner 2026-10-10 23:27Z, screenshot: "the graph is still completely broken 😞 I miss how it used to move 😞 look at how the movement is in main and base and refine off that" (34 notes in one vertical line, topic labels stacked on it) and "there is no smooth transition, I just change views or reset it and it just suddenly changes or disappears and reappears". Owner: the graphfeel agent, round 2 (root cause of the line; main's motion as the reference; animated view changes).
+- INBOX 798, the owner 2026-10-10 23:27Z, screenshot: "the graph is still completely broken 😞 I miss how it used to move 😞 look at how the movement is in main and base and refine off that" (34 notes in one vertical line, topic labels stacked on it) and "there is no smooth transition, I just change views or reset it and it just suddenly changes or disappears and reappears". Owner: the graphfeel agent, round 2 (root cause of the line; main's motion as the reference; animated view changes). **Per part, s58left3-1110:** (a) the vertical line, built (`graphfeel.js` MODE=feel, 34 notes: box 399 by 519, 0 overlaps); (b) no smooth transition on a view change, built (MODE=viewchange: 0 hidden samples over tree, radial, arc, force and Refresh; largest single-sample move 76 to 133 px, 0 on Refresh). Struck.
 - INBOX 799, the owner 2026-10-10 23:45Z: "Alright work autonomously to fix, finish,redesign, improve and extend everything. I will be at work. Impress me! :D" (the standing order for the day: the queue in HANDOVER, three Opus agents at most, Sonnet for well-defined work).
 
 ## Placed from INBOX, 2026-10-11 (the owner on dragging the force graph)
 
 Owner: the graph agent (Opus), when a slot frees.
 
-- INBOX 802, graph, the owner 2026-10-11 03:35Z, verbatim: "The graph movement is a lot closer to how it is on main and better than you had it, but I still cant move the force graph as well. Can you like copy the physics of the force graph on main?? like if cant drag parts of the graph to different areas of the graph and have it kinda settle into place there. idk but I quite like how it is on the main branch. also the resetting or re-centering of the force graph is not smooth and doesnt smoothlly pan over." Recommendation, taken: port main's force simulation and its drag (a dragged node pins while held, the simulation reheats, neighbours follow, it settles where dropped); reset and recentre ease the view transform over the motion token, never jump. Then, 03:50Z, screenshot (the graph sits right of centre, an empty minimap top left): "why's the graph so positioned to the right and not in the middle??" Fit centres on the visible canvas, reserving only what a showing panel covers.
+- INBOX 802, graph, the owner 2026-10-11 03:35Z, verbatim: "The graph movement is a lot closer to how it is on main and better than you had it, but I still cant move the force graph as well. Can you like copy the physics of the force graph on main?? like if cant drag parts of the graph to different areas of the graph and have it kinda settle into place there. idk but I quite like how it is on the main branch. also the resetting or re-centering of the force graph is not smooth and doesnt smoothlly pan over." Recommendation, taken: port main's force simulation and its drag (a dragged node pins while held, the simulation reheats, neighbours follow, it settles where dropped); reset and recentre ease the view transform over the motion token, never jump. Then, 03:50Z, screenshot (the graph sits right of centre, an empty minimap top left): "why's the graph so positioned to the right and not in the middle??" Fit centres on the visible canvas, reserving only what a showing panel covers. **Per part, s58left3-1110:** drag physics (neighbours follow, `carryForce`, graph-worker.js, graph-canvas.js `fx`), eased reset and recentre (`graphGlideMs`, Brief 100) and fit centred on the visible canvas (MODE=feel: free-area fill 0.887, nothing under an overlay) are built in the code and HISTORY; a live drag was not driven this pass. Struck.
 
-## Placed from the owner, 2026-10-11: a tessellation view (next PR)
+## Placed from the owner, 2026-10-11: a tessellation view (built)
 
-The owner: "I'm thinking next pr we should add another graph view which better resembles the essence of the name tessellate". A third view beside the force graph and the map: every note owns one cell of a plane tiled with no gaps (a Voronoi tessellation over the existing 2D layout, or a hexagon grid placed by it), neighbours are related notes, categories are coloured regions with a heavier border, and a new note settles into its cell the way the logo's third cell does. First step: mock three variants (Voronoi, hexagon grid, hexagon clusters per category) at 50, 500 and 2,000 notes for the owner to pick from, then a brief here.
+Built 2026-11-10 (q31-1110): the Tessellation layout with Cells and Hexes, and the Map's link-weighted tiles and uncut names; see HISTORY.md, "Moved from the plans, 2026-11-10 (q31-1110)". Left: `q31-1110.md` (git history).
 
 ## Placed from INBOX, 2026-10-26 (the owner: the force view is messy, popups and controls hard to learn)
 
@@ -626,7 +604,7 @@ The owner: "I'm thinking next pr we should add another graph view which better r
 
 ## Decision made, 2026-10-26: a landscape map is laid out landscape, a hub's lines are rays
 
-INBOX 1400 and 1306, measured with `gm.js` (numbers in `agent-remaining/graph-1026.md`). The 430 rule shaped portrait only, so a 1440x900 map came out 0.49 of the canvas wide and 0.80 tall. Now the y pull rises and the x pull falls by one root (`landscapePull`, graph-worker.js, capped at 3), so the cloud keeps its size and takes the canvas's shape. A hub (`gcHubSpokeMin`: three times the mean degree, at least 8) draws its lines straight, and a line from it to another category at 0.55 of the quiet bridge until pointed at. The node panel's foot is worded at every width (Open, Focus, Pin, Link, then the ⋯), replacing Phase 6's nine bare icons.
+INBOX 1400 and 1306, measured with `gm.js` (numbers in `graph-1026.md` (git history)). The 430 rule shaped portrait only, so a 1440x900 map came out 0.49 of the canvas wide and 0.80 tall. Now the y pull rises and the x pull falls by one root (`landscapePull`, graph-worker.js, capped at 3), so the cloud keeps its size and takes the canvas's shape. A hub (`gcHubSpokeMin`: three times the mean degree, at least 8) draws its lines straight, and a line from it to another category at 0.55 of the quiet bridge until pointed at. The node panel's foot is worded at every width (Open, Focus, Pin, Link, then the ⋯), replacing Phase 6's nine bare icons.
 
 ## Placed from INBOX, 2026-10-31
 
@@ -638,3 +616,9 @@ INBOX 1400 and 1306, measured with `gm.js` (numbers in `agent-remaining/graph-10
 
 - Decision needed from the owner (INBOX is at its cap of 19, so it lives here): graph hover p50 is about 50 ms against a 16 ms target at 500 notes and 4x CPU; the hover card's refill on each new note is about 17 ms of it. Recommendation (taken unless the owner says otherwise): refill the card only once the pointer rests, keep the highlight instant, then re-measure on an idle machine with a real GPU. Check: hover p50 at 4x CPU before and after, and the card still appears on rest.
 - Still open from audit row 19 (2,000 notes, 4x): the worker's own settle is 11 to 14 s (the d3 charge and collide are most of a tick), and wheel and hover at rest cost the at-rest scene repaint (true strokes, 21 ms of raster at 1x). Label fades are done (`gcDrawLabels.frame`, 4.6 ms a frame against 14).
+
+## Placed from W34, 2026-11-11 (gap5: the open graph rows, sized)
+
+- **Hub crossings (L).** `UNTANGLE_HUB_RINGS` (graph-worker.js:2379, used at :3382) places a hub's neighbours on rings in the order they arrive. The default 36-note seed still has 34 to 36 link crossings of 49 to 55 at the hub (graph-1030.md:35). First step: order each hub's neighbours by angle around the hub (sort by the angle to the neighbour's own other neighbours' centroid) before the ring placement, in the worker only. Check: re-run the 36-note seed (`graph-1030.md` recipe) and count crossings with `crossingsOn` (graph-worker.js:2476); done when crossings at the hub fall by a third with 0 dot and 0 label overlaps kept. The old sweep `graphdefault1306.js` is gone: write the count as a pytest on the worker function instead.
+- **Balance pass riding the layer paint (M, a risk call).** At rest the chain is a whole frame, then composed, then a balance pass and composed again. Making pass 2 ride the layer paint (`again()` asking `gcRequestDraw(s, true)` once shown) removed one whole frame (30 ms) but left the composed frames at 46 and 59 ms: tasks over 50 ms unchanged, total 188 to 167 ms. Reverted (graph-1111.md:24) as a risk for 11% of the work. Needs the owner's yes that 21 ms of the total is worth the risk; first step then is a test that layer boxes keep their bounds after the balance runs inside the paint.
+- **Incremental crossing count per turned category (M).** `crossingsOn` (graph-worker.js:2476) recounts every edge pair when a category turns. First step: a trace on a 2,000-note notebook (`measure-seed.py` makes one) to learn if it is on the settle path; only then count only pairs that touch a moved node. Done when the trace shows the count under 5% of the settle.

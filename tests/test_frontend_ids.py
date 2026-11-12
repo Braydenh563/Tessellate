@@ -37,6 +37,17 @@ RUNTIME_IDS = {
     "focus-step-value",
     "focus-today",
     "copy-fallback",
+    #: The New space and Edit space Private switches, built by private-spaces.js
+    #: `mount` on the first open (INBOX 1727; the boot element cap).
+    "space-create-private",
+    "space-edit-private",
+    #: The lock card's Windows Hello button, built by hello-unlock.js `button`
+    #: on the first lock screen that offers it (INBOX 1727; the boot element cap).
+    "lock-hello",
+    #: Confirmed patterns, built by settings-controls.js `confirmedHost` on the
+    #: first draw of What it remembers (CHAT_PLAN B9; the boot element cap).
+    "memory-confirmed-list",
+    "memory-confirmed-empty",
     #: Tidy spacing, drawn by graph.js `graphTidyRow` on the first Graph visit
     #: (INBOX 1529; the boot element cap, test_boot_diet3).
     "graph-tidy",
@@ -407,7 +418,7 @@ def test_every_model_gated_control_gives_a_reason_and_is_in_the_inventory():
 def test_the_digest_is_never_off_for_want_of_a_model():
     """UX-12 (audit 2026-10-05) gave the digest's disabled button a reason
     on the page. Since owner-1026b K3 it is not disabled at all: with no
-    model the composer says the week (`activity.week`), so the widget carries
+    model the composer says the week (`review_digest.week`), so the widget carries
     no model gate and no offline line. The shared line the status poll fills
     (`[data-offline-line]`, with the Settings link) stays for the others."""
     js = Path(__file__).resolve().parents[1] / "frontend" / "js"

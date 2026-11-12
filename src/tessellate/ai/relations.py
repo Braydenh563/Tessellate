@@ -11,7 +11,7 @@ evidence that each might be wrong, any of which could be right.
 
 Pure on purpose: `recognise` takes plain data, so it is tested and measured
 without a database (`tests/test_relations_kg2.py`), and the route
-(`routes_entries.link_suggestions`) only gathers the rows.
+(`routes_entries_relations.link_suggestions`) only gathers the rows.
 
 **Every signal's cost is bounded by a hub cap, not by the notebook.** Pairs
 come from shared things (an entity, a neighbour, a tag), so a thing shared by
@@ -189,6 +189,21 @@ def _written_apart(first, second) -> str | None:  # noqa: ANN001
     return "written the same minute" if minutes < 1 else f"written {round(minutes)} minutes apart"
 
 
+def _attach_evidence(candidate: Candidate, key: tuple[int, int], shared: dict, cosine: dict, worth, time_read: tuple) -> None:  # noqa: ANN001
+    """Fill a surviving candidate's evidence: each shared signal, its similarity, and the time lift when one applied."""
+    when, time_p = time_read
+    for signal, table in shared.items():
+        hits = table.get(key)
+        if hits:
+            hits.sort(key=lambda hit: (-hit[0], hit[1]))
+            candidate.evidence[signal] = (worth(signal, _noisy_or([w for w, _ in hits], CAPS[signal])), [t for _, t in hits])
+    if key in cosine:
+        candidate.similarity = cosine[key]
+        candidate.evidence["similarity"] = (worth("similarity", cosine[key]), [])
+    if when:
+        candidate.evidence["time"] = (time_p, [when])
+
+
 def recognise(
     notes: dict[int, NoteFacts],
     edges: list[tuple[int, int]],
@@ -237,16 +252,7 @@ def recognise(
         if 1.0 - missed < MIN_CONFIDENCE:
             continue
         candidate = Candidate(a, b)
-        for signal, table in shared.items():
-            hits = table.get(key)
-            if hits:
-                hits.sort(key=lambda hit: (-hit[0], hit[1]))
-                candidate.evidence[signal] = (worth(signal, _noisy_or([w for w, _ in hits], CAPS[signal])), [t for _, t in hits])
-        if key in cosine:
-            candidate.similarity = cosine[key]
-            candidate.evidence["similarity"] = (worth("similarity", cosine[key]), [])
-        if when:
-            candidate.evidence["time"] = (time_p, [when])
+        _attach_evidence(candidate, key, shared, cosine, worth, (when, time_p))
         kept.append(candidate)
     kept.sort(key=lambda c: (-c.confidence, -len(c.evidence), c.a, c.b))
     return kept

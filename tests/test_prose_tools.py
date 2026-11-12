@@ -25,9 +25,11 @@ FRONTEND = ROOT / "frontend"
 HARPER = FRONTEND / "vendor" / "harper"
 #: documents.js and documents-prose.js joined: the prose tools moved into
 #: documents-prose.js verbatim on 2026-09-24, and the panel and dock wiring
-#: that reaches them stayed in documents.js.
+#: that reaches them stayed in documents.js. documents-spell.js (INBOX 1731) holds the
+#: "Add to dictionary" row both menus draw, so the one-literal check still sees it.
 DOCUMENTS = "\n".join(
-    (FRONTEND / "js" / name).read_text(encoding="utf-8") for name in ("documents.js", "documents-prose.js")
+    (FRONTEND / "js" / name).read_text(encoding="utf-8")
+    for name in ("documents.js", "documents-view.js", "documents-prose.js", "documents-spell.js")
 )
 WORKER = (FRONTEND / "js" / "harper-worker.js").read_text(encoding="utf-8")
 

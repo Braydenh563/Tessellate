@@ -1,7 +1,7 @@
 {
- "about": "The popup agent's fourteen starters on the dashboard (palette.js AGENT_STARTERS and AGENT_TAB_STARTERS.dashboard), each with its stem filled, and what the engine must answer with no model: an act card (`card`), a search row (`tool`), a reading (`answer`) or a write run at once (`done`). AGENT_SKILLS_REFORM 'Deepened 2026-10-10' row 1.",
+ "about": "The popup agent's fourteen starters on the dashboard (palette.js AGENT_STARTERS and AGENT_TAB_STARTERS.dashboard), each with its stem filled, and what the engine must answer with no model: an act card (`card`), a search row (`tool`) or a reading (`answer`); no write runs before Confirm (owner, 2026-11-10). AGENT_SKILLS_REFORM 'Deepened 2026-10-10' row 1.",
  "starters": [
-  {"label": "Make a note of…", "text": "Make a note of buy oat milk", "expect": "done"},
+  {"label": "Make a note of…", "text": "Make a note of buy oat milk", "expect": "card"},
   {"label": "Add to today's note…", "text": "Add to today's note: call the bank", "expect": "card"},
   {"label": "Notes about…", "text": "Find my notes about harbor", "expect": "tool"},
   {"label": "What did I write this week?", "text": "What did I write this week?", "expect": "answer"},
@@ -9,7 +9,7 @@
   {"label": "The open note", "text": "Summarise the note I have open.", "expect": "answer", "open_note": true},
   {"label": "My week", "text": "Summarise what I wrote this week.", "expect": "answer"},
   {"label": "This conversation", "text": "Summarise this conversation.", "expect": "answer", "history": true},
-  {"label": "Remind me to…", "text": "Remind me to call Sam tomorrow", "expect": "done"},
+  {"label": "Remind me to…", "text": "Remind me to call Sam tomorrow", "expect": "card"},
   {"label": "What is due?", "text": "What is due?", "expect": "answer"},
   {"label": "Tag my untagged notes", "text": "Tag my untagged notes.", "expect": "card"},
   {"label": "Link related notes", "text": "Link notes that belong together.", "expect": "card"},

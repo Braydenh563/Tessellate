@@ -294,6 +294,77 @@ def _mb(n: float) -> str:
     return f"{n / 1_000_000:.1f}"
 
 
+#: Waits before the second and third try of a download that met a server
+#: error. GitHub's release downloads answer 502 and 504 now and then (the
+#: package check failed three times in a row on one, 2026-11-08), and one
+#: blip used to fail the whole install. A 4xx is the address or the file
+#: and is not tried again.
+_RETRY_WAITS = (2.0, 5.0)
+#: A 429 or 503 may say how long to wait (`Retry-After`); the wait is that
+#: many seconds, but never more than this, so a server asking for an hour
+#: still gets one more try inside half a minute.
+_RETRY_AFTER_CAP = 30.0
+#: Stop is looked for this often while a wait runs.
+_WAIT_SLICE = 0.25
+
+
+def _retry_after(exc, default: float) -> float:
+    """The wait before the next try: the `Retry-After` of a 429 or 503 (seconds
+    or an HTTP date) up to `_RETRY_AFTER_CAP`, else `default`."""
+    from email.utils import parsedate_to_datetime
+
+    raw = exc.headers.get("Retry-After") if exc.code in (429, 503) and exc.headers is not None else None
+    if not raw or not raw.strip():
+        return default
+    raw = raw.strip()
+    try:
+        seconds = float(raw)
+    except ValueError:
+        try:
+            seconds = parsedate_to_datetime(raw).timestamp() - time.time()
+        except (TypeError, ValueError):
+            return default
+    if not seconds > 0:  # a past date, a negative number or NaN
+        return default
+    return min(seconds, _RETRY_AFTER_CAP)
+
+
+def _wait(seconds: float, state) -> None:
+    """Sleep `seconds` in short slices so Stop is heard during the wait, and
+    raise `stopped` the moment it is."""
+    left = seconds
+    while left > 0:
+        step = min(_WAIT_SLICE, left)
+        time.sleep(step)
+        left -= step
+        if state.cancelled:
+            raise DownloadFailed("stopped")
+
+
+def _open_retrying(url: str, state):
+    """`_open_url`, tried again after a 5xx, a 429 or a connection that could
+    not be opened. Only the opening is retried: a body that breaks off
+    part-way fails the download, which starts again from the first byte."""
+    import urllib.error
+
+    for wait in (*_RETRY_WAITS, None):
+        try:
+            return _open_url(url)
+        except urllib.error.HTTPError as exc:
+            if wait is None or not (exc.code >= 500 or exc.code == 429):
+                raise
+            wait = _retry_after(exc, wait)
+            state.log.append(f"{url} answered {exc.code}, trying again in {wait:g} s")
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+            if wait is None:
+                raise
+            state.log.append(f"{url} unreachable ({exc}), trying again in {wait:g} s")
+        if state.cancelled:
+            raise DownloadFailed("stopped")
+        _wait(wait, state)
+    raise AssertionError("unreachable")
+
+
 def _fetch(download: Download, dest: Path, state, label: str) -> None:
     """Stream one file to `dest`, hashing as it goes; raise on a mismatch."""
     url = effective_url(download)
@@ -302,7 +373,7 @@ def _fetch(download: Download, dest: Path, state, label: str) -> None:
     digest = hashlib.sha256()
     received = 0
     last = 0.0
-    with _open_url(url) as response, open(dest, "wb") as out:
+    with _open_retrying(url, state) as response, open(dest, "wb") as out:
         while True:
             if state.cancelled:
                 raise DownloadFailed("stopped")

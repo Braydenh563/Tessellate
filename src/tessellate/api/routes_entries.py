@@ -8,29 +8,40 @@ calls run (plan §4).
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import functools
 import json
 import logging
-import threading
-import time
 import re
-from datetime import date, datetime, timedelta
+import threading
 from collections import OrderedDict
+from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import delete as sa_delete
-from sqlalchemy import event, func, or_, select, text
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from tessellate.ai import backend_hint, extractor, filing_certainty, janitor, learning, lexical_filing, librarian, links, relations
-from tessellate.ai import tensions as tensions_module
+from tessellate.ai import (
+    extractor,
+    filing_certainty,
+    janitor,
+    lexical_filing,
+    librarian,
+)
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import paging
 from tessellate.api.downloads import attachment_headers, safe_filename
-from tessellate.api.edit_conflicts import content_hash, entity_tag, refuse_if_stale, refuse_unless_match
+from tessellate.api.edit_conflicts import (
+    content_hash,
+    entity_tag,
+    refuse_if_stale,
+    refuse_unless_match,
+)
+from tessellate.api.routes_entries_refs import REFERENCE_SOURCES_MAX, _reference_rows_batch
 from tessellate.api.schemas import (
     AttachmentOut,
     ContextBody,
@@ -42,38 +53,33 @@ from tessellate.api.schemas import (
     LinkOut,
     SimilarOut,
 )
-from tessellate.core import cjk, deps, events, jobruns, jobs, vault
-from tessellate.core.events import ACTOR_USER_AND_AI
-from tessellate.core.validation_copy import Said
+from tessellate.core import cjk, companion_events, deps, events, jobruns, jobs, vault
 from tessellate.core.database import (
-    AuditLog,
-    DerivedTension,
+    LIKE_ESCAPE,
     EmbeddingRecord,
     Entry,
-    Entity,
-    EntityMention,
-    EntryRevision,
     MediaUpload,
     WhiteboardNode,
-    WhiteboardObject,
     like_escape,
     utcnow,
 )
-from tessellate.core.database import LIKE_ESCAPE
 from tessellate.core.deps import get_session
-from tessellate.entry import duplicates, link_facts, manager
-from tessellate.repo import bookmarks as bookmark_repo
-from tessellate.repo import relation_types
-from tessellate.repo import relations as relations_repo
-from tessellate.repo import content as content_repo
-from tessellate.repo import documents as documents_repo
-from tessellate.repo import tags as tags_repo
-from tessellate.repo.content import NOTES
-from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
+from tessellate.core.events import ACTOR_USER_AND_AI
+from tessellate.core.validation_copy import Said
+from tessellate.entry import manager, private_space
+from tessellate.entry import manager_wiki
+from tessellate.entry import manager_links
+from tessellate.entry import manager_text
+from tessellate.entry import manager_purge
+from tessellate.entry import manager_private
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry import properties as note_properties
 from tessellate.entry.tagnames import inline_tags, normalise_tags
-from tessellate.search import engine as search_engine
+from tessellate.repo import content as content_repo
+from tessellate.repo import documents as documents_repo
+from tessellate.repo import relation_types
+from tessellate.repo import tags as tags_repo
+from tessellate.repo.content import NOTES
 from tessellate.search import search_manager
 
 router = APIRouter(prefix="/entries", tags=["entries"])
@@ -90,7 +96,7 @@ def _preview(text: str, length: int = 60) -> str:
     """
     from tessellate.entry.properties import strip as strip_properties
 
-    plain = manager.strip_inline_markdown(manager.wiki_plain(strip_properties(text or "").lstrip()))
+    plain = manager_text.strip_inline_markdown(manager_text.wiki_plain(strip_properties(text or "").lstrip()))
     return plain if len(plain) <= length else plain[: length - 1] + "…"
 
 
@@ -115,20 +121,20 @@ def _to_out(
     # item 1: `GET /entries` was doing exactly that). Single-entry callers
     # (create/update/get) pass none of them and keep the original per-entry
     # queries below, unchanged.
-    content = manager.readable_content(entry)
+    content = manager_text.readable_content(entry)
     resolved_dates = manager.entry_dates(session, entry) if dates is None else dates
     resolved_documents = (
         manager.documents_for_entry(session, entry) if documents is None else documents
     )
-    resolved_links = manager.links_for_entry(session, entry) if links is None else links
+    resolved_links = manager_links.links_for_entry(session, entry) if links is None else links
     resolved_attachments = (
-        manager.attachments_for(session, entry) if attachments is None else attachments
+        manager_purge.attachments_for(session, entry) if attachments is None else attachments
     )
     return EntryOut(
         id=entry.id,
         content=content,
         content_hash=content_hash(content),
-        title=manager.extract_title(content),
+        title=manager_text.extract_title(content),
         #: KG4: what the note's `---` block says, and its type.
         properties=(props := note_properties.split(content)[0]),
         note_type=note_properties.note_type(props),
@@ -164,50 +170,62 @@ def _to_out(
         created_at=entry.created_at,
         deleted_at=entry.deleted_at if entry.is_deleted else None,
         archived_at=entry.archived_at,
-        dates=[
-            EntryDateOut(
-                phrase=d.phrase,
-                at=d.at.date(),
-                precision=d.precision,
-                time=d.at.strftime("%H:%M") if d.precision == "minute" else None,
-            )
-            for d in resolved_dates
-        ],
+        dates=_date_outs(resolved_dates),
         documents=[
             DocumentRefOut(id=doc.id, title=doc.title) for doc in resolved_documents
         ],
-        links=[
-            LinkOut(
-                link_id=link.id,
-                entry_id=other.id,
-                preview=_connection_label(other, 60),
-                reason=link.reason,
-                reason_confidence=link.reason_confidence,
-                # The one fact the merged list could never carry. See
-                # `LinkOut.direction`.
-                direction="out" if link.source_entry_id == entry.id else "in",
-                link_type=link.link_type,
-                link_label=manager.relation_label(
-                    relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
-                ),
-                props=link.props,
-            )
-            for link, other in resolved_links
-        ],
-        attachments=[
-            AttachmentOut(
-                id=a.id,
-                filename=a.filename,
-                size=a.size,
-                is_image=a.mime.startswith("image/"),
-                created_at=a.created_at.isoformat() if a.created_at else "",
-            )
-            for a in resolved_attachments
-        ],
+        links=_link_outs(session, entry, resolved_links),
+        attachments=_attachment_outs(resolved_attachments),
         filed_by=filed_by,
         filing_state=getattr(entry, "filing_state", "done") or "done",
         similar=similar,
     )
+
+
+def _date_outs(dates: list) -> list[EntryDateOut]:
+    return [
+        EntryDateOut(
+            phrase=d.phrase,
+            at=d.at.date(),
+            precision=d.precision,
+            time=d.at.strftime("%H:%M") if d.precision == "minute" else None,
+        )
+        for d in dates
+    ]
+
+
+def _link_outs(session: Session, entry, links: list) -> list[LinkOut]:  # noqa: ANN001
+    return [
+        LinkOut(
+            link_id=link.id,
+            entry_id=other.id,
+            preview=_connection_label(other, 60),
+            reason=link.reason,
+            reason_confidence=link.reason_confidence,
+            # The one fact the merged list could never carry. See
+            # `LinkOut.direction`.
+            direction="out" if link.source_entry_id == entry.id else "in",
+            link_type=link.link_type,
+            link_label=manager_links.relation_label(
+                relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
+            ),
+            props=link.props,
+        )
+        for link, other in links
+    ]
+
+
+def _attachment_outs(attachments: list) -> list[AttachmentOut]:
+    return [
+        AttachmentOut(
+            id=a.id,
+            filename=a.filename,
+            size=a.size,
+            is_image=a.mime.startswith("image/"),
+            created_at=a.created_at.isoformat() if a.created_at else "",
+        )
+        for a in attachments
+    ]
 
 
 def _json_tags(raw: str | None) -> list[str]:
@@ -236,6 +254,13 @@ def _open_suggestions(entry) -> list[str]:  # noqa: ANN001
 
 #: Longest note whose reasons are remembered: the cache holds the text as its key.
 REASONS_CACHE_CHARS = 20_000
+#: A note longer than this, opened, is the in-app companion's reading glasses (`avatars.js` `nameMarkBuddyNoteOpened`).
+LONG_NOTE_CHARS = 1200
+
+
+def _kept_private(session: Session, entry) -> bool:  # noqa: ANN001
+    """A private note, or one in a private space: the desk companion hears only the generic kind for these."""
+    return bool(entry.is_private) or private_space.is_private_space(session, entry.workspace_id)
 
 
 def _tag_reasons(content: str, tags: list[str]) -> dict[str, str]:
@@ -287,7 +312,7 @@ def _keep_suggestions(session: Session, entry, filed_by: str | None) -> None:  #
             )
         except Exception:
             logger.info("tag suggestions from the model failed; using the notebook's own", exc_info=True)
-    content = manager.readable_content(entry)
+    content = manager_text.readable_content(entry)
     keep = [tag for tag in _engine_tags(session, content, have, suggested, entry.id) if tag.casefold() not in discarded]
     from tessellate.ai import tagging
 
@@ -316,7 +341,7 @@ def _to_out_bulk(session: Session, entries: list) -> list[EntryOut]:
     dates_by_id = manager.entry_dates_bulk(session, ids)
     documents_by_id = manager.documents_for_entries_bulk(session, ids)
     links_by_id = manager.links_for_entries_bulk(session, ids)
-    attachments_by_id = manager.attachments_for_entries_bulk(session, ids)
+    attachments_by_id = manager_purge.attachments_for_entries_bulk(session, ids)
     return [
         _to_out(
             session,
@@ -431,7 +456,7 @@ class _LateFiling:
         an answer inside the wait (`filing_certainty`). On this thread's own
         session: the late answer has none of the request's."""
         from tessellate.ai import filing_certainty
-        from tessellate.core.deps import impersonate_workspace
+        from tessellate.core.database import impersonate_workspace
 
         try:
             with deps.get_db().session() as session:
@@ -439,7 +464,7 @@ class _LateFiling:
                     entry = session.get(Entry, self.entry_id)
                     if entry is not None:
                         return filing_certainty.calibrated(
-                            session, manager.readable_content(entry), category, raw, "llm",
+                            session, manager_text.readable_content(entry), category, raw, "llm",
                             exclude_entry_id=entry.id,
                         )
         except Exception:
@@ -454,6 +479,8 @@ class _LateFiling:
         if lexical_filing.holds_sensitive(self._content, category):
             return  # decision 6: the model's late answer is held like an early one
         confidence = self._calibrated(category, confidence)
+        if lexical_filing.is_unsure(confidence):
+            return  # ask when unsure: a late pick under the line waits like an early one
         with self._lock:
             if self._stand_in is None:
                 self._early = (category, confidence)
@@ -462,7 +489,7 @@ class _LateFiling:
         self.apply(category, confidence, stand_in)
 
     def apply(self, category: str, confidence: int, stand_in: str) -> None:
-        from tessellate.core.deps import impersonate_workspace
+        from tessellate.core.database import impersonate_workspace
 
         try:
             with deps.get_db().session() as session:
@@ -594,7 +621,7 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
     this", a moment later, in the same notification that says where it was
     filed.
     """
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     try:
         with deps.get_db().session() as session:
@@ -607,10 +634,10 @@ def _file_entry_in_background(entry_id: int, workspace_id: str) -> None:
                 # finished: a settled note is never filed twice.
                 if (getattr(entry, "filing_state", "") or "") != "pending":
                     return
-                late = _LateFiling(entry_id, workspace_id, manager.readable_content(entry))
+                late = _LateFiling(entry_id, workspace_id, manager_text.readable_content(entry))
                 category, confidence, filed_by = _file_entry_now(
                     session,
-                    manager.readable_content(entry),
+                    manager_text.readable_content(entry),
                     on_late_llm=late,
                     model_deadline=janitor.filing_deadline(),
                 )
@@ -651,7 +678,7 @@ def retry_stand_ins() -> int:
     still coming when the app closed. Runs once per launch on the model lane
     (`app.py`). A note moved by hand or stopped in the meantime keeps its
     place (`_LateFiling.apply`). Returns how many were asked about."""
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     with deps.get_db().session() as session:
         waiting = [
@@ -666,7 +693,7 @@ def retry_stand_ins() -> int:
                     if entry is None or entry.filing_state != manager.STAND_IN:
                         continue
                     stand_in = manager.category_name_for(session, entry)
-                    content = manager.readable_content(entry)
+                    content = manager_text.readable_content(entry)
                     category, confidence, method = janitor._ask_llm(
                         session,
                         content,
@@ -689,7 +716,7 @@ def _embed_entry_in_background(entry_id: int, workspace_id: str) -> None:
     job), so the text is read again after storing and embedded again if it
     moved: the vector left behind is always the newest text's.
     """
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     try:
         with deps.get_db().session() as session:
@@ -866,8 +893,8 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     # [[wiki links]] become real links. Best effort for the same reason: a
     # link that can't be resolved must never cost someone their note.
     try:
-        manager.sync_wiki_links(session, entry)
-        manager.resolve_links_to(session, entry)
+        manager_wiki.sync_wiki_links(session, entry)
+        manager_wiki.resolve_links_to(session, entry)
         session.commit()
     except Exception:
         session.rollback()
@@ -889,13 +916,42 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     _process_committed_media(session, body.content)
 
 
+def _starts_sealed(session: Session, body: EntryCreate) -> tuple[bool, bool]:
+    """INBOX 1695: (sealed, sealed by this note's own ask rather than its space)."""
+    if private_space.is_private_space(session, session.info.get("workspace_id")):
+        return True, False
+    try:
+        ask = private_space.starts_private(body.private)
+    except private_space.VaultLocked as locked:
+        raise HTTPException(status_code=409, detail="Unlock the app first: the encryption key isn't loaded.") from locked
+    return ask, ask
+
+
+def _note_total(session: Session) -> int:
+    """The notes the dashboard counts (`/insights/stats` `total_entries`): not deleted, drafts or boards."""
+    return session.scalar(
+        select(func.count(Entry.id)).where(Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
+    ) or 0
+
+
+def _cheer_note_count(session: Session, entry: Entry) -> None:
+    """Passing a round count is a cheer on the desk: a kind and a time (P7). A draft is no note yet, so the count moved not."""
+    if not entry.is_draft:
+        companion_events.counted(_note_total(session))
+
+
 @router.post("", response_model=EntryOut, status_code=201)
 def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> EntryOut:
     earlier = _already_delivered(session, body.client_key)
     if earlier is not None:
         return _to_out(session, earlier, filed_by=None, similar=None)
     parent = _existing_entry(session, body.parent_id) if body.parent_id is not None else None
-    category, confidence, filed_by, defer = _decide_filing(session, body, parent)
+    sealed, by_ask = _starts_sealed(session, body)
+    if sealed:
+        # INBOX 1727: the model never reads a private space's note to file it.
+        category, confidence, filed_by, defer = body.category or manager.UNCATEGORISED, 100, "user", False
+    else:
+        category, confidence, filed_by, defer = _decide_filing(session, body, parent)
     content, tags = _new_note_text(session, body)
     try:
         entry = manager.create_entry(
@@ -917,11 +973,17 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
     if parent is not None:
         entry.parent_id = parent.id
     _mark_new_entry(entry, body, filed_by)
+    if by_ask:
+        manager_private.set_private(session, entry, True)  # sealed before the first commit
     if defer:
         entry.filing_state = "pending"
     elif janitor.settled_state(filed_by) != "done":
         entry.filing_state = janitor.settled_state(filed_by)
-    session.commit()
+    session.commit()  # a note in a private space is sealed on the way in (`database._seal_private_space_joins`)
+    if sealed:
+        manager_private.scrub_private_leftovers(session)
+    else:
+        _cheer_note_count(session, entry)
     _finish_new_entry(session, entry, body, defer)
     out = _to_out(
         session,
@@ -938,7 +1000,6 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
     _remember_delivery(body.client_key, entry)
 
     return out
-
 
 
 # --- D6: the journal's daily note (WORLD_CLASS_PLAN section 13, D6) ----------
@@ -1141,7 +1202,7 @@ def stop_filing(session: Session, entry, action: str) -> str:  # noqa: ANN001
     if action == "fallback":
         match = janitor._semantic_category(
             session,
-            manager.readable_content(entry),
+            manager_text.readable_content(entry),
             deps.get_embeddings(),
             exclude_entry_id=entry.id,
         )
@@ -1209,7 +1270,7 @@ def stop_all_filing(action: str = "fallback") -> int:
     of Settings, Background tasks and the activity popup. Each note is
     stopped in its own space, so the fallback weighs that space's
     categories only. Returns how many were stopped."""
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     stopped = 0
     with deps.get_db().session() as session:
@@ -1241,6 +1302,20 @@ def _filing_similar(session: Session, entry) -> dict | None:  # noqa: ANN001
     return {"id": other.id, "preview": _connection_label(other, 60)}
 
 
+def _choices_filled(session: Session, content: str, entry_id: int, category: str, choices: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    """The filing call's choices, then recent categories by the words, up to three, never the current one."""
+    from tessellate.ai import lexical_filing
+
+    explained = [(name, reason) for name, reason in choices if name != category]
+    if len(explained) < 3:
+        taken = {name for name, _ in explained} | {category}
+        for name, reason in lexical_filing.suggest_categories_explained(session, content, exclude_entry_id=entry_id, limit=4):
+            if name not in taken:
+                explained.append((name, reason))
+                taken.add(name)
+    return explained
+
+
 def _offered_categories(session: Session, entry, category: str) -> tuple[list[str], dict[str, str], dict | None, dict | None, str]:  # noqa: ANN001
     """`(suggestions, reasons, proposal, held, why)`: up to three categories to offer as
     one-tap choices (INBOX 434), each one's line, a new category the pack proposes
@@ -1255,15 +1330,14 @@ def _offered_categories(session: Session, entry, category: str) -> tuple[list[st
     held = None
     why = ""
     try:
-        content = manager.readable_content(entry) or ""
+        content = manager_text.readable_content(entry) or ""
         call = lexical_filing.filing_call(session, content, exclude_entry_id=entry.id)
-        explained = [(name, reason) for name, reason in call.choices if name != category]
-        if len(explained) < 3:
-            taken = {name for name, _ in explained} | {category}
-            for name, reason in lexical_filing.suggest_categories_explained(session, content, exclude_entry_id=entry.id, limit=4):
-                if name not in taken:
-                    explained.append((name, reason))
-                    taken.add(name)
+        explained = _choices_filled(session, content, entry.id, category, call.choices)
+        #: A pick the person asked to be asked about (a model's, or by
+        #: meaning) is first among the choices, with the words' reason.
+        if call.category and call.category != category and lexical_filing.ask_when_unsure():
+            explained = [(call.category, call.why)] + [row for row in explained if row[0] != call.category]
+            call = dataclasses.replace(call, why=lexical_filing.ASK_WHY)
         explained = explained[:3]
         if call.proposal is not None:
             proposal = {"name": call.proposal.name, "why": call.proposal.why}
@@ -1283,7 +1357,7 @@ def _filing_why(session: Session, entry, category: str) -> str:  # noqa: ANN001
 
     try:
         decision = lexical_filing.decide(
-            session, manager.readable_content(entry) or "", exclude_entry_id=entry.id
+            session, manager_text.readable_content(entry) or "", exclude_entry_id=entry.id
         )
         return next((c.why for c in decision.ranked if c.name == category), "")
     except Exception:  # noqa: BLE001 - a hint never fails the status
@@ -1548,165 +1622,6 @@ def add_context(
     return _to_out(session, entry, filed_by=filed_by)
 
 
-def _linked_entry_ids(session: Session, entry) -> set[int]:  # noqa: ANN001
-    """Ids this note is already connected to, explicit links plus its
-    thread parent/children: so re-evaluate never re-suggests them."""
-    linked = {other.id for _link, other in manager.links_for_entry(session, entry)}
-    if entry.parent_id is not None:
-        linked.add(entry.parent_id)
-    # Was `for child in manager.list_entries(session)`, loading and
-    # ORM-hydrating every non-deleted note in the notebook (decrypting private
-    # ones) just to find the handful whose parent_id matches. This entry has
-    # at most a few children; the notebook can have thousands of notes.
-    child_ids = session.scalars(
-        select(Entry.id).where(Entry.parent_id == entry.id, Entry.is_deleted == False)  # noqa: E712
-    )
-    linked.update(child_ids)
-    return linked
-
-
-@router.post("/{entry_id}/reevaluate")
-def reevaluate_entry(entry_id: int, session: Session = Depends(get_session)) -> dict:
-    """Re-run the AI on one note (Wave: re-evaluate). Refreshes its
-    confidence, and its category, unless the user filed it themselves , 
-    and suggests tags and links for the user to apply. Tags and links are
-    suggestion-only: nothing is tagged or linked without the user's click."""
-    entry = _existing_entry(session, entry_id)
-    # Every step below sends the note's text to the model or the search index:
-    # ciphertext while the vault is locked, the plain text of a note that is
-    # private so that no model reads it once it is open (sweep 1004). Refused
-    # outright, like generate-title; the menu's toast shows the sentence.
-    if entry.is_private:
-        raise HTTPException(
-            status_code=400, detail="Make this note readable first: Atlas doesn't read private notes."
-        )
-
-    # 1. Re-file: refresh confidence, and the category if the AI owns it.
-    filed_by = None
-    recategorised_to = None
-    # The last "filing" run (INBOX 438). This step swallows its own errors so a
-    # down model never fails the re-evaluation, which is exactly why the record
-    # has to be told about them: `refiling` is how the screen hears.
-    refiling = jobruns.begin("filing")
-    try:
-        category, confidence, filed_by = janitor.categorise(
-            session,
-            entry.content,
-            deps.get_embeddings(),
-            deps.get_model_manager(),
-            deps.get_ollama(),
-            exclude_entry_id=entry.id,  # don't let the note anchor to itself
-        )
-        if filed_by != "none":
-            entry.ai_confidence = confidence
-            if not entry.user_filed:
-                if manager.record_filing(
-                    session, entry, category,
-                    by=janitor.filed_by_label(
-                        filed_by, confidence, deps.get_model_manager(), deps.get_embeddings()
-                    ),
-                ):
-                    recategorised_to = category
-                # As on adding context: the AI owns this category now, so a
-                # move by hand is a correction the filing loop should read.
-                if janitor.settled_state(filed_by) != "done":
-                    entry.filing_state = janitor.settled_state(filed_by)
-            session.commit()
-            refiling.result = (
-                f"note {entry.id} moved to {recategorised_to}"
-                if recategorised_to
-                else f"note {entry.id} re-read, category kept"
-            )
-        else:
-            refiling.fail("No filing model or embeddings were available.")
-    except Exception as exc:
-        #: One line: a model that is off (connection refused) is a state, not a bug.
-        logger.warning(
-            "re-evaluation's filing step failed: %s", exc,
-            exc_info=not isinstance(exc, (OllamaError, ConnectionError)),
-        )
-        filed_by = None  # AI down, keep the note exactly as it was
-        refiling.fail("The filing step stopped before it finished. The log has the reason.")
-    finally:
-        #: Every way out, a cancel included: nothing stays "running" (B77).
-        refiling.finish()
-
-    # 2. Suggest tags (best effort: never blocks the re-evaluation).
-    suggested_tags = _reevaluate_tags(session, entry)
-
-    # 3. Suggest links: semantic neighbours that aren't connected yet.
-    suggested_links: list[dict] = []
-    try:
-        already = _linked_entry_ids(session, entry)
-        results = search_manager.semantic_search(
-            session, entry.content, deps.get_embeddings(), limit=6
-        )
-        for other, score in results or []:
-            if other.id == entry.id or other.id in already or score < 0.4:
-                continue
-            suggested_links.append(
-                {"id": other.id, "preview": _preview(other.content), "similarity": round(score, 2)}
-            )
-            if len(suggested_links) >= 4:
-                break
-    except Exception:
-        logger.warning("re-evaluation's link step failed", exc_info=True)
-        suggested_links = []
-
-    return {
-        "entry": _to_out(session, entry, filed_by=filed_by).model_dump(),
-        "recategorised_to": recategorised_to,
-        "suggested_categories": _other_categories(session, entry),
-        "suggested_tags": suggested_tags,
-        "suggested_tag_reasons": {} if getattr(entry, "is_private", False) else _tag_reasons(entry.content or "", suggested_tags),
-        "suggested_links": suggested_links,
-    }
-
-
-def _other_categories(session: Session, entry) -> list[dict]:  # noqa: ANN001
-    """The other places the note could go, with why (owner, 2026-10-17: Tag with
-    Atlas "didn't suggest alternate categories to make or move to"). Not from a
-    private note's text, like the tags."""
-    if getattr(entry, "is_private", False):
-        return []
-    try:
-        from tessellate.ai import lexical_filing
-
-        here = manager.category_name_for(session, entry)
-        found = lexical_filing.suggest_categories_explained(
-            session, manager.readable_content(entry) or "", exclude_entry_id=entry.id, limit=4,
-        )
-        return [{"name": name, "why": why} for name, why in found if name not in (here, manager.UNCATEGORISED)][:3]
-    except Exception:
-        logger.info("re-evaluation's category step failed", exc_info=True)
-        return []
-
-
-def _reevaluate_tags(session: Session, entry) -> list[str]:  # noqa: ANN001
-    """The model's tags when one answers, then the notebook's own: with no
-    model, Tag and file with Atlas offered no tag at all (INBOX 781). Not
-    from a private note's text: nothing derives a suggestion from it
-    (`_keep_suggestions`)."""
-    have = manager.entry_tags(entry)
-    model: list[str] = []
-    try:
-        model = librarian.suggest_tags(
-            entry.content, have, deps.get_model_manager(), deps.get_ollama(), vocabulary=_tag_vocabulary(session),
-        )
-    except Exception as exc:
-        logger.info(
-            "re-evaluation's model tag step failed; using the notebook's own: %s", exc,
-            exc_info=not isinstance(exc, (OllamaError, ConnectionError)),
-        )
-    if getattr(entry, "is_private", False):
-        return model
-    try:
-        return _engine_tags(session, entry.content or "", have, model, entry.id)
-    except Exception:
-        logger.warning("re-evaluation's tag step failed", exc_info=True)
-        return []
-
-
 class ImproveBody(BaseModel):
     text: str
     mode: str = "proofread"  # proofread | rewrite | concise | custom
@@ -1761,14 +1676,6 @@ def improve_writing(body: ImproveBody) -> dict:
     return {"original": text, "improved": improved, "mode": body.mode}
 
 
-# Notes this similar are almost certainly worth connecting.
-LINK_SUGGESTION_THRESHOLD = 0.55
-
-#: How many of the twelve suggestions any one note may anchor. See
-#: `link_suggestions` for the measurement that put this here: without a cap,
-#: one note paired with six copies of itself filled half the list.
-MAX_SUGGESTIONS_PER_NOTE = 2
-
 #: How many concept matches `?semantic=true` returns. A search result is a
 #: shortlist to read, not a second copy of the notebook.
 SEMANTIC_LIST_LIMIT = 25
@@ -1797,13 +1704,13 @@ def query_entries(q: str = "", session: Session = Depends(get_session)) -> dict:
     entries = {e.id: e for e in session.scalars(select(Entry).where(Entry.id.in_(shown)))} if shown else {}
     for entry_id in shown:
         entry = entries[entry_id]
-        content = manager.readable_content(entry)
+        content = manager_text.readable_content(entry)
         found = {} if entry.is_private else note_properties.split(content)[0]
         for key in found:
             counts[key] = counts.get(key, 0) + 1
         rows.append({
             "id": entry_id,
-            "title": manager.extract_title(content) or manager.plain_label(content, 60) or "Untitled note",
+            "title": manager_text.extract_title(content) or manager_text.plain_label(content, 60) or "Untitled note",
             "properties": found,
         })
     columns = sorted(counts, key=lambda k: (k != "type", -counts[k], k))[:QUERY_COLUMNS_MAX]
@@ -1816,648 +1723,6 @@ def query_entries(q: str = "", session: Session = Depends(get_session)) -> dict:
         #: match (not only the rows drawn), per column.
         "rollups": live_query.rollups(session, ids, columns),
     }
-
-
-class _LazyNoteFacts:
-    """`relations.NoteFacts` whose label is read only when asked for.
-
-    `recognise` names a note only when it is a hub of shared neighbours, yet
-    every note's label was cleaned up front: at 5,000 notes 0.66 s of a
-    1.08 s warm `/entries/link-suggestions` (audit 2026-10-05, ARCH-11).
-    """
-
-    __slots__ = ("_content", "_label", "tags", "created_at")
-
-    def __init__(self, content: str, tags: frozenset[str], created_at) -> None:  # noqa: ANN001
-        self._content = content
-        self._label: str | None = None
-        self.tags = tags
-        self.created_at = created_at
-
-    @property
-    def label(self) -> str:
-        if self._label is None:
-            self._label = manager.plain_label(self._content, 40) or "Untitled note"
-        return self._label
-
-
-#: **The suggestions are kept until the notebook changes** (audit 1028 K30:
-#: every request read every note, link and mention, and the Inbox asks on
-#: every open, from every tab). Any session write moves `_writes`: a flush,
-#: or a bulk statement run through `session.execute`. A write past both (a
-#: raw connection) is caught by the age bound.
-_writes = [0]
-_LINK_CACHE_SECONDS = 300.0
-_link_cache: dict = {"key": None, "at": 0.0, "value": None}
-
-
-@event.listens_for(Session, "after_flush")
-def _count_flush(_session: Session, _context) -> None:  # noqa: ANN001
-    _writes[0] += 1
-
-
-@event.listens_for(Session, "do_orm_execute")
-def _count_statement(state) -> None:  # noqa: ANN001
-    if not state.is_select:
-        _writes[0] += 1
-
-
-@router.get("/link-suggestions")
-def link_suggestions(session: Session = Depends(get_session)) -> list[dict]:
-    """The pairs `_link_suggestions` finds, kept until something is written."""
-    key = (id(deps.get_db()), _writes[0], deps.get_embeddings().is_ready())
-    now = time.monotonic()
-    if _link_cache["key"] == key and now - _link_cache["at"] < _LINK_CACHE_SECONDS:
-        return _link_cache["value"]
-    value = _link_suggestions(session)
-    _link_cache.update(key=key, at=now, value=value)
-    return value
-
-
-def _already_linked(session: Session, entries: list) -> set[frozenset[int]]:
-    """Pairs with nothing left to suggest: linked, parent and child, or dismissed."""
-    already_linked: set[frozenset[int]] = set()
-    for source_id, target_id in relations_repo.pairs(session):
-        already_linked.add(frozenset((source_id, target_id)))
-    # Threads are already a connection, don't re-suggest parent/child.
-    for entry in entries:
-        if entry.parent_id is not None:
-            already_linked.add(frozenset((entry.parent_id, entry.id)))
-    # A pair the person has already said no to (WORLD_CLASS_PLAN I7). The same
-    # set as the two above, because "you dismissed this" and "these are
-    # already linked" are the same answer to this endpoint's only question:
-    # is there anything left to suggest about these two. A suggestion that
-    # comes back after being dismissed is the single most annoying thing a
-    # suggester can do, and it is what this feature did until now: the
-    # dismissal lived in the browser and died with the tab.
-    for pair in learning.boosts(session, kind="links"):
-        already_linked.add(frozenset(pair))
-    return already_linked
-
-
-def _recognised_pairs(session: Session, entries: list, candidates: dict, already_linked: set) -> list:
-    """`relations.recognise` over the notebook's meaning, links, entities, tags and time."""
-    # **Structure as well as wording** (GRAPH_PLAN KG2): shared entities,
-    # shared link neighbours, shared rare tags and time join the cosine pairs
-    # in `ai/relations.recognise`, each with its own reason and confidence, so
-    # the list explains itself and is not empty with the embedding backend
-    # off. The cosine pairs come from the engine's matrix (Brief 11), cached
-    # per version of it (WORLD_CLASS_PLAN row 9); the filters below are per
-    # request because what is linked or dismissed moves without any vector
-    # changing.
-    similar: list[tuple[int, int, float]] = []
-    if deps.get_embeddings().is_ready():
-        similar = search_engine.cached_similar_pairs(
-            session, LINK_SUGGESTION_THRESHOLD, only=set(candidates)
-        )
-    edges = relations_repo.pairs(session)
-    edges += [(e.parent_id, e.id) for e in entries if e.parent_id is not None]
-    mentions = [
-        (name, entry_id)
-        for name, entry_id in session.execute(
-            select(Entity.name, EntityMention.entry_id).join(Entity, Entity.id == EntityMention.entity_id)
-        )
-    ]
-    notes = {
-        i: _LazyNoteFacts(e.content, frozenset(t.lower() for t in manager.entry_tags(e)), e.created_at)
-        for i, e in candidates.items()
-    }
-    return relations.recognise(
-        notes, edges, mentions, similar, already_linked, weights=learning.signal_weights(session)
-    )
-
-
-def _suggestion_row(session: Session, candidate, candidates: dict) -> dict:  # noqa: ANN001
-    a, b = candidate.a, candidate.b
-    signals = candidate.signals()
-    reason = "; ".join(s["reason"] for s in signals if s["signal"] != "time")
-    #: Meaning alone previews what linking would write, and linking now
-    #: names what the two notes share when they share something (INBOX
-    #: 691, `entry/link_wording.py`), so the preview does too.
-    if [s["signal"] for s in signals if s["signal"] != "time"] == ["similarity"]:
-        reason = link_facts.reason_for(session, a, b) or reason
-    return {
-        "source_id": a,
-        "target_id": b,
-        "source_preview": _preview(candidates[a].content),
-        "target_preview": _preview(candidates[b].content),
-        "similarity": round(candidate.similarity, 2) if candidate.similarity is not None else None,
-        "confidence": round(candidate.confidence, 2),
-        "signals": signals,
-        # Similarity alone previews what `create_link` deduces at the same
-        # bar (`manager.AUTO_REASON_THRESHOLD`): the specific reason, else
-        # "similar in meaning". Otherwise every signal, strongest first,
-        # less the time, which supports a pair but is no reason to link.
-        "reason": reason,
-    }
-
-
-def _link_suggestions(session: Session) -> list[dict]:
-    """Pairs of notes that mean similar things but aren't linked yet: 
-    the auto-linker. Suggestion-only: it never links anything on
-    its own, it hands the pairs to the UI to approve. Empty when the
-    embedding backend is unavailable (semantic search off).
-
-    Used to call `semantic_search` once *per entry*: a full embedding scan,
-    for every entry, so O(entries) database round-trips each doing O(entries)
-    work, and each one **re-embedding that entry's own content from scratch**
-    on top of the scan. At any real notebook size that's the O(n^2) trap this
-    file was checked for after §38.1's scale-test found two others: found by
-    the same kind of sweep, not by profiling this one specifically, since a
-    75k-note notebook running this by hand was not something worth actually
-    waiting out. Rewritten to match `routes_graph._similarity_edges`'s
-    already-correct shape: fetch every stored vector once, compare all
-    pairs in memory: which turns O(n) queries plus O(n) re-embeddings into
-    one query and zero re-embedding calls."""
-    entries = manager.list_entries(session)
-    candidates = {e.id: e for e in entries if not e.is_private and not e.is_board}
-    already_linked = _already_linked(session, entries)
-    found = _recognised_pairs(session, entries, candidates, already_linked)
-
-    # **Two filters stand between "best-first" and "useful"**, both added
-    # after measuring a real 116-note notebook whose twelve suggestions were
-    # all a note paired with copies of itself (tests/test_link_suggestion_quality.py):
-    #  1. A near-identical pair is a *duplicate* (`entry/duplicates.py`, same
-    #     word-overlap score), not a connection.
-    #  2. One note anchors at most `MAX_SUGGESTIONS_PER_NOTE` of the twelve, so
-    #     the list is a survey of the notebook and not of its best-linked note.
-    suggestions = []
-    appearances: dict[int, int] = {}
-    for candidate in found:
-        a, b = candidate.a, candidate.b
-        if (
-            appearances.get(a, 0) >= MAX_SUGGESTIONS_PER_NOTE
-            or appearances.get(b, 0) >= MAX_SUGGESTIONS_PER_NOTE
-        ):
-            continue
-        if (
-            duplicates.similarity(candidates[a].content, candidates[b].content)
-            >= duplicates.DEFAULT_THRESHOLD
-        ):
-            continue
-        appearances[a] = appearances.get(a, 0) + 1
-        appearances[b] = appearances.get(b, 0) + 1
-        suggestions.append(_suggestion_row(session, candidate, candidates))
-        if len(suggestions) == 12:
-            break
-    return suggestions
-
-
-#: Where dismissed tensions are remembered. A preference key rather than a new
-#: table: this is a small list of pair keys, it belongs to the person rather
-#: than to either note, and adding a migration for "I looked at this and it
-#: was not a contradiction" would be a heavy answer to a light question.
-TENSION_DISMISSED_KEY = "tensions_dismissed"
-
-#: Tensions look at pairs the notebook already believes are about the same
-#: thing (see `ai/tensions.py`, contradiction is only possible between notes
-#: sharing a subject). A lower bar than `LINK_SUGGESTION_THRESHOLD` on
-#: purpose: two notes that *disagree* often share less vocabulary than two
-#: that agree, because the disagreement is exactly where their words differ.
-TENSION_CANDIDATE_THRESHOLD = 0.45
-
-
-def _tension_key(a: int, b: int) -> str:
-    """A stable id for a pair, order-independent."""
-    low, high = sorted((a, b))
-    return f"{low}:{high}"
-
-
-def _dismissed_tensions() -> set[str]:
-    stored = deps.get_config().get_preference(TENSION_DISMISSED_KEY, []) or []
-    return {str(key) for key in stored}
-
-
-@router.get("/tensions")
-def find_tensions(
-    limit: int = Query(default=8, ge=1, le=20),
-    session: Session = Depends(get_session),
-) -> dict:
-    """Places the notebook appears to disagree with itself.
-
-    The feature `core/database.py`'s `LINK_TYPES` comment says the typed-link
-    vocabulary was built for and that nothing ever produced, see
-    `ai/tensions.py` for the full reasoning. Read-only and suggestion-only:
-    finding a tension writes nothing, and `POST /entries/tensions/accept` is
-    the only thing that creates the `contradicts` link.
-
-    Returns `{"tensions": [...], "status": "..."}` rather than a bare list so
-    an empty result can say *why* it is empty, "no model running" and "your
-    notebook does not contradict itself" are completely different answers and
-    a bare `[]` renders them identically, which is how a feature that never
-    ran gets reported as a feature that found nothing.
-    """
-
-    ollama = deps.get_ollama()
-    if not backend_hint.running(ollama):
-        return {"tensions": [], "status": "no_model"}
-
-    embeddings = deps.get_embeddings()
-    if not embeddings.is_ready():
-        return {"tensions": [], "status": "no_embeddings"}
-
-    entries = manager.list_entries(session)
-    by_id = {e.id: e for e in entries if not e.is_private and not e.is_board}
-    if len(by_id) < 2:
-        return {"tensions": [], "status": "too_few_notes"}
-
-    # Cached per version of the matrix, as link suggestions are (row 9).
-    pairs = search_engine.cached_similar_pairs(
-        session, TENSION_CANDIDATE_THRESHOLD, only=set(by_id)
-    )
-
-    # A pair already marked as contradicting is a finding the person has
-    # already accepted, not one to re-propose. Every other link type is left
-    # alone deliberately: notes can be linked as "related" *and* disagree,
-    # and that is one of the more interesting cases.
-    known: set[str] = set(_dismissed_tensions())
-    for link in relations_repo.with_type(session, "contradicts"):
-        known.add(_tension_key(link.source_entry_id, link.target_entry_id))
-    # WORLD_CLASS_PLAN B4: a pair already in the tensions table (found by an
-    # earlier scan or the night shift, whatever became of it) is never asked
-    # about again; the widget and `GET /entries/tensions/known` list it.
-    tensions_module.refresh(session)
-    known.update(session.scalars(select(DerivedTension.pair)))
-
-    models = deps.get_model_manager()
-    found: list[dict] = []
-    checked = 0
-    for a_id, b_id, score in pairs:
-        if checked >= tensions_module.MAX_PAIRS_PER_PASS or len(found) >= limit:
-            break
-        if _tension_key(a_id, b_id) in known:
-            continue
-        ordered = tensions_module.order_by_time(by_id[a_id], by_id[b_id])
-        if ordered is None:
-            continue  # same few days, or undated, see MIN_GAP_DAYS
-        checked += 1
-        tension = tensions_module.compare_pair(ordered[0], ordered[1], models, ollama)
-        if tension is None:
-            continue
-        #: Kept as an event, so the finding outlives this response and the
-        #: table can be rebuilt from it (B4).
-        tensions_module.record_event(
-            session,
-            tensions_module.FOUND,
-            tension.earlier_id,
-            tension.later_id,
-            reason=tension.explanation,
-            model=str(models.utility_model() or "local"),
-            confidence=0.7,
-        )
-        found.append(
-            {
-                "key": _tension_key(tension.earlier_id, tension.later_id),
-                "earlier_id": tension.earlier_id,
-                "later_id": tension.later_id,
-                "explanation": tension.explanation,
-                "earlier_excerpt": tension.earlier_excerpt,
-                "later_excerpt": tension.later_excerpt,
-                "earlier_at": tension.earlier_at,
-                "later_at": tension.later_at,
-                "gap_days": tension.gap_days,
-                "similarity": round(score, 2),
-            }
-        )
-    status = "ok" if found else ("none_found" if checked else "no_candidates")
-    session.commit()
-    return {"tensions": found, "status": status, "pairs_checked": checked}
-
-
-@router.get("/tensions/known")
-def known_tensions(
-    status: str = Query(default="open", pattern="^(open|accepted|dismissed|all)$"),
-    limit: int = Query(default=20, ge=1, le=100),
-    session: Session = Depends(get_session),
-) -> dict:
-    """The tensions the notebook already knows (WORLD_CLASS_PLAN B4): the
-    derived table, rebuilt from its sources when one moved, in the shape the
-    scan returns plus who decided each and when. Reads nothing with a model,
-    so the Tensions widget can show it on every Dashboard draw."""
-    rows, counts = tensions_module.listing(session, status=None if status == "all" else status, limit=limit)
-    session.commit()
-    notes = {
-        e.id: e
-        for e in session.scalars(
-            select(Entry).where(Entry.id.in_({r.earlier_id for r in rows} | {r.later_id for r in rows}))
-        )
-    }
-    out = []
-    for row in rows:
-        earlier, later = notes.get(row.earlier_id), notes.get(row.later_id)
-        if earlier is None or later is None:
-            continue
-        out.append(
-            {
-                "key": row.pair,
-                "earlier_id": row.earlier_id,
-                "later_id": row.later_id,
-                "explanation": row.reason,
-                "earlier_excerpt": tensions_module._excerpt(manager.readable_content(earlier))[:280],
-                "later_excerpt": tensions_module._excerpt(manager.readable_content(later))[:280],
-                "earlier_title": manager.extract_title(manager.readable_content(earlier))
-                or manager.plain_label(manager.readable_content(earlier), 60),
-                "later_title": manager.extract_title(manager.readable_content(later))
-                or manager.plain_label(manager.readable_content(later), 60),
-                "earlier_at": tensions_module._stamp(earlier.created_at),
-                "later_at": tensions_module._stamp(later.created_at),
-                "gap_days": abs((later.created_at - earlier.created_at).days)
-                if earlier.created_at and later.created_at
-                else 0,
-                "status": row.status,
-                "model": row.model,
-                "confidence": row.confidence,
-                "computed_at": row.computed_at.isoformat() if row.computed_at else None,
-                "source": row.source,
-                "event_id": row.event_id,
-            }
-        )
-    return {"tensions": out, "counts": counts}
-
-
-class TensionPair(BaseModel):
-    earlier_id: int
-    later_id: int
-
-
-@router.post("/tensions/accept")
-def accept_tension(body: TensionPair, session: Session = Depends(get_session)) -> dict:
-    """Record a tension as a real `contradicts` link between the two notes.
-
-    Uses `manager.create_link` rather than inserting a row, so the link gets
-    the same audit entry, the same self-link and duplicate guards, and the
-    same graph/traversal treatment as one made by hand.
-    """
-    earlier = _existing_entry(session, body.earlier_id)
-    later = _existing_entry(session, body.later_id)
-    link = manager.create_link(
-        session,
-        earlier,
-        later,
-        reason="these disagree with each other",
-        link_type="contradicts",
-    )
-    #: KG9: the inbox's decisions are corrections like every other kind.
-    learning.record(session, kind="accept_tension", subject={"a": earlier.id, "b": later.id})
-    tensions_module.record_event(session, tensions_module.ACCEPTED, earlier.id, later.id)
-    session.commit()
-    return {"created": link is not None}
-
-
-@router.post("/tensions/dismiss")
-def dismiss_tension(body: TensionPair, session: Session = Depends(get_session)) -> dict:
-    """Stop offering this pair. Remembered across restarts.
-
-    Capped, and oldest-first: without a cap this preference would grow
-    without bound on a notebook where most candidates are rejected, and it
-    is written to disk on every change (see `Config.set_preference`).
-    """
-    config = deps.get_config()
-    stored = list(config.get_preference(TENSION_DISMISSED_KEY, []) or [])
-    key = _tension_key(body.earlier_id, body.later_id)
-    if key not in stored:
-        stored.append(key)
-    del stored[:-500]
-    config.set_preference(TENSION_DISMISSED_KEY, stored)
-    learning.record(session, kind="dismiss_tension", subject={"a": body.earlier_id, "b": body.later_id})
-    tensions_module.record_event(session, tensions_module.DISMISSED, body.earlier_id, body.later_id)
-    session.commit()
-    return {"dismissed": key}
-
-
-class TensionReopen(TensionPair):
-    #: The accept made the `contradicts` link (it was not there before), so
-    #: Undo takes it away; a link the person already had is left alone.
-    remove_link: bool = False
-
-
-@router.post("/tensions/reopen")
-def reopen_tension(body: TensionReopen, session: Session = Depends(get_session)) -> dict:
-    """Undo of accepting or dismissing a tension: the pair is offered again (INBOX 898).
-
-    The event log is a history, so this writes a `tension_reopened` event
-    rather than editing the earlier one, and drops the correction the
-    decision taught the learning loop (it was a slip, not a lesson).
-    """
-    pair = {body.earlier_id, body.later_id}
-    config = deps.get_config()
-    stored = [k for k in (config.get_preference(TENSION_DISMISSED_KEY, []) or []) if k != _tension_key(body.earlier_id, body.later_id)]
-    config.set_preference(TENSION_DISMISSED_KEY, stored)
-    removed_link = False
-    if body.remove_link:
-        for link in relations_repo.with_type(session, "contradicts"):
-            if {link.source_entry_id, link.target_entry_id} == pair:
-                manager.delete_link(session, link)
-                removed_link = True
-    for kind in ("accept_tension", "dismiss_tension"):
-        for item in reversed(learning.corrections(session, kind=kind)):
-            if {item.subject.get("a"), item.subject.get("b")} == pair:
-                row = session.get(AuditLog, item.id)
-                if row is not None:
-                    session.delete(row)
-                break
-    tensions_module.record_event(session, tensions_module.REOPENED, body.earlier_id, body.later_id)
-    session.commit()
-    return {"reopened": _tension_key(body.earlier_id, body.later_id), "removed_link": removed_link}
-
-
-class LinkSuggestionReasonPair(BaseModel):
-    source_id: int
-    target_id: int
-
-
-class LinkSuggestionReasonsBody(BaseModel):
-    pairs: list[LinkSuggestionReasonPair]
-
-
-@router.post("/link-suggestions/reasons")
-def link_suggestion_reasons(
-    body: LinkSuggestionReasonsBody, session: Session = Depends(get_session)
-) -> dict:
-    """Reasons for *pending* suggestions, not yet real links, the gap
-    `/links/backfill-reasons` (below) deliberately doesn't cover, since that
-    one only ever touches links that already exist. Asked for directly: the
-    suggestions panel's own "Why?" boxes had no way to get an AI guess
-    without linking first, editing, and re-linking. Best-effort per pair: 
-    one bad or private pair doesn't sink the rest, and the whole call
-    degrades to an empty list rather than an error the moment the model is
-    down, so the caller can tell "nothing generated" from "everything
-    genuinely had one already" without a special-cased response shape."""
-    reasons = []
-    ai_unavailable = False
-    for pair in body.pairs[:12]:  # same cap link_suggestions() itself uses
-        source = session.get(Entry, pair.source_id)
-        target = session.get(Entry, pair.target_id)
-        if not source or not target or source.is_private or target.is_private:
-            continue
-        try:
-            reason = librarian.generate_link_reason(
-                manager.readable_content(source),
-                manager.readable_content(target),
-                deps.get_model_manager(),
-                deps.get_ollama(),
-            )
-        except Exception as exc:  # noqa: BLE001  # model offline is the expected case, once per pair; the message is logged
-            logger.info("link suggestion reason skipped: %s", exc)
-            ai_unavailable = True
-            continue
-        reasons.append(
-            {"source_id": pair.source_id, "target_id": pair.target_id, "reason": reason}
-        )
-    result = {"reasons": reasons}
-    if ai_unavailable:
-        result["ai_unavailable"] = True
-    return result
-
-
-class BackfillReasonsBody(BaseModel):
-    """`ai=False` runs only the cheap embedding pass, useful when the model
-    is known to be down and you just want the links marked."""
-
-    ai: bool = True
-    limit: int = Field(default=100, ge=1, le=500)
-
-
-@router.post("/links/backfill-reasons")
-def backfill_link_reasons(
-    body: BackfillReasonsBody | None = None, session: Session = Depends(get_session)
-) -> dict:
-    """"None of my notes have a linked reason yet, is there an easy way to
-    give them all a reason?" There wasn't: `_deduce_reason` only ever ran at
-    the moment a link was *made*, so every link from before that shipped, or
-    made while the embedding backend was off, stays mute forever with
-    nothing to revisit it. One pass over every reason-less link, same rule
-    as a fresh one, a link that still can't be deduced is left alone rather
-    than given a manufactured answer.
-
-    **Two passes, not one, and the second is the one the user actually
-    wanted.** The first (embeddings) can only ever write the literal string
-    "similar in meaning", it compares two vectors and has no words for what
-    it found. So a notebook that ran this ended up with every link reading
-    *"similar in meaning"*, which is what was reported: the button appeared to
-    work and the reasons it produced said nothing.
-
-    The second pass hands those to the model and asks it to name the actual
-    connection. It is best-effort: if the model is down, the embedding pass
-    has still marked the links and the audit can be re-run later, which is
-    why a failure here is reported in the result rather than raised.
-    """
-    options = body or BackfillReasonsBody()
-    with jobruns.job_run("link-reasons", origin="you") as run:
-        result = _backfill_reasons(session, options)
-        run.result = (
-            f"checked {result.get('checked', 0)} links, "
-            f"added {result.get('updated', 0)} reasons, "
-            f"reworded {result['rewritten']}"
-        )
-        if result.get("ai_unavailable"):
-            run.result += " (the model was not available)"
-    return result
-
-
-def _backfill_reasons(session: Session, options: "BackfillReasonsBody") -> dict:
-    result = manager.backfill_link_reasons(session)
-
-    result["rewritten"] = 0
-    if not options.ai:
-        return result
-    try:
-        result["rewritten"] = links.audit_vague_links(
-            session, deps.get_model_manager(), deps.get_ollama(), limit=options.limit
-        )
-    except Exception as exc:  # noqa: BLE001  # model offline is the expected case; the message is logged
-        # Not an error the caller should see as a failure: the cheap pass
-        # succeeded and its work is committed.
-        logger.info("link reason audit skipped: %s", exc)
-        result["ai_unavailable"] = True
-    return result
-
-
-#: How alike two notes have to be before one is offered as "see also".
-#: Unchanged from the number this route already used inline; named now that
-#: the scoring moved into the engine, so the threshold and the engine's own
-#: `MIN_SIMILARITY` are visibly two different decisions rather than one
-#: number copied twice.
-RELATED_MIN_SIMILARITY = 0.3
-
-
-@router.get("/{entry_id}/related", response_model=list[EntryOut])
-def related_entries(entry_id: int, session: Session = Depends(get_session)) -> list[EntryOut]:
-    """Semantic neighbours of one entry ("see also")."""
-    entry = _existing_entry(session, entry_id)
-    # The engine's matrix rather than a scan of every stored vector per note
-    # opened (Brief 11). `warm_vectors` is idempotent: it builds once per
-    # process and per notebook, and returns immediately after that, so this
-    # is not per-request work. `related()` itself never builds, which is what
-    # the spec pins.
-    try:
-        search_engine.warm_vectors(session)
-        neighbours = search_engine.related(session, entry.id, k=8)
-    except Exception:  # noqa: BLE001  # a "see also" panel never fails a note
-        neighbours = []
-    wanted = [other_id for other_id, score in neighbours if score >= RELATED_MIN_SIMILARITY]
-    if not wanted:
-        return []
-    #: Each row is a press that links the two notes, so a note already linked
-    #: (either way round) is left out, and so is a draft against a committed
-    #: note (`manager.create_link` refuses both with a 400).
-    linked = {
-        other_id
-        for link in relations_repo.touching(session, entry.id)
-        for other_id in (link.source_entry_id, link.target_entry_id)
-    }
-    found = {
-        other.id: other
-        for other in session.scalars(
-            select(Entry).where(Entry.id.in_(wanted), Entry.is_deleted == False)  # noqa: E712
-        )
-        if not other.is_private and other.id not in linked and bool(other.is_draft) == bool(entry.is_draft)
-    }
-    ordered = [found[other_id] for other_id in wanted if other_id in found]
-    return [_to_out(session, e) for e in ordered[:3]]
-
-
-class AttachBookmarkBody(BaseModel):
-    bookmark_id: int
-    #: Undo's door (undo-1005): a detached reference re-attached where it was,
-    #: since References list in attach order. The DELETE answers with it.
-    created_at: datetime | None = None
-
-
-@router.get("/{entry_id}/bookmarks")
-def entry_bookmarks(entry_id: int, session: Session = Depends(get_session)) -> list[dict]:
-    """Bookmarks attached to this note, its References, alongside the
-    [[wiki links]] `links` already carries. Its own endpoint rather than a
-    field on EntryOut, matching `/related` right above: only the editor
-    needs this, and `_to_out_bulk`'s per-list-page bulk fetch shouldn't grow
-    a query for something most renders of a note never show."""
-    _existing_entry(session, entry_id)
-    rows = bookmark_repo.attached_to_entry(session, entry_id)
-    return [
-        {"id": b.id, "url": b.url, "title": b.title, "group_name": b.group_name}
-        for b in rows
-    ]
-
-
-@router.post("/{entry_id}/bookmarks", status_code=201)
-def attach_bookmark(
-    entry_id: int, body: AttachBookmarkBody, session: Session = Depends(get_session)
-) -> dict:
-    NOTES.writable(session, entry_id)
-    if bookmark_repo.attach_to_entry(session, entry_id, body.bookmark_id, created_at=body.created_at):
-        session.commit()
-    return {"attached": True}
-
-
-@router.delete("/{entry_id}/bookmarks/{bookmark_id}")
-def detach_bookmark(
-    entry_id: int, bookmark_id: int, session: Session = Depends(get_session)
-) -> dict:
-    NOTES.writable(session, entry_id)
-    # When it was attached, so Undo puts it back in its place in the list.
-    attached = bookmark_repo.detach_from_entry(session, entry_id, bookmark_id)
-    session.commit()
-    return {"detached": True, "created_at": attached.isoformat() if attached else None}
 
 
 #: A page of the plain list, not a hard ceiling on notebook size, the
@@ -2482,6 +1747,21 @@ _TASK_DONE = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[xX]\]", re.M)
 _WIKI_LINK = re.compile(r"\[\[[^\]\n]{1,120}\]\]")
 
 
+_FENCE = re.compile(r"^[ \t]*(?:```|~~~)")
+_ATX = re.compile(r"^#{1,6}[ \t]+\S")
+
+
+def _heading_count(text: str) -> int:
+    """`#` headings outside code fences, as the card's outline (`mdTocEntries`) counts them."""
+    fenced, count = False, 0
+    for line in text.split("\n"):
+        if _FENCE.match(line):
+            fenced = not fenced
+        elif not fenced and _ATX.match(line):
+            count += 1
+    return count
+
+
 def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
     """`rows` with each note's text cut to `preview` characters (0 keeps it
     whole), at the last space before the cut when there is one, and
@@ -2496,6 +1776,7 @@ def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
         row.tasks_open = len(_TASK_OPEN.findall(row.content))
         row.tasks_done = len(_TASK_DONE.findall(row.content))
         row.wiki_linked = bool(_WIKI_LINK.search(row.content))
+        row.heading_count = _heading_count(row.content)
         #: A meeting's card reads its sections from the whole text (`meetingGlance`), so a meeting is sent whole. So is
         #: a private note: the index never reads one, so the list's filter box matches it on the text the list holds
         #: (INBOX 1525 review). Locked, its text is the short placeholder anyway.
@@ -2738,7 +2019,7 @@ def seed_example_entries(session: Session = Depends(get_session)) -> dict:
     """The onboarding tour's "add example notes" offer (ROADMAP.md's
     onboarding item). Refuses on any notebook that already has a note, 
     see `manager.seed_example_notes`'s own guard."""
-    created = manager.seed_example_notes(session)
+    created = manager_wiki.seed_example_notes(session)
     return {"created": created}
 
 
@@ -2843,6 +2124,12 @@ def get_entry(
         # pill pointing at whatever was newest. Same guard as the count: a
         # note read on its way out of the bin has not been come back to.
         entry.last_opened_at = utcnow()
+        #: The in-app companion's reading glasses and covered eyes, for the desk one (W31): a kind and a time. A private
+        #: note is only ever the generic kind (not its length, not which note).
+        if _kept_private(session, entry):
+            companion_events.record("private_note")
+        elif len(entry.content or "") > LONG_NOTE_CHARS:
+            companion_events.record("long_note")
     if not entry.is_deleted:
         # A private note has no audit trail at all otherwise, encrypted at
         # rest and invisible to the AI is the whole promise, but nothing
@@ -2897,9 +2184,9 @@ def export_entry(entry_id: int, session: Session = Depends(get_session)) -> Resp
     if entry.is_deleted:
         raise HTTPException(status_code=404, detail="That note could not be found.")
     _refuse_while_sealed(entry)
-    content = manager.readable_content(entry)
-    title = manager.extract_title(content) or content.strip()[:60] or "Untitled note"
-    body = content if manager.extract_title(content) else f"# {title}\n\n{content}"
+    content = manager_text.readable_content(entry)
+    title = manager_text.extract_title(content) or content.strip()[:60] or "Untitled note"
+    body = content if manager_text.extract_title(content) else f"# {title}\n\n{content}"
     return Response(
         content=body,
         media_type="text/markdown; charset=utf-8",
@@ -2916,7 +2203,7 @@ def _content_change(entry, body: EntryUpdate) -> tuple[bool, str | None]:  # noq
         #: was written plain, with the note still flagged private, and sat in
         #: `entries.content` and the full-text index in the clear (found
         #: 2026-10-04 by scanning a data dir for a private note's words).
-        content_changed = body.content != manager.readable_content(entry)
+        content_changed = body.content != manager_text.readable_content(entry)
         new_content = _stored_form(entry, body.content) if content_changed else None
     else:
         content_changed = body.content is not None and body.content != entry.content
@@ -2945,8 +2232,8 @@ def _after_content_edit(session: Session, entry, body: EntryUpdate) -> None:  # 
         _queue_embedding(entry)
     # Editing a note can introduce new [[links]]; resolve those too.
     try:
-        manager.sync_wiki_links(session, entry)
-        manager.resolve_links_to(session, entry)
+        manager_wiki.sync_wiki_links(session, entry)
+        manager_wiki.resolve_links_to(session, entry)
         session.commit()
     except Exception:
         session.rollback()
@@ -2960,12 +2247,12 @@ def _after_content_edit(session: Session, entry, body: EntryUpdate) -> None:  # 
 
 def _wiki_rename(session: Session, entry, old_name: str) -> dict | None:  # noqa: ANN001
     """Set when the opening line changed and other notes link to the old name."""
-    if not old_name or manager.wiki_opening(entry.content) == old_name:
+    if not old_name or manager_wiki.wiki_opening(entry.content) == old_name:
         return None
     # Spelt as the holders wrote it, the opening line as the note does.
     first = (entry.content or "").strip().split("\n", 1)[0]
     new_name = re.sub(r"^\s{0,3}#{1,6}\s+", "", first).strip()
-    holders = manager.wiki_holders(session, entry, old_name)
+    holders = manager_wiki.wiki_holders(session, entry, old_name)
     if not holders or not new_name:
         return None
     spelt = re.search(r"\[\[\s*(" + re.escape(old_name) + r")", holders[0].content, re.IGNORECASE)
@@ -2990,7 +2277,7 @@ def update_entry(
     entry = NOTES.writable(session, entry_id)
     refuse_unless_match(
         if_match,
-        current_hash=content_hash(manager.readable_content(entry)),
+        current_hash=content_hash(manager_text.readable_content(entry)),
         current=lambda: _to_out(session, entry),
         noun="note",
     )
@@ -3001,7 +2288,7 @@ def update_entry(
     if body.base_hash and body.content is not None:
         refuse_if_stale(
             base_hash=body.base_hash,
-            current_text=manager.readable_content(entry),
+            current_text=manager_text.readable_content(entry),
             new_text=body.content,
             current=lambda: _to_out(session, entry),
             noun="note",
@@ -3010,7 +2297,7 @@ def update_entry(
     tags_changed = body.tags is not None and body.tags != manager.entry_tags(entry)
     #: The note's [[name]] before the edit (a private note is never a target).
     old_name = (
-        manager.wiki_opening(entry.content) if content_changed and not entry.is_private else ""
+        manager_wiki.wiki_opening(entry.content) if content_changed and not entry.is_private else ""
     )
     #: A save that carries an applied Atlas suggestion is both of theirs.
     with events.acting_as(ACTOR_USER_AND_AI) if body.ai_assisted else contextlib.nullcontext():
@@ -3049,12 +2336,12 @@ def wiki_rename(entry_id: int, body: WikiRenameIn, session: Session = Depends(ge
     """Rewrite `[[old]]` as this note's current name in every note that still
     writes the old one (GRAPH_PLAN 518; offered by the edit that renamed it)."""
     entry = NOTES.writable(session, entry_id)
-    first = (manager.readable_content(entry) or "").strip().split("\n", 1)[0]
+    first = (manager_text.readable_content(entry) or "").strip().split("\n", 1)[0]
     new_name = re.sub(r"^\s{0,3}#{1,6}\s+", "", first).strip()
     if not new_name or len(new_name) > 120 or "]" in new_name or "[" in new_name:
         raise HTTPException(status_code=422, detail="This note's first line can't be a [[name]].")
     notes: list[dict] = []
-    rewritten = manager.rewrite_wiki_name(session, entry, body.old, new_name, notes)
+    rewritten = manager_wiki.rewrite_wiki_name(session, entry, body.old, new_name, notes)
     return {"rewritten": rewritten, "notes": notes}
 
 
@@ -3069,12 +2356,13 @@ def delete_entry(
     entry = _existing_entry(session, entry_id)
     refuse_unless_match(
         if_match,
-        current_hash=content_hash(manager.readable_content(entry)),
+        current_hash=content_hash(manager_text.readable_content(entry)),
         current=lambda: _to_out(session, entry),
         noun="note",
     )
     if not entry.is_deleted:
         manager.soft_delete_entry(session, entry)
+        companion_events.record("private_note" if _kept_private(session, entry) else "note_binned")  # kind and time only (W31)
     return _to_out(session, entry)
 
 
@@ -3090,7 +2378,7 @@ def archive_entry(entry_id: int, session: Session = Depends(get_session)) -> Ent
     """Kept, but out of the way (BACKLOG §30b): distinct from the recycle
     bin: never auto-cleared, never purgeable, no confirmation needed since
     nothing is at risk of being lost."""
-    entry = _existing_entry(session, entry_id)
+    entry = NOTES.writable(session, entry_id)
     if not entry.archived_at:
         manager.archive_entry(session, entry)
     return _to_out(session, entry)
@@ -3098,7 +2386,7 @@ def archive_entry(entry_id: int, session: Session = Depends(get_session)) -> Ent
 
 @router.post("/{entry_id}/unarchive", response_model=EntryOut)
 def unarchive_entry(entry_id: int, session: Session = Depends(get_session)) -> EntryOut:
-    entry = _existing_entry(session, entry_id)
+    entry = NOTES.writable(session, entry_id)
     if entry.archived_at:
         manager.unarchive_entry(session, entry)
     return _to_out(session, entry)
@@ -3124,7 +2412,7 @@ def purge_entry(entry_id: int, session: Session = Depends(get_session)) -> dict:
             status_code=400,
             detail="Only notes in the recycle bin can be permanently deleted.",
         )
-    removed = manager.purge_entries(
+    removed = manager_purge.purge_entries(
         session, [entry], uploads_dir=deps.get_config().uploads_dir
     )
     return {"purged": removed, "id": entry_id}
@@ -3209,11 +2497,11 @@ def _stored_form(entry, text: str, session: Session | None = None) -> str:  # no
 
     A private note's restored text marks the pictures it embeds, as an edit
     does (SEC-A2): a picture only an older version used was served locked."""
-    stored = manager.content_for_entry(entry, text or "")
+    stored = manager_text.content_for_entry(entry, text or "")
     if stored is None:
         raise HTTPException(status_code=409, detail="Unlock the app first: this version needs the encryption key.")
     if session is not None and entry.is_private:
-        manager.flag_private_media(session, _readable(stored))
+        manager_text.flag_private_media(session, _readable(stored))
     return stored
 
 
@@ -3223,539 +2511,26 @@ def _readable(content: str) -> str:
     `manager.readable_content` reads one attribute, so an event's stored
     content can borrow it without a row to hang it on.
     """
-    return manager.readable_content(SimpleNamespace(content=content or ""))
+    return manager_text.readable_content(SimpleNamespace(content=content or ""))
 
 
-#: How many candidate sources a references scan will read, and how many rows
-#: it will answer with. The same two caps `routes_documents._backlinks` uses,
-#: and for the same reason: the scan is a LIKE over the notes and documents
-#: tables, which is fine at any notebook size and is not free at every one.
-REFERENCE_SOURCES_MAX = 400
-REFERENCE_ROWS_MAX = 60
+class MakeAllPrivateBody(BaseModel):
+    confirm: bool
 
 
-def _board_reference_rows_batch(session: Session, entry_ids: list[int]) -> dict[int, list[dict]]:
-    """The boards and maps each of these notes is on, one row per board,
-    boards and maps told apart. Two statements for the whole page.
-
-    Two tables hold "this note is on that board", and a reader that knows
-    one of them is wrong half the time (INBOX 246's first gap). A whiteboard
-    card is a `WhiteboardNode` row. A mind map's note is a `WhiteboardObject`
-    of kind "note" whose `data.ref_id` is the note (`MAP_REFERENCE_KINDS` in
-    routes_whiteboard), and nothing else in `data` says which table the id
-    belongs to: the kind does. So the object read filters on the kind first
-    and only then on the id, the way routes_graph learnt to (a document and
-    a note both numbered 1 exist in any notebook with one of each).
-
-    `json_extract` because SQLite has JSON1 built in and the column is JSON;
-    the verify-after in Python stays because a row written before the
-    schema was tightened can hold anything. Shared by the Referenced-by row,
-    the Connections dialog and the card's counts, so the three cannot
-    disagree about what a board reference is.
-
-    **A page at a time** (the performance pass, 2026-10-03). This was a pair
-    of statements per note, so sixty cards were a hundred and twenty trips,
-    each scanning `whiteboard_nodes` (no index on `entry_id`) and every
-    `note` object of every map. `IN (...)` over the page is the same two
-    scans once. Rows are read in id order, which is the order the per-note
-    reads happened to return them in, and which makes the order a fact
-    rather than the planner's choice.
-    """
-    from tessellate.entry.manager import plain_label
-
-    wanted = set(entry_ids)
-    seen_boards: dict[int, set[int]] = {i: set() for i in wanted}
-    found: dict[int, list[tuple[int, Entry]]] = {i: [] for i in wanted}
-    if not wanted:
-        return {}
-    for entry_id, board_id, board in session.execute(
-        select(WhiteboardNode.entry_id, WhiteboardNode.board_id, Entry)
-        .join(Entry, Entry.id == WhiteboardNode.board_id)
-        .where(
-            WhiteboardNode.entry_id.in_(wanted),
-            Entry.is_deleted.is_(False),
-        )
-        .order_by(WhiteboardNode.id)
-    ).all():
-        if board_id is None or board_id in seen_boards[entry_id]:
-            continue
-        seen_boards[entry_id].add(board_id)
-        found[entry_id].append((board_id, board))
-    for board_id, board, raw in session.execute(
-        select(WhiteboardObject.board_id, Entry, WhiteboardObject.data)
-        .join(Entry, Entry.id == WhiteboardObject.board_id)
-        .where(
-            WhiteboardObject.kind == "note",
-            func.json_extract(WhiteboardObject.data, "$.ref_id").in_(wanted),
-            Entry.is_deleted.is_(False),
-        )
-        .order_by(WhiteboardObject.id)
-    ).all():
-        try:
-            ref_id = (json.loads(raw or "{}") or {}).get("ref_id")
-        except (ValueError, AttributeError):
-            continue
-        if board_id is None or not isinstance(ref_id, int) or ref_id not in wanted:
-            continue
-        if board_id in seen_boards[ref_id]:
-            continue
-        seen_boards[ref_id].add(board_id)
-        found[ref_id].append((board_id, board))
-
-    out: dict[int, list[dict]] = {}
-    for entry_id, boards in found.items():
-        rows: list[dict] = []
-        for board_id, board in boards:
-            #: `board_settings` says whether this is a whiteboard or a mind map,
-            #: and the owner asked for both by name, so the row says which.
-            #: Through `manager.board_type_of` rather than parsed here: this app
-            #: already reads that column in four places and CodeQL caught the
-            #: fifth arriving with a bare `except: pass`, which is fair. One
-            #: reader, one decision about what a malformed value means.
-            kind = manager.board_type_of(board)
-            rows.append({
-                "kind": kind,
-                "id": board_id,
-                "label": plain_label(board.content, 60) or ("Untitled map" if kind == "map" else "Untitled board"),
-                "how": "on it",
-            })
-        out[entry_id] = rows[:REFERENCE_ROWS_MAX]
-    return out
-
-
-def _reference_rows_batch(session: Session, entries: list[Entry]) -> dict[int, list[dict]]:
-    """Everything that points at each of these notes: documents, notes,
-    boards, maps. Four statements for the whole page, whatever its size.
-
-    INBOX 246, the owner's second sentence: "I want it to show in notes if
-    they are attached to or referenced in/by a document, note, whiteboard, or
-    mindmap."
-
-    **Two kinds of pointing, and they are found two different ways.** A board
-    or a map carries a note as a real row (`WhiteboardNode.entry_id`), so that
-    half is a join and is exact. A document or another note carries it as
-    text, either a `[[wiki link]]` or a bare mention of its label, so that
-    half is the same LIKE-then-verify scan `routes_documents._backlinks`
-    runs, and it says which of the two it found because "it links to this"
-    and "it happens to say these words" are different facts about a note.
-
-    A note with no label to be named by (an image-only note, a note that
-    starts with a heading marker and nothing else) still gets its board rows:
-    a card on a board is a reference whether or not the note has a name.
-
-    **One scan for the page, not one per note** (the performance pass,
-    2026-10-03, INBOX 441). The text half used to be two LIKE scans per note,
-    each reading every note's and document's text: sixty cards at boot were
-    two hundred and forty statements and 172 ms on 500 notes, growing with
-    the notebook. Now each table is read once, with one `LIKE` flag column per
-    distinct label, so SQLite still decides what matches (same ASCII case
-    folding, same escaped wildcards, nothing re-implemented in Python) and
-    only rows that match some label come back. The per-label caps and the
-    order are the old ones: documents newest-updated first, notes newest
-    first, `REFERENCE_SOURCES_MAX` each, the note itself never its own source.
-    """
-    from tessellate.entry.manager import plain_label
-
-    result = _board_reference_rows_batch(session, [entry.id for entry in entries])
-    label_of: dict[int, str] = {}
-    for entry in entries:
-        label = plain_label(entry.content, 60).strip()
-        if label:
-            label_of[entry.id] = label
-    distinct = sorted(set(label_of.values()))
-    document_hits = _document_mentions(session, distinct)
-    note_hits = _note_mentions(session, distinct)
-    for entry in entries:
-        rows = list(result.get(entry.id, []))
-        label = label_of.get(entry.id)
-        if label is not None:
-            rows += _mention_rows(entry.id, label, document_hits[label], note_hits[label])
-            #: Links before mentions, so the rows someone chose come first, and the
-            #: boards before both because they are exact.
-            rows.sort(key=lambda row: {"on it": 0, "links to it": 1, "mentions it": 2}[row["how"]])
-        result[entry.id] = rows[:REFERENCE_ROWS_MAX]
-    return result
-
-
-def _document_mentions(session: Session, distinct: list[str]) -> dict[str, list[tuple[int, str, str]]]:
-    """Per label, the documents (newest-updated first) that name it."""
-    hits: dict[str, list[tuple[int, str, str]]] = {label: [] for label in distinct}
-    if not distinct:
-        return hits
-    #: `like`, not `ilike`: on SQLite a plain LIKE already folds ASCII case
-    #: (the pragma that turns that off is never set here), and `ilike`
-    #: compiles to `lower(x) LIKE lower(?)`, which copies every row's text
-    #: once per label. Measured over 60 labels on 500 notes, same answers:
-    #: 74 ms per call with `ilike`, 35 ms with `like`
-    #: (`test_a_mention_matches_whatever_the_case...` pins the folding).
-    for row in documents_repo.mention_rows(session, [_mention_like(label) for label in distinct]):
-        for i, label in enumerate(distinct):
-            if row[3 + i] and len(hits[label]) < REFERENCE_SOURCES_MAX and _names(row[2], label):
-                hits[label].append((row[0], row[1] or "Untitled", row[2] or ""))
-    return hits
-
-
-def _note_mentions(session: Session, distinct: list[str]) -> dict[str, list[tuple[int, str]]]:
-    """Per label, the notes (newest first) that name it."""
-    hits: dict[str, list[tuple[int, str]]] = {label: [] for label in distinct}
-    if not distinct:
-        return hits
-    #: Two groups (audit 2026-10-05, ARCH-11: 1.1 s for sixty cards at
-    #: 5,000 notes, all of it SQLite running sixty LIKEs over every
-    #: note). A label with an interior word has a phrase the full-text
-    #: index can find, so its LIKE only reads the notes holding that
-    #: phrase; a short label still reads every note. Each label is in
-    #: one group, each group is read newest first, so a label's hits come
-    #: back in the order they always did.
-    narrowed = {label: _interior_phrase(label) for label in distinct}
-    groups = [
-        [label for label in distinct if narrowed[label] is None],
-        [label for label in distinct if narrowed[label] is not None],
-    ]
-    for group in groups:
-        if group:
-            _scan_note_group(session, group, narrowed, hits)
-    return hits
-
-
-def _scan_note_group(session: Session, group: list[str], narrowed: dict, hits: dict[str, list[tuple[int, str]]]) -> None:
-    flags = [Entry.content.like(_mention_like(label), escape=LIKE_ESCAPE) for label in group]
-    where = [
-        Entry.is_deleted.is_(False),
-        #: A private note is encrypted at rest, so its content could not
-        #: match the LIKE anyway; the filter is here so that stays true
-        #: by decision rather than by side effect. The same sentence
-        #: `routes_documents._backlinks` carries, for the same reason.
-        Entry.is_private.is_(False),
-        or_(*flags),
-    ]
-    if narrowed[group[0]] is not None:
-        where.append(
-            Entry.id.in_(
-                text(
-                    " UNION ".join(
-                        f"SELECT rowid FROM entries_fts WHERE entries_fts MATCH :p{i}"
-                        for i in range(len(group))
-                    )
-                ).bindparams(**{f"p{i}": narrowed[label] for i, label in enumerate(group)})
-            )
-        )
-    for row in session.execute(
-        select(Entry.id, Entry.content, *[f.label(f"m{i}") for i, f in enumerate(flags)])
-        .where(*where)
-        .order_by(Entry.id.desc())
-    ):
-        for i, label in enumerate(group):
-            #: One over the cap, because the note itself can be among its
-            #: own label's matches and is dropped per note below: the cap
-            #: is on sources other than the note, as it always was.
-            if row[2 + i] and len(hits[label]) <= REFERENCE_SOURCES_MAX and _names(row[1], label):
-                hits[label].append((row[0], row[1] or ""))
-
-
-def _mention_rows(entry_id: int, label: str, document_hits: list, note_hits: list) -> list[dict]:
-    """The document and note rows that point at one note, links before mentions."""
-    from tessellate.entry.manager import plain_label
-
-    wanted = label.casefold()
-    candidates: list[tuple[str, int, str, str]] = []
-    for document_id, title, content in document_hits:
-        candidates.append(("document", document_id, title, content))
-    others = [(nid, content) for nid, content in note_hits if nid != entry_id]
-    for note_id, content in others[:REFERENCE_SOURCES_MAX]:
-        candidates.append(("note", note_id, plain_label(content, 60) or "Untitled note", content))
-    return [
-        {
-            "kind": kind,
-            "id": source_id,
-            "label": source_label,
-            #: A link is a decision someone made; a mention is a coincidence
-            #: until they make it. Saying which is what stops this row being
-            #: a list of every note that happens to share a word.
-            "how": "links to it" if _links_to(content, wanted) else "mentions it",
-        }
-        for kind, source_id, source_label, content in candidates
-    ]
-
-
-def _mention_like(label: str) -> str:
-    """The LIKE that narrows the scan; `_names` decides. A label too short to
-    be mentioned (audit 1029 N1) can still be linked, `[[t]]`, so it only
-    narrows to notes with that bracket."""
-    if len(label) < MENTION_MIN_TITLE_CHARS:
-        return f"%[[{like_escape(label)}%"
-    return f"%{like_escape(label)}%"
-
-
-def _names(content: str | None, label: str) -> bool:
-    """Whether the text links to `label` or names it as a whole word: the
-    one definition (`entry/mentions.py`) every mention surface shares."""
-    return names_label(content, label) or _links_to(content, label.casefold())
-
-
-#: A run of characters the full-text tokenizer may treat as one word: ASCII
-#: letters and digits, and anything outside ASCII (whose class only the
-#: tokenizer knows, so it is never assumed to split a word).
-_FTS_WORDISH = re.compile(r"[A-Za-z0-9\u0080-\U0010ffff]+")
-
-
-def _interior_phrase(label: str) -> str | None:
-    """An `entries_fts` phrase every note containing `label` also contains.
-
-    A note that holds the label as a substring (the LIKE's question) holds
-    its interior words as whole words: the label's second word to its
-    second-last are bounded by ASCII separators inside the label, so they are
-    bounded the same way in the note, and the index (unicode61, which splits
-    on every ASCII non-alphanumeric) tokenizes that span exactly as it
-    tokenizes the phrase. The first and last words are left out because the
-    note may run on into them ("biweekly reviews" holds "weekly review"), and
-    no prefix query is used because porter stems a prefix too ("runn"* finds
-    nothing where "running" is). None when there is no interior word, or no
-    ASCII letter in it to be sure the phrase is not empty.
-    """
-    words = list(_FTS_WORDISH.finditer(label))
-    if len(words) < 3:
-        return None
-    interior = label[words[1].start() : words[-2].end()]
-    if not re.search(r"[A-Za-z0-9]", interior):
-        return None
-    return '"' + interior.replace('"', '""') + '"'
-
-
-def _links_to(content: str | None, wanted: str) -> bool:
-    """Whether some text has a `[[wiki link]]` whose target is `wanted` (casefolded)."""
-    return any(
-        manager.wiki_target(match.group(1)).casefold() == wanted
-        for match in manager.WIKI_LINK.finditer(content or "")
-    )
-
-
-def _reference_rows(session: Session, entry: Entry) -> list[dict]:
-    """Everything that points at this note: documents, notes, boards, maps.
-
-    The page reader (`_reference_rows_batch`) asked about one note, so the
-    Referenced-by row, the Connections dialog and the card's chip are the
-    same code and cannot disagree.
-    """
-    return _reference_rows_batch(session, [entry])[entry.id]
-
-
-@router.get("/{entry_id}/references")
-def entry_references(entry_id: int, session: Session = Depends(get_session)) -> dict:
-    """What points at this note, from anywhere in the notebook."""
-    entry = _existing_entry(session, entry_id)
-    items = _reference_rows(session, entry)
-    return {"items": items, "total": len(items)}
-
-
-@router.get("/{entry_id}/then-and-now")
-def then_and_now(entry_id: int, as_of: date = Query(...), session: Session = Depends(get_session)) -> dict:
-    """This note's claims as they stood at the end of `as_of` against its
-    claims now (WORLD_CLASS_PLAN I5, row 23; `ai/timetravel.py`): `then` and
-    `now` are its sentences, `changed` pairs them as revised, dropped or new."""
-    from tessellate.ai import timetravel
-    from tessellate.core.config import user_now
-
-    entry = _existing_entry(session, entry_id)
-    if entry.is_private:
-        raise HTTPException(status_code=403, detail="This note is private, so its history is not compared.")
-    zone = user_now(deps.get_config()).tzinfo
-    then = timetravel.text_as_of(session, entry, timetravel.end_of_day(as_of, zone))
-    if then is None:
-        raise HTTPException(status_code=404, detail=f"This note did not exist on {timetravel.day_words(as_of)}.")
-    out = timetravel.then_and_now(then.text, entry.content or "")
-    out.update({"as_of": as_of.isoformat(), "revision_id": then.revision_id, "exact": then.exact})
-    return out
-
-
-class ThenTextBody(BaseModel):
-    #: A version of the note the reader is looking at (a History row's text).
-    then: str = Field(max_length=200_000)
-
-
-@router.post("/{entry_id}/then-and-now")
-def then_and_now_of_text(entry_id: int, body: ThenTextBody, session: Session = Depends(get_session)) -> dict:
-    """The same comparison for one version the reader already has on screen,
-    a History row: by its text rather than by a day, so two edits made the
-    same day are still two versions. Reads nothing but the note now."""
-    from tessellate.ai import timetravel
-
-    entry = _existing_entry(session, entry_id)
-    if entry.is_private:
-        raise HTTPException(status_code=403, detail="This note is private, so its history is not compared.")
-    return timetravel.then_and_now(body.then, entry.content or "")
-
-
-@router.get("/{entry_id}/history")
-def entry_history(
-    entry_id: int,
-    before: int | None = Query(default=None, ge=1),
-    session: Session = Depends(get_session),
-) -> dict:
-    """This note's history, as events and as past versions.
-
-    Two lists because they answer two questions and Brief 7 deliberately
-    kept both. `items` is the event log (Brief 7, WORLD_CLASS_PLAN B1):
-    everything that ever happened to this note, who did it, and the state
-    it left the note in, which is what the History sheet renders and what
-    `POST /entries/{id}/restore/{event_id}` replays. `revisions` is the
-    older per-edit snapshot list (`EntryRevision`, capped at
-    `manager.MAX_REVISIONS`), still written, still restorable through its
-    own route, and still the only thing that holds a version of a note
-    whose events predate the log.
-
-    `before` pages backwards through the events by id, newest first.
-    """
-    entry = _existing_entry(session, entry_id)
-    _refuse_while_sealed(entry)
-
-    rows = events.events_for(
-        session,
-        "entry",
-        entry.id,
-        newest_first=True,
-        limit=HISTORY_PAGE + 1,
-        before_id=before,
-        # The bookkeeping events (a version snapshotted, the dates
-        # re-resolved) always accompany the edit that caused them and say the
-        # same thing twice in a list a person reads. They are still in the
-        # log, still in /audit, and still replayed: hidden here, not dropped.
-        skip_actions=events.QUIET_ACTIONS,
-    )
-    more = len(rows) > HISTORY_PAGE
-    rows = rows[:HISTORY_PAGE]
-    # What the note said after each row on *this page*, folded in one
-    # ascending pass (`events.states_at`). It was every event of the note
-    # hydrated into an ORM object with a whole copy of the note's text kept
-    # for each, whichever page was asked for. Measured on this sandbox, on a
-    # note with 4,000 events: the newest page 109 ms before against 36 ms
-    # after, the oldest page 104 ms against 2.9 ms.
-    rebuilt = events.states_at(session, "entry", entry.id, [row.id for row in rows])
-    items = []
-    for row in rows:
-        at_the_time = rebuilt.get(row.id, {})
-        items.append(
-            {
-                "id": row.id,
-                "action": row.action,
-                "actor": row.actor or events.ACTOR_USER,
-                "detail": row.detail,
-                "created_at": row.created_at.isoformat(),
-                # Decrypted for display exactly like the note itself, so a
-                # private note's history is readable while unlocked and not
-                # otherwise.
-                "content": _readable(at_the_time.get("content") or ""),
-                "tags": at_the_time.get("tags") or [],
-                # Whether this event's values were dropped by the compactor
-                # (`events.compact`), so the sheet can say "the text from this
-                # change is no longer kept" rather than render a row with no
-                # text and no reason for it.
-                "compacted": events.is_compacted(row),
-            }
-        )
-
-    return {
-        "items": items,
-        "next_cursor": rows[-1].id if (more and rows) else None,
-        "revisions": [
-            {
-                "id": revision.id,
-                "content": manager.readable_content(revision),
-                "tags": json.loads(revision.tags or "[]"),
-                "created_at": revision.created_at.isoformat(),
-            }
-            for revision in manager.revisions_for(session, entry)
-        ],
-    }
-
-
-@router.post("/{entry_id}/restore/{event_id}", response_model=EntryOut)
-def restore_event(
-    entry_id: int, event_id: int, session: Session = Depends(get_session)
-) -> EntryOut:
-    """Put this note back the way one of its events left it.
-
-    Replay rather than a stored copy: the state after an event is every
-    `after` payload up to and including it, applied in order, which is the
-    same definition the History sheet shows and the same one a note rebuilt
-    from scratch would get. Restoring is itself an edit, so the current text
-    is snapshotted first and the restore records its own event: undoing an
-    undo has to work, or this is a trap rather than a safety net.
-    """
-    entry = NOTES.writable(session, entry_id)
-    row = session.get(AuditLog, event_id)
-    if row is None or row.entity_type != "entry" or row.entity_id != entry.id:
-        raise HTTPException(status_code=404, detail="That version no longer exists.")
-
-    if events.is_compacted(row):
-        # Not "did not change the note" and not "does not exist": this event
-        # happened, and its text was deliberately dropped to stop the log
-        # growing by a copy of the note on every edit (`events.compact`).
-        # Gone rather than a bad request, which is what 410 is for.
-        raise HTTPException(
-            status_code=410,
-            detail=(
-                "That version is no longer kept: changes older than the "
-                "history window keep the record of what happened, not the text."
-            ),
-        )
-
-    state = events.replay(session, "entry", entry.id, upto_event_id=event_id)
-    if "content" not in state and "tags" not in state:
-        raise HTTPException(
-            status_code=400, detail="That event did not change the note's text."
-        )
-
-    if "content" in state:
-        restored = _stored_form(entry, state["content"], session)
-    manager.record_revision(session, entry)
-    if "content" in state:
-        entry.content = restored
-    if "tags" in state:
-        entry.tags = json.dumps(state["tags"])
-    manager.mark_edited(entry)
-    manager.log_action(
-        session,
-        "restored",
-        "entry",
-        entry.id,
-        f"back to event {event_id}",
-        payload={
-            "from_event": event_id,
-            "after": {
-                "content": entry.content,
-                "tags": manager.tags_from_json(entry.tags),
-            },
-        },
-    )
+@router.post("/make-all-private")
+def make_all_private(body: MakeAllPrivateBody, session: Session = Depends(get_session)) -> dict:
+    """Seal every ordinary note (INBOX 1695 d). The client asks first; the
+    server refuses without `confirm` so a stray call cannot do it."""
+    if not body.confirm:
+        raise HTTPException(status_code=400, detail="Confirm first: this locks every note.")
+    sealed = manager_private.make_all_private(session)
+    if sealed is None:
+        raise HTTPException(status_code=409, detail="Unlock the app first: the encryption key isn't loaded.")
     session.commit()
-    session.refresh(entry)
-    return _to_out(session, entry)
-
-
-@router.post("/{entry_id}/history/{revision_id}/restore", response_model=EntryOut)
-def restore_revision(
-    entry_id: int, revision_id: int, session: Session = Depends(get_session)
-) -> EntryOut:
-    """Put a past version back.
-
-    Restoring is itself an edit, so the current text is saved first, undoing
-    an undo has to work, or this is a trap rather than a safety net.
-    """
-    entry = NOTES.writable(session, entry_id)
-    revision = session.get(EntryRevision, revision_id)
-    if revision is None or revision.entry_id != entry.id:
-        raise HTTPException(status_code=404, detail="That version no longer exists.")
-
-    restored = _stored_form(entry, revision.content, session)
-    manager.record_revision(session, entry)
-    entry.content = restored
-    entry.tags = revision.tags
-    manager.mark_edited(entry)
-    manager.log_action(session, "edited", "entry", entry.id, "restored an earlier version")
-    session.commit()
-    session.refresh(entry)
-    return _to_out(session, entry)
+    if sealed:
+        manager_private.scrub_private_leftovers(session)
+    return {"sealed": len(sealed), "ids": sealed}
 
 
 @router.post("/{entry_id}/privacy", response_model=EntryOut)
@@ -3768,7 +2543,10 @@ def set_entry_privacy(
     only exists in memory while it is.
     """
     entry = NOTES.writable(session, entry_id)
-    if not manager.set_private(session, entry, body.private):
+    if not body.private and private_space.is_private_space(session, entry.workspace_id):
+        # INBOX 1727: no per-note opt-out inside a private space.
+        raise HTTPException(status_code=409, detail=private_space.MOVE_OUT_TO_SHARE)
+    if not manager_private.set_private(session, entry, body.private):
         raise HTTPException(
             status_code=409,
             detail="Unlock the app first: the encryption key isn't loaded.",
@@ -3779,7 +2557,7 @@ def set_entry_privacy(
     if body.private:
         # SEC-03: the note's words out of the search index's segments and the
         # WAL too, not only out of the answers.
-        manager.scrub_private_leftovers(session)
+        manager_private.scrub_private_leftovers(session)
     session.refresh(entry)
     return _to_out(session, entry)
 
@@ -3806,7 +2584,7 @@ def generate_entry_title(
         raise HTTPException(
             status_code=400, detail="Make this note readable first: private notes can't be re-titled here."
         )
-    content = manager.readable_content(entry)
+    content = manager_text.readable_content(entry)
     if not content.strip():
         raise HTTPException(status_code=400, detail="There's no text to title yet.")
     if not deps.get_ollama().is_running():
@@ -3820,7 +2598,7 @@ def generate_entry_title(
         raise HTTPException(status_code=502, detail="The AI didn't return a usable title.")
 
     manager.record_revision(session, entry)
-    entry.content = manager.apply_title(content, title)
+    entry.content = manager_text.apply_title(content, title)
     manager.mark_edited(entry)
     manager.log_action(session, "edited", "entry", entry.id, f"generated title: {title}")
     session.commit()
@@ -3835,11 +2613,11 @@ def _composed_title(session: Session, entry, content: str) -> EntryOut:  # noqa:
     hold. The client says it was taken, not written."""
     from tessellate.ai import composer_voice
 
-    title = composer_voice.title_for(manager.remove_title(content) or content)
+    title = composer_voice.title_for(manager_text.remove_title(content) or content)
     if not title:
         raise HTTPException(status_code=422, detail="There's no sentence here to take a title from yet.")
     manager.record_revision(session, entry)
-    entry.content = manager.apply_title(content, title)
+    entry.content = manager_text.apply_title(content, title)
     manager.mark_edited(entry)
     manager.log_action(session, "edited", "entry", entry.id, f"title from its own words: {title}")
     session.commit()
@@ -3860,8 +2638,8 @@ def remove_entry_title(entry_id: int, session: Session = Depends(get_session)) -
         raise HTTPException(
             status_code=400, detail="Make this note readable first: private notes can't be edited here."
         )
-    content = manager.readable_content(entry)
-    stripped = manager.remove_title(content)
+    content = manager_text.readable_content(entry)
+    stripped = manager_text.remove_title(content)
     if stripped != content:
         manager.record_revision(session, entry)
         entry.content = stripped
@@ -3889,7 +2667,7 @@ def _stored_connections(session: Session, entry: Entry) -> tuple[list[dict], lis
     """`(outgoing, incoming)` from the stored links, direction kept."""
     outgoing: list[dict] = []
     incoming: list[dict] = []
-    for link, other in manager.links_for_entry(session, entry):
+    for link, other in manager_links.links_for_entry(session, entry):
         if other.is_deleted:
             continue
         row = {
@@ -3907,7 +2685,7 @@ def _stored_connections(session: Session, entry: Entry) -> tuple[list[dict], lis
             "reason_confidence": link.reason_confidence,
             #: KG3: the kind, named from this end, and the link's properties.
             "link_type": link.link_type,
-            "link_label": manager.relation_label(
+            "link_label": manager_links.relation_label(
                 relation_types.kinds(session), link.link_type, link.source_entry_id == entry.id
             ),
             "props": link.props,
@@ -4010,42 +2788,6 @@ def _boards_of(session: Session, entry: Entry, references: list[dict]) -> list[d
     return boards
 
 
-@router.get("/{entry_id}/connections")
-def entry_connections(entry_id: int, session: Session = Depends(get_session)) -> dict:
-    """Everything this note is joined to, in one place and grouped by kind.
-
-    Asked for by way of Kortex's Connections block: *"I should be able to
-    seamlessly utilise, flick, link, manage, create and search between
-    multiple features"*. Every one of these joins already existed in the
-    database: `EntryLink` both ways, `DocumentLink`, `WhiteboardNode`,
-    `/media/<name>` references in the body, but each was surfaced (if at
-    all) somewhere different: links as chips on the card, documents as a
-    separate list, boards nowhere at all. A note could be on three boards
-    and referenced by two documents and show none of it.
-
-    Direction is kept, not merged. "This note points at that one" and "that
-    one points at this" are different facts, and a merged list can state
-    neither.
-    """
-    entry = _existing_entry(session, entry_id)
-    outgoing, incoming = _stored_connections(session, entry)
-    documents = _attached_documents(session, entry)
-    references = _reference_rows(session, entry)
-    _add_referenced(session, references, documents, incoming)
-    _add_wiki_outgoing(session, entry, outgoing)
-    boards = _boards_of(session, entry, references)
-    files = _connected_files(session, manager.readable_content(entry))
-
-    return {
-        "outgoing": outgoing,
-        "incoming": incoming,
-        "documents": documents,
-        "boards": boards,
-        "files": files,
-        "total": len(outgoing) + len(incoming) + len(documents) + len(boards) + len(files),
-    }
-
-
 def _wiki_link_targets_of(session: Session, entry: Entry) -> list[Entry]:
     """The notes this note's `[[names]]` point at, in the order written.
 
@@ -4056,11 +2798,11 @@ def _wiki_link_targets_of(session: Session, entry: Entry) -> list[Entry]:
     when the text holds `[[label]]`): without that second reading a note
     named by its heading was incoming on the target and absent here.
     """
-    from tessellate.entry.manager import plain_label
+    from tessellate.entry.manager_text import plain_label
 
     found: list[Entry] = []
-    for name in manager.wiki_link_targets(manager.readable_content(entry)):
-        target = manager.find_by_wiki_name(session, name)
+    for name in manager_wiki.wiki_link_targets(manager_text.readable_content(entry)):
+        target = manager_wiki.find_by_wiki_name(session, name)
         if target is None:
             wanted = name.strip().casefold()
             pattern = "%" + like_escape(name.strip()) + "%"
@@ -4094,9 +2836,11 @@ def _connection_label(entry, length: int = 80) -> str:  # noqa: ANN001
     B\noven temperatures", which renders on a single-line row as the hash, the
     title and the first line of the body run together.
     """
+    if getattr(entry, "sealed_placeholder", False):
+        return manager.PRIVATE_SPACE_NOTE
     if entry.is_private:
         return manager.PRIVATE_LABEL
-    return manager.plain_label(manager.readable_content(entry), length)
+    return manager_text.plain_label(manager_text.readable_content(entry), length)
 
 
 def _connected_files(session: Session, text: str) -> list[dict]:
@@ -4122,114 +2866,6 @@ def _connected_files(session: Session, text: str) -> list[dict]:
         }
         for media in rows
     ]
-
-
-@router.post("/{entry_id}/links", response_model=EntryOut)
-def create_link(
-    entry_id: int, body: LinkBody, session: Session = Depends(get_session)
-) -> EntryOut:
-    source = NOTES.writable(session, entry_id)
-    target = _existing_entry(session, body.target_id)
-    link = manager.create_link(
-        session, source, target, reason=body.reason, link_type=body.link_type,
-        reason_confidence=body.reason_confidence, props=body.props,
-    )
-    if link is None:
-        # Three refusals share one return value, so the message names the one
-        # that actually applies: "already linked" on a draft/note pair would
-        # send someone hunting for a link that was never allowed to exist.
-        if bool(source.is_draft) != bool(target.is_draft):
-            raise HTTPException(
-                status_code=400,
-                detail="A draft can't be linked to a saved note. Save the draft first.",
-            )
-        raise HTTPException(
-            status_code=400, detail="Those notes are already linked, or you tried to link a note to itself."
-        )
-    return _to_out(session, source)
-
-
-@router.delete("/{entry_id}/links/{link_id}", response_model=EntryOut)
-def delete_link(
-    entry_id: int, link_id: int, session: Session = Depends(get_session)
-) -> EntryOut:
-    entry = NOTES.writable(session, entry_id)
-    link = relations_repo.get_for_note(session, entry.id, link_id)
-    manager.delete_link(session, link)
-    return _to_out(session, entry)
-
-
-@router.patch("/{entry_id}/links/{link_id}", response_model=EntryOut)
-def patch_link(
-    entry_id: int, link_id: int, body: LinkPatchBody, session: Session = Depends(get_session)
-) -> EntryOut:
-    """Change a link's type (GRAPH_PLAN KG9), its properties (KG3) or its
-    direction (INBOX 693)."""
-    entry = NOTES.writable(session, entry_id)
-    link = relations_repo.get_for_note(session, entry.id, link_id)
-    sent = body.model_fields_set
-    if "link_type" in sent:
-        if body.link_type is not None and not manager.is_link_type(session, body.link_type):
-            raise HTTPException(status_code=422, detail="That isn't a kind of link this notebook knows.")
-        manager.set_link_type(session, link, body.link_type)
-    if "props" in sent:
-        manager.set_link_props(session, link, body.props)
-    if "two_way" in sent:
-        manager.set_link_two_way(session, link, body.two_way)
-    return _to_out(session, entry)
-
-
-@router.put("/{entry_id}/links/{link_id}/reason", response_model=EntryOut)
-def update_link_reason(
-    entry_id: int, link_id: int, body: LinkReasonBody, session: Session = Depends(get_session)
-) -> EntryOut:
-    """Add, edit, or clear a link's reason by hand, whether it started
-    with none, one somebody typed, or one `create_link` deduced on its own.
-    """
-    entry = NOTES.writable(session, entry_id)
-    link = relations_repo.get_for_note(session, entry.id, link_id)
-    try:
-        manager.set_link_reason(session, link, body.reason)
-        return _to_out(session, entry)
-    except Exception:
-        # The exception text can carry paths or content; only the log gets it
-        # (see test_removing_a_model_never_returns_the_filesystem_path).
-        logger.error("Failed to update link reason", exc_info=True)
-        raise HTTPException(status_code=500, detail="Couldn't save that reason.") from None
-
-
-@router.post("/{entry_id}/links/{link_id}/generate-reason")
-def generate_link_reason_endpoint(
-    entry_id: int, link_id: int, session: Session = Depends(get_session)
-) -> dict:
-    """Ask the model to generate a specific reason why these two notes are connected."""
-    entry = NOTES.writable(session, entry_id)
-    link = relations_repo.get_for_note(session, entry.id, link_id)
-
-    source = session.get(Entry, link.source_entry_id)
-    target = session.get(Entry, link.target_entry_id)
-    if not source or not target:
-        raise HTTPException(status_code=404, detail="Those notes could not be found.")
-    # Same boundary generate-title and remove-title enforce: a private note's
-    # decrypted text must never reach the model. Every other AI-facing read
-    # path in this codebase (search, embeddings, janitor, chat linking...)
-    # excludes is_private notes for the same reason.
-    if source.is_private or target.is_private:
-        raise HTTPException(
-            status_code=400, detail="Make both notes readable first: private notes can't be sent to the AI."
-        )
-
-    try:
-        reason = librarian.generate_link_reason(
-            manager.readable_content(source),
-            manager.readable_content(target),
-            deps.get_model_manager(),
-            deps.get_ollama(),
-        )
-        return {"reason": reason}
-    except Exception:
-        logger.error("Failed to generate link reason", exc_info=True)
-        raise HTTPException(status_code=500, detail="Couldn't generate a reason right now.") from None
 
 
 # --- extract notes (BACKLOG.md §62) ------------------------------------------
@@ -4350,7 +2986,7 @@ def extract_commit(body: ExtractCommitBody, session: Session = Depends(get_sessi
             target = by_ref.get(link.target_ref)
             if target is None:
                 continue
-        if manager.create_link(session, source, target, reason=link.reason) is not None:
+        if manager_links.create_link(session, source, target, reason=link.reason) is not None:
             links_created += 1
 
     return {

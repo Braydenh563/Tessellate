@@ -22,7 +22,9 @@ from pathlib import Path
 import pytest
 
 from tessellate.core import filetypes
-from tests._app_js import with_pieces, documents_text
+from tests import _js_scope
+from tests._app_js import documents_text, with_pieces
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -190,14 +192,14 @@ def test_the_code_panel_is_lazy_and_its_ways_in_load_it():
     assert "#tab-documents:not(.doc-is-code) .doc-code-only" in css
     assert ".doc-code-side)" not in css.split("#tab-documents:not(.doc-is-code)")[1].split("{")[0]
     #: On a phone the panel is the recipe's sheet, never a hand-built one.
-    kit = (JS / "documents-codekit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "documents-codekit.js").read_text(encoding="utf-8"))
     assert "openSheet({" in kit and "sidebar-sheet-open" not in kit
 
 
 def test_every_built_in_library_snippet_is_well_formed():
     if not Path(NODE).exists():
         pytest.skip("node is not installed")
-    source = (JS / "documents-codekit.js").read_text(encoding="utf-8")
+    source = _js_scope.unwrapped((JS / "documents-codekit.js").read_text(encoding="utf-8"))
     start = source.index("const DOC_KIT_LIBRARY = {")
     end = source.index("\n};\n", start) + 4
     out = subprocess.run(
@@ -304,7 +306,7 @@ def test_the_asks_that_need_a_model_say_so_and_fix_and_the_tools_do_not():
     #: Every tool the panel offers needle is one the browser can run.
     from tessellate.ai import code_assist
 
-    kit = (JS / "documents-codekit.js").read_text(encoding="utf-8")
+    kit = _js_scope.unwrapped((JS / "documents-codekit.js").read_text(encoding="utf-8"))
     for name in code_assist.TOOL_NAMES:
         assert f"    {name}: () =>" in kit, name
 
@@ -385,7 +387,7 @@ def test_the_answer_names_the_place_as_read():
 
 
 # Row 1056: the Statistics charts' axis, unchecked at a 0 to 1,240 range.
-ASK_CHART = (JS / "ask-chart.js").read_text(encoding="utf-8")
+ASK_CHART = _js_scope.unwrapped((JS / "ask-chart.js").read_text(encoding="utf-8"))
 
 
 def test_chart_ticks_are_round_and_cover_the_top():
@@ -483,7 +485,9 @@ def test_an_overtime_python_line_is_interrupted_not_its_worker_ended():
 
 # Row 1066: the split's second half had no completions, lint or snippets.
 def test_the_split_carries_completions_lint_and_snippets_but_one_run_panel():
-    ide = (JS / "documents-ide.js").read_text(encoding="utf-8")
+#: documents-ide.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    #: documents-word.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    ide = _js_scope.unwrapped((JS / "documents-ide.js").read_text(encoding="utf-8"))
     tools = _fn(ide, "docIdeSplitTools")
     for part in ("CM.lint.linter(docCodeLintSource(CM)", "CM.lint.lintGutter()", "CM.autocomplete.autocompletion(",
                  "docNativeSnippets(CM, type.ext)", "docCodeEditing(CM, type)"):
@@ -495,7 +499,7 @@ def test_the_split_carries_completions_lint_and_snippets_but_one_run_panel():
 
 # Row 1067: Ctrl+K Ctrl+S flashed the palette open before the sheet.
 def test_ctrl_k_waits_for_its_second_chord_before_the_palette():
-    ide = (JS / "documents-ide.js").read_text(encoding="utf-8")
+    ide = _js_scope.unwrapped((JS / "documents-ide.js").read_text(encoding="utf-8"))
     start = ide.index("const DOC_IDE_CHORD_WAIT_MS")
     end = ide.index("}, true);", start) + len("}, true);")
     chord = ide[start:end].replace("window.addEventListener(\"keydown\",", "const onKey =", 1).replace("}, true);", "};", 1)
@@ -698,7 +702,7 @@ def test_a_suggestion_marker_is_a_word_boundary_for_the_spelling_check():
 
 # Row 1097: a fenced block's language was not written to Word.
 def test_a_code_blocks_language_goes_to_word_and_comes_back(tmp_path):
-    word = (JS / "documents-word.js").read_text(encoding="utf-8")
+    word = _js_scope.unwrapped((JS / "documents-word.js").read_text(encoding="utf-8"))
     start = word.index('const DOC_WORD_CODE_STYLE = "Code";')
     tables = word[start : word.index("];", word.index("const DOC_WORD_STYLE_MAP")) + 2]
     vendor = ROOT / "frontend/vendor"
@@ -734,7 +738,7 @@ const D = global.docx;
 
 # Row 1096: Mammoth accepted a .docx's tracked changes on the reader's behalf.
 def test_a_word_file_with_tracked_changes_is_seen_before_mammoth_reads_it(tmp_path):
-    word = (JS / "documents-word.js").read_text(encoding="utf-8")
+    word = _js_scope.unwrapped((JS / "documents-word.js").read_text(encoding="utf-8"))
     vendor = ROOT / "frontend/vendor"
     script = f"""
 const vm = require("vm"), fs = require("fs");
@@ -848,7 +852,7 @@ def test_p5_completions_are_names_the_vendored_p5_has():
 
 # Row 1109: Help puts a group's best match first while searching.
 def test_help_search_orders_each_group_by_its_match():
-    find = (JS / "settings-find.js").read_text(encoding="utf-8")
+    find = unwrapped((JS / "settings-find.js").read_text(encoding="utf-8"))
     body = _fn(find, "helpApplySearch")
     assert "tiers.get(b) - tiers.get(a)" in body and "a._helpAt - b._helpAt" in body
 
@@ -921,3 +925,33 @@ def test_a_documents_slash_templates_are_the_gallerys_writing_and_planning_set()
     assert 'template.group === "code") continue' in rows
     assert "docTemplateFill(template" in rows and 'group: "Templates"' in rows
     assert body.index("...custom") < body.index("for (const template of DOC_TEMPLATES)")
+
+
+def test_the_topic_chip_says_why_and_how_to_change_it():
+    # INBOX 1620 (c): the words that named the topic, the rename path (the graph),
+    # and the only way out of a derived topic (its links).
+    chip = _fn(NOTES_LIST, "noteTopicChip")
+    assert "Named from the words" in chip
+    assert "rename it" in chip and "remove the links" in chip
+
+
+def test_a_template_fills_the_time_and_places_the_cursor():
+    """DOCUMENTS_PLAN gap row 14: `{{time}}` is filled and `{{cursor}}` leaves the text and returns its offset."""
+    if not Path(NODE).exists():
+        pytest.skip("node is not installed")
+    source = documents_text()
+    fill_start = source.index("function docTemplateFill(")
+    fill_end = source.index("\n}\n", fill_start) + 3
+    script = (
+        "const docNextName = () => 'Untitled document 1';\n"
+        + source[fill_start:fill_end]
+        + "const a = docTemplateFill({id:'t', title:'T', content:'# {{title}}\\nAt {{time}}\\n\\n{{cursor}}end'});"
+        + "const b = docTemplateFill({id:'t', title:'T', content:'plain'});"
+        + "console.log(JSON.stringify([a, b]));"
+    )
+    out = subprocess.run([NODE, "-e", script], capture_output=True, text=True, check=True, timeout=30)
+    with_cursor, plain = json.loads(out.stdout)
+    assert "{{" not in with_cursor["content"] and "At " in with_cursor["content"]
+    assert re.search(r"At \d{1,2}:\d{2}", with_cursor["content"])
+    assert with_cursor["content"][with_cursor["cursor"] :].startswith("end")
+    assert plain["cursor"] == -1

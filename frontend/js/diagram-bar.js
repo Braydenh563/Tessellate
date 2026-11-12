@@ -6,9 +6,9 @@
 // `diagramModel.keys` is the one table of shape keys: the Add menu's hints and the pane's key handler both read it.
 (() => {
   const LAST = "diagram.lastShape";
-  //: key -> what it adds. N (a Box) and G (a group) were there before; 1 to 7 are the Add menu's order.
-  const KEYS = { 1: "rect", 2: "round", 3: "stadium", 4: "circle", 5: "diamond", 6: "hexagon", 7: "note", n: "rect", g: "group" };
-  const ORDER = ["rect", "round", "stadium", "circle", "diamond", "hexagon", "note", "group"];
+  //: key -> what it adds. N (a Box) and G (a group) were there before; 1 to 9 are the Add menu's order.
+  const KEYS = { 1: "rect", 2: "round", 3: "stadium", 4: "circle", 5: "diamond", 6: "hexagon", 7: "note", 8: "cylinder", 9: "parallelogram", n: "rect", g: "group" };
+  const ORDER = ["rect", "round", "stadium", "circle", "diamond", "hexagon", "note", "cylinder", "parallelogram", "group"];
   //: A short word for the Direction button; the full names stay on its tooltip and the live line.
   const WORD = { TD: "Down", LR: "Right", BT: "Up", RL: "Left" };
   diagramModel.keys = KEYS;
@@ -22,15 +22,9 @@
   const optionsOf = (shape) => (shape === "group" ? { group: true } : shape === "note" ? { shape: "round", text: "Note" } : { shape });
   const nameOf = (shape, h) => (shape === "group" ? "Group" : shape === "note" ? "Note" : h.label[shape]);
 
-  const OUTLINE = "diagram.outline";
-  function paintOutline(S, button) {
-    const on = prefs.get(OUTLINE) !== "0";
-    S.root.classList.toggle("dgm-no-outline", !on);
-    button.setAttribute("aria-pressed", String(on));
-  }
-
   //: Refreshes what depends on the model: the Direction button's arrow and word.
   function sync(S) {
+    diagramModel.library.hist(S);
     const [dir, arrow, name] = S.bar.dirs.find(([d]) => d === S.m?.dir) || S.bar.dirs[0];
     const icon = document.createElement("i");
     icon.className = `ph ${arrow.replace(":", "-")}`;
@@ -69,12 +63,22 @@
       h.add(S, optionsOf(shape));
     };
     main.addEventListener("click", () => add(last()));
-    const caret = h.smallButton("ph:caret-down", "Choose a shape to add", () => {
+    const caret = h.smallButton("ph:caret-down", "Choose a shape to add (1 to 9, or ? for every key)", () => {
       //: A pointer menu lines its right edge up with the point, so the point is the caret's right edge (it opened at the window's left edge from the split's left).
+      //: A second press closes it (the owner 2026-11-09), as a chip's menu does (chip-menus.js `openChipMenu`): while open the caret says `aria-expanded`, so the outside-press closer leaves it to this click.
+      if (caret.getAttribute("aria-expanded") === "true") {
+        closeActionMenus();
+        return;
+      }
       const r = caret.getBoundingClientRect();
       const rows = ORDER.map((shape) => ({ label: nameOf(shape, h), keys: hintOf(shape), title: hints.get(nameOf(shape, h)) || "", run: () => add(shape) }));
-      openMenuAtPoint(rows, "Add to the diagram", r.right, r.bottom, caret);
+      const menu = openMenuAtPoint(rows, "Add to the diagram", r.right, r.bottom, caret);
+      if (menu) {
+        menu._escapedOpener = caret;
+        caret.setAttribute("aria-expanded", "true");
+      }
     });
+    caret.setAttribute("aria-expanded", "false");
     caret.classList.add("dgm-addcaret");
     caret.setAttribute("aria-haspopup", "menu");
     paint();
@@ -105,35 +109,27 @@
       b.classList.add("dgm-hist");
       return b;
     });
-    //: The outline (the blocks list) can be hidden, leaving the picture and the toolbar; the choice is kept.
-    const outline = h.smallButton("ph:sidebar-simple", "Show or hide the list of blocks", () => {
-      prefs.set(OUTLINE, prefs.get(OUTLINE) === "0" ? "1" : "0");
-      paintOutline(S, outline);
-    });
-    outline.setAttribute("aria-label", "Blocks list");
-    outline.classList.add("dgm-outline-toggle");
-    paintOutline(S, outline);
     const actions = el("div", "dock-actions");
-    actions.append(suggest, ...hist, outline, h.more(S));
+    actions.append(suggest, ...hist, ...[diagramModel.kindbar?.expand(S)].filter(Boolean), h.more(S));
     bar.append(split, S.dirs, actions);
-    diagramModel.kindbar?.mount(S, h);
+    diagramModel.kindbar?.mount(S, h, bar);
     sync(S);
     //: One Tab stop for the whole toolbar, Left and Right between its buttons (documents.js; 17 stops to the first block before).
     wireToolbarRoving(bar);
     return bar;
   }
 
-  //: The keys that add a shape (1 to 7) and Shift+N (the last one used). Returns true when it took the key.
+  //: The keys that add a shape (1 to 9) and Shift+N (the last one used). Returns true when it took the key.
   function key(event) {
     if (event.altKey || event.ctrlKey || event.metaKey) return null;
-    const shape = event.shiftKey ? (event.key === "N" ? last() : null) : /^[1-7]$/.test(event.key) ? KEYS[event.key] : null;
+    const shape = event.shiftKey ? (event.key === "N" ? last() : null) : /^[1-9]$/.test(event.key) ? KEYS[event.key] : null;
     if (!shape) return null;
     prefs.set(LAST, shape);
     return optionsOf(shape);
   }
 
   //: The same keys from the picture, the toolbar or the outline's edge (the block handler only hears a focused block):
-  //: 1 to 7, N, Shift+N, G add after the selected block, K colours, ? opens the sheet. Typing in a field is left alone.
+  //: 1 to 9, N, Shift+N, G add after the selected block, K colours, ? opens the sheet. Typing in a field is left alone.
   function rootKey(S, event, h) {
     const t = event.target;
     if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || t.isContentEditable || t.closest?.(".dgm-tree, .menu-wrap, input, textarea, select")) return;
@@ -145,5 +141,34 @@
     run();
   }
 
-  diagramModel.bar = { build, sync, key, last, rootKey };
+  //: **Tab chains** (DD-3, 1107; Whimsical's way), and only where they cannot trap: Tab on the LAST box adds a box joined to it and
+  //: opens its name; Shift+Tab on a box with a parent selects the parent. Any other Tab (and Shift+Tab on a root) is left to the
+  //: browser, so the blocks can be walked out of (review 1107: Tab on every box added boxes without end). Returns true when it
+  //: took the key.
+  function chain(event, S, key, block, add) {
+    if (event.altKey) return false;
+    //: F6 leaves the blocks for the picture (Shift+F6 for the toolbar).
+    if (event.key === "F6") {
+      event.preventDefault();
+      (event.shiftKey ? S.root.querySelector(".dgm-dock button") : S.fig)?.focus();
+      return true;
+    }
+    if (event.key !== "Tab" || key[0] !== "n") return false;
+    const ops = diagramModel.ops;
+    const id = ops.split(key)[1];
+    if (event.shiftKey) {
+      const from = S.m.edges.find((e) => e.to === id)?.from;
+      const up = (from && S.tree.querySelector(`.dgm-block[data-key="${ops.key("n", from)}"]`)) || block.parentElement.closest(".dgm-block");
+      if (!up) return false;
+      event.preventDefault();
+      diagramModel.builder.select(S, up.dataset.key, true);
+      return true;
+    }
+    if (block !== [...S.tree.querySelectorAll(".dgm-block")].at(-1)) return false;
+    event.preventDefault();
+    add(S, { after: key, from: id });
+    return true;
+  }
+
+  diagramModel.bar = { build, sync, key, last, rootKey, chain };
 })();

@@ -283,38 +283,16 @@ const expandedNotes = new Set();
 //: that is (shown, scrolled into a `content-visibility` window, a chunk
 //: landing) and again when the width changes, and a removed card leaves it.
 const noteClampFit = new ResizeObserver((seen) => {
+  //: Every read first, then the writes: an unclip between two cards' reads made each next read a forced layout.
+  const fits = [];
   for (const { target } of seen) {
     if (!target.isConnected) noteClampFit.unobserve(target);
-    else if (target.clientHeight && target.classList.contains("entry-clamped") && target.scrollHeight <= target.clientHeight + 2) target.unclip();
+    else if (target.clientHeight && target.classList.contains("entry-clamped") && target.scrollHeight <= target.clientHeight + 2) fits.push(target);
   }
+  for (const target of fits) target.unclip();
 });
 
 
-//: **The facts about a file, as facts.** Asked for directly with the Files
-//: sub-tab redesign: "the card format is difficult with files as they can be
-//: quite long and large, a single image or ocr caption doesnt fit them. there
-//: should be details on the name, a generated description that cna happen,
-//: file details such as the type, size, topic/category, linked notes and
-//: other features."
-//:
-//: A tile could show a thumbnail, a name and a caption; everything else a
-//: person actually brings to a file list, how big is it, how many pages,
-//: when did it arrive, has it been read, was either absent or buried. These
-//: are the ones the row can state in one line.
-function formatFileSize(bytes) {
-  const size = Number(bytes) || 0;
-  if (size <= 0) return ""; // unknown, or the file is gone, say nothing
-  if (size < 1024) return `${size} B`;
-  const units = ["KB", "MB", "GB"];
-  let value = size / 1024;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  // One decimal below 10 (2.4 MB reads better than 2 MB), none above it.
-  return `${value < 10 ? value.toFixed(1) : Math.round(value)} ${units[unit]}`;
-}
 
 
 //: The page size each of those lists is asked for, matching the server's own
@@ -347,37 +325,6 @@ function noteIsMeeting(entry) {
   return entry.tags.includes("meeting") || /^meeting$/i.test(entry.properties?.type?.[0] || "");
 }
 
-function favouriteButton(entry) {
-  //: `.favourite-btn` names the control for the phone's swipe (`initRowSwipe`),
-  //: which presses it rather than carrying a second copy of the toggle.
-  const button = smallButton(
-    "ph:star",
-    entry.pinned ? "Remove from Favourites" : "Add to Favourites (also floats it to the top)",
-    async () => {
-      const was = Boolean(entry.pinned);
-      await api(`/entries/${entry.id}`, {
-        method: "PUT",
-        body: JSON.stringify({ pinned: !was }),
-      });
-      //: On the global stack, because a mis-click here is silent: the star
-      //: changes shape and the note moves to the top of the list, and there
-      //: was nothing that put it back. Reported as the undo stack being
-      //: "significantly outdated and dont register a lot of actions".
-      pushEntryPutUndo(
-        entry.id,
-        was ? "Removed a favourite" : "Added a favourite",
-        { pinned: was },
-        { pinned: !was }
-      );
-      await loadEntries();
-    }
-  );
-  button.classList.add("favourite-btn");
-  button.classList.toggle("is-favourite", Boolean(entry.pinned));
-  button.setAttribute("aria-pressed", Boolean(entry.pinned));
-  return button;
-}
-
 // One entry card, shared by the browse list, chat results, and the bin.
 // "2 hours ago" style, with the exact date kept for the hover tooltip
 // (Wave J). Anything older than a week just shows the date.
@@ -387,9 +334,19 @@ function favouriteButton(entry) {
 // carry a second copy of it. Instant + one-click Undo, soft delete
 // underneath (Wave J). Also on the global undo stack (status bar / Ctrl+Z),
 // so it survives past the toast's own timeout.
+//: Move to bin keeps keyboard focus (W8): the neighbour is taken before the delete and focused only if focus was lost.
 async function binNoteWithUndo(entry) {
+  const list = document.getElementById("entry-list");
+  const rows = list ? entryListItems(list) : [];
+  const at = rows.findIndex((row) => row.dataset.id === String(entry.id));
+  const heirId = (rows[at + 1] || rows[at - 1])?.dataset.id;
   await api(`/entries/${entry.id}`, { method: "DELETE" });
   await refreshEntries([entry.id]);
+  const held = document.activeElement;
+  if (at >= 0 && (!held || held === document.body || !held.isConnected)) {
+    const heir = heirId && list.querySelector(`:scope > li[data-id="${heirId}"]`);
+    (heir || document.getElementById("capture-bar-input"))?.focus();
+  }
   const restoreIt = async () => {
     await api(`/entries/${entry.id}/restore`, { method: "POST" });
     await refreshEntries([entry.id]);
@@ -408,43 +365,6 @@ async function binNoteWithUndo(entry) {
 }
 
 let notesSpanMemo = { list: null, many: false };
-
-function notesSpanSpaces() {
-  if (notesSpanMemo.list !== allEntries) {
-    const first = allEntries[0]?.workspace_id;
-    notesSpanMemo = { list: allEntries, many: allEntries.some((e) => e.workspace_id && e.workspace_id !== first) };
-  }
-  return notesSpanMemo.many;
-}
-
-//: A note's own attached files (the `Attachment` table, `/files/{id}`), one
-//: card each, in a wrapping grid. Pictures page through the lightbox
-//: together; the bytes need the auth header, so a picture's src is a blob url
-//: (`attachmentObjectUrl`). `editable` is the note list's own actions flag:
-//: a card on a read-only surface offers no Rename or Remove.
-function renderAttachmentCards(entry, editable) {
-  const row = document.createElement("div");
-  row.className = "att-cards";
-  const images = entry.attachments.filter((a) => a.is_image);
-  for (const attachment of entry.attachments) {
-    row.append(attachmentCard({
-      name: attachment.filename,
-      url: `/files/${attachment.id}`,
-      size: attachment.size,
-      added: attachment.created_at,
-      attachment,
-      onChange: editable ? () => loadEntries() : null,
-      thumb: attachment.is_image ? () => attachmentObjectUrl(attachment) : null,
-      gallery: attachment.is_image
-        ? () => ({
-          items: images.map((a) => ({ filename: a.filename, getUrl: () => attachmentObjectUrl(a) })),
-          index: images.indexOf(attachment),
-        })
-        : null,
-    }));
-  }
-  return row;
-}
 
 //: **A note's details line is one line** (INBOX 455 (1), the owner: "note
 //: metadata wraps now and needs a better redesign"). Measured at 1100 before:
@@ -535,78 +455,6 @@ function fitNoteMetas(metas) {
     more.title = fold.map((el) => `#${el.dataset.tag}`).reverse().join(" ");
     meta.classList.remove("is-measuring");
   }
-}
-
-async function publishDraft(entry) {
-  try {
-    await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ is_draft: false }) });
-    entry.is_draft = false;
-    pushEntryPutUndo(entry.id, "Published a draft", { is_draft: true }, { is_draft: false });
-    await refreshEntries([entry.id]);
-    toast("Published.");
-  } catch (error) {
-    toast(error.message || "Couldn't publish that draft.", true);
-  }
-}
-
-//: The "+N" itself: a press lists what folded, each row doing what its chip
-//: does (a tag shows its notes, a suggestion is taken).
-function noteMetaMore(entry) {
-  const more = chip("+0", "note-meta-more", (event) => {
-    event.stopPropagation();
-    const at = more.getBoundingClientRect();
-    const items = [...more.parentElement.querySelectorAll(":scope > [data-tag][hidden]")].map((el) => {
-      const tag = el.dataset.tag;
-      return el.classList.contains("suggested-tag")
-        ? { label: `ph:plus ${tag}`, title: `Suggested: add #${tag}`, group: "Suggested", run: () => answerTags(entry, { take: [tag] }) }
-        : { label: `ph:hash ${tag}`, title: `Show every note tagged #${tag}`, group: "Tags", run: () => filterNotesByTag(tag) };
-    });
-    openMenuAtPoint(items, "More tags", at.left, at.bottom);
-  });
-  more.setAttribute("aria-haspopup", "menu");
-  more.hidden = true;
-  return more;
-}
-
-//: Take a note to the graph and put it in the middle, lit. The graph is its
-//: own lazy bundle and lays itself out after the tab opens, so this waits for
-//: the node to exist and to have a position rather than guessing a delay.
-//: Accept keeps the janitor's category and makes it the person's (the note
-//: leaves the queue, with Undo); Refile is the Move to category sheet, and a
-//: move is a decision already; Split is Extract notes over the whole note,
-//: which needs the model, so it is disabled with the reason when it is off.
-function noteReviewActions(entry) {
-  const row = document.createElement("div");
-  //: `.night-questions-row` is the wrapping line of small buttons this is.
-  row.className = "row night-questions-row entry-review";
-  const set = async (accepted) => {
-    await apiJson(`/entries/${entry.id}/filing`, { method: "POST", body: JSON.stringify({ accepted }) });
-    for (const e of allEntries) if (e.id === entry.id) e.user_filed = accepted;
-    renderEntries();
-  };
-  const where = entry.category || "Uncategorised";
-  const accept = smallButton("ph:check Accept", `Keep it in ${where}`, async () => {
-    try {
-      await set(true);
-    } catch (error) {
-      toast(error.message, true);
-      return;
-    }
-    const message = `Kept in ${where}.`;
-    const action = pushUndo(message, () => set(false), () => set(true));
-    toastAction(message, "Undo", async () => {
-      settleUndoFromToast(action);
-      await set(false).catch((error) => toast(error.message, true));
-    });
-  });
-  const refile = smallButton("ph:folder-open Refile…", `Now in ${where}; choose another`, () => chooseNoteCategory([entry.id], entry.category));
-  const split = smallButton(
-    "ph:scissors Split…",
-    "Split it into linked notes, with a preview first",
-    () => fullEntry(entry.id).then((whole) => openExtractPreview(whole.content || "", { sourceEntryIds: [entry.id] }), (error) => toast(error.message, true))
-  );
-  row.append(accept, refile, split);
-  return row;
 }
 
 //: A document is a node of its own (`document:<id>`, routes_graph.py) that the

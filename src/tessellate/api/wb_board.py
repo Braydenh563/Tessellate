@@ -128,8 +128,12 @@ def get_whiteboard_state(
     if dropped:
         db.commit()
         sketches = [row for row in sketches if row.id not in dropped]
+    #: A card whose note is in the bin is not drawn (it opened a note nobody could see); Restore
+    #: brings it back, so the row and its links stay (the orphan pass above sees every card) and
+    #: only the read leaves it out (INBOX 1747, row 10).
+    binned = set(db.scalars(select(Entry.id).where(Entry.id.in_([n.entry_id for n in nodes]), Entry.is_deleted.is_(True))))
     return WhiteboardStateOut(
-        nodes=list(nodes),
+        nodes=[n for n in nodes if n.entry_id not in binned],
         sketches=list(sketches),
         objects=[_object_to_out(o) for o in objects],
         background=_board_background(db.get(Entry, board_id)) if board_id else {},
@@ -527,6 +531,47 @@ def _on_current_layer(db: Session, board_id: int | None, data: dict) -> dict:
     return {**data, "layer": layer} if layer else data
 
 
+DEFAULT_GROUPS = ("shape", "link", "text", "pen", "highlighter")
+_DEFAULT_KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,31}$")
+
+
+def _default_value(value, *, nested: bool = True):
+    """A style value: a short string, a number, a bool, or (once) a small dict of those (a gradient)."""
+    if isinstance(value, bool) or (isinstance(value, (int, float)) and not isinstance(value, bool)):
+        return value
+    if isinstance(value, str) and len(value) <= 64:
+        return value
+    if nested and isinstance(value, dict) and len(value) <= 6:
+        out = {k: _default_value(v, nested=False) for k, v in value.items() if _DEFAULT_KEY_RE.match(str(k))}
+        if len(out) == len(value):
+            return out
+    raise ValueError("A default style value is a short word, a number, a switch or a small group of those")
+
+
+def _clean_defaults(value, *, strict: bool = False) -> dict:
+    """`{shape, link, text, pen, highlighter}` of style dicts; an unknown group is dropped, an empty one stores nothing,
+    and anything that is not style raises when `strict` (the route) and is skipped when not (a read)."""
+    if not isinstance(value, dict):
+        if strict:
+            raise ValueError("Default styles are a group per kind of item")
+        return {}
+    out: dict = {}
+    for group in DEFAULT_GROUPS:
+        style = value.get(group)
+        if style in (None, {}):
+            continue
+        try:
+            if not isinstance(style, dict) or len(style) > 40:
+                raise ValueError("A default style is a small set of values")
+            if not all(_DEFAULT_KEY_RE.match(str(k)) for k in style):
+                raise ValueError("A default style names its values with plain words")
+            out[group] = {k: _default_value(v) for k, v in style.items()}
+        except ValueError:
+            if strict:
+                raise
+    return out
+
+
 class BoardBackground(BaseModel):
     """A board's look (WHITEBOARD_PLAN decision 24, FEAT-06): a colour, an
     image from this notebook's uploads, or both. A patch: a field sent as
@@ -542,6 +587,15 @@ class BoardBackground(BaseModel):
     #: line drawn with rough strokes. Plain is the default, so only `true` is
     #: stored; an item's own `rough` in its data overrides it.
     rough: bool | None = None
+    #: **Set as default style** (draw.io's Ctrl+Shift+D): `{shape, link, text}`, each a small dict
+    #: of the style values a new item of that kind starts with. A patch like the rest: `null` takes
+    #: them all off. Kept opaque beyond its shape (see `_clean_defaults`), as a sketch's data is.
+    defaults: dict | None = None
+
+    @field_validator("defaults")
+    @classmethod
+    def _style_defaults(cls, value: dict | None) -> dict | None:
+        return None if value is None else _clean_defaults(value, strict=True)
 
     @field_validator("color")
     @classmethod
@@ -586,6 +640,8 @@ def _board_background(entry: Entry | None) -> dict:
         out["sticky_fold"] = False
     if stored.get("rough") is True:
         out["rough"] = True
+    if defaults := _clean_defaults(stored.get("defaults")):
+        out["defaults"] = defaults
     return out
 
 
@@ -595,7 +651,7 @@ def _store_board_background(entry: Entry, patch: BoardBackground) -> dict:
     merged = _board_background(entry)
     for field in patch.model_fields_set:
         value = getattr(patch, field)
-        if value is None or (field == "sticky_fold" and value is True) or (field == "rough" and value is False):
+        if value is None or value == {} or (field == "sticky_fold" and value is True) or (field == "rough" and value is False):
             merged.pop(field, None)
         else:
             merged[field] = value

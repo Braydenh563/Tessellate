@@ -104,7 +104,7 @@ function citeKey(kind, id) {
 
 function citationNumbers(sentences, orderedSources = null) {
   const numberFor = new Map();
-  if (orderedSources && orderedSources.length) {
+  if (orderedSources?.length) {
     orderedSources.forEach((source, index) => {
       if (source && (source.kind === "note" || source.kind === "document")) numberFor.set(citeKey(source.kind, source.id), index + 1);
     });
@@ -181,7 +181,7 @@ function citationInsertionPoint(node, offset, targets) {
     anchor = anchor.parentElement;
   }
   const next = anchor.nextSibling;
-  if (next && next.nodeType === Node.TEXT_NODE) {
+  if (next?.nodeType === Node.TEXT_NODE) {
     let run = 0;
     while (run < next.data.length && CITATION_CLOSING.test(next.data[run])) run += 1;
     if (run) {
@@ -241,14 +241,11 @@ function addInlineCitations(answerEl, sentences, rawResults, orderedSources = nu
     for (const g of rows) parent.insertBefore(citationMarker(g, byId, numberFor), before);
   }
   collapseCitationRuns(targets);
-  //: A composed answer's "[**Dentist**]" opens its note (ask-compose.js,
-  //: lazy: the boot scripts are at their gzip cap).
-  //: …and its quoted sentences take the quote style (`markSaidSentences`).
-  if (sentences.some((g) => g.title || g.said)) {
-    ensureModule("askCompose").then(() => {
-      linkCitedTitles(targets, sentences, byId, numberFor);
-      markSaidSentences(targets, sentences);
-    });
+  //: A composed answer's quoted sentences take the quote style (`markSaidSentences`,
+  //: ask-compose.js, lazy: the boot scripts are at their gzip cap). Citations are
+  //: numbered marks only (Q1, D25): the bracketed title link is gone.
+  if (sentences.some((g) => g.said)) {
+    ensureModule("askCompose").then(() => markSaidSentences(targets, sentences));
   }
 }
 
@@ -329,6 +326,10 @@ function citationMarker(g, byId, numberFor) {
   });
   link.addEventListener("click", (event) => {
     event.stopPropagation();
+    //: The press is what opens the sources (hover only previews).
+    for (const card of document.querySelectorAll(`.chat-source-card[data-note-id="${g.note_id}"]`)) {
+      card.closest("details")?.setAttribute("open", "");
+    }
     openCitationPeek(link, describe(), { pinned: true });
     //: **From the keyboard, the peek is where the keyboard goes next.** The
     //: peek is lifted to `<body>`, so Tab from a mark reaches the next mark
@@ -402,11 +403,11 @@ function showCitedPassage(noteId, passage) {
     ...document.querySelectorAll(`#raw-results li[data-id="${noteId}"]`),
   ];
   for (const card of cards) {
-    //: A closed disclosure cannot show anything, and the mark is the reader
-    //: asking to see this source: opened, and left open, because closing it
-    //: again the moment the pointer moves would be the panel flickering at
-    //: every mark passed over on the way down an answer.
-    card.closest("details")?.setAttribute("open", "");
+    //: A closed disclosure stays closed on hover (the owner, 2026-10-10:
+    //: "Hovering over an intext reference opens up the sources dropdown");
+    //: the peek already shows the passage, and a press opens the sources.
+    const fold = card.closest("details");
+    if (fold && !fold.open) continue;
     card.classList.add("is-cited");
     const box = document.createElement("p");
     box.className = "chat-source-passage";
@@ -1099,6 +1100,7 @@ async function streamChatEvents({
   onGroundingLive,
   onAnswerFinal,
   onRelated,
+  onFrame,
   onUnsupported,
   onWebSources,
   onWhy,
@@ -1141,22 +1143,22 @@ async function streamChatEvents({
   // answering a pending `ask` event, so it says so rather than making the
   // classifier guess from three letters.
   if (answeringAgent) body.answering_agent = true;
-  if (noteIds && noteIds.length) body.note_ids = noteIds;
+  if (noteIds?.length) body.note_ids = noteIds;
   // Vision-capable models (ROADMAP.md's largest open item): ids from
   // /media/upload, the same endpoint the note/document editors already use
   // for drag-and-drop images: see `_resolve_chat_images` (routes_chat.py)
   // for how an id becomes a data URI the provider actually sends.
-  if (imageMediaIds && imageMediaIds.length) body.image_media_ids = imageMediaIds;
+  if (imageMediaIds?.length) body.image_media_ids = imageMediaIds;
   //: Documents and files must be sent here too: `/chat/stream` is the path the Chat tab uses, and a chip that never reached the model was a shipped bug.
-  if (documentIds && documentIds.length) body.document_ids = documentIds;
-  if (fileIds && fileIds.length) body.file_ids = fileIds;
-  if (mediaFileIds && mediaFileIds.length) body.media_file_ids = mediaFileIds;
+  if (documentIds?.length) body.document_ids = documentIds;
+  if (fileIds?.length) body.file_ids = fileIds;
+  if (mediaFileIds?.length) body.media_file_ids = mediaFileIds;
   //: A mind map attached by hand (MINDMAP_PLAN.md §5 item 11). Its own
   //: field, not folded into `note_ids`, because a board's `content` is the
   //: single line `# My map`, sent as a note the model would get a heading
   //: and be told it was a map. `_attached_boards` (routes_chat.py) turns the
   //: id into the outline instead.
-  if (boardIds && boardIds.length) body.board_ids = boardIds;
+  if (boardIds?.length) body.board_ids = boardIds;
   // Running a skill sends its name, not its prompt: the server owns what a
   // skill is, the steps, the values, the tools it may use, so the two
   // definitions can't drift apart.
@@ -1268,7 +1270,7 @@ async function streamChatEvents({
       //: An act with no model (CHAT_PLAN decision 38) is drawn by the same
       //: confirm hook (`renderToolConfirm` hands it to `renderActCard`).
       else if ((event.type === "confirm" || event.type === "act") && onConfirm) onConfirm(event);
-      else if (event.type === "navigate") actNavigate(event.surface);
+      else if (event.type === "navigate") actNavigate(event.surface, event);
       else if (event.type === "web_sources" && onWebSources) onWebSources(event);
       //: How the answer was made, as a job's lines (B30), just before `done`.
       else if (event.type === "why" && onWhy) onWhy(event);
@@ -1303,11 +1305,15 @@ async function streamChatEvents({
       // more than its notes, so the answer names what else mentions it
       // (routes_chat.py's `_related_elsewhere`).
       else if (event.type === "related" && onRelated) onRelated(event);
+      //: What a composed answer showed, sent back with the next turn (fable-composer-1110 F1).
+      else if (event.type === "frame" && onFrame) onFrame(event.frame);
       // INBOX 272 part 1: Agent mode was asked for and the model couldn't
       // call tools, so it answered as a plain question instead. Silently
       // dropped before this (routes_chat.py used to `pass` on it); now it
       // carries the remedy in `message` and the caller shows it.
       else if (event.type === "unsupported" && onUnsupported) onUnsupported(event);
+      //: A server Stop reads as the browser Stop (W1).
+      else if (event.stopped) throw Object.assign(Error(), { name: "AbortError" });
       else if (event.type === "error") {
         // The server caught something mid-stream and said so. Surfacing it
         // beats the silent truncation this used to be.
@@ -1328,6 +1334,9 @@ async function streamChatEvents({
   }
 }
 
+//: The id of the note offer the last composed answer ended with, while its button is unpressed.
+chatHistoryToSend.heldOffer = ""; // a property, not a global: one name fewer in the shared scope (ratchet)
+
 // What the model is given as history: the summary in place of the turns it
 // covers, then everything since, capped as before.
 //
@@ -1337,7 +1346,18 @@ async function streamChatEvents({
 // characters carrying the gist of ten turns is strictly better than the whole
 // of one.
 function chatHistoryToSend() {
-  const turns = chatConv.turns;
+  //: The last turn carries the label and id of the card the turn before left waiting for
+  //: Confirm (`renderActCard` marks it), so a typed yes or no reaches it (`ai/consent.py`).
+  //: Only that card counts: every send marks all cards not pending, so a card ignored
+  //: turns ago is never run by a later "ok". The server runs what it parked under the
+  //: id, never steps the page sends.
+  const waiting = [...$("chat-messages").querySelectorAll(".tool-confirm[data-pending-act]")];
+  const open = waiting.at(-1);
+  for (const card of waiting) delete card.dataset.pendingAct;
+  let turns = open && chatConv.turns.length ? [...chatConv.turns.slice(0, -1), { ...chatConv.turns.at(-1), pending_act: open.dataset.askedAct, ...(open.consentId ? { pending_id: open.consentId } : {}) }] : chatConv.turns;
+  //: The answer's note offer (Gather them, Track your lifts) is held by the server under an id; the last turn
+  //: carries it until the button is pressed, so a typed yes makes that note (`composer_talk.held_offer`).
+  if (chatHistoryToSend.heldOffer && turns.length) turns = [...turns.slice(0, -1), { ...turns.at(-1), offer_id: chatHistoryToSend.heldOffer }];
   if (!chatSummary || chatSummary.covered <= 0) {
     return turns.slice(-MAX_CLIENT_HISTORY);
   }
@@ -1351,10 +1371,20 @@ function chatHistoryToSend() {
   ];
 }
 
+chatHistoryToSend.settle = (card, event, outcome, extra = {}) => {
+  const msg = card.closest(".msg.assistant");
+  const send = () => {
+    const index = msg.turnIndex ?? [...$("chat-messages").querySelectorAll(".msg.assistant")].indexOf(msg);
+    if (chatConv.id === null || index < 0 || !Number.isInteger(event.act_slot)) return;
+    return apiJson(`/conversations/${chatConv.id}/turns/${index}/acts/${event.act_slot}`, { method: "PUT", silent: true, body: JSON.stringify({ outcome, consent_id: event.consent_id || event.offer_id || "", label: event.label, ...extra }) }).catch((e) => toast(e.message));
+  };
+  return msg.saving ? void msg.saving.push(send) : send();
+};
+
 // The persona name to label assistant bubbles with (falls back to "Assistant").
 function assistantLabel() {
   const select = $("persona-select");
-  return (select && select.value) || "Assistant";
+  return select?.value || "Assistant";
 }
 
 function chatMessageActions(actions) {
@@ -1379,20 +1409,27 @@ function chatMessageActions(actions) {
   //: Ten buttons over a two-line answer is not a control row, it is a toolbar
   //: that happens to be under a message, so the rest go behind the same ⋯ the
   //: app uses everywhere else for "more actions on this object".
-  for (const action of actions.slice(0, MSG_ACTIONS_VISIBLE)) row.appendChild(make(action));
-  const overflow = actions.slice(MSG_ACTIONS_VISIBLE);
+  //: An action with `items` is a submenu ("Regenerate as…", E60): it has no button of its own, so it always sits in the ⋯.
+  const flat = actions.filter((action) => !action.items);
+  const shown = flat.slice(0, MSG_ACTIONS_VISIBLE);
+  for (const action of shown) row.appendChild(make(action));
+  const overflow = actions.filter((action) => !shown.includes(action));
   if (overflow.length) {
     const more = kebabMenu(
-      overflow.map((action) => ({
-        label: `${action.label} ${action.title}`,
-        title: action.title,
-        danger: action.danger,
-        run: () => action.onClick({ currentTarget: null }),
-      })),
+      overflow.map((action) =>
+        action.items
+          ? { label: `${action.label} ${action.title}`, title: action.title, items: action.items }
+          : {
+              label: `${action.label} ${action.title}`,
+              title: action.title,
+              danger: action.danger,
+              run: () => action.onClick({ currentTarget: null }),
+            }
+      ),
       "More actions for this message"
     );
     const spoken = overflow.findIndex((action) => action.speak);
-    if (spoken >= 0) more.querySelectorAll(".action-menu .menu-item")[spoken].dataset.speak = "1";
+    if (spoken >= 0) more.querySelectorAll(":scope > .action-menu > .menu-item, :scope > .action-menu > .menu-group > .menu-item")[spoken].dataset.speak = "1";
     row.appendChild(more);
   }
   return row;
@@ -1440,9 +1477,11 @@ function metaItem(text, { title = "", kind = "", icon = "" } = {}) {
 //
 // Nothing was removed: every field is still here, and the ones that moved into
 // tooltips moved because they answer a question nobody asks mid-conversation.
-function messageMetaLine({ model, elapsedMs, stats, toolCount = 0, rounds = 0, usedTools = null }) {
+function messageMetaLine({ model, elapsedMs, stats, toolCount = 0, rounds = 0, usedTools = null, stopped }) {
   const row = document.createElement("div");
   row.className = "msg-meta muted";
+  //: 0. Stopped, first (W1).
+  if (stopped) row.appendChild(metaItem("Stopped"));
 
   // 1. What it cost. First, because it is the only field anyone looks for
   //    while actually using the app.
@@ -1568,14 +1607,14 @@ function messageMetaLine({ model, elapsedMs, stats, toolCount = 0, rounds = 0, u
   //    three lines of digits on a narrow window.
   const detail = [];
   if (inTok != null || outTok != null) {
-    const approx = stats && stats.usage_source === "estimated" ? "~" : "";
+    const approx = stats?.usage_source === "estimated" ? "~" : "";
     detail.push(`${approx}${inTok ?? "?"} tokens in → ${outTok ?? "?"} out`);
   }
   if (outTok && stats && stats.eval_ms) {
     detail.push(`${(outTok / (stats.eval_ms / 1000)).toFixed(1)} tokens/second`);
   }
   if (rounds > 1) detail.push(`${rounds} rounds`);
-  if (stats && stats.usage_source === "estimated") {
+  if (stats?.usage_source === "estimated") {
     detail.push("~ means the server didn't report counts, so these are estimated");
   }
   if (detail.length) row.title = detail.join("\n");
@@ -1888,13 +1927,18 @@ function planProposalCard(holder, event, run) {
   const row = document.createElement("div");
   row.className = "row";
   row.append(
-    smallButton("Run the plan", "Run every step; each one's writes are listed above and can be undone", () => {
-      card.replaceWith(toolChip(`ph:play Running ${nounCount(event.steps.length, "step")}`));
+    smallButton(event.runLabel || "Run the plan", "Run every step; each one's writes are listed above and can be undone", () => {
+      card.replaceWith(toolChip(`ph:play ${event.running || `Running ${nounCount(event.steps.length, "step")}`}`));
       run();
     }, false),
     smallButton("Not now", "Run nothing", () => card.replaceWith(toolChip("ph:x Not run: nothing was changed.")))
   );
   card.append(head, list, row);
+  //: Open until a press settles it; the page tells the server so a typed yes or no reaches it (`chatHistoryToSend`, `ai/consent.py`).
+  if (event.consent_id) {
+    card.dataset.pendingAct = card.dataset.askedAct = event.ask_label || "";
+    card.consentId = event.consent_id;
+  }
   holder.appendChild(card);
   return card;
 }
@@ -2071,6 +2115,34 @@ function toolChip(label, ok = true, event = null) {
     ensureModule("webClip").then(() => searxngDownRow()).then((row) => wrap.append(row));
     return markToolStep(wrap, chip.toolStep);
   }
+  //: A failed web step that is not SearXNG being down gets its own Try again:
+  //: a search runs again in the web panel (the panel's own retry), a page is
+  //: fetched again and kept (`/websearch/stored/refetch`).
+  const webTool = event?.tool === "web_search" ? "query" : event?.tool === "read_url" ? "url" : "";
+  if (!ok && webTool && event.reason !== "searxng_down" && !event.retryDrawn && event.arguments?.[webTool]) {
+    const chip = toolChip(label, ok, { ...event, retryDrawn: true });
+    const wrap = document.createElement("div");
+    wrap.className = "tool-chip-wrap";
+    const again = smallButton("ph:arrow-clockwise Try again", "Try this web step again", async () => {
+      const value = String(event.arguments[webTool]);
+      if (webTool === "query") {
+        await ensureModule("webClip");
+        $("web-query").value = value;
+        toggleWebPanel(true);
+        return runWebSearch();
+      }
+      again.disabled = true;
+      try {
+        await apiJson("/websearch/stored/refetch", { method: "POST", body: JSON.stringify({ url: value }) });
+        again.replaceWith(Object.assign(document.createElement("span"), { className: "muted", textContent: "Fetched again." }));
+      } catch (error) {
+        again.disabled = false;
+        toast(error.message || "Couldn't fetch that page.", "info");
+      }
+    });
+    wrap.append(chip, again);
+    return markToolStep(wrap, chip.toolStep);
+  }
   const step = {
     kind: "tool",
     label,
@@ -2137,19 +2209,28 @@ function toolChip(label, ok = true, event = null) {
   return markToolStep(item, step);
 }
 
+//: A reopened turn's saved cards; an offer is drawn from the answer's support.
+renderToolConfirm.saved = (handles, { acts }) => {
+  for (const act of acts || []) if (act.type !== "offer") renderToolConfirm(act.type === "act" ? handles.timeline.holder : handles.recordsHolder, act);
+};
+
 // A destructive tool call parked for approval (Wave G). Nothing has
 // happened yet: Confirm actually runs it via /chat/tools/execute.
 function renderToolConfirm(holder, event) {
   //: An act's card lives with the composer's page code (ask-compose.js).
   if (event.type === "act") return ensureModule("askCompose").then(() => renderActCard(holder, event));
+  if (event.state === "cancelled" || event.state === "done") return void holder.appendChild(toolChip(event.state === "done" ? `ph:check-circle ${event.summary || event.label || event.name}` : "ph:x Cancelled: nothing was changed."));
   const card = document.createElement("div");
   card.className = "tool-confirm";
+  //: Open until Confirm or Cancel settles it; a typed yes or no reaches it through the next turn (`chatHistoryToSend`).
+  card.dataset.pendingAct = card.dataset.askedAct = event.label || event.name;
+  card.consentId = event.consent_id || "";
   const text = document.createElement("p");
   setLabel(text, `ph:warning Atlas wants to: ${event.label || event.name}`);
   
   const contentArea = document.createElement("div");
   
-  if (event.name === "edit_note" && event.arguments.content) {
+  if (event.name === "edit_note" && event.arguments?.content) {
     // async fetch for diff
     apiJson(`/entries/${event.arguments.note_id}`).then(res => {
       const oldContent = res.content || "";
@@ -2181,8 +2262,9 @@ function renderToolConfirm(holder, event) {
         try {
           const result = await apiJson("/chat/tools/execute", {
             method: "POST",
-            body: JSON.stringify({ name: event.name, arguments: event.arguments }),
+            body: JSON.stringify({ name: event.name, arguments: event.arguments, consent_id: event.consent_id || null }),
           });
+          chatHistoryToSend.settle(card, event, "done");
           card.replaceWith(toolChip(`ph:check-circle ${result.label || event.label || event.name}`));
           toast("Done: check Activity for the audit trail.");
           refreshAfterToolChanges();
@@ -2195,17 +2277,28 @@ function renderToolConfirm(holder, event) {
   );
   row.appendChild(
     smallButton("Cancel", "Don't do this", () => {
+      chatHistoryToSend.settle(card, event, "cancelled");
       card.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
     })
   );
   card.append(text, contentArea, row);
+  if (event.state === "expired") {
+    for (const button of row.querySelectorAll("button")) button.disabled = true;
+    contentArea.textContent = event.notice;
+    delete card.dataset.pendingAct;
+  }
   holder.appendChild(card);
   chatScrollToEnd();
 }
 
 //: "open settings", "go to the graph" (decision 38): the place, opened.
-function actNavigate(surface) {
-  if (surface === "settings") openSettingsModal();
+function actNavigate(surface, detail = {}) {
+  if (surface === "clock") {
+    //: Opens the window and puts the length in its box; Start stays the person's press.
+    openClockPanel(detail.tab || "timer");
+    const box = document.querySelector('[data-sheet="clock"] input[data-clock-focus="timer"]');
+    if (box && detail.minutes && detail.tab !== "stopwatch") box.value = `${detail.minutes}m`;
+  } else if (surface === "settings") openSettingsModal();
   else switchTab(surface);
 }
 
@@ -2246,7 +2339,12 @@ function sourceLines(content) {
 //: `grounded`: a composed answer's own note ids. The search hands the composer
 //: every hit, but the answer quotes one or two; "Sources: 4 notes" under "your
 //: only note" contradicted it (dog3-1026 row 10), so only those count.
-function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
+//: `composed`: the same set, derived here from `sentences`, so the live turn
+//: and a reopened one (saved `by.composed`) count the same notes (INBOX 1706).
+function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences, composed }) {
+  if (composed && !grounded) {
+    grounded = new Set((sentences || []).filter((row) => row.kind !== "document").map((row) => row.note_id).filter(Boolean));
+  }
   const seen = new Set();
   const sources = [];
   const add = (source) => {
@@ -2261,6 +2359,7 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
     const flat = String(text || "").replace(/\s+/g, " ").trim();
     return flat.length > 180 ? `${flat.slice(0, 180)}…` : flat;
   };
+  const linked = new Set(meta?.connected_ids || []);
   for (const entry of meta?.raw_results || []) {
     if (grounded?.size && !grounded.has(entry.id)) continue;
     //: The card's title is the note's first line and its preview what follows
@@ -2285,6 +2384,8 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
     add({
       kind: board === "map" ? "map" : board ? "board" : "note",
       id: entry.id,
+      //: 0 a direct match, 1 one link away, 2 two (`sourcesByFirstMention`).
+      tier: linked.has(entry.id) ? (meta.match_info?.[entry.id]?.type === "connected_2hop" ? 2 : 1) : 0,
       label,
       snippet: board ? "" : preview(rest),
       //: The note itself rides along, so the card can show its picture and its
@@ -2374,9 +2475,15 @@ function sourcesByFirstMention(sources, sentences) {
     notes.push(source);
   });
   const key = (n) => citeKey(n.kind, n.id);
-  const cited = notes.filter((n) => rank.has(key(n))).sort((a, b) => rank.get(key(a)) - rank.get(key(b)));
+  //: Direct matches before notes that only came by a link (INBOX 1746: cards
+  //: 12 to 14, link-only, sat above direct matches 15 and 16 because the answer
+  //: met them first). First mention orders each tier; the tiers keep the
+  //: search's own order, direct then one step then two.
+  const tier = (n) => n.tier || 0;
+  const cited = notes.filter((n) => rank.has(key(n))).sort((a, b) => tier(a) - tier(b) || rank.get(key(a)) - rank.get(key(b)));
+  const uncited = notes.filter((n) => !rank.has(key(n))).sort((a, b) => tier(a) - tier(b));
   const out = sources.slice();
-  [...cited, ...notes.filter((n) => !rank.has(key(n)))].forEach((n, k) => (out[places[k]] = n));
+  [...cited, ...uncited].sort((a, b) => tier(a) - tier(b)).forEach((n, k) => (out[places[k]] = n));
   return out;
 }
 
@@ -2403,6 +2510,37 @@ function chatSourcesPanel(input) {
   //: Two derivations of "the same" order is how they drift apart, which is
   //: what INBOX 81's second half is about.
   const sources = input.sources || chatSourcesFrom(input);
+  //: **Kept pages** (CHAT_PLAN web-search store): a web source read in a chat is
+  //: kept on this computer for 7 days. One line each under the cards, outside
+  //: them because a card is itself a link: how long ago, and Fetch again.
+  const keptPagesRow = (body, sources) => {
+    const urls = [...new Set(sources.filter((s) => s.kind === "web" && s.url).map((s) => s.url))].slice(0, 50);
+    if (!urls.length) return;
+    apiJson("/websearch/stored/ages", { method: "POST", body: JSON.stringify({ urls }), silent: true })
+      .then(({ ages }) => {
+        for (const url of urls) {
+          if (!ages[url]) continue;
+          const line = document.createElement("p");
+          line.className = "chat-source-kept muted";
+          const when = document.createElement("span");
+          const show = (iso) => (when.textContent = `${sourceHost(url) || url}: fetched ${relativeTime(iso)}`);
+          show(ages[url]);
+          const again = smallButton("ph:arrow-clockwise Fetch again", `Fetch ${url} again`, async () => {
+            again.disabled = true;
+            try {
+              const fresh = await apiJson("/websearch/stored/refetch", { method: "POST", body: JSON.stringify({ url }) });
+              show(fresh.ages[url] || new Date().toISOString());
+            } catch (error) {
+              toast(error.message || "Couldn't fetch that page.", "info");
+            }
+            again.disabled = false;
+          });
+          line.append(when, " ", again);
+          body.appendChild(line);
+        }
+      })
+      .catch(() => {});
+  };
   if (!sources.length) return null;
   //: **The number on a card is the number in the answer**, which stops being
   //: the card's own position the moment this panel is handed a subset (the
@@ -2564,6 +2702,7 @@ function chatSourcesPanel(input) {
     grid.appendChild(card);
   });
   body.appendChild(grid);
+  keptPagesRow(body, sources);
   details.appendChild(body);
   //: **On a phone the sources are a sheet** (UI_MODERNISATION_PLAN Phase 11
   //: item 3). Opened in place, the grid of cards unfolds inside a bubble in
@@ -2812,6 +2951,49 @@ function agentRunTool(run, node) {
   renderAgentRunSummary(run);
 }
 
+// Why a result showed up, as a badge, not a footnote. Reported directly:
+// the one existing explanation ("Link linked to a match") was a muted chip
+// easy to miss, and every *other* result, the actual matches, carried no
+// reason at all, so "why is this here?" only had an answer for the minority
+// of rows that arrived by connection rather than by matching. `match_info`
+// (search/search_manager.py's `_retrieve`) now carries real provenance for
+// the rest: a cosine similarity score for a semantic hit, the words that
+// matched for a keyword hit, both for a hybrid one.
+const MATCH_REASON_LABEL = {
+  // `info.reason` is the link's own reason, when whoever made the link gave
+  // one ("both about scheduling"), asked for directly: does a link's
+  // reason show up here too, not just on the graph and in Trace. It does
+  // now (search_manager.graph_expansion carries it through).
+  connected: (info) => ({
+    text: info.reason ? `ph:link Linked (${info.reason})` : "ph:link Linked to a match",
+    title: info.reason
+      ? `This note didn't match your question, it's here because it's linked to one that did: ${info.reason}.`
+      : "This note didn't match your question, it's here because it is linked to one that did.",
+  }),
+  // ROADMAP.md item 33: an opt-in second hop, linked to something linked
+  // to a match, not to the match itself. Real evidence, weaker evidence;
+  // its own badge text says so rather than reading identically to a direct
+  // connection; both look as bright as a match.
+  connected_2hop: (info) => ({
+    text: info.reason ? `ph:link Two steps away (${info.reason})` : "ph:link Two steps from a match",
+    title: info.reason
+      ? `This note is linked to a note that's linked to a match, not to the match itself: ${info.reason}.`
+      : "This note is linked to a note that's linked to a match, not to the match itself, weaker evidence than a direct connection.",
+  }),
+  semantic: (info) => ({
+    text: `ph:target ${Math.round(info.score * 100)}% similar`,
+    title: `Matched by meaning, not exact words, ${Math.round(info.score * 100)}% cosine similarity to your question.`,
+  }),
+  keyword: (info) => ({
+    text: `ph:magnifying-glass Matched “${info.terms.join("”, “")}”`,
+    title: `Matched the word(s) “${info.terms.join(", ")}” in your question.`,
+  }),
+  hybrid: (info) => ({
+    text: `ph:target ${Math.round(info.score * 100)}% similar · “${info.terms.join("”, “")}”`,
+    title: `Matched both by meaning (${Math.round(info.score * 100)}% similarity) and by the word(s) “${info.terms.join(", ")}”.`,
+  }),
+};
+
 //: **One answer foot** (CHAT_PLAN B2; DESIGN.md "An answer's foot"). The
 //: owner, 2026-11-05: "individually they are fine but when they stack up
 //: below it gets a little unprofessional". Every surface's own renderer
@@ -2847,7 +3029,17 @@ function agentRunTool(run, node) {
     //: Beside "4 of 5 from your notes", the fold's own "From your notes"
     //: read as the same claim twice.
     { key: "notes", find: ".from-notes-fold", label: () => "ph:note Notes-only answer" },
-    { key: "patterns", find: ".insight-line", label: (parts) => `ph:lightbulb ${parts.length} ${parts.length === 1 ? "pattern" : "patterns"} to check` },
+    //: A line answered (Confirm or Not right) loses its pair and is checked:
+    //: the count to check is the lines that still carry one.
+    {
+      key: "patterns",
+      find: ".insight-line",
+      label: (parts) => {
+        const all = `${parts.length} ${parts.length === 1 ? "pattern" : "patterns"}`;
+        const open = parts.filter((line) => line.querySelector(".insight-verdicts")).length;
+        return `ph:lightbulb ${!open ? all : open === parts.length ? `${all} to check` : `${all}, ${open} to check`}`;
+      },
+    },
     { key: "related", find: ".answer-related", label: () => "ph:compass Elsewhere in your notebook" },
     //: By its holders: `renderAskWhy` stays the one file naming the fold (B30).
     { key: "why", find: ".why-trail > details, #ask-why > details" },
@@ -2893,12 +3085,25 @@ function agentRunTool(run, node) {
     while (top.parentElement !== scope) top = top.parentElement;
     if (top !== bar && bar.nextElementSibling !== top) scope.insertBefore(bar, top);
     const open = scope.dataset.footOpen || "";
+    //: **Each chip is made once and kept.** Rebuilt on every change while an
+    //: answer streams, a press whose mousedown landed on one button and
+    //: mouseup on its replacement was no click at all (the review of B2);
+    //: now a chip's words and state change in place, only when they differ.
+    const had = new Map([...bar.querySelectorAll(":scope > .answer-foot-chip")].map((chip) => [chip.dataset.foot, chip]));
     const chips = found.map(({ spec, parts }) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "chip chip-interactive answer-foot-chip";
-      button.dataset.foot = spec.key;
-      setLabel(button, answerFootChipLabel(spec, parts));
+      let button = had.get(spec.key);
+      if (!button) {
+        button = document.createElement("button");
+        button.type = "button";
+        button.className = "ghost quiet answer-foot-chip";
+        button.dataset.foot = spec.key;
+        button.addEventListener("click", () => answerFootToggle(scope, spec.key));
+      }
+      const label = answerFootChipLabel(spec, parts);
+      if (button.dataset.label !== label) {
+        button.dataset.label = label;
+        setLabel(button, label);
+      }
       //: The part's own head is hidden while the chip stands for it: its
       //: words (and the search mode the chip leaves out) are the title.
       button.title = (parts[0].querySelector(":scope > summary") || parts[0]).textContent.trim();
@@ -2914,12 +3119,15 @@ function agentRunTool(run, node) {
         if (on && part.tagName === "DETAILS") part.open = true;
       });
       button.setAttribute("aria-controls", parts.map((part) => part.id).join(" "));
-      button.addEventListener("click", () => answerFootToggle(scope, spec.key));
       return button;
     });
     const kept = stats || bar.querySelector(":scope > .msg-meta");
+    //: The stats line may be cut to fit the one row: its words are its title.
+    if (kept) kept.title = [...kept.children].map((item) => item.textContent.trim()).filter(Boolean).join(" · ");
+    const want = [...chips, ...(kept ? [kept] : [])];
+    if (want.length === bar.children.length && want.every((el, index) => bar.children[index] === el)) return;
     const focused = bar.contains(document.activeElement) ? document.activeElement.dataset.foot : null;
-    bar.replaceChildren(...chips, ...(kept ? [kept] : []));
+    bar.replaceChildren(...want);
     if (focused) bar.querySelector(`[data-foot="${focused}"]`)?.focus();
   }
 
@@ -2959,7 +3167,7 @@ function agentRunTool(run, node) {
   //: Its own sheet, so every bundle that brings an answer brings the row's
   //: look, and the boot scripts' gzip budget carries no path for it.
   lazyScript("/css/answer-foot-lazy.css");
-  answerFootWatch($("ai-answer")?.parentElement);
-  answerFootWatch($("chat-messages"), ".msg.assistant");
-  answerFootWatch($("command-palette-results"), ".msg.assistant");
+  onSurface("notes", () => answerFootWatch($("ai-answer")?.parentElement));
+  onSurface("chat", () => answerFootWatch($("chat-messages"), ".msg.assistant"));
+  onSurface("palette", () => answerFootWatch($("command-palette-results"), ".msg.assistant"));
 })();

@@ -17,13 +17,14 @@ from dataclasses import dataclass
 from datetime import date
 
 from tessellate.ai import composer, composer_lists, factgraph, realise, recognise
+from tessellate.ai import recognise_questions
 from tessellate.ai import composer_body
 
 _SELF = r"(?:do|did|have|has|does) i"
 _ASKS = (
     ("often", re.compile(rf"^how often {_SELF} (?P<v>[a-z]+)(?P<r>.*)$")),
     ("count", re.compile(rf"^how many times {_SELF} (?P<v>[a-z]+)(?P<r>.*)$")),
-    ("count", re.compile(rf"^how many (?P<v>[a-z]+?)s {_SELF} (?:do|done|go on|gone on|have|had|log|logged|manage|managed)(?P<r>.*)$")),
+    ("count", re.compile(rf"^how many (?P<v>[a-z]+?)s {_SELF} (?:done|do|go on|gone on|have|had|logged|log|managed|manage)\b(?P<r>.*)$")),
     #: "How far" and "how many km" are `composer_money`'s measure sums.
     ("total", re.compile(rf"^how much {_SELF} (?P<v>[a-z]+)(?P<r>.*)$")),
 )
@@ -128,7 +129,7 @@ def _reads_done(s, forms: frozenset[str], logged: bool) -> tuple[bool, bool]:  #
     """(says, logs): the line tells the doing in the past, or is a dated log line of it."""
     words = set(re.findall(r"[a-z]+", s.text.lower()))
     #: "Ran twice, prepared the beta and booked nothing": the count settles the tense.
-    says = bool(forms & words) and (recognise.told_as_past(s.text) or (_times_in(s.text, forms) > 1 and not _PERIOD.search(s.text))) and not _IDIOM.search(s.text)
+    says = bool(forms & words) and (recognise_questions.told_as_past(s.text) or (_times_in(s.text, forms) > 1 and not _PERIOD.search(s.text))) and not _IDIOM.search(s.text)
     #: A log's line needs a day of its own and a figure; a plan has neither or is ahead.
     logs = bool(logged and not says and _CALENDAR_DAY.search(s.text) and _km(s.text) is not None)
     return says, logs

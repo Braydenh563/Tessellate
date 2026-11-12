@@ -24,6 +24,7 @@ ins for what they call.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import re
 import shutil
@@ -130,10 +131,12 @@ def test_the_library_menu_names_its_kind_and_does_not_show_the_canvas_itself():
         line = WB[start : WB.index("\n", start)]
         assert call in line, line
         assert "wbShowCanvasView" not in line, line
-    mount = WB[WB.index("function wbNewMenuMount(") :]
+    gallery = (ROOT / "frontend" / "js" / "boards-gallery.js").read_text(encoding="utf-8")
+    mount = gallery[gallery.index("function wbNewMenuMount(") :]
     mount = mount[: mount.index("\n}\n")]
-    assert 'run: () => wbNewUntitledBoard("map")' in mount
-    assert 'run: () => wbNewUntitledBoard()' in mount
+    # The rows wait for the board code (the arrow is up with the cards), then act.
+    assert 'run: afterBoards(() => wbNewUntitledBoard("map"))' in mount
+    assert 'run: afterBoards(() => wbNewUntitledBoard())' in mount
     assert 'createNewBoard("board", { reveal: true })' in mount
     assert "wbShowCanvasView" not in mount
 
@@ -188,10 +191,12 @@ def _notice() -> str:
 def test_chat_ask_and_agent_banners_are_dismissible_and_the_others_are_not():
     """The agent joined Ask and Chat when it learned to run with no model
     (AGENT_SKILLS_REFORM "Deepened 2026-10-10" row 1)."""
-    block = STATUS[STATUS.index("  renderAiOfflineNotice(\n    $(\"ask-offline\")") : STATUS.index("  syncAgentPaletteAvailability();")]
-    asks = re.search(r'\$\("ask-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
-    chat = re.search(r'\$\("chat-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
-    agent = re.search(r'\$\("command-palette-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
+    #: The lookups are `document.getElementById(...)` (the code moved off
+    #: the `$` shorthand; the three dismissible banners are unchanged).
+    block = STATUS[STATUS.index('  renderAiOfflineNotice(\n    document.getElementById("ask-offline")') : STATUS.index("  syncAgentPaletteAvailability();")]
+    asks = re.search(r'getElementById\("ask-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
+    chat = re.search(r'getElementById\("chat-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
+    agent = re.search(r'getElementById\("command-palette-offline"\),.*?\{ dismissible: true[,}][^)]*\)', block, re.S)
     assert asks and chat and agent, block
     assert block.count("dismissible: true") == 3, block
 
@@ -219,7 +224,7 @@ def test_the_dismiss_recipe_is_in_the_design_system():
 
 
 def test_the_guide_says_the_banners_can_be_closed():
-    text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    text = help_more_text()
     assert "close button" in text and "new session" in text
 
 

@@ -198,14 +198,39 @@ def action_items(content: str) -> list[dict]:
                 "cited": task != raw,
             }
         )
-    return items
+    return items or _inline(lines, start, ACTIONS)
+
+
+#: "Decisions: ship Friday; hire Sam." and "Actions: Mia sends the deck." on one
+#: line, the way people type a meeting with no headings (G14 h: the sheet was
+#: empty for a note Ask read fine).
+_LABELLED = re.compile(r"^[ \t]*(?:[-*+][ \t]+)?([A-Za-z][A-Za-z ]{2,18}?)[ \t]*:[ \t]*(\S.*?)[ \t]*$")
+
+
+def _split_inline(value: str) -> list[str]:
+    parts = re.split(r";|\.(?=\s+[A-Z])|\s+and\s+(?=[A-Z])|,\s*(?:and\s+)?", value)
+    return [p.strip(" .") for p in parts if p.strip(" .")]
+
+
+def _inline(lines: list[str], start: int, section: str) -> list:
+    """The items of a section written as one "Label: a; b" line, as the
+    section's list: strings for Decisions, task dicts for Action items."""
+    out: list = []
+    for index in range(start, len(lines)):
+        found = _LABELLED.match(lines[index])
+        if not found or _section_of(found.group(1)) != section:
+            continue
+        texts = _split_inline(found.group(2)) if section == DECISIONS else [found.group(2).strip(" .")]
+        out.extend({"line": index, "text": text, "done": False, "owner": None, "cited": False} if section == ACTIONS else text for text in texts)
+    return out
 
 
 def section_items(content: str, section: str) -> list[str]:
     """The non-empty bullet lines of one section, without their markers."""
     span = _sections(content).get(section)
     if not span:
-        return []
+        start, lines = _body_offset(content)
+        return _inline(lines, start, section) if section == DECISIONS else []
     lines = str(content or "").split("\n")
     out = []
     for line in lines[span[0] : span[1]]:
@@ -273,7 +298,16 @@ def meeting_date(content: str) -> str:
 
 def attendees(content: str) -> list[str]:
     found, _ = note_properties.split(content or "")
-    return [v for v in found.get("attendees") or [] if v]
+    listed = [v for v in found.get("attendees") or [] if v]
+    if listed:
+        return listed
+    #: "Attendees: Mia, Priya, Jon." as a line of the body.
+    start, lines = _body_offset(content)
+    for index in range(start, len(lines)):
+        said = _LABELLED.match(lines[index])
+        if said and said.group(1).strip().lower() in ("attendees", "present", "in attendance", "who was there"):
+            return [n.strip() for n in re.split(r",|\band\b|;", said.group(2).strip(" .")) if n.strip()]
+    return []
 
 
 def reminder_text(item: dict) -> str:
@@ -311,6 +345,16 @@ _NOT_A_NAME = frozenset(
     "We I You They He She It This That There Everyone Everybody Someone Nobody The A An "
     "Let Lets Okay Ok So And But Then Next First Also Thanks".split()
 )
+#: A decision word with a "not" straight in front of it ("haven't decided",
+#: "nobody agreed", "has not yet been agreed"), or a word that says it is open.
+#: A negative further away ("nobody objected, so we decided") leaves it be.
+_UNDECIDED = re.compile(
+    r"(?:\b(?:not|never|nobody|no[ \t]one|neither)|n't)[ \t]+(?:(?:yet|really|actually|fully|been|have|had|be)[ \t]+)*"
+    r"(?:decided|agreed|resolved|approved|settled)\b|\b(?:undecided|unresolved|unsettled)\b",
+    re.I,
+)
+#: A person declining a task: "Sam will not", "Priya needn't", "Alex does not need to".
+_NOT_COMMITTING = re.compile(r"^@?[A-Z][a-z]+(?:[ \t]+[A-Z][a-z]+)?[ \t]+(?:will[ \t]+not|won't|does[ \t]+not|doesn't|needn't|is[ \t]+not|isn't)\b")
 _WORD = re.compile(r"[a-z][a-z'-]+")
 _FILLER = frozenset(
     "the and for with will to by of on in at a an is be our we that this it from as "
@@ -366,13 +410,16 @@ def _read_line(line: str, now, names: set[str]) -> tuple[str, dict] | None:  # n
 
     marked = bool(_ACTION_MARK.match(line))
     text = _ACTION_MARK.sub("", line).rstrip(" .")
+    #: A question asks, and a declined task is nobody's: neither is minuted.
+    if not marked and (line.rstrip().endswith("?") or _NOT_COMMITTING.match(text.lstrip("@"))):
+        return None
     spans = recognise(text, now=now, tense="future")
     owner = _owner_of(text, marked, spans, names)
     if marked or (owner and _SUBJECT.match(text.lstrip("@"))):
         due = next((s for s in spans if s.kind in {"date", "datetime"} and s.rank == 0), None)
         item = {"text": _as_owned(text, owner), "quote": line, "owner": owner, "due": due.read_as if due else None}
         return "actions", {**item, "verbatim": True}
-    if _DECISION_WORDS.search(text):
+    if _DECISION_WORDS.search(text) and not _UNDECIDED.search(text):
         return "decisions", {"text": text, "quote": line, "verbatim": True}
     return None
 

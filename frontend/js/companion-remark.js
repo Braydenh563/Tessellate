@@ -27,8 +27,12 @@
     if (!next || !buddy?.isConnected || nameMarkBuddyStill() || document.hidden) return;
     if (buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-sleep")) return;
     prefs.setJSON(NMB_REMARK_SEEN, [...seen, next.key].slice(-80));
-    nameMarkBuddyExpress("happy", 2400);
-    nameMarkSay(buddy, next.text, Math.min(12000, 2500 + 60 * next.text.length));
+    //: After a frame has drawn the page (INBOX 1726: 213ms, 210 of it forced layout).
+    nmb.afterClean(() => {
+      if (!buddy.isConnected || nameMarkBuddyStill() || document.hidden) return;
+      nameMarkBuddyExpress("happy", 2400);
+      nameMarkSay(buddy, next.text, Math.min(12000, 2500 + 60 * next.text.length));
+    });
   }
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).

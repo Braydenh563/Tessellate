@@ -14,21 +14,22 @@ from __future__ import annotations
 
 import re
 
-from tessellate.api.asset_strip import strip_js
+from tessellate.api.asset_strip import strip_js_comments
 
 _OPEN = re.compile(r"^\(\(\) => \{$")
 _CLOSE = re.compile(r"^\}\)\(\);$")
 _EXPORT = re.compile(r"^  Object\.assign\(window, \{ ([\w$, ]+) \}\);$", re.M)
 _WINDOW_SET = re.compile(r"^  window\.([A-Za-z_$][\w$]*) =", re.M)
 _TOP_LEVEL = re.compile(
-    r"^(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)|^(?:let|var|const|class)\s+([A-Za-z_$][\w$]*)", re.M
+    r"^(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)|^(?:let|var|const|class)\s+([A-Za-z_$][\w$]*)",
+    re.M,
 )
 
 
 def is_wrapped(source: str) -> bool:
     """The whole script is one closure: nothing but comments before its opening
     line, nothing after its closing one."""
-    lines = [line for line in strip_js(source).split("\n") if line.strip()]
+    lines = [line for line in strip_js_comments(source).split("\n") if line.strip()]
     return bool(lines) and bool(_OPEN.match(lines[0])) and bool(_CLOSE.match(lines[-1]))
 
 
@@ -52,4 +53,118 @@ def global_names(source: str) -> set[str]:
     any other script's top-level declarations."""
     if is_wrapped(source):
         return exported(source)
-    return {a or b for a, b in _TOP_LEVEL.findall(strip_js(source))}
+    return {a or b for a, b in _TOP_LEVEL.findall(strip_js_comments(source))}
+
+
+def template_lines(src: str) -> set[int]:
+    """The 0-based lines that begin inside a multi-line template literal: a wrapper
+    indents the code, never a string's own text."""
+    inside = set()
+    stack = []
+    i = 0
+    line = 0
+    n = len(src)
+    while i < n:
+        c = src[i]
+        if c == "\n":
+            line += 1
+            if stack and stack[-1] == "T":
+                inside.add(line)
+            i += 1
+            continue
+        top = stack[-1] if stack else None
+        if top == "T":
+            if c == "\\":
+                i += 2
+                continue
+            if c == "`":
+                stack.pop()
+            elif c == "$" and src[i + 1 : i + 2] == "{":
+                stack.append("B")
+                i += 1
+            i += 1
+            continue
+        if c == "/" and src[i + 1 : i + 2] == "/":
+            while i < n and src[i] != "\n":
+                i += 1
+            continue
+        if c == "/" and src[i + 1 : i + 2] == "*":
+            j = src.index("*/", i + 2)
+            line += src.count("\n", i, j)
+            i = j + 2
+            continue
+        if c == "/" and src[:i].rstrip()[-1:] in "(,=:[!&|?{};+" or (c == "/" and not src[:i].strip()):
+            # a regex literal: its quotes and backticks are not string starts
+            j = i + 1
+            in_class = False
+            while src[j] != "\n" and (in_class or src[j] != "/"):
+                if src[j] == "\\":
+                    j += 1
+                elif src[j] == "[":
+                    in_class = True
+                elif src[j] == "]":
+                    in_class = False
+                j += 1
+            i = j + 1
+            continue
+        if c in "'\"":
+            j = i + 1
+            while src[j] != c:
+                if src[j] == "\\":
+                    j += 1
+                j += 1
+            i = j + 1
+            continue
+        if c == "`":
+            stack.append("T")
+        elif c == "{" and top == "B":
+            stack.append("B")
+        elif c == "}" and top == "B":
+            stack.pop()
+        i += 1
+    return inside
+
+
+def unwrapped(source: str) -> str:
+    """A wrapped script's text as it was before it was wrapped: the closure
+    lines off and the two-space indent taken back (not inside a template
+    literal, which the wrapper never indented), so a test that slices a
+    function by its head and `\n}\n` tail, or runs it in a vm and calls a
+    private name, checks the same code. Any other script is returned as it is.
+    Only the wrapper changed, so nothing a test asserts is weaker; the closure
+    itself is covered by the ratchet. The foot's `Object.assign(window, ...)`
+    goes too: unwrapped, every name is a global already."""
+    if not is_wrapped(source):
+        return source
+    lines = source.split("\n")
+    first = next(i for i, line in enumerate(lines) if _OPEN.match(line))
+    last = max(i for i, line in enumerate(lines) if _CLOSE.match(line))
+    inside = template_lines(source)
+    body = [
+        line if n in inside or not line.startswith("  ") else line[2:]
+        for n, line in enumerate(lines)
+        if first < n < last
+    ]
+    body = [
+        line for line in body if not re.match(r"Object\.assign\(window, \{ [\w$, ]+ \}\);$", line)
+    ]
+    return "\n".join([*lines[:first], *body, *lines[last + 1 :]])
+
+
+_COPIES: dict = {}
+
+
+def unwrapped_copy(path):
+    """The path of a copy of a script as `unwrapped` gives it, for a test that
+    hands a node harness the file's path or reads it with `Path.read_text`.
+    The copy lives in a temp directory made once per run."""
+    import tempfile
+    from pathlib import Path
+
+    path = Path(path)
+    if path not in _COPIES:
+        folder = _COPIES.setdefault("dir", Path(tempfile.mkdtemp(prefix="unwrapped-")))
+        copy = folder / path.name
+        copy.write_text(unwrapped(path.read_text(encoding="utf-8")), encoding="utf-8")
+        _COPIES[path] = copy
+    return _COPIES[path]

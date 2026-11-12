@@ -98,6 +98,7 @@ KEPT_ON_RESTORE = frozenset(
         "new_window_on_launch",
         "searxng_autostart",
         "session_idle_ttl_minutes",
+        "private_space_idle_minutes",
     }
 )
 
@@ -226,6 +227,55 @@ def _check_unpackable(infos: list[zipfile.ZipInfo], data_dir: Path) -> None:
         raise BundleError(f"Not enough free space to restore that backup: free up {diskspace.human_bytes(short)} and try again.")
 
 
+def _restore_db_member(archive: zipfile.ZipFile, member: str, db_path: Path, data_dir: Path, keep: int) -> None:
+    """Stage the zip's notebook beside the live one and hand it to `restore_file`."""
+    staged = db_path.with_name(f"{db_path.name}.import-tmp")
+    try:
+        with archive.open(member) as source, open(staged, "wb") as sink:
+            while chunk := source.read(CHUNK_BYTES):
+                sink.write(chunk)
+        try:
+            backup.restore_file(staged, db_path, data_dir, keep)
+        except sqlite3.DatabaseError as exc:
+            raise BundleError(backup.DAMAGED_BACKUP) from exc
+    finally:
+        staged.unlink(missing_ok=True)
+
+
+def _read_preferences(archive: zipfile.ZipFile, names: list[str]) -> dict:
+    """The zip's settings, minus the ones a restore never brings back."""
+    preferences: dict = {}
+    if PREFERENCES_MEMBER in names:
+        info = archive.getinfo(PREFERENCES_MEMBER)
+        # A settings file is a few KB; anything large is not one.
+        if info.file_size <= 4 * 1024 * 1024:
+            try:
+                loaded = json.loads(archive.read(info).decode("utf-8"))
+            except ValueError:
+                loaded = {}
+            if isinstance(loaded, dict):
+                preferences = {k: v for k, v in loaded.items() if k not in _NOT_BACKED_UP | KEPT_ON_RESTORE}
+    return preferences
+
+
+def _extract_files(archive: zipfile.ZipFile, data_dir: Path) -> tuple[int, int]:
+    """Merge the zip's files over the data folders: (restored, skipped)."""
+    restored = skipped = 0
+    for info in archive.infolist():
+        if info.is_dir() or info.filename in (*DB_MEMBERS, PREFERENCES_MEMBER):
+            continue
+        target = _safe_target(data_dir, info.filename)
+        if target is None:
+            skipped += 1
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with archive.open(info) as source, open(target, "wb") as sink:
+            while chunk := source.read(CHUNK_BYTES):
+                sink.write(chunk)
+        restored += 1
+    return restored, skipped
+
+
 def restore_zip(archive_path: Path, db_path: Path, data_dir: Path, keep: int) -> dict:
     """Replace the notebook with the one in the zip.
 
@@ -247,39 +297,7 @@ def restore_zip(archive_path: Path, db_path: Path, data_dir: Path, keep: int) ->
         if member is None:
             raise BundleError("That zip has no notebook in it, so nothing was changed.")
         _check_unpackable(archive.infolist(), data_dir)
-        staged = db_path.with_name(f"{db_path.name}.import-tmp")
-        try:
-            with archive.open(member) as source, open(staged, "wb") as sink:
-                while chunk := source.read(CHUNK_BYTES):
-                    sink.write(chunk)
-            try:
-                backup.restore_file(staged, db_path, data_dir, keep)
-            except sqlite3.DatabaseError as exc:
-                raise BundleError(backup.DAMAGED_BACKUP) from exc
-        finally:
-            staged.unlink(missing_ok=True)
-        preferences: dict = {}
-        if PREFERENCES_MEMBER in names:
-            info = archive.getinfo(PREFERENCES_MEMBER)
-            # A settings file is a few KB; anything large is not one.
-            if info.file_size <= 4 * 1024 * 1024:
-                try:
-                    loaded = json.loads(archive.read(info).decode("utf-8"))
-                except ValueError:
-                    loaded = {}
-                if isinstance(loaded, dict):
-                    preferences = {k: v for k, v in loaded.items() if k not in _NOT_BACKED_UP | KEPT_ON_RESTORE}
-        restored = skipped = 0
-        for info in archive.infolist():
-            if info.is_dir() or info.filename in (*DB_MEMBERS, PREFERENCES_MEMBER):
-                continue
-            target = _safe_target(data_dir, info.filename)
-            if target is None:
-                skipped += 1
-                continue
-            target.parent.mkdir(parents=True, exist_ok=True)
-            with archive.open(info) as source, open(target, "wb") as sink:
-                while chunk := source.read(CHUNK_BYTES):
-                    sink.write(chunk)
-            restored += 1
+        _restore_db_member(archive, member, db_path, data_dir, keep)
+        preferences = _read_preferences(archive, names)
+        restored, skipped = _extract_files(archive, data_dir)
     return {"files": restored, "skipped": skipped, "preferences": preferences}

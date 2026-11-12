@@ -31,17 +31,26 @@ def _seed(session):
     session.commit()
 
 
-def _state(session) -> tuple:
-    """Everything an act may change, as plain values."""
+def _state(session, categories: bool = False, by_name: bool = False) -> tuple:
+    """Everything an act may change, as plain values. The category by its id and by its
+    name: a rename keeps the id, so the id alone cannot see rename_category change anything."""
     session.expire_all()
     notes = tuple(
-        (e.id, e.content, e.category_id, e.tags, e.pinned, e.deleted_at is None)
+        (e.id, e.content, None if by_name else e.category_id, manager.category_name_for(session, e), e.tags, e.pinned, e.deleted_at is None)
         for e in session.scalars(select(Entry).order_by(Entry.id))
         if e.deleted_at is None
     )
     links = tuple(sorted((link.source_entry_id, link.target_entry_id) for link in session.scalars(select(EntryLink))))
     reminders = tuple((r.id, r.done, r.due_at) for r in session.scalars(select(Reminder)) if r.deleted_at is None)
-    return notes, links, reminders
+    #: The name is a preference, not a row: set_name changes it (G7).
+    from tessellate.core import deps
+
+    #: A category made with no note in it is a row of its own: create_category changes it (parity, 1110).
+    #: Read only for that act, since a move leaves the category it made behind when it is undone.
+    from tessellate.core.database import Category
+
+    made = tuple(sorted(c.name for c in session.scalars(select(Category)))) if categories else ()
+    return notes, links, reminders, deps.get_config().get_preference("display_name", ""), made
 
 
 def test_every_act_has_parse_preview_run_and_a_help_line():
@@ -55,15 +64,36 @@ def test_every_act_has_parse_preview_run_and_a_help_line():
 
 WRITES = [a for a in acts.ACTS.values() if a.writes]
 #: An unpin, an unlink or an untag needs its pin, link or tag first.
-_BEFORE = {"unpin": "pin the dentist note", "unlink": "link the gym note to the running note", "untag": "tag the boiler note with urgent"}
+_BEFORE = {
+    "unpin": "pin the dentist note", "unlink": "link the gym note to the running note", "untag": "tag the boiler note with urgent",
+    #: A tag, a category and a binned note must exist before they are renamed or restored.
+    "rename_tag": "tag the gym note with gym", "rename_category": "move the gym note to Work", "restore": "delete the passport note",
+    #: Parity acts (1110): the category, the tag, the two categories a merge needs.
+    "delete_category": ("move the gym note to Hobbies",), "delete_tag": ("tag the gym note with harbor",),
+    "merge_categories": ("move the gym note to Work", "move the running note to Job"),
+}
+#: A category row is made again by Undo with a new id, so these compare the categories by name.
+_BY_NAME = frozenset({"delete_category", "merge_categories"})
 
 
 @pytest.mark.parametrize("act", WRITES, ids=[a.intent for a in WRITES])
 def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, session, act):
     _seed(session)
-    if act.intent in _BEFORE:
-        setup = acts.preview(session, acts.parse(_BEFORE[act.intent], NOW))
+    if act.intent == "restore":
+        manager.create_entry(session, "# Passport\n\nRenew in May.")
+        session.commit()
+    if act.intent == "edit_text":
+        manager.create_entry(session, "# Wifi\n\nNetwork is Bluegum-5G.")
+        session.commit()
+    if act.intent == "to_reminders":
+        manager.create_entry(session, "# Action items\n\n- [ ] book the venue\n- [ ] email the caterer\n")
+        session.commit()
+    for before_sentence in (lambda x: (x,) if isinstance(x, str) else x)(_BEFORE.get(act.intent, ())):
+        setup = acts.preview(session, acts.parse(before_sentence, NOW))
         acts.run(session, setup["card"]["steps"])
+        session.commit()
+    if act.intent == "uncomplete":
+        session.add(Reminder(text="Buy milk", due_at=datetime(2030, 1, 1, 9), done=True))
         session.commit()
     if act.intent in ("complete", "cancel", "snooze"):
         #: A task is completed, cancelled or snoozed only once one is open;
@@ -71,23 +101,23 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
         #: real clock.
         session.add(Reminder(text="Buy milk" if act.intent == "complete" else "Call the dentist", due_at=datetime(2030, 1, 1, 9)))
         session.commit()
-    before = _state(session)
+    before = _state(session, act.intent in ("create_category", *_BY_NAME), act.intent in _BY_NAME)
     # The store refuses a reminder due in the past by the real clock, so a
     # fixed NOW turns "on Friday" into a past date once that week is over
     # (a snooze too: its plan refuses a time already passed on the real clock).
-    now = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0) if act.intent in ("reminder", "snooze") else NOW
+    now = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0) if act.intent in ("reminder", "snooze", "to_reminders") else NOW
     planned = acts.preview(session, acts.parse(act.example, now))
     card = planned["card"]
     assert card["steps"], act.intent
     done = acts.run(session, card["steps"], card.get("skipped"))
     session.commit()
     assert done["ok"], (act.intent, done)
-    assert _state(session) != before, f"{act.intent} changed nothing"
+    assert _state(session, act.intent in ("create_category", *_BY_NAME), act.intent in _BY_NAME) != before, f"{act.intent} changed nothing"
     assert done["undo"] and done["undo"][0]["name"] == act.inverse, (act.intent, done["undo"])
     undone = acts.run(session, done["undo"])
     session.commit()
     assert undone["ok"], (act.intent, undone)
-    assert _state(session) == before, act.intent
+    assert _state(session, act.intent in ("create_category", *_BY_NAME), act.intent in _BY_NAME) == before, act.intent
 
 
 def test_read_acts_have_no_inverse_and_write_acts_all_do():
@@ -117,12 +147,12 @@ def test_ask_names_the_act_it_read():
 
 
 def test_a_models_proposed_act_waits_for_confirm(client, session):
-    """Decision 53: a reminder typed runs at once; the same act proposed by a
-    model is a card that waits for Confirm."""
+    """Decision 53, moved by the owner's consent order (2026-11-10): a reminder typed and
+    the same act proposed by a model are both a card that waits for Confirm."""
     _seed(session)
     typed = acts.preview(session, acts.parse("remind me to call mum on Friday at 9", NOW))
     proposed = acts.propose(session, "remind me to call mum on Friday at 9", NOW)
-    assert typed.get("run") is True
+    assert "run" not in typed and typed["card"]["steps"] == proposed["card"]["steps"]
     assert "run" not in proposed and proposed["card"]["proposed"] is True
     assert acts.propose(session, "what is the boiler pressure?", NOW) is None
 
@@ -167,8 +197,14 @@ def test_a_reminder_is_said_back_with_the_note_it_comes_from(client, session, mo
     assert card["items"] == ["Dentist"]
     assert card["steps"][0]["arguments"]["note_id"] == dentist.id
     #: Said back in the composer's words (CHAT_PLAN 1353), the card's label exact.
-    assert out["text"].endswith("remind you on Friday at 9: call the dentist.") and "!" not in out["text"], out["text"]
+    assert "remind you on friday at 9: call the dentist" in out["text"].lower() and "!" not in out["text"], out["text"]
     assert "call the dentist" in phrase.lower()
+    assert session.scalars(select(Reminder)).all() == [], "nothing is set before Confirm"
+    from tests._consent import confirmed
+
+    done = confirmed(client, out)  # Confirm words the run as the composer did before the consent order
+    assert done["text"].endswith("remind you on Friday at 9: call the dentist.") and "!" not in done["text"], done["text"]
+    session.expire_all()
     reminder = session.scalars(select(Reminder)).one()
     assert reminder.entry_id == dentist.id and reminder.due_at.strftime("%a %H:%M") == "Fri 09:00"
 

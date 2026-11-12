@@ -101,6 +101,18 @@ def test_the_image_leaves_room_for_what_is_under_it():
     assert "max-height: 68vh" in block, "80vh left no room for the caption panel"
 
 
+def test_a_short_window_shrinks_the_picture_so_the_filmstrip_clears_the_caption():
+    """WORLD_CLASS 423 (e): at 125 and 150% zoom (960x600, 1280x720) the
+    picture was 68vh and the filmstrip, fixed to the bottom, drew over the
+    caption line at rest (measured: film top 594, caption 615 to 633 at
+    1280x720). The picture's cap now also leaves the framed overlay's own
+    top and bottom padding and the facts and caption lead."""
+    for sel in (".lightbox.lightbox-framed .lightbox-stage > img {",
+                ".lightbox.lightbox-framed.lightbox-has-film .lightbox-stage > img {"):
+        block = CSS.split(sel)[1].split("}")[0]
+        assert "min(68vh, calc(100dvh -" in block, sel
+
+
 def test_the_panel_says_which_picture_this_is():
     """"maybe it can have the image information and other info about it below
     the image with the caption and ocr text??", size, when it arrived, what

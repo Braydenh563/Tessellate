@@ -16,6 +16,7 @@ node vm with a fixed clock; the hooks are checked in the source.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import re
 import shutil
@@ -28,18 +29,26 @@ from tests.test_atlas_micro import HARNESS as MICRO_HARNESS
 from tests.test_atlas_micro import MICRO
 from tests.test_companion_mind import HARNESS as MIND_HARNESS
 from tests.test_companion_mind import MIND
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-AV = (JS / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
 ATLAS = (JS / "atlas.js").read_text(encoding="utf-8")
 MOTION = (JS / "atlas-motion.js").read_text(encoding="utf-8")
-MENU = (JS / "companion-menu.js").read_text(encoding="utf-8")
+MENU = unwrapped((JS / "companion-menu.js").read_text(encoding="utf-8"))
 SETTINGS = (JS / "companion-settings.js").read_text(encoding="utf-8")
 CARDS = (JS / "note-cards.js").read_text(encoding="utf-8")
-TOPICS = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+TOPICS = help_more_text()
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+
+
+def _look(src: str) -> str:
+    """The rig's look, `atlasRigWake.look` (a task after a drawn frame, INBOX 1766)."""
+    match = re.search(r"^atlasRigWake\.look = function atlasRigLook\(.*?^\};", src, re.S | re.M)
+    assert match
+    return match.group(0)
 
 
 def _fn(src: str, name: str) -> str:
@@ -178,7 +187,7 @@ const out = (v) => process.stdout.write(JSON.stringify(v));
 
 def _react_src() -> str:
     table = re.search(r"^const NMB_REACTIONS = \{.*?^\};", AV, re.S | re.M).group(0)
-    gap = re.search(r"^const NMB_REACT_GAP = .*$", AV, re.M).group(0)
+    gap = "\n".join(re.search(rf"^const {n} = .*$", AV, re.M).group(0) for n in ("NMB_REACT_GAP", "NMB_REACT_BUDGET", "NMB_REACT_WINDOW_MS"))  # the budget joined the gap in P6 (1112)
     return "\n".join([table, gap, _fn(AV, "nameMarkBuddyReact")])
 
 
@@ -305,12 +314,12 @@ def test_the_app_tells_it_what_happened() -> None:
 
 
 def test_first_readers_wait_for_an_arriving_page() -> None:
-    frame = _fn(MOTION, "atlasRigFrame")
-    assert "const settling = !!rig.reads && (now < (globalThis.uiSettlingUntil || 0) || (!!buddy && nameMarkBuddyBehindCover()));" in frame  # INBOX 1667: a dialog over the figure holds the rig the same way
-    assert "const look = (rig.dirty || !rig.reads) && !settling;" in frame
-    assert "rig.still = busy || (settling && rig.dirty) ? 0" in frame, "it stays awake until it has read again"
+    # INBOX 1766: the look is its own task (`atlasRigLook`) after a drawn frame; the frame reads nothing.
+    look = _look(MOTION)
+    assert "rig.reads && (now < (globalThis.uiSettlingUntil || 0) || (!!buddy && nameMarkBuddyBehindCover()))" in look  # INBOX 1667: a dialog over the figure holds the rig the same way
+    assert "if (rig.dirty) atlasRigWake.look.soon(rig, 100);" in look, "it asks again until it has read"
     mood = _fn(ATLAS, "setAtlasMood")
-    assert "window.uiSettlingUntil" in mood and "nmb.afterClean(() => nameMarkBuddyBlend(boxes, latest, 700), 6, latest), Math.max(0, settling + 20))" in mood  # INBOX 1667: a frame on as well, and a dirty page snaps; `latest` is the newest call only (review: mood race)
+    assert "window.uiSettlingUntil" in mood and "nmb.afterClean(() => nameMarkBuddyBlend(boxes, latest, 700), 14, latest, 160), Math.max(0, settling + 20))" in mood  # INBOX 1667: a frame on as well, and a dirty page snaps; `latest` is the newest call only (review: mood race)
     # The follow frame holds only while it is glued to a panel (1575's hold). One
     # harness (1575's nine-tab series at 4x, 500 seeded notes, three runs each),
     # reads and forced ms under the follow frame: glue-only 155 and 2.65 s, no hold

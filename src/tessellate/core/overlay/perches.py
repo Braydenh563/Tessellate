@@ -9,9 +9,10 @@ the person can see. Nothing here touches Windows or any window.
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import Iterable
 
-from tessellate.core.overlay.engine import Perch
+from tessellate.core.overlay.engine import Cover, Perch
 from tessellate.core.overlay.win32 import WinInfo
 
 
@@ -28,7 +29,8 @@ def _cut(spans: list[tuple[int, int]], lo: int, hi: int) -> list[tuple[int, int]
     return out
 
 
-def top_edges(wins: Iterable[WinInfo], min_width: int) -> list[Perch]:
+def top_edges(wins: Iterable[WinInfo], min_width: int, drops: Counter | None = None) -> list[Perch]:
+    """`drops`, when given, counts why a standable window's top gave no perch (never a title)."""
     ordered = list(wins)
     found: list[Perch] = []
     for i, win in enumerate(ordered):
@@ -36,14 +38,21 @@ def top_edges(wins: Iterable[WinInfo], min_width: int) -> list[Perch]:
             continue
         left, top, right, _bottom = win.rect
         spans = [(left, right)]
+        by_tool = False
         for above in ordered[:i]:
+            if not above.solid:  # a full-monitor layered window hides no top
+                continue
             al, at, ar, ab = above.rect
             if at <= top < ab:  # the line the figure would stand on passes through it
-                spans = _cut(spans, al, ar)
-        spans = [s for s in spans if s[1] - s[0] >= min_width]
-        if spans:
-            a, b = max(spans, key=lambda s: s[1] - s[0])
+                cut = _cut(spans, al, ar)
+                by_tool = by_tool or (cut != spans and not above.perch)
+                spans = cut
+        wide = [s for s in spans if s[1] - s[0] >= min_width]
+        if wide:
+            a, b = max(wide, key=lambda s: s[1] - s[0])
             found.append(Perch(win.key, a, top, b))
+        elif drops is not None:
+            drops["covered by a tool window" if by_tool and not spans else "covered by a window" if not spans else "too narrow"] += 1
     return found
 
 
@@ -61,10 +70,28 @@ def hang_spots(wins: Iterable[WinInfo], min_width: int) -> list[Perch]:
         spans = [(left, right)]
         for above in ordered[:i]:
             al, at, ar, ab = above.rect
-            if at <= line < ab:
+            if above.solid and at <= line < ab:
                 spans = _cut(spans, al, ar)
         spans = [s for s in spans if s[1] - s[0] >= min_width]
         if spans:
             a, b = max(spans, key=lambda s: s[1] - s[0])
             found.append(Perch(key, a, line, b, kind))
+    return found
+
+
+def tuck_spots(wins: Iterable[WinInfo], min_size: int) -> list[Cover]:
+    """The windows a figure may tuck behind the side of (INBOX 1683 k): each window it could stand on, at least
+    `min_size` each way, with the rectangles of the solid windows above it that overlap it (a window drawn over its
+    edge hides the figure's cover). The engine judges the side, the reach and the room."""
+    ordered = list(wins)
+    found: list[Cover] = []
+    for i, win in enumerate(ordered):
+        left, top, right, bottom = win.rect
+        if not win.perch or right - left < min_size or bottom - top < min_size:
+            continue
+        above = tuple(
+            a.rect for a in ordered[:i]
+            if a.solid and a.rect[0] < right and left < a.rect[2] and a.rect[1] < bottom and top < a.rect[3]
+        )
+        found.append(Cover(win.key, win.rect, above))
     return found

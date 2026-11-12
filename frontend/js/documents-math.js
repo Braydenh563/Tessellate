@@ -419,8 +419,14 @@
     //: `\tag{1}` is TeX's own equation number, taken off the formula and kept
     //: beside the tree (`label`) for the display box to set at the right edge.
     //: Display only: an inline formula has nowhere to put one.
-    const found = display ? /\\tag\*?\{([^{}]{1,24})\}/.exec(tex) : null;
-    const body = found ? tex.replace(found[0], "") : tex;
+    //: `\label{k}` names a display equation and `\eqref{k}` (or `\ref{k}`) is its number in parentheses, from the map the page
+    //: was indexed with (`docMathIndex`, `docMathUse`); an unknown key reads "(?)". A label is never drawn; with no `\tag` it
+    //: supplies the number.
+    const src = String(tex).replace(/\\(?:eqref|ref)\{([^{}]{1,40})\}/g, (all, key) => `\\text{(${DOC_MATH_LABELS.get(key.trim()) ?? "?"})}`);
+    const named = /\\label\{([^{}]{1,40})\}/.exec(src);
+    const clean = src.replace(/\\label\{[^{}]{0,40}\}/g, "");
+    const found = display ? /\\tag\*?\{([^{}]{1,24})\}/.exec(clean) : null;
+    const body = found ? clean.replace(found[0], "") : clean;
     const tokens = docMathTokens(body);
     const state = { at: 0, problems: [] };
     const kids = docMathNodes(tokens, state);
@@ -431,8 +437,47 @@
       tag: "math",
       attrs: { display: display ? "block" : "inline" },
       kids: [docMathRow(kids.length ? kids : [{ tag: "mtext", text: "" }])],
-      label: found ? found[1].trim() : "",
+      label: found ? found[1].trim() : display && named ? DOC_MATH_LABELS.get(named[1].trim()) || "" : "",
     };
+  }
+
+  //: The numbers a page's labels stand for: each `$$ ... $$` block with a `\label{k}` takes its `\tag{n}` or the next number
+  //: (equations with a tag do not use one up). The caller (a page render) hands the map to `docMathUse` before it draws.
+  let DOC_MATH_LABELS = new Map();
+  //: The numbered blocks of a page in reading order: each `$$ ... $$` and each `\begin{equation} ... \end{equation}`
+  //: (the latter with its `eq-auto-N` key, N counting those, starred ones left out).
+  function docMathBlocks(page) {
+    const blocks = [];
+    //: Blocks found with indexOf, not a lazy regex: a run of `$` with no closing pair would be rescanned from every start.
+    for (let open = page.indexOf("$$"); open >= 0; ) {
+      const close = page.indexOf("$$", open + 2);
+      if (close < 0) break;
+      if (close > open + 2) blocks.push({ at: open, body: page.slice(open + 2, close), auto: "" });
+      open = page.indexOf("$$", close + 2);
+    }
+    let n = 0;
+    for (const found of page.matchAll(/^[ \t]*\\begin\{equation\}([\s\S]*?)\\end\{equation\}/gm)) {
+      n += 1;
+      blocks.push({ at: found.index, body: found[1], auto: `eq-auto-${n}` });
+    }
+    return blocks.sort((a, b) => a.at - b.at);
+  }
+  function docMathIndex(text) {
+    const labels = new Map();
+    let next = 0;
+    for (const { body, auto } of docMathBlocks(String(text ?? ""))) {
+      const key = /\\label\{([^{}]{1,40})\}/.exec(body)?.[1].trim();
+      const dup = key && labels.has(key);
+      if ((!key && !auto) || (dup && !auto)) continue;
+      const tag = /\\tag\*?\{([^{}]{1,24})\}/.exec(body)?.[1].trim();
+      const number = tag || String((next += 1));
+      if (key && !dup) labels.set(key, number);
+      if (auto) labels.set(auto, number);
+    }
+    return labels;
+  }
+  function docMathUse(labels) {
+    DOC_MATH_LABELS = labels instanceof Map ? labels : new Map();
   }
 
   //: **What counts as math and what is a price.** `$` is a currency sign far
@@ -450,6 +495,46 @@
   }
 
   // DOC-MATH-END
+
+  // DOC-EQUATION-BEGIN (tests/test_doc_equation_env.py runs this in node)
+  //: `\begin{equation} ... \end{equation}` is a display equation that numbers
+  //: itself, `equation*` is the same without a number (LaTeX's rule). The block
+  //: opens at the start of a line and ends at the line with `\end{...}` (or on
+  //: the same line). A numbered one is handed on with a `\label{eq-auto-N}` the
+  //: page index (`docMathIndex`) knows, N counting the numbered openers before
+  //: it; one that has its own `\label` or `\tag` keeps it.
+  //:
+  //: **Taken in front of the boot script's door** (`mdMathBlockFrom`,
+  //: markdown.js) when this file loads, rather than as lines in it: the boot
+  //: scripts are on a byte ratchet and this is only needed where math draws. A
+  //: page with no math module loaded shows the block as the text it is.
+  function docMathEquationFrom(lines, start) {
+    const open = /^\s*\\begin\{(equation\*?)\}(.*)$/.exec(String(lines[start] || ""));
+    if (!open) return null;
+    const close = `\\end{${open[1]}}`;
+    const body = [];
+    let tail = open[2];
+    for (let i = start; i < lines.length; i += 1, tail = lines[i] ?? "") {
+      const at = tail.indexOf(close);
+      if (at >= 0) {
+        body.push(tail.slice(0, at));
+        return { tex: docMathEquationLabel(lines, start, open[1], body.join("\n").trim()), end: i + 1 };
+      }
+      body.push(tail);
+    }
+    return null;
+  }
+
+  function docMathEquationLabel(lines, start, name, tex) {
+    if (name.endsWith("*") || /\\(?:label|tag)\{/.test(tex)) return tex;
+    let before = 0;
+    for (let i = 0; i < start; i += 1) if (/^\s*\\begin\{equation\}/.test(String(lines[i] || ""))) before += 1;
+    return `${tex} \\label{eq-auto-${before + 1}}`;
+  }
+
+  const mdDoor = window.mdMathBlockFrom;
+  if (mdDoor) window.mdMathBlockFrom = (lines, start) => docMathEquationFrom(lines, start) || mdDoor(lines, start);
+  // DOC-EQUATION-END
 
   //: The tree as elements. MathML is its own namespace: built with
   //: `createElement` the tags are unknown HTML elements, which render as their
@@ -495,4 +580,112 @@
 
   //: The file's whole surface: what documents-cm.js, markdown.js and navigation.js call.
   Object.assign(window, { docMathLooksLikeMath, docMathRender });
+  //: The page's equation numbers ride on the renderer rather than take two more names in the shared scope.
+  docMathRender.labels = {
+    index: docMathIndex,
+    use: docMathUse,
+    //: A render of its own (a note card, a chat answer) indexes its own labels, only when it has some (navigation.js, boot-size budget).
+    page: (text) => !docMathRender.labels.held && /\\(?:label|eqref|ref)\{|\\begin\{equation\}/.test(text) && docMathUse(docMathIndex(text)),
+    //: True while a document renders its pieces (columns): each piece keeps the whole page's map instead of indexing its own text.
+    held: false,
+  };
+
+  //: **Fenced blocks drawn by a lazy module**: the ```graph block (documents-graph.js; DOCUMENTS_PLAN 16) and the ```base block
+  //: (documents-base.js; gap row 6). Read swaps each fence for its figure, and Live draws one the caret is outside of, through a
+  //: state field for the reason the mermaid fence gives (a replace across line breaks may not come from a plugin). The figure's own
+  //: clicks and drags are the figure's: the pencil on its corner puts the caret in the text.
+  const FENCES = {
+    graph: { module: "docGraph", cls: "md-graph", wrap: "cm-md-graph-wrap", pending: "md-graph-pending", edit: "dg-edit", height: 420, fill: (figure, source) => docMathRender.graph.fill(figure, source) },
+    base: { module: "docBase", cls: "md-base", wrap: "cm-md-base-wrap", pending: "md-base-pending", edit: "db-edit", height: 180, fill: (figure, source) => docMathRender.base.fill(figure, source) },
+  };
+  const fenceBlocks = (lang) => (text) =>
+    [...text.matchAll(new RegExp("^```[ \\t]*" + lang + "\\b[^\\n]*\\n([\\s\\S]*?)\\n```[ \\t]*$", "gm"))].map((m) => ({ from: m.index, to: m.index + m[0].length, source: m[1] }));
+  const fenceIn = (lang) => (container) => {
+    const spec = FENCES[lang];
+    const codes = [...container.querySelectorAll(`.code-block code[data-lang="${lang}"]`)];
+    if (!codes.length) return;
+    ensureModule(spec.module).then((ok) => {
+      for (const code of ok ? codes : []) {
+        const block = code.closest(".code-block");
+        if (!block?.isConnected) continue;
+        const figure = document.createElement("figure");
+        figure.className = spec.cls;
+        //: A fence that draws nothing stays the code it is, with the reasons under it.
+        if (spec.fill(figure, code.textContent)) block.replaceWith(figure);
+        else block.after(figure);
+      }
+    });
+  };
+  const fenceFieldCache = {};
+  const fenceField = (lang) => (CM) => {
+    if (fenceFieldCache[lang]) return fenceFieldCache[lang];
+    const spec = FENCES[lang];
+    const { StateField } = CM.state;
+    const { Decoration, EditorView, WidgetType } = CM.view;
+    class DocFenceWidget extends WidgetType {
+      constructor(source) {
+        super();
+        this.source = source;
+      }
+      //: The source alone: a key typed above a block must not draw it again and lose its sliders.
+      eq(other) {
+        return other.source === this.source;
+      }
+      get estimatedHeight() {
+        return spec.height;
+      }
+      ignoreEvent() {
+        return true;
+      }
+      toDOM(view) {
+        const wrap = document.createElement("div");
+        wrap.className = spec.wrap;
+        const figure = document.createElement("figure");
+        figure.className = `${spec.cls} cm-${spec.cls} ${spec.pending}`;
+        const edit = smallButton("ph:pencil-simple", `Edit the ${lang}'s text`, () => {
+          view.dispatch({ selection: { anchor: Math.min(view.posAtDOM(wrap) + 4, view.state.doc.length) } });
+          view.focus();
+        });
+        edit.classList.add(spec.edit, "icon-only");
+        wrap.append(figure, edit);
+        ensureModule(spec.module).then((ok) => {
+          if (!ok) return;
+          figure.classList.remove(spec.pending);
+          spec.fill(figure, this.source);
+          view.requestMeasure();
+        });
+        return wrap;
+      }
+    }
+    //: The fences once per text, as the mermaid field does: a caret move rescanned the whole document.
+    const blocksOf = new WeakMap();
+    const find = fenceBlocks(lang);
+    const build = (state) => {
+      let blocks = blocksOf.get(state.doc);
+      if (!blocks) {
+        //: Through the Documents file's cached reader where it is loaded (a long text read twice per keystroke is the cost it avoids).
+        const text = window.docStr ? window.docStr(state.doc) : state.doc.sliceString(0);
+        blocks = new RegExp("```[ \\t]*" + lang).test(text) ? find(text) : [];
+        blocksOf.set(state.doc, blocks);
+      }
+      const ranges = blocks
+        .filter((block) => !docLiveSpanTouched.anchorIn(state.selection.ranges, block.from, block.to))
+        .map((block) => Decoration.replace({ widget: new DocFenceWidget(block.source), block: true }).range(block.from, block.to));
+      return ranges.length ? Decoration.set(ranges, true) : Decoration.none;
+    };
+    fenceFieldCache[lang] = StateField.define({
+      create: (state) => build(state),
+      update: (value, tr) => (tr.docChanged || tr.selection ? build(tr.state) : value),
+      provide: (field) => EditorView.decorations.from(field),
+    });
+    return fenceFieldCache[lang];
+  };
+  Object.assign(docMathRender, {
+    graphBlocks: fenceBlocks("graph"),
+    graphIn: fenceIn("graph"),
+    graphField: fenceField("graph"),
+    baseBlocks: fenceBlocks("base"),
+    baseIn: fenceIn("base"),
+    baseField: fenceField("base"),
+  });
 })();

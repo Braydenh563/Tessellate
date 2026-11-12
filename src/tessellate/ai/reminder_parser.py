@@ -17,6 +17,7 @@ import json
 import re
 from datetime import datetime, timedelta
 
+from tessellate.ai import presets
 from tessellate.ai import recognise
 
 _PRIORITIES = ("low", "normal", "high")
@@ -107,6 +108,15 @@ def read_by_rule(text: str, now: datetime) -> dict | None:
     return parsed
 
 
+_VAGUE = re.compile(r"\b(?:some ?time|some ?day|whenever|eventually)\b", re.IGNORECASE)
+
+
+def says_no_time(text: str) -> bool:
+    """Whether the words promise a time and name none ("something sometime"):
+    a parse of it must not invent tomorrow 9am (G14 j)."""
+    return bool(_VAGUE.search(text or ""))
+
+
 def _fallback(text: str, now: datetime) -> dict:
     due = (now + timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
     return {"text": text.strip() or "Reminder", "due_at": due, "priority": "normal"}
@@ -140,7 +150,7 @@ def parse_reminder(text: str, ollama, model_manager, now: datetime) -> dict:
         {"role": "user", "content": text},
     ]
     try:
-        reply = ollama.chat(model_manager.utility_model(), messages)
+        reply = ollama.chat(model_manager.utility_model(), messages, mode=presets.BACKGROUND_MODE)
     except Exception:  # noqa: BLE001  # any model failure degrades gracefully
         return _fallback(text, now)
 
@@ -323,9 +333,16 @@ def _is_reminder_word(word: str) -> bool:
     """"reminder" or "reminders", typos included ("remindr", "remnder")."""
     if word in ("remind", "reminds", "reminded", "reminding"):
         return False
+    #: A timer or an alarm is asked for as a reminder in the same time (R9-11).
     return word.startswith("remind") or bool(
         difflib.get_close_matches(word, ("reminder", "reminders"), n=1, cutoff=0.8)
     )
+
+
+def _names_reminder(word: str, after: list[str]) -> bool:
+    """The word names a reminder; a timer or an alarm with a length ("a timer for 40 minutes") is one in that time (R9-11)."""
+    bare = re.sub(r"[^\w]", "", word.lower())
+    return _is_reminder_word(bare) or (bare in ("timer", "alarm") and any(c.isdigit() for c in " ".join(after)))
 
 
 def canonical_ask(text: str) -> str:
@@ -335,7 +352,7 @@ def canonical_ask(text: str) -> str:
     as typed, so the existing readers take the what and the when from it."""
     words = text.split()
     for at, word in enumerate(words[:8]):
-        if not _is_reminder_word(re.sub(r"[^\w]", "", word.lower())):
+        if not _names_reminder(word, words[at + 1:]):
             continue
         lead = [w for w in re.split(r"[^a-z]+", " ".join(words[:at]).lower().replace("'", " ")) if w]
         #: "I set a reminder yesterday" reports; "I want to set one" asks.

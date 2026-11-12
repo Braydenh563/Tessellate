@@ -98,7 +98,8 @@ startClockTicker();
 tickClocks();
 
 window.addEventListener("resize", () => {
-  //: `typeof`, for the reason `refreshArtForTheme` below already records:
+  //: Guarded with `typeof` (88bfe5341 removed it, 87139afcf put it back, and
+  //: tests/test_boot_guards_late_scripts.py pins it):
   //: `sizeDashWidgets` lives in dashboard.js, which loads after this file,
   //: and the desktop window resizes itself while the scripts are still being
   //: fetched (pywebview shows the window, then sizes it to the saved
@@ -109,7 +110,7 @@ window.addEventListener("resize", () => {
   //: dashboard.js sizes its own widgets when it renders.
   if ($("dash-grid") && typeof sizeDashWidgets === "function") sizeDashWidgets();
   // A dragged composer height is only valid for the window it was dragged in.
-  refitComposer();
+  if (typeof refitComposer === "function") refitComposer();
 });
 
 // Fade a tab-strip edge only while there is something hidden beyond it.
@@ -620,7 +621,10 @@ let scrollEdgeFrame = 0;
 function onScrollEdge(event) {
   const region = event.target === document ? document.scrollingElement : event.target;
   if (!region || region.nodeType !== 1) return;
-  if (scrollEdgeFrame) return;
+  //: The same guard the edge effect uses: a menu, a dialog or a sheet scrolls *over* the page, and nothing
+  //: under it reacts. Before the timer, not in it (INBOX 1696 f): a Settings section switch scrolls its pane,
+  //: and the timer's scrollTop read paid the pane's pending style (274 ms at 4x CPU) for no change at all.
+  if (scrollEdgeFrame || region.closest(".action-menu, .help-popover, .modal-overlay, #settings-modal, [role='menu']")) return;
   // Coalesced to one measurement per frame: a scroll event fires far more
   // often than the screen repaints, and this one reads layout.
   //: After the frame's layout, a timer past it (see `scheduleUpdate`,
@@ -628,15 +632,7 @@ function onScrollEdge(event) {
   scrollEdgeFrame = requestAnimationFrame(() => setTimeout(() => {
     scrollEdgeFrame = 0;
     markScrollEdge(region);
-    //: The same guard the edge effect uses: a menu, a dialog or a sheet
-    //: scrolls *over* the page, and the bar it is covering has no business
-    //: reacting to it.
-    if (
-      !region.closest ||
-      !region.closest(".action-menu, .help-popover, .modal-overlay, #settings-modal, [role='menu']")
-    ) {
-      markTabBarRecede(region);
-    }
+    markTabBarRecede(region);
   }));
 }
 
@@ -678,7 +674,10 @@ function syncScrollEdges() {
       scrollEdgeRegions.delete(region);
       continue;
     }
-    if (page && page.contains(region) && region.scrollTop > 1) {
+    //: Only a region last seen scrolled is asked: a `scrollTop` read lays the page out, and on
+    //: a tab change (this runs from the class mutation) that was 59ms of forced style plus
+    //: 14ms of layout on the Dashboard at 4x, for regions that never scrolled (INBOX 1111).
+    if (page && scrollEdgeLastState.get(region) && page.contains(region) && region.scrollTop > 1) {
       markScrollEdge(region, true);
       handled = true;
     }
@@ -699,7 +698,16 @@ window.addEventListener("resize", syncScrollEdges);
 // publishes, and observing it here keeps the whole effect in one block
 // instead of adding a line to the tab machinery for a gradient.
 if (typeof MutationObserver !== "undefined") {
-  const scrollEdgeObserver = new MutationObserver(() => syncScrollEdges());
+  //: A frame on, after layout, not in the switch's microtask (INBOX 1667: a 38 to 65 ms forced layout).
+  let scrollEdgeSync = 0;
+  const scrollEdgeObserver = new MutationObserver(() => {
+    if (scrollEdgeSync || !window.afterFrames) return;
+    scrollEdgeSync = 1;
+    afterFrames(() => setTimeout(() => {
+      scrollEdgeSync = 0;
+      syncScrollEdges();
+    }), 1);
+  });
   for (const page of document.querySelectorAll(".tab-page")) {
     scrollEdgeObserver.observe(page, { attributes: true, attributeFilter: ["class"] });
   }
@@ -1134,7 +1142,9 @@ function reminderItem(reminder, label) {
     //: by the server from the rule (every weekday, the last Friday of the
     //: month) in this person's own days; its undo puts the due time back.
     if (checkbox.checked && reminder.recurring && reminder.recurring !== "none") {
-      const rolled = await apiJson(`/reminders/${reminder.id}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { method: "POST" });
+      const rolled = await apiJson(`/reminders/${reminder.id}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}&expected_due_at=${encodeURIComponent(reminder.due_at)}`, { method: "POST" }).catch(() => null);
+      //: A 409 means another tab or press already rolled this occurrence: show the new time, roll nothing.
+      if (!rolled) { loadReminders(); return; }
       const put = (body) => async () => {
         await apiJson(`/reminders/${reminder.id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
         loadReminders();
@@ -1584,41 +1594,43 @@ function defaultDueValue() {
 //: "Add all to calendar (.ics)" in the Reminders dock's More menu: every open
 //: reminder in this space, one file. The menu closes first so the save
 //: dialog (or the desktop's saved-to toast) is not drawn under it.
-$("reminders-export-ics")?.addEventListener("click", () => {
-  $("reminders-more-menu")?.removeAttribute("open");
-  downloadFromApi("/reminders/export.ics", "tessellate-reminders.ics");
-});
+onSurface("reminders", () => {
+  $("reminders-export-ics").addEventListener("click", () => {
+    $("reminders-more-menu").removeAttribute("open");
+    downloadFromApi("/reminders/export.ics", "tessellate-reminders.ics");
+  });
 
-//: "Import a calendar (.ics)" (TIMELINE_PLAN decision 17): every event a
-//: reminder can hold comes in, a bad one is named by its line and the rest
-//: kept, and Undo bins exactly the reminders it added.
-$("reminders-import-ics").addEventListener("click", () => {
-  $("reminders-more-menu").removeAttribute("open");
-  $("reminders-import-ics-file").click();
-});
-$("reminders-import-ics-file").addEventListener("change", async (event) => {
-  const file = event.target.files?.[0];
-  event.target.value = "";
-  if (!file) return;
-  const form = new FormData();
-  form.append("file", file);
-  form.append("tz_offset_minutes", String(-new Date().getTimezoneOffset()));
-  let result;
-  try {
-    result = await (await api.upload("/reminders/import.ics", form)).json();
-  } catch (error) {
-    toast(error.message, true);
-    return;
-  }
-  loadReminders();
-  const skipped = result.skipped.length ? ` Skipped ${result.skipped.length}: ${result.skipped[0].reason}${result.skipped.length > 1 ? " and more" : ""}.` : "";
-  const message = `Imported ${result.added.length}, updated ${result.updated.length}.${skipped}`;
-  const each = (path, method) => async () => {
-    for (const id of result.added) await apiJson(path(id), { method });
+  //: "Import a calendar (.ics)" (TIMELINE_PLAN decision 17): every event a
+  //: reminder can hold comes in, a bad one is named by its line and the rest
+  //: kept, and Undo bins exactly the reminders it added.
+  $("reminders-import-ics").addEventListener("click", () => {
+    $("reminders-more-menu").removeAttribute("open");
+    $("reminders-import-ics-file").click();
+  });
+  $("reminders-import-ics-file").addEventListener("change", async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const form = new FormData();
+    form.append("file", file);
+    form.append("tz_offset_minutes", String(-new Date().getTimezoneOffset()));
+    let result;
+    try {
+      result = await (await api.upload("/reminders/import.ics", form)).json();
+    } catch (error) {
+      toast(error.message, true);
+      return;
+    }
     loadReminders();
-  };
-  if (!result.added.length) return void toast(message, "info");
-  offerUndo("Imported reminders", message, each((id) => `/reminders/${id}`, "DELETE"), each((id) => `/reminders/${id}/restore`, "POST"));
+    const skipped = result.skipped.length ? ` Skipped ${result.skipped.length}: ${result.skipped[0].reason}${result.skipped.length > 1 ? " and more" : ""}.` : "";
+    const message = `Imported ${result.added.length}, updated ${result.updated.length}.${skipped}`;
+    const each = (path, method) => async () => {
+      for (const id of result.added) await apiJson(path(id), { method });
+      loadReminders();
+    };
+    if (!result.added.length) return void toast(message, "info");
+    offerUndo("Imported reminders", message, each((id) => `/reminders/${id}`, "DELETE"), each((id) => `/reminders/${id}/restore`, "POST"));
+  });
 });
 
 //: In this boot file rather than app.js, whose gzipped size is a ratchet;

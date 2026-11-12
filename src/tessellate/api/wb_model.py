@@ -13,7 +13,7 @@ import math
 import re
 import unicodedata
 
-from typing import Annotated
+from typing import Annotated, Literal
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StrictInt, StringConstraints, field_validator, model_serializer
 from fastapi import HTTPException
 from tessellate.core.validation_copy import Said
@@ -127,6 +127,10 @@ MAP_THEME_FIELDS: dict[str, frozenset | type] = {
     #: mindmap appearance options"). The tidy's two gaps scaled; normal is no
     #: value. The map's, like the font: never resolved onto a topic.
     "spacing": frozenset({"compact", "roomy"}),
+    #: **Rainbow every level** (MINDMAP_PLAN gap 10): each topic claims the next palette colour among its siblings at every depth, not only the first. The map's, never resolved onto a topic.
+    "rainbow": bool,
+    #: **A legend on the map** (MINDMAP_PLAN gap 11): the main branches' colours and the markers in use, drawn over the canvas. The map's, never resolved onto a topic.
+    "legend": bool,
     #: **The hierarchy preset** (MINDMAP_PLAN.md decision 39): how the centre,
     #: the main branches and everything deeper draw. Classic is the default
     #: and is stored as no value; the frontend holds what each one draws
@@ -160,7 +164,7 @@ MAP_LEVELS = ("0", "1", "2")
 #: one topic: never filled in under a topic's style (`_themed_style`), so an
 #: export never writes them onto a node and a re-import never reads them back
 #: as a topic's own choice.
-MAP_LEVEL_THEME_FIELDS = frozenset({"palette", "font", "hierarchy", "levels", "spacing"})
+MAP_LEVEL_THEME_FIELDS = frozenset({"palette", "font", "hierarchy", "levels", "spacing", "rainbow", "legend"})
 
 #: **A stored name for the app's own default, per themed select** (decision
 #: 9's narrow case, built). Every select in the topic strip stores the app's
@@ -460,6 +464,17 @@ class WhiteboardObjectData(BaseModel):
     #: A picture cropped to a shape (INBOX 1313): a name from this short list,
     #: never a path, so nothing a client sends reaches a style.
     crop: str | None = Field(default=None, pattern="^(ellipse|diamond|hexagon|triangle)$")
+    #: A picture's rectangle crop: percent cut from the top, right, bottom and left
+    #: (the Format panel's Trim edges). It shares the clip with `crop`.
+    trim: list[Annotated[int, Field(ge=0, le=90)]] | None = Field(default=None, min_length=4, max_length=4)
+    #: Edit image: a picture's quarter turn, flips and filters, drawn over the
+    #: untouched file (non-destructive). Brightness and contrast are percent, 100 is as-is.
+    turn: Literal[0, 90, 180, 270] | None = None
+    flip_x: bool | None = None
+    flip_y: bool | None = None
+    grey: bool | None = None
+    bright: int | None = Field(default=None, ge=20, le=200)
+    contrast: int | None = Field(default=None, ge=20, le=200)
     #: Voting dots on a board item (Miro's; INBOX 1313): how many it holds.
     #: Content, not a look. Zero is "none", so it is not stored.
     votes: int | None = Field(default=None, ge=1, le=99)
@@ -660,6 +675,17 @@ class WhiteboardObjectData(BaseModel):
     #: so a topic is due on a day wherever the map is opened. Content, like
     #: the markers; a reminder is made from it on request, never by itself.
     due: str | None = Field(default=None, pattern=r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$")
+    #: **A start day**, beside `due` (the Gantt view draws a bar from one to the
+    #: other for a topic that has both). The same shape and the same kind of
+    #: field: content, so a look reset keeps it. Which comes first is not
+    #: checked here; the view skips a topic whose start is after its due day.
+    start: str | None = Field(default=None, pattern=r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$")
+    #: **An audio note** (MINDMAP_PLAN gap 4, decided 2026-11-10): the id of a
+    #: recording in the Library, never audio of its own (WORLD_CLASS_PLAN,
+    #: "Audio in the notebook", decision 2: a recording is its own object).
+    #: Content like `note`. A recording later put in the bin leaves the id
+    #: dangling, which the topic's player says in words rather than failing.
+    recording: int | None = Field(default=None, ge=1, strict=True)
     #: **The bar down a topic's leading edge** (MINDMAP_PLAN.md item 177:
     #: "per-node left edge: solid, dashed or none"). Two values, because the
     #: third is the absence of the field: a map drawn before this existed and

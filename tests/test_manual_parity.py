@@ -15,7 +15,7 @@ panel (notes-list.js, `routes_categories.py`).
 
 from __future__ import annotations
 
-from tests._help_text import help_chat_text
+from tests._help_text import help_chat_text, help_more_text
 
 import json
 import shutil
@@ -25,6 +25,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai.tools import WRITE_TOOLS
+from tests._js_scope import unwrapped
 
 FRONTEND = Path(__file__).resolve().parents[1] / "frontend"
 
@@ -37,7 +38,7 @@ MANUAL = {
     "create_note": ("capture-ask.js", 'apiJson("/entries", {', "Notes, Capture box"),
     "edit_note": ("note-edit-panels.js", "base_hash: base", "a note's Edit form"),
     "tag_note": ("note-edit-panels.js", 'tagField.className = "tag-field note-edit-tags";', "a note's Edit form, Tags"),
-    "pin_note": ("note-cards.js", 'button.classList.add("favourite-btn");', "a note's star"),
+    "pin_note": ("entry-card.js", 'button.classList.add("favourite-btn");', "a note's star"),
     "link_notes": ("graph-canvas.js", 'method: "POST", body: JSON.stringify({ target', "Graph, drag one note to another"),
     "unlink_notes": ("graph.js", '/links/${edge.id}`, { method: "DELETE" })', "Graph, click a link, Remove"),
     "audit_link_reasons": ("entry-card.js", "/reason`", "a note's links, Edit reason"),
@@ -138,6 +139,8 @@ UTILITIES = {
     "convert units": ("settings-panes.js", 'id: "convert", name: "Convert units"', "the palette's Convert units", "calculator"),
     "equation": ("math-editor.js", "function mathEditorMount({", "Calculator and equations, Equation tab, Alt+=, or /equation", "equation-editor"),
     "count words": ("utility-tools.js", "function countSelection(caught)", "the palette's Count words", "count-words"),
+    "audio overview": ("studio.js", "function openStudio()", "the palette's Make an audio overview", "audio-overview"),
+    "sync between computers": ("sync-folder.js", "async function openFolderSync()", "Settings, Import & export, Sync between computers, Sync through a folder", "folder-sync"),
     "live captions": ("captions.js", "async function startLiveCaptions(opts = {})", "the palette's Live captions", "live-captions"),
     "translate this": ("translate.js", "async function translateCaught(caught)", "the palette's Translate this", "translate-offline"),
     "check this computer": ("settings-controls.js", "async function runMaintenanceDoctor()", "Settings, About, Maintenance, Check this computer", "maintenance"),
@@ -186,8 +189,9 @@ def test_every_utility_has_its_way_in_and_a_guide_topic():
 #: controls): their topics now name them.
 _PROBE = """
 const fs = require("fs"), vm = require("vm");
-const ctx = {}; vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(process.argv[2], "utf8"), ctx);
+const ctx = {}; ctx.window = ctx; vm.createContext(ctx);
+// manual.js is one closure (row 37a): this probe reads two private names by adding them to its export foot.
+vm.runInContext(fs.readFileSync(process.argv[2], "utf8").replace("Object.assign(window, {", "Object.assign(window, { manualMatches, manualWords,"), ctx);
 const topics = JSON.parse(fs.readFileSync(process.argv[3], "utf8")).groups.flatMap((g) => g.topics);
 const out = {};
 for (const q of JSON.parse(fs.readFileSync(process.argv[4], "utf8"))) {
@@ -224,7 +228,7 @@ def test_the_manual_is_the_guides_topics_with_a_door_from_help_and_the_guide():
     assert "window.print()" in manual and 'search.placeholder = "Search the manual";' in manual
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     assert 'id="help-open-manual"' in html
-    find = (FRONTEND / "js" / "settings-find.js").read_text(encoding="utf-8")
+    find = unwrapped((FRONTEND / "js" / "settings-find.js").read_text(encoding="utf-8"))
     assert '$("help-open-manual")?.addEventListener("click", () => lazyScript("/js/manual.js")' in find
     guide = (FRONTEND / "js" / "help-chat.js").read_text(encoding="utf-8")
     assert '"ph:book-open-text Open the manual"' in guide
@@ -236,9 +240,8 @@ def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_t
     """Standing order 13: the Open Packages button on package notices (fixes1),
     the transcript's copy controls (C40) and the strip's dates switch (C36) are
     named in the Guide and in Settings or the Timeline's own help."""
-    from tessellate.ai import help_topics_more
 
-    text = help_chat_text() + Path(help_topics_more.__file__).read_text(encoding="utf-8")
+    text = help_chat_text() + help_more_text()
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     assert "Open Packages button" in text and "Open Packages button" in html
     assert "Shift-click picks a run of" in text
@@ -335,7 +338,7 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
     for words in ("floats like a wind spirit", "sleeps", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
                   "climbs onto the top of a window", "Roam over windows", "a card when a reminder falls due",
                   "alive in place", "walking, running", "out at one edge and in at the other", "through a portal", "swings down or lets go with a start",
-                  "right-click for Companion (Atlas masculine or feminine, your own or a saved one, drawn once)"):
+                  "right-click for Companion (Atlas masculine or feminine, your own or a saved one, summoned once)"):
         assert words in " ".join(popover.split()), words
     for topic in named:
         flat = " ".join(topic["body"].split())
@@ -343,7 +346,7 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
                       "climbs onto the top of a window", "Roam over windows", "a card to click",
                       "alive in place", "walking, running", "out at one edge and in at the other", "through a portal", "swings down or lets go with a start",
                       #: Changed on purpose (INBOX 1684): every companion shows on the desk, so "the rest show in the app only" is gone.
-                      "Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, drawn once)"):
+                      "Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, summoned once)"):
             assert words in flat, (topic["id"], words)
             assert len(topic["body"]) < 1900, topic["id"]
     settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
@@ -361,18 +364,26 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
     from tessellate.ai.help_chat import HELP_TOPICS
     from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
 
+    # Intent moved (INBOX 1661 i): the views Canvas and Blocks are now named Picture and List, so the words checked are theirs.
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
-    for words in ("Blocks", "Source and Split", "Ctrl+Z", "press its arrow", "joins them", "inside",
+    for words in ("List gives", "Source and Split", "Ctrl+Z", "press its arrow", "joins them", "inside",
                   "Enter renames", "N adds", "G adds a group", "J joins", "Delete removes", "Alt+Up and Alt+Down",
                   "Alt+Right nests", "Alt+Left lifts", "long press", "shape swatch"):
         assert words in body, words
     assert "diagram-blocks" in TOPIC_META
     assert "diagram-blocks" in dict(HELP_GROUPS)["Documents and code"]
+    # The toolbar's Expand and Collapse (the owner, 2026-11-11), said in the controls' words in the Guide and the dock's popover.
+    from tessellate.ai.help_chat import HELP_TOPICS as TOPICS
+
+    builder = str(next(t["body"] for t in TOPICS if t["id"] == "diagram-lines"))
+    assert "Expand, at the end of the toolbar of a diagram in a document" in builder and "Collapse or Escape returns to the document" in builder
+    index = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert "Expand, at the end of the diagram's toolbar" in index and "Collapse or Escape returns to the document" in index
     builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
     for key in ("Insert", "Delete", "Backspace", "ContextMenu"):
         assert key in builder, key
     docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
-    assert "Canvas" in docs and "A diagram has Canvas, Blocks, Split and Source." in docs
+    assert "Picture" in docs and "A diagram has Picture, List, Split and Source." in docs
 
 
 def test_the_diagram_add_library_and_connect_to_are_in_the_guide_in_the_controls_words() -> None:
@@ -426,7 +437,11 @@ def test_the_diagram_kinds_are_in_the_guide_in_the_controls_words() -> None:
                   "a section, a period and an event (S, P and E)",
                   # 1679 m: the tiles grew by Parallel, Critical and Break (U, C, B); the sentence still lists every tile with its key.
                   "actor, participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, L, G, O, U, C and B)",
-                  "opens in Source with its picture", "of another kind says so and is left out", "replaces a blank one"):
+                  "opens in Source with its picture", "of another kind says so and is left out", "replaces a blank one",
+                  # 1661 k: the four kind buttons became one Kind menu in the Title row.
+                  "Kind, in the Title row (first in the toolbar elsewhere), is a menu",
+                  # 1661 l: a sequence diagram is edited on its picture (diagram-seq-canvas.js); dgpic-1109: a mind map and a timeline too.
+                  "On a sequence, mind map or timeline picture a press picks a part, a double press, Enter or F2 renames it"):
         assert words in body, words
     assert "diagram-kinds" in TOPIC_META and "diagram-kinds" in dict(HELP_GROUPS)["Documents and code"]
     assert "next topic" in str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
@@ -460,7 +475,7 @@ def test_the_diagram_dialog_the_reply_action_and_the_exports_are_in_the_guide_in
     for words in ("Save to Library", "replace the fence with a link", "link a board's diagram", "Attach a Library diagram to Chat"):
         assert words in body, words
     assert 'smallButton("ph:books", "Save to Library"' in mermaid and "Save to Library" in embed
-    for label in ('"Done"', '"Cancel"', '"Source"', '"Blocks"'):
+    for label in ('"Done"', '"Cancel"', '"Source"', '"List"'):
         assert label in embed, label
 
 
@@ -470,10 +485,10 @@ def test_the_diagram_picture_zoom_is_in_the_guide_in_the_controls_words() -> Non
     from tessellate.ai.help_chat import HELP_TOPICS
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
-    for words in ("corner bar zooms (Zoom in, Zoom out, Fit)", "reads the zoom now", "100% is the drawing's own size", "Ctrl+wheel", "a pinch", "arrow keys pan"):
+    for words in ("corner bar zooms (Zoom in, Zoom out, Fit)", "percentage is typeable", "100% is the drawing's own size", "Ctrl+wheel", "a pinch", "arrow keys pan"):
         assert words in body, words
     view = (FRONTEND / "js" / "diagram-view.js").read_text(encoding="utf-8")
-    for label in ('"Zoom in"', '"Zoom out"', '"Fit"', '"100%"', "event.ctrlKey", "ArrowLeft"):
+    for label in ('"Zoom in"', '"Zoom out"', '"Fit"', 'label: "Zoom percent"', "event.ctrlKey", "ArrowLeft"):
         assert label in view, label
 
 
@@ -503,5 +518,228 @@ def test_the_diagram_multiselect_is_in_the_guide_in_the_controls_words() -> None
     for words in ("Shift+click picks a range", "Ctrl+click adds one", "Duplicate", "Box them", "any picked grip moves all"):
         assert words in body, words
     multi = (FRONTEND / "js" / "diagram-multi.js").read_text(encoding="utf-8")
-    for label in ('"ph:trash Delete"', '"ph:copy Duplicate"', '"ph:diamond Shape"', '"ph:stack Box them"', '"Done"'):
+    for label in ('tool("trash", "Delete"', 'tool("copy", "Duplicate"', 'tool("diamond", "Shape"', 'tool("stack", "Box them"', '"Select all"', '"Clear"'):
         assert label in multi, label
+
+
+def test_confirmed_patterns_are_managed_where_the_guide_and_the_help_say():
+    """B9 (the owner: "also is there a way to edit or managed confirmed
+    patterns??"): the Patterns topic, the memory topic and What it remembers'
+    own help name the group and its three actions in the controls' words."""
+    from tessellate.ai import help_chat
+
+    topics = {t["id"]: t["body"] for t in help_chat.HELP_TOPICS}
+    for words in ("Edit", "Not right", "Remove", "Undo", "Settings, What it remembers", "its tag still reaches it"):
+        assert words in topics["patterns"], words
+    assert "patterns you confirmed" in topics["memory"]
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    help_body = html[html.index('id="memory-help"') :][:2400]
+    for words in ("Confirmed patterns", "Edit", "Remove", "Not right", "Undo", "its tag still"):
+        assert words in help_body, words
+    menu = (FRONTEND / "js" / "confirmed-patterns.js").read_text(encoding="utf-8")
+    for label in ('"ph:pencil-simple Edit"', 'item.verdict === "dismiss").label', '"ph:trash Remove"'):
+        assert label in menu, label
+
+
+def test_the_diagram_tab_chain_the_starter_and_the_keys_chip_are_in_the_guide() -> None:
+    """1107 DD-3 and DD-7: Tab and Shift+Tab on a box, the New diagram window's starter and Clear, the Keys button and `?`,
+    each said in the Guide in the words the controls carry (standing order 13)."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    elsewhere = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-elsewhere"))
+    for words in ("Tab adds a joined box", "Shift+Tab selects its source", "F6 leaves the blocks", "Ctrl+Enter keeps the diagram", "three-box starter", "Clear, in the ... menu", "The Keys button", "? outside a text field", "one Add button"):
+        assert words in elsewhere, words
+    embed = (FRONTEND / "js" / "diagram-embed.js").read_text(encoding="utf-8")
+    style = (FRONTEND / "js" / "diagram-style.js").read_text(encoding="utf-8")
+    assert '"ph:keyboard Keys"' in embed and '"ph:eraser Clear"' in embed and 'data-help-for", "dgm-dialog-help"' in embed
+    assert '["Tab", "Add a box after the last one, joined to it"]' in style
+    # 1107 DD-8a: the picture's arrows pick a box, the Keys sheet and the Guide say so.
+    assert '["Arrows on the picture", "Pick the box in that direction"]' in style
+    diagram = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    assert "Shift+arrow keys pan" in diagram
+    # 1107 DD-5: the Source pane's keys, in the Keys sheet and the Guide.
+    assert '["Tab, Shift + Tab in Source", "Indent, take the indent back"]' in style and '["Esc in Source", "Leave the text for the views"]' in style
+    reading = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-reading"))
+    kinds = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
+    assert "Hand-drawn look, in the ... menu" in kinds and "Clean look takes it back" in kinds
+    assert '"ph:pencil-line Hand-drawn look"' in embed and '"ph:rectangle Clean look"' in embed
+    for words in ("In Source, Tab indents and Shift+Tab takes it back", "Escape leaves the text", "a red line number", "Title names the document Done makes (blank dates it)"):
+        assert words in reading, words
+    assert "In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture" in reading
+
+
+def test_the_diagram_panel_folds_are_in_the_guide_in_the_controls_words() -> None:
+    """1661 m: `[` and `]` fold the list and the picture to a rail (diagram-split.js), and a kind's list is the phone's sheet."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-reading"))
+    assert "[ and ] fold the list and the picture to a rail" in body and "Blocks list opens the list as a sheet" in body
+    split = (FRONTEND / "js" / "diagram-split.js").read_text(encoding="utf-8")
+    assert 'right: ["picture", "]"' in split and 'left: ["list", "["' in split
+
+
+# --- the one-line lead on every topic (INBOX 1612) ----------------------------
+#: The owner's decision: "yes to a one-line summary at the top of every topic
+#: (the copy rule's one line, the rest under it)". Each lead is one sentence
+#: saying what the feature is for, drawn first in Settings, Help and the
+#: manual, and kept out of the prompt (help_leads.py says why).
+
+_LEAD_MAX = 90
+
+
+def _listed_topics() -> list[dict]:
+    from tessellate.ai.help_chat import help_listing
+
+    return [topic for group in help_listing()["groups"] for topic in group["topics"]]
+
+
+def _lead_faults(lead: str, title: str) -> list[str]:
+    import re
+
+    words = lead.split()
+    return [
+        reason
+        for reason, bad in (
+            ("over 90 characters", len(lead) > _LEAD_MAX),
+            ("no full stop at the end", not lead.endswith(".")),
+            ("more than one sentence", bool(re.search(r"[.!?;]\s", lead))),
+            ("an em-dash or en-dash", "\u2014" in lead or "\u2013" in lead),
+            ("an exclamation mark", "!" in lead),
+            ("not starting with a capital", not lead[:1].isupper()),
+            ("title case", sum(w[:1].isupper() for w in words[1:]) * 2 > len(words)),
+            ("the title again", lead.rstrip(".").casefold() == title.casefold()),
+        )
+        if bad
+    ]
+
+
+def test_every_listed_topic_has_a_one_sentence_lead():
+    faults = {}
+    for topic in _listed_topics():
+        lead = topic.get("lead", "")
+        found = ["no lead"] if not lead else _lead_faults(lead, topic["title"])
+        if found:
+            faults[topic["id"]] = found
+    assert not faults, faults
+
+
+def test_no_two_leads_are_the_same_and_none_is_left_over():
+    from tessellate.ai.help_leads import TOPIC_LEADS
+
+    listed = {topic["id"] for topic in _listed_topics()}
+    assert set(TOPIC_LEADS) <= listed, sorted(set(TOPIC_LEADS) - listed)
+    leads = [lead.casefold() for lead in TOPIC_LEADS.values()]
+    assert len(leads) == len(set(leads)), sorted({lead for lead in leads if leads.count(lead) > 1})
+
+
+def test_the_lead_is_never_prompt_text(monkeypatch):
+    from tessellate.ai import help_chat
+    from tessellate.ai.help_leads import TOPIC_LEADS
+
+    assert not any("lead" in topic for topic in help_chat.HELP_TOPICS)
+    #: Every topic grounds this one turn, so no lead can hide behind retrieval.
+    monkeypatch.setattr(help_chat, "topics_for", lambda question, tab: list(help_chat.HELP_TOPICS))
+    messages, topics = help_chat._prompt_for("how do I sort my notes", None, None, None)
+    sent = "\n".join(message["content"] for message in messages)
+    assert len(topics) == len(help_chat.HELP_TOPICS)
+    assert [lead for lead in TOPIC_LEADS.values() if lead in sent] == []
+    #: A body no longer opens on its label ("Graph keys and controls."), so the
+    #: title names the surface for the model, as `help_block_for` does.
+    assert [t["id"] for t in help_chat.HELP_TOPICS if f"- {help_chat.topic_title(t)}: " not in sent] == []
+
+
+def test_settings_help_and_the_manual_draw_and_search_the_lead():
+    # Both scripts are lazy, so they are read as files, not from app_js_text.
+    find = unwrapped((FRONTEND / "js" / "settings-find.js").read_text(encoding="utf-8"))
+    manual = (FRONTEND / "js" / "manual.js").read_text(encoding="utf-8")
+    assert 'lead.className = "help-topic-lead"' in find
+    assert "details.append(summary, lead," in find
+    assert "[topic.title, topic.lead," in find
+    assert 'lead.className = "manual-lead"' in manual
+    assert "${topic.lead}" in manual
+
+
+def test_the_sequence_picture_drags_are_in_the_guide_and_the_dialog_help() -> None:
+    """INBOX 1661 (l): a head dragged sideways, a drag between lifelines and the + at a gap, said in the Guide's
+    `diagram-kinds` topic and the New diagram window's About this editor."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
+    # Review finding 4: the + is pointer-only, so the Guide names the keyboard way to the same gap (the block list's Insert key).
+    for words in ("a head dragged sideways reorders", "a drag from one lifeline to another adds a message", "the + at a gap opens the Add menu",
+                  "from the keyboard, Insert in the blocks list adds a step under the selected one"):
+        assert words in body, words
+    embed = (FRONTEND / "js" / "diagram-embed.js").read_text(encoding="utf-8")
+    assert "double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message. The shelf in the picture's corner adds a block by a press or a drag" in embed
+    blocks = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    assert "Press or drag a block from the shelf onto the picture" in blocks
+    # dgmleft-1108: the drop joins the nearest box and Kind asks first, in the Guide and in the dialog's help, under the 1900 limit.
+    assert "onto the picture to join the nearest box" in blocks and "Kind asks before it clears blocks" in blocks and len(blocks) < 1900
+    assert "Kind asks before it clears a diagram that has blocks." in embed
+
+
+def test_the_diagram_ask_suggestions_and_versions_are_in_the_guide_in_the_controls_words() -> None:
+    """dgai-1110: what the model can do to a diagram (the ops) a person asks for by hand in the Ask box, and the Guide's
+    `diagram-ai` topic names each control as diagram-ai.js labels it, in the Documents group, under the 1,900 limit."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+    from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-ai"))
+    ai = (FRONTEND / "js" / "diagram-ai.js").read_text(encoding="utf-8")
+    for words, control in (("Apply", "ph:check Apply"), ("Discard", "ph:x Discard"), ("Suggestions", "Suggestions ("),
+                           ("Versions...", "ph:clock-counter-clockwise Versions…"), ("Compare", "ph:git-diff Compare"),
+                           ("Restore", 'label: "Restore"'), ("add Refund after In stock? No", "add Refund after In stock? No")):
+        assert words in body and control in ai, words
+    assert "no model a rule" in body and "Ctrl+Z" in body and len(body) < 1900
+    assert "diagram-ai" in TOPIC_META and "diagram-ai" in dict(HELP_GROUPS)["Documents and code"]
+
+
+def test_the_viewer_page_number_is_a_typeable_field_in_the_guide() -> None:
+    """INBOX 1694 (b): the lightbox's 'Page 3 of 12' is a value field; the `image-viewer` topic says so in the words the
+    control carries (its name, its text, the jump)."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "image-viewer"))
+    for words in ("'Page 3 of 12' is a field too", "type 7 and Enter", "pinch to zoom"):
+        assert words in body, words
+    view = (FRONTEND / "js" / "lightbox-view.js").read_text(encoding="utf-8")
+    for label in ('label: "Page number"', "Page ${v} of ${docPageCount}", "setDocPage(n - 1)"):
+        assert label in view, label
+
+
+def test_the_answer_offers_and_the_pool_count_line_are_in_the_guide() -> None:
+    """Standing order 13 (composer batch 2): the offer link at the end of an answer, a typed yes taking
+    it up in Chat, and the story's "That tells N of the M" line are named in the Ask and Chat topic."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = " ".join(str(t["body"]) for t in HELP_TOPICS if "Save it as a checklist note" in str(t["body"]))
+    for phrase in ("Save it as a checklist note", "Start a list of", "typing yes", "no thanks drops it", "That tells five of the twelve"):
+        assert phrase in body, phrase
+
+
+def test_the_connector_row_and_the_suggestions_fold_are_in_the_guide_in_the_controls_words() -> None:
+    """INBOX 1771: a connector row's words go to the block it points at and its ... opens the menu; Suggestions turns its arrow
+    and numbers blocks that share a name in one row. Said in the Guide, in the words the pane carries."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    builder_help = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-builder"))
+    ai_help = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-ai"))
+    assert "A connector row's words (or Enter) go to its block; its ... opens the menu." in builder_help
+    assert "opens like a fold (its arrow turns)" in ai_help and "one row numbers them" in ai_help
+    js = FRONTEND / "js"
+    assert "Go to ${to}" in (js / "diagram-builder.js").read_text(encoding="utf-8")
+    assert "blocks say ${group[0].text}." in (js / "diagram-ai.js").read_text(encoding="utf-8")
+
+
+def test_map_build_up_and_level_stepping_are_in_the_keys_sheet_the_menus_and_the_guide() -> None:
+    """INBOX 1774: Alt+= and Alt+- step the levels (the Keys sheet, the palette and
+    the map menus), and Build up branch by branch presents the map from the
+    centre out; the Guide says both in the controls' words."""
+    commands = (FRONTEND / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
+    assert 'keys: ["Alt+=", "Alt+-"]' in commands
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    assert "<span>Build up branch by branch</span>" in html
+    text = help_chat_text() + help_more_text()
+    assert "Alt+= and Alt+- show one more or one less level" in text
+    assert "Build up branch by branch shows the centre, then each branch a level at a time" in text
+    assert "End shows the whole map to take it apart" in text

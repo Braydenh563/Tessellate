@@ -215,7 +215,9 @@ def test_the_switch_is_in_settings_writing_and_the_dictionary_dialog() -> None:
     assert '{ key: "check_link_text", id: "pref-check-link-text" }' in rows
     panes = (JS / "settings-panes.js").read_text(encoding="utf-8")
     assert 'check_link_text: $("pref-check-link-text").checked' in panes
-    assert 'prefsCache.check_link_text === true' in panes
+    # The load side moved with loadPrefs into settings-prefs.js (Sh1 P12, fc806ad6d); the save side stays.
+    prefs = (JS / "settings-prefs.js").read_text(encoding="utf-8")
+    assert 'prefsCache.check_link_text === true' in prefs
     docs = (JS / "documents.js").read_text(encoding="utf-8")
     assert 'check_link_text: event.currentTarget.checked' in docs
 

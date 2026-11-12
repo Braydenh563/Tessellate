@@ -12,11 +12,12 @@ from __future__ import annotations
 import contextvars
 import functools
 import re
+import unicodedata
 
 from tessellate.core.lazyre import lazy_compile
 from datetime import date, datetime
 
-from tessellate.ai import composer_sides, composer_tables, question_noise, recognise as rec, variants
+from tessellate.ai import common_words, composer_sides, composer_tables, question_noise, recognise as rec, variants
 from tessellate.search import query as query_understanding
 
 
@@ -94,10 +95,11 @@ _ASKING_WORDS = frozenset(
     until also again just only some other one ones any every each main
     remind idea forgot forget remember wonder wondering deal hows whats
     wheres whens whos whys going happen happened happening news anything
-    something stuff info information details please thanks thank check
+    next last first per something stuff info information details please thanks thank check
     find look show help kind sort bit quick quickly briefly short detail
     detailed full whole remind possible maybe okay ok hey hi
-    whereabouts address place put decide decided conclude concluded doing""".split()
+    whereabouts address place put decide decided conclude concluded doing
+    possibly exactly precisely definitely basically honestly kindly truly certainly probably roughly approximately because""".split()
 ) | composer_tables.EXTRA_ASKING_WORDS | frozenset(
     #: Time words say when, never what (engine probe P6: "what did I write
     #: last week" was told "No note found brings up last"). The window they
@@ -174,7 +176,7 @@ _IF = lazy_compile(r"^(?:if|whether)\s+", re.I)
 #: notes on X": everything on a subject, the broad answer.
 _ANYTHING_ON = lazy_compile(
     r"^(?:(?:is there )?anything (?:about|on)|do i have (?:any )?(?:notes? )?(?:about|on)|have i (?:written|got|noted) (?:anything |down )?(?:about|on)|"
-    r"what(?: is|'s)? the deal with|what is going on with|what's going on with)\b",
+    r"what(?: is|'s)? the deal with|what is going on with|what's going on with|what(?:'s|s| is) new (?:with|on|about))\b",
     re.I,
 )
 
@@ -249,12 +251,12 @@ def classify(question: str, embed=None) -> str:  # noqa: ANN001
     text = rephrase(question)
     if _IF.match(text):
         return "yesno"
+    if _COMPARE_EXTRA.search(text) and compare_sides(text):
+        return "compare"
     #: "is there anything about the boiler", "how many notes mention
     #: sourdough": everything on a subject, however they open.
     if _ANYTHING_ON.match(text) or re.match(r"^how many (?:of my )?notes\b", text, re.I):
         return "what"
-    if _COMPARE_EXTRA.search(text) and compare_sides(text):
-        return "compare"
     for name, pattern in _SHAPE_RULES:
         if pattern.search(text):
             return name
@@ -293,6 +295,14 @@ def _overview():
 
 
 @functools.lru_cache(maxsize=1 << 16)
+def _unaccented(word: str) -> str:
+    """"josé" as "jose": the key a word is matched on, so a name typed on a
+    phone keyboard without its accents meets the note that has them (E14)."""
+    if word.isascii():
+        return word
+    return "".join(c for c in unicodedata.normalize("NFKD", word) if not unicodedata.combining(c))
+
+
 def _stem(word: str) -> str:
     """A light stem, so "testers" meets "tester" and "booked" meets "book".
 
@@ -304,7 +314,7 @@ def _stem(word: str) -> str:
     """
     #: One key for the UK and US spellings ("colour" meets "color", INBOX
     #: 895); the answer is still made from the note's own words.
-    return _stem_plain(variants.canonical(word.lower()))
+    return _stem_plain(variants.canonical(_unaccented(word.lower())))
 
 
 #: Plurals whose singular ends in f or fe: "find notes about knives" must meet
@@ -398,19 +408,32 @@ SYNONYM_GROUPS = (
 ) + composer_tables.EXTRA_SYNONYM_GROUPS
 
 
+#: One act said five ways ("when did I phone mum" with the note "Called mum"; W8B 1111): the verbs of getting in touch,
+#: the irregular past of "ring" included, which no suffix rule folds to its stem. Not a row of `SYNONYM_GROUPS`, whose
+#: groups never share a word: "call" is also a meeting, "phone" and "text" also a device and a message.
+CONTACT_VERBS = ("call", "phone", "ring", "rang", "rung", "text", "message")
+
+
 def _build_synonyms(key=None) -> dict[str, frozenset[str]]:  # noqa: ANN001
     key = key or _stem_plain
     table: dict[str, set[str]] = {}
-    for group in SYNONYM_GROUPS:
+    for group in (*SYNONYM_GROUPS, CONTACT_VERBS):
         stems = {key(w) for w in group}
         for stem in stems:
             table.setdefault(stem, set()).update(stems - {stem})
     return {k: frozenset(v) for k, v in table.items()}
 
 
+#: The names this question's notes give its subject ("Doug" for sourdough), by subject stem: set for a
+#: "latest on X" ask by `composer_aliases.read` and read as synonyms, so the newer note that only says
+#: "Doug the starter is bubbly again" is the latest on sourdough (W7b B7).
+ALIASES: contextvars.ContextVar[dict] = contextvars.ContextVar("composer_aliases", default={})
+
+
 def _alternatives(stem: str) -> frozenset[str]:
     """The other stems that name what `stem` names."""
-    return _keyed_synonyms().get(stem, frozenset())
+    own = ALIASES.get().get(stem)
+    return _keyed_synonyms().get(stem, frozenset()) | own if own else _keyed_synonyms().get(stem, frozenset())
 
 
 @functools.lru_cache(maxsize=1)
@@ -546,13 +569,39 @@ def subject_terms(question: str) -> list[str]:
     #: pasta" keeps its "add", which understanding may have moved to the front.
     if _without_command(question) != question:
         source = _without_command(source)
-    for word in query_understanding.search_terms(source):
-        if word in _ASKING_WORDS or word in seen:
+    terms = query_understanding.search_terms(source)
+    for at, word in enumerate(terms):
+        #: "first order" names a thing; "whose birthday is first" is only the asking (R3-4, G11).
+        names_next = word == "first" and at + 1 < len(terms) and terms[at + 1] not in _ASKING_WORDS
+        if (word in _ASKING_WORDS and not names_next) or word in seen:
             continue
         seen.append(word)
+    seen = _without_asked_shape(question, seen)
     #: A praise word alone names nothing ("anything interesting", "the cool
     #: stuff"); beside a noun ("interesting bean") it stays (INBOX 1561).
     return [] if all(w in question_noise.PRAISE_WORDS for w in seen) else seen
+
+
+def _without_asked_shape(question: str, seen: list[str]) -> list[str]:
+    """The terms less the words that are the question's shape, not its subject."""
+    #: "What dates do I have", "the date of my passport expiry" ask for dates; the word is no term to find in a
+    #: note ("the date test still fails"; R3-5).
+    if _DATE_ASK.search(question):
+        seen = [w for w in seen if w not in ("date", "dates")]
+    #: "the first note I wrote about Sara": the place in an order, not a word to find ("First day of uni"; R3-4).
+    if _ORDINAL_NOTE.search(question):
+        seen = [w for w in seen if w not in ("first", "last")]
+    #: "When does uni start": the verb is the event's own, not a word to find; kept as a term it finds the
+    #: Marathon note's "Start is at 9am" and answers with that race (round 3 review, R3-1).
+    if _EVENT_ENDS.search(question) and len(seen) > 1:
+        seen = [w for w in seen if w.lower() not in _EVENT_VERBS]
+    return seen
+
+
+_EVENT_ENDS = lazy_compile(r"^\s*when\s+(?:does|do|will|is)\b[^?.!]{1,80}?\b(?:start|begin|end|finish)s?\s*[?.!]*$", re.I)
+_EVENT_VERBS = frozenset(("start", "starts", "begin", "begins", "end", "ends", "finish", "finishes"))
+_ORDINAL_NOTE = lazy_compile(r"\b(?:first|last)\s+(?:note|notes|entry|entries)\b", re.I)
+_DATE_ASK = lazy_compile(r"\b(?:what|which)\s+dates?\b|\bdates?\s+(?:of|for)\b", re.I)
 
 
 _COMPARE_SIDES = (
@@ -564,7 +613,7 @@ _COMPARE_SIDES = (
 
 #: The patterns that name a comparison by more than a bare "vs" are tried first:
 #: "pros and cons of A vs B" is not a "vs" with "pros and cons of A" on its left.
-_COMPARE_SIDES = (*composer_tables.EXTRA_COMPARE_SIDES, *_COMPARE_SIDES)
+_COMPARE_SIDES = (*composer_tables.EXTRA_COMPARE_SIDES, *_COMPARE_SIDES, *composer_tables.BARE_COMPARE_SIDES)
 
 
 #: The extra comparison words ("cheaper than", "compared with", "pros and cons
@@ -640,6 +689,16 @@ def _numbered_sides(sides: list[str]) -> list[str]:
     return out
 
 
+#: The category names of the notes a digest answer reads, "and" written "&": "what do I know about
+#: courses and study" names one category, not two sides to compare (INBOX 1743).
+NOTE_CATEGORIES: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_note_categories", default=frozenset())
+
+
+def _one_category(sides: tuple[str, ...] | None) -> bool:
+    """Whether `sides` joined are all of one category's name."""
+    return bool(sides) and re.sub(r"\s+", " ", re.sub(r"\band\b", "&", " and ".join(sides).lower())) in NOTE_CATEGORIES.get()
+
+
 def compare_sides(question: str) -> tuple[str, ...] | None:
     """The things a comparison names, as typed: ("Lisbon", "Porto"), or three
     to six of them for "which is soonest, the dentist, the Lisbon trip or the
@@ -657,7 +716,43 @@ def compare_sides(question: str) -> tuple[str, ...] | None:
         sides = [_bare_side(side, shared_noun=shared) for side in raw]
         sides = [side for side in sides if subject_terms(side)]
         if len(sides) >= composer_sides.MIN_SIDES:
-            return tuple(sides[: composer_sides.MAX_SIDES])
+            return None if _one_category(tuple(sides)) else tuple(sides[: composer_sides.MAX_SIDES])
+    pair = _lower_pair(text)
+    return None if _one_category(pair) else pair
+
+
+#: The words of the notes a digest answer reads, for `_lower_pair` only: `_KNOWN` also steers the speller.
+NOTE_WORDS: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_note_words", default=frozenset())
+
+
+#: The notes' own text, as written, for `_lower_pair` only: a pair one note says as a phrase is one subject.
+NOTE_TEXTS: contextvars.ContextVar[tuple] = contextvars.ContextVar("composer_note_texts", default=())
+
+
+def _said_together(a: str, b: str) -> bool:
+    """Whether some note says "a and b" (or "a & b", "a, b") as one phrase: "salt and pepper" in a recipe.
+    Capitalised in the middle of a sentence it is two names ("Anna, Tom and Sara" is a guest list)."""
+    phrase = re.compile(rf"\b{re.escape(a)}\s*(?:and|&|,)\s*{re.escape(b)}\b", re.I)
+    for text in NOTE_TEXTS.get():
+        for hit in phrase.finditer(text):
+            before = text[: hit.start()].rstrip(" \t")
+            names = text[hit.start()].isupper() and bool(before) and before[-1] not in ".!?\n:#-*"
+            if not names:
+                return True
+    return False
+
+
+def _lower_pair(text: str) -> tuple[str, ...] | None:
+    """"tom and sara": two lower-case words the notes hold, neither an everyday
+    one. "salt and pepper" with no notes about them stays one thing, and so does
+    a pair a note says together as a phrase."""
+    pair = composer_tables.LOWER_PAIR.match(text.strip())
+    known = _KNOWN.get() | NOTE_WORDS.get()
+    if not pair or not known:
+        return None
+    sides = (pair.group("a"), pair.group("b"))
+    if all(w.lower() in known and w.lower() not in common_words.WORDS and subject_terms(w) for w in sides) and not _said_together(*(w.lower() for w in sides)):
+        return sides
     return None
 
 
@@ -669,8 +764,11 @@ _KNOWN: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_kno
 #: "When was my gym log written", "what day did I create the pasta recipe",
 #: "what date was the essay started": about the note's own day, not its words.
 _WRITTEN_WHEN = lazy_compile(
-    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|write|made|make|created|create|(?:started|start|began|begun)(?!\s+(?:\w+ing|to\s+\w+)\b)|"
-    r"added|add|saved|save|put together|jotted|typed)\b",
+    r"\b(?:when|what (?:day|date)|how long)\b.{0,50}?\b(?:written|wrote|made|created|(?:started|began|begun)(?!\s+(?:\w+ing|to\s+\w+)\b)|"
+    r"added|saved|put together|jotted|typed|"
+    # The base verb is the note's day only after "did I": "when does uni start" and "when do I make
+    # the banana bread" ask about the event, not the day it was written (round 3, R3-1).
+    r"did\s+(?:I|we)\b.{0,30}?\b(?:write|make|create|(?:start|begin)(?!\s+(?:\w+ing|to\s+\w+)\b)|add|save|put together|jot|type))\b",
     re.I,
 )
 

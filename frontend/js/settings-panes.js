@@ -289,7 +289,7 @@ function refitComposer() {
 //: under 4px, or one this function caused, does nothing.
 function fitChatEmpty() {
   const pane = document.getElementById("chat-messages");
-  const empty = pane && pane.querySelector(".chat-empty");
+  const empty = pane?.querySelector(".chat-empty");
   if (!empty) return;
   const room = pane.clientHeight;
   if (!room) return;
@@ -347,7 +347,8 @@ function chatDockSuppressRing() {
 
 function chatDockReleaseRing() {
   const dock = document.querySelector(".chat-dock");
-  if (dock) dock.classList.remove("ring-held");
+  //: Only on a change: `remove` rewrites the attribute even when the class is absent, a restyle of the dock on every key (B59).
+  if (dock?.classList.contains("ring-held")) dock.classList.remove("ring-held");
 }
 
 // The chat composer can be dragged taller, and remembers it.
@@ -361,7 +362,7 @@ function chatDockReleaseRing() {
 // keystroke. A drag is told from a grow by comparing against the height
 // autoGrow last set: anything else was a hand on the corner.
 function initComposerResize() {
-  const box = $("chat-input");
+  const box = document.getElementById("chat-input");
   if (!box || box.dataset.resizeReady) return;
   box.dataset.resizeReady = "1";
 
@@ -561,14 +562,14 @@ async function reportTimezone() {
     weekDay = null;
   }
   const body = {};
-  if (zone && !(prefsCache && prefsCache.timezone === zone)) body.timezone = zone;
-  if (weekDay !== null && !(prefsCache && prefsCache.week_start_locale === weekDay)) {
+  if (zone && prefsCache?.timezone !== zone) body.timezone = zone;
+  if (weekDay !== null && prefsCache?.week_start_locale !== weekDay) {
     body.week_start_locale = weekDay;
   }
   //: The browser's language and region, so "automatic" seasons can follow
   //: it (southern for en-AU, en-NZ, en-ZA ...) when a call carries no locale.
   const tag = String(navigator.language || "").slice(0, 35);
-  if (tag && !(prefsCache && prefsCache.season_locale === tag)) body.season_locale = tag;
+  if (tag && prefsCache?.season_locale !== tag) body.season_locale = tag;
   if (!Object.keys(body).length) return;
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
@@ -611,152 +612,6 @@ function loadPreferences({ refresh = false } = {}) {
   return prefsInflight;
 }
 
-async function renderPrefs() {
-  //: **A change still waiting for its quiet save is written first.** Profile
-  //: and General save 700 ms after the last change (`markPrefsDirty`); opening
-  //: either, or Search and index or Personas, lands here, and the GET below
-  //: wrote the old value over the form, which the timer then saved: the switch
-  //: you had just pressed went back and nothing said so (found by the
-  //: deepflows sweep).
-  if (prefsDirty) await savePrefs({ quiet: true });
-  if (prefsSaveInFlight) await prefsSaveInFlight.catch(() => {});
-  prefsCache = await apiJson("/preferences");
-  $("pref-display-name").value = prefsCache.display_name || "";
-  $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? false;
-  //: The saved look, and its controls (avatars.js, once it is in).
-  const savedLook = prefsCache.avatar_style || {};
-  afterCharacters(() => {
-    setOwnNameMarkStyle(savedLook);
-    mountProfileLook();
-  });
-  $("pref-bin-days").value = prefsCache.recycle_bin_days;
-  $("pref-chat-retention").value = prefsCache.conversation_retention_days ?? 0;
-  $("pref-search-min-sim").value = prefsCache.search_min_similarity;
-  $("pref-search-z-margin").value = prefsCache.search_relative_z_margin;
-  $("pref-style").value = prefsCache.communication_style;
-  $("pref-voice").value = prefsCache.composer_voice;
-  $("pref-week-start").value = prefsCache.week_start || "auto";
-  $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
-  $("pref-insight").value = prefsCache.insight_level || "one";
-  $("pref-profile").value = prefsCache.user_profile;
-  $("pref-profile-enabled").checked = prefsCache.profile_enabled;
-  paintUserMarks();
-  updateProfileCount();
-  if (prefsCache.session_idle_ttl_minutes) {
-    $("account-idle-ttl").value = prefsCache.session_idle_ttl_minutes;
-  }
-  $("pref-notif-mute-except-reminders").checked = Boolean(
-    prefsCache.notifications_muted_except_reminders
-  );
-  $("pref-smart-punctuation").checked = prefsCache.smart_punctuation === true;
-  $("pref-autocorrect").checked = prefsCache.autocorrect !== false;
-  $("pref-link-offers").checked = prefsCache.link_offers !== false;
-  $("pref-check-link-text").checked = prefsCache.check_link_text === true;
-  $("prefs-status").textContent = "";
-  //: The fields now hold what the server holds, so nothing is unsaved: this
-  //: also covers the reopen, since `showSettingsSection` re-renders.
-  markPrefsSaved();
-}
-
-// --- Settings, Web search ------------------------------------------------------
-//
-// Its own screen, and its own save. Web search used to be four controls inside
-// Preferences, which is why every error message that said "Settings, Web
-// search" pointed at a screen that did not exist.
-//
-// The engine list comes from the server rather than being written out here:
-// the frontend and `websearch.PROVIDERS` would otherwise drift, and the first
-// symptom would be a radio button the API rejects.
-// The Background tasks section's own controls (`#pref-autonomous-tasks` and
-// everything under it): pulled out so `showSettingsSection` can populate
-// them the moment *that* section opens, not only as a side effect of opening
-// Web search. They used to be filled in exclusively by `renderWebSearch`
-// despite living in `#settings-tasks`, a different section entirely, open
-// Settings, Background tasks directly in a fresh session (never having
-// visited Web search) and every checkbox here read its raw HTML default
-// (unchecked) instead of what was actually saved. Toggling one of them then
-// called `savePrefs()`, which rebuilds the *entire* preferences object from
-// the DOM: sending those defaults back to the server and silently
-// overwriting the real values. This is "my preferences settings keep
-// getting deleted": not one bad field, but a whole section's worth of
-// settings reset the moment anything on it was touched without the
-// Web-search tab having been opened first in the same session.
-function renderAutonomousSettings() {
-  $("pref-autonomous-tasks").checked = Boolean(prefsCache.autonomous_tasks_enabled);
-  $("pref-ai-first-filing").checked = prefsCache.ai_first_filing ?? true;
-  $("pref-auto-file-sensitive").checked = Boolean(prefsCache.auto_file_sensitive);
-  $("pref-filing-style").value = prefsCache.filing_style || "topic";
-  $("pref-background-filing").checked = prefsCache.background_filing ?? true;
-  $("pref-warm-search-model").checked = prefsCache.warm_search_model_at_launch ?? true;
-  $("pref-filing-wait").value = prefsCache.filing_wait_seconds || 15;
-  $("pref-auto-caption-images").checked = prefsCache.auto_caption_images ?? true;
-  $("pref-auto-read-image-text").checked = prefsCache.auto_read_image_text ?? true;
-  $("pref-auto-tag").checked = prefsCache.auto_tag_enabled ?? true;
-  $("pref-auto-link").checked = prefsCache.auto_link_enabled ?? true;
-  $("pref-auto-dedupe").checked = prefsCache.auto_dedupe_enabled ?? true;
-  $("pref-auto-stale-review").checked = Boolean(prefsCache.auto_stale_review_enabled);
-  $("pref-auto-capture").checked = Boolean(prefsCache.auto_capture_enabled);
-  $("pref-autonomous-interval").value = prefsCache.autonomous_tasks_interval_hours || 6;
-  $("pref-autonomous-model").value = prefsCache.autonomous_tasks_model || "";
-  $("pref-battery-mode").checked = Boolean(prefsCache.battery_efficient_mode);
-  $("pref-smart-model-routing").checked = prefsCache.smart_model_routing_enabled ?? true;
-  toggleAutonomousPanel();
-}
-
-async function renderWebSearch() {
-  prefsCache = await apiJson("/preferences");
-  $("pref-web-search").checked = Boolean(prefsCache.web_search_enabled);
-  $("pref-searxng").value = prefsCache.searxng_url || "";
-  renderAutonomousSettings();
-  $("searxng-autostart").checked = Boolean(prefsCache.searxng_autostart);
-  $("search-provider-status").textContent = "";
-
-  const picker = $("search-provider-picker");
-  picker.replaceChildren();
-  const info = await apiJson("/websearch/providers").catch(() => null);
-  if (!info) {
-    picker.textContent = "Couldn't load the engine list.";
-    return;
-  }
-  for (const provider of info.providers) {
-    const row = document.createElement("label");
-    row.className = "provider-option";
-    const radio = document.createElement("input");
-    radio.type = "radio";
-    radio.name = "search-provider";
-    radio.value = provider.id;
-    radio.checked = provider.id === info.selected;
-    radio.addEventListener("change", () => saveSearchProvider(provider.id));
-    const text = document.createElement("span");
-    const title = document.createElement("strong");
-    title.textContent = provider.label;
-    const detail = document.createElement("span");
-    detail.className = "muted provider-detail";
-    detail.textContent = provider.detail;
-    text.append(title, document.createElement("br"), detail);
-    row.append(radio, text);
-    picker.appendChild(row);
-  }
-  //: `refreshSearxngHost` is in settings-controls.js; the stand-in
-  //: (LAZY_ENTRY_POINTS) loads it for a pane drawn before the window's await.
-  refreshSearxngHost().catch(() => {});
-}
-
-async function saveSearchProvider(provider) {
-  const status = $("search-provider-status");
-  try {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ search_provider: provider }),
-    });
-    status.classList.remove("error");
-    status.textContent = "Saved.";
-  } catch (error) {
-    status.classList.add("error");
-    status.textContent = error.message;
-  }
-}
-
 // A source checkout (start.sh/start.bat) auto-updates via `git pull` before
 // the server even starts, asked for directly, the same "popup after
 // login, only if the app auto updates" the packaged-Windows dialog above
@@ -774,6 +629,7 @@ async function checkForSourceUpdateNotice() {
 //: controls for one preference is a reasonable convenience and a reliable way
 //: to get them out of step; this is the list that keeps them honest.
 const MIRRORED_PREFS = {
+  ask_when_unsure: ["pref-ask-when-unsure"],
   autonomous_tasks_enabled: ["pref-autonomous-tasks", "skills-auto-toggle"],
   auto_tag_enabled: ["pref-auto-tag", "skills-auto-tag"],
   auto_link_enabled: ["pref-auto-link", "skills-auto-link"],
@@ -868,7 +724,7 @@ async function savePrefs(options = {}) {
     markPrefsSaved();
     // The microbes and mycelium backgrounds grow from the display name
     // (bg-art.js), so a new name regrows them now rather than next launch.
-    if (typeof bgArtRefreshSeed === "function") bgArtRefreshSeed();
+    bgArtRefreshSeed();
     //: **A toast as well as the inline word** (INBOX 263). Reported: "no
     //: visual confirmation popup shows when I use ctrl s to save my
     //: preferences settings". The inline "Saved." is beside the button, which
@@ -881,7 +737,7 @@ async function savePrefs(options = {}) {
     if (!quiet) toast("Preferences saved.");
 
     // Reflect a name change immediately if the dashboard is showing.
-    if (typeof renderDashboardGreeting === "function") renderDashboardGreeting();
+    renderDashboardGreeting();
     paintUserMarks();
   } catch (error) {
     $("prefs-status").textContent = error.message;
@@ -933,35 +789,6 @@ function markPrefsSaved() {
   if (button) button.classList.remove("primary");
   const note = $("prefs-unsaved");
   if (note) note.classList.add("hidden");
-}
-
-//: Every control the payload above reads, so the mark cannot go stale against
-//: a field someone adds to one and forgets in the other. A `change` and an
-//: `input` both, because a `<select>` and a checkbox fire the first and a
-//: text field is worth marking on the keystroke rather than on the blur.
-const PREFS_FIELD_IDS = [
-  "pref-display-name", "pref-bin-days", "pref-chat-retention",
-  "pref-search-min-sim", "pref-search-z-margin", "pref-style",
-  "pref-profile", "pref-profile-enabled", "pref-notif-mute-except-reminders",
-  "pref-smart-punctuation", "pref-autocorrect",
-];
-
-function wirePrefsDirtyMarks() {
-  for (const id of PREFS_FIELD_IDS) {
-    const el = $(id);
-    if (!el) continue;
-    el.addEventListener("input", markPrefsDirty);
-    el.addEventListener("change", markPrefsDirty);
-  }
-  //: The profile head previews the name as it is typed; the rest of the app's
-  //: marks wait for the save, since that is when the name is real.
-  $("pref-display-name")?.addEventListener("input", (e) => {
-    const typed = e.target.value.trim();
-    afterCharacters(() => $("profile-avatar")?.replaceChildren(nameMark(typed || "You", 56)));
-    const head = $("profile-head-name");
-    if (head) head.textContent = typed || "Your profile";
-  });
-  $("pref-profile")?.addEventListener("input", updateProfileCount);
 }
 
 //: The prompt reads the first 600 characters of About me
@@ -1019,6 +846,7 @@ function setZoom(percent) {
   if (slider) slider.value = next;
   const readout = $("zoom-value");
   if (readout) readout.textContent = `${next}%`;
+  window.valueField?.refresh();
   applyZoomVar();
   return next;
 }
@@ -1158,12 +986,13 @@ const POPUP_TOOLS = [
     guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("alarm")),
   },
   //: The Diagram builder (INBOX 1588): one opener, `diagramModel.door` (documents-mermaid.js), for every list.
+  //: A text box or board in hand needs the Library (the door writes into it); with none, the model file alone opens the builder (INBOX 1722), and `lazyScript` fetches it once whichever asks first.
   {
     id: "diagram", name: "Diagram builder", icon: "ph:flow-arrow", group: "Documents", widgetExempt: "It needs a full dialog or a document, too big for a card.",
     keywords: "flowchart mind map timeline sequence mermaid mmd draw process boxes arrows",
     about: "Build a flowchart, mind map, timeline or sequence diagram from blocks, into what you write, a board or a new .mmd file.",
     keys: "/diagram", where: "Diagram builder, from Insert or Ctrl+K",
-    guide: "diagram-builder", open: (t) => ensureModule("library").then(() => diagramModel.door({ target: t || null })),
+    guide: "diagram-builder", open: (t) => (t ? ensureModule("library") : lazyScript("/js/documents-mermaid.js")).then(() => diagramModel.door({ target: t || null })),
   },
 ];
 

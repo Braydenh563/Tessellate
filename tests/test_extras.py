@@ -729,6 +729,9 @@ def test_a_cancelled_install_leaves_nothing_behind(client, monkeypatch, tmp_path
             extras._state.cancelled = True
             self.stdout = []
 
+        def terminate(self):
+            pass
+
         def wait(self):
             return -15
 
@@ -793,3 +796,71 @@ def test_the_first_launch_install_is_an_activity_row_with_progress_and_stop(clie
     finally:
         extras.cancel()
         extras._bulk.running = False
+
+
+def test_stop_pressed_before_pip_has_started_still_stops_it(client, monkeypatch):
+    """The notice's Undo is on screen the moment Install is pressed, before pip
+    has been launched (`_state.process` is still None). Measured 2026-11-11: that
+    Stop answered "Nothing is installing." and the install ran to the end."""
+    extras.reset_for_tests()
+    extras._state.running = True
+    extras._state.extra_id = "rapidocr"
+    extras._state.process = None
+    try:
+        stopped, message = extras.cancel()
+        assert stopped is True and "Stopping" in message
+        assert extras._state.cancelled is True
+    finally:
+        extras.reset_for_tests()
+
+
+def test_a_stopped_install_reads_as_running_until_the_roll_back_is_done(client, monkeypatch):
+    """Measured 2026-11-11 (the notice's Undo): `running` went false first and
+    the roll-back ran after it, so a client that waits for idle saw the package
+    still importable and drew "Installed" for a download that was undone."""
+    seen = {}
+
+    class _Pip:
+        def __init__(self, command, **kwargs):
+            extras._state.cancelled = True
+            self.stdout = []
+
+        def terminate(self):
+            pass
+
+        def wait(self):
+            return -15
+
+    monkeypatch.setattr(extras, "_pip_base_command", lambda: ["python", "-m", "pip"])
+    monkeypatch.setattr(extras.subprocess, "Popen", _Pip)
+    monkeypatch.setattr(extras, "_roll_back", lambda before: seen.setdefault("running_during_roll_back", extras._state.running))
+    extras.reset_for_tests()
+    extras._state.running = True
+    extras._run_install(extras.EXTRAS_BY_ID["rapidocr"], reinstall=False)
+    assert seen["running_during_roll_back"] is True
+    assert extras._state.running is False
+
+
+def test_pip_started_after_a_stop_is_terminated_at_once(client, monkeypatch):
+    seen = {"terminated": False}
+
+    class _Pip:
+        def __init__(self, command, **kwargs):
+            self.stdout = []
+
+        def terminate(self):
+            seen["terminated"] = True
+
+        def wait(self):
+            return -15
+
+    def _base():
+        #: The stop arrives while the command is being built, before Popen returns.
+        extras._state.cancelled = True
+        return ["python", "-m", "pip"]
+
+    monkeypatch.setattr(extras, "_pip_base_command", _base)
+    monkeypatch.setattr(extras.subprocess, "Popen", _Pip)
+    extras._run_install(extras.EXTRAS_BY_ID["rapidocr"], reinstall=False)
+    assert seen["terminated"] is True
+    assert extras._state.outcome == "cancelled"

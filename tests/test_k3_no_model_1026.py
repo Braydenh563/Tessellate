@@ -24,6 +24,7 @@ import pytest
 
 from tessellate.ai import extractor, no_model_text
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -81,6 +82,38 @@ def test_a_title_never_ends_on_a_word_that_needs_another(draft):
     last = no_model_text.draft_title(draft).split()[-1].lower().strip(",;:")
     assert last not in composer_voice.TITLE_DANGLING, (last, draft)
     assert last not in composer_voice.query_understanding.STOPWORDS, (last, draft)
+
+
+#: gap5-1111, the audit INBOX 1618 asked for on the other no-model writers.
+LABEL_DRAFTS = [
+    ("Trip to Lisbon\nFlights booked for May 3. Hotel near the river.", "Trip to Lisbon"),
+    ("Book ideas:\n- a novel about bees\n- a cookbook", "Book ideas"),
+    ("Spring clean\nwash the windows", "Spring clean"),
+    ("  Weekend plan\n\nSaturday: the market. Sunday: rest.", "Weekend plan"),
+]
+
+
+@pytest.mark.parametrize(("draft", "title"), LABEL_DRAFTS)
+def test_a_short_first_line_with_more_below_is_the_draft_title(draft, title):
+    assert no_model_text.draft_title(draft) == title
+
+
+def test_a_split_part_with_a_label_line_is_titled_by_it():
+    parts = no_model_text.split_notes("Trip to Lisbon\nFlights booked for May 3. Hotel near the river.\n\nGym\nLeg day: squats and rows.", 8)
+    assert [p.title for p in parts] == ["Trip to Lisbon", "Gym"]
+    assert parts[0].content.startswith("Trip to Lisbon")
+
+
+FENCED_DRAFTS = [
+    ("```python\nprint(1)\n```\nThen notes about the build", "Then notes about the build"),
+    ("# Build log\n\n```\nmake all\n```", "Build log"),
+    ("~~~\nmake all\n~~~", ""),
+]
+
+
+@pytest.mark.parametrize(("draft", "title"), FENCED_DRAFTS)
+def test_a_code_fence_is_never_the_title(draft, title):
+    assert no_model_text.draft_title(draft) == title
 
 
 @pytest.mark.parametrize("draft", ["", "   ", "\n\n", "ok", "# ", "---"])
@@ -189,7 +222,7 @@ def test_the_preview_links_the_parts_and_their_source_without_a_model(client, se
     ).json()
     kinds = sorted(link["kind"] for link in body["links"])
     assert kinds == ["sibling", "source", "source"]
-    assert all(link["reason"] and link["reason"] != manager.AUTO_REASON_TEXT for link in body["links"])
+    assert all(link["reason"] and link["reason"] != manager_links.AUTO_REASON_TEXT for link in body["links"])
 
 
 def test_a_failed_model_split_falls_back_to_the_same_plain_split(ai_client, fake_ollama):

@@ -251,9 +251,9 @@ def test_the_three_entries_all_prepare_before_they_read():
 
 
 def test_the_region_route_reads_through_the_region_entry():
-    from tessellate.api import routes_files
+    from tessellate.api import routes_files_readings  # the region routes moved here (K24); same assertion
 
-    source = Path(routes_files.__file__).read_text(encoding="utf-8")
+    source = Path(routes_files_readings.__file__).read_text(encoding="utf-8")
     body = source.split("def _region_text(")[1].split("\ndef ")[0]
     assert "_local_region_text(" in body and "_local_text(" not in body
 

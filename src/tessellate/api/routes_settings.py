@@ -4,10 +4,8 @@ maintenance.
 
 from __future__ import annotations
 
-import asyncio
 import csv
 import io
-import hashlib
 import json
 import logging
 import importlib
@@ -15,16 +13,12 @@ import os
 import platform
 import re
 import sys
-import tempfile
-import time
 import zipfile
-from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response, UploadFile
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response
 
 from tessellate.api import paging
 from pydantic import BaseModel, Field, field_validator
@@ -35,15 +29,14 @@ from tessellate import __version__
 from tessellate.ai import budget as run_budget
 from tessellate.ai import backend_hint, librarian, memory, presets, skill_composer, skills
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
-from tessellate.core import backup, backup_bundle, deps, embedmodels, events, extras, jobruns, jobs, logbuffer, paths, security
+from tessellate.core import backup, deps, events, logbuffer, security
 from tessellate.core.config import default_preferences
 from tessellate.core.database import AuditLog, Entry, utcnow
 from tessellate.core.deps import get_session
-from tessellate.entry import importer, manager
+from tessellate.entry import manager
+from tessellate.entry import manager_purge
 from tessellate.repo import categories as categories_repo
-from tessellate.repo import relation_types, relations
-from tessellate.repo.content import walk as content_walk
-from tessellate.entry.cleantext import import_path
+from tessellate.repo import relations
 from tessellate.search import searxng_manager, websearch
 from tessellate.api.this_computer import REFUSAL, is_another_device, this_computer_only
 
@@ -330,6 +323,10 @@ class PreferencesBody(BaseModel):
     #: a Python weekday, 0 Monday to 6 Sunday).
     week_start: Literal["auto", "monday", "saturday", "sunday"] | None = None
     week_start_locale: int | None = Field(default=None, ge=0, le=6)
+    #: Whether `before:` in a search counts its own day (Q25); off by default.
+    before_includes_day: bool | None = None
+    #: The order a numeric date such as 3/4 is read in; "auto" follows the browser's region.
+    date_order: Literal["auto", "day", "month"] | None = None
     #: Which half of the year "summer" and "last winter" mean: the person's
     #: pick, or "auto" to follow the locale the browser reports (`season_locale`).
     season_hemisphere: Literal["auto", "north", "south"] | None = None
@@ -356,7 +353,7 @@ class PreferencesBody(BaseModel):
     #: `off` means "do not have an opinion about which side of the Atlantic
     #: this document is on", the honest default for a notebook that does not
     #: know who is writing in it.
-    spelling_variant: Literal["off", "uk", "us", "au", "ca", "in"] | None = None
+    spelling_variant: Literal["auto", "off", "uk", "us", "au", "ca", "in"] | None = None
     #: The grammar checker (Harper, run in the browser; INBOX 401). On by
     #: default: it costs nothing until a prose document or note box is open,
     #: and nothing on the main thread even then.
@@ -441,6 +438,9 @@ class PreferencesBody(BaseModel):
     # `tests/test_offline_promise.py`, which fails if a third appears and the
     # copy still says two.
     web_search_enabled: bool | None = None
+    web_store_enabled: bool | None = None
+    # Q22 (audit 1028 K13): whether an outside MCP client may change notes.
+    mcp_writes_enabled: bool | None = None
     # The other opt-in network call (Settings -> About): see core.config.
     update_check_enabled: bool | None = None
     # Separate switch: "notify me" vs. "download and run the installer
@@ -453,6 +453,7 @@ class PreferencesBody(BaseModel):
     # Whether the app may install search by meaning itself: see core.config.
     semantic_auto_install: bool | None = None
     session_idle_ttl_minutes: int | None = Field(default=None, ge=1)
+    private_space_idle_minutes: int | None = Field(default=None, ge=1, le=240)
     # The desktop launcher's console window: see core.config's own comment.
     show_console_on_startup: bool | None = None
     # Whether the first-run Dev-view/User-view prompt has already been
@@ -552,6 +553,11 @@ class PreferencesBody(BaseModel):
     #: WORLD_CLASS 23, decision 6: health, money, relationships, the law and
     #: identity are suggested, not filed, unless this is on.
     auto_file_sensitive: bool | None = None
+    #: The owner, 2026-11-11: a filing under `lexical_filing.UNSURE_LINE` is
+    #: not applied; the capture offers the top choices instead. Off by default.
+    ask_when_unsure: bool | None = None
+    #: INBOX 1695 (Q30): a new note is sealed from its first write; off by default.
+    new_notes_private: bool | None = None
     #: WORLD_CLASS_PLAN section 17 row 3 (`librarian.FILING_STYLES`).
     filing_style: Literal["topic", "project", "time"] | None = None
     background_filing: bool | None = None
@@ -791,11 +797,14 @@ class _FreshConfig:
         return self._prefs.get(key, default)
 
 
-def _preferences_from(config) -> dict:
+def _prefs_notebook(config) -> dict:
+    """Filing, search, writing, dates and the account's display settings."""
     return {
         "recycle_bin_days": config.get_preference("recycle_bin_days", 30),
         "ai_first_filing": config.get_preference("ai_first_filing", True),
         "auto_file_sensitive": config.get_preference("auto_file_sensitive", False),
+        "ask_when_unsure": config.get_preference("ask_when_unsure", False),
+        "new_notes_private": config.get_preference("new_notes_private", False),
         "filing_style": config.get_preference("filing_style", "topic"),
         "background_filing": config.get_preference("background_filing", True),
         "auto_caption_images": config.get_preference("auto_caption_images", True),
@@ -811,12 +820,14 @@ def _preferences_from(config) -> dict:
         "composer_voice": config.get_preference("composer_voice", "natural"),
         "week_start": config.get_preference("week_start", "auto"),
         "week_start_locale": config.get_preference("week_start_locale", 0),
+        "before_includes_day": config.get_preference("before_includes_day", False),
+        "date_order": config.get_preference("date_order", "auto"),
         "season_hemisphere": config.get_preference("season_hemisphere", "auto"),
         "season_locale": config.get_preference("season_locale", ""),
         "embedder_idle_unload_minutes": config.get_preference("embedder_idle_unload_minutes", 60),
         "insight_level": config.get_preference("insight_level", "one"),
         "writing_dictionary": config.get_preference("writing_dictionary", []),
-        "spelling_variant": config.get_preference("spelling_variant", "off"),
+        "spelling_variant": config.get_preference("spelling_variant", "auto"),
         "grammar_check": config.get_preference("grammar_check", True),
         "smart_punctuation": config.get_preference("smart_punctuation", False),
         "link_offers": config.get_preference("link_offers", True),
@@ -836,6 +847,13 @@ def _preferences_from(config) -> dict:
         # default on every reload no matter what had actually been saved and
         # was actually in effect, which reads as "my setting didn't save."
         "session_idle_ttl_minutes": config.get_preference("session_idle_ttl_minutes", 720),
+        "private_space_idle_minutes": config.get_preference("private_space_idle_minutes", 10),
+    }
+
+
+def _prefs_profile_and_ai(config) -> dict:
+    """The profile, personas, dashboard, tools and run budget."""
+    return {
         "user_profile": config.get_preference("user_profile", ""),
         "profile_enabled": config.get_preference("profile_enabled", False),
         "custom_templates": config.get_preference("custom_templates", []),
@@ -859,7 +877,14 @@ def _preferences_from(config) -> dict:
         "run_budget_seconds": config.get_preference(
             "run_budget_seconds", run_budget.DEFAULT_SECONDS
         ),
+    }
+
+
+def _prefs_web_updates_voice(config) -> dict:
+    """Web search, updates, semantic search, voice and saved searches."""
+    return {
         "web_search_enabled": config.get_preference("web_search_enabled", False),
+        "web_store_enabled": config.get_preference("web_store_enabled", True),
         "update_check_enabled": config.get_preference("update_check_enabled", False),
         "auto_update_enabled": config.get_preference("auto_update_enabled", False),
         "show_update_bar": config.get_preference("show_update_bar", True),
@@ -886,6 +911,12 @@ def _preferences_from(config) -> dict:
         "voice_vocabulary": config.get_preference("voice_vocabulary", ""),
         "saved_searches": config.get_preference("saved_searches", []),
         "saved_finds": config.get_preference("saved_finds", []),
+    }
+
+
+def _prefs_interface_and_desktop(config) -> dict:
+    """What the interface keeps, the autonomous loop and the desktop shell."""
+    return {
         # Echoed back so the browser can tell whether the zone it just
         # detected is already the stored one, and skip a pointless write on
         # every startup.
@@ -920,6 +951,7 @@ def _preferences_from(config) -> dict:
         "auto_dedupe_enabled": config.get_preference("auto_dedupe_enabled", True),
         "auto_stale_review_enabled": config.get_preference("auto_stale_review_enabled", False),
         "auto_capture_enabled": config.get_preference("auto_capture_enabled", False),
+        "mcp_writes_enabled": config.get_preference("mcp_writes_enabled", False),
         "autonomous_tasks_interval_hours": config.get_preference(
             "autonomous_tasks_interval_hours", 6
         ),
@@ -951,6 +983,15 @@ def _preferences_from(config) -> dict:
         "avatar_style": _clean_avatar_style(config.get_preference("avatar_style", {})),
         "status_bar_hidden": config.get_preference("status_bar_hidden", []),
         "status_bar_clock": config.get_preference("status_bar_clock", False),
+    }
+
+
+def _preferences_from(config) -> dict:
+    return {
+        **_prefs_notebook(config),
+        **_prefs_profile_and_ai(config),
+        **_prefs_web_updates_voice(config),
+        **_prefs_interface_and_desktop(config),
     }
 
 
@@ -1081,6 +1122,7 @@ _THIS_COMPUTER_PREFERENCES: dict[str, object] = {
     "web_search_enabled": False,
     "local_only_ai": True,
     "session_idle_ttl_minutes": "shorter",
+    "private_space_idle_minutes": "shorter",
 }
 
 
@@ -1144,6 +1186,14 @@ def _apply_preference(config, session: Session, key: str, value) -> None:
         recognise.configure_hemisphere(
             config.get_preference("season_hemisphere", "auto"), config.get_preference("season_locale", "")
         )
+    if key == "date_order":
+        from tessellate.ai import recognise
+
+        recognise.configure_date_order(str(value))
+    if key == "before_includes_day":
+        from tessellate.search import query as search_query
+
+        search_query.configure_before(bool(value))
     if key == "semantic_auto_install":
         # Either answer settles the ask-once question (frontend/js/semantic-notice.js).
         config.set_preference("semantic_choice_made", True)
@@ -1853,7 +1903,7 @@ def _not_private_events(query):
     Two ways an event is about a private note: the note is still there and
     private (looked up by id), or it was purged, and its id matches nothing
     any more. A purge seals the events it leaves behind with a `private` flag
-    in their payload (`manager.seal_private_events`), and that flag is the
+    in their payload (`manager_purge.seal_private_events`), and that flag is the
     second test. `is_(True)` rather than `== True`, so an event with no
     payload at all (SQL null) is kept rather than dropped by a null compare.
     """
@@ -2073,450 +2123,12 @@ def clear_audit_log(
 def empty_recycle_bin(session: Session = Depends(get_session)) -> dict:
     from tessellate.entry import bin as other_bin
 
-    removed = manager.empty_recycle_bin(
+    removed = manager_purge.empty_recycle_bin(
         session, uploads_dir=deps.get_config().uploads_dir
     )
     #: The bin's documents and reminders go with its notes (5 item 10).
     removed += other_bin.empty(session)
     return {"removed": removed}
-
-
-# --- optional extras ---------------------------------------------------------
-
-
-@router.get("/extras")
-def list_extras() -> dict:
-    """What can be installed, and what already is.
-
-    The install itself reports through /tasks like every other background job,
-    so this is only the catalogue and the current state.
-    """
-    state = extras.current()
-    bulk = extras.bulk_status()
-    return {
-        "extras": extras.status(),
-        "bundles": extras.bundles(),
-        #: A bulk action is running between two of its packages too, when
-        #: `state` is idle for a moment: the screen keeps polling through it.
-        "running": state.running or bulk["running"],
-        "installing": state.extra_id if state.running else "",
-        "step": state.step,
-        "outcome": state.outcome,
-        "log": list(state.log),
-        "bulk": bulk,
-    }
-
-
-class ExtrasBulkBody(BaseModel):
-    """A bulk action: ids from the allowlist, or one bundle's id. Never a
-    package spec: `core/extras.start_bulk` refuses any id it does not hold."""
-
-    action: str = Field(max_length=20)
-    ids: list[str] = Field(default_factory=list, max_length=50)
-    bundle: str = Field(default="", max_length=40)
-
-
-@router.post("/extras/bulk", dependencies=[Depends(this_computer_only)])
-def bulk_extras(body: ExtrasBulkBody) -> dict:
-    """Install, remove or reinstall several extras, one after another, as one
-    background job (INBOX 595). Each package reports its own outcome in
-    `GET /extras`'s `bulk.items`; one failing does not stop the rest."""
-    started, message = extras.start_bulk(body.action, body.ids, bundle=body.bundle)
-    return {"started": started, "message": message}
-
-
-@router.post("/extras/{extra_id}/install", dependencies=[Depends(this_computer_only)])
-def install_extra(extra_id: str, reinstall: bool = False) -> dict:
-    """Start installing one extra **from the allowlist**.
-
-    The path names an entry in `core/extras.py`; the package spec handed to pip
-    is never anything the client sent. That is the whole security property here
-    - `pip install <a name from a request body>` is arbitrary code execution by
-    design, and validating the string afterwards does not fix it.
-    """
-    started, message = extras.start(extra_id, reinstall=reinstall)
-    return {"started": started, "message": message}
-
-
-@router.post("/extras/{extra_id}/uninstall", dependencies=[Depends(this_computer_only)])
-def uninstall_extra(extra_id: str) -> dict:
-    """Remove one extra, by the same allowlist id the install uses."""
-    started, message = extras.remove(extra_id)
-    return {"started": started, "message": message}
-
-
-# --- embedding models ---------------------------------------------------------
-
-
-@router.get("/embedding-models")
-def list_embedding_models() -> dict:
-    """Which embedding models are on this machine, and what they cost.
-
-    `can_download` is here rather than left for the client to infer: without
-    `huggingface_hub` (which arrives with the semantic-search extra) every
-    button on this screen would start something that cannot finish, and a
-    disabled button with a reason beats a download that fails on an ImportError.
-    """
-    state = embedmodels.current()
-    return {
-        "models": embedmodels.status(),
-        "cache": str(embedmodels.cache_root()),
-        "can_download": embedmodels.can_download(),
-        "running": state.running,
-        "downloading": state.model_id if state.running else "",
-        "step": state.step,
-        "outcome": state.outcome,
-        "log": list(state.log),
-    }
-
-
-class EmbeddingChoiceBody(BaseModel):
-    #: A catalogue id (`core/embedmodels.catalogue`), never a repo or a path.
-    id: str = Field(max_length=80)
-
-
-def _legacy_search_files(backend: str, model: str) -> dict:
-    """The old engine's files Settings offers to remove: only once the new
-    build of the model search uses is in place (or search runs on Ollama), so
-    nothing is taken away while it is still the way back to a working search."""
-    if backend != "ollama" and not embedmodels.is_downloaded(model):
-        return {"files": [], "engine": None}
-    engine = extras.legacy_engine()
-    if engine is not None:
-        engine = {**engine, "size": embedmodels.size_in_words(engine["bytes"])}
-    return {"files": embedmodels.legacy_files(), "engine": engine}
-
-
-@router.get("/embedding-models/choices")
-def embedding_model_choices() -> dict:
-    """Settings, Models' list (INBOX 700): every model on offer with its
-    facts, which one search uses now, and a switch in progress."""
-    from tessellate.core import embedswitch
-
-    manager = deps.get_model_manager()
-    backend = manager.embedding_backend()
-    model = manager.embedding_model() if backend == "ollama" else manager.embedding_st_model()
-    from tessellate.core import embedfind
-
-    choices = embedmodels.catalogue()
-    #: Which Ollama rows are pulled already, for Install against Reinstall
-    #: and Uninstall (the owner's second addendum). Ollama's local list only.
-    try:
-        from tessellate.api import routes_models
-
-        pulled = routes_models._installed_names()
-    except Exception:  # noqa: BLE001  # Ollama down: nothing is pulled as far as this screen knows
-        pulled = set()
-    for row in choices:
-        if row["backend"] == "ollama":
-            row["downloaded"] = row["model"] in pulled or f"{row['model']}:latest" in pulled
-    return {
-        "choices": choices,
-        #: The previous engine's files (PyTorch weights, and in a packaged app
-        #: the packages), offered for removal once nothing needs them.
-        "legacy": _legacy_search_files(backend, model),
-        #: Where the built-in models are kept, said in words under the list.
-        "cache": str(embedmodels.cache_root()),
-        #: Already on this computer, outside the catalogue (the owner's
-        #: addendum): a read-only scan, offline.
-        "found": embedfind.found(deps.get_ollama()),
-        "current": {"backend": backend, "model": model},
-        "switch": embedswitch.status(),
-    }
-
-
-@router.post("/embedding-models/use", dependencies=[Depends(this_computer_only)])
-def use_embedding_model(body: EmbeddingChoiceBody) -> dict:
-    """Switch search to one catalogue entry, in the background. An entry
-    whose licence or loading rules forbid one press is refused here too,
-    not only by its missing button."""
-    from tessellate.core import embedswitch
-
-    from tessellate.core import embedfind
-
-    if body.id.startswith("found"):
-        resolved = embedfind.resolve(body.id, deps.get_ollama())
-    else:
-        resolved = embedmodels.resolve_choice(body.id)
-    if resolved is None:
-        raise HTTPException(status_code=400, detail="That model can't be switched to from here.")
-    started, message = embedswitch.start(*resolved)
-    return {"started": started, "message": message}
-
-
-class EmbeddingPullBody(BaseModel):
-    name: str = Field(max_length=200)
-
-
-@router.post("/embedding-models/pull", dependencies=[Depends(this_computer_only)])
-def pull_embedding_model(body: EmbeddingPullBody) -> dict:
-    """Pull a model by name (INBOX 700, the owner's second addendum).
-
-    A Hugging Face repo is checked against the Hub's metadata, on this click
-    and never before, and fetched only if the built-in engine can load it
-    (`embedmodels.start_typed` says why not otherwise). An Ollama name goes
-    to Ollama's own pull, a Background task with its bytes. Either way the
-    model then appears under Found on this computer, with Use."""
-    from tessellate.ai import model_cards, model_manager
-
-    kind, name = embedmodels.parse_typed_name(body.name)
-    if kind is None:
-        return {"started": False, "message": name, "source": ""}
-    if kind == "hf":
-        started, message = embedmodels.start_typed(name)
-        return {"started": started, "message": message, "source": "huggingface"}
-    #: An Ollama name is checked by the rules of "Download another model".
-    info = model_cards.inspect_model_name(name)
-    if not info.get("valid"):
-        return {"started": False, "message": info.get("error") or "That is not a model name.", "source": ""}
-    name = info["name"]
-    ollama = deps.get_ollama()
-    try:
-        running = ollama.is_running()
-        installed = {str(m.get("name", "")) for m in (ollama.list_models() or [])} if running else set()
-    except Exception:  # noqa: BLE001  # an Ollama that cannot answer is one that is not there
-        running, installed = False, set()
-    if not running:
-        return {"started": False, "message": "Ollama isn't running. Start it and try again.", "source": "ollama"}
-    if name in installed or f"{name}:latest" in installed:
-        return {"started": False, "message": f"{name} is already in Ollama: it is under Found on this computer.", "source": "ollama"}
-    if not model_manager.start_pull(ollama, name):
-        return {"started": False, "message": f"{name} is already downloading.", "source": "ollama"}
-    return {"started": True, "message": f"Pulling {name} into Ollama. Background tasks shows its progress.", "source": "ollama"}
-
-
-@router.post("/embedding-models/{model_id}/download", dependencies=[Depends(this_computer_only)])
-def download_embedding_model(model_id: str, reinstall: bool = False) -> dict:
-    """Fetch one model **from the allowlist** in `core/embedmodels.py`.
-
-    Same property as the extras installer: the repo id handed to the hub is
-    never anything the client sent. A repo id from a request is a path that
-    gets fetched and written to disk.
-
-    A reinstall removes first, because that is the state the button exists for
-    - a half-finished download leaves a directory that looks installed and
-    loads as a corrupt model, and fetching over the top of it resumes the same
-    broken snapshot.
-    """
-    if reinstall:
-        started, message = embedmodels.reinstall(model_id)
-    else:
-        started, message = embedmodels.start(model_id)
-    return {"started": started, "message": message}
-
-
-@router.delete("/embedding-models/legacy/{item_id}", dependencies=[Depends(this_computer_only)])
-def remove_legacy_search_files(item_id: str) -> dict:
-    """Remove the previous engine's files: one catalogue model's PyTorch copy
-    by its allowlist id, or "engine" for the packages in a packaged app's
-    extras folder. Refused until the new model is in place."""
-    manager = deps.get_model_manager()
-    model = manager.embedding_st_model()
-    if manager.embedding_backend() != "ollama" and not embedmodels.is_downloaded(model):
-        return {"removed": False, "message": "Download the new search model first: the old files stay until it is here."}
-    if item_id == "engine":
-        started, message = extras.remove_legacy_engine()
-        return {"removed": started, "message": message}
-    removed, message = embedmodels.remove_legacy(item_id)
-    return {"removed": removed, "message": message}
-
-
-@router.delete("/embedding-models/{model_id}", dependencies=[Depends(this_computer_only)])
-def remove_embedding_model(model_id: str) -> dict:
-    """Delete one model from the cache, by the same allowlist id."""
-    removed, message = embedmodels.remove(model_id)
-    return {"removed": removed, "message": message}
-
-
-@router.get("/logs")
-def server_logs(limit: int = Query(default=200, ge=1, le=logbuffer.MAX_RECORDS)) -> list[dict]:
-    """Recent server-side log records for the Settings, Logs viewer."""
-    return logbuffer.recent(limit=limit)
-
-
-class ClientError(BaseModel):
-    """One thing that went wrong in the browser, on its way to the terminal."""
-
-    message: str = Field(max_length=2000)
-    #: Where it happened, when the browser knows: "app.js:6088:12". Free text
-    #: because a stack frame's shape differs per engine and none of it is
-    #: parsed: it is read by a person.
-    source: str = Field(default="", max_length=500)
-    #: "error" | "unhandledrejection" | "csp", what kind of failure this was,
-    #: since the three need different first questions asked about them.
-    kind: str = Field(default="error", max_length=40)
-
-
-#: Lines one client may log per minute (audit 1028 K10): open to the LAN in
-#: LAN mode, so a flood must not push real warnings out of the ring buffer.
-CLIENT_LOG_PER_MINUTE = 30
-_client_log_times: dict[str, list[float]] = {}
-_client_log_clock = time.monotonic
-
-
-def _client_log_allowed(client: str) -> bool:
-    now = _client_log_clock()
-    recent = [t for t in _client_log_times.get(client, ()) if now - t < 60]
-    if len(_client_log_times) > 256:
-        _client_log_times.clear()
-    allowed = len(recent) < CLIENT_LOG_PER_MINUTE
-    _client_log_times[client] = recent + [now] if allowed else recent
-    return allowed
-
-
-@open_router.post("/logs/client", status_code=204)
-def record_client_error(body: ClientError, request: Request, response: Response) -> None:
-    """Put a browser-side failure into the same log everything else uses.
-
-    Asked for directly: *"can you make any other erros like what aoppeared on
-    the loading screen appear in the logs as well?? the terminal and logs need
-    to capture everything."*
-
-    The gap was real and had just cost a session. A JavaScript error aborts
-    the rest of the file it is in, so the app can hang on its loading screen
-    with **nothing** in the terminal, nothing in Settings, Logs, and the only
-    record sitting in a browser console nobody opens, least of all in the
-    desktop shell, which has no obvious way to open one. The crash that
-    prompted this (`Cannot access 'captureStagedFiles' before initialization`)
-    was invisible to every log this app keeps.
-
-    Deliberately `logger.error`, not a new channel: `logbuffer`'s handler is
-    already attached to the root logger, so this reaches the terminal, the
-    Settings, Logs viewer and `/logs/stream` at once, with no new plumbing to
-    keep in step. The `[browser]` prefix is what tells a reader the failure
-    happened on the other side of the wire, which changes what they should
-    look at next.
-
-    **On `open_router`, outside the unlock gate, on purpose.** This has to
-    work *before* unlock: the loading-screen hang it exists for happens with
-    the lock overlay still up, and a crash report that needs a token cannot
-    describe the failure that stopped the token from ever being used. Every
-    other route in this module stays behind `locked`.
-
-    What it accepts is bounded instead of authenticated: three short strings,
-    length-capped by the schema, appended to a ring buffer that already caps
-    itself at `MAX_RECORDS`, reachable only from an origin the CSP pins to
-    `'self'`, and rate-limited per client (LAN mode reaches it too). The worst an abuser of it
-    can do is push older lines out of a 500-record buffer on their own
-    machine.
-    """
-    # **Through `safe_value`, not raw.** Everything in this payload is
-    # attacker-shaped by construction: it is text the browser was handed by
-    # whatever failed, and a message containing a newline would draw a forged
-    # second row in the Settings, Logs viewer while control characters can
-    # rewrite what a terminal shows. `logbuffer.sanitise` runs at the ring
-    # buffer and so protects the viewer only; the terminal sees the raw
-    # record, which is exactly why this module's own helper exists and says
-    # to clean at the call site.
-    response.status_code = 204
-    if not _client_log_allowed(request.client.host if request.client else ""):
-        return
-    logger = logging.getLogger("tessellate.browser")
-    kind = logbuffer.safe_value(body.kind, limit=40)
-    message = logbuffer.safe_value(body.message, limit=logbuffer.MAX_MESSAGE_CHARS)
-    where = f" ({logbuffer.safe_value(body.source, limit=200)})" if body.source else ""
-    logger.error("[browser/%s] %s%s", kind, message, where)
-    response.status_code = 204
-
-
-@router.get("/logs/stats")
-def server_log_stats(
-    limit: int = Query(default=200, ge=1, le=logbuffer.MAX_RECORDS),
-) -> dict:
-    """How complete the log above actually is.
-
-    A separate call rather than a wrapper around the records, so the shape of
-    /logs stays a plain list for everything already reading it.
-    """
-    return logbuffer.stats(limit=limit)
-
-
-@router.delete("/logs")
-def clear_server_logs() -> dict:
-    logbuffer.clear()
-    return {"cleared": True}
-
-
-# How long a single stream lives before it hands over to the browser's own
-# reconnect, and how often it looks for new records. The cap is not a
-# limitation to work around, EventSource reconnects on its own and resends
-# Last-Event-ID, so the handover is seamless, and a stream that lives forever
-# is a resource nothing ever reclaims when a tab is left open for a week.
-LOG_STREAM_SECONDS = 10 * 60
-LOG_STREAM_POLL = 0.7
-LOG_STREAM_HEARTBEAT = 15
-
-
-@router.get("/logs/stream")
-async def stream_server_logs(request: Request, after: int = 0) -> StreamingResponse:
-    """A live log feed, so the Logs screen reads like a terminal.
-
-    Asked for directly: the screen should behave "like the terminal running in
-    the background", not a list you refresh by hand.
-
-    **NDJSON over fetch rather than the EventSource the roadmap suggested.**
-    EventSource cannot set request headers, and this app authenticates with
-    `X-Auth-Token`, so an EventSource here would simply 401. The usual way
-    round that is to put the token in the query string, which is a bad trade
-    anywhere and a farcical one on the endpoint that serves the log: the token
-    would be written into the very records it is protecting. `fetch` carries
-    the header, and NDJSON matches the chat and digest streams the app already
-    has, so the browser-side reader is the one that already exists.
-
-    Polling the ring buffer rather than registering a subscriber on it. That
-    sounds like the lazier choice and is the more robust one: a subscriber
-    registry means the logging handler pushes into per-connection queues, so a
-    slow or dead reader can block or grow unboundedly *inside logging itself*, 
-    and a logging path that can stall is a far worse failure than a console
-    running 700ms behind. One reader, one process, one deque.
-    """
-
-    async def lines() -> AsyncIterator[str]:
-        cursor = after
-        loop = asyncio.get_running_loop()
-        started = loop.time()
-        last_sent = started
-        # An immediate first line, so the reader knows the stream is live
-        # before anything has been logged, and learns where it is starting
-        # from, which is what makes "dropped" meaningful on the client.
-        yield json.dumps(
-            {"type": "open", "cursor": cursor, "latest": logbuffer.latest_seq()}
-        ) + "\n"
-        while True:
-            if await request.is_disconnected():
-                return
-            now = loop.time()
-            # Drain BEFORE checking the deadline. The other order loses every
-            # record that arrived in the last poll interval of the connection:
-            # the client reconnects from its cursor and those records are
-            # inside the buffer but behind it, so they are never sent at all.
-            for record in logbuffer.since(cursor):
-                cursor = record.get("seq", cursor)
-                yield json.dumps({"type": "record", "record": record}) + "\n"
-                last_sent = now
-            if now - started > LOG_STREAM_SECONDS:
-                # Hand back to the client's own reconnect rather than holding a
-                # connection open forever for a tab left open all week.
-                yield json.dumps({"type": "reconnect", "cursor": cursor}) + "\n"
-                return
-            if now - last_sent > LOG_STREAM_HEARTBEAT:
-                # Keeps the connection from being reaped as idle, and doubles
-                # as the client's proof that the server is still there rather
-                # than merely quiet.
-                yield json.dumps({"type": "ping", "cursor": cursor}) + "\n"
-                last_sent = now
-            await asyncio.sleep(LOG_STREAM_POLL)
-
-    return StreamingResponse(
-        lines(),
-        media_type="application/x-ndjson",
-        headers={
-            # Same reasoning as the chat stream: stop a reverse proxy buffering
-            # a stream whose whole value is arriving promptly.
-            "X-Accel-Buffering": "no",
-            "Cache-Control": "no-cache",
-        },
-    )
 
 
 # Preferences safe to put in a file the user will send to a stranger.
@@ -2703,760 +2315,3 @@ def _models_status_snapshot() -> dict:
     }
 
 
-def _export_rows(session: Session) -> tuple[list, list[Entry], list]:
-    """Everything the user owns, including binned entries, an export
-    should never silently drop data. The notes and boards come from the one
-    export walker (`repo/content.walk`), the folder export's own."""
-    categories = categories_repo.all_rows(session)
-    entries = [row for _adapter, row in content_walk(session, ("note", "board"))]
-    links = relations.all_rows(session)
-    return categories, entries, links
-
-
-
-@router.get("/export/backup")
-def export_backup(background_tasks: BackgroundTasks):
-    import os
-    config = deps.get_config()
-    fd, tmp_path = tempfile.mkstemp(suffix=".zip", prefix="memorymap_backup_")
-    os.close(fd)
-
-    def cleanup():
-        try:
-            os.remove(tmp_path)
-        except OSError:
-            pass  # already gone, or never got written, nothing left to clean up
-
-    background_tasks.add_task(cleanup)
-    #: **A snapshot, not the live file** (audit 2026-10-05, ARCH-18): the
-    #: database runs in WAL mode, so zipping the main file alone lost what
-    #: was saved last (measured, three notes and none of them in the zip,
-    #: with `integrity_check` passing). `backup_bundle.build_zip` copies a
-    #: consistent whole through SQLite's backup API, and adds `uploads/` to
-    #: `media/`. The same zip is what `POST /backups/bundle` seals with a
-    #: password and `POST /backups/bundle/restore` reads back.
-    backup_bundle.build_zip(config.data_dir, config.db_path, Path(tmp_path))
-    return FileResponse(tmp_path, media_type="application/zip", filename="memorymap_backup.zip", background=background_tasks)
-
-@router.get("/export/json")
-
-def export_json(session: Session = Depends(get_session)) -> Response:
-    categories, entries, links = _export_rows(session)
-    payload = {
-        "app": "Tessellate",
-        "version": __version__,
-        "exported_at": utcnow().isoformat(),
-        "categories": [{"id": c.id, "name": c.name} for c in categories],
-        "entries": [],
-        "links": [],
-    }
-
-    category_names = manager.bulk_category_names(session, entries)
-
-    for e in entries:
-        payload["entries"].append({
-            "id": e.id,
-            # Exports decrypt while the app is unlocked. An export is for
-            # taking your notes elsewhere, and ciphertext with no key is
-            # not your notes. (The app's own backups keep private notes
-            # encrypted, and since SEC-03 carry none of their words in the
-            # search index either: `backup.strip_leftovers`.)
-            "content": manager.readable_content(e),
-            "category": category_names.get(e.category_id, manager.UNCATEGORISED),
-            "tags": manager.shown_tags(e),
-            "ai_confidence": e.ai_confidence,
-            # Said, so a note decrypted for the export is not mistaken for an
-            # ordinary one by whatever reads the file next (SEC-14).
-            "is_private": bool(e.is_private),
-            "created_at": e.created_at.isoformat(),
-            "updated_at": e.updated_at.isoformat(),
-            # `is_deleted` is not decoration and not derivable from
-            # `deleted_at`: an export is what a re-import reads, and without
-            # this flag every note in the recycle bin comes back as a live
-            # note. It went missing when this block was rewritten as a loop.
-            "is_deleted": e.is_deleted,
-            "deleted_at": e.deleted_at.isoformat() if e.deleted_at else None,
-            #: A board or map keeps a companion entry the list hides; it is in
-            #: the file as a note, so the file says which ones are those (1031
-            #: SH8: the file held 210 where the list held 207).
-            "is_board": bool(e.is_board),
-        })
-
-    payload["links"] = [
-        {
-            "id": link.id,
-            "source_entry_id": link.source_entry_id,
-            "target_entry_id": link.target_entry_id,
-            # GRAPH_PLAN KG3: a link is its kind, its reason and its
-            # properties as much as its two ends.
-            "reason": link.reason,
-            "link_type": link.link_type,
-            "props": link.props,
-        }
-        for link in links
-    ]
-    payload["relation_types"] = [
-        {k: v for k, v in kind.items() if k != "description"}
-        for kind in relation_types.kinds(session).values()
-    ]
-    manager.log_action(session, "exported", "data", detail="json")
-    session.commit()
-    return Response(
-        content=json.dumps(payload, indent=2),
-        media_type="application/json",
-        headers={"Content-Disposition": "attachment; filename=tessellate-export.json"},
-    )
-
-
-def build_markdown_export(session: Session, ids: list[int] | None = None) -> bytes:
-    """The zip itself, as bytes, with nothing HTTP about it.
-
-    Lifted out of the route below so `python -m tessellate --export PATH`
-    writes exactly the same archive the Settings button downloads, rather
-    than a second implementation that drifts. uninstall.sh and
-    uninstall.bat call that entry point for `--export`, which is the whole
-    point: someone removing the app should be able to take their notes out
-    first, from a terminal, with no browser and no running server.
-
-    The audit line is written here rather than in the route so a CLI export
-    is recorded too: "where did this zip come from" is the same question
-    either way.
-    """
-    _categories, entries, _links = _export_rows(session)
-    #: A selection (WORLD_CLASS_PLAN 5 item 6, section 8 row 30): the same
-    #: files the whole export writes, for these notes only.
-    if ids is not None:
-        wanted = set(ids)
-        entries = [entry for entry in entries if entry.id in wanted]
-    category_names = manager.bulk_category_names(session, entries)
-    
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
-        for entry in entries:
-            cat_name = category_names.get(entry.category_id, manager.UNCATEGORISED)
-            folder = (
-                "_recycle-bin"
-                if entry.is_deleted
-                else paths.slug(cat_name)
-            )
-            tags = manager.entry_tags(entry)
-            front = [
-                "---",
-                f"category: {cat_name}",
-                f"created: {entry.created_at.isoformat()}",
-            ]
-            if tags:
-                front.append(f"tags: [{', '.join(tags)}]")
-            if entry.pinned:
-                front.append("pinned: true")
-            readable = manager.readable_content(entry)
-            #: KG4: the note's own properties join the app's in one block.
-            from tessellate.entry import properties as note_properties
-
-            end = note_properties.block_end(readable)
-            if end:
-                front.extend(line for line in readable[:end].rstrip("\n").split("\n")[1:-1] if line.strip())
-                readable = readable[end:].lstrip("\n")
-            front.append("---")
-            body = "\n".join(front) + f"\n\n{readable}\n"
-            archive.writestr(f"{folder}/{entry.id}-{paths.slug(readable, 30)}.md", body)
-    detail = "markdown" if ids is None else f"markdown, {len(entries)} selected"
-    manager.log_action(session, "exported", "data", detail=detail)
-    session.commit()
-    return buffer.getvalue()
-
-
-@router.get("/export/markdown")
-def export_markdown(
-    session: Session = Depends(get_session),
-    ids: str = Query(default="", max_length=6000, description="Comma-separated note ids; empty for every note"),
-) -> Response:
-    """A zip of Obsidian-friendly .md files: one file per note, one
-    folder per category, YAML frontmatter carrying the metadata. Binned
-    notes go under _recycle-bin/, exports never silently drop data. With
-    `ids`, only those notes (the Notes selection's Export)."""
-    chosen = [int(part) for part in ids.split(",") if part.strip().isdigit()] if ids.strip() else None
-    return Response(
-        content=build_markdown_export(session, chosen),
-        media_type="application/zip",
-        headers={"Content-Disposition": "attachment; filename=tessellate-markdown.zip"},
-    )
-
-
-MAX_IMPORT_BYTES = 1024 * 1024  # a single markdown note, not a novel
-#: `import_markdown` below had a per-file size cap but no cap on how many
-#: files one request could carry, each one does its own `create_entry` +
-#: `session.commit()`, so a request with an unbounded file count ran
-#: unbounded work. Same instinct as `MAX_DOCUMENT_IMPORT_NOTES` just below:
-#: a real "import my Obsidian vault" drag-and-drop is at most a few hundred
-#: files, so this is generous headroom, not a real-world ceiling.
-MAX_IMPORT_FILES = 500
-
-
-#: The keys the app reads into its own fields (and writes on export); every
-#: other key stays in the note's text as a property (GRAPH_PLAN KG4).
-_APP_KEYS = {"category", "tags", "created", "updated", "pinned"}
-
-
-def _exported_created(values: list[str] | None):
-    """The `created:` the export wrote, as the naive UTC the database holds,
-    or None when it is absent, unreadable, or in the future (a vault from
-    elsewhere may use any date format; only a clean past ISO stamp is trusted)."""
-    from datetime import datetime, timezone
-
-    if not values:
-        return None
-    try:
-        parsed = datetime.fromisoformat(values[0].strip())
-    except ValueError:
-        return None
-    if parsed.tzinfo is not None:
-        parsed = parsed.astimezone(timezone.utc).replace(tzinfo=None)
-    return parsed if parsed <= datetime.now(timezone.utc).replace(tzinfo=None) else None
-
-
-def _keep_exported_state(session: Session, entry, meta: dict) -> None:
-    """Put back the date and pin an exported note carried."""
-    if meta.get("created"):
-        entry.created_at = meta["created"]
-    if meta.get("pinned"):
-        entry.pinned = True
-    if meta.get("created") or meta.get("pinned"):
-        session.commit()
-
-
-def _parse_frontmatter(text: str) -> tuple[dict, str]:
-    """(metadata, content). `category` and `tags` become the note's own
-    fields; `created` and `updated` are the export's and are dropped; every
-    other key stays at the top of the note as its properties (KG4), lines
-    as written, so an imported vault keeps them. Imports must never eat
-    someone's text."""
-    from tessellate.entry import properties as note_properties
-
-    end = note_properties.block_end(text)
-    if not end:
-        return {}, text
-    found, body = note_properties.split(text)
-    meta: dict = {}
-    if found.get("category"):
-        meta["category"] = found["category"][0]
-    if "tags" in found:
-        meta["tags"] = [t for t in found["tags"] if t]
-    # What this app's own export wrote (audit 2026-10-10, item 1): a note
-    # exported and imported again kept its words and lost its date and pin,
-    # so the timeline reshuffled to "everything today".
-    stamp = _exported_created(found.get("created"))
-    if stamp is not None:
-        meta["created"] = stamp
-    if (found.get("pinned") or [""])[0].lower() == "true":
-        meta["pinned"] = True
-    kept: list[str] = []
-    skipping = False
-    for line in text[:end].rstrip("\n").split("\n")[1:-1]:
-        head = line.partition(":")[0].strip().lower()
-        if line[:1] not in (" ", "\t", "-") and ":" in line:
-            skipping = head in _APP_KEYS
-        if not skipping:
-            kept.append(line)
-    body = body.lstrip("\n")
-    if any(line.strip() for line in kept):
-        return meta, "---\n" + "\n".join(kept) + "\n---\n" + body
-    return meta, body
-
-
-
-class ImportDirectoryRequest(BaseModel):
-    path: str
-
-def _validated_import_directory(path_value: str) -> Path:
-    """The one place `import_directory`'s request path is turned into a
-    real, checked filesystem path, both the route and the background job
-    it schedules use this, and both pass its *return value* on, never the
-    original string.
-
-    CodeQL flags the raw `req.path` reaching file I/O as "uncontrolled
-    data used in a path expression", correct about the data flow, but
-    this route's whole job is letting the already-authenticated owner of
-    this single-user, local-only notebook pick any folder on their own
-    machine to import from (the Obsidian-vault-import feature). There is
-    no narrower base directory to confine it to without breaking that.
-    What this *can* do, and didn't before: reject a null byte outright
-    (the one thing no legitimate path contains), confirm the path
-    genuinely resolves to an existing directory before anything reads
-    from it, and, the part a first pass at this missed, make sure the
-    resolved, checked `Path` is what actually gets used downstream rather
-    than the original unchecked string living on past this function.
-    """
-    if not path_value or "\x00" in path_value:
-        raise ValueError("Invalid directory path")
-    # Normalised with `realpath` and confined by a prefix test before the
-    # disk is touched at all: the form CodeQL's path-injection query knows
-    # as a guard (a `Path.resolve(strict=True)` first is itself a read of
-    # an unchecked path, and `is_relative_to` is not recognised).
-    # The guard is spelled out here rather than behind a helper: CodeQL only
-    # counts a `startswith` that sits in the same function as the read.
-    real = os.path.normpath(os.path.realpath(path_value))
-    root = _import_root_for(real)
-    if not root or not real.startswith(root):
-        raise ValueError("Outside the folders an import may read")
-    p = Path(real)
-    if not p.is_dir():
-        raise ValueError("Invalid directory path")
-    # **Inside home or the data folder, judged after `resolve`** (WORLD_CLASS
-    # _PLAN §12, S3). "There is no narrower base directory" above was written
-    # for the owner at their own keyboard; for anyone holding a token over a
-    # network, this route was a read of any folder the server can see. Home
-    # is where a vault lives; the data folder is where the app itself puts
-    # things. Checked on the resolved path, so a symlink in home that points
-    # at `/etc` is judged by where it lands, not by where it sits.
-    return p
-
-
-def _import_roots() -> list[str]:
-    """The folders a directory import may read from, as real paths."""
-    roots = []
-    for candidate in (Path.home(), deps.get_config().data_dir):
-        try:
-            roots.append(os.path.realpath(candidate))
-        except OSError:
-            continue
-    return roots
-
-
-def _under_root(real: str, root: str) -> bool:
-    """Is the real path `real` the folder `root` or somewhere inside it?"""
-    return real == root or real.startswith(root.rstrip(os.sep) + os.sep)
-
-
-def _import_root_for(real: str) -> str:
-    """The import root `real` lies in (separator-aware), or "" for none."""
-    for root in _import_roots():
-        if _under_root(real, root):
-            return root
-    return ""
-
-
-def _inside(root: Path, f: Path) -> bool:
-    """Does `f`, symlinks followed, still lie inside `root`?
-
-    The walk below reads every `.md` under the chosen folder, and a symlink
-    inside it can point anywhere: `innocent.md -> ~/.ssh/config.md`, or a
-    linked folder. The folder was checked; what it links to was not, so
-    each file is checked by where it resolves.
-    """
-    real = os.path.realpath(f)
-    return _under_root(real, os.path.realpath(root)) and os.path.isfile(real)
-
-
-def _run_directory_import(directory_path: str):
-    """The background task: the import, recorded as the last "import" run
-    (INBOX 438), because a 202 Accepted answers nobody about how it went."""
-    with jobruns.job_run("import", origin="you") as run:
-        _import_directory_files(directory_path, run)
-
-
-#: Stands for "this path is a private note": matched without its text.
-_PRIVATE = object()
-
-
-def _text_hash(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def _already_imported(session) -> dict:  # noqa: ANN001
-    """Every live note that came from a vault file: its path in the vault ->
-    the hashes of its text, or `_PRIVATE` when its text is encrypted."""
-    from sqlalchemy import select
-
-    from tessellate.core.database import Entry
-
-    known: dict = {}
-    rows = session.execute(
-        select(Entry.source_path, Entry.content, Entry.is_private).where(
-            Entry.source_path != "", Entry.is_deleted.is_(False)
-        )
-    )
-    for path, content, private in rows:
-        if private:
-            known[path] = _PRIVATE
-        elif known.get(path) is not _PRIVATE:
-            known.setdefault(path, set()).add(_text_hash((content or "").strip()))
-    return known
-
-
-def _import_directory_files(directory_path: str, run: "jobruns.Run"):
-    try:
-        p = _validated_import_directory(directory_path)
-    except ValueError:
-        run.fail("That folder is not inside your home folder or the data folder.")
-        return
-    with deps.get_db().session() as session:
-        imported = 0
-        skipped = 0
-        skipped_oversize = 0
-        already = 0
-        made = []
-        known = _already_imported(session)
-        for f in p.rglob("*.md"):
-            if not _inside(p, f):
-                skipped += 1
-                continue
-            try:
-                #: `import_markdown` (the upload path just below) has always
-                #: capped a file at `MAX_IMPORT_BYTES` before reading it; this
-                #: path read whole files with no ceiling at all, so a
-                #: multi-gigabyte `.md` dropped into the vault by mistake was
-                #: read into memory in full. `stat()` first and reuse the
-                #: same constant, so a directory import can't be a bigger
-                #: attack surface than the upload form sitting right next to
-                #: it in the settings page.
-                if f.stat().st_size > MAX_IMPORT_BYTES:
-                    skipped += 1
-                    skipped_oversize += 1
-                    continue
-                text = f.read_text(encoding="utf-8")
-                meta, body = _parse_frontmatter(text)
-                if not body.strip():
-                    skipped += 1
-                    continue
-                try:
-                    relative = f.relative_to(p).as_posix()[:500]
-                except ValueError:
-                    relative = f.name[:500]
-                #: **Running it again is safe** (SEC-10, audit 2026-10-05): a
-                #: file whose path in the vault and whose text are already a
-                #: note is passed over, so "import again" finishes an import
-                #: that was cut off instead of doubling what got in. A note
-                #: made private since is matched on its path alone: its text
-                #: is encrypted, and a second, readable copy is the one thing
-                #: an import must never make of it.
-                seen = known.get(relative)
-                if seen is not None and (seen is _PRIVATE or _text_hash(body.strip()) in seen):
-                    already += 1
-                    continue
-                #: **The file's own text, unchanged.** An earlier attempt at
-                #: this prepended `# <filename>` so the note would carry its
-                #: vault name: and three existing tests caught it, rightly:
-                #: an importer that edits what it imports is a data-loss bug
-                #: waiting to be reported, and this app's own rule is that a
-                #: note has no separate title, its opening words *are* its
-                #: name. The filename is preserved on `source_path` instead,
-                #: where `find_by_wiki_name` reads it, so `[[wiki links]]`
-                #: resolve without a single character of the note changing.
-                entry = manager.create_entry(
-                    session,
-                    body.strip(),
-                    category_name=meta.get("category") or manager.UNCATEGORISED,
-                    tags=meta.get("tags") or [],
-                    ai_confidence=100 if meta.get("category") else 0,
-                )
-                #: Relative to the vault root, never absolute, see
-                #: `Entry.source_path`. `as_posix` so a vault imported on
-                #: Windows and one imported on Linux group identically.
-                entry.source_path = relative
-                if meta.get("category"):
-                    entry.user_filed = True
-                _keep_exported_state(session, entry, meta)
-                deps.store_quietly(session, entry)
-                imported += 1
-                made.append(entry)
-                known.setdefault(relative, set()).add(_text_hash(body.strip()))
-                if imported % 50 == 0:
-                    session.commit()
-            except Exception:
-                # Counted on the activity line below, and now said: which
-                # file, and why. A skip used to be a number with no reason.
-                logging.getLogger("tessellate.import").warning(
-                    "skipped %s while importing a folder", f.name, exc_info=True
-                )
-                skipped += 1
-                #: A failed flush leaves the session refusing every later
-                #: statement until it is rolled back, so one bad file used to
-                #: end the import for every file after it (SEC-10). Each note
-                #: before it is already committed by `create_entry`.
-                session.rollback()
-        #: The importer runs as a background task (202 Accepted, no
-        #: synchronous response), so a skipped file has nowhere to be
-        #: reported except this activity-log line: unlike `import_markdown`,
-        #: which can hand its skip list straight back in the response body,
-        #: this is the only place the count and the reason reach anyone.
-        #: Firing on `skipped` too, not just `imported`, matters here: a
-        #: directory whose files were all oversize used to leave no trace
-        #: at all, imported stayed 0 and the whole run vanished silently.
-        _link_imported(session, made)
-        if imported > 0 or skipped > 0 or already > 0:
-            detail = f"markdown dir x{imported}"
-            if already:
-                detail += f", {already} already in"
-            if skipped:
-                detail += f", skipped {skipped}"
-                if skipped_oversize:
-                    limit_mb = MAX_IMPORT_BYTES // (1024 * 1024)
-                    detail += f" ({skipped_oversize} over {limit_mb} MB)"
-            manager.log_action(session, "imported", "data", detail=detail)
-            session.commit()
-            run.result = (
-                f"imported {imported} note{'' if imported == 1 else 's'} from a folder"
-                + (f", {already} already in" if already else "")
-                + (f", skipped {skipped}" if skipped else "")
-            )
-            #: A whole vault arriving at once is exactly the "large change"
-            #: the rebuild suggestion exists for, see `mark_index_stale`.
-            if imported > 0:
-                deps.mark_index_stale(imported)
-        else:
-            run.result = "no markdown files found in that folder"
-
-@router.post("/import/directory", status_code=202, dependencies=[Depends(this_computer_only)])
-def import_directory(req: ImportDirectoryRequest):
-    try:
-        p = _validated_import_directory(req.path)
-    except ValueError:
-        raise HTTPException(
-            400,
-            "Choose a folder that exists inside your home folder or the notebook's data folder.",
-        ) from None
-    # The validated, resolved path, not req.path, is what the background
-    # job and the response both carry from here on.
-    canonical_path = str(p)
-    # On the pool, not a request task: the job is remembered, so a quit
-    # part-way is finished at the next launch (Brief 9). One folder waiting
-    # twice is one job.
-    jobs.enqueue(
-        "import", _run_directory_import, canonical_path, name=p.name, dedupe_key=("import", canonical_path)
-    )
-    return {"status": "started", "path": canonical_path}
-
-@router.post("/import/markdown", status_code=201)
-
-def import_markdown(
-    files: list[UploadFile], session: Session = Depends(get_session)
-) -> dict:
-    """Turn uploaded .md files into notes (Obsidian-friendly: the same
-    frontmatter the export writes is understood on the way back in)."""
-    if len(files) > MAX_IMPORT_FILES:
-        raise HTTPException(
-            status_code=422,
-            detail=f"{len(files)} files at once is more than one import handles "
-            f"({MAX_IMPORT_FILES} max): split it into smaller batches.",
-        )
-    with jobruns.job_run("import", origin="you") as run:
-        result = _import_markdown_files(files, session)
-        run.result = f"imported {result['imported']} note{'' if result['imported'] == 1 else 's'}" + (
-            f", skipped {len(result['skipped'])}" if result["skipped"] else ""
-        )
-    return result
-
-
-def _link_imported(session: Session, entries: list) -> None:
-    """Join up the `[[wiki links]]` an import brought in, both ways.
-
-    After every file is a note, so a link to a file later in the same batch
-    resolves (`sync_wiki_links` only links names that exist), and
-    `resolve_links_to` links notes already here that named one of the new
-    ones. Before this, an imported vault had no links at all until each note
-    was saved again (tests/test_import_markdown_links.py)."""
-    for entry in entries:
-        manager.sync_wiki_links(session, entry)
-        manager.resolve_links_to(session, entry)
-    session.commit()
-
-
-def _import_markdown_files(files: list[UploadFile], session: Session) -> dict:
-    imported = 0
-    skipped: list[str] = []
-    #: The notes this import made, so the client's Undo can bin exactly
-    #: these (INBOX 464 (18): choosing the files starts the import now).
-    ids: list[int] = []
-    made = []
-    #: **Choosing the same files again adds nothing** (the folder importer's
-    #: rule, SEC-10, and the README's promise): a file whose name or path and
-    #: whose text are already a note is passed over; an edited one comes in.
-    known = _already_imported(session)
-    already = 0
-    for file in files:
-        raw = file.file.read(MAX_IMPORT_BYTES + 1)
-        name = file.filename or "note.md"
-        if len(raw) > MAX_IMPORT_BYTES:
-            skipped.append(f"{name}: larger than 1 MB")
-            continue
-        try:
-            text = raw.decode("utf-8")
-        except UnicodeDecodeError:
-            skipped.append(f"{name}: not a text file")
-            continue
-        meta, body = _parse_frontmatter(text)
-        if not body.strip():
-            skipped.append(f"{name}: empty")
-            continue
-        #: The path, not the text, see the directory importer above for why
-        #: nothing here rewrites the file's own content. A browser sends the
-        #: relative path as the filename when the picker was a directory
-        #: picker, and the bare name otherwise; both are relative, which is
-        #: the only kind stored.
-        relative = import_path(name, "imported.md")
-        seen = known.get(relative)
-        if seen is not None and (seen is _PRIVATE or _text_hash(body.strip()) in seen):
-            already += 1
-            continue
-        entry = manager.create_entry(
-            session,
-            body.strip(),
-            category_name=meta.get("category") or manager.UNCATEGORISED,
-            tags=meta.get("tags") or [],
-            ai_confidence=100 if meta.get("category") else 0,
-        )
-        entry.source_path = relative
-        if meta.get("category"):
-            entry.user_filed = True  # the file said where it belongs
-            session.commit()
-        _keep_exported_state(session, entry, meta)
-        deps.store_quietly(session, entry)
-        imported += 1
-        ids.append(entry.id)
-        made.append(entry)
-        known.setdefault(relative, set()).add(_text_hash(body.strip()))
-    _link_imported(session, made)
-    detail = f"markdown x{imported}" + (f", {already} already in" if already else "")
-    manager.log_action(session, "imported", "data", detail=detail)
-    session.commit()
-    deps.mark_index_stale(imported)
-    return {"imported": imported, "skipped": skipped, "ids": ids, "already": already}
-
-
-#: A PDF or slide deck, not a video, well past what a document-conversion
-#: library is for.
-MAX_DOCUMENT_IMPORT_BYTES = 20 * 1024 * 1024
-#: A very long deck splits into one note per slide; a sane ceiling on how
-#: many notes one upload can create, the same instinct as `tools.py`'s
-#: MAX_PLAN_STEPS: a huge number here is usually a converter emitting one
-#: heading per page rather than someone wanting 200 new notes at once.
-MAX_DOCUMENT_IMPORT_NOTES = 25
-
-
-@router.post("/import/document", status_code=201)
-def import_document(file: UploadFile, session: Session = Depends(get_session)) -> dict:
-    """Turn an uploaded PDF/Word/slide file into one or more notes, via
-    markitdown (§37G): the button `core/extras.py`'s `documents` extra
-    installed for and had nothing behind, until this.
-
-    One note per top-level heading when the converted markdown has more than
-    one (a deck, a document with real chapters); the whole file as one note
-    otherwise: `import_markdown`'s "each file becomes a note" for the common
-    case, once markitdown has turned it into something with that shape.
-    """
-    if not importer.markitdown_available():
-        raise HTTPException(status_code=503, detail=importer.INSTALL_HINT)
-
-    data = file.file.read(MAX_DOCUMENT_IMPORT_BYTES + 1)
-    if len(data) > MAX_DOCUMENT_IMPORT_BYTES:
-        raise HTTPException(status_code=413, detail="That file is larger than 20 MB.")
-    if not data:
-        raise HTTPException(status_code=400, detail="That file is empty.")
-
-    suffix = Path(file.filename or "document").suffix[:12] or ".txt"
-    with tempfile.NamedTemporaryFile(suffix=suffix, delete=True) as saved:
-        saved.write(data)
-        saved.flush()
-        try:
-            text = importer.convert_to_markdown(Path(saved.name))
-        except Exception as exc:  # a file markitdown can't parse must not 500
-            #: Background jobs shows this row to a person, so it is a plain
-            #: sentence with the file's name; the converter's own words (a
-            #: path, a library's message) stay in the log with the traceback
-            #: (final scan, item 5).
-            jobruns.note_finished(
-                "import",
-                "failed",
-                f"Couldn't read {logbuffer.safe_value(file.filename or 'that file', 80)}. "
-                "It may be damaged or in a format that can't be converted.",
-            )
-            logging.getLogger("tessellate.import").warning(
-                "couldn't convert %s", logbuffer.safe_value(file.filename, 80), exc_info=True
-            )
-            raise HTTPException(
-                status_code=422,
-                detail="Couldn't read that file. It may be damaged or in a format that can't be converted.",
-            ) from exc
-
-    all_sections = importer.split_into_sections(text)
-    if not all_sections:
-        jobruns.note_finished(
-            "import", "failed", f"{file.filename or 'That file'} had no readable text in it"
-        )
-        raise HTTPException(
-            status_code=422, detail="That file had no readable text in it."
-        )
-    sections = all_sections[:MAX_DOCUMENT_IMPORT_NOTES]
-
-    with jobruns.job_run("import", origin="you") as run:
-        ids = _create_document_notes(session, sections, Path(file.filename or "document").name)
-        imported = len(ids)
-        run.result = f"imported {imported} note{'' if imported == 1 else 's'} from {file.filename or 'a document'}"
-    manager.log_action(
-        session, "imported", "data", detail=f"document x{imported} ({file.filename})"
-    )
-    session.commit()
-    return {
-        "imported": imported,
-        "truncated": len(all_sections) > len(sections),
-        "filename": file.filename,
-        "ids": ids,
-    }
-
-
-def _create_document_notes(session: Session, sections: list[str], source_name: str = "") -> list[int]:
-    """The ids of the notes made, one per section (the client's Undo bins
-    exactly these). Each keeps the file's name as its `source_path`, as the
-    other importers do, which is also what marks it as text from outside for
-    the agent's injection guard (SEC-02)."""
-    ids: list[int] = []
-    for section in sections:
-        entry = manager.create_entry(
-            session,
-            section,
-            category_name="Imports",
-            tags=["imported"],
-            ai_confidence=100,
-        )
-        entry.user_filed = True  # this file said where it came from, not the janitor
-        entry.source_path = import_path(source_name, "document")
-        session.commit()
-        deps.store_quietly(session, entry)
-        ids.append(entry.id)
-    return ids
-
-
-
-# web search (routes_websearch.py) and backups (routes_backups.py) moved out
-
-@router.get("/export/csv")
-def export_csv(session: Session = Depends(get_session)) -> Response:
-    _categories, entries, _links = _export_rows(session)
-    buffer = io.StringIO()
-    writer = csv.writer(buffer)
-    writer.writerow(
-        ["id", "content", "category", "tags", "ai_confidence", "created_at", "is_deleted"]
-    )
-    
-    category_names = manager.bulk_category_names(session, entries)
-    
-    for e in entries:
-        writer.writerow(
-            [
-                e.id,
-                manager.readable_content(e),
-                category_names.get(e.category_id, manager.UNCATEGORISED),
-                "|".join(manager.shown_tags(e)),
-                e.ai_confidence,
-                e.created_at.isoformat(),
-                e.is_deleted,
-            ]
-        )
-    manager.log_action(session, "exported", "data", detail="csv")
-    session.commit()
-    return Response(
-        content=buffer.getvalue(),
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=tessellate-export.csv"},
-    )

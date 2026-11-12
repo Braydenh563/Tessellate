@@ -25,6 +25,7 @@ from tessellate.repo import uploads as uploads_repo
 from tessellate.repo.documents import Document
 from tessellate.core.imagesize import image_size
 from tessellate.entry import manager
+from tessellate.entry import manager_text
 
 
 #: `/media/<filename>` as it appears inside note and document content, 
@@ -122,6 +123,9 @@ _TITLE_FILLER = frozenset(
 )
 
 
+#: `_TITLE_FILLER` stemmed as `_title_words` stems a title: built once, not per title (400 a question).
+_FILLER_STEMS = frozenset(f.rstrip("s") for f in _TITLE_FILLER)
+
 _KIND_SAID = re.compile(r"\b(?:(?:white)?boards?|mind ?maps?|maps?|documents?|docs?)\b", re.I)
 
 
@@ -143,7 +147,7 @@ def _named_sources(session: Session, question: str) -> tuple[list, list[int]]:
     says_kind = bool(_KIND_SAID.search(question or ""))
 
     def named(title: str) -> bool:
-        words = {w for w in _title_words(title) if w not in {f.rstrip("s") for f in _TITLE_FILLER}}
+        words = _title_words(title) - _FILLER_STEMS
         return bool(words) and words <= asked and (says_kind or len(words) >= 2)
 
     documents = [
@@ -153,7 +157,7 @@ def _named_sources(session: Session, question: str) -> tuple[list, list[int]]:
         e.id for e in session.scalars(
             select(Entry).where(Entry.is_board == True, Entry.is_deleted == False, Entry.is_private == False)  # noqa: E712
             .order_by(Entry.created_at.desc()).limit(400)
-        ) if named(manager.extract_title(e.content) or "")
+        ) if named(manager_text.extract_title(e.content) or "")
     ][:3]
     return documents, boards
 
@@ -276,7 +280,7 @@ def _attached_boards(session: Session, board_ids: list[int]) -> list[dict]:
     reaching the model by a different door would make that guard decorative.
     """
     from tessellate.api.routes_whiteboard import _board_settings, _build_tree, _map_objects
-    from tessellate.entry import manager as entry_manager
+    from tessellate.entry import manager_text
 
     found: list[dict] = []
     for board_id in dict.fromkeys(board_ids):
@@ -284,7 +288,7 @@ def _attached_boards(session: Session, board_ids: list[int]) -> list[dict]:
         if entry is None or entry.is_deleted or entry.is_private:
             continue
         board_type, _layout = _board_settings(entry)
-        title = entry_manager.extract_title(entry.content) or f"Board {board_id}"
+        title = manager_text.extract_title(entry.content) or f"Board {board_id}"
         objects = _map_objects(session, board_id)
         lines: list[str] = []
         _outline_into(_build_tree(session, objects), 0, lines)
@@ -461,6 +465,24 @@ def _one_line(text: str) -> str:
     return " / ".join(line.strip() for line in text.splitlines() if line.strip())
 
 
+def _reading_line(upload: MediaUpload, filename: str, captions_only: bool) -> str:
+    caption = (upload.caption or "").strip()
+    text = "" if captions_only else (upload.vision_ocr_text or upload.ocr_text or "").strip()
+    #: One line a picture: the text's own lines joined by " / " (INBOX
+    #: 787: a reading over several lines broke the block, and the answer
+    #: quoted `text in it: "Ranked Solo/Duo.` and stopped).
+    text = _one_line(text)
+    if not caption and not text:
+        return ""
+    parts = []
+    if caption:
+        parts.append(f"shows {caption[:MEDIA_READING_CHARS]}")
+    if text:
+        parts.append(f'text in it: "{text[:MEDIA_READING_CHARS]}"')
+    name = (upload.original_name or filename).strip()
+    return f"- {name}: {'; '.join(parts)}"
+
+
 def _media_readings(session: Session, content: str, captions_only: bool = False) -> str:
     """What the app already knows about the pictures inside a note.
 
@@ -496,21 +518,9 @@ def _media_readings(session: Session, content: str, captions_only: bool = False)
         upload = rows.get(filename)
         if upload is None:
             continue
-        caption = (upload.caption or "").strip()
-        text = "" if captions_only else (upload.vision_ocr_text or upload.ocr_text or "").strip()
-        #: One line a picture: the text's own lines joined by " / " (INBOX
-        #: 787: a reading over several lines broke the block, and the answer
-        #: quoted `text in it: "Ranked Solo/Duo.` and stopped).
-        text = _one_line(text)
-        if not caption and not text:
-            continue
-        parts = []
-        if caption:
-            parts.append(f"shows {caption[:MEDIA_READING_CHARS]}")
-        if text:
-            parts.append(f'text in it: "{text[:MEDIA_READING_CHARS]}"')
-        name = (upload.original_name or filename).strip()
-        lines.append(f"- {name}: {'; '.join(parts)}")
+        line = _reading_line(upload, filename, captions_only)
+        if line:
+            lines.append(line)
     if not lines:
         return ""
     # Bracketed and labelled so the model can tell the app's reading of a

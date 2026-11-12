@@ -206,6 +206,24 @@ def _despell(text: str) -> str:
     return re.sub(r"[a-z]+", fix, text)
 
 
+#: "Stats" is the subject only when it is the thing asked for: "statistics",
+#: "show my stats", "notebook stats". A noun after it ("the stats exam",
+#: "statistics lecture") or a when/where/who lead is a question about a note
+#: (audit 1110 F2), and "show my statistics" is the overview (conv-1110).
+_STATS_SUBJECT = re.compile(
+    r"^(?:(?:please|can you|could you|will you|just|hey|ok|okay|so)\s+)*"
+    r"(?:(?:show|open|give|see|tell|get|display|pull up|bring up)(?: me)?\s+)?"
+    r"(?:what(?:'s| is| are)\s+)?"
+    r"(?:(?:my|the|our|your|notebook|note|notes|writing|overall|general|all|some|a|few|quick)\s+)*"
+    r"stat(?:istic)?s"
+    r"(?:\s+(?:please|now|page|overview|summary|again|so far|today|for me|of my notes|of my notebook))*$"
+)
+
+
+def stats_is_subject(text: str) -> bool:
+    return bool(_STATS_SUBJECT.match(text.strip().rstrip("?!. ")))
+
+
 def _asks(text: str, *patterns: str) -> bool:
     return all(re.search(pattern, text) for pattern in patterns)
 
@@ -226,7 +244,7 @@ def looks_like_a_question_about_the_notebook(message: str) -> bool:
         or re.search(r"\bwords?\b|word ?count|writ(?:ten|ing)|\bwr(?:ite|ote)\b", text)
         or re.search(r"stale|forgotten|untouched|abandoned", text)
         or re.search(r"^what (?:are|were) (?:my |the )?(?:main |biggest |top |common |recurring )?(?:themes|topics|subjects|areas)\b", text)
-        or re.search(r"\bstat(?:istic)?s\b", text)
+        or stats_is_subject(text)
         or re.search(r"\b(?:pinned|archived|checklists?|reminders?|unticked|unchecked|tasks?)\b", text)
     )
 
@@ -240,9 +258,24 @@ def by_order(message: str, session: Session) -> StatAnswer | None:
     return None if placed is None else StatAnswer("note-order", note_order.say(session, placed)[0])
 
 
-def answer_chat(message: str, session: Session) -> StatAnswer | None:
-    """What the Chat counts: an ordinal question first, then the shape of the notebook."""
+def answer_chat(message: str, session: Session, as_of: date | None = None) -> StatAnswer | None:
+    """What the Chat counts: an ordinal question first, then the shape of the notebook.
+    With `as_of` (time travel) only the overview is answered, as that day's notebook (R3-32)."""
+    if as_of is not None:
+        return _coverage_as_of(message, session, as_of)
     return by_order(message, session) or answer(message, session)
+
+
+def _coverage_as_of(message: str, session: Session, day: date) -> StatAnswer | None:
+    """"What is in my notebook" as it stood at the end of `day`: the count and span of the notes written by then."""
+    text = _despell((message or "").strip().lower())
+    if not _COVERAGE.match(text.rstrip("?!. ")) or note_recency.is_recency_ask(text):
+        return None
+    made = sorted(value for value in session.scalars(_visible(select(Entry.created_at)).where(Entry.created_at <= datetime.combine(day, time.max))).all() if value)
+    when = f"{day.day} {day:%B %Y}"
+    if not made:
+        return StatAnswer("coverage-as-of", f"You had no notes on {when}.")
+    return StatAnswer("coverage-as-of", f"On {when} you had {_plural(len(made), 'note')}{_span_words(made)}.", [{"label": "notes", "count": len(made)}])
 
 
 def answer(message: str, session: Session) -> StatAnswer | None:
@@ -262,6 +295,18 @@ def answer(message: str, session: Session) -> StatAnswer | None:
     for ask, reader in _COUNT_RULES:
         if ask(text):
             return reader(session)
+    totalled = _total_or_window_count(text, session)
+    if totalled is not None:
+        return totalled
+    for ask, reader in _LATER_RULES:
+        if ask(text):
+            return reader(session)
+    return _whole_notebook(text, session)
+
+
+def _total_or_window_count(text: str, session: Session) -> StatAnswer | None:
+    """The notebook's note count, or the count over a window, when no subject
+    follows the count; None otherwise."""
     #: "How many notes are about Harbor" counts the notes on a subject, which
     #: retrieval finds and the composer counts ("At least four of your notes
     #: mention Harbor"); answering it "You have 77 notes" dropped the subject
@@ -275,10 +320,7 @@ def answer(message: str, session: Session) -> StatAnswer | None:
         return _recent_count(session, window)
     if _asks(text, _COUNT, r"\bnotes?\b") and not _SUBJECT_AFTER.search(text):
         return _note_count(session)
-    for ask, reader in _LATER_RULES:
-        if ask(text):
-            return reader(session)
-    return _whole_notebook(text, session)
+    return None
 
 
 def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
@@ -286,6 +328,10 @@ def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
     of boards and maps, reminders and open items; None for the rest."""
     from tessellate.ai import notebook_tasks, recognise
 
+    #: "how many notes have the word Lisbon" counts the notes that hold it; it
+    #: said the notebook's total, with the subject dropped (round 1 D4).
+    if holding := _held_word(text, message):
+        return _mention_of(holding, session)
     tasks = None if _SUBJECT_AFTER.search(text) else notebook_tasks.answer(text, session, utcnow(), _visible, recognise.ahead_window(text))
     if tasks is not None:
         return StatAnswer(*tasks[:2], tasks[2])
@@ -316,7 +362,7 @@ def _whole_notebook(text: str, session: Session) -> StatAnswer | None:
     #: "What have I written lately" asks for the newest notes (INBOX 441, 1590), not the topics covered.
     if _COVERAGE.match(text.rstrip("?!. ")) and not note_recency.is_recency_ask(text):
         return _coverage(session)
-    if _asks(text, r"\bstat(?:istic)?s\b"):
+    if stats_is_subject(text):
         return _general_stats(session)
     return None
 
@@ -337,19 +383,16 @@ def _no_repeats(notes: int) -> str:
     return f"No word comes up in more than one of your {_plural(notes, 'note')} yet."
 
 
-def _top_subjects(session: Session) -> StatAnswer:
-    """What the notebook is most about, by what it is filed under first (its
-    tags, then its categories) and, with neither, by the words the most notes
-    use (engine probe P7: "what did I write most about" listed the newest
-    notes). Every figure is a count of notes."""
-    rows = session.execute(_visible(select(Entry.tags, Entry.content))).all()
-    if not rows:
-        return StatAnswer("subjects", "There are no notes to read yet.")
+def _tag_subjects(rows: list) -> StatAnswer | None:
     tags = Counter(tag for raw, _content in rows for tag in set(_tags_of(raw)))
-    if len(tags) >= 2:
-        top = tags.most_common(5)
-        listed = ", ".join(f"{tag} ({_plural(n, 'note')})" for tag, n in top)
-        return StatAnswer("subjects", f"By your tags, you write most about {listed}.", [{"label": t, "count": n} for t, n in top])
+    if len(tags) < 2:
+        return None
+    top = tags.most_common(5)
+    listed = ", ".join(f"{tag} ({_plural(n, 'note')})" for tag, n in top)
+    return StatAnswer("subjects", f"By your tags, you write most about {listed}.", [{"label": t, "count": n} for t, n in top])
+
+
+def _word_subjects(rows: list) -> StatAnswer:
     words: Counter[str] = Counter()
     for _raw, content in rows:
         words.update({w for w in re.findall(r"[a-z][a-z'-]{2,}", str(content or "").lower()) if w not in _PLAIN})
@@ -358,6 +401,17 @@ def _top_subjects(session: Session) -> StatAnswer:
         return StatAnswer("subjects", _no_repeats(len(rows)))
     listed = ", ".join(f"“{w}” ({_plural(n, 'note')})" for w, n in top)
     return StatAnswer("subjects", f"The words the most notes use are {listed}.", [{"label": w, "count": n} for w, n in top])
+
+
+def _top_subjects(session: Session) -> StatAnswer:
+    """What the notebook is most about, by what it is filed under first (its
+    tags, then its categories) and, with neither, by the words the most notes
+    use (engine probe P7: "what did I write most about" listed the newest
+    notes). Every figure is a count of notes."""
+    rows = session.execute(_visible(select(Entry.tags, Entry.content))).all()
+    if not rows:
+        return StatAnswer("subjects", "There are no notes to read yet.")
+    return _tag_subjects(rows) or _word_subjects(rows)
 
 
 def _top_tags(session: Session) -> StatAnswer:
@@ -491,6 +545,43 @@ def _mention_count(text: str, session: Session) -> StatAnswer | None:
     word = found.group(1) if found else ""
     if not word or word in _KIND_WORDS or _SUBJECT_AFTER.search(text) or _window(word) is not None:
         return None
+    return _mention_of(word, session)
+
+
+#: "notes have the word Lisbon", "notes contain Lisbon", "notes with the phrase X".
+_HOLDING = re.compile(
+    r"\bnotes?\b(?: (?:do )?(?:i|we|you))? (?:have|has|contains?|holds?|with|including|containing)(?:(?: (?:the|a))? (?:words?|terms?|phrases?)| (?!(?:the|a|an|any|no|tags?|categor\w+|links?|images?|checklists?|tasks?|titles?)\b)) ?([a-z0-9][\w'-]{1,29})$"
+)
+#: "Sara comes up in how many notes", "in how many notes does Sara appear": the same count as "how many notes mention Sara" (R3-35).
+_COMES_UP = re.compile(r"^(?:([a-z0-9][\w'-]{1,29}) (?:comes|come|shows|appears|turns) up in how many notes|in how many notes (?:does|do) ([a-z0-9][\w'-]{1,29}) (?:come up|appear|show up|get mentioned))$")
+
+
+#: What a note can hold that the app counts on its own ("how many notes have
+#: reminders" is the reminders, not the word): never a word to find.
+_HELD_KINDS = frozenset(
+    """reminders photos pictures images attachments files documents boards maps comments subtasks checklists tasks todos links backlinks
+    tags categories folders titles dates deadlines events highlights drawings audio recordings voice videos""".split()
+)
+#: A day or a stretch of time after "have": a window, not a word.
+_HELD_TIMES = frozenset("today yesterday tomorrow tonight now week weekend month year morning afternoon evening".split())
+
+
+def _held_word(text: str, message: str) -> str:
+    """The word "how many notes have the word Lisbon?" asks for, as the person
+    typed it; "" when the ask is a day, a window or a kind the app counts."""
+    flat = " ".join(text.split()).rstrip(" ?.!")
+    found = _HOLDING.search(flat) or _COMES_UP.match(flat)
+    word = (found.group(1) or found.group(2) if found and found.re is _COMES_UP else found.group(1)) if found else ""
+    low = word.lower()
+    if not word or low in _KIND_WORDS or low in _HELD_TIMES or low.rstrip("s") in _HELD_KINDS or low in _HELD_KINDS or _window(word) is not None:
+        return ""
+    #: The text was lowercased and spell-fixed to match; the word is said back as typed.
+    typed = re.search(rf"(?<!\w){re.escape(word)}(?!\w)", message or "", re.I)
+    return typed.group(0) if typed else word
+
+
+def _mention_of(word: str, session: Session) -> StatAnswer:
+    """How many notes hold `word`, said as that and never as the total."""
     said = re.compile(rf"(?<!\w){re.escape(word)}(?:s|es)?(?!\w)", re.I)
     n = sum(1 for body in session.scalars(_visible(select(Entry.content))) if said.search(body or ""))
     said_n = f"{_plural(n, 'note')} mention{'s' if n == 1 else ''} {word}." if n else f"None of your notes mention {word}."
@@ -696,9 +787,13 @@ def _word_count(session: Session) -> StatAnswer:
 
 
 def _has_title(content: str) -> bool:
-    """A note has a title when its first line is a heading."""
-    first = next((ln for ln in str(content or "").splitlines() if ln.strip()), "")
-    return first.lstrip().startswith("#")
+    """A note has a title when its first line is a heading, or when that line is all it has and is
+    only a name ("Suica", G14 d), never a one-line sentence ("Just missed the bus": the composer names
+    that one by its quoted first words, `composer_frame.name_of`)."""
+    lines = [ln for ln in str(content or "").splitlines() if ln.strip()]
+    if lines and lines[0].lstrip().startswith("#"):
+        return True
+    return len(lines) == 1 and not composer_frame.name_of({"content": content}).startswith("\u201c")
 
 
 def _untitled(session: Session) -> StatAnswer:
@@ -710,6 +805,22 @@ def _untitled(session: Session) -> StatAnswer:
         return StatAnswer("untitled", "Every note has a title.")
     facts = [{"label": composer_frame.plain_snippet(content), "count": composer_frame.note_words(content), "id": note_id} for note_id, content in bare[:TOP_N]]
     return StatAnswer("untitled", f"{_plural(len(bare), 'note')} out of {len(rows)} {'has' if len(bare) == 1 else 'have'} no title. The newest {'is' if len(facts) == 1 else 'are'} listed below.", facts)
+
+
+def _title_only(content: str) -> bool:
+    """A heading and nothing under it, or nothing at all."""
+    lines = [ln for ln in str(content or "").splitlines() if ln.strip()]
+    return len(lines) <= 1 and (not lines or lines[0].lstrip().startswith("#"))
+
+
+def _empty(session: Session) -> StatAnswer:
+    """The notes with a title and no body (F13 e: "what notes are empty")."""
+    rows = session.execute(_visible(select(Entry.id, Entry.content)).order_by(Entry.created_at.desc())).all()
+    bare = [(note_id, content) for note_id, content in rows if _title_only(content)]
+    if not bare:
+        return StatAnswer("empty", "No note is empty; each has something written under its title.")
+    facts = [{"label": composer_frame.plain_snippet(content) or "Untitled", "count": 0, "id": note_id} for note_id, content in bare[:TOP_N]]
+    return StatAnswer("empty", f"{_plural(len(bare), 'note')} out of {len(rows)} {'has' if len(bare) == 1 else 'have'} a title and nothing under it. The newest {'is' if len(facts) == 1 else 'are'} listed below.", facts)
 
 
 def _same_text(content: str) -> str:
@@ -736,30 +847,61 @@ def _longest_notes(session: Session) -> StatAnswer:
 
     Useful for the reason nobody expects: the longest notes are usually the
     ones that should have been split, and this is the only view in the app that
-    surfaces them. Ordered by character count in SQL so the whole notebook does
-    not have to come back to rank ten rows.
+    surfaces them. The SQL narrows to the longest by characters, so the whole
+    notebook does not have to come back; the ranking and the number said are
+    words, and each note is named by its title (round 1 D5: a list labelled in
+    words but ordered by characters, named by a glued title and body).
     """
     rows = session.execute(
         _visible(select(Entry.id, Entry.content))
         .where(func.length(Entry.content) >= _LONGEST_MIN_CHARS)
         .order_by(func.length(Entry.content).desc())
-        .limit(TOP_N)
+        .limit(TOP_N * 5)
     ).all()
     if not rows:
         return StatAnswer("longest-notes", "There are no notes long enough to rank yet.")
+    counted = sorted(((composer_frame.note_words(content), note_id, content) for note_id, content in rows), key=lambda r: -r[0])
     facts = [
-        {
-            "label": composer_frame.plain_snippet(content),
-            "count": composer_frame.note_words(content),
-            "id": note_id,
-        }
-        for note_id, content in rows
+        {"label": composer_frame.note_title(content, size=60) or composer_frame.plain_snippet(content), "count": words, "id": note_id}
+        for words, note_id, content in counted[:TOP_N]
     ]
     lead = facts[0]
     return StatAnswer(
         "longest-notes",
-        f"Your longest note is about {lead['count']} words: “{lead['label']}”. "
+        f"Your longest note is “{lead['label']}”, about {lead['count']} words. "
         f"The top {len(facts)} are listed below.",
+        facts,
+    )
+
+
+def _shortest_notes(session: Session) -> StatAnswer:
+    """The notes with the least in them, the mirror of the longest (round 2 E21).
+
+    "What is my shortest note" used to fall through to "Your notes don't mention
+    shortest". Empty notes are left out (nothing to name), and the SQL narrows
+    to the shortest by characters before the words are counted.
+    """
+    rows = session.execute(
+        _visible(select(Entry.id, Entry.content))
+        .where(func.length(func.trim(Entry.content)) > 0)
+        .order_by(func.length(Entry.content).asc())
+        .limit(TOP_N * 5)
+    ).all()
+    if not rows:
+        return StatAnswer("shortest-notes", "There are no notes to rank yet.")
+    counted = sorted(((composer_frame.note_words(content), note_id, content) for note_id, content in rows), key=lambda r: r[0])
+    facts = [
+        {"label": composer_frame.note_title(content, size=60) or composer_frame.plain_snippet(content), "count": words, "id": note_id}
+        for words, note_id, content in counted[:TOP_N]
+    ]
+    lead = facts[0]
+    unit = "word" if lead["count"] == 1 else "words"
+    #: A note that is only its title has no words beyond it: said so, not "about 0 words" (G14 c).
+    size = "has only a title" if not lead["count"] else f"is about {lead['count']} {unit}"
+    return StatAnswer(
+        "shortest-notes",
+        f"Your shortest note is “{lead['label']}”; it {size}. "
+        f"The {len(facts)} shortest are listed below.",
         facts,
     )
 
@@ -790,7 +932,7 @@ def _stale_notes(session: Session) -> StatAnswer:
         )
     facts = [
         {
-            "label": composer_frame.plain_snippet(content),
+            "label": composer_frame.note_title(content, size=60) or composer_frame.plain_snippet(content),
             "id": note_id,
             "when": touched.isoformat() if touched else "",
         }
@@ -904,12 +1046,21 @@ def _coverage(session: Session) -> StatAnswer:
     )
 
 
+def categories_in_use(session: Session) -> int:
+    """How many categories hold a note (an empty one is not counted)."""
+    return session.scalar(manager.note_filter(select(func.count(func.distinct(Entry.category_id))).select_from(Entry))) or 0
+
+
 def _general_stats(session: Session) -> StatAnswer:
     """"Notebook stats" (INBOX 801, decision 70's gold Q3): the count and
     span in one opening sentence, the most filed category and the busiest
     month under bold labels, the rest in one line, and Statistics offered."""
-    note_total = session.scalar(_visible(select(func.count(Entry.id)))) or 0
-    cat_total = session.scalar(_visible(select(func.count(func.distinct(Entry.category_id))))) or 0
+    #: The notes and the categories they sit in are the Statistics card's own figures
+    #: (`manager.count_notes`, every category): the overview and the card said 41 and
+    #: 40 notes, 11 and 16 categories of one notebook (INBOX 1729); an empty category is now said.
+    note_total = manager.count_notes(session)
+    cat_total = categories_in_use(session)
+    cat_all = session.scalar(select(func.count(Category.id))) or 0
     #: Documents are not entries, so not filtered as entries are (the same
     #: count `_document_count` gives).
     doc_total = session.scalar(select(func.count(Document.id))) or 0
@@ -920,7 +1071,8 @@ def _general_stats(session: Session) -> StatAnswer:
         _visible(select(Category.name, func.count(Entry.id)).join(Category, Category.id == Entry.category_id).group_by(Category.name))
         .order_by(func.count(Entry.id).desc()).limit(1)
     ).first()
-    in_cats = f" in {_plural(cat_total, 'category')}" if cat_total else ""
+    #: The card counts every category, the empty ones too: said so, not left to disagree.
+    in_cats = (f" in {cat_total} of your {cat_all} categories" if cat_all > cat_total else f" in {_plural(cat_total, 'category')}") if cat_total else ""
     lines = [f"You have {_plural(note_total, 'note')}{in_cats}{_span_words(made)}."]
     labelled = []
     if top:
@@ -939,7 +1091,7 @@ def _general_stats(session: Session) -> StatAnswer:
         [
             {"label": "notes", "count": note_total},
             {"label": "documents", "count": doc_total},
-            {"label": "categories", "count": cat_total},
+            {"label": "categories", "count": cat_all},
             {"label": "tags", "count": distinct_tags},
         ],
         offer,
@@ -1237,10 +1389,14 @@ def page(session: Session, now: datetime, usage_summary: dict, first_day: int = 
 #: answers). Below the readers they name, so each is named directly. Three tables because a named count and a windowed count sit
 #: between them, in this order.
 _FIRST_RULES = (
+    #: "how many words in my longest note" asks that note's length, not the notebook's size (D4).
+    (lambda t: _asks(t, r"\bhow many words\b", r"\b(?:longest|biggest|largest)\b", r"\bnotes?\b"), _longest_notes),
+    (lambda t: _asks(t, r"\bhow many words\b", r"\b(?:shortest|smallest)\b", r"\bnotes?\b"), _shortest_notes),
     (lambda t: _asks(t, _TAG_WORDS, _MOST), _top_tags),
     (lambda t: _asks(t, _CATEGORY_WORDS, _MOST), _top_categories),
     (lambda t: _asks(t, r"untagged|no tags|without (?:a )?tags?|missing tags?"), _untagged),
     (lambda t: _asks(t, r"untitled|title-?less|(?:no|without|missing|lack\w*) (?:a )?titles?"), _untitled),
+    (lambda t: _asks(t, r"\b(?:empty|blank|title-?only)\b", r"\bnotes?\b") and not re.search(r"\b(?:categor|folder|space|tag)", t), _empty),
     (lambda t: _asks(t, r"duplicat|same text|written twice|copies of"), _duplicates),
     (
         lambda t: _asks(t, _COUNT, r"\bnotes?\b")
@@ -1274,6 +1430,7 @@ _LATER_RULES = (
     (lambda t: _asks(t, r"\b(?:write|wrote|written|writing)\b", r"\bmost\b", r"\babout\b"), _top_subjects),
     (lambda t: _asks(t, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount") and not _names_a_thing(t), _word_count),
     (lambda t: _asks(t, r"longest|biggest|largest", r"\bnotes?\b"), _longest_notes),
+    (lambda t: _asks(t, r"shortest|smallest", r"\bnotes?\b"), _shortest_notes),
     (lambda t: _asks(t, r"stale|forgotten|untouched|abandoned|haven.?t (?:looked|touched|opened|read)"), _stale_notes),
     (lambda t: _asks(t, _TAG_WORDS, r"together|alongside|\bpairs?\b|combination|co-?occur"), _tag_pairs),
 )

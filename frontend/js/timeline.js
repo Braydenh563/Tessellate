@@ -512,8 +512,9 @@ const TIMELINE_FIRST = 100;
 //: Which render a page belongs to: a page asked for before the range
 //: changed is dropped, not appended to the new range's rows. `pagingFor`:
 //: the render a page is being fetched for (0: none); a page in flight for a
-//: superseded range must not stop the new range asking for its own.
-const timelineRenders = { n: 0, pagingFor: 0 };
+//: superseded range must not stop the new range asking for its own. `total`:
+//: how many rows the whole range holds (the first page's `total`), null until it lands.
+const timelineRenders = { n: 0, pagingFor: 0, total: null };
 // Counts per day for the whole range (not just the loaded pages), which is
 // what the scrubber draws.
 let timelineDensity = {};
@@ -579,6 +580,7 @@ async function renderTimeline() {
   surfaceRecovered($("timeline-empty"));
   timelineDensity = body?.density || {};
   timelineNextCursor = body?.next_cursor || null;
+  timelineRenders.total = Number.isFinite(body?.total) ? body.total : null;
   timelineRows = body ? body.rows.map(timelineRow) : [];
   // Newest first by the moment the row *sits* on, not by when it was typed.
   // Those differ for every note placed by what it mentions, and the old grid
@@ -733,8 +735,9 @@ async function timelineLoadMore(limit = TIMELINE_PAGE) {
 }
 
 //: **One header line for the feed, the grid and the table.** A page is not the
-//: range: while `timelineNextCursor` says more follow, the count is what is
-//: loaded and a plus ("300+ items"), never a total it is not. "1 day", not
+//: range: while `timelineNextCursor` says more follow, the count is against
+//: the range's total ("40 of 1200 items"), or what is loaded and a plus when
+//: the total is not known ("300+ items"), never a total it is not. "1 day", not
 //: "1 days"; "1 item" only when nothing follows.
 function timelineUnitText(n, unit) {
   return nounCount(n, unit);
@@ -752,10 +755,17 @@ function timelineKindsText(rows) {
   };
   return ` (${TIMELINE_KINDS.filter((k) => counts.has(k.key)).map((k) => word(k.key, counts.get(k.key))).join(", ")})`;
 }
+
 function timelineCountLine(shown, loaded, tail, rows = []) {
-  const more = timelineNextCursor ? "+" : "";
-  const count = shown === loaded ? `${shown}${more}` : `${shown} of ${loaded}${more}`;
-  return `${count} item${shown === 1 && !more ? "" : "s"}${timelineKindsText(rows)} · ${tail}`;
+  //: Said as a figure when the first page told the range's total, and as a
+  //: plus only when it did not (an older server, a failed count).
+  const total = timelineRenders.total;
+  const known = timelineNextCursor && total >= loaded && total > 0;
+  const more = timelineNextCursor && !known ? "+" : "";
+  let count = shown === loaded ? `${shown}${more}` : `${shown} of ${loaded}${more}`;
+  if (known) count = shown === loaded ? `${shown} of ${total}` : `${shown} of ${loaded}`;
+  const range = known && shown !== loaded ? ` (${total} in the range)` : "";
+  return `${count} item${shown === 1 && !more && !known ? "" : "s"}${range}${timelineKindsText(rows)} · ${tail}`;
 }
 
 //: **The feed is windowed** (`windowRows`, notes-list.js): a row is built only
@@ -842,14 +852,6 @@ function appendTimelineRows(fresh) {
 //: Once a frame, whatever the number of scroll events (libtl-0926: the
 //: strip's window was worked out, with its hit tests, per event).
 let timelineScrollFrame = 0;
-$("timeline-scroll").addEventListener("scroll", () => {
-  if (timelineScrollFrame) return;
-  timelineScrollFrame = requestAnimationFrame(() => {
-    timelineScrollFrame = 0;
-    const box = $("timeline-scroll");
-    if (box.scrollTop + box.clientHeight > box.scrollHeight - 600) timelineLoadMore();
-  });
-}, { passive: true });
 
 // What a row belongs to under the current grouping: the value the band filter
 // matches against. Threads are named by the note they continue, which is the
@@ -1454,36 +1456,6 @@ function timelineMonthKeys(event) {
   } else renderTimelineMonthPop(timelineMonthStart(target), target);
 }
 
-//: The popover is wired once and its trigger is static markup. The capture
-//: phase runs before the wiring's own press handler, so the grid is built
-//: before the popover opens and placed at its real size; the focus follows
-//: once it is open.
-(() => {
-  const button = $("timeline-month-btn");
-  const pop = $("timeline-month-pop");
-  if (!button || !pop) return;
-  wireHelpPopover(button, pop);
-  button.addEventListener(
-    "click",
-    () => {
-      if (button.getAttribute("aria-expanded") === "true") return;
-      const end = timelineStripEnd || timelineBucketKey(new Date(), "day");
-      renderTimelineMonthPop(timelineMonthStart(end), null);
-      setTimeout(() => pop.querySelector('.timeline-monthday[tabindex="0"]')?.focus({ preventScroll: true }), 0);
-    },
-    true
-  );
-  pop.addEventListener("keydown", timelineMonthKeys);
-  $("timeline-month-prev").addEventListener("click", () => renderTimelineMonthPop(timelineMonthShift(timelineMonth.shown, -1), null));
-  $("timeline-month-next").addEventListener("click", () => renderTimelineMonthPop(timelineMonthShift(timelineMonth.shown, 1), null));
-  const walk = (delta) => {
-    timelineStripEnd = timelineDayShift(timelineStripEnd, delta * TIMELINE_STRIP_DAYS);
-    renderTimelineDayStrip();
-  };
-  $("timeline-daystrip-days").addEventListener("keydown", timelineDayKeys);
-  $("timeline-days-earlier").addEventListener("click", () => walk(-1));
-  $("timeline-days-later").addEventListener("click", () => walk(1));
-})();
 
 // One Tab stop for the feed, kept on the row the reader was on. A repaint
 // happens on every keystroke in the search box, and resetting the stop to the
@@ -1722,48 +1694,6 @@ function openTimelineRowDetail(detail, row) {
   return lazyScript("/js/timeline-detail.js").then((ok) => ok && timelineRowDetail(detail, row));
 }
 
-$("timeline-scroll").addEventListener("keydown", (event) => {
-  const row = event.target.closest?.(".timeline-row");
-  if (!row || event.target !== row) return;
-  const rows = timelineRowEls();
-  const at = rows.indexOf(row);
-  const go = (index) => {
-    const next = rows[Math.max(0, Math.min(rows.length - 1, index))];
-    if (next) {
-      event.preventDefault();
-      focusTimelineRow(next.dataset.key);
-    }
-  };
-  if (event.key === "ArrowDown") return go(at + 1);
-  if (event.key === "ArrowUp") return go(at - 1);
-  if (event.key === "Home") return go(0);
-  if (event.key === "End") return go(rows.length - 1);
-  if (event.key === " " && selectMode && row.tagName === "TR") {
-    event.preventDefault();
-    const model = timelineById.get(row.dataset.key);
-    //: Space selects, and only where a tick box exists: see `timelineTableRow`.
-    if (model && (model.kind === "note" || model.kind === "board")) {
-      setTimelineRowSelected(row, model, !selectedIds.has(model.id));
-    }
-    return;
-  }
-  if (event.key === "Enter" || event.key === " ") {
-    event.preventDefault();
-    const model = timelineById.get(row.dataset.key);
-    if (model) toggleTimelineRow(row, model);
-    return;
-  }
-  if (event.key === "Escape" && row.getAttribute("aria-expanded") === "true") {
-    event.preventDefault();
-    closeTimelineRow(row);
-    return;
-  }
-  //: + and - are the keyboard's way to the same steps as Ctrl and the wheel.
-  if ((event.key === "+" || event.key === "=" || event.key === "-") && timelineViewMode() === "feed") {
-    event.preventDefault();
-    timelineStepScale(event.key === "-" ? 1 : -1);
-  }
-});
 
 //: **Zoom the dates, not the page** (TIMELINE_PLAN section 8, Apple and
 //: Google Photos): Ctrl and the wheel, or a trackpad pinch (which Chromium
@@ -1776,27 +1706,6 @@ const TIMELINE_ZOOM_STEP = 50;
 const TIMELINE_ZOOM_GAP = 350;
 const timelineZoom = { sum: 0, at: 0, stepped: false };
 
-$("timeline-scroll").addEventListener(
-  "wheel",
-  (event) => {
-    //: The feed only: the table has no date groups to change, and there the
-    //: gesture stays the browser's.
-    if (!event.ctrlKey || timelineViewMode() !== "feed") return;
-    //: The browser's own page zoom would otherwise take the gesture.
-    event.preventDefault();
-    const now = performance.now();
-    //: Fields, not a new object: `timelineZoom` is a const, and assigning it
-    //: threw on the first gesture after a pause.
-    if (now - timelineZoom.at > TIMELINE_ZOOM_GAP) Object.assign(timelineZoom, { sum: 0, stepped: false });
-    timelineZoom.at = now;
-    if (timelineZoom.stepped) return;
-    timelineZoom.sum += event.deltaY;
-    if (Math.abs(timelineZoom.sum) < TIMELINE_ZOOM_STEP) return;
-    timelineZoom.stepped = true;
-    timelineStepScale(timelineZoom.sum < 0 ? -1 : 1);
-  },
-  { passive: false },
-);
 
 //: One step finer (-1) or coarser (+1) from the scale on screen (Auto resolves
 //: to the one it chose first). The row at the top of the list stays at the
@@ -2015,17 +1924,7 @@ function timelineScrubTo(clientY) {
   drawTimelineWindow();
 }
 
-$("timeline-scrubber").addEventListener("pointerdown", (event) => {
-  // Pointer capture, so a drag that leaves the 40px strip keeps scrubbing
-  // instead of stopping the moment the pointer wanders into the feed.
-  $("timeline-scrubber").setPointerCapture(event.pointerId);
-  timelineScrubTo(event.clientY);
-});
 
-$("timeline-scrubber").addEventListener("pointermove", (event) => {
-  if (!event.buttons) return;
-  timelineScrubTo(event.clientY);
-});
 
 //: **The table** (TIMELINE_PLAN Phase 2, decision 6). The same rows the feed
 //: draws, in the shape you want when the question is "which of these" rather
@@ -2297,30 +2196,8 @@ function syncTimelineSelectUi() {
   $("timeline-select-btn").setAttribute("aria-pressed", String(selectMode));
 }
 
-$("timeline-select-btn").addEventListener("click", () => {
-  if (selectMode) exitSelectMode();
-  else enterSelectMode();
-});
 
-$("timeline-batch-tag").addEventListener("click", batchTag);
-$("timeline-batch-delete").addEventListener("click", batchDelete);
-$("timeline-batch-done").addEventListener("click", exitSelectMode);
 
-//: Sorting is a click on the column head, and clicking the column you are
-//: already sorted by turns it around. Time starts newest first and text starts
-//: A to Z, because those are the two orders a person means by "sort by this".
-$("timeline-table-head").addEventListener("click", (event) => {
-  const button = event.target.closest(".timeline-sort");
-  if (!button) return;
-  const key = button.dataset.sort;
-  const column = TIMELINE_COLUMNS.find((c) => c.key === key);
-  if (!column) return;
-  timelineSort =
-    timelineSort.key === key
-      ? { key, dir: timelineSort.dir === "asc" ? "desc" : "asc" }
-      : { key, dir: column.type === "text" ? "asc" : "desc" };
-  paintTimeline();
-});
 
 //: **The calendar is a lazy file** (TIMELINE_PLAN section 9): the boot
 //: scripts are at their budget, so its code arrives the first time it is
@@ -2329,17 +2206,6 @@ function timelineCalendarCall(name, ...args) {
   return lazyScript("/js/timeline-calendar.js").then((ok) => ok && window[name](...args));
 }
 
-$("timeline-view-seg").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-timeline-view]");
-  if (!button) return;
-  const mode = button.dataset.timelineView;
-  if (mode === timelineViewMode()) return;
-  prefs.set("timeline-view", mode);
-  syncTimelineViewSeg();
-  // A repaint, not a reload: `timelineRows` is already in memory and both
-  // views render from it.
-  paintTimeline();
-});
 
 function syncTimelineViewSeg() {
   const mode = timelineViewMode();
@@ -2350,15 +2216,6 @@ function syncTimelineViewSeg() {
   }
 }
 
-//: Scale is a repaint, not a request (see `timelineBucketKey`), and it is
-//: remembered the way the graph's layout is: which bucket suits a notebook is
-//: a property of the notebook rather than of one visit. "Auto" is stored like
-//: any other choice, so a notebook that grows past the day threshold re-cuts
-//: its own headers without anyone touching the control.
-$("timeline-scale").addEventListener("change", (event) => {
-  prefs.set("timeline-scale", event.target.value);
-  paintTimeline();
-});
 
 //: Grouping decides what the band filter offers, so it rebuilds the options
 //: and repaints. It does not refetch either: every row already carries its
@@ -2370,88 +2227,13 @@ $("timeline-scale").addEventListener("change", (event) => {
 //: filter is not remembered: it hides rows, and a remembered filter shows a
 //: timeline with most of the notebook missing and no obvious reason why.
 const TIMELINE_GROUP_KEY = "timeline-group";
-(() => {
-  const select = $("timeline-group");
-  let stored = null;
-  try { stored = prefs.get(TIMELINE_GROUP_KEY, null); } catch { /* a private window */ }
-  if (stored && [...select.options].some((o) => o.value === stored)) select.value = stored;
-})();
-$("timeline-group").addEventListener("change", (event) => {
-  try { prefs.set(TIMELINE_GROUP_KEY, event.target.value); } catch { /* a private window */ }
-  timelineFilter = null;
-  fillTimelineBandOptions();
-  paintTimeline();
-});
 
-//: **The bands are a filter now, not lanes** (TIMELINE_PLAN decision 5). As
-//: lanes they were mostly empty: eight rows of whitespace with a handful of
-//: dots in each. The same choice is worth more as "show me only this", which
-//: is what the rest of the app does with a category.
-$("timeline-band").addEventListener("change", (event) => {
-  timelineFilter = event.target.value || null;
-  syncTimelineFilterChip();
-  paintTimeline();
-});
 
-//: One delegated handler on the list, not one per row: the rows are rebuilt
-//: after every fetch, and a listener bound per row would accumulate with them
-//: (`tests/test_frontend_handlers.py` exists because of exactly that shape).
-//:
-//: `change`, not `click`, since INBOX 214: the control is a checkbox inside
-//: its own `<label>`, so a press on the words fires a click on the label and a
-//: second one on the input it labels, and a click handler would toggle the
-//: kind twice and land back where it started.
-$("timeline-kinds")?.addEventListener("change", (event) => {
-  const box = event.target.closest("[data-timeline-kind]");
-  if (!box || box.disabled) return;
-  toggleTimelineKind(box.dataset.timelineKind);
-});
 
-$("timeline-filter-clear").addEventListener("click", () => {
-  timelineFilter = null;
-  $("timeline-band").value = "";
-  syncTimelineFilterChip();
-  paintTimeline();
-});
 
-const timelineDays = $("timeline-days");
-if (timelineDays) {
-  timelineDays.addEventListener("change", () => {
-    const isCustom = timelineDays.value === "custom";
-    const customRangeEl = $("timeline-custom-range");
-    if (customRangeEl) {
-      customRangeEl.classList.toggle("hidden", !isCustom);
-    }
-    // A range is the one control that has to go back to the server.
-    if (!isCustom || ($("timeline-start-date").value && $("timeline-end-date").value)) {
-      renderTimeline();
-    }
-  });
-}
 
-$("timeline-start-date")?.addEventListener("change", () => {
-  if ($("timeline-end-date").value) renderTimeline();
-});
-$("timeline-end-date")?.addEventListener("change", () => {
-  if ($("timeline-start-date").value) renderTimeline();
-});
 
-//: Today is under the days ahead in a newest-first feed, so this is a scroll
-//: rather than a search. It still looks the bucket up by key rather than assuming the
-//: first section is today's: a notebook with nothing written today should land
-//: on the newest day it has, not claim that day is today.
-//: The Options menu's switches are wired by the lazy ticks file (C36).
-$("timeline-options-menu").addEventListener("toggle", () => lazyScript("/js/timeline-ticks.js"), { once: true });
 
-$("timeline-jump-today")?.addEventListener("click", () => {
-  if (timelineViewMode() === "calendar") return void timelineCalendarCall("timelineCalendarToday");
-  //: Home for the strip too, when it was walked back to an earlier week.
-  if (timelineStripEnd) {
-    timelineStripEnd = null;
-    renderTimelineDayStrip();
-  }
-  timelineFocusFirstIn(timelineScrollToToday());
-});
 
 //: Today's section at the top of the feed's window, the days ahead above it
 //: (INBOX 904 B72); a fresh read and the dock's Today both land here.
@@ -2480,13 +2262,256 @@ function timelineScrollToToday() {
 //: to find the two that matched. 150ms is the debounce the Notes, Library and
 //: Graph boxes use, and a repaint costs no request.
 let timelineSearchDebounceTimeout;
-$("timeline-search").addEventListener("input", () => {
-  clearTimeout(timelineSearchDebounceTimeout);
-  timelineSearchDebounceTimeout = setTimeout(paintTimeline, 150);
-});
 
-$("timeline-clear-search")?.addEventListener("click", () => {
-  $("timeline-search").value = "";
-  paintTimeline();
-  $("timeline-search").focus();
+onSurface("timeline", () => {
+  $("timeline-scroll").addEventListener("scroll", () => {
+    if (timelineScrollFrame) return;
+    timelineScrollFrame = requestAnimationFrame(() => {
+      timelineScrollFrame = 0;
+      const box = $("timeline-scroll");
+      if (box.scrollTop + box.clientHeight > box.scrollHeight - 600) timelineLoadMore();
+    });
+  }, { passive: true });
+  //: The popover is wired once and its trigger is static markup. The capture
+  //: phase runs before the wiring's own press handler, so the grid is built
+  //: before the popover opens and placed at its real size; the focus follows
+  //: once it is open.
+  (() => {
+    const button = $("timeline-month-btn");
+    const pop = $("timeline-month-pop");
+    if (!button || !pop) return;
+    wireHelpPopover(button, pop);
+    button.addEventListener(
+      "click",
+      () => {
+        if (button.getAttribute("aria-expanded") === "true") return;
+        const end = timelineStripEnd || timelineBucketKey(new Date(), "day");
+        renderTimelineMonthPop(timelineMonthStart(end), null);
+        setTimeout(() => pop.querySelector('.timeline-monthday[tabindex="0"]')?.focus({ preventScroll: true }), 0);
+      },
+      true
+    );
+    pop.addEventListener("keydown", timelineMonthKeys);
+    $("timeline-month-prev").addEventListener("click", () => renderTimelineMonthPop(timelineMonthShift(timelineMonth.shown, -1), null));
+    $("timeline-month-next").addEventListener("click", () => renderTimelineMonthPop(timelineMonthShift(timelineMonth.shown, 1), null));
+    const walk = (delta) => {
+      timelineStripEnd = timelineDayShift(timelineStripEnd, delta * TIMELINE_STRIP_DAYS);
+      renderTimelineDayStrip();
+    };
+    $("timeline-daystrip-days").addEventListener("keydown", timelineDayKeys);
+    $("timeline-days-earlier").addEventListener("click", () => walk(-1));
+    $("timeline-days-later").addEventListener("click", () => walk(1));
+  })();
+  $("timeline-scroll").addEventListener("keydown", (event) => {
+    const row = event.target.closest?.(".timeline-row");
+    if (!row || event.target !== row) return;
+    const rows = timelineRowEls();
+    const at = rows.indexOf(row);
+    const go = (index) => {
+      const next = rows[Math.max(0, Math.min(rows.length - 1, index))];
+      if (next) {
+        event.preventDefault();
+        focusTimelineRow(next.dataset.key);
+      }
+    };
+    if (event.key === "ArrowDown") return go(at + 1);
+    if (event.key === "ArrowUp") return go(at - 1);
+    if (event.key === "Home") return go(0);
+    if (event.key === "End") return go(rows.length - 1);
+    if (event.key === " " && selectMode && row.tagName === "TR") {
+      event.preventDefault();
+      const model = timelineById.get(row.dataset.key);
+      //: Space selects, and only where a tick box exists: see `timelineTableRow`.
+      if (model && (model.kind === "note" || model.kind === "board")) {
+        setTimelineRowSelected(row, model, !selectedIds.has(model.id));
+      }
+      return;
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      const model = timelineById.get(row.dataset.key);
+      if (model) toggleTimelineRow(row, model);
+      return;
+    }
+    if (event.key === "Escape" && row.getAttribute("aria-expanded") === "true") {
+      event.preventDefault();
+      closeTimelineRow(row);
+      return;
+    }
+    //: + and - are the keyboard's way to the same steps as Ctrl and the wheel.
+    if ((event.key === "+" || event.key === "=" || event.key === "-") && timelineViewMode() === "feed") {
+      event.preventDefault();
+      timelineStepScale(event.key === "-" ? 1 : -1);
+    }
+  });
+  $("timeline-scroll").addEventListener(
+    "wheel",
+    (event) => {
+      //: The feed only: the table has no date groups to change, and there the
+      //: gesture stays the browser's.
+      if (!event.ctrlKey || timelineViewMode() !== "feed") return;
+      //: The browser's own page zoom would otherwise take the gesture.
+      event.preventDefault();
+      const now = performance.now();
+      //: Fields, not a new object: `timelineZoom` is a const, and assigning it
+      //: threw on the first gesture after a pause.
+      if (now - timelineZoom.at > TIMELINE_ZOOM_GAP) Object.assign(timelineZoom, { sum: 0, stepped: false });
+      timelineZoom.at = now;
+      if (timelineZoom.stepped) return;
+      timelineZoom.sum += event.deltaY;
+      if (Math.abs(timelineZoom.sum) < TIMELINE_ZOOM_STEP) return;
+      timelineZoom.stepped = true;
+      timelineStepScale(timelineZoom.sum < 0 ? -1 : 1);
+    },
+    { passive: false },
+  );
+  $("timeline-scrubber").addEventListener("pointerdown", (event) => {
+    // Pointer capture, so a drag that leaves the 40px strip keeps scrubbing
+    // instead of stopping the moment the pointer wanders into the feed.
+    $("timeline-scrubber").setPointerCapture(event.pointerId);
+    timelineScrubTo(event.clientY);
+  });
+  $("timeline-scrubber").addEventListener("pointermove", (event) => {
+    if (!event.buttons) return;
+    timelineScrubTo(event.clientY);
+  });
+  $("timeline-select-btn").addEventListener("click", () => {
+    if (selectMode) exitSelectMode();
+    else enterSelectMode();
+  });
+  $("timeline-batch-tag").addEventListener("click", batchTag);
+  $("timeline-batch-delete").addEventListener("click", batchDelete);
+  $("timeline-batch-done").addEventListener("click", exitSelectMode);
+  //: Sorting is a click on the column head, and clicking the column you are
+  //: already sorted by turns it around. Time starts newest first and text starts
+  //: A to Z, because those are the two orders a person means by "sort by this".
+  $("timeline-table-head").addEventListener("click", (event) => {
+    const button = event.target.closest(".timeline-sort");
+    if (!button) return;
+    const key = button.dataset.sort;
+    const column = TIMELINE_COLUMNS.find((c) => c.key === key);
+    if (!column) return;
+    timelineSort =
+      timelineSort.key === key
+        ? { key, dir: timelineSort.dir === "asc" ? "desc" : "asc" }
+        : { key, dir: column.type === "text" ? "asc" : "desc" };
+    paintTimeline();
+  });
+  $("timeline-view-seg").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-timeline-view]");
+    if (!button) return;
+    const mode = button.dataset.timelineView;
+    if (mode === timelineViewMode()) return;
+    prefs.set("timeline-view", mode);
+    syncTimelineViewSeg();
+    // A repaint, not a reload: `timelineRows` is already in memory and both
+    // views render from it. A feed painted from the table or the calendar has
+    // scrollTop 0, which is the days ahead, not Today (INBOX 1733).
+    paintTimeline();
+    if (mode === "feed") timelineScrollToToday();
+  });
+  //: Scale is a repaint, not a request (see `timelineBucketKey`), and it is
+  //: remembered the way the graph's layout is: which bucket suits a notebook is
+  //: a property of the notebook rather than of one visit. "Auto" is stored like
+  //: any other choice, so a notebook that grows past the day threshold re-cuts
+  //: its own headers without anyone touching the control.
+  $("timeline-scale").addEventListener("change", (event) => {
+    prefs.set("timeline-scale", event.target.value);
+    paintTimeline();
+    //: A re-cut feed is empty for a frame, so its scroll is 0; stepScale's own
+    //: anchoring runs after this and wins.
+    if (timelineViewMode() === "feed") timelineScrollToToday();
+  });
+  (() => {
+    const select = $("timeline-group");
+    let stored = null;
+    try { stored = prefs.get(TIMELINE_GROUP_KEY, null); } catch { /* a private window */ }
+    if (stored && [...select.options].some((o) => o.value === stored)) select.value = stored;
+  })();
+  $("timeline-group").addEventListener("change", (event) => {
+    try { prefs.set(TIMELINE_GROUP_KEY, event.target.value); } catch { /* a private window */ }
+    timelineFilter = null;
+    fillTimelineBandOptions();
+    paintTimeline();
+  });
+  //: **The bands are a filter now, not lanes** (TIMELINE_PLAN decision 5). As
+  //: lanes they were mostly empty: eight rows of whitespace with a handful of
+  //: dots in each. The same choice is worth more as "show me only this", which
+  //: is what the rest of the app does with a category.
+  $("timeline-band").addEventListener("change", (event) => {
+    timelineFilter = event.target.value || null;
+    syncTimelineFilterChip();
+    paintTimeline();
+  });
+  //: One delegated handler on the list, not one per row: the rows are rebuilt
+  //: after every fetch, and a listener bound per row would accumulate with them
+  //: (`tests/test_frontend_handlers.py` exists because of exactly that shape).
+  //:
+  //: `change`, not `click`, since INBOX 214: the control is a checkbox inside
+  //: its own `<label>`, so a press on the words fires a click on the label and a
+  //: second one on the input it labels, and a click handler would toggle the
+  //: kind twice and land back where it started.
+  $("timeline-kinds")?.addEventListener("change", (event) => {
+    const box = event.target.closest("[data-timeline-kind]");
+    if (!box || box.disabled) return;
+    toggleTimelineKind(box.dataset.timelineKind);
+  });
+  $("timeline-filter-clear").addEventListener("click", () => {
+    timelineFilter = null;
+    $("timeline-band").value = "";
+    syncTimelineFilterChip();
+    paintTimeline();
+  });
+  $("timeline-start-date")?.addEventListener("change", () => {
+    if ($("timeline-end-date").value) renderTimeline();
+  });
+  $("timeline-end-date")?.addEventListener("change", () => {
+    if ($("timeline-start-date").value) renderTimeline();
+  });
+  //: Today is under the days ahead in a newest-first feed, so this is a scroll
+  //: rather than a search. It still looks the bucket up by key rather than assuming the
+  //: first section is today's: a notebook with nothing written today should land
+  //: on the newest day it has, not claim that day is today.
+  //: The Options menu's switches are wired by the lazy ticks file (C36).
+  $("timeline-options-menu").addEventListener("toggle", () => lazyScript("/js/timeline-ticks.js"), { once: true });
+  $("timeline-jump-today")?.addEventListener("click", () => {
+    if (timelineViewMode() === "calendar") return void timelineCalendarCall("timelineCalendarToday");
+    //: Home for the strip too, when it was walked back to an earlier week.
+    if (timelineStripEnd) {
+      timelineStripEnd = null;
+      renderTimelineDayStrip();
+    }
+    timelineFocusFirstIn(timelineScrollToToday());
+  });
+  $("timeline-search").addEventListener("input", () => {
+    clearTimeout(timelineSearchDebounceTimeout);
+    timelineSearchDebounceTimeout = setTimeout(paintTimeline, 150);
+  });
+  $("timeline-clear-search")?.addEventListener("click", () => {
+    $("timeline-search").value = "";
+    paintTimeline();
+    $("timeline-search").focus();
+  });
+  //: The count line is its own tooltip: under 1100 the chip ellipsises ("11 items
+  //: (6 notes, 2 maps, 3 documents) · 1 day" is 275px, which a 720px dock cannot
+  //: spare), and a cut word should still be readable (INBOX 1717). Written when the
+  //: pointer arrives, so the four places that write the line need not know.
+  {
+    const chip = $("timeline-count");
+    chip?.addEventListener("pointerenter", () => { chip.title = chip.textContent; });
+  }
+  const timelineDays = $("timeline-days");
+  if (timelineDays) {
+    timelineDays.addEventListener("change", () => {
+      const isCustom = timelineDays.value === "custom";
+      const customRangeEl = $("timeline-custom-range");
+      if (customRangeEl) {
+        customRangeEl.classList.toggle("hidden", !isCustom);
+      }
+      // A range is the one control that has to go back to the server.
+      if (!isCustom || ($("timeline-start-date").value && $("timeline-end-date").value)) {
+        renderTimeline();
+      }
+    });
+  }
 });

@@ -1029,6 +1029,16 @@ class Retrieval:
             self.mentioned = set()
 
 
+#: The notes one search reads on a first ask, and how many more each Ask again
+#: adds up to the cap (audit 1028 E62): a retry that read the same five notes
+#: could only reword the same answer.
+FIRST_READ, READ_STEP, READ_CAP = 5, 5, 20
+
+
+def widened_limit(widen: int) -> int:
+    return min(READ_CAP, FIRST_READ + READ_STEP * max(0, widen))
+
+
 def retrieve_detailed(
     session: Session,
     query: str,
@@ -1036,14 +1046,17 @@ def retrieve_detailed(
     limit: int = 5,
     expand_graph: bool = True,
     locale: str | None = None,
+    unscoped: bool = False,
 ) -> Retrieval:
     """`retrieve`, with the provenance kept. See `Retrieval`.
 
     `locale` is the asker's (the browser's), so "3/4" reads as 4 March in
-    en-US and 3 April elsewhere, the way the quick-add reading route does."""
+    en-US and 3 April elsewhere, the way the quick-add reading route does.
+    `unscoped` ignores a category the question named: Ask again on a miss
+    (audit 1028 E62) reads past the scope the first ask was kept inside."""
     found: dict = {}
     entries, mode = _retrieve(
-        session, query, embeddings, limit, expand_graph, found, locale
+        session, query, embeddings, limit, expand_graph, found, locale, unscoped
     )
     return Retrieval(
         entries=entries,
@@ -1383,6 +1396,19 @@ def meaning_floor(entries: list[Entry], match_info: dict, kw_terms) -> list[Entr
     ]
 
 
+def direct_before_linked(entries: list[Entry], connected: set, match_info: dict) -> list[Entry]:
+    """Direct matches first, then notes that only came by a link (one step
+    before two), each group keeping its own order. `_append_connected` puts them
+    last, but `_learned_order` moves a note the person opened before and could
+    lift a link-only note over a direct match (owner, Matching records)."""
+    def tier(entry: Entry) -> int:
+        if entry.id not in connected:
+            return 0
+        return 2 if match_info.get(entry.id, {}).get("type") == "connected_2hop" else 1
+
+    return sorted(entries, key=tier)
+
+
 def _append_connected(session: Session, entries: list[Entry], match_info: dict, found: dict) -> None:
     # Appended, never interleaved: a connected note is context and a match is
     # an answer, and a prompt that has to drop something should drop the
@@ -1426,7 +1452,7 @@ def _latest_about(session: Session, query: str, embeddings: EmbeddingService, li
     filters first, then the newest of what it left (audit 1029 C31); the
     newest notes of the whole notebook were the answer to a subject never
     searched. None when the query is no such request."""
-    from tessellate.ai import note_recency
+    from tessellate.ai import composer_aliases, note_recency
 
     #: A find's topic keeps no noun ("latest", "last three"): short, it is read bare.
     bare = len(query.split()) <= 3
@@ -1435,15 +1461,23 @@ def _latest_about(session: Session, query: str, embeddings: EmbeddingService, li
         #: "What's the latest on uni": every note on the subject, so the answer
         #: can lead with the newest one (it is not the search's first).
         about = note_recency.status_subject(query)
-        return _retrieve(session, about, embeddings, max(limit, 20), False, found, locale) if about else None
+        if not about:
+            return None
+        got, how = _retrieve(session, about, embeddings, max(limit, 20), False, found, locale)
+        #: ...and the notes that say the name the subject's own notes give it (W7b B7: "Doug" for sourdough).
+        return composer_aliases.widen(session, about, got)[0], how
     if not rec.subject:
         return (_without_private(recent_entries(session, limit=rec.count)), "recent") if (rec.said_count or bare) and not rec.oldest else None
     entries, mode = _retrieve(session, rec.subject, embeddings, max(limit, 20), False, found, locale)
     terms = _meaningful_terms(rec.subject)
+    entries, names = composer_aliases.widen(session, rec.subject, entries, skip=bool(rec.said_count))
+    terms = [*terms, *(n.lower() for n in names)]
     #: A tag is the subject too: "my 2 latest baking notes" are the notes tagged #baking.
     held = [e for e in entries if mode != "recent" and any(t in f"{e.content or ''} {e.tags or ''}".lower() for t in terms)]
-    held.sort(key=lambda e: (e.created_at, e.id), reverse=not rec.oldest)
-    return _without_private(held[: rec.count]), mode if held else "keyword"
+    #: Notes written at the same moment keep the search's order (the sort is stable): the more relevant leads a tie.
+    held.sort(key=lambda e: e.created_at, reverse=not rec.oldest)
+    #: With a name found the notes saying it need the subject's own beside them to be read as its latest.
+    return _without_private(held[: max(rec.count, 5 * len(names[:1]))]), mode if held else "keyword"
 
 
 def _when_nothing_ranked(session: Session, entries: list, asked, mentioned: set, scope, semantic, any_time, limit: int, found: dict, subject: str):  # noqa: ANN001, ANN202
@@ -1485,6 +1519,7 @@ def _retrieve(
     expand_graph: bool,
     found: dict,
     locale: str | None = None,
+    unscoped: bool = False,
 ) -> tuple[list[Entry], str]:
     """The search itself. `found` is filled in with what happened, for
     `retrieve_detailed`; the plain caller passes a dict it throws away."""
@@ -1509,7 +1544,7 @@ def _retrieve(
     #: **A named category is a scope** (`_named_category`). A question that
     #: asks for the whole category lists it; one with a subject searches
     #: inside it, and lists it when nothing inside matches.
-    scope, listed = _category_scope(session, query, limit, found)
+    scope, listed = (None, None) if unscoped else _category_scope(session, query, limit, found)
     if listed is not None:
         return listed
 
@@ -1545,7 +1580,8 @@ def _retrieve(
     # the individual queries and have no embeddings to match on, but retrieval
     # feeds the AI's context: a single missed path would hand a private note
     # to the model, so it's checked once more here where every route converges.
-    return _learned_order(session, query, _without_private(entries)), mode
+    ordered = _learned_order(session, query, _without_private(entries))
+    return direct_before_linked(ordered, found.get("connected", set()), match_info), mode
 
 
 def _learned_order(session: Session, query: str, entries: list[Entry]) -> list[Entry]:
@@ -1576,30 +1612,46 @@ def _learned_order(session: Session, query: str, entries: list[Entry]) -> list[E
     # level `from tessellate.ai import learning` here is a cycle, and
     # `tests/test_no_import_cycles.py` counts the statement wherever it sits.
     learning = importlib.import_module("tessellate.ai.learning")
-    boosts = learning.boosts(session, kind="search")
-    if not boosts:
-        return entries
     asked = learning._words(query)
     if not asked:
         return entries
-    by_id = {entry.id: entry for entry in entries}
-    promoted: list[tuple[float, int]] = []
-    for (question, entry_id), weight in boosts.items():
-        if entry_id not in by_id:
-            continue
+
+    def like(question: str) -> bool:
         words = learning._words(question)
-        if not words:
-            continue
-        shared = len(words & asked)
-        if shared and shared * 2 >= len(words):
-            promoted.append((weight, entry_id))
-    if not promoted:
+        shared = len(words & asked) if words else 0
+        return bool(shared) and shared * 2 >= len(words)
+
+    boosts = learning.boosts(session, kind="search")
+    by_id = {entry.id: entry for entry in entries}
+    promoted = sorted(
+        ((weight, entry_id) for (question, entry_id), weight in boosts.items() if entry_id in by_id and like(question)),
+        reverse=True,
+    )
+    if promoted:
+        order = [by_id[entry_id] for _weight, entry_id in promoted]
+        seen = {entry.id for entry in order}
+        entries = order + [entry for entry in entries if entry.id not in seen]
+    #: Last, so a note the person once opened and later marked not right for this question still goes down.
+    return _learned_down(session, learning, entries, like)
+
+
+def _learned_down(session: Session, learning, entries: list[Entry], like) -> list[Entry]:  # noqa: ANN001
+    """The notes an answer to a question like this was marked not right for
+    (audit 1028 E59): read last, and left out once the person has said so
+    `learning.EXCLUDE_AFTER` times. Never an addition, like the boost above, and
+    the correction's Delete puts it all back."""
+    down = learning.boosts(session, kind="search_down")
+    if not down:
         return entries
-    promoted.sort(reverse=True)
-    order = [by_id[entry_id] for _weight, entry_id in promoted]
-    seen = {entry.id for entry in order}
-    order.extend(entry for entry in entries if entry.id not in seen)
-    return order
+    marked: dict[int, float] = {}
+    for (question, entry_id), weight in down.items():
+        if like(question):
+            marked[entry_id] = max(marked.get(entry_id, 0.0), weight)
+    if not marked:
+        return entries
+    drop = learning.EXCLUDE_AFTER * learning.PER_CORRECTION
+    kept = [entry for entry in entries if marked.get(entry.id, 0.0) < drop]
+    return [e for e in kept if e.id not in marked] + [e for e in kept if e.id in marked]
 
 
 def _without_private(entries: list[Entry]) -> list[Entry]:

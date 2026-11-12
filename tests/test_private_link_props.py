@@ -14,7 +14,7 @@ from sqlalchemy import text
 
 from tessellate.core import crypto, vault
 from tessellate.core.database import EntryLink
-from tessellate.entry import manager
+from tessellate.entry import manager_private
 
 SECRET = "Dr Weatherby"
 PROPS = {"doctor": SECRET, "count": 4}
@@ -95,7 +95,7 @@ def test_rotating_the_key_moves_props(client, session):
     client.post(f"/entries/{b['id']}/privacy", json={"private": True})
     before = _raw(session)
     old, new = vault.key(), crypto.new_dek()
-    manager.rekey_private_extras(session, old, new)
+    manager_private.rekey_private_extras(session, old, new)
     session.commit()
     vault.set_key(new)
     session.expire_all()

@@ -31,6 +31,7 @@ from tessellate.core.database import utcnow
 from tessellate.repo import reminders as reminder_repo
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
+from tessellate.entry import manager_text
 from tessellate.entry import meetings as shape
 
 router = APIRouter(tags=["meetings"])
@@ -89,7 +90,7 @@ def read_meeting(entry_id: int, session: Session = Depends(get_session)) -> dict
     """What the meeting sheet draws: when, who, the decisions and the action
     items, each item with the reminder it already has."""
     entry = _meeting_entry(session, entry_id)
-    content = manager.readable_content(entry)
+    content = manager_text.readable_content(entry)
     made = _reminders_for(session, entry.id)
     actions = []
     for item in shape.action_items(content):
@@ -134,7 +135,7 @@ def remind_action(entry_id: int, body: RemindBody, session: Session = Depends(ge
     """An action item as a real reminder, linked to its meeting, due when the
     line says (or when `when` says). Pressed twice, the same reminder."""
     entry = _meeting_entry(session, entry_id)
-    content = manager.readable_content(entry)
+    content = manager_text.readable_content(entry)
     item = next((i for i in shape.action_items(content) if i["line"] == body.line), None)
     if item is None:
         raise HTTPException(status_code=409, detail="That action item has changed. Open the meeting again.")
@@ -174,7 +175,7 @@ def append_to_meeting(
     """Lines added at the end of one section (a summary's decisions, a
     recording's transcript), the person's own lines untouched."""
     entry = _meeting_entry(session, entry_id)
-    content = manager.readable_content(entry)
+    content = manager_text.readable_content(entry)
     lines = [str(line)[:20_000] for line in body.lines]
     updated = shape.append_to_section(content, body.section, lines)
     return routes_entries.update_entry(
@@ -237,7 +238,7 @@ def summarise_meeting(entry_id: int, session: Session = Depends(get_session)) ->
     from tessellate.ai import meeting_summary
 
     entry = _meeting_entry(session, entry_id)
-    content = manager.readable_content(entry)
+    content = manager_text.readable_content(entry)
     #: The Notes section is what was said; the whole body when a meeting
     #: was written without the shape.
     source = shape.section_text(content, shape.NOTES) or shape.note_properties.strip(content)

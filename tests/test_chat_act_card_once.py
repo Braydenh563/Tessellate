@@ -18,9 +18,9 @@ SRC = (ROOT / "frontend" / "js" / "ask-compose.js").read_text(encoding="utf-8")
 def test_a_done_acts_card_does_not_repeat_the_answer():
     body = SRC[SRC.index("function renderActCard(") :]
     body = body[: body.index("\n}\n")]
-    assert re.search(r"const done = \(summary, undo, steps, said = false\)", body)
+    assert re.search(r"const done = \(summary, undo, steps, said = false, again = false\)", body)
     assert 'card.setAttribute("aria-label", summary)' in body
-    assert "if (event.done) done(event.summary || event.label, event.undo, event.steps, true);" in body
+    assert 'if (event.done || event.state === "done") done(event.summary || event.label, event.undo, event.steps, Boolean(event.done), restored);' in body
     # The Confirm path is the only place its sentence is drawn, so it still is.
     assert "done(result.summary, result.undo, event.steps)" in body
     assert "if (card.childElementCount) holder.appendChild(card);" in body

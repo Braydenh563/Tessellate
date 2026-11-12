@@ -2,6 +2,7 @@
 (generate, edit, regenerate)")."""
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 
 def test_a_template_is_drafted_from_its_name(ai_client, fake_ollama):
@@ -26,4 +27,4 @@ def test_no_model_is_a_reason_not_an_error(client):
 def test_the_button_is_wired():
     root = Path(__file__).resolve().parent.parent / "frontend"
     assert 'id="template-draft"' in (root / "index.html").read_text(encoding="utf-8")
-    assert '$("template-draft")?.addEventListener("click"' in (root / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    assert '$("template-draft")?.addEventListener("click"' in unwrapped((root / "js" / "settings-controls.js").read_text(encoding="utf-8"))

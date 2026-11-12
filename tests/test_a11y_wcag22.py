@@ -15,6 +15,7 @@ from pathlib import Path
 
 from tests._app_js import with_pieces
 from tests._css_paths import css_text
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
@@ -22,7 +23,9 @@ CSS = FRONTEND / "css"
 
 
 def _read(name: str) -> str:
-    return (FRONTEND / ("js/" + name if name.endswith(".js") else name)).read_text(encoding="utf-8")
+    text = (FRONTEND / ("js/" + name if name.endswith(".js") else name)).read_text(encoding="utf-8")
+    #: documents.js and its CodeMirror view glue (documents-view.js, D21) are one file to these checks.
+    return text + _read("documents-view.js") if name == "documents.js" else text
 
 
 def _function(source: str, name: str) -> str:
@@ -118,7 +121,7 @@ def test_the_keyboard_lands_somewhere_after_every_note_step():
     assert "restoreFocusTo(" in row and "row.tabIndex = 0;" in row
     contract = _function(notes, "restoreFocusTo")
     assert "here !== document.body" in contract and "el.focus(" in contract
-    assert "if (!many) focusNoteRow(noteIds[0]);" in _read("categories-panel.js")
+    assert "if (!many) focusNoteRow(noteIds[0]);" in _js_scope.unwrapped(_read("categories-panel.js"))
     sheet = _function(_read("phone-shell.js"), "openSheet")
     assert "'.sheet-row[aria-current=\"true\"]'" in sheet
     assert "ArrowDown: 1, ArrowUp: -1" in sheet
@@ -271,7 +274,7 @@ def test_the_folded_tags_chip_keeps_a_24px_target():
     rule = re.search(r"\.note-meta > \.note-meta-more \{([^}]*)\}", css)
     assert rule, ".note-meta-more rule missing"
     assert "min-width: 24px;" in rule.group(1)  # the height is the chip's own 24
-    assert 'chip("+0", "note-meta-more"' in _read("note-cards.js")
+    assert 'chip("+0", "note-meta-more"' in _read("entry-card.js")  # moved by the boot diet (3d1f8627e)
 
 
 def test_an_icon_only_control_is_named_by_aria_label_not_title_alone():
@@ -304,7 +307,7 @@ def test_a_solid_map_topic_keeps_its_progress_count_legible():
 
 
 def test_a_disabled_task_box_on_a_note_card_says_why():
-    from _app_js import app_js_text
+    from tests._app_js import app_js_text
 
     js = app_js_text()
     at = js.index('item.className = "entry-task"')
@@ -530,3 +533,9 @@ def test_every_labelledby_and_describedby_names_an_element_that_exists():
         if ref not in ids
     ]
     assert missing == []
+
+
+def test_the_document_editor_describes_its_way_out():
+    """W26 (sweep-1028b): Escape then Tab leaves the editor and nothing said so."""
+    docs = _read("documents.js")
+    assert '"aria-description": "Tab indents. To leave the editor, press Escape, then Tab."' in docs

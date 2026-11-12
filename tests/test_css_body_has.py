@@ -9,10 +9,7 @@ import re
 from pathlib import Path
 
 CSS = Path(__file__).resolve().parent.parent / "frontend" / "css"
-ALLOWED = {
-    ("07-whiteboard-misc.css", "body:has(#library-media-selectbar"),
-    ("08-consistency.css", "body:has(#library-media-selectbar"),
-}
+ALLOWED = set()
 
 
 def test_no_new_body_has_rules():

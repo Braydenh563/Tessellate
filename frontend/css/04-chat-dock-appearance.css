@@ -1191,6 +1191,10 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 
 /* Run is the action the panel exists for, so it gets the full width and the
    emphasis rather than sitting as a third peer in a row of settings. */
+.chat-skills-note {
+  margin: 0;
+}
+
 .chat-skills-run {
   display: flex;
 }
@@ -1557,8 +1561,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
      of its own under the title, where it reads as a control belonging to the
      note rather than to the panel. The identity block shrinks instead
      (min-width: 0 below) and the title wraps inside it. */
-  flex-wrap: nowrap;
-}
+  flex-wrap: nowrap;}
 
 /* The head is the drag handle (INBOX 1413); touch-action keeps a finger from
    scrolling the page instead. Away: the node is out of view, the popup waits. */
@@ -1575,12 +1578,39 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   visibility: hidden;
 }
 
+/* One coherent head (INBOX 1713, the owner resizing the popup): the glyph and the title share row one, the category chip
+   sits under the title at its indent, and the tools (restore, close) take row one's height on the right. It was a wrapping
+   flex row, so a long title (flex-basis its full width) wrapped onto its own line and left the glyph alone above it. */
 .graph-popup-ident {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-2);
+  row-gap: var(--space-1);
+  min-width: 0;
+}
+
+.graph-popup-ident > i:first-child {
+  grid-area: 1 / 1;
+}
+
+/* The category and how sure the filing was, on one row under the title and level with the meta lines below
+   (owner, 2026-11-10: the chip sat indented under the title and the bare "95%" floated at the far right). */
+.graph-popup-ident > .graph-popup-filed {
+  grid-area: 2 / 1 / auto / -1;
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-2);
   min-width: 0;
+}
+
+.graph-popup-filed > .chip {
+  max-inline-size: 100%;
+  min-width: 0;
+}
+
+.graph-popup-filed:not(:has(> :not(.hidden))) {
+  display: none;
 }
 
 /* **One line, ellipsised, and the close button never moves.** Reported on
@@ -1596,9 +1626,10 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
    `.graph-popup-ident`'s own `flex-wrap: wrap` is for: it is the title, not
    the row, that must stay on one line. */
 .graph-popup-ident>strong {
+  grid-area: 1 / 2;
   font-size: var(--text-body);
-  line-height: 1.3;
-  flex: 1 1 auto;
+  /* Row one is as tall as the tools beside it, so the title, the glyph and the buttons share one centre line. */
+  line-height: var(--dialog-head-btn-size);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1634,6 +1665,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   min-width: 0;
 }
 
+.graph-popup-head > button.dialog-head-btn,
 .graph-popup-head>#graph-popup-close {
   flex: none;
   align-self: flex-start;
@@ -1733,14 +1765,10 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   font-size: var(--text-md);
 }
 
-/* The close button belongs to the same panel and is the same size as the
-   toolbar under it: a 28px close over a row of 36px icons is the four-pixel
-   mismatch DESIGN.md's control-height section is about, and here it is a
-   whole step. */
+/* The close button is the head's own square (--dialog-head-btn-size, like every dialog head) and shares it with the restore
+   button beside it, so the tools and the title are one row (INBOX 1713; it was 36 px tall beside a 32 px restore). */
 #graph-popup-close {
   flex: 0 0 auto;
-  min-height: 2.25rem;
-  height: 2.25rem;
 }
 
 /* Gravity, Spread and Unpin all used to be an inline-flex row inside the
@@ -1854,14 +1882,21 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 /* The tags field sat flush under the content box (the owner at release:
    "no gap between the note content and tags textbox"). On the field, not
    `#graph-popup-content + ...`: the text box is wrapped in a
-   `.note-surface`, so that sibling rule matched nothing. */
-#graph-popup-tags {
+   `.note-surface`, so that sibling rule matched nothing. The new-note box has the same pair (the owner 2026-11-09). */
+#graph-popup-tags,
+#graph-new-tags {
   margin-top: var(--space-3);
 }
 
 .graph-popup .row {
   margin: 0;
   align-items: center;
+}
+
+/* The owner, 2026-11-08: "no small gap at the bottom below the x close button": the rule above zeroed the head's
+   margin too, so a one-line head sat flush on the body and a sketch's picture touched the close (INBOX 1694 d). */
+.graph-popup > .graph-popup-head {
+  margin-bottom: var(--space-2);
 }
 
 /* --- markdown tables ------------------------------------------------------- */
@@ -2074,6 +2109,18 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   border: 1px solid var(--border);
   background: var(--input-bg);
   cursor: pointer;
+}
+
+/* **A number in a setting row is a number's width** (wrapzoom 2026-11-11).
+   The base field rule gives every `input[type=number]` the full width, so
+   the run budget's two fields took the 694px pane and dropped under their
+   labels at every viewport (rows 121px tall, the field 59px below its
+   name). Wide enough for a six-digit token count and its spinner. Side by
+   side only: the phone width stacks the row and the field takes it. */
+@media (min-width: 600px) {
+  .setting-row > input[type="number"].setting-control {
+    width: 8rem;
+  }
 }
 
 .slider-value {
@@ -2346,6 +2393,23 @@ label.setting-check,
 
 .onboarding-actions.hidden {
   display: none;
+}
+
+/* The preferences card: a label and its select per row; a row wraps, the select under its label, where it does not fit beside it. */
+.onboarding-prefs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  text-align: left;
+}
+
+.onboarding-pref {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
 }
 
 /* --- help guide accordion ------------------------------------------------------ */
@@ -3217,7 +3281,7 @@ span > .chip {
   min-width: 0;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   background: var(--surface-2);
   font-weight: 400;
@@ -3363,7 +3427,13 @@ span > .chip {
    and what the AI made of it at the same time. */
 .draft-columns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* **The draft's side never narrows below its actions.** Copy, Insert into
+     a note and Save as note need 476px on one line; at 1280 an even split
+     gave the column 472 (wrapzoom 2026-11-11), and two columns run down to
+     the 1152 window where they become one. So the draft asks for 30rem and
+     the thoughts take what is left (464px at 1280, 360 at 1153): no width
+     query, the row keeps its words wherever there are two columns. */
+  grid-template-columns: minmax(0, 1fr) minmax(30rem, 1fr);
   gap: 1rem;
   /* **`stretch`, not `start`.** With `start` each column was only as tall as
      its own contents, and the two contents were different: measured at
@@ -3453,6 +3523,41 @@ span > .chip {
    right read as two. */
 .draft-actions-row {
   justify-content: flex-end;
+  /* **One line at every width.** Two columns give the draft 30rem (above);
+     one column is the card's width from 600 up. Under 600 Copy and Insert
+     keep their icon and clip their word (the `.toolbar-word` recipe,
+     DESIGN.md): still their accessible name, their title names them for a
+     pointer. */
+  flex-wrap: nowrap;
+}
+@media (max-width: 599.98px) {
+  .draft-actions-row > button .toolbar-word {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .draft-actions-row > button:has(> .toolbar-word) {
+    width: var(--control-h);
+    padding-inline: 0;
+    justify-content: center;
+  }
+  .draft-actions-row > button > .ph-lead:has(~ .toolbar-word) {
+    margin-inline-end: 0;
+    translate: none;
+  }
+  /* **Three controls in 286px (wrapzoom 2026-11-11, 360x800 measured 96px, two
+     rows).** Copy and Insert are 44px icons, Save as note is 146px with its 44px
+     caret: 294 with 8px gaps, 8 too many for the phone's column. A 4px gap and the
+     save word's 8px sides make it 262, one 44px row. */
+  .draft-actions-row {
+    column-gap: var(--space-1);
+  }
+  .draft-actions-row #draft-save {
+    padding-inline: var(--space-3);
+  }
 }
 
 /* The tags row's label is inside the surface, the way `.ask-composer-icon` is
@@ -3745,7 +3850,7 @@ span > .chip {
   top: 0;
   align-self: stretch;
   height: 100%;
-  max-height: var(--page-sticky-h);
+  max-height: calc(var(--page-viewport) - var(--page-top) - var(--page-bottom));
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -3754,6 +3859,39 @@ span > .chip {
      sticky behaviour with it. */
   min-height: 0;
   overflow: hidden;
+}
+
+/* The Recent head's tools hold one row at every sidebar width (220 to 320px);
+   the rules are in library-lazy.css. The sidebar is the container: under 16rem
+   of content New gives up its word (the `.toolbar-word` recipe, DESIGN.md);
+   under 14.5rem the help, template and diagram buttons fold into the head's ⋯
+   (the kebab built in `docTypeMount`). Measured before: head 58 px tall at 260 and 97 px at
+   220, against 32 px on one row. */
+.doc-sidebar {
+  container: doc-sidebar / inline-size;
+}
+.doc-sidebar .doc-head-more {
+  display: none;
+}
+/* The Outline tab's "This document" head (the owner, 2026-11-11: "the ? tooltip isnt aligned to the left or
+   right and is cut off at the top"). The collapse toggle sits in the tab strip above this tab, so the head
+   needs no lane for it: the ? ends the row (it floated 38px short of the right edge), and the head starts a
+   ring's room below the scrolling section's top instead of 4px above it, where the section clipped the ?'s
+   face and ring flat. */
+#doc-sidebar-outline > .sidebar-head {
+  padding-right: 0;
+  margin-top: var(--ring-room);
+}
+@container doc-sidebar (max-width: 16rem) {
+  .doc-sidebar .doc-new-split .toolbar-word {
+    display: none;
+  }
+  #doc-sidebar-list .doc-head-tools > :is(.graph-help-toggle, #doc-new-template, #doc-new-diagram) {
+    display: none;
+  }
+  .doc-sidebar .doc-head-more {
+    display: inline-flex;
+  }
 }
 
 /* The lists are the scrolling part, not the card. */
@@ -5157,7 +5295,7 @@ span > .chip {
 .media-pick-tile:hover,
 .media-pick-tile:focus-visible {
   border-color: var(--border);
-  background: var(--card-bg-hover);
+  background: var(--inner);
 }
 
 .media-pick-tile img {
@@ -6347,7 +6485,7 @@ button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
   align-items: center;
   gap: var(--space-2);
   padding-top: var(--space-2);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
 }
 
 .manage-cat-footer-label {

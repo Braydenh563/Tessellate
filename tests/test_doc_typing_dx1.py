@@ -17,8 +17,10 @@ from pathlib import Path
 
 import pytest
 
+from tests._js_scope import unwrapped
+
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
-DOCS = (JS / "documents.js").read_text(encoding="utf-8")
+DOCS = (JS / "documents.js").read_text(encoding="utf-8") + (JS / "documents-view.js").read_text(encoding="utf-8")
 PROSE = (JS / "documents-prose.js").read_text(encoding="utf-8")
 MERMAID = (JS / "documents-mermaid.js").read_text(encoding="utf-8")
 needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
@@ -285,6 +287,7 @@ function docListGuides() { return []; }
 function asSurface() { return null; }
 function docSurface() { return null; }
 const LIST_DEPTH_MAX = 6;
+const docViewState = { tableFilter: { of: () => null, letters: () => "A" } };
 const DOC_BLOCK_ID_AT_END = /(?:^|[ \\t])\\^([a-z0-9-]+)[ \\t]*$/;
 """
 
@@ -305,6 +308,10 @@ def test_a_patched_live_set_is_the_set_a_full_rebuild_draws(text):
     (patched where `patchRegion` allows) equals a fresh plugin's on the new state."""
     helpers = "\n".join(_function(DOCS, h) for h in ("function docLiveSpanTouched(", "function docLiveRevealSame("))
     anchor = re.search(r"^docLiveSpanTouched\.anchorIn = .*$", DOCS, re.M).group(0)
+    # The plugin reads the fence's language and title through docPairInput
+    # (documents-prose.js, 5d37fc43e); the harness carries the real parser.
+    fence = "function docPairInput() {}\n" + PROSE[PROSE.index("docPairInput.fenceParts = ") :].split("\n};\n")[0] + "\n};"
+    helpers = fence + "\n" + _function((JS / "markdown.js").read_text(encoding="utf-8"), "function mdMathBlockFrom(") + "\n" + helpers
     got = _node(
         _LOAD
         + 'vm.runInContext(read("js/documents-props.js"), ctx);\n'
@@ -362,7 +369,7 @@ def test_a_widget_moved_by_a_key_reads_its_place_when_pressed():
 
 @needs_node
 def test_a_fresh_frame_closure_is_known_by_its_source():
-    lag = (JS / "lag-watch.js").read_text(encoding="utf-8")
+    lag = unwrapped((JS / "lag-watch.js").read_text(encoding="utf-8"))
     fns = "\n".join(_function(lag, h) for h in ("function lagStackOwner(", "function lagRafOwner("))
     const = re.search(r"^const LAG_RAF = .*$", lag, re.M).group(0)
     got = _node(

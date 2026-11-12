@@ -22,10 +22,10 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import notebook_stats, realise
+from tessellate.ai import notebook_stats, question_noise, realise
 from tessellate.ai import composer_plan
 from tessellate.ai import when as when_words
 
@@ -66,6 +66,7 @@ _KINDS = (
 )
 _KIND_WORD = {"note": "note", "document": "document", "board": "board", "map": "mind map", "reminder": "reminder"}
 _LIMIT = 30
+_MONTH_NAMES = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
 
 
 @dataclass
@@ -147,6 +148,14 @@ def as_recap(text: str) -> str:
 
 
 def read(question: str, today: date) -> Asked | None:
+    """The window, the doing and the kinds of an own-activity question, or a
+    window-less catch-up ("what's been happening": the past week, every kind)."""
+    if question_noise.catching_up(question):
+        return Asked(today - timedelta(days=6), today, "last 7 days", "all", frozenset())
+    return _read_windowed(question, today)
+
+
+def _read_windowed(question: str, today: date) -> Asked | None:
     """The window, the doing and the kinds of an own-activity question, or
     None when it is not one (no window, no doing, or a subject named)."""
     text = as_recap((question or "").strip())
@@ -182,9 +191,11 @@ def _day_words(day: date, today: date) -> str:
 
 
 def _title_of(content: str) -> str:
-    from tessellate.ai import composer_read
+    """A note's name in the feed: the one reader's (`composer_frame.note_title`), so the feed, the composer and the
+    tools name a title-less note alike (D28), cut at 80 characters as before."""
+    from tessellate.ai import composer_frame
 
-    return realise.cut_title((composer_read._title(content or "")[0] or "Untitled").strip(), 80)
+    return realise.cut_title(composer_frame.note_title(content or "") or "Untitled", 80)
 
 
 def _bounds(start: date, end: date) -> tuple[datetime, datetime]:
@@ -204,9 +215,19 @@ def _entry_kind(entry) -> str:  # noqa: ANN001
     return {"board": "board", "map": "map"}.get(entry.board_kind or "", "note")
 
 
+def _note_name(content: str) -> str:
+    """A note's name as every surface says it (R9-15): its title, or its first words in quotes."""
+    from tessellate.ai import composer_frame
+
+    name = composer_frame.name_of({"content": content or ""})
+    return name
+
+
 def _link(kind: str, ident: int, title: str) -> str:
     path = {"note": "notes", "document": "docs", "board": "library/board", "map": "library/board"}.get(kind)
-    return f"[**{title}**](#/{path}/{ident})" if path else f"**{title}**"
+    #: A title-less note's quoted words are not bold, as in the day lists (R9-15).
+    mark = "" if title.startswith("“") else "**"
+    return f"[{mark}{title}{mark}](#/{path}/{ident})" if path else f"**{title}**"
 
 
 _Event = tuple[datetime, str, str, str]
@@ -235,7 +256,8 @@ def _entry_events(session: Session, lo: datetime, hi: datetime, inside) -> list[
         )
     ).all()
     for entry in entries:
-        kind, title = _entry_kind(entry), _title_of(entry.content)
+        kind = _entry_kind(entry)
+        title = _note_name(entry.content) if kind == "note" else _title_of(entry.content)
         said = f"**{title}** (now in the bin)" if entry.is_deleted else _link(kind, entry.id, title)
         _made_edited(out, kind, said, inside(entry.created_at), inside(entry.edited_at))
         binned = inside(entry.deleted_at)
@@ -357,7 +379,7 @@ def _clause(doing: str, kind: str, said: str) -> str:
 def _window_said(asked: Asked) -> str:
     from tessellate.ai import composer
 
-    return composer.window_said(asked.phrase)
+    return composer.window_said(asked.phrase, (asked.start, asked.end))
 
 
 def _empty(asked: Asked, session: Session, today: date, zone) -> str:  # noqa: ANN001
@@ -372,7 +394,10 @@ def _empty(asked: Asked, session: Session, today: date, zone) -> str:  # noqa: A
         return f"{lead} The last thing before it was made on {_say_day(before, today)}."
     if after:
         return f"{lead} The first thing after it was made on {_say_day(after, today)}."
-    return lead
+    #: An empty notebook says one thing on every surface (composer_empty.EMPTY_NOTEBOOK).
+    from tessellate.ai import composer_empty
+
+    return composer_empty.EMPTY_NOTEBOOK if not asked.kinds else lead
 
 
 def _summary(rows: list[tuple[datetime, str, str, str]]) -> str:
@@ -426,7 +451,9 @@ def _filtered(rows: list[_Event], asked: Asked) -> list[_Event]:
 
 def _head(asked: Asked, today: date) -> str:
     when = _window_said(asked)
-    return f"{when[:1].upper()}{when[1:]}" + (f" ({_span(asked.start, asked.end, today)})" if asked.start != asked.end else "")
+    #: "In October (1 to 31 October)" says the month twice: a window that names its month needs no span.
+    named = any(m in (asked.phrase or "").lower() for m in _MONTH_NAMES)
+    return f"{when[:1].upper()}{when[1:]}" + (f" ({_span(asked.start, asked.end, today)})" if asked.start != asked.end and not named else "")
 
 
 _NOTE_ID = re.compile(r"\(#/notes/(\d+)\)")
@@ -434,6 +461,22 @@ _NOTE_ID = re.compile(r"\(#/notes/(\d+)\)")
 
 def _first_sentence(text: str) -> str:
     return realise.cut_title(re.split(r"(?<=[.!?])\s", " ".join(text.split()), maxsplit=1)[0], 140)
+
+
+_CHECK_ITEM = re.compile(r"^\s*[-*+]\s+\[(?P<box>[ xX])\]\s+(?P<item>.+?)\s*$")
+
+
+def _checklist_gist(body: str) -> str:
+    """A checklist said in words, not as its markdown (R9-16): "oat milk, garlic and lemons still open",
+    or "all four done"; "" when the body is not made of checklist lines."""
+    lines = [ln for ln in body.splitlines() if ln.strip()]
+    found = [_CHECK_ITEM.match(ln) for ln in lines]
+    if not lines or not all(found):
+        return ""
+    open_ = [m.group("item") for m in found if m.group("box") == " "]
+    if not open_:
+        return f"all {_n(len(found))} done"
+    return f"{realise.join_items(open_)} still open"
 
 
 def _glosses(session: Session, rows: list[_Event]) -> dict[str, str]:
@@ -450,7 +493,7 @@ def _glosses(session: Session, rows: list[_Event]) -> dict[str, str]:
     for key, ident in found.items():
         content = str(contents.get(ident) or "")
         name, start = composer_read._title(content)  # noqa: SLF001
-        body = _first_sentence(re.sub(r"^[#*>\-\s]+", "", content[start:].strip())) if start else ""
+        body = (_checklist_gist(content[start:]) or _first_sentence(re.sub(r"^[#*>\-\s]+", "", content[start:].strip()))) if start else ""
         if start:
             said[key] = f"{key}: {body}" if body else key
         elif name:
@@ -469,6 +512,32 @@ def _recap_lines(rows: list[_Event], asked: Asked, today: date, glosses: dict[st
     return _day_lines(by_day, today)
 
 
+def _named_on(session: Session, day: date) -> list[str]:
+    """Lines of the notes whose own text names `day` ("Ran 6 km on 25 October."): what happened that day is
+    what the notes say happened, before the log of when notes were made (W8 B15)."""
+    from tessellate.ai import composer_ahead, composer_read
+    from tessellate.core.database import LIKE_ESCAPE, Entry
+
+    month = _MONTH_NAMES[day.month - 1]
+    like = [f"%{day.day} {month}%", f"%{day.day:02d} {month}%", f"%{month} {day.day}%", f"%{day.isoformat()}%"]
+    entries = session.scalars(
+        select(Entry).where(
+            Entry.is_private == False, Entry.map_topic == False, Entry.is_draft == False, Entry.is_deleted == False,  # noqa: E712
+            or_(*(func.lower(Entry.content).like(pattern, escape=LIKE_ESCAPE) for pattern in like)),
+        )
+    ).all()
+    out: list[str] = []
+    for entry in entries[:8]:
+        title = _note_name(entry.content)
+        _, start = composer_read._title(entry.content or "")  # noqa: SLF001
+        for sentence in re.split(r"(?<=[.!?])\s+|\n+", (entry.content or "")[start or 0:]):
+            said = " ".join(sentence.split()).lstrip("#*>-[] ")
+            if said and composer_ahead.date_in(said, date(day.year, 1, 1)) == day:
+                out.append(f"- {said} {_link('note', entry.id, title)}")
+                break
+    return out
+
+
 def answer(question: str, session: Session, now: datetime) -> notebook_stats.StatAnswer | None:
     """The activity recap, or None when `question` is not an own-activity
     question with a window."""
@@ -480,106 +549,20 @@ def answer(question: str, session: Session, now: datetime) -> notebook_stats.Sta
     if asked is None:
         return None
     rows = _filtered(_events(session, asked.start, asked.end, zone), asked)
+    named = _named_on(session, asked.start) if asked.start == asked.end and asked.verb == "all" else []
+    if named and not rows:
+        return notebook_stats.StatAnswer(kind="activity", text="\n".join([f"{_head(asked, today)}, your notes say:", *named]), facts=[])
     if not rows:
         return notebook_stats.StatAnswer(kind="activity", text=_empty(asked, session, today, zone), facts=[])
     #: Only a "what did I do" (every kind of change) is said as what the notes hold.
     glosses = _glosses(session, rows) if asked.verb == "all" else None
     lines = [f"{_head(asked, today)} you {_summary(rows)}:", *_recap_lines(rows, asked, today, glosses)]
+    if named:
+        lines = [f"{_head(asked, today)}, your notes say:", *named, "", *lines]
     if len(rows) > _LIMIT:
         lines.append(f"And {len(rows) - _LIMIT} more.")
     facts = [{"when": r[0].isoformat(), "doing": r[1], "kind": r[2], "what": r[3]} for r in rows[:_LIMIT]]
     return notebook_stats.StatAnswer(kind="activity", text="\n".join(lines), facts=facts)
-
-
-#: Reminders named per line of the composed week, so it stays a glance.
-_WEEK_NAMED = 3
-
-
-#: What a reminder's words keep when the parser lifts its date out ("when I get
-#: home , probably around"): words that only lead into a date.
-_DATE_STUB = re.compile(r"(?<![\s,;:])(?:[\s,;:]+(?:probably|maybe|perhaps|around|about|at|on|by|before|for|until|till))+[\s,;:.]*$", re.I)
-
-
-def _reminder_words(text: str) -> str:
-    """A reminder's text as the digest says it: no space before a comma and no
-    dangling lead-in to a date that is said beside it."""
-    words = re.sub(r"\s+([,.;:!?])", r"\1", realise.cut_title(text or "", 80))
-    return _DATE_STUB.sub("", words).rstrip(" ,;:") or words
-
-
-def _named(rows: list, today: date, zone) -> str:  # noqa: ANN001
-    said = [f"{_reminder_words(r.text)} (due {_say_day(_local(r.due_at, zone).date(), today)})" for r in rows[:_WEEK_NAMED]]
-    more = len(rows) - len(said)
-    return "; ".join(said) + (f"; and {_n(more)} more" if more > 0 else "") + "."
-
-
-def _week_lean(session: Session, start: date, today: date, zone) -> str:  # noqa: ANN001
-    """Where most of the week's notes went, only when more than half went to
-    one category (and at least three were written); else ""."""
-    from tessellate.core.database import Category, Entry
-
-    lo, hi = _bounds(start, today)
-    #: Fetched a day wider each side (stored in UTC), then cut on the
-    #: person's clock, as `_events` does.
-    written = session.execute(
-        select(Category.name, Entry.created_at)
-        .select_from(Entry)
-        .join(Category, Category.id == Entry.category_id)
-        .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False,  # noqa: E712
-               Entry.map_topic == False, Entry.is_draft == False,  # noqa: E712
-               Entry.created_at >= lo - timedelta(days=1), Entry.created_at < hi + timedelta(days=1))
-    ).all()
-    counts: dict[str, int] = {}
-    for name, at in written:
-        if lo <= _local(at, zone) < hi:
-            counts[name] = counts.get(name, 0) + 1
-    made = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
-    total = sum(n for _, n in made)
-    if made and total >= 3 and made[0][1] * 2 > total:
-        return f"Most of the week's notes went to {made[0][0]} ({made[0][1]} of {total})."
-    return ""
-
-
-def _week_reminders(session: Session, today: date, zone) -> list[str]:  # noqa: ANN001
-    """The overdue and coming-this-week lines."""
-    from tessellate.core.database import Reminder
-
-    open_ = session.scalars(
-        select(Reminder).where(Reminder.done == False, Reminder.deleted_at.is_(None)).order_by(Reminder.due_at)  # noqa: E712
-    ).all()
-    start_of_today = datetime.combine(today, time(0))
-    late = [r for r in open_ if _local(r.due_at, zone) < start_of_today]
-    coming = [r for r in open_ if start_of_today <= _local(r.due_at, zone) < start_of_today + timedelta(days=7)]
-    return ([f"Overdue: {_named(late, today, zone)}"] if late else []) + (
-        [f"Coming up this week: {_named(coming, today, zone)}"] if coming else []
-    )
-
-
-def week(session: Session, now: datetime) -> str:
-    """The weekly digest with no model (owner-1026b K3, the owner: "is it
-    possible to have the composer fill more roles the ai usually would?? like
-    the weekly digest"): the last seven days said from the rows, what is
-    overdue and coming, where the notes went, and the days themselves. Every
-    line is a count or a title, so it can be checked by opening it."""
-    today, zone = now.date(), now.tzinfo or timezone.utc
-    start = today - timedelta(days=6)
-    lines = ["From your notes, no AI."]
-    rows = _events(session, start, today, zone)
-    span = _span(start, today, today)
-    if rows:
-        lines.append(f"In the last 7 days ({span}) you {_summary(rows)}.")
-    else:
-        lines.append(f"Nothing was made, edited or binned in the last 7 days ({span}).")
-    lines += _week_reminders(session, today, zone)
-    lean = _week_lean(session, start, today, zone)
-    if lean:
-        lines.append(lean)
-    if rows:
-        lines.append("")
-        lines += _day_lines(_by_day(rows), today)
-        if len(rows) > _LIMIT:
-            lines.append(f"And {len(rows) - _LIMIT} more.")
-    return "\n".join(lines[:1] + [""] + lines[1:])
 
 
 _BOARD_NOUNS = {"board": "(?:white)?boards?|canvas(?:es)?", "map": "mind ?maps?|mindmaps?|maps?"}

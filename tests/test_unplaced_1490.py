@@ -144,7 +144,11 @@ def test_the_persons_own_record_and_an_instruction_are_never_unplaced(said):
 def test_a_feature_word_the_composer_answers_is_not_asked_back(client, notebook, web, tools):
     out = _ask(client, "timer", use_tools=tools)
     assert "one of the app's own tools" in out["text"], out["text"]
-    assert not _asks(out) and web == []
+    # INBOX 1729 (a): every composed answer now ends with Next chips, so the
+    # check is that none asks the word back or offers the web.
+    asks = _asks(out)
+    assert not any("timer" in a.lower() or "web" in a.lower() for a in asks), asks
+    assert web == []
 
 
 @pytest.mark.parametrize("said", OWN)

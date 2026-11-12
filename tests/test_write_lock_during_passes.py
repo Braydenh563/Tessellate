@@ -43,8 +43,10 @@ class SlowOllama(FakeOllama):
         self.lock_free: list[bool] = []
 
     def think(self) -> None:
-        self.thinking.set()
+        # Probe before the signal: the signal lets the test's own save start, and a probe after it
+        # could catch that save's lock rather than the pass's (PR 216 CI, 3.13: [False, True]).
         self.lock_free.append(_write_lock_is_free())
+        self.thinking.set()
         time.sleep(SLOW)
 
     def chat(self, model, messages, mode=None):  # noqa: ANN001, ANN201

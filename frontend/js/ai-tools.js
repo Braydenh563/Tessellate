@@ -57,10 +57,6 @@ const TASK_OUTCOMES = {
 // the list is first built; after that a poll never touches `.value`, so
 // your choice stays put until you Apply (which re-syncs to the new saved
 // value). No timing-sensitive "userChosen" flag to get wrong.
-function _namesSignature(names) {
-  return [...names].sort().join("|");
-}
-
 function fillModelSelect(select, names, extraFirst, savedValue) {
   //: `extraFirst` started as one leading option ("Inherited: X"); the model-
   //: per-feature select needs three (Inherited, Same as chat model, Same as
@@ -68,7 +64,7 @@ function fillModelSelect(select, names, extraFirst, savedValue) {
   //: caller still passes a single object or null, unchanged.
   const extras = Array.isArray(extraFirst) ? extraFirst.filter(Boolean) : extraFirst ? [extraFirst] : [];
   const wanted = [...extras.map((e) => e.value), ...names];
-  const signature = _namesSignature(wanted);
+  const signature = [...wanted].sort().join("|");
   if (select.dataset.sig === signature) return; // same options → leave it alone
   select.dataset.sig = signature;
   const previous = select.value; // preserve a live selection across a rebuild
@@ -142,7 +138,7 @@ function renderChatModelPicker(status) {
 // itself isn't backend-specific, so this reads it straight off the poll
 // loop instead of piggybacking on that gated render.
 function renderChatActiveModelBadge() {
-  const badge = $("chat-active-model");
+  const badge = document.getElementById("chat-active-model");
   if (!badge) return;
   //: **The Chat tab's own model, which is not always the app's.** Since the
   //: chat tab is a row in `model_manager.FEATURES` it can be pinned to a
@@ -248,7 +244,7 @@ function placeChatModelPanel() {
 window.addEventListener("resize", placeChatModelPanel);
 window.addEventListener("scroll", placeChatModelPanel, true);
 
-$("chat-active-model")?.addEventListener("click", () => {
+onSurface("chat", () => $("chat-active-model")?.addEventListener("click", () => {
   if ($("chat-active-model").dataset.offline) {
     openSettingsModal("models");
     return;
@@ -259,7 +255,7 @@ $("chat-active-model")?.addEventListener("click", () => {
     return;
   }
   openChatModelPanel();
-});
+}));
 
 function renderUtilityModelPicker(status) {
   const names = status.installed_models.map((m) => m.name);
@@ -433,7 +429,7 @@ const FEATURE_MODEL_SELECTS = [
 
 function syncFeatureModelSelects() {
   for (const [id, key] of FEATURE_MODEL_SELECTS) {
-    const select = $(id);
+    const select = document.getElementById(id);
     if (!select) continue;
     const row = featureModelRow(key);
     //: No rows yet (the first poll has not answered, or the app is locked):
@@ -493,7 +489,7 @@ function syncFeatureModelSelects() {
 
 function wireFeatureModelSelects() {
   for (const [id, key] of FEATURE_MODEL_SELECTS) {
-    const select = $(id);
+    const select = document.getElementById(id);
     if (!select || select.dataset.wired) continue;
     select.dataset.wired = "1";
     select.addEventListener("change", () => {
@@ -545,59 +541,6 @@ function renderAutonomousModelPicker(status) {
 
 //: `renderEmbeddingPicker` lives in settings-models.js (lazy `settingsUi`),
 //: like the model cards: only an open Settings draws it.
-
-//: **A control says whether it is the one in use.** Asked after reading the
-//: code: *"does the ai embedding model actually get used??"* It does, in
-//: seven places, but only when the backend radio above is set to Ollama, and
-//: the built-in backend is the default. So somebody who picked a model here
-//: expecting it to be doing the work had a fully enabled, fully ignored
-//: control, which is the same class of thing as a disabled control that does
-//: not say why: a setting whose state is invisible.
-//:
-//: Disabled rather than hidden, because hiding it would make the choice
-//: unfindable from the radio that names it, and the reason rides on the
-//: tooltip so the state is legible without another paragraph on screen.
-//:
-//: `offline` is passed by the status poll, which knows; the radio's own
-//: handler omits it and it is read back off the control the poll last set,
-//: so a change of radio cannot claim Ollama is reachable when it is not.
-function syncEmbeddingPickerState(offline) {
-  const ollamaRadio = document.querySelector('input[name="emb-backend"][value="ollama"]');
-  const down = offline === undefined ? Boolean(ollamaRadio?.disabled) : offline;
-  const usingOllama =
-    document.querySelector('input[name="emb-backend"]:checked')?.value === "ollama";
-  const picker = $("embedding-model-select");
-  if (!picker) return;
-  picker.disabled = down || !usingOllama;
-  //: An empty select says nothing: with Ollama off it drew as a blank 46px
-  //: box beside a pale Apply button. It names why it is empty instead.
-  if (!picker.options.length || picker.options[0].dataset.placeholder) {
-    const note = down ? "Needs Ollama running" : "No embedding models installed";
-    let option = picker.options[0];
-    if (!option) {
-      option = document.createElement("option");
-      option.value = "";
-      option.dataset.placeholder = "1";
-      picker.appendChild(option);
-    }
-    option.textContent = note;
-  }
-  picker.title = down
-    ? "Ollama is not running, so there are no embedding models to choose from"
-    : usingOllama
-      ? "The model used for semantic search"
-      : "Only used when the backend above is set to Ollama. The built-in one is in use";
-  const apply = $("embedding-apply");
-  if (!apply) return;
-  //: **Enabled for the built-in choice too.** It was disabled whenever
-  //: Built-in was picked, so switching back from an Ollama model could never
-  //: be applied: the backend stayed on Ollama and that model stayed "in use"
-  //: and could not be removed (owner, 0.3.31).
-  apply.disabled = usingOllama && down;
-  apply.title = usingOllama
-    ? "Re-read every note with this model"
-    : "Switch to the built-in model and re-read every note with it";
-}
 
 // The button lives in index.html (see `#reindex-box`) rather than being built
 // here: `test_frontend_ids.py` refuses an id this file looks up that the
@@ -684,67 +627,6 @@ let improveCustomInstruction = "";
 
 
 
-
-// Heuristic: does this Ollama model look like it can produce embeddings?
-// Chat/generation models can't, Ollama answers /api/embed with 501, and
-// picking one by mistake is the #1 way people break the search engine.
-function looksLikeEmbeddingModel(name) {
-  return /embed|minilm|bge|gte|e5|arctic/i.test(name || "");
-}
-
-async function applyEmbeddingBackend() {
-  const backend = document.querySelector('input[name="emb-backend"]:checked')?.value;
-  const model = $("embedding-model-select").value || null;
-  if (!backend) return;
-  // Guard the #1 misconfiguration: a chat model chosen as the search engine.
-  if (backend === "ollama") {
-    if (!model) {
-      toast("Pick an embedding model first, e.g. nomic-embed-text.", "info");
-      return;
-    }
-    if (!looksLikeEmbeddingModel(model)) {
-      const proceed = (await confirmDialog(
-        `"${model}" doesn't look like an embedding model. Chat models can't create ` +
-          "embeddings, so semantic search will fail (Ollama returns 501). Download and " +
-          "pick a dedicated embedding model like nomic-embed-text instead.\n\nApply anyway?"
-      ));
-      if (!proceed) return;
-    }
-  }
-  const ok = (await confirmDialog(
-    `Switching the search engine re-indexes all ${allEntries.length} of your ` +
-      "notes so search keeps making sense. Notes and keyword search stay " +
-      "available while it runs. Continue?"
-  ));
-  if (!ok) {
-    // Backing out puts the saved backend back on screen, rather than leaving
-    // a radio selected for a switch that never happened.
-    clearEmbeddingBackendLatch();
-    refreshModelStatus();
-    return;
-  }
-  try {
-    await api("/models/embedding-backend", {
-      method: "POST",
-      body: JSON.stringify({ backend, model: backend === "ollama" ? model : null }),
-    });
-    clearEmbeddingBackendLatch(); // applied: polling may reflect it again
-    refreshModelStatus();
-  } catch (error) {
-    toast(error.message, true);
-  }
-}
-
-// Let the status poll own the radios again. Called once a choice is applied,
-// and when the user backs out of applying it, otherwise a cancelled switch
-// would leave the radio showing a backend that was never saved, which is the
-// same lie in the opposite direction.
-function clearEmbeddingBackendLatch() {
-  delete $("embedding-model-select").dataset.userChosen;
-  for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
-    delete radio.dataset.userChosen;
-  }
-}
 
 // --- keeping the look across restarts (§35E) --------------------------------
 //
@@ -1092,6 +974,7 @@ const OVERRIDABLE_KEYS = [
   "theme", "palette", "accent", "accent-custom", "page-bg", "font", "fontsize",
   "density", "radius", "glass", "glass-blur", "glass-opacity", "glass-sheen", "glass-controls", "page-wash",
   "glass-sheen-strength", "bg-style", "bg-motion", "bg-intensity", "zoom",
+  "read-leading", "read-measure",
 ];
 
 // LOOK_KEYS stays here, not in settings.js with the rest of "your own saved
@@ -1114,27 +997,14 @@ function applyPalette(id, remember = true) {
   // The generative background paints from the accent, so it has to be rebuilt, 
   // and so does the dashboard constellation, for the same reason.
   if (bgArtOn()) startBgArt();
-  // Guarded since the dashboard.js split (roadmap §88.3 item 3): originally
-  // because applyPalette() was reachable from a bare top-level call in THIS
-  // file's own wiring (`applyAppearance()` -> `applyPalette()`, painting the
-  // saved appearance before first render) while dashboard.js, which owns
-  // `refreshArtForTheme`, hadn't loaded yet. An unguarded call threw
-  // `ReferenceError: refreshArtForTheme is not defined` from inside that
-  // exact chain and aborted the rest of app.js's synchronous top-level code
-  // (same shape as the `initDocSidebarTabs()` hazard documents.js's split
-  // found). The settings.js split (item 4) moved that bare call itself, 
-  // `applyAppearance()` now runs from settings.js's own tail, after
-  // dashboard.js has already loaded, so this guard now always passes at
-  // that call site too. Left in place rather than removed: applyPalette()
-  // stays a plain global function, callable from anywhere, and nothing
-  // guarantees a *future* caller runs this late, the guard is what makes
-  // that safe by construction instead of by "nothing calls it early right
-  // now." Still a genuine no-op either way at today's one early call site:
-  // the dashboard's art widget hasn't mounted a canvas yet at startup
-  // (`artHolder` is still null), so `refreshArtForTheme()` returns
-  // immediately regardless of whether the guard lets it run. Every other
-  // call site (the theme toggle, the accent/theme pickers, the OS
-  // dark-mode listener) fires only from user interaction, well after every
-  // script has loaded.
-  if (typeof refreshArtForTheme === "function") refreshArtForTheme();
+  // Not `typeof`-guarded (88bfe5341 removed it). `refreshArtForTheme` lives in
+  // dashboard.js, which loads after this file, so a call made before
+  // dashboard.js has run would throw ReferenceError. That no longer happens:
+  // the one early path, `applyAppearance()` -> `applyPalette()`, now runs from
+  // settings.js's tail, after dashboard.js, and every other caller (theme
+  // toggle, accent/theme pickers, the OS dark-mode listener) fires from user
+  // interaction. A new caller that runs at parse time here must not reach
+  // this line. At startup the art widget has not mounted a canvas
+  // (`artHolder` is null), so the call returns at once anyway.
+  refreshArtForTheme();
 }

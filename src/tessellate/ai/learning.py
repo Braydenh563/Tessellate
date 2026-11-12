@@ -120,6 +120,11 @@ KINDS = frozenset(
         # The verdict rows stop or pin it; these say so in the log.
         "wrong_fact",
         "pin_fact",
+        # A whole answer marked not right (audit 1028 E59): one row per note
+        # it cited, against the question. `search_down` reads it: those notes
+        # are read last for a question like that one, and left out once the
+        # person has said so `EXCLUDE_AFTER` times.
+        "wrong_answer",
     }
 )
 
@@ -130,6 +135,7 @@ KINDS = frozenset(
 FAMILIES: dict[str, tuple[str, ...]] = {
     "filing": ("refile",),
     "search": ("open_after_ask",),
+    "search_down": ("wrong_answer",),
     "links": ("dismiss_link",),
     "resurface": ("dismiss_resurface",),
 }
@@ -302,8 +308,19 @@ def dismissal_counts(session: Session) -> dict[str, int]:
     return counts
 
 
-def revive_dismissals(session: Session) -> list[int]:
-    """Forget every dismissal: the suggestions they hid may be offered again.
+def live_dismissals(session: Session) -> list[tuple[int, str, dict]]:
+    """Every dismissal in force as `(row id, kind, payload)`, oldest first
+    (Settings, Data lists them one by one)."""
+    return [
+        (row.id, str(_payload(row).get("kind") or ""), _payload(row))
+        for row in _live_dismissal_rows(session)
+        if str(_payload(row).get("kind") or "") in DISMISSAL_KINDS
+    ]
+
+
+def revive_dismissals(session: Session, only: set[int] | None = None) -> list[int]:
+    """Forget every dismissal (or just the rows in `only`): the suggestions
+    they hid may be offered again.
 
     The rows stay, marked `revived`, so the same call can put them back
     (`restore_dismissals`) and nothing is lost to a mis-click. Returns the ids
@@ -311,7 +328,7 @@ def revive_dismissals(session: Session) -> list[int]:
     marked: list[int] = []
     for row in _live_dismissal_rows(session):
         payload = dict(_payload(row))
-        if str(payload.get("kind") or "") not in DISMISSAL_KINDS:
+        if str(payload.get("kind") or "") not in DISMISSAL_KINDS or (only is not None and row.id not in only):
             continue
         payload["revived"] = True
         row.payload = payload  # a new dict: SQLAlchemy sees a JSON column change by assignment
@@ -409,6 +426,23 @@ def decayed(weight: float, days: float) -> float:
     return weight * math.pow(0.5, days / HALF_LIFE_DAYS)
 
 
+def _boost_key(item) -> tuple | None:  # noqa: ANN001
+    """What a correction teaches about, in its family's key shape; None when it names nothing usable."""
+    if item.kind == "refile":
+        return (item.from_value or "", item.to_value or "")
+    if item.kind in ("open_after_ask", "wrong_answer"):
+        question = str(item.subject.get("question") or "")
+        entry_id = item.subject.get("entry_id")
+        return (question, entry_id) if question and entry_id is not None else None
+    if item.kind == "dismiss_link":
+        a, b = item.subject.get("a"), item.subject.get("b")
+        return (min(a, b), max(a, b)) if a is not None and b is not None else None
+    if item.kind == "dismiss_resurface":
+        entry_id = item.subject.get("entry_id")
+        return (entry_id,) if entry_id is not None else None
+    return None
+
+
 def boosts(session: Session, kind: str) -> dict[tuple, float]:
     """The weight each subject has earned, keyed by what the reader looks up.
 
@@ -442,22 +476,7 @@ def boosts(session: Session, kind: str) -> dict[tuple, float]:
     # before the limit rather than after it.
     items = [item for correction_kind in kinds for item in corrections(session, kind=correction_kind)]
     for item in sorted(items, key=lambda row: row.id):
-        key: tuple | None = None
-        if item.kind == "refile":
-            key = (item.from_value or "", item.to_value or "")
-        elif item.kind == "open_after_ask":
-            question = str(item.subject.get("question") or "")
-            entry_id = item.subject.get("entry_id")
-            if question and entry_id is not None:
-                key = (question, entry_id)
-        elif item.kind == "dismiss_link":
-            a, b = item.subject.get("a"), item.subject.get("b")
-            if a is not None and b is not None:
-                key = (min(a, b), max(a, b))
-        elif item.kind == "dismiss_resurface":
-            entry_id = item.subject.get("entry_id")
-            if entry_id is not None:
-                key = (entry_id,)
+        key = _boost_key(item)
         if key is None:
             continue
         out[key] = min(MAX_BOOST, out.get(key, 0.0) + PER_CORRECTION)
@@ -598,6 +617,7 @@ def filing_evidence(
     nearest neighbour.
     """
     from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     wanted = _words(text)
     out: list[dict] = []
@@ -631,7 +651,7 @@ def filing_evidence(
     ).all()
     scored: list[tuple[int, Entry]] = []
     for entry in rows:
-        overlap = len(_words(manager.readable_content(entry)) & wanted)
+        overlap = len(_words(manager_text.readable_content(entry)) & wanted)
         if overlap:
             scored.append((overlap, entry))
     scored.sort(key=lambda pair: (-pair[0], -pair[1].id))
@@ -641,7 +661,7 @@ def filing_evidence(
                 "kind": "neighbour",
                 "entry_id": entry.id,
                 "category": manager.category_name_for(session, entry),
-                "excerpt": " ".join(manager.readable_content(entry).split()),
+                "excerpt": " ".join(manager_text.readable_content(entry).split()),
             }
         )
     return out

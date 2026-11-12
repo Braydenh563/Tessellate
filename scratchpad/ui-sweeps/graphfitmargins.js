@@ -5,7 +5,7 @@
 // Pass: |left - right| < 4 and |top - bottom| < 4, the limiting pair near 9% of
 // the short side. Also measured after a Fit button press. BASE=..., MODE=topic
 // to colour by topic (plates drawn).
-const { boot } = require("/home/user/MemoryMap-AI/scratchpad/ui-sweeps/lib.js");
+const { boot } = require('./lib.js');
 (async () => {
   const { browser, page } = await boot({ viewport: { width: 1440, height: 900 } });
   if (process.env.MODE) await page.evaluate((m) => { try { localStorage.setItem("graphColourMode", m); } catch (e) {} }, process.env.MODE);

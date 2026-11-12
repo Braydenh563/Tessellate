@@ -14,8 +14,19 @@ const path = require("node:path");
 
 const root = path.resolve(process.argv[2]);
 const scenario = JSON.parse(fs.readFileSync(process.argv[3], "utf8"));
+// A wrapped script (ranked row 37a) is cut as it was before its closure: the two closure
+// lines off, the two-space indent back, the export line gone (`tests/_js_scope.py: unwrapped`).
+function unwrapped(src) {
+  const lines = src.split("\n");
+  const first = lines.indexOf("(() => {");
+  const last = lines.lastIndexOf("})();");
+  if (first < 0 || last < 0) return src;
+  const body = lines.slice(first + 1, last).map((l) => (l.startsWith("  ") ? l.slice(2) : l)).filter((l) => !/^Object\.assign\(window, \{ [\w$, ]+ \}\);$/.test(l));
+  return [...lines.slice(0, first), ...body, ...lines.slice(last + 1)].join("\n");
+}
+
 const SOURCES = ["documents.js", "documents-prose.js", "prefs.js", "autocorrect.js"].map((name) =>
-  fs.readFileSync(path.join(root, "frontend", "js", name), "utf8")
+  unwrapped(fs.readFileSync(path.join(root, "frontend", "js", name), "utf8"))
 );
 
 function declaration(name) {
@@ -63,6 +74,7 @@ const factory = new Function(
   const docDictionary = () => __env.dictionary;
   const docVariantLookup = () => new Map();
   const docSpellingVariant = () => "off";
+  const docSpell = { answer: () => null, want: () => false, ownWordsSend: () => {}, dictionaryRow: () => ({}), packKey: () => "" };
   const docLoadWordlist = () => {};
   const docCheckLinkText = () => false;
   const docProseKey = (f) => f.rule + ":" + f.text.toLowerCase();

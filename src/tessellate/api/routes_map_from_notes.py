@@ -259,7 +259,7 @@ class MapFromNotes(BaseModel):
 @router.post("/maps/from-notes", status_code=201)
 def map_from_notes(body: MapFromNotes, db: Session = Depends(get_session)):
     from tessellate.api import routes_whiteboard as wb
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     wanted = list(dict.fromkeys(body.note_ids))
     found = {
@@ -277,7 +277,7 @@ def map_from_notes(body: MapFromNotes, db: Session = Depends(get_session)):
         #: A private note is on the map by reference only: its title is not
         #: copied into the map's own text, the node shows it as the app shows
         #: any private note, from the note.
-        title = "Private note" if entry.is_private else manager.extract_title(manager.readable_content(entry)) or ""
+        title = "Private note" if entry.is_private else manager_text.extract_title(manager_text.readable_content(entry)) or ""
         try:
             tags = json.loads(entry.tags or "[]")
         except (TypeError, ValueError):

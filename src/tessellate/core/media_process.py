@@ -79,7 +79,12 @@ def process_committed_upload(upload: MediaUpload, media_dir: Path) -> None:
     permanent. Never raises: a missing file or an unsupported suffix for
     one reader just means that reader has nothing to do, exactly as
     `POST /media/upload`'s own trigger calls always treated it.
+
+    A board-only picture (K18) starts nothing: it is filed and read only once
+    the person chooses Save to Library.
     """
+    if getattr(upload, "board_only", False):
+        return
     ocr = _module("tessellate.core.ocr")
     captioning = _module("tessellate.ai.captioning")
     vision_ocr = _module("tessellate.ai.vision_ocr")

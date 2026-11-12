@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests import _js_scope
 from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
@@ -25,7 +26,7 @@ def _function(source: str, head: str) -> str:
 
 def test_dictation_without_the_add_on_says_where_to_get_it_not_report_this():
     # The hint is the server's (ai/voice.py): it names Settings, Packages.
-    body = _function((JS / "media.js").read_text(encoding="utf-8"), "async function toggleDictation(")
+    body = _function((JS / "gesture-kit.js").read_text(encoding="utf-8"), "async function toggleDictation(")
     branch = body[body.index("if (!voiceStatus.available) {") :]
     branch = branch[: branch.index("return;")]
     assert "toast(voiceStatus.hint || \"Voice capture isn't available.\");" in branch
@@ -57,7 +58,7 @@ def test_a_package_action_the_server_refuses_is_a_notice_and_a_failed_request_is
 def test_a_held_quick_note_says_its_reminder_was_not_set():
     # OPEN.md: a reminder chip on a note saved while the server is away was
     # dropped without a word; the note is kept, and now the toast says so.
-    body = _function((JS / "quick-note.js").read_text(encoding="utf-8"), "async function saveQuickNote(")
+    body = _function(_js_scope.unwrapped((JS / "quick-note.js").read_text(encoding="utf-8")), "async function saveQuickNote(")
     queued = body[body.index("if (result.queued) {") :]
     queued = queued[: queued.index("return;")]
     assert "slots?.due" in queued and "Its reminder was not set" in queued

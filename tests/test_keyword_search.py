@@ -173,7 +173,7 @@ def test_an_index_built_without_stemming_is_rebuilt_once(tmp_path):
     rebuilds that index (never the notes) exactly once."""
     from sqlalchemy import text
 
-    from tessellate.core.database import DatabaseManager
+    from tessellate.core.database_manager import DatabaseManager
 
     db_path = tmp_path / "old.db"
     db = DatabaseManager(db_path)

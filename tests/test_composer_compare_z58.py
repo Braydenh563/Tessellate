@@ -26,7 +26,7 @@ def ask(client, session, monkeypatch):
                                       "Lisbon or Tokyo, which is cheaper", "differences between Lisbon and Tokyo"])
 def test_each_side_is_its_trip(ask, question):
     said = ask(question)
-    assert "[**Lisbon trip**]" in said and "[**Tokyo trip**]" in said, said
+    assert "(**Lisbon trip**)" in said and "(**Tokyo trip**)" in said, said
     assert "Lisbon packing list" not in said and "Passport" not in said, said
 
 
@@ -39,4 +39,4 @@ def test_which_asked_last_names_both_sides(question):
 @pytest.mark.parametrize("question", ["running log vs running plan", "compare the running log and the running plan"])
 def test_a_side_named_whole_keeps_its_note(ask, question):
     said = ask(question)
-    assert "[**Running log**]" in said and "[**Running plan**]" in said, said
+    assert "(**Running log**)" in said and "(**Running plan**)" in said, said

@@ -14,7 +14,8 @@ from __future__ import annotations
 import pytest
 
 import tests._seed_1030 as seed_1030
-from tessellate.ai import composer_digest, intent
+from tessellate.ai import intent
+from tessellate.ai import composer_digest_sentences
 from tessellate.api import bounds, routes_chat
 
 
@@ -30,7 +31,7 @@ from tessellate.api import bounds, routes_chat
     "This is the only lecture.",
 ])
 def test_a_line_with_only_in_it_is_not_the_closing_claim(line):
-    assert not composer_digest.is_only_claim(line), line
+    assert not composer_digest_sentences.is_only_claim(line), line
 
 
 @pytest.mark.parametrize("line", [
@@ -44,7 +45,7 @@ def test_a_line_with_only_in_it_is_not_the_closing_claim(line):
     "It's your only note on Lisbon so far.",
 ])
 def test_the_closings_the_composer_says_are_claims(line):
-    assert composer_digest.is_only_claim(line), line
+    assert composer_digest_sentences.is_only_claim(line), line
 
 
 def test_the_words_only_swap_keeps_a_real_line():

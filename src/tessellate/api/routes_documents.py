@@ -35,7 +35,7 @@ from tessellate.core.database import (
     like_escape,
 )
 from tessellate.core.deps import get_session
-from tessellate.entry import link_offers
+from tessellate.entry import link_offers, private_space
 from tessellate.repo import content as content_repo
 from tessellate.repo.content import DOCUMENTS, unshelved
 from tessellate.repo import bookmarks as bookmark_repo
@@ -47,15 +47,8 @@ from tessellate.entry.mentions import (
     backlink_rows as _backlink_rows,
     backlink_spans as _backlink_spans,
 )
-from tessellate.entry.manager import (
-    entries_for_document,
-    join_blocks,
-    strip_inline_markdown,
-    get_entry,
-    link_document,
-    log_action,
-    unlink_document,
-)
+from tessellate.entry.manager import entries_for_document, get_entry, link_document, log_action, unlink_document
+from tessellate.entry.manager_text import join_blocks, readable_embeds, strip_inline_markdown
 from tessellate.entry.properties import strip as strip_properties
 
 logger = logging.getLogger(__name__)
@@ -174,7 +167,7 @@ def _preview_line(line: str) -> str:
         line = ", ".join(cell.strip() for cell in line.strip("|").split("|") if cell.strip())
     if _HORIZONTAL_RULE.match(line):
         return ""
-    line = strip_inline_markdown(_HIGHLIGHT.sub(r"\1", line)).lstrip("#>-*+ \t")
+    line = strip_inline_markdown(_HIGHLIGHT.sub(r"\1", readable_embeds(line))).lstrip("#>-*+ \t")
     return _CALLOUT_HEAD.sub("", _LEAD_TASK.sub("", _LEAD_ORDERED.sub("", line)))
 
 
@@ -256,7 +249,7 @@ def _linked_notes(session: Session, document_id: int) -> list[dict]:
     usually about the same thing, asked for directly: "the documents and
     notes sections and features need to be more integrated together".
     """
-    from tessellate.entry.manager import readable_content
+    from tessellate.entry.manager_text import readable_content
 
     return [
         {
@@ -513,7 +506,7 @@ def create_document(
         content=body.content,
         file_type=filetypes.normalise(body.file_type),
     )
-    log_action(session, "created", "document", document.id, document.title[:80])
+    log_action(session, "created", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     _process_committed_media(session, document.content)
     return _full(document, session)
@@ -715,7 +708,7 @@ def import_document(
             else filetypes.normalise(suffix.lstrip("."))
         ),
     )
-    log_action(session, "imported", "document", document.id, document.title[:80])
+    log_action(session, "imported", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     return {**_full(document, session), "truncated": viewed.truncated}
 
@@ -801,7 +794,7 @@ def delete_document(document_id: int, session: Session = Depends(get_session)) -
     the app deleted outright, and its Undo made a new document with a new id."""
     document = _existing(session, document_id)
     document.deleted_at = utcnow()
-    log_action(session, "deleted", "document", document.id, document.title[:80])
+    log_action(session, "deleted", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     return {"deleted": True, "binned": True}
 
@@ -823,7 +816,7 @@ def purge_document(document_id: int, session: Session = Depends(get_session)) ->
     document = document_repo.get_any(session, document_id)
     if document.deleted_at is None:
         raise HTTPException(status_code=409, detail="Only a document in the bin can be deleted for good.")
-    log_action(session, "purged", "document", document.id, document.title[:80])
+    log_action(session, "purged", "document", document.id, private_space.audit_title(session, document))
     with other_bin.including_binned(session):
         other_bin.purge_document(session, document)
         session.commit()
@@ -839,7 +832,7 @@ def archive_document(document_id: int, session: Session = Depends(get_session)) 
     document = DOCUMENTS.writable(session, document_id)
     if not document.archived_at:
         document.archived_at = utcnow()
-        log_action(session, "archived", "document", document.id, document.title[:80])
+        log_action(session, "archived", "document", document.id, private_space.audit_title(session, document))
         session.commit()
     return _summary(document)
 
@@ -849,7 +842,7 @@ def unarchive_document(document_id: int, session: Session = Depends(get_session)
     document = DOCUMENTS.writable(session, document_id)
     if document.archived_at:
         document.archived_at = None
-        log_action(session, "unarchived", "document", document.id, document.title[:80])
+        log_action(session, "unarchived", "document", document.id, private_space.audit_title(session, document))
         session.commit()
     return _summary(document)
 
@@ -899,7 +892,7 @@ def detach_note(
 
 
 def _backlinks(session: Session, document: Document) -> dict:
-    from tessellate.entry.manager import plain_label
+    from tessellate.entry.manager_text import plain_label
 
     title = (document.title or "").strip()
     if not title:
@@ -1179,7 +1172,7 @@ def ai_check(
             yield json.dumps(event) + "\n"
 
     return StreamingResponse(
-        activity.tracked_stream("generation", "Reviewing a document", lines()),
+        activity.tracked_stream("generation", "Reviewing a document", lines(), stopped_line=activity.STOPPED_DONE),
         media_type="application/x-ndjson",
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )
@@ -1227,6 +1220,33 @@ def rephrase_passage(
         "ollama_running": running,
         "message": "" if running else drafter.offline_message(),
     }
+
+
+@router.post("/{document_id}/suggest-title")
+def suggest_document_title(document_id: int, session: Session = Depends(get_session)) -> dict:
+    """A name for this document, on request (INBOX 904 B17). The model writes
+    it when one runs; with none, the document's own words are cut to a title
+    (`composer_voice.title_for`, as for a note). Nothing is saved: the client
+    renames through the same undoable path as Rename."""
+    from tessellate.ai import composer_voice, librarian
+    from tessellate.ai.ollama_client import OllamaError
+
+    doc = _existing(session, document_id)
+    text = strip_properties(doc.content or "").strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="There is nothing in this document to name it from yet.")
+    if deps.get_ollama().is_running():
+        try:
+            title = librarian.generate_title(text[:4000], deps.get_model_manager(), deps.get_ollama())
+        except OllamaError:
+            logger.warning("document title generation failed", exc_info=True)
+            title = ""
+        if title:
+            return {"title": title, "by": "model"}
+    title = composer_voice.title_for(text)
+    if not title:
+        raise HTTPException(status_code=422, detail="There is no sentence here to take a name from yet.")
+    return {"title": title, "by": "composer"}
 
 
 class DocumentRevisionOut(BaseModel):
@@ -1368,7 +1388,7 @@ def restore_document_revision(
     if wanted_title:
         document.title = wanted_title
     document.updated_at = utcnow()
-    log_action(session, "restored", "document", document.id, document.title[:80])
+    log_action(session, "restored", "document", document.id, private_space.audit_title(session, document))
     session.commit()
     return _full(document, session)
 

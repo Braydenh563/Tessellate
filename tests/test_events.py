@@ -20,6 +20,7 @@ from datetime import timedelta
 
 from tessellate.core.database import AuditLog
 from tessellate.entry import manager
+from tessellate.entry import manager_categories, manager_links, manager_purge, manager_wiki
 
 WRITE_PREFIXES = (
     "create_", "update_", "soft_delete_", "restore_", "archive_", "unarchive_",
@@ -28,9 +29,10 @@ WRITE_PREFIXES = (
 
 
 def _manager_writes():
+    #: `manager_purge`, `manager_links`, `manager_wiki` and `manager_categories` hold writes moved out of manager.py whole (K24/BK11).
     return sorted(
-        name for name, fn in inspect.getmembers(manager, inspect.isfunction)
-        if name.startswith(WRITE_PREFIXES) and fn.__module__ == manager.__name__
+        name for module in (manager, manager_purge, manager_links, manager_wiki, manager_categories) for name, fn in inspect.getmembers(module, inspect.isfunction)
+        if name.startswith(WRITE_PREFIXES) and fn.__module__ == module.__name__
     )
 
 
@@ -94,7 +96,7 @@ def test_a_purge_is_one_event_with_the_id_list(session):
     ids = [e.id for e in entries]
     session.commit()
     before = session.query(AuditLog).count()
-    manager.purge_entries(session, entries)
+    manager_purge.purge_entries(session, entries)
     session.commit()
     assert session.query(AuditLog).count() == before + 1
     last = session.query(AuditLog).order_by(AuditLog.id.desc()).first()

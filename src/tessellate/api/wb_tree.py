@@ -121,15 +121,15 @@ def _reference_label(db: Session, kind: str, ref_id: int | None, fallback: str) 
 
 def _note_reference_label(db: Session, ref_id: int, fallback: str) -> str:
     """A note reference's name: its title, "Private note" for a private one."""
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     entry = db.get(Entry, ref_id)
     if entry is None or entry.is_deleted:
         return fallback or "(note missing)"
     if entry.is_private:
         return "Private note"
-    text = manager.readable_content(entry)
-    return manager.extract_title(text) or text.strip().split("\n")[0][:80] or fallback
+    text = manager_text.readable_content(entry)
+    return manager_text.extract_title(text) or text.strip().split("\n")[0][:80] or fallback
 
 
 def _other_reference_label(db: Session, kind: str, ref_id: int) -> str:
@@ -232,6 +232,8 @@ MAP_STYLE_FIELDS = (
     "flag",
     "markers",
     "due",
+    "start",
+    "recording",
 )
 
 

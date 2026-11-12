@@ -28,6 +28,7 @@ from datetime import date, datetime
 
 from tessellate.ai import act_registry
 from tessellate.ai import recognise as rec
+from tessellate.ai import recognise_reminders
 
 #: The bands of decision 48, highest first: a reading is in the first band
 #: whose floor its confidence reaches. Set 2026-10-10 by the eval
@@ -173,7 +174,7 @@ def _weigh(reading: Reading, used: list, context: dict) -> Reading:
 def _reminder_slots(text: str, spans: list, now: datetime, locale: str | None, known: dict,
                     tense: str = "future") -> tuple[dict, list]:
     """Slots for a reminder read from a whole sentence (quick add), and the spans they used."""
-    parsed = rec.parse_reminder_text(text, now, locale=locale, known=known, tense=tense)
+    parsed = recognise_reminders.parse_reminder_text(text, now, locale=locale, known=known, tense=tense)
     used = [s for s in spans if s.rank == 0 and s.kind in _TIME_KINDS]
     if parsed is None:
         return {"text": rec.strip_lead(text.strip()) or text.strip(), "due_at": None}, used
@@ -187,7 +188,7 @@ def _repeat_slots(slots: dict, spans: list) -> None:
     repeat = next((s for s in spans if s.kind == "recurrence" and s.rank == 0), None)
     if repeat is not None:
         slots["repeat"] = repeat.value
-        stored = rec.stored_repeat(repeat.value)
+        stored = recognise_reminders.stored_repeat(repeat.value)
         if stored:
             slots["recurring"] = stored
         return
@@ -385,6 +386,8 @@ _read = read.__wrapped__
 #: How many turns back a follow-up may lean (decision 58: the last five).
 FOLLOW_TURNS = 5
 
+#: "undo that" right after a tick (composer-r6 E7): the tick taken back, in words.
+_UNDO_THAT = r"^(?:and |ok |okay )?(?:please )?(?:undo|take back|revert|reverse|put back)(?: (?:that|it|this|that tick|the tick|the last tick))?[.?!]*$"
 _AGAIN = r"^(?:and |ok |okay )?(?:same again|again|do (?:that|it) again|one more time|repeat that)[.?]*$"
 #: `follow` folds whitespace and strips the trailing mark first, so single
 #: spaces and an unqualified tail keep these linear (CodeQL).
@@ -430,7 +433,10 @@ _REFER_GROUP = re.compile(rf"^{_REFER_FILLER}(?P<head>compare)\s+(?:those|them|t
 
 
 def _joined(titles: list[str], last: str) -> str:
-    return f"{', '.join(titles[:-1])} {last} {titles[-1]}"
+    """The titles as the sides of a comparison, comma-listed: a title is cut at its own comma, which would
+    otherwise make more sides than there are notes (the note is still named by its first words)."""
+    sides = [title.split(",")[0].strip() or title for title in titles]
+    return f"{', '.join(sides[:-1])} {last} {sides[-1]}"
 
 
 def _follow_place(low: str, raw: str, titles: list[str]) -> str | None:
@@ -491,6 +497,21 @@ def _follow_referent(raw: str, low: str, turns: list[dict]) -> str | None:
     return None
 
 
+#: What takes an act back, said as the sentence that does it (B24): "undo" after a tick, an untick, a pin or an unpin.
+_INVERSE = {"complete": "untick {about}", "uncomplete": "tick off {about}", "pin": "unpin the {about} note", "unpin": "pin the {about} note"}
+
+
+def _untick_of(turn: dict, now: datetime) -> tuple[str, str] | None:
+    """The sentence that takes the last turn back when it ticked, unticked, pinned or
+    unpinned something, else None (so "undo" after anything else is still the help
+    line about the keys)."""
+    from tessellate.ai import commands
+
+    done = commands.read(str(turn.get("text") or ""), now)
+    inverse = _INVERSE.get(done["intent"]) if done and done.get("about") else None
+    return (inverse.format(about=done["about"]), "undo") if inverse else None
+
+
 def cited_follow(text: str, turns: list[dict] | None, now: datetime) -> str | None:
     """`text` with its "it", "that", "the X" or bare "more" named as the
     leading note the last answer cited, else None. The same on every path,
@@ -544,6 +565,8 @@ def follow(text: str, turns: list[dict] | None, now: datetime) -> tuple[str, str
         return slot, "slot"
     if re.match(_AGAIN, low):
         return str(turns[-1]["text"]), "again"
+    if re.match(_UNDO_THAT, low):
+        return _untick_of(turns[-1], now)
     cited = _follow_referent(raw, low, turns)
     if cited:
         return cited, "pronoun"

@@ -311,15 +311,16 @@ def test_the_agents_field_stays_open_with_no_model():
     """AGENT_SKILLS_REFORM "Deepened 2026-10-10" row 1 replaces decision 11's
     "visible, disabled" for the agent: with no model it runs acts and
     readings (`ai/starter_acts.py`), so neither the field nor a starter is
-    disabled, and `cmdPaletteBusy` closes the field only while a run is in
-    hand."""
+    disabled. `cmdPaletteBusy` closed the field while a run was in hand; since
+    CHAT_PLAN B3 (the owner: "I cant type in the text box while the popup agent
+    is respondning") it never does: a send mid-run waits in the composer queue."""
     start = APP.index("function syncAgentPaletteAvailability(")
     body = APP[start : APP.index("\n}\n", start)]
     assert "disabled" not in body
 
     start = APP.index("function cmdPaletteBusy(")
     busy = APP[start : APP.index("\n}\n", start)]
-    assert "cmdPaletteInput.disabled = busy;" in busy
+    assert "cmdPaletteInput.disabled" not in busy
 
 
 # --- links the AI writes (CHAT_PLAN.md decision 12, INBOX 172) ----------------
@@ -430,3 +431,17 @@ def test_the_sources_panel_can_be_given_a_subset_without_renumbering_it():
         "and number each card by its place in that list, not by its place in "
         "the subset it was handed"
     )
+
+
+def test_hovering_a_mark_does_not_open_the_sources_but_pressing_it_does():
+    """The owner (2026-10-10): "Hovering over an intext reference opens up the
+    sources dropdown." Driven: a closed disclosure was open during hover (1 of
+    1 at 390 and 1440). The peek is the hover's preview; the press opens the
+    sources, as the owner's recommendation reads."""
+    start = APP.index("function showCitedPassage(")
+    body = APP[start : APP.index("\n}\n", start)]
+    assert 'setAttribute("open"' not in body, "a hover must not open a closed disclosure"
+    assert "details:not([open])" in body or 'closest("details")' in body
+    marker = APP[APP.index("function citationMarker(") : APP.index("function scheduleCitationPeek(")]
+    click = marker[marker.index('link.addEventListener("click"') : marker.index('link.addEventListener("mouseenter"')]
+    assert 'setAttribute("open"' in click, "a press opens the sources"

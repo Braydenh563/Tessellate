@@ -12,7 +12,7 @@ import re
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from tessellate.entry.manager import extract_title
+from tessellate.entry.manager_text import extract_title
 from tessellate.core.deps import get_session
 from tessellate.api.wb_model import MAP_TOPIC_KIND
 from tessellate.api.wb_tree import MAX_MAP_DEPTH, _build_tree, _cross_links, _map_objects
@@ -315,7 +315,7 @@ _FREEMIND_PRIVATE = {
     **{f: f"_{f}" for f in ("boundary", "boundary_label", "summary", "summary_span", "branch_layout", "callout", "labels", "stamps")},
     #: Markers (decision 34): neither format has a place for them that the
     #: other reads, so all four ride as private attributes.
-    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due")},
+    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due", "start")},
 }
 #: OPML 2.0 defines `text`, `type`, `url`, `isComment`, `isBreakpoint`,
 #: `created` and `category` and nothing else, so `url` is the only native
@@ -350,7 +350,7 @@ _OPML_PRIVATE = {
     **{f: f"_{f}" for f in ("boundary", "boundary_label", "summary", "summary_span", "branch_layout", "callout", "labels", "stamps")},
     #: Markers (decision 34): neither format has a place for them that the
     #: other reads, so all four ride as private attributes.
-    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due")},
+    **{f: f"_{f}" for f in ("priority", "progress", "flag", "markers", "due", "start")},
 }
 
 

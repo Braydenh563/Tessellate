@@ -16,11 +16,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
 WORKER = (FRONTEND / "js" / "graph-worker.js").read_text(encoding="utf-8")
-CANVAS = (FRONTEND / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+CANVAS = unwrapped((FRONTEND / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
 REMINDERS = (FRONTEND / "js" / "shell-reminders.js").read_text(encoding="utf-8")
 
 

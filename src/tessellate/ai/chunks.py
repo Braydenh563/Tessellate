@@ -26,7 +26,9 @@ CHUNK_MAX_WORDS = 160
 CHUNK_MAX_PER_NOTE = 32
 
 _PARAGRAPH_BREAK = re.compile(r"\n[ \t]*\n+")
-_SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+#: The stop is matched, not looked behind: CodeQL ignores a lookbehind and reads a bare `\s+` as polynomial;
+#: only `m.end()` is used, which is the same either way.
+_SENTENCE_END = re.compile(r"[.!?]\s+")
 _CHUNK_WORD = re.compile(r"[^\W_]+", re.UNICODE)
 
 

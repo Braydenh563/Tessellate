@@ -968,7 +968,21 @@ function entryItem(entry, options = {}) {
       actions.appendChild(smallButton("ph:check-circle", "Publish this draft as a proper note", () => publishDraft(entry)));
     }
     actions.appendChild(entryOverflowMenu(entry));
+    //: **The icon buttons say which note they act on** (audit 1029 N17): a list
+    //: of buttons read "Edit this entry" once per card. The note's name after
+    //: the verb tells them apart; `title` stays (notes-list.js finds Edit by it).
+    const cardName = (entry.title || noteNamePlain(entry.content || "", 60) || "").trim();
+    if (cardName) {
+      for (const button of actions.querySelectorAll("button")) {
+        const verb = (button.getAttribute("aria-label") || button.title || "").trim();
+        if (verb) button.setAttribute("aria-label", `${verb}: ${cardName}`);
+      }
+    }
     metaEnd.appendChild(actions);
+    //: A draft's strip holds a fifth target (Publish): the card's first
+    //: lines and the row's lane keep that much more clear for it
+    //: (08-consistency.css, "The strip's own width, kept clear").
+    li.classList.toggle("has-wide-strip", actions.childElementCount > 4);
   }
   if (entry.is_private) {
     // With the vault known to be locked (sign-in off, INBOX 426 aa), the
@@ -1233,4 +1247,207 @@ function entryItem(entry, options = {}) {
     li.appendChild(linkRow);
   }
   return li;
+}
+
+//: Take a note to the graph and put it in the middle, lit. The graph is its
+//: own lazy bundle and lays itself out after the tab opens, so this waits for
+//: the node to exist and to have a position rather than guessing a delay.
+//: Accept keeps the janitor's category and makes it the person's (the note
+//: leaves the queue, with Undo); Refile is the Move to category sheet, and a
+//: move is a decision already; Split is Extract notes over the whole note,
+//: which needs the model, so it is disabled with the reason when it is off.
+function noteReviewActions(entry) {
+  const row = document.createElement("div");
+  //: `.night-questions-row` is the wrapping line of small buttons this is.
+  row.className = "row night-questions-row entry-review";
+  const set = async (accepted) => {
+    await apiJson(`/entries/${entry.id}/filing`, { method: "POST", body: JSON.stringify({ accepted }) });
+    for (const e of allEntries) if (e.id === entry.id) e.user_filed = accepted;
+    renderEntries();
+  };
+  const where = entry.category || "Uncategorised";
+  const accept = smallButton("ph:check Accept", `Keep it in ${where}`, async () => {
+    try {
+      await set(true);
+    } catch (error) {
+      toast(error.message, true);
+      return;
+    }
+    const message = `Kept in ${where}.`;
+    const action = pushUndo(message, () => set(false), () => set(true));
+    toastAction(message, "Undo", async () => {
+      settleUndoFromToast(action);
+      await set(false).catch((error) => toast(error.message, true));
+    });
+  });
+  const refile = smallButton("ph:folder-open Refile…", `Now in ${where}; choose another`, () => chooseNoteCategory([entry.id], entry.category));
+  const split = smallButton(
+    "ph:scissors Split…",
+    "Split it into linked notes, with a preview first",
+    () => fullEntry(entry.id).then((whole) => openExtractPreview(whole.content || "", { sourceEntryIds: [entry.id] }), (error) => toast(error.message, true))
+  );
+  row.append(accept, refile, split);
+  return row;
+}
+
+function favouriteButton(entry) {
+  //: `.favourite-btn` names the control for the phone's swipe (`initRowSwipe`),
+  //: which presses it rather than carrying a second copy of the toggle.
+  const button = smallButton(
+    "ph:star",
+    entry.pinned ? "Remove from Favourites" : "Add to Favourites (also floats it to the top)",
+    async () => {
+      const was = Boolean(entry.pinned);
+      await api(`/entries/${entry.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ pinned: !was }),
+      });
+      //: On the global stack, because a mis-click here is silent: the star
+      //: changes shape and the note moves to the top of the list, and there
+      //: was nothing that put it back. Reported as the undo stack being
+      //: "significantly outdated and dont register a lot of actions".
+      pushEntryPutUndo(
+        entry.id,
+        was ? "Removed a favourite" : "Added a favourite",
+        { pinned: was },
+        { pinned: !was }
+      );
+      await loadEntries();
+    }
+  );
+  button.classList.add("favourite-btn");
+  button.classList.toggle("is-favourite", Boolean(entry.pinned));
+  button.setAttribute("aria-pressed", Boolean(entry.pinned));
+  return button;
+}
+
+//: A note's own attached files (the `Attachment` table, `/files/{id}`), one
+//: card each, in a wrapping grid. Pictures page through the lightbox
+//: together; the bytes need the auth header, so a picture's src is a blob url
+//: (`attachmentObjectUrl`). `editable` is the note list's own actions flag:
+//: a card on a read-only surface offers no Rename or Remove.
+function renderAttachmentCards(entry, editable) {
+  const row = document.createElement("div");
+  row.className = "att-cards";
+  const images = entry.attachments.filter((a) => a.is_image);
+  for (const attachment of entry.attachments) {
+    row.append(attachmentCard({
+      name: attachment.filename,
+      url: `/files/${attachment.id}`,
+      size: attachment.size,
+      added: attachment.created_at,
+      attachment,
+      onChange: editable ? () => loadEntries() : null,
+      thumb: attachment.is_image ? () => attachmentObjectUrl(attachment) : null,
+      gallery: attachment.is_image
+        ? () => ({
+          items: images.map((a) => ({ filename: a.filename, getUrl: () => attachmentObjectUrl(a) })),
+          index: images.indexOf(attachment),
+        })
+        : null,
+    }));
+  }
+  return row;
+}
+
+//: The "+N" itself: a press lists what folded, each row doing what its chip
+//: does (a tag shows its notes, a suggestion is taken).
+function noteMetaMore(entry) {
+  const more = chip("+0", "note-meta-more", (event) => {
+    event.stopPropagation();
+    const at = more.getBoundingClientRect();
+    const items = [...more.parentElement.querySelectorAll(":scope > [data-tag][hidden]")].map((el) => {
+      const tag = el.dataset.tag;
+      return el.classList.contains("suggested-tag")
+        ? { label: `ph:plus ${tag}`, title: `Suggested: add #${tag}`, group: "Suggested", run: () => answerTags(entry, { take: [tag] }) }
+        : { label: `ph:hash ${tag}`, title: `Show every note tagged #${tag}`, group: "Tags", run: () => filterNotesByTag(tag) };
+    });
+    openMenuAtPoint(items, "More tags", at.left, at.bottom);
+  });
+  more.setAttribute("aria-haspopup", "menu");
+  more.hidden = true;
+  return more;
+}
+
+//: Moved here from the boot files (W27): only this file calls them.
+function notesSpanSpaces() {
+  if (notesSpanMemo.list !== allEntries) {
+    const first = allEntries[0]?.workspace_id;
+    notesSpanMemo = { list: allEntries, many: allEntries.some((e) => e.workspace_id && e.workspace_id !== first) };
+  }
+  return notesSpanMemo.many;
+}
+
+// The words worth highlighting in a result, operators aren't text to find.
+function searchHighlightTerms() {
+  if (!noteSearch) return [];
+  const query = parseNoteQuery(noteSearch);
+  return [...query.phrases, ...query.words].filter((t) => t.length > 1);
+}
+
+//: The note card's "..." menu, moved here from menus.js (boot gzip budget): only this lazy file builds it.
+function entryOverflowMenu(entry) {
+  const wrap = document.createElement("span");
+  wrap.className = "menu-wrap";
+
+  const menu = document.createElement("div");
+  menu.className = "action-menu hidden";
+  menu.setAttribute("role", "menu");
+
+  //: Same square-kebab rule as `kebabMenu` below: this is the *other* ⋯
+  //: builder (note cards, built lazily on first open), and a rule applied to
+  //: one of two implementations of the same control is how they drift.
+  //:
+  //: **And they had.** Reported: "the ellipse kebab icons in the notes on the
+  //: your notes tab are not centred." `kebabMenu` draws `ph:dots-three`; this
+  //: one drew the literal character `⋯` (U+22EF), and a text glyph is placed
+  //: on the *font's* baseline inside a 19.2px line box centred in a 28px
+  //: button: U+22EF sits at the em box's midline, which is above the line
+  //: box's optical centre, so the dots rode high. No amount of flex centring
+  //: fixes that: the box is centred correctly and the glyph is not centred
+  //: within the box. The icon font's own glyph is drawn to fill its box, so
+  //: using the same icon as the other builder fixes the centring and the
+  //: drift in one go.
+  const opener = smallButton("ph:dots-three", "More actions", async () => {
+    //: Built now, and given the card rows (Copy, Move, Add to tray) as `kebabMenu` gives them.
+    filled ||= ensureModule("entryMenu").then((ok) => ok && (fillEntryMenu(menu, entry), true));
+    if (!(await filled)) return ((filled = null), lazyLoadFailed());
+    window.objKebabRows?.(menu);
+    // The phone's action sheet, as `kebabMenu` opens (`openKebabSheet`).
+    if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
+      openKebabSheet(menu, opener, "Note actions");
+      return;
+    }
+    if (menu.classList.contains("hidden")) openActionMenu(menu, opener);
+    else closeActionMenus();
+  });
+  opener.classList.add("icon-only");
+  opener.setAttribute("aria-haspopup", "menu");
+  opener.setAttribute("aria-expanded", "false");
+
+  // **Built on first open, not on render: a scale fix.** This menu is about 50
+  // nodes and `entryItem()` builds one per note card, on every renderEntries()
+  // (every search keystroke, sort, filter and save); a 2,500-note notebook built
+  // over a hundred thousand hidden nodes nobody opens. The opener renders eagerly
+  // (it carries the aria state and a tab stop); the rows are `fillEntryMenu`
+  // (entry-menu.js, lazy), awaited by the opener so `openActionMenu` finds a first item.
+  let filled = null;
+
+  wireMenuKeyboard(menu, opener);
+
+  wrap.append(opener, menu);
+  return wrap;
+}
+
+//: The draft's Publish button and menu row are this file's only callers (moved from note-cards.js for the boot gzip budget, 2026-11-11).
+async function publishDraft(entry) {
+  try {
+    await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ is_draft: false }) });
+    entry.is_draft = false;
+    pushEntryPutUndo(entry.id, "Published a draft", { is_draft: true }, { is_draft: false });
+    await refreshEntries([entry.id]);
+    toast("Published.");
+  } catch (error) {
+    toast(error.message || "Couldn't publish that draft.", true);
+  }
 }

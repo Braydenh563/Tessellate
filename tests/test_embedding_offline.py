@@ -118,7 +118,9 @@ def test_a_model_never_downloaded_downloads_once(engine, fetched):
 def test_the_download_takes_only_the_onnx_build(monkeypatch, tmp_path):
     """Only the files the engine reads: bge's repo also holds PyTorch and
     safetensors weights, several times the ONNX build's size."""
-    import huggingface_hub
+    # Optional: huggingface_hub arrives with fastembed (requirements.txt, so CI
+    # runs this); a venv without Search by meaning skips, as test_fastembed_engine does.
+    huggingface_hub = pytest.importorskip("huggingface_hub")
 
     asked = {}
     monkeypatch.setattr(huggingface_hub, "snapshot_download", lambda **kwargs: asked.update(kwargs))

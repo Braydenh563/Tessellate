@@ -24,16 +24,7 @@ function recordBrowserLog(level, parts) {
   const record = {
     time: new Date().toISOString(),
     level,
-    message: parts
-      .map((p) => {
-        if (typeof p === "string") return p;
-        try {
-          return JSON.stringify(p);
-        } catch {
-          return String(p);
-        }
-      })
-      .join(" "),
+    message: parts.map(recordBrowserLog.text).join(" "),
   };
   browserLogs.push(record);
   if (browserLogs.length > MAX_BROWSER_LOGS) browserLogs.shift();
@@ -48,15 +39,23 @@ function recordBrowserLog(level, parts) {
     logRecords.push({ ...record, source: "browser", logger: "browser", key: `b-live-${Math.random()}` });
     //: The four are settings.js's, beside `logRecords`.
     sortLogRecords();
-    if (logScreenOpen) {
-      renderActiveLogView();
-      // Scroll to bottom so the new error is visible without manual scroll.
-      scrollLogToBottom();
-    }
+    if (logScreenOpen) renderActiveLogView.soon(true);
     // Bump the error badge in the Logs button so the user knows to check.
     bumpLogErrorBadge(record);
   }
 }
+
+//: A log part as text. An Error, DOMException or ErrorEvent stringifies to "{}"
+//: (INBOX 1111): its name, message and stack go in, never a bare "{}". A
+//: property, not a global (the lag watcher reads it too).
+recordBrowserLog.text = (p) => {
+  try {
+    const j = JSON.stringify(p);
+    return typeof p === "string" ? p : j === "{}" ? p.stack || String(p) : j;
+  } catch {
+    return String(p);
+  }
+};
 
 for (const level of ["log", "info", "warn", "error"]) {
   const original = console[level].bind(console);
@@ -79,13 +78,13 @@ window.addEventListener("error", (e) =>
   // hunting for a null-dereference with no line number to start from.
   recordBrowserLog("ERROR", [
     `${e.message} (${e.filename}:${e.lineno}:${e.colno})`,
-    e.error?.stack || "",
+    e.error || "",
   ])
 );
 window.addEventListener("unhandledrejection", (e) =>
   e.reason?.isStale || recordBrowserLog("ERROR", [
     "Unhandled promise rejection:",
-    e.reason?.stack || String(e.reason),
+    e.reason,
   ])
 );
 
@@ -159,7 +158,7 @@ let noteSort = "newest"; // newest | oldest | az | most-used (Wave J)
 let notesPageSize = localStorage.getItem("notes-page-size") || "all";
 let notesCurrentPage = 1;
 
-const $ = (id) => document.getElementById(id) || settingsBodyFind(id);
+const $ = (id) => document.getElementById(id) || surfaceFind(id);
 const show = (...ids) => ids.forEach((id) => $(id).classList.remove("hidden"));
 const hide = (...ids) => ids.forEach((id) => $(id).classList.add("hidden"));
 
@@ -712,15 +711,13 @@ function showLockScreen(setupMode) {
   $("lock-message").textContent = setupMode
     ? "A notebook that runs on this machine. Your notes stay here, and nothing goes online unless you turn it on later."
     : ""; // unlock wording is `lockFieldForPin`'s, below
-  //: Four is the backend's own floor (`Field(min_length=4)`,
-  //: routes_auth.py), quoted rather than restated so the two cannot drift.
+  //: The setup words are the page's own (#lock-setup-note in index.html, out
+  //: of the boot scripts' gzip budget), kept here before a restore's
+  //: "Restored." line (account-recovery.js) writes over them.
   const note = $("lock-setup-note");
   if (note) {
-    note.textContent =
-      "Choose a password, at least eight characters; a few unrelated words are best. The app asks for it " +
-      "when it opens, unless you turn that off in Settings. Ordinary notes are not encrypted and survive a reset, " +
-      "but anything you later mark private is locked with this password and cannot " +
-      "be recovered without it.";
+    note.dataset.text ??= note.textContent;
+    if (setupMode) note.textContent = note.dataset.text;
     note.classList.toggle("hidden", !setupMode);
   }
   $("lock-submit").textContent = setupMode ? "Set password & start" : "Unlock";
@@ -739,6 +736,8 @@ function showLockScreen(setupMode) {
       .then((status) => {
         pinHere = !!status?.pin_here;
         if ($("lock-overlay").dataset.mode === "unlock") lockFieldForPin(pinHere);
+        //: Windows Hello's button (hello-unlock.js, in the private spaces' lazy bundle).
+        if (status?.hello_here || $("lock-hello")) privateSpaces("hello", "lock", status?.hello_here);
       })
       .catch(() => {});
   }
@@ -781,6 +780,8 @@ const LOCK_PURGE_IDS = [
   "graph-svg", // node labels are note titles
   "palette-list", // whatever was last searched for
   "palette-preview", // and the note it was showing
+  "dash-glance", // the dashboard's recent note titles
+  "dash-more", // and its More menu, whose Continue row names the last note
 ];
 
 //: Empty everything the lock screen is covering.
@@ -799,11 +800,21 @@ function purgeLockedContent() {
   for (const el of document.querySelectorAll("[data-holds-notebook]")) {
     el.matches("input, textarea") ? (el.value = "") : el.replaceChildren();
   }
+  //: The open conversation's turns live in memory too (INBOX 1747, row 19): a stream still
+  //: running is stopped (it filled detached nodes) and the chat starts fresh; a saved one is in the history list.
+  try {
+    chatController?.abort();
+    chatConv = { id: null, turns: [] };
+  } catch {
+    /* chat.js not loaded yet (a lock at boot): nothing in memory to drop */
+  }
   // `.value` survives `replaceChildren`, so the editor's text needs its own clear.
   for (const id of ["doc-content", "doc-title"]) if ($(id)) $(id).value = "";
 }
 
 async function lockNow() {
+  //: The typed words are sealed and emptied before the key goes (INBOX 1747, row 22).
+  await typedWords("keep").catch(() => false);
   try {
     await api("/auth/lock", { method: "POST" });
   } catch {
@@ -897,7 +908,7 @@ function startApp() {
   // "check it's running, then refresh" line sat under the capture form for the
   // whole session after one slow start, telling the user the app was broken
   // while it worked perfectly. Screenshotted.
-  const shellStatus = $("save-status");
+  const shellStatus = document.getElementById("save-status");
   if (shellStatus) shellStatus.textContent = "";
   // Warm the filing model, retry stand-ins (routes_models.warm_filing).
   api("/models/warm-filing", { method: "POST", silent: true }).catch(() => {});
@@ -963,7 +974,7 @@ function startApp() {
     // A seeded background (microbes, mycelium) started before the
     // preferences arrived grew from the placeholder name; regrow it from the
     // real one. A no-op for every other style and when nothing changed.
-    if (typeof bgArtRefreshSeed === "function") bgArtRefreshSeed();
+    bgArtRefreshSeed();
     
     // Always check battery efficient mode regardless of ui_state seeding
     const indicator = $("power-saver-indicator");
@@ -980,13 +991,10 @@ function startApp() {
   });
 
   const entriesReady = step("load entries", loadEntries);
-  step("load recent questions", loadRecentQuestions);
-  step("load ask history badge", loadAskHistoryBadge);
-  step("load suggestions", loadSuggestions);
-  step("load your most-used items", loadMostUsed);
+  onSurface("notes", () => { loadRecentQuestions(); loadAskHistoryBadge(); loadSuggestions(); loadMostUsed(); });
   const templatesReady = step("load templates", loadTemplates);
   templatesReady.then(() =>
-    step("set up chat options", () => {
+    step("set up chat options", () => onSurface("chat", () => {
       personaOptions();
       // Wave G: skills chips + the agent-mode toggle read the
       // same prefsCache that loadTemplates just filled.
@@ -994,7 +1002,7 @@ function startApp() {
       $("tools-toggle").checked = prefsCache?.tools_enabled !== false;
       renderChatModeSeg();
       renderWebSearchToggle();
-    })
+    }))
   );
   step("load answer-length options", loadResponseModes);
   // Here, not at module level beside initSpaceSwitcher(). The switcher's
@@ -1025,7 +1033,7 @@ function startApp() {
   // not every time they login", the endpoint self-clears after one read,
   // so this only ever fires the run right after a real update landed.
   step("check for an update notice", checkForSourceUpdateNotice);
-  step("load conversations", loadConversationList);
+  step("load conversations", () => onSurface("chat", loadConversationList));
   step("check the model status", refreshModelStatus);
   // Reminders poll on their own timer once running (see startReminderWatch);
   // starting that here, not at module level, is the other half of the fix
@@ -1036,7 +1044,7 @@ function startApp() {
   // Re-render whichever tab is on screen. This used to be switchTab() itself, called at module level before initAuth() has a token, so a tab that fetches its own data painted itself from a pile of 401s and then never tried again. On the dashboard that meant an empty grid until you opened Edit layout and cancelled out of it, which re-ran renderDashboard by hand (user-reported). Now the module-level call is revealTab(), DOM only, no fetch: and this is the one place the real data load happens. *After* the entries land, not alongside them. These two ran concurrently, so on a cold load the dashboard rendered against an `allEntries` that was still `[]` and drew its brand-new-notebook card instead of the widgets, reported as "the dashboard widgets are missing until I refresh or change tabs". Every tab wants the notes; none of them wants to guess.
   //: The view the address names, when the page was opened on one (a reload, a bookmark, a pasted link: router.js); it loads its own tab, so the Dashboard is not loaded under it first.
   const tabReady = entriesReady.then(() => step("load this tab", async () => {
-    if (typeof routerRestore === "function" && (await routerRestore())) return;
+    if (await routerRestore()) return;
     return refreshActiveTab();
   }));
 
@@ -1263,6 +1271,7 @@ function confirmVerb(message) {
 // One confirm at a time (HR20): a second ask waits for the first to close, so
 // each takes focus and Esc answers the one the person can see.
 function confirmDialog(message, options = {}) {
+  confirmDialog.n = confirmDialog.n || 0;
   const {
     confirmLabel = confirmVerb(message),
     cancelLabel = "Cancel",
@@ -1289,7 +1298,12 @@ function confirmDialog(message, options = {}) {
       if (index === 0 && parts.length > 1) line.className = "confirm-title";
       line.textContent = part;
       text.append(line, document.createElement("br"));
+      //: Named and described as every reference dialog is (APG alert dialog, Radix AlertDialog): the question is the name, the whole text the description.
+      if (index === 0) line.id = `confirm-name-${++confirmDialog.n}`;
     });
+    text.id = `confirm-text-${confirmDialog.n}`;
+    overlay.setAttribute("aria-labelledby", parts.length > 1 ? `confirm-name-${confirmDialog.n}` : text.id);
+    overlay.setAttribute("aria-describedby", text.id);
     const row = document.createElement("div");
     row.className = "row confirm-actions";
 
@@ -1375,6 +1389,8 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     const text = document.createElement("h3");
     text.className = "confirm-title";
     text.textContent = message;
+    text.id = `prompt-name-${promptDialog.n = (promptDialog.n || 0) + 1}`;
+    overlay.setAttribute("aria-labelledby", text.id);
     head.appendChild(text);
     const input = document.createElement("input");
     input.type = "text";
@@ -1508,9 +1524,9 @@ function smallButton(label, title, onClick, ghost = true) {
 //: **A tab's code arrives when the tab does** (WORLD_CLASS_PLAN A1). Measured on this head before the change: 13 blocking scripts and 1,699 KB of compressed JS parsed before the first tab could draw, of which whiteboard (678 KB), documents (640 KB), library (404 KB) and the two graph files (334 KB) are surfaces most sessions never open. `ensureP5` above is the same idea for the one decoration that was bigger than all of them.  Two bundles, not five, because the five files are not five independent modules: library.js renders the boards gallery from whiteboard.js and the documents list from documents.js, whiteboard.js calls back into both, and documents.js renders the library's own filters. That cycle is real (it is one surface split across three files, not three surfaces), so splitting it further would only mean loading two thirds of it and waiting for the rest. The graph pair has no edge into it at all once `formatFileSize` moved to this file, so it stands alone.  `async = false` on a dynamically inserted script is what keeps them in document order: a dynamic script defaults to async, and library.js running before documents.js would be a different program.
 const LAZY_MODULES = {
   //: d3 (90 KB gzipped) comes with the two surfaces that use it, not at boot (audit FE-07); `ensureModule` fetches a file once whichever bundle names it first.
-  graph: ["/vendor/d3.v7.min.js", "/css/graph-lazy.css", "/js/graph.js", "/js/graph-canvas.js"],
+  graph: ["/vendor/d3.v7.min.js", "/css/graph-lazy.css", "/js/graph.js", "/js/graph-canvas.js", "/js/graph-tessellate.js"],
   //: The image viewer (2026-09-27, the boot-script gzip budget): see lightbox-view.js's header.
-  lightbox: ["/css/lightbox-lazy.css", "/js/lightbox-view.js"],
+  lightbox: ["/css/lightbox-lazy.css", "/css/value-field.css", "/js/value-field.js", "/js/lightbox-view.js"],
   //: Run, preview and test for a code document (DOCUMENTS_PLAN 23, D1): the protocol and its languages, loaded on the first Run.
   run: ["/js/run-core.js", "/js/run-tests.js", "/js/run-debug.js"],
   editConflict: ["/js/edit-conflict.js"],
@@ -1535,6 +1551,8 @@ const LAZY_MODULES = {
   attachments: ["/js/attachment-actions.js"],
   //: Tesseract's status line (INBOX 443 (3)): see ocr-engine.js.
   ocrEngine: ["/js/ocr-engine.js"],
+  //: The "needs an optional package" notice (INBOX 1748): extra-notice.js.
+  extraNotice: ["/js/extra-notice.js"],
   //: Quick note and the note outbox (INBOX 434): see quick-note.js. router-overlays.js rides with the quick note: Back closes an open overlay first, and Settings' close settles the address. Both preloaded below; boot code is at its cap.
   quickNote: ["/js/quick-note.js", "/js/router-overlays.js"],
   fieldClear: ["/js/field-clear.js"],
@@ -1558,11 +1576,12 @@ const LAZY_MODULES = {
   appPalette: ["/js/meaning.js", "/js/app-features.js", "/js/app-palette.js"],
   notePanels: ["/js/note-panels.js", "/js/note-edit-panels.js", "/js/note-pick-preview.js"],
   //: Every listener inside the Settings window, awaited on first open: settings-controls.js.
-  settingsControls: ["/css/settings-controls-lazy.css", "/js/settings-controls.js"],
+  settingsControls: ["/css/settings-controls-lazy.css", "/js/settings-prefs.js", "/js/settings-controls.js"],
   attachTo: ["/js/pick-row.js", "/js/attach-to.js"],
   vault: ["/js/vault-unlock.js"],
   //: The one icon and emoji picker, on first use (MINDMAP_PLAN decision 43): see icon-picker.js.
   iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js"],
+  vf: ["/css/value-field.css", "/js/value-field.js"],
   //: Settings groups, each file's header says which (WORLD_CLASS_PLAN rows 21 to 27).
   modelBench: ["/js/model-bench.js"],
   //: The web panel: web-clip.js, and its search, result rows and recents (web-results.js).
@@ -1618,17 +1637,21 @@ const LAZY_MODULES = {
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
-  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. The other documents-*.js files (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
+  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. The other documents-*.js files (DC13) go before it likewise. The whiteboard files and d3 are the `boards` bundle (lazy-entries.js), which lists these files first.
   library: [
-    "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
     "/js/undo-store.js", //: First: both editors and the list read it.
     "/js/pick-row.js", //: The Attach picker's row, drawn synchronously by the board pickers.
+    "/css/value-field.css",
+    "/js/value-field.js",
     "/js/image-layout.js",
     //: Before the editors: it holds the file-type table they read.
     "/js/library.js",
+    "/js/boards-gallery.js", //: The Boards & maps gallery: also its own module (`boardsGallery`), and the board code calls it.
     "/js/documents-code.js",
     "/js/documents-prose.js",
+    "/js/documents-spell.js",
+    "/js/documents-languagetool.js",
     "/js/documents-print.js",
     "/js/documents-outline.js",
     "/js/documents-cm.js",
@@ -1641,17 +1664,11 @@ const LAZY_MODULES = {
     "/js/documents-tables.js",
     "/js/documents-columns.js",
     "/js/autocorrect.js",
+    "/js/documents-view.js", //: Before documents.js: the editor mount and keymap; its top level only declares, and documents.js calls into it at load.
     "/js/documents.js",
+    "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
+    "/js/documents-tabs.js", //: After documents.js: the open code files as a strip; documents.js calls it only once a document opens.
     "/js/margin-reader.js",
-    "/js/whiteboard-map.js",
-    "/js/whiteboard.js",
-    "/js/whiteboard-commands.js",
-    "/js/whiteboard-library.js",
-    //: The New board dialog and every template's picture (INBOX 715).
-    "/js/whiteboard-templates.js",
-    "/js/whiteboard-format.js",
-    "/js/whiteboard-interchange.js",
-    "/js/whiteboard-history.js",
   ],
 };
 
@@ -1750,6 +1767,7 @@ function mountNoteSurfaceNow(host) {
   });
 }
 
+
 document.addEventListener("focusin", (event) => {
   const host = event.target;
   if (!(host instanceof HTMLTextAreaElement) || !NOTE_SURFACE_IDS.has(host.id)) return;
@@ -1817,10 +1835,10 @@ const LAZY_ENTRY_POINTS = {
   //: The icon and emoji picker: reached through `pickIconOrEmoji` (editor.js).
   iconPicker: ["openIconPicker"],
   //: Async, and reached from a Settings pane drawn before the window's own await.
-  settingsControls: ["refreshSearxngHost", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings"],
+  settingsControls: ["refreshSearxngHost", "renderPrefs", "renderWebSearch", "syncEmbeddingPickerState", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings", "renderSkillSettings"],
   settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument"],
   tagSuggest: ["openTagSuggest", "renderReevaluateResult"],
-  writingDesk: ["composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
+  writingDesk: ["addDraftSource", "composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
   //: Each called for its effect when a figure mounts or moves; nothing reads a result.
   atlasMotion: ["atlasBlinkStart", "atlasRigAttach", "atlasRigWake"],
   companionMenu: ["nameMarkBuddyMenu", "openNameMarkViewer", "mountBuddyPresets"],
@@ -1828,7 +1846,7 @@ const LAZY_ENTRY_POINTS = {
   helpChat: ["openHelpChat", "toggleHelpChat", "askAtlas", "renderAtlasStarters"],
   batchSpace: ["batchMoveToSpace", "rmSpace", "moveNotesToSpace"],
   notifications: ["openNotifications"],
-  webClip: ["runWebSearch", "renderWebSearchHistory"],
+  webClip: ["runWebSearch", "renderWebSearchHistory", "startSearxng"],
   sharedIntake: ["takeSharedIntake"],
   undoKit: ["pushEntryCreateUndo", "pushLinkCreateUndo", "pushRequestUndo", "pushEntriesPutUndo", "pushBinPairUndo", "pushRoutePairUndo", "pushTensionLinkUndo", "pushTokenUndo", "pushUploadUndo", "pushCorrectionUndo", "pushMadeUndo", "pushTextUndo", "pushWikiRenameUndo"],
   tidy: ["openTidySheet"],
@@ -1841,7 +1859,7 @@ const LAZY_ENTRY_POINTS = {
   updates: ["checkForUpdate", "applyUpdateNow", "showSourceUpdatedDialog", "askUpdateChoiceOnce"],
   appPalette: ["openPalette"],
   notePanels: ["beginOrCompleteLink", "toggleRelated", "toggleReferences", "toggleFaded", "toggleNoteReminders", "renderEditForm", "richPickerNote"],
-  vault: ["unlockPrivateNotes", "ensureVaultOpen"],
+  vault: ["unlockPrivateNotes", "ensureVaultOpen", "typedWords"],
   accountRecovery: ["openForgotPassword", "offerRecoveryKey", "showRecoveryKey", "makeRecoveryKey", "recoveryAccountRow"],
   attachTo: ["renderAttachToBoard", "renderAttachToDocument", "renderNotePickerList"],
   noteTemplates: ["openNoteTemplateDialog", "useNoteTemplate", "templateCatalogue"],
@@ -1856,6 +1874,7 @@ const LAZY_ENTRY_POINTS = {
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
   attachments: ["attachmentAction"],
   ocrEngine: ["ocrEngineMount"],
+  extraNotice: ["extraNoticeMount"],
   quickAccess: ["quickAccessEdit"],
   inbox: ["openSuggestionsInbox", "openEntityPage", "openEntitiesSheet", "openLinkTypeSheet", "openRelationTypesSheet", "openNotePropertiesSheet", "openNoteTypesSheet", "openQueryTable", "showQueryOnGraph"],
   assistantAvatar: ["assistantEmblemInto"],
@@ -1880,10 +1899,10 @@ const LAZY_ENTRY_POINTS = {
     "setTracePanelOpen",
     "syncGraphPopupSave",
   ],
-  library: ["applyDocGutter", "applyMarkdown", "closeDocAiPanel", "createDocument", "createNewBoard", "expandNoteIntoDocument", "initDocSidebarTabs", "loadDocuments", "markDocDirty", "mountDocToolbarControlsFor", "mountGutterFor", "openDocDictionary", "openDocTemplateDialog", "openDocument", "renderDocStorage", "saveDocument", "showDocSidebarSection", "toggleDocFindBar", "wbOpenBoardSearch", "wbShowBoardsLanding", "wbToggleNavigator", "wireMarkdownToolbar", "wireMdFormatShortcuts", "openWhiteboardBoard", "offerCreateUndo", "offerCreatedDocsUndo", "jumpToDocLine", "renderLibraryBoardsGallery", "renameDocumentWithUndo", "archiveDocumentWithUndo", "deleteDocumentWithUndo"],
+  library: ["applyDocGutter", "applyMarkdown", "closeDocAiPanel", "createDocument", "expandNoteIntoDocument", "initDocSidebarTabs", "loadDocuments", "markDocDirty", "mountDocToolbarControlsFor", "mountGutterFor", "openDocDictionary", "openDocTemplateDialog", "openDocument", "renderDocStorage", "saveDocument", "showDocSidebarSection", "toggleDocFindBar", "wireMarkdownToolbar", "wireMdFormatShortcuts", "offerCreateUndo", "offerCreatedDocsUndo", "jumpToDocLine", "renameDocumentWithUndo", "archiveDocumentWithUndo", "deleteDocumentWithUndo"],
   //: The Library's own list (audit FE-03(c)): library.js alone. A call from
-  //: it into a document or a board is one of `library`'s stand-ins above,
-  //: which fetches the editors on first use.
+  //: it into a document is one of `library`'s stand-ins above and into a board one of `boards`' (lazy-entries.js),
+  //: which fetch the editors on first use.
   libraryList: ["closeBinnedReader", "flashLibraryItem", "focusLibraryFile"],
 };
 
@@ -1909,4 +1928,4 @@ installStandIns(LAZY_ENTRY_POINTS);
 //: Fetched soon after boot, not on first use: the outbox is for the moment
 //: the server is gone, when no script can be fetched (quick-note.js).
 //: The library bundle is warmed after the first touch (lazy-entries.js), not here.
-setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk"].forEach(ensureModule), 3000);
+setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk", "attachments"].forEach(ensureModule), 3000);

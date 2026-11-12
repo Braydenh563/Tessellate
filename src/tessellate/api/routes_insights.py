@@ -11,16 +11,17 @@ from concurrent.futures import Future
 from concurrent.futures import TimeoutError as FutureTimeout
 from datetime import date, datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import backend_hint, greeting_compose, librarian
+from tessellate.ai import address, backend_hint, greeting_compose, librarian
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.core import deps, jobs
+from tessellate.api import paging
+from tessellate.core import companion_events, deps, jobs
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import Entry, utcnow
 from tessellate.core.deps import get_session
@@ -184,7 +185,9 @@ def greeting(block: str = "morning", session: Session = Depends(get_session)) ->
     fallback = {
         "greeting": phrase,
         "punctuation": mark,
-        "append_name": True,  # composed phrases are name-free
+        #: Composed phrases are name-free; the server decides which take the
+        #: name (`ai/address.py`: the first of the day, about one in three, never a question).
+        "append_name": address.dashboard_append(address.name_of(config), mark, user_now(config).date(), block),
         "source": source,
     }
 
@@ -226,6 +229,14 @@ def _greeting_within(config, ollama, block: str, fallback: dict) -> dict:  # noq
     return result
 
 
+def _true_fact(fallback: dict) -> str:
+    """The composed line carries the notebook's own numbers (the streak, what is
+    due); the model is handed it, so the two greetings agree (parity, decision 75)."""
+    if fallback.get("source") != "composed":
+        return ""
+    return f" If it fits, let the greeting carry this true fact from their notebook: {fallback['greeting']}."
+
+
 def _ai_greeting(config, ollama, block: str, fallback: dict) -> dict:  # noqa: ANN001
     # The name is read from preferences here rather than trusted from the
     # client, so there is exactly one source of truth for it.
@@ -246,6 +257,7 @@ def _ai_greeting(config, ollama, block: str, fallback: dict) -> dict:  # noqa: A
         if use_name
         else GREETING_PROMPT.format(block=block, flavour=flavour)
     )
+    system += _true_fact(fallback)
     if persona:
         system = f"{persona.strip()} {system}"
     ask = f"It is {block}. Greet {name}." if use_name else f"It is {block}. Greet me."
@@ -466,6 +478,8 @@ def remarks(session: Session = Depends(get_session)) -> dict:
     notes = voice.as_notes(session, [*recent, *(e for e in voice.this_day_before(session, today) if e.id not in ids)])
     reminders = reminder_repo.due_by(session, today)
     found = composer_voice.remarks(notes, today=today, reminders=reminders)[:6]
+    if found:
+        companion_events.record("remark")  # something to say: a kind and a time, never the line (W31)
     return {"remarks": [{"text": r["text"].replace("**", ""), "key": r["key"], "kind": r["kind"], "sources": r["sources"]} for r in found]}
 
 
@@ -500,11 +514,12 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
         try:
             now = user_now(deps.get_config()).replace(tzinfo=None)
             voice = str(deps.get_config().get_preference("composer_voice", "natural") or "natural")
-            text = chat_extra.welcome_line(session, now, voice=voice, seed=f"{seed}:{now.date()}") if not notes else ""
+            text = chat_extra.welcome_line(session, now, voice=voice, seed=f"{seed}:{now.date()}", bare=True) if not notes else ""
         except Exception:  # noqa: BLE001  # the page falls back to its counts
             text = ""
         return {"text": text, "kind": "welcome" if text else "none", "sources": []}
-    return {"text": line["text"].replace("**", ""), "kind": line["kind"], "sources": line["sources"]}
+    #: A title is quoted, not run into the sentence ("the latest “Shopping”").
+    return {"text": re.sub(r"\*\*(.+?)\*\*", r"“\1”", line["text"]).replace("**", ""), "kind": line["kind"], "sources": line["sources"]}
 
 
 class InsightVerdict(BaseModel):
@@ -556,6 +571,102 @@ def done_insight(body: InsightVerdict, session: Session = Depends(get_session)) 
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     session.commit()
     return result
+
+
+# --- Confirmed patterns, managed (CHAT_PLAN B9) --------------------------------------------
+# The owner, 2026-11-05: "also is there a way to edit or managed confirmed
+# patterns??". Settings, What it remembers lists them; the Patterns line's
+# menu reaches the same four routes. Every one reads through the notes it
+# rests on, so when none can be opened (private, binned, another space) it is a 404.
+
+
+class ConfirmedEdit(BaseModel):
+    """The person's own wording, or the subject it also answers under."""
+
+    sentence: str | None = Field(default=None, max_length=300)
+    subject: str | None = Field(default=None, max_length=80)
+
+
+def _confirmed_or_404(session: Session, fact_id: int):  # noqa: ANN202
+    from tessellate.ai import insights
+
+    found = insights.shown_confirmed(session, fact_id)
+    if not found:
+        raise HTTPException(status_code=404, detail="That confirmed pattern could not be found.")
+    return found[0]
+
+
+#: One page of confirmed patterns: they grow with each Yes the person gives.
+CONFIRMED_PAGE_SIZE = 200
+
+
+@router.get("/confirmed")
+def list_confirmed(
+    response: Response,
+    limit: int = Query(default=CONFIRMED_PAGE_SIZE, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+    cursor: str | None = paging.cursor_param(),
+    session: Session = Depends(get_session),
+) -> dict:
+    """The confirmed patterns the person can open, newest first, a page at a
+    time; `X-Total-Count` says how many there are, `X-Next-Cursor` where the next page starts."""
+    from tessellate.ai import insights
+
+    offset = paging.start(cursor, offset)
+    rows = insights.shown_confirmed(session)
+    response.headers["X-Total-Count"] = str(len(rows))
+    paging.finish(response, offset, limit, len(rows))
+    return {"items": [insights.confirmed_json(session, row) for row in rows[offset : offset + limit]], "total": len(rows)}
+
+
+@router.patch("/confirmed/{fact_id}")
+def edit_confirmed(fact_id: int, body: ConfirmedEdit, session: Session = Depends(get_session)) -> dict:
+    """Edit: said in the person's words from the next turn on."""
+    from tessellate.ai import insights
+
+    row = _confirmed_or_404(session, fact_id)
+    try:
+        insights.edit_confirmed(session, row, body.sentence, body.subject)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    session.commit()
+    return insights.confirmed_json(session, row)
+
+
+@router.delete("/confirmed/{fact_id}")
+def remove_confirmed(fact_id: int, session: Session = Depends(get_session)) -> dict:
+    """Remove: a soft delete; the pattern may be shown, and confirmed, again."""
+    from tessellate.core.database import utcnow
+
+    row = _confirmed_or_404(session, fact_id)
+    row.deleted_at = utcnow()
+    session.commit()
+    return {"id": fact_id}
+
+
+@router.post("/confirmed/{fact_id}/restore")
+def restore_confirmed(fact_id: int, session: Session = Depends(get_session)) -> dict:
+    """Undo of Remove and of Not right: the confirmed fact is back, and one
+    confirmed again under the same key in between goes (`replaced`)."""
+    from tessellate.ai import insights
+
+    row = insights.removed_confirmed(session, fact_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="That confirmed pattern is not removed.")
+    replaced = insights.restore_confirmed(session, row)
+    session.commit()
+    return {**insights.confirmed_json(session, row), "replaced": replaced}
+
+
+@router.post("/confirmed/{fact_id}/dismiss", status_code=201)
+def dismiss_confirmed(fact_id: int, session: Session = Depends(get_session)) -> dict:
+    """Not right: removed, and the pattern and its variants not shown again."""
+    from tessellate.ai import insights
+
+    row = _confirmed_or_404(session, fact_id)
+    ids = insights.dismiss_confirmed(session, row)
+    session.commit()
+    return {"id": fact_id, "correction_ids": ids}
 
 
 @router.get("/tag-cloud")
@@ -667,7 +778,9 @@ def _written_label(created_at: datetime | None, zone) -> str:  # noqa: ANN001
 def digest_question(session: Session) -> str:
     """The digest instruction for right now, with its structure sentence."""
     today = user_now(deps.get_config())
-    return DIGEST_QUESTION.format(today=_long_date(today)) + digest_structure_note(session)
+    from tessellate.ai import review_digest
+
+    return DIGEST_QUESTION.format(today=_long_date(today)) + digest_structure_note(session) + review_digest.reminder_note(session, today)
 
 
 def _digest_notes(session: Session) -> list[dict]:
@@ -754,10 +867,10 @@ def digest_structure_note(session: Session) -> str:
 
 
 def composed_week(session: Session) -> str:
-    """The weekly digest with no model, from the rows (`activity.week`)."""
-    from tessellate.ai import activity
+    """The weekly digest with no model, from the rows (`review_digest.week`)."""
+    from tessellate.ai import review_digest
 
-    return activity.week(session, user_now(deps.get_config()))
+    return review_digest.week(session, user_now(deps.get_config()))
 
 
 @router.post("/digest/stream")

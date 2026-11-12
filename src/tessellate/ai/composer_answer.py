@@ -19,6 +19,7 @@ from tessellate.ai.composer_ask import _MONTHS, _stem
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_read import NoteView, Sentence
 from tessellate.search import query as query_understanding
+from tessellate.core.lazyre import lazy_compile
 
 
 # --- composition ------------------------------------------------------------------
@@ -56,9 +57,8 @@ class _Answer:
         #: The notes already named in this answer: a note is named once, at
         #: its first quote, and its later quotes go uncited (INBOX 741).
         self.named: set[int] = set()
-        #: Where each day-named citation starts, and whether a titled one was cited (`_one_cite_style`).
-        self._plain_cites: list[int] = []
-        self._titled_cite = False
+        #: Whether a title-less note's citation also says the day it was written (a "when" ask; `composer._fresh_answer`).
+        self.day_in_cite = False
         #: The question's subject, stemmed, for the openers that check a
         #: sentence holds all of it; and whether the next quote follows a
         #: joiner that ends in a comma, so its first letter is lowered.
@@ -115,7 +115,11 @@ class _Answer:
         usable = [i for i, key in enumerate(leads) if not self.opened_lately(PHRASES[key])] or list(range(len(leads)))
         #: No template twice in a conversation (decision 25): a variant an
         #: earlier answer used is left while another is unused.
-        fresh = [i for i in usable if PHRASES[mine[i]] not in self.used]
+        #: Nor twice in one answer: two keys may share a wording ("separately"
+        #: and "elsewhere" both say "In another place"), and `used` only learns
+        #: an answer when its turn ends. A pair's second half follows its first.
+        said = {p[1] for p in self.parts if p[0] == "template"} if lead == name else set()
+        fresh = [i for i in usable if PHRASES[mine[i]] not in self.used and PHRASES[mine[i]] not in said]
         usable = fresh or usable
         session = _SESSION.get()
         digest = hashlib.sha1(f"voice:{lead}:{self.question.strip().lower()}{':' + session if session else ''}".encode()).digest()
@@ -162,54 +166,60 @@ class _Answer:
 
     def name(self, view: NoteView, cap: bool = False) -> _Answer:
         """The note's name: its heading in bold, or, for a note with no
-        heading, "your note from 3 March" (never its first words)."""
+        heading, its first line cut at about six words with an ellipsis, in
+        quotes (owner 2026-11-10: the same name in lists, compare and prose)."""
         self.last_note = view.id
         self.named.add(view.id)
         if view.titled:
             self.t("bold")
             self.parts.append(("title", view.title, view.id))
             return self.t("bold")
-        if view.written:
-            return self.t("your_note_cap" if cap else "your_note", "note_from").m(self.day(view.written))
-        return self.t("one_of_your_notes_cap" if cap else "one_of_your_notes")
+        self.parts.append(("title", self._first_line(view), view.id))
+        return self
+
+    @staticmethod
+    def _first_line(view: NoteView) -> str:
+        from tessellate.ai import composer_frame
+
+        return composer_frame.name_of(view.note)
 
     def cite(self, view: NoteView, again: bool = False) -> _Answer:
-        """" [**Harbor launch plan**]" or " [your note, 3 March]" after a
-        quote: the citation as a marker, once per note unless `again`."""
+        """The note an answer rests on, once per note unless `again`. No bracketed
+        title follows the quote (decision D25, owner 2026-11-10): the numbered mark
+        and the Sources list name it. What they cannot say is written, lightly: a
+        titled note's name on its first mention in the chat ("From your Gym log
+        note."), nothing on later turns about the same note, a title-less note's
+        day for a when-ask, and a board, map, document, file or page by its kind."""
         if view.id in self.named and not again:
             return self
         self.named.add(view.id)
-        self.t("cite_open")
         if view.kind != "note":
-            self.t(f"kind_{view.kind}")
-        if view.titled:
-            self.t("bold")
-            self.parts.append(("title", view.title, view.id))
-            self.t("bold")
-            self._one_cite_style()
-        elif view.written:
-            at = len(self.parts)
-            self.t("your_note", "comma").m(self.day(view.written))
-            self._plain_cites.append(at)
-            self._one_cite_style(bold_now=True)
-        else:
-            self.t("one_of_your_notes")
-        return self.t("cite_close")
+            self.t("open_paren").t(f"kind_{view.kind}")
+            self.parts.append(("title", view.title if view.titled else self._first_line(view), view.id))
+            return self.t("close_paren")
+        if not view.titled:
+            #: Its first words are the quote itself; only a when-ask's day is new.
+            return self.dated(view) if view.written and self.day_in_cite else self
+        if self._said_before(view.title):
+            return self
+        bold = view.title
+        if again:
+            #: A row of a list from several notes: the title, plainly, in a parenthesis.
+            self.t("open_paren", "bold")
+            self.parts.append(("title", bold, view.id))
+            return self.t("bold", "close_paren")
+        if re.match(r"(?:the|a|an|my|your)\b", bold.strip(), re.I) or re.search(r"\bnotes?$", bold.strip(), re.I):
+            self.t("cite_from_note", "bold")
+            self.parts.append(("title", bold, view.id))
+            return self.t("bold", "stop")
+        self.t("cite_from", "bold")
+        self.parts.append(("title", bold, view.id))
+        return self.t("bold", "cite_note")
 
-    def _one_cite_style(self, bold_now: bool = False) -> None:
-        """One bracket style in an answer (audit 1031 C40): "[**Tom**]" beside
-        "[your note, 24 July]" reads as two kinds of source, so once a titled
-        note is cited every day-named citation is bold too, earlier ones
-        included."""
-        if not bold_now:
-            self._titled_cite = True
-        if not self._titled_cite or not self._plain_cites:
-            return
-        for at in reversed(self._plain_cites):
-            #: ["your note", ", ", day] from `at`; the open is before it and the close follows.
-            self.parts.insert(at + 3, ("template", PHRASES["bold"]))
-            self.parts.insert(at, ("template", PHRASES["bold"]))
-        self._plain_cites.clear()
+    def _said_before(self, title: str) -> bool:
+        """Whether an earlier answer in this chat already named the note."""
+        key = title.strip().lower()
+        return bool(key) and any(key in (said or "").lower() for said in (*self.recent, self.previous))
 
     def _shifted(self, s: Sentence, text: str) -> str | None:
         """The sentence said to the person who wrote it (decision 33): "I
@@ -306,6 +316,34 @@ class _Answer:
             self.t("open_paren").m(self.day(view.written)).t("close_paren")
         return self
 
+    def placed_day(self, view: NoteView) -> date | None:
+        """The day the timeline files the note under when it is not the day it
+        was written: the first day its text names, to the day (INBOX 1739)."""
+        placed = view.note.get("placed") or {}
+        if not (placed.get("on") and view.written and placed.get("precision") in ("day", "minute")):
+            return None
+        try:
+            on = date.fromisoformat(placed["on"])
+        except ValueError:
+            return None
+        return on if on != view.written else None
+
+    def dated_both(self, view: NoteView) -> _Answer:
+        """" (3 March)", or, for a note the timeline files elsewhere, " (written
+        3 March, about Friday 28 February)": the answer and the timeline agree on
+        the note's day, or say both (INBOX 1739)."""
+        about = self.placed_day(view)
+        if about is None:
+            return self.dated(view)
+        return self.written_about(view, about).t("close_paren")
+
+    def written_about(self, view: NoteView, about: date, top: bool = False) -> _Answer:
+        """" (written 3 March, about Friday 28 February" (the bracket is closed by the caller),
+        or, opening a line, "Written 3 March, about Friday 28 February"."""
+        named = self.day(about)
+        weekday = f"{about:%A} {named}" if named[:1].isdigit() else named
+        return self.t("written_top" if top else "written_a").m(self.day(view.written)).t("about_a").m(weekday)
+
     @property
     def text(self) -> str:
         return realise.mend_stops("".join(part[1] for part in self.parts))
@@ -313,7 +351,7 @@ class _Answer:
 
 #: The openers that promise the person's words as written: after one, the
 #: run is quoted, not shifted (`_Answer.t`).
-_CLAIMS_WORDS = re.compile(r"\b(?:wrote|written|put it|own words|phrasing|exactly|noted|jotted|write)\b[^:]*:\s*$", re.I)
+_CLAIMS_WORDS = lazy_compile(r"\b(?:wrote|written|put it|own words|phrasing|exactly|noted|jotted|write)\b[^:]*:\s*$", re.I)
 
 
 def _due(note: dict, s: Sentence) -> date | None:
@@ -348,7 +386,7 @@ def figures_of(text: str) -> frozenset:
     return frozenset((d, round(v, 6)) for d, v, _unit, _at in rec.measures(text))
 
 
-_NOW_WORDS = re.compile(r"\b(?:now|currently|current|latest|these days|any ?more|new one)\b", re.I)
+_NOW_WORDS = lazy_compile(r"\b(?:now|currently|current|latest|these days|any ?more|new one)\b", re.I)
 
 
 def asks_now(question: str) -> bool:

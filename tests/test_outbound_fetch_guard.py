@@ -58,6 +58,9 @@ REACHES_THE_NETWORK = {
     # `core.security.public_addresses`, every redirect hop re-checked, and the
     # connection pinned to the address that passed.
     "search/websearch.py": "untrusted",
+    # Configured: the launcher asks its own server's /health over `localhost`
+    # once a launch, to fall back to 127.0.0.1 when that name does not work.
+    "__main__.py": "configured",
     # Untrusted: a page the person asked to clip (WORLD_CLASS_PLAN D9), only
     # while the web opt-in is on. The same guard on every hop, the same
     # pinning, and a cap on the whole fetch's size and time.
@@ -72,6 +75,12 @@ REACHES_THE_NETWORK = {
     "ai/provider_http.py": "configured",
     "ai/captions.py": "configured",
     "api/routes_bench.py": "configured",  # this server over 127.0.0.1 only (the live budgets)  # TESSELLATE_CAPTIONS_URL, refused unless loopback
+    # Configured: the captions helper the app starts itself (INBOX 1777): a
+    # health check over 127.0.0.1 at the port its own child process printed.
+    "ai/captions_process.py": "configured",
+    # The other computer the person paired: the address they typed in Settings, on their own network, and from
+    # the second press on only to the certificate they checked (sync_link.pair).
+    "entry/sync_link.py": "configured",
     # Configured: the app's own SearXNG, which it downloads and starts itself.
     "search/searxng_install.py": "configured",
     # Configured: the update feed and the installer download, both pinned to an

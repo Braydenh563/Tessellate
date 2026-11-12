@@ -19,6 +19,7 @@ from __future__ import annotations
 import math
 import re
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS_DIR = ROOT / "frontend" / "css"
@@ -27,13 +28,14 @@ CSS08 = (CSS_DIR / "08-consistency.css").read_text(encoding="utf-8")
 LAZY = (CSS_DIR / "atlas-lazy.css").read_text(encoding="utf-8")
 ATLAS = (JS_DIR / "atlas.js").read_text(encoding="utf-8")
 MICRO = (JS_DIR / "atlas-micro.js").read_text(encoding="utf-8")
-AVATARS = (JS_DIR / "avatars.js").read_text(encoding="utf-8")
+AVATARS = unwrapped((JS_DIR / "avatars.js").read_text(encoding="utf-8"))
 
 #: The acts that leave the arms as the mood has them: the faceless ones
 #: (every other act sets `nmb-arms`, avatars.js).
 QUIET = set(re.findall(r'"(\w+)"', re.search(r"const NMB_FACELESS_ACTS = \[([^\]]*)\];", AVATARS).group(1)))
 #: The shoulders (atlas.js `shoulders`, `armPivots`) and the arm's length to the hand.
-PIVOTS = {"masculine": {"l": (24.6, 41.0), "r": (37.4, 41.0)}, "feminine": {"l": (26.4, 40.6), "r": (35.6, 40.6)}}
+#: Intent moved (INBOX 1607 b): his shoulders came in by 1 each side with his arms, so his pivots did too.
+PIVOTS = {"masculine": {"l": (25.6, 41.0), "r": (36.4, 41.0)}, "feminine": {"l": (26.4, 40.6), "r": (35.6, 40.6)}}
 ARM = {"masculine": 20.4, "feminine": 20.8}
 MIDDLE = 31.0
 
@@ -215,7 +217,7 @@ def test_the_held_props_are_in_front_at_the_hands_and_the_seats_behind_at_the_hi
     for act in ("chair", "beanbag"):
         assert any(_names(sel, act) and f".nmp-{act}" in sel and "opacity: 1" in d for _, sel, d in lazy), act
     # Atlas's own seats stand in for the companion's generic scene.
-    assert "#nm-buddy:has(.atl-figure-box) .nms { opacity: 0; }" in CSS08
+    assert "#nm-buddy[data-atlas-figure] .nms { opacity: 0; }" in CSS08
 
 
 def test_the_eyes_and_the_head_go_to_the_prop() -> None:

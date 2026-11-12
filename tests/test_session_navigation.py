@@ -46,7 +46,9 @@ def test_unlocking_also_resets():
     """The lock screen is an overlay, not a page: unlocking after an idle lock
     never reloads anything, so a load-time reset alone would leave every
     sub-tab where it was hours ago, which is the reported case."""
-    block = JS.split("async function submitLockForm()")[1].split("\n}")[0]
+    # The password and Windows Hello unlocks share `lockOpened` (INBOX 1727).
+    assert "lockOpened(" in JS.split("async function submitLockForm()")[1].split("\n}")[0]
+    block = JS.split("function lockOpened(")[1].split("\n}")[0]
     assert "resetNavigationToDefaults();" in block
     assert block.index("resetNavigationToDefaults();") < block.index("startApp();"), (
         "startApp is what reads the stored section back"
@@ -78,4 +80,4 @@ def test_only_navigation_is_reset_not_display_preferences():
 def test_the_reset_runs_before_the_notes_strip_reads_the_key():
     """Order matters: `initNotesSubtabs` calls `activeNotesSection()`, which
     reads the key this clears."""
-    assert JS.index("resetNavigationForNewSession();") < JS.index("initNotesSubtabs();")
+    assert JS.index("resetNavigationForNewSession();") < JS.index('onSurface("notes", initNotesSubtabs);')

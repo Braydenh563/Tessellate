@@ -3,7 +3,7 @@
 At 1024 the sidebar is 192px and "Outline" ran 7px under the collapse
 toggle. The decision (DOCUMENTS_PLAN, decisions): below a 14rem content box
 the strip starts one toggle-height down, full width, with less side room per
-tab. Measured by scratchpad/ui-sweeps/perf2-1005-docside.js.
+tab. Measured by scratchpad/ui-sweeps/perf2-1005-docside.js (in git history).
 """
 
 from __future__ import annotations

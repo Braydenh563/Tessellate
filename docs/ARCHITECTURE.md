@@ -70,7 +70,7 @@ GitHub and the docs site draw these fences; any mermaid viewer does too.
 ```mermaid
 flowchart TB
   subgraph Browser["Browser: frontend/, vanilla JS, no build step"]
-    Shell["28 classic scripts, one global scope<br/>index.html order: app, status, library, chat ..."]
+    Shell["29 classic scripts, one global scope<br/>index.html order: app, status, library, chat ..."]
     Lazy["Lazy modules<br/>LAZY_MODULES + ensureModule:<br/>board, graph, docs, code, meetings, mermaid"]
     SW["sw.js: offline cache, hash-stamped assets"]
     Shell -- "first use" --> Lazy
@@ -304,7 +304,13 @@ Tessellate/
 │   │   │                    #   a password (`.mmenc`), and its restore
 │   │   ├── diskspace.py     # what the app does when the disk fills
 │   │   ├── extras.py        # the ALLOWLIST of pip-installable extras
-│   │   ├── extra_downloads.py # the pinned-download kind of extra (needle, Pyodide)
+│   │   ├── extra_downloads.py # the pinned-download kind of extra (needle,
+│   │   │                    #   Pyodide, Bergamot, LanguageTool, the speaker
+│   │   │                    #   and caption models, the spelling packs)
+│   │   ├── spellpacks.py    # which French, German and Spanish spelling packs
+│   │   │                    #   are installed, and where their two files are
+│   │   ├── languagetool.py  # the optional second grammar checker: a Java
+│   │   │                    #   child process on 127.0.0.1, started on first use
 │   │   ├── embedmodels.py   # the same shape for embedding models
 │   │   ├── hardware.py      # this computer's memory, for the Models fit badges
 │   │   ├── readings.py      # every reading of a file, in one shape
@@ -319,6 +325,10 @@ Tessellate/
 │   │   ├── lancert.py       # the self-signed certificate LAN mode serves
 │   │   ├── instance_lock.py # one running server per data directory
 │   │   ├── vault.py         # the private-note key, derived + held in memory
+│   │   ├── webauthn.py · hellostore.py # Unlock with Windows Hello: the WebAuthn
+│   │   │                    #   checks, and a third wrap of the vault key
+│   │   ├── secrets_store.py # secret settings (the model API key, the MCP
+│   │   │                    #   token): the OS keyring, else a 0600 file
 │   │   ├── crypto.py        # scrypt key derivation, encrypt/decrypt
 │   │   ├── atomic_io.py     # temp-file + fsync + rename for preferences.json
 │   │   ├── logbuffer.py     # in-memory log capture + safe_value()
@@ -400,6 +410,14 @@ Tessellate/
 │   │   ├── reminder_parser.py # "call mum tomorrow evening" -> a due_at
 │   │   ├── captioning.py · vision_ocr.py · docreader.py # an image read
 │   │   │                    #   three ways; a document read as it lands
+│   │   ├── captions.py      # live captions: microphone audio in, text out,
+│   │   │                    #   through a local whisper.cpp-style helper
+│   │   ├── captions_process.py · captions_helper.py # the app's own helper:
+│   │   │                    #   a child process started on the first caption,
+│   │   │                    #   never imported (pywhispercpp, the Live
+│   │   │                    #   captions package), stopped when idle
+│   │   ├── diarize.py       # speaker labels by voice (sherpa-onnx, the
+│   │   │                    #   Speakers package); absent, nothing changes
 │   │   ├── help_chat.py     # the in-app guide: app knowledge only, no notes
 │   │   │                    #   (`help_topics_more.py` holds part two)
 │   │   ├── extractive.py    # an answer with no model: the notes' own words
@@ -439,7 +457,7 @@ Tessellate/
 │   ├── theme-boot.js · boot-guard.js # before first paint: theme, perf mode,
 │   │                        #   and the guard that reports a boot failure
 │   ├── app.js … agent-activity.js # the shell, notes, chat and settings
-│   │                        #   glue: 28 classic scripts, one file until
+│   │                        #   glue: 29 classic scripts, one file until
 │   │                        #   2026-09-26, in index.html's order (app.js
 │   │                        #   first: api, auth, the lazy loader;
 │   │                        #   agent-activity.js, Agent Activity's list of
@@ -463,6 +481,10 @@ Tessellate/
 │   │                        #   question; a board's time machine; lazy
 │   ├── settings-packages.js # Settings, Packages: the extras and their bundles;
 │   │                        #   loaded when the section opens
+│   ├── extra-notice.js      # the one Install notice where a feature needs a
+│   │                        #   missing optional package (`extraNoticeMount`)
+│   ├── settings-body.js     # surfaces kept as raw text (`text/x-surface`) in
+│   │                        #   index.html until first needed (`surfaceBuild`)
 │   ├── quick-note.js        # Quick note (Alt+N) and the offline note
 │   │                        #   outbox; lazy, fetched a few seconds after boot
 │   ├── tag-manager.js · chip-menus.js · tag-suggest.js # the tag manager and
@@ -484,7 +506,8 @@ Tessellate/
 │   │                        #   menu panels and the edit form's two panels (one
 │   │                        #   bundle), the put-on-a-board and add-to-document pickers
 │   ├── settings.js          # Settings, appearance, whether the background art runs
-│   ├── bg-art.js            # the background art: its styles and its runtime
+│   ├── bg-art.js            # the background art: its styles and its runtime;
+│   │                        #   lazy (`bgArt`), only when the art is on
 │   ├── dashboard.js         # the dashboard's widgets
 │   ├── timeline.js          # the Timeline tab: feed, table, scrubber
 │   ├── library.js           # Library: files, images, the OCR workspace
@@ -504,6 +527,8 @@ Tessellate/
 │   │                        #   prose tools, loaded before documents.js
 │   ├── graph.js · graph-canvas.js · graph-worker.js # the graph, its
 │   │                        #   canvas renderer and its layout worker
+│   ├── boards-gallery.js    # the Boards & maps gallery (`boardsGallery`): the
+│   │                        #   cards paint before the board code has run
 │   ├── whiteboard.js        # boards, and the concept map of cards
 │   ├── whiteboard-map.js    # mind maps: nodes, edges, tidy, themes,
 │   │                        #   loaded before whiteboard.js
@@ -517,8 +542,9 @@ Tessellate/
 │   ├── sw.js · manifest.webmanifest # PWA
 │   ├── css/                 # eleven files, 00-tokens-shell to 10-responsive;
 │   │                        #   index.html's <link> order is load-bearing; and
-│   │                        #   lazy sheets (icon-picker, library-lazy,
-│   │                        #   nav-history-lazy, mermaid-lazy, glass-controls-lazy, math-editor-lazy, web-lazy) fetched with their scripts
+│   │                        #   about 65 lazy sheets (`*-lazy.css` and a few
+│   │                        #   others: icon-picker, sketch-pad, value-field)
+│   │                        #   fetched with their scripts
 │   └── vendor/              # d3 v7, p5, CodeMirror, Mermaid 12.2.0, Phosphor icons, the
 │                            #   spelling wordlist: local, never a CDN
 ├── tests/                   # pytest; every AI call faked (tests/fakes.py)
@@ -548,20 +574,29 @@ gate** (`routes_auth.require_unlock`). Routers are grouped by feature area:
 | Router | Prefix | Responsibility |
 | --- | --- | --- |
 | `routes_auth` | `/auth` | first-run password setup, unlock, lock, change password, account state |
+| `routes_hello` | `/auth/hello` | Unlock with Windows Hello on this computer: enrol, forget, begin and unlock (a WebAuthn PRF wrap of the vault key, `core/webauthn.py` and `core/hellostore.py`) |
+| `routes_origin_handoff` | `/origin-handoff` | a one-shot carry of the page's saved browser settings from `127.0.0.1` to `localhost`, since the desktop window opens `localhost` for Windows Hello |
+| `routes_kept_words` | `/kept-words` | the fields typed but not saved when the notebook locks, sealed with the vault key and handed back after the next unlock |
 | `routes_entries` | `/entries` | create/read/edit/soft-delete notes, links, related, restore. `POST /entries` takes an optional `client_key`: the offline outbox's resend of a save whose answer was lost returns the first note instead of making a second (`_already_delivered`, in memory, 512 keys). `POST /entries/{id}/suggested-tags` takes or discards the tags filing suggested |
+| `routes_entries_links` · `routes_entries_history` · `routes_entries_relations` · `routes_entries_reevaluate` | `/entries` | split out of `routes_entries` (K24), same paths: a note's Connections and link routes; references, then-and-now and history; link suggestions and tensions; re-evaluate. `routes_entries_refs` holds the referenced-by scan they share |
 | `routes_chat` | `/chat` | ask questions, streaming answers, agentic tools, suggestions |
 | `routes_conversations` | `/conversations` | saved chat threads |
 | `routes_ask_history` | `/ask-history` | the Ask tab's past question/answer turns, independent of saved chats |
 | `routes_models` | `/models` | Ollama status, pull models, switch chat/embedding/utility model; `GET /models/suggested` (cards decorated by `ai/model_cards.py` with size, memory and fit), `GET /models/hardware` (`core/hardware.py`), `POST /models/inspect` |
-| `routes_settings` | `/` | preferences, skills (`GET /skills`), audit log, JSON/CSV/Markdown export & import, logs, optional extras (`/extras`), embedding models (`/embedding-models`) |
+| `routes_settings` | `/` | preferences, skills (`GET /skills`), audit log, support bundle; its export and import, optional extras (`/extras`) with embedding models (`/embedding-models`), and logs moved whole to `routes_settings_transfer`, `routes_settings_extras` and `routes_settings_logs` (K24) |
 | `routes_update` | `/update` | check GitHub for a newer release and apply it in place, instead of sending the user back through a browser to redownload the installer |
 | `routes_websearch` | `/websearch` | web search provider selection + SearXNG install/start/status lifecycle, split out of `routes_settings` |
 | `routes_backups` | `/`, `/backups` | `GET /storage` (where the data lives, how big it is) + daily local backup list/create/restore/delete |
 | `routes_spaces` | `/spaces` | separate note "spaces" (workspaces) within the one notebook |
+| `routes_private_spaces` | `/private-spaces`, `/spaces/{id}/private` | open and close a private space (the vault password, or the PIN or Windows Hello on this computer only), and turn a space private or ordinary |
+| `routes_sync` | `/sync` | sync with another computer: its status, the segment the other computer reads (as an allowed LAN device), and Sync now (`entry/sync_segments.py`, `entry/sync_pull.py`) |
 | `routes_documents` | `/documents` | long-form markdown documents, export, AI edit; `GET /documents/outline` is every live document with its headings and `created_at`, one request, for the Library's Contents tree |
 | `routes_duplicates` | `/duplicates` | near-duplicate finder + AI merge |
 | `routes_drafts` | `/drafts` | the writing room's compose/rewrite calls |
-| `routes_files` | `/`, `/media` | attachments upload/download/delete; `GET /ocr-readers` says what can read a page (vision model, OCR model, and the Tesseract `engine` status). `media_router` (`/media`, pasted/dropped inline images) is a second router from the same file, gated by `require_unlock_media` rather than the ordinary unlock dependency: it accepts a query-param token, since an `<img src>` cannot carry a header |
+| `routes_files` | `/`, `/media` | attachments upload/download/delete (`GET /ocr-readers` moved to `routes_files_ocr`). `media_router` (`/media`, pasted/dropped inline images) is a second router from the same file, gated by `require_unlock_media` rather than the ordinary unlock dependency: it accepts a query-param token, since an `<img src>` cannot carry a header |
+| `routes_files_ocr` · `routes_files_readings` | `/`, `/media` | split out of `routes_files` (K24), same paths: the reading workbench's regions, readers and language; range, page and region reads |
+| `routes_spelling` | `/spelling`, `/spellpacks`, `/grammar` | the words your own notes use twice or more (never flagged), the installed spelling packs' files, and `POST /grammar/languagetool` for the optional second grammar checker |
+| `routes_captions` | `/voice/captions` | live captions: start a session, send its audio windows, stop; the helper behind it is `ai/captions.py` and, unless `TESSELLATE_CAPTIONS_URL` names one, the app's own child process |
 | `routes_tags` | `/tags` | list, rename, merge, delete (several names at once), `POST /tags/bulk` (add or remove tags on many notes) and `POST /tags/restore` (the one Undo); each is one transaction with a revision and an event per note |
 | `routes_categories` | `/categories` | list/rename/merge/delete categories, and a category's chosen colour |
 | `routes_graph` | `/` | force-directed graph data + link suggestions |
@@ -1164,7 +1199,7 @@ named next.
 ### Storage headroom, measured not guessed
 
 Asked directly whether storage becomes a problem for a notebook that grows
-for years. Measured with `scripts/scale_test.py` (roadmap ANALYSIS.md §34,
+for years. Measured with `scripts/scale_test.py` (git history: roadmap ANALYSIS.md §34,
 item 2) rather than estimated: a real 50,000-note SQLite file, checkpointed
 out of WAL before measuring, was **12MB**: its `embeddings` table is the
 only part that scales with vector size, and this fixture's vectors are 4
@@ -1307,6 +1342,17 @@ its JSON API, and `websearch.probe_searxng` returns True against it.
   `active_embedding_model`. Optionally switch the backend to an
   Ollama embedding model; notes re-index automatically with a progress bar.
 - **Voice (optional):** local Whisper via `faster-whisper` for the 🎙 buttons.
+- **Live captions (optional):** `ai/captions.py` sends short windows of
+  microphone audio to a local helper that speaks whisper.cpp's
+  `whisper-server` dialect. `TESSELLATE_CAPTIONS_URL` names one; otherwise,
+  with the Live captions package installed (the `pywhispercpp` wheel and a
+  pinned 32 MB `tiny.en` model), `ai/captions_process.py` starts
+  `ai/captions_helper.py` as a child process on the first caption, restarts
+  it up to 3 times in 10 minutes, and stops it 5 minutes after the last
+  session and at exit. The app never imports the engine.
+- **Speaker labels (optional):** `ai/diarize.py` tells voices apart with
+  sherpa-onnx (ONNX Runtime, no PyTorch) and two pinned models in the data
+  folder (the Speakers package); a transcript then reads Speaker 1, 2, 3.
 - **Other backends:** `ai/openai_client.py` speaks the OpenAI dialect for LM
   Studio, llama.cpp's `llama-server`, Jan and vLLM, and `ai/needle_provider.py`
   picks tools with a small built-in model when no server is running. Reading
@@ -1333,10 +1379,10 @@ fetched by `ensureP5` the first time something draws: the dashboard's art asks f
 is ever loaded from a CDN, consistent with the offline-first rule. The
 JavaScript is split by surface (`dashboard.js`, `timeline.js`,
 `library.js`, `documents.js`, `graph.js`, `whiteboard.js`, `settings.js`); `app.js`
-and the 27 files after it hold the shell and everything shared, cut on
+and the 28 files after it hold the shell and everything shared, cut on
 2026-09-26 from one 50,000-line file into contiguous ranges kept in the old
 order, so a file may call into the ones above it while the page loads and
-never into one below (`tests/test_frontend_load_order.py`; tests read the 28
+never into one below (`tests/test_frontend_load_order.py`; tests read the 29
 as one text through `tests/_app_js.py`). The two biggest lazy surfaces are split
 further by concern: `documents-code.js` and `documents-prose.js` hold the
 document editor's code and prose tools, and `whiteboard-map.js` the mind map
@@ -1353,15 +1399,15 @@ stripped (`api/asset_strip.py`); the files on disk keep them
 
 ### The scripts, their order, and the one scope they share
 
-A hundred and seven JavaScript files in `frontend/js/`, in five kinds (38 load at boot; `d3` is fetched from `vendor/` with the Graph bundle, not at boot; checked 2026-10-06):
+285 JavaScript files in `frontend/js/`, in five kinds (38 load at boot; `d3` is fetched from `vendor/` with the Graph bundle, not at boot; checked 2026-11-11, and `scripts/codemap.py`'s Counts line carries the numbers):
 
 | Kind | Files | Loaded |
 | --- | --- | --- |
 | Before first paint | `boot-guard.js`, `theme-boot.js` | in `<head>`, so the theme and the boot-failure guard apply before anything draws |
-| The app's own code | `app.js`, `prefs.js`, `store.js`, `note-cards.js`, `menus.js`, `lightbox.js`, `selection.js`, `notes-list.js`, `capture-ask.js`, `chat.js`, `chat-agent.js`, `chat-attach.js`, `sheets-selects.js`, `skills.js`, `shell-reminders.js`, `markdown.js`, `navigation.js`, `router.js`, `settings-panes.js`, `media.js`, `status.js`, `ai-tools.js`, `phone-shell.js`, `wiring.js`, `settings-wiring.js`, `spaces-find.js`, `agent-activity.js` | at the end of `<body>`, in this order |
-| The boot surfaces | `rich-picker.js`, `editor.js`, `dashboard.js`, `timeline.js`, `palette.js`, `bg-art.js`, `settings.js` | straight after, in this order |
-| Lazy bundles | `graph.js` and `graph-canvas.js` (the Graph tab); `undo-store.js`, `documents-code.js`, `documents-prose.js`, `documents.js`, `margin-reader.js`, `whiteboard-map.js`, `whiteboard.js`, `whiteboard-commands.js`, `whiteboard-library.js`, `whiteboard-format.js`, `whiteboard-interchange.js`, `library.js` (Library and Documents) | on the first visit to the tab, by `ensureModule` from `LAZY_MODULES` in `app.js` |
-| Lazy pieces | one entry each in `LAZY_MODULES`: `panel-movable.js` (`panelMovable`, with `panel-movable-lazy.css`), `lightbox-view.js`, `edit-conflict.js`, `categories-panel.js`, `tag-manager.js`, `chip-menus.js`, `note-history.js`, `ask-history.js`, `settings-data.js`, `settings-find.js` + `settings-models.js` (`settingsUi`), `tag-suggest.js`, `attachment-actions.js`, `ocr-engine.js`, `quick-note.js`, `field-clear.js`, `assistant-avatar.js`, `quick-access.js`, `notes-rail-spy.js`, `dash-boards.js`, `suggestions-inbox.js` + `entity-page.js` + `link-types.js` + `note-properties.js` (`inbox`), `model-bench.js`, `web-clip.js`, `app-import.js`, `usage-ledger.js`, and (2026-10-05) `reveal-targets.js`, `onboarding.js`, `update-dialogs.js`, `app-palette.js`, `note-panels.js` + `note-edit-panels.js` (`notePanels`), `attach-to.js`, `settings-controls.js` (no entry points: `openSettingsModal` awaits it on the first open), and, from the boot-budget moves, `tour.js` (the guided tour, when one starts or Settings, Help opens), `icon-picker.js` (the one emoji and icon picker), `nav-history.js` (the Back and Forward list's rows), `settings-packages.js`, `help-chat.js` (the Guide), `chord-guide.js`, `batch-space.js`, `note-templates.js`, `companion-menu.js`, `avatars.js` + `atlas.js` + `characters-ready.js` (`characters`: the faces, the companion and Atlas, fetched once the app is open and idle; `afterCharacters` and the stand-ins in `lazy-entries.js` carry what the boot files ask of them meanwhile), `vault-unlock.js`, `pick-row.js`, `drag-edge.js`, `atlas-life.js` and `atlas-motion.js`, `ask-chart.js` (with `ask-history.js`), and `whiteboard-history.js` (with the boards) | on first use through `LAZY_ENTRY_POINTS`, to keep the boot scripts under their gzip budget; `quick-note.js` is fetched a few seconds after boot, because its outbox is for the moment the server is gone and a script cannot be fetched then |
+| The app's own code | `settings-body.js` first (it keeps the surfaces the page shows only on request as raw `<script type="text/x-surface">` text and builds each on first need), then the 29: `app.js`, `prefs.js`, `store.js`, `lazy-entries.js` (the rest of `LAZY_MODULES` and `LAZY_ENTRY_POINTS`), `att-chip.js`, `note-cards.js`, `menus.js`, `lightbox.js`, `selection.js`, `notes-list.js`, `capture-ask.js`, `chat.js`, `chat-agent.js`, `chat-attach.js`, `sheets-selects.js`, `skills.js`, `shell-reminders.js`, `markdown.js`, `navigation.js`, `router.js`, `settings-panes.js`, `media.js`, `status.js`, `ai-tools.js`, `phone-shell.js`, `wiring.js`, `settings-wiring.js`, `spaces-find.js`, `agent-activity.js` | at the end of `<body>`, in this order |
+| The boot surfaces | `rich-picker.js`, `editor.js`, `dashboard.js`, `timeline.js`, `palette.js`, `settings.js` | straight after, in this order (`bg-art.js` left the boot list: it is the lazy `bgArt`, fetched only when the art is on) |
+| Lazy bundles | `graph.js` and `graph-canvas.js` (the Graph tab); `undo-store.js`, `documents-code.js`, `documents-prose.js`, `documents.js`, `margin-reader.js`, `whiteboard-map.js`, `whiteboard.js`, `whiteboard-commands.js`, `whiteboard-library.js`, `whiteboard-format.js`, `whiteboard-interchange.js`, `library.js` (Library and Documents; the bundle has grown many more `documents-*.js` and `whiteboard-*.js` files since, and its exact list is `LAZY_MODULES.library`); `boards-gallery.js` (`boardsGallery`: the Boards & maps cards, painted from the library code before the 2.6 MB board code has run, which then loads in idle time) | on the first visit to the tab, by `ensureModule` from `LAZY_MODULES` in `app.js` and `lazy-entries.js` |
+| Lazy pieces | one entry each in `LAZY_MODULES` (the earliest moves are named here; the tables in `app.js` and `lazy-entries.js` are the full list): `panel-movable.js` (`panelMovable`, with `panel-movable-lazy.css`), `lightbox-view.js`, `edit-conflict.js`, `categories-panel.js`, `tag-manager.js`, `chip-menus.js`, `note-history.js`, `ask-history.js`, `settings-data.js`, `settings-find.js` + `settings-models.js` (`settingsUi`), `tag-suggest.js`, `attachment-actions.js`, `ocr-engine.js`, `quick-note.js`, `field-clear.js`, `assistant-avatar.js`, `quick-access.js`, `notes-rail-spy.js`, `dash-boards.js`, `suggestions-inbox.js` + `entity-page.js` + `link-types.js` + `note-properties.js` (`inbox`), `model-bench.js`, `web-clip.js`, `app-import.js`, `usage-ledger.js`, and (2026-10-05) `reveal-targets.js`, `onboarding.js`, `update-dialogs.js`, `app-palette.js`, `note-panels.js` + `note-edit-panels.js` (`notePanels`), `attach-to.js`, `settings-controls.js` (no entry points: `openSettingsModal` awaits it on the first open), and, from the boot-budget moves, `tour.js` (the guided tour, when one starts or Settings, Help opens), `icon-picker.js` (the one emoji and icon picker), `nav-history.js` (the Back and Forward list's rows), `settings-packages.js`, `help-chat.js` (the Guide), `chord-guide.js`, `batch-space.js`, `note-templates.js`, `companion-menu.js`, `avatars.js` + `atlas.js` + `characters-ready.js` (`characters`: the faces, the companion and Atlas, fetched once the app is open and idle; `afterCharacters` and the stand-ins in `lazy-entries.js` carry what the boot files ask of them meanwhile), `vault-unlock.js`, `pick-row.js`, `drag-edge.js`, `atlas-life.js` and `atlas-motion.js`, `ask-chart.js` (with `ask-history.js`), and `whiteboard-history.js` (with the boards) | on first use through `LAZY_ENTRY_POINTS`, to keep the boot scripts under their gzip budget; `quick-note.js` is fetched a few seconds after boot, because its outbox is for the moment the server is gone and a script cannot be fetched then |
 
 Plus five that are not scripts of the main page: `sw.js` (the service worker),
 `graph-worker.js` and `harper-worker.js` (web workers for the graph's layout
@@ -1375,6 +1421,15 @@ others can name, which is how `settings.js` calls `renderEmblem` from
 are no imports and nothing to resolve: the browser runs the files in the
 order `index.html` lists them, one after the other, each to its end before
 the next begins.
+
+**Scope-wrapped scripts.** A file may instead be wrapped whole in one closure
+(`(() => {` on its first code line, `})();` on its last) and put on `window`
+only the names its foot lists (`Object.assign(window, { ... })`); about 159
+of the 285 are, `lag-watch.js` and `agent-activity.js` among the latest. Its
+other names stay its own, so the shared scope shrinks
+(`tests/test_global_scope_ratchet.py` holds the count of shared names as a
+ratchet that only goes down). Tests that slice a wrapped file read it
+through `tests/_js_scope.py`'s `unwrapped`.
 
 **Load order is therefore the one rule, and it has two halves.**
 
@@ -1391,10 +1446,11 @@ the next begins.
    simply "X is not defined"). A top-level throw stops the rest of that one
    file, not the page, so a half-booted app is the symptom to look for.
 
-The two calls that start the app, `initNotesSubtabs()` and `initAuth()`, are
-the last lines of `spaces-find.js` for that reason: they reach functions
-declared across the whole app, and `initAuth`'s answer can arrive between
-two files. A lazy bundle's entry points are reachable before the bundle
+The call that starts the app, `initAuth()`, is the last line of
+`spaces-find.js` for that reason (with `initNotesSubtabs` registered just
+above it through `onSurface("notes", ...)`, so it runs when the Notes surface
+is first built): it reaches functions declared across the whole app, and its
+answer can arrive between two files. A lazy bundle's entry points are reachable before the bundle
 exists through `LAZY_ENTRY_POINTS` in `app.js`: a stand-in on `window`
 that loads the bundle and then calls the real function. A boot surface that
 calls into a later one guards the call with `typeof`.
@@ -1405,9 +1461,9 @@ top-level read of a later file's constant, and on a lazy name read at load
 with no stand-in; `tests/test_lazy_bundle_calls.py` covers the lazy bundles.
 `scratchpad/appjs-map.js --check FROM TO [AFTER]` answers the same question
 for a range of lines before it moves. The app's own code was one 50,000-line
-`app.js` until 0.3.3; it was cut into the 28 files above as contiguous
+`app.js` until 0.3.3; it was cut into the 29 files above as contiguous
 ranges in their old order, so every reference that was backward stayed
-backward (`docs/roadmap/archive/agent-remaining/appjs-split.md`). A test
+backward (git history: appjs-split.md). A test
 that means "the app's code" reads all of them as one text through
 `tests/_app_js.py`. To find a function's file:
 `grep -n "^function name" frontend/js/*.js`.
@@ -1491,6 +1547,7 @@ focused element's `offsetParent`) catches far more than a screenshot.
    `SETTINGS_SECTIONS`, a `<section id="settings-NAME">`, and a
    `<button data-section="NAME">` in the nav. Miss the first and the section
    never hides; miss the third and it is unreachable.
+12. **The desk frames' canvas is wider than before** (masculine 289x304, feminine 275x298, was 263x302 and 263x299), so the centred crop and the wave swing's reach changed, and the window size at 100 percent follows it. Not verified on a real Windows desktop: PNG crops and targeted pytest only. (git history: deskframes-1108.md)
 
 ## 11. Configuration
 
@@ -1511,13 +1568,24 @@ the architecture:
   SearXNG. A port *already answering as SearXNG* beats a free one: that is
   ours from a previous run, and moving would start a second copy beside it.
 
+- `TESSELLATE_EXTRAS_MIRROR`: a mirror for the pinned downloads in Settings,
+  Packages. `TESSELLATE_CAPTIONS_URL`: an outside live-captions helper; when
+  set, the app never starts its own (`ai/captions.py`).
+- `TESSELLATE_MCP_TOKEN`: the token an outside client hands
+  `python -m tessellate.mcp_server`; Settings shows it in the snippet, and
+  without it the server reads and changes nothing.
+
 User-facing preferences (chat model, embedding backend, recycle-bin days, answer
 style, optional AI profile, …) live in `data/preferences.json`, managed by
-`ConfigManager` and edited from the Settings panes.
+`ConfigManager` and edited from the Settings panes. The secret settings
+(`llm_api_key`, `mcp_token`: `secrets_store.SECRET_FILES`) are kept apart:
+in the OS keyring when there is one, else in an owner-only file under
+`<data>/secrets/`, never in `preferences.json`; a key an older version left
+there moves out on the next start (`core/secrets_store.py`).
 
 ## 12. Testing & CI
 
-- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 1,400 files, 17,000+ tests,
+- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 2,600 files, 21,000+ tests,
   under nine minutes on four cores and about 25 serially). Uses a throwaway database and fakes every AI call
   (`tests/fakes.py` + `tests/conftest.py`), so it is fully offline. The
   routine local gate is `bash scripts/gate.sh --changed` (the lint set,
@@ -1700,7 +1768,7 @@ thread; a plain save and an edit still embed on the request (corrected
 | Add a built-in skill | `skills.BUILTIN_SKILLS`, not `app.js`; name its tools (§7b) |
 | Log something a user or a website typed | `logbuffer.safe_value()` at the call site; `sanitise` only protects the in-app viewer |
 | Work out why SearXNG won't start | `searxng/searxng.log` in the data folder, surfaced in Settings → Web search |
-| Expose a tool to another program | `mcp_server.py`: it lists only non-destructive, enabled tools, so a new destructive tool needs no change there |
+| Expose a tool to another program | `mcp_server.py`: it lists only non-destructive, enabled tools, so a new destructive tool needs no change there; a tool that writes is offered only once Settings' "Let that app add and change notes" (`mcp_writes_enabled`) is on, and a client without the notebook's `TESSELLATE_MCP_TOKEN` is refused |
 | Add a background job | `core/jobs.enqueue(kind, func, ...)` with a lane in `KIND_LANES`, never a `Thread` of its own; `api/routes_tasks.collect()` already draws what the pool holds, so the panel needs nothing |
 | Show when a job last ran | wrap the job in `with jobruns.job_run("kind") as run:` (`core/jobruns.py`), set `run.result`, and add the kind to `jobruns.KINDS` for its wording; `GET /jobs/last-runs` and Settings → Background tasks (its Background jobs list) pick it up. Never write a `JobRun` row by hand |
 | Change how a note is filed with no model | `ai/lexical_filing.py` (`suggest_categories`, `suggest_tags`); the janitor and `_keep_suggestions` in `routes_entries.py` call it |
@@ -1717,3 +1785,26 @@ thread; a plain save and an edit still embed on the request (corrected
 
 *This document tracks the codebase: if you change the architecture, update it in
 the same PR.*
+
+## Decisions and measurements kept from the retired roadmap docs (2026-11-12)
+
+ANALYSIS, AUDIT, MODERNISATION_AUDIT, REDESIGN, PLAN, AGENT_SKILLS_REFORM and FABLE_BRIEF were removed (INBOX 1784); their open items are LEDGER rows, and these standing facts moved here. Each names its old source for `git log -S`.
+
+- The backend stays synchronous: 230 sync `def` routes run in Starlette's threadpool; converting to `async def` without aiosqlite/AsyncSession would run blocking sqlite3 on the event loop. Revisit only if multi-user or a network DB arrives, database layer first. (was REDESIGN.md:661; topic: ARCHITECTURE.md section 8)
+- A second frontend (separate SPA) was decided against; the user agreed (Kortex read). (was ANALYSIS.md:937; topic: ARCHITECTURE.md decisions)
+- Declined for good: agent containment/effect-log runtime (no shell tool), ChromaDB/SearXNG/ntfy sidecars, ChatGPT/Copilot account bridges, ody_-style API tokens (one user, one password), offline service-worker cache (owner chose network-only so a stopped server fails loudly), CDN libraries at runtime, internal loopback bearer token, sharded CI (revisit past the 25-minute CI timeout). (was ANALYSIS.md:4364; topic: ARCHITECTURE.md decisions)
+- Licence rule for taking code in: MIT, ISC, BSD, Apache-2.0 and GPL-3.0 may come in with notices; EPL-2.0 (ELK.js), CC share-alike and non-commercial licences are refused; tldraw (own licence) and a ProseMirror/Tiptap swap are refused; model weights and voices are licensed per file. (was ANALYSIS.md:4420; topic: CLAUDE.md section 3 licence line / docs/THIRD_PARTY.md header)
+- Library verdicts: drop networkx, Whoosh, NLTK, textblob, snips-nlu, adapt-parser, hunspell, pyspellchecker, rapidfuzz, transformers.js, ruff-wasm, KaTeX; Pyodide, sql.js and eslint-linter stay optional downloads, never vendored; Harper's 16 MB stays lazy and off the boot gzip budget; model2vec potion is the torch-free embedding candidate, unmeasured against bge-small. (was ANALYSIS.md:4112; topic: ARCHITECTURE.md vendoring section or docs/THIRD_PARTY.md)
+- Algorithm verdicts: build bigram LLR collocations, pair-count co-occurrence, Naive Bayes (only if it beats TF-IDF on the filing eval), SimHash, K-means; skip BK-tree; drop t-SNE/UMAP/HMM/CRF/SVM. (was ANALYSIS.md:4096; topic: BACKLOG.md filing section)
+- Architecture review verdicts: keep FastAPI+SQLite in one process, the no-build frontend, imperative DOM helpers, the event log and job runtime as the spine (finish B2 before new background features); change to cascade layers, ES modules (rejected as of CLAUDE.md: 29 classic scripts stay), and move the 20 stable sweeps into CI. (was ANALYSIS.md:3676; topic: ARCHITECTURE.md decisions)
+- Vendor shortlist ranked: Silero VAD via faster-whisper plus browser audio constraints and language/initial_prompt (built), then Piper, Kokoro-82M via kokoro-onnx (no code yet), perfect-freehand, model2vec potion; rbush, dagre, MiniSearch, chrono-node, GLiNER, lingua-py, DeepFilterNet left until a measurement asks. (was ANALYSIS.md:4488; topic: BACKLOG.md voice/whiteboard sections)
+- A tool argument is either intent (the model's) or a fact the app can compute (never asked of the model): reminder arithmetic, dates, offsets are computed by the harness. (was AGENT_SKILLS_REFORM.md:134; topic: ARCHITECTURE.md agent harness section)
+- Real-model reach for tests is two env vars, TESSELLATE_EVALS_URL and TESSELLATE_EVALS_MODEL, read at import by the eval module; no pytest option or conftest hook, so 'every eval skipped' is the default. (was AGENT_SKILLS_REFORM.md:143; topic: CLAUDE.md section 4 / WORKING.md evals)
+- Measured on Qwen2.5-3B-Instruct Q4_K_M (llama-server --jinja): right first tool 9/10, finished 10/10; forced first call fires on 20/20 imperatives and 0/10 questions, right tool 14/20; two calls in one reply 2/20; picture placement 5/5 after fix. At 1.5B the stall on step 1 of 'Auto-tag my notes' is the model, not the scaffolding. 4B and Ollama's native dialect on a real Ollama are unmeasured. (was AGENT_SKILLS_REFORM.md:285; topic: CHAT_PLAN.md harness evals section)
+- MCP server measured: 56 of 67 registry tools offered over stdio (9 destructive withheld by design); initialize+tools/list+two calls in 1.6 s with embedder cached; packaged app has no Python so installer users have no stdio MCP. (was AGENT_SKILLS_REFORM.md:345; topic: ARCHITECTURE.md MCP section)
+- Windows ships an unsigned .msi built with WiX; an unsigned MSI or .exe raises the same SmartScreen prompt, only an Authenticode certificate removes it; idle memory work is lazy imports, not idle suspend (decided 2026-09-20). ANALYSIS later suggested finishing one installer format and dropping MSI until asked; not resolved. (was AGENT_SKILLS_REFORM.md:195; topic: ARCHITECTURE.md packaging section)
+- `filing_similar_id` on Entry is deliberately not a ForeignKey (see its docstring); a periodic dangling-id sweep would be tidier than resolve-and-shrug. (was REDESIGN.md:651; topic: ARCHITECTURE.md data model)
+- Bookmark groups are a name on a bookmark (group_name), not a table row; an empty group lives only in a localStorage placeholder in library.js, a deliberate patch not to copy. (was FABLE_BRIEF.md:158; topic: ARCHITECTURE.md data model / LINKS notes in BACKLOG)
+- Tessellate's notification history lives in localStorage while reminders are rows, so a reminder notification's Done cannot complete the reminder (AUDIT A15/B13, MODERNISATION H2c); W7-3 is the fix. (was MODERNISATION_AUDIT.md:803; topic: WORLD_CLASS_PLAN.md reminders section)
+- OpenAPI/docs/redoc are disabled (docs_url, redoc_url, openapi_url None in create_app) so the route surface is not served; do not re-raise. (was MODERNISATION_AUDIT.md:611; topic: ARCHITECTURE.md security section)
+- Assets are served no-cache with an ETag because the ?v= stamp is per release (hash-stamped in current head per CLAUDE.md); a content-hash stamp would permit immutable caching. (was MODERNISATION_AUDIT.md:536; topic: ARCHITECTURE.md static assets)

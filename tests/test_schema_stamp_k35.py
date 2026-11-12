@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import sqlite3
 
-from tessellate.core.database import DatabaseManager
+from tessellate.core.database_manager import DatabaseManager
 
 
 def _spy(monkeypatch):

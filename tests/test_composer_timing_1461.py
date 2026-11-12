@@ -28,11 +28,15 @@ from datetime import date
 
 import pytest
 
-from tessellate.ai import composer_digest, composer_frame, insights
+from tessellate.ai import composer_frame, insights
+from tessellate.ai import composer_digest_sentences
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._framed_path import framed_path  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("framed_path")
 
 NOW = dt.datetime(2026, 10, 30, 10, 0, 0)
 TODAY = NOW.date()
@@ -76,9 +80,9 @@ def _pinned(question: str, text: str, written: date) -> str:
     #: In a copy of the context: the timing set here never reaches the
     #: next test in this worker (`test_gold_answers` pins against its own day).
     def run() -> str:
-        composer_digest._TODAY.set(TODAY)
-        composer_digest._set_timing(question)
-        return composer_digest._pin(text, written)
+        composer_digest_sentences._TODAY.set(TODAY)
+        composer_digest_sentences._set_timing(question)
+        return composer_digest_sentences._pin(text, written)
 
     return contextvars.copy_context().run(run)
 
@@ -143,7 +147,7 @@ def test_a_time_gone_by_is_said_in_the_past(question, text, said):
 def test_last_week_counts_from_the_persons_first_day(monkeypatch, first, monday, back):
     """"last week" in a note of Sunday 26 July: the week of 13 July where
     weeks start on Monday, of 19 July where they start on Sunday."""
-    monkeypatch.setattr(composer_digest, "_week_first", lambda: first)
+    monkeypatch.setattr(composer_digest_sentences, "_week_first", lambda: first)
     #: Asked "when", so the week is said by its first day (a plain question
     #: says "back in July" since INBOX 1483, which hides the first day).
     said = _pinned("when did I have three lectures", "I had three lectures last week", date(2026, 7, 26))
@@ -165,12 +169,12 @@ def test_the_owners_question_reads_in_the_past_with_both(ask, question):
 
 
 @pytest.mark.parametrize(("content", "name"), [
-    ("had design class today for prototyping", "your note on design class for prototyping"),
-    ("went to the gym after work", "your note on the gym after work"),
-    ("studied for the exam tonight", "your note on the exam"),
-    ("Finished my assignment on networks", "your note on your assignment on networks"),
-    ("Started a new job", "your note on a new job"),
-    ("Met Sam for coffee yesterday", "your note on Sam for coffee"),
+    ("had design class today for prototyping", "“had design class today for prototyping”"),
+    ("went to the gym after work", "“went to the gym after work”"),
+    ("studied for the exam tonight", "“studied for the exam tonight”"),
+    ("Finished my assignment on networks", "“Finished my assignment on networks”"),
+    ("Started a new job", "“Started a new job”"),
+    ("Met Sam for coffee yesterday", "“Met Sam for coffee yesterday”"),
 ])
 def test_a_diary_line_is_named_by_what_it_is_about(content, name):
     assert composer_frame.short_name({"id": 1, "content": content}) == name
@@ -183,9 +187,9 @@ def test_a_name_that_looks_like_a_past_stays_a_name(content):
 
 
 @pytest.mark.parametrize(("content", "name"), [
-    ("my uni days this week are tuesday and thursday", "the note on your uni days"),
-    ("my shifts today are long", "the note on your shifts"),
-    ("my readings last week were dense", "the note on your readings"),
+    ("my uni days this week are tuesday and thursday", "“my uni days this week are…”"),
+    ("my shifts today are long", "“my shifts today are long”"),
+    ("my readings last week were dense", "“my readings last week were dense”"),
 ])
 def test_a_subject_name_drops_its_time_words(content, name):
     assert composer_frame.short_name({"id": 1, "content": content}) == name

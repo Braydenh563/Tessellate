@@ -147,6 +147,13 @@ button.outline-twist {
   display: none !important;
 }
 
+/* View, Connection arrows and Connection points (`whiteboard-hints.js`): off hides the drawing,
+   not the snapping, so a board can be read or presented without the dots and arrows. */
+#library-view-whiteboard.wb-hide-grips #wb-clone-grips,
+#library-view-whiteboard.wb-hide-ports #wb-anchor-hints {
+  display: none;
+}
+
 /* A text box showing rendered markdown: the app's own markdown body rules
    apply, at the box's own font size and colour rather than the page's. */
 .wb-text-content.wb-text-md {
@@ -518,6 +525,108 @@ textarea.has-gutter {
   margin-bottom: 0;
 }
 
+/* A synced block (documents-embeds.js `docEmbedBlockEdit`): the pencil on the quote's corner, and the box that replaces the text. */
+.doc-embed-block {
+  position: relative;
+}
+
+.doc-embed-block-edit {
+  position: absolute;
+  inset-block-start: var(--space-1);
+  inset-inline-end: var(--space-1);
+  opacity: 0;
+}
+
+.doc-embed-block:is(:hover, :focus-within) .doc-embed-block-edit {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .doc-embed-block-edit {
+    opacity: 1;
+  }
+}
+
+.doc-embed-block-input {
+  inline-size: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font: inherit;
+}
+
+.doc-embed-block-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+}
+
+/* A board embedded in a document, edited in a panel over it (documents-board.js, gap row 10). The card is the board's own
+   whiteboard view, lent to the panel; the board's "Boards" button is the dialog's X here, so it is hidden. */
+.doc-embed-board-edit {
+  margin-block-start: var(--space-2);
+}
+@media print {
+  .doc-embed-board-edit {
+    display: none;
+  }
+}
+.doc-board-card {
+  width: min(90rem, 96vw);
+  height: min(54rem, 92dvh);
+  max-height: 92dvh;
+  padding: var(--space-2);
+  gap: var(--space-2);
+}
+.doc-board-card #library-view-whiteboard {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.doc-board-card #wb-back-to-boards {
+  display: none;
+}
+/* Full screen in the panel is the panel filling the window: the view's own fixed, window-sized box would sit in the card (its
+   transform makes the card the containing block) and run past it. The head stays, so the X is in reach. */
+.doc-board-card #library-view-whiteboard.wb-fullscreen {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  width: auto;
+  height: auto;
+}
+.doc-board-overlay:has(.wb-fullscreen) {
+  padding: 0;
+}
+.doc-board-overlay:has(.wb-fullscreen) .doc-board-card {
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+}
+/* The Library's board is loaded again behind the closing panel: laid out, not seen. */
+.doc-board-closing {
+  visibility: hidden;
+}
+
+/* A recording embedded in a document (documents-embeds.js, gap row 1): the take's name over the browser's own audio controls. */
+.doc-embed-recording {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
+  width: 28rem;
+  max-width: 100%;
+}
+.doc-embed-recording figcaption {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.doc-embed-recording audio {
+  width: 100%;
+}
+
 /* The two states the shared classes already colour, given a ground here so a
    change is findable by scanning rather than by reading every line. The
    strike-through the chat's one-line removal carries is cancelled: over forty
@@ -632,6 +741,14 @@ textarea.has-gutter {
   bottom: 0;
   z-index: 2;
   padding-block: var(--space-2);
+}
+/* **The foot never hides what has the focus** (the wrapzoom sweep, 1280 by
+   720: the form is 685px in a 608px page, so at rest the stuck foot lay over
+   the filing row's space picker and document button). A control above it,
+   reached by Tab or scrolled to, stops the foot's height short of the
+   page's bottom edge. */
+#capture > :not(.capture-commit-row) :is(button, input, select, textarea, summary, [tabindex], [contenteditable]) {
+  scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2));
 }
 
 @media print {
@@ -778,6 +895,27 @@ body.printing-doc #doc-preview p,
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
+}
+
+/* The margin reader in a note's edit form: the document's column, laid under
+   the text as a row of cards (two classes outrank `.doc-margin` without
+   !important). */
+.doc-margin.note-edit-margin {
+  flex: none;
+  max-height: 14rem;
+  margin-top: var(--space-2);
+  padding: var(--space-2) 0 0;
+  border-left: 0;
+  border-top: 1px solid var(--divider);
+}
+
+.doc-margin.note-edit-margin.hidden {
+  display: none;
+}
+
+.note-edit-margin .doc-margin-cards {
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin-top: 0;
 }
 
 @media (max-width: 599.98px) {
@@ -1384,7 +1522,7 @@ body.printing-doc #doc-preview p,
      "Never run" stood 16px over the line and 24px over Run). */
   margin-top: 0;
   padding-top: var(--space-3);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
 }
 
 .log-detail {
@@ -1484,6 +1622,19 @@ body.printing-doc #doc-preview p,
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* The map's own legend (data-own) lists branches and markers, so it can be
+   long: it scrolls inside a share of the board rather than covering it, and a
+   marker in it is drawn in the ink of the text beside it. */
+.wb-map-legend[data-own="1"] {
+  max-height: 40%;
+  overflow-y: auto;
+}
+
+.wb-map-legend-mark {
+  color: var(--text);
+  min-width: 0.75rem;
 }
 
 /* The swatch carries the colour it is standing for as a `background` set from
@@ -2367,7 +2518,8 @@ body.printing-doc #doc-preview p,
 /* The mark of a note behind a topic (MINDMAP_PLAN.md decision 18): the link
    marker's recipe in the label's own ink, like the task box, so it reads on a
    core or filled topic's ground too. */
-.wb-map-note {
+.wb-map-note,
+.wb-map-audio {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
@@ -2380,7 +2532,9 @@ body.printing-doc #doc-preview p,
 }
 
 .wb-map-note:hover,
-.wb-map-note:focus-visible {
+.wb-map-note:focus-visible,
+.wb-map-audio:hover,
+.wb-map-audio:focus-visible {
   color: var(--accent-text);
 }
 
@@ -3007,7 +3161,11 @@ body.printing-doc #doc-preview p,
 #wb-outline-tree .wb-outline-text {
   display: block;
   width: 100%;
-  min-height: 0;
+  /* A row is as tall as the pencil over its end (`--target-min`: 28px, 44px on
+     a touch screen or below 820). It was 0, with 44px on a coarse pointer
+     only, so at 360 and 768 with a mouse the 44px pencil stood 7px over the
+     first row and the tree's scroll box cut 4px of it. */
+  min-height: var(--target-min);
   margin: 0;
   box-sizing: border-box;
   border: 1px solid transparent;
@@ -3075,12 +3233,6 @@ body.printing-doc #doc-preview p,
   }
 }
 
-/* A finger's row: the 44px target floor on a touch screen. */
-@media (pointer: coarse) {
-  #wb-outline-tree .wb-outline-text {
-    min-height: 44px;
-  }
-}
 
 /* A topic's markers (MINDMAP_PLAN decision 34): a row before the label, in
    the branch's ink, each mark one em square so the row lines up with the
@@ -3328,6 +3480,26 @@ body.printing-doc #doc-preview p,
 
 .cm-md-image-frame[data-sized] > img {
   width: 100%;
+}
+
+/* K18: a saved picture's caption, one muted line under it (Show captions). Laid below the frame and the room reserved,
+   so the grip stays on the picture's corner. */
+.cm-md-image-frame.has-caption {
+  margin-bottom: calc(var(--text-xs) * 1.3 + var(--space-1));
+}
+.md-picture-caption {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
 }
 
 /* The hit area is the touch floor (24px, WCAG 2.5.8) on every pointer; the
@@ -4425,7 +4597,6 @@ button.ghost.doc-template-choice.wb-template-choice {
    both themes, as a real note is; its ink is chosen for the paper. */
 #whiteboard-container {
   --wb-sticky-paper: #fff4a3;
-  --wb-sticky-edge: #e8d56a;
   --wb-sticky-shadow: 0 1px 2px rgb(0 0 0 / 0.14), 0 6px 14px -4px rgb(0 0 0 / 0.18);
   /* One sticky's own paper, set on it by the renderer from its `bg`. */
   --wb-paper: var(--wb-sticky-paper);
@@ -4493,7 +4664,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .wb-place-ghost[data-kind="sticky"] {
   background: var(--wb-sticky-paper);
-  border: 1px solid var(--wb-sticky-edge);
+  border: 1px solid #e8d56a;
   box-shadow: var(--wb-sticky-shadow);
 }
 
@@ -5814,6 +5985,13 @@ button.ghost.doc-template-choice.wb-template-choice {
     order: -1;
     width: auto;
   }
+  /* The typeable page number is a target a thumb reaches: 28 px tall beside 44 px buttons (measured at 390, 1694 b3); the touch height token. */
+  .wb-present-bar .wb-present-page .value-field .value-field-input {
+    box-sizing: border-box;
+    min-height: var(--control-h-touch);
+    min-width: var(--control-h-touch);
+    text-align: center;
+  }
 }
 
 /* The template gallery's group heads (INBOX 788, `openDocTemplateDialog`):
@@ -6185,10 +6363,16 @@ button.ghost.doc-template-choice.wb-template-choice {
   align-items: start;
 }
 
-#doc-assist-model-line > .ghost,
-#doc-ai-offline > .ghost {
+/* The action is the split button once offline-split.js has wrapped it (INBOX
+   904 B05), not a bare `.ghost`: matched only as `.ghost`, the 237px split took
+   the auto column and the words were squeezed into 42px, one per line (348px
+   tall, wrapzoom 2026-11-11). Its own sheet's `margin-inline-start: auto`
+   would push it to the far edge of the grid cell. */
+#doc-assist-model-line > :is(.ghost, .ai-offline-split),
+#doc-ai-offline > :is(.ghost, .ai-offline-split) {
   grid-column: 2;
   justify-self: start;
+  margin-inline-start: 0;
 }
 
 @media (pointer: coarse) {
@@ -6396,7 +6580,7 @@ button.ghost.doc-template-choice.wb-template-choice {
   flex-direction: column;
   gap: var(--space-1);
   margin: var(--space-2) 0;
-  padding: 0;
+  padding: 0 var(--space-1);
 }
 
 .wb-fmt-prop {
@@ -6404,12 +6588,19 @@ button.ghost.doc-template-choice.wb-template-choice {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) auto;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 .wb-fmt-prop input {
   min-width: 0;
   width: 100%;
+}
+
+/* The ring sits on the box's own edge (the owner, 2026-11-09: the global 2px offset put it 4px out, so
+   the Name box's ring was cut by the panel's left edge and touched the Value box's ring across the gap). */
+.wb-fmt-prop input:focus-visible,
+.wb-fmt-prop input:focus {
+  outline-offset: 0;
 }
 
 /* The Format panel's four tabs share its width (canvasdepth2: Data made a
@@ -6710,19 +6901,19 @@ input[type="color"].wb-mixed {
 }
 
 .doc-table-grip-col::before {
-  top: 50%;
   right: var(--space-1);
+  bottom: var(--space-3);
   left: var(--space-1);
   height: var(--space-2);
-  margin-top: calc(var(--space-2) / -2);
 }
 
+/* The bars sit a token gap (--space-3) clear of the table edge, so the active
+   cell's accent ring (drawn inside the cell) never touches them. */
 .doc-table-grip-row::before {
   top: var(--space-1);
+  right: var(--space-3);
   bottom: var(--space-1);
-  left: 50%;
   width: var(--space-2);
-  margin-left: calc(var(--space-2) / -2);
 }
 
 .doc-table-grip:hover::before,
@@ -6736,7 +6927,8 @@ input[type="color"].wb-mixed {
 }
 
 .doc-table-add {
-  position: relative;
+  /* Absolute, from the shared rule above: `relative` here left the button in
+     the layer's flow, so the add-row plus landed a band's height low. */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6748,6 +6940,10 @@ input[type="color"].wb-mixed {
   font-size: var(--text-sm);
   line-height: 1;
   cursor: pointer;
+}
+
+.doc-table-add-row {
+  margin-top: var(--space-1);
 }
 
 /* The plus is drawn, not typed: a "+" glyph sits on the font's baseline and
@@ -7010,11 +7206,111 @@ input[type="color"].wb-mixed {
     padding-inline: var(--space-2);
   }
 }
-@container docdock (max-width: 599.98px) {
+/* Back to the document a diagram was opened from names that document (dgbt-1109 13); a long title is cut, the full one is the tooltip. */
+.doc-back-label {
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* **Browser zoom (INBOX 1717): the name gives way before the tools do.** At 125 to
+   200 % the dock is 544 to 806px and a code document's tools need 410 to 600, so the
+   title and Back (246px, the input's own 128px floor) sat on a line above them.
+   Back is its arrow from 820 down (its title and aria-label name it), the title may
+   shrink to 5rem, and the save state leaves the row below 820 (wrapzoom 2026-11-11:
+   at 768x1024 the dock is 652px, the 44px touch targets make the actions 539 and the
+   name asked for 128 beside them, so the name sat on a line of its own, 94px; without
+   the 64px save state the row is 603 and one line, 44px, for a markdown and a .py file). */
+@container docdock (max-width: 819.98px) {
+  .doc-back-label {
+    display: none;
+  }
   .doc-dock-status {
     display: none;
   }
-  .doc-back-label {
+  #tab-documents .doc-dock > .doc-dock-identity {
+    flex-basis: 12rem;
+    min-width: 0;
+  }
+  .doc-dock-identity > .doc-title-input {
+    flex: 1 1 5rem;
+    min-width: 5rem;
+  }
+}
+@container docdock (max-width: 599.98px) {
+  #tab-documents .doc-dock > .doc-dock-identity {
+    flex-basis: 8rem;
+  }
+}
+/* **The dock stays one row at every zoom (wrapzoom 2026-11-11), on Phase 9's
+   1100.** A code file's actions measured 808px (1062 with "Install Python in
+   Settings, Packages") in a 931px dock at 1280, so the name sat on a line of
+   its own and the actions broke in two; a markdown document's 733 did the
+   same beside the title's 22rem. Below 1100 of dock Back is its arrow (as
+   under 820), the name asks for 8rem and may narrow to 5rem, and Snippets (or
+   Sections) is its icon; a code file's Format and Assistant are theirs too
+   (Run, the bar's one filled action, keeps its word), and the Python line is
+   cut with an ellipsis (its title says it whole). Prose keeps Formatting and
+   AI edit: 655px of actions beside a 120px name is 781, under 820. Under 820
+   the Python line leaves the row: the card's install notice says the same. */
+@container docdock (max-width: 1099.98px) {
+  .doc-back-label,
+  #doc-code-snippets-open > .doc-ai-label,
+  #tab-documents.doc-is-code .doc-ai-label,
+  #doc-code-format > .toolbar-word {
+    display: none;
+  }
+  #tab-documents .doc-dock > .doc-dock-identity {
+    flex-basis: 8rem;
+    min-width: 0;
+  }
+  .doc-dock-identity > .doc-title-input {
+    flex: 1 1 5rem;
+    min-width: 5rem;
+  }
+  #doc-code-snippets-open,
+  #tab-documents.doc-is-code :is(#doc-code-assist-open, #doc-code-format) {
+    flex: 0 0 var(--target-min);
+    justify-content: center;
+    padding-inline: 0;
+  }
+  :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) > .ph-lead {
+    margin: 0;
+  }
+  #tab-documents.doc-is-code .doc-view-cluster .seg > button {
+    padding-inline: var(--space-2);
+  }
+  #doc-code-run-why {
+    display: inline-block;
+    max-width: 7.5rem;
+    line-height: var(--control-h);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+/* **While the Python line is in the row, at any width, the lesser buttons are
+   their icons.** With their words the actions are 1068px (958 with the line
+   cut to 9rem), which leaves the name under its 5rem below 1165 of dock, a
+   band the 1100 above cannot reach. Their icons make the actions 840: the
+   name keeps 253px at 1100, and the line is whole there. */
+#tab-documents.doc-is-code .doc-dock.doc-run-why > .doc-dock-identity {
+  flex-basis: 8rem;
+  min-width: 0;
+}
+#tab-documents.doc-is-code .doc-dock.doc-run-why :is(.doc-ai-label, #doc-code-format > .toolbar-word) {
+  display: none;
+}
+#tab-documents.doc-is-code .doc-dock.doc-run-why :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) {
+  flex: 0 0 var(--target-min);
+  justify-content: center;
+  padding-inline: 0;
+}
+#tab-documents.doc-is-code .doc-dock.doc-run-why :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) > .ph-lead {
+  margin: 0;
+}
+@container docdock (max-width: 819.98px) {
+  #doc-code-run-why {
     display: none;
   }
 }
@@ -7283,6 +7579,14 @@ input[type="color"].wb-mixed {
 #tab-documents.doc-size-large #doc-preview {
   font-size: var(--text-h3);
 }
+#tab-documents.doc-size-xlarge .doc-source-wrap .cm-editor:not(.doc-content-code) .cm-scroller,
+#tab-documents.doc-size-xlarge #doc-preview {
+  font-size: var(--text-h2);
+}
+#tab-documents.doc-size-xxlarge .doc-source-wrap .cm-editor:not(.doc-content-code) .cm-scroller,
+#tab-documents.doc-size-xxlarge #doc-preview {
+  font-size: var(--text-h1);
+}
 #tab-documents.doc-spacing-compact .doc-source-wrap .cm-editor:not(.doc-content-code) .cm-scroller,
 #tab-documents.doc-spacing-compact #doc-preview {
   line-height: 1.4;
@@ -7306,7 +7610,7 @@ input[type="color"].wb-mixed {
 }
 .doc-paste-chip button,
 .wb-paste-chip button {
-  background: var(--panel);
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -7357,8 +7661,8 @@ input[type="color"].wb-mixed {
    icon neighbours, wide enough for "400%" so the dock does not jitter as the
    number changes. */
 .whiteboard-floating-panel .wb-zoom-level {
-  min-inline-size: 6ch;
-  padding-inline: var(--space-2);
+  display: inline-flex;
+  align-items: center;
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
 }
@@ -7691,7 +7995,7 @@ input[type="color"].wb-mixed {
 }
 /* Glass only while the glass look is on (the owner, 2026-10-27). */
 :root:not([data-glass="off"]) .library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]):not(:hover):not(:focus-visible) {
-  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  background: color-mix(in srgb, var(--card) 80%, transparent);
   backdrop-filter: var(--glass-filter-clear);
   -webkit-backdrop-filter: var(--glass-filter-clear);
 }
@@ -8035,6 +8339,25 @@ input[type="color"].wb-mixed {
 .wb-format.hidden {
   display: none;
 }
+/* **Beside the selection bar and above the zoom cluster, not over them**
+   (wrapzoom 2026-11-11, 768x1024). Under 820 the zoom cluster stands on the
+   shelf at the right, where the panel reached down to the shelf too: Zoom out
+   and the level were under the panel's head. And the selection bar, 624px of
+   controls, was centred on the object whatever the panel left it, so its
+   Duplicate, Delete and menu were under the panel. The bar may be as wide as
+   the board less the panel and the rail (it wraps, its own recipe), and the
+   panel's foot clears the cluster. */
+@media (min-width: 600px) {
+  #wb-canvas-view:has(> #wb-format:not(.hidden)) > #wb-context {
+    max-width: max(12rem, calc(100% - 18.5rem - 5rem));
+  }
+}
+@media (min-width: 600px) and (max-width: 819.98px) {
+  .wb-format {
+    /* The cluster's height is one target, its padding and its border. */
+    bottom: calc(0.5rem + var(--wb-h-tools) + var(--space-3) + var(--target-min) + 2 * var(--space-1) + 2px + var(--space-3));
+  }
+}
 .wb-format-body {
   flex: 1 1 auto;
   min-height: 0;
@@ -8126,6 +8449,7 @@ input[type="color"].wb-mixed {
 .wb-fmt-row input[type="range"] {
   width: 100%;
   min-width: 0;
+  margin: 0;
 }
 /* One height for every field in the panel: a number field drew taller than
    the select beside it. */
@@ -8144,6 +8468,13 @@ input[type="color"].wb-mixed {
 }
 .wb-format input[type="number"]:is(:hover, :focus-visible) {
   -moz-appearance: auto;
+}
+/* **A paired cell holds four digits** (width sweep 1111): the global field's
+   --space-5 side padding left a 26px content box in a 62px cell, so "812"
+   read "8(". The cell trades that padding for a hair and centres its value. */
+.wb-format .wb-fmt-cell input[type="number"] {
+  padding-inline: var(--space-1);
+  text-align: center;
 }
 .wb-fmt-out {
   min-width: 3ch;
@@ -8236,6 +8567,20 @@ input[type="color"].wb-mixed {
 .wb-fmt-commands .wb-fmt-buttons {
   flex-wrap: nowrap;
 }
+/* **Under the finger the arrange rows put their buttons under the name**
+   (wrapzoom 2026-11-11, 768x1024). Four 44px targets and their gaps are 188px
+   against the field track's 179 (11rem, 160 on Small text), so Send to back
+   and Same height stood past the panel's edge, under its scroll clip. The
+   name takes its own line and the buttons the panel's width, still one row. */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .wb-fmt-commands > .wb-fmt-row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-1);
+  }
+  .wb-fmt-commands > .wb-fmt-row > :nth-child(2) {
+    grid-column: 1;
+  }
+}
 /* A pressed toggle (bold, italic, an alignment) on the selection's soft
    ground, the sidebar tab's own state. */
 .wb-fmt-buttons button[aria-pressed="true"] {
@@ -8259,8 +8604,17 @@ input[type="color"].wb-mixed {
    goes too (44 px). Edit and Read are their icons (the words stay their names for
    a screen reader), since the title had 45 px of the row beside them. Moved here
    from the boot sheet it first went in, which was 45 bytes over its budget. */
-@media (min-width: 600px) {
+@container docdock (min-width: 600px) {
   #tab-documents .doc-phone-only {
+    display: none;
+  }
+}
+/* The same fold for a narrow dock in a wide window (INBOX 1717, 200 % zoom): the
+   dock's own width decides, not the window's. A code document's tools were 476px of
+   44px targets in 544px; the extras are the kebab's rows and the row stays one line. */
+@container docdock (max-width: 599.98px) {
+  #tab-documents .doc-actions > :is(#doc-ai, #doc-code-snippets-open, #doc-code-assist-open, #doc-code-format, #doc-focus-toggle, .graph-help-toggle),
+  #tab-documents .doc-view-menu {
     display: none;
   }
 }
@@ -8592,19 +8946,17 @@ input[type="color"].wb-mixed {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* The documents list's head holds four controls beside "Recent": on a sidebar too narrow for one line
-   the controls wrap under the word at their own widths, never over each other (the owner, 2026-11-05:
-   "no gap between the templates and new arrow button"; the pill had been squeezed under its caret). */
+/* The documents list's head holds its controls beside "Recent" on ONE row at every sidebar width (the owner,
+   2026-11-11: the tools had wrapped under the word at 260; before that, 2026-11-05, they had to never overlap).
+   Narrower sidebars shed, in order: the New word (under 16rem of sidebar content), then the help, template and
+   diagram buttons into the head's ⋯ (under 14.5rem), so the row never wraps and never overlaps. */
 #doc-sidebar-list > .sidebar-head {
-  flex-wrap: wrap;
-  row-gap: var(--space-2);
+  flex-wrap: nowrap;
 }
 #doc-sidebar-list > .sidebar-head > .row {
-  flex: 0 1 auto;
-  min-width: 0;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
   justify-content: flex-end;
-  row-gap: var(--space-2);
   margin-inline-start: auto;
 }
 
@@ -8637,4 +8989,248 @@ input[type="color"].wb-mixed {
 .wb-context .wb-snap-label:hover,
 .wb-context .wb-snap-label:is(:focus-visible, :has(:focus-visible)) {
   background: var(--row-hover-bg);
+}
+
+/* The saved palettes in the colour popover: a few rows, scrolling past that rather than growing the popover. */
+.wb-colour-palettes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 30vh;
+  overflow-y: auto;
+}
+.wb-colour-palettes:empty {
+  display: none;
+}
+
+/* Board style presets (Format panel, nothing selected): a grid of two-colour tiles, fill behind a border in the text colour, which the tile sets to the line colour. */
+.wb-board-style-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--space-8) * 2), 1fr));
+  gap: var(--space-2);
+}
+.wb-board-style-list .wb-board-style-btn {
+  --swatch: transparent;
+  min-height: var(--space-8);
+  padding: 0;
+  border: var(--space-1) solid currentcolor;
+  background: var(--swatch);
+}
+
+/* Edit style as text (Format panel, Data tab): the JSON box fills the panel's width, in the code face. */
+.wb-fmt-raw {
+  width: 100%;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: var(--text-xs);
+}
+
+/* The map's Gantt chart (whiteboard-map-more.js, MINDMAP_PLAN gap 3): a sheet wider than the usual reading width, because a bar needs room to be a length. A name column beside one shared day scale, the axis and every row on the same two columns. Each bar's left and width (percent of the scale) and a drag's offset are set from the script, not from custom properties, so the token budget stays where it was. */
+@media (min-width: 600px) {
+  [data-sheet="map-gantt"] .sheet-card:not(.sheet-card-corner) {
+    max-width: min(64rem, 100%);
+  }
+}
+.wb-gantt {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+.wb-gantt-axis,
+.wb-gantt-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 22%) minmax(0, 1fr);
+  align-items: center;
+}
+.wb-gantt-ticks {
+  position: relative;
+  height: var(--space-5);
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.wb-gantt-tick {
+  position: absolute;
+  white-space: nowrap;
+}
+.wb-gantt-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wb-gantt-row {
+  min-height: var(--target-min);
+}
+.wb-gantt-name {
+  box-sizing: border-box;
+  padding-right: var(--space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}
+.wb-gantt-track {
+  position: relative;
+  height: var(--target-min);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.wb-gantt-today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--accent);
+  pointer-events: none;
+}
+.wb-gantt-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: var(--space-3);
+  padding: 0 var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-xs);
+  text-align: left;
+  cursor: grab;
+  touch-action: none;
+  overflow: hidden;
+}
+.wb-gantt-bar.is-dragging {
+  cursor: grabbing;
+  opacity: 0.8;
+}
+.wb-gantt-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* A topic's audio note (whiteboard-map-audio.js, MINDMAP_PLAN gap 4): the mark is `.wb-map-note`'s recipe; the player is the help popover's shell around the browser's own audio controls, the recording's name above and Choose another and Remove below. */
+.wb-map-audio-pop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 16rem;
+}
+.wb-map-audio-pop audio {
+  width: 100%;
+}
+.wb-map-audio-title {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+.wb-map-audio-foot {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* A document's icon and cover (documents-props.js, DOCUMENTS_PLAN gap row 8): a band in the chosen category colour (set from the script as --swatch, the swatch picker's own property) with the icon sitting on its foot, then the buttons that set them; the colour row is the app's swatch picker. */
+.doc-look {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.doc-cover {
+  position: relative;
+  height: calc(var(--space-8) * 2);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--swatch) 70%, var(--card)), color-mix(in srgb, var(--swatch) 22%, transparent));
+}
+.doc-cover-none {
+  height: auto;
+  background: none;
+}
+.doc-cover-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1) var(--space-2);
+  font-size: calc(var(--text-lg) * 2);
+  line-height: 1.1;
+}
+/* The icon hangs one space-4 below the band; the band keeps that room, or the icon lay over the next row (Add property: 6 px at 390). */
+.doc-cover:not(.doc-cover-none):has(> .doc-cover-icon) {
+  margin-block-end: var(--space-4);
+}
+.doc-cover:not(.doc-cover-none) .doc-cover-icon {
+  position: absolute;
+  left: var(--space-3);
+  bottom: calc(var(--space-4) * -1);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+}
+.doc-look-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* The code files open at once (documents-tabs.js, audit 1028 D52): a `.tabs-line`
+   that scrolls sideways beside its one Close button. A long file name is cut
+   with an ellipsis (the full name is the tab's title), never wrapped. */
+.doc-tabs-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.doc-tabs-row > #doc-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.doc-tabs-row .doc-tab {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.doc-tabs-row > #doc-tab-end {
+  flex: 0 0 auto;
+}
+/* At 600 to 819.98 Skill logs is a rail on the left (07-whiteboard-misc.css)
+   and its opener rode over the "All" sub-tab at 768 (x 7 to 51 against
+   x 9): the strip above the split keeps the same rail clear as the column
+   beside it, only while the Skills view is the one showing. */
+@media (min-width: 600px) and (max-width: 819.98px) {
+  #tab-library:has(> #library-view-skills:not(.hidden)) > #library-subtabs {
+    padding-left: calc(max(var(--sidebar-toggle-size), var(--target-min)) + 2 * var(--sidebar-toggle-inset));
+  }
+}
+
+/* The shape picker (whiteboard-library-more.js): a help popover holding the head, a search field and the rich picker's
+   rows, each with the shape drawn in its tile. Opened at the pointer by an invisible one-pixel anchor, which the
+   popover's own placement hangs from. */
+.wb-libpick-anchor {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+  visibility: hidden;
+}
+.wb-libpick.help-popover {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(22rem, calc(100vw - var(--space-6)));
+  max-height: min(30rem, calc(100vh - var(--space-8)));
+}
+.wb-libpick-list {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.wb-libpick-empty {
+  padding: var(--space-3);
+  list-style: none;
+}
+.wb-libpick-hint {
+  margin: 0;
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
 }

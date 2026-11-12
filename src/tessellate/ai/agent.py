@@ -64,6 +64,8 @@ from tessellate.ai.agent_policy import (
 )
 from tessellate.ai.agent_turn import (
     AWAITING_CONFIRMATION,
+    all_it_names,
+    from_outside as _from_outside,
     _cleared_page,
     _copies_what_was_read,
     _first_round_tools,
@@ -168,16 +170,80 @@ def _query_said(name: str, arguments: dict) -> list[dict]:
     )
 
 
+def _record_call(
+    state: _TurnState, name: str, arguments: dict, result: dict, undo: dict | None, signature: tuple
+) -> dict | None:
+    """The turn's ledgers after a call, and the change a write made (None for a read or a failure)."""
+    ok = "error" not in result
+    change = None
+    if ok and signature not in state.done_calls:
+        # Something new worked. That is what buys another round,
+        # see EARNED_ROUNDS. Reads and writes both count: paging
+        # through a notebook to find the right note is the work,
+        # not a preamble to it.
+        state.done_calls.add(signature)
+        state.progressed = True
+    if ok and name not in _WRITE_TOOLS:
+        # Its result is now in the messages above, and stays valid
+        # until something writes.
+        state.fresh_reads.add(signature)
+    if ok and reads_outside(name):
+        state.outside = True
+    if ok and name == "web_search":
+        state.result_pages |= _result_urls(result)
+    if ok and name in _WRITE_TOOLS:
+        state.did_write = True
+        state.ran_writes.add(name)
+        if name == "create_note" and arguments.get("tags"):
+            state.implied.add("tag_note")
+        # The notebook just changed, so every read before now may be stale:
+        # re-reading is legitimate work after a write, not a loop. Not
+        # `done_calls` (the earned-round ledger: clearing it would let one
+        # repeated write buy a fresh round each time, the loop EARNED_ROUNDS
+        # starves). Not `failed_calls` either: a call that failed on its own
+        # arguments (a bad note id, a malformed date) fails again for the same
+        # reason after an unrelated write, and forgetting it hands the model
+        # back the infinite retry `_RECOVERY_HINTS` exists to break.
+        state.fresh_reads.clear()
+        change = {
+            "tool": name,
+            "label": result.get("label") or name,
+            "diff": _change_diff(name, arguments, undo),
+            "note_id": _change_note_id(name, result),
+            "document_id": _change_document_id(name, result),
+            "reminder_id": _change_reminder_id(name, result),
+            "category_name": _change_category_name(name, result),
+            "undo": undo,
+        }
+    return change
+
+
+def _with_advice(state: _TurnState, name: str, signature: tuple, result: dict) -> dict:
+    """A failed call's result with advice beside the error, and the failure counted."""
+    repeated = signature in state.failed_calls
+    state.failed_calls.add(signature)
+    exhausted = state.count_failure(name) >= MAX_TOOL_FAILURES
+    # The exhausted note is said on the failure that *reaches* the cap, not
+    # only on the blocked call after it, so the model does not spend one more
+    # round discovering the rule.
+    advice = (
+        TOOL_EXHAUSTED_NOTE
+        if exhausted
+        else REPEATED_CALL_NOTE
+        if repeated
+        else _recovery_hint(name, str(result["error"]))
+    )
+    return {**result, "what_to_do": advice}
+
+
 def _run_and_record(
     session: Session, plan: _TurnPlan, state: _TurnState, name: str, arguments: dict
 ) -> Iterator[dict]:
     """Run a call every guard let through, record what it did on the turn's
     state, yield its tool event, and return the result for the model.
 
-    `_dispatch_call`'s last branch, lifted with no behaviour change (audit
-    2026-10-05, ARCH-22: the function was 455 lines). The order inside is
-    the branch's own: the taint, the ledgers, the write's change, the advice
-    on an error, then the event.
+    `_dispatch_call`'s last branch, lifted with no behaviour change (ARCH-22).
+    Order: the taint, the ledgers, the write's change, the advice, the event.
     """
     spend = run_budget.current()
     if name in _WRITE_TOOLS and spend is not None and spend.stop_requested():
@@ -201,77 +267,10 @@ def _run_and_record(
     # left in the result is resent to the model on every later
     # round of the turn.
     undo = result.pop("undo", None)
-    change = None
     signature = (name, json.dumps(arguments, sort_keys=True))
-    if "error" not in result and signature not in state.done_calls:
-        # Something new worked. That is what buys another round,
-        # see EARNED_ROUNDS. Reads and writes both count: paging
-        # through a notebook to find the right note is the work,
-        # not a preamble to it.
-        state.done_calls.add(signature)
-        state.progressed = True
-    if "error" not in result and name not in _WRITE_TOOLS:
-        # Its result is now in the messages above, and stays valid
-        # until something writes.
-        state.fresh_reads.add(signature)
-    if "error" not in result and reads_outside(name):
-        state.outside = True
-    if "error" not in result and name == "web_search":
-        state.result_pages |= _result_urls(result)
-    if "error" not in result and name in _WRITE_TOOLS:
-        state.did_write = True
-        state.ran_writes.add(name)
-        if name == "create_note" and arguments.get("tags"):
-            state.implied.add("tag_note")
-        # The notebook just changed, so every read taken before now
-        # may be out of date. Clearing this is what keeps the
-        # repeat-suppression above from ever serving a stale
-        # answer: after a write, re-reading is legitimate work
-        # rather than a loop, and it has to be allowed through.
-        #
-        # Deliberately *not* `done_calls`, which is the earned-round
-        # ledger: clearing that would let a model repeating one
-        # identical write buy a fresh round every time it did so,
-        # which is the exact loop EARNED_ROUNDS exists to starve.
-        #
-        # Deliberately not `failed_calls` either, for the same
-        # reason one step removed. A write briefly cleared it here,
-        # which sounds symmetrical and is not: a call that failed on
-        # its own arguments, a bad note id, a malformed date, fails
-        # again for exactly the same reason after an unrelated note
-        # is written, and forgetting it hands the model back the
-        # infinite retry that `_RECOVERY_HINTS` and the repeat
-        # interception exist to break. Only a read can go stale.
-        state.fresh_reads.clear()
-        change = {
-            "tool": name,
-            "label": result.get("label") or name,
-            "diff": _change_diff(name, arguments, undo),
-            "note_id": _change_note_id(name, result),
-            "document_id": _change_document_id(name, result),
-            "reminder_id": _change_reminder_id(name, result),
-            "category_name": _change_category_name(name, result),
-            "undo": undo,
-        }
+    change = _record_call(state, name, arguments, result, undo, signature)
     if "error" in result:
-        # Hand back advice with the error, not just the error.
-        repeated = signature in state.failed_calls
-        state.failed_calls.add(signature)
-        exhausted = state.count_failure(name) >= MAX_TOOL_FAILURES
-        result = {
-            **result,
-            "what_to_do": (
-                # Said on the failure that *reaches* the cap, not
-                # only on the blocked call after it, otherwise the
-                # model spends one more round discovering a rule it
-                # could have been told here.
-                TOOL_EXHAUSTED_NOTE
-                if exhausted
-                else REPEATED_CALL_NOTE
-                if repeated
-                else _recovery_hint(name, str(result["error"]))
-            ),
-        }
+        result = _with_advice(state, name, signature, result)
     event = _tool_event(name, arguments, result)
     if change:
         event["change"] = change
@@ -454,14 +453,16 @@ def _confirm_gate(c: _Call) -> _Verdict | None:
     hands the model `AWAITING_CONFIRMATION` rather than a result, which is
     honest but is not a *stop*: a model that has misread the job re-parks the
     same tool with fresh arguments, and every round is another card in front
-    of the user for something they never asked for. Two is enough for a genuine
-    "delete this, and that" turn; past that the model is guessing, and guessing
+    of the user for something they never asked for. A dozen covers a genuine
+    "make these three notes" turn (every write waits now, owner 2026-11-10); past that the model is guessing, and guessing
     at destructive calls is where this app should be least willing to keep up."""
     if c.spec is None:
         return None
     outside = c.state.tainted and parks_when_tainted(c.name) and not _cleared_page(c.state, c.name, c.arguments)
     if not (tools.needs_confirm(c.name, c.arguments, c.state.approved) or outside):
         return None
+    if (whole := all_it_names(c.session, c.state, c.name, c.arguments, plan_now)) is not None:
+        return whole
     waiting = c.state.parked.get(c.name, 0)
     if waiting >= MAX_PARKED_CONFIRMS:
         c.state.count_failure(c.name)
@@ -474,6 +475,7 @@ def _confirm_gate(c: _Call) -> _Verdict | None:
         )
     c.state.did_write = True
     c.state.ran_writes.add(c.name)
+    c.state.implied |= {"tag_note"} if c.name == "create_note" and c.arguments.get("tags") else set()  # the card carries the tags
     c.state.parked[c.name] = waiting + 1
     label = tools.confirm_label(c.name, c.arguments, c.session)
     return AWAITING_CONFIRMATION, [{"type": "confirm", "name": c.name, "arguments": c.arguments, "label": label}]
@@ -561,9 +563,9 @@ def _repeated_read(c: _Call) -> _Verdict | None:
 
 #: The guards in the order they must run, which is the order of precedence: an
 #: unusable call is refused before a handover, and a handover before the
-#: approval, spent-tool and repeat checks.
+#: approval, spent-tool and repeat checks (a copy of a note is refused before it asks).
 _BEFORE_HANDOVER = (_not_permitted, _unreadable_arguments)
-_AFTER_HANDOVER = (_confirm_gate, _tool_spent, _repeated_failure, _note_copy, _repeated_write, _repeated_read)
+_AFTER_HANDOVER = (_note_copy, _confirm_gate, _tool_spent, _repeated_failure, _repeated_write, _repeated_read)
 
 
 def _first_verdict(c: _Call, guards: tuple) -> _Verdict | None:
@@ -1095,12 +1097,6 @@ def _exhausted_events(
     }
 
 
-def _from_outside(notes: list[dict]) -> bool:
-    """SEC-02: a note retrieved for the question that was clipped from the web
-    or imported is already in the prompt, so the turn starts tainted."""
-    return any(isinstance(n, dict) and n.get("from_outside") for n in notes or ())
-
-
 def _blocked_for_turn(
     blocked_tools: frozenset[str] | set[str] | None,
 ) -> frozenset[str] | set[str] | None:
@@ -1179,6 +1175,7 @@ def run_agent(
         offered=plan.offered,
         named_hosts=_hosts_named(question),
         approved=approved,
+        asked=question or "",
     )
     state.outside = _from_outside(notes)
     loop = _Loop(allowance=plan.granted, ceiling=plan.ceiling)

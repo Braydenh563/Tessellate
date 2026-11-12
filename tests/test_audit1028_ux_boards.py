@@ -128,7 +128,10 @@ def test_every_layout_option_names_an_icon_and_a_menu_row_draws_it():
         assert f".ph-{icon}:before" in vendor, icon
     selects = (JS / "sheets-selects.js").read_text(encoding="utf-8")
     row = _block(selects, "const buildOptionRow = (option) => {", "row.addEventListener")
-    assert "option.dataset.icon" in row and "ph-lead" in row and 'setAttribute("aria-hidden", "true")' in row
+    # The glyph is built by `optionGlyph`, shared with the opener's face; the row must prepend it.
+    glyph = _block(selects, "const optionGlyph = (option) => {", "return glyph;")
+    assert "optionGlyph(option)" in row and "row.prepend(glyph)" in row
+    assert "option?.dataset.icon" in glyph and "ph-lead" in glyph and 'setAttribute("aria-hidden", "true")' in glyph
 
 
 # U28 ------------------------------------------------------------------------

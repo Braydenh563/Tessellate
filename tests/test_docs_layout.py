@@ -10,9 +10,10 @@ Two facts are load-bearing and live outside the main file:
 
 - HISTORY.md answers "has this been built?", the audit that found four of §2's
   six "quick wins" already done is in there.
-- ANALYSIS.md holds §33's constraint that **odysseus is AGPL and this project
-  is MIT, so no code crosses in either direction**. That is invisible if you
-  only read the backlog, and expensive to violate.
+- The licence constraint (AGPL-3.0: AGPL or MIT code may come in, nothing goes
+  out to MIT) is stated on ROADMAP.md's first screen. ANALYSIS.md, which held
+  §30 to §34, was retired on 2026-11-12 (INBOX 1784); those numbers resolve to
+  short pointers in HISTORY.md, so a code comment citing them still lands.
 
 So this checks that every file announces the others, that the two facts above
 are reachable, and, the one that actually matters, that no section was lost
@@ -27,7 +28,7 @@ from pathlib import Path
 DOCS = Path(__file__).resolve().parents[1] / "docs"
 ROADMAP = DOCS / "ROADMAP.md"
 COMPANIONS = {
-    name: DOCS / "roadmap" / f"{name}.md" for name in ("BACKLOG", "ANALYSIS", "HISTORY")
+    name: DOCS / "roadmap" / f"{name}.md" for name in ("BACKLOG", "HISTORY")
 }
 
 

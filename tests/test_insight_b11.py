@@ -71,7 +71,7 @@ def test_through_the_route_the_line_and_its_row_arrive(client, session):
     import json
     from datetime import datetime
 
-    import _gold
+    from tests import _gold
     from tessellate.core.database import Entry
     from tessellate.entry import manager
 

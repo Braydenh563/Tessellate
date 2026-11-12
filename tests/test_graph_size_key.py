@@ -6,7 +6,7 @@ size, should they be different??". Measured on the 57-note seed before the fix
 (`d2/probe.js LAYOUT=treemap`): every dot drew at 5px, because a treemap draws
 no lines and the size rule counted the drawn lines; a header wider than its
 box was clipped mid-letter. Now the size rule counts the notebook's links in
-every layout, a header too wide ends in an ellipsis with its count kept, and
+every layout, a header too wide wraps or shrinks (Q31 retired the ellipsis), and
 the legend says what a dot's size means.
 """
 
@@ -17,10 +17,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
-CANVAS = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+CANVAS = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
+GRAPH_TESS = (JS / "graph-tessellate.js").read_text(encoding="utf-8")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 
@@ -38,26 +40,28 @@ def _run(script: str) -> dict:
     return json.loads(run.stdout)
 
 
-def test_a_title_too_wide_for_its_box_ends_in_an_ellipsis_and_keeps_its_count() -> None:
-    script = _function(CANVAS, "gcEllipsize") + """
-const measure = (t) => t.length * 7;
+def test_a_title_too_wide_for_its_box_wraps_whole_and_keeps_its_count_where_it_fits() -> None:
+    # Q31 replaced the ellipsis (INBOX 1300 C37) with a name that is never cut:
+    # the intent, no clipped glyph, stands; the means moved to `fitHeaderLabel`.
+    script = "globalThis.window = {};" + GRAPH_TESS + """
+const fitHeaderLabel = window.gcTess.fit;
+const measure = (t, size) => t.length * size * 0.56;
 console.log(JSON.stringify({
-  fits: gcEllipsize("Work", " (10)", 200, measure),
-  cut: gcEllipsize("Courses & Study", " (10)", 90, measure),
-  bare: gcEllipsize("Courses & Study", " (10)", 20, measure),
+  fits: fitHeaderLabel(measure, "Work", 10, 200, 20).lines,
+  wrapped: fitHeaderLabel(measure, "Courses & Study", 10, 60, 40).lines,
+  bare: fitHeaderLabel(measure, "Courses & Study", 10, 20, 12),
 }));
 """
     out = _run(script)
-    assert out["fits"] == "Work (10)"
-    assert out["cut"].endswith("… (10)") and len(out["cut"]) * 7 <= 90, out["cut"]
-    assert out["cut"].startswith("Cour")
-    # No room for even a letter and the count: nothing, never a clipped glyph.
-    assert out["bare"] == ""
+    assert out["fits"] == ["Work (10)"]
+    assert "".join(out["wrapped"]).replace(" ", "") == "Courses&Study" and not any("…" in line for line in out["wrapped"])
+    # No room for even one line: nothing, never a clipped glyph.
+    assert out["bare"] is None
 
 
-def test_the_treemap_header_is_ellipsized_not_clipped() -> None:
+def test_the_treemap_header_is_fitted_not_clipped() -> None:
     body = _function(CANVAS, "gcDrawTreemap")
-    assert "gcEllipsize(" in body
+    assert "gcTess.fit(" in body
     assert "ctx.clip()" not in body, "a clip cuts a letter in half with no ellipsis"
 
 

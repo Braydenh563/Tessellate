@@ -33,7 +33,9 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
 from tessellate.ai import recognise
+from tessellate.ai import recognise_questions
 from tessellate.core import clock
+from tessellate.core.lazyre import lazy_compile
 
 #: **How much of a question anything reads** (audit 1031 AI9, HR7): the one
 #: number the search, the warm, the finder routes, the follow-up route and the
@@ -136,7 +138,7 @@ class Understood:
 
 
 #: What "recently" means when nobody says (the rule lives with the reader).
-RECENT_DAYS = recognise.RECENT_DAYS
+RECENT_DAYS = recognise_questions.RECENT_DAYS
 
 
 # The words a question is *made of* rather than about. Stripped before
@@ -147,11 +149,11 @@ RECENT_DAYS = recognise.RECENT_DAYS
 # to prove bread" must keep its "how", that one is the subject. A leading
 # "what did I write about" is scaffolding; the same words inside a sentence may
 # not be.
-_SCAFFOLD = re.compile(
+_SCAFFOLD = lazy_compile(
     r"^\s*(?:"
     r"what(?:'s| is| are| did| have| was| were)?|"
     r"which|show me|pull up|bring up|find( me)?|list|tell me( about)?|remind me( about)?|"
-    r"can you (?:show|find|tell|list)( me)?|do i have|did i (?:write|save|note|say)|"
+    r"can you (?:show|find|tell|list)( me)?|do i have|do i know(?: about| on| of)?|did i (?:write|save|note|say)|"
     r"have i (?:written|saved|noted|said)|i (?:wrote|saved|noted|write|save|note)|"
     r"any(?:thing)?|all (?:my|the)|my|the|about|any notes|notes|note|"
     # Pronouns and auxiliaries left behind once the phrase around them goes:
@@ -303,16 +305,24 @@ _VALUE_ALIASES = {
 _KNOWN_VALUES = {"is": IS_VALUES, "has": HAS_VALUES}
 #: Prefixes that look like `name:value` and are not filters.
 _NOT_OPERATORS = frozenset({"http", "https", "mailto", "ftp", "file", "www", "tel", "sms", "re", "fwd"})
-_UNKNOWN_OPERATOR = re.compile(r'(?<!\S)([A-Za-z][A-Za-z-]{1,24}):(?=[A-Za-z0-9"])\S*')
+_UNKNOWN_OPERATOR = lazy_compile(r'(?<!\S)([A-Za-z][A-Za-z-]{1,24}):(?=[A-Za-z0-9"])\S*')
 
 #: `before:` and `after:` are dates rather than filters: see `Understood.filters`.
 _DATE_OPERATORS = ("before", "after", "since", "until")
+#: Whether `before:` counts its own day (Q25: Settings, General, Search; off by
+#: default). Kept here, set from Settings and at start (`configure_before`),
+#: because `understand` is called from a dozen places with no config in hand.
+_BEFORE = {"includes_day": False}
+
+
+def configure_before(includes_day: bool) -> None:
+    _BEFORE["includes_day"] = bool(includes_day)
 
 # `name:value`, where the value may be quoted so `tag:"two words"` works, and
 # where the name must start the token so a bare URL ("http://example.com") is
 # never read as an operator. The lookbehind is on whitespace rather than `\b`
 # for exactly that reason.
-_OPERATOR = re.compile(
+_OPERATOR = lazy_compile(
     r'(?<!\S)(' + "|".join([*_OPERATOR_NAMES, *_DATE_OPERATORS]) + r'):(?:"([^"]*)"|(\S+))',
     re.IGNORECASE,
 )
@@ -321,21 +331,21 @@ _OPERATOR = re.compile(
 #: and `[^"]+` gets that right without backtracking, which matters because this
 #: runs on search-box text (see `_tidy` on the two ReDoS alerts this file has
 #: already collected).
-_PHRASE = re.compile(r'"([^"]+)"')
+_PHRASE = lazy_compile(r'"([^"]+)"')
 
 #: A word the person does not want. Leading `-`, and only at the start of a
 #: token, so "state-of-the-art" and a negative number keep their hyphens.
-_EXCLUDED = re.compile(r"(?<!\S)-([\w][\w'-]*)")
+_EXCLUDED = lazy_compile(r"(?<!\S)-([\w][\w'-]*)")
 
 #: `-tag:work`: an operator the person does not want. Read before the
 #: positive operators and before `_EXCLUDED`, which would otherwise take
 #: `-tag` as an unwanted word and leave `:work` behind as text.
-_NEGATED = re.compile(r'(?<!\S)-(' + "|".join(_OPERATOR_NAMES) + r'):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
+_NEGATED = lazy_compile(r'(?<!\S)-(' + "|".join(_OPERATOR_NAMES) + r'):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
 
 
-_CATEGORY = re.compile(r'(?<!\S)(-?)(?:cat|category):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
+_CATEGORY = lazy_compile(r'(?<!\S)(-?)(?:cat|category):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
 #: `tags:<2`, `tags:0`, `tags:>=3`: a count of tags, never a tag name (`tag:` is that).
-_TAG_COUNT = re.compile(r"(?<!\S)tags:(<=|>=|<|>|=)?(\d+)(?!\S)", re.IGNORECASE)
+_TAG_COUNT = lazy_compile(r"(?<!\S)tags:(<=|>=|<|>|=)?(\d+)(?!\S)", re.IGNORECASE)
 
 
 def _take_categories(text: str) -> tuple[str, list[str], list[str]]:
@@ -380,13 +390,24 @@ def _take_negated(text: str) -> tuple[str, dict[str, list[str]]]:
     return _NEGATED.sub(take, text), without
 
 
-def _parse_date_operator(value: str) -> date | None:
-    """`2026-01-01`, `2026-01` or `2026` as a date. Anything else is None.
+def _date_operator_span(value: str, today: date, locale: str | None) -> tuple[date, date] | None:
+    """The first and last day a `before:` or `after:` value names.
 
-    Deliberately ISO only, and deliberately silent about the rest: a typed
-    `before:tuesday` stays in the text as typed, rather than being rejected
-    with an error message in a search box or read as a date it made up.
+    An ISO date is one day; anything else goes to the same reader the rest of
+    the search box uses (`recognise.span`: `tuesday`, `yesterday`, `march`,
+    `"last week"`), so a spoken bound means what the phrase means anywhere
+    else (owner decision Q25). What neither reads is None, and stays in the
+    text as typed rather than becoming a date it made up.
     """
+    when = _parse_date_operator(value)
+    if when is not None:
+        return when, when
+    got = recognise.span(value, today, locale=locale)
+    return (got[0], got[1]) if got else None
+
+
+def _parse_date_operator(value: str) -> date | None:
+    """`2026-01-01`, `2026-01` or `2026` as a date. Anything else is None."""
     parts = value.strip().split("-")
     try:
         if len(parts) == 1:
@@ -408,7 +429,9 @@ def _split_values(raw: str) -> list[str]:
     return [part.strip() for part in raw.split(",") if part.strip()]
 
 
-def _parse_operators(text: str) -> tuple[str, dict[str, list[str]], list[str], list[str], date | None, date | None]:
+def _parse_operators(
+    text: str, today: date | None = None, locale: str | None = None
+) -> tuple[str, dict[str, list[str]], list[str], list[str], date | None, date | None]:
     """Lift the operators out of a query and hand back what is left.
 
     The remainder goes on to the time and scaffolding passes exactly as an
@@ -426,19 +449,21 @@ def _parse_operators(text: str) -> tuple[str, dict[str, list[str]], list[str], l
         name = match.group(1).lower()
         value = match.group(2) if match.group(2) is not None else (match.group(3) or "")
         if name in _DATE_OPERATORS:
-            when = _parse_date_operator(value)
-            if when is None:
+            named = _date_operator_span(value, today or clock.today(), locale)
+            if named is None:
                 # Not a date this parser reads: leave the text in place so the
                 # free-text path can try, rather than swallowing it silently.
                 return match.group(0)
+            first, last = named
             if name in ("before", "until"):
                 # Exclusive, the way every search box that has these treats
                 # them: "before 2026-01-01" does not mean "including new
-                # year's day". `until:` is the inclusive spelling for anyone
-                # who wants the other reading.
-                until = when - timedelta(days=1) if name == "before" else when
+                # year's day", and `before:tuesday` leaves Tuesday out (Q25,
+                # as mail search does). `until:` is the inclusive spelling,
+                # and Settings can make `before:` count its day too.
+                until = last if name == "until" or _BEFORE["includes_day"] else first - timedelta(days=1)
             else:
-                since = when + timedelta(days=1) if name == "after" else when
+                since = last + timedelta(days=1) if name == "after" else first
             return " "
         key = _OPERATOR_NAMES[name]
         for value_part in _split_values(value):
@@ -500,12 +525,12 @@ def _read_window(remainder: str, today: date, locale: str | None, operator_dates
     if dated is not None:
         since, until, phrase, start, end = dated
         return (remainder[:start] + " " + remainder[end:]).strip(), since, until, phrase, soft
-    found = recognise.question_range(remainder, today)
+    found = recognise_questions.question_range(remainder, today)
     if found is not None:
         since, until, phrase, start, end, soft = found
         remainder = (remainder[:start] + " " + remainder[end:]).strip()
         return remainder, since, until, phrase, soft
-    day = recognise.question_day(remainder, today, locale)
+    day = recognise_questions.question_day(remainder, today, locale)
     if day is not None:
         since, until, phrase, start, end = day
         remainder = (remainder[:start] + " " + remainder[end:]).strip()
@@ -530,7 +555,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     text, without = _take_negated(text)
     text, categories, without_categories = _take_categories(text)
     text, tag_count = _take_tag_count(text)
-    remainder, filters, phrases, excluded, since, until = _parse_operators(text)
+    remainder, filters, phrases, excluded, since, until = _parse_operators(text, today, locale)
     operator_dates = since is not None or until is not None
     kept = remainder
     remainder, since, until, phrase, soft = _read_window(remainder, today, locale, operator_dates, since, until)
@@ -635,7 +660,7 @@ _PRONOUNS = frozenset(
 )
 
 #: A word with an apostrophe in it, either mark: "I've", "you’re", "don't", "Alice's".
-_APOSTROPHE_WORD = re.compile(r"\b([^\W\d_]+)['\u2019]([^\W\d_]+)\b")
+_APOSTROPHE_WORD = lazy_compile(r"\b([^\W\d_]+)['\u2019]([^\W\d_]+)\b")
 #: The bases whose "'s", "'d" or "'ll" is a pronoun or an auxiliary, never a possessive.
 _SPEAKER_BASES = frozenset(
     """i you we they he she it that this there here who what where when why how which would could should might must
@@ -697,7 +722,7 @@ def is_topic_word(term: str) -> bool:
     return bool(word) and word not in STOPWORDS and word not in FUNCTION_WORDS
 
 
-_LEADING_COMMAND = re.compile(r"^\s*(?:please\s+)?(?:pull|bring)\s+up\b")
+_LEADING_COMMAND = lazy_compile(r"^\s*(?:please\s+)?(?:pull|bring)\s+up\b")
 
 
 def search_terms(text: str) -> list[str]:

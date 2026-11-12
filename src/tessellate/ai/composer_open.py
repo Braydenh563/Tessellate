@@ -11,7 +11,7 @@ words, chosen for what was asked:
   do ("Book the tram pass before we go.");
 - `when`: the sentences that carry a date, not every date in the note;
 - `who`: the people the note names;
-- `point`: handled by the digest's "Summarise this" (`composer_digest._THIS`).
+- `point`: handled by the digest's "Summarise this" (`composer_digest_sentences._THIS`).
 
 Every clause is the note's sentence, or a count or list of names read off it
 (the composer's rule, `composer.py`); the connecting words are `PHRASES`,
@@ -25,7 +25,7 @@ import re
 
 from tessellate.core.lazyre import lazy_compile
 
-from tessellate.ai import recognise
+from tessellate.ai import recognise_questions
 
 PHRASES: dict[str, str] = {
     "open_left_a1": "Still open here: ",
@@ -55,7 +55,7 @@ PHRASES: dict[str, str] = {
 #: The question's kind. Anchored on the asking words, so a subject-bearing
 #: question ("when is the dentist") falls to `reads_note`'s subject check.
 _KINDS: tuple[tuple[str, re.Pattern], ...] = (
-    ("left", re.compile(
+    ("left", lazy_compile(
         r"\bwhat(?:'s| is| else)?\s+(?:is |are )?(?:left|remaining|outstanding|still (?:to do|open|needed))\b|"
         r"\bwhat\s+(?:do|should|must|can|could)\s+i\s+(?:still\s+)?(?:do|need to|have to)\b|"
         r"\bwhat(?:'s| is)\s+next\b|\bnext steps?\b|\bto-?dos?\b|\baction items?\b|\bremaining tasks?\b|"
@@ -63,16 +63,16 @@ _KINDS: tuple[tuple[str, re.Pattern], ...] = (
         #: "what is not done yet", "how many are left", "what's unpacked" (audit 1030 Z33).
         r"\bwhat(?:'s| is| are)\s+(?:not\s+(?:done|finished|ticked|checked|packed|complete\w*)|un(?:done|ticked|checked|packed|finished|complete\w*))\b|"
         r"\bhow\s+many\b[^?]*\b(?:left|remaining|open|to\s+go)\b", re.I)),
-    ("done", re.compile(
+    ("done", lazy_compile(
         r"\bwhat(?:'s| is| have i| has been)?\s+(?:i\s+)?(?:done|finished|ticked(?: off)?|checked(?: off)?|packed|completed)\b|"
         r"\bwhat\s+have\s+i\s+(?:done|finished|ticked|packed|completed)\b|\bhow\s+many\b[^?]*\b(?:done|ticked|checked|packed|finished|complete\w*)\b", re.I)),
-    ("who", re.compile(
+    ("who", lazy_compile(
         r"\bwho\b[^?]*\b(?:involved|mentioned|named|in (?:it|this)|on (?:it|this)|there)\b|\bwhich people\b|\bwho(?:'s| is) here\b|"
         r"\bwho(?:'s| is) (?:this|it)(?: note)? (?:about|for|with)\b", re.I)),
-    ("when", re.compile(
+    ("when", lazy_compile(
         r"\bdeadlines?\b|\bdue (?:date|when|by)\b|\bwhen\s+(?:is|does|do|did|are|will|should|was)\s+(?:it|this|that|we)?\s*(?:due|happening|happen|start|end|finish|over)?\b|"
         r"\bwhat (?:dates?|days?)\b|\b(?:which|any|all the|list the|show the|what are the) (?:dates?|days?|deadlines?)\b|\bdates?\b[^?]*\b(?:mentioned|in (?:it|this|here)|given|named|are there)\b|\bby when\b|\bwhen is (?:it )?due\b|\bwhen\s+(?:is|are)\s+the\b", re.I)),
-    ("point", re.compile(
+    ("point", lazy_compile(
         r"\b(?:main|key|big|core)\s+(?:point|idea|takeaway)s?\b|\btake-?aways?\b|\bwhat(?:'s| is)\s+important\b|\bwhat matters\b|\bgist\b", re.I)),
 )
 
@@ -210,7 +210,7 @@ def _done(out, view, question: str, salt: str) -> None:  # noqa: ANN001
 
 
 def _when(out, view, question: str, salt: str) -> None:  # noqa: ANN001
-    said = [s for s in view.sentences if s.kind != "picture" and recognise.dated_sentence(s.text)][:2]
+    said = [s for s in view.sentences if s.kind != "picture" and recognise_questions.dated_sentence(s.text)][:2]
     if not said:
         _say(out, "open_when_none")
         return

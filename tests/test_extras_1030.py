@@ -15,7 +15,9 @@ from pathlib import Path
 import pytest
 from fastapi import HTTPException
 
-from test_forgot_password import (  # noqa: F401  # the fixtures are autouse there
+from tests import _js_scope
+
+from tests.test_forgot_password import (  # noqa: F401  # the fixtures are autouse there
     _clean,
     _devices_already_allowed,
     _known_code,
@@ -135,7 +137,9 @@ def _node(script: str):
 def _js_function(path: str, name: str) -> str:
     import re
 
-    text = (ROOT / path).read_text(encoding="utf-8")
+    #: A wrapped script (ranked row 37a) is read as it was before the closure (`_js_scope.unwrapped`):
+    #: this slices a private function by its head and `\n}\n` tail; the code asserted on is unchanged.
+    text = _js_scope.unwrapped((ROOT / path).read_text(encoding="utf-8"))
     start = re.search(rf"\n(?:async )?function {name}\(", text).start() + 1
     return text[start : text.index("\n}\n", start) + 2]
 

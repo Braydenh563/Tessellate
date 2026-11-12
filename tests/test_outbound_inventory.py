@@ -47,8 +47,12 @@ INVENTORY = {
         "GET /models/bench/budgets?live=true, the interaction budgets timed on the person's notebook",
     ),
     "ai/captions.py": (
-        "the whisper.cpp captions helper at TESSELLATE_CAPTIONS_URL, refused unless it is this computer (loopback)",
+        "the captions helper (the app's own child process, or TESSELLATE_CAPTIONS_URL), refused unless it is this computer (loopback)",
         "Live captions started from the palette, and a status probe while the captions dock is open",
+    ),
+    "ai/captions_process.py": (
+        "this computer only: the app's own captions helper child process on 127.0.0.1 (a health probe, no proxy)",
+        "the first Live captions start once the Live captions engine and model are installed",
     ),
     "ai/provider_http.py": (
         "the person's model server: Ollama at localhost:11434 or an OpenAI-compatible one at localhost:1234 unless they typed another address",
@@ -59,6 +63,8 @@ INVENTORY = {
         "huggingface.co (an allowlisted model, or the metadata and files of a repo typed into Pull a model by name)",
         "an Install, Reinstall or Pull click in Settings, or a yes to the one-time question about search by meaning",
     ),
+    "entry/sync_link.py": ("another computer the person paired by typing its address, over its own HTTPS port, certificate pinned on first contact", "the person presses Pair or Sync now in Settings, after pairing; nothing runs in the background"),
+    "core/languagetool.py": ("this computer only: the installed LanguageTool child process on 127.0.0.1", "a grammar check once the LanguageTool extra is installed"),
     "core/extra_downloads.py": ("the pinned URL of an allowlisted extra, sha256 checked", "an Install click in Settings, Extras"),
     "core/privacy_http.py": ("whatever its caller names; records each destination on the privacy receipt", "its callers' triggers"),
     "core/webclip.py": ("the page the person clipped, or the agent's read_url", "web_search_enabled (off by default)"),

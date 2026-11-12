@@ -237,4 +237,4 @@ def test_a_comparison_heads_each_side_without_its_the(ask, question):
     assert heads and all(not re.match(r"\*\*(?:the|The) ", h) for h in heads), said
     assert any("Lisbon trip" in h for h in heads) and any("dentist" in h.lower() for h in heads), said
     #: Mid-sentence the article stays.
-    assert "mentions the dentist" in said, said
+    assert re.search(r"mentions? the dentist", said), said

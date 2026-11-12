@@ -30,13 +30,14 @@ and measured by `tests/_composer_eval.py --noise`.
 
 from __future__ import annotations
 
+import difflib
 import math
 import re
 
 from tessellate.core.lazyre import lazy_compile
 from collections import Counter
 
-from tessellate.ai import act_registry, repair_turn, spelling
+from tessellate.ai import act_registry, composer_aboutme, repair_turn, spelling, typo_context
 from tessellate.ai.spelling import distance  # noqa: F401 - re-exported: the speller owns it, so the two modules do not import each other
 
 # --- 1. slang and text-speak ----------------------------------------------------
@@ -479,6 +480,28 @@ def strip_strays(text: str) -> str:
     return _RUN_OF_SPACES.sub(" ", text).strip()
 
 
+_RATING_SLASH = lazy_compile(r"(?<![\w/])(\d{1,3}) ?/ ?(5|10|20|100)\b(?! ?/)")
+_DATE_CUES = frozenset("on by due before until till from since at for of around near about after during circa week"
+                        " starting ending".split())
+# A fraction is a rating only beside a rating word; with none ("what did I do around 9/10") it is a date (the owner,
+# 2026-11-11: "9/10 could be a date based on context").
+_RATING_CUES = lazy_compile(r"\b(?:is|was|are|were|gave|give|given|giving|rate[ds]?|rating|ratings|scored?|scores|stars?|out)\b", re.I)
+
+
+def _rating_words(text: str) -> str:
+    """"is Piranesi 9/10" is a rating ("9 out of 10", which the readers already take), not 9 October; after "on",
+    "by", "due" and the like it stays a date (audit 1030 Z17)."""
+    def say(m: re.Match) -> str:
+        before = text[: m.start()].split()
+        if before and before[-1].lower() in ("a", "an"):  # "I reckon it was around a 9/10": "a 9/10" is always a score
+            return f"{m.group(1)} out of {m.group(2)}"
+        if int(m.group(1)) > int(m.group(2)) or (before and before[-1].lower() in _DATE_CUES) or not _RATING_CUES.search(text):
+            return m.group(0)
+        return f"{m.group(1)} out of {m.group(2)}"
+
+    return _RATING_SLASH.sub(say, text) if "/" in text else text
+
+
 def tidy(text: str) -> str:
     """A question as it was meant before anything reads it (INBOX 801): stray
     keys off its edges, runs of spaces made one (line breaks kept, a pasted
@@ -486,7 +509,7 @@ def tidy(text: str) -> str:
     ("NOTEBOOK STATS") put in lower case. One capitalised word ("NASA") is a
     name and stays. Words are never changed here: `repair` does that, for
     the readers that want it."""
-    text = strip_strays(text)
+    text = _rating_words(strip_strays(text))
     words = re.findall(r"[A-Za-z]{2,}", text)
     if len(words) >= 2 and len(text) <= 200 and not re.search(r"[a-z]", text):
         text = text.lower()
@@ -539,6 +562,7 @@ SOCIAL_PHRASES: dict[str, str] = {
     "how is it going": "how", "how's it going": "how", "whats up": "how", "what's up": "how",
     "what is up": "how", "how you doing": "how", "how are things": "how", "you good": "how",
     "what are you doing": "how", "what you up to": "how", "what are you up to": "how",
+    "whatcha doing": "how", "whatcha up to": "how", "watcha doing": "how",
     "my bad": "sorry", "my mistake": "sorry", "sorry about that": "sorry",
     "wait what": "confused", "come again": "confused", "say again": "confused", "sorry what": "confused",
     "i dont get it": "confused", "i don't get it": "confused", "i dont understand": "confused",
@@ -1911,7 +1935,7 @@ SOCIAL.update({
     "stunning": "compliment", "fabulous": "compliment", "superb": "compliment",
     "outstanding": "compliment", "incredible": "compliment", "marvelous": "compliment",
     "genius": "compliment", "clever": "compliment", "intelligent": "compliment",
-    "kind": "compliment", "rad": "compliment", "sick": "compliment", "epic": "compliment",
+    "kind": "compliment", "rad": "compliment", "epic": "compliment",
     "ugly": "insult", "horrible": "insult", "crap": "insult", "trash": "insult",
     "garbage": "insult", "rubbish": "insult", "junk": "insult", "sucks": "insult",
     "stinks": "insult", "boring": "insult", "lame": "insult", "weak": "insult",
@@ -2141,6 +2165,13 @@ def _social_phrases(text: str) -> tuple[list[str], str]:
     return kinds, text
 
 
+def asks_how(message: str) -> bool:
+    """Whether a message asks how the app is or what it is doing ("hey! whatcha
+    doing??"), whatever else it says: a greeting leads the kind, this is the rest."""
+    text = " ".join(re.split(r"[^\w']+", strip_symbols(destretch(drop_filler((message or "").strip()))).lower())).strip()
+    return "how" in _social_phrases(text)[0]
+
+
 _SOCIAL_RANK = ("repair", "confused", "thanks", "sorry", "bye", "morning", "greeting", "how", "who", "frustrated", "reaction", "laugh", "compliment", "insult", "emotion", "glad")
 
 
@@ -2160,7 +2191,9 @@ def _spoken_to_kind(message: str) -> str | None:
     what I asked" (INBOX 1668 b), whatever else the message could be."""
     if asks_identity(message):
         return "who"
-    return "repair" if repair_turn.is_repair(message) else addressed_kind(message)
+    if repair_turn.is_repair(message):
+        return "repair"
+    return addressed_kind(message) or composer_aboutme.kind(message)
 
 
 def social_kind(message: str) -> str | None:
@@ -2306,7 +2339,8 @@ def _split(word: str) -> str | None:
     low = word.lower()
     if len(low) < 5 or low in VOCABULARY or low in REAL_WORDS:
         return None
-    for cut in range(2, len(low) - 1):
+    #: The head is an asking word, so only cuts up to the longest one are tried (each cut copies the word).
+    for cut in range(2, min(len(low) - 1, max(map(len, ASKING)) + 1)):
         head, tail = low[:cut], low[cut:]
         if head in ASKING and tail in VOCABULARY:
             return f"{head} {tail}"
@@ -2328,6 +2362,19 @@ def _small_talk_words() -> frozenset:
     return _SMALL_TALK["words"]
 
 
+def slips_only(text: str, known=frozenset()) -> str:  # noqa: ANN001
+    """`repair`, keeping only the slips: a word changed to one that looks like it ("abuot" to "about", "tokio" to
+    "Tokyo") is taken, a word spelled out ("Dr" to "doctor", "uni" to "university") stays as typed, so the search
+    still finds the notes that say it as the person did (round 3, R3-17). The question as typed when the repair
+    added or dropped a word."""
+    typed = " ".join((text or "").split())
+    fixed = repair(tidy(typed), known=known) or typed
+    old, new = typed.split(" "), fixed.split(" ")
+    if len(old) != len(new):
+        return typed
+    return " ".join(b if difflib.SequenceMatcher(None, a.lower().strip("?.,!"), b.lower().strip("?.,!")).ratio() >= 0.6 else a for a, b in zip(old, new, strict=True))
+
+
 def repair(text: str, report: list | None = None, known=frozenset(), fixed: list | None = None) -> str:  # noqa: ANN001
     """Slang spelled out, asking words put right, run-together words split
     and split words joined, then every other misspelt word read as the word it
@@ -2344,7 +2391,7 @@ def repair(text: str, report: list | None = None, known=frozenset(), fixed: list
     i = 0
     while i < len(tokens):
         i += _repair_token(tokens, i, out, text, report, known, fixed)
-    return " ".join(w for w in _real_word_slips(out, fixed) if w)
+    return " ".join(w for w in _real_word_slips(out, fixed, report) if w)
 
 
 #: Real-word slips (Brief 104): a word that is a word, read as another only
@@ -2359,8 +2406,34 @@ _ITS_NOUNS = frozenset(
 )
 
 
-def _real_word_slips(tokens: list[str], fixed: list | None) -> list[str]:
+_AUX_BEFORE_KNOW = frozenset({"do", "did", "does", "can", "could", "would", "should", "to"})
+
+
+def _context_slip(out: list[str], i: int, fixed: list | None, report: list | None, words) -> None:  # noqa: ANN001
+    """A real word that the sentence and the notebook say is another ("notes form last week", "run my skull"):
+    read as it (`typo_context`), the other offered when the two stay close. The notebook's own words weigh in there."""
+    word = out[i].rstrip("?!.,:;")
+    if not word.islower() or (i and out[i - 1].rstrip("?!.,:;") != out[i - 1]):
+        return
+    read = typo_context.real_slip(out, i, words)
+    if read is None:
+        return
+    chosen, other = read
+    if report is not None and other:
+        report.append({"typed": word, "chosen": chosen, "alternative": other})
+    if chosen != word.lower():
+        typo_context.swap(words, word, chosen)
+        out[i] = chosen + out[i][len(word):]
+        if fixed is not None:
+            fixed.append((word, chosen))
+
+
+def _real_word_slips(tokens: list[str], fixed: list | None, report: list | None = None) -> list[str]:
     out = list(tokens)
+    #: Counted once and kept up to date, so a long question is read in one pass.
+    words = typo_context.seen(out)
+    for i in range(len(out)):
+        _context_slip(out, i, fixed, report, words)
     for i in range(1, len(out)):
         prev = out[i - 1].lower().rstrip("?!.,:;")
         word = out[i].rstrip("?!.,:;")
@@ -2370,6 +2443,9 @@ def _real_word_slips(tokens: list[str], fixed: list | None) -> list[str]:
             out[i] = _AFTER_INTENSIFIER[low] + tail
         elif low in _ITS_NOUNS and prev in ("it's", "it’s") and out[i - 1].rstrip("?!.,:;") == out[i - 1]:
             out[i - 1] = "its"
+        elif low == "no" and prev in ("i", "we", "you") and i >= 2 and out[i - 2].lower() in _AUX_BEFORE_KNOW and i + 1 < len(out):
+            #: "what do i no about hanna": "no" after "do I" is "know" (R9-14).
+            out[i] = "know" + tail
         else:
             continue
         if fixed is not None:
@@ -2477,7 +2553,7 @@ def _repair_misspelt(token: str, word: str, tail: str, nxt: str, text: str, out:
     chosen = nearest(low, ASKING, after) if _at_asking_place(out) and not spelt else None
     pool = ASKING
     if not chosen and _speller_may_read(word, out):
-        if _repair_by_speller(word, tail, after, out, report, known, fixed):
+        if _repair_by_speller(word, tail, after, out, report, known, fixed, text):
             return
     #: Past the opening words only the long words that name a kind
     #: of question are repaired ("lastest"): a subject word near a
@@ -2509,10 +2585,8 @@ def _run_on_reading(word: str, known) -> tuple[str, str] | None:  # noqa: ANN001
     )
 
 
-def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report, known, fixed) -> bool:  # noqa: ANN001
-    """Reads a misspelt word as the word it is near (`spelling.fix`), or as two
-    words run together, one of them small ("thenthe"), tried only when no list
-    word is near; True when it did and `out` has the reading."""
+def _speller_reading(word: str, after: str, out: list[str], known, text: str) -> tuple[str, str | None] | None:  # noqa: ANN001
+    """The speller's (reading, alternative) for a misspelt word, the sentence choosing between two (INBOX 1745)."""
     low = word.lower()
     read = spelling.fix(
         low, after=after.lower(), before=out[-1].strip("?!.,:;") if out else "", known=known, distance=distance,
@@ -2522,6 +2596,17 @@ def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report,
     #: "Kristopher called" (Brief 90's list, O3).
     if read and word[:1].isupper() and read[0] not in spelling._common():
         read = None
+    if read and read[1] and typo_context.speaks_for(read):
+        #: Two readings near the word: the sentence, the notebook and the last turn choose (INBOX 1745).
+        read = typo_context.lean(low, [read[0], read[1]], out[-1] if out else "", after, text.split(), False)
+    return read
+
+
+def _repair_by_speller(word: str, tail: str, after: str, out: list[str], report, known, fixed, text: str = "") -> bool:  # noqa: ANN001
+    """Reads a misspelt word as the word it is near (`spelling.fix`), or as two
+    words run together, one of them small ("thenthe"), tried only when no list
+    word is near; True when it did and `out` has the reading."""
+    read = _speller_reading(word, after, out, known, text)
     if read:
         chosen = read[0].capitalize() if word[0].isupper() else read[0]
         if report is not None and read[1]:
@@ -2597,6 +2682,9 @@ def guided(text: str, accepts, vocabulary=None, *, real_to=_COMMAND_GLUE, known=
             continue
         pool = vocabulary if real_to is None or not spelling.is_word(low) else vocabulary & real_to
         for word in _one_slip_from(low, pool):
+            #: A word that is a title, tag or name of the notebook's own is not the command word (INBOX 1745).
+            if typo_context.prefers(low, word):
+                continue
             reading = " ".join([*tokens[:i], word + token[len(core):], *tokens[i + 1:]])
             if accepts(reading):
                 return reading
@@ -2707,3 +2795,24 @@ def guess_kind(asking: str, embed=None) -> str | None:  # noqa: ANN001
 
 #: The Guide reads a question through this (`act_registry.repair`).
 act_registry.repair = repair
+
+
+#: A catch-up asked with no window ("hey what's been happening?", "what have I
+#: been up to", "catch me up", "what did I miss"): the past week's recap. Whole
+#: question only, so "catch me up on Harbor" stays a recall and "whats
+#: happening" alone (small talk, `intent`) and "what's coming up" (the agenda)
+#: are not it; "been" or "lately" is what makes "happening" past.
+CATCH_LEAD = lazy_compile(r"^(?:(?:hey|hi|hello|hiya|yo|so|ok|okay|well|um)\b[ ,!]*)+", re.I)
+_CATCH_UP = lazy_compile(
+    r"^(?:(?:what|whats)(?: has| have)? been (?:happening|going on)(?: (?:lately|recently|so far|these days))?"
+    r"|(?:what|whats)(?: is| has)? (?:happening|going on|happened) (?:lately|recently|these days)"
+    r"|(?:what|whats)(?: have| has| did)? (?:i|we) (?:been (?:up to|doing)|miss(?:ed)?)"
+    r"|(?:catch me up|bring me up to speed|fill me in|catch us up))(?: please)?$"
+)
+
+
+def catching_up(question: str) -> bool:
+    """Whether the whole question is a catch-up with no window and no subject."""
+    text = CATCH_LEAD.sub("", (question or "").strip().lower().replace("\u2019", "'"))
+    text = " ".join(re.sub(r"[^a-z' ]", " ", text).replace("'s", "s").replace("'", "").split())
+    return bool(text) and len(text) <= 60 and bool(_CATCH_UP.match(text))

@@ -38,18 +38,20 @@ def test_a_write_that_changes_existing_text_parks_with_nothing_outside_read(monk
     assert confirms == ["edit_note", "rename_tag", "unlink_notes"], confirms
 
 
-def test_a_write_that_only_adds_runs_without_a_card(monkeypatch, app_state):
+def test_a_write_that_only_adds_parks_too(monkeypatch, app_state):
+    """Intent moved (owner, 2026-11-10, "any and all actions need the user's consent"):
+    an add waited no more than a removal did before; now it parks for a card like the rest."""
     ran, confirms = _run(monkeypatch, [
         {"name": "create_note", "arguments": {"content": "Buy oat milk"}},
         {"name": "tag_note", "arguments": {"note_id": 1, "add": ["home"]}},
     ])
-    assert ran == ["create_note", "tag_note"], ran
-    assert confirms == []
+    assert ran == [], ran
+    assert confirms == ["create_note", "tag_note"]
 
 
-def test_removing_a_tag_parks_but_adding_one_does_not():
+def test_removing_a_tag_parks_and_so_does_adding_one():
     assert tools.needs_confirm("tag_note", {"note_id": 1, "remove": ["x"]})
-    assert not tools.needs_confirm("tag_note", {"note_id": 1, "add": ["x"]})
+    assert tools.needs_confirm("tag_note", {"note_id": 1, "add": ["x"]})
     assert tools.needs_confirm("delete_note", {})
     assert not tools.needs_confirm("get_note", {})
 
@@ -67,7 +69,7 @@ def test_every_write_tool_is_in_one_class():
 def test_the_settings_group_says_which_tools_ask_first():
     groups = {row["name"]: row["group"] for row in tools.tool_catalog()}
     assert groups["edit_note"] == "confirm" and groups["delete_note"] == "confirm"
-    assert groups["create_note"] == "write"
+    assert groups["create_note"] == "confirm" and groups["get_note"] == "read"
 
 
 def test_the_tip_matches_the_gate():

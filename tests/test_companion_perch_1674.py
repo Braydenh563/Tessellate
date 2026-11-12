@@ -18,11 +18,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-MENU = (JS / "companion-menu.js").read_text(encoding="utf-8")
-AV = (JS / "avatars.js").read_text(encoding="utf-8")
+MENU = unwrapped((JS / "companion-menu.js").read_text(encoding="utf-8"))
+AV = unwrapped((JS / "avatars.js").read_text(encoding="utf-8"))
 MIND = MENU[MENU.index("const NMB_MIND_ACTS") :]
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")

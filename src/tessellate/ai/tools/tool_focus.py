@@ -27,9 +27,8 @@ def needs_confirm(name: str, arguments: dict | None = None, approved: bool = Fal
         return True
     if approved:
         return False
-    if name in CHANGE_TOOLS:
-        return True
-    return name == "tag_note" and bool((arguments or {}).get("remove"))
+    #: Every write waits (owner, 2026-11-10: "any and all actions need the user's consent"), adds too.
+    return name in WRITE_TOOLS or name in CHANGE_TOOLS or (name == "tag_note" and bool((arguments or {}).get("remove")))
 
 # "Do something about my notebook" without saying what. The safe answer is the
 # whole toolbox: this is exactly the request that needs tools we can't guess.
@@ -168,8 +167,7 @@ def focus_detail(question: str, recent: str = "") -> toolwords.Focus:
     wanted.extend(["web_search", "read_url"])
     # De-duplicated but order-preserving: a group can name a tool that is
     # already core, and a repeated schema is a wasted schema.
-    seen: set[str] = set()
-    unique = [n for n in wanted if not (n in seen or seen.add(n))]
+    unique = list(dict.fromkeys(wanted))
     return toolwords.Focus(
         tools=unique,
         ranked=ranked,

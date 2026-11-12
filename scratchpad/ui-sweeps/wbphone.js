@@ -42,7 +42,7 @@ async function dismissRecovery(page) {
 
 async function newBoard(page, name, type) {
   await dismissRecovery(page);
-  await page.click('[data-tab="library"]');
+  await page.click('#tab-btn-library');
   await page.waitForTimeout(600);
   // On a phone an open board hides the Library's sub-tabs (INBOX 392); its
   // own "Boards" is the way back to them, as it is for a person.

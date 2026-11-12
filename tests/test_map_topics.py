@@ -64,7 +64,7 @@ def test_the_upgrade_marks_the_topics_a_map_gesture_already_made(tmp_path):
     after, a long note and a board are not."""
     import sqlite3
 
-    from tessellate.core.database import DatabaseManager, _ensure_alembic_baseline
+    from tessellate.core.database_manager import DatabaseManager, _ensure_alembic_baseline
 
     from datetime import datetime
 

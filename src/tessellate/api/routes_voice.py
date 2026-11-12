@@ -5,15 +5,15 @@ transcribes with local Whisper, nothing is sent anywhere.
 from __future__ import annotations
 
 import logging
+import re
 import tempfile
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import captions, librarian, voice
-from tessellate.api import bounds
+from tessellate.ai import captions, diarize, natural_voice, voice
 from tessellate.core import activity, deps
 from tessellate.api.this_computer import this_computer_only
 from tessellate.core.deps import get_session
@@ -22,11 +22,6 @@ from tessellate.entry.manager import log_action
 router = APIRouter(prefix="/voice", tags=["voice"])
 
 MAX_AUDIO_BYTES = 25 * 1024 * 1024  # a spoken note, not a podcast
-# A meeting or a lecture runs far longer than a spoken note, 300MB covers
-# several hours of compressed voice audio (WebM/Opus at typical browser
-# bitrates), well past what CPU-based Whisper could transcribe in a sitting
-# anyway, so this is a sanity ceiling, not the expected common case.
-MAX_MEETING_AUDIO_BYTES = 300 * 1024 * 1024
 
 
 @router.get("/status")
@@ -45,7 +40,29 @@ def status() -> dict:
         #: The translator's row waits for this (WORLD_CLASS_PLAN 28.5 row 10,
         #: Brief 83): shown only once true, so no control does nothing.
         "translate": False,
+        #: Speaker labels by voice are ready (the Speakers bundle is installed):
+        #: the recordings menu runs them, or points to Settings, Packages.
+        "speakers_by_voice": diarize.available(),
+        #: The natural voice (Piper, Settings, Packages): `available` is true only with the
+        #: engine and the voice both on disk; the page falls back to the browser's voices.
+        "speak": natural_voice.status(),
     }
+
+
+class SpeakIn(BaseModel):
+    text: str = Field(max_length=natural_voice.MAX_CHARS * 4)
+
+
+@router.post("/speak")
+def speak(body: SpeakIn) -> Response:
+    """Read `body.text` aloud in the natural voice: a wav, made on this computer, kept nowhere."""
+    if not natural_voice.available():
+        raise HTTPException(status_code=503, detail=natural_voice.INSTALL_HINT)
+    try:
+        wav = natural_voice.speak(body.text)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    return Response(wav, media_type="audio/wav", headers={"Cache-Control": "no-store"})
 
 
 @router.delete("/models/{size}", dependencies=[Depends(this_computer_only)])
@@ -71,7 +88,9 @@ def _transcribe_upload(
     if not data:
         raise HTTPException(status_code=400, detail="The recording is empty.")
 
-    suffix = Path(file.filename or "clip.webm").suffix[:8] or ".webm"
+    # Only a plain extension of the upload's name reaches the temp file's name (CodeQL path injection).
+    suffix = Path(file.filename or "").suffix.lower()
+    suffix = suffix if re.fullmatch(r"\.[a-z0-9]{1,7}", suffix) else ".webm"
     # delete=True keeps the file open under this handle for the `with` block's
     # whole lifetime: harmless on POSIX, where a second handle can still open
     # the same path, but Windows locks a file exclusively while any handle on
@@ -112,41 +131,3 @@ def transcribe(file: UploadFile, session: Session = Depends(get_session)) -> dic
     return _transcribe_upload(
         file, session, MAX_AUDIO_BYTES, "That recording is larger than 25 MB."
     )
-
-
-@router.post("/transcribe-meeting")
-def transcribe_meeting(file: UploadFile, session: Session = Depends(get_session)) -> dict:
-    """The longer-recording sibling of `/transcribe` (§17: meeting notes):
-    same engine, same response shape, just a ceiling sized for a meeting or a
-    lecture rather than a spoken note."""
-    return _transcribe_upload(
-        file,
-        session,
-        MAX_MEETING_AUDIO_BYTES,
-        "That recording is larger than 300 MB.",
-    )
-
-
-class SummarizeBody(BaseModel):
-    #: A transcript, bounded (audit HR3: 3 MB was accepted): ten hours of
-    #: speech is about 600,000 characters.
-    text: str = Field(max_length=bounds.TRANSCRIPT_MAX)
-
-
-@router.post("/summarize")
-def summarize(body: SummarizeBody) -> dict:
-    """Decisions/action-items extraction for a meeting transcript (§25).
-    Best-effort like `/entries/suggest-tags`: a model that's offline or
-    errors mid-call must never block saving the meeting note, so every
-    failure here just means an empty summary, not a 5xx."""
-    text = body.text.strip()
-    if not text:
-        return {"summary": ""}
-    try:
-        summary = librarian.summarize_meeting(
-            text, deps.get_model_manager(), deps.get_ollama()
-        )
-    except Exception:
-        logging.getLogger("tessellate.voice").warning("meeting summary failed", exc_info=True)
-        summary = ""
-    return {"summary": summary}

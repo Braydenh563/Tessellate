@@ -3,6 +3,7 @@ through `/chat/stream` with no model, as the owner met it."""
 
 from __future__ import annotations
 
+from datetime import date
 import json
 
 from tessellate.ai import composer
@@ -78,7 +79,8 @@ def test_the_capability_rundown_is_composed_and_sized_to_the_request():
     medium = {capability.overview("what can you do", seed=str(i)) for i in range(12)}
     assert len(medium) > 4, "the same words every time"
     for text in medium:
-        assert "assistant" in text.lower() and "Atlas" in text
+        #: INBOX 1705: the rundown speaks as Atlas, not as Atlas's assistant.
+        assert "Atlas" in text and "assistant" not in text.lower()
         assert "connect a model" in text.lower() or "add one" in text.lower(), text
         assert text.count("**") == 6, text
     short = capability.overview("what can you do, briefly?", seed="a")
@@ -97,7 +99,8 @@ def test_who_are_you_says_it_is_the_assistant_not_atlas(ai_client, session):
     for table in (composer_smalltalk.SOCIAL, composer_smalltalk.SOCIAL_PROFESSIONAL):
         for line in table["who"]:
             assert "assistant" in line.lower(), line
-        for line in table["who"] + table["about_app"]:
+        #: INBOX 1705: "what can you do" is Atlas speaking, so only "who are you" keeps the assistant's voice.
+        for line in table["who"]:
             assert not line.startswith(("I'm Atlas.", "I am Atlas.", "Atlas,", "Atlas ", "Atlas.")), line
     text = _ask(ai_client, "who are you", notes_only=True, use_tools=False)["text"]
     assert "assistant" in text.lower(), text
@@ -208,8 +211,11 @@ def test_a_time_with_no_note_in_it_is_said_as_that_with_where_the_notes_are(clie
         text = _ask(client, "What did I write last month?", **body)["text"]
         assert "couldn't find" not in text and "last month" in text.lower(), (body, text)
         assert "All your notes are from" in text or "Every entry is dated" in text, text
+    #: An empty notebook has the one line everywhere (second audit G14, `composer_empty.EMPTY_NOTEBOOK`);
+    #: the wording varies where the notes are, so the window is given a first and a last day.
+    assert composer_empty.empty_window("last month", None, None) == composer_empty.EMPTY_NOTEBOOK
     for voice in ("natural", "professional"):
-        lines = {composer_empty.empty_window("last month", None, None, voice=voice, seed=str(i)) for i in range(60)}
+        lines = {composer_empty.empty_window("last month", date(2026, 10, 1), date(2026, 10, 9), voice=voice, seed=str(i), today=date(2026, 11, 10)) for i in range(60)}
         assert len(lines) >= 8, (voice, lines)
         assert all("!" not in line and chr(0x2014) not in line and line[0].isupper() for line in lines), lines
 
@@ -280,5 +286,5 @@ def test_a_misspelt_what_can_you_do_gets_the_capability_reply(ai_client, session
     answered with note citations. It gets the same reply the clean question gets."""
     clean = _ask(ai_client, "What can you do??", notes_only=True, use_tools=False)["text"]
     typed = _ask(ai_client, "Wat cna u do??", notes_only=True, use_tools=False)["text"]
-    assert "assistant" in typed.lower() and typed.count("**") == clean.count("**"), typed
+    assert "Atlas" in typed and typed.count("**") == clean.count("**"), typed
     assert "no note" not in typed.lower() and "[1]" not in typed, typed

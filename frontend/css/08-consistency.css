@@ -191,6 +191,7 @@
 .doc-dock-menu-list .doc-dock-menu-item.active,
 .doc-dock-menu-list .doc-dock-menu-item.is-on,
 .action-menu .menu-item[aria-pressed="true"],
+.action-menu .menu-item[aria-current="true"],
 .nav-history-menu .nav-history-item.nav-history-current {
   background: var(--accent-soft);
   color: var(--accent-text);
@@ -265,6 +266,20 @@
 .action-menu .menu-item.menu-item-unavailable:hover,
 .action-menu .menu-item.menu-item-unavailable:focus-visible {
   background: none;
+}
+/* A select row its option disables (a skill that needs a model) reads as
+   unavailable, as `.menu-item-unavailable` does; at 0,3,0 for the same reason
+   as above. The native popup's own grey never reached this menu (the owner,
+   2026-11-12: "I see no greyed out skills"). */
+.select-menu .select-option[aria-disabled="true"] {
+  color: var(--muted);
+  opacity: 0.75;
+  cursor: default;
+}
+.select-menu .select-option[aria-disabled="true"]:hover,
+.select-menu .select-option[aria-disabled="true"]:focus-visible {
+  background: none;
+  color: var(--muted);
 }
 /* A select's opener inside a dock menu is a *field*, not a menu row - it is
    the control the section's label names. Excluded from the row recipe by not
@@ -478,6 +493,14 @@ details[open] > :is(.fold-summary, .agent-step-group-summary)::after {
   padding: 0 0 var(--space-3);
   border-top: 0;
 }
+/* The topic's one line (INBOX 1612): first under its title, on the body's
+   edge, in the ink at the worded-control weight so it reads as the summary
+   and the body as the detail under it. */
+.help-accordion > details > p.help-topic-lead {
+  margin-bottom: var(--space-2);
+  font-weight: 500;
+  color: var(--text);
+}
 /* ---------------------------------------------------------------------------
    3. A dock is one bar, and its controls belong to it
    ---------------------------------------------------------------------------
@@ -579,14 +602,14 @@ details[open] > :is(.fold-summary, .agent-step-group-summary)::after {
   border-color: var(--accent);
   background: var(--input-bg);
 }
-/* One inset for anything that takes input: one fill, one radius, one
+/* One inset for anything typed into (a value field and a slider keep their own look, INBOX 1694 c): one fill, one radius, one
    height, and the same quiet edge as the search field beside it (INBOX 621:
    a bordered sort select next to an edgeless field was two answers again).
    Three of these (search, the select opener, the native select behind it)
    drew three radii while sitting side by side. The Ask composer and the
    chat strip are bars too (INBOX 813: one bar select), so their pickers take
    the same inset at their own bar's height rather than a form field's edge. */
-.dock input:not([type="checkbox"]):not([type="radio"]):not(.search-field-input),
+.dock input:not([type="checkbox"]):not([type="radio"]):not(.search-field-input, .value-field-input, [type="range"]),
 .dock select:not(.select-native-hidden):not(.dock-native-hidden),
 .dock .select-shell > .select-opener,
 .ask-composer .select-shell > .select-opener,
@@ -2100,7 +2123,7 @@ summary > .ph-lead,
   gap: var(--space-2);
   flex-wrap: nowrap;
   padding-top: var(--space-4);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
 }
 .atlas-composer > #help-chat-input {
   flex: 1 1 auto;
@@ -2190,7 +2213,7 @@ summary > .ph-lead,
 .help-atlas {
   margin: var(--space-2) 0 0;
   padding-top: var(--space-2);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
   font-size: var(--text-sm);
 }
 /* In a centred empty state the rule has no paragraph edge to run along: it
@@ -3608,6 +3631,27 @@ body .chip.item-label,
   .suggested-tag-dismiss:is(:hover, :focus-visible)::before {
     background: color-mix(in srgb, var(--error) 14%, transparent);
   }
+  /* The wrapzoom sweep (768): the 44px box hung 20px past a chip that clips
+     (a row's chips are `overflow: hidden` for their ellipsis), so only the
+     chip's own 24px took a press, and in cards the overhang lay over the
+     next chip. The chip keeps the overhang's width after it, as wrapped
+     pills keep the floor apart (DESIGN.md "One overhang rule"), its words
+     clip in the take half, and a row's lane keeps the overhang's height as
+     padding with the same negative margin, so no row grows. */
+  .entry-meta > .chip.suggested-tag {
+    margin-inline-end: calc(var(--target-min) - 1.5rem);
+  }
+  .entry-list .entry-meta > .chip.suggested-tag.suggested-tag {
+    overflow: visible;
+  }
+  .entry-meta > .chip.suggested-tag > .suggested-tag-take {
+    min-width: 0;
+    overflow: clip;
+  }
+  #entry-list.is-rows > li:not(:has(textarea)) > .entry-meta:has(> .chip.suggested-tag) {
+    padding-block: calc((var(--target-min) - 1.5rem) / 2);
+    margin-block: calc((1.5rem - var(--target-min)) / 2);
+  }
 }
 .entry-meta > .chip.filing-sure {
   gap: var(--space-1);
@@ -3931,7 +3975,7 @@ body .chip.item-label,
   :is(#library-docs-list, #bookmark-list):has(.doc-list-tick:checked) .doc-list-tick,
   .library-image-tile:is(:hover, :focus-within) > .library-tile-tick,
   .library-image-tile > .library-tile-tick:checked,
-  body:has(#library-media-selectbar:not(.hidden)) .library-image-tile > .library-tile-tick {
+  body.library-media-selecting .library-image-tile > .library-tile-tick {
     opacity: 1;
   }
   :is(.doc-list-item, .bookmark-row):is(:hover, :focus-within) :is(.doc-list-icon, .bookmark-mark),
@@ -4479,10 +4523,26 @@ body .chip.item-label,
   #reminder-groups li .entry-meta > .entry-actions > .menu-wrap {
     pointer-events: auto;
   }
+  /* `--target-min`, not the 28px it is at a desktop width: under 820 the ⋯
+     is 44px and a fixed 1.75rem left it 10px over the time (wrapzoom, 768). */
   #reminder-groups li .entry-meta > .entry-date {
-    margin-inline-end: calc(1.75rem + var(--space-2));
+    margin-inline-end: calc(var(--target-min) + var(--space-2));
+  }
+  /* **On hover the strip takes the time's place, not a slice of it**
+     (wrapzoom, every width: the strip is 222px and the time 250, so the
+     first 29px of "Wed," showed beside "+1h"; with a short time the strip
+     ran over the words instead). The time leaves the row and the strip
+     joins it, so the words end where the strip starts and ellipsise there.
+     The negative block margin keeps the row's height: the worded snoozes
+     are 4px taller than the line they sit in. */
+  #reminder-groups li:is(:hover, :focus-within) .entry-meta > .entry-date {
+    display: none;
   }
   #reminder-groups li:is(:hover, :focus-within) .entry-meta > .entry-actions {
+    position: static;
+    transform: none;
+    flex: 0 0 auto;
+    margin-block: calc(var(--space-1) * -1);
     /* Opaque, so the time under it does not show through: the row's own
        tint over the card it sits on. */
     background: linear-gradient(var(--surface-2), var(--surface-2)), var(--card);
@@ -5129,6 +5189,11 @@ body .chip.item-label,
    1010, so with a modal open it is seen dimmed behind the scrim, as the
    modal rule has it for every other thing on the page. */
 #nm-buddy-band {
+  /* Under <html>, not <body> (avatars.js, `nameMarkBuddyBuild`), so it says what it took from body. */
+  font-family: var(--ui-font, system-ui, -apple-system, "Segoe UI", sans-serif);
+  color: var(--ink);
+  font-size: var(--text-lg);
+  line-height: 1.5;
   position: fixed;
   left: 0;
   top: 0;
@@ -5282,25 +5347,22 @@ body .chip.item-label,
 }
 #nm-buddy:is([data-pose="stand"], [data-pose="sit"]) .nmb-size-grip { pointer-events: auto; }
 #nm-buddy .nm-buddy-face:active { cursor: grabbing; }
-/* **Its focus is a glow round the figure, not a box** (the owner,
-   2026-10-11: a blue rounded rectangle round the sleeping companion in its
-   large view). No ring from a click, and none of the base `:focus-visible`
-   outline (the button's 64 by 92 box, not the figure); from the keyboard a
-   soft accent glow behind the figure, an ellipse its own size. A gradient
-   on a still pseudo-element, not a `drop-shadow` on the moving drawing
-   (the "no filter on the figure" rule below). */
+/* **Its focus is a glow and a ring round the figure, not a box** (the owner, 2026-10-11: a blue
+   rounded rectangle round the sleeping companion). None from a click; from the keyboard an accent
+   ellipse its own size, on a still pseudo-element (no `drop-shadow` on the moving drawing). */
 #nm-buddy .nm-buddy-face:is(:focus, :focus-visible) { outline: none; }
 #nm-buddy .nm-buddy-face::before {
   content: "";
   position: absolute;
   inset: -10px -14px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 42%, transparent), color-mix(in srgb, var(--accent) 16%, transparent) 70%, transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 36%, transparent), transparent);
   opacity: 0;
   transition: opacity var(--ui-fast) var(--ease-out);
   pointer-events: none;
 }
-#nm-buddy .nm-buddy-face:focus-visible::before { opacity: 1; }
+/* The ring (an outline follows the ellipse, and forced colours keep it): the haze alone was 1.9:1, a focus indicator needs 3:1. */
+#nm-buddy .nm-buddy-face:focus-visible::before { opacity: 1; outline: 2px solid var(--accent); }
 /* **Its size** (avatars.js, `nameMarkBuddySetSize`): the figure scaled
    about the point it touches its perch, so it keeps its place on it: its
    soles standing, its seat sitting (`--nmb-edge`), its hands hanging, its
@@ -5347,7 +5409,7 @@ body .chip.item-label,
   transition-delay: 0s;
 }
 /* Hanging: bottom right, off the bar (the owner, 2026-11-05). */
-#nm-buddy[data-pose="hang"] .nmb-size-grip { top: auto; bottom: 2px; }
+#nm-buddy[data-pose="hang"] .nmb-size-grip { top: auto; bottom: 2px; cursor: nwse-resize; }
 @media (hover: none) {
   #nm-buddy .nmb-size-grip { display: none; }
 }
@@ -5596,6 +5658,9 @@ body .chip.item-label,
 }
 /* Hanging, its head is under its hands and the bar: beside its face. */
 .nm-viewer-figure > #nm-buddy[data-pose="hang"] > .nm-say { top: 48px; }
+/* Floating, it is 82px down the figure, so the line at 1.2 edges above it went under the card's head
+   (sticky, opaque): 1 edge keeps it 10px clear of it (INBOX 1698: "the little text bubbles get cut off"). */
+.nm-viewer-figure > #nm-buddy[data-pose="float"] > .nm-say { top: calc(var(--nmb-edge) * -1); }
 /* Limbs turn where they join the body: each carries its hip or shoulder
    as its `transform-origin` (avatars.js, `data-pivot`). */
 #nm-buddy :is(.nmb-arm, .nmb-leg) {
@@ -5684,7 +5749,7 @@ body .chip.item-label,
 #nm-buddy :is(.atl-layer-back, .atl-layer-front) { transform-origin: 31px 31px; transition: rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
 #nm-buddy[data-pose="lie-2"] :is(.atl-layer-back, .atl-layer-front) { rotate: calc(40deg - 80deg * var(--atl-v1)); }
 #nm-buddy[data-pose="lie"] :is(.atl-layer-back, .atl-layer-front) { rotate: calc(84deg - 168deg * var(--atl-v1)); }
-#nm-buddy .atl-figure-box > .atl-orbits { transform-origin: 31px 31px; transition: rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out); }
+#nm-buddy .atl-figure-box > .atl-orbits { transform-origin: 31px 31px; transition: rotate calc(var(--motion-slow) * 1.8) var(--ease-in-out), opacity calc(var(--motion-slow) * 3) var(--ease-out); }
 #nm-buddy[data-pose="lie-2"] .atl-figure-box > .atl-orbits { rotate: calc(40deg - 80deg * var(--atl-v1)); }
 #nm-buddy[data-pose="lie"] .atl-figure-box > .atl-orbits { rotate: calc(84deg - 168deg * var(--atl-v1)); }
 /* The ground shadow and the dark theme's glow follow the body down, to
@@ -5707,7 +5772,7 @@ body .chip.item-label,
    deeper at its heart, with a few stars in it, raised to take the body's
    weight. It is the host's own pseudo-element, so it stays level under the
    body whichever way the figure turns and costs no layer. */
-#nm-buddy:has(.atl-figure):is([data-pose="lie"], [data-pose="lie-2"], [data-pose="curl"])::before {
+#nm-buddy[data-atlas-figure]:is([data-pose="lie"], [data-pose="lie-2"], [data-pose="curl"])::before {
   top: calc(var(--nmb-edge) - 2px);
   height: 18px;
   background:
@@ -5721,7 +5786,7 @@ body .chip.item-label,
 /* Lying flat, the body's underside is lower than the ledge it sat on
    (atlasbed.js, the real companion: the torso spans 69 to 90 of the host's
    92px), so the bed sits under that, not behind the chest. */
-#nm-buddy:has(.atl-figure)[data-pose="lie"]::before { top: calc(var(--nmb-edge) + 6px); }
+#nm-buddy[data-atlas-figure][data-pose="lie"]::before { top: calc(var(--nmb-edge) + 6px); }
 /* The near half of the stream lies under the body as its bed, not over it. */
 #nm-buddy[data-pose="lie"] .atl-layer-neb-front { opacity: 0.35; }
 /* Settling: sitting back with the legs out. */
@@ -5824,8 +5889,8 @@ body .chip.item-label,
    as a whole, and the stream is its cushion, not a pillow. Its chair and
    beanbag are its own drawing's (atlas.js, `atlasCoilProp.seats`), so none of
    the generic props shows on it. */
-#nm-buddy.nmb-act-lie:has(.atl-figure-box) .nm-buddy-char { transform: none; }
-#nm-buddy:has(.atl-figure-box) .nms { opacity: 0; }
+#nm-buddy.nmb-act-lie[data-atlas-figure] .nm-buddy-char { transform: none; }
+#nm-buddy[data-atlas-figure] .nms { opacity: 0; }
 #nm-buddy.nmb-act-beanbag .nm-buddy-char { transform: translateY(12px) scale(1.03, 0.95); }
 #nm-buddy.nmb-act-chair .nm-buddy-char { transform: translateY(6px); }
 #nm-buddy.nmb-act-facepalm .nm-buddy-char { transform: rotate(-3deg) translateY(2px); }
@@ -5928,7 +5993,8 @@ body .chip.item-label,
 /* Tucked behind the bottom bar (the last resort in a small window): only
    its eyes over the edge, ducking out of sight when the pointer is near. */
 #nm-buddy[data-legs="peek"] .nm-buddy-face {
-  clip-path: inset(-80px -80px calc(92px - var(--nmb-edge)) -80px);
+  /* The top is the head, not the handle's air above it (the char sits at --nmb-edge - 34, rising to - 44 when it emerges). */
+  clip-path: inset(calc(var(--nmb-edge) - 44px) -80px calc(92px - var(--nmb-edge)) -80px);
 }
 #nm-buddy[data-legs="peek"] .nm-buddy-char {
   translate: 0 calc(var(--nmb-edge) - 34px);
@@ -6540,9 +6606,7 @@ body .chip.item-label,
   --atl-glow-c: color-mix(in oklab, var(--accent) 35%, #c3d8f8);
   --atl-ring-c: color-mix(in oklab, var(--accent) 25%, #c8d6ff);
   --atl-blush: #ff7d9c;
-  --atl-tongue: #ff94aa;
   --atl-heart-c: #ff4f7e;
-  --atl-tear-c: #a5dcff;
   --atl-gold: #ffd35c;
   --atl-gold-line: #9a6f00;
   --atl-amber: #f2a65a;
@@ -6559,7 +6623,6 @@ body .chip.item-label,
   --atl-aura: none;
   --atl-core: none;
   --atl-skirt: var(--atl-md);
-  --atl-flow: var(--atl-md);
   /* A chest star's brightness (atlas.js sets it per star). */
   --atl-b: 0.5;
   --atl-iris: var(--atl-ink);
@@ -6576,7 +6639,6 @@ body .chip.item-label,
   --atl-belly: none;
   --atl-tip: none;
   --atl-aura-a: 0.2;
-  --atl-shade-a: 0.4;
   --atl-k: 0;
   --atl-side: 1;
   /* The face at rest (calm). Every mood below overrides some of these. */
@@ -6735,7 +6797,7 @@ body .chip.item-label,
 .atl-lw-pose > .atl-lw-tip { position: absolute; left: 0; top: 0; width: 64px; height: 92px; will-change: rotate; }
 /* The lower body's and the tail's pose for what it is doing (atlas.js,
    `atlasLowerState`, INBOX 575): set by the rig, on the compositor. */
-.atl-lw > .atl-lw-pose { position: absolute; left: 0; top: 0; width: 64px; height: 92px; will-change: transform; }
+.atl-lw > .atl-lw-pose { position: absolute; left: 0; top: 0; width: 64px; height: 92px; will-change: translate; }
 .atl-lw-lower { transform-origin: 31px 55.5px; }
 /* The legs' limb gestures (`nameMarkBuddyLimbs`: rotate and scale) turn the box about the hip, the same two points the root's own `transform` uses. */
 .atl-lw-leg-l { transform-origin: 27.4px 60px; }
@@ -6851,7 +6913,13 @@ body .chip.item-label,
   & .atl-orbit-arm { animation: atl-orbit var(--atl-orbit-t) linear calc(var(--atl-at) * var(--atl-orbit-t) * -1) infinite; }
   & .atl-orbiter { animation: atl-orbit-back var(--atl-orbit-t) linear calc(var(--atl-at) * var(--atl-orbit-t) * -1) infinite, atl-orbit-depth var(--atl-orbit-t) linear calc(var(--atl-at) * var(--atl-orbit-t) * -1) infinite; }
 }
-.atl-figure-box.atl-off .atl-orbits *, :root[data-atlas-hidden] .atl-orbits * { animation-play-state: paused !important; }
+/* UX3: after 20 s without input (`nmbClock.setCalm`, avatars.js) the endless loops hold: the rings, hair, tail,
+   hem, nebula and lower wisps; by part, so an act started while calm still plays. */
+.atl-figure-box.atl-off .atl-orbits *, :root[data-atlas-hidden] .atl-orbits *,
+:root.is-calm :is(.atl-orbits *, .atl-lw-hair, .atl-lw-tail, .atl-lw-lower, .atl-lw-body, .atl-lw-breathe, .atl-lw-neb, .atl-lw-neb-front, .atl-layer-front, .atl-layer-lower, .atl-layer-neb, .atl-layer-neb-front, [class*="atl-lw-pose-"], [class*="atl-lw-pose-"] > svg) { animation-play-state: paused !important; }
+/* And no loop is made under the entrance fade (atlas.js, `atlasWhenShown` adds atl-lit): the
+   compositor refuses for good an animation created while #nm-buddy is opacity 0. One rule, one !important. */
+.atl-figure-box:not(.atl-lit), .atl-figure-box:not(.atl-lit) *,
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-live > .atl-orbits :is(.atl-orbit-arm, .atl-orbiter) { animation: none !important; }
 @keyframes atl-orbit { from { rotate: 0deg; } to { rotate: 360deg; } }
 @keyframes atl-orbit-back { from { rotate: 0deg; } to { rotate: -360deg; } }
@@ -6873,8 +6941,8 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   transform-box: fill-box;
   transform-origin: center;
 }
-.nm-atlas .nmb-arm-l { transform-box: view-box; transform-origin: 24.6px 41px; }
-.nm-atlas .nmb-arm-r { transform-box: view-box; transform-origin: 37.4px 41px; }
+.nm-atlas .nmb-arm-l { transform-box: view-box; transform-origin: 25.6px 41px; }
+.nm-atlas .nmb-arm-r { transform-box: view-box; transform-origin: 36.4px 41px; }
 /* Thinking: a hand at the chin, as the reference sheet draws it. The
    forearm is drawn in the head's layer (atlas.js), over the face, and the
    resting right arm steps aside for it; not while the companion sits or
@@ -6977,15 +7045,15 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    out at shoulder height over the rings, 72%; it is now up beside the head
    (163deg; 145deg for her longer-reaching left arm, which at 163 covered
    her eye). Shy's third variant swung an arm out the same way; it clasps. */
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="happy"] { --atl-ar0: -28deg; --atl-al0: 28deg; --atl-chin0: 0; --atl-ar1: -120deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -40deg; --atl-al2: 40deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="happy"] { --atl-ar0: -28deg; --atl-al0: 28deg; --atl-chin0: 0; --atl-ar1: -120deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -40deg; --atl-al2: 40deg; --atl-chin2: 0; --atl-lid: 0; --atl-low: 0.42; --atl-brow-y: -1.8px; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="delighted"] { --atl-ar0: -44deg; --atl-al0: 44deg; --atl-chin0: 0; --atl-ar1: -130deg; --atl-al1: 130deg; --atl-chin1: 0; --atl-ar2: -50deg; --atl-al2: 50deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="laughing"] { --atl-ar0: -38deg; --atl-al0: 38deg; --atl-chin0: 0; --atl-ar1: 0deg; --atl-al1: 16deg; --atl-chin1: 1; --atl-ar2: 14deg; --atl-al2: -14deg; --atl-chin2: 0; }
 /* Thinking's second way folded both arms across the chest for the whole
    turn, the stance INBOX 1402 read as a sulk: now a hand at the chest. */
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="thinking"] { --atl-ar0: 0deg; --atl-al0: -10deg; --atl-chin0: 1; --atl-ar1: -18deg; --atl-al1: -14deg; --atl-chin1: 0; --atl-ar2: 0deg; --atl-al2: -14deg; --atl-chin2: 1; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="curious"] { --atl-ar0: -40deg; --atl-al0: 0deg; --atl-chin0: 0; --atl-ar1: 0deg; --atl-al1: 40deg; --atl-chin1: 0; --atl-ar2: -60deg; --atl-al2: 10deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="surprised"] { --atl-ar0: -120deg; --atl-al0: 120deg; --atl-chin0: 0; --atl-ar1: -150deg; --atl-al1: 150deg; --atl-chin1: 0; --atl-ar2: -140deg; --atl-al2: 60deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="confused"] { --atl-ar0: 0deg; --atl-al0: 163deg; --atl-chin0: 0; --atl-ar1: -163deg; --atl-al1: 0deg; --atl-chin1: 0; --atl-ar2: -20deg; --atl-al2: 163deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="surprised"] { --atl-ar0: -120deg; --atl-al0: 120deg; --atl-chin0: 0; --atl-ar1: -150deg; --atl-al1: 150deg; --atl-chin1: 0; --atl-ar2: -140deg; --atl-al2: 60deg; --atl-chin2: 0; --atl-brow-y: -4.2px; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="confused"] { --atl-ar0: 0deg; --atl-al0: 163deg; --atl-chin0: 0; --atl-ar1: -163deg; --atl-al1: 0deg; --atl-chin1: 0; --atl-ar2: -20deg; --atl-al2: 163deg; --atl-chin2: 0; --atl-tilt: 9deg; }
 /* **Sleepy arms stay off the rings** (the owner: "no arm resting on the
    orbit rings"). Measured (atlasarms.js): the eye-rub turned the arm the
    wrong way, out and up over the rings (masculine left hand at 9.8,25.6,
@@ -6996,10 +7064,12 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="sleepy"] { --atl-ar0: 8deg; --atl-al0: -8deg; --atl-chin0: 0; --atl-ar1: 12deg; --atl-al1: -12deg; --atl-chin1: 0; --atl-ar2: 0deg; --atl-al2: -6deg; --atl-chin2: 1; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="sad"] { --atl-ar0: 8deg; --atl-al0: -8deg; --atl-chin0: 0; --atl-ar1: 10deg; --atl-al1: -10deg; --atl-chin1: 0; --atl-ar2: 6deg; --atl-al2: -6deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="proud"] { --atl-ar0: -24deg; --atl-al0: 24deg; --atl-chin0: 0; --atl-ar1: -28deg; --atl-al1: 28deg; --atl-chin1: 0; --atl-ar2: -24deg; --atl-al2: 24deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="shy"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 18deg; --atl-al1: -18deg; --atl-chin1: 0; --atl-ar2: 14deg; --atl-al2: -14deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="determined"] { --atl-ar0: -14deg; --atl-al0: 14deg; --atl-chin0: 0; --atl-ar1: -18deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -30deg; --atl-al2: 22deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="love"] { --atl-ar0: 18deg; --atl-al0: -18deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: -120deg; --atl-al2: 0deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="worried"] { --atl-ar0: 18deg; --atl-al0: -18deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: 18deg; --atl-al2: -12deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="shy"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: 14deg; --atl-al2: -14deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="determined"] { --atl-ar0: -14deg; --atl-al0: 14deg; --atl-chin0: 0; --atl-ar1: -18deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -30deg; --atl-al2: 22deg; --atl-chin2: 0; --atl-low: 0.3; --atl-knit: 2deg; --atl-brow-y: 0.4px; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="love"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: -120deg; --atl-al2: 0deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="worried"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: 16deg; --atl-al2: -12deg; --atl-chin2: 0; --atl-knit: -15deg; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="miffed"] { --atl-ar0: 6deg; --atl-al0: -6deg; --atl-chin0: 0; --atl-ar1: 10deg; --atl-al1: -10deg; --atl-chin1: 0; --atl-ar2: -26deg; --atl-al2: 26deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="smirk"] { --atl-ar0: -12deg; --atl-al0: 12deg; --atl-chin0: 0; --atl-ar1: -20deg; --atl-al1: 20deg; --atl-chin1: 0; --atl-ar2: -10deg; --atl-al2: 14deg; --atl-chin2: 1; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="happy"] { --atl-ar0: -105deg; --atl-al0: 25deg; --atl-chin0: 0; --atl-ar1: -150deg; --atl-al1: 20deg; --atl-chin1: 0; --atl-ar2: -80deg; --atl-al2: 30deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="delighted"] { --atl-ar0: -130deg; --atl-al0: 70deg; --atl-chin0: 0; --atl-ar1: -160deg; --atl-al1: 110deg; --atl-chin1: 0; --atl-ar2: -110deg; --atl-al2: 30deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="laughing"] { --atl-ar0: -110deg; --atl-al0: 30deg; --atl-chin0: 0; --atl-ar1: 0deg; --atl-al1: 20deg; --atl-chin1: 1; --atl-ar2: -30deg; --atl-al2: -10deg; --atl-chin2: 0; }
@@ -7014,10 +7084,12 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="determined"] { --atl-ar0: -50deg; --atl-al0: 10deg; --atl-chin0: 0; --atl-ar1: -70deg; --atl-al1: 15deg; --atl-chin1: 0; --atl-ar2: -35deg; --atl-al2: -12deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="love"] { --atl-ar0: 12deg; --atl-al0: -12deg; --atl-chin0: 0; --atl-ar1: 10deg; --atl-al1: -12deg; --atl-chin1: 0; --atl-ar2: -150deg; --atl-al2: 20deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="worried"] { --atl-ar0: 12deg; --atl-al0: -12deg; --atl-chin0: 0; --atl-ar1: 12deg; --atl-al1: -12deg; --atl-chin1: 0; --atl-ar2: 10deg; --atl-al2: -10deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="feminine"][data-atlas-mood="miffed"] { --atl-ar0: 8deg; --atl-al0: -8deg; --atl-chin0: 0; --atl-ar1: 12deg; --atl-al1: -12deg; --atl-chin1: 0; --atl-ar2: -20deg; --atl-al2: 20deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="feminine"][data-atlas-mood="smirk"] { --atl-ar0: -14deg; --atl-al0: -6deg; --atl-chin0: 0; --atl-ar1: -22deg; --atl-al1: -10deg; --atl-chin1: 0; --atl-ar2: -10deg; --atl-al2: -4deg; --atl-chin2: 1; }
 /* The companion turns limbs about its own generic joints; Atlas's are
    higher and narrower, so they are named here, one step more specific. */
-#nm-buddy .atl-figure .nmb-arm-l { transform-origin: 24.6px 41px; }
-#nm-buddy .atl-figure .nmb-arm-r { transform-origin: 37.4px 41px; }
+#nm-buddy .atl-figure .nmb-arm-l { transform-origin: 25.6px 41px; }
+#nm-buddy .atl-figure .nmb-arm-r { transform-origin: 36.4px 41px; }
 /* The legs are the roots of their own layers (atlas.js `atlasDrawFigure`),
    so a leg rule names `.atl-figure.nmb-leg-*`, the root, and the origin is
    in the layer's own 64x92 px frame; turned on the compositor, a step
@@ -7036,8 +7108,8 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    bubble. Wake: a stretch, the arms out. Meditate: cross-legged, eyes
    closed, the rings level. Lantern and bell: the arm out. Juggling: arms
    half up under the arc of stars. Starry map: leaning on the panel. */
-#nm-buddy .atl-figure .nmb-hold-l { transform-origin: 24.6px 41px; }
-#nm-buddy .atl-figure .nmb-hold-r { transform-origin: 37.4px 41px; }
+#nm-buddy .atl-figure .nmb-hold-l { transform-origin: 25.6px 41px; }
+#nm-buddy .atl-figure .nmb-hold-r { transform-origin: 36.4px 41px; }
 #nm-buddy[data-pose="sit"] .atl-figure.nmb-leg-l { transform: rotate(54deg) scaleY(0.7); }
 #nm-buddy[data-pose="sit"] .atl-figure.nmb-leg-r { transform: rotate(-54deg) scaleY(0.7); }
 /* The arms at rest, per pose (round 6, the owner: "improve the arms"):
@@ -7106,7 +7178,8 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 #nm-buddy.nmb-act-wave .atl-figure[data-atlas-look="feminine"] .nmb-arm-r { transform: rotate(-130deg); }
 /* The desk's wave frame (scripts/render_desk_frames.js, INBOX 1688): the right arm's hand
    vanishes into the hair of the same tint, so the frame waves the left, in the clear. */
-#nm-buddy.nmb-desk-wave .atl-figure .nmb-arm-l { transform: rotate(120deg); }
+/* The wave cycle's frames set the angle (INBOX 1696: one raised arm held still read as a salute). */
+#nm-buddy.nmb-desk-wave .atl-figure .nmb-arm-l { transform: rotate(var(--desk-wave, 120deg)); }
 #nm-buddy.nmb-act-shrug .atl-figure .nmb-arm-r { transform: rotate(-40deg); }
 #nm-buddy.nmb-act-shrug .atl-figure .nmb-arm-l { transform: rotate(40deg); }
 /* A facepalm is the chin hand brought up over the eyes, not the arm thrown
@@ -7141,7 +7214,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas .atl-st-dp { stop-color: var(--atl-dp); }
 .nm-atlas .atl-st-rim { stop-color: var(--atl-rim); }
 .nm-atlas .atl-st-clear { stop-color: var(--atl-rim); stop-opacity: 0; }
-.nm-atlas .atl-st-shade { stop-color: var(--atl-rim); stop-opacity: var(--atl-shade-a); }
+.nm-atlas .atl-st-shade { stop-color: var(--atl-rim); stop-opacity: 0.4; }
 .nm-atlas .atl-st-white { stop-color: white; stop-opacity: 1; }
 .nm-atlas .atl-st-white-mid { stop-color: white; stop-opacity: 0.55; }
 .nm-atlas .atl-st-white-0 { stop-color: white; stop-opacity: 0; }
@@ -7207,12 +7280,14 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas .atl-catch { fill: white; }
 .nm-atlas .atl-heart { fill: var(--atl-heart-c); }
 .nm-atlas .atl-lash { fill: none; stroke: var(--atl-line); stroke-width: 1.2; stroke-linecap: round; }
+.nm-atlas[data-atlas-look="masculine"] .atl-lash { stroke-width: 1.5; }
 .nm-atlas .atl-stroke { fill: none; stroke: var(--atl-ink); stroke-linecap: round; stroke-linejoin: round; }
 .nm-atlas .atl-brow-line { stroke: var(--atl-line); stroke-width: 1.1; opacity: 0.22; }
-.nm-atlas .atl-brow-straight { stroke-width: 1.3; }
+/* His brows carry his moods (INBOX 1607 d): at 0.22 a brow's move showed as nothing. */
+.nm-atlas .atl-brow-straight { stroke-width: 1.5; opacity: 0.6; }
 .nm-atlas .atl-lashes { fill: none; stroke: var(--atl-line); stroke-width: 0.9; stroke-linecap: round; }
 .nm-atlas[data-atlas-look="feminine"] .atl-cheek { rx: 4.3px; ry: 2.6px; }
-.nm-atlas .atl-tongue { fill: var(--atl-tongue); }
+.nm-atlas .atl-tongue { fill: #ff94aa; }
 /* The ears, the wisps and the mane: an inner ear of galaxy inside a
    lighter rim, the nebula gathering toward the ends, each lock of the
    mane translucent with a lighter leading edge, a star at each tip. */
@@ -7298,6 +7373,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 /* Round 9: the hair's cap (atlas.js, `atlasHairCap`), fuller than a lock
    so the crown reads as hair, not skin under a veil, and a faint parting. */
 .nm-atlas .atl-hair-cap .atl-cap-fill { opacity: 0.94; }
+.nm-atlas[data-atlas-look="masculine"] .atl-hair-cap .atl-hair-neb { opacity: 0.8; }
 /* The feminine fringe in strands (atlas.js, `fringe`; INBOX 550, where
    three wedges cut in the cap's edge read as flat and hard): each lock in
    the cap's paint over its own shadow on the brow, the roots' shade, a
@@ -7376,15 +7452,18 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas .atl-z { stroke: var(--atl-line); stroke-width: 1.1; opacity: 0.85; }
 .nm-atlas .atl-mark-dot { fill: var(--ink); }
 .nm-atlas .atl-dot { fill: var(--atl-hi); stroke: var(--atl-line); stroke-width: 0.6; }
-.nm-atlas .atl-drop { fill: var(--atl-tear-c); stroke: var(--atl-line); stroke-width: 0.5; }
+.nm-atlas .atl-drop { fill: #a5dcff; stroke: var(--atl-line); stroke-width: 0.5; }
 /* The face, read from the mood's numbers. */
 .nm-atlas .atl-eye-l { --atl-side: 1; }
 .nm-atlas .atl-eye-r { --atl-side: -1; }
 .nm-atlas .atl-eye { transform: scale(var(--atl-eye-s)); }
 /* Round 9 (the owner, of the masculine look: "it still looks like a fnaf
-   character"): softer eyes, a size smaller (the lid rests out of sight, INBOX 1607). Individual
-   properties, so every mood's own scale and lid still apply over them. */
-.nm-atlas[data-atlas-look="masculine"] .atl-eye { scale: 0.84; }
+   character"): softer eyes (the lid rests out of sight, INBOX 1607). Her size since INBOX 1607 d
+   ("the facial expressions need some work"): at 0.84 they were small and set wide on his face.
+   Individual properties, so every mood's own scale and lid still apply over them. */
+.nm-atlas[data-atlas-look="masculine"] .atl-eye { scale: 0.9; }
+/* His upper lid line heavier, as her lashes frame hers (INBOX 1607 d). */
+.nm-atlas[data-atlas-look="masculine"] .atl-liner:not(.atl-liner-low) { stroke-width: 1.5; }
 /* INBOX 563: softer eyes in the narrower face, a little smaller and less
    wide open at rest (`--atl-lid`, the calm face), so they do not stare. */
 .nm-atlas[data-atlas-look="feminine"] .atl-eye { scale: 0.9; }
@@ -7405,6 +7484,9 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    neck. The head marks and the icon crop to the head, so they keep it
    whole. */
 .nm-atlas:not(.atl-head, .atl-tiny) { --atl-head-k: 0.76; }
+/* His a little larger on his narrower shoulders (INBOX 1607 b, "the size or shape or smth of the head
+   looks off"): head over shoulders 1.09 to 1.31, hers 1.59 (tests/test_atlas_masc_1607.py). */
+.nm-atlas[data-atlas-look="masculine"]:not(.atl-head, .atl-tiny) { --atl-head-k: 0.8; }
 @property --atl-lean { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 @property --atl-sx { syntax: "<number>"; inherits: false; initial-value: 1; }
 @property --atl-sy { syntax: "<number>"; inherits: false; initial-value: 1; }
@@ -7443,14 +7525,14 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas .atl-ribbon-edge { fill: none; stroke: white; stroke-width: 0.45; stroke-linecap: round; opacity: 0.42; }
 /* **The Galaxy Seed Sower's tail** (atlas.js, `lowerTaper: "sower"`;
    INBOX 535): her skin's light at the hips deepening to the nebula's
-   violet (`--atl-flow`), the inner side shaded deeper violet with galaxy
+   violet (`--atl-md`), the inner side shaded deeper violet with galaxy
    sparkles, a pale light down the outer side. Fills only. Every part is
    static paint in the lower layer, so its sway is the layer root's. */
 .nm-atlas .atl-st-flow0 { stop-color: var(--atl-lt); stop-opacity: 0.97; }
 .nm-atlas .atl-st-flow1 { stop-color: var(--atl-md); stop-opacity: 0.92; }
 .nm-atlas .atl-st-flow2 { stop-color: var(--atl-neb-c); stop-opacity: 0.9; }
 .nm-atlas .atl-st-flow3 { stop-color: var(--atl-neb2-c); stop-opacity: 0.9; }
-.nm-atlas .atl-sower-fill { fill: var(--atl-flow); }
+.nm-atlas .atl-sower-fill { fill: var(--atl-md); }
 /* The dress (atlas.js, `spec.sower`; INBOX 559, the owner of a striped
    gown with an outlined, scalloped hem: "it looks old and like a circus").
    No outline: a nebula's clouds in the flow's paint, two broad soft sweeps
@@ -7560,8 +7642,8 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
        trailing behind him (`atl-lower-trail`, leaning away from the way he
        goes, `--nmb-lean`); hers is a lighter drift with a rock, her skirt
        swinging as before. */
-    &:has(.atl-figure).nmb-walking .nm-buddy-char { animation: atl-glide 0.9s ease-in-out infinite alternate; }
-    &:has(.atl-figure[data-atlas-look="masculine"]).nmb-walking .nm-buddy-char { animation: atl-glide-heavy 1.25s ease-in-out infinite alternate; }
+    &[data-atlas-figure].nmb-walking .nm-buddy-char { animation: atl-glide 0.9s ease-in-out infinite alternate; }
+    &[data-atlas-figure="masculine"].nmb-walking .nm-buddy-char { animation: atl-glide-heavy 1.25s ease-in-out infinite alternate; }
   }
 }
 /* **Limbs in motion** (INBOX 469, the owner: "have the arms and legs be
@@ -7575,12 +7657,12 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
    under Off and Reduce motion. */
 @media all {
   :root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) #nm-buddy {
-    &:not(:has(.atl-figure)).nmb-walking:not([data-travel]) .nmb-arm-l { animation: nmb-arm-swing 0.34s ease-in-out -0.34s infinite alternate; }
-    &:not(:has(.atl-figure)).nmb-walking:not([data-travel]) .nmb-arm-r { animation: nmb-arm-swing 0.34s ease-in-out infinite alternate; }
-    &[data-gait="masculine"]:not(:has(.atl-figure)).nmb-walking:not([data-travel]) :is(.nmb-arm-l, .nmb-arm-r) { animation-duration: 0.4s; }
-    &[data-gait="masculine"]:not(:has(.atl-figure)).nmb-walking:not([data-travel]) .nmb-arm-l { animation-delay: -0.4s; }
-    &[data-gait="feminine"]:not(:has(.atl-figure)).nmb-walking:not([data-travel]) :is(.nmb-arm-l, .nmb-arm-r) { animation-duration: 0.3s; }
-    &[data-gait="feminine"]:not(:has(.atl-figure)).nmb-walking:not([data-travel]) .nmb-arm-l { animation-delay: -0.3s; }
+    &:not([data-atlas-figure]).nmb-walking:not([data-travel]) .nmb-arm-l { animation: nmb-arm-swing 0.34s ease-in-out -0.34s infinite alternate; }
+    &:not([data-atlas-figure]).nmb-walking:not([data-travel]) .nmb-arm-r { animation: nmb-arm-swing 0.34s ease-in-out infinite alternate; }
+    &[data-gait="masculine"]:not([data-atlas-figure]).nmb-walking:not([data-travel]) :is(.nmb-arm-l, .nmb-arm-r) { animation-duration: 0.4s; }
+    &[data-gait="masculine"]:not([data-atlas-figure]).nmb-walking:not([data-travel]) .nmb-arm-l { animation-delay: -0.4s; }
+    &[data-gait="feminine"]:not([data-atlas-figure]).nmb-walking:not([data-travel]) :is(.nmb-arm-l, .nmb-arm-r) { animation-duration: 0.3s; }
+    &[data-gait="feminine"]:not([data-atlas-figure]).nmb-walking:not([data-travel]) .nmb-arm-l { animation-delay: -0.3s; }
     &[data-travel="climb"] .nmb-hold { opacity: 1; }
     &[data-travel="climb"] .nmb-arm { opacity: 0; }
     &[data-travel="climb"] .nmb-hold-l { animation: nmb-reach 0.32s ease-in-out infinite alternate; }
@@ -7630,7 +7712,7 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
    because the loops' motion gates out-rank this selector. */
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy:is(.nmb-walking, .nm-buddy-dragging) .nm-live .nm-atlas.atl-layer-lower,
 :where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy.nmb-walking .nm-live .nm-atlas.atl-layer-lower[data-atlas-look="masculine"],
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy:has(.atl-figure):is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy[data-atlas-figure]:is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }
 /* A slow turn and lift about her middle, the compositor's (a box). */
 @keyframes atl-float {
   from { translate: 0 0.5px; }
@@ -7844,6 +7926,24 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   --atl-brow-y: -1.5px; --atl-knit: -6deg; --atl-lid: 0; --atl-hearteye: 1;
   --atl-m-smile: 0; --atl-m-cat: 1; --atl-cheek: 0.95;
   --atl-tilt: -6deg; --atl-glow: 1.3; --atl-fx-hearts: 1;
+}
+/* Miffed (the desk's `miffed`): brows knit and a little low, the lids half down, a flat mouth,
+   the eyes off to one side, the tail low; brief and mild, for a shake, a pout or a grumble. */
+.nm-atlas[data-atlas-mood="miffed"] {
+  --atl-tail: 18deg; --atl-star: 0.8;
+  --atl-crest: 4deg;
+  --atl-brow-y: 0.4px; --atl-knit: 9deg; --atl-lid: 0.18; --atl-px: 1.4px; --atl-py: 0.3px; --atl-ps: 0.9;
+  --atl-m-smile: 0; --atl-m-frown: 1; --atl-cheek: 0.1;
+  --atl-tilt: 3deg; --atl-sx: 1.02; --atl-sy: 0.98;
+}
+/* Smirk (the desk's `smirk`): the smug mouth, one brow up and the other level, the lids a little low,
+   a sideways glance and the head cocked. */
+.nm-atlas[data-atlas-mood="smirk"] {
+  --atl-tail: -8deg; --atl-star: 1.1;
+  --atl-crest: -3deg;
+  --atl-bl-y: -2.2px; --atl-br-y: 0.2px; --atl-bl-r: -8deg; --atl-lid: 0.14; --atl-px: 1.2px; --atl-ps: 0.96;
+  --atl-m-smile: 0; --atl-m-smug: 1; --atl-cheek: 0.4;
+  --atl-tilt: -5deg; --atl-glow: 1.1;
 }
 .nm-atlas[data-atlas-mood="worried"] {
   --atl-tail: 12deg; --atl-star: 0.7;
@@ -8457,6 +8557,25 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
        beside the ⋯). The corner box already sits `--space-4` in. */
     right: var(--space-1);
   }
+  /* **The strip takes the time's place and the lane makes room for it**
+     (wrapzoom sweep, every width: the 131px strip lay over the 56px time
+     and the chips before it, "Linked by 1 note" half shown under the star).
+     While the row is pointed at, focused or its menu is open, the time
+     leaves and the lane's end keeps the strip's width, so the lane grows
+     into the preview's column (which ellipsises) or, at its 26rem cap,
+     folds its tags into "+N" (`fitNoteMetas` refits on the resize). */
+  #entry-list.is-rows > li:not(:has(textarea)):is(:hover, :focus-within) > .entry-meta,
+  #entry-list.is-rows > li:not(:has(textarea)) > .entry-meta:has(> .entry-meta-end > .entry-actions.menu-open) {
+    padding-inline-end: calc(4 * var(--target-min) + 3 * 0.4rem + var(--space-2));
+  }
+  #entry-list.is-rows > li.has-wide-strip:not(:has(textarea)):is(:hover, :focus-within) > .entry-meta,
+  #entry-list.is-rows > li.has-wide-strip:not(:has(textarea)) > .entry-meta:has(> .entry-meta-end > .entry-actions.menu-open) {
+    padding-inline-end: calc(5 * var(--target-min) + 4 * 0.4rem + var(--space-2));
+  }
+  #entry-list.is-rows > li:not(:has(textarea)):is(:hover, :focus-within) > .entry-meta > .entry-date,
+  #entry-list.is-rows > li:not(:has(textarea)) > .entry-meta:has(> .entry-meta-end > .entry-actions.menu-open) > .entry-date {
+    display: none;
+  }
 }
 /* A row with no title starts its text where a title would, not one column
    gap to the right of an empty column (measured 375 against 365px). */
@@ -8467,11 +8586,24 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   font-variant-numeric: tabular-nums;
   transition: opacity var(--ui-fast) var(--ease-out);
 }
+/* **The strip's own width, kept clear** (wrapzoom sweep: a fixed 6.5rem,
+   104px, against a 131px strip of four 28px targets left the strip over the
+   text's line end, 11x6 at 1280, and it was 1em tall against a 28px strip,
+   so the second line ran under it too). The width is the strip's: four
+   targets at `--target-min` and the strip's three 0.4rem gaps, five and four
+   on a draft (`.has-wide-strip`, written by `entryItem`), and a gap. The
+   height is the strip's below the text's top: one target, less the
+   `--space-1` the strip rises into the card's padding (below, "Into the
+   padding"), so a one-line note grows 1px at 28px targets, and at 44px ones
+   the date line steps clear of the strip it ran under (768: 62x5). */
 #entry-list > li > .entry-content::before {
   content: "";
   float: right;
-  width: 6.5rem;
-  height: 1em;
+  width: calc(4 * var(--target-min) + 3 * 0.4rem + var(--space-2));
+  height: calc(var(--target-min) - var(--space-1));
+}
+#entry-list > li.has-wide-strip > .entry-content::before {
+  width: calc(5 * var(--target-min) + 4 * 0.4rem + var(--space-2));
 }
 /* The time ends the details line, at the right, and stays when the card is
    pointed at (INBOX 446); the corner above is the actions' alone. */
@@ -8718,13 +8850,6 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
 .finder-filters .library-chip.active {
   border-color: transparent;
   box-shadow: none;
-}
-/* The Ask column's facts ("No tags yet", "In 1 document", "Default Space")
-   are icon-and-word items with no ground of their own, so the 4px the
-   column's chips use read as none (the owner, 2026-09-24). Words get a
-   word's gap across; the rows stay close. */
-#raw-results .entry-meta {
-  column-gap: var(--space-3);
 }
 /* **Toasts at the bottom on a phone** (the owner's decision, 2026-09-24): at
    the top a due-reminder toast sat over the Notes sub-tabs for its whole
@@ -9927,6 +10052,13 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   label:is(.check-row, .setting-check):has(> input[type="checkbox"]):not(.row > *, .tool-picker > *) {
   margin-inline: calc(-1 * var(--space-3) - 1px);
 }
+/*    A switch that leads a help head (its '?' beside it) hangs on the start
+      side only, so it stands on the same edge and its changed bar on the
+      same x as the rows around it (INBOX 1696 c: 9px further in). */
+#settings-modal :is(.settings-group, .settings-fold)
+  .row.help-head > label:is(.check-row, .setting-check):first-child:has(> input[type="checkbox"]) {
+  margin-inline-start: calc(-1 * var(--space-3) - 1px);
+}
 /* 3. The hairline between two hung switch rows stops where the head's does
       (INBOX 464 (13)). Hanging the row (2) took its top border with it, 9px
       past the head's underline on each side: measured (divider.js, 1440) on
@@ -10029,13 +10161,6 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #raw-results > li[data-id] {
   padding-left: calc(var(--space-7) + var(--space-2));
 }
-#raw-results > li[data-id] > .entry-meta.entry-meta {
-  margin-top: var(--space-4);
-}
-#raw-results .entry-meta.note-meta > .chip.category {
-  color: var(--muted);
-  font-weight: 400;
-}
 /* The list's pill: the edge on the connection, the chip inside it bare, so
    the pill's edge is the card's text edge (the chip's own 1.8px hover bleed
    had it 2px in). */
@@ -10071,21 +10196,6 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #raw-results .chip-interactive.link:hover,
 #raw-results .chip-interactive.link:focus-within {
   color: var(--ink);
-}
-#raw-results .entry-meta > .result-reason-chip {
-  background: none;
-  border: none;
-  box-shadow: none;
-  padding-inline: 0;
-  margin: 0;
-  color: var(--muted);
-  font-weight: 400;
-}
-#raw-results .entry-meta > .result-reason-chip > .ph {
-  color: var(--ok);
-}
-#raw-results .entry-meta > :is(.result-reason-connected, .result-reason-connected_2hop) > .ph {
-  color: var(--accent-text);
 }
 #raw-results li > .record-index {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 34%, transparent);
@@ -10222,7 +10332,10 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    hides what leaves it, a list of rows fills the list. The ring is drawn
    inside the control (one outline, 2px, offset -2px); a chosen segment is an
    accent fill, so its ring is `--on-accent` there, or it would vanish into
-   the fill it sits on. */
+   the fill it sits on. A movable panel's grip sits in the clipping card's
+   corner (#wb-help-card: 0px of room right, 0.4 below), and the diagram list
+   column clips its head and rows (wrapzoom 2026-11-11: 3px over a head button
+   at 960@2, 0.5 under a join at 768). */
 :is(
   .tabs-line > button,
   .doc-crumbs .doc-crumb,
@@ -10239,10 +10352,17 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .graph-zoom-btn,
   .chat-dock-controls .seg > button,
   .job-run-now,
-  .phone-tab-more
+  .phone-tab-more,
+  .timeline-cal-cell .timeline-cal-item,
+  .timeline-cal-cell .timeline-cal-more,
+  .dgm-panehead button,
+  .dgm-listcol :is(.dgm-join, .dgm-menu > button, .dgm-swatch),
+  .feature-row
 ):focus-visible {
   outline-offset: -2px;
 }
+/* `.feature-row` fills the Tools and features list and lost 4px of ring to
+   its clip at every viewport (wrapzoom 2026-11-11); the grip is below. */
 :is(.graph-zoom-btn, .chat-dock-controls .seg > button):is(.active, [aria-pressed="true"], [aria-checked="true"], [aria-selected="true"]):focus-visible {
   outline-color: var(--on-accent);
 }
@@ -10257,13 +10377,31 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
   .doc-sidebar-section,
   .doc-sidebar .doc-outline-wrap,
   .library-view-section,
-  .doc-list
+  .doc-list,
+  .wb-side-section
 ) {
   padding-inline: var(--ring-room);
   margin-inline: calc(-1 * var(--ring-room));
 }
 :is(.doc-sidebar-section, .library-view-section, .doc-list) {
   padding-block: var(--ring-room);
+}
+/* A whiteboard side panel's section scrolls (07-whiteboard-misc.css), and its
+   actions are full-width buttons against both edges. */
+.wb-side-section {
+  padding: var(--ring-room);
+  margin: calc(-1 * var(--ring-room));
+}
+/* The board sidebar's three lists (Library templates, This map's layers,
+   Outline) scroll down and so clip across too: the template tiles lost
+   3.6 to 4px of their ring on the left and right, the group head and the
+   Outline's first Rename button 4px on top (map sweep, 1280 and 360). Room
+   on all four sides, the layout unmoved; the section above holds the same
+   room across, so the list's negative margin lands in the section's padding
+   and not past its edge (the sweep read that as an overflow). */
+:is(.wb-lib-list, .wb-side-section .wb-library-list, .wb-layers-tree, .wb-outline-tree) {
+  padding: var(--ring-room);
+  margin: calc(-1 * var(--ring-room));
 }
 /* A rows-view note's meta line scrolls across and clips down, so its chips'
    rings (a category, a tag, a count) were cut at the line's edges (INBOX
@@ -10282,6 +10420,15 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 .library-view-section {
   scroll-padding-block: var(--ring-room);
 }
+/* The graph note panel's body scrolls between its head and its dock, and its
+   fields fill it edge to edge: the tags field lost 4px of its ring on both
+   sides, Add properties 4.4px on the right and the topic chip 2.2px on the
+   left (wrap/zoom sweep, 2026-11-11, every viewport). */
+.graph-popup-body {
+  padding-inline: var(--ring-room);
+  margin-inline: calc(-1 * var(--ring-room));
+  scroll-padding-block: var(--ring-room);
+}
 /* The Settings nav scrolls on its own and its last section button stood on
    the bottom edge (2px of padding for a 4px ring). */
 .modal-nav {
@@ -10293,6 +10440,24 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 .modal-content {
   padding-inline-start: var(--ring-room);
   scroll-padding-block: var(--ring-room);
+}
+/* The Widgets dialog's list scrolls, and its first row's Reset stood on the
+   top edge: 4px of its ring cut at scrollTop 0, every viewport (2026-11-11
+   zoom sweep). Room down, and at the start across (the end already has the
+   scrollbar's `--space-2`). */
+.dash-widgets-list {
+  padding-block: var(--ring-room);
+  padding-inline-start: var(--ring-room);
+  margin-block: calc(-1 * var(--ring-room));
+  margin-inline-start: calc(-1 * var(--ring-room));
+  scroll-padding-block: var(--ring-room);
+}
+/* A movable panel's resize grip is sticky in its bottom-right corner, flush
+   with both clipping edges (the Guide sheet, the graph panels, the Widgets
+   dialog, the notifications panel: 3 to 4.4px of the ring cut on the right
+   and the underside), so its ring is drawn inside it, the Inset recipe. */
+.panel-movable-on > button.panel-grip:focus-visible {
+  outline-offset: -2px;
 }
 /* Beside the nav the pane's extra room comes out of the grid gap; under 820
    the pane fills the body, which hides what leaves it, so it stays padding. */
@@ -10306,6 +10471,28 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #doc-bookmarks-wrap:has(> .doc-outline:empty) {
   padding-block: var(--ring-room);
   margin-top: calc(var(--space-3) - var(--ring-room));
+}
+/* The wrapzoom sweep (2026-11-11, every width and zoom), each ring cut 4px:
+   - a sidebar's heading clips for its ellipsis, and the Notes sidebar builds
+     its fold caret inside it, flush on three sides (`SIDEBAR_FOLDS`,
+     categories-panel.js): `clip` with a clip margin, the words still end at
+     the box;
+   - the Timeline's scroller hides across and the calendar head's first
+     button stood on its left edge: room as padding with the same negative
+     margin, so nothing moves;
+   - the week's day heads stood on the top of their row, which hides down to
+     keep its scrollbar gutter: the same room at its top. */
+.sidebar-head h2 {
+  overflow: clip;
+  overflow-clip-margin: var(--ring-room);
+}
+.timeline-scroll {
+  padding-inline: var(--ring-room);
+  margin-inline: calc(-1 * var(--ring-room));
+}
+.timeline-cal-week.timeline-cal-weektop {
+  padding-top: var(--ring-room);
+  margin-top: calc(-1 * var(--ring-room));
 }
 /* A pill track and its segments (INBOX 694: "the bottom of these pills gets
    cut off", the dock's Ask | Agent and the skills panel's Pace: Auto | Manual).
@@ -10470,6 +10657,14 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 :is(#library-boards-filter, #reminder-filter) {
   margin-bottom: calc(var(--space-6) - var(--ring-room));
 }
+/* Three chips, "All 4", "Maps 1" and "Boards 3", ran 3px past the strip at
+   360 (311 of 308), so a row that has nothing to scroll to scrolled. A
+   tighter gap on a phone gives it 5px back; a longer row still scrolls. */
+@media (max-width: 599.98px) {
+  #library-boards-filter {
+    gap: var(--space-1);
+  }
+}
 /* The chat's suggestions fill the page's width (`max-width: 100%`), so the
    room is padding inside it. */
 #chat-suggest {
@@ -10574,9 +10769,14 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #entry-list > li > .entry-content:empty::before {
   display: none;
 }
+/* **Into the padding** (wrapzoom sweep): the 28px strip from the corner's
+   top reached 6px into the text's second line (1280: strip 242 to 270, the
+   second line's text from 264). It rises by `--space-1` into the card's top
+   padding, so it ends about where the first line does, and the float above
+   keeps what is left clear. */
 @media (hover: hover) {
   #entry-list:not(.is-rows) > li .entry-meta-end > .entry-actions {
-    top: 0;
+    top: calc(var(--space-1) * -1);
   }
 }
 /* --- One ⋯ opener, styled once (INBOX 722) ---
@@ -10724,8 +10924,10 @@ html[data-other-device] [data-this-computer="hide"] {
    controls, so a control's top is 3.5px from the window's edge, and the
    2px ring at the 2px offset reached 0.5px past it (measured at 1440: ring
    top -0.5 on the six right-hand buttons). A 1px offset puts the ring top at
-   +0.5. The tab strip keeps its own ring inside its well. */
-header#top-bar :is(.header-cluster, .notif-wrap, .header-controls) button:focus-visible,
+   +0.5. The tab strip keeps its own ring inside its well, and the
+   notifications panel's resize grip, a panel control and not a bar one,
+   keeps the panel's inset ring (Ring room). */
+header#top-bar :is(.header-cluster, .notif-wrap, .header-controls) button:not(.panel-grip):focus-visible,
 header#top-bar button.space-switcher-btn:focus-visible {
   outline-offset: 1px;
 }

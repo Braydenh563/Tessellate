@@ -207,6 +207,37 @@ def _turn_bookkeeping(action: str, entity_type: str) -> bool:
 _TURN_ENTITIES = frozenset({"chat", "skill"})
 
 
+#: INBOX 1727: what the log says about a private board or document, whose
+#: title is as sealed as its text; the payload (a replayable state) goes.
+_PRIVATE_LABELS = {
+    "board": "a private board",
+    "document": "a private document",
+    "reminder": "a private reminder",
+    "conversation": "a private chat",
+}
+
+
+def _private_words(session: Session, entity_type: str, entity_id: int | None, detail, payload):  # noqa: ANN001, ANN202
+    """`detail` and `payload` as the log may keep them for this row."""
+    if entity_id is not None and entity_type in _PRIVATE_LABELS and _owner_private(session, entity_type, entity_id):
+        return _PRIVATE_LABELS[entity_type], None
+    return detail, payload
+
+
+def _owner_private(session: Session, entity_type: str, entity_id: int) -> bool:
+    from tessellate.core.database import Conversation, Document, Entry, Reminder, Space
+
+    model = {"board": Entry, "reminder": Reminder, "conversation": Conversation}.get(entity_type, Document)
+    with session.no_autoflush:
+        row = session.get(model, entity_id)
+        if row is None:
+            return False
+        if getattr(row, "is_private", False):
+            return True
+        space = session.get(Space, row.workspace_id or session.info.get("workspace_id") or "default")
+        return bool(space is not None and space.is_private)
+
+
 def record(
     session: Session,
     action: str,
@@ -246,6 +277,7 @@ def record(
         )
         return None
 
+    detail, payload = _private_words(session, entity_type, entity_id, detail, payload)
     row = AuditLog(
         action=action,
         entity_type=entity_type,
@@ -714,11 +746,29 @@ def node_state(node: WhiteboardNode) -> dict:
     }
 
 
+def _item_data(item: WhiteboardSketch | WhiteboardObject) -> str:
+    """A board item's `data` for the log: sealed when its board is private
+    (INBOX 1727), since the log is as readable as the board is not. A replay
+    writes the sealed form back, which `SealedText` reads as the text."""
+    from sqlalchemy.orm import object_session
+
+    from tessellate.core import crypto, vault
+    from tessellate.core.database import Entry
+
+    owner = object_session(item)
+    board = owner.get(Entry, item.board_id) if owner is not None and item.board_id is not None else None
+    data = item.data
+    if board is None or not board.is_private or not isinstance(data, str) or crypto.is_encrypted(data):
+        return data
+    key = vault.key()
+    return crypto.encrypt(key, data) if key is not None else ""
+
+
 def sketch_state(sketch: WhiteboardSketch) -> dict:
     """A sketch's whole state, its strokes included: `data` is the drawing."""
     return {
         "board_id": sketch.board_id,
-        "data": sketch.data,
+        "data": _item_data(sketch),
         "x": sketch.x,
         "y": sketch.y,
         "z": sketch.z,
@@ -733,7 +783,7 @@ def object_state(obj: WhiteboardObject) -> dict:
     return {
         "board_id": obj.board_id,
         "kind": obj.kind,
-        "data": obj.data,
+        "data": _item_data(obj),
         "x": obj.x,
         "y": obj.y,
         "z": obj.z,

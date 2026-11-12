@@ -106,6 +106,18 @@ OPEN = {
     #: a forged, expired or other reminder's token is refused and that the
     #: token opens no other route).
     "/reminders/{reminder_id}/notification-act",
+    #: Windows Hello on the lock screen (INBOX 1727, api/routes_hello.py):
+    #: whoever asks has not unlocked by definition. Both answer 403 to anything
+    #: but this computer; `begin` hands out a single-use challenge and opens
+    #: nothing, `unlock` verifies the signature before any unwrap and counts a
+    #: wrong one like a wrong password (tests/test_hello_unlock.py).
+    "/auth/hello/begin",
+    "/auth/hello/unlock",
+    # One-shot carry-over of saved settings from the 127.0.0.1 origin to
+    # localhost (api/routes_origin_handoff.py): this computer only, two
+    # minutes, one use, never the token (tests/test_origin_handoff.py).
+    "/origin-handoff/put",
+    "/origin-handoff/take",
 }
 
 #: Prefixes, for the same reason, where the path carries a file name.

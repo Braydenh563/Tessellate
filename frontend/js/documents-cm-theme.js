@@ -672,6 +672,12 @@
         //: the line's hanging `-1.6em` and drew its own glyph 24px left of its
         //: box (bullet 44px from the words, half outside the page at 720).
         ".cm-md-li-bullet": { display: "inline-block", width: "1.6em", textIndent: "0" },
+        //: The four dot-point styles are drawn, not typed (no glyph outside Phosphor): a disc, a ring,
+        //: a square and a short bar, in the marker's muted ink and centred on the line.
+        ".cm-md-li-bullet::before": { content: '""', display: "inline-block", boxSizing: "border-box", width: "0.4em", height: "0.4em", background: "currentColor", verticalAlign: "middle" },
+        ".cm-md-li-bullet-disc::before": { borderRadius: "50%" },
+        ".cm-md-li-bullet-circle::before": { borderRadius: "50%", background: "transparent", border: "1.5px solid currentColor" },
+        ".cm-md-li-bullet-dash::before": { width: "0.6em", height: "2px" },
         ".cm-md-li-num": { display: "inline-block", minWidth: "1.6em", textIndent: "0" },
         //: **A quotation's bar has to be seen to do its job** (17c). It was
         //: `--border`, a 10% ink that composites to 1.2:1 on the page, so a
@@ -755,6 +761,7 @@
           height: "0.5em",
         },
         ".cm-md-fence-open": {
+          position: "relative",
           borderTopLeftRadius: "var(--radius-sm, 6px)",
           borderTopRightRadius: "var(--radius-sm, 6px)",
         },
@@ -762,23 +769,27 @@
           borderBottomLeftRadius: "var(--radius-sm, 6px)",
           borderBottomRightRadius: "var(--radius-sm, 6px)",
         },
-        //: The block's language, in the corner rather than on a line of its
-        //: own: it is a label for the block, the same relationship
-        //: `.cm-md-callout-label` has to a callout, and the whole point of this
-        //: change is that the block stops spending rows on things that are not
-        //: code. `user-select: none` and `pointer-events: none` so a drag
-        //: across the block selects the code and not the word "python".
-        ".cm-md-fence-open[data-lang]::after": {
-          content: "attr(data-lang)",
+        //: The block's title or language, in the corner rather than on a line
+        //: of its own: a label for the block, the same relationship
+        //: `.cm-md-callout-label` has to a callout, and the block stops
+        //: spending rows on things that are not code. A button (a widget
+        //: `DocFenceLabelWidget`) that lists the language names; absolute, so
+        //: it takes no row.
+        ".cm-md-fence-label": {
           position: "absolute",
           right: "0.6em",
           top: "0",
           fontSize: "0.7em",
           lineHeight: "1.6",
           color: "var(--muted)",
+          background: "none",
+          border: "none",
+          padding: "0 0.4em",
+          minHeight: "0",
+          cursor: "pointer",
           userSelect: "none",
-          pointerEvents: "none",
         },
+        ".cm-md-fence-label:hover, .cm-md-fence-label:focus-visible": { color: "var(--ink)" },
         //: A rule whose own `---` is hidden is an empty line, and an empty line
         //: with a bottom border is a hairline sitting on the baseline of nothing.
         //: The height is what makes it read as a divider between two blocks
@@ -868,6 +879,8 @@
         ".cm-md-embed .doc-embed-map": { display: "block", width: "min(320px, 100%)" },
         ".cm-md-embed .att-card": { width: "min(360px, 100%)" },
         ".cm-md-math": { cursor: "text" },
+        //: The lines under a multi-line formula's drawn first line.
+        ".cm-md-math-fold": { display: "none" },
         ".cm-md-math-block": { display: "block", textAlign: "center", margin: "0.2em 0" },
         ".cm-md-footnote": {
           verticalAlign: "super",
@@ -950,6 +963,8 @@
         ".cm-md-table .cm-md-td-last": {
           paddingRight: "calc(var(--space-4) + 1.75rem)",
         },
+        //: Room for the filter chip beside the menu, so it never covers the header's last word.
+        ".cm-md-table .cm-md-td-filtered": { paddingRight: "calc(var(--space-4) + 1.75rem + 9rem)" },
         ".cm-md-td-left": { textAlign: "left" },
         ".cm-md-td-center": { textAlign: "center" },
         ".cm-md-td-right": { textAlign: "right" },
@@ -977,6 +992,25 @@
           opacity: "0.7",
         },
         ".cm-md-table-menu:hover, .cm-md-table-menu:focus-within": { opacity: "1" },
+        //: A filtered row is out of the grid, not blank. Two classes beat the
+        //: line's `display: grid`.
+        ".cm-md-table.cm-md-row-hidden": { display: "none" },
+        //: A formula's result reads as a computed value, not typed text.
+        ".cm-md-td-calc": { fontVariantNumeric: "tabular-nums", fontStyle: "italic" },
+        //: The filter chip sits left of the menu on the header row, out of the
+        //: grid's flow like the menu itself.
+        ".cm-md-table-filter": {
+          position: "absolute",
+          right: "calc(1.75rem + var(--space-2))",
+          top: "calc(50% - 0.75rem)",
+          maxWidth: "min(18rem, 40vw)",
+          height: "1.5rem",
+          minHeight: "0",
+          padding: "0 var(--space-2)",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        },
 
         //: --- the prose findings ---------------------------------------------
         //: Three shapes, one per kind of claim. Wavy for a spelling

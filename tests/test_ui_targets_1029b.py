@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = ROOT / "frontend" / "css"
@@ -89,7 +90,7 @@ def test_the_panel_grip_is_the_floor_not_a_space_step():
 
 
 def test_a_finger_gets_a_wider_graph_hit_slop():
-    text = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    text = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
     assert re.search(r'const GC_SLOP_PX = window\.matchMedia\?\.\("\(pointer: coarse\)"\)\?\.matches \? \d+ : 6;', text)
     body = text[text.index("function gcNodeAtWorld(") :]
     body = body[: body.index("\n}\n")]
@@ -100,7 +101,7 @@ def test_a_finger_gets_a_wider_graph_hit_slop():
 
 
 def test_the_graph_legend_is_one_tab_stop():
-    text = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    text = unwrapped((JS / "graph-canvas.js").read_text(encoding="utf-8"))
     assert "function graphLegendRove(" in text
     body = text[text.index("function graphLegendRove(") :]
     body = body[: body.index("\n}\n")]

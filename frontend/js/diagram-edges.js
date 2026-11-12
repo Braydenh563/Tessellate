@@ -11,7 +11,6 @@
 (() => {
   const overlay = () => diagramModel.overlay.math;
   const REACH = 16;
-  const STRIP = 32;
   const math = {
     //: The id Mermaid gives an arrow: `L_<from>_<to>_<n>`, n counting the arrows with the same two ends.
     edgeId: (m, edge) => `L_${edge.from}_${edge.to}_${m.edges.filter((e) => e.from === edge.from && e.to === edge.to).indexOf(edge)}`,
@@ -30,7 +29,7 @@
   function wire(S, h) {
     const fig = S?.fig;
     const stage = fig?.parentElement;
-    const layer = stage?.querySelector(".dgm-overlay");
+    const layer = fig?.querySelector(":scope > .dgm-overlay");
     if (!layer || S.k || fig.dataset.edges) return;
     fig.dataset.edges = "1";
     const img = () => fig.querySelector(".md-mermaid-img");
@@ -41,7 +40,7 @@
 
     //: Four handles, one a side, so a connection can leave any edge and the picked block reads as connectable (INBOX 1679).
     const handles = ["top", "right", "bottom", "left"].map((side) => {
-      const b = smallButton("ph:arrow-bend-down-right", "Connect to another block. Drag it to a block, or press it and click one", () => {});
+      const b = smallButton("ph:arrow-bend-down-right", "Click for a new joined block, or drag it to a block to connect them", () => {});
       b.className = "dgm-handle ghost small hidden";
       b.dataset.side = side;
       //: Four tab stops, so each says which edge it leaves from.
@@ -58,6 +57,9 @@
     let editing = null;
     //: What to ask next, once the picture shows it: `{ node: id }` or `{ edge }` (the model's arrow).
     const want = [];
+    //: Keys typed between Add and the name box opening (the picture draws first) are kept for it, not run as shortcuts on the sheet (W17 C1).
+    let held = "";
+    let entered = false;
 
     const sole = () => {
       const on = layer.querySelectorAll(".dgm-box.on:not(.dgm-cluster)");
@@ -70,20 +72,34 @@
       const id = current();
       const at = id && place().find((b) => b.id === id);
       const only = conn?.side || (armed && armedSide);
-      for (const handle of handles) handle.classList.toggle("hidden", !at || Boolean(editing) || Boolean(only && only !== handle.dataset.side));
-      if (!at) return;
-      //: Shown first, measured once, then placed: a read between writes would lay the page out four times.
+      const show = () => { for (const handle of handles) handle.classList.toggle("hidden", !at || Boolean(editing) || Boolean(only && only !== handle.dataset.side)); };
+      if (!at) return show();
+      //: Measured once, then shown and placed: a read after the class writes laid the page out for them (scrollWidth: 156 ms of 22
+      //: calls at 4x CPU), and the handles (absolute, in the scrolled area) are no part of the area they are kept inside.
       //: A handle is never wider than half the block it leaves, so a zoomed-out block or a phone's small one is not hidden under four of them (1679 m); 14 px is the least that still shows its arrow.
       const coarse = matchMedia("(pointer: coarse)").matches;
       const full = coarse ? 44 : 24;
       const size = overlay().handleSize(at, full, coarse ? 24 : 14);
+      //: Read before the loop writes (a read after a write lays the page out once per handle).
+      const [wide, tall] = [fig.scrollWidth, fig.scrollHeight];
+      //: The part of that area the stage shows (a wide chart scrolls inside the stage, which clips): a handle past it was cut (390 px: 8 to 10 px).
+      const [seen, shown] = [stage.getBoundingClientRect(), fig.getBoundingClientRect()];
+      const [ox0, oy0] = [shown.left + fig.clientLeft - fig.scrollLeft, shown.top + fig.clientTop - fig.scrollTop];
+      const [x0, y0] = [Math.max(0, seen.left - ox0), Math.max(0, seen.top - oy0)];
+      const [x1, y1] = [Math.min(wide, seen.right - ox0), Math.min(tall, seen.bottom - oy0)];
+      show();
       for (const handle of handles) {
         handle.style.inlineSize = handle.style.blockSize = `${size}px`;
         const [x, y] = anchor(at, handle.dataset.side);
         //: A shrunk handle leans out of its edge so no more than a sixth of the block's smaller side is under it.
+        //: On a coarse pointer it leans fully out (its inner edge on the box edge), so a finger that taps the handle never lands on the box (up to 12 px of overlap, measured at 390).
         const lean = size < full ? Math.max(0, size / 2 - Math.min(at.w, at.h) / 6) : 0;
+        const out = coarse ? size / 2 : lean;
         const [ox, oy] = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] }[handle.dataset.side];
-        handle.style.transform = `translate(${x - size / 2 + ox * lean}px, ${y - size / 2 + oy * lean}px)`;
+        //: Never past the picture's scroll area: a block near the edge had its handle cut by the pane (blind test 1108: a box 15 px under
+        //: the top, a 44 px handle). The handle moves in over the block instead, which a cut handle could not be pressed through.
+        const room = (from, to, at) => Math.max(from, Math.min(at, to - size));
+        handle.style.transform = `translate(${room(x0, x1, x - size / 2 + ox * out)}px, ${room(y0, y1, y - size / 2 + oy * out)}px)`;
       }
     };
     const leave = () => {
@@ -122,6 +138,8 @@
       showHandle();
       input.focus();
       input.select();
+      if (held) (input.value = held), (held = "");
+      if (entered) (entered = false), end(true);
     }
 
     const renameNode = (id) => {
@@ -150,53 +168,64 @@
     };
 
     fig.addEventListener("dblclick", (event) => {
-      if (!S.hit || !rect() || event.target.closest(".dock, .dgm-handle, .dgm-rename")) return;
+      if (!S.hit || !rect() || event.target.closest(".dock, .dgm-overlay > *")) return;
       const node = nodeAt(event.clientX, event.clientY);
       const arrow = !node && math.edgeAt(S.hit, rect(), event.clientX, event.clientY);
       const edge = arrow && S.m.edges.find((e) => math.edgeId(S.m, e) === arrow);
-      const group = !node && !edge && groupAt(event.clientX, event.clientY);
-      const top = group && place(S.hit.clusters).find((b) => b.id === group);
-      const y = event.clientY - layer.getBoundingClientRect().top;
+      const group = !node && !edge && overlay().clusterEdgeAt(S.hit, rect(), event.clientX, event.clientY);
       event.preventDefault();
       if (node) renameNode(node);
       else if (edge) renameEdge(edge);
-      else if (top && y - top.y <= STRIP) renameGroup(group);
+      else if (group) renameGroup(group);
     });
 
     //: The next thing asked for, once the new picture has a size to place it by (an image decodes after the draw); dropped after 4 s.
     const ask = () => {
       while (want.length && want[0].until < Date.now()) want.shift();
+      if (!want.length) (held = ""), (entered = false);
       const next = want[0];
-      if (!next || editing) return;
-      if (next.node ? renameNode(next.node) : renameEdge(next.edge)) want.shift();
+      if (!next || editing || S.drawing) return;
+      //: A rename re-reads the source, so the edge asked for is a new object by now: found again by its two ends (blind task b: naming the new box lost the arrow's question).
+      const live = next.edge && (S.m.edges.includes(next.edge) ? next.edge : S.m.edges.find((e) => e.from === next.edge.from && e.to === next.edge.to));
+      if (next.node ? renameNode(next.node) : live && renameEdge(live)) want.shift();
     };
-    const settle = () => (ask(), showHandle());
-    (fig.onpaint ||= []).push(settle);
-    (fig.onzoom ||= []).push(settle);
-    fig.addEventListener("load", settle, true);
-    fig.addEventListener("scroll", showHandle, { passive: true });
-    for (const type of ["click", "keyup", "focusin"]) S.root.addEventListener(type, () => queueMicrotask(showHandle));
+    //: The picture it last placed the handle by: a zoom of that one follows at once, a new one waits for the overlay's task (`afterpaint`).
+    let placed = null;
+    const settle = () => ((placed = img()), ask(), showHandle());
+    //: After a paint: in the overlay's task (diagram-overlay.js `task`), once its boxes are drawn and layout is settled; `sole()` reads
+    //: the picked box and `showHandle` four boxes, which in the paint itself laid the page out (scrollWidth: 188 ms over 30 adds at 4x).
+    (fig.afterpaint ||= []).push(settle);
+    (fig.onzoom ||= []).push(() => img() === placed && settle());
+    //: A pick changes on a click, a key or a focus move; the handle follows in a task after a frame, not in the event (it read
+    //: scrollWidth and the picture's box right after the key's own writes: 232 ms over 30 adds at 4x CPU), once per frame.
+    let moving = 0;
+    const follow = () => {
+      if (!moving) moving = 1, afterFrames(() => setTimeout(() => ((moving = 0), showHandle())), 1);
+    };
+    for (const type of ["click", "keyup", "focusin"]) S.root.addEventListener(type, follow);
 
     fig.addEventListener("pointermove", (event) => {
-      if (event.pointerType === "touch" || event.buttons || conn) return;
+      if (event.pointerType === "touch" || event.buttons || conn || event.target.closest?.(".dgm-handle")) return;
       const id = nodeAt(event.clientX, event.clientY);
       if (id) (hover = id), clearTimeout(hideTimer), showHandle();
       else if (hover) leave();
     });
     fig.addEventListener("pointerleave", (event) => !handles.includes(event.relatedTarget) && hover && leave());
 
+    //: A new block joined from `from` (in `group` when given), its words asked for as soon as it has a place in the picture.
+    function grow(from, group) {
+      const key = h.add(S, { shape: "rect", after: null, into: group ? h.ops.key("g", group) : null, before: null, from, edit: false });
+      const edge = key && S.m.edges.find((e) => e.from === from && e.to === key.slice(2));
+      if (key) want.push({ node: key.slice(2), until: Date.now() + 4000 });
+      if (edge && h.ops.needsLabel(S.m, edge)) want.push({ edge, until: Date.now() + 4000 });
+      return key;
+    }
+
     //: Connects `from` to what is at the point: a block or a group, or (nothing there) a new block, in the group under it.
     function connect(from, x, y) {
       const to = nodeAt(x, y) || groupAt(x, y);
       const name = (id) => h.ops.node(S.m, id)?.text || h.ops.group(S.m, id)?.title || id;
-      if (!to) {
-        const group = groupAt(x, y);
-        const key = h.add(S, { shape: "rect", after: null, into: group ? h.ops.key("g", group) : null, before: null, from, edit: false });
-        const edge = key && S.m.edges.find((e) => e.from === from && e.to === key.slice(2));
-        if (key) want.push({ node: key.slice(2), until: Date.now() + 4000 });
-        if (edge && h.ops.needsLabel(S.m, edge)) want.push({ edge, until: Date.now() + 4000 });
-        return key;
-      }
+      if (!to) return grow(from, groupAt(x, y));
       if (to === from) return;
       const edge = h.ops.join(S.m, from, to);
       if (!edge) return h.say(S, `${name(from)} is already connected to ${name(to)}.`);
@@ -249,8 +278,9 @@
         if (!conn || event.pointerId !== conn.id) return;
         const { from, moved } = conn;
         finish();
+        //: A click with no drag grows a joined block and asks for its words; a drag still connects to what it lands on.
         if (moved) connect(from, event.clientX, event.clientY);
-        else arm(from, side);
+        else grow(from, h.ops.node(S.m, from)?.group || null);
       });
       handle.addEventListener("pointercancel", finish);
       //: Enter or Space on the handle (a click with no pointer) arms it too.
@@ -271,11 +301,28 @@
     S.arm = (from) => arm(from, "right");
     //: And the pick (diagram-edge-pick.js) opens a picked arrow's words on Enter.
     S.renameEdge = renameEdge;
+    //: And the picture's own keys (diagram-view.js): Enter or F2 on a picked box names it where it stands.
+    S.renameNode = renameNode;
+    //: And a block added with the list folded (diagram-builder.js `nameOnPicture`): named here once the picture has drawn it.
+    S.askNode = (id) => want.push({ node: id, until: Date.now() + 4000 });
+    S.root.addEventListener("keydown", (event) => {
+      const key = event.key;
+      if (editing || event.ctrlKey || event.metaKey || event.altKey || !(key.length === 1 || key === "Enter" || key === "Escape") || !want.some((w) => w.node && w.until > Date.now())) return;
+      event.preventDefault();
+      event.stopPropagation();
+      //: Enter is the name accepted, Escape leaves it as it was; both wait for the box like the letters do.
+      if (key === "Escape") (want.length = 0), (held = ""), (entered = false);
+      else if (key === "Enter") entered = true;
+      else held += key;
+    }, true);
     const disarm = () => {
       armed = "";
       for (const handle of handles) handle.removeAttribute("aria-pressed");
       showHandle();
     };
+    //: Escape on a picked block puts an armed handle back before it lets go of the pick (diagram-canvas.js `clear`).
+    S.cancelArm = () => Boolean(armed) && (disarm(), true);
+    S.handles = showHandle;
     fig.addEventListener("click", (event) => {
       if (!armed || event.target.closest(".dock, .dgm-handle")) return;
       const from = armed;

@@ -9,7 +9,7 @@ description: Start a Tessellate session or agent task with the fewest tokens. Us
    else in it unless a rule is in question.
 2. Read the first "**Now (" paragraph of `docs/roadmap/HANDOVER.md` and the
    owner notes above the first heading. Stop there.
-3. Find code through `docs/CODEMAP.md` (every function, route, CSS section
+3. In `frontend/js`, `src/tessellate/ai` or `src/tessellate/core/overlay`, read the folder's `CONTEXT.md` first (which files hold what, which tests guard them). Find code through `docs/CODEMAP.md` (every function, route, CSS section
    and plan heading with its file and line; regenerate with
    `python scripts/codemap.py` if `tests/test_codemap_fresh.py` fails).
    Grep the map, then `sed -n 'A,Bp'` the lines you need. Never `cat` a

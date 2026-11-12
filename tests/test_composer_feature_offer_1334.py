@@ -10,7 +10,7 @@ import pytest
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 
-OFFER = "The app has a tool by that name too."
+OFFER = "The app has a tool for that too."
 
 
 @pytest.fixture
@@ -47,3 +47,11 @@ def test_a_feature_word_no_note_mentions_is_still_the_tool_alone(client, session
     text = _ask(client, "timer", use_tools=False)["text"]
     assert "one of the app's own tools" in text
     assert OFFER not in text
+
+
+def test_a_long_help_sentence_is_not_pasted_under_a_note_answer(client, session):
+    # Intent moved with round 3 (R3-7): the offer under a note is one short line, never the topic's paragraph.
+    manager.create_entry(session, "# Dentist\n\nThe dentist phone is 020 7946 0011.")
+    session.commit()
+    text = _ask(client, "phone", use_tools=False)["text"]
+    assert OFFER in text and len(text.split(OFFER)[1].split()) <= 20, text

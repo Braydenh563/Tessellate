@@ -16,6 +16,22 @@ import warnings
 from pathlib import Path
 
 from tessellate.core import launch_status, startup_status
+from tessellate.launcher_loading import (
+    _STARTUP_PHASE_PERCENT,
+    _loading_html,
+)
+
+#: Names other modules read from here; they live in `launcher_loading` now.
+from tessellate.launcher_loading import (
+    _LOADING_HTML,
+    _recolour_loading_page,
+)
+
+#: Re-exported: tests read them as `__main__._LOADING_HTML`.
+__all__ = [
+    "_LOADING_HTML",
+    "_recolour_loading_page",
+]
 
 # **A packaged build writes no bytecode into its own folder.** The bundle's
 # modules are precompiled, but Alembic runs `migrations/env.py` and every
@@ -32,14 +48,90 @@ logger = logging.getLogger("tessellate.launcher")
 HOST = "127.0.0.1"  # local only: this is a private app
 
 
-def page_host() -> str:
-    """The name the window and browser open: `HOST`, or `<name>.localhost`
-    when `TESSELLATE_LOCAL_NAME` gives one. Browsers resolve every
-    `*.localhost` to loopback themselves (RFC 6761), so the friendly name
-    needs no DNS, hosts file or admin rights; the server still binds `HOST`."""
-    from tessellate.core import netbind
+#: Left in the webview profile once the desktop window has been through
+#: `origin-bridge.html` (the carry-over from 127.0.0.1 to localhost).
+_ORIGIN_MOVED = "origin-moved"
 
-    return netbind.local_name() or HOST
+
+#: Per-port verdict of `_localhost_works`, so one launch probes once and logs once.
+_LOCALHOST_VERDICT: dict[int, bool] = {}
+
+
+def _localhost_works(port: int) -> bool:
+    """True when `localhost` is loopback only and this server answers there.
+    Some machines map `localhost` elsewhere (a hosts file, a VPN, a proxy); the
+    window then falls back to 127.0.0.1 for that launch. Logs why."""
+    if port in _LOCALHOST_VERDICT:
+        return _LOCALHOST_VERDICT[port]
+    import http.client
+    import ipaddress
+    import socket
+
+    ok, why = True, ""
+    try:
+        addrs = {info[4][0] for info in socket.getaddrinfo("localhost", port, proto=socket.IPPROTO_TCP)}
+        if not addrs or not all(ipaddress.ip_address(a.split("%")[0]).is_loopback for a in addrs):
+            ok, why = False, f"localhost resolves to {sorted(addrs)}, not loopback"
+    except (OSError, ValueError) as error:
+        ok, why = False, f"localhost does not resolve ({error})"
+    if ok:
+        try:
+            conn = http.client.HTTPConnection("localhost", port, timeout=2)
+            try:
+                conn.request("GET", "/health")
+                status = conn.getresponse().status
+            finally:
+                conn.close()
+            if status != 200:
+                ok, why = False, f"localhost /health answered {status}"
+        except (OSError, ValueError, http.client.HTTPException) as error:
+            ok, why = False, f"localhost /health failed ({error})"
+    if not ok:
+        logger.warning("Opening %s instead of localhost: %s", HOST, why)
+    _LOCALHOST_VERDICT[port] = ok
+    return ok
+
+
+def window_host(port: int | None = None) -> str:
+    """The name every page for this computer opens at (window, Open in browser,
+    capture hotkey, tray, printed addresses): `localhost`, not the bind address.
+    Windows Hello (WebAuthn) refuses an IP address as an RP id (owner decision,
+    HANDOVER "Hello origin", 2026-11-10); the server still binds `HOST` only.
+    `TESSELLATE_LOCAL_NAME` wins. With a `port`, `localhost` is checked once
+    (`_localhost_works`) and `HOST` is used for that launch when it fails;
+    127.0.0.1 is only ever this automatic fallback, never a setting."""
+    from tessellate.core import netbind
+    from tessellate.core.config import resolved_data_dir
+
+    netbind.load_address_prefs_file(resolved_data_dir())  # the name Settings saved
+    name = netbind.local_name()
+    if name:
+        return name
+    if port is not None and not _localhost_works(port):
+        return HOST
+    return "localhost"
+
+
+def _window_url(port: int) -> str:
+    """The desktop window's address. The first time (no marker in the webview
+    profile) it is the bridge page on 127.0.0.1, which hands the saved settings
+    of that origin over to `window_host()` and goes on to the app; after that
+    it is the app. The marker is written here, so a failed carry-over is not
+    retried on every launch (the settings then start from their defaults)."""
+    host = window_host(port)
+    plain = f"http://{host}:{port}"
+    if host == HOST:
+        return plain  # fallback launch: nothing to carry over to
+    from tessellate.core.config import resolved_data_dir
+    try:
+        marker = resolved_data_dir() / "webview" / _ORIGIN_MOVED
+        if marker.exists():
+            return plain
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text("1", encoding="utf-8")
+    except OSError:
+        return plain
+    return f"http://{HOST}:{port}/origin-bridge.html?to={host}"
 
 
 def _port_from_env(raw: str | None = None) -> int:
@@ -76,369 +168,6 @@ def _port_from_env(raw: str | None = None) -> int:
 # a scratch port.
 PORT = _port_from_env()
 
-# Shown in the desktop window the instant it opens, before the server is
-# reachable: replaces what used to be a black/blank window for however long
-# _wait_for_server() took, which on a cold start (embeddings warmup, a slow
-# machine) is not always instant. Someone running in "hidden console" mode
-# (show_console_on_startup=False, or the packaged installer's console-less
-# build) has *no* terminal to watch either, so this is the only feedback
-# they get that anything is happening at all, reported directly: "the
-# window doesn't [show] until all the checks and dependency updates are
-# done", which is exactly the gap between this window opening and
-# `_boot_and_swap` below finishing.
-#
-# Deliberately plain, inline HTML/CSS/JS rather than a page served from
-# `frontend/`, the whole point is that it must render with no server
-# listening on HOST:PORT yet, so it cannot be a request to that server. The
-# palette (#4664f0) matches index.html's own `theme-color` meta tag rather
-# than pulling in the real app's CSS, so the swap to the real window doesn't
-# jar even though nothing is actually shared between them.
-#
-# The logo is the same reason, and is why it is **copied** here as inline SVG
-# rather than referenced. Asked for directly ("add the logo to the loading
-# screen"); this window used to show a 10px blue dot beside the wordmark,
-# which is the first thing anyone sees of the app on a cold start. It cannot
-# be `<img src="/favicon.svg">`, there is no server to serve it, and a
-# `file://` path breaks in the packaged build, so the artwork is duplicated.
-# It is 30 lines of static geometry that has changed once; keeping the two in
-# sync by hand is cheaper than the alternatives, and a drift shows up
-# immediately on the next launch.
-_LOADING_HTML = """<!doctype html>
-<html><head><meta charset="utf-8">
-<style>
-  html, body { height: 100%; margin: 0; }
-  body {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 18px; height: 100%; background: #12141c; color: #e7e9ee;
-    font: 14px/1.4 -apple-system, "Segoe UI", system-ui, sans-serif;
-  }
-  .mark { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; }
-  .mark svg { width: 46px; height: 46px; display: block; }
-  .tagline { color: #9aa1ad; font-size: 12px; margin-top: -12px; }
-  /* The step list, the same one scripts/splash.ps1 draws before this
-     window exists, so the handoff from that window to this one looks
-     like the same list carrying on rather than a restart. */
-  .steps { list-style: none; margin: 0; padding: 0; width: 300px; }
-  .steps li { display: flex; align-items: baseline; gap: 8px; padding: 3px 0;
-              color: #5d6472; }
-  .steps li .tick { width: 14px; flex: none; text-align: center; }
-  .steps li .name { flex: none; }
-  .steps li .detail { color: #5d6472; font-size: 12px; overflow: hidden;
-                      text-overflow: ellipsis; white-space: nowrap; }
-  .steps li.done { color: #9aa1ad; }
-  .steps li.done .tick { color: #4a9d7a; }
-  .steps li.active { color: #e7e9ee; }
-  .steps li.active .tick { color: #4f6df5; animation: mm-pulse 1.4s ease-in-out infinite; }
-  .steps li.active .detail { color: #9aa1ad; }
-  .steps li.failed { color: #e58f8f; }
-  .steps li.failed .tick { color: #e58f8f; }
-  @keyframes mm-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-  .bar-track { width: 300px; height: 6px; border-radius: 3px; background: #262b3a; overflow: hidden; }
-  .bar-fill { height: 100%; width: 4%; background: #4f6df5; border-radius: 3px;
-              transition: width 300ms ease-out; }
-  .bar-fill.error { background: #e5a13a; }
-  #status { color: #9aa1ad; min-height: 1.2em; }
-  /* Two lines reserved, not one: the longest tip names the data folder,
-     which wraps, and a fixed 1.4em clipped its second line. min-height
-     rather than height so nothing can shift the bar and the step list
-     every six seconds either. */
-  #tip { color: #5d6472; font-size: 12px; min-height: 2.8em; max-width: 340px;
-         text-align: center; transition: opacity 200ms ease-out; }
-  /* Reduced motion: the pulse and both fades go, the information stays.
-     Nothing here is conveyed by movement alone. */
-  @media (prefers-reduced-motion: reduce) {
-    .steps li.active .tick { animation: none; }
-    .bar-fill, #tip { transition: none; }
-  }
-</style></head>
-<body>
-  <div class="mark"><svg viewBox="0 0 100 100" role="img" aria-label="Tessellate">
-    <defs>
-      <linearGradient id="tile" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="100">
-        <stop offset="0%" stop-color="#5b7cff"/><stop offset="55%" stop-color="#4f6df5"/>
-        <stop offset="100%" stop-color="#a927d8"/>
-      </linearGradient>
-      <linearGradient id="pearl" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#c9b8ff"/>
-      </linearGradient>
-      <filter id="lift" x="-30%" y="-30%" width="160%" height="160%">
-        <feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="#1a1060" flood-opacity="0.45"/>
-      </filter>
-    </defs>
-    <rect width="100" height="100" rx="23" fill="url(#tile)"/>
-    <g opacity="0.95"><polygon points="35.3,48.7 46.8,55.4 46.8,68.6 35.3,75.3 23.8,68.6 23.8,55.4" fill="#fff" stroke="#fff" stroke-width="7" stroke-linejoin="round"/></g>
-    <g opacity="0.7"><polygon points="64.7,48.7 76.2,55.4 76.2,68.6 64.7,75.3 53.2,68.6 53.2,55.4" fill="#fff" stroke="#fff" stroke-width="7" stroke-linejoin="round"/></g>
-    <g filter="url(#lift)"><polygon points="57.3,18.4 67.5,27.0 65.2,40.0 52.7,44.6 42.5,36.0 44.8,23.0" fill="url(#pearl)" stroke="url(#pearl)" stroke-width="7" stroke-linejoin="round"/></g>
-  </svg><span>Tessellate</span></div>
-  <div class="tagline">Your notes, pieced together</div>
-  <ul class="steps" id="steps"></ul>
-  <div class="bar-track"><div class="bar-fill" id="bar"></div></div>
-  <div id="status">Starting…</div>
-  <div id="tip"></div>
-  <script>
-    // Seeded by _loading_html() from the launcher's own status file before
-    // this window is created: see core/launch_status.py. The launcher's
-    // work (the git pull, building .venv, the pip install) is already over
-    // by the time this page exists, so without the seed the list would
-    // open empty and only ever learn about the steps still to come. An
-    // empty seed is the ordinary case for `python -m tessellate --desktop`
-    // run by hand, and falls back to the one step this process owns.
-    window.__mmSeed = [];
-    window.__mmTips = [
-      "Your notes never leave this machine.",
-      "Ctrl+K opens the command palette.",
-      "The capture box files a thought for you, in the right place.",
-      "The first run installs about 300 MB once. Later starts take seconds.",
-      "Your notes live in your own data folder, as plain files you can copy."
-    ];
-
-    var mmSteps = window.__mmSeed.slice();
-    // The share of the bar the launcher's steps already account for. This
-    // process's own phases divide up what is left, so the bar carries on
-    // from where the pre-Python splash stopped rather than resetting.
-    var mmBase = 0;
-    var mmOwn = null;   // the row this process is narrating into
-
-    // Built from DOM nodes rather than an innerHTML string: every title
-    // and detail here came out of a shell script by way of a text file,
-    // and the project's own lint exists because the next author to touch
-    // a line like this interpolates one.
-    function mmRender() {
-      var list = document.getElementById("steps");
-      list.textContent = "";
-      for (var i = 0; i < mmSteps.length; i++) {
-        var s = mmSteps[i];
-        var mark = s.state === "done" ? "\\u2713"
-                 : s.state === "failed" ? "\\u00d7"
-                 : s.state === "active" ? "\\u25cf" : "\\u25cb";
-        var row = document.createElement("li");
-        row.className = s.state;
-        var tick = document.createElement("span");
-        tick.className = "tick";
-        tick.textContent = mark;
-        var name = document.createElement("span");
-        name.className = "name";
-        name.textContent = s.title;
-        var detail = document.createElement("span");
-        detail.className = "detail";
-        detail.textContent = s.detail || "";
-        row.appendChild(tick);
-        row.appendChild(name);
-        row.appendChild(detail);
-        list.appendChild(row);
-      }
-    }
-
-    function mmSetup() {
-      var done = 0, total = 0;
-      for (var i = 0; i < mmSteps.length; i++) {
-        if (mmSteps[i].state === "done") done++;
-        total = mmSteps[i].total || total;
-      }
-      if (!total) total = mmSteps.length || 1;
-      // The last step is this process: whatever the launcher called it, it
-      // is the one still running, so this window narrates into it.
-      if (mmSteps.length && mmSteps[mmSteps.length - 1].state !== "done") {
-        mmOwn = mmSteps[mmSteps.length - 1];
-      } else {
-        mmOwn = { step: total, total: total, title: "Start",
-                  detail: "Starting the app", state: "active" };
-        mmSteps.push(mmOwn);
-      }
-      mmBase = Math.round(done * 100 / total);
-      mmRender();
-      document.getElementById("bar").style.width = Math.max(mmBase, 4) + "%";
-    }
-
-    // Called from the Python side (window.evaluate_js) as the launcher
-    // learns more, not polled from here, see startup_status.py's own
-    // docstring for why the loading window can't ask the server itself.
-    window.__mmSetStatus = function (text, pct) {
-      document.getElementById("status").textContent = text;
-      // The row keeps the launcher's own detail for this step and the line
-      // below carries the phase inside it. Writing the phase into both put
-      // the same sentence on screen twice, one above the other, which reads
-      // as a rendering bug rather than as two pieces of information.
-      if (mmOwn && mmOwn.state !== "active") {
-        mmOwn.state = "active";
-        mmRender();
-      }
-      // pct is this process's own progress through its own phases; the bar
-      // shows it inside the slice the launcher's finished steps left.
-      var scaled = mmBase + (pct * (100 - mmBase) / 100);
-      document.getElementById("bar").style.width = Math.max(scaled, 4) + "%";
-    };
-    // The last step really does finish, and this is the moment: the server
-    // answered and the window is about to be pointed at the app. Without
-    // it nothing ever marked the step this process owns as done, so the
-    // list closed on four ticks out of five and the bar on 98.4% of its
-    // track, every launch, which is the "only ever goes to 3/5 and then it
-    // loads" report: not a step that was skipped, a step nobody ticked.
-    window.__mmSetDone = function (text) {
-      document.getElementById("status").textContent = text;
-      if (mmOwn) {
-        mmOwn.state = "done";
-        mmOwn.detail = text;
-        mmRender();
-      }
-      document.getElementById("bar").style.width = "100%";
-    };
-    window.__mmSetError = function (text) {
-      document.getElementById("status").textContent = text;
-      document.getElementById("bar").className = "bar-fill error";
-      document.getElementById("bar").style.width = "100%";
-      if (mmOwn) {
-        mmOwn.state = "failed";
-        mmOwn.detail = text;
-        mmRender();
-      }
-    };
-
-    mmSetup();
-
-    // One tip at a time, changed every six seconds, starting at a random
-    // one so the same tip is not the only one anybody ever reads. Under
-    // reduced motion the fade goes and the text simply swaps.
-    var mmTip = document.getElementById("tip");
-    var mmTipAt = Math.floor(Math.random() * window.__mmTips.length);
-    var mmReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    function mmShowTip() {
-      mmTip.textContent = window.__mmTips[mmTipAt % window.__mmTips.length];
-      mmTipAt++;
-    }
-    mmShowTip();
-    setInterval(function () {
-      if (mmReduced) { mmShowTip(); return; }
-      mmTip.style.opacity = "0";
-      setTimeout(function () { mmShowTip(); mmTip.style.opacity = "1"; }, 200);
-    }, 6000);
-  </script>
-</body></html>"""
-
-
-#: The loading page's six colours, per look and mode: ground, text, faint
-#: text, secondary text, accent, bar track. The page's own stylesheet is
-#: written in the Classic set, which is the fallback for any other palette.
-_LOADING_CLASSIC = ("#12141c", "#e7e9ee", "#5d6472", "#9aa1ad", "#4f6df5", "#262b3a")
-_LOADING_LOOKS = {
-    ("utilitarian", "dark"): ("#161615", "#ecebe8", "#75736e", "#a09e98", "#5b95ff", "#2a2a27"),
-    ("utilitarian", "light"): ("#f4f3f1", "#1c1c1a", "#8a8883", "#66645f", "#2f5bd3", "#e3e1dd"),
-    ("paper", "dark"): ("#141312", "#f2efe9", "#77726a", "#a49f95", "#ff7a4d", "#2a2826"),
-    ("paper", "light"): ("#faf9f6", "#111111", "#8a867e", "#57544e", "#c63d17", "#e6e3dc"),
-    ("mono", "dark"): ("#0f1215", "#e6eaee", "#5f6a75", "#8f9aa6", "#42d67f", "#232a31"),
-    ("mono", "light"): ("#eceff2", "#15191e", "#7b8591", "#56606b", "#1a7f45", "#d5dae0"),
-}
-_LOOK_PALETTES = {"utilitarian": "utilitarian", "paper": "paper", "mono": "mono", "default": "default"}
-
-
-#: The loading page's two raw reduced-motion reads: the stylesheet's block and
-#: the tip fade's script. They live here, not in `frontend/`, because the page is
-#: shown from `html=` before the app and cannot read the app's `data-motion`.
-_LOADING_MOTION_CSS = "@media (prefers-reduced-motion: reduce) {"
-_LOADING_MOTION_JS = 'window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches'
-
-
-def _loading_motion(html: str, choice: object) -> str:
-    """The loading page under the person's Motion choice (INBOX 1506), which the
-    app mirrors to `ui_state` as "follow", "on" or "off" (older words "auto" and
-    "reduced" read as follow and off, as `MOTION.choice` in theme-boot.js does).
-    "off" holds the page still, "on" keeps it moving whatever the system asks,
-    and anything else leaves it following the system's request, as written."""
-    if choice == "on":
-        return html.replace(_LOADING_MOTION_CSS, "@media not all {").replace(_LOADING_MOTION_JS, "false")
-    if choice in ("off", "reduced"):
-        return html.replace(_LOADING_MOTION_CSS, "@media all {").replace(_LOADING_MOTION_JS, "true")
-    return html
-
-
-def _recolour_loading_page(html: str, data_dir: str | None) -> str:
-    """The loading page in the look the app will open in (owner: "some popup
-    ui's havent followed the theme change like the loading screen").
-
-    The page is shown before the app, from `html=`, so it cannot read the
-    browser storage the look lives in; the look is mirrored to the server's
-    preferences (`ui_state`), which this reads from the data folder. Only the
-    page's stylesheet is recoloured; the logo keeps its own colours. Any
-    failure leaves the page as written, which is a loading screen in the
-    Classic colours rather than no loading screen.
-    """
-    try:
-        from tessellate.core.config import ConfigManager
-
-        state = ConfigManager(data_dir or None).get_preference("ui_state", {}) or {}
-    except Exception:  # noqa: BLE001  # a cosmetic read must never stop the launch
-        return html
-    html = _loading_motion(html, state.get("motion"))
-    # The same order as `appearancePref` (settings.js): a palette chosen by
-    # hand, then the chosen look's palette, then the default look's.
-    preset = state.get("themePreset")
-    palette = state.get("palette") or (_LOOK_PALETTES.get(preset, "") if preset else "utilitarian")
-    mode = "light" if state.get("theme") == "light" else "dark"
-    colours = _LOADING_LOOKS.get((palette, mode))
-    if not colours:
-        return html
-    head, sep, rest = html.partition("</style>")
-    if not sep:
-        return html
-    for old, new in zip(_LOADING_CLASSIC, colours):
-        head = head.replace(old, new)
-    return head + sep + rest
-
-
-def _loading_html(steps=None, data_dir: str | None = None) -> str:
-    """`_LOADING_HTML` with the launcher's step history seeded into it.
-
-    Read before `_close_launch_splash()` deletes the status file, which is
-    the only window in which it exists: see `_run_desktop`. With no
-    launcher (someone ran `python -m tessellate --desktop` by hand) there is
-    no history, and the page renders the one step this process owns, which
-    is exactly what `_LOADING_HTML` already says on its own.
-    """
-    import json
-
-    if steps is None:
-        steps = launch_status.read_file(os.environ.get("MM_SPLASH_FILE"))
-    if data_dir is None:
-        data_dir = os.environ.get("TESSELLATE_DATA_DIR") or ""
-
-    html = _recolour_loading_page(_LOADING_HTML, data_dir)
-    if steps:
-        seed = [
-            {
-                "step": s.step,
-                "total": s.total,
-                "title": s.title,
-                "detail": s.detail,
-                "state": s.state,
-            }
-            for s in launch_status.summarise(steps)
-        ]
-        html = html.replace("window.__mmSeed = [];", f"window.__mmSeed = {json.dumps(seed)};")
-    if data_dir:
-        # The last tip names the folder rather than describing it: "where
-        # are my notes" is the most-asked question this app has, and the
-        # loading window is one of the few places with room to answer it.
-        html = html.replace(
-            '"Your notes live in your own data folder, as plain files you can copy."',
-            json.dumps(f"Your notes live in {data_dir}, as plain files you can copy."),
-        )
-    return html
-
-# Coarse phase name -> a fixed progress-bar percentage. Real percentages
-# aren't knowable, create_app() has no notion of "38% done", but a handful
-# of ordered, named phases read as real progress rather than an indeterminate
-# spinner, which is what was asked for ("a progress bar with sub text
-# showing the action currently being done"). A phase this map doesn't know
-# about (core/startup_status.py's own default, or a future phase string
-# added there without updating this) still shows as text, just without
-# advancing the bar past whatever the last known phase left it at.
-_STARTUP_PHASE_PERCENT = {
-    "Starting…": 4,
-    "Setting up your notebook…": 30,
-    "Starting local services…": 55,
-    "Warming up search…": 75,
-    "Starting the server…": 92,
-}
 
 # start.bat's own console window (the one visible when start-desktop.bat is
 # double-clicked) blocks synchronously on this process, then falls through to
@@ -510,6 +239,7 @@ def _run_server() -> None:
     # password (`_serve_with_lan`). This computer always has plain http on
     # HOST:PORT, which everything else in this file talks to.
     config = deps.get_config()
+    netbind.apply_address_prefs(config)  # the short name and domains Settings saved
     #: Docker (Brief 40): TESSELLATE_BIND names a non-loopback address, and
     #: TESSELLATE_FIRST_PASSWORD seeds the password a fresh container has no
     #: console to type. Both unset is the ordinary launch, unchanged.
@@ -1018,12 +748,13 @@ def _claim_notebook() -> None:
     lock as "starting" (live pid, silent port) and waits for it.
     """
     global PORT
-    from tessellate.core import instance_lock
+    from tessellate.core import instance_lock, running_copies
     from tessellate.core.config import resolved_data_dir
 
     PORT = _desktop_port()
     os.environ["TESSELLATE_PORT"] = str(PORT)
     instance_lock.claim(resolved_data_dir(), PORT)
+    running_copies.prune_in_background()
 
 
 def _boot_and_swap(window) -> None:
@@ -1067,7 +798,7 @@ def _boot_and_swap(window) -> None:
         # every launch 1.5s slower, and the missing splash it was aimed at is
         # the pre-Python one, which this page cannot be.
         _mark_start_step_done(window)
-        window.load_url(f"http://{page_host()}:{PORT}")
+        window.load_url(_window_url(PORT))
         _focus_window(window)
     else:
         try:
@@ -1799,7 +1530,7 @@ def _open_window_onto(port: int) -> None:
     tray, no loading page (the server is already up). Shares the running
     window's storage, since the saved sign-in and theme belong to the one
     address both windows open. Closing it ends this process only."""
-    url = f"http://{page_host()}:{port}"
+    url = _window_url(port)
     try:
         import webview
     except ImportError:
@@ -1821,15 +1552,9 @@ def _open_window_onto(port: int) -> None:
         webview.start(_focus_window, window)
 
 
-def _run_desktop(hidden_relaunch: bool = False) -> None:
-    """A real app window: uvicorn in a background thread,
-    pywebview in front. Closing the window exits the process.
-
-    `hidden_relaunch` is True only when this process IS the console-less
-    `pythonw.exe` relaunch `_maybe_relaunch_hidden` spawned: see there for
-    why relaunching, rather than hiding an already-created console, is
-    "User view"'s actual mechanism now.
-    """
+def _desktop_preflight(hidden_relaunch: bool) -> tuple | None:
+    """Single instance, the hidden relaunch and the pywebview import: `(webview, show_on_startup)`, or None when
+    this process has nothing more to do (it handed off, or fell back to the plain server)."""
     # Read the preference, and try a relaunch if it calls for one, before
     # anything else, including importing webview: if this is about to hand
     # off to a separate process and exit, nothing below matters. ConfigManager
@@ -1849,7 +1574,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     )
     if action != "start":
         _hand_off_to_running(running, action)
-        return
+        return None
     _start_frozen_splash()
 
     show_on_startup = ConfigManager().get_preference("show_console_on_startup", True)
@@ -1866,8 +1591,13 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
             "Starting the normal server instead, open http://localhost:8000"
         )
         _run_server_holding_lock()
-        return
+        return None
 
+    return webview, show_on_startup
+
+
+def _desktop_console(show_on_startup: bool) -> tuple[int | None, bool, dict[int, str]]:
+    """Hide the console unless asked to keep it: its handle, whether it is hidden now, and its window targets."""
     # Hide the console before starting anything else, unless the user has
     # asked to keep seeing it, asked for directly: "I want it to be hidden
     # but the user can make it show ... if they want", both as a startup
@@ -1897,7 +1627,11 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         if not show_on_startup:
             _apply_console_visibility(console_targets, hidden=True)
             console_hidden = True
+    return console_hwnd, console_hidden, console_targets
 
+
+def _desktop_window(webview):  # noqa: ANN001, ANN202
+    """Open the loading window and wire the quit, fullscreen and splash handoffs; None when the web view cannot render."""
     # The window opens on the loading page immediately, before the server
     # thread has even started, let alone finished create_app()'s
     # migrations/embeddings-warmup/etc.: instead of waiting here for
@@ -1917,7 +1651,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     # render is worse than no window: at least this says what is wrong.
     if _webview2_runtime_missing():
         _warn_webview2_missing()
-        return
+        return None
 
     _claim_notebook()
     _splash_status("Opening the window...")
@@ -1939,26 +1673,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     # never reaches a main thread inside the window's event loop.
     from tessellate.core import quit_hook
 
-    def _quit_from_app() -> None:
-        # The window goes first (the owner: "the quit application button is
-        # a little slow"). Stopping the background work can wait up to 5s
-        # for the autonomous scheduler to finish a write; that wait now
-        # happens behind a window that is already gone, not in front of one
-        # that looks frozen.
-        hide = getattr(window, "hide", None)
-        if callable(hide):
-            try:
-                hide()
-            except Exception:  # noqa: BLE001 - cosmetic; the exit below still runs
-                logger.debug("window.hide failed during quit", exc_info=True)
-        _stop_background_work()
-        try:
-            window.destroy()
-        except Exception:  # noqa: BLE001 - the exit below is the guarantee
-            logger.debug("window.destroy failed during quit", exc_info=True)
-        os._exit(0)
-
-    quit_hook.set_quit_handler(_quit_from_app)
+    quit_hook.set_quit_handler(lambda: _quit_from_app(window))
     # The documents focus mode's "Fill the whole screen": a web view's own
     # full screen fills the web view, not the window (INBOX 426 z), so the
     # page asks the window through `POST /desktop/fullscreen`.
@@ -1979,82 +1694,11 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     except AttributeError:  # an older pywebview without window events
         _close_bootloader_splash()
         _close_launch_splash()
-    # `private_mode` defaults to True in pywebview, which throws away
-    # localStorage and cookies when the window closes. The browser build keeps
-    # a great deal in localStorage, the theme and every appearance key, the
-    # "onboardingDone" flag, the auth token, the active tab, sidebar widths, 
-    # so the desktop app was starting from scratch every single time. That is
-    # one cause behind three separate reports (§35E): the theme resetting to
-    # default, the onboarding tour showing on every launch, and having to sign
-    # in again each time.
-    #
-    # The storage lives beside the notes rather than in pywebview's own
-    # default, so "where your data is" stays one answer, and deleting the data
-    # directory really does remove everything.
+    return window
 
-    # The app icon: replaces the default Python snake in the taskbar and
-    # title bar. Two levels up from src/tessellate/__main__.py lands at the
-    # repo root; frontend/icon.ico sits there. A PyInstaller build has no
-    # "two levels up", everything bundled lands directly under the
-    # extraction root with the `src/` layer gone, same reasoning and same
-    # fix as FRONTEND_DIR in api/app.py. The ICO contains a 512px PNG entry,
-    # which pywebview on Windows and WebKit on macOS both accept. None is a
-    # valid fallback: a missing file never blocks the window.
-    #
-    # Linux gets the plain PNG instead: GTK's icon loading goes through
-    # GdkPixbuf, and unlike Windows/macOS this was never actually run
-    # against a Linux desktop to confirm ICO decodes there, icon-512.png
-    # is the one format every platform this app now ships on is known to
-    # accept, so there's no reason to gamble on the untested one for a
-    # cosmetic detail.
-    if getattr(sys, "frozen", False):
-        _frontend_dir = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)) / "frontend"
-    else:
-        _frontend_dir = Path(__file__).resolve().parents[2] / "frontend"
-    _icon_path = _frontend_dir / ("icon-512.png" if sys.platform.startswith("linux") else "icon.ico")
-    _icon = str(_icon_path) if _icon_path.is_file() else None
 
-    if sys.platform == "win32":
-        try:
-            import ctypes
-            # Setting a custom AppUserModelID tells Windows this is a distinct app,
-            # decoupling the taskbar icon from the Python executable's default snake.
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-                "memorymap.desktop.app.1"
-            )
-        except Exception as exc:
-            # Best-effort cosmetic fix: a wrong or missing taskbar icon is not
-            # worth blocking the window over, so this must never crash the
-            # launcher. But CodeQL is right that a silent `except: pass` here
-            # hides a real failure mode too: an unexpected `ctypes.windll`
-            # shape (a Windows build this wasn't tested against) would fail
-            # every time with no way to tell a cosmetic no-op from a bug.
-            # Logged, not swallowed.
-            logger.warning("could not set the Windows AppUserModelID: %s", exc, exc_info=True)
-
-    # Asked for directly, alongside the installer: a way to manage the app
-    # without a terminal window sitting open, and a place for "close" to go
-    # that isn't "quit", the whole point of a background app.  Optional in
-    # the same way voice/semantic search are (see core/extras.py): a source
-    # checkout without pystray+Pillow installed still gets a normal window,
-    # it just closes for real instead of minimizing.
-    #
-    # Windows only, deliberately: see _start_tray's own docstring: this
-    # runs pystray's event loop on a daemon thread while webview.start()
-    # blocks the main one, which Windows' pystray backend tolerates and
-    # macOS's does not (already excluded for exactly that reason). Linux's
-    # GTK-based backend has the same main-thread-only UI constraint as
-    # macOS's AppKit, so shipping the identical off-main-thread architecture
-    # there risks the same class of crash on a platform this was never
-    # built or run against, the Linux build gets a real window that closes
-    # for real instead, the same fallback already in place when pystray
-    # simply isn't installed.
-    tray_icon = (
-        _start_tray(window, _icon_path, console_hwnd, console_hidden, console_targets)
-        if sys.platform == "win32"
-        else None
-    )
-    _attach_desk_companion(webview, window, tray_icon)
+def _desktop_close_to_tray(window, tray_icon) -> None:  # noqa: ANN001
+    """Closing the window hides it to the tray (with a first-time notice) instead of quitting."""
     if tray_icon is not None:
         # **Closing the window is not quitting the app, and it now says so.**
         # The hide itself has been here since the tray was added; what was
@@ -2079,38 +1723,75 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         #    explained. Once per install, keyed on a preference: an app that
         #    tells you the same thing every time you close it is worse than
         #    one that never tells you.
-        _told_about_tray = {"done": False}
+        told_about_tray = {"done": False}
 
         def _on_closing() -> bool:
-            try:
-                from tessellate.core import deps
-
-                config = deps.get_config()
-                if not config.get_preference("close_to_tray", True):
-                    # A real quit, so the same teardown the tray's own Quit
-                    # does: this path skips the lifespan handler too.
-                    _stop_background_work()
-                    return True
-                if not _told_about_tray["done"] and not config.get_preference(
-                    "tray_hide_explained", False
-                ):
-                    _told_about_tray["done"] = True
-                    config.set_preference("tray_hide_explained", True)
-                    try:
-                        tray_icon.notify(
-                            "Still running here. Click the icon to bring the "
-                            "window back, or right-click it and choose Quit to close it "
-                            "properly.",
-                            "Tessellate",
-                        )
-                    except Exception as exc:  # noqa: BLE001  # balloons are optional
-                        logger.debug("couldn't show the tray balloon: %s", exc)
-            except Exception as exc:  # noqa: BLE001  # never block a close
-                logger.warning("close-to-tray check failed: %s", exc)
-            window.hide()
-            return False  # cancels the real close, pywebview just hides it
+            return _close_to_tray(window, tray_icon, told_about_tray)
 
         window.events.closing += _on_closing
+
+
+def _run_desktop(hidden_relaunch: bool = False) -> None:
+    """A real app window: uvicorn in a background thread,
+    pywebview in front. Closing the window exits the process.
+
+    `hidden_relaunch` is True only when this process IS the console-less
+    `pythonw.exe` relaunch `_maybe_relaunch_hidden` spawned: see there for
+    why relaunching, rather than hiding an already-created console, is
+    "User view"'s actual mechanism now.
+    """
+    from tessellate.core import instance_lock
+
+    ready = _desktop_preflight(hidden_relaunch)
+    if ready is None:
+        return
+    webview, show_on_startup = ready
+    console_hwnd, console_hidden, console_targets = _desktop_console(show_on_startup)
+    window = _desktop_window(webview)
+    if window is None:
+        return
+
+    # `private_mode` defaults to True in pywebview, which throws away
+    # localStorage and cookies when the window closes. The browser build keeps
+    # a great deal in localStorage, the theme and every appearance key, the
+    # "onboardingDone" flag, the auth token, the active tab, sidebar widths, 
+    # so the desktop app was starting from scratch every single time. That is
+    # one cause behind three separate reports (§35E): the theme resetting to
+    # default, the onboarding tour showing on every launch, and having to sign
+    # in again each time.
+    #
+    # The storage lives beside the notes rather than in pywebview's own
+    # default, so "where your data is" stays one answer, and deleting the data
+    # directory really does remove everything.
+
+    _icon_path = _app_icon_path()
+    _icon = str(_icon_path) if _icon_path.is_file() else None
+    _set_windows_app_id()
+
+    # Asked for directly, alongside the installer: a way to manage the app
+    # without a terminal window sitting open, and a place for "close" to go
+    # that isn't "quit", the whole point of a background app.  Optional in
+    # the same way voice/semantic search are (see core/extras.py): a source
+    # checkout without pystray+Pillow installed still gets a normal window,
+    # it just closes for real instead of minimizing.
+    #
+    # Windows only, deliberately: see _start_tray's own docstring: this
+    # runs pystray's event loop on a daemon thread while webview.start()
+    # blocks the main one, which Windows' pystray backend tolerates and
+    # macOS's does not (already excluded for exactly that reason). Linux's
+    # GTK-based backend has the same main-thread-only UI constraint as
+    # macOS's AppKit, so shipping the identical off-main-thread architecture
+    # there risks the same class of crash on a platform this was never
+    # built or run against, the Linux build gets a real window that closes
+    # for real instead, the same fallback already in place when pystray
+    # simply isn't installed.
+    tray_icon = (
+        _start_tray(window, _icon_path, console_hwnd, console_hidden, console_targets)
+        if sys.platform == "win32"
+        else None
+    )
+    _attach_desk_companion(webview, window, tray_icon)
+    _desktop_close_to_tray(window, tray_icon)
 
     from tessellate.core.config import resolved_data_dir
 
@@ -2149,6 +1830,107 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         instance_lock.release()
 
 
+def _quit_from_app(window) -> None:  # noqa: ANN001
+    # The window goes first (the owner: "the quit application button is
+    # a little slow"). Stopping the background work can wait up to 5s
+    # for the autonomous scheduler to finish a write; that wait now
+    # happens behind a window that is already gone, not in front of one
+    # that looks frozen.
+    # The companion is closed BEFORE the main window is hidden: hiding the main
+    # window is what makes the companion due, and it then made its quick panel
+    # (a new WebView2) in the middle of the quit, which was destroyed while
+    # starting: "WebView2 initialization failed ... E_ABORT" (INBOX 1666).
+    from tessellate.core import desk_companion
+
+    desk_companion.shutdown()
+    hide = getattr(window, "hide", None)
+    if callable(hide):
+        try:
+            hide()
+        except Exception:  # noqa: BLE001 - cosmetic; the exit below still runs
+            logger.debug("window.hide failed during quit", exc_info=True)
+    _stop_background_work()
+    try:
+        window.destroy()
+    except Exception:  # noqa: BLE001 - the exit below is the guarantee
+        logger.debug("window.destroy failed during quit", exc_info=True)
+    os._exit(0)
+
+
+def _close_to_tray(window, tray_icon, told_about_tray: dict) -> bool:  # noqa: ANN001
+    try:
+        from tessellate.core import deps
+
+        config = deps.get_config()
+        if not config.get_preference("close_to_tray", True):
+            # A real quit, so the same teardown the tray's own Quit
+            # does: this path skips the lifespan handler too.
+            _stop_background_work()
+            return True
+        if not told_about_tray["done"] and not config.get_preference(
+            "tray_hide_explained", False
+        ):
+            told_about_tray["done"] = True
+            config.set_preference("tray_hide_explained", True)
+            try:
+                tray_icon.notify(
+                    "Still running here. Click the icon to bring the "
+                    "window back, or right-click it and choose Quit to close it "
+                    "properly.",
+                    "Tessellate",
+                )
+            except Exception as exc:  # noqa: BLE001  # balloons are optional
+                logger.debug("couldn't show the tray balloon: %s", exc)
+    except Exception as exc:  # noqa: BLE001  # never block a close
+        logger.warning("close-to-tray check failed: %s", exc)
+    window.hide()
+    return False  # cancels the real close, pywebview just hides it
+
+
+def _app_icon_path() -> Path:
+    # The app icon: replaces the default Python snake in the taskbar and
+    # title bar. Two levels up from src/tessellate/__main__.py lands at the
+    # repo root; frontend/icon.ico sits there. A PyInstaller build has no
+    # "two levels up", everything bundled lands directly under the
+    # extraction root with the `src/` layer gone, same reasoning and same
+    # fix as FRONTEND_DIR in api/app.py. The ICO contains a 512px PNG entry,
+    # which pywebview on Windows and WebKit on macOS both accept. None is a
+    # valid fallback: a missing file never blocks the window.
+    #
+    # Linux gets the plain PNG instead: GTK's icon loading goes through
+    # GdkPixbuf, and unlike Windows/macOS this was never actually run
+    # against a Linux desktop to confirm ICO decodes there, icon-512.png
+    # is the one format every platform this app now ships on is known to
+    # accept, so there's no reason to gamble on the untested one for a
+    # cosmetic detail.
+    if getattr(sys, "frozen", False):
+        _frontend_dir = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)) / "frontend"
+    else:
+        _frontend_dir = Path(__file__).resolve().parents[2] / "frontend"
+    return _frontend_dir / ("icon-512.png" if sys.platform.startswith("linux") else "icon.ico")
+
+
+def _set_windows_app_id() -> None:
+    """Best-effort taskbar identity; never blocks the window."""
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            # Setting a custom AppUserModelID tells Windows this is a distinct app,
+            # decoupling the taskbar icon from the Python executable's default snake.
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                "memorymap.desktop.app.1"
+            )
+        except Exception as exc:
+            # Best-effort cosmetic fix: a wrong or missing taskbar icon is not
+            # worth blocking the window over, so this must never crash the
+            # launcher. But CodeQL is right that a silent `except: pass` here
+            # hides a real failure mode too: an unexpected `ctypes.windll`
+            # shape (a Windows build this wasn't tested against) would fail
+            # every time with no way to tell a cosmetic no-op from a bug.
+            # Logged, not swallowed.
+            logger.warning("could not set the Windows AppUserModelID: %s", exc, exc_info=True)
+
+
 def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
     """The corner companion (`core/desk_companion.py`, BACKLOG 16): a second
     window shown while this one is in the tray and the preference is on.
@@ -2185,7 +1967,7 @@ def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
         webview,
         window,
         _open_main,
-        lambda: f"http://{page_host()}:{PORT}/desktop-companion.html",
+        lambda: f"http://{window_host(PORT)}:{PORT}/desktop-companion.html",
         on_change=getattr(tray_icon, "update_menu", None),
     )
 
@@ -2224,6 +2006,225 @@ def _start_reminder_notifier(window, icon_path: Path, data_dir: Path):  # noqa: 
         logger.warning("reminder notifications are off: %s", exc)
         notifier = None
     return notifier.stop if notifier is not None else (lambda: None)
+
+
+def _tray_image(Image, icon_path: Path):  # noqa: ANN001, ANN202
+    """The tray icon bitmap: the .ico decoded now, or a flat brand square."""
+    image = None
+    if icon_path.is_file():
+        try:
+            # Pillow's ICO decoder warns "Image was not the expected size"
+            # for any .ico whose largest frame doesn't match the size in its
+            # directory header: true of frontend/icon.ico, and harmless here
+            # since we only ever want the largest frame. Scoped to this one
+            # call so a genuine UserWarning from elsewhere still surfaces.
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message="Image was not the expected size",
+                    category=UserWarning,
+                )
+                image = Image.open(icon_path).convert("RGBA")  # decode now, not inside the tray thread
+        except Exception as exc:  # noqa: BLE001  # Pillow raises ValueError/SyntaxError on a bad .ico too
+            logger.warning("couldn't load %s for the tray icon: %s", icon_path, exc)
+            image = None
+    if image is None:
+        # A flat brand-blue square rather than no icon at all, pystray
+        # requires a real image, and a missing tray icon reads as "the app
+        # crashed", not "cosmetic fallback".
+        image = Image.new("RGBA", (64, 64), (74, 108, 247, 255))
+    return image
+
+
+def _tray_open(window) -> None:
+    # `show()` un-minimises but does not raise or focus, so clicking Open
+    # while the window was merely *behind* something did nothing visible, 
+    # which reads as the menu item being broken. `_focus_window` is the
+    # same helper the loading-window handoff already uses for this.
+    window.show()
+    _focus_window(window)
+
+def _tray_toggle_console(window, icon, console_hwnd, console_targets, console_state) -> None:
+    if console_hwnd is None:
+        return
+    going_hidden = not console_state["hidden"]
+
+    # Best-effort, same as the startup path's own fallback: works for
+    # legacy conhost, a no-op under Windows Terminal's ConPTY (see
+    # _maybe_relaunch_hidden's docstring): which the restart below is
+    # what actually guarantees, at the cost of a brief relaunch instead
+    # of an instant toggle.
+    _apply_console_visibility(console_targets or {console_hwnd: _window_class_name(console_hwnd)}, hidden=going_hidden)
+    console_state["hidden"] = going_hidden
+
+    try:
+        from tessellate.core import deps
+
+        deps.get_config().set_preference("show_console_on_startup", not going_hidden)
+    except Exception as exc:
+        # Remembering the choice is a nicety on top of the live toggle,
+        # which has already happened above, never let a failure here
+        # make the menu item look like it did nothing.
+        logger.warning("couldn't save the console visibility preference: %s", exc, exc_info=True)
+
+    # The reliable half: relaunch into the correct mode from scratch
+    # rather than trust the ShowWindow attempt just above actually
+    # worked: same _spawn_desktop the startup path and the
+    # Settings-triggered restart both use, so all three take identical
+    # action for the same mode switch.
+    process = _spawn_desktop(hidden=going_hidden)
+    if process is None:
+        return  # nothing to relaunch into; the ShowWindow attempt above is all there is
+
+    _stop_background_work()
+    icon.stop()
+    window.destroy()
+    os._exit(0)
+
+def _tray_go(window, js: str):
+    """A tray item that brings the window forward and *lands somewhere*.
+
+    Reported directly: "the options and buttons in the system tray dont
+    fully navigate to the propper features, just the tabs or settings
+    modal." Two items existed and each hand-rolled the same three steps, 
+    show, focus, evaluate a string of JS, so adding a third meant copying
+    them again, which is why there was never a third.
+
+    Every generated item carries the same lock guard, and that is the
+    reason this is a factory rather than a list of one-liners: a tray menu
+    must never reach past the lock screen, and a guard that has to be
+    remembered per item is a guard that will be forgotten. Locked, the
+    window still comes forward, the person asked for the app, and the
+    honest answer is the lock screen, not nothing happening.
+
+    **Also closes Settings first, if it's open.** Reported directly, on
+    "Reminders" specifically but asked to apply to "the others" too: a
+    tray item that calls `switchTab(...)` switches the tab *underneath*
+    an open Settings modal, which is a full-screen overlay, the tab
+    changes, nothing about it is visible, and clicking Reminders reads as
+    broken. `switchTab()` itself has no opinion on a modal sitting on top
+    of it; closing that modal first is this factory's job, applied once
+    here rather than repeated (or, as happened once already, forgotten)
+    per item.
+    """
+    close_settings_first = (
+        "if (typeof settingsModalOpen === 'function' && settingsModalOpen()"
+        " && typeof closeSettingsModal === 'function') { closeSettingsModal(); }"
+    )
+
+    def run(icon, item) -> None:
+        window.show()
+        _focus_window(window)
+        try:
+            window.evaluate_js(
+                "if (document.getElementById('lock-overlay')"
+                "?.classList.contains('hidden')) {"
+                + close_settings_first
+                + js
+                + "}"
+            )
+        except Exception as exc:  # noqa: BLE001  # a menu item is not worth a crash
+            logger.warning("tray navigation failed: %s", exc)
+
+    return run
+
+def _tray_view_logs(window) -> None:
+    # Reported directly, twice: this used to open Settings unconditionally
+    # (reaching straight past the lock screen, fixed once already, see
+    # the lock-overlay guard below) and, separately, never actually landed
+    # on the Logs section, it called `openSettingsModal()` with no
+    # argument and then `showSettingsSection('logs')`, a function that
+    # does not exist anywhere in the frontend (grepped, not assumed) and
+    # so silently did nothing past opening Settings on whatever section it
+    # last had open. `openSettingsModal(section)` already takes the
+    # section directly: every other settings-bound tray item below
+    # already calls it this way (`openSettingsModal('tasks')`,
+    # `openSettingsModal('models')`); this was the one holdout.
+    window.show()
+    _focus_window(window)
+    window.evaluate_js(
+        "if (document.getElementById('lock-overlay')?.classList.contains('hidden')"
+        " && typeof openSettingsModal === 'function') {"
+        " openSettingsModal('logs'); }"
+    )
+
+def _tray_restart(window, icon) -> None:
+    # Re-execs this same process rather than spawning a second one, no
+    # window during the gap, and never two copies of the app arguing
+    # over the same SQLite file if something goes wrong mid-relaunch.
+    #
+    # The argv has to be built differently for the two install types, and
+    # getting it wrong broke Restart in exactly the build where it is
+    # hardest to notice. `[sys.executable, *sys.argv]` is right from
+    # source, where `sys.executable` is python.exe and `sys.argv[0]` is the
+    # script: but in a PyInstaller build **both are the .exe**, so that
+    # form passes the executable's own path as a positional argument.
+    # `parse_args` has no positionals, so it exits(2) on "unrecognized
+    # arguments", and the packaged app has no console to print that to:
+    # the user clicks Restart, the window closes, and nothing comes back.
+    argv = list(sys.argv) if getattr(sys, "frozen", False) else [sys.executable, *sys.argv]
+    # A Restart is not a repair: launched from the Start Menu's "Repair
+    # Tessellate", the argv carries --reinstall, and restarting with it
+    # cleared the window's saved sign-in and theme a second time.
+    argv = [argv[0], *(arg for arg in argv[1:] if arg != "--reinstall")]
+    argv = [*argv, "--restart-after", str(os.getpid())]
+    _stop_background_work()
+    icon.stop()
+    window.destroy()
+    _replace_process(argv)
+
+def _tray_quit(window, icon) -> None:
+    # **Before the hard exit below, not after it, there is no after.**
+    # Reported directly: "make sure that if the app is quit, all ai tasks
+    # and bg tasks stop as well." `os._exit(0)` skips every shutdown hook
+    # this process has, including the lifespan handler that calls exactly
+    # this function, so quitting from the tray was the one exit path that
+    # left a pip install and a SearXNG server running with nothing left to
+    # own them.
+    _stop_background_work()
+    icon.stop()
+    window.destroy()
+    # window.destroy() runs on this thread (pystray's own), not the main
+    # thread blocked inside webview.start(), reported directly: Quit
+    # closed the window but left the process (and the uvicorn server
+    # thread behind it) running, because a cross-thread destroy call
+    # isn't guaranteed to actually unblock that main-thread wait. A hard
+    # exit is the same shape _restart already trusts (os.execv, no
+    # graceful winddown either) and guarantees the process, and the
+    # terminal it's running in: actually ends.
+    os._exit(0)
+
+def _tray_new_note(window) -> None:
+    """Straight to an empty note, focused and ready to type.
+
+    The reason a tray icon earns its place in a notebook app: the whole
+    point of "capture it before you lose it" is not having to find the
+    window, pick a tab and click into a box first. Everything else on this
+    menu is app management; this is the only item that does the app's
+    actual job.
+
+    Guarded by the lock overlay exactly as View Logs is, a tray item must
+    never reach past the lock screen, and by `typeof`, because the menu
+    can be clicked while the page is still loading. Kept as its own named
+    function rather than folded into the `_go` factory below (which would
+    remove some duplication) because test_tray.py locates this function's
+    body by splitting this file's source text on its own signature, the
+    safer fix for "close Settings first" was adding the same guard `_go`
+    now carries, not restructuring around a test with no other reason to
+    change today. (This paragraph deliberately avoids spelling that
+    signature out verbatim, for the same reason, that string appearing
+    twice is exactly what broke the split the first time this was tried.)
+    """
+    window.show()
+    _focus_window(window)
+    window.evaluate_js(
+        "if (!document.getElementById('lock-overlay')?.classList.contains('hidden')) {}"
+        " else if (typeof switchTab === 'function') {"
+        " if (typeof settingsModalOpen === 'function' && settingsModalOpen()"
+        " && typeof closeSettingsModal === 'function') { closeSettingsModal(); }"
+        " switchTab('notes');"
+        " document.getElementById('entry-content')?.focus(); }"
+    )
 
 
 def _start_tray(
@@ -2271,272 +2272,56 @@ def _start_tray(
 
     from tessellate.core import desk_companion
 
-    image = None
-    if icon_path.is_file():
-        try:
-            # Pillow's ICO decoder warns "Image was not the expected size"
-            # for any .ico whose largest frame doesn't match the size in its
-            # directory header: true of frontend/icon.ico, and harmless here
-            # since we only ever want the largest frame. Scoped to this one
-            # call so a genuine UserWarning from elsewhere still surfaces.
-            with warnings.catch_warnings():
-                warnings.filterwarnings(
-                    "ignore",
-                    message="Image was not the expected size",
-                    category=UserWarning,
-                )
-                image = Image.open(icon_path).convert("RGBA")  # decode now, not inside the tray thread
-        except Exception as exc:  # noqa: BLE001  # Pillow raises ValueError/SyntaxError on a bad .ico too
-            logger.warning("couldn't load %s for the tray icon: %s", icon_path, exc)
-            image = None
-    if image is None:
-        # A flat brand-blue square rather than no icon at all, pystray
-        # requires a real image, and a missing tray icon reads as "the app
-        # crashed", not "cosmetic fallback".
-        image = Image.new("RGBA", (64, 64), (74, 108, 247, 255))
-
-    def _open(icon, item) -> None:
-        # `show()` un-minimises but does not raise or focus, so clicking Open
-        # while the window was merely *behind* something did nothing visible, 
-        # which reads as the menu item being broken. `_focus_window` is the
-        # same helper the loading-window handoff already uses for this.
-        window.show()
-        _focus_window(window)
+    image = _tray_image(Image, icon_path)
 
     # Running from start.bat/start-desktop.bat rather than the packaged
     # installer (whose PyInstaller build sets console=False, so there is no
-    # window to find) leaves a cmd.exe console sitting behind the app, 
-    # asked for directly: a way to get rid of it without losing the ability
-    # to bring it back for a stray print/traceback. `console_hwnd` and its
-    # initial `console_hidden` state come from the caller, which already
-    # applied the show_console_on_startup preference before the window even
-    # opened: this menu item is the *live* control, and toggling it also
-    # writes the preference back, so "hide it" or "show it" from here is
-    # remembered for the next launch too, not just this one.
+    # window to find) leaves a cmd.exe console sitting behind the app. This
+    # menu item is the *live* control for it; `console_hwnd` and its initial
+    # `console_hidden` state come from the caller, which already applied the
+    # show_console_on_startup preference before the window opened.
     console_state = {"hidden": console_hidden}
 
     def _console_hidden(item) -> bool:
         return console_state["hidden"]
 
-    def _toggle_console(icon, item) -> None:
-        if console_hwnd is None:
-            return
-        going_hidden = not console_state["hidden"]
-
-        # Best-effort, same as the startup path's own fallback: works for
-        # legacy conhost, a no-op under Windows Terminal's ConPTY (see
-        # _maybe_relaunch_hidden's docstring): which the restart below is
-        # what actually guarantees, at the cost of a brief relaunch instead
-        # of an instant toggle.
-        _apply_console_visibility(console_targets or {console_hwnd: _window_class_name(console_hwnd)}, hidden=going_hidden)
-        console_state["hidden"] = going_hidden
-
-        try:
-            from tessellate.core import deps
-
-            deps.get_config().set_preference("show_console_on_startup", not going_hidden)
-        except Exception as exc:
-            # Remembering the choice is a nicety on top of the live toggle,
-            # which has already happened above, never let a failure here
-            # make the menu item look like it did nothing.
-            logger.warning("couldn't save the console visibility preference: %s", exc, exc_info=True)
-
-        # The reliable half: relaunch into the correct mode from scratch
-        # rather than trust the ShowWindow attempt just above actually
-        # worked: same _spawn_desktop the startup path and the
-        # Settings-triggered restart both use, so all three take identical
-        # action for the same mode switch.
-        process = _spawn_desktop(hidden=going_hidden)
-        if process is None:
-            return  # nothing to relaunch into; the ShowWindow attempt above is all there is
-
-        _stop_background_work()
-        icon.stop()
-        window.destroy()
-        os._exit(0)
-
-    def _go(js: str):
-        """A tray item that brings the window forward and *lands somewhere*.
-
-        Reported directly: "the options and buttons in the system tray dont
-        fully navigate to the propper features, just the tabs or settings
-        modal." Two items existed and each hand-rolled the same three steps, 
-        show, focus, evaluate a string of JS, so adding a third meant copying
-        them again, which is why there was never a third.
-
-        Every generated item carries the same lock guard, and that is the
-        reason this is a factory rather than a list of one-liners: a tray menu
-        must never reach past the lock screen, and a guard that has to be
-        remembered per item is a guard that will be forgotten. Locked, the
-        window still comes forward, the person asked for the app, and the
-        honest answer is the lock screen, not nothing happening.
-
-        **Also closes Settings first, if it's open.** Reported directly, on
-        "Reminders" specifically but asked to apply to "the others" too: a
-        tray item that calls `switchTab(...)` switches the tab *underneath*
-        an open Settings modal, which is a full-screen overlay, the tab
-        changes, nothing about it is visible, and clicking Reminders reads as
-        broken. `switchTab()` itself has no opinion on a modal sitting on top
-        of it; closing that modal first is this factory's job, applied once
-        here rather than repeated (or, as happened once already, forgotten)
-        per item.
-        """
-        close_settings_first = (
-            "if (typeof settingsModalOpen === 'function' && settingsModalOpen()"
-            " && typeof closeSettingsModal === 'function') { closeSettingsModal(); }"
-        )
-
-        def run(icon, item) -> None:
-            window.show()
-            _focus_window(window)
-            try:
-                window.evaluate_js(
-                    "if (document.getElementById('lock-overlay')"
-                    "?.classList.contains('hidden')) {"
-                    + close_settings_first
-                    + js
-                    + "}"
-                )
-            except Exception as exc:  # noqa: BLE001  # a menu item is not worth a crash
-                logger.warning("tray navigation failed: %s", exc)
-
-        return run
-
-    def _view_logs(icon, item) -> None:
-        # Reported directly, twice: this used to open Settings unconditionally
-        # (reaching straight past the lock screen, fixed once already, see
-        # the lock-overlay guard below) and, separately, never actually landed
-        # on the Logs section, it called `openSettingsModal()` with no
-        # argument and then `showSettingsSection('logs')`, a function that
-        # does not exist anywhere in the frontend (grepped, not assumed) and
-        # so silently did nothing past opening Settings on whatever section it
-        # last had open. `openSettingsModal(section)` already takes the
-        # section directly: every other settings-bound tray item below
-        # already calls it this way (`openSettingsModal('tasks')`,
-        # `openSettingsModal('models')`); this was the one holdout.
-        window.show()
-        _focus_window(window)
-        window.evaluate_js(
-            "if (document.getElementById('lock-overlay')?.classList.contains('hidden')"
-            " && typeof openSettingsModal === 'function') {"
-            " openSettingsModal('logs'); }"
-        )
-
-    def _restart(icon, item) -> None:
-        # Re-execs this same process rather than spawning a second one, no
-        # window during the gap, and never two copies of the app arguing
-        # over the same SQLite file if something goes wrong mid-relaunch.
-        #
-        # The argv has to be built differently for the two install types, and
-        # getting it wrong broke Restart in exactly the build where it is
-        # hardest to notice. `[sys.executable, *sys.argv]` is right from
-        # source, where `sys.executable` is python.exe and `sys.argv[0]` is the
-        # script: but in a PyInstaller build **both are the .exe**, so that
-        # form passes the executable's own path as a positional argument.
-        # `parse_args` has no positionals, so it exits(2) on "unrecognized
-        # arguments", and the packaged app has no console to print that to:
-        # the user clicks Restart, the window closes, and nothing comes back.
-        argv = list(sys.argv) if getattr(sys, "frozen", False) else [sys.executable, *sys.argv]
-        # A Restart is not a repair: launched from the Start Menu's "Repair
-        # Tessellate", the argv carries --reinstall, and restarting with it
-        # cleared the window's saved sign-in and theme a second time.
-        argv = [argv[0], *(arg for arg in argv[1:] if arg != "--reinstall")]
-        argv = [*argv, "--restart-after", str(os.getpid())]
-        _stop_background_work()
-        icon.stop()
-        window.destroy()
-        _replace_process(argv)
-
-    def _quit(icon, item) -> None:
-        # **Before the hard exit below, not after it, there is no after.**
-        # Reported directly: "make sure that if the app is quit, all ai tasks
-        # and bg tasks stop as well." `os._exit(0)` skips every shutdown hook
-        # this process has, including the lifespan handler that calls exactly
-        # this function, so quitting from the tray was the one exit path that
-        # left a pip install and a SearXNG server running with nothing left to
-        # own them.
-        _stop_background_work()
-        icon.stop()
-        window.destroy()
-        # window.destroy() runs on this thread (pystray's own), not the main
-        # thread blocked inside webview.start(), reported directly: Quit
-        # closed the window but left the process (and the uvicorn server
-        # thread behind it) running, because a cross-thread destroy call
-        # isn't guaranteed to actually unblock that main-thread wait. A hard
-        # exit is the same shape _restart already trusts (os.execv, no
-        # graceful winddown either) and guarantees the process, and the
-        # terminal it's running in: actually ends.
-        os._exit(0)
-
-    def _new_note(icon, item) -> None:
-        """Straight to an empty note, focused and ready to type.
-
-        The reason a tray icon earns its place in a notebook app: the whole
-        point of "capture it before you lose it" is not having to find the
-        window, pick a tab and click into a box first. Everything else on this
-        menu is app management; this is the only item that does the app's
-        actual job.
-
-        Guarded by the lock overlay exactly as View Logs is, a tray item must
-        never reach past the lock screen, and by `typeof`, because the menu
-        can be clicked while the page is still loading. Kept as its own named
-        function rather than folded into the `_go` factory below (which would
-        remove some duplication) because test_tray.py locates this function's
-        body by splitting this file's source text on its own signature, the
-        safer fix for "close Settings first" was adding the same guard `_go`
-        now carries, not restructuring around a test with no other reason to
-        change today. (This paragraph deliberately avoids spelling that
-        signature out verbatim, for the same reason, that string appearing
-        twice is exactly what broke the split the first time this was tried.)
-        """
-        window.show()
-        _focus_window(window)
-        window.evaluate_js(
-            "if (!document.getElementById('lock-overlay')?.classList.contains('hidden')) {}"
-            " else if (typeof switchTab === 'function') {"
-            " if (typeof settingsModalOpen === 'function' && settingsModalOpen()"
-            " && typeof closeSettingsModal === 'function') { closeSettingsModal(); }"
-            " switchTab('notes');"
-            " document.getElementById('entry-content')?.focus(); }"
-        )
-
     # Everything a tray icon is for: capture something, ask something, check
     # on the app, get to the settings that matter. Each item lands on the
-    # feature rather than on the tab that contains it, see `_go`.
+    # feature rather than on the tab that contains it, see `_tray_go`.
     menu_items = [
-        pystray.MenuItem("Open Tessellate", _open, default=True),
-        pystray.MenuItem("New note", _new_note),
+        pystray.MenuItem("Open Tessellate", lambda icon, item: _tray_open(window), default=True),
+        pystray.MenuItem("New note", lambda icon, item: _tray_new_note(window)),
         pystray.MenuItem(
             "Ask a question",
-            _go("if (typeof switchTab === 'function') { switchTab('chat');"
+            _tray_go(window, "if (typeof switchTab === 'function') { switchTab('chat');"
                 " document.getElementById('chat-input')?.focus(); }"),
         ),
         pystray.MenuItem(
             "Search everything",
-            _go("if (typeof openPalette === 'function') openPalette();"
+            _tray_go(window, "if (typeof openPalette === 'function') openPalette();"
                 " else if (typeof switchTab === 'function') switchTab('library');"),
         ),
         pystray.MenuItem(
             "Record a meeting",
-            _go("if (typeof openMeetingRecorder === 'function') openMeetingRecorder();"),
+            _tray_go(window, "if (typeof openMeetingRecorder === 'function') openMeetingRecorder();"),
         ),
         pystray.MenuItem(
             "Reminders",
-            _go("if (typeof switchTab === 'function') switchTab('reminders');"),
+            _tray_go(window, "if (typeof switchTab === 'function') switchTab('reminders');"),
         ),
         pystray.MenuItem(
             "Whiteboard",
-            _go("if (typeof switchTab === 'function') switchTab('whiteboard');"),
+            _tray_go(window, "if (typeof switchTab === 'function') switchTab('whiteboard');"),
         ),
         pystray.MenuItem(
             "Background tasks",
-            _go("if (typeof openSettingsModal === 'function') openSettingsModal('tasks');"),
+            _tray_go(window, "if (typeof openSettingsModal === 'function') openSettingsModal('tasks');"),
         ),
         pystray.MenuItem(
             "Settings",
-            _go("if (typeof openSettingsModal === 'function') openSettingsModal('models');"),
+            _tray_go(window, "if (typeof openSettingsModal === 'function') openSettingsModal('models');"),
         ),
-        pystray.MenuItem("View Logs", _view_logs),
+        pystray.MenuItem("View Logs", lambda icon, item: _tray_view_logs(window)),
         pystray.Menu.SEPARATOR,
         # The other half of "there is a difference between minimising the app
         # and quitting the app", the same hide the window's own close button
@@ -2549,11 +2334,17 @@ def _start_tray(
     ]
     if console_hwnd is not None:
         menu_items.append(
-            pystray.MenuItem("Hide console window", _toggle_console, checked=_console_hidden)
+            pystray.MenuItem(
+                "Hide console window",
+                lambda icon, item: _tray_toggle_console(
+                    window, icon, console_hwnd, console_targets, console_state
+                ),
+                checked=_console_hidden,
+            )
         )
     menu_items += [
-        pystray.MenuItem("Restart", _restart),
-        pystray.MenuItem("Quit", _quit),
+        pystray.MenuItem("Restart", lambda icon, item: _tray_restart(window, icon)),
+        pystray.MenuItem("Quit", lambda icon, item: _tray_quit(window, icon)),
     ]
     icon = pystray.Icon(
         "memorymap",
@@ -2561,22 +2352,22 @@ def _start_tray(
         "Tessellate",
         pystray.Menu(*menu_items),
     )
-
-    def _run_tray() -> None:
-        # A daemon thread swallows its own exceptions, so a tray that failed
-        # to appear (bad backend, icon error) left no trace in the log and
-        # the window then hid on close with nothing to bring it back.
-        def _ready(icon_) -> None:
-            icon_.visible = True
-            logger.info("system tray icon shown")
-
-        try:
-            icon.run(setup=_ready)
-        except Exception:  # noqa: BLE001
-            logger.exception("system tray icon failed to start")
-
-    threading.Thread(target=_run_tray, daemon=True).start()
+    threading.Thread(target=_run_tray_loop, args=(icon,), daemon=True).start()
     return icon
+
+
+def _run_tray_loop(icon) -> None:  # noqa: ANN001
+    # A daemon thread swallows its own exceptions, so a tray that failed
+    # to appear (bad backend, icon error) left no trace in the log and
+    # the window then hid on close with nothing to bring it back.
+    def _ready(icon_) -> None:
+        icon_.visible = True
+        logger.info("system tray icon shown")
+
+    try:
+        icon.run(setup=_ready)
+    except Exception:  # noqa: BLE001
+        logger.exception("system tray icon failed to start")
 
 
 def _run_mcp() -> int:
@@ -2618,7 +2409,7 @@ def _export_markdown(destination: str) -> int:
     directory gets the default filename inside it, which is what someone
     typing `--export .` means.
     """
-    from tessellate.api.routes_settings import build_markdown_export
+    from tessellate.api.routes_settings_transfer import build_markdown_export
     from tessellate.core import deps
 
     target = Path(destination).expanduser()
@@ -2780,7 +2571,7 @@ def _capture() -> int:
     if state != "live":
         print("Tessellate is not running on this notebook. Start it, then capture again.")
         return 1
-    webbrowser.open(f"http://{page_host()}:{running.port}/capture.html", new=1)
+    webbrowser.open(f"http://{window_host(running.port)}:{running.port}/capture.html", new=1)
     return 0
 
 
@@ -2887,7 +2678,7 @@ def main() -> None:
             # One server per data directory in browser mode as well: the
             # launcher scripts already open a browser onto a copy on their
             # own port, and this covers a copy on another port.
-            print(f"Tessellate is already running on this notebook: http://{page_host()}:{running.port}")
+            print(f"Tessellate is already running on this notebook: http://{window_host(running.port)}:{running.port}")
             return
         _run_server_holding_lock()
 
@@ -2896,10 +2687,11 @@ def _run_server_holding_lock() -> None:
     """`_run_server`, with this data directory's `instance.lock` held for as
     long as it runs, so a desktop launch finds it and opens a window onto it
     rather than starting a second server."""
-    from tessellate.core import instance_lock
+    from tessellate.core import instance_lock, running_copies
     from tessellate.core.config import resolved_data_dir
 
     instance_lock.claim(resolved_data_dir(), PORT)
+    running_copies.prune_in_background()
     try:
         _run_server()
     finally:

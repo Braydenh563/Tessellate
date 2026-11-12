@@ -108,7 +108,7 @@ def test_the_json_export_carries_types_and_props(client):
 
 
 def test_the_migration_adds_props_and_the_table_over_the_auto_migrator(tmp_path):
-    from tessellate.core.database import DatabaseManager, _ensure_alembic_baseline
+    from tessellate.core.database_manager import DatabaseManager, _ensure_alembic_baseline
 
     db_path = tmp_path / "kg3.db"
     DatabaseManager(db_path)

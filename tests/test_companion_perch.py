@@ -28,9 +28,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 
@@ -83,7 +84,7 @@ def _watch(glued: bool):
             "class ResizeObserver { constructor(cb) { this.cb = cb; } observe(el) { watched.push(el); } disconnect() {} }",
             "const bar = { name: 'status-bar' }, card = { name: 'card', closest: () => null, parentElement: null };",
             "const nmb = { glue: " + ("{ el: card }" if glued else "null") + ", spot: { edge: { kind: 'bar', el: bar } } };",
-            "const nmbFollow = { observer: null, poll: 0, frame: 0 };",
+            "const nmbFollow = { observer: null, poll: 0, frame: 0, sizes: new WeakMap() };  // 1741: the callback keeps the size it last saw per box",
             "const document = { hidden: false, getElementById: () => null };",
             "function nameMarkBuddyTab() { return 'reminders'; }",
             "function nameMarkBuddyKeepUp() {}",
@@ -93,7 +94,7 @@ def _watch(glued: bool):
             _fn("nameMarkBuddyWatch"),
             "nameMarkBuddyWatch();",
             "const observers = [];",
-            "console.log(JSON.stringify({ watched: watched.map((w) => w.name), barAsked: (nmbFollow.observer ? (nmbFollow.observer.cb(), checks.length) : 0) }));",
+            "console.log(JSON.stringify({ watched: watched.map((w) => w.name), barAsked: (nmbFollow.observer ? (nmbFollow.observer.cb([{ target: bar, contentRect: { width: 1280, height: 28 } }]), checks.length) : 0) }));",
         ]
     )
     return _node(script)

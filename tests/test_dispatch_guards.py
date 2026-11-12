@@ -92,18 +92,19 @@ def test_arguments_that_were_not_json_say_so_with_an_example(session):
     assert state.tool_failures == {"count_notes": 1} and len(state.failed_calls) == 1
 
 
-def test_a_destructive_tool_already_waiting_twice_queues_no_more(session):
-    state = _TurnState(messages=[], offered=[], parked={"delete_document": 2})
+def test_a_destructive_tool_already_waiting_at_the_limit_queues_no_more(session):
+    limit = agent.MAX_PARKED_CONFIRMS
+    state = _TurnState(messages=[], offered=[], parked={"delete_document": limit})
     events, over = _dispatch(session, _plan(), state, {"name": "delete_document", "arguments": {"id": 1}})
     assert over is False
     assert [e["label"] for e in events] == ["ph:prohibit delete document, too many waiting for approval"]
     told = _told(state)
     assert told["error"] == (
-        "delete_document is already waiting for the user's approval 2 times in this turn. "
+        f"delete_document is already waiting for the user's approval {limit} times in this turn. "
         "Nothing more can be queued for them."
     )
     assert told["what_to_do"].startswith("Stop. The user has to approve what is already waiting")
-    assert state.parked == {"delete_document": 2} and state.tool_failures == {"delete_document": 1}
+    assert state.parked == {"delete_document": limit} and state.tool_failures == {"delete_document": 1}
     assert state.did_write is False
 
 

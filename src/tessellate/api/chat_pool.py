@@ -17,14 +17,16 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import composer, composer_frame, composer_intent, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
-from tessellate.ai import composer_ask
+from tessellate.ai import composer_ask, composer_property, composer_tables
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import relations as relations_repo
 from tessellate.repo import tags as tags_repo
 from tessellate.entry import manager
+from tessellate.entry import manager_text
 from tessellate.search import engine, search_manager
 
 
@@ -32,6 +34,9 @@ from tessellate.search import engine, search_manager
 #: notes" answered from the five a similarity search ranked counted five, and
 #: the overview says how many there are.
 OVERVIEW_LIMIT = 24
+
+#: How far the count of a topic's notes looks past the pool (never read, only counted).
+POOL_COUNT_LIMIT = 500
 
 
 #: Notes found by what their pictures show or say, beside retrieval.
@@ -67,8 +72,8 @@ def _widened(session: Session, question: str, entries: list, scope: str = "") ->
         #: The notes filed under the subject (its category, its tag) come first:
         #: a keyword rank by how often a word repeats put a note that says
         #: "reading" nine times above the Books note (audit 1031 C4).
-        filed = _filed_under(session, composer.subject_terms(subject))
-        said = filed + search_manager.keyword_search(session, subject, limit=OVERVIEW_LIMIT)
+        filed = _filed_under(session, composer.subject_terms(subject), POOL_COUNT_LIMIT)
+        said = filed + search_manager.keyword_search(session, subject, limit=POOL_COUNT_LIMIT)
         extra += said if len({e.id for e in said}) >= 2 else said + _by_synonym(session, subject)
     seen = {entry.id for entry in entries}
     out = list(entries)
@@ -81,7 +86,11 @@ def _widened(session: Session, question: str, entries: list, scope: str = "") ->
         if entry.id not in seen and not entry.is_deleted and not entry.is_private:
             seen.add(entry.id)
             out.append(entry)
-    return out[: max(len(entries), OVERVIEW_LIMIT)]
+    kept = out[: max(len(entries), OVERVIEW_LIMIT)]
+    #: The pool stays at OVERVIEW_LIMIT, but the lead counts the notes there are.
+    if subject and kept and len(out) > len(kept):
+        kept[0]._overview_pool = (len(out), len(kept))  # noqa: SLF001  # read by `_chat_payload`
+    return kept
 
 
 #: Notes read for "the topic whole" come from the first of the retrieved
@@ -141,7 +150,7 @@ def _by_synonym(session: Session, subject: str) -> list:
     return found
 
 
-def _filed_under(session: Session, terms: list[str]) -> list:
+def _filed_under(session: Session, terms: list[str], limit: int = OVERVIEW_LIMIT) -> list:
     """Notes tagged with, or filed in a category named for, a word of the
     topic ("games" finds the notes tagged games that never say the word)."""
     words = [t.lower() for t in terms if len(t) >= 3][:3]
@@ -156,7 +165,7 @@ def _filed_under(session: Session, terms: list[str]) -> list:
         select(Entry)
         .where(Entry.is_deleted == False, Entry.is_private == False, or_(*clauses))  # noqa: E712
         .order_by(Entry.created_at.desc())
-        .limit(OVERVIEW_LIMIT)
+        .limit(limit)
     )
     return list(session.scalars(query))
 
@@ -198,6 +207,8 @@ class _Found:
     when_phrase: str = ""
     #: As of a date: per note, the revision its text came from.
     as_of_then: dict = field(default_factory=dict)
+    #: The days a time recall asked about, so the documents made then are read beside the notes.
+    window: tuple | None = None
 
 
 @dataclass
@@ -230,6 +241,7 @@ def _in_window(found: _Found, session: Session, asked, question: str) -> None:  
         window = search_manager.entries_between(session, asked.window[0], asked.window[1], limit=1000 if stems else 40, archived=archived)
         found.entries = [e for e in window if composer_intent.holds_any(stems, e.content or "")][:40] if stems else window
     found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
+    found.window = asked.window
 
 
 def _keep_window(found: _Found, asked) -> None:  # noqa: ANN001
@@ -250,7 +262,7 @@ def _with_each_side(session: Session, question: str, entries: list, locale: str 
     """A comparison needs both things in hand: a search for "Lisbon vs Porto"
     can fill its few slots with one side, so each side is searched on its own
     and the best of each is added."""
-    sides = composer.compare_sides(question)
+    sides = composer.compare_sides(question) or _lower_pair(session, question, entries, locale)
     if not sides:
         return entries
     merged = list(entries)
@@ -267,6 +279,25 @@ def _with_each_side(session: Session, question: str, entries: list, locale: str 
                 seen.add(entry.id)
                 merged.append(entry)
     return merged
+
+
+def _lower_pair(session: Session, question: str, entries: list, locale: str | None) -> tuple[str, ...] | None:  # noqa: ANN001
+    """"tom and sara" typed in lower case is two names when the notes hold both words: each word is
+    looked up on its own (the pool of the pair may hold only one), then the pair is read with those
+    notes' words (W7 B5, composer-r6 L23)."""
+    pair = composer_tables.LOWER_PAIR.match(question.strip())
+    if not pair:
+        return None
+    pooled = list(entries)
+    for word in (pair.group("a"), pair.group("b")):
+        pooled += search_manager.retrieve_detailed(session, word, deps.get_embeddings(), limit=3, locale=locale).entries
+    notes = [{"content": e.content or ""} for e in pooled]
+    words, texts = composer_ask.NOTE_WORDS.set(composer._note_words(notes)), composer_ask.NOTE_TEXTS.set(tuple(n["content"] for n in notes))  # noqa: SLF001
+    try:
+        return composer.compare_sides(question)
+    finally:
+        composer_ask.NOTE_TEXTS.reset(texts)
+        composer_ask.NOTE_WORDS.reset(words)
 
 
 def _titled_entry(session: Session, side: str):  # noqa: ANN202
@@ -299,6 +330,37 @@ def _with_records(session: Session, question: str, entries: list, locale: str | 
                 seen.add(entry.id)
                 merged.append(entry)
     return merged
+
+
+def _or_empty_notebook(session: Session, line: str) -> str:
+    """"I couldn't find any saved notes matching that question" reads as if notes exist: with no note and no
+    document at all the answer says so, and how to begin (round 3, R3-30); a notebook of documents keeps the
+    plain miss, which the related items follow. A private note is a note: it is counted (and only counted),
+    and a line that says more than the plain miss (a day with nothing in it, with where the
+    notes run) is kept."""
+    if line != librarian.NO_RESULTS_MESSAGE:
+        return line
+    if content_repo.anything_kept(session):
+        return line
+    return "You have no notes yet. Write one, or type note: and what you want to keep."
+
+
+def _slips_put_right(question: str) -> str:
+    """The question searched with its slips put right ("wat do i know abuot tokio"), which the search would
+    otherwise match on "wat" and "abuot" (round 3, R3-17)."""
+    return question_noise.slips_only(question)
+
+
+def _with_holders(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
+    """"The number for the dentist" is searched on the word "number" too, which
+    fills the five places with other notes that say number: the person's notes are fetched as well, on the name alone, so a
+    denial is made over everything the notebook says of them (round 3, R3-2)."""
+    whose = composer_property.subject(question) if composer_property.asked(question) == "phone" else ""
+    if not whose:
+        return entries
+    have = {e.id for e in entries}
+    found = search_manager.retrieve_detailed(session, whose, deps.get_embeddings(), limit=6, locale=locale).entries
+    return entries + [e for e in found if e.id not in have]
 
 
 def _records_beside(session: Session, question: str, attached: list, locale: str | None) -> list:  # noqa: ANN001
@@ -363,7 +425,7 @@ def _holds_read_text(content: str) -> bool:
 
 def _note_content(ctx: _NoteCtx, entry) -> str:  # noqa: ANN001
     session, found = ctx.session, ctx.found
-    content = found.as_of_then[entry.id].text if entry.id in found.as_of_then else entry.content
+    content = found.as_of_then[entry.id].text if entry.id in found.as_of_then else manager_text.readable_content(entry)
     if entry.id in ctx.attached_ids:
         # Only for notes the user picked by hand. A retrieved note is a
         # candidate; an attached one is the subject of the question, and that is
@@ -426,6 +488,10 @@ def _raw_results(session: Session, found: _Found) -> list:
 
 
 def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as_of) -> dict:  # noqa: ANN001
+    #: The cut pool's size travels with the notes to wherever the answer is composed.
+    pool = next((p for p in (getattr(e, "_overview_pool", None) for e in found.entries) if p), None)
+    if pool and notes:
+        notes[0]["overview_pool"] = list(pool)
     return {
         "notes": notes,
         "intent": found.detected,
@@ -564,6 +630,22 @@ def _matched_rows(session: Session, question: str, skip: set[tuple[str, int]]) -
         row["attached"] = False
         row["named"] = True
     return rows[:MATCHED_SOURCES]
+
+
+#: How many documents of a window are read beside its notes.
+WINDOW_DOCUMENTS = 8
+
+
+def _window_documents(session: Session, found: "_Found") -> list[dict]:
+    """The documents made in the days a time recall asked about, as rows beside
+    its notes: "what did I write on 3 November" counts a diagram made that day
+    too (INBOX 1739). Read by the composer and the model alike (decision 75)."""
+    if found.mode != "window" or not found.window:
+        return []
+    rows = [_document_row(d, session) for d in documents_repo.made_between(session, found.window[0], found.window[1], WINDOW_DOCUMENTS)]
+    for row in rows:
+        row["attached"] = False
+    return rows
 
 
 def _with_sources(session: Session, question: str, notes: list[dict], mode: str) -> list[dict]:

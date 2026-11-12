@@ -1,0 +1,54 @@
+/* A number you read and may type (value-field.js; INBOX 1694 b). It reads as text
+   until the pointer or the keyboard is on it; then it is a field. The chevron is a
+   kebabMenu opener, so its menu is the app's own. Lazy, with the surfaces that draw one. */
+.value-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  color: inherit;
+}
+.value-field .value-field-input {
+  box-sizing: content-box;
+  width: auto;
+  min-height: 0;
+  height: auto;
+  line-height: 1.3;
+  min-width: 3ch;
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  inline-size: auto;
+  field-sizing: content;
+}
+.value-field .value-field-input:hover {
+  border-color: var(--border);
+}
+.value-field .value-field-input:focus,
+.value-field .value-field-input:focus-visible {
+  border-color: var(--accent);
+  background: var(--field-inset);
+  outline: none;
+}
+.value-field .value-field-chevron {
+  min-width: 0;
+  padding-inline: var(--space-1);
+  color: inherit;
+}
+/* A slider readout is kept as the source the surface writes and replaced by a field. */
+.value-field-source.value-field-source {
+  display: none;
+}
+.value-field-range .value-field .value-field-input {
+  min-width: 2ch;
+}
+/* In a flex row (the graph panel's) the field keeps the width of its number and the label gives way. */
+.graph-option-row > .value-field-range {
+  flex: 0 0 auto;
+}

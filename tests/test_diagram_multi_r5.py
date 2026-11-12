@@ -128,8 +128,10 @@ def test_the_picked_set_is_a_lazy_file_with_one_export_and_no_new_global():
 def test_the_bar_is_the_library_selection_bar_with_the_named_actions():
     assert '"library-contextbar selectbar dgm-selectbar hidden"' in MULTI
     assert "selected" in MULTI
-    for word in ("Delete", "Duplicate", "Shape", "Box them", "Undo", "Done"):
+    for word in ("Delete", "Duplicate", "Shape", "Box them", "Select all", "Clear"):
         assert word in MULTI, word
+    # INBOX 1708: Undo and Done are the toolbar's and Clear's, so the bar no longer repeats them.
+    assert '"Undo"' not in MULTI and '"Done"' not in MULTI
     assert "library-selected-count" in MULTI and "library-contextbar-end" in MULTI
     assert ".dgm-selectbar" in CSS
 
@@ -144,9 +146,16 @@ def test_builder_keeps_its_one_primary_key_and_marks_the_picked_rows():
     assert "S.picked?.clear()" in BUILDER
 
 
-def test_the_bar_has_eight_buttons_with_colour_and_connect_over_the_picked_blocks():
+def test_the_bar_has_six_icon_buttons_with_colour_and_connect_over_the_picked_blocks():
     """1679 slice 10: Colour reuses the style sheet (K), Connect joins the first picked to the second and asks a decision's words."""
-    labels = re.findall(r'(?:tool|smallButton)\("(?:ph:[\w-]+ )?([A-Za-z ]+)"', MULTI[MULTI.index("const shapeBtn") : MULTI.index("S.pane.prepend(bar)")])
-    assert sorted(labels) == sorted(["Shape", "Colour", "Connect", "Undo", "Done", "Delete", "Duplicate", "Box them"]), labels
+    labels = re.findall(r'tool\("[\w-]+", "([A-Za-z ]+)"', MULTI[MULTI.index("const tool =") : MULTI.index("S.pane.prepend(bar)")])
+    assert labels == ["Shape", "Colour", "Connect", "Duplicate", "Box them", "Delete"], labels  # Delete is last, the danger tone
     assert 'ensureModule("diagramStyle")' in MULTI and "diagramModel.style.colour(S, h)" in MULTI
     assert "ops.join(S.m, from, to)" in MULTI and "diagramModel.joins.ask(S, edge, h)" in MULTI
+
+
+def test_the_list_head_and_the_bar_both_select_all():
+    """INBOX 1708: a Select all in the List head while nothing is picked, and Select all and Clear on the bar's head line."""
+    SPLIT = (ROOT / "frontend/js/diagram-split.js").read_text()
+    assert "dgm-head-all" in SPLIT and "S.pickAll" in SPLIT
+    assert "S.pickAll = pickAll" in MULTI and "run = S.pickAll" in MULTI

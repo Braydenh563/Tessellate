@@ -19,7 +19,8 @@ from __future__ import annotations
 import pytest
 from sqlalchemy import select, text
 
-from tessellate.core.database import DatabaseManager, Entry
+from tessellate.core.database import Entry
+from tessellate.core.database_manager import DatabaseManager
 from tessellate.entry import manager
 from tessellate.repo import tags as tags_repo
 

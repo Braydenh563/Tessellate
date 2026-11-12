@@ -84,4 +84,4 @@ def test_a_due_list_shows_identical_reminders_once(question):
     said = composer_plan.answer(ctx)
     assert said is not None
     assert said.text.lower().count("call the dentist") == 2, said.text
-    assert "2 dated items" in said.text, said.text
+    assert "two dated items" in said.text, said.text

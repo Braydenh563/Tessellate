@@ -162,8 +162,11 @@ def test_an_enter_typed_ahead_ends_the_name_rather_than_adding_a_sibling():
 
 
 def test_a_drag_measures_nothing_it_does_not_have_to():
-    # The cull reads the gesture's cached canvas box, not clientWidth.
-    assert "wbCullNow(undefined, rect ?" in _function_body(WB, "wbScheduleCull")
+    # The cull reads the gesture's cached canvas box, not clientWidth (the call is now guarded by the box, which is
+    # null before the board's template is stamped: the form moved, not the intent).
+    cull = _function_body(WB, "wbScheduleCull")
+    assert "const rect = wbCanvasOriginRect();" in cull and "wbCullNow(undefined, { width: rect.width, height: rect.height })" in cull
+    assert ".clientWidth" not in cull
     # "Found none" is cached too.
     chrome = _function_body(WB, "wbTranslateSelectionChrome")
     assert "if (!groups || groups.some(" in chrome

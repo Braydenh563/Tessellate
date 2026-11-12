@@ -17,7 +17,7 @@ from datetime import datetime, time, timedelta, timezone
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import questions, realise
+from tessellate.ai import due_summary, questions, realise
 from tessellate.core.database import Category, Entry, Reminder
 
 #: A topic is quiet when its newest note is older than this.
@@ -53,6 +53,15 @@ def _first_line(text: str) -> str:
     return ""
 
 
+def _head(content: str) -> str:
+    """The first line as a name: a note with a heading keeps it; one without is
+    named by its first six words, not quoted whole (G12: 81 characters seen)."""
+    line = _first_line(content)
+    if (content or "").lstrip().startswith("#") or len(line.split()) <= 8:
+        return line
+    return " ".join(line.split()[:6]).rstrip(",;:") + "…"
+
+
 def _cut(text: str) -> str:
     return realise.cut_title(text, QUOTE_CHARS)
 
@@ -71,7 +80,6 @@ def _notes():
 
 def _due(session: Session, now: datetime) -> list[dict]:
     end = _naive(datetime.combine(now.date(), time.max, tzinfo=now.tzinfo))
-    start = _naive(datetime.combine(now.date(), time.min, tzinfo=now.tzinfo))
     rows = session.scalars(
         select(Reminder)
         .where(Reminder.done == False, Reminder.deleted_at.is_(None), Reminder.due_at <= end)  # noqa: E712
@@ -79,8 +87,9 @@ def _due(session: Session, now: datetime) -> list[dict]:
     ).all()
     if not rows:
         return []
-    late = sum(1 for r in rows if _naive(r.due_at) < start)
-    today = len(rows) - late
+    #: The count is `due_summary`'s, the rule every surface shares (audit 2 G3).
+    counted = due_summary.of(rows, now)
+    today, late = counted.today, counted.overdue
     parts = []
     if today:
         parts.append(f"{realise.count_noun(today, 'reminder')} due today")
@@ -127,7 +136,7 @@ def _changed(session: Session, now: datetime) -> list[dict]:
               "text": (" and ".join(said) + " since this time yesterday.").capitalize()}]
     shown = 0
     for entry in (made + edited)[:QUOTES]:
-        head = _cut(_first_line(entry.content))
+        head = _cut(_head(entry.content))
         if head:
             shown += 1
             lines.append({"part": "changed", "kind": "quote", "quote": head, "source": {"entry_id": entry.id},
@@ -135,7 +144,7 @@ def _changed(session: Session, now: datetime) -> list[dict]:
     #: The list agrees with its count: what the quotes leave out is said (INBOX 1569).
     rest = len(made) + len(edited) - shown
     if rest > 0:
-        lines.append({"part": "changed", "kind": "more", "counts": [rest], "text": f"And {realise.count_word(rest)} more."})
+        lines.append({"part": "changed", "kind": "more", "counts": [rest], "text": f"And {realise.count_word(rest)} more note{'' if rest == 1 else 's'}."})
     return lines
 
 
@@ -166,4 +175,15 @@ def compose(session: Session, now: datetime) -> dict:
     """The digest's lines in the order the widget shows them, and an
     empty-day line when there is nothing to say."""
     lines = _due(session, now) + _questions(session) + _changed(session, now) + _quiet(session, now)
-    return {"lines": lines, "empty": "Nothing is due and nothing changed since yesterday." if not lines else ""}
+    return {"lines": lines, "empty": _empty(session, now) if not lines else ""}
+
+
+def _empty(session: Session, now: datetime) -> str:
+    """The quiet day's line, with the next thing coming when there is one."""
+    end = _naive(datetime.combine(now.date(), time.max, tzinfo=now.tzinfo))
+    row = session.scalars(
+        select(Reminder).where(Reminder.done == False, Reminder.deleted_at.is_(None), Reminder.due_at > end).order_by(Reminder.due_at).limit(1)  # noqa: E712
+    ).first()
+    if row is None:
+        return "Nothing is due and nothing changed since yesterday."
+    return f"Nothing is due today. Next up: {_cut(row.text)}, {row.due_at:%A} {row.due_at.day} {row.due_at:%B}."

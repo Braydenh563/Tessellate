@@ -23,12 +23,12 @@ latest dated additions are at the top of
 
 1. **"Continue"**: read this file, HANDOVER's top block and "Now" line, and
    `docs/ROADMAP.md`'s table; merge agent worktrees; then work INBOX,
-   `agent-remaining/*.md`, SESSION_BRIEFS, plan phases, ROADMAP, BACKLOG, in
-   that order, without asking.
+   `docs/roadmap/LEDGER.md`, plan phases, ROADMAP, BACKLOG, in that order,
+   without asking.
 2. **Mid-work drops** go into `INBOX.md` verbatim, triaged at the next step
    boundary; never lose the "Now" line. A usage figure means commit, push, be
    terser. INBOX stays under twenty items (lint); a triaged item is fixed and
-   moved to HISTORY, or placed in its plan's "Placed from INBOX" section.
+   moved to HISTORY, or becomes a LEDGER row (its id written on the item).
 3. **Decisions are not remade.** A missing one becomes an INBOX entry with a
    recommendation, which is then taken.
 4. **Agents** by the rungs in section 8 (Haiku labour, Sonnet implementation,
@@ -38,9 +38,9 @@ latest dated additions are at the top of
    line at the top of HANDOVER; if unsure, take the lower number. Own
    worktree, port and data dir each; first step
    `git merge --no-edit -q <working branch>`; commit per step and every 20
-   minutes; write a remaining list. The orchestrator merges, gates and
-   pushes. Briefs begin with
-   `docs/roadmap/agent-remaining/agent_common.md` and the `orient` skill.
+   minutes; work left is a LEDGER row (`scripts/ledger.py add`), never a
+   remaining file. The orchestrator merges, gates and pushes. Briefs begin
+   with `.claude/skills/orient/agent_common.md` and the `orient` skill.
 5. **Quality does not drop with the model:** tests first, measure before
    claiming, one commit per step, push per batch, five-line reports.
 5a. **Speed without losing quality:** targeted tests plus `scripts/gate.sh`
@@ -77,9 +77,10 @@ latest dated additions are at the top of
 ## 3. Where things are written down
 
 Start with `docs/ROADMAP.md`'s table. HANDOVER (orders, "Now"), INBOX
-(owner findings), SESSION_BRIEFS, one plan per surface (`docs/roadmap/*_PLAN.md`),
-`agent-remaining/OPEN.md` (ledger), HISTORY (built, with retractions), BACKLOG,
-ANALYSIS, `docs/DESIGN.md` (design system), `docs/ARCHITECTURE.md`,
+(intake only), one plan per surface (`docs/roadmap/*_PLAN.md`), LEDGER (every
+other open item, one row, plan-tagged; `tests/test_ledger.py`), HISTORY (built,
+with retractions), BACKLOG, `docs/DESIGN.md` (design system), `docs/ARCHITECTURE.md`
+(and standing decisions),
 `docs/CODEMAP.md` (every function, id, route as `name | file:line`).
 **Licence:** AGPL-3.0; AGPL or MIT code may come in, nothing goes out to MIT.
 
@@ -122,7 +123,7 @@ Run targeted tests against the base branch first.
   minutes with `-n auto`.
 - `scripts/gate.sh` (`--changed`, `--staged`, `--full`, `--sweeps`) is the
   merge gate; `node --check` after JS edits.
-- The app's code is 28 classic scripts sharing one global scope (index.html
+- The app's code is 29 classic scripts sharing one global scope (index.html
   order); a file calls only upwards at load. Tests read `app_js_text()` from
   `tests/_app_js.py`, never `frontend/js/app.js`. Only `frontend/sw.js` stays
   at the root. `python scripts/codemap.py` regenerates CODEMAP

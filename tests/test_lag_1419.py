@@ -45,7 +45,9 @@ def test_the_digest_words_are_stemmed_on_first_use_not_at_import():
     launch); the digest's three word sets were stemmed at import."""
     from pathlib import Path
 
-    src = (Path(__file__).resolve().parents[1] / "src/tessellate/ai/composer_digest.py").read_text(encoding="utf-8")
+    #: The digest is three modules since audit K24; the rule holds across them.
+    ai = Path(__file__).resolve().parents[1] / "src/tessellate/ai"
+    src = "".join((ai / f"{name}.py").read_text(encoding="utf-8") for name in ("composer_digest", "composer_digest_lines", "composer_digest_sentences"))
     assert "_FRAME_WORDS = frozenset(composer._stem" not in src
     assert "_VERBS = frozenset(composer._stem" not in src
     assert "_FRAME_WORDS()" in src and "_VERBS()" in src and "_ASKING()" in src

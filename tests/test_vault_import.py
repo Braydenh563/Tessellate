@@ -14,11 +14,12 @@ from __future__ import annotations
 
 import pytest
 
-from tessellate.api import routes_settings
+from tessellate.api import routes_settings_transfer
 from tessellate.core.database import AuditLog, Entry
 from sqlalchemy import select
 
 from tessellate.entry import manager
+from tessellate.entry import manager_wiki
 
 
 @pytest.fixture(autouse=True)
@@ -38,7 +39,7 @@ def _vault(tmp_path):
 
 
 def test_the_folder_a_note_came_from_is_kept(tmp_path, session):
-    routes_settings._run_directory_import(str(_vault(tmp_path)))
+    routes_settings_transfer._run_directory_import(str(_vault(tmp_path)))
     paths = sorted(e.source_path for e in session.scalars(select(Entry)).all())
     assert paths == ["Daily.md", "Projects/Roadmap.md"]
 
@@ -49,7 +50,7 @@ def test_the_import_does_not_rewrite_the_file(tmp_path, session):
     what it imports is a data-loss bug waiting to be reported, and it was
     never needed: the name lives on `source_path`, where the wiki-link
     resolver reads it."""
-    routes_settings._run_directory_import(str(_vault(tmp_path)))
+    routes_settings_transfer._run_directory_import(str(_vault(tmp_path)))
     roadmap = session.scalars(
         select(Entry).where(Entry.source_path == "Projects/Roadmap.md")
     ).first()
@@ -59,8 +60,8 @@ def test_the_import_does_not_rewrite_the_file(tmp_path, session):
 def test_a_wiki_link_resolves_to_the_file_it_names(tmp_path, session):
     """The whole point. `[[Roadmap]]` is a *filename*, and the note's own text
     starts with the heading rather than the name."""
-    routes_settings._run_directory_import(str(_vault(tmp_path)))
-    found = manager.find_by_wiki_name(session, "Roadmap")
+    routes_settings_transfer._run_directory_import(str(_vault(tmp_path)))
+    found = manager_wiki.find_by_wiki_name(session, "Roadmap")
     assert found is not None
     assert found.source_path == "Projects/Roadmap.md"
 
@@ -74,8 +75,8 @@ def test_a_vault_name_beats_a_note_that_merely_starts_with_it(tmp_path, session)
     root = tmp_path / "v2"
     root.mkdir()
     (root / "Index.md").write_text("The real index file.", encoding="utf-8")
-    routes_settings._run_directory_import(str(root))
-    assert manager.find_by_wiki_name(session, "Index").source_path == "Index.md"
+    routes_settings_transfer._run_directory_import(str(root))
+    assert manager_wiki.find_by_wiki_name(session, "Index").source_path == "Index.md"
 
 
 def test_a_note_written_here_has_no_path(session):
@@ -96,10 +97,10 @@ def test_an_oversize_file_is_skipped_not_read_whole(tmp_path, session):
     root = tmp_path / "vault3"
     root.mkdir()
     (root / "Small.md").write_text("a normal note", encoding="utf-8")
-    huge = "x" * (routes_settings.MAX_IMPORT_BYTES + 1)
+    huge = "x" * (routes_settings_transfer.MAX_IMPORT_BYTES + 1)
     (root / "Huge.md").write_text(huge, encoding="utf-8")
 
-    routes_settings._run_directory_import(str(root))
+    routes_settings_transfer._run_directory_import(str(root))
 
     entries = session.scalars(select(Entry)).all()
     assert [e.content for e in entries] == ["a normal note"]

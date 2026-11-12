@@ -59,10 +59,10 @@ KEYWORDS = frozenset(
 #: check is that an unknown name is treated as a mistake.
 KNOWN_GLOBALS = frozenset(
     """
-    Array ArrayBuffer AudioContext BigInt MathfieldElement Blob Boolean BroadcastChannel CSS ClipboardItem
+    Array ArrayBuffer Audio AudioContext BigInt MathfieldElement Blob Boolean BroadcastChannel CSS ClipboardItem
     CSSStyleSheet CustomEvent DataView Date DecompressionStream DOMMatrix DOMParser Error EvalError Event MouseEvent
     EventSource File FileReader Float32Array Float64Array Int16Array FormData Function
-    InputEvent KeyboardEvent WheelEvent
+    InputEvent KeyboardEvent PointerEvent WheelEvent DataTransfer DragEvent
     Headers Image Infinity Int32Array Intl IntersectionObserver JSON Map Math
     MediaRecorder MutationObserver NaN Notification Number Object Option Path2D
     Performance PerformanceObserver Promise Proxy Range RangeError
@@ -71,7 +71,7 @@ KNOWN_GLOBALS = frozenset(
     TypeError URIError URL URLSearchParams Uint8Array Uint32Array WeakMap
     WeakRef WeakSet Worker XMLHttpRequest XMLSerializer AbortController
     AbortSignal
-    alert atob btoa clearInterval clearTimeout confirm createImageBitmap
+    alert atob getSelection btoa clearInterval clearTimeout confirm createImageBitmap
     decodeURI decodeURIComponent encodeURI encodeURIComponent fetch
     getComputedStyle importScripts isFinite isNaN matchMedia parseFloat
     parseInt prompt queueMicrotask requestAnimationFrame requestIdleCallback

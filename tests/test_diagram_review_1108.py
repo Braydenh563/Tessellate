@@ -1,0 +1,160 @@
+"""Review 1108 of the diagram builder: seven findings, each run in node where the code can be loaded.
+
+Files load into a `vm` context with the globals they read at load time stubbed; what is stubbed is named in each test.
+"""
+
+from __future__ import annotations
+
+import json
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
+needs_node = pytest.mark.skipif(not shutil.which("node"), reason="node is not installed")
+
+HARNESS = r"""
+const vm = require("vm"), fs = require("fs");
+const JS = process.argv[1];
+const ctx = { diagramModel: {}, console, Promise, Math, Number, String, Set, Map, Array, JSON, RegExp, Object };
+ctx.window = ctx;
+vm.createContext(ctx);
+const load = (file) => vm.runInContext(fs.readFileSync(JS + "/" + file, "utf8"), ctx, { filename: file });
+const out = (v) => process.stdout.write(JSON.stringify(v));
+"""
+
+
+def run(body: str):
+    proc = subprocess.run(["node", "-e", HARNESS + "\n(async () => {\n" + body + "\n})();", str(JS)], capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr[-2500:]
+    return json.loads(proc.stdout)
+
+
+@needs_node
+def test_ctrl_z_in_a_non_flowchart_pane_runs_its_own_undo_without_the_flowchart_toolbar_loaded():
+    """HIGH: diagram-kinds.js called diagramModel.bar.historyKey; bar loads for flowcharts only, so a sequence .mmd threw."""
+    got = run(
+        """
+load("diagram-kindbar.js");
+const calls = [];
+const key = (extra) => ({ key: "z", ctrlKey: true, altKey: false, shiftKey: false, target: { isContentEditable: false, closest: () => null },
+  preventDefault: () => calls.push("prevent"), stopPropagation: () => calls.push("stop"), ...extra });
+const S = { io: { undo: () => calls.push("undo"), redo: () => calls.push("redo") } };
+const h = ctx.diagramModel.kindbar.historyKey;
+h(S, key());
+h(S, key({ key: "y" }));
+h(S, key({ target: { isContentEditable: false, closest: () => ({}) } }));
+out({ bar: typeof ctx.diagramModel.bar, calls });
+"""
+    )
+    assert got["bar"] == "undefined"
+    assert got["calls"] == ["prevent", "stop", "undo", "prevent", "stop", "redo"]
+
+
+def test_the_other_kinds_pane_never_reaches_for_the_flowchart_toolbar():
+    assert "diagramModel.bar" not in (JS / "diagram-kinds.js").read_text(encoding="utf-8")
+
+
+def _embed_key(target: str, shift: bool = False) -> list:
+    """The real diagram-embed.js `historyKey`, called with Ctrl+Z from `target`: the source box, a button or the title field."""
+    return run(
+        f"""
+load("diagram-embed.js");
+const calls = [];
+const field = {{ isContentEditable: false, closest: () => ({{}}) }};
+const targets = {{ field, button: {{ isContentEditable: false, closest: () => null }}, title: {{ isContentEditable: false, closest: () => ({{}}) }} }};
+const event = {{ key: "z", ctrlKey: true, shiftKey: {json.dumps(shift)}, target: targets[{json.dumps(target)}],
+  preventDefault: () => calls.push("prevent"), stopPropagation: () => calls.push("stop") }};
+ctx.diagramModel.embed.historyKey(event, field, () => calls.push("flush"), {{ undo: () => calls.push("undo"), redo: () => calls.push("redo") }});
+out(calls);
+"""
+    )
+
+
+@needs_node
+def test_ctrl_z_from_a_button_in_the_diagram_window_stops_before_the_apps_undo():
+    """MED: Picture, List, Source, Done, Cancel and "?" sit outside the builder pane; the app's undo listens on the document."""
+    assert _embed_key("button") == ["prevent", "stop", "undo"]
+    assert _embed_key("button", shift=True) == ["prevent", "stop", "redo"]
+    assert _embed_key("field") == ["prevent", "stop", "flush", "undo"]
+
+
+@needs_node
+def test_ctrl_z_in_a_text_field_of_the_diagram_window_is_left_to_the_browsers_text_undo():
+    """LOW: the title field (and a rename input) got preventDefault, which cancelled the browser's undo of the typing."""
+    assert _embed_key("title") == []
+    assert _embed_key("title", shift=True) == []
+
+
+def _join(first: str, steps: str):
+    from tests.test_diagram_builder import _script
+
+    label = f"|{first}|" if first else ""
+    return _script(f"flowchart TD\n  D{{Ready?}}\n  Y[Ship]\n  N[Fix]\n  D -->{label} Y\n", steps)["result"]
+
+
+@needs_node
+@pytest.mark.parametrize("first,said", [("yes", "no"), ("Yes!", "no"), (" YES? ", "no"), ("maybe", ""), ("", ""), ("not yes", "")])
+def test_the_automatic_no_is_only_for_a_new_second_branch_after_a_yes(first, said):
+    """MED: the first label folds (case, punctuation) to yes; any other first word leaves the new arrow to be asked."""
+    assert _join(first, "return o.join(m, 'D', 'N').label;") == said
+
+
+@needs_node
+def test_a_repointed_or_suggested_arrow_keeps_exactly_the_words_it_was_given():
+    """MED: reconnect (diagram-edge-pick.js) and a template's or suggestion's edge (diagram-suggest.js) pass `label`, even empty."""
+    assert _join("yes", "return o.join(m, 'D', 'N', { label: '' }).label;") == ""
+    assert _join("yes", "return o.join(m, 'D', 'N', { label: 'later' }).label;") == "later"
+
+
+@needs_node
+def test_a_third_arrow_out_of_a_decision_is_not_given_no():
+    assert _join("yes", "o.join(m, 'D', 'N'); const z = o.addNode(m, { text: 'Skip' }); return o.join(m, 'D', z).label;") == ""
+
+
+@needs_node
+def test_keep_on_the_tall_chart_offer_is_remembered_per_diagram_not_per_shared_preview_host():
+    """MED: every diagram document draws into the one #doc-preview, so a host key turned the offer off for all of them."""
+    got = run(
+        """
+const mk = () => { const e = { cls: new Set(), kids: [], classList: { add(c) { e.cls.add(c); }, remove(c) { e.cls.delete(c); }, contains: (c) => e.cls.has(c) },
+  append(...n) { e.kids.push(...n); }, setAttribute() {}, set className(v) { e.cls = new Set(v.split(" ")); }, set textContent(v) {} }; return e; };
+ctx.document = { createElement: mk };
+ctx.smallButton = (label, tip, run) => { const b = mk(); b.run = run; b.label = label; return b; };
+load("diagram-outline.js");
+const host = mk();
+const pane = (key) => ({ host, io: { key }, turn: () => {}, fig: { parentElement: mk() }, note: {} });
+const shown = (S) => { ctx.diagramModel.outline.offer(S, true); return Boolean(S.sideways) && !S.sideways.cls.has("hidden"); };
+const a1 = pane("doc-a");
+const first = shown(a1);
+// The two buttons sit in one group now (2026-11-11), so the search goes down a level.
+const all = (e) => e.kids.flatMap((k) => [k, ...all(k)]);
+all(a1.sideways).find((k) => k.label === "Keep").run();
+const a2 = pane("doc-a");
+const b1 = pane("doc-b");
+out({ first, sameDiagramAgain: shown(a2), otherDiagram: shown(b1) });
+"""
+    )
+    assert got == {"first": True, "sameDiagramAgain": False, "otherDiagram": True}
+
+
+def test_the_embedded_picture_click_listens_to_click_only_so_a_press_still_reaches_the_editor():
+    """LOW: no mousedown listener and no preventDefault on the embed box; the Live widget ignores editor events by design."""
+    draw = (JS / "mermaid-draw.js").read_text(encoding="utf-8")
+    box = draw[draw.index('box.classList.add("diagram-embed-box")') :]
+    box = box[: box.index("box.append(open);")]
+    assert 'addEventListener("click"' in box and "mousedown" not in box and "pointerdown" not in box and "preventDefault" not in box
+    cm = (JS / "documents-cm.js").read_text(encoding="utf-8")
+    widget = cm[cm.index("class DocEmbedWidget") :][:1200]
+    assert "ignoreEvent() {\n      return true;" in widget
+
+
+def test_the_guide_says_the_shape_keys_and_k_again_inside_its_budget():
+    """LOW: dgmfix2 dropped "1 to 9 the other shapes, Shift+N the last one" and "K colours" from the Guide to fit 1900."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    assert "1 to 9 the other shapes, Shift+N the last one" in body and "K colours" in body
+    assert len(body) < 1900

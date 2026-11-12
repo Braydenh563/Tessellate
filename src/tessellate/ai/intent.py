@@ -26,6 +26,8 @@ from __future__ import annotations
 
 import re
 
+from tessellate.ai import composer_remark
+
 SMALLTALK = "smalltalk"
 ABOUT_APP = "about_app"
 NOTES = "notes"
@@ -276,6 +278,11 @@ def _classify(message: str) -> str:
 
     #: A key-mash ("asdfgh"): asked what was meant, never searched for.
     if is_mash(message) or is_test(message):
+        return SMALLTALK
+
+    #: "Its been really hot today", "ugh work": a remark to talk back to,
+    #: never a search (INBOX 1749).
+    if composer_remark.is_remark(message):
         return SMALLTALK
 
     # "hey, what did I write about pasta" is a question wearing a greeting.

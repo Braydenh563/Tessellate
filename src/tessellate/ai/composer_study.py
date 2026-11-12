@@ -55,7 +55,7 @@ _TERMS = (
     re.compile(rf"^{_LEAD}(?:glossary|vocab(?:ulary)?|key terms|keywords?)\s*(?:{_FROM}\s+)?(?P<t>.*)$", re.I),
 )
 _SUMMARY = re.compile(
-    rf"^{_LEAD}(?P<brief>briefly\s+|quickly\s+)?(?:summari[sz]e|sum up|recap|run through|run me through|go over|give me (?:a |an |the )?(?:quick |short |brief |rough )?(?:summary|recap|overview|rundown|run-?down|tl;?dr|gist)(?:\s+{_FROM})?|tl;?dr(?:\s+{_FROM})?|"
+    rf"^{_LEAD}(?P<brief>briefly\s+|quickly\s+)?(?:summari[sz]e|sum up|boil down|condense|recap|run through|run me through|go over|give me (?:a |an |the )?(?:quick |short |brief |rough )?(?:summary|recap|overview|rundown|run-?down|tl;?dr|gist)(?:\s+{_FROM})?|tl;?dr(?:\s+{_FROM})?|"
     rf"what (?:did|have|do|was|were) (?:we|i|you) (?:cover|covered|learn|learnt|learned|study|studied|go over|discuss)(?:\s+(?:in|on|during|at|about))?|what(?:['’]?s| is| was) (?:covered|inside)(?:\s+(?:in|on))?|"
     rf"what(?:['’]?s| is) the (?:gist|summary|point|main idea)\s+{_FROM})\s*(?P<t>.*)$", re.I)
 
@@ -132,7 +132,9 @@ def _titled_as(topic: str, ctx: Ctx, open_one: bool) -> list[dict]:
         return exact[:1]
     #: "open the chess note" names the note titled "Chess": one note, not a menu.
     said = " ".join(_TOPIC_NOISE.sub(" ", topic).split()).lower()
-    return [n for n in ctx.notes if open_one and said and composer_frame.note_title(n).lower() == said][:1]
+    #: "show me the Dentist note" says the same (round 1 D1): "note" in the singular names one.
+    one = open_one or bool(re.search(r"\bnote$", topic, re.I))
+    return [n for n in ctx.notes if one and said and composer_frame.note_title(n).lower() == said][:1]
 
 
 def _ranked_by_title_then_body(topic: str, wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
@@ -323,6 +325,17 @@ def _summary_text(ctx: Ctx, notes: list[dict], parts: list, level: int) -> str:
     return "\n".join(lines)
 
 
+def _several(ctx: Ctx, topic: str) -> Reply | None:
+    """A subject several notes are about ("summarise harbor") is one summary of
+    them, the defining note first, never the lead note alone (G11)."""
+    found = topic_notes(topic, ctx, limit=6)
+    if len(found) < 2 or re.search(r"\bthis\b", topic or "", re.I):
+        return None
+    if any(composer_frame.note_title(n).lower() == (topic or "").strip().lower() for n in ctx.notes):
+        return None
+    return _summaries(ctx, found, _subject(topic))
+
+
 def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
     #: A category by name ("summarise my lecture notes" for the category
     #: "Lecture notes") is all of its notes, not the one whose title has the
@@ -330,6 +343,8 @@ def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
     named = category_notes(topic, ctx, limit=8)
     if len(named) > 1 and not any(composer_frame.note_title(n).lower() == (topic or "").strip().lower() for n in ctx.notes):
         return _summaries(ctx, named)
+    if (many := _several(ctx, topic)) is not None:
+        return many
     notes, reply = _target(ctx, topic, "Summarise", "summarise", strict=True)
     if not notes:
         return reply
@@ -337,15 +352,32 @@ def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
         return _summaries(ctx, notes)
     parts = study.summary(str(notes[0].get("content") or ""), level)
     if not parts:
-        return Reply(_list_said(notes[0]) or f"{_link(notes[0])} has too little in it to summarise.")
+        return Reply(_list_said(notes[0]) or _too_little(notes[0]))
     return Reply(_summary_text(ctx, notes, parts, level))
 
 
-def _summaries(ctx: Ctx, notes: list[dict]) -> Reply:
+def _subject(topic: str) -> str:
+    """The subject a summary was asked of, without "my", "the" or "notes"."""
+    said = _FILLER.sub(" ", topic or "").strip(" ,")
+    return re.sub(r"^(?:my|the|all)\s+|\s+notes?$", "", said, flags=re.I).strip()
+
+
+def _too_little(note: dict) -> str:
+    """A note with no more than a line or two is said as it is: the sentence
+    itself is the summary (G11: the answer was "too little in it")."""
+    body = " ".join(str(note.get("content") or "").split())
+    title = composer_frame.note_title(note)
+    rest = body[len(title):].strip(" :-") if body.startswith(title) else body
+    if not rest:
+        return f"{_link(note)} is only a title, so there is nothing more to summarise."
+    return f"{_link(note)} is short, so here it is whole: {rest[:240]}"
+
+
+def _summaries(ctx: Ctx, notes: list[dict], subject: str = "") -> Reply:
     """Several notes asked for together ("summarise my COMP2001 notes"): each
     in a line or two, newest first, never the first one alone."""
     lines = [pick(ctx.seed, "multihead", (f"{len(notes)} notes match. The short version of each:", f"Here are your {len(notes)} matching notes, one short paragraph each:")), ""]
-    for note in notes:
+    for note in notes[:6]:
         #: One sentence a section drops a short note's second fact (the date
         #: beside the topic), so a note with a single section gets its first
         #: four sentences; a long one still gets a line per section.
@@ -354,9 +386,20 @@ def _summaries(ctx: Ctx, notes: list[dict]) -> Reply:
             parts = study.summary(str(note.get("content") or ""), 1)
         body = " ".join(_stopped(sents) for _t, sents in parts[:3] if sents)
         body = " ".join(re.split(r"(?<=[.!?])\s+", body)[:4]) if len(parts) < 2 else body
-        body = body or "Too little in it to summarise."
+        title = composer_frame.note_title(note)
+        if title and body.startswith(title):
+            body = body[len(title):].lstrip(" .:-,;")
+            body = body[:1].upper() + body[1:]
+        body = body or "Only a title, nothing more to say."
         lines += [f"- {_link(note)}: {body}"]
-    return Reply("\n".join(lines))
+    #: The subject as the notes write it ("Harbor"), not as it was typed.
+    for note in notes:
+        found = re.search(rf"\b{re.escape(subject)}\b", composer_frame.note_title(note), re.I) if subject else None
+        if found:
+            subject = found.group(0)
+            break
+    asks = [f"What is the latest on {subject}?", f"What is still open in {subject}?"] if subject else []
+    return Reply("\n".join(lines), asks=asks)
 
 
 def _terms(ctx: Ctx, topic: str, *, more: bool = False) -> Reply | None:
@@ -606,6 +649,8 @@ def _finish(ctx: Ctx, topic: str, note: dict, deck: list[study.Card], score: int
 
 
 _OPEN = re.compile(r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you )*(?P<verb>open|show me|show|go to|take me to|pull up|bring up|jump to|find and open)\s+(?:my |the |all my |all the )?(?P<t>.+?)\W*$", re.I)
+#: "the Sara note", "my Dentist note": a note said by its title and nothing more.
+_BARE_NOTE = re.compile(r"^(?:the|my)\s+(?P<t>[\w'’ -]{1,60}?)\s+note\W*$", re.I)
 _OPEN_NOT = re.compile(r"^(?:a new|new|a|an|settings?|chat|the chat|help|guide|the guide|tab|statistics|calendar|timeline|graph|reminders?|tasks?|whiteboard|board|map|the app|search|library|inbox|today)\b", re.I)
 
 
@@ -638,7 +683,13 @@ def open_named(ctx: Ctx) -> Reply | None:
     notes" is the links to the notes that name it. Chat answers the same
     (audit 1029 C20): "open the sourdough starter" was a digest of three loaf
     notes there, and the same words in Ask pointed at the starter."""
-    found = _OPEN.match(" ".join((ctx.asked or ctx.question or "").split()))
+    said = " ".join((ctx.asked or ctx.question or "").split())
+    found = _OPEN.match(said)
+    if found is None and (bare := _BARE_NOTE.match(said)):
+        #: "the Sara note" names the note titled Sara (round 1 D1): that note, not a five-note overview.
+        titled = _titled_as(bare.group("t") + " note", ctx, True)
+        if titled:
+            return Reply(pick(ctx.seed, "openone", ("Here it is:", "Open it from here:", "This one:")) + f" {_link(titled[0])}")
     if not found or _not_an_open(ctx, found):
         return None
     notes = topic_notes(found.group("t"), ctx, limit=5, open_one=not found.group("verb").lower().startswith("show"))

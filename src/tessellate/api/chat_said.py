@@ -19,14 +19,17 @@ from datetime import datetime
 from sqlalchemy import func, or_, select, text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import capability, composer, composer_aware, composer_digest, composer_lists, composer_open, composer_plan, composer_social, fact_check, filed_name, intent, phrasing, realise
-from tessellate.ai import composer_dialogue
-from tessellate.ai import composer_read
-from tessellate.ai import composer_smalltalk
+from tessellate.ai import capability, composer, composer_aware, composer_lists, composer_open, composer_plan, composer_social, fact_check, filed_name, intent, phrasing, realise
+from tessellate.ai import composer_digest_sentences
+from tessellate.ai import acts, composer_dialogue, task_acts
+from tessellate.ai import composer_frame, composer_read
+from tessellate.ai import composer_smalltalk, composer_talk
 from tessellate.ai.ollama_client import OllamaError
+from tessellate.entry import manager
 from tessellate.api import chat_extra
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _composed, _meta_event
-from tessellate.core import clock, private_turn
+from tessellate.core import clock, deps, private_turn
+from tessellate.core.config import user_now
 from tessellate.core.database import AskTurn, Conversation, Entity, Entry, like_escape, LIKE_ESCAPE
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import relations as relations_repo
@@ -62,6 +65,7 @@ def _save_ask_turn(
     answer: str,
     prepared: dict,
     grounding: list[dict] | None = None,
+    composed: bool = False,
 ) -> None:
     """Durable record of one Ask-box turn, for routes_ask_history.py's browse
     panel. Only ever called for `notes_only` requests (the Ask box's own
@@ -83,6 +87,7 @@ def _save_ask_turn(
             #: than reopening a turn as bare prose (INBOX 241). The rows are
             #: already plain dicts of primitives by the time they reach here.
             grounding=json.dumps(grounding or []),
+            composed=composed,
         )
     )
     session.commit()
@@ -424,15 +429,14 @@ def _newest_titles(session: Session, count: int = 4) -> list[str]:
 
 
 def _closing_name(content: str) -> str:
-    """What a next-step line calls a note: its heading, a whole short first
-    line, or, for a title-less note whose first words would be cut mid
-    sentence, its first sentence whole (audit 1030 Z38; never its date,
+    """What a next-step line and the Open chip call a note: its heading, a
+    whole short first line, or, for a title-less note, the one name every
+    surface gives it (`composer_frame.clipped_words`, R3-15; never its date,
     INBOX 1441)."""
-    name, start = composer_read._title(content)
-    name = name.strip()
-    if start == 0 and name.endswith("…"):
-        name = re.split(r"(?<=[.!?;])\s|\n", content.strip(), maxsplit=1)[0].strip(" .:;")
-    return realise.cut_title(name, 60) if name else ""
+    if not composer_frame.title_line(content):
+        return composer_frame.clipped_words({"content": content})
+    name, _ = composer_read._title(content)
+    return realise.cut_title(name.strip(), 60) if name.strip() else ""
 
 
 #: The stats kinds that ask about the notebook as a whole, which carry the
@@ -480,7 +484,9 @@ def _listed_below(stats: dict) -> str:
     if not rows or "listed below" not in str(stats.get("text") or ""):
         return ""
     def line(f: dict) -> str:
-        return f"- [{f['label']}](#/notes/{f['id']}), {realise.count_noun(int(f.get('count') or 0), 'word')}"
+        #: A row with no count (the notes gone stale) is its link alone, not ", no words" (F13 d, 1110).
+        tail = f", {realise.count_noun(int(f['count']), 'word')}" if isinstance(f.get("count"), int) else ""
+        return f"- [{f['label']}](#/notes/{f['id']}){tail}"
     return "\n\n" + "\n".join(line(f) for f in rows)
 
 
@@ -556,6 +562,32 @@ def _held_reply(req: _StreamRequest, messages: list) -> dict:
     return held
 
 
+def _miss_events(req: _StreamRequest, ollama_running: bool, prepared: dict, line: str) -> list[dict]:
+    """**The plain miss, in the model's words** (model-facts-1027 row 6): the answer to a question no note answers.
+    With a model up and a notebook that holds something (`line` is still the engine's plain miss; an empty notebook has its
+    first steps, which are true as they are), the miss goes to the model as its facts, and the reply stands only if it
+    says just that (`fact_check.says_nothing_found`). Held whole until checked, like `_fact_events`; a model that fails or
+    claims a find leaves the engine's line, with the reply's cost and no model named. Else the line, as it was."""
+    from tessellate.ai import librarian
+    from tessellate.ai.answer_trim import trim_assistant_padding
+    from tessellate.api.chat_request import _in_full
+
+    if line != librarian.NO_RESULTS_MESSAGE or not ollama_running or _composed(req, ollama_running):
+        return [{"type": "answer", "delta": line}]
+    messages = librarian.build_facts_messages(
+        _in_full(req), line, style=prepared["style"], profile=prepared["profile"], history=req.history,
+        persona_prompt=req.persona_prompt, mode=req.mode,
+    )
+    held = _held_reply(req, messages)
+    prose = trim_assistant_padding(held["prose"]).strip()
+    if fact_check.says_nothing_found(prose, req.question or ""):
+        return [{"type": "answer", "delta": prose}, *([held["stats"]] if held["stats"] else [])]
+    if held["prose"]:
+        logging.getLogger("tessellate.chat").warning("chat: the model's words did not keep to the app's miss, which stands")
+    cost = {k: v for k, v in held["stats"].items() if k != "model"} if held["stats"] else None
+    return [{"type": "answer", "delta": line}, *([cost] if cost else [])]
+
+
 def _current_notes(req: _StreamRequest, notes: list[dict]) -> tuple[list[dict], list]:
     """The notes with any a newer note on the asked subject supersedes left
     out, and those left out (O11, `ai/supersede.py`)."""
@@ -564,24 +596,33 @@ def _current_notes(req: _StreamRequest, notes: list[dict]) -> tuple[list[dict], 
     return supersede.current(req.question or "", notes)
 
 
-def _with_words_only(text: str, prepared: dict, result: dict) -> str:
+def _older_dates(req: _StreamRequest, current: list[dict], result: dict, older: list) -> list:
+    """`older` when a note was set aside, else the older date of the same event
+    for a when-answer: the newest dated fact leads and the older is said once
+    (audit 2 G1, `supersede.older_dates`)."""
+    from tessellate.ai import supersede
+
+    if older or not result.get("grounding"):
+        return older
+    return supersede.older_dates(req.question or "", str(result.get("text") or ""), current, user_now(deps.get_config()).date())
+
+
+def _with_words_only(text: str, prepared: dict, result: dict, session=None) -> str:  # noqa: ANN001
     """"Your only note on it" is a claim about the whole notebook; a search
     that read words only (no search by meaning) cannot make it, so the line
-    says what was measured instead (blind test 2026-10-31, item 3)."""
+    leaves it out (blind test 2026-10-31, item 3)."""
     words_only = prepared.get("search_mode") == "keyword" or prepared.get("meaning_off") or prepared.get("meaning_loading")
     if not words_only or not result.get("grounding"):
         return text
-    parts = text.split("\n\n")
-    if not any(composer_digest.is_only_claim(part) for part in parts):
+    #: A notebook of one note has no other to find: the plain claim is true as said (R3-31).
+    if session is not None and manager.count_notes(session) <= 1:
         return text
-    #: A looked-up fact (a password, a name) is no topic another note could add to: the claim goes and nothing replaces it.
-    said = [] if result.get("shape") == "digest:fact" else [composer_digest.ONLY_WORDS]
-    swapped = [part for part in parts if not composer_digest.is_only_claim(part)]
-    #: The line is a footer, but an offer ("Start a list of films?") stays the last word:
-    #: an answer ends on its question (the gold shape rule), so the footer goes above it.
-    if swapped and said and swapped[-1].rstrip().endswith("?"):
-        return "\n\n".join([*swapped[:-1], *said, swapped[-1]])
-    return "\n\n".join([*swapped, *said])
+    parts = text.split("\n\n")
+    if not any(composer_digest_sentences.is_only_claim(part) for part in parts):
+        return text
+    #: The claim goes and nothing replaces it: "Only one note has those words; search by meaning
+    #: could find others" was a stat line a person would not add (fable-composer-1110 F7.3).
+    return "\n\n".join(part for part in parts if not composer_digest_sentences.is_only_claim(part))
 
 
 def _help_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
@@ -715,20 +756,39 @@ def _open_title(session: Session, body: ChatRequest) -> str:
     return ""
 
 
-def _chat_topic(history: list[dict]) -> str:
-    """What the last question in this chat was about: its first search term of
-    four letters or more that the answer to it also used, or "". A word the
-    answer never touched ("left", "write", "week") is the question's frame,
-    not its subject (blind test round 2, finding 2)."""
+def _topic_word(asked: str, answer: str) -> str:
+    """The first search term of `asked` of four letters or more that `answer`
+    also used, as typed (a name keeps its capital: "We were on Sara"), or ""."""
+    from tessellate.ai import when as when_words
     from tessellate.search import query as query_understanding
 
+    dates = {w.lower() for _s, _e, phrase in when_words.find(asked) for w in re.findall(r"[A-Za-z]+", phrase)}
+    for term in query_understanding.search_terms(asked):
+        if term.lower() in dates or composer_aware.is_date_word(term):
+            continue
+        if len(term) >= 4 and term.isalpha() and query_understanding.is_topic_word(term) and term.lower() in answer:
+            typed = re.search(rf"\b{re.escape(term)}\b", asked, re.I)
+            return typed.group(0) if typed else term
+    return ""
+
+
+def _chat_topic(history: list[dict]) -> str:
+    """What the last question in this chat was about: a word of it the answer
+    also used, or "". A word the answer never touched ("left", "write",
+    "week") is the question's frame, not its subject (blind test round 2,
+    finding 2). A date word ("November", "Friday") is the question's window,
+    never a subject: a question about nothing but a day is about that day,
+    said as typed ("3 November", INBOX 1739)."""
+    from tessellate.ai import when as when_words
+
     for turn in reversed(history or []):
-        answer = str(turn.get("answer") or "").lower()
-        for term in query_understanding.search_terms(str(turn.get("question") or "")[:200]):
-            if len(term) >= 4 and term.isalpha() and query_understanding.is_topic_word(term) and term.lower() in answer:
-                #: As it was typed, so a name keeps its capital ("We were on Sara").
-                typed = re.search(rf"\b{re.escape(term)}\b", str(turn.get("question") or ""), re.I)
-                return typed.group(0) if typed else term
+        answer, asked = str(turn.get("answer") or "").lower(), str(turn.get("question") or "")[:200]
+        word = _topic_word(asked, answer)
+        if word:
+            return word
+        day = when_words.find(asked)
+        if day and answer:
+            return day[0][2]
     return ""
 
 
@@ -828,7 +888,7 @@ def _search_footer(prepared: dict, result: dict) -> str:
         return ""
     for key in ("meaning_loading", "meaning_off"):
         if prepared.get(key):
-            return "\n\n" + composer_digest.PHRASES[key]
+            return "\n\n" + composer_digest_sentences.PHRASES[key]
     return ""
 
 
@@ -886,4 +946,14 @@ def _composed_lines(req: _StreamRequest, events: list[dict]) -> list[str]:
     meta = {"type": "meta", "raw_results": [], "picture_alts": {}, "picture_sizes": {}, "search_mode": "command",
             "connected_ids": [], "match_info": {}, "when_phrase": None, "as_of": None, "as_of_revisions": {},
             "answered_by": None, "ollama_running": req.ollama.is_running(), "composed": True}
+    events = events if req.skill else composer_talk.Closing(req.session, req.body.question or "", user_now(deps.get_config()).date(), history=req.history).apply(events)
     return [json.dumps(e) + "\n" for e in ({"type": "status", "stage": "searching"}, meta, *events, {"type": "done"})]
+
+
+def acts_on_listed_task(question: str, history: list[dict], now: datetime) -> bool:
+    """Whether `question` acts on a task the last answer's list showed ("tick the first one", R9-9)."""
+    if not history:
+        return False
+    shown = history[-1].get("answer") or ""
+    listed = set(task_acts.items_in(shown))
+    return (acts.parse(question, now, history) or {}).get("about") in listed

@@ -10,7 +10,8 @@ committed); here are the contracts a source check can hold.
 
 from __future__ import annotations
 
-from tests._help_text import help_chat_text
+from tests._help_text import help_chat_text, help_more_text
+from tests._js_scope import unwrapped
 
 import importlib.util
 import json
@@ -24,7 +25,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 CSS = ROOT / "frontend" / "css"
-PANEL = (JS / "appearance-panel.js").read_text(encoding="utf-8")
+PANEL = unwrapped((JS / "appearance-panel.js").read_text(encoding="utf-8"))
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 LAZY = (JS / "lazy-entries.js").read_text(encoding="utf-8")
 
@@ -96,7 +97,7 @@ def test_it_opens_from_the_palette_the_top_bar_and_the_settings_page():
     assert re.search(r'label: "ph:palette Appearance panel".*act: \(\) => openAppearancePanel\(\)', panes)
     settings = (JS / "settings.js").read_text(encoding="utf-8")
     assert '$("theme-btn").addEventListener("contextmenu"' in settings and "openAppearancePanel()" in settings
-    controls = (JS / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
     assert "function ensureAppearancePopOut" in controls and "Pop out" in controls
     assert 'if (box.id === "settings-appearance") ensureAppearancePopOut(box);' in controls
 
@@ -123,7 +124,7 @@ def test_it_is_non_modal_and_on_panel_movable():
 def test_peek_fades_the_ground_with_a_token_mix_never_element_opacity():
     css = _own_css()
     peek = css[css.index(".appearance-panel.peeking {") : css.index("}", css.index(".appearance-panel.peeking {"))]
-    assert "color-mix(in srgb, var(--panel)" in peek and "opacity" not in css
+    assert "color-mix(in srgb, var(--card)" in peek and "opacity" not in css
     assert 'setAttribute("aria-pressed"' in PANEL and 'peek.title = ' in PANEL
     # It ends with the panel, as Settings' does.
     close = PANEL[PANEL.index("function closeAppearancePanel") :]
@@ -159,8 +160,10 @@ console.log(JSON.stringify({
 def test_the_section_in_view_is_the_last_one_that_has_reached_the_line(tmp_path):
     script = tmp_path / "harness.js"
     script.write_text(HARNESS, encoding="utf-8")
+    plain = tmp_path / "appearance-panel.js"  # unwrapped: the harness reads a private name
+    plain.write_text(PANEL, encoding="utf-8")
     out = subprocess.run(
-        ["node", str(script), str(JS / "appearance-panel.js")], capture_output=True, text=True, check=True
+        ["node", str(script), str(plain)], capture_output=True, text=True, check=True
     ).stdout
     got = json.loads(out)
     assert got == {
@@ -178,7 +181,7 @@ def test_the_section_in_view_is_the_last_one_that_has_reached_the_line(tmp_path)
 def test_help_moves_with_the_panel():
     chat = help_chat_text()
     assert "Appearance panel" in chat
-    more = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    more = help_more_text()
     assert "Pop out" in chat + more
     assert 'data-help-for' in PANEL or "dataset.helpFor" in PANEL
     assert 'id = "appearance-panel-help"' in PANEL

@@ -34,6 +34,7 @@ from collections import Counter
 #: imported from `query` so this module does not pull the search manager,
 #: and with it SQLAlchemy and the embeddings, into a no-model answer.
 from tessellate.search.query import search_terms as _meaningful_terms
+from tessellate.core.lazyre import lazy_compile
 
 # Below this fraction of a sentence's own meaningful words being found in a
 # note, the "match" is coincidence (shared stopword-adjacent filler) rather
@@ -62,16 +63,16 @@ DISTINCTIVE_MIN_TERMS = 2
 #: single space first (one linear pass), so the split itself has no
 #: quantifier to backtrack over. CodeQL (alert 425) flagged the `\s+` form as
 #: polynomial on an answer with a long run of tabs.
-_SENTENCE_SPLIT = re.compile(r"(?<=[.!?]) (?=[A-Z\d])")
-_WHITESPACE_RUN = re.compile(r"\s+")
+_SENTENCE_SPLIT = lazy_compile(r"(?<=[.!?]) (?=[A-Z\d])")
+_WHITESPACE_RUN = lazy_compile(r"\s+")
 #: A note the answer names by the number the prompt gave it: "note 6",
 #: "Notes 1, 5, and 6", "[6]". Bounded repeats of plain separators only, so
 #: the pattern stays linear however the answer is written.
-_NAMED_NOTES = re.compile(
+_NAMED_NOTES = lazy_compile(
     r"\b[Nn]otes?\s{1,3}#?(\d{1,2}(?:(?:\s{0,3},\s{0,3}(?:and\s{1,3})?|\s{1,3}and\s{1,3}|\s{0,3}&\s{0,3})#?\d{1,2}){0,9})"
 )
-_BRACKET_NUMBER = re.compile(r"\[(\d{1,2})\]")
-_DIGITS = re.compile(r"\d{1,2}")
+_BRACKET_NUMBER = lazy_compile(r"\[(\d{1,2})\]")
+_DIGITS = lazy_compile(r"\d{1,2}")
 
 #: **How long a passage is** (CHAT_PLAN decision 2). Forty words is about two
 #: sentences of prose: long enough that a paraphrased claim and its source
@@ -104,7 +105,7 @@ BM25_B = 0.75
 #: is, so no fixed number would survive a different-sized answer.
 PASSAGE_SECOND_RATIO = 0.75
 
-_WORD = re.compile(r"[^\W_]+", re.UNICODE)
+_WORD = lazy_compile(r"[^\W_]+", re.UNICODE)
 
 
 def _words_with_offsets(text: str) -> list[tuple[str, int, int]]:
@@ -311,7 +312,7 @@ def note_passage_scores(sentence: str, notes: list[dict]) -> dict[int, float]:
 #: A line that opens a new block when rendered: a heading, a quote, a list
 #: item. Its marker is not part of any sentence, because the rendered block
 #: does not print it.
-_BLOCK_START = re.compile(r"^ {0,3}(?:#{1,6}\s+|>\s?|[-*+]\s+|\d{1,3}[.)]\s+)")
+_BLOCK_START = lazy_compile(r"^ {0,3}(?:#{1,6}\s+|>\s?|[-*+]\s+|\d{1,3}[.)]\s+)")
 
 
 def _blocks(text: str) -> list[str]:
@@ -687,6 +688,23 @@ def support(answer: str, grounded: list[dict]) -> dict:
         #: future caller cannot each pick their own threshold.
         "low": total >= LOW_SUPPORT_MIN_SENTENCES and ratio < LOW_SUPPORT_RATIO,
     }
+
+
+def composed_support(base: dict | None, rows: list[dict]) -> dict:
+    """The support of an answer no model wrote (`by_model: False`): every
+    sentence of it is quoted or the app's own joining words, so the notice
+    says something only when most of what it quotes is how the app read a
+    picture (INBOX 787: "Only 0 of 2 sentences here are quoted" under an
+    answer that had nothing else to say). One function for the live stream
+    and a saved turn, so a reopened composer answer never gets the model-draft
+    warning it did not have on arrival (INBOX 1706). `base` None (a saved
+    turn, which keeps the rows but not the composer's own count) counts the
+    quoted sentences themselves, as the composer does."""
+    if base is None:
+        quoted = list(dict.fromkeys(row["sentence"] for row in rows or [] if row.get("sentence")))
+        base = support("\n\n".join(quoted), rows)
+    pictures = sum(1 for row in rows or [] if row.get("said") == "picture")
+    return {**base, "by_model": False, "low": pictures * 2 > len(rows or []) > 0}
 
 
 def _mark(sentence: str, note_id: int, contents: dict[int, str]) -> dict:

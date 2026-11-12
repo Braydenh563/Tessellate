@@ -75,93 +75,6 @@ let lastChatAttachments = [];
 let attachedImages = [];
 let lastChatImageAttachments = [];
 
-//: **The one attachment chip** (DESIGN.md "An attachment chip"; Chat's images,
-//: documents and files and the popup agent's staged files all build it here).
-//: A tile (the picture, or the kind's glyph), the name with its extension kept
-//: when the stem is cut, one facts line, a bar while it uploads, a round x.
-//: `state` is "ready", "uploading" (with `progress` 0..1) or "error" (the
-//: facts line then says why). A notebook item (`notebookCard`, chat-agent.js)
-//: passes its own `icon` and `facts` (a note's name is words, not a file name,
-//: so no extension is split off) and `onOpen`, which makes the tile and the
-//: words one button; the remove x stays its sibling.
-function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, state = "ready", progress = 0, error = "", title, removeTitle, onRemove }) {
-  const chipEl = document.createElement("span");
-  //: **Staged is a pill, sent is a card** (INBOX 1476, the owner: the grey slab
-  //: is not "very clean and dynamic"). A staged chip (`onRemove` given, null while it uploads) is waiting in a
-  //: composer: one quiet line, the glyph, the name cut at about 14 characters,
-  //: the kind in brackets, the x. Sent, it keeps the two-line card.
-  const pill = onRemove !== undefined;
-  chipEl.className = `chip att-chip${pill ? " att-chip-pill" : ""}`;
-  chipEl.dataset.state = state;
-  chipEl.title = title || name;
-  let tile;
-  if (thumb) {
-    tile = document.createElement("img");
-    tile.src = thumb;
-    tile.alt = "";
-  } else {
-    tile = document.createElement("i");
-    tile.className = `ph ${icon || attachmentIconClass("", name) || "ph-file"}`;
-    tile.setAttribute("aria-hidden", "true");
-  }
-  tile.classList.add("att-chip-tile");
-  const ext = icon ? "" : attachmentExt(name);
-  const stem = document.createElement("span");
-  stem.className = "att-chip-stem";
-  stem.textContent = ext ? name.slice(0, -(ext.length + 1)) : name;
-  const nameEl = document.createElement("span");
-  nameEl.className = "att-chip-name";
-  nameEl.append(stem);
-  if (ext) {
-    const extEl = document.createElement("span");
-    extEl.className = "att-chip-ext";
-    extEl.textContent = `.${ext}`;
-    nameEl.append(extEl);
-  }
-  const facts = document.createElement("span");
-  facts.className = "att-chip-facts";
-  const kind = fileKindLabel("", name);
-  const factsLine =
-    state === "uploading"
-      ? `Uploading ${Math.round(progress * 100)}%`
-      : state === "error"
-        ? error || "Couldn't attach that file"
-        : factsText || [kind, formatFileSize(size)].filter(Boolean).join(" · ");
-  facts.textContent = pill && state === "ready" ? `[${(factsText || kind || "File").split(" · ")[0]}]` : factsLine;
-  const body = document.createElement("span");
-  body.className = "att-chip-body";
-  body.append(nameEl, facts);
-  if (onOpen) {
-    const open = document.createElement("button");
-    open.type = "button";
-    open.className = "att-chip-open";
-    open.setAttribute("aria-haspopup", "dialog");
-    if (title) open.setAttribute("aria-label", `${title}, ${facts.textContent}`);
-    open.append(tile, body);
-    open.addEventListener("click", onOpen);
-    chipEl.append(open);
-  } else chipEl.append(tile, body);
-  if (state === "uploading") {
-    lazyScript("/css/chip-bar-lazy.css");
-    const bar = document.createElement("progress");
-    bar.className = "att-chip-bar";
-    bar.max = 100;
-    bar.value = Math.round(progress * 100);
-    bar.setAttribute("aria-label", `Uploading ${name}`);
-    chipEl.append(bar);
-  }
-  if (onRemove) {
-    const remove = document.createElement("button");
-    remove.className = "att-chip-x";
-    remove.type = "button";
-    setLabel(remove, "ph:x");
-    remove.title = removeTitle || `Remove “${name}”`;
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", onRemove);
-    chipEl.append(remove);
-  }
-  return chipEl;
-}
 
 function renderImageAttachments() {
   const box = $("chat-image-attachments");
@@ -249,114 +162,12 @@ async function attachImageFiles(files) {
 // Failures are per-file and quiet, the same rule attachImageFiles already
 // followed: a picker with four files selected must not lose three because one
 // was a .mp4.
-function isImageFile(file) {
-  // The type the browser reports, falling back to the extension, a file
-  // dragged from some archives arrives with an empty `type`.
-  if ((file.type || "").startsWith("image/")) return true;
-  return /\.(png|jpe?g|gif|webp|bmp|avif|ico|tiff?|heic|heif|svg)$/i.test(file.name || "");
-}
-
 async function attachChatFiles(files) {
   const all = Array.from(files);
   const images = all.filter(isImageFile);
   const documents = all.filter((f) => !isImageFile(f));
   if (images.length) await attachImageFiles(images);
   if (documents.length) await importChatDocuments(documents);
-}
-
-//: The suffixes `/media/upload` accepts (`MEDIA_SUFFIXES`, routes_files.py).
-//: Kept as a literal rather than fetched: it is a fallback path that must not
-//: itself need a round trip to decide whether it can run.
-const MEDIA_FALLBACK_SUFFIXES = /\.(png|jpe?g|gif|webp|avif|bmp|ico|pdf)$/i;
-
-async function keepUnreadableChatFile(file, error) {
-  if (!MEDIA_FALLBACK_SUFFIXES.test(file.name || "")) return false;
-  const form = new FormData();
-  form.append("file", file);
-  form.append("direct", "true");
-  try {
-    await apiJson("/media/upload", {
-      method: "POST",
-      headers: authHeaders(),
-      body: form,
-    });
-  } catch {
-    return false;
-  }
-  //: Both halves, because either alone is misleading: "saved to your Library"
-  //: without the reason looks like the import worked, and the reason without
-  //: the destination looks like the file was lost.
-  toastAction(
-    `Kept “${file.name}” in your Library, ${error?.message || "its text could not be read"}`,
-    "Show it",
-    async () => {
-      await switchTab("library");
-      document.querySelector('#library-subtabs [data-media-kind="files"]')?.click();
-    },
-    { go: { tab: "library", media: "files" } },
-  );
-  return true;
-}
-
-async function importChatDocuments(files) {
-  const made = [];
-  for (const file of files) {
-    const form = new FormData();
-    form.append("file", file);
-    try {
-      // Same header handling as attachImageFiles: a FormData body needs the
-      // browser to set its own multipart boundary, so apiJson's JSON default
-      // has to be overridden rather than merged.
-      const document = await apiJson("/documents/import", {
-        method: "POST",
-        headers: authHeaders(),
-        body: form,
-      });
-      made.push(document);
-    } catch (error) {
-      //: **A file the app cannot read is still a file worth keeping.**
-      //:
-      //: Reported: *"make sure the file upload and staging as chips works
-      //: because I tried to upload two pdf files and nothing showed up."*
-      //: Nothing showed up because `/documents/import` answers 422 for a PDF
-      //: whose text cannot be extracted, which on an install without
-      //: markitdown is *every* PDF, and a 422 became one toast that expired.
-      //: So the paperclip advertised PDFs, refused them, and left no trace.
-      //:
-      //: REDESIGN.md §R7.2's reversal is the rule here and it is explicit:
-      //: PDFs and documents must be viewable, downloadable and manageable
-      //: **without any AI model in the loop**. Failing to read a PDF's words
-      //: is not a reason to throw the PDF away. So the bytes go to
-      //: `/media/upload`, the Library's own store, which takes PDFs, and
-      //: the user is told where it went and why the text is missing.
-      const kept = await keepUnreadableChatFile(file, error);
-      if (!kept) toast(error.message || `Couldn't read "${file.name}".`, true);
-    }
-  }
-  if (!made.length) return;
-  offerCreatedDocsUndo(made);
-  // **Staged on the message, not just imported and announced.** The toast
-  // below still says where the file went, but a toast is a moment and the
-  // report was about what is left behind: "images and files uploaded into a
-  // chat conversation arent rendered with the chat messages". An imported
-  // document is now an attachment of the message being written, exactly as
-  // an image is: a chip in the composer, then a chip in the bubble, then a
-  // way back to the document.
-  for (const document of made) {
-    if (attachedDocuments.length >= MAX_CHAT_DOCUMENTS) break;
-    attachedDocuments.push({ id: document.id, name: document.title });
-  }
-  renderDocumentAttachments();
-
-  const first = made[0];
-  const label =
-    made.length === 1
-      ? `Added “${first.title}” to your documents.`
-      : `Added ${nounCount(made.length, "file")} to your documents.`;
-  toastAction(label, made.length === 1 ? "Open it" : "Show them", () => {
-    switchTab("documents");
-    if (made.length === 1) openDocument(first.id);
-  }, { go: made.length === 1 ? { open: "doc", id: first.id } : { tab: "documents" } });
 }
 
 //: Documents staged on the message being written. Same shape and same
@@ -1151,39 +962,40 @@ function chatTidyTyped(text) {
 }
 
 //: **A message sent while the answer on screen is still coming waits its
-//: turn** (INBOX 1321, the owner: "queue messages, and edit or delete/bring
-//: back queued messages"). Stop shows exactly while that answer streams; a
-//: Stop pressed holds the queue until the next send (`chatQueueState.held`).
+//: turn** (INBOX 1321) in the composer queue (chat.js). Stop shows exactly
+//: while that answer streams.
 async function sendChatMessage(preset, opts = {}) {
   const input = $("chat-input");
-  if (!$("chat-stop").classList.contains("hidden")) {
-    const typed = chatTidyTyped((preset ?? input.value).trim());
-    if (typed) chatQueue.push(typed);
+  if (chatQueue.busy()) {
+    chatQueue.take(chatTidyTyped((preset ?? input.value).trim()));
     if (preset == null) {
       input.value = "";
       input.dispatchEvent(new Event("input"));
     }
-    return chatQueueShow();
+    return;
   }
-  chatQueueState.held = false;
+  //: After Stop the queue is held, not sent (owner, 2026-11-11): Send from the box runs the waiting
+  //: messages oldest first, what is typed going last. No turn of its own: the `finally` drains the queue.
+  const resume = preset == null && chatQueue.held && chatQueue.items.length > 0;
+  if (resume) {
+    const typed = chatTidyTyped(input.value.trim());
+    if (typed) {
+      chatQueue.items.push(typed);
+      input.value = "";
+      input.dispatchEvent(new Event("input"));
+    }
+  }
+  chatQueue.held = false;
   try {
+    if (resume) return;
     //: The turn itself is lazy (chat-turn.js, warmed when the box takes focus).
     if (!(await ensureModule("chatTurn"))) return lazyLoadFailed();
     return await chatSendTurn(preset, opts);
   } finally {
-    if (!chatQueueState.held && chatQueue.length && $("chat-stop").classList.contains("hidden")) sendChatMessage(chatQueue.shift());
-    chatQueueShow();
+    chatQueue.finishing.delete(opts.finishing);
+    chatQueue.next();
   }
 }
-
-function chatQueueShow() {
-  if (chatQueue.length || document.querySelector(".chat-queue")) ensureModule("replyKit").then(() => chatQueuePaint()).catch(() => {});
-}
-
-//: **A bare "undo" or "redo" typed in chat runs the app's own** (audit 1028
-//: E13), as Ctrl+Z does: sent as a question it got the Help line, and the
-//: change the person meant to take back stayed.
-const CHAT_UNDO_WORDS = /^(undo|redo)( that| it)?\.?$/i;
 
 //: Saved content may carry Plan mode's block after the words.
 const followupMatches = (sent, ref) => Boolean(sent) && (sent === ref || sent.startsWith(ref));

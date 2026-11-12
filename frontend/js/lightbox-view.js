@@ -25,10 +25,21 @@
 //: The viewer's '?' popover: the gestures and keys no button shows.
 const LIGHTBOX_HELP = [
   "Scroll to zoom where the pointer is, drag to move a zoomed picture, and double-click to switch between fit and actual size.",
-  "Keys: Left and Right move between files, plus and minus zoom, 0 fits, 1 shows actual size, R rotates, I shows or hides the details, Escape closes.",
+  "Keys: Left and Right move between files, plus and minus zoom, 0 fits, 1 shows actual size, R rotates, I shows or hides the details, Ctrl+C copies the picture, Escape closes.",
   "On a touch screen, swipe sideways to move between files and pinch to zoom.",
   "The bars fade when the mouse rests on the picture and come back when it moves.",
 ];
+
+//: How far one wheel event zooms. In proportion to the travel, so a wheel's
+//: one notch of 100 is one even step (x1.22); a line or a page of travel
+//: (`deltaMode` 1, 2) counts as 40px. A trackpad pinch (a Ctrl wheel of small
+//: pixel deltas) moves at the diagram view's rate, 0.01 a pixel: at the
+//: notch's 0.002 it was "very slow or minimal" (the owner, INBOX 1694).
+function lightboxZoomFactor(e) {
+  if (e.ctrlKey && e.deltaMode === 0 && Math.abs(e.deltaY) < 50) return Math.exp(-e.deltaY * 0.01);
+  const travel = Math.max(-200, Math.min(200, e.deltaY * (e.deltaMode ? 40 : 1)));
+  return Math.exp(-travel * 0.002);
+}
 
 function openLightbox(items, startIndex = 0, opts = {}) {
   let index = startIndex;
@@ -427,6 +438,19 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   const ZOOM_MIN = 1;
   const zoomLabel = document.createElement("span");
   zoomLabel.className = "lightbox-zoom-label";
+  //: The readout is a typeable number with a dropdown (INBOX 1694 b, value-field.js): 150 and Enter zooms to 150% of the picture's own pixels.
+  const zoomField = valueField(zoomLabel, {
+    value: 100,
+    min: 5,
+    max: 3200,
+    label: "Zoom percent",
+    format: (v) => `${Math.round(v)}%`,
+    presets: [25, 50, 75, 100, 150, 200, 400].concat([{ label: "Fit", run: () => fitView() }]),
+    onCommit: (pct) => {
+      glide();
+      setZoom((pct / 100) * (zoomTarget() === img && img.naturalWidth && img.offsetWidth ? actualZoom() : 1));
+    },
+  });
   const reducedMotion = () => reducedMotionWanted();
   //: A turned picture is fitted again: a wide photo stood on its end is as
   //: tall as it was wide, so it is scaled into the box it had.
@@ -493,7 +517,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     //: A picture's readout is against its own pixels, as every viewer's is:
     //: "53%" at Fit for a picture twice the window, "100%" at actual size.
     const pixels = isImg && img.naturalWidth && img.offsetWidth;
-    zoomLabel.textContent = `${Math.round((pixels ? zoom / actualZoom() : zoom) * 100)}%`;
+    zoomField.set(Math.round((pixels ? zoom / actualZoom() : zoom) * 100));
     fitBtn.setAttribute("aria-pressed", String(zoom === 1));
     //: Pressed when the picture is already at actual size, so a press that
     //: changes nothing (a picture smaller than the window, where fit is 1:1)
@@ -647,10 +671,31 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   const pagePrevBtn = actionBtn("ph:caret-up", "Previous page", () => setDocPage(docPage - 1), dockPageZone);
   const pageLabel = document.createElement("span");
   pageLabel.className = "lightbox-page-label";
-  //: `role="status"`, matching the OCR workspace's own page label: the page
-  //: changes without focus moving, so a screen reader is otherwise never told.
-  pageLabel.setAttribute("role", "status");
   dockPageZone.appendChild(pageLabel);
+  //: A typeable page number with a dropdown (INBOX 1694 b). An input's change is not read out, so a status line says the page too.
+  const pageStatus = document.createElement("span");
+  pageStatus.className = "visually-hidden";
+  pageStatus.setAttribute("role", "status");
+  dockPageZone.appendChild(pageStatus);
+  let pageField = null;
+  let pageFieldCount = -1;
+  //: Up to twelve rows: every page, else evenly spaced with the first and last kept.
+  const pagePresets = (n) => {
+    const at = n <= 12 ? Array.from({ length: n }, (_, i) => i + 1) : Array.from({ length: 12 }, (_, i) => 1 + Math.round((i * (n - 1)) / 11));
+    return at.map((v) => ({ value: v, label: `Page ${v}` }));
+  };
+  const drawPageField = () => {
+    pageFieldCount = docPageCount;
+    pageField = valueField(pageLabel, {
+      value: docPage + 1,
+      min: 1,
+      max: () => docPageCount,
+      label: "Page number",
+      format: (v) => `Page ${v} of ${docPageCount}`,
+      presets: pagePresets(docPageCount),
+      onCommit: (n) => setDocPage(n - 1),
+    });
+  };
   const pageNextBtn = actionBtn("ph:caret-down", "Next page", () => setDocPage(docPage + 1), dockPageZone);
   const pageControls = [pagePrevBtn, pageLabel, pageNextBtn];
   const showPageControls = (on) =>
@@ -670,7 +715,9 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       chip.classList.toggle("is-current", Number(chip.dataset.page) === docPage);
       chip.setAttribute("aria-current", Number(chip.dataset.page) === docPage ? "true" : "false");
     }
-    pageLabel.textContent = docPageCount ? `Page ${docPage + 1} of ${docPageCount}` : "";
+    if (docPageCount && pageFieldCount !== docPageCount) drawPageField();
+    pageField?.set(docPage + 1);
+    pageStatus.textContent = docPageCount ? `Page ${docPage + 1} of ${docPageCount}` : "";
     pagePrevBtn.disabled = docPage <= 0;
     pageNextBtn.disabled = docPage >= docPageCount - 1;
     //: The panel below is about *this* page, its reading, its figures, so
@@ -884,11 +931,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       if (!doc.classList.contains("hidden") && !e.ctrlKey) return;
       if (!doc.classList.contains("hidden") && pdfPages.classList.contains("hidden")) return; // plain text: nothing to zoom
       e.preventDefault();
-      //: In proportion to the travel, so a trackpad's many small deltas and
-      //: a wheel's one notch of 100 both feel continuous (a notch: x1.22).
-      //: A line or a page of travel (`deltaMode` 1, 2) counts as 40px.
-      const travel = Math.max(-200, Math.min(200, e.deltaY * (e.deltaMode ? 40 : 1)));
-      setZoom(zoom * Math.exp(-travel * 0.002), [e.clientX, e.clientY]);
+      setZoom(zoom * lightboxZoomFactor(e), [e.clientX, e.clientY]);
     },
     { passive: false }
   );
@@ -1032,6 +1075,14 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     if (!value) return;
     await copyToClipboard(value, b);
   }, topActions);
+
+  //: The picture itself (INBOX 1775); Ctrl+C does the same while a picture is shown.
+  const copyPictureNow = () => {
+    const item = items[index];
+    if (img.classList.contains("hidden") || item.kind) return;
+    attachmentAction("copy-image", { src: img.currentSrc || img.src, name: item.filename });
+  };
+  const copyPictureBtn = actionBtn("ph:image", "Copy image (Ctrl+C)", copyPictureNow, topActions);
 
   // Save the original file. `download` needs a same-origin href to name the
   // file, which `mediaSrc()` gives us: it is this app's own /media route.
@@ -1462,6 +1513,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     const menu = kebabMenu(
       [
         ...items,
+        { label: "ph:image Copy image", title: "Put this picture on the clipboard", run: copyPictureNow },
         {
           label: "ph:pencil-simple Rename",
           title: "Rename this image",
@@ -1909,6 +1961,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
         loadDocPageReads(attachmentId, name, item).catch(() => {});
         return;
       }
+      if (info && info.available === false) extraNoticeMount(doc, "pdfpages");
       // pdfpages isn't installed, or this particular file can't be opened: 
       // `info.message` already says which. Fall through to the AI-text path
       // below, which gives the same honest message (docview.py's own
@@ -2211,6 +2264,11 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     copyBtn.title = perPage
       ? `Copy the text read from page ${docPage + 1}`
       : "Copy the text read from this image";
+    //: No reader at all (no Tesseract, no RapidOCR, no vision model): the one
+    //: optional-package notice, since "Read text" is left out of the menu then.
+    if (ok && !docPageCount && modelStatus && modelStatus.tesseract_available === false && !modelStatus.vision_model_resolved) {
+      extraNoticeMount(info, "rapidocr");
+    }
   }
 
   //: Per file: the title and count, the filmstrip's current tile, what the
@@ -2219,6 +2277,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     syncTitle(item);
     syncFilmstrip();
     openTabBtn.classList.toggle("hidden", Boolean(item.kind));
+    copyPictureBtn.classList.toggle("hidden", Boolean(item.kind));
     for (const b of [dockPrevBtn, dockNextBtn]) b.classList.toggle("hidden", items.length < 2);
   }
   //: The dock goes when nothing in it applies (a text file has no zoom and
@@ -2267,15 +2326,24 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   //: Typing keeps its keys: the find box and the file editor are inside this
   //: dialog, and an arrow there moves the caret, not the file.
   const typing = (el) => el instanceof Element && el.matches("input, textarea, select, [contenteditable=''], [contenteditable='true']");
+  //: Ctrl+C is the picture's only while nothing is selected or typed in (a selected reading copies as text).
+  const copyKey = (e, above) => {
+    if (!(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey || (e.key !== "c" && e.key !== "C") || above || typing(e.target) || String(window.getSelection?.() || "").trim()) return false;
+    copyPictureNow();
+    e.preventDefault();
+    return true;
+  };
   const onKey = (e) => {
     keysSeen = true;
     wake();
     //: A menu, a popover or a confirm over the viewer has the keys first.
     const above = document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden), .confirm-overlay:not(.hidden)");
     if (e.key === "Escape") {
-      if (!above) close();
+      //: Escape in the zoom field puts its number back (value-field.js); it does not close the viewer.
+      if (!above && !e.target.closest?.(".value-field")) close();
       return;
     }
+    if (copyKey(e, above)) return;
     if (above || typing(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
     const picture = !img.classList.contains("hidden") && doc.classList.contains("hidden");
     const zoomable = picture || !pdfPages.classList.contains("hidden");

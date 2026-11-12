@@ -59,6 +59,7 @@ class Source:
 
 
 SOURCES: tuple[Source, ...] = (
+    Source("entry/private_space.py", consts=("MOVE_OUT_TO_SHARE",)),
     Source("core/backup.py", raises=("FileNotFoundError", "ValueError"), functions=("restore_backup",)),
     Source("core/syntaxcheck.py", raises=("ValueError",), functions=("check",)),
     Source("ai/insights.py", raises=("ValueError",), functions=("confirm", "dismiss")),
@@ -78,17 +79,21 @@ SOURCES: tuple[Source, ...] = (
     Source("core/ocr.py", assigns=("reason", "note"), functions=("engine_status",)),
     Source("core/docview.py", returns=("editability",), keywords=("message",)),
     Source("ai/voice.py", raises=("RuntimeError",), consts=("INSTALL_HINT",), returns=("remove_model",)),
+    Source("ai/diarize.py", consts=("INSTALL_HINT",)),
+    Source("ai/captions_process.py", raises=("HelperError",)),
+    Source("ai/natural_voice.py", raises=("ValueError", "RuntimeError"), consts=("INSTALL_HINT",)),
+    Source("entry/folder_sync.py", raises=("SyncError",)),
+    Source("entry/sync_pull.py", consts=("BUSY",)),
+    Source("entry/sync_segments.py", consts=("SAME_ID",)),
     Source("ai/captions.py", raises=("CaptionsError",), consts=("NO_HELPER_HINT", "NOT_LOCAL_HINT")),
     Source("entry/importer.py", raises=("RuntimeError",), consts=("INSTALL_HINT",)),
+    #: The category functions moved out of manager.py whole (K24/BK11): same messages, new file.
+    Source("entry/manager_categories.py", raises=("ValueError",), functions=("rename_category", "delete_category")),
+    #: The attachment functions moved out of manager.py whole (K24): same messages, new file.
     Source(
-        "entry/manager.py",
+        "entry/manager_purge.py",
         raises=("ValueError", "FileExistsError"),
-        functions=(
-            "validate_attachment_filename",
-            "rename_attachment",
-            "rename_category",
-            "delete_category",
-        ),
+        functions=("validate_attachment_filename", "rename_attachment"),
     ),
     Source("repo/tags.py", raises=("ValueError",), functions=("rename",)),
     Source("entry/tidy.py", raises=("ValueError", "LookupError"), functions=("set_auto", "undo")),
@@ -110,6 +115,7 @@ SOURCES: tuple[Source, ...] = (
     Source("search/searxng_install.py", raises=("SearxngError",), calls=("_reason",)),
     Source("search/searxng_process.py", raises=("SearxngError",)),
     Source("search/searxng_docker.py", raises=("SearxngError",), calls=("_reason",)),
+    Source("ai/consent_store.py", returns=("refusal_for_press",)),
 )
 
 #: (file, text with `{}` for each placeholder) -> why it may break a rule.
@@ -303,6 +309,12 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_bench.py", "NOT_RUNNING"): "a constant in routes_bench.py, checked below",
     ("routes_bench.py", "NO_MODELS"): "a constant in routes_bench.py, checked below",
     ("routes_bench.py", "OFF"): "a constant in routes_bench.py, checked below",
+    ("routes_entries.py", "private_space.MOVE_OUT_TO_SHARE"): "a constant in entry/private_space.py, checked in SOURCES",
+    ("routes_private_spaces.py", "LOCKED_DETAIL"): "a constant in routes_private_spaces.py, checked below",
+    ("routes_hello.py", "NOT_UNLOCKED"): "a constant in routes_hello.py, checked below",
+    ("routes_hello.py", "NO_LOCALHOST"): "a constant in routes_hello.py, checked below",
+    ("routes_hello.py", "REFUSAL"): "api/this_computer.py REFUSAL, one fixed sentence",
+    ("routes_origin_handoff.py", "REFUSAL"): "api/this_computer.py REFUSAL, one fixed sentence",
     ("routes_board_library.py", "detail"): "_fail's callers pass literals and f-strings of counts and names, which collect() checks",
     ("routes_import.py", "str(exc)"): "TooBig from entry/app_import.py, one fixed sentence",
     ("routes_webclip.py", "NOT_A_PAGE"): "a constant in routes_webclip.py, checked below",
@@ -312,6 +324,15 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_captions.py", "str(exc)"): "CaptionsError from ai/captions.py: its hint constants and literal sentences",
     ("routes_recordings.py", "str(exc)"): "RuntimeError from ai/voice.py transcribe",
     ("routes_recordings.py", "voice.INSTALL_HINT"): "ai/voice.py INSTALL_HINT",
+    ("routes_recordings.py", "diarize.INSTALL_HINT"): "ai/diarize.py INSTALL_HINT",
+    ("routes_studio.py", "natural_voice.INSTALL_HINT"): "ai/natural_voice.py INSTALL_HINT",
+    ("routes_voice.py", "natural_voice.INSTALL_HINT"): "ai/natural_voice.py INSTALL_HINT",
+    ("routes_voice.py", "str(error)"): "ValueError from ai/natural_voice.py speak, one fixed sentence",
+    ("routes_folder_sync.py", "folder_sync.last_problem()"): "SyncError from entry/folder_sync.py, sentences written for a person",
+    ("routes_folder_sync.py", "sync_pull.BUSY"): "a constant in entry/sync_pull.py (one sync at a time, B6 decision 14), checked in SOURCES",
+    ("routes_sync.py", "NO_DEVICE"): "a constant in routes_sync.py, checked below",
+    ("routes_sync.py", "sync_pull.BUSY"): "a constant in entry/sync_pull.py (one sync at a time), checked in SOURCES",
+    ("routes_sync.py", "sync_segments.SAME_ID"): "a constant in entry/sync_segments.py (a copied notebook folder, INBOX 1783), checked in SOURCES",
     ("routes_chat.py", "str(exc)"): "ToolError from validate_make_plan and summarise_turns",
     ("routes_documents.py", "str(error)"): "ValueError from core/syntaxcheck.py check",
     ("routes_documents.py", "viewed.message or 'There was no readable text in that file.'"): "ViewedFile.message in core/docview.py",
@@ -319,9 +340,12 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("paging.py", "_BAD"): "a fixed sentence, the constant in api/paging.py",
     ("routes_entries.py", "librarian.AI_FAILED_MESSAGE"): "a constant in ai/librarian.py, checked there",
     ("routes_files.py", "reason"): "core/ocr.py unavailable_reason",
+    ("routes_files_readings.py", "reason"): "core/ocr.py unavailable_reason",  # moved with its route; same source
+    ("routes_files_ocr.py", "reason"): "core/ocr.py unavailable_reason",  # moved with its route; same source
+    ("routes_files_ocr.py", "ocr.unavailable_reason('rapidocr')"): "core/ocr.py unavailable_reason",
+    ("routes_files_ocr.py", "str(exc)"): "ValueError from core/ocr.py set_language",
     ("routes_auth.py", "REFUSAL"): "a fixed sentence, the constant in api/this_computer.py",
     ("routes_map_from_notes.py", "str(exc)"): "ValueError from map_from_note_entry in this module: a fixed sentence with the note id",
-        ("routes_files.py", "ocr.unavailable_reason('rapidocr')"): "core/ocr.py unavailable_reason",
     ("routes_files.py", "edit_message"): "core/docview.py editability",
     ("routes_files.py", "str(exc)"): "ValueError and FileExistsError from entry/manager.py, ValueError from core/ocr.py set_language",
     ("routes_learned.py", "str(exc)"): "ValueError from ai/learning.py record and ai/facts.py set_switches",
@@ -329,7 +353,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_models.py", "str(exc)"): "ValueError from ai/model_manager.py known_feature",
     ("routes_models.py", "reason"): "core/security.py check_backend_url",
     ("routes_models.py", "info['error']"): "ai/model_cards.py inspect_model_name",
-    ("routes_settings.py", "importer.INSTALL_HINT"): "entry/importer.py INSTALL_HINT",
+    ("routes_settings_transfer.py", "importer.INSTALL_HINT"): "entry/importer.py INSTALL_HINT",
     ("routes_tags.py", "str(exc)"): "ValueError from repo/tags.py rename",
     ("routes_tidy.py", "str(exc)"): "ValueError from entry/tidy.py set_auto and LookupError from entry/tidy.py undo",
     ("routes_voice.py", "voice.INSTALL_HINT"): "ai/voice.py INSTALL_HINT",
@@ -340,6 +364,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_webclip.py", "WEB_OFF"): "a constant in routes_webclip.py, checked below",
     ("routes_webclip.py", "str(exc)"): "ClipRefused from core/webclip.py",
     ("routes_maintenance.py", "refusal"): "core/maintenance.py SHORTCUT_REFUSALS, fixed sentences keyed by reason",
+    ("routes_chat.py", "why"): "ai/consent_store.py refusal_for_press, fixed sentences checked in SOURCES",
     ("routes_websearch.py", "str(exc)"): "WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py)",
     # INBOX 1556: the same sentence, now beside its reason code so the panel can offer to start SearXNG.
     ("routes_websearch.py", "detail"): "str(exc) of WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py), with exc.reason as `code`",
@@ -395,7 +420,7 @@ def test_no_route_literal_tells_the_person_to_run_a_command():
     assert not bad, f"a route detail carries developer vocabulary: {bad}"
 
 
-@pytest.mark.parametrize("module, name", [("routes_webclip.py", "WEB_OFF"), ("routes_webclip.py", "NOT_A_PAGE"), ("routes_mentions.py", "LINK_UNSAFE_WHY"), ("routes_bench.py", "OFF"), ("routes_bench.py", "BUSY"), ("routes_bench.py", "NO_MODELS"), ("routes_bench.py", "NOT_RUNNING")])
+@pytest.mark.parametrize("module, name", [("routes_webclip.py", "WEB_OFF"), ("routes_webclip.py", "NOT_A_PAGE"), ("routes_mentions.py", "LINK_UNSAFE_WHY"), ("routes_bench.py", "OFF"), ("routes_bench.py", "BUSY"), ("routes_bench.py", "NO_MODELS"), ("routes_bench.py", "NOT_RUNNING"), ("routes_private_spaces.py", "LOCKED_DETAIL"), ("routes_hello.py", "NOT_UNLOCKED"), ("routes_hello.py", "NO_LOCALHOST"), ("routes_sync.py", "NO_DEVICE")])
 def test_a_route_constant_reads_as_a_sentence(module, name):
     tree = ast.parse((API / module).read_text(encoding="utf-8"))
     texts = []
@@ -506,15 +531,15 @@ def test_a_clip_that_cannot_be_transcribed_does_not_show_the_exception(client, m
 
 
 def test_a_document_that_cannot_be_converted_does_not_show_the_exception(client, monkeypatch, caplog):
-    from tessellate.api import routes_settings
+    from tessellate.api import routes_settings_transfer
 
     caplog.set_level("WARNING")
-    monkeypatch.setattr(routes_settings.importer, "markitdown_available", lambda: True)
+    monkeypatch.setattr(routes_settings_transfer.importer, "markitdown_available", lambda: True)
 
     def broken(_path):
         raise ValueError("corrupt zip at offset 0x2a")
 
-    monkeypatch.setattr(routes_settings.importer, "convert_to_markdown", broken)
+    monkeypatch.setattr(routes_settings_transfer.importer, "convert_to_markdown", broken)
     response = client.post("/import/document", files={"file": ("deck.pptx", b"junk", "application/x")})
     assert response.status_code == 422
     assert "corrupt zip" not in response.json()["detail"]

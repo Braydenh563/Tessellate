@@ -710,6 +710,7 @@
     S.size = Math.max(1, Math.min(48, Math.round(n)));
     S.el.size.value = String(S.size);
     S.el.sizeValue.textContent = String(S.size);
+    window.valueField?.refresh(S.root);
     if (S.text) S.text.input.style.fontSize = `${textPx() * S.zoom}px`;
   }
 

@@ -9,8 +9,9 @@ from __future__ import annotations
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.core.database import Category
+from tessellate.core.database import Category, Entry
 from tessellate.entry import manager
+from tessellate.entry import manager_categories
 
 from ._common import ToolError
 
@@ -48,7 +49,7 @@ def _find_category(session: Session, name: str) -> Category:
             select(Category).where(func.lower(Category.name) == wanted.lower())
         )
     if found is None:
-        existing = [c["name"] for c in manager.all_categories(session)]
+        existing = [c["name"] for c in manager_categories.all_categories(session)]
         known = ", ".join(f"“{n}”" for n in existing[:12])
         raise ToolError(
             f"There is no category called “{wanted}”. "
@@ -103,7 +104,7 @@ def _rename_category(session: Session, args: dict) -> dict:
         raise ToolError("A category needs a name.")
     old_name = category.name
     try:
-        result = manager.rename_category(session, category.id, new_name)
+        result = manager_categories.rename_category(session, category.id, new_name)
     except ValueError as exc:
         raise ToolError(str(exc)) from exc
 
@@ -153,14 +154,17 @@ def _merge_categories(session: Session, args: dict) -> dict:
             f"“{source.name}” and “{target.name}” are in different spaces, so they can't be merged."
         )
     source_name, target_name = source.name, target.name
+    ids = _live_ids(session, source.id)
+    description = source.description or ""
     try:
-        result = manager.rename_category(session, source.id, target_name)
+        result = manager_categories.rename_category(session, source.id, target_name)
     except ValueError as exc:
         raise ToolError(str(exc)) from exc
     return {
         "from": source_name,
         "into": target_name,
         "notes_moved": result["moved"],
+        "undo": _filed_back(source_name, ids, description),
         "label": (
             f"ph:folder Merged “{source_name}” into “{target_name}” "
             f"({result['moved']} notes moved)"
@@ -168,18 +172,40 @@ def _merge_categories(session: Session, args: dict) -> dict:
     }
 
 
+def _live_ids(session: Session, category_id: int) -> list[int]:
+    """Every note in a category, binned ones too: what an Undo of a delete or a merge files back (a binned
+    note stays in the bin but returns to its category)."""
+    return list(session.scalars(select(Entry.id).where(Entry.category_id == category_id).order_by(Entry.id)))
+
+
+def _filed_back(name: str, ids: list[int], description: str = "") -> dict:
+    """The Undo of a category that went away: file the same notes under its name (made when new, with its
+    description), or just make it."""
+    if ids:
+        arguments: dict = {"ids": ids, "category": name, "include_binned": True}
+        if description:
+            arguments["description"] = description
+        return {"tool": "move_notes", "arguments": arguments}
+    arguments = {"name": name}
+    if description:
+        arguments["description"] = description
+    return {"tool": "create_category", "arguments": arguments}
+
+
 def _delete_category(session: Session, args: dict) -> dict:
     """Remove a category. Its notes survive as Uncategorised.
 
     Deleting a category never deletes notes, an organising action that could
     destroy writing is not what anyone means by "delete category". Still marked
-    destructive, so the user approves it before it runs: it is not reversible
-    from here, because nothing records which notes were moved out.
+    destructive, so the user approves it before it runs; Undo files the notes
+    it held back under the name.
     """
     category = _find_category(session, str(args.get("name") or ""))
     name = category.name
+    ids = _live_ids(session, category.id)
+    description = category.description or ""
     try:
-        result = manager.delete_category(session, category.id)
+        result = manager_categories.delete_category(session, category.id)
     except ValueError as exc:
         raise ToolError(str(exc)) from exc
     return {
@@ -189,6 +215,8 @@ def _delete_category(session: Session, args: dict) -> dict:
             f"ph:folder Deleted the category “{name}”: {result['moved']} "
             f"note{'' if result['moved'] == 1 else 's'} kept, now Uncategorised"
         ),
+        #: The notes it held are named before they move, so Undo files them back, with the description.
+        "undo": _filed_back(name, ids, description),
     }
 
 

@@ -177,7 +177,7 @@ def test_a_skill_step_that_runs_out_gets_no_wrap_up(monkeypatch, app_state):
 def test_the_tools_stream_retries_a_503_once(openai_client, capture_post):
     """llama-server answers 503 while it loads a model. `chat` and
     `chat_stream` retried once; the agent's own path ended the turn."""
-    from fakes_http import FakeResponse, sse
+    from tests.fakes_http import FakeResponse, sse
 
     capture_post.queue.extend([
         FakeResponse(status=503, text="Loading model"),
@@ -190,7 +190,7 @@ def test_the_tools_stream_retries_a_503_once(openai_client, capture_post):
 
 
 def test_a_second_5xx_is_still_an_error(openai_client, capture_post):
-    from fakes_http import FakeResponse
+    from tests.fakes_http import FakeResponse
 
     from tessellate.ai.provider import ProviderError
 
@@ -323,7 +323,7 @@ def test_a_claimed_note_is_asked_for_and_then_made(monkeypatch, app_state):
     monkeypatch.setattr(agent.tools, "execute_tool", lambda s, n, a, **k: ran.append(n) or {"id": 5, "label": "made"})
     fake = _Claims()
     events = list(agent.run_agent(_Session(), "Make a note: buy oat milk", [], _Models(), fake))
-    assert ran == ["create_note"]
+    assert ran == [] and [e["name"] for e in events if e.get("type") == "confirm"] == ["create_note"]  # parked for consent (owner, 2026-11-10)
     nudge = fake.sent[1][-1]["content"]
     assert "saved a note" in nudge and "create_note" in nudge
     answer = "".join(e.get("delta", "") for e in events if e.get("type") == "answer")
@@ -364,7 +364,7 @@ class _SmallModels:
 
 
 def _small_turn(monkeypatch, openai_client, capture_post, question):
-    from fakes_http import FakeResponse, sse
+    from tests.fakes_http import FakeResponse, sse
 
     capture_post.queue.extend([
         FakeResponse(lines=sse({"choices": [{"delta": {"tool_calls": [
@@ -394,7 +394,7 @@ def test_a_question_is_never_forced_into_a_call(monkeypatch, app_state, openai_c
 
 
 def test_a_server_that_refuses_tool_choice_is_asked_again_without_it(openai_client, capture_post):
-    from fakes_http import FakeResponse, sse
+    from tests.fakes_http import FakeResponse, sse
 
     capture_post.queue.extend([
         FakeResponse(status=400, text="unknown field tool_choice"),
@@ -410,13 +410,13 @@ def test_a_server_that_refuses_tool_choice_is_asked_again_without_it(openai_clie
 
 
 def _prose(text):
-    from fakes_http import FakeResponse, sse
+    from tests.fakes_http import FakeResponse, sse
 
     return FakeResponse(lines=sse({"choices": [{"delta": {"content": text}}]}))
 
 
 def _call(name, arguments):
-    from fakes_http import FakeResponse, sse
+    from tests.fakes_http import FakeResponse, sse
 
     return FakeResponse(lines=sse({"choices": [{"delta": {"tool_calls": [
         {"index": 0, "id": "a", "function": {"name": name, "arguments": arguments}}
@@ -437,7 +437,7 @@ def test_a_forced_round_that_comes_back_as_prose_is_asked_once_more(monkeypatch,
     monkeypatch.setattr(agent.tools, "execute_tool", lambda s, n, a, **k: ran.append(n) or {"id": 1, "label": "made"})
     events = list(agent.run_agent(_Session(), "Make a note: buy oat milk and eggs", [], _SmallModels(), openai_client))
     sent = [request["json"] for request in capture_post.sent]
-    assert ran == ["create_note"]
+    assert ran == [] and [e["name"] for e in events if e.get("type") == "confirm"] == ["create_note"]  # parked for consent (owner, 2026-11-10)
     assert sent[0].get("tool_choice") == "required"
     assert sent[1].get("tool_choice") == "required", "the retry is forced again"
     assert "tool_choice" not in sent[2], "and only the retry"

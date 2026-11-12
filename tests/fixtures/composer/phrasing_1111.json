@@ -1,0 +1,481 @@
+{
+ "about": "Real phrasings for the composer (CHAT_PLAN 'Phrasing tests from real conversations'): user turns from CLINC150 (CC BY 3.0) small talk, out-of-scope, reminder, to-do and calendar acts, PTO and meeting questions; WildChat (ODC-BY) general-knowledge questions; Schema-Guided Dialogue (CC BY-SA 4.0) alarm, weather and events requests. Names are replaced. Each is asked through /chat/stream with no model over voice_1110.json's notebook at its fixed clock. Raw sets are not in the repo; see SOURCES.md.",
+ "classes": {
+  "greeting": {
+   "kind": "social",
+   "source": "CLINC150 plus, intent greeting",
+   "phrases": [
+    "how's everything",
+    "ahoy hoy",
+    "hello there!",
+    "is everything going okay",
+    "good day",
+    "yo, hows it going",
+    "ai how are you doing today",
+    "hi how are you",
+    "why hello",
+    "good evening",
+    "is everything ok with you",
+    "what's going on",
+    "how are you this fine day",
+    "hello, what's up"
+   ]
+  },
+  "goodbye": {
+   "kind": "social",
+   "source": "CLINC150 plus, intent goodbye",
+   "phrases": [
+    "syonara, ai device!",
+    "nice to speak with you",
+    "see ya later",
+    "i am glad we got to talk again, see you soon",
+    "great chat, talk to you later",
+    "it is time to say goodbye",
+    "it was nice chatting with you",
+    "later gator!",
+    "it was nice to speak with you",
+    "talk to you later!",
+    "it was great to have this conversation with you",
+    "good bye my friend",
+    "it was enjoyable to chat with you",
+    "nice to see you again"
+   ]
+  },
+  "thank_you": {
+   "kind": "social",
+   "source": "CLINC150 plus, intent thank_you",
+   "phrases": [
+    "you have been a big help, thank you so much",
+    "much obliged",
+    "i thank you",
+    "good looking out",
+    "why thank you",
+    "thank you for the answer",
+    "i have much gratitude for your help",
+    "i appreciate it",
+    "thank you for the information",
+    "you were so kind to do that",
+    "really great!",
+    "thanks for that!",
+    "i can not thank you enough",
+    "you're the best!"
+   ]
+  },
+  "tell_joke": {
+   "kind": "social",
+   "source": "CLINC150 plus, intent tell_joke",
+   "phrases": [
+    "please, recite to me some good one liners",
+    "what's a good joke",
+    "make me laugh",
+    "i'd like you to tell me a joke",
+    "what funny jokes do you know",
+    "tell me something funny about politics",
+    "would you like to tell me a joke",
+    "tell me a joke about cows",
+    "do you know any good jokes about lawyers",
+    "i would like to hear a funny joke",
+    "make me giggle",
+    "tell me a joke about cats",
+    "tell me something funny about cats",
+    "i would love to hear a joke about the dmv"
+   ]
+  },
+  "what_can_i_ask_you": {
+   "kind": "social",
+   "source": "CLINC150 plus, intent what_can_i_ask_you",
+   "phrases": [
+    "what things can you help me with exactly",
+    "what sorts of subjects are you well versed in",
+    "what sorts of subjects do you know about",
+    "what information can i ask you",
+    "what are my list of commands",
+    "what are you able to help me with",
+    "what's the sort of thing i should ask",
+    "what questions am i allowed to ask",
+    "how can i get you to help me",
+    "what subjects are you familiar with",
+    "tell me the subjects you're aware of",
+    "what kinds of things would you be able to help me with",
+    "i wanna know the types of subjects are you familiar with",
+    "are you familiar with any types of subjects"
+   ]
+  },
+  "are_you_a_bot": {
+   "kind": "social",
+   "source": "CLINC150 plus, intent are_you_a_bot",
+   "phrases": [
+    "may i know if you are a real person or an ai",
+    "would you consider yourself to be a bot",
+    "are you real or fake",
+    "are you a real person or an ai",
+    "are you actually a bot",
+    "are you real or automated",
+    "are you a real person or a computer",
+    "are you really an actual human being",
+    "are you ai",
+    "how are you classified, as a human or a computer",
+    "what are you, a bot or human",
+    "are you an ai or person",
+    "are you a machine",
+    "are you an actual person, or ai"
+   ]
+  },
+  "what_is_your_name": {
+   "kind": "social",
+   "source": "CLINC150 plus, intent what_is_your_name",
+   "phrases": [
+    "what's your full name",
+    "what name do you prefer",
+    "tell me your full name",
+    "is there a particular name i should call you",
+    "what would your name be",
+    "please tell me your name",
+    "who gave you your name",
+    "what did your friends call you",
+    "how can i get your attention",
+    "what do they call you",
+    "i wanna know your name",
+    "provide the name i should use to refer to you",
+    "i want to know your name",
+    "could you tell me your name"
+   ]
+  },
+  "who_do_you_work_for": {
+   "kind": "social",
+   "source": "CLINC150 plus, intent who_do_you_work_for",
+   "phrases": [
+    "who is your employeer",
+    "what is the name of your boss",
+    "are you working for another person or entity",
+    "what's your boss' name",
+    "your boss is who",
+    "are you employed by someone",
+    "who is it u work for",
+    "who is your employer",
+    "do you have another job",
+    "don't you work for your self",
+    "is there someone else you work for",
+    "who would you say you are employed by",
+    "for what person do you work",
+    "what company do you toil for"
+   ]
+  },
+  "how_old_are_you": {
+   "kind": "social",
+   "source": "CLINC150 plus, intent how_old_are_you",
+   "phrases": [
+    "what is your birthday again",
+    "when did you come to exist",
+    "you are how old now",
+    "what would your age be",
+    "how many years have you been on",
+    "i am wanting to know how old you are",
+    "i want to know how old you are",
+    "tell me your age",
+    "what's your age again",
+    "how old are you",
+    "ai, how many months old are you",
+    "what age is the ai",
+    "can you tell me when you were born",
+    "how long have you been around, ai"
+   ]
+  },
+  "oos": {
+   "kind": "oos",
+   "source": "CLINC150 plus, intent oos",
+   "phrases": [
+    "how much is an overdraft fee for bank",
+    "what is the formula for the circumference of a circle",
+    "how many sides are in a hexagon",
+    "how long is winter",
+    "when was the theory of evolution first considered",
+    "are you able to answer algebra equations",
+    "which marvel character has appeared in the most movies",
+    "what is the highest earning game on atari",
+    "how much money does radiohead earn a year",
+    "who is the current captain of this ship",
+    "what does it mean to be an alpha male",
+    "show me all contacts",
+    "why can't you divide by zero",
+    "can you tell me who else is on my account",
+    "how do i change my flight",
+    "how do i find a common denominator",
+    "is the shutdown over",
+    "if you're dishonorably discharged, are you still a veteran",
+    "how do you know if a mushroom is edible",
+    "where are the oscar's held",
+    "what year was the first pokemon game released",
+    "how long do chipmunks usually live",
+    "is it difficult to learn a semitic language",
+    "which sport is the most fun"
+   ]
+  },
+  "reminder_update": {
+   "kind": "act",
+   "source": "CLINC150 plus, intent reminder_update",
+   "phrases": [
+    "remind me to call my mother saturday morning",
+    "i need a reminder set for signing up for the conference",
+    "can you set me a reminder",
+    "will you add a reminder for me",
+    "i'd like to have a reminder made",
+    "set a reminder",
+    "i need a reminder to remind me to do something",
+    "set a reminder to go dress shopping",
+    "set a reminder to feed the dogs",
+    "remind me to do this in awhile",
+    "set reminder for tomorrow to eat",
+    "set up a reminder to give the cat her flea medicine",
+    "create a reminder to pay taxes on monday",
+    "make me a reminder that tommorow is trash day"
+   ]
+  },
+  "todo_list_update": {
+   "kind": "act",
+   "source": "CLINC150 plus, intent todo_list_update",
+   "phrases": [
+    "i need to add the chore of vacuuming to my task list",
+    "add clean bathroom to my to do list",
+    "put clean stovetop on my list of reminders",
+    "hey just take off everything from my todo list",
+    "i want you to add cleaning the toilet to my to do list",
+    "i need to add dusting the bookshelf to my to do list",
+    "can you check washing the dishes off on my to do list",
+    "put clean refrigerator on my spring cleaning to do list",
+    "please also list wash laundry on my to do list",
+    "add dishes to my list",
+    "on my to do list, i need cleaning added",
+    "help remind me that i need to add laundry to my list of housework",
+    "add mop bathroom to my to do list",
+    "clear out my entire todo list"
+   ]
+  },
+  "calendar_update": {
+   "kind": "act",
+   "source": "CLINC150 plus, intent calendar_update",
+   "phrases": [
+    "add my dentist appointment to the calendar",
+    "i no longer want this event in my calendar",
+    "remove celebrate anniversary from my calendar",
+    "clear my calendar for this friday",
+    "delete my golf tournament event from tomrrow",
+    "remove the recurring training meeting events off my calendar",
+    "i must add farm trip to my calendar for friday",
+    "i need to remove fishing from my calendar for soccer",
+    "add farm trip to my calendar for friday",
+    "take my dinner plans off my calendar for tomorrow",
+    "i need to put my appointment for tomorrow on my calendar",
+    "lunch with my friend at noon today",
+    "take lunch with my friend off of my calendar",
+    "remove meeting with my boss from the calendar"
+   ]
+  },
+  "meeting_schedule": {
+   "kind": "nothing",
+   "source": "CLINC150 plus, intent meeting_schedule",
+   "phrases": [
+    "when is the meeting with my boss scheduled for",
+    "when is that meeting with my boss",
+    "what is the meeting schedule today",
+    "share my meeting schedule with me",
+    "go over my meeting schedule with me please",
+    "meetings today",
+    "do i have any meeting to go to today",
+    "what's on my meeting schedule today",
+    "are there any meetings i have today",
+    "how many meetings do i have today between noon and one",
+    "are any meetings scheduled for today",
+    "is mr ceo waiting me now",
+    "do you know if i have any meetings set up with my boss today",
+    "tell me what my day looks like today in terms of meetings"
+   ]
+  },
+  "pto_balance": {
+   "kind": "nothing",
+   "source": "CLINC150 plus, intent pto_balance",
+   "phrases": [
+    "what is my vacation schedule look like",
+    "how many vacation days do i have remaining, please",
+    "do i have any vacation time left",
+    "how many vacation hours do i have",
+    "how many vacation days have i accrued",
+    "what's the amount of pto i have left",
+    "how much pto do i have left",
+    "check days of pto",
+    "hoe many vacation days are left for me",
+    "i have how many vacation days left this year",
+    "what is my remaining pto days",
+    "how many days of vacation do i have",
+    "tell me how many vacation days i have",
+    "how much paid time off do i have"
+   ]
+  },
+  "pto_request_status": {
+   "kind": "nothing",
+   "source": "CLINC150 plus, intent pto_request_status",
+   "phrases": [
+    "have they approved my vacation request yet",
+    "have i been approved for vacation yet",
+    "is my day off request approved",
+    "have they recieved my vacation request and approved it",
+    "has my supervisor approved my vacation",
+    "what is the status for what i requested for my vacation",
+    "has my vacation time been signed off on",
+    "has my request for vacation time been okayed",
+    "do you know if my vacation request went through",
+    "has my vacation request been approved",
+    "could you tell me the status of my vacation request",
+    "has my day off request been approved or denied yet",
+    "any status update on my day off request",
+    "has my day off request been looked at yet"
+   ]
+  },
+  "calendar": {
+   "kind": "notes",
+   "source": "CLINC150 plus, intent calendar",
+   "phrases": [
+    "what items do i have on my calendar for easter",
+    "did i had my wife and mine anniversary to my calendar",
+    "does the calendar already have easter noted on it",
+    "what do i have planned on my calendar for next sunday",
+    "show me my calendar for next sunday",
+    "what is on my calendar next sunday",
+    "when am i next having a meeting in december",
+    "do i have any appointments on tuesday",
+    "is there an event titled anniversary dinner on my calendar",
+    "check my calendar to see if an event called final exams exists",
+    "what's on my calendar for tuesday",
+    "what is on my schedule for tomorrow",
+    "search my calendar for birthday",
+    "tell me what's on the calendar for saturday"
+   ]
+  },
+  "reminder": {
+   "kind": "notes",
+   "source": "CLINC150 plus, intent reminder",
+   "phrases": [
+    "tell me my reminders",
+    "is mop the floor already in my reminders",
+    "read what i added to the reminder list",
+    "is respond to the professor's email on my list of reminders",
+    "please go through my reminder list and tell me what's on it",
+    "can you remind me what i was trying to remember",
+    "what's on my reminder list today",
+    "please read my list of reminders",
+    "can you repeat my list back to me",
+    "let me know what is on my reminder list",
+    "what did i list in my reminders",
+    "what were those things i was trying to remember",
+    "reminders of my list is what",
+    "can you read my reminder list, please"
+   ]
+  },
+  "todo_list": {
+   "kind": "notes",
+   "source": "CLINC150 plus, intent todo_list",
+   "phrases": [
+    "what are the things that i have for today",
+    "is cleaning the toilet on my to-do list",
+    "please read my todo list",
+    "read back my to do list",
+    "please read back to me my to do list",
+    "does my errand list have goodwill on it",
+    "what do i have on my need to do list",
+    "how many chores are on my todo list",
+    "what tasks have i yet to complete off my list",
+    "please tell me all items on my todo list",
+    "i wonder what my to-do list looks like for today",
+    "please remind me of the tasks on my to do list",
+    "i need to know what tasks are on my to-do list",
+    "please inform me of what tasks i have listed on my to do list"
+   ]
+  },
+  "date": {
+   "kind": "date",
+   "source": "CLINC150 plus, intent date",
+   "phrases": [
+    "i would like to know what today's date is",
+    "i would like to know tomorrow's date",
+    "what day is it gonna be in twenty-one days",
+    "what date is it today",
+    "what's the date tomorrow, please",
+    "today's date is what",
+    "today's date is what exactly",
+    "i'd like to know the date tomorrow",
+    "what day is it today",
+    "what is today",
+    "what day of the week is it",
+    "tell me what the date is today",
+    "tomorrow, what will the date be",
+    "calender says tomorrow is"
+   ]
+  },
+  "alarm_show": {
+   "kind": "oos",
+   "phrases": [
+    "What alarms do I have set.",
+    "Tell me my alarms.",
+    "Can you show me my alarms?",
+    "I want to see my alarms.",
+    "Let me see my alarms please.",
+    "Could you tell me what alarms I have on?",
+    "Is that the only alarm I have?",
+    "Do I have any more alarms?",
+    "What are the alarm times?",
+    "Hi there, what alarms do I have that are currently active?"
+   ]
+  },
+  "alarm_set": {
+   "kind": "act",
+   "phrases": [
+    "I need to set an alarm.",
+    "Please can I add a new alarm.",
+    "Can you add an alarm for me?",
+    "I would like to put in another alarm.",
+    "Can you add an alarm for four in the evening?"
+   ]
+  },
+  "weather": {
+   "kind": "oos",
+   "phrases": [
+    "Could you please inform me about the weather?",
+    "Can you help me check the weather?",
+    "Please check the weather.",
+    "Can you tell me if it is going to rain?",
+    "I would like weather information.",
+    "Give me a weather report for tomorrow.",
+    "I'd like to know the weather forecast please.",
+    "Will you check the weather?",
+    "I want to see what the weather will be on Sunday this week."
+   ]
+  },
+  "events": {
+   "kind": "oos",
+   "phrases": [
+    "Please help me find an event.",
+    "I am looking for events, please.",
+    "Could you show me some interesting events?",
+    "Can you find me some interesting events?",
+    "Are there any interesting events?",
+    "Help me find some events I could go to",
+    "I'd like to find events.",
+    "I want to book tickets for an event.",
+    "I would like to purchase event tickets."
+   ]
+  },
+  "general_knowledge": {
+   "kind": "oos",
+   "phrases": [
+    "How many feet are in a mile?",
+    "How much wood would a woodchuck chuck, if a woodchuck could chuck wood?",
+    "How many terms can a filipino senator have",
+    "When did Pluto stop becoming a planet?",
+    "When did your training finish?",
+    "How many schools of genetics are there in the UK ?",
+    "how many r in strawberry",
+    "how much would it cost to start a cafe in estonia"
+   ]
+  }
+ }
+}

@@ -114,6 +114,39 @@ function settingsScroller(name) {
   return null;
 }
 
+//: **A picked row keeps a row of room** (INBOX 1696 e, the owner: a row picked
+//: "right at the bottom in the settings sidebar and other sidebars" should
+//: "scroll a little down to give comfortable room for the selected item unless
+//: it is the last item"). Measured before at 1440x560: the Settings nav's
+//: bottom row stayed 12px under the edge (and 1440x260, a notes sidebar row
+//: 3.3px above it). The row is brought to its own height inside its sidebar's edge (half the
+//: sidebar at most), with the box's own `scrollTop`, never `scrollIntoView`,
+//: which walks every ancestor; the last and first rows stop at the end, as
+//: the scroll clamps. A property of menus.js's `nearestScrollParent`, not a
+//: name in the shared scope (tests/test_global_scope_ratchet.py), and here, a
+//: boot script past the gzip budget's eager set (tests/test_static_compression.py:
+//: notes-list.js had 1 byte to spare). DESIGN.md, the row-room recipe.
+nearestScrollParent.reveal = function revealRow(row, box = row && nearestScrollParent(row), smooth = false) {
+  if (!row?.isConnected || !box) return 0;
+  //: A list the page itself scrolls has no sidebar edge to keep room at.
+  if (box === document.documentElement) return row.scrollIntoView({ block: "nearest" }), 0;
+  //: The edge seen: a sidebar taller than the window ends at the window.
+  const rect = box.getBoundingClientRect();
+  const have = { top: Math.max(rect.top, 0), bottom: Math.min(rect.bottom, innerHeight) };
+  const at = row.getBoundingClientRect();
+  if (have.bottom <= have.top || !at.height) return 0;
+  const room = Math.min(at.height, Math.max(0, (have.bottom - have.top - at.height) / 2));
+  const delta = at.bottom > have.bottom - room ? at.bottom - have.bottom + room : at.top < have.top + room ? at.top - have.top - room : 0;
+  //: Whole pixels away from the row, as `scrollTop` rounds.
+  if (Math.abs(delta) >= 1) box.scrollTo({ top: box.scrollTop + (delta > 0 ? Math.ceil(delta) : Math.floor(delta)), behavior: smooth ? "smooth" : "auto" });
+  return delta;
+};
+//: The notes sidebar: a pick (a press, or Enter, which presses) redraws the list inside the row's own click
+//: (`renderSidebar`), so on the way back up the redrawn current row is brought in.
+onSurface("notes", () => {
+  $("category-list")?.addEventListener("click", (event) => nearestScrollParent.reveal(event.currentTarget.querySelector('li[aria-current="true"]')));
+});
+
 function showSettingsSection(name) {
   //: The companion's one-time nudge (avatars.js) may show when Appearance
   //: is first opened.
@@ -145,6 +178,7 @@ function showSettingsSection(name) {
   for (const section of SETTINGS_SECTIONS) {
     $(`settings-${section}`).classList.toggle("hidden", section !== name);
   }
+  enhanceAllSelects($(`settings-${name}`));
   ensureSettingsPaneTitle($(`settings-${name}`), name);
   ensureSettingsFoldAll($(`settings-${name}`));
   for (const button of document.querySelectorAll("#settings-nav button")) {
@@ -157,22 +191,27 @@ function showSettingsSection(name) {
   //: A long section gets its own index (settings-find.js, loaded on the first
   //: open of Settings).
   if (typeof settingsIndexWatchSection === "function") settingsIndexWatchSection(name);
+  //: The chosen pane's row keeps a row of room in the sidebar (INBOX 1696 e), after its "On this page" list is drawn.
+  //: A frame on: the section was just switched, and this walk's style reads (`nearestScrollParent`) plus two
+  //: rects laid the window out inside the press (54ms style and 14 layout at 4x, INBOX 1111).
+  afterFrames(() => nearestScrollParent.reveal(document.querySelector(`#settings-nav button[data-section="${name}"]`)), 1);
   updatePeekAvailability(name);
   // The log stream is the only section that holds a connection open, so it is
   // the only one that has to be told it is no longer being looked at.
   if (name !== "logs") closeLogs();
   if (name === "logs") renderLogs();
-  if (["preferences", "general", "searchindex", "personas"].includes(name)) renderPrefs().catch(() => {});
+  const read = ["preferences", "general", "searchindex", "personas"].includes(name) && renderPrefs().catch(() => {});
   if (name === "websearch") renderWebSearch().catch(() => {});
-  if (name === "personas") renderPersonas().catch(() => {});
+  //: Personas draws from the read above, not a second GET of the same document (INBOX 1696 f).
+  if (name === "personas") renderPersonas(read).catch(() => {});
   if (name === "skills") renderSkillSettings();
   if (name === "templates") renderTemplateSettings();
   if (name === "tools") renderToolSettings();
   if (name === "memory") renderMemorySettings().catch(() => {});
   //: The Learned section lives in settings-controls.js (lazy, 2026-11-02, eager gzip headroom).
   if (name === "learned") ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
-  if (name === "tasks") renderAutonomousReview().catch(() => {});
   if (name === "tasks") {
+    renderAutonomousReview().catch(() => {});
     apiJson("/preferences")
       .then((prefs) => {
         prefsCache = prefs;
@@ -194,8 +233,8 @@ function showSettingsSection(name) {
         $("pref-smart-model-routing").checked = prefs.smart_model_routing_enabled ?? true;
       })
       .catch(() => {});
+    renderModelBench();
   }
-  if (name === "models") renderModelBench();
   if (name === "general") {
     renderUsage();
     //: Search suggestions are kept on this device (search-suggest.js).
@@ -223,9 +262,11 @@ function showSettingsSection(name) {
   if (name === "searchindex") renderEmbedChoices();
   //: The Atlas row's starter chips, with the chat's bundle (help-chat.js).
   if (name === "help") renderAtlasStarters();
-  if (name === "about") renderHealthBlock().catch(() => {});
   //: Settings, About, Maintenance: settings-controls.js, the window's lazy file.
-  if (name === "about") ensureModule("settingsControls").then(() => renderMaintenance());
+  if (name === "about") {
+    renderHealthBlock().catch(() => {});
+    ensureModule("settingsControls").then(() => renderMaintenance());
+  }
   //: The "Last run" lines on this section's controls, and the Background jobs
   //: overview (INBOX 438): one fetch fills every line on the page.
   refreshJobRuns();
@@ -278,7 +319,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   }
   overlayReturnFocus = document.activeElement;
   window.uiSettlingUntil = performance.now() + 400;
-  settingsBodyBuild();
+  surfaceBuild("settings");
   //: **The window's own listeners arrive before the window does** (the gzip
   //: budget, settings-controls.js). Only the first open waits, and only for
   //: that file: once its marker constant exists this stays synchronous, so a
@@ -297,12 +338,16 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: reproduced, so whatever path changed the look without a repaint, the
   //: window never opens on a stale one.
   paintUserMarks();
-  $("settings-close").focus();
+  //: A frame on: focusing a button in a window just un-hidden lays the whole window out inside
+  //: the press (60ms style + 12 layout at 4x), and the reads after it laid out a second time.
+  afterFrames(() => $("settings-close").focus(), 1);
   //: The version alone: "46 entries loaded" was a debugging line (the
   //: client's cache size, drafts included) sitting beside the Health
   //: section's own count of the same thing, and the two disagreed.
   const aboutHealth = await apiJson("/health").catch(() => null);
-  $("about-version").textContent = aboutHealth?.version ? `Version ${aboutHealth.version}` : "Version not available right now";
+  //: Where it is served from, read from the page itself so it is the address in use (the owner, 2026-11-07).
+  const served = `Running at ${location.host}${location.port ? "" : " (the default port)"}.`;
+  $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."} ${served}`;
   //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
   afterCharacters(() => {
     const { mode, reason } = nameMarkBuddyMotion();
@@ -681,14 +726,15 @@ function filterSettings(term) {
   // The first match is shown rather than leaving the pane on what it was
   // (dog2 item 18: "phone" listed results over the Models pane).
   const first = settingsFound ? findSettings(query, 1)[0]?.section : buttons.find((b) => !b.classList.contains("hidden"))?.dataset.section;
-  if (first) showSettingsSection(first);
+  if (first && first !== currentSettingsSection) showSettingsSection(first);
 }
 
 function closeSettingsModal() {
   //: The address and the title go back to the tab under it (router.js).
   ensureModule("quickNote").then(() => routerSettle());
   const search = $("settings-search");
-  if (search) {
+  //: Only a box that was typed in needs putting back (perf audit 1108 P12: the empty pass was a 396 ms task at 4x).
+  if (search?.value) {
     search.value = "";
     filterSettings("");
   }
@@ -699,9 +745,10 @@ function closeSettingsModal() {
   //: away with the window: closing Settings with one open left the list
   //: floating over the page (measured, scratchpad/ui-sweeps/menus.js).
   closeActionMenus();
-  $("settings-modal").classList.add("hidden");
+  //: Focus first, then hide (INBOX 1726: 123ms, 105 forced layout at 4x): the reads find a clean page.
   focusBackTo(overlayReturnFocus, "#settings-btn");
   overlayReturnFocus = null;
+  $("settings-modal").classList.add("hidden");
 }
 
 // --- logs viewer (Wave A) ---------------------------------------------------------
@@ -892,12 +939,6 @@ function activeLogContainer() {
   return $(logView === "terminal" ? "log-terminal" : "log-list");
 }
 
-function nearLogBottom() {
-  const list = activeLogContainer();
-  // 40px of slack: "close enough to the bottom that you meant to be there".
-  return list.scrollHeight - list.scrollTop - list.clientHeight < 40;
-}
-
 function scrollLogToBottom() {
   const list = activeLogContainer();
   list.scrollTop = list.scrollHeight;
@@ -1036,7 +1077,6 @@ function renderActiveLogView() {
   if (logView === "terminal") renderLogTerminal();
   else renderLogList();
 }
-
 function setLogLive(state, detail) {
   const pill = $("log-live");
   setLabel(pill, detail);
@@ -1118,7 +1158,7 @@ async function startLogStream() {
           logRecords.push(serverLogRecord(event.record));
           bumpLogErrorBadge(event.record);
           sortLogRecords();
-          if (logScreenOpen) renderActiveLogView();
+          if (logScreenOpen) renderActiveLogView.soon();
         } else if (event.type === "ping") {
           logStreamCursor = event.cursor || logStreamCursor;
         } else if (event.type === "reconnect") {
@@ -1190,18 +1230,6 @@ function closeLogs() {
   // abort returns early from there, so the pill would still read "● live"
   // with nothing behind it, a status that lies is worse than none.
   setLogLive("paused", "paused");
-}
-
-async function copyLogs() {
-  const shown = logRecords.filter(logMatchesFilters);
-  if (!shown.length) {
-    toast("Nothing to copy: the filters above are hiding every record.", "info");
-    return;
-  }
-  const text = shown.map(logRecordText).join("\n");
-  if (await copyToClipboard(text)) {
-    toast(`Copied ${nounCount(shown.length, "record")}.`);
-  }
 }
 
 // The button copies what is ON SCREEN, not the whole buffer, so it has to say
@@ -1474,12 +1502,6 @@ function contrastOn() {
   return prefs.get("contrast", null) === "on";
 }
 
-function applyContrast(on) {
-  if (on) document.documentElement.dataset.contrast = "on";
-  else delete document.documentElement.dataset.contrast;
-  prefs.set("contrast", on ? "on" : "off");
-}
-
 // --- Wave O: expanded appearance controls -------------------------------------------
 // Each preference is a data-attribute on <html> + a localStorage key, all
 // applied before first paint by applyAppearance() so there's no flash.
@@ -1487,6 +1509,8 @@ const APPEARANCE_DEFAULTS = {
   fontsize: "normal",
   font: "system", // system | serif | mono
   density: "comfortable", // comfortable | compact | spacious
+  "read-leading": "normal", // tight | normal | roomy: a note's and a document's line height
+  "read-measure": "standard", // narrow | standard | wide: how long a line of reading text runs
   glass: "on",
   // Performance mode (INBOX 49): "auto" turns it on for a small machine, 4
   // cores or 4 GB or fewer, and when the operating system asks for reduced
@@ -1738,6 +1762,8 @@ function themeSwatch(preset) {
 //: A theme under the pointer in Settings (settings-controls.js previewTheme):
 //: read before the manual layer, because a click would clear that layer.
 const settingsLook = {
+  quiet: 0,
+  quietWords: "",
   themePreview: "",
   logFilterFromRun: false,
 };
@@ -1817,27 +1843,6 @@ function applyThemePreset(name, chosenByUser = false) {
 
 function manualOverrides() {
   return OVERRIDABLE_KEYS.filter((key) => prefs.get(key, null) !== null);
-}
-
-// Drop the manual layer, keeping the chosen theme, the counterpart to
-// "reset the theme" below.
-function clearManualOverrides() {
-  for (const key of manualOverrides()) prefs.remove(key);
-  applyCustomAccent(null);
-  applyPageBackground(null);
-  applyThemePreset(activeThemePreset());
-  renderAppearance();
-  toast("Your manual changes are cleared, the theme is showing on its own.");
-}
-
-// Drop the theme, keeping every manual change, so "reset the theme to
-// default because I want my own colours instead" does exactly that, rather
-// than wiping the colours too (user request).
-function resetThemeOnly() {
-  prefs.remove("themePreset");
-  applyThemePreset("");
-  renderAppearance();
-  toast("Theme reset to the app default. Your own changes are still applied.");
 }
 
 // --- building a scheme from one colour ---------------------------------------
@@ -1921,36 +1926,6 @@ function harmonyScheme(baseHex, kind, dark) {
 // stored light/dark to read, and generating a light background for someone
 // looking at a dark page is the one way this feature can be obviously wrong.
 
-function applyHarmony() {
-  const base = $("harmony-base").value;
-  const kind = $("harmony-kind").value;
-  const scheme = harmonyScheme(base, kind, resolvedTheme() === "dark");
-  const note = $("harmony-note");
-  if (!scheme) {
-    note.textContent = "That colour didn't parse: try picking it again.";
-    return;
-  }
-  prefs.set("accent-custom", scheme.accent);
-  // A scheme's background is worked out *for a mode*, the same accent wants a
-  // near-white page in light and a near-black one in dark. Storing only the one
-  // for whichever mode happened to be on is what made the light/dark toggle
-  // "stop working on the background": the stored value is written inline on
-  // <html>, and an inline custom property outranks every `[data-mode="dark"]`
-  // rule in the stylesheet, so the page stayed put while the rest of the UI
-  // changed around it. Both are computed and stored; `currentPageBackground`
-  // picks the right one whenever the mode changes.
-  const dark = harmonyScheme(base, kind, true);
-  const light = harmonyScheme(base, kind, false);
-  prefs.set("page-bg", light ? light.page : scheme.page);
-  prefs.set("page-bg-dark", dark ? dark.page : scheme.page);
-  applyCustomAccent(scheme.accent);
-  applyPageBackground(currentPageBackground());
-  renderAppearance();
-  note.textContent =
-    `Accent ${scheme.accent}, background ${scheme.page}. ` +
-    "Both have their own Clear buttons above if you'd rather start again.";
-}
-
 // --- your own saved themes ---------------------------------------------------
 //
 // A saved theme is a snapshot of the same localStorage keys every appearance
@@ -1993,6 +1968,208 @@ function currentLookValues() {
   return { values, preset: preset || "" };
 }
 
+// LOOK FILE BEGIN
+//: One property of `settingsLook`, not a dozen globals: the shared scope is
+//: counted and capped (tests/test_global_scope_ratchet.py).
+settingsLook.lookFile = (() => {
+  //: **A look as a file** (BACKLOG, Colours). The export is what a saved look
+  //: holds (`currentLookValues`); the import takes only what it can prove, key
+  //: by key, because a file is typed by hand or by someone else and a value
+  //: invalid where it is used, not where it is set, breaks the page far away
+  //: (a "NaN" in a custom property takes every shadow with it).
+  const LOOK_FILE_KIND = "tessellate-look";
+  const LOOK_HEX = /^#[0-9a-f]{6}$/i;
+  //: A background is a colour or a gradient; nothing that can fetch (`url(`) or
+  //: reach into the page (`var(`, `attr(`, `env(`).
+  const LOOK_GRADIENT = /^linear-gradient\([#0-9a-zA-Z.,()%\s-]{1,180}\)$/;
+
+  function lookRules() {
+    const oneOf = (list) => (v) => (typeof v === "string" && list.includes(v) ? v : null);
+    const whole = (lo, hi) => (v) => {
+      if (typeof v !== "string" && typeof v !== "number") return null;
+      const text = String(v);
+      return /^\d{1,3}$/.test(text) && Number(text) >= lo && Number(text) <= hi ? String(Number(text)) : null;
+    };
+    const onOff = oneOf(["on", "off"]);
+    return {
+      theme: oneOf(["light", "dark", "system"]),
+      palette: oneOf(PALETTES.map((p) => p.id)),
+      accent: oneOf(ACCENTS.map((a) => a.name)),
+      "accent-custom": (v) => (typeof v === "string" && LOOK_HEX.test(v) ? v.toLowerCase() : null),
+      "page-bg": (v) => {
+        if (typeof v !== "string") return null;
+        if (LOOK_HEX.test(v)) return v.toLowerCase();
+        return LOOK_GRADIENT.test(v) && !/\b(url|var|attr|env|image)\s*\(/i.test(v) ? v : null;
+      },
+      font: oneOf(["system", "serif", "mono", "arial", "readable"]),
+      glass: onOff,
+      "glass-blur": whole(2, 30),
+      "glass-opacity": whole(5, 100),
+      "glass-sheen": onOff,
+      "glass-controls": onOff,
+      "page-wash": onOff,
+      "glass-sheen-strength": whole(0, 100),
+      "bg-style": oneOf(BG_ART_STYLES),
+      "bg-motion": oneOf(["auto", "moving", "still"]),
+      "bg-intensity": whole(20, 100),
+      radius: whole(0, 22),
+      bgArt: onOff,
+      "read-leading": oneOf(["tight", "normal", "roomy"]),
+      "read-measure": oneOf(["narrow", "standard", "wide"]),
+    };
+  }
+
+  function lookFilePayload(values, preset) {
+    const out = {};
+    for (const key of LOOK_KEYS) if (Object.hasOwn(values, key)) out[key] = values[key];
+    return { kind: LOOK_FILE_KIND, version: 1, values: out, preset: preset || "" };
+  }
+
+  //: Up to four names, then a count: a toast is a line, not a list.
+  function skippedLine(names) {
+    const shown = names.slice(0, 4).join(", ");
+    return names.length > 4 ? `${shown} and ${names.length - 4} more` : shown;
+  }
+
+  function checkLookFile(data) {
+    const out = { values: {}, preset: "", skipped: [] };
+    const plain = (x) => x && typeof x === "object" && !Array.isArray(x);
+    if (!plain(data) || data.kind !== LOOK_FILE_KIND || data.version !== 1 || !plain(data.values)) {
+      out.error = "That file isn't a Tessellate look.";
+      return out;
+    }
+    const rules = lookRules();
+    for (const [key, value] of Object.entries(data.values)) {
+      const name = String(key).slice(0, 30);
+      if (!LOOK_KEYS.includes(key)) {
+        out.skipped.push(`${name} (not part of a look)`);
+        continue;
+      }
+      const clean = rules[key](value);
+      if (clean === null) out.skipped.push(`${name} (value out of range)`);
+      else out.values[key] = clean;
+    }
+    if (data.preset) {
+      if (typeof data.preset === "string" && Object.hasOwn(THEME_PRESETS, data.preset)) out.preset = data.preset;
+      else out.skipped.push("preset (unknown theme)");
+    }
+    if (!Object.keys(out.values).length && !out.preset) {
+      out.error = `Nothing in that file could be applied. Skipped: ${skippedLine(out.skipped)}.`;
+    }
+    return out;
+  }
+
+  //: **Surprise mix**: a palette, an accent and a density from the sets the
+  //: pickers already offer, each different from what is showing. Seeded
+  //: (mulberry32), so the same number is the same mix and a test can hold it.
+  function surprisePick(seed, current) {
+    let state = seed >>> 0;
+    const next = () => {
+      state = (state + 0x6d2b79f5) >>> 0;
+      let t = state;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const choose = (list, now) => {
+      const rest = list.filter((x) => x !== now);
+      return rest[Math.floor(next() * rest.length)];
+    };
+    return {
+      palette: choose(PALETTES.map((p) => p.id), current.palette),
+      accent: choose(ACCENTS.map((a) => a.name), current.accent),
+      density: choose(["comfortable", "compact", "spacious"], current.density),
+    };
+  }
+
+  //: Everything a look can change, read before and put back after, so Undo is
+  //: exact: a key the person had not set is removed, not set to a default.
+  function lookSnapshot() {
+    const snap = {};
+    for (const key of [...LOOK_KEYS, "density", "themePreset", "page-bg-dark"]) snap[key] = prefs.get(key, null);
+    return snap;
+  }
+
+  function restoreLook(snap) {
+    settingsLook.quiet = Date.now() + 5000;
+    for (const [key, value] of Object.entries(snap)) {
+      if (value === null) prefs.remove(key);
+      else prefs.set(key, value);
+    }
+    repaintLook();
+  }
+
+  //: The tail every way of applying a look shares (saved, imported, restored).
+  function repaintLook() {
+    applyThemeChoice(effectiveTheme(), false);
+    applyAppearance();
+    // The art is a running p5 sketch, not a CSS variable, so applyAppearance
+    // marking the root "on" is not enough to start or stop one.
+    if (bgArtOn()) startBgArt();
+    else stopBgArt();
+    renderAppearance();
+  }
+
+  //: Runs `change`, then offers Undo (the toast's button and Ctrl+Z).
+  function changeLookWithUndo(label, message, change) {
+    //: The look reaches the notebook a moment later as a preference change, whose own
+    //: generic toast ("Palette: default to default and 1 more") would stack on this one.
+    settingsLook.quiet = Date.now() + 5000;
+    settingsLook.quietWords = label;
+    const before = lookSnapshot();
+    change();
+    const after = lookSnapshot();
+    const action = pushUndo(label, () => restoreLook(before), () => restoreLook(after));
+    toastAction(message, "Undo", () => {
+      settleUndoFromToast(action);
+      restoreLook(before);
+      toast("Put your look back.");
+    });
+  }
+
+  function surpriseNow() {
+    const seed = Date.now() % 100000;
+    const pick = surprisePick(seed, { palette: activePalette(), accent: appearancePref("accent"), density: effectiveDensity() });
+    const names = `${PALETTES.find((p) => p.id === pick.palette).name} palette, ${ACCENTS.find((a) => a.name === pick.accent).label.toLowerCase()} accent, ${pick.density} density`;
+    changeLookWithUndo("Mixed a look", `Mixed a look: ${names}.`, () => {
+      // As choosing a palette does (`applyThemePreset`): its colours must not sit under a custom accent or page.
+      for (const key of ["accent-custom", "page-bg", "page-bg-dark"]) prefs.remove(key);
+      prefs.set("density", pick.density);
+      applySavedTheme({ values: { palette: pick.palette, accent: pick.accent }, preset: prefs.get("themePreset", null) || "" }, false);
+    });
+  }
+
+  function exportLook() {
+    const { values, preset } = currentLookValues();
+    downloadJson("tessellate-look.json", lookFilePayload(values, preset));
+  }
+
+  function importLook(data) {
+    const check = checkLookFile(data);
+    if (check.error) return toast(check.error, "info");
+    const theme = { name: "imported look", values: check.values, preset: check.preset };
+    changeLookWithUndo("Imported a look", "Applied the look from that file.", () => {
+      // A custom accent outranks a named one: a file naming an accent alone means that accent.
+      if (check.values.accent && !check.values["accent-custom"]) prefs.remove("accent-custom");
+      // "System" is the absence of a choice (`applyThemeChoice`), never a stored one.
+      if (check.values.theme === "system") {
+        delete check.values.theme;
+        prefs.remove("theme");
+      }
+      applySavedTheme(theme, false);
+    });
+    if (check.skipped.length) toast(`Skipped ${skippedLine(check.skipped)}.`, "info");
+  }
+
+    return {
+      check: checkLookFile, payload: lookFilePayload, skippedLine,
+      snapshot: lookSnapshot, restore: restoreLook, repaint: repaintLook,
+      changeWithUndo: changeLookWithUndo, exportNow: exportLook, importNow: importLook,
+      pick: surprisePick, surpriseNow,
+    };
+})();
+// LOOK FILE END
+
 function savedThemes() {
   const saved = prefsCache && prefsCache.custom_themes;
   return Array.isArray(saved) ? saved : [];
@@ -2025,7 +2202,7 @@ async function saveCurrentLook() {
   toast(`Saved “${name}”.`);
 }
 
-function applySavedTheme(theme) {
+function applySavedTheme(theme, announce = true) {
   // Everything the snapshot named is restored; everything it didn't is left
   // alone rather than reset, so applying a saved look never silently changes a
   // setting the snapshot had nothing to say about.
@@ -2036,16 +2213,10 @@ function applySavedTheme(theme) {
   }
   if (theme.preset) prefs.set("themePreset", theme.preset);
   else prefs.remove("themePreset");
-  // The same function startup uses, so a restored look is applied by exactly
+  // The same functions startup uses, so a restored look is applied by exactly
   // the path that would have applied it on a fresh load.
-  applyThemeChoice(theme.values?.theme || "system", false);
-  applyAppearance();
-  // The art is a running p5 sketch, not a CSS variable, so applyAppearance
-  // marking the root "on" is not enough to start or stop one.
-  if (bgArtOn()) startBgArt();
-  else stopBgArt();
-  renderAppearance();
-  toast(`Applied “${theme.name}”.`);
+  settingsLook.lookFile.repaint();
+  if (announce) toast(`Applied “${theme.name}”.`);
 }
 
 async function deleteSavedTheme(name) {
@@ -2416,6 +2587,10 @@ function applyAppearance() {
   root.dataset.font = appearancePref("font");
   measureLabelOptics();
   root.dataset.density = effectiveDensity();
+  //: A stored value the lists do not offer reads as the middle one, never as an invalid token.
+  for (const [key, field, list] of [["read-leading", "readLeading", ["tight", "normal", "roomy"]], ["read-measure", "readMeasure", ["narrow", "standard", "wide"]]]) {
+    root.dataset[field] = list.includes(appearancePref(key)) ? appearancePref(key) : list[1];
+  }
   //: The dashboard's own level follows the app's Compact (dashboard.js).
   applyDashDensity(dashDensity(), { persist: false });
   const perf = perfModeOn();
@@ -2717,6 +2892,7 @@ function renderAppearance() {
   } catch (e) {
     $("avatar-buddy-motion").value = "follow";
   }
+  $("avatar-buddy-rest").value = prefs.get("avatar-buddy-rest", null) || "mains";
   nameMarkBuddyMotionApply();
   nameMarkBuddySizeSelect();
   $("atlas-style").value = appearancePref("atlas-style");
@@ -2754,6 +2930,7 @@ function renderAppearance() {
   _segActive("border-style-seg", "borderChoice", appearancePref("border-style", "solid"));
   $("shadow-intensity").value = appearancePref("shadow-intensity", "5");
   $("shadow-intensity-value").textContent = `${appearancePref("shadow-intensity", "5")}%`;
+  window.valueField?.refresh();
   $("accent-custom").value = prefs.get("accent-custom", null) || "#4664f0";
   $("page-bg-custom").value = prefs.get("page-bg", null) || "#f5f7fb";
   $("custom-css").value = prefs.get("custom-css", null) || "";
@@ -2767,6 +2944,8 @@ function renderAppearance() {
   //: first row rather than on a blank.
   $("font-seg").value = appearancePref("font");
   $("density-seg").value = prefs.get("density", null) || "auto";
+  $("read-leading").value = appearancePref("read-leading");
+  $("read-measure").value = appearancePref("read-measure");
   settingsReadouts.auto?.();
 }
 
@@ -2989,7 +3168,7 @@ function renderPaletteGrid() {
 
 function resetAppearance() {
   for (const key of [
-    "fontsize", "font", "density", "glass", "perf", "motion", "ui-motion", "reply-motion", "progress-motion", "avatar-motion", "avatar-follow", "avatar-buddy", "avatar-buddy-size", "avatar-buddy-actions", "atlas-style", "assistant-avatar", "atlas-look", "face-look", "dash-mark", "bg-intensity", "accent",
+    "fontsize", "font", "density", "glass", "perf", "motion", "ui-motion", "reply-motion", "progress-motion", "avatar-motion", "avatar-follow", "avatar-buddy", "avatar-buddy-size", "avatar-buddy-actions", "atlas-style", "assistant-avatar", "atlas-look", "face-look", "dash-mark", "avatar-buddy-motion", "avatar-buddy-rest", "avatar-buddy-entrances", "bg-intensity", "accent",
     "contrast", "bgArt", "theme", "radius", "glass-blur", "glass-opacity",
     "glass-sheen", "glass-sheen-strength", "glass-controls", "page-wash", "bg-style", "bg-motion", "palette", "themePreset",
     "accent-custom", "page-bg", "custom-css", "zoom",
@@ -3021,8 +3200,8 @@ function resetAppearance() {
 // changed.
 function bgArtRefreshSeed() {
   //: bg-art.js not fetched: nothing has been drawn from a seed.
-  if (typeof bgArtSeedUsed === "undefined" || bgArtSeedUsed === null || !bgArtOn()) return;
-  if (bgArtSeedUsed !== bgArtSeedText()) startBgArt();
+  if (!window.bgArtSeedStale?.() || !bgArtOn()) return;
+  startBgArt();
 }
 
 function bgArtOn() {
@@ -3085,7 +3264,7 @@ function renderBgStyleGrid() {
       //: The cost is a facts row of its own, so a long name never pushes the
       //: label onto a second line on some cards and not others.
       const facts = document.createElement("span");
-      facts.className = "row bg-style-facts";
+      facts.className = "bg-style-facts"; // not a `.row`: a Settings row wraps, and this line never does
       const ms = document.createElement("span");
       ms.className = "theme-note";
       ms.textContent = `${BG_ART_COST[name].toFixed(1)}ms a frame`;
@@ -3213,9 +3392,11 @@ function startBgArt() {
 
 function toggleBgArt(on) {
   prefs.set("bgArt", on ? "on" : "off");
-  applyAppearance(); // updates data-bg-art so the cards adjust with it
-  if (on) startBgArt();
-  else stopBgArt();
+  //: Updates data-bg-art so the cards adjust with it, and, with the art on,
+  //: restarts it: `applyPalette` rebuilds the art from the accent (audit 1029
+  //: X15). A second `startBgArt` here mounted it twice per switch.
+  applyAppearance();
+  if (!on) stopBgArt();
   //: The constellation moves only with it on (INBOX 1530 d).
   refreshArtForTheme();
 }
@@ -3266,7 +3447,8 @@ function focusSettingsHeading(name) {
   const head = pane?.querySelector(":scope > .settings-pane-title h3, :scope > .help-head h3, h3");
   if (!head) return focusSettingsPane();
   head.tabIndex = -1;
-  head.focus({ preventScroll: true });
+  //: A frame on: the section was just switched, and focusing laid it out inside the press.
+  afterFrames(() => head.focus({ preventScroll: true }), 1);
 }
 
 //: A group heading (INBOX 697) is in the loop too: a press on it opens its
@@ -3696,8 +3878,8 @@ function wireFoldHelps() {
 
 //: The folds are in Settings' lazy body (settings-body.js), not in the page at
 //: boot: run when it is built, or the '?' is never placed and no fold remembers.
-onSettingsBody(wireFoldHelps);
-onSettingsBody(wireSettingsFolds);
+onSurface("settings", wireFoldHelps);
+onSurface("settings", wireSettingsFolds);
 
 // --- Last run of each job (INBOX 438) ------------------------------------------
 //
@@ -3789,7 +3971,8 @@ async function refreshJobRuns() {
   if (jobRunsInFlight) return;
   jobRunsInFlight = true;
   try {
-    const body = await apiJson("/jobs/last-runs", { silent: true });
+    //: `cacheMs` 1000, under the 2 s poll: the Data pane's schedule line asks the same endpoint at the same open.
+    const body = await apiJson("/jobs/last-runs", { silent: true, cacheMs: 1000 });
     jobRunsList = body.jobs || [];
   } catch {
     return; // a missing line is better than a toast over a status nicety
@@ -3800,7 +3983,8 @@ async function refreshJobRuns() {
   const lines = [...document.querySelectorAll("[data-job-line]")];
   for (const el of lines) paintJobLine(el);
   clearTimeout(jobRunsTimer);
-  const running = lines.some((el) => el.offsetParent !== null && el.dataset.jobRunning === "1");
+  //: Layout is read only for a running line: after the paint above, the first `offsetParent` laid out the page (INBOX 1696 f).
+  const running = lines.some((el) => el.dataset.jobRunning === "1" && el.offsetParent);
   if (running && authToken()) jobRunsTimer = setTimeout(refreshJobRuns, 2000);
 }
 

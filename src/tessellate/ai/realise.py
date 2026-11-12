@@ -179,17 +179,17 @@ def first_person(text: str) -> bool:
 # --- tense ------------------------------------------------------------------------
 
 _PLAN_PAST = (
-    (re.compile(r"\byou plan to\b"), "you planned to"),
-    (re.compile(r"\byou are planning to\b"), "you were planning to"),
-    (re.compile(r"\byou're planning to\b"), "you were planning to"),
-    (re.compile(r"\byou are going to\b"), "you were going to"),
-    (re.compile(r"\byou're going to\b"), "you were going to"),
-    (re.compile(r"\byou are going\b"), "you were going"),
-    (re.compile(r"\byou're going\b"), "you were going"),
-    (re.compile(r"\byou will\b"), "you were going to"),
-    (re.compile(r"\byou want to\b"), "you wanted to"),
-    (re.compile(r"\byou need to\b"), "you needed to"),
-    (re.compile(r"\byou intend to\b"), "you intended to"),
+    (lazy_compile(r"\byou plan to\b"), "you planned to"),
+    (lazy_compile(r"\byou are planning to\b"), "you were planning to"),
+    (lazy_compile(r"\byou're planning to\b"), "you were planning to"),
+    (lazy_compile(r"\byou are going to\b"), "you were going to"),
+    (lazy_compile(r"\byou're going to\b"), "you were going to"),
+    (lazy_compile(r"\byou are going\b"), "you were going"),
+    (lazy_compile(r"\byou're going\b"), "you were going"),
+    (lazy_compile(r"\byou will\b"), "you were going to"),
+    (lazy_compile(r"\byou want to\b"), "you wanted to"),
+    (lazy_compile(r"\byou need to\b"), "you needed to"),
+    (lazy_compile(r"\byou intend to\b"), "you intended to"),
 )
 
 
@@ -209,6 +209,12 @@ def past_plan(text: str, due: date | None, today: date) -> str:
 
 def count_word(n: int) -> str:
     return _NUMBERS[n] if 0 <= n < len(_NUMBERS) else str(n)
+
+
+def counted(n: int, noun: str, plural: str = "") -> str:
+    """"one note", "six reminders", "no reminders": a count in words up to twelve with
+    its noun in the right number (fable-composer-1110 F7.6); "dated item" takes "dated items"."""
+    return f"{count_word(n)} {noun if n == 1 else (plural or noun + 's')}"
 
 
 def weeks_gone(days: int) -> int:
@@ -623,3 +629,13 @@ def tool_answer(tool: str, result: dict, today: date) -> dict | None:
     lead, shaped = sayer(tool, result, today)
     text = lead if not shaped["text"] else f"{lead}\n\n{shaped['text']}"
     return {"text": text, "form": shaped["form"], "chart": shaped["chart"]}
+
+
+_TODO_TITLE = frozenset({"todo", "todos", "to-do", "to-dos", "tasks", "chores", "errands", "checklist"})
+
+
+def todo_titled(title: str | None) -> bool:
+    """Whether a note's title names it a to-do list ("Todo", "Weekend todo", "Things to do"): its plain "- "
+    lines are tasks not yet done (bt-compcomp-1109 item 9)."""
+    words = [w for w in str(title or "")[:200].lower().split(" ") if w]
+    return bool(words) and (words[-1] in _TODO_TITLE or words[-2:] == ["to", "do"])

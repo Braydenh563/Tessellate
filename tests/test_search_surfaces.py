@@ -20,6 +20,7 @@ from __future__ import annotations
 import re
 
 from tests._app_js import JS_DIR
+from tests import _js_scope
 
 
 def _note(client, content: str, **extra) -> int:
@@ -141,7 +142,7 @@ def test_the_palette_does_not_search_content():
     ask limited to `kind=note`. Nothing else is searched, no engine state is
     held, and no documents, reminders, conversations, files or boards are
     listed."""
-    text = _read("app-palette.js")
+    text = _js_scope.unwrapped(_read("app-palette.js"))
     code = re.sub(r"//.*", "", text)
     assert code.count("/search") == 1 and "kind=note&limit=${PALETTE_NOTE_ASK}" in code
     assert "paletteAskEngine" not in text and "paletteEngine" not in text
@@ -156,7 +157,7 @@ def test_the_palette_ends_with_a_row_that_opens_find_anything():
     everything for", which closes the palette and opens Find anything with the
     text in its field (`openFinder` searches at once). With no command matching
     it is the only row, so it is the lit one."""
-    text = _read("app-palette.js")
+    text = _js_scope.unwrapped(_read("app-palette.js"))
     matches = _function(text, "paletteMatches")
     assert r"Search everything for \u201c" in matches
     assert "openFinder(" in matches
@@ -227,6 +228,22 @@ def test_the_filter_words_survive_a_reload_in_the_tab():
     assert 'sessionStorage.getItem("note-filter")' in text
     assert "rememberNoteFilter(noteSearch);" in _function(text, "renderEntries")
     assert text.index('sessionStorage.getItem("note-filter")') < text.index("function renderEntries(")
+
+
+def test_the_sort_survives_a_reload_with_words_in_the_filter_box():
+    """Audit 1031 N44, the sort half: a reload with words in the box lost the saved sort and logged
+    five ReferenceErrors, because the load-time restore called `$("note-search")`, which built the
+    Notes surface mid-load and ran hooks queued for files not yet loaded (settings-wiring.js then
+    stopped before it read `notes-sort`). Both restores now read storage only; the boxes are
+    filled under `onSurface`. (Measured in the app: sort az + filter harbor came back az + harbor.)"""
+    lists = (JS_DIR / "notes-list.js").read_text(encoding="utf-8")
+    restore = lists[lists.index('sessionStorage.getItem("note-filter")') : lists.index("function rememberNoteFilter")]
+    assert '$("note-search")' in restore and 'onSurface("notes"' in restore
+    assert restore.index('onSurface("notes"') < restore.index('$("note-search")')
+    wiring = (JS_DIR / "settings-wiring.js").read_text(encoding="utf-8")
+    load = wiring[wiring.index('prefs.get("notes-sort")') - 40 : wiring.index('onSurface("notes"', wiring.index('prefs.get("notes-sort")'))]
+    assert "$(" not in load, "the saved sort is read without touching the Notes surface"
+    assert "noteSort = prefs.get(" in load
 
 
 def test_tag_counts_and_negated_categories_in_the_finder(client):

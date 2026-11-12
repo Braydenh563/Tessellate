@@ -64,7 +64,7 @@ def test_deleting_a_map_takes_its_topics_and_leaves_the_notes_it_referenced(
 
     Without this the default behaviour is actively wrong in two different
     directions at once: purging a board detaches everything on it to the
-    default scratch board (`manager._hard_delete`), so a deleted map's topics
+    default scratch board (`manager_purge._hard_delete`), so a deleted map's topics
     would reappear as loose text on the one board nobody deletes, and any
     attempt to fix that by simply deleting everything on the board would take
     the referenced *notes* with it, which is data loss.
@@ -2353,6 +2353,27 @@ def test_a_due_date_is_a_marker_checked_kept_and_carried(client):
     assert "2026-10-12" not in client.get(f"/whiteboard/boards/{board['id']}/export?format=markdown").text
     client.post(f"/whiteboard/boards/{board['id']}/nodes/clear-style")
     assert _styles_by_text(client, board["id"])["Book"]["due"] == "2026-10-12"
+
+
+def test_a_start_day_beside_the_due_day_is_checked_kept_and_carried(client):
+    """MINDMAP_PLAN gap 3 (the Gantt view): `start` is `due`'s twin, a calendar
+    day, content a look reset keeps, carried by OPML and FreeMind as `_start`."""
+    board = _map(client, name="Start")
+    root = _node(client, board["id"], text="Plan")
+    node = _node(client, board["id"], parent_id=root["id"], text="Build")
+    response = _set_data(client, board, node, {"start": "next week"})
+    assert response.status_code == 422
+    response = _set_data(client, board, node, {"start": "2026-10-05", "due": "2026-10-12"})
+    assert response.status_code == 200
+    styles = _styles_by_text(client, board["id"])["Build"]
+    assert (styles["start"], styles["due"]) == ("2026-10-05", "2026-10-12")
+    for fmt in ("opml", "freemind"):
+        text = client.get(f"/whiteboard/boards/{board['id']}/export?format={fmt}").text
+        assert '_start="2026-10-05"' in text, fmt
+        back = client.post("/whiteboard/boards/import", json={"format": fmt, "content": text, "name": fmt})
+        assert _styles_by_text(client, back.json()["id"])["Build"].get("start") == "2026-10-05", fmt
+    client.post(f"/whiteboard/boards/{board['id']}/nodes/clear-style")
+    assert _styles_by_text(client, board["id"])["Build"]["start"] == "2026-10-05"
 
 
 def test_a_map_exports_and_imports_as_a_plain_text_outline(client):

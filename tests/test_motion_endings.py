@@ -32,6 +32,9 @@ FRONTEND = ROOT / "frontend"
 OBSERVERS = {
     ("avatars.js", 'for (const type of ["pointerdown", "pointerup", "keydown", "transitionrun"'),
     ("avatars.js", 'document.addEventListener("transitionend", (event) => {'),
+    #: Tracks which gestures the probe has running (the set is seeded from getAnimations in
+    #: `atlasProbeWatch.seed`); nothing waits on it, so a missing end event strands nothing.
+    ("atlas-motion.js", 'for (const type of ["animationend", "animationcancel"]) arm.probe.addEventListener'),
 }
 
 FALLBACK = re.compile(r"setTimeout\(|getAnimations\(|reducedMotionWanted\(|prefers-reduced-motion")

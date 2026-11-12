@@ -230,6 +230,7 @@ def test_loading_window_swaps_to_the_real_url_once_the_server_answers(monkeypatc
     against a fake server/progress poll, not just asserting it was wired up.
     """
     monkeypatch.setenv("TESSELLATE_DATA_DIR", str(tmp_path))
+    monkeypatch.setitem(launcher._LOCALHOST_VERDICT, launcher.PORT, True)  # no real server to probe
     monkeypatch.setattr(launcher, "_run_server", lambda: None)
     monkeypatch.setattr(launcher, "_wait_for_server_with_progress", lambda window, timeout=45.0: True)
     calls = _fake_webview(monkeypatch, run_start_func=True)
@@ -238,7 +239,9 @@ def test_loading_window_swaps_to_the_real_url_once_the_server_answers(monkeypatc
 
     window = calls["window"]
     assert window is not None
-    assert window.load_url_calls == [f"http://{launcher.HOST}:{launcher.PORT}"]
+    # First open: the bridge on 127.0.0.1 hands the saved settings to localhost
+    # (tests/test_origin_handoff.py holds the rest).
+    assert window.load_url_calls == [f"http://{launcher.HOST}:{launcher.PORT}/origin-bridge.html?to=localhost"]
     # Asked for directly: the window must take focus once it swaps from the
     # loading page to the real app, not just navigate silently in place.
     assert window.show_calls >= 1

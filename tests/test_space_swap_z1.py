@@ -87,6 +87,7 @@ EXEMPT = {
     "askHistoryTotal": "reset with the Ask history list (loadAskHistoryBadge reads it again)",
     "askBadgeTotal": "read again by loadAskHistoryBadge in the swap",
     "manageCategoriesRedraw": "a redraw callback, not data",
+    "wbMapNoteState": "the map's open note panel (UI, not data): closed on the next redraw when its object is gone (wbMapCloseNote)",
     "extractProposal": "the extract preview, closed with its dialog",
     "attachedWebPage": "a page the person fetched, not a space's row",
     "webEngineInfo": "the web search engine, per notebook",
@@ -103,7 +104,6 @@ EXEMPT = {
     "graphHighlightIds": "reset in the graph row",
     "graphGroupOf": "reset in the graph row",
     "graphTrace": "reset in the graph row",
-    "bookmarkGroupFilter": "a filter name chosen on the page",
     "contentsTopics": "the topics of an open document, redrawn on open",
     "docFileTypes": "file types, per notebook",
     "librarySemanticIds": "the ids of one search, replaced by the next",
@@ -209,7 +209,8 @@ def test_every_server_fed_collection_is_forgotten_or_exempt() -> None:
 
 def test_every_exempt_name_still_exists() -> None:
     everything = "\n".join(p.read_text(encoding="utf-8") for p in JS_DIR.glob("*.js"))
-    gone = [n for n in EXEMPT if not re.search(rf"^(?:let|var|const) {n}\b", everything, re.M)]
+    # Indent-aware: a file wrapped in one closure (audit row 37a) declares its module state two spaces in.
+    gone = [n for n in EXEMPT if not re.search(rf"^\s*(?:let|var|const) {n}\b", everything, re.M)]
     assert not gone, f"EXEMPT names that no longer exist: {gone}"
 
 

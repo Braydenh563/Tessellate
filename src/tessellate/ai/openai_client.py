@@ -66,6 +66,17 @@ from tessellate.ai.provider import (
 from tessellate.core import activity
 
 
+def _fill_null_content(payload: dict) -> bool:
+    """Give every assistant turn that carries `tool_calls` and a null `content`
+    an empty string instead. True when anything changed."""
+    changed = False
+    for message in payload.get("messages") or []:
+        if message.get("role") == "assistant" and message.get("tool_calls") and message.get("content") is None:
+            message["content"] = ""
+            changed = True
+    return changed
+
+
 def _looks_like_tools_rejection(status: int, body: str) -> bool:
     """Did the server refuse because the model can't do tools?
 
@@ -142,6 +153,7 @@ class OpenAICompatClient(Provider):
         # restarted app in practice, and re-probing per turn costs a round trip
         # on the path that is already the slowest thing the app does.
         self._context_lengths: dict[str, int | None] = {}
+        self._fixed_windows: set[str] = set()
         self._catalog: list[dict] | None = None
         self._props: dict | None = None
 
@@ -288,6 +300,7 @@ class OpenAICompatClient(Provider):
             loaded = entry.get("loaded_context_length")
             if isinstance(loaded, (int, float)) and loaded > 0:
                 length = int(loaded)
+                self._fixed_windows.add(model)
             else:
                 length = context_from_catalog_entry(entry)
             break
@@ -295,10 +308,18 @@ class OpenAICompatClient(Provider):
             n_ctx = self._fetch_props().get("n_ctx")
             if isinstance(n_ctx, (int, float)) and n_ctx > 0:
                 length = int(n_ctx)
+                self._fixed_windows.add(model)
         if length is None:
             length = known_context(model)
         self._context_lengths[model] = length
         return length
+
+    def window_is_fixed(self, model: str) -> bool:
+        """The server loaded this model at the reported window (`/props`
+        n_ctx or LM Studio's loaded length), so the app budgets to it as it
+        stands and the server, not this app, decides it."""
+        self.context_length(model)
+        return model in self._fixed_windows
 
     def _fetch_props(self) -> dict:
         """`llama-server`'s own `/props`, ROADMAP.md item A.2: "detect it".
@@ -375,6 +396,7 @@ class OpenAICompatClient(Provider):
             "quantisation": entry.get("quantization") or entry.get("quantization_level"),
             "context_length": self.context_length(model),
             "usable_context": self.usable_context(model),
+            "context_reason": self.context_explanation(model),
             # Only LM Studio answers these two, and both are worth showing:
             # "loaded at 4k" explains a 128k model behaving like a small one.
             "loaded_context_length": int(loaded) if isinstance(loaded, (int, float)) and loaded > 0 else None,
@@ -683,6 +705,18 @@ class OpenAICompatClient(Provider):
         return payload
 
     def _post(self, payload: dict, stream: bool):
+        response = self._send(payload, stream)
+        if response.status_code >= 400 and _fill_null_content(payload):
+            # A null `content` beside `tool_calls` is the spec, and the first
+            # ask keeps it because some servers 400 on an empty string. The
+            # others (llama-cpp-python's pydantic schema, B70) answer a 500
+            # that names no field and refuse every turn after the first tool
+            # call, so a refusal asks once more with the empty string.
+            response.close()
+            response = self._send(payload, stream)
+        return response
+
+    def _send(self, payload: dict, stream: bool):
         return requests.post(
             f"{self.base_url}/chat/completions",
             json=payload,
@@ -829,6 +863,30 @@ class OpenAICompatClient(Provider):
             return response
         raise ProviderError(f"Tool chat with '{model}' failed: retries exhausted")
 
+    @staticmethod
+    def _stream_delta(payload: dict) -> dict:
+        """The first choice's delta of one streamed frame; empty when it has none."""
+        choices = payload.get("choices") or []
+        return ((choices[0] or {}).get("delta") if choices else None) or {}
+
+    def _settle_calls(self, buckets: dict[int, dict], content: str, tools: list[dict]) -> tuple[list[dict], list[dict], str]:
+        """(calls, raw calls, text left over) once the stream ends."""
+        raw_calls = self._buckets_to_raw_calls(buckets)
+        calls = normalise_tool_calls(raw_calls)
+        clean = content
+        if not calls:
+            # Nothing structured: the text may itself be the call. Anything
+            # still gated was never shown, so removing it costs the user
+            # nothing.
+            recovered, clean = extract_text_tool_calls(content, offered_tool_names(tools))
+            if recovered:
+                calls = recovered
+                raw_calls = [
+                    {"function": {"name": c["name"], "arguments": c["arguments"]}}
+                    for c in recovered
+                ]
+        return calls, raw_calls, clean
+
     def chat_tools_stream(
         self,
         model: str,
@@ -856,6 +914,7 @@ class OpenAICompatClient(Provider):
         buckets: dict[int, dict] = {}
         started = time.monotonic()
         last: dict = {}
+        frames = 0
         try:
             with self._open_tools_stream(model, messages, tools, mode, tool_choice) as response:
 
@@ -874,9 +933,9 @@ class OpenAICompatClient(Provider):
                         yield {"content_delta": visible}
 
                 for payload in self._sse_payloads(response):
+                    frames += 1
                     last = payload
-                    choices = payload.get("choices") or []
-                    delta = ((choices[0] or {}).get("delta") if choices else None) or {}
+                    delta = self._stream_delta(payload)
                     text, reasoning = self._delta_text(delta)
                     if reasoning:
                         thinking += reasoning
@@ -892,20 +951,15 @@ class OpenAICompatClient(Provider):
         except (requests.RequestException, KeyError, IndexError, TypeError, ValueError) as exc:
             raise ProviderError(f"Tool chat with '{model}' failed: {exc}") from exc
 
-        raw_calls = self._buckets_to_raw_calls(buckets)
-        calls = normalise_tool_calls(raw_calls)
-        clean = content
-        if not calls:
-            # Nothing structured: the text may itself be the call. Anything
-            # still gated was never shown, so removing it costs the user
-            # nothing.
-            recovered, clean = extract_text_tool_calls(content, offered_tool_names(tools))
-            if recovered:
-                calls = recovered
-                raw_calls = [
-                    {"function": {"name": c["name"], "arguments": c["arguments"]}}
-                    for c in recovered
-                ]
+        if tool_choice and tools and not frames:
+            # A server that opens the stream and ends it with no frame at all
+            # (llama-cpp-python's function-calling handler, which cannot take
+            # `tool_choice="required"`, B69) refused the field the quiet way:
+            # the turn ended with no words. Asked again as an ordinary round.
+            yield from self.chat_tools_stream(model, messages, tools, mode)
+            return
+
+        calls, raw_calls, clean = self._settle_calls(buckets, content, tools)
         held = gate.flush()
         if held and not calls:
             # Gated text that turned out to be ordinary prose (a short answer

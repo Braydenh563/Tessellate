@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-ALLOWED = {"src/tessellate/ai/recognise.py", "src/tessellate/entry/timewords.py"}
+ALLOWED = {"src/tessellate/ai/recognise.py", "src/tessellate/ai/recognise_windows.py", "src/tessellate/ai/recognise_units.py", "src/tessellate/ai/recognise_reminders.py", "src/tessellate/ai/recognise_questions.py", "src/tessellate/entry/timewords.py"}
 
 # Hand verdicts, 2026-10-10 (Brief 64), for the files the scan finds. A new file
 # in the scan with no verdict prints "unjudged": judge it, then add it here.
@@ -54,6 +54,8 @@ VERDICT = {
     # 2026-10-18 (C06): the answer panel's calculator.
     "frontend/js/reply-kit.js": "not a reader: REPLY_CALC_PAIRS, the unit pair each converter kind opens on; the sum is read by the server",
     "src/tessellate/ai/composer_digest.py": "not a reader: weekday names for writing a date (the digest's day-of-week phrasing); its cue patterns (_AGO, _CASUAL, _ECHO_WORDS, _WEEK_SAID, _SHORTHAND) are masks that pick a phrasing or say the person's own words back, they turn no word into a date, window or quantity; windows and units read by recognise",
+    "src/tessellate/ai/composer_digest_sentences.py": "not a reader: weekday names for writing a date (the digest's day-of-week phrasing); its cue patterns (_AGO, _CASUAL, _ECHO_WORDS, _WEEK_SAID, _SHORTHAND) are masks that pick a phrasing or say the person's own words back, they turn no word into a date, window or quantity; windows and units read by recognise",
+    "src/tessellate/ai/composer_digest_lines.py": "not a reader: weekday names for writing a date (the digest's day-of-week phrasing); its cue patterns (_AGO, _CASUAL, _ECHO_WORDS, _WEEK_SAID, _SHORTHAND) are masks that pick a phrasing or say the person's own words back, they turn no word into a date, window or quantity; windows and units read by recognise",
     "src/tessellate/ai/composer_frame.py": "not a reader: `_WHEN_WORDS` is a mask that keeps a time word out of a name; it turns no word into a value, recognise reads the window",
     "src/tessellate/ai/composer_unplaced.py": "not a reader: `_NOTEBOOK_THINGS` is a mask that tells a question about the notebook's own lists and due items from a lookup; it turns no word into a value, recognise reads the window",
     "src/tessellate/ai/composer_write.py": "not a reader: weekday names for writing a day heading (`_day_heading`); no word becomes a date",
@@ -61,9 +63,17 @@ VERDICT = {
     # the recogniser, and nothing here becomes a date, window or quantity.
     "frontend/js/documents.js": "not a reader: the spellcheck's unit mask, which skips the unit straight after a number (10 min, 5 km) so it is not marked as a misspelling",
     # 2026-10-30 (audit 1029 C21): the slot answerer's day and unit names.
+    "src/tessellate/ai/composer_aboutme.py": "not a reader: `_NOTE_ANCHOR`, `_SELF` and `_BYE` are masks that tell a question about the person's own notes, a question about the assistant (its age) and a goodbye ('see you tomorrow') from a lookup; they turn no word into a value, recognise reads every window",
     "src/tessellate/ai/composer_read.py": "not a reader: `_WEEKDAYS` and `_MONTH_INDEX` are a mask that keeps day and month names out of a who answer's names, and `_written` reads back the route's own written stamp, never the person's words; recognise reads every window",
     "src/tessellate/ai/composer_slots.py": "not a reader: _WEEKDAYS matches a question's day to a note's written weekday and _UNITS lists a unit's spellings so the note's figure is quoted as written; days are found and judged by recognise (find, names_a_day)",
-    "src/tessellate/ai/commands.py": "not a reader: _TIME_FIRST, the words that open a reminder's time part (weekday words included), to split it from the task; the date is read by when, which delegates to recognise",
+    "src/tessellate/ai/composer_small.py": "not a reader: `_OLD` is a mask that recognises the request 'show me something old' (its 'from a while ago' is a phrase of that request); it turns no word into a date, window or quantity, the pick is made by resurface from the notes' own stamps",
+    "src/tessellate/ai/commands.py": "not a reader: _TIME_FIRST, the words that open a reminder's time part (weekday words included), to split it from the task; the date is read by when, which delegates to recognise; `_BARE_CALL` is a mask that tells call mum from call mum tomorrow so a bare call is asked when, and the time words after it go to when unread",
+    # 2026-11-11 (composer batch 2): patterns from other sessions' work, judged.
+    "src/tessellate/ai/composer_remark.py": "not a reader: `_TIMED` is a mask that tells a remark which names a time (an appointment to ask about) from small talk, and `_WORK_NOUN`, `_WISH_NAMED` and the weather words are stop lists for a social reply; no word becomes a date, window or quantity",
+    "src/tessellate/ai/composer_story.py": "not a reader: `_LEAD` is a mask that strips the time lead a per-note line starts with because the paragraph says its own, and `_QUOTED_RELATIVE` a mask that spots a quote saying today or tonight so the plain lines pin the day; recognise reads every window",
+    "src/tessellate/ai/parity_acts.py": "not a reader: `_REMINDERS` and `_REMINDERS_FROM` are a mask that cuts the time part off 'make reminders from the Harbor note for tomorrow'; the cut words go to when unread",
+    "src/tessellate/ai/study.py": "not a reader: `_WHEN` is a mask-like cue that ranks a sentence with a day, month or clock time above a bare number; it turns no word into a value, recognise reads the window",
+    "frontend/js/onboarding.js": "not a reader: the week_start options (monday, saturday, sunday) of a setting, as in routes_settings",
 }
 
 WEEKDAYS = "monday|tuesday|wednesday|thursday|friday|saturday|sunday"

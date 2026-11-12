@@ -9,6 +9,13 @@
   cursor: grab;
 }
 
+/* **A category's header is a target** (INBOX 1744): the pointing hand over a
+   Map or Tessellation header band or a Tree or Radial category node
+   (`gcCategoryAtWorld`). */
+#graph-canvas.graph-cat-hover {
+  cursor: pointer;
+}
+
 /* **A topic renamed where its name is** ("I cant rename a topic??"): the
    field `gcRenameTopicInline` opens in place of the name on the topic's card
    or a note's panel, or floating over the plate on the map. The app's own
@@ -615,4 +622,22 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  /* A band of padding at each end that the content fades through, so what
+     scrolls under the head (the Properties heading cut in half, INBOX 1769)
+     thins out inside the band instead of ending on a hard clip line, and the
+     last field's bottom edge and ring clear the Save row. At rest the band
+     is empty padding, so nothing is dimmed. */
+  padding-block: var(--space-2);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, var(--text) var(--space-2), var(--text) calc(100% - var(--space-2)), transparent);
+  mask-image: linear-gradient(to bottom, transparent, var(--text) var(--space-2), var(--text) calc(100% - var(--space-2)), transparent);
+}
+/* **The head, the Save row and the dock never shrink.** In a column flex box
+   they were the shrinkable items: past the popup's max-height the Save row
+   (min-height 0) squeezed to its 19px status line while its 32px button stayed
+   32, so the button stood 6px up over the body's last line (INBOX 1769,
+   measured 1440x900: body bottom 752.9, Save top 746.5). */
+#graph-popup > .graph-popup-head,
+#graph-popup > .graph-popup-saverow,
+#graph-popup > .graph-popup-actions {
+  flex: none;
 }

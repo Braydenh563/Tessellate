@@ -11,14 +11,15 @@
 // something to retype: and it works with no AI at all.
 
 function savedSearches() {
-  return (prefsCache && prefsCache.saved_searches) || [];
+  return prefsCache?.saved_searches || [];
 }
 
 function renderSavedSearches() {
-  const box = $("saved-searches");
+  const box = document.getElementById("saved-searches");
+  if (!box) return;
   const saved = savedSearches();
   box.replaceChildren();
-  box.classList.toggle("hidden", saved.length === 0);
+  box.classList.toggle("hidden", !saved.length);
   for (const item of saved) {
     const chipEl = document.createElement("span");
     chipEl.className = "chip saved-search";
@@ -71,13 +72,14 @@ async function saveCurrentSearch() {
   toast(`Saved "${name}".`);
 }
 
-$("save-search").addEventListener("click", saveCurrentSearch);
+onSurface("notes", () => {
+  $("save-search").addEventListener("click", saveCurrentSearch);
+});
 
 $("history-close").addEventListener("click", () =>
   $("history-overlay").classList.add("hidden")
 );
 
-$("shortcuts-reset").addEventListener("click", resetShortcuts);
 
 
 //: **Ctrl+S on the Preferences section**, which the section's own copy has
@@ -102,11 +104,15 @@ document.addEventListener(
   },
   true
 );
-$("draft-model").addEventListener("click", () => openFeatureModelSheet("writing"));
+onSurface("notes", () => {
+  $("draft-model").addEventListener("click", () => openFeatureModelSheet("writing"));
+});
 wireFeatureModelSelects();
 
 // Wave N: improve-writing, link suggestions.
-$("improve-btn").addEventListener("click", () => openImprove($("entry-content")));
+onSurface("notes", () => {
+  $("improve-btn").addEventListener("click", () => openImprove($("entry-content")));
+});
 $("improve-close").addEventListener("click", closeImprove);
 $("improve-apply").addEventListener("click", applyImprove);
 $("improve-retry").addEventListener("click", runImprove);
@@ -134,7 +140,6 @@ $("improve-custom-input").addEventListener("keydown", (e) => {
     $("improve-custom-go").click();
   }
 });
-$("link-suggest-btn").addEventListener("click", () => openSuggestionsInbox("links"));
 $("status-back").addEventListener("click", () => stepTabHistory(-1));
 $("status-forward").addEventListener("click", () => stepTabHistory(1));
 $("status-back").addEventListener("contextmenu", (event) => {
@@ -165,43 +170,55 @@ document.addEventListener("keydown", (event) => {
 // nothing behind it and Back stays dead until the second navigation, which
 // reads as the button being broken rather than empty.
 recordTabVisit(prefs.get("activeTab", null) || "dashboard", null);
-$("save-btn").addEventListener("click", saveEntry);
-$("save-draft-btn").addEventListener("click", saveEntryAsDraft);
-$("ask-btn").addEventListener("click", () => askQuestion()); // no event as preset
+onSurface("notes", () => {
+  $("save-btn").addEventListener("click", saveEntry);
+  $("save-draft-btn").addEventListener("click", saveEntryAsDraft);
+  $("ask-btn").addEventListener("click", () => askQuestion()); // no event as preset
+});
 // Reported: "the semantic search settings button in the ask tab doesn't
 // work", it does exist in the markup (`#ask-search-tune`, same icon/title
 // as Chat's own per-turn tune button) but nothing ever wired a listener to
 // it. Same destination as the other two quick-access links into this
 // preferences group (Chat's per-turn tune button, the Dashboard catalog).
-$("ask-search-tune").addEventListener("click", () => {
-  openSettingsModal("searchindex", "search-relevance-group");
-});
-$("stop-btn").addEventListener("click", stopAnswer);
-$("retry-btn").addEventListener("click", retryAnswer);
-$("copy-btn").addEventListener("click", copyAnswer);
-$("new-chat-btn").addEventListener("click", newChat);
-$("ask-history-toggle").addEventListener("click", toggleAskHistoryPanel);
-//: Esc shuts the open history panel from the button or from inside it, and the keyboard goes back to the button (AI14).
-for (const id of ["ask-history-toggle", "ask-history-panel"]) {
-  $(id).addEventListener("keydown", (event) => {
-    if (event.key !== "Escape" || $("ask-history-toggle").getAttribute("aria-expanded") !== "true") return;
-    event.stopPropagation();
-    toggleAskHistoryPanel();
-    $("ask-history-toggle").focus();
+onSurface("notes", () => {
+  $("ask-search-tune").addEventListener("click", () => {
+    openSettingsModal("searchindex", "search-relevance-group");
   });
-}
+});
+onSurface("notes", () => {
+  $("stop-btn").addEventListener("click", stopAnswer);
+  $("retry-btn").addEventListener("click", retryAnswer);
+  $("copy-btn").addEventListener("click", copyAnswer);
+  $("new-chat-btn").addEventListener("click", newChat);
+  $("ask-history-toggle").addEventListener("click", toggleAskHistoryPanel);
+});
+//: Esc shuts the open history panel from the button or from inside it, and the keyboard goes back to the button (AI14).
+onSurface("notes", () => {
+  for (const id of ["ask-history-toggle", "ask-history-panel"]) {
+    $(id).addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || $("ask-history-toggle").getAttribute("aria-expanded") !== "true") return;
+      event.stopPropagation();
+      toggleAskHistoryPanel();
+      $("ask-history-toggle").focus();
+    });
+  }
+});
 // Asked for directly: an X to close the history panel, not only the History
 // toggle button that opened it (easy to lose track of once scrolled past).
-$("ask-history-close")?.addEventListener("click", () => {
-  if (askHistoryOpen) toggleAskHistoryPanel();
+onSurface("notes", () => {
+  $("ask-history-close")?.addEventListener("click", () => {
+    if (askHistoryOpen) toggleAskHistoryPanel();
+  });
+  $("ask-history-more").addEventListener("click", () => loadAskHistoryPage(false));
+  $("ask-history-pinned-only").addEventListener("change", () => loadAskHistoryPage(true));
+  $("ask-history-clear").addEventListener("click", clearAskHistory);
 });
-$("ask-history-more").addEventListener("click", () => loadAskHistoryPage(false));
-$("ask-history-pinned-only").addEventListener("change", () => loadAskHistoryPage(true));
-$("ask-history-clear").addEventListener("click", clearAskHistory);
 let askHistorySearchDebounce;
-$("ask-history-search").addEventListener("input", () => {
-  clearTimeout(askHistorySearchDebounce);
-  askHistorySearchDebounce = setTimeout(() => loadAskHistoryPage(true), 200);
+onSurface("notes", () => {
+  $("ask-history-search").addEventListener("input", () => {
+    clearTimeout(askHistorySearchDebounce);
+    askHistorySearchDebounce = setTimeout(() => loadAskHistoryPage(true), 200);
+  });
 });
 $("lock-btn").addEventListener("click", lockNow);
 
@@ -326,43 +343,50 @@ async function submitLockForm() {
     return;
   }
   try {
-    const body = await lockRequest(mode, password, errorLine);
-    prefs.set("token", body.token);
-    if (body.warning) toast(body.warning, "info");
-    vaultOpen = mode === "setup" ? true : Boolean(body.vault_open);
-    lockedByHand = false;
-    $("lock-password").value = "";
-    // **Give the focus back, or every single-key shortcut in the app is
-    // dead.** Hiding the overlay does not move focus off the field inside
-    // it, so `document.activeElement` stayed `#lock-password` for the whole
-    // session that followed. Every handler that (correctly) refuses to steal
-    // a keystroke while someone is typing, the whiteboard's V/H/P tool keys,
-    // its `n` and `/`, and the same guard elsewhere, therefore returned
-    // immediately on every press, until the reader happened to click some
-    // other focusable control. Found while testing the tool shortcuts: they
-    // did nothing at all from a freshly unlocked app.
-    $("lock-password").blur();
-    //: The overlay stays up as the opening curtain and fades over the
-    //: drawn page (`curtainShell`, `liftLockScreen`).
-    $("lock-btn").classList.remove("hidden");
-    // Signing in starts a session, and a session starts at the front of every
-    // tab: see `resetNavigationForNewSession`. Here as well as at load
-    // because the lock screen is an *overlay*, not a page: unlocking after an
-    // idle lock never reloads anything, so the load-time reset alone would
-    // leave every sub-tab exactly where it was hours ago. Called before
-    // `startApp()`, which is what reads the stored section back.
-    resetNavigationToDefaults();
-    setBusy($("lock-submit"), true, "Opening…");
-    const opening = startApp();
-    curtainShell(opening);
-    //: The step after setup (INBOX 663): a recovery key, offered once the
-    //: app is drawn, skippable. The password just chosen goes with it so
-    //: the offer does not ask for it again; account-recovery.js drops it
-    //: when the dialog closes.
-    if (mode === "setup") offerRecoveryKey(password);
+    lockOpened(await lockRequest(mode, password, errorLine), mode, password);
   } catch (error) {
     lockFailed(error);
   }
+}
+
+//: The lock card's way in, whatever opened it: the password here, Windows
+//: Hello from hello-unlock.js (`body` is `/auth/unlock`'s answer either way).
+function lockOpened(body, mode, password) {
+  prefs.set("token", body.token);
+  if (body.warning) toast(body.warning, "info");
+  vaultOpen = mode === "setup" ? true : Boolean(body.vault_open);
+  lockedByHand = false;
+  $("lock-password").value = "";
+  // **Give the focus back, or every single-key shortcut in the app is
+  // dead.** Hiding the overlay does not move focus off the field inside
+  // it, so `document.activeElement` stayed `#lock-password` for the whole
+  // session that followed. Every handler that (correctly) refuses to steal
+  // a keystroke while someone is typing, the whiteboard's V/H/P tool keys,
+  // its `n` and `/`, and the same guard elsewhere, therefore returned
+  // immediately on every press, until the reader happened to click some
+  // other focusable control. Found while testing the tool shortcuts: they
+  // did nothing at all from a freshly unlocked app.
+  $("lock-password").blur();
+  //: The overlay stays up as the opening curtain and fades over the
+  //: drawn page (`curtainShell`, `liftLockScreen`).
+  $("lock-btn").classList.remove("hidden");
+  // Signing in starts a session, and a session starts at the front of every
+  // tab: see `resetNavigationForNewSession`. Here as well as at load
+  // because the lock screen is an *overlay*, not a page: unlocking after an
+  // idle lock never reloads anything, so the load-time reset alone would
+  // leave every sub-tab exactly where it was hours ago. Called before
+  // `startApp()`, which is what reads the stored section back.
+  resetNavigationToDefaults();
+  setBusy($("lock-submit"), true, "Opening…");
+  const opening = startApp();
+  curtainShell(opening);
+  //: The words typed before the lock come back once the page is drawn (INBOX 1747, row 22).
+  if (mode !== "setup") Promise.resolve(opening).then(() => typedWords("restore")).catch(() => {});
+  //: The step after setup (INBOX 663): a recovery key, offered once the
+  //: app is drawn, skippable. The password just chosen goes with it so
+  //: the offer does not ask for it again; account-recovery.js drops it
+  //: when the dialog closes.
+  if (mode === "setup") offerRecoveryKey(password);
 }
 
 //: **A new device waits for Allow by itself** (lansafe-1011's leftover): the
@@ -371,8 +395,9 @@ async function submitLockForm() {
 //: the same held request back up, so the phone keeps waiting, up to
 //: `LOCK_DEVICE_WAIT_MS`, instead of telling its owner to press Unlock again
 //: after walking to the computer. Editing the field stops it.
-const LOCK_DEVICE_WAIT_MS = 180_000;
 async function lockRequest(mode, password, errorLine) {
+  //: A local, not a shared name: lockOpened took its place in the shared scope's cap.
+  const LOCK_DEVICE_WAIT_MS = 180_000;
   const until = Date.now() + LOCK_DEVICE_WAIT_MS;
   for (;;) {
     try {
@@ -432,35 +457,37 @@ $("lock-cancel").addEventListener("click", () => settleLockPrompt(false));
 //: "Forgot your password?" (INBOX 663): the card is account-recovery.js's.
 $("lock-forgot").addEventListener("click", () => openForgotPassword());
 // Enter in the question box asks; Ctrl+Enter in the note box saves.
-$("question").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") askQuestion();
-  //: Escape clears the question (CHAT_PLAN, INBOX 63: "Esc clears"); an
-  //: empty box lets it through to whatever else it closes. The box is
-  //: disabled while an answer streams, so this never races a stop.
-  if (e.key === "Escape" && e.target.value) {
-    e.preventDefault();
-    e.stopPropagation();
-    e.target.value = "";
-  }
-});
-//: Time travel on Ask (row 23): the clock opens the "as of" line, Back to
-//: now closes it (`showAskAsOf`, capture-ask.js).
-$("ask-time-travel").addEventListener("click", () => {
-  showAskAsOf($("ask-as-of-row").classList.contains("hidden"));
-});
-$("ask-as-of-clear").addEventListener("click", () => {
-  showAskAsOf(false);
-  $("question").focus();
-});
-$("entry-content").addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-    e.preventDefault();
-    saveEntry();
-  }
-});
-//: The `[[` list is the editor menu's (editor.js), as in every other surface.
-$("entry-content").addEventListener("input", () => {
-  scheduleCaptureTagSuggestions();
+onSurface("notes", () => {
+  $("question").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") askQuestion();
+    //: Escape clears the question (CHAT_PLAN, INBOX 63: "Esc clears"); an
+    //: empty box lets it through to whatever else it closes. The box is
+    //: disabled while an answer streams, so this never races a stop.
+    if (e.key === "Escape" && e.target.value) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.target.value = "";
+    }
+  });
+  //: Time travel on Ask (row 23): the clock opens the "as of" line, Back to
+  //: now closes it (`showAskAsOf`, capture-ask.js).
+  $("ask-time-travel").addEventListener("click", () => {
+    showAskAsOf($("ask-as-of-row").classList.contains("hidden"));
+  });
+  $("ask-as-of-clear").addEventListener("click", () => {
+    showAskAsOf(false);
+    $("question").focus();
+  });
+  $("entry-content").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      saveEntry();
+    }
+  });
+  //: The `[[` list is the editor menu's (editor.js), as in every other surface.
+  $("entry-content").addEventListener("input", () => {
+    scheduleCaptureTagSuggestions();
+  });
 });
 //: True while the notebook is locked, the unlock overlay is up and nothing
 //: behind it may be reached.
@@ -662,12 +689,11 @@ document.addEventListener("keydown", (e) => {
   //: board's own chords; the same handoff undo already makes
   //: (`boardHistoryActive`), one owner for one shortcut.
   if (chorded && !(typeof wbOwnsChord === "function" && wbOwnsChord(e))) {
+    //: A confirm or a picker in front is a pause, not a step: Ctrl+Z reached past "Switch to mind map?" and undid the last edit behind it (dgmlive2 1108). Read only for undo and redo.
+    const behindModal = () => [...document.querySelectorAll(".modal-overlay, dialog[open]")].some((m) => m.getClientRects().length);
     const inTextField = inEditable(document.activeElement);
-    //: **Ctrl+Y is redo too**, the Windows habit: the board's own Redo
-    //: button and Edit menu already print "Ctrl+Y" and nothing answered it
-    //: (the Guide agent's finding, 2026-09-24). Same rule as Ctrl+Shift+Z:
-    //: a text field keeps its own.
-    if (!inTextField && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "y") {
+    //: **Ctrl+Y is redo too** (the Windows habit; the board's Redo prints it): a text field keeps its own.
+    if (!inTextField && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "y" && !behindModal()) {
       e.preventDefault();
       runShortcut("redo");
       return;
@@ -683,6 +709,7 @@ document.addEventListener("keydown", (e) => {
       //: first (comment toggle, link) and marks the press handled; a note box does not.
       if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;
       if (matchesShortcut(e, def.keys)) {
+        if ((id === "undo" || id === "redo") && behindModal()) continue;
         e.preventDefault();
         //: The chord goes through the same `performUndo`/`performRedo` the
         //: status bar's buttons press, which is where the board handoff
@@ -705,11 +732,11 @@ document.addEventListener("keydown", (e) => {
     closeFeatures();
     return;
   }
-  if (e.key === "Escape" && !$("graph-new").classList.contains("hidden")) {
+  if (e.key === "Escape" && document.getElementById("graph-new")?.classList.contains("hidden") === false) {
     closeGraphNewNote();
     return;
   }
-  if (e.key === "Escape" && !$("graph-popup").classList.contains("hidden")) {
+  if (e.key === "Escape" && document.getElementById("graph-popup")?.classList.contains("hidden") === false) {
     closeGraphPopup(true);
     return;
   }
@@ -753,7 +780,7 @@ document.addEventListener("keydown", (e) => {
     closeSettingsModal();
     return;
   }
-  if (e.key === "Escape" && !$("doc-ai-panel").classList.contains("hidden")) {
+  if (e.key === "Escape" && document.getElementById("doc-ai-panel")?.classList.contains("hidden") === false) {
     closeDocAiPanel();
     return;
   }
@@ -1139,8 +1166,8 @@ SHORTCUT_SOURCE.table = () => shortcuts;
 //: neither, and for a chord written next to a `data-shortcut`.
 const SHORTCUT_TITLE_CHORD = /\s*\([^()]*(?:Ctrl|Alt|Shift|⌘|⌥|⇧)[^()]*\)\s*$/;
 
-function stampShortcutTitles() {
-  for (const button of document.querySelectorAll("[data-shortcut]")) {
+function stampShortcutTitles(root = document) {
+  for (const button of root.querySelectorAll("[data-shortcut]")) {
     const combo = shortcuts[button.dataset.shortcut]?.keys;
     if (!combo) continue;
     const base = (button.title || "").replace(SHORTCUT_TITLE_CHORD, "") || button.getAttribute("aria-label") || button.textContent.trim();
@@ -1153,10 +1180,10 @@ function stampShortcutTitles() {
 //: one from the table, are written "Ctrl+B" in the markup; on a Mac they read
 //: with the Command symbol. The static ones only: a title a script sets later
 //: is written through `shortcutTitle` or `chordLabel` where it is set.
-function localizeStaticChords() {
+function localizeStaticChords(root = document) {
   if (!SHORTCUT_MAC) return;
   const chord = /\b(?:(?:Ctrl|Alt|Shift)\+)+[^\s)(,;]+/g;
-  for (const el of document.querySelectorAll('[title*="Ctrl+"], [title*="Alt+"], [title*="Shift+"]')) {
+  for (const el of root.querySelectorAll('[title*="Ctrl+"], [title*="Alt+"], [title*="Shift+"]')) {
     el.title = el.title.replace(chord, (match) => chordLabel(match));
   }
 }
@@ -1173,10 +1200,6 @@ function restampShortcutHints() {
 }
 localizeStaticChords();
 restampShortcutHints();
-onSettingsBody(() => {
-  localizeStaticChords();
-  stampShortcutTitles();
-});
 // Sets the status-bar Undo/Redo buttons' icons and "nothing to undo yet"
 // tooltips on load: both stacks are empty at this point, so this only
 // establishes the disabled state the HTML already carries, not a real render.
@@ -1313,7 +1336,7 @@ function runShortcut(id) {
     //: one. It answers false when nothing editable has focus, and then this
     //: does nothing rather than inserting a slash into whatever is there.
     editorMenu: () => {
-      if (typeof editorOpenMenuByShortcut === "function") editorOpenMenuByShortcut();
+      editorOpenMenuByShortcut();
     },
     palette: () => {
       if ($("palette-overlay").classList.contains("hidden")) openPalette();
@@ -1321,7 +1344,7 @@ function runShortcut(id) {
     },
     findAnything: () => {
       const overlay = $("finder-overlay");
-      if (overlay && overlay.classList.contains("hidden")) openFinder();
+      if (overlay?.classList.contains("hidden")) openFinder();
       else closeFinder();
     },
     search: () => {
@@ -1491,7 +1514,11 @@ function closeShortcuts() {
   overlay.returnFocus = null;
 }
 
-$("shortcuts-close").addEventListener("click", closeShortcuts);
+//: The sheet is built when it first opens (row 21).
+onSurface("shortcuts", () => {
+  $("shortcuts-close").addEventListener("click", closeShortcuts);
+  $("shortcuts-reset").addEventListener("click", resetShortcuts);
+});
 wireBackdropClose($("shortcuts-overlay"), () => closeShortcuts());
 
 document.addEventListener("keydown", (e) => {
@@ -1511,15 +1538,25 @@ document.addEventListener("keydown", (e) => {
   //: the first stop the wrap's `focus()` landed nowhere and Tab from the last
   //: button stayed on it (audit 1031 Z15, the welcome's hidden emblem). A
   //: fixed-position control had the opposite fault: it was always dropped.
-  const focusables = [
-    ...overlay.querySelectorAll(
-      'button, [href], input, select, textarea, [contenteditable=""], ' +
-        '[contenteditable="true"], [tabindex]:not([tabindex="-1"])'
-    ),
-  ].filter((el) => !el.disabled && el.getClientRects().length > 0);
-  if (!focusables.length) return;
-  const first = focusables[0];
-  const last = focusables[focusables.length - 1];
+  //: Only the two ends are needed, so the shown test runs from each end until it finds one, not on every control:
+  //: it was 602 reads per Tab with Settings open, the first laying the page out inside the key (INBOX 1716,
+  //: `settings-wiring.js #document.onkeydown 183ms (forced layout 179ms)`).
+  const stops = overlay.querySelectorAll(
+    'button, [href], input, select, textarea, [contenteditable=""], ' +
+      '[contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+  );
+  //: `checkVisibility` needs style, not layout; `getClientRects` is the fallback for an older engine.
+  const shown = (el) => !el.disabled && (el.checkVisibility ? el.checkVisibility() : el.getClientRects().length > 0);
+  let first = null;
+  for (let i = 0; i < stops.length && !first; i += 1) if (shown(stops[i])) first = stops[i];
+  if (!first) return;
+  let last = first;
+  for (let i = stops.length - 1; i >= 0; i -= 1) {
+    if (shown(stops[i])) {
+      last = stops[i];
+      break;
+    }
+  }
   const outside = !overlay.contains(document.activeElement);
   if (e.shiftKey && (document.activeElement === first || outside)) {
     e.preventDefault();
@@ -1538,20 +1575,22 @@ document.addEventListener("keydown", (e) => {
 // and rebuilt the whole visible note list, and with semantic search on, also
 // fired a backend embedding-compare request per character typed.
 let noteSearchDebounceTimeout;
-$("note-search").addEventListener("input", (e) => {
-  noteSearch = e.target.value.trim();
-  // Nothing to save when the box is empty; the button appears when it isn't.
-  // Cheap, so it stays immediate rather than waiting on the debounce below.
-  $("save-search").classList.toggle("hidden", !noteSearch);
-  clearTimeout(noteSearchDebounceTimeout);
-  noteSearchDebounceTimeout = setTimeout(() => {
-    if ($("semantic-search-toggle")?.checked) loadEntries(); // trigger semantic backend search
-    renderEntries();
-    // After the list is on screen, never before it: the reasons are an
-    // annotation on a list that is already correct, and waiting for a
-    // round trip to show any notes at all would undo the debounce's point.
-    refreshNoteSearchWhy();
-  }, 150);
+onSurface("notes", () => {
+  $("note-search").addEventListener("input", (e) => {
+    noteSearch = e.target.value.trim();
+    // Nothing to save when the box is empty; the button appears when it isn't.
+    // Cheap, so it stays immediate rather than waiting on the debounce below.
+    $("save-search").classList.toggle("hidden", !noteSearch);
+    clearTimeout(noteSearchDebounceTimeout);
+    noteSearchDebounceTimeout = setTimeout(() => {
+      if ($("semantic-search-toggle")?.checked) loadEntries(); // trigger semantic backend search
+      renderEntries();
+      // After the list is on screen, never before it: the reasons are an
+      // annotation on a list that is already correct, and waiting for a
+      // round trip to show any notes at all would undo the debounce's point.
+      refreshNoteSearchWhy();
+    }, 150);
+  });
 });
 //: The fading order, fetched once per sort rather than per render. Empty
 //: until "Forgotten first" is chosen, so nothing pays for it otherwise, and
@@ -1571,44 +1610,53 @@ async function loadForgottenOrder() {
 
 //: Remembered like the page size beside it (INBOX 432: it reset on reload).
 try {
-  const kept = prefs.get("notes-sort", null);
-  if (kept && [...$("note-sort").options].some((o) => o.value === kept)) noteSort = kept;
+  noteSort = prefs.get("notes-sort") || noteSort;
 } catch {
   /* storage blocked: newest, as before */
 }
-$("note-sort").value = noteSort;
+onSurface("notes", () => {
+  const select = $("note-sort");
+  select.value = noteSort;
+  select.value ||= noteSort = "newest";
+});
 if (noteSort === "forgotten") loadForgottenOrder().then(() => renderEntries());
-$("note-sort").addEventListener("change", async (e) => {
-  noteSort = e.target.value;
-  try {
-    prefs.set("notes-sort", noteSort);
-  } catch {
-    /* storage blocked: this session only */
-  }
-  notesCurrentPage = 1; // a re-sort can move a note off whatever page it was on
-  //: Awaited before the render, not alongside it: painting the list in id
-  //: order and re-sorting it a moment later is a list that jumps under the
-  //: hand of whoever just chose the sort.
-  if (noteSort === "forgotten") await loadForgottenOrder();
-  renderEntries();
+onSurface("notes", () => {
+  $("note-sort").addEventListener("change", async (e) => {
+    noteSort = e.target.value;
+    try {
+      prefs.set("notes-sort", noteSort);
+    } catch {
+      /* storage blocked: this session only */
+    }
+    notesCurrentPage = 1; // a re-sort can move a note off whatever page it was on
+    //: Awaited before the render, not alongside it: painting the list in id
+    //: order and re-sorting it a moment later is a list that jumps under the
+    //: hand of whoever just chose the sort.
+    if (noteSort === "forgotten") await loadForgottenOrder();
+    renderEntries();
+  });
+  $("notes-page-size").value = notesPageSize;
 });
-$("notes-page-size").value = notesPageSize;
-$("notes-page-size").addEventListener("change", (e) => {
-  notesPageSize = e.target.value;
-  prefs.set("notes-page-size", notesPageSize);
-  notesCurrentPage = 1;
-  renderEntries();
+onSurface("notes", () => {
+  $("notes-page-size").addEventListener("change", (e) => {
+    notesPageSize = e.target.value;
+    prefs.set("notes-page-size", notesPageSize);
+    notesCurrentPage = 1;
+    renderEntries();
+  });
 });
-$("notes-page-prev").addEventListener("click", () => {
-  if (notesCurrentPage <= 1) return;
-  notesCurrentPage -= 1;
-  renderEntries();
-  $("entries-heading").scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
-});
-$("notes-page-next").addEventListener("click", () => {
-  notesCurrentPage += 1; // clamped back down inside renderEntries if this overshoots
-  renderEntries();
-  $("entries-heading").scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
+onSurface("notes", () => {
+  $("notes-page-prev").addEventListener("click", () => {
+    if (notesCurrentPage <= 1) return;
+    notesCurrentPage -= 1;
+    renderEntries();
+    $("entries-heading").scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
+  });
+  $("notes-page-next").addEventListener("click", () => {
+    notesCurrentPage += 1; // clamped back down inside renderEntries if this overshoots
+    renderEntries();
+    $("entries-heading").scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
+  });
 });
 //: **The files a note's text points at, as attachment cards** (INBOX 440 (2)),
 //: in the Capture box and in a note's edit form alike. The text is where an
@@ -1654,7 +1702,7 @@ function renderEntryAttachmentChips(boxId = "entry-content", hostId = "entry-att
   box.chipsSig = sig;
   box.chipsFor = textarea;
   box.replaceChildren();
-  box.classList.toggle("hidden", matches.length + staged.length === 0);
+  box.classList.toggle("hidden", !(matches.length + staged.length));
   for (const [markdown, name, url] of matches) {
     const image = stagedImageByUrl(url);
     box.append(attachmentCard({ name, url, markdown, textarea, staged: !!image, size: image?.file.size }));
@@ -1712,7 +1760,7 @@ function captureCountText(text) {
 //: that cleared it in the pause writes nothing. A pending write also goes when the page is
 //: hidden or closed; nothing pending, nothing written, so a window with an empty box never
 //: removes another window's draft.
-{
+onSurface("notes", () => {
   const box = $("entry-content");
   const flush = () => {
     if (!box.draftTimer) return;
@@ -1731,13 +1779,13 @@ function captureCountText(text) {
   });
   window.addEventListener("pagehide", flush);
   document.addEventListener("visibilitychange", () => document.hidden && flush());
-}
+});
 
 //: **The shown count costs the same on every key** (z1c-1101): counting reads the whole text, 0.36 ms a
 //: key at 20,000 characters and 3 ms at 200,000. Up to `CAPTURE_COUNT_SYNC` characters it is counted
 //: on the key (0.04 ms); past that one count runs per `CAPTURE_COUNT_GAP` ms from the box as it is
 //: THEN, so the last key's number always lands and a key in between only checks a timer.
-{
+onSurface("notes", () => {
   const CAPTURE_COUNT_SYNC = 2000;
   const CAPTURE_COUNT_GAP = 150;
   const box = $("entry-content");
@@ -1755,15 +1803,17 @@ function captureCountText(text) {
       }, CAPTURE_COUNT_GAP);
     }
   });
-}
+});
 
-$("entry-content").addEventListener("input", () => {
-  // Keep a draft so a half-typed thought survives a reload or a stray tab
-  // switch: losing one is the most annoying thing this app could do.
-  renderEntryAttachmentChips("entry-content", "entry-attachment-chips", { paced: true });
-  // The "go to it" link belongs to the note you just saved, not the one you
-  // are now writing: drop it as soon as typing starts.
-  $("save-status").querySelector(".jump-to-note")?.remove();
+onSurface("notes", () => {
+  $("entry-content").addEventListener("input", () => {
+    // Keep a draft so a half-typed thought survives a reload or a stray tab
+    // switch: losing one is the most annoying thing this app could do.
+    renderEntryAttachmentChips("entry-content", "entry-attachment-chips", { paced: true });
+    // The "go to it" link belongs to the note you just saved, not the one you
+    // are now writing: drop it as soon as typing starts.
+    $("save-status").querySelector(".jump-to-note")?.remove();
+  });
 });
 
 //: A staged picture's bytes live in this tab and nowhere else, so a restored
@@ -1779,42 +1829,42 @@ $("entry-content").addEventListener("input", () => {
 const STAGED_IN_DRAFT = /!\[[^\]\n]{0,200}\]\(staged:[^)\n]{1,120}\)\n?/g;
 
 // Restore an unsaved draft on load.
-(() => {
-  const stored = prefs.get("captureDraft", null);
-  if (!stored) return;
-  const draft = stored.replace(STAGED_IN_DRAFT, "");
-  const lostImages = draft !== stored;
-  //: A draft that is only blank lines (older builds saved those, and removing
-  //: a staged image can leave nothing else) restores as nothing, so the
-  //: box stays empty and its placeholder shows.
-  if (!draft.trim()) {
-    prefs.remove("captureDraft");
-    if (lostImages) toast("Your restored draft only held images that were never uploaded, so it was cleared.");
-    return;
-  }
-  const box = $("entry-content");
-  box.value = draft;
-  autoGrow(box); // a long restored draft shouldn't arrive in a one-line box
-  $("entry-count").textContent = captureCountText(draft);
-  renderEntryAttachmentChips();
-  const status = $("save-status");
-  if (status) status.textContent = "Restored your unsaved draft.";
-  //: A toast rather than the status line for the images, because this runs at
-  //: module load, before the lock screen is even answered, and every status
-  //: line written here is overwritten by the boot sequence that follows.
-  //: Measured: the line came back empty in a driven browser. `toast` queues
-  //: and shows once the app is up, which is when there is somebody to read it.
-  if (lostImages) {
-    toast(
-      "Your restored draft mentioned images that were never uploaded, they " +
-        "could not come back, so those lines were removed.",
-    );
-  }
-})();
+onSurface("notes", () => {
+    const stored = prefs.get("captureDraft", null);
+    if (!stored) return;
+    const draft = stored.replace(STAGED_IN_DRAFT, "");
+    const lostImages = draft !== stored;
+    //: A draft that is only blank lines (older builds saved those, and removing
+    //: a staged image can leave nothing else) restores as nothing, so the
+    //: box stays empty and its placeholder shows.
+    if (!draft.trim()) {
+      prefs.remove("captureDraft");
+      if (lostImages) toast("Your restored draft only held images that were never uploaded, so it was cleared.");
+      return;
+    }
+    const box = $("entry-content");
+    box.value = draft;
+    autoGrow(box); // a long restored draft shouldn't arrive in a one-line box
+    $("entry-count").textContent = captureCountText(draft);
+    renderEntryAttachmentChips();
+    const status = $("save-status");
+    if (status) status.textContent = "Restored your unsaved draft.";
+    //: A toast rather than the status line for the images, because this runs at
+    //: module load, before the lock screen is even answered, and every status
+    //: line written here is overwritten by the boot sequence that follows.
+    //: Measured: the line came back empty in a driven browser. `toast` queues
+    //: and shows once the app is up, which is when there is somebody to read it.
+    if (lostImages) {
+      toast(
+        "Your restored draft mentioned images that were never uploaded, they " +
+          "could not come back, so those lines were removed.",
+      );
+    }
+});
 
 //: The title and the tags are the draft too (INBOX 434): measured, a reload
 //: brought the words back and dropped both. `resetCaptureForm` clears them.
-for (const [id, key] of [["entry-title", "captureDraftTitle"], ["entry-tags", "captureDraftTags"]]) {
+onSurface("notes", () => { for (const [id, key] of [["entry-title", "captureDraftTitle"], ["entry-tags", "captureDraftTags"]]) {
   const field = $(id);
   try {
     field.value ||= prefs.get(key, null) || "";
@@ -1825,17 +1875,21 @@ for (const [id, key] of [["entry-title", "captureDraftTitle"], ["entry-tags", "c
       else prefs.remove(key);
     } catch {}
   });
-}
+  } });
 
-$("sketch-btn").addEventListener("click", () => openSketch());
-// Wave H: dictation + read-aloud.
-$("mic-note").addEventListener("click", () =>
-  toggleDictation($("mic-note"), $("entry-content"))
+onSurface("notes", () => {
+  $("sketch-btn").addEventListener("click", () => openSketch());
+  // Wave H: dictation + read-aloud.
+  $("mic-note").addEventListener("click", () =>
+    toggleDictation($("mic-note"), $("entry-content"))
+  );
+});
+onSurface("chat", () =>
+  $("mic-chat").addEventListener("click", () => toggleDictation($("mic-chat"), $("chat-input")))
 );
-$("mic-chat").addEventListener("click", () =>
-  toggleDictation($("mic-chat"), $("chat-input"))
-);
-$("speak-btn").addEventListener("click", (e) => speakText($("ai-answer").textContent, e.currentTarget));
+onSurface("notes", () => {
+  $("speak-btn").addEventListener("click", (e) => speakText($("ai-answer").textContent, e.currentTarget));
+});
 
 // PWA (WORLD_CLASS_PLAN decision 49): sw.js caches stamped files, vendored
 // libraries and icons, and shows offline.html when the server is not
@@ -1893,7 +1947,7 @@ window.addEventListener("appinstalled", () => {
   renderInstallRow();
 });
 //: The Install row paints when the body is built (the button is wired in settings-controls.js).
-onSettingsBody(renderInstallRow);
+onSurface("settings", renderInstallRow);
 
 // The generative brand emblem's initial draw (Wave O) moved to settings.js's
 // own tail (§88.3 item 4): renderBrandLogo() itself stays here (used far
@@ -1911,7 +1965,7 @@ onSettingsBody(renderInstallRow);
 
 // --- Global Drag and Drop & Paste Image Upload for Textareas ---
 document.addEventListener("dragover", (e) => {
-  if (e.target.tagName && e.target.tagName.toLowerCase() === 'textarea') {
+  if (e.target.tagName?.toLowerCase() === 'textarea') {
     e.preventDefault();
     e.target.classList.add("drag-over");
   } else if (Array.from(e.dataTransfer?.types || []).includes("Files") && fileDropBox(e.target)?.kind === "codemirror") {
@@ -1921,7 +1975,7 @@ document.addEventListener("dragover", (e) => {
 });
 
 document.addEventListener("dragleave", (e) => {
-  if (e.target.tagName && e.target.tagName.toLowerCase() === 'textarea') {
+  if (e.target.tagName?.toLowerCase() === 'textarea') {
     e.preventDefault();
     e.target.classList.remove("drag-over");
   }
@@ -2233,30 +2287,18 @@ async function handleFileUpload(textarea, files) {
   if (added) pushTextUndo("Added a file", textarea, originalText, textarea.value);
 }
 
-// ROADMAP.md Tier 2 §16c: paste and drag-drop already reached Capture (the
-// global textarea handler above matches any `<textarea>`, and `#entry-content`
-// is one): checked live before building, and both already worked. The one
-// genuinely missing path was a file-picker button; the only "attach" control
-// near Capture was for linking existing *notes* to a chat message, not
-// uploading a new file. Reuses the same `handleFileUpload` the paste/drop
-// paths already use, so all three input paths insert identically.
-if ($("entry-attach-file")) {
-  $("entry-attach-file").addEventListener("click", () => {
-    $("entry-attach-file-input").click();
-  });
+// ROADMAP.md Tier 2 §16c: a file-picker button for Capture; paste and drop already worked. Same `handleFileUpload`, so all three paths insert alike.
+onSurface("notes", () => {
+  $("entry-attach-file").addEventListener("click", () => $("entry-attach-file-input").click());
   $("entry-attach-file-input").addEventListener("change", async (e) => {
     const files = Array.from(e.target.files);
     if (files.length) await handleFileUpload($("entry-content"), files);
     e.target.value = ""; // so picking the same file twice still fires "change"
   });
-}
-
-if ($("entry-attach-existing")) {
   $("entry-attach-existing").addEventListener("click", async () => {
     const upload = await pickMediaDialog();
     if (!upload) return;
-    // Same inline-markdown insertion shape handleFileUpload's own success
-    // path uses, minus the upload, this is already sitting on disk.
+    // Same inline-markdown insertion shape handleFileUpload's own success path uses, minus the upload.
     const textarea = $("entry-content");
     const cursorPosition = textarea.selectionStart;
     const original = textarea.value;
@@ -2265,7 +2307,7 @@ if ($("entry-attach-existing")) {
       original.substring(0, cursorPosition) + markdown + original.substring(textarea.selectionEnd);
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
   });
-}
+});
 
 //: Off when the reader turned single-key shortcuts off (stored in this
 //: browser, like the other keyboard preferences); on by default.
@@ -2307,3 +2349,7 @@ function singleKeysOn() {
     });
   };
 }
+
+onSurface("graph", () => {
+  $("link-suggest-btn").addEventListener("click", () => openSuggestionsInbox("links"));
+});

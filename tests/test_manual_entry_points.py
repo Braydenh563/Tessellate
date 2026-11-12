@@ -7,7 +7,9 @@ button that opens the manual over Settings; the dashboard quick-access catalogue
 holds `reveal:manual`. The Guide's text names its More actions menu.
 """
 
+from tests._help_text import help_more_text
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -23,12 +25,12 @@ def test_the_palette_and_find_anything_have_an_open_the_manual_command():
 
 
 def test_the_manual_topic_in_settings_help_opens_the_manual_itself():
-    find = (JS / "settings-find.js").read_text(encoding="utf-8")
+    find = unwrapped((JS / "settings-find.js").read_text(encoding="utf-8"))
     assert 'topic.id === "manual" ? { manual: true' in find
     assert "if (link.manual) button.addEventListener" in find
 
 
 def test_the_guide_names_the_menu_that_holds_the_manual():
-    text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    text = help_more_text()
     assert "Guide's More actions menu" in text
     assert "Guide's ... menu" not in text

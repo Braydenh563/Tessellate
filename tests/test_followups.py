@@ -215,3 +215,11 @@ def test_a_mixed_reply_still_yields_three():
         "When is the deadline?",
         "Who owns this?",
     ]
+
+
+def test_followups_run_in_quick_so_a_reasoning_model_does_not_think_first(ai_client, fake_ollama):
+    """2026-11-05a: /chat/followups ran past its deadline on the owner's machine. Under the default preset a
+    reasoning model reasons before three short questions nobody reads the reasoning of; Quick sends
+    `think: false` and a 256-token cap (presets.MODES["quick"])."""
+    ai_client.post("/chat/followups", json={"question": "What did I save?", "answer": "Three notes."})
+    assert fake_ollama.chat_call_modes[-1] == "quick"

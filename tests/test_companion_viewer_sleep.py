@@ -12,8 +12,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 ROOT = Path(__file__).resolve().parents[1]
-AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-menu.js"))
+AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8")) for n in ("avatars.js", "companion-menu.js"))
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
 
 
@@ -51,7 +53,9 @@ def test_its_focus_is_a_glow_from_the_keyboard_only() -> None:
     glow = CSS[CSS.index("#nm-buddy .nm-buddy-face::before {") :]
     glow = glow[: glow.index("}")]
     assert "border-radius: 50%" in glow and "radial-gradient" in glow and "opacity: 0" in glow
-    assert "#nm-buddy .nm-buddy-face:focus-visible::before { opacity: 1; }" in CSS
+    # Intent moved (in-app dive 1107, b8a51ef7): the keyboard-only glow also draws a 2px accent ring
+    # (4.74:1 light, 6.8:1 dark at the ring; the glow alone was about 1.9:1). Still focus-visible only.
+    assert "#nm-buddy .nm-buddy-face:focus-visible::before { opacity: 1; outline: 2px solid var(--accent); }" in CSS
     # No filter on the moving figure for it.
     assert "drop-shadow" not in glow
 
@@ -62,7 +66,7 @@ def test_the_reduce_hint_stops_atlas_figure_loops_and_keeps_acts() -> None:
     assert "#nm-buddy:has(.atl-figure) .nm-buddy-char,\n" not in CSS, "the 6s slow-down is gone"
     block = CSS[CSS.index("ledger 669") :]
     block = block[: block.index("\n}\n")]
-    assert '#nm-buddy:has(.atl-figure):is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }' in block
+    assert '#nm-buddy[data-atlas-figure]:is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }' in block
     assert "#nm-buddy:is(.nmb-walking, .nm-buddy-dragging) .nm-live .nm-atlas.atl-layer-lower," in block
     assert "[class*=" not in block, "a class attribute selector up the tree restyles the subtree on every class change"
     assert "nmb-act" not in block.split("*/")[-1], "an act, one gesture, still plays"

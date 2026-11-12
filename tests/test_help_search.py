@@ -14,16 +14,19 @@ import json
 import re
 import subprocess
 from pathlib import Path
+from tests._js_scope import unwrapped, unwrapped_copy
 
 ROOT = Path(__file__).resolve().parents[1]
-JS = (ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8")
+JS = unwrapped((ROOT / "frontend" / "js" / "settings-find.js").read_text(encoding="utf-8"))
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
 
 #: meaning.js first: the Settings bundle loads the two together (Brief 94).
 HARNESS = """
 const vm = require("vm"), fs = require("fs"), path = require("path");
-const ctx = vm.createContext({ document: { addEventListener() {} }, window: {}, apiJson: () => new Promise(() => {}) });
+const ctx = vm.createContext({ document: { addEventListener() {} }, apiJson: () => new Promise(() => {}) });
+//: meaning.js is one closure and puts its exports on `window` (ranked row 37a); the context is the window, so they are the globals settings-find.js calls.
+ctx.window = ctx;
 vm.runInContext(fs.readFileSync(path.join(path.dirname(process.argv[1]), "meaning.js"), "utf8"), ctx);
 vm.runInContext(fs.readFileSync(process.argv[1], "utf8"), ctx);
 const call = (src) => JSON.stringify(vm.runInContext(src, ctx));
@@ -32,8 +35,9 @@ console.log(call(process.argv[2]));
 
 
 def _node(expr: str):
+    unwrapped_copy(ROOT / "frontend" / "js" / "meaning.js")  # the harness reads it from beside the copy of settings-find.js
     out = subprocess.run(
-        ["node", "-e", HARNESS, str(ROOT / "frontend" / "js" / "settings-find.js"), expr],
+        ["node", "-e", HARNESS, str(unwrapped_copy(ROOT / "frontend" / "js" / "settings-find.js")), expr],
         capture_output=True,
         text=True,
         check=True,

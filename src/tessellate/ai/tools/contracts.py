@@ -41,6 +41,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core.database import Category, Entry, EntryLink, Reminder
 from tessellate.entry import manager
+from tessellate.entry import manager_categories
 from tessellate.repo import tags as tags_repo
 from tessellate.entry.tagnames import normalise_tags
 
@@ -71,7 +72,7 @@ def _fold(text: object) -> str:
 
 
 def _category_names(session: Session) -> list[str]:
-    return [row["name"] for row in manager.all_categories(session)]
+    return [row["name"] for row in manager_categories.all_categories(session)]
 
 
 def near_category(session: Session, wanted: str) -> tuple[str | None, str | None]:

@@ -273,10 +273,10 @@ def test_a_reply_says_who_wrote_it_and_a_composed_one_arrives():
     attach = frontend_text("chat-attach.js")
     #: Who wrote it is a badge in the head now (INBOX 1300 C14, `replyByline`
     #: in reply-kit.js, tests/test_reply_cards.py), not words after the name.
-    assert "const model = stats?.model || meta?.answered_by;" in attach and "head, model, engine: Boolean(meta)" in attach
+    assert "const model = t.stats?.model || t.meta?.answered_by;" in attach and "head, model, engine: Boolean(t.meta)" in attach
     #: The arrival is the one reveal every surface shares now (INBOX 1300
     #: C28, `replyReveal` in reply-kit.js, tests/test_reply_cards.py).
-    assert "finishReply(answerEls, { composed: meta?.composed" in attach
+    assert "finishReply(answerEls, { composed: t.meta?.composed" in attach
     assert '"ph:notebook Your notes, no AI"' not in attach
 
 

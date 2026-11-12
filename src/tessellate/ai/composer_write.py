@@ -460,18 +460,27 @@ def _tidy(thoughts: str) -> str:
 
 
 def note_name(note: dict, size: int = 80) -> str:
-    """What the composer calls a note: its label ("Budget review: ..."), else
-    its title (`composer_frame`), cut at a word past `size`."""
+    """What the composer calls a note: its title, else its first line cut at about six
+    words (`composer_frame.name_of`, the one name; owner 2026-11-10), cut at a word past `size`."""
     from tessellate.ai import composer_frame
 
-    return _cap(composer_frame.note_label(note) or composer_frame.note_title(note.get("content") or "", size=size)) or "Untitled"
+    return _cap(composer_frame.name_of(note)) or "Untitled"
 
 
 def _write_up_name(note: dict) -> str:
     """A note's name for the write-up: its first sentence when that is short
     ("Dentist visit"), so the rest of the note is points under it and not
     part of its name."""
+    #: The one name quotes a title-less note's words (“Standup…”); a write-up is the person's own
+    #: document, so it takes the words without the quotes and, for "Budget review: we have 2000
+    #: left", the label before the colon.
     name = note_name(note)
+    if name.startswith("\u201c") and name.endswith("\u201d"):
+        name = name[1:-1].rstrip("\u2026 ").strip()
+        label = re.match(r"^([^:]{3,40}?):\s", name + " ")
+        if label and len(label.group(1).split()) <= 4:
+            name = label.group(1)
+        name = name[:1].upper() + name[1:]
     first = sentences(name)[0] if sentences(name) else name
     return first.rstrip(".") if len(first.split()) <= 8 and first != name else name
 

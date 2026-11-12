@@ -115,9 +115,57 @@
 /* The jump list says the pane's name, so the phone band hides the title
    (`.jump-echo`). A pane whose dock held only that title was left a blank
    bordered bar under the nav (Settings, Models at half width; the owner's
-   22-10 screenshot). With nothing left in it the dock goes too. */
+   22-10 screenshot). With nothing left in it the dock goes too.
+   Both are clipped (the visually-hidden recipe), never `display: none`: a
+   pane keeps its heading for a screen reader's heading navigation (P32). */
 #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child):not(:has(> :not(.dock-identity))) {
-  display: none;
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  border: 0;
+}
+@media (max-width: 819.98px) {
+  #settings-modal h3.jump-echo {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+/* A dock left holding only the help button gives the row up: the dock shrinks
+   to nothing, the button sits at the pane's top right and the intro line
+   leaves room for it (Memory at 390px: the dock was 62px tall for one 44px
+   button; measured 2026-11-10). */
+@media (max-width: 819.98px) {
+  #settings-modal .settings-section:has(> .dock > .dock-identity > h3.jump-echo:only-child):has(> .dock > .dock-actions) {
+    position: relative;
+  }
+  #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child):has(> .dock-actions) {
+    height: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+  }
+  /* `--ring-room` down from the top: flush with the pane's scrolling edge,
+     the buttons' rings lost their top 4px to it (wrapzoom at 768). */
+  #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child) > .dock-actions {
+    position: absolute;
+    inset-block-start: var(--ring-room);
+    inset-inline-end: 0;
+  }
+  #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child):has(> .dock-actions) + p {
+    padding-inline-end: var(--target-min);
+  }
 }
 
 /* Hover tints the chip's border, not a second box (K28); lazy with Settings for the boot CSS cap. */
@@ -222,15 +270,28 @@
 :root:not([data-contrast="on"]) :is(#settings-modal, #appearance-panel) :is(.settings-section, .settings-group, .settings-pane-title, .dialog-head) button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main):is(:hover, :focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg);
 }
+/* The outdent is for a button in a group's well. Two places have no room for it (wrapzoom
+   2026-11-11): a row straight under the section (Reset appearance to defaults, Read it again)
+   stands on the pane's scrolling edge, whose 4px of ring room the -8px outdent overran, so the
+   tint and ring lost 4px; and a button inside a sentence (Clear kept pages, the Logs'
+   filtered-out count) pulled its tint 4px over the word before it. Both keep their own box. */
+:root:not([data-contrast="on"]) :is(#settings-modal, #appearance-panel) :is(.settings-section > .row, p) > button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main) {
+  margin-inline-start: 0;
+}
 
 /* A collapsed hint keeps no gap under the title (1610: controls sat 6px low). */
 .setting-label > .setting-hint.is-collapsed {
   margin-top: calc(-1 * var(--space-1));
 }
 
-/* One bar x per recipe (1610): a padded row's box is a padding left of its text. */
+/* One bar x per recipe (1610, 1696 c): every bar is `--setting-bar-inset` from
+   its text edge; a padded row's box is a padding left of its text, a group
+   that is itself the row a group padding. */
 #settings-modal :is(.check-row, .setting-check, .checkbox-label).setting-modified::before {
-  inset-inline-start: calc(-1 * var(--space-3));
+  inset-inline-start: calc(var(--space-3) - var(--setting-bar-inset));
+}
+#settings-modal .settings-group.setting-modified::before {
+  inset-inline-start: calc(1rem - var(--setting-bar-inset));
 }
 
 /* A selection bar inside a Settings group takes the pane head's box (INBOX
@@ -239,4 +300,42 @@
 #settings-modal .settings-group > .selectbar {
   margin-inline: calc(-1rem - 1px);
   padding-inline: calc(1rem + 1px);
+}
+
+/* A live status label (INBOX 1734: the Running badge on the SearXNG card): the
+   label recipe's ok tint with a dot before the words, so "running" reads as a
+   state rather than a green tag. The dot is the ok ink the recipe's icon takes,
+   ringed by a softer ring of the same colour; the words stay in the ink, which
+   is what holds 4.5:1 on the tint. */
+.item-label.is-live::before {
+  content: "";
+  flex: none;
+  inline-size: var(--space-2);
+  block-size: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--ok);
+  box-shadow: 0 0 0 var(--space-1) color-mix(in srgb, var(--ok) 22%, transparent);
+  margin-inline: var(--space-1);
+}
+
+/* The run-it-yourself disclosure is the last row of the SearXNG card (INBOX
+   1734: it sat in a card of its own, its open body 6px under the summary). It
+   is set off by a hairline like the autostart row above it, and its open body
+   is inset past the caret, with room under the summary. */
+.searxng-host > .searxng-diy {
+  padding: var(--space-3) 0 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+}
+/* The two lines that are only filled while it is not running; empty, they
+   would still take a flex gap each (two blank rows under the intro). */
+.searxng-host > p:empty {
+  display: none;
+}
+.searxng-host > .searxng-diy[open] > :not(summary) {
+  margin-inline-start: var(--space-6);
+}
+.searxng-host > .searxng-diy[open] > summary {
+  margin-bottom: var(--space-3);
 }

@@ -16,13 +16,15 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 ROOT = Path(__file__).resolve().parents[1]
 
 JS = ROOT / "frontend" / "js"
 
 
 def _read(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return unwrapped((JS / name).read_text(encoding="utf-8"))
 
 
 def test_outside_press_closer_leaves_the_opener_alone():

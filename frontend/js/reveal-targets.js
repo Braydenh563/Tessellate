@@ -155,7 +155,7 @@ async function revealDocument() {
 async function revealBoard(wantMap = false) {
   await switchTab("library");
   document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
-  await ensureModule("library");
+  await ensureModule("boards");
   const onCanvas = !$("wb-canvas-view")?.classList.contains("hidden");
   const isMap = typeof wbIsMap === "function" && wbIsMap();
   if (window.currentBoardId && onCanvas && (!wantMap || isMap)) return true;
@@ -457,6 +457,10 @@ const REVEAL_TARGETS = {
   //: KG4: note types and their fields.
   "note-types": { open: () => openNoteTypesSheet(), sel: '[data-sheet="note-types"] .sheet-card', built: "openNoteTypesSheet", flash: false },
   //: New meeting (INBOX 644): its sheet, the title field first.
+  //: The offline studio (studio.js): an audio overview of the notes, read in the natural voice.
+  //: Sync between computers: the one Settings group, both ways in (WORLD_CLASS_PLAN B6 decision 14).
+  "sync-group": { settings: "data", el: "sync-group" },
+  studio: { open: () => openStudio(), sel: '[data-sheet="studio"] .sheet-card', built: "openStudio", flash: false },
   "meeting-new": { open: () => openNewMeeting(), sel: '[data-sheet="new-meeting"] .sheet-card', built: "openNewMeeting", flash: false },
   //: KG3: the kinds of link, the built-ins and a person's own.
   "relation-types": { open: () => openRelationTypesSheet(), sel: '[data-sheet="relation-types"] .sheet-card', built: "openRelationTypesSheet", flash: false },
@@ -537,7 +541,7 @@ const REVEAL_TARGETS = {
 function revealBoardsGallery() {
   return switchTab("library").then(() => {
     document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
-    return ensureModule("library").then(() => wbShowBoardsLanding());
+    return ensureModule("boards").then(() => wbShowBoardsLanding());
   });
 }
 
@@ -691,6 +695,7 @@ function packagesNoticeTarget(message) {
   if (/Python|Pyodide/.test(message)) return "pyodide";
   if (/Translate/.test(message)) return "translate";
   if (/Live captions/.test(message)) return "captions";
+  if (/Speaker labels/.test(message)) return "speakers";
   return "";
 }
 
@@ -773,6 +778,7 @@ function buildShortcutList(list) {
 }
 
 function openShortcuts() {
+  surfaceBuild("shortcuts");
   capturingShortcut = null;
   setShortcutStatus("");
   renderShortcutList();

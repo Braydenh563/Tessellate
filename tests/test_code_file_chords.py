@@ -16,7 +16,8 @@ MARKDOWN_CALL = re.compile(r"\b(applyMarkdown|wrapDocSelection)\(")
 
 
 def _keymap() -> str:
-    source = DOCS_JS.read_text(encoding="utf-8")
+    #: The keymap moved to documents-view.js (D21).
+    source = DOCS_JS.parent.joinpath("documents-view.js").read_text(encoding="utf-8")
     start = source.index("function docCmKeymap(CM)")
     return source[start : source.index("\n}\n", start)]
 
@@ -31,7 +32,7 @@ def test_every_markdown_chord_declines_in_a_code_file():
 
 
 def test_the_guard_reads_the_file_type():
-    source = DOCS_JS.read_text(encoding="utf-8")
+    source = DOCS_JS.parent.joinpath("documents-view.js").read_text(encoding="utf-8")
     body = source[source.index("function docProseChord(") :].split("\n}\n")[0]
     assert "docFileType().previewable" in body
     assert "return false" in body
@@ -81,7 +82,7 @@ def test_a_code_files_exports_are_its_source_not_an_empty_page():
     for it too."""
     source = DOCS_JS.read_text(encoding="utf-8")
     export = (DOCS_JS.parent / "documents-export.js").read_text(encoding="utf-8")
-    html = export[export.index("async function docExportHtmlRun()") :].split("\n}\n")[0]
+    html = export[export.index("async function docExportHtmlRun(") :].split("\n}\n")[0]
     head = html.split("withDocPreviewShown")[0]
     assert "!docFileType().previewable" in head
     assert "<pre><code>" in head

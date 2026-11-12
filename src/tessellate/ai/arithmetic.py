@@ -18,6 +18,7 @@ from __future__ import annotations
 import ast
 import operator
 import re
+from tessellate.core.lazyre import lazy_compile
 
 MAX_EXPONENT = 100
 MAX_MAGNITUDE = 1e15
@@ -36,8 +37,8 @@ _BINARY = {
 #: "x" and "×" are read as times, "÷" as divided by, "^" as a power.
 #: The trailing "?", "=" and "." come off in `sum_in`: a lazy `.+?` before
 #: `\s*[?=.]*\s*$` was quadratic on a run of whitespace (CodeQL).
-_ASK = re.compile(r"^\s*(?:what(?:'?s| is)|calculate|compute|work out)\s+(?P<expr>\S.*)$", re.I)
-_ALLOWED = re.compile(r"^[\d\s.+\-*/%()^x×÷]+$")
+_ASK = lazy_compile(r"^\s*(?:what(?:'?s| is)|calculate|compute|work out)\s+(?P<expr>\S.*)$", re.I)
+_ALLOWED = lazy_compile(r"^[\d\s.+\-*/%()^x×÷]+$")
 
 
 class NotArithmetic(ValueError):
@@ -84,7 +85,7 @@ def evaluate(expression: str) -> float:
 #: A sum typed bare ("5 + 5", INBOX 801: it got "None of my tools fits
 #: that") needs an operator no date or code uses: `+ * x × ÷ ^ %`, or a minus
 #: or a slash with a space on each side. "2024-10-11" and "10/11" are dates.
-_BARE_OPERATOR = re.compile(r"[+*x×÷^%]|\s[-/]\s")
+_BARE_OPERATOR = lazy_compile(r"[+*x×÷^%]|\s[-/]\s")
 
 
 def sum_in(question: str) -> str | None:

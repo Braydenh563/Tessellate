@@ -15,7 +15,7 @@ import pytest
 
 from tessellate.core import deps, vault
 from tessellate.core.database import AskTurn, Conversation
-from tessellate.entry import manager
+from tessellate.entry import manager_private
 
 SECRET = "# Zebrasecret plan\n\nMy bank PIN is 4417, the spare key is at Quokkatown station."
 QUOTE = "the spare key is at Quokkatown station"
@@ -66,18 +66,18 @@ def test_making_a_note_private_redacts_the_answers_that_quoted_it(client):
         for turn_id in (cited, quoted):
             turn = s.get(AskTurn, turn_id)
             assert "Quokkatown" not in turn.answer
-            assert turn.answer == manager.PRIVATE_ANSWER_REDACTED
+            assert turn.answer == manager_private.PRIVATE_ANSWER_REDACTED
         assert s.get(AskTurn, clean).answer == "A long proof."
 
         messages = json.loads(s.get(Conversation, chat).messages)
         assert messages[0]["content"] == "where is my key"  # the person's own words stay
-        assert messages[1]["content"] == manager.PRIVATE_ANSWER_REDACTED
+        assert messages[1]["content"] == manager_private.PRIVATE_ANSWER_REDACTED
         assert messages[1].get("redacted") is True
         assert "Quokkatown" not in json.dumps(messages) and "4417" not in json.dumps(messages)
         assert messages[3]["content"] == "A long proof."
 
         attached_messages = json.loads(s.get(Conversation, attached).messages)
-        assert attached_messages[1]["content"] == manager.PRIVATE_ANSWER_REDACTED
+        assert attached_messages[1]["content"] == manager_private.PRIVATE_ANSWER_REDACTED
         assert json.loads(s.get(Conversation, untouched).messages)[1]["content"] == "A long proof."
 
 
@@ -97,4 +97,4 @@ def test_ask_history_shows_the_redaction(client):
     note, (cited, *_rest) = _seed(client)
     client.post(f"/entries/{note}/privacy", json={"private": True})
     body = client.get(f"/ask-history/{cited}").json()
-    assert body["answer"] == manager.PRIVATE_ANSWER_REDACTED
+    assert body["answer"] == manager_private.PRIVATE_ANSWER_REDACTED

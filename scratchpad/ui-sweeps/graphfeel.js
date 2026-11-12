@@ -33,10 +33,14 @@ const N = Number(process.env.N || 34), W = Number(process.env.W || 1440), H = Nu
     }
     // ~N links on the first 2/3 of the notes (hubs and leaves), the rest unlinked, as a real notebook is.
     const core = ids.slice(0, Math.ceil(ids.length * 0.65));
+    // A pair is linked once either way round: the API answers a repeat with a 400.
+    const pairs = new Set();
     let made = 0, guard = 0;
     while (made < ids.length && guard++ < ids.length * 6) {
       const a = core[Math.floor(Math.pow(rnd(), 2) * core.length)], b = core[Math.floor(rnd() * core.length)];
-      if (a === b) continue;
+      const pair = a < b ? `${a}:${b}` : `${b}:${a}`;
+      if (a === b || pairs.has(pair)) continue;
+      pairs.add(pair);
       const res = await api(`/entries/${a}/links`, { method: "POST", body: JSON.stringify({ target_id: b, reason: rnd() < 0.5 ? "Same subject" : "" }) }).catch(() => null);
       if (res && res.ok) made++;
     }

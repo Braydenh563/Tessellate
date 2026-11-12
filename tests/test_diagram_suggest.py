@@ -71,15 +71,17 @@ def _compose(client, **body):
 # --- the templates -------------------------------------------------------------------
 
 
-def test_fourteen_flowcharts_each_read_back_as_blocks_the_printer_writes_unchanged():
+def test_twenty_flowcharts_each_read_back_as_blocks_the_printer_writes_unchanged():
     #: 1546 P4 added a mind map, a timeline and two sequence diagrams (each with a `kind`); they are
     #: held to the same rule by tests/test_diagram_kinds.py, so this one stays the flowcharts'.
     rows = [t for t in json.loads(TEMPLATES.read_text(encoding="utf-8"))["templates"] if "kind" not in t]
     #: 1679 slice 9 moved the intent from "eight" to fourteen: an org chart and an architecture lead, then
-    #: the first seven, then a lifecycle, a checklist, sideways lanes and a loop, and Blank last.
+    #: the first seven, then a lifecycle, a checklist, sideways lanes and a loop, and Blank last. R16 (OPEN W18, 1109) added six
+    #: more before Blank: an incident, a release, a ticket, a hire, an order and a content review.
     assert [t["id"] for t in rows] == [
         "org-chart", "architecture", "process", "decision", "approval", "onboarding", "bug-triage", "user-flow",
-        "swimlanes", "state-lifecycle", "checklist-flow", "swimlanes-sideways", "request-loop", "blank",
+        "swimlanes", "state-lifecycle", "checklist-flow", "swimlanes-sideways", "request-loop",
+        "incident-response", "release-pipeline", "support-ticket", "hiring-pipeline", "order-fulfilment", "content-review", "blank",
     ]  # fmt: skip
     got = _node(
         f"const rows = {json.dumps(rows)};\n"

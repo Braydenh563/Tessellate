@@ -23,6 +23,8 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 FRONTEND_DIR = Path(__file__).resolve().parents[1] / "frontend"
 #: The scripts live in `frontend/js/` (2026-10-03); `sw.js` alone stays at the
 #: frontend root, because a service worker only controls pages under its own path.
@@ -47,13 +49,13 @@ def app_js_files() -> list[Path]:
 #: (app.js, `LAZY_MODULES`). Still the app's code for every test that reads
 #: it, so `app_js_text` includes them; not in `app_js_files`, which is what
 #: loads at boot and what the gzip budget counts.
-LAZY_PIECES = ("panel-movable.js", "notes-lazy.js", "lightbox-view.js", "edit-conflict.js", "categories-panel.js", "tag-manager.js", "chip-menus.js", "note-history.js", "ask-history.js", "settings-data.js", "meaning.js", "settings-find.js", "settings-models.js", "tag-suggest.js", "search-suggest.js", "sketch-pad.js", "writing-desk.js", "attachment-actions.js", "ocr-engine.js", "quick-note.js", "quick-access.js", "field-clear.js", "date-field.js", "assistant-avatar.js", "suggestions-inbox.js", "entity-page.js", "link-types.js", "note-properties.js", "reveal-targets.js", "onboarding.js", "update-dialogs.js", "app-palette.js", "note-panels.js", "settings-controls.js", "note-edit-panels.js", "attach-to.js", "notes-rail-spy.js", "dash-boards.js", "model-bench.js", "web-clip.js", "app-import.js", "usage-ledger.js", "chord-guide.js", "note-templates.js", "atlas-motion.js", "atlas-micro.js", "help-chat.js", "mermaid-draw.js", "settings-packages.js", "batch-space.js", "atlas-life.js", "companion-menu.js", "companion-settings.js", "drag-edge.js", "pick-row.js", "vault-unlock.js", "nav-history.js", "icon-picker.js", "note-pick-preview.js", "tour.js", "questions-view.js", "ask-compose.js", "meetings.js", "chat-edit.js", "quickadd.js", "search.js", "statistics.js", "utility-tools.js", "captions.js", "translate.js", "app-features.js", "chat-undo.js", "web-results.js", "chat-private.js", "chat-time.js", "notifications.js", "shared-intake.js", "undo-kit.js", "connections.js", "timeline-calendar.js", "timeline-cal-add.js", "timeline-detail.js", "task-steps.js", "chat-tasks.js", "improve-panel.js", "lightbox-actions.js", "settings-health.js", "dash-orphans.js", "dash-night.js", "personas-pane.js", "dash-day.js", "library-pick.js", "feature-model-sheet.js", "status-panels.js", "phone-more.js", "gesture-kit.js", "load-failed.js", "reminder-edit.js", "image-layout.js", "obj-ref.js", "obj-order.js", "obj-drag.js", "obj-reorder.js", "obj-clip.js", "obj-carry.js", "obj-tray.js", "popup-glyph.js", "capture-card.js", "capture-card-more.js", "chat-turn.js", "entry-menu.js", "answer-kit.js", "map-preview.js", "citation-peek.js", "space-swap.js", "table-block.js", "entry-card.js", "dash-art.js", "scroll-row.js")
+LAZY_PIECES = ("panel-movable.js", "notes-lazy.js", "lightbox-view.js", "edit-conflict.js", "categories-panel.js", "tag-manager.js", "chip-menus.js", "note-history.js", "ask-history.js", "settings-data.js", "meaning.js", "settings-find.js", "settings-models.js", "tag-suggest.js", "search-suggest.js", "sketch-pad.js", "writing-desk.js", "attachment-actions.js", "ocr-engine.js", "quick-note.js", "quick-access.js", "field-clear.js", "date-field.js", "assistant-avatar.js", "suggestions-inbox.js", "entity-page.js", "link-types.js", "note-properties.js", "reveal-targets.js", "onboarding.js", "update-dialogs.js", "app-palette.js", "note-panels.js", "settings-controls.js", "settings-prefs.js", "note-edit-panels.js", "attach-to.js", "notes-rail-spy.js", "dash-boards.js", "model-bench.js", "web-clip.js", "app-import.js", "usage-ledger.js", "chord-guide.js", "note-templates.js", "atlas-motion.js", "atlas-micro.js", "help-chat.js", "mermaid-draw.js", "code-colour.js","settings-packages.js", "batch-space.js", "atlas-life.js", "companion-menu.js", "companion-settings.js", "drag-edge.js", "pick-row.js", "vault-unlock.js", "nav-history.js", "icon-picker.js", "note-pick-preview.js", "tour.js", "questions-view.js", "ask-compose.js", "meetings.js", "chat-edit.js", "quickadd.js", "search.js", "statistics.js", "utility-tools.js", "captions.js", "translate.js", "app-features.js", "chat-undo.js", "web-results.js", "chat-private.js", "chat-time.js", "notifications.js", "shared-intake.js", "undo-kit.js", "connections.js", "timeline-calendar.js", "timeline-cal-add.js", "timeline-detail.js", "task-steps.js", "chat-tasks.js", "improve-panel.js", "lightbox-actions.js", "settings-health.js", "dash-orphans.js", "dash-night.js", "personas-pane.js", "dash-day.js", "library-pick.js", "feature-model-sheet.js", "status-panels.js", "phone-more.js", "gesture-kit.js", "load-failed.js", "reminder-edit.js", "image-layout.js", "obj-ref.js", "obj-order.js", "obj-drag.js", "obj-reorder.js", "obj-clip.js", "obj-carry.js", "obj-tray.js", "popup-glyph.js", "capture-card.js", "capture-card-more.js", "capture-stage.js", "attach-accept.js", "chat-docs.js", "chat-turn.js", "entry-menu.js", "answer-kit.js", "map-preview.js", "citation-peek.js", "space-swap.js", "table-block.js", "entry-card.js", "dash-art.js", "scroll-row.js", "confirmed-patterns.js", "value-field.js", "studio.js", "sync-folder.js")
 
 
 @lru_cache(maxsize=1)
 def _joined() -> str:
     paths = [*app_js_files(), *(JS_DIR / name for name in LAZY_PIECES)]
-    return "\n".join(path.read_text(encoding="utf-8") for path in paths)
+    return "\n".join(unwrapped(path.read_text(encoding="utf-8")) for path in paths)
 
 
 def app_js_text() -> str:
@@ -76,22 +78,22 @@ MOVED_OUT = {
     "dashboard.js": ("dash-day.js", "dash-night.js", "dash-orphans.js", "app-features.js", "dash-art.js"),
     "navigation.js": ("load-failed.js",),
     "settings-panes.js": ("app-features.js",),
-    "chat-attach.js": ("chat-turn.js", "answer-kit.js"),
+    "chat-attach.js": ("chat-turn.js", "answer-kit.js", "chat-docs.js"),
     "chat-agent.js": ("chat-turn.js", "answer-kit.js"),
     "chat.js": ("chat-turn.js", "answer-kit.js"),
     "capture-ask.js": ("ask-compose.js", "answer-kit.js", "citation-peek.js"),
     "agent-activity.js": ("answer-kit.js",),
     "status.js": ("status-panels.js", "answer-kit.js"),
     "wiring.js": ("answer-kit.js",),
-    "skills.js": ("answer-kit.js",),
+    "skills.js": ("answer-kit.js", "settings-controls.js"),
     "shell-reminders.js": ("scroll-row.js",),
 }
 
 
 def with_pieces(name: str) -> str:
     """A boot script's text plus the lazy files its code moved into."""
-    parts = [(JS_DIR / name).read_text(encoding="utf-8")]
-    parts += [(JS_DIR / piece).read_text(encoding="utf-8") for piece in MOVED_OUT.get(name, ())]
+    parts = [unwrapped((JS_DIR / name).read_text(encoding="utf-8"))]
+    parts += [unwrapped((JS_DIR / piece).read_text(encoding="utf-8")) for piece in MOVED_OUT.get(name, ())]
     return "\n".join(parts)
 
 
@@ -105,7 +107,13 @@ def frontend_text(name: str) -> str:
     path = JS_DIR / name
     if not path.exists():  # sw.js, the one script that stays at the root
         path = FRONTEND_DIR / name
-    return path.read_text(encoding="utf-8")
+    return unwrapped(path.read_text(encoding="utf-8"))
+
+
+def script_file_text(name: str) -> str:
+    """A script as written, wrapper and all: the scope tests ask whether the file is one closure,
+    which `frontend_text` hides by unwrapping."""
+    return (JS_DIR / name).read_text(encoding="utf-8")
 
 
 def app_js_family(path: Path) -> bool:
@@ -152,7 +160,7 @@ def stand_ins_source() -> str:
 #: own text (`docLivePlugin`, `docCmTheme`; audit 1031 DC13): a test that means
 #: "the documents editor's code" reads them joined, so a piece moving between
 #: these files does not move its tests.
-DOCUMENTS_PIECES = ("documents.js", "documents-cm.js", "documents-cm-theme.js", "documents-replace.js", "documents-export.js", "documents-ai.js", "documents-history.js", "documents-props.js", "documents-mermaid.js", "documents-math.js", "documents-comments.js", "documents-embeds.js", "documents-tables.js", "documents-columns.js", "documents-print.js", "documents-outline.js")
+DOCUMENTS_PIECES = ("documents.js", "documents-cm.js", "documents-cm-theme.js", "documents-replace.js", "documents-export.js", "documents-ai.js", "documents-history.js", "documents-props.js", "documents-mermaid.js", "documents-math.js", "documents-comments.js", "documents-embeds.js", "documents-tables.js", "documents-columns.js", "documents-print.js", "documents-spell.js", "documents-languagetool.js", "documents-outline.js", "documents-callouts.js", "documents-view.js")
 
 
 def documents_text() -> str:

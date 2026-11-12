@@ -1,12 +1,12 @@
 """The Activity heatmap opens at today (INBOX 1578, the owner: "the activity
 heatmap is auto scrolled to the left and not right where the actual data is").
 
-The grid is `content-visibility: auto`, so in the frame after it was built its
-`scrollWidth` read its box (304 of 701 at 1440) and `scrollLeft = scrollWidth`
-clamped to 0. The end is now read from the last cell's rect and re-taken when
-the grid is laid out, when it stops being skipped and on a resize, for as long
-as the reader has not scrolled away. Measured in the running app (INBOX 1578:
-scrollLeft 0 of 397 before, 397 of 397 after); this file pins the rule.
+The grid is `content-visibility: auto`, so a `scrollLeft = scrollWidth` write clamped to 0; the
+first fix read the last cell's rect and re-took the end on every refit (INBOX 1741: that read was
+70ms of forced layout at 4x). The end is now CSS only: the grid is `direction: rtl` (a scroll box
+starts at its right edge) and the weeks are appended newest first, which draws them oldest to
+newest. Measured in the running app: the newest day's right edge sits on the grid's right edge
+(1051 of 1051) with scrollLeft 0, and no script reads it. This file pins the rule.
 """
 
 from __future__ import annotations
@@ -19,23 +19,20 @@ def _widget() -> str:
     return text.split("async function renderHeatmapWidget(", 1)[1].split("\n// --- category breakdown", 1)[0]
 
 
-def test_the_end_is_read_from_the_last_cell_not_from_a_scroll_width_that_may_be_stale():
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_the_end_is_css_only_so_nothing_reads_layout_for_it():
     body = _widget()
-    assert "grid.scrollLeft = grid.scrollWidth" not in body
-    assert "last.getBoundingClientRect().right - grid.getBoundingClientRect().right" in body
+    code = "\n".join(line for line in body.splitlines() if not line.strip().startswith("//"))
+    for gone in ("toEnd", "atEnd", "getBoundingClientRect", "scrollLeft", "scrollWidth", "dash-refit", "contentvisibilityautostatechange"):
+        assert gone not in code, gone
+    sized = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8").split("function sizeDashWidgets()", 1)[1].split("\n}\n", 1)[0]
+    assert "dash-refit" not in sized
 
 
-def test_it_is_taken_again_when_the_grid_is_laid_out_unskipped_or_resized():
-    body = _widget()
-    assert 'grid.addEventListener("dash-refit", toEnd)' in body
-    assert "ResizeObserver" not in body  # the file's wake sources only fall (test_frontend_wake_sources)
-    sized = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
-    assert 'heat.dispatchEvent(new Event("dash-refit"))' in sized.split("function sizeDashWidgets()", 1)[1].split("\n}\n", 1)[0]
-    assert '"contentvisibilityautostatechange"' in body
-    assert "requestAnimationFrame(toEnd)" in body
-
-
-def test_a_reader_who_scrolled_away_is_left_where_they_are():
-    body = _widget()
-    assert "if (!atEnd || !last) return;" in body
-    assert "atEnd = grid.scrollWidth - grid.clientWidth - grid.scrollLeft < 2;" in body
+def test_the_grid_is_right_to_left_and_the_weeks_are_appended_newest_first():
+    css = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
+    block = css[css.index("\n.heatmap {") :].split("}", 1)[0]
+    assert "direction: rtl;" in block
+    assert "for (let w = cells.length - 7; w >= 0; w -= 7) grid.append(...cells.slice(w, w + 7));" in _widget()

@@ -15,7 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from tessellate.core.database import WhiteboardObject
 from tessellate.core import events
-from tessellate.entry.manager import extract_title
+from tessellate.entry.manager_text import extract_title
 from sqlalchemy import func, select
 from tessellate.core.deps import get_session
 from tessellate.api.wb_model import Coord, MAP_REFERENCE_KINDS, MAP_TOPIC_KIND, MAX_OBJECT_TEXT_CHARS, WhiteboardObjectData, WhiteboardObjectOut, _object_to_out
@@ -515,7 +515,7 @@ class MapClearStyleOut(BaseModel):
 #: before any of this existed.
 MAP_CONTENT_FIELDS = frozenset({
     "image", "task", "note", "boundary", "boundary_label", "summary", "summary_span", "branch_layout", "callout", "labels", "stamps",
-    "priority", "progress", "flag", "markers", "due",
+    "priority", "progress", "flag", "markers", "due", "start", "recording",
 })
 MAP_CLEARABLE_FIELDS = frozenset(MAP_STYLE_FIELDS) - MAP_CONTENT_FIELDS | {"color"}
 

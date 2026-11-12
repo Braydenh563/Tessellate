@@ -19,7 +19,9 @@ PRIVATE_JS = (JS_DIR / "chat-private.js").read_text(encoding="utf-8")
 
 def _function(source: str, name: str) -> str:
     start = source.index(f"function {name}(")
-    return source[start : source.index("\n}\n", start)]
+    line = source[source.rfind("\n", 0, start) + 1 : start]
+    indent = line[: len(line) - len(line.lstrip())]  # a wrapped script (row 37a) indents its functions
+    return source[start : source.index("\n" + indent + "}\n", start)]
 
 
 def test_there_are_three_ways_in():
@@ -59,8 +61,8 @@ def test_a_private_turn_writes_nothing_and_says_so_to_the_server():
     js = app_js_text()
     send = js[js.index("async function chatSendTurn") :]
     # the send-time row, the long turn's checkpoints and the finished turn's save
-    assert "if (convRef.id === null && !convRef.private) checkpointTurn();" in send
-    assert "if (checkpointInFlight || convRef.private) return checkpointRun;" in send
+    assert "if (convRef.id === null && !convRef.private) chatSendTurn.stage.checkpointTurn(t);" in send
+    assert "if (t.checkpointInFlight || t.convRef.private) return t.checkpointRun;" in send
     assert re.search(r"if \(convRef\.private\) \{\s*\} else if \(convRef\.id === null\) \{\s*const created = await apiJson\(\"/conversations\"", send)
     # and the flag goes on the wire
     assert "isPrivate: convRef.private," in send

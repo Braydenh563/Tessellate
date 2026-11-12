@@ -37,7 +37,9 @@ def test_every_closer_the_hook_calls_is_a_global_function():
     assert len(names) >= 6
     everything = "\n".join(p.read_text(encoding="utf-8") for p in JS.glob("*.js"))
     for name in names:
-        assert re.search(rf"^(?:async )?function {name}\(", everything, re.M), name
+        #: A wrapped file (W29 carve) defines it inside and exports it on window.
+        exported = re.search(rf"Object\.assign\(window, \{{[^}}]*\b{name}\b", everything)
+        assert re.search(rf"^(?:async )?function {name}\(", everything, re.M) or exported, name
 
 
 def test_the_agent_palette_records_its_opener():
@@ -60,3 +62,43 @@ def test_settings_escape_never_steps_off_the_app():
     assert "history.replaceState({ navId: entry.navId, depth }" in router
     settle = LAZY[LAZY.index("function routerSettle"):]
     assert "history.state?.depth > 0 && routerGo(-1)" in settle.split("\n}\n")[0]
+
+
+def test_every_modal_overlay_closes_on_back_through_its_own_close_button():
+    """W12 (wb-1111): Back with the note history, connections, bin reader, skill run,
+    board help, meeting, extract or OCR overlay open stepped the tab and left the
+    overlay open on the other tab. Each is closed by the button its own X presses."""
+    index = (JS.parent / "index.html").read_text(encoding="utf-8")
+    table = re.search(r"const OVERLAY_CLOSE_BUTTONS = \{(.*?)\};", LAZY, re.S)
+    assert table, "the table of overlay close buttons"
+    pairs = re.findall(r'"([\w-]+)": "([\w-]+)"', table.group(1))
+    assert len(pairs) >= 8
+    for overlay, button in pairs:
+        assert re.search(rf'id="{overlay}" class="[^"]*modal-overlay', index), overlay
+        assert f'id="{button}"' in index, button
+    #: The closer asks for the visible overlay, topmost last, and the button's own click closes it.
+    hook = LAZY[LAZY.index("function routerCloseTopOverlay") :]
+    assert "OVERLAY_CLOSE_BUTTONS" in hook and ".click()" in hook
+
+
+def test_a_close_button_that_is_not_wired_still_leaves_the_overlay_hidden():
+    hook = LAZY[LAZY.index("function routerCloseTopOverlay") :]
+    assert 'if (!el.classList.contains("hidden")) el.classList.add("hidden");' in hook
+
+
+def test_a_dialog_shown_as_a_phone_sheet_closes_by_its_own_x():
+    """W12 at 390 (real browser, page.goBack and history.back): the dialogs
+    `phoneSheetDialogs` and `ocrPhonePage` stamp `.sheet-overlay` on have no
+    `.sheet-close`, so the sheet branch pressed nothing, returned true, and
+    Back was spent on an overlay that stayed open (9 of 10 stayed). Every
+    overlay that gets the class is in the table, and the sheet branch falls
+    back to the table's button."""
+    phone = (JS / "phone-shell.js").read_text(encoding="utf-8")
+    sheets = re.search(r"const PHONE_SHEET_DIALOGS = \[(.*?)\];", phone, re.S)
+    ids = re.findall(r'"([\w-]+)"', sheets.group(1)) + ["ocr-workspace"]
+    table = re.search(r"const OVERLAY_CLOSE_BUTTONS = \{(.*?)\};", LAZY, re.S).group(1)
+    for overlay in ids:
+        assert f'"{overlay}":' in table, overlay
+    hook = LAZY[LAZY.index("function routerCloseTopOverlay") :]
+    sheet_branch = hook[hook.index("const sheets") : hook.index("const dialog")]
+    assert "OVERLAY_CLOSE_BUTTONS[top.id]" in sheet_branch

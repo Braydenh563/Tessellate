@@ -31,7 +31,7 @@ const path = require('path');
 const { boot } = require('./lib.js');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const VENV_PY = process.env.VENV_PY || '/home/user/MemoryMap-AI/.venv/bin/python';
+const VENV_PY = process.env.VENV_PY || require('path').resolve(__dirname, '..', '..', '.venv', 'bin', 'python');
 
 //: What the help says a tab holds. Static labels only: a menu a script draws
 //: on press is read from the source by the person triaging, not here.

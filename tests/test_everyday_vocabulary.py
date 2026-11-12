@@ -14,6 +14,7 @@ never used to choose a word in it, filed against the first set's notebook:
 | 120 notes, after | 0.617 | 11 | 0.792 |
 | 48 held-out notes, before | 0.458 | 6 | not measured |
 | 48 held-out notes, after | 0.667 | 3 | 0.833 |
+| 60 frozen notes (`tests/test_filing_held_out_c.py`), Q29 | 0.633 | 5 | 0.817 |
 
 The held-out set is the evidence: its notes were not read for a word, only
 scored. The 120 are partly the evidence this was written beside. Words that

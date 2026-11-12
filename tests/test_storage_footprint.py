@@ -47,6 +47,15 @@ def test_storage_reports_the_three_folders(client):
     assert body["backups_bytes"] == 40
 
 
+def test_the_notebook_segment_counts_the_write_ahead_log_too(client, monkeypatch):
+    """Audit 1029 X17: `database_bytes` was the main file alone, so the bar read
+    4 KB beside a 2.9 MB log; it is the sum About health shows (`db_footprint`)."""
+    from tessellate.api import routes_debug
+
+    monkeypatch.setattr(routes_debug, "db_footprint", lambda path: {"main_bytes": 4096, "wal_bytes": 2_900_000, "size_bytes": 2_904_096})
+    assert client.get("/storage").json()["database_bytes"] == 2_904_096
+
+
 def test_storage_reports_what_the_installed_extras_weigh(client, monkeypatch):
     """The breakdown's last segment (BACKLOG section 26, the owner: see what an
     optional feature costs before deciding to keep it)."""
@@ -80,3 +89,13 @@ def test_the_storage_bar_is_one_recipe():
         assert f'"{key}"' in data_js and f'data-kind="{key}"' in sheet
     assert "#" not in "".join(line.split("/*")[0] for line in sheet.splitlines() if "{" in line or ":" in line)
     assert "style=" not in data_js.split("async function renderStorageBreakdown")[1].split("//: The schedule")[0]
+
+
+def test_the_two_totals_say_what_each_covers():
+    """Audit 1029 X17: "Together 684 KB" beside "Data folder 9.3 MB" was
+    unexplained; each row now says what it counts."""
+    from pathlib import Path
+
+    page = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert "which leave out the search index, logs and other working files" in page
+    assert "The five add up to less than the data folder" in page

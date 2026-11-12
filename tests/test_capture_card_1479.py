@@ -13,6 +13,7 @@ import re
 from pathlib import Path
 
 from tests._app_js import APP_JS, INDEX_HTML, LAZY_PIECES, app_js_files
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -120,7 +121,8 @@ def test_the_draft_keeps_the_mode_and_the_items():
 
 # --- step 3: colour, tags, the bell ---------------------------------------------
 
-MORE = (JS / "capture-card-more.js").read_text(encoding="utf-8")
+MORE = _js_scope.unwrapped((JS / "capture-card-more.js").read_text(encoding="utf-8"))
+STAGE = (JS / "capture-stage.js").read_text(encoding="utf-8")
 
 
 def test_the_second_file_is_lazy_and_loaded_by_the_card():
@@ -171,7 +173,7 @@ def test_the_bar_has_a_picture_button_after_the_input_that_opens_the_picker():
     row = INDEX[INDEX.index('id="capture-bar-row"') :]
     assert row.index('id="capture-bar-input"') < row.index('id="capture-bar-picture"')
     button = re.search(r'<button[^>]*id="capture-bar-picture"[^>]*>', row).group(0)
-    assert 'aria-label="Add pictures' in button and 'title="Add pictures"' in button
+    assert 'aria-label="Add pictures' in button and 'title="Add pictures or files"' in button
     # the picker opens from the lazy file, on the click that fetched it: no boot bytes
     notes = (JS / "notes-list.js").read_text(encoding="utf-8")
     assert "openCaptureCard(event.target, event.type)" in notes
@@ -180,28 +182,28 @@ def test_the_bar_has_a_picture_button_after_the_input_that_opens_the_picker():
 
 
 def test_pictures_are_uploaded_on_save_and_written_as_the_markdown_the_editor_writes():
-    assert "/media/upload" in _function_body(MORE, "uploadCapturePictures")
-    assert "![" in _function_body(MORE, "uploadCapturePictures")
+    assert "/media/upload" in _function_body(STAGE, "uploadCapturePictures")
+    assert "![" in _function_body(STAGE, "uploadCapturePictures")
     save = _function_body(CARD, "saveCaptureCard")
     assert "uploadCapturePictures()" in save and "captureCard.pictures.length" in save
     # a picture alone is a note; a failed upload keeps the card and the words
-    assert "!text && !captureCard.pictures.length" in save
+    assert "!text && !held" in save and "captureCard.pictures.length + captureCard.files.length" in save
     assert "catch (error)" in save
 
 
 def test_an_uploaded_picture_is_not_uploaded_twice_when_a_retry_follows_a_failure():
-    assert "picture.uploaded" in _function_body(MORE, "uploadCapturePictures")
+    assert "picture.uploaded" in _function_body(STAGE, "uploadCapturePictures")
 
 
-def test_thumbnails_have_a_remove_button_and_images_only_are_taken():
-    assert "Remove " in _function_body(MORE, "captureThumb")
-    add = _function_body(MORE, "addCapturePictures")
-    assert 'startsWith("image/")' in add and "CAPTURE_PICTURE_LIMIT" in add
-    assert "URL.revokeObjectURL" in _function_body(MORE, "removeCapturePicture")
+def test_thumbnails_have_a_remove_button_and_pictures_stop_at_the_limit():
+    assert "Remove " in _function_body(STAGE, "captureThumb")
+    add = _function_body(STAGE, "addCaptureFiles")
+    assert "isImageFile" in add and "CAPTURE_PICTURE_LIMIT" in add and "CAPTURE_FILE_LIMIT" in add
+    assert "URL.revokeObjectURL" in _function_body(STAGE, "removeCapturePicture")
 
 
 def test_draw_opens_the_sketch_pad_with_a_host_that_adds_the_picture_to_the_card():
-    assert 'data-cc": "draw"' in _function_body(MORE, "mountCapturePictures") or '"draw"' in MORE
+    assert 'data-cc": "draw"' in _function_body(MORE, "mountCaptureDraw")
     host = _function_body(MORE, "captureSketchHost")
     assert "sketchHost()" in host and "saveLabel" in host and "addCaptureSketch" in host
     assert "openSketch({ host:" in _function_body(MORE, "openCaptureDraw")
@@ -213,4 +215,6 @@ def test_draw_opens_the_sketch_pad_with_a_host_that_adds_the_picture_to_the_card
 
 def test_a_reset_clears_the_pictures():
     reset = _function_body(CARD, "resetCaptureCard")
-    assert "captureCard.pictures" in reset and "URL.revokeObjectURL" in reset
+    assert "discardCaptureStage()" in reset
+    discard = _function_body(STAGE, "discardCaptureStage")
+    assert "captureCard.pictures" in discard and "captureCard.files = []" in discard and "URL.revokeObjectURL" in discard

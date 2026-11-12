@@ -35,7 +35,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from test_ai_name import _html_outside_comments, _js_string_bodies  # noqa: E402
+from tests.test_ai_name import _html_outside_comments, _js_string_bodies  # noqa: E402
 from tests._app_js import app_js_family  # noqa: E402
 
 #: The glyphs this app has a Phosphor icon for, and reaches for anyway. Each

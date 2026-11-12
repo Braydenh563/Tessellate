@@ -92,7 +92,9 @@ def _sealed_image(client, session, *, also_plain=False):
 def test_a_locked_private_notes_picture_is_not_served(client, session):
     url = _sealed_image(client, session)
     reply = client.get(url)
-    assert reply.status_code == 403
+    # Q18 (owner): a locked read answers 409 "Unlock first." like the link and read routes; it was 403.
+    assert reply.status_code == 409
+    assert reply.json()["detail"] == "Unlock first."
 
 
 def test_a_picture_a_readable_note_also_uses_stays_served(client, session):
@@ -129,7 +131,7 @@ def test_a_private_note_restored_to_a_version_with_a_picture_keeps_it_sealed(cli
     # version embedded came back served to a locked session.
     from tessellate.core import vault
     from tessellate.core.database import EntryRevision
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     vault.close()
     vault.create(session, PASSPHRASE)
@@ -140,9 +142,46 @@ def test_a_private_note_restored_to_a_version_with_a_picture_keeps_it_sealed(cli
     assert edited.status_code == 200
     made_private = client.post(f"/entries/{note['id']}/privacy", json={"private": True})
     assert made_private.status_code == 200
-    revision = next(r for r in session.query(EntryRevision).filter_by(entry_id=note["id"]) if "old pic" in manager.readable_content(r))
+    revision = next(r for r in session.query(EntryRevision).filter_by(entry_id=note["id"]) if "old pic" in manager_text.readable_content(r))
     restored = client.post(f"/entries/{note['id']}/history/{revision.id}/restore")
     assert restored.status_code == 200, restored.text
     vault.close()
     reply = client.get(url)
-    assert reply.status_code == 403
+    assert reply.status_code == 409
+
+
+_PIC_ROUTES = [
+    ("get", "/media/{id}/ocr-regions?auto=true", {}),
+    ("post", "/media/{id}/caption", {}),
+    ("post", "/media/{id}/ocr", {}),
+    ("post", "/media/{id}/ocr-range-read", {}),
+    ("post", "/media/{id}/ocr-page-read", {}),
+    ("post", "/media/{id}/region-read", {"files": {"crop": ("c.png", PNG, "image/png")}}),
+    ("post", "/media/{id}/page-caption", {}),
+    ("get", "/media/{id}/page-reads", {}),
+    ("delete", "/media/{id}/page-reads/0", {}),
+    ("delete", "/media/{id}/readings/ocr", {}),
+    ("post", "/media/{id}/ocr-clean-loops", {}),
+    ("post", "/media/{id}/vision-ocr", {}),
+]
+
+
+@pytest.mark.parametrize(("verb", "path", "kw"), _PIC_ROUTES)
+def test_a_locked_private_notes_picture_readings_are_refused(client, session, verb, path, kw):
+    from tessellate.core.database import MediaUpload
+
+    url = _sealed_image(client, session)
+    uid = session.query(MediaUpload).filter_by(filename=url.rsplit("/", 1)[-1]).one().id
+    reply = getattr(client, verb)(path.format(id=uid), **kw)
+    assert reply.status_code == 409, reply.text
+    assert "IMGSECRET" not in reply.text
+
+
+def test_media_meta_is_refused_for_a_sealed_picture(client, session):
+    url = _sealed_image(client, session)
+    assert client.get(f"/media/meta/{url.rsplit('/', 1)[-1]}").status_code == 409
+
+
+def test_media_meta_stays_open_for_a_picture_a_readable_note_shares(client, session):
+    shared = _sealed_image(client, session, also_plain=True)
+    assert client.get(f"/media/meta/{shared.rsplit('/', 1)[-1]}").status_code == 200

@@ -144,3 +144,19 @@ def test_a_folder_from_one_space_imports_into_the_space_that_is_open(client, ses
     # And the space it came from still holds its own, undisturbed.
     home = client.get("/entries?limit=50", headers={"X-Workspace-ID": two_spaces}).json()
     assert len(home) == 2
+
+
+def test_a_readable_private_note_is_not_imported_open_while_locked(client, session, two_spaces):
+    """sm-1111 row 8: an unlocked export carries the private note readable; imported with the
+    vault locked there is no key to seal it, so the import is refused before a note is made,
+    and goes through once unlocked."""
+    data = client.get("/export/folder", headers={"X-Workspace-ID": two_spaces}).content
+    other = client.post("/spaces", json={"name": "Elsewhere"}).json()["id"]
+    sent = {"files": [("files", ("tessellate-notebook.zip", data, "application/zip"))], "headers": {"X-Workspace-ID": other}}
+    vault.close()
+    refused = client.post("/import/app?source=memorymap", **sent)
+    assert refused.status_code == 409 and "Unlock private notes" in refused.json()["detail"]
+    assert client.get("/entries?limit=50", headers={"X-Workspace-ID": other}).json() == []
+    assert vault.open_with(session, "test-passphrase")
+    imported = client.post("/import/app?source=memorymap", **sent)
+    assert imported.status_code == 201

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from tests._objmove_node import JS, needs_node, run
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 FILES = ["obj-ref.js", "obj-clip.js", "obj-drag.js", "obj-reorder.js", "obj-carry.js", "obj-tray.js"]
 STUBS = """
@@ -134,7 +135,7 @@ def test_the_engine_hands_the_gesture_between_modes_and_ends_the_old_one() -> No
 def test_the_tray_control_and_panel_are_in_the_page_and_the_settings_list() -> None:
     html = (JS.parent / "index.html").read_text(encoding="utf-8")
     assert 'id="status-tray"' in html and 'data-status-slot="tray"' in html and 'id="obj-tray"' in html
-    controls = (JS / "settings-controls.js").read_text(encoding="utf-8")
+    controls = unwrapped((JS / "settings-controls.js").read_text(encoding="utf-8"))
     assert 'key: "tray"' in controls
     ref = (JS / "obj-ref.js").read_text(encoding="utf-8")
     assert '"/js/obj-carry.js", "/js/obj-tray.js"' in ref

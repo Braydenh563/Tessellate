@@ -15,11 +15,13 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-AVATARS = "\n".join((JS / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-settings.js"))
+AVATARS = "\n".join(unwrapped((JS / n).read_text(encoding="utf-8")) for n in ("avatars.js", "companion-settings.js"))
 ATLAS = (JS / "atlas.js").read_text(encoding="utf-8")
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
@@ -124,7 +126,7 @@ def test_the_dodge_listener_uses_the_typing_look_for_typing_keys() -> None:
     assert "nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge" in src
     # The timers wrap `look` in a look after the frame (INBOX 1534); since 1587 that
     # wait is `nmb.afterClean`, a frame no other reader has dirtied.
-    assert "setTimeout(afterPaint, 80)" in src and "setTimeout(afterPaint, 700)" in src and "nmb.afterClean(look)" in src
+    assert "setTimeout(afterPaint, 80)" in src and "setTimeout(afterPaint, 700)" in src and "nmb.afterCalm(look)" in src
 
 
 @needs_node

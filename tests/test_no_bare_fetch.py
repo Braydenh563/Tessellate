@@ -51,9 +51,16 @@ ALLOWED = {
     # The desktop companion's window (desktop-companion.html): a page of its
     # own as well, one `call` carrying the token.
     "desk-companion.js": 1,
+    # The 127.0.0.1 -> localhost carry-over page (origin-bridge.html): no
+    # app.js, no token (the routes are this computer only), one POST helper.
+    "origin-bridge.js": 1,
     # A Web Worker (the offline translator, Brief 83) has no app.js and so no
     # `api()`: its engine (.wasm) and model files, from an open route.
     "translate-worker.js": 2,
+    # The spelling second opinion's files (the dictionaries and the frequency
+    # list), in the grammar worker that imports it: a static read from the
+    # open /vendor mount, one helper.
+    "spell-second.js": 1,
     # The icon font for an exported page (INBOX 1545): a static file from the
     # open /vendor mount, read as a blob to inline, not an API request.
     "documents-export.js": 1,

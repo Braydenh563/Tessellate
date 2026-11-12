@@ -102,12 +102,30 @@ def label_is_sentence(label: str) -> bool:
     return len(words) >= 3 and bool(_LABEL_VERB.search(label))
 
 
+_NUMBER_WORDS = frozenset("one two three four five six seven eight nine ten eleven twelve several few many some two".split())
+_PREPOSITIONS = frozenset("for of before after to in on with by at from about until".split())
+
+
+def _plural_head(words: list[str]) -> bool:
+    """Whether the noun phrase before its first preposition is a plural or a counted one
+    ("goals for the half", "three gates before then"), which takes no "a"."""
+    if words[0].lower() in _NUMBER_WORDS or words[0][:1].isdigit():
+        return True
+    head: list[str] = []
+    for word in words:
+        if word.lower() in _PREPOSITIONS:
+            break
+        head.append(word)
+    last = (head or words)[-1].lower()
+    return last.endswith("s") and not last.endswith(("ss", "us", "is"))
+
+
 def with_article(head: str) -> str:
     """"warm up" as "a warm up" after "has": a label of two or more plain
-    words that is not a plural; "attendees", "Phase 2" and "key points"
-    stay as they are."""
+    words that is not a plural or a count; "attendees", "goals for the half",
+    "three gates", "Phase 2" and "key points" stay as they are."""
     words = head.split()
-    if len(words) < 2 or not head[:1].islower() or words[-1].endswith("s") or words[0] in _LEADING | {"your", "my"}:
+    if len(words) < 2 or not head[:1].islower() or _plural_head(words) or words[0] in _LEADING | {"your", "my"}:
         return head
     return f"{'an' if head[0] in 'aeiou' else 'a'} {head}"
 
@@ -179,7 +197,7 @@ _CAPTION_VERBS = frozenset(
     "fills fill covers cover surrounds surround stretches stretch glows glow rises rise falls fall flows flow grows grow "
     "wanders wander poses pose smiles smile waits wait lounges lounge perches perch crouches crouch leans lean".split()
 )
-_SENTENCE_BREAK = re.compile(r"[.!?][\"”’)]?\s+[A-Z]")
+_SENTENCE_BREAK = lazy_compile(r"[.!?][\"”’)]?\s+[A-Z]")
 
 
 def caption_form(caption: str) -> tuple[bool, str]:
@@ -278,6 +296,18 @@ def group_said(theme: str, names: str, tail: str, i: int) -> str:
     return GROUP_FRAMES[i % len(GROUP_FRAMES)].format(theme=more_theme(theme, i), names=names, tail=tail)
 
 
+_REASON_STOP = frozenset("shared share both same about with the and are is these those notes note related similar also together linked link".split())
+
+
+def restated(reason: str, first: dict, second: dict) -> bool:
+    """Whether every word of a link's `reason` is already in the two notes
+    ("Shared Tuesday 9pm legs training" over a note that says "tuesday for legs"
+    and one that says "Training"): the link line then says no more than they do."""
+    words = [w for w in re.findall(r"[a-z0-9]+", reason.lower()) if w not in _REASON_STOP]
+    held = re.findall(r"[a-z0-9]+", f"{first.get('content')} {second.get('content')}".lower())
+    return bool(words) and all(any(h.startswith(w[:4]) for h in held) for w in words)
+
+
 def link_said(a: str, b: str, reason: str, i: int, back: bool) -> str:
     """The link line: back to "them" when the group is just the pair."""
     said = reason_said(reason)
@@ -371,6 +401,51 @@ def _original(piece: str, raws: list[str]) -> str:
     return best if score >= _SAME_SENTENCE else piece
 
 
+#: Words the app swaps or adds when it re-voices a note: never evidence of which sentence it was.
+_VOICE_WORDS = frozenset("i me my mine we our us you your yours and that is are was were the a an it".split())
+_SENTENCE = lazy_compile(r"[^.!?\n]+(?:[.!?]+|$)")
+
+
+def _content(text: str) -> set[str]:
+    return {re.sub(r"'(?:d|ll|ve|m|s|re)$", "", t) for t in _TOKEN.findall(text.lower())} - _VOICE_WORDS
+
+
+def _run_of(quote: str, sources: list[str]) -> str:
+    """The note's own run of one to three sentences that `quote` re-voiced or
+    merged, byte for byte; "" when no run holds most of its words (R9-4)."""
+    mine = _content(quote)
+    if len(mine) < 3:
+        return ""
+    best, score = "", 0.0
+    for source in sources:
+        for line in source.splitlines():
+            spans = [(m.start(), m.end()) for m in _SENTENCE.finditer(line) if m.group(0).strip(" -*•|")]
+            for size in (1, 2, 3):
+                for at in range(len(spans) - size + 1):
+                    raw = line[spans[at][0] : spans[at + size - 1][1]].strip(" -*•")
+                    theirs = _content(raw)
+                    if not theirs:
+                        continue
+                    hit = len(mine & theirs)
+                    recall, precision = hit / len(mine), hit / len(theirs)
+                    if recall >= 0.75 and precision >= 0.55 and recall * precision > score:
+                        best, score = raw, recall * precision
+    return best.rstrip(".") if best and not quote.rstrip().endswith((".", "!", "?")) else best
+
+
+_TABLE_QUOTE = lazy_compile(r"(?:(?:[Yy]ou (?:wrote|noted down|put down|noted|wrote down)|[Ii]t also says|[Yy]our [^“”\n]{1,60}? note says) )?“\|([^”\n]*\|)[^”\n]*”")
+
+
+def _row_said(found: re.Match) -> str:
+    """A table row is not a quotation: "| Marek | £7,200 |" is "Marek at £7,200" (R9-4)."""
+    cells = [c.strip() for c in ("|" + found.group(1)).strip("|").split("|") if c.strip()]
+    if len(cells) == 2:
+        said = f"{cells[0]} at {cells[1]}" if re.match(r"[£$€\d]", cells[1]) else f"{cells[0]}: {cells[1]}"
+    else:
+        said = ", ".join(cells)
+    return ("You listed " if found.start() == 0 else "you listed ") + said
+
+
 def own_words(line: str, sources: list[str]) -> str:
     """`line` with every “quote” made the note's own words (INBOX 1515: “Bake
     at 230C. You rested the dough” held the app's re-voicing of the note's
@@ -392,6 +467,11 @@ def own_words(line: str, sources: list[str]) -> str:
         mended = [p if _flat(p) in held else _original(p, raws) for p in pieces]
         if mended and not quote.rstrip().endswith((".", "!", "?")):
             mended[-1] = mended[-1].rstrip(".")
-        return "“" + " ".join(mended) + "”"
+        whole = " ".join(mended)
+        if any(_flat(p) not in held for p in mended):
+            #: Two sentences merged into one ("list comprehensions and
+            #: assignment due Friday"): the note's own run of sentences (R9-4).
+            whole = _run_of(quote, sources) or whole
+        return "“" + whole + "”"
 
-    return _QUOTED.sub(mend, line)
+    return _TABLE_QUOTE.sub(_row_said, _QUOTED.sub(mend, line))

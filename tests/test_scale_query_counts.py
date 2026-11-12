@@ -28,6 +28,18 @@ from tessellate.core.database import Category, EmbeddingRecord, Entry
 from tessellate.search import search_manager
 
 
+def _jobs_settled() -> None:
+    import time
+
+    from tessellate.core import jobs
+
+    for _ in range(600):
+        if not jobs.pool().queued_count() and not jobs.pool().running_count():
+            return
+        time.sleep(0.05)
+    raise AssertionError("background jobs never settled")
+
+
 def _count_queries(session, fn):
     count = 0
 
@@ -224,7 +236,7 @@ def test_notes_list_fetches_attachments_once_not_once_per_note(client, session):
     The fourth thing `_to_out` resolves per entry. `_to_out_bulk` had been
     given batched forms for categories, dates, documents and links, so the
     endpoint looked bulk-fetched; `attachments=` still called
-    `manager.attachments_for` inside the list comprehension. Counted on a
+    `manager_purge.attachments_for` inside the list comprehension. Counted on a
     60-note page: 67 statements, 60 of them the same
     `SELECT ... FROM attachments WHERE entry_id = ?`; 8 after. This is the
     notes list, so it is the most-requested endpoint in the app.
@@ -275,6 +287,7 @@ def test_the_attachment_gallery_reads_the_page_not_a_row_at_a_time(client, sessi
             files={"file": (f"p{i}.png", pixel, "image/png")},
         )
 
+    _jobs_settled()  # each upload queues a document read whose own statements would land in the count under load
     small = _count_queries(session, lambda: client.get("/files/gallery?limit=5"))
     large = _count_queries(session, lambda: client.get("/files/gallery?limit=30"))
     assert large <= small + 1, (

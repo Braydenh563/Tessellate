@@ -18,6 +18,7 @@ import pytest
 
 from tests import _gold
 from tessellate.ai import composer, composer_digest
+from tessellate.ai import composer_digest_lines
 
 FIXTURE = _gold.load()
 TODAY = date.fromisoformat(FIXTURE["today"])
@@ -80,10 +81,10 @@ def test_the_owners_question_opens_with_the_count():
     #: "next week" said from today; the narration tests further down have the rest.
     assert lines[1].startswith("You went back to uni the week of 20 July") and "classes on Tuesdays and Thursdays" in lines[1]
     assert "Nothing yet on assessments or due dates." in lines
-    #: The note's Thursday (6 August) has gone by: the offer drops the day
-    #: and says what to ask, from the line beside it (the owner, 2026-10-11).
-    assert lines[-1] == "Remind you to ask the tutor about big O?"
-    assert result["offer"] == {"kind": "reminder", "label": lines[-1], "text": "Ask the tutor about big O"}
+    #: Audit 1110 F12 (2026-11-10): "what have I saved about courses" asks for no date or task, so the
+    #: reminder it used to end on ("Shall I remind you to ask the tutor about big O?") is not offered.
+    assert lines[-1] == "Nothing yet on assessments or due dates."
+    assert result["offer"] is None
 
 
 def test_the_joke_is_never_a_fact_about_the_person():
@@ -189,23 +190,29 @@ def test_a_relative_time_is_pinned_to_the_day_it_meant(text, said):
     its Monday, as the Mentions chip's resolver (`when.span`) has it; "before
     next week" is before that Monday, a day (the owner, 2026-10-11)."""
 
-    assert composer_digest._tidy(text, date(2026, 7, 17)) == said
+    assert composer_digest_lines._tidy(text, date(2026, 7, 17)) == said
 
 
 @pytest.mark.parametrize(("question", "kind", "label", "text"), [
     ("what did I think of Dune?", "note", "Start a list of films to watch next?", "Films to watch next\n\n- [ ] "),
-    ("how much did I spend on groceries?", "reminder", "Remind you each week to log your spending?", "Log your spending every Sunday"),
     ("Logitech or Razer?", "note", "Note the Logitech as your pick?", "My pick: the Logitech G Pro X Superlight"),
-    ("do I like golf?", "reminder", "Remind you to go to the driving range again?", "Go to the driving range"),
     ("what hobbies do I want to try?", "reminder", "Remind you to try bouldering?", "Try bouldering"),
 ])
 def test_every_kind_ends_with_one_offer_the_app_can_do(question, kind, label, text):
     """CHAT_PLAN B12: one acting offer, the answer's last line, done in one
     press (a reminder or a note); never two."""
     result = composer_digest.answer(question, NOTES, today=TODAY)
-    assert result["offer"] == {"kind": kind, "label": label, "text": text}
-    assert result["text"].split("\n\n")[-1] == label
+    #: Q4: a reminder's prose is "Shall I remind you to ...?" (`line`); its button keeps `label`.
+    assert {k: v for k, v in result["offer"].items() if k != "line"} == {"kind": kind, "label": label, "text": text}
+    assert result["text"].split("\n\n")[-1] == result["offer"].get("line", label)
     assert result["text"].count("?") == 1
+
+
+@pytest.mark.parametrize("question", ["how much did I spend on groceries?", "do I like golf?", "What have I saved about courses & study?"])
+def test_a_question_about_neither_a_date_nor_a_task_ends_on_no_reminder(question):
+    """Audit 1110 F12: these used to end on "Shall I remind you each week to log your spending?" and the like."""
+    result = composer_digest.answer(question, NOTES, today=TODAY)
+    assert (result["offer"] or {}).get("kind") != "reminder" and "emind you" not in result["text"]
 
 
 def test_how_its_going_says_the_change_what_went_quiet_and_offers_a_table():
@@ -320,7 +327,7 @@ def test_a_when_question_says_the_day_then_what_happened_without_the_asides(ques
 
 
 def test_just_meaning_only_stays():
-    assert composer_digest._unfilled("just two tickets left haha") == "just two tickets left"
+    assert composer_digest_lines._unfilled("just two tickets left haha") == "just two tickets left"
 
 
 # A note told as what happened (the owner, 2026-10-11): its relative time
@@ -354,13 +361,13 @@ def test_the_note_is_told_from_today(variant):
     (date(2026, 7, 29), "the week of 20 July", False),
 ])
 def test_next_week_is_said_from_today(today, said, ahead):
-    assert composer_digest._when_now("next week", date(2026, 7, 17), today) == (said, ahead)
+    assert composer_digest_lines._when_now("next week", date(2026, 7, 17), today) == (said, ahead)
 
 
 def test_in_the_whole_notebook_the_note_is_one_flowing_line():
     text = composer_digest.answer(NARRATE_FIXTURE["question"], NOTES, today=TODAY)["text"]
     assert "You went back to uni the week of 20 July, and you" in text
-    assert "**This semester:**" not in text and "**Your week:** classes" not in text
+    assert "**This semester:**" not in text and "**Your week:** classes" not in text and "**Your schedule:** classes" not in text
 
 
 NARRATE_ALL = composer_digest.answer(NARRATE_FIXTURE["question"], NOTES, today=TODAY)
@@ -407,7 +414,7 @@ def test_the_open_plan_is_said_once_in_prose():
     ("tram 28, pasteis de Belem", None),
 ])
 def test_a_days_shorthand_is_said_as_the_persons_own_clause(body, said):
-    assert composer_digest._day_clause(body) == said
+    assert composer_digest_lines._day_clause(body) == said
 
 
 def test_a_day_line_is_prose_not_a_date_label():

@@ -77,19 +77,24 @@ def test_set_chat_model_requires_installed(ai_client):
 
 
 def test_set_chat_model_needs_ollama(client):
-    assert client.post("/models/chat-model", json={"name": "llama3.2"}).status_code == 409
+    response = client.post("/models/chat-model", json={"name": "llama3.2"})
+    assert response.status_code == 409
 
 
 def test_pull_streams_progress_to_status(ai_client, fake_ollama):
-    assert ai_client.post("/models/pull", json={"name": "nomic-embed-text"}).status_code == 200
+    response = ai_client.post("/models/pull", json={"name": "nomic-embed-text"})
+    assert response.status_code == 200
 
     body = _wait_for(
         ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success"
     )
     job = body["pulls"]["nomic-embed-text"]
     assert job["total"] == 1_000 and job["done"] == 1_000
-    # The fake now reports it installed, like real Ollama would.
-    assert any(m["name"] == "nomic-embed-text" for m in body["installed_models"])
+    # The fake now reports it installed, like real Ollama would. Waited for, not read from the
+    # "success" poll alone: on a busy runner that poll's list can predate the download, and the
+    # polls after it now ask again (`_installed_after_pulls`; CI on PR 216, 3.11). The intent,
+    # the finished download is listed as installed, is unchanged.
+    _wait_for(ai_client, lambda b: any(m["name"] == "nomic-embed-text" for m in b["installed_models"]))
 
 
 def test_switch_embedding_backend_reindexes_everything(ai_client, fake_embeddings):
@@ -156,7 +161,8 @@ def test_status_reports_utility_model(client):
 
 def test_set_utility_model_offline_still_saves(client):
     # Ollama unavailable in this fixture, an empty name always applies.
-    assert client.post("/models/utility-model", json={"name": ""}).status_code == 200
+    response = client.post("/models/utility-model", json={"name": ""})
+    assert response.status_code == 200
 
 
 def test_digest_uses_utility_model(ai_client, fake_ollama):
@@ -202,7 +208,8 @@ def test_status_reports_vision_model(client):
 
 
 def test_set_vision_model_offline_still_saves(client):
-    assert client.post("/models/vision-model", json={"name": ""}).status_code == 200
+    response = client.post("/models/vision-model", json={"name": ""})
+    assert response.status_code == 200
 
 
 def test_set_vision_model_rejects_a_name_not_installed(ai_client):
@@ -278,7 +285,8 @@ def test_a_rebuild_also_rebuilds_the_keyword_index(ai_client, fake_embeddings):
         session.commit()
     finally:
         session.close()
-    assert ai_client.post("/models/reindex").status_code == 200
+    response = ai_client.post("/models/reindex")
+    assert response.status_code == 200
     _wait_for(ai_client, lambda b: (b["reindex"] or {}).get("status") == "success")
     stats = ai_client.get("/search/stats").json()
     assert stats["index"]["note"] == 1
@@ -296,7 +304,8 @@ def test_a_rebuild_does_not_change_which_backend_is_in_use(ai_client, fake_embed
         config.get_preference("embedding_model"),
     )
     ai_client.post("/entries", json={"content": "something to embed"})
-    assert ai_client.post("/models/reindex").status_code == 200
+    response = ai_client.post("/models/reindex")
+    assert response.status_code == 200
     _wait_for(ai_client, lambda b: (b["reindex"] or {}).get("status") == "success")
     assert (
         config.get_preference("embedding_backend"),
@@ -562,7 +571,8 @@ def test_a_start_up_choice_is_said_with_its_reason_until_one_is_picked(client, m
     body = client.get("/models/status").json()
     assert body["chat_model"] == "granite4.1:3b" and body["chat_model_chosen"] is True
     assert "llama3.2 is not installed" in body["chat_model_chosen_why"]
-    assert client.post("/models/chat-model", json={"name": "granite4.1:3b"}).status_code == 200
+    response = client.post("/models/chat-model", json={"name": "granite4.1:3b"})
+    assert response.status_code == 200
     assert client.get("/models/status").json()["chat_model_chosen_why"] == ""
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
     assert "sayChatModelChosen(modelStatus);" in js and '"Change"' in js.split("function sayChatModelChosen", 1)[1][:900]
@@ -701,10 +711,17 @@ def test_the_first_poll_against_a_busy_runner_says_checking_instead_of_waiting(c
     ollama = OllamaClient("http://127.0.0.1:9")
     monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
     monkeypatch.setattr(routes_models, "INSTALLED_COLD_BUDGET", 0.2)
-    routes_models._installed_known.pop(routes_models._flight_key(ollama), None)
+    client.get("/health")  # the app's first request pays its own warm-up (3.8 s on CI); time the poll alone
+    monkeypatch.setattr(ollama, "list_models", lambda: [])
+    client.get("/models/status")  # and the status route's own first-call costs (3.1 s under a loaded CI leg)
+    key = routes_models._flight_key(ollama)
+    for _ in range(200):  # that warm-up's own flight must land before the timed poll starts a fresh one
+        if key not in routes_models._installed_flights:
+            break
+        time.sleep(0.05)
+    routes_models._installed_known.pop(key, None)
     release = threading.Event()
     monkeypatch.setattr(ollama, "list_models", lambda: (release.wait(30), [{"name": "model-a", "size": 1}])[1])
-    client.get("/health")  # the app's first request pays its own warm-up (3.8 s on CI); time the poll alone
     started = time.monotonic()
     first = client.get("/models/status").json()
     assert time.monotonic() - started < 3
@@ -765,7 +782,11 @@ def test_status_does_not_probe_the_runner_a_second_time_for_embedding_ready(clie
     monkeypatch.setattr(ollama_client.requests, "get", lambda url, **kw: probes.append(url) or (_ for _ in ()).throw(AssertionError(url)))
     monkeypatch.setattr(deps.get_embeddings(), "_ollama", ollama)
     client.get("/models/status")  # starts the list flight
-    body = client.get("/models/status").json()
+    for _ in range(200):  # the flight lands on its own thread; a loaded CI leg can poll before it does
+        body = client.get("/models/status").json()
+        if body["ollama_running"]:
+            break
+        time.sleep(0.05)
     assert body["ollama_running"] is True
     assert body["embedding_ready"] is True
     assert probes == []

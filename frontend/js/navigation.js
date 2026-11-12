@@ -41,10 +41,7 @@ function wireLongPress(target, handler, { selector = null } = {}) {
       const timer = setTimeout(() => {
         cancel();
         //: A card the hold has lifted (obj-drag.js) and moved is a drag; one held still is this menu.
-        if (typeof objDragNow !== "undefined" && objDragNow?.live) {
-          if (objDragNow.moved) return;
-          objDragFinish(true);
-        }
+        if (typeof objDragLifted === "function" && objDragLifted() === "moved") return;
         //: **The lift-off is swallowed.** A hold ends like every other touch,
         //: with a click, and the element under it is the element the hold was
         //: about: measured on the graph at 390, holding a node opened its menu
@@ -137,6 +134,8 @@ function rowMenuAtEvent(event) {
     return null;
   }
   if (String(window.getSelection?.() || "").trim()) return null;
+  //: A picture inside a note is the picture menu's (Copy image, attachment-actions.js); a file card keeps its own.
+  if (target.closest("#entry-list img") && !target.closest(".att-card")) return null;
   const host = target.closest(ROW_MENU_HOSTS);
   if (!host) return null;
   const opener = [...host.querySelectorAll('.menu-wrap > [aria-haspopup="menu"]')].find(
@@ -332,7 +331,7 @@ function openSelectionScope() {
       remove: () => bar.querySelector('[id$="-bulk-delete"]')?.click(),
     };
   }
-  if (typeof selectMode !== "undefined" && selectMode && $("tab-notes") && !$("tab-notes").classList.contains("hidden")) {
+  if (selectMode && $("tab-notes") && !$("tab-notes").classList.contains("hidden")) {
     return {
       clear: () => exitSelectMode(),
       selectAll: () => {
@@ -383,6 +382,8 @@ function renderMarkdown(container, text, depth = 0) {
   container.replaceChildren();
   let lines = unlatex(text).replace(/\r\n/g, "\n").split("\n");
   const footnotes = depth === 0 ? mdFootnotePrepare(lines) : null;
+  //: A render of its own (a note card, a chat answer) indexes its own equation labels (a document indexes its whole text first, documents.js).
+  if (depth === 0) window.docMathRender?.labels.page(text);
   if (footnotes) lines = footnotes.lines;
   //: The text before `unlatex` swapped its symbols, line for line (it never
   //: crosses a newline): a `$$` block is handed to the maths renderer as it
@@ -390,28 +391,17 @@ function renderMarkdown(container, text, depth = 0) {
   const rawLines = String(text ?? "").replace(/\r\n/g, "\n").split("\n");
   let i = 0;
   let list = null; // the <ul>/<ol> currently being filled, or null
+  let listKey = ""; // its marker style (mdList.item's key) and first indent
+  let listIndent = "";
   const headingIds = new Set(); // so two "Notes" headings get distinct anchors
 
-  //: **Which source line each rendered block came from**, written on the
-  //: block as `data-src-line`. The split document view needs it to line its
-  //: two panes up: a scroll fraction is exact at both ends and wrong
-  //: everywhere a picture, a table or a code fence takes a different amount
-  //: of room in the two halves, which is the owner's report of 2026-09-20
-  //: ("the scrolling is off in the split document view because of the md
-  //: rendering"). See `docScrollAnchors` in documents.js.
-  //:
-  //: Stamped here rather than worked out afterwards, because this loop is the
-  //: only thing that knows which lines produced which element. Any other
-  //: answer is a second parser standing beside this one, and two parsers
-  //: disagree the first time either is changed.
-  //:
-  //: The bookkeeping is deliberately outside the branches: a block is
-  //: appended at eight different points in this loop, several of them after
-  //: `i` has already moved past the lines they consumed, so the line is
-  //: remembered at the top of the iteration and everything the iteration
-  //: appended is stamped at the top of the next one. A list is the exception,
-  //: since `closeList` appends it in a later iteration than the one that
-  //: started it, so it carries its own start line.
+  //: **Which source line each rendered block came from**, written as `data-src-line` so the split document
+  //: view can line its panes up (a scroll fraction is wrong wherever a picture, table or fence takes a
+  //: different room in the two halves; the owner, 2026-09-20; `docScrollAnchors`, documents.js). Stamped
+  //: here because this loop is the only thing that knows which lines made which element; a second parser
+  //: beside it would disagree the first time either changed. A block is appended at eight points, some
+  //: after `i` has moved on, so the line is remembered at the top of the iteration and what it appended is
+  //: stamped at the top of the next. A list carries its own start line (`closeList` appends it later).
   let blockLine = 0;
   let listLine = 0;
   let stamped = 0;
@@ -507,6 +497,8 @@ function renderMarkdown(container, text, depth = 0) {
       block.append(bar, pre);
       container.appendChild(block);
       if (language === "mermaid") mermaidSoon(block);
+      //: Coloured by the lazy `codeColour` module (code-colour.js) after the same settle.
+      else if (language) setTimeout(() => block.isConnected && ensureModule("codeColour").then((ok) => ok && block.dispatchEvent(new Event("codecolour", { bubbles: true }))), 400);
       continue;
     }
 
@@ -546,7 +538,7 @@ function renderMarkdown(container, text, depth = 0) {
         for (let c = 0; c < headers.length; c++) {
           const td = document.createElement("td");
           if (aligns[c]) td.style.textAlign = aligns[c];
-          appendInline(td, (row[c] || "").trim());
+          appendInline(td, window.docTableParse?.cell(row[c], rawTable) || (row[c] || "").trim());
           tr.appendChild(td);
         }
         tbody.appendChild(tr);
@@ -687,24 +679,25 @@ function renderMarkdown(container, text, depth = 0) {
       continue;
     }
 
-    const bullet = line.match(/^\s*[-*+]\s+(.*)$/);
-    const numbered = line.match(/^\s*\d+\.\s+(.*)$/);
-    if (bullet || numbered) {
-      const wantOrdered = Boolean(numbered);
-      if (!list || (list.tagName === "OL") !== wantOrdered) {
+    //: Whether an item continues the open list. A change of marker is a new list (CommonMark, and the
+    //: editor's rule), except an item indented under the list, which stays in it (nesting is drawn flat).
+    const joins = (e) => list && e && e.key[0] === listKey[0] && !e.fresh && (e.key === listKey || e.indent.length > listIndent.length);
+    const at = (l) => mdList.item(l, list ? { key: listKey, count: list.childElementCount, indent: listIndent } : null);
+    const entry = at(line);
+    if (entry) {
+      if (!joins(entry)) {
         closeList();
-        list = document.createElement(wantOrdered ? "ol" : "ul");
+        list = document.createElement(entry.key[0] === "u" ? "ul" : "ol");
+        list.className = `md-${entry.key}`;
         listLine = i;
-        // Start where the author started. Without this a list written as
-        // "3. 4. 5." renders as 1, 2, 3, and, more importantly, a list that
-        // resumes after a paragraph restarts from 1.
-        if (wantOrdered) {
-          const first = Number.parseInt(line.trim(), 10);
-          if (Number.isFinite(first) && first !== 1) list.start = first;
-        }
+        listKey = entry.key;
+        listIndent = entry.indent;
+        // Start where the author started: "3. 4. 5." is not 1, 2, 3, and a list that resumes after a
+        // paragraph does not restart from 1.
+        if (entry.number > 1) list.start = entry.number;
       }
       const li = document.createElement("li");
-      let itemText = (bullet || numbered)[1];
+      let itemText = entry.text;
       // GFM task list: "- [ ] todo" / "- [x] done" → a real checkbox.
       const task = itemText.match(/^\[([ xX])\]\s+(.*)$/);
       if (task) {
@@ -729,13 +722,7 @@ function renderMarkdown(container, text, depth = 0) {
       // numbering at 1 every single time (user-reported).
       let next = i + 1;
       while (next < lines.length && lines[next].trim() === "") next++;
-      const continues =
-        list &&
-        next < lines.length &&
-        (list.tagName === "OL"
-          ? /^\s*\d+\.\s+/.test(lines[next])
-          : /^\s*[-*+]\s+/.test(lines[next]));
-      if (!continues) closeList();
+      if (!(next < lines.length && joins(at(lines[next])))) closeList();
       i++;
       continue;
     }
@@ -755,8 +742,7 @@ function renderMarkdown(container, text, depth = 0) {
       !MD_TOC_LINE.test(lines[i]) &&
       !MD_PAGE_BREAK.test(lines[i]) &&
       lines[i].trim() !== "$$" &&
-      !lines[i].match(/^\s*[-*+]\s+/) &&
-      !lines[i].match(/^\s*\d+\.\s+/) &&
+      !mdList.item(lines[i], false) &&
       !(lines[i].includes("|") && i + 1 < lines.length && isTableSeparator(lines[i + 1]))
     ) {
       para.push(lines[i]);
@@ -862,6 +848,7 @@ function revealTab(name) {
     $(`tab-${tab}`).classList.toggle("hidden", tab !== name);
   }
   scheduleUndoBar();
+  if (name === "notes") window.initNotesSubtabHeightToken?.();
   if (name === "notes" && $("entry-list").dataset.stale) renderEntries();
   //: The companion finds its perch on the tab it is now on (avatars.js).
   window.nameMarkBuddyTabChanged?.();
@@ -1118,7 +1105,7 @@ async function goToTabHistory(next, { fromBrowser = false } = {}) {
   tabSwitchDeclined = false;
   const scroll = entry.scroll;
   try {
-    await openHistoryEntry(entry);
+    await openHistoryEntry(entry, { from: tabHistory.stack[from] });
     if (entry.tab === "settings" && scroll) restoreSettingsScroll(entry.section, scroll);
   } finally {
     // Cleared in a finally so a throw inside a tab's own setup cannot strand
@@ -1166,7 +1153,7 @@ function restoreSettingsScroll(section, top) {
 //: thing open in it. Shared by the history walk above and the router's fresh
 //: visits (a reload, a pasted link: `routerOpen`, router.js), which are the
 //: same question asked from an address instead of from the stack.
-async function openHistoryEntry(entry) {
+async function openHistoryEntry(entry, { from = null } = {}) {
   if (await window.overlayGo?.(entry)) return;
   // Settings is a modal overlay, not one of the tab-pages switchTab knows
   // about: asked for directly: "the back and forward buttons should cover
@@ -1181,6 +1168,8 @@ async function openHistoryEntry(entry) {
     return;
   }
   if (settingsModalOpen()) closeSettingsModal();
+  //: Settings closed onto the tab it was under: that page never left, so no switchTab (580ms at 4x).
+  if (from?.tab === "settings" && entry.tab === prefs.get("activeTab", null)) return;
   //: Awaited: every branch below reaches straight into the tab's own file
   //: (`openWhiteboardBoard`, `openDocument`, `graphFocusModeId`), and two of
   //: those are lazily loaded now (A1). `graphFocusModeId` in particular is a
@@ -1512,17 +1501,15 @@ document.addEventListener(
   },
   true
 );
-//: Run at boot and again for Settings' body when it is built (its Logs menu is
-//: one of these).
-function hideClosedDockMenuLists() {
-  for (const list of document.querySelectorAll(
+//: At boot, and over each stamped surface (`surfaceBuild` passes the host).
+function hideClosedDockMenuLists(root = document) {
+  for (const list of root.querySelectorAll(
     "details.dock-menu:not([open]) > .dock-menu-list, details.doc-dock-menu:not(.doc-toolbar-menu):not([open]) > .doc-dock-menu-list"
   )) {
     list.hidden = true;
   }
 }
 hideClosedDockMenuLists();
-onSettingsBody(hideClosedDockMenuLists);
 //: Escape closes an open dock menu and puts focus back on its button, 
 //: `<details>` does not do this on its own, whatever a comment elsewhere in
 //: this codebase once claimed; measured with a keyboard-only probe. Capture
@@ -1639,6 +1626,15 @@ document.addEventListener("keydown", (event) => {
       focusMenuItem(event.key === "ArrowDown" ? rows[0] : rows[rows.length - 1], menu);
       return;
     }
+    //: The other half of the APG menu button: ↓ on a closed one opens it on the first row, ↑ on the last (Enter and Space already open it).
+    if (opener.tagName === "BUTTON" && opener.getAttribute("aria-haspopup") === "menu" && opener.getAttribute("aria-expanded") === "false") {
+      event.preventDefault();
+      opener.click();
+      const opened = menuOfOpener(opener) || document.activeElement?.closest('[role="menu"]');
+      const openRows = opened ? menuRowsOf(opened) : [];
+      if (openRows.length) focusMenuItem(event.key === "ArrowDown" ? openRows[0] : openRows[openRows.length - 1], opened);
+      return;
+    }
   }
   //: Inside the menu: a `details` menu's list, or a markup menu an open
   //: button controls (the space switcher's list). A menu `wireMenuKeyboard`
@@ -1708,7 +1704,7 @@ document.addEventListener("click", async (event) => {
     //: The Library tab loads library.js alone (FE-03(c)); this button's
     //: listener is the boards' bundle's, so it is waited for first
     //: (tests/test_new_document_opens_new.py).
-    await ensureModule("library");
+    await ensureModule("boards");
     $("wb-boards-new")?.click();
   } else if (action === "add-link") {
     $("bookmark-form")?.classList.remove("hidden");
@@ -1738,7 +1734,7 @@ const lazyTabsReady = new Set();
 // check below already uses for a lazy tab that was never visited.
 function hasUnsavedWork() {
   if (typeof docDirty !== "undefined" && docDirty) return true;
-  if (typeof noteFormDirty !== "undefined" && noteFormDirty && editingId !== null) return true;
+  if (noteFormDirty && editingId !== null) return true;
   //: Not the capture box: its text survives a tab switch (the box stays in
   //: the page) and a reload (the draft in localStorage), so leaving loses
   //: nothing, and asking "Leave without saving?" on every tab switch while a
@@ -1765,12 +1761,12 @@ function chatMidStream() {
 //: audio is only kept as far as it was sent). Not in `hasUnsavedWork`: a tab
 //: switch leaves it running in the dock. `typeof`: meetings.js loads lazily.
 function recordingLive() {
-  return typeof meetingRecorder !== "undefined" && !!meetingRecorder && meetingRecorder.state !== "inactive";
+  return window.meetingRecordingLive?.() === true;
 }
 
 window.addEventListener("beforeunload", (event) => {
-  //: A private chat is gone with its tab (chat-private.js, lazy: `typeof`).
-  const privateChat = typeof chatConv !== "undefined" && chatConv.private && chatConv.turns.length;
+  //: A private chat is gone with its tab (chat-private.js).
+  const privateChat = chatConv.private && chatConv.turns.length;
   if (!hasUnsavedWork() && !chatMidStream() && !recordingLive() && !privateChat) return;
   event.preventDefault();
   event.returnValue = "";
@@ -1876,6 +1872,7 @@ document.addEventListener("input", (event) => {
 
 async function switchTab(name) {
   if (!(await confirmLeavingUnsavedWork(name))) return;
+  surfaceBuild(name);
   usageCount(`tab:${name}`);
   // Profiled directly: leaving the Graph tab left `graphSimulation` running
   //, it is only ever `.stop()`-ed "before every rebuild" (graph.js), never
@@ -2214,25 +2211,6 @@ function stripMarkdownPreview(text) {
     .replace(/!?\[([^[\]\n|]*)(?:\|[^[\]\n]*)?\]\([^()\n]*\)?/g, "$1");
 }
 
-// Layout picker (§9). Stored, because which shape suits a notebook is a
-// property of the notebook rather than of one visit.
-$("graph-layout").addEventListener("change", async (event) => {
-  prefs.set("graph-layout", event.target.value);
-  //: The picker is drawn at boot and graph.js is not (`switchTab`'s `inert`
-  //: covers a person's press; this covers a change made from script, a saved
-  //: view or the palette, before the first visit). `setGraphPhysicsEnabled`
-  //: and `renderGraph` are stand-ins that would load it anyway; the await is
-  //: for `graphAutoFitDone`, a `let` in graph.js, which a bare assignment on a
-  //: cold bundle would write to a stray global that graph.js's own binding
-  //: then shadows, so the re-frame asked for here would be lost.
-  await ensureModule("graph");
-  setGraphPhysicsEnabled(event.target.value);
-  // A different layout is a different shape (a radial ring is nothing like
-  // a force-directed cloud): re-frame for it, unlike the filter/slider
-  // changes that intentionally leave the camera alone.
-  if (prefs.get("graph-autofit", null) !== "0") graphAutoFitDone = false;
-  renderGraph();
-});
 
 // --- Notes sub-tabs ---------------------------------------------------------------
 // Four full-height cards stacked on one page meant scrolling past three forms
@@ -2306,7 +2284,8 @@ function resetNavigationToDefaults() {
   if (allTab && !allTab.classList.contains("active")) allTab.click();
   // If the Notes strip is already built, put it back on its front page now;
   // on a cold load it has not been built yet and will read the cleared key.
-  if ($("notes-subtabs")?.dataset.ready) {
+  //: `getElementById`, not `$`: `$` would build the unbuilt Notes pane on every unlock (audit 1030 Y5).
+  if (document.getElementById("notes-subtabs")?.dataset.ready) {
     showNotesSection("browse");
   }
 }
@@ -2319,7 +2298,10 @@ function activeNotesSection() {
 function showNotesSection(name, { focus = false } = {}) {
   // The picker lists documents that may have been created since this page
   // loaded: a stale list is how "add to document" ends up offering nothing.
-  if (name === "capture") loadCaptureDocuments();
+  if (name === "capture") {
+    loadCaptureDocuments();
+    extraNoticeMount($("xn-voice"), "voice");
+  }
   if (name === "writing-room") draftSaveMenuInit();
   //: Questions (row 7) re-reads its list each time it is shown.
   if (name === "questions") {
@@ -2372,7 +2354,7 @@ function showNotesSection(name, { focus = false } = {}) {
 }
 
 function initNotesSubtabs() {
-  const strip = $("notes-subtabs");
+  const strip = document.getElementById("notes-subtabs");
   if (!strip || strip.dataset.ready) return;
   strip.dataset.ready = "1";
   strip.addEventListener("click", (event) => {
@@ -2444,7 +2426,7 @@ function scrollingPage() {
 // kept in sync with a second copy of the same "scrolled away" logic.
 const NO_SCROLL_TOP_TABS = new Set(["graph", "chat"]);
 const NESTED_SCROLL_TABS = {
-  chat: () => chatMessagesEl(),
+  chat: () => $("chat-messages"),
   notes: () => document.querySelector("#tab-notes .layout > .tab-main"),
   // The Whiteboards sub-view pans rather than scrolls (like Graph), so it
   // deliberately returns nothing here, scrollTopTargetEl() then falls
@@ -2456,10 +2438,6 @@ const NESTED_SCROLL_TABS = {
   },
 };
 let scrollTopUpdate = null;
-
-function chatMessagesEl() {
-  return $("chat-messages");
-}
 
 function scrollTopTargetEl() {
   const tab = prefs.get("activeTab", null) || "dashboard";
@@ -2803,3 +2781,25 @@ function zoomWheelDelta(event) {
   if (event.ctrlKey) pixels = Math.max(-24, Math.min(24, pixels));
   return -pixels * 0.002 * (event.ctrlKey ? 10 : 1);
 }
+
+onSurface("graph", () => {
+  // Layout picker (§9). Stored, because which shape suits a notebook is a
+  // property of the notebook rather than of one visit.
+  $("graph-layout").addEventListener("change", async (event) => {
+    prefs.set("graph-layout", event.target.value);
+    //: The picker is drawn at boot and graph.js is not (`switchTab`'s `inert`
+    //: covers a person's press; this covers a change made from script, a saved
+    //: view or the palette, before the first visit). `setGraphPhysicsEnabled`
+    //: and `renderGraph` are stand-ins that would load it anyway; the await is
+    //: for `graphAutoFitDone`, a `let` in graph.js, which a bare assignment on a
+    //: cold bundle would write to a stray global that graph.js's own binding
+    //: then shadows, so the re-frame asked for here would be lost.
+    await ensureModule("graph");
+    setGraphPhysicsEnabled(event.target.value);
+    // A different layout is a different shape (a radial ring is nothing like
+    // a force-directed cloud): re-frame for it, unlike the filter/slider
+    // changes that intentionally leave the camera alone.
+    if (prefs.get("graph-autofit", null) !== "0") graphAutoFitDone = false;
+    renderGraph();
+  });
+});

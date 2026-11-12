@@ -36,6 +36,7 @@ from dataclasses import dataclass, field
 
 from tessellate.ai import composer_lines as lines
 from tessellate.ai import recognise
+from tessellate.core.lazyre import lazy_compile
 
 #: Voice names the rest of the app uses (the `composer_voice` preference and
 #: the composer's two registers) mapped onto the four voices written here.
@@ -58,13 +59,13 @@ _LEXICON: dict[str, tuple[str, ...]] = {
               "wrong", "stupid", "worst", "damn", "sad", "upset"),
     "upbeat": ("great", "thank", "awesome", "love", "nice", "cool", "happy", "excited", "amazing", "yay", "brilliant", "perfect", "fantastic", "wonderful"),
 }
-_WORD = re.compile(r"[a-z0-9']+")
+_WORD = lazy_compile(r"[a-z0-9']+")
 _STOP = frozenset("the a an of to and or is are was were my me i you it in on for with about what when how do does did can could please this that".split())
 
 
 #: One alternation per emotion, compiled at import: a read is four scans.
 _LEXICON_RE = {e: re.compile("|".join(re.escape(x) for x in stems)) for e, stems in _LEXICON.items()}
-_EMPHASIS = re.compile(r"[!?]{2,}")
+_EMPHASIS = lazy_compile(r"[!?]{2,}")
 
 
 def voice_for(name: str | None) -> str:
@@ -334,7 +335,7 @@ def time_of_day(hour: int) -> str:
     return "morning" if 5 <= hour < 12 else "afternoon" if 12 <= hour < 17 else "evening" if 17 <= hour < 22 else "night"
 
 
-_GREETED = re.compile(r"^\W*(morning|afternoon|evening)\b|\bgood\s+(morning|afternoon|evening)\b", re.I)
+_GREETED = lazy_compile(r"^\W*(morning|afternoon|evening)\b|\bgood\s+(morning|afternoon|evening)\b", re.I)
 
 
 def greeted_as(question: str, hour: int) -> str:
@@ -342,24 +343,49 @@ def greeted_as(question: str, hour: int) -> str:
     morning" is answered in the morning, whatever the clock says, audit 1029
     C14), else the clock's."""
     said = _GREETED.search(question or "")
-    return (said.group(1) or said.group(2)).lower() if said else time_of_day(hour)
+    #: "Good night" is how a day ends, never how a visit begins: a hello at 23:08 is a "good evening" (R3-34).
+    part = (said.group(1) or said.group(2)).lower() if said else time_of_day(hour)
+    return "evening" if part == "night" else part
 
 
-def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = "", streak: int = 0, notes: int = 1, question: str = "", last_href: str = "") -> str:
+def _due_clause(mood: Mood, due: int | None, overdue: int) -> str | None:
+    """What is due, said once: today's count, then the overdue apart ("1 reminder due today, 2 overdue");
+    nothing due is the quiet line, None when the count is unknown."""
+    if due:
+        said = frame("w_due", mood, due=f"{due} reminder{'s' if due != 1 else ''}")
+        return f"{said.rstrip('.')}, {overdue} overdue." if overdue else said
+    if overdue:
+        return f"{overdue} reminder{'s' if overdue != 1 else ''} overdue."
+    return frame("w_quiet", mood) if due == 0 else None
+
+
+def _empty_welcome(mood: Mood, hour: int, question: str, bare: bool) -> str:
+    """The welcome to a notebook with nothing in it. `bare` is the dashboard's:
+    it has a greeting above, so no second one, no "Welcome." (G6)."""
+    new = frame("welcome_new", mood)
+    if bare:
+        new = re.sub(r"^Welcome[.,;] ?", "", new)
+        return new[:1].upper() + new[1:]
+    hello = frame("hello", mood, tod=greeted_as(question, hour))
+    #: Never "welcome back" to a notebook with nothing in it.
+    hello = re.sub(r",? and welcome back", "", hello)
+    if "elcome back" in hello:
+        hello = f"Good {greeted_as(question, hour)}."
+    return new if _stable(mood.seed, "tod") < 0.5 else f"{hello} {new}"
+
+
+def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, overdue: int = 0, last: str = "", streak: int = 0, notes: int = 1, question: str = "", last_href: str = "", bare: bool = False) -> str:
     """A greeting built from what the app knows: the time of day, what is due
-    today (`due`, None when unknown), the title of the last note (`last`, a
+    today (`due`, None when unknown; `overdue` is said apart), the title of the last note (`last`, a
     link to `last_href` when given) and the streak in days. No note yet is
     the empty welcome. Each known fact is one clause; which come, in what
     order and joined how is the mood's."""
     if notes <= 0:
-        new = frame("welcome_new", mood)
-        return new if _stable(mood.seed, "tod") < 0.5 else f"{frame('hello', mood, tod=greeted_as(question, hour))} {new}"
+        return _empty_welcome(mood, hour, question, bare)
     parts = [frame("hello", mood, tod=greeted_as(question, hour))]
     clauses: list[tuple[str, str]] = []
-    if due:
-        clauses.append(("due", frame("w_due", mood, due=f"{due} reminder{'s' if due != 1 else ''}")))
-    elif due == 0:
-        clauses.append(("due", frame("w_quiet", mood)))
+    if (said := _due_clause(mood, due, overdue)) is not None:
+        clauses.append(("due", said))
     if last:
         named = f"[{last.replace('[', '(').replace(']', ')')}]({last_href})" if last_href else f"“{last}”"
         clauses.append(("last", frame("w_last", mood, last=named)))
@@ -367,7 +393,10 @@ def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = ""
         clauses.append(("streak", frame("w_streak", mood, streak=f"{streak} days")))
     clauses.sort(key=lambda kv: _stable(mood.seed, "order", kv[0]))
     keep = len(clauses) if mood.voice != "terse" else min(len(clauses), 2)
-    for n, (_name, text) in enumerate(clauses[:keep]):
-        lead = bridge(mood, n) if n and mood.voice != "terse" and _stable(mood.seed, "bridge", n) < 0.6 else ""
+    for n, (name, text) in enumerate(clauses[:keep]):
+        #: "On top of that, no reminders are due" and "Also, most recently you wrote" read wrong:
+        #: the quiet line and the last note take no connective (INBOX 1749).
+        bare_clause = name == "last" or (name == "due" and not due and not overdue)
+        lead = bridge(mood, n) if n and mood.voice != "terse" and _stable(mood.seed, "bridge", n) < 0.6 and not bare_clause else ""
         parts.append(_clause(lead, text))
     return " ".join(parts)

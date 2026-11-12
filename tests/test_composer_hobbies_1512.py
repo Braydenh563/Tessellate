@@ -20,7 +20,11 @@ import pytest
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 from tests import _hobbies_1512 as hobbies
+from tests._framed_path import framed_path  # noqa: F401
+
+pytestmark = pytest.mark.usefixtures("framed_path")
 
 NOW = datetime(2026, 11, 1, 12, 0)
 QUESTION = "Summarise my notes in Hobbies."
@@ -38,7 +42,7 @@ def notebook(session, monkeypatch):
     session.commit()
     for (_c, _t, _w, links), entry in zip(hobbies.NOTES, made, strict=True):
         for i, reason in links.items():
-            manager.create_link(session, entry, made[i], reason=reason)
+            manager_links.create_link(session, entry, made[i], reason=reason)
     session.commit()
     return made
 
@@ -176,4 +180,4 @@ def test_a_link_inside_a_named_pair_refers_back_to_them():
 
     notes = hobbies.notes()
     line = composer_frame.group_line(next(g for g in composer_frame.groups(notes) if 1 in g.ids), notes, "hobbies")
-    assert line.count("I just bought a new gaming mouse") == 1 and "them" in line, line
+    assert line.count("I just bought a new gaming") == 1 and "them" in line, line

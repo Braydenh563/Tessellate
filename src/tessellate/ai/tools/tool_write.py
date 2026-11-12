@@ -14,7 +14,8 @@ from tessellate.core.database import Entry, Reminder
 from sqlalchemy.orm import Session
 from tessellate.core import deps
 from sqlalchemy import func, select
-from tessellate.entry import manager
+from tessellate.entry import manager, private_space, tagnames
+from tessellate.entry import manager_links
 from tessellate.repo import relation_types
 from tessellate.repo import tags as tags_repo
 from tessellate.ai.tools.reminder_rules import held_reminder, reminder_time
@@ -26,10 +27,10 @@ def _create_note(session: Session, args: dict) -> dict:
         raise ToolError("The note content is empty")
     category = str(args.get("category") or "").strip()
     tags = [str(t) for t in args.get("tags") or []]
-    if category:
-        entry = manager.create_entry(
-            session, content, category_name=category, tags=tags, ai_confidence=100
-        )
+    sealed = private_space.starts_private()  # INBOX 1695: a model never files a note it must seal
+    if category or sealed:
+        entry = manager.create_entry(session, content, category_name=category or manager.UNCATEGORISED, tags=tags, ai_confidence=100)
+        private_space.seal_new(session, entry, sealed)
     else:
         # No category given: ask the janitor, exactly like a manual save.
         try:
@@ -59,8 +60,21 @@ def _create_note(session: Session, args: dict) -> dict:
     return result
 
 
+def _refuse_stale(entry: Entry, args: dict) -> None:
+    """The edit-conflict lock for a card that appends to a note's text it read
+    earlier (`base_hash`, CHAT_PLAN X10): if the note changed in between, the
+    append would overwrite that change, so it is refused, not merged."""
+    base = args.get("base_hash")
+    if base:
+        from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
+
+        if content_hash(entry.content) != str(base):
+            raise ToolError("That note changed since this was prepared, so nothing was written. Ask again to add to the latest text.")
+
+
 def _edit_note(session: Session, args: dict) -> dict:
     entry = _require_note(session, args)
+    _refuse_stale(entry, args)
     undo = _undo_edit(session, entry)  # before the write, or it undoes nothing
     content = args.get("content")
     content_changed = content is not None and str(content) != entry.content
@@ -160,11 +174,7 @@ def _tag_note(session: Session, args: dict) -> dict:
             continue
 
         undos.append(_undo_edit(session, entry))
-        tags = manager.entry_tags(entry)
-        tags = [t for t in tags if t.casefold() not in remove_tags]
-        for tag in add_tags:
-            if str(tag).casefold() not in {t.casefold() for t in tags}:
-                tags.append(str(tag))
+        tags = tagnames.retagged(manager.entry_tags(entry), add_tags, remove_tags)
         manager.update_entry(session, entry, tags=tags)
 
         tagged.append(entry.id)
@@ -286,7 +296,7 @@ def _link_notes(session: Session, args: dict) -> dict:
         target = _require_note(session, {"note_id": target_id})
         if target.is_deleted:
             continue
-        link = manager.create_link(session, source, target, reason=reason, link_type=link_type)
+        link = manager_links.create_link(session, source, target, reason=reason, link_type=link_type)
         if link is not None:
             linked.append(target.id)
 
@@ -335,7 +345,7 @@ def _unlink_notes(session: Session, args: dict) -> dict:
     target = _require_note(session, {"note_id": int(args["other_note_id"])})
     if target.is_deleted:
         raise ToolError(f"No note with id {args.get('other_note_id')}")
-    removed = manager.remove_link(session, source, target)
+    removed = manager_links.remove_link(session, source, target)
     if not removed:
         raise ToolError(f"Notes #{source.id} and #{target.id} aren't linked")
     return {
@@ -408,19 +418,20 @@ def _set_reminder(session: Session, args: dict) -> dict:
     held = held_reminder(session, text, due_at)
     if held:
         return held
-    reminder = Reminder(text=text, due_at=due_at, entry_id=entry_id, priority=priority)
+    repeat = next(iter({str(args.get("recurring")).lower()} & {"daily", "weekly", "monthly"}), "none")
+    reminder = Reminder(text=text, due_at=due_at, entry_id=entry_id, priority=priority, recurring=repeat)
     session.add(reminder)
     session.flush()
     manager.log_action(session, "created", "reminder", reminder.id, text[:80])
     session.commit()
     return {
-        "id": reminder.id,
-        "text": text,
+        "id": reminder.id, "text": text,
         "due_at": due_at.isoformat(),
         #: Said back in words, so the answer repeats the app's reading of the
         #: time rather than the model's own arithmetic.
         "due": due_at.strftime("%A %d %B %Y, %H:%M"),
-        "label": f"⏰ Set a reminder for {due_at.strftime('%a %d %b %Y %H:%M')}",
+        "label": f"⏰ Set a reminder for {due_at.strftime('%a %d %b %Y %H:%M')}" + (f", repeating {repeat}" if repeat != "none" else ""),
+        "recurring": repeat,
     }
 
 
@@ -517,9 +528,7 @@ def _rename_tag(session: Session, args: dict) -> dict:
 
 
 def _delete_tag(session: Session, args: dict) -> dict:
-    changed = len(tags_repo.remove(session, [str(args["name"])]))
+    name = str(args["name"])
+    held = tags_repo.remove(session, [name])
     session.commit()
-    return {
-        "entries_changed": changed,
-        "label": f"ph:tag Removed the tag “{args['name']}” from {changed} notes",
-    }
+    return {"entries_changed": len(held), "label": f"ph:tag Removed the tag “{name}” from {len(held)} notes", **tags_repo.put_back(held, name)}

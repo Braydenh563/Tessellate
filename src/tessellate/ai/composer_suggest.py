@@ -53,6 +53,14 @@ _IMPERATIVE = re.compile(
     rf"^{_FILLER}(?:get|make|give|put|set|play|read|write|send|turn|run|clean|sort|organi[sz]e|tidy|fix|do|show|help me|let me|take|bring|throw|stick|get rid of|use|try|go|build|draw|plan|schedule|book|email|call|print|share|export|import|copy|merge|split|archive|clear|reset)\b",
     re.I,
 )
+#: "Give me the short version" with no answer before it to shorten.
+_FORM = re.compile(
+    rf"^{_FILLER}(?:give|show|tell|get) me (?:it |that )?(?:in )?(?:the |a )?(?:short|long|brief|quick|full|detailed|simple|plain|shorter|longer|simpler)(?: version| answer| summary| form| way| one)?[?.! ]*$", re.I
+)
+_NO_FORM = (
+    "There is no answer yet to give in a shorter form. Ask me something first, then say “shorter” and I will cut it down.",
+    "Nothing to shorten so far. Ask a question about your notes, and I can give you the short version of the answer.",
+)
 _ASKING = re.compile(r"^(?:what|when|where|who|whom|whose|which|why|how|is|are|was|were|do i|did i|does|have i|has|can i)\b", re.I)
 
 #: Words each act is also said with, so "get rid of" finds delete without the
@@ -113,9 +121,16 @@ def _tokens(text: str) -> set[str]:
 _STOP = frozenset("the and for with from that this you can could would please about into onto have has not are was were your note notes".split())
 
 
+#: Acts said as a whole sentence about a kind of thing (a category, a tag, a note's text, a list, a skill): offered
+#: by name they would outscore "delete a note" on a bare "delete" (`parity_acts`).
+_SENTENCE_ONLY = frozenset({"delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "run_skill"})
+
+
 def _catalogue() -> list[tuple[Option, set[str], str]]:
     rows = []
     for intent, act in act_registry.ACTS.items():
+        if intent in _SENTENCE_ONLY:
+            continue
         words = _tokens(f"{act.label} {act.verb} {_SYNONYMS.get(intent, '')}")
         rows.append((Option(intent, act.label, _ASK_FOR.get(intent, act.label.capitalize())), words, f"{act.label}. {act.help}"))
     return rows
@@ -289,6 +304,13 @@ _DETAIL = {
 }
 #: A bare "new note" offers both readings: making one, or the newest ones (INBOX 1532).
 _DETAIL_ASKS = {"new": ("Show my newest notes",)}
+_FEELS = re.compile(r"\b(?:bored|stuck|lost|unsure)\b", re.I)
+_FEELING_TEXT = (
+    "Bored, then. Here are a few things worth trying, or tell me what you are after.",
+    "Let us fix that. A few ideas below, or say what you feel like.",
+    "Slow day? Here are some things to try, or tell me what you are in the mood for.",
+    "I can help with that. Pick something below, or say what you have in mind.",
+)
 _VAGUE_TEXT = (
     "I can do a few useful things without a model. What are you in the mood for? Pick one, or say what you have in mind.",
     "Cool how? Here are some things worth trying, or tell me what you are after.",
@@ -297,22 +319,27 @@ _VAGUE_TEXT = (
 )
 
 
+def _which_reply(kind: str, question: str, shown: list[str], seed: str) -> dict:
+    """The question for a request that names its verb but not which note ("open it")."""
+    if not shown and kind in ("open", "delete", "pin", "unpin", "summarise"):
+        return {"text": "You have no notes yet, so there is nothing to " + kind + ". Make one with “note:” and your words, or ask me what I can do.",
+                "asks": ["Make a new note", "What can you do?"]}
+    text = _pick(list(_WHICH[kind]), question, seed)
+    if kind == "find":
+        return {"text": text, "asks": [f"Open the note about {t}" for t in shown] or ["What have I saved recently?"]}
+    verb = _VERB_FOR[kind]
+    if kind == "summarise":
+        return {"text": text, "asks": ["Summarise my newest notes"] + [f"Summarise the note about {t}" for t in shown[:3]]}
+    return {"text": text, "asks": [f"{verb} the note about {t}" for t in shown]}
+
+
 def reply(question: str, titles: list[str], *, seed: str = "") -> dict:
     """The clarifying question and its choices for an open-ended request:
     `{"text", "asks"}`. `titles` are the newest notes' names, newest first."""
     kind = open_ended(question)
     shown = [t for t in titles if t][:4]
     if kind in _WHICH:
-        if not shown and kind in ("open", "delete", "pin", "unpin", "summarise"):
-            return {"text": "You have no notes yet, so there is nothing to " + kind + ". Make one with “note:” and your words, or ask me what I can do.",
-                    "asks": ["Make a new note", "What can you do?"]}
-        text = _pick(list(_WHICH[kind]), question, seed)
-        if kind == "find":
-            return {"text": text, "asks": [f"Open the note about {t}" for t in shown] or ["What have I saved recently?"]}
-        verb = _VERB_FOR[kind]
-        if kind == "summarise":
-            return {"text": text, "asks": ["Summarise my newest notes"] + [f"Summarise the note about {t}" for t in shown[:3]]}
-        return {"text": text, "asks": [f"{verb} the note about {t}" for t in shown]}
+        return _which_reply(kind, question, shown, seed)
     if kind in _DETAIL:
         #: A bare "new note" offers both readings: making one, or the newest ones.
         return {"text": _DETAIL[kind], "asks": list(_DETAIL_ASKS.get(kind, ()))}
@@ -322,7 +349,9 @@ def reply(question: str, titles: list[str], *, seed: str = "") -> dict:
     asks = [ideas[(start + i * 2) % len(ideas)] for i in range(3)]
     if shown:
         asks.append(f"Open the note about {shown[int(hashlib.sha1(seed.encode()).hexdigest(), 16) % len(shown)]}")
-    return {"text": _pick(list(_VAGUE_TEXT), question, seed), "asks": list(dict.fromkeys(asks))}
+    #: A feeling is answered as one first ("I'm bored" is not "Cool how?", INBOX 1749).
+    feeling = _FEELING_TEXT if _FEELS.search(question or "") else _VAGUE_TEXT
+    return {"text": _pick(list(feeling), question, seed), "asks": list(dict.fromkeys(asks))}
 
 
 #: The doing words of a request, which every help sentence shares; the
@@ -352,6 +381,8 @@ def unknown_action(question: str, titles: list[str], *, embed=None, seed: str = 
     q = " ".join((question or "").split())
     if not q or _ASKING.match(q) or not _IMPERATIVE.match(q):
         return None
+    if _FORM.match(q):
+        return {"text": _pick(list(_NO_FORM), q, seed), "asks": []}
     tool = _app_tool(q)
     if tool:
         return {"text": tool, "asks": []}

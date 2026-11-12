@@ -170,6 +170,20 @@
 #doc-preview {
   line-height: 1.6;
 }
+/* Settings, Line spacing: 0.9 and 1.15 of the 1.6 (1.72 in serif). */
+:root[data-read-leading="tight"] #doc-preview {
+  line-height: 1.44;
+}
+/* The Live editor's lines (CodeMirror's scroller, 1.6): same two steps. A code file keeps its own. */
+:root[data-read-leading="tight"] .doc-editor .cm-editor:not(.doc-content-code) .cm-scroller {
+  line-height: 1.44;
+}
+:root[data-read-leading="roomy"] .doc-editor .cm-editor:not(.doc-content-code) .cm-scroller {
+  line-height: 1.84;
+}
+:root[data-read-leading="roomy"] #doc-preview {
+  line-height: 1.84;
+}
 #doc-preview :is(.md-h1, .md-h2) {
   margin-block: var(--space-9) var(--space-4);
 }
@@ -210,11 +224,21 @@
 #doc-preview .md-table-block .md-table:has(thead th:nth-child(3)) {
   width: 100%;
 }
+/* **The bar has its own strip under the table** (wrapzoom 2026-11-11). Half
+   over the table's bottom edge, it covered the last row's last cell ("2,100"
+   at 1440) whenever the table filled the measure, and took its clicks. The
+   block keeps the bar's 2.5rem below the table on a screen that hovers, so
+   the bar shows in room of its own and nothing moves when it does. */
+@media (hover: hover) {
+  #doc-preview .md-table-block {
+    margin-block-end: var(--space-3);
+    padding-block-end: 2.5rem;
+  }
+}
 #doc-preview .md-table-block > .code-bar {
   position: absolute;
   inset-block-end: 0;
   inset-inline-end: 0;
-  transform: translateY(50%);
   z-index: 2;
   padding: 0;
   border: 0;
@@ -636,7 +660,7 @@
   gap: var(--space-2);
   margin-top: var(--space-2);
   padding: var(--space-1) var(--space-2);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--glass-border);
   background: var(--inner);
   font-family: var(--ui-font, inherit);
   font-size: var(--text-xs);
@@ -688,6 +712,12 @@
 .doc-serif #doc-preview {
   font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, "Times New Roman", serif;
   line-height: 1.72;
+}
+:root[data-read-leading="tight"] .doc-serif #doc-preview {
+  line-height: 1.55;
+}
+:root[data-read-leading="roomy"] .doc-serif #doc-preview {
+  line-height: 1.98;
 }
 
 /* **And its own measure, for the same reason it has its own leading.** A
@@ -1028,11 +1058,16 @@
    child of body (`docPlaceFixed` corrects its frame), solid rather than
    blurred so it is not one more surface for the glass-off list, and the
    height of one small button so it sits on the block's edge without covering
-   its first line. */
+   its first line. **A column in the preview's right gutter** (2026-11-11, the
+   owner: it "covers the content in the top corner of that row"): centred on
+   the block's top edge it lay over the line above and the words below, so it
+   now stands up the block's right side in the room
+   `#doc-preview` keeps for it on a device that can hover (the bar is hover-only). */
 .doc-block-bar {
   position: fixed;
   z-index: 55;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-1);

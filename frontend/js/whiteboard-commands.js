@@ -55,10 +55,15 @@ function wbCommandTextTarget() {
 
 const wbCommandNeeds = {
   link: () => wbCommandTextTarget()?.kind === "link",
+  //: One more or one less level changes something (INBOX 1774).
+  moreLevel: () => wbIsMap() && wbMapBuild.ring(wbMapIndex(), wbMapHidden(wbMapIndex()), 1).ids.length > 0,
+  lessLevel: () => wbIsMap() && wbMapBuild.ring(wbMapIndex(), wbMapHidden(wbMapIndex()), -1).ids.length > 0,
   clone: () => Boolean(wbCloneSource()),
   selection: () => wbCommandSelectionCount() > 0,
   tree: () => wbTidyEdges(wbSelectionEntries()).length > 0,
   swappable: () => Boolean(wbSwapTarget()),
+  parallel: () => Boolean(wbFmtState.arrangeMore?.canSpread()),
+  polygon: () => Boolean(wbFmtState.shapeMore?.pointsTarget()),
   joinable: () => wbJoinableEntries().length >= 2,
   voteable: () => wbVoteTargets().length > 0,
   measurable: () => wbJoinableEntries().length >= 2 || wbCommandTextTarget()?.kind === "link",
@@ -131,8 +136,12 @@ const WB_COMMANDS = [
   { id: "paste-no-comments", group: "Edit", icon: "ph:clipboard", label: "Paste without comments", keys: "Ctrl+Alt+Shift+V", surface: "board", needs: "copied", run: () => wbPasteClipboard({ noComments: true }) },
   { id: "duplicate", group: "Edit", icon: "ph:copy", label: "Duplicate", keys: "Ctrl+D", surface: "both", needs: "selection", run: () => wbDuplicateSelection() },
   { id: "delete", group: "Edit", icon: "ph:trash", label: "Delete", keys: "Del", surface: "both", needs: "selection", run: () => deleteWbSelection() },
+  { id: "clear-labels", group: "Edit", icon: "ph:tag", label: "Clear the labels, keep the shapes", keys: "Shift+Del", surface: "board", needs: "selection", run: () => wbFmtState.keys.clearLabels() },
   { id: "copy-style", group: "Edit", icon: "ph:eyedropper", label: "Copy style", keys: "Ctrl+Alt+C", surface: "board", needs: "one", run: () => wbCopySelectedStyle() },
   { id: "paste-style", group: "Edit", icon: "ph:paint-bucket", label: "Paste style", keys: "Ctrl+Alt+V", surface: "board", needs: "selection", run: () => wbPasteCopiedStyle() },
+  { id: "edit-style", group: "Edit", icon: "ph:code", label: "Edit style as text", keys: "Ctrl+E", surface: "board", needs: "one", run: () => wbFmtState.raw.open() },
+  { id: "set-default-style", group: "Edit", icon: "ph:push-pin", label: "Set as default style", keys: "Ctrl+Alt+D", surface: "board", needs: "one", run: () => wbFmtState.board?.setDefault() },
+  { id: "clear-default-style", group: "Edit", icon: "ph:push-pin-slash", label: "Clear the default style", keys: "", surface: "board", run: () => wbFmtState.board?.clearDefault() },
   { id: "reset-style", group: "Edit", icon: "ph:arrow-counter-clockwise", label: "Reset style", keys: "", surface: "both", needs: "selection", run: () => wbResetSelectedStyle() },
   { id: "clear-format", group: "Edit", icon: "ph:text-t-slash", label: "Clear text formatting", keys: "", surface: "board", needs: "selection", run: () => wbClearTextFormat() },
   { id: "font-bigger", group: "Edit", icon: "ph:text-aa", label: "Make the text larger", keys: "", surface: "board", needs: "selection", run: () => wbStepFontSize(1) },
@@ -169,6 +178,9 @@ const WB_COMMANDS = [
   { id: "fold-level-1", group: "View", icon: "ph:list-dashes", label: "Show the trunks only", keys: "Alt+1", surface: "map", run: () => wbMapFoldToLevel(1) },
   { id: "fold-level-2", group: "View", icon: "ph:list-dashes", label: "Show two levels", keys: "Alt+2", surface: "map", run: () => wbMapFoldToLevel(2) },
   { id: "fold-level-3", group: "View", icon: "ph:list-dashes", label: "Show three levels", keys: "Alt+3", surface: "map", run: () => wbMapFoldToLevel(3) },
+  { id: "fold-level-more", group: "View", icon: "ph:plus-circle", label: "Show one more level", keys: "Alt+=", surface: "map", needs: "moreLevel", run: () => wbMapFoldToLevel({ by: 1 }) },
+  { id: "fold-level-less", group: "View", icon: "ph:minus-circle", label: "Show one less level", keys: "Alt+-", surface: "map", needs: "lessLevel", run: () => wbMapFoldToLevel({ by: -1 }) },
+  { id: "present-build", group: "View", icon: "ph:steps", label: "Build up branch by branch", keys: "", surface: "map", run: () => wbMapBuild.start() },
   { id: "insert-parent", group: "Item", icon: "ph:arrow-elbow-left-up", label: "Insert a parent topic", keys: "Ctrl+Enter", surface: "map", needs: "topic", run: () => wbMapInsertParent(wbSelectedMapNode()?.id) },
   { id: "move-under", group: "Item", icon: "ph:arrow-bend-right-down", label: "Move under…", keys: "M", surface: "map", needs: "topic", run: () => wbMapMoveUnder(wbSelectedMapNode()?.id) },
   { id: "sort-az", group: "Item", icon: "ph:sort-ascending", label: "Sort branches A to Z", keys: "", surface: "map", needs: "topic", run: () => wbMapSortChildren(wbSelectedMapNode()?.id, 1) },
@@ -198,9 +210,17 @@ const WB_COMMANDS = [
   { id: "same-height", group: "Arrange", icon: "ph:arrows-out-line-vertical", label: "Same height as the tallest", menu: "Same height", keys: "", surface: "board", needs: "two", run: () => wbSameSizeSelection("height") },
   { id: "tidy-down", group: "Arrange", icon: "ph:tree-structure", label: "Tidy as a tree, top to bottom", menu: "Top to bottom", keys: "", surface: "board", needs: "tree", run: () => wbTidySelection("down") },
   { id: "tidy-right", group: "Arrange", icon: "ph:tree-view", label: "Tidy as a tree, left to right", menu: "Left to right", keys: "", surface: "board", needs: "tree", run: () => wbTidySelection("right") },
+  { id: "flip-layout-h", group: "Arrange", icon: "ph:arrows-left-right", label: "Flip the layout left to right", menu: "Layout, left to right", keys: "", surface: "board", needs: "two", run: () => wbFmtState.arrangeMore.flipLayout("h") },
+  { id: "flip-layout-v", group: "Arrange", icon: "ph:arrows-down-up", label: "Flip the layout top to bottom", menu: "Layout, top to bottom", keys: "", surface: "board", needs: "two", run: () => wbFmtState.arrangeMore.flipLayout("v") },
+  { id: "parallel-edges", group: "Arrange", icon: "ph:equals", label: "Space parallel connectors", menu: "Space parallel connectors", keys: "", surface: "board", needs: "parallel", run: () => wbFmtState.arrangeMore.spread() },
   { id: "join-chain", group: "Arrange", icon: "ph:arrow-elbow-down-right", label: "Connect the selected in a line, one to the next", menu: "In a line", keys: "", surface: "board", needs: "joinable", run: () => wbJoinSelection("chain") },
   { id: "join-fan", group: "Arrange", icon: "ph:share-network", label: "Connect the selected to the first one picked", menu: "All to the first picked", keys: "", surface: "board", needs: "joinable", run: () => wbJoinSelection("fan") },
   { id: "measure", group: "Arrange", icon: "ph:ruler", label: "Measure: a dimension line with its length", menu: "Measure with a dimension line", keys: "", surface: "board", needs: "measurable", run: () => wbMeasureSelection() },
+  { id: "loop", group: "Arrange", icon: "ph:arrow-u-up-left", label: "Add a loop: a connector from the shape back to itself", menu: "Loop on the shape", keys: "", surface: "board", needs: "clone", run: () => wbFmtState.drawMore.addLoop() },
+  { id: "edit-ports", group: "Arrange", icon: "ph:crosshair-simple", label: "Edit connection points: press the outline to add one, a point to take it out", menu: "Edit connection points", keys: "", surface: "board", needs: "swappable", run: () => wbFmtState.drawMore.editPorts() },
+  { id: "edit-points", group: "Arrange", icon: "ph:polygon", label: "Edit the points of a shape: drag one, press the outline to add one", menu: "Edit shape points", keys: "", surface: "board", needs: "polygon", run: () => wbFmtState.shapeMore.editPoints() },
+  { id: "reset-ports", group: "Arrange", icon: "ph:arrow-counter-clockwise", label: "Connection points back to the standard ones", menu: "Reset connection points", keys: "", surface: "board", needs: "swappable", run: () => wbFmtState.drawMore.resetPorts() },
+  { id: "replace-library", group: "Arrange", icon: "ph:swap", label: "Replace the shape with one from the library, keeping its words and connectors", menu: "Replace with a library shape…", keys: "", surface: "board", needs: "swappable", run: () => wbFmtState.libraryMore.open({ mode: "replace" }) },
   { id: "change-shape", group: "Arrange", icon: "ph:shapes", label: "Change the shape to another kind…", menu: "Change the shape…", keys: "", surface: "board", needs: "swappable", run: () => wbOpenShapeSwapMenu() },
   { id: "text-fit", group: "Edit", icon: "ph:arrows-in-simple", label: "Shrink the text to fit the shape (on or off)", keys: "", surface: "board", needs: "swappable", run: () => wbToggleLabelFit() },
   { id: "vote", group: "Edit", icon: "ph:circle", label: "Add a vote dot to the selected items", menu: "Add a vote dot", keys: "", surface: "board", needs: "voteable", run: () => wbVoteSelection(1) },
@@ -234,6 +254,7 @@ const WB_COMMANDS = [
   { id: "insert-image", group: "Insert", icon: "ph:image", label: "Image from a file", keys: "I", surface: "board", run: wbClickId("wb-add-image") },
   { id: "insert-note", group: "Insert", icon: "ph:note-pencil", label: "A note from the library", keys: "", surface: "both", run: wbClickId("wb-add-note") },
   //: MINDMAP_PLAN decision 44: a sticker, or (dropped on a topic) its icon.
+  { id: "shape-picker", group: "Insert", icon: "ph:magnifying-glass", label: "Shape picker: search the library and place a shape at the pointer", menu: "Shape picker…", keys: "", surface: "board", run: () => wbFmtState.libraryMore.open({ mode: "place" }) },
   { id: "insert-sticker", group: "Insert", icon: "ph:smiley-sticker", label: "Emoji and icon stickers", menu: "Emoji and icons…", keys: "", surface: "both", run: () => wbOpenStickerPicker() },
   // Tools
   { id: "tool-select", group: "Tools", icon: "ph:cursor", label: "Select tool", keys: "V", surface: "both", run: wbTool("select") },
@@ -262,6 +283,8 @@ const WB_COMMANDS = [
   { id: "zoom-out", group: "View", icon: "ph:magnifying-glass-minus", label: "Zoom out", keys: "Ctrl+-", surface: "both", run: wbClickId("wb-zoom-out") },
   { id: "zoom-100", group: "View", icon: "ph:magnifying-glass", label: "Zoom to 100%", keys: "Ctrl+1", surface: "both", run: wbClickId("wb-zoom-actual") },
   { id: "zoom-fit", group: "View", icon: "ph:frame-corners", label: "Fit everything", keys: "Ctrl+0", surface: "both", run: () => wbZoomToFit() },
+  { id: "view-home", group: "View", icon: "ph:house", label: "Back to the top left of the board", keys: "Home", surface: "board", run: () => wbFmtState.keys.home() },
+  { id: "view-reset", group: "View", icon: "ph:arrows-in", label: "Reset the view to 100%", keys: "Shift+Home", surface: "board", run: () => wbFmtState.keys.reset() },
   { id: "zoom-selection", group: "View", icon: "ph:selection", label: "Zoom to the selection", keys: "Shift+2", surface: "both", needs: "selection", run: () => wbZoomToSelection() },
   { id: "overview", group: "View", icon: "ph:map-trifold", label: "Board overview", keys: "Shift+N", surface: "both", run: () => wbToggleNavigator() },
   //: The View menu's background, grid and colour rows (row 9), each pressing
@@ -325,6 +348,8 @@ function wbRunCommand(id) {
       three: "Select three or more items first.",
       tree: "Select two or more shapes and the connectors between them first.",
       swappable: "Select one closed shape first.",
+      parallel: "No two connectors join the same pair of shapes here.",
+      polygon: "Select one shape with straight sides first.",
       joinable: "Select two or more shapes, text boxes or notes first.",
       voteable: "Select a note, text box, picture or frame first.",
       measurable: "Select two or more shapes, or one connector, first.",
@@ -340,6 +365,8 @@ function wbRunCommand(id) {
       drawing: "Select one drawn shape or pen stroke first.",
       styled: "Select one shape, line or text box first.",
       textbox: "Select one sticky or text box first.",
+      moreLevel: "Every level is showing.",
+      lessLevel: "Only the centre is showing.",
     }[command.needs];
     toast(why || "That is not on a mind map.");
     return false;
@@ -654,6 +681,7 @@ const WB_HELP_SECTIONS = [
     { icon: "ph:trash", label: "Delete the topic and its branch", keys: ["Delete"] },
     { icon: "ph:caret-down", label: "Fold or open a branch", keys: ["C"] },
     { icon: "ph:list-dashes", label: "Show that many levels", keys: ["Alt+1 to 9"] },
+    { icon: "ph:plus-circle", label: "Show one more or one less level", keys: ["Alt+=", "Alt+-"] },
     { icon: "ph:crosshair", label: "Focus here, show all again", keys: ["F"] },
     { icon: "ph:dots-three", label: "The topic's whole menu", keys: ["Shift+F10"] },
     { icon: "ph:text-aa", label: "Label a line", keys: ["double-click it"] },
@@ -675,13 +703,13 @@ const WB_HELP_SECTIONS = [
     { icon: "ph:arrows-horizontal", label: "Pan sideways", keys: ["Shift+wheel"] },
     { icon: "ph:hand-grabbing", label: "Pan with any tool", keys: ["Space+drag"] },
     { icon: "ph:magnifying-glass-plus", label: "Zoom", keys: ["wheel", "pinch"] },
-    { cmd: "zoom-in" }, { cmd: "zoom-out" }, { cmd: "zoom-100" }, { cmd: "zoom-fit", also: ["Shift+1"] },
+    { cmd: "zoom-in" }, { cmd: "zoom-out" }, { cmd: "zoom-100" }, { cmd: "zoom-fit", also: ["Shift+1"] }, { cmd: "view-home" }, { cmd: "view-reset" },
     { cmd: "overview" }, { cmd: "find" },
     { icon: "ph:keyboard", label: "Walk the board's items", keys: ["Tab", "Shift+Tab"] },
   ] },
   { title: "Select and edit", surface: "both", rows: [
     { icon: "ph:cursor-click", label: "Add to the selection", keys: ["Shift+click"] },
-    { cmd: "select-all" }, { cmd: "undo" }, { cmd: "redo" },
+    { cmd: "select-all" }, { cmd: "clear-labels" }, { cmd: "undo" }, { cmd: "redo" },
     { icon: "ph:clipboard", label: "Copy, paste at the pointer", keys: ["Ctrl+C", "Ctrl+V"] },
     { icon: "ph:clipboard-text", label: "Paste text from another app: a list becomes stickies", keys: ["Ctrl+V"] },
     { icon: "ph:note", label: "Next sticky beside this one, while typing in one", keys: ["Ctrl+Enter"] },
@@ -811,9 +839,11 @@ function wbCloseHelpSheet() {
   focusBackTo(back, fallback);
 }
 
+//: The More menu goes into the board's top bar, which lives in the board template (row 21).
+onSurface("board", wbInitMoreMenu);
+
 //: Wired once, when this file arrives with the Library bundle.
 onDomReady(() => {
-  wbInitMoreMenu();
   const overlay = document.getElementById("wb-help-overlay");
   if (!overlay) return;
   document.getElementById("wb-help-close")?.addEventListener("click", wbCloseHelpSheet);
@@ -966,7 +996,7 @@ async function wbMeasureSelection() {
 // (rows and columns, indentation, list marks) are documents-prose.js's `paste*` functions, shared with
 // the document editor; this file is the board's half. The pure half runs in
 // node (tests/test_wb_paste_text.py); the wiring is driven by
-// scratchpad/ui-sweeps/wbpaste.js. It sits in this file, after the command
+// wbpaste.js (git history). It sits in this file, after the command
 // table, because app.js's gzip cap leaves no room for another script line.
 
 // WB-PASTE-PURE-START

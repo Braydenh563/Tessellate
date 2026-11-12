@@ -48,11 +48,11 @@ const DOC_GRAMMAR_NOTE_DEBOUNCE_MS = 600;
 
 let docGrammarWorker = null;
 let docGrammarError = "";
-let docGrammarSeq = 0;
-const docGrammarWaiting = new Map();
+//: The ask in flight: the next message's id, who waits for each answer, and the
+//: text a grammar check is being asked about.
+const docGrammarWire = { seq: 0, waiting: new Map(), asking: null };
 //: The document's last answer: the text it was for and its findings.
 let docGrammarCache = { text: null, findings: [] };
-let docGrammarAsking = null;
 
 //: On unless the reader turned it off, and never once it has failed: a
 //: binary that did not load will not load on the next keystroke either.
@@ -65,8 +65,8 @@ function docGrammarEnabled() {
 function docGrammarFail(reason) {
   docGrammarError = reason || "the grammar checker did not load";
   console.warn("Grammar check off for this session:", docGrammarError);
-  for (const resolve of docGrammarWaiting.values()) resolve(null);
-  docGrammarWaiting.clear();
+  for (const resolve of docGrammarWire.waiting.values()) resolve(null);
+  docGrammarWire.waiting.clear();
   if (docGrammarWorker) docGrammarWorker.terminate();
   docGrammarWorker = null;
 }
@@ -95,9 +95,18 @@ async function docGrammarWhy() {
   return found.join("; ") || "every file it loads answered as JavaScript";
 }
 
-//: One lint of `text`, or null when there is no checker. Never rejects: a
-//: caller that has to catch is a caller that one day will not.
+//: One lint of `text`, or null when there is no checker.
 function docGrammarAsk(text) {
+  const asked = docGrammarSend({ text, dialect: docSpellingVariant() });
+  //: LanguageTool, when installed (documents-languagetool.js), adds its findings.
+  return asked.then((lints) => docSpell.languageTool(lints, text));
+}
+
+//: One message to the worker and its answer, or null when there is no checker
+//: (`reply` false: a message with no answer, the person's own words). The
+//: worker is started here, on first use. Never rejects: a caller that has to
+//: catch is a caller that one day will not.
+function docGrammarSend(message, reply = true) {
   if (!docGrammarEnabled()) return Promise.resolve(null);
   if (!docGrammarWorker) {
     try {
@@ -112,11 +121,11 @@ function docGrammarAsk(text) {
     }
     docGrammarWorker.addEventListener("message", (event) => {
       const data = event.data || {};
-      const resolve = docGrammarWaiting.get(data.id);
+      const resolve = docGrammarWire.waiting.get(data.id);
       if (!data.ok) return docGrammarFail(data.error);
       if (!resolve) return;
-      docGrammarWaiting.delete(data.id);
-      resolve(data.lints || []);
+      docGrammarWire.waiting.delete(data.id);
+      resolve(data.spell || data.lints || []);
     });
     //: A worker whose script fails to load says so here and nowhere else,
     //: and with no message: a module worker refused for its type, its CSP or
@@ -129,11 +138,17 @@ function docGrammarAsk(text) {
       if (event.message) return docGrammarFail(event.message);
       docGrammarWhy().then((why) => docGrammarFail(`the grammar worker did not start (${why})`));
     });
+    //: Its first message is the person's own words (documents-spell.js).
+    setTimeout(docSpell.ownWordsSend, 0);
   }
-  const id = ++docGrammarSeq;
+  if (!reply) {
+    docGrammarWorker.postMessage(message);
+    return Promise.resolve(null);
+  }
+  const id = ++docGrammarWire.seq;
   return new Promise((resolve) => {
-    docGrammarWaiting.set(id, resolve);
-    docGrammarWorker.postMessage({ id, text, dialect: docSpellingVariant() });
+    docGrammarWire.waiting.set(id, resolve);
+    docGrammarWorker.postMessage({ ...message, id });
   });
 }
 
@@ -209,6 +224,9 @@ function docGrammarKeeps(lint, span, structural, text) {
   //: list loads `docWordKnown` says yes, which drops these too; Harper's
   //: Typo lints come back with the next pass.
   if (lint.kind === "Typo" && /^[A-Za-z]+$/.test(span) && docWordKnown(span)) return false;
+  //: A word the person added to the dictionary is theirs (INBOX 1731), in the
+  //: kinds that judge a word and not a sentence.
+  if (["Spelling", "Typo", "Regionalism"].includes(lint.kind) && /^[A-Za-z']+$/.test(span) && docDictionary().has(span.toLowerCase())) return false;
   const message = String(lint.message || "");
   //: A file name's extension is not a new sentence: "start.bat", "run.bat.".
   if (/does not start with a capital letter/i.test(message) && /[A-Za-z0-9]\./.test(text.slice(Math.max(0, lint.start - 2), lint.start))) {
@@ -315,11 +333,11 @@ function docProseRemap(findings, from, to) {
 //: on the first document opened (or typed into) with grammar on.
 function docGrammarRequest(text) {
   if (!text || !text.trim()) return;
-  if (!docGrammarEnabled() || docGrammarAsking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
-  docGrammarAsking = text;
+  if (!docGrammarEnabled() || docGrammarWire.asking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
+  docGrammarWire.asking = text;
   const asked = performance.now();
   docGrammarAsk(text).then((lints) => {
-    docGrammarAsking = null;
+    docGrammarWire.asking = null;
     //: **Typed into since the ask: the pause will draw it** (DX1). Repainting
     //: here asked again, so while keys kept coming every answer started a
     //: prose pass of its own (37 passes in 60 keys at 4x CPU).
@@ -599,6 +617,23 @@ function noteGrammarMenu(view, plugin, finding, x, y) {
   }));
   if (!items.length) {
     items.push({ group: "fix", label: `ph:info ${finding.message}`, disabled: true, run: () => {} });
+  }
+  //: **Beside "Ignore this one"** (INBOX 1731): a word Harper does not know
+  //: can be added to the notebook's dictionary, which is the Settings
+  //: preference the document editor already reads, so one add answers both.
+  const word = /^[A-Za-z]+(?:'[A-Za-z]+)*$/.test(finding.text) && (["Spelling", "Typo", "Regionalism"].includes(finding.harperKind) || /negative word/i.test(finding.message));
+  if (word) {
+    const add = docSpell.dictionaryRow(finding.text);
+    items.push({
+      group: "ignore",
+      label: add.label,
+      title: add.title,
+      run: () => {
+        plugin.findings = plugin.findings.filter((other) => other.text.toLowerCase() !== finding.text.toLowerCase());
+        view.dispatch({ effects: noteGrammarEffect.of(null) });
+        add.run();
+      },
+    });
   }
   items.push({
     group: "ignore",
@@ -1782,6 +1817,287 @@ function docSmartPunct(before, ch) {
   return null;
 }
 
+//: **`#tag` completion in markdown** (DOCUMENTS_PLAN 23 L5), `docPairInput.tag`
+//: and `.tagSource`, properties not globals (the scope ratchet). `before` is the
+//: line up to the caret; returns the typed word after a `#` that opens a word
+//: (`#wi` in `fix #wi`), or null. Not a heading (`## Plan`), not `#` inside a
+//: word (`C#`, a URL anchor), and nothing until a letter follows the `#`.
+docPairInput.tag = (before) => {
+  if (/^\s{0,3}#{1,6}(?:\s|$)/.test(before)) return null;
+  const m = /(?:^|\s)#([\p{L}\p{N}_-]+)$/u.exec(before);
+  return m ? m[1] : null;
+};
+
+//: The completion source for it: the tags the tag fields offer (`/tags`,
+//: the same answer `tag-suggest.js` reads), most used first. Silent about
+//: code, fences and headings, and about a failed fetch.
+docPairInput.tagSource = (CM) => {
+  return async (context) => {
+    if (docFileType().ext !== "md") return null;
+    const line = context.state.doc.lineAt(context.pos);
+    const typed = docPairInput.tag(line.text.slice(0, context.pos - line.from));
+    if (typed === null || docInCodeAt(CM, context.state, context.pos)) return null;
+    const counts = await apiJson("/tags", { silent: true, cacheMs: 30000 }).catch(() => null);
+    if (!counts || context.aborted) return null;
+    const options = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([name, count]) => ({ label: `#${name}`, detail: String(count), type: "keyword" }));
+    return options.length ? { from: context.pos - typed.length - 1, options, validFor: /^#[\p{L}\p{N}_-]*$/u } : null;
+  };
+};
+
+// DOC-CITE-BEGIN (tests/test_doc_citations.py runs this region in node)
+//: **Citations** (DOCUMENTS_PLAN row 2): `[@key]` in the prose and `[@key]: the source` at the foot, the footnote
+//: model with another sigil. Read view turns them into footnotes (`citeFootnotes`), so the numbers follow the order
+//: of first use and the list at the end renumbers itself when a paragraph moves. Properties of `docPairInput`, not
+//: globals (the scope ratchet).
+docPairInput.citeKey = (source, taken) => {
+  const text = String(source || "").trim();
+  const url = /^https?:\/\/(?:www\.)?([^/\s?#]+)/i.exec(text);
+  const base =
+    (url ? url[1].split(".")[0] : text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim().split(" ").slice(0, 2).join("-"))
+      .replace(/[^\p{L}\p{N}-]/gu, "")
+      .slice(0, 24) || "source";
+  let key = base;
+  for (let n = 2; taken.includes(key); n += 1) key = `${base}${n}`;
+  return key;
+};
+
+//: The text a citation of this source carries: an address in angle brackets, else what was typed.
+docPairInput.citeText = (source) => {
+  const text = String(source || "").trim();
+  return /^https?:\/\/\S+$/i.test(text) ? `<${text}>` : text;
+};
+
+//: The keys defined in a text (`[@key]: ...` at the start of a line), in order.
+docPairInput.citeKeys = (text) => [...String(text || "").matchAll(/^\[@([^\]\s]{1,40})\]:/gm)].map((m) => m[1]);
+
+//: The text with each defined citation written as a footnote, which the renderer already numbers and lists.
+//: A key with no definition stays as typed, and fenced code is left alone.
+docPairInput.citeFootnotes = (text) => {
+  const keys = docPairInput.citeKeys(text);
+  if (!keys.length) return text;
+  let fenced = false;
+  return String(text)
+    .split("\n")
+    .map((line) => {
+      if (/^\s*(```|~~~)/.test(line)) fenced = !fenced;
+      if (fenced) return line;
+      return line.replace(/\[@([^\]\s]{1,40})\]/g, (whole, key) => (keys.includes(key) ? `[^${key}]` : whole));
+    })
+    .join("\n");
+};
+
+//: What the box holds once a source is cited at the caret: the reference there, the definition at the foot (a
+//: source cited before keeps its key). Returns the new value and where the caret goes.
+docPairInput.citeInsert = (value, start, end, source) => {
+  const wanted = docPairInput.citeText(source);
+  const keys = docPairInput.citeKeys(value);
+  const known = keys.find((key) => value.split("\n").includes(`[@${key}]: ${wanted}`));
+  const key = known || docPairInput.citeKey(source, keys);
+  const mark = `[@${key}]`;
+  let next = value.slice(0, start) + mark + value.slice(end);
+  if (!known) {
+    const gap = keys.length ? "\n" : "\n\n";
+    next = `${next.replace(/\s+$/, "")}${gap}${mark}: ${wanted}\n`;
+  }
+  return { value: next, caret: start + mark.length };
+};
+
+//: A note cited by its title: `[[title]]`, which Read draws as a link to the note. Brackets, the alias bar and line
+//: breaks cannot sit inside the pair, so they go; nothing left means nothing to cite.
+docPairInput.citeNote = (title) => {
+  const name = String(title || "").replace(/[[\]|]/g, "").replace(/\s+/g, " ").trim();
+  return name ? `[[${name}]]` : "";
+};
+
+//: What the picker lists for the typed words: the notes (not drafts, deleted or private ones) whose name holds them,
+//: each as its `[[title]]` source, then what was typed as it stands (an address, or words for a book). `nameOf` is the
+//: note's name where the app has one (`noteNamePlain`); the title, else the first line, is the fallback.
+docPairInput.citeChoices = (entries, term, nameOf = null) => {
+  const typed = String(term || "").trim();
+  const needle = typed.toLowerCase();
+  const name = (entry) =>
+    String(entry.title || (nameOf ? nameOf(entry.content) : String(entry.content || "").split("\n").find((l) => l.trim()) || ""))
+      .replace(/^[#>\s]+/, "")
+      .trim();
+  const picks = [];
+  for (const entry of entries || []) {
+    if (entry.is_draft || entry.is_deleted || entry.is_private || entry.is_board) continue;
+    const label = name(entry);
+    const source = docPairInput.citeNote(label);
+    if (!source || (needle && !label.toLowerCase().includes(needle))) continue;
+    picks.push({ label, source, entry });
+    if (picks.length === 40) break;
+  }
+  return typed ? [...picks, { label: typed, source: typed, entry: null }] : picks;
+};
+// DOC-CITE-END
+
+//: The Cite row's picker, on the app's picker recipe (`pickerDialog`): the notes whose name holds the words, then the
+//: words themselves as the source, so an address or a book is one Enter away. Resolves with the source text, or null.
+docPairInput.citePick = () =>
+  new Promise((resolve) => {
+    const shell = pickerDialog({ title: "Cite a source", placeholder: "Search your notes, or type an address…", searchLabel: "Cite a note, an address or a title" });
+    const box = pickerListbox(shell, "Sources");
+    const paint = () => {
+      const term = shell.search.value.trim();
+      const items = docPairInput.citeChoices(allEntries, term, noteNamePlain).map((choice) => ({
+        icon: choice.entry ? "ph:note" : /^https?:\/\//i.test(choice.source) ? "ph:link" : "ph:quotes",
+        label: choice.label,
+        about: choice.entry ? pickerNoteAbout(choice.entry) : "Cite as typed",
+        value: choice.source,
+      }));
+      box.fill(items, term, pickerEmpty("notes", term, "ph:note", "Type an address or a title to cite it."));
+    };
+    shell.search.addEventListener("input", paint);
+    paint();
+    shell.open(resolve);
+  });
+
+//: **`\ref{` and `\eqref{` completion**: the labels of the page's equations,
+//: with the number each one takes (`docMathRender.labels.index`, the same map
+//: the rendered number reads). `docPairInput.refTyped` is the typed key after
+//: the open brace, or null.
+docPairInput.refTyped = (before) => {
+  const m = /\\(?:eqref|ref)\{([\w:.-]*)$/.exec(before);
+  return m ? m[1] : null;
+};
+
+docPairInput.refSource = (CM) => (context) => {
+  const line = context.state.doc.lineAt(context.pos);
+  const typed = docPairInput.refTyped(line.text.slice(0, context.pos - line.from));
+  if (typed === null || !docMathRender.labels) return null;
+  const labels = docMathRender.labels.index(docStr(context.state.doc));
+  const options = [...labels]
+    .filter(([key]) => !key.startsWith("eq-auto-"))
+    .map(([key, number]) => ({ label: key, detail: `(${number})`, type: "variable" }));
+  return options.length ? { from: context.pos - typed.length, options, validFor: /^[\w:.-]*$/ } : null;
+};
+
+// DOC-FENCE-BEGIN (tests/test_live_code_blocks.py runs this region in node)
+//: **Live code blocks** (the owner, 2026-10-07 and 2026-10-26). A fenced block
+//: that names a language is not a second editor: the Markdown parser mounts
+//: that language on the block (`codeLanguages`, documents.js), so the one
+//: editor gives it the language's colour, indentation and brackets, and the
+//: source below gives it the language's completion. The stored text stays the
+//: fenced Markdown. Properties of `docPairInput`, not globals (the scope
+//: ratchet), like `tagSource` above.
+//:
+//: The words an info string may name, and the file type each one means.
+docPairInput.fenceNames = {
+  js: "js", javascript: "js", jsx: "js", ts: "ts", typescript: "ts", tsx: "ts",
+  py: "py", python: "py", css: "css", html: "html", json: "json",
+  yaml: "yaml", yml: "yaml", sh: "bash", bash: "bash", shell: "bash", zsh: "bash",
+  sql: "sql", toml: "toml", go: "go", rust: "rs", rs: "rs", c: "c", cpp: "cpp", "c++": "cpp",
+  cs: "cs", csharp: "cs", java: "java", kotlin: "kt", kt: "kt", ruby: "rb", rb: "rb",
+  xml: "xml", svg: "xml", swift: "swift", r: "r", ini: "ini",
+};
+
+//: The file type an info string names (`python title="fit.py"`, `{.sh}`), or
+//: null for no language or one the bundle has no mode for (mermaid, text).
+docPairInput.fenceExt = (info) => {
+  const word = /^[{.\s]*([A-Za-z+#][\w+#-]*)/.exec(String(info || ""));
+  return word ? docPairInput.fenceNames[word[1].toLowerCase()] || null : null;
+};
+
+//: An info string as the language word and the `title="fit.py"` beside it.
+docPairInput.fenceParts = (info) => {
+  const text = String(info || "");
+  const title = /\btitle=(?:"([^"]*)"|'([^']*)')/.exec(text);
+  const word = /^[{.\s]*([A-Za-z+#][\w+#-]*)/.exec(text.replace(/\btitle=(?:"[^"]*"|'[^']*')/, ""));
+  return { language: word ? word[1] : "", title: title ? title[1] ?? title[2] : "" };
+};
+
+docPairInput.fenceCache = new Map();
+
+//: The `codeLanguages` callback of the Markdown language: a Language, or null.
+docPairInput.fenceLanguage = (CM, info) => {
+  const ext = docPairInput.fenceExt(info);
+  if (!ext) return null;
+  const cache = docPairInput.fenceCache;
+  if (!cache.has(ext)) {
+    const support = docCmLanguageFor(CM, ext);
+    cache.set(ext, (support && (support.language || (support.parser ? support : null))) || null);
+  }
+  return cache.get(ext);
+};
+
+//: The fenced block around a position, or null.
+docPairInput.fenceAt = (CM, state, pos) => {
+  for (let node = CM.language.syntaxTree(state).resolveInner(pos, -1); node; node = node.parent) {
+    if (node.name === "FencedCode") return node;
+  }
+  return null;
+};
+
+//: Typing the language after the opening ``` offers the names above.
+docPairInput.fenceInfo = (context, block) => {
+  const open = context.state.doc.lineAt(block.from);
+  const before = open.text.slice(0, context.pos - open.from);
+  const typed = /[\w+#-]*$/.exec(before)[0];
+  if (before.slice(0, before.length - typed.length).replace(/^\s*[`~]{3,}/, "").trim()) return null;
+  const options = Object.keys(docPairInput.fenceNames).map((label) => ({ label, type: "keyword" }));
+  return { from: context.pos - typed.length, options, validFor: /^[\w+#-]*$/ };
+};
+
+//: The completion sources the language packages bring. A package registers
+//: them in its own `LanguageSupport`, which only a file of that language
+//: mounts, so for a block they are named here, from the same bundle.
+docPairInput.fenceCompleters = new Map();
+
+docPairInput.fenceCompletersFor = (CM, ext) => {
+  const cache = docPairInput.fenceCompleters;
+  if (cache.has(ext)) return cache.get(ext);
+  const skip = ["LineComment", "BlockComment", "String", "TemplateString", "VariableDefinition", "PropertyDefinition"];
+  const list = (items) => CM.autocomplete.ifNotIn(skip, CM.autocomplete.completeFromList(items));
+  const js = CM.javascript;
+  const make = {
+    js: () => [js.localCompletionSource, js.scopeCompletionSource(globalThis), list(js.snippets)],
+    ts: () => [js.localCompletionSource, js.scopeCompletionSource(globalThis), list(js.typescriptSnippets)],
+    py: () => [CM.python.localCompletionSource, CM.python.globalCompletion],
+    css: () => [CM.css.cssCompletionSource],
+    html: () => [CM.html.htmlCompletionSource],
+  }[ext];
+  cache.set(ext, make ? make() : []);
+  return cache.get(ext);
+};
+
+//: Inside a block with a language: that language's own sources, then its
+//: reserved words for the languages without any. Every source is asked and
+//: the answers that start at the same place are one list: the first source
+//: with options is often the scope's own names, none of which match what is
+//: being typed.
+docPairInput.fenceBody = async (CM, context, block) => {
+  const info = block.node.getChild("CodeInfo");
+  const ext = docPairInput.fenceExt(info ? context.state.sliceDoc(info.from, info.to) : "");
+  if (!ext) return null;
+  let merged = null;
+  for (const source of docPairInput.fenceCompletersFor(CM, ext)) {
+    const found = await source(context);
+    if (!found || !found.options.length) continue;
+    if (!merged) merged = { ...found, options: [...found.options] };
+    else if (found.from === merged.from) merged.options.push(...found.options);
+  }
+  if (merged) return merged;
+  const word = context.matchBefore(/[A-Za-z_$][\w$]*/);
+  const words = (DOC_CODE_KEYWORDS[ext] || "").split(" ").filter(Boolean);
+  if (!words.length || !word || (word.from === word.to && !context.explicit)) return null;
+  return CM.autocomplete.completeFromList(words.map((label) => ({ label, type: "keyword" })))(context);
+};
+
+docPairInput.fenceSource = (CM) => async (context) => {
+  if (docFileType().ext !== "md") return null;
+  const block = docPairInput.fenceAt(CM, context.state, context.pos);
+  if (!block) return null;
+  const open = context.state.doc.lineAt(block.from);
+  if (context.pos <= open.to) return docPairInput.fenceInfo(context, block);
+  const close = context.state.doc.lineAt(block.to);
+  if (close.number > open.number && context.pos >= close.from && /^\s*[`~]{3,}\s*$/.test(close.text)) return null;
+  return docPairInput.fenceBody(CM, context, block);
+};
+// DOC-FENCE-END
+
 //: The characters that pair, and what closes each.
 const DOC_PAIR_CLOSE = { "(": ")", "[": "]", "{": "}", "`": "`", "_": "_", "*": "*" };
 const DOC_PAIR_CLOSERS = new Set([")", "]", "}"]);
@@ -1990,7 +2306,9 @@ function docSmartPunctOn() {
 function docInCodeAt(CM, state, pos, anyHost = false) {
   if (!anyHost && docFileType().ext !== "md") return false;
   let node = CM.language.syntaxTree(state).resolveInner(pos, -1);
-  for (let k = 0; node && k < 6; node = node.parent, k += 1) {
+  //: Deep enough to climb out of a fenced block's own language tree (a
+  //: Python string sits twelve levels under its `FencedCode`).
+  for (let k = 0; node && k < 48; node = node.parent, k += 1) {
     if (/^(FencedCode|CodeBlock|InlineCode|CodeText|HTMLBlock)$/.test(node.name)) return true;
   }
   return false;
@@ -2123,8 +2441,19 @@ function docProsePairKeymap(CM, anyHost = false) {
       if (!range.empty || view.state.selection.ranges.length > 1) return false;
       const line = view.state.doc.lineAt(range.head);
       if (range.head !== line.to || docInCodeAt(CM, view.state, range.head, anyHost)) return false;
-      const exit = docListEnter(line.text);
-      if (exit === null) return false;
+      let exit = docListEnter(line.text);
+      if (exit === null) {
+        //: Letter, roman and dash items: the keymap does not continue them (`docLists.enter`).
+        const rows = [];
+        for (let n = Math.max(1, line.number - 200); n <= line.number; n += 1) rows.push(view.state.doc.line(n).text);
+        const more = docLists.enter(rows);
+        if (!more) return false;
+        if (more.insert) {
+          view.dispatch({ changes: { from: range.head, insert: more.insert }, selection: { anchor: range.head + more.insert.length }, userEvent: "input" });
+          return true;
+        }
+        exit = docListEnter(more.exit);
+      }
       const next = docListExitText(exit, line.number > 1 ? view.state.doc.line(line.number - 1).text : null);
       view.dispatch({
         changes: { from: line.from, to: line.to, insert: next },
@@ -3133,7 +3462,7 @@ function docTurnIntoMenu(boxId = "doc-content", x = null, y = null) {
 }
 
 //: **The editor's own right-click menu** (docs6-1026: "paste options on right-click").
-//: Cut, Copy, Paste, the Paste special modes, Turn into, Select all. Opened by
+//: Cut, Copy, Paste, Paste as (the Paste special modes), Turn into, Select all. Opened by
 //: `docEditorMenuAtPoint` (documents.js) after the table's menu and the
 //: suggestion popover have declined; Shift+right-click keeps the browser's.
 async function docEditorPaste(view) {
@@ -3158,7 +3487,16 @@ function docEditorMenuItems(view, x, y) {
     { ...cut, label: "Cut" },
     { ...copy, label: "Copy" },
     { label: "Paste", group: "Clipboard", title: "Paste the clipboard as plain text", run: () => docEditorPaste(view) },
-    ...DOC_PASTE_SPECIAL.map(([id, label]) => ({ label, group: "Paste special", run: () => docPasteSpecial(id) })),
+    //: One "Paste as" row that flies out (owner, 2026-11-10: "I feel like paste should be a submenu"):
+    //: eight "Paste as ..." rows made the clipboard group the whole menu. Inside, the rows drop the "Paste".
+    {
+      label: "Paste as",
+      group: "Clipboard",
+      items: DOC_PASTE_SPECIAL.map(([id, label]) => ({
+        label: label.replace(/^Paste (as (a )?)?(\w)/, (...m) => m[3].toUpperCase()),
+        run: () => docPasteSpecial(id),
+      })),
+    },
     { label: "Turn into", group: "Block", title: "Change the block to a heading, list, quote or code", run: () => docTurnIntoMenu("doc-content", x, y) },
     {
       label: "Select all",

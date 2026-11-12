@@ -26,6 +26,14 @@ same line in the source, and ASI (a `return` before a multi-line comment)
 reads the same. (A stylesheet is the exception: no stack trace names a CSS
 line, so `strip_css` also drops the empty lines.)
 
+**Indentation.** Scripts and stylesheets also lose the spaces and tabs at the
+start of each line (about 8.8 KB gzipped off the boot set), newlines kept.
+Not where the leading whitespace is data: the text of a template literal, a
+string continued over a line end, a kept multi-line comment, a CSS string or an
+unquoted `url(`. The scanners report those ranges and `_drop_indent` skips any
+line that starts inside one. It runs on the comment-free text, so it scans
+that a second time.
+
 `tests/test_asset_strip.py` holds the edge cases and, where `node` is on the
 path, runs `node --check` over every stripped script; the acorn token check in
 that file proves the stripped token stream equals the original's.
@@ -38,7 +46,7 @@ import re
 #: Bumped whenever the output for the same input changes, so a cached copy
 #: from an older stripper (memory, `<data dir>/cache/static-gz`, and the
 #: content-hash stamp the browser caches against) is never reused.
-STRIP_VERSION = "3"
+STRIP_VERSION = "5"
 
 _IDENT_CHAR = re.compile(r"[\w$]")
 #: After these words a `/` starts a regex literal, not a division.
@@ -51,6 +59,38 @@ def _keep(comment: str) -> bool:
     return (
         comment.startswith(("/*!", "//#", "//@")) or "@license" in comment or "@preserve" in comment
     )
+
+
+def _drop_span(text: str, start: int, end: int, cursor: int, joiner: str, out: list[str]) -> int:
+    """Emit the text before one comment span and what replaces it; the new cursor."""
+    n = len(text)
+    line_start = max(text.rfind("\n", 0, start), text.rfind("\r", 0, start)) + 1
+    line_end = end
+    while line_end < n and text[line_end] in " \t":
+        line_end += 1
+    alone_before = line_start >= cursor and not text[line_start:start].strip(" \t")
+    alone_after = line_end >= n or text[line_end] in "\r\n"
+    body = text[start:end]
+    if alone_before and alone_after:
+        out.append(text[cursor:line_start])
+        out.append("\n" * body.count("\n"))
+        return line_end  # the line's own newline stays, as text
+    before = text[cursor:start]
+    if alone_after:
+        # A trailing comment: drop it and the spaces before it.
+        out.append(before.rstrip(" \t"))
+        out.append("\n" * body.count("\n"))
+        return end
+    out.append(before)
+    if joiner and "\n" in body:
+        out.append("\n" * body.count("\n"))
+    elif not (before[-1:].isspace() or text[end : end + 1].isspace()):
+        out.append(joiner)
+    elif before[-1:] in (" ", "\t"):
+        # `a /* c */ + b` reads `a + b`, not `a  + b`.
+        while end < n and text[end] in " \t":
+            end += 1
+    return end
 
 
 def _rebuild(text: str, spans: list[tuple[int, int]], joiner: str = " ") -> str:
@@ -66,39 +106,32 @@ def _rebuild(text: str, spans: list[tuple[int, int]], joiner: str = " ") -> str:
     with it."""
     out: list[str] = []
     cursor = 0
-    n = len(text)
     for start, end in spans:
         if start < cursor:
             continue
-        line_start = max(text.rfind("\n", 0, start), text.rfind("\r", 0, start)) + 1
-        line_end = end
-        while line_end < n and text[line_end] in " \t":
-            line_end += 1
-        alone_before = line_start >= cursor and not text[line_start:start].strip(" \t")
-        alone_after = line_end >= n or text[line_end] in "\r\n"
-        body = text[start:end]
-        if alone_before and alone_after:
-            out.append(text[cursor:line_start])
-            out.append("\n" * body.count("\n"))
-            cursor = line_end  # the line's own newline stays, as text
+        cursor = _drop_span(text, start, end, cursor, joiner, out)
+    out.append(text[cursor:])
+    return "".join(out)
+
+
+_LINE_INDENT = re.compile(r"(?<=\n)[ \t]+|\A[ \t]+")
+
+
+def _drop_indent(text: str, keep: list[tuple[int, int]]) -> str:
+    """`text` without the leading spaces and tabs of any line, except a line
+    that starts inside a `keep` range (a template's text, a continued string,
+    a kept comment): the newline before it is at an index `a <= p - 1 < b`."""
+    out: list[str] = []
+    cursor = 0
+    k = 0
+    for m in _LINE_INDENT.finditer(text):
+        p = m.start()
+        while k < len(keep) and keep[k][1] < p:
+            k += 1
+        if k < len(keep) and keep[k][0] < p <= keep[k][1]:
             continue
-        before = text[cursor:start]
-        if alone_after:
-            # A trailing comment: drop it and the spaces before it.
-            out.append(before.rstrip(" \t"))
-            out.append("\n" * body.count("\n"))
-            cursor = end
-            continue
-        out.append(before)
-        if joiner and "\n" in body:
-            out.append("\n" * body.count("\n"))
-        elif not (before[-1:].isspace() or text[end : end + 1].isspace()):
-            out.append(joiner)
-        elif before[-1:] in (" ", "\t"):
-            # `a /* c */ + b` reads `a + b`, not `a  + b`.
-            while end < n and text[end] in " \t":
-                end += 1
-        cursor = end
+        out.append(text[cursor:p])
+        cursor = m.end()
     out.append(text[cursor:])
     return "".join(out)
 
@@ -109,8 +142,9 @@ _JS_NEXT = re.compile(r"[\"'`/{}]")
 _TEMPLATE_NEXT = re.compile(r"[`\\$]")
 
 
-def _js_regex_allowed(text: str, i: int, spans: list[tuple[int, int]]) -> bool:
-    """Whether a `/` at `i` begins a regex literal, from the token before it."""
+def _prev_code(text: str, i: int, spans: list[tuple[int, int]]) -> int:
+    """Index of the last character before `i` that is neither blank nor in a
+    comment of `spans`, or -1."""
     j = i - 1
     k = len(spans) - 1
     while j >= 0:
@@ -126,6 +160,12 @@ def _js_regex_allowed(text: str, i: int, spans: list[tuple[int, int]]) -> bool:
             k -= 1
             continue
         break
+    return j
+
+
+def _js_regex_allowed(text: str, i: int, spans: list[tuple[int, int]]) -> bool:
+    """Whether a `/` at `i` begins a regex literal, from the token before it."""
+    j = _prev_code(text, i, spans)
     if j < 0:
         return True
     ch = text[j]
@@ -142,6 +182,36 @@ def _js_regex_allowed(text: str, i: int, spans: list[tuple[int, int]]) -> bool:
     if ch in "+-" and j > 0 and text[j - 1] == ch:
         return False  # postfix `x++ / 2`
     return True
+
+
+def _first_doubt(doubt: int, text: str, i: int, spans: list[tuple[int, int]]) -> int:
+    """`doubt` if set, else `i` when the division-read `/` at `i` is doubtful."""
+    if doubt >= 0:
+        return doubt
+    return i if _js_slash_doubtful(text, i, spans) else -1
+
+
+_CONTROL_HEAD = re.compile(r"[ \t]*(?:\}[ \t]*)?(?:else[ \t]+)?(?:if|while|for|with)\b")
+
+
+def _js_slash_doubtful(text: str, i: int, spans: list[tuple[int, int]]) -> bool:
+    """A `/` read as division that could be a regex statement whose quote or
+    backtick would then not open a string, e.g. `if (x) /`/.test(y)`: the
+    one guess `_js_scan` cannot settle from the token before. Only a `/`
+    right after the `)` of an `if`/`while`/`for`/`with` head, or a `/` that
+    starts a line after a `}` or `)`, qualifies; `(a - b) / 100 + "."` does
+    not."""
+    j = _prev_code(text, i, spans)
+    if j < 0 or text[j] not in ")}":
+        return False
+    line = text.rfind("\n", 0, j) + 1
+    first = text.rfind("\n", 0, i) + 1
+    control = text[j] == ")" and _CONTROL_HEAD.match(text, line) is not None
+    starts_line = first > j and not text[first:i].strip()
+    if not (control or starts_line):
+        return False
+    end = _skip_regex(text, i)
+    return end is not None and re.search(r"[\"'`]", text[i:end]) is not None
 
 
 def _skip_string(text: str, i: int, quote: str) -> int:
@@ -187,11 +257,32 @@ def _skip_regex(text: str, i: int) -> int | None:
     return None
 
 
+def _keep_after(
+    keep: list[tuple[int, int]], doubt: int, n: int
+) -> list[tuple[int, int]]:
+    """`keep` with everything from the first doubtful `/` on as one range."""
+    if doubt < 0:
+        return keep
+    return [r for r in keep if r[1] <= doubt] + [(doubt, n)]
+
+
 def js_comment_spans(text: str) -> list[tuple[int, int]]:
     """Every comment's (start, end) in a script, kept ones excluded."""
+    return _js_scan(text)[0]
+
+
+def _js_scan(text: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    """(comment spans, ranges whose inner line starts are data), in order."""
     spans: list[tuple[int, int]] = []
+    #: Template text, strings and kept comments: `_drop_indent` leaves alone
+    #: a line that starts inside one.
+    keep: list[tuple[int, int]] = []
+    tstart = 0
     #: Every comment, kept ones too, in order: what the regex test skips over.
     every: list[tuple[int, int]] = []
+    #: Where the first doubtful `/` sits; text after it may be misread, so
+    #: its lines keep their indentation.
+    doubt = -1
     # One entry per open `${`: the `{` depth inside that substitution.
     templates: list[int] = []
     n = len(text)
@@ -201,15 +292,18 @@ def js_comment_spans(text: str) -> list[tuple[int, int]]:
         if in_template:
             m = _TEMPLATE_NEXT.search(text, i)
             if m is None:
-                return spans
+                keep.append((tstart, n))
+                return spans, _keep_after(keep, doubt, n)
             i = m.start()
             ch = text[i]
             if ch == "\\":
                 i += 2
             elif ch == "`":
+                keep.append((tstart, i))
                 in_template = False
                 i += 1
             elif text[i + 1 : i + 2] == "{":
+                keep.append((tstart, i))
                 templates.append(0)
                 in_template = False
                 i += 2
@@ -222,10 +316,13 @@ def js_comment_spans(text: str) -> list[tuple[int, int]]:
         i = m.start()
         ch = text[i]
         if ch in "\"'":
-            i = _skip_string(text, i, ch)
+            end = _skip_string(text, i, ch)
+            keep.append((i, end))
+            i = end
         elif ch == "`":
             in_template = True
             i += 1
+            tstart = i
         elif ch == "{":
             if templates:
                 templates[-1] += 1
@@ -235,6 +332,7 @@ def js_comment_spans(text: str) -> list[tuple[int, int]]:
                 if templates[-1] == 0:
                     templates.pop()
                     in_template = True
+                    tstart = i + 1
                 else:
                     templates[-1] -= 1
             i += 1
@@ -252,19 +350,29 @@ def js_comment_spans(text: str) -> list[tuple[int, int]]:
                 end = text.find("*/", i + 2)
                 end = n if end == -1 else end + 2
                 every.append((i, end))
-                if not _keep(text[i:end]):
+                if _keep(text[i:end]):
+                    keep.append((i, end))
+                else:
                     spans.append((i, end))
                 i = end
             elif _js_regex_allowed(text, i, every):
                 end = _skip_regex(text, i)
                 i = i + 1 if end is None else end
             else:
+                doubt = _first_doubt(doubt, text, i, every)
                 i += 1
-    return spans
+    return spans, _keep_after(keep, doubt, n)
+
+
+def strip_js_comments(text: str) -> str:
+    """Comments gone, indentation kept: for a reader (a test, a lint) that
+    tells a top-level line from a nested one by its indent."""
+    return _rebuild(text, js_comment_spans(text))
 
 
 def strip_js(text: str) -> str:
-    return _rebuild(text, js_comment_spans(text))
+    bare = strip_js_comments(text)
+    return _drop_indent(bare, _js_scan(bare)[1])
 
 
 # ----------------------------------------------------------------------- CSS
@@ -273,7 +381,13 @@ _CSS_NEXT = re.compile(r"[\"'/]|url\(", re.IGNORECASE)
 
 
 def css_comment_spans(text: str) -> list[tuple[int, int]]:
+    return _css_scan(text)[0]
+
+
+def _css_scan(text: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    """(comment spans, string / `url(` / kept-comment ranges), as `_js_scan`."""
     spans: list[tuple[int, int]] = []
+    keep: list[tuple[int, int]] = []
     n = len(text)
     i = 0
     while i < n:
@@ -283,12 +397,16 @@ def css_comment_spans(text: str) -> list[tuple[int, int]]:
         i = m.start()
         ch = text[i]
         if ch in "\"'":
-            i = _skip_string(text, i, ch)
+            end = _skip_string(text, i, ch)
+            keep.append((i, end))
+            i = end
         elif ch == "/":
             if text[i + 1 : i + 2] == "*":
                 end = text.find("*/", i + 2)
                 end = n if end == -1 else end + 2
-                if not _keep(text[i:end]):
+                if _keep(text[i:end]):
+                    keep.append((i, end))
+                else:
                     spans.append((i, end))
                 i = end
             else:
@@ -301,8 +419,10 @@ def css_comment_spans(text: str) -> list[tuple[int, int]]:
                 i = j  # a quoted url is a string, read as one next round
             else:
                 close = text.find(")", j)
-                i = n if close == -1 else close + 1
-    return spans
+                end = n if close == -1 else close + 1
+                keep.append((i, end))
+                i = end
+    return spans, keep
 
 
 _CSS_BLANK_LINE = re.compile(r"\n[ \t]*(?=\n)")
@@ -312,8 +432,10 @@ def strip_css(text: str) -> str:
     """Comments gone, and the empty lines they leave with them. Unlike a
     script, a stylesheet is never named by line in a stack trace, and the
     1,300 empty lines a commented file left cost the boot stylesheets about
-    three kilobytes gzipped against a cap that was at zero (INBOX 776)."""
-    return _CSS_BLANK_LINE.sub("", _rebuild(text, css_comment_spans(text)))
+    three kilobytes gzipped against a cap that was at zero (INBOX 776), and
+    the indentation goes too, outside strings and `url(`."""
+    bare = _CSS_BLANK_LINE.sub("", _rebuild(text, css_comment_spans(text)))
+    return _drop_indent(bare, _css_scan(bare)[1])
 
 
 # ---------------------------------------------------------------------- HTML
@@ -323,9 +445,12 @@ _HTML_NEXT = re.compile(r"<(!--|/?[a-zA-Z])")
 #: as written: everything inside is passed over to the matching close tag.
 #: Not `template`: its content is ordinary markup, and Settings' body (62 KB of
 #: comments in 317 KB) sits in one (INBOX 1501), so its comments go like the
-#: page's own.
+#: page's own. Nor a `<script type="text/x-surface">`: a surface's markup kept
+#: as raw text so the parser makes no nodes for it at boot, which is markup all
+#: the same (comments go; the lint holds that none holds a `<script` of its own).
 _HTML_OPAQUE = ("script", "style", "textarea", "title", "pre", "xmp")
 _TAG_NAME = re.compile(r"[a-zA-Z][a-zA-Z0-9-]*")
+_SURFACE_SCRIPT = re.compile(r'<script\s+type="text/x-surface"[\s>]', re.I)
 
 
 def _html_tag_end(text: str, i: int) -> int:
@@ -342,6 +467,31 @@ def _html_tag_end(text: str, i: int) -> int:
             return j + 1
         j += 1
     return n
+
+
+def _opens_opaque(text: str, i: int, tag: str, tag_end: int) -> bool:
+    """Whether the tag at `i` opens an element whose content is passed over as written."""
+    if tag not in _HTML_OPAQUE or text[i:tag_end].rstrip(">").endswith("/"):
+        return False
+    return not (tag == "script" and _SURFACE_SCRIPT.match(text, i))
+
+
+def _opaque_end(text: str, lower: str, tag: str, tag_end: int) -> int:
+    """Past the matching close tag, counting nested ones of the same name."""
+    n = len(text)
+    depth = 1
+    j = tag_end
+    opener = re.compile(rf"<(/?){tag}(?=[\s/>])")
+    while depth and j < n:
+        found = opener.search(lower, j)
+        if found is None:
+            return n
+        if tag in ("script", "style", "textarea", "title", "xmp") and not found.group(1):
+            j = found.end()  # raw text: an opener inside is just text
+            continue
+        depth += -1 if found.group(1) else 1
+        j = _html_tag_end(text, found.start())
+    return j
 
 
 def html_comment_spans(text: str) -> list[tuple[int, int]]:
@@ -364,24 +514,8 @@ def html_comment_spans(text: str) -> list[tuple[int, int]]:
         if text[i + 1] != "/":
             name = _TAG_NAME.match(text, i + 1)
             tag = name.group(0).lower() if name else ""
-            if tag in _HTML_OPAQUE and not text[i:tag_end].rstrip(">").endswith("/"):
-                # Past the matching close tag, counting nested ones of the same name.
-                depth = 1
-                j = tag_end
-                opener = re.compile(rf"<(/?){tag}(?=[\s/>])")
-                while depth and j < n:
-                    found = opener.search(lower, j)
-                    if found is None:
-                        j = n
-                        break
-                    if tag in ("script", "style", "textarea", "title", "xmp") and not found.group(
-                        1
-                    ):
-                        j = found.end()  # raw text: an opener inside is just text
-                        continue
-                    depth += -1 if found.group(1) else 1
-                    j = _html_tag_end(text, found.start())
-                i = j
+            if _opens_opaque(text, i, tag, tag_end):
+                i = _opaque_end(text, lower, tag, tag_end)
                 continue
         i = tag_end
     return spans

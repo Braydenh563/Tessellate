@@ -17,7 +17,10 @@ from tests._app_js import app_js_text
 def _palette_matches_source() -> str:
     text = app_js_text()
     start = text.index("function paletteMatches(")
-    end = text.index("\nfunction ", start + 1)
+    #: app-palette.js is wrapped in one IIFE (W29 carve 7); app_js_text unwraps it
+    #: (13d130b11), so the function ends at its column-0 closing brace again. Ending
+    #: at the next column-0 `function` would read the whole rest of the file.
+    end = text.index("\n}\n", start) + 3
     return text[start:end]
 
 

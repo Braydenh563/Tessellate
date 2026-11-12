@@ -24,10 +24,10 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from typing import Annotated, Literal
 
-from tessellate.ai import captioning, composer_digest, composer_frame, composer_open, librarian, memory, presets, questions, skills, tools, vocative
+from tessellate.ai import captioning, composer_digest_sentences, composer_talk, consent, composer_frame, composer_open, librarian, memory, presets, questions, skills, tools, vocative
 from tessellate.api import bounds
 from tessellate.api.chat_attach import _attached_boards, _attached_documents, _attached_notes
-from tessellate.api.schemas import EntryOut
+from tessellate.api.schemas import EntryOut, TurnFrame
 from tessellate.core import activity, deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
 from tessellate.repo import categories as categories_repo
@@ -74,6 +74,18 @@ class ChatTurn(BaseModel):
     #: "delete the other one" (`reading.follow`, decision 57). Optional, and
     #: dropped from the dump when absent, so a turn without it is unchanged.
     objects: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=8)
+    #: The label of an act's card this turn left waiting for Confirm, sent by
+    #: the page only while the card is still open, so "cancel" can drop it
+    #: (`composer_cancel`, CHAT_PLAN X17).
+    pending_act: str | None = Field(default=None, max_length=300)
+    #: The frame the answer was sent with, echoed back; absent from an older page.
+    frame: TurnFrame | None = None
+    #: The id the server parked that card under (`ai/consent_store.py`), sent with it so a typed
+    #: yes runs what was proposed. The page never sends back steps or arguments.
+    pending_id: str | None = Field(default=None, max_length=40)
+    #: The id the server parked the answer's note offer under (Gather them, Track your lifts; `consent.py`),
+    #: sent on the last turn while the offer stands, so a typed yes makes that note.
+    offer_id: str | None = Field(default=None, max_length=40)
 
     @model_validator(mode="after")
     def _objects_from_links(self):  # noqa: ANN202
@@ -361,14 +373,14 @@ def _category_note_ids(session: Session, name: str) -> list[int]:
 def _first_more_is_this(body: ChatRequest) -> None:
     """"Tell me more" as the first thing said with a note open is about that
     note (audit 1030 Z54), read as "summarise this"."""
-    if body.open_note_id and not body.history and composer_digest.more_of_this(body.question):
+    if body.open_note_id and not body.history and composer_digest_sentences.more_of_this(body.question):
         body.question, body.raw_question = "summarise this", None
 
 
 def _attached_only(body: ChatRequest) -> None:
     """"What is this about" with a note attached is that note alone, never a
     list of the newest (INBOX 1461)."""
-    if not body.scope and composer_digest.about_this(body.question):
+    if not body.scope and composer_digest_sentences.about_this(body.question):
         body.attached_notes_only = True
 
 
@@ -406,6 +418,38 @@ def _named_note(session: Session, body: ChatRequest) -> bool:
                     #: "called" is how the note was named, not a word to look for.
                     body.question = re.sub(r"\bnote (?:called|titled|named)\b", "note", body.question, flags=re.I)
                     return True
+    return False
+
+
+def _bind_cited(session: Session, body: ChatRequest, sentence: str) -> str:
+    """`sentence`, a follow-on already given its referent ("tell me more about the Plumber note"
+    for "tell me more about it"), bound to that note as if it had been typed: the binding above
+    reads the words the page sent, which name no note. Returns the sentence."""
+    if not body.note_ids:
+        typed, body.question = body.question, sentence
+        try:
+            _named_note(session, body)
+        finally:
+            body.question = typed
+    return sentence
+
+
+def take_up_offer(req: _StreamRequest) -> bool:
+    """A bare "yes" takes up the offer the answer before ended with (B23); "open it" names the note the
+    answer cited. True when the yes made the note the server held (Gather them, Track your lifts), which
+    needs no reading of the question: its text is `req.offer_note`, made on this yes with Undo."""
+    from tessellate.core import config
+
+    held = composer_talk.held_offer(req.question, req.history)
+    if held is not None:
+        req.offer_note, req.offer_yes, req.question = held, True, f"make a note: {held}"
+        return True
+    now = config.user_now(deps.get_config())
+    offered = composer_talk.accepted_offer(req.question, req.history, now)
+    req.offer_yes = offered is not None and consent.says(req.question) == "yes"
+    cited = offered or composer_talk.cited_question(req.question, req.history, now)
+    if cited is not None:
+        req.question = _bind_cited(req.session, req.body, cited)
     return False
 
 
@@ -448,7 +492,7 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
     if _named_note(session, body):
         return
     _first_more_is_this(body)
-    if composer_digest.about_this(body.question):
+    if composer_digest_sentences.about_this(body.question):
         if _apply_open_this(session, body):
             return
     elif body.open_note_id and composer_open.kind(body.question):
@@ -460,7 +504,7 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
             body.note_ids = [body.open_note_id]
     else:
         names = categories_repo.names(session)
-        named = composer_digest.named_category(body.question, names)
+        named = composer_digest_sentences.named_category(body.question, names)
         if named:
             body.note_ids = _category_note_ids(session, named)
     if body.note_ids:
@@ -485,7 +529,7 @@ def _apply_open_this(session: Session, body: ChatRequest) -> bool:
 def _nothing_open(body: ChatRequest) -> bool:
     """"Summarise this" with nothing open: said plainly, not answered with
     the newest notes."""
-    return composer_digest.about_this(body.question) and not (body.note_ids or body.document_ids or body.board_ids)
+    return composer_digest_sentences.about_this(body.question) and not (body.note_ids or body.document_ids or body.board_ids)
 
 
 def _resolve_mode(requested: str | None) -> str:
@@ -748,6 +792,11 @@ class _StreamRequest:
     #: own `tip` event so it is never part of the answer's saved, copied or
     #: spoken text (audit 1028 E52).
     tip: str = ""
+    #: A bare yes took up an offer ("Shall I remind you ...?"): the offer was the proposal and the
+    #: yes is the consent, so its act runs with no second card (`_follow_up`).
+    offer_yes: bool = False
+    #: The note a held offer makes (`composer_talk.held_offer`); the yes is its consent.
+    offer_note: str = ""
 
     def tip_events(self) -> list[dict]:
         return [{"type": "tip", "text": self.tip}] if self.tip else []
@@ -766,8 +815,10 @@ def _composed(req: _StreamRequest, ollama_running: bool) -> bool:
 
 
 class CommandRunBody(BaseModel):
-    """A confirmed act's steps, or an act's undo steps (decision 38)."""
+    """A confirmed act's steps, or an act's undo steps (decision 38). `consent_id`
+    is the card's own id: the steps parked under it run, in the card's words."""
 
+    consent_id: str | None = Field(default=None, max_length=40)
     steps: list[dict] = Field(default_factory=list, max_length=60)
     skipped: list[dict] = Field(default_factory=list, max_length=60)
 
@@ -799,13 +850,16 @@ class _Turn:
     #: Rows an answer brought with it, exact by construction (the composed
     #: and the extractive answers): kept, saved, and never re-grounded.
     exact_grounding: list | None = None
+    #: The live notice said no model wrote it (`support.by_model` False): the
+    #: saved Ask turn keeps that, so its reopened count matches (W1 A5).
+    written_by_app: bool = False
     shape: str | None = None
     sent_kinds: set = field(default_factory=set)
     model_checks: dict | None = None
 
 
 def _event(payload: dict) -> str:
-    return json.dumps(payload) + "\n"
+    return json.dumps(consent.attach(payload)) + "\n"
 
 
 def _meta_event(req: _StreamRequest, prepared: dict, t: _Turn) -> dict:
@@ -873,6 +927,8 @@ class ToolExecuteBody(BaseModel):
 
     name: str = Field(max_length=bounds.LABEL_MAX)
     arguments: dict = Field(default_factory=dict, max_length=100)
+    #: The card's own id (`ai/consent_store.py`): pressing Confirm spends it, so a yes typed after runs nothing twice.
+    consent_id: str | None = Field(default=None, max_length=40)
     #: A `{"tool": "batch", "steps": [...]}` undo (a change to several notes or
     #: board items): each step is `{"tool", "arguments"}` of a registry tool.
     #: Posted as name "batch" it used to answer 404, so such a change had an

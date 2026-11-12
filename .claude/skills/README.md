@@ -7,7 +7,7 @@ MIT-licensed. The licence text is kept beside it as `LICENSE.ui-ux-pro-max`.
 
 **Licence direction matters here.** This project is AGPL-3.0. MIT code may come
 *in* (this directory); nothing from this project may go *out* to an MIT
-project. Same rule as `docs/roadmap/ANALYSIS.md` records for odysseus.
+project. Same rule as `docs/ARCHITECTURE.md` (decisions kept from the retired roadmap docs) records for odysseus.
 
 `ui-ux-pro-max` is a searchable local CSV/JSON corpus (styles, palettes, font
 pairings, UX guidelines, icons, chart types, stacks) driven by

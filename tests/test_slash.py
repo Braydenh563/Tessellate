@@ -178,7 +178,7 @@ def test_stats_and_orphans(session, dated):
     from tessellate.core.database import EntryLink
 
     stats = _run(session, "/stats")
-    assert stats.startswith("You have four notes and ") and "Your newest note is from 17 October 2026" in stats
+    assert stats.startswith("You have four notes and ") and "Your newest note is from today" in stats  # intent moved (round 3, R3-16): chat says "today", so the stats line does too
     assert "written on four days" in stats
     assert _run(session, "/orphans").startswith("Four notes link to nothing:")
     session.add(EntryLink(source_entry_id=dated[0].id, target_entry_id=dated[1].id))
@@ -262,3 +262,4 @@ def test_agent_popup_has_the_slash_menu():
 
     topic = next(t for t in MORE_TOPICS if t["id"] == "slash-commands")
     assert "the Agent popup" in topic["body"]
+

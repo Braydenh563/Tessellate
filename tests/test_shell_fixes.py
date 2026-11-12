@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from tests._app_js import app_js_text
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -63,7 +64,7 @@ def _extract(path: str, *heads: str) -> str:
 def test_timeline_count_line_pluralises_and_marks_a_page():
     body = _extract("timeline.js", "function timelineUnitText(", "function timelineKindsText(", "function timelineCountLine(")
     script = (
-        "let timelineNextCursor = null;\n"
+        "let timelineNextCursor = null;\nconst timelineRenders = { total: null };\n"
         + body
         + """
 const out = [];
@@ -73,6 +74,11 @@ out.push(timelineCountLine(2, 7, timelineUnitText(1, "week")));
 timelineNextCursor = "more";
 out.push(timelineCountLine(100, 100, timelineUnitText(4, "month")));
 out.push(timelineCountLine(1, 1, timelineUnitText(1, "year")));
+timelineRenders.total = 1200;
+out.push(timelineCountLine(100, 100, timelineUnitText(4, "month")));
+out.push(timelineCountLine(2, 100, timelineUnitText(4, "month")));
+timelineNextCursor = null;
+out.push(timelineCountLine(3, 3, timelineUnitText(2, "day")));
 console.log(JSON.stringify(out));
 """
     )
@@ -82,6 +88,9 @@ console.log(JSON.stringify(out));
         "2 of 7 items · 1 week",
         "100+ items · 4 months",
         "1+ items · 1 year",
+        "100 of 1200 items · 4 months",
+        "2 of 100 items (1200 in the range) · 4 months",
+        "3 items · 2 days",
     ]
 
 
@@ -125,5 +134,5 @@ def test_palette_is_a_combobox_with_a_live_count():
     for attr in ('role="combobox"', 'aria-expanded="true"', 'aria-haspopup="listbox"', 'aria-controls="palette-list"'):
         assert attr in field
     assert 'id="palette-count" class="visually-hidden" role="status" aria-live="polite"' in html
-    js = (ROOT / "frontend" / "js" / "app-palette.js").read_text(encoding="utf-8")
+    js = _js_scope.unwrapped((ROOT / "frontend" / "js" / "app-palette.js").read_text(encoding="utf-8"))
     assert 'aria-activedescendant' in js and "if (count.textContent !== said)" in js

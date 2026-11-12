@@ -41,6 +41,12 @@ def test_the_model_names_a_kind_and_odd_ones_are_read_or_dropped():
     assert suggest_entities("text", _Models(), _Ollama(["Sam|person"])) == ["Sam"]
 
 
+
+def test_html_entities_a_small_model_writes_are_read_as_their_characters():
+    """B71 on Qwen2.5-1.5B wrote `&#39;` and `&amp;` into names; a person sees the apostrophe and the ampersand."""
+    found = suggest_entities_with_kinds("text", _Models(), _Ollama(["O&#39;Brien|person, Marks &amp; Spencer|org"]))
+    assert found == [("O'Brien", "person"), ("Marks & Spencer", "organisation")]
+
 def test_extraction_keeps_the_kind_and_fills_one_missing(session):
     session.add(Entity(name="Sam Lee"))
     session.add(Entry(content="Went over the kiln rota with Sam Lee in Leeds today.", ai_confidence=0))

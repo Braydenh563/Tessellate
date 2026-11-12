@@ -24,14 +24,14 @@ from pydantic import BaseModel, Field
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from tessellate.ai import speakers, voice
+from tessellate.ai import diarize, speakers, voice
 from tessellate.api import paging
 from tessellate.api.downloads import attachment_headers
 from tessellate.core import activity, deps, jobs, recordings, transcript
 from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import bin as other_bin
-from tessellate.entry import manager
+from tessellate.entry import manager_text
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry.manager import log_action
 from tessellate.repo import content as content_repo
@@ -301,8 +301,9 @@ def transcribe_recording(recording_id: int, session: Session = Depends(get_sessi
             status_code=422, detail="Couldn't transcribe that recording. Try recording it again."
         ) from exc
     kept = transcript.clean(segments)
-    if deps.get_ollama().is_running():
-        kept = _named(session, row, kept)
+    if diarize.available():
+        kept = diarize.label_audio(kept, Path(path))
+    kept = _named_if_unlabelled(session, row, kept)
     row.segments = transcript.dumps(kept)
     log_action(session, "transcribed", "recording", row.id)
     session.commit()
@@ -359,22 +360,43 @@ def _transcribe_in_background(
                 job.update(done=min(segment["end"], duration_ms), total=duration_ms)
                 recordings.note_progress(recording_id, job.progress)
             job.update(detail=f"{len(kept)} lines heard")
-        if state == "done" and job.stopped:
-            state = "stopped"
         if state == "done":
-            _keep_segments(recording_id, kept, workspace)
+            kept = _voice_labelled(kept, path, job)
+            if job.stopped:
+                state = "stopped"
+            else:
+                _keep_segments(recording_id, kept, workspace)
     except RuntimeError as exc:
+        logger.warning("background transcription failed: %s", exc)
         state, error = "failed", str(exc)
     except Exception:  # noqa: BLE001  # a bad clip is a row that says so, never a dead thread
         logger.warning("background transcription failed", exc_info=True)
         state, error = "failed", "Couldn't transcribe that recording. Try recording it again."
     finally:
         words = sum(len(seg["text"].split()) for seg in kept) if state == "done" else 0
-        if job.run is not None and state == "failed":
-            job.run.fail(error)
+        _record_failure(job, state, error)
         job.result = {"done": f"{words} words", "stopped": "stopped", "failed": error}[state]
         activity.finish(job)
         recordings.end_transcription(recording_id, state, error, words)
+
+
+def _record_failure(job: activity.Job, state: str, error: str) -> None:
+    """The run's last-run line for a background job that ended "failed".
+    `error` is always one of this module's own sentences (a RuntimeError
+    raised here, or a fixed line for anything else, whose exception is logged
+    where it is caught), never an exception's text."""
+    if job.run is not None and state == "failed":
+        job.run.fail(error)
+
+
+def _voice_labelled(kept: list[dict], path: Path, job: activity.Job) -> list[dict]:
+    """The lines with speakers from the audio when the Speakers bundle is
+    installed. Done before the row is opened: it takes minutes on a long
+    meeting and holds no database session."""
+    if job.stopped or not diarize.available():
+        return kept
+    job.update(detail="Telling the voices apart")
+    return diarize.label_audio(transcript.clean(kept), path)
 
 
 def _keep_segments(recording_id: int, segments: list[dict], workspace: str | None) -> None:
@@ -385,9 +407,7 @@ def _keep_segments(recording_id: int, segments: list[dict], workspace: str | Non
         row = session.query(Recording).filter(Recording.id == recording_id).first()
         if row is None:
             raise RuntimeError("That recording was deleted while it was transcribed.")
-        kept = transcript.clean(segments)
-        if deps.get_ollama().is_running():
-            kept = _named(session, row, kept)
+        kept = _named_if_unlabelled(session, row, transcript.clean(segments))
         row.segments = transcript.dumps(kept)
         log_action(session, "transcribed", "recording", row.id)
         session.commit()
@@ -395,11 +415,19 @@ def _keep_segments(recording_id: int, segments: list[dict], workspace: str | Non
         session.close()
 
 
+def _named_if_unlabelled(session: Session, row: Recording, segments: list[dict]) -> list[dict]:
+    """The model's reading of the words (row 11) only where the voices gave no
+    labels: a label from the audio is not second-guessed by the text."""
+    if any(seg["speaker"] for seg in segments) or not deps.get_ollama().is_running():
+        return segments
+    return _named(session, row, segments)
+
+
 def _people_at(session: Session, row: Recording) -> list[str]:
     """The attendees of the meeting it was recorded into: names the model
     may use, read from the note, never guessed."""
     entry = session.get(Entry, row.entry_id) if row.entry_id else None
-    return meeting_shape.attendees(manager.readable_content(entry)) if entry else []
+    return meeting_shape.attendees(manager_text.readable_content(entry)) if entry else []
 
 
 def _named(session: Session, row: Recording, segments: list[dict]) -> list[dict]:
@@ -442,6 +470,63 @@ def name_speakers(recording_id: int, session: Session = Depends(get_session)) ->
     row.segments = transcript.dumps(named)
     session.commit()
     return {"segments": named, "speakers": any(seg["speaker"] for seg in named)}
+
+
+@router.post("/recordings/{recording_id}/speakers/voice", status_code=202)
+def label_speakers_by_voice(recording_id: int, session: Session = Depends(get_session)) -> dict:
+    """Label who speaks each line from the audio (`ai/diarize.py`), as a
+    background run shaped like a transcription: the card shows it, a
+    notification says when it ends. It replaces the transcript's speaker
+    names, so the page asks first when there are names. Behind the optional
+    Speakers bundle: without it, 503 and the sentence that says where."""
+    row, _segments = _segments_of(session, recording_id, write=True)
+    if not diarize.available():
+        raise HTTPException(status_code=503, detail=diarize.INSTALL_HINT)
+    path = recordings.path_of(row)
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="That recording's audio is missing.")
+    name = row.title or "a recording"
+    job = activity.start("transcription", f"Telling the voices apart in “{name}”", stoppable=False)
+    if not recordings.begin_transcription(row.id, job.id, task="voices"):
+        activity.finish(job)
+        raise HTTPException(status_code=409, detail="That recording is already being worked on.")
+    work = (row.id, Path(path), session.info.get("workspace_id"), job)
+    jobs.thread(f"voices-{row.id}", lambda: _label_in_background(*work))
+    return {"id": row.id, "job_id": job.id, "transcription": recordings.transcription_of(row.id)}
+
+
+def _label_in_background(recording_id: int, path: Path, workspace: str | None, job: activity.Job) -> None:
+    state, error, count = "done", "", 0
+    try:
+        found = diarize.spans(path)
+        session = deps.get_db().session()
+        if workspace:
+            session.info["workspace_id"] = workspace
+        try:
+            row = session.query(Recording).filter(Recording.id == recording_id).first()
+            if row is None:
+                raise RuntimeError("That recording was deleted while its voices were told apart.")
+            segments = transcript.loads(row.segments)
+            labels = diarize.voice_labels(segments, found)
+            if labels is not None:
+                labelled = transcript.clean([{**seg, "speaker": label} for seg, label in zip(segments, labels, strict=True)])
+                count = diarize.speaker_count(labelled)
+                row.segments = transcript.dumps(labelled)
+                log_action(session, "edited", "recording", row.id, f"{count} speakers labelled by voice")
+                session.commit()
+        finally:
+            session.close()
+    except RuntimeError as exc:
+        logger.warning("telling the voices apart failed: %s", exc)
+        state, error = "failed", str(exc)
+    except Exception:  # noqa: BLE001  # a bad clip or a model that will not load is a row that says so
+        logger.warning("telling the voices apart failed", exc_info=True)
+        state, error = "failed", "Couldn't tell the voices apart. See Settings, Logs for why."
+    finally:
+        _record_failure(job, state, error)
+        job.result = {"done": f"{count} speakers", "failed": error}[state]
+        activity.finish(job)
+        recordings.end_transcription(recording_id, state, error, speakers=count)
 
 
 class RenameSpeakerBody(BaseModel):

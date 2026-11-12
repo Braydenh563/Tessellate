@@ -187,3 +187,37 @@ def test_a_note_box_gone_before_the_editor_loads_is_not_mounted():
     loaded = body.index("await loadCodeMirror()")
     guard = body.index("if (!host.parentNode) return textareaSurface(host);")
     assert loaded < guard < body.index("host.parentNode.insertBefore(wrap, host)")
+
+
+def test_a_late_mount_does_not_take_the_focus_from_an_open_sheet():
+    """Dashboard Write link, then "?" (measured, Playwright): the shortcuts
+    sheet focused its Close button and the editor's mount took the focus about
+    150 ms later. Both places that hand the focus to the editor after a late mount
+    do so only while no modal dialog is open (`activeOverlay`)."""
+    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    assert "!activeOverlay() && s?.focus()" in docs
+    wiring = (ROOT / "frontend" / "js" / "wiring.js").read_text(encoding="utf-8")
+    start = wiring.index("function startNewNote()")
+    assert "!activeOverlay() && s?.focus()" in wiring[start : wiring.index("\n}\n", start)]
+
+
+def test_a_late_mount_does_not_take_the_focus_back_from_a_box_left_meanwhile():
+    """e2e capture-filing "Undo takes a new note back", under load: Save puts the
+    caret in the composer (`focusCaptureBox`), the editor bundle is still
+    loading, the person leaves the box (blur), and the mount then focused the
+    editor anyway about 400 ms later. Ctrl+Shift+Z met a text field and Redo,
+    which a text field keeps for itself, never ran. The delegated listener hands
+    the focus on only while the box it mounted for is still the focused one."""
+    start = DOCS.index('document.addEventListener("focusin"', DOCS.index("NOTE-SURFACE-END") - 900)
+    body = DOCS[start : DOCS.index("});", start)]
+    assert body.index("document.activeElement !== host") < body.index("s?.focus()")
+
+
+def test_a_broken_editor_bundle_is_asked_for_once():
+    """D47: with the bundle blocked, the idle warm-up failed and then
+    code-colour's `loadCodeMirror()` asked again (measured, 2 requests and 2
+    warnings; `scratchpad/ui-sweeps/docfallback.js` now reads 1 and 1). The
+    loader itself refuses once `docCmBroken` is set, so no caller can retry."""
+    start = DOCS.index("function loadCodeMirror() {")
+    body = DOCS[start : DOCS.index("\n}\n", start)]
+    assert body.index("if (docCmBroken) return Promise.resolve(null);") < body.index("docCmLoad = new Promise")

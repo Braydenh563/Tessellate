@@ -10,10 +10,11 @@ an outside click hid it, Enter and Space each toggled.
 """
 
 from pathlib import Path
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 GRAPH = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
-CANVAS = (ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8")
+CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
 
 
 def _function(source: str, name: str, kind: str = "function") -> str:
@@ -34,7 +35,8 @@ def test_a_click_on_the_open_note_closes_before_it_would_reopen() -> None:
 
 
 def test_enter_and_space_toggle_the_same_way() -> None:
-    start = GRAPH.index('event.key === "Enter" || event.key === " "')
+    # The category-focus branch also tests Enter/Space (with Escape); the note toggle is the bare form.
+    start = GRAPH.index('if (event.key === "Enter" || event.key === " ") {')
     block = GRAPH[start : start + 400]
     assert "graphPopupShows(current)" in block and "closeGraphPopup(true)" in block
     assert "openGraphPopup(" in block

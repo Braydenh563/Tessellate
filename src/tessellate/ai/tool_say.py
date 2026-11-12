@@ -87,7 +87,10 @@ def _note_row(note: dict, extra: str = "") -> str:
     """One note as a list row: its title linked, its first line, where it
     is filed."""
     text = note.get("content") or note.get("preview") or note.get("title") or ""
+    #: "Uncategorised" is the lack of a filing, not a place a note is: no row says it (W10 B32).
     filed = note.get("category")
+    if str(filed or "").strip().lower() in ("uncategorised", "uncategorized"):
+        filed = None
     tags = [str(t) for t in note.get("tags") or []]
     gist = _gist(text) if note.get("content") else ""
     where = f": {gist}" if gist else ""
@@ -254,7 +257,10 @@ def _search_notes(result: dict, args: dict) -> Said:
         newest = f"your {count_word_of(len(notes))} newest notes" if len(notes) > 1 else "your newest note"
         #: "latest" and "last three" ask for the newest notes: nothing failed to match.
         asked_newest = not query or note_recency.recency(query, bare=True) is not None
-        lead = (f"Here are {newest}." if len(notes) > 1 else f"Here is {newest}.") if asked_newest else f"Nothing matched “{query}”; here are {newest}."
+        if not asked_newest:
+            #: Nothing matched is said and stops: the newest notes are not an answer to "anything on france" (F13 b, 1110).
+            return _found_notes("", [], 0, f"Nothing matched “{query}”. Try other words, or browse them in Notes.")
+        lead = f"Here are {newest}." if len(notes) > 1 else f"Here is {newest}."
         return _found_notes(lead, notes, total, f"I found no notes{about}.")
     return _found_notes(f"I found {count_noun(total, 'note')}{about}.", notes, total, f"I found no notes{about}. Try other words, or browse them in Notes.")
 
@@ -312,7 +318,7 @@ def _contradictions(result: dict, args: dict) -> Said:
     if not found:
         message = str(result.get("message") or "")
         if "model" in message:
-            return "Finding where notes disagree needs a model to read them, and none is running.", "Start one in Settings, Models, then ask again.", _chips(("Open Settings, Models", settings_at("models")))
+            return "I could not tell from the notes alone which ones disagree.", "Ask “what changed” about one subject, and the dated changes are listed.", _chips(("Open the graph", GRAPH))
         return "I found no notes that disagree with each other.", "", _chips(("Open the graph", GRAPH))
     rows = []
     for t in found[:5]:
@@ -790,7 +796,8 @@ def _reminder_set(result: dict, args: dict) -> Said:
     when = _when(result.get("due_at")) or str(result.get("due") or "")
     if result.get("existing"):
         return f"You already have that reminder, to {_lower_first(str(result.get('text') or args.get('text') or 'do that'))} on {when}.", "", _chips(("Open Reminders", REMINDERS))
-    return f"I'll remind you to {_lower_first(str(result.get('text') or args.get('text') or 'do that'))} on {when}.", "", _chips(("Open Reminders", REMINDERS))
+    again = {"daily": "every day", "weekly": "every week", "monthly": "every month"}.get(str(result.get("recurring") or ""))
+    return f"I'll remind you to {_lower_first(str(result.get('text') or args.get('text') or 'do that'))} on {when}{f', then {again}' if again else ''}.", "", _chips(("Open Reminders", REMINDERS))
 
 
 def _lower_first(text: str) -> str:

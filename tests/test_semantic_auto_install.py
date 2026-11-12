@@ -7,7 +7,7 @@ Settings switch that is bound to the preference."""
 
 from __future__ import annotations
 
-from tests._help_text import help_chat_text
+from tests._help_text import help_chat_text, help_more_text
 
 import re
 from pathlib import Path
@@ -162,11 +162,10 @@ def test_the_switch_is_bound_to_the_preference():
 
 
 def test_the_guide_tells_the_choice():
-    from tessellate.ai import help_topics_more
 
     text = (
         help_chat_text()
-        + Path(help_topics_more.__file__).read_text(encoding="utf-8")
+        + help_more_text()
     )
     joined = re.sub(r'"\s*\n\s*"', "", text)
     assert "Download search by meaning" in joined

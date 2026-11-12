@@ -13,7 +13,7 @@ import contextvars
 import re
 from datetime import date
 
-from tessellate.ai import composer_compose, composer_lines, composer_tables, grounding, recognise as rec
+from tessellate.ai import composer_compose, composer_lines, composer_tables, grounding, recognise as rec, recognise_windows
 from tessellate.ai.composer_answer import _Answer, _SESSION
 from tessellate.ai.composer_ask import _holds, _stem, user_today
 from tessellate.ai.composer_intent import Plan
@@ -75,12 +75,12 @@ def _absent(terms: list[str], views: list[NoteView]) -> list[str]:
     return absent if terms and len(absent) == len(terms) else []
 
 
-def window_said(phrase: str) -> str:
+def window_said(phrase: str, window: tuple | None = None) -> str:
     """A time window as an adverbial, with the preposition it needs ("on 20
     October", "in the last 7 days"; "last week" and "today" as they are):
     `recognise.adverbial`, the one reader of it; said with its capitals (audit
-    1030 Z45)."""
-    return rec.proper_days(rec.adverbial(phrase))
+    1030 Z45). `window` (first day, last day) lets "last Christmas" name its year."""
+    return recognise_windows.with_holiday_year(rec.proper_days(rec.adverbial(phrase)), window[0] if window else None)
 
 
 def _as_typed(word: str, question: str) -> str:
@@ -98,6 +98,10 @@ def _bare_title(out: _Answer, terms: list[str], views: list[NoteView]) -> NoteVi
         return None
     for v in views:
         if v.sentences or not v.title:
+            continue
+        #: A note with more under its title (a table whose header was all it
+        #: had, a picture) is not "only a title" (round 2 E1).
+        if sum(1 for line in str(v.note.get("content") or "").splitlines() if line.strip()) > 1:
             continue
         named = v.title_words | v.filed_words | v.words
         if all(_holds(stem, named) for stem in stems):
@@ -187,6 +191,22 @@ _EMPTY_WINDOW_NEWEST = {
 }
 
 
+def _window_voice(voice: str, register: str) -> str:
+    """"natural" or "professional": the chat's own register wins over the saved voice."""
+    if register:
+        return {"warm": "natural", "formal": "professional"}.get(composer_compose.voice_for(register), composer_compose.voice_for(register))
+    return "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
+
+
+def _nothing_planned(when: str) -> str:
+    """A day that has not come holds no notes written then: what is on it is what is planned (R9-8)."""
+    return f"Nothing is planned {when if when.startswith(('on ', 'for ', 'in ', 'next ', 'this ')) else 'for ' + when}."
+
+
+#: The one line an empty notebook gets on every surface (second audit, composed list).
+EMPTY_NOTEBOOK = "Nothing yet. Write a first note and I'll have something to say."
+
+
 def empty_window(when: str, first: date | None, last: date | None, *, voice: str = "natural", seed: str = "",
                  today: date | None = None, register: str = "", window: tuple | None = None) -> str:
     """A time window with no note in it, said as that, and where the notes
@@ -194,14 +214,14 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
     `register` is the chat's own voice (a persona's cue included); `window`
     is the days asked, so one that starts after the newest note is answered
     with that note."""
-    voice = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
-    if register:
-        voice = {"warm": "natural", "formal": "professional"}.get(composer_compose.voice_for(register), composer_compose.voice_for(register))
+    voice = _window_voice(voice, register)
     today = today or user_today()
-    when = window_said(when)
+    when = window_said(when, window)
+    if window and window[0] > today:
+        return _nothing_planned(when)
     lead = _pick(seed or when, "empty_window", list(_EMPTY_WINDOW[voice])).format(when=when, When=when[:1].upper() + when[1:])
     if first is None or last is None:
-        return lead
+        return EMPTY_NOTEBOOK if voice in ("natural", "professional") else lead
 
     def day(d: date) -> str:
         return f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}"

@@ -23,7 +23,20 @@ def _rule(css: str, selector: str) -> str:
 def test_the_time_stops_short_of_the_kebab_by_a_gap_token() -> None:
     css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
     rule = _rule(css, "  #reminder-groups li .entry-meta > .entry-date")
-    assert "margin-inline-end: calc(1.75rem + var(--space-2))" in rule
+    # The kebab's own size, `--target-min`: it is 44px under 820 and a fixed
+    # 1.75rem left it 10px over the time at 768 (wrapzoom sweep).
+    assert "margin-inline-end: calc(var(--target-min) + var(--space-2))" in rule
+
+
+def test_on_hover_the_strip_takes_the_times_place_rather_than_a_slice_of_it() -> None:
+    """wrapzoom sweep, every width: the 222px strip lay over the 250px time, so
+    29px of "Wed," showed beside "+1h"; a short time let it run over the words.
+    The time leaves the row on hover and the strip joins the row's flow."""
+    css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    hover = "  #reminder-groups li:is(:hover, :focus-within) .entry-meta > "
+    assert "display: none" in _rule(css, hover + ".entry-date")
+    strip = _rule(css, hover + ".entry-actions")
+    assert "position: static" in strip and "transform: none" in strip
 
 
 def test_the_kebab_takes_presses_at_rest_and_only_the_other_actions_wait_for_hover() -> None:

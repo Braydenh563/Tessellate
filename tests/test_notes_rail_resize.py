@@ -7,6 +7,7 @@ numbers in the commit).
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import shutil
 import subprocess
@@ -69,7 +70,7 @@ def test_the_width_is_the_grid_track_and_the_handle_follows_the_rail() -> None:
 def test_the_recipe_and_the_guide_say_it() -> None:
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "`notesRailResize`" in design and "INBOX 1443" in design
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    topics = help_more_text()
     assert "Drag its left edge" in topics and "Home puts it back" in topics
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "Drag its left edge" in html

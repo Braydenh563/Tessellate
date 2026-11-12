@@ -85,5 +85,5 @@ def test_every_popup_tool_is_a_quick_access_tile():
     feats = _read("app-features.js")
     row = next(line for line in feats.splitlines() if "...POPUP_TOOLS.map((t) =>" in line)
     assert "quick: `tool-${t.id}`" in row
-    catalogue = feats.split("function quickCatalogue()", 1)[1].split("\n}\n", 1)[0]
+    catalogue = feats.split("function quickCatalogue(only = null)", 1)[1].split("\n}\n", 1)[0]
     assert 'row.keys && !row.quick ? ""' in catalogue

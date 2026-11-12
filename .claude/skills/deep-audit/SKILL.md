@@ -5,7 +5,7 @@ description: Full clean-eye audit of every Tessellate surface, element, function
 
 # Deep audit (orchestrator)
 
-The scans of 2026-10-28 (about 313 rows, `docs/roadmap/agent-remaining/audit-1028-*.md`)
+The scans of 2026-10-28 (about 313 rows, now in `docs/roadmap/LEDGER.md`; git history: audit-1028-*.md)
 saved as agents (INBOX 1430, 1431). Every agent reads `.claude/skills/deep-audit/checklist.md`.
 
 ## Surfaces and agents

@@ -10,6 +10,7 @@ is `scratchpad/ui-sweeps/snippetdrag1018.js`.
 
 from __future__ import annotations
 
+from tests._help_text import help_more_text
 import json
 import re
 import shutil
@@ -17,9 +18,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parents[1]
-KIT = (ROOT / "frontend" / "js" / "documents-codekit.js").read_text(encoding="utf-8")
+KIT = _js_scope.unwrapped((ROOT / "frontend" / "js" / "documents-codekit.js").read_text(encoding="utf-8"))
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 
@@ -61,7 +63,7 @@ def test_a_drag_that_ends_leaves_nothing_behind() -> None:
 def test_the_help_says_a_row_can_be_dragged() -> None:
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert "drag it into the text" in html
-    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    topics = help_more_text()
     assert "drag a row into the text" in topics
 
 

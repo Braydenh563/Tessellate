@@ -14,6 +14,7 @@ import pytest
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 from tests import _courses_1665 as fx
 
 NOW = datetime(2026, 11, 4, 10, 5)
@@ -33,7 +34,7 @@ def notebook(session, monkeypatch):
     session.commit()
     for (_c, _cat, _t, _w, links), entry in zip(fx.NOTES, made, strict=True):
         for i, reason in links.items():
-            manager.create_link(session, entry, made[i], reason=reason)
+            manager_links.create_link(session, entry, made[i], reason=reason)
     session.commit()
     return made
 
@@ -103,7 +104,8 @@ def test_a_one_count_from_one_pool_and_every_note_said_or_counted(client, notebo
 
 def test_b_the_opening_says_what_the_notes_are_about_in_one_short_sentence(answer):
     text, _g, _e = answer
-    group = next(p for p in text.split("\n\n") if p.startswith("Your university"))
+    #: 1743: the opening is the lead of the woven overview (the "Your university notes share ..." group line is gone).
+    group = text.split("\n\n")[0]
     first = re.split(r"(?<=[.!?])\s+", group)[0]
     assert len(first.split()) <= 25, first
     assert first.count("“") <= 1, first
@@ -125,9 +127,10 @@ def test_c_a_long_note_is_said_briefly_and_never_with_a_spaced_hyphen(answer):
 def test_d_the_answers_weeks_ago_is_the_cards(gap):
     from datetime import date, timedelta
 
-    from tessellate.ai import composer_digest, realise
+    from tessellate.ai import realise
+    from tessellate.ai import composer_digest_sentences
 
-    said = composer_digest._ago(date(2026, 11, 4) - timedelta(days=gap), date(2026, 11, 4))
+    said = composer_digest_sentences._ago(date(2026, 11, 4) - timedelta(days=gap), date(2026, 11, 4))
     card = int(gap / 7 + 0.5)  # Math.round(days / 7), frontend/js/sheets-selects.js relativeTime
     assert said == ("a week ago" if card == 1 else f"{realise.count_word(card)} weeks ago")
 
@@ -141,7 +144,8 @@ def test_d_the_card_still_rounds_the_way_the_answer_does():
 
 def test_d_the_answer_and_the_card_agree_on_the_missed_bus_note(answer):
     text, _g, _e = answer
-    assert "Four weeks ago, on 8 October" in text and "Three weeks ago" not in text
+    #: 1743: a woven overview dates by month ("In October"), so only the wrong count is refused here.
+    assert "Three weeks ago" not in text and "In October" in text
 
 
 @pytest.mark.parametrize(
@@ -185,14 +189,17 @@ def test_f_no_note_is_said_twice_no_phrase_is_cut_every_sentence_is_cited(answer
     text, grounding, _e = answer
     rows = [r for event in grounding for r in event["sentences"]]
     assert [r["sentence"] for r in rows if r["sentence"] not in text] == [], text
-    per_note: dict[int, int] = {}
+    #: A sentence is cited once; a note's two sentences with a third between are two quotes (bt-compcomp-1109 item 4).
+    per_note: dict[tuple, int] = {}
     for r in rows:
-        per_note[r["note_id"]] = per_note.get(r["note_id"], 0) + 1
+        key = (r["note_id"], r["sentence"])
+        per_note[key] = per_note.get(key, 0) + 1
     assert all(n == 1 for n in per_note.values()), per_note
     for paragraph in text.split("\n\n"):
         if not paragraph.startswith(_FRAME):
             assert any(r["sentence"] in paragraph for r in rows), paragraph
-    assert "You didnt lock in" in text and "You didnt lock." not in text
+    #: 1743: the person's own words are quoted, not re-voiced as "You didnt lock in".
+    assert "“I didnt lock in”" in text and "You didnt lock." not in text
     assert "at work need to" not in text
     assert text.lower().count("lock-in") + text.lower().count("lock in") <= 2
 
@@ -207,10 +214,10 @@ def test_f_a_chat_sign_off_ends_a_sentence(text):
 
 @pytest.mark.parametrize(("sentence", "last"), [("you didnt lock in", "in"), ("you need to log in", "in"), ("you never give up", "up")])
 def test_f_a_phrasal_verb_a_whole_sentence_ends_on_is_not_cut(sentence, last):
-    from tessellate.ai import composer_digest as digest
+    from tessellate.ai import composer_digest_lines
 
-    assert digest.whole_clause(sentence, frozenset({last})) == sentence
-    assert digest.whole_clause("you went to the footer and") == "you went to the footer"
+    assert composer_digest_lines.whole_clause(sentence, frozenset({last})) == sentence
+    assert composer_digest_lines.whole_clause("you went to the footer and") == "you went to the footer"
 
 
 def test_g_a_title_that_says_something_counts_when_the_body_loses_the_point(answer):
@@ -317,10 +324,10 @@ def test_i_a_weak_cue_never_heads_a_separate_notes_event(client, golf):
 
 
 def test_i_a_weak_cue_still_tells_parts_of_one_note_apart():
-    from tessellate.ai import composer_digest as digest
+    from tessellate.ai import composer_digest_lines
 
-    assert digest._cue_for("it was fun", "", "", False, "", True) == "How it went"
-    assert digest._cue_for("it was fun", "", "", False, "", False) == ""
+    assert composer_digest_lines._cue_for("it was fun", "", "", False, "", True) == "How it went"
+    assert composer_digest_lines._cue_for("it was fun", "", "", False, "", False) == ""
 
 
 def test_i_b_a_past_tense_weekday_mention_is_the_past_one(session, golf):

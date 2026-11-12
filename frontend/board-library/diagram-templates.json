@@ -81,6 +81,42 @@
    "source": "flowchart TD\n  A([\"Send a request\"])\n  B[\"Review it\"]\n  C{\"Approved?\"}\n  D[\"Ask for changes\"]\n  E([\"Done\"])\n  A --> B\n  B --> C\n  C -->|\"Yes\"| E\n  C -->|\"No\"| D\n  D --> B\n"
   },
   {
+   "id": "incident-response",
+   "name": "Incident response",
+   "hint": "Spot it, size it, fix it, and write it up.",
+   "source": "flowchart TD\n  A([\"Alert fires\"])\n  B[\"Acknowledge it\"]\n  C{\"Is it serious?\"}\n  D[\"Call the team\"]\n  E[\"Fix and watch\"]\n  F([\"Write it up\"])\n  A --> B\n  B --> C\n  C -->|\"Yes\"| D\n  C -->|\"No\"| E\n  D --> E\n  E --> F\n"
+  },
+  {
+   "id": "release-pipeline",
+   "name": "Release pipeline",
+   "hint": "Build, test, stage and ship, with a stop on failure.",
+   "source": "flowchart LR\n  A([\"Commit\"])\n  B[\"Build\"]\n  C{\"Tests pass?\"}\n  D[\"Stage\"]\n  E([\"Ship\"])\n  F[\"Fix it\"]\n  A --> B\n  B --> C\n  C -->|\"Yes\"| D\n  C -->|\"No\"| F\n  F -.-> B\n  D --> E\n"
+  },
+  {
+   "id": "support-ticket",
+   "name": "Support ticket",
+   "hint": "From a question to a reply, with a hand-off when it is stuck.",
+   "source": "flowchart TD\n  A([\"Ticket arrives\"])\n  B[\"Read it\"]\n  C{\"Can you answer it?\"}\n  D[\"Reply\"]\n  E[\"Pass to a specialist\"]\n  F([\"Close it\"])\n  A --> B\n  B --> C\n  C -->|\"Yes\"| D\n  C -->|\"No\"| E\n  E --> D\n  D --> F\n"
+  },
+  {
+   "id": "hiring-pipeline",
+   "name": "Hiring pipeline",
+   "hint": "Applications to an offer, one stage at a time.",
+   "source": "flowchart LR\n  A([\"Application\"])\n  B[\"Screen\"]\n  C[\"Interview\"]\n  D{\"Good fit?\"}\n  E[\"Offer\"]\n  F([\"Decline politely\"])\n  A --> B\n  B --> C\n  C --> D\n  D -->|\"Yes\"| E\n  D -->|\"No\"| F\n"
+  },
+  {
+   "id": "order-fulfilment",
+   "name": "Order fulfilment",
+   "hint": "Order placed, paid, packed and delivered.",
+   "source": "flowchart LR\n  A([\"Order placed\"])\n  B[\"Take payment\"]\n  C[\"Pack it\"]\n  D[\"Post it\"]\n  E([\"Delivered\"])\n  F[(\"Stock records\")]\n  A --> B\n  B --> C\n  C --> D\n  D --> E\n  C -.-> F\n"
+  },
+  {
+   "id": "content-review",
+   "name": "Content review",
+   "hint": "Draft, edit, approve and publish, with edits sent back.",
+   "source": "flowchart TD\n  A([\"Draft\"])\n  B[\"Edit\"]\n  C{\"Approved?\"}\n  D[\"Publish\"]\n  E([\"Done\"])\n  F[\"Send back\"]\n  A --> B\n  B --> C\n  C -->|\"Yes\"| D\n  C -->|\"No\"| F\n  F -.-> B\n  D --> E\n"
+  },
+  {
    "id": "blank",
    "name": "Blank",
    "hint": "An empty flowchart to build with the blocks.",

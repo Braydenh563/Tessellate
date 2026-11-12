@@ -22,6 +22,7 @@ from tessellate.ai.embeddings import vector_to_bytes
 from tessellate.core import deps
 from tessellate.core.database import AuditLog, Entry, EntryDate, EntryLink, EmbeddingRecord
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 
 
 @pytest.fixture(autouse=True)
@@ -37,7 +38,7 @@ def _clear_failure_tracking():
     links._failed_attempts.clear()
 
 
-def _linked_pair(session, reason=manager.AUTO_REASON_TEXT, reason_confidence=0.8):
+def _linked_pair(session, reason=manager_links.AUTO_REASON_TEXT, reason_confidence=0.8):
     """Two notes linked the way `create_link` leaves them when nobody gives a
     reason and the embedding score clears `AUTO_REASON_THRESHOLD`: a generic
     reason plus a confidence score, exactly what `audit_vague_links` looks
@@ -64,7 +65,7 @@ def _linked_pair(session, reason=manager.AUTO_REASON_TEXT, reason_confidence=0.8
 
 def test_audit_never_sends_a_private_note_to_the_model(session, fake_ollama):
     """A note can be marked private *after* it was already linked to another
-    note: `manager.set_private` drops the note's embedding and resolved
+    note: `manager_private.set_private` drops the note's embedding and resolved
     dates for exactly this reason but leaves any existing `EntryLink` rows in
     place. `audit_vague_links` fetches both ends of a link by id with no
     `is_private` check at all, so it read the raw `content` column: ciphertext
@@ -123,7 +124,7 @@ def test_a_vague_model_reply_is_rejected_and_the_link_left_unchanged(session, fa
 
     assert updated == 0
     session.refresh(link)
-    assert link.reason == manager.AUTO_REASON_TEXT
+    assert link.reason == manager_links.AUTO_REASON_TEXT
     assert link.reason_confidence == 0.8
 
 
@@ -135,7 +136,7 @@ def test_other_vague_phrasings_are_also_rejected(session, fake_ollama):
 
     assert updated == 0
     session.refresh(link)
-    assert link.reason == manager.AUTO_REASON_TEXT
+    assert link.reason == manager_links.AUTO_REASON_TEXT
 
 
 def test_an_empty_model_reply_is_also_left_unchanged(session, fake_ollama):
@@ -146,7 +147,7 @@ def test_an_empty_model_reply_is_also_left_unchanged(session, fake_ollama):
 
     assert updated == 0
     session.refresh(link)
-    assert link.reason == manager.AUTO_REASON_TEXT
+    assert link.reason == manager_links.AUTO_REASON_TEXT
 
 
 # --- (c) the batch commits once and logs once, not per link ---------------------
@@ -277,7 +278,7 @@ def test_creating_a_link_does_not_call_the_model(session, fake_ollama, fake_embe
     fake_embeddings.store_for_entry(session, a)
     fake_embeddings.store_for_entry(session, b)
 
-    link = manager.create_link(session, a, b)
+    link = manager_links.create_link(session, a, b)
 
     assert link is not None
     #: INBOX 691: the cheap reason is the specific one the two notes give
@@ -633,10 +634,10 @@ def test_a_shared_resolved_date_rescues_a_borderline_reason(session):
     )
     session.commit()
 
-    link = manager.create_link(session, a, b)
+    link = manager_links.create_link(session, a, b)
 
     assert link is not None
-    assert link.reason == manager.AUTO_REASON_TEXT_TEMPORAL
+    assert link.reason == manager_links.AUTO_REASON_TEXT_TEMPORAL
     assert link.reason_confidence == 0.5
 
 
@@ -645,10 +646,10 @@ def test_being_written_the_same_day_also_rescues_a_borderline_reason(session):
     the same calendar day is the other named case."""
     a, b = _borderline_pair(session)
 
-    link = manager.create_link(session, a, b)
+    link = manager_links.create_link(session, a, b)
 
     assert link is not None
-    assert link.reason == manager.AUTO_REASON_TEXT_TEMPORAL
+    assert link.reason == manager_links.AUTO_REASON_TEXT_TEMPORAL
     assert link.reason_confidence == 0.5
 
 
@@ -667,7 +668,7 @@ def test_a_coarser_than_day_date_does_not_rescue_a_borderline_reason(session):
     )
     session.commit()
 
-    link = manager.create_link(session, a, b)
+    link = manager_links.create_link(session, a, b)
 
     assert link is not None
     assert link.reason is None
@@ -697,7 +698,7 @@ def test_the_temporal_boost_cannot_manufacture_a_reason_from_a_low_score(session
     )
     session.commit()
 
-    link = manager.create_link(session, a, b)
+    link = manager_links.create_link(session, a, b)
 
     assert link is not None
     assert link.reason is None
@@ -734,7 +735,7 @@ def test_ordinary_today_phrasing_in_note_text_rescues_a_borderline_reason(sessio
     )
     session.commit()
 
-    link = manager.create_link(session, a, b)
+    link = manager_links.create_link(session, a, b)
 
     assert link is not None
     # The rescue still links the pair; what the two notes share names it
@@ -831,10 +832,10 @@ def test_a_score_already_over_threshold_keeps_the_plain_reason(session):
     )
     session.commit()
 
-    link = manager.create_link(session, a, b)  # both created just now, same day
+    link = manager_links.create_link(session, a, b)  # both created just now, same day
 
     assert link is not None
-    assert link.reason != manager.AUTO_REASON_TEXT_TEMPORAL
+    assert link.reason != manager_links.AUTO_REASON_TEXT_TEMPORAL
     assert link.reason == "Both mention “funny”"
     assert link.reason_confidence == 1.0
 
@@ -857,7 +858,7 @@ def test_two_notes_that_share_only_meaning_keep_the_generic_reason(session):
     )
     session.commit()
 
-    link = manager.create_link(session, a, b)
+    link = manager_links.create_link(session, a, b)
 
-    assert link.reason == manager.AUTO_REASON_TEXT
+    assert link.reason == manager_links.AUTO_REASON_TEXT
     assert link.reason_confidence == 1.0

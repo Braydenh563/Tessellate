@@ -92,12 +92,12 @@ def test_the_fingerprint_sees_a_link_swapped_for_another(client, session):
 
 def test_graph_reads_each_notes_text_once_per_version(client, monkeypatch):
     from tessellate.api import routes_graph
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     notes = [_save(client, f"# Note {i}\n\nwords here") for i in range(5)]
     reads = []
-    original = manager.readable_content
-    monkeypatch.setattr(routes_graph.manager, "readable_content", lambda e: reads.append(e.id) or original(e))
+    original = manager_text.readable_content
+    monkeypatch.setattr(routes_graph.manager_text, "readable_content", lambda e: reads.append(e.id) or original(e))
     client.get("/graph")
     assert len(reads) == 5
     client.get("/graph")

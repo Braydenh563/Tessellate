@@ -74,8 +74,12 @@ def test_no_destination_comes_three_times_in_a_row(mix: str) -> None:
 
 
 @pytest.mark.parametrize("gait", ["walk", "float"])
-def test_with_roam_over_windows_off_it_stays_on_the_floor(gait: str) -> None:
-    assert set(trips("all", roam_windows=False, gait=gait)) == {"floor"}
+def test_with_roam_over_windows_off_it_stays_off_the_windows(gait: str) -> None:
+    # Intent moved (INBOX 1696 k, the owner 2026-11-08: "now its not even hanging from the top of my screen"): the
+    # screen's top is not a window, so with the windows option off a trip is the floor or a hang from the screen's top
+    # (`_hang_spots` is empty without the option, so no window bar is taken), never a window.
+    kinds = set(trips("all", roam_windows=False, gait=gait))
+    assert "window" not in kinds and kinds <= {"floor", "hang"}, kinds
 
 
 def test_a_reduced_or_busy_figure_takes_no_trip_at_all() -> None:
@@ -103,7 +107,7 @@ def test_it_hangs_from_a_bottom_edge_a_maximised_title_bar_or_a_title_bar(gait: 
         t += 0.016
         e.update(t)
     assert e.state == "hang" and e.hang_on.key == spot.key
-    grip = spot.top + (eng.TITLE_BAR * 1.5 if spot.kind in ("top", "bar") else 0.0)
+    grip = spot.top + (eng.TITLE_BAR * 1.5 if spot.kind == "top" else 0.0)  # 1721 b: a maximised bar is gripped at its top edge
     assert e.y + e._lift() == pytest.approx(grip)  # the hands are on the edge
     centre = e.x + SIZE[0] / 2
     assert spot.left <= centre <= spot.right

@@ -32,11 +32,14 @@ PHRASES: dict[str, str] = {
     "close_quote": "”",
     "open_paren": " (",
     "close_paren": ")",
-    #: A citation is bracketed, not parenthesised (the owner, 2026-10-10:
-    #: "Intext reference should be square brackets or styled differently"):
-    #: "[**Dentist**]" reads as a reference, "(**Dentist**)" as an aside.
-    "cite_open": " [",
-    "cite_close": "]",
+    #: A note the timeline files under the day its text names, not the day it was written (INBOX 1739).
+    "written_a": " (written ",
+    "written_top": "Written ",
+    "about_a": ", about ",
+    #: The note an answer rests on, said once in a chat (decision D25: no bracketed title): "From your Gym log note."
+    "cite_from": " From your ",
+    "cite_note": " note.",
+    "cite_from_note": " From your note ",
     #: "2 + 2 is 4." (`_sum`): the sum as asked, then its value.
     "sum_is": " is ",
     "and": " and ",
@@ -106,9 +109,9 @@ PHRASES: dict[str, str] = {
     # and after a colon when it cannot ("Separately: Lisbon to Porto ...").
     "and_join": "And ",
     "on_top": "On top of that",
-    "separately": "Separately",
+    "separately": "Apart from that",
     "elsewhere": "Elsewhere",
-    "another_note": "On another note",
+    "another_note": "In another note",
     "later_on": "Later, on ",
     "then_on": "Then on ",
     "earlier_on": "Earlier, on ",
@@ -132,6 +135,9 @@ PHRASES: dict[str, str] = {
     "timeline": "In the order you wrote them:",
     # A comparison.
     "of_found": "Of the notes found, ",
+    "only_lead": "Only ",
+    "only_appear": " appears in your notes; nothing mentions ",
+    "only_appear_many": " appear in your notes; nothing mentions ",
     "mentions_one": " mentions ",
     #: "which is longer, the budget or the Lisbon trip" (audit 1029 C36).
     "is_longer": " is the longer note: ",
@@ -150,6 +156,8 @@ PHRASES: dict[str, str] = {
     "newest_lead": "Your ",
     "newest_guess": "I could not tell what that asks about, so here are your ",
     "newest_mid": " newest notes",
+    "newest_one_lead": "Your newest note",
+    "newest_one_guess": "I could not tell what that asks about, so here is your newest note",
     "until_ahead_days": " days from today, on ",
     "until_ahead_day": " day from today, on ",
     "until_ago_days": " days ago, on ",
@@ -178,6 +186,17 @@ PHRASES: dict[str, str] = {
     "recall_note": " note ",
     "recall_notes": " notes ",
     "recall_b": ", newest first:",
+    #: "around <day>" (INBOX 1739): the days either side, the nearest first.
+    "recall_near_b": ", nearest first:",
+    #: A day's documents are counted beside its notes (INBOX 1739).
+    "recall_made": "You made ",
+    "recall_note_and": " note and made ",
+    "recall_notes_and": " notes and made ",
+    "recall_doc": " document ",
+    "recall_docs": " documents ",
+    "doc_lead": "Document ",
+    "recall_dated_note": " note falls ",
+    "recall_dated_notes": " notes fall ",
     #: The window held more than the list shows (audit 1029 C11): say so.
     "recall_more_a": "And ",
     "recall_more_b": " more.",
@@ -240,7 +259,7 @@ PHRASES: dict[str, str] = {
     "picture_text_lead": "a picture with the words ",
     "next_tag_b": "?",
     "next_latest_a": "What is the latest on ",
-    "feature_offer": "\n\nThe app has a tool by that name too. ",
+    "feature_offer": "\n\nThe app has a tool for that too. ",
     "next_when_a": "When did I write about ",
 }
 

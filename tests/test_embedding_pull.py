@@ -147,7 +147,9 @@ def test_hub_metadata_asks_through_huggingface_hub_and_refuses_a_bad_id(monkeypa
     shape `hub_refusal` reads."""
     from types import SimpleNamespace
 
-    import huggingface_hub
+    # Optional: huggingface_hub arrives with fastembed (requirements.txt, so CI
+    # runs this); a venv without Search by meaning skips, as test_fastembed_engine does.
+    huggingface_hub = pytest.importorskip("huggingface_hub")
 
     seen = []
 

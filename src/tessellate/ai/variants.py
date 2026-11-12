@@ -18,25 +18,25 @@ because they are made from the note's text.
 
 from __future__ import annotations
 
-import re
 from functools import lru_cache
+from tessellate.core.lazyre import lazy_compile
 
 #: (UK pattern, US replacement), tried on the word's end or middle.
 _RULES = (
-    (re.compile(r"is(e|ed|es|ing|ation|ations|er|ers|able|ational)$"), r"iz\1"),
-    (re.compile(r"ys(e|ed|es|ing|er|ers)$"), r"yz\1"),
-    (re.compile(r"our(s|ed|ing|ite|ites|able|ful|less|ism|ist|er|ers)?$"), r"or\1"),
-    (re.compile(r"([tb])re(s)?$"), r"\1er\2"),
-    (re.compile(r"([tb])red$"), r"\1ered"),
-    (re.compile(r"([tb])ring$"), r"\1ering"),
-    (re.compile(r"ogue(s)?$"), r"og\1"),
-    (re.compile(r"ence(s)?$"), r"ense\1"),
-    (re.compile(r"ae(?=[a-z])"), "e"),
-    (re.compile(r"oe(?=[a-z])"), "e"),
+    (lazy_compile(r"is(e|ed|es|ing|ation|ations|er|ers|able|ational)$"), r"iz\1"),
+    (lazy_compile(r"ys(e|ed|es|ing|er|ers)$"), r"yz\1"),
+    (lazy_compile(r"our(s|ed|ing|ite|ites|able|ful|less|ism|ist|er|ers)?$"), r"or\1"),
+    (lazy_compile(r"([tb])re(s)?$"), r"\1er\2"),
+    (lazy_compile(r"([tb])red$"), r"\1ered"),
+    (lazy_compile(r"([tb])ring$"), r"\1ering"),
+    (lazy_compile(r"ogue(s)?$"), r"og\1"),
+    (lazy_compile(r"ence(s)?$"), r"ense\1"),
+    (lazy_compile(r"ae(?=[a-z])"), "e"),
+    (lazy_compile(r"oe(?=[a-z])"), "e"),
 )
 #: A doubled l before an ending ("travelled", "cancelling", "labelled"),
 #: only when the stem with one l is the word ("fill" keeps "filled").
-_DOUBLE_L = re.compile(r"^(.+[aeiou])ll(ed|ing|er|ers)$")
+_DOUBLE_L = lazy_compile(r"^(.+[aeiou])ll(ed|ing|er|ers)$")
 #: Pairs no rule makes.
 NAMED = (
     ("grey", "gray"), ("greys", "grays"), ("programme", "program"), ("programmes", "programs"),

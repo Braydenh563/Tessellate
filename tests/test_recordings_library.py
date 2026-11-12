@@ -6,9 +6,11 @@ Driven by `scratchpad/ui-sweeps/audio80.js` ACT=library at 1440 and 390."""
 from __future__ import annotations
 
 from pathlib import Path
+from tests import _js_scope
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-JS = (ROOT / "frontend/js/meetings.js").read_text(encoding="utf-8")
+JS = unwrapped((ROOT / "frontend/js/meetings.js").read_text(encoding="utf-8"))
 HTML = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
 
 
@@ -103,13 +105,15 @@ def test_the_microphone_is_chosen_cleaned_and_tested_in_one_set_of_controls():
     assert "function micAudioConstraints()" in media
     for key in ("micNoise", "micEcho", "micGain", "deviceId: { ideal: device }"):
         assert key in media
-    captions = (ROOT / "frontend/js/captions.js").read_text(encoding="utf-8")
-    for text in (media, JS, captions):
+    captions = _js_scope.unwrapped((ROOT / "frontend/js/captions.js").read_text(encoding="utf-8"))
+    # Dictation is in gesture-kit.js (moved from media.js, 2026-11-11, gzip budget).
+    dictation = (ROOT / "frontend/js/gesture-kit.js").read_text(encoding="utf-8")
+    for text in (dictation, JS, captions):
         assert "getUserMedia({ audio: true })" not in text
         assert "getUserMedia({ audio: micAudioConstraints() })" in text
     assert "enumerateDevices" in JS and "const MIC_TEST_MS = 3000;" in JS
     assert 'id="mic-settings-controls"' in HTML and 'id="meeting-mic-controls"' in HTML
-    settings = (ROOT / "frontend/js/settings-controls.js").read_text(encoding="utf-8")
+    settings = unwrapped((ROOT / "frontend/js/settings-controls.js").read_text(encoding="utf-8"))
     assert 'micControlsInto($("mic-settings-controls"))' in settings
 
 
@@ -145,7 +149,7 @@ def test_level_line_is_the_signal_and_still_with_reduced_motion():
     assert 'canvas.dataset.mode = still ? "meter" : "line";' in block
 
 
-CAPTIONS = (ROOT / "frontend/js/captions.js").read_text(encoding="utf-8")
+CAPTIONS = _js_scope.unwrapped((ROOT / "frontend/js/captions.js").read_text(encoding="utf-8"))
 
 
 def test_live_words_while_recording_come_from_the_captions_pipeline():

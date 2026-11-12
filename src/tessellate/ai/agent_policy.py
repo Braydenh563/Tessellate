@@ -1001,7 +1001,7 @@ MAX_TOOL_FAILURES = 3
 
 # How many confirm cards one destructive tool may put in front of the user in
 # a single turn. See the `parked` check in `run_agent`.
-MAX_PARKED_CONFIRMS = 2
+MAX_PARKED_CONFIRMS = 12
 
 TOOL_EXHAUSTED_NOTE = (
     "This tool has now failed several times in this turn with different "

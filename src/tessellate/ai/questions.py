@@ -146,6 +146,19 @@ def open_counts(session: Session, entry_ids: list[int]) -> dict[str, int]:
     return counts
 
 
+def _notes_for(session: Session, page: list) -> dict[int, Entry]:
+    """The notes a page of questions names: their own, their answers', and any answered by hand."""
+    wanted = {row.entry_id for row, _a, _s in page}
+    wanted |= {answer.entry_id for _r, answer, _s in page if answer is not None}
+    for row, _a, _s in page:
+        by_hand = _payload(row).get("answered_by_entry")
+        if by_hand:
+            wanted.add(int(by_hand))
+    if not wanted:
+        return {}
+    return {entry.id: entry for entry in session.scalars(select(Entry).where(Entry.id.in_(wanted))).all()}
+
+
 def listing(
     session: Session, *, state: str | None = None, limit: int = 50, offset: int = 0, entry_id: int | None = None
 ) -> dict:
@@ -176,15 +189,7 @@ def listing(
         counts[name] += 1
     chosen = [item for item in states if state is None or item[2] == state]
     page = chosen[offset : offset + limit]
-    wanted = {row.entry_id for row, _a, _s in page}
-    wanted |= {answer.entry_id for _r, answer, _s in page if answer is not None}
-    for row, _a, _s in page:
-        by_hand = _payload(row).get("answered_by_entry")
-        if by_hand:
-            wanted.add(int(by_hand))
-    notes = {
-        entry.id: entry for entry in session.scalars(select(Entry).where(Entry.id.in_(wanted))).all()
-    } if wanted else {}
+    notes = _notes_for(session, page)
     return {
         "items": [_as_json(row, answer, notes) for row, answer, _s in page],
         "total": len(chosen),
@@ -241,9 +246,9 @@ def set_state(session: Session, question: DerivedFact, state: str, entry_id: int
         payload["answered_at"] = utcnow().isoformat()
         asked_in = session.get(Entry, question.entry_id)
         if asked_in is not None:
-            from tessellate.entry import manager
+            from tessellate.entry import manager_links
 
-            manager.create_link(
+            manager_links.create_link(
                 session,
                 answering,
                 asked_in,

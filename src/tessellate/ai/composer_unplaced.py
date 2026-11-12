@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import realise, toolwords
+from tessellate.ai import composer_property, realise, toolwords
 
 #: A note, a notebook, "my ...": the person is asking about their own record,
 #: whose home is the notes (the web is a chip, never the first stop).
@@ -136,7 +136,7 @@ def about_the_person(message: str) -> bool:
 def unplaced(message: str) -> bool:
     """A message no reader placed and that asks nothing of the web: banter,
     slang, a bare word, an emoji. With no note to answer it, it is asked about."""
-    return bool((message or "").strip()) and not worthy(message) and not names_notes(message) and not about_the_person(message)
+    return bool((message or "").strip()) and not worthy(message) and not names_notes(message) and not about_the_person(message) and not composer_property.asked(message)
 
 
 def bare_word(message: str) -> str:
@@ -174,7 +174,70 @@ def clarify(message: str, *, web_on: bool, voice: str = "natural", seed: str = "
     return _pick(pool, f"unplaced|{seed}|{message}").format(what=realise.cut_title(" ".join(message.split()), 40))
 
 
-def chips(message: str, *, web_on: bool) -> list[str]:
-    """Two chips: the notes on it, then the web (when it is on) or what the app can do."""
+def chips(message: str, *, web_on: bool, previous: list[str] | None = None) -> list[str]:
+    """The notes on it, then the web (when it is on) or what the app can do;
+    after a turn, that turn's subject's own acts come first (INBOX 1729 c)."""
     what = realise.cut_title(" ".join(message.split()), 40)
-    return [f"Search my notes for {what}", f"Search the web for {what}" if web_on else "What can you do?"]
+    return [*(previous or [])[:2], f"Search my notes for {what}", f"Search the web for {what}" if web_on else "What can you do?"]
+
+
+#: Notes or the web? (INBOX 1696 s). Each side is read as a strength from 0 to 1
+#: and the person is asked only when both are real and within `CLOSE_BY`.
+CLOSE_BY = 0.12
+#: Below this a side is not a reading at all.
+_REAL = 0.45
+#: Per `note_rank.key` tier: the title is the subject, the note defines it, the
+#: title holds it; a note that only mentions it is `_MENTION` times its coverage.
+_TIER = (1.0, 0.95, 0.8)
+_MENTION = 0.6
+
+
+def web_reading(message: str) -> float:
+    """How far the message reads as a question for the web: 1 when it says so,
+    0.7 for a lookup shape, 0.8 when it also names a topic the web answers."""
+    if toolwords.asks_web(message):
+        return 1.0
+    if not lookup(message):
+        return 0.0
+    return 0.8 if _TOPIC.search(clean(message)) else 0.7
+
+
+def notes_reading(message: str, notes: list) -> float:
+    """How far the notes answer it: the best note's tier by its title, else the
+    share of the subject's stems its text holds."""
+    from tessellate.ai import note_rank
+
+    words = note_rank.subject(message)
+    stems = note_rank.stems_of(message)
+    if not stems:
+        return 0.0
+    best = 0.0
+    for note in notes or []:
+        tier = note_rank.key(note, words, stems)[0]
+        if tier < len(_TIER):
+            best = max(best, _TIER[tier])
+            continue
+        have = set(note_rank._stems(re.findall(r"[a-z0-9']+", note_rank._content(note).lower())))  # noqa: SLF001
+        best = max(best, _MENTION * len(set(stems) & have) / len(stems))
+    return best
+
+
+def torn_by(notes: float, web: float) -> bool:
+    """Both readings are real and close."""
+    return notes >= _REAL and web >= _REAL and abs(notes - web) <= CLOSE_BY
+
+
+def torn(message: str, notes: list, *, web_on: bool) -> bool:
+    """The message could be asked of the notes or of the web, and nothing says which.
+    Off or offline (`web_on` False) it is never asked: the notes answer."""
+    if not web_on or toolwords.asks_web(message) or names_notes(message) or about_the_person(message):
+        return False
+    return torn_by(notes_reading(message, notes), web_reading(message))
+
+
+def torn_chips(message: str) -> list[str]:
+    """The two sides as chips, on the subject in the person's words."""
+    from tessellate.ai import note_rank
+
+    what = " ".join(note_rank.subject(message)) or realise.cut_title(" ".join(message.split()), 40)
+    return [f"Search my notes for {what}", f"Search the web for {what}"]

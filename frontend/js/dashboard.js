@@ -4,7 +4,8 @@
 // functions (refreshActiveTab, switchTab, the appearance code). Two split
 // hazards, both a bare top-level reference resolving before this file loads:
 // the features-close wiring moved here beside its functions, and
-// ai-tools.js's applyPalette guards refreshArtForTheme with `typeof`.
+// ai-tools.js's applyPalette calls refreshArtForTheme unguarded, which holds
+// because applyAppearance now runs from settings.js's tail, after this file.
 // Left in app.js: tickClocks (Reminders uses it too), the tab-bar overflow
 // fade, safeMdSlice/notePreviewText/renderEmblem (shared), the Settings
 // appearance and persona code, and the AI Skills page.
@@ -293,7 +294,8 @@ function withDisplayName(phrase, punctuation = ".", appendName = true) {
 }
 
 function dashboardGreetingText(now = new Date()) {
-  return withDisplayName(fallbackGreetingPhrase(now), ".");
+  //: Name-free until the server says this greeting takes it (`ai/address.py`).
+  return withDisplayName(fallbackGreetingPhrase(now), ".", false);
 }
 
 // A cached AI greeting, refreshed once per time-block per day so it changes
@@ -523,14 +525,10 @@ async function renderDashSubmessage() {
     const n = stats.total_entries;
     bits.push(["notes", n === 0 ? "No notes yet" : `You have ${nounCount(n, "note")}`]);
   }
-  const due = (reminders || []).filter(
-    (r) => !r.done && new Date(r.due_at) <= new Date()
-  ).length;
-  if (due) bits.push(["reminders", `${nounCount(due, "reminder")} due`]);
-  else {
-    const open = (reminders || []).filter((r) => !r.done).length;
-    if (open) bits.push(["reminders", `${nounCount(open, "reminder")} coming up`]);
-  }
+  //: One count for every surface that says it (ai/due_summary.py, audit 2 G3).
+  const counted = dashGlanceFacts({ reminders }).find((f) => f.id === "due");
+  if (counted.today + counted.overdue) bits.push(["reminders", counted.say]);
+  else if (counted.later) bits.push(["reminders", `${nounCount(counted.later, "reminder")} coming up`]);
   if (stats && stats.per_day) {
     const streak = dashStreak(stats.per_day);
     if (streak > 1) bits.push(["streak", `${streak}-day capture streak`]);
@@ -539,7 +537,7 @@ async function renderDashSubmessage() {
     //: (avatars.js). Here since INBOX 436 took the stat strip that used to
     //: carry both calls off the first screen: this line reads the same figure.
     atlasStreak(streak);
-    nameMarkBuddyStreak(streak);
+    nameMarkBuddyStreak(streak, stats.total_entries);
   }
   //: A different pattern each day, not always the first (the owner, 2026-10-26:
   //: "I keep seeing this one pattern and nothing else").
@@ -615,13 +613,26 @@ function dashGlanceFacts({ reminders = [], stats = null, entries = [], now = new
   const byDue = (a, b) => new Date(a.due_at) - new Date(b.due_at);
   const open = (reminders || []).filter((r) => r && !r.done).sort(byDue);
   const today = open.filter((r) => new Date(r.due_at) < endOfDay);
-  const overdue = today.filter((r) => new Date(r.due_at) <= now).length;
+  //: **The one count of due reminders** (ai/due_summary.py is its twin): due today
+  //: when the day is today (a time earlier today is still today), overdue when it
+  //: is before today, later otherwise. The sub line and this tile both read it.
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const counted = { today: 0, overdue: 0, later: 0 };
+  for (const r of open) {
+    const at = new Date(r.due_at);
+    if (at < startOfDay) counted.overdue += 1;
+    else if (at < endOfDay) counted.today += 1;
+    else counted.later += 1;
+  }
+  const word = (n) => ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"][n] || String(n);
+  const say = [[counted.today, "due today"], [counted.overdue, "overdue"]].filter(([n]) => n).map(([n, what]) => `${word(n)} ${what}`).join(", ");
+  const overdue = counted.overdue;
   const next = open.find((r) => new Date(r.due_at) >= endOfDay);
   let dueHint = "No reminders set";
   if (today.length) {
     const first = today[0];
     const when = new Date(first.due_at);
-    dueHint = when <= now ? `${first.text}, overdue` : `${first.text} at ${time(when)}`;
+    dueHint = when < startOfDay ? `${first.text}, overdue` : `${first.text} at ${time(when)}`;
   } else if (next) {
     dueHint = `Next: ${next.text}, ${new Date(next.due_at).toLocaleDateString([], { weekday: "long" })}`;
   }
@@ -630,7 +641,9 @@ function dashGlanceFacts({ reminders = [], stats = null, entries = [], now = new
     icon: "ph:alarm",
     count: today.length,
     overdue,
-    label: today.length ? `${today.length} due today` : "Nothing due today",
+    label: today.length ? say.charAt(0).toUpperCase() + say.slice(1) : "Nothing due today",
+    ...counted,
+    say: say.charAt(0).toUpperCase() + say.slice(1),
     hint: dueHint,
     go: "reminders",
   };
@@ -835,19 +848,23 @@ function sizeDashWidgets() {
   //: as the grid goes `display: none`, every card measured 0px and was given
   //: `span 1`, and the next visit painted them stacked until it re-measured
   //: (layout shift 0.34). The grid's own fire on showing it measures it right.
-  if (!grid || (grid.checkVisibility && !grid.checkVisibility())) return;
-  const styles = getComputedStyle(grid);
-  const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
-  const rowGap = Number.parseFloat(styles.rowGap) || 0;
-  const cardGap = Number.parseFloat(styles.columnGap) || 16;
+  //: The class is the test, and the cards' own boxes are the rest: the visibility API needs a clean
+  //: style tree, so it paid the whole-page style recalc as a flush of its own (129 ms at 4x on a
+  //: switch to Notes, W25 D7; 34 to 46ms of boot, INBOX 1741). A grid that is not drawn measures
+  //: every card 0px, and that is the bail below, before any write.
+  if (!grid || grid.closest(".hidden")) return;
   const cards = [...grid.querySelectorAll(".dash-widget")];
   //: **One layout a call, not three** (INBOX 1591: the dashboard's first reads were 85ms of
   //: forced layout inside the notes response). The grid is `align-items: start`, so a card is
   //: its content's height whatever span it holds (identical at 1440, 1000, 700 and 390): the
   //: release to `span 1` before the read only dirtied the layout the read then paid for. And
-  //: the heatmap's refit reads its end, so it goes with the other reads, before any write.
+  //: reads go before any write.
   const heights = cards.map((card) => card.getBoundingClientRect().height);
-  for (const heat of grid.querySelectorAll(".heatmap")) heat.dispatchEvent(new Event("dash-refit"));
+  if (!heights.some(Boolean)) return;
+  const styles = getComputedStyle(grid);
+  const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
+  const rowGap = Number.parseFloat(styles.rowGap) || 0;
+  const cardGap = Number.parseFloat(styles.columnGap) || 16;
   cards.forEach((card, i) => {
     card.style.gridRowEnd = sizeDashWidgetSpan(heights[i], rowUnit, rowGap, cardGap);
   });
@@ -869,7 +886,9 @@ function watchDashWidgets() {
     queued = true;
     requestAnimationFrame(() => {
       queued = false;
-      sizeDashWidgets();
+      //: Not behind the veil (INBOX 1741): the grid is hidden while its cards fill and `renderDashboard`'s settle
+      //: sizes it once as it lifts; a pass per fill was 5 or 6 forced layouts at boot.
+      if (!grid.classList.contains("dash-filling")) sizeDashWidgets();
     });
   });
   //: Observing fires once for every card, so the first sizing is the observer's, a frame on,
@@ -1181,7 +1200,7 @@ function dashboardMarkSeed() {
   //: persona" only shows Atlas while Atlas is that persona.
   if (choice === "atlas") return "Atlas";
   if (choice === "persona") {
-    return prefsCache?.dashboard_persona || document.getElementById("persona-select")?.value || "Atlas";
+    return prefsCache?.dashboard_persona || document.getElementById("persona-select")?.value || personaDisplayName(prefsCache?.active_persona) || "Atlas";
   }
   return null;
 }
@@ -1238,7 +1257,7 @@ const DASH_MARK_CHOICES = [
 ];
 
 function dashMarkMenu(x, y) {
-  const now = typeof appearancePref === "function" ? appearancePref("dash-mark", "logo") : "logo";
+  const now = appearancePref("dash-mark", "logo");
   const items = DASH_MARK_CHOICES.map(([value, label]) => ({
     label: `${now === value ? "ph:check" : "ph:dot-outline"} ${label}`,
     title: `Show ${label.toLowerCase()} here`,
@@ -1364,7 +1383,14 @@ function quickLinkButton(link, tint = "") {
   setLabel(hint, link.hint);
   text.append(label, hint);
   button.append(icon, text);
-  button.addEventListener("click", () => link.run());
+  //: A tile whose code is fetched on the first press (the Diagram builder: the Library bundle and its own files, seconds on
+  //: a slow machine) shows the working ring and takes no second press until it has opened (the owner, 2026-11-09).
+  button.addEventListener("click", () => {
+    const pending = link.run();
+    if (typeof pending?.then !== "function") return;
+    const ring = setTimeout(() => setBusy(button, true), 150);
+    pending.then(null, () => {}).then(() => (clearTimeout(ring), setBusy(button, false)));
+  });
   return button;
 }
 
@@ -1830,36 +1856,33 @@ async function renderDashboard({ refresh = false } = {}) {
     header.appendChild(title);
     if (dashEditMode) {
       const controls = document.createElement("span");
-      controls.className = "entry-actions";
-      // There used to be two width buttons here, side by side: this one and
-      // the "▭ Wide" below, writing to `wide` and the legacy `sizes` map
-      // respectively. dashLayout() only falls back to `sizes` when `wide` is
-      // empty, so the legacy button appeared to work exactly once and then
-      // silently stopped: and until then the row showed two controls doing
-      // the same job. One control, one place it's stored.
+      //: **One line, whatever the zoom** (owner, 2026-11-11: "make sure the
+      //: wrapping and ui issues arent an issue anywhere else from zoom or
+      //: resolution"). Remove, Wide, Move earlier, Move later and Drag sat
+      //: side by side at 293px, so 34 of 35 heads wrapped at 1366 (32px head
+      //: became 66) and the row ran 5px past the card. The row-actions
+      //: recipe (DESIGN.md): the first action stays, the rest fold into the
+      //: head's ⋯, and Remove and the grip are their glyphs (with the words
+      //: "Remove", 10 of 35 titles were cut at 1366), so the title gives way
+      //: with an ellipsis only when long (`.dash-edit-actions`,
+      //: 01-forms-settings.css).
+      controls.className = "entry-actions dash-edit-actions";
+      title.title = title.textContent.trim();
+      // There used to be two width buttons here, side by side: one writing
+      // to `wide` and one to the legacy `sizes` map. dashLayout() only falls
+      // back to `sizes` when `wide` is empty, so the legacy button appeared to
+      // work exactly once and then silently stopped. One control, one place
+      // it's stored.
       controls.appendChild(
-        smallButton(hidden ? "ph:plus Add" : "ph:x Remove", hidden ? "Add this widget to the dashboard" : "Remove this widget from the dashboard", async () => {
+        smallButton(hidden ? "ph:plus" : "ph:x", hidden ? "Add this widget to the dashboard" : "Remove this widget from the dashboard", async () => {
           await toggleDashWidgetHidden(name);
           renderDashboard();
         })
       );
-      if (!hidden) controls.appendChild(
-        smallButton(
-          isWide ? "ph:rows Narrow" : "ph:arrows-out-line-horizontal Wide",
-          isWide ? "Show in one column" : "Span two columns",
-          async () => {
-            await toggleDashWidgetWide(name);
-            renderDashboard();
-          }
-        )
-      );
-      //: **Reordering without a mouse.** Drag-to-reorder is the only way this
-      //: grid could be arranged, and HTML5 drag-and-drop is unreachable by
-      //: keyboard, unusable with a screen reader and awkward on a trackpad, 
-      //: which is the whole of "a better way to manage and rearrange widgets"
-      //: for anyone who does not want to drag a card across a page. Two
-      //: buttons do the same job, exactly, and are also the faster way to move
-      //: one widget three places up.
+      //: **Reordering without a mouse.** HTML5 drag-and-drop is unreachable
+      //: by keyboard, unusable with a screen reader and awkward on a
+      //: trackpad, so Move earlier and Move later do the same job from the
+      //: head's ⋯, and are the faster way to move one widget three places up.
       if (!hidden) {
         const at = layout.order.indexOf(name);
         const move = (delta) => async () => {
@@ -1872,27 +1895,30 @@ async function renderDashboard({ refresh = false } = {}) {
           //: Focus follows the widget, so a second press moves the same card
           //: again rather than whatever landed under the pointer.
           setTimeout(() => {
-            document
-              .querySelector(`[data-widget="${name}"] .dash-move-${delta < 0 ? "up" : "down"}`)
-              ?.focus();
+            document.querySelector(`[data-widget="${name}"] .dash-edit-actions .kebab-opener`)?.focus();
           }, 60);
         };
-        const up = smallButton("ph:arrow-up", "Move this widget earlier", move(-1));
-        up.classList.add("dash-move-up");
-        up.disabled = at <= 0;
-        const down = smallButton("ph:arrow-down", "Move this widget later", move(1));
-        down.classList.add("dash-move-down");
-        down.disabled = at >= layout.order.length - 1;
-        controls.append(up, down);
+        const items = [
+          {
+            label: isWide ? "ph:rows Narrow" : "ph:arrows-out-line-horizontal Wide",
+            title: isWide ? "Show in one column" : "Span two columns",
+            run: async () => {
+              await toggleDashWidgetWide(name);
+              renderDashboard();
+            },
+          },
+        ];
+        if (at > 0) items.push({ label: "ph:arrow-up Move earlier", title: "Move this widget earlier", run: move(-1) });
+        if (at < layout.order.length - 1) items.push({ label: "ph:arrow-down Move later", title: "Move this widget later", run: move(1) });
+        controls.appendChild(kebabMenu(items, "Widget layout options"));
       }
       const handle = document.createElement("span");
       handle.className = "drag-handle";
-      //: An icon and a word like its Remove and Wide neighbours, not a "≡"
-      //: glyph that sat above their baseline (reported at release).
+      handle.title = "Drag to move";
       const grip = document.createElement("i");
-      grip.className = "ph ph-dots-six-vertical ph-lead";
+      grip.className = "ph ph-dots-six-vertical";
       grip.setAttribute("aria-hidden", "true");
-      handle.append(grip, " Drag");
+      handle.append(grip);
       controls.appendChild(handle);
       header.appendChild(controls);
     }
@@ -1944,7 +1970,7 @@ async function renderDashboard({ refresh = false } = {}) {
   //: The opening curtain waits for this (`curtainShell`), 1.2s at most.
   //: Every visit, not only the first: a switch back to the dashboard redrew
   //: the widgets the same way, in view (0.26 on 300 notes, measured).
-  const settled = (window.dashSettled = Promise.race([Promise.allSettled(drawing), new Promise((r) => setTimeout(r, 1200))]));
+  const settled = (window.dashSettled = Promise.race([Promise.allSettled(drawing), new Promise((resolve) => setTimeout(function dashSettleTimeout() { resolve(); }, 1200))]));
   //: Placed a frame on (INBOX 1591): it reads the grid's box, and read here it laid the whole
   //: page out inside the script that delivered the notes (46ms at 4x); in the frame callback
   //: that layout is the one the frame was going to do anyway. Two frames on, the settle takes
@@ -1955,6 +1981,7 @@ async function renderDashboard({ refresh = false } = {}) {
   }, 1);
   settled.then(() => afterFrames(() => {
     if (window.dashSettled !== settled) return;
+    sizeDashWidgets();
     grid.classList.remove("dash-filling");
     dashFillingSkeletonDone(outline);
   }));
@@ -2012,7 +2039,7 @@ function dashFillingSkeleton(grid, count) {
   //: filling in had left the layout dirty, and each read laid the page out.
   const follow = () => {
     if (!outline.isConnected) return;
-    afterFrames(() => setTimeout(() => {
+    afterFrames(() => setTimeout(function dashSkeletonFollowTask() {
       if (!outline.isConnected) return;
       outline.style.translate = `0 ${grid.offsetTop - top0}px`;
       setTimeout(follow, 80);
@@ -2746,7 +2773,7 @@ async function renderDigestWidget(outer) {
   //: one line in view read as the whole answer. Now "This week" labels it, the caption is a muted
   //: footnote, and a click scrolls the card to the week.
   const weekParts = (text) => {
-    const source = "From your notes, no AI.";
+    const source = "From your notes.";
     const trimmed = String(text || "").trimStart();
     return trimmed.startsWith(source) ? { words: trimmed.slice(source.length).trimStart(), source } : { words: trimmed, source: "" };
   };
@@ -2842,7 +2869,7 @@ async function renderQuickCaptureWidget(body) {
   bar.className = "capture-bar";
   bar.setAttribute("role", "group");
   bar.setAttribute("aria-label", "Add a note");
-  const row = $("capture-bar-row").cloneNode(true);
+  const row = SURFACES.peek("notes", "capture-bar-row").cloneNode(true);
   //: No ids on the copy (two bars on one page): the card finds a bar by class.
   for (const el of [row, ...row.querySelectorAll("[id]")]) el.removeAttribute("id");
   bar.append(row);
@@ -2938,54 +2965,33 @@ async function renderHeatmapWidget(body) {
   //: (below) rather than to the oldest day, so the crop this replaces is
   //: not missed on first paint.
   function paint() {
-    grid.replaceChildren();
     const counts = data.counts;
     const start = new Date(`${data.start}T00:00:00`);
-    // Pad so each column is a whole week starting on Sunday.
+    // Pad so each column is a whole week starting on Sunday, and the last one is whole too.
     const lead = start.getDay();
-    for (let i = 0; i < lead; i++) {
-      const blank = document.createElement("span");
-      blank.className = "heat-cell heat-blank";
-      grid.appendChild(blank);
-    }
-    counts.forEach((count, index) => {
+    const cells = [];
+    for (let i = 0; i < Math.ceil((lead + counts.length) / 7) * 7; i++) {
       const cell = document.createElement("span");
-      // Five buckets, scaled against the busiest day so quiet notebooks
-      // still show contrast.
-      const level = count === 0 ? 0 : Math.min(4, Math.ceil((count / data.busiest) * 4));
-      cell.className = `heat-cell heat-${level}`;
-      const day = new Date(start);
-      day.setDate(day.getDate() + index);
-      cell.title = `${day.toLocaleDateString()}, ${nounCount(count, "note")}`;
-      grid.appendChild(cell);
-    });
+      const index = i - lead;
+      if (index < 0 || index >= counts.length) cell.className = "heat-cell heat-blank";
+      else {
+        const count = counts[index];
+        // Five buckets, scaled against the busiest day so quiet notebooks still show contrast.
+        cell.className = `heat-cell heat-${count === 0 ? 0 : Math.min(4, Math.ceil((count / data.busiest) * 4))}`;
+        const day = new Date(start);
+        day.setDate(day.getDate() + index);
+        cell.title = `${day.toLocaleDateString()}, ${nounCount(count, "note")}`;
+      }
+      cells.push(cell);
+    }
+    //: **Opens at today by CSS alone** (INBOX 1578, then 1741). The grid is `direction: rtl`, so a
+    //: scroll box starts at its right edge, and its columns run right to left: the weeks are
+    //: appended newest first, which draws them oldest to newest, left to right. The end was read
+    //: from the last cell's rect (a layout read of 13k nodes, 70ms at 4x) and re-taken on every
+    //: refit; nothing reads it now, and a reader who scrolls away is simply left there.
+    for (let w = cells.length - 7; w >= 0; w -= 7) grid.append(...cells.slice(w, w + 7));
   }
-
-  //: **Opens at today, and stays there** (INBOX 1578: it opened at the far
-  //: left of an empty year). The grid runs oldest to newest, so the data is at
-  //: the right. `scrollLeft = scrollWidth` in a frame after the build set
-  //: nothing: the grid is `content-visibility: auto`, and until its cells are
-  //: laid out its `scrollWidth` reads its box (304 of 701 at 1440), so the
-  //: write clamped to 0. The end is read from the last cell's rect instead
-  //: (that read lays the cells out), and re-taken when the grid is laid out
-  //: (the observer, which also fires when a hidden tab shows), when it stops
-  //: being skipped, and on a resize, for as long as the reader has not
-  //: scrolled away from the end.
-  let atEnd = true;
-  function toEnd() {
-    const last = grid.lastElementChild;
-    if (!atEnd || !last) return;
-    grid.scrollLeft += last.getBoundingClientRect().right - grid.getBoundingClientRect().right;
-  }
-  grid.addEventListener("scroll", () => {
-    atEnd = grid.scrollWidth - grid.clientWidth - grid.scrollLeft < 2;
-  }, { passive: true });
-  grid.addEventListener("contentvisibilityautostatechange", toEnd);
-  //: The dashboard's own card observer tells it (`sizeDashWidgets`), so no
-  //: observer of its own.
-  grid.addEventListener("dash-refit", toEnd);
   paint();
-  requestAnimationFrame(toEnd);
 
   const legend = document.createElement("div");
   legend.className = "heat-legend muted";
@@ -3138,10 +3144,10 @@ function paintFadedNotes(body, items) {
     const title = document.createElement("button");
     title.type = "button";
     title.className = "linklike faded-title";
-    title.textContent = item.title || "Untitled note";
+    title.textContent = noteNamePlain(item.title || "") || "Untitled note";
     //: One line, ellipsised, so the full title is the tooltip; the reason
     //: line beneath is what the row is for.
-    title.title = `${item.title || "Untitled note"}: open in the Notes tab`;
+    title.title = `${title.textContent}: open in the Notes tab`;
     title.addEventListener("click", () => flashEntry(item.id));
     main.appendChild(title);
 
@@ -3618,18 +3624,20 @@ async function renderFocusTimerWidget(body) {
 // which handlers happen to be safe.
 //: Edit layout is a row of the dock's menu; Done is the edit line's own
 //: button, the one way out of the mode, so it is the only place this id is.
-$("dash-edit").addEventListener("click", async () => {
-  const leaving = dashEditMode;
-  dashEditMode = !dashEditMode;
-  //: The button just pressed is hidden with its line: the focus goes back to
-  //: the menu it came from rather than to the page's body, once the render
-  //: has rebuilt that menu (it replaces the opener).
-  await renderDashboard();
-  if (leaving) $("dash-more")?.querySelector("button")?.focus();
-  //: The edit line is plain text (audit 1031 N28: a hidden `role=status` is read
-  //: out when it later shows, and 25 such regions exist at once); the one
-  //: status region says what began.
-  else announce("Editing layout. Drag a card to move it, make it wide or narrow, or remove it. Done ends it.");
+onSurface("notes", () => {
+  $("dash-edit").addEventListener("click", async () => {
+    const leaving = dashEditMode;
+    dashEditMode = !dashEditMode;
+    //: The button just pressed is hidden with its line: the focus goes back to
+    //: the menu it came from rather than to the page's body, once the render
+    //: has rebuilt that menu (it replaces the opener).
+    await renderDashboard();
+    if (leaving) $("dash-more")?.querySelector("button")?.focus();
+    //: The edit line is plain text (audit 1031 N28: a hidden `role=status` is read
+    //: out when it later shows, and 25 such regions exist at once); the one
+    //: status region says what began.
+    else announce("Editing layout. Drag a card to move it, make it wide or narrow, or remove it. Done ends it.");
+  });
 });
 
 // Widget picker modal (roadmap §26): a dedicated surface alongside "Edit
@@ -4335,11 +4343,17 @@ function renderPaceWidget(body) {
   body.appendChild(caption);
 }
 
-//: Recordings a killed tab left: the server finishes them at each start and
-//: meetings.js says so once. Hooked here, after agent-activity.js's own hook, because
+//: After the app has painted: the agent log stream, then the wheel-scroll wiring
+//: (the strips built at run time, the Library sub-tabs and editor toolbars, are in
+//: the DOM by then; idempotent per element, `data-wheel-x`). Then recordings a
+//: killed tab left: the server finishes them at each start and meetings.js says
+//: so once. Hooked here, not in agent-activity.js: that file is wrapped whole and
+//: a `window.startApp =` there is a second owner of app.js's global (audit 1028 S66);
 //: app.js and the files up to agent-activity.js sit under a gzip total (tests/test_static_compression.py).
 const startAppBeforeRecover = window.startApp;
 window.startApp = async function () {
   if (startAppBeforeRecover) await startAppBeforeRecover.apply(this, arguments);
+  streamAgentLogs();
+  wireHorizontalWheelScrolling();
   apiJson("/recordings/recover", { method: "POST", silent: true }).then((r) => r.length && ensureModule("meetings").then(() => noteRecoveredRecordings(r))).catch(() => {});
 };

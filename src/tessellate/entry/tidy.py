@@ -47,6 +47,8 @@ from sqlalchemy import func, or_, select
 from tessellate.core import events
 from tessellate.core.database import AuditLog, Entry, EntryLink, Reminder, plain_reason, utcnow
 from tessellate.entry import link_facts, link_wording, manager
+from tessellate.entry import manager_categories
+from tessellate.entry import manager_links
 from tessellate.repo import tags as tags_repo
 
 logger = logging.getLogger("tessellate.tidy")
@@ -282,6 +284,18 @@ def _rows_weak_links(session, level: str) -> list[dict]:  # noqa: ANN001
     return rows
 
 
+def _tag_states(payload) -> tuple[dict, dict]:  # noqa: ANN001
+    """The after and before states of an audit payload, each {} when absent."""
+    payload = payload if isinstance(payload, dict) else {}
+    after = payload.get("after") if isinstance(payload.get("after"), dict) else {}
+    before = payload.get("before") if isinstance(payload.get("before"), dict) else {}
+    return after, before
+
+
+def _new_tags(after: dict, before: dict) -> set[str]:
+    return {str(t).casefold() for t in (after.get("tags") or [])} - {str(t).casefold() for t in (before.get("tags") or [])}
+
+
 def _auto_added(session) -> dict[int, dict[str, str]]:  # noqa: ANN001
     """{entry id: {tag casefold: actor}} for tags another actor put on a note
     whose tags no person has changed since."""
@@ -294,20 +308,17 @@ def _auto_added(session) -> dict[int, dict[str, str]]:  # noqa: ANN001
         ).order_by(AuditLog.id)
     ).all()
     for row_id, entry_id, actor, payload, _action in rows:
-        payload = payload if isinstance(payload, dict) else {}
-        after = payload.get("after") if isinstance(payload.get("after"), dict) else {}
+        after, before = _tag_states(payload)
         if "tags" not in after:
             continue
-        before = payload.get("before") if isinstance(payload.get("before"), dict) else {}
         if actor == ACTOR:
             continue  # Tidy's own removal or undo says nothing about who chose a tag
         if (actor or "user") in PERSON:
             # The person changed this note's tags: everything earlier is theirs now.
             added.pop(entry_id, None)
             continue
-        new = {str(t).casefold() for t in (after.get("tags") or [])} - {str(t).casefold() for t in (before.get("tags") or [])}
         mine = added.setdefault(entry_id, {})
-        for tag in new:
+        for tag in _new_tags(after, before):
             mine[tag] = (actor, row_id)
     return {eid: {tag: who for tag, (who, _id) in tags.items()} for eid, tags in added.items() if tags}
 
@@ -586,11 +597,8 @@ def _rows_duplicates(session, _level: str) -> list[dict]:  # noqa: ANN001
     return rows
 
 
-def _rows_short_notes(session, _level: str) -> list[dict]:  # noqa: ANN001
-    entries = [e for e in _live_entries(session) if not e.pinned and is_short(e.content or "")]
-    if not entries:
-        return []
-    ids = [e.id for e in entries]
+def _tied_ids(session, ids: list[int]) -> set[int]:  # noqa: ANN001
+    """Of `ids`, the notes with a link or a reply thread; the ids a link names beside them come too."""
     linked = {
         i for pair in session.execute(
             select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(
@@ -598,11 +606,19 @@ def _rows_short_notes(session, _level: str) -> list[dict]:  # noqa: ANN001
             )
         ) for i in pair
     }
-    threaded = set(session.scalars(select(Entry.parent_id).where(Entry.parent_id.in_(ids))))
+    return linked | set(session.scalars(select(Entry.parent_id).where(Entry.parent_id.in_(ids))))
+
+
+def _rows_short_notes(session, _level: str) -> list[dict]:  # noqa: ANN001
+    entries = [e for e in _live_entries(session) if not e.pinned and is_short(e.content or "")]
+    if not entries:
+        return []
+    ids = [e.id for e in entries]
+    tied = _tied_ids(session, ids)
     files = manager.documents_for_entries_bulk(session, ids)
     rows = []
     for entry in entries:
-        if entry.id in linked or entry.id in threaded or entry.parent_id or files.get(entry.id):
+        if entry.id in tied or entry.parent_id or files.get(entry.id):
             continue
         shown = " ".join((entry.content or "").split())
         rows.append(_row(f"note:{entry.id}", shown or "Empty note", f"{len(shown)} characters, no links or files", "Move to the bin", [entry.id]))
@@ -786,6 +802,25 @@ def _apply_move(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa: ANN00
     return len(undo), {"moved": undo}
 
 
+def _merged_tags(entries: list) -> list[str]:
+    tags: list[str] = []
+    for entry in entries:
+        for tag in _tags(entry):
+            if tag not in tags:
+                tags.append(tag)
+    return tags
+
+
+def _merged_content(entries: list) -> str:
+    merged = "\n\n---\n\n".join((e.content or "").strip() for e in entries)
+    #: The text of the longest note when one already holds all the others'
+    #: words (the usual near-duplicate: one note and its longer retelling).
+    longest = max(entries, key=lambda e: len(e.content or ""))
+    if all(set((e.content or "").split()) <= set((longest.content or "").split()) for e in entries):
+        merged = longest.content
+    return merged
+
+
 def _apply_merge_notes(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa: ANN001
     undo = []
     for row in chosen:
@@ -794,20 +829,10 @@ def _apply_merge_notes(session, chosen: list[dict]) -> tuple[int, dict]:  # noqa
         if any(e is None or e.is_deleted or e.is_private for e in entries):
             continue
         keeper = entries[0]
-        tags: list[str] = []
-        for entry in entries:
-            for tag in _tags(entry):
-                if tag not in tags:
-                    tags.append(tag)
+        tags = _merged_tags(entries)
         undo.append({"keeper": keeper.id, "content": keeper.content, "tags": _tags(keeper), "binned": ids[1:]})
         manager.record_revision(session, keeper)
-        merged = "\n\n---\n\n".join((e.content or "").strip() for e in entries)
-        #: The text of the longest note when one already holds all the others'
-        #: words (the usual near-duplicate: one note and its longer retelling).
-        longest = max(entries, key=lambda e: len(e.content or ""))
-        if all(set((e.content or "").split()) <= set((longest.content or "").split()) for e in entries):
-            merged = longest.content
-        manager.update_entry(session, keeper, content=merged, tags=tags)
+        manager.update_entry(session, keeper, content=_merged_content(entries), tags=tags)
         for entry in entries[1:]:
             manager.soft_delete_entry(session, entry)
     return len(undo), {"merged": undo}
@@ -837,7 +862,7 @@ def _apply_merge_categories(session, chosen: list[dict]) -> tuple[int, dict]:  #
             for topic in taxonomy.name_topics(fold.name):
                 correction = learning.record(session, kind="alias", subject={"topic": topic}, from_value=fold.name, to_value=keep.name)
                 aliases.append(correction.id)
-            manager.rename_category(session, fold.id, keep.name)
+            manager_categories.rename_category(session, fold.id, keep.name)
         merged += 1
     return merged, {"moved": moved, "aliases": aliases}
 
@@ -853,7 +878,7 @@ def _apply_rename_categories(session, chosen: list[dict]) -> tuple[int, dict]:  
         new = row["change"][len("Rename to "):]
         entries = [e.id for e in session.scalars(select(Entry).where(Entry.category_id == category.id))]
         renamed.append({"id": category.id, "from": category.name, "to": new, "entries": entries})
-        manager.rename_category(session, category.id, new)
+        manager_categories.rename_category(session, category.id, new)
     return len(renamed), {"renamed": renamed}
 
 
@@ -983,7 +1008,7 @@ def _undo_unlinked(session, undo: dict) -> int:  # noqa: ANN001
         source, target = session.get(Entry, item["source"]), session.get(Entry, item["target"])
         if source is None or target is None:
             continue
-        made = manager.create_link(
+        made = manager_links.create_link(
             session, source, target, reason=item["reason"], link_type=item["link_type"],
             origin=item["origin"], reason_confidence=item["reason_confidence"],
         )
@@ -1043,7 +1068,7 @@ def _undo_renamed(session, undo: dict) -> int:  # noqa: ANN001
     for item in undo.get("renamed", []):
         category = session.get(Category, item["id"])
         if category is not None and category.name == item["to"]:
-            manager.rename_category(session, category.id, item["from"])
+            manager_categories.rename_category(session, category.id, item["from"])
             restored += 1
     return restored
 
@@ -1214,7 +1239,7 @@ def respecify_all(workspace_id: str = "default", chunk: int = 200) -> dict:
     undoable run. Idempotent (a named link no longer matches), so a resumed
     job repeats nothing. Returns {"named", "stopped", "undo_id"}."""
     from tessellate.core import deps
-    from tessellate.core.deps import impersonate_workspace
+    from tessellate.core.database import impersonate_workspace
 
     from tessellate.core import jobruns
 

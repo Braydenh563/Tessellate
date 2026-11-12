@@ -66,9 +66,9 @@ def _topic_text(db: Session, obj: WhiteboardObject) -> str:
     if not text and data.get("ref_id"):
         entry = db.get(Entry, data["ref_id"])
         if entry is not None and not entry.is_private:
-            from tessellate.entry import manager
+            from tessellate.entry import manager_text
 
-            text = (manager.extract_title(manager.readable_content(entry)) or "").strip()
+            text = (manager_text.extract_title(manager_text.readable_content(entry)) or "").strip()
     return text[:200]
 
 
@@ -82,7 +82,7 @@ def _node_or_404(db: Session, board_id: int, node_id: int) -> WhiteboardObject:
 def _candidates(db: Session, board_id: int, query: str, skip_titles: set[str]) -> list[tuple[Entry, str, str]]:
     """The notes the topic's words find, best first: not private, not a board,
     not already a topic on this map, not this map's own note."""
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
     from tessellate.search import engine
 
     try:
@@ -107,8 +107,8 @@ def _candidates(db: Session, board_id: int, query: str, skip_titles: set[str]) -
         entry = db.get(Entry, hit.ref_id)
         if entry is None or entry.is_deleted or entry.is_private or entry.is_board:
             continue
-        text = manager.readable_content(entry)
-        title = (manager.extract_title(text) or text.strip().split("\n")[0] or "Untitled").strip()[:100]
+        text = manager_text.readable_content(entry)
+        title = (manager_text.extract_title(text) or text.strip().split("\n")[0] or "Untitled").strip()[:100]
         if title.casefold() in skip_titles:
             continue
         body = " ".join(text.replace(title, "", 1).split())[:NOTE_CHARS]
@@ -144,28 +144,20 @@ def _ask_model(topic: str, parent: str, rows: list[tuple[Entry, str, str]]) -> l
     return out
 
 
-@router.post("/boards/{board_id}/nodes/{node_id}/suggest")
-def suggest_branches(board_id: int, node_id: int, db: Session = Depends(get_session)) -> dict:
-    """Up to five children for this topic, each grounded in one of the
-    person's notes, and nothing written."""
-    node = _node_or_404(db, board_id, node_id)
-    topic = _topic_text(db, node)
-    if not topic:
-        raise HTTPException(status_code=422, detail="Give the topic some words first: they are what the notes are found by.")
-    parent = None
-    if node.parent_id is not None:
-        up = db.get(WhiteboardObject, node.parent_id)
-        parent = _topic_text(db, up) if up is not None else None
-    children = db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == node.id)).all()
-    have = {_topic_text(db, child).casefold() for child in children} | {topic.casefold()}
-    rows = _candidates(db, board_id, f"{topic} {parent or ''}".strip(), have)
-    if not rows:
-        return {"topic": topic, "suggestions": [], "source": "notebook", "reason": "nothing"}
+def _parent_topic(db: Session, node: WhiteboardObject) -> str | None:
+    if node.parent_id is None:
+        return None
+    up = db.get(WhiteboardObject, node.parent_id)
+    return _topic_text(db, up) if up is not None else None
+
+
+def _pick_branches(topic: str, parent: str, rows: list) -> tuple[list[tuple[str, int]], str, str]:
+    """The model's picks when it answers, else the notes' own titles."""
     picked: list[tuple[str, int]] = []
     source, reason = "notebook", "offline"
     if deps.get_ollama().is_running():
         try:
-            picked = _ask_model(topic, parent or "", rows)
+            picked = _ask_model(topic, parent, rows)
             reason = "unusable"
         except Exception:
             logging.getLogger("tessellate.whiteboard").warning("Branch suggestions: the model failed", exc_info=True)
@@ -174,6 +166,10 @@ def suggest_branches(board_id: int, node_id: int, db: Session = Depends(get_sess
             source, reason = "model", "model"
     if not picked:
         picked = [(title, i) for i, (_, title, _) in enumerate(rows)]
+    return picked, source, reason
+
+
+def _dedupe_branches(picked: list[tuple[str, int]], rows: list, have: set[str]) -> list[dict]:
     out, seen = [], set(have)
     for text, index in picked:
         if not text or text.casefold() in seen:
@@ -183,6 +179,25 @@ def suggest_branches(board_id: int, node_id: int, db: Session = Depends(get_sess
         out.append({"text": text, "note_id": entry.id, "note_title": title})
         if len(out) >= SUGGESTIONS:
             break
+    return out
+
+
+@router.post("/boards/{board_id}/nodes/{node_id}/suggest")
+def suggest_branches(board_id: int, node_id: int, db: Session = Depends(get_session)) -> dict:
+    """Up to five children for this topic, each grounded in one of the
+    person's notes, and nothing written."""
+    node = _node_or_404(db, board_id, node_id)
+    topic = _topic_text(db, node)
+    if not topic:
+        raise HTTPException(status_code=422, detail="Give the topic some words first: they are what the notes are found by.")
+    parent = _parent_topic(db, node)
+    children = db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == node.id)).all()
+    have = {_topic_text(db, child).casefold() for child in children} | {topic.casefold()}
+    rows = _candidates(db, board_id, f"{topic} {parent or ''}".strip(), have)
+    if not rows:
+        return {"topic": topic, "suggestions": [], "source": "notebook", "reason": "nothing"}
+    picked, source, reason = _pick_branches(topic, parent or "", rows)
+    out = _dedupe_branches(picked, rows, have)
     return {"topic": topic, "suggestions": out, "source": source, "reason": reason}
 
 
@@ -196,9 +211,9 @@ EXPAND_MAX = 12
 
 
 def _title_of(text: str) -> str:
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
-    return (manager.extract_title(text) or text.strip().split("\n")[0] or "Untitled").strip()[:100]
+    return (manager_text.extract_title(text) or text.strip().split("\n")[0] or "Untitled").strip()[:100]
 
 
 def _refs_on_map(db: Session, board_id: int) -> set[int]:
@@ -227,10 +242,10 @@ def _note_behind(db: Session, node: WhiteboardObject) -> Entry | None:
 
 def _heading_suggestions(entry: Entry, title: str, have: set[str]) -> list[dict]:
     from tessellate.ai.utilities import outline
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     seen, out = set(have) | {title.casefold()}, []
-    for heading in outline(manager.readable_content(entry), max_level=4):
+    for heading in outline(manager_text.readable_content(entry), max_level=4):
         words = heading["text"].strip()
         if not words or words.casefold() in seen:
             continue
@@ -243,7 +258,7 @@ def _heading_suggestions(entry: Entry, title: str, have: set[str]) -> list[dict]
 
 def _link_suggestions(db: Session, entry: Entry, board_id: int, have: set[str]) -> list[dict]:
     """Linked notes, ones this note points at before ones that point at it."""
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     links = relations_repo.touching(db, entry.id)
     ids = [link.target_entry_id for link in links if link.source_entry_id == entry.id]
@@ -255,7 +270,7 @@ def _link_suggestions(db: Session, entry: Entry, board_id: int, have: set[str]) 
             continue
         if other.is_deleted or other.is_private or other.is_board:
             continue
-        title = _title_of(manager.readable_content(other))
+        title = _title_of(manager_text.readable_content(other))
         if title.casefold() in seen:
             continue
         seen.add(title.casefold())
@@ -274,9 +289,9 @@ def expand_from_note(board_id: int, node_id: int, db: Session = Depends(get_sess
             status_code=422,
             detail="Only a topic that is one of your notes can be expanded from it. Use Branches from my notes for any other topic.",
         )
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
-    title = _title_of(manager.readable_content(entry))
+    title = _title_of(manager_text.readable_content(entry))
     children = db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == node.id)).all()
     have = {_topic_text(db, child).casefold() for child in children}
     found = _heading_suggestions(entry, title, have)
@@ -304,7 +319,7 @@ def add_branches(board_id: int, node_id: int, body: BranchesBody, db: Session = 
     `created` event per topic, and the note each came from in its note."""
     from tessellate.api.routes_whiteboard import MAP_COL, MAP_ROW, WhiteboardObjectData, _object_to_out
     from tessellate.core.events import object_state as _object_state
-    from tessellate.entry import manager
+    from tessellate.entry import manager_text
 
     parent = _node_or_404(db, board_id, node_id)
     siblings = db.scalars(select(WhiteboardObject).where(WhiteboardObject.parent_id == parent.id)).all()
@@ -314,8 +329,8 @@ def add_branches(board_id: int, node_id: int, body: BranchesBody, db: Session = 
         if item.note_id is not None:
             entry = db.get(Entry, item.note_id)
             if entry is not None and not entry.is_deleted and not entry.is_private:
-                text = manager.readable_content(entry)
-                source = (manager.extract_title(text) or text.strip().split("\n")[0] or "Untitled").strip()[:100]
+                text = manager_text.readable_content(entry)
+                source = (manager_text.extract_title(text) or text.strip().split("\n")[0] or "Untitled").strip()[:100]
         data = WhiteboardObjectData(content=item.text.strip(), note=f'From your note "{source}".' if source else None)
         obj = WhiteboardObject(
             board_id=board_id,

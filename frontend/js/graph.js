@@ -170,7 +170,7 @@ function graphNodeRadius(node) {
 
 function graphLayout() {
   const saved = prefs.get("graph-layout", null);
-  return ["force", "tree", "radial", "arc", "treemap"].includes(saved) ? saved : "force";
+  return ["force", "tree", "radial", "arc", "treemap", "tessellation"].includes(saved) ? saved : "force";
 }
 
 //: **Tree, Radial and Arc compute every position, so nothing in them moves.**
@@ -234,6 +234,9 @@ function setGraphPhysicsEnabled(layoutKind) {
   //: other than force"): the worker's shapes are sets of forces, and Tree,
   //: Radial and Arc place every note by rule. Dimmed with its reason, the
   //: same as the sliders, rather than hidden.
+  //: The Tessellation view's Look row (Cells or Hexes) shows under that layout only.
+  const tess = $("graph-tess-row");
+  if (tess) tess.hidden = layoutKind !== "tessellation";
   const shape = $("graph-shape");
   if (shape) {
     shape.disabled = !applies;
@@ -336,7 +339,7 @@ function replyLoops(node, byId) {
 //: width and height with no padding between them, so the areas stay exact; the
 //: gap between two categories is drawn, not laid out (`gcDrawTreemap`). Each
 //: note keeps its cell's size so its dot never outgrows it.
-function layoutTreemap(nodes, width, height) {
+function layoutTreemap(nodes, width, height, info) {
   const byCategory = new Map();
   for (const node of nodes) {
     if (!byCategory.has(node.category)) byCategory.set(node.category, []);
@@ -344,20 +347,48 @@ function layoutTreemap(nodes, width, height) {
   }
   const done = { nodes: [], links: [], radial: false, arc: false, vertical: false, treemap: [] };
   if (!nodes.length) return done;
+  //: **A tile's area follows its links** (Q31): a note weighs 1 plus its
+  //: links, capped at 12 so one hub cannot take the page; no `info` weighs
+  //: every note 1, which is the plain count.
+  const weightOf = (note) => 1 + Math.min((info && info.degree && info.degree.get(note.id)) || 0, 12);
   const root = d3
     .hierarchy({
       children: [...byCategory].map(([category, notes]) => ({ category, children: notes.map((note) => ({ note })) })),
     })
-    .sum((d) => (d.note ? 1 : 0))
+    .sum((d) => (d.note ? weightOf(d.note) : 0))
     .sort((a, b) => b.value - a.value);
+  //: A category header is one line (18) when the name fits the rectangle's
+  //: width and two (32) when it must wrap at a space or end on a whole word and
+  //: an ellipsis; a name is never split inside a word (INBOX 1744). The width
+  //: of a character is a guess at 12px semibold; `fitHeaderLabel` measures for
+  //: real when it draws.
+  function treemapHeaderH(name, count, width) {
+    const room = Math.max(24, width - 12);
+    return (name || "Unfiled").length * 7 <= room ? 18 : 32;
+  }
+  const heads = new Map();
   d3
     .treemap()
     .size([width, height])
     .tile(d3.treemapSquarify)
     .paddingInner((d) => (d.depth === 0 ? 0 : 2))
-    .paddingTop((d) => (d.depth === 1 ? 18 : 0))(root);
+    .paddingTop((d) => {
+      if (d.depth !== 1) return 0;
+      const head = treemapHeaderH(d.data.category, d.children.length, d.x1 - d.x0);
+      heads.set(d.data.category, head);
+      return head;
+    })(root);
   for (const group of root.children) {
-    done.treemap.push({ category: group.data.category, count: group.value, x0: group.x0, y0: group.y0, x1: group.x1, y1: group.y1 });
+    done.treemap.push({
+      category: group.data.category,
+      count: group.children.length,
+      weight: group.value,
+      head: heads.get(group.data.category) || 18,
+      x0: group.x0,
+      y0: group.y0,
+      x1: group.x1,
+      y1: group.y1,
+    });
     for (const leaf of group.children) {
       const node = leaf.data.note;
       node.x = (leaf.x0 + leaf.x1) / 2;
@@ -374,8 +405,9 @@ function layoutTreemap(nodes, width, height) {
   return done;
 }
 
-function layoutHierarchy(nodes, kind, width, height) {
-  if (kind === "treemap") return layoutTreemap(nodes, width, height);
+function layoutHierarchy(nodes, kind, width, height, info) {
+  if (kind === "treemap") return layoutTreemap(nodes, width, height, info);
+  if (kind === "tessellation") return gcTess.layout(nodes, width, height, info, prefs.get("graph-tess-look", null));
   // Build parent → children from the notes themselves.
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const groups = new Map();
@@ -1950,6 +1982,8 @@ function initGraphKeyboard() {
       ["INPUT", "TEXTAREA", "SELECT"].includes(event.target?.tagName) ||
       event.target?.isContentEditable;
     if (typingTarget) return;
+    //: A button inside a popup (Private, Add to map) keeps its own Space and Enter (INBOX 1736: the map ate them to open a note).
+    if (event.target?.closest?.(".graph-popup")) return;
     if (!graphNodesRef?.length) return;
     const current = graphNodeById(graphKeyboardId) || graphNodesRef[0];
 
@@ -1985,6 +2019,30 @@ function initGraphKeyboard() {
       return;
     }
 
+    //: INBOX 1744: C steps through the Map's and Tessellation's categories
+    //: (Shift+C back), Enter selects the lit one's notes, Escape lets it go.
+    const regions = gcTab.tree && gcTab.tree.treemap;
+    if ((event.key === "c" || event.key === "C") && !event.ctrlKey && !event.metaKey && !event.altKey && regions && regions.length) {
+      event.preventDefault();
+      const at = regions.findIndex((r) => r.category === gcTab.kbCat);
+      const next = regions[(at + (event.shiftKey ? -1 : 1) + regions.length) % regions.length];
+      gcTab.kbCat = next.category;
+      gcRequestDraw(gcTab, true);
+      announce(`${next.category || "Unfiled"}, ${nounCount(next.count, "note")}. Enter selects them, Escape leaves.`);
+      return;
+    }
+    if (gcTab.kbCat != null && (event.key === "Enter" || event.key === " " || event.key === "Escape")) {
+      event.preventDefault();
+      const category = gcTab.kbCat;
+      gcTab.kbCat = null;
+      if (event.key !== "Escape") gcCat.select(category, gcTab, event.shiftKey);
+      else gcRequestDraw(gcTab, true);
+      return;
+    }
+    if (gcTab.kbCat != null) {
+      gcTab.kbCat = null;
+      gcRequestDraw(gcTab, true);
+    }
     const directions = {
       ArrowRight: "right",
       ArrowLeft: "left",
@@ -2087,6 +2145,17 @@ function graphFitFrame(box, width, height, insets = null, over = null) {
 // Zoom/pan so every node fits with a margin (Wave N).
 function fitGraphToView(svg, zoomBehavior, nodes, width, height, instant = false) {
   if (!nodes.length) return;
+  //: **A computed layout fits the way it first opened** (the owner,
+  //: 2026-11-11, Tessellation: the fit "is too zoomed in and cuts off at the
+  //: edges"). The button, 0 and the menu framed the dots, so a treemap's or a
+  //: tessellation's headers and outer cells fell off the view; the whole map
+  //: goes through `frameTree` and its rectangles. A subset (a group) still
+  //: frames its own dots.
+  const whole = typeof gcTab !== "undefined" && gcTab.svg === svg ? gcTab : null;
+  if (whole?.tree && nodes.length >= whole.nodes.length) {
+    frameTree(svg, zoomBehavior, gcTreeFrameNodes(whole.tree, whole.nodes), width, height, whole.tree.radial, whole.tree.arc, instant);
+    return;
+  }
   // Reported: fit-to-view "zooms out like crazy so you only see the generic
   // cluster blobs". It bounded only the node *centres*, and its scale had no
   // floor (`graphFitFrame` has one). The box is each dot's own extent; a
@@ -2330,10 +2399,7 @@ function graphSearchGo(dir) {
   found.at = at;
   found.current = node.id;
   //: The suggestions list sits over the map's left side; a jump is the end of typing.
-  if (typeof searchSuggest !== "undefined" && searchSuggest?.input === box) {
-    searchSuggest.quiet = true;
-    fillSearchSuggest();
-  }
+  if (typeof searchSuggestHold === "function" && searchSuggestHold(box)) fillSearchSuggest();
   announce(`Match ${at + 1} of ${found.list.length}: ${node.preview}`);
   graphPanToNode(node);
   gcRequestDraw(gcTab, true);
@@ -2395,8 +2461,9 @@ function renderGraphPopupHeader(entry, node) {
   //: that note. `entry.title` when the AI (or the owner) gave it one, the
   //: first line otherwise, which is what every other note surface shows.
   const firstLine = noteNamePlain(entry.content);
+  //: A heading's own colon ("Ice Breakers:") is the note's punctuation, not its name (owner, 2026-11-10).
   titleEl.textContent =
-    entry.title || firstLine.slice(0, 80).trim() || node.category || "Note";
+    (entry.title || firstLine.slice(0, 80).trim()).replace(/[\s:;,.–-]+$/, "") || node.category || "Note";
   //: The title is ellipsised to one line now, so the whole of it has to be
   //: reachable some other way: hover is the cheapest, and it is what every
   //: other truncated label in this app already does.
@@ -2412,7 +2479,7 @@ function renderGraphPopupHeader(entry, node) {
   const hasConfidence = typeof entry.ai_confidence === "number" && entry.ai_confidence > 0 && !entry.user_filed;
   confidence.classList.toggle("hidden", !hasConfidence);
   if (hasConfidence) {
-    confidence.textContent = `${entry.ai_confidence}%`;
+    confidence.textContent = `${entry.ai_confidence}% sure`;
     confidence.title = `Atlas's estimate that this is the right category: ${entry.ai_confidence}%`;
   }
 
@@ -2430,7 +2497,7 @@ function graphPopupShows(node) {
 
 async function openGraphPopup(event, node) {
   event.stopPropagation();
-  if (graphPopupId !== node.id) keepGraphPopupEdit();
+  if (graphPopupId !== node.id && !(await graphPopupMayLeave())) return;
   graphPopupId = node.id;
   graphLate.popupDragged = false;
   //: The open note wears the focus ring (graph-canvas.js `openId`).
@@ -2943,8 +3010,14 @@ function graphPanelRoom() {
   //: `floor` is the top of what can be seen: the map's box may start under the
   //: app's top bar (a scrolled page), and anything placed there is covered by
   //: it (INBOX 1630, "the graph popup gets covered by the top bar").
-  const head = document.getElementById("top-bar");
-  const floor = head && head.offsetParent !== null ? Math.max(0, head.getBoundingClientRect().bottom - box.top) : 0;
+  //: The graph's own dock lies over the map's top too (the owner, 2026-11-08: "the top of popup
+  //: cards can be cut off by the top bar in the graph on hover"): a hover card 25px under it at
+  //: 1440 and 65px at 390, so the floor is the lower of the two bars' feet.
+  let floor = 0;
+  for (const bar of [document.getElementById("top-bar"), document.querySelector('.dock[data-dock-name="graph"]')]) {
+    const at = bar && bar.offsetParent !== null ? bar.getBoundingClientRect() : null;
+    if (at && at.top < box.top + box.height / 2) floor = Math.max(floor, at.bottom - box.top);
+  }
   return { box, room: Math.max(0, bottom - box.top), floor };
 }
 
@@ -2955,6 +3028,8 @@ function graphPanelRoom() {
 const graphLate = {
   newAt: null,
   popupResize: null,
+  //: The one Discard changes card, while it is up (`graphPopupMayLeave`).
+  leaveAsk: null,
   //: The popup's own placement (INBOX 1413): `popupDragged` once the head has
   //: moved it (it then stays where put until closed), `popupDrag` the live gesture.
   popupDragged: false,
@@ -3026,7 +3101,8 @@ function placeGraphPopup() {
   // Never taller than the room it has, beyond that its body scrolls inside
   // it and the action dock stays pinned at its foot (the CSS's sticky row).
   popup.style.maxHeight = `${graphPopupCap(room, graphLate.popupDragged)}px`;
-  const size = popup.getBoundingClientRect();
+  //: Its own size, not its growing box (`ui-grow`): see placeGraphNewNote.
+  const size = { width: popup.offsetWidth, height: popup.offsetHeight };
   const maxLeft = Math.max(8, box.width - size.width - 8);
   const maxTop = Math.max(floor + 8, room - size.height - 8);
   let spot = null;
@@ -3228,7 +3304,7 @@ async function showTopicInGraph(entryId) {
     toast("That note's topic is not on the graph right now: a filter or the view may be hiding it.", "info");
     return;
   }
-  closeGraphPopup();
+  if (!(await closeGraphPopup())) return;
   gcOpenTopic(topic);
   const members = gcTopicMembers(topic);
   if (members.length) fitGraphToView(gcTab.svg, gcTab.zoom, members, gcTab.dims.w, gcTab.dims.h);
@@ -3291,7 +3367,8 @@ function renderGraphPopupInfo(entry) {
   const links = (entry.links || []).length;
   const views = entry.access_count || 0;
   const parts = [
-    new Date(entry.created_at).toLocaleDateString(),
+    //: "Created 3 Aug 2026", not "03/08/2026": a numeric date reads two ways, and the edit beside it says "7 Oct".
+    `Created ${shortDate(entry.created_at)}`,
     nounCount(links, "link"),
     nounCount(views, "view"),
   ];
@@ -3363,9 +3440,9 @@ function graphPopupActionList(entry) {
       word: "Open",
       title: "Open this note in the Notes tab",
       primary: true,
-      run: () => {
+      run: async () => {
         const id = entry.id;
-        closeGraphPopup();
+        if (!(await closeGraphPopup())) return;
         flashEntry(id);
       },
     },
@@ -3384,7 +3461,7 @@ function graphPopupActionList(entry) {
         // Reuse the existing highlight pass by searching for these ids.
         graphHighlightIds = new Set(related.map((r) => r.id).concat(entry.id));
         applyGraphHighlight();
-        closeGraphPopup();
+        if (!(await closeGraphPopup())) return;
         toast(`Highlighted ${related.length} similar note${related.length === 1 ? "" : "s"}.`);
       },
     },
@@ -3400,8 +3477,8 @@ function graphPopupActionList(entry) {
       title: tracingFrom
         ? "Trace to here: find how this note connects to the one you started from"
         : "Trace from here: start tracing a path from this note",
-      run: () => {
-        closeGraphPopup();
+      run: async () => {
+        if (!(await closeGraphPopup())) return;
         setTraceEnd(tracingFrom ? "to" : "from", entry.id);
         if (!tracingFrom) toast("Now pick the other note, use Trace to here.");
       },
@@ -3423,11 +3500,11 @@ function graphPopupActionList(entry) {
       word: "Focus on this note",
       short: "Focus",
       title: "Focus: show only this note and its neighbours",
-      run: () => {
+      run: async () => {
+        if (!(await closeGraphPopup())) return;
         graphFocusModeId = entry.id;
         recordTabVisit("graph", `focus:${entry.id}`);
         $("graph-focus-clear")?.classList.remove("hidden");
-        closeGraphPopup();
         renderGraph();
         toast("Focus Mode active. Showing local neighborhood.");
       },
@@ -3459,8 +3536,8 @@ function graphPopupActionList(entry) {
       icon: "link",
       word: "Link",
       title: "Link: start linking this note to another",
-      run: () => {
-        closeGraphPopup();
+      run: async () => {
+        if (!(await closeGraphPopup())) return;
         beginOrCompleteLink(entry);
         toast("Now click another note on the map to link them.");
       },
@@ -3471,8 +3548,8 @@ function graphPopupActionList(entry) {
       icon: "alarm",
       word: "Remind me",
       title: "Remind me about this note",
-      run: () => {
-        closeGraphPopup();
+      run: async () => {
+        if (!(await closeGraphPopup())) return;
         switchTab("reminders");
         $("reminder-text").value = `Follow up: ${stripFrontmatter(entry.content).trim().slice(0, 60)}`;
         setDue(defaultDueValue()); // keeps the visible date/time fields in step
@@ -3494,7 +3571,7 @@ function graphPopupActionList(entry) {
         }).catch((e) => toast(e.message, true));
         if (flipped) pushEntryPutUndo(entry.id, was ? "Removed from Favourites" : "Added to Favourites", { pinned: was }, { pinned: !was });
         toast(entry.pinned ? "Removed from Favourites." : "Added to Favourites.");
-        closeGraphPopup();
+        if (!(await closeGraphPopup())) return;
         await loadEntries().catch(() => {});
         renderGraph();
       },
@@ -3508,7 +3585,7 @@ function graphPopupActionList(entry) {
       danger: true,
       run: async () => {
         if (!(await confirmDialog("Move this note to the bin?"))) return;
-        closeGraphPopup();
+        if (!(await closeGraphPopup())) return;
         try {
           await binNoteWithUndo(entry);
         } catch (e) {
@@ -3518,6 +3595,22 @@ function graphPopupActionList(entry) {
       },
     }
   );
+  //: Show captions (K18, the board's pref): only a note that carries a saved (`/media/`) picture has a caption to show.
+  if (graphPopupMediaRefs(entry).some((r) => r.image && r.url.startsWith("/media/"))) {
+    const on = prefs.get("wb-show-captions", null) === "1";
+    list.splice(list.findIndex((a) => a.key === "trace") + 1, 0, {
+      key: "captions",
+      group: "read",
+      icon: "text-aa",
+      word: on ? "Hide picture captions" : "Show picture captions",
+      title: "Draw a saved picture's caption as one line under it, on boards, maps, graph popups and note cards",
+      run: () => {
+        prefs.set("wb-show-captions", on ? "0" : "1");
+        if (typeof imageLayout === "function") imageLayout.paintCaptions();
+        renderGraphPopupActions(entry);
+      },
+    });
+  }
   return list;
 }
 
@@ -3579,8 +3672,8 @@ try {
 }
 
 //: The keyboard stays on the map: Esc, or Close from inside the popup, used to leave focus on <body> (audit 1029 G19).
-function closeGraphPopup(returnFocus = false) {
-  keepGraphPopupEdit();
+async function closeGraphPopup(returnFocus = false) {
+  if (!(await graphPopupMayLeave())) return false;
   const held = returnFocus || $("graph-popup").contains(document.activeElement);
   graphPopupId = null;
   graphLate.popupDragged = false;
@@ -3589,6 +3682,7 @@ function closeGraphPopup(returnFocus = false) {
   $("graph-popup").classList.remove("graph-popup-away");
   clearGraphKeyboardFocus();
   if (held) $("graph-box")?.focus({ preventScroll: true });
+  return true;
 }
 
 //: **Keyboard focus ends when the keyboard leaves.** `focusGraphNode` is
@@ -3615,10 +3709,11 @@ $("graph-box")?.addEventListener("pointerdown", () => {
 
 //: **One guard for every way out of the popup** (audit G2: Escape, the X, a
 //: click on the map and a click on another note all dropped unsaved typing).
-//: `closeGraphPopup` and `openGraphPopup` (another note) both call this first.
-//: A dirty popup is saved on the way out, as the document editor autosaves, and
-//: Ctrl+Z undoes it (`pushEntryPutUndo`); a save that fails hands the text back
-//: on the clipboard instead of dropping it.
+//: The owner, 2026-11-11 (INBOX 1769): "I didnt even save it, I just clicked
+//: off the popup and it saved ... it should have canceled unless I pressed
+//: save". So leaving saves nothing: a dirty popup asks first, Discard changes
+//: or Keep editing, and only the Save button writes. `closeGraphPopup` and
+//: `openGraphPopup` (another note) both ask here first.
 function graphPopupIsDirty() {
   if (graphPopupId === null || $("graph-popup").classList.contains("hidden")) return false;
   if (graphPopupClean.content === "Loading…") return false;
@@ -3627,12 +3722,24 @@ function graphPopupIsDirty() {
   );
 }
 
-function keepGraphPopupEdit() {
-  if (!graphPopupIsDirty()) return;
-  saveGraphPopup({ leaving: true });
+//: True when the popup may go: nothing changed, or the person chose Discard
+//: changes. Two ways out at once share the one card.
+async function graphPopupMayLeave() {
+  if (!graphPopupIsDirty()) return true;
+  if (!graphLate.leaveAsk) {
+    graphLate.leaveAsk = confirmDialog("Discard your changes to this note?", {
+      confirmLabel: "Discard changes",
+      cancelLabel: "Keep editing",
+    }).finally(() => {
+      graphLate.leaveAsk = null;
+    });
+  }
+  const leave = await graphLate.leaveAsk;
+  if (!leave) $("graph-popup-content")?.focus({ preventScroll: true });
+  return leave;
 }
 
-async function saveGraphPopup({ leaving = false } = {}) {
+async function saveGraphPopup() {
   if (graphPopupId === null) return;
   const id = graphPopupId;
   const status = $("graph-popup-status");
@@ -3653,7 +3760,6 @@ async function saveGraphPopup({ leaving = false } = {}) {
     });
     pushEntryPutUndo(id, "Edited a note on the map", { content: was.content, tags: wasTags }, { content, tags });
     if (typeof offerWikiRename === "function") offerWikiRename(id, saved);
-    if (leaving) toast("Saved your edit to the note.");
     //: The popup may have moved on to another note while the request ran.
     if (graphPopupId === id) {
       status.textContent = "Saved.";
@@ -3664,18 +3770,10 @@ async function saveGraphPopup({ leaving = false } = {}) {
     }
     await loadEntries().catch(() => {});
     renderGraph(); // content/tags may change what the map shows
-    if (!leaving) {
-      setTimeout(() => {
-        if (graphPopupId === id) closeGraphPopup();
-      }, 600);
-    }
+    setTimeout(() => {
+      if (graphPopupId === id) closeGraphPopup();
+    }, 600);
   } catch (error) {
-    if (leaving) {
-      toastAction(`Couldn't save your edit: ${error.message}`, "Copy text", () => {
-        navigator.clipboard?.writeText(content).catch(() => {});
-      });
-      return;
-    }
     status.textContent = error.message;
     status.classList.add("error");
   }
@@ -3688,8 +3786,8 @@ async function saveGraphPopup({ leaving = false } = {}) {
 
 let graphNewLinkFrom = null; // note id the new one should link to, if any
 
-function openGraphNewNote(event, linkFrom = null) {
-  closeGraphPopup();
+async function openGraphNewNote(event, linkFrom = null) {
+  if (!(await closeGraphPopup())) return;
   graphNewLinkFrom = linkFrom;
   const popup = $("graph-new");
   if (popup.classList.contains("hidden")) graphLate.newOpener = document.activeElement;
@@ -3703,6 +3801,8 @@ function openGraphNewNote(event, linkFrom = null) {
     ? "This note will be linked to the one you grew it from."
     : "It joins the map as soon as you add it.";
   popup.classList.remove("hidden");
+  //: The lock is Capture's (quick-note.js): each opening starts as Settings' "New notes start private" says.
+  ensureModule("quickNote").then(() => createNoteSafely.lock.sync($("graph-new-private")));
   graphLate.newAt = event ? { x: event.clientX, y: event.clientY } : null;
   placeGraphNewNote();
   watchGraphPopupSize(popup, placeGraphNewNote);
@@ -3722,7 +3822,11 @@ function placeGraphNewNote() {
   // Save/Close/Tags controls rendered below the fold with nothing to
   // scroll them into view).
   popup.style.maxHeight = `${Math.max(120, room - 16)}px`;
-  const size = popup.getBoundingClientRect();
+  //: Its own size, not its box on screen: it opens with `ui-grow` (scale 0.94
+  //: to 1), so a rect read mid-grow is up to 6% short and no resize follows a
+  //: scale to place it again. Opened at 1280x720 it was placed from 405px of
+  //: its 424 and hung 11px past the map (wrap/zoom sweep, 2026-11-11).
+  const size = { width: popup.offsetWidth, height: popup.offsetHeight };
   // Centre it when there's no click position (toolbar button).
   const rawX = graphLate.newAt ? graphLate.newAt.x - box.left + 12 : (box.width - size.width) / 2;
   const rawY = graphLate.newAt ? graphLate.newAt.y - box.top + 12 : 60;
@@ -3758,7 +3862,7 @@ async function saveGraphNewNote() {
     //: are (INBOX 434): the map draws the note at once, wherever it lands.
     const created = await apiJson("/entries", {
       method: "POST",
-      body: JSON.stringify({ content, tags, defer_filing: true, inline_tags: true }),
+      body: JSON.stringify({ content, tags, defer_filing: true, inline_tags: true, ...createNoteSafely.lock?.ask($("graph-new-private")) }),
     });
     if (created.filing_state === "pending") watchFiling(created);
     pushEntryCreateUndo(created, "Added a note to the map");
@@ -3955,14 +4059,13 @@ document.addEventListener("visibilitychange", () => {
 function graphMinimapChildren(group, count, tag, className) {
   const kids = group.children;
   while (kids.length > count) group.lastElementChild.remove();
+  //: **Made in one parse, not one by one** (W26, 2,000 notes: the first paint
+  //: made about 1,300 elements one at a time and was a 47 ms task).
+  //: An SVG group parses its own markup as SVG, so the whole run of missing
+  //: elements is one string and one parse.
   if (kids.length < count) {
-    const fragment = document.createDocumentFragment();
-    for (let i = kids.length; i < count; i++) {
-      const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
-      if (className) el.setAttribute("class", className);
-      fragment.appendChild(el);
-    }
-    group.appendChild(fragment);
+    const one = `<${tag}${className ? ` class="${className}"` : ""}></${tag}>`;
+    group.insertAdjacentHTML("beforeend", one.repeat(count - kids.length));
   }
   return kids;
 }
@@ -4510,6 +4613,8 @@ function graphCaptureView() {
   const transform = graphSvg ? d3.zoomTransform(graphSvg.node()) : null;
   return {
     layout: prefs.get("graph-layout", null) || "force",
+    //: The Tessellation's Look rides with the layout it belongs to (INBOX 1744).
+    tessLook: prefs.get("graph-tess-look", null) === "hexes" ? "hexes" : "cells",
     colour: prefs.get("graph-colour", null) || "",
     hiddenCategories: [...graphHiddenCategories],
     hiddenKeys: [...graphHiddenKeys],
@@ -4579,6 +4684,12 @@ function graphApplyView(view) {
   // without this function needing to know which `set()` call that will be.
   graphPendingViewPositions =
     view.positions && Object.keys(view.positions).length ? view.positions : null;
+  //: Before the layout's change event, which lays the cells out with it.
+  if (view.tessLook === "cells" || view.tessLook === "hexes") {
+    prefs.set("graph-tess-look", view.tessLook);
+    const look = $("graph-tess-look");
+    if (look) look.value = view.tessLook;
+  }
   prefs.set("graph-layout", view.layout);
   if (view.colour) prefs.set("graph-colour", view.colour);
   //: The layout is a list (INBOX 670; it was a radio group, which `set()` on
@@ -4760,8 +4871,8 @@ for (const prefix of ["focus", "pane"]) {
       prefs.set(box.id, box.type === "checkbox" ? (box.checked ? "1" : "0") : box.value);
       if (prefix === "focus") {
         if (graphFocusModeId) renderGraph();
-      } else if (typeof renderGraphPane === "function" && graphPaneShownId != null) {
-        renderGraphPane(graphPaneShownId);
+      } else if (typeof graphPaneRerender === "function") {
+        graphPaneRerender();
       }
     });
   }
@@ -4907,6 +5018,17 @@ $("graph-fullscreen")?.addEventListener("click", toggleGraphFullscreen);
   });
 })();
 
+// Q31: the Tessellation view's Look. Remembered; a change re-lays the cells out.
+(() => {
+  const look = $("graph-tess-look");
+  if (!look) return;
+  look.value = prefs.get("graph-tess-look", null) === "hexes" ? "hexes" : "cells";
+  look.addEventListener("change", () => {
+    prefs.set("graph-tess-look", look.value);
+    renderGraph();
+  });
+})();
+
 $("graph-curved")?.addEventListener("change", (event) => {
   prefs.set("graph-curved", event.target.checked ? "1" : "0");
   //: The layout keeps dots clear of the lines as drawn (the worker's
@@ -5005,6 +5127,7 @@ function graphSyncSimilarityRow() {
 // knows.
 const GRAPH_DEFAULTS = {
   layout: "force",
+  "graph-tess-look": "cells",
   "graph-colour": "category",
   "graph-size": "connections",
   "graph-gravity": "50",
@@ -5252,3 +5375,141 @@ function openGraphControlsSheet(opener) {
     },
   });
 }
+
+//: The graph tab's controls, wired when this file loads (the tab's first open), not from a boot script.
+onSurface("graph", () => {
+  //: **The concept-map door, in the tab people look for it in.** Reported: "the
+  //: concept map feature is there in the graph but I have no clue how to use it,
+  //: it isnt a labeled feature and is it even there actually??" It was real and
+  //: it was three levels away -- Library, then a sub-tab called Boards & maps,
+  //: then "+ Create", then "New concept map". This tab is already the map of
+  //: your notes; the only difference is that this one is drawn for you. So the
+  //: counterpart gets a labelled button here that lands on the maps themselves.
+  //: Awaited: the sub-tab's handler is library.js's, fetched on the Library's
+  //: first visit, and a press before it arrived landed on the All view
+  //: (tests/test_new_document_opens_new.py).
+  $("graph-concept-maps")?.addEventListener("click", async () => {
+    await switchTab("library");
+    document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
+    // The sub-tab click can leave the last board open on the canvas; a button
+    // called "Mind maps" has to arrive at the list of them.
+    wbShowBoardsLanding();
+  });
+  $("graph-refresh").addEventListener("click", () => {
+    graphHighlightIds = null; // a refresh clears any "similar notes" spotlight
+    renderGraph();
+  });
+  $("graph-export-png")?.addEventListener("click", exportGraphPng);
+  $("graph-similarity").addEventListener("change", renderGraph);
+  $("graph-entities")?.addEventListener("change", renderGraph);
+  $("graph-documents")?.addEventListener("change", renderGraph);
+  $("graph-maps")?.addEventListener("change", renderGraph);
+  $("graph-options-toggle").addEventListener("click", (event) => {
+    // The click must not reach the document listener below, which would read
+    // the panel it has just opened as a click outside it and close it again.
+    event.stopPropagation();
+    if (window.matchMedia(PHONE_TABS).matches) {
+      if (graphSheetClose) graphSheetClose();
+      else openGraphControlsSheet(event.currentTarget);
+      return;
+    }
+    setGraphOptionsOpen($("graph-options").classList.contains("hidden"));
+  });
+  // Trace (§9), folded away the same way Options is (§37F): it is a mode you
+  // step into to ask one question, not a strip worth drawing on every visit.
+  // Closing it does not clear an active trace: the path stays drawn on the map
+  // itself, the same as Options' sliders keep their values while hidden.
+  $("graph-trace-toggle").addEventListener("click", () => {
+    const open = $("graph-trace").classList.contains("hidden");
+    setTracePanelOpen(open);
+    if (open && !graphSheetClose) setGraphOptionsOpen(false);
+  });
+  $("graph-focus-clear").addEventListener("click", () => {
+    graphFocusModeId = null;
+    recordTabVisit("graph", null);
+    $("graph-focus-clear").classList.add("hidden");
+    renderGraph();
+    toast("Exited Focus Mode.");
+  });
+  $("graph-highlight-clear").addEventListener("click", () => {
+    graphHighlightIds = null;
+    applyGraphHighlight();
+    toast("Highlight cleared.");
+  });
+  //: The trace strip's X leaves trace mode, strip and result both, the same
+  //: as Escape: it used to be `clearTrace()`, which kept the mode on and only
+  //: reset the two ends, under a tooltip that said it left (INBOX 421 d).
+  $("graph-trace-clear").addEventListener("click", () => setTracePanelOpen(false));
+  // The legend's own collapse: asked for twice: "the categories toggle line
+  // needs to be collapsible or redesigned." A fixed row taken from the
+  // canvas whether or not anyone reads it; collapsing it reclaims that row
+  // entirely. Persisted like the graph's other view preferences
+  // (graph-colour, right above) rather than reset every visit.
+  (() => {
+    const row = document.querySelector(".graph-legend-row");
+    const toggle = $("graph-legend-toggle");
+    if (!row || !toggle) return;
+    const apply = (collapsed) => {
+      row.classList.toggle("legend-collapsed", collapsed);
+      toggle.setAttribute("aria-expanded", !collapsed);
+      toggle.title = collapsed ? "Show the legend" : "Hide the legend";
+      toggle.setAttribute("aria-label", toggle.title);
+      // A menu item, not the bare caret it was when it sat in the strip: the
+      // dock's View menu (Phase 8) names what each row does, and a row that is
+      // only an arrow names nothing.
+      setLabel(toggle, collapsed ? "ph:eye Show legend" : "ph:eye-slash Hide legend");
+    };
+    apply(prefs.get("graphLegendCollapsed", null) === "1");
+    toggle.addEventListener("click", () => {
+      const collapsed = !row.classList.contains("legend-collapsed");
+      apply(collapsed);
+      prefs.set("graphLegendCollapsed", collapsed ? "1" : "0");
+    });
+  })();
+  // What the colours mean, remembered like the layout is, it is a property of
+  // how you read your notebook, not of one visit.
+  $("graph-colour").addEventListener("change", (event) => {
+    prefs.set("graph-colour", event.target.value);
+    renderGraph();
+  });
+  // What the sizes mean (INBOX 430), remembered the same way.
+  $("graph-size").addEventListener("change", (event) => {
+    prefs.set("graph-size", event.target.value);
+    renderGraph();
+  });
+  $("graph-hide-orphans").addEventListener("change", renderGraph);
+  // Labels toggle just flips a class, no need to rebuild the whole map.
+  $("graph-labels").addEventListener("change", (e) => {
+    $("graph-box").classList.toggle("graph-labels-hidden", !e.target.checked);
+    // The canvas renderer reads the tickbox in its own draw (a label is drawn or
+    // it is not: there is no layer to fade), so it needs one more frame.
+    if (typeof gcRequestDraw === "function") gcRequestDraw();
+    // The layer's positions are skipped while it is hidden (see graph.js's tick
+    // handler: it is one <g> per note, transformed ~300 times a settle, and
+    // moving something invisible is work nobody can see). A settled simulation
+    // has no further ticks, so turning them back on has to reposition them here
+    // or the names sit detached from their notes until something redraws.
+    graphCatchUpLabels();
+  });
+  // Node popup: edit a note in place on the map.
+  $("graph-popup-close").addEventListener("click", () => closeGraphPopup());
+  $("graph-popup-save").addEventListener("click", () => saveGraphPopup());
+  // "Open in Notes" now lives in the popup's action row (renderGraphPopupActions).
+  // Clicking empty canvas dismisses the popups.
+  $("graph-svg").addEventListener("click", () => {
+    closeGraphPopup();
+    closeGraphNewNote();
+  });
+  // Grow the map: double-click empty space to add a note right there.
+  $("graph-svg").addEventListener("dblclick", (event) => {
+    if (event.target.closest(".graph-node")) return; // node dblclick pins it
+    openGraphNewNote(event);
+  });
+  $("graph-add-node").addEventListener("click", () => openGraphNewNote(null));
+  $("graph-new-close").addEventListener("click", closeGraphNewNote);
+  $("graph-new-save").addEventListener("click", saveGraphNewNote);
+  $("graph-new-private").addEventListener("click", async (e) => (await ensureModule("quickNote")) && createNoteSafely.lock.flip(e.currentTarget));
+  $("graph-new-content").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) saveGraphNewNote();
+  });
+});

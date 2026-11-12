@@ -316,9 +316,10 @@ def test_the_open_status_says_nothing_about_the_notebook(client):
     status = _local(client).get("/auth/status").json()
     # `pin_here` is about this caller and this computer (core/pinstore.py),
     # like `reset_here`: never note counts or whether a recovery key exists.
+    #: `hello_here` (INBOX 1727, core/hellostore.py) is the same kind of fact.
     #: `restore_offer` (INBOX 1573) is null once a notebook has its account:
     #: it is offered only to a notebook with none, on this computer.
-    assert set(status) == {"setup_required", "auto_session", "reset_here", "pin_here", "restore_offer"}
+    assert set(status) == {"setup_required", "auto_session", "reset_here", "pin_here", "hello_here", "restore_offer"}
     assert status["restore_offer"] is None
 
 
@@ -499,7 +500,7 @@ def test_the_migration_goes_up_and_down_on_an_existing_notebook(tmp_path):
     """An existing notebook from before: a vault row without the recovery
     columns. Up adds them (null), down takes them away, and the password's
     wrap of the key is untouched both ways."""
-    from tessellate.core.database import DatabaseManager
+    from tessellate.core.database_manager import DatabaseManager
 
     db_path = tmp_path / "old.db"
     manager = DatabaseManager(db_path)

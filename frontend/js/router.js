@@ -13,7 +13,7 @@
 // load but the listener and the address the page was opened with, which the
 // boot opens after the unlock (`routerRestore`, app.js).
 
-const ROUTE_TABS = { dashboard: "dashboard", notes: "notes", chat: "chat", docs: "documents", library: "library", graph: "graph", timeline: "timeline", reminders: "reminders", settings: "settings" };
+const ROUTE_TABS = { dashboard: "dashboard", notes: "notes", chat: "chat", docs: "documents", library: "library", graph: "graph", timeline: "timeline", reminders: "reminders", settings: "settings", Manual: "Manual", Statistics: "Statistics" };
 const ROUTE_NOTES_SECTIONS = ["capture", "writing-room", "ask", "questions"];
 //: The Library's sub-tabs by the word the address uses. Images and Files are
 //: one view (`library-view-media`) in two kinds, so their sections carry the
@@ -105,13 +105,16 @@ function appAddressLabel(hash) {
   const entry = routeEntry(hash);
   const kind = entry && Object.keys(ROUTE_OBJECTS).find((key) => ROUTE_OBJECTS[key].tab === entry.tab && String(entry.section).startsWith(ROUTE_OBJECTS[key].prefix));
   if (!kind) return (entry && ROUTE_VIEW_NAMES[entry.tab]) || hash;
-  const title = typeof historyTitles !== "undefined" && historyTitles.get(entry.section);
+  const title = historyTitles.get(entry.section);
   return title || `${kind.charAt(0).toUpperCase()}${kind.slice(1)} ${entry.section.slice(ROUTE_OBJECTS[kind].prefix.length)}`;
 }
 
 //: The entry a hash names, or null when the hash is not a route (an empty
 //: one, an in-page anchor, a tab that does not exist, an id that is not one).
 function routeEntry(hash) {
+  //: The manual and Statistics are overlays with an address of their own (`#/Manual`, in either case), kept as `{tab: "Manual"}` (router-overlays.js opens them).
+  const overlay = /^#\/(manual|statistics)$/i.exec(String(hash || ""));
+  if (overlay) return { tab: overlay[1][0].toUpperCase() + overlay[1].slice(1).toLowerCase(), section: null };
   const match = /^#\/([a-z-]+)(?:\/(.*))?$/.exec(String(hash || ""));
   if (!match) return null;
   const tab = ROUTE_TABS[match[1]];
@@ -161,7 +164,7 @@ let routerNextId = 1;
 function routerPaintTitle(entry) {
   if (typeof setTitleView !== "function" || !entry) return;
   const view = ROUTE_VIEW_NAMES[entry.tab] || "";
-  let item = entry.section && typeof historyTitles !== "undefined" ? historyTitles.get(entry.section) || "" : "";
+  let item = entry.section ? historyTitles.get(entry.section) || "" : "";
   //: A sub-tab by the word its address uses (Images, Capture, Appearance).
   if (!item && entry.section) {
     const word = entry.tab === "library"
@@ -210,7 +213,7 @@ function routerGo(delta) {
 //: link, a bookmark, a hash typed by hand, a reload. A fresh visit, opened by
 //: the same code the history walk uses, replacing the address it came from.
 async function routerOpen(entry) {
-  if (!entry || typeof openHistoryEntry !== "function") return false;
+  if (!entry) return false;
   routerReplacing = true;
   try {
     await openHistoryEntry(entry);
@@ -240,5 +243,10 @@ window.addEventListener("popstate", async (event) => {
 async function routerRestore() {
   const entry = routeEntry(routerBootHash);
   if (!entry || (entry.tab === "dashboard" && !entry.section)) return false;
+  //: An overlay opens over the tab the boot draws, as a visit of its own so closing steps back off it; the file that opens it is the quick-note bundle's.
+  if (entry.tab === "Manual" || entry.tab === "Statistics") {
+    ensureModule("quickNote").then(() => openHistoryEntry(entry));
+    return false;
+  }
   return routerOpen(entry);
 }

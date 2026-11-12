@@ -24,6 +24,7 @@ from sqlalchemy import select
 from tessellate.core import deps
 from tessellate.core.database import Entry, EntryLink
 from tessellate.entry import manager
+from tessellate.entry import manager_links
 
 
 def _notes_in(session, space: str) -> tuple[Entry, Entry]:
@@ -44,7 +45,7 @@ def test_a_link_made_without_a_request_lands_in_its_notes_space(app_state):
     # A background pass: a plain session, no workspace in `info`, which is
     # exactly how `ai/autonomous.py` opens one.
     with db.session() as session:
-        manager.create_link(
+        manager_links.create_link(
             session, session.get(Entry, ids[0]), session.get(Entry, ids[1]), reason="related"
         )
         session.commit()
@@ -67,7 +68,7 @@ def test_a_link_made_inside_a_request_still_takes_that_space(app_state):
     db = deps.get_db()
     with db.session() as session:
         first, second = _notes_in(session, "space-c")
-        manager.create_link(session, first, second, reason="related")
+        manager_links.create_link(session, first, second, reason="related")
         session.commit()
 
     with db.session() as session:

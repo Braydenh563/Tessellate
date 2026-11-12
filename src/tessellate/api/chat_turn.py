@@ -14,24 +14,27 @@ import logging
 import re
 import time
 from collections.abc import Iterator
-from sqlalchemy import select
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_digest, composer_lists, composer_slots, context, fence, intent, librarian, question_noise, recognise, verdicts, why
+from tessellate.ai import composer_digest, composer_lists, composer_slots, composer_talk, context, fence, intent, librarian, question_noise, recognise, verdicts, why
+from tessellate.ai import composer_digest_sentences
 from tessellate.ai import composer_dialogue
 from tessellate.ai.answer_trim import trim_assistant_padding
-from tessellate.ai.grounding import SentenceGrounder
+from tessellate.ai.grounding import SentenceGrounder, composed_support
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api.chat_agent import _starter_read
 from tessellate.api.chat_pool import _Found
 from tessellate.api.chat_extra import _turn_label
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _event, _in_full
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_capability, _in_notes
+from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_capability, _cited_titles, _first_cited_has_list, _in_notes
 from tessellate.core import deps, private_turn
+from tessellate.core.config import user_now
+from tessellate.core.database import Entry
 from datetime import datetime
-from tessellate.core.database import Entry, like_escape, LIKE_ESCAPE
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager
+from tessellate.repo import visible_notes
 from tessellate.search import chunks as search_chunks
 
 
@@ -62,9 +65,18 @@ def _log_question(session: Session, found: "_Found", question: str, surface: str
         #: again; the log line carries no words of it either.
         logging.getLogger("tessellate.chat").info("chat: %d note(s) via %s search (private)", len(found.entries), found.mode)
         return
-    # Every entry this question surfaced counts as "used".
-    for entry in found.entries:
-        entry.access_count += 1
+    # Every entry this question surfaced counts as "used": one UPDATE that names
+    # `updated_at`, which stops its `onupdate` moving the note's edit time. Reading a
+    # note is not editing it, and everything keyed on the newest edit (the abbreviation
+    # glossary: every note re-read per question, 40 to 130 ms) was dropped by the bump.
+    used = list(dict.fromkeys(entry.id for entry in found.entries if getattr(entry, "id", None) is not None))
+    if used:
+        session.execute(
+            update(Entry)
+            .where(Entry.id.in_(used))
+            .values(access_count=Entry.access_count + 1, updated_at=Entry.updated_at)
+            .execution_options(synchronize_session=False)
+        )
     manager.log_action(session, "queried", surface, detail=question)
     session.commit()
     logging.getLogger("tessellate.chat").info(
@@ -285,7 +297,7 @@ def _may_digest(prepared: dict, question: str) -> bool:
     """The digest answers unless this is a "newest notes" turn, which keeps
     the composer's: but "all the dates in my notes" reads as newest-first
     and is a computed answer (`ai/composer_lists.py`)."""
-    return not str(prepared.get("search_mode") or "").endswith("recent") or composer_lists.computed_kind(question) is not None or composer_digest.shows_the_lot(question)
+    return not str(prepared.get("search_mode") or "").endswith("recent") or composer_lists.computed_kind(question) is not None or composer_digest_sentences.shows_the_lot(question)
 
 
 def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
@@ -294,16 +306,90 @@ def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
     about it": audit 1030 Z53). It is read like an open note: the follow-on
     keeps its subject, and the slot runs on that note rather than on
     whichever note best matches the bare words."""
+    if follow is not None and follow.note_ids and not req.body.note_ids:
+        return _framed_scope(req, follow)
     objects = ((req.history or [{}])[-1].get("objects") or []) if req.history else []
     if not objects or req.body.note_ids or (follow is not None and follow.kind != "pronoun") or not composer_dialogue.refers_back(req.question):
         return []
     label = str(objects[0]).strip().lower()
-    rows = req.session.execute(
-        select(Entry.id, Entry.content).where(
-            Entry.is_deleted == False, Entry.is_private == False, Entry.content.ilike(f"%{like_escape(label)}%", escape=LIKE_ESCAPE)  # noqa: E712
-        ).limit(25)
-    ).all()
+    rows = visible_notes.holding(req.session, label, limit=25)
     return [row.id for row in rows if _turn_label(row.content).lower() == label][:1]
+
+
+def _framed_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
+    """The notes the last answer's frame binds this turn to (fable-composer-1110 F1). The ids are
+    client input, so each is read again: a deleted or private note is never reached through them.
+    Not bound, and searched instead, when the turn's own words are held by another note and not by
+    this one ("what is the standard deviation" after the Harbor answer), or the thing it names is
+    another note's title ("did I finish it" when the answer before cited the wrong note)."""
+    rows = visible_notes.by_ids(req.session, follow.note_ids)
+    ids = [row.id for row in rows]
+    bound = " ".join(row.content or "" for row in rows).lower()
+    if _said_plainly_instead(req, follow, bound):
+        return []
+    asked = composer_dialogue.subject_terms(req.question) if follow.kind == "bound" else []
+    own = _own_words(asked, bound)
+    if follow.kind == "bound" and not own and not _slot_cue(req.question):
+        follow.question = req.question  # "how many sets": the note holds the words, so they are asked as typed
+    if not ids or any(_visible_elsewhere(req.session, t, ids) for t in own) or any(_visible_elsewhere(req.session, t, ids, titled=True) for t in [*asked, *composer_dialogue.subject_terms(follow.question)]):
+        follow.question = req.question if follow.kind == "bound" else follow.question  # let go: the turn's own words, searched
+        return []
+    return ids
+
+
+def _said_plainly_instead(req: _StreamRequest, follow, bound: str) -> bool:  # noqa: ANN001
+    """"who am I going with" after an answer binds to that note; when it has no such line the question is the trip note's (F13 a)."""
+    plain = composer_dialogue.said_plainly(req.question)
+    if follow.kind != "bound" or plain is None or not plain.question.endswith("travelling with") or "going with" in bound:
+        return False
+    follow.question, follow.kind, follow.note_ids = plain.question, "subject", ()
+    return True
+
+
+def _own_words(asked: list[str], bound: str) -> list[str]:
+    """The question's words the bound notes do not hold; a cue ("fast") is never one."""
+    return [t for t in asked if t.lower() not in bound and t.lower() not in composer_slots.SLOT_CUES]
+
+
+def _slot_cue(question: str) -> bool:
+    """"how fast", "how long": a cue to read on the note before, not words to find in another note;
+    the rewritten question ("how long about banana bread?") is kept, not the bare typed one."""
+    return bool(composer_slots.SLOT_CUES.intersection(question.lower().replace("?", " ").split()))
+
+
+def _visible_elsewhere(session, term: str, ids: list[int], *, titled: bool = False) -> bool:  # noqa: ANN001
+    """Whether a visible note outside `ids` holds `term`, or with `titled`, is titled `term` ("Mia")."""
+    rows = visible_notes.holding(session, term, limit=25 if titled else 1, besides=ids)
+    return any(_turn_label(row.content).lower() == term.lower() for row in rows) if titled else bool(rows)
+
+
+def _composed_support(result: dict) -> dict:
+    """The support of an answer no model wrote (`grounding.composed_support`)."""
+    return composed_support(result["support"], result.get("grounding") or [])
+
+
+def _not_again(answer, follow, restated: bool, req: _StreamRequest) -> tuple:  # noqa: ANN001
+    """`answer(follow, restated)`, asked again plainly when the follow-on's reading gave the answer
+    before again: "and kyoto?" after the budget is never the budget twice (fable-composer-1110 F1)."""
+    result = answer(follow, restated)
+    if follow is not None and follow.fallback and composer_dialogue.repeats(str(result.get("text") or ""), req.history):
+        follow = composer_dialogue.FollowOn(follow.fallback, follow.previous, kind="subject")
+        result = answer(follow, True)
+    return result, follow
+
+
+def _with_frame(result: dict, follow, req: _StreamRequest, current: list, today) -> None:  # noqa: ANN001
+    """The frame the answer is sent with (`composer_dialogue.turn_frame`), read from the question
+    as the follow-on put it. A slot read on the note before ("how much flour") is still about that
+    note's subject, so "what temperature" next is asked of the banana bread, not of "flour"."""
+    result["frame"] = frame = composer_dialogue.turn_frame(follow.question if follow else req.question, result, current, today)
+    before = ((req.history or [{}])[-1] or {}).get("frame") or {}
+    if frame and follow is not None and follow.kind == "bound" and before.get("subject") and frame["note_ids"][:1] == before.get("note_ids", [])[:1]:
+        frame["subject"] = before["subject"]
+
+
+def _frame_events(result: dict) -> list[dict]:
+    return [{"type": "frame", "frame": result["frame"]}] if result.get("frame") else []
 
 
 def _searched_question(req: _StreamRequest, follow) -> str:
@@ -366,6 +452,23 @@ def _will_answer(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
     return bool(prepared["notes"]) or bool(req.images_raw) or req.use_tools or t.conversational
 
 
+def model_chips(session: Session, t: "_Turn", grounding: list[dict]) -> list[dict]:
+    """The next steps under a model's answer (first audit F14; 26 of 30 model
+    turns had none): the chips the composer puts under an answer that cites a
+    note, "Open it" and "What is left in it", and any question the model's
+    own words suggest (`ask_chips`). Only a model-written answer that sent no
+    offer of its own, so the composer's and the engine's chips stand."""
+    if not t.ollama_running or t.written_by_app or t.conversational or "offer" in t.sent_kinds or not t.answer_text:
+        return []
+    from tessellate.ai import ask_chips
+
+    result = {"grounding": grounding}
+    titles = _cited_titles(session, result)[:1]
+    asks = [f"Open \u201c{titles[0]}\u201d", *([f"What is left in \u201c{titles[0]}\u201d?"] if _first_cited_has_list(session, result) else [])] if titles else []
+    asks += [q for q in ask_chips.lift(t.answer_text) if q not in asks]
+    return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks[:4]}}] if asks else []
+
+
 def _uncut(title: str) -> str:
     return title.rstrip("…. ").lower()
 
@@ -378,9 +481,10 @@ def _facts_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
     your notes (`_composed`). Not a skill run, which reads its own way.
 
     Not "nothing matched" (`_no_notes_events`): the check on the model's words
-    (`fact_check.keeps`) reads figures, and that answer has none, so a model
-    saying "here is what I found" over it could not be caught. With tools (the
-    popup agent, Chat's Agent mode) the agent has that turn and can search."""
+    (`fact_check.keeps`) reads figures, and that answer has none. That turn has
+    its own check, which reads the negative (`fact_check.says_nothing_found`,
+    `chat_said._miss_events`). With tools (the popup agent, Chat's Agent
+    mode) the agent has that turn and can search."""
     if not t.ollama_running or t.composed or req.skill:
         return False
     if _asks_change(req.question or "") or (prepared["intent"] == intent.ACT and not prepared.get("tool_read")):
@@ -489,6 +593,7 @@ def _note_kind(t: _Turn, kind: str, payload: dict) -> None:
     if kind == "grounding":
         if payload.get("exact"):
             t.exact_grounding = payload.get("sentences") or []
+            t.written_by_app = (payload.get("support") or {}).get("by_model") is False
         t.shape = (payload.get("support") or {}).get("shape") or t.shape
     if kind == "answer" and "answered" not in t.marks:
         t.marks["answered"] = time.perf_counter() - t.started
@@ -537,9 +642,12 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
     #: The fence markers a small model echoes back are taken out of the answer
     #: before anything reads or saves it (`fence.AnswerScrubber`).
     scrubber = fence.AnswerScrubber()
+    #: A composed turn ends with Next chips (INBOX 1729 a).
+    closing = composer_talk.Closing(req.session, req.body.question or "", user_now(deps.get_config()).date(), t.composing or t.composed or prepared["stats"] is not None, req.history)
     try:
         for payload in events:
             kind = payload.get("type")
+            payload = closing.see(payload, t.answer_text)
             _note_kind(t, kind, payload)
             if kind == "answer":
                 #: `attached` and `counts` are the server's own marks (`_said_events`), not the client's.
@@ -559,6 +667,7 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
         if held:
             t.answer_text += held
             yield _event({"type": "answer", "delta": held})
+        yield from map(_event, closing.finish(t.answer_text))
     except Exception as exc:  # noqa: BLE001  # a failure partway through rather
         # than before the first event (a later skill step, say): say what
         # happened instead of the stream just stopping.
@@ -571,7 +680,7 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
         # `exc`'s own str() is untrusted and can embed a file path or
         # connection detail; same sanitiser librarian.model_error_message
         # already trusts for this exact shape.
-        yield _event({"type": "answer", "delta": f"\n\nSomething went wrong: {safe_value(exc)}"})
+        yield _event({"type": "answer", "delta": "\n\nThat did not work. Nothing was changed."})
 
 
 def _trim_answer(t: _Turn) -> Iterator[str]:

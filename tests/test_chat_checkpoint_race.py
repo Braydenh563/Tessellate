@@ -16,13 +16,13 @@ JS = app_js_text()
 
 
 def test_the_checkpoint_keeps_its_promise() -> None:
-    assert "let checkpointRun = null;" in JS
-    assert "checkpointRun = writeCheckpoint();" in JS
+    assert "t.checkpointRun = null;" in JS
+    assert "t.checkpointRun = chatSendTurn.stage.writeCheckpoint(t);" in JS
     # A second call while one is in flight hands back the same write.
-    assert "if (checkpointInFlight || convRef.private) return checkpointRun;" in JS
+    assert "if (t.checkpointInFlight || t.convRef.private) return t.checkpointRun;" in JS
 
 
 def test_the_end_save_waits_for_a_checkpoint_in_flight() -> None:
-    wait = JS.index("if (checkpointRun) await checkpointRun;")
-    create = JS.index('const created = await apiJson("/conversations", {\n        method: "POST",\n        body: JSON.stringify(payload),')
+    wait = JS.index("if (t.checkpointRun) await t.checkpointRun;")
+    create = JS.index('const created = await apiJson("/conversations", {\n          method: "POST",\n          body: JSON.stringify(payload),')
     assert wait < create, "the end save must wait before it decides to create"

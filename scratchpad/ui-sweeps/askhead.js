@@ -2,7 +2,7 @@
 // app's control height? #chat-results is hidden until an answer exists, so the
 // sweep unhides it and gives the badge a real model id: the question is what
 // the layout does with a long one, which needs no model run.
-const {boot} = require('/home/user/MemoryMap-AI/scratchpad/ui-sweeps/lib.js');
+const {boot} = require('./lib.js');
 const NAMES = [
   // What renderChatMeta now writes: the model id, with the phrase on the
   // tooltip. Both the name from the report and a real long Ollama id.

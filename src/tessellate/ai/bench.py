@@ -43,6 +43,8 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import Callable
 
+from tessellate.ai import presets
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -295,7 +297,7 @@ def _filing_step(session, provider, model, items, categories, score, tick) -> No
             reply = provider.chat(model, [
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt},
-            ])
+            ], mode=presets.BENCH_MODE)
             right, got = filing_right(reply.get("content") or "", item.category)
         except Exception as exc:  # noqa: BLE001  # one failing call is a failed task, not a failed run
             score.errors += 1
@@ -320,7 +322,7 @@ def _answer_step(provider, model, items, score, tick, clock) -> None:  # noqa: A
             reply = provider.chat(model, [
                 {"role": "system", "content": ANSWER_SYSTEM},
                 {"role": "user", "content": f"{blocks}\n\nQuestion: {item.question}"},
-            ])
+            ], mode=presets.BENCH_MODE)
             text = reply.get("content") or ""
             score.latency_ms.append((clock() - began) * 1000)
             score.tokens.append(_tokens(reply))
@@ -342,7 +344,7 @@ def _tool_step(provider, model, items, score, tick) -> None:  # noqa: ANN001
             reply = provider.chat_tools(model, [
                 {"role": "system", "content": TOOL_SYSTEM},
                 {"role": "user", "content": ask},
-            ], [FIND_NOTE_TOOL])
+            ], [FIND_NOTE_TOOL], mode=presets.BENCH_MODE)
             calls = reply.get("tool_calls") or []
             right = any(
                 c.get("name") == "find_note"

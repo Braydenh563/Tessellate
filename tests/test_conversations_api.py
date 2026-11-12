@@ -579,3 +579,29 @@ def test_a_stray_trailing_backslash_never_reaches_a_chat_title():
     assert rc._question_title("  two\n lines  ") == "two lines"
     assert rc._clean_title("Gaming mouse\\") == "Gaming mouse"
     assert len(rc._question_title("word " * 40)) <= 60
+
+
+def test_a_reply_keeps_who_wrote_it_and_why_for_a_reload(client):
+    """INBOX 1693 (b): a composed greeting drew a Composer badge, a Why trail and
+    its timing live, and the reopened chat showed text only. Both facts ride
+    with the reply, so the page draws what the live answer drew."""
+    body = {
+        "question": "hey! whatcha doing??",
+        "answer": "Good night. Most recently you wrote [The note](#/notes/1).",
+        "elapsed_ms": 1500,
+        "by": {"composed": False, "model": ""},
+        "why": ["Read the question", "Answered from the app"],
+    }
+    created = client.post("/conversations", json=body).json()
+    client.post(f"/conversations/{created['id']}/turns", json={**body, "question": "again"})
+    full = client.get(f"/conversations/{created['id']}").json()
+    for reply in [m for m in full["messages"] if m["role"] == "assistant"]:
+        assert reply["by"] == {"composed": False, "model": ""}
+        assert reply["why"] == ["Read the question", "Answered from the app"]
+        assert reply["elapsed_ms"] == 1500
+
+
+def test_a_reply_without_them_has_neither_key(client):
+    created = client.post("/conversations", json={"question": "hi", "answer": "hello"}).json()
+    reply = client.get(f"/conversations/{created['id']}").json()["messages"][1]
+    assert "by" not in reply and "why" not in reply

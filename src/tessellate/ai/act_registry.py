@@ -12,6 +12,9 @@ import re
 
 from dataclasses import dataclass
 
+from tessellate.ai import composer_calendar
+from tessellate.core.lazyre import lazy_compile
+
 #: The act runner's `propose` (acts.py), set when acts.py is imported: the
 #: agent's `propose_act` tool (ai/tools) calls it through this leaf rather
 #: than importing the runner, which imports commands, which imports tools
@@ -64,8 +67,13 @@ def propose(session, text: str, now, note_ids: list[int] | None = None) -> dict 
     return proposer(session, text, now, note_ids)
 
 
-#: The write intents that wait for Confirm before anything changes.
-CONFIRM_INTENTS = frozenset({"delete", "rename", "move", "tag", "untag", "link", "unlink", "append"})
+#: The write intents that wait for Confirm before anything changes: all of them
+#: (the owner, 2026-11-10, "any and all actions need the user's consent"). A
+#: typed yes confirms the card that waits (`ai/consent.py`), a typed no drops it.
+CONFIRM_INTENTS = frozenset({
+    "reminder", "complete", "uncomplete", "cancel", "snooze", "new_note", "meeting", "pin", "unpin",
+    "delete", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "move", "tag", "untag", "link", "unlink", "append", "set_name",
+})
 
 
 @dataclass(frozen=True)
@@ -94,13 +102,15 @@ class Act:
 
 #: In the order the capability line says them.
 _ACTS = (
-    Act("reminder", "remind", "set a reminder", "Say what and when; it is set at once with Undo.",
+    Act("reminder", "remind", "set a reminder", "Say what and when; it is set after you confirm. Say add buy stamps to my todo, with no time, to put a checklist line on your Todo note instead.",
         "remind me to call mum on Friday at 9", ("text", "due_at"), "bin_reminder"),
-    Act("complete", "complete", "tick off a task", "Names a reminder or a checklist line; it is ticked at once with Undo, and asked about if more than one fits.",
+    Act("complete", "complete", "tick off a task", "Names a reminder or a checklist line; it is ticked after you confirm, and asked about if more than one fits. After a list, tick the first one counts from that list.",
         "tick off buy milk", (), "complete_reminder", stem="Tick off "),
-    Act("cancel", "cancel", "cancel a task", "Names a reminder or a checklist line; a reminder goes to the bin and a checklist line is taken out of its note, at once with Undo.",
+    Act("uncomplete", "complete", "untick a task", "Names a ticked reminder or checklist line; it is reopened after you confirm.",
+        "untick buy milk", (), "complete_reminder", stem="Untick "),
+    Act("cancel", "cancel", "cancel a task", "Names a reminder or a checklist line; a reminder goes to the bin and a checklist line is taken out of its note, after you confirm.",
         "cancel the dentist task", (), "restore_reminder", stem="Cancel the task "),
-    Act("snooze", "snooze", "snooze a reminder", "Names a reminder and a new time; it moves at once with Undo. Only reminders have a time, so a checklist line cannot be snoozed.",
+    Act("snooze", "snooze", "snooze a reminder", "Names a reminder and a new time; it moves after you confirm. Only reminders have a time, so a checklist line cannot be snoozed.",
         "snooze the dentist task until Friday", ("due_at",), "snooze_reminder", stem="Snooze the task "),
     Act("tag", "tag", "tag notes", "Name the notes and the tags; the change waits for Confirm.",
         "tag the knife note with kitchen", ("tags",), "edit_note", stem="Tag the note about "),
@@ -108,13 +118,13 @@ _ACTS = (
         "remove the tag urgent from the boiler note", ("tags",), "edit_note"),
     Act("move", "file", "move notes to a category", "Name the notes and the category; waits for Confirm.",
         "move the sourdough note to Cooking", ("category",), "edit_note", stem="Move the note about "),
-    Act("new_note", "create", "make a new note", "Start with \"note:\" and the words; saved at once with Undo.",
+    Act("new_note", "create", "make a new note", "Start with \"note:\" and the words; saved after you confirm, and Undo takes it back.",
         "note: buy milk and eggs", ("content",), "delete_note"),
-    Act("meeting", "create", "start a meeting", "Starts a meeting note now; Undo bins it.",
+    Act("meeting", "create", "start a meeting", "Starts a meeting note after you confirm; Undo bins it.",
         "start a meeting", (), "delete_note", stem="Start a meeting"),
-    Act("pin", "pin", "pin a note", "Pins one note to the top of the list; Undo unpins it.",
+    Act("pin", "pin", "pin a note", "Pins one note to the top of the list after you confirm; Undo unpins it.",
         "pin the dentist note", (), "pin_note", stem="Pin the note about "),
-    Act("unpin", "unpin", "unpin a note", "Takes one note's pin off; Undo pins it again.",
+    Act("unpin", "unpin", "unpin a note", "Takes one note's pin off after you confirm; Undo pins it again.",
         "unpin the dentist note", (), "pin_note"),
     Act("link", "link", "link two notes", "Names both notes; waits for Confirm, Undo unlinks them.",
         "link the gym note to the running note", (), "unlink_notes", stem="Link the note about "),
@@ -126,6 +136,28 @@ _ACTS = (
         "add buy chalk to the gym note", ("content",), "edit_note", stem="Add "),
     Act("delete", "delete", "delete a note", "Always waits for Confirm; the note goes to the bin and Undo restores it.",
         "delete the boiler note", (), "restore_note", stem="Delete the note about "),
+    Act("rename_tag", "rename", "rename a tag", "Names the tag and its new name; waits for Confirm, Undo renames it back. A name that already exists is left to the Tag manager.",
+        "rename the tag gym to fitness", ("old", "new"), "rename_tag", stem="Rename the tag "),
+    Act("rename_category", "rename", "rename a category", "Names the category and its new name; waits for Confirm, Undo renames it back. A name that already exists is left to Manage categories.",
+        "rename the category Work to Job", ("old", "new"), "rename_category", stem="Rename the category "),
+    Act("create_category", "create", "make a category", "Names the category; it is made after you confirm, and Undo takes it away again. A name that already exists is left as it is.",
+        "make a category called Hobbies", ("name",), "delete_category", stem="Create a category called "),
+    Act("delete_category", "delete", "delete a category", "Names the category; its notes stay, as Uncategorised, and Undo files them back. Waits for Confirm.",
+        "delete the category Hobbies", ("name",), "move_notes", stem="Delete the category "),
+    Act("merge_categories", "rename", "merge two categories", "Names both; the first goes into the second after you confirm, and Undo files its notes back under it.",
+        "merge category Work into Job", ("from", "into"), "move_notes", stem="Merge the category "),
+    Act("delete_tag", "delete", "delete a tag", "Names the tag; it comes off every note after you confirm, and Undo puts it back on the same notes.",
+        "delete the tag harbor", ("name",), "tag_note", stem="Remove the tag "),
+    Act("edit_text", "rename", "replace a note's text", "Names the note and the new words, or one phrase to swap (change Bluegum-5G to 6G in the wifi note); the card shows the old and the new, and Undo puts the old text back.",
+        "edit the wifi note: use channel 6", ("content",), "edit_note", stem="Replace the text of "),
+    Act("to_reminders", "remind", "make reminders from a list", "Names the note's list and a time; one reminder per open checklist line, after you confirm, and Undo bins them.",
+        "turn the action items into reminders for Friday", ("due_at",), "bin_reminder", stem="Set reminders from "),
+    Act("restore", "restore", "restore a note from the bin", "Names a note in the bin; waits for Confirm, Undo puts it back in the bin.",
+        "restore the passport note", (), "delete_note", stem="Restore the note about "),
+    Act("set_name", "call", "set your name", "Say what to call you; it is saved after you confirm, and Undo puts the old name back.",
+        "call me Sam", ("name",), "set_display_name"),
+    Act("run_skill", "open", "run a skill", "Names a saved skill; the card asks before the run starts, and every change it makes can be undone.",
+        "run the daily review skill", ("name",), writes=False),
     Act("find", "find", "find a note", "Lists the notes that match.", "find my note about the passport", (), writes=False),
     Act("open", "open", "open a note", "Opens the one note named.", "open the note about the boiler", (), writes=False),
     Act("navigate", "open", "open a part of the app", "Goes to Settings, the graph, the timeline and the rest.",
@@ -142,8 +174,8 @@ ACTS: dict[str, Act] = {a.intent: a for a in _ACTS}
 def capability_line() -> str:
     """Agent mode with no model, for a sentence that is not an act: every
     write act the registry has, in order, and one example."""
-    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "delete", "link", "pin")]
-    single = "pin, link, rename or delete a note (delete always after you confirm)"
+    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "delete", "link", "pin", "set_name")]
+    single = "pin, link, rename or delete a note, rename a tag or category, make a category, merge or delete one, delete a tag, replace a note\'s text, turn its open lines into reminders, restore a note from the bin (each after you confirm)"
     reads = "find or open a note"
     return (
         "With no model running I can do these myself: "
@@ -155,7 +187,7 @@ def capability_line() -> str:
 #: Verbs only the app's own menus do (decision 42: archiving stays a UI
 #: action). A sentence that opens with one is an act said to the wrong place,
 #: so it is answered "done in the app", never searched (audit 1029 C45).
-_APP_VERB = re.compile(
+_APP_VERB = lazy_compile(
     r"^(?:(?:and|then|please|can you|could you|would you|just)\s+)*"
     r"(?P<verb>archive|unarchive|restore|split|merge|duplicate|clone|combine)\s+(?:the|my|a|an|this|that|these|those|all|both|every|\w+)\b",
     re.IGNORECASE,
@@ -167,11 +199,16 @@ def app_verb(text: str) -> str | None:
     None. A question about the verb ("how do I archive a note?") does not open
     with it."""
     found = _APP_VERB.match(" ".join(str(text or "").split()))
-    return found.group("verb").lower() if found else None
+    if found:
+        return found.group("verb").lower()
+    #: Emptying a whole calendar or list is not an act here (composer_calendar).
+    return "clear" if composer_calendar.bulk(text) else None
 
 
 def app_verb_line(verb: str) -> str:
     """Where an app verb is done, in one line."""
+    if verb == "clear":
+        return composer_calendar.CLEAR_LINE
     where = {
         "archive": "open the note and use Archive in its menu",
         "unarchive": "open the Archive and use Restore on the note",
@@ -185,7 +222,11 @@ def app_verb_line(verb: str) -> str:
 def ask_line(parsed: dict | None) -> str:
     """What Ask says to a sentence that is an act: where it is done."""
     act = ACTS.get((parsed or {}).get("intent", ""))
-    named = f" ({act.label})" if act else ""
+    label = act.label if act else ""
+    if act and act.intent == "navigate" and (parsed or {}).get("surface"):
+        #: Name the place ("open the clock timer"), so the line says what it would open, not just "a part of the app".
+        label = " ".join(["open the", str(parsed["surface"]), str(parsed.get("tab") or "")]).strip()
+    named = f" ({label})" if label else ""
     return f"That is something to do{named} rather than to look up: say it in Chat and it is done there, with Undo."
 
 
@@ -200,7 +241,6 @@ def palette_rows() -> list[dict]:
 def guide_topic() -> dict:
     """The Guide's topic on acts, generated from the registry."""
     lines = [f"{a.label[:1].upper() + a.label[1:]}: \"{a.example}\"." for a in _ACTS]
-    waits = ", ".join(a.label for a in _ACTS if a.confirm)
     return {
         "id": "chat-acts",
         "title": "Things Chat does for you",
@@ -208,7 +248,7 @@ def guide_topic() -> dict:
                      "with no model running", "undo an act", "things chat does"),
         "badge": {"label": "Chat", "tab": "chat"},
         "body": "Chat does these from one sentence, with no model. " + " ".join(lines)
-        + f" These wait for Confirm: {waits}. The rest run at once. Undo on the card, or Ctrl+Z, takes any of them back.",
+        + " Every one waits for Confirm: press it, or type yes or go ahead; Cancel or no drops it. Undo on the card, or Ctrl+Z, takes any of them back. Say add buy milk to today's note to put a bullet in the daily note, or put it in today's note to add a note itself.",
     }
 
 
@@ -218,10 +258,10 @@ def guide_topic() -> dict:
 #: its tool as well as its intent. "navigate" opens a part of the app and
 #: runs no tool.
 ACT_TOOLS: dict[str, str] = {
-    "reminder": "set_reminder", "complete": "complete_reminder", "cancel": "bin_reminder", "snooze": "snooze_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
+    "reminder": "set_reminder", "complete": "complete_reminder", "uncomplete": "complete_reminder", "cancel": "bin_reminder", "snooze": "snooze_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
     "new_note": "create_note", "meeting": "create_note", "pin": "pin_note", "unpin": "pin_note",
-    "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "append": "edit_note",
-    "delete": "delete_note", "find": "search_notes", "open": "get_note", "summarise": "summarize_notes",
+    "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "rename_tag": "rename_tag", "rename_category": "rename_category", "create_category": "create_category", "delete_category": "delete_category", "merge_categories": "merge_categories", "delete_tag": "delete_tag", "edit_text": "edit_note", "to_reminders": "set_reminder", "run_skill": "run_skill", "restore": "restore_note", "append": "edit_note",
+    "delete": "delete_note", "set_name": "set_display_name", "find": "search_notes", "open": "get_note", "summarise": "summarize_notes",
 }
 
 #: A utility's kind (`utilities.kind_of`) to the tool a model would call for it.
@@ -268,9 +308,12 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("path_between", r"\bhow (?:is|are) .+ (?:related|connected) to\b|\bpath between\b"),
     ("related_notes", r"\bwhat(?:'s| is) (?:connected|linked) to\b|\b(?:connected|linked) to the .+ note\b"),
     ("find_similar_notes", r"\bsimilar to\b|\blike the .+ note\b"),
-    ("notebook_structure", r"\b(?:shape|structure|clusters?) of (?:my|the) notebook\b|^how (?:are|r) (?:all )?my notes (?:connected|linked)\b"),
+    ("notebook_structure", r"\b(?:shape|structure|clusters?) of (?:my|the) notebook\b|^how (?:are|r) (?:all )?my notes (?:connected|linked)\b"
+     #: The shape asked in its other words: the notes on their own, the clusters (parity, decision 75).
+     r"|\bconnected to nothing\b|\b(?:not|isn't|aren't) (?:linked|connected) to anything\b|\b(?:orphan(?:ed)?|unlinked|disconnected|isolated) notes\b|^what are (?:the|my) (?:note )?clusters\b|\bwhich notes (?:have|has) no links\b"),
     ("notebook_overview", r"\boverview of (?:my|the) notebook\b|\bnotebook overview\b|^how (?:big|large) is (?:my|the) notebook\b"),
-    ("count_notes", r"\bcount (?:my |the )?notes\b|\bnotes per (?:category|tag)\b"),
+    #: "count notes about the dentist" counts a subject's notes, which the composer answers (R3-6, D4).
+    ("count_notes", r"\bcount (?:my |the )?notes\b(?! (?:about|on|mentioning|mention|containing|that|with)\b)|\bnotes per (?:category|tag)\b"),
     ("list_tags", r"\b(?:list|show|what are) (?:me )?(?:all )?my tags\b|" + _listing("tags?")),
     ("list_categories", r"\b(?:list|show|what are) (?:me )?(?:all )?my categories\b|" + _listing("categories|categorys|category")),
     #: "what tasks do I have", "whats due this week", "what is overdue": the
@@ -335,9 +378,10 @@ NO_MODEL_READS = frozenset({
 #: how-to that reads as one of these acts keeps its topic first, the act's
 #: own line next; one whose words reached another topic gets the act first.
 ACT_HELP_TOPICS: dict[str, tuple[str, ...]] = {
-    "reminder": ("reminders", "reminders-controls"), "complete": ("tasks",), "cancel": ("tasks",), "snooze": ("tasks",), "meeting": ("meetings", "voice"), "link": ("links",),
+    "reminder": ("reminders", "reminders-controls"), "complete": ("tasks",), "uncomplete": ("tasks",), "cancel": ("tasks",), "snooze": ("tasks",), "meeting": ("meetings", "voice"), "link": ("links",),
     "unlink": ("links",), "tag": ("tags-categories", "tag-manager", "suggested-tags"),
-    "untag": ("tags-categories", "tag-manager"), "move": ("tags-categories",), "delete": ("undo-bin",),
+    "untag": ("tags-categories", "tag-manager"), "move": ("tags-categories",), "delete": ("undo-bin",), "restore": ("undo-bin",),
+    "rename_tag": ("tags-categories", "tag-manager"), "rename_category": ("tags-categories",), "create_category": ("tags-categories",), "delete_category": ("tags-categories",), "merge_categories": ("tags-categories",), "delete_tag": ("tags-categories", "tag-manager"), "edit_text": ("undo-bin",), "to_reminders": ("reminders",),
     #: Not pin: Favourites says what a pinned note is, not how to pin one, so
     #: the act's line leads "how do I pin a note" and Favourites follows.
     "find": ("ask-chat",), "summarise": ("ask-chat",),

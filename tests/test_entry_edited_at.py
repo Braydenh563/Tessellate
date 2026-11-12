@@ -14,7 +14,8 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-from tessellate.core.database import DatabaseManager, Entry, _ensure_alembic_baseline
+from tessellate.core.database import Entry
+from tessellate.core.database_manager import DatabaseManager, _ensure_alembic_baseline
 from tessellate.entry import manager
 
 

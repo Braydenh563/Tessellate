@@ -51,29 +51,30 @@ def test_the_edit_answer_names_the_way_to_edit():
 
 
 def test_a_quoted_line_never_ends_on_a_dangling_word():
-    from tessellate.ai import composer_digest as d
+    from tessellate.ai import composer_digest_lines
 
     cut = "Open the hub-finish-ui page and check the header, the dock and the footer all render and"
-    assert d.whole_clause(cut) == "Open the hub-finish-ui page and check the header, the dock and the footer all render"
-    assert d.whole_clause("Check the hub-finish-ui and") == "Check the hub-finish-ui"
-    assert d.whole_clause("Fix it and") == ""
-    assert d.whole_clause("Press Edit, then Save.") == "Press Edit, then Save."
-    assert d.whole_clause("Row More button. Expect: menu with Use, Copy, Edit") == "Row More button. Expect: menu with Use, Copy, Edit"
+    assert composer_digest_lines.whole_clause(cut) == "Open the hub-finish-ui page and check the header, the dock and the footer all render"
+    assert composer_digest_lines.whole_clause("Check the hub-finish-ui and") == "Check the hub-finish-ui"
+    assert composer_digest_lines.whole_clause("Fix it and") == ""
+    assert composer_digest_lines.whole_clause("Press Edit, then Save.") == "Press Edit, then Save."
+    assert composer_digest_lines.whole_clause("Row More button. Expect: menu with Use, Copy, Edit") == "Row More button. Expect: menu with Use, Copy, Edit"
 
 
 def test_only_note_is_said_for_a_topic_never_for_a_request():
-    from tessellate.ai import composer_digest as d
+    from tessellate.ai import composer_digest_lines
 
-    assert d.asks_for_a_topic("what do I know about pasta")
-    assert d.asks_for_a_topic("pasta")
+    assert composer_digest_lines.asks_for_a_topic("what do I know about pasta")
+    assert composer_digest_lines.asks_for_a_topic("pasta")
     for q in ("I want to edit my pasta note", "can I open the pasta note", "help me edit the pasta note"):
-        assert not d.asks_for_a_topic(q), q
+        assert not composer_digest_lines.asks_for_a_topic(q), q
 
 
 def test_a_request_answer_has_no_only_note_claim():
-    from tessellate.ai import composer, composer_digest
+    from tessellate.ai import composer
+    from tessellate.ai import composer_digest_sentences
 
     notes = [{"id": 1, "title": "pasta", "content": "# pasta\n\nBoil the pasta for ten minutes with salt.", "tags": [],
               "category": "Food", "created_at": "2026-10-02T10:00:00"}]
     text = composer.compose("I want to edit my pasta note", notes)["text"]
-    assert not any(composer_digest.is_only_claim(line) for line in text.splitlines()), text
+    assert not any(composer_digest_sentences.is_only_claim(line) for line in text.splitlines()), text

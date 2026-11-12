@@ -67,3 +67,30 @@ class WordBand:
             if len(held) >= 2 and not self._keyword_in(keyword, lowered):
                 best = max(best, BAND * sum(1.0 + math.log(self._total / self._topics_with[w]) for w in held))
         return best
+
+
+def one_edit_apart(a: str, b: str) -> bool:
+    """True when `a` becomes `b` by one insertion, deletion, substitution or
+    swap of two neighbours: the typos a person makes in a help box ("remnder",
+    "serach", "chnage")."""
+    if a == b:
+        return True
+    la, lb = len(a), len(b)
+    if abs(la - lb) > 1:
+        return False
+    if la == lb:
+        diff = [k for k in range(la) if a[k] != b[k]]
+        if len(diff) == 1:
+            return True
+        return (
+            len(diff) == 2
+            and diff[1] == diff[0] + 1
+            and a[diff[0]] == b[diff[1]]
+            and a[diff[1]] == b[diff[0]]
+        )
+    if la > lb:
+        a, b = b, a
+    k = 0
+    while k < len(a) and a[k] == b[k]:
+        k += 1
+    return a[k:] == b[k + 1 :]

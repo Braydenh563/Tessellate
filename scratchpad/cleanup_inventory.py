@@ -99,7 +99,10 @@ def classify():
         elif p in recent:
             keep.add(p)
             why[p] = "recent"
-        elif base in named:
+        # By stem too: scripts/gate.sh --sweeps names its sweeps bare
+        # ("phonedocs", run as scratchpad/ui-sweeps/$s.js), and a basename-only
+        # match marked eight of them DELETE (CI red, 2026-11-10).
+        elif base in named or os.path.splitext(base)[0] in named:
             keep.add(p)
             why[p] = "named"
     by_base = collections.defaultdict(list)

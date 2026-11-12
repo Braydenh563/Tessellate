@@ -13,7 +13,7 @@ import functools
 import re
 from datetime import datetime
 
-from tessellate.ai import grounding, utilities
+from tessellate.ai import composer_property, grounding, utilities
 from tessellate.ai.composer_ask import _stem, _words
 from tessellate.ai.composer_body import length_wish
 from tessellate.ai.composer_dialogue import _MORE
@@ -21,6 +21,7 @@ from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_quote import _pick
 from tessellate.ai.composer_read import NoteView
 from tessellate.search import query as query_understanding
+from tessellate.core.lazyre import lazy_compile
 
 
 #: A message this short that names one of the app's own tools ("timer",
@@ -33,11 +34,19 @@ _FEATURE_WORDS = 3
 _FEATURE_FILLER = frozenset({"the", "a", "an", "my", "that", "this", "it", "last", "latest", "please"})
 
 
+#: "and last week?" carries on the question before; it is not asking for the Timeline tab. "who wrote it" is a
+#: question about a note, not the name of a tool (R9-9).
+_ABOUT_AN_ANSWER = lazy_compile(r"^\s*(?:is|are|was|what|what's|whats|who|when|where|why|how|do|does|did|can|the)\b|\b(?:it|its|one|they|them)\b", re.I)
+_CARRIES_ON = lazy_compile(r"^\s*(?:and|but|or|also|then|who)\b", re.I)
+
+
 def _may_name_a_tool(question: str, words: list[str]) -> bool:
     """Short enough, and not a follow-on or a length control ("tell me more",
-    "shorter"), which is about the answer before, never a tool: the Follow-up
-    trail's help line says "tell me more" in its own words."""
-    return bool(words) and len(words) <= _FEATURE_WORDS and not (_MORE.match(question) or length_wish(question))
+    "shorter", "and last week?"), which is about the answer before, never a
+    tool: the Follow-up trail's help line says "tell me more" in its own words."""
+    return bool(words) and len(words) <= _FEATURE_WORDS and not (
+        _MORE.match(question) or length_wish(question) or _CARRIES_ON.match(question)
+    )
 
 
 def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:
@@ -64,6 +73,17 @@ def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:
     return best
 
 
+def _undo_lead(words: list[str]) -> str:
+    """Typed "undo" or "redo" after a change asks for the thing itself, so the
+    keys come first, not a note that the word is not in the notes (round 2 E7)."""
+    said = [w for w in words if w not in _FEATURE_FILLER and w not in ("change", "changes", "action")]
+    if said == ["undo"]:
+        return "Press Undo in the status bar, or Ctrl+Z when you are not typing in a box, to take back your last change. "
+    if said == ["redo"]:
+        return "Press Redo in the status bar, or Ctrl+Shift+Z or Ctrl+Y when you are not typing in a box, to bring back what you undid. "
+    return ""
+
+
 def _feature_instead(question: str, absent: list[str]) -> dict | None:
     """Nothing in the notes, and a two- or three-word message that names an
     app feature (INBOX 1334, "timer\\" got "Which note might it be in?"):
@@ -76,8 +96,18 @@ def _feature_instead(question: str, absent: list[str]) -> dict | None:
     said = absent[0] if absent else " ".join(words)
     #: The feature first: "Nothing in your notes mentions timer" was a
     #: not-found answer to a request for the timer (INBOX 1357, class B).
-    lead = f"“{said[:1].upper()}{said[1:]}” is one of the app's own tools, not something in your notes. "
-    return _result([("template", lead), ("help", best[0], best[1])], "help")
+    lead = _undo_lead(words) or f"“{said[:1].upper()}{said[1:]}” is one of the app's own tools, not something in your notes. "
+    return _result([("template", lead), ("help", _short_line(best[0]), best[1])], "help")
+
+
+#: The longest help sentence an offer repeats under a note answer.
+_OFFER_WORDS = 20
+
+
+def _short_line(line: str) -> str:
+    """A help line as one short sentence: the line itself when it is a line, else
+    where to read the steps (D21: "what is my name" answered a Settings paragraph)."""
+    return line if len(line.split()) <= _OFFER_WORDS else "Open its Help topic for the steps."
 
 
 def offered(result: dict | None, question: str) -> dict | None:
@@ -87,10 +117,16 @@ def offered(result: dict | None, question: str) -> dict | None:
     The digest and `compose` both answer a chat turn, so both pass through."""
     if not result or result.get("shape") in ("help", None) or result.get("missed") or not result.get("parts"):
         return result
+    #: A question about an answer ("is it this week", "the second one", "what's in it") names no tool.
+    if _ABOUT_AN_ANSWER.search(question or ""):
+        return result
     best = _feature_help(question, [])
     if best is None:
         return result
-    more = [("template", PHRASES["feature_offer"]), ("help", best[0], best[1])]
+    #: A topic's whole step sentence is a paragraph under a note answer ("phone" got 600 characters
+    #: on opening the notebook over the network): past a line, the offer points to the topic (R3-7).
+    line = _short_line(best[0])
+    more = [("template", PHRASES["feature_offer"]), ("help", line, best[1])]
     return {**result, "parts": [*result["parts"], *more], "text": result["text"] + "".join(part[1] for part in more)}
 
 
@@ -176,7 +212,7 @@ def _help_ask(question: str, topic: dict) -> dict:
 
 #: Where the thing a doing is done to ends: "remove a tag from a note" is about
 #: the tag, and the note only says where.
-_PLACE_WORD = re.compile(r"\b(?:from|in|on|to|into|onto|of|out|off|for|at|about|by|with|between)\b")
+_PLACE_WORD = lazy_compile(r"\b(?:from|in|on|to|into|onto|of|out|off|for|at|about|by|with|between)\b")
 
 
 def _direct_object(question: str, verb: str) -> set[str]:
@@ -259,16 +295,16 @@ def _help_act_stems() -> dict[str, frozenset[str]]:
 
 
 #: "change a note's title": a rename said without its verb.
-_RETITLING = re.compile(r"\b(?:change|edit|set|update|fix)\b.{0,20}\b(?:title|name)s?\b", re.I)
+_RETITLING = lazy_compile(r"\b(?:change|edit|set|update|fix)\b.{0,20}\b(?:title|name)s?\b", re.I)
 
 #: "get a note back", "bring it back": a restore said without its verb.
-_BACK_PHRASE = re.compile(
+_BACK_PHRASE = lazy_compile(
     r"\b(?:get|bring|put|have|take)\b(?:\s+\w+){0,4}\s+back\b|\b(?:out of|from) (?:the |my )?(?:bin|trash|recycle bin)\b", re.I
 )
 
 #: Asked as a restore of something deleted (not of a backup): the bin sentence
 #: is the one whose subject says it ("A deleted note ... goes to the bin").
-_RESTORING = re.compile(r"\b(?:restor\w*|recover\w*|undelet\w*|retriev\w*)\b|" + _BACK_PHRASE.pattern, re.I)
+_RESTORING = lazy_compile(r"\b(?:restor\w*|recover\w*|undelet\w*|retriev\w*)\b|" + _BACK_PHRASE.pattern, re.I)
 
 
 def _help_act(question: str) -> str:
@@ -300,31 +336,31 @@ def _act_score(line: str, at: int, ask: set, stems: set[str], topic: dict, place
 
 
 #: A sentence that lists what the thing cannot do, not how to do it.
-_EXCEPTION = re.compile(r"\b(?:no undo|except|cannot|can't|never|nothing)\b", re.I)
+_EXCEPTION = lazy_compile(r"\b(?:no undo|except|cannot|can't|never|nothing)\b", re.I)
 
 #: The ask is about the exception itself ("why is there no undo", "permanently").
-_EXCEPTION_ASKED = re.compile(r"\b(?:no undo|except\w*|cannot|can't|never|for good|permanent\w*|empty|why)\b", re.I)
+_EXCEPTION_ASKED = lazy_compile(r"\b(?:no undo|except\w*|cannot|can't|never|for good|permanent\w*|empty|why)\b", re.I)
 
-_NO_UNDO = re.compile(r"\bno undo\b", re.I)
+_NO_UNDO = lazy_compile(r"\bno undo\b", re.I)
 
 #: The sentence about emptying the bin, and the ask that wants it: it answers
 #: "how do I empty the bin" and nothing about deleting one thing.
-_EMPTYING_LINE = re.compile(r"\bempty the bin\b", re.I)
-_EMPTYING = re.compile(r"\b(?:empt\w*|clear\w*|purge\w*|wipe\w*)\b", re.I)
+_EMPTYING_LINE = lazy_compile(r"\bempty the bin\b", re.I)
+_EMPTYING = lazy_compile(r"\b(?:empt\w*|clear\w*|purge\w*|wipe\w*)\b", re.I)
 
 #: The ask is for the list itself, not a word that merely touches it: "what
 #: can't I undo", "what cannot be undone", "which things have no undo". The
 #: list leads for these (a negated doing is a class, not a question).
-_EXCEPTION_LISTED = re.compile(
+_EXCEPTION_LISTED = lazy_compile(
     r"\b(?:can'?t|cannot|can not|couldn'?t|won'?t|never|no|not)\b.{0,15}\b(?:undo|undone|recover\w*|restor\w*|reversed?)\b|\bno undo\b|\birreversible\b", re.I
 )
 
 #: Where a sentence's subject ends: its first verb or clause break. A comma
 #: inside a list is not one: "A deleted note, board, document, reminder goes
 #: to the bin" has a subject of four things, and the ask names any of them.
-_SUBJECT_END = re.compile(r"\s(?:goes|go|is|are|has|have|keeps|makes|lets|shows|says|covers|opens|adds|removes|moves|finds|takes|asks|puts|sets|clears|deletes|gives|needs|offers|lists|reads|saves)\b|[,;:]")
+_SUBJECT_END = lazy_compile(r"\s(?:goes|go|is|are|has|have|keeps|makes|lets|shows|says|covers|opens|adds|removes|moves|finds|takes|asks|puts|sets|clears|deletes|gives|needs|offers|lists|reads|saves)\b|[,;:]")
 #: A comma inside a list of single words ("note, board, document or reminder").
-_LIST_COMMA = re.compile(r"(?<=\w), (?=\w+(?:,| or | and ))")
+_LIST_COMMA = lazy_compile(r"(?<=\w), (?=\w+(?:,| or | and ))")
 
 
 def _subject_fit(line: str, ask: dict) -> float:
@@ -432,7 +468,21 @@ def _clauses(sentence: str) -> list[str]:
     return [c[:1].upper() + c[1:] for c in ended]
 
 
-_JA_STOP = re.compile(r"([。！？])\.")
+_JA_STOP = lazy_compile(r"([。！？])\.")
+
+
+_UNTICK = lazy_compile(r"^(?:please |can you |could you )?(?:un-?tick|un-?check|un-?mark|un-?cross)\b", re.I)
+
+
+def cannot_answer(question: str, notes: list[dict]) -> dict | None:
+    """An ask no note settles, said in one line instead of a search for its words: "untick it"
+    with no item the act reader could name (say which; audit 1030 Z37, "untick bread" itself is
+    the act, `task_acts.read_uncomplete`), and "what is the table number" when no note gives one
+    (never a note that only mentions the dinner or the booking; R3-2 residue)."""
+    text = " ".join((question or "").split())
+    line = ("Say which item to untick, like: untick buy milk. Press Undo on the card right after a tick to take it back."
+            if _UNTICK.match(text) else composer_property.none_given(text, notes))
+    return {**_result([("template", line)], "none"), "answered": True} if line else None
 
 
 def _result(parts: list[tuple], shape: str, rows: list[dict] | None = None, next_parts: list | None = None) -> dict:

@@ -16,7 +16,7 @@ import re
 from datetime import date, timedelta
 from typing import NamedTuple
 
-from tessellate.ai import composer, composer_frame, composer_lists, recognise
+from tessellate.ai import composer, composer_frame, composer_lists, recognise, recognise_units
 
 #: "How much money have I recorded I've spent" and "what have I spent so far"
 #: are the same total: the ask can say where the figures are kept.
@@ -92,7 +92,7 @@ _NOT_DONE = re.compile(_PLANNED.pattern + r"|\bbudget\w*|\blimits?\b|\baim\w*|" 
 #: A balance still owed, said beside the total so it is not mistaken as missed.
 _STILL_DUE = re.compile(r"\b(?:due|unpaid|balance|haven't paid|not paid)\b", re.I)
 #: A note is a spending note when its title or text says so.
-_SPENDING = re.compile(r"\b(?:spen[dt]\w*|expenses?|costs?|paid|bought|purchases?|bills?|receipts?)\b", re.I)
+_SPENDING = re.compile(r"\b(?:spen[dt]\w*|expenses?|costs?|paid|bought|purchases?|bills?|receipts?|shop\w*)\b", re.I)
 _DATE_TAIL = re.compile(r"(?<!\s)\s+(?:on|in|at|from|for)\s+.*$", re.I)
 
 
@@ -107,6 +107,15 @@ class Item(NamedTuple):
 _VERB = re.compile(r"^(?:i\s+)?(?:paid|spent|bought|cost|was|were|aud|usd|gbp|eur|nzd|cad)\b\s*", re.I)
 #: Word by word: a blank run is split one way only (CodeQL).
 _AFTER = re.compile(r"^\s*(?:for|on|at|to)\s+(?P<what>[\w'-]+(?:\s+[\w'-]+)*?)(?:\s+(?:to|because|as|in|on)\b.*)?\s*$", re.I)
+
+
+#: A clause longer than this has no label to read after its amount: `_AFTER` tries a connector word at every
+#: word and each try runs to the end of the line, so a 50,000-character line cost seconds (review 1109).
+AFTER_MAX = 400
+
+
+def _after_what(rest: str):
+    return _AFTER.match(rest) if len(rest) <= AFTER_MAX else None
 
 
 _LABEL_TAIL = frozenset({"is", "are", "was", "were", "cost", "costs", "about"})
@@ -125,11 +134,13 @@ def _what(clause: str, at: int, end: int, last: str) -> str:
         words.pop()
     if words:
         return " ".join(words[-3:])
-    after = _AFTER.match(clause[end:])
+    after = _after_what(clause[end:])
     #: "$112 on the 17th" is when, not what: it keeps the clause before's label.
-    if not after or re.search(r"[0-9]", after.group("what")) or recognise.without_windows(after.group("what")) != after.group("what") or set(after.group("what").lower().split()) & recognise.MONTH_NAMES:
+    #: "$84 on groceries this week" is groceries: a window after the thing is dropped, not the label.
+    thing = " ".join(recognise.without_windows(after.group("what")).split()) if after else ""
+    if not thing or re.search(r"[0-9]", thing) or set(thing.lower().split()) & recognise.MONTH_NAMES:
         return last
-    return re.sub(r"^my\b", "your", after.group("what").strip())
+    return re.sub(r"^my\b", "your", thing)
 
 
 def _moved(clause: str, said: list) -> bool:
@@ -403,19 +414,41 @@ _BOUGHT = re.compile(
 _FIGURE_IN_NAME = re.compile(r"\b\d[\d.,]*\s?(?:[a-zA-Zµ]+\b)?")
 
 
+#: A first word that says when or where, not what, after "bought".
+_WHEN_WORDS = frozenset("in on at from since by last this next yesterday today tomorrow january february march april may june july august september october november december".split())
+
+
+#: "My phone is ...", "The car was ...": a short subject before its verb.
+_SUBJECT = re.compile(r"((?:my|your|the)\s+[\w-]+(?:\s[\w-]+){0,2}?)\s+(?:is|are|was|were)\b", re.I)
+
+
 def _note_name(view) -> str:  # noqa: ANN001
     """A note as a sum names it: its title, what it bought, or a short noun
     phrase for what it is about ("your note on the run"), never its whole
     line and never a figure the answer says beside it (composer-1031)."""
     if view.titled:
         return composer_lists._title(view)  # noqa: SLF001
-    if m := _BOUGHT.search(str(view.note.get("content") or "")):
+    #: What it bought, unless that is a time or place ("bought in March") and no thing (R3-23).
+    if (m := _BOUGHT.search(str(view.note.get("content") or ""))) and m.group("what").split()[0].lower() not in _WHEN_WORDS:
         return m.group("what").strip()
-    named = composer_frame.short_name(view.note)
+    #: "My phone is a Pixel 8" is the phone: the subject before its verb names the thing.
+    if (subject := _SUBJECT.match(str(view.note.get("content") or "").strip())):
+        return re.sub(r"^my\b", "your", subject.group(1), flags=re.I)
+    #: Else the note's words (`composer_frame.clipped_words`, R3-15) up to the
+    #: figure: "Order 4471 from Amazon arrives Tuesday" is the order.
+    named = composer_frame.clipped_words(view.note)
+    cut = named.endswith("…")
+    named = named.rstrip("…")
+    figure = re.search(r"\s\S*\d", named)
+    if figure and figure.start() > 2:
+        named, cut = named[: figure.start()], False
     bare = " ".join(_FIGURE_IN_NAME.sub("", named).split())
-    if not bare or re.search(r"\b(?:on|of|for|about|after|before)$", bare):
-        return f"your note of {composer_lists._day(view.written, composer.user_today())}" if view.written else composer_lists._title(view)  # noqa: SLF001
-    return bare
+    #: A name cut at its figure that is only the spending verb ("Spent") names nothing.
+    if not bare or not _VERB.sub("", bare) or re.search(r"\b(?:on|of|for|about|after|before)$", bare):
+        return composer_frame.name_of(view.note)
+    #: The note's clipped first words are its name (R3-15), quoted as `name_of`
+    #: quotes them; a name cut at its figure ("Order") is a noun, said bare.
+    return f"“{bare}…”" if cut else bare
 
 
 def _spent_line(items: list, symbol: str, on: str, when: str) -> tuple[str, float]:
@@ -435,7 +468,7 @@ def _spent_line(items: list, symbol: str, on: str, when: str) -> tuple[str, floa
             by_label[item.label] = by_label.get(item.label, 0) + item.value
         listed = _listed([f"{label.lower() if i else label} {_money(symbol, v)}" for i, (label, v) in enumerate(by_label.items())])
         return f"You spent {_money(symbol, total)}{on}{when}, going by {next(iter(by_note))}: {listed}.", total
-    listed = _listed([f"{name} {_money(symbol, v)}" for name, v in by_note.items()])
+    listed = _listed([f"{name[:1].upper()}{name[1:]} {_money(symbol, v)}" for name, v in by_note.items()])
     return f"Your notes record {_money(symbol, total)} spent{on}{when}: {listed}.", total
 
 
@@ -489,9 +522,18 @@ def _rates(views: list, subject: list[str]) -> list[tuple[str, Item]]:
     return found
 
 
+def _rates_total(rates: list[tuple[str, Item]]) -> str:
+    """" That is £592 a year in all.", when the standing amounts share a currency and a period (R9-10)."""
+    pers = {re.search(r"\ba (\w+)$", said).group(1) for said, _ in rates if re.search(r"\ba (\w+)$", said)}
+    signs = {item.symbol for _, item in rates}
+    if len(rates) < 2 or len(pers) != 1 or len(signs) != 1 or any(_APPROX.search(said) for said, _ in rates):
+        return ""
+    return f" That is {_money(signs.pop(), sum(item.value for _, item in rates))} a {pers.pop()} in all."
+
+
 def _say_rates(out, rates: list[tuple[str, Item]], lead: str) -> bool:  # noqa: ANN001
     lead = lead.replace("a regular amount", "regular amounts") if len(rates) > 1 else lead
-    line = f"{lead} {_listed([said for said, _ in rates])}."
+    line = f"{lead} {_listed([said for said, _ in rates])}.{_rates_total(rates)}"
     out.lines.append(line)
     _cite_all(out, [item for _, item in rates], line)
     return True
@@ -530,6 +572,9 @@ def _spent(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     if len({i.symbol for i in items}) == 1 and _one_of_several(items, views, win, subject):
         return False
     _spent_by_sign(out, items, views, (win, subject), on, when)
+    #: A budget note's "rent $1,200 a month" is spending the sum above leaves out (audit 1031 C30).
+    if not win and (rates := [r for r in _rates(views, subject) if all(r[1].view is not i.view for i in items)]):
+        _say_rates(out, rates, "Your notes also give a regular amount:")
     return True
 
 
@@ -695,7 +740,7 @@ def _one_day(rest: str) -> bool:
 
 def _dimension_of(word: str) -> tuple[str | None, bool]:
     """"far" is a length and "km" one by the unit table; "pounds" is money's."""
-    named = recognise.UNITS.get(word) if word not in recognise.CURRENCY_NAMES and len(word) > 1 else None
+    named = recognise_units.UNITS.get(word) if word not in recognise_units.CURRENCY_NAMES and len(word) > 1 else None
     return _DIMENSION_WORDS.get(word) or (named[0] if named and named[0] != "temperature" else None), bool(named)
 
 
@@ -767,12 +812,12 @@ def _done(verb: str) -> str:
 
 
 def _figure(value: float, unit: str) -> str:
-    size = recognise.UNITS[unit][1]
+    size = recognise_units.UNITS[unit][1]
     shown = f"{value / size:,.2f}".rstrip("0").rstrip(".")
     #: "10k" is said "10 km"; another glued letter by its name ("800m", 800 metres).
-    name = unit if len(unit) > 1 else "km" if unit == "k" else recognise.UNITS[unit][2]
+    name = unit if len(unit) > 1 else "km" if unit == "k" else recognise_units.UNITS[unit][2]
     #: "40 hour goal" is said "40 hours".
-    name = recognise.UNITS[unit][2] if len(unit) > 1 and recognise.UNITS[unit][2] == unit + "s" else name
+    name = recognise_units.UNITS[unit][2] if len(unit) > 1 and recognise_units.UNITS[unit][2] == unit + "s" else name
     return f"{shown} {name[:-1] if shown == '1' and name.endswith('s') and len(name) > 3 else name}"
 
 
@@ -919,13 +964,27 @@ def _target_asked(q: str) -> _Target | None:
     return _Target(dimension, figure[0][1] if figure else None, unit, word, _target_verb(q), rest)
 
 
-def _goal_in(views: list, dimension: str) -> Item | None:
-    """The newest figure a note sets as a goal, target or budget."""
+#: Words that name the same kind of figure: a limit is not a budget, a target is a goal.
+_KIND = {"goal": "goal", "target": "goal", "aim": "goal", "budget": "budget", "limit": "limit", "cap": "limit"}
+
+
+def _says_kind(text: str, noun: str) -> bool:
+    return any(_KIND.get(w.lower().rstrip("s")) == _KIND.get(noun) for w in _TARGET_WORD.findall(text))
+
+
+def _goal_in(views: list, dimension: str, noun: str = "") -> Item | None:
+    """The newest figure a note sets as the goal, target or budget asked for.
+    A sentence of another kind ("Overdraft limit £500" is not a budget) does
+    not count, and a note titled for it counts only when it holds one figure
+    (a Budget note listing rent, groceries and phone sets no limit)."""
     goals = []
     for view in views:
+        figures = [s for s in view.sentences if _read(s.text, dimension)]
         for sentence in view.sentences:
-            if _TARGET_WORD.search(sentence.text + " " + str(view.title)):
-                goals += [(bool(_TARGET_WORD.search(sentence.text)), view.written or date.min, Item(_note_name(view), m[2], m[1], view, sentence)) for m in _read(sentence.text, dimension)]  # noqa: SLF001
+            named = _says_kind(sentence.text, noun) if noun else bool(_TARGET_WORD.search(sentence.text))
+            titled = _says_kind(str(view.title), noun) if noun else bool(_TARGET_WORD.search(str(view.title)))
+            if named or (titled and len(figures) == 1):
+                goals += [(named, view.written or date.min, Item(_note_name(view), m[2], m[1], view, sentence)) for m in _read(sentence.text, dimension)]  # noqa: SLF001
     return max(goals, key=lambda g: g[:2])[2] if goals else None
 
 
@@ -948,7 +1007,7 @@ def _toward(out, ask: _Target, views: list, today: date) -> bool:  # noqa: ANN00
     win = _window_asked(ask.after, today, views)
     aim, goal = ask.value, None
     if aim is None:
-        goal = _goal_in(views, ask.dimension)
+        goal = _goal_in(views, ask.dimension, ask.noun)
         if goal is None:
             out.lines.append(f"I found no {ask.noun} figure in your notes.")
             return True
@@ -1014,7 +1073,7 @@ def _unit_named(body: str) -> tuple[str, str] | None:
     "m" are units only glued to a number."""
     for word in re.findall(r"[a-zµ]+", body.lower()):
         dimension, named = _dimension_of(word)
-        if named and dimension and word not in _CALENDAR and word not in recognise._GLUED_ONLY:  # noqa: SLF001
+        if named and dimension and word not in _CALENDAR and word not in recognise_units.GLUED_ONLY:
             return dimension, word
     return None
 
@@ -1183,7 +1242,8 @@ def recorded_notes(list_page) -> list:  # noqa: ANN001
 
 def records_amounts(text: str) -> bool:
     """A note that names spending, a refund or a budget and holds an amount, or holds a measure."""
-    return bool(_read(text) and (_SPENDING.search(text) or _REFUND.search(text) or _TARGET_WORD.search(text))) or any(m[0] != "money" for m in recognise.measures(text))
+    #: A standing amount ("£412 a year") is an amount a note records, whatever its words (R9-10).
+    return bool(_read(text) and (_SPENDING.search(text) or _REFUND.search(text) or _TARGET_WORD.search(text))) or bool(_RATE.search(text)) or any(m[0] != "money" for m in recognise.measures(text))
 
 
 def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001

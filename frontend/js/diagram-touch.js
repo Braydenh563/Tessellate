@@ -5,6 +5,7 @@
 // page, hidden, and the sheet presses them, so there is one way a block is added). The picture's pinch, pan
 // and fit are diagram-view.js's now (1614), for every window.
 (() => {
+  const COMPACT = "(max-width: 599.98px), (pointer: coarse)";
   //: The sheet: the Add library's groups (diagram-library.js), a heading each, then a row per tile with the tile's own glyph,
   //: its name and its hint (1594). A tile is pressed, so its handler adds the block.
   function addSheet(root, opener) {
@@ -29,7 +30,8 @@
             //: Every glyph in a slot of one width, so the names start at the same x (R6.11: 57, 54 and 56 px before).
             const slot = document.createElement("span");
             slot.className = "dgm-add-glyph";
-            slot.append(tile.firstElementChild.cloneNode(true));
+            //: The glyph by what it is, not by its place: a tile that lost its glyph printed its name here.
+            slot.append(tile.querySelector(":scope > :not(.dgm-tile-name)").cloneNode(true));
             row.firstElementChild.replaceWith(slot);
             const hint = document.createElement("small");
             hint.className = "dgm-add-hint muted";
@@ -60,18 +62,28 @@
   function wire(S) {
     if (!S?.root || S.root.dataset.touch) return;
     S.root.dataset.touch = "1";
-    S.root.classList.add("dgm-compact");
+    //: Wide, a kind's dock only swaps its palette for the Add sheet (`dgm-addlist`); the rest of `dgm-compact` is the phone's.
+    S.root.classList.add(matchMedia(COMPACT).matches ? "dgm-compact" : "dgm-addlist");
     const actions = S.root.querySelector(".dgm-dock .dock-actions");
     //: The flowchart's toolbar has its own Add split (diagram-bar.js); the kinds' palettes still open this sheet.
-    if (S.steps && S.pane && actions && matchMedia("(max-width: 599.98px)").matches) {
+    //: A kind's list is the same sheet once it has a block (1661 m: its list stacked under a 96 px picture at 390;
+    //: diagram-kinds.js `sync` says when, with `dgm-listless`).
+    if ((S.steps || S.k) && S.pane && actions && matchMedia("(max-width: 599.98px)").matches) {
       const list = smallButton("ph:list-bullets", "Blocks list", () => listSheet(S, list));
       list.classList.add("dgm-listbtn");
       list.setAttribute("aria-haspopup", "dialog");
       actions.prepend(list);
       S.root.classList.add("dgm-phonelist");
+      //: Ask sat only inside the Blocks sheet (dgai-1110 left): its own button opens that sheet with the question box in hand.
+      if (S.pane.querySelector(".dgm-ai-form")) {
+        const ask = smallButton("ph:sparkle", "Ask for a change", () => (listSheet(S, ask), S.pane.querySelector(".dgm-ai-form input")?.focus()));
+        ask.classList.add("dgm-askbtn");
+        ask.setAttribute("aria-haspopup", "dialog");
+        list.after(ask);
+      }
     }
     if (actions && !S.root.querySelector(".dgm-addsplit")) {
-      const add = smallButton("ph:plus Add", "Choose a shape to add as a block", () => addSheet(S.root, add), false);
+      const add = smallButton("ph:plus Add", "Choose a shape to add as a block (N, or ? for every key)", () => addSheet(S.root, add), false);
       add.classList.add("dgm-add");
       add.setAttribute("aria-haspopup", "dialog");
       actions.prepend(add);

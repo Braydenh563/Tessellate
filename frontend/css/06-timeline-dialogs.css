@@ -1011,16 +1011,19 @@
    to 32% opacity, eased (22% and 8% read slightly too see-through, the owner
    2026-10-11); the head keeps its full strength, because Peek, the
    title and the way out live there and must stay findable. */
-.modal-overlay.peeking {
-  background: transparent !important;
+/* Won by the id, not by `!important`: `#settings-modal > .modal-card` gives
+   the card its opaque ground at (1,1,0), and the one overlay that peeks is
+   the settings modal (`setSettingsPeek`), so these name it. */
+#settings-modal.peeking {
+  background: transparent;
 }
-.modal-overlay.peeking .modal-card {
-  opacity: 1 !important;
-  background: color-mix(in srgb, var(--panel) 14%, transparent) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: none !important;
+#settings-modal.peeking .modal-card {
+  opacity: 1;
+  background: color-mix(in srgb, var(--card) 14%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
 }
 #settings-modal .modal-card > .modal-body {
   transition: opacity var(--ui-base) var(--ease-out);
@@ -1029,7 +1032,7 @@
   opacity: 0.32;
 }
 .modal-overlay.peeking .modal-card > .dialog-head {
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
   border-radius: var(--radius-md);
 }
 /* A saved look: its name applies it, the ✕ deletes it. One chip rather than a
@@ -2767,6 +2770,25 @@
   /* A section is one unit, "Shapes" wrapping its label onto the next line
      while its icons stayed behind would read as two unrelated pieces. */
   flex-shrink: 0;
+}
+/* **The section with the pickers gives way before the shelf wraps** (wrapzoom
+   2026-11-11). A map's Layout section is two selects and Tidy, 370px, and at
+   1280 it sent Edit to a second row of the shelf. In the bottom shelf it asks
+   for 12rem, grows back to its own width when the row has room, and its
+   pickers shorten with an ellipsis (`.select-value`; the select's title and
+   label name the choice) before the shelf takes a row. */
+.whiteboard-floating-panel:not([data-dock="side"]) .wb-tool-section:has(.select-shell) {
+  flex: 1 1 12rem;
+  max-width: max-content;
+  min-width: 0;
+}
+.whiteboard-floating-panel:not([data-dock="side"]) .wb-tool-section:has(.select-shell) > .wb-tool-section-row {
+  flex-wrap: nowrap;
+  max-width: 100%;
+}
+.whiteboard-floating-panel:not([data-dock="side"]) .wb-tool-section-row > .select-shell {
+  flex: 0 1 auto;
+  min-width: 4.5rem;
 }
 .wb-tool-section-label {
   font-size: var(--text-xs);

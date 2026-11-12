@@ -8,6 +8,8 @@ it. The measured numbers live in the commit bodies.
 import re
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 ROOT = Path(__file__).resolve().parent.parent
 CSS_DIR = ROOT / "frontend" / "css"
 
@@ -133,7 +135,7 @@ def test_12_reminder_when_row_takes_the_fields_height_and_corner():
 
 
 def _js(name: str) -> str:
-    return (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
+    return unwrapped((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8"))
 
 
 def test_13_reminder_facts_are_one_line_of_equal_chips():
@@ -173,7 +175,7 @@ def test_15_a_dock_title_is_a_count_not_the_tab_name_again():
     assert "nounCount.dock = function (" in _js("library.js"), "a property, not one more global; not in the boot scripts (test_static_compression)"
     calls = {
         "library.js": ('nounCount.dock("library-docs"', 'nounCount.dock("library-media"', 'nounCount.dock("library-links"', 'nounCount.dock("library-skills"', 'nounCount.dock("library",'),
-        "whiteboard.js": ('nounCount.dock("library-boards"',),
+        "boards-gallery.js": ('nounCount.dock("library-boards"',),
         "meetings.js": ('nounCount.dock?.("library-recordings"',),
     }
     for name, needles in calls.items():

@@ -7,6 +7,7 @@ import re
 from datetime import date
 
 from tessellate.ai import composer, composer_digest
+from tessellate.ai import composer_digest_sentences
 
 LABEL_OPENER = re.compile(r"^\*\*[^*\n]{1,40}:\*\*", re.M)
 
@@ -22,15 +23,15 @@ def test_who_says_days_as_clauses_and_keeps_names_capitalised():
     ]
     #: Asked about time, each day is a clause (INBOX 1441: a day is said
     #: only then); not asked, the same line is said once, undated.
-    composer_digest._set_timing("when did Priya come up?")
-    out = composer_digest._Out()
+    composer_digest_sentences._set_timing("when did Priya come up?")
+    out = composer_digest_sentences._Out()
     assert composer_digest._who(out, "priya", _views(notes), set(), date(2026, 10, 11))
     text = "\n".join(out.lines)
     assert not LABEL_OPENER.search(text), text
     #: Composer5-1031 (INBOX 1483: "when did" says the date, then how far back): was "On 2 September, Priya moved ...".
     assert "On 2 September, about a month ago, Priya moved to Leeds in spring." in text, text
-    composer_digest._set_timing("who is Priya?")
-    out = composer_digest._Out()
+    composer_digest_sentences._set_timing("who is Priya?")
+    out = composer_digest_sentences._Out()
     assert composer_digest._who(out, "priya", _views(notes), set(), date(2026, 10, 11))
     assert out.lines[1:] == ["Priya moved to Leeds in spring."], out.lines
 
@@ -40,7 +41,7 @@ def test_still_open_extra_is_a_sentence():
         {"id": 1, "content": "# Groceries\n\nNeed to buy: milk, eggs, bread.", "tags": ["shopping"], "category": "Home", "created_at": "2026-10-02T10:00:00"},
         {"id": 2, "content": "# Trip\n\nThe tent is still to buy.", "tags": ["camping"], "category": "Home", "created_at": "2026-10-03T10:00:00"},
     ]
-    out = composer_digest._Out()
+    out = composer_digest_sentences._Out()
     assert composer_digest._left(out, "what do I need to buy", [], _views(notes), set(), date(2026, 10, 11))
     assert not any(LABEL_OPENER.search(line) for line in out.lines), out.lines
     assert out.lines[-1] == "The Camping tent is also still open.", out.lines

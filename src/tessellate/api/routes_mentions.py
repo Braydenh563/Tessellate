@@ -33,7 +33,8 @@ from tessellate.core.database import LIKE_ESCAPE, Entry, like_escape
 from tessellate.core.deps import get_session
 from tessellate.repo import documents as documents_repo, relations as relations_repo
 from tessellate.entry import manager
-from tessellate.entry.manager import WIKI_LINK, plain_label
+from tessellate.entry import manager_wiki
+from tessellate.entry.manager_text import WIKI_LINK, plain_label
 from tessellate.entry.mentions import (
     BACKLINK_ROWS_MAX,
     BACKLINK_SOURCES_MAX,
@@ -93,7 +94,7 @@ def _backlinks(session: Session, entry: Entry) -> dict:
         #: `[[name|alias]]` and `[[name#part]]` name the note before the mark.
         name = re.split(r"[|#]", raw, maxsplit=1)[0].strip().casefold()
         if name not in resolved:
-            resolved[name] = bool(name) and manager.find_by_wiki_name(session, name) is entry
+            resolved[name] = bool(name) and manager_wiki.find_by_wiki_name(session, name) is entry
         return resolved[name]
 
     likes = [f"%{like_escape(name)}%" for name in names]
@@ -141,7 +142,18 @@ def _backlinks(session: Session, entry: Entry) -> dict:
             if not ok:
                 row["why"] = LINK_UNSAFE_WHY
             mentions.append(row)
+    links += _sealed_sources(session, linked_ids)
     return {"name": names[0], "links": links[:BACKLINK_ROWS_MAX], "mentions": mentions[:BACKLINK_ROWS_MAX]}
+
+
+def _sealed_sources(session: Session, linked_ids: set[int]) -> list[dict]:
+    """A source in a locked private space (INBOX 1727): the link is shown, as
+    "A private note" with no sentence; its text is out of this read. Its own
+    kind, so the window lends no sentence to the Connections row it matches."""
+    return [
+        {"kind": "private", "id": source_id, "title": manager.PRIVATE_SPACE_NOTE, "context": "", "locked": True}
+        for source_id in sorted(manager.sealed_stand_ins(session, linked_ids))
+    ]
 
 
 @router.get("/{entry_id}/backlinks")

@@ -503,6 +503,9 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "library_ref": None,
         #: A map topic's due day (MINDMAP decision 37); None on a board text.
         "due": None,
+        #: Its start day (the Gantt view) and its audio note (a recording id); None on a board text.
+        "start": None,
+        "recording": None,
         # And with a topic's markers (MINDMAP_PLAN decision 34).
         "priority": None,
         "progress": None,
@@ -524,6 +527,15 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "keep_ratio": None,
         # And with a picture's crop to a shape (INBOX 1313, plan row 13).
         "crop": None,
+        # And with a picture's rectangle crop (Trim edges).
+        "trim": None,
+        # And with Edit image: a picture's turn, flips and filters (non-destructive).
+        "turn": None,
+        "flip_x": None,
+        "flip_y": None,
+        "grey": None,
+        "bright": None,
+        "contrast": None,
         # And with a board item's voting dots (INBOX 1313, plan row 14).
         "votes": None,
     }
@@ -1191,6 +1203,26 @@ def test_a_pictures_crop_shape_is_kept_and_only_a_known_one(board_client):
     assert board_client.get("/whiteboard/").json()["objects"][0]["data"]["crop"] == "hexagon"
     refused = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "crop": "url(x)"}})
     assert refused.status_code == 422
+
+
+def test_a_pictures_rectangle_trim_is_kept_and_bounded(board_client):
+    made = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "trim": [10, 0, 20, 40]}})
+    assert made.status_code == 201, made.text
+    assert board_client.get("/whiteboard/").json()["objects"][0]["data"]["trim"] == [10, 0, 20, 40]
+    for bad in ([10, 0, 20], [10, 0, 20, 95], [-1, 0, 0, 0]):
+        refused = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "trim": bad}})
+        assert refused.status_code == 422, bad
+
+
+def test_the_server_keeps_and_bounds_the_picture_style(board_client):
+    ok = {"url": "/media/abc123.png", "turn": 270, "flip_x": True, "flip_y": False, "grey": True, "bright": 140, "contrast": 60}
+    made = board_client.post("/whiteboard/objects", json={"kind": "image", "data": ok})
+    assert made.status_code == 201, made.text
+    kept = board_client.get("/whiteboard/").json()["objects"][0]["data"]
+    assert all(kept[k] == v for k, v in ok.items() if k != "url")
+    for bad in ({"turn": 45}, {"bright": 500}, {"contrast": 0}, {"turn": "left"}):
+        refused = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", **bad}})
+        assert refused.status_code == 422, bad
 
 
 def test_a_board_items_votes_are_kept_and_bounded(board_client):

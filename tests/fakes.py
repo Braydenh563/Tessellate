@@ -68,6 +68,7 @@ class FakeOllama:
         self.chat_calls: list[list[dict]] = []
         self.chat_models: list[str] = []  # which model each chat() used (Wave N)
         self.chat_modes: list[str | None] = []  # which preset each chat_stream() ran in
+        self.chat_call_modes: list[str | None] = []  # and each one-shot chat()
         self.librarian_reply = "Here's what I found in your notebook!"
         self.librarian_thinking: str | None = None  # set to fake a thinking model
         # `ai.extractor.propose_split`'s own JSON reply, kept apart from
@@ -143,6 +144,7 @@ class FakeOllama:
 
     def chat(self, model: str, messages: list[dict], mode: str | None = None) -> dict:
         self.chat_models.append(model)
+        self.chat_call_modes.append(mode)
         return {"content": self._reply_text(messages), "thinking": self.librarian_thinking}
 
     def chat_stream(self, model: str, messages: list[dict], mode: str | None = None):

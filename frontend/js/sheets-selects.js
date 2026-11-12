@@ -76,16 +76,12 @@ const SIDEBAR_VIEWPORT_SHARE = 0.24;
 const SIDEBAR_TABLET_MAX = 192;
 const SIDEBAR_TABLET_BAND = "(min-width: 820px) and (max-width: 1099.98px)";
 
-function layoutIsTablet() {
-  return window.matchMedia(SIDEBAR_TABLET_BAND).matches;
-}
-
 //: What the sidebar may actually occupy right now, the user's own width
 //: where there is room for it, less where there is not, never below the
 //: floor a category name needs to stay readable.
 function sidebarFittedWidth(saved) {
   const cap = Math.max(SIDEBAR_MIN, Math.round(window.innerWidth * SIDEBAR_VIEWPORT_SHARE));
-  const banded = layoutIsTablet() ? Math.min(cap, SIDEBAR_TABLET_MAX) : cap;
+  const banded = window.matchMedia(SIDEBAR_TABLET_BAND).matches ? Math.min(cap, SIDEBAR_TABLET_MAX) : cap;
   return Math.min(saved, banded);
 }
 
@@ -161,7 +157,7 @@ for (const query of [STACKED_LAYOUT, SIDEBAR_TABLET_BAND]) {
   window.matchMedia(query).addEventListener("change", () => {
     applySidebarSheetMode(layoutIsStacked());
     for (const id of SIDEBAR_IDS) {
-      const aside = $(id);
+      const aside = document.getElementById(id);
       if (aside?.dataset.resizable) {
         applySidebarWidth(aside, sidebarWidth(id, sidebarDefault(id)), { remember: false });
       }
@@ -195,7 +191,7 @@ const SIDEBAR_IDS = ["sidebar", "chat-sidebar", "doc-sidebar", "skills-sidebar"]
 
 function eachSidebar(fn) {
   for (const id of SIDEBAR_IDS) {
-    const aside = $(id);
+    const aside = document.getElementById(id);
     if (aside) fn(aside, id);
   }
 }
@@ -475,12 +471,15 @@ function makeSidebarResizable(aside) {
 }
 
 function initResizableSidebars() {
-  for (const id of SIDEBAR_IDS) {
-    const aside = $(id);
-    if (aside) makeSidebarResizable(aside);
-  }
-  makeWebPanelResizable($("web-panel"));
-  applySidebarSheetMode(layoutIsStacked());
+  //: Not `$`: a sidebar inside a surface template is wired when its pane is built.
+  const wire = () => {
+    eachSidebar(makeSidebarResizable);
+    applySidebarSheetMode(layoutIsStacked());
+    syncSidebarInert();
+  };
+  wire();
+  for (const name of ["documents", "chat", "library"]) onSurface(name, wire);
+  onSurface("chat", () => makeWebPanelResizable($("web-panel")));
   window.matchMedia(SIDEBAR_PHONE).addEventListener("change", syncSidebarInert);
   initSidebarSheetDismissal();
 }
@@ -740,6 +739,9 @@ function enhanceSelect(select) {
   // guessing at a listbox that supports multiple selection.
   if (select.multiple || select.size > 1) return;
   if (select.closest("[data-no-select-enhance]")) return;
+  //: A select in a Settings pane not yet shown waits for the pane (`showSettingsSection`): 48 of them were three
+  //: listeners and an opener each on the first open (perf audit 1108 P4). The native select keeps the value meanwhile.
+  if (select.closest("#settings-modal .settings-section.hidden")) return;
   select.setAttribute(SELECT_ENHANCED, "1");
   const rich = select.classList.contains("feature-model-select");
 
@@ -817,11 +819,25 @@ function enhanceSelect(select) {
   wrapper?.querySelectorAll("select, .select-shell").forEach((part) => part.remove());
   const label = named || wrapper?.textContent.trim().replace(/\s+/g, " ") || select.title || "Choose an option";
   opener.setAttribute("aria-label", label);
+  menu.setAttribute("aria-label", label); // the listbox is named like its button
   opener.title = select.title || label;
 
+  //: An option's `data-icon` picture (U27), decorative.
+  const optionGlyph = (option) => {
+    const name = option?.dataset.icon;
+    if (!name) return null;
+    const glyph = document.createElement("i");
+    glyph.className = `ph ph-${name} ph-lead`;
+    glyph.setAttribute("aria-hidden", "true");
+    return glyph;
+  };
+  let faceGlyph = null; // the chosen option's picture, if it names one
   const syncValue = () => {
     const chosen = select.options[select.selectedIndex];
     valueText.textContent = chosen ? selectFaceText(chosen, syncValue) : "";
+    faceGlyph?.remove();
+    faceGlyph = optionGlyph(chosen);
+    if (faceGlyph) opener.insertBefore(faceGlyph, valueText);
     //: A face cut down for a phone keeps the whole row in the tooltip.
     opener.title = chosen?.dataset.faceNarrow && NARROW_FACE.matches
       ? chosen.textContent.trim()
@@ -866,12 +882,8 @@ function enhanceSelect(select) {
     //: **A picture before the name** (`data-icon`, a Phosphor name; audit 1028
     //: U27: the Layout list was ten lines of text for ten shapes). Decorative:
     //: the name beside it is the label.
-    if (option.dataset.icon) {
-      const glyph = document.createElement("i");
-      glyph.className = `ph ph-${option.dataset.icon} ph-lead`;
-      glyph.setAttribute("aria-hidden", "true");
-      row.prepend(glyph);
-    }
+    const glyph = optionGlyph(option);
+    if (glyph) row.prepend(glyph);
     //: **An option that wants its row drawn its own way** names a class in
     //: `data-menu-class` (Settings' Font list sets each row in its own face,
     //: INBOX 670). The menu is lifted to <body>, so no selector can reach a
@@ -939,6 +951,14 @@ function enhanceSelect(select) {
     } else {
       closeActionMenus();
     }
+  });
+
+  //: APG select-only combobox: ↓ and ↑ on the closed button open the list on the chosen row (Enter and Space already do, as a click).
+  opener.addEventListener("keydown", (event) => {
+    if ((event.key !== "ArrowDown" && event.key !== "ArrowUp") || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (!menu.classList.contains("hidden")) return;
+    event.preventDefault();
+    opener.click();
   });
 
   select.addEventListener("change", syncValue);
@@ -1061,6 +1081,7 @@ function enhanceAllSelects(root) {
   for (const select of (root || document).querySelectorAll("select")) {
     enhanceSelect(select);
   }
+  enhanceAllSelects.stampSwitches?.(root || document); // a Settings pane's switches, as it is shown
 }
 
 //: **A date or a time, picked** (UI_MODERNISATION_PLAN Phase 12 decision 5;
@@ -1369,43 +1390,6 @@ function menuRowFits(row, hint) {
   row.addEventListener("focus", check);
 }
 
-function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
-  const wrap = document.createElement("span");
-  wrap.className = "menu-wrap";
-
-  const menu = document.createElement("div");
-  menu.className = "action-menu hidden";
-  menu.setAttribute("role", "menu");
-
-  const opener = smallButton(vertical ? "ph:dots-three-vertical" : "ph:dots-three", ariaLabel, () => {
-    window.objKebabRows?.(menu);
-    if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
-      openKebabSheet(menu, opener, ariaLabel);
-      return;
-    }
-    const willOpen = menu.classList.contains("hidden");
-    if (willOpen) openActionMenu(menu, opener);
-    else closeActionMenus();
-  });
-  //: **A kebab is one glyph, so it is square.** Reported: "all the chat header
-  //: buttons [should] be square, there should be no rectangle single icon
-  //: buttons as that is not consistent with the rest of the application."
-  //: Measured in that header: Fork and Compress 28×28, this opener 43×28, it
-  //: took `.small`'s text padding because the class that squares an icon
-  //: button has to be remembered per button (see the rule's own comment in
-  //: 00-tokens-shell.css) and nobody remembered it here. Set at the source, so
-  //: every ⋯ in the app is square rather than one more thing to remember.
-  //: **One class for every ⋯** (INBOX 722, the owner: "meatball buttons have a
-  //: visible outline, is that consistent with the rest of the app??"). The
-  //: Library's cards and lines drew a resting `--shadow-sm` on a button whose
-  //: fill and edge another rule had already cleared, so the ⋯ read as an
-  //: outlined square there and as a plain glyph everywhere else. The class is
-  //: the one place a surface cannot override: the ghost recipe is written once,
-  //: in 08-consistency.css, DESIGN.md's "A ⋯ or ⋮ that opens a menu" row.
-  opener.classList.add("icon-only", "kebab-opener");
-  opener.setAttribute("aria-haspopup", "menu");
-  opener.setAttribute("aria-expanded", "false");
-
   //: **Groups, drawn from the items rather than from separator objects**
   //: (DOCUMENTS_PLAN section 16). The table cell's menu was the case that
   //: asked for this: ten items covering rows, columns, alignment and the
@@ -1422,6 +1406,8 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
   //: the divider, not the label. `role="separator"` so the grouping is in the
   //: accessibility tree too, and `wireMenuKeyboard` walks `.menu-item`, so a
   //: divider is never a stop on the way down.
+//: Its own function so a menu can build its rows on first open instead of at once: the Library's cards (audit 1029 X15), where the rows were 43 of a card's 55 nodes.
+kebabMenu.rows = (menu, items) => {
   let lastGroup = null;
   for (const item of items) {
     if (lastGroup !== null && item.group && item.group !== lastGroup) {
@@ -1451,6 +1437,8 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
     if (item.danger) button.classList.add("menu-danger");
     button.setAttribute("role", "menuitem");
     setLabel(button, item.label);
+    //: `lead`, a function returning a node, puts that node first in its own row: a drawn glyph the label's `ph:` marker cannot name. It rides on the item, so a regrouped or reordered list keeps each glyph on its row (the diagram shelf's more menu matched rows by index before).
+    if (typeof item.lead === "function") button.prepend(item.lead());
     if (item.keys) {
       const hint = document.createElement("kbd");
       hint.className = "menu-keys";
@@ -1458,6 +1446,8 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
       button.append(hint);
       button.setAttribute("aria-keyshortcuts", item.keys.replace(/ or /g, " "));
     }
+    //: `current`: the chosen row of a choice menu.
+    if (item.current) button.setAttribute("aria-current", "true");
     if (item.title) button.title = item.title;
     menuRowFits(button, item.title || "");
     // Muted, not `disabled`, a native disabled button also blocks its own
@@ -1472,6 +1462,51 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
     });
     menu.appendChild(button);
   }
+};
+
+function kebabMenu(items, ariaLabel, { vertical = false, anchor = null } = {}) {
+  const wrap = document.createElement("span");
+  wrap.className = "menu-wrap";
+
+  const menu = document.createElement("div");
+  menu.className = "action-menu hidden";
+  menu.setAttribute("role", "menu");
+  //: A menu is named (APG menu button); the opener already is, by the same words.
+  if (ariaLabel) menu.setAttribute("aria-label", ariaLabel);
+
+  const opener = smallButton(vertical ? "ph:dots-three-vertical" : "ph:dots-three", ariaLabel, () => {
+    window.objKebabRows?.(menu);
+    if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
+      openKebabSheet(menu, opener, ariaLabel);
+      return;
+    }
+    const willOpen = menu.classList.contains("hidden");
+    if (willOpen) {
+      openActionMenu(menu, opener);
+      //: `kebabMenu.beside` is in diagram-library.js, the only file whose menus pass an `anchor`.
+      if (anchor) kebabMenu.beside(menu, anchor.getBoundingClientRect(), opener);
+    } else closeActionMenus();
+  });
+  //: **A kebab is one glyph, so it is square.** Reported: "all the chat header
+  //: buttons [should] be square, there should be no rectangle single icon
+  //: buttons as that is not consistent with the rest of the application."
+  //: Measured in that header: Fork and Compress 28×28, this opener 43×28, it
+  //: took `.small`'s text padding because the class that squares an icon
+  //: button has to be remembered per button (see the rule's own comment in
+  //: 00-tokens-shell.css) and nobody remembered it here. Set at the source, so
+  //: every ⋯ in the app is square rather than one more thing to remember.
+  //: **One class for every ⋯** (INBOX 722, the owner: "meatball buttons have a
+  //: visible outline, is that consistent with the rest of the app??"). The
+  //: Library's cards and lines drew a resting `--shadow-sm` on a button whose
+  //: fill and edge another rule had already cleared, so the ⋯ read as an
+  //: outlined square there and as a plain glyph everywhere else. The class is
+  //: the one place a surface cannot override: the ghost recipe is written once,
+  //: in 08-consistency.css, DESIGN.md's "A ⋯ or ⋮ that opens a menu" row.
+  opener.classList.add("icon-only", "kebab-opener");
+  opener.setAttribute("aria-haspopup", "menu");
+  opener.setAttribute("aria-expanded", "false");
+
+  kebabMenu.rows(menu, items);
   wireMenuKeyboard(menu, opener);
   wrap.append(opener, menu);
   //: What a right-click on the row this menu belongs to opens at the pointer
@@ -1933,7 +1968,8 @@ async function loadConversationList() {
     // into an ellipsis at the default sidebar width.
     if (conversation.tokens) bits.push(`${formatTokens(conversation.tokens)} tok`);
     meta.textContent = bits.join(" · ");
-    meta.title = bits.join(" · "); // in full, if the row still has to clip
+    //: The hover holds the exact time (OPEN #593); the row reads relative.
+    meta.title = [parseServerTime(conversation.last_at)?.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" }), ...bits.slice(1)].filter(Boolean).join(" · ");
     title.append(name, meta);
     // The title often isn't the subject: show what was actually asked.
     if (conversation.preview && conversation.preview !== conversation.title) {
@@ -2095,20 +2131,16 @@ async function openConversation(id) {
       // Older turns (saved before steps existed) only have the flattened
       // thinking/tools/answer, so they're rebuilt in that fixed order, 
       // everything is still shown, just without the interleaving.
-      if (message.steps && message.steps.length) {
+      if (message.steps?.length) {
         handles.timeline.replay(message.steps);
       } else {
-        if (message.thinking) {
-          handles.timeline.thinking(message.thinking);
-        }
+        if (message.thinking) handles.timeline.thinking(message.thinking);
         // Re-draw the tool-activity chips (Wave G) so they don't vanish on
         // reload the way they used to (user-reported).
         for (const t of message.tools || []) {
           handles.timeline.tool(toolChip(t.label, t.ok !== false, t));
         }
-        if (message.content) {
-          handles.timeline.answer(message.content);
-        }
+        if (message.content) handles.timeline.answer(message.content);
       }
       handles.timeline.finalise();
       //: …and the step group, so a replayed turn does not reopen with
@@ -2119,36 +2151,25 @@ async function openConversation(id) {
       // stream, so reopening a chat showed answers with nothing to say which
       // model wrote them or what they cost. Turns saved before this stored no
       // stats and correctly get no line, rather than a row of "?"s.
-      if (message.stats) {
-        //: A reopened conversation gets its meter back from the last turn that
-        //: recorded one: without this the header says nothing about a thread
-        //: that is already 80% through its window, which is precisely the
-        //: thread you want warned about.
-        renderChatContextMeter(message.stats);
+      //: Badge and note card as the live answer drew them (INBOX 1693): `by` is saved with the reply.
+      const by = message.by;
+      if (by) finishReply(null, { ...by, bubble: handles.bubble, why: message.why, records: handles.recordsHolder });
+      //: A reopened conversation gets its meter back from the last turn that recorded one.
+      if (message.stats) renderChatContextMeter(message.stats);
+      if (message.wrote) handles.bubble.dataset.wrote = "1";
+      if (message.stats || by) {
         handles.bubble.appendChild(
           messageMetaLine({
-            model: message.stats.model,
+            ...message, // stats and stopped, as saved
+            model: (message.stats || by).model,
             elapsedMs: message.elapsed_ms,
-            stats: message.stats,
             toolCount: (message.tools || []).length,
-            rounds: message.stats.round || 0,
-            usedTools: message.used_tools ?? null,
+            rounds: (message.stats || by).round || 0,
+            usedTools: message.used_tools,
           })
         );
       }
-      //: **The Sources panel is rebuilt, not the thing it replaced.**
-      //:
-      //: Reported: *"a lot of the steps and agent process disappears when I
-      //: leave the chat session and come back to it."* A live turn ends with
-      //: the Sources panel: notes, files and web pages, with previews and
-      //: links: and this path rebuilt the old "N matching notes" disclosure
-      //: instead, which knows nothing about files or the web. So reopening a
-      //: conversation genuinely lost most of what the turn had consulted, and
-      //: what survived was drawn as a different control.
-      //:
-      //: `touched` comes back off the saved tool events, which have carried it
-      //: since the live action line was built, the same rows, from the same
-      //: place, so a reopened panel is the panel and not an approximation.
+      //: The Sources panel is rebuilt, not the old "N matching notes" disclosure; `touched` comes off the saved tool events.
       const savedInput = {
         meta: {
           raw_results: message.raw_results || [],
@@ -2157,6 +2178,7 @@ async function openConversation(id) {
         toolEvents: message.tools || [],
         touched: (message.tools || []).flatMap((t) => t.touched || []),
         sentences: message.sentence_grounding,
+        composed: Boolean(message.by?.composed),
       };
       //: The panel's order, built once and handed to the citation pass below
       //: as the live path does (chat-attach.js, `turnSources`). Reopening
@@ -2168,12 +2190,7 @@ async function openConversation(id) {
       if (savedSources) {
         handles.recordsHolder.appendChild(savedSources);
       } else if (message.raw_results) {
-        renderRecordsDetails(handles.recordsHolder, {
-          raw_results: message.raw_results,
-          search_mode: message.search_mode,
-          match_info: message.match_info || {},
-          connected_ids: message.connected_ids || [],
-        });
+        renderRecordsDetails(handles.recordsHolder, { ...message, match_info: message.match_info || {}, connected_ids: message.connected_ids || [] });
       }
       // Same reload-reconstruction fix as raw_results just above, for the
       // "Grounded in" chips: reported directly as disappearing once the chat
@@ -2202,6 +2219,7 @@ async function openConversation(id) {
       if (message.followups) {
         renderFollowups(handles.bubble, message.followups);
       }
+      renderToolConfirm.saved(handles, message);
       //: And the Resume and Edit-step buttons, which disappeared on reopen for
       //: the same reason and are rebuilt through the same function the live
       //: path uses, from the state saved with the turn.
@@ -2217,16 +2235,14 @@ async function openConversation(id) {
       //: These two paths had already drifted (this one had Edit and no fork or
       //: rewrite; the live one the reverse), which is how a fix lands on half
       //: the app's messages.
-      handles.bubble.appendChild(
-        assistantMessageActions({
-          bubble: handles.bubble,
-          text: message.content,
-          question: lastQuestionText,
-          onEdit: () => editChatAnswer(handles, turnIndex, message.content),
-        })
-      );
+      assistantMessageActions({
+        bubble: handles.bubble,
+        text: message.content,
+        question: lastQuestionText,
+        onEdit: () => editChatAnswer(handles, turnIndex, message.content),
+      });
       if (lastQuestionText !== null) {
-        chatConv.turns.push({ question: lastQuestionText, answer: message.content });
+        chatConv.turns.push({ question: lastQuestionText, answer: message.content, objects: message.objects, frame: message.frame });
       }
     }
   }
@@ -2243,11 +2259,10 @@ async function openConversation(id) {
     // written yet, or exists only as a half-finished checkpoint row, which is
     // the reported "empty message bubble". Drop that partial and put the live
     // nodes back instead.
-    const bubbles = $("chat-messages").querySelectorAll(".msg");
-    const lastAssistant = [...bubbles].reverse().find((b) => b.classList.contains("assistant"));
+    const lastAssistant = [...$("chat-messages").querySelectorAll(".msg.assistant")].pop();
     if (lastAssistant && !lastAssistant.textContent.trim()) {
-      lastAssistant.previousElementSibling?.classList.contains("msg")
-        && lastAssistant.previousElementSibling.remove();
+      const asked = lastAssistant.previousElementSibling;
+      if (asked?.matches(".msg")) asked.remove();
       lastAssistant.remove();
     }
     reattachStreamingTurn();
@@ -2337,7 +2352,7 @@ async function loadChatSuggestions() {
 const AI_NAME = "Atlas";
 
 function aiNameNow() {
-  return typeof AI_NAME === "string" ? AI_NAME : "Atlas";
+  return AI_NAME;
 }
 
 //: The built-in librarian is Atlas; a preference saved as "Librarian" from
@@ -2403,7 +2418,7 @@ function builtinThinkingWords() {
 //: normalises everywhere else (`null`, `"Librarian"`, a real name).
 function thinkingWordsFor(personaName) {
   const writer = personaDisplayName(personaName);
-  const overrides = (prefsCache && prefsCache.personas) || [];
+  const overrides = prefsCache?.personas || [];
   const custom = overrides.find((p) => p.name === writer || p.name === personaName);
   if (custom && Array.isArray(custom.thinking_words) && custom.thinking_words.length) {
     return custom.thinking_words;
@@ -2481,3 +2496,20 @@ function focusFirstIn(root, preferred = null) {
   el?.focus();
   return !!el;
 }
+
+// --- a switch says "switch" (APG switch, Radix Switch) ----------------------------
+//: Settings' toggles are native checkboxes drawn as switches (06-timeline-dialogs.css, "one switch, everywhere a checkbox means on or off"), so a screen reader said "checkbox". `role="switch"` on the input keeps the browser's checked state and keys and changes only the word. The list is that rule's selector list (`tests/test_switch_role.py` holds the two together); a pane's boxes are stamped as `enhanceAllSelects` shows it, the page's once it is idle, and any other when it takes focus.
+(() => {
+  const SWITCH_BOXES = [
+    ".settings-section label>input[type=checkbox]", ".setting-check input[type=checkbox]", ".tools-toggle input[type=checkbox]",
+    "#tool-list input[type=checkbox]", ".library-toolbar label>input[type=checkbox]", ".check-row input[type=checkbox]",
+    ".semantic-toggle input[type=checkbox]", ".library-sort-check input[type=checkbox]",
+    ".checkbox-label>input[type=checkbox]:not(.sr-only)", ".wb-snap-label input[type=checkbox]",
+  ].join(", ");
+  const stamp = (box) => {
+    if (box instanceof HTMLInputElement && box.type === "checkbox" && !box.hasAttribute("role") && box.matches(SWITCH_BOXES)) box.setAttribute("role", "switch");
+  };
+  document.addEventListener("focusin", (event) => stamp(event.target), true);
+  enhanceAllSelects.stampSwitches = (root) => root.querySelectorAll(SWITCH_BOXES).forEach(stamp);
+  (window.requestIdleCallback || setTimeout)(() => enhanceAllSelects.stampSwitches(document));
+})();

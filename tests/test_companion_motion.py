@@ -30,11 +30,12 @@ from pathlib import Path
 
 import pytest
 from tests._app_js import app_js_text, frontend_text, with_pieces
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 #: avatars.js and its lazy half, companion-menu.js (the menu and the enlarged
 #: view), read as one.
-AV = "\n".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("avatars.js", "companion-menu.js", "companion-settings.js", "companion-throw.js"))
+AV = "\n".join(unwrapped((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")) for name in ("avatars.js", "companion-menu.js", "companion-settings.js", "companion-throw.js"))
 APP = app_js_text()
 SETTINGS = with_pieces("settings.js")  # the body listeners are in settings-controls.js since INBOX 1501
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
@@ -201,10 +202,10 @@ def test_it_rides_its_panels_scroll_and_leaves_with_it() -> None:
     ride = _fn("nameMarkBuddyRide")
     assert "new ScrollTimeline({ source: want" in ride
     assert 'rangeEnd: `${NMB_RIDE_PX}px`' in ride and 'rangeStart: "0px"' in ride
-    # It stays in the body, in its own band: the app's scroll boxes are
-    # never given a child.
+    # It stays out of the app's scroll boxes, in its own band under <html>
+    # (INBOX 1726: a node under <body> re-asks every :has() subject).
     build = _fn("nameMarkBuddyBuild")
-    assert 'band.id = "nm-buddy-band"' in build and "document.body.appendChild(band)" in build
+    assert 'band.id = "nm-buddy-band"' in build and "document.documentElement.appendChild(band)" in build
     assert "#nm-buddy-band.nmb-riding {\n  overflow: clip;" in CSS08
     # A scroll of the area it rides reads no box and moves nothing.
     listener = AV[AV.index('document.addEventListener("scroll", (event) => {\n  //: Any scroll') :]
@@ -406,9 +407,10 @@ def test_it_notices_the_app_rate_limited_and_never_under_reduced_motion() -> Non
     for kind in ("read", "graph", "streak", "yawn", "private", "toast"):
         assert f"{kind}: {{ cool:" in AV, kind
     # The streak: once, and only for a count longer than the last seen.
-    assert "if (seen && days > seen) nameMarkBuddyReact(\"streak\");" in _fn("nameMarkBuddyStreak")
+    # Recorded only once the cheer plays (review 2026-11-12), so a refused one is tried again.
+    assert "if (seen && days > seen && !nameMarkBuddyReact(\"streak\")) return;" in _fn("nameMarkBuddyStreak")
     dashboard = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
-    assert "nameMarkBuddyStreak(streak)" in dashboard
+    assert "nameMarkBuddyStreak(streak, stats.total_entries)" in dashboard  # P6/N10 (1112): the call carries the note count for the milestone
     # Night: a tick yawns, and the yawn's early return comes after the mood
     # has moved, so a tick that yawns still tires it at night (review, round 6).
     tick = _fn("nameMarkBuddyTick")
@@ -544,7 +546,7 @@ def test_it_keeps_out_of_the_tours_ring() -> None:
     # character in a field, audit 1101.)
     # Looked after a frame has drawn the press (INBOX 1534): the timer wraps `look` (since INBOX
     # 1587 through `nmb.afterClean`, a frame and a timer, tests/test_atlas_cover_1587.py).
-    assert "nmbDodgeLate = setTimeout(afterPaint, 700);" in AV and "const afterPaint = () => nmb.afterClean(look);" in AV
+    assert "nmbDodgeLate = setTimeout(afterPaint, 700);" in AV and "const afterPaint = () => nmb.afterCalm(look);" in AV
     assert "const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;" in AV
     assert 'buddy.querySelector(".nm-figure")' in _fn("nameMarkBuddyDodge")
 
@@ -1240,13 +1242,24 @@ def test_a_perch_that_goes_is_replaced_at_once() -> None:
     assert "nmb.placeTimer = setTimeout(nameMarkBuddyBeat, 250);" in lost and "nameMarkBuddyQueuePlace()" not in lost
 
 
+def test_a_control_under_it_that_it_cannot_step_off_asks_for_a_beat_in_a_quarter_second() -> None:
+    # companion dive 1107: a hang on Graph covered Search and Options for 2.3 to 3.1s (the queued beat
+    # waits 1.2 to 2.5s); the perch check now asks for the quick beat when no step along the edge is clear.
+    check = _fn("nameMarkBuddyCheck")
+    tail = check[check.index("const aside = "):]
+    assert "nmb.placeTimer = setTimeout(nameMarkBuddyBeat, 250);" in tail and "nameMarkBuddyQueuePlace()" not in tail
+
+
 def test_an_act_lets_its_face_go_slowly() -> None:
     # The owner: emotes and acts on a click "must ease back to the prior
     # state, never cut back after a few seconds". Measured
     # (companionactease.js, Atlas, a cheer): its happy eyes went back in
     # 104ms when the act ended, now over 1307ms.
     act = _fn("nameMarkBuddyAct")
-    assert "if (was && was !== act && !NMB_FACELESS_ACTS.includes(was)) nameMarkBuddyEase(buddy, 1800);" in act
+    # Written first thing inside `leave` (the hand-over's change), so the ease is on before the act's class goes;
+    # not ahead of the hand-over's reads, where it cost a restyle of its own (test_lag_act_restyle_once_1111.py).
+    assert "const easeOut = !!was && was !== act && !NMB_FACELESS_ACTS.includes(was);" in act
+    assert "if (easeOut) nameMarkBuddyEase(buddy, 1800);" in act
     assert act.index("nameMarkBuddyEase(buddy, 1800)") < act.index("buddy.classList.remove(`nmb-act-${was}`)")
     # A shorter ease never cuts a longer one (a wake's 7s) short.
     assert "if (until <= (nmb.easeUntil || 0) && buddy.classList.contains(\"nmb-easing\")) return;" in _fn("nameMarkBuddyEase")
@@ -1281,7 +1294,7 @@ def test_the_atlas_hooks_are_wired() -> None:
     assert 'if (act === "lie") nameMarkBuddyLieDown(buddy, lieSide);' in _fn("nameMarkBuddyAct")
     assert "nameMarkBuddyCurlUp(buddy)" in _fn("nameMarkBuddyTick") and "nameMarkBuddyGetUp(buddy)" in _fn("nameMarkBuddyWake")
     assert "if (/^(lie|curl)/.test(buddy.dataset.pose || \"\")) buddy.dataset.pose = nmb.pose;" in _fn("nameMarkBuddyHalt")
-    assert "#nm-buddy.nmb-act-lie:has(.atl-figure-box) .nm-buddy-char { transform: none; }" in CSS08
+    assert "#nm-buddy.nmb-act-lie[data-atlas-figure] .nm-buddy-char { transform: none; }" in CSS08
 
 
 def test_a_woken_atlas_companion_wakes_atlas_too() -> None:
@@ -1381,7 +1394,7 @@ def test_it_does_what_the_apps_model_work_is_doing() -> None:
     # actions when things are happening like for the tag and file with atlas
     # note function running with atlas reading the note". One hook (fetch,
     # watched once) and a table of the model's addresses, not a call in each
-    # feature. Measured by scratchpad/ui-sweeps/companionwork.js.
+    # feature. Measured by scratchpad/ui-sweeps/companionwork.js (in git history).
     table = AV[AV.index("const NMB_WORK = [") : AV.index("];", AV.index("const NMB_WORK = ["))]
     for address in ("reevaluate", "suggest-tags", "improve", "vision-ocr", "caption", "chat|help\\/ask|drafts\\/compose"):
         assert address in table, address
@@ -1561,7 +1574,7 @@ def test_an_act_or_a_walk_is_let_go_not_dropped():
     # (INBOX 1589: the hand-over also takes `nmb-arms` off with the last act that moves the arms.)
     # (INBOX 1634: the leave is written inside the enter's change, one hand-over for both.)
     act_fn = _fn("nameMarkBuddyAct")
-    assert "const leave = () => {\n    buddy.classList.remove(`nmb-act-${was}`);" in act_fn
+    assert "const leave = () => {\n    if (easeOut) nameMarkBuddyEase(buddy, 1800);\n    buddy.classList.remove(`nmb-act-${was}`);" in act_fn
     assert "joined ? () => (leave(), into()) : into" in act_fn and "nameMarkBuddyBlend(buddy, leave)" in act_fn
     assert 'nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking"));' in AV
     assert 'a.id !== "nmb-blend"' in _fn("nameMarkBuddyTempo")
@@ -1780,7 +1793,7 @@ def test_nothing_runs_behind_the_lock_and_an_idle_page_is_not_polled() -> None:
     assert "is-idle" in poll
     assert "nameMarkBuddyLockSync();" in _fn("nameMarkBuddyBuild")
     assert '"none"' in _fn("nameMarkBuddyLockSync")
-    life = (ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8")
+    life = unwrapped((ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8"))
     frame = _fn("atlasTailFrame", life)
     assert 'data-atlas-hidden' in frame and "tail.calm" in frame and "ATLAS_TAIL_CALM_MS" in frame
     # The large view keeps the frame loop: it is the one thing on screen.
@@ -1818,7 +1831,7 @@ def test_the_companion_steps_off_a_dock_more_menu():
     companion still covers some parts of the ui and doesnt move out of the
     way". A dock's "more" menu is an open `<details>`, which the popup list
     missed (measured: the figure now ends clear of the open menu's box)."""
-    js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    js = unwrapped((Path(__file__).resolve().parent.parent / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
     # Found by tag and role since INBOX 1465 (one selector over the whole document cost 15 to 50ms a look).
     popups = js[js.index("function nameMarkBuddyPopupEls("):].split("\n}\n", 1)[0]
     assert 'getElementsByTagName("details")' in popups and "d.open && /menu/.test(d.className)" in popups and 'c.tagName !== "SUMMARY"' in popups
@@ -1833,7 +1846,7 @@ def test_the_companions_words_check_counts_only_drawn_text():
     # INBOX 812: the walk's 400-node cap was spent on text nobody can see (the
     # Ask card's closed history list sits ahead of the answer), so the words
     # under Atlas read as 0 over the "You asked:" line.
-    js = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    js = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
     body = js[js.index("function nameMarkBuddyWordsUnder("):].split("\nconst NMB_WORDS_PX", 1)[0]
     body += js[js.index("  rootWords(root) {") : js.index("\n  },", js.index("  rootWords(root) {"))]  # the walk moved to nmb.rootWords (INBOX 1575)
     assert "checkVisibility()" in body and "FILTER_REJECT" in body
@@ -1889,6 +1902,17 @@ def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
     assert "NMB_IDLE_MARK_MS = 120000" in AV and 'classList.remove("is-idle")' in AV
 
 
+def test_atlas_loops_hold_still_after_twenty_seconds_without_input_ux3() -> None:
+    # UX3: 77 endless animations ran on an untouched page; the rings, hair, tail and nebula now pause.
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    rule = css[css.index(":root.is-calm") :]
+    rule = rule[: rule.index("{")]
+    assert ".atl-orbits *" in rule and ".atl-lw-tail" in rule and ".atl-layer-neb" in rule
+    assert "animation-play-state: paused" in css[css.index(":root.is-calm") :]
+    assert "setTimeout(nmbClock.setCalm, 20000, true)" in AV and 'toggle("is-calm", on)' in AV
+    assert '"pointermove"' in AV
+
+
 def test_the_feminine_atlas_casts_her_stars_instead_of_wearing_them_1576() -> None:
     """INBOX 1576, the owner: "those stars permanently stuck to the end of the
     feminine atlas are a little awkward being permanently there, I think they
@@ -1932,7 +1956,8 @@ def test_the_size_handle_is_reachable_in_every_pose_1624() -> None:
     assert "right: 2px;" in grip and "right: -" not in grip
     # Intent moved (the owner, 2026-11-05): hanging, the handle is at the
     # bottom-right corner, away from the bar and the hands, still inside the figure.
-    assert '#nm-buddy[data-pose="hang"] .nmb-size-grip { top: auto; bottom: 2px; }' in CSS08
+    # be9722a9: and it shows its own diagonal cursor there.
+    assert '#nm-buddy[data-pose="hang"] .nmb-size-grip { top: auto; bottom: 2px; cursor: nwse-resize; }' in CSS08
     # A pull sizes at one rate: the reference length is never under 100px.
     assert "Math.max(from, 100)" in frontend_text("avatars.js")
 

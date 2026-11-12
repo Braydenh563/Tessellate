@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from tessellate.core import deps, events
 from tessellate.core.database import Entry
 from tessellate.entry import manager
+from tessellate.entry import manager_text
 from tessellate.entry.properties import strip as strip_properties
 
 from ._common import DEFAULT_LIST_LIMIT, PREVIEW_CHARS, ToolError, _clip, _limit_arg, _require_note, board_top_z, mark_outside
@@ -255,7 +256,7 @@ def _board_title(session: Session, board_id: int | None) -> str:
     # Same rule as a card's own note: a board is itself an Entry, and it can
     # be marked private after being used as one.
     if board_entry is not None and not board_entry.is_private:
-        return manager.extract_title(board_entry.content) or _clip(board_entry.content, 40)
+        return manager_text.extract_title(board_entry.content) or _clip(board_entry.content, 40)
     return "Default board"
 
 
@@ -828,7 +829,7 @@ def _read_mindmap(session: Session, args: dict) -> dict:
     budget = [MAX_OUTLINE_NODES]
     lines: list[str] = []
     _outline_lines(roots, 0, lines, budget)
-    title = manager.extract_title(board.content) or _clip(board.content, 40)
+    title = manager_text.extract_title(board.content) or _clip(board.content, 40)
     outline = "\n".join([title, *lines]) if lines else f"{title}\n(empty: no nodes yet)"
 
     result = {
@@ -972,7 +973,7 @@ def _add_map_node(session: Session, args: dict) -> dict:
         # around it was kept" is exactly this line going missing.)
         entry = _require_note(session, args, "note_id")
         ref_id = entry.id
-        text = text or _clip(manager.readable_content(entry), 80)
+        text = text or _clip(manager_text.readable_content(entry), 80)
     elif kind in MAP_REFERENCE_KINDS:
         raw_ref = args.get("ref_id")
         if raw_ref in (None, ""):

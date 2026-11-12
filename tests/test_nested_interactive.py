@@ -19,11 +19,12 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
 LIBRARY = (FRONTEND / "js" / "library.js").read_text(encoding="utf-8")
-WHITEBOARD = (FRONTEND / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WHITEBOARD = (FRONTEND / "js" / "boards-gallery.js").read_text(encoding="utf-8")
 MENUS = (FRONTEND / "js" / "menus.js").read_text(encoding="utf-8")
 NAVIGATION = (FRONTEND / "js" / "navigation.js").read_text(encoding="utf-8")
 CSS = "\n".join(
@@ -159,7 +160,7 @@ def test_the_button_is_placed_over_its_slot_and_still_opens_its_fold():
     place = _function(SETTINGS, "placeFoldHelp")
     assert ".fold-help-slot" in place and "getBoundingClientRect" in place
     assert "ResizeObserver" in _function(SETTINGS, "wireFoldHelps")
-    assert "onSettingsBody(wireFoldHelps);" in SETTINGS
+    assert 'onSurface("settings", wireFoldHelps);' in SETTINGS
     folds = _function(SETTINGS, "wireSettingsFolds")
     assert ":scope.fold-help-wrap > .fold-help" in folds
     assert re.search(r"\.fold-help-wrap\s*\{[^}]*position:\s*relative", CSS)
@@ -189,7 +190,7 @@ def test_the_placement_is_divided_by_the_dialogs_entrance_scale():
 # with `aria-selected` in a multiselectable `role="grid"`; the first cell
 # (dot, name, count) is the roving stop and the ⋯ is the last cell.
 
-CATEGORIES = (FRONTEND / "js" / "categories-panel.js").read_text(encoding="utf-8")
+CATEGORIES = _js_scope.unwrapped((FRONTEND / "js" / "categories-panel.js").read_text(encoding="utf-8"))
 
 
 def test_the_category_rows_are_grid_rows_with_the_menu_in_its_own_cell():

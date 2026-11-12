@@ -119,6 +119,16 @@ ASK_OVERVIEW = (
     "a conversation. Summarise and synthesise what the notes below actually "
     "say about the question: lead with the answer, group related points, and "
     "name what the notes cover and what they leave out. Use ONLY these notes. "
+    "Write two to four short paragraphs, not a line per note: a lead saying "
+    "what the notes add up to and the span they cover, then paragraphs grouped "
+    "by theme or time, naming the arc (a semester, a project) and ending with "
+    "one insight they did not ask for. Tell notes that share a tag or a link "
+    "together in one sentence, and with many notes keep each paragraph short "
+    "and tell every one of them, never \"and N more\". Say a definition as \"your note defines "
+    "it as\", quote slang instead of re-voicing it, never open two sentences "
+    "on the same time phrase, say a note's \"now\" or \"this weekend\" as of "
+    "the day it was written, congratulate a finish and acknowledge a hard "
+    "stretch plainly. "
     "Do NOT end by offering to do anything else, do NOT ask what they would "
     "like next, and do NOT suggest chatting further, the results beside your "
     "answer already link every note you drew on. If the notes do not answer "
@@ -381,6 +391,11 @@ UNTOOLED_NOTE_CHARS = 2_400
 BRIEF_HEADER = "(Each note is cut to the parts on my question, in its own words; … marks text left out.)"
 
 
+#: A note that only arrived by a link did not match the question, so it goes in
+#: as a line, not retold (audit 1030 Z70).
+LINKED_NOTE_CHARS = 240
+
+
 def note_for_prompt(note: dict, limit: int = MAX_NOTE_CHARS, can_fetch: bool = True) -> str:
     """A note's text, short enough to sit beside nine others.
 
@@ -393,6 +408,8 @@ def note_for_prompt(note: dict, limit: int = MAX_NOTE_CHARS, can_fetch: bool = T
     from tessellate.ai.fence import fence
 
     content = str(note.get("content", ""))
+    if note.get("connected") and not note.get("attached"):
+        limit = min(limit, LINKED_NOTE_CHARS)
     #: A note clipped from a page or brought in by an import says so in its
     #: fence (row 24): the model is told what the text is, not just that it
     #: is quoted, and `from_outside` is the same flag the agent's guard reads.
@@ -1067,7 +1084,7 @@ def generate_link_reason(source_text: str, target_text: str, model_manager: Mode
 
     This exists to fix a reported complaint: the reason shown for almost
     every link was the literal string "similar in meaning"
-    (`entry.manager.AUTO_REASON_TEXT`), true of any two notes an embedding
+    (`entry.manager_links.AUTO_REASON_TEXT`), true of any two notes an embedding
     thought were close, and useless for telling *which* two. The system
     prompt below asks for the concrete thing the two notes share, not a
     restatement that they're related; the caller (`ai.links.audit_vague_links`)
@@ -1277,42 +1294,6 @@ def suggest_thinking_words(
         if len(words) >= limit:
             break
     return words
-
-
-def summarize_meeting(
-    text: str,
-    model_manager: ModelManager,
-    ollama: OllamaClient,
-) -> str:
-    """Pull a decisions/action-items block out of a raw meeting transcript
-    (§25: Whisper's `/voice/transcribe-meeting` returns only the transcript
-    itself, nothing structured). Same shape as `suggest_tags`: one
-    utility-model completion, raises `OllamaError` if the model is
-    unavailable and leaves it to the caller, never blocks a save on its own.
-
-    Returns "" when the model replied but found nothing worth extracting
-    (a short or off-topic recording), so the caller can skip prepending an
-    empty block rather than showing one."""
-    system = (
-        "You read meeting transcripts and pull out only what's actionable. "
-        "Reply in this exact Markdown shape, omitting a section entirely if "
-        "it has nothing in it:\n\n"
-        "**Decisions**\n- ...\n\n**Action items**\n- ...\n\n"
-        "Each bullet is one short sentence. No preamble, no closing remarks. "
-        "If the transcript has no decisions and no action items, reply with "
-        "exactly: NONE"
-    )
-    reply = ollama.chat(
-        model_manager.utility_model(),
-        [
-            {"role": "system", "content": system},
-            {"role": "user", "content": text},
-        ],
-    )
-    summary = reply["content"].strip()
-    if not summary or summary.upper() == "NONE":
-        return ""
-    return summary
 
 
 #: How many notes one map proposal is built from. A mind map of two hundred

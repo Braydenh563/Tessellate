@@ -1,11 +1,11 @@
-"""SQLAlchemy engine, ORM models, and session factory.
+"""SQLAlchemy ORM models and the session hooks (the engine, the migrations and the session factory are `core/database_manager.py`).
 
 The full MVP schema (build plan §5) is created up front, tables the
 AI needs later (embeddings, entry_links) are cheap to have from day
 one and painful to retrofit.
 
 Schema upgrades: once real user data exists, "delete the db" stops
-being acceptable, so DatabaseManager does additive auto-migration, 
+being acceptable, so `database_manager.DatabaseManager` does additive auto-migration,
 any column that exists in the models but not in the on-disk database
 is added with ALTER TABLE at startup. Renames/removals would still
 need a real migration tool, so don't do those casually.
@@ -13,15 +13,11 @@ need a real migration tool, so don't do those casually.
 
 from __future__ import annotations
 
-import importlib
 import json
-import logging
-import os
 import re
-import sys
-import zlib
+from collections.abc import Callable
+from contextlib import contextmanager
 from datetime import datetime, timezone
-from pathlib import Path
 
 from sqlalchemy import (
     Boolean,
@@ -35,9 +31,9 @@ from sqlalchemy import (
     Text,
     TypeDecorator,
     UniqueConstraint,
-    create_engine,
     event,
     inspect as sa_inspect,
+    select,
     text as sql_text,
 )
 from sqlalchemy.orm import (
@@ -45,12 +41,24 @@ from sqlalchemy.orm import (
     Mapped,
     Session,
     mapped_column,
-    sessionmaker,
     with_loader_criteria,
 )
 from sqlalchemy.orm.attributes import flag_modified
 
-from tessellate.core import concurrency
+
+
+@contextmanager
+def impersonate_workspace(session: Session, workspace_id: str):
+    """Run a block of code as if in a specific workspace."""
+    old = session.info.get("workspace_id")
+    session.info["workspace_id"] = workspace_id
+    try:
+        yield
+    finally:
+        if old is None:
+            del session.info["workspace_id"]
+        else:
+            session.info["workspace_id"] = old
 
 
 def utcnow() -> datetime:
@@ -152,7 +160,10 @@ class Space(Base):
     #: the everything-view. Anything that must actually be unreadable is what
     #: the private-note vault is for.
     hidden_from_all: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
-
+    #: A private space (INBOX 1727): membership is the privacy. Everything in
+    #: it is sealed under the vault key, and its rows are out of every read
+    #: until this session opens the private spaces (`core/spacelock.py`).
+    is_private: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
 
 
 class WorkspaceMixin:
@@ -185,6 +196,17 @@ def _add_workspace_filter(execute_state):
     # the caller's own. A feature that needs a space to be private has to enforce it.
     # Only filter if the statement is a select() or similar ORM statement
     if execute_state.is_select or execute_state.is_update or execute_state.is_delete:
+        # INBOX 1727: a locked private space is out of every read, whatever
+        # space the request names (`deps._seal_private_spaces` sets the ids).
+        sealed = execute_state.session.info.get("sealed_workspaces")
+        if sealed:
+            execute_state.statement = execute_state.statement.options(
+                with_loader_criteria(
+                    WorkspaceMixin,
+                    lambda cls: cls.workspace_id.notin_(sealed),
+                    include_aliases=True
+                )
+            )
         workspace_id = execute_state.session.info.get("workspace_id")
         if workspace_id and workspace_id != "all":
             # Add criteria to all entities that have a workspace_id column
@@ -235,6 +257,94 @@ def _hide_binned(execute_state):
     )
 
 
+#: Per sealed class: the columns `SealedText` encrypts, and how to find
+#: whether the row's owner is private (INBOX 1727). A document owns itself.
+_SEALED_COLUMNS: dict[type, tuple[str, ...]] = {}
+
+
+#: Rows a space owns outright: sealed while their space is private. Filled
+#: once the classes exist (end of module); one list, never reassigned.
+_SPACE_SEALED: list[type] = []
+
+
+#: `session.info` key: the private space ids, read once when a request opens
+#: its session (`deps._seal_private_spaces`); dropped when a space is written.
+PRIVATE_SPACES = "private_spaces"
+
+
+def _private_space_ids(session: Session) -> set[str]:
+    cached = session.info.get(PRIVATE_SPACES)
+    if cached is not None:
+        return set(cached)
+    with session.no_autoflush:
+        return set(session.scalars(select(Space.id).where(Space.is_private.is_(True))))
+
+
+@event.listens_for(Session, "before_flush")
+def _forget_private_spaces(session, flush_context, instances):
+    """A space written in this flush may have changed which are private."""
+    if any(isinstance(obj, Space) for obj in (*session.new, *session.dirty, *session.deleted)):
+        session.info.pop(PRIVATE_SPACES, None)
+
+
+def _sealed_owner_private(session: Session, obj: object, private_spaces: set[str] | None = None) -> bool:
+    if isinstance(obj, tuple(_SPACE_SEALED)):
+        # Before `_set_workspace` has stamped a new row: the request's space.
+        space = obj.workspace_id or session.info.get("workspace_id") or "default"
+        return space in (_private_space_ids(session) if private_spaces is None else private_spaces)
+    if isinstance(obj, Document):
+        return bool(obj.is_private)
+    if isinstance(obj, (DocumentRevision, DocumentAiEdit)):
+        owner = session.get(Document, obj.document_id) if obj.document_id is not None else None
+        return bool(owner is not None and owner.is_private)
+    owner = session.get(Entry, obj.board_id) if getattr(obj, "board_id", None) is not None else None
+    return bool(owner is not None and owner.is_private)
+
+
+def _already_sealed(value: str) -> bool:
+    """A value written back already sealed (a replay of a logged state)."""
+    from tessellate.core import crypto
+
+    return crypto.is_encrypted(value)
+
+
+def seal_row(obj: object, *, every_column: bool = False) -> None:
+    """Mark `obj`'s sealed columns for encryption at the next flush: the
+    ones that changed, or all of them (`every_column`, when the row itself
+    is being sealed and nothing in it changed)."""
+    state = sa_inspect(obj)
+    for name in _SEALED_COLUMNS.get(type(obj), ()):
+        value = state.dict.get(name) if not every_column else getattr(obj, name)
+        if not isinstance(value, str) or isinstance(value, SealMe) or _already_sealed(value):
+            continue
+        if not every_column and not state.attrs[name].history.has_changes() and state.has_identity:
+            continue
+        setattr(obj, name, SealMe(value))
+        if every_column:
+            flag_modified(obj, name)
+
+
+def unseal_row(obj: object) -> None:
+    """Write `obj`'s sealed columns back as plain text (its owner was made
+    ordinary): what is loaded is the plain text, so rewrite it as it is."""
+    for name in _SEALED_COLUMNS.get(type(obj), ()):
+        value = getattr(obj, name)
+        if isinstance(value, str):
+            setattr(obj, name, str(value))
+            flag_modified(obj, name)
+
+
+@event.listens_for(Session, "before_flush")
+def _seal_private_writes(session, flush_context, instances):
+    """Every write to a row whose owner is private goes in encrypted."""
+    with session.no_autoflush:
+        rows = [obj for obj in list(session.new) + list(session.dirty) if type(obj) in _SEALED_COLUMNS]
+        private_spaces = _private_space_ids(session) if any(isinstance(obj, tuple(_SPACE_SEALED)) for obj in rows) else set()
+        for obj in rows:
+            if _sealed_owner_private(session, obj, private_spaces):
+                seal_row(obj)
+
+
 @event.listens_for(Session, "before_flush")
 def _set_workspace(session, flush_context, instances):
     workspace_id = session.info.get("workspace_id")
@@ -245,6 +355,65 @@ def _set_workspace(session, flush_context, instances):
                 if not obj.__dict__.get("workspace_id"):
                     obj.workspace_id = workspace_id
 
+
+#: `session.info` key: notes and moved documents that joined a private space
+#: in this transaction, sealed by `_seal_private_space_joins` before it lands.
+_JOINED_PRIVATE = "joined_private_space"
+
+
+def _joined_space(obj: object, new: bool) -> bool:
+    if new:
+        return True
+    history = sa_inspect(obj).attrs["workspace_id"].history
+    return history.has_changes()
+
+
+@event.listens_for(Session, "before_flush")
+def _note_private_space_joins(session, flush_context, instances):
+    """INBOX 1727: whatever is made in, or moved into, a private space is
+    sealed, by whichever route wrote it. A new document is sealed before its
+    first write; a note (whose sealing is `set_private`, too much to run in
+    a flush) and a moved document are sealed before the commit lands."""
+    joined = [
+        (obj, obj in session.new)
+        for obj in list(session.new) + list(session.dirty)
+        if isinstance(obj, (Entry, Document)) and (not obj.is_private or getattr(obj, "is_board", False))
+    ]
+    joined = [(obj, new) for obj, new in joined if _joined_space(obj, new)]
+    if not joined:
+        return
+    with session.no_autoflush:
+        private = set(session.scalars(select(Space.id).where(Space.is_private.is_(True))))
+    for obj, new in joined:
+        if (obj.workspace_id or "default") not in private:
+            continue
+        if isinstance(obj, Document) and new:
+            obj.is_private = True
+            obj.sealed_by_space = True
+            seal_row(obj, every_column=True)
+        else:
+            session.info.setdefault(_JOINED_PRIVATE, []).append(obj)
+
+
+#: Seals what joined a private space. entry/private_space.py sets it on import
+#: (it imports the manager, which imports this module: a cycle the other way).
+JOIN_SEALER: Callable[[Session, object], object] = lambda session, obj: None  # noqa: E731
+
+
+@event.listens_for(Session, "before_commit")
+def _seal_private_space_joins(session):
+    pending = session.info.pop(_JOINED_PRIVATE, None)
+    if not pending:
+        return
+    for obj in pending:
+        JOIN_SEALER(session, obj)
+
+
+@event.listens_for(Session, "after_soft_rollback")
+def _forget_private_space_joins(session, previous_transaction):
+    session.info.pop(_JOINED_PRIVATE, None)
+
+
 class User(Base):
     """Single-user unlock. One row, bcrypt password hash."""
 
@@ -254,6 +423,22 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(100), unique=True)
     password_hash: Mapped[str] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class WebPage(Base):
+    """A page fetched in a chat, kept on this computer for a week (CHAT_PLAN,
+    the web-search store). Never sent anywhere; `search/webstore.py` owns it."""
+
+    __tablename__ = "web_pages"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    url_key: Mapped[str] = mapped_column(String(2000), unique=True, index=True)
+    url: Mapped[str] = mapped_column(String(2000))
+    title: Mapped[str] = mapped_column(String(500), default="")
+    domain: Mapped[str] = mapped_column(String(255), default="")
+    text: Mapped[str] = mapped_column(Text, default="")
+    links: Mapped[list | None] = mapped_column(JSON, default=None)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
 
 
 class Vault(Base):
@@ -431,6 +616,9 @@ class Entry(Base, WorkspaceMixin):
     # Private notes have their content encrypted at rest. Scalar default so
     # the additive auto-migrator backfills every existing row as not-private.
     is_private: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: Sealed because it joined a private space, not by its own switch: "Make
+    #: it ordinary" on the way out unseals only these (INBOX 1727).
+    sealed_by_space: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
     # ROADMAP.md item 34. Null means "never scanned"; set (even with zero
     # entities found) after a pass, so a note that genuinely mentions none
@@ -698,6 +886,66 @@ class LinkProps(TypeDecorator):
         except (crypto.DecryptionError, ValueError):
             return None
         return parsed if isinstance(parsed, dict) else None
+
+
+class SealMe(str):
+    """A value `SealedText` encrypts on the way in: the marker the private
+    space hook (`_seal_private_writes`) puts on a write to a sealed row."""
+
+
+class SealedWriteRefused(RuntimeError):
+    """A sealed row was written while no key is loaded: refused rather than
+    stored in the clear."""
+
+
+class SealedText(TypeDecorator):
+    """A document's or a board item's text, sealed when its owner is private
+    (INBOX 1727): read back as plain text while the key is loaded and as
+    `locked` while it is not, so every reader is unchanged, as `LinkReason`
+    does for a link's reason. Whether a row is sealed is a fact about its
+    owner, which a column type cannot see, so the hook marks the value
+    (`SealMe`) and this type does the encryption."""
+
+    impl = Text
+    cache_ok = True
+
+    def __init__(self, *args, locked: str = "", **kwargs):  # noqa: ANN002, ANN003
+        super().__init__(*args, **kwargs)
+        self.locked = locked
+
+    def process_bind_param(self, value, dialect):
+        if not isinstance(value, SealMe):
+            return value
+        from tessellate.core import crypto
+
+        key = LinkReason.key_source()
+        if key is None:
+            raise SealedWriteRefused("a private row cannot be written while the vault is locked")
+        return crypto.encrypt(key, str(value))
+
+    def process_result_value(self, value, dialect):
+        if not value:
+            return value
+        from tessellate.core import crypto
+
+        if not crypto.is_encrypted(value):
+            return value
+        key = LinkReason.key_source()
+        if key is None:
+            return self.locked
+        try:
+            return crypto.decrypt(key, value)
+        except crypto.DecryptionError:
+            return self.locked
+
+
+class SealedTitle(SealedText):
+    """`SealedText` on a short column (`String(n)`)."""
+
+    impl = String
+    #: SQLAlchemy reads `cache_ok` from each class's own body, not the parent's: without it every
+    #: query on a sealed title skipped the statement cache and warned (the E2E server log, 2026-11-11).
+    cache_ok = True
 
 
 #: The columns whose change is a person editing a board or mind map. Anything
@@ -1054,8 +1302,9 @@ class Conversation(Base, WorkspaceMixin):
     __tablename__ = "conversations"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(120))
-    messages: Mapped[str] = mapped_column(Text, default="[]")
+    #: Sealed in a private space (INBOX 1727): a chat opened inside one reads its notes.
+    title: Mapped[str] = mapped_column(SealedTitle(120, locked="Private chat"))
+    messages: Mapped[str] = mapped_column(SealedText(locked="[]"), default="[]")
     # Pinned chats sort above the rest. The list is flat and grows forever,
     # so the thread you keep coming back to sinks under a week of one-offs.
     # (Added by the auto-migrator on existing databases, defaulting to false.)
@@ -1087,8 +1336,8 @@ class AskTurn(Base, WorkspaceMixin):
     __tablename__ = "ask_turns"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    question: Mapped[str] = mapped_column(Text)
-    answer: Mapped[str] = mapped_column(Text)
+    question: Mapped[str] = mapped_column(SealedText(locked="A private question"))
+    answer: Mapped[str] = mapped_column(SealedText())
     raw_result_ids: Mapped[str] = mapped_column(Text, default="[]")
     search_mode: Mapped[str] = mapped_column(String(40), default="")
     when_phrase: Mapped[str] = mapped_column(String(120), default="")
@@ -1111,6 +1360,10 @@ class AskTurn(Base, WorkspaceMixin):
     # sentences. The sources list needs nothing here, it is built from
     # `raw_result_ids`, which this table has always kept.
     grounding: Mapped[str] = mapped_column(Text, default="[]")
+    #: No model wrote the answer (the composer did), so a reopened turn counts
+    #: its support as the live one did (`grounding.composed_support`), never
+    #: with the model counter and its draft warning (chatfoot L6, W1 A5).
+    composed: Mapped[bool] = mapped_column(Boolean, default=False)
     # Pinned turns survive "clear history" and sort first: the same shape
     # Conversation.pinned already uses for saved chats.
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -1145,6 +1398,9 @@ class Bookmark(Base, WorkspaceMixin):
     # hierarchy: without a second data model. Scalar default so the
     # additive auto-migrator backfills existing rows to "" (ungrouped).
     group_name: Mapped[str] = mapped_column(String(120), default="")
+    #: Tags, comma-joined (`repo/bookmarks.py` `clean_tags` writes it and `tag_list` reads it): a link in many
+    #: places at once, which a single group cannot be. Scalar default so the additive auto-migrator backfills "".
+    tags: Mapped[str] = mapped_column(String(400), default="")
     #: A link you have been through. Set when it is opened from the list or
     #: ticked by hand; an "Unread" filter is the reading list a saved link is
     #: usually for. Scalar default so the additive auto-migrator backfills
@@ -1200,7 +1456,8 @@ class Reminder(Base, WorkspaceMixin):
     #: a map is an `Entry`, so `entry_id` already covers those; a document is
     #: its own table. At most one of the two is set (`routes_reminders`).
     document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.id"), default=None, index=True)
-    text: Mapped[str] = mapped_column(String(500))
+    #: Sealed in a private space (INBOX 1727); a notification says "A private reminder".
+    text: Mapped[str] = mapped_column(SealedTitle(500, locked="A private reminder"))
     due_at: Mapped[datetime] = mapped_column(DateTime)
     done: Mapped[bool] = mapped_column(Boolean, default=False)
     # Scalar defaults so the additive auto-migrator backfills existing rows.
@@ -1476,8 +1733,8 @@ class Document(Base, WorkspaceMixin):
     __tablename__ = "documents"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(200), default="Untitled")
-    content: Mapped[str] = mapped_column(Text, default="")
+    title: Mapped[str] = mapped_column(SealedTitle(200, locked="Private document"), default="Untitled")
+    content: Mapped[str] = mapped_column(SealedText(), default="")
     # What kind of file this is, a bare extension, no dot ("md", "py",
     # "sql"). See core/filetypes.py for the table and why it is shared with
     # the frontend rather than duplicated there. A scalar default (not a
@@ -1490,12 +1747,16 @@ class Document(Base, WorkspaceMixin):
     #: (core/docthreads.py). Additive; "" is none, as every older row reads.
     #: The server default too, so a build from before the column can still
     #: insert a document into a database this one created.
-    threads: Mapped[str] = mapped_column(Text, default="", server_default=sql_text("''"))
+    threads: Mapped[str] = mapped_column(SealedText(), default="", server_default=sql_text("''"))
     #: Where the Graph holds this document's node in place, as a note's
     #: `graph_pin_x`/`graph_pin_y` do (B78: a document node can be pinned by
     #: double-click or drag, and had nowhere to keep it). Additive.
     graph_pin_x: Mapped[float | None] = mapped_column(Float, default=None)
     graph_pin_y: Mapped[float | None] = mapped_column(Float, default=None)
+    #: Sealed under the vault key, as a private note is (INBOX 1727): only a
+    #: document in a private space is, and `sealed_by_space` says so.
+    is_private: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
+    sealed_by_space: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
     # Same "kept, out of the way" column as Entry.archived_at/
     # Conversation.archived_at (BACKLOG §30b): never implies deletion.
     archived_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
@@ -1559,13 +1820,13 @@ class DocumentAiEdit(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("documents.id"), index=True)
     verb: Mapped[str] = mapped_column(String(10), default="edit")
-    instruction: Mapped[str] = mapped_column(String(500), default="")
+    instruction: Mapped[str] = mapped_column(SealedTitle(500), default="")
     #: Whichever passage was targeted, trimmed to a display-sized excerpt, 
     #: never the full document (that's what before_content is for), just
     #: enough for the changelog entry to say what it touched.
-    selection_excerpt: Mapped[str] = mapped_column(String(200), default="")
-    before_content: Mapped[str] = mapped_column(Text, default="")
-    after_content: Mapped[str] = mapped_column(Text, default="")
+    selection_excerpt: Mapped[str] = mapped_column(SealedTitle(200), default="")
+    before_content: Mapped[str] = mapped_column(SealedText(), default="")
+    after_content: Mapped[str] = mapped_column(SealedText(), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
@@ -1783,8 +2044,8 @@ class DocumentRevision(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("documents.id"), index=True)
-    title: Mapped[str] = mapped_column(String(200), default="")
-    content: Mapped[str] = mapped_column(Text, default="")
+    title: Mapped[str] = mapped_column(SealedTitle(200), default="")
+    content: Mapped[str] = mapped_column(SealedText(), default="")
     #: How the change was made: "edit" (a person), "ai" (an accepted AI
     #: suggestion), "restore" (rolled back to an earlier revision). Shown in
     #: the list, because "who changed this" is the first question a history
@@ -1847,7 +2108,7 @@ class WhiteboardSketch(Base, WorkspaceMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
     board_id: Mapped[int | None] = mapped_column(ForeignKey("entries.id"), default=None)
     # The strokes data (JSON/SVG). Can be encrypted at rest later if needed.
-    data: Mapped[str] = mapped_column(Text)
+    data: Mapped[str] = mapped_column(SealedText(locked="{}"))
     x: Mapped[float] = mapped_column(Float, default=0.0)
     y: Mapped[float] = mapped_column(Float, default=0.0)
     z: Mapped[int] = mapped_column(Integer, default=0)
@@ -1879,7 +2140,7 @@ class WhiteboardObject(Base, WorkspaceMixin):
     #: `topic` carries its own `content`, a `note`/`document`/`file`/`link`
     #: node carries the id of the library item it stands for in `ref_id`, and
     #: both may carry `collapsed`/`pinned`.
-    data: Mapped[str] = mapped_column(Text)
+    data: Mapped[str] = mapped_column(SealedText(locked="{}"))
     #: This node's parent in a mindmap's tree: NULL for a root topic and for
     #: every object on an ordinary whiteboard, which is what makes the map a
     #: *mode* of the board rather than a second data model (MINDMAP_PLAN.md
@@ -2049,6 +2310,10 @@ class MediaUpload(Base, WorkspaceMixin):
     #: its readings. Only ever set, never cleared: a stale True costs a
     #: readable-note-less file staying sealed until unlock, never a leak.
     in_private_note: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: A picture placed on a board or map stays there (owner-1026b K18): no
+    #: Library row, no search hit, no caption or reading job, until the person
+    #: chooses Save to Library (`POST /media/{id}/library`), which clears this.
+    board_only: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class JobRun(Base):
@@ -2187,880 +2452,17 @@ class AuditLog(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
-_logger = logging.getLogger("tessellate.database")
+_SEALED_COLUMNS.update(
+    {
+        Document: ("title", "content", "threads"),
+        DocumentRevision: ("title", "content"),
+        DocumentAiEdit: ("instruction", "selection_excerpt", "before_content", "after_content"),
+        WhiteboardSketch: ("data",),
+        WhiteboardObject: ("data",),
+        Conversation: ("title", "messages"),
+        AskTurn: ("question", "answer"),
+        Reminder: ("text",),
+    }
+)
+_SPACE_SEALED.extend((Conversation, AskTurn, Reminder))
 
-
-def _migrations_root() -> Path:
-    """Where `alembic.ini` and `migrations/` live, source or frozen.
-
-    Mirrors `api/app.py`'s own `FRONTEND_DIR` resolution exactly: same
-    directory depth from this file (`src/tessellate/core/database.py`) to
-    the repo root, same `sys.frozen`/`_MEIPASS` split for a PyInstaller
-    build. Kept here rather than imported from `app.py` because `core/` is
-    the bottom layer (`deps.register_cache_reset`'s own docstring, above,
-    already explains why that direction matters in this codebase).
-    """
-    if getattr(sys, "frozen", False):
-        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
-    return Path(__file__).resolve().parents[3]
-
-
-def _safety_copy_before_migrating(cfg, current: str, db_path: Path) -> None:  # noqa: ANN001
-    """A copy of the database before a pending migration runs (audit
-    2026-10-10, item 8). A launcher update that pulls a migration used to run
-    it on the only copy of the notebook, with the nightly backup up to a day
-    old. Only when the stamped revision is behind head: an ordinary launch
-    changes nothing and copies nothing. A failed copy is logged and the
-    migration still runs, because this must never be what stops the app
-    starting (the caller's own rule)."""
-    from alembic.script import ScriptDirectory
-
-    try:
-        if current == ScriptDirectory.from_config(cfg).get_current_head():
-            return
-        from tessellate.core import backup
-
-        backup.backup_now(db_path, db_path.parent, origin="update")
-    except Exception:  # noqa: BLE001
-        _logger.warning("Could not take a safety copy before migrating", exc_info=True)
-
-
-def _ensure_alembic_baseline(db_path: Path) -> None:
-    """Make Alembic aware of this exact database, without ever running DDL
-    against one that doesn't need it.
-
-    Every database this app opens already has the correct current schema by
-    the time this runs, `create_all()` and `_add_missing_columns()` above
-    guarantee that, unchanged, for both a brand-new database and an existing
-    one missing a column. What Alembic adds is only for the day a *rename*
-    or *drop* is actually needed, which those two never could do (`core/
-    database.py`'s own module docstring has said so from the start). So:
-
-    - No `alembic_version` table yet (every database before this function
-      existed, plus every fresh one `create_all()` just built) → **stamp**
-      to the baseline revision. Stamping records "this database is already
-      at revision X" without executing revision X's `upgrade()`, correct
-      here specifically because the schema already matches it by
-      construction, not because stamping is generally safe to reach for.
-    - `alembic_version` already exists → a previous startup already
-      stamped or migrated this database, so **upgrade** to head. A no-op
-      when nothing newer than what's stamped has been added; applies any
-      real migration that has, the actual point of wiring this in at all.
-
-    Never allowed to stop the app from starting: this is new, additive
-    infrastructure layered on a schema mechanism that already works on its
-    own, not a replacement for it. Any failure here: a packaging issue in
-    a frozen build that didn't bundle `migrations/` correctly, a locked
-    file, anything: is logged and swallowed rather than raised.
-
-    `DatabaseManager.__init__` skips calling this at all under pytest
-    (`PYTEST_CURRENT_TEST`, which pytest itself sets, no per-test opt-in
-    needed): a throwaway `tmp_path` database that gets discarded the
-    moment its one test ends has nothing to gain from being stamped, and
-    this measured ~30ms per call against a suite where `DatabaseManager`
-    runs in a large fraction of the ~1,600 tests: real minutes, for a
-    database that will never see a second startup to make the "upgrade"
-    half of this function's job matter. The skip lives at the call site,
-    not in here, so `tests/test_alembic_baseline.py` can call this function
-    directly and actually exercise it.
-    """
-    try:
-        from alembic import command
-        from alembic.config import Config
-        from alembic.runtime.migration import MigrationContext
-        from sqlalchemy import create_engine as _create_engine
-
-        root = _migrations_root()
-        ini_path = root / "alembic.ini"
-        if not ini_path.is_file():
-            _logger.warning("Alembic config not found at %s, skipping", ini_path)
-            return
-
-        cfg = Config(str(ini_path))
-        cfg.set_main_option("script_location", str(root / "migrations"))
-        cfg.set_main_option("sqlalchemy.url", f"sqlite:///{db_path}")
-        # alembic.ini's own [loggers] section defaults to INFO, meant for a
-        # human watching a terminal run `alembic upgrade head` by hand: not
-        # for every one of this app's own startups. This runs silently
-        # unless something actually goes wrong (the except below still logs).
-        logging.getLogger("alembic").setLevel(logging.WARNING)
-
-        probe_engine = _create_engine(f"sqlite:///{db_path}")
-        try:
-            with probe_engine.connect() as connection:
-                current = MigrationContext.configure(connection).get_current_revision()
-        finally:
-            probe_engine.dispose()
-
-        # migrations/env.py calls logging.config.fileConfig() every time
-        # command.stamp/upgrade below runs it, and that call unconditionally
-        # REPLACES the handler list (and resets the level) of every logger
-        # alembic.ini explicitly configures, root among them, regardless
-        # of disable_existing_loggers, which only protects loggers *not*
-        # listed there from being disabled. alembic.ini's own
-        # [logger_root] sets handlers = console, so this silently tore
-        # logbuffer.install()'s own handler off the root logger and
-        # replaced it with Alembic's plain console handler for the rest of
-        # this process's life: reported directly: the Settings -> Logs
-        # viewer showed nothing but Alembic's own plugin-registration
-        # lines, forever, because nothing the app itself logs reaches a
-        # handler that no longer exists. Same mechanism undid the
-        # WARNING level just set above ([logger_alembic] says INFO),
-        # which is why those plugin lines were visible at all. Restored
-        # here rather than in env.py itself, because a human running
-        # `alembic upgrade head` directly from a terminal *wants*
-        # fileConfig()'s effect to stick for that short-lived process, 
-        # this restore only matters for the in-process caller, which is
-        # this function.
-        root_logger = logging.getLogger()
-        saved_root_handlers = list(root_logger.handlers)
-        saved_root_level = root_logger.level
-        saved_alembic_level = logging.getLogger("alembic").level
-        try:
-            if current is None:
-                command.stamp(cfg, "head")
-            else:
-                _safety_copy_before_migrating(cfg, current, db_path)
-                command.upgrade(cfg, "head")
-        finally:
-            root_logger.handlers = saved_root_handlers
-            root_logger.setLevel(saved_root_level)
-            logging.getLogger("alembic").setLevel(saved_alembic_level)
-    except Exception:  # noqa: BLE001  # see docstring: never fatal to startup
-        _logger.warning("Alembic baseline/upgrade step failed", exc_info=True)
-
-
-class DatabaseManager:
-    """Owns the one engine + session factory for the whole app."""
-
-    def __init__(self, db_path: Path) -> None:
-        # check_same_thread=False because FastAPI serves requests from a
-        # threadpool; SQLAlchemy still gives each request its own session.
-        self.engine = create_engine(
-            f"sqlite:///{db_path}",
-            connect_args={"check_same_thread": False},
-            pool_size=concurrency.POOL_SIZE,
-            max_overflow=concurrency.POOL_OVERFLOW,
-            pool_timeout=concurrency.POOL_TIMEOUT,
-        )
-
-        # Per-connection SQLite settings. All of these are per-connection
-        # rather than per-database, so they have to be set on every connect.
-        @event.listens_for(self.engine, "connect")
-        def _configure_connection(dbapi_connection, _record):  # noqa: ANN001
-            # SQLite ignores foreign keys unless told otherwise.
-            dbapi_connection.execute("PRAGMA foreign_keys=ON")
-            # WAL lets readers carry on while a write is in progress. Without
-            # it, saving a note blocks every concurrent read, and FastAPI
-            # serves from a threadpool, so a background job (the janitor, an
-            # embedding write) overlapping a page load is routine rather than
-            # rare. WAL persists on the file, but setting it per connection is
-            # harmless and covers a database created by an older version.
-            dbapi_connection.execute("PRAGMA journal_mode=WAL")
-            # When two writers do collide, wait rather than failing instantly.
-            # The default is 0, which turns a millisecond of contention into a
-            # "database is locked" error the user sees as a broken save.
-            dbapi_connection.execute("PRAGMA busy_timeout=5000")
-            # NORMAL is the recommended durability level under WAL: still
-            # crash-safe, without an fsync on every single commit.
-            dbapi_connection.execute("PRAGMA synchronous=NORMAL")
-            # Temp b-tree sorts and the transient tables ANALYZE/vacuum use
-            # otherwise spill to a file under the data directory, the same
-            # disk this app is trying to keep quiet while a local model reads
-            # its own weights off it. The working set here is one user's own
-            # notebook, not a multi-gigabyte warehouse query, so keeping it in
-            # RAM instead costs nothing that matters (PLAN.md §0 P5).
-            dbapi_connection.execute("PRAGMA temp_store=MEMORY")
-
-        Base.metadata.create_all(self.engine)  # creates missing tables only
-        #: A start that finds the schema as the last one stamped it has no column to add
-        #: (audit 1028 K35): the scan is one `PRAGMA table_info` per table.
-        stamped = self._schema_is_stamped()
-        if not stamped:
-            self._add_missing_columns()
-        self._rebuild_categories_unique_constraint()
-        if not stamped:
-            self._stamp_schema()
-        self._backfill_inherited_workspaces()
-        self._drop_orphan_links()
-        self._ensure_fts5()
-        self._ensure_indexes()
-        self._ensure_readings_view()
-        # See _ensure_alembic_baseline's own docstring for why this is
-        # skipped under pytest: a throwaway per-test database has nothing
-        # to gain from being stamped, and the constructor runs in most of
-        # this suite's ~1,600 tests.
-        if not os.environ.get("PYTEST_CURRENT_TEST"):
-            _ensure_alembic_baseline(db_path)
-        self._session_factory = sessionmaker(
-            bind=self.engine, expire_on_commit=False
-        )
-        self._ensure_search_index()
-        self._ensure_default_spaces()
-
-    def _ensure_search_index(self) -> None:
-        """The index that covers every kind (`search/index.py`), built once.
-
-        Below the session factory rather than beside `_ensure_fts5` because a
-        database that has never had this table has to be *filled*, and filling
-        it needs a session.
-
-        `importlib`, not an `import` statement: `search/index.py` reads this
-        module's models, so naming it here closes `core.database ->
-        search.index -> core.database`, and the storage layer is the wrong
-        end of that edge to be doing the naming.
-        `tests/test_no_import_cycles.py` counts the statement wherever it
-        sits (CodeQL does), so a function-level `from ... import` would hide
-        the cycle rather than break it.
-        """
-        search_index = importlib.import_module("tessellate.search.index")
-
-        with self.engine.begin() as connection:
-            created = search_index.ensure_table(connection)
-        if not created:
-            # A table from before maps had their own kind, or before a
-            # board's row held the words on it: a diff over the boards, a
-            # read-only no-op once it has run (`reconcile_boards`).
-            with self.session() as session:
-                # Either may write; `or` would skip the second once the first did.
-                boards = search_index.reconcile_boards(session)
-                late = search_index.reconcile_sources(session)
-                private_files = search_index.reconcile_private_files(session)
-                if boards or late or private_files:
-                    session.commit()
-            return
-        # Only on the one startup that creates the table: every write after
-        # this keeps itself in step (see the module's `after_flush` hook), so
-        # this is a migration, not a recurring cost.
-        with self.session() as session:
-            search_index.rebuild(session)
-            session.commit()
-
-    def _ensure_default_spaces(self) -> None:
-        """Seed default spaces if none exist."""
-        with self.session() as session:
-            if session.query(Space).first() is None:
-                defaults = [
-                    Space(id="default", name="Default space", icon="ph-house"),
-                    Space(id="work", name="Work", icon="ph-briefcase"),
-                    Space(id="personal", name="Personal", icon="ph-user"),
-                    Space(id="projects", name="Projects", icon="ph-kanban")
-                ]
-                session.add_all(defaults)
-                session.commit()
-
-
-    def _ensure_fts5(self) -> None:
-        """An FTS5 index over `entries`, kept in sync by triggers.
-
-        ROADMAP.md item 32: `keyword_search` used to be a leading-wildcard
-        `ILIKE`, which no index can serve, plus a hand-rolled integer score
-        that treats a rare word the same as a common one. FTS5's own
-        `bm25()` gives real IDF-weighted relevance, already in SQLite, no
-        new dependency: for the cost of one virtual table.
-
-        `content='entries', content_rowid='id'` makes this an *external
-        content* table: FTS5 stores only its own index, not a second copy
-        of the text, and `entries.id` already is the SQLite rowid (a plain
-        `INTEGER PRIMARY KEY` column is a rowid alias). The three triggers
-        are what an external-content table needs instead of the automatic
-        upkeep a normal table gets from the ORM, SQLite doesn't have
-        anything that reaches into a virtual table on its own, so every
-        write path (the ORM, a raw migration script, anything future) stays
-        in sync for free rather than needing to remember to call something.
-        `IF NOT EXISTS` throughout makes this safe to run on every startup,
-        the same additive convention `_add_missing_columns` already uses.
-        """
-        with self.engine.begin() as connection:
-            # Stemming, so "proving" finds "prove" and "proved", and "boots"
-            # finds "boot". The index shipped on FTS5's default tokenizer,
-            # which matches whole words only; with no AI running keyword
-            # search is the whole of search, and a query in a different
-            # inflection than the note found nothing. `porter unicode61`
-            # is built into SQLite's FTS5, no dependency. A tokenizer is
-            # fixed at CREATE time, so an index built before this has to be
-            # rebuilt once: the table's own DDL in sqlite_master says which
-            # it is, and dropping the index (never the notes: it is an
-            # external-content table holding no text of its own) lets the
-            # back-fill below repopulate it, guarded by the trigger it also
-            # drops.
-            existing_ddl = connection.exec_driver_sql(
-                "SELECT sql FROM sqlite_master WHERE type='table' AND name='entries_fts'"
-            ).scalar()
-            if existing_ddl and "porter" not in existing_ddl:
-                for trigger in ("entries_fts_ai", "entries_fts_ad", "entries_fts_au"):
-                    connection.exec_driver_sql(f"DROP TRIGGER IF EXISTS {trigger}")
-                connection.exec_driver_sql("DROP TABLE IF EXISTS entries_fts_vocab")
-                connection.exec_driver_sql("DROP TABLE IF EXISTS entries_fts")
-            connection.exec_driver_sql(
-                "CREATE VIRTUAL TABLE IF NOT EXISTS entries_fts USING fts5("
-                "content, tags, content='entries', content_rowid='id', "
-                "tokenize='porter unicode61'"
-                ")"
-            )
-            # The index's own vocabulary as a table, one row per distinct
-            # term, maintained by FTS5 itself. `keyword_search` reads it to
-            # correct a misspelt query word to the nearest word the notebook
-            # actually contains ("sourdogh" → "sourdough"), which is the
-            # cheap, honest form of typo tolerance: it can only ever suggest
-            # words that exist in the notes, and it costs one range scan on
-            # the term's first letter rather than a second index.
-            connection.exec_driver_sql(
-                "CREATE VIRTUAL TABLE IF NOT EXISTS entries_fts_vocab "
-                "USING fts5vocab('entries_fts', 'row')"
-            )
-            # A fresh virtual table starts empty even when `entries` already
-            # has rows (a database from before this existed), the
-            # external-content trick means FTS5 never scanned the real table
-            # on its own. `INSERT INTO ... SELECT` once, guarded by the
-            # trigger's own existence so it can't re-run and duplicate rows
-            # on every subsequent startup.
-            already_wired = connection.exec_driver_sql(
-                "SELECT count(*) FROM sqlite_master "
-                "WHERE type='trigger' AND name='entries_fts_ai'"
-            ).scalar()
-            if not already_wired:
-                connection.exec_driver_sql(
-                    "INSERT INTO entries_fts(rowid, content, tags) "
-                    "SELECT id, content, tags FROM entries"
-                )
-            connection.exec_driver_sql(
-                "CREATE TRIGGER IF NOT EXISTS entries_fts_ai "
-                "AFTER INSERT ON entries BEGIN "
-                "INSERT INTO entries_fts(rowid, content, tags) "
-                "VALUES (new.id, new.content, new.tags); "
-                "END"
-            )
-            connection.exec_driver_sql(
-                "CREATE TRIGGER IF NOT EXISTS entries_fts_ad "
-                "AFTER DELETE ON entries BEGIN "
-                "INSERT INTO entries_fts(entries_fts, rowid, content, tags) "
-                "VALUES ('delete', old.id, old.content, old.tags); "
-                "END"
-            )
-            connection.exec_driver_sql(
-                "CREATE TRIGGER IF NOT EXISTS entries_fts_au "
-                "AFTER UPDATE ON entries BEGIN "
-                "INSERT INTO entries_fts(entries_fts, rowid, content, tags) "
-                "VALUES ('delete', old.id, old.content, old.tags); "
-                "INSERT INTO entries_fts(rowid, content, tags) "
-                "VALUES (new.id, new.content, new.tags); "
-                "END"
-            )
-
-    #: The list queries that run on essentially every page load, and the
-    #: composite index each one needs to be served from an index instead of a
-    #: sort. Kept as data in one place rather than as `Index()` objects on the
-    #: model, for a reason worth stating: `create_all()` "creates missing
-    #: tables only" (see its call site above), so an index declared on an
-    #: already-existing table would be created on a *fresh* database and
-    #: silently never appear on anybody's real one: the same
-    #: works-on-a-new-profile-only trap `_add_missing_columns` exists to avoid
-    #: for columns.
-    #:
-    #: The column order in each is the query's own shape: equality filters
-    #: first, then the ORDER BY terms in order and in their own direction.
-    #: SQLite will only skip the sort if the index's trailing columns match
-    #: the ORDER BY exactly, direction included, which is why `pinned DESC`
-    #: is spelled out rather than left to default ASC.
-    _INDEXES: tuple[tuple[str, str], ...] = (
-        # manager.list_entries(), the Notes tab, GET /entries, and most
-        # background jobs. Measured before this existed: EXPLAIN QUERY PLAN
-        # reported "USE TEMP B-TREE FOR ORDER BY", i.e. SQLite sorted every
-        # live note in the notebook on every call.
-        (
-            "ix_entries_live",
-            "entries (workspace_id, is_deleted, archived_at, "
-            "pinned DESC, created_at DESC, id DESC)",
-        ),
-        # manager.list_deleted_entries(), the recycle bin.
-        (
-            "ix_entries_bin",
-            "entries (workspace_id, is_deleted, deleted_at DESC, id DESC)",
-        ),
-        # manager.list_archived_entries(), the archive.
-        (
-            "ix_entries_archive",
-            "entries (workspace_id, is_deleted, archived_at DESC, id DESC)",
-        ),
-        # routes_library._notes() and routes_graph's entry scan both add
-        # `is_draft = 0` to the live filter; without `is_draft` in an index
-        # they fall back to the same full scan the live index above removes.
-        (
-            "ix_entries_live_nodraft",
-            "entries (workspace_id, is_deleted, is_draft, archived_at, "
-            "created_at DESC, id DESC)",
-        ),
-        # PLAN.md §0 P5 / AUDIT.md B10's remaining, unverified columns.
-        # `Entry.category_id`, a plain ForeignKey column carries no index of
-        # its own in SQLAlchemy/SQLite, is scanned by "notes in category X"
-        # (`entry/manager.py`'s `category_entry_ids`/`move_category_entries`)
-        # and by every `/library` row that resolves a note's category name.
-        ("ix_entries_category_id", "entries (category_id)"),
-        # `Attachment.entry_id`, same gap: an unindexed ForeignKey, searched
-        # both singly (a note opening its own attachments) and via `IN (...)`
-        # over a page of notes (`/library`'s thumbnail lookup,
-        # `entry/manager.py`'s bulk delete). Measured: without this, the
-        # `IN` lookup above does a full table scan of `attachments` per page.
-        ("ix_attachments_entry_id", "attachments (entry_id)"),
-        # GET /media (`routes_files.list_media`) orders every upload by
-        # `created_at DESC` inside the workspace filter `WorkspaceMixin`
-        # already adds: measured "USE TEMP B-TREE FOR ORDER BY" on 5,000
-        # uploads without this; the single-column `workspace_id` index the
-        # mixin gives every table isn't enough once an ORDER BY is added on
-        # top of the equality filter.
-        ("ix_media_uploads_workspace_created", "media_uploads (workspace_id, created_at DESC)"),
-        # GET /documents (`routes_documents.list_documents`) is the same
-        # shape one predicate wider: workspace-scoped, `archived_at IS NULL`,
-        # ordered by `updated_at DESC`, same measured TEMP B-TREE without a
-        # composite index that includes the sort column.
-        (
-            "ix_documents_workspace_live_updated",
-            "documents (workspace_id, archived_at, updated_at DESC)",
-        ),
-        # `PageRead(kind, source_id)`, named in the same audit item, turns
-        # out to already be covered: `uq_page_read_source_page`'s own unique
-        # constraint is itself an index on `(kind, source_id, page)`, and
-        # SQLite serves both `_remember_page_read`'s single-row lookup and
-        # `_stored_page_reads`'s `kind=? AND source_id IN (...)` scan from
-        # its `(kind, source_id)` prefix with no SCAN (checked with EXPLAIN
-        # QUERY PLAN, not assumed), so no new index is added for it here.
-        #
-        # `events.events_for`, which is a note's History sheet, every replay
-        # and every restore (WORLD_CLASS_PLAN B1, Brief 7): it filters
-        # `entity_type` and `entity_id` and orders by `id DESC`, and neither
-        # filter column was indexed, so opening one note's history read the
-        # whole of `audit_log`. That table only grows, and grows fastest on
-        # the notebooks that are used most, so this is the one index here
-        # whose absence gets worse rather than staying merely wasteful.
-        # Measured on 60,000 events over 2,000 notes: "SCAN audit_log" at
-        # 6.390 ms per request became "SEARCH audit_log USING INDEX
-        # ix_audit_log_entity" at 0.082 ms. `id DESC` is in the index so the
-        # newest-first page is a walk backwards along it rather than a sort
-        # of everything that matched.
-        ("ix_audit_log_entity", "audit_log (entity_type, entity_id, id DESC)"),
-        # `EntryLink.source_entry_id` and `.target_entry_id`, the link table
-        # of a linked-notes app and the largest remaining gap. Both are plain
-        # ForeignKey columns, so neither carried an index, and every lookup
-        # is `source = ? OR target = ?`: a note opening its own connections,
-        # `links_for_entries_bulk` for a page of the notes list, the graph
-        # build, and the two-hop walk `search/engine._hops_from` does per
-        # search. Measured on 2,000 notes with 6,000 links, three per note:
-        # "SCAN entry_links", and `links_for_entries_bulk` over a 50-note
-        # page at 8.78 ms. Two single-column indexes rather than one
-        # composite, because the OR means SQLite serves each side from its
-        # own index and unions the rowids; a composite on (source, target)
-        # would only serve the source half.
-        ("ix_entry_links_source", "entry_links (source_entry_id)"),
-        ("ix_entry_links_target", "entry_links (target_entry_id)"),
-        # `WhiteboardObject.board_id`, the same shape: every open of a
-        # whiteboard or mind map reads its objects by board, and the table
-        # holds every object of every board. Measured on one board of 3,000
-        # objects: "SCAN whiteboard_objects", 34.38 ms to read that board.
-        ("ix_whiteboard_objects_board", "whiteboard_objects (board_id)"),
-        # `Conversation` and `Reminder` list newest-first inside the
-        # workspace filter the mixin adds, and both reported "USE TEMP
-        # B-TREE FOR ORDER BY": the same shape as the media and documents
-        # indexes above, which is why they take the same form.
-        ("ix_conversations_workspace_updated", "conversations (workspace_id, updated_at DESC)"),
-        ("ix_reminders_workspace_due", "reminders (workspace_id, due_at DESC)"),
-        # `note_scores`, read newest-faded-first on every resurfacing request
-        # (WORLD_CLASS_PLAN I4). The ORDER BY is the whole query, so without
-        # this SQLite sorts every scored note to find three: measured at 800
-        # notes, adding a LIMIT alone moved the read from 23.0 ms to 58.7 ms,
-        # because a LIMIT over an unindexed sort still sorts everything and
-        # then throws it away. The index is the half that makes the LIMIT
-        # mean something.
-        ("ix_note_scores_rank", "note_scores (score DESC, entry_id DESC)"),
-        # The foreign keys a note is looked up by that still carried no index
-        # (the performance pass, 2026-10-03, INBOX 441). Each is "this note's
-        # ...": its replies (`entries.parent_id`), the boards it is on and a
-        # board's cards (`whiteboard_nodes`), a board's sketches, its
-        # reminders and its bookmarks. SQLite also reads the child column of
-        # every foreign key on every delete of the parent, so with
-        # `foreign_keys=ON` an unindexed one is a table scan per deleted note.
-        # Measured on 5,000 notes with 4,000 board cards and 1,500 reminders:
-        # 900 lookups by these columns, 604 ms unindexed, 2.9 ms indexed.
-        ("ix_entries_parent", "entries (parent_id)"),
-        ("ix_whiteboard_nodes_entry", "whiteboard_nodes (entry_id)"),
-        ("ix_whiteboard_nodes_board", "whiteboard_nodes (board_id)"),
-        ("ix_whiteboard_sketches_board", "whiteboard_sketches (board_id)"),
-        ("ix_reminders_entry", "reminders (entry_id)"),
-        ("ix_entry_bookmarks_entry", "entry_bookmarks (entry_id)"),
-        # The last five foreign keys with no index leading on them (the
-        # Brief 60 census, WORLD_CLASS_PLAN 26.4): deleting an entry, an
-        # entity, a document or a bookmark scanned these join tables.
-        ("ix_entry_bookmarks_bookmark", "entry_bookmarks (bookmark_id)"),
-        ("ix_document_bookmarks_document", "document_bookmarks (document_id)"),
-        ("ix_document_bookmarks_bookmark", "document_bookmarks (bookmark_id)"),
-        ("ix_entity_mentions_entry", "entity_mentions (entry_id)"),
-        ("ix_entity_mentions_entity", "entity_mentions (entity_id)"),
-        # **The all-spaces orders** (WORLD_CLASS_PLAN 19.3, the whole
-        # `EXPLAIN QUERY PLAN` pass, 2026-10-05: scratchpad/
-        # plat1005_query_plans.py over every GET route at 5,000 notes). Every
-        # composite above leads with `workspace_id`, and they were measured
-        # with one space selected. The page's default is "All spaces", which
-        # sends no equality on `workspace_id` (`_add_workspace_filter` adds
-        # nothing, or a NOT IN for hidden spaces), so not one of them could
-        # serve an ORDER BY in the view most people are in: SQLite sorted.
-        #
-        # **Keyed by the ORDER BY alone, not by `is_deleted` first.** The
-        # first cut put `is_deleted` in front, the way the scoped ones are
-        # built, and measured worse elsewhere: with no `ANALYZE` statistics
-        # SQLite takes an equality on an indexed column as selective, so
-        # every "live notes, by id" scan (duplicates 69.6 to 98.1 ms, a
-        # note's connections 31.9 to 40.0) switched from reading the table
-        # in rowid order to an index lookup plus a sort. An index on the
-        # order alone is only chosen where it removes a sort; the filters are
-        # checked on the walk, and the rows they drop are few (the bin and
-        # the archive are a few percent of a notebook). Before and after,
-        # each statement alone, at 5,000 notes:
-        # the notes list's first page, the Library and link suggestions
-        # (24.98 ms, "USE TEMP B-TREE FOR ORDER BY");
-        ("ix_entries_order_all", "entries (pinned DESC, created_at DESC, id DESC)"),
-        # the bin and the archive (5.10 and 4.12 ms, sorting). **Partial**,
-        # holding only binned or archived rows, and that is load-bearing: a
-        # whole-table index on `archived_at` was taken by the notes list's
-        # `archived_at IS NULL` as an equality lookup (SQLite plans `IS NULL`
-        # like `= ?`), which put the sort back on the main list (40.2 ms);
-        # one only the bin's and the archive's own WHERE can match cannot be.
-        ("ix_entries_deleted_order", "entries (deleted_at DESC, id DESC) WHERE is_deleted = 1"),
-        ("ix_entries_archived_order", "entries (archived_at DESC, id DESC) WHERE archived_at IS NOT NULL"),
-        # the Timeline's page and the Dashboard's counts since a date (35.79
-        # and 15.15 ms, a range on `created_at` read by scanning every note);
-        ("ix_entries_created_order", "entries (created_at DESC, id DESC)"),
-        # the Library's activity rows, newest first over the whole event log
-        # (76.62 ms at 20,000 events, "SCAN audit_log" and a sort), and the
-        # lookups by action (corrections, the link-reason backfill);
-        ("ix_audit_log_recent", "audit_log (created_at DESC, id DESC)"),
-        ("ix_audit_log_action", "audit_log (action, id DESC)"),
-        # and the other lists' pages: uploads (5.52 ms at 5,000), documents
-        # (5.08 ms at 1,000), chats and reminders.
-        ("ix_media_uploads_order", "media_uploads (created_at DESC, id DESC)"),
-        ("ix_documents_order", "documents (updated_at DESC, id DESC)"),
-        # the Timeline's documents since a date (13.38 ms at 1,000) and the
-        # Dashboard's most-opened notes (7.17 ms, sorting every live note);
-        ("ix_documents_created_order", "documents (created_at DESC, id DESC)"),
-        ("ix_entries_accessed_order", "entries (access_count DESC, id DESC)"),
-        ("ix_conversations_order", "conversations (pinned DESC, updated_at DESC, id DESC)"),
-        ("ix_reminders_due_order", "reminders (due_at, id)"),
-        # The chat list in one space: `pinned DESC, updated_at DESC, id DESC`
-        # over the unarchived, which `(workspace_id, updated_at DESC)` above
-        # never matched (audit 2026-10-05, ARCH-05); the all-spaces shape is
-        # `ix_conversations_order`.
-        (
-            "ix_conversations_live_pinned",
-            "conversations (workspace_id, archived_at, pinned DESC, updated_at DESC, id DESC)",
-        ),
-    )
-
-    #: Unique indexes, partial where the column is optional: the same
-    #: additive `IF NOT EXISTS` convention as `_INDEXES`.
-    _UNIQUE_INDEXES: tuple[tuple[str, str], ...] = (
-        ("uq_entries_client_key", "entries (client_key) WHERE client_key IS NOT NULL"),
-    )
-
-    def _ensure_readings_view(self) -> None:
-        """Every reading of a file as one `readings` view (F10, `core/readings.py`).
-
-        Replaced when its definition changes, so a column added to it reaches
-        a notebook made before; a failure is logged and the app starts, since
-        nothing writes through the view and only the readings route reads it.
-        """
-        from tessellate.core import readings
-
-        try:
-            with self.engine.begin() as connection:
-                readings.ensure_view(connection)
-        except Exception:  # noqa: BLE001  # a read model must never stop the app opening
-            logging.getLogger("tessellate.db").warning("could not create the readings view", exc_info=True)
-
-    def _ensure_indexes(self) -> None:
-        """Create the composite indexes the hot list queries need.
-
-        `IF NOT EXISTS` throughout, run on every startup, the same additive
-        convention `_ensure_fts5` and `_add_missing_columns` already use, and
-        for the same reason: it has to be correct on a database created by any
-        earlier version, not only on a fresh one.
-
-        Adding an index is not free, every write to `entries` maintains it , 
-        but these are read-heavy paths by a wide margin in a notebook app, and
-        the alternative measured on a 20k-note database was a temp B-tree sort
-        of the whole table per request.
-        """
-        with self.engine.begin() as connection:
-            for name, definition in self._INDEXES:
-                connection.exec_driver_sql(
-                    f"CREATE INDEX IF NOT EXISTS {name} ON {definition}"
-                )
-            for name, definition in self._UNIQUE_INDEXES:
-                connection.exec_driver_sql(
-                    f"CREATE UNIQUE INDEX IF NOT EXISTS {name} ON {definition}"
-                )
-
-    #: Rows whose space has to be *inherited* rather than defaulted, as
-    #: `(table, parent-id column, parent table)`. See
-    #: `_backfill_inherited_workspaces` for why a plain DEFAULT is wrong here.
-    _WORKSPACE_INHERITANCE = (
-        ("attachments", "entry_id", "entries"),
-        ("reminders", "entry_id", "entries"),
-        ("whiteboard_nodes", "board_id", "entries"),
-        ("whiteboard_sketches", "board_id", "entries"),
-        ("whiteboard_objects", "board_id", "entries"),
-    )
-
-    def _rebuild_categories_unique_constraint(self) -> None:
-        """Move `categories.name`'s UNIQUE from the column to (space, name).
-
-        `create_all` never touches an existing table and `_add_missing_columns`
-        only ever *adds* columns, so an existing database keeps whatever
-        constraints it was built with, and the one this replaces made a
-        second space unusable. `get_or_create_category` looks a name up under
-        the current space's filter; in another space it finds nothing, tries
-        to insert, and hits a UNIQUE that spans every space at once.
-        Reproduced as a **500 on `POST /entries`** the first time a note in a
-        new space wanted a category name the default space already had, 
-        which for ordinary names ("Work", "Ideas", "Uni") is immediately.
-
-        SQLite cannot drop a constraint, so this is the standard rebuild:
-        make the table with the right shape, copy every row, swap the names.
-        Guarded on actually finding the old single-column unique index, so it
-        runs exactly once per database and is a no-op on a fresh one (where
-        `create_all` has already built the correct shape) and on every
-        startup after the first.
-
-        Never allowed to stop the app from starting, the same rule
-        `_ensure_alembic_baseline` follows: a database that somehow cannot be
-        rebuilt still opens, with the old constraint and the old limitation,
-        rather than not opening at all.
-        """
-        try:
-            with self.engine.begin() as connection:
-                tables = {
-                    row[0]
-                    for row in connection.exec_driver_sql(
-                        "SELECT name FROM sqlite_master WHERE type='table'"
-                    ).fetchall()
-                }
-                if "categories" not in tables:
-                    return
-                stale = None
-                for index in connection.exec_driver_sql(
-                    "PRAGMA index_list('categories')"
-                ).fetchall():
-                    name, unique = index[1], index[2]
-                    if not unique:
-                        continue
-                    columns = [
-                        row[2]
-                        for row in connection.exec_driver_sql(
-                            f"PRAGMA index_info('{name}')"
-                        ).fetchall()
-                    ]
-                    if columns == ["name"]:
-                        stale = name
-                        break
-                if stale is None:
-                    return  # already the composite constraint, or never had one
-
-                _logger.info("rebuilding categories to scope its unique name per space")
-                connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
-                connection.exec_driver_sql(
-                    'CREATE TABLE "categories_rebuilt" ('
-                    " id INTEGER NOT NULL PRIMARY KEY,"
-                    " name VARCHAR(100) NOT NULL,"
-                    " description TEXT,"
-                    " colour VARCHAR(16),"
-                    " created_at DATETIME,"
-                    " workspace_id VARCHAR DEFAULT 'default' NOT NULL,"
-                    " CONSTRAINT uq_categories_workspace_name UNIQUE (workspace_id, name)"
-                    ")"
-                )
-                connection.exec_driver_sql(
-                    'INSERT INTO "categories_rebuilt" '
-                    " (id, name, description, colour, created_at, workspace_id)"
-                    " SELECT id, name, description, colour, created_at,"
-                    "        COALESCE(workspace_id, 'default') FROM categories"
-                )
-                connection.exec_driver_sql('DROP TABLE "categories"')
-                connection.exec_driver_sql(
-                    'ALTER TABLE "categories_rebuilt" RENAME TO "categories"'
-                )
-                connection.exec_driver_sql(
-                    "CREATE INDEX IF NOT EXISTS ix_categories_workspace_id"
-                    " ON categories (workspace_id)"
-                )
-                connection.exec_driver_sql("PRAGMA foreign_keys=ON")
-        except Exception:
-            _logger.warning(
-                "couldn't rebuild the categories table; spaces will still share "
-                "one category namespace on this database",
-                exc_info=True,
-            )
-
-    def _backfill_inherited_workspaces(self) -> None:
-        """Give a newly-scoped child row the space its parent note is in.
-
-        These six tables (the five here plus `media_uploads`) had no
-        `workspace_id` at all until this ran, which is why an image uploaded
-        inside a class-specific space showed up in the main space's gallery
-        and a reminder written in one space appeared in every other, 
-        reported directly, and reproduced before this was written.
-
-        Adding the column is the easy half. `_add_missing_columns` backfills
-        it with the model default, `'default'`, and for a *parentless* row
-        (a `media_uploads` row, a whiteboard object on the shared
-        board_id-NULL board) that is the honest answer: it really was
-        visible everywhere before, and the main space is where it belongs
-        now.
-
-        For a row that hangs off a note it is actively wrong. An attachment
-        on a note in space `uni` stamped `'default'` does not merely land in
-        the wrong gallery: the workspace loader criteria then filter it out
-        of its *own note*, so a user in `uni` opens the note they attached it
-        to and the file is gone. That is data loss as far as anyone using it
-        can tell. So each of these inherits from its parent note instead,
-        and only a row with no parent keeps the default.
-
-        Idempotent by construction: it only touches rows still sitting at
-        `'default'` whose parent says otherwise, so a second startup is a
-        no-op, and a row a user has deliberately moved is never dragged back.
-        """
-        with self.engine.begin() as connection:
-            tables = {
-                row[0]
-                for row in connection.exec_driver_sql(
-                    "SELECT name FROM sqlite_master WHERE type='table'"
-                ).fetchall()
-            }
-            if "entries" not in tables:
-                return
-            for table, fk, parent in self._WORKSPACE_INHERITANCE:
-                if table not in tables:
-                    continue
-                #: The model's columns, not a `PRAGMA table_info` per table (audit 1028 K35):
-                #: `_add_missing_columns` has run, so a table the model knows has them all.
-                model = Base.metadata.tables.get(table)
-                columns = set(model.columns.keys()) if model is not None else set()
-                if "workspace_id" not in columns or fk not in columns:
-                    continue
-                connection.exec_driver_sql(
-                    f'UPDATE "{table}" SET workspace_id = ('
-                    f'  SELECT p.workspace_id FROM "{parent}" p WHERE p.id = "{table}".{fk}'
-                    f") WHERE {fk} IS NOT NULL AND workspace_id = 'default'"
-                    f'   AND EXISTS (SELECT 1 FROM "{parent}" p WHERE p.id = "{table}".{fk}'
-                    f"              AND p.workspace_id <> 'default')"
-                )
-
-    def _drop_orphan_links(self) -> None:
-        """Remove link rows whose source or target note no longer exists.
-
-        Every purge clears a note's links (`manager._hard_delete`), so a row
-        pointing at a missing note came from a path that did not (a database
-        written with foreign keys off, an interrupted import). Left in place
-        it inflates the link count (diagnostics showed 4,234 links on 37
-        notes) and every walk of the link table. Idempotent: a clean table
-        matches nothing. A note in the bin still exists, so its links stay.
-        """
-        with self.engine.begin() as connection:
-            tables = {
-                row[0]
-                for row in connection.exec_driver_sql("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
-            }
-            if not {"entries", "entry_links"} <= tables:
-                return
-            connection.exec_driver_sql(
-                "DELETE FROM entry_links WHERE source_entry_id NOT IN (SELECT id FROM entries)"
-                " OR target_entry_id NOT IN (SELECT id FROM entries)"
-            )
-
-    @staticmethod
-    def _model_signature() -> str:
-        """Every model table's column names and types, in a fixed order."""
-        return ";".join(
-            f"{table.name}({','.join(f'{column.name} {column.type}' for column in table.columns)})"
-            for table in sorted(Base.metadata.tables.values(), key=lambda t: t.name)
-        )
-
-    def _schema_stamp(self) -> int:
-        """A 31-bit fingerprint of the model and of the model's tables as SQLite
-        holds them (their CREATE text, which an added or dropped column changes).
-        Only the model's tables: the search and full-text tables other steps make
-        after this one would otherwise change it between two starts."""
-        names = sorted(Base.metadata.tables)
-        marks = ",".join("?" for _ in names)
-        with self.engine.connect() as connection:
-            held = connection.exec_driver_sql(
-                f"SELECT name, sql FROM sqlite_master WHERE type='table' AND name IN ({marks}) ORDER BY name",
-                tuple(names),
-            ).fetchall()
-        text = self._model_signature() + "|" + "|".join(f"{name}:{sql}" for name, sql in held)
-        return zlib.crc32(text.encode("utf-8")) & 0x7FFFFFFF
-
-    def _schema_is_stamped(self) -> bool:
-        with self.engine.connect() as connection:
-            stored = connection.exec_driver_sql("PRAGMA user_version").scalar()
-        return stored == self._schema_stamp()
-
-    def _stamp_schema(self) -> None:
-        """Record the fingerprint, after the steps that can change the tables ran."""
-        stamp = self._schema_stamp()
-        with self.engine.begin() as connection:
-            connection.exec_driver_sql(f"PRAGMA user_version = {int(stamp)}")
-
-    def _add_missing_columns(self) -> None:
-        """Additive auto-migration for existing databases.
-
-        create_all() never touches tables that already exist, so a
-        database made by an older version lacks newly added columns and
-        every query on that table would 500. Add them here instead of
-        making the user delete their data."""
-        with self.engine.begin() as connection:
-            for table in Base.metadata.tables.values():
-                rows = connection.exec_driver_sql(
-                    f'PRAGMA table_info("{table.name}")'
-                ).fetchall()
-                if not rows:
-                    continue  # brand-new table: create_all just made it
-                existing = {row[1] for row in rows}
-                for column in table.columns:
-                    if column.name in existing:
-                        continue
-                    ddl = (
-                        f'ALTER TABLE "{table.name}" ADD COLUMN "{column.name}" '
-                        f"{column.type.compile(self.engine.dialect)}"
-                    )
-                    # Backfill old rows with the model's default when it's a
-                    # plain value (callables like utcnow can't run in DDL, 
-                    # those columns stay NULL for pre-existing rows).
-                    if column.default is not None and column.default.is_scalar:
-                        value = column.default.arg
-                        if isinstance(value, bool):
-                            value = int(value)
-                        if isinstance(value, str):
-                            # A quote in the default doubled (audit 1028 K21):
-                            # left as it was, one apostrophe broke every start.
-                            quoted = value.replace("'", "''")
-                            ddl += f" DEFAULT '{quoted}'"
-                        else:
-                            ddl += f" DEFAULT {value}"
-                    connection.exec_driver_sql(ddl)
-
-    def optimize(self) -> None:
-        """`PRAGMA optimize` at a clean quit (audit 1028 K37), as SQLite advises:
-        it gathers the statistics the planner lacks, only for tables the
-        launch's queries used, so plans keep up as a notebook grows.
-
-        Then the write-ahead log is folded into the file and emptied. A
-        seeded notebook measured 4 KB of file beside 2.2 MB of log after a
-        clean quit, so deleting the `-wal` lost every note (INBOX 1573)."""
-        try:
-            with self.engine.connect() as connection:
-                connection.exec_driver_sql("PRAGMA optimize")
-                connection.exec_driver_sql("PRAGMA wal_checkpoint(TRUNCATE)")
-        except Exception as exc:  # noqa: BLE001  # a quit must not fail over statistics
-            logging.getLogger(__name__).info("PRAGMA optimize skipped: %s", exc)
-
-    def session(self) -> Session:
-        """A fresh session; caller is responsible for closing it."""
-        return self._session_factory()

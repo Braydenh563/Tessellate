@@ -459,3 +459,74 @@ def test_needle_engine_downloads_are_all_inspected_and_pinned_per_platform():
 
 def test_needle_row_says_the_engine_is_checked_at_install():
     assert "checks at install" in extras.EXTRAS_BY_ID["needle"].caveat
+
+
+def test_a_server_error_is_tried_again(client, monkeypatch, server):
+    """GitHub's release downloads answer 504 now and then; one blip used to
+    fail the whole install (the Windows package check, 2026-11-08)."""
+    import urllib.error
+
+    _point_at(monkeypatch, "pyodide", server, {"core.tar.bz2": _tar_bz2(PYODIDE_FILES)})
+    real = extra_downloads._open_url
+    tries = []
+
+    def flaky(url):
+        tries.append(url)
+        if len(tries) < 3:
+            raise urllib.error.HTTPError(url, 504, "Gateway Time-out", {}, None)
+        return real(url)
+
+    monkeypatch.setattr(extra_downloads, "_open_url", flaky)
+    monkeypatch.setattr(extra_downloads.time, "sleep", lambda _s: None)
+    extras.start("pyodide")
+    _wait()
+    assert extras.current().outcome == "completed", extras.current().log[-5:]
+    assert len(tries) == 3
+    assert any("answered 504" in line for line in extras.current().log)
+
+
+def test_a_missing_file_is_not_tried_again(client, monkeypatch, server):
+    import urllib.error
+
+    _point_at(monkeypatch, "pyodide", server, {"core.tar.bz2": _tar_bz2(PYODIDE_FILES)})
+    tries = []
+
+    def gone(url):
+        tries.append(url)
+        raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+
+    monkeypatch.setattr(extra_downloads, "_open_url", gone)
+    monkeypatch.setattr(extra_downloads.time, "sleep", lambda _s: None)
+    extras.start("pyodide")
+    _wait()
+    assert extras.current().outcome == "failed"
+    assert len(tries) == 1
+
+
+def test_the_captions_model_lands_as_the_one_file_the_helper_reads(client, monkeypatch, server):
+    """INBOX 1777: the tiny.en file is a `file` download, hash checked, and
+    `captions_process.model_path` finds it as an absolute path."""
+    from tessellate.ai import captions_process
+
+    monkeypatch.setattr(extra_downloads, "platform_key", lambda: "linux-x86_64")
+    _point_at(monkeypatch, "captionmodel", server, {"model.bin": b"ggml-bytes"})
+    assert captions_process.model_path() is None
+    assert client.post("/extras/captionmodel/install").json()["started"] is True
+    _wait()
+    assert extras.current().outcome == "completed", extras.current().step
+    path = captions_process.model_path()
+    assert path is not None and path.is_absolute()
+    assert path.name == extras.CAPTIONS_MODEL_FILE and path.read_bytes() == b"ggml-bytes"
+    assert _row(client, "captionmodel")["installed"] is True
+
+
+def test_a_corrupt_captions_model_is_refused_and_not_kept(client, monkeypatch, server):
+    from tessellate.ai import captions_process
+
+    monkeypatch.setattr(extra_downloads, "platform_key", lambda: "linux-x86_64")
+    _point_at(monkeypatch, "captionmodel", server, {"model.bin": b"ggml-bytes"}, sha="0" * 64)
+    extras.start("captionmodel")
+    _wait()
+    assert extras.current().outcome == "failed" and "checksum" in extras.current().step.lower()
+    assert captions_process.model_path() is None
+

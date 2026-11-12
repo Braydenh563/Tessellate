@@ -94,6 +94,7 @@ const allEntries = [
 const wikiStem = () => '';
 const wikiForms = (e) => ({{ opening: e.content.toLowerCase(), title: '' }});
 const mapBoardTitled = () => null;
+const loadEmbedDocuments = () => {{}};
 function boardEmbedTarget() {{ return null; }}
 {source}
 const hit = resolveWikiTarget('Eta reading|a friendly alias');

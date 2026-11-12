@@ -1,13 +1,14 @@
 import re
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from tessellate.api.schemas import SpaceResponse, SpaceCreate, SpaceUpdate
-from tessellate.core import deps, paths
+from tessellate.core import deps, paths, spacelock, vault
 from tessellate.core.database import Base, Category, Entry, Space, workspace_scoped_models
-from tessellate.core.deps import get_session, impersonate_workspace
+from tessellate.core.database import impersonate_workspace
+from tessellate.core.deps import get_session
 from tessellate.repo import spaces as space_repo
 from tessellate.entry.cleantext import clean_name, is_blank, name_key
 from sqlalchemy import delete as sa_delete
@@ -94,7 +95,9 @@ def create_space(space_in: SpaceCreate, session: Session = Depends(get_session))
     icon = _validate_icon(space_in.icon)
     _refuse_duplicate_name(session, name)
     space_id = _generate_space_id(name, session)
-    space = Space(id=space_id, name=name, icon=icon)
+    if space_in.is_private and vault.key() is None:
+        raise HTTPException(status_code=423, detail="Unlock your private notes first.")
+    space = Space(id=space_id, name=name, icon=icon, is_private=space_in.is_private)
     session.add(space)
     session.commit()
     session.refresh(space)
@@ -200,8 +203,17 @@ class SpaceRestore(BaseModel):
     merged: list[dict] = Field(default_factory=list)
 
 
+def _refuse_locked_private(private: bool, token: str | None) -> None:
+    """INBOX 1727: a private space is deleted or brought back only while its
+    session has them open, so nothing in it is moved or remade unsealed."""
+    if private and not spacelock.opened(token):
+        raise HTTPException(status_code=423, detail="Unlock your private spaces first.")
+
+
 @router.post("/spaces/restore", response_model=SpaceResponse)
-def restore_space(body: SpaceRestore, session: Session = Depends(get_session)):
+def restore_space(
+    body: SpaceRestore, session: Session = Depends(get_session), x_auth_token: str | None = Header(default=None)
+):
     """Undo a space's delete: the space again, with its own id, and every row
     the delete moved out of it moved back (a row moved on since stays where
     it is now). A merged category is made again with its id and its notes
@@ -212,50 +224,71 @@ def restore_space(body: SpaceRestore, session: Session = Depends(get_session)):
         raise HTTPException(400, "The default spaces cannot be made again.")
     if space_repo.find(session, sid) is not None:
         raise HTTPException(409, "A space with that id already exists.")
+    _refuse_locked_private(bool(body.space.is_private), x_auth_token)
     #: Checked, but stored as it was: an undo never renames the space.
     _validate_name(body.space.name, restoring=True)
     name = body.space.name
     icon = _validate_icon(body.space.icon)
-    session.add(Space(id=sid, name=name, icon=icon, hidden_from_all=bool(body.space.hidden_from_all)))
+    session.add(Space(id=sid, name=name, icon=icon, hidden_from_all=bool(body.space.hidden_from_all), is_private=bool(body.space.is_private)))
     session.flush()
     if body.move_to:
-        tables = {model.__table__.name: model.__table__ for model in workspace_scoped_models()}
-        categories, entries = Category.__table__, Entry.__table__
-        for item in body.merged:
-            cid = int(item["id"])
-            if session.execute(sa_select(categories.c.id).where(categories.c.id == cid)).first():
-                continue
-            created = item.get("created_at")
-            session.execute(categories.insert().values(
-                id=cid, name=str(item["name"])[:100], description=item.get("description"),
-                colour=item.get("colour"), workspace_id=sid,
-                **({"created_at": datetime.fromisoformat(created)} if created else {}),
-            ))
-            ids = [int(i) for i in item.get("entry_ids") or []]
-            for start in range(0, len(ids), 500):
-                session.execute(
-                    sa_update(entries)
-                    .where(entries.c.id.in_(ids[start:start + 500]), entries.c.category_id == int(item["into"]))
-                    .values(category_id=cid)
-                )
-        for name_, ids in body.moved.items():
-            table = tables.get(name_)
-            if table is None:
-                continue
-            for start in range(0, len(ids), 500):
-                session.execute(
-                    sa_update(table)
-                    .where(table.c.id.in_(ids[start:start + 500]), table.c.workspace_id == body.move_to)
-                    .values(workspace_id=sid)
-                )
-        from tessellate.ai import lexical_filing
-        from tessellate.search import index as search_index
-
-        search_index.rebuild(session)
-        # Moved back by statement, so the filing corpus must forget too.
-        lexical_filing.forget_corpus()
+        _move_back(session, body, sid)
+    if body.space.is_private:
+        _seal_restored(session, sid)
     session.commit()
+    if body.space.is_private:
+        from tessellate.entry import manager_private
+
+        manager_private.scrub_private_leftovers(session)
     return space_repo.find(session, sid)
+
+
+def _move_back(session: Session, body: SpaceRestore, sid: str) -> None:
+    """Every row the delete moved out, moved back, and each merged category made again."""
+    tables = {model.__table__.name: model.__table__ for model in workspace_scoped_models()}
+    categories, entries = Category.__table__, Entry.__table__
+    for item in body.merged:
+        cid = int(item["id"])
+        if session.execute(sa_select(categories.c.id).where(categories.c.id == cid)).first():
+            continue
+        created = item.get("created_at")
+        session.execute(categories.insert().values(
+            id=cid, name=str(item["name"])[:100], description=item.get("description"),
+            colour=item.get("colour"), workspace_id=sid,
+            **({"created_at": datetime.fromisoformat(created)} if created else {}),
+        ))
+        ids = [int(i) for i in item.get("entry_ids") or []]
+        for start in range(0, len(ids), 500):
+            session.execute(
+                sa_update(entries)
+                .where(entries.c.id.in_(ids[start:start + 500]), entries.c.category_id == int(item["into"]))
+                .values(category_id=cid)
+            )
+    for name_, ids in body.moved.items():
+        table = tables.get(name_)
+        if table is None:
+            continue
+        for start in range(0, len(ids), 500):
+            session.execute(
+                sa_update(table)
+                .where(table.c.id.in_(ids[start:start + 500]), table.c.workspace_id == body.move_to)
+                .values(workspace_id=sid)
+            )
+    from tessellate.ai import lexical_filing
+    from tessellate.search import index as search_index
+
+    search_index.rebuild(session)
+    # Moved back by statement, so the filing corpus must forget too.
+    lexical_filing.forget_corpus()
+
+
+def _seal_restored(session: Session, sid: str) -> None:
+    """Whatever came back into a private space is sealed again, a note made
+    ordinary since the delete included: a restore never lands one in the clear."""
+    from tessellate.entry import private_space
+
+    session.expire_all()  # moved back by statement: read them as they are now
+    private_space.seal_space_members(session, sid)
 
 
 def _detach_references(session: Session, table, ids: list, depth: int = 0) -> None:  # noqa: ANN001
@@ -488,6 +521,7 @@ def delete_space(
     move_to: str | None = None,
     purge: bool = False,
     session: Session = Depends(get_session),
+    x_auth_token: str | None = Header(default=None),
 ):
     """Delete a space and move everything in it to `move_to` (the default
     space when it is not given), or, with `purge=1`, delete everything in it
@@ -497,6 +531,7 @@ def delete_space(
     if space_id in RESERVED_SPACE_IDS:
         raise HTTPException(400, "The default spaces cannot be deleted.")
     space = deps.get_or_404(session, Space, space_id, "That space could not be found.")
+    _refuse_locked_private(bool(space.is_private), x_auth_token)
     if purge and move_to:
         raise HTTPException(400, "Choose either moving the contents or deleting them, not both.")
     if purge:
@@ -506,6 +541,9 @@ def delete_space(
 
 class MoveNotesBody(BaseModel):
     ids: list[int] = Field(min_length=1, max_length=500)
+    #: Out of a private space (INBOX 1727): "Keep it private" (the default)
+    #: or "Make it ordinary".
+    keep_private: bool = True
 
 
 @router.post("/spaces/{space_id}/move-notes")
@@ -526,5 +564,18 @@ def move_notes_to_space(space_id: str, body: MoveNotesBody, session: Session = D
 
     if space_id == "all":
         raise HTTPException(400, "Pick one space to move them to.")
-    deps.get_or_404(session, Space, space_id, "That space could not be found.")
-    return moving.to_space(session, space_id, body.ids)
+    from tessellate.entry import private_space
+    from tessellate.entry import manager_private
+
+    target = deps.get_or_404(session, Space, space_id, "That space could not be found.")
+    # A locked private space's notes are out of this read, so only the target can be locked here.
+    if target.is_private and session.info.get("sealed_workspaces"):
+        raise HTTPException(status_code=423, detail="Unlock your private spaces first.")
+    leaving = private_space.leaving_ids(session, space_id, body.ids)
+    moved = moving.to_space(session, space_id, body.ids)
+    if leaving:
+        private_space.after_leaving(session, leaving, keep_private=body.keep_private)
+        session.commit()
+    if target.is_private and moved.get("moved"):
+        manager_private.scrub_private_leftovers(session)
+    return moved

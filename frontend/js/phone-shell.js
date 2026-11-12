@@ -120,9 +120,7 @@ function emblemArt(size, { arrive = false, still = false, head = false } = {}) {
 //: Called where either changes.
 
 function syncEmblemBusy() {
-  const chatting = typeof chatController !== "undefined" && Boolean(chatController);
-  const running = typeof agentRuns !== "undefined" && agentRuns.some((run) => run.state === "running");
-  const busy = chatting || running;
+  const busy = Boolean(chatController) || (typeof agentRuns !== "undefined" && agentRuns.some((run) => run.state === "running"));
   if (busy === emblemState.busy) return;
   emblemState.busy = busy;
   for (const art of document.querySelectorAll(".emblem-art:not(.is-head)")) emblemSetBusy(art, busy);
@@ -212,7 +210,7 @@ const EMBLEM_SLOTS = [
 ];
 
 //: The About page's emblem is in Settings' body: drawn when the body is built (INBOX 1501).
-onSettingsBody(() => {
+onSurface("settings", () => {
   const holder = document.getElementById("about-emblem");
   if (holder) renderEmblemWhenShown(holder, 96, true);
 });
@@ -511,15 +509,17 @@ $("skip-link").addEventListener("click", (e) => {
 });
 //: Past the sidebar, the dock and the composer to the first row of the page's
 //: list (UX1: 51 Tabs from the composer to the first note).
-$("skip-to-list").addEventListener("click", (e) => {
-  e.preventDefault();
-  const page = $(`tab-${prefs.get("activeTab", null) || "notes"}`);
-  const rows = page?.querySelectorAll("#entry-list > li, .library-card .card-open, li[tabindex], tbody tr[tabindex]") || [];
-  const first = [...rows].find((el) => el.tabIndex >= 0 && el.checkVisibility?.() !== false);
-  (first || page?.querySelector("[role=tabpanel], h1, h2") || $(`tab-btn-${prefs.get("activeTab", null) || "notes"}`))?.focus?.();
+onSurface("notes", () => {
+  $("skip-to-list").addEventListener("click", (e) => {
+    e.preventDefault();
+    const page = $(`tab-${prefs.get("activeTab", null) || "notes"}`);
+    const rows = page?.querySelectorAll("#entry-list > li, .library-card .card-open, li[tabindex], tbody tr[tabindex]") || [];
+    const first = [...rows].find((el) => el.tabIndex >= 0 && el.checkVisibility?.() !== false);
+    (first || page?.querySelector("[role=tabpanel], h1, h2") || $(`tab-btn-${prefs.get("activeTab", null) || "notes"}`))?.focus?.();
+  });
 });
 initSelectionPopup();
-initEntryListKeyboardNav();
+onSurface("notes", initEntryListKeyboardNav);
 scrollTopUpdate = initScrollTopButton();
 // Reminder watching moved into startApp() (below `_active_tokens` note in
 // api()'s own comment): this used to run unconditionally here, before
@@ -574,8 +574,9 @@ function initHeaderHeightToken() {
     written = h / em;
     root.style.setProperty("--header-h", `${Math.round(written * 1000) / 1000}rem`);
   };
+  //: No first call of its own (INBOX 1667, `write` 132ms of forced layout at boot): an observer reports a new
+  //: target at once, after the frame's layout, where the read is free; a direct call here was the page's first layout.
   new ResizeObserver(write).observe(bar);
-  write();
 }
 
 initHeaderHeightToken();
@@ -589,7 +590,8 @@ initHeaderHeightToken();
 function initNotesSubtabHeightToken() {
   const strip = $("notes-subtabs");
   const page = $("tab-notes");
-  if (!strip || !page || typeof ResizeObserver === "undefined") return;
+  if (!strip || !page || typeof ResizeObserver === "undefined" || strip.dataset.sized) return;
+  strip.dataset.sized = "1";
   const write = () => {
     const box = strip.getBoundingClientRect().height;
     //: The strip's own bottom margin counts: it is the gap the strip keeps
@@ -615,7 +617,9 @@ function initNotesSubtabHeightToken() {
   new ResizeObserver(write).observe(strip);
 }
 
-initNotesSubtabHeightToken();
+//: **Not at boot** (INBOX 1741: the hidden strip's first report cost 35 to 40ms at 4x on the
+//: Dashboard): the Notes tab's reveal starts it (`revealTab`), and a start on Notes starts it here.
+if (!$("tab-notes")?.classList.contains("hidden")) initNotesSubtabHeightToken();
 
 // --- the tab bar docks to the bottom on a phone -------------------------------
 // UI_MODERNISATION_PLAN.md Phase 9, band 4.
@@ -873,7 +877,7 @@ const PHONE_SIDEBAR_OPENERS = [
 
 function mountPhoneSidebarOpeners() {
   for (const { aside: asideId, dock: dockSel, label } of PHONE_SIDEBAR_OPENERS) {
-    const aside = $(asideId);
+    const aside = document.getElementById(asideId);
     const dock = document.querySelector(dockSel);
     if (!aside || !dock || dock.querySelector(":scope > .dock-nav")) continue;
     const nav = document.createElement("span");
@@ -892,17 +896,20 @@ function mountPhoneSidebarOpeners() {
 }
 
 mountPhoneSidebarOpeners();
+onSurface("documents", mountPhoneSidebarOpeners);
 
 //: Choosing a category on a phone closes the drawer, so the filtered list it
 //: chose is what shows; the row's ⋯ stops its own click before this.
-$("category-list")?.addEventListener("click", () => {
-  const aside = $("sidebar");
-  if (!window.matchMedia(PHONE_TABS).matches || !aside?.classList.contains("sidebar-sheet-open")) return;
-  setSidebarSheet(aside, false);
-  aside.querySelector(".sidebar-collapse-toggle")?.setAttribute("aria-expanded", "false");
-  const opener = document.querySelector('.phone-sidebar-opener[aria-controls="sidebar"]');
-  opener?.setAttribute("aria-expanded", "false");
-  opener?.focus();
+onSurface("notes", () => {
+  $("category-list")?.addEventListener("click", () => {
+    const aside = $("sidebar");
+    if (!window.matchMedia(PHONE_TABS).matches || !aside?.classList.contains("sidebar-sheet-open")) return;
+    setSidebarSheet(aside, false);
+    aside.querySelector(".sidebar-collapse-toggle")?.setAttribute("aria-expanded", "false");
+    const opener = document.querySelector('.phone-sidebar-opener[aria-controls="sidebar"]');
+    opener?.setAttribute("aria-expanded", "false");
+    opener?.focus();
+  });
 });
 
 // --- swipe a row: star to the right, bin to the left --------------------------
@@ -997,7 +1004,7 @@ function initRowSwipe(list, actions) {
   list.addEventListener("pointercancel", end);
 }
 
-initRowSwipe($("entry-list"), {
+onSurface("notes", () => initRowSwipe($("entry-list"), {
   right: (li) => li.querySelector(".favourite-btn")?.click(),
   // The menu builds its rows on open, so the bin is reached as the one
   // function the menu's own row calls, not by pressing a row that does
@@ -1006,13 +1013,15 @@ initRowSwipe($("entry-list"), {
     const entry = allEntries.find((e) => String(e.id) === li.dataset.id);
     if (entry) binNoteWithUndo(entry);
   },
-});
+}));
 
 //: Reminders (Phase 11 item 8, "reminders as rows with swipe done"): right
 //: presses the row's own Done checkbox, which toggles and saves as a tap on
 //: it would; there is no left.
-initRowSwipe($("reminder-groups"), {
-  right: (li) => li.querySelector('input[type="checkbox"]')?.click(),
+onSurface("reminders", () => {
+  initRowSwipe($("reminder-groups"), {
+    right: (li) => li.querySelector('input[type="checkbox"]')?.click(),
+  });
 });
 
 // --- the note page: a note opened on a phone is a page, not a longer card ----
@@ -1120,7 +1129,7 @@ function initNotePage() {
     //: the checkbox (note-cards.js), and this handler did not know the mode:
     //: the first tap selected the note and opened its page over the list too
     //: (found by the deepflows sweep).
-    if (typeof selectMode !== "undefined" && selectMode) return;
+    if (selectMode) return;
     const li = event.target.closest("li[data-id]");
     if (!li || li.querySelector("textarea")) return;
     if (event.target.closest("button, a, input, select, [contenteditable], .chip-interactive, summary")) return;
@@ -1132,7 +1141,7 @@ function initNotePage() {
   });
 }
 
-initNotePage();
+onSurface("notes", initNotePage);
 
 // --- the Library reader as the page ------------------------------------------
 // UI_MODERNISATION_PLAN Phase 11 item 5, "the reader full-screen with a bottom
@@ -1361,7 +1370,7 @@ function initPhoneChatRow() {
   });
 }
 
-initPhoneChatRow();
+onSurface("chat", initPhoneChatRow);
 
 // --- a sheet, the phone's own dialog ------------------------------------------
 // DESIGN.md's recipe index, "A sheet". UI_MODERNISATION_PLAN.md Phase 11.
@@ -1402,9 +1411,18 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   //: "Open the Reminders tab" and a dimmed app cannot be read against it.
   //: Escape still closes it, from inside it only. Below 600 the sheet is the
   //: window, so it stays modal there.
-  const modeless = modal === false && matchMedia("(min-width: 600px)").matches;
-  if (modeless) overlay.classList.add("sheet-modeless");
-  else overlay.setAttribute("aria-modal", "true");
+  //: Re-read when the window crosses 600 while it is open (sm-1111 row 24):
+  //: opened wide and shrunk, it kept no scrim at phone width.
+  const wide = matchMedia("(min-width: 600px)");
+  let modeless = false;
+  const applyModeless = () => {
+    modeless = modal === false && wide.matches;
+    overlay.classList.toggle("sheet-modeless", modeless);
+    if (modeless) overlay.removeAttribute("aria-modal");
+    else overlay.setAttribute("aria-modal", "true");
+  };
+  applyModeless();
+  if (modal === false) wide.addEventListener("change", applyModeless);
   //: **Above whatever it was opened from.** A sheet is a `.modal-overlay`
   //: (1010), and a surface drawn higher than that opened its sheet behind
   //: itself: the lightbox (1020) on a phone, whose ⋯ "does nothing (no
@@ -1456,6 +1474,7 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     if (settled) return;
     settled = true;
     document.removeEventListener("keydown", onKey, true);
+    wide.removeEventListener("change", applyModeless);
     onClose?.();
     returnFocus?.focus?.();
     //: **The way out** (OPEN.md, after the menus got theirs): a sheet used to
@@ -1502,7 +1521,7 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     //: sheet over the note page, INBOX 392), and every sheet's listener is
     //: on the document, so one Escape closed both. Only the topmost answers.
     const sheets = document.querySelectorAll(".sheet-overlay:not(.sheet-leaving)");
-    if ((sheets.length && sheets[sheets.length - 1] !== overlay) || document.querySelector(".confirm-overlay")) return;
+    if ((sheets.length && sheets[sheets.length - 1] !== overlay) || [...document.querySelectorAll(".confirm-overlay")].some((o) => overlay.compareDocumentPosition(o) & Node.DOCUMENT_POSITION_FOLLOWING)) return;
     //: A dialog over this sheet (Connect to… over the Blocks list) takes the Escape too.
     //: A ⋯ menu open over the sheet takes its own Escape (an entity page's).
     //: Not the menu this sheet *is* (`openKebabSheet` moves a ⋯ menu in,
@@ -1655,7 +1674,7 @@ function syncPhoneMoreRuns() {
 
 //: Due-or-overdue reminders, as `updateReminderBadge` last counted them.
 function phoneMoreDueCount() {
-  return typeof reminderCounts === "undefined" ? 0 : reminderCounts.due || 0;
+  return reminderCounts.due || 0;
 }
 
 // The bar has to say where you are on all seven tabs, not on the four it
@@ -1880,7 +1899,7 @@ const FAB_IDS = [
 
 function floatPrimaryActions(floating) {
   for (const id of FAB_IDS) {
-    const button = $(id);
+    const button = document.getElementById(id);
     if (!button) continue;
     const page = button.closest(".tab-page");
     if (!page) continue;
@@ -1908,6 +1927,7 @@ function initPrimaryFab() {
   const query = window.matchMedia(PHONE_FAB);
   floatPrimaryActions(query.matches);
   query.addEventListener("change", (event) => floatPrimaryActions(event.matches));
+  for (const name of ["reminders", "timeline", "graph"]) onSurface(name, () => floatPrimaryActions(query.matches));
 }
 
 initPrimaryFab();
@@ -2185,15 +2205,24 @@ function initDockFolding() {
     }
     docks.forEach(fitDock);
   });
-  for (const dock of document.querySelectorAll(".dock[data-dock-name]")) {
-    watcher.observe(dock);
-    for (const zone of dock.querySelectorAll(":scope > .dock-identity, :scope > .dock-find, :scope > .dock-actions")) watcher.observe(zone);
-  }
+  //: Docks of a surface built later (Notes, Timeline) are watched when it is.
+  const seen = new WeakSet();
+  const watchDocks = () => {
+    for (const dock of document.querySelectorAll(".dock[data-dock-name]")) {
+      if (seen.has(dock)) continue;
+      seen.add(dock);
+      watcher.observe(dock);
+      for (const zone of dock.querySelectorAll(":scope > .dock-identity, :scope > .dock-find, :scope > .dock-actions")) watcher.observe(zone);
+    }
+  };
+  watchDocks();
+  for (const name of SURFACES.keys()) onSurface(name, watchDocks);
 }
 
 initDockFolding();
 watchOverlays(); // page behind a dialog must not scroll
 initAutoGrow(); // capture + magic-add boxes follow their content
+onSurface("chat", initAutoGrow);
 // Used to reopen on whichever tab was last active, with only the very
 // first-ever visit defaulting to Dashboard. Changed on direct request: every
 // load should open on Dashboard, not just the first one, closing the app on
@@ -2324,33 +2353,35 @@ function toggleAutonomousPanel() {
   if (panel) panel.classList.toggle("hidden", !$("pref-autonomous-tasks").checked);
 }
 
-$("semantic-search-toggle")?.addEventListener("change", () => {
-  // `loadEntries` re-runs the list with the toggle's new state (it once
-  // called an undefined name; tests/test_frontend_symbols.py found it).
-  if (noteSearch) loadEntries();
-  //: Audit 1028 S83: the closed menu says the filter is on.
-  const on = $("semantic-search-toggle").checked;
-  const summary = $("notes-filter-menu")?.firstElementChild;
-  summary?.classList.toggle("is-on", on);
-  summary?.setAttribute("aria-pressed", String(on));
-  //: Turning it on with no engine would otherwise change nothing and say nothing (N25).
-  if (on && meaningEngineMissing()) toast(MEANING_ENGINE_WORDS, "info");
-});
+onSurface("notes", () => {
+  $("semantic-search-toggle")?.addEventListener("change", () => {
+    // `loadEntries` re-runs the list with the toggle's new state (it once
+    // called an undefined name; tests/test_frontend_symbols.py found it).
+    if (noteSearch) loadEntries();
+    //: Audit 1028 S83: the closed menu says the filter is on.
+    const on = $("semantic-search-toggle").checked;
+    const summary = $("notes-filter-menu")?.firstElementChild;
+    summary?.classList.toggle("is-on", on);
+    summary?.setAttribute("aria-pressed", String(on));
+    //: Turning it on with no engine would otherwise change nothing and say nothing (N25).
+    if (on && meaningEngineMissing()) toast(MEANING_ENGINE_WORDS, "info");
+  });
 
-// There is no Tags / Recycle bin / Activity shortcut in the notes sidebar, and
-// `openLibraryOn` went with them. The buttons were dropped once with their
-// handlers left behind (which is how `test_frontend_ids` found three ids that
-// nothing defined), briefly restored during the §40 audit on the assumption
-// the removal had been accidental, and then removed again, deliberately this
-// time, because the owner asked for it.
-//
-// The reasoning is the Library's own (§36G): the bin, the activity log and the
-// tag list are all "show me the things of this sort", which is what the
-// Library is, and it reaches each of them through its own filter chips. A
-// second door in a sidebar that is meant to be a category list is exactly the
-// "too much in one place, clashing with the text beside it" this app has been
-// asked to stop doing.
-$("entry-template")?.addEventListener("click", () => openNoteTemplateDialog());
+  // There is no Tags / Recycle bin / Activity shortcut in the notes sidebar, and
+  // `openLibraryOn` went with them. The buttons were dropped once with their
+  // handlers left behind (which is how `test_frontend_ids` found three ids that
+  // nothing defined), briefly restored during the §40 audit on the assumption
+  // the removal had been accidental, and then removed again, deliberately this
+  // time, because the owner asked for it.
+  //
+  // The reasoning is the Library's own (§36G): the bin, the activity log and the
+  // tag list are all "show me the things of this sort", which is what the
+  // Library is, and it reaches each of them through its own filter chips. A
+  // second door in a sidebar that is meant to be a category list is exactly the
+  // "too much in one place, clashing with the text beside it" this app has been
+  // asked to stop doing.
+  $("entry-template")?.addEventListener("click", () => openNoteTemplateDialog());
+});
 $("note-template-use")?.addEventListener("click", () => useNoteTemplate());
 //: Manage templates, from the picker (the owner at release): the list is
 //: made and edited in Settings, Templates, so the way there is here too.
@@ -2360,5 +2391,5 @@ $("note-template-manage")?.addEventListener("click", () => {
 });
 
 // Chat tab (Wave C).
-$("chat-send").addEventListener("click", () => sendChatMessage());
+onSurface("chat", () => $("chat-send").addEventListener("click", () => sendChatMessage()));
 

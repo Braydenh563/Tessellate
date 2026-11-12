@@ -25,9 +25,10 @@ from pathlib import Path
 
 import pytest
 from tests._app_js import app_js_text, with_pieces
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-APP = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+APP = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 
 
 def _mood_source() -> str:

@@ -2,9 +2,9 @@
 
 **Status: written by direct instruction; to be executed after the plans in
 [UI_MODERNISATION_PLAN.md](UI_MODERNISATION_PLAN.md),
-[AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md),
-[MINDMAP_PLAN.md](MINDMAP_PLAN.md), [PLAN.md](PLAN.md) and
-[REDESIGN.md](REDESIGN.md) are done, in the order
+the retired agent-skills plan,
+[MINDMAP_PLAN.md](MINDMAP_PLAN.md), the retired plan doc and
+the retired redesign doc are done, in the order
 [ROADMAP.md](../ROADMAP.md) gives.** One decision (§4) has to be made before
 any of it is built.
 
@@ -124,7 +124,7 @@ The bridge, the chrome and the engine. The text, with every acceptance line, mov
 
 All five items. The record, with every measurement and every decision, is in
 HISTORY.md ("From DOCUMENTS_PLAN.md Phase 3", items 1 to 3 and items 4 and 5);
-what the phase left open is in `archive/agent-remaining/documents-phase4.md`.
+what the phase left open is in `documents-phase4.md` (git history).
 
 **The syntax this phase decided, kept here because later phases read it**:
 `:::columns` opens a columns block, `:::column` starts the next column, `:::`
@@ -134,19 +134,7 @@ the same thing.
 
 ### Phase 4: the connected document (1 session)
 
-1. **Backlinks with context**: built, 2026-09-12. `GET
-   /documents/{id}/backlinks` answers for notes and documents at once, the
-   panel shows the sentence around each link with "link back", and unlinked
-   mentions sit below with "link", which rewrites the mention in the source
-   that wrote it. Decisions in section 11.
-2. **Block references** (`^block-id`): built, 2026-09-12. A paragraph carries
-   `^an-id` at the end of its last line; `[[Doc#^id]]` links to it and
-   `![[Doc#^id]]` embeds it, from a note, a map node or a chat. The model is
-   `DOC-BLOCKREF-BEGIN`..`END` in `documents.js` (run in node by
-   `tests/test_doc_blockrefs.py`), the "/" menu's "Link to this block" writes
-   the id and copies the reference, the marker hides in Live and is stripped
-   from Read, and `scratchpad/ui-sweeps/docblockref.js` measures the lot
-   (25/25). Decisions in section 11.
+Phase 4 items 1 (backlinks with context) and 2 (block references) are built, 2026-09-12 (`tests/test_doc_blockrefs.py`); decisions are in section 11. Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 3. **Outline drag-to-reorder** (PLAN D6), breadcrumbs, sticky outline: built,
    2026-09-20. The record is in HISTORY.md ("Moved from the plans,
    2026-09-20", DOCUMENTS_PLAN.md Phase 4 item 3).
@@ -154,20 +142,7 @@ the same thing.
    The record, including the `Ctrl+K` decision the plan left open, is in
    HISTORY.md ("Moved from the plans, 2026-09-20", DOCUMENTS_PLAN.md Phase 4
    item 4).
-5. **Daily notes** and **templates gallery**: built, 2026-09-20. The gallery
-   was already there with six templates, each carrying a description
-   (`scratchpad/ui-sweeps/doctemplates.js`); daily notes were the row that
-   needed the decision first, and it is section 14. What was built from it is
-   one template and one recognition: New from a template now offers Daily
-   (seven rows), the document it makes is titled with the ISO day, and the
-   Timeline's day bucket accepts a note *or* a document with that title, so
-   the "Start today's note" offer beside a day already written as a document
-   is gone. Measured before and after in `scratchpad/ui-sweeps/docdaily.js`,
-   11 of 11: before, 6 templates with no daily and the bucket offering to
-   start a second page beside a document titled `2026-09-20`; after, 7
-   templates, the created document titled `2026-09-20` with `# 2026-09-20` as
-   its first line, 0 "start today's note" offers, 1 "Today's document" offer,
-   and the calendar glyph on the row.
+Phase 4 item 5 (daily notes and the templates gallery) is built, 2026-09-20; the decision is section 14. Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 
 ### Phase 5: review, history and AI (1 session)
 
@@ -319,27 +294,22 @@ agent that audits what renders first (section 1 of CLAUDE.md) and then builds:
 - Help moves with it (standing order 13). Measure with a Playwright sweep per
   language; no new required dependency (CLAUDE.md, the owner's offline rule).
 
-## Built, Phase 1 (the chrome), 2026-09-09
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only.
-
-## Built, Phase 2 step 1 (the engine, vendored and verified under the CSP), 2026-09-09
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only.
-
-## Built, Phase 2 steps 2 to 4 (the engine under the editor), 2026-09-09
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only. What is left open from this phase is in `archive/agent-remaining/documents-engine.md`.
-
-## Built: Phase 0
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only.
+## Built, Phases 0 to 2 (the chrome, the engine, the editor), 2026-09-09
+Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md): a plan holds open work only.
 
 ## Built, Phase 3 (tables, blocks, embeds, properties, columns), 2026-09-12
 
 Moved to HISTORY.md ("From DOCUMENTS_PLAN.md Phase 3", two entries) on
 2026-09-12: a plan holds open work only. What the phase left behind is in
-`archive/agent-remaining/documents-phase4.md`.
+`documents-phase4.md` (git history).
+
+## Placed from INBOX, 2026-11-10 (selection to a note)
+
+- Group selection row (screenshot of a flowchart with "Customer" and "Warehouse" groups): built 2026-11-10 (dgroup-1110). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (dgroup-1110: group selection)".
+- Owner, 2026-11-10, diagram builder ("have you integrated the ai into the diagram builder yet??"): built 2026-11-10 (dgai-1110). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (dgai-1110: the AI in the diagram builder)".
+- Diagram AI left (dgai-1110 remaining list; w17-1110 built the phone Ask button and the Versions grouping): mind maps, timelines and sequence diagrams get Versions but no Ask or Suggestions; real-model output and Ask inside the dialog (a Live figure, a board diagram) unverified.
+- INBOX 1731 (spelling second opinion): built 2026-11-10 (spell-1110), (a) to (e). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (spell-1110: the spelling second opinion)". (f) LanguageTool as an optional download: built 2026-11-10 (lag1726-1110), CHANGELOG line; the real program is unverified.
+- INBOX 1728: **Owner, 2026-11-10, documents, verbatim (screenshot):** "I want to be able to highlight sections in a document and turn them into or append them to a new or existing note". Recommendation, taken: two items in the document selection menu and right-click menu, "New note from selection" (the note links back to the document) and "Add to note..." (the note finder, appends the text with a back link); the same in the code editor. Placed: the documents batch of the work order.
 
 ## Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder)
 
@@ -349,7 +319,7 @@ Built and moved: 1542 to 1545 (insert panels: first-frame place, the minimise pi
 
 1621. **Owner, 2026-11-03 (diagram builder):** "also with the diagram builder, I feel it should be more separate from the document editor, there should be a library of diagrams stored wich cna be copied and pasted into things, or straigh up added to places like objects, they can be edited or experted as well as images or svgs or mmd idk." Recommendation: a diagram is its own object kind (like a board or a picture): a Diagrams shelf in the Library, opened in the builder on its own page, carried by the object drag and the tray into notes, documents, boards and chat (as a live reference that redraws, with Copy as picture for a frozen one), and exported as PNG, SVG or .mmd from its menu; the builder stays reachable from a document's slash menu but saves into the library. With DOCUMENTS_PLAN's Diagram builder rows (1615); a design note first. Then: "also the diagram builder needs a much more builder like redesign, Like I want to drag things into place, edit them, draw connections, be abloe to manage it in a menu like what is currently on the left, right now it just feels unusable and unintuitive." Recommendation: the builder is a canvas first (drag shapes from a palette into place, edit a label in place, drag from a shape's edge handle to draw a connection), with the current left panel kept as the outline and properties menu that stays in step with the canvas; the Mermaid text becomes an export and an advanced view, not the way in.
 
-1566. **Owner, 2026-11-03, verbatim (screenshots: the Calculator and equations panel, Equation tab):** "I want you to redesign this quick jump scroll menu, also it doesnt have a horizontal scrollbar" (the row of boxed group buttons, Fraction to Bracket) and "can you also redesign that pill selector?? it looks awkward, the whole equations panel needs a slight better modern and professional redesign" (the Inline / Display segmented well under the Sum, Units, Equation tabs). Step 1 (this commit): the jump row is a `.tabs-line.edge-fade` strip with a thin scrollbar and wheel-to-sideways scroll, not measured in a browser yet. Rest, for an agent with the recipes: the Inline / Display choice as the `.seg` recipe at the dock height (or one row with the lede, Pin and LaTeX), the lede and its two boxed buttons as one quiet toolbar row, the tile grid's tiles quieter (inset fill, no ink edge, glyphs centred and larger), group heads on the type scale, the foot ("Insert writes into the note once there is an equation." plus Copy and Insert) as the dialog foot recipe with the one filled button last, spacing on tokens; measured at the panel's default and narrowest sizes, light and dark. Then, verbatim: "also I dont like excessive use of these glowy grey styled buttons, they feel vibe coded, its alright ot still use them but just not excessively yk?? use them intentionally and in a modern and professional way. also with that toggle pill for inline/display, small toggles like that where they ar eon their own line and the only thing on their line and they are just there on the right, it just feels liek the pill has been chuckedc there with no thought, like at least make it extend the full width or redesign it some other way" (screenshots: the calculator keypad, twenty bordered grey keys; the equation tiles; Pin and LaTeX boxed). Class: a bordered grey ghost button used for every control in a grid or row; and a lone `.seg` on its own line. Recommendation: a DESIGN rule and lint: a grid of keys or tiles takes the quiet inset fill with no edge (operators tinted, `=` the one filled key), a toolbar's secondary actions are icon or text buttons without an edge, the bordered ghost stays for a lone secondary action beside a filled one; a `.seg` alone on its line spans the row (equal segments) or joins the row of the control it governs. Sweep every surface for both, after the equations panel. **Panel built 6c08378** (the sweep of the other surfaces remains, `agent-remaining/a30n-1103.md`): seg 492 of a 492px row (320px: 284 of 284), keys and tiles border 0, keypad glyphs 18.4px, group heads 12px/600 on the eyebrow, jump row scrollWidth 1311 over 492 with a thin bar, foot right edge at the row's, no horizontal overflow at 1440 and 320, light and dark; the Radical tiles' x cleared the sign by 0 and 0.5px before, 1.5px after (an ink-component count on a 4x capture), no tile has ink at its edge. **Sweep a30q (6894c02, 56c97cb, c7d9119, c911fec, 246ee43):** bordered ghosts 80 to 15 across the tabs and Settings, 23 to 9 across the deeper states (1440, light); every lone seg spans its row (prompt 438 of 438, Forgot password 418 of 418, 300 of 300 and 336.8 of 336.8 narrow); radicand gap 0 to 0.5px before, at least 2.5px after in Live, Read and the tiles. Left in `agent-remaining/a30q-1103.md` (Reminders filter chips, icon pickers and add-widget tiles, dark, 390 and high contrast unmeasured), so the item stays open.
+1566. **Owner, 2026-11-03, verbatim (screenshots: the Calculator and equations panel, Equation tab):** "I want you to redesign this quick jump scroll menu, also it doesnt have a horizontal scrollbar" (the row of boxed group buttons, Fraction to Bracket) and "can you also redesign that pill selector?? it looks awkward, the whole equations panel needs a slight better modern and professional redesign" (the Inline / Display segmented well under the Sum, Units, Equation tabs). Step 1 (this commit): the jump row is a `.tabs-line.edge-fade` strip with a thin scrollbar and wheel-to-sideways scroll, not measured in a browser yet. Rest, for an agent with the recipes: the Inline / Display choice as the `.seg` recipe at the dock height (or one row with the lede, Pin and LaTeX), the lede and its two boxed buttons as one quiet toolbar row, the tile grid's tiles quieter (inset fill, no ink edge, glyphs centred and larger), group heads on the type scale, the foot ("Insert writes into the note once there is an equation." plus Copy and Insert) as the dialog foot recipe with the one filled button last, spacing on tokens; measured at the panel's default and narrowest sizes, light and dark. Then, verbatim: "also I dont like excessive use of these glowy grey styled buttons, they feel vibe coded, its alright ot still use them but just not excessively yk?? use them intentionally and in a modern and professional way. also with that toggle pill for inline/display, small toggles like that where they ar eon their own line and the only thing on their line and they are just there on the right, it just feels liek the pill has been chuckedc there with no thought, like at least make it extend the full width or redesign it some other way" (screenshots: the calculator keypad, twenty bordered grey keys; the equation tiles; Pin and LaTeX boxed). Class: a bordered grey ghost button used for every control in a grid or row; and a lone `.seg` on its own line. Recommendation: a DESIGN rule and lint: a grid of keys or tiles takes the quiet inset fill with no edge (operators tinted, `=` the one filled key), a toolbar's secondary actions are icon or text buttons without an edge, the bordered ghost stays for a lone secondary action beside a filled one; a `.seg` alone on its line spans the row (equal segments) or joins the row of the control it governs. Sweep every surface for both, after the equations panel. **Panel built 6c08378** (the sweep of the other surfaces remains, `a30n-1103.md` (git history)): seg 492 of a 492px row (320px: 284 of 284), keys and tiles border 0, keypad glyphs 18.4px, group heads 12px/600 on the eyebrow, jump row scrollWidth 1311 over 492 with a thin bar, foot right edge at the row's, no horizontal overflow at 1440 and 320, light and dark; the Radical tiles' x cleared the sign by 0 and 0.5px before, 1.5px after (an ink-component count on a 4x capture), no tile has ink at its edge. **Sweep a30q (6894c02, 56c97cb, c7d9119, c911fec, 246ee43):** bordered ghosts 80 to 15 across the tabs and Settings, 23 to 9 across the deeper states (1440, light); every lone seg spans its row (prompt 438 of 438, Forgot password 418 of 418, 300 of 300 and 336.8 of 336.8 narrow); radicand gap 0 to 0.5px before, at least 2.5px after in Live, Read and the tiles. Left in `a30q-1103.md` (git history) (Reminders filter chips, icon pickers and add-widget tiles, dark, 390 and high contrast unmeasured), so the item stays open.
 
 1615. **Owner, 2026-11-03 (screenshot, Diagram builder blocks):** "there is no way to multiselect the items and edit/manage/delete them in the left panel on the diagram builder, I cant drag things as a group and rearrange them, the diagram editor seems to be missing a lot of features and functionality and capability and it is still unintuitive to use. also the arrows on the top dont have a label above them". Recommendation (taken): (a) selection in the blocks list as the app's other lists do it (click, Shift+click a range, Ctrl+click to add, Ctrl+A), with the one selection bar (`N selected`, Delete, Duplicate, Shape, Group into a box, Done) and Undo; (b) the selected blocks drag as one (the grip of any selected row carries all of them, in order); (c) every icon-only row control (Connect to, the ⋯) carries its words: Connect to shows its label on every row at widths that fit, the tooltip and `aria-label` elsewhere; (d) before building more, a `blind-tester` pass on "make a flowchart with a decision and two branches, then rearrange it" lists what is missing or unclear (expected: inline rename on the row, connect by dragging from a row to a row, edge labels editable in place, undo and redo in the dialog, a search over blocks, keyboard reorder), and the build takes that list in order. With 1613 and 1614 it is one Diagram builder pass. **Then:** "also the panels on the diagram builder cant be resized. and yeah I still dont understand how the diagram builder works, it just needs a lot more features and some improved design and ux and utility and function. think deeply on it." So (e) the blocks and picture panes split with a draggable divider (the app's splitter recipe, remembered per device, keyboard resizable), and (f) the pass starts with a written design (a judge-rung design pass in a fresh session when Opus is allowed; in budget mode a Sonnet high design note first) that names the model a person needs to hold (shapes, connections, labels, layout direction), how each is made in one gesture, and an empty-state walkthrough inside the dialog; the build follows that note.
 
@@ -375,9 +345,9 @@ Built and moved: 1542 to 1545 (insert panels: first-frame place, the minimise pi
 - **D10 Budgets.** Boot bytes: none. The model lives in documents-mermaid.js's closure (already in the lazy Library bundle, app.js:1654) and exports one name, `diagramModel`. The builder is a new bundle, `diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"]`, registered by `Object.assign(LAZY_MODULES, ...)` at that file's foot, not in app.js (APP_JS_CAP 14,300) or the boot file lazy-entries.js (TOTAL_CAP 260,350, tests/test_static_compression.py:127); every caller is in the Library bundle or opens a document first, so there is no stand-in. Global names: `diagramModel` and `openDiagramBuilder` in, `wbMermaidParse` and `wbMermaidText` out, net 0 against 9,714 (tests/test_global_scope_ratchet.py:62); diagram-builder.js is one closure, under 12 KB gzipped (PIECE_CAP 32,000). CSP: nothing changes. The page shows only blob `<img>`s (as `mermaidShow` does) and builder DOM made with `createElement` and `textContent`, sized by `el.style` or classes; the frame keeps `default-src 'none'` with `data:` images only; the builder never loads Mermaid itself (tests/test_mermaid_frame.py:42).
 - **1546 P1, the model and two-way sync (flowchart).** Built 2026-11-02 (a30a-1102). Moved to HISTORY.md "Moved from the plans, 2026-11-02 (a30a-1102: 1546 P1, the diagram model)".
 - **1546 P2, the block pane.** Built 2026-11-03 (a30l-1103, 7122184 and f89ae3e). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30l-1103: 1546 P2, the block pane)". The touch pan and zoom and the phone palette sheet closed in a30y-1103 (HISTORY.md, same heading as P5).
-- **1546 P3, templates and from my notes.** Built 2026-11-03 (a30o-1103). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30o-1103: 1546 P3, templates and from my notes)". Left, both closed by P4: mind maps and timelines landing as source plus picture, and a non-flowchart suggestion that could not merge into a non-blank diagram (agent-remaining/a30o-1103.md).
-- **1546 P4, the other kinds.** Built 2026-11-03 (a30u-1103). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30u-1103: 1546 P4, the other kinds)". Left: 1.7 KB of diagram-builder.js over its 12 KB target (agent-remaining/a30u-1103.md, a30y-1103.md); the touch pan and zoom, the phone palette sheet and D3 closed in a30y-1103.
-- **1546 P5, everywhere Mermaid draws.** Built 2026-11-03 (a30y-1103). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30y-1103: 1546 P5, the P2 leftovers and D3)". Left: the dock is two rows at 390, not one (agent-remaining/a30y-1103.md).
+- **1546 P3, templates and from my notes.** Built 2026-11-03 (a30o-1103). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30o-1103: 1546 P3, templates and from my notes)". Left, both closed by P4: mind maps and timelines landing as source plus picture, and a non-flowchart suggestion that could not merge into a non-blank diagram (`a30o-1103.md` (git history)).
+- **1546 P4, the other kinds.** Built 2026-11-03 (a30u-1103). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30u-1103: 1546 P4, the other kinds)". Left: 1.7 KB of diagram-builder.js over its 12 KB target (`a30u-1103.md` (git history), a30y-1103.md); the touch pan and zoom, the phone palette sheet and D3 closed in a30y-1103.
+- **1546 P5, everywhere Mermaid draws.** Built 2026-11-03 (a30y-1103). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30y-1103: 1546 P5, the P2 leftovers and D3)". Left: the dock is two rows at 390, not one (`a30y-1103.md` (git history)).
 - **Risks.** (1) A small edit can reshuffle Mermaid's layout (it reads declaration order); the pane is the stable view, and no row measures the picture's positions. (2) The picture's hit boxes depend on Mermaid's internal ids: pinned by a test on the vendored 12.2.0, and dropped quietly (no select from the picture) when absent. (3) Canonical printing rewrites hand spacing and trailing `%%` comments the first time a block changes; said once ("Tidied the source"). (4) A model's fence can be long or wrong: the 20,000-character cap and the frame's one-line reason bound it. (5) `mmd` as previewable touches every `previewable` check (documents.js:195 to 231); P1 lists each and gives `mmd` its answer. (6) The model grows documents-mermaid.js; if a size lint objects, the model moves to its own file in the Library bundle and wins back its app.js bytes in that commit. **Not verified:** Mermaid 12.2.0's node ids and reading a transform through `DOMParser` are from the library's conventions, not measured.
 
 DX24t. Built 2026-11-03 (a30h-1102, 65c01c4, e3aae86): see HISTORY.md, "Moved from the plans, 2026-11-03 (comment threads DX24t, find in all D33)".
@@ -386,31 +356,7 @@ DX24t. Built 2026-11-03 (a30h-1102, 65c01c4, e3aae86): see HISTORY.md, "Moved fr
 
 INBOX 1482 (the file type picker) is built and moved to HISTORY.md ("Moved from the plans, 2026-10-31 (file type picker 1482)") on 2026-10-31: a plan holds open work only.
 
-"Note in the redesign documents and where it is supposed to that I want to get
-rid of and redesign these mini menu bars as they are in a couple popups around
-the place and they desperately need a modern redesign or alternative", with a
-photo of `#doc-ai-verb`, the Edit / Write / Remove bar in this tab's AI
-assistant panel.
-
-**Done, 2026-09-12, and the decision is in `docs/DESIGN.md`** ("A choice
-control's selected segment is `--accent-surface` behind `--on-accent`"), which
-is where it belongs: it is a rule about a recipe, not about this tab. The
-short version, so it is not re-litigated here: the two radio-backed bars
-(`#doc-ai-verb`, `#graph-layout`) were the app's own segmented control drawn
-with a different set of numbers, and the selected option was a 14% accent tint
-behind body-coloured text with a drop shadow under it, which is not a selected
-state anyone can see across a popup. They read as the other twenty-eight `.seg`
-groups now. Measured before and after with
-`scratchpad/ui-sweeps/segbars.js`; the numbers are in DESIGN.md and in the
-commit.
-
-**The label size this found is closed too** (`9586542`, a later pass the same
-day). `.seg button` set no `font-size` at all, so it inherited whatever tab it
-was on: measured at three sizes across the app, 16px on the tab strips, 13.6px
-on two choice controls and 12.8px on three more. Every choice control is on
-`--text-md` now, the tab strips deliberately are not. Re-measured here: all
-nine segments across `#doc-ai-verb`, `#doc-view-seg` and `#graph-layout` read
-13.6px.
+The segmented mini bars (107d) are done, 2026-09-12; the rule is in `docs/DESIGN.md` ("A choice control's selected segment is `--accent-surface` behind `--on-accent`"). Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 
 ## Placed from INBOX, 2026-09-09 (the owner's evening batch)
 
@@ -539,7 +485,7 @@ is the half that makes the other half true.
   with its `LICENSE` and a `build.sh` that records the exact parameters.
 - Licence: permissive, notice-retention only. It asks that the copyright
   notice travel with any list built from it, which `LICENSE` does. Safe
-  under this project's AGPL-3.0 (ANALYSIS.md's licence constraint).
+  under this project's AGPL-3.0 (the retired analysis doc's licence constraint).
 - 92,972 words. 871,173 bytes raw, 252,926 over the wire under this app's
   own gzip, one fetch, lazily on the first prose pass, never on first paint.
 - `DOC_EXTRA_WORDS` in documents.js carries 75 words the app is written in
@@ -651,7 +597,7 @@ on 2026-09-13: decisions D1 to D5 are built and measured, and a plan holds
 open work only. The rules that outlive the pass are two rows in
 `docs/DESIGN.md`'s recipe index (a viewport popup, and one feature drawn on
 several surfaces), kept by `tests/test_ui_recipes.py`. What is left open is
-in `archive/agent-remaining/editor-intelligence.md`.
+in `editor-intelligence.md` (git history).
 
 ## 13. What a self-contained HTML export is: decided 2026-09-13
 
@@ -812,26 +758,7 @@ left a fourth beside them. Each is decided here rather than carried again, and
 each decision rests on a number from `scratchpad/ui-sweeps/doctoolbarstate.js`
 (21 of 21) rather than on how the item was described.
 
-**1. The toolbar's own state: built.** This is the one that was only ever
-waiting for the tree. Before the engine, deciding whether the caret sat inside
-`**bold**` meant counting asterisks from the top of the document on every
-keystroke; the tree exists now for the decorations, so `renderDocToolbarState`
-resolves one node and walks its ancestors, which costs the depth of the
-markdown at the caret and not the length of the document. It runs on the same
-beat as the caret readout, which is the beat that already exists.
-
-Measured at eleven stops in a document with one of everything: `h1` in a
-heading, nothing in plain prose, `bold`, `italic`, `code`, `h2`, `ul`, `task`,
-`ol`, `quote` and `link`, each with no other button lit. 17 of the strip's 41
-`data-md` buttons carry `aria-pressed`, and the other 24 are the ones that
-always insert something new and have no state to be in: a button that is not a
-toggle must not tell a screen reader it is one. The caret resolves with side
-`-1`, so a caret just past the final `d` of a bold word still reads as bold,
-which is what makes "keep typing in bold" and "the button says bold" the same
-answer. A task item lights `task` and not `ul`, although a task list is a
-bullet list in the grammar, because the more specific one is the one pressing
-the button would turn off.
-
+Section 16 item 1 (the toolbar's own state) is built (`renderDocToolbarState`). Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 **2. Atomic ranges: decided against, and the decision rests on a
 measurement that contradicts the note that asked for them.** The engine file
 records the symptom as "a hidden marker can still be walked into with the
@@ -863,25 +790,7 @@ it costs a window-level key listener with a reset on blur for a hover hint
 that is already available by resting on the chip. Left unbuilt on purpose; a
 row here rather than a fourth session rediscovering the tooltip.
 
-**4. The table cell's ten-row menu: built, as a change to the shared recipe.**
-Rows, columns, alignment and the whole table read as one list of ten, and
-finding "Align centre" in it meant knowing the order. The bullet that recorded
-this said correctly that `kebabMenu` had no separator and that this was
-therefore a change to the recipe and to DESIGN.md rather than a phase item, so
-that is what it is: an item may carry `group`, a name, and `kebabMenu` draws a
-hairline wherever the name changes. Callers declare meaning, never pixels, and
-an item with no `group` behaves exactly as before, so every other menu in the
-app is untouched.
-
-The name is not drawn. A heading over every three rows would make this menu
-seventeen rows tall, and what makes a list scannable is the break rather than
-the word. Measured after: 10 items, 3 hairlines at 1px tall and 172px wide,
-`role="separator"` on each so the grouping reaches the accessibility tree,
-10 `menuitem` roles and 3 separators, and `wireMenuKeyboard` walks
-`[role="menuitem"]`, so a hairline is never a stop on the way down. The recipe
-index carries it and `tests/test_ui_recipes.py` holds the ratchet: a command
-table past five rows declares its groups, and the separator element and its
-stylesheet rule both still exist.
+Section 16 item 4 (the table cell menu, `kebabMenu` item `group`) is built. Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 
 ## 17. The live view for professional use: measured 2026-09-21, phases open
 
@@ -1182,9 +1091,9 @@ row does today.
 
 | Phase | Brief | Deliverable | Measured by |
 | --- | --- | --- | --- |
-| I1 run, preview, test | 69 | Built 2026-10-10 (HISTORY "DOCUMENTS Brief 69, I1"); what is left is in `agent-remaining/ide1-1010.md` | `scratchpad/ui-sweeps/code-run.js`, 46/46 at 1440 and 47/47 at 390 |
-| I2 the debugger | 70 | Built 2026-10-10 (HISTORY "DOCUMENTS Brief 70, I2"); what is left is in `archive/agent-remaining/debug70-1010.md` | `scratchpad/ui-sweeps/code-debug.js`, 32/32 at 1440 and 31/31 at 390 (js, ts, py: breakpoint, three steps, a watch, the exception stop) |
-| I3 the IDE shell | 71 | Built 2026-10-10 (HISTORY "DOCUMENTS Brief 71, I3"); what is left is in `archive/agent-remaining/shell71-1010.md` | `code-keys.js` 34/34 keys exercised, palette 61 commands (40/40 and 67 with Brief 70's debugger rows); `ide-shell.js` 19/19 (four heights kept across a reload); `ide-split.js` 10/10 |
+| I1 run, preview, test | 69 | Built 2026-10-10 (HISTORY "DOCUMENTS Brief 69, I1"); what is left is in `ide1-1010.md` (git history) | `scratchpad/ui-sweeps/code-run.js`, 46/46 at 1440 and 47/47 at 390 |
+| I2 the debugger | 70 | Built 2026-10-10 (HISTORY "DOCUMENTS Brief 70, I2"); what is left is in `debug70-1010.md` (git history) | `scratchpad/ui-sweeps/code-debug.js`, 32/32 at 1440 and 31/31 at 390 (js, ts, py: breakpoint, three steps, a watch, the exception stop) |
+| I3 the IDE shell | 71 | Built 2026-10-10 (HISTORY "DOCUMENTS Brief 71, I3"); what is left is in `shell71-1010.md` (git history) | `code-keys.js` 34/34 keys exercised, palette 61 commands (40/40 and 67 with Brief 70's debugger rows); `ide-shell.js` 19/19 (four heights kept across a reload); `ide-split.js` 10/10 |
 
 Help moves with each phase (standing order 13): the `data-help-for`
 popovers on Run, Debug and the panels, the Guide topic `code-run`, and
@@ -1280,7 +1189,7 @@ lists every command with its shortcut.
 
 Moved to HISTORY.md ("Moved from the plans, 2026-09-12", DOCUMENTS_PLAN.md) on
 2026-09-12: a plan holds open work only. What is left open is in
-`archive/agent-remaining/doc-sidebar.md`.
+`doc-sidebar.md` (git history).
 
 ## Placed from INBOX, 2026-09-21
 
@@ -1319,46 +1228,16 @@ Moved to HISTORY.md ("Moved from the plans, 2026-10-03 (the documents pass)", DO
 
 ## Placed from INBOX, 2026-10-03 (INBOX 409: the AI assistant bar is what stays open)
 
-409. **The owner, 2026-09-24, verbatim, with screenshots of Settings,
-    Templates, the persona list, a .json document with the formatting bar
-    over it, and the Write tab's AI assistant bar.** "templates cant be
-    edited, I want the generation of persona icons to be improved and I also
-    want to auto generate other icons in other places like potentially the
-    user chat bubbles?? idk. also the degree of indenting is shallow, I think
-    it should be more prominent. also this edit/write/remove bar is ugly and
-    doesnt suit a modern app, it needs to be restructured/redesigned or
-    transformed somehow to be better." Read from the screenshots: built-in
-    templates have no edit (only added ones do); the persona marks are a
-    blob on a flat disc, too alike at 20px; the prose formatting bubble (B,
-    I, S, highlight, code, link, H, quote) draws over a code document, where
-    none of it applies; the indent guides step 2 spaces; the AI assistant
-    control is a filled segmented pill. Placed: orchestrator, in this order.
-    **Built 2026-09-24**: templates editable, built-ins included (3a769ed,
-    sweep `templates.js`); persona marks a generated face, closest pair of
-    23 at 40px 5.6% before, 29.8% after (259b743, `namemarks.js`); the
-    user's own mark on their chat bubbles and the persona picker's
-    (0e88b6e, ede4f2a, `chatmarks.js`, bubble box unchanged). The code
-    selection bar and the indent step are 7ab7eec. The AI assistant bar
-    is closed: the owner's later line (INBOX 431 (f), 2026-09-27) says they
-    like that dialog's design and the edit/write/remove pill, so nothing
-    is open here.
+INBOX 409 is built, 2026-09-24 (editable built-in templates, generated persona marks, the user's own mark on chat bubbles, the code selection bar and indent step); the AI assistant bar is closed by the owner's INBOX 431 (f). Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 
-## Placed from INBOX, 2026-10-05 (OPEN.md triage)
+## Placed from INBOX, 2026-10-05 (ledger triage)
 
 - ~~`docRevealForSuggest` will not bring a table-cell word into view~~ Not reproduced at 1440 or 390; the account is in HISTORY.md, "Moved from the plans, 2026-10-05 (small-1005: the small open items)" (`revealcell.js`).
 - ~~`editor.js` sweep describes the retired editor~~ Re-pointed at `docSurface()`: 78 of the old 89 checks remain and pass; the account is in HISTORY.md, "Moved from the plans, 2026-10-05 (small-1005)".
 
 ## Placed from INBOX, 2026-10-07 (next PR)
 
-- **Live code blocks in a prose document** (the owner, verbatim: "also I want
-  to be able to make special code blocks where the code editor works and code
-  autofill and suggestions work for the stated language in that codeblock",
-  with a fenced ```html block in Live view). A fenced block with a language
-  becomes an embedded code editor in Live: syntax colour, indenting, bracket
-  matching and the completion the code documents already have for that
-  language (documents-code.js), its language shown and changeable on the
-  block, Escape or the arrow keys out of it back into the prose. Stored as the
-  same fenced Markdown, so Source, export and print are unchanged.
+- Built 2026-11-10 (s9c-1110): live code blocks in a prose document; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
 
 ## Placed from the owner's list, 2026-10-10
 
@@ -1420,7 +1299,7 @@ Decisions made (the Links half extends WORLD_CLASS D9 and Brief 42; do not re-de
 - L3. A link's details: the card shows icon, title, site and a two-line excerpt; the full extract is behind "Show page text" in the L1 reader, never a wall of raw lines; the URL is a quiet copyable chip.
 - L4. Folders: drag a link onto another to make a folder (named "Folder", renamed in place), drag into and out of folders, and New folder in the bar; folders nest one level.
 - L5. Each link and folder takes an icon (the site's own, an app icon or an emoji) and a highlight colour from the palette tokens, from its kebab menu and from the details card.
-- L6. More from the read of Raindrop, Pocket and browser bookmark managers, ranked by how often a person meets it: sort and view (list, cards), tags, a read-later state, duplicate finding, import and export of browser bookmarks HTML. Built in that order after L1 to L5.
+- L6. More from the read of Raindrop, Pocket and browser bookmark managers, ranked by how often a person meets it: sort and view (list, cards), tags, a read-later state, duplicate finding, import and export of browser bookmarks HTML. Built in that order after L1 to L5. Import, export and tags built 2026-11-11 (HISTORY.md, F1 graph block).
 
 Rows (owner: libraryup, Opus, after canvasdepth3): R1 to R6 build L1 to L6, each a commit with a test, measured at 1440 and 390, help moving with it (standing order 13).
 
@@ -1428,24 +1307,24 @@ Rows (owner: libraryup, Opus, after canvasdepth3): R1 to R6 build L1 to L6, each
 
 Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is built yet this run; the app already has callouts, toggles, columns, tables, footnotes, wiki links, backlinks, the slash menu, find and replace, outline and versions.
 
-1. Video and audio embed from a link or a local file in a note (Notion "Embed", Obsidian `![[file.mp4]]`) - M.
-2. Citations: a reference list built from footnote-style keys (Obsidian citations plugin) - M.
-3. A block's own link (heading links exist in documents.js; a paragraph's does not, to verify) - S.
+1. Built 2026-11-11 (F1 run) as a recording embed; video stays out (no player, decision 2): see HISTORY.md, "Moved from the plans, 2026-11-11 (F1 graph block, DOCUMENTS_PLAN 16)".
+2. Built 2026-11-11 (bd-1111): `[@key]` citations listed at the foot, the "/" menu's Citation; see CHANGELOG.
+3. Built (found by grep, checked 2026-11-10): the / menu's "Link to this block" copies `[[Title#^id]]`; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
 4. Built 2026-10-26 (docs5-1026): see HISTORY.md, "Moved from the plans, 2026-10-26 (docs5-1026)".
-5. Synced blocks: one block shown in two notes, edited in either - L.
-6. A database view of notes by property (Notion, Obsidian Bases): table, board, calendar - L.
-7. Inline date and reminder mention that creates a reminder (Notion "@date") - S.
-8. Page cover and icon picker parity with Notion's gallery - S.
-9. Web clipper fields on a note's properties - M.
-10. Canvas block: a board embedded and editable in place - M.
-11. Equation cross-reference (`\eqref`, a number that follows the equation); numbering by `\tag{n}` is built (HISTORY, docs5-1026) - S.
-12. Table: column sort, filter row, formulas - M.
+5. Built 2026-11-11 (F1 run 2): the block lives in its source document, an embed edits it in place (DOCUMENTS_PLAN 26, decision 82); HISTORY.md, "F1 run 2".
+6. Table built 2026-11-11 (F1 run 2): a ```base block, read-only (HISTORY.md, "F1 run 2"). Board and calendar views stay open - M.
+7. Built 2026-11-10 (s9c-1110): the / menu's "Remind me about this"; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
+8. ~~Page cover and icon picker parity with Notion's gallery - S.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 5").
+9. Built 2026-11-11 (F1 run): see HISTORY.md, "Moved from the plans, 2026-11-11 (F1 graph block, DOCUMENTS_PLAN 16)".
+10. Built 2026-11-11 (F1 run 2): a board card in a document has Edit here, which lends the whiteboard's one view to a dialog over the document (DOCUMENTS_PLAN 26); a second, per-instance whiteboard stays unbuilt (HISTORY.md, "F1 run 2").
+11. Built 2026-11-10 (`\label`, `\eqref`, `\ref`): see HISTORY.md, "Moved from the plans, 2026-11-10 (s9-1110)".
+12. Built 2026-11-11 (s9c-1110 part 6): sort, filter rows and `=SUM`/`=AVG`/`=COUNT`/`=MIN`/`=MAX`; see HISTORY.md, "Moved from the plans, 2026-11-11 (s9c-1110 part 6)".
 13. Built 2026-10-26 (docs5-1026): the Read view takes a progress line; see HISTORY.md.
-14. Template variables exist (documents.js, documents-codekit.js); check they cover time and the cursor place - S.
-15. Export a note as a slide deck from its headings - M.
-16. **The owner, 2026-10-26, verbatim:** "can you add an easier and guided way to write out mathematical equations and symbols like with word or desmos?" A guided equation editor over the existing TeX renderer (`docMathRender`, documents.js): Insert equation (slash menu, Ctrl+K, a toolbar row, Alt+= as Word), a live-preview box where typing `x^2`, `sqrt`, `/`, `pi`, `>=`, `alpha` becomes structure (Desmos and Word linear format: `a/b` becomes a fraction, the caret moves into slots, Tab to the next slot), a symbol palette in groups (Greek, operators, relations, arrows, sets, calculus, matrices) with a search, structure templates (fraction, root, power, subscript, sum, integral, limit, matrix, cases), inline or display, the TeX written into the note so it stays plain text, editable by clicking the rendered equation. No heavy library: own parser or a small vendored one under its licence, lazy-loaded, measured against the boot cap - M. Owner: docs7 (Opus, design). **Decided by the owner, 2026-10-26:** writing first, then a graph block (y = f(x), sliders, lazy-loaded) as its own step; the editor works in Documents, Notes, whiteboard text and the Chat/Ask box (one shared lazy module, each surface a thin caller). **The writing step is built** (HISTORY, "Moved from the plans, 2026-10-26 (docs7-1026)"). Open: the graph block; opening the editor by a click on a rendered equation (today the caret in it and Alt+= or /equation); a Ctrl+K palette row.
+14. Built 2026-11-10 (`{{time}}`, `{{cursor}}`): see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110)".
+15. Built 2026-11-10 (s9c-1110): Download as slides; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
+16. **The owner, 2026-10-26, verbatim:** "can you add an easier and guided way to write out mathematical equations and symbols like with word or desmos?" A guided equation editor over the existing TeX renderer (`docMathRender`, documents.js): Insert equation (slash menu, Ctrl+K, a toolbar row, Alt+= as Word), a live-preview box where typing `x^2`, `sqrt`, `/`, `pi`, `>=`, `alpha` becomes structure (Desmos and Word linear format: `a/b` becomes a fraction, the caret moves into slots, Tab to the next slot), a symbol palette in groups (Greek, operators, relations, arrows, sets, calculus, matrices) with a search, structure templates (fraction, root, power, subscript, sum, integral, limit, matrix, cases), inline or display, the TeX written into the note so it stays plain text, editable by clicking the rendered equation. No heavy library: own parser or a small vendored one under its licence, lazy-loaded, measured against the boot cap - M. Owner: docs7 (Opus, design). **Decided by the owner, 2026-10-26:** writing first, then a graph block (y = f(x), sliders, lazy-loaded) as its own step; the editor works in Documents, Notes, whiteboard text and the Chat/Ask box (one shared lazy module, each surface a thin caller). **The writing step is built** (HISTORY, "Moved from the plans, 2026-10-26 (docs7-1026)"). `\begin{equation}` numbers itself in Read view (s9c-1110; Live draws only one-line `$$`). **The graph block is built** (HISTORY, "Moved from the plans, 2026-11-11 (F1 graph block)"); a click on a rendered equation opens the editor (built). The Ctrl+K row "Insert equation" is built (over a note, Chat or a board's text; a document's own row stands in a document).
 17. **The owner, 2026-10-26, verbatim (screenshot: Notes "Capture a thought", source view showing `<u>underlined</u>` with line numbers):** "also the note capture doesnt have view options, I want it to use the live view by dafault and then the user can change it if they want." The note composer gets the Documents view switch (Live, Source, Read), Live by default, the choice remembered per device (prefs) - S/M. Owner: notecap (Sonnet), check the running app first.
-18. **The owner, 2026-10-26, verbatim:** "can the user name code blocks or set it as a language and then the code editor can work for that language withing the bllock??" A fenced block's language (and an optional title, ```` ```python title="fit.py" ````) chosen from a picker on the block, the block edited with that language's highlighting, indentation, brackets and completion (the code-file engine in documents-code.js, scoped to the block), in Documents and the note composer - M. Owner: after notecap; check first what the fence highlighter already does.
+18. Built 2026-11-10 (s9c-1110): live code blocks, stated language coloured, indented and completed in Live; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)". The title on the fence is drawn and the corner label is a language picker (built 2026-11-11, bd-1111; CHANGELOG).
 
 ## Placed from INBOX, 2026-10-19
 
@@ -1544,7 +1423,7 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 - **R5 (1615 a, b):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R5)").
 - **R6 (R4's list, R6.1 to R6.13):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R6)").
 - **R7 (1621 D5, D6):** built 2026-11-04 except the page head, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R7)").
-- **R7 left (the page head):** hide the file chrome that means nothing for a diagram and put Export in the head. Not built: the document head already has its Export menu and the builder's dock has PNG and SVG, and which chrome to hide wants the owner's eye on the page.
+- **R7 (page head):** Built 2026-11-10, moved to HISTORY.md ("Moved from the plans, 2026-11-10 (s9-1110)").
 - **R8a (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R8a)").
 - **R8b (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R8b)").
 - **R8c (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R8c)").
@@ -1556,11 +1435,7 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 - **R11 (blind test, 2026-11-04) left:** `/diagram` and Insert open a starter, not an existing diagram (add a "pick an existing diagram" row); Done creates a document silently; first paint blank about 1 s; 27 Tab stops to the first block; 390 px: tap scrolls the toolbar under the header and targets (tabs 28, grips 14x19, swatches 24, Connect 44x40) are under 44 px; chat chip says "Document" and the list "17 words" for a diagram; export items missing from the document's own menu; Boards empty state links only New mind map.
 - **R12 (blind test of 0931c35, fixed: phone toolbar fits one row, empty steps visible at 390, shape menu under its caret, Connect's new block is a box) left:** Done from a document or board opens the starter and saves a separate `Diagram <stamp>` file (decide: empty builder or pick an existing diagram, the R11 first item); the Embed row inserts a bare `![[` with no picker and renders "Nothing called" until reload; board Mermaid import drops block colour and stacks edge labels; a template on a non-empty builder only lists ghost blocks; the first branch off a decision is silent (the prompt is for the second); 390 picture is 47 to 59% zoom with the connect handle over a diamond; Box in the Add menu adds at once; key hints show on touch; the list row truncation at 1440 was not reproduced (rows 105 px, no overflow).
 
-- **R12 (1661 B, find):** Ctrl+F filters the outline and boxes get `dgm-found`, Enter walking matches (`listFilter`, DESIGN row 714).
-- **R13 (1661 B, layout):** curve (straight, curved, stepped) and spacing in a View popover, written to the kept `%%{init}%%` line (previews row 751).
-- **R14 (1661 B):** double-headed arrows (`<-->`) and the unread shapes (cylinder, parallelogram) in the shape menu and connector kinds.
-- **R15 (1661 B, only if a diagram routinely overflows the stage):** a corner minimap, a plain `.dock`.
-- **R16 (1661 B left):** edge colour (`linkStyle N` lines regenerated in canonical edge order, same swatch picker, arrow menu); six more flowchart templates plus a `listFilter` in the picker; colour in the multi-select bar. Block colour and the shortcuts sheet are built (`diagram-style.js`). Declined: align and distribute (Mermaid owns layout).
+- **R12, R13, R14, R16 (1661 B: find, curve and spacing, both-ways arrows and shapes, edge colour, six templates):** Built 2026-11-10, moved to HISTORY.md ("Moved from the plans, 2026-11-10 (s9-1110)"). R15 (a corner minimap) and the head Export: built 2026-11-10, moved to HISTORY.md ("Moved from the plans, 2026-11-10 (s9b-1110)").
 
 Order: R1 to R4, then R5, R6, R7; R8a after R2 and R5, then R8b, R8c; R9a any time, then R9b; R9c after R9a and R7; R10 after R7.
 
@@ -1596,4 +1471,32 @@ Critique points rejected or changed:
 
 ## Placed from INBOX, 2026-11-04
 
-1679. **Owner, 2026-11-04 16:50Z, verbatim (names Fable for this task):** "also can you get fable to take a quick look at and do a deep dive on the diagram builder?? it si still not really learnable and is still quite unintuitive and it feels like it lacks key design features and utility and it just feels very demo and not a complete feature or smth that it usable and easy to understand". One Fable agent, read-only deep dive, findings in `docs/roadmap/agent-remaining/diagram-fable-1679.md`, then ranked slices built by Sonnet. Owner, 2026-11-05 00:25Z, verbatim: "also on the mermaid diagram, it is soo much better now, but the left panel still needs a bit of a redesign to be more intuitive to use and understand, also the panning and zoom of the right panel feels really awkward and unresponsive and it needs a bit of usability, an ux polishing". Recommendation (taken): (k) the left panel (the outline and blocks pane) redesigned for first use: one clear purpose line, the tree of boxes and lines read top to bottom with what each row does on hover and focus, add and connect where the eye is, and a blind-tester pass before and after; (l) the picture pane's pan and zoom: wheel and pinch zoom about the pointer, drag to pan with momentum, zoom on every input in one frame (no wait for a re-render; the SVG transforms and redraws after), fit and 100% buttons, keyboard pan and zoom, measured input-to-paint latency (under 16 ms) and zoom steps that feel even. Then, 2026-11-05: "shouldnt these be from the outer box not the text?" (the connect arrows sat on a pill's label; fixed 2026-11-05, the shape is read before the label group) and "like make tools and features more accessible and aparrent, beef it up, are there any missing features?? what if I need to make like a sequence diagram or box certain elements?? it feels very rudimentary and basic". Recommendation (taken): (m) sequence diagrams and groups exist but are hidden behind the kind menu and the Arrange menu: a visible kind switcher (flowchart, sequence, mind map, timeline) at the top of the builder, "Box the picked blocks" on the selection bar and the block menu, every tool labelled where it sits, and a gap audit against Mermaid (class, state, ER, Gantt and pie open in Source only today; styling per block, notes and activations in a sequence, edge labels and link styles, icons) with the gaps built in order of use. **(m) built 2026-11-05:** the visible kind switcher (Flowchart, Sequence, Mind map, Timeline: `diagram-kindbar.js`, a new empty diagram of the kind, Undo brings the old one back), Box this block (block menu) and Box them (selection bar), sequence Parallel, Critical and Break boxes (U, C, B), and nine editor bugs from a fresh-eyes tester (handles scale with the block, `&quot;` drawn as a quote, emptied name, hint and pending line at once, `Add a box`, steps buttons duplicating the foot, + and wheel top, pan with nothing to pan). **Gap audit against Mermaid, still open, in order of use:** (1) flowchart shapes the blocks cannot read (cylinder `[( )]`, subroutine `[[ ]]`, parallelogram `[/ /]`, flag `>]`; such a diagram opens in Source), then `classDef`/`class` styling beyond the fill colour, `click` links and Font Awesome icons; (2) sequence: `autonumber`, `box` around participants, `create`/`destroy`, `rect` highlight colour (all open in Source today); (3) Gantt, pie and state diagrams as block kinds (the three most asked after sequence), then class and ER (Source only); (4) a per-edge label position, curve style and a link `id@` animation; (5) markdown strings and `<br>` line breaks in a name; (6) flowchart sub-direction inside a subgraph.
+1679. **Owner, 2026-11-04 16:50Z, verbatim (names Fable for this task):** "also can you get fable to take a quick look at and do a deep dive on the diagram builder?? it si still not really learnable and is still quite unintuitive and it feels like it lacks key design features and utility and it just feels very demo and not a complete feature or smth that it usable and easy to understand". One Fable agent, read-only deep dive, findings in `diagram-fable-1679.md` (git history), then ranked slices built by Sonnet. Owner, 2026-11-05 00:25Z, verbatim: "also on the mermaid diagram, it is soo much better now, but the left panel still needs a bit of a redesign to be more intuitive to use and understand, also the panning and zoom of the right panel feels really awkward and unresponsive and it needs a bit of usability, an ux polishing". Recommendation (taken): (k) the left panel (the outline and blocks pane) redesigned for first use: one clear purpose line, the tree of boxes and lines read top to bottom with what each row does on hover and focus, add and connect where the eye is, and a blind-tester pass before and after; (l) the picture pane's pan and zoom: wheel and pinch zoom about the pointer, drag to pan with momentum, zoom on every input in one frame (no wait for a re-render; the SVG transforms and redraws after), fit and 100% buttons, keyboard pan and zoom, measured input-to-paint latency (under 16 ms) and zoom steps that feel even. Then, 2026-11-05: "shouldnt these be from the outer box not the text?" (the connect arrows sat on a pill's label; fixed 2026-11-05, the shape is read before the label group) and "like make tools and features more accessible and aparrent, beef it up, are there any missing features?? what if I need to make like a sequence diagram or box certain elements?? it feels very rudimentary and basic". Recommendation (taken): (m) sequence diagrams and groups exist but are hidden behind the kind menu and the Arrange menu: a visible kind switcher (flowchart, sequence, mind map, timeline) at the top of the builder, "Box the picked blocks" on the selection bar and the block menu, every tool labelled where it sits, and a gap audit against Mermaid (class, state, ER, Gantt and pie open in Source only today; styling per block, notes and activations in a sequence, edge labels and link styles, icons) with the gaps built in order of use. **(m) built 2026-11-05:** the visible kind switcher (Flowchart, Sequence, Mind map, Timeline: `diagram-kindbar.js`, a new empty diagram of the kind, Undo brings the old one back), Box this block (block menu) and Box them (selection bar), sequence Parallel, Critical and Break boxes (U, C, B), and nine editor bugs from a fresh-eyes tester (handles scale with the block, `&quot;` drawn as a quote, emptied name, hint and pending line at once, `Add a box`, steps buttons duplicating the foot, + and wheel top, pan with nothing to pan). **Gap audit against Mermaid, still open, in order of use:** (1) flowchart shapes the blocks cannot read (cylinder `[( )]`, subroutine `[[ ]]`, parallelogram `[/ /]`, flag `>]`; such a diagram opens in Source), then `classDef`/`class` styling beyond the fill colour, `click` links and Font Awesome icons; (2) sequence: `autonumber`, `box` around participants, `create`/`destroy`, `rect` highlight colour (all open in Source today); (3) Gantt, pie and state diagrams as block kinds (the three most asked after sequence), then class and ER (Source only); (4) a per-edge label position, curve style and a link `id@` animation; (5) markdown strings and `<br>` line breaks in a name; (6) flowchart sub-direction inside a subgraph.
+
+## 23. List styles, decision 40 (INBOX 1696 cc, built 2026-11-08)
+**Decision 40.** The marker is the style, so the source and the export agree.
+Dots: `-` disc, `*` circle, `+` square, `-` plus two spaces dash. Numbers:
+`1.`, `1)`, `a.` and `i.` (the last two count only as a run of two, `a.` then
+`b.` or `i.` then `ii.`; `h. i. j.` stays letters). One list is one marker at
+one level. The List and Numbered menus restyle the list at the caret as one
+undo step; a pasted Unicode dash (U+2010 to U+2014), `•`, `◦` or `▪` at a line start becomes `- `.
+Block `docLists`, documents-cm.js. Scout of the bundled CodeMirror:
+- Already in prose: fold, multiple cursors, rectangular select, brackets, search, merge view.
+- Rows L1 (Enter continues `a.`, `i.`, dash lists) built, see HISTORY 2026-11-08 (DOCUMENTS_PLAN 23 L1 to L5).
+- Row L2 was already built (`docPairInput`, documents-prose.js; see HISTORY 2026-11-08).
+- Row L3 was already built (the markdown grammar folds list items), see HISTORY.
+- Row L4 built, see HISTORY. Row L5 built, see HISTORY.
+
+## Placed from W34, 2026-11-11 (gap5: the diagram builder's open cost)
+
+- **Diagram builder opens with about 251 row listeners (M; perfdgm-1108:4).** Each row attaches about 3 (shape, connect, chip) in diagram-builder.js `show` (:656); the mermaid fetch already starts first. First step: delegate them to one listener on `S.tree`, then idle-slice rows past 40 blocks. Check: listeners on open 251 to under 20; the blind-tester on keyboard row selection. The audit's 2,500 listeners and 766 / 1,128 ms relabel long tasks did not reproduce (host loaded): re-measure first.
+
+## 26. Synced blocks, decision 82 (row 5, F1 run 2, 2026-11-11)
+**Decision 82 (taken on the recommendation).** A block exists once, in the document it was written in (it carries `^id`). Every other place is a window onto it: `![[Doc#^id]]` shows the block, and its pencil edits the text there. Save reads the source afresh, rewrites that one block (the `^id` stays, so every link and embed still resolves) and saves the document through `PUT /documents/{id}` with the document's own `base_hash`, so the change has a revision and an edit of the same document elsewhere stays.
+- **Refused, not merged:** a block changed elsewhere since the box opened (the text is kept), and a block made two by a blank line.
+- **Not built:** a copy that stays in step in both places (no second source of truth, no sync engine); a pencil in the block's own document (it is edited there as text); live refresh of other open windows after a save (they update when the document is next drawn).
+- Code: `frontend/js/documents-synced.js` (lazy, `LAZY_MODULES.docSynced`), the pencil in `docEmbedNode` (documents-embeds.js), `tests/test_doc_blockrefs.py`; Guide topic `document-synced`.
+
+**Row 10, a board editable from a document (built 2026-11-11).** The whiteboard is one page-wide instance (`wbState`, `#whiteboard-container`, ids all through 25,000 lines), so there is no second one to mount in a document. A board card (`![[board:12]]`) has Edit here, which lends `#library-view-whiteboard` to a dialog over the document (`documents-board.js`, lazy `docBoard`) and puts it back on close. Whiteboard side, two hooks only: `openWhiteboardBoard(id, { stay: true })`, and a cancelable `wb-leave` event before `wbShowBoardsLanding`.
+- **Cost:** while the dialog is open the Library has no board window (closing puts the Library back: its open board again with its camera, or its list); the dialog is modal, so the document cannot be typed in meanwhile.
+- **Not built:** the board drawn live and editable inside the page's text flow (needs the whiteboard state made per instance first, a refactor of whiteboard.js that the whiteboard owner has to make).

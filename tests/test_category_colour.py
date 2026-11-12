@@ -17,7 +17,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
-from tessellate.core.database import DatabaseManager
+from tessellate.core.database_manager import DatabaseManager
 
 
 def _note(client, text, category):
@@ -154,7 +154,7 @@ def test_the_migration_alone_adds_the_column(tmp_path):
     """The Alembic step, not the startup auto-migrator, is what is checked: a
     database stood at the revision before this one, with `categories` lacking
     the column, gains it from `upgrade` and keeps its rows."""
-    from tessellate.core.database import _ensure_alembic_baseline
+    from tessellate.core.database_manager import _ensure_alembic_baseline
 
     path = tmp_path / "migrate.db"
     DatabaseManager(path)

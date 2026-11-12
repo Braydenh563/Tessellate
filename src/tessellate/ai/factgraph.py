@@ -29,8 +29,12 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, time
 
 from tessellate.ai import recognise
+from tessellate.ai import recognise_questions
 from tessellate.ai import when as when_words
 from tessellate.core import clock
+from tessellate.core.lazyre import lazy_compile
+
+_WEEKDAY_WORDS = frozenset("monday tuesday wednesday thursday friday saturday sunday mon tue tues wed thu thur thurs fri sat sun".split())
 
 KINDS = (
     "event", "quantity", "money", "date", "duration", "entity", "list_item", "check_item",
@@ -99,9 +103,9 @@ _REGULAR = frozenset(
     backup bike camp code commit email fill fry jog lift log mix park ping pitch row sail ski skate slice stretch
     surf sync tag text tour type wire wrap""".split()
 )
-_AUX_FUTURE = re.compile(r"\b(?:will|'ll|shall|going to|gonna)\s+(?:not\s+)?([a-z]+)\b", re.I)
-_DID_NOT = re.compile(r"\b(?:did not|didn't|never)\s+([a-z]+)\b", re.I)
-_PROGRESSIVE_FUTURE = re.compile(r"\b(?:am|is|are|'m|'re)\s+(going)\b(?!\s+to\b)", re.I)
+_AUX_FUTURE = lazy_compile(r"\b(?:will|'ll|shall|going to|gonna)\s+(?:not\s+)?([a-z]+)\b", re.I)
+_DID_NOT = lazy_compile(r"\b(?:did not|didn't|never)\s+([a-z]+)\b", re.I)
+_PROGRESSIVE_FUTURE = lazy_compile(r"\b(?:am|is|are|'m|'re)\s+(going)\b(?!\s+to\b)", re.I)
 
 
 def _past_forms() -> dict[str, str]:
@@ -139,8 +143,8 @@ def _tables() -> None:
 #: Where an event's object stops: a time or place phrase, a clause break.
 _OBJECT_STOP = frozenset("on at in after before during since until for with by from because but and so then when while".split())
 _NEGATORS = frozenset("not no never didn't don't doesn't won't can't cannot isn't wasn't aren't weren't haven't hasn't hadn't nothing".split())
-_HEDGES = re.compile(r"\b(maybe|might|perhaps|possibly|probably|could|would)\b", re.I)
-_IF = re.compile(r"^\s*(?:if|unless|in case)\b|\b(?:if|unless)\b", re.I)
+_HEDGES = lazy_compile(r"\b(maybe|might|perhaps|possibly|probably|could|would)\b", re.I)
+_IF = lazy_compile(r"^\s*(?:if|unless|in case)\b|\b(?:if|unless)\b", re.I)
 
 _NUMBER_WORDS = {
     "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
@@ -159,35 +163,35 @@ _UNITS = frozenset(
     oz cm mm l litres liters ml percent % sets reps laps times steps pages words people notes loaves cups tbsp tsp
     degrees grit bpm kcal calories items tickets users testers""".split()
 )
-_QUANTITY = re.compile(r"\b" + _NUMBER + r"\s*(%|[a-z]+)\b(?:\s+of\s+([a-z]+(?:\s[a-z]+)?))?", re.I)
-_DECISION = re.compile(r"\b(decided|going with|chose|settled on|opted for)\b\s*(?:to\s+go\s+with\s+|to\s+|on\s+)?", re.I)
-_PREFERENCE = re.compile(
+_QUANTITY = lazy_compile(r"\b" + _NUMBER + r"\s*(%|[a-z]+)\b(?:\s+of\s+([a-z]+(?:\s[a-z]+)?))?", re.I)
+_DECISION = lazy_compile(r"\b(decided|going with|chose|settled on|opted for)\b\s*(?:to\s+go\s+with\s+|to\s+|on\s+)?", re.I)
+_PREFERENCE = lazy_compile(
     r"\b(?:(?:i|we)\s+(?:really\s+|also\s+)?(?P<neg>don't |do not |didn't |never )?(?P<verb>like|love|prefer|hate|dislike|enjoy|adore|can't stand|cannot stand)"
     r"|(?:my\s+)?(?P<fav>favou?rite)\b)\s*",
     re.I,
 )
 _NEGATIVE_PREFERENCE = frozenset({"hate", "dislike", "can't stand", "cannot stand"})
-_PLAN = re.compile(r"\b(plan(?:ning)? to|want to|wants to|going to|need to|needs to|should|have to|has to)\s+(?!be\b)", re.I)
-_LINK = re.compile(r"https?://[^\s)>\]]+|\[\[[^\]\n]{1,120}\]\]")
-_QUOTED = re.compile(r"[\"“]([^\"“”\n]{2,400})[\"”]")
-_SAID = re.compile(r"\b([A-Z][a-z]+|[Ss]he|[Hh]e|[Tt]hey)\s+(?:said|says|wrote|writes|told me|replied|asked)\s*[:,]?\s*", re.U)
-_ACCORDING = re.compile(r"\baccording to\s+([A-Z][\w ]{0,40}?),\s*", re.U)
-_CAPITAL = re.compile(r"\b[A-Z][a-z]+(?:[ -][A-Z][a-z]+)*\b")
-_SPEECH_AFTER = re.compile(r"^\s*(?:and I\b|and me\b|said\b|says\b|wrote\b|told\b|asked\b|replied\b)")
-_PERSON_BEFORE = re.compile(r"\b(?:met|with|told|asked|called|emailed|texted|saw|and|from|to|by)\s+$", re.I)
-_PLACE_BEFORE = re.compile(r"\b(?:at|in|near|to)\s+(?:the\s+)?$", re.I)
-_PLACE_AFTER = re.compile(r"^\s+(?:cafe|café|course|park|street|road|lane|beach|station|gym|office|hotel|airport|centre|center|hall|bar|pub|market|lake|river)\b", re.I)
-_ORG_AFTER = re.compile(r"^\s+(?:Inc|Ltd|LLC|Corp|Co|Group|Labs|University|Bank)\b")
+_PLAN = lazy_compile(r"\b(plan(?:ning)? to|want to|wants to|going to|need to|needs to|should|have to|has to)\s+(?!be\b)", re.I)
+_LINK = lazy_compile(r"https?://[^\s)>\]]+|\[\[[^\]\n]{1,120}\]\]")
+_QUOTED = lazy_compile(r"[\"“]([^\"“”\n]{2,400})[\"”]")
+_SAID = lazy_compile(r"\b([A-Z][a-z]+|[Ss]he|[Hh]e|[Tt]hey)\s+(?:said|says|wrote|writes|told me|replied|asked)\s*[:,]?\s*", re.U)
+_ACCORDING = lazy_compile(r"\baccording to\s+([A-Z][\w ]{0,40}?),\s*", re.U)
+_CAPITAL = lazy_compile(r"\b[A-Z][a-z]+(?:[ -][A-Z][a-z]+)*\b")
+_SPEECH_AFTER = lazy_compile(r"^\s*(?:and I\b|and me\b|said\b|says\b|wrote\b|told\b|asked\b|replied\b)")
+_PERSON_BEFORE = lazy_compile(r"\b(?:met|with|told|asked|called|emailed|texted|saw|and|from|to|by)\s+$", re.I)
+_PLACE_BEFORE = lazy_compile(r"\b(?:at|in|near|to)\s+(?:the\s+)?$", re.I)
+_PLACE_AFTER = lazy_compile(r"^\s+(?:cafe|café|course|park|street|road|lane|beach|station|gym|office|hotel|airport|centre|center|hall|bar|pub|market|lake|river)\b", re.I)
+_ORG_AFTER = lazy_compile(r"^\s+(?:Inc|Ltd|LLC|Corp|Co|Group|Labs|University|Bank)\b")
 _NOT_NAMES = frozenset(
     """I I'm I've I'll I'd Monday Tuesday Wednesday Thursday Friday Saturday Sunday January February March April May
     June July August September October November December Today Tomorrow Yesterday The A An This That These Those It
     My Our Your We He She They Then Also But And So Next Last Ok Okay Yes No""".split()
 )
-_HEADING = re.compile(r"^\s{0,3}#{1,6}\s+")
-_ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+)(\[([ xX])\]\s+)?")
-_SPLIT = re.compile(r"([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])")
+_HEADING = lazy_compile(r"^\s{0,3}#{1,6}\s+")
+_ITEM = lazy_compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+)(\[([ xX])\]\s+)?")
+_SPLIT = lazy_compile(r"([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])")
 _PICTURES_HEAD = "[Pictures in this note"
-_JOKE = re.compile(r"\bjoke\b|\bpunchline\b", re.I)
+_JOKE = lazy_compile(r"\bjoke\b|\bpunchline\b", re.I)
 
 
 # --- reading -----------------------------------------------------------------------
@@ -201,6 +205,39 @@ def _written(note: dict) -> date | None:
         except ValueError:
             return None
     return None
+
+
+def _anchor(note: dict) -> date | None:
+    """The day a bare "25 October" is read against: the later of the day the
+    note was written and the day it was last edited, since a running log
+    gains its lines over weeks and a line is no older than the edit that
+    added it (round 4, E17: "a year ago" for a date two weeks off)."""
+    written = _written(note)
+    edited = str(note.get("entry_edited_at") or note.get("edited_at") or note.get("updated_at") or "")
+    try:
+        later = date.fromisoformat(edited[:10]) if re.match(r"\d{4}-\d{2}-\d{2}", edited) else None
+    except ValueError:
+        later = None
+    return max(written, later) if written and later else written
+
+
+def _line_units(content: str, line: str, start: int, body_end: int) -> list[tuple[int, int, str, bool | None]]:
+    """The claims of one body line: a list or check item is one unit, prose is
+    split into sentences."""
+    item = _ITEM.match(line)
+    if item:
+        box = item.group(3)
+        kind = "check_item" if box is not None else "list_item"
+        return [(start + item.end(), body_end, kind, None if box is None else box.lower() == "x")]
+    out: list[tuple[int, int, str, bool | None]] = []
+    lead = len(line) - len(line.lstrip(" >"))
+    cursor = start + lead
+    for match in _SPLIT.finditer(content, cursor, body_end):
+        out.append((cursor, match.end(1), "prose", None))
+        cursor = match.end()
+    if cursor < body_end:
+        out.append((cursor, body_end, "prose", None))
+    return out
 
 
 def _units(content: str) -> list[tuple[int, int, str, bool | None]]:
@@ -224,19 +261,7 @@ def _units(content: str) -> list[tuple[int, int, str, bool | None]]:
             continue
         if in_fence or not stripped or _HEADING.match(line) or stripped.startswith((_PICTURES_HEAD, "|", "![")):
             continue
-        item = _ITEM.match(line)
-        if item:
-            box = item.group(3)
-            kind = "check_item" if box is not None else "list_item"
-            out.append((start + item.end(), body_end, kind, None if box is None else box.lower() == "x"))
-            continue
-        lead = len(line) - len(line.lstrip(" >"))
-        cursor = start + lead
-        for match in _SPLIT.finditer(content, cursor, body_end):
-            out.append((cursor, match.end(1), "prose", None))
-            cursor = match.end()
-        if cursor < body_end:
-            out.append((cursor, body_end, "prose", None))
+        out.extend(_line_units(content, line, start, body_end))
     return [(s, e, k, d) for s, e, k, d in out if content[s:e].strip()]
 
 
@@ -309,7 +334,7 @@ _MONTH_WORD = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*"
 
 def _sentence_tense(sentence: str) -> str | None:
     _tables()
-    if _AUX_FUTURE.search(sentence) or _PROGRESSIVE_FUTURE.search(sentence) or re.search(r"\b(?:plan|want|need)s? to\b", sentence, re.I) or recognise.says_ahead(sentence):
+    if _AUX_FUTURE.search(sentence) or _PROGRESSIVE_FUTURE.search(sentence) or re.search(r"\b(?:plan|want|need)s? to\b", sentence, re.I) or recognise_questions.says_ahead(sentence):
         return "future"
     if re.search(r"\bfor\s+(?:the\s+)?\d{1,2}(?:st|nd|rd|th)\b", sentence, re.I):
         return "future"
@@ -331,6 +356,9 @@ def _after_object(sentence: str, pos: int, obj: str) -> int:
 class _SentenceReader:
     """The facts of one sentence. The order of the steps in `read` is the order
     the facts are collected in, which the final stable sort keeps for ties."""
+
+    #: The day dates are read against, when it is not the day written.
+    anchor: date | None = None
 
     def __init__(self, content: str, source: int, written: date | None, tags: list[str], unit: tuple) -> None:
         self.content, self.source, self.written, self.tags = content, source, written, tags
@@ -363,8 +391,12 @@ class _SentenceReader:
 
     def dates(self) -> None:
         # dates first: their spans are not quantities
-        for s, e, phrase in when_words.find(self.sentence):
-            resolved = _date_value(phrase, self.written, self.tense)
+        found = when_words.find(self.sentence)
+        for i, (s, e, phrase) in enumerate(found):
+            after = found[i + 1] if i + 1 < len(found) else None
+            if after and after[0] - e in (1, 2) and phrase.lower().removeprefix("on ") in _WEEKDAY_WORDS and after[2][:1].isdigit() and self.sentence[e:after[0]] in (" ", ", "):
+                continue  # "Monday 16 November": the date names the day, the weekday beside it is no second one (bt-compcomp item 1)
+            resolved = _date_value(phrase, self.anchor or self.written, self.tense)
             self.add("date", s, e, {"phrase": phrase, "resolved": resolved[0].isoformat() if resolved else None,
                                     "through": resolved[1].isoformat() if resolved else None,
                                     "grain": resolved[2] if resolved else "unknown"}, confidence=0.9 if resolved else 0.5)
@@ -570,8 +602,11 @@ def _note_facts(note: dict) -> list[Fact]:
     joke = bool(_JOKE.search(content))
     units = _units(content)
     facts: list[Fact] = []
+    anchor = _anchor(note)
     for index, unit in enumerate(units):
-        facts += _SentenceReader(content, source, written, tags, unit).read(index, units, joke)
+        reader = _SentenceReader(content, source, written, tags, unit)
+        reader.anchor = anchor
+        facts += reader.read(index, units, joke)
     facts.sort(key=lambda f: (f.start, KINDS.index(f.kind), f.end))
     return facts
 

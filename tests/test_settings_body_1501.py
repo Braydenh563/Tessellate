@@ -3,7 +3,7 @@
 The 21 sections (2,700 nodes, 784 ids) sat in index.html under a window that is
 `display:none` until somebody opens it, and cost every boot their parse, their
 memory and a share of every style pass. They now sit in an inert `<template>`
-and `settingsBodyBuild` (settings-body.js) puts them in the page on the first
+and `surfaceBuild("settings")` (settings-body.js) puts them in the page on the first
 open, or the first `$("<id>")` that asks for one of them. The numbers are in
 CHANGELOG.md; this holds the shape, and the one rule that keeps it cheap: a
 script that loads at boot must not ask for a control in the body, because the
@@ -18,6 +18,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._js_scope import unwrapped
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +28,7 @@ INDEX = (FRONTEND / "index.html").read_text(encoding="utf-8")
 BODY_JS = (FRONTEND / "js" / "settings-body.js").read_text(encoding="utf-8")
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
-TEMPLATE = re.search(r'<template id="settings-body-template">(.*?)</template>', INDEX, re.S)
+TEMPLATE = re.search(r'<template id="settings-body-template" data-surface="settings">(.*?)</template>', INDEX, re.S)
 
 
 def _template() -> str:
@@ -67,23 +69,23 @@ def test_the_script_loads_before_app_js_which_calls_it():
     scripts = _boot_scripts()
     assert "/js/settings-body.js" in scripts
     assert scripts.index("/js/settings-body.js") < scripts.index("/js/app.js")
-    assert re.search(r"^const \$ = \(id\) => document\.getElementById\(id\) \|\| settingsBodyFind\(id\);$", _src("app.js"), re.M)
+    assert re.search(r"^const \$ = \(id\) => document\.getElementById\(id\) \|\| surfaceFind\(id\);$", _src("app.js"), re.M)
 
 
 def _src(name: str) -> str:
-    return (FRONTEND / "js" / name).read_text(encoding="utf-8")
+    return unwrapped((FRONTEND / "js" / name).read_text(encoding="utf-8"))
 
 
 def test_opening_the_window_builds_the_body_first():
     src = _src("settings.js")
     start = src.index("function openSettingsModal")
     head = src[start : start + 2500]
-    assert "settingsBodyBuild();" in head
-    assert head.index("settingsBodyBuild();") < min(
+    assert 'surfaceBuild("settings");' in head
+    assert head.index('surfaceBuild("settings");') < min(
         i for i in (head.find('$("'), head.find("showSettingsSection(")) if i != -1
     ), "the body is built before the first control is read"
     controls = _src("settings-controls.js")
-    assert controls.index("settingsBodyBuild();") < controls.index('$("'), "the lazy listeners find their controls"
+    assert controls.index('surfaceBuild("settings");') < controls.index('$("'), "the lazy listeners find their controls"
 
 
 def test_no_boot_script_asks_for_a_control_in_the_body_at_its_top_level():
@@ -107,7 +109,7 @@ def test_no_boot_script_sweeps_the_body_at_its_top_level():
     # The same mistake by selector: `wireFoldHelps();` at the top of settings.js
     # ran before the body existed, found no folds, and every fold's '?' sat
     # unplaced over the head's corner. A function that queries Settings by
-    # selector runs from `onSettingsBody`, never as a bare top-level call.
+    # selector runs from `onSurface("settings", ...)`, never as a bare top-level call.
     funcs = {}
     for script in _boot_scripts():
         text = _src(script.rsplit("/", 1)[1])
@@ -127,10 +129,11 @@ def test_every_boot_sweep_over_the_body_is_rerun_at_the_build():
     # What the page ran over every control at boot, for the controls that now
     # arrive late (the four a before/after snapshot of every section found).
     assert "window.initHelpToggles?.(host);" in BODY_JS
-    assert "onSettingsBody(hideClosedDockMenuLists);" in _src("navigation.js")
-    assert "onSettingsBody(syncNotifBlocked);" in _src("status.js")
-    wiring = _src("settings-wiring.js")
-    assert re.search(r"onSettingsBody\(\(\) => \{\s*localizeStaticChords\(\);\s*stampShortcutTitles\(\);", wiring)
+    # The dock-menu, chord and title sweeps moved into `surfaceBuild` itself, over the stamped host, so every
+    # surface gets them (row 21 review); `test_surface_templates` holds that shape.
+    for sweep in ("hideClosedDockMenuLists", "localizeStaticChords", "stampShortcutTitles"):
+        assert f"window.{sweep}?.(host);" in BODY_JS
+    assert 'onSurface("settings", syncNotifBlocked);' in _src("status.js")
 
 
 def test_the_reveal_targets_and_the_guide_reach_ids_that_exist():
@@ -149,8 +152,8 @@ def _run(body: str) -> dict:
         "const log = []; let built = 0;",
         "const content = { getElementById: (id) => (id === 'sync-now' ? { id } : null) };",
         "const host = {};",
-        "const tpl = { content, parentNode: host, replaceWith(c) { built++; log.push('replace'); } };",
-        "const document = { getElementById: (id) => (id === 'settings-body-template' ? tpl : built && id === 'sync-now' ? { id, live: 1 } : null) };",
+        "const tpl = { dataset: { surface: 'settings' }, content, parentNode: host, replaceWith(c) { built++; log.push('replace'); } };",
+        "const document = { querySelectorAll: () => [tpl], getElementById: (id) => (built && id === 'sync-now' ? { id, live: 1 } : null) };",
         "const window = { initHelpToggles: (h) => log.push(h === host ? 'help' : 'help-wrong-root') };",
         BODY_JS,
         body,
@@ -164,12 +167,12 @@ def _run(body: str) -> dict:
 def test_build_is_once_find_builds_on_demand_and_the_queue_runs_after_it():
     result = _run(
         """
-        const first = settingsBodyFind('no-such-id');
+        const first = surfaceFind('no-such-id');
         const afterMiss = built;
-        onSettingsBody(() => log.push('queued'));
-        const found = settingsBodyFind('sync-now');
-        const again = settingsBodyBuild();
-        onSettingsBody(() => log.push('now'));
+        onSurface('settings', () => log.push('queued'));
+        const found = surfaceFind('sync-now');
+        const again = surfaceBuild('settings');
+        onSurface('settings', () => log.push('now'));
         console.log(JSON.stringify({ first, afterMiss, found, built, again, log }));
         """
     )

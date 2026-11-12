@@ -30,7 +30,7 @@ class _Model:
         self.reply = reply
         self.sent: list[list[dict]] = []
 
-    def chat(self, model: str, messages: list[dict]) -> dict:
+    def chat(self, model: str, messages: list[dict], mode: str | None = None) -> dict:
         self.sent.append(messages)
         return {"content": self.reply}
 

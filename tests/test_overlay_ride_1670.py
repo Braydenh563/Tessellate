@@ -18,7 +18,25 @@ ONE = [Monitor(AREA, 96)]
 LOOKS = ("masculine", "feminine")
 WIN = Perch(11, 500, 300, 1100)
 #: Frames a figure shows while it stands, sits, sleeps, waves, lands, walks or holds a card.
-RESTING = tuple(n for n in FRAME_NAMES if n not in ("hang", "tumble", "fall", "hop", "held"))
+#: Intent moved (W31 E2): the legs-over-the-edge pictures (`dangle`, `kick0`, `kick1`) and the one-handed hang hang below their line on purpose: a
+#: dangle is seated on the window's top with its hem under it, so its lowest row is not the floor (tests/test_overlay_desk_acts_1710.py pins the seat).
+RESTING = tuple(n for n in FRAME_NAMES if n not in ("hang", "hang_one", "tumble", "fall", "hop", "held", "dangle", "kick0", "kick1"))
+
+
+_METRICS: dict[tuple[str, str], dict] = {}
+
+
+def shared_metrics(s: SpriteSet, look: str) -> dict:
+    """The shipped frames' drawn boxes at 96 dpi, built once per process: `SpriteSet.metrics` renders every frame in both
+    mirrors (0.7 s) and the frames never change, yet each of a few hundred `make()` calls rebuilt them. The set keeps the
+    shared result as its own, so a later `s.metrics(96)` in a test reads the same boxes without another build."""
+    key = (look, str(s.directory))
+    boxes = _METRICS.get(key)
+    if boxes is None:
+        boxes = _METRICS[key] = s.metrics(96)
+    else:
+        s._metrics, s._metrics_base = {96: boxes}, (s.size(96), boxes)
+    return boxes
 
 
 def make(look: str = "masculine", gait: str = "float", seed: int = 2, plain: bool = False) -> tuple[Engine, SpriteSet]:
@@ -28,7 +46,7 @@ def make(look: str = "masculine", gait: str = "float", seed: int = 2, plain: boo
         size, ONE, rng=random.Random(seed), gait=gait, hang_top=s.top_share("hang"), idle_frames=IDLE_COUNT,
         home=(900, AREA[3] - size[1]),
     )
-    e.set_metrics(s.metrics(96))
+    e.set_metrics(shared_metrics(s, look))
     e.climb_ready = math.inf
     e.big_ready = math.inf
     e.plain_legs = plain  # True: every leg is the plain walk or drift (the older tests); False: the full repertoire
@@ -155,7 +173,11 @@ def ride(look: str, gait: str, seed: int, ticks: int = 2000) -> dict[str, float]
             else:
                 ev = ("move", px, py)
         o = e.update(t, (px, py), ev)
-        if o.clip:
+        # Intent moved (INBOX 1719 a): a throw past the leave line goes off the top on purpose (out through it, then
+        # alpha 0 while away, then falling back in through it), so those frames are skipped like a clipped one; every other
+        # throw still counts. The way back in is the flight `_return_top` launched (`AWAY_FALL`).
+        back = e.state == "fly" and e.launch[1] == eng.AWAY_FALL * e._scale()
+        if o.clip or o.alpha == 0 or e.away_until is not None or back or (e.state == "fly" and e._leaves()):
             continue
         left, top, right, bottom = boxes[(o.frame, o.flip)]
         worst["left"] = max(worst["left"], AREA[0] - (o.x + left))

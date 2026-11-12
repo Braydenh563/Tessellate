@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import date
 
 from tessellate.ai import recognise
 
@@ -38,6 +39,7 @@ _NOT_NAMES = frozenset(
         *_MONTHS,
         *(m[:3] for m in _MONTHS),
         "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+        "mon", "tue", "tues", "wed", "thu", "thur", "thurs", "fri", "sat", "sun",
         "today", "tomorrow", "yesterday", "i", "i'm", "i've", "i'll", "i'd", "ok", "okay",
         "ai", "atlas", "memorymap", "notes", "note", "chat", "graph", "library",
         "settings", "timeline", "whiteboard", "documents", "document", "reminders",
@@ -69,6 +71,10 @@ _SENTENCE_START = re.compile(r"(?:^|[.!?:;]\s+|\n\s*(?:[-*+]|\d+[.)])?\s*|\(\s*|
 _FIGURES = re.compile(r"^[\d:/\-.,]+(?:st|nd|rd|th)?$")
 
 
+_CLOCK_DAY = re.compile(r"the current date and time is (\d{4}-\d\d-\d\d)")
+_ISO_DAY = re.compile(r"(?<!\d)(\d{4}-\d\d-\d\d)(?!\d)")
+
+
 def _number_key(whole: str, fraction: str | None) -> str:
     whole = whole.replace(",", "").lstrip("0") or "0"
     fraction = (fraction or "").rstrip("0")
@@ -92,6 +98,24 @@ class Sources:
                 self.numbers.add(str(month))
         for text in texts:
             self._list_lengths(text)
+        self._day_gaps()
+
+    def _day_gaps(self) -> None:
+        """"in 5 days" and "2 weeks ago" are the date's own figures: the days between the clock's today and a
+        date the sources hold are said, so they are not unbacked (W8 found-not-fixed)."""
+        clock = _CLOCK_DAY.search(self.text)
+        if not clock:
+            return
+        try:
+            today = date.fromisoformat(clock.group(1))
+            days = {date.fromisoformat(d) for d in _ISO_DAY.findall(self.text)}
+        except ValueError:
+            return
+        for day in days:
+            gap = abs((day - today).days)
+            self.numbers.add(str(gap))
+            if gap and gap % 7 == 0:
+                self.numbers.add(str(gap // 7))
 
     def _list_lengths(self, text: str) -> None:
         try:
@@ -117,18 +141,21 @@ def sources_from_messages(messages: list[dict]) -> Sources:
         for m in messages[1:]
         if m.get("role") in ("user", "tool")
     ]
+    #: The date the prompt's clock gave the model is the app's own fact: "today, 4 November" is backed, where the
+    #: rest of the system prompt is not (W8 B16, "I could not find 4").
+    if messages and messages[0].get("role") == "system":
+        texts += [m.group(0) for m in _PROMPT_CLOCK.finditer(str(messages[0].get("content") or ""))]
     asked = next((str(m.get("content") or "") for m in reversed(messages) if m.get("role") == "user"), "")
     return Sources(texts, asked)
 
 
+#: Only today's date, not the week list: its figures (10, 15 ...) would back an invented "10:15" on some days of the month.
+_PROMPT_CLOCK = re.compile(r"The current date and time is \d{4}-\d\d-\d\d")
 _APP_LINK = re.compile(r"\[[^\]\n]{1,120}\]\(#/[^)\s]*\)")
 
 
-def unbacked_claims(answer: str, sources: Sources) -> list[str]:
-    """Numbers and names in `answer` that `sources` does not contain, in order."""
-    #: An app link ("[Open your notes](#/notes)") is the app's own offer, not
-    #: a claim: "Open" was flagged as an unbacked name (owner, 2026-10-12).
-    text = _IGNORED.sub(" ", _APP_LINK.sub(" ", answer).replace("**", "").replace("__", ""))
+def _unbacked_numbers(text: str, sources: Sources) -> list[str]:
+    """The compound figures ("10:15", "3/3", "2026-10-06") with a part the sources lack."""
     found: list[str] = []
     # "10:15", "3/3" and "2026-10-06" are one claim of several numbers: said
     # as written, flagged when any part is not in the sources.
@@ -136,6 +163,12 @@ def unbacked_claims(answer: str, sources: Sources) -> list[str]:
         parts = [_number_key(w, f) for w, f in _NUMBER.findall(match.group(0))]
         if any(key not in ("0", "1") and key not in sources.numbers for key in parts):
             found.append(match.group(0))
+    return found
+
+
+def _unbacked_names(text: str, sources: Sources) -> list[str]:
+    """The runs of capitalised words (a name) with a word the sources lack."""
+    found: list[str] = []
     run: list[str] = []
     prev_end = -1
 
@@ -162,6 +195,15 @@ def unbacked_claims(answer: str, sources: Sources) -> list[str]:
         run.append(word)
     if run:
         close()
+    return found
+
+
+def unbacked_claims(answer: str, sources: Sources) -> list[str]:
+    """Numbers and names in `answer` that `sources` does not contain, in order."""
+    #: An app link ("[Open your notes](#/notes)") is the app's own offer, not
+    #: a claim: "Open" was flagged as an unbacked name (owner, 2026-10-12).
+    text = _IGNORED.sub(" ", _APP_LINK.sub(" ", answer).replace("**", "").replace("__", ""))
+    found = _unbacked_numbers(text, sources) + _unbacked_names(text, sources)
     return _without_computed(list(dict.fromkeys(found)), sources)
 
 

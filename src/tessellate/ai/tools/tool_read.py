@@ -8,15 +8,16 @@ down the layer list in `__init__.py`'s docstring, never back to `__init__`.
 from __future__ import annotations
 
 from tessellate.core.database import Category, Entry, LIKE_ESCAPE, like_escape
-from tessellate.ai.tools._common import DEFAULT_CONTEXT_TOKENS, DEFAULT_LIST_LIMIT, FULL_NOTE_CHARS, MAX_LIST_LIMIT, PREVIEW_CHARS, SEARCH_CONTEXT_SHARE, SUMMARY_NOTE_LIMIT, ToolError, _READ_MORE, _category_clause, _clip, _limit_arg, _note_summary, _readable, _require_note, _since_days, _visible
+from tessellate.ai.tools._common import DEFAULT_CONTEXT_TOKENS, DEFAULT_LIST_LIMIT, FULL_NOTE_CHARS, MAX_LIST_LIMIT, PREVIEW_CHARS, SEARCH_CONTEXT_SHARE, SUMMARY_NOTE_LIMIT, _READ_MORE, _category_clause, _clip, _limit_arg, _note_summary, _readable, _require_note, _since_clause, _since_days, _span_not_category, _visible
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, or_, select
 from tessellate.core import deps
-from tessellate.entry import link_wording, manager, paths
+from tessellate.entry import link_wording, manager, manager_links, paths
 from tessellate.ai import note_rank
 from tessellate.search import search_manager
 from tessellate.entry.properties import strip as strip_properties
 from datetime import timedelta
+from tessellate.ai.tools.tool_list_page import describe_filters, page_of_notes, unknown_category_hint
 
 # --- handlers (session, args) -> result dict -----------------------------------
 # Results always include a human "label" on success; the UI shows it
@@ -84,7 +85,7 @@ def _get_note_tool(session: Session, args: dict) -> dict:
     entry = _require_note(session, args)
     result = _note_summary(session, entry, chars=FULL_NOTE_CHARS)
     result["links"] = [
-        other.id for _link, other in manager.links_for_entry(session, entry)
+        other.id for _link, other in manager_links.links_for_entry(session, entry)
     ]
     result["label"] = f"ph:file-text Read {_named(entry)} in full"
     return result
@@ -170,7 +171,7 @@ def _graph_neighbours(session: Session, entry: Entry) -> list[tuple[Entry, str]]
         seen[other.id] = how
         out.append((other, how))
 
-    for link, other in manager.links_for_entry(session, entry):
+    for link, other in manager_links.links_for_entry(session, entry):
         # A link's own reason, when someone gave one, "a note about uni and
         # gym might still be related if they're both about scheduling"
         # (user-reported) is exactly the kind of connection that reads as
@@ -295,18 +296,8 @@ def _suggested_neighbours(session: Session, entry: Entry, exclude: set[int]) -> 
     return results
 
 
-def _related_notes(session: Session, args: dict) -> dict:
-    """The neighbourhood around one note, as context rather than as a picture.
-
-    Breadth-first so the nearest notes arrive first and the cap cuts the
-    furthest, which is the right thing to lose. Every result says how far away
-    it is and how it got there, so the model can weigh "you linked these" above
-    "these share a tag two hops out" instead of treating a flat list as equally
-    relevant.
-    """
-    entry = _require_note(session, args)
-    depth = max(1, min(MAX_GRAPH_DEPTH, int(args.get("depth") or 1)))
-
+def _walk_neighbourhood(session: Session, entry: Entry, depth: int) -> tuple[list[dict], set[int]]:
+    """Breadth-first out from `entry`, nearest first, stopping at the cap: the summaries and the ids seen."""
     frontier = [entry]
     visited = {entry.id}
     found: list[dict] = []
@@ -339,6 +330,22 @@ def _related_notes(session: Session, args: dict) -> dict:
         frontier = next_frontier
         if not frontier:
             break
+    return found, visited
+
+
+def _related_notes(session: Session, args: dict) -> dict:
+    """The neighbourhood around one note, as context rather than as a picture.
+
+    Breadth-first so the nearest notes arrive first and the cap cuts the
+    furthest, which is the right thing to lose. Every result says how far away
+    it is and how it got there, so the model can weigh "you linked these" above
+    "these share a tag two hops out" instead of treating a flat list as equally
+    relevant.
+    """
+    entry = _require_note(session, args)
+    depth = max(1, min(MAX_GRAPH_DEPTH, int(args.get("depth") or 1)))
+
+    found, visited = _walk_neighbourhood(session, entry, depth)
 
     result = {
         "note_id": entry.id,
@@ -401,98 +408,6 @@ def _find_similar_notes(session: Session, args: dict) -> dict:
             "embeddings, even if they don't share exact keywords. Use link_notes "
             "to connect them if they belong together."
         )
-    }
-
-
-def _path_between(session: Session, args: dict) -> dict:
-    """"How are these two related?", the chain, not the neighbourhood (§9).
-
-    `related_notes` answers "what is near this note". This answers "what joins
-    these two", which the model could previously only attempt by walking one
-    note's neighbourhood, then another's, and eyeballing the overlap, three
-    rounds and a guess for something the notebook knows exactly.
-
-    Private notes are not in the graph this searches (`include_private=False`).
-    The model may not read one, so a route *through* one would put a preview it
-    is barred from into an answer, and a route *to* one would hand it an id it
-    cannot open.
-
-    The failure case is written out as prose deliberately. "No path" with no
-    reason invites the model to invent one, the notebook's most-used tag being
-    ignored is exactly the kind of thing it would otherwise explain away.
-    """
-    source = _require_note(session, args, "note_id")
-    target = _require_note(session, args, "other_note_id")
-    index = paths.build(session, include_private=False)
-
-    if source.id == target.id:
-        raise ToolError("Those are the same note, pick two different ones.")
-    chain = paths.find(index, source.id, target.id)
-    if chain is None:
-        both_connected = all(
-            paths.degree(index, note.id) > 0 for note in (source, target)
-        )
-        return {
-            "found": False,
-            "from": source.id,
-            "to": target.id,
-            "label": f"ph:prohibit No path between #{source.id} and #{target.id}",
-            "note": (
-                "These two notes are not connected, not by a link, not by a "
-                "reply, and not by a shared tag, within "
-                f"{paths.MAX_PATH_HOPS} steps. "
-                + (
-                    "Both are connected to other notes, just not to each other. "
-                    if both_connected
-                    else "At least one of them is connected to nothing at all. "
-                )
-                + "Say so plainly rather than describing a connection you "
-                "cannot see; use link_notes if the user wants them joined up."
-            ),
-        }
-
-    hops = [
-        {
-            "from": step.source,
-            "to": step.target,
-            "how": step.how,
-            # The words the answer should use. A step's kind is what the model
-            # must not get wrong: reporting a shared tag as "you linked these"
-            # is the same class of mistake as claiming a write that never
-            # happened (§35B), one degree quieter.
-            "kind": step.kind,
-        }
-        for step in chain
-    ]
-    order = [source.id] + [step.target for step in chain]
-    return {
-        "found": True,
-        "from": source.id,
-        "to": target.id,
-        "hops": len(chain),
-        # Not `_graph_summary`: its `how`/`hops` fields answer "how far is this
-        # from the note you asked about", which on a path is said by the
-        # position in the list and by the step beside it.
-        "path": [
-            {
-                "id": note_id,
-                "preview": _clip(
-                    strip_properties(_readable(index.entries[note_id])).lstrip(), GRAPH_PREVIEW_CHARS
-                ),
-                "category": manager.category_name_for(session, index.entries[note_id]),
-            }
-            for note_id in order
-        ],
-        "steps": hops,
-        "label": (
-            f"ph:path {len(chain)} step{'' if len(chain) == 1 else 's'} from "
-            f"#{source.id} to #{target.id}"
-        ),
-        "how_to_read_more": (
-            "Each step says how the two notes are joined: a link somebody made, "
-            "a reply thread, or a tag they share. Describe the chain in that "
-            "order and name the notes by their text, not only by id."
-        ),
     }
 
 
@@ -601,11 +516,9 @@ def _scope_filters(args: dict) -> list:
     into a query the database was always going to be better at.
     """
     filters: list = []
-    since_days = _since_days(args.get("since"))
-    if since_days is not None:
-        from tessellate.core.database import utcnow
-
-        filters.append(Entry.created_at >= utcnow() - timedelta(days=since_days))
+    clause = _since_clause(args.get("since"))
+    if clause is not None:
+        filters.append(clause)
     if args.get("untagged"):
         #: Three shapes for "no tags", and all three are real rows. `tags` is
         #: a JSON string (`entry/manager.py` writes `json.dumps(tags or [])`),
@@ -637,6 +550,7 @@ def _list_notes(session: Session, args: dict) -> dict:
     total against the filter and where the next page starts, so the model can
     tell the difference between "that's all of them" and "there's more".
     """
+    args = _span_not_category(session, args)  # "this week" in `category` is a `since`
     limit = _limit_arg(args, default=DEFAULT_LIST_LIMIT)
     offset = max(0, int(args.get("offset") or 0))
 
@@ -652,45 +566,8 @@ def _list_notes(session: Session, args: dict) -> dict:
     since_days = _since_days(args.get("since"))
     filters.extend(_scope_filters(args))
 
-    query = select(Entry).where(*_visible(*filters))
-    rows = list(
-        session.scalars(
-            query.order_by(Entry.created_at.desc(), Entry.id.desc())
-            # Over-fetch when a tag filter is on, because the exact tag match
-            # below can only remove rows, never add them.
-            .offset(offset).limit(limit + 1 if not tag else (limit + 1) * 4)
-        )
-    )
-    if tag:
-        wanted = tag.lower()
-        rows = [e for e in rows if wanted in {t.lower() for t in manager.entry_tags(e)}]
-
-    has_more = len(rows) > limit
-    rows = rows[:limit]
-
-    if tag:
-        # An exact count needs the same per-row check, so it can't be a
-        # SQL count(). Cheap enough: tags, not content.
-        total = sum(
-            1
-            for e in session.scalars(select(Entry).where(*_visible(*filters)))
-            if tag.lower() in {t.lower() for t in manager.entry_tags(e)}
-        )
-        has_more = offset + len(rows) < total
-    else:
-        total = session.scalar(
-            select(func.count(Entry.id)).where(*_visible(*filters))
-        ) or 0
-
-    described = ", ".join(
-        part
-        for part in (
-            category or "",
-            f"#{tag}" if tag else "",
-            f"last {since_days} days" if since_days is not None else "",
-        )
-        if part
-    )
+    rows, total, has_more = page_of_notes(session, filters, tag, offset, limit)
+    described = describe_filters(category, tag, since_days)
     dates_by_id = manager.entry_dates_bulk(session, [e.id for e in rows])
     result = {
         "notes": [_note_summary(session, e, dates=dates_by_id.get(e.id, [])) for e in rows],
@@ -709,6 +586,8 @@ def _list_notes(session: Session, args: dict) -> dict:
             f"offset={offset + len(rows)} for the next page, do not assume "
             "these are all the notes."
         )
+    elif category and not total and (hint := unknown_category_hint(session, category)):
+        result["note_to_model"] = hint
     return result
 
 
@@ -732,6 +611,7 @@ def _count_notes(session: Session, args: dict) -> dict:
     postcondition that counted "untagged" differently from the tool that
     found them would pass runs that left work undone.
     """
+    args = _span_not_category(session, args)
     tag = str(args.get("tag") or "").strip()
     wanted = str(args.get("category") or "").strip()
     extra = _scope_filters(args)

@@ -15,8 +15,10 @@ import re
 import subprocess
 from pathlib import Path
 
+from tests._js_scope import unwrapped_copy
+
 ROOT = Path(__file__).resolve().parents[1]
-JS_PATH = ROOT / "frontend" / "js" / "settings-find.js"
+JS_PATH = unwrapped_copy(ROOT / "frontend" / "js" / "settings-find.js")
 JS = JS_PATH.read_text(encoding="utf-8")
 
 HARNESS = """

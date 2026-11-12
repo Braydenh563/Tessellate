@@ -13,6 +13,7 @@ import re
 from pathlib import Path
 
 from tests._app_js import JS_DIR
+from tests._js_scope import unwrapped
 
 WORDS = ("Built-in", "Edited", "Yours", "you set this")
 
@@ -81,7 +82,7 @@ def test_status_badges_are_never_a_fill_again():
     js = _js()
     assert "extras-installed" not in css and "extras-installed" not in js
     assert ".ocr-engine-chip.is-warn" not in css
-    assert 'badge.className = `chip item-label${running ? " is-ok" : ""}`' in js
+    assert 'badge.className = `chip item-label${view.running ? " is-ok is-live" : ""}`' in js
     index = (JS_DIR.parent / "index.html").read_text(encoding="utf-8")
     assert 'id="searxng-host-state" class="chip item-label"' in index
     # The recipe reaches every surface, not three.
@@ -95,7 +96,7 @@ def test_status_badges_are_never_a_fill_again():
 def test_a_model_cards_badges_are_a_row_of_their_own():
     """INBOX 468: in the foot beside the action they wrapped into a ragged
     stack. A row of their own, one line, above the actions."""
-    models = (JS_DIR / "settings-models.js").read_text(encoding="utf-8")
+    models = unwrapped((JS_DIR / "settings-models.js").read_text(encoding="utf-8"))
     card = models[models.index("function buildModelCard("):models.index("function updateModelProgress(")]
     assert "if (badges.children.length) card.appendChild(badges);" in card
     assert "actions.appendChild(badgesNode)" not in card

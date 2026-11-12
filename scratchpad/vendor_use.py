@@ -49,6 +49,7 @@ LIBRARY_KEYS = {
     "p5.js": "p5",
     "Phosphor Icons": "phosphor",
     "English word list": "wordlist",
+    "Spelling second opinion": "spelling",
     "Python standard library table": "pystdlib",
     "Atkinson Hyperlegible": "atkinson",
     "Mammoth": "mammoth",
@@ -594,6 +595,7 @@ def codemirror_report(scripts: dict[str, str]) -> Report:
     unbundled = sorted(n for n in pkg if not any(b == n or b.startswith(n + "/") for b in bundled))
     notes = [
         f"{len(pkg)} packages pinned in package.json; not bundled: {', '.join(unbundled) or 'none'}",
+        "static highlighting of fenced code blocks (code-colour.js) uses highlight.highlightTree and classHighlighter",
         "not vendored at all: " + ", ".join(NOT_VENDORED),
     ]
     return Report("codemirror", "CodeMirror 6", available, called, groups, notes)
@@ -826,6 +828,27 @@ def wordlist_report() -> Report:
     return Report(
         "wordlist", "English word list", available, called, {}, [f"{len(words)} words in en.txt"]
     )
+
+
+#: What the spelling second opinion (`vendor/spelling/`, INBOX 1731) offers:
+#: nspell's check and suggest over the AU and GB Hunspell files, and the SCOWL
+#: frequency buckets that rank its suggestions.
+SPELLING_CAPABILITIES = (
+    ("Australian dictionary", r"en_AU"),
+    ("British dictionary", r"en_GB"),
+    ("check a word", r"\.correct\("),
+    ("suggest spellings", r"\.suggest\("),
+    ("rank by frequency", r"frequencyList\("),
+    ("the person's own words", r"ownWords"),
+    ("add a word to nspell's own dictionary", r"checker\.(add|personal)\("),
+)
+
+
+def spelling_report() -> Report:
+    source = _live_lines(_read(ROOT / "frontend" / "js" / "spell-second.js"))
+    available = [label for label, _ in SPELLING_CAPABILITIES]
+    called = [label for label, pattern in SPELLING_CAPABILITIES if re.search(pattern, source)]
+    return Report("spelling", "Spelling second opinion", available, called, {}, [])
 
 
 #: What the Python standard library table (`python-stdlib/stdlib.json`: each
@@ -1088,6 +1111,7 @@ def collect() -> dict[str, Report]:
         harper_report(scripts),
         phosphor_report(),
         wordlist_report(),
+        spelling_report(),
         pystdlib_report(),
         atkinson_report(),
         d3_report(scripts),
@@ -1104,11 +1128,19 @@ def collect() -> dict[str, Report]:
 
 
 def third_party_libraries() -> list[str]:
-    """The Library column of docs/THIRD_PARTY.md's tables."""
+    """The Library column of docs/THIRD_PARTY.md's tables.
+
+    The "Optional downloads" section is skipped: those are never in the
+    repository, so there is no vendored copy to count.
+    """
     names = []
+    downloads = False
     for line in _read(THIRD_PARTY).splitlines():
+        if line.startswith("## "):
+            downloads = line.startswith("## Optional downloads")
         if (
-            line.startswith("| ")
+            not downloads
+            and line.startswith("| ")
             and not line.startswith("| ---")
             and not line.startswith("| Library")
         ):

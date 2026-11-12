@@ -10,6 +10,7 @@ from sqlalchemy import select
 from tessellate.core.config import ConfigManager
 from tessellate.core.database import AuditLog, Category
 from tessellate.entry import manager
+from tessellate.entry import manager_text
 
 
 def test_config_creates_data_dir_and_defaults(tmp_path):
@@ -91,53 +92,53 @@ def test_create_and_list_entries(session):
 
 
 def test_a_leading_heading_becomes_the_title():
-    assert manager.extract_title("# Trip to the coast\nPacked the tent.") == "Trip to the coast"
+    assert manager_text.extract_title("# Trip to the coast\nPacked the tent.") == "Trip to the coast"
 
 
 def test_a_note_with_no_heading_has_no_title():
-    assert manager.extract_title("just a plain thought") is None
+    assert manager_text.extract_title("just a plain thought") is None
 
 
 def test_blank_lines_before_the_heading_are_skipped():
-    assert manager.extract_title("\n\n## Recipe idea\nmore flour next time") == "Recipe idea"
+    assert manager_text.extract_title("\n\n## Recipe idea\nmore flour next time") == "Recipe idea"
 
 
 def test_a_heading_partway_through_the_note_is_not_the_title():
     """A `#` three paragraphs in is a section break, not what the note is
     called: only the first non-blank line counts."""
-    assert manager.extract_title("some thoughts first\n# a heading later") is None
+    assert manager_text.extract_title("some thoughts first\n# a heading later") is None
 
 
 def test_a_hashtag_with_no_space_is_not_mistaken_for_a_heading():
     """"#recipe" typed as a tag-like opener must not read as an empty title."""
-    assert manager.extract_title("#recipe good one this week") is None
+    assert manager_text.extract_title("#recipe good one this week") is None
 
 
 def test_apply_title_prepends_a_heading_to_an_untitled_note():
-    result = manager.apply_title("just a plain thought", "A plain thought")
+    result = manager_text.apply_title("just a plain thought", "A plain thought")
     assert result == "# A plain thought\njust a plain thought"
-    assert manager.extract_title(result) == "A plain thought"
+    assert manager_text.extract_title(result) == "A plain thought"
 
 
 def test_apply_title_replaces_an_existing_one():
-    result = manager.apply_title("# Old title\nsome body text", "New title")
+    result = manager_text.apply_title("# Old title\nsome body text", "New title")
     assert result == "# New title\nsome body text"
 
 
 def test_apply_title_on_empty_content_is_just_the_heading():
-    assert manager.apply_title("", "A title") == "# A title"
+    assert manager_text.apply_title("", "A title") == "# A title"
 
 
 def test_remove_title_takes_the_heading_line_back_out():
-    assert manager.remove_title("# A trip\nPacked the tent.") == "Packed the tent."
+    assert manager_text.remove_title("# A trip\nPacked the tent.") == "Packed the tent."
 
 
 def test_remove_title_also_drops_one_blank_line_after_it():
-    assert manager.remove_title("# A trip\n\nPacked the tent.") == "Packed the tent."
+    assert manager_text.remove_title("# A trip\n\nPacked the tent.") == "Packed the tent."
 
 
 def test_remove_title_on_an_untitled_note_is_a_no_op():
-    assert manager.remove_title("just a plain thought") == "just a plain thought"
+    assert manager_text.remove_title("just a plain thought") == "just a plain thought"
 
 
 def test_the_api_reports_the_extracted_title(client):
@@ -182,7 +183,8 @@ def test_old_database_gains_new_columns_without_data_loss(tmp_path):
     keep the old rows."""
     import sqlite3
 
-    from tessellate.core.database import DatabaseManager, Entry
+    from tessellate.core.database import Entry
+    from tessellate.core.database_manager import DatabaseManager
 
     db_path = tmp_path / "old.db"
     connection = sqlite3.connect(db_path)

@@ -84,5 +84,87 @@
     return S.hit.boxes.find((b) => Math.abs(x - b.x) <= b.w / 2 && Math.abs(y - b.y) <= b.h / 2)?.id || "";
   }
 
-  diagramModel.picture = { boxes, pick };
+  //: A source that will not draw (DD-4, 1107): the last good picture stays, dimmed, with the reason under it, instead of an empty
+  //: pane. The reason is an alert the first time a given error shows and a status when the same one is drawn again; the line it
+  //: names is `data-line` and a button puts the caret there, another undoes the last edit; the "tall for this pane" offer is for a picture that is not there.
+  function failure(S, result, source, smallButton) {
+    S.fig.classList.toggle("dgm-picture-stale", !result.svg);
+    const field = S.root.closest(".dgm-dialog")?.querySelector(".dgm-source");
+    //: The text field's gutter marks the line (DD-5): set with the note, cleared when the picture draws.
+    const mark = (line) => {
+      if (!field || field.dataset.errorLine === (line || undefined)) return;
+      if (line) field.dataset.errorLine = line;
+      else delete field.dataset.errorLine;
+      field.dispatchEvent(new Event("dgmerror"));
+    };
+    if (result.svg) return void ((S.errorSeen = ""), delete S.fig.dataset.errorLine, mark(""));
+    S.fig.classList.remove("md-mermaid-pending");
+    S.fig.removeAttribute("aria-busy");
+    const error = result.error;
+    const note = mermaidFailure.note(error, source);
+    const plain = mermaidFailure.plain(error, source);
+    const fresh = S.errorSeen !== plain;
+    S.errorSeen = plain;
+    note.setAttribute("role", fresh ? "alert" : "status");
+    S.sideways?.classList.add("hidden");
+    const line = /^Line (\d+):/.exec(plain)?.[1];
+    mark(line);
+    if (line) {
+      note.dataset.line = line;
+      S.fig.dataset.errorLine = line;
+    } else delete S.fig.dataset.errorLine;
+    if (line && field) {
+      const go = smallButton(`Go to line ${line}`, "Put the cursor on the line the message names", () => {
+        const lines = field.value.split("\n");
+        const from = lines.slice(0, Number(line) - 1).join("\n").length + (line > 1 ? 1 : 0);
+        field.focus();
+        field.setSelectionRange(from, from + (lines[Number(line) - 1] || "").length);
+      });
+      note.prepend(go);
+    }
+    //: On the documents page there is no field here to put the caret in, so the way to the text is a button (dgpolish-1109: the note said what was wrong and left no step); the page's own Source view takes the fix.
+    if (!field && typeof setDocView === "function") note.prepend(smallButton("ph:code Edit in Source", "Open the text of this diagram to fix the line", () => setDocView("source", { persist: false })));
+    //: A bad edit is one press from undone, whichever pane made it (DD-4).
+    //: Not offered where there is no earlier step (a bad file opened as it is). The note leaves when the old picture draws, with the focus
+    //: in it, so focus goes to the picture first (measured: the body, and the first Tab was "Skip to content").
+    if (S.io?.undo && S.io.canUndo !== false) {
+      note.prepend(smallButton("ph:arrow-u-up-left Undo the last edit", "Go back to the diagram before this change", () => {
+        (S.fig?.isConnected ? S.fig : field)?.focus?.({ preventScroll: true });
+        S.io.undo();
+      }));
+    }
+    if (!S.fig.querySelector(":scope > .md-mermaid-img")) return S.fig.replaceChildren(note);
+    S.fig.querySelector(":scope > .md-mermaid-reason")?.remove();
+    S.fig.append(note);
+  }
+
+  //: A relabel shows in the drawn picture before the redraw (1108 P3): the node's one row of words (a tspan per word)
+  //: becomes one tspan of the new words and the picture is shown again: a blob swap, not a Mermaid render. Skipped unless
+  //: the node has one row reading as the old words; the redraw that follows replaces it either way.
+  function patch(S, key, was, text) {
+    const id = diagramModel.ops.split(key)[1];
+    const svg = S.fig.querySelector(":scope > img.md-mermaid-img")?.mermaidSvg;
+    const at = svg && new RegExp('<g\\b[^>]*\\bid="(?:[^"]*?-)?flowchart-' + id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + '-\\d+"').exec(svg);
+    if (!at) return;
+    const rest = svg.slice(at.index + at[0].length);
+    const next = rest.search(/\bid="[^"]*flowchart-/);
+    const end = at.index + at[0].length + (next < 0 ? rest.length : next);
+    const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const part = svg.slice(at.index, end);
+    const rows = [...part.matchAll(/(<tspan\b[^>]*text-outer-tspan[^>]*>)((?:<tspan\b[^>]*>[^<]*<\/tspan>)+)<\/tspan>/g)];
+    if (rows.length !== 1 || [...rows[0][2].matchAll(/>([^<]*)<\/tspan>/g)].map((m) => m[1]).join("") !== esc(was)) return;
+    const words = '<tspan font-style="normal" class="text-inner-tspan" font-weight="normal">' + esc(text) + "</tspan>";
+    const from = at.index + rows[0].index;
+    mermaidShow(S.fig, { svg: svg.slice(0, from) + rows[0][1] + words + "</tspan>" + svg.slice(from + rows[0][0].length), key: S.fig.mermaidKey }, S.source);
+    for (const paint of S.fig.onpaint || []) paint();
+  }
+
+  //: Resolves in an idle slice (at most 400 ms), and not while a label is being typed (1108 P3): a draw starts between
+  //: keys, never on one, and Enter or blur brings it. A newer change drops the older draw by its stamp.
+  const idle = (S) => new Promise((done) => {
+    const go = () => (S.tree.querySelector(".dgm-editing") ? setTimeout(go, 150) : (window.requestIdleCallback || setTimeout)(done, { timeout: 400 }));
+    go();
+  });
+
+  diagramModel.picture = { boxes, pick, failure, patch, idle };
 })();

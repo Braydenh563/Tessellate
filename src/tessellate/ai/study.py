@@ -31,7 +31,9 @@ from tessellate.entry import properties
 _HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 _BULLET = re.compile(r"^\s*(?:[-*+]|\d{1,2}[.)])\s+(?!\[[ xX]\])(.+)$")
 _CHECK = re.compile(r"^\s*[-*+]\s+\[([ xX])\]\s+(.+)$")
-_SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
+#: One space after a stop: the prose is folded to single spaces before the split, so no `\s+` run is left for
+#: CodeQL to read as polynomial (it ignores the lookbehind; composer_brief has the same fix).
+_SENTENCE_END = re.compile(r"(?<=[.!?]) (?=[A-Z0-9*\"“(\[])")
 _MARKUP = re.compile(r"(\*\*|__|\*|`)")
 _FOOTNOTE = re.compile(r"\[\^[^\]\n]*\]|<sup>[^<]{0,6}</sup>")
 #: A list marker with nothing after it ("-", "* ", "3."): an empty bullet.
@@ -199,7 +201,7 @@ def sentences(text: str) -> list[str]:
     bullets and tables left out."""
     out: list[str] = []
     for para in re.split(r"\n\s*\n", text or ""):
-        out += [s.strip() for s in _SENTENCE_END.split(_prose(para)) if len(s.strip()) > 3]
+        out += [s.strip() for s in _SENTENCE_END.split(" ".join(_prose(para).split())) if len(s.strip()) > 3]
     return out
 
 
@@ -208,7 +210,10 @@ def bullets(text: str) -> list[str]:
 
 
 def open_tasks(content: str) -> list[str]:
-    return [clean(m.group(2)) for ln in (content or "").splitlines() if (m := _CHECK.match(ln)) and m.group(1) == " "]
+    ticked = [clean(m.group(2)) for ln in (content or "").splitlines() if (m := _CHECK.match(ln)) and m.group(1) == " "]
+    if ticked or not realise.todo_titled(title_of(content)):
+        return ticked
+    return bullets(content)
 
 
 # --- cards ---------------------------------------------------------------------
@@ -470,11 +475,48 @@ def key_terms(content: str, limit: int = 12) -> list[tuple[str, str]]:
     return [(t, glosses[t.lower()]) for t in ranked[:limit]]
 
 
-def _picks(sec: Section, level: int) -> list[str]:
+#: A day, a month or a clock time: what a note is usually kept for, so it outranks a bare number.
+_MONTHS = "jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec"
+_WHEN = re.compile(rf"\b(?:january|february|march|april|june|july|august|september|october|november|december)\b|"
+                   rf"\b\d{{1,2}}(?:st|nd|rd|th)?\s+(?:{_MONTHS})\b|\b(?:{_MONTHS})\.?\s+\d{{1,2}}\b|"
+                   r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)day\b|\b(?:today|tomorrow)\b|\b\d{1,2}(?::\d\d)?\s?(?:am|pm)\b", re.I)
+#: A telephone number is digits that say nothing about the note's point.
+_PHONE = re.compile(r"\+\d[\d ]{7,}|\b0\d{3,4}[ ]?\d{3}[ ]?\d{3,4}\b")
+
+
+def _worth(rest: list[str], count: int, *, any_rest: bool = False) -> list[str]:
+    """The sentences after the lead worth keeping, best first (a date or a
+    time, bold, a figure, a definition, a phone number last), in the note's
+    own order: "Work starts 16 November" outranks "phone 07700 900456"
+    (W10 B30). `any_rest`: a short section gives its next sentence even
+    when none of these marks it."""
+    def rank(x: str) -> int | None:
+        if _WHEN.search(x):
+            return 0
+        if _BOLD.search(x):
+            return 1
+        if re.search(r"\d", _PHONE.sub("", x)):
+            return 2
+        if _definition(x):
+            return 3
+        return 4 if _PHONE.search(x) else 5 if any_rest else None
+
+    ranked = sorted((r, i) for i, x in enumerate(rest) if (r := rank(x)) is not None)
+    return [rest[i] for i in sorted(i for _r, i in ranked[:count])]
+
+
+def _picks(sec: Section, level: int, said: set[str]) -> list[str]:
     sents = sentences(sec.text)
-    picks = sents[:1]
+    #: The lead is the first sentence that says something: a note's name
+    #: said again ("Recipe: lemon risotto.") leads nothing (W10 B30).
+    #: A bare list note ("Reading list" over its items) keeps its title as the lead, which says nothing, so
+    #: the list reader summarises it by its items (`composer_study._list_said`).
+    listed = list_gist(sec.text) is not None
+    lead = 0 if listed else next((i for i, x in enumerate(sents) if _says_something(x, said)), 0)
+    picks = sents[lead : lead + 1]
+    sents = sents[lead:]
     if level >= 0:
-        picks += [x for x in sents[1:] if _BOLD.search(x) or re.search(r"\d", x) or _definition(x)][: (1 if level == 0 else 4)]
+        picks += _worth(sents[1:], 1 if level == 0 else 4, any_rest=level == 0 and len(sents) <= 4 and not listed)
     if level >= 1:
         picks = list(dict.fromkeys(picks + sents[1:5]))
     shown = 3 if level == 0 else 8
@@ -491,7 +533,9 @@ def _says_something(pick: str, titles: set[str]) -> bool:
     """Not the note's own name said again, and not a bare label ("Actions:")
     left standing where its text was cut (audit 1029 C35)."""
     words = clean(pick).strip(" -*+")
-    return bool(words) and words.rstrip(":").lower() not in titles and not _LABEL_ONLY.match(words)
+    #: "Recipe: lemon risotto." under the note "Lemon risotto" is the name said again with a label (W10 B30).
+    named = words.partition(":")[2].strip(" .").lower() if _LABEL_ONLY.match(words.partition(":")[0] + ":") else ""
+    return bool(words) and words.rstrip(":. ").lower() not in titles and not (named and named in titles) and not _LABEL_ONLY.match(words)
 
 
 def summary(content: str, level: int = 0) -> list[tuple[str, list[str]]]:
@@ -503,7 +547,7 @@ def summary(content: str, level: int = 0) -> list[tuple[str, list[str]]]:
     out = []
     for sec in sections(content or ""):
         said = titles | {sec.title.lower()}
-        if picks := [p for p in _picks(sec, level) if _says_something(p, said)]:
+        if picks := [p for p in _picks(sec, level, said) if _says_something(p, said)]:
             out.append((sec.title, picks))
     return out[: 4 if level < 0 else 8 if level == 0 else 20]
 

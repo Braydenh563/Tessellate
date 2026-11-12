@@ -5,10 +5,6 @@
 // app.js's globals, loaded in app.js's old order; nothing in an earlier file
 // calls into it while the page loads (scratchpad/appjs-map.js --check).
 
-function inlineActionIs(id, kind) {
-  return inlineAction && inlineAction.id === id && inlineAction.kind === kind;
-}
-
 // Close every open ⋯ menu (shared by outside-click and Esc, Wave L).
 // A kebab menu that stays where it opened while the list scrolls under it
 // ends up beside the wrong note (reported: "they stay sticky on the screen
@@ -414,19 +410,42 @@ function wireHelpPopover(trigger, panel) {
     panel.classList.add("help-popover");
     trigger.setAttribute("aria-expanded", "true");
     openHelpPopovers.add(entry);
+    //: A panel that fills itself when it opens (date-field.js): the shared capture listener below stops the press before
+    //: any listener on the trigger runs, so a trigger's own click handler never sees it (INBOX 1742: empty date pickers).
+    panel._beforeOpen?.();
+    //: The panel's own stop is added at its first open: a '?' never opened (most of Settings' hundred) costs no listener.
+    if (!panel._helpStop) {
+      panel._helpStop = true;
+      panel.addEventListener("click", (event) => event.stopPropagation());
+    }
     placeHelpPopover(panel, trigger);
+    //: After it is placed: a panel that fills or focuses into itself once open (lan-watch.js, obj-tray.js).
+    panel._afterOpen?.();
   };
-  trigger.addEventListener("click", (event) => {
-    // These triggers live inside <label>s often enough that a bare click
-    // would toggle the setting they explain.
-    event.preventDefault();
-    event.stopPropagation();
+  entry.toggle = () => {
     if (openHelpPopovers.has(entry)) entry.close();
     else open();
-  });
-  panel.addEventListener("click", (event) => event.stopPropagation());
+  };
+  wireHelpPopover.triggers.set(trigger, entry);
 }
+wireHelpPopover.triggers = new WeakMap();
 window.wireHelpPopover = wireHelpPopover;
+
+//: **One capture listener for every '?'** (perf audit 1108 P4: Settings' first open added 922 listeners, 202 of them
+//: these). The trigger's press is read here, before anything under it: the same stop as the per-trigger listener had,
+//: since these triggers live inside <label>s often enough that a bare click would toggle the setting they explain.
+document.addEventListener("click", (event) => {
+  for (let el = event.target; el && el !== document; el = el.parentElement) {
+    const entry = wireHelpPopover.triggers.get(el);
+    if (!entry) continue;
+    event.preventDefault();
+    event.stopPropagation();
+    //: `_instead`: a trigger that opens something else this time (a sheet when the status bar is off screen) says so
+    //: here; a capture listener on the trigger itself never runs, this one stops the press first (INBOX 1742).
+    if (!entry.panel._instead?.()) entry.toggle();
+    return;
+  }
+}, true);
 
 //: **The accessible card: the title opens it, not the card** (INBOX 433,
 //: WCAG 4.1.2). A Library card was an `<article role="button">` holding its
@@ -856,7 +875,14 @@ function escapeAndCapMenu(menu, opener) {
   }
   //: The floor keeps a menu opened near the bottom edge a menu rather than a
   //: slit; under it, scrolling inside the panel is the affordance.
-  menu.style.maxHeight = `${Math.max(120, Math.round(window.innerHeight - top - margin))}px`;
+  //: **A menu left in place is capped to what clips it, not to the window.** It
+  //: fitted when it opened, so it was not escaped; a nested level (Share and
+  //: save, Paste in other ways) then made it taller, and at 768x1024 the board
+  //: menu ran 27px past the whiteboard view's clipping edge, Delete board cut
+  //: 21px (wrapzoom 2026-11-11). Capped to that edge, the level scrolls inside.
+  const clipper = menu._escapedHome ? null : menuClippingAncestor(menu);
+  const floor = clipper ? Math.min(window.innerHeight, clipper.getBoundingClientRect().bottom) : window.innerHeight;
+  menu.style.maxHeight = `${Math.max(120, Math.round(floor - top - margin))}px`;
 }
 
 // **Escapes a `kebabMenu()` dropdown from a clipping scroll ancestor.**
@@ -1220,111 +1246,6 @@ const HISTORY_ACTION_WORDS = {
   filed: "Filed", // the auto-filer's own move (manager.record_filing, system:filing)
 };
 
-function historyActorLabel(actor) {
-  // "ai:summarise" and "system:auto-file" carry the half worth reading after
-  // the colon; "user" is everything a person did and needs no chip at all.
-  //: Every change says whose it was (INBOX 446, the owner: "I cant
-  //: distinguish between personal or ai edits or mixed edits").
-  if (!actor || actor === "user") return "You";
-  if (actor === "user+ai") return "You and Atlas";
-  const [kind, rest] = [actor.slice(0, actor.indexOf(":")), actor.slice(actor.indexOf(":") + 1)];
-  //: `ai:<tool>@<model>` since 0.3.32: which model made the change.
-  if (kind === "ai") {
-    const [tool, model] = rest.split("@");
-    return model ? `Atlas (${model}): ${tool.replace(/_/g, " ")}` : `AI: ${rest}`;
-  }
-  if (kind === "system") return `Background: ${rest}`;
-  //: `agent:<tool>@<who>`: an outside agent, through the MCP server or the
-  //: API with its name in `X-MemoryMap-Agent` (H4); `api` for a plain write.
-  if (kind === "agent") {
-    const [tool, who] = rest.split("@");
-    return tool === "api" ? `${who} (agent)` : `${who} (agent): ${tool.replace(/_/g, " ")}`;
-  }
-  return actor;
-}
-
-async function toggleEntryPrivacy(entry) {
-  const makingPrivate = !entry.is_private;
-  if (makingPrivate) {
-    const ok = (await confirmDialog(
-      "Make this note private?\n\n" +
-        "It gets encrypted with a key derived from your password, so it stays " +
-        "unreadable in the database, in backups, and to anyone without that " +
-        "password.\n\n" +
-        "It also stops appearing in search and stops being given to Atlas.\n\n" +
-        "There is no recovery: if you forget your password this note is gone."
-    ));
-    if (!ok) return;
-  }
-  // Both directions need the key, which a session without a password lacks.
-  if (!(await ensureVaultOpen())) return;
-  try {
-    await apiJson(`/entries/${entry.id}/privacy`, {
-      method: "POST",
-      body: JSON.stringify({ private: makingPrivate }),
-    });
-    const setPrivacy = (value) => async () => {
-      await apiJson(`/entries/${entry.id}/privacy`, { method: "POST", body: JSON.stringify({ private: value }) });
-      await refreshEntries([entry.id]);
-    };
-    pushUndo(makingPrivate ? "Made a note private" : "Made a note readable", setPrivacy(!makingPrivate), setPrivacy(makingPrivate));
-    toast(makingPrivate ? "Note encrypted." : "Note is readable again.");
-    await refreshEntries([entry.id]);
-  } catch (error) {
-    toast(error.message, true);
-  }
-}
-
-// Reported: no popup shows when a title is regenerated.
-//
-// There WAS a toast, and it was being swallowed. `toast()` drops anything
-// that is not an error while notifications are muted, which is right for
-// background chatter and wrong here: this is the result of a button the user
-// just pressed, and a direct action that reports nothing reads as a broken
-// button. Muting is about noise you did not ask for.
-//
-// The "Generating…" toast is also worth keeping distinct from the settled one:
-// this call waits on the model, so it can take seconds, and a control that
-// looks inert for seconds gets pressed again.
-async function generateEntryTitle(entry) {
-  const regenerating = Boolean(entry.title);
-  try {
-    toast(regenerating ? "Regenerating the title…" : "Generating a title…", false, {
-      exempt: true,
-    });
-    const was = (await fullEntry(entry.id)).content; // the undo puts back the whole text, not a list row's first 300 characters
-    const updated = await apiJson(`/entries/${entry.id}/generate-title`, { method: "POST" });
-    if (updated?.content) pushEntryPutUndo(entry.id, "Titled a note", { content: was }, { content: updated.content });
-    await refreshEntries([entry.id]);
-    flashEntry(entry.id);
-    const title = updated && updated.title;
-    toast(title ? `Titled “${title}”.` : "Titled.", false, { exempt: true });
-    // And in the notification centre, so the result survives the 5.5 seconds
-    // the toast lives for, the model can finish while you are on another tab.
-    recordNotification({
-      kind: "task",
-      title: regenerating ? "Title regenerated" : "Title generated",
-      detail: title ? `“${title}”` : `Note #${entry.id}`,
-    });
-  } catch (error) {
-    toast(error.message || "Couldn't generate a title.", true);
-  }
-}
-
-async function removeEntryTitle(entry) {
-  try {
-    const was = (await fullEntry(entry.id)).content;
-    const updated = await apiJson(`/entries/${entry.id}/remove-title`, { method: "POST" });
-    if (updated?.content) pushEntryPutUndo(entry.id, "Removed a title", { content: was }, { content: updated.content });
-    await refreshEntries([entry.id]);
-    flashEntry(entry.id);
-    // Said out loud: it was silent.
-    toast("Title removed.", false, { exempt: true });
-  } catch (error) {
-    toast(error.message || "Couldn't remove the title.", true);
-  }
-}
-
 // Arrow-key navigation, as the `role="menu"` contract implies. ↑/↓ move
 // between *top-level* items (wrapping): `:scope >` so a hidden submenu's own
 // items (handled by their own keydown handler) never get mixed into this list,
@@ -1386,6 +1307,12 @@ function wireMenuKeyboard(menu, opener) {
     } else if (event.key === "End") {
       event.preventDefault();
       focusMenuItem(menuItems[menuItems.length - 1], menu);
+    } else if (event.key === "Tab") {
+      //: APG menu button: Tab closes the menu and moves on. `closeActionMenus` hands the focus back to the opener, and the Tab then leaves from there.
+      closeActionMenus();
+    } else if (wireMenuKeyboard.typeahead(menu, menuItems, current, event)) {
+      event.preventDefault();
+      event.stopPropagation(); // a letter that found a row is not also a single-key shortcut
     } else if (event.key === "Escape") {
       event.preventDefault();
       //: The menu owns this Escape: without the stop, the document's own
@@ -1397,6 +1324,21 @@ function wireMenuKeyboard(menu, opener) {
     }
   });
 }
+
+//: Type-ahead (APG menu and listbox): letters typed within half a second make one prefix, and the next row starting with it takes the focus, after the current one so a repeated letter walks the matches. True when a row took it.
+wireMenuKeyboard.typeahead = function (menu, items, current, event) {
+  const plain = event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey;
+  if (!plain || (event.key === " " && !menu._typed)) return false;
+  clearTimeout(menu._typedTimer);
+  menu._typed = (menu._typed || "") + event.key.toLowerCase();
+  menu._typedTimer = setTimeout(() => (menu._typed = ""), 500);
+  const word = (item) => item.textContent.trim().toLowerCase();
+  const order = [...items.slice(current + 1), ...items.slice(0, current + 1)];
+  const repeated = [...menu._typed].every((ch) => ch === menu._typed[0]);
+  const hit = order.find((item) => word(item).startsWith(menu._typed)) || (repeated ? order.find((item) => word(item).startsWith(menu._typed[0])) : null);
+  if (hit) focusMenuItem(hit, menu);
+  return Boolean(hit);
+};
 
 // A single `role="menuitem"` button: shared by the top-level menu and every
 // submenu, so a click behaves identically (close everything, then run) no
@@ -1595,59 +1537,6 @@ function buildMenuGroupButton(label, subItems) {
   return groupWrap;
 }
 
-function entryOverflowMenu(entry) {
-  const wrap = document.createElement("span");
-  wrap.className = "menu-wrap";
-
-  const menu = document.createElement("div");
-  menu.className = "action-menu hidden";
-  menu.setAttribute("role", "menu");
-
-  //: Same square-kebab rule as `kebabMenu` below: this is the *other* ⋯
-  //: builder (note cards, built lazily on first open), and a rule applied to
-  //: one of two implementations of the same control is how they drift.
-  //:
-  //: **And they had.** Reported: "the ellipse kebab icons in the notes on the
-  //: your notes tab are not centred." `kebabMenu` draws `ph:dots-three`; this
-  //: one drew the literal character `⋯` (U+22EF), and a text glyph is placed
-  //: on the *font's* baseline inside a 19.2px line box centred in a 28px
-  //: button: U+22EF sits at the em box's midline, which is above the line
-  //: box's optical centre, so the dots rode high. No amount of flex centring
-  //: fixes that: the box is centred correctly and the glyph is not centred
-  //: within the box. The icon font's own glyph is drawn to fill its box, so
-  //: using the same icon as the other builder fixes the centring and the
-  //: drift in one go.
-  const opener = smallButton("ph:dots-three", "More actions", async () => {
-    //: Built now, and given the card rows (Copy, Move, Add to tray) as `kebabMenu` gives them.
-    filled ||= ensureModule("entryMenu").then((ok) => ok && (fillEntryMenu(menu, entry), true));
-    if (!(await filled)) return ((filled = null), lazyLoadFailed());
-    window.objKebabRows?.(menu);
-    // The phone's action sheet, as `kebabMenu` opens (`openKebabSheet`).
-    if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
-      openKebabSheet(menu, opener, "Note actions");
-      return;
-    }
-    if (menu.classList.contains("hidden")) openActionMenu(menu, opener);
-    else closeActionMenus();
-  });
-  opener.classList.add("icon-only");
-  opener.setAttribute("aria-haspopup", "menu");
-  opener.setAttribute("aria-expanded", "false");
-
-  // **Built on first open, not on render: a scale fix.** This menu is about 50
-  // nodes and `entryItem()` builds one per note card, on every renderEntries()
-  // (every search keystroke, sort, filter and save); a 2,500-note notebook built
-  // over a hundred thousand hidden nodes nobody opens. The opener renders eagerly
-  // (it carries the aria state and a tab stop); the rows are `fillEntryMenu`
-  // (entry-menu.js, lazy), awaited by the opener so `openActionMenu` finds a first item.
-  let filled = null;
-
-  wireMenuKeyboard(menu, opener);
-
-  wrap.append(opener, menu);
-  return wrap;
-}
-
 //: Moved from app.js (its gzip ratchet): called only at save time, never at
 //: load, so any boot piece may hold it.
 //: **Two windows, one note** (WORLD_CLASS_PLAN 22.1 item 5). A save the
@@ -1669,3 +1558,26 @@ function isEditConflict(error) {
   return error?.status === 409 && error?.detail?.code === "edit_conflict";
 }
 
+//: Boot: the dashboard's activity feed names who made each change before any history panel loads.
+function historyActorLabel(actor) {
+  // "ai:summarise" and "system:auto-file" carry the half worth reading after
+  // the colon; "user" is everything a person did and needs no chip at all.
+  //: Every change says whose it was (INBOX 446, the owner: "I cant
+  //: distinguish between personal or ai edits or mixed edits").
+  if (!actor || actor === "user") return "You";
+  if (actor === "user+ai") return "You and Atlas";
+  const [kind, rest] = [actor.slice(0, actor.indexOf(":")), actor.slice(actor.indexOf(":") + 1)];
+  //: `ai:<tool>@<model>` since 0.3.32: which model made the change.
+  if (kind === "ai") {
+    const [tool, model] = rest.split("@");
+    return model ? `Atlas (${model}): ${tool.replace(/_/g, " ")}` : `AI: ${rest}`;
+  }
+  if (kind === "system") return `Background: ${rest}`;
+  //: `agent:<tool>@<who>`: an outside agent, through the MCP server or the
+  //: API with its name in `X-MemoryMap-Agent` (H4); `api` for a plain write.
+  if (kind === "agent") {
+    const [tool, who] = rest.split("@");
+    return tool === "api" ? `${who} (agent)` : `${who} (agent): ${tool.replace(/_/g, " ")}`;
+  }
+  return actor;
+}

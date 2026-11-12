@@ -46,7 +46,7 @@ def test_no_screen_no_tip(client, dentist):
 def test_the_page_draws_the_tip_outside_the_answer():
     kit = app_js_text()
     assert 'else if (event.type === "tip" && onTip) onTip(event);' in kit
-    assert "onTip: (event) => { chatTip = event.text || \"\"; }," in kit
+    assert "onTip: (event) => { t.chatTip = event.text || \"\"; }," in kit
     assert 'tip.className = "muted answer-tip";' in kit and "recordsHolder.prepend(tip)" in kit
 
 

@@ -11,7 +11,7 @@ workspace, could not be found by its words.
 
 **One `readings` table, as a view.** `readings(source, source_id, kind, page,
 text, model, ts)` is a SQLite view over those five places, created at startup
-(`database.DatabaseManager`) and replaced whenever its definition changes. A
+(`database_manager.DatabaseManager`) and replaced whenever its definition changes. A
 view rather than a table the writers move onto: the four extractors, the
 caption editor and the page reader keep writing where they write, and a
 derived table cannot drift from them, which a second copy kept in step by
@@ -19,14 +19,13 @@ hand eventually does. `source` is "attachment" or "upload", the vocabulary
 `page_reads.kind` already uses; `kind` is "caption", "ocr", "vision" or
 "page"; `page` is 0 for a reading of the whole file.
 
-`for_file` is the one reader for a renderer (`GET /files/readings`), and
 `text_of` is what the search index takes for a file's body, every kind.
 """
 
 from __future__ import annotations
 
 from sqlalchemy import text
-from sqlalchemy.orm import Session, object_session
+from sqlalchemy.orm import object_session
 
 SOURCES = {"attachment": "attachments", "upload": "media_uploads"}
 KINDS = ("caption", "ocr", "vision", "page")
@@ -71,26 +70,6 @@ def ensure_view(connection) -> None:  # noqa: ANN001  # a SQLAlchemy connection
     connection.exec_driver_sql(VIEW_SQL)
 
 
-_ORDER = {kind: n for n, kind in enumerate(KINDS)}
-
-
-def for_file(session: Session, source: str, source_id: int) -> list[dict]:
-    """Every reading of one file, whole-file readings first, then by page."""
-    if source not in SOURCES:
-        raise ValueError(f"not a file source: {source!r}")
-    rows = session.execute(
-        text(
-            "SELECT kind, page, text, model, ts FROM readings "
-            "WHERE source = :source AND source_id = :id"
-        ),
-        {"source": source, "id": int(source_id)},
-    ).all()
-    out = [
-        {"kind": kind, "page": int(page or 0), "text": body, "model": model or "", "at": str(ts or "")}
-        for kind, page, body, model, ts in rows
-    ]
-    out.sort(key=lambda r: (r["page"], _ORDER.get(r["kind"], 9)))
-    return out
 
 
 def text_of(obj, source: str) -> str:  # noqa: ANN001  # an Attachment or a MediaUpload

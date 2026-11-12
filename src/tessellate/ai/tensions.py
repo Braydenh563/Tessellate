@@ -47,7 +47,7 @@ prompt does:
 
 ## Nothing is written without a person saying yes
 
-Same policy as the auto-linker (`routes_entries.link_suggestions`) and for a
+Same policy as the auto-linker (`routes_entries_relations.link_suggestions`) and for a
 stronger reason: telling someone they contradicted themselves when they did
 not is worse than telling them nothing. This module only ever *proposes*.
 Accepting a tension is what creates the `EntryLink` with
@@ -64,6 +64,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
+from tessellate.ai import presets
 from tessellate.ai import model_manager as model_manager_module
 from tessellate.ai import ollama_client as ollama_client_module
 from tessellate.core.database import Entry
@@ -234,6 +235,7 @@ def compare_pair(
                 {"role": "system", "content": _SYSTEM},
                 {"role": "user", "content": prompt},
             ],
+            mode=presets.BACKGROUND_MODE,
         )
     except Exception:  # noqa: BLE001  # one pair failing must not end the pass
         logger.debug("tension check failed for %s/%s", earlier.id, later.id, exc_info=True)
@@ -303,7 +305,7 @@ _SOURCE_RANK = {"scan": 0, "night": 1, "link": 2}
 
 def pair_key(a: int, b: int) -> str:
     """`"low:high"`: one pair, one key, whichever side is named first. The
-    same shape as `routes_entries._tension_key` and the dismissed list."""
+    same shape as `routes_entries_relations._tension_key` and the dismissed list."""
     low, high = sorted((int(a), int(b)))
     return f"{low}:{high}"
 
@@ -495,6 +497,40 @@ def _link_event_id(session, link) -> int | None:  # noqa: ANN001
         if ((event.payload or {}).get("after") or {}).get("link_id") == link.id:
             return event.id
     return None
+
+
+def comparable_notes(session, embeddings) -> tuple[dict, dict, set]:  # noqa: ANN001
+    """The notes worth comparing by id, their vectors, and the pairs already linked as contradicting."""
+    from sqlalchemy import select
+
+    from tessellate.ai.embeddings import bytes_to_vector
+    from tessellate.core.database import EmbeddingRecord, EntryLink
+    from tessellate.entry import manager
+
+    by_id = {e.id: e for e in manager.list_entries(session) if not e.is_private and not e.is_board}
+    records = session.execute(
+        select(EmbeddingRecord.entry_id, EmbeddingRecord.embedding).where(
+            EmbeddingRecord.model_version == embeddings.backend_id()
+        )
+    ).all()
+    vectors = {eid: bytes_to_vector(blob) for eid, blob in records if eid in by_id}
+    already = {
+        frozenset((link.source_entry_id, link.target_entry_id))
+        for link in session.scalars(select(EntryLink).where(EntryLink.link_type == "contradicts"))
+    }
+    return by_id, vectors, already
+
+
+def agent_row(tension: Tension) -> dict:
+    """One tension as the agent's `find_contradictions` result reports it."""
+    return {
+        "earlier_note_id": tension.earlier_id,
+        "later_note_id": tension.later_id,
+        "what_they_disagree_about": tension.explanation,
+        "earlier": tension.earlier_excerpt,
+        "later": tension.later_excerpt,
+        "written_apart_days": tension.gap_days,
+    }
 
 
 def _read_links(session, found: _Sources) -> None:  # noqa: ANN001

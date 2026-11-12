@@ -16,7 +16,8 @@ import re
 
 import pytest
 
-from tessellate.ai import activity, composer, composer_compose, composer_digest, realise
+from tessellate.ai import activity, composer, composer_compose, realise
+from tessellate.ai import composer_digest_sentences
 from tessellate.ai import composer_empty
 from tessellate.ai import composer_quote
 from tessellate.api import routes_chat
@@ -96,14 +97,14 @@ def test_a_checklist_count_reads_whatever_is_ticked(ticked, total, lead, said):
 def _frames() -> list[str]:
     found = []
     for key in ("stale", "burst", "cadence", "fresh"):
-        said = composer_digest.PHRASES[key]
+        said = composer_digest_sentences.PHRASES[key]
         found += [said] if isinstance(said, str) else list(said)
     return found
 
 
 @pytest.mark.parametrize("days", [1, 2, 3, 5, 6, 10, 11, 14, 20, 24, 25, 30, 45, 46, 60, 75, 90, 150, 200, 364, 365, 400])
 def test_no_gap_frame_doubles_about_or_every(days):
-    gap, bare = composer_digest._gap(days), composer_digest._bare_gap(composer_digest._gap(days))
+    gap, bare = composer_digest_sentences._gap(days), composer_digest_sentences._bare_gap(composer_digest_sentences._gap(days))
     for frame in _frames():
         said = frame.format(age=gap, ago=f"{gap} ago", span=gap, every=bare, count="three", all_of="All three")
         assert not re.search(r"\babout\b[^.,;]*\babout\b", said, re.I), said
@@ -116,7 +117,7 @@ def test_no_gap_frame_doubles_about_or_every(days):
     ("a few days", "few days"), ("over a year", "year"), ("two days", "two days"), ("nearly two months", "two months"),
 ])
 def test_a_bare_gap_has_no_hedge_or_article(gap, bare):
-    assert composer_digest._bare_gap(gap) == bare
+    assert composer_digest_sentences._bare_gap(gap) == bare
 
 
 # --- C11: a list says how many it left out ---------------------------------------------

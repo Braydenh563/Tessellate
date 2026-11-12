@@ -604,7 +604,7 @@ async function editorInsertBookmarkLink(textarea) {
 }
 
 async function editorInsertBoardObject(textarea) {
-  if (typeof pickLibraryItemDialog !== "function" || typeof boardEmbedMarkdown !== "function") return;
+  if (typeof pickLibraryItemDialog !== "function") return;
   const chosen = await pickLibraryItemDialog("Which board or map?", { sources: ["board"] });
   if (!chosen) return;
   editorInsertBlock(textarea, boardEmbedMarkdown(chosen.row || { id: chosen.id, title: chosen.label }));
@@ -675,7 +675,6 @@ function chatCommands() {
   //: and Web rows open popovers with the same click-away, so `press` waits
   //: too.
   const pick = (source) => afterPress(() => {
-    if (typeof openNotePicker !== "function") return;
     requestAnimationFrame(() => {
       openNotePicker();
       //: And the source tab a frame after that: the picker renders its own
@@ -956,6 +955,9 @@ function editorBlockRows(context) {
     //: A starter the document's Live view draws at once (OPEN 1119): an empty
     //: ```mermaid fence drew nothing until its syntax was looked up.
     add({ id: "flowchart", group: "Media", icon: "ph:flow-arrow", label: "Flowchart", about: "Boxes and arrows, drawn from the text", keys: "```mermaid", keywords: ["flowchart", "diagram", "mermaid", "chart", "boxes", "arrows", "process"], sample: "flowchart TD\n  A[Start] --> B[Next]", run: (t) => editorBlock(t, "```mermaid\nflowchart TD\n  A[Start] --> B[Next]\n```", "", "") });
+    //: DOCUMENTS_PLAN 16: a plot with sliders, drawn by documents-graph.js (lazy) in Read and in Live.
+    add({ id: "base", group: "Media", icon: "ph:table", label: "Notes table", about: "A table of the notes that have a property", keys: "```base", keywords: ["base", "database", "table", "notes", "properties", "query"], sample: "type: Book\ncolumns: author, rating", run: (t) => editorBlock(t, "```base\ntype: Book\ncolumns: author, rating\n```", "", "") });
+    add({ id: "graph", group: "Media", icon: "ph:chart-line", label: "Graph", about: "Plot y = f(x) with sliders you can move", keys: "```graph", keywords: ["graph", "plot", "function", "curve", "desmos", "slider", "equation", "chart", "axes"], sample: "y = sin(a x)\na = 1 [0, 5]", run: (t) => editorBlock(t, "```graph\ny = sin(a x)\na = 1 [0, 5]\n```", "", "") });
   }
   add({ id: "math", group: "Media", icon: "ph:function", label: "Maths block", about: "A formula on its own line, typeset", keys: "$$ ... $$", keywords: ["math", "maths", "formula", "equation", "latex", "tex", "block"], sample: "$$ e^{i\\pi} + 1 = 0 $$", run: (t) => editorBlock(t, "$$ ", "x^2 + y^2 = z^2", " $$") });
   add({ id: "math-inline", group: "Media", icon: "ph:math-operations", label: "Inline maths", about: "A formula inside a sentence", keys: "$ ... $", keywords: ["math", "inline", "formula", "latex", "tex"], run: act("math") });
@@ -983,9 +985,11 @@ function editorBlockRows(context) {
   }
 
   // --- Advanced --------------------------------------------------------------
-  add({ id: "footnote", group: "Advanced", icon: "ph:push-pin", label: "Footnote", about: "A reference here, its text at the foot", keys: "[^1]", keywords: ["footnote", "reference", "cite", "aside", "note"], run: (t) => editorApplyNamed(t, "footnote") });
+  add({ id: "footnote", group: "Advanced", icon: "ph:push-pin", label: "Footnote", about: "A reference here, its text at the foot", keys: "[^1]", keywords: ["footnote", "reference", "aside", "note"], run: (t) => editorApplyNamed(t, "footnote") });
+  if (inDocument) add({ id: "cite", group: "Advanced", icon: "ph:quotes", label: "Citation", about: "A source, listed at the foot", keys: "[@]", keywords: ["cite", "source"], run: (t) => editorApplyNamed(t, "cite") });
   add({ id: "comment", group: "Advanced", icon: "ph:eye-slash", label: "Private comment", about: "Kept in the file, never shown", keys: "%% %%", keywords: ["comment", "private", "hidden", "note to self"], run: (t) => editorApplyNamed(t, "comment") });
   if (inDocument) {
+    add({ id: "remind", group: "Advanced", icon: "ph:bell", label: "Remind me about this", about: "Opens this document when due", keys: "", keywords: ["remind", "reminder", "follow up"], run: () => (currentDoc?.id ? ensureModule("library").then((ok) => ok && remindAbout({ title: currentDoc.title || "this document", documentId: currentDoc.id })) : toast("Save the document first.", "info")) });
     add({ id: "annotate", group: "Advanced", icon: "ph:chat-circle", label: "Comment on this", about: "A remark on these words, listed in the sidebar", keys: "==text== %%", keywords: ["comment", "annotate", "remark", "review", "feedback", "margin"], run: (t) => editorApplyNamed(t, "annotate") });
   }
   const now = new Date();
@@ -1067,7 +1071,7 @@ function editorCommands(context) {
   // The user's own templates first, then the built-ins, the same "yours
   // before ours" ordering loadTemplates() already uses for the dropdown.
   const custom = (typeof prefsCache !== "undefined" && prefsCache?.custom_templates) || [];
-  const builtin = typeof BUILTIN_TEMPLATES !== "undefined" ? BUILTIN_TEMPLATES : [];
+  const builtin = BUILTIN_TEMPLATES;
   for (const template of [...custom, ...(context === "document" && typeof DOC_TEMPLATES !== "undefined" ? [] : builtin)]) {
     if (!template?.name || !template?.content) continue;
     commands.push({
@@ -1380,11 +1384,8 @@ function editorLinkMatches(needle) {
   //: can do is ask for the list and let the *next* keystroke show it. The
   //: request itself is cached for 8s inside `loadMapBoardIndex`, so a burst
   //: of typing costs one call.
-  if (typeof mapBoardRows === "function" && !mapBoardRows().length
-      && typeof loadMapBoardIndex === "function") {
-    loadMapBoardIndex();
-  }
-  const boards = (typeof mapBoardRows === "function" ? mapBoardRows() : [])
+  if (!mapBoardRows().length) loadMapBoardIndex();
+  const boards = mapBoardRows()
     .filter((b) => b.id != null)
     .filter((b) => !query || String(b.title || "").toLowerCase().includes(query))
     .slice(0, 3)

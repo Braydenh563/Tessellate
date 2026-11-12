@@ -9,10 +9,10 @@ leaves every hidden place reachable from the palette.
 from __future__ import annotations
 
 import re
-from datetime import date, timedelta
+from datetime import timedelta
 from pathlib import Path
 
-from tessellate.core import deps, usage
+from tessellate.core import clock, deps, usage
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -28,7 +28,7 @@ def test_counts_are_kept_and_most_used_come_first(client):
 
 def test_a_feature_unused_for_ninety_days_is_listed(app_state):
     data = deps.get_config().data_dir
-    old = date.today() - timedelta(days=120)
+    old = clock.today() - timedelta(days=120)
     usage.record(data, ["tab:graph"], today=old)
     usage.record(data, ["tab:notes"])
     body = usage.summary(data, known=["tab:graph", "tab:notes", "tab:timeline"])

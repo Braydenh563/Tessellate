@@ -17,12 +17,15 @@ def rest_life(gait: str, look: str, state: str, seed: int, secs: float = 120.0, 
     try:
         e, _s = make(look, gait, seed)
         e.reduced = reduced
+        e.presence = False  # Intent moved (INBOX 1692): this measures a still rest; spells have their own tests
         home_at_edge(e)
         e.big_ready = e.trip_ready = e.climb_ready = e.ex.act_ready = float("inf")  # nothing started: no trip, no in-place act
         e.update(0.0)
         if state != "stand":
             e._enter(state, 0.0)
-            e.state_until = float("inf")
+        # The spell never ends, so `_decide` picks no act either (1109: once the D3 acts took the catalogue's
+        # weights, seed 2's first stand picked read_book, whose 8 px drop counted as a move of the rest).
+        e.state_until = float("inf")
         e.next_ambient = 5.0  # the first blink does not wait out the whole run
         out = e.update(0.0)
         t, wakes, draws, moves = 0.0, 0, 0, 0

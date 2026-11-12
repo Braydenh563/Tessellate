@@ -542,7 +542,7 @@ def _keep_matrix_in_step(session: Session, flush_context) -> None:  # noqa: ANN0
     `current_matrix` catches it from the table's fingerprint. Of the three
     that exist, two (`routes_entries.py`, re-embedding after an edit) store a
     fresh vector immediately afterwards, so the row is replaced rather than
-    left stale; the third (`manager.set_private`) stores nothing, because a
+    left stale; the third (`manager_private.set_private`) stores nothing, because a
     private note is never embedded, and calls `forget_vector` instead.
     """
     if _matrix is None:
@@ -610,7 +610,7 @@ def forget_vector(entry_id: int) -> None:
     """Drop one note's vector from the matrix, now.
 
     For the writes the ORM hook cannot see. There is exactly one that matters
-    and it is a privacy one: `manager.set_private` deletes a note's
+    and it is a privacy one: `manager_private.set_private` deletes a note's
     `EmbeddingRecord` with a bulk `delete()` statement and stores nothing in
     its place, because a private note is never embedded. Without this the
     matrix would go on holding a vector *derived from the text the
@@ -766,11 +766,13 @@ def _session_space(session: Session):  # noqa: ANN202
     and snippets included, and spaces hidden from "All spaces" too.
     """
     workspace = session.info.get("workspace_id")
+    # INBOX 1727: a locked private space answers nothing, from anywhere.
+    sealed = tuple(session.info.get("sealed_workspaces") or ())
     if workspace and workspace != "all":
-        return workspace
+        return "\x00sealed" if workspace in sealed else workspace
     if workspace == "all":
-        return tuple(session.info.get("hidden_workspaces") or ())
-    return None
+        return tuple(session.info.get("hidden_workspaces") or ()) + sealed
+    return sealed or None
 
 
 def _narrow(

@@ -31,6 +31,8 @@ def settle(e: eng.Engine, secs: float = 3.0, t: float = 0.0) -> float:
 def still(look: str = "masculine", seed: int = 2) -> tuple[eng.Engine, SpriteSet, float]:
     """A standing figure with no trip, climb or in-place act due: only what the test asks for happens."""
     e, s = make(look, "float", seed)
+    e.presence = False  # Intent moved (INBOX 1692, 00:50Z): spells (presence) have their own tests; this one measures the plain acts
+    e._enter("stand", 0.0)  # its first hold was drawn with presence on
     e.big_ready = e.trip_ready = e.climb_ready = e.ex.act_ready = float("inf")
     e.next_ambient = float("inf")
     e.ex.micro.next_at = float("inf")
@@ -178,6 +180,7 @@ def test_a_figure_that_stands_does_things_in_place_now_and_then(monkeypatch) -> 
     monkeypatch.setattr(eng, "IDLE_SIT", float("inf"))  # the person is about: the long-idle sit is off
     monkeypatch.setattr(eng, "IDLE_SLEEP", float("inf"))
     e, _s = make("masculine", "float", 3)
+    e.presence = False  # Intent moved (INBOX 1692, 00:50Z): a spell holds one act for minutes; this counts the plain acts
     e.big_ready = e.trip_ready = e.climb_ready = float("inf")
     names, t, last = [], 0.0, None
     while t < 1800.0:
@@ -232,11 +235,15 @@ def run_gesture(kind: str, seed: int = 2) -> str | None:
     elif kind == "rub":
         path = [(cx - 25, cy), (cx + 25, cy), (cx - 25, cy), (cx + 25, cy), (cx - 25, cy), (cx + 25, cy), (cx - 25, cy)]
     elif kind == "poke":
-        path = [(cx + 400, cy), (cx + 330, cy), (cx + 200, cy), (cx + 60, cy), (cx + 12, cy), (cx + 10, cy), (cx + 10, cy)]
+        # Intent moved (INBOX 1692, the owner 2026-11-08: "it gets instantly mad every time i hover"): a poke is a
+        # jab that goes back out the way it came; an arrival that stays is a hover.
+        path = [(cx + 400, cy), (cx + 330, cy), (cx + 200, cy), (cx + 60, cy), (cx + 10, cy), (cx + 120, cy), (cx + 300, cy)]
     elif kind == "flip":
         path = [(lx - 160, cy), (lx - 80, cy), (lx, cy), (cx, cy), (r, cy), (r + 80, cy), (r + 160, cy)]
     elif kind == "flinch":
-        path = [(cx + w * 2 + 100, top - 60), (cx + w * 2, top - 55), (cx + w + 60, top - 50), (cx + w + 10, top - 45)]
+        # Intent moved (INBOX 1692): a flinch is a swipe that whizzes past, not an approach that stops beside it.
+        path = [(cx + w * 2 + 100, top - 50), (cx + w, top - 50), (cx, top - 50), (cx - w, top - 50), (cx - w * 2 - 100, top - 50)]
+        path += [path[-1]] * 4
     elif kind == "hover":
         path = [(cx + 3 * (i % 2), cy) for i in range(30)]
     else:
@@ -262,9 +269,33 @@ def test_a_poke_is_answered_by_mood() -> None:
         e.mind.feel(mood, t)
         lx, top, r, b = box(e)
         cy = (top + b) // 2
-        feed(e, t, [(r + 400, cy), (r + 330, cy), (r + 200, cy), (r + 60, cy), (r - 10, cy), (r - 12, cy), (r - 12, cy)], 0.04)
+        # Intent moved (INBOX 1692): the jab goes back out; the answer by mood is unchanged.
+        feed(e, t, [(r + 400, cy), (r + 330, cy), (r + 200, cy), (r + 60, cy), (r - 12, cy), (r + 100, cy), (r + 300, cy)], 0.04)
         answers.add((mood, e.ex.last[-1] if e.ex.last else None))
     assert answers == {("happy", "poke_giggle"), ("sleepy", "poke_miffed"), ("bored", "poke_curious")}
+
+
+@pytest.mark.parametrize("mood", ["happy", "sleepy", "startled", "bored"])
+@pytest.mark.parametrize("speed", [1, 3])
+def test_an_ordinary_hover_arrival_is_never_a_poke_or_a_flinch(mood: str, speed: int) -> None:
+    """INBOX 1692, the owner 2026-11-08: "it gets instantly mad every time i hover my mouse over it". Moving the
+    mouse onto it, fast or slow, and resting there is a hover (a smile); stopping beside it is nothing."""
+    for stop in ("on", "beside"):
+        e, _s, t = still()
+        e.mind.feel(mood, t)
+        lx, top, r, b = box(e)
+        cx, cy = (lx + r) // 2, (top + b) // 2
+        end = (cx, cy) if stop == "on" else (r + 40, cy)
+        far = (end[0] + 900, end[1] - 300)
+        steps = 6
+        arrive = [(far[0] + (end[0] - far[0]) * i // steps, far[1] + (end[1] - far[1]) * i // steps) for i in range(steps + 1)]
+        feed(e, t, arrive + [end] * 40, 0.05 / speed)
+        t2 = feed(e, t + 1, [(end[0] + (i % 2), end[1]) for i in range(30)], 0.05)
+        assert t2 > t
+        said = set(e.ex.last)
+        assert not said & {"poke_giggle", "poke_miffed", "poke_curious", "flinch"}, (mood, speed, stop, said)
+        if stop == "on":
+            assert "hover" in said, (mood, speed, said)
 
 
 def test_a_pointer_that_only_passes_or_rests_far_away_is_not_a_gesture() -> None:
@@ -337,7 +368,10 @@ def test_a_screen_event_waits_for_a_free_moment() -> None:
     e.card = None
     e._enter("held", t)
     assert e.react("window_opened", t) is False
+    # Intent moved (INBOX 1721 a): a hang that holds still answers (face and swing, tests/test_overlay_deskfix_1110.py);
+    # one that is letting go waits for a free moment like the rest.
     e._enter("hang", t)
+    e.releasing = True
     assert e.react("window_opened", t) is False
 
 

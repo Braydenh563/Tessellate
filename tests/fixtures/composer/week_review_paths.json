@@ -3,25 +3,6 @@
   "grounding": [
    {
     "chunk_ordinal": 0,
-    "end": 58,
-    "kind": "note",
-    "label": "Garden shed roof leaks in the north corner after the rain.",
-    "note_id": 6,
-    "said": "quoted",
-    "score": 0.0,
-    "sentence": "Garden shed roof leaks in the north corner after the rain.",
-    "signals": {
-     "bm25": 1.0,
-     "cosine": null,
-     "graph": null
-    },
-    "start": 0,
-    "terms": [],
-    "title": "",
-    "verdict": "supported"
-   },
-   {
-    "chunk_ordinal": 0,
     "end": 82,
     "kind": "note",
     "label": "# Harbor launch plan Ship the mobile app to the public…",
@@ -98,25 +79,25 @@
    },
    {
     "chunk_ordinal": 0,
-    "end": 159,
+    "end": 90,
     "kind": "note",
-    "label": "# Harbor launch plan Ship the mobile app to the public…",
-    "note_id": 1,
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
     "said": "quoted",
     "score": 0.0,
-    "sentence": "Pricing page sign off",
+    "sentence": "Call to confirm",
     "signals": {
      "bm25": 1.0,
      "cosine": null,
      "graph": null
     },
-    "start": 138,
+    "start": 75,
     "terms": [],
-    "title": "Harbor launch plan",
+    "title": "Dentist",
     "verdict": "supported"
    }
   ],
-  "key": "620fe13b9027",
+  "key": "2a13c57cfe6c",
   "kind": "week_review",
   "parts": [
    [
@@ -230,16 +211,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "“Garden shed roof leaks in the…”"
    ],
    [
     "template",
@@ -252,23 +225,6 @@
    [
     "template",
     ")"
-   ],
-   [
-    "template",
-    ": "
-   ],
-   [
-    "template",
-    "“"
-   ],
-   [
-    "quote",
-    "Garden shed roof leaks in the north corner after the rain.",
-    6
-   ],
-   [
-    "template",
-    "”"
    ],
    [
     "template",
@@ -468,36 +424,6 @@
    ],
    [
     "quote",
-    "Pricing page sign off",
-    1
-   ],
-   [
-    "template",
-    ", in "
-   ],
-   [
-    "template",
-    "**"
-   ],
-   [
-    "title",
-    "Harbor launch plan",
-    1
-   ],
-   [
-    "template",
-    "**"
-   ],
-   [
-    "template",
-    "\n"
-   ],
-   [
-    "template",
-    "- [ ] "
-   ],
-   [
-    "quote",
     "Milk",
     7
    ],
@@ -513,6 +439,36 @@
     "title",
     "Shopping",
     7
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Call to confirm",
+    3
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
    ],
    [
     "template",
@@ -522,33 +478,13 @@
   "sources": [
    1,
    4,
-   6,
    7,
    3
   ],
-  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- “Garden shed roof leaks in the…” (today)\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**\n- [ ] Call to confirm, in **Dentist**"
  },
  "full_week_unlinked": {
   "grounding": [
-   {
-    "chunk_ordinal": 0,
-    "end": 58,
-    "kind": "note",
-    "label": "Garden shed roof leaks in the north corner after the rain.",
-    "note_id": 6,
-    "said": "quoted",
-    "score": 0.0,
-    "sentence": "Garden shed roof leaks in the north corner after the rain.",
-    "signals": {
-     "bm25": 1.0,
-     "cosine": null,
-     "graph": null
-    },
-    "start": 0,
-    "terms": [],
-    "title": "",
-    "verdict": "supported"
-   },
    {
     "chunk_ordinal": 0,
     "end": 82,
@@ -627,25 +563,25 @@
    },
    {
     "chunk_ordinal": 0,
-    "end": 159,
+    "end": 90,
     "kind": "note",
-    "label": "# Harbor launch plan Ship the mobile app to the public…",
-    "note_id": 1,
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
     "said": "quoted",
     "score": 0.0,
-    "sentence": "Pricing page sign off",
+    "sentence": "Call to confirm",
     "signals": {
      "bm25": 1.0,
      "cosine": null,
      "graph": null
     },
-    "start": 138,
+    "start": 75,
     "terms": [],
-    "title": "Harbor launch plan",
+    "title": "Dentist",
     "verdict": "supported"
    }
   ],
-  "key": "f077fddeff01",
+  "key": "f300e328fcc2",
   "kind": "week_review",
   "parts": [
    [
@@ -759,16 +695,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "“Garden shed roof leaks in the…”"
    ],
    [
     "template",
@@ -781,23 +709,6 @@
    [
     "template",
     ")"
-   ],
-   [
-    "template",
-    ": "
-   ],
-   [
-    "template",
-    "“"
-   ],
-   [
-    "quote",
-    "Garden shed roof leaks in the north corner after the rain.",
-    6
-   ],
-   [
-    "template",
-    "”"
    ],
    [
     "template",
@@ -997,36 +908,6 @@
    ],
    [
     "quote",
-    "Pricing page sign off",
-    1
-   ],
-   [
-    "template",
-    ", in "
-   ],
-   [
-    "template",
-    "**"
-   ],
-   [
-    "title",
-    "Harbor launch plan",
-    1
-   ],
-   [
-    "template",
-    "**"
-   ],
-   [
-    "template",
-    "\n"
-   ],
-   [
-    "template",
-    "- [ ] "
-   ],
-   [
-    "quote",
     "Milk",
     7
    ],
@@ -1042,6 +923,36 @@
     "title",
     "Shopping",
     7
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Call to confirm",
+    3
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
    ],
    [
     "template",
@@ -1056,16 +967,9 @@
     "Linked to nothing yet: "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "title",
+    "“Garden shed roof leaks in the…”",
+    6
    ],
    [
     "template",
@@ -1126,12 +1030,12 @@
   "sources": [
    1,
    4,
-   6,
    7,
    3,
+   6,
    2
   ],
-  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**\n\nLinked to nothing yet: your note from today, **Beta feedback**, **Shopping** and **Lisbon**."
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- “Garden shed roof leaks in the…” (today)\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**\n- [ ] Call to confirm, in **Dentist**\n\nLinked to nothing yet: “Garden shed roof leaks in the…”, **Beta feedback**, **Shopping** and **Lisbon**."
  },
  "long_lead_clipped": {
   "grounding": [
@@ -1427,28 +1331,9 @@
     "terms": [],
     "title": "Harbor launch plan",
     "verdict": "supported"
-   },
-   {
-    "chunk_ordinal": 0,
-    "end": 159,
-    "kind": "note",
-    "label": "# Harbor launch plan Ship the mobile app to the public…",
-    "note_id": 1,
-    "said": "quoted",
-    "score": 0.0,
-    "sentence": "Pricing page sign off",
-    "signals": {
-     "bm25": 1.0,
-     "cosine": null,
-     "graph": null
-    },
-    "start": 138,
-    "terms": [],
-    "title": "Harbor launch plan",
-    "verdict": "supported"
    }
   ],
-  "key": "bc39adc0dd2e",
+  "key": "83fc5efdc4d4",
   "kind": "week_review",
   "parts": [
    [
@@ -1570,66 +1455,16 @@
    [
     "template",
     "**"
-   ],
-   [
-    "template",
-    "\n"
-   ],
-   [
-    "template",
-    "- [ ] "
-   ],
-   [
-    "quote",
-    "Pricing page sign off",
-    1
-   ],
-   [
-    "template",
-    ", in "
-   ],
-   [
-    "template",
-    "**"
-   ],
-   [
-    "title",
-    "Harbor launch plan",
-    1
-   ],
-   [
-    "template",
-    "**"
    ]
   ],
   "sources": [
    1
   ],
-  "text": "You wrote one note in the last seven days, from yesterday to today.\n\nWhat stands out:\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**"
+  "text": "You wrote one note in the last seven days, from yesterday to today.\n\nWhat stands out:\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**"
  },
  "one_untitled": {
-  "grounding": [
-   {
-    "chunk_ordinal": 0,
-    "end": 58,
-    "kind": "note",
-    "label": "Garden shed roof leaks in the north corner after the rain.",
-    "note_id": 6,
-    "said": "quoted",
-    "score": 0.0,
-    "sentence": "Garden shed roof leaks in the north corner after the rain.",
-    "signals": {
-     "bm25": 1.0,
-     "cosine": null,
-     "graph": null
-    },
-    "start": 0,
-    "terms": [],
-    "title": "",
-    "verdict": "supported"
-   }
-  ],
-  "key": "3e5c04d3039e",
+  "grounding": [],
+  "key": "f0e3c71fc4e0",
   "kind": "week_review",
   "parts": [
    [
@@ -1637,20 +1472,8 @@
     "You wrote one note"
    ],
    [
-    "template",
-    " in the last seven days, from "
-   ],
-   [
-    "measure",
-    "today"
-   ],
-   [
-    "template",
-    " to "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    " today"
    ],
    [
     "template",
@@ -1673,16 +1496,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "“Garden shed roof leaks in the…”"
    ],
    [
     "template",
@@ -1695,29 +1510,10 @@
    [
     "template",
     ")"
-   ],
-   [
-    "template",
-    ": "
-   ],
-   [
-    "template",
-    "“"
-   ],
-   [
-    "quote",
-    "Garden shed roof leaks in the north corner after the rain.",
-    6
-   ],
-   [
-    "template",
-    "”"
    ]
   ],
-  "sources": [
-   6
-  ],
-  "text": "You wrote one note in the last seven days, from today to today.\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”"
+  "sources": [],
+  "text": "You wrote one note today.\n\nWhat stands out:\n- “Garden shed roof leaks in the…” (today)"
  },
  "only_done_tasks": {
   "grounding": [
@@ -2030,66 +1826,8 @@
   "text": "You wrote three notes in the last seven days, from 3 October to today. Most went under **Home** (two), then **Health** (one).\n\nWhat stands out:\n- **Done list** (yesterday): “Paid the bill”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Call to confirm, in **Dentist**"
  },
  "three_no_category": {
-  "grounding": [
-   {
-    "chunk_ordinal": 0,
-    "end": 58,
-    "kind": "note",
-    "label": "Garden shed roof leaks in the north corner after the rain.",
-    "note_id": 6,
-    "said": "quoted",
-    "score": 0.0,
-    "sentence": "Garden shed roof leaks in the north corner after the rain.",
-    "signals": {
-     "bm25": 1.0,
-     "cosine": null,
-     "graph": null
-    },
-    "start": 0,
-    "terms": [],
-    "title": "",
-    "verdict": "supported"
-   },
-   {
-    "chunk_ordinal": 0,
-    "end": 52,
-    "kind": "note",
-    "label": "Plain words about the bike chain, it needs oil soon.",
-    "note_id": 10,
-    "said": "quoted",
-    "score": 0.0,
-    "sentence": "Plain words about the bike chain, it needs oil soon.",
-    "signals": {
-     "bm25": 1.0,
-     "cosine": null,
-     "graph": null
-    },
-    "start": 0,
-    "terms": [],
-    "title": "",
-    "verdict": "supported"
-   },
-   {
-    "chunk_ordinal": 0,
-    "end": 58,
-    "kind": "note",
-    "label": "Another plain one about the kettle descaling this weekend.",
-    "note_id": 11,
-    "said": "quoted",
-    "score": 0.0,
-    "sentence": "Another plain one about the kettle descaling this weekend.",
-    "signals": {
-     "bm25": 1.0,
-     "cosine": null,
-     "graph": null
-    },
-    "start": 0,
-    "terms": [],
-    "title": "",
-    "verdict": "supported"
-   }
-  ],
-  "key": "4f8ed54ad510",
+  "grounding": [],
+  "key": "18c7e867c336",
   "kind": "week_review",
   "parts": [
    [
@@ -2141,16 +1879,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "“Garden shed roof leaks in the…”"
    ],
    [
     "template",
@@ -2166,23 +1896,6 @@
    ],
    [
     "template",
-    ": "
-   ],
-   [
-    "template",
-    "“"
-   ],
-   [
-    "quote",
-    "Garden shed roof leaks in the north corner after the rain.",
-    6
-   ],
-   [
-    "template",
-    "”"
-   ],
-   [
-    "template",
     "\n"
    ],
    [
@@ -2190,16 +1903,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "yesterday"
+    "word",
+    "“Plain words about the bike chain…”"
    ],
    [
     "template",
@@ -2215,23 +1920,6 @@
    ],
    [
     "template",
-    ": "
-   ],
-   [
-    "template",
-    "“"
-   ],
-   [
-    "quote",
-    "Plain words about the bike chain, it needs oil soon.",
-    10
-   ],
-   [
-    "template",
-    "”"
-   ],
-   [
-    "template",
     "\n"
    ],
    [
@@ -2239,16 +1927,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "4 October"
+    "word",
+    "“Another plain one about the kettle…”"
    ],
    [
     "template",
@@ -2261,31 +1941,10 @@
    [
     "template",
     ")"
-   ],
-   [
-    "template",
-    ": "
-   ],
-   [
-    "template",
-    "“"
-   ],
-   [
-    "quote",
-    "Another plain one about the kettle descaling this weekend.",
-    11
-   ],
-   [
-    "template",
-    "”"
    ]
   ],
-  "sources": [
-   6,
-   10,
-   11
-  ],
-  "text": "You wrote three notes in the last seven days, from 4 October to today.\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- your note from yesterday (yesterday): “Plain words about the bike chain, it needs oil soon.”\n- your note from 4 October (4 October): “Another plain one about the kettle descaling this weekend.”"
+  "sources": [],
+  "text": "You wrote three notes in the last seven days, from 4 October to today.\n\nWhat stands out:\n- “Garden shed roof leaks in the…” (today)\n- “Plain words about the bike chain…” (yesterday)\n- “Another plain one about the kettle…” (4 October)"
  },
  "three_one_category": {
   "grounding": [
@@ -2364,28 +2023,9 @@
     "terms": [],
     "title": "Harbor launch plan",
     "verdict": "supported"
-   },
-   {
-    "chunk_ordinal": 0,
-    "end": 159,
-    "kind": "note",
-    "label": "# Harbor launch plan Ship the mobile app to the public…",
-    "note_id": 1,
-    "said": "quoted",
-    "score": 0.0,
-    "sentence": "Pricing page sign off",
-    "signals": {
-     "bm25": 1.0,
-     "cosine": null,
-     "graph": null
-    },
-    "start": 138,
-    "terms": [],
-    "title": "Harbor launch plan",
-    "verdict": "supported"
    }
   ],
-  "key": "74b1318f6109",
+  "key": "2549b440230f",
   "kind": "week_review",
   "parts": [
    [
@@ -2648,36 +2288,6 @@
    [
     "template",
     "**"
-   ],
-   [
-    "template",
-    "\n"
-   ],
-   [
-    "template",
-    "- [ ] "
-   ],
-   [
-    "quote",
-    "Pricing page sign off",
-    1
-   ],
-   [
-    "template",
-    ", in "
-   ],
-   [
-    "template",
-    "**"
-   ],
-   [
-    "title",
-    "Harbor launch plan",
-    1
-   ],
-   [
-    "template",
-    "**"
    ]
   ],
   "sources": [
@@ -2685,7 +2295,7 @@
    2,
    9
   ],
-  "text": "You wrote three notes in the last seven days, from 30 September to today. Most went under **Work** (three).\n\nWhat stands out:\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Beta feedback** (4 October): “The top complaint is the sign-up flow with nine fields.”\n- **Sync rewrite** (30 September): “The sync rewrite now keeps both versions and asks, merged behind a flag.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**"
+  "text": "You wrote three notes in the last seven days, from 30 September to today. Most went under **Work** (three).\n\nWhat stands out:\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Beta feedback** (4 October): “The top complaint is the sign-up flow with nine fields.”\n- **Sync rewrite** (30 September): “The sync rewrite now keeps both versions and asks, merged behind a flag.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**"
  },
  "title_only_alone": {
   "grounding": [],
@@ -3089,28 +2699,9 @@
     "terms": [],
     "title": "Harbor launch plan",
     "verdict": "supported"
-   },
-   {
-    "chunk_ordinal": 0,
-    "end": 159,
-    "kind": "note",
-    "label": "# Harbor launch plan Ship the mobile app to the public…",
-    "note_id": 1,
-    "said": "quoted",
-    "score": 0.0,
-    "sentence": "Pricing page sign off",
-    "signals": {
-     "bm25": 1.0,
-     "cosine": null,
-     "graph": null
-    },
-    "start": 138,
-    "terms": [],
-    "title": "Harbor launch plan",
-    "verdict": "supported"
    }
   ],
-  "key": "61086a362476",
+  "key": "3e8978a0835c",
   "kind": "week_review",
   "parts": [
    [
@@ -3290,67 +2881,18 @@
    [
     "template",
     "**"
-   ],
-   [
-    "template",
-    "\n"
-   ],
-   [
-    "template",
-    "- [ ] "
-   ],
-   [
-    "quote",
-    "Pricing page sign off",
-    1
-   ],
-   [
-    "template",
-    ", in "
-   ],
-   [
-    "template",
-    "**"
-   ],
-   [
-    "title",
-    "Harbor launch plan",
-    1
-   ],
-   [
-    "template",
-    "**"
    ]
   ],
   "sources": [
    1,
    2
   ],
-  "text": "You wrote two notes in the last seven days, from 4 October to today.\n\nWhat stands out:\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Beta feedback** (4 October): “The top complaint is the sign-up flow with nine fields.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**"
+  "text": "You wrote two notes in the last seven days, from 4 October to today.\n\nWhat stands out:\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Beta feedback** (4 October): “The top complaint is the sign-up flow with nine fields.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**"
  },
  "unlinked_empty": {
   "grounding": [
    {
     "chunk_ordinal": 0,
-    "end": 58,
-    "kind": "note",
-    "label": "Garden shed roof leaks in the north corner after the rain.",
-    "note_id": 6,
-    "said": "quoted",
-    "score": 0.0,
-    "sentence": "Garden shed roof leaks in the north corner after the rain.",
-    "signals": {
-     "bm25": 1.0,
-     "cosine": null,
-     "graph": null
-    },
-    "start": 0,
-    "terms": [],
-    "title": "",
-    "verdict": "supported"
-   },
-   {
-    "chunk_ordinal": 0,
     "end": 82,
     "kind": "note",
     "label": "# Harbor launch plan Ship the mobile app to the public…",
@@ -3427,25 +2969,25 @@
    },
    {
     "chunk_ordinal": 0,
-    "end": 159,
+    "end": 90,
     "kind": "note",
-    "label": "# Harbor launch plan Ship the mobile app to the public…",
-    "note_id": 1,
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
     "said": "quoted",
     "score": 0.0,
-    "sentence": "Pricing page sign off",
+    "sentence": "Call to confirm",
     "signals": {
      "bm25": 1.0,
      "cosine": null,
      "graph": null
     },
-    "start": 138,
+    "start": 75,
     "terms": [],
-    "title": "Harbor launch plan",
+    "title": "Dentist",
     "verdict": "supported"
    }
   ],
-  "key": "620fe13b9027",
+  "key": "2a13c57cfe6c",
   "kind": "week_review",
   "parts": [
    [
@@ -3559,16 +3101,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "“Garden shed roof leaks in the…”"
    ],
    [
     "template",
@@ -3581,23 +3115,6 @@
    [
     "template",
     ")"
-   ],
-   [
-    "template",
-    ": "
-   ],
-   [
-    "template",
-    "“"
-   ],
-   [
-    "quote",
-    "Garden shed roof leaks in the north corner after the rain.",
-    6
-   ],
-   [
-    "template",
-    "”"
    ],
    [
     "template",
@@ -3797,36 +3314,6 @@
    ],
    [
     "quote",
-    "Pricing page sign off",
-    1
-   ],
-   [
-    "template",
-    ", in "
-   ],
-   [
-    "template",
-    "**"
-   ],
-   [
-    "title",
-    "Harbor launch plan",
-    1
-   ],
-   [
-    "template",
-    "**"
-   ],
-   [
-    "template",
-    "\n"
-   ],
-   [
-    "template",
-    "- [ ] "
-   ],
-   [
-    "quote",
     "Milk",
     7
    ],
@@ -3846,40 +3333,50 @@
    [
     "template",
     "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Call to confirm",
+    3
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
+   ],
+   [
+    "template",
+    "**"
    ]
   ],
   "sources": [
    1,
    4,
-   6,
    7,
    3
   ],
-  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- “Garden shed roof leaks in the…” (today)\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**\n- [ ] Call to confirm, in **Dentist**"
  },
  "unlinked_none_this_week": {
   "grounding": [
    {
     "chunk_ordinal": 0,
-    "end": 58,
-    "kind": "note",
-    "label": "Garden shed roof leaks in the north corner after the rain.",
-    "note_id": 6,
-    "said": "quoted",
-    "score": 0.0,
-    "sentence": "Garden shed roof leaks in the north corner after the rain.",
-    "signals": {
-     "bm25": 1.0,
-     "cosine": null,
-     "graph": null
-    },
-    "start": 0,
-    "terms": [],
-    "title": "",
-    "verdict": "supported"
-   },
-   {
-    "chunk_ordinal": 0,
     "end": 82,
     "kind": "note",
     "label": "# Harbor launch plan Ship the mobile app to the public…",
@@ -3956,25 +3453,25 @@
    },
    {
     "chunk_ordinal": 0,
-    "end": 159,
+    "end": 90,
     "kind": "note",
-    "label": "# Harbor launch plan Ship the mobile app to the public…",
-    "note_id": 1,
+    "label": "# Dentist Check-up booked for the 21st, ask about the night…",
+    "note_id": 3,
     "said": "quoted",
     "score": 0.0,
-    "sentence": "Pricing page sign off",
+    "sentence": "Call to confirm",
     "signals": {
      "bm25": 1.0,
      "cosine": null,
      "graph": null
     },
-    "start": 138,
+    "start": 75,
     "terms": [],
-    "title": "Harbor launch plan",
+    "title": "Dentist",
     "verdict": "supported"
    }
   ],
-  "key": "620fe13b9027",
+  "key": "2a13c57cfe6c",
   "kind": "week_review",
   "parts": [
    [
@@ -4088,16 +3585,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "“Garden shed roof leaks in the…”"
    ],
    [
     "template",
@@ -4110,23 +3599,6 @@
    [
     "template",
     ")"
-   ],
-   [
-    "template",
-    ": "
-   ],
-   [
-    "template",
-    "“"
-   ],
-   [
-    "quote",
-    "Garden shed roof leaks in the north corner after the rain.",
-    6
-   ],
-   [
-    "template",
-    "”"
    ],
    [
     "template",
@@ -4326,36 +3798,6 @@
    ],
    [
     "quote",
-    "Pricing page sign off",
-    1
-   ],
-   [
-    "template",
-    ", in "
-   ],
-   [
-    "template",
-    "**"
-   ],
-   [
-    "title",
-    "Harbor launch plan",
-    1
-   ],
-   [
-    "template",
-    "**"
-   ],
-   [
-    "template",
-    "\n"
-   ],
-   [
-    "template",
-    "- [ ] "
-   ],
-   [
-    "quote",
     "Milk",
     7
    ],
@@ -4375,15 +3817,44 @@
    [
     "template",
     "**"
+   ],
+   [
+    "template",
+    "\n"
+   ],
+   [
+    "template",
+    "- [ ] "
+   ],
+   [
+    "quote",
+    "Call to confirm",
+    3
+   ],
+   [
+    "template",
+    ", in "
+   ],
+   [
+    "template",
+    "**"
+   ],
+   [
+    "title",
+    "Dentist",
+    3
+   ],
+   [
+    "template",
+    "**"
    ]
   ],
   "sources": [
    1,
    4,
-   6,
    7,
    3
   ],
-  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- “Garden shed roof leaks in the…” (today)\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**\n- [ ] Call to confirm, in **Dentist**"
  }
 }

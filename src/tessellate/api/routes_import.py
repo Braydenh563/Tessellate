@@ -15,6 +15,7 @@ import tempfile
 import time
 import zipfile
 from pathlib import Path
+from typing import BinaryIO
 
 import json
 
@@ -32,17 +33,19 @@ router = APIRouter(tags=["import"])
 MAX_FILES = 5000
 
 
-def _received(files: list[UploadFile]) -> list[tuple[str, bytes]]:
+def _received(files: list[UploadFile]) -> list[tuple[str, BinaryIO]]:
+    """The uploads as the spooled files Starlette already wrote (K34): sized
+    by seeking, never read whole here; `app_import.expand` opens a zip from
+    the file and reads one member at a time."""
     if len(files) > MAX_FILES:
         raise HTTPException(status_code=422, detail=f"{len(files)} files at once is more than one import takes ({MAX_FILES}).")
-    raw: list[tuple[str, bytes]] = []
+    raw: list[tuple[str, BinaryIO]] = []
     total = 0
     for upload in files:
-        data = upload.file.read(app_import.MAX_ARCHIVE_BYTES + 1)
-        total += len(data)
+        total += app_import.size_of(upload.file)
         if total > app_import.MAX_ARCHIVE_BYTES:
             raise HTTPException(status_code=413, detail="That export is larger than 200 MB.")
-        raw.append((upload.filename or "note", data))
+        raw.append((upload.filename or "note", upload.file))
     return raw
 
 
@@ -77,6 +80,20 @@ def _excluded(text: str) -> set[str]:
     return set(keys)
 
 
+def _refuse_open_private_while_locked(source: str, notes: list) -> None:
+    """A Tessellate folder exported unlocked carries its private notes readable,
+    flagged `is_private`. Written while this notebook's private notes are locked
+    there is no key to seal them with, and they landed as ordinary notes, words
+    open and indexed (sm-1111 row 8). Refused before a note is made; sealed ones
+    (exported locked) are fine, they stay sealed."""
+    from tessellate.core import vault
+
+    if source != "memorymap" or vault.key() is not None:
+        return
+    if any(n.record.get("is_private") and not n.record.get("sealed") for n in notes):
+        raise HTTPException(status_code=409, detail="Some of these notes are private. Unlock private notes, then import again.")
+
+
 @router.post("/import/app", status_code=201)
 def import_app(
     files: list[UploadFile],
@@ -89,7 +106,7 @@ def import_app(
     """Read, write, and keep a report. The write is a job with progress and
     Stop (decision 70): Stop ends it at the next note and every note made
     before then stays, since each one is committed as it is made."""
-    from tessellate.api.routes_settings import _parse_frontmatter
+    from tessellate.api.routes_settings_transfer import _parse_frontmatter
 
     left_out = _excluded(exclude)
     raw = _received(files)
@@ -104,6 +121,7 @@ def import_app(
         return {"source": source, "label": label, "found": len(read.notes), "skipped": read.skipped[:50],
                 **app_import.preview(session, source, read.notes)}
     read.notes = [note for note in read.notes if note.key not in left_out]
+    _refuse_open_private_while_locked(source, read.notes)
     with jobruns.job_run("import", title=f"Importing from {label}", origin="you") as run, activity.track(
         "import", f"Importing from {label}", ledger=False
     ) as job:

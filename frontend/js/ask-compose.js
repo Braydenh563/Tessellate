@@ -67,7 +67,7 @@ function renderAskUseAi() {
 }
 
 function wireAskUseAi() {
-  const box = $("ask-use-ai");
+  const box = document.getElementById("ask-use-ai");
   if (!box || box.dataset.wired) return;
   box.dataset.wired = "1";
   box.addEventListener("change", () => {
@@ -92,64 +92,7 @@ function wireAskUseAi() {
   renderAskUseAi();
 }
 
-wireAskUseAi();
-
-//: **The name in "[**Dentist**]" opens the note** (the 2026-10-10 triage,
-//: decision 5). An answer written without a model cites each note by its
-//: title in square brackets (`composer.PHRASES["cite_open"]`), and the
-//: grounding row carries that title (`title`), so the match is exact rather
-//: than a guess from opening words. Hover or focus shows the citation peek
-//: (capture-ask.js), the passage the sentence came from, as a numbered mark
-//: does; a press or Enter goes to the note itself, never to the Sources
-//: disclosure. The bold name itself is the control (a link role, focusable),
-//: so the sentence reads and wraps as before and no stylesheet rule is
-//: needed: the global `:focus-visible` ring and the peek are its states.
-//: Called by `addInlineCitations` after every paint; a name already wired
-//: carries `data-note-id` and is skipped.
-function linkCitedTitles(targets, sentences, byId, numberFor) {
-  const byTitle = new Map();
-  for (const g of sentences || []) if (g.title && !byTitle.has(g.title)) byTitle.set(g.title, g);
-  for (const target of targets) {
-    for (const name of target.querySelectorAll("strong:not([data-note-id])")) {
-      const g = byTitle.get(name.textContent.trim());
-      //: "[**Dentist**]", or "[board **Harbor board**]" for a board, a map,
-      //: a document or a file (CHAT_PLAN decision 37: the citation says its kind).
-      const bracketed = /\[(?:board |map |document |file |page )?$/.test(name.previousSibling?.textContent || "") && /^\]/.test(name.nextSibling?.textContent || "");
-      if (!g || !bracketed) continue;
-      name.dataset.noteId = String(g.note_id);
-      name.tabIndex = 0;
-      name.setAttribute("role", "link");
-      const kind = g.kind && g.kind !== "note" ? g.kind : "note";
-      name.setAttribute("aria-label", `Open the ${kind === "map" ? "mind map" : kind} ${g.title}`);
-      name.style.cursor = "pointer";
-      const describe = () => ({
-        noteId: g.note_id, number: numberFor.get(citeKey(g.kind, g.note_id)), entry: g.kind === "document" ? undefined : byId.get(g.note_id), label: g.label,
-        start: g.start, end: g.end, signals: g.signals, verdict: g.verdict, terms: g.terms,
-      });
-      name.addEventListener("mouseenter", () => scheduleCitationPeek(name, describe));
-      name.addEventListener("mouseleave", () => scheduleCitationPeekClose());
-      name.addEventListener("focus", () => {
-        if (!citationPeekState.restoring) openCitationPeek(name, describe(), { pinned: false });
-      });
-      name.addEventListener("blur", (event) => {
-        if (!citationPeekState.panel?.contains(event.relatedTarget)) scheduleCitationPeekClose();
-      });
-      //: Each kind opens in its own place (INBOX 744): a document in the
-      //: editor, a map or a board on its canvas, a file in the Library.
-      const open = (event) => {
-        event.stopPropagation();
-        closeCitationPeek();
-        if (kind === "document") openDocumentFromNote(g.note_id);
-        else if (kind === "map" || kind === "board") openWhiteboardBoard(g.note_id);
-        else if (kind === "file") focusLibraryFile(g.title, `/files/${g.note_id}`);
-        else if (kind === "web" && /^https?:\/\//.test(g.url || "")) window.open(g.url, "_blank", "noopener");
-        else flashEntry(g.note_id);
-      };
-      name.addEventListener("click", open);
-      name.addEventListener("keydown", (event) => event.key === "Enter" && open(event));
-    }
-  }
-}
+onSurface("notes", wireAskUseAi);
 
 //: **A sentence said from a note is drawn as one** (CHAT_PLAN decision 33):
 //: an answer composed from the notes marks each of its rows `said`, "quoted"
@@ -199,10 +142,29 @@ function markSaidSentences(targets, sentences) {
 //: new note, a pin), what was done and Undo. Confirm and Undo both post the
 //: steps to `/chat/command/run`, which runs only the tools an act may use.
 function renderActCard(holder, event) {
+  //: The card a typed yes or no answered: found by its id, which stays on it after a send marks it not pending.
+  const waitingCard = (reply) => [...document.querySelectorAll(".tool-confirm")].filter((card) => (reply.consent_id ? card.consentId === reply.consent_id : !reply.label || card.dataset.askedAct === reply.label)).at(-1);
+  //: "cancel" said in the chat (CHAT_PLAN X17): the server's reply closes the
+  //: card it names (the last open one with that label, the one the page sent as
+  //: `pending_act` in `chatHistoryToSend`), nothing else is drawn.
+  if (event.cancel) {
+    const open = waitingCard(event);
+    if (open) open.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
+    return;
+  }
+  //: A typed yes ran the card that waited (`ai/consent.py`): it is settled, not pressed twice.
+  if (event.settle) {
+    const waiting = waitingCard(event);
+    if (waiting) waiting.remove();
+    refreshAfterToolChanges(); // what the typed yes wrote, as Confirm does
+    if (!event.done) return;
+  }
+  const restored = typeof event.state === "string";
+  if (event.state === "cancelled" || event.state === "undone") return void holder.appendChild(toolChip(`ph:${event.state === "undone" ? "check" : "x"} ${event.notice}`));
   const card = document.createElement("div");
   card.className = "tool-confirm";
   const run = (steps, then) =>
-    apiJson("/chat/command/run", { method: "POST", body: JSON.stringify({ steps, skipped: event.skipped || [] }) })
+    apiJson("/chat/command/run", { method: "POST", body: JSON.stringify({ steps, skipped: event.skipped || [], consent_id: steps === event.steps ? event.consent_id || null : null }) })
       .then((result) => (refreshAfterToolChanges(), then(result)))
       .catch((error) => toast(error.message, true));
   const line = (label, ...more) => {
@@ -223,23 +185,30 @@ function renderActCard(holder, event) {
   //: note or a pin ran at once), so the card carries only Undo; drawing the
   //: sentence again made the bubble say it twice. The words stay on the card
   //: as its accessible name, and a run with nothing to undo draws no card.
-  const done = (summary, undo, steps, said = false) => {
+  const done = (summary, undo, steps, said = false, again = false) => {
+    delete card.dataset.pendingAct;
+    //: A Confirmed card wrote: Regenerate on this answer asks first (sm-1111 row 16, `confirmRerun`).
+    const answer = card.closest(".msg");
+    if (answer) answer.dataset.wrote = "1";
     const row = document.createElement("div");
     row.className = "row";
     if (undo?.length) {
       let inverse = undo;
-      const action = pushUndo(
-        summary.replace(/^Done:\s*/, "").replace(/\.$/, ""),
-        () => post(inverse),
-        async () => {
-          const again = await post(steps);
-          inverse = again.undo || [];
-        }
-      );
+      const action = again
+        ? null
+        : pushUndo(
+            summary.replace(/^Done:\s*/, "").replace(/\.$/, ""),
+            () => post(inverse),
+            async () => {
+              const redone = await post(steps);
+              inverse = redone.undo || [];
+            }
+          );
       row.appendChild(
         smallButton("Undo", "Take this back", () =>
           run(inverse, () => {
-            settleUndoFromToast(action);
+            if (action) settleUndoFromToast(action);
+            chatHistoryToSend.settle(card, event, "undone");
             card.replaceWith(toolChip("ph:arrow-counter-clockwise Undone."));
           })
         )
@@ -253,7 +222,7 @@ function renderActCard(holder, event) {
     }
     line(`ph:check-circle ${summary}`, row);
   };
-  if (event.done) done(event.summary || event.label, event.undo, event.steps, true);
+  if (event.done || event.state === "done") done(event.summary || event.label, event.undo, event.steps, Boolean(event.done), restored);
   else {
     const notice = document.createElement("p");
     notice.className = "muted";
@@ -261,10 +230,25 @@ function renderActCard(holder, event) {
     const row = document.createElement("div");
     row.className = "row";
     row.append(
-      smallButton("Confirm", "Do this", () => run(event.steps, (result) => done(result.summary, result.undo, event.steps)), false),
-      smallButton("Cancel", "Don't do this", () => card.replaceWith(toolChip("ph:x Cancelled: nothing was changed.")))
+      smallButton("Confirm", "Do this", () =>
+        run(event.steps, (result) => {
+          chatHistoryToSend.settle(card, event, "done");
+          done(result.summary, result.undo, event.steps);
+        }),
+      false),
+      smallButton("Cancel", "Don't do this", () => {
+        chatHistoryToSend.settle(card, event, "cancelled");
+        card.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
+      })
     );
     line(`ph:warning ${event.label}`, notice, row);
+    if (event.state === "expired") {
+      for (const button of row.querySelectorAll("button")) button.disabled = true;
+      return void holder.appendChild(card);
+    }
+    //: Open until Confirm settles it (`done` clears this) or Cancel replaces the card; the page tells the server (`chatHistoryToSend`).
+    card.dataset.pendingAct = card.dataset.askedAct = event.label || "";
+    card.consentId = event.consent_id || ""; // the server holds what a typed yes runs (`chatHistoryToSend`)
   }
   if (card.childElementCount) holder.appendChild(card);
   chatScrollToEnd();
@@ -461,7 +445,7 @@ function digestShape(answerEl, shape, figureText) {
 //: short answer arrive cited and are folded here behind one plain-tier
 //: "Show five more", found by the bold label each opens with (the server's
 //: `support.more.labels`), so the marks inside them keep their numbers.
-//: Pressed, they show and the first of them takes focus.
+//: Pressed, they show and the button stays (focus with it), reading "Show fewer".
 function digestMore(answerEl, more) {
   if (!answerEl || !more) return;
   const wanted = new Set((more.labels || []).map((l) => `${l}:`));
@@ -482,11 +466,13 @@ function digestMore(answerEl, more) {
   button.setAttribute("aria-expanded", "false");
   for (const p of folded) p.hidden = true;
   folded[0].before(button);
+  //: The button stays and toggles (INBOX 1767 a): it kept focus, so no folded
+  //: line (the "More loosely related" label, say) takes a ring it never had.
   button.addEventListener("click", () => {
-    for (const p of folded) p.hidden = false;
-    button.remove();
-    folded[0].tabIndex = -1;
-    folded[0].focus({ preventScroll: true });
+    const open = button.getAttribute("aria-expanded") !== "true";
+    for (const p of folded) p.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    setLabel(button, open ? "ph:caret-up Show fewer" : `ph:caret-down ${more.label}`);
   });
 }
 
@@ -516,15 +502,20 @@ function digestOffer(answerEl, offer) {
   //: A choice ("That could be Export or Export chat. Which one?") is one
   //: offer a line, each its own link (`find_it.answer`).
   for (const other of offer.also || []) digestOffer(answerEl, other);
-  const line = [...answerEl.querySelectorAll("p")].reverse().find((p) => p.textContent.trim() === offer.label);
+  const line = [...answerEl.querySelectorAll("p")].reverse().find((p) => p.textContent.trim() === (offer.line || offer.label));
   if (!line) return;
   const button = document.createElement("button");
   button.type = "button";
   button.className = "linklike digest-offer";
   button.dataset.surface = offer.surface || "";
   button.textContent = offer.label;
+  if (offer.state && offer.state !== "pending") {
+    line.textContent = offer.notice || offer.summary || "Done.";
+    return void line.classList.add("muted");
+  }
   button.addEventListener("click", async () => {
     button.disabled = true;
+    if (offer.offer_id && chatHistoryToSend.heldOffer === offer.offer_id) chatHistoryToSend.heldOffer = ""; // pressed: a later yes must not make it twice
     try {
       let undo = null;
       let redo = null;
@@ -586,18 +577,21 @@ function digestOffer(answerEl, offer) {
       }
       line.textContent = said;
       line.classList.add("muted");
+      chatHistoryToSend.settle(line, offer, "done", { summary: said });
       if (undo) {
         offerUndo(
           label,
           said,
           async () => {
             await undo();
+            chatHistoryToSend.settle(line, offer, "undone");
             line.replaceChildren(button);
             line.classList.remove("muted");
             button.disabled = false;
           },
           async () => {
             await redo();
+            chatHistoryToSend.settle(line, offer, "done", { summary: said });
             line.textContent = said;
             line.classList.add("muted");
           }
@@ -1009,6 +1003,7 @@ async function askQuestion(preset) {
   let answerTip = ""; // the pick-up line, under the answer as in Chat (audit 1028 E52)
   const answerPanels = []; // the app's panels under the answer (INBOX 1300 C06)
   let composedNext = []; // a composed answer's own next questions (INBOX 725)
+  let turnFrame = null; // what the composed answer showed, echoed with the next turn
   //: Kept beyond the callback that receives them, because the answer element
   //: is rebuilt after the stream ends and the markers have to be put back.
   let groundedSentences = [];
@@ -1142,6 +1137,7 @@ async function askQuestion(preset) {
         groundedInsights = Array.isArray(event.insights) ? event.insights : [];
         composedNext = Array.isArray(event.next) ? event.next : [];
       },
+      onFrame: (frame) => { turnFrame = frame || null; },
       onOffer: (event) => {
         answerOffer = event.offer || null;
       },
@@ -1187,7 +1183,7 @@ async function askQuestion(preset) {
     if (!hinted) {
       //: The notes this answer cited ride with the turn, as Chat's do, so
       //: "how much does it cost" after an Ask answer names what "it" was.
-      conversation.push({ question, answer: answerRaw, objects: chatTurnObjects(liveSources) });
+      conversation.push({ question, answer: answerRaw, objects: chatTurnObjects(liveSources), ...(turnFrame ? { frame: turnFrame } : {}) });
       show("retry-btn", "copy-btn", "speak-btn", "new-chat-btn");
       //: What the ⋯ keeps (B12): the answer as written, and the notes it cites.
       askKept = {
@@ -1235,7 +1231,7 @@ async function askQuestion(preset) {
       if (answerTip) answerBox.appendChild(Object.assign(document.createElement("p"), { className: "muted answer-tip", textContent: answerTip }));
       if (answerPanels.length) drawAnswerPanels(answerBox, answerPanels);
       //: `composed`, and `match_info` for each record's reason (INBOX 1310,
-      //: `replyRecordReasons`); only these, so a new meta key cannot steer it.
+      //: `replyRecordCards`); only these, so a new meta key cannot steer it.
       finishReply(answerBox, { composed: answerMeta?.composed, match_info: answerMeta?.match_info });
       //: Not awaited: it is a second model call, and the answer is already on
       //: screen. The same contract `offerFollowups` has in the Chat tab. An
@@ -1368,6 +1364,7 @@ function renderChatMeta(meta) {
   //: note list uses, pointed at this list: one implementation, and a second
   //: one is how the two would come to disagree about what "linked by" counts.
   ensureCardCounts(rawList, _entriesLoadGeneration);
+  ensureModule("replyKit").then(() => replyRecordCards(rawList, meta.raw_results, matchInfo, scored)).catch(() => {});
   $("chat-results").classList.remove("hidden");
   $("ask-idle")?.classList.add("hidden");
 }

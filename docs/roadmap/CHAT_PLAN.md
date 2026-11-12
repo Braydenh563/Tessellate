@@ -361,8 +361,7 @@ Priya) and one note that is not a loose end. Read from the run: the model
 wrote `list_notes({...})` into its prose and then "I cannot execute the tool
 call", so the paging never happened; that shape is now recovered as a call
 for a read (`provider.extract_text_tool_calls`, pass 5). **Still open**: the
-gate itself (8 of 8, and 80% of the skills with no invalid call) on a 3B
-after that fix, and the built-in skills pass, which is hours on these cores.
+gate itself (8 of 8, and 80% of the skills with no invalid call) on a 3B; a Qwen2.5-1.5B (2026-11-11, w34-unv1-1111.md) found 2 of 8, skills 1 pass 2 partial 6 fail of 9, tool choice 0 of 10: not met.
 
 ### Phase 5: the composer, after INBOX 725 (open)
 Left from INBOX 725, each its own step: (a) when a model runs, feed it the
@@ -382,7 +381,7 @@ an agent's write uses; Agent mode then opens with no model for those verbs;
 user to write better link reasons"): INBOX 691's concrete overlaps first,
 then the composer's quoted sentence pair, a model's checked line when one
 runs, feeding Tidy's "Add reasons" and "Add reasons to all". Open items and
-numbers: agent-remaining/composer725-1006.md.
+numbers: `composer725-1006.md` (git history).
 INBOX 1301 D5 (an overview note as its gist, sections said as its shape, no "You asked:" echo, a reminder only for a stated task): built, see HISTORY.md "Moved from the plans, 2026-10-18 (design4-1018: how a no-model answer reads)".
 
 ### Phase 6: the deterministic engine (the owner, 2026-10-10; Brief 39)
@@ -502,10 +501,10 @@ What follows is the architecture that gets there; each decision is a step.
 Steps 0 to 10, the first tests and the specification moved there whole, with
 the numbers. Decisions 30 to 45 stay above: later briefs build on them.
 
-#### Open from Phase 6 (one line each; the agent's ledger is `agent-remaining/engine-1010.md`)
+#### Open from Phase 6 (one line each; the agent's ledger is `engine-1010.md` (git history))
 
-- The blind panel (decision 40): the owner's rating against the 1 to 3B model on the owner's notebook.
-- Probe P15 (`archive/agent-remaining/engine-probe-1010.md`): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
+- The blind panel (decision 40), composer half run 2026-11-11 (PR 216 composer spoke; the 1 to 3B model half is rerun below once a GGUF is up; the owner's own-notebook rating is an owner check, not open work). Three independent blind-tester raters saw only the 25 showcase questions, the notes and two unlabelled answers each (the composer's and a naive baseline: the top note's first three sentences), scoring 0 to 5 on facts, grounded, human and useful. Composer (75 ratings): facts 4.28, grounded 4.31, human 3.19, useful 3.73 (sum 15.5 of 20). Baseline: 4.72, 4.84, 2.09, 3.13 (14.8). The composer beats it on human (+1.1) and useful (+0.6) and loses on facts and grounded (-0.4, -0.5): raters were not shown the notes' dates, so several measured dates read as unverifiable. Rater means within 0.16 of each other on every criterion. Marked down and fixed: a "latest" walk back in time used forward joiners ("Soon after, on 29 August" under 12 September; `composer_body._earlier`), and "Due in March." was left out of "when is the boiler service due" (`composer_select._Scorer.score`'s subject-only halving hit a sentence that carries the cue); `tests/test_composer_panel_216.py`. Also fixed from the panel (`tests/test_composer_panel_216.py`): Q10 no longer counts "Stay one night" as a hotel (`composer_unfound._VERB_SYNONYMS`), so the answer ends "None of these notes say anything about “hotel”."; Q6's comparison lead counts every found note that names a side ("four mention Lisbon and five mention Porto", not the lines shown; three older tests asserted the old singular count and now accept either number); Q17 an entry of a risks list is said as the nearest the notes come, not as the page's status. Q22's "That may be a hobby forming." stays: it is the owner's own insight hedge (INBOX 883, decision 60), computed from a count and dates, not a model's guess. **Model half run 2026-11-11** (Qwen2.5-1.5B on llama-cpp-python, `librarian.build_messages` over `composer.brief`; one blind-tester rater, same 25 questions, two unlabelled answers each, 0 to 5, dates shown): model on facts 2.92, grounded 2.76, human 3.20, useful 3.28 (12.2); the composer on the same pairs 4.72, 4.64, 2.72, 4.00 (16.1). The model rates worse on 17 of 25 (a misread checklist, two notes merged, a date or a hotel that no note holds) and ties or wins on 8 (Q2, Q4, Q10, Q12, Q13, Q16, Q24); the answer validators flag 4 of the 17. Decision 75 keeps the model leading, so no answer was swapped; recommendation: at 3B and below a plain Ask defaults to `answer_from: "notes"`.
+- Probe P15 (`engine-probe-1010.md` (git history)): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
 - The currency table's Settings editor (decision 43); the rates are dated and fixed.
 - The model choosing among the engine's numbered readings (decision 45): the readings are listed; with a model running it does not yet pick.
 - The currency table has no preference at all (`utilities.RATES` is a constant), so decision 43's editor has nothing to edit until the table is a preference.
@@ -573,6 +572,23 @@ session that builds the phase should confirm it in the product first.
   how Claude Code and similar harnesses behave; the missing piece in
   `skill_runner` today is paging inside the step.
 
+## Placed from INBOX, 2026-11-10 (libraries for the composer)
+
+- INBOX 1730: **Owner, 2026-11-10, chat (composer), verbatim:** "also the conversational ability, social skills and biological feel need major improvement. I dont want the same robotic responses every time and also I want it to sound more natural and note generated." (read "not generated"). Follows 1729 (follow-ons). Recommendation (taken, order 3): (a) phrasing variety: each answer shape gets several openers and closers chosen by a seed from the question and the turn number (stable for one question, varied across a conversation), never the same opener twice in a row in one chat; (b) conversational glue: acknowledge the follow-on ("Here are the 13 tags", "Sure, the other charts are"), short replies to thanks, greetings and small talk that answer in kind and offer one next step; (c) contractions and plain spoken English in the composer's templates ("you've", "there's", "nothing yet"), no stacked stat sentences: the most interesting fact first, the rest in the card; (d) an eval: twenty two to four turn chats scored for repeated openers, repeated sentences across turns, and a readability ceiling, gated in the composer suite. Placed: after 1729 (agent conv-1110), Sonnet, next session top.
+- **Owner, 2026-11-10, verbatim:** "are there any other repos or libraries we can use or vendor for anything else like the composer or anything else?". Recommendation (taken, order 3; each licence read from its own LICENSE file before it comes in, AGPL-compatible only): (1) `holidays` (MIT) for holiday dates in the composer and dates reader ("last Christmas" gets its year; holiday-as-topic told from holiday-as-date, W8 left B19); (2) `inflect` (MIT) for plurals, "a"/"an", ordinals and number words in composer sentences; (3) `rapidfuzz` (MIT) for fuzzy binding of follow-ons to the previous answer's items and for speller candidates (replaces hand-written edit-distance loops where it is faster, measured); (4) `textstat` (MIT) for the readability ceiling in the voice eval (INBOX 1730 d); (5) a word-frequency list for ranking (SCOWL sizes or `wordfreq`, whose data is CC-BY-SA 4.0: checked before use). Not taken now: spaCy (MIT, a 12 MB model and compiled parts; only if the rule-based follow-on binding of 1729 falls short on the eval); anything that needs torch (CLAUDE.md section 7). Placed: with conv-1110's follow-up batch (1730), Sonnet; the dependency added in `pyproject.toml` with its licence named in `THIRD_PARTY` (or the repo's notices file) in the same commit.
+
+## Placed from INBOX, 2026-11-11 (1743: the Ask sub-tab as a smart browser; design, not built)
+- INBOX 1743, owner: "Ive always wanted the ask subtab to be a smart browser for your notes". **Design entry, composer batch 2 (2026-11-11); nothing built; the recommendation is taken unless the owner says otherwise.**
+  - **Exists:** the woven overview names its threads in prose (`composer_story`: lead, stretches by thread, one insight); the Matching records column (`#raw-results`, cards in `reply-kit.js`) shows the notes the answer cites, numbered to match its marks; a digest answer draws no chips of its own (`answer-kit.js` `renderAnswerGrounding`, digest branch); the follow-up strip (`renderFollowups`) offers next questions.
+  - **Recommendation, in three slices, each shippable alone:**
+    1. *Thread chips filter the column.* The server already knows the threads (`composer_story._themed`, `_beats`): send them on `support.threads` as `{label, note_ids}`. The page draws them as one `.chip` row above Matching records (not under the answer: the column is the browser). A chip press filters the column to its notes (client only, no new request, the ids are already loaded), a second press clears it, the count in the heading says "3 of 11". Chips are never an act, so no consent applies. Tests: a threads fixture with two themes gives two chips whose ids partition the cited cards; pressing one hides the others (`tests/test_ui_recipes.py` for the chip recipe; a Playwright sweep for the measured count).
+    2. *A card opens its neighbours in place.* The card's existing links row gains "Around this note": press it and the column shows that note's linked and similar notes (`/entries/{id}/related`, already used by the graph and the note's Connections) under the card, indented one step, never replacing the answer. The answer text is untouched; it is a browse, not a new question.
+    3. *Back walks the trail.* Each filter or opened neighbourhood pushes one step on a small trail (`[answer] > thread > note`), shown as a breadcrumb in the heading; Back (the heading's arrow and the browser's Back through `router.js` `navId` state) pops one step. Reload keeps the answer, not the trail.
+  - **Why this order:** slice 1 is the owner's "smart browser" feel at the lowest cost (data exists, client only) and proves the chips; slice 2 needs the related-notes route's cost measured on a 2,000-note notebook before it ships; slice 3 only matters once 2 exists.
+  - **Parity both ways (decision 75):** the threads come from the composer, so a model answer sends none and shows no chips; the model path may later fill `support.threads` from its own cited sources' categories, which needs no change to the page.
+  - **Not decided, for the owner:** whether a chip filter should also narrow the answer text itself (it does not in this design: the answer stays whole). **Not verified:** nothing here has run; slice 1's chip row at 360 px and the column's dimmed-versus-bright cards (INBOX 1743 follow-up) need a measured sweep before closing.
+- **Gather and Track-in-a-table taken up by a typed yes (OPEN O5, 2026-11-11).** The offer's note is parked server-side with an `offer_id` (`consent_store`, single use, 30 minutes); the page sends the id back on the last turn until the button is pressed; a bare yes in Chat makes the held note with Undo, never the page's text. Parity (75): with a model, the same yes becomes "make a note: ..." and its tool card asks Confirm. Ask still declines acts.
+
 ## Placed from INBOX, 2026-09-09
 
 ### Found by an agent while measuring something else (2026-09-08, graph)
@@ -607,57 +623,7 @@ shadow 2px by 8px against a 52.8px gap.
 
 ## Placed from INBOX, 2026-09-21 (the Ask sub-tab, four reports in one pass)
 
-**All four built, 2026-09-21.** One pass, because they are one screen and
-four separate fixes would have meant four rounds of the same measurement.
-The probe is `scratchpad/ui-sweeps/asktab.js` (registered in
-`scripts/gate.sh`'s sweep list); it measures rather than captures, and it
-drives a real stream through `scratchpad/fake_answer_server.py`, which now
-takes `FAKE_DELAY_MS` so a stream lasts long enough to poll. The full record
-is in HISTORY.md, "INBOX resolved, 2026-09-21".
-
-~~297. Gaps between an attached file and the badges, and badges that do not
-all show.~~ **Built.** The gap: 0.0px to 6.4px, at 1440, 1024, 820 and 390.
-The badges: not a truncation and not a wrap (every badge the data implies
-was drawn at every width, none clipped, 0px of the lane scrolled out), but a
-condition that never fired: `clickableResult` passed `entryItem` no options,
-so every chip gated on `options.actions` was missing from a read-only row.
-The same note: 2 badges in the Ask column before, 4 after, against 5 in
-Browse, the fifth being the one chip decision 16 keeps off a result row.
-
-~~298. No generating animation while the model is thinking and streaming.~~
-**Built.** Frames with the answer actually streaming: 250 before, 0 of them
-showing anything moving; 63 after, 63 of them showing something. Across the
-whole turn: 120 of 372 before, 243 of 243 after. Two existing components
-(`progressLine`, `.is-generating`) called from a surface that never called
-either, not a new control.
-
-~~299. Number the matching records to match the inline referencing.~~
-**Built.** Records numbered: 0 of 5 before, 5 of 5 after, from
-`citationNumbers`, the map the prose marks, the "Grounded in" chips and the
-Sources panel already share. Marks whose row disagrees with them: 0. Numbers
-drawn over a row's own text: 0 (6.4px of clear gutter on every row).
-
-~~300. The sources button reads as a banner and describes a place.~~
-**Built.** 525px of a 525px column (100%) before, 204px (38.9%) after;
-"Sources: 5 notes, on the right" before, "Show the 5 notes used" after; and
-a press now moves the first cited record from 328px below the top of the
-window to 72px.
-
-### The four reports, verbatim
-
-297. **The owner, 2026-09-21, verbatim:** "in the ask subtab in notes, make
-    sure there are appropriate gaps between uploaded files and attachments
-    and the badges and make sure all the badges show."
-
-298. **The owner, 2026-09-21, verbatim:** "there's no generating animation
-    while the model is thinking and streaming in the ask tab either."
-
-299. **The owner, 2026-09-21, verbatim:** "can the notes in the matching
-    records that appear in the ask tab be numbered accordingly to match the
-    inline referencing??"
-
-300. **The owner, 2026-09-21, verbatim:** "fix the ui of this sources button
-    in the ask tab."
+All four built 2026-09-21; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN, the Ask sub-tab of 2026-09-21)").
 
 ## Placed from INBOX, 2026-10-03 (the chat stutter, INBOX 413)
 
@@ -682,7 +648,7 @@ twenty). Open until the owner's next run reports it gone or not.
     a 300 to 700px drag, 0 while still). Open until the owner's next run; the skill match being "not entirely accurate" is placed with
     the documents' Check with AI rework (INBOX 410).
 
-## Placed from INBOX, 2026-10-05 (OPEN.md triage)
+## Placed from INBOX, 2026-10-05 (ledger triage)
 
 - Built 2026-10-05: Ask honours `grounding_live` (HISTORY.md, "Moved from the plans, 2026-10-05 (backlog-1005)"); the placed lists' triage pass and the question hover row ("... (op3-1005)").
 
@@ -739,7 +705,7 @@ composer to be soooo good that users dont even need to install ai ... some of
 my friends dont like ai and probs wont want to install a local model so I want
 it to be the best and most capable and well spoken, coherent, well made
 composer the world has seen." Next session: the Phase 5 rows and
-`agent-remaining/composer725-1006.md` (link reasons from sentence pairs, the
+`composer725-1006.md` (git history) (link reasons from sentence pairs, the
 composer feeding a running model, "the composer acts"), each measured on the
 725 eval. The owner may run this phase with a Fable planning pass later, by
 their own call when usage allows (standing order 4 bars Fable agents unless
@@ -919,6 +885,29 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
   Recommendation: this is the composer's brief at large; it is Brief 39's scope, measured against the eval. Also carried by Brief 39.
 - "should we store recently retrieved website content for easy reretieval??"
   Recommendation: keep fetched page text with its fetch time and a re-fetch control, and show it in the sources list. No brief carries it; Brief 37 (web sources) is the nearest.
+
+**E20, s58left4-1110, per part.** Driven on a fresh data dir with no model
+(port 8791): built, with numbers: the empty-chats line sits above the list
+(top 152px, list 377px); Agent mode and Plan are `aria-disabled` with their
+reason ("needs a model"); in the skills menu (first 21 listed) the 12 that
+need a model are disabled and the 9 that need none are not; a composer bubble is headed
+"Atlas, Composer"; the slash menu's "A note", "A document" and "A file"
+each open the picker (3 of 3); Ask has "Forget" per question and "Clear all";
+the context pill is the popover with Compact inside (hidden with no model,
+so its figures were not read). Composer-quality entries (the "ah," opener,
+arrows, second person, time words, insights, variation, social acts, grounded
+claims, captions) are Brief 39's eval rows, not UI parts: open until that
+brief's numbers say so. **Driven 2026-11-10 (wc3-1110) at 390 and 1440:**
+the Guide's thinking gap holds (6.4px head to fold, 9.4px fold to phase
+line); the SearXNG control now draws from the last known state (4017 ms to 5
+ms with the status call held 4000 ms); "show them" lands on Your notes from 4
+of 4 sub-tabs; hovering an in-text reference opened the Sources disclosure,
+now it previews and a press opens it (the mark is a white digit on a blue
+pill, 10 by 13px); the web panel's Try again holds (2 requests, 1 result).
+Still open: the web-search store (only a 60 s one-shot prefetch exists, no
+stored page text, fetch time or re-fetch control) and a per-item
+suppressed-suggestions list (Settings, Data has counts by kind and Clear all
+with Undo; no list of the items).
 
 ## The assistant catalogue, 2026-10-10
 
@@ -1193,7 +1182,7 @@ and https://learn.microsoft.com/en-us/windows/powertoys/run
 | Inline calculator | "15% of 85", roots, implied multiplication `2(3+4)`, ceil, floor, round, max, min, abs, log, ln, sqrt, pow, factorial, constants | Parsed expression; `=` direct prefix in PowerToys | An owned evaluator (an `ast` walk, policy 1), percent-of phrases, words ("times", "plus", "squared") | Partial: simple_eval on a digit-only regex, invisible (finding 1) | M |
 | Unit conversion with `to` and `in` | 13 types: acceleration, angle, area, duration, energy, information, length, mass, power, pressure, speed, temperature, volume | A units table | Our own table (about 150 units, plain data), "5 miles in km" | Partial: Gemini-branch pint path, to be removed (policy 1) | M |
 | Currency conversion | Spotlight converts currency | Live rates | Offline: a dated table the person can edit, always stated "rates as of <date>" | No | M |
-| Time and date | Current time, calendar week of a date, Unix epoch, days in a month, week of year | Time and date plugin with formats | "what week is 3 March", "days until Friday", "what day is 3 weeks from now" | Partial: `when.py`; the Gemini `utility` time answer is invisible | S |
+| Time and date | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN Time and date)"). | | | | |
 | Value generator | GUID, hashes, base64, URL encode | stdlib | Text transforms (below) take the useful half: case, sort lines, count, slugify | No | S |
 | Definitions | Word meanings | System dictionary | Own-notes definitions only (a "X is" sentence); a general dictionary is too heavy (policy 2) | No | M |
 | History plugin `!!` | Recall what you ran before | Result history | Ask history and `search_chat_history` | Yes: `routes_ask_history.py` | none |
@@ -1250,8 +1239,8 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | U13 | Lists | `list` shape, `_list_block`, checklist done counts | A list spread across notes; "the third item"; "how many left" | Merge list items from notes in the window, number them, count done and open as a measured line | S | 2 |
 | U14 | Yes or no | `yesno`, "your notes say", contrary sentence check | Negated and hypothetical facts are not told apart from asserted ones | Fact `mode` (asserted, negated, hypothetical, conditional, question, quoted) decides which sentences may answer | M | 1 |
 | U15 | Why and how | `explain` shape, `because` cue in `_cue` | Why and how are one shape; steps not kept in order | Why: sentences with because, so that, since, due to, reason, plus the sentence before; how: numbered or ordered items and imperatives in note order | S | 2 |
-| U16 | Hypotheticals | None: "what if I move to Lisbon" is shape `translate` (finding 2) | A what-if has no fact to answer from | Kind `hypothetical`: say what the notes hold about the premise's subject (plans, preferences, costs), then "Your notes do not say what would happen." Never a consequence | S | 2 |
-| U17 | Spelled numbers and ordinals | `timewords` and `reminder_parser` read "two", "half an hour"; `_ORDINAL` reads "second" | Not applied to whole questions ("the last 2 weeks", "twenty notes") | `normalise()` turns number words to digits ahead of every rule, in quoted-free text only | S | 2 |
+| U16 | Hypotheticals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U16)"). | | | | |
+| U17 | Spelled numbers and ordinals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U17)"). | | | | |
 | U18 | Out-of-domain | `_nothing` | No class, no eval group (Snips None) | A measured out-of-domain group in the noisy set: weather, scores, trivia; the plain no-answer, the closest note if any, a capability line with one tappable example | S | 2 and 10 |
 
 #### Answering
@@ -1279,9 +1268,9 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | A19 | Definitions | `help_chat` topics (121) define app terms | "X is" from the notes; a glossary for app words | Fact kind `definition`: first sentence matching `X is a|an|the|means|refers to`; app terms answered from help topics through the `help` register | S | 1 and 8 |
 | A20 | Summaries | `summarize_notes` tool, `brief()`, `meeting_summary.py`, `week_review`; the Gemini `summary` shape crashes (finding 3) | One entry point from Chat; clusters with a centrality lead | One lead sentence per cluster by `centrality`, by note and by day, at most N sentences, counts stated | M | 2 and 3 |
 | A21 | Last time, how long since, how often | `when.days_since` (phrase to days) | Not asked of the notes | Event facts: latest date for a verb and object, days since, count per window; measured, dates shown | M | 1 and 6 |
-| A22 | Where did I write X | Search results show the note, category, space | Not said in a sentence | "It is in 'Gym plan', in Fitness, last edited 3 days ago." from the row's own fields | S | 2 |
+| A22 | Where did I write X | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A22)"). | | | | |
 | A23 | Who or what is X (entity card) | Entities pass (model), `EntityMention` | None without a model | Entity fact aggregate: first and last mention, note count, what is said about them (top 2 sentences), related entities by co-occurrence | M | 1 and 6 |
-| A24 | A random note, an old note | `resurface.for_day`, `ranked` | Not from a question | "show me something old" picks from `resurface.ranked`, seeded by the session salt | S | 2 |
+| A24 | A random note, an old note | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A24)"). | | | | |
 | A25 | No answer | `_nothing`, `closest_a`, `_did_you_mean` | Capability line; a suggested question the person could answer with a note (decision 24) | Closest note quoted, one suggestion built from the question's subject, capability line when the question is out of domain | S | 2 |
 
 #### Acting
@@ -1295,21 +1284,21 @@ and always show the exact change before running.
 | X1 | Remind | `set_reminder` tool; `when.parse_reminder_text`, `reminder_parser`; recurring none, daily, weekly, monthly | `commands.py` unrun on `wip/composer-acts`; Gemini `utility` branch claims "noted" and writes nothing (finding 1) | Parse text and time, confirm card "Remind you to call mum, Friday 9:00", ask "When?" when missing; recurrence words map to the four values | M | 7 |
 | X2 | Tag and untag | `tag_note` (add, remove, many ids) | No chat verb | "tag my gym notes #fitness": resolve notes by plan, card lists them (cap 50), undo = the inverse call | M | 7 |
 | X3 | Link and unlink | `link_notes` (reason, link type), `unlink_notes` | No chat verb; no reasons | "link A and B": the reason is the composer's pair reason (decision 39), shown on the card | M | 7 |
-| X4 | File into a category | `edit_note` `category` | No chat verb | "file this under Work" with the engine's explanation line ("shares gym, squat and protein with 6 notes there") | S | 7 (decision 39) |
-| X5 | Rename (note title, tag, category) | `edit_note`, `rename_tag`, `rename_category` | No chat verb | Object resolved by kind word ("rename the tag gym to fitness") | S | 7 |
-| X6 | Pin | `pin_note` | No chat verb | "pin this" with dialogue reference | S | 7 |
+| X4 | File into a category | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
+| X5 | Rename (note title, tag, category) | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
+| X6 | Pin | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | X7 | Archive | No tool (only delete and restore) | An archive verb with nothing behind it | Do not offer until a tool exists; the capability line lists only verbs that run | none | n/a |
-| X8 | Delete and restore | `delete_note`, `restore_note` (bin) | No chat verb | Always confirmed, always the bin, undo = restore | S | 7 |
+| X8 | Delete and restore | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
 | X9 | Create (note, reminder, document, board, map) | `create_note`, `create_document`, `create_mindmap`, `generate_diagram`, board tools | `new_note` only on the wip branch | "make a note: ..." with the person's words verbatim; documents and maps from a named source note or a list | M | 7 |
-| X10 | Add to a note | Daily-note route; `edit_note` replaces content (no append argument) | The act reads the note and writes the whole text | "add X to today's note": daily route, append a bullet, optimistic-lock check (`edit_conflicts.py`) | S | 7 |
+| X10 | Add to a note | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
 | X11 | Summarise as an act | `summarize_notes` | Results not saved | "summarise my gym notes into a note": A20 text, created as a note with its sources linked | S | 7 |
-| X12 | Find and open | `search_notes`, `get_note` | No chat verb ("open the passport note") | Title match first, then plan; one result opens, several asks which | S | 7 |
+| X12 | Find and open | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | X13 | Templates | Four built-in templates; daily-note body in the frontend | No variables; no user quick-adds | `{date}`, `{weekday}`, `{week}`, `{title}`, `{n}` filled by rule; a saved phrasing with slots appears as a chip ("Log a workout: {what}") | M | 7 |
 | X14 | Bulk acts with preview | Confirm card for agent writes | Counts, caps, partial failure wording | Card: "Tag 14 notes #fitness" with the first five listed and a "show all"; cap 50; result line "Done: 13. Not done: 1, it is private."; one undo for the batch | M | 7 |
 | X15 | Scheduled acts | Reminders recur; Night shift jobs | No "every Monday, list what is open" | An act with a recurrence is a reminder whose note carries the phrasing; at most one proactive line a day per scheduled act (decision 28) | M | 7 and new |
 | X16 | Undo | Per-feature undo toasts; `restore_note`; tidy runs undoable | No generic "undo that" in Chat | The act's own inverse steps stored in the confirm card's result; "undo" and "undo that" read as a conversation control (C13) | M | 7 |
-| X17 | Cancel | None | Pending act cannot be dropped | "cancel", "never mind" clear `Dialogue.pending_act` | S | 7 |
-| X18 | Capability line | `CAPABILITY_LINE` only on the wip branch | Must list only verbs that run | Generated from the registered acts, not typed | S | 7 and 8 |
+| X17 | Cancel | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). | | | | |
+| X18 | Capability line | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 
 #### Conversing
 
@@ -1320,7 +1309,7 @@ and always show the exact change before running.
 | C3 | Mood | `SOCIAL["emotion"]` 21 | Replies are generic | Name the feeling word the person used; if their recent notes show a streak or a hard week (measured), say that measured fact, never advice | S | 8 |
 | C4 | Small talk | how, laugh, reaction, confused, ack, compliment, insult (20 lines each) | No memory of what was said; the same kind repeats | Kind plus the last two replies: avoid repeats across the session (decision 34) | S | 4 |
 | C5 | About the app | `intent.ABOUT_APP`, `SOCIAL["about_app"]` 10; the Guide separately (`help_chat`) | Chat and Guide are two engines | One engine with a `help` register (decision 36): the step sentence first, the rest behind "More about the Dashboard" | M | 8 |
-| C6 | Identity | `SOCIAL["who"]` 12; owner: "Composer doesn't know it is atlas" | Not named; bubble label | "I am Atlas. With no model I answer from your notes alone; with one, I use it and check it against them." ; label "Atlas, from your notes" or "Atlas, <model>" | S | 8 |
+| C6 | Identity | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | C7 | Capability questions | `ABOUT_APP` patterns; `get_app_navigation` tool | Answers are static | Generated from the act registry and utility table (X18, T-rows) with one example each | S | 8 |
 | C8 | Help | `help_chat.HELP_TOPICS` 121, keyword and edit-distance matching, `offline_answer` pastes whole paragraphs | Whole paragraphs; no step-first answer | `help` register composer picks the one sentence (owner's widgets example) | M | 8 |
 | C9 | Encouragement | `composer_voice` remarks (week count, open items) | None in Chat | When a measured streak, a finished checklist or a long gap ends, say it plainly ("All 5 items on the Trip list are ticked."); no praise words the data cannot back | S | 6 and 8 |
@@ -1339,19 +1328,19 @@ branch's pint and simpleeval go with Brief 35 (policy 1).
 
 | Id | Capability | Has it (file) | Gap | Deterministic rule or data | Cost | Step |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | Calculator | Gemini `math` shape, invisible, digit-only regex | "15% of 80", "20 percent of 50", "3 times 4", "sqrt 144", "2(3+4)", words for operators | `ast` evaluator over + - * / % ^ and a function whitelist (sqrt, round, floor, ceil, abs, min, max, log, ln, pow, factorial), percent-of, "plus/minus/times/divided by/squared"; no names, no attributes | M | 2 |
+| T1 | Calculator | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T1)"). | | | | |
 | T2 | Unit tables | Gemini `convert` shape (pint), invisible | Length, mass, volume, temperature, speed, area, time, data, energy, pressure, angle with `to` and `in` | A plain-data table of about 150 units with factor and offset; temperature by formula; ambiguity ("ton", "pint", "cup") asks | M | 2 |
 | T3 | Currency tables offline | None | Rates change | A small dated table in the app (about 30 currencies, one date), user-editable in Settings, every answer says "rates as of <date>"; no network | M | new (2) |
 | T4 | Date arithmetic | `when.days_since`, `timewords` | "days until Friday", "what day is 3 weeks from now", "weeks between two dates", "what week number is 3 March", "how old is a date" | Date maths over `timewords` mentions and a table of fixed-date holidays by name and country-neutral rule (Easter by algorithm) | M | 2 |
-| T5 | Word count and reading time | Gemini `reading_time` (counts the retrieved notes, not the one asked about; invisible) | "how many words is this note", "reading time of the passport note" | Count on the resolved note's text (code and front matter excluded), 238 words per minute, "about 420 words, two minutes" | S | 2 |
-| T6 | Text transforms | None | Upper, lower, title case, sort lines, remove duplicate lines, number lines, slugify, count characters, reverse, join/split on commas | Act on the note or the pasted text; output is a draft the person confirms before it replaces anything | S | 7 |
+| T5 | Word count and reading time | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
+| T6 | Text transforms | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T6)"). | | | | |
 | T7 | Checklists | Checklist units in `read_note`; done counts | Make a checklist from a sentence; tick by chat | "make a checklist: milk, eggs, bread" creates a note with `- [ ]` lines; "tick milk" edits one line | S | 7 |
 | T8 | Counters | None | "add 1 to coffee", "how many coffees this week" | A counter is a note titled "Counter: coffee" with a numeric property, incremented by an act; the count over a window is derived from dated lines | M | 7 |
 | T9 | Timers | Reminders with `due_at`, `reminder_parser.relative_delta` ("in 20 minutes") | A timer in a chat | A timer is a reminder due in N minutes, titled "Timer: 10 minutes"; the confirm card says so; no countdown claim | S | 7 |
-| T10 | Random pick | `resurface.ranked` | "pick one of pizza, sushi, tacos", "pick a number between 1 and 10" | Seeded by session salt and turn; the result is a computed value labelled "random" | S | 2 |
-| T11 | Dice and coin | None | "roll 2d6", "flip a coin", "roll a dice" | `random` with the same labelling; the roll is stated with each die | S | 2 |
+| T10 | Random pick | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T10)"). | | | | |
+| T11 | Dice and coin | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | T12 | Templates | See X13 | See X13 | See X13 | M | 7 |
-| T13 | Time and date now | Gemini `utility` shape, invisible | Today's date, the time, week number, "what day is it" | Local clock and the user's timezone setting; computed | S | 2 |
+| T13 | Time and date now | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T13)"). | | | | |
 
 #### Proactive (decision 28: rarely, on real signals, never while typing)
 
@@ -1544,9 +1533,9 @@ catalogue above specifies the engine for chat. This section is the layer under
 every surface: what the research says it should be made of, where it joins each
 surface, the decisions, and the briefs. It remakes nothing decided in 17 to 45.
 "Today" is read from the code and from the probe tables in
-`archive/agent-remaining/engine-probe-1010.md`, not observed in the app, except where a
+`engine-probe-1010.md` (git history), not observed in the app, except where a
 number is given. The probe tables were re-run on the merged head by F0: every row is
-unchanged (`archive/agent-remaining/found-1010.md` part 2).
+unchanged (`found-1010.md` (git history) part 2).
 
 - (Odysseus, fourth read 2026-10-10) 
 
@@ -1587,7 +1576,7 @@ unchanged (`archive/agent-remaining/found-1010.md` part 2).
 4. **`ai/realise.py`**, the realiser: templates with protected spans, two voices plus help, salt per chat and turn, the variety floor measured. Every system sentence may route through it; chat first, then toasts and empty states surface by surface.
 5. **`ai/validate.py`**, the validators: `source_check`, grounding marks, the maxims lint, slot completeness and the computed-sentence rule, run on the engine's answer and the model's alike.
 
-Rule: a surface never reads language itself. `tests/test_one_reader.py` ratchets the count of files outside `recognise.py` and `timewords.py` that compile a date-word or unit pattern, from today's count down to zero. Today's count, measured 2026-10-10 by `scratchpad/reader_count.py` (F0): **6 files** (`ai/when.py`, `ai/reminder_parser.py`, `search/query.py`, `ai/notebook_stats.py`, `api/routes_vision.py` by substring, `ai/composer.py` as a date cue), 0 in `frontend/js`, and no unit reader anywhere; the lines are in `archive/agent-remaining/found-1010.md`.
+Rule: a surface never reads language itself. `tests/test_one_reader.py` ratchets the count of files outside `recognise.py` and `timewords.py` that compile a date-word or unit pattern, from today's count down to zero. Today's count, measured 2026-10-10 by `scratchpad/reader_count.py` (F0): **6 files** (`ai/when.py`, `ai/reminder_parser.py`, `search/query.py`, `ai/notebook_stats.py`, `api/routes_vision.py` by substring, `ai/composer.py` as a date cue), 0 in `frontend/js`, and no unit reader anywhere; the lines are in `found-1010.md` (git history).
 
 ### 4. Decisions, 2026-10-10 (not to be remade; numbered after Phase 6's 45)
 
@@ -1881,7 +1870,7 @@ The owner: "composer_money seems very specific, what if the user asks about othe
 
 1. **One quantity engine replaces `composer_money`.** Built: sums, money as a dimension, status words of any quantity, differences (HISTORY, 2026-10-30 measures and quantity engine). No pint: it would duplicate `recognise.UNITS`. quantulum3 only if the UNITS reader misses a measured class, then without its classifier. Open: "X compared to Y" and "X versus Y" asks are taken by `composer.compare_sides` before the digest (`composer_digest._kind_if_mine`); a goal with no doing in the ask ("my 10k goal") sums every distance instead of taking the doing from the goal note; a difference whose dimension no unit, doing or comparative names (data-driven choice).
 2. **Nouns weigh above verbs in retrieval.** Built: `composer.COMMON_VERBS` counts as a timing word does (HISTORY, 2026-10-30 measures). Open: vendor simplemma (MIT, English data only) only if a stress run shows the list short.
-3. **Phrasing tests from real conversations, not training data:** CLINC150 (CC BY 3.0) out-of-scope and small talk; Schema-Guided Dialogue (CC BY-SA 4.0) reminder and calendar acts; WildChat (ODC-BY, gated) "how many / did I / when is" questions. The raw sets stay out of the repo; generated fixtures carry attribution in `tests/fixtures/composer/SOURCES.md`.
+3. **Phrasing tests from real conversations, not training data:** built 2026-11-11 (`fixtures/composer/phrasing_1111.json`, `tests/test_phrasing_real_1111.py`; CLINC150 CC BY 3.0, SGD CC BY-SA 4.0, WildChat ODC-BY, not gated; raw sets stay out; attribution in `SOURCES.md`). Open: 26 strict xfails (coverage gate on the nearest-note answer for topics the notebook lacks: PTO, meetings, shared everyday words; jokes about a subject; alarm questions; number-word dates). SGD has no calendar service in its public splits; a larger WildChat pull needs its (down) search endpoint.
 
 ## Placed from INBOX, 2026-11-05 (the Ask columns and folds)
 
@@ -1889,10 +1878,22 @@ A1, A2 and the A2 follow-up built; moved to HISTORY.md ("Moved from the plans, 2
 
 B2 and B7 built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B2 and B7)").
 
-- **B1, the owner 2026-11-05 02:20Z (screenshots: Ask, the whole answer inside a "145 words" card under Thinking, then the same card collapsed to one line), verbatim:** "also the whole response from my ai model just got placed in a dropdown collapsed box" (pasted: the model's "Thinking Process:" text, numbered steps, no tags). Recommendation (taken): find the class (an untagged "Thinking Process:" preamble, the reasoning split, or the long-answer card folding the answer itself) with a fake-transport stream of exactly that shape; the answer is never inside a fold or a collapsed card, the reasoning is, in Ask, Chat and the popup agent.
-- **B3, verbatim:** "I also cant type in the text box while the popup agent is respondning (check the guide as well) and I cant draft, queue or edit/delete queued messages like in chat for the popup agent." Recommendation (taken): the popup agent and the guide take Chat's composer behaviour: typing stays open while a turn runs, Enter queues, the queue shows with edit and delete, drafts are kept per surface; one shared queue component.
-- **B4, verbatim:** "also when fullscreen or docked to the main window, the bottom footer of te popup agent is really really tall which it shouldnt be" (screenshot: the status row then about 270 px of empty footer). Recommendation (taken): the footer is its content's height in every mode (floating, docked, full screen), measured.
-- **B5, verbatim:** "also in that test request the search appeared after the generated text when it happened before that text was written out." Recommendation (taken): steps and text keep the order they happened in (one timeline ordered by event arrival), in the agent, Chat and the guide; a test with a fake stream of text, tool call, text.
-- **B6, verbatim:** "also I still dont understand why the ai model context windows are so small, cna they be larger?? they need to properly adapt to the model." Recommendation (taken): the context window is read from the model (GGUF metadata or the server's reported n_ctx), set as large as the model and memory allow (a bounded share of free RAM or VRAM), shown in Settings with why; prompt budgets scale from it; fake-transport tests for a 4k, 32k and 128k model. Owner log 02:15Z: "tessellate.agent context budget: 5120 tok window" for gemma-4-E2B (a 128k model).
-- **B8, the owner 2026-11-05 02:23Z, verbatim:** "sometimes when I close a minimised tab for a window, the window flashes for a split second". Recommendation (taken): closing a minimised window from its tab never shows the window (no restore before the close, no transition on a hidden window), for every window kind that minimises to a tab.
-- **B9, the owner 2026-11-05 02:25Z (screenshot: three "Patterns: ... as you told me on ..." lines), verbatim:** "also is there a way to edit or managed confirmed patterns??". Found: no; a Confirm writes a `derived_facts` row of kind "confirmed" (ai/insights.py), and Settings' "What it remembers" (`GET /settings/memory`, routes_settings.py:1638) lists preferences only. Recommendation (taken): confirmed patterns join "What it remembers" as their own group, each with its sentence, the date confirmed and the notes behind it, and Edit (the subject or wording, kept as the person's own word), Remove (soft delete, with Undo) and Not right (the dismiss path); the Patterns line gets the same three in its row menu; Help and the Guide topic say where they are managed.
+- **B1 and B5: built 2026-11-05** (41d42ef, f30176e), moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B1 and B5)"): the answer is never folded, the reasoning is; the popup agent keeps arrival order.
+- B6 (the context window adapts to the model and memory) built; moved to HISTORY.md ("Moved from the plans, 2026-11-07 (CHAT_PLAN B6)").
+- **B3, B4 and B8**: built 2026-11-05, moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B3, B4 and B8)").
+- B9 (confirmed patterns managed) built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B9)").
+
+## Placed from INBOX, 2026-11-07 (room for 1694)
+
+1564. **Owner decisions, 2026-11-03 (asked and answered):** U15 arrange menu: "I think it is a good idea to make it subsectioned yeah" (build the submenus). **U15 fixed 8b7d6ad:** five submenus (Order, Align, Distribute size and flip, Tidy and connect, Group and lock); the menu 785px and 24 rows with a scrollbar before, 220px and 5 rows after at 1440x900 (`$S/u15/arrange.js`); all 24 commands by keys; the phone's More sheet still lists them flat (a31r-1103). E33 Guide lead: sentence first, the click path as its own second line (the current order; tests stay). E50: keep Fork and Compress in the phone chat menu. U41: shorten the map-created toast to one line with an action, the longer help behind the help button (tests/test_wb_dog1_fixb.py changes with this dated reason). D30 spellcheck: "japanese, chinese, uk/us english spelling, shouldn the user be able to download language packs like with MS Word?" plus Spanish, French and German, Portuguese. Recommendation: language packs downloaded on demand from Settings (like the model downloads: one download, then offline), a per-document language, UK and US English as two variants of the bundled list; Japanese and Chinese have no word-list spellcheck (no spaces between words), so their pack gives the document language and input hints only, said plainly in the pack's card. Also "tell me about this" joins composer_digest `_THIS` (a30e's found-not-fixed).
+
+## Placed from INBOX, 2026-11-09 (the tray at its cap)
+
+1691. **Found 2026-11-07 (session, from the 2026-11-05a "/chat/followups 15 s deadline" line; the owner's log line itself is not in the repo):** every background call to the utility model runs in the default preset, so a reasoning model reasons before a job whose reasoning nobody reads. Follow-ups now run in Quick (`think: false`, 256 tokens; `tests/test_followups.py`). The same holds for meeting_summary.py:150, reminder_parser.py:143, speakers.py:75, skill_runner.py:660, entities.py:83, drafter.py:531 and 592, captioning.py:144, passive_capture.py:197 and tensions.py:232 (all `src/tessellate/ai/`). Recommendation (taken when a real-model check can run, `scratchpad/llama-dev.sh serve` then `pytest -m evals`): an internal `BACKGROUND_MODE` in presets.py (`think: False`, Normal's 1024 cap, temperature unset) for each of those whose output is short, measured before and after on one reasoning model. Owner: paste the log line for the 15 s failure if it comes back.
+1692. **Decided 2026-11-11 (web-search store; no earlier decision was recorded, smallest privacy-safe design taken):** pages the agent or composer fetches in a chat are kept in the local `web_pages` table (URL, title, text, links, fetch time; `search/webstore.py`) for 7 days, capped at 200, never sent anywhere. Setting `web_store_enabled` (default on, Settings, Web search) and "Clear kept pages". A web source in the Sources panel says "fetched 2 days ago" with Fetch again (`/websearch/stored/refetch`, needs web search on). Stored text is not served in place of a live fetch. A failed `web_search` or `read_url` chip (not SearXNG down) has its own Try again. Tests: `tests/test_web_store_1111.py`.
+
+## Placed from W34, 2026-11-11 (gap5: model-facts rows, sized)
+
+- **A negative-claim check (M, a design call; model-facts-1027:6).** "Nothing matched" with a model and no tools (`_no_notes_events`, routes_chat.py) stays the engine's because the figure check cannot catch a model claiming a find. First step: a reader that marks a reply as claiming a find or a none, tested against the facts' note list, before `_no_notes_events` may hand over. Done when a reply claiming a note the search did not return is refused (fake transport test).
+- **Find rows as carried facts for Ask-mode search acts (M; model-facts-1027:10).** "Find my gym notes" (a search act, `_act_events`, routes_chat.py) stays the engine's with a model up because it is no read tool. First step: carry the find rows as facts, then let the model word them under the figure check.
+- **Date and time wording in `fact_check` (design; model-facts-1027:14, :15).** `_moments` (fact_check.py, docstring at :522) checks a span only to the nearest unit and gives a year-less date the year nearest now; "by 10" counts as a time only when the facts or the question state hour 10. Both are the stated design: widening needs real-model checks (`scratchpad/llama-dev.sh serve`, then `pytest -m evals`), so it stays open until an owner run.

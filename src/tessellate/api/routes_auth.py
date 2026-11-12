@@ -39,6 +39,7 @@ from tessellate.core import (
     crypto,
     desktop_dialog,
     diskspace,
+    hellostore,
     lanlive,
     lantrust,
     netbind,
@@ -52,7 +53,7 @@ from tessellate.core import (
 from tessellate.core.config import ConfigManager
 from tessellate.core.deps import brief_session, get_config, get_session, register_cache_reset
 from tessellate.core.database import Entry, User, Vault
-from tessellate.entry import manager
+from tessellate.entry import manager_private
 from tessellate.entry.manager import log_action
 from tessellate.api.this_computer import REFUSAL, is_another_device, this_computer_only
 
@@ -158,6 +159,21 @@ MEDIA_LINK_SECONDS = 120
 # ticket -> (decoded path, expiry, session token)
 _media_links: dict[str, tuple[str, float, str]] = _GuardedDict()
 register_cache_reset(_media_links.clear)
+
+
+class _HideTickets(logging.Filter):
+    """A media link's `?once=` ticket is a bearer for two minutes; uvicorn's access line would write it to the log (audit 1028 K38).
+    Not single use: a PDF viewer asks a file for ranges more than once."""
+
+    _TICKET = re.compile(r"(\?|&)once=[A-Za-z0-9_-]+")
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if isinstance(record.args, tuple):
+            record.args = tuple(self._TICKET.sub(r"\1once=...", a) if isinstance(a, str) else a for a in record.args)
+        return True
+
+
+logging.getLogger("uvicorn.access").addFilter(_HideTickets())
 _MEDIA_LINK_PATH = re.compile(r"/(?:media|files)/[A-Za-z0-9._~%/-]+")
 # Module state, not app state, so `deps.reset_app_state()` (the thing every
 # test's `app_state` fixture calls) threw the database away and kept the
@@ -356,9 +372,21 @@ def _revoke_media(request: Request, response: Response) -> None:
         )
 
 
+#: The sweep walks every token, so it runs at most this often from the per-request check (audit 1028 K33); the token being
+#: asked about is judged on its own entry every time, so an idle session is still refused at once.
+_SWEEP_EVERY = 30.0
+_sweep_state = {"last": 0.0}  # a dict, not a rebound global: one place reads and writes it
+
+
 def _token_valid(token: str | None, idle_ttl: int) -> bool:
     """Is this token live? Using it also keeps it alive."""
-    _sweep_expired(idle_ttl)
+    now = time.time()
+    with _token_lock:
+        entry = _active_tokens.get(token) if token else None
+        own_dead = entry is not None and (now - entry[1] > idle_ttl or now - entry[0] > _SESSION_MAX_AGE)
+    if entry is None or own_dead or now - _sweep_state["last"] >= _SWEEP_EVERY or now < _sweep_state["last"]:
+        _sweep_state["last"] = now
+        _sweep_expired(idle_ttl)
     with _token_lock:
         entry = _active_tokens.get(token) if token else None
         if entry is None:
@@ -788,6 +816,7 @@ def end_every_session() -> int:
     # it could open nothing now, so it goes rather than lingering as five
     # strikes' worth of guesses at a record that is already dead.
     pinstore.forget(get_config().data_dir)
+    hellostore.forget(get_config().data_dir)  # bound the same way as the PIN
     return ended
 
 
@@ -825,6 +854,8 @@ def status(
         # Whether this caller may type a PIN: set, and this computer. Any
         # other device is told False whether or not there is one.
         "pin_here": _from_this_computer(request) and pinstore.is_set(config.data_dir),
+        # Windows Hello (core/hellostore.py), by the same rule as the PIN.
+        "hello_here": _from_this_computer(request) and hellostore.is_set(config.data_dir),
         # INBOX 1573: a notebook with no account while a backup holds notes
         # (the database deleted, damaged or its log lost) is offered that
         # backup. This computer only: another device learns nothing of them.
@@ -1026,12 +1057,23 @@ def unlock(
         refused = _hold_new_device(request, device, config)
         if refused is not None:
             return refused
+    return _finish_unlock(request, response, session, config, user, body.password, pin_dek)
+
+
+def _finish_unlock(
+    request: Request, response: Response, session: Session, config: ConfigManager,
+    user: User, password: str | None, quick_dek: bytes | None,
+) -> dict:
+    """After the password, the PIN or Windows Hello was accepted: the key, the
+    audit line and the session. `quick_dek` is what the PIN or Hello
+    unwrapped (bound to this very vault row); otherwise the password opens it."""
+    device = _device_cookie(request)
     # Unwrap the data key so private notes are readable for this session.
-    if pin_dek is not None:
-        vault.set_key(pin_dek)  # bound to this very vault row (`_pin_binding`)
+    if quick_dek is not None:
+        vault.set_key(quick_dek)
         vault_open = True
     else:
-        vault_open = vault.open_with(session, body.password)
+        vault_open = vault.open_with(session, password or "")
     #: **A full disk must not lock you out of your own notebook.** Measured
     #: (INBOX 266, item 6) on a data dir filled to 100%: this route answered
     #: 507 and the app became unopenable, while every read endpoint behind it
@@ -1275,6 +1317,8 @@ def _lan_state(config: ConfigManager, request: Request) -> dict:
         #: When LAN mode last switched itself off for lack of use (a date).
         "switched_off": trust["switched_off"],
         "unused_days": lantrust.UNUSED_DAYS,
+        #: The short name and the proxy's domain names (WORLD_CLASS_PLAN design requests).
+        "names": netbind.saved_address_names(config),
     }
 
 
@@ -1449,6 +1493,55 @@ def set_lan_option(
         log_action(session, "edited", "user", user.id, f"other devices: {body.name.replace('_', ' ')} {'on' if body.enabled else 'off'}")
         session.commit()
     lantrust.set_flag(config.data_dir, body.name, body.enabled)
+    return _lan_state(config, request)
+
+
+class AddressNamesBody(BaseModel):
+    local_name: str = Field(default="", max_length=63)
+    allowed_hosts: list[str] = Field(default_factory=list, max_length=netbind.MAX_ALLOWED_HOSTS * 2)
+    current_password: str | None = Field(default=None, max_length=MAX_PASSWORD_CHARS)
+
+
+@router.post("/address-names", dependencies=[Depends(require_unlock)])
+def set_address_names(
+    body: AddressNamesBody,
+    request: Request,
+    session: Session = Depends(get_session),
+    config: ConfigManager = Depends(get_config),
+) -> dict:
+    """**A name instead of localhost, and a domain behind a proxy** (the owner,
+    "customise the domain name"): the short name the window opens
+    (`<name>.localhost`, loopback only) and the host names a reverse proxy
+    forwards (`TESSELLATE_ALLOWED_HOSTS` from Settings). This computer's call,
+    like the rest of the network pane. A new domain loosens the rebinding
+    guard, so it asks for the password; removing one, or the short name, does not.
+    """
+    _require_this_computer(request)
+    raw_label = body.local_name.strip()
+    label = netbind.clean_label(raw_label)
+    if raw_label and not label:
+        raise HTTPException(status_code=400, detail="Use letters, digits and hyphens for the short name, up to 63.")
+    hosts = netbind.parse_hosts(body.allowed_hosts)
+    typed = [t for t in body.allowed_hosts if str(t).strip()]
+    for token in typed:
+        if not netbind.parse_host(token):
+            raise HTTPException(status_code=400, detail=f"“{str(token).strip()[:60]}” isn't a domain name. Use a name like notes.example.com.")
+    if len(hosts) > netbind.MAX_ALLOWED_HOSTS:
+        raise HTTPException(status_code=400, detail=f"At most {netbind.MAX_ALLOWED_HOSTS} domain names.")
+    added = [h for h in hosts if h not in netbind.extra_allowed_hosts()]
+    user = None
+    if added:
+        user = _check_password_for_lan(request, session, body.current_password)
+    config.set_preference(netbind.LOCAL_NAME_PREF, label)
+    config.set_preference(netbind.ALLOWED_HOSTS_PREF, hosts)
+    netbind.apply_address_prefs(config)
+    user = user or _get_user(session)
+    if user is not None:
+        log_action(
+            session, "edited", "user", user.id,
+            f"address names: short name {label or 'none'}, domains {', '.join(hosts) or 'none'}",
+        )
+        session.commit()
     return _lan_state(config, request)
 
 
@@ -1660,6 +1753,12 @@ def account(
             "set": pinstore.is_set(config.data_dir),
             "here": _from_this_computer(request),
         },
+        # Settings, "Unlock with Windows Hello": the same three facts.
+        "hello": {
+            "available": hellostore.available(config.data_dir),
+            "set": hellostore.is_set(config.data_dir),
+            "here": _from_this_computer(request),
+        },
     }
 
 
@@ -1728,6 +1827,7 @@ def change_password(
     # The PIN record is bound to the old hash, so it could open nothing now;
     # it is cleared rather than re-wrapped, since re-wrapping needs the PIN.
     pin_cleared = pinstore.forget(get_config().data_dir)
+    hello_cleared = hellostore.forget(get_config().data_dir)  # bound the same way
 
     # Every other session is invalidated: a password change is exactly when
     # you want anything already open elsewhere to stop working. The caller
@@ -1746,6 +1846,7 @@ def change_password(
         "other_sessions_ended": signed_out,
         "warning": password_warning(body.new_password),
         "pin_cleared": pin_cleared,
+        "hello_cleared": hello_cleared,
     }
 
 
@@ -1941,7 +2042,7 @@ def rotate_vault_key(
 
     for entry, _plaintext, new_ciphertext in rewritten:
         entry.content = new_ciphertext
-    manager.rekey_private_extras(session, old_key, new_key)
+    manager_private.rekey_private_extras(session, old_key, new_key)
 
     vault_row = session.scalar(select(Vault))
     new_salt = crypto.new_salt()
@@ -1963,6 +2064,7 @@ def rotate_vault_key(
     vault.set_key(new_key)
     # The PIN wraps the old key, which is what a re-key exists to retire.
     pinstore.forget(get_config().data_dir)
+    hellostore.forget(get_config().data_dir)  # bound the same way as the PIN
 
     # Same reasoning as change-password: rotating a key you suspect is
     # compromised should not leave anything already open still trusted on
@@ -2166,6 +2268,7 @@ def recover(
     session.commit()
     vault.set_key(dek)  # only after the commit, as `rotate_vault_key` does
     pinstore.forget(get_config().data_dir)  # bound to the old password hash
+    hellostore.forget(get_config().data_dir)  # bound the same way as the PIN
     _owner_seen.clear()
     token = _end_sessions_and_issue(request, response)
     return {

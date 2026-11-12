@@ -28,13 +28,13 @@ Anything else is skipped rather than guessed at.
 
 from __future__ import annotations
 
-import re
+from tessellate.core.lazyre import lazy_compile
 
 #: A fence line: exactly three dashes and nothing but whitespace after them
 #: (a CR too: a note saved with CRLF line ends splits on "\n" and keeps it).
 #: Not `---` anywhere in the document, which is a horizontal rule; the only
 #: thing that makes these three characters a fence is being the first line.
-_FENCE = re.compile(r"^---[ \t\r]*$")
+_FENCE = lazy_compile(r"^---[ \t\r]*$")
 
 #: The key half of a `key: value` line. What YAML allows unquoted and what the
 #: competitor editors write: letters, digits, underscores, dashes, dots, and
@@ -48,7 +48,7 @@ _FENCE = re.compile(r"^---[ \t\r]*$")
 #: colon, which is a line any document can contain. `str.partition` finds the
 #: colon in one pass and this only has to say whether what precedes it is a
 #: key, over a class with no repetition ambiguity in it at all.
-_KEY_NAME = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.\- ]*$")
+_KEY_NAME = lazy_compile(r"^[A-Za-z0-9_][A-Za-z0-9_.\- ]*$")
 
 
 def _split_key(line: str) -> tuple[str, str] | None:
@@ -62,7 +62,7 @@ def _split_key(line: str) -> tuple[str, str] | None:
     return head, rest
 
 #: A block list item under a key: `  - value`.
-_ITEM = re.compile(r"^[ \t]*-[ \t]?(.*)$")
+_ITEM = lazy_compile(r"^[ \t]*-[ \t]?(.*)$")
 
 #: Bounds, because this runs per row of a list that can be the whole notebook.
 #: A document with three hundred tags is not a document anybody filters by; it

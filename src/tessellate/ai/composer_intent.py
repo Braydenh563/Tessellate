@@ -12,11 +12,13 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 
-from tessellate.ai import question_noise, recognise as rec, utilities, when as when_words
+from tessellate.ai import composer_numbers, question_noise, recognise as rec, utilities, when as when_words
+from tessellate.ai import recognise_questions
 from tessellate.ai.composer_ask import _ASKING_WORDS, _holds, _stem, _words, classify, rephrase, subject_terms, user_today
 from tessellate.ai.composer_body import length_wish
+from tessellate.core.lazyre import lazy_compile
 
 
 # --- the query plan (CHAT_PLAN Phase 6, decision 31) ------------------------------
@@ -36,10 +38,10 @@ _SHAPE_KIND = {
 }
 
 
-_WHY = re.compile(r"^\s*(?:why|how come|what (?:made|makes|caused|causes)|explain why)\b", re.I)
+_WHY = lazy_compile(r"^\s*(?:why|how come|what (?:made|makes|caused|causes)|explain why)\b", re.I)
 
 
-_RECALL = re.compile(
+_RECALL = lazy_compile(
     r"\bwhat (?:did|have|had) (?:i|we) (?:do|did|done|write|wrote|written|get up to|work on|worked on|note|noted|been up to)\b"
     r"|\bwhat (?:did|have|had) (?:i|we) (?:add|added|save|saved|make|made|jot|jotted|capture|captured)\b"
     r"|\banything (?:i|we) (?:added|saved|made|wrote|noted|jotted|did|captured)\b|\bdid (?:i|we) (?:add|write|save|make|note|jot) anything\b"
@@ -49,24 +51,28 @@ _RECALL = re.compile(
 
 
 #: The verbs of such a question, which are not subjects to search for.
+#: "do I have anything on Wednesday" asks what is on the day, as "what is on Wednesday" does (R3-8).
+_ANYTHING_ON = lazy_compile(r"^\W*(?:do i have|have i got|have i|got|is there|are there)\s+(?:anything|something)\b", re.I)
+
+
 _RECALL_VERBS = frozenset("add added save saved make made jot jotted capture captured anything write wrote note noted".split())
 
 
-_INSIGHT = re.compile(r"\b(?:patterns?|habits?|trends?|keeps? coming up|how often do i|what do i (?:keep|always))\b", re.I)
+_INSIGHT = lazy_compile(r"\b(?:patterns?|habits?|trends?|keeps? coming up|how often do i|what do i (?:keep|always))\b", re.I)
 
 
-_RECOMMEND = re.compile(r"^\s*(?:what|which) should (?:i|we)\b|^\s*should (?:i|we)\b|\brecommend|\bsuggest(?:ion)?s?\b", re.I)
+_RECOMMEND = lazy_compile(r"^\s*(?:what|which) should (?:i|we)\b|^\s*should (?:i|we)\b|\brecommend|\bsuggest(?:ion)?s?\b", re.I)
 
 
-_TAGGED = re.compile(r"\b(?:tagged(?: with)?|with the tags?|under the tags?)\s+#?([\w-]{1,40})|(?<![\w&])#([A-Za-z][\w-]{0,39})", re.I)
+_TAGGED = lazy_compile(r"\b(?:tagged(?: with)?|with the tags?|under the tags?)\s+#?([\w-]{1,40})|(?<![\w&])#([A-Za-z][\w-]{0,39})", re.I)
 
 
 #: The words that name a kind of source (decision 37), and the kind.
 _SOURCE_WORDS = (
-    ("board", re.compile(r"\b(?:white)?boards?\b", re.I)),
-    ("map", re.compile(r"\bmind ?maps?\b|\bmaps?\b", re.I)),
-    ("document", re.compile(r"\bdocuments?\b|\bdocs\b", re.I)),
-    ("picture", re.compile(r"\b(?:pictures?|photos?|images?|screenshots?)\b", re.I)),
+    ("board", lazy_compile(r"\b(?:white)?boards?\b", re.I)),
+    ("map", lazy_compile(r"\bmind ?maps?\b|\bmaps?\b", re.I)),
+    ("document", lazy_compile(r"\bdocuments?\b|\bdocs\b", re.I)),
+    ("picture", lazy_compile(r"\b(?:pictures?|photos?|images?|screenshots?)\b", re.I)),
 )
 
 
@@ -87,6 +93,23 @@ class Plan:
     source_kind: str | None = None
     length: str = ""
     utility: str | None = None
+    #: "around 3 November": the day the window is centred on, three days either
+    #: side (INBOX 1739); `others` leaves that day itself out ("what else ...").
+    around: date | None = None
+    others: bool = False
+
+
+#: The days either side of an "around <day>" question.
+AROUND_DAYS = 3
+_OTHERS = lazy_compile(r"\b(?:else|other|others|more|besides|another)\b", re.I)
+
+
+def _around(question: str, phrase: str, span: tuple | None, kind: str) -> date | None:
+    """The day an "around <day>" recall is centred on: "what did I write around
+    3 November" is the notes near it, nearest first, not the one day."""
+    if kind != "recall" or not span or not phrase or span[0] != span[1]:
+        return None
+    return span[0] if re.search(rf"\b(?:around|near|close to)\s+(?:the\s+)?{re.escape(phrase)}", question or "", re.I) else None
 
 
 def _time_phrase(question: str) -> str:
@@ -98,7 +121,7 @@ def _plan_phrase(question: str, terms: list[str]) -> str:
     """The question's time phrase, or "" for a bare "recently" with no subject:
     "what did I write recently" asks for the newest notes, not a fortnight."""
     phrase = _time_phrase(question)
-    return "" if not terms and rec.is_lately(phrase) else phrase
+    return "" if not terms and recognise_questions.is_lately(phrase) else phrase
 
 
 #: What the planner reads of a question. Its passes cost words x length, so a
@@ -107,7 +130,7 @@ PLAN_CHARS = 2000
 
 
 def _planned_text(question: str | None) -> str:
-    return (question or "")[:PLAN_CHARS]
+    return composer_numbers.normalise((question or "")[:PLAN_CHARS])
 
 
 def _plan_constraints(question: str, terms: list[str]) -> tuple[dict, list[str], str | None]:
@@ -128,10 +151,29 @@ def _plan_constraints(question: str, terms: list[str]) -> tuple[dict, list[str],
     return constraints, terms, source_kind
 
 
+#: "what do I have on Friday", "do I have anything on Friday": the day's items (R3-8).
+_DAY_ASK = lazy_compile(r"^\W*(?:what do i have|do i have|have i got|have i|got|is there|are there)\s+(?:(?:anything|something)\s+)?(?:on|for)\b", re.I)
+
+
+def asks_the_day(question: str, today: date) -> bool:
+    """Whether the question asks what is on one named day, which the recall
+    answers the same way however it is put."""
+    if not _DAY_ASK.search(question or ""):
+        return False
+    p = plan(question, today)
+    return p.kind == "recall" and bool(p.window) and p.window[0] == p.window[1]
+
+
+def _asks_recall(question: str, shape: str) -> bool:
+    """A day or window with no subject asks what the notes hold from then;
+    "do I have anything on Wednesday" asks it as a yes/no (R3-8)."""
+    return bool(_RECALL.search(question or "")) or shape in ("what", "recent", "list") or (shape == "yesno" and bool(_ANYTHING_ON.search(question or "")))
+
+
 def _plan_kind(question: str, utility: str | None, shape: str, spanned: bool, has_terms: bool) -> str:
     if utility and utility != "until_note":
         return "utility"
-    if spanned and not has_terms and (_RECALL.search(question or "") or shape in ("what", "recent", "list")):
+    if spanned and not has_terms and _asks_recall(question, shape):
         return "recall"
     if _INSIGHT.search(question or ""):
         return "insight"
@@ -168,6 +210,22 @@ def holds_any(stems: list[str], text: str) -> bool:
     return any(_holds(st, words) or any(w.startswith(st) for w in words) for st in stems)
 
 
+
+
+
+
+#: A present or future yes/no ("is the plumber coming this week", "are we meeting on Tuesday"): its window dates the event, not the note.
+_PRESENT_ASK = lazy_compile(rf"^\W*{recognise_questions.EVENT_LEAD}", re.I)
+
+
+def without_event_window(question: str) -> str:
+    """"is the plumber coming this week" asked of the notes as "is the plumber coming": the window dates the
+    event, so searching for it finds the notes that happen to say "week" (R9-7)."""
+    if not _PRESENT_ASK.match(question or ""):
+        return question
+    return recognise_questions.without_event_window_tail(question)
+
+
 def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> tuple[tuple | None, list[str]]:
     """The window the phrase names (None for none, or for one still ahead
     that sits beside a subject) and the subject terms left once the phrase's
@@ -176,7 +234,8 @@ def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> t
         said = [w for w in re.findall(r"[\w']+", phrase.lower()) if w not in rec.PHRASE_FILLER]
         return None, terms + [w for w in said if w not in terms]
     span = when_words.span(phrase, today, "past") if phrase else None
-    if span and span[0] > today and _subject_left(question, terms, phrase):
+    #: "is the plumber coming this week": the week is when it happens, not when the note was written (R9-7).
+    if span and (span[0] > today or (_PRESENT_ASK.match(question or "") and span[1] >= today)) and _subject_left(question, terms, phrase):
         return None, terms
     return span, _without_window_words(question, terms, phrase) if span else terms
 
@@ -210,10 +269,15 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
     phrase = _plan_phrase(question, terms)
     span, terms = _plan_window(question, terms, phrase, today)
     kind = _plan_kind(question, utility, shape, bool(span), bool(terms))
+    around = _around(question, phrase, span, kind)
+    if around:
+        span = (around - timedelta(days=AROUND_DAYS), around + timedelta(days=AROUND_DAYS), span[2])
     return Plan(
         kind=kind,
         shape=shape,
         terms=terms,
+        around=around,
+        others=bool(around and _OTHERS.search(question)),
         window=(span[0], min(span[1], today)) if span else None,
         grain=span[2] if span else None,
         window_phrase=phrase if span else "",

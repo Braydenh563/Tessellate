@@ -30,6 +30,7 @@ It lives in `core` rather than beside the web reader so the privacy receipt
 from __future__ import annotations
 
 import html
+import logging
 import re
 import time
 from html.parser import HTMLParser
@@ -40,6 +41,8 @@ import requests
 from tessellate.core import egress
 from tessellate.core.privacy_http import PRIVACY_HEADERS, PinnedAdapter, pin_url, strip_tracking
 from tessellate.core.security import UnsafeUrl, public_addresses
+
+logger = logging.getLogger("tessellate.webclip")
 
 #: The largest page a clip will read. Well past any article, and small enough
 #: that a runaway response (a video served as text/html) is refused quickly.
@@ -79,6 +82,76 @@ def clean_url(url: str) -> str:
     return strip_tracking((url or "").strip())
 
 
+def _clip_hop(session, url: str):  # noqa: ANN001
+    """One request of the walk: the address checked, the connection pinned to it."""
+    try:
+        addresses = public_addresses(url)
+    except UnsafeUrl as exc:
+        # `UnsafeUrl` is a sentence written for a person (core/security.py).
+        raise ClipRefused(str(exc)) from exc
+    pinned, host_header = pin_url(url, addresses[0])
+    parsed = urlparse(pinned)
+    if parsed.scheme == "https":
+        session.mount(f"https://{parsed.netloc}", PinnedAdapter(urlparse(url).hostname))
+    # CodeQL reads this as SSRF, as it does the web reader's: fetching
+    # the page the person asked to clip is the feature. The address
+    # was checked on this hop and the connection is pinned to it.
+    try:
+        return session.get(
+            pinned,
+            headers={"Host": host_header},
+            timeout=CLIP_SOCKET_TIMEOUT,
+            stream=True,
+            allow_redirects=False,
+        )
+    except requests.RequestException as exc:
+        raise ClipRefused(f"Couldn't reach {urlparse(url).hostname}.", 502) from exc
+
+
+def _redirect_url(response, url: str, deadline: float) -> str:  # noqa: ANN001
+    """Where a redirect points, checked and made absolute."""
+    location = response.headers.get("location", "")
+    response.close()
+    if not location:
+        raise ClipRefused("That page redirected to nowhere.", 502)
+    url = clean_url(urljoin(url, location))
+    if time.monotonic() > deadline:
+        raise ClipRefused("That page took too long to answer.", 502)
+    return url
+
+
+def _check_clippable(response, url: str) -> None:  # noqa: ANN001
+    """Refuse an error status, a non-page or a page declared too large."""
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as exc:
+        raise ClipRefused(
+            f"{urlparse(url).hostname} answered {response.status_code}, so there was nothing to clip.",
+            502,
+        ) from exc
+    content_type = response.headers.get("content-type", "").lower()
+    if "html" not in content_type and "text/plain" not in content_type:
+        response.close()
+        raise ClipRefused("That link isn't a web page, so it can't be clipped as text.")
+    declared = response.headers.get("content-length", "")
+    if declared.isdigit() and int(declared) > CLIP_MAX_BYTES:
+        response.close()
+        raise ClipRefused("That page is too large to clip.")
+
+
+def _read_clip_body(response, deadline: float) -> bytes:  # noqa: ANN001
+    body = bytearray()
+    for chunk in response.iter_content(65536):
+        body.extend(chunk)
+        if len(body) > CLIP_MAX_BYTES:
+            response.close()
+            raise ClipRefused("That page is too large to clip.")
+        if time.monotonic() > deadline:
+            response.close()
+            raise ClipRefused("That page took too long to arrive.", 502)
+    return bytes(body)
+
+
 @egress.labelled(lambda url, *a, **k: f"Clipping a page: {egress.short(url, 80)}")
 def fetch_page(url: str) -> dict:
     """GET one public page, checking every hop. Returns
@@ -88,63 +161,14 @@ def fetch_page(url: str) -> dict:
     session = _new_session()
     try:
         for _ in range(CLIP_MAX_REDIRECTS + 1):
-            try:
-                addresses = public_addresses(url)
-            except UnsafeUrl as exc:
-                # `UnsafeUrl` is a sentence written for a person (core/security.py).
-                raise ClipRefused(str(exc)) from exc
-            pinned, host_header = pin_url(url, addresses[0])
-            parsed = urlparse(pinned)
-            if parsed.scheme == "https":
-                session.mount(f"https://{parsed.netloc}", PinnedAdapter(urlparse(url).hostname))
-            # CodeQL reads this as SSRF, as it does the web reader's: fetching
-            # the page the person asked to clip is the feature. The address
-            # was checked on this hop and the connection is pinned to it.
-            try:
-                response = session.get(
-                    pinned,
-                    headers={"Host": host_header},
-                    timeout=CLIP_SOCKET_TIMEOUT,
-                    stream=True,
-                    allow_redirects=False,
-                )
-            except requests.RequestException as exc:
-                raise ClipRefused(f"Couldn't reach {urlparse(url).hostname}.", 502) from exc
+            response = _clip_hop(session, url)
             if response.is_redirect or getattr(response, "is_permanent_redirect", False):
-                location = response.headers.get("location", "")
-                response.close()
-                if not location:
-                    raise ClipRefused("That page redirected to nowhere.", 502)
-                url = clean_url(urljoin(url, location))
-                if time.monotonic() > deadline:
-                    raise ClipRefused("That page took too long to answer.", 502)
+                url = _redirect_url(response, url, deadline)
                 continue
-            try:
-                response.raise_for_status()
-            except requests.HTTPError as exc:
-                raise ClipRefused(
-                    f"{urlparse(url).hostname} answered {response.status_code}, so there was nothing to clip.",
-                    502,
-                ) from exc
-            content_type = response.headers.get("content-type", "").lower()
-            if "html" not in content_type and "text/plain" not in content_type:
-                response.close()
-                raise ClipRefused("That link isn't a web page, so it can't be clipped as text.")
-            declared = response.headers.get("content-length", "")
-            if declared.isdigit() and int(declared) > CLIP_MAX_BYTES:
-                response.close()
-                raise ClipRefused("That page is too large to clip.")
-            body = bytearray()
-            for chunk in response.iter_content(65536):
-                body.extend(chunk)
-                if len(body) > CLIP_MAX_BYTES:
-                    response.close()
-                    raise ClipRefused("That page is too large to clip.")
-                if time.monotonic() > deadline:
-                    response.close()
-                    raise ClipRefused("That page took too long to arrive.", 502)
+            _check_clippable(response, url)
+            body = _read_clip_body(response, deadline)
             encoding = response.encoding or "utf-8"
-            return {"url": url, "html": bytes(body).decode(encoding, errors="replace")}
+            return {"url": url, "html": body.decode(encoding, errors="replace")}
         raise ClipRefused("That page redirected too many times.", 502)
     finally:
         session.close()
@@ -179,6 +203,20 @@ _JUNK = re.compile(
 )
 
 
+#: The `<meta>` names that fill a clipped note's properties, and which one.
+_META_FACTS = {
+    "og:site_name": "site",
+    "author": "author",
+    "article:author": "author",
+    "article:published_time": "published",
+    "og:article:published_time": "published",
+    "datepublished": "published",
+    "date": "published",
+    "pubdate": "published",
+}
+_ISO_DAY = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
 class _Node:
     __slots__ = ("tag", "attrs", "children", "parent")
 
@@ -204,14 +242,18 @@ class _Tree(HTMLParser):
         self.title = ""
         self._in_title = False
         self.og_title = ""
+        #: What the page says about itself, for the note's properties.
+        self.facts: dict[str, str] = {}
 
     def handle_starttag(self, tag, attrs):
         tag = tag.lower()
         attrs = {k.lower(): (v or "") for k, v in attrs}
         if tag == "title":
             self._in_title = True
-        if tag == "meta" and attrs.get("property", "").lower() == "og:title":
-            self.og_title = attrs.get("content", "").strip()
+        if tag == "meta":
+            if attrs.get("property", "").lower() == "og:title":
+                self.og_title = attrs.get("content", "").strip()
+            self._meta_fact(attrs)
         if self.skip:
             if tag not in _VOID:
                 self.skip += 1
@@ -228,6 +270,21 @@ class _Tree(HTMLParser):
         self.cur.children.append(node)
         if tag not in _VOID:
             self.cur = node
+
+    def _meta_fact(self, attrs: dict) -> None:
+        """Keep the first site, author and publish date a `<meta>` names."""
+        key = (attrs.get("property") or attrs.get("name") or attrs.get("itemprop") or "").lower()
+        field = _META_FACTS.get(key)
+        value = " ".join(attrs.get("content", "").split())
+        if not field or not value or field in self.facts:
+            return
+        if field == "published":
+            found = _ISO_DAY.match(value)
+            value = found.group(0) if found else ""
+        elif field == "author" and value.lower().startswith(("http://", "https://")):
+            value = ""  # article:author is often a profile address, not a name
+        if value:
+            self.facts[field] = value[:120]
 
     def handle_endtag(self, tag):
         tag = tag.lower()
@@ -323,6 +380,10 @@ def _safe_href(href: str, base: str) -> str:
 _CONTAINERS = {"ul", "ol", "table", "tr", "div", "section", "article", "main", "figure", "dl", "tbody", "thead", "html", "body"}
 
 
+#: The inline tags that wrap their text in a markdown mark.
+_INLINE_MARKS = {"strong": "**", "b": "**", "em": "*", "i": "*", "code": "`"}
+
+
 class _Markdown:
     def __init__(self, base: str):
         self.base = base
@@ -333,31 +394,79 @@ class _Markdown:
             return re.sub(r"\s+", " ", node)
         inner = "".join(self.inline(child) for child in node.children)
         tag = node.tag
-        if tag in ("strong", "b") and inner.strip():
-            return f"**{inner.strip()}**"
-        if tag in ("em", "i") and inner.strip():
-            return f"*{inner.strip()}*"
-        if tag == "code" and inner.strip():
-            return f"`{inner.strip()}`"
+        mark = _INLINE_MARKS.get(tag)
+        if mark and inner.strip():
+            return f"{mark}{inner.strip()}{mark}"
         if tag == "br":
             return "\n"
         if tag == "a":
-            href = _safe_href(node.attrs.get("href", ""), self.base)
-            label = inner.strip()
-            # A link to a place on the same page means nothing in a note.
-            same_page = "#" in href and href.split("#", 1)[0] == self.base.split("#", 1)[0]
-            if href and label and not same_page:
-                return f"[{label}]({href})"
-            return label
+            return self._link(node, inner.strip())
         if tag == "img":
             return ""
         return inner
+
+    def _link(self, node, label: str) -> str:
+        href = _safe_href(node.attrs.get("href", ""), self.base)
+        # A link to a place on the same page means nothing in a note.
+        same_page = "#" in href and href.split("#", 1)[0] == self.base.split("#", 1)[0]
+        if href and label and not same_page:
+            return f"[{label}]({href})"
+        return label
 
     def flush_inline(self, parts: list[str]) -> None:
         text = re.sub(r"[ \t]+", " ", "".join(parts)).strip()
         if text:
             self.blocks.append(text)
         parts.clear()
+
+    def _heading(self, child: _Node) -> str:
+        text = self.inline(child).strip()
+        return f"{'#' * int(child.tag[1])} {text}" if text else ""
+
+    def _quote(self, child: _Node) -> str:
+        text = " ".join(self.inline(child).split())
+        return f"> {text}" if text else ""
+
+    def _pre(self, child: _Node) -> str:
+        code = _text(child).strip("\n")
+        return f"```\n{code}\n```" if code.strip() else ""
+
+    def _list(self, child: _Node, depth: int) -> str:
+        items = [c for c in child.children if isinstance(c, _Node) and c.tag == "li"]
+        lines = []
+        for n, item in enumerate(items, 1):
+            text = " ".join(self.inline(item).split())
+            if text:
+                marker = f"{n}." if child.tag == "ol" else "-"
+                lines.append(f"{'  ' * depth}{marker} {text}")
+        return "\n".join(lines)
+
+    def _table(self, child: _Node) -> str:
+        rows = []
+        for tr in _descendants(child, "tr"):
+            cells = [" ".join(self.inline(c).split()) for c in tr.children if isinstance(c, _Node) and c.tag in ("td", "th")]
+            if any(cells):
+                rows.append("| " + " | ".join(cells) + " |")
+        if not rows:
+            return ""
+        rows.insert(1, "|" + " --- |" * (rows[0].count("|") - 1))
+        return "\n".join(rows)
+
+    def _own_block(self, child: _Node, depth: int) -> str | None:
+        """The markdown block a heading, quote, code, list or table makes ("" when it
+        is empty); None for any other tag."""
+        tag = child.tag
+        if tag in ("h1", "h2", "h3", "h4", "h5", "h6"):
+            return self._heading(child)
+        if tag == "blockquote":
+            return self._quote(child)
+        if tag == "pre":
+            return self._pre(child)
+        if tag in ("ul", "ol"):
+            return self._list(child, depth)
+        if tag == "table":
+            return self._table(child)
+        return None
 
     def block(self, node: _Node, depth: int = 0) -> None:
         loose: list[str] = []
@@ -366,42 +475,11 @@ class _Markdown:
                 loose.append(self.inline(child))
                 continue
             self.flush_inline(loose)
-            tag = child.tag
-            if tag in ("h1", "h2", "h3", "h4", "h5", "h6"):
-                text = self.inline(child).strip()
-                if text:
-                    self.blocks.append(f"{'#' * int(tag[1])} {text}")
-            elif tag == "p" or tag in ("dt", "dd", "figcaption"):
-                self.flush_inline([self.inline(child)])
-            elif tag == "blockquote":
-                text = " ".join(self.inline(child).split())
-                if text:
-                    self.blocks.append(f"> {text}")
-            elif tag == "pre":
-                code = _text(child).strip("\n")
-                if code.strip():
-                    self.blocks.append(f"```\n{code}\n```")
-            elif tag in ("ul", "ol"):
-                items = [c for c in child.children if isinstance(c, _Node) and c.tag == "li"]
-                lines = []
-                for n, item in enumerate(items, 1):
-                    text = " ".join(self.inline(item).split())
-                    if text:
-                        marker = f"{n}." if tag == "ol" else "-"
-                        lines.append(f"{'  ' * depth}{marker} {text}")
-                if lines:
-                    self.blocks.append("\n".join(lines))
-            elif tag == "table":
-                rows = []
-                for tr in _descendants(child, "tr"):
-                    cells = [" ".join(self.inline(c).split()) for c in tr.children if isinstance(c, _Node) and c.tag in ("td", "th")]
-                    if any(cells):
-                        rows.append("| " + " | ".join(cells) + " |")
-                if rows:
-                    width = rows[0].count("|") - 1
-                    rows.insert(1, "|" + " --- |" * width)
-                    self.blocks.append("\n".join(rows))
-            elif tag in ("li", "td", "th"):
+            made = self._own_block(child, depth)
+            if made is not None:
+                if made:
+                    self.blocks.append(made)
+            elif child.tag in ("p", "dt", "dd", "figcaption", "li", "td", "th"):
                 self.flush_inline([self.inline(child)])
             else:
                 self.block(child, depth)
@@ -431,7 +509,8 @@ def _read(page: str, url: str, junk: bool) -> tuple[_Tree, str]:
 
 
 def extract(page: str, url: str) -> dict:
-    """`{"title", "markdown", "words"}` for a page's main content."""
+    """`{"title", "markdown", "words", "facts"}` for a page's main content;
+    `facts` holds the `site`, `author` and `published` day the page names."""
     tree, markdown = _read(page, url, junk=True)
     #: A theme can hang a "junk" word on the one wrapper everything sits in
     #: (a `div.site-header-wrapper` around the whole page is common), and the
@@ -454,7 +533,35 @@ def extract(page: str, url: str) -> dict:
     names = {title.lower(), tree.og_title.lower()} - {""}
     if blocks and blocks[0].startswith("# ") and blocks[0][2:].strip().lower() in names:
         markdown = "\n\n".join(blocks[1:])
-    return {"title": title[:300], "markdown": markdown, "words": len(markdown.split())}
+    return {"title": title[:300], "markdown": markdown, "words": len(markdown.split()), "facts": dict(tree.facts)}
+
+
+def page_facts(page: str) -> dict[str, str]:
+    """Only the `site`, `author` and `published` a page names, for a clip
+    whose text was selected by hand (the selection is the body, the page
+    still says who wrote it)."""
+    tree = _Tree()
+    try:
+        tree.feed(page)
+        tree.close()
+    except Exception:  # noqa: BLE001  # a malformed page is still a page
+        logger.debug("page facts: the page did not parse to the end; keeping what it named so far", exc_info=True)
+    return dict(tree.facts)
+
+
+def note_properties(extracted: dict, url: str, clipped: str) -> dict[str, str]:
+    """The `---` block a clipped note opens with: where it came from, who
+    wrote it and when, and the day it was clipped (passed in, so a test holds
+    the clock still). Empty values are left out."""
+    facts = extracted.get("facts") or {}
+    props = {
+        "source": url,
+        "site": facts.get("site") or "",
+        "author": facts.get("author") or "",
+        "published": facts.get("published") or "",
+        "clipped": clipped,
+    }
+    return {k: v for k, v in props.items() if v}
 
 
 def note_content(extracted: dict, url: str) -> str:

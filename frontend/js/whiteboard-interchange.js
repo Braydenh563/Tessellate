@@ -577,7 +577,8 @@ function wbDrawioPlan(cells) {
     const data = { width: Math.max(1, Math.round((Number(s.strokeWidth) || 1) * 2)) };
     if (/^#[0-9a-f]{6}$/i.test(s.strokeColor || "")) data.color = s.strokeColor.toLowerCase();
     if (s.edgeStyle === "orthogonalEdgeStyle" || s.edgeStyle === "elbowEdgeStyle") data.route = "elbow";
-    if (s.edgeStyle === "entityRelationEdgeStyle") data.route = "elbow";
+    if (s.edgeStyle === "entityRelationEdgeStyle") data.route = "er";
+    if (s.edgeStyle === "isometricEdgeStyle") data.route = "iso";
     const end = s.endArrow ?? "classic";
     if (end !== "none" && end !== "") data.endCap = WB_DRAWIO_CAPS[end] || "arrow";
     if (s.startArrow && s.startArrow !== "none") data.startCap = WB_DRAWIO_CAPS[s.startArrow] || "arrow";
@@ -591,7 +592,7 @@ function wbDrawioPlan(cells) {
       drop("loose connector");
       continue;
     }
-    if (Array.isArray(c.points) && c.points.length && data.route !== "elbow") data.points = c.points.map((p) => ({ x: Number(p.x) || 0, y: Number(p.y) || 0 }));
+    if (Array.isArray(c.points) && c.points.length && !["elbow", "er", "iso"].includes(data.route)) data.points = c.points.map((p) => ({ x: Number(p.x) || 0, y: Number(p.y) || 0 }));
     links.push({ id: c.id, type: s.curved === "1" ? "link-curved" : "link-straight", source, target, data });
   }
   return { items, links, dropped };
@@ -676,11 +677,13 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
     };
     const joined = (side) => ref(side) || d[`${side}Point`];
     if (!joined("source") || !joined("target")) { skip("loose connectors"); continue; }
+    //: A .drawio edge carries one value here; the second label (`label2`) has no cell of its own to ride, so the notice names it.
+    if (d.label2) skip("second connector labels");
     const capOf = (cap, flag) => (cap && cap !== "none" ? WB_DRAWIO_CAPS_OUT[cap] || "classic" : flag ? "classic" : "none");
     const end = capOf(d.endCap, d.endStyle === "end" || d.endStyle === "both");
     const start = capOf(d.startCap, d.endStyle === "both");
-    const way = Array.isArray(d.points) && d.route !== "elbow" ? `<Array as="points">${d.points.map((p) => `<mxPoint x="${Math.round(p.x)}" y="${Math.round(p.y)}"/>`).join("")}</Array>` : "";
-    const style = `${d.route === "elbow" ? "edgeStyle=orthogonalEdgeStyle;" : ""}${d.type === "link-curved" ? "curved=1;" : ""}html=0;endArrow=${end};startArrow=${start};` +
+    const way = Array.isArray(d.points) && !["elbow", "er", "iso"].includes(d.route) ? `<Array as="points">${d.points.map((p) => `<mxPoint x="${Math.round(p.x)}" y="${Math.round(p.y)}"/>`).join("")}</Array>` : "";
+    const style = `${{ elbow: "edgeStyle=orthogonalEdgeStyle;", er: "edgeStyle=entityRelationEdgeStyle;", iso: "edgeStyle=isometricEdgeStyle;" }[d.route] || ""}${d.type === "link-curved" ? "curved=1;" : ""}html=0;endArrow=${end};startArrow=${start};` +
       `${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}strokeWidth=${Math.max(1, Math.round((Number(d.width) || 2) / 2))};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}`;
     cells.push(`<mxCell id="c${++n}" value="${esc(d.label || "")}" style="${style}" edge="1" parent="1"${ref("source")}${ref("target")}>` +
       `<mxGeometry relative="1" as="geometry">${point("source")}${point("target")}${way}</mxGeometry></mxCell>`);
@@ -1243,7 +1246,8 @@ async function wbThumbFlush() {
   }
 }
 
-(function wbThumbWatch() {
+//: It watches the board canvas, built when a board first opens (row 21).
+onSurface("board", function wbThumbWatch() {
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
   new MutationObserver(wbThumbMark).observe(container, { childList: true, subtree: true, attributes: true });
@@ -1257,7 +1261,7 @@ async function wbThumbFlush() {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden" && wbThumbState.pending !== null) wbThumbFlush();
   });
-})();
+});
 
 // --- A live Mermaid diagram (INBOX 1451) -----------------------------------
 //
@@ -1293,8 +1297,8 @@ function wbDiagramFillColour(data) {
 
 function wbDiagramFillShare() {
   const strong = document.documentElement.dataset.contrast === "on";
-  //: The lazy module may not be in yet, so the same two numbers stand by.
-  return globalThis.mermaidFillShare?.(strong) ?? (strong ? 0.28 : 0.16);
+  //: The same two numbers as mermaid-draw.js `mermaidFillShare`, read here without loading that lazy module.
+  return strong ? 0.28 : 0.16;
 }
 
 function wbDiagramDataUrl(obj) {
@@ -1372,6 +1376,7 @@ function wbEditDiagram(d = null) {
   openDiagramBuilder({
     source: d?.data?.mermaid || diagramModel.starter,
     title: d ? "Edit diagram" : "Diagram builder",
+    draft: d ? `board:${d.id}` : "board-new",
     shapes: d ? (source) => (wbMermaidKind(source) ? wbDiagramToShapes(d, source) : toast("Shapes cover flowchart, state, class and sequence diagrams.")) : null,
     //: Save to Library (R9c).
     offer: d && { link: d },

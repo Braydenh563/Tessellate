@@ -30,1152 +30,1197 @@
 //: arrows resize 16px, Home resets.
 //: Docking, the reset button and Settings' "Panels open where you left them"
 //: (INBOX 1434): DESIGN.md `panelMovable`.
-const PANEL_KEY = "tessellate.panels";
-const PANEL_STEP = 16;
-const PANEL_MIN_W = 280;
-const PANEL_MIN_H = 160;
-const PANEL_MEDIA = "(min-width: 600px) and (pointer: fine)";
-const PANEL_SKIP = "button, a, input, select, textarea, summary, [contenteditable], .panel-grip";
-const PANEL_STATE = new WeakMap();
-//: INBOX 1472: a band from the very edge (0px, and past it when the pointer is
-//: captured outside the window) in to 48px. It was 24 with `x >= vw - 24`, which
-//: the last pixel column (`vw - 1`) made 23 on the right and bottom.
-const PANEL_EDGE = 48;
-const PANEL_ZONES = ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"];
-//: INBOX 1474 (split screen): the narrowest the app may be squeezed to.
-const PANEL_PUSH_MIN = 640;
+(() => {
+  const PANEL_KEY = "tessellate.panels";
+  const PANEL_STEP = 16;
+  const PANEL_MIN_W = 280;
+  const PANEL_MIN_H = 160;
+  const PANEL_MEDIA = "(min-width: 600px) and (pointer: fine)";
+  const PANEL_SKIP = "button, a, input, select, textarea, summary, [contenteditable], .panel-grip";
+  const PANEL_STATE = new WeakMap();
+  //: INBOX 1472: a band from the very edge (0px, and past it when the pointer is
+  //: captured outside the window) in to 48px. It was 24 with `x >= vw - 24`, which
+  //: the last pixel column (`vw - 1`) made 23 on the right and bottom.
+  const PANEL_EDGE = 48;
+  const PANEL_ZONES = ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"];
+  //: INBOX 1474 (split screen): the narrowest the app may be squeezed to.
+  const PANEL_PUSH_MIN = 640;
 
-//: Pure maths, kept apart so tests/test_panel_movable.py can run it in node.
-//: **A panel stays inside the free area** (INBOX 1474, the owner: "I can drag
-//: the attach panel behind the sidebar"): `safe` is the window minus the
-//: sidebar, the status bar and any panel docked to a side (`panelSafe`), and
-//: the whole panel stays in it when it fits, else its top left does.
-function panelClampMove(rect, ox, oy, nx, ny, vw, vh, headH, safe) {
-  const b = safe || { left: 0, top: 0, right: vw, bottom: vh };
-  const left = Math.min(Math.max(rect.left + nx - ox, b.left), Math.max(b.left, b.right - rect.width));
-  const top = Math.min(Math.max(rect.top + ny - oy, 0), Math.max(0, b.bottom - Math.max(rect.height, headH)));
-  return { x: ox + (left - rect.left), y: oy + (top - rect.top) };
-}
-function panelClampSize(rect, w, h, vw, vh) {
-  const minW = Math.min(PANEL_MIN_W, rect.width);
-  const minH = Math.min(PANEL_MIN_H, rect.height);
-  const maxW = Math.max(minW, vw - Math.max(0, rect.left));
-  const maxH = Math.max(minH, vh - Math.max(0, rect.top));
-  return { w: Math.round(Math.min(Math.max(w, minW), maxW)), h: Math.round(Math.min(Math.max(h, minH), maxH)) };
-}
-//: Which zone the pointer is in, "" for none; edges within PANEL_EDGE, corners
-//: when two meet.
-function panelSnapZone(x, y, vw, vh) {
-  const l = x <= PANEL_EDGE;
-  const r = x >= vw - 1 - PANEL_EDGE;
-  const t = y <= PANEL_EDGE;
-  const b = y >= vh - 1 - PANEL_EDGE;
-  //: The top band is read by thirds so one gesture always gives one height:
-  //: the middle third maximises, the outer thirds are the top quarters.
-  if (t) return x < vw / 3 ? "tl" : x > (2 * vw) / 3 ? "tr" : "max";
-  if (b) return l ? "bl" : r ? "br" : "bottom";
-  return l ? "left" : r ? "right" : "";
-}
-//: `safe` ({left, top, right, bottom}) keeps zones off the app's own bars.
-function panelZoneRect(zone, vw, vh, inset, safe) {
-  if (!PANEL_ZONES.includes(zone)) return null;
-  const sx = safe ? safe.left : 0;
-  const sy = safe ? safe.top : 0;
-  const sr = safe ? safe.right : vw;
-  const sb = safe ? safe.bottom : vh;
-  const halfW = Math.round((sr - sx - 3 * inset) / 2);
-  const halfH = Math.round((sb - sy - 3 * inset) / 2);
-  const w = zone === "left" || zone === "right" || zone.length === 2 ? halfW : sr - sx - 2 * inset;
-  const h = zone === "bottom" || zone.length === 2 ? halfH : sb - sy - 2 * inset;
-  const east = zone === "right" || zone === "tr" || zone === "br";
-  const south = zone === "bottom" || zone === "bl" || zone === "br";
-  return { left: east ? sr - inset - w : sx + inset, top: south ? sb - inset - h : sy + inset, width: w, height: h };
-}
-//: **A panel is bounded by what it would go under** (INBOX 1504, the owner: "I
-//: cant drag the templates popup window to the left past the sidebar"). The
-//: free area of INBOX 1474 kept every panel off the sidebar because the attach
-//: panel drew under it; a modal dialog draws above it, so for that panel the
-//: sidebar is no obstacle. Decided from the real stacking, never a list of ids:
-//: the top layer (a modal dialog, an open popover) is above everything outside
-//: it; otherwise the two are compared inside their nearest common stacking
-//: context, by the z-index of the branch each sits in, then by document order.
-function panelAboveBy(za, zb, aLater) {
-  return za > zb || (za === zb && aLater);
-}
-function panelTopLayer(el) {
-  return [":modal", ":popover-open"].some((q) => {
+  //: Pure maths, kept apart so tests/test_panel_movable.py can run it in node.
+  //: **A panel stays inside the free area** (INBOX 1474, the owner: "I can drag
+  //: the attach panel behind the sidebar"): `safe` is the window minus the
+  //: sidebar, the status bar and any panel docked to a side (`panelSafe`), and
+  //: the whole panel stays in it when it fits, else its top left does.
+  function panelClampMove(rect, ox, oy, nx, ny, vw, vh, headH, safe) {
+    const b = safe || { left: 0, top: 0, right: vw, bottom: vh };
+    const left = Math.min(Math.max(rect.left + nx - ox, b.left), Math.max(b.left, b.right - rect.width));
+    const top = Math.min(Math.max(rect.top + ny - oy, 0), Math.max(0, b.bottom - Math.max(rect.height, headH)));
+    return { x: ox + (left - rect.left), y: oy + (top - rect.top) };
+  }
+  function panelClampSize(rect, w, h, vw, vh) {
+    const minW = Math.min(PANEL_MIN_W, rect.width);
+    const minH = Math.min(PANEL_MIN_H, rect.height);
+    const maxW = Math.max(minW, vw - Math.max(0, rect.left));
+    const maxH = Math.max(minH, vh - Math.max(0, rect.top));
+    return { w: Math.round(Math.min(Math.max(w, minW), maxW)), h: Math.round(Math.min(Math.max(h, minH), maxH)) };
+  }
+  //: Which zone the pointer is in, "" for none; edges within PANEL_EDGE, corners
+  //: when two meet.
+  function panelSnapZone(x, y, vw, vh) {
+    const l = x <= PANEL_EDGE;
+    const r = x >= vw - 1 - PANEL_EDGE;
+    const t = y <= PANEL_EDGE;
+    const b = y >= vh - 1 - PANEL_EDGE;
+    //: The top band is read by thirds so one gesture always gives one height:
+    //: the middle third maximises, the outer thirds are the top quarters.
+    if (t) return x < vw / 3 ? "tl" : x > (2 * vw) / 3 ? "tr" : "max";
+    if (b) return l ? "bl" : r ? "br" : "bottom";
+    return l ? "left" : r ? "right" : "";
+  }
+  //: `safe` ({left, top, right, bottom}) keeps zones off the app's own bars.
+  function panelZoneRect(zone, vw, vh, inset, safe) {
+    if (!PANEL_ZONES.includes(zone)) return null;
+    const sx = safe ? safe.left : 0;
+    const sy = safe ? safe.top : 0;
+    const sr = safe ? safe.right : vw;
+    const sb = safe ? safe.bottom : vh;
+    const halfW = Math.round((sr - sx - 3 * inset) / 2);
+    const halfH = Math.round((sb - sy - 3 * inset) / 2);
+    const w = zone === "left" || zone === "right" || zone.length === 2 ? halfW : sr - sx - 2 * inset;
+    const h = zone === "bottom" || zone.length === 2 ? halfH : sb - sy - 2 * inset;
+    const east = zone === "right" || zone === "tr" || zone === "br";
+    const south = zone === "bottom" || zone === "bl" || zone === "br";
+    return { left: east ? sr - inset - w : sx + inset, top: south ? sb - inset - h : sy + inset, width: w, height: h };
+  }
+  //: **A panel is bounded by what it would go under** (INBOX 1504, the owner: "I
+  //: cant drag the templates popup window to the left past the sidebar"). The
+  //: free area of INBOX 1474 kept every panel off the sidebar because the attach
+  //: panel drew under it; a modal dialog draws above it, so for that panel the
+  //: sidebar is no obstacle. Decided from the real stacking, never a list of ids:
+  //: the top layer (a modal dialog, an open popover) is above everything outside
+  //: it; otherwise the two are compared inside their nearest common stacking
+  //: context, by the z-index of the branch each sits in, then by document order.
+  function panelAboveBy(za, zb, aLater) {
+    return za > zb || (za === zb && aLater);
+  }
+  function panelTopLayer(el) {
+    return [":modal", ":popover-open"].some((q) => {
+      try {
+        return el.matches(q);
+      } catch (_) {
+        return false;
+      }
+    });
+  }
+  const PANEL_CONTEXT_PROPS = ["transform", "translate", "scale", "rotate", "filter", "backdropFilter", "perspective", "clipPath", "mask"];
+  function panelMakesContext(el) {
+    const cs = getComputedStyle(el);
+    if (cs.position === "fixed" || cs.position === "sticky") return true;
+    if (cs.zIndex !== "auto" && (cs.position !== "static" || /flex|grid/.test(el.parentElement ? getComputedStyle(el.parentElement).display : ""))) return true;
+    if (Number(cs.opacity) < 1 || cs.isolation === "isolate") return true;
+    return PANEL_CONTEXT_PROPS.some((p) => cs[p] && cs[p] !== "none");
+  }
+  //: The outermost node from `el` up to (not including) `stop` that opens a
+  //: stacking context: the thing that takes part in `stop`'s context as one.
+  function panelStackBranch(el, stop) {
+    let hit = null;
+    for (let n = el; n && n !== stop; n = n.parentElement) if (panelMakesContext(n)) hit = n;
+    return hit || el;
+  }
+  function panelStackZ(el) {
+    const z = getComputedStyle(el).zIndex;
+    return z === "auto" ? 0 : Number(z);
+  }
+  //: Does `panel` draw above `other`? An ancestor or descendant is never asked.
+  function panelAbove(panel, other) {
+    const pt = panelTopLayer(panel);
+    const ot = panelTopLayer(other);
+    if (pt || ot) return pt && !ot;
+    let common = panel;
+    while (common && !common.contains(other)) common = common.parentElement;
+    if (!common || common === panel || common === other) return false;
+    const a = panelStackBranch(panel, common);
+    const b = panelStackBranch(other, common);
+    return panelAboveBy(panelStackZ(a), panelStackZ(b), !(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING));
+  }
+  //: **A panel is drawn only inside the boxes that clip it** (INBOX 1504, found
+  //: measuring the attach panel of 1474: it went "behind the sidebar" because its
+  //: page's `.tab-main` is `overflow-x: clip`, not because the sidebar is above
+  //: it). An in-flow panel is clipped by every ancestor that clips; an absolutely
+  //: positioned one by its containing block and the ancestors above it, not the
+  //: boxes between; a fixed panel and a top-layer one by none. The free area
+  //: starts from the window cut down to what the panel can show.
+  function panelContains(cs) {
+    return cs.position !== "static" || PANEL_CONTEXT_PROPS.some((p) => cs[p] && cs[p] !== "none");
+  }
+  function panelClipBox(panel, vw, vh) {
+    const box = { left: 0, top: 0, right: vw, bottom: vh };
+    const pos = getComputedStyle(panel).position;
+    if (pos === "fixed" || panelTopLayer(panel)) return box;
+    let reached = pos !== "absolute";
+    for (let n = panel.parentElement; n && n !== document.documentElement; n = n.parentElement) {
+      const cs = getComputedStyle(n);
+      reached = reached || panelContains(cs);
+      if (!reached) continue;
+      const r = n.getBoundingClientRect();
+      if (cs.overflowX !== "visible") {
+        box.left = Math.max(box.left, Math.round(r.left));
+        box.right = Math.min(box.right, Math.round(r.right));
+      }
+      if (cs.overflowY !== "visible") {
+        box.top = Math.max(box.top, Math.round(r.top));
+        box.bottom = Math.min(box.bottom, Math.round(r.bottom));
+      }
+      if (cs.position === "fixed") break;
+    }
+    return box;
+  }
+  //: The window minus the top bar, the status bar, a side tab rail, a sidebar
+  //: and the panels docked to a side, read when a drag starts or a dock is
+  //: fitted, never per move. `except` is the panel being placed; what it draws
+  //: above (`panelAbove`) is not taken off the free area, except the two bars
+  //: when `bars` is set: a dock zone never covers them, whatever the panel
+  //: draws above (INBOX 1648, the owner: "if a panel is docked, it shouldnt
+  //: cover the top or bottom bar"; a modal panel docked left had filled over both).
+  function panelSafe(vw, vh, except, ignore = "", bars = false) {
+    const safe = except ? panelClipBox(except, vw, vh) : { left: 0, top: 0, right: vw, bottom: vh };
+    const blocks = (el) => !except || !panelAbove(except, el);
+    const seen = (id) => {
+      const el = document.getElementById(id);
+      return el && el.getClientRects().length && blocks(el) ? el.getBoundingClientRect() : null;
+    };
+    const barBox = (id) => {
+      const el = document.getElementById(id);
+      return el && el.getClientRects().length ? el.getBoundingClientRect() : null;
+    };
+    const bar = bars ? barBox("top-bar") : seen("top-bar");
+    const foot = bars ? barBox("status-bar") : seen("status-bar");
+    const tabs = seen("tab-bar");
+    if (bar) safe.top = Math.max(safe.top, Math.round(bar.bottom));
+    if (foot) safe.bottom = Math.min(safe.bottom, Math.round(foot.top));
+    if (tabs && tabs.height > tabs.width && tabs.left < vw / 2 && ignore !== "left") safe.left = Math.max(safe.left, Math.round(tabs.right));
+    const sides = [...document.querySelectorAll("aside.sidebar-panel")].filter((el) => !(except && el.contains(except)));
+    const docked = [...document.querySelectorAll(".panel-movable-on")].filter((el) => el !== except && PANEL_STATE.get(el)?.dock);
+    for (const el of [...sides, ...docked]) {
+      if (!panelShown(el) || !blocks(el)) continue;
+      const r = el.getBoundingClientRect();
+      const zone = PANEL_STATE.get(el)?.dock || "";
+      if (zone === "max" || zone === "bottom" || r.width >= vw - 2 || (el.tagName === "ASIDE" && r.height <= r.width)) continue;
+      const west = r.left + r.width / 2 < vw / 2;
+      //: A side the app is about to be pushed away from is not an obstacle.
+      if (ignore === (west ? "left" : "right")) continue;
+      if (west) safe.left = Math.max(safe.left, Math.round(r.right));
+      else safe.right = Math.min(safe.right, Math.round(r.left));
+    }
+    return safe;
+  }
+  //: **Split screen** (INBOX 1474, the owner: "there's no point in docking if it
+  //: hides half the screen"). A panel docked to the left or right half pushes the
+  //: app aside: `--dock-push-left/right` on the root, read by `body`'s padding
+  //: (panel-movable-lazy.css, eased with `--ui-base`, instant with motion off).
+  //: Corner docks, the bottom and the maximise never push, and a panel that is
+  //: not fixed to the window (it would ride the push) does not either. One
+  //: preference, Settings, Appearance, and the head's toggle both write it.
+  function panelPushOn() {
+    return prefs.get("panel-push", "on") !== "off";
+  }
+  function panelPinned(panel) {
+    for (let el = panel; el && el !== document.body; el = el.parentElement) {
+      if (getComputedStyle(el).position === "fixed") return true;
+    }
+    return false;
+  }
+  function panelShown(el) {
+    return el.getClientRects().length > 0 && !el.closest("[data-panel-min]");
+  }
+  function panelPushSide(panel, zone) {
+    return (zone === "left" || zone === "right") && panelMovableOn() && panelPinned(panel) ? zone : "";
+  }
+  function panelPushSync() {
+    const vw = window.innerWidth;
+    let l = 0;
+    let r = 0;
+    for (const el of document.querySelectorAll(".panel-movable-on")) {
+      const st = PANEL_STATE.get(el);
+      const side = st && panelShown(el) ? panelPushSide(el, st.dock) : "";
+      if (st && st.push) st.push.hidden = !side;
+      if (st && st.push) st.push.setAttribute("aria-pressed", String(panelPushOn()));
+      if (!side || !panelPushOn()) continue;
+      const b = el.getBoundingClientRect();
+      if (side === "left") l = Math.max(l, Math.round(b.right));
+      else r = Math.max(r, Math.round(vw - b.left));
+    }
+    if (vw - l - r < PANEL_PUSH_MIN) l = r = 0;
+    const root = document.documentElement;
+    root.style.setProperty("--dock-push-left", `${l}px`);
+    root.style.setProperty("--dock-push-right", `${r}px`);
+    root.toggleAttribute("data-dock-push", l + r > 0);
+  }
+  //: `data-panel-zones="left right max"` on a panel limits its zones.
+  function panelZoneFor(panel, zone) {
+    const only = panel.dataset.panelZones;
+    return !only || only.split(/\s+/).includes(zone) ? zone : "";
+  }
+  function panelRestoreOn() {
+    return prefs.get("panel-pos", "on") !== "off";
+  }
+  function panelKeyDelta(key, shift) {
+    const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[key];
+    if (!d) return null;
+    const s = d.map((n) => n * PANEL_STEP);
+    return shift ? { dx: 0, dy: 0, dw: s[0], dh: s[1] } : { dx: s[0], dy: s[1], dw: 0, dh: 0 };
+  }
+  function panelStoreParse(raw) {
     try {
-      return el.matches(q);
+      const v = JSON.parse(raw || "{}");
+      return v && typeof v === "object" && !Array.isArray(v) ? v : {};
     } catch (_) {
-      return false;
+      return {};
     }
-  });
-}
-const PANEL_CONTEXT_PROPS = ["transform", "translate", "scale", "rotate", "filter", "backdropFilter", "perspective", "clipPath", "mask"];
-function panelMakesContext(el) {
-  const cs = getComputedStyle(el);
-  if (cs.position === "fixed" || cs.position === "sticky") return true;
-  if (cs.zIndex !== "auto" && (cs.position !== "static" || /flex|grid/.test(el.parentElement ? getComputedStyle(el.parentElement).display : ""))) return true;
-  if (Number(cs.opacity) < 1 || cs.isolation === "isolate") return true;
-  return PANEL_CONTEXT_PROPS.some((p) => cs[p] && cs[p] !== "none");
-}
-//: The outermost node from `el` up to (not including) `stop` that opens a
-//: stacking context: the thing that takes part in `stop`'s context as one.
-function panelStackBranch(el, stop) {
-  let hit = null;
-  for (let n = el; n && n !== stop; n = n.parentElement) if (panelMakesContext(n)) hit = n;
-  return hit || el;
-}
-function panelStackZ(el) {
-  const z = getComputedStyle(el).zIndex;
-  return z === "auto" ? 0 : Number(z);
-}
-//: Does `panel` draw above `other`? An ancestor or descendant is never asked.
-function panelAbove(panel, other) {
-  const pt = panelTopLayer(panel);
-  const ot = panelTopLayer(other);
-  if (pt || ot) return pt && !ot;
-  let common = panel;
-  while (common && !common.contains(other)) common = common.parentElement;
-  if (!common || common === panel || common === other) return false;
-  const a = panelStackBranch(panel, common);
-  const b = panelStackBranch(other, common);
-  return panelAboveBy(panelStackZ(a), panelStackZ(b), !(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING));
-}
-//: **A panel is drawn only inside the boxes that clip it** (INBOX 1504, found
-//: measuring the attach panel of 1474: it went "behind the sidebar" because its
-//: page's `.tab-main` is `overflow-x: clip`, not because the sidebar is above
-//: it). An in-flow panel is clipped by every ancestor that clips; an absolutely
-//: positioned one by its containing block and the ancestors above it, not the
-//: boxes between; a fixed panel and a top-layer one by none. The free area
-//: starts from the window cut down to what the panel can show.
-function panelContains(cs) {
-  return cs.position !== "static" || PANEL_CONTEXT_PROPS.some((p) => cs[p] && cs[p] !== "none");
-}
-function panelClipBox(panel, vw, vh) {
-  const box = { left: 0, top: 0, right: vw, bottom: vh };
-  const pos = getComputedStyle(panel).position;
-  if (pos === "fixed" || panelTopLayer(panel)) return box;
-  let reached = pos !== "absolute";
-  for (let n = panel.parentElement; n && n !== document.documentElement; n = n.parentElement) {
-    const cs = getComputedStyle(n);
-    reached = reached || panelContains(cs);
-    if (!reached) continue;
-    const r = n.getBoundingClientRect();
-    if (cs.overflowX !== "visible") {
-      box.left = Math.max(box.left, Math.round(r.left));
-      box.right = Math.min(box.right, Math.round(r.right));
+  }
+  //: An entry is `[x, y, w, h, dock?, layout?]`. `layout` is the panel's
+  //: `data-panel-layout` when it was stored (INBOX 1454): a panel whose layout
+  //: changed under a stored entry bumps it, and the old entry is not applied.
+  function panelStoreRead(id, layout = 0) {
+    const e = panelStoreParse(prefs.get(PANEL_KEY, ""))[id];
+    if (!Array.isArray(e) || e.length < 4 || e.length > 6) return null;
+    const [x, y, w, h, dock, ver] = e;
+    if (![x, y].every(Number.isFinite) || (w !== null && !Number.isFinite(w)) || (h !== null && !Number.isFinite(h))) return null;
+    if ((ver || 0) !== layout) return null;
+    return PANEL_ZONES.includes(dock) ? { x, y, w, h, dock } : { x, y, w, h };
+  }
+  function panelStoreWrite(id, st, layout = 0) {
+    //: prefs swallows a private window or blocked storage: the panel still works.
+    const all = panelStoreParse(prefs.get(PANEL_KEY, ""));
+    if (st) {
+      all[id] = [Math.round(st.x), Math.round(st.y), st.w, st.h];
+      if (st.dock || layout) all[id].push(st.dock || "");
+      if (layout) all[id].push(layout);
+    } else {
+      delete all[id];
     }
-    if (cs.overflowY !== "visible") {
-      box.top = Math.max(box.top, Math.round(r.top));
-      box.bottom = Math.min(box.bottom, Math.round(r.bottom));
-    }
-    if (cs.position === "fixed") break;
+    prefs.setJSON(PANEL_KEY, all);
   }
-  return box;
-}
-//: The window minus the top bar, the status bar, a side tab rail, a sidebar
-//: and the panels docked to a side, read when a drag starts or a dock is
-//: fitted, never per move. `except` is the panel being placed; what it draws
-//: above (`panelAbove`) is not taken off the free area, except the two bars
-//: when `bars` is set: a dock zone never covers them, whatever the panel
-//: draws above (INBOX 1648, the owner: "if a panel is docked, it shouldnt
-//: cover the top or bottom bar"; a modal panel docked left had filled over both).
-function panelSafe(vw, vh, except, ignore = "", bars = false) {
-  const safe = except ? panelClipBox(except, vw, vh) : { left: 0, top: 0, right: vw, bottom: vh };
-  const blocks = (el) => !except || !panelAbove(except, el);
-  const seen = (id) => {
-    const el = document.getElementById(id);
-    return el && el.getClientRects().length && blocks(el) ? el.getBoundingClientRect() : null;
-  };
-  const barBox = (id) => {
-    const el = document.getElementById(id);
-    return el && el.getClientRects().length ? el.getBoundingClientRect() : null;
-  };
-  const bar = bars ? barBox("top-bar") : seen("top-bar");
-  const foot = bars ? barBox("status-bar") : seen("status-bar");
-  const tabs = seen("tab-bar");
-  if (bar) safe.top = Math.max(safe.top, Math.round(bar.bottom));
-  if (foot) safe.bottom = Math.min(safe.bottom, Math.round(foot.top));
-  if (tabs && tabs.height > tabs.width && tabs.left < vw / 2 && ignore !== "left") safe.left = Math.max(safe.left, Math.round(tabs.right));
-  const sides = [...document.querySelectorAll("aside.sidebar-panel")].filter((el) => !(except && el.contains(except)));
-  const docked = [...document.querySelectorAll(".panel-movable-on")].filter((el) => el !== except && PANEL_STATE.get(el)?.dock);
-  for (const el of [...sides, ...docked]) {
-    if (!panelShown(el) || !blocks(el)) continue;
-    const r = el.getBoundingClientRect();
-    const zone = PANEL_STATE.get(el)?.dock || "";
-    if (zone === "max" || zone === "bottom" || r.width >= vw - 2 || (el.tagName === "ASIDE" && r.height <= r.width)) continue;
-    const west = r.left + r.width / 2 < vw / 2;
-    //: A side the app is about to be pushed away from is not an obstacle.
-    if (ignore === (west ? "left" : "right")) continue;
-    if (west) safe.left = Math.max(safe.left, Math.round(r.right));
-    else safe.right = Math.min(safe.right, Math.round(r.left));
+  //: Whether a stored entry still makes sense for the panel as it is now: a
+  //: size under the minimum (the panel's own natural size when that is smaller),
+  //: a size past the window, a place a whole window away, or a zone the panel
+  //: does not allow. The old check only clamped a place into the window, and its
+  //: size minimum was the stored size itself, so a squashed entry stayed squashed.
+  function panelStoreFits(saved, nat, vw, vh, zones) {
+    if (Math.abs(saved.x) > vw || Math.abs(saved.y) > vh) return false;
+    if (saved.w !== null && (saved.w < Math.min(PANEL_MIN_W, nat.width) || saved.w > vw)) return false;
+    if (saved.h !== null && (saved.h < Math.min(PANEL_MIN_H, nat.height) || saved.h > vh)) return false;
+    return !saved.dock || !zones || zones.split(/\s+/).includes(saved.dock);
   }
-  return safe;
-}
-//: **Split screen** (INBOX 1474, the owner: "there's no point in docking if it
-//: hides half the screen"). A panel docked to the left or right half pushes the
-//: app aside: `--dock-push-left/right` on the root, read by `body`'s padding
-//: (panel-movable-lazy.css, eased with `--ui-base`, instant with motion off).
-//: Corner docks, the bottom and the maximise never push, and a panel that is
-//: not fixed to the window (it would ride the push) does not either. One
-//: preference, Settings, Appearance, and the head's toggle both write it.
-function panelPushOn() {
-  return prefs.get("panel-push", "on") !== "off";
-}
-function panelPinned(panel) {
-  for (let el = panel; el && el !== document.body; el = el.parentElement) {
-    if (getComputedStyle(el).position === "fixed") return true;
+  //: `data-panel-layout` on the panel or its dialog host, 0 when absent.
+  function panelLayout(panel) {
+    const host = panel.closest('dialog, [role="dialog"]');
+    return Number(panel.dataset.panelLayout || (host && host.dataset.panelLayout)) || 0;
   }
-  return false;
-}
-function panelShown(el) {
-  return el.getClientRects().length > 0 && !el.closest("[data-panel-min]");
-}
-function panelPushSide(panel, zone) {
-  return (zone === "left" || zone === "right") && panelMovableOn() && panelPinned(panel) ? zone : "";
-}
-function panelPushSync() {
-  const vw = window.innerWidth;
-  let l = 0;
-  let r = 0;
-  for (const el of document.querySelectorAll(".panel-movable-on")) {
-    const st = PANEL_STATE.get(el);
-    const side = st && panelShown(el) ? panelPushSide(el, st.dock) : "";
-    if (st && st.push) st.push.hidden = !side;
-    if (st && st.push) st.push.setAttribute("aria-pressed", String(panelPushOn()));
-    if (!side || !panelPushOn()) continue;
-    const b = el.getBoundingClientRect();
-    if (side === "left") l = Math.max(l, Math.round(b.right));
-    else r = Math.max(r, Math.round(vw - b.left));
-  }
-  if (vw - l - r < PANEL_PUSH_MIN) l = r = 0;
-  const root = document.documentElement;
-  root.style.setProperty("--dock-push-left", `${l}px`);
-  root.style.setProperty("--dock-push-right", `${r}px`);
-  root.toggleAttribute("data-dock-push", l + r > 0);
-}
-//: `data-panel-zones="left right max"` on a panel limits its zones.
-function panelZoneFor(panel, zone) {
-  const only = panel.dataset.panelZones;
-  return !only || only.split(/\s+/).includes(zone) ? zone : "";
-}
-function panelRestoreOn() {
-  return prefs.get("panel-pos", "on") !== "off";
-}
-function panelKeyDelta(key, shift) {
-  const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[key];
-  if (!d) return null;
-  const s = d.map((n) => n * PANEL_STEP);
-  return shift ? { dx: 0, dy: 0, dw: s[0], dh: s[1] } : { dx: s[0], dy: s[1], dw: 0, dh: 0 };
-}
-function panelStoreParse(raw) {
-  try {
-    const v = JSON.parse(raw || "{}");
-    return v && typeof v === "object" && !Array.isArray(v) ? v : {};
-  } catch (_) {
-    return {};
-  }
-}
-//: An entry is `[x, y, w, h, dock?, layout?]`. `layout` is the panel's
-//: `data-panel-layout` when it was stored (INBOX 1454): a panel whose layout
-//: changed under a stored entry bumps it, and the old entry is not applied.
-function panelStoreRead(id, layout = 0) {
-  const e = panelStoreParse(prefs.get(PANEL_KEY, ""))[id];
-  if (!Array.isArray(e) || e.length < 4 || e.length > 6) return null;
-  const [x, y, w, h, dock, ver] = e;
-  if (![x, y].every(Number.isFinite) || (w !== null && !Number.isFinite(w)) || (h !== null && !Number.isFinite(h))) return null;
-  if ((ver || 0) !== layout) return null;
-  return PANEL_ZONES.includes(dock) ? { x, y, w, h, dock } : { x, y, w, h };
-}
-function panelStoreWrite(id, st, layout = 0) {
-  //: prefs swallows a private window or blocked storage: the panel still works.
-  const all = panelStoreParse(prefs.get(PANEL_KEY, ""));
-  if (st) {
-    all[id] = [Math.round(st.x), Math.round(st.y), st.w, st.h];
-    if (st.dock || layout) all[id].push(st.dock || "");
-    if (layout) all[id].push(layout);
-  } else {
-    delete all[id];
-  }
-  prefs.setJSON(PANEL_KEY, all);
-}
-//: Whether a stored entry still makes sense for the panel as it is now: a
-//: size under the minimum (the panel's own natural size when that is smaller),
-//: a size past the window, a place a whole window away, or a zone the panel
-//: does not allow. The old check only clamped a place into the window, and its
-//: size minimum was the stored size itself, so a squashed entry stayed squashed.
-function panelStoreFits(saved, nat, vw, vh, zones) {
-  if (Math.abs(saved.x) > vw || Math.abs(saved.y) > vh) return false;
-  if (saved.w !== null && (saved.w < Math.min(PANEL_MIN_W, nat.width) || saved.w > vw)) return false;
-  if (saved.h !== null && (saved.h < Math.min(PANEL_MIN_H, nat.height) || saved.h > vh)) return false;
-  return !saved.dock || !zones || zones.split(/\s+/).includes(saved.dock);
-}
-//: `data-panel-layout` on the panel or its dialog host, 0 when absent.
-function panelLayout(panel) {
-  const host = panel.closest('dialog, [role="dialog"]');
-  return Number(panel.dataset.panelLayout || (host && host.dataset.panelLayout)) || 0;
-}
 
-function panelMovableOn() {
-  return window.matchMedia(PANEL_MEDIA).matches;
-}
-//: The nearest ancestor-or-self that holds a head and sits in a dialog.
-//: **Always the whole panel: the dialog itself, or the card that is its direct
-//: child.** The head's own parent used to be taken, which is the card only when
-//: the head sits straight in it; the OCR workspace wraps its head and tool row
-//: in `.ocr-head`, so a drag moved that wrapper alone, the head bar drawn across
-//: the middle of a body that stayed put (INBOX 1448). Climb from the element
-//: that holds the head to the host's top-most box.
-function panelOf(node) {
-  const host = node instanceof Element ? node.closest('dialog, [role="dialog"]') : null;
-  if (!host) return null;
-  for (let el = node; el; el = el.parentElement) {
-    if (!el.querySelector(":scope > .dialog-head")) continue;
-    let top = el;
-    while (top !== host && top.parentElement && top.parentElement !== host) top = top.parentElement;
-    return top.closest("[data-panel-fixed]") ? null : top;
+  function panelMovableOn() {
+    return window.matchMedia(PANEL_MEDIA).matches;
   }
-  return null;
-}
-function panelId(panel) {
-  const host = panel.closest('dialog, [role="dialog"]');
-  const own = panel.id || (host && (host.id || host.dataset.sheet));
-  if (own) return own;
-  const title = panel.querySelector(":scope > .dialog-head .dialog-head-title");
-  return title ? "title-" + title.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40) : "";
-}
-function panelSt(panel) {
-  let st = PANEL_STATE.get(panel);
-  if (!st) {
-    st = { x: 0, y: 0, w: null, h: null, dock: "", pre: null, nat: null, id: panelId(panel), grip: null, reset: null, push: null, min: null, skip: false };
-    PANEL_STATE.set(panel, st);
+  //: The nearest ancestor-or-self that holds a head and sits in a dialog.
+  //: **Always the whole panel: the dialog itself, or the card that is its direct
+  //: child.** The head's own parent used to be taken, which is the card only when
+  //: the head sits straight in it; the OCR workspace wraps its head and tool row
+  //: in `.ocr-head`, so a drag moved that wrapper alone, the head bar drawn across
+  //: the middle of a body that stayed put (INBOX 1448). Climb from the element
+  //: that holds the head to the host's top-most box.
+  function panelOf(node) {
+    const host = node instanceof Element ? node.closest('dialog, [role="dialog"]') : null;
+    if (!host) return null;
+    for (let el = node; el; el = el.parentElement) {
+      if (!el.querySelector(":scope > .dialog-head")) continue;
+      let top = el;
+      while (top !== host && top.parentElement && top.parentElement !== host) top = top.parentElement;
+      return top.closest("[data-panel-fixed]") ? null : top;
+    }
+    return null;
   }
-  return st;
-}
-function panelApply(panel, st) {
-  panel.style.translate = st.x || st.y ? `${st.x}px ${st.y}px` : "";
-  //: **The scrim lifts once a panel is moved** (INBOX 1450, the owner:
-  //: "there's no point in dragging windows if the background is darkened
-  //: ... it should only be dark in the default position"). A panel moved,
-  //: docked or resized is put where it is to see what is beside it; at its
-  //: default place the dim stays. The panel is still modal (focus, Esc).
-  panelScrimLift(panel, st);
-  if (st.w === null) {
-    panel.style.width = panel.style.maxWidth = "";
-  } else {
-    panel.style.width = `${st.w}px`;
-    panel.style.maxWidth = "none";
+  function panelId(panel) {
+    const host = panel.closest('dialog, [role="dialog"]');
+    const own = panel.id || (host && (host.id || host.dataset.sheet));
+    if (own) return own;
+    const title = panel.querySelector(":scope > .dialog-head .dialog-head-title");
+    return title ? "title-" + title.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40) : "";
   }
-  if (st.h === null) {
-    panel.style.height = panel.style.maxHeight = "";
-  } else {
-    panel.style.height = `${st.h}px`;
-    panel.style.maxHeight = "none";
+  function panelSt(panel) {
+    let st = PANEL_STATE.get(panel);
+    if (!st) {
+      st = { x: 0, y: 0, w: null, h: null, dock: "", pre: null, nat: null, id: panelId(panel), grip: null, reset: null, push: null, min: null, skip: false };
+      PANEL_STATE.set(panel, st);
+    }
+    return st;
   }
-}
-//: The dimmed layer behind a panel: its `dialog` (the ::backdrop) or the
-//: fixed overlay that holds it.
-function panelScrimOf(panel) {
-  return panel.closest("dialog, .modal-overlay, [id$='-overlay']");
-}
-function panelScrimLift(panel, st) {
-  panelScrimOf(panel)?.toggleAttribute("data-panel-moved", Boolean(st.x || st.y || st.dock || st.w !== null));
-}
-//: One level down too: the OCR workspace wraps its head in `.ocr-head`, so it
-//: had no reset button and none of the head's grab cursor or no-select rule,
-//: and a drag there highlighted text (the owner 2026-10-29).
-function panelHeadOf(panel) {
-  return panel.querySelector(":scope > .dialog-head, :scope > * > .dialog-head");
-}
-//: Keeps a panel inside the window: size first, then place.
-function panelClamp(panel, st) {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const head = panelHeadOf(panel);
-  const headH = head ? head.offsetHeight : 40;
-  const safe = panelSafe(vw, vh, panel);
-  const place = () => {
-    const r = panel.getBoundingClientRect();
-    //: Whole panel inside the free area when it fits (a window resize or a
-    //: reload brings it back), else its top left.
-    const m = panelClampMove(r, st.x, st.y, st.x, st.y, vw, vh, headH, safe);
-    if (m.x === st.x && m.y === st.y) return;
-    st.x = m.x;
-    st.y = m.y;
-    panelApply(panel, st);
-  };
-  //: Place, then size against the new place, then place again: a panel left
-  //: off to one side must come back before its room is measured.
-  place();
-  if (st.w !== null || st.h !== null) {
-    const r = panel.getBoundingClientRect();
-    //: The minimum is the panel's natural size at most, not the size it was
-    //: just given (that made a stored squash its own floor).
-    const ref = st.nat ? { left: r.left, top: r.top, width: st.nat.width, height: st.nat.height } : r;
-    const c = panelClampSize(ref, st.w ?? r.width, st.h ?? r.height, vw, vh);
-    if (st.w !== null) st.w = c.w;
-    if (st.h !== null) st.h = c.h;
-    panelApply(panel, st);
+  function panelApply(panel, st) {
+    panel.style.translate = st.x || st.y ? `${st.x}px ${st.y}px` : "";
+    //: **The scrim lifts once a panel is moved** (INBOX 1450, the owner:
+    //: "there's no point in dragging windows if the background is darkened
+    //: ... it should only be dark in the default position"). A panel moved,
+    //: docked or resized is put where it is to see what is beside it; at its
+    //: default place the dim stays. The panel is still modal (focus, Esc).
+    panelScrimLift(panel, st);
+    if (st.w === null) {
+      panel.style.width = panel.style.maxWidth = "";
+    } else {
+      panel.style.width = `${st.w}px`;
+      panel.style.maxWidth = "none";
+    }
+    if (st.h === null) {
+      panel.style.height = panel.style.maxHeight = "";
+    } else {
+      panel.style.height = `${st.h}px`;
+      panel.style.maxHeight = "none";
+    }
+  }
+  //: The dimmed layer behind a panel: its `dialog` (the ::backdrop) or the
+  //: fixed overlay that holds it.
+  function panelScrimOf(panel) {
+    return panel.closest("dialog, .modal-overlay, [id$='-overlay']");
+  }
+  function panelScrimLift(panel, st) {
+    panelScrimOf(panel)?.toggleAttribute("data-panel-moved", Boolean(st.x || st.y || st.dock || st.w !== null));
+  }
+  //: One level down too: the OCR workspace wraps its head in `.ocr-head`, so it
+  //: had no reset button and none of the head's grab cursor or no-select rule,
+  //: and a drag there highlighted text (the owner 2026-10-29).
+  function panelHeadOf(panel) {
+    return panel.querySelector(":scope > .dialog-head, :scope > * > .dialog-head");
+  }
+  //: Keeps a panel inside the window: size first, then place.
+  function panelClamp(panel, st) {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const head = panelHeadOf(panel);
+    const headH = head ? head.offsetHeight : 40;
+    const safe = panelSafe(vw, vh, panel);
+    const place = () => {
+      const r = panel.getBoundingClientRect();
+      //: Whole panel inside the free area when it fits (a window resize or a
+      //: reload brings it back), else its top left.
+      const m = panelClampMove(r, st.x, st.y, st.x, st.y, vw, vh, headH, safe);
+      if (m.x === st.x && m.y === st.y) return;
+      st.x = m.x;
+      st.y = m.y;
+      panelApply(panel, st);
+    };
+    //: Place, then size against the new place, then place again: a panel left
+    //: off to one side must come back before its room is measured.
     place();
+    if (st.w !== null || st.h !== null) {
+      const r = panel.getBoundingClientRect();
+      //: The minimum is the panel's natural size at most, not the size it was
+      //: just given (that made a stored squash its own floor).
+      const ref = st.nat ? { left: r.left, top: r.top, width: st.nat.width, height: st.nat.height } : r;
+      const c = panelClampSize(ref, st.w ?? r.width, st.h ?? r.height, vw, vh);
+      if (st.w !== null) st.w = c.w;
+      if (st.h !== null) st.h = c.h;
+      panelApply(panel, st);
+      place();
+    }
   }
-}
-//: The one preview, reused: top layer (a modal dialog's own layer sits under
-//: it), click-through. Its padding is `--space-3`, so the inset is read from it
-//: (a density-aware length) rather than parsed out of a calc().
-//: The snap preview and the open-panel observer, made on first use.
-const PANEL_LIVE = { preview: null, watch: null };
-function panelPreviewEl() {
-  if (!PANEL_LIVE.preview || !PANEL_LIVE.preview.isConnected) {
-    PANEL_LIVE.preview = document.createElement("div");
-    PANEL_LIVE.preview.className = "panel-snap-preview";
-    PANEL_LIVE.preview.setAttribute("popover", "manual");
-    PANEL_LIVE.preview.setAttribute("aria-hidden", "true");
-    document.body.appendChild(PANEL_LIVE.preview);
+  //: The one preview, reused: top layer (a modal dialog's own layer sits under
+  //: it), click-through. Its padding is `--space-3`, so the inset is read from it
+  //: (a density-aware length) rather than parsed out of a calc().
+  //: The snap preview and the open-panel observer, made on first use.
+  const PANEL_LIVE = { preview: null, watch: null };
+  function panelPreviewEl() {
+    if (!PANEL_LIVE.preview || !PANEL_LIVE.preview.isConnected) {
+      PANEL_LIVE.preview = document.createElement("div");
+      PANEL_LIVE.preview.className = "panel-snap-preview";
+      PANEL_LIVE.preview.setAttribute("popover", "manual");
+      PANEL_LIVE.preview.setAttribute("aria-hidden", "true");
+      document.body.appendChild(PANEL_LIVE.preview);
+    }
+    return PANEL_LIVE.preview;
   }
-  return PANEL_LIVE.preview;
-}
-function panelInset() {
-  return parseFloat(getComputedStyle(panelPreviewEl()).paddingLeft) || 12;
-}
-function panelShowZone(r) {
-  const el = panelPreviewEl();
-  try {
-    if (!r) {
-      if (el.matches(":popover-open")) el.hidePopover();
+  function panelInset() {
+    return parseFloat(getComputedStyle(panelPreviewEl()).paddingLeft) || 12;
+  }
+  function panelShowZone(r) {
+    const el = panelPreviewEl();
+    try {
+      if (!r) {
+        if (el.matches(":popover-open")) el.hidePopover();
+        return;
+      }
+      el.style.left = `${r.left}px`;
+      el.style.top = `${r.top}px`;
+      el.style.width = `${r.width}px`;
+      el.style.height = `${r.height}px`;
+      if (!el.matches(":popover-open")) el.showPopover();
+    } catch (_) {
+      /* no popover support: the drop still docks, only the preview is missing */
+    }
+  }
+  //: Fill the dock zone: size first, then one rect read to learn where the
+  //: centred layout put it, and translate the difference.
+  function panelFit(panel, st) {
+    const z = panelZoneRect(st.dock, window.innerWidth, window.innerHeight, panelInset(), panelSafe(window.innerWidth, window.innerHeight, panel, panelPushOn() ? panelPushSide(panel, st.dock) : "", true));
+    if (!z) {
+      st.dock = "";
       return;
     }
-    el.style.left = `${r.left}px`;
-    el.style.top = `${r.top}px`;
-    el.style.width = `${r.width}px`;
-    el.style.height = `${r.height}px`;
-    if (!el.matches(":popover-open")) el.showPopover();
-  } catch (_) {
-    /* no popover support: the drop still docks, only the preview is missing */
-  }
-}
-//: Fill the dock zone: size first, then one rect read to learn where the
-//: centred layout put it, and translate the difference.
-function panelFit(panel, st) {
-  const z = panelZoneRect(st.dock, window.innerWidth, window.innerHeight, panelInset(), panelSafe(window.innerWidth, window.innerHeight, panel, panelPushOn() ? panelPushSide(panel, st.dock) : "", true));
-  if (!z) {
-    st.dock = "";
-    return;
-  }
-  st.w = z.width;
-  st.h = z.height;
-  panelApply(panel, st);
-  const r = panel.getBoundingClientRect();
-  st.x += z.left - r.left;
-  st.y += z.top - r.top;
-  panelApply(panel, st);
-  panelPushSync();
-}
-function panelDock(panel, st, zone) {
-  if (!st.dock) st.pre = { w: st.w, h: st.h };
-  st.dock = zone;
-  panelFit(panel, st);
-}
-function panelUnsnap(st) {
-  st.dock = "";
-  st.w = st.pre ? st.pre.w : null;
-  st.h = st.pre ? st.pre.h : null;
-  st.pre = null;
-}
-//: The reset button shows only while there is something to put back.
-function panelSync(panel) {
-  const st = panelSt(panel);
-  if (st.reset) st.reset.hidden = !(st.x || st.y || st.w !== null || st.h !== null || st.dock);
-}
-//: Closing a panel with "open where you left them" off puts it back in the
-//: middle (the saved place stays). One observer for all panels; it wakes only
-//: when a panel appears or disappears.
-function panelWatchOpen(panel) {
-  if (typeof IntersectionObserver === "undefined") return;
-  PANEL_LIVE.watch ||= new IntersectionObserver((list) => {
-    for (const en of list) {
-      if (en.isIntersecting || panelRestoreOn() || en.target.closest("[data-panel-min]")) continue;
-      const st = panelSt(en.target);
-      st.x = st.y = 0;
-      st.w = st.h = null;
-      st.dock = "";
-      st.pre = null;
-      panelApply(en.target, st);
-      panelSync(en.target);
-    }
-    panelPushSync();
-  });
-  PANEL_LIVE.watch.observe(panel);
-}
-function panelFull(panel) {
-  const r = panel.getBoundingClientRect();
-  return r.width >= window.innerWidth - 2 && r.height >= window.innerHeight - 2;
-}
-function panelReset(panel) {
-  const st = panelSt(panel);
-  st.x = st.y = 0;
-  st.w = st.h = null;
-  st.dock = "";
-  st.pre = null;
-  panelApply(panel, st);
-  if (st.id) panelStoreWrite(st.id, null);
-  panelSync(panel);
-  panelPushSync();
-}
-//: The grip's double-click: the size goes back, the place stays (a docked
-//: panel is all size, so it goes back to the middle like the head's).
-function panelResetSize(panel) {
-  const st = panelSt(panel);
-  if (st.dock) {
-    panelReset(panel);
-    return;
-  }
-  st.w = st.h = null;
-  st.pre = null;
-  panelApply(panel, st);
-  panelClamp(panel, st);
-  panelSave(panel);
-}
-function panelSave(panel) {
-  const st = panelSt(panel);
-  st.rim = null;
-  if (st.id) panelStoreWrite(st.id, st, panelLayout(panel));
-  panelScrimLift(panel, st);
-  panelSync(panel);
-  panelPushSync();
-}
-//: **A popover hung from a caret or a button is re-based on the middle of the
-//: window** (INBOX 1542), where every stored place is measured from: it keeps
-//: the place it was given (the offset is the difference in layout, so a grow in
-//: progress does not enter it), and a place saved later opens there whatever
-//: the caret is by then, in the first frame, not the caret's and then the saved.
-panelAdopt.rebase = (panel, st) => {
-  if (!panel.matches(".help-popover:not(.popover-centred)")) return;
-  const left = panel.offsetLeft;
-  const top = panel.offsetTop;
-  panel.style.left = panel.style.top = "";
-  panel.style.removeProperty("--help-caret-x");
-  panel.classList.add("popover-centred");
-  st.x = left - panel.offsetLeft;
-  st.y = top - panel.offsetTop;
-  panelApply(panel, st);
-};
-//: Adopt a panel once: restore, add the grip. Cheap to call again.
-function panelAdopt(panel) {
-  if (!panel || !panelMovableOn()) return;
-  const st = panelSt(panel);
-  if (st.skip) return;
-  if (!panel.classList.contains("panel-movable-on")) {
-    if (panelFull(panel)) { st.skip = true; return; }
-    //: Not laid out yet (a panel touched while hidden): adopt it next time.
-    const nat = panel.getBoundingClientRect();
-    if (!nat.width || !nat.height) return;
-    st.nat = { width: nat.width, height: nat.height };
-    panel.classList.add("panel-movable-on");
-    panel.addEventListener("pointermove", panelAdopt.rimHover);
-    panelWatchOpen(panel);
-    panelAdopt.rebase(panel, st);
-    let saved = st.id && panelRestoreOn() ? panelStoreRead(st.id, panelLayout(panel)) : null;
-    //: A stored entry that does not fit this panel opens it at the default and
-    //: is forgotten, rather than applied and left broken (INBOX 1454).
-    if (saved && !panelStoreFits(saved, nat, window.innerWidth, window.innerHeight, panel.dataset.panelZones)) {
-      panelStoreWrite(st.id, null);
-      saved = null;
-    }
-    if (saved) {
-      Object.assign(st, saved);
-      panelApply(panel, st);
-      if (st.dock) panelFit(panel, st);
-      else panelClamp(panel, st);
-    }
-  }
-  panelHeadOf(panel)?.classList.add("panel-drag-head");
-  if (!st.reset || !st.reset.isConnected) {
-    const head = panelHeadOf(panel);
-    const actions = head && head.querySelector(":scope > .dialog-head-actions");
-    if (head) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "icon-only ghost small dialog-head-btn panel-reset";
-      btn.setAttribute("aria-label", "Put back in the middle");
-      btn.title = "Put back in the middle. Double-clicking the title bar does the same. Settings, Appearance, Panels open where you left them, turns remembering off.";
-      const icon = document.createElement("i");
-      icon.className = "ph ph-arrow-counter-clockwise";
-      icon.setAttribute("aria-hidden", "true");
-      btn.appendChild(icon);
-      //: Beside Close, never after it (INBOX 1491): a head with no actions
-      //: wrapper took these at its end, past the X.
-      const closeBtn = panelCloseBtn(panel);
-      const tools = actions || closeBtn?.parentElement || head;
-      const slot = actions ? actions.firstChild : closeBtn?.parentElement === tools ? closeBtn : null;
-      tools.insertBefore(btn, slot);
-      st.reset = btn;
-      const push = document.createElement("button");
-      push.type = "button";
-      push.className = "icon-only ghost small dialog-head-btn panel-push";
-      push.setAttribute("aria-label", "Move the app aside while docked");
-      push.title = "Move the app aside while this panel is docked to a side";
-      push.hidden = true;
-      const pushIcon = document.createElement("i");
-      pushIcon.className = "ph ph-columns";
-      pushIcon.setAttribute("aria-hidden", "true");
-      push.appendChild(pushIcon);
-      tools.insertBefore(push, btn);
-      st.push = push;
-      if (panelPinned(panel)) {
-        const min = document.createElement("button");
-        min.type = "button";
-        min.className = "icon-only ghost small dialog-head-btn panel-min";
-        const minIcon = document.createElement("i");
-        minIcon.className = "ph ph-minus";
-        minIcon.setAttribute("aria-hidden", "true");
-        min.appendChild(minIcon);
-        min.addEventListener("click", () => panelMinimise(panel));
-        const close = panelCloseBtn(panel);
-        if (close) close.parentElement.insertBefore(min, close);
-        else (actions || head).appendChild(min);
-        st.min = min;
-      }
-    }
-  }
-  panelHeadSettle(panel, st);
-  if (st.min) {
-    const label = panelTitle(panel);
-    st.min.setAttribute("aria-label", `Minimise ${label}`);
-    st.min.title = `Minimise ${label} (Shift+Escape)`;
-  }
-  panelSync(panel);
-  if (!st.grip || !st.grip.isConnected || st.grip.parentElement !== panel) {
-    const grip = document.createElement("button");
-    grip.type = "button";
-    grip.className = "panel-grip";
-    grip.setAttribute("aria-label", "Move or resize this panel");
-    grip.title = "Drag to resize. Double-click resets the size. Arrow keys move, Shift and arrow keys resize, Home resets.";
-    panel.appendChild(grip);
-    st.grip = grip;
-    panelGripRoom(panel, grip);
-  }
-}
-//: The grip is the card's last row and hangs into its padding (INBOX 1454):
-//: the padding in pixels is read once here and written as the grip's margins
-//: and sticky `bottom`, capped at the grip's own size so a deep padding does
-//: not float it. Cards differ (20 by 16 on `.card`, 12.8 on a popup, 0 on the
-//: palette), which is why the CSS cannot say it.
-function panelGripRoom(panel, grip) {
-  const cs = getComputedStyle(panel);
-  const size = grip.offsetHeight || 28;
-  const cap = (v) => Math.max(0, Math.min(parseFloat(v) || 0, size));
-  const pb = cap(cs.paddingBottom);
-  grip.style.marginRight = `${-cap(cs.paddingRight)}px`;
-  grip.style.marginBottom = `${-pb}px`;
-  grip.style.bottom = `${-pb}px`;
-}
-function panelHeadDown(e) {
-  const head = e.target.closest(".dialog-head");
-  const panel = head && panelOf(head);
-  if (!panel || e.button !== 0 || e.target.closest(PANEL_SKIP) || !panelMovableOn()) return;
-  panelAdopt(panel);
-  const st = panelSt(panel);
-  if (st.skip) return;
-  let rect = panel.getBoundingClientRect();
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const hh = head.offsetHeight;
-  const inset = panelInset();
-  const safe = panelSafe(vw, vh, panel);
-  //: With the push on, a side dock is laid against the window's own edge: the
-  //: sidebar and the rail beside it are pushed over with the rest of the app.
-  const pushing = panelPushOn() && panelPinned(panel);
-  const dockSafe = panelSafe(vw, vh, panel, "", true);
-  const sideSafe = { left: panelSafe(vw, vh, panel, pushing ? "left" : "", true), right: panelSafe(vw, vh, panel, pushing ? "right" : "", true) };
-  let moved = 0;
-  let x0 = e.clientX;
-  let y0 = e.clientY;
-  let ox = st.x;
-  let oy = st.y;
-  let zone = "";
-  let lifted = false;
-  panel.classList.add("panel-moving");
-  head.setPointerCapture(e.pointerId);
-  const move = (ev) => {
-    if (st.dock) {
-      //: Off the edge: back to the size it had, under the pointer (the one
-      //: layout read of a drag, and only for a docked panel).
-      if (Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) < 6) return;
-      const fx = (x0 - rect.left) / rect.width;
-      panelUnsnap(st);
-      panelApply(panel, st);
-      panelPushSync();
-      const r = panel.getBoundingClientRect();
-      st.x += ev.clientX - fx * r.width - r.left;
-      st.y += ev.clientY - (y0 - rect.top) - r.top;
-      rect = { left: ev.clientX - fx * r.width, top: ev.clientY - (y0 - rect.top), width: r.width, height: r.height };
-      ox = st.x;
-      oy = st.y;
-      x0 = ev.clientX;
-      y0 = ev.clientY;
-    }
-    const m = panelClampMove(rect, ox, oy, ox + ev.clientX - x0, oy + ev.clientY - y0, vw, vh, hh, safe);
-    st.x = m.x;
-    st.y = m.y;
-    panel.style.translate = `${m.x}px ${m.y}px`;
-    //: The dim lifts as the drag starts, not as it ends (it popped on release).
-    if (!lifted && Math.abs(ev.clientX - e.clientX) + Math.abs(ev.clientY - e.clientY) > 4) {
-      lifted = true;
-      panelScrimLift(panel, st);
-    }
-    moved = Math.max(moved, Math.abs(ev.clientX - e.clientX) + Math.abs(ev.clientY - e.clientY));
-    const z = panelZoneFor(panel, panelSnapZone(ev.clientX, ev.clientY, vw, vh));
-    if (z !== zone) {
-      zone = z;
-      panelShowZone(z ? panelZoneRect(z, vw, vh, inset, sideSafe[z] || dockSafe) : null);
-    }
-  };
-  const done = (ev) => {
-    head.removeEventListener("pointermove", move);
-    head.removeEventListener("pointerup", done);
-    head.removeEventListener("pointercancel", done);
-    panel.classList.remove("panel-moving");
-    //: The drop reads the pointer where it was let go, not the last move: a
-    //: flick to the very edge can end with no move event at the edge.
-    if (ev.type === "pointerup" && moved > 4) zone = panelZoneFor(panel, panelSnapZone(ev.clientX, ev.clientY, vw, vh));
-    if (zone) panelShowZone(null);
-    if (zone && ev.type === "pointerup") panelDock(panel, st, zone);
-    panelSave(panel);
-    if (moved > 4) {
-      //: A drag is not a click on the head: swallow the one that follows.
-      const eat = (c) => { c.stopPropagation(); c.preventDefault(); };
-      head.addEventListener("click", eat, { capture: true, once: true });
-      setTimeout(() => head.removeEventListener("click", eat, true), 80);
-    }
-  };
-  head.addEventListener("pointermove", move);
-  head.addEventListener("pointerup", done);
-  head.addEventListener("pointercancel", done);
-}
-//: Resize with the left and top edges held where they were.
-//: **Every edge and corner resizes (INBOX 1536, the owner: "can you make the
-//: edges and corners of popups resizable??")**: the outer 6 pixels of
-//: a movable panel. The box is read once as the pointer comes in (`st.rim`,
-//: dropped on every save), so a hover reads no layout; `data-rim` names the
-//: edge for the cursor, and a press there resizes from it with the opposite
-//: edge held still. The right edge of a panel that scrolls is 3px, so its
-//: scrollbar keeps most of its width. The corner grip stays the keyboard route.
-//: A property, not a name: the shared scope is at its cap (test_global_scope_ratchet).
-//: The edge a point names: 6px on a side, 16px each way at a corner (INBOX
-//: 1552). The card's rounded corner clips hit testing, so the last few pixels
-//: of a corner belong to the backdrop; a corner reached from 16px in sits
-//: inside the curve, and a press on the backdrop inside the box still counts.
-panelAdopt.rimEdge = (r, x, y) => {
-  const c = (a, b) => (a < 16 && b < 16);
-  const [t, b, l, rt] = [y - r.top, r.bottom - y, x - r.left, r.right - x];
-  const corner = c(t, l) ? "nw" : c(t, rt) ? "ne" : c(b, l) ? "sw" : c(b, rt) ? "se" : "";
-  const v = t < 6 ? "n" : b < 6 ? "s" : "";
-  const h = l < 6 ? "w" : rt < (r.bar ? 3 : 6) ? "e" : "";
-  return corner || v + h;
-};
-panelAdopt.rimHover = (e) => {
-  const panel = e.currentTarget;
-  const st = panelSt(panel);
-  if (e.buttons || panel.classList.contains("panel-moving") || !panelMovableOn()) return;
-  if (!st.rim) {
-    const r = panel.getBoundingClientRect();
-    st.rim = { top: r.top, bottom: r.bottom, left: r.left, right: r.right, bar: panel.scrollHeight > panel.clientHeight };
-  }
-  const edge = e.target.closest(".panel-movable-on") === panel ? panelAdopt.rimEdge(st.rim, e.clientX, e.clientY) : "";
-  if ((panel.dataset.rim || "") !== edge) {
-    if (edge) panel.dataset.rim = edge;
-    else delete panel.dataset.rim;
-  }
-};
-//: **The edge is named again at the press** (INBOX 1630, "chooses the wrong
-//: edge resize like a corner for an edge"): the hover reads the box once, so a
-//: panel that moved or changed size under a still pointer (the graph's panel
-//: follows its note and grows as its body loads) kept naming the edge of its old
-//: box. A press is the one moment a layout read is free, so it names the edge
-//: from the box as it is now, and presses off every edge resize nothing.
-panelAdopt.rimFresh = (panel, e) => {
-  const r = panel.getBoundingClientRect();
-  const st = panelSt(panel);
-  st.rim = { top: r.top, bottom: r.bottom, left: r.left, right: r.right, bar: panel.scrollHeight > panel.clientHeight };
-  const edge = panelAdopt.rimEdge(st.rim, e.clientX, e.clientY);
-  if (edge) panel.dataset.rim = edge;
-  else delete panel.dataset.rim;
-  return edge;
-};
-function panelGripDown(e, rimmed) {
-  const grip = rimmed || e.target.closest(".panel-grip");
-  const panel = rimmed || (grip && grip.parentElement);
-  if (!panel || e.button !== 0 || !panelMovableOn()) return;
-  const edge = rimmed ? rimmed.dataset.rim : "se";
-  const dx = edge.includes("e") ? 1 : edge.includes("w") ? -1 : 0;
-  const dy = edge.includes("s") ? 1 : edge.includes("n") ? -1 : 0;
-  e.preventDefault();
-  const st = panelSt(panel);
-  st.dock = "";
-  st.pre = null;
-  const rect = panel.getBoundingClientRect();
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const x0 = e.clientX;
-  const y0 = e.clientY;
-  const ox = st.x;
-  const oy = st.y;
-  const k = { x: null, y: null };
-  grip.setPointerCapture(e.pointerId);
-  panel.classList.add("panel-moving");
-  //: Grown left or up, the room is what lies left of the right edge or above the bottom.
-  const room = { width: rect.width, height: rect.height, left: dx < 0 ? vw - rect.right : rect.left, top: dy < 0 ? vh - rect.bottom : rect.top };
-  const move = (ev) => {
-    const dw = dx * (ev.clientX - x0);
-    const dh = dy * (ev.clientY - y0);
-    const c = panelClampSize(room, rect.width + dw, rect.height + dh, vw, vh);
-    st.w = c.w;
-    st.h = c.h;
-    panel.style.width = `${c.w}px`;
-    panel.style.height = `${c.h}px`;
-    panel.style.maxWidth = panel.style.maxHeight = "none";
-    //: One read per axis, once the size has moved enough to tell.
-    const sw = c.w - rect.width;
-    const sh = c.h - rect.height;
-    //: How far the panel's own layout moves an edge as it grows (0 pinned, 0.5
-    //: centred), read once with the translate it started with.
-    if ((k.x === null && Math.abs(sw) >= 8) || (k.y === null && Math.abs(sh) >= 8)) {
-      panel.style.translate = `${ox}px ${oy}px`;
-      const now = panel.getBoundingClientRect();
-      if (k.x === null && Math.abs(sw) >= 8) k.x = Math.round(((now.left - rect.left) / sw) * 2) / 2;
-      if (k.y === null && Math.abs(sh) >= 8) k.y = Math.round(((now.top - rect.top) / sh) * 2) / 2;
-    }
-    st.x = ox - (k.x || 0) * sw - (dx < 0 ? sw : 0);
-    st.y = oy - (k.y || 0) * sh - (dy < 0 ? sh : 0);
-    panel.style.translate = `${st.x}px ${st.y}px`;
-  };
-  const done = () => {
-    grip.removeEventListener("pointermove", move);
-    grip.removeEventListener("pointerup", done);
-    grip.removeEventListener("pointercancel", done);
-    panel.classList.remove("panel-moving");
-    panelSave(panel);
-  };
-  grip.addEventListener("pointermove", move);
-  grip.addEventListener("pointerup", done);
-  grip.addEventListener("pointercancel", done);
-}
-function panelGripKey(e) {
-  const grip = e.target.closest(".panel-grip");
-  const panel = grip && grip.parentElement;
-  if (!panel) return;
-  const st = panelSt(panel);
-  if (e.key === "Home") {
-    e.preventDefault();
-    e.stopPropagation();
-    panelReset(panel);
-    return;
-  }
-  const d = panelKeyDelta(e.key, e.shiftKey);
-  if (!d) return;
-  e.preventDefault();
-  e.stopPropagation();
-  st.dock = "";
-  st.pre = null;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const before = panel.getBoundingClientRect();
-  if (d.dw || d.dh) {
-    const c = panelClampSize(before, before.width + d.dw, before.height + d.dh, vw, vh);
-    st.w = c.w;
-    st.h = c.h;
+    st.w = z.width;
+    st.h = z.height;
     panelApply(panel, st);
-    const after = panel.getBoundingClientRect();
-    st.x += before.left - after.left;
-    st.y += before.top - after.top;
-  } else {
-    const head = panelHeadOf(panel);
-    const m = panelClampMove(before, st.x, st.y, st.x + d.dx, st.y + d.dy, vw, vh, head ? head.offsetHeight : 40, panelSafe(vw, vh, panel));
-    st.x = m.x;
-    st.y = m.y;
+    const r = panel.getBoundingClientRect();
+    st.x += z.left - r.left;
+    st.y += z.top - r.top;
+    panelApply(panel, st);
+    panelPushSync();
   }
-  panelApply(panel, st);
-  panelSave(panel);
-}
-//: **Minimise** (INBOX 1475, the owner: "popups should have a minimise button
-//: with a popup or indicator somewhere so the user can open it up or close the
-//: popup"). A pinned panel (a dialog or overlay) hides with its state kept and
-//: shows as a pill in `#panel-min-tray`, floating above the composer at the
-//: content's bottom left; the pill restores it, its x closes it. A dialog is
-//: re-opened non-modal while hidden (a modal one would keep the app inert) and
-//: modal again on restore; the `close` it fires is swallowed so the panel's own
-//: close handling does not run. Shift+Escape minimises from the keyboard.
-const PANEL_MIN = new Map();
-function panelMinHost(panel) {
-  return panel.closest("dialog") || panelScrimOf(panel) || panel;
-}
-function panelTitle(panel) {
-  const el = panel.querySelector(".dialog-head-title");
-  return el ? el.textContent.trim().replace(/\s+/g, " ") || "Panel" : "Panel";
-}
-//: **One order for every popup head** (INBOX 1498, the owner: "this order of
-//: buttons on the guide doesnt make sense"): the actions this file adds (move
-//: the app aside, put back in the middle) first, then the head's own help and
-//: more, then minimise, and Close last. The reset sat after Close in a head
-//: with no actions wrapper (1491), and beside help in the others, so no two
-//: popups agreed. Idempotent, so every adopt can run it; it moves nothing that
-//: is already in place, which keeps a focused button focused.
-function panelHeadSettle(panel, st) {
-  const head = panelHeadOf(panel);
-  const closeBtn = panelCloseBtn(panel);
-  if (!head || !closeBtn || !st.reset || !st.push) return;
-  const tail = closeBtn.parentElement;
-  if (st.min && st.min.nextElementSibling !== closeBtn) tail.insertBefore(st.min, closeBtn);
-  let host = [...head.querySelectorAll("[data-help-for], .menu-wrap, .atlas-menu")].find((el) => !el.closest(".panel-reset, .panel-push"));
-  //: Stops at the row that also holds Close: climbing past it to the head put
-  //: the reset beside the title, floating mid-head (Appearance, the owner
-  //: 2026-11-01: "this header's arrangement is wierd").
-  while (host && host.parentElement !== head && host.parentElement !== tail && !host.parentElement.contains(tail)) host = host.parentElement;
-  const ref = host || st.min || closeBtn;
-  const box = ref.parentElement;
-  if (ref.previousElementSibling === st.reset && st.reset.previousElementSibling === st.push) return;
-  box.insertBefore(st.push, ref);
-  box.insertBefore(st.reset, ref);
-}
-function panelCloseBtn(panel) {
-  const head = panelHeadOf(panel);
-  return head && head.querySelector('button[aria-label^="Close"], button[title^="Close"], button[data-close]');
-}
-function panelReopen(host, modal) {
-  const quiet = (e) => {
-    if (e.target !== host) return;
-    e.stopPropagation();
-    window.removeEventListener("close", quiet, true);
-  };
-  window.addEventListener("close", quiet, true);
-  host.close();
-  if (modal) host.showModal();
-  else host.show();
-}
-function panelMinTray() {
-  let tray = document.getElementById("panel-min-tray");
-  if (!tray) {
-    tray = document.createElement("div");
-    tray.id = "panel-min-tray";
-    tray.setAttribute("role", "group");
-    tray.setAttribute("aria-label", "Minimised panels");
-    tray.setAttribute("popover", "manual");
-    document.body.appendChild(tray);
+  function panelDock(panel, st, zone) {
+    if (!st.dock) st.pre = { w: st.w, h: st.h };
+    st.dock = zone;
+    panelFit(panel, st);
   }
-  return tray;
-}
-//: Above the chat composer when it is on screen, else above the status bar, at
-//: the left of the page the reader is on.
-function panelMinPlace() {
-  const tray = document.getElementById("panel-min-tray");
-  if (!tray) return;
-  const shown = (el) => (el && el.getClientRects().length ? el.getBoundingClientRect() : null);
-  const page = shown(document.querySelector("#app-main > .tab-page:not(.hidden)"));
-  const dock = shown(document.querySelector(".chat-dock"));
-  const foot = shown(document.getElementById("status-bar"));
-  const gap = parseFloat(getComputedStyle(tray).paddingLeft) || 8;
-  const left = (dock || page || { left: 0 }).left + gap;
-  const floor = dock ? dock.top : foot ? foot.top : window.innerHeight;
-  tray.style.left = `${Math.round(left)}px`;
-  tray.style.bottom = `${Math.round(window.innerHeight - floor + gap)}px`;
-}
-function panelChip(panel) {
-  const title = panelTitle(panel);
-  const chip = document.createElement("span");
-  chip.className = "minimised-pill";
-  const open = document.createElement("button");
-  open.type = "button";
-  open.className = "minimised-pill-open";
-  open.setAttribute("aria-label", `Restore ${title}`);
-  const glyph = panel.querySelector(".dialog-head .pop-glyph, .dialog-head-title .ph");
-  const icon = document.createElement("i");
-  icon.className = glyph ? [...glyph.classList].filter((c) => c !== "ph-lead" && c !== "pop-glyph").join(" ") : "ph ph-app-window";
-  icon.setAttribute("aria-hidden", "true");
-  const name = document.createElement("span");
-  name.textContent = title;
-  open.append(icon, name);
-  const x = document.createElement("button");
-  x.type = "button";
-  x.className = "minimised-pill-x";
-  x.setAttribute("aria-label", `Close ${title}`);
-  x.title = `Close ${title}`;
-  const xi = document.createElement("i");
-  xi.className = "ph ph-x";
-  xi.setAttribute("aria-hidden", "true");
-  x.appendChild(xi);
-  chip.append(open, x);
-  return chip;
-}
-function panelMinimise(panel) {
-  const host = panelMinHost(panel);
-  if (PANEL_MIN.has(host)) return;
-  const modal = host.tagName === "DIALOG" && host.matches(":modal");
-  const chip = panelChip(panel);
-  PANEL_MIN.set(host, { panel, chip, modal });
-  host.setAttribute("data-panel-min", "");
-  host.inert = true;
-  if (host.tagName === "DIALOG" && host.open) panelReopen(host, false);
-  const tray = panelMinTray();
-  tray.appendChild(chip);
-  if (!tray.matches(":popover-open")) tray.showPopover();
-  panelMinPlace();
-  panelPushSync();
-  chip.querySelector(".minimised-pill-open").focus({ preventScroll: true });
-}
-function panelRestore(host, close = false) {
-  const m = PANEL_MIN.get(host);
-  if (!m) return;
-  PANEL_MIN.delete(host);
-  m.chip.remove();
-  host.removeAttribute("data-panel-min");
-  host.inert = false;
-  if (!PANEL_MIN.size) panelMinTray().hidePopover();
-  if (host.tagName === "DIALOG" && host.open && m.modal) panelReopen(host, true);
-  const gone = host.tagName === "DIALOG" ? !host.open : host.classList.contains("hidden");
-  if (gone) return;
-  panelPushSync();
-  const btn = close ? panelCloseBtn(m.panel) : panelSt(m.panel).min;
-  if (btn) btn.focus({ preventScroll: true });
-  if (close) (btn ? btn.click() : host.tagName === "DIALOG" && host.close());
-}
-//: **The pill is never an outside press** (INBOX 1543, the owner: "I minimised
-//: it and tried to reopen it from the minimised pill but it didnt reopen"). A
-//: panel that closes on a press outside itself (the emoji picker, the Guide)
-//: closed on the press meant to restore it. The tray's presses stop at the
-//: window, before any such listener, and the click is answered here: one door
-//: for every panel that can minimise, not one fix per panel.
-panelAdopt.trayPress = (e) => {
-  const btn = e.target instanceof Element && e.target.closest("#panel-min-tray button");
-  if (!btn) return;
-  e.stopImmediatePropagation();
-  if (e.type !== "click") return;
-  const host = [...PANEL_MIN.keys()].find((h) => PANEL_MIN.get(h).chip.contains(btn));
-  if (host) panelRestore(host, btn.classList.contains("minimised-pill-x"));
-};
-function panelMinKey(e) {
-  if (e.key !== "Escape" || !e.shiftKey || !(e.target instanceof Element)) return;
-  const host = e.target.closest('dialog, [role="dialog"]');
-  const head = host && host.querySelector(".dialog-head");
-  const panel = head && panelOf(head);
-  if (!panel || !panelSt(panel).min) return;
-  e.preventDefault();
-  e.stopPropagation();
-  panelMinimise(panel);
-}
-function panelPushToggle() {
-  const on = !panelPushOn();
-  prefs.set("panel-push", on ? "on" : "off");
-  const box = document.getElementById("panel-push-toggle");
-  if (box) box.checked = on;
-  document.querySelectorAll(".panel-movable-on").forEach((panel) => {
+  function panelUnsnap(st) {
+    st.dock = "";
+    st.w = st.pre ? st.pre.w : null;
+    st.h = st.pre ? st.pre.h : null;
+    st.pre = null;
+  }
+  //: The reset button shows only while there is something to put back.
+  function panelSync(panel) {
     const st = panelSt(panel);
-    if (st.dock && panel.getClientRects().length) panelFit(panel, st);
-  });
-  panelPushSync();
-}
-let panelResizeTimer = 0;
-function panelWindowResized() {
-  clearTimeout(panelResizeTimer);
-  panelResizeTimer = setTimeout(() => {
-    if (PANEL_MIN.size) panelMinPlace();
-    const on = panelMovableOn();
-    document.querySelectorAll(".panel-movable-on").forEach((panel) => {
-      const st = panelSt(panel);
-      if (!on) {
+    if (st.reset) st.reset.hidden = !(st.x || st.y || st.w !== null || st.h !== null || st.dock);
+  }
+  //: Closing a panel with "open where you left them" off puts it back in the
+  //: middle (the saved place stays). One observer for all panels; it wakes only
+  //: when a panel appears or disappears.
+  function panelWatchOpen(panel) {
+    if (typeof IntersectionObserver === "undefined") return;
+    PANEL_LIVE.watch ||= new IntersectionObserver((list) => {
+      for (const en of list) {
+        if (en.isIntersecting || panelRestoreOn() || en.target.closest("[data-panel-min]")) continue;
+        const st = panelSt(en.target);
         st.x = st.y = 0;
         st.w = st.h = null;
+        st.dock = "";
+        st.pre = null;
+        panelApply(en.target, st);
+        panelSync(en.target);
+      }
+      panelPushSync();
+    });
+    PANEL_LIVE.watch.observe(panel);
+  }
+  function panelFull(panel) {
+    const r = panel.getBoundingClientRect();
+    return r.width >= window.innerWidth - 2 && r.height >= window.innerHeight - 2;
+  }
+  function panelReset(panel) {
+    const st = panelSt(panel);
+    st.x = st.y = 0;
+    st.w = st.h = null;
+    st.dock = "";
+    st.pre = null;
+    panelApply(panel, st);
+    if (st.id) panelStoreWrite(st.id, null);
+    panelSync(panel);
+    panelPushSync();
+  }
+  //: The grip's double-click: the size goes back, the place stays (a docked
+  //: panel is all size, so it goes back to the middle like the head's).
+  function panelResetSize(panel) {
+    const st = panelSt(panel);
+    if (st.dock) {
+      panelReset(panel);
+      return;
+    }
+    st.w = st.h = null;
+    st.pre = null;
+    panelApply(panel, st);
+    panelClamp(panel, st);
+    panelSave(panel);
+  }
+  function panelSave(panel) {
+    const st = panelSt(panel);
+    st.rim = null;
+    if (st.id) panelStoreWrite(st.id, st, panelLayout(panel));
+    panelScrimLift(panel, st);
+    panelSync(panel);
+    panelPushSync();
+  }
+  //: Panels with a first look waiting on the next frame (the pointerover listener).
+  panelAdopt.hoverWait = new WeakSet();
+  //: **A popover hung from a caret or a button is re-based on the middle of the
+  //: window** (INBOX 1542), where every stored place is measured from: it keeps
+  //: the place it was given (the offset is the difference in layout, so a grow in
+  //: progress does not enter it), and a place saved later opens there whatever
+  //: the caret is by then, in the first frame, not the caret's and then the saved.
+  panelAdopt.rebase = (panel, st) => {
+    if (!panel.matches(".help-popover:not(.popover-centred)")) return;
+    const left = panel.offsetLeft;
+    const top = panel.offsetTop;
+    panel.style.left = panel.style.top = "";
+    panel.style.removeProperty("--help-caret-x");
+    panel.classList.add("popover-centred");
+    st.x = left - panel.offsetLeft;
+    st.y = top - panel.offsetTop;
+    panelApply(panel, st);
+  };
+  //: Adopt a panel once: restore, add the grip. Cheap to call again.
+  function panelAdopt(panel) {
+    if (!panel || !panelMovableOn()) return;
+    const st = panelSt(panel);
+    if (st.skip) return;
+    if (!panel.classList.contains("panel-movable-on")) {
+      if (panelFull(panel)) { st.skip = true; return; }
+      //: Not laid out yet (a panel touched while hidden): adopt it next time.
+      const nat = panel.getBoundingClientRect();
+      if (!nat.width || !nat.height) return;
+      st.nat = { width: nat.width, height: nat.height };
+      panel.classList.add("panel-movable-on");
+      panel.addEventListener("pointermove", panelAdopt.rimHover);
+      panelWatchOpen(panel);
+      panelAdopt.rebase(panel, st);
+      let saved = st.id && panelRestoreOn() ? panelStoreRead(st.id, panelLayout(panel)) : null;
+      //: A stored entry that does not fit this panel opens it at the default and
+      //: is forgotten, rather than applied and left broken (INBOX 1454).
+      if (saved && !panelStoreFits(saved, nat, window.innerWidth, window.innerHeight, panel.dataset.panelZones)) {
+        panelStoreWrite(st.id, null);
+        saved = null;
+      }
+      if (saved) {
+        Object.assign(st, saved);
         panelApply(panel, st);
-      } else if (panel.getClientRects().length) {
         if (st.dock) panelFit(panel, st);
         else panelClamp(panel, st);
       }
-    });
-  }, 120);
-}
-if (typeof document !== "undefined" && document.addEventListener) {
-  //: Adopting adds the grip's row, and a bottom-anchored sheet grows upward by
-  //: it (measured: the Guide's send button rose 20px). A focus that a press
-  //: brings waits for the press to end: adopted between pointerdown and
-  //: pointerup, the button left the pointer and the click went to the card.
-  const press = { down: false, wait: new Set() };
-  const adoptWaiting = () => {
-    press.down = false;
-    if (!press.wait.size) return;
-    const panels = [...press.wait];
-    press.wait.clear();
-    setTimeout(() => panels.forEach(panelAdopt), 0);
-  };
-  document.addEventListener("pointerdown", () => { press.down = true; }, true);
-  window.addEventListener("pointerup", adoptWaiting, true);
-  window.addEventListener("pointercancel", adoptWaiting, true);
-  document.addEventListener("focusin", (e) => {
-    const p = panelOf(e.target);
-    if (p && press.down) press.wait.add(p);
-    //: A panel not yet adopted is, after the frame the focus came in: its first look reads
-    //: the style the focus change has just invalidated (52 to 150ms at 4x, INBOX 1534).
-    else if (p) p.classList.contains("panel-movable-on") ? panelAdopt(p) : afterFrames(() => setTimeout(panelAdopt, 0, p), 1);
-  }, true);
-  document.addEventListener("keydown", panelMinKey, true);
-  for (const type of ["pointerdown", "mousedown", "click"]) window.addEventListener(type, panelAdopt.trayPress, true);
-  //: A pill rides above the page the reader is on: put it back after a tab change.
-  document.addEventListener("click", () => { if (PANEL_MIN.size) setTimeout(panelMinPlace, 250); }, true);
-  document.addEventListener("pointerover", (e) => {
-    const t = e.target;
-    //: Anywhere in a panel, not only its head, so its edges resize from the first touch (INBOX 1536).
-    if (t instanceof Element && t.closest('dialog, [role="dialog"]') && !t.closest(".panel-movable-on")) { const p = panelOf(t); if (p) panelAdopt(p); }
-  }, true);
-  document.addEventListener("pointerdown", (e) => {
-    if (!(e.target instanceof Element)) return;
-    let rim = e.target.closest(".panel-movable-on[data-rim]");
-    if (rim && !panelAdopt.rimFresh(rim, e)) rim = null;
-    if (e.target.closest(".panel-grip")) panelGripDown(e);
-    else if (rim && e.button === 0) {
-      e.stopPropagation();
-      panelGripDown(e, rim);
     }
-    else if (e.target.closest(".dialog-head")) panelHeadDown(e);
-    else if (e.button === 0 && !e.target.closest(".panel-movable-on")) {
-      //: A press on the backdrop inside a panel's box: a rounded corner's clipped pixels (INBOX 1552).
-      const p = e.target.querySelector(".panel-movable-on");
-      const r = p && p.getBoundingClientRect();
-      const edge = r && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom ? panelAdopt.rimEdge(r, e.clientX, e.clientY) : "";
-      if (!edge) return;
-      e.stopPropagation();
-      p.dataset.rim = edge;
-      panelGripDown(e, p);
-      //: The click that ends the drag lands on the backdrop, which may close the dialog.
-      const eat = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
-      document.addEventListener("click", eat, { capture: true, once: true });
-      document.addEventListener("pointerup", () => setTimeout(() => document.removeEventListener("click", eat, true), 80), { capture: true, once: true });
+    panelHeadOf(panel)?.classList.add("panel-drag-head");
+    if (!st.reset || !st.reset.isConnected) {
+      const head = panelHeadOf(panel);
+      const actions = head && head.querySelector(":scope > .dialog-head-actions");
+      if (head) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "icon-only ghost small dialog-head-btn panel-reset";
+        btn.setAttribute("aria-label", "Put back in the middle");
+        btn.title = "Put back in the middle. Double-clicking the title bar does the same. Settings, Appearance, Panels open where you left them, turns remembering off.";
+        const icon = document.createElement("i");
+        icon.className = "ph ph-arrow-counter-clockwise";
+        icon.setAttribute("aria-hidden", "true");
+        btn.appendChild(icon);
+        //: Beside Close, never after it (INBOX 1491): a head with no actions
+        //: wrapper took these at its end, past the X.
+        const closeBtn = panelCloseBtn(panel);
+        const tools = actions || closeBtn?.parentElement || head;
+        const slot = actions ? actions.firstChild : closeBtn?.parentElement === tools ? closeBtn : null;
+        tools.insertBefore(btn, slot);
+        st.reset = btn;
+        const push = document.createElement("button");
+        push.type = "button";
+        push.className = "icon-only ghost small dialog-head-btn panel-push";
+        push.setAttribute("aria-label", "Move the app aside while docked");
+        push.title = "Move the app aside while this panel is docked to a side";
+        push.hidden = true;
+        const pushIcon = document.createElement("i");
+        pushIcon.className = "ph ph-columns";
+        pushIcon.setAttribute("aria-hidden", "true");
+        push.appendChild(pushIcon);
+        tools.insertBefore(push, btn);
+        st.push = push;
+        if (panelPinned(panel)) {
+          const min = document.createElement("button");
+          min.type = "button";
+          min.className = "icon-only ghost small dialog-head-btn panel-min";
+          const minIcon = document.createElement("i");
+          minIcon.className = "ph ph-minus";
+          minIcon.setAttribute("aria-hidden", "true");
+          min.appendChild(minIcon);
+          min.addEventListener("click", () => panelMinimise(panel));
+          const close = panelCloseBtn(panel);
+          if (close) close.parentElement.insertBefore(min, close);
+          else (actions || head).appendChild(min);
+          st.min = min;
+        }
+      }
     }
-  }, true);
-  //: A press on a head must not take the focus from the control that has it
-  //: nor start a text selection (a pointerdown handler cannot stop either).
-  document.addEventListener("mousedown", (e) => {
-    const head = e.target instanceof Element && e.target.closest(".dialog-head.panel-drag-head");
-    if (head && e.button === 0 && !e.target.closest(PANEL_SKIP) && panelMovableOn()) e.preventDefault();
-  }, true);
-  document.addEventListener("click", (e) => {
-    const btn = e.target instanceof Element && e.target.closest(".panel-reset");
-    const panel = btn && panelOf(btn);
-    if (panel) panelReset(panel);
-    if (e.target instanceof Element && e.target.closest(".panel-push")) panelPushToggle();
-  }, true);
-  document.addEventListener("dblclick", (e) => {
-    if (!(e.target instanceof Element)) return;
-    const grip = e.target.closest(".panel-grip");
-    if (grip) {
-      if (grip.parentElement && grip.parentElement.classList.contains("panel-movable-on")) panelResetSize(grip.parentElement);
-      return;
+    panelHeadSettle(panel, st);
+    if (st.min) {
+      const label = panelTitle(panel);
+      st.min.setAttribute("aria-label", `Minimise ${label}`);
+      st.min.title = `Minimise ${label} (Shift+Escape)`;
     }
-    if (e.target.closest(PANEL_SKIP)) return;
+    panelSync(panel);
+    if (!st.grip || !st.grip.isConnected || st.grip.parentElement !== panel) {
+      const grip = document.createElement("button");
+      grip.type = "button";
+      grip.className = "panel-grip";
+      grip.setAttribute("aria-label", "Move or resize this panel");
+      grip.title = "Drag to resize. Double-click resets the size. Arrow keys move, Shift and arrow keys resize, Home resets.";
+      panel.appendChild(grip);
+      st.grip = grip;
+      panelGripRoom(panel, grip);
+    }
+  }
+  //: The grip is the card's last row and hangs into its padding (INBOX 1454):
+  //: the padding in pixels is read once here and written as the grip's margins
+  //: and sticky `bottom`, capped at the grip's own size so a deep padding does
+  //: not float it. Cards differ (20 by 16 on `.card`, 12.8 on a popup, 0 on the
+  //: palette), which is why the CSS cannot say it.
+  function panelGripRoom(panel, grip) {
+    const cs = getComputedStyle(panel);
+    const size = grip.offsetHeight || 28;
+    const cap = (v) => Math.max(0, Math.min(parseFloat(v) || 0, size));
+    const pb = cap(cs.paddingBottom);
+    grip.style.marginRight = `${-cap(cs.paddingRight)}px`;
+    grip.style.marginBottom = `${-pb}px`;
+    grip.style.bottom = `${-pb}px`;
+  }
+  function panelHeadDown(e) {
     const head = e.target.closest(".dialog-head");
     const panel = head && panelOf(head);
-    if (panel && panel.classList.contains("panel-movable-on")) panelReset(panel);
-  }, true);
-  document.addEventListener("keydown", (e) => {
-    if (e.target instanceof Element && e.target.closest(".panel-grip")) panelGripKey(e);
-  }, true);
-  window.addEventListener("resize", panelWindowResized);
-}
+    if (!panel || e.button !== 0 || e.target.closest(PANEL_SKIP) || !panelMovableOn()) return;
+    panelAdopt(panel);
+    const st = panelSt(panel);
+    if (st.skip) return;
+    let rect = panel.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const hh = head.offsetHeight;
+    const inset = panelInset();
+    const safe = panelSafe(vw, vh, panel);
+    //: With the push on, a side dock is laid against the window's own edge: the
+    //: sidebar and the rail beside it are pushed over with the rest of the app.
+    const pushing = panelPushOn() && panelPinned(panel);
+    const dockSafe = panelSafe(vw, vh, panel, "", true);
+    const sideSafe = { left: panelSafe(vw, vh, panel, pushing ? "left" : "", true), right: panelSafe(vw, vh, panel, pushing ? "right" : "", true) };
+    let moved = 0;
+    let x0 = e.clientX;
+    let y0 = e.clientY;
+    let ox = st.x;
+    let oy = st.y;
+    let zone = "";
+    let lifted = false;
+    panel.classList.add("panel-moving");
+    head.setPointerCapture(e.pointerId);
+    const move = (ev) => {
+      if (st.dock) {
+        //: Off the edge: back to the size it had, under the pointer (the one
+        //: layout read of a drag, and only for a docked panel).
+        if (Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) < 6) return;
+        const fx = (x0 - rect.left) / rect.width;
+        panelUnsnap(st);
+        panelApply(panel, st);
+        panelPushSync();
+        const r = panel.getBoundingClientRect();
+        st.x += ev.clientX - fx * r.width - r.left;
+        st.y += ev.clientY - (y0 - rect.top) - r.top;
+        rect = { left: ev.clientX - fx * r.width, top: ev.clientY - (y0 - rect.top), width: r.width, height: r.height };
+        ox = st.x;
+        oy = st.y;
+        x0 = ev.clientX;
+        y0 = ev.clientY;
+      }
+      const m = panelClampMove(rect, ox, oy, ox + ev.clientX - x0, oy + ev.clientY - y0, vw, vh, hh, safe);
+      st.x = m.x;
+      st.y = m.y;
+      panel.style.translate = `${m.x}px ${m.y}px`;
+      //: The dim lifts as the drag starts, not as it ends (it popped on release).
+      if (!lifted && Math.abs(ev.clientX - e.clientX) + Math.abs(ev.clientY - e.clientY) > 4) {
+        lifted = true;
+        panelScrimLift(panel, st);
+      }
+      moved = Math.max(moved, Math.abs(ev.clientX - e.clientX) + Math.abs(ev.clientY - e.clientY));
+      const z = panelZoneFor(panel, panelSnapZone(ev.clientX, ev.clientY, vw, vh));
+      if (z !== zone) {
+        zone = z;
+        panelShowZone(z ? panelZoneRect(z, vw, vh, inset, sideSafe[z] || dockSafe) : null);
+      }
+    };
+    const done = (ev) => {
+      head.removeEventListener("pointermove", move);
+      head.removeEventListener("pointerup", done);
+      head.removeEventListener("pointercancel", done);
+      panel.classList.remove("panel-moving");
+      //: The drop reads the pointer where it was let go, not the last move: a
+      //: flick to the very edge can end with no move event at the edge.
+      if (ev.type === "pointerup" && moved > 4) zone = panelZoneFor(panel, panelSnapZone(ev.clientX, ev.clientY, vw, vh));
+      if (zone) panelShowZone(null);
+      if (zone && ev.type === "pointerup") panelDock(panel, st, zone);
+      panelSave(panel);
+      if (moved > 4) {
+        //: A drag is not a click on the head: swallow the one that follows.
+        const eat = (c) => { c.stopPropagation(); c.preventDefault(); };
+        head.addEventListener("click", eat, { capture: true, once: true });
+        setTimeout(() => head.removeEventListener("click", eat, true), 80);
+      }
+    };
+    head.addEventListener("pointermove", move);
+    head.addEventListener("pointerup", done);
+    head.addEventListener("pointercancel", done);
+  }
+  //: Resize with the left and top edges held where they were.
+  //: **Every edge and corner resizes (INBOX 1536, the owner: "can you make the
+  //: edges and corners of popups resizable??")**: the outer 6 pixels of
+  //: a movable panel. The box is read once as the pointer comes in (`st.rim`,
+  //: dropped on every save), so a hover reads no layout; `data-rim` names the
+  //: edge for the cursor, and a press there resizes from it with the opposite
+  //: edge held still. The right edge of a panel that scrolls is 3px, so its
+  //: scrollbar keeps most of its width. The corner grip stays the keyboard route.
+  //: A property, not a name: the shared scope is at its cap (test_global_scope_ratchet).
+  //: The edge a point names: 6px on a side, 16px each way at a corner (INBOX
+  //: 1552). The card's rounded corner clips hit testing, so the last few pixels
+  //: of a corner belong to the backdrop; a corner reached from 16px in sits
+  //: inside the curve, and a press on the backdrop inside the box still counts.
+  panelAdopt.rimEdge = (r, x, y) => {
+    const c = (a, b) => (a < 16 && b < 16);
+    const [t, b, l, rt] = [y - r.top, r.bottom - y, x - r.left, r.right - x];
+    const corner = c(t, l) ? "nw" : c(t, rt) ? "ne" : c(b, l) ? "sw" : c(b, rt) ? "se" : "";
+    const v = t < 6 ? "n" : b < 6 ? "s" : "";
+    const h = l < 6 ? "w" : rt < (r.bar ? 3 : 6) ? "e" : "";
+    return corner || v + h;
+  };
+  panelAdopt.rimHover = (e) => {
+    const panel = e.currentTarget;
+    const st = panelSt(panel);
+    if (e.buttons || panel.classList.contains("panel-moving") || !panelMovableOn()) return;
+    if (!st.rim) {
+      const r = panel.getBoundingClientRect();
+      st.rim = { top: r.top, bottom: r.bottom, left: r.left, right: r.right, bar: panel.scrollHeight > panel.clientHeight };
+    }
+    const edge = e.target.closest(".panel-movable-on") === panel ? panelAdopt.rimEdge(st.rim, e.clientX, e.clientY) : "";
+    if ((panel.dataset.rim || "") !== edge) {
+      if (edge) panel.dataset.rim = edge;
+      else delete panel.dataset.rim;
+    }
+  };
+  //: **The edge is named again at the press** (INBOX 1630, "chooses the wrong
+  //: edge resize like a corner for an edge"): the hover reads the box once, so a
+  //: panel that moved or changed size under a still pointer (the graph's panel
+  //: follows its note and grows as its body loads) kept naming the edge of its old
+  //: box. A press is the one moment a layout read is free, so it names the edge
+  //: from the box as it is now, and presses off every edge resize nothing.
+  panelAdopt.rimFresh = (panel, e) => {
+    const r = panel.getBoundingClientRect();
+    const st = panelSt(panel);
+    st.rim = { top: r.top, bottom: r.bottom, left: r.left, right: r.right, bar: panel.scrollHeight > panel.clientHeight };
+    const edge = panelAdopt.rimEdge(st.rim, e.clientX, e.clientY);
+    if (edge) panel.dataset.rim = edge;
+    else delete panel.dataset.rim;
+    return edge;
+  };
+  function panelGripDown(e, rimmed) {
+    const grip = rimmed || e.target.closest(".panel-grip");
+    const panel = rimmed || (grip && grip.parentElement);
+    if (!panel || e.button !== 0 || !panelMovableOn()) return;
+    const edge = rimmed ? rimmed.dataset.rim : "se";
+    const dx = edge.includes("e") ? 1 : edge.includes("w") ? -1 : 0;
+    const dy = edge.includes("s") ? 1 : edge.includes("n") ? -1 : 0;
+    e.preventDefault();
+    const st = panelSt(panel);
+    //: A half docked left or right, widened by its inner edge, stays docked and keeps pushing the app aside
+    //: (the owner, 2026-11-09: the page went back to full width as soon as the middle edge was dragged).
+    const keep = (st.dock === "left" && edge === "e") || (st.dock === "right" && edge === "w");
+    if (!keep) {
+      st.dock = "";
+      st.pre = null;
+    }
+    const rect = panel.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const x0 = e.clientX;
+    const y0 = e.clientY;
+    const ox = st.x;
+    const oy = st.y;
+    const k = { x: null, y: null };
+    grip.setPointerCapture(e.pointerId);
+    panel.classList.add("panel-moving");
+    //: Grown left or up, the room is what lies left of the right edge or above the bottom.
+    const room = { width: rect.width, height: rect.height, left: dx < 0 ? vw - rect.right : rect.left, top: dy < 0 ? vh - rect.bottom : rect.top };
+    const move = (ev) => {
+      const dw = dx * (ev.clientX - x0);
+      const dh = dy * (ev.clientY - y0);
+      const c = panelClampSize(room, rect.width + dw, rect.height + dh, vw, vh);
+      st.w = c.w;
+      st.h = c.h;
+      panel.style.width = `${c.w}px`;
+      panel.style.height = `${c.h}px`;
+      panel.style.maxWidth = panel.style.maxHeight = "none";
+      //: One read per axis, once the size has moved enough to tell.
+      const sw = c.w - rect.width;
+      const sh = c.h - rect.height;
+      //: How far the panel's own layout moves an edge as it grows (0 pinned, 0.5
+      //: centred), read once with the translate it started with.
+      if ((k.x === null && Math.abs(sw) >= 8) || (k.y === null && Math.abs(sh) >= 8)) {
+        panel.style.translate = `${ox}px ${oy}px`;
+        const now = panel.getBoundingClientRect();
+        if (k.x === null && Math.abs(sw) >= 8) k.x = Math.round(((now.left - rect.left) / sw) * 2) / 2;
+        if (k.y === null && Math.abs(sh) >= 8) k.y = Math.round(((now.top - rect.top) / sh) * 2) / 2;
+      }
+      st.x = ox - (k.x || 0) * sw - (dx < 0 ? sw : 0);
+      st.y = oy - (k.y || 0) * sh - (dy < 0 ? sh : 0);
+      panel.style.translate = `${st.x}px ${st.y}px`;
+      if (keep) panelPushSync();  // the pointer's own events pace it: no frame loop of its own
+    };
+    const done = () => {
+      grip.removeEventListener("pointermove", move);
+      grip.removeEventListener("pointerup", done);
+      grip.removeEventListener("pointercancel", done);
+      panel.classList.remove("panel-moving");
+      panelSave(panel);
+      if (keep) panelPushSync();
+    };
+    grip.addEventListener("pointermove", move);
+    grip.addEventListener("pointerup", done);
+    grip.addEventListener("pointercancel", done);
+  }
+  function panelGripKey(e) {
+    const grip = e.target.closest(".panel-grip");
+    const panel = grip && grip.parentElement;
+    if (!panel) return;
+    const st = panelSt(panel);
+    if (e.key === "Home") {
+      e.preventDefault();
+      e.stopPropagation();
+      panelReset(panel);
+      return;
+    }
+    const d = panelKeyDelta(e.key, e.shiftKey);
+    if (!d) return;
+    e.preventDefault();
+    e.stopPropagation();
+    st.dock = "";
+    st.pre = null;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const before = panel.getBoundingClientRect();
+    if (d.dw || d.dh) {
+      const c = panelClampSize(before, before.width + d.dw, before.height + d.dh, vw, vh);
+      st.w = c.w;
+      st.h = c.h;
+      panelApply(panel, st);
+      const after = panel.getBoundingClientRect();
+      st.x += before.left - after.left;
+      st.y += before.top - after.top;
+    } else {
+      const head = panelHeadOf(panel);
+      const m = panelClampMove(before, st.x, st.y, st.x + d.dx, st.y + d.dy, vw, vh, head ? head.offsetHeight : 40, panelSafe(vw, vh, panel));
+      st.x = m.x;
+      st.y = m.y;
+    }
+    panelApply(panel, st);
+    panelSave(panel);
+  }
+  //: **Minimise** (INBOX 1475, the owner: "popups should have a minimise button
+  //: with a popup or indicator somewhere so the user can open it up or close the
+  //: popup"). A pinned panel (a dialog or overlay) hides with its state kept and
+  //: shows as a pill in `#panel-min-tray`, floating above the composer at the
+  //: content's bottom left; the pill restores it, its x closes it. A dialog is
+  //: re-opened non-modal while hidden (a modal one would keep the app inert) and
+  //: modal again on restore; the `close` it fires is swallowed so the panel's own
+  //: close handling does not run. Shift+Escape minimises from the keyboard.
+  const PANEL_MIN = new Map();
+  function panelMinHost(panel) {
+    return panel.closest("dialog") || panelScrimOf(panel) || panel;
+  }
+  function panelTitle(panel) {
+    const el = panel.querySelector(".dialog-head-title");
+    return el ? el.textContent.trim().replace(/\s+/g, " ") || "Panel" : "Panel";
+  }
+  //: **One order for every popup head** (INBOX 1498, the owner: "this order of
+  //: buttons on the guide doesnt make sense"): the actions this file adds (move
+  //: the app aside, put back in the middle) first, then the head's own help and
+  //: more, then minimise, and Close last. The reset sat after Close in a head
+  //: with no actions wrapper (1491), and beside help in the others, so no two
+  //: popups agreed. Idempotent, so every adopt can run it; it moves nothing that
+  //: is already in place, which keeps a focused button focused.
+  function panelHeadSettle(panel, st) {
+    const head = panelHeadOf(panel);
+    const closeBtn = panelCloseBtn(panel);
+    if (!head || !closeBtn || !st.reset || !st.push) return;
+    const tail = closeBtn.parentElement;
+    if (st.min && st.min.nextElementSibling !== closeBtn) tail.insertBefore(st.min, closeBtn);
+    let host = [...head.querySelectorAll("[data-help-for], .menu-wrap, .atlas-menu")].find((el) => !el.closest(".panel-reset, .panel-push"));
+    //: Stops at the row that also holds Close: climbing past it to the head put
+    //: the reset beside the title, floating mid-head (Appearance, the owner
+    //: 2026-11-01: "this header's arrangement is wierd").
+    while (host && host.parentElement !== head && host.parentElement !== tail && !host.parentElement.contains(tail)) host = host.parentElement;
+    const ref = host || st.min || closeBtn;
+    const box = ref.parentElement;
+    if (ref.previousElementSibling === st.reset && st.reset.previousElementSibling === st.push) return;
+    box.insertBefore(st.push, ref);
+    box.insertBefore(st.reset, ref);
+  }
+  function panelCloseBtn(panel) {
+    const head = panelHeadOf(panel);
+    return head && head.querySelector('button[aria-label^="Close"], button[title^="Close"], button[data-close]');
+  }
+  function panelReopen(host, modal) {
+    const quiet = (e) => {
+      if (e.target !== host) return;
+      e.stopPropagation();
+      window.removeEventListener("close", quiet, true);
+    };
+    window.addEventListener("close", quiet, true);
+    host.close();
+    if (modal) host.showModal();
+    else host.show();
+  }
+  function panelMinTray() {
+    let tray = document.getElementById("panel-min-tray");
+    if (!tray) {
+      tray = document.createElement("div");
+      tray.id = "panel-min-tray";
+      tray.setAttribute("role", "group");
+      tray.setAttribute("aria-label", "Minimised panels");
+      tray.setAttribute("popover", "manual");
+      document.body.appendChild(tray);
+    }
+    return tray;
+  }
+  //: Above the chat composer when it is on screen, else above the status bar, at
+  //: the left of the page the reader is on.
+  function panelMinPlace() {
+    const tray = document.getElementById("panel-min-tray");
+    if (!tray) return;
+    const shown = (el) => (el && el.getClientRects().length ? el.getBoundingClientRect() : null);
+    const page = shown(document.querySelector("#app-main > .tab-page:not(.hidden)"));
+    const dock = shown(document.querySelector(".chat-dock"));
+    const foot = shown(document.getElementById("status-bar"));
+    const gap = parseFloat(getComputedStyle(tray).paddingLeft) || 8;
+    const left = (dock || page || { left: 0 }).left + gap;
+    const floor = dock ? dock.top : foot ? foot.top : window.innerHeight;
+    tray.style.left = `${Math.round(left)}px`;
+    tray.style.bottom = `${Math.round(window.innerHeight - floor + gap)}px`;
+  }
+  function panelChip(panel) {
+    const title = panelTitle(panel);
+    const chip = document.createElement("span");
+    chip.className = "minimised-pill";
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "minimised-pill-open";
+    open.setAttribute("aria-label", `Restore ${title}`);
+    const glyph = panel.querySelector(".dialog-head .pop-glyph, .dialog-head-title .ph");
+    const icon = document.createElement("i");
+    icon.className = glyph ? [...glyph.classList].filter((c) => c !== "ph-lead" && c !== "pop-glyph").join(" ") : "ph ph-app-window";
+    icon.setAttribute("aria-hidden", "true");
+    const name = document.createElement("span");
+    name.textContent = title;
+    open.append(icon, name);
+    const x = document.createElement("button");
+    x.type = "button";
+    x.className = "minimised-pill-x";
+    x.setAttribute("aria-label", `Close ${title}`);
+    x.title = `Close ${title}`;
+    const xi = document.createElement("i");
+    xi.className = "ph ph-x";
+    xi.setAttribute("aria-hidden", "true");
+    x.appendChild(xi);
+    chip.append(open, x);
+    return chip;
+  }
+  function panelMinimise(panel) {
+    const host = panelMinHost(panel);
+    if (PANEL_MIN.has(host)) return;
+    const modal = host.tagName === "DIALOG" && host.matches(":modal");
+    const chip = panelChip(panel);
+    PANEL_MIN.set(host, { panel, chip, modal });
+    host.setAttribute("data-panel-min", "");
+    host.inert = true;
+    if (host.tagName === "DIALOG" && host.open) panelReopen(host, false);
+    const tray = panelMinTray();
+    tray.appendChild(chip);
+    if (!tray.matches(":popover-open")) tray.showPopover();
+    panelMinPlace();
+    panelPushSync();
+    chip.querySelector(".minimised-pill-open").focus({ preventScroll: true });
+  }
+  //: **A close from the pill never shows the window** (CHAT_PLAN B8, the owner:
+  //: "sometimes when I close a minimised tab for a window, the window flashes
+  //: for a split second"). The x restored the window, a modal dialog modal
+  //: again, then pressed its Close, so the exit fade played on screen (8 frames
+  //: for the agent and the Guide, 4 for Settings). Close is pressed while it is
+  //: still `data-panel-min` (hidden, no transition), the style is read so the
+  //: close lands hidden, and the mark comes off once it is gone. A close held
+  //: back (a confirm it asks) shows the window again after 700ms.
+  function panelRestore(host, close = false) {
+    const m = PANEL_MIN.get(host);
+    if (!m) return;
+    PANEL_MIN.delete(host);
+    m.chip.remove();
+    host.inert = false;
+    if (!PANEL_MIN.size) panelMinTray().hidePopover();
+    const gone = () => !host.isConnected || (host.tagName === "DIALOG" ? !host.open : host.classList.contains("hidden"));
+    if (close) {
+      if (!gone()) {
+        const btn = panelCloseBtn(m.panel);
+        if (btn) btn.click();
+        else if (host.tagName === "DIALOG") host.close();
+        if (host.isConnected) getComputedStyle(host).display;
+      }
+      const t0 = Date.now();
+      const settle = () => {
+        if (!gone() && Date.now() - t0 < 700) return void setTimeout(settle, 50);
+        host.removeAttribute("data-panel-min");
+        if (!gone() && host.tagName === "DIALOG" && m.modal) panelReopen(host, true);
+        panelPushSync();
+      };
+      return void setTimeout(settle, 50);
+    }
+    host.removeAttribute("data-panel-min");
+    if (host.tagName === "DIALOG" && host.open && m.modal) panelReopen(host, true);
+    if (gone()) return;
+    panelPushSync();
+    const btn = panelSt(m.panel).min;
+    if (btn) btn.focus({ preventScroll: true });
+  }
+  //: **The pill is never an outside press** (INBOX 1543, the owner: "I minimised
+  //: it and tried to reopen it from the minimised pill but it didnt reopen"). A
+  //: panel that closes on a press outside itself (the emoji picker, the Guide)
+  //: closed on the press meant to restore it. The tray's presses stop at the
+  //: window, before any such listener, and the click is answered here: one door
+  //: for every panel that can minimise, not one fix per panel.
+  panelAdopt.trayPress = (e) => {
+    const btn = e.target instanceof Element && e.target.closest("#panel-min-tray button");
+    if (!btn) return;
+    e.stopImmediatePropagation();
+    if (e.type !== "click") return;
+    const host = [...PANEL_MIN.keys()].find((h) => PANEL_MIN.get(h).chip.contains(btn));
+    if (host) panelRestore(host, btn.classList.contains("minimised-pill-x"));
+  };
+  function panelMinKey(e) {
+    if (e.key !== "Escape" || !e.shiftKey || !(e.target instanceof Element)) return;
+    const host = e.target.closest('dialog, [role="dialog"]');
+    const head = host && host.querySelector(".dialog-head");
+    const panel = head && panelOf(head);
+    if (!panel || !panelSt(panel).min) return;
+    e.preventDefault();
+    e.stopPropagation();
+    panelMinimise(panel);
+  }
+  function panelPushToggle() {
+    const on = !panelPushOn();
+    prefs.set("panel-push", on ? "on" : "off");
+    const box = document.getElementById("panel-push-toggle");
+    if (box) box.checked = on;
+    document.querySelectorAll(".panel-movable-on").forEach((panel) => {
+      const st = panelSt(panel);
+      if (st.dock && panel.getClientRects().length) panelFit(panel, st);
+    });
+    panelPushSync();
+  }
+  let panelResizeTimer = 0;
+  function panelWindowResized() {
+    clearTimeout(panelResizeTimer);
+    panelResizeTimer = setTimeout(() => {
+      if (PANEL_MIN.size) panelMinPlace();
+      const on = panelMovableOn();
+      document.querySelectorAll(".panel-movable-on").forEach((panel) => {
+        const st = panelSt(panel);
+        if (!on) {
+          st.x = st.y = 0;
+          st.w = st.h = null;
+          panelApply(panel, st);
+        } else if (panel.getClientRects().length) {
+          if (st.dock) panelFit(panel, st);
+          else panelClamp(panel, st);
+        }
+      });
+    }, 120);
+  }
+  if (typeof document !== "undefined" && document.addEventListener) {
+    //: Adopting adds the grip's row, and a bottom-anchored sheet grows upward by
+    //: it (measured: the Guide's send button rose 20px). A focus that a press
+    //: brings waits for the press to end: adopted between pointerdown and
+    //: pointerup, the button left the pointer and the click went to the card.
+    const press = { down: false, wait: new Set() };
+    const adoptWaiting = () => {
+      press.down = false;
+      if (!press.wait.size) return;
+      const panels = [...press.wait];
+      press.wait.clear();
+      setTimeout(() => panels.forEach(panelAdopt), 0);
+    };
+    document.addEventListener("pointerdown", () => { press.down = true; }, true);
+    window.addEventListener("pointerup", adoptWaiting, true);
+    window.addEventListener("pointercancel", adoptWaiting, true);
+    document.addEventListener("focusin", (e) => {
+      const p = panelOf(e.target);
+      if (p && press.down) press.wait.add(p);
+      //: A panel not yet adopted is, after the frame the focus came in: its first look reads
+      //: the style the focus change has just invalidated (52 to 150ms at 4x, INBOX 1534).
+      else if (p) p.classList.contains("panel-movable-on") ? panelAdopt(p) : afterFrames(() => setTimeout(panelAdopt, 0, p), 1);
+    }, true);
+    document.addEventListener("keydown", panelMinKey, true);
+    for (const type of ["pointerdown", "mousedown", "click"]) window.addEventListener(type, panelAdopt.trayPress, true);
+    //: A pill rides above the page the reader is on: put it back after a tab change.
+    document.addEventListener("click", () => { if (PANEL_MIN.size) setTimeout(panelMinPlace, 250); }, true);
+    document.addEventListener("pointerover", (e) => {
+      const t = e.target;
+      //: Anywhere in a panel, not only its head, so its edges resize from the first touch (INBOX 1536).
+      //: **Not measured inside the pointerover** (lag log: `document.onpointerover` 54ms, forced layout 51ms): the
+      //: adopt reads the panel's box, which the hover's own style change has just dirtied. One look per panel, a
+      //: frame on (as the focus path above does), and none while one is waiting.
+      if (t instanceof Element && t.closest('dialog, [role="dialog"]') && !t.closest(".panel-movable-on")) {
+        const p = panelOf(t);
+        if (!p || panelAdopt.hoverWait.has(p)) return;
+        panelAdopt.hoverWait.add(p);
+        afterFrames(() => setTimeout(() => { panelAdopt.hoverWait.delete(p); panelAdopt(p); }, 0), 1);
+      }
+    }, true);
+    document.addEventListener("pointerdown", (e) => {
+      if (!(e.target instanceof Element)) return;
+      let rim = e.target.closest(".panel-movable-on[data-rim]");
+      if (rim && !panelAdopt.rimFresh(rim, e)) rim = null;
+      if (e.target.closest(".panel-grip")) panelGripDown(e);
+      else if (rim && e.button === 0) {
+        e.stopPropagation();
+        panelGripDown(e, rim);
+      }
+      else if (e.target.closest(".dialog-head")) panelHeadDown(e);
+      else if (e.button === 0 && !e.target.closest(".panel-movable-on")) {
+        //: A press on the backdrop inside a panel's box: a rounded corner's clipped pixels (INBOX 1552).
+        const p = e.target.querySelector(".panel-movable-on");
+        const r = p && p.getBoundingClientRect();
+        const edge = r && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom ? panelAdopt.rimEdge(r, e.clientX, e.clientY) : "";
+        if (!edge) return;
+        e.stopPropagation();
+        p.dataset.rim = edge;
+        panelGripDown(e, p);
+        //: The click that ends the drag lands on the backdrop, which may close the dialog.
+        const eat = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
+        document.addEventListener("click", eat, { capture: true, once: true });
+        document.addEventListener("pointerup", () => setTimeout(() => document.removeEventListener("click", eat, true), 80), { capture: true, once: true });
+      }
+    }, true);
+    //: A press on a head must not take the focus from the control that has it
+    //: nor start a text selection (a pointerdown handler cannot stop either).
+    document.addEventListener("mousedown", (e) => {
+      const head = e.target instanceof Element && e.target.closest(".dialog-head.panel-drag-head");
+      if (head && e.button === 0 && !e.target.closest(PANEL_SKIP) && panelMovableOn()) e.preventDefault();
+    }, true);
+    document.addEventListener("click", (e) => {
+      const btn = e.target instanceof Element && e.target.closest(".panel-reset");
+      const panel = btn && panelOf(btn);
+      if (panel) panelReset(panel);
+      if (e.target instanceof Element && e.target.closest(".panel-push")) panelPushToggle();
+    }, true);
+    document.addEventListener("dblclick", (e) => {
+      if (!(e.target instanceof Element)) return;
+      const grip = e.target.closest(".panel-grip");
+      if (grip) {
+        if (grip.parentElement && grip.parentElement.classList.contains("panel-movable-on")) panelResetSize(grip.parentElement);
+        return;
+      }
+      if (e.target.closest(PANEL_SKIP)) return;
+      const head = e.target.closest(".dialog-head");
+      const panel = head && panelOf(head);
+      if (panel && panel.classList.contains("panel-movable-on")) panelReset(panel);
+    }, true);
+    document.addEventListener("keydown", (e) => {
+      if (e.target instanceof Element && e.target.closest(".panel-grip")) panelGripKey(e);
+    }, true);
+    window.addEventListener("resize", panelWindowResized);
+  }
+
+  //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  Object.assign(window, { panelId });
+})();

@@ -12,12 +12,15 @@ CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8
 
 
 def test_the_toolbar_is_one_nowrap_dock_with_the_controls_in_order():
-    assert "flex-wrap: nowrap" in CSS.split(".dgm-dock {", 1)[1].split("}", 1)[0]
+    # Intent moved (DD-2, 1107): one row is the flowchart dock's, so the nowrap is scoped to it; the kinds' docks wrap.
+    assert "flex-wrap: nowrap" in CSS.split(".dgm-dock:has(> .dgm-addsplit) {", 1)[1].split("}", 1)[0]
     build = BAR.split("function build(", 1)[1]
     order = build.index("bar.append(split, S.dirs, actions)")
     assert order > 0
     # Eight now: the blocks-list button sits before the menu (1661 review: the list can be hidden).
-    assert "actions.append(suggest, ...hist, outline, h.more(S))" in build
+    # 1661 m: the list button left for the panel's own fold. Intent moved (the owner, 2026-11-11): Expand joined the toolbar's end, made by the
+    # kind bar (a diagram in a document only), so the buttons are the same and one control sits before the menu.
+    assert "actions.append(suggest, ...hist, ...[diagramModel.kindbar?.expand(S)].filter(Boolean), h.more(S))" in build
     assert 'bar.dataset.dockName = "diagram"' in build and 'setAttribute("role", "toolbar")' in build
     # The eight tiles and the four direction buttons are not built any more.
     assert "library.build(" not in BUILDER and "for (const [dir, arrow, name] of DIRS)" not in BUILDER
@@ -40,7 +43,7 @@ def test_direction_is_a_menu_of_the_four_and_shift_still_cycles_back():
 def test_one_key_table_feeds_the_menu_hints_and_the_handler():
     table = re.search(r"const KEYS = \{([^}]*)\}", BAR).group(1)
     keys = dict(re.findall(r'(\w+): "(\w+)"', table))
-    assert [keys[str(n)] for n in range(1, 8)] == ["rect", "round", "stadium", "circle", "diamond", "hexagon", "note"]
+    assert [keys[str(n)] for n in range(1, 10)] == ["rect", "round", "stadium", "circle", "diamond", "hexagon", "note", "cylinder", "parallelogram"]
     assert keys["n"] == "rect" and keys["g"] == "group"
     # The menu hint is read from the table (hintOf), and the handler reads the same table.
     assert "Object.keys(KEYS).find" in BAR and "KEYS[event.key]" in BAR

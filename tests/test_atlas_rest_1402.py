@@ -21,6 +21,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
@@ -28,14 +29,14 @@ LAZY = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8"
 ATLAS = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
 MOTION = (ROOT / "frontend" / "js" / "atlas-motion.js").read_text(encoding="utf-8")
 MICRO = (ROOT / "frontend" / "js" / "atlas-micro.js").read_text(encoding="utf-8")
-AV = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+AV = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 #: Moods Atlas rests in (`atlasRestingMood`) or passes through with nothing
 #: having happened: the drift (`ATLAS_DRIFT_POOL`), the micro-expressions
 #: (`ATLAS_MICRO_MOOD`), a poke, and a chat turn (thinking, then determined).
 #: Sad, worried, confused and surprised are for an error, a miss or a fall.
-EVENT_ONLY = {"sad", "worried", "confused", "surprised"}
+EVENT_ONLY = {"sad", "worried", "confused", "surprised", "miffed", "smirk"}  # miffed (a shake, a pout) and smirk (a shrug) are the desk's faces, atlascat D4
 
 
 def _mouths() -> dict[str, float]:
@@ -78,7 +79,7 @@ def _mouth_of(body: str) -> str:
 
 def _quiet_moods() -> set[str]:
     moods = set(re.findall(r'^\s*(\w+): \{ words:', re.search(r"const ATLAS_MOODS = \{(.*?)\n\};", ATLAS, re.S).group(1), re.M))
-    assert len(moods) == 15
+    assert len(moods) == 17  # 15, and the desk's miffed and smirk (atlascat D4)
     return moods - EVENT_ONLY
 
 

@@ -370,12 +370,15 @@ let libraryCurrentPage = 1;
 //: default and the one you come back to, then by how often you would reach for
 //: the kind: a document is something you sat down to write, a binned note is
 //: something you threw away.
+//: `subtab: true` marks a kind with a sub-tab of its own: it is filtered there,
+//: so All does not offer its chip too (WORLD_CLASS 424 o; Files 6 and Boards 1
+//: sat beside the Files and Boards & maps sub-tabs). It shows while selected.
 const LIBRARY_KINDS = [
   { key: "all", icon: "ph:books", label: "Everything" },
   { key: "note", icon: "ph:note-pencil", label: "Notes" },
-  { key: "document", icon: "ph:file-text", label: "Documents" },
+  { key: "document", icon: "ph:file-text", label: "Documents", subtab: true },
   { key: "chat", icon: "ph:chat-circle", label: "Chats" },
-  { key: "file", icon: "ph:paperclip", label: "Files" },
+  { key: "file", icon: "ph:paperclip", label: "Files", subtab: true },
   { key: "tag", icon: "ph:tag", label: "Tags" },
   //: A board and a mind map are `Entry` rows carrying `is_board`
   //: (MINDMAP_PLAN §4 chose option B), so "Everything" listed them with a
@@ -385,8 +388,8 @@ const LIBRARY_KINDS = [
   //: rows are what let this view draw and count them as what they are. Same
   //: icons the Boards and maps sub-tab uses, so one thing has one glyph
   //: wherever it appears.
-  { key: "board", icon: "ph:pencil-circle", label: "Boards" },
-  { key: "map", icon: "ph:tree-structure", label: "Mind maps" },
+  { key: "board", icon: "ph:pencil-circle", label: "Boards", subtab: true },
+  { key: "map", icon: "ph:tree-structure", label: "Mind maps", subtab: true },
   //: A Mermaid diagram is a document of the `mmd` type (1546 D5); the server lists it as
   //: its own kind, and it opens in the Documents editor like any document.
   { key: "diagram", icon: "ph:flow-arrow", label: "Diagrams" },
@@ -491,7 +494,13 @@ async function loadLibrary() {
   renderLibraryOverview();
   renderLibraryFilters();
   renderLibraryView();
+  //: A row action (rename, archive, delete) reloads the grid under the focused ⋯, which dropped focus to the page (dgmlive2 1108): the card last used, or the first, takes it back.
+  const held = grid.contains(document.activeElement);
   renderLibrary({ quiet: true });
+  if (held && !grid.contains(document.activeElement)) {
+    ensureLibraryGridStop(grid);
+    grid.querySelector(".library-card .card-open[tabindex='0']")?.focus({ preventScroll: true });
+  }
 }
 
 /** The one line of the old overview strip that was not already on screen.
@@ -591,7 +600,10 @@ function renderLibraryFilters() {
     //: the row (a class, not a removal) so the active chip, and a kind that
     //: fills while the tab is open, need no second code path; "Everything"
     //: and whichever chip is selected always show.
-    button.classList.toggle("is-empty", count === 0 && kind.key !== "all" && libraryKind !== kind.key);
+    button.classList.toggle(
+      "is-empty",
+      (count === 0 || kind.subtab) && kind.key !== "all" && libraryKind !== kind.key,
+    );
     button.addEventListener("click", () => {
       libraryKind = kind.key;
       libraryCurrentPage = 1;
@@ -868,6 +880,10 @@ function renderLibrary(options) {
       columns[i % columns.length].appendChild(card);
       return document.createDocumentFragment();
     }, {
+      //: The first chunk is one screen's cards, not sixty (audit 1029 X15): sixty cards were 3,300 nodes built in one
+      //: task (170 to 240ms at 4x CPU) when a 1440px window shows about a dozen; the frame pump below carries on
+      //: for as long as the sentinel is within 600px, so the grid still fills before it is scrolled to.
+      initial: 12,
       budgetMs: 6,
       afterChunk: () => {
         renderLibraryContextBars();
@@ -1405,16 +1421,36 @@ function keepLibraryScroll() {
   const saved = new Map();
   const pending = new Set();
   const sections = [...document.querySelectorAll("#tab-library .library-view-section")];
-  const restore = () => {
+  const restore = (entries) => {
+    //: **Whether a section is showing comes from the entries, not from the
+    //: page** (lag trace, 2026-11-11). This used to read `clientHeight` of all eight
+    //: sections on every delivery, and a read after any earlier observer's
+    //: write is a full layout: measured with 34k nodes in the Images grid and
+    //: an earlier observer writing the grid, 4x CPU, 13 deliveries cost 1.9s
+    //: (150ms each), almost all of it forced layout. An entry already carries
+    //: the size it was delivered with, so a section is shown when its own
+    //: border box has height, or (when only a child was delivered) when that
+    //: child has. A section with nothing delivered is left alone: nothing
+    //: about it changed. The one remaining read, `scrollHeight`, is only for
+    //: a section that is showing again with an offset still to put back.
+    const shown = new Map();
+    for (const entry of entries) {
+      const own = sections.includes(entry.target);
+      const el = own ? entry.target : entry.target.parentElement;
+      if (!own && !sections.includes(el)) continue;
+      const size = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+      if (own) shown.set(el, size > 0);
+      else if (size > 0 && !shown.has(el)) shown.set(el, true);
+    }
     //: Read every section, then put the offsets back (INBOX 1446).
     const put = [];
-    for (const el of sections) {
-      if (!el.clientHeight) {
-        if (saved.get(el.id)) pending.add(el.id);
+    for (const [el, isShown] of shown) {
+      const want = saved.get(el.id) || 0;
+      if (!isShown) {
+        if (want) pending.add(el.id);
         continue;
       }
       if (!pending.has(el.id)) continue;
-      const want = saved.get(el.id) || 0;
       if (el.scrollHeight - el.clientHeight >= want) {
         put.push([el, want]);
         pending.delete(el.id);
@@ -1714,7 +1750,12 @@ function libraryCard(item) {
 
   const actions = withLibraryCopyActions(libraryActions(item), item.kind, item.title, item.id);
   if (actions.length) {
-    const menu = kebabMenu(actions, `Actions for ${item.title}`);
+    //: The rows are built on the first open, in the capture phase so before `objKebabRows` counts them (audit 1029
+    //: X15: 43 of a card's 55 nodes). `rowMenu` keeps the items for a right-click and F2.
+    const label = `Actions for ${item.title}`;
+    const menu = kebabMenu([], label);
+    menu.rowMenu = { items: actions, ariaLabel: label };
+    menu.addEventListener("click", () => kebabMenu.rows(menu.lastChild, actions), { capture: true, once: true });
     menu.classList.add("library-card-menu");
   // The menu is inside the card and the card is a click target, so every click
   // in the menu would also open the thing. Stopped here rather than on each
@@ -1754,6 +1795,9 @@ function ensureLibraryGridStop(grid) {
     grid.querySelector(".library-card");
   if (card) setLibraryCardStop(card, true);
 }
+document.addEventListener("documents-undone", () => {
+  if ($("library-grid")?.offsetParent) loadLibrary();
+});
 $("library-grid").addEventListener("focusin", (event) => {
   const card = event.target.closest?.(".library-card");
   if (!card || card.querySelector(".card-open")?.tabIndex === 0) return;
@@ -2352,8 +2396,8 @@ const LIBRARY_CREATE_BY_KIND = {
     //: (tests/test_new_document_opens_new.py).
     run: async () => {
       document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
-      await ensureModule("library");
-      //: New's arrow rows are built by whiteboard.js (`wbNewMenuMount`), so the map is made by its function (through `window`, as below).
+      await ensureModule("boards");
+      //: New's arrow rows are built by whiteboard.js (`wbNewMenuMount`, in boards-gallery.js), so the map is made by its function (through `window`, as below).
       await window.wbNewUntitledBoard("map");
     },
   },
@@ -2364,7 +2408,7 @@ const LIBRARY_CREATE_BY_KIND = {
     //: (tests/test_new_document_opens_new.py).
     run: async () => {
       document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
-      await ensureModule("library");
+      await ensureModule("boards");
       $("wb-boards-new")?.click();
     },
   },
@@ -6294,6 +6338,7 @@ function ocrOpenSibling(row) {
 //: opening a fifteen-page scan at page 1 from page 9 is navigation the reader
 //: then has to redo by hand.
 function openOcrWorkspace(image, images, page = 0) {
+  surfaceBuild("ocr");
   const overlay = $("ocr-workspace");
   if (!overlay) return;
   //: Clamped at 0 here rather than trusted: a caller with a stale page number
@@ -6938,6 +6983,16 @@ async function ocrLoadReadersNow() {
       : "Install RapidOCR in Settings, Packages.";
   }
   $("ocr-rapidocr-missing")?.classList.toggle("hidden", rapidReady || !ocrReaders.engine);
+  //: Nothing can read text (no Tesseract, no RapidOCR, no vision model): the one
+  //: optional-package notice (extra-notice.js), "the quickest way", with Install
+  //: that turns to Undo once pressed, closable. `needed: false` keeps it only
+  //: for an install pressed here, so its Undo outlives the first repaint.
+  const ocrHead = $("ocr-workspace")?.querySelector(".ocr-head");
+  if (ocrHead && ocrReaders.engine && !ocrCan("tesseract")) {
+    extraNoticeMount(ocrHead, "rapidocr", { fresh: true, needed: !ocrReaders.vision && !ocrReaders.ocr });
+  } else {
+    ocrHead?.querySelector(":scope > .extra-notice")?.remove();
+  }
   //: The engine's own line (ocr-engine.js, lazy): ready or not, which
   //: language, and the one Install. Handed the answer just fetched, so opening
   //: the window is one request, and told to reload this picker when it changes
@@ -7187,7 +7242,11 @@ function ocrRevealRegionsForPage(page) {
   }
   if (!first) return;
   ocrRegionScrollLock = true;
-  first.scrollIntoView({ block: "nearest", behavior: "auto" });
+  //: In the next frame, not here: the list was rebuilt a moment ago, so a
+  //: scroll now lays the whole dialog out inside this script (33 to 44 ms at
+  //: 4x on 300 notes with 60 sections); the frame lays it out once anyway.
+  ocrUi.revealPending = first;
+  ocrScheduleFitDock();
   setTimeout(() => {
     ocrRegionScrollLock = false;
   }, 300);
@@ -7587,6 +7646,11 @@ function ocrFitDock() {
     if (fits(ocrUi.dockFit.step)) lo = hi = ocrUi.dockFit.step;
     else lo = ocrUi.dockFit.step + 1;
   }
+  //: A wide row almost always fits unfolded: that is one measure (a style
+  //: recalculation of the whole dialog, 10 to 20 ms at 4x on 300 notes)
+  //: where halving from the middle took three. A narrow one starts in the
+  //: middle as before.
+  if (lo === 0 && hi === steps && dock.getBoundingClientRect().width >= 720 && fits(0)) hi = 0;
   while (lo < hi) {
     const mid = Math.floor((lo + hi) / 2);
     if (fits(mid)) hi = mid;
@@ -7603,7 +7667,13 @@ function ocrFitDock() {
 //: answer, the dock's own resize): one per frame.
 function ocrScheduleFitDock() {
   cancelAnimationFrame(ocrUi.dockFrame);
-  ocrUi.dockFrame = requestAnimationFrame(() => ocrFitDock());
+  ocrUi.dockFrame = requestAnimationFrame(() => {
+    ocrFitDock();
+    //: The row to bring into view, left by `ocrRevealRegionsForPage`.
+    const row = ocrUi.revealPending;
+    ocrUi.revealPending = null;
+    if (row?.isConnected) row.scrollIntoView({ block: "nearest", behavior: "auto" });
+  });
 }
 
 //: Watched, because the card follows the window and a phone turns sideways.
@@ -7860,7 +7930,8 @@ function ocrAllText() {
   return ocrWorkspaceRegions.map((region) => region.text).join("\n\n").trim();
 }
 
-onDomReady(() => {
+//: The workspace's card is built on its first open (row 21); its wiring waits for it.
+onSurface("ocr", () => {
   $("ocr-close")?.addEventListener("click", () => closeOcrWorkspace());
   $("ocr-workspace")?.addEventListener("click", (event) => {
     //: Click the backdrop to close, the card to keep working, the same rule
@@ -8841,6 +8912,8 @@ function syncLibraryMediaSelectbar() {
   if (!bar || !count) return;
   const n = libraryMediaSelection.size;
   bar.classList.toggle("hidden", n === 0);
+  //: Not `body:has(#library-media-selectbar)`: it restyled every tile on any page change (INBOX 1716).
+  document.body.classList.toggle("library-media-selecting", n > 0);
   count.textContent = `${n} selected`;
 }
 
@@ -10258,6 +10331,8 @@ function filterLibraryImagesGallery() {
       }));
     const rows = menuRows.filter((row) => !row.text);
     rows.splice(menuRows.findIndex((row) => row.text), 0, { label: "ph:text-aa Text and description", items: menuRows.filter((row) => row.text) });
+    //: The picture itself on the clipboard (INBOX 1775); the right-click on a tile opens this same menu (obj-ref.js).
+    if (image._isImage) rows.unshift({ label: "ph:image Copy image", title: `Copy “${image.original_name}” as a picture`, run: () => attachmentAction("copy-image", { url: image.url, name: image.original_name }) });
     const menu = kebabMenu(rows, `More actions for “${image.original_name}”`);
     actions.append(menu);
 
@@ -10733,7 +10808,7 @@ onDomReady(() => {
         //: **A sub-tab shown a moment ago is not fetched again** (the owner:
         //: "it can be a bit glitchy and flashy switching somewhat fast
         //: through the library subtabs"). Every press re-fetched and rebuilt
-        //: its section from scratch, so flicking Documents, Boards, AI skills
+        //: its section from scratch, so flicking Documents, Boards, Skills
         //: and back rebuilt each one per press, and presses faster than a
         //: fetch stacked two rebuilds of one section on top of each other.
         //: Within a few seconds the section is shown as it was; after that,
@@ -10767,7 +10842,18 @@ onDomReady(() => {
             //: every time, not behind a probe for the bundle: the gallery
             //: replaces them with its own on its first paint either way.
             showSkeletons($("library-boards-grid"), 4);
-            wbShowBoardsLanding();
+            //: The list and the miniature drawer are asked for now, beside the
+            //: bundle, not after it: the gallery's own fetch used to leave only
+            //: once every board file had run, and the drawer once the list was
+            //: back (INBOX 1772). `renderLibraryBoardsGallery` takes this once.
+            window.libraryBoardsPrefetch = {
+              at: Date.now(),
+              list: apiPagedList("/whiteboard/boards", 200, { silent: true }).catch(() => null),
+            };
+            ensureModule("mapPreview");
+            //: The cards are drawn by the small gallery file, not by the board code, so they
+            //: do not wait for 2.3 MB to be fetched and run (INBOX 1772); `show` says the rest.
+            ensureModule("boardsGallery").then((ok) => ok ? renderLibraryBoardsGallery.show() : lazyLoadFailed());
           } else if (targetId === "library-view-docs") {
             renderLibraryDocuments();
           } else if (targetId === "library-view-skills") {
@@ -10902,6 +10988,7 @@ onDomReady(() => {
     const urlInput = $("bookmark-url-input");
     const titleInput = $("bookmark-title-input");
     const groupInput = $("bookmark-group-input");
+    const tagsInput = $("bookmark-tags-input");
     const url = urlInput.value.trim();
     if (!url) return;
     try {
@@ -10911,17 +10998,19 @@ onDomReady(() => {
           url,
           title: titleInput.value.trim(),
           group_name: groupInput.value.trim(),
+          tags: (tagsInput?.value || "").split(","),
           note: ($("bookmark-note-input")?.value || "").trim(),
         }),
       });
       urlInput.value = "";
       titleInput.value = "";
       groupInput.value = "";
+      if (tagsInput) tagsInput.value = "";
       if ($("bookmark-note-input")) $("bookmark-note-input").value = "";
       urlInput.focus();
       if (!created.duplicate_of && created.id != null) {
         let liveId = created.id;
-        const body = { url, title: created.title || "", group_name: created.group_name || "", note: created.note || "" };
+        const body = { url, title: created.title || "", group_name: created.group_name || "", tags: created.tags || [], note: created.note || "" };
         pushUndo(
           `Added the bookmark “${clipText(created.title || url, 40)}”`,
           async () => {
@@ -10979,7 +11068,8 @@ onDomReady(() => {
   $("bookmark-no-match-clear")?.addEventListener("click", () => {
     const search = $("bookmark-search");
     if (search) search.value = "";
-    bookmarkGroupFilter = null;
+    bookmarkScope.group = null;
+    bookmarkScope.tag = null;
     bookmarkStateFilter = "all";
     renderBookmarkGroupChips();
     filterBookmarks();
@@ -10987,6 +11077,12 @@ onDomReady(() => {
   });
   $("bookmark-group-new")?.addEventListener("click", newBookmarkGroup);
   $("bookmark-group-manage")?.addEventListener("click", manageBookmarkGroups);
+  $("bookmark-import")?.addEventListener("click", () => $("bookmark-import-file")?.click());
+  $("bookmark-import-file")?.addEventListener("change", (event) => {
+    const input = event.target;
+    renderBookmarks.file.load(input.files?.[0]).finally(() => { input.value = ""; });
+  });
+  $("bookmark-export")?.addEventListener("click", () => renderBookmarks.file.save());
   $("contents-refresh")?.addEventListener("click", renderContents);
   const contentsGroup = $("contents-group");
   if (contentsGroup) {
@@ -11281,7 +11377,8 @@ onDomReady(() => {
 // documents already linkable to each other via [[wiki links]] ------------
 
 let bookmarksCache = [];
-let bookmarkGroupFilter = null; // null = all groups
+// The group and the tag the Links tab is narrowed to (null = all): one object, so a new filter adds no global name.
+const bookmarkScope = { group: null, tag: null };
 let bookmarkStateFilter = "all"; // "all" | "unread" | "pinned"
 //: Sites folded away in the "By site" grouping, for this visit.
 const bookmarkFoldedSites = new Set();
@@ -11349,9 +11446,53 @@ function clearLibraryLinksSelection() {
 //: bookmark has no bin, so Undo saves the same fields again (the id is new,
 //: nothing refers to a link by id except a note's attached references, which
 //: the delete route already removes). Pin and read state travel with it.
+//: **Browser bookmarks in and out** (DOCUMENTS_PLAN L6; `repo/bookmarks_html.py` reads and writes the Netscape file every browser
+//: uses). Import skips what is already saved and says how many it added; Undo takes exactly those away, Redo reads the file again.
+//: Hung on `renderBookmarks` so the Library's global names stay where they were (the cap).
+renderBookmarks.file = {
+  async load(file) {
+    if (!file) return;
+    const html = await file.text();
+    const run = () => apiJson("/bookmarks/import", { method: "POST", body: JSON.stringify({ html }) });
+    let done;
+    try {
+      done = await run();
+    } catch (err) {
+      return toast(err.message, true);
+    }
+    if (!done.found) return toast("No links found in that file. Choose the bookmarks file your browser exported.", "info");
+    let ids = done.ids;
+    await renderBookmarks();
+    if (!ids.length) return toast("Every link in that file is already saved.");
+    const drop = async () => {
+      for (const id of ids) await apiJson(`/bookmarks/${id}`, { method: "DELETE" }).catch((e) => toast(e.message, true));
+      await renderBookmarks();
+    };
+    const action = pushUndo(`Imported ${nounCount(ids.length, "bookmark")}`, drop, async () => {
+      ids = (await run()).ids;
+      await renderBookmarks();
+    });
+    const notes = [done.duplicates && `${done.duplicates} already saved`, done.skipped && `${done.skipped} not web links`].filter(Boolean);
+    toastAction(`${nounCount(ids.length, "bookmark")} added${notes.length ? ` (${notes.join(", ")})` : ""}.`, "Undo", async () => {
+      settleUndoFromToast(action);
+      await drop();
+      toast("Import undone.");
+    });
+  },
+  async save() {
+    try {
+      const response = await api("/bookmarks/export");
+      if (!response.ok) throw new Error(`The server answered ${response.status}`);
+      await saveFile("tessellate-bookmarks.html", await response.blob());
+    } catch (e) {
+      toast(`Couldn't export your bookmarks: ${e.message}.`, true, { action: ["Try again", () => renderBookmarks.file.save()] });
+    }
+  },
+};
+
 async function deleteBookmarksWithUndo(links) {
   const kept = links.map((b) => ({
-    url: b.url, title: b.title, note: b.note, group_name: b.group_name,
+    url: b.url, title: b.title, note: b.note, group_name: b.group_name, tags: b.tags || [],
     pinned: Boolean(b.pinned), is_read: Boolean(b.is_read),
   }));
   let deleted = 0;
@@ -11524,7 +11665,7 @@ async function renameBookmarkGroup(from, to) {
   const empties = emptyBookmarkGroups().filter((g) => g !== from);
   if (to) empties.push(to);
   setEmptyBookmarkGroups(empties);
-  if (bookmarkGroupFilter === from) bookmarkGroupFilter = to || null;
+  if (bookmarkScope.group === from) bookmarkScope.group = to || null;
   if (written.length) pushBookmarksPutUndo(to ? `Renamed the group “${from}”` : `Deleted the group “${from}”`, written);
   return moved;
 }
@@ -11542,7 +11683,7 @@ async function newBookmarkGroup() {
   if (!name) return;
   if (allBookmarkGroups().includes(name)) {
     toast(`"${name}" already exists.`);
-    bookmarkGroupFilter = name;
+    bookmarkScope.group = name;
     renderBookmarks();
     return;
   }
@@ -11551,7 +11692,7 @@ async function newBookmarkGroup() {
   // the group you just made, needs no second trip to the group field.
   const groupInput = $("bookmark-group-input");
   if (groupInput) groupInput.value = name;
-  bookmarkGroupFilter = name;
+  bookmarkScope.group = name;
   renderBookmarks();
   toast(`Group "${name}" created. Add a bookmark to it, or it'll be forgotten on the next device.`);
 }
@@ -11673,12 +11814,13 @@ function renderBookmarkGroupChips() {
   );
   box.replaceChildren();
   if (bookmarksCache.length === 0) {
-    bookmarkGroupFilter = null;
+    bookmarkScope.group = null;
+    bookmarkScope.tag = null;
     bookmarkStateFilter = "all";
     return;
   }
   //: A group that has gone (renamed, emptied) cannot stay the filter.
-  if (bookmarkGroupFilter !== null && !groups.includes(bookmarkGroupFilter)) bookmarkGroupFilter = null;
+  if (bookmarkScope.group !== null && !groups.includes(bookmarkScope.group)) bookmarkScope.group = null;
   const apply = () => { renderBookmarkGroupChips(); filterBookmarks(); };
   const chip = (label, count, active, onPress) => {
     const el = document.createElement("button");
@@ -11702,9 +11844,10 @@ function renderBookmarkGroupChips() {
   //: and the groups below narrow it further.
   const unread = bookmarksCache.filter((b) => !b.is_read).length;
   const pinned = bookmarksCache.filter((b) => b.pinned).length;
-  chip("All", bookmarksCache.length, bookmarkStateFilter === "all" && bookmarkGroupFilter === null, () => {
+  chip("All", bookmarksCache.length, bookmarkStateFilter === "all" && bookmarkScope.group === null && bookmarkScope.tag === null, () => {
     bookmarkStateFilter = "all";
-    bookmarkGroupFilter = null;
+    bookmarkScope.group = null;
+    bookmarkScope.tag = null;
     apply();
   });
   chip("Unread", unread, bookmarkStateFilter === "unread", () => {
@@ -11723,10 +11866,20 @@ function renderBookmarkGroupChips() {
     const count = bookmarksCache.filter((b) => b.group_name === group).length;
     // "Work/Reading" renders as "Work / Reading", the "/" is a grouping
     // convention for the user to type, not meant to display as a raw slash.
-    chip(group.split("/").join(" / "), count, bookmarkGroupFilter === group, () => {
-      bookmarkGroupFilter = bookmarkGroupFilter === group ? null : group;
+    chip(group.split("/").join(" / "), count, bookmarkScope.group === group, () => {
+      bookmarkScope.group = bookmarkScope.group === group ? null : group;
       apply();
     });
+  }
+  //: Tags after the groups: a link carries several, so a tag filters across groups (one at a time, like a group).
+  const tagCounts = new Map();
+  for (const b of bookmarksCache) for (const tag of b.tags || []) tagCounts.set(tag.toLowerCase(), { tag, n: (tagCounts.get(tag.toLowerCase())?.n || 0) + 1 });
+  if (bookmarkScope.tag !== null && !tagCounts.has(bookmarkScope.tag)) bookmarkScope.tag = null;
+  for (const [key, { tag, n }] of [...tagCounts].sort((a, b) => a[0].localeCompare(b[0]))) {
+    chip(`#${tag}`, n, bookmarkScope.tag === key, () => {
+      bookmarkScope.tag = bookmarkScope.tag === key ? null : key;
+      apply();
+    }).classList.add("bookmark-tag-chip");
   }
 }
 
@@ -11777,7 +11930,8 @@ function filterBookmarks() {
   if (!list) return;
   const query = ($("bookmark-search")?.value || "").trim().toLowerCase();
   const visible = bookmarksCache.filter((b) => {
-    if (bookmarkGroupFilter !== null && b.group_name !== bookmarkGroupFilter) return false;
+    if (bookmarkScope.group !== null && b.group_name !== bookmarkScope.group) return false;
+    if (bookmarkScope.tag !== null && !(b.tags || []).some((tag) => tag.toLowerCase() === bookmarkScope.tag)) return false;
     if (bookmarkStateFilter === "unread" && b.is_read) return false;
     if (bookmarkStateFilter === "pinned" && !b.pinned) return false;
     if (!query) return true;
@@ -11787,7 +11941,8 @@ function filterBookmarks() {
       b.title.toLowerCase().includes(query) ||
       b.url.toLowerCase().includes(query) ||
       b.note.toLowerCase().includes(query) ||
-      (b.group_name || "").toLowerCase().includes(query)
+      (b.group_name || "").toLowerCase().includes(query) ||
+      (b.tags || []).some((tag) => tag.toLowerCase().includes(query))
     );
   });
   list.replaceChildren();
@@ -11963,6 +12118,7 @@ function bookmarkRow(bookmark) {
         //: not carrying.
         bookmark.title ? address.host : address.rest,
         bookmark.group_name ? bookmark.group_name.split("/").join(" / ") : "",
+        (bookmark.tags || []).map((tag) => `#${tag}`).join(" "),
         bookmark.note,
       ],
       "bookmark-meta",
@@ -12035,6 +12191,7 @@ function bookmarkRow(bookmark) {
     const urlInput = field("URL", bookmark.url, "https://example.com");
     // Blank is meaningful here and always was: it means "no group".
     const groupInput = field("Group", bookmark.group_name, "e.g. Work/Reading");
+    const tagsInput = field("Tags", (bookmark.tags || []).join(", "), "Separate with commas");
     //: The note had no way in once a link was saved: the Add form never asked
     //: for one and this form never showed it, though the row and the search
     //: both read it.
@@ -12084,9 +12241,10 @@ function bookmarkRow(bookmark) {
           title: titleInput.value.trim(),
           url,
           group_name: groupInput.value.trim(),
+          tags: tagsInput.value.split(","),
           note: noteInput.value.trim(),
         };
-        const wasFields = { title: bookmark.title || "", url: bookmark.url, group_name: bookmark.group_name || "", note: bookmark.note || "" };
+        const wasFields = { title: bookmark.title || "", url: bookmark.url, group_name: bookmark.group_name || "", tags: bookmark.tags || [], note: bookmark.note || "" };
         await apiJson(`/bookmarks/${bookmark.id}`, { method: "PUT", body: JSON.stringify(edited) });
         pushBookmarksPutUndo("Edited a bookmark", [{ id: bookmark.id, before: wasFields, after: edited }]);
         renderBookmarks();
@@ -12151,6 +12309,7 @@ function bookmarkRow(bookmark) {
     addr.textContent = bookmark.url;
     const facts = [kind.label];
     if (bookmark.group_name) facts.push(bookmark.group_name.split("/").join(" / "));
+    if ((bookmark.tags || []).length) facts.push(bookmark.tags.map((tag) => `#${tag}`).join(" "));
     const saved = new Date(bookmark.created_at);
     if (!Number.isNaN(saved.getTime())) facts.push(`saved ${saved.toLocaleDateString()}`);
     facts.push(bookmark.is_read ? "read" : "unread");
@@ -12202,7 +12361,7 @@ function bookmarkRow(bookmark) {
         ),
         group: "look",
       },
-      { ...makeMenuItem("ph:pencil-simple Edit this bookmark", "Change the title, address, group or note", startEditing), group: "change" },
+      { ...makeMenuItem("ph:pencil-simple Edit this bookmark", "Change the title, address, group, tags or note", startEditing), group: "change" },
       { ...makeMenuItem("ph:folder-simple Move to group", "Move this bookmark to a group", moveToGroup), group: "change" },
       {
         ...makeMenuItem("ph:copy Copy address", "Copy the address to the clipboard", async () => {
@@ -12912,7 +13071,7 @@ function contentsTreeKeys(event) {
     if (!target) return;
     event.preventDefault();
     target.focus();
-    target.scrollIntoView({ block: "nearest" });
+    nearestScrollParent.reveal(target);
   };
   const expanded = current.getAttribute("aria-expanded");
   switch (event.key) {

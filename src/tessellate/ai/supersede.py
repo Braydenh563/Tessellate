@@ -34,7 +34,7 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
-from tessellate.ai import recognise
+from tessellate.ai import recognise_questions
 from tessellate.core import clock
 from tessellate.search import query as query_understanding
 
@@ -116,7 +116,7 @@ def _same(a: frozenset, b: frozenset) -> bool:
 def current(question: str, notes: list[dict]) -> tuple[list[dict], list[Replaced]]:
     """`notes` with each note a newer one supersedes left out, and what was
     left out; unchanged for a question about the change or the past."""
-    if recognise.says_past(question) or len(notes) < 2:
+    if recognise_questions.says_past(question) or len(notes) < 2:
         return notes, []
     #: Only the subject asked about: an older note says other things too, and
     #: "what are my uni days" is no reason to set aside an old note on golf.
@@ -155,6 +155,80 @@ def _alike(old: str, old_form: str, new: str, new_form: str) -> bool:
     if "relation" in (a, b):
         return a == b
     return a == b != "text" or old_form == new_form
+
+
+_WHEN_ASK = re.compile(r"^\W*(?:when|what\s+(?:day|date))\b", re.I)
+
+
+def _dated_sentences(notes: list[dict], asked: frozenset, today: date) -> list[tuple[date, dict, date]]:
+    """(the day a sentence names, its note, the day the note was written) for each
+    sentence of `notes` that holds every word asked (its note's title counts)."""
+    from tessellate.ai import composer_ahead
+
+    held = []
+    for note in notes:
+        written = _day(note)
+        title = str(note.get("content") or "").lstrip().split("\n", 1)[0].lstrip("# ")
+        for sentence in _sentences(str(note.get("content") or "")) if written else []:
+            day = composer_ahead.date_in(sentence, today)
+            if day is not None and asked <= set(query_understanding.search_terms(f"{title} {sentence}")):
+                held.append((day, note, written))
+    return held
+
+
+def _asks_when(question: str, text: str, notes: list[dict], today: date) -> tuple[frozenset, date] | None:
+    """(the words asked, the date the answer gave) for a when-question over several notes, else None."""
+    from tessellate.ai import composer_ahead
+
+    asked = frozenset(w for w in query_understanding.search_terms(question or "") if w not in _VALIDITY)
+    said = composer_ahead.date_in(text.split("\n", 1)[0], today)
+    ok = _WHEN_ASK.match(question or "") and asked and said and len(notes) > 1 and not recognise_questions.says_past(question)
+    return (asked, said) if ok else None
+
+
+def older_dates(question: str, text: str, notes: list[dict], today: date) -> list[Replaced]:
+    """The older date of the same event, for a when-question: the answer's
+    date is one a note says, and an earlier note names another date for the
+    same subject ("the launch is 14 December", then "slips to 11 January").
+    The newest dated fact leads (audit 2 G1); the older is said once."""
+    asks = _asks_when(question, text, notes, today)
+    held = _dated_sentences(notes, asks[0], today) if asks else []
+    newest = max((h for h in held if h[0] == asks[1]), key=lambda h: h[2], default=None) if asks else None
+    older = [h for h in held if newest and h[0] != asks[1] and h[2] < newest[2]]
+    if not older:
+        return []
+    day, note, written = max(older, key=lambda h: h[2])
+    return [Replaced(note, newest[1], f"{day.day} {_MONTHS[day.month - 1]}", written)]
+
+
+#: "has the launch date changed", "did the meeting move": the subject is what comes between the verb and the change.
+_CHANGED_ASK = re.compile(
+    r"^\W*(?:has|have|did|is|was|will)\s+(?:the\s+|my\s+|our\s+)?(?P<subject>.+?)\s+(?:been\s+)?"
+    r"(?:changed|change|moved|move|slipped|slip|shifted|shift|pushed(?:\s+back)?|delayed|rescheduled|postponed)(?:\s+again)?\W*$",
+    re.I,
+)
+_DATE_WORDS = frozenset({"date", "time", "day"})
+
+
+def _said_day(day: date, today: date) -> str:
+    return f"{day.day} {_MONTHS[day.month - 1]}" + ("" if day.year == today.year else f" {day.year}")
+
+
+def changed(question: str, notes: list[dict], today: date) -> str:
+    """The answer to "has the launch date changed": yes, with the day it was and the day it is, when two
+    notes written on different days give different days for the subject; no, when every note that gives
+    one gives the same; "" when the notes cannot tell (one note, or no day). The newest note leads."""
+    found = _CHANGED_ASK.match(question or "")
+    asked = frozenset(w for w in query_understanding.search_terms(found["subject"]) if w not in _VALIDITY | _DATE_WORDS) if found else frozenset()
+    held = _dated_sentences(notes, asked, today) if asked else []
+    if len({id(h[1]) for h in held}) < 2:
+        return ""
+    newest = max(held, key=lambda h: h[2])
+    older = [h for h in held if h[2] < newest[2] and h[0] != newest[0]]
+    if not older:
+        return f"No, your notes give the same day: {_said_day(newest[0], today)}." if len({h[0] for h in held}) == 1 else ""
+    before = max(older, key=lambda h: h[2])
+    return f"Yes, from {_said_day(before[0], today)} to {_said_day(newest[0], today)}. Your note of {_said_day(newest[2], today)} has the new day; your note of {_said_day(before[2], today)} had the old one."
 
 
 _NATURAL = (
@@ -245,7 +319,7 @@ def _lapsed_in(note: dict, written: date | None, asked: frozenset, today: date) 
 def lapsed(question: str, notes: list[dict], today: date) -> Lapsed | None:
     """The first of `notes` (already the current ones) the question names
     whose own window has closed; None for a question about the past."""
-    if recognise.says_past(question):
+    if recognise_questions.says_past(question):
         return None
     asked = frozenset(w for w in query_understanding.search_terms(question or "") if w not in _VALIDITY)
     return next((found for n in notes if (found := _lapsed_in(n, _day(n), asked, today))), None)

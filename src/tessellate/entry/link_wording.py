@@ -200,10 +200,18 @@ def is_generic(reason: str | None) -> bool:
     return bool(reason) and reason.strip().casefold().startswith(GENERIC_PREFIX)
 
 
+#: A list or checkbox mark leading the line, then every emphasis and code mark
+#: wherever it is: a closing `**` kept read "Guide**" in a link (INBOX 1696 d).
+_LEAD = re.compile(r"^(?:[#>]+\s*|[-*+]\s+|\d{1,3}[.)]\s+)*(?:\[[ xX]\]\s+)?")
+_MARKS = re.compile(r"\*\*|~~|`+|(?:(?<=^)|(?<=\W))__|__(?=\W|$)")
+#: A single asterisk is italic only in a pair, so "2 * 3" and "5* stay" keep theirs.
+_ITALIC = re.compile(r"(?<![\w*])\*(?=\S)([^*\n]*?\S)\*(?![\w*])")
+
+
 def title(text: str, limit: int = 30) -> str:
     """A note's name: its first line with the markdown marks off, clipped."""
     for line in (text or "").splitlines():
-        shown = _WIKI.sub(lambda m: m.group(1), line).strip().lstrip("#>*-+ ").strip()
+        shown = _ITALIC.sub(r"\1", _MARKS.sub("", _LEAD.sub("", _WIKI.sub(lambda m: m.group(1), line).strip()))).strip()
         if shown:
             return shown if len(shown) <= limit else shown[: limit - 1].rstrip() + "…"
     return ""
@@ -239,16 +247,21 @@ def _and(things: list[str]) -> str:
     return " and ".join(things) if len(things) <= 2 else f"{things[0]}, {things[1]} and {len(things) - 2} more"
 
 
-def _shared_names(a: PairNote, b: PairNote, counts: Counts, taken: set[str]) -> tuple[str | None, set[str]]:
+def _name_candidates(a: PairNote, b: PairNote) -> tuple[set[str], dict[str, str]]:
     names_a, mid_a = _names(a.text)
     names_b, mid_b = _names(b.text)
     spelled = {**names_b, **names_a}
     keys = (mid_a & set(names_b)) | (mid_b & set(names_a))
-    ents_a = {e.casefold(): e for e in a.entities}
-    for key, shown in ents_a.items():
-        if key in {e.casefold() for e in b.entities}:
+    ents_b = {e.casefold() for e in b.entities}
+    for key, shown in {e.casefold(): e for e in a.entities}.items():
+        if key in ents_b:
             keys.add(key)
             spelled[key] = shown
+    return keys, spelled
+
+
+def _shared_names(a: PairNote, b: PairNote, counts: Counts, taken: set[str]) -> tuple[str | None, set[str]]:
+    keys, spelled = _name_candidates(a, b)
     #: A name that is only a shared tag again ("Launch" beside #launch) adds nothing.
     keys = {
         k for k in keys
@@ -291,9 +304,7 @@ def _close_in_time(a: PairNote, b: PairNote) -> str | None:
     return f"written {when}, both in {a.category}"
 
 
-def specific_reason(a: PairNote, b: PairNote, counts: Counts) -> str | None:
-    """The most specific thing the two notes share, in one sentence, or None
-    when all they share is meaning (the caller keeps the generic reason)."""
+def _clues(a: PairNote, b: PairNote, counts: Counts) -> list[str]:
     clues: list[str] = []
     mention = _mentions(a, b)
     if mention:
@@ -315,6 +326,13 @@ def specific_reason(a: PairNote, b: PairNote, counts: Counts) -> str | None:
         when = _close_in_time(a, b)
         if when:
             clues.append(when)
+    return clues
+
+
+def specific_reason(a: PairNote, b: PairNote, counts: Counts) -> str | None:
+    """The most specific thing the two notes share, in one sentence, or None
+    when all they share is meaning (the caller keeps the generic reason)."""
+    clues = _clues(a, b, counts)
     if not clues:
         return None
     reason = "; ".join(clues[:2])

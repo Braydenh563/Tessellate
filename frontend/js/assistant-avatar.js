@@ -15,10 +15,15 @@
 // Interface animations off (CSS, `.emblem-art`), and it is left out of the
 // lift while the AI works (`head`). A change of accent redraws the heads
 // where they stand (`renderBrandLogo` calls `repaintAssistantAvatars`).
-function assistantEmblemInto(target, size) {
-  const art = emblemArt(size, { head: true });
-  //: The head's box decides its size (75% of an Atlas mark's disc).
-  art.style.width = "100%";
-  art.style.height = "100%";
-  target.replaceChildren(art);
-}
+(() => {
+  function assistantEmblemInto(target, size) {
+    const art = emblemArt(size, { head: true });
+    //: The head's box decides its size (75% of an Atlas mark's disc).
+    art.style.width = "100%";
+    art.style.height = "100%";
+    target.replaceChildren(art);
+  }
+
+  //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  Object.assign(window, { assistantEmblemInto });
+})();

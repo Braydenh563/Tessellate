@@ -199,7 +199,7 @@
   gap: 0.25rem;
   padding: 0.15rem;
   border-radius: var(--radius-md);
-  background: var(--panel);
+  background: var(--card);
   /* A hairline, not `--shadow-sm`: this row hangs two pixels under a bubble
      that has a shadow of its own, and the two stacked into the "excessive
      shadow" the owner reported (03-dashboard-widgets.css, `.msg`). */
@@ -455,9 +455,17 @@
 /* A number of backups to keep, not a name or a path, this app's other
    `.small-select` uses are all <select>/text and can take the full 16rem;
    a bare number reads as a stray box that wide. */
-.backup-retention-input {
+/* `input.`: the base field rule is `input[type="number"]` (0,1,1) and gave it
+   the whole 694px pane, under its label (wrapzoom 2026-11-11, row 73px). */
+input.backup-retention-input {
   width: 5rem;
   max-width: 5rem;
+}
+/* Its short label and a 5rem number fit a phone's column side by side, so
+   the narrow "label on a line of its own" rule (07-whiteboard-misc.css,
+   Settings at phone width) does not apply here: at 768 the row was 76px. */
+#settings-modal #backup-retention-row > label {
+  flex: 1 1 auto;
 }
 .row .small-select {
   flex: 0 1 auto;
@@ -1243,13 +1251,6 @@ body.graph-fullscreen-on .sidebar-panel {
 }
 .graph-node {
   cursor: pointer;
-  /* Declared here so the token has a live value of its own, and overridden per
-     node from graph.js with `(r + GRAPH_HOVER_GROW) / r`, this node's own
-     factor from its core half way out to its halo. 1.2 is the middle of the
-     range that produces (1.15 on the largest node, 1.33 on the smallest), so a
-     node drawn before the script has set its property still grows by about the
-     right amount rather than by a number chosen to look harmless. */
-  --graph-hover-scale: 1.2;
 }
 /* --- hovering a node --------------------------------------------------------
    Asked for: "can you make graph nodes temporarily expand to fill their glow
@@ -1260,16 +1261,15 @@ body.graph-fullscreen-on .sidebar-panel {
    around it rather than something the dot has eaten. It went the whole
    distance first and was shown: "the halo growth on the nodes is a bit
    visually jarring tbh", so it is half the travel and half the light now.
-   `--graph-hover-scale` is set per node in graph.js: it is
-   `(r + GRAPH_HOVER_GROW) / r`, this node's own factor, and it has to be per
-   node because the halo sits a fixed 6 outside a radius that ranges from 9 to
-   20 (graph.js says this at length).
+   The dot grows by 1.2, the middle of the 1.15 to 1.33 that half the way
+   out to the halo makes over the radii a node can have (nothing sets a
+   per-node factor any more, so the token that carried it was retired).
    `transform-box: fill-box` is what makes `transform-origin: center` mean the
    circle's own centre. Without it the origin is the SVG viewport's, and every
    node would fly across the canvas instead of growing in place. */
 .graph-node:hover .graph-core,
 .graph-node:is(:focus-visible, :has(:focus-visible)) .graph-core {
-  transform: scale(var(--graph-hover-scale));
+  transform: scale(1.2);
 }
 .graph-node .graph-core {
   stroke: var(--card);
@@ -1990,11 +1990,10 @@ kbd {
    looks weird"): two rows. The message and the close button are the first,
    the actions (`.toast-actions`, one wrapper from `toastActions`) sit under
    the message on their own row, so the X is alone in its corner. Every
-   control is `--toast-ctl` tall and the message's first line is padded to
+   control is `--target-min` tall and the message's first line is padded to
    centre on the close button, so a wrapped message keeps the X beside its
    first line rather than floating to the middle of the paragraph. */
 .toast {
-  --toast-ctl: var(--target-min);
   --toast-line: 1.375rem;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -2009,7 +2008,7 @@ kbd {
      its second line ("Moved 3 notes to / the bin."). */
   text-wrap: pretty;
   line-height: var(--toast-line);
-  padding-block: calc((var(--toast-ctl) - var(--toast-line)) / 2);
+  padding-block: calc((var(--target-min) - var(--toast-line)) / 2);
   overflow-wrap: anywhere;
 }
 .toast > .toast-actions {
@@ -2029,15 +2028,15 @@ kbd {
   padding-inline: var(--space-2);
 }
 .toast.toast button {
-  height: var(--toast-ctl);
-  min-height: var(--toast-ctl);
+  height: var(--target-min);
+  min-height: var(--target-min);
   margin: 0;
   white-space: nowrap;
 }
 .toast.toast > .toast-close {
   grid-column: 2;
   grid-row: 1;
-  min-width: var(--toast-ctl);
+  min-width: var(--target-min);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2240,9 +2239,26 @@ kbd {
   aspect-ratio: 16 / 9;
   background: var(--page);
 }
+/* One line on every card, so the cards line up (wrapzoom 2026-11-11: one
+   card's chip and cost split onto two lines, 42.6px against 20px). The chip
+   keeps its word; the cost gives way with an ellipsis, and the card's title
+   says it whole. */
 .bg-style-facts {
-  flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  min-width: 0;
+  max-width: 100%;
   gap: var(--space-2);
+}
+.bg-style-facts > .chip {
+  flex: none;
+}
+.bg-style-facts > .theme-note {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .accent-offer-dot {
   width: 0.9rem;
@@ -2735,9 +2751,13 @@ kbd {
 /* Where a side flyout has nowhere to go (a narrow window, or a touch screen
    with no hover: `SUBMENU_STACK` in menus.js) the group is a nested level of
    the same menu: its rows replace the menu's, under a back row. */
+/* `width: auto`: a submenu that carries its menu's own width (a whiteboard
+   menu's 19rem) stood that wide inside the menu's padded 19rem box, every row
+   cut 8px at the right (wrapzoom 2026-11-11, 768). */
 @media (max-width: 819.98px), (hover: none) {
   .action-menu.submenu {
     position: static;
+    width: auto;
     min-width: 100%;
     margin: 0;
     padding: 0;
@@ -4176,7 +4196,7 @@ mark.lightbox-hit {
   padding: var(--space-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: var(--card-bg);
+  background: var(--card);
 }
 /* Capped and scrollable: this is a preview inside a conversation, and a note
    that runs to four screens must not push the answer you were reading off the
@@ -5149,17 +5169,60 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
    Centred rather than at the column's left edge, which is the one horizontal
    position that clears *both* top corners the minimap can be set to: at
    1440px it spans x=473 to x=967 with the minimap's corners ending at 195
-   and starting at 1237. `left`/`right`/`margin-inline` rather than a
-   translate, so the bar lands on whole pixels and its text stays crisp. */
+   and starting at 1237.
+   **Back in the column, under the dock** (wrap/zoom sweep, 2026-11-11). Out
+   of the flow it sat at the same height as the panels the column holds under
+   the dock (a topic's card, the options, the trace), so with a topic open it
+   covered the topic's name: 137px of it at 1280, all of it at 768. After the
+   dock in the column it moves nothing the owner's report was about (the dock
+   and the minimap, which is pinned to the card, keep their places) and the
+   panels under it start below it instead of under it. Centred by the column's
+   cross axis, so it still clears both top corners. */
 .graph-selection-dock {
-  position: absolute;
-  top: calc(var(--graph-dock-h) + var(--space-3));
-  left: 0;
-  right: 0;
-  margin-inline: auto;
+  align-self: center;
   gap: var(--space-2);
   width: max-content;
   max-width: 100%;
+}
+/* **One row at every width** (wrap/zoom sweep, 2026-11-11): its six worded
+   actions are 792px, so in a column under that (768 wide) Mind map and the
+   close dropped to a second row and the bar was 114px tall. Below 1100 the
+   words go, the dock's own recipe (`.dock-word`, the Notes dock): each stays
+   the button's name in the tree, the title stays its tooltip, and the button
+   is a square like the close beside it (about 340px for the bar). */
+@media (max-width: 1099.98px) {
+  .graph-selection-dock .dock-word,
+  .dock[data-dock-name="graph"] .dock-find .dock-word {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .graph-selection-dock .ph-lead:has(~ .dock-word),
+  .dock[data-dock-name="graph"] .dock-find .ph-lead:has(~ .dock-word) {
+    translate: none;
+    margin: 0;
+  }
+  .graph-selection-dock > button:has(> .ph-lead + .dock-word),
+  .dock[data-dock-name="graph"] .dock-find > button:has(> .ph-lead + .dock-word) {
+    width: var(--control-h);
+    padding-inline: 0;
+    justify-content: center;
+  }
+}
+/* The map's own dock, the same way: Clear highlight and Exit focus (144px
+   with their words) made the find zone's floor 288px at 768, so the actions
+   dropped to a second row whenever a highlight was on (52px of chrome over
+   the map). Square, and with the zone asking for the search's own floor (the
+   basis a find zone that is only a search already has, 10-responsive.css),
+   it fits beside the identity and the actions. Not on a phone, where the
+   find zone takes a row of its own by design. */
+@media (min-width: 600px) and (max-width: 1099.98px) {
+  .dock[data-dock-name="graph"] > .dock-find {
+    flex-basis: 8rem;
+  }
 }
 .graph-node-menu {
   z-index: 80;

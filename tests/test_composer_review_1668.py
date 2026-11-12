@@ -13,8 +13,9 @@ import pytest
 
 from tessellate.ai import reminder_parser, repair_turn
 from tessellate.api import routes_chat
-from tessellate.core import config
+from tessellate.core import clock, config
 from tessellate.entry import manager
+from tests._consent import confirmed
 from tests.test_composer_route_688 import _ask
 
 NOW = datetime(2026, 11, 4, 10, 5)
@@ -27,6 +28,8 @@ INTRO = ("Atlas's assistant", "I read your notes", "I answer from your notes", "
 def notebook(session, monkeypatch):
     monkeypatch.setattr(config, "user_now", lambda _c: NOW)
     monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    # The reply seed carries the day (chat_said._reply_seed), so the real date picked the wording.
+    monkeypatch.setattr(clock, "today", lambda: NOW.date())
     manager.create_entry(session, "# Dentist\n\nCheck-up booked for the 21st.")
     session.commit()
 
@@ -110,7 +113,7 @@ def test_the_same_asks_with_a_model_running(ai_client, fake_ollama, notebook, sa
     "said", ["put a reminder in for me tomorrow at 5pm to call mum", "schedule a reminder to pay rent on Friday at 9am"],
 )
 def test_an_ask_with_what_and_when_still_sets_it(client, notebook, said):
-    assert _ask(client, said)["text"].startswith("Done. I will remind you"), said
+    assert confirmed(client, _ask(client, said))["text"].startswith("Done. I will remind you"), said
 
 
 @pytest.mark.parametrize("said", ["I need to be reminded of the dentist", "I set a reminder yesterday", "what reminders do I have", "I was reminded of Sam"])
@@ -129,6 +132,8 @@ _ABSOLUTE = re.compile(r"\b(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day,? \d{1,2} 
 def _seed(session, monkeypatch, notes) -> None:
     monkeypatch.setattr(config, "user_now", lambda _c: NOW)
     monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
+    # The reply seed carries the day (chat_said._reply_seed), so the real date picked the wording.
+    monkeypatch.setattr(clock, "today", lambda: NOW.date())
     for content, when in notes:
         entry = manager.create_entry(session, content, "Hobbies", [])
         entry.created_at = entry.updated_at = datetime.fromisoformat(when)

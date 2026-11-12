@@ -85,6 +85,8 @@ ALLOWED = {
     ("max", 1152.0): 1,
     ("max", 560.0): 1,
     ("max", 927.84): 1,
+    # The Documents sidebar's Recent head (16rem of sidebar): sheds the New word and folds its icons.
+    ("max", 256.0): 1,
 }
 
 

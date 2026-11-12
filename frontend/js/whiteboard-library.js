@@ -154,6 +154,7 @@ function wbRenderSideMap() {
   const host = document.getElementById("wb-side-map-facts");
   if (!host || !wbIsMap()) return;
   host.replaceChildren(wbMapStatsList(wbMapStats(wbMapIndex()), { tiles: true }));
+  wbMapFoldToLevel.sync();
 }
 
 // --- loading -------------------------------------------------------------------
@@ -185,9 +186,9 @@ async function wbLoadLibrary({ force = false } = {}) {
       // A set that does not load is left out; the rest still show.
     }
   }));
-  //: The tiles are drawn by whiteboard-templates.js (`wbThumbSvg`), later in this bundle: a
+  //: The tiles are drawn by whiteboard-templates.js (`wbThumbSvg`), later in this bundle (`boards`): a
   //: board restored with its Library side open gets here while the bundle is still loading.
-  await ensureModule("library");
+  await ensureModule("boards");
   wbRenderLibrary();
 }
 
@@ -458,7 +459,14 @@ function wbLibGroup(host, key, title, entries, { open = true, extra = null, coun
   grid.className = "wb-lib-grid";
   grid.setAttribute("role", "group");
   grid.setAttribute("aria-label", title);
-  for (const entry of entries) grid.append(wbLibTile(entry));
+  //: **A closed fold draws its tiles when it is opened** (INBOX 1726, `whiteboard-library.js
+  //: Response.json.then 94ms`; 86.7ms at 4x, 220 tiles with their thumbnails, 196 behind a closed
+  //: fold): the header and its count are all a closed group shows.
+  const fill = () => {
+    for (const entry of entries) grid.append(wbLibTile(entry));
+  };
+  if (details.open) fill();
+  else details.addEventListener("toggle", fill, { once: true });
   details.append(grid);
   if (extra) details.append(extra);
   details.addEventListener("toggle", () => {
@@ -1350,7 +1358,7 @@ function wbLibPanelMenu() {
 
 // --- wiring --------------------------------------------------------------------------
 
-onDomReady(() => {
+onSurface("board", () => {
   const side = document.getElementById("wb-sidebar");
   if (!side) return;
   for (const button of side.querySelectorAll("[data-side-tab]")) {
@@ -1574,11 +1582,13 @@ onDomReady(() => {
       if (!menu) return;
       const got = menu.getBoundingClientRect();
       menu.style.left = `${parseFloat(menu.style.left) + r.right - got.right}px`;
-      menu.style.top = `${parseFloat(menu.style.top) + r.bottom + 4 - got.top}px`;
+      //: A menu that `place()` opened upward (no room below) is hung 4px over the button, not under it: forcing it back down ran it off a short window.
+      menu.style.top = `${parseFloat(menu.style.top) + (got.top < r.top ? r.top - 4 - got.bottom : r.bottom + 4 - got.top)}px`;
     });
   });
   document.getElementById("wb-side-map-look")?.addEventListener("click", () => wbMapThemeDialog());
   document.getElementById("wb-side-map-expand")?.addEventListener("click", () => wbMapExpandAll());
+  document.getElementById("wb-side-map-fold")?.addEventListener("click", () => wbMapFoldToLevel(1));
   document.getElementById("wb-side-map-tidy")?.addEventListener("click", async () => {
     const moved = await wbMapTidy({ quiet: true });
     toast(moved ? `Tidied ${nounCount(moved, "node")}.` : "Everything is already where this layout puts it.");
@@ -1860,6 +1870,7 @@ function wbNamedLayerMenu(layer) {
       wbApplySelectionHighlight();
       wbUpdateSelectionBar();
     } },
+    ...wbFmtState.layersMore.rows(layer),
     { label: "ph:pencil-simple Rename", run: async () => {
       const name = await promptDialog("Rename the layer", layer.name, { confirmLabel: "Rename" });
       if (name && name.trim()) wbNamedLayerSet(layer.id, { name: name.trim().slice(0, 60) }, "Layer renamed.");
@@ -2179,7 +2190,7 @@ async function wbLayerRestack(li, target, above) {
   wbLayerFocus(li.dataset.key);
 }
 
-onDomReady(() => {
+onSurface("board", () => {
   const tree = document.getElementById("wb-layers-tree");
   if (!tree) return;
   tree.addEventListener("click", (e) => {
@@ -2417,7 +2428,7 @@ function wbPagePresent(id) {
   if (at > 0 && wbPresent) requestAnimationFrame(() => requestAnimationFrame(() => wbPresentShow(at)));
 }
 
-onDomReady(() => {
+onSurface("board", () => {
   const list = document.getElementById("wb-pages-list");
   if (!list) return;
   const rowOf = (e) => e.target.closest("[role='treeitem']");

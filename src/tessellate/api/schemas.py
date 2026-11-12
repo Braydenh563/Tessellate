@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from datetime import date, datetime
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from tessellate.core.validation_copy import Said
 from tessellate.entry.cleantext import is_blank
@@ -29,6 +31,8 @@ class SpaceCreate(BaseModel):
     id: str | None = None
     name: str = Field(min_length=1)
     icon: str = Field(min_length=1, default="ph-circles-four")
+    #: A private space (INBOX 1727): made sealed, so it needs the vault key.
+    is_private: bool = False
 
 class SpaceUpdate(BaseModel):
     # Optional: update_space only writes fields the caller actually sent,
@@ -47,6 +51,8 @@ class SpaceResponse(BaseModel):
     icon: str
     #: True when this space's contents are kept out of "All spaces".
     hidden_from_all: bool = False
+    #: A private space: shown with a lock, its contents sealed (INBOX 1727).
+    is_private: bool = False
 
 #: The longest a note may be, and the longest a tag may be.
 #:
@@ -110,6 +116,9 @@ class EntryCreate(BaseModel):
     # connection is obvious while you are writing and forgotten by the time
     # the note is in a list.
     document_ids: list[int] = Field(default_factory=list, max_length=10)
+    #: INBOX 1695: sealed from the first write (never filed, indexed or
+    #: embedded). None follows Settings, "New notes start private".
+    private: bool | None = None
     # A note captured from the text-selection popup, not yet reviewed.
     is_draft: bool = False
     #: Made by a map gesture (`Entry.map_topic`): kept out of Notes and
@@ -287,6 +296,8 @@ class EntryOut(BaseModel):
     tasks_done: int | None = None
     #: Whether the whole text holds a `[[wiki link]]` (the list's `is:linked`, INBOX 432), for the same rows.
     wiki_linked: bool | None = None
+    #: The `#` headings of the whole text outside code fences (the note card's Headings row, S74), for the same rows.
+    heading_count: int | None = None
     #: The hash of `content` (api/edit_conflicts.py): an editor sends it back
     #: as `base_hash` so a save over a newer text is refused, not lost.
     content_hash: str = ""
@@ -376,3 +387,23 @@ class EntryOut(BaseModel):
     # still write `[[old]]`: {"old", "new", "notes"}, for the offer to
     # rewrite them (`POST /entries/{id}/wiki-rename`).
     wiki_rename: dict | None = None
+
+
+#: Lives here, not in chat_request, so routes_conversations can read it
+#: without importing the chat stack (tests/test_no_import_cycles.py).
+class TurnFrame(BaseModel):
+    """What a composed answer showed (`composer_dialogue.turn_frame`), echoed back by the page so
+    the next turn binds to it before searching (fable-composer-1110 F1). Client input: bounded
+    here, and its note ids are read only through `chat_turn._cited_scope`, which checks each."""
+
+    note_ids: list[int] = Field(default_factory=list, max_length=5)
+    subject: str = Field(default="", max_length=80)
+    person: str = Field(default="", max_length=40)
+    ask: str = Field(default="", max_length=200)
+    dates: list[Annotated[str, Field(max_length=10)]] = Field(default_factory=list, max_length=5)
+    items: list[Annotated[str, Field(max_length=80)]] = Field(default_factory=list, max_length=12)
+
+    @model_validator(mode="after")
+    def _real_days(self):  # noqa: ANN202
+        self.dates = [d for d in self.dates if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d)]
+        return self

@@ -11,8 +11,7 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps
-from tessellate.core.database import Attachment, Entry, EntryLink, NoteScore, Reminder, Space
+from tessellate.core.database import Attachment, Entry, EntryLink, NoteScore, Reminder, Space, impersonate_workspace
 from tessellate.entry import manager
 
 
@@ -35,7 +34,7 @@ def to_category(session: Session, entries: list, name: str, user_filed: bool | N
 def _move_entries(session: Session, entries: list, space_id: str) -> None:
     """Put the notes in the space; a category goes by name, made in the target when it has none."""
     names = manager.bulk_category_names(session, entries)
-    with deps.impersonate_workspace(session, space_id):
+    with impersonate_workspace(session, space_id):
         for entry in entries:
             name = names.get(entry.category_id)
             if entry.category_id is not None and name:
@@ -45,7 +44,7 @@ def _move_entries(session: Session, entries: list, space_id: str) -> None:
 
 def _move_dependents(session: Session, moved_ids: list[int], space_id: str) -> None:
     """What hangs off the moved notes follows: files, reminders, fade scores, and links with both ends moved."""
-    with deps.impersonate_workspace(session, "all"):
+    with impersonate_workspace(session, "all"):
         for model in (Attachment, Reminder, NoteScore):
             for row in session.scalars(select(model).where(model.entry_id.in_(moved_ids))):
                 row.workspace_id = space_id

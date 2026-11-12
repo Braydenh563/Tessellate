@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+from tests._js_scope import unwrapped_copy
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 
@@ -29,7 +31,7 @@ console.log(JSON.stringify(vm.runInContext(input.expr, ctx)));
 
 
 def run(expr: str, files: tuple[str, ...] = ("diag-report.js",)):
-    paths = [str(JS / f) for f in files]
+    paths = [str(unwrapped_copy(JS / f)) for f in files]
     result = subprocess.run(
         ["node", "-e", HARNESS, paths[0], paths[1] if len(paths) > 1 else ""],
         input=json.dumps({"expr": expr}),
@@ -196,7 +198,7 @@ def test_a_long_frame_in_apijsons_continuation_names_the_path_and_the_awaiting_c
     now ends with the paths whose answers landed in it and the first script
     outside the plumbing that asked."""
     result = subprocess.run(
-        ["node", "-e", API_HARNESS, str(JS / "lag-watch.js")], capture_output=True, text=True, check=True, timeout=30
+        ["node", "-e", API_HARNESS, str(unwrapped_copy(JS / "lag-watch.js"))], capture_output=True, text=True, check=True, timeout=30
     )
     out = json.loads(result.stdout)
     assert out["data"] == {"p": "/entries?limit=5"}, "the answer passes through untouched"

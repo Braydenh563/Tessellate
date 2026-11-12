@@ -53,6 +53,11 @@ WHITEBOARD_EXTRAS = [
 #: registration that can run more than once, so that is what this checks.
 #: (element, event) pairs that legitimately have two handlers, and why.
 ALLOWED_DOUBLES = {
+    # Two jobs on the notes sidebar, both registered once at load: closing the
+    # phone drawer on a pick (phone-shell.js), and bringing the redrawn picked
+    # row in with a row of room (settings.js, INBOX 1696 e; outside the eager
+    # gzip budget, which is why it is not one listener in phone-shell.js).
+    ("category-list", "click"),
     # Two different jobs on the same overlay, both registered once: closing on
     # a backdrop click, and delegating clicks on the "that setting lives over
     # there" cross-links inside it.
@@ -259,7 +264,8 @@ def test_graph_fullscreen_escape_asks_rather_than_relies_on_order():
     match = re.search(
         r'(?ms)document\.addEventListener\("keydown", \(event\) => \{\n'
         r'  if \(event\.key !== "Escape"\) return;\n'
-        r'  if \(!\$\("graph-card"\)\?\.classList\.contains\("graph-fullscreen"\)\) return;.*?\n\}\);',
+        #: `getElementById`, not `$`: `$` would build the lazy graph pane on any Escape (X15).
+        r'  if \(!(?:\$|document\.getElementById)\("graph-card"\)\?\.classList\.contains\("graph-fullscreen"\)\) return;.*?\n\}\);',
         source,
     )
     assert match, "graph full-screen Escape handler not found in app.js"

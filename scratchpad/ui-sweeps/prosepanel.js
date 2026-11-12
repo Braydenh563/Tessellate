@@ -212,7 +212,7 @@ const CONTENT = [
   add("menu", samples.menu, 6, 6);
   add("panel", samples.panel, 4, 4);
   const out = require("child_process").execFileSync("python3", [
-    "/home/user/MemoryMap-AI/scratchpad/pngpixel.py", shotPath,
+    require('path').resolve(__dirname, '..', 'pngpixel.py'), shotPath,
     ...points.flatMap((p) => [String(p.x), String(p.y)]),
   ], { encoding: "utf8" }).trim().split("\n").slice(1);
   const painted = {};

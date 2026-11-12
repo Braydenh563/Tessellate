@@ -45,12 +45,14 @@
   const token = () => prefs.get("token", "");
 
   //: The window's one kind of request: signed in, in the space open in the app.
-  const call = (path, method = "GET", body = null) =>
-    fetch(path, {
+  const call = (path, method = "GET", body = null) => {
+    const form = body instanceof FormData;  // a file: the browser sets the multipart type itself
+    return fetch(path, {
       method,
-      headers: { "Content-Type": "application/json", "X-Auth-Token": token(), "X-Workspace-ID": prefs.get("spaceId", "") || "all" },
-      ...(body ? { body: JSON.stringify(body) } : {}),
+      headers: { ...(form ? {} : { "Content-Type": "application/json" }), "X-Auth-Token": token(), "X-Workspace-ID": prefs.get("spaceId", "") || "all" },
+      ...(body ? { body: form ? body : JSON.stringify(body) } : {}),
     });
+  };
 
   const host = () => window.pywebview?.api || null;
   const ask = (name, ...args) => {
@@ -73,8 +75,11 @@
 
   function draw() {
     const name = seed();
-    if (name === seedShown) return;
-    seedShown = name;
+    //: The key holds the parts you chose as well as the name: the same name with a changed look is a new
+    //: drawing (INBOX 1692 k: the card kept the bare name's figure after the profile's look was saved).
+    const key = `${name}|${JSON.stringify(nameMarkOwnFor(name) || {})}`;
+    if (key === seedShown) return;
+    seedShown = key;
     $("desk-figure").replaceChildren(characterFor(name).figure());
     $("desk-pet").setAttribute("aria-label", `${name}, your companion. Click for the menu, right-click for settings, drag to move it.`);
   }
@@ -99,6 +104,8 @@
 
   // --- the window ----------------------------------------------------------------
   function show(next) {
+    //: Pictures and files staged in the note card go with it when the panel is left (capture-stage.js).
+    if (state === "note" && next !== "note") window.discardCaptureStage?.();
     state = next;
     document.body.dataset.state = next;
     document.body.dataset.size = SIZES[next].join("x");
@@ -118,6 +125,7 @@
     if (state === "rest") return;
     let height = SIZES[state][1] - (overlay ? OVERLAY_TRIM : 0);
     if (overlay) height = panelHeight($(PANELS[state]), height, state);
+    else if (state === "menu" || state === "context") height = cardHeight(height, state);
     if (Math.abs(height - asked) <= 2) return;
     asked = height;
     ask("set_size", SIZES[state][0], height, state);
@@ -148,6 +156,17 @@
     return Math.min(wanted, kind === "search" ? Math.min(most, SEARCH_MOST) : most);
   }
   const SEARCH_MOST = 520;
+
+  //: The card window (macOS, and Windows when the see-through figure fails) holds the menu
+  //: above the companion, so its height is the menu's own plus the companion's box and the gap:
+  //: the fixed 312 and 268 left the six-row menu scrolling 95 px and the context 24 px (Q34
+  //: sweep, 2026-11-11). A locked menu (Open only) gets a shorter window the same way.
+  function cardHeight(fallback, kind) {
+    const pet = $("desk-pet").getBoundingClientRect().height;
+    const gap = parseFloat(getComputedStyle($("desk-pet").parentElement).rowGap) || 0;
+    if (!(pet > 0)) return fallback;
+    return Math.ceil(panelHeight($(PANELS[kind]), fallback - pet - gap, kind) + pet + gap);
+  }
 
   //: Why the figure stands still, for the right-click menu's one muted line.
   const STILL_WHY = {
@@ -222,6 +241,8 @@
   }
   const hideRow = () => item("Hide for 10 minutes", "timer", () => leave(() => ask("snooze")));
 
+  //: The row `keepOpen` redraws the menu for: the focus goes back to it, not to the first row.
+  let refocus = "";
   async function openMenu(kind) {
     await probe();
     const menu = $("desk-menu");
@@ -230,6 +251,7 @@
     if (kind === "context") {
       const notes = [];
       if (!overlay && motion?.note) notes.push(note(motion.note));
+      if (overlay && motion?.doing) notes.push(note(`Right now: ${motion.doing}.`));
       if (motion?.still) notes.push(note(`Standing still: ${STILL_WHY[motion.reason] || "movement is off"}.`));
       const look = [];
       if (overlay) look.push(item("Companion", "user-switch", openCompanion));
@@ -237,13 +259,24 @@
       const motionRows = [];
       if (overlay && !locked && motion?.still && motion.reason !== "avatar") motionRows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
       if (overlay && motion && typeof motion.stay === "boolean" && !motion.still) {
-        motionRows.push(motion.stay ? item("Roam", "person-simple-walk", () => leave(() => ask("set_stay", false))) : item("Stay here", "push-pin", () => leave(() => ask("set_stay", true))));
+        motionRows.push(motion.stay ? item("Roam", "person-simple-walk", () => keepOpen(() => ask("set_stay", false), "Stay here")) : item("Stay here", "push-pin", () => keepOpen(() => ask("set_stay", true), "Roam")));
       }
       //: Roam over windows: a switch, not a one-way action.
-      if (overlay && motion && typeof motion.roam === "boolean") motionRows.push(toggle("Roam over windows", motion.roam, () => leave(() => ask("set_roam", !motion.roam))));
+      if (overlay && motion && typeof motion.roam === "boolean") motionRows.push(toggle("Roam over windows", motion.roam, () => keepOpen(() => ask("set_roam", !motion.roam), "Roam over windows")));
+      //: How lively it is: one row that steps Calm, Usual, Lively (saved, and the figure follows).
+      if (overlay && motion && typeof motion.lively === "string") {
+        const levels = ["calm", "usual", "lively"];
+        const names = { calm: "Calm", usual: "Usual", lively: "Lively" };
+        const at = Math.max(0, levels.indexOf(motion.lively));
+        motionRows.push(item(`Activity: ${names[levels[at]]}`, "lightning", () => keepOpen(() => ask("set_lively", levels[(at + 1) % levels.length]), "Activity: ")));
+      }
+      //: The in-app Companion size steps (`NMB_SIZES`); a size pulled with the corner handle marks none.
+      const sizeRows = overlay && !locked && typeof motion?.size === "number"
+        ? [["Small", "small", 0.8], ["Medium", "medium", 1], ["Large", "large", 1.3]].map(([label, name, size]) => toggle(label, Math.abs(motion.size - size) < 0.005, () => keepOpen(() => ask("set_figure_size", name), label)))
+        : [];
       const away = [hideRow()];
       away.push(item("Turn off", "power", () => (overlay ? leave(() => ask("hide_companion")) : ask("hide_companion"))));
-      rows = [...notes, ...groups(look, motionRows, away)];
+      rows = [...notes, ...groups(look, motionRows, sizeRows, away)];
     } else {
       const capture = locked
         ? [note("Tessellate is locked. Open it to unlock.")]
@@ -260,19 +293,23 @@
     }
     menu.replaceChildren(...rows);
     show(kind);
-    rows.find((row) => row.tagName === "BUTTON" && !row.disabled)?.focus();
+    const live = rows.filter((row) => row.tagName === "BUTTON" && !row.disabled);
+    const again = refocus;
+    refocus = "";
+    (live.find((row) => again && row.textContent.startsWith(again)) || live[0])?.focus();
   }
 
   //: The right-click menu's "Companion": every choice the app's Appearance offers
   //: (Atlas masculine or feminine, matching your faces, You, the chat's persona, your
   //: own character, each saved companion), the current one marked. A choice is written
   //: to the app's own prefs by the host and the figure restarts with the new look. The
-  //: figure on the desktop is Atlas, so the others are listed but cannot be picked here.
+  //: overlay draws all of them (the app window renders the frames), so every row can be picked.
   async function openCompanion() {
     const got = await Promise.resolve(ask("companion_choices")).catch(() => null);
     const rows = [item("Back", "caret-left", () => openMenu("context"))];
     if (got?.locked) rows.push(note("Tessellate is locked. Open it to unlock, then choose."));
     else if (!got?.options?.length) rows.push(note("Tessellate did not answer. Open it and try again."));
+    if (got?.note) rows.push(note(got.note));
     let group = "";
     for (const option of got?.options || []) {
       if (option.group !== group) {
@@ -288,6 +325,18 @@
     $("desk-menu").replaceChildren(...rows);
     show("context");
     rows.find((row) => row.tagName === "BUTTON" && !row.disabled)?.focus();
+  }
+
+  //: A choice that changes a setting (Activity, Stay here or Roam, Roam over windows, a size) keeps the menu
+  //: open, drawn again with the new tick and the focus back on that row (INBOX 1696); a request that moves the
+  //: figure or opens something closes it (`leave`).
+  async function keepOpen(action, row) {
+    try {
+      await action();
+    } finally {
+      refocus = row;
+      await openMenu("context");
+    }
   }
 
   //: Run `action` first, then rest: the click that brought the app forward is the
@@ -331,10 +380,23 @@
     noteStatus("");
     document.querySelector(".desk-actions").replaceChildren();
     if (!(await ensureModule("captureCard"))) return noteStatus("Couldn't open the note card.", true);
+    captureCard.discardOnClose = true;  // this window rests on Close: what the card held back goes with it
     openCaptureCard($("desk-capture"), "focusin");
     focusCaptureCard();
     fit();  // the card is in the DOM now: measuring forces the layout, so no frame wait (and no new wake source)
   }
+
+  //: The two calls capture-stage.js uploads through (the app's, in its window), answered with this
+  //: window's token: a picture to /media/upload, a file to the new note's /files.
+  const deskApiJson = async (path, { method = "GET", body = null } = {}) => {
+    const response = await call(path, method, body);
+    if (!response.ok) {
+      const detail = (await response.json().catch(() => ({}))).detail;
+      throw new Error(typeof detail === "string" ? detail : "That didn't go through.");
+    }
+    return response.json();
+  };
+  Object.assign(window, { apiJson: deskApiJson, authHeaders: () => ({}) });
 
   const createNote = async (body) => {
     const response = await call("/entries", "POST", { defer_filing: true, inline_tags: true, ...body });
@@ -371,6 +433,9 @@
   };
   let searchTimer = 0;
   let searchSeq = 0;
+  //: The fetch is out. Enter pressed meanwhile opens the first match when it lands (`enterAt` is that run).
+  let searching = false;
+  let enterAt = 0;
   const plain = (text) =>
     String(text || "")
       .replace(/<[^>]*>/g, "")
@@ -421,6 +486,7 @@
     const q = $("desk-search-text").value.trim();
     const mine = ++searchSeq;
     const list = $("desk-search-hits");
+    searching = !!q;
     if (!q) {
       list.replaceChildren();
       $("desk-search-status").textContent = "";
@@ -432,6 +498,7 @@
       const response = await call(`/search?q=${encodeURIComponent(deskClip(q))}&limit=6`);
       if (mine !== searchSeq) return;
       if (response.status === 401) {
+        searching = false;
         list.replaceChildren();
         await probe();
         return openMenu("menu");
@@ -441,9 +508,12 @@
       list.replaceChildren(...(body.hits || []).map(hitRow));
       $("desk-search-status").textContent = "";
       searchEmpty(body.hits?.length ? "hits" : "none", q);
+      searching = false;
       if (overlay) fit();
+      if (enterAt === mine) list.querySelector("button")?.click();
     } catch (error) {
       if (mine !== searchSeq) return;
+      searching = false;
       $("desk-search-status").textContent = error.message || "Search is not available right now.";
       if (overlay) fit();
     }
@@ -504,7 +574,17 @@
     event.preventDefault();
     rows[(to + rows.length) % rows.length].focus();
   });
-  for (const button of document.querySelectorAll("[data-desk-close]")) button.addEventListener("click", rest);
+  //: The note's head X is the card's Close too: the card's own is folded away here (the 296px
+  //: foot had no room for it beside Note | To-do, the picture and Save, so Save wrapped to a
+  //: second line; wrapzoom 2026-11-11). It closes the card the card's way (the draft kept, a
+  //: held picture dropped), and the capture listener below rests the window.
+  for (const button of document.querySelectorAll("[data-desk-close]")) {
+    button.addEventListener("click", () => {
+      const cardClose = button.closest("#desk-note") && $("desk-capture").querySelector('#capture-card:not([hidden]) [data-cc="close"]');
+      if (cardClose) cardClose.click();
+      else rest();
+    });
+  }
 
   //: The card closes itself (Close, Escape); the panel goes with it. Capture phase: the card
   //: stops the Escape it handles, and keeps its draft either way.
@@ -514,6 +594,7 @@
   //: The card changes its own height (a to-do list, the tags): the window follows.
   document.addEventListener("mm:controls-changed", fit);
   $("desk-search-text").addEventListener("input", () => {
+    enterAt = 0;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
       searchTimer = 0;
@@ -532,7 +613,9 @@
         clearTimeout(searchTimer);
         searchTimer = 0;
         runSearch();
-      } else $("desk-search-hits").querySelector("button")?.click();
+        enterAt = searchSeq;
+      } else if (searching) enterAt = searchSeq;
+      else $("desk-search-hits").querySelector("button")?.click();
     }
   });
   //: The results are walked with the arrows; Up from the first goes back to the field.
