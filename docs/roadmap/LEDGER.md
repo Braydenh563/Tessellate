@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 85 | 4 | 0 | 17 | 185 |
+| ui-modernisation | 96 | 84 | 4 | 0 | 17 | 184 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 13 | 0 | 0 | 0 | 13 |
-| all | 553 | 657 | 158 | 3 | 191 | 1368 |
+| all | 553 | 656 | 158 | 3 | 191 | 1367 |
 
 ## graph
 
@@ -518,7 +518,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L417** `ui-modernisation` open, S: Background jobs Report button waits for boot room; make Activity panel opaque at 390. From OPEN.md:1809; OPEN.md:2686. Evidence: No change found; row stands (unverified fix absent)
 - [ ] **L418** `ui-modernisation` open, S: Sweep other sheets' h3 titles for the same rank clash as .card h3 over .tidy-title. From OPEN.md:1989. Evidence: Tidy fix present (tidy-lazy.css:61 .tidy-nav .tidy-title); no sweep of other h3 titles found
 - [ ] **L419** `ui-modernisation` open, S: Fix focus ring clipping: header buttons, Library sub-tab, chat composer at 390. From OPEN.md:2546. Evidence: Mechanical clipping open per row
-- [ ] **L420** `ui-modernisation` open, S: Make skeleton shimmer honour OS reduced-motion. From OPEN.md:2668. Evidence: 02-chat-graph.css:2080 gates on data-progress-motion=always; verified open
 - [ ] **L421** `ui-modernisation` open, S: Restyle sidebar Comments, Linked from and Notes rows. From OPEN.md:2694. Evidence: Verified open 2026-11-10
 - [ ] **L425** `ui-modernisation` open, S: Verify CSS blank-line tests, picker and 390 layout. From OPEN.md:3810. Evidence: No recorded follow-up sweep
 - [ ] **L427** `ui-modernisation` open, S: Count title-only icon buttons outside the Notes list (other tabs, Settings). From OPEN.md:3610. Evidence: Measurement gap; no later count found
