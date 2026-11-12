@@ -148,7 +148,9 @@ def test_single_key_shortcuts_can_be_turned_off():
     # way to turn them off.
     wiring = _read("settings-wiring.js")
     assert "const singleKeys = singleKeysOn();" in wiring
-    assert "if (!burst && singleKeys && !boardOwns) {" in wiring
+    # A named key (F2) is not a character key and stays on (L-ui-modernisation-14 follow-up).
+    assert "if (!burst && !boardOwns) {" in wiring
+    assert "(singleKeys || def.keys.length > 1) && matchesShortcut(e, def.keys)" in wiring
     assert 'singleKeys && (e.key === "m" || e.key === "t") && !e.ctrlKey' in wiring
     assert 'prefs.get("singleKeys", null) !== "off"' in _function(wiring, "singleKeysOn")
     assert 'id="pref-single-keys"' in _read("index.html")

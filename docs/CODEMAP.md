@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2671, tests 21804, plan headings 682, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2671, tests 21805, plan headings 682, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -1180,52 +1180,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activeOverlay` | frontend/js/settings-wiring.js:971 |
-| `captureCountText` | frontend/js/settings-wiring.js:1754 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1477 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2157 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1271 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1507 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1307 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2142 |
-| `fileDropBox` | frontend/js/settings-wiring.js:2005 |
+| `activeOverlay` | frontend/js/settings-wiring.js:972 |
+| `captureCountText` | frontend/js/settings-wiring.js:1755 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1478 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2158 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1272 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1508 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1308 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2143 |
+| `fileDropBox` | frontend/js/settings-wiring.js:2006 |
 | `flashSaved` | frontend/js/settings-wiring.js:523 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2189 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1289 |
-| `inEditable` | frontend/js/settings-wiring.js:969 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1604 |
-| `loadShortcuts` | frontend/js/settings-wiring.js:1141 |
-| `localizeStaticChords` | frontend/js/settings-wiring.js:1184 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2190 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1290 |
+| `inEditable` | frontend/js/settings-wiring.js:970 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1605 |
+| `loadShortcuts` | frontend/js/settings-wiring.js:1142 |
+| `localizeStaticChords` | frontend/js/settings-wiring.js:1185 |
 | `lockFail` | frontend/js/settings-wiring.js:286 |
 | `lockFailed` | frontend/js/settings-wiring.js:298 |
 | `lockOpened` | frontend/js/settings-wiring.js:354 |
 | `lockRequest` | frontend/js/settings-wiring.js:398 |
-| `mapEditorShown` | frontend/js/settings-wiring.js:966 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1325 |
-| `maybeShowOnboarding` | frontend/js/settings-wiring.js:992 |
+| `mapEditorShown` | frontend/js/settings-wiring.js:967 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1326 |
+| `maybeShowOnboarding` | frontend/js/settings-wiring.js:993 |
 | `notebookLocked` | frontend/js/settings-wiring.js:508 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:54 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1719 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1686 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1927 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1720 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1687 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1928 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1444 |
-| `restampShortcutHints` | frontend/js/settings-wiring.js:1194 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2130 |
-| `runShortcut` | frontend/js/settings-wiring.js:1334 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1445 |
+| `restampShortcutHints` | frontend/js/settings-wiring.js:1195 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2131 |
+| `runShortcut` | frontend/js/settings-wiring.js:1335 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:62 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1295 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1296 |
 | `saveWhatIsInFront` | frontend/js/settings-wiring.js:586 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1461 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1468 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2316 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2107 |
-| `stampShortcutTitles` | frontend/js/settings-wiring.js:1170 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1462 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1469 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2317 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2108 |
+| `stampShortcutTitles` | frontend/js/settings-wiring.js:1171 |
 | `submitLockForm` | frontend/js/settings-wiring.js:322 |
-| `textCounts` | frontend/js/settings-wiring.js:1744 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2166 |
-| `wordCount` | frontend/js/settings-wiring.js:1739 |
+| `textCounts` | frontend/js/settings-wiring.js:1745 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2167 |
+| `wordCount` | frontend/js/settings-wiring.js:1740 |
 
 ### frontend/js/spaces-find.js (24)
 
@@ -27663,7 +27663,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21804)
+## Tests (21805)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28739,7 +28739,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extras_download.py | 26 |
 | tests/test_extras_inplace_progress.py | 5 |
 | tests/test_f13_ek_1110.py | 4 |
-| tests/test_f2_in_shortcut_table_l_ui14.py | 2 |
+| tests/test_f2_in_shortcut_table_l_ui14.py | 3 |
 | tests/test_f7_pool_moves.py | 3 |
 | tests/test_fact_check_1027.py | 17 |
 | tests/test_factgraph.py | 11 |

@@ -16,3 +16,13 @@ def test_f2_is_declared_in_the_table():
 def test_the_loose_f2_listener_is_gone():
     assert 'event.key !== "F2"' not in JS
     assert "renameRow: renameFocusedRow" in JS
+
+
+def test_turning_single_keys_off_leaves_a_named_key_on():
+    """Moving F2 into the table put it behind the single-key switch (WCAG
+    2.1.4), which is about character keys speech input types; before, F2
+    worked with the switch off. A named key (more than one character) stays
+    on; a character key ("/", "?") still waits for the switch."""
+    start = JS.index("if (!burst && !boardOwns) {")
+    loop = JS[start : start + 600]
+    assert "(singleKeys || def.keys.length > 1)" in loop

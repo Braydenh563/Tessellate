@@ -823,10 +823,11 @@ document.addEventListener("keydown", (e) => {
   //: `boardOwns`: a key the open board answers itself (`wbOwnsChord`), such
   //: as a letter typed while a new map topic is still being made.
   const boardOwns = typeof wbOwnsChord === "function" && wbOwnsChord(e);
-  if (!burst && singleKeys && !boardOwns) {
+  if (!burst && !boardOwns) {
     for (const [id, def] of Object.entries(shortcuts)) {
       const bare = !/\+/.test(def.keys);
-      if (bare && matchesShortcut(e, def.keys)) {
+      //: WCAG 2.1.4 is about character keys, which speech input types; a named key (F2) stays on.
+      if (bare && (singleKeys || def.keys.length > 1) && matchesShortcut(e, def.keys)) {
         //: Any open modal, not a list of three (audit 1029 X1), asked only for a matching key.
         if (activeOverlay() || document.querySelector("dialog[open]")) break;
         e.preventDefault();

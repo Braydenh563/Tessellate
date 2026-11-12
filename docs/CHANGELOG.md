@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: F2 (rename the list item you are on) works again with single-key shortcuts turned off; the switch (WCAG 2.1.4) covers character keys only.
 - Phones: a picture or file shared to the installed app (the camera roll, another app) now lands in Capture with the note, staged as a paste would be; the share target is the POST form, taken by the service worker, with the files kept in their own cache until the notebook is unlocked (L-ui-modernisation-7).
 - Motion: a Notes sub-tab panel fades in (0.4 to 1 over the base motion time) when you switch between sub-tabs; `showNotesSection` marks the page `.section-switch` for the switch so the page arriving does not fade twice (L414; Ask measured 0.40 to 1.00 over 9 frames).
 - Shortcuts: F2 (rename the list item you are on) is a row of the shortcut table, so the shortcuts sheet, rebinding and the collision check see it; the loose listener in navigation.js is gone (L-ui-modernisation-14, first key; 36 rows to 37).
