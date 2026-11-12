@@ -20,7 +20,8 @@ def test_settings_pane_dock_with_only_a_hidden_title_is_hidden():
     """Settings, Models at half width was a blank bordered bar: the jump list hides the title."""
     text = _css("settings-controls-lazy.css")
     assert "h3.jump-echo:only-child" in text
-    assert "display: none" in text.split("h3.jump-echo:only-child", 1)[1].split("}", 1)[0]
+    # P32: clipped, not display: none, so the pane keeps its heading in the accessibility tree.
+    assert "clip-path: inset(50%)" in text.split("h3.jump-echo:only-child", 1)[1].split("}", 1)[0]
 
 
 def test_focus_mode_thumb_bar_sits_on_the_bottom_edge():

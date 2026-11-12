@@ -115,9 +115,30 @@
 /* The jump list says the pane's name, so the phone band hides the title
    (`.jump-echo`). A pane whose dock held only that title was left a blank
    bordered bar under the nav (Settings, Models at half width; the owner's
-   22-10 screenshot). With nothing left in it the dock goes too. */
+   22-10 screenshot). With nothing left in it the dock goes too.
+   Both are clipped (the visually-hidden recipe), never `display: none`: a
+   pane keeps its heading for a screen reader's heading navigation (P32). */
 #settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child):not(:has(> :not(.dock-identity))) {
-  display: none;
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  border: 0;
+}
+@media (max-width: 819.98px) {
+  #settings-modal h3.jump-echo {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 /* A dock left holding only the help button gives the row up: the dock shrinks
    to nothing, the button sits at the pane's top right and the intro line
