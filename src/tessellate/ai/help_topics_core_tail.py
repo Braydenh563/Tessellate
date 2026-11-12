@@ -1370,6 +1370,32 @@ TAIL_TOPICS.extend(
             ),
             "badge": {"label": "Graph", "tab": "graph"},
         },
+        #: L-graph-1 and L-graph-2: its own entry, since graph-controls and
+        #: graph-display both sit at the reply budget.
+        {
+            "id": "graph-draft-map",
+            "keywords": (
+                "compose into a draft",
+                "draft from notes",
+                "notes into a document",
+                "cluster to document",
+                "map of meaning",
+                "map of my notes",
+                "notes by meaning",
+                "projection",
+                "similar notes reason",
+            ),
+            "body": (
+                "Select notes on the graph (Shift and drag on empty map), open the selection bar's ⋯ "
+                "menu and choose Compose into a draft: one document opens with a section per note, "
+                "oldest first, and a line naming the notes it came from. The notes stay as they are, "
+                "private notes are left out, and no AI is needed. Options, View, Layout, Map of meaning "
+                "places each note by what it means, so notes about the same thing sit together; "
+                "notes with no meaning data yet wait in a row at the bottom. In Similar notes, hover "
+                "a note to see why it is offered: a shared tag, name or week, else similar in meaning."
+            ),
+            "badge": {"label": "Graph", "tab": "graph"},
+        },
         #: GRAPH_PLAN KG4: note properties and note types.
         {
             "id": "properties",

@@ -170,7 +170,7 @@ function graphNodeRadius(node) {
 
 function graphLayout() {
   const saved = prefs.get("graph-layout", null);
-  return ["force", "tree", "radial", "arc", "treemap", "tessellation"].includes(saved) ? saved : "force";
+  return ["force", "tree", "radial", "arc", "map", "treemap", "tessellation"].includes(saved) ? saved : "force";
 }
 
 //: **Tree, Radial and Arc compute every position, so nothing in them moves.**
@@ -406,6 +406,7 @@ function layoutTreemap(nodes, width, height, info) {
 }
 
 function layoutHierarchy(nodes, kind, width, height, info) {
+  if (kind === "map") return graphLate.layoutMap(nodes, width, height);
   if (kind === "treemap") return layoutTreemap(nodes, width, height, info);
   if (kind === "tessellation") return gcTess.layout(nodes, width, height, info, prefs.get("graph-tess-look", null));
   // Build parent → children from the notes themselves.
@@ -3047,6 +3048,56 @@ const graphLate = {
   //: An edge resize is under way (`placeGraphPopup` waits it out).
   sizing: false,
 };
+//: **The map of my notes** (L-graph-2): the Map layout places each note where
+//: `/graph/projection` puts it (its meaning flattened to a plane), so notes
+//: that mean alike sit together. The layout is synchronous, so the first call
+//: starts the fetch and draws the notes in a row until it arrives; a note the
+//: server has no point for (no vector yet, private) stays in that row below
+//: the map. No lines: the picture is about distance.
+graphLate.projection = null;
+graphLate.layoutMap = function (nodes, width, height) {
+  const done = { nodes: [], links: [], radial: false, arc: false, vertical: false };
+  const fresh = graphLate.projection && Date.now() - graphLate.projection.at < 60000;
+  if (!graphLate.projection || (!fresh && !graphLate.projection.busy)) {
+    const held = graphLate.projection;
+    graphLate.projection = { at: held ? held.at : 0, busy: true, points: held ? held.points : new Map() };
+    apiJson("/graph/projection")
+      .then((data) => {
+        const points = new Map(data.points.map((p) => [p.id, p]));
+        graphLate.projection = { at: Date.now(), busy: false, points };
+        if (graphLayout() === "map") renderGraph();
+      })
+      .catch(() => {
+        graphLate.projection.busy = false;
+        graphLate.projection.at = Date.now();
+      });
+  }
+  const points = graphLate.projection.points;
+  const pad = 40;
+  const side = Math.max(60, Math.min(width, height * 0.9) - pad * 2);
+  const left = (width - side) / 2;
+  const loose = [];
+  for (const node of nodes) {
+    const p = points.get(node.id);
+    if (p) {
+      node.x = left + p.x * side;
+      node.y = pad + p.y * side;
+    } else loose.push(node);
+  }
+  loose.forEach((node, i) => {
+    node.x = pad + ((i + 0.5) / loose.length) * (width - pad * 2);
+    node.y = height - pad / 2;
+  });
+  for (const node of nodes) {
+    node.fx = node.x;
+    node.fy = node.y;
+    node.depth = 2;
+    node.isLeaf = true;
+    node.shared = false;
+    done.nodes.push(node);
+  }
+  return done;
+};
 function watchGraphPopupSize(popup, place) {
   if (typeof ResizeObserver !== "function" || popup.dataset.placeWatch) return;
   popup.dataset.placeWatch = "1";
@@ -4878,6 +4929,29 @@ function renderGraphViews() {
   }
 }
 
+//: The selection dock's ⋯ (`kebabMenu`): rows that act on the selected notes
+//: and are too many for the dock itself. "Compose into a draft" makes one
+//: document from them (`expandNoteIntoDocument` takes a list of ids).
+graphLate.wireSelectionMore = function () {
+  const slot = document.getElementById("graph-selection-more");
+  if (!slot || slot.firstChild) return;
+  slot.appendChild(
+    kebabMenu(
+      [
+        {
+          label: "ph:file-text Compose into a draft",
+          title: "Make one document from the selected notes, a section each; the notes stay as they are",
+          run: () => {
+            const ids = [...gcSelected].filter((id) => Number.isInteger(id));
+            if (!ids.length) return toast("Select some notes first.");
+            expandNoteIntoDocument(ids);
+          },
+        },
+      ],
+      "More actions for the selected notes"
+    )
+  );
+};
 function initGraphViews() {
   const select = document.getElementById("graph-view-picker");
   if (!select || select._wired) return;
@@ -4913,6 +4987,7 @@ function initGraphViews() {
 initGraphDockHeightToken();
 initGraphRailToken();
 initGraphToastClearance();
+graphLate.wireSelectionMore();
 //: Tidy spacing (INBOX 1529) is drawn on the first visit, beside Group by
 //: category, not shipped in index.html (the boot element cap, test_boot_diet3).
 (function graphTidyRow() {
