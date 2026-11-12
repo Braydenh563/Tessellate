@@ -438,7 +438,7 @@ export that claims it.
    (exists, Phase 4) and now opens it in the map editor with the
    proposal as floating topics to accept or discard. **Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)")**: it opens with a Keep or Discard bar. (Chat's Make a mind map
    of an answer or a whole chat is built, 2026-10-18 fixes7: no model, the
-   text's headings and lists; the floating-topics proposal is still open.)
+   text's headings and lists; the proposal opens with the Keep or Discard bar above.)
 4. ~~**Graph sync**~~ **Built** (HISTORY.md, "Moved from the plans, 2026-10-05
    (docs hygiene before 0.4.0: MINDMAP_PLAN)"): a map is a node in the graph
    with an edge of kind `map` to each note on it (`_add_map_edges`,
@@ -1265,24 +1265,7 @@ topic: a control that wide has nowhere to go.
   and a dragged branch's lines no longer trail it by a frame (77 of 81 frames
   up to 12px behind, now 0, `mapedgelag.js`).
 
-- **13g. The middle-button pan on the owner's own machine.** He reports, with
-  13.1's own gesture: "the whiteboard and mindmap goes haywire and moves to
-  the left when I try to move around by pushing down my mouse scroll wheel
-  and moving the mouse to the edges of the screen, no matter which
-  direction." **Not reproduced here**, and the two things that would explain
-  it were each tested: `mapmidpan.js` drives a real middle-button drag in all
-  four directions at 50 and 500 topics and the board goes the way the hand
-  goes every time, and a pan whose release never arrives (window blurred
-  mid-gesture) leaves the board still rather than following the pointer.
-  What cannot be tested here is the remaining explanation and the likeliest
-  one: **Chromium's middle-button autoscroll is a windowed-browser
-  behaviour**, a headless run has none, so the `mousedown` guard that exists
-  for it (INBOX 183, reasoned and never observed) is not exercised by any
-  gate in this repository. Gate: this needs the owner, not a sweep. What to
-  ask him for is which platform and whether the four-way autoscroll cursor
-  appears when he presses the wheel; if it does, the guard is not reaching
-  the event on his machine and the next thing to read is whether
-  `#library-view-whiteboard` is really an ancestor of what he pressed on.
+- ~~**13g. The middle-button pan on the owner's own machine.**~~ Not reproduced headless or headed; the owner's check is in BACKLOG.md ("Device and owner checks from the mindmap plan", L759), the full text in HISTORY.md ("Moved from the plans, 2026-11-12 (mindmap-plan)").
 - ~~**13b. The strip is sized like a topic.**~~ **Built 2026-09-21**, and the
   record is in HISTORY.md ("Moved from the plans, 2026-09-21", "From
   MINDMAP_PLAN.md section 13b: the topic strip is sized like a topic"). The

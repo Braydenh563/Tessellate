@@ -7133,9 +7133,8 @@ function wbSyncMapToolState() {
 //:
 //: Coggle's four are text, link, image and icon. Text and icon are here in
 //: full; link is a web address on the topic, drawn as a marker that opens it;
-//: **image is not built** (it needs the upload path a board image uses, and a
-//: node whose body is a picture rather than a label), and
-//: `archive/agent-remaining/mindmap.md` carries the next step for it.
+//: image is the `image` style, set from a pasted web address through
+//: `POST /links/image` (wbTopicImageFromLink, whiteboard-map-more.js).
 //:
 //: Size and alignment reuse `font_size` and `align`, which a text box already
 //: stores in the same units, rather than inventing a second vocabulary for

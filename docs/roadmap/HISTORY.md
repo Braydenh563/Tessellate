@@ -59,6 +59,25 @@ Owner: the mapfix agent (Sonnet).
 - **Built, LEDGER L371:** the Due row is the date-field picker with an optional time (`data.due_time`, `_due_time`; the day stays a day, decision 37); the markers popover stays open while the calendar is used, so the day and the time are set in four presses; `tests/test_map_due_time.py`, `tests/test_mindmap.py`.
 - **Built, decision 36 (L-mindmap-5):** the note-as-answer half was already built (`wbMapStudyQuestions`, `tests/test_map_study.py`; verified in code and test); the spaced order is built: a mark keeps `streak` and `at`, the next run asks missed, then due, then new, then not yet due (0.12 ms for 40 branches in node), and the palette has Study the map in map order; fixed-clock tests in `tests/test_map_study.py`.
 
+- **13g. The middle-button pan on the owner's own machine.** He reports, with
+  13.1's own gesture: "the whiteboard and mindmap goes haywire and moves to
+  the left when I try to move around by pushing down my mouse scroll wheel
+  and moving the mouse to the edges of the screen, no matter which
+  direction." **Not reproduced here**, and the two things that would explain
+  it were each tested: `mapmidpan.js` drives a real middle-button drag in all
+  four directions at 50 and 500 topics and the board goes the way the hand
+  goes every time, and a pan whose release never arrives (window blurred
+  mid-gesture) leaves the board still rather than following the pointer.
+  What cannot be tested here is the remaining explanation and the likeliest
+  one: **Chromium's middle-button autoscroll is a windowed-browser
+  behaviour**, a headless run has none, so the `mousedown` guard that exists
+  for it (INBOX 183, reasoned and never observed) is not exercised by any
+  gate in this repository. Gate: this needs the owner, not a sweep. What to
+  ask him for is which platform and whether the four-way autoscroll cursor
+  appears when he presses the wheel; if it does, the guard is not reaching
+  the event on his machine and the next thing to read is whether
+  `#library-view-whiteboard` is really an ancestor of what he pressed on. 2026-11-12: `mapmidedge.js` drove the wheel drag to each edge and past it, headless and headed under Xvfb: the board followed the hand every time and every middle press was prevented; the owner's check moved to BACKLOG.
+
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
 - **Built, Sh1 P4:** the reminder edit form's time, priority, repeat and alert share one height (32px, equal top); `tests/test_reminder_edit_form_alert.py` holds the shared-height loop (cb83f2ed3).
@@ -55255,6 +55274,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L759** `mindmap` owner-call, M: 13g haywire middle-button pan and mapperf SIZES gate need the owner's mouse. From OPEN.md:1817; OPEN.md:3031. Evidence: Never reproduced headless; row says do not fix blind; needs owner's mouse Owner decided 2026-11-12: Send details later. Built: Moved to BACKLOG.md 'Device and owner checks from the mindmap plan': not reproduced headless or headed (mapmidedge.js: board follows the hand in 4 directions past the edges; middle mousedown prevented)
 - [x] **L369** `mindmap` open, M: Make wbSyncMapStrip ring the map's look, and add options for 17px size and level fill. From OPEN.md:1773; OPEN.md:3558. Evidence: whiteboard-map.js:7559 wbSyncMapStrip unchanged by evidence; 17px size and level fill gap remain Built: wbSyncMapStrip adds data-off-scale option for 17px so the pick row rings it; level fill already in wbSyncMapFill; test_map_node_controls
 - [x] **L366** `mindmap` open, M: Give the size stepper words and Classic level sizes S/M/L/XL instead of 17px/22px. From OPEN.md:1114. Evidence: No fix commit found for stepper words; needs a sweep to confirm Built: wbMapSizeStepper.say: level rows read S/M/L/XL/XXL; test_map_node_controls
 - [x] **L367** `mindmap` open, M: Add search or filter to the More sheet on a map (59-62 rows at 390). From OPEN.md:1682; OPEN.md:2802. Evidence: No filter in the sheet (chat-attach.js sheet recipe unchanged for this); long list remains Built: wbInitMoreMenu uses listFilter; 82 rows -> 9 for 'layout' at 390, restored 82; test_wb_commands
