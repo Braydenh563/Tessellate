@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: "every weekday", "every other friday" and "yearly" are read as a repeat and saved once as their rule through the Recurring model (`tests/test_recurring_rules_l493.py`).
 - Tests: one spec case each for the six insight rules (streak, drift, contrast, load, time of day, slot lint) in `tests/test_engine_phase6_spec.py`; the owner keeps all six, no behaviour change.
 - Feature: Settings, General, My birthday stores the day so "remind me on my birthday" resolves with no note saying it; a stored one wins over the notes (`tests/test_reading.py::test_a_stored_birthday_setting_wins_over_the_notes`).
 - Fix: reminders ticked before `done_at` existed are dated on start (updated, due or made time), so the review counts them (`tests/test_reminder_done_at_backfill.py`).

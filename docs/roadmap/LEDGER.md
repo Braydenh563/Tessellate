@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 25 | 3 | 0 | 5 | 31 |
+| timeline | 3 | 25 | 2 | 0 | 5 | 30 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 697 | 157 | 3 | 195 | 1407 |
+| all | 553 | 697 | 156 | 3 | 195 | 1406 |
 
 ## graph
 
@@ -615,7 +615,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L490** `timeline` open, M: Get timeline bar click to rows under 300 ms at 96 notes (329 measured). From OPEN.md:2780. Evidence: timeline.js drawTimelineWindow; boot CSS budget tight; verified open
 - [ ] **L491** `timeline` open, M: Window the Timeline table view rows like the feed. From agent-remaining/listwin-1031.md. Evidence: The Timeline table view (`timelineTableRow`, paintTimelineTable) still builds every loaded row; only the feed is windowe
 - [ ] **L492** `timeline` open, L: Timeline feed lays out ~39x/s while scrolling. From OPEN.md:1385. Evidence: content-visibility: auto still in css (03-dashboard-widgets.css:1927, library-lazy.css:6866); no layout-rate fix or measurement after
-- [ ] **L493** `timeline` partly, S: Verify every weekday, every other friday and yearly repeats save once in Recurring model. From OPEN.md:1400. Evidence: routes_reminders.py:215-224 reads WEEKLY/MONTHLY/YEARLY and every weekday/every other; Recurring model itself not re-verified
 - [ ] **L495** `timeline` partly, M: Add the Timeline dock streak surface for D6 streak count. From OPEN.md:1388. Evidence: dashboard.js:50 has a Streak widget; the Timeline dock/streak surface the row asks for not found
 - [ ] **L496** `timeline` partly, M: Re-check timeline pinned bucket head flake and 4 off-screen ghost buttons. From OPEN.md:3902. Evidence: Pointer note to other OPEN rows (44px On this day shift, meeting mark in table, map under Boards chip), each tracked separately; flaky pinned-head sweep and Notes off-screen buttons not re-checked.
 - [ ] **L-timeline-1** `timeline` open, S: Mark empty weeks on the timeline with a one-click 'what happened here?' prompt. From ANALYSIS.md:1190. Evidence: grep gap|quiet timeline.js only finds TIMELINE_AUTO_MAX_GAP (bucket choice); TIMELINE_PLAN has no gap marker
