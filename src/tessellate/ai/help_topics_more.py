@@ -2328,7 +2328,7 @@ MORE_TOPICS.extend([
             "box instead of a picture. Turn into shapes, in the editor's ... menu, replaces "
             "a flowchart, state, class or sequence diagram with shapes and connectors "
             "you can move one by one (Ctrl+Z puts the diagram back). Insert, Diagram, Mermaid, "
-            "draw.io or board SVG brings a diagram in as shapes straight away."
+            "draw.io or board SVG brings a diagram in as shapes straight away; a Mermaid style line's fill and stroke colour the shape, a linkStyle stroke its connector."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2494,7 +2494,8 @@ MORE_TOPICS.extend([
             "one way out, a block with no way out or joined to nothing, blocks with the same words (one row numbers them), a group "
             "holding one block. Each row's button shows its fix the same way. On a diagram document every Apply is "
             "a named version (AI: added Refund). Versions..., in the ... menu, lists them: tick two to Compare, or "
-            "one to compare it with now, and Restore puts one back."
+            "one to compare it with now, and Restore puts one back; Named only hides the plain saves. "
+            "Suggest, Templates, on a diagram with blocks, offers Add its blocks (as ghosts) or Replace the diagram, which Ctrl+Z undoes."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

@@ -93,8 +93,9 @@
   //: that goes with it. Answers once it has landed or been refused. A suggestion of the
   //: pane's own kind lands as blocks (D8; 1546 P4 gave the other kinds the same): on a blank
   //: diagram it becomes the diagram, otherwise its blocks arrive as ghosts. Another kind is
-  //: refused when the diagram has blocks, and replaces a blank one.
-  async function receive(S, h, source, said) {
+  //: refused when the diagram has blocks, and replaces a blank one. `replace` (the template dialog's
+  //: Replace the diagram) treats the pane as blank, so the template becomes the diagram in one undoable commit.
+  async function receive(S, h, source, said, replace = false) {
     S.note.classList.toggle("hidden", !S.plain);
     const kind = diagramModel.builder.kindOf(source);
     const mine = S.k ? S.k.name : "flowchart";
@@ -102,7 +103,7 @@
     const A = kind === "flowchart" ? null : diagramModel.kinds[kind];
     const inc = A ? A.parse(source) : diagramModel.parse(source);
     //: Blank: nothing in the diagram a suggestion could clash with, so it becomes the diagram.
-    const blank = !S.source.trim() || (!S.plain && paneBlank(S));
+    const blank = replace || !S.source.trim() || (!S.plain && paneBlank(S));
     if (inc && kind === mine && !S.plain) {
       if (blank) {
         const keep = S.m.front || [];
@@ -357,11 +358,12 @@
       }
       paint(t);
     };
-    const use = async () => {
+    const use = async (replace = false) => {
       if (made || !chosen) return;
       made = true;
       dialog.close();
-      await receive(S, h, chosen.source, `Started from the ${chosen.name.toLowerCase()} template.`);
+      if (replace === true) await receive(S, h, chosen.source, `Replaced the diagram with the ${chosen.name.toLowerCase()} template.`, true);
+      else await receive(S, h, chosen.source, `Started from the ${chosen.name.toLowerCase()} template.`);
     };
     for (const t of rows) {
       const li = h.el("li");
@@ -402,7 +404,10 @@
     const cancel = smallButton("Cancel", "Close without starting", () => dialog.close());
     const go = smallButton(fill ? "Add its blocks" : "Use this template", "Start from the chosen template", use, false);
     go.classList.add("accent");
-    foot.append(cancel, go);
+    foot.append(cancel);
+    //: A diagram with blocks can also be swapped for the template; Undo (Ctrl+Z) brings the old one back.
+    if (fill && !S.plain) foot.append(smallButton("Replace the diagram", "Swap the diagram for the chosen template; Undo brings it back", () => use(true)));
+    foot.append(go);
     dialog.append(
       dialogHead("Start from a template", () => dialog.close()),
       h.el("p", "muted", fill ? "Your diagram has blocks, so the template's blocks arrive as suggestions to take." : "A starting shape, not a form: every block is yours to change."),

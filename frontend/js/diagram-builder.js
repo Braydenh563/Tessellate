@@ -533,6 +533,8 @@
     //: 480 px or less: Direction, Redo and Ask leave the dock (diagram-lazy.css) so it is one row; their rows are here (L-documents-7).
     const narrow = matchMedia("(max-width: 480px)").matches;
     S.root.classList.toggle("dgm-narrow", narrow);
+    //: 360 px or less: the dock drops the kind button's caret and its side padding to stay one row at 320 (diagram-lazy.css).
+    S.root.classList.toggle("dgm-tight", matchMedia("(max-width: 360px)").matches);
     const ask = narrow && S.pane && (S.steps || S.k) && S.pane.querySelector(".dgm-ai-form");
     if (narrow) {
       const anchor = () => (S.root.querySelector(".dgm-more button") || S.root).getBoundingClientRect();

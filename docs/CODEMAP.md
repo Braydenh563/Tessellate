@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2697, tests 21903, plan headings 687, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8373, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2702, tests 21924, plan headings 687, app scripts 29, boot scripts 38, script files 301.
 
-## Frontend functions (8369)
+## Frontend functions (8373)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3172,7 +3172,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyPreview` | frontend/js/diagram-ai.js:357 |
 | `ask` | frontend/js/diagram-ai.js:312 |
 | `build` | frontend/js/diagram-ai.js:262 |
-| `compareThem` | frontend/js/diagram-ai.js:436 |
+| `compareThem` | frontend/js/diagram-ai.js:452 |
 | `copyOf` | frontend/js/diagram-ai.js:233 |
 | `counts` | frontend/js/diagram-ai.js:253 |
 | `dgaAdd` | frontend/js/diagram-ai.js:45 |
@@ -3197,7 +3197,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lint` | frontend/js/diagram-ai.js:376 |
 | `show` | frontend/js/diagram-ai.js:331 |
 | `versions` | frontend/js/diagram-ai.js:391 |
-| `wire` | frontend/js/diagram-ai.js:458 |
+| `wire` | frontend/js/diagram-ai.js:474 |
 
 ### frontend/js/diagram-bar.js (9)
 
@@ -3223,7 +3223,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `blockItems` | frontend/js/diagram-builder.js:302 |
 | `blockKeys` | frontend/js/diagram-builder.js:141 |
 | `buildBlock` | frontend/js/diagram-builder.js:209 |
-| `buildPalette` | frontend/js/diagram-builder.js:560 |
+| `buildPalette` | frontend/js/diagram-builder.js:562 |
 | `buildRow` | frontend/js/diagram-builder.js:222 |
 | `commit` | frontend/js/diagram-builder.js:44 |
 | `drawPicture` | frontend/js/diagram-builder.js:59 |
@@ -3233,16 +3233,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `joinChip` | frontend/js/diagram-builder.js:285 |
 | `joinPick` | frontend/js/diagram-builder.js:511 |
 | `joins` | frontend/js/diagram-builder.js:507 |
-| `kindOf` | frontend/js/diagram-builder.js:659 |
+| `kindOf` | frontend/js/diagram-builder.js:661 |
 | `menuAt` | frontend/js/diagram-builder.js:491 |
 | `more` | frontend/js/diagram-builder.js:528 |
-| `mount` | frontend/js/diagram-builder.js:562 |
+| `mount` | frontend/js/diagram-builder.js:564 |
 | `nameOf` | frontend/js/diagram-builder.js:37 |
 | `nameOnPicture` | frontend/js/diagram-builder.js:367 |
 | `nestBlock` | frontend/js/diagram-builder.js:423 |
 | `onKey` | frontend/js/diagram-builder.js:445 |
 | `reconcile` | frontend/js/diagram-builder.js:133 |
-| `refreshMore` | frontend/js/diagram-builder.js:551 |
+| `refreshMore` | frontend/js/diagram-builder.js:553 |
 | `relabel` | frontend/js/diagram-builder.js:371 |
 | `removeBlock` | frontend/js/diagram-builder.js:431 |
 | `render` | frontend/js/diagram-builder.js:93 |
@@ -3252,13 +3252,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `shapeGlyph` | frontend/js/diagram-builder.js:149 |
 | `shapeItems` | frontend/js/diagram-builder.js:157 |
 | `shapeRow` | frontend/js/diagram-builder.js:170 |
-| `show` | frontend/js/diagram-builder.js:669 |
+| `show` | frontend/js/diagram-builder.js:671 |
 | `stepBlock` | frontend/js/diagram-builder.js:421 |
 | `stops` | frontend/js/diagram-builder.js:121 |
 | `styleDo` | frontend/js/diagram-builder.js:513 |
 | `suggest` | frontend/js/diagram-builder.js:501 |
 | `suggestMenu` | frontend/js/diagram-builder.js:519 |
-| `sync` | frontend/js/diagram-builder.js:634 |
+| `sync` | frontend/js/diagram-builder.js:636 |
 | `titleOf` | frontend/js/diagram-builder.js:36 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -3606,25 +3606,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `choose` | frontend/js/diagram-suggest.js:482 |
-| `compose` | frontend/js/diagram-suggest.js:437 |
+| `choose` | frontend/js/diagram-suggest.js:487 |
+| `compose` | frontend/js/diagram-suggest.js:442 |
 | `count` | frontend/js/diagram-suggest.js:72 |
-| `describe` | frontend/js/diagram-suggest.js:465 |
+| `describe` | frontend/js/diagram-suggest.js:470 |
 | `dgsMerge` | frontend/js/diagram-suggest.js:25 |
 | `dgsSubtree` | frontend/js/diagram-suggest.js:62 |
-| `el` | frontend/js/diagram-suggest.js:471 |
+| `el` | frontend/js/diagram-suggest.js:476 |
 | `firstKey` | frontend/js/diagram-suggest.js:82 |
-| `flowSpec` | frontend/js/diagram-suggest.js:153 |
-| `ghosts` | frontend/js/diagram-suggest.js:186 |
+| `flowSpec` | frontend/js/diagram-suggest.js:154 |
+| `ghosts` | frontend/js/diagram-suggest.js:187 |
 | `isEmpty` | frontend/js/diagram-suggest.js:77 |
-| `items` | frontend/js/diagram-suggest.js:286 |
-| `loadTemplates` | frontend/js/diagram-suggest.js:307 |
-| `notes` | frontend/js/diagram-suggest.js:452 |
-| `outlineOf` | frontend/js/diagram-suggest.js:425 |
+| `items` | frontend/js/diagram-suggest.js:287 |
+| `loadTemplates` | frontend/js/diagram-suggest.js:308 |
+| `notes` | frontend/js/diagram-suggest.js:457 |
+| `outlineOf` | frontend/js/diagram-suggest.js:430 |
 | `paneBlank` | frontend/js/diagram-suggest.js:79 |
-| `reason` | frontend/js/diagram-suggest.js:143 |
-| `receive` | frontend/js/diagram-suggest.js:97 |
-| `templates` | frontend/js/diagram-suggest.js:318 |
+| `reason` | frontend/js/diagram-suggest.js:144 |
+| `receive` | frontend/js/diagram-suggest.js:98 |
+| `templates` | frontend/js/diagram-suggest.js:319 |
 
 ### frontend/js/diagram-touch.js (3)
 
@@ -3980,40 +3980,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docColumnsBlocks` | frontend/js/documents-columns.js:63 |
 | `docColumnsField` | frontend/js/documents-columns.js:154 |
 
-### frontend/js/documents-comments.js (30)
+### frontend/js/documents-comments.js (34)
 
 | Name | File:line |
 |---|---|
-| `docAnnotateSelection` | frontend/js/documents-comments.js:821 |
-| `docCommentContext` | frontend/js/documents-comments.js:510 |
+| `docAnnotateSelection` | frontend/js/documents-comments.js:892 |
+| `docCommentContext` | frontend/js/documents-comments.js:530 |
 | `docCommentFootnotes` | frontend/js/documents-comments.js:208 |
-| `docCommentReplyForm` | frontend/js/documents-comments.js:542 |
+| `docCommentReplyForm` | frontend/js/documents-comments.js:577 |
 | `docCommentResolveEdit` | frontend/js/documents-comments.js:160 |
-| `docCommentRow` | frontend/js/documents-comments.js:567 |
+| `docCommentRow` | frontend/js/documents-comments.js:606 |
 | `docCommentSkipMask` | frontend/js/documents-comments.js:73 |
 | `docCommentStrip` | frontend/js/documents-comments.js:187 |
-| `docComments` | frontend/js/documents-comments.js:503 |
+| `docComments` | frontend/js/documents-comments.js:523 |
 | `docCommentsParse` | frontend/js/documents-comments.js:110 |
-| `docCommentsShell` | frontend/js/documents-comments.js:669 |
-| `docGoToComment` | frontend/js/documents-comments.js:737 |
-| `docReopenComment` | frontend/js/documents-comments.js:794 |
-| `docReplyToComment` | frontend/js/documents-comments.js:807 |
-| `docResolveComment` | frontend/js/documents-comments.js:771 |
-| `docResolvedRow` | frontend/js/documents-comments.js:644 |
-| `docShowComment` | frontend/js/documents-comments.js:755 |
-| `docThreadAuthor` | frontend/js/documents-comments.js:461 |
+| `docCommentsShell` | frontend/js/documents-comments.js:716 |
+| `docDeleteReply` | frontend/js/documents-comments.js:865 |
+| `docEditReply` | frontend/js/documents-comments.js:855 |
+| `docGoToComment` | frontend/js/documents-comments.js:785 |
+| `docReopenComment` | frontend/js/documents-comments.js:842 |
+| `docReplyToComment` | frontend/js/documents-comments.js:878 |
+| `docResolveComment` | frontend/js/documents-comments.js:819 |
+| `docResolvedRow` | frontend/js/documents-comments.js:683 |
+| `docShowComment` | frontend/js/documents-comments.js:803 |
+| `docThreadAuthor` | frontend/js/documents-comments.js:480 |
+| `docThreadDeleteReply` | frontend/js/documents-comments.js:375 |
+| `docThreadEditReply` | frontend/js/documents-comments.js:367 |
 | `docThreadHash` | frontend/js/documents-comments.js:247 |
 | `docThreadKeys` | frontend/js/documents-comments.js:256 |
-| `docThreadReopen` | frontend/js/documents-comments.js:381 |
-| `docThreadReopenEdit` | frontend/js/documents-comments.js:391 |
-| `docThreadReplies` | frontend/js/documents-comments.js:522 |
+| `docThreadReopen` | frontend/js/documents-comments.js:398 |
+| `docThreadReopenEdit` | frontend/js/documents-comments.js:408 |
+| `docThreadReplies` | frontend/js/documents-comments.js:542 |
 | `docThreadReply` | frontend/js/documents-comments.js:359 |
-| `docThreadResolve` | frontend/js/documents-comments.js:369 |
-| `docThreadWho` | frontend/js/documents-comments.js:465 |
-| `docThreadsForSave` | frontend/js/documents-comments.js:499 |
+| `docThreadResolve` | frontend/js/documents-comments.js:386 |
+| `docThreadWho` | frontend/js/documents-comments.js:484 |
+| `docThreadsForSave` | frontend/js/documents-comments.js:519 |
 | `docThreadsReconcile` | frontend/js/documents-comments.js:278 |
-| `docThreadsSync` | frontend/js/documents-comments.js:473 |
-| `renderDocComments` | frontend/js/documents-comments.js:694 |
+| `docThreadsSync` | frontend/js/documents-comments.js:492 |
+| `renderDocComments` | frontend/js/documents-comments.js:741 |
 
 ### frontend/js/documents-embeds.js (14)
 
@@ -4538,21 +4542,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `docWordBlob` | frontend/js/documents-word.js:195 |
-| `docWordBlocks` | frontend/js/documents-word.js:472 |
-| `docWordCallout` | frontend/js/documents-word.js:429 |
+| `docWordBlocks` | frontend/js/documents-word.js:497 |
+| `docWordCallout` | frontend/js/documents-word.js:454 |
 | `docWordCodeLang` | frontend/js/documents-word.js:52 |
-| `docWordExport` | frontend/js/documents-word.js:325 |
-| `docWordFlat` | frontend/js/documents-word.js:443 |
+| `docWordExport` | frontend/js/documents-word.js:350 |
+| `docWordFlat` | frontend/js/documents-word.js:468 |
 | `docWordHasRevisions` | frontend/js/documents-word.js:84 |
 | `docWordImport` | frontend/js/documents-word.js:124 |
 | `docWordLib` | frontend/js/documents-word.js:23 |
-| `docWordListShape` | frontend/js/documents-word.js:399 |
+| `docWordListShape` | frontend/js/documents-word.js:424 |
 | `docWordMarkSuggestions` | frontend/js/documents-word.js:144 |
 | `docWordPicture` | frontend/js/documents-word.js:160 |
-| `docWordRuns` | frontend/js/documents-word.js:355 |
-| `docWordSections` | frontend/js/documents-word.js:450 |
-| `docWordText` | frontend/js/documents-word.js:339 |
-| `docWordToc` | frontend/js/documents-word.js:422 |
+| `docWordRuns` | frontend/js/documents-word.js:380 |
+| `docWordSections` | frontend/js/documents-word.js:475 |
+| `docWordText` | frontend/js/documents-word.js:364 |
+| `docWordToc` | frontend/js/documents-word.js:447 |
 | `docWordUploadPicture` | frontend/js/documents-word.js:62 |
 
 ### frontend/js/documents.js (447)
@@ -8526,55 +8530,55 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wbBoardOutline` | frontend/js/whiteboard-interchange.js:220 |
-| `wbBoardRowsFromSvg` | frontend/js/whiteboard-interchange.js:716 |
-| `wbBoardSvgMetadata` | frontend/js/whiteboard-interchange.js:262 |
-| `wbBoardToDrawio` | frontend/js/whiteboard-interchange.js:614 |
+| `wbBoardOutline` | frontend/js/whiteboard-interchange.js:249 |
+| `wbBoardRowsFromSvg` | frontend/js/whiteboard-interchange.js:745 |
+| `wbBoardSvgMetadata` | frontend/js/whiteboard-interchange.js:291 |
+| `wbBoardToDrawio` | frontend/js/whiteboard-interchange.js:643 |
 | `wbBoardToMermaid` | frontend/js/whiteboard-interchange.js:36 |
-| `wbBuildDiagram` | frontend/js/whiteboard-interchange.js:1309 |
-| `wbCardTitleForExport` | frontend/js/whiteboard-interchange.js:941 |
-| `wbDiagramDataUrl` | frontend/js/whiteboard-interchange.js:1304 |
-| `wbDiagramFillColour` | frontend/js/whiteboard-interchange.js:1292 |
-| `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1298 |
-| `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1281 |
-| `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1353 |
-| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1417 |
-| `wbDrawioBox` | frontend/js/whiteboard-interchange.js:1052 |
-| `wbDrawioCells` | frontend/js/whiteboard-interchange.js:1004 |
-| `wbDrawioLook` | frontend/js/whiteboard-interchange.js:505 |
-| `wbDrawioModelCells` | frontend/js/whiteboard-interchange.js:1029 |
-| `wbDrawioPath` | frontend/js/whiteboard-interchange.js:700 |
-| `wbDrawioPlace` | frontend/js/whiteboard-interchange.js:1059 |
-| `wbDrawioPlan` | frontend/js/whiteboard-interchange.js:541 |
-| `wbDrawioShape` | frontend/js/whiteboard-interchange.js:525 |
-| `wbDrawioStyle` | frontend/js/whiteboard-interchange.js:464 |
-| `wbDrawioText` | frontend/js/whiteboard-interchange.js:483 |
-| `wbEditDiagram` | frontend/js/whiteboard-interchange.js:1375 |
-| `wbExportDrawio` | frontend/js/whiteboard-interchange.js:970 |
-| `wbExportMermaid` | frontend/js/whiteboard-interchange.js:960 |
-| `wbExportOutline` | frontend/js/whiteboard-interchange.js:981 |
-| `wbExportRows` | frontend/js/whiteboard-interchange.js:732 |
-| `wbImportBoardRows` | frontend/js/whiteboard-interchange.js:765 |
-| `wbImportDrawio` | frontend/js/whiteboard-interchange.js:1104 |
-| `wbImportMermaid` | frontend/js/whiteboard-interchange.js:803 |
-| `wbImportMermaidSequence` | frontend/js/whiteboard-interchange.js:888 |
-| `wbImportText` | frontend/js/whiteboard-interchange.js:1151 |
-| `wbInsertDiagram` | frontend/js/whiteboard-interchange.js:1362 |
-| `wbMermaidCap` | frontend/js/whiteboard-interchange.js:854 |
-| `wbMermaidClassParse` | frontend/js/whiteboard-interchange.js:354 |
-| `wbMermaidFrameOf` | frontend/js/whiteboard-interchange.js:948 |
-| `wbMermaidKind` | frontend/js/whiteboard-interchange.js:270 |
+| `wbBuildDiagram` | frontend/js/whiteboard-interchange.js:1340 |
+| `wbCardTitleForExport` | frontend/js/whiteboard-interchange.js:972 |
+| `wbDiagramDataUrl` | frontend/js/whiteboard-interchange.js:1335 |
+| `wbDiagramFillColour` | frontend/js/whiteboard-interchange.js:1323 |
+| `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1329 |
+| `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1312 |
+| `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1384 |
+| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1448 |
+| `wbDrawioBox` | frontend/js/whiteboard-interchange.js:1083 |
+| `wbDrawioCells` | frontend/js/whiteboard-interchange.js:1035 |
+| `wbDrawioLook` | frontend/js/whiteboard-interchange.js:534 |
+| `wbDrawioModelCells` | frontend/js/whiteboard-interchange.js:1060 |
+| `wbDrawioPath` | frontend/js/whiteboard-interchange.js:729 |
+| `wbDrawioPlace` | frontend/js/whiteboard-interchange.js:1090 |
+| `wbDrawioPlan` | frontend/js/whiteboard-interchange.js:570 |
+| `wbDrawioShape` | frontend/js/whiteboard-interchange.js:554 |
+| `wbDrawioStyle` | frontend/js/whiteboard-interchange.js:493 |
+| `wbDrawioText` | frontend/js/whiteboard-interchange.js:512 |
+| `wbEditDiagram` | frontend/js/whiteboard-interchange.js:1406 |
+| `wbExportDrawio` | frontend/js/whiteboard-interchange.js:1001 |
+| `wbExportMermaid` | frontend/js/whiteboard-interchange.js:991 |
+| `wbExportOutline` | frontend/js/whiteboard-interchange.js:1012 |
+| `wbExportRows` | frontend/js/whiteboard-interchange.js:761 |
+| `wbImportBoardRows` | frontend/js/whiteboard-interchange.js:794 |
+| `wbImportDrawio` | frontend/js/whiteboard-interchange.js:1135 |
+| `wbImportMermaid` | frontend/js/whiteboard-interchange.js:832 |
+| `wbImportMermaidSequence` | frontend/js/whiteboard-interchange.js:919 |
+| `wbImportText` | frontend/js/whiteboard-interchange.js:1182 |
+| `wbInsertDiagram` | frontend/js/whiteboard-interchange.js:1393 |
+| `wbMermaidCap` | frontend/js/whiteboard-interchange.js:884 |
+| `wbMermaidClassParse` | frontend/js/whiteboard-interchange.js:383 |
+| `wbMermaidFrameOf` | frontend/js/whiteboard-interchange.js:979 |
+| `wbMermaidKind` | frontend/js/whiteboard-interchange.js:299 |
 | `wbMermaidLayout` | frontend/js/whiteboard-interchange.js:106 |
-| `wbMermaidLines` | frontend/js/whiteboard-interchange.js:280 |
-| `wbMermaidPlaceNode` | frontend/js/whiteboard-interchange.js:861 |
-| `wbMermaidSequenceParse` | frontend/js/whiteboard-interchange.js:414 |
-| `wbMermaidStateParse` | frontend/js/whiteboard-interchange.js:289 |
-| `wbOpenImportDialog` | frontend/js/whiteboard-interchange.js:989 |
-| `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1318 |
-| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1397 |
-| `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1199 |
-| `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1209 |
-| `wbThumbMark` | frontend/js/whiteboard-interchange.js:1203 |
+| `wbMermaidLines` | frontend/js/whiteboard-interchange.js:309 |
+| `wbMermaidPlaceNode` | frontend/js/whiteboard-interchange.js:891 |
+| `wbMermaidSequenceParse` | frontend/js/whiteboard-interchange.js:443 |
+| `wbMermaidStateParse` | frontend/js/whiteboard-interchange.js:318 |
+| `wbOpenImportDialog` | frontend/js/whiteboard-interchange.js:1020 |
+| `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1349 |
+| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1428 |
+| `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1230 |
+| `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1240 |
+| `wbThumbMark` | frontend/js/whiteboard-interchange.js:1234 |
 
 ### frontend/js/whiteboard-keys.js (5)
 
@@ -13203,7 +13207,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 233 |
-| frontend/css/diagram-lazy.css | 2736 |
+| frontend/css/diagram-lazy.css | 2774 |
 | frontend/css/doc-base-lazy.css | 141 |
 | frontend/css/doc-graph-lazy.css | 221 |
 | frontend/css/file-drop-lazy.css | 51 |
@@ -13217,7 +13221,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 9430 |
+| frontend/css/library-lazy.css | 9433 |
 | frontend/css/lightbox-lazy.css | 449 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
@@ -17850,8 +17854,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2576 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2729 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2577 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2730 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -27726,7 +27730,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21903)
+## Tests (21924)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28553,6 +28557,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_dgpolish_1109.py | 8 |
 | tests/test_diagram_dgsel_1111.py | 8 |
 | tests/test_diagram_doc_expand_1111.py | 10 |
+| tests/test_diagram_dock_320.py | 3 |
 | tests/test_diagram_dock_480_l_documents_7.py | 3 |
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_door_light_1722.py | 6 |
@@ -28575,6 +28580,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_page_1679.py | 7 |
 | tests/test_diagram_panel.py | 8 |
 | tests/test_diagram_panzoom.py | 8 |
+| tests/test_diagram_phone_targets_l15.py | 2 |
 | tests/test_diagram_r10.py | 6 |
 | tests/test_diagram_r12_1112.py | 6 |
 | tests/test_diagram_r6.py | 13 |
@@ -28593,7 +28599,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_spacing.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 22 |
+| tests/test_diagram_template_replace.py | 3 |
 | tests/test_diagram_touch.py | 7 |
+| tests/test_diagram_versions_named_only.py | 3 |
 | tests/test_diagram_view_1614.py | 10 |
 | tests/test_diagram_w17_1110.py | 6 |
 | tests/test_dialogue_b8.py | 1 |
@@ -28707,7 +28715,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_document_rephrase.py | 9 |
 | tests/test_document_revisions.py | 14 |
 | tests/test_document_suggest_name_904.py | 5 |
-| tests/test_document_thread_model.py | 2 |
+| tests/test_document_thread_model.py | 3 |
 | tests/test_document_threads.py | 23 |
 | tests/test_document_tools.py | 6 |
 | tests/test_document_untitled_names.py | 9 |
@@ -30295,7 +30303,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_help_sheet.py | 5 |
 | tests/test_wb_hover_after_frame_1111.py | 2 |
 | tests/test_wb_inline_format_k24.py | 6 |
-| tests/test_wb_interchange.py | 10 |
+| tests/test_wb_interchange.py | 13 |
 | tests/test_wb_keep_ratio.py | 3 |
 | tests/test_wb_key_object.py | 4 |
 | tests/test_wb_keyboard_enter.py | 6 |
@@ -30405,6 +30413,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_windowed_streams.py | 4 |
 | tests/test_word_count_cjk.py | 4 |
 | tests/test_word_files_b42.py | 4 |
+| tests/test_word_omml_binom_matrix_accent.py | 6 |
 | tests/test_word_toc_callout_columns.py | 6 |
 | tests/test_words_review.py | 7 |
 | tests/test_worker_guard.py | 6 |
@@ -30846,14 +30855,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1242 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:884 |
+| Needs hardware | docs/roadmap/LEDGER.md:880 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:876 |
+| Owner calls | docs/roadmap/LEDGER.md:872 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31034,7 +31043,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1084 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1080 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31088,25 +31097,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:62 |
-| chat | docs/roadmap/LEDGER.md:1100 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1184 |
+| chat | docs/roadmap/LEDGER.md:1096 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1180 |
 | documents | docs/roadmap/LEDGER.md:365 |
-| documents | docs/roadmap/LEDGER.md:1124 |
-| general | docs/roadmap/LEDGER.md:836 |
+| documents | docs/roadmap/LEDGER.md:1120 |
+| general | docs/roadmap/LEDGER.md:832 |
 | graph | docs/roadmap/LEDGER.md:26 |
-| graph | docs/roadmap/LEDGER.md:1088 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1196 |
+| graph | docs/roadmap/LEDGER.md:1084 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1192 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
-| mindmap | docs/roadmap/LEDGER.md:411 |
-| mindmap | docs/roadmap/LEDGER.md:1136 |
-| timeline | docs/roadmap/LEDGER.md:565 |
-| timeline | docs/roadmap/LEDGER.md:1160 |
-| ui-modernisation | docs/roadmap/LEDGER.md:448 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1148 |
+| mindmap | docs/roadmap/LEDGER.md:407 |
+| mindmap | docs/roadmap/LEDGER.md:1132 |
+| timeline | docs/roadmap/LEDGER.md:561 |
+| timeline | docs/roadmap/LEDGER.md:1156 |
+| ui-modernisation | docs/roadmap/LEDGER.md:444 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1144 |
 | whiteboard | docs/roadmap/LEDGER.md:319 |
-| whiteboard | docs/roadmap/LEDGER.md:1112 |
-| world-class | docs/roadmap/LEDGER.md:600 |
-| world-class | docs/roadmap/LEDGER.md:1172 |
+| whiteboard | docs/roadmap/LEDGER.md:1108 |
+| world-class | docs/roadmap/LEDGER.md:596 |
+| world-class | docs/roadmap/LEDGER.md:1168 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

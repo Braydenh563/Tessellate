@@ -362,6 +362,23 @@
     return threads.map((thread) => (thread.id === id ? { ...thread, replies: [...thread.replies, { author: author || "", at: at || "", text: said }] } : thread));
   }
 
+  //: A reply's words changed (the stamp stays: it says when it was first said), or the reply taken
+  //: away. Empty words and a place that is not there change nothing, and hand back the same list.
+  function docThreadEditReply(threads, id, index, text) {
+    const said = String(text || "").trim();
+    const thread = threads.find((one) => one.id === id);
+    if (!said || !thread || !thread.replies[index]) return threads;
+    const replies = thread.replies.map((reply, at) => (at === index ? { ...reply, text: said } : reply));
+    return threads.map((one) => (one === thread ? { ...one, replies } : one));
+  }
+
+  function docThreadDeleteReply(threads, id, index) {
+    const thread = threads.find((one) => one.id === id);
+    if (!thread || !thread.replies[index]) return threads;
+    const replies = thread.replies.filter((reply, at) => at !== index);
+    return threads.map((one) => (one === thread ? { ...one, replies } : one));
+  }
+
   //: What Reopen needs is kept on the record at the moment of resolving, when
   //: the remark is still in the text: the words it was about, the line, and
   //: whether it was alone on its line (`own`, which `docCommentResolveEdit`
@@ -457,6 +474,8 @@
   let docThreadMap = {};
   let docThreadsResolvedOpen = false;
   let docCommentReplying = null;
+  //: The reply being reworded: `thread.id:index`, or null.
+  let docCommentEditing = null;
 
   function docThreadAuthor() {
     return ((typeof prefsCache === "object" && prefsCache?.display_name) || "").trim() || "You";
@@ -482,6 +501,7 @@
       docThreads = Array.isArray(currentDoc.threads) ? currentDoc.threads : [];
       docThreadsDoc = currentDoc.id;
       docCommentReplying = null;
+      docCommentEditing = null;
     }
     const stamp = opening ? { author: "", at: "" } : { author: docThreadAuthor(), at: new Date().toISOString() };
     const result = docThreadsReconcile(docThreads, comments, stamp);
@@ -522,24 +542,40 @@
   function docThreadReplies(thread) {
     const list = document.createElement("ol");
     list.className = "doc-comment-replies";
-    for (const reply of thread.replies) {
+    thread.replies.forEach((reply, index) => {
       const item = document.createElement("li");
       item.className = "doc-comment-reply";
       const who = document.createElement("span");
       who.className = "doc-comment-who";
       who.textContent = docThreadWho(reply.author, reply.at);
+      if (docCommentEditing === `${thread.id}:${index}`) {
+        item.append(who, docCommentReplyForm(thread, index));
+        list.appendChild(item);
+        return;
+      }
       const said = document.createElement("p");
       said.className = "doc-comment-body";
       said.textContent = reply.text;
+      //: Edit and Delete sit on the byline, icon only, like the head row's actions.
+      const edit = smallButton("ph:pencil-simple", "Edit this reply", () => {
+        docCommentEditing = `${thread.id}:${index}`;
+        renderDocComments();
+        document.querySelector("#doc-comments .doc-comment-reply-input")?.focus();
+      });
+      const drop = smallButton("ph:trash", "Delete this reply", () => docDeleteReply(thread, index));
+      for (const button of [edit, drop]) button.classList.add("doc-comment-action", "doc-comment-reply-action");
+      who.append(edit, drop);
       item.append(who, said);
       list.appendChild(item);
-    }
+    });
     return list;
   }
 
   //: One line and Enter to post, Escape to cancel: a reply is a sentence. The
   //: field is the app's plain text input, not a second editor.
-  function docCommentReplyForm(thread) {
+  //: With an `index` it rewords that reply instead of adding one.
+  function docCommentReplyForm(thread, index = -1) {
+    const editing = index >= 0;
     const form = document.createElement("form");
     form.className = "doc-comment-reply-form";
     const input = document.createElement("input");
@@ -547,19 +583,22 @@
     input.className = "doc-comment-reply-input";
     input.maxLength = 2000;
     input.placeholder = "Write a reply";
-    input.setAttribute("aria-label", "Reply to this comment");
+    input.setAttribute("aria-label", editing ? "Edit this reply" : "Reply to this comment");
+    if (editing) input.value = thread.replies[index].text;
     input.addEventListener("keydown", (event) => {
       if (event.key !== "Escape") return;
       event.preventDefault();
       docCommentReplying = null;
+      docCommentEditing = null;
       renderDocComments();
     });
-    const post = smallButton("Post", "Post the reply", () => {}, false);
+    const post = smallButton(editing ? "Save" : "Post", editing ? "Save the reply" : "Post the reply", () => {}, false);
     post.type = "submit";
     form.append(input, post);
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      docReplyToComment(thread, input.value);
+      if (editing) docEditReply(thread, index, input.value);
+      else docReplyToComment(thread, input.value);
     });
     return form;
   }
@@ -652,7 +691,14 @@
     context.textContent = thread.target || `Line ${thread.line}`;
     const reopen = smallButton("ph:arrow-counter-clockwise", "Reopen: put the remark back in the document", () => docReopenComment(thread));
     reopen.classList.add("doc-outline-row-action", "doc-comment-action");
-    head.append(context, reopen);
+    //: A resolved thread can still be answered: the reply stays on it, and it stays resolved.
+    const answer = smallButton("ph:arrow-bend-up-left", "Reply to this comment", () => {
+      docCommentReplying = thread.id;
+      renderDocComments();
+      document.querySelector("#doc-comments .doc-comment-reply-input")?.focus();
+    });
+    answer.classList.add("doc-outline-row-action", "doc-comment-action", "doc-comment-reply-open");
+    head.append(context, ...(docCommentReplying === thread.id ? [] : [answer]), reopen);
     const meta = document.createElement("span");
     meta.className = "doc-comment-who";
     meta.textContent = [docThreadWho(thread.author, thread.at), thread.resolved_at ? `resolved ${relativeTime(thread.resolved_at)}` : "resolved"].filter(Boolean).join(" \u00b7 ");
@@ -662,6 +708,7 @@
     body.title = thread.text;
     item.append(head, meta, body);
     if (thread.replies.length) item.append(docThreadReplies(thread));
+    if (docCommentReplying === thread.id) item.append(docCommentReplyForm(thread));
     return item;
   }
 
@@ -700,6 +747,7 @@
     //: A reply being typed is not redrawn under the person typing it: the facts
     //: pass runs on every edit and would swap the field out from under the caret.
     if (docCommentReplying && list.contains(document.activeElement) && document.activeElement.matches?.(".doc-comment-reply-input")) return;
+    if (docCommentEditing && list.contains(document.activeElement) && document.activeElement.matches?.(".doc-comment-reply-input")) return;
     const comments = currentDoc ? docComments() : [];
     docThreadsSync(comments);
     if (docCommentCurrent && !comments.some((c) => c.id === docCommentCurrent)) {
@@ -802,6 +850,29 @@
     scheduleDocPreview();
     renderDocCounts();
     toast("Reopened. Ctrl+Z puts it back.");
+  }
+
+  function docEditReply(thread, index, text) {
+    docCommentEditing = null;
+    const next = docThreadEditReply(docThreads, thread.id, index, text);
+    if (next !== docThreads) {
+      docThreads = next;
+      markDocDirty();
+    }
+    renderDocComments();
+  }
+
+  function docDeleteReply(thread, index) {
+    const before = docThreads;
+    const next = docThreadDeleteReply(before, thread.id, index);
+    if (next === before) return;
+    const apply = (list) => {
+      docThreads = list;
+      markDocDirty();
+      renderDocComments();
+    };
+    apply(next);
+    offerUndo("Deleted a reply", "Reply deleted.", () => apply(before), () => apply(next));
   }
 
   function docReplyToComment(thread, text) {

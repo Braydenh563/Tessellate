@@ -1482,6 +1482,24 @@
   display: none;
 }
 
+/* 360 px or less (`dgm-tight`, set by `more`): the kind button, Add and its caret, the blocks list, Undo and the menu are 280 px
+   at 44 px each, and a 320 dialog gives the dock 270. The caret goes, the dock's side padding and gaps shrink, and the empty
+   direction group (it left a gap) is gone, so the dock is one row (it was two, 110 px tall). */
+.dgm-narrow .dock-group:has(> .dgm-dirs) {
+  display: none;
+}
+
+.dgm-tight .dgm-kindbtn .ph-caret-down {
+  display: none;
+}
+
+.dgm-dialog .dgm-tight .dgm-dock,
+.dgm-dialog .dgm-tight .dgm-dock:has(> .dgm-addsplit) {
+  flex-wrap: nowrap;
+  column-gap: 0;
+  padding-inline: 2px;
+}
+
 /* The sheet's rows give every glyph about the same width, so the names line up. */
 .dgm-add-glyph {
   flex: none;
@@ -2544,6 +2562,14 @@
   font-size: var(--text-sm);
 }
 
+/* A touch screen's zoom readout is a 44 px target too (it measured 42 x 54 at 390: its 3 characters and padding). */
+@media (pointer: coarse) {
+  .dgm-zoom .dgm-zoom-level .value-field-input {
+    min-inline-size: 2.75rem;
+    box-sizing: border-box;
+  }
+}
+
 /* Find (diagram-multi.js, quick ways): a small dock at the picture's top corner; a found box is ringed dashed. */
 .dgm-find {
   position: absolute;
@@ -2733,4 +2759,16 @@ button.ghost.disclosure-row.dgm-ai-lints-head {
 
 .dgm-versions-legend > .dgm-mark-chg::before {
   background: var(--warn);
+}
+
+/* L321: Named only hides the plain saves and their heading. */
+.dgm-versions-named .dgm-versions-save,
+.dgm-versions-named .dgm-versions-head {
+  display: none;
+}
+.dgm-versions-only {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 44px;
 }

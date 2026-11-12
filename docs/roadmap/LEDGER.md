@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 30 | 13 | 0 | 18 | 113 |
-| documents | 70 | 30 | 13 | 0 | 18 | 113 |
-| documents | 70 | 30 | 13 | 0 | 18 | 113 |
+| documents | 70 | 26 | 13 | 0 | 18 | 109 |
+| documents | 70 | 26 | 13 | 0 | 18 | 109 |
+| documents | 70 | 26 | 13 | 0 | 18 | 109 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 670 | 153 | 3 | 195 | 1376 |
-| all | 553 | 670 | 153 | 3 | 195 | 1376 |
-| all | 553 | 670 | 153 | 3 | 195 | 1376 |
+| all | 553 | 666 | 153 | 3 | 195 | 1372 |
+| all | 553 | 666 | 153 | 3 | 195 | 1372 |
+| all | 553 | 666 | 153 | 3 | 195 | 1372 |
 
 ## graph
 
@@ -367,16 +367,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines.
 - [ ] **L309** `documents` open, M: Keep Python runtime frame persistent across documents to avoid 5-7 s cold reload per document. From OPEN.md:1219; OPEN.md:1224; OPEN.md:2829; OPEN.md:2907. Evidence: Row: needs the Pyodide extra, not installed here; cold Debug cannot be timed.
-- [ ] **L313** `documents` open, M: Step JS watches instead of evaluating natively. From OPEN.md:2825. Evidence: run_sandbox.py:250 evaluate; known limitation, verified
-- [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10
-- [ ] **L318** `documents` open, M: Comment threads: edit/delete replies, per-device author, reply to resolved, code-doc comments. From a30h-1102.md Left. Evidence: documents-comments.js:275 replies never edited; no edit/delete path found
+- [ ] **L313** `documents` open, M: Step JS watches instead of evaluating natively. From OPEN.md:2825. Evidence: run_sandbox.py:250 evaluate; known limitation, verified. Looked at 2026-11-12 (docsD): watches run through js_debug_worker.js evaluate() with a Function over a read-only view of the frame; stepping them in the interpreter needs a nested State run on the interpreter's stack and loses the read-only guarantee, so it is a design call, not a quick fix
+- [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10. Looked at 2026-11-12 (docsD): Python debug already runs a test file through the harness (run-core.js py.debug, tests:); JS and TS debug run it as a plain script because the harness (run-tests.js runTestHarness) is modern JS and the debug worker is ES5 JS-Interpreter, so it needs an ES5 harness plus a bridge for test rows
 - [ ] **L319** `documents` open, M: Verify code editor: Python run, SQL/p5, Emmet/hover docs, conflict dialog, multi-cursor, Console eval. From audit-1031-code.md. Evidence: No later code audit; Python extra not installed here
 - [ ] **L320** `documents` open, M: Verify docs: read-view mermaid, print/PDF, docx, import, comments, phone editor entry. From audit-1031-docs.md. Evidence: audit-1102-docs covered part; print dialog and phone remain
-- [ ] **L321** `documents` open, M: Extend diagram Ask/Suggestions beyond flowcharts; build Versions 'Named only' filter. From dgai-1110.md Left. Evidence: Source: mind map, timeline, sequence get Versions only; filter not built
 - [ ] **L322** `documents` open, M: Frames with no script and CodeMirror requestMeasure (1667m). From OPEN.md:4327. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L323** `documents` open, M: Typing in a 230-note list costs ~12 ms per key in CodeMirror. From OPEN.md:1478. Evidence: Perf measurement; no fix found in HISTORY/CHANGELOG
-- [ ] **L324** `documents` open, M: Write binomial coefficients as OMML in Word export, not a barred fraction. From agent-remaining/a29g-1102.md. Evidence: next: `\binom` is written as a barred fraction (documents-word.js `docWordBlob.math`, mfrac with linethickness 0).
-- [ ] **L325** `documents` open, M: Write matrices and accents as OMML objects in Word export. From agent-remaining/a29g-1102.md. Evidence: next: matrices (`mtable`) and accents (`mover` accent) are written as their symbols in a row, not OMML matrix or accent
 - [ ] **L327** `documents` open, L: Split documents.js, documents-code.js and run_sandbox.py into lazy chunks (Opus design step) and fix listener imbalance. From OPEN.md:4468; OPEN.md:4482; OPEN.md:4485; OPEN.md:4493. Evidence: documents.js 16,598 lines now; lazy-chunk split needs Opus design step, not done
 - [ ] **L328** `documents` open, L: Build spreadsheet grid view for csv/tsv documents. From OPEN.md:4476. Evidence: Deferred L grid view for csv/tsv; not built
 - [ ] **L329** `documents` open, L: Owner decisions on D46 comment ratio, D47 drop or keep textarea fallback, D45 worker; then remove fallback aliases. From OPEN.md:4480; v1028-1.md Remaining. Evidence: Deferred L; drop of textarea fallback (documents.js) not done
@@ -401,12 +397,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L352** `documents` partly, L: Documents: Autocorrect status-bar switch, deferred-large rows, DC1/DC2 lock, old audit rows re-verify. From ledger-1112 O27; ledger-1112 X14.
 - [ ] **L-documents-3** `documents` open, M: Compare two documents side by side. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:568. Evidence: there is version diff within a document but no compare of two documents; untracked
 - [ ] **L-documents-4** `documents` open, M: Turn a board's frames into a document draft. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:843. Evidence: no command turns a board into a document draft; lines 843 to 846 are untracked
-- [ ] **L-documents-8** `documents` open, M: Diagram builder a30u and a30y leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:350. Evidence: Open line in the plan's prose a session could miss. a30u/a30y leftovers incl. clipboard read-back, ghost-row contrast in dark.
 - [ ] **L-documents-9** `documents` open, M: Code block runner leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1100. Evidence: Open line in the plan's prose a session could miss. Unmined pointer leftovers.
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
-- [ ] **L-documents-15** `documents` open, M: Diagram builder at 390: first paint, Tab stops, tap scroll and 44 px targets (R11). From DOCUMENTS_PLAN R11 blind test 2026-11-04. Evidence: diagram-embed.js: first paint blank about 1 s; 27 Tab stops to the first block; 390 px tap scrolls the toolbar under the header; tabs 28, grips 14x19, swatches 24, Connect 44x40 under 44 px
-- [ ] **L-documents-17** `documents` open, M: Board Mermaid import keeps block colour and edge labels (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: board Mermaid import (wbImportMermaid, whiteboard-interchange.js) drops block colour and stacks edge labels
-- [ ] **L-documents-18** `documents` open, M: Templates on a non-empty builder, and the 390 picture zoom and handle (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: diagram-suggest.js templates(): a template on a non-empty builder only lists ghost blocks; 390 picture is 47 to 59 percent zoom with the connect handle over a diamond
+- [ ] **L-documents-19** `documents` open, M: Comment threads: per-device author, and comments in code documents. From L318 split. Evidence: documents-comments.js docThreadAuthor: the name is the account's, one per account
+- [ ] **L-documents-20** `documents` open, S: Connect handle over a diamond at 390 (L-documents-18 remainder). From L-documents-18. Evidence: At 390 a 4-block flowchart opens at 84 percent (the 47 to 59 percent was a larger one, fit by design); the connect handle over a diamond (box 144x144 at 186,388) is not measured: tap the handle on a diamond in the picture and check it does not cover the decision's text
+- [ ] **L-documents-21** `documents` open, M: Diagram Ask and Suggestions for mind map, timeline and sequence (L321 remainder). From L321. Evidence: Ask and Suggestions are flowchart-only; mind map, timeline and sequence get Versions only (diagram-ai.js lint/show use the flowchart model)
+- [ ] **L-documents-22** `documents` open, S: Drag a shape from the diagram Add sheet onto the picture on a touch screen (L-documents-8 remainder). From L-documents-8. Evidence: Add sheet opens from the kinds' Add button at 390 (measured: no target under 44 px, fits the width); the drag of a shape from the sheet onto the picture on a real touch screen is not driven
 
 ## mindmap
 

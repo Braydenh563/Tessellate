@@ -95,6 +95,29 @@ const apply = (t, e) => t.slice(0, e.from) + e.insert + t.slice(e.to);
   check('reply/empty is refused', docThreadReply(t0, t0[0].id, 'Sam', LATER, '   ') === t0, '');
 }
 
+// --- edit and delete a reply (L318) --------------------------------------------
+{
+  const t0 = docThreadsReconcile([], parse('a %%b%%'), stamp()).threads;
+  const t1 = docThreadReply(docThreadReply(t0, t0[0].id, 'Sam', LATER, 'one'), t0[0].id, 'Sam', LATER, 'two');
+  const edited = docThreadEditReply(t1, t1[0].id, 0, '  uno ');
+  check('edit/the words change, trimmed, the stamp stays', edited[0].replies[0].text === 'uno' && edited[0].replies[0].at === LATER && edited[0].replies[1].text === 'two', JSON.stringify(edited[0].replies));
+  check('edit/the input is not changed', t1[0].replies[0].text === 'one', '');
+  check('edit/empty words are refused', docThreadEditReply(t1, t1[0].id, 0, '  ') === t1, '');
+  check('edit/an index that is not there is refused', docThreadEditReply(t1, t1[0].id, 5, 'x') === t1, '');
+  const gone = docThreadDeleteReply(t1, t1[0].id, 0);
+  check('delete/one reply goes, the other stays', gone[0].replies.length === 1 && gone[0].replies[0].text === 'two', JSON.stringify(gone[0].replies));
+  check('delete/an index that is not there is refused', docThreadDeleteReply(t1, t1[0].id, 9) === t1, '');
+  const kept = docThreadsReconcile(docThreadDeleteReply(docThreadDeleteReply(t1, t1[0].id, 0), t1[0].id, 0), parse('a b'), stamp(LATER));
+  check('delete/a thread whose replies are all gone is dropped with its deleted remark', kept.threads.length === 0, JSON.stringify(kept.threads));
+}
+{
+  // a reply on a resolved thread is kept like any other
+  const t0 = docThreadsReconcile([], parse('a %%b%%'), stamp()).threads;
+  const resolved = [{ ...t0[0], resolved: true, resolved_at: LATER }];
+  const t1 = docThreadReply(resolved, resolved[0].id, 'Sam', LATER, 'later note');
+  check('resolved/takes a reply and stays resolved', t1[0].resolved === true && t1[0].replies.length === 1, JSON.stringify(t1[0]));
+}
+
 // --- resolve and reopen ------------------------------------------------------
 function roundTrip(text, which = 0) {
   const comments = parse(text);
@@ -191,3 +214,13 @@ def test_the_thread_model_runs_without_a_browser(thread_checks):
 def test_threads_reconcile_reply_resolve_and_reopen_as_decided(thread_checks):
     failed = [c for c in thread_checks if not c["ok"]]
     assert not failed, "\n".join(f"{c['name']}: {c['detail']}" for c in failed[:20])
+
+
+def test_reply_edit_delete_and_resolved_reply_are_wired_into_the_panel() -> None:
+    """L318: the model functions have call sites, and a resolved row offers Reply."""
+    text = JS.read_text(encoding="utf-8")
+    assert "docThreadEditReply(docThreads" in text and "docThreadDeleteReply(before" in text
+    assert 'smallButton("ph:pencil-simple", "Edit this reply"' in text
+    assert 'smallButton("ph:trash", "Delete this reply"' in text
+    resolved = text.split("function docResolvedRow(")[1].split("function docCommentsShell")[0]
+    assert "docCommentReplyForm(thread)" in resolved and '"Reply to this comment"' in resolved

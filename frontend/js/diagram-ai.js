@@ -413,7 +413,7 @@
         const ordered = [...rows.filter((r) => r.name), ...rows.filter((r) => !r.name)];
         for (const row of ordered) {
           if (!row.name && rows.some((r) => r.name) && row === ordered.find((r) => !r.name)) list.append(el("li", "dgm-versions-head muted text-sm", "Saves"));
-          const li = el("li", "dgm-versions-row");
+          const li = el("li", row.name ? "dgm-versions-row" : "dgm-versions-row dgm-versions-save");
           const label = el("label", "dgm-versions-pick");
           const tick = el("input");
           tick.type = "checkbox";
@@ -428,7 +428,23 @@
           li.append(label, rowActions([{ label: "Restore", title: "Put the diagram back to this version (Undo takes it back)", run: () => (close(), restoreDocVersionWithUndo(row)) }], "Version"));
           list.append(li);
         }
-        card.append(lead, list, view, compare);
+        //: Named only (L321, as the document history has): shown only when the list holds both kinds. A save that was ticked and is now hidden is unticked, so Compare never uses a row that is not shown.
+        const mixed = rows.some((r) => r.name) && rows.some((r) => !r.name);
+        const only = el("input");
+        only.type = "checkbox";
+        only.addEventListener("change", () => {
+          list.classList.toggle("dgm-versions-named", only.checked);
+          if (only.checked) {
+            for (const row of rows.filter((r) => !r.name && r.tick?.checked)) {
+              row.tick.checked = false;
+              picked.splice(picked.indexOf(row), 1);
+            }
+            compare.disabled = !picked.length;
+          }
+        });
+        const filter = el("label", "dgm-versions-only text-sm");
+        filter.append(only, el("span", "", "Named only"));
+        card.append(lead, ...(mixed ? [filter] : []), list, view, compare);
       },
     });
   }
