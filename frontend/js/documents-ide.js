@@ -106,7 +106,16 @@
     const view = docIdeCodeView();
     const CM = window.CM6;
     if (!view || !CM) return false;
+    if (unfold === "toggle") return CM.language.toggleFold(view);
     return unfold ? CM.language.unfoldAll(view) : CM.language.foldAll(view);
+  }
+
+  //: CodeMirror's own list of problems, in a panel under the editor: the same
+  //: diagnostics as the Problems tab, for a reader who wants them beside the code.
+  function docIdeProblemsInline() {
+    const view = docIdeCodeView();
+    const CM = window.CM6;
+    return Boolean(view && CM && CM.lint.openLintPanel(view));
   }
 
   function docIdeToggleMinimap(on) {
@@ -656,5 +665,5 @@
     return true;
   }
 
-  Object.assign(window, { docIdeCompareMenu, docIdeCompareWith, docIdeExtensions, docIdeFoldAll, docIdeOpenKeys, docIdeOpenPalette, docIdeRevertAtCaret, docIdeRunGrip, docIdeStopCompare, docIdeToggleMinimap, docIdeToggleSplit });
+  Object.assign(window, { docIdeCompareMenu, docIdeCompareWith, docIdeExtensions, docIdeFoldAll, docIdeOpenKeys, docIdeProblemsInline, docIdeOpenPalette, docIdeRevertAtCaret, docIdeRunGrip, docIdeStopCompare, docIdeToggleMinimap, docIdeToggleSplit });
 })();

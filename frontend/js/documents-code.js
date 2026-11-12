@@ -6152,7 +6152,8 @@ function docCodeEditing(CM, type) {
       //: The quick fixes at the caret, on the prose menu's own chord, and the
       //: problems one at a time on the prose findings' own keys.
       { key: "Alt-Enter", run: () => docOpenCodeFixes() },
-      { key: "F8", run: CM.lint.nextDiagnostic },
+      ...CM.lint.lintKeymap,
+      { key: "Mod-Alt-.", run: CM.language.toggleFold },
       { key: "Shift-F8", run: CM.lint.previousDiagnostic },
     ]),
   ];

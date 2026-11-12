@@ -1871,7 +1871,7 @@ HELP_TOPICS.extend(
                 "steps in (Focus mode otherwise), Shift+F11 steps out, Shift+F5 "
                 "stops); Stop ends it, and the panel's top edge drags its height "
                 "(kept for each tab). Blocks fold from the "
-                "gutter (Ctrl+Shift+[ and Ctrl+Shift+] fold and unfold, Ctrl+Alt+[ "
+                "gutter (Ctrl+Shift+[ and Ctrl+Shift+] fold and unfold, Ctrl+Alt+. toggles one, Ctrl+Alt+[ "
                 "and Ctrl+Alt+] all of them). "
                 "Its tabs: Output, Problems, Tests, Console (Python or JavaScript, "
                 "in what the run left) and Debug. Ctrl+J shows it, Ctrl+Shift+M "

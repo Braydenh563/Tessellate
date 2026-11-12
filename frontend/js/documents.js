@@ -3270,8 +3270,12 @@ const DOC_COMMANDS = [
     code: true, run: () => docIdeCall("docIdeFoldAll", false) },
   { id: "unfold-all", icon: "ph:arrows-out-line-vertical", label: "Unfold every block in a code file", keys: "Ctrl+Alt+]",
     code: true, run: () => docIdeCall("docIdeFoldAll", true) },
+  { id: "toggle-fold", icon: "ph:caret-line-down", label: "Fold or unfold the block at the caret", keys: "Ctrl+Alt+.",
+    code: true, run: () => docIdeCall("docIdeFoldAll", "toggle") },
   { id: "problems", icon: "ph:warning-circle", label: "List every problem in this file", keys: "Ctrl+Shift+M",
     code: true, run: () => docPanelToggle("problems") },
+  { id: "problems-inline", icon: "ph:list-bullets", label: "List every problem in this file, inside the editor", keys: "none",
+    code: true, run: () => docIdeCall("docIdeProblemsInline") },
   //: Brief 71 (I3, D8): the panel and its Console on VS Code's chords, the
   //: editor's palette, the split and this table as a sheet. The chords are
   //: answered in documents-ide.js (`docIdeKeydown`), which stops them before

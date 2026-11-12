@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 60 | 17 | 0 | 18 | 147 |
+| documents | 70 | 59 | 17 | 0 | 18 | 146 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 700 | 157 | 3 | 195 | 1410 |
 
 ## graph
 
@@ -389,7 +389,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L313** `documents` open, M: Step JS watches instead of evaluating natively. From OPEN.md:2825. Evidence: run_sandbox.py:250 evaluate; known limitation, verified
 - [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10
 - [ ] **L315** `documents` open, M: Persist Python breakpoints across reload. From OPEN.md:2828. Evidence: DOC_DEBUG.breaks in documents-code.js; verified
-- [ ] **L316** `documents` open, M: Problems panel for prose documents showing Harper findings. From OPEN.md:2836. Evidence: Panel mounted for code files only; underlines and F8 only
 - [ ] **L317** `documents` open, M: Load a CSV document as a SQL table from a panel action. From OPEN.md:2903. Evidence: run-core.js:169 accepts tables; no panel action sends a CSV doc
 - [ ] **L318** `documents` open, M: Comment threads: edit/delete replies, per-device author, reply to resolved, code-doc comments. From a30h-1102.md Left. Evidence: documents-comments.js:275 replies never edited; no edit/delete path found
 - [ ] **L319** `documents` open, M: Verify code editor: Python run, SQL/p5, Emmet/hover docs, conflict dialog, multi-cursor, Console eval. From audit-1031-code.md. Evidence: No later code audit; Python extra not installed here
