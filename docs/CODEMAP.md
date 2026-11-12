@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2763, CSS sections 524, backend routes 699, backend modules 10777, test files 2675, tests 21827, plan headings 686, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2763, CSS sections 524, backend routes 699, backend modules 10787, test files 2675, tests 21827, plan headings 686, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -13561,7 +13561,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merge` | POST | `merge_tags` | src/tessellate/api/routes_tags.py:84 |
 | `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:141 |
 | `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
-| `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:336 |
+| `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:308 |
 | `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1726 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:68 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2379 |
@@ -13844,9 +13844,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{document_id}/revisions/{revision_id}/restore` | POST | `restore_document_revision` | src/tessellate/api/routes_documents.py:1363 |
 | `/{document_id}/suggest-title` | POST | `suggest_document_title` | src/tessellate/api/routes_documents.py:1225 |
 | `/{document_id}/unarchive` | PUT | `unarchive_document` | src/tessellate/api/routes_documents.py:840 |
-| `/{entity_id}` | GET | `entity_page` | src/tessellate/api/routes_entities.py:104 |
-| `/{entity_id}` | PATCH | `patch_entity` | src/tessellate/api/routes_entities.py:291 |
-| `/{entity_id}/merge` | POST | `merge_into` | src/tessellate/api/routes_entities.py:324 |
+| `/{entity_id}` | GET | `entity_page` | src/tessellate/api/routes_entities.py:96 |
+| `/{entity_id}` | PATCH | `patch_entity` | src/tessellate/api/routes_entities.py:263 |
+| `/{entity_id}/merge` | POST | `merge_into` | src/tessellate/api/routes_entities.py:296 |
 | `/{entry_id}` | DELETE | `delete_entry` | src/tessellate/api/routes_entries.py:2348 |
 | `/{entry_id}` | GET | `get_entry` | src/tessellate/api/routes_entries.py:2082 |
 | `/{entry_id}` | PUT | `update_entry` | src/tessellate/api/routes_entries.py:2262 |
@@ -13912,7 +13912,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10777)
+## Backend modules (10787)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21825,22 +21825,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `EntityPatch` | src/tessellate/api/routes_entities.py:285 |
-| `MergeInto` | src/tessellate/api/routes_entities.py:320 |
-| `_hit` | src/tessellate/api/routes_entities.py:91 |
-| `_linked_notes` | src/tessellate/api/routes_entities.py:242 |
+| `EntityPatch` | src/tessellate/api/routes_entities.py:257 |
+| `MergeInto` | src/tessellate/api/routes_entities.py:292 |
+| `_hit` | src/tessellate/api/routes_entities.py:83 |
+| `_linked_notes` | src/tessellate/api/routes_entities.py:218 |
 | `_live` | src/tessellate/api/routes_entities.py:56 |
-| `_names_line` | src/tessellate/api/routes_entities.py:189 |
-| `_open_items` | src/tessellate/api/routes_entities.py:198 |
+| `_names_line` | src/tessellate/api/routes_entities.py:169 |
+| `_open_items` | src/tessellate/api/routes_entities.py:178 |
 | `_row` | src/tessellate/api/routes_entities.py:46 |
-| `_timeline` | src/tessellate/api/routes_entities.py:225 |
-| `_visible_ids` | src/tessellate/api/routes_entities.py:40 |
-| `entity_page` | src/tessellate/api/routes_entities.py:105 |
+| `_timeline` | src/tessellate/api/routes_entities.py:201 |
+| `_visible_ids` | src/tessellate/api/routes_entities.py:42 |
+| `entity_page` | src/tessellate/api/routes_entities.py:97 |
 | `list_entities` | src/tessellate/api/routes_entities.py:69 |
-| `merge_into` | src/tessellate/api/routes_entities.py:325 |
-| `names_in_note` | src/tessellate/api/routes_entities.py:266 |
-| `patch_entity` | src/tessellate/api/routes_entities.py:292 |
-| `undo_merge_route` | src/tessellate/api/routes_entities.py:337 |
+| `merge_into` | src/tessellate/api/routes_entities.py:297 |
+| `names_in_note` | src/tessellate/api/routes_entities.py:238 |
+| `patch_entity` | src/tessellate/api/routes_entities.py:264 |
+| `undo_merge_route` | src/tessellate/api/routes_entities.py:309 |
 
 ### src/tessellate/api/routes_entries.py (119)
 
@@ -27134,6 +27134,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `title_of` | src/tessellate/repo/documents.py:140 |
 | `unshelved` | src/tessellate/repo/documents.py:214 |
 
+### src/tessellate/repo/entities.py (9)
+
+| Name | File:line |
+|---|---|
+| `by_ids` | src/tessellate/repo/entities.py:53 |
+| `dates_in` | src/tessellate/repo/entities.py:61 |
+| `entity_ids_in_note` | src/tessellate/repo/entities.py:39 |
+| `find` | src/tessellate/repo/entities.py:17 |
+| `mention_pairs` | src/tessellate/repo/entities.py:43 |
+| `named_with_counts` | src/tessellate/repo/entities.py:21 |
+| `note_ids_naming` | src/tessellate/repo/entities.py:35 |
+| `notes_by_ids` | src/tessellate/repo/entities.py:57 |
+| `visible_note_ids` | src/tessellate/repo/entities.py:13 |
+
 ### src/tessellate/repo/properties.py (12)
 
 | Name | File:line |
@@ -27185,7 +27199,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `wiki_sources` | src/tessellate/repo/relations.py:98 |
 | `with_type` | src/tessellate/repo/relations.py:65 |
 
-### src/tessellate/repo/reminders.py (21)
+### src/tessellate/repo/reminders.py (22)
 
 | Name | File:line |
 |---|---|
@@ -27204,6 +27218,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `matching` | src/tessellate/repo/reminders.py:124 |
 | `move_to_bin` | src/tessellate/repo/reminders.py:226 |
 | `on_note` | src/tessellate/repo/reminders.py:120 |
+| `open_on_notes` | src/tessellate/repo/reminders.py:249 |
 | `open_stamp` | src/tessellate/repo/reminders.py:83 |
 | `page` | src/tessellate/repo/reminders.py:50 |
 | `purge` | src/tessellate/repo/reminders.py:240 |

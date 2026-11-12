@@ -18,14 +18,16 @@ from collections import Counter
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai.entities import MergeUndoError, merge_with_undo, undo_merge
-from tessellate.core.database import ENTITY_KINDS, Entity, EntityMention, Entry, EntryDate, EntryLink, Reminder
+from tessellate.core.database import ENTITY_KINDS, Entity, Entry
 from tessellate.core.deps import get_session
 from tessellate.entry.manager_text import plain_label
 from tessellate.entry.mentions import sentence_around
+from tessellate.repo import entities as entities_repo
+from tessellate.repo import relations as relations_repo
+from tessellate.repo import reminders as reminders_repo
 
 router = APIRouter(prefix="/entities", tags=["entities"])
 
@@ -38,9 +40,7 @@ LIST_MAX = 500
 
 
 def _visible_ids(session: Session) -> set[int]:
-    return set(
-        session.scalars(select(Entry.id).where(Entry.is_deleted.is_(False), Entry.is_private.is_(False)))
-    )
+    return entities_repo.visible_note_ids(session)
 
 
 def _row(entity: Entity, notes: int) -> dict:
@@ -55,11 +55,11 @@ def _row(entity: Entity, notes: int) -> dict:
 
 def _live(session: Session, entity_id: int) -> Entity:
     """The entity, or the one a merge folded it into; 404 if neither."""
-    entity = session.get(Entity, entity_id)
+    entity = entities_repo.find(session, entity_id)
     for _ in range(10):
         if entity is None or entity.merged_into is None:
             break
-        entity = session.get(Entity, entity.merged_into)
+        entity = entities_repo.find(session, entity.merged_into)
     if entity is None or entity.merged_into is not None:
         raise HTTPException(status_code=404, detail="That name could not be found.")
     return entity
@@ -74,15 +74,7 @@ def list_entities(
     """Every entity some visible note names, most named first. Counted in
     SQL (audit 1028 K31: every mention row was read and counted in Python on
     each call, whatever the limit)."""
-    notes = func.count(func.distinct(EntityMention.entry_id))
-    named = (
-        select(Entity, notes)
-        .join(EntityMention, EntityMention.entity_id == Entity.id)
-        .join(Entry, Entry.id == EntityMention.entry_id)
-        .where(Entity.merged_into.is_(None), Entry.is_deleted.is_(False), Entry.is_private.is_(False))
-        .group_by(Entity.id)
-    )
-    rows = [_row(entity, count) for entity, count in session.execute(named)]
+    rows = [_row(entity, count) for entity, count in entities_repo.named_with_counts(session)]
     rows.sort(key=lambda r: (-r["notes"], r["name"].casefold()))
     response.headers["X-Total-Count"] = str(len(rows))
     return rows[:limit]
@@ -107,18 +99,13 @@ def entity_page(entity_id: int, session: Session = Depends(get_session)) -> dict
     it, and the dates its notes resolve."""
     entity = _live(session, entity_id)
     visible = _visible_ids(session)
-    note_ids = [
-        i for i in session.scalars(select(EntityMention.entry_id).where(EntityMention.entity_id == entity.id))
-        if i in visible
-    ]
+    note_ids = [i for i in entities_repo.note_ids_naming(session, entity.id) if i in visible]
     if not note_ids:
         # The list hides an entity no visible note names; so does its page. The
         # name was lifted from a note while it was readable, and by id it would
         # otherwise outlive that note going private (sweep 1004).
         raise HTTPException(status_code=404, detail="That name could not be found.")
-    notes = {
-        e.id: e for e in session.scalars(select(Entry).where(Entry.id.in_(note_ids)))
-    } if note_ids else {}
+    notes = entities_repo.notes_by_ids(session, note_ids)
     # Longest name first, so "Sam Lee" is marked whole rather than its "Sam".
     names = sorted({entity.name, *(entity.aliases or [])}, key=len, reverse=True)
     mentions = []
@@ -143,15 +130,10 @@ def entity_page(entity_id: int, session: Session = Depends(get_session)) -> dict
             }
         )
     related: Counter[int] = Counter()
-    if note_ids:
-        for other, entry_id in session.execute(
-            select(EntityMention.entity_id, EntityMention.entry_id).where(EntityMention.entry_id.in_(note_ids))
-        ):
-            if other != entity.id:
-                related[other] += 1
-    others = {
-        e.id: e for e in session.scalars(select(Entity).where(Entity.id.in_(list(related))))
-    } if related else {}
+    for other, _entry_id in entities_repo.mention_pairs(session, note_ids):
+        if other != entity.id:
+            related[other] += 1
+    others = entities_repo.by_ids(session, list(related))
     related_rows = [
         {**_row(others[i], n), "notes": n}
         for i, n in sorted(related.items(), key=lambda kv: (-kv[1], others[kv[0]].name.casefold()))
@@ -159,10 +141,8 @@ def entity_page(entity_id: int, session: Session = Depends(get_session)) -> dict
     ][:PAGE_RELATED]
     dates = [
         {"entry_id": d.entry_id, "phrase": d.phrase, "at": d.at.isoformat(), "precision": d.precision}
-        for d in session.scalars(
-            select(EntryDate).where(EntryDate.entry_id.in_(note_ids)).order_by(EntryDate.at).limit(PAGE_DATES)
-        )
-    ] if note_ids else []
+        for d in entities_repo.dates_in(session, note_ids, PAGE_DATES)
+    ]
     seen = [e.created_at for e in notes.values() if e.created_at]
     return {
         **_row(entity, len(notes)),
@@ -209,11 +189,7 @@ def _open_items(session: Session, entity: Entity, notes: dict, names: list[str])
             text = " ".join(m.group(2).split()) if m and m.group(1) == " " else ""
             if text and (not only_named or _names_line(text, names)):
                 items.append({"kind": "task", "entry_id": entry.id, "title": title, "text": text})
-    reminders = session.scalars(
-        select(Reminder)
-        .where(Reminder.entry_id.in_(list(notes)), Reminder.done.is_(False), Reminder.deleted_at.is_(None))
-        .order_by(Reminder.due_at)
-    ) if notes else []
+    reminders = reminders_repo.open_on_notes(session, list(notes))
     items += [
         {"kind": "reminder", "id": r.id, "entry_id": r.entry_id, "text": r.text, "due_at": r.due_at.isoformat()}
         for r in reminders
@@ -247,16 +223,12 @@ def _linked_notes(session: Session, notes: dict, visible: set[int]) -> list[dict
         return []
     ids = list(notes)
     joined: Counter[int] = Counter()
-    for source, target in session.execute(
-        select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(
-            EntryLink.source_entry_id.in_(ids) | EntryLink.target_entry_id.in_(ids)
-        )
-    ):
+    for source, target in relations_repo.touching_any(session, set(ids)):
         other = target if source in notes else source
         if other not in notes and other in visible:
             joined[other] += 1
     top = sorted(joined.items(), key=lambda kv: (-kv[1], kv[0]))[:PAGE_LINKS]
-    rows = {e.id: e for e in session.scalars(select(Entry).where(Entry.id.in_([i for i, _ in top])))}
+    rows = entities_repo.notes_by_ids(session, [i for i, _ in top])
     return [
         {"id": i, "title": plain_label(rows[i].content or "", 60) or "Untitled note", "links": n}
         for i, n in top if i in rows
@@ -268,7 +240,7 @@ def names_in_note(session: Session, entry: Entry) -> list[dict]:
     (B4: a page reachable from the mention). A private note lends no names."""
     if entry.is_private:
         return []
-    ids = set(session.scalars(select(EntityMention.entity_id).where(EntityMention.entry_id == entry.id)))
+    ids = entities_repo.entity_ids_in_note(session, entry.id)
     named = {}
     for entity_id in ids:
         try:

@@ -511,7 +511,9 @@ def test_a_pass_run_through_the_pool_is_one_row_not_two(client, monkeypatch):
                 break
             time.sleep(0.02)
         assert len(rows) == 1 and rows[0]["progress"] == pytest.approx(0.5)
-        assert rows[0]["cancellable"] is False  # resurfacing has no step to stop at
+        #: Resurfacing gained a stop step (L658, `passes.STOPPABLE`), so its one
+        #: row now offers Stop; the test's intent (one row, its progress) holds.
+        assert rows[0]["cancellable"] is True
     finally:
         gate.set()
         passes.reset_for_tests()

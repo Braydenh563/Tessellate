@@ -244,3 +244,16 @@ def purge(session: Session, reminder: Reminder) -> None:
     log_action(session, "purged", "reminder", reminder.id)
     session.delete(reminder)
     session.flush()
+
+
+def open_on_notes(session: Session, entry_ids: list[int]) -> list[Reminder]:
+    """The reminders on these notes not yet done, soonest first."""
+    if not entry_ids:
+        return []
+    return list(
+        session.scalars(
+            select(Reminder)
+            .where(Reminder.entry_id.in_(entry_ids), Reminder.done.is_(False), Reminder.deleted_at.is_(None))
+            .order_by(*ORDER)
+        )
+    )
