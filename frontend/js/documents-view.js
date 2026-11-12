@@ -11,11 +11,25 @@
 function docRedoChord(CM) {
   return CM.state.Prec.highest(CM.view.EditorView.domEventHandlers({
     keydown: (event, view) => {
-      if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.altKey) return false;
-      if (event.key.toLowerCase() !== "z") return false;
-      event.preventDefault();
-      CM.commands.redo(view);
-      return true;
+      if (!(event.ctrlKey || event.metaKey) || event.altKey) return false;
+      const key = event.key.toLowerCase();
+      //: C32 (gsweep): the keyboard's undo and redo in the document gave no notice while the
+      //: status bar's did; the document's own view goes through `docUndo`/`docRedo`, which say so
+      //: ("info" shows even with notifications muted). A note's box keeps CodeMirror's own.
+      const mine = typeof docCmView !== "undefined" && view === docCmView;
+      if (key === "z" && event.shiftKey) {
+        event.preventDefault();
+        if (mine) docRedo();
+        else CM.commands.redo(view);
+        return true;
+      }
+      if (mine && !event.shiftKey && (key === "z" || key === "y")) {
+        event.preventDefault();
+        if (key === "z") docUndo();
+        else docRedo();
+        return true;
+      }
+      return false;
     },
   }));
 }
