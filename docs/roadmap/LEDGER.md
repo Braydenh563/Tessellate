@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 174 | 58 | 0 | 72 | 362 |
+| world-class | 130 | 172 | 58 | 0 | 72 | 360 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 700 | 157 | 3 | 195 | 1410 |
+| all | 553 | 698 | 157 | 3 | 195 | 1408 |
 
 ## graph
 
@@ -641,7 +641,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L505** `world-class` open, S: Audit jobruns detail strings that carry {exc}. From OPEN.md:1950; OPEN.md:3542. Evidence: Audit not recorded
 - [ ] **L506** `world-class` open, S: Build the core/background.py registry. From OPEN.md:1975. Evidence: No core/background.py in src/tessellate/core; lint only counts sites
 - [ ] **L507** `world-class` open, S: Persist pending device requests in core/lantrust.py across restart. From OPEN.md:1985. Evidence: core/lantrust.py:69 _pending dict still in-memory; W34 skipped
-- [ ] **L508** `world-class` open, S: Batch commits in 5,000-note import (45.9 s) while keeping Stop. From OPEN.md:1763. Evidence: routes_import.py:108 'each one is committed as it is made' (deliberate for Stop); no batching found
 - [ ] **L509** `world-class` open, S: Handle deleted_at on import of binned notes. From OPEN.md:1764. Evidence: Export writes deleted_at (routes_settings_transfer.py:109-113); routes_import.py has no deleted handling to change it
 - [ ] **L510** `world-class` open, S: Trace how 'conversation' is derived as a topic for a gym note. From OPEN.md:4332. Evidence: Ledger open; needs the owner's note to trace topic derivation.
 - [ ] **L511** `world-class` open, S: Drive the dictionary spelling offer in a live empty search result. From OPEN.md:604; OPEN.md:2789. Evidence: Server correction answered every typo tried; finderSpellingOffer path undriven
@@ -744,7 +743,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L609** `world-class` open, M: Server grew to 8.5 GB resident over 35 min of seeding/sweeps. From OPEN.md:2064. Evidence: Row says not reproduced, cause not found; no fix or test located
 - [ ] **L610** `world-class` open, M: Boot gzip budget leftovers (chord guide in settings-wiring.js ~3 KB etc.). From OPEN.md:2248. Evidence: Candidates measured and left; test_static_compression.py holds numbers
 - [ ] **L611** `world-class` open, M: App scripts gzip cap has no room (320,589 of 320,600); unblock chat-agent.js budget line and helpers. From OPEN.md:2499; OPEN.md:3909; OPEN.md:3818. Evidence: Budget at 11 bytes headroom; guard paths not driven
-- [ ] **L612** `world-class` open, M: 5,000-note import takes 45.9 s (commit per note). From OPEN.md:2683. Evidence: Verified open 2026-11-10; no batching commit
 - [ ] **L613** `world-class` open, M: Smaller backend/gate rows: note-types undo id, gate --changed, palette test, CSS budgets. From OPEN.md:3289. Evidence: Undo id loss unreproduced; budgets near limit; palette undecided
 - [ ] **L614** `world-class` open, M: Night shift pairing phase slow (120 s) and bar resets between phases. From OPEN.md:3501. Evidence: No commit or test addressing pairing speed or bar reset found.
 - [ ] **L615** `world-class` open, M: 49 routes need a test or removal. From OPEN.md:3783. Evidence: tests/test_routes_named.py SEED still present

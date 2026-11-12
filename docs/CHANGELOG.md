@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Perf (L508, L612): the app import embeds and commits its notes 100 at a time (`deps.store_quietly_many`) instead of one commit per note, and Stop is still checked between batches. Counted with a fake embedder at 1,000 notes: 1,013 commits to 23 (6.2 s to 4.9 s, an in-memory fake with no real fsync, so the real saving is larger); `tests/test_import_commit_batches.py`.
 - Indexes (L569): the five unindexed foreign keys of the Brief 60 census are already indexed in `database_indexes.py` (`ix_entity_mentions_*`, `ix_document_bookmarks_*`, `ix_entry_bookmarks_bookmark`); `tests/test_indexes_at_5000.py` pins every foreign-key lookup, and `audit_log.entity_id`, to an index search at 5,000 notes.
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
