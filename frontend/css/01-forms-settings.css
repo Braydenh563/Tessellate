@@ -1494,22 +1494,23 @@ input.md-task-inline:disabled,
 .settings-group .entry-list li {
   background: var(--surface-3);
 }
-/* The notes list's card view only, not the shared `.entry-list li` above:
-   the owner's density ask ("at least 4 note cards above the fold" at
-   1093x614) is about the Browse list's cards specifically, and tightening
-   the general rule would also squeeze reminders, backups, sessions and
-   skill logs, none of which were measured or asked about. `:not(.is-rows)`
-   keeps this off the list's own compact row view, which already has a
-   tighter, already-tuned padding of its own (`.entry-list.is-rows li`,
-   below) that an id selector would otherwise outrank and override. */
-/* The block padding was 0.15rem, which left the first line 2px under the
-   card's top border (the owner at release: "a slightly larger top margin");
-   --space-2 each way keeps the card symmetric and costs 8px a card. */
+/* The notes list's cards only (the owner: "at least 4 note cards above the
+   fold" at 1093x614), not reminders, backups or sessions, and not the rows
+   view's own tuned padding. --space-2 each way: the owner at release, "a
+   slightly larger top margin". */
 #entry-list:not(.is-rows) li {
   padding: var(--space-2) 0.8rem;
   /* 0.15rem read as cards touching (the owner at release: "a slightly
      larger gap between notes"). */
   margin-bottom: var(--space-3);
+  /* A note card is a Library card (L767, the owner 2026-11-12: one card
+     token for border, fill and corner). */
+  background: var(--card);
+  border-radius: var(--radius-lg);
+}
+/* The edge at (0,1,1), so a thread child's own edge still wins. */
+.entry-list:where(#entry-list:not(.is-rows)) li {
+  border-color: var(--glass-border);
 }
 /* ---- Rows: the default way a list of notes is shown --------------------
    Reported directly: "half the screen is taken up by poor ui choices or
@@ -1518,10 +1519,8 @@ input.md-task-inline:disabled,
    body text ran the full 1003px of the card, which is roughly 160
    characters: more than twice the 65-75 the readable-measure rule (and
    every typographic source behind it) puts the limit at.
-   Both numbers come from the same cause: the card is laid out as a
-   document, one block stacked under another across the full width, when a
-   list row wants two columns, what the note says on the left, what the
-   app knows about it on the right.
+   Both come from a card laid out as a document, where a row wants two
+   columns: the note on the left, what the app knows on the right.
    Cards are not deleted and are one click away, because a note carrying an
    image or a file genuinely needs the room. Rows are the default because a
    list of notes is a list. */

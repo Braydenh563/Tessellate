@@ -2315,31 +2315,7 @@ button.scroll-row-arrow[hidden] {
 .library-card-tick {
   align-self: center;
 }
-/* --- rows instead of cards ---------------------------------------------------
-   Cards to browse, rows to manage: a list shows forty things at once with
-   their metadata lined up in columns, which is what you want when the job is
-   tidying rather than finding. One class on the container, every card is
-   already a flex column, so this turns it on its side rather than re-styling
-   it. */
-/* `.library-grid`'s own layout moved from CSS Grid to a multi-column
-   masonry (`column-width`, above) at some point, but this override was
-   left targeting the old `grid-template-columns` - a property that does
-   nothing on a multi-column container, so Rows view kept the ~17rem
-   masonry columns instead of becoming single-width rows. Cards ended up
-   squeezed to column-width and their text wrapped to one character per
-   line. `columns: unset` undoes the multi-column layout entirely. */
-.library-grid.library-list {
-  columns: unset;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-.library-list .library-card {
-  flex-direction: row;
-  align-items: center;
-  gap: var(--space-5);
-  padding: var(--space-3) var(--space-5);
-}
+/* Rows instead of cards (`.library-list`): library-lazy.css (L767, room under the boot cap). */
 
 /* And the card keeps those layers to itself, so an overlay at 1 and a tick
    at 2 can never rise over a sticky bar the grid scrolls under. */

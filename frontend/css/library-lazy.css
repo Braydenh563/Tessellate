@@ -15,6 +15,31 @@
 
 /* --- moved from the boot sheets (Brief 101a and UI plan 13b's L459, room under the boot CSS cap): rules whose selectors
    name only the Library bundle's own classes (in no other script, page or server file), in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
+/* --- rows instead of cards (from 00-tokens-shell.css, L767: the class is set only by library.js and boards-gallery.js, both of whose bundles load this file first) ---------------------------------------------------
+   Cards to browse, rows to manage: a list shows forty things at once with
+   their metadata lined up in columns, which is what you want when the job is
+   tidying rather than finding. One class on the container, every card is
+   already a flex column, so this turns it on its side rather than re-styling
+   it. */
+/* `.library-grid`'s own layout moved from CSS Grid to a multi-column
+   masonry (`column-width`, above) at some point, but this override was
+   left targeting the old `grid-template-columns` - a property that does
+   nothing on a multi-column container, so Rows view kept the ~17rem
+   masonry columns instead of becoming single-width rows. Cards ended up
+   squeezed to column-width and their text wrapped to one character per
+   line. `columns: unset` undoes the multi-column layout entirely. */
+.library-grid.library-list {
+  columns: unset;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.library-list .library-card {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-3) var(--space-5);
+}
 
 .library-image-reading[open] > summary::before {
   transform: rotate(90deg);
