@@ -19,12 +19,8 @@ WIRING = (JS / "settings-wiring.js").read_text(encoding="utf-8")
 
 NEW_KEYS = {
     "edit-data": "Ctrl+M",
-    "select-none": "Ctrl+Shift+A",
     "select-shapes": "Ctrl+Shift+I",
-    "select-connectors": "Ctrl+Shift+E",
     "turn-90": "Ctrl+R",
-    "auto-size": "Ctrl+Shift+Y",
-    "clear-default-style": "Ctrl+Shift+R",
     "copy-image": "Ctrl+Alt+X",
     "copy-svg": "Ctrl+Alt+Shift+X",
     "copy-size": "Alt+Shift+F",
@@ -75,19 +71,20 @@ def test_no_two_board_commands_share_a_chord() -> None:
     assert ("board", "Ctrl+Shift+U") not in seen and ("board", "Ctrl+Shift+Home") not in seen
 
 
-def test_a_chord_an_app_shortcut_also_has_is_one_the_board_takes() -> None:
+def test_no_new_board_key_takes_an_app_shortcut() -> None:
     app = set(re.findall(r'\{ keys: "([^"]+)"', WIRING))
     mine = set(NEW_KEYS.values()) | {"Ctrl+Shift+U", "Ctrl+Shift+Home", "F2"}
     shared = app & mine
-    #: Ask the agent, selection actions, record a meeting, the companion: the board has them while it has the keys.
-    assert shared == {"Ctrl+Shift+A", "Ctrl+Shift+E", "Ctrl+Shift+R", "Ctrl+Shift+Y"}, shared
+    #: Changed 2026-11-12 (orchestrator review): the board first took Ctrl+Shift+A, E, R and Y from Atlas,
+    #: selection actions, record and the companion; those stay the app's, so no new board key is an app key.
+    assert shared == set(), shared
     # Taken in the capture phase, ahead of the app's document listener, and only while a board has the keys.
     assert "wbBoardHasFocus()" in KEYS and "e.stopImmediatePropagation()" in KEYS
 
 
 def test_a_key_with_a_browser_meaning_goes_on_unless_the_command_applies() -> None:
     idle = re.search(r"const PASS_WHEN_IDLE = new Set\(\[(.*?)\]\)", KEYS, re.S).group(1)
-    for command in ("turn-90", "font-bigger", "font-smaller", "select-none", "auto-size"):
+    for command in ("turn-90", "font-bigger", "font-smaller"):
         assert f'"{command}"' in idle, command
 
 
@@ -123,3 +120,14 @@ def test_the_app_slash_steps_aside_on_a_board() -> None:
     body = BOARD[BOARD.index("function wbOwnsChord(") :]
     body = body[: body.index("async function wbFlushNudge")]
     assert 'e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) return true' in body
+
+
+def test_the_apps_own_chords_stay_the_apps() -> None:
+    """Ctrl+Shift+A (Atlas from anywhere), E (selection actions), R (record) and Y (the companion) are the
+    app's keys in the settings registry; draw.io's select none, select connectors, clear default style and
+    autosize keep no key on a board rather than take them (2026-11-12, orchestrator review)."""
+    for command in ("select-none", "select-connectors", "clear-default-style", "auto-size"):
+        assert _rows()[command]["keys"] == "", command
+    bound = re.search(r"const BOUND = \[(.*?)\];", KEYS, re.S).group(1)
+    for command in ("select-none", "select-connectors", "clear-default-style", "auto-size"):
+        assert f'"{command}"' not in bound, command

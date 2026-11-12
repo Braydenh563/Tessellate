@@ -57,19 +57,26 @@ const { check, summary } = checker();
   await ev(() => { document.activeElement?.blur?.(); });
   check("leaving the Data tab keeps the shape data", Boolean(propsBefore.props) && JSON.stringify((await sketchData(ids.s1)).props) === JSON.stringify(propsBefore.props), [propsBefore.props, (await sketchData(ids.s1)).props]);
 
-  // --- Ctrl+Shift+A: select none ---
+  // --- Select none: a palette command; Ctrl+Shift+A stays the app's (Atlas from anywhere) ---
   await sel("sketch", ids.s1);
-  await press("Control+Shift+A");
-  check("Ctrl+Shift+A selects none", (await selected()).length === 0, await selected());
+  await press("Control+Shift+A", 600);
+  check("Ctrl+Shift+A leaves the board selection alone (the app's key)", (await selected()).length === 1, await selected());
+  await press("Escape", 300);
+  await ev(() => { document.activeElement?.blur?.(); });
+  await sel("sketch", ids.s1);
+  await ev(() => wbRunCommand("select-none"));
+  await settle(300);
+  check("Select none (palette) selects none", (await selected()).length === 0, await selected());
 
   // --- Ctrl+Shift+I / E: shapes, connectors ---
   await press("Control+Shift+I");
   let picked = await selected();
   check("Ctrl+Shift+I selects the shapes and no connector", picked.length >= 3 && !picked.includes(`sketch:${ids.link}`), picked);
-  await press("Control+Shift+E");
+  await ev(() => wbRunCommand("select-connectors"));
+  await settle(300);
   picked = await selected();
-  check("Ctrl+Shift+E selects the connectors only", picked.length === 1 && picked[0] === `sketch:${ids.link}`, picked);
-  check("neither opened the app's selection actions or agent (still on the board)", await ev(() => !document.getElementById("library-view-whiteboard").classList.contains("hidden")));
+  check("Select all connectors (palette) selects the connectors only", picked.length === 1 && picked[0] === `sketch:${ids.link}`, picked);
+  check("still on the board", await ev(() => !document.getElementById("library-view-whiteboard").classList.contains("hidden")));
 
   // --- Alt+Shift+R: clear waypoints, one undo step ---
   await sel("sketch", ids.link);
@@ -109,9 +116,10 @@ const { check, summary } = checker();
   // --- Ctrl+Shift+Y: autosize ---
   await sel("sketch", ids.s3);
   const before = await box(ids.s3);
-  await press("Control+Shift+Y", 1500);
+  await ev(() => wbRunCommand("auto-size"));
+  await settle(1500);
   const after = await box(ids.s3);
-  check("Ctrl+Shift+Y grows a shape to its words", after.w > before.w || after.h > before.h, { before, after });
+  check("Grow to fit (palette) grows a shape to its words", after.w > before.w || after.h > before.h, { before, after });
 
   // --- Ctrl+Shift+R: clear default style (no hard reload, no recording) ---
   await ev(() => { document.activeElement?.blur?.(); });
@@ -119,10 +127,11 @@ const { check, summary } = checker();
   await ev(() => wbFmtState.board?.setDefault());
   await settle(700);
   const hadDefault = await ev(() => JSON.stringify(wbBoardSettings?.() || {}).includes("default"));
-  await press("Control+Shift+R", 900);
+  await ev(() => wbRunCommand("clear-default-style"));
+  await settle(900);
   const gone = await ev(() => !JSON.stringify(wbBoardSettings?.() || {}).includes("default"));
-  check("Ctrl+Shift+R clears the default style", gone, { hadDefault });
-  check("...the page did not reload and no recorder opened", (await reloads()) === 0 && (await ev(() => !document.querySelector(".recording-active, #meeting-recorder:not(.hidden)"))));
+  check("Clear the default style (palette) clears it", gone, { hadDefault });
+  check("...and the page did not reload", (await reloads()) === 0 && (await ev(() => !document.querySelector(".recording-active, #meeting-recorder:not(.hidden)"))));
 
   // --- Ctrl+Alt+X: copy as image (the call is made; the permission may be denied in the sandbox) ---
   await ev(() => { window.__img = 0; window.__orig = wbCopyAsImage; });
@@ -213,7 +222,7 @@ const { check, summary } = checker();
   await ev(() => { document.activeElement?.blur?.(); wbOpenHelpSheet(); });
   await settle(500);
   const sheet = await ev(() => document.getElementById("wb-help-sections")?.textContent || "");
-  const wanted = ["Ctrl+M", "Ctrl+Shift+A", "Ctrl+Shift+I", "Ctrl+Shift+E", "Ctrl+R", "Ctrl+Shift+Y", "Ctrl+Shift+R", "Ctrl+Alt+X", "Alt+Shift+F", "Alt+Shift+B", "Alt+Shift+R", "Ctrl+Shift+End", "Ctrl+Shift+Home", "Ctrl+Shift+U", "F2", "Ctrl+Shift+Plus", "Ctrl+arrows"];
+  const wanted = ["Ctrl+M", "Ctrl+Shift+I", "Ctrl+R", "Ctrl+Alt+X", "Alt+Shift+F", "Alt+Shift+B", "Alt+Shift+R", "Ctrl+Shift+End", "Ctrl+Shift+Home", "Ctrl+Shift+U", "F2", "Ctrl+Shift+Plus", "Ctrl+arrows"];
   const missing = wanted.filter((k) => !sheet.includes(k));
   check("the keys sheet lists all of them", missing.length === 0, missing);
 

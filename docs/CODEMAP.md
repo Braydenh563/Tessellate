@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8364, frontend ids 2772, CSS sections 524, backend routes 698, backend modules 10763, test files 2677, tests 21889, plan headings 687, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8364, frontend ids 2772, CSS sections 524, backend routes 698, backend modules 10763, test files 2677, tests 21890, plan headings 687, app scripts 29, boot scripts 38, script files 301.
 
 ## Frontend functions (8364)
 
@@ -8542,15 +8542,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `boardKey` | frontend/js/whiteboard-keys.js:170 |
-| `chordMatches` | frontend/js/whiteboard-keys.js:150 |
+| `boardKey` | frontend/js/whiteboard-keys.js:171 |
+| `chordMatches` | frontend/js/whiteboard-keys.js:151 |
 | `clearLabels` | frontend/js/whiteboard-keys.js:30 |
-| `commandFor` | frontend/js/whiteboard-keys.js:160 |
+| `commandFor` | frontend/js/whiteboard-keys.js:161 |
 | `describe` | frontend/js/whiteboard-keys.js:92 |
 | `dragDelta` | frontend/js/whiteboard-keys.js:66 |
 | `forCanvas` | frontend/js/whiteboard-keys.js:128 |
 | `go` | frontend/js/whiteboard-keys.js:17 |
-| `onKey` | frontend/js/whiteboard-keys.js:181 |
+| `onKey` | frontend/js/whiteboard-keys.js:182 |
 | `record` | frontend/js/whiteboard-keys.js:83 |
 | `repeat` | frontend/js/whiteboard-keys.js:99 |
 | `viewAt` | frontend/js/whiteboard-keys.js:11 |
@@ -27717,7 +27717,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21889)
+## Tests (21890)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30265,7 +30265,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_keep_ratio.py | 3 |
 | tests/test_wb_key_object.py | 4 |
 | tests/test_wb_keyboard_enter.py | 6 |
-| tests/test_wb_keys_gaps_1112.py | 10 |
+| tests/test_wb_keys_gaps_1112.py | 11 |
 | tests/test_wb_label2.py | 6 |
 | tests/test_wb_label_drag_1027.py | 6 |
 | tests/test_wb_label_kit.py | 11 |

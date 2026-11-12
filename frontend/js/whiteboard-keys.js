@@ -136,14 +136,15 @@
 
   //: **The keys draw.io has that the board lacked** (WHITEBOARD_PLAN section 11, 2026-11-12). Each command's
   //: own `keys` in `WB_COMMANDS` is the chord, so the palette, the menus and this reader never disagree; a
-  //: second chord for a command (`ALSO`) is listed on the help sheet. Taken in the capture phase, so the app's
-  //: Ctrl+Shift+A (ask the agent), E (selection actions), R (record) and Y (companion) step aside while a board
-  //: has the keys, as Ctrl+Shift+G already does. A key with a meaning of its own when it would do nothing
+  //: second chord for a command (`ALSO`) is listed on the help sheet. Taken in the capture phase. draw.io's
+  //: Ctrl+Shift+A, E, R and Y stay the app's (Atlas from anywhere, selection actions, record, the companion:
+  //: the settings key registry), so select none, select connectors, clear default style and autosize keep no
+  //: key, as the plan's table already said for select none (Esc). A key with a meaning of its own when it would do nothing
   //: (Ctrl+R reloads, Ctrl+Shift+Plus zooms) goes on to that meaning unless the command applies.
-  const BOUND = ["edit-data", "select-shapes", "select-connectors", "select-none", "turn-90", "auto-size", "clear-default-style",
+  const BOUND = ["edit-data", "select-shapes", "turn-90",
     "copy-image", "copy-svg", "copy-size", "paste-size", "copy-data", "paste-data", "clear-waypoints", "enter-group", "font-bigger", "font-smaller"];
   const ALSO = { ungroup: "Ctrl+Shift+U", "leave-group": "Ctrl+Shift+Home" };
-  const PASS_WHEN_IDLE = new Set(["turn-90", "auto-size", "select-none", "font-bigger", "font-smaller", "enter-group", "leave-group", "ungroup"]);
+  const PASS_WHEN_IDLE = new Set(["turn-90", "font-bigger", "font-smaller", "enter-group", "leave-group", "ungroup"]);
   //: Words in a chord that name a key's code: the rest is a letter.
   const CODES = { Plus: ["Equal", "NumpadAdd"], Minus: ["Minus", "NumpadSubtract"], Home: ["Home"], End: ["End"] };
 
