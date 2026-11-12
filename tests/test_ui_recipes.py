@@ -4920,6 +4920,56 @@ def test_an_empty_line_in_a_small_panel_is_the_recipe():
         assert part in rule, f".empty-line lost {part}"
 
 
+#: "Nothing here yet" lines the scripts build that are not a small panel's
+#: empty line: an empty state's own title, a picker's status, a canvas
+#: placeholder, an embed, a row of its own list. Only shrinks.
+JS_YET_LINES_OFF_RECIPE = {
+    "attach-to.js": "a picker's status line",
+    "documents-graph.js": "a plot's placeholder over its canvas",
+    "documents.js": "a `.notice` (no model), a recipe of its own",
+    "library.js:ocr": "the reading panel's own block (`ocr-empty-title`, `library-image-ocr-empty`)",
+    "markdown.js": "an embed's body, inside the note",
+    "note-edit-panels.js": "the related panel's whole text",
+    "settings-data.js": "a row of the recent-changes list (`li`)",
+    "timeline.js": "a day's bucket on the timeline",
+    "whiteboard-library.js": "a row of the frames list (`li`)",
+}
+
+
+def test_a_scripted_empty_line_is_the_recipe():
+    """L765 (owner decided 2026-11-12: align every empty state to the
+    recipe). Inventory: every `.empty-state` in index.html already had an
+    icon (or the emblem), an `.empty-title` and one sentence; the gap was the
+    lines the scripts build. A `p` that says a panel has nothing "yet" is
+    `p.muted.empty-line`, or an `.empty-title`, or named above. Seven were
+    a bare `p.muted` in five sizes and margins (saved looks, saved setups,
+    map groups, bookmark groups, a note's history, board snapshots, board
+    comments)."""
+    off = []
+    for path in sorted((ROOT / "frontend" / "js").glob("*.js")):
+        lines = path.read_text(encoding="utf-8").split("\n")
+        for i, line in enumerate(lines):
+            said = re.search(r"\b(\w+)\.textContent\s*=\s*[\"'`](?:No |Nothing )[^\"'`]*\byet\b", line)
+            if not said:
+                continue
+            name = said.group(1)
+            made = next((re.search(rf"\b{name}\.className\s*=\s*\"([^\"]*)\"", lines[j]) for j in range(i - 1, max(-1, i - 12), -1)
+                         if re.search(rf"\b{name}\.className\s*=", lines[j])), None)
+            classes = made.group(1).split() if made else []
+            if {"empty-line", "empty-title"} & set(classes):
+                continue
+            key = path.name if path.name in JS_YET_LINES_OFF_RECIPE else f"{path.name}:ocr" if "ocr" in " ".join(classes) else path.name
+            if key not in JS_YET_LINES_OFF_RECIPE:
+                off.append(f"{path.name}:{i + 1}")
+    assert not off, f"an empty line off the recipe (p.muted.empty-line): {off}"
+    for name in ("02-chat-graph.css", "library-lazy.css"):
+        css = (ROOT / "frontend" / "css" / name).read_text(encoding="utf-8")
+        for sel in (".graph-groups-empty", ".wb-comments-empty"):
+            for sel_text, body in _rules(css):
+                if sel in sel_text:
+                    assert "font-size" not in body and "margin" not in body, f"{sel} overrides the recipe"
+
+
 def test_a_label_on_a_settings_list_row_takes_the_ink():
     """`contrast.js` (op4-1005): "Built-in" on a Settings, Skills row read
     4.27:1 in light, `--muted` on three stacked tints (the fold, the row, the

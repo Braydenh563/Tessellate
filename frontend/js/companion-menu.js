@@ -656,7 +656,7 @@
     const list = nameMarkBuddyPresets();
     if (!list.length) {
       const empty = document.createElement("p");
-      empty.className = "muted";
+      empty.className = "muted empty-line";
       empty.textContent = "Nothing saved yet: set the companion up how you like it, then save it here.";
       box.appendChild(empty);
     }

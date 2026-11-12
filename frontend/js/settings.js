@@ -2254,7 +2254,7 @@ function renderCustomThemes() {
   box.classList.toggle("theme-presets-empty", !themes.length);
   if (!themes.length) {
     const empty = document.createElement("p");
-    empty.className = "muted";
+    empty.className = "muted empty-line";
     empty.textContent = "Nothing saved yet: set the app up how you like it, then save it here.";
     box.appendChild(empty);
     return;

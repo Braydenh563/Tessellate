@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Empty states: every scripted "nothing here yet" line in a small panel is the empty-line recipe (saved looks, saved setups, map groups, bookmark groups, note history, board snapshots, board comments), with a lint (L765).
 - Notes and Library: a note card now draws the same border, fill and corner as a Library card (L767).
 - Graph: the Arc layout opens no smaller than the mind map's readable zoom (0.45) and centres a line too long for the view (L770).
 - Dashboard: a tall map in the boards widget is cropped around its centre so its labels stay readable (L778).

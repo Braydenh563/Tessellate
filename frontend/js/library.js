@@ -11737,7 +11737,7 @@ function manageBookmarkGroups() {
     const groups = allBookmarkGroups();
     if (!groups.length) {
       const none = document.createElement("p");
-      none.className = "muted";
+      none.className = "muted empty-line";
       none.textContent = "No groups yet. Use “New group”, or type a group name when you add a bookmark.";
       list.appendChild(none);
       return;

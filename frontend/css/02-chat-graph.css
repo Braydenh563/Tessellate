@@ -5476,9 +5476,7 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
   white-space: nowrap;
 }
 .graph-groups-empty {
-  margin: 0;
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--text-sm);
+  padding: 0 var(--space-2);
 }
 .legend-group {
   font-weight: 500;

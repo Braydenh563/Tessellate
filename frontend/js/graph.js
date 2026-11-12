@@ -1645,7 +1645,7 @@ function graphRenderGroups() {
   const groups = graphGroups();
   if (!groups.length) {
     const empty = document.createElement("p");
-    empty.className = "muted graph-groups-empty";
+    empty.className = "muted empty-line graph-groups-empty";
     empty.textContent = "No groups yet. Add a search and its notes take one colour.";
     list.appendChild(empty);
     return;

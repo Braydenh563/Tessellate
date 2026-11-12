@@ -1988,15 +1988,16 @@ body.printing-doc #doc-preview p,
   border-bottom: 1px solid var(--divider);
 }
 
-.wb-comment-text,
-.wb-comments-empty {
+.wb-comment-text {
   margin: 0;
   font-size: var(--text-sm);
   overflow-wrap: anywhere;
 }
 
+/* The empty line is the recipe (`.empty-line`, L765); only its wrapping is its own. */
 .wb-comments-empty {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 /* The words go through `renderMarkdown`: its paragraphs sit tight here. */

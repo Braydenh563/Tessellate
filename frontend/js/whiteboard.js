@@ -12795,7 +12795,7 @@ function wbFillComments() {
   const thread = wbItemComments(state.kind, item);
   if (!thread.length) {
     const empty = document.createElement("p");
-    empty.className = "muted wb-comments-empty";
+    empty.className = "muted empty-line wb-comments-empty";
     empty.textContent = "No comments yet.";
     list.appendChild(empty);
     return;
