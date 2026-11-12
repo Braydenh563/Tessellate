@@ -391,7 +391,9 @@ HELP_TOPICS: list[dict] = [
             'day ("on Friday") sits on that day and says All day; one that '
             'names a time too ("on Friday at 3pm") shows that time. '
             "A daily note is an ordinary note whose title is its day, such as 2026-09-13; "
-            "the strip under the bar opens or starts one, and its head steps to the day before and after."
+            "the strip under the bar opens or starts one, and its head steps to the day before and after. "
+            "A week or more with nothing written shows a line between the dates; its What happened here? "
+            "starts a page for the first empty day."
         ),
         "badge": {"label": "Timeline", "tab": "timeline"},
     },
