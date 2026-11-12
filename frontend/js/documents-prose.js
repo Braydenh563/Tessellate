@@ -3481,6 +3481,79 @@ async function docEditorPaste(view) {
   view.dispatch(view.state.replaceSelection(text.replace(/\r\n?/g, "\n")));
 }
 
+(() => {
+  //: **Selection to a note** (INBOX 1728, the owner: "highlight sections in a document and turn them into or
+  //: append them to a new or existing note"). One body for the selection bar, the right-click menu and the
+  //: code editor. The text goes in as a quote (a fenced block in a code file) with a `[[Title]]` line under it,
+  //: the back link the notes' wiki-link resolver and the document's backlinks already read. Both ends are one
+  //: Undo step: the new note is binned, the appended note gets its old text back.
+  function docSelectionNoteBlock(text, doc) {
+    const title = String(doc?.title || "this document").replace(/[[\]|\n]/g, " ").replace(/\s+/g, " ").trim() || "this document";
+    const code = doc && doc.file_type && doc.file_type !== "md" && doc.file_type !== "txt";
+    const body = code
+      ? `\`\`\`${doc.file_type}\n${text.replace(/\s+$/, "")}\n\`\`\``
+      : text.trim().split("\n").map((line) => (line ? `> ${line}` : ">")).join("\n");
+    return `${body}\n\nFrom [[${title}]]`;
+  }
+
+  async function docSelectionToNote(surface, mode) {
+    const text = surface.value.slice(surface.selectionStart, surface.selectionEnd);
+    if (!text.trim()) return void toast("Select some text first.", "info");
+    const block = docSelectionNoteBlock(text, currentDoc);
+    try {
+      if (mode === "new") {
+        const entry = await apiJson("/entries", { method: "POST", body: JSON.stringify({ content: block, defer_filing: true }) });
+        await refreshEntries([entry.id]);
+        const action = pushEntryCreateUndo(entry, "Made a note from a selection");
+        toastAction("Made a note from the selection.", "Undo", async () => {
+          settleUndoFromToast(action);
+          await action.undo();
+        }, { also: { label: "Open", run: () => flashEntry(entry.id) } });
+        return;
+      }
+      if (typeof pickLibraryItemDialog !== "function") return;
+      const chosen = await pickLibraryItemDialog("Add to which note?", { sources: ["note"] });
+      if (!chosen) return;
+      const whole = await fullEntry(chosen.id);
+      const before = { content: whole.content };
+      const after = { content: `${whole.content.replace(/\s+$/, "")}\n\n${block}` };
+      await apiJson(`/entries/${chosen.id}`, { method: "PUT", body: JSON.stringify(after) });
+      const put = (body) => async () => {
+        await api(`/entries/${chosen.id}`, { method: "PUT", body: JSON.stringify(body) });
+        await refreshEntries([chosen.id]);
+      };
+      const action = pushUndo("Added a selection to a note", put(before), put(after));
+      await refreshEntries([chosen.id]);
+      toastAction(`Added to \u201c${chosen.label}\u201d.`, "Undo", async () => {
+        settleUndoFromToast(action);
+        await action.undo();
+      }, { also: { label: "Open", run: () => flashEntry(chosen.id) } });
+    } catch (error) {
+      toast(error.message || "Couldn't save that to a note.", true);
+    }
+  }
+
+  function docSelectionNoteItems(surface) {
+    const none = surface.selectionStart === surface.selectionEnd;
+    const group = "Selection";
+    return [
+      { label: "New note from selection", group, disabled: none, title: "Start a note from the selected text, linked back here", run: () => docSelectionToNote(surface, "new") },
+      { label: "Add to note\u2026", group, disabled: none, title: "Append the selected text to a note you choose, linked back here", run: () => docSelectionToNote(surface, "add") },
+    ];
+  }
+
+  //: Under the selection bar's note button: a snapshot of the selection, because the menu takes focus.
+  function docSelectionNoteMenu(textarea, button) {
+    const frozen = { value: textarea.value, selectionStart: textarea.selectionStart, selectionEnd: textarea.selectionEnd };
+    const at = button.getBoundingClientRect();
+    openMenuAtPoint(docSelectionNoteItems(frozen), "Selection to a note", at.left, at.bottom);
+  }
+
+  //: The block's whole surface (ranked row 37a): what the bar, the menu and the code editor call.
+  Object.assign(window, { docSelectionNoteItems, docSelectionNoteMenu });
+
+})();
+
 function docEditorMenuItems(view, x, y) {
   const [cut, copy] = docClipboardMenuItems(view);
   return [
@@ -3497,6 +3570,7 @@ function docEditorMenuItems(view, x, y) {
         run: () => docPasteSpecial(id),
       })),
     },
+    ...docSelectionNoteItems(docSurface()),
     { label: "Turn into", group: "Block", title: "Change the block to a heading, list, quote or code", run: () => docTurnIntoMenu("doc-content", x, y) },
     {
       label: "Select all",

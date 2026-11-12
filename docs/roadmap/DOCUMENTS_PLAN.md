@@ -309,7 +309,7 @@ Moved to HISTORY.md ("From DOCUMENTS_PLAN.md Phase 3", two entries) on
 - Owner, 2026-11-10, diagram builder ("have you integrated the ai into the diagram builder yet??"): built 2026-11-10 (dgai-1110). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (dgai-1110: the AI in the diagram builder)".
 - Diagram AI left (dgai-1110 remaining list; w17-1110 built the phone Ask button and the Versions grouping): mind maps, timelines and sequence diagrams get Versions but no Ask or Suggestions; real-model output and Ask inside the dialog (a Live figure, a board diagram) unverified.
 - INBOX 1731 (spelling second opinion): built 2026-11-10 (spell-1110), (a) to (e). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (spell-1110: the spelling second opinion)". (f) LanguageTool as an optional download: built 2026-11-10 (lag1726-1110), CHANGELOG line; the real program is unverified.
-- INBOX 1728: **Owner, 2026-11-10, documents, verbatim (screenshot):** "I want to be able to highlight sections in a document and turn them into or append them to a new or existing note". Recommendation, taken: two items in the document selection menu and right-click menu, "New note from selection" (the note links back to the document) and "Add to note..." (the note finder, appends the text with a back link); the same in the code editor. Placed: the documents batch of the work order.
+- INBOX 1728 (selection to a note): built 2026-11-12 (notesel-1112). Moved to HISTORY.md "Moved from the plans, 2026-11-12 (documents-plan: selection to a note, INBOX 1728)".
 
 ## Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder)
 

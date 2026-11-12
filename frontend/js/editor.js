@@ -1987,6 +1987,8 @@ const SELECTION_BAR_ACTIONS = [
   { md: "h2", label: "ph:text-h", title: "Heading" },
   { md: "quote", label: "ph:quotes", title: "Quote" },
   { turn: true, label: "ph:swap", title: "Turn into" },
+  //: INBOX 1728: documents only (hidden elsewhere in `selectionBarShow`); opens the two note rows.
+  { note: true, label: "ph:note-pencil", title: "Selection to a note" },
   //: **Not a formatting action, and it says so with a rule beside it.**
   //: REDESIGN.md §R7.1 item 1, quoted from the request: *"able to highlight
   //: text and say something in the chat and the agent gets the context of
@@ -2037,6 +2039,7 @@ function selectionBarElement() {
     }
     if (action.md) button.dataset.md = action.md;
     if (action.turn) button.dataset.turn = "1";
+    if (action.note) button.dataset.note = "1";
     button.title = action.title;
     button.setAttribute("aria-label", action.title);
     setLabel(button, action.label);
@@ -2049,6 +2052,10 @@ function selectionBarElement() {
       if (!textarea) return;
       if (action.turn) {
         if (typeof docTurnIntoMenu === "function") docTurnIntoMenu(textarea.id, button);
+        return;
+      }
+      if (action.note) {
+        docSelectionNoteMenu(textarea, button);
         return;
       }
       if (action.ask) {
@@ -2102,6 +2109,8 @@ function selectionBarShow(textarea) {
   //: rewrite in place; the formatting eight and their rule are hidden.
   const code = editorSurfaceKind(textarea) === "document" && editorDocIsCode();
   for (const button of bar.querySelectorAll("[data-md], [data-turn], .selection-bar-rule")) button.hidden = code;
+  const note = bar.querySelector("[data-note]");
+  if (note) note.hidden = editorSurfaceKind(textarea) !== "document" || typeof docSelectionNoteItems !== "function";
   const turn = bar.querySelector("[data-turn]");
   if (turn && !code) turn.hidden = typeof docTurnIntoMenu !== "function";
   //: **Never a second copy of the phone's formatting bar.** Below 600 the

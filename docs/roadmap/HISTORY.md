@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (documents-plan: selection to a note, INBOX 1728)
+
+- INBOX 1728: **Owner, 2026-11-10, documents, verbatim (screenshot):** "I want to be able to highlight sections in a document and turn them into or append them to a new or existing note". Built 2026-11-12 (notesel-1112): "New note from selection" and "Add to note…" (the note finder, `pickLibraryItemDialog` on notes) in the selection bar (a note button, documents and code files) and the document's right-click menu (a code file's menu opens over a selection only); the text is a quote, or a fenced block in a code file, with a `From [[Title]]` back link; one Undo step on the toast and the stack (`docSelectionToNote`, documents-prose.js). Measured at 1440x900 (`scratchpad` notesel run): bar button 28x28 in the window, both rows in the bar menu and the right-click menu, a note made with the quote and link, an existing note appended and Undo restoring its text exactly; Guide topic `documents-to-note`. Not verified: a phone-width bar (the button is the 11th, hidden below 600 as the bar already is for documents), other code languages.
+
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
 - **Built, Sh1 P4:** the reminder edit form's time, priority, repeat and alert share one height (32px, equal top); `tests/test_reminder_edit_form_alert.py` holds the shared-height loop (cb83f2ed3).
