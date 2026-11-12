@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
-| ui-modernisation | 96 | 109 | 4 | 0 | 17 | 209 |
+| ui-modernisation | 96 | 99 | 4 | 0 | 17 | 199 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 699 | 157 | 3 | 195 | 1409 |
+| all | 553 | 689 | 157 | 3 | 195 | 1399 |
 
 ## graph
 
@@ -479,8 +479,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L380** `ui-modernisation` open, S: Fix capture box moving 2.4px/1.6px on first click. From OPEN.md:1452. Evidence: No fix test found (grep 2.4px hits only an unrelated test_reply_cards note)
 - [ ] **L381** `ui-modernisation` open, S: Pixel-sample the 6 of 31 topic elements culled at 390. From OPEN.md:3903. Evidence: Verification gap: contrast measured from computed styles only; culled topics not measured. Low risk.
-- [ ] **L382** `ui-modernisation` open, S: Fix help popovers closing at once (exit transition cancelled, 1419). From a30c-1102.md Still open small. Evidence: No fix commit found; menus.js:302 handles only graph exit
-- [ ] **L383** `ui-modernisation` open, S: Replace bespoke #search-help and #capture-help toggles (1123). From a30c-1102.md Still open small. Evidence: reveal-targets.js:265 still clicks #search-help directly
 - [ ] **L384** `ui-modernisation` open, S: Fix Ask head model picker sitting on its own short line at 390. From OPEN.md:835; OPEN.md:3516. Evidence: Pre-existing layout, no fix found; cosmetic
 - [ ] **L385** `ui-modernisation` open, S: Give #chat-results second half a head with actions or drop the panel-head. From OPEN.md:953. Evidence: No change found; index.html:2339 #chat-results head unchanged; no-op until a head wants a control
 - [ ] **L386** `ui-modernisation` open, S: Share one recipe between web link cards in chat/web reader and markdown.js linkCard. From OPEN.md:988. Evidence: markdown.js linkCard still separate; no recipe lint found in test_ui_recipes
@@ -511,7 +509,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L411** `ui-modernisation` open, S: Check the Settings voice row in dark theme (only light checked). From OPEN.md:833; OPEN.md:3513. Evidence: Only light checked per row; THEME=dark run not recorded
 - [ ] **L412** `ui-modernisation` open, S: Re-measure Logs More menu .dock-menu-check rows and board Start/End menus against other menu items. From OPEN.md:1207; OPEN.md:2523. Evidence: 07-whiteboard-misc.css:9720 .dock-menu-check now token padding; re-measure of Logs menu and board menus not shown.
 - [ ] **L413** `ui-modernisation` open, S: Measure the 390 px layout of Tidy Patterns rows and the Chat pattern line. From OPEN.md:991. Evidence: Only 1440 measured; no 390 measure recorded
-- [ ] **L414** `ui-modernisation` open, S: Cross-fade the sub-tab panel (showNotesSection must set a switch class). From OPEN.md:1823; OPEN.md:3469. Evidence: Needs a class set by the switch; no commit found
 - [ ] **L415** `ui-modernisation` open, S: Measure the status ring under 'auto' motion. From OPEN.md:1758. Evidence: No later measurement found; needs a sweep of the status ring in auto motion
 - [ ] **L416** `ui-modernisation` open, S: Stop the Bin row's long label wrapping when its reset appears; add per-row marker. From OPEN.md:1761; OPEN.md:2592. Evidence: No change found in settings rows for the bin reset label; unverified fix absent
 - [ ] **L417** `ui-modernisation` open, S: Background jobs Report button waits for boot room; make Activity panel opaque at 390. From OPEN.md:1809; OPEN.md:2686. Evidence: No change found; row stands (unverified fix absent)
@@ -519,8 +516,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L419** `ui-modernisation` open, S: Fix focus ring clipping: header buttons, Library sub-tab, chat composer at 390. From OPEN.md:2546. Evidence: Mechanical clipping open per row
 - [ ] **L420** `ui-modernisation` open, S: Make skeleton shimmer honour OS reduced-motion. From OPEN.md:2668. Evidence: 02-chat-graph.css:2080 gates on data-progress-motion=always; verified open
 - [ ] **L421** `ui-modernisation` open, S: Restyle sidebar Comments, Linked from and Notes rows. From OPEN.md:2694. Evidence: Verified open 2026-11-10
-- [ ] **L422** `ui-modernisation` open, S: Settings row focus should land on the control, not label/head. From OPEN.md:2791. Evidence: settings-find.js openSettingRow; verified open
-- [ ] **L423** `ui-modernisation` open, S: Let help popovers play an exit transition instead of closing at once. From OPEN.md:3468. Evidence: menus.js closeHelpPopovers removes panel on close; no exit transition path found.
 - [ ] **L424** `ui-modernisation` open, S: Restore focus ring on Chat button.active. From OPEN.md:3809. Evidence: Bug recorded; later ring fixes (d8cee9ffa) cover other rows only
 - [ ] **L425** `ui-modernisation` open, S: Verify CSS blank-line tests, picker and 390 layout. From OPEN.md:3810. Evidence: No recorded follow-up sweep
 - [ ] **L426** `ui-modernisation` open, S: Fix rail-dot alignment at 390. From OPEN.md:3580. Evidence: No fix commit found; needs a 390 measurement
@@ -531,7 +526,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L431** `ui-modernisation` open, S: Measure findings 5-12 in dark, 390 on a real device and the one-column gap at 900. From a30k-1103.md Left. Evidence: Source says unmeasured; no later sweep record found
 - [ ] **L432** `ui-modernisation` open, S: Fix constellation yellow stars contrast (~2.1:1 in light) and notes rows/cards toggle 28x24. From OPEN.md:1337; OPEN.md:2540. Evidence: No contrast fix located in graph-canvas.js; .notes-view-toggle at 03-dashboard-widgets.css:466 not rechecked.
 - [ ] **L433** `ui-modernisation` open, S: Fix .dash-find glyph-only hover and 28px meta button in 24px line. From OPEN.md:1807; OPEN.md:2669. Evidence: 07-whiteboard-misc.css:11224 .dash-find unchanged; meta button size not shown fixed
-- [ ] **L434** `ui-modernisation` open, S: Extend close-other-menus fix from graph head buttons app-wide. From OPEN.md:2661. Evidence: App-wide needs ~98 bytes script room; verified open
 - [ ] **L435** `ui-modernisation` open, S: Crossfade dashboard constellation on theme change; fix chat dock button radius. From SESSION_BRIEFS.md:285; e19-1110.md True. Evidence: dash-art.js:131 redraws in one frame, no crossfade
 - [ ] **L436** `ui-modernisation` open, S: Ring sweep flags fixed-sheet control at viewport edge as scroll clip. From OPEN.md:740. Evidence: Sweep-lint false positive for phone Writing room textarea; no exemption found
 - [ ] **L437** `ui-modernisation` open, S: Ring sweep skips end-of-scroller controls; fixed-height text cut unseen. From OPEN.md:1946; OPEN.md:3505. Evidence: Sweep limitation, no change recorded
@@ -544,13 +538,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L444** `ui-modernisation` open, M: Align opened row first line with the chevron (2.6px offset, use 1lh line box). From OPEN.md:1951; OPEN.md:3546. Evidence: 2.6px offset, no fix recorded
 - [ ] **L445** `ui-modernisation` open, M: Fix entry-meta.note-meta and entry-list li overflow at 320/390. From OPEN.md:3698. Evidence: 08-consistency.css:2724 .entry-meta.note-meta; no fix commit found
 - [ ] **L446** `ui-modernisation` open, M: Drive the phone More-sheet paths (agent, Guide, timeline, reminders) at 390. From OPEN.md:746; OPEN.md:3573. Evidence: Touch phone walkthrough; headless drive left toggleAgentPalette hidden at 390
-- [ ] **L447** `ui-modernisation` open, M: Fix Settings scrollToId and notice go:{settings,focus} not scrolling to the control at 390. From OPEN.md:749; OPEN.md:3796. Evidence: Row measured y 1527 of 900 at 390; no fix commit found
 - [ ] **L448** `ui-modernisation` open, M: Rework Band 3 (600-820) header, two rows and 128px at 819. From OPEN.md:1451. Evidence: No change to the band design found in CHANGELOG/HISTORY; design call recorded in row
 - [ ] **L449** `ui-modernisation` open, M: Give the 110 controls with no keyboard focus change a visible focus state (a11yname.js, status-item, ghost.small). From OPEN.md:1815; OPEN.md:1833; OPEN.md:2917. Evidence: No HISTORY/test closing it found by grep; repeats row 1833 (1430). Not re-run
 - [ ] **L450** `ui-modernisation` open, M: Density decision 1: apply panel padding 12 and gutter 8 and fix Notes dock wrap at 1440. From OPEN.md:1845; OPEN.md:3806. Evidence: Design decision pending; Notes dock wrap tied to row 1830
 - [ ] **L451** `ui-modernisation` open, M: Reduce the first-run queue (welcome, recovery key, updates) from 3 acts before dashboard. From OPEN.md:1805; OPEN.md:2600. Evidence: No change found to the first-run queue; row stands
-- [ ] **L452** `ui-modernisation` open, M: Fix smallButton naming worded buttons by tooltip (WCAG 2.5.3). From OPEN.md:2598. Evidence: app.js smallButton comment still says only first-steps fixed
-- [ ] **L453** `ui-modernisation` open, M: Mount confirmDialog/promptDialog above modals instead of beneath. From OPEN.md:2758. Evidence: Verified open; app.js at gzip ratchet
 - [ ] **L454** `ui-modernisation` open, M: Make the eight dialogs bottom sheets at 390 (Brief 59). From OPEN.md:2918. Evidence: Brief 59; no bottom-sheet rule found for those dialogs in 10-responsive.css
 - [ ] **L455** `ui-modernisation` open, M: Brief 56 measures: 1024/820, dark counts, chat, doc AI panel. From OPEN.md:2920. Evidence: Measures not taken; sweep work
 - [ ] **L456** `ui-modernisation` open, M: Density decision 7: chat bubble metadata and library cards. From OPEN.md:3805. Evidence: Only note cards changed
@@ -581,7 +572,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-10** `ui-modernisation` open, M: Draw the missing desk frames: hang by feet, sloth, chair, lean, tail-curl pot. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. compalive-1109.md (git history) still lists missing desk frames with no LEDGER row: hang_by_feet, sloth, chair, lean, back_float, the pot in the tail curl, and a card box for the card nap. dangle and kick were built in W31.
 - [ ] **L-ui-modernisation-11** `ui-modernisation` open, S: Bring desk note and search reactions to app parity: glasses, shy hands, bubble. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. The events feed is built, but compalive-1109 says the desk reactions fall short of the app: no reading glasses, no hands over the eyes, no remark bubble. There is no row.
 - [ ] **L-ui-modernisation-12** `ui-modernisation` open, S: Close the px spacing-literal escape in test_style_scale. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1004. Evidence: Open line in the plan's prose a session could miss. A 13.1 table judgement with no numbered decision, so the 13a list does not carry it.
-- [ ] **L-ui-modernisation-13** `ui-modernisation` open, S: Label note card task checkboxes and make the heatmap scroller focusable. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1007. Evidence: Open line in the plan's prose a session could miss. Axe findings in the 13.1 table with no row.
 - [ ] **L-ui-modernisation-14** `ui-modernisation` open, M: Bring hidden key handlers into the shortcut table and palette. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1008. Evidence: Open line in the plan's prose a session could miss. A 13.1 recognition-over-recall finding with no decision or row.
 - [ ] **L-ui-modernisation-15** `ui-modernisation` open, S: Fold the five literal 44px targets into --target-min. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1011. Evidence: Open line in the plan's prose a session could miss. A 13.1 Fitts row judgement with no decision number.
 - [ ] **L-ui-modernisation-16** `ui-modernisation` open, M: Show query help in the notes search box and fold editor bars into two. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1025. Evidence: Open line in the plan's prose a session could miss. 13c lists only some 13.2 rows. The Notes list query help and the editor's four-surfaces-to-two are not in it.
