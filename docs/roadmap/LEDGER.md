@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 25 | 3 | 0 | 11 | 58 |
+| whiteboard | 30 | 23 | 3 | 0 | 11 | 56 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
+| mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 687 | 156 | 3 | 195 | 1396 |
+| all | 553 | 686 | 156 | 3 | 195 | 1395 |
 
 ## graph
 
@@ -323,7 +323,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Built here: wbExportBoard({ branch: true }) titles the dialog "Export this branch" (tests/test_wb_export_pdf.py, wbexport-pdf.js). Left: whiteboard-map.js:5072 in wbMapExportBranch must call wbExportBoard({ branch: true }) (file owned by another session). The mmd2 sweeps do not touch export; wbexport-pdf.js covers the dialog.
 - [ ] **L269** `whiteboard` open, M: Cut board toolbar tab stops from 33 with a roving tabindex. From OPEN.md:4266. Evidence: Ledger row 261 marked new, M; no roving-tabindex fix found.
 - [ ] **L271** `whiteboard` open, M: Unify the four overlapping drag and pointer-capture mechanisms in whiteboard.js. From OPEN.md:4442. Evidence: whiteboard.js still has mixed pointer capture and mouse handlers (27 matches); not unified
-- [ ] **L275** `whiteboard` open, M: Build Illustrator-style linked symbols and Photoshop-style topic effects. From OPEN.md:1240. Evidence: library_ref only deleted on copy (whiteboard-library.js:1062-1224); no linked symbol feature.
 - [ ] **L277** `whiteboard` open, M: Stop free lines and arrows drawing the shaft through hollow ends. From OPEN.md:1675; OPEN.md:2607. Evidence: whiteboard.js:2358-2365 wbHollowInset trims links only; free lines re-read path as endpoints (row's reason stands)
 - [ ] **L278** `whiteboard` open, M: Audit board frames/present flow, connector re-routing, touch eraser, image paste limits, PDF export. From audit-1031-board.md. Evidence: No later board audit found
 - [ ] **L279** `whiteboard` open, M: Close or record U19 U20 U23 U30 U31 U36 U37 U39 U41 U45 U49 across map, board, documents, code editor. From bs-1111.md. Evidence: Other agents' surfaces; no closing record found
@@ -336,7 +335,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-2** `whiteboard` open, M: Add a resizable PDF and document viewer object to the whiteboard. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:121. Evidence: BACKLOG claims it went to WHITEBOARD_PLAN, but no whiteboard plan item, LEDGER row or code exists for a resizable PDF or document viewer on the board
 - [ ] **L-whiteboard-3** `whiteboard` open, M: Turn rough ink strokes into clean shapes. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:293. Evidence: there is no shape recognition code in frontend/js; it exists only in this audit file, which BACKLOG points at only in general terms
 - [ ] **L-whiteboard-4** `whiteboard` open, M: Replay a board's ink strokes in drawing order. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:296. Evidence: no stroke replay exists in the code and no plan or LEDGER row covers it
-- [ ] **L-whiteboard-9** `whiteboard` open, M: Update a placed library copy from its source. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:634. Evidence: library_ref is stored on placed items, but no update command exists; untracked
 - [ ] **L-whiteboard-12** `whiteboard` open, L: Bind board cards to note properties through their frame. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:768. Evidence: no shape that stays bound to live notebook content exists; lines 768 to 772 are untracked
 - [ ] **L-whiteboard-15** `whiteboard` open, S: Measure board idle and drag cost at 500 objects and with the companion on. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1405. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census leaves two measurements unmeasured, with no row.
 - [ ] **L-whiteboard-16** `whiteboard` open, S: Run the blind-tester timing for transparency and hex entry. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1583. Evidence: Open line in the plan's prose a session could miss. INBOX 1685's acceptance (find transparency and enter a hex in under 20 s) was never run.
@@ -459,6 +457,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-mindmap-7** `mindmap` open, S: Make Web link insert inline syntax distinct from Link card. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1526. Evidence: Open line in the plan's prose a session could miss. The slash menu's Link card and Web link render the same. The inline-syntax recommendation waits on the owner.
 - [ ] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row.
 - [ ] **L-mindmap-9** `mindmap` open, S: Measure idle and drag cost on a map of hundreds of nodes. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1751. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census gap, with no row.
+- [ ] **L-mindmap-11** `mindmap` open, M: Photoshop-style topic effects on a mind map (shadow, glow, bevel as non-destructive effects on a topic). From L275 split, wblibrary3 2026-11-12.
 
 ## ui-modernisation
 

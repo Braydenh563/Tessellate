@@ -60,6 +60,9 @@ const wbCommandNeeds = {
   lessLevel: () => wbIsMap() && wbMapBuild.ring(wbMapIndex(), wbMapHidden(wbMapIndex()), -1).ids.length > 0,
   clone: () => Boolean(wbCloneSource()),
   selection: () => wbCommandSelectionCount() > 0,
+  //: A selected part that was placed from the library, and one placed linked (library-more.js `copies`).
+  libraryCopy: () => wbCommandSelectionCount() > 0 && wbFmtState.libraryMore?.copies.collect(wbFmtState.libraryMore.copies.selectionRows()).length > 0,
+  libraryLinked: () => wbCommandSelectionCount() > 0 && wbFmtState.libraryMore?.copies.collect(wbFmtState.libraryMore.copies.selectionRows()).some((c) => c.ref.linked),
   tree: () => wbTidyEdges(wbSelectionEntries()).length > 0,
   swappable: () => Boolean(wbSwapTarget()),
   parallel: () => Boolean(wbFmtState.arrangeMore?.canSpread()),
@@ -184,6 +187,8 @@ const WB_COMMANDS = [
   // The library (decision 25, whiteboard-library.js)
   { id: "open-library", group: "Library", icon: "ph:shapes", label: "Open the library", menu: "Shapes, icons and frames…", keys: "", surface: "both", run: () => wbOpenSidebar("library") },
   { id: "save-selection", group: "Library", icon: "ph:bookmark-simple", label: "Save to the library…", keys: "Ctrl+Shift+S", surface: "board", needs: "selection", run: () => wbSaveSelectionToLibrary() },
+  { id: "update-from-library", group: "Library", icon: "ph:arrows-clockwise", label: "Update from the library", keys: "", surface: "board", needs: "libraryCopy", run: () => wbFmtState.libraryMore.copies.update() },
+  { id: "unlink-library", group: "Library", icon: "ph:link-break", label: "Unlink from the library", keys: "", surface: "board", needs: "libraryLinked", run: () => wbFmtState.libraryMore.copies.unlink() },
   { id: "save-branch", group: "Library", icon: "ph:tree-structure", label: "Save this branch to the library…", keys: "Ctrl+Shift+S", surface: "map", needs: "topic", run: () => wbSaveBranchToLibrary() },
   { id: "fold-level-1", group: "View", icon: "ph:list-dashes", label: "Show the trunks only", keys: "Alt+1", surface: "map", run: () => wbMapFoldToLevel(1) },
   { id: "fold-level-2", group: "View", icon: "ph:list-dashes", label: "Show two levels", keys: "Alt+2", surface: "map", run: () => wbMapFoldToLevel(2) },
