@@ -12,13 +12,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 4 | 4 | 0 | 5 | 41 |
+| mindmap | 33 | 3 | 5 | 0 | 5 | 41 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 675 | 156 | 2 | 195 | 1384 |
-| all | 553 | 675 | 156 | 2 | 195 | 1384 |
+| all | 553 | 674 | 157 | 2 | 195 | 1384 |
+| all | 553 | 674 | 157 | 2 | 195 | 1384 |
 
 ## graph
 
@@ -441,7 +441,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## mindmap
 
-- [ ] **L374** `mindmap` open, L: Make picture node resize to its picture; fix mindmap3 timeout and AI half; curve probe at 390. From OPEN.md:1112; OPEN.md:3041. Evidence: mindmapimage.js removed 2026-10-12; picture-fit not confirmed; sweep script gone
 - [ ] **L376** `mindmap` partly, S: Close mind map gaps: structure per branch, labels under topic, .xmind export, stickers. From OPEN.md:1109. Evidence: Callouts whiteboard-map.js:1803, votes :8537, .xmind import wb_import.py:356; .xmind export not found
 - [ ] **L377** `mindmap` partly, M: Drive the undriven checks: dark hand-drawn look, tables, Data tab, XMind, multi-page draw.io, callout export (touch double-tap needs hardware). From OPEN.md:589; OPEN.md:2562. Evidence: Dark theme/tables drivable in Playwright; touch double-tap needs touch hardware
 - [ ] **L378** `mindmap` partly, M: Verify remaining map render and persistence leftovers. From OPEN.md:1935. Evidence: wbMapNodeSize row closed per HISTORY; rest of list not individually verified
@@ -449,6 +448,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row.
 - [ ] **L-mindmap-13** `mindmap` open, M: Cut the style recalcs behind press-to-editable at 390 (6x throttle 135 ms toward 50). From L370 measurement 2026-11-12. Evidence: Tab to focus at 390, 6x CPU: 130-146 ms; 25-30 style recalcs per Tab (190 ms at 6x). Needs a Chrome trace with invalidation tracking (scratchpad/ui-sweeps/f2-trace.js INV=1) to name the invalidating class or property, then cut recalcs.
 - [ ] **L-mindmap-14** `mindmap` open, M: Swap an icon sticker for another icon in every copy: an icon is a scaled path per copy, so Swap everywhere handles emoji only; recolour and opacity already follow by Match all copies. From MINDMAP_PLAN 14.4 linked stickers. Evidence: frontend/js/whiteboard-map-more.js wbStickerSwap
+- [ ] **L-mindmap-15** `mindmap` partly, S: Finish the 390 px runs of mindmapcurve.js (dblclick check) and mindmap3.js (crash). From L374, mapverify-1112. Evidence: mindmapcurve.js at 390: 13 of 14 (was 11); the double-click-to-straighten check still fails after a drag: the dot's box at (176,282) reads opacity 1, pointer-events auto, yet elementFromPoint there is the canvas container. mindmap3.js at VIEWPORT=390x844 crashes on a page.click timeout (1440 is 57 of 57).
 
 ## ui-modernisation
 

@@ -55,8 +55,8 @@ const READ = `(childId) => {
     const cy = +grip.getAttribute("cy");
     const total = hit.getTotalLength();
     let best = Infinity;
-    for (let i = 0; i <= 600; i++) {
-      const p = hit.getPointAtLength((total * i) / 600);
+    for (let i = 0; i <= 4000; i++) {
+      const p = hit.getPointAtLength((total * i) / 4000);
       best = Math.min(best, Math.hypot(p.x - cx, p.y - cy));
     }
     onLine = +best.toFixed(3);
@@ -86,8 +86,8 @@ const READ = `(childId) => {
     plusGap = +Math.hypot(px - +grip.getAttribute("cx"), py - +grip.getAttribute("cy")).toFixed(2);
     const total = hit.getTotalLength();
     let best = Infinity;
-    for (let i = 0; i <= 600; i++) {
-      const q = hit.getPointAtLength((total * i) / 600);
+    for (let i = 0; i <= 4000; i++) {
+      const q = hit.getPointAtLength((total * i) / 4000);
       best = Math.min(best, Math.hypot(q.x - px, q.y - py));
     }
     plusOffLine = +best.toFixed(3);
@@ -108,7 +108,7 @@ const READ = `(childId) => {
     box: box ? { w: +box.width.toFixed(1), h: +box.height.toFixed(1), x: +(box.x + box.width / 2).toFixed(1), y: +(box.y + box.height / 2).toFixed(1) } : null,
     plusGap,
     plusOffLine,
-    quarterAt: along(0.2),
+    quarterAt: along(window.innerWidth < 700 ? 0.4 : 0.2), // zoomed out, 0.2 along sits under the trunk topic
     onTop: box ? (() => {
       const top = document.elementFromPoint(box.x, box.y);
       return top ? top.tagName + "." + (top.getAttribute("class") || "").split(" ")[0] : null;
@@ -171,6 +171,12 @@ const READ = `(childId) => {
     return { board: board.id, root: root.id, curved: curved.id, elbow: elbow.id, straight: straight.id };
   });
 
+  //: At a phone's width the 800-unit map is wider than the screen, so its handles sat off screen (the old 11 of 14).
+  //: Fitting the map to the view puts every handle on screen; drags are in client pixels so they still reshape.
+  if (VIEWPORT.width < 700) {
+    await page.evaluate(() => window.wbZoomToFit && window.wbZoomToFit({ animate: false }));
+    await page.waitForTimeout(700);
+  }
   const read = (id) => page.evaluate(`(${READ})(${id})`);
   const select = async (id) => {
     await page.click(`.wb-object[data-id="${id}"] .wb-map-text`, { position: { x: 8, y: 8 } });
@@ -189,12 +195,15 @@ const READ = `(childId) => {
     const at = await read(id);
     await page.mouse.move(at.quarterAt.x, at.quarterAt.y);
     await page.waitForTimeout(150);
+    //: What pointing at the line alone does, before the pointer goes on to the dot: zoomed out (a phone) the mid-line
+    //: `+` is 24px wide and covers the dot, so the pointer leaves the line on the way and only a selection reaches it.
+    const byLine = await read(id);
     await page.mouse.move(at.box.x, at.box.y);
     await page.waitForTimeout(150);
     // Read again, with the pointer on it: the first reading is what the line
     // looks like at rest, and the point of this helper is what it looks like
     // once it has been pointed at.
-    return read(id);
+    return { ...(await read(id)), byLine };
   };
   const dragHandle = async (id, dx, dy, { selected = false } = {}) => {
     const before = selected ? await read(id) : await grab(id);
@@ -235,7 +244,8 @@ const READ = `(childId) => {
   }, built);
 
   // And back to the line it was, from the handle's own double-click.
-  const gripAt = await grab(built.curved);
+  //: Zoomed out the `+` covers the dot unless the topic is selected (which stands it aside), so a phone selects first.
+  const gripAt = VIEWPORT.width < 700 ? (await select(built.curved), await read(built.curved)) : await grab(built.curved);
   await page.mouse.dblclick(gripAt.box.x, gripAt.box.y);
   await page.waitForTimeout(900);
   const straightened = await read(built.curved);
@@ -246,7 +256,7 @@ const READ = `(childId) => {
     resting.opacity === 0 && resting.pointer === "none" && resting.cx !== null,
     `opacity ${resting.opacity}, pointer-events ${resting.pointer}, at ${resting.cx},${resting.cy}`);
   check("pointing at the line reveals it, with nothing selected",
-    hovered.opacity === 1 && hovered.pointer === "auto" && hovered.box.w > 8,
+    hovered.byLine.opacity === 1 && hovered.byLine.pointer === "auto" && hovered.box.w > 8,
     `opacity ${hovered.opacity}, ${hovered.box.w}x${hovered.box.h}px at ${hovered.box.x},${hovered.box.y}, top element ${hovered.onTop}`);
   check("selecting the topic reveals it too",
     woken.opacity === 1 && woken.pointer === "auto",

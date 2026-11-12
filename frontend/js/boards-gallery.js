@@ -72,6 +72,10 @@ window.redrawLibraryBoardsGallery = redrawLibraryBoardsGallery;
 //: the board code is asked for in idle time, once they are up, so it never sits ahead of the first paint and a
 //: card or New board finds it in (INBOX 1772). A property of the function, not a new name in the shared scope.
 renderLibraryBoardsGallery.show = async function showBoardsGallery() {
+  //: A board opened by code presses this sub-tab itself (`openWhiteboardBoard`), and this runs once the gallery file
+  //: has loaded, which can be after the canvas is up: the landing then hid the map the import had just opened.
+  const opening = window.openWhiteboardBoard?.at;
+  if (opening && performance.now() - opening < 5000 && !$("wb-canvas-view")?.classList.contains("hidden")) return;
   if (window.initWhiteboard) return wbShowBoardsLanding();
   await renderLibraryBoardsGallery();
   const load = () => ensureModule("boards");

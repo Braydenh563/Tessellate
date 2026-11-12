@@ -25486,6 +25486,7 @@ async function openWhiteboardBoard(boardId, opts = null) {
   wbRememberBoardView();
   //: `stay`: the caller has put `#library-view-whiteboard` where the board is wanted (a document's board panel, documents-board.js).
   if (!opts?.stay) {
+    openWhiteboardBoard.at = performance.now(); // read by boards-gallery.js `show`: its landing must not hide this board
     switchTab("library");
     document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
   }
