@@ -227,7 +227,51 @@
     return out.slice(0, 20);
   }
 
-  const diagramAiPure = { find: dgaFind, apply: dgaApply, diff: dgaDiff, marked: dgaMarked, say: dgaSay, name: dgaName, lint: dgaLint, MAX_OPS: DGA_MAX_OPS };
+  //: Suggestions for the other kinds (L-documents-21): the same `{key, text, act}` rows, each with the `drop` (a block's uid) its Apply
+  //: removes. A mind map holds `children`, a sequence `steps` and a timeline `periods` then `events`; the kind's own printer writes the result.
+  const dgaKids = (n) => n.children || n.steps || n.periods || n.events || [];
+  function dgaKindLint(kind, m) {
+    const out = [];
+    const row = (drop, text, act) => out.push({ key: drop, text, act, drop });
+    const walk = (list, fn) => list.forEach((n) => (fn(n), walk(dgaKids(n), fn)));
+    if (kind === "mindmap") {
+      walk(m.root ? [m.root] : [], (n) => {
+        const seen = new Set();
+        for (const c of n.children || []) {
+          const f = dgaFold(c.text);
+          if (!f && !c.children.length) row(c.uid, `${n.text} has a branch with no words.`, "Remove the empty branch");
+          else if (seen.has(f) && !c.children.length) row(c.uid, `${n.text} has ${c.text} twice.`, "Remove the second");
+          seen.add(f);
+        }
+      });
+    } else if (kind === "timeline") {
+      const periods = (list) => list.forEach((p) => p.events.length || row(p.uid, `${dgaText(p.when, 60) || "A period"} has no events.`, "Remove the period"));
+      periods(m.free);
+      for (const s of m.sections) s.periods.length ? periods(s.periods) : row(s.uid, `The section ${dgaText(s.title, 60)} has no periods.`, "Remove the section");
+    } else if (kind === "sequence") {
+      const used = new Set();
+      walk(m.steps, (s) => {
+        if (s.type === "m") used.add(s.from).add(s.to);
+        else if (s.type === "t") s.who.forEach((w) => used.add(w));
+        else if (s.type === "b" && !s.steps.length) row(s.uid, `The ${s.kw} block holds no steps.`, "Remove the block");
+      });
+      for (const p of m.participants) used.has(p.id) || row(p.uid, `${dgaText(p.label, 60)} never sends or receives a message.`, "Remove the participant");
+    }
+    return out.slice(0, 20);
+  }
+
+  //: The model without the block `uid`, on a copy.
+  function dgaKindDrop(m, uid) {
+    const next = JSON.parse(JSON.stringify(m));
+    const cut = (list) => {
+      const at = list.findIndex((n) => n.uid === uid);
+      return at >= 0 ? !!list.splice(at, 1) : list.some((n) => cut(dgaKids(n)));
+    };
+    [next.participants, next.free, next.sections, next.steps, next.root ? [next.root] : null].some((list) => list && cut(list));
+    return next;
+  }
+
+  const diagramAiPure = { find: dgaFind, apply: dgaApply, diff: dgaDiff, marked: dgaMarked, say: dgaSay, name: dgaName, lint: dgaLint, kindLint: dgaKindLint, kindDrop: dgaKindDrop, MAX_OPS: DGA_MAX_OPS };
   // DIAGRAM-AI-END
 
   const copyOf = (m) => JSON.parse(JSON.stringify(m));
@@ -302,6 +346,8 @@
       A.toggle.setAttribute("aria-expanded", String(open));
       A.lints.classList.toggle("hidden", !open);
     });
+    //: The other kinds get Suggestions only (L-documents-21); the Ask box reads the flowchart's blocks and arrows.
+    if (S.k) form.classList.add("hidden");
     box.append(form, A.preview, A.toggle, A.lints);
     S.pane.prepend(box);
     (S.fig.onpaint ||= []).push(() => lint(A));
@@ -348,18 +394,18 @@
   }
 
   function discard(A) {
-    A.ops = A.next = null;
+    A.ops = A.next = A.name = null;
     A.preview.classList.add("hidden");
     A.h.say(A.S, "Discarded. The diagram is as it was.");
-    A.input.focus();
+    (A.S.k ? A.toggle : A.input).focus();
   }
 
   async function applyPreview(A) {
     const { S, h } = A;
     if (!A.next) return;
-    const name = diagramAiPure.name(S.m, A.ops);
+    const name = A.name || diagramAiPure.name(S.m, A.ops);
     S.m = A.next;
-    A.ops = A.next = null;
+    A.ops = A.next = A.name = null;
     A.preview.classList.add("hidden");
     A.input.value = "";
     h.commit(S, `${name.replace(/^AI: /, "Applied: ")}. Undo puts it back.`);
@@ -373,16 +419,31 @@
     }
   }
 
+  //: A suggestion on another kind: the removal on a copy, the kind's own printer for the picture, then Apply or Discard as for a flowchart.
+  function showKind(A, f) {
+    const { S } = A;
+    const next = diagramAiPure.kindDrop(S.m, f.drop);
+    A.ops = [];
+    A.next = next;
+    A.name = `AI: ${f.act.charAt(0).toLowerCase()}${f.act.slice(1)}`.slice(0, 120);
+    A.list.replaceChildren(el("li", "", f.act));
+    A.said.textContent = "1 block removed.";
+    A.preview.classList.remove("hidden");
+    draw(A.fig, S.k.print(next));
+    A.h.say(S, `Proposed: ${f.act.toLowerCase()}. Apply or Discard.`);
+    A.preview.querySelector(".dgm-ai-foot button")?.focus();
+  }
+
   function lint(A) {
     const { S } = A;
     if (!S.m || S.plain) return A.toggle.classList.add("hidden");
-    const found = diagramAiPure.lint(S.m, A.h.ops);
+    const found = S.k ? diagramAiPure.kindLint(S.k.name, S.m) : diagramAiPure.lint(S.m, A.h.ops);
     A.toggle.classList.toggle("hidden", !found.length);
     A.words.textContent = `Suggestions (${found.length})`;
     A.lints.replaceChildren(...found.map((f) => {
       const li = el("li", "dgm-ai-lint");
       const words = el("span", "dgm-ai-lint-text", f.text);
-      li.append(words, rowActions([{ label: f.act, title: `${f.act}: preview the change`, run: () => show(A, f.ops, "A suggestion, by rule.") }], "Suggestion"));
+      li.append(words, rowActions([{ label: f.act, title: `${f.act}: preview the change`, run: () => (S.k ? showKind(A, f) : show(A, f.ops, "A suggestion, by rule.")) }], "Suggestion"));
       return li;
     }));
   }
@@ -470,10 +531,10 @@
   }
 
   //: Every show: the Versions row in the ... menu on a Documents page (the builder rebuilds the menu after), and on a
-  //: flowchart the Ask box and Suggestions, built once per pane.
+  //: pane Suggestions, and on a flowchart the Ask box too, built once per pane.
   function wire(S, h) {
     if (docOf(S)) S.io.menu = [...(S.io.menu || []).filter((row) => row.label !== VERSIONS), { label: VERSIONS, run: () => versions(S) }];
-    if (S.k || S.ai) return;
+    if (S.ai) return;
     S.ai = build(S, h);
   }
 

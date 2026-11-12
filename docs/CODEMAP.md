@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8374, frontend ids 2770, CSS sections 524, backend routes 701, backend modules 10780, test files 2717, tests 21998, plan headings 688, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8378, frontend ids 2770, CSS sections 524, backend routes 701, backend modules 10780, test files 2718, tests 22002, plan headings 688, app scripts 29, boot scripts 38, script files 301.
 
-## Frontend functions (8374)
+## Frontend functions (8378)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3165,22 +3165,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
 
-### frontend/js/diagram-ai.js (29)
+### frontend/js/diagram-ai.js (33)
 
 | Name | File:line |
 |---|---|
-| `applyPreview` | frontend/js/diagram-ai.js:357 |
-| `ask` | frontend/js/diagram-ai.js:312 |
-| `build` | frontend/js/diagram-ai.js:262 |
-| `compareThem` | frontend/js/diagram-ai.js:452 |
-| `copyOf` | frontend/js/diagram-ai.js:233 |
-| `counts` | frontend/js/diagram-ai.js:253 |
+| `applyPreview` | frontend/js/diagram-ai.js:403 |
+| `ask` | frontend/js/diagram-ai.js:358 |
+| `build` | frontend/js/diagram-ai.js:306 |
+| `compareThem` | frontend/js/diagram-ai.js:513 |
+| `copyOf` | frontend/js/diagram-ai.js:277 |
+| `counts` | frontend/js/diagram-ai.js:297 |
 | `dgaAdd` | frontend/js/diagram-ai.js:45 |
 | `dgaApply` | frontend/js/diagram-ai.js:93 |
 | `dgaArrow` | frontend/js/diagram-ai.js:31 |
 | `dgaDiff` | frontend/js/diagram-ai.js:102 |
 | `dgaFind` | frontend/js/diagram-ai.js:21 |
 | `dgaFold` | frontend/js/diagram-ai.js:17 |
+| `dgaKids` | frontend/js/diagram-ai.js:232 |
+| `dgaKindDrop` | frontend/js/diagram-ai.js:264 |
+| `dgaKindLint` | frontend/js/diagram-ai.js:233 |
 | `dgaLint` | frontend/js/diagram-ai.js:179 |
 | `dgaMarked` | frontend/js/diagram-ai.js:123 |
 | `dgaName` | frontend/js/diagram-ai.js:170 |
@@ -3189,15 +3192,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgaText` | frontend/js/diagram-ai.js:18 |
 | `dgaUnused` | frontend/js/diagram-ai.js:35 |
 | `dgaWords` | frontend/js/diagram-ai.js:152 |
-| `discard` | frontend/js/diagram-ai.js:350 |
-| `docOf` | frontend/js/diagram-ai.js:245 |
-| `draw` | frontend/js/diagram-ai.js:247 |
-| `el` | frontend/js/diagram-ai.js:237 |
-| `hues` | frontend/js/diagram-ai.js:234 |
-| `lint` | frontend/js/diagram-ai.js:376 |
-| `show` | frontend/js/diagram-ai.js:331 |
-| `versions` | frontend/js/diagram-ai.js:391 |
-| `wire` | frontend/js/diagram-ai.js:474 |
+| `discard` | frontend/js/diagram-ai.js:396 |
+| `docOf` | frontend/js/diagram-ai.js:289 |
+| `draw` | frontend/js/diagram-ai.js:291 |
+| `el` | frontend/js/diagram-ai.js:281 |
+| `hues` | frontend/js/diagram-ai.js:278 |
+| `lint` | frontend/js/diagram-ai.js:437 |
+| `show` | frontend/js/diagram-ai.js:377 |
+| `showKind` | frontend/js/diagram-ai.js:423 |
+| `versions` | frontend/js/diagram-ai.js:452 |
+| `wire` | frontend/js/diagram-ai.js:535 |
 
 ### frontend/js/diagram-bar.js (9)
 
@@ -27745,7 +27749,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21998)
+## Tests (22002)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28550,6 +28554,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1661klm.py | 18 |
 | tests/test_diagram_1679m.py | 14 |
 | tests/test_diagram_ai.py | 5 |
+| tests/test_diagram_ai_kinds_1112.py | 4 |
 | tests/test_diagram_ask.py | 15 |
 | tests/test_diagram_behaviour_1108.py | 7 |
 | tests/test_diagram_bg1.py | 2 |
