@@ -1352,6 +1352,7 @@
     ctx.textBaseline = "middle";
     const inset = 1.5;
     const heads = (s.treemapHeads = {});
+    const overlays = gcOverlayBoxes(s, s.transform || d3.zoomIdentity);
     for (const rect of rects) {
       const x = rect.x0 + inset;
       const y = rect.y0 + inset;
@@ -1387,13 +1388,22 @@
       //: Room in screen px: the lines the header was made tall for, at a zoom
       //: where it is smaller than its text (k < 1) the same lines still draw.
       const lines = Math.round((head - 18) / 14) + 1;
-      const fit = gcTess.fit(measure, rect.category, rect.count, (w - 12 / k) * k, lines * 15);
+      //: Clear of the corner furniture (L-graph-12's pair: the minimap sat on
+      //: "Uncategorised (103)", the fitted Tessellation's top-left header).
+      //: The fit leaves the minimap and zoom strip alone (INBOX 802), so the
+      //: name starts past any overlay on its band, and drops out if no room is left.
+      let start = x + 6 / k;
+      for (const box of overlays) {
+        if (box.bottom > y && box.top < y + head / k && box.left <= start && box.right > start) start = box.right + 6 / k;
+      }
+      const room = x + w - 6 / k - start;
+      const fit = room > 0 ? gcTess.fit(measure, rect.category, rect.count, room * k, lines * 15) : null;
       heads[rect.category] = fit ? fit.lines.join(" ") : "";
       if (!fit) continue;
       ctx.globalAlpha = 1;
       ctx.fillStyle = gcTokens.ink;
       ctx.font = `600 ${fit.size / k}px ${gcTokens.font}`;
-      fit.lines.forEach((line, i) => ctx.fillText(line, x + 6 / k, y + ((i + 0.5) * (fit.size + 3) + 2) / k));
+      fit.lines.forEach((line, i) => ctx.fillText(line, start, y + ((i + 0.5) * (fit.size + 3) + 2) / k));
     }
     ctx.restore();
   }

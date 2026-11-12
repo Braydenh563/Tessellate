@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: a sweep draws the Tessellation view beside the chosen layout as one PNG with numbers (L-graph-12); a Map or Tessellation header no longer sits under the minimap.
 - Graph: in the Tessellation view a new note's cell drifts in and settles like the logo's third cell, 1.4 s, still under reduced motion (L-graph-10).
 - Graph: gcDraw, gcWireInteraction and gcStartWorker split into helpers under 130 lines each (L14); ring tuning measured and closed (L15).
 - Graph: focus mode and the note pane walk boards only with the Maps switch on, as the whole map does (L-graph-8).

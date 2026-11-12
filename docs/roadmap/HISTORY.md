@@ -55189,6 +55189,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the plans, 2026-11-12 (graph-plan session)
+- - [x] **L-graph-12** built 2026-11-12: scratchpad/ui-sweeps/tess-pair.js (103 notes: force covers 0.55 of the canvas, Tessellation 0.50, 0 overlaps); its first run found the top-left header under the minimap, fixed in gcDrawTreemap (tests/test_graph_header_clear_minimap.py). BACKLOG keeps the owner's look.
 - - [x] **L-graph-10** built 2026-11-12: tessArrivals and tessArrivePose in graph-tessellate.js; tests/test_graph_tess_arrive.py; sweep scratchpad/ui-sweeps/tess-arrive.js (new note arrives about 1.4 s, none under reduced motion).
 - - [x] **L14** split graph-canvas.js's three longest functions (855, 502, 273 lines to 126, 44, 92). **L15** closed by GRAPH_PLAN decision 3, 2026-11-12.
 - - [x] **L-graph-8** built 2026-11-12: `/graph/local` takes `include_maps`; graphLocalQuery sends the Maps switch; tests/test_graph_local_boards.py.
