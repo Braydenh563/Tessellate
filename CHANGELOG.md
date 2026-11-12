@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Import: the people and places an imported note names become its tags (three of each at most); the recogniser also reads a name after Dr, Mr, Mrs, Ms, Prof, a phone with a (0) trunk digit and a tel: link (L575).
 - Note editor: a sum alone on its line with no "=" is offered its answer, and a "Total:" line with no amount is offered the column's sum (L577).
 - Night pass: dates a note names, the entities it mentions and a note that repeats another word for word are fact kinds, read by rule and not judged by the learned-store check (L657).
 - Meetings: decisions and actions are read in French, Spanish, German, Italian, Portuguese and Dutch as well as English (a cue table per language; a name taking a task on counts only if it is an attendee) (L665).

@@ -913,10 +913,10 @@ _CLOCK_SRC = r"(?:noon|midday|midnight|(\d{1,2})(?::(\d{2}))?\s?(am|pm|a\.m\.|p\
 _SOURCES: dict[str, object] = {
     "email": r"(?<![\w.+-])[\w.+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+",
     "url": r"\b(?:https?://|www\.)[^\s<>\"')\]]+",
-    "phone": r"(?<![\w+])(?:\+\d{1,3}[ .-]?)?(?:\(\d{2,5}\)[ .-]?)?\d{2,8}(?:[ .-]\d{2,8}){0,4}(?![\w])",
+    "phone": r"(?<![\w+])(?:\+\d{8,15}(?![\w])|(?:\+\d{1,3}[ .-]?)?(?:\(\d{1,5}\)[ .-]?)?\d{2,8}(?:[ .-]\d{2,8}){0,4}(?![\w]))",
     "tag": r"(?<![\w&#/])#([a-z][\w-]{0,40})",
     "at_person": r"(?<![\w.@])@([a-z][\w-]{0,30})",
-    "person": r"\b(?i:with|call|ring|meet|email|text|ask|tell|phone|message|thank)\s+([A-Z][a-z]+(?: [A-Z][a-z]+)?)\b",
+    "person": r"\b(?:(?i:with|call|ring|meet|email|text|ask|tell|phone|message|thank)|(?:Dr|Mr|Mrs|Ms|Miss|Mx|Prof|Professor)\.?)\s+(?!(?:Dr|Mr|Mrs|Ms|Miss|Mx|Prof|Professor)\b)([A-Z][a-z]+(?: [A-Z][a-z]+)?)\b",
     "place": r"\b(?i:in|to|at|from|near|visit|visiting)\s+(?:the\s+)?([A-Z][\w'-]+(?: [A-Z][\w'-]+){0,2})",
     "every": lambda: (
         r"\b(?:every|each)\s+(other\s+)?(?:(\d{1,2}|two|three|four|five|six)\s+)?"
@@ -1536,7 +1536,7 @@ def _contact_cands(raw: str, low: str) -> list[tuple]:
         out.append((found.start(), found.start() + len(text), "url", value, "", 0))
     for found in _rx("phone").finditer(low):
         text = found.group(0)
-        digits = re.sub(r"\D", "", text)
+        digits = re.sub(r"\D", "", text.replace("(0)", ""))  # "+44 (0)20": the (0) is dialled at home only
         lead = text[:1]
         if not 7 <= len(digits) <= 15 or not (lead in "+(0" or len(digits) >= 10):
             continue

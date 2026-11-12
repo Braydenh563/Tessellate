@@ -55519,6 +55519,7 @@ keystroke-to-margin update.
 **State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
 
 ## Moved from the LEDGER
+- [x] **L575** `world-class` open, M: Write imported people and places as tags and recognise more contact shapes. From OPEN.md:870; OPEN.md:3751. Evidence: Row states design; no change commit found Built: app_import.name_tags; recognise titled person, (0) trunk, tel:; tests/test_import_name_tags.py
 - [x] **L577** `world-class` open, M: Offer sums without requiring '=' and support a Total: column in ai/offers.py. From OPEN.md:3745. Evidence: ai/offers.py:38 _SUM requires = Built: ai/offers.py _BARE_SUM and blank _TOTAL; tests/test_note_offers.py
 - [x] **L665** `world-class` partly, M: Meeting decision/action rules beyond English cue words. From OPEN.md:1917; OPEN.md:2624. Evidence: Rename done: routes_recordings.py:538, meetings.js:2124; English-only rules remain Built: entry/meetings_cues.py, six languages; tests/test_meetings_languages.py
 - [x] **L657** `world-class` partly, M: Left: duplicates, entities and dates as fact kinds. `KINDS` is claim, question, tension, answered (ai/facts.py:109); tensions built. From OPEN.md:1226. Built: ai/facts_kinds.py; facts.KINDS; tests/test_fact_kinds_exact.py
