@@ -859,3 +859,38 @@ def _thread_bands(notes: list[dict]) -> list[dict]:
     if other:
         bands.append({"name": THREAD_BAND, "count": len(other), "ids": sorted(other)})
     return bands
+
+
+#: The longest span a brush may ask about: a year and a day, the strip's own
+#: longest reach (`/entries/daily`'s window has the same bound).
+SPAN_DIGEST_MAX_DAYS = 366
+
+
+@router.get("/digest")
+def span_digest(start: str, end: str, session: Session = Depends(get_session)) -> dict:
+    """What was written from `start` to `end` (L-timeline-2): the composed
+    review (`review_digest.span`, no model) and the notes in it, oldest first,
+    which the brushed sheet lists beside the review."""
+    from datetime import date
+
+    from tessellate.ai import activity, review_digest
+    from tessellate.core import deps
+    from tessellate.core.config import user_now
+
+    try:
+        first, last = date.fromisoformat(start), date.fromisoformat(end)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="start and end are days, YYYY-MM-DD") from exc
+    if last < first or (last - first).days >= SPAN_DIGEST_MAX_DAYS:
+        raise HTTPException(status_code=422, detail=f"a span runs forwards and is at most {SPAN_DIGEST_MAX_DAYS} days")
+    text, notes = review_digest.span(session, first, last, user_now(deps.get_config()))
+    return {
+        "start": first.isoformat(),
+        "end": last.isoformat(),
+        "text": text,
+        "composed": True,
+        "notes": [
+            {"id": n["id"], "title": activity._note_name(n["content"]), "day": n["created_at"][:10], "category": n["category"]}
+            for n in notes
+        ],
+    }

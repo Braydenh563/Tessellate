@@ -3774,9 +3774,12 @@ Link to another note with [[its first few words]]."></textarea>
         month walk a week, and the month opens a calendar to jump to any earlier day.
         In the feed, Ctrl and the mouse wheel, or a pinch, makes the date
         groups finer or coarser, as do + and - on a row. The thin strip at the feed's right edge shows how much you wrote
-        over the whole range, labelled by month or year (Options, Dates beside the strip, hides the labels); click or drag it to jump. The chips under the strip show what you
+        over the whole range, labelled by month or year (Options, Dates beside the strip, hides the labels); click or drag it to jump, and Shift and drag reads a span: what you wrote
+        in those days, with the notes beside it. The chips under the strip show what you
         wrote on today's date in earlier years, and the year menu beside the month narrows the list to one year;
         Options, Time range, On this day does the same.
+        A week or more with nothing written shows a line between the dates; What happened here?
+        starts a page for the first empty day.
   </p>
   <p>The calendar shows a month, a week or a day: reminders and meetings at
         their time, a day's page at the top of its day and a chip with its title for
@@ -3899,10 +3902,11 @@ Link to another note with [[its first few words]]."></textarea>
         </table>
       </div>
         <div id="timeline-scrubber" class="timeline-scrubber hidden" aria-hidden="true"
-          title="How much you wrote, over the whole range. Click or drag to jump.">
+          title="How much you wrote, over the whole range. Click or drag to jump; Shift and drag to read a span.">
           <svg class="timeline-scrubber-svg" viewBox="0 0 40 1000" preserveAspectRatio="none">
             <path id="timeline-density-path" class="timeline-density-path"></path>
             <rect id="timeline-scrubber-window" class="timeline-scrubber-window" x="0" y="0" width="40" height="0"></rect>
+            <rect id="timeline-scrubber-brush" class="timeline-scrubber-brush hidden" x="0" y="0" width="40" height="0"></rect>
           </svg>
         </div>
       </div>

@@ -815,7 +815,10 @@
    been seen. Traced at 500 notes (`scratchpad/ui-sweeps/f2-trace.js`): 1,206
    of the 1,382 elements in the Notes list were more than a window below the
    fold, and entering the tab restyled all of them, 61ms; with this, 31ms.
-   The Timeline's feed, 1,946 of 2,116: a 48ms layout became 7ms.
+   Not the Timeline's feed (L492): it is windowed (`windowRows`), so only
+   rows near the window exist, and a row locking and unlocking as it crossed
+   the edge was a layout a frame: 38 to 44 layouts a second while scrolling,
+   6 to 10 without, entry unchanged (430 nodes, 6 to 15ms of layout).
    Not a row being edited, holding an open disclosure or holding focus:
    containment clips what a row paints to its own box, and the note editor's
    toolbar menus and a `<details>` list open past it. The ⋯ menus are not
@@ -825,10 +828,6 @@
 #entry-list > li:not(.row-shell, .list-window-sentinel, :focus-within):not(:has(textarea, details[open], .cm-editor)) {
   content-visibility: auto;
   contain-intrinsic-size: auto 8.25rem;
-}
-.timeline-feed .timeline-row:not(:focus-within) {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 2.6rem;
 }
 /* Each list's placeholders are its own rows' shape (`showSkeletons`,
    app.js; the look is `.skeleton`, 02-chat-graph.css): a Library card's

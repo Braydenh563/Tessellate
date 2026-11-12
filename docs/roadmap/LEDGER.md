@@ -8,16 +8,16 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 29 | 4 | 0 | 4 | 48 |
+| graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 13 | 2 | 0 | 5 | 18 |
+| timeline | 3 | 7 | 2 | 0 | 5 | 12 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 685 | 156 | 3 | 195 | 1394 |
+| general | 0 | 36 | 2 | 0 | 4 | 38 |
+| all | 553 | 679 | 157 | 3 | 195 | 1389 |
 
 ## graph
 
@@ -29,7 +29,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L6** `graph` open, S: graphfslightbox.js reads .lightbox before lazy openLightbox resolves; add await. From OPEN.md:2334. Evidence: scratchpad/ui-sweeps/graphfslightbox.js exists; await not added
 - [ ] **L7** `graph` open, M: Add dirty-rectangle draw per worker tick and sample gcRequestDraw callers while the graph settles. From OPEN.md:4553; a30p-1103.md Found, not fixed. Evidence: Fixed 20ed22a (label fades); dirty rectangle per worker tick open (gcRequestDraw, graph-canvas.js:1045)
 - [ ] **L8** `graph` open, M: Trace and remove the 7.1px single-tick step after graph drag release. From OPEN.md:1333; OPEN.md:2235. Evidence: graph-worker.js:826 dragHeat only change; residual step stated unresolved.
-- [ ] **L9** `graph` open, M: Fix timeline layout 39x/s, Atlas arm behind hair and mood blend. From OPEN.md:3019. Evidence: content-visibility trade and drawing-order changes not done
+- [ ] **L9** `graph` partly, M: Fix timeline layout 39x/s, Atlas arm behind hair and mood blend. From OPEN.md:3019. Evidence: timeline layout part done with L492 (content-visibility off the windowed feed rows, 31-37 to 11-14 layouts/s wheel scrolling); Atlas arm and mood blend drawing-order changes not done
 - [ ] **L10** `graph` open, M: Retarget an interrupted graph glide with a spring instead of restarting at ease peak speed. From OPEN.md:3532. Evidence: Not asked for; a spring retarget not built.
 - [ ] **L11** `graph` open, M: Link graph topics to categories and add the hand-off to section 23. From OPEN.md:3622. Evidence: No code linking graph topics to categories; not started
 - [ ] **L12** `graph` open, M: Audit graph time slider, link-kind chips, saved views, physics folds, minimap, trace route, private graph, dark phone. From audit-1029-graph.md 4. Evidence: No later graph audit file; list stands
@@ -599,17 +599,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L479** `timeline` open, S: Fold the 'On this day' row on phone so it stops shifting the list 44px at 390. From OPEN.md:734; OPEN.md:2781. Evidence: timeline.js:645 recall row; css only has calendar-mode rule 06-timeline-dialogs.css:3488; no phone fold
 - [ ] **L481** `timeline` open, S: Run contrast and errors sweeps on the calendar view. From OPEN.md:1374. Evidence: No calendar sweep in scratchpad/ui-sweeps recorded; runnable without hardware.
 - [ ] **L482** `timeline` open, S: Make feed Last-year range filter by calendar date, not written date. From OPEN.md:1375; OPEN.md:2570. Evidence: No change found in timeline-calendar.js/timeline.js for date vs written-date filtering.
-- [ ] **L483** `timeline` open, S: Stop timeline-days preference arriving after click rendering the timeline twice. From OPEN.md:1381; OPEN.md:2783. Evidence: timeline.js:2503 change handler unchanged; double render guard not found.
 - [ ] **L485** `timeline` open, S: Add a mark column to the timeline table view so meetings do not read as Note. From OPEN.md:3564. Evidence: grep meeting in timeline*.js shows no table mark column; only calendar/add paths
 - [ ] **L486** `timeline` open, S: Fix deepen72b.js timeline row at 390 timing out waiting for .timeline-rows. From OPEN.md:735; OPEN.md:2782. Evidence: scratchpad/ui-sweeps/deepen72b.js:61 still waits on .timeline-rows; phone keeps table view
 - [ ] **L487** `timeline` open, S: timelinepaging.js strip-click fails on base; frame check flaky. From OPEN.md:2784. Evidence: Sweep script fails on base; verified open
-- [ ] **L490** `timeline` open, M: Get timeline bar click to rows under 300 ms at 96 notes (329 measured). From OPEN.md:2780. Evidence: timeline.js drawTimelineWindow; boot CSS budget tight; verified open
-- [ ] **L491** `timeline` open, M: Window the Timeline table view rows like the feed. From agent-remaining/listwin-1031.md. Evidence: The Timeline table view (`timelineTableRow`, paintTimelineTable) still builds every loaded row; only the feed is windowe
-- [ ] **L492** `timeline` open, L: Timeline feed lays out ~39x/s while scrolling. From OPEN.md:1385. Evidence: content-visibility: auto still in css (03-dashboard-widgets.css:1927, library-lazy.css:6866); no layout-rate fix or measurement after
-- [ ] **L495** `timeline` partly, M: Add the Timeline dock streak surface for D6 streak count. From OPEN.md:1388. Evidence: dashboard.js:50 has a Streak widget; the Timeline dock/streak surface the row asks for not found
+- [ ] **L495** `timeline` partly, M: Add the Timeline dock streak surface for D6 streak count. From OPEN.md:1388. Evidence: dashboard.js:50 has a Streak widget; the Timeline dock/streak surface the row asks for not found. Not built 2026-11-12 (tlperf): TIMELINE_PLAN.md:262 decision 22 "No streak count" (the dock is at its seven-control ceiling, `.dock-chip-row` held at zero uses), and decisions are not remade; needs an owner call to lift decision 22. The data is there: `/entries/daily` returns `streak` (routes_entries.py:1101), capped by its `days` window, so a surface would ask with days=366, not the strip's 7
 - [ ] **L496** `timeline` partly, M: Re-check timeline pinned bucket head flake and 4 off-screen ghost buttons. From OPEN.md:3902. Evidence: Pointer note to other OPEN rows (44px On this day shift, meeting mark in table, map under Boards chip), each tracked separately; flaky pinned-head sweep and Notes off-screen buttons not re-checked.
-- [ ] **L-timeline-1** `timeline` open, S: Mark empty weeks on the timeline with a one-click 'what happened here?' prompt. From ANALYSIS.md:1190. Evidence: grep gap|quiet timeline.js only finds TIMELINE_AUTO_MAX_GAP (bucket choice); TIMELINE_PLAN has no gap marker
-- [ ] **L-timeline-2** `timeline` open, M: Brush a date range on the timeline to get an AI digest of that span with its notes listed beside it. From ANALYSIS.md:1186. Evidence: no brush in timeline*.js; no 'date range digest' in code or plans
 
 ## world-class
 
@@ -886,6 +880,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
+- [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
 
 ## Owner calls
 
@@ -996,7 +991,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L909** `ui-modernisation` blocked-hardware, M: Frame-cost numbers need GPU; background slider effect unmeasured. From OPEN.md:1234; OPEN.md:3383. Evidence: Needs real GPU hardware to confirm absolute milliseconds.
 - [ ] **L910** `timeline` blocked-hardware, S: Drive touch drag on tablet, day page drop on another day, 1,000-note month. From OPEN.md:1373; OPEN.md:2569. Evidence: Needs real touch device; timeline-calendar.js:313 has non-touch path built.
 - [ ] **L911** `timeline` blocked-hardware, S: Verify calendar touch double tap and real model reading. From OPEN.md:3839. Evidence: Needs touch hardware and a real model
-- [ ] **L912** `timeline` blocked-hardware, M: Timeline row 8 bar click to rows under 300 ms at 96 notes. From OPEN.md:1378. Evidence: Load-dependent timing on loaded headless machine; needs idle/real hardware to confirm.
+- [ ] **L912** `timeline` blocked-hardware, M: Timeline row 8 bar click to rows under 300 ms at 96 notes. From OPEN.md:1378. Evidence: Load-dependent timing on loaded headless machine; needs idle/real hardware to confirm. Measured 2026-11-12 (L490, headless, load 3.8-4.5, 96 notes, fresh browser per run, dashboard then `#tab-btn-timeline` to first `.timeline-rows > *`): 125-249 ms over 10 runs, app side 77-172 ms; 137-365 ms at load 6.3. Still needs real hardware.
 - [ ] **L913** `timeline` blocked-hardware, M: Windows and macOS toast/notification behaviour not run. From OPEN.md:2631. Evidence: Needs owner's Windows desktop and a Mac
 - [ ] **L914** `timeline` blocked-hardware, M: Verify Firefox/Safari permission help, webview denied state, hidden-tab firing, non-UTC browser. From OPEN.md:2785. Evidence: Needs other browsers/webview/timezone
 - [ ] **L915** `world-class` blocked-hardware, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
