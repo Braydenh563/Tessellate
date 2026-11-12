@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Packaging: LICENSE and THIRD_PARTY.md ship inside the Windows installer and MSI, the Linux tarball and the Docker image (`tests/test_licence_shipped.py`).
 - CI: every workflow action is pinned to a commit SHA, every checkout drops its token, and a zizmor workflow lints the workflows (`tests/test_workflow_pins.py`).
 - Security: the outbound address test decodes NAT64 (64:ff9b::/96) to its embedded IPv4, so a wrapped metadata or loopback address is refused (`tests/test_outbound_fetch_guard.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.

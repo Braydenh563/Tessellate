@@ -24,7 +24,8 @@ RUN python -m venv /venv \
 COPY src ./src
 COPY frontend ./frontend
 COPY migrations ./migrations
-COPY alembic.ini ./
+COPY alembic.ini LICENSE ./
+COPY docs/THIRD_PARTY.md ./
 RUN /venv/bin/pip install --no-deps -e .
 
 FROM python:3.13-slim
