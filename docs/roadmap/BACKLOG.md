@@ -4412,3 +4412,5 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 Each row is the one step left of a built item; everything that runs here is built and tested.
 
 - **Real phones on the LAN trust page and plain http (Brief 40):** Real-phone check of the LAN trust page and plain http: on an iPhone and an Android phone, scan Settings, Other devices, Phone setup QR code, install the certificate from /lan/trust, then open the https address with no warning; turn on Also allow plain http and open the address without https. From WORLD_CLASS_PLAN Brief 40. Evidence: tests/test_lan_trust_page.py drives a real TLS client and a plain-http client; no phone was used
+
+- **Second device and calendar app on the LAN (L567):** Add a second device (a phone or another computer) on the LAN trust page, then subscribe a real calendar app (Apple Calendar, Google Calendar, Thunderbird) to the reminders feed and check an event appears and updates; needs the hardware, nothing else of the thread move is open.

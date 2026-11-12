@@ -1031,7 +1031,9 @@ def _begin_download(model: EmbedModel, repair: bool = False) -> tuple[bool, str]
 
 
 def _spawn_download(model: EmbedModel) -> None:
-    threading.Thread(target=_run_download, args=(model,), daemon=True).start()
+    from tessellate.core import jobs
+
+    jobs.thread("embedding-model-download", lambda: _run_download(model))
 
 
 def repair_title(label: str) -> str:

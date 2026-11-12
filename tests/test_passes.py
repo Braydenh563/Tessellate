@@ -98,11 +98,11 @@ def test_stop_ends_a_pass_at_its_next_step(client, monkeypatch):
 
 def test_a_pass_with_no_step_to_stop_at_says_so(client, monkeypatch):
     gate = threading.Event()
-    monkeypatch.setitem(passes.RUNNERS, "backup", lambda: gate.wait(10))
-    client.post("/jobs/passes/backup/run")
-    _wait(lambda: passes.running("backup"))
-    # The backup's own row: another test's pass can still be listed in this worker (CI 31bac2a took a stoppable one).
-    row = next(t for t in client.get("/tasks").json()["tasks"] if t["kind"] == "job-pass" and passes.kind_for_label(t["name"]) == "backup")
+    monkeypatch.setitem(passes.RUNNERS, "learned-audit", lambda: gate.wait(10))
+    client.post("/jobs/passes/learned-audit/run")
+    _wait(lambda: passes.running("learned-audit"))
+    # The learned audit's own row: another test's pass can still be listed in this worker (CI 31bac2a took a stoppable one).
+    row = next(t for t in client.get("/tasks").json()["tasks"] if t["kind"] == "job-pass" and passes.kind_for_label(t["name"]) == "learned-audit")
     assert row["cancellable"] is False
     gate.set()
 

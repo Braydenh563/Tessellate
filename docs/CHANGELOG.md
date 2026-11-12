@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Backup: Stop on the backup pass ends it between the copy, the check and the second copy and deletes what it had made (no half-written file); the embedding model load row now has Stop too (a download ends after its file, nothing follows the load); every write to a note's text stamps its edited time in one place, and the lexical filing corpus keys on it instead of updated_at.
+- Threads: the update apply and exit watch, SearXNG autostart, install and output reader, the DNS probe, the LAN first-byte selector, the filing deadline, the auto-install watch, the model download, the autonomous loop and the desktop server and tray now start through core/jobs.py (listed, one place); the thread-site ratchet holds only the pool and the captions helper's child process.
 - Search: a note opened from a finder result has the words you searched marked in it.
 - Clock: Settings, General has a 12 or 24 hour choice that every time in the app follows (it was the browser's region only).
 - Escape: a lint checks every overlay and dialog closes on Escape; the graph's Manage this connection panel did not, and now does.

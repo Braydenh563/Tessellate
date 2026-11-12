@@ -15,6 +15,7 @@ import shutil
 import sqlite3
 import threading
 import time
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -243,7 +244,20 @@ def _copy_aside(destination: Path, target: Path, keep: int) -> None:
         _record_path(old).unlink(missing_ok=True)
 
 
-def backup_now(db_path: Path, data_dir: Path, keep: int = KEEP_BACKUPS, run=None, origin: str = "") -> Path:  # noqa: ANN001
+class BackupStopped(Exception):  # noqa: N818  # a request honoured, not a fault
+    """Stop was pressed between two steps of `backup_now`. Nothing of the
+    backup is left: the partial file and a copy already renamed are deleted
+    before this is raised, so a caller treats it as "no backup was made"."""
+
+
+def backup_now(  # noqa: ANN001
+    db_path: Path,
+    data_dir: Path,
+    keep: int = KEEP_BACKUPS,
+    run=None,
+    origin: str = "",
+    should_stop: Callable[[], bool] | None = None,
+) -> Path:
     """Take one consistent snapshot and prune old ones.
 
     `keep` was a hard-coded 10 until asked about directly ("backup retention
@@ -253,7 +267,15 @@ def backup_now(db_path: Path, data_dir: Path, keep: int = KEEP_BACKUPS, run=None
     fixed in code instead of being a preference. `keep` defaults to the old
     constant so a caller that never heard of the preference keeps behaving
     exactly as before.
+
+    `should_stop` is asked between the steps (copy, check, second copy); when
+    it says yes the half-made backup is deleted and `BackupStopped` is raised
+    (L-world-class-29). A caller with no Stop button passes nothing.
     """
+    def halt() -> None:
+        if should_stop is not None and should_stop():
+            raise BackupStopped("the backup was stopped")
+
     #: `run` is the `jobruns.Run` of the caller, when it has one: the steps
     #: and lines the Background tasks row shows while this works.
     run = run if run is not None else _NoRun()
@@ -271,6 +293,7 @@ def backup_now(db_path: Path, data_dir: Path, keep: int = KEEP_BACKUPS, run=None
     partial = destination.with_name(f"{destination.name}.partial")
     try:
         snapshot(db_path, partial)
+        halt()
         os.replace(partial, destination)
         run.step(1)
         run.say("Checking the copy.")
@@ -282,8 +305,14 @@ def backup_now(db_path: Path, data_dir: Path, keep: int = KEEP_BACKUPS, run=None
             destination.unlink(missing_ok=True)
             raise
         run.step(2)
+        halt()
         more = _second_copy(destination, origin, aside, keep, run)
         _write_record(destination, origin, checked=True, **more)
+    except BackupStopped:
+        _discard_partial(partial)
+        destination.unlink(missing_ok=True)
+        _record_path(destination).unlink(missing_ok=True)
+        raise
     except BaseException:
         _discard_partial(partial)
         raise

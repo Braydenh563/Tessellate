@@ -17,7 +17,6 @@ import logging
 import os
 import re
 import sys
-import threading
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -830,11 +829,7 @@ def _start_searxng_if_asked() -> None:
         config = deps.get_config()
         if not config.get_preference("searxng_autostart", False):
             return
-        threading.Thread(
-            target=lambda: searxng_manager.start(config.data_dir),
-            name="searxng-autostart",
-            daemon=True,
-        ).start()
+        jobs.thread("searxng-autostart", lambda: searxng_manager.start(config.data_dir))
     except Exception:  # noqa: BLE001  # a failed autostart must never block startup
         logging.getLogger("tessellate.startup").warning(
             "SearXNG autostart didn't run this start", exc_info=True

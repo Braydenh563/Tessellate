@@ -73,11 +73,7 @@ def test_a_download_needs_the_hub_library_and_says_when_it_is_missing(client, mo
 
 def test_only_one_download_runs_at_a_time(client, monkeypatch):
     monkeypatch.setattr(embedmodels, "can_download", lambda: True)
-    monkeypatch.setattr(
-        embedmodels.threading,
-        "Thread",
-        lambda **kw: type("T", (), {"start": lambda self: None})(),
-    )
+    monkeypatch.setattr(embedmodels, "_spawn_download", lambda model: None)
     assert client.post("/embedding-models/bge-small/download").json()["started"] is True
     second = client.post("/embedding-models/minilm/download").json()
     assert second["started"] is False
@@ -94,11 +90,7 @@ def test_only_one_download_runs_at_a_time(client, monkeypatch):
 
 def test_a_running_download_appears_in_the_shared_task_list(client, monkeypatch):
     monkeypatch.setattr(embedmodels, "can_download", lambda: True)
-    monkeypatch.setattr(
-        embedmodels.threading,
-        "Thread",
-        lambda **kw: type("T", (), {"start": lambda self: None})(),
-    )
+    monkeypatch.setattr(embedmodels, "_spawn_download", lambda model: None)
     assert client.post("/embedding-models/bge-small/download").json()["started"] is True
 
     tasks = client.get("/tasks").json()["tasks"]

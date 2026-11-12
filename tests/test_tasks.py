@@ -101,12 +101,10 @@ def test_the_embedding_warm_up_is_a_visible_job(client, monkeypatch):
     monkeypatch.setattr(embeddings_module, "warmup_running", lambda: True)
     task = next(t for t in client.get("/tasks").json()["tasks"] if t["kind"] == "embeddings")
     assert "90 MB" in task["detail"]
-    # **The one job with no Quit button, and the only one.** It is a single
-    # blocking model load with nothing to check a flag between, so a button
-    # would be a lie. The detail text has to say so, or a missing button reads
-    # as a missing feature.
-    assert task["cancellable"] is False
-    assert "stopped part-way" in task["detail"]
+    # Stoppable since L650 (a download stops after its file, nothing follows
+    # the load); the detail says what Stop cannot do.
+    assert task["cancellable"] is True
+    assert "can't be stopped part-way" in task["detail"]
 
 
 def test_a_vision_caption_shows_up_while_running(client, monkeypatch):

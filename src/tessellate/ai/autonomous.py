@@ -908,10 +908,10 @@ def start() -> None:
             return
         _stop_event = threading.Event()
         _wake_event = threading.Event()
-        _loop_thread = threading.Thread(
-            target=_loop, args=(_stop_event, _wake_event), daemon=True, name="autonomous-agent"
-        )
-        _loop_thread.start()
+        from tessellate.core import jobs
+
+        stop_event, wake_event = _stop_event, _wake_event
+        _loop_thread = jobs.thread("autonomous-agent", lambda: _loop(stop_event, wake_event))
 
 
 def stop() -> None:

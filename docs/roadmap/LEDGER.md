@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 161 | 48 | 0 | 73 | 339 |
+| world-class | 130 | 157 | 47 | 0 | 73 | 334 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 687 | 147 | 3 | 196 | 1387 |
+| all | 553 | 683 | 146 | 3 | 196 | 1382 |
 
 ## graph
 
@@ -688,9 +688,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L564** `world-class` open, M: Fold picture captions into their note for the composer and keyword search. From OPEN.md:3642. Evidence: search/index.py:851 caption+OCR+vision one body per picture row; not folded into its note's row
 - [ ] **L565** `world-class` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
 - [ ] **L566** `world-class` open, M: Sign parked tool calls so /chat/tools/execute stops running client-supplied args. From OPEN.md:4499. Evidence: routes_chat.py:2434 execute_confirmed_tool; signing the parked call needs composer_*.py to sign what it parks
-- [ ] **L567** `world-class` open, M: Move the remaining 13 thread modules onto core/jobs.py and verify second device and calendar app. From OPEN.md:611; OPEN.md:2998. Evidence: tests/test_flaw_class_lints.py:11 ratchet still lists Thread( outside core/jobs.py
 - [ ] **L568** `world-class` open, M: Audit other [^\]\n] scanners for ReDoS and add a JS link-stripping oracle test. From OPEN.md:1249; OPEN.md:3543. Evidence: Python oracles exist (tests/test_doc_graph.py:136, test_file_editing.py:252); JS link stripping has no oracle.
-- [ ] **L570** `world-class` open, M: Key lexical_filing stamps on edited_at instead of updated_at. From OPEN.md:1699. Evidence: lexical_filing.py:1009,1060,1217 still key stamps on updated_at; edited_at (database.py:581) not used there. Not done 2026-11-12: edited_at is set only by manager.mark_edited at per-note edit paths (database.py:572-577), so AI-tool, import and merge writes would leave the corpus stale; updated_at over-reads one note per open (access_count bump), cheap. Decided 2026-11-12 (standing order 3, recommendation taken): every content write stamps edited_at in one place (a SQLAlchemy before_flush hook when title, content or category changes, so AI-tool, import and merge writes are covered), then lexical_filing keys on edited_at
 - [ ] **L571** `world-class` open, M: Preserve the note type id on Undo after POST /note-types then delete. From OPEN.md:1771. Evidence: routes_properties.py:145 POST /note-types; no id-preserving restore found; not reproduced here
 - [ ] **L572** `world-class` open, M: Add redo for /events/undo AI-change undo so it folds into pushUndo. From OPEN.md:1775. Evidence: note-history.js:340 undoSkillRun and dashboard activityUndoControl still use /events/undo; no server redo found
 - [ ] **L573** `world-class` open, M: Build wiki-link hover preview, tag counts on chips, empty-state recipe, icons and card styles. From OPEN.md:4240; bs-1111.md. Evidence: New feature (M); citation-peek.js and attachment-peek.js are the recipe; no wiki-link peek file.
@@ -763,7 +761,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L641** `world-class` partly, S: Left: SETTING_WORDS is still `meaning.GROUPS`, a hand table (filters.py:234); replace it with a measured source. From OPEN.md:1843.
 - [ ] **L643** `world-class` partly, S: Left: `aiIsOff()` (status.js:2122, already reading `model_ready`) is still called from 14 files; move those controls to read `model_ready` directly. From OPEN.md:1924.
 - [ ] **L646** `world-class` partly, S: Re-drive undo counts for documents, OCR, meetings. From OPEN.md:3455. Evidence: undo-kit.js, undo-store.js, standalone-undo.js now exist (Brief 74 landed); counts not re-driven.
-- [ ] **L650** `world-class` partly, S: Left: make the 30 s model job stoppable (model_manager has a cooperative cancel only for re-index, :883). The `/models/status` 3.2 s is fixed (tests/test_models_status_cold_1591.py, warm-up dispatch). From OPEN.md:4362.
 - [ ] **L651** `world-class` partly, S: Drive undo helpers in a browser (only node --check and scanner so far). From OPEN.md:512. Evidence: Scanner + node checks exist; no cited Playwright drive of every undo step; Playwright is available so can be driven
 - [ ] **L656** `world-class` partly, M: Left: per-act note and meeting rows and the search chip in the palette. `/read/acts` rows are drawn (palette.js:177-187); no note, meeting or search-chip row found. From OPEN.md:3721.
 - [ ] **L657** `world-class` partly, M: Left: duplicates, entities and dates as fact kinds. `KINDS` is claim, question, tension, answered (ai/facts.py:109); tensions built. From OPEN.md:1226.
@@ -807,7 +804,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L700** `world-class` partly, L: D9 composed mount not started; D19 gate unmet; D22 to D25 ratchets partly. From ledger-1112 X15.
 - [ ] **L701** `world-class` partly, L: 380ms style-and-layout first frame (13k nodes); dashboard.js widget fill callbacks 98-119ms not fixed. From ledger-1112 I8.
 - [ ] **L-world-class-1** `world-class` open, M: Run the Harper autocorrect on reminders, magic add and the other single-line app inputs. From INBOX 904 B04. Evidence: Harper runs in the note boxes (autocorrect.js); no harper hook on reminders or magic add
-- [ ] **L-world-class-2** `world-class` open, S: Stop the composer-written weekly digest sentences reading as clickable buttons. From INBOX 904 B83 (O9). Evidence: digest sentences render as buttons
 - [ ] **L810** `world-class` open, M: Decide FIT42: ?preview=300 adoption awaiting server-side note search. From OPEN.md:4321. Evidence: Waits on Q9 (server-side note search) decision. Owner decided 2026-11-12: Server search first (Add a local search route over the notebook database, switch the filter box to it, then move the other readers onto previews). Build: routes_entries.py: GET /entries?q= local text search; notes-list.js filter calls it; then migrate allEntries content readers in batches; measure on a 5,000-note notebook.
 - [ ] **L795** `world-class` open, M: Decide whether to remove routes only tests use. From OPEN.md:4213. Evidence: Ledger owner call: removing public routes changes the interface. Owner decided 2026-11-12: Remove, one by one (Each route with no app, MCP or doc caller is deleted with its tests after a grep; fewer paths to secure). Build: Script listing routes with no frontend/js, mcp_server or docs reference; delete each with its tests, CODEMAP regenerated, CHANGELOG line.
 - [ ] **L805** `world-class` open, M: Decide redo design so undoActorFrom/undoSkillRun stop refusing the person's changes. From OPEN.md:3794. Evidence: Redo design needs owner decision; app.js:1819 still lists undoSkillRun Owner decided 2026-11-12: Add a server redo (The server re-applies the reversed AI events, so these undos join the normal undo stack with Redo). Build: routes_settings.py events undo: add redo that re-applies reversed events; fold undoActorFrom and undoSkillRun into pushUndo.
@@ -838,7 +834,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-25** `world-class` partly, M: B4 knowledge kernel: per-claim citations, 'what changed about X' on an entity page, and the 'computed by <model> at <ts>' stamp on derived rows. From WORLD_CLASS_PLAN.md B4. Evidence: routes_entities.py entity_page has open_items, timeline, links (2b7d96fe); no per-claim citation rows, no what-changed view, no computed-by stamp
 - [ ] **L-world-class-26** `world-class` partly, M: I5 time travel: the model's judgement over then and now claim pairs, re-embedding past texts for as-of retrieval, and an as-of answer's cards grouped by month (H8). From WORLD_CLASS_PLAN.md I5. Evidence: ai/timetravel.py:179 then_and_now pairs claims by shared words; claims_as_of route (72ce2bca) resolves revisions at a day
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
-- [ ] **L-world-class-29** `world-class` open, M: Add a stop step to the backup pass (night shift, resurfacing, embeddings backfill and maintenance now stop). From L658 remainder. Evidence: core/backup.py:260 backup_now has no stop step between copy, check and second copy; callers use the returned path, so a stop needs a decided shape
 
 ## general
 

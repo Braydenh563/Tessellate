@@ -153,8 +153,7 @@ def merge_notes(body: MergeBody, session: Session = Depends(get_session)) -> dic
                 tags.append(tag)
 
     keeper.content = preview["merged"]
-    keeper.tags = json.dumps(tags)
-    manager.mark_edited(keeper)
+    keeper.tags = json.dumps(tags)  # `edited_at` is stamped by the before_flush hook (the text changed)
     manager.log_action(
         session, "edited", "entry", keeper.id, f"merged {len(entries)} notes"
     )
