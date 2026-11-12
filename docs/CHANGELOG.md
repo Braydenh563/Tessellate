@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagrams: the diagram editor's ... menu has Wrap long lines, which folds long Source lines instead of scrolling sideways (the line numbers hide while folded); the choice is kept on the device (L304)
 - Documents: a TypeScript file's Problems list carries sucrase's own parse errors when the editor's tree finds none, named TypeScript and linked to the line (L310).
 - Documents: the Writing Room's thoughts and draft boxes end on one line (326.8 and 294.8 px before, 294.8 and 294.8 at 1440, 1280 and 1160), and the graph's two note boxes were measured: 146 px empty, 352 px at 60 lines, no scroll in a 900 px window (L303, L326).
 - Documents: choosing Source again on a code file clears a stored Plain view, so the next file no longer opens uncoloured; the docviews sweep ignores bracket colours (L-documents-12).
