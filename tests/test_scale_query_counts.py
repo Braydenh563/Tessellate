@@ -28,6 +28,18 @@ from tessellate.core.database import Category, EmbeddingRecord, Entry
 from tessellate.search import search_manager
 
 
+def _jobs_settled() -> None:
+    import time
+
+    from tessellate.core import jobs
+
+    for _ in range(600):
+        if not jobs.pool().queued_count() and not jobs.pool().running_count():
+            return
+        time.sleep(0.05)
+    raise AssertionError("background jobs never settled")
+
+
 def _count_queries(session, fn):
     count = 0
 
@@ -275,6 +287,7 @@ def test_the_attachment_gallery_reads_the_page_not_a_row_at_a_time(client, sessi
             files={"file": (f"p{i}.png", pixel, "image/png")},
         )
 
+    _jobs_settled()  # each upload queues a document read whose own statements would land in the count under load
     small = _count_queries(session, lambda: client.get("/files/gallery?limit=5"))
     large = _count_queries(session, lambda: client.get("/files/gallery?limit=30"))
     assert large <= small + 1, (

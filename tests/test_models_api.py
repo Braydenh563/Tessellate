@@ -711,10 +711,17 @@ def test_the_first_poll_against_a_busy_runner_says_checking_instead_of_waiting(c
     ollama = OllamaClient("http://127.0.0.1:9")
     monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
     monkeypatch.setattr(routes_models, "INSTALLED_COLD_BUDGET", 0.2)
-    routes_models._installed_known.pop(routes_models._flight_key(ollama), None)
+    client.get("/health")  # the app's first request pays its own warm-up (3.8 s on CI); time the poll alone
+    monkeypatch.setattr(ollama, "list_models", lambda: [])
+    client.get("/models/status")  # and the status route's own first-call costs (3.1 s under a loaded CI leg)
+    key = routes_models._flight_key(ollama)
+    for _ in range(200):  # that warm-up's own flight must land before the timed poll starts a fresh one
+        if key not in routes_models._installed_flights:
+            break
+        time.sleep(0.05)
+    routes_models._installed_known.pop(key, None)
     release = threading.Event()
     monkeypatch.setattr(ollama, "list_models", lambda: (release.wait(30), [{"name": "model-a", "size": 1}])[1])
-    client.get("/health")  # the app's first request pays its own warm-up (3.8 s on CI); time the poll alone
     started = time.monotonic()
     first = client.get("/models/status").json()
     assert time.monotonic() - started < 3
@@ -775,7 +782,11 @@ def test_status_does_not_probe_the_runner_a_second_time_for_embedding_ready(clie
     monkeypatch.setattr(ollama_client.requests, "get", lambda url, **kw: probes.append(url) or (_ for _ in ()).throw(AssertionError(url)))
     monkeypatch.setattr(deps.get_embeddings(), "_ollama", ollama)
     client.get("/models/status")  # starts the list flight
-    body = client.get("/models/status").json()
+    for _ in range(200):  # the flight lands on its own thread; a loaded CI leg can poll before it does
+        body = client.get("/models/status").json()
+        if body["ollama_running"]:
+            break
+        time.sleep(0.05)
     assert body["ollama_running"] is True
     assert body["embedding_ready"] is True
     assert probes == []
