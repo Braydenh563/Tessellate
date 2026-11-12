@@ -338,6 +338,11 @@ changed_tests() {
     esac
   done | sort -u
 }
+# A per-test limit when pytest-timeout is there: a hung test (the full suite
+# stopped twice at 92% and 99% under -q, ledger 2026-11-12b) fails by name,
+# with every thread's stack, instead of running into the shell's timeout and
+# naming nothing. Five minutes is far past any one test's run here.
+TIMEOUT=(); "$PY" -c "import pytest_timeout" 2>/dev/null && TIMEOUT=(--timeout=300)
 if [ "$CHANGED" = 1 ]; then
   mapfile -t TARGETED < <(changed_tests)
   # A selection this large is not a targeted run any more, and pretending
@@ -350,14 +355,14 @@ if [ "$CHANGED" = 1 ]; then
   if [ "${#TARGETED[@]}" = 0 ]; then skipped+=("changed-tests (none matched)");
   else
     [ "${#TARGETED[@]}" -le 40 ] && echo "changed-tests: ${TARGETED[*]}"
-    step changed-tests "$PY" -m pytest -q -p no:warnings "${TARGETED[@]}"
+    step changed-tests "$PY" -m pytest -q -p no:warnings "${TIMEOUT[@]}" "${TARGETED[@]}"
   fi
 else skipped+=("changed-tests (--changed)"); fi
 # Across every core when pytest-xdist is there (requirements.txt): the suite
 # is 25 minutes serial and under 9 on four cores, and each test already runs
 # in its own data dir, so nothing is shared between workers.
 XDIST=(); "$PY" -c "import xdist" 2>/dev/null && XDIST=(-n auto)
-if [ "$FULL" = 1 ]; then step full-suite "$PY" -m pytest -q -p no:warnings "${XDIST[@]}" tests/; else skipped+=("full-suite (--full)"); fi
+if [ "$FULL" = 1 ]; then step full-suite "$PY" -m pytest -q -p no:warnings "${TIMEOUT[@]}" "${XDIST[@]}" tests/; else skipped+=("full-suite (--full)"); fi
 if [ "$SWEEPS" = 1 ]; then
   export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"
   export BASE="${BASE:-http://127.0.0.1:8781}"
