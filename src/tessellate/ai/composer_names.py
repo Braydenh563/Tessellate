@@ -12,6 +12,7 @@ from tessellate.core.lazyre import lazy_compile
 
 #: A word after one of these (or the last word) can be the subject asked about.
 _BEFORE_SUBJECT = frozenset({"about", "is", "of", "for", "on", "does", "did", "was", "with", "from", "to", "who", "whos"})
+_POSSESSIVE = frozenset({"my", "the", "our", "your"})
 _CAPITAL = lazy_compile(r"\b[A-Z][a-z]{3,}\b")
 _LOWER = lazy_compile(r"\b[a-z]{3,}\b")
 
@@ -27,6 +28,12 @@ def _opens_a_sentence(text: str, at: int) -> bool:
     return at == 0 or text[at - 1] in ".!?:\n#*|>-"
 
 
+def _heading(note: dict) -> str:
+    """The note's one-word name, lower case: its title, or the "# " line it opens with."""
+    first = str(note.get("title") or "").strip() or str(note.get("content") or "").lstrip().split("\n", 1)[0]
+    return first.lstrip("# ").strip().lower()
+
+
 def names_of(notes: list[dict]) -> frozenset[str]:
     """The names the notes write with a capital and never without, lower case. A word that is capitalised only
     for opening a sentence is a name only when it is not an ordinary word ("Pick up the parcel" is not Pick)."""
@@ -35,7 +42,9 @@ def names_of(notes: list[dict]) -> frozenset[str]:
         m.group(0).lower() for m in _CAPITAL.finditer(text)
         if not _opens_a_sentence(text, m.start()) or m.group(0).lower() not in _ORDINARY
     }
-    return frozenset(capital) - frozenset(_LOWER.findall(text))
+    #: A one-word title ("Budget", "Shopping") is the note's name whatever else says the word (F8).
+    titles = {t for n in notes or () if (t := _heading(n)).isalpha() and len(t) >= 4}
+    return (frozenset(capital) - frozenset(_LOWER.findall(text))) | titles
 
 
 def respell(question: str, names: frozenset[str], fixed: list | None = None) -> str:
@@ -47,7 +56,9 @@ def respell(question: str, names: frozenset[str], fixed: list | None = None) -> 
     for i, token in enumerate(tokens):
         word = token.strip("?.!,;:").lower()
         last = all(not t.strip("?.!,;:") for t in tokens[i + 1:])
-        if len(word) < 4 or not word.isalpha() or word in names or not (last or (i and tokens[i - 1].lower() in _BEFORE_SUBJECT)):
+        #: "my shoping list": the word before a bare "list" is the note's name as much as the last word is (F8).
+        listed = i > 0 and i + 1 < len(tokens) and tokens[i + 1].strip("?.!,;:").lower() == "list" and tokens[i - 1].lower() in _POSSESSIVE
+        if len(word) < 4 or not word.isalpha() or word in names or not (last or listed or (i and tokens[i - 1].lower() in _BEFORE_SUBJECT)):
             continue
         chosen = question_noise.nearest(word, names)
         if chosen:
@@ -55,3 +66,4 @@ def respell(question: str, names: frozenset[str], fixed: list | None = None) -> 
             if fixed is not None:
                 fixed.append((token, tokens[i]))
     return " ".join(tokens)
+
