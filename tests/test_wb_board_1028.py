@@ -170,7 +170,8 @@ def test_the_fold_chevron_and_count_keep_a_24px_floor_and_44_on_touch():
     coarse = LAZY[LAZY.index("@media (pointer: coarse) {\n  .wb-map-collapse") :][:400]
     # Touch: 44 at 100% and above, shrinking with the board to the 24px floor
     # (INBOX 1450: one size at every zoom drew 44px chevrons over 17px topics).
-    assert "scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)))" in coarse
+    # L-general-52: the middle term is 1.2, so a fit zoom of 0.98 still draws 44px, not 43.
+    assert "scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1.2, var(--wb-inv-zoom)))" in coarse
     count = LAZY[LAZY.index("\n.wb-map-count {") :][:1800]
     assert "scale(max(1, var(--wb-inv-zoom)))" in count and "min-width: 1.5rem" in count
     down = MISC[MISC.index(".wb-map-down .wb-map-collapse {") :][:200]
@@ -183,7 +184,7 @@ def test_the_node_action_buttons_floor_is_24_not_20():
     rule = LAZY[LAZY.index("\n.wb-map-actions {\n  transform: scale(") :][:200]
     assert "24 / 28" in rule
     coarse = LAZY[LAZY.index("@media (pointer: coarse) {\n  .wb-map-actions") :][:200]
-    assert "scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)))" in coarse  # INBOX 1450
+    assert "scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1.2, var(--wb-inv-zoom)))" in coarse  # INBOX 1450, L-general-52
 
 
 def test_far_out_the_fold_chevron_waits_for_the_zoom_or_the_selection():
