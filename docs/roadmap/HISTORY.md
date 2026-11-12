@@ -7,6 +7,39 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)
+
+Re-grounded against the code on 2026-11-12; evidence is file:line at that date.
+
+- Edit image, replace image, crop to a rectangle or ellipse: frontend/index.html:8565 (wb-fmt-crop), frontend/js/whiteboard-format.js crop handler.
+- Label background and border colour: frontend/js/whiteboard-label.js:7 (label_bg, label_border), frontend/index.html:8774.
+- Label position, inside or outside: frontend/index.html:8780 (wb-fmt-lpos), frontend/js/whiteboard.js:20767 (label_pos).
+- Word wrap, label width, label padding: frontend/index.html:8788 (wb-fmt-lwidth, wb-fmt-lwrap), frontend/js/whiteboard-label.js:9.
+- Label spacing top, right, bottom, left: frontend/index.html:8792 (wb-fmt-lpad0..3).
+- Group padding (frame padding row): frontend/index.html:8617 (data-fmt="pad"), frontend/js/whiteboard-format.js frame fields.
+- Link on a shape, sketches and a frame target: frontend/js/whiteboard-commands.js:70 (wbTakesLink), frontend/js/whiteboard.js:9949 (wbItemLink).
+- Arrowheads, 22 filled and hollow kinds with size: frontend/js/whiteboard.js:2329 (WB_CAP_KINDS), wb-fmt-startsize and wb-fmt-endsize.
+- Rounded and curved polylines: frontend/index.html:8522 (wb-fmt-linestyle), :8527 (wb-fmt-round).
+- Stencil libraries at scale, five draw.io sets: frontend/board-library/drawio/*.json, frontend/js/whiteboard-library.js:199 (wbLoadShapeSets).
+- Template categories as tags: frontend/js/whiteboard-templates.js:22 (WB_TEMPLATE_PURPOSES).
+- Find extends to shape and connector labels and data props: frontend/js/whiteboard.js:4188 (wb-search-regex, wb-search-word, wbBoardSearchRun).
+- Zoom list: frontend/js/whiteboard.js:689 (zoom presets 25 to 400 and Fit).
+- Mouse wheel zoom or scroll: frontend/js/whiteboard.js:96-101 (wheel handling).
+- Ctrl+Shift+Z redo: frontend/js/settings-wiring.js:1069.
+- Groups with nesting and remove from group: frontend/js/whiteboard-commands.js (remove-from-group), nested groups 883fc62.
+- Swimlanes and lane preset: frontend/board-library/frames.json (swimlanes-rows, Timeline lane).
+- XML export as .drawio: frontend/js/whiteboard-interchange.js:970 (wbExportDrawio), frontend/js/whiteboard.js:14828 (WB_EXPORT_FORMATS).
+- Diagram style presets: frontend/index.html:8452 (wb-fmt-help-boardstyle).
+- Dimension lines with a live length: frontend/js/whiteboard-commands.js:218 (measure), :952 (wbMeasureSelection).
+- Crop a picture to a circle or rounded box: frontend/index.html:8565 (wb-fmt-crop), radii wb-fmt-r0..r3 on the image kind (whiteboard-format.js:85-90).
+
+Decided not to build (from the draw.io catalogue):
+
+- Snap to grid after align: built elsewhere: the snap toggle exists, frontend/js/whiteboard.js:16088 (wb-snap-toggle); nothing further to build.
+- Pages (tabs) in one file: decision 22 in the plan: frames are the pages; the Pages side tab lists them.
+- Ruler: built elsewhere: guides and smart guides cover it, frontend/js/whiteboard.js:1013 (wbGuideBoxes).
+- Pages inside one board: duplicate of the Pages (tabs) row, decision 22 in the plan: boards and frames stand in.
+
 ## Moved from the plans, 2026-11-12 (whiteboard plan, stale entries)
 
 From WHITEBOARD_PLAN (LEDGER L-whiteboard-17): the 1358 dogfood passes were run and merged; `contrast.js` visits boards and maps; the 258 right-drag pan recommendation was superseded by INBOX 1452; decision 36's ghost note is built (fixes7-1018).

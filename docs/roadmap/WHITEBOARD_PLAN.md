@@ -817,7 +817,6 @@ the same three tabs (Style, Text, Arrange); fields per kind in
 | Set as default style, default for new connectors | yes, 2026-11-10 (s9c-1110; HISTORY) | `setAsDefaultStyle` (Actions.js 1749), `setAsDefaultForNewConnections` (1763), Ctrl+Shift+D | `board.defaults {shape, link, text}` in the board's settings row, read by the tools when they create an item; Ctrl+Shift+D writes it from the selection | M |
 | Named styles | yes (`save-style`, `wb-fmt-save-style`, library kind `style`) | style presets in the sidebar and `DiagramStylePanel.addGraphStyles` (Format.js 8383) | done for items; the whole-board presets are the next row | none |
 | Board-wide style presets (twelve colour schemes applied to every shape) | yes, 2026-11-10 (s9c-1110; HISTORY) | `DiagramStylePanel` (Format.js 8252 to 8858) | a "Board style" row in the Format panel's no-selection state, writing fill, stroke and text colour across the board in one undo step | M |
-| Edit image, replace image, crop | partly, 2026-11-10 (s9c-1110; HISTORY): rectangle crop (Trim edges), Replace picture and Edit image (turn, flips, greyscale, brightness, contrast as item style) built; Crop on picture (draggable box, eight handles) built | `editImage`, `image...`, `crop...` (Actions.js 884, 1998, 2112) | canvas crop to a new media row; ANALYSIS row "Crop, rotate, flip" | M |
 | SVG image styles and CSS variables | no | `addSvgStyles`, `addSvgVars` (Format.js 6442, 6594) | drop: draw.io-specific theming of embedded SVG | none |
 
 ### 2. Format panel, Text tab, and the Arrange tab
@@ -836,13 +835,9 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Horizontal align (left, centre, right) | yes (`wb-fmt-align`) | `STYLE_ALIGN` | done | none |
 | Vertical align (top, middle, bottom) | yes, 2026-10-10 (HISTORY) | `STYLE_VERTICAL_ALIGN` | `label_valign`; the SVG label block is positioned by it; Brief 36 carries it | S |
 | Font colour | yes (`wb-fmt-ink`) | `fontColor...` (Actions.js 1525) | done | none |
-| Label background and border colour | no | `labelBackgroundColor`, `labelBorderColor` (Format.js, Text tab) | `label_bg`, `label_border`: a rounded rect behind the label, which a connector label needs to stay readable over crossing lines | S |
 | Text opacity | yes, 2026-11-01 (board-1101; HISTORY), `label_alpha`, `text_alpha` | `textOpacity` | `label_alpha` | S |
 | Text shadow | no | `textShadow` | drop | none |
-| Label position (inside, outside: above, below, left, right of the shape) | no | `labelPosition`, `verticalLabelPosition` | `label_pos` enum; the icon and swimlane use it | M |
 | Text direction, vertical text | yes, 2026-11-01 (board-1101; HISTORY), `label_dir`, `text_dir` (rtl, vertical) | `textDirection`, `horizontal=0` (`vertical` action, Actions.js 1584) | `label_dir` (rtl, vertical-rl) applied as SVG `writing-mode` | S |
-| Word wrap, label width, padding | partly (shapes wrap inside `label_area`) | `whiteSpace=wrap`, `labelWidth`, `labelPadding` | `label_width`, `label_pad` on top of `label_area` | S |
-| Spacing: top, right, bottom, left, global | no | `spacing`, `spacingTop..Left` | `label_pad {t,r,b,l}` shares the row above | S |
 | Line height | yes (`wb-fmt-lh`) | `lineheight` in the text panel | `label_lh` | S |
 | Auto-size to text, fit text to shape | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `autosize` action (Actions.js 1001), `autosizeText`, `fitTextToShape` | one command `autosize` in `WB_COMMANDS`: measure the label with `getBBox`, resize the shape's box; grows only | S |
 | Formatted (HTML) text, lists, indent, links, horizontal rule | partly: text boxes are markdown with a slash menu; shapes plain | `formattedText` (Actions.js 1086), `html=1`, list and indent buttons | shapes keep plain text; markdown stays for text boxes; the Format panel shows the markdown toolbar for them | none |
@@ -851,17 +846,15 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Layer order: front, back, forward, backward | yes (four `order-*` commands) | `toFront`, `toBack`, `bringForward`, `sendBackward` (Actions.js 569 to 585) | done | none |
 | Group, ungroup, lock | yes (`group`, `ungroup`, `lock`) | `group`, `ungroup`, `lockUnlock` (Actions.js 644, 665, 521) | done | none |
 | Remove from group | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `removeFromGroup` (Actions.js 705) | one command: clear `group_id` on the selected member, keeping the group | S |
-| Copy size, paste size, swap | copy and paste size yes, 2026-10-18 (whiteboard-1018; HISTORY); swap no | `copySize`, `pasteSize`, `swap` (Actions.js 223, 238, 213) | `same-width`, `same-height` cover the multi-select case; copy size is two commands that remember w and h | S |
+| Copy size, paste size, swap | copy size and paste size yes (commands `copy-size`, `paste-size`); swap size has no command | `copySize`, `pasteSize`, `swap` (Actions.js 223, 238, 213) | a `swap-size` command exchanging w and h of two selected items | S |
 | X, Y, width, height | yes (`wb-fmt-x/y/w/h`) | `addGeometry` (Format.js 3082) | done; resize from the centre is the one gap (matrix) | S |
 | Constrain proportions | yes (`wb-fmt-link`, the W/H lock); size presets (`wb-fmt-aspect`: 1:1, 4:3, 3:2, 16:9, 3:4, A4), 2026-11-01 (board-1101) | `constrainProportions` checkbox (Format.js 3082) | `data.aspect` lock; shift-drag already keeps it | S |
 | Rotation angle, flip horizontal and vertical | yes (`wb-fmt-angle`, `wb-fmt-flip-h/v`) | `addAngle` (Format.js 2913), `addFlip` (2612) | done | none |
 | Turn 90 degrees | yes, 2026-10-18 (whiteboard-1018; HISTORY), no Ctrl+R (the browser's reload) | `turn` action (Ctrl+R) | a command that adds 90 to `rotation` | S |
 | Align (six), distribute (two) | yes (eight commands) | `addAlign` (Format.js 2575), `addDistribute` (2856) | done | none |
-| Snap to grid after align | partly (`wb-snap-toggle`) | `snapToGrid` in the align block | none worth building | none |
-| Group padding | no | `addGroupPadding` (Format.js 3663) | frame padding row (`tint` and `hint` exist on frames) | S |
 | Table: rows, columns, merge, stripes | no | `addTable` (Format.js 2162), section 12 below | section 12 | M |
 | Arrow shape geometry (width of a block arrow connector) | no | `addArrowGeometry` (Format.js 3972) | needs the `flexArrow` connector shape, section 4 | M |
-| Edit data, copy and paste data, edit tooltip, note, link, open link | no (links on items exist) | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | section 3 | M |
+| Edit data, copy and paste data, edit tooltip, note, link, open link | edit data yes (`edit-data`, whiteboard-commands.js:253), tooltip and links yes; copy data and paste data (Alt+Shift+B, V) absent | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | two commands that copy and paste `data.props` | S |
 
 ### 3. Edit style, Edit data, placeholders, tooltips
 
@@ -871,7 +864,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Edit data: custom properties | yes, 2026-10-11 (canvasdepth2; HISTORY) | `EditDataDialog` (Dialogs.js 3707): key and value rows, id, placeholders toggle | `data.props {key: value}` shown as a two-column editor; search and the AI tools read it | M |
 | Placeholders `%name%` in labels | yes, 2026-10-18 (whiteboard-1018 and fixes7-1018; HISTORY), `%date%` and `%page%` included | `Graph.replacePlaceholders` (Graph.js 14099), `updatePlaceholders` (13534) | the label renderer replaces `%key%` from `data.props`, `%date%`, `%page%`; export bakes the values | M |
 | Note on a shape | no (comments exist, `comment` command) | `editNote` (Actions.js 786) | covered by board comments | none |
-| Link on a shape (URL or page) | yes (object links, WHITEBOARD_PLAN decision) | `getLinkForCell` (Graph.js 15330), `editLink`, `openLink`, `link=`; `data:page/id,` links to pages | done for objects; add sketches and a "frame" target | S |
 | Edit geometry as numbers | yes (`wb-fmt-x/y/w/h`) | `editGeometry` (Menus.js 962) | done | none |
 | Edit shape (custom stencil XML) | no | `editShape` (Menus.js 768), `EditShapeDialog` | drop; the library's "Save as a shape" (`save-shape`) covers it | none |
 
@@ -883,13 +875,11 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Orthogonal routing that avoids other shapes | partly: elbow detours around its own two end boxes only (`wbElbowRoute`, `wbElbowDetour`) | mxEdgeStyle plus libavoid (`LibavoidRouting.js`, `libavoidRouting=1`), loaded when the extensions bundle is | an obstacle grid over item boxes (A* on a coarse grid, then simplify to corners); `route: "elbow"` keeps its shape, the router becomes the default behind it | L |
 | Waypoints: add, move, remove, clear | yes (`waypoint` in `whiteboard-map.js`; `points` in the link data); "Clear the connector's bends" command 2026-10-18 (whiteboard-1018; HISTORY), the numeric list not | `addWaypoint`, `removeWaypoint`, `clearWaypoints` (Actions.js 1782, 1830, 1871), `addEdgeWaypoints` list (Format.js 4278) | done; add a "Clear waypoints" command and the numeric list in the Arrange tab | S |
 | Line jumps (arc, gap, sharp) with size | yes, size 2026-10-18 (whiteboard-1018; HISTORY) | `addLineJumps` (Format.js 7835), `jumpStyle`, `jumpSize` | add `jump_size` | S |
-| Arrowheads: about 40 (classic, block, open, oval, diamond, thin variants, async, box, half circle, dash, cross, circle plus, ER set, double block), filled or hollow, with size | partly: 11 stroked kinds (`WB_CAP_KINDS`: arrow, circle, square, multiline, six ER); no filled heads, no size | `Format.processMenuIcon` list (Format.js 140 to 175), `startArrow`, `endArrow`, `startFill`, `endFill`, `startSize`, `endSize` | caps become `{kind, fill, size}`; add block, diamond, oval filled and hollow, open, dash, cross, half circle; draw as closed subpaths like `wbCapPath` | M |
 | Connector shapes: line, link (double), flex arrow, simple arrow, tapered arrow, filled edge, pipe, wire | no | `edgeShape` menu (Menus.js 107); `Shapes.js` `link`, `flexArrow`, `taperedArrow`, `filledEdge`, `pipe`, `wire` | `link-*` gains `shape` (line, double, block arrow, pipe) drawn as a closed outline around the centre line | L |
-| Edge labels: text, position along the line, background | yes (`wb-fmt-label-t`, `wblinklabel.js`) | `edge value`, label offset in `mxGeometry`; background `labelBackgroundColor` | done; add `label_bg` (section 2) and a perpendicular offset | S |
+| Edge labels: text, position along the line, background | yes (`wb-fmt-label-t`, `wblinklabel.js`), background `label_bg` and a second label | `edge value`, label offset in `mxGeometry`; background `labelBackgroundColor` | add a perpendicular offset field if a number is wanted | S |
 | Perimeter spacing (gap between line end and shape) | yes, 2026-10-18 (whiteboard-1018; HISTORY), as `gapStart` and `gapEnd` | `sourcePerimeterSpacing`, `targetPerimeterSpacing`, `perimeterSpacing` (Format.js `addStroke`) | `gap_start`, `gap_end` subtracted along the end tangent | S |
 | Source and target connect to a shape, an edge, or float | partly: links join cards and shapes; a free end floats | `mxConnectionHandler`, `Graph.connectVertex` (Graph.js 14940) | done for items; edge-to-edge is drop | none |
 | Hover connection arrows to create a connected shape | yes (`wb-clone-grips`, `wbCloneConnect`) | `HoverIcons` (Graph.js 17581), `connectVertex` | done; a drag from a grip to empty space opens the shape picker (HISTORY, f2-1111 batch 3) | S |
-| Rounded and curved polylines | rounded: yes, 2026-10-18 (an elbow connector; whiteboard-1018, HISTORY); curved: no | `rounded`, `curved` styles | `data.round` on link polylines | M |
 | Edge shadow and opacity | yes | `shadow`, `opacity` | done | none |
 
 ### 5. Connection points and constraints
@@ -906,7 +896,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Pages (tabs) in one file: insert, duplicate, rename, delete, move, sort | by decision (WHITEBOARD_PLAN decision 22: frames are the pages; boards are separate rows) | `Pages.js` (2,834 lines), `insertPage`, `removePage`, `renamePage`, `duplicatePage`, `sortPages` (diagramly/Menus.js 264 to 292) | done by decision; a "Pages" side tab already lists frames (`wb-side-tab-pages`) | none |
 | Page background colour and image | yes (board background, `wb1005-bg.js`) | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
 | Units (points, inches, mm, cm, m) | no | `units` menu (diagramly/Menus.js 370) | drop: the board has no print scale | none |
 
@@ -923,7 +912,6 @@ whiteboard-library.js 400). draw.io: `Sidebar.prototype.addStencilPalette`
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Stencil libraries at scale | no: four primitives plus the sets above | 204 libraries, 9,090 shapes in `stencils.min.js`, loaded per palette by `mxStencilRegistry.loadStencil` | the converter (`scratchpad/stencils/convert_stencils.py`) makes one `memorymap-library-set` per library; five ship in `frontend/board-library/drawio/` (basic 30, flowchart 36, arrows 34, bpmn 39, networks 57 shapes; 0.37 MB), all 204 convert (24.5 MB, so the rest stay offline and load on request) | S to ship, M for the loader |
 | JS-drawn shape classes (cylinder, cube, callout, step, hexagon, UML actor and lifeline, folder, note, tape, document, process...) | no | `Shapes.js`: 99 `mxCellRenderer.registerShape` classes (for example `cylinder3` at Shapes.js, `umlActor`, `callout`) drawn by `redrawPath` | a `wbShapePath(kind, w, h)` table of 40 of them that returns M/L/C/Z, with the shape name stored in `data.shape` so the path regenerates on resize (stencils scale; these keep corner radii) | M |
 | More-shapes dialog (tick libraries on and off) | no | `shapes` action, `moreShapes` dialog (diagramly/Menus.js 2924) | a "Shape libraries" dialog on the Library tab: one row per set, count, on or off; written to a user preference | S |
 | Library import: `mxlibrary` XML and JSON | partly: `wb-lib-import` takes `.json` (the app's own set format) | `<mxlibrary>[{"xml": "<mxGraphModel>...", "w": 80, "h": 40, "title": "x"}]</mxlibrary>`, `LibraryDialog`, `DesktopLibrary`, `RemoteLibrary` | an `mxlibrary` reader that feeds each entry through the `.drawio` cell importer (section 14) | M |
@@ -990,7 +978,6 @@ product; the NOTICE says so).
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Template gallery with categories, search, preview | yes: the New board dialog (`whiteboard-templates.js`, INBOX 715): 17 board templates, 15 map templates | `templates/index.xml` plus 15 category folders, 156 `.xml` files each with a `.png`; `NewDialog` (diagramly/Dialogs.js) | done; add categories as tags | S |
 | Insert a template into the current board | no | `insertTemplate` action (diagramly/Menus.js 257) | `import` of a library template entry at the viewport centre (the library already places items) | S |
 | draw.io's templates (basic 10, business 15, charts 6, engineering 3, flowcharts 9, layout 4, maps 5, network 13, other 12, software 12, tables 4, uml 8, venn 8, wireframes 5) | no | `templates/*/*.xml` are `mxfile` with a deflate-compressed `mxGraphModel` | convert 40 through the cell importer (section 14); licence is CC BY 4.0 (`templates/LICENSE`), so each carries "Template by JGraph, CC BY 4.0" in its library note | M, after the importer |
 | Save a board as a template | yes (`save-template`) | `File > Save as template` | done | none |
@@ -999,7 +986,6 @@ product; the NOTICE says so).
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Find text, next and previous, highlight, count | yes for cards and objects (`wbBoardSearchRun`, whiteboard.js 2210; `wb-search-*`; Ctrl+F) | `FindWindow` (diagramly/Dialogs.js 9512), `findReplace` action (Ctrl+F) | done; extend to shape and connector labels (`label`) and `data.props` | S |
 | Regular expression, all pages, case | regex and whole word yes, 2026-10-18 (whiteboard-1018; HISTORY); "all frames" open: find already spans every frame of the board, so the row needs a decision (a "this frame only" scope?) | `regularExpression` and `allPages` checkboxes (Dialogs.js 9512 onward); matches in label text and, with regex, in metadata | regex toggle and "all frames" (not boards); case-insensitive by default | S |
 | Find in custom data | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `testMeta` over the cell's attributes | with `data.props` | S |
 | Tags on shapes, filter by tag | no | `tags` action (Ctrl+K, diagramly/Menus.js 1299), `tags` style attribute | `data.tags` with a tag filter that dims the rest; the Library already has tags | M |
@@ -1009,12 +995,9 @@ product; the NOTICE says so).
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Outline window (a minimap) | yes (`wb-navigator`, Shift+N) | `outline` action (Actions.js 2187), Ctrl+Shift+O, `mxOutline` | done | none |
-| Fit window, fit page width, fit page, two pages, custom zoom, zoom list | partly (fit everything Shift+1, 100 percent, in and out) | `viewZoom` menu (Menus.js 444): 25 to 400 percent list, `fitWindow`, `fitPage`, `fitTwoPages`, `fitPageWidth`, `customZoom` (Ctrl+0) | a zoom list in the zoom strip's menu; fit selection (F) exists per the decisions | S |
-| Home, enter and exit group, expand and collapse | partly (`group` exists; no enter or collapse) | `home`, `enterGroup`, `exitGroup`, `collapse`, `expand` (Actions.js 562 to 566) | enter group dims everything else; collapse folds a frame to its title bar | M |
-| Ruler | no (matrix says drop) | `ruler` action, `mxRuler.js` (690 lines) | drop; guides and smart guides cover it | none |
-| Grid size and colour, guides, page view, connection arrows, tooltips toggles | partly (grid style: none, lines, dots, iso; snap; connection arrows and points, 2026-11-11) | `grid`, `guides`, `tooltips`, `connectionArrows`, `connectionPoints`, `pageView`, `animations`, `zoomWheel` (Actions.js 1313 to 1403) | add grid size (matrix row) | S |
+| Home, enter and exit group, expand and collapse | `view-home` yes (whiteboard-commands.js:286); no enter or exit group, no canvas collapse | `home`, `enterGroup`, `exitGroup`, `collapse`, `expand` (Actions.js 562 to 566) | enter group dims everything else; collapse folds a frame to its title bar | M |
+| Grid size and colour, guides, page view, connection arrows, tooltips toggles | grid style, snap, connection arrows and points, tooltip field yes; grid spacing fixed (`WB_GRID_SPACING` 24), page view absent | `grid`, `guides`, `tooltips`, `connectionArrows`, `connectionPoints`, `pageView`, `animations`, `zoomWheel` (Actions.js 1313 to 1403) | add grid size (matrix row) | S |
 | Fullscreen | yes | `fullscreen` (diagramly/Menus.js 399) | done | none |
-| Mouse wheel: zoom or scroll | not checked | `zoomWheel` | not checked | none |
 | Presentation mode | yes (`present`) | `presentationMode` (diagramly/Menus.js 3954) | done | none |
 | Light, dark and automatic appearance, adaptive colours | yes (the app's themes; the board's ink follows) | `adaptiveColors`, `light-dark()` colours (Format.js `defaultStripeColor`) | done | none |
 
@@ -1027,7 +1010,6 @@ clash is listed so the choice is made once.
 
 | draw.io | Action | Tessellate | Note |
 | --- | --- | --- | --- |
-| Ctrl+Z, Ctrl+Shift+Z or Ctrl+Y | undo, redo | Ctrl+Z, Ctrl+Y | add Ctrl+Shift+Z |
 | Ctrl+X, C, V | cut, copy, paste | same | paste here and paste size: none |
 | Delete, Backspace | delete | Del | Backspace: add on the board only |
 | Ctrl+D | duplicate | Ctrl+D | same |
@@ -1039,14 +1021,14 @@ clash is listed so the choice is made once.
 | Ctrl+L | lock | Ctrl+Shift+L | differs (ours is the lint-held key) |
 | Ctrl+Shift+F, Ctrl+Shift+B | to front, to back | Ctrl+], Ctrl+[ | keep ours; accept both |
 | Ctrl+B, Ctrl+I, Ctrl+U | bold, italic, underline | bold and italic only on text | underline with section 2 |
-| Ctrl+E | edit style | none | with "Edit data" (Ctrl+M) |
+| Ctrl+M | edit data | none (Ctrl+E edit style is built, whiteboard-commands.js:142) | Ctrl+M is free; bare M is the highlighter |
 | Ctrl+M | edit data | none | section 3 |
 | Ctrl+Shift+M | edit geometry | the Format panel (Ctrl+Shift+P) | |
 | Ctrl+Shift+P | format panel | same | |
 | Ctrl+Shift+L | layers panel | lock (clash) | the layers panel opens from the side tab and keeps no key |
 | Ctrl+Shift+O | outline | Shift+N | differs |
 | Ctrl+Shift+D | set as default style | none | section 1 |
-| Ctrl+Shift+R | clear default style | none | S |
+| Ctrl+Shift+R | clear default style | command `clear-default-style` exists (whiteboard-commands.js:144), no key | S |
 | Ctrl+R | turn 90 degrees | none, 2026-10-18: a command without the key (whiteboard-1018) | S |
 | Ctrl+Shift+Y | autosize | none, 2026-10-18: a command without the key (whiteboard-1018) | S |
 | Ctrl+Shift+G | grid on and off | ungroup (clash) | grid stays on the View menu |
@@ -1065,10 +1047,10 @@ clash is listed so the choice is made once.
 | Arrow keys, Shift+arrow, Ctrl+arrow | move 1 px, move by the grid size, resize (`nudge`, EditorUi.js 8249) | arrows 1 px, Shift 10 px | add Ctrl+arrow resize |
 | Alt+Shift+arrow | clone and connect (`connectVertex`) | Alt+Shift+Arrow | same |
 | Alt+Shift+R, L, T, N | clear waypoints, edit link, edit tooltip, edit note (`altShiftActions`, EditorUi.js 8129) | none | with sections 3 and 4 |
-| Alt+Shift+F, V, B, E | copy size, paste size, copy data, paste data | none; copy and paste size are commands without the key, 2026-10-18 (whiteboard-1018) | S each |
+| Alt+Shift+F, V, B, E | copy size, paste size, copy data, paste data | copy-size and paste-size commands exist without keys; copy and paste data absent | S each |
 | Alt+Shift+A, O, Q | connection arrows, connection points, edit connection points | none | with section 5 |
 | Ctrl+Alt+Shift+F, B | bring forward, send backward | ] and [ | differs |
-| Ctrl+Alt+X, Ctrl+Alt+Shift+X | copy as image, as SVG | none | section 14 |
+| Ctrl+Alt+X, Ctrl+Alt+Shift+X | copy as image, as SVG | commands `copy-image` and `copy-svg` exist (whiteboard-commands.js:314), no keys | S |
 | / | focus the sidebar search (`geOmniSearch`) | Ctrl+F finds on the board | the Library search could take / |
 | Tab, Shift+Tab | next and previous cell | map topics only | S: cycle through items in z order on a board |
 | Ctrl+Shift+6 | adaptive colours | none | drop |
@@ -1081,11 +1063,9 @@ clash is listed so the choice is made once.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Rubber-band, lasso, shift-add, select all of a kind | yes (select, lasso K; Ctrl+A); select all shapes and select all connectors, 2026-10-18 (whiteboard-1018; HISTORY) | `mxRubberband`, `selectVertices`, `selectEdges` (Actions.js 517, 518) | two commands | S |
-| Groups with nesting | partly: `group_id` (18 hits in whiteboard.js); nested depth not checked | `group`, `ungroup`, `removeFromGroup` (Actions.js 644 to 705); `Graph.updateGroupBounds` (Graph.js 16483) | check the depth, add remove from group | S |
-| Containers (a shape that holds children, drop target highlight, children move with it, auto-resize) | partly: frames hold items (`frames.json`); no drop highlight, no resize with children | `container=1`, `isContainer` (Graph.js 11233), `getDropTarget` (26334), `dropTarget`, `recursiveResize`, `collapsible`, `foldCells` (15610) | frames gain "fit to children", a drop highlight, and collapse; the frame-as-container rule is an existing decision | M |
-| Swimlanes and pools (header strip, lanes in a stack) | no (matrix: partly) | `swimlane;startSize=...`, `childLayout=stackLayout`, `horizontalStack`, `resizeParent`, `resizeLast` | a "Lane" frame preset (frames.json already has "Timeline lane") with a header strip and a stack layout in `wbFrameLayout`: new lane appended in line, children keep their offsets | M |
-| Child layouts (stack, tree, flow, rack) | no | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | the stack layout on lanes only; others are the Layout menu (section 16) | M |
-| Tables: rows, columns, cell merge, stripes, header | rows, columns and a header, 2026-10-11 (canvasdepth2; HISTORY); open: merge, stripes, a line dragged to size one row or column, Markdown paste | `Graph.createTable` (Graph.js 18553), `insertTableRow` (29524), `insertTableColumn` (29349), `setTableRowHeight` (19762), `tableLine`, `tableRow` shapes, Arrange panel `addTable` (Format.js 2162) | a `table` item: a grid frame with row and column sizes, cells as text objects, resize by dragging a line; Markdown paste converts into one | L |
+| Containers (a shape that holds children, drop target highlight, children move with it, auto-resize) | `fit-frame` yes (whiteboard-commands.js:170); no drop highlight on frames, no collapse | `container=1`, `isContainer` (Graph.js 11233), `getDropTarget` (26334), `dropTarget`, `recursiveResize`, `collapsible`, `foldCells` (15610) | a drop highlight class on a frame while an item is dragged over it, and collapse | M |
+| Child layouts (stack, tree, flow, rack) | tree tidy (`tidy-down`, `tidy-right`), flip layout, join chain and fan yes; no stack layout on lanes | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | the stack layout on lanes only; others are the Layout menu (section 16) | M |
+| Tables: rows, columns, cell merge, stripes, header | rows, columns, header and column widths yes (`data.col_widths`, menu Widen and Narrow); open: merge, stripes, row heights and a line dragged to size one row or column, Markdown (pipe) paste | `Graph.createTable` (Graph.js 18553), `insertTableRow` (29524), `insertTableColumn` (29349), `setTableRowHeight` (19762), `tableLine`, `tableRow` shapes, Arrange panel `addTable` (Format.js 2162) | `data.merges` and `data.stripes`, grips on the grid lines, a pipe-table parser in the paste helper | M |
 | Lock, hide and "locked" cursor | yes | `lockUnlock` (Actions.js 521), `locked=1` | done | none |
 | Z-order within a container | yes (z per item) | child order | done | none |
 
@@ -1095,7 +1075,7 @@ clash is listed so the choice is made once.
 | --- | --- | --- | --- | --- |
 | Insert an image (file, URL, drag, paste), embedded data URI | yes (`insert-image`, I; media rows) | `image...` (Actions.js 1998), `shape=image;image=data:...` | done | none |
 | Image as a shape fill (`image` style on any shape) | no | `STYLE_IMAGE`, `shape=image` | drop; an image is its own item | none |
-| Crop, replace, border | crop and replace yes, 2026-11-10 (HISTORY); border open | `crop` (Actions.js 2112), `editImage` | section 1 | M |
+| Crop, replace, border | crop (rectangle, ellipse, rounded radii), replace and edit image yes; border open | `crop` (Actions.js 2112), `editImage` | add stroke and width to the image fields, render in the node and the export | S |
 | Math typesetting (LaTeX in labels) | no | `mathematicalTypesetting` action (diagramly/Menus.js 840), `Editor.initMath` (diagramly/Editor.js 4701) loads MathJax | KaTeX is MIT and offline-friendly; a `$...$` span in text objects and shape labels rendered to SVG `foreignObject`; Tessellate's markdown has no math today, so it would come with notes | L |
 | Hyperlinks on shapes, to a URL, a page, or a note | yes for objects; links to a note are the app's own | `editLink`, `link=` | add to sketches; targets: note, frame, URL | S |
 | Embedded notes | no (comments) | `editNote` | comments cover it | none |
@@ -1106,12 +1086,11 @@ clash is listed so the choice is made once.
 | Format | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | PNG with scale and transparent | yes (`wbExportPng`, `WB_EXPORT_FORMATS`) | `ExportDialog` (grapheditor/Dialogs.js 3582) zoom, width, height, dpi, transparent, grid, border width; "include a copy of my diagram" embeds the XML in the PNG | add border width, DPI; embedding the board JSON in a PNG `tEXt` chunk makes the PNG re-importable | S |
-| JPG, WebP, GIF | JPG and WebP yes, 2026-10-18 (whiteboard-1018; HISTORY); GIF open | `exportJpg`, `exportWebp`, `exportAnimatedGif` (diagramly/Menus.js 1170 to 1181) | JPG and WebP are one canvas call each | S |
+| GIF | JPG and WebP yes (`WB_EXPORT_FORMATS`, whiteboard.js:14828); GIF open | `exportAnimatedGif` (diagramly/Menus.js 1181) | no animated source on a board; recommend a decision to drop | S |
 | SVG (re-editable, with the model embedded) | yes (`wbExportSvg`; `<metadata>` carries the board, `wbBoardSvgMetadata`) | `exportSvg` (diagramly/Menus.js 1101) with `content=` attribute | done | none |
 | PDF | yes (`wbExportPdf`) | `exportPdf` (692), server side | done (print path) | none |
 | HTML, embedded viewer, iframe, link | no | `exportHtml` (669), `embed` menu (4208) | an HTML export is the SVG in a page; embedding is out of scope | S |
-| XML, JSON, URL | no | `exportXml` (536), `exportJson` (605), `exportUrl` (581) | the `.drawio` export below | M |
-| `.drawio` import and export (mxfile with `diagram`, `mxGraphModel`, `mxCell`, `mxGeometry`, `UserObject`) | no (`mxfile` appears nowhere in `frontend/`) | `Editor.getGraphXml` (grapheditor/Editor.js 1563), `setGraphXml` (1508), compressed or plain `diagram` text, `mxCodec` | a pure parse in `whiteboard-interchange.js`: cells to items (vertex style `shape`, `fillColor`, `strokeColor`, `rounded`, `ellipse`, `rhombus`, `text`, `swimlane`, `image` to sketch, text, frame, image rows; edge `source` and `target` to link rows with `sourceAnchor` from `exitX`/`entryX`), pages to frames, `UserObject` label and link to `data.props`; the reverse writes plain `mxfile`; the Style mapping is the "Decisions" table | L |
+| `.drawio` import: map rotation, images, gradient | import and export yes (whiteboard-interchange.js:970 writer, :999 reader, pages and deflate-raw); `WB_DRAWIO_DROPPED` still lists rotation, image, gradientColor, shadow | `Editor.getGraphXml` (grapheditor/Editor.js 1563), `setGraphXml` (1508) | map rotation, gradient and shadow in the style reader near whiteboard-interchange.js:503 and the writer near :641, now that the board has counterparts | M |
 | VSDX import and export, Gliffy, Lucidchart, draw.io CSV import | no | `vsdx/importer.js` (15,344 lines), `exportVsdx` (1431), `importFrom` (3410), `csv` action | drop VSDX and Lucid; the CSV importer is S to M and gives the AI a way to draw org charts | M |
 | Mermaid in and out; PlantUML | yes for Mermaid flowcharts (`whiteboard-interchange.js`); no PlantUML | `mermaid`, `plantUml` actions (insertAdvanced menu) | keep the Mermaid subset; PlantUML needs a server, drop | none |
 | Outline, Markdown, OPML, FreeMind, plain text | yes (for maps and outline) | no | Tessellate's own | none |
@@ -1122,8 +1101,8 @@ clash is listed so the choice is made once.
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Insert menu: text, note, rectangle, ellipse, rhombus, line, polygon, freehand, image, link, template, table | yes except polygon, table (Insert menu, `insert-*` commands) | diagramly/Menus.js 4516 to 4574 | add "Polygon" (click points, double-click to close) writing a closed `d`; table with section 12 | S |
-| Sidebar search: tags, soundex, translations, "mxgraph.x.y" names | name, tag and set substring | `searchEntries` (Sidebar.js 1634), `addSearchPalette` (1878), `splitCompoundToken`, `Editor.soundex` | add word-start matching and ranking; synonyms come with the converter's tags | S |
+| Insert menu: polygon | yes except polygon (table built: `insert-table`) | diagramly/Menus.js 4516 to 4574 | add "Polygon" (click points, double-click to close) writing a closed `d` | S |
+| Sidebar search: tags, soundex, translations, "mxgraph.x.y" names | name, tag, set and word-start matching, ranked (library-more.js `rankEntries`); no stemming or soundex | `searchEntries` (Sidebar.js 1634), `addSearchPalette` (1878), `splitCompoundToken`, `Editor.soundex` | synonyms come with the converter's tags; low value | S |
 | Text to diagram (Mermaid, PlantUML, "from text", "generate") | partly: Mermaid import; the AI's `generate_diagram` (HISTORY section 61) | `fromText`, `generate` (diagramly/Menus.js 1393) AI action | done by the assistant, which already places a diagram | none |
 | Freehand | yes (pen, highlighter) | `insertFreehand`, `mxFreehand.js` | done | none |
 
@@ -1141,9 +1120,8 @@ clash is listed so the choice is made once.
 | --- | --- | --- | --- | --- |
 | Background colour or image | yes | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
 | Grid: size, colour, on or off | partly (style, snap) | `addGridOption` (Format.js 9103) | grid size | S |
-| Options: connection arrows, connection points, guides, tooltips, page view, shadow default, "Edit data" of the diagram | partly | `addOptions` (Format.js 9016) | the toggles in section 10 | S |
+| Options: connection arrows, connection points, guides, tooltips, page view, shadow default, "Edit data" of the diagram | connection arrows and points, tooltip field yes; guides, page view, shadow default open | `addOptions` (Format.js 9016) | the toggles in section 10 | S |
 | Paper size, orientation | no | `addPaperSize` (Format.js 9231) | section 6 | S |
-| Diagram style presets | no | `DiagramStylePanel` | section 1 | M |
 
 ### 18. Out of scope, with the reason
 
@@ -1452,9 +1430,9 @@ The owner, 2026-10-25: "upgrade the whiteboard and mindmap; add the features dra
 Exists (no work): connector waypoints and elbow routing (`route`, Bend a line); line jumps at crossings (`jumps`); align, distribute, same size, align to a key object; equal spacing guides; z-order (forward, back, front, back of all); lock; duplicate (Ctrl+D) and copy-and-join arrows; copy, paste and reset style; connector labels; frames and swimlane stencils; layers; shape and icon search in the Library (`wb-lib-search`); grid snap toggle; export or copy the selection; flip; select similar; keep proportions; Edit data; find and replace; Mermaid and draw.io import.
 
 Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, a shape's link and text that shrinks to fit, are built: HISTORY.md, "Moved from the plans, 2026-10-25 (wb2)"):
-6. Dimension lines with a live length (10-19 item 7). M.
-7. Crop a picture to a circle or rounded box (10-19 item 13). M.
-9. Pages inside one board (draw.io's page tabs); boards and frames stand in. L, not planned.
+6. Dimension lines with a live length: built; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
+7. Crop a picture to a circle or rounded box: built; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
+9. Pages inside one board: decided; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
 10. Rulers and units. M, not planned for a student's board.
 
 ## Placed from INBOX, 2026-10-26
