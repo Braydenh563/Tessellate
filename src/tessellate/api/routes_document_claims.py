@@ -52,13 +52,27 @@ class ClaimBody(BaseModel):
     text: str = Field(min_length=1, max_length=MAX_TEXT)
 
 
+def _front_matter_end(text: str) -> int:
+    """Where a leading `---` block ends, or 0. By line, not one regex: a
+    lazy `.*?` up to a closing `---` was polynomial on '---\n' + 'a---\n' * n
+    (CodeQL 2285)."""
+    lines = text.splitlines(keepends=True)
+    if not lines or lines[0].rstrip("\r\n") != "---":
+        return 0
+    pos = len(lines[0])
+    for line in lines[1:]:
+        pos += len(line)
+        if line.rstrip("\r\n").rstrip(" \t") == "---":
+            return pos
+    return 0
+
+
 def _claims(text: str) -> list[tuple[int, int]]:
     """(start, end) of each sentence worth checking, in the text as given:
     not a heading, a code fence's lines, a table row or a frontmatter block."""
     spans: list[tuple[int, int]] = []
     pos, fenced = 0, False
-    front = re.match(r"---\r?\n.*?\r?\n---[ \t]*(?:\r?\n|$)", text, re.S)
-    skip_to = front.end() if front else 0
+    skip_to = _front_matter_end(text)
     for line in text.splitlines(keepends=True):
         start, pos = pos, pos + len(line)
         stripped = line.strip()

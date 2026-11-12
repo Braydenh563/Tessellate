@@ -96,3 +96,21 @@ def test_the_panel_lists_claims_with_the_note_behind_each():
     assert '["claim", "Checked against your notes"]' in text
     assert 'return "backed";' in text and 'return "claim";' in text
     assert "docAiCheck.claims()" in text
+
+
+def test_front_matter_is_skipped_and_parsed_in_linear_time():
+    """CodeQL 2285: the front-matter regex was polynomial on '---\\n' plus many
+    'a---\\n'. By line it is linear, and still ends at the closing `---`."""
+    import time
+
+    from tessellate.api.routes_document_claims import _claims, _front_matter_end
+
+    text = "---\ntitle: x\n---  \nThe river floods the valley every spring now.\n"
+    assert _front_matter_end(text) == text.index("The river")
+    assert _front_matter_end("no front matter\n---\n") == 0
+    assert _front_matter_end("---\nnever closed\n") == 0
+    assert [text[a:b] for a, b in _claims(text)] == ["The river floods the valley every spring now."]
+    hostile = "---\n" + "a---\n" * 50_000
+    started = time.perf_counter()
+    _front_matter_end(hostile)
+    assert time.perf_counter() - started < 0.1
