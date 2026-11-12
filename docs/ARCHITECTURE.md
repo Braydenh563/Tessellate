@@ -1706,7 +1706,9 @@ deliberate animation, and turning it down is a design choice rather than a
 bug fix. **Since answered without turning it down:** the emblem is drawn
 once and turned by a CSS rotation (`canvas.emblem-spin`), at the same
 speed, so the compositor does the turning and no p5 loop runs for it at
-all. Not re-measured with `top` since.
+all. Re-measured 2026-11-12 (`scratchpad/ui-sweeps/idlecpu.js`, 90 s after a
+20 s settle, dashboard open): the tab 0.33% of one core, the server 0.32%,
+0.65% together, under ROADMAP 0.5's 1% line.
 
 What was deliberately *not* cut: the 60-second reminder check, because a
 reminder that waits for you to look at the tab is not a reminder, and the

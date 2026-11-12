@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 100 | 4 | 0 | 17 | 200 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 24 | 2 | 0 | 4 | 26 |
-| all | 553 | 683 | 160 | 3 | 195 | 1396 |
+| general | 0 | 23 | 2 | 0 | 4 | 25 |
+| all | 553 | 682 | 160 | 3 | 195 | 1395 |
 
 ## graph
 
@@ -876,7 +876,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-14** `general` open, S: Tour sweeps: drive the tour through openTour() instead of its old globals. From shell-1112 (Sh1). Evidence: scratchpad/ui-sweeps/toursteps.js, tourdim.js, tour.js read TOUR_SECTIONS and tourRun, now inside tour.js's IIFE; they stop on a ReferenceError
 - [ ] **L-general-15** `general` partly, L: W34 L1 remainder: 265 true, 125 owner-call, 22 hardware-only and 153 unverifiable rows by spoke, each confirmed as a LEDGER row or built. From ledger-1112 X20. Evidence: the w34-*.md spoke lists were retired into LEDGER rows (OPEN.md and w34 sources); recheck that each of the 265 true rows has its row
 - [ ] **L-general-16** `general` partly, M: Session briefs W5 and W16 to W18 have no outcome record; W32 left E9, E10 and E12. From ledger-1112 X23. Evidence: no record of W5, W16 to W18 found at the migration; W32 left E9 (hardware), E10 BK6, BK10, BK12, K36, E12 owner
-- [ ] **L-general-18** `general` open, S: Re-measure idle CPU with idlecpu.js after the emblem spin moved to CSS rotation. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1708. Evidence: The emblem spin moved to a CSS rotation to cut idle CPU, but idle CPU was never measured afterwards. ROADMAP 0.5 sets idle CPU under 1 percent as an exit criterion, and no row holds this measurement.
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-34** `general` open, M: Add the SKILL.md intent-router snippet (with copy button, help, Guide) to Settings' MCP row. From L-general-8 remainder. Evidence: src/tessellate/mcp_server.py cli() built; frontend/js/settings-controls.js:2278 renderMcpSnippet still has no SKILL.md snippet
