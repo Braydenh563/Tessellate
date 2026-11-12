@@ -369,8 +369,7 @@ composer's chosen sentences as context (the owner: "the composer can assist
 the ai"); (b) run the 25-question eval with a real embedder and set the
 cosine thresholds from it (decision 19's are reasoned, the lexical ones are
 measured); (c) a "Your notes, no AI" label on a composed Chat bubble, as
-Ask's chip has; (d) a picture attached as a file (`files` captions), not only
-one inside a mostly-picture note; (e) re-capture the eval's retrieval when
+Ask's chip has; (e) re-capture the eval's retrieval when
 search changes (`tests/fixtures/composer/showcase_725.json`); (f) "the
 composer acts" (the owner: "or the composer can somehow call tools and act
 like an agent"): deterministic commands parsed from a Chat message ("make a

@@ -9,6 +9,7 @@ that answers "has this been done?" before anyone starts.
 
 ## Moved from the plans, 2026-11-12 (compose agent: CHAT_PLAN phase 5, chat LEDGER rows)
 
+- **Built, CHAT_PLAN phase 5 (d):** a picture attached as a file (the prompt's `files` captions, "bean.png (a blue bean drawn in pen)") reaches the composer as a picture reading, in the same `[Pictures in this note ...]` block an inline picture gets, for any retrieved note and not only a mostly-picture one (`chat_attach._file_pictures`, `chat_pool._note_content`); a caption of one word is not read. `tests/test_chat_attachments.py`.
 - **Built, CHAT_PLAN phase 5 (g):** link reasons beyond "similar in meaning": INBOX 691's concrete overlaps (`link_wording`: names, tags, rare words, same week) come first and the last resort is now the composer's quoted sentence pair, one sentence from each note sharing two plain words, each cut to 31 characters (`link_wording._quoted_pair`), so Tidy's "Add reasons" and "Add reasons to all" and a new link's own reason use it; a pair sharing one word is not quoted. `tests/test_link_wording.py`. Closes L95.
 
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
