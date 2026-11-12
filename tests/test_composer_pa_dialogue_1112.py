@@ -146,3 +146,40 @@ def test_p25_f9_this_week_lists_the_dated_note_and_not_the_mood_note(notebook, q
     said = notebook(question)[0]
     assert "Plumber is coming Thursday between 8 and 10" in said and "Thursday 12 November" in said, said
     assert "tired" not in said.lower(), said
+
+
+# --- F1: a follow-on reads what the last answer showed, whatever the notes are called ---
+
+
+def test_f1_titles_with_commas_stay_whole_sides_of_a_which_is_follow_on():
+    """Joined with commas the titles split into more sides than notes ("which is oldest" over four notes named three
+    nonsense ones); each side is the title up to its comma, which names the note by its words."""
+    from tessellate.ai import reading
+
+    titles = ["feeling pretty tired today, slept badly", "landlord called back, plumber is coming", "Shopping"]
+    got = reading._follow_place("which one is the oldest", "which one is the oldest", titles)
+    assert got == "which is oldest, feeling pretty tired today, landlord called back or Shopping", got
+    compare = reading._follow_place("compare those", "compare those", titles)
+    assert compare == "compare feeling pretty tired today, landlord called back and Shopping", compare
+
+
+def test_f1_which_one_is_the_oldest_over_titles_with_commas_answers_over_the_notes(client, session):
+    seed.seed(session)
+    titles = ["landlord called back, plumber is coming thursday between 8 and 10", "Shopping"]
+    history = [{"question": "list all my notes", "answer": "Here are your eight newest notes, of 36 in all.", "objects": titles}]
+    said = _ask(client, "which one is the oldest", history)["text"]
+    assert "Shopping" in said and "oldest" in said, said
+    assert "nothing mentions" not in said and "appear in your notes" not in said, said
+
+
+# --- PAR1: the ways to ask whether the notes contradict each other all reach the dated changes of mind ---
+
+
+@pytest.mark.parametrize("question", [
+    "do my notes contradict each other", "are there any contradictions in my notes", "does any note disagree with another",
+    "is anything in my notes inconsistent", "are any of my notes contradictory", "do any of my notes conflict",
+])
+def test_par1_contradiction_wordings_get_the_changes_of_mind(notebook, question):
+    said = notebook(question)[0]
+    assert "change of mind" in said, said
+    assert "don't mention" not in said and "None of your notes" not in said, said

@@ -433,7 +433,10 @@ _REFER_GROUP = re.compile(rf"^{_REFER_FILLER}(?P<head>compare)\s+(?:those|them|t
 
 
 def _joined(titles: list[str], last: str) -> str:
-    return f"{', '.join(titles[:-1])} {last} {titles[-1]}"
+    """The titles as the sides of a comparison, comma-listed: a title is cut at its own comma, which would
+    otherwise make more sides than there are notes (the note is still named by its first words)."""
+    sides = [title.split(",")[0].strip() or title for title in titles]
+    return f"{', '.join(sides[:-1])} {last} {sides[-1]}"
 
 
 def _follow_place(low: str, raw: str, titles: list[str]) -> str | None:
