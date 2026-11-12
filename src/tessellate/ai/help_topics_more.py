@@ -2165,7 +2165,7 @@ MORE_TOPICS.extend([
             "structure of a branch", "branch structure", "branch layout", "org chart branch",
             "fishbone branch", "one branch as", "lay out one branch", "logic chart branch",
             "different layout for a branch", "xmind structure", "filter the more sheet",
-            "find a command on a map",
+            "find a command on a map", "boundary round selected topics", "boundary round several topics",
         ),
         "body": (
             "A branch can have its own structure, as in XMind: a topic's menu, "
@@ -2174,7 +2174,7 @@ MORE_TOPICS.extend([
             "or left, or radial, while the rest of the map keeps its layout. The "
             "branch is laid out as one block, so nothing else overlaps it; Follow "
             "the map's layout takes it back. Ctrl+Z undoes it in one step. To find any command of a board or map by name, "
-            "type in the filter field at the top of the More sheet."
+            "type in the filter field at the top of the More sheet. To box topics that are not one branch, select them (Ctrl-click or a box) and choose Draw a boundary round the selected topics in the topic's menu or Ctrl+K."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

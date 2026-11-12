@@ -928,6 +928,46 @@
     wbAnnounce(`${nounCount(copies.length, "copy", "copies")} swapped.`);
   }
 
+
+  // --- A boundary round a lasso'd set ---------------------------------------
+  //
+  //: MINDMAP_PLAN 12.2 item 1 (decision 19 extended): `boundary_set` on the
+  //: first selected topic lists the ids; the shape is the union of those that
+  //: are showing, so it follows them as they move or fold, and a deleted
+  //: member just drops out. The same `boundary`, label, styles and removal.
+  function wbBoundarySetBox(index, hidden, ids) {
+    let box = null;
+    for (const id of ids) {
+      const node = index.byId.get(id);
+      if (!node || hidden.has(id)) continue;
+      const size = wbMapNodeSize(node);
+      const r = { minX: node.x, minY: node.y, maxX: node.x + size.w, maxY: node.y + size.h };
+      box = box
+        ? { minX: Math.min(box.minX, r.minX), minY: Math.min(box.minY, r.minY), maxX: Math.max(box.maxX, r.maxX), maxY: Math.max(box.maxY, r.maxY) }
+        : r;
+    }
+    return box;
+  }
+
+  //: The selected topics, lowest id first (the lead keeps the boundary).
+  function wbBoundaryTargets() {
+    if (!wbIsMap()) return [];
+    const out = [];
+    for (const key of wbMultiSelection) {
+      const [kind, id] = key.split(":");
+      const item = kind === "object" ? wbFindItem("object", Number(id)) : null;
+      if (item && item.kind === "topic") out.push(item);
+    }
+    return out.sort((a, b) => a.id - b.id);
+  }
+
+  async function wbBoundaryDraw() {
+    const topics = wbBoundaryTargets();
+    if (topics.length < 2) return toast("Select two or more topics first.");
+    await wbMapSetStructure(topics[0], { boundary: "rounded", boundary_set: topics.map((t) => t.id) },
+      `Boundary drawn round ${nounCount(topics.length, "topic")}.`);
+  }
+
   //: The file's whole surface, one object, so the shared scope gains one name rather than one per entry point.
   const wbMapLazy = {
     openGantt: wbMapOpenGantt,
@@ -944,6 +984,9 @@
     imageFromLink: wbTopicImageFromLink,
     secondRoot: wbSecondRoot,
     saveBranch: wbBranchSaveMarkdown,
+    setBox: wbBoundarySetBox,
+    boundaryTargets: wbBoundaryTargets,
+    boundaryDraw: wbBoundaryDraw,
     stickerCopies: wbStickerCopies,
     stickerMatch: wbStickerMatch,
     stickerSwap: wbStickerSwap,

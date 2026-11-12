@@ -457,6 +457,7 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         # And with a boundary and a summary (MINDMAP_PLAN decisions 19, 20).
         "boundary": None,
         "boundary_label": None,
+        "boundary_set": None,
         "summary": None,
         "summary_span": None,
         # And with a structure per branch (canvasdepth2, XMind's).

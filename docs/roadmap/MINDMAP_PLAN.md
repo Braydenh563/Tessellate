@@ -392,8 +392,8 @@ Closed 2026-10-05 (op5): moved whole to HISTORY.md ("Moved from the plans,
 
 1. **Boundaries** and 2. **Summaries**: built (decisions 19 and 20;
    HISTORY.md, "Moved from the plans, 2026-10-05 (boundaries and
-   summaries)"). A boundary round a lasso'd set that is not one branch is
-   not built.
+   summaries)"). A boundary round a lasso'd set that is not one branch:
+   built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 3. **Relationships**: built (§13c, the cross-link; HISTORY.md, op5's
    §12.1 record).
 4. **Markers and task info**: priority 1 to 5, progress 0 to 100, flags,

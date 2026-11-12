@@ -8712,7 +8712,7 @@ const WB_MAP_STYLE_KEYS = [
 //: And a note (decision 18): a reset is about looks, never about words.
 //: And a boundary and a summary (decisions 19, 20): what the map says.
 const WB_MAP_CONTENT_KEYS = [
-  "image", "task", "note", "boundary", "boundary_label", "summary", "summary_span",
+  "image", "task", "note", "boundary", "boundary_label", "boundary_set", "summary", "summary_span",
   "priority", "progress", "flag", "markers", "due", "due_time", "start", "recording", "branch_layout", "callout", "labels", "stamps", "stamped",
 ];
 
@@ -9951,7 +9951,8 @@ function wbRenderMapStructure() {
     if (hidden.has(node.id)) continue;
     const style = node.data?.boundary;
     if (style) {
-      const box = wbMapBranchBox(index, hidden, node.id);
+      //: A lasso'd set (`boundary_set`) is the union of those topics; else the branch.
+      const box = Array.isArray(node.data?.boundary_set) ? wbMapLazy.setBox(index, hidden, node.data.boundary_set) : wbMapBranchBox(index, hidden, node.id);
       if (box) {
         const x = box.minX - WB_MAP_BOUNDARY_PAD;
         const y = box.minY - WB_MAP_BOUNDARY_PAD;

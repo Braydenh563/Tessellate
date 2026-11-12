@@ -9847,6 +9847,9 @@ function wbBuildContextMenu(kind) {
       );
       //: A boundary round the branch (MINDMAP_PLAN decision 19).
       const boundary = mapNode.data?.boundary;
+      if (!boundary && wbMapLazy.boundaryTargets().length > 1) {
+        sub("Draw a boundary round the selected topics", "One shape round just these topics, whichever branches they are on", () => wbMapLazy.boundaryDraw());
+      }
       if (!boundary) {
         sub("Draw a boundary round this branch", "A shaded shape round this topic and everything under it, in the branch colour", () =>
           wbMapSetStructure(mapNode, { boundary: "rounded" }, "Boundary drawn."));
@@ -9857,7 +9860,7 @@ function wbBuildContextMenu(kind) {
         sub(mapNode.data?.boundary_label ? "Change the boundary's label…" : "Label the boundary…", "Words over its top edge", () =>
           wbMapAskStructureWords(mapNode, "boundary_label", "What should the boundary say?", "Label it"));
         sub("Remove the boundary", "The topics stay; Ctrl+Z brings it back", () =>
-          wbMapSetStructure(mapNode, { boundary: null, boundary_label: null }, "Boundary removed."));
+          wbMapSetStructure(mapNode, { boundary: null, boundary_label: null, boundary_set: null }, "Boundary removed."));
       }
       //: A summary beside a run of siblings (decision 20); a root takes none.
       if (!rooted && mapNode.data?.summary) {

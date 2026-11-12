@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: a boundary round a lasso'd set of topics that are not one branch (select two or more, then "Draw a boundary round the selected topics" in the topic menu or Ctrl+K); it follows the topics, one Undo step (12.2).
 - Board: linked stickers. Select a placed icon or emoji with copies, then Insert, Shapes and icons, "Match all copies" (colour, size, turn) or "Swap everywhere" (emoji); one Undo step, and the copies follow by icon name or glyph (14.4; supersedes WHITEBOARD_PLAN decision 25 for stickers).
 - Board: reaction stamps on a note, text box, picture or frame (the mind map topic's six chips, a toggle per person), from Board, Workshop, "React with a stamp"; one Undo step each, and they travel in an SVG export (14.4).
 - Mind map: a topic label with a subject-verb agreement slip ("He have a plan") gets a double line, and the topic menu offers the fix as one Undo step; no grammar check runs during a drag (VC12).
