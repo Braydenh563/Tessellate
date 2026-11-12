@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Feature: Settings, General, My birthday stores the day so "remind me on my birthday" resolves with no note saying it; a stored one wins over the notes (`tests/test_reading.py::test_a_stored_birthday_setting_wins_over_the_notes`).
 - Fix: reminders ticked before `done_at` existed are dated on start (updated, due or made time), so the review counts them (`tests/test_reminder_done_at_backfill.py`).
 - Fix: "this week", "next week" and "next friday" in a note start the week on the person's first day (Monday by default) (`tests/test_timewords.py::test_week_phrases_start_on_monday_by_default`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
