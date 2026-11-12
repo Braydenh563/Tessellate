@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 188 | 60 | 2 | 59 | 424 |
+| chat | 176 | 184 | 58 | 2 | 59 | 418 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 695 | 157 | 3 | 195 | 1405 |
+| all | 553 | 691 | 155 | 3 | 195 | 1399 |
 
 ## graph
 
@@ -118,7 +118,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L85** `chat` open, S: Atlas look row landed under Settings head at 390 in one of four runs. From OPEN.md:1067. Evidence: Intermittent 390 layout flake; no fix commit found
 - [ ] **L86** `chat` open, S: Face sheet: crowns spill 6 px past card top. From OPEN.md:1092. Evidence: facesheet.js removed 2026-10-12; spill not rechecked; needs a fresh sheet run
 - [ ] **L87** `chat` open, S: Popup agent results pane with a conversation in it not measured. From OPEN.md:3414. Evidence: No sweep or test cited for the populated state; measurement gap remains.
-- [ ] **L88** `chat` open, M: Make how-often and how-many answers count events, not notes (Z23). From OPEN.md:4052. Evidence: Deferred in composer_slots.py; no later fix found in CHANGELOG/HISTORY.
 - [ ] **L89** `chat` open, M: Remove or decide the composer's self-describing 'Read as' lines and related frame defects (Z49, F7, Decision 54, F7.3 to F7.9). From OPEN.md:4067; OPEN.md:4310; OPEN.md:1972; fc7-1110.md Left. Evidence: Decision 54 mandates the 'Read as ...' sentence; recommendation shorten it, owner to decide.
 - [ ] **L90** `chat` open, M: Rank the defining note above term frequency in noisy notebooks (C4). From OPEN.md:4085. Evidence: Reproduced at 207 notes: filler notes lead after the Books note; no fix.
 - [ ] **L91** `chat` open, M: Stop gluing notes into one sentence with commas and ellipses (C5). From OPEN.md:4086. Evidence: Reproduced at 207 notes: filler notes quoted in full with ellipses.
@@ -135,7 +134,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L102** `chat` open, M: Derive themes beyond shared tags and links. From OPEN.md:3846. Evidence: composer_frame.themes unchanged
 - [ ] **L103** `chat` open, M: Answer who/status questions over list notes instead of returning a quote. From OPEN.md:3847. Evidence: composer.py select not changed
 - [ ] **L104** `chat` open, M: Make Compare notes a table, not a digest. From OPEN.md:3850. Evidence: No side-by-side facts table found
-- [ ] **L105** `chat` open, M: Understand 'which of A, B and C is the newest' with three names. From a30e-1102.md Found, not fixed. Evidence: composer_versus.py _versus(key, rows) two-name form only
 - [ ] **L106** `chat` open, M: Fix R3-2 lead dropping label, R3-18 dentist time, E23 repeated provenance, E17 'when did I last run' seed. From composer-r4-1108.md Still open. Evidence: No tests naming R3-2/R3-18/E23 found; E17 has tests but probe-seed source unresolved
 - [ ] **L107** `chat` open, M: Trim ask-chat Guide topic (1916 of 1919 chars) so it can name Agent-with-no-model. From OPEN.md:804; OPEN.md:2237. Evidence: help_topics_more.py:1712 ask-chat; reply cap test_help_controls.py:342; no cap relief found
 - [ ] **L108** `chat` open, M: Make Guide 'how do I set a reminder' start with the step. From OPEN.md:821. Evidence: No fix found; topic text and retrieval unchanged (test_help_retrieval.py)
@@ -230,10 +228,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L201** `chat` partly, S: Rows 839 and 841 never checked (no text located for either). From ledger-1112 P11.
 - [ ] **L204** `chat` partly, S: Repeat in 'milk' line still reproduced; 'what did I write about in October' restates a line. From ledger-1112 E18.
 - [ ] **L205** `chat` partly, S: 'compare Tokyo and Lisbon' opener 'Of the notes found...' and repeated cites need fixing. From ledger-1112 D20.
-- [ ] **L206** `chat` partly, S: 'how far did I run' adds goal to distance (16 km for 6 km); no fix or test. From ledger-1112 G1.
 - [ ] **L207** `chat` partly, S: 'remember to take the bins out tonight' returns None; 'between 8 and 10' becomes 09:00. From ledger-1112 G10.
 - [ ] **L208** `chat` partly, M: Finish reminder, timer and dark-mode composer commands (E56). From OPEN.md:4026. Evidence: Timer/pomodoro/stopwatch done (tests/test_composer_bc1_1111.py). Missing: 'remind me ... an hour before' (when.py) and 'switch to dark mode' act.
-- [ ] **L209** `chat` partly, M: Finish comparison questions such as 'which is cheaper' and 'who is older' (E9). From OPEN.md:4135. Evidence: Cheaper/costs-more compare figures; 'who is older, Anna or Tom' still gives gift line, no birth-year reader in composer_amounts.
 - [ ] **L210** `chat` partly, M: Fix the 'who is Priya' overview shape (R3-20). From OPEN.md:4152. Evidence: Owned by 1743 (overview answer shape); not closed.
 - [ ] **L211** `chat` partly, M: Lead with the defining note when the title only contains the subject (D1). From OPEN.md:4168. Evidence: Owned by 1743 (overview answer shape); not closed.
 - [ ] **L212** `chat` partly, M: Keep the subject in follow-ons in Ask and Chat (C12). From OPEN.md:4514. Evidence: CHANGELOG.md:229 (W9 B21, B29) fixed 'tell me more about it' for composer; Ask client sends no objects, still open
@@ -273,8 +269,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L255** `chat` partly, L: Hold still, carry over, tail pull, toss up, pointer chase and drag skid need new desk frames and a human rater (the catalogue refuses one-sided acts; engine.py and engine_input.py are at their line caps, so a desk hook lives in extras.py). Catch mid-air is built (05b51746d, `caught` both sides). From ledger-1112 I21.
 - [ ] **L-chat-1** `chat` open, M: Close the Guide answer gap so a question about the app gets an answer. From INBOX 904 B86 (W22). Evidence: the owner's Guide question went unanswered
 - [ ] **L-chat-2** `chat` open, S: Stop at the turn start with a plain sentence when a tool group the request needs is switched off in Settings, instead of a ToolError after the model tried. From ANALYSIS.md:4354. Evidence: ANALYSIS names CHAT_PLAN 'deterministic foundation' as home; grep 'turn contract' in plans returns nothing
-- [ ] **L-chat-5** `chat` open, M: A three-way 'which is oldest' over notes with little in common retrieves only the best match, so the answer names the other two as missing. From composerA 2026-11-12. Evidence: reading._follow_place makes the sentence; chat_turn._framed_scope binds ids; a follow-on that carried the cited note ids into the compare would fix it
-- [ ] **L-chat-6** `chat` open, S: 'which is oldest, Shopping or Todo' answers with the Shopping checklist line, not a date comparison. From composerA 2026-11-12.
 - [ ] **L-chat-7** `chat` open, S: Companion stretches (app and desk) when a long writing run ends. From Brief 88 N9; review 2026-11-12. Evidence: companion-menu.js:713 typing_burst plays a nod after 30 s, not a stretch after a minute
 - [ ] **L-chat-8** `chat` open, M: Contradiction answer: wire supersede.py in or record that the insights reader replaces it; the PAR1 imperative remainder. From ledger-1112 PAR1; review 2026-11-12. Evidence: chat_extra.py:57 contradiction asks reach the insights contrast reader; supersede.py feeds composer_select and composer_digest only; composer_suggest.py:52 _IMPERATIVE unchanged
 - [ ] **L-chat-9** `chat` partly, M: "and the dentist" after "when is the passport renewal" keeps the when ask, live and in a reopened chat. From ledger-1112 O4 (L239); review 2026-11-12. Evidence: composer_dialogue.py _swap_reading drops an "and X" with no "?", so it falls to a topic dump with dates=[]; two strict-xfail route tests in tests/test_composer_pa_1112.py

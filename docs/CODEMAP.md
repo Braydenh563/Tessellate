@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2668, tests 21798, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2669, tests 21806, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8325)
 
@@ -14768,22 +14768,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_after_suffix` | src/tessellate/ai/composer_ask.py:353 |
 | `_alternatives` | src/tessellate/ai/composer_ask.py:433 |
-| `_bare_side` | src/tessellate/ai/composer_ask.py:630 |
+| `_bare_side` | src/tessellate/ai/composer_ask.py:631 |
 | `_build_synonyms` | src/tessellate/ai/composer_ask.py:417 |
-| `_clean_split` | src/tessellate/ai/composer_ask.py:655 |
+| `_clean_split` | src/tessellate/ai/composer_ask.py:656 |
 | `_guessing_recent` | src/tessellate/ai/composer_ask.py:196 |
 | `_holds` | src/tessellate/ai/composer_ask.py:447 |
 | `_is_clause_start` | src/tessellate/ai/composer_ask.py:487 |
 | `_keyed_synonyms` | src/tessellate/ai/composer_ask.py:440 |
-| `_lower_pair` | src/tessellate/ai/composer_ask.py:745 |
-| `_numbered_sides` | src/tessellate/ai/composer_ask.py:682 |
-| `_one_category` | src/tessellate/ai/composer_ask.py:697 |
+| `_lower_pair` | src/tessellate/ai/composer_ask.py:747 |
+| `_numbered_sides` | src/tessellate/ai/composer_ask.py:683 |
+| `_one_category` | src/tessellate/ai/composer_ask.py:698 |
 | `_one_syllable_cvc` | src/tessellate/ai/composer_ask.py:278 |
 | `_overview` | src/tessellate/ai/composer_ask.py:289 |
 | `_past_filler` | src/tessellate/ai/composer_ask.py:530 |
-| `_raw_sides` | src/tessellate/ai/composer_ask.py:668 |
+| `_raw_sides` | src/tessellate/ai/composer_ask.py:669 |
 | `_respell` | src/tessellate/ai/composer_ask.py:204 |
-| `_said_together` | src/tessellate/ai/composer_ask.py:732 |
+| `_said_together` | src/tessellate/ai/composer_ask.py:734 |
 | `_stem` | src/tessellate/ai/composer_ask.py:306 |
 | `_stem_plain` | src/tessellate/ai/composer_ask.py:332 |
 | `_still_recent` | src/tessellate/ai/composer_ask.py:184 |
@@ -14795,17 +14795,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_without_command` | src/tessellate/ai/composer_ask.py:499 |
 | `_words` | src/tessellate/ai/composer_ask.py:461 |
 | `_words_of` | src/tessellate/ai/composer_ask.py:457 |
-| `asks_time` | src/tessellate/ai/composer_ask.py:791 |
-| `asks_written_when` | src/tessellate/ai/composer_ask.py:797 |
+| `asks_time` | src/tessellate/ai/composer_ask.py:793 |
+| `asks_written_when` | src/tessellate/ai/composer_ask.py:799 |
 | `classify` | src/tessellate/ai/composer_ask.py:245 |
-| `compare_sides` | src/tessellate/ai/composer_ask.py:702 |
+| `compare_sides` | src/tessellate/ai/composer_ask.py:703 |
 | `month_name` | src/tessellate/ai/composer_ask.py:42 |
 | `rephrase` | src/tessellate/ai/composer_ask.py:222 |
 | `subject_terms` | src/tessellate/ai/composer_ask.py:549 |
 | `user_now` | src/tessellate/ai/composer_ask.py:24 |
 | `user_today` | src/tessellate/ai/composer_ask.py:35 |
 | `what_is` | src/tessellate/ai/composer_ask.py:217 |
-| `when_terms` | src/tessellate/ai/composer_ask.py:786 |
+| `when_terms` | src/tessellate/ai/composer_ask.py:788 |
 
 ### src/tessellate/ai/composer_aware.py (17)
 
@@ -27659,7 +27659,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21798)
+## Tests (21806)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28277,6 +28277,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r9_typos_1109.py | 3 |
 | tests/test_composer_r9_values_1109.py | 5 |
 | tests/test_composer_ranker_1029.py | 12 |
+| tests/test_composer_readers_1112.py | 8 |
 | tests/test_composer_redos_1026.py | 4 |
 | tests/test_composer_redos_1109.py | 8 |
 | tests/test_composer_regex_linear_1029.py | 3 |
@@ -30750,14 +30751,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:909 |
+| Needs hardware | docs/roadmap/LEDGER.md:903 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:901 |
+| Owner calls | docs/roadmap/LEDGER.md:895 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30938,7 +30939,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1109 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1103 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -30992,25 +30993,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1125 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1209 |
-| documents | docs/roadmap/LEDGER.md:355 |
-| documents | docs/roadmap/LEDGER.md:1149 |
-| general | docs/roadmap/LEDGER.md:861 |
+| chat | docs/roadmap/LEDGER.md:1119 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1203 |
+| documents | docs/roadmap/LEDGER.md:349 |
+| documents | docs/roadmap/LEDGER.md:1143 |
+| general | docs/roadmap/LEDGER.md:855 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1113 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1221 |
+| graph | docs/roadmap/LEDGER.md:1107 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1215 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
-| mindmap | docs/roadmap/LEDGER.md:435 |
-| mindmap | docs/roadmap/LEDGER.md:1161 |
-| timeline | docs/roadmap/LEDGER.md:590 |
-| timeline | docs/roadmap/LEDGER.md:1185 |
-| ui-modernisation | docs/roadmap/LEDGER.md:472 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1173 |
-| whiteboard | docs/roadmap/LEDGER.md:309 |
-| whiteboard | docs/roadmap/LEDGER.md:1137 |
-| world-class | docs/roadmap/LEDGER.md:625 |
-| world-class | docs/roadmap/LEDGER.md:1197 |
+| mindmap | docs/roadmap/LEDGER.md:429 |
+| mindmap | docs/roadmap/LEDGER.md:1155 |
+| timeline | docs/roadmap/LEDGER.md:584 |
+| timeline | docs/roadmap/LEDGER.md:1179 |
+| ui-modernisation | docs/roadmap/LEDGER.md:466 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1167 |
+| whiteboard | docs/roadmap/LEDGER.md:303 |
+| whiteboard | docs/roadmap/LEDGER.md:1131 |
+| world-class | docs/roadmap/LEDGER.md:619 |
+| world-class | docs/roadmap/LEDGER.md:1191 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |
