@@ -947,6 +947,17 @@ function clearTrace({ quiet = false } = {}) {
   applyGraphHighlight();
 }
 
+//: The layers the map shows are stops on a route too (L-graph-14): the same
+//: Show switches that widen `/graph` widen the trace, and an end that is a
+//: `document:N` / `entity:N` node needs its layer on or the server refuses it.
+function graphPathLayerQuery() {
+  const on = (id) => Boolean(document.getElementById(id)?.checked);
+  const ends = [traceFromNode, traceToNode].map((n) => String(n?.id ?? ""));
+  const documents = on("graph-documents") || ends.some((id) => id.startsWith("document:"));
+  const entities = on("graph-entities") || ends.some((id) => id.startsWith("entity:"));
+  return `${documents ? "&documents=true" : ""}${entities ? "&entities=true" : ""}`;
+}
+
 async function runTrace() {
   if (!traceFromNode || !traceToNode) {
     showTraceMessage("Pick two notes to trace between.");
@@ -965,7 +976,7 @@ async function runTrace() {
   }
   showTraceMessage("Tracing…");
   const result = await apiJson(
-    `/graph/path?source=${encodeURIComponent(from)}&target=${encodeURIComponent(to)}`
+    `/graph/path?source=${encodeURIComponent(from)}&target=${encodeURIComponent(to)}${graphPathLayerQuery()}`
   ).catch(() => null);
   if (!result) {
     showTraceMessage("Couldn't trace that: the server didn't answer.");
