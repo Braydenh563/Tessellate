@@ -623,62 +623,59 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:522 |
 | `wireInPlaceSheetDismissal` | frontend/js/sheets-selects.js:260 |
 
-### frontend/js/skills.js (52)
+### frontend/js/skills.js (49)
 
 | Name | File:line |
 |---|---|
 | `allSkills` | frontend/js/skills.js:28 |
 | `askSkillInputs` | frontend/js/skills.js:217 |
-| `batchArchive` | frontend/js/skills.js:1185 |
-| `batchDelete` | frontend/js/skills.js:1228 |
-| `batchEach` | frontend/js/skills.js:1152 |
-| `batchExport` | frontend/js/skills.js:1222 |
-| `batchFavourite` | frontend/js/skills.js:1179 |
-| `batchMove` | frontend/js/skills.js:1130 |
-| `batchNoun` | frontend/js/skills.js:1175 |
-| `batchPublish` | frontend/js/skills.js:1196 |
-| `batchPut` | frontend/js/skills.js:1171 |
-| `batchSelection` | frontend/js/skills.js:1124 |
-| `batchTag` | frontend/js/skills.js:1144 |
-| `blobToBase64` | frontend/js/skills.js:930 |
+| `batchArchive` | frontend/js/skills.js:1096 |
+| `batchDelete` | frontend/js/skills.js:1139 |
+| `batchEach` | frontend/js/skills.js:1063 |
+| `batchExport` | frontend/js/skills.js:1133 |
+| `batchFavourite` | frontend/js/skills.js:1090 |
+| `batchMove` | frontend/js/skills.js:1041 |
+| `batchNoun` | frontend/js/skills.js:1086 |
+| `batchPublish` | frontend/js/skills.js:1107 |
+| `batchPut` | frontend/js/skills.js:1082 |
+| `batchSelection` | frontend/js/skills.js:1035 |
+| `batchTag` | frontend/js/skills.js:1055 |
+| `blobToBase64` | frontend/js/skills.js:841 |
 | `buildSkillsPanel` | frontend/js/skills.js:428 |
 | `customSkills` | frontend/js/skills.js:35 |
-| `desktopShell` | frontend/js/skills.js:879 |
-| `downloadBlob` | frontend/js/skills.js:967 |
-| `downloadFromApi` | frontend/js/skills.js:946 |
-| `downloadJson` | frontend/js/skills.js:845 |
-| `enterSelectMode` | frontend/js/skills.js:1094 |
-| `exitSelectMode` | frontend/js/skills.js:1112 |
-| `fillBatchCategories` | frontend/js/skills.js:1067 |
-| `fillBatchMore` | frontend/js/skills.js:1202 |
+| `desktopShell` | frontend/js/skills.js:790 |
+| `downloadBlob` | frontend/js/skills.js:878 |
+| `downloadFromApi` | frontend/js/skills.js:857 |
+| `downloadJson` | frontend/js/skills.js:756 |
+| `enterSelectMode` | frontend/js/skills.js:1005 |
+| `exitSelectMode` | frontend/js/skills.js:1023 |
+| `fillBatchCategories` | frontend/js/skills.js:978 |
+| `fillBatchMore` | frontend/js/skills.js:1113 |
 | `fillSkillSelect` | frontend/js/skills.js:373 |
-| `healthFacts` | frontend/js/skills.js:869 |
+| `healthFacts` | frontend/js/skills.js:780 |
 | `inputsToText` | frontend/js/skills.js:45 |
 | `loadChatSkills` | frontend/js/skills.js:299 |
 | `loadSkills` | frontend/js/skills.js:19 |
 | `looksLikeAnAgentRequest` | frontend/js/skills.js:615 |
-| `markOtherDevice` | frontend/js/skills.js:895 |
-| `onOtherDevice` | frontend/js/skills.js:912 |
-| `refuseOnOtherDevice` | frontend/js/skills.js:920 |
+| `markOtherDevice` | frontend/js/skills.js:806 |
+| `onOtherDevice` | frontend/js/skills.js:823 |
+| `refuseOnOtherDevice` | frontend/js/skills.js:831 |
 | `renderChatNudge` | frontend/js/skills.js:658 |
-| `renderSkillFolderLine` | frontend/js/skills.js:828 |
-| `renderSkillSettings` | frontend/js/skills.js:810 |
 | `renderSkillToolPicker` | frontend/js/skills.js:84 |
 | `renderSkillVerifyPicker` | frontend/js/skills.js:116 |
 | `resetChatNudge` | frontend/js/skills.js:726 |
 | `runSkill` | frontend/js/skills.js:159 |
-| `saveFile` | frontend/js/skills.js:983 |
+| `saveFile` | frontend/js/skills.js:894 |
 | `saveSkillList` | frontend/js/skills.js:744 |
 | `setSkillVerify` | frontend/js/skills.js:136 |
 | `skillMatchingDraft` | frontend/js/skills.js:625 |
 | `skillPacePill` | frontend/js/skills.js:513 |
-| `skillRow` | frontend/js/skills.js:754 |
 | `skillSummary` | frontend/js/skills.js:731 |
 | `startEditingSkill` | frontend/js/skills.js:51 |
 | `startSkill` | frontend/js/skills.js:167 |
 | `stopEditingSkill` | frontend/js/skills.js:69 |
 | `syncSkillVerifyRow` | frontend/js/skills.js:151 |
-| `updateBatchCount` | frontend/js/skills.js:1043 |
+| `updateBatchCount` | frontend/js/skills.js:954 |
 
 ### frontend/js/shell-reminders.js (50)
 
@@ -7210,7 +7207,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `semanticQuestionText` | frontend/js/semantic-notice.js:22 |
 | `semanticSetAutoInstall` | frontend/js/semantic-notice.js:37 |
 
-### frontend/js/settings-controls.js (119)
+### frontend/js/settings-controls.js (122)
 
 | Name | File:line |
 |---|---|
@@ -7301,6 +7298,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderMemorySettings` | frontend/js/settings-controls.js:2773 |
 | `renderPinSettings` | frontend/js/settings-controls.js:3629 |
 | `renderRunBudget` | frontend/js/settings-controls.js:3761 |
+| `renderSkillFolderLine` | frontend/js/settings-controls.js:5374 |
+| `renderSkillSettings` | frontend/js/settings-controls.js:5356 |
 | `renderSmallModelAuto` | frontend/js/settings-controls.js:3365 |
 | `renderSmallModelMode` | frontend/js/settings-controls.js:3749 |
 | `renderStatusBarSettings` | frontend/js/settings-controls.js:2215 |
@@ -7324,6 +7323,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setMaintenanceReinstall` | frontend/js/settings-controls.js:3079 |
 | `showLanQr` | frontend/js/settings-controls.js:2359 |
 | `showVoiceSample` | frontend/js/settings-controls.js:679 |
+| `skillRow` | frontend/js/settings-controls.js:5300 |
 | `syncLearnedSelectbar` | frontend/js/settings-controls.js:4583 |
 | `textToInputs` | frontend/js/settings-controls.js:2747 |
 | `textToSteps` | frontend/js/settings-controls.js:2740 |

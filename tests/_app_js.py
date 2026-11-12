@@ -85,7 +85,7 @@ MOVED_OUT = {
     "agent-activity.js": ("answer-kit.js",),
     "status.js": ("status-panels.js", "answer-kit.js"),
     "wiring.js": ("answer-kit.js",),
-    "skills.js": ("answer-kit.js",),
+    "skills.js": ("answer-kit.js", "settings-controls.js"),
     "shell-reminders.js": ("scroll-row.js",),
 }
 
