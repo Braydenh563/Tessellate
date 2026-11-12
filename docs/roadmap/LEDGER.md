@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 154 | 47 | 0 | 17 | 331 |
+| world-class | 130 | 153 | 47 | 0 | 17 | 330 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 680 | 146 | 3 | 140 | 1379 |
+| all | 553 | 679 | 146 | 3 | 140 | 1378 |
 
 ## graph
 
@@ -823,7 +823,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-15** `world-class` open, S: Merge the four one-second timers. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:2046. Evidence: Open line in the plan's prose a session could miss. Found item (d) not fixed: four separate 1 s timers.
 - [ ] **L-world-class-17** `world-class` open, M: Find and replace inside a note. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3747. Evidence: Open line in the plan's prose a session could miss. Gap listed in section 25 and 27 (3975).
 - [ ] **L-world-class-18** `world-class` open, M: Write the threat model. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3772. Evidence: Open line in the plan's prose a session could miss. No threat-model doc exists; open in 25 and 26 (3877).
-- [ ] **L-world-class-19** `world-class` open, S: Property tests for the realiser and when.py. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3879. Evidence: Open line in the plan's prose a session could miss. Testing gap.
 - [ ] **L-world-class-20** `world-class` open, S: Measure memory and _to_out with a large notebook. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3931. Evidence: Open line in the plan's prose a session could miss. Not measured (also _to_out at 5,000 notes at 3950).
 - [ ] **L-world-class-22** `world-class` open, L: Build the 27.1 remainder: templates, pin and archive, space tools. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3975. Evidence: Open line in the plan's prose a session could miss. Section 27.1 items besides bulk edit and exports have no rows.
 - [ ] **L-world-class-23** `world-class` open, M: Filing leftovers from the 1010 pass. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4173. Evidence: Open line in the plan's prose a session could miss. Pointer leftovers lost when pointer files were deleted.
