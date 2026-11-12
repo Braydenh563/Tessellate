@@ -690,3 +690,17 @@ def test_a_withdrawn_note_placed_on_a_local_board_is_kept(two):
     sync(a, folder)
     sync(b, folder)
     assert "Placed on a board" in texts(b)
+
+
+def test_a_withdrawn_note_with_a_file_attached_here_is_kept_and_says_so(two):
+    a, b, folder = two
+    secret = note(a, "A file was added to this here", 1)
+    settle(a, b, folder)
+    theirs = find(b, "A file was added to this here")
+    b.session.add(Attachment(entry_id=theirs.id, filename="local.png", stored_name="local-b.bin", mime="image/png", size=4))
+    b.session.commit()
+    _made_private(a, secret, 4)
+    sync(a, folder)
+    got = sync(b, folder)
+    assert "A file was added to this here" in texts(b) and got["conflicts"] == 1
+    assert _said(b).count(sync_segments.WITHHELD_KEPT) == 1

@@ -29,8 +29,9 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.core import events
+from tessellate.core import events, sync_state
 from tessellate.core.database import (
+    Attachment,
     AuditLog,
     DocumentLink,
     Entry,
@@ -247,16 +248,26 @@ def _keep_theirs_as_version(session: Session, entry: Entry, item: dict) -> None:
     manager.log_action(session, "revised", "entry", entry.id, "the other computer's version")
 
 
-def _referenced_here(session: Session, entry_id: int) -> bool:
-    """A link from or to the note, a card placing it on a board, or a document attached to it: work done here
-    that a purge would break, though none of it is in the note's own log."""
+def _files_added_here(session: Session, entry_id: int, uploads: Path | None) -> bool:
+    """A file on the note that did not come by sync. With no uploads folder to read the arrivals from, any file
+    counts, so the copy is kept rather than purged."""
+    ids = session.scalars(select(Attachment.id).where(Attachment.entry_id == entry_id)).all()
+    came = {local for local, _ in sync_state.arrived(uploads.parent).get("file", {}).values()} if uploads else set()
+    return any(i not in came for i in ids)
+
+
+def _referenced_here(session: Session, entry_id: int, uploads: Path | None) -> bool:
+    """A link from or to the note, a card placing it on a board, a document or a file attached to it here: work
+    done here that a purge would break, though none of it is in the note's own log."""
     return any(session.scalar(query.limit(1)) is not None for query in (
         select(EntryLink.id).where((EntryLink.source_entry_id == entry_id) | (EntryLink.target_entry_id == entry_id)),
         select(WhiteboardNode.id).where(WhiteboardNode.entry_id == entry_id, WhiteboardNode.board_id != entry_id),
-        select(DocumentLink.document_id).where(DocumentLink.entry_id == entry_id)))
+        select(DocumentLink.document_id).where(DocumentLink.entry_id == entry_id))) or _files_added_here(
+        session, entry_id, uploads)
 
 
-def _changed_here(session: Session, entity_type: str, entity_id: int) -> tuple[bool, bool]:
+def _changed_here(session: Session, entity_type: str, entity_id: int,
+                  uploads: Path | None = None) -> tuple[bool, bool]:
     """(a person or Atlas here ever changed the item, the keep was already said): only a sync or a system job did not.
     A note something here points at counts as changed."""
     rows = session.execute(select(AuditLog.actor, AuditLog.action, AuditLog.detail).where(
@@ -264,14 +275,14 @@ def _changed_here(session: Session, entity_type: str, entity_id: int) -> tuple[b
     said = any(detail == WITHHELD_KEPT for _, _, detail in rows)
     here = any(not (actor or "").startswith(("sync:", "system:")) and action not in events.QUIET_ACTIONS
                for actor, action, _ in rows)
-    return here or (entity_type == "entry" and _referenced_here(session, entity_id)), said
+    return here or (entity_type == "entry" and _referenced_here(session, entity_id, uploads)), said
 
 
-def withdraw_verdict(session: Session, me: str, sid: str, entity: tuple[str, int]) -> str:
+def withdraw_verdict(session: Session, me: str, sid: str, entity: tuple[str, int], uploads: Path | None = None) -> str:
     """What a withheld marker does to the item (a note, document or board) it names, entity = (log type, id):
     'same' when the keep was said already, 'conflicts' when it was written or changed here (kept, said now),
     else 'purge'."""
-    here, said = _changed_here(session, *entity)
+    here, said = _changed_here(session, *entity, uploads)
     if said:
         return "same"
     if here or sid.partition(":")[0] == me:
@@ -286,7 +297,7 @@ def withdraw(session: Session, me: str, item: dict, uploads: Path | None) -> str
     entry = _find(session, me, item["sid"])
     if entry is None or entry.is_private:
         return "same"
-    verdict = withdraw_verdict(session, me, item["sid"], ("entry", entry.id))
+    verdict = withdraw_verdict(session, me, item["sid"], ("entry", entry.id), uploads)
     if verdict != "purge":
         return verdict
     manager_purge.seal_private_events(session, [entry.id])
