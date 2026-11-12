@@ -1931,4 +1931,5 @@ installStandIns(LAZY_ENTRY_POINTS);
 //: Fetched soon after boot, not on first use: the outbox is for the moment
 //: the server is gone, when no script can be fetched (quick-note.js).
 //: The library bundle is warmed after the first touch (lazy-entries.js), not here.
-setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk", "attachments"].forEach(ensureModule), 3000);
+//: The bell's panel too: on a slow link its first press waited 3s with nothing drawn (L409).
+setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk", "attachments", "notifications"].forEach(ensureModule), 3000);

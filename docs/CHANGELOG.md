@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notifications: the bell's panel is fetched soon after start-up, so its first press opens at once on a slow link (L409; it waited for the file with nothing drawn). The moved Library rules checked in dark at four widths: no findings.
 - Documents, focus mode: from 720px wide the sidebar and the suggestions panel sit beside the page instead of over it (L403; the line was 820).
 - Library: a document with headings opened from Contents opens on its Outline tab, a click sooner than before (L400).
 - Settings: from 820px wide a form row keeps room for its reset, so changing a setting no longer pushes the reset onto its own line or moves the field (L416). Kept: the Bin row's confirm ring sits 27px clear of the screen edges (L404).
