@@ -422,14 +422,14 @@ def test_python_variables_carry_their_children():
     assert by["xs"]["children"] == [
         {"name": "[0]", "value": "1", "type": "int"},
         {"name": "[1]", "value": "'a'", "type": "str"},
-        {"name": "[2]", "value": "[3]", "type": "list"},
+        {"name": "[2]", "value": "[3]", "type": "list", "children": [{"name": "[0]", "value": "3", "type": "int"}]},
     ]
     assert by["d"]["children"] == [{"name": "'k'", "value": "2", "type": "int"}]
     assert [c["name"] for c in by["p"]["children"]] == ["x", "y"]
     big = by["big"]["children"]
     assert len(big) == 51 and big[-1] == {"name": "...", "value": "10 more", "type": ""}
-    #: One level down only: a child's own children are its repr.
-    assert all("children" not in c for c in by["xs"]["children"])
+    #: L312 moved this from one level to three: a child that is a container opens too, and a plain value does not.
+    assert [("children" in c) for c in by["xs"]["children"]] == [False, False, True]
 
 
 def test_the_panel_draws_a_row_with_children_as_a_disclosure():

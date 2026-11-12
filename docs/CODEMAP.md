@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2694, tests 21890, plan headings 687, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2695, tests 21893, plan headings 687, app scripts 29, boot scripts 38, script files 301.
 
 ## Frontend functions (8369)
 
@@ -3739,42 +3739,42 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `DOC_CSS_COLORS` | frontend/js/documents-code.js:945 |
-| `docApplyCodeFix` | frontend/js/documents-code.js:6410 |
+| `docApplyCodeFix` | frontend/js/documents-code.js:6421 |
 | `docBalanceRange` | frontend/js/documents-code.js:1229 |
 | `docBeautifyText` | frontend/js/documents-code.js:1646 |
 | `docBracketColours` | frontend/js/documents-code.js:2408 |
 | `docBracketDepths` | frontend/js/documents-code.js:2391 |
 | `docCmSyncCodeTools` | frontend/js/documents-code.js:894 |
-| `docCodeActions` | frontend/js/documents-code.js:6425 |
+| `docCodeActions` | frontend/js/documents-code.js:6436 |
 | `docCodeCompletionData` | frontend/js/documents-code.js:841 |
 | `docCodeCompletionSource` | frontend/js/documents-code.js:813 |
-| `docCodeEditing` | frontend/js/documents-code.js:6152 |
-| `docCodeFixNow` | frontend/js/documents-code.js:6392 |
-| `docCodeFixes` | frontend/js/documents-code.js:5877 |
-| `docCodeIndentAt` | frontend/js/documents-code.js:6137 |
-| `docCodeIndentLevel` | frontend/js/documents-code.js:5425 |
-| `docCodeInsertPoint` | frontend/js/documents-code.js:5868 |
-| `docCodeInsertPointForString` | frontend/js/documents-code.js:5955 |
-| `docCodeKeyPress` | frontend/js/documents-code.js:6510 |
-| `docCodeLastCodeBefore` | frontend/js/documents-code.js:5938 |
-| `docCodeLineOf` | frontend/js/documents-code.js:5414 |
+| `docCodeEditing` | frontend/js/documents-code.js:6163 |
+| `docCodeFixNow` | frontend/js/documents-code.js:6403 |
+| `docCodeFixes` | frontend/js/documents-code.js:5888 |
+| `docCodeIndentAt` | frontend/js/documents-code.js:6148 |
+| `docCodeIndentLevel` | frontend/js/documents-code.js:5436 |
+| `docCodeInsertPoint` | frontend/js/documents-code.js:5879 |
+| `docCodeInsertPointForString` | frontend/js/documents-code.js:5966 |
+| `docCodeKeyPress` | frontend/js/documents-code.js:6521 |
+| `docCodeLastCodeBefore` | frontend/js/documents-code.js:5949 |
+| `docCodeLineOf` | frontend/js/documents-code.js:5425 |
 | `docCodeLintSource` | frontend/js/documents-code.js:340 |
-| `docCodePairs` | frontend/js/documents-code.js:6126 |
-| `docCodeProblemMessage` | frontend/js/documents-code.js:5440 |
-| `docCodeProfile` | frontend/js/documents-code.js:4899 |
-| `docCodeScan` | frontend/js/documents-code.js:4987 |
+| `docCodePairs` | frontend/js/documents-code.js:6137 |
+| `docCodeProblemMessage` | frontend/js/documents-code.js:5451 |
+| `docCodeProfile` | frontend/js/documents-code.js:4910 |
+| `docCodeScan` | frontend/js/documents-code.js:4998 |
 | `docCodeSnippetOptions` | frontend/js/documents-code.js:592 |
 | `docCodeSymbols` | frontend/js/documents-code.js:2475 |
 | `docCodeTools` | frontend/js/documents-code.js:861 |
 | `docColorAt` | frontend/js/documents-code.js:2046 |
 | `docColorSwatches` | frontend/js/documents-code.js:2086 |
 | `docCompleteTab` | frontend/js/documents-code.js:1907 |
-| `docCompletionExtras` | frontend/js/documents-code.js:4833 |
-| `docConsoleEval` | frontend/js/documents-code.js:3922 |
-| `docConsoleKey` | frontend/js/documents-code.js:4012 |
-| `docConsoleLang` | frontend/js/documents-code.js:3914 |
-| `docConsoleMessage` | frontend/js/documents-code.js:3982 |
-| `docConsoleOvertime` | frontend/js/documents-code.js:3967 |
+| `docCompletionExtras` | frontend/js/documents-code.js:4844 |
+| `docConsoleEval` | frontend/js/documents-code.js:3933 |
+| `docConsoleKey` | frontend/js/documents-code.js:4023 |
+| `docConsoleLang` | frontend/js/documents-code.js:3925 |
+| `docConsoleMessage` | frontend/js/documents-code.js:3993 |
+| `docConsoleOvertime` | frontend/js/documents-code.js:3978 |
 | `docCssColorFormat` | frontend/js/documents-code.js:1320 |
 | `docCssCompletionSource` | frontend/js/documents-code.js:1863 |
 | `docCssInBlock` | frontend/js/documents-code.js:1703 |
@@ -3783,7 +3783,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docCssValueContext` | frontend/js/documents-code.js:1152 |
 | `docCssValueOptions` | frontend/js/documents-code.js:1193 |
 | `docCssValueTable` | frontend/js/documents-code.js:1164 |
-| `docCsvTableHtml` | frontend/js/documents-code.js:4480 |
+| `docCsvTableHtml` | frontend/js/documents-code.js:4491 |
 | `docDebugAct` | frontend/js/documents-code.js:3055 |
 | `docDebugBegin` | frontend/js/documents-code.js:3025 |
 | `docDebugBreakMenu` | frontend/js/documents-code.js:3261 |
@@ -3820,13 +3820,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docEmmetWrap` | frontend/js/documents-code.js:1788 |
 | `docEmmetWrapText` | frontend/js/documents-code.js:1250 |
 | `docFindInDocuments` | frontend/js/documents-code.js:2818 |
-| `docFormatChanges` | frontend/js/documents-code.js:6258 |
-| `docFormatCode` | frontend/js/documents-code.js:6282 |
-| `docFormatCodeText` | frontend/js/documents-code.js:5477 |
-| `docFormatJsonText` | frontend/js/documents-code.js:5794 |
-| `docFormatMarkupText` | frontend/js/documents-code.js:5557 |
-| `docFormatRemoteRefusal` | frontend/js/documents-code.js:6237 |
-| `docFormatTreeRefusal` | frontend/js/documents-code.js:6223 |
+| `docFormatChanges` | frontend/js/documents-code.js:6269 |
+| `docFormatCode` | frontend/js/documents-code.js:6293 |
+| `docFormatCodeText` | frontend/js/documents-code.js:5488 |
+| `docFormatJsonText` | frontend/js/documents-code.js:5805 |
+| `docFormatMarkupText` | frontend/js/documents-code.js:5568 |
+| `docFormatRemoteRefusal` | frontend/js/documents-code.js:6248 |
+| `docFormatTreeRefusal` | frontend/js/documents-code.js:6234 |
 | `docGhostPlugin` | frontend/js/documents-code.js:1919 |
 | `docGhostSuffix` | frontend/js/documents-code.js:1211 |
 | `docGoToDefinition` | frontend/js/documents-code.js:2771 |
@@ -3835,26 +3835,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docHtmlDiagnostics` | frontend/js/documents-code.js:270 |
 | `docHtmlTextAt` | frontend/js/documents-code.js:1669 |
 | `docIndentGuides` | frontend/js/documents-code.js:2262 |
-| `docIndentMixFixes` | frontend/js/documents-code.js:6041 |
+| `docIndentMixFixes` | frontend/js/documents-code.js:6052 |
 | `docIndentSteps` | frontend/js/documents-code.js:2243 |
 | `docJsMemberSource` | frontend/js/documents-code.js:776 |
 | `docJsObjectKeys` | frontend/js/documents-code.js:771 |
 | `docJsonDiagnostics` | frontend/js/documents-code.js:221 |
 | `docJsonErrorAt` | frontend/js/documents-code.js:103 |
-| `docJsonFixes` | frontend/js/documents-code.js:5965 |
+| `docJsonFixes` | frontend/js/documents-code.js:5976 |
 | `docJsxChildAt` | frontend/js/documents-code.js:1680 |
 | `docLoadBeautify` | frontend/js/documents-code.js:1627 |
 | `docLoadEmmet` | frontend/js/documents-code.js:1600 |
 | `docMeasureNextFrame` | frontend/js/documents-code.js:2565 |
 | `docNamesIn` | frontend/js/documents-code.js:798 |
 | `docNativeSnippets` | frontend/js/documents-code.js:652 |
-| `docOpenCodeFixes` | frontend/js/documents-code.js:6440 |
-| `docOpenSymbols` | frontend/js/documents-code.js:4812 |
+| `docOpenCodeFixes` | frontend/js/documents-code.js:6451 |
+| `docOpenSymbols` | frontend/js/documents-code.js:4823 |
 | `docP5Source` | frontend/js/documents-code.js:636 |
-| `docPanelChord` | frontend/js/documents-code.js:3869 |
-| `docPanelToggle` | frontend/js/documents-code.js:3853 |
+| `docPanelChord` | frontend/js/documents-code.js:3880 |
+| `docPanelToggle` | frontend/js/documents-code.js:3864 |
 | `docPickDefinition` | frontend/js/documents-code.js:2760 |
-| `docProblemsRender` | frontend/js/documents-code.js:3890 |
+| `docProblemsRender` | frontend/js/documents-code.js:3901 |
 | `docPyHost` | frontend/js/documents-code.js:2904 |
 | `docPyHover` | frontend/js/documents-code.js:2200 |
 | `docPyImports` | frontend/js/documents-code.js:699 |
@@ -3862,62 +3862,62 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docPyStdlibSource` | frontend/js/documents-code.js:725 |
 | `docPyStdlibTable` | frontend/js/documents-code.js:685 |
 | `docPyWarm` | frontend/js/documents-code.js:2924 |
-| `docPythonColonFix` | frontend/js/documents-code.js:6018 |
+| `docPythonColonFix` | frontend/js/documents-code.js:6029 |
 | `docPythonDefines` | frontend/js/documents-code.js:2716 |
 | `docReferencesOf` | frontend/js/documents-code.js:2692 |
 | `docRemoteDiagnostics` | frontend/js/documents-code.js:300 |
 | `docRgbToHex` | frontend/js/documents-code.js:1310 |
-| `docRunAfterSave` | frontend/js/documents-code.js:4068 |
-| `docRunArmTimeout` | frontend/js/documents-code.js:4425 |
-| `docRunAsk` | frontend/js/documents-code.js:4338 |
-| `docRunCell` | frontend/js/documents-code.js:4671 |
-| `docRunClear` | frontend/js/documents-code.js:4155 |
-| `docRunClearTab` | frontend/js/documents-code.js:3879 |
-| `docRunClose` | frontend/js/documents-code.js:4399 |
-| `docRunCode` | frontend/js/documents-code.js:4536 |
-| `docRunExtension` | frontend/js/documents-code.js:4075 |
-| `docRunJobArm` | frontend/js/documents-code.js:4117 |
-| `docRunJobCall` | frontend/js/documents-code.js:4110 |
-| `docRunJobEnd` | frontend/js/documents-code.js:4145 |
-| `docRunLiveOn` | frontend/js/documents-code.js:4046 |
-| `docRunLiveSchedule` | frontend/js/documents-code.js:4059 |
+| `docRunAfterSave` | frontend/js/documents-code.js:4079 |
+| `docRunArmTimeout` | frontend/js/documents-code.js:4436 |
+| `docRunAsk` | frontend/js/documents-code.js:4349 |
+| `docRunCell` | frontend/js/documents-code.js:4682 |
+| `docRunClear` | frontend/js/documents-code.js:4166 |
+| `docRunClearTab` | frontend/js/documents-code.js:3890 |
+| `docRunClose` | frontend/js/documents-code.js:4410 |
+| `docRunCode` | frontend/js/documents-code.js:4547 |
+| `docRunExtension` | frontend/js/documents-code.js:4086 |
+| `docRunJobArm` | frontend/js/documents-code.js:4128 |
+| `docRunJobCall` | frontend/js/documents-code.js:4121 |
+| `docRunJobEnd` | frontend/js/documents-code.js:4156 |
+| `docRunLiveOn` | frontend/js/documents-code.js:4057 |
+| `docRunLiveSchedule` | frontend/js/documents-code.js:4070 |
 | `docRunOpenPythonExtra` | frontend/js/documents-code.js:2973 |
 | `docRunPanel` | frontend/js/documents-code.js:3567 |
-| `docRunPythonMissing` | frontend/js/documents-code.js:4407 |
+| `docRunPythonMissing` | frontend/js/documents-code.js:4418 |
 | `docRunPythonReady` | frontend/js/documents-code.js:2888 |
-| `docRunRow` | frontend/js/documents-code.js:4164 |
+| `docRunRow` | frontend/js/documents-code.js:4175 |
 | `docRunSelectFrame` | frontend/js/documents-code.js:2933 |
-| `docRunSelection` | frontend/js/documents-code.js:4660 |
-| `docRunSend` | frontend/js/documents-code.js:4379 |
-| `docRunSetLive` | frontend/js/documents-code.js:4050 |
-| `docRunSetStatus` | frontend/js/documents-code.js:4095 |
-| `docRunShowStdin` | frontend/js/documents-code.js:4036 |
-| `docRunShowTab` | frontend/js/documents-code.js:3833 |
-| `docRunShowTestMarks` | frontend/js/documents-code.js:4324 |
-| `docRunStop` | frontend/js/documents-code.js:4388 |
+| `docRunSelection` | frontend/js/documents-code.js:4671 |
+| `docRunSend` | frontend/js/documents-code.js:4390 |
+| `docRunSetLive` | frontend/js/documents-code.js:4061 |
+| `docRunSetStatus` | frontend/js/documents-code.js:4106 |
+| `docRunShowStdin` | frontend/js/documents-code.js:4047 |
+| `docRunShowTab` | frontend/js/documents-code.js:3844 |
+| `docRunShowTestMarks` | frontend/js/documents-code.js:4335 |
+| `docRunStop` | frontend/js/documents-code.js:4399 |
 | `docRunSyncAvailability` | frontend/js/documents-code.js:2951 |
-| `docRunTable` | frontend/js/documents-code.js:4221 |
-| `docRunTestDiagnostics` | frontend/js/documents-code.js:4290 |
-| `docRunTestRow` | frontend/js/documents-code.js:4259 |
-| `docRunTestsDone` | frontend/js/documents-code.js:4303 |
+| `docRunTable` | frontend/js/documents-code.js:4232 |
+| `docRunTestDiagnostics` | frontend/js/documents-code.js:4301 |
+| `docRunTestRow` | frontend/js/documents-code.js:4270 |
+| `docRunTestsDone` | frontend/js/documents-code.js:4314 |
 | `docRunnable` | frontend/js/documents-code.js:2881 |
 | `docShowReferences` | frontend/js/documents-code.js:2792 |
-| `docSqlCsvRows` | frontend/js/documents-code.js:4452 |
-| `docSqlCsvTable` | frontend/js/documents-code.js:4493 |
-| `docSqlCsvTables` | frontend/js/documents-code.js:4514 |
-| `docSqlTableName` | frontend/js/documents-code.js:4444 |
+| `docSqlCsvRows` | frontend/js/documents-code.js:4463 |
+| `docSqlCsvTable` | frontend/js/documents-code.js:4504 |
+| `docSqlCsvTables` | frontend/js/documents-code.js:4525 |
+| `docSqlTableName` | frontend/js/documents-code.js:4455 |
 | `docStickyHeaders` | frontend/js/documents-code.js:2549 |
 | `docStickyScroll` | frontend/js/documents-code.js:2583 |
 | `docTagLink` | frontend/js/documents-code.js:1977 |
 | `docTagRename` | frontend/js/documents-code.js:1261 |
 | `docTreeDiagnostics` | frontend/js/documents-code.js:244 |
-| `docTreeHasJsx` | frontend/js/documents-code.js:6208 |
+| `docTreeHasJsx` | frontend/js/documents-code.js:6219 |
 | `docWordAt` | frontend/js/documents-code.js:2681 |
 | `docXmlAutoClose` | frontend/js/documents-code.js:2012 |
 | `docXmlOpenedBy` | frontend/js/documents-code.js:1284 |
 | `docXmlTextAt` | frontend/js/documents-code.js:1690 |
 | `docXmlUnclosed` | frontend/js/documents-code.js:1291 |
-| `docYamlBlockLines` | frontend/js/documents-code.js:5767 |
+| `docYamlBlockLines` | frontend/js/documents-code.js:5778 |
 
 ### frontend/js/documents-codekit.js (47)
 
@@ -27726,7 +27726,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21890)
+## Tests (21893)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28460,6 +28460,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_css_regex_anchor.py | 2 |
 | tests/test_css_unused_names.py | 1 |
 | tests/test_css_wrapzoom_map_dash.py | 9 |
+| tests/test_csv_query_as_sql_l317.py | 3 |
 | tests/test_daily_journal.py | 13 |
 | tests/test_daily_strip.py | 9 |
 | tests/test_dash_counts_link_s87.py | 2 |
@@ -30843,14 +30844,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1242 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:886 |
+| Needs hardware | docs/roadmap/LEDGER.md:885 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:878 |
+| Owner calls | docs/roadmap/LEDGER.md:877 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31031,7 +31032,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1086 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1085 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31085,25 +31086,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:62 |
-| chat | docs/roadmap/LEDGER.md:1102 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1186 |
+| chat | docs/roadmap/LEDGER.md:1101 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1185 |
 | documents | docs/roadmap/LEDGER.md:365 |
-| documents | docs/roadmap/LEDGER.md:1126 |
-| general | docs/roadmap/LEDGER.md:838 |
+| documents | docs/roadmap/LEDGER.md:1125 |
+| general | docs/roadmap/LEDGER.md:837 |
 | graph | docs/roadmap/LEDGER.md:26 |
-| graph | docs/roadmap/LEDGER.md:1090 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1198 |
+| graph | docs/roadmap/LEDGER.md:1089 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1197 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
-| mindmap | docs/roadmap/LEDGER.md:413 |
-| mindmap | docs/roadmap/LEDGER.md:1138 |
-| timeline | docs/roadmap/LEDGER.md:567 |
-| timeline | docs/roadmap/LEDGER.md:1162 |
-| ui-modernisation | docs/roadmap/LEDGER.md:450 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1150 |
+| mindmap | docs/roadmap/LEDGER.md:412 |
+| mindmap | docs/roadmap/LEDGER.md:1137 |
+| timeline | docs/roadmap/LEDGER.md:566 |
+| timeline | docs/roadmap/LEDGER.md:1161 |
+| ui-modernisation | docs/roadmap/LEDGER.md:449 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1149 |
 | whiteboard | docs/roadmap/LEDGER.md:319 |
-| whiteboard | docs/roadmap/LEDGER.md:1114 |
-| world-class | docs/roadmap/LEDGER.md:602 |
-| world-class | docs/roadmap/LEDGER.md:1174 |
+| whiteboard | docs/roadmap/LEDGER.md:1113 |
+| world-class | docs/roadmap/LEDGER.md:601 |
+| world-class | docs/roadmap/LEDGER.md:1173 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

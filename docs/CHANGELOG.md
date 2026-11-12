@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a CSV document's panel has Query as SQL, which opens a new SQL document selecting the table's first 50 rows and runs it (L317)
 - Documents: Variables and Watch rows expand into children of children, three levels down, and a value holding itself stops there (L312)
 - Documents: a console line stopped after 10 seconds says so in the console, and the output and Problems above it stay (L293)
 - Documents: the diagram builder pans by dragging with the right mouse button, as well as Space and drag (L-documents-1)

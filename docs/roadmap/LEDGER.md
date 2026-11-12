@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 32 | 13 | 0 | 18 | 115 |
-| documents | 70 | 32 | 13 | 0 | 18 | 115 |
-| documents | 70 | 32 | 13 | 0 | 18 | 115 |
+| documents | 70 | 31 | 13 | 0 | 18 | 114 |
+| documents | 70 | 31 | 13 | 0 | 18 | 114 |
+| documents | 70 | 31 | 13 | 0 | 18 | 114 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 672 | 153 | 3 | 195 | 1378 |
-| all | 553 | 672 | 153 | 3 | 195 | 1378 |
-| all | 553 | 672 | 153 | 3 | 195 | 1378 |
+| all | 553 | 671 | 153 | 3 | 195 | 1377 |
+| all | 553 | 671 | 153 | 3 | 195 | 1377 |
+| all | 553 | 671 | 153 | 3 | 195 | 1377 |
 
 ## graph
 
@@ -369,7 +369,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L309** `documents` open, M: Keep Python runtime frame persistent across documents to avoid 5-7 s cold reload per document. From OPEN.md:1219; OPEN.md:1224; OPEN.md:2829; OPEN.md:2907. Evidence: Row: needs the Pyodide extra, not installed here; cold Debug cannot be timed.
 - [ ] **L313** `documents` open, M: Step JS watches instead of evaluating natively. From OPEN.md:2825. Evidence: run_sandbox.py:250 evaluate; known limitation, verified
 - [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10
-- [ ] **L317** `documents` open, M: Load a CSV document as a SQL table from a panel action. From OPEN.md:2903. Evidence: run-core.js:169 accepts tables; no panel action sends a CSV doc
 - [ ] **L318** `documents` open, M: Comment threads: edit/delete replies, per-device author, reply to resolved, code-doc comments. From a30h-1102.md Left. Evidence: documents-comments.js:275 replies never edited; no edit/delete path found
 - [ ] **L319** `documents` open, M: Verify code editor: Python run, SQL/p5, Emmet/hover docs, conflict dialog, multi-cursor, Console eval. From audit-1031-code.md. Evidence: No later code audit; Python extra not installed here
 - [ ] **L320** `documents` open, M: Verify docs: read-view mermaid, print/PDF, docx, import, comments, phone editor entry. From audit-1031-docs.md. Evidence: audit-1102-docs covered part; print dialog and phone remain
