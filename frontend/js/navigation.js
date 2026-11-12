@@ -1626,6 +1626,15 @@ document.addEventListener("keydown", (event) => {
       focusMenuItem(event.key === "ArrowDown" ? rows[0] : rows[rows.length - 1], menu);
       return;
     }
+    //: The other half of the APG menu button: ↓ on a closed one opens it on the first row, ↑ on the last (Enter and Space already open it).
+    if (opener.tagName === "BUTTON" && opener.getAttribute("aria-haspopup") === "menu" && opener.getAttribute("aria-expanded") === "false") {
+      event.preventDefault();
+      opener.click();
+      const opened = menuOfOpener(opener) || document.activeElement?.closest('[role="menu"]');
+      const openRows = opened ? menuRowsOf(opened) : [];
+      if (openRows.length) focusMenuItem(event.key === "ArrowDown" ? openRows[0] : openRows[openRows.length - 1], opened);
+      return;
+    }
   }
   //: Inside the menu: a `details` menu's list, or a markup menu an open
   //: button controls (the space switcher's list). A menu `wireMenuKeyboard`

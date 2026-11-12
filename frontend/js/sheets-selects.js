@@ -819,6 +819,7 @@ function enhanceSelect(select) {
   wrapper?.querySelectorAll("select, .select-shell").forEach((part) => part.remove());
   const label = named || wrapper?.textContent.trim().replace(/\s+/g, " ") || select.title || "Choose an option";
   opener.setAttribute("aria-label", label);
+  menu.setAttribute("aria-label", label); // the listbox is named like its button
   opener.title = select.title || label;
 
   //: An option's `data-icon` picture (U27), decorative.
@@ -952,6 +953,14 @@ function enhanceSelect(select) {
     }
   });
 
+  //: APG select-only combobox: ↓ and ↑ on the closed button open the list on the chosen row (Enter and Space already do, as a click).
+  opener.addEventListener("keydown", (event) => {
+    if ((event.key !== "ArrowDown" && event.key !== "ArrowUp") || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (!menu.classList.contains("hidden")) return;
+    event.preventDefault();
+    opener.click();
+  });
+
   select.addEventListener("change", syncValue);
   //: A closed menu is not rebuilt for an option that changed (OPEN 813): the
   //: opener's click rebuilds on every open, and the board picker's "N topics"
@@ -1072,6 +1081,7 @@ function enhanceAllSelects(root) {
   for (const select of (root || document).querySelectorAll("select")) {
     enhanceSelect(select);
   }
+  enhanceAllSelects.stampSwitches?.(root || document); // a Settings pane's switches, as it is shown
 }
 
 //: **A date or a time, picked** (UI_MODERNISATION_PLAN Phase 12 decision 5;
@@ -1461,6 +1471,8 @@ function kebabMenu(items, ariaLabel, { vertical = false, anchor = null } = {}) {
   const menu = document.createElement("div");
   menu.className = "action-menu hidden";
   menu.setAttribute("role", "menu");
+  //: A menu is named (APG menu button); the opener already is, by the same words.
+  if (ariaLabel) menu.setAttribute("aria-label", ariaLabel);
 
   const opener = smallButton(vertical ? "ph:dots-three-vertical" : "ph:dots-three", ariaLabel, () => {
     window.objKebabRows?.(menu);
@@ -2484,3 +2496,20 @@ function focusFirstIn(root, preferred = null) {
   el?.focus();
   return !!el;
 }
+
+// --- a switch says "switch" (APG switch, Radix Switch) ----------------------------
+//: Settings' toggles are native checkboxes drawn as switches (06-timeline-dialogs.css, "one switch, everywhere a checkbox means on or off"), so a screen reader said "checkbox". `role="switch"` on the input keeps the browser's checked state and keys and changes only the word. The list is that rule's selector list (`tests/test_switch_role.py` holds the two together); a pane's boxes are stamped as `enhanceAllSelects` shows it, the page's once it is idle, and any other when it takes focus.
+(() => {
+  const SWITCH_BOXES = [
+    ".settings-section label>input[type=checkbox]", ".setting-check input[type=checkbox]", ".tools-toggle input[type=checkbox]",
+    "#tool-list input[type=checkbox]", ".library-toolbar label>input[type=checkbox]", ".check-row input[type=checkbox]",
+    ".semantic-toggle input[type=checkbox]", ".library-sort-check input[type=checkbox]",
+    ".checkbox-label>input[type=checkbox]:not(.sr-only)", ".wb-snap-label input[type=checkbox]",
+  ].join(", ");
+  const stamp = (box) => {
+    if (box instanceof HTMLInputElement && box.type === "checkbox" && !box.hasAttribute("role") && box.matches(SWITCH_BOXES)) box.setAttribute("role", "switch");
+  };
+  document.addEventListener("focusin", (event) => stamp(event.target), true);
+  enhanceAllSelects.stampSwitches = (root) => root.querySelectorAll(SWITCH_BOXES).forEach(stamp);
+  (window.requestIdleCallback || setTimeout)(() => enhanceAllSelects.stampSwitches(document));
+})();

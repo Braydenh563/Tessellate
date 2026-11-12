@@ -41,7 +41,7 @@ for (let i = 0; i < 30; i += 1) {
   const s = Object.assign(Object.create(HTMLInputElement.prototype), {
     type: "range", id: `s${i}`, dataset: {}, min: "0", max: "10", step: "1", value: "3",
     parentElement: { querySelector: () => null }, hasAttribute: () => false, getAttribute: () => null, title: "",
-    addEventListener() {}, after() {},
+    addEventListener() {}, after() {}, setAttribute() {},
   });
   Object.defineProperty(s, "labels", { get() { labelReads += 1; return []; } });
   sliders.push(s);

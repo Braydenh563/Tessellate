@@ -1307,6 +1307,12 @@ function wireMenuKeyboard(menu, opener) {
     } else if (event.key === "End") {
       event.preventDefault();
       focusMenuItem(menuItems[menuItems.length - 1], menu);
+    } else if (event.key === "Tab") {
+      //: APG menu button: Tab closes the menu and moves on. `closeActionMenus` hands the focus back to the opener, and the Tab then leaves from there.
+      closeActionMenus();
+    } else if (wireMenuKeyboard.typeahead(menu, menuItems, current, event)) {
+      event.preventDefault();
+      event.stopPropagation(); // a letter that found a row is not also a single-key shortcut
     } else if (event.key === "Escape") {
       event.preventDefault();
       //: The menu owns this Escape: without the stop, the document's own
@@ -1318,6 +1324,21 @@ function wireMenuKeyboard(menu, opener) {
     }
   });
 }
+
+//: Type-ahead (APG menu and listbox): letters typed within half a second make one prefix, and the next row starting with it takes the focus, after the current one so a repeated letter walks the matches. True when a row took it.
+wireMenuKeyboard.typeahead = function (menu, items, current, event) {
+  const plain = event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey;
+  if (!plain || (event.key === " " && !menu._typed)) return false;
+  clearTimeout(menu._typedTimer);
+  menu._typed = (menu._typed || "") + event.key.toLowerCase();
+  menu._typedTimer = setTimeout(() => (menu._typed = ""), 500);
+  const word = (item) => item.textContent.trim().toLowerCase();
+  const order = [...items.slice(current + 1), ...items.slice(0, current + 1)];
+  const repeated = [...menu._typed].every((ch) => ch === menu._typed[0]);
+  const hit = order.find((item) => word(item).startsWith(menu._typed)) || (repeated ? order.find((item) => word(item).startsWith(menu._typed[0])) : null);
+  if (hit) focusMenuItem(hit, menu);
+  return Boolean(hit);
+};
 
 // A single `role="menuitem"` button: shared by the top-level menu and every
 // submenu, so a click behaves identically (close everything, then run) no

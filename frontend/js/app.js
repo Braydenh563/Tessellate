@@ -1271,6 +1271,7 @@ function confirmVerb(message) {
 // One confirm at a time (HR20): a second ask waits for the first to close, so
 // each takes focus and Esc answers the one the person can see.
 function confirmDialog(message, options = {}) {
+  confirmDialog.n = confirmDialog.n || 0;
   const {
     confirmLabel = confirmVerb(message),
     cancelLabel = "Cancel",
@@ -1297,7 +1298,12 @@ function confirmDialog(message, options = {}) {
       if (index === 0 && parts.length > 1) line.className = "confirm-title";
       line.textContent = part;
       text.append(line, document.createElement("br"));
+      //: Named and described as every reference dialog is (APG alert dialog, Radix AlertDialog): the question is the name, the whole text the description.
+      if (index === 0) line.id = `confirm-name-${++confirmDialog.n}`;
     });
+    text.id = `confirm-text-${confirmDialog.n}`;
+    overlay.setAttribute("aria-labelledby", parts.length > 1 ? `confirm-name-${confirmDialog.n}` : text.id);
+    overlay.setAttribute("aria-describedby", text.id);
     const row = document.createElement("div");
     row.className = "row confirm-actions";
 
@@ -1383,6 +1389,8 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     const text = document.createElement("h3");
     text.className = "confirm-title";
     text.textContent = message;
+    text.id = `prompt-name-${promptDialog.n = (promptDialog.n || 0) + 1}`;
+    overlay.setAttribute("aria-labelledby", text.id);
     head.appendChild(text);
     const input = document.createElement("input");
     input.type = "text";
@@ -1568,7 +1576,7 @@ const LAZY_MODULES = {
   appPalette: ["/js/meaning.js", "/js/app-features.js", "/js/app-palette.js"],
   notePanels: ["/js/note-panels.js", "/js/note-edit-panels.js", "/js/note-pick-preview.js"],
   //: Every listener inside the Settings window, awaited on first open: settings-controls.js.
-  settingsControls: ["/css/settings-controls-lazy.css", "/js/settings-controls.js"],
+  settingsControls: ["/css/settings-controls-lazy.css", "/js/settings-controls.js", "/js/settings-prefs.js"],
   attachTo: ["/js/pick-row.js", "/js/attach-to.js"],
   vault: ["/js/vault-unlock.js"],
   //: The one icon and emoji picker, on first use (MINDMAP_PLAN decision 43): see icon-picker.js.
@@ -1827,7 +1835,7 @@ const LAZY_ENTRY_POINTS = {
   //: The icon and emoji picker: reached through `pickIconOrEmoji` (editor.js).
   iconPicker: ["openIconPicker"],
   //: Async, and reached from a Settings pane drawn before the window's own await.
-  settingsControls: ["refreshSearxngHost", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings"],
+  settingsControls: ["refreshSearxngHost", "renderPrefs", "renderWebSearch", "syncEmbeddingPickerState", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings"],
   settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument"],
   tagSuggest: ["openTagSuggest", "renderReevaluateResult"],
   writingDesk: ["addDraftSource", "composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],

@@ -542,59 +542,6 @@ function renderAutonomousModelPicker(status) {
 //: `renderEmbeddingPicker` lives in settings-models.js (lazy `settingsUi`),
 //: like the model cards: only an open Settings draws it.
 
-//: **A control says whether it is the one in use.** Asked after reading the
-//: code: *"does the ai embedding model actually get used??"* It does, in
-//: seven places, but only when the backend radio above is set to Ollama, and
-//: the built-in backend is the default. So somebody who picked a model here
-//: expecting it to be doing the work had a fully enabled, fully ignored
-//: control, which is the same class of thing as a disabled control that does
-//: not say why: a setting whose state is invisible.
-//:
-//: Disabled rather than hidden, because hiding it would make the choice
-//: unfindable from the radio that names it, and the reason rides on the
-//: tooltip so the state is legible without another paragraph on screen.
-//:
-//: `offline` is passed by the status poll, which knows; the radio's own
-//: handler omits it and it is read back off the control the poll last set,
-//: so a change of radio cannot claim Ollama is reachable when it is not.
-function syncEmbeddingPickerState(offline) {
-  const ollamaRadio = document.querySelector('input[name="emb-backend"][value="ollama"]');
-  const down = offline === undefined ? Boolean(ollamaRadio?.disabled) : offline;
-  const usingOllama =
-    document.querySelector('input[name="emb-backend"]:checked')?.value === "ollama";
-  const picker = $("embedding-model-select");
-  if (!picker) return;
-  picker.disabled = down || !usingOllama;
-  //: An empty select says nothing: with Ollama off it drew as a blank 46px
-  //: box beside a pale Apply button. It names why it is empty instead.
-  if (!picker.options.length || picker.options[0].dataset.placeholder) {
-    const note = down ? "Needs Ollama running" : "No embedding models installed";
-    let option = picker.options[0];
-    if (!option) {
-      option = document.createElement("option");
-      option.value = "";
-      option.dataset.placeholder = "1";
-      picker.appendChild(option);
-    }
-    option.textContent = note;
-  }
-  picker.title = down
-    ? "Ollama is not running, so there are no embedding models to choose from"
-    : usingOllama
-      ? "The model used for semantic search"
-      : "Only used when the backend above is set to Ollama. The built-in one is in use";
-  const apply = $("embedding-apply");
-  if (!apply) return;
-  //: **Enabled for the built-in choice too.** It was disabled whenever
-  //: Built-in was picked, so switching back from an Ollama model could never
-  //: be applied: the backend stayed on Ollama and that model stayed "in use"
-  //: and could not be removed (owner, 0.3.31).
-  apply.disabled = usingOllama && down;
-  apply.title = usingOllama
-    ? "Re-read every note with this model"
-    : "Switch to the built-in model and re-read every note with it";
-}
-
 // The button lives in index.html (see `#reindex-box`) rather than being built
 // here: `test_frontend_ids.py` refuses an id this file looks up that the
 // markup never declares, and it is right to, a control that exists only in
