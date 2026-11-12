@@ -4731,6 +4731,8 @@ function graphCaptureView() {
     colour: prefs.get("graph-colour", null) || "",
     hiddenCategories: [...graphHiddenCategories],
     hiddenKeys: [...graphHiddenKeys],
+    //: The link-kind chips (a view saved with Contradicts off came back with it on).
+    hiddenLinkKinds: prefs.json("graph-hidden-link-kinds", []),
     groups: graphGroups(),
     // graph.md section 1: `#graph-physics` is the Physics *section*
     // (`.dock-menu-section`, index.html), not a checkbox -- it was never
@@ -4829,6 +4831,8 @@ function graphApplyView(view) {
   set("graph-time-slider", view.time);
   graphHiddenCategories = new Set(view.hiddenCategories || []);
   graphHiddenKeys = new Set(view.hiddenKeys || []);
+  //: Stored, then read back by `gcRenderFilterChips` on the render the changes above kick off.
+  if (Array.isArray(view.hiddenLinkKinds)) prefs.set("graph-hidden-link-kinds", JSON.stringify(view.hiddenLinkKinds));
   if (Array.isArray(view.groups)) {
     prefs.set(GRAPH_GROUPS_KEY, JSON.stringify(view.groups));
     graphRenderGroups();
@@ -5275,6 +5279,7 @@ const GRAPH_DEFAULTS = {
   "graph-minimap-size": "sm",
   hiddenCategories: [],
   hiddenKeys: [],
+  hiddenLinkKinds: [],
 };
 
 //: The same shape as `GRAPH_DEFAULTS`, read off the controls as they stand,
@@ -5288,6 +5293,8 @@ function graphCaptureSettings() {
       out.hiddenCategories = [...graphHiddenCategories];
     } else if (key === "hiddenKeys") {
       out.hiddenKeys = [...graphHiddenKeys];
+    } else if (key === "hiddenLinkKinds") {
+      out.hiddenLinkKinds = prefs.json("graph-hidden-link-kinds", []);
     } else {
       const el = document.getElementById(key);
       if (!el) out[key] = fallback;
@@ -5318,8 +5325,9 @@ function graphApplySettings(settings) {
   }
   graphHiddenCategories = new Set(settings.hiddenCategories || []);
   graphHiddenKeys = new Set(settings.hiddenKeys || []);
+  prefs.set("graph-hidden-link-kinds", JSON.stringify(settings.hiddenLinkKinds || []));
   for (const [key, value] of Object.entries(settings)) {
-    if (key === "layout" || key === "hiddenCategories" || key === "hiddenKeys") continue;
+    if (key === "layout" || key === "hiddenCategories" || key === "hiddenKeys" || key === "hiddenLinkKinds") continue;
     const el = document.getElementById(key);
     if (!el) continue;
     if (el.type === "checkbox") {

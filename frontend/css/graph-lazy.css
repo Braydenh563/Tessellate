@@ -130,6 +130,12 @@
 .graph-popup-topic > .graph-topic-tools {
   flex: none;
 }
+/* The topic chip is a button: a finger gets the touch floor (audit 1029 G20: 24px). */
+@media (pointer: coarse) {
+  .graph-popup-topic > .chip-interactive {
+    min-height: var(--target-min);
+  }
+}
 
 /* A note's properties in its panel (INBOX 1300 C27): a section, the
    small-caps head with its count and its one action at the row's end, then

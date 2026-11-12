@@ -1585,6 +1585,9 @@
     const kinds = document.getElementById("graph-link-kinds");
     const props = document.getElementById("graph-prop-chips");
     if (!kinds || !props) return;
+    //: A saved view or a reset writes the pref; the Set follows it here, once a render.
+    graphHiddenLinkKinds.clear();
+    for (const key of prefs.json("graph-hidden-link-kinds", [])) graphHiddenLinkKinds.add(key);
     const rows = gcLinkKindRows(data.edges, graphHiddenLinkKinds);
     kinds.replaceChildren(...rows.map(([key, row]) => {
       const shown = !graphHiddenLinkKinds.has(key);
