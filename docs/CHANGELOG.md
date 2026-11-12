@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Measured: the Timeline bar click reaches its first rows in 125 to 249 ms at 96 notes (10 runs, headless), under the 300 ms bar (L490; real hardware stays L912).
 - Fix: a time range chosen while the Timeline's own render is still waiting paints once, with the newer answer; the older answer landing last no longer paints the old range over it (L483, `tests/test_timeline_render_superseded.py`).
 - Speed: the Timeline feed no longer lays out every frame while scrolling (L492); its rows are windowed, so `content-visibility` on them only cost a layout per row crossing the edge: 38 to 44 layouts a second down to 6 to 10 at 2,096 notes, tab entry unchanged (`tests/test_css_invalidation.py`).
 - Speed: the Timeline table is windowed like the feed (L491); at 2,096 notes, 1,214 loaded rows went from 13,375 nodes to 1,985 and a sort repaint from 246ms to 43ms; End still reaches the last row (`tests/test_window_rows.py`).
