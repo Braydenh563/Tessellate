@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8333, frontend ids 2763, CSS sections 524, backend routes 700, backend modules 10776, test files 2684, tests 21852, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8338, frontend ids 2763, CSS sections 524, backend routes 703, backend modules 10791, test files 2685, tests 21866, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
-## Frontend functions (8333)
+## Frontend functions (8338)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5167,194 +5167,199 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openChatModelPanel` | frontend/js/gesture-kit.js:55 |
 | `toggleDictation` | frontend/js/gesture-kit.js:367 |
 
-### frontend/js/graph-canvas.js (184)
+### frontend/js/graph-canvas.js (189)
 
 | Name | File:line |
 |---|---|
-| `gcAdditionHolds` | frontend/js/graph-canvas.js:5854 |
-| `gcAimNodes` | frontend/js/graph-canvas.js:2384 |
-| `gcArmTouchLasso` | frontend/js/graph-canvas.js:4984 |
-| `gcArriving` | frontend/js/graph-canvas.js:7573 |
+| `gcAdditionHolds` | frontend/js/graph-canvas.js:5908 |
+| `gcAimNodes` | frontend/js/graph-canvas.js:2438 |
+| `gcArmTouchLasso` | frontend/js/graph-canvas.js:5038 |
+| `gcArriving` | frontend/js/graph-canvas.js:7632 |
 | `gcArrows` | frontend/js/graph-canvas.js:881 |
 | `gcAutoFitDone` | frontend/js/graph-canvas.js:196 |
-| `gcAutoFitTurnedOn` | frontend/js/graph-canvas.js:2094 |
-| `gcBalanceFit` | frontend/js/graph-canvas.js:1947 |
-| `gcBornAlpha` | frontend/js/graph-canvas.js:2155 |
+| `gcAutoFitTurnedOn` | frontend/js/graph-canvas.js:2148 |
+| `gcBalanceFit` | frontend/js/graph-canvas.js:2001 |
+| `gcBornAlpha` | frontend/js/graph-canvas.js:2209 |
 | `gcBowPoint` | frontend/js/graph-canvas.js:895 |
 | `gcBoxLineCount` | frontend/js/graph-canvas.js:752 |
-| `gcBoxPoints` | frontend/js/graph-canvas.js:5001 |
-| `gcCachedPositions` | frontend/js/graph-canvas.js:6186 |
-| `gcCameraStill` | frontend/js/graph-canvas.js:2503 |
-| `gcCardRested` | frontend/js/graph-canvas.js:5463 |
-| `gcCat` | frontend/js/graph-canvas.js:1845 |
+| `gcBoxPoints` | frontend/js/graph-canvas.js:5055 |
+| `gcCachedPositions` | frontend/js/graph-canvas.js:6240 |
+| `gcCameraStill` | frontend/js/graph-canvas.js:2557 |
+| `gcCardRested` | frontend/js/graph-canvas.js:5517 |
+| `gcCat` | frontend/js/graph-canvas.js:1899 |
 | `gcClampBox` | frontend/js/graph-canvas.js:662 |
-| `gcClickNode` | frontend/js/graph-canvas.js:5667 |
+| `gcClickNode` | frontend/js/graph-canvas.js:5721 |
 | `gcClipEdge` | frontend/js/graph-canvas.js:739 |
-| `gcCloseNodeMenu` | frontend/js/graph-canvas.js:5259 |
-| `gcCoolGap` | frontend/js/graph-canvas.js:2423 |
-| `gcCooling` | frontend/js/graph-canvas.js:2404 |
+| `gcCloseNodeMenu` | frontend/js/graph-canvas.js:5313 |
+| `gcCoolGap` | frontend/js/graph-canvas.js:2477 |
+| `gcCooling` | frontend/js/graph-canvas.js:2458 |
 | `gcCurvedLinks` | frontend/js/graph-canvas.js:850 |
-| `gcDraw` | frontend/js/graph-canvas.js:3070 |
-| `gcDrawComposed` | frontend/js/graph-canvas.js:2770 |
-| `gcDrawDrift` | frontend/js/graph-canvas.js:4011 |
-| `gcDrawEdgeHover` | frontend/js/graph-canvas.js:4024 |
-| `gcDrawHeld` | frontend/js/graph-canvas.js:2445 |
-| `gcDrawLabels` | frontend/js/graph-canvas.js:4100 |
-| `gcDrawLeaving` | frontend/js/graph-canvas.js:2218 |
-| `gcDrawLeavingLines` | frontend/js/graph-canvas.js:2209 |
-| `gcDrawLight` | frontend/js/graph-canvas.js:2911 |
+| `gcDraw` | frontend/js/graph-canvas.js:3124 |
+| `gcDrawComposed` | frontend/js/graph-canvas.js:2824 |
+| `gcDrawDrift` | frontend/js/graph-canvas.js:4065 |
+| `gcDrawEdgeHover` | frontend/js/graph-canvas.js:4078 |
+| `gcDrawHeld` | frontend/js/graph-canvas.js:2499 |
+| `gcDrawLabels` | frontend/js/graph-canvas.js:4154 |
+| `gcDrawLeaving` | frontend/js/graph-canvas.js:2272 |
+| `gcDrawLeavingLines` | frontend/js/graph-canvas.js:2263 |
+| `gcDrawLight` | frontend/js/graph-canvas.js:2965 |
 | `gcDrawNebulae` | frontend/js/graph-canvas.js:1294 |
-| `gcDrawPill` | frontend/js/graph-canvas.js:4077 |
-| `gcDrawSelection` | frontend/js/graph-canvas.js:5040 |
-| `gcDrawTick` | frontend/js/graph-canvas.js:2414 |
+| `gcDrawPill` | frontend/js/graph-canvas.js:4131 |
+| `gcDrawSelection` | frontend/js/graph-canvas.js:5094 |
+| `gcDrawTick` | frontend/js/graph-canvas.js:2468 |
 | `gcDrawTopicHulls` | frontend/js/graph-canvas.js:1463 |
-| `gcDrawTrace` | frontend/js/graph-canvas.js:4298 |
+| `gcDrawTrace` | frontend/js/graph-canvas.js:4352 |
 | `gcDrawTreemap` | frontend/js/graph-canvas.js:1343 |
-| `gcDropTargetFor` | frontend/js/graph-canvas.js:5662 |
-| `gcEaseOut` | frontend/js/graph-canvas.js:2243 |
-| `gcEdgeAtWorld` | frontend/js/graph-canvas.js:4383 |
+| `gcDropTargetFor` | frontend/js/graph-canvas.js:5716 |
+| `gcEaseOut` | frontend/js/graph-canvas.js:2297 |
+| `gcEdgeAtWorld` | frontend/js/graph-canvas.js:4437 |
 | `gcEdgeLook` | frontend/js/graph-canvas.js:918 |
 | `gcEdgeStyle` | frontend/js/graph-canvas.js:953 |
-| `gcEl` | frontend/js/graph-canvas.js:2572 |
+| `gcEl` | frontend/js/graph-canvas.js:2626 |
 | `gcEnsureCanvas` | frontend/js/graph-canvas.js:1003 |
-| `gcExportPng` | frontend/js/graph-canvas.js:2643 |
-| `gcFadeStep` | frontend/js/graph-canvas.js:2323 |
-| `gcFadeToward` | frontend/js/graph-canvas.js:2310 |
-| `gcFillSparks` | frontend/js/graph-canvas.js:3991 |
+| `gcExportPng` | frontend/js/graph-canvas.js:2697 |
+| `gcFadeStep` | frontend/js/graph-canvas.js:2377 |
+| `gcFadeToward` | frontend/js/graph-canvas.js:2364 |
+| `gcFillSparks` | frontend/js/graph-canvas.js:4045 |
 | `gcFilterChip` | frontend/js/graph-canvas.js:1558 |
-| `gcFitInsets` | frontend/js/graph-canvas.js:2056 |
-| `gcForcesKey` | frontend/js/graph-canvas.js:5850 |
-| `gcFrameIntro` | frontend/js/graph-canvas.js:6201 |
-| `gcGlideFinish` | frontend/js/graph-canvas.js:2472 |
-| `gcGlideStep` | frontend/js/graph-canvas.js:2453 |
+| `gcFitInsets` | frontend/js/graph-canvas.js:2110 |
+| `gcForcesKey` | frontend/js/graph-canvas.js:5904 |
+| `gcFrameIntro` | frontend/js/graph-canvas.js:6255 |
+| `gcGlideFinish` | frontend/js/graph-canvas.js:2526 |
+| `gcGlideStep` | frontend/js/graph-canvas.js:2507 |
 | `gcHexToRgb` | frontend/js/graph-canvas.js:1100 |
 | `gcHideTopic` | frontend/js/graph-canvas.js:1638 |
-| `gcHighlight` | frontend/js/graph-canvas.js:2597 |
-| `gcHoverCardEl` | frontend/js/graph-canvas.js:5432 |
-| `gcHoverCardFacts` | frontend/js/graph-canvas.js:5397 |
-| `gcHoverCardFill` | frontend/js/graph-canvas.js:5476 |
-| `gcHoverCardFrame` | frontend/js/graph-canvas.js:5531 |
-| `gcHoverChanged` | frontend/js/graph-canvas.js:2251 |
-| `gcHoverGrow` | frontend/js/graph-canvas.js:2262 |
-| `gcHoverStep` | frontend/js/graph-canvas.js:2270 |
+| `gcHighlight` | frontend/js/graph-canvas.js:2651 |
+| `gcHoverCardEl` | frontend/js/graph-canvas.js:5486 |
+| `gcHoverCardFacts` | frontend/js/graph-canvas.js:5451 |
+| `gcHoverCardFill` | frontend/js/graph-canvas.js:5530 |
+| `gcHoverCardFrame` | frontend/js/graph-canvas.js:5585 |
+| `gcHoverChanged` | frontend/js/graph-canvas.js:2305 |
+| `gcHoverGrow` | frontend/js/graph-canvas.js:2316 |
+| `gcHoverStep` | frontend/js/graph-canvas.js:2324 |
 | `gcHubSpokeMin` | frontend/js/graph-canvas.js:412 |
 | `gcIsNote` | frontend/js/graph-canvas.js:384 |
 | `gcKeyboardId` | frontend/js/graph-canvas.js:208 |
-| `gcLabelCut` | frontend/js/graph-canvas.js:4259 |
+| `gcLabelCut` | frontend/js/graph-canvas.js:4313 |
 | `gcLabelPlates` | frontend/js/graph-canvas.js:862 |
-| `gcLabelText` | frontend/js/graph-canvas.js:4269 |
-| `gcLabelWidth` | frontend/js/graph-canvas.js:4227 |
+| `gcLabelText` | frontend/js/graph-canvas.js:4323 |
+| `gcLabelWidth` | frontend/js/graph-canvas.js:4281 |
 | `gcLabelZoom` | frontend/js/graph-canvas.js:869 |
-| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6992 |
-| `gcLegendSizeKey` | frontend/js/graph-canvas.js:7038 |
-| `gcLightFrame` | frontend/js/graph-canvas.js:2899 |
+| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:7051 |
+| `gcLegendSizeKey` | frontend/js/graph-canvas.js:7097 |
+| `gcLightFrame` | frontend/js/graph-canvas.js:2953 |
 | `gcLineGrid` | frontend/js/graph-canvas.js:679 |
 | `gcLinkKindHidden` | frontend/js/graph-canvas.js:1549 |
 | `gcLinkKindRows` | frontend/js/graph-canvas.js:1574 |
-| `gcLinkSpark` | frontend/js/graph-canvas.js:3946 |
+| `gcLinkSpark` | frontend/js/graph-canvas.js:4000 |
 | `gcLinkWidth` | frontend/js/graph-canvas.js:875 |
-| `gcLitAlpha` | frontend/js/graph-canvas.js:2316 |
-| `gcMarkLeaving` | frontend/js/graph-canvas.js:2174 |
+| `gcLitAlpha` | frontend/js/graph-canvas.js:2370 |
+| `gcMarkLeaving` | frontend/js/graph-canvas.js:2228 |
 | `gcMaxDegree` | frontend/js/graph-canvas.js:252 |
 | `gcMixRgb` | frontend/js/graph-canvas.js:1116 |
 | `gcMs` | frontend/js/graph-canvas.js:347 |
-| `gcNodeAtWorld` | frontend/js/graph-canvas.js:4357 |
+| `gcNodeAtWorld` | frontend/js/graph-canvas.js:4411 |
 | `gcNodeSprite` | frontend/js/graph-canvas.js:1151 |
-| `gcNoteDrawCost` | frontend/js/graph-canvas.js:2351 |
-| `gcOpenNodeTarget` | frontend/js/graph-canvas.js:5725 |
-| `gcOpenTopic` | frontend/js/graph-canvas.js:1921 |
-| `gcOrphansLabel` | frontend/js/graph-canvas.js:6311 |
-| `gcOverlayBoxes` | frontend/js/graph-canvas.js:2034 |
+| `gcNoteDrawCost` | frontend/js/graph-canvas.js:2405 |
+| `gcOpenNodeTarget` | frontend/js/graph-canvas.js:5779 |
+| `gcOpenTopic` | frontend/js/graph-canvas.js:1975 |
+| `gcOrphansLabel` | frontend/js/graph-canvas.js:6365 |
+| `gcOverlayBoxes` | frontend/js/graph-canvas.js:2088 |
 | `gcPaintCore` | frontend/js/graph-canvas.js:1129 |
-| `gcPaintLayer` | frontend/js/graph-canvas.js:2713 |
-| `gcPinSelection` | frontend/js/graph-canvas.js:5095 |
+| `gcPaintLayer` | frontend/js/graph-canvas.js:2767 |
+| `gcPinSelection` | frontend/js/graph-canvas.js:5149 |
 | `gcPlaceLabels` | frontend/js/graph-canvas.js:505 |
 | `gcPlacePill` | frontend/js/graph-canvas.js:799 |
-| `gcPlateAtWorld` | frontend/js/graph-canvas.js:1830 |
-| `gcPlateTitle` | frontend/js/graph-canvas.js:1900 |
-| `gcPointInPolygon` | frontend/js/graph-canvas.js:4963 |
-| `gcPositionsSig` | frontend/js/graph-canvas.js:6171 |
-| `gcPost` | frontend/js/graph-canvas.js:5757 |
+| `gcPlateAtWorld` | frontend/js/graph-canvas.js:1884 |
+| `gcPlateTitle` | frontend/js/graph-canvas.js:1954 |
+| `gcPointInPolygon` | frontend/js/graph-canvas.js:5017 |
+| `gcPositionsSig` | frontend/js/graph-canvas.js:6225 |
+| `gcPost` | frontend/js/graph-canvas.js:5811 |
 | `gcPruneSimilarity` | frontend/js/graph-canvas.js:448 |
-| `gcQuadAt` | frontend/js/graph-canvas.js:3936 |
+| `gcQuadAt` | frontend/js/graph-canvas.js:3990 |
 | `gcRadius` | frontend/js/graph-canvas.js:268 |
 | `gcReadTokens` | frontend/js/graph-canvas.js:326 |
-| `gcRefitForPanels` | frontend/js/graph-canvas.js:2086 |
-| `gcRelinkPairs` | frontend/js/graph-canvas.js:7553 |
-| `gcRenameTopicInline` | frontend/js/graph-canvas.js:1759 |
+| `gcRefitForPanels` | frontend/js/graph-canvas.js:2140 |
+| `gcRelinkPairs` | frontend/js/graph-canvas.js:7612 |
+| `gcRenameTopicInline` | frontend/js/graph-canvas.js:1813 |
 | `gcRenderFilterChips` | frontend/js/graph-canvas.js:1587 |
-| `gcRequestDraw` | frontend/js/graph-canvas.js:2524 |
-| `gcRequestMinimapFrame` | frontend/js/graph-canvas.js:2554 |
-| `gcReshuffle` | frontend/js/graph-canvas.js:5812 |
+| `gcRequestDraw` | frontend/js/graph-canvas.js:2578 |
+| `gcRequestMinimapFrame` | frontend/js/graph-canvas.js:2608 |
+| `gcResetTopicEdits` | frontend/js/graph-canvas.js:1752 |
+| `gcReshuffle` | frontend/js/graph-canvas.js:5866 |
 | `gcResize` | frontend/js/graph-canvas.js:966 |
-| `gcRestBuild` | frontend/js/graph-canvas.js:2747 |
-| `gcReveal` | frontend/js/graph-canvas.js:7598 |
-| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:7586 |
+| `gcRestBuild` | frontend/js/graph-canvas.js:2801 |
+| `gcReveal` | frontend/js/graph-canvas.js:7657 |
+| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:7645 |
 | `gcRimShare` | frontend/js/graph-canvas.js:1124 |
-| `gcRuleDomain` | frontend/js/graph-canvas.js:6778 |
-| `gcRuleKey` | frontend/js/graph-canvas.js:6760 |
-| `gcRuleScale` | frontend/js/graph-canvas.js:6784 |
-| `gcSavePositions` | frontend/js/graph-canvas.js:6174 |
-| `gcSaveTopicName` | frontend/js/graph-canvas.js:1731 |
-| `gcSearchOver` | frontend/js/graph-canvas.js:2586 |
+| `gcRuleDomain` | frontend/js/graph-canvas.js:6832 |
+| `gcRuleKey` | frontend/js/graph-canvas.js:6814 |
+| `gcRuleScale` | frontend/js/graph-canvas.js:6838 |
+| `gcSavePositions` | frontend/js/graph-canvas.js:6228 |
+| `gcSaveTopicName` | frontend/js/graph-canvas.js:1785 |
+| `gcSearchOver` | frontend/js/graph-canvas.js:2640 |
 | `gcSeatTopicPlates` | frontend/js/graph-canvas.js:1411 |
-| `gcSeedBesideNeighbours` | frontend/js/graph-canvas.js:6345 |
-| `gcSelectedNodes` | frontend/js/graph-canvas.js:5119 |
-| `gcSelectionChanged` | frontend/js/graph-canvas.js:5073 |
+| `gcSeedBesideNeighbours` | frontend/js/graph-canvas.js:6399 |
+| `gcSelectedNodes` | frontend/js/graph-canvas.js:5173 |
+| `gcSelectionChanged` | frontend/js/graph-canvas.js:5127 |
 | `gcSetAutoFitDone` | frontend/js/graph-canvas.js:200 |
 | `gcSetHovered` | frontend/js/graph-canvas.js:212 |
-| `gcSetStroke` | frontend/js/graph-canvas.js:3062 |
-| `gcShape` | frontend/js/graph-canvas.js:5795 |
-| `gcShowEmpty` | frontend/js/graph-canvas.js:6283 |
-| `gcShowEveryNote` | frontend/js/graph-canvas.js:6320 |
-| `gcShowNodeMenu` | frontend/js/graph-canvas.js:5327 |
+| `gcSetStroke` | frontend/js/graph-canvas.js:3116 |
+| `gcShape` | frontend/js/graph-canvas.js:5849 |
+| `gcShowEmpty` | frontend/js/graph-canvas.js:6337 |
+| `gcShowEveryNote` | frontend/js/graph-canvas.js:6374 |
+| `gcShowNodeMenu` | frontend/js/graph-canvas.js:5381 |
 | `gcShowTopic` | frontend/js/graph-canvas.js:1644 |
 | `gcSimilarityBand` | frontend/js/graph-canvas.js:491 |
 | `gcSimilarityCutoff` | frontend/js/graph-canvas.js:829 |
-| `gcSmooth` | frontend/js/graph-canvas.js:2305 |
-| `gcSpawnWorker` | frontend/js/graph-canvas.js:5866 |
-| `gcStartWorker` | frontend/js/graph-canvas.js:5879 |
+| `gcSmooth` | frontend/js/graph-canvas.js:2359 |
+| `gcSpawnWorker` | frontend/js/graph-canvas.js:5920 |
+| `gcStartWorker` | frontend/js/graph-canvas.js:5933 |
 | `gcStill` | frontend/js/graph-canvas.js:357 |
-| `gcStop` | frontend/js/graph-canvas.js:5761 |
+| `gcStop` | frontend/js/graph-canvas.js:5815 |
 | `gcSurface` | frontend/js/graph-canvas.js:44 |
-| `gcTabHidden` | frontend/js/graph-canvas.js:2494 |
-| `gcTickDraw` | frontend/js/graph-canvas.js:2428 |
-| `gcTickSettles` | frontend/js/graph-canvas.js:2411 |
-| `gcTickSnaps` | frontend/js/graph-canvas.js:2354 |
-| `gcTogglePin` | frontend/js/graph-canvas.js:4938 |
-| `gcTooltip` | frontend/js/graph-canvas.js:5613 |
-| `gcTooltipMatches` | frontend/js/graph-canvas.js:5639 |
-| `gcTopicColour` | frontend/js/graph-canvas.js:1928 |
-| `gcTopicCore` | frontend/js/graph-canvas.js:1915 |
-| `gcTopicMembers` | frontend/js/graph-canvas.js:1908 |
+| `gcTabHidden` | frontend/js/graph-canvas.js:2548 |
+| `gcTickDraw` | frontend/js/graph-canvas.js:2482 |
+| `gcTickSettles` | frontend/js/graph-canvas.js:2465 |
+| `gcTickSnaps` | frontend/js/graph-canvas.js:2408 |
+| `gcTogglePin` | frontend/js/graph-canvas.js:4992 |
+| `gcTooltip` | frontend/js/graph-canvas.js:5667 |
+| `gcTooltipMatches` | frontend/js/graph-canvas.js:5693 |
+| `gcTopicColour` | frontend/js/graph-canvas.js:1982 |
+| `gcTopicCore` | frontend/js/graph-canvas.js:1969 |
+| `gcTopicEdit` | frontend/js/graph-canvas.js:1743 |
+| `gcTopicMembers` | frontend/js/graph-canvas.js:1962 |
+| `gcTopicMenuRows` | frontend/js/graph-canvas.js:1759 |
+| `gcTopicPost` | frontend/js/graph-canvas.js:1750 |
+| `gcTopicsRepaint` | frontend/js/graph-canvas.js:1737 |
 | `gcTreeFrameNodes` | frontend/js/graph-canvas.js:1337 |
-| `gcTreeIndex` | frontend/js/graph-canvas.js:4343 |
-| `gcTweenFromPrior` | frontend/js/graph-canvas.js:2108 |
-| `gcUnframed` | frontend/js/graph-canvas.js:2520 |
-| `gcUnlinkPairs` | frontend/js/graph-canvas.js:7546 |
-| `gcVisibleAtTime` | frontend/js/graph-canvas.js:2630 |
-| `gcWireInteraction` | frontend/js/graph-canvas.js:4435 |
-| `gcWireLasso` | frontend/js/graph-canvas.js:5005 |
-| `gcWireNodeMenu` | frontend/js/graph-canvas.js:5263 |
-| `gcWireSelectionDock` | frontend/js/graph-canvas.js:5123 |
-| `gcWorkerParams` | frontend/js/graph-canvas.js:5768 |
-| `gcWorldFor` | frontend/js/graph-canvas.js:6234 |
-| `gcWorldPoint` | frontend/js/graph-canvas.js:4369 |
-| `gcWriteUnresolved` | frontend/js/graph-canvas.js:5740 |
-| `graphLegendRove` | frontend/js/graph-canvas.js:6803 |
-| `graphPaneColour` | frontend/js/graph-canvas.js:7338 |
-| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:7474 |
-| `graphPaneEnsure` | frontend/js/graph-canvas.js:7316 |
-| `graphPaneFollow` | frontend/js/graph-canvas.js:7428 |
-| `graphPaneRerender` | frontend/js/graph-canvas.js:7312 |
-| `graphPaneWire` | frontend/js/graph-canvas.js:7483 |
-| `graphRenderLegend` | frontend/js/graph-canvas.js:6820 |
-| `graphRenderStats` | frontend/js/graph-canvas.js:7062 |
-| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:7112 |
-| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:7139 |
-| `graphWireTimePlay` | frontend/js/graph-canvas.js:7178 |
-| `renderGraphCanvas` | frontend/js/graph-canvas.js:6376 |
-| `renderGraphPane` | frontend/js/graph-canvas.js:7344 |
+| `gcTreeIndex` | frontend/js/graph-canvas.js:4397 |
+| `gcTweenFromPrior` | frontend/js/graph-canvas.js:2162 |
+| `gcUnframed` | frontend/js/graph-canvas.js:2574 |
+| `gcUnlinkPairs` | frontend/js/graph-canvas.js:7605 |
+| `gcVisibleAtTime` | frontend/js/graph-canvas.js:2684 |
+| `gcWireInteraction` | frontend/js/graph-canvas.js:4489 |
+| `gcWireLasso` | frontend/js/graph-canvas.js:5059 |
+| `gcWireNodeMenu` | frontend/js/graph-canvas.js:5317 |
+| `gcWireSelectionDock` | frontend/js/graph-canvas.js:5177 |
+| `gcWorkerParams` | frontend/js/graph-canvas.js:5822 |
+| `gcWorldFor` | frontend/js/graph-canvas.js:6288 |
+| `gcWorldPoint` | frontend/js/graph-canvas.js:4423 |
+| `gcWriteUnresolved` | frontend/js/graph-canvas.js:5794 |
+| `graphLegendRove` | frontend/js/graph-canvas.js:6857 |
+| `graphPaneColour` | frontend/js/graph-canvas.js:7397 |
+| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:7533 |
+| `graphPaneEnsure` | frontend/js/graph-canvas.js:7375 |
+| `graphPaneFollow` | frontend/js/graph-canvas.js:7487 |
+| `graphPaneRerender` | frontend/js/graph-canvas.js:7371 |
+| `graphPaneWire` | frontend/js/graph-canvas.js:7542 |
+| `graphRenderLegend` | frontend/js/graph-canvas.js:6874 |
+| `graphRenderStats` | frontend/js/graph-canvas.js:7121 |
+| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:7171 |
+| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:7198 |
+| `graphWireTimePlay` | frontend/js/graph-canvas.js:7237 |
+| `renderGraphCanvas` | frontend/js/graph-canvas.js:6430 |
+| `renderGraphPane` | frontend/js/graph-canvas.js:7403 |
 
 ### frontend/js/graph-tessellate.js (11)
 
@@ -13210,7 +13215,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
-## Backend routes (700)
+## Backend routes (703)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -13447,15 +13452,18 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/graph` | GET | `graph` | src/tessellate/api/routes_graph.py:878 |
 | `/graph/local/{entry_id}` | GET | `graph_local` | src/tessellate/api/routes_graph.py:1484 |
 | `/graph/match` | GET | `graph_match` | src/tessellate/api/routes_graph.py:469 |
-| `/graph/path` | GET | `graph_path` | src/tessellate/api/routes_graph.py:1806 |
-| `/graph/pin/{node_id}` | PUT | `pin_node` | src/tessellate/api/routes_graph.py:2058 |
-| `/graph/pins` | PUT | `pin_nodes` | src/tessellate/api/routes_graph.py:2115 |
+| `/graph/path` | GET | `graph_path` | src/tessellate/api/routes_graph.py:1875 |
+| `/graph/pin/{node_id}` | PUT | `pin_node` | src/tessellate/api/routes_graph.py:2127 |
+| `/graph/pins` | PUT | `pin_nodes` | src/tessellate/api/routes_graph.py:2184 |
 | `/graph/projection` | GET | `graph_projection` | src/tessellate/api/routes_graph_projection.py:51 |
 | `/graph/structure` | GET | `graph_structure` | src/tessellate/api/routes_graph.py:1563 |
-| `/graph/topics/name` | PUT | `name_topic` | src/tessellate/api/routes_graph.py:1641 |
-| `/graph/topics/of` | GET | `graph_topics_of` | src/tessellate/api/routes_graph.py:1601 |
-| `/graph/topics/summary` | POST | `topic_summary` | src/tessellate/api/routes_graph.py:1673 |
-| `/graph/unpin-all` | POST | `unpin_all_nodes` | src/tessellate/api/routes_graph.py:2147 |
+| `/graph/topics/edits` | PUT | `set_topic_edits` | src/tessellate/api/routes_graph.py:1701 |
+| `/graph/topics/merge` | POST | `merge_topics` | src/tessellate/api/routes_graph.py:1684 |
+| `/graph/topics/name` | PUT | `name_topic` | src/tessellate/api/routes_graph.py:1658 |
+| `/graph/topics/of` | GET | `graph_topics_of` | src/tessellate/api/routes_graph.py:1620 |
+| `/graph/topics/remove` | POST | `remove_topic` | src/tessellate/api/routes_graph.py:1693 |
+| `/graph/topics/summary` | POST | `topic_summary` | src/tessellate/api/routes_graph.py:1729 |
+| `/graph/unpin-all` | POST | `unpin_all_nodes` | src/tessellate/api/routes_graph.py:2216 |
 | `/greeting` | GET | `greeting` | src/tessellate/api/routes_insights.py:175 |
 | `/hardware` | GET | `hardware_memory` | src/tessellate/api/routes_models.py:997 |
 | `/hardware` | PUT | `save_hardware` | src/tessellate/api/routes_models.py:1005 |
@@ -13917,7 +13925,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10776)
+## Backend modules (10791)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22230,15 +22238,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `folder_status` | src/tessellate/api/routes_folder_sync.py:30 |
 | `sync_folder` | src/tessellate/api/routes_folder_sync.py:39 |
 
-### src/tessellate/api/routes_graph.py (71)
+### src/tessellate/api/routes_graph.py (79)
 
 | Name | File:line |
 |---|---|
-| `PinBody` | src/tessellate/api/routes_graph.py:2037 |
-| `PinRow` | src/tessellate/api/routes_graph.py:2103 |
-| `PinsBody` | src/tessellate/api/routes_graph.py:2111 |
-| `TopicNameBody` | src/tessellate/api/routes_graph.py:1636 |
-| `TopicSummaryBody` | src/tessellate/api/routes_graph.py:1653 |
+| `PinBody` | src/tessellate/api/routes_graph.py:2106 |
+| `PinRow` | src/tessellate/api/routes_graph.py:2172 |
+| `PinsBody` | src/tessellate/api/routes_graph.py:2180 |
+| `TopicEditsBody` | src/tessellate/api/routes_graph.py:1674 |
+| `TopicIdsBody` | src/tessellate/api/routes_graph.py:1670 |
+| `TopicNameBody` | src/tessellate/api/routes_graph.py:1653 |
+| `TopicSummaryBody` | src/tessellate/api/routes_graph.py:1709 |
 | `_add_attachment_nodes` | src/tessellate/api/routes_graph.py:758 |
 | `_add_degree` | src/tessellate/api/routes_graph.py:1146 |
 | `_add_document_nodes` | src/tessellate/api/routes_graph.py:561 |
@@ -22251,15 +22261,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_add_unresolved_nodes` | src/tessellate/api/routes_graph.py:717 |
 | `_age_days` | src/tessellate/api/routes_graph.py:58 |
 | `_build_graph` | src/tessellate/api/routes_graph.py:1247 |
-| `_build_structure` | src/tessellate/api/routes_graph.py:1758 |
-| `_build_topics` | src/tessellate/api/routes_graph.py:1729 |
+| `_build_structure` | src/tessellate/api/routes_graph.py:1827 |
+| `_build_topics` | src/tessellate/api/routes_graph.py:1785 |
 | `_cached` | src/tessellate/api/routes_graph.py:140 |
+| `_category_of` | src/tessellate/api/routes_graph.py:1815 |
 | `_centrality` | src/tessellate/api/routes_graph.py:416 |
-| `_extra_path_nodes` | src/tessellate/api/routes_graph.py:1937 |
-| `_extractive_summary` | src/tessellate/api/routes_graph.py:1659 |
+| `_extra_path_nodes` | src/tessellate/api/routes_graph.py:2006 |
+| `_extractive_summary` | src/tessellate/api/routes_graph.py:1715 |
 | `_graph_entries` | src/tessellate/api/routes_graph.py:921 |
 | `_graph_fingerprint` | src/tessellate/api/routes_graph.py:119 |
-| `_hop_reasons` | src/tessellate/api/routes_graph.py:1995 |
+| `_hop_reasons` | src/tessellate/api/routes_graph.py:2064 |
 | `_iso_or_none` | src/tessellate/api/routes_graph.py:917 |
 | `_label` | src/tessellate/api/routes_graph.py:177 |
 | `_layer_fingerprint` | src/tessellate/api/routes_graph.py:395 |
@@ -22271,40 +22282,45 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_local_walk` | src/tessellate/api/routes_graph.py:1432 |
 | `_maps_of` | src/tessellate/api/routes_graph.py:958 |
 | `_mark_board_nodes` | src/tessellate/api/routes_graph.py:634 |
-| `_no_route_reason` | src/tessellate/api/routes_graph.py:1970 |
-| `_node_key` | src/tessellate/api/routes_graph.py:1926 |
+| `_no_route_reason` | src/tessellate/api/routes_graph.py:2039 |
+| `_node_key` | src/tessellate/api/routes_graph.py:1995 |
 | `_note_nodes` | src/tessellate/api/routes_graph.py:998 |
 | `_note_texts` | src/tessellate/api/routes_graph.py:192 |
 | `_note_types_of` | src/tessellate/api/routes_graph.py:980 |
 | `_note_vectors` | src/tessellate/api/routes_graph.py:313 |
 | `_path_node` | src/tessellate/api/routes_graph.py:1552 |
-| `_path_refusal` | src/tessellate/api/routes_graph.py:1958 |
-| `_path_similarity` | src/tessellate/api/routes_graph.py:1918 |
+| `_path_refusal` | src/tessellate/api/routes_graph.py:2027 |
+| `_path_similarity` | src/tessellate/api/routes_graph.py:1987 |
 | `_payload_key` | src/tessellate/api/routes_graph.py:808 |
-| `_pin_target` | src/tessellate/api/routes_graph.py:2048 |
+| `_pin_target` | src/tessellate/api/routes_graph.py:2117 |
 | `_preview` | src/tessellate/api/routes_graph.py:240 |
 | `_preview_line` | src/tessellate/api/routes_graph.py:265 |
 | `_ring_edges` | src/tessellate/api/routes_graph.py:1418 |
+| `_save_edits` | src/tessellate/api/routes_graph.py:1679 |
 | `_similarity_edges` | src/tessellate/api/routes_graph.py:274 |
 | `_slim` | src/tessellate/api/routes_graph.py:1354 |
 | `_slim_note` | src/tessellate/api/routes_graph.py:1342 |
 | `_stamp_layer_nodes` | src/tessellate/api/routes_graph.py:1166 |
 | `_tags_of` | src/tessellate/api/routes_graph.py:66 |
 | `_thread_edges` | src/tessellate/api/routes_graph.py:1135 |
+| `_topics_laid` | src/tessellate/api/routes_graph.py:1600 |
 | `_word_count` | src/tessellate/api/routes_graph.py:779 |
 | `_words` | src/tessellate/api/routes_graph.py:185 |
 | `graph` | src/tessellate/api/routes_graph.py:879 |
 | `graph_local` | src/tessellate/api/routes_graph.py:1485 |
 | `graph_match` | src/tessellate/api/routes_graph.py:470 |
-| `graph_path` | src/tessellate/api/routes_graph.py:1807 |
+| `graph_path` | src/tessellate/api/routes_graph.py:1876 |
 | `graph_structure` | src/tessellate/api/routes_graph.py:1564 |
-| `graph_topics_of` | src/tessellate/api/routes_graph.py:1602 |
-| `name_topic` | src/tessellate/api/routes_graph.py:1642 |
-| `pin_node` | src/tessellate/api/routes_graph.py:2059 |
-| `pin_nodes` | src/tessellate/api/routes_graph.py:2116 |
+| `graph_topics_of` | src/tessellate/api/routes_graph.py:1621 |
+| `merge_topics` | src/tessellate/api/routes_graph.py:1685 |
+| `name_topic` | src/tessellate/api/routes_graph.py:1659 |
+| `pin_node` | src/tessellate/api/routes_graph.py:2128 |
+| `pin_nodes` | src/tessellate/api/routes_graph.py:2185 |
+| `remove_topic` | src/tessellate/api/routes_graph.py:1694 |
 | `reset_graph_cache` | src/tessellate/api/routes_graph.py:157 |
-| `topic_summary` | src/tessellate/api/routes_graph.py:1674 |
-| `unpin_all_nodes` | src/tessellate/api/routes_graph.py:2148 |
+| `set_topic_edits` | src/tessellate/api/routes_graph.py:1702 |
+| `topic_summary` | src/tessellate/api/routes_graph.py:1730 |
+| `unpin_all_nodes` | src/tessellate/api/routes_graph.py:2217 |
 
 ### src/tessellate/api/routes_graph_projection.py (2)
 
@@ -26976,21 +26992,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_written_date` | src/tessellate/entry/timewords.py:108 |
 | `find` | src/tessellate/entry/timewords.py:309 |
 
-### src/tessellate/entry/topics.py (11)
+### src/tessellate/entry/topics.py (18)
 
 | Name | File:line |
 |---|---|
 | `_display` | src/tessellate/entry/topics.py:83 |
 | `_fallback_name` | src/tessellate/entry/topics.py:155 |
+| `_merge_group` | src/tessellate/entry/topics.py:294 |
 | `_score_terms` | src/tessellate/entry/topics.py:87 |
 | `_weights` | src/tessellate/entry/topics.py:48 |
+| `apply_edits` | src/tessellate/entry/topics.py:307 |
 | `apply_names` | src/tessellate/entry/topics.py:221 |
 | `build` | src/tessellate/entry/topics.py:108 |
+| `clean_edits` | src/tessellate/entry/topics.py:260 |
 | `detect` | src/tessellate/entry/topics.py:60 |
 | `extractive_sentence` | src/tessellate/entry/topics.py:181 |
 | `overlap` | src/tessellate/entry/topics.py:217 |
+| `store_merge` | src/tessellate/entry/topics.py:273 |
 | `store_name` | src/tessellate/entry/topics.py:244 |
+| `store_remove` | src/tessellate/entry/topics.py:288 |
 | `terms_sentence` | src/tessellate/entry/topics.py:171 |
+| `topic_of` | src/tessellate/entry/topics.py:326 |
+| `with_categories` | src/tessellate/entry/topics.py:330 |
 
 ### src/tessellate/launcher_loading.py (3)
 
@@ -27697,7 +27720,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21852)
+## Tests (21866)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28956,7 +28979,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_tick_rate_1029.py | 4 |
 | tests/test_graph_tidy_1529.py | 2 |
 | tests/test_graph_toast_1306.py | 2 |
-| tests/test_graph_topic_drag.py | 9 |
+| tests/test_graph_topic_drag.py | 10 |
 | tests/test_graph_treemap.py | 5 |
 | tests/test_graph_untangle_1400.py | 10 |
 | tests/test_graph_untangle_scale.py | 2 |
@@ -30103,6 +30126,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_tools_benches.py | 2 |
 | tests/test_toolwords.py | 14 |
 | tests/test_topbar_mode.py | 3 |
+| tests/test_topic_edits.py | 13 |
 | tests/test_topic_names.py | 9 |
 | tests/test_topic_summary_kg6.py | 7 |
 | tests/test_topics_kg6.py | 8 |
@@ -30804,14 +30828,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4405 |
-| Needs hardware | docs/roadmap/LEDGER.md:888 |
+| Needs hardware | docs/roadmap/LEDGER.md:886 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:880 |
+| Owner calls | docs/roadmap/LEDGER.md:878 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4278 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30992,7 +31016,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1084 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1082 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2654 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31045,26 +31069,26 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Why the app feels "off" even where each screen is fine | docs/roadmap/WORLD_CLASS_PLAN.md:54 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
-| chat | docs/roadmap/LEDGER.md:31 |
-| chat | docs/roadmap/LEDGER.md:1100 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1184 |
-| documents | docs/roadmap/LEDGER.md:334 |
-| documents | docs/roadmap/LEDGER.md:1124 |
-| general | docs/roadmap/LEDGER.md:840 |
+| chat | docs/roadmap/LEDGER.md:29 |
+| chat | docs/roadmap/LEDGER.md:1098 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1182 |
+| documents | docs/roadmap/LEDGER.md:332 |
+| documents | docs/roadmap/LEDGER.md:1122 |
+| general | docs/roadmap/LEDGER.md:838 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1088 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1196 |
+| graph | docs/roadmap/LEDGER.md:1086 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1194 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4414 |
-| mindmap | docs/roadmap/LEDGER.md:414 |
-| mindmap | docs/roadmap/LEDGER.md:1136 |
-| timeline | docs/roadmap/LEDGER.md:569 |
-| timeline | docs/roadmap/LEDGER.md:1160 |
-| ui-modernisation | docs/roadmap/LEDGER.md:451 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1148 |
-| whiteboard | docs/roadmap/LEDGER.md:288 |
-| whiteboard | docs/roadmap/LEDGER.md:1112 |
-| world-class | docs/roadmap/LEDGER.md:604 |
-| world-class | docs/roadmap/LEDGER.md:1172 |
+| mindmap | docs/roadmap/LEDGER.md:412 |
+| mindmap | docs/roadmap/LEDGER.md:1134 |
+| timeline | docs/roadmap/LEDGER.md:567 |
+| timeline | docs/roadmap/LEDGER.md:1158 |
+| ui-modernisation | docs/roadmap/LEDGER.md:449 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1146 |
+| whiteboard | docs/roadmap/LEDGER.md:286 |
+| whiteboard | docs/roadmap/LEDGER.md:1110 |
+| world-class | docs/roadmap/LEDGER.md:602 |
+| world-class | docs/roadmap/LEDGER.md:1170 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2824 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2875 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2982 |

@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: a topic's card names the category most of its notes sit in, and File as a category offers it first.
+- Graph: topics can be merged and removed from the topic card's menu; each has an Undo, and Reset topic edits in the legend brings the automatic grouping back.
 - Graph: saved views and Reset now carry the link-kind chips; the node popup's topic chip is 44 px on touch.
 - Graph: a Map of meaning layout places notes by a PCA of their stored vectors.
 - Graph: Compose into a draft: the selection bar's menu makes one document from the selected notes, a section each.
