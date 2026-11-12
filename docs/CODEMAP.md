@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8378, frontend ids 2772, CSS sections 524, backend routes 703, backend modules 10786, test files 2720, tests 22009, plan headings 688, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8379, frontend ids 2772, CSS sections 524, backend routes 703, backend modules 10786, test files 2721, tests 22011, plan headings 688, app scripts 29, boot scripts 38, script files 301.
 
-## Frontend functions (8378)
+## Frontend functions (8379)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4098,43 +4098,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderDocHistoryList` | frontend/js/documents-history.js:426 |
 | `toggleDocHistoryDiff` | frontend/js/documents-history.js:645 |
 
-### frontend/js/documents-ide.js (33)
+### frontend/js/documents-ide.js (34)
 
 | Name | File:line |
 |---|---|
-| `docIdeChordEnd` | frontend/js/documents-ide.js:343 |
-| `docIdeChordStart` | frontend/js/documents-ide.js:336 |
+| `docIdeChordEnd` | frontend/js/documents-ide.js:373 |
+| `docIdeChordStart` | frontend/js/documents-ide.js:366 |
 | `docIdeChunks` | frontend/js/documents-ide.js:86 |
-| `docIdeCloseKeys` | frontend/js/documents-ide.js:683 |
-| `docIdeCloseSplit` | frontend/js/documents-ide.js:476 |
+| `docIdeCloseKeys` | frontend/js/documents-ide.js:713 |
+| `docIdeCloseSplit` | frontend/js/documents-ide.js:506 |
 | `docIdeCodeView` | frontend/js/documents-ide.js:101 |
 | `docIdeCompareMenu` | frontend/js/documents-ide.js:133 |
-| `docIdeCompareWith` | frontend/js/documents-ide.js:160 |
+| `docIdeCompareOther` | frontend/js/documents-ide.js:173 |
+| `docIdeCompareWith` | frontend/js/documents-ide.js:161 |
 | `docIdeExtensions` | frontend/js/documents-ide.js:26 |
 | `docIdeFoldAll` | frontend/js/documents-ide.js:105 |
-| `docIdeKeydown` | frontend/js/documents-ide.js:311 |
-| `docIdeKeysContext` | frontend/js/documents-ide.js:591 |
-| `docIdeKeysFor` | frontend/js/documents-ide.js:599 |
-| `docIdeKeysOverlay` | frontend/js/documents-ide.js:513 |
-| `docIdeOpenKeys` | frontend/js/documents-ide.js:671 |
-| `docIdeOpenPalette` | frontend/js/documents-ide.js:384 |
+| `docIdeKeydown` | frontend/js/documents-ide.js:341 |
+| `docIdeKeysContext` | frontend/js/documents-ide.js:621 |
+| `docIdeKeysFor` | frontend/js/documents-ide.js:629 |
+| `docIdeKeysOverlay` | frontend/js/documents-ide.js:543 |
+| `docIdeOpenKeys` | frontend/js/documents-ide.js:701 |
+| `docIdeOpenPalette` | frontend/js/documents-ide.js:414 |
 | `docIdeProblemsInline` | frontend/js/documents-ide.js:115 |
 | `docIdeReconfigure` | frontend/js/documents-ide.js:78 |
-| `docIdeRenderKeys` | frontend/js/documents-ide.js:608 |
-| `docIdeRevertAtCaret` | frontend/js/documents-ide.js:179 |
+| `docIdeRenderKeys` | frontend/js/documents-ide.js:638 |
+| `docIdeRevertAtCaret` | frontend/js/documents-ide.js:209 |
 | `docIdeRevertSpec` | frontend/js/documents-ide.js:94 |
-| `docIdeRunApply` | frontend/js/documents-ide.js:232 |
-| `docIdeRunGrip` | frontend/js/documents-ide.js:244 |
-| `docIdeRunHeights` | frontend/js/documents-ide.js:207 |
-| `docIdeRunSaveHeight` | frontend/js/documents-ide.js:218 |
-| `docIdeRunSavedHeight` | frontend/js/documents-ide.js:227 |
+| `docIdeRunApply` | frontend/js/documents-ide.js:262 |
+| `docIdeRunGrip` | frontend/js/documents-ide.js:274 |
+| `docIdeRunHeights` | frontend/js/documents-ide.js:237 |
+| `docIdeRunSaveHeight` | frontend/js/documents-ide.js:248 |
+| `docIdeRunSavedHeight` | frontend/js/documents-ide.js:257 |
 | `docIdeSlot` | frontend/js/documents-ide.js:34 |
-| `docIdeSplitFollow` | frontend/js/documents-ide.js:492 |
-| `docIdeSplitTools` | frontend/js/documents-ide.js:397 |
-| `docIdeStopCompare` | frontend/js/documents-ide.js:171 |
+| `docIdeSplitFollow` | frontend/js/documents-ide.js:522 |
+| `docIdeSplitTools` | frontend/js/documents-ide.js:427 |
+| `docIdeStopCompare` | frontend/js/documents-ide.js:201 |
 | `docIdeToggleMinimap` | frontend/js/documents-ide.js:121 |
-| `docIdeToggleSplit` | frontend/js/documents-ide.js:417 |
-| `formatDocHistoryWhen` | frontend/js/documents-ide.js:155 |
+| `docIdeToggleSplit` | frontend/js/documents-ide.js:447 |
+| `formatDocHistoryWhen` | frontend/js/documents-ide.js:156 |
 
 ### frontend/js/documents-languagetool.js (6)
 
@@ -27759,7 +27760,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22009)
+## Tests (22011)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28656,6 +28657,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_columns.py | 2 |
 | tests/test_doc_commands.py | 7 |
 | tests/test_doc_comments.py | 4 |
+| tests/test_doc_compare_other.py | 2 |
 | tests/test_doc_conflict_banner.py | 8 |
 | tests/test_doc_context_menu.py | 6 |
 | tests/test_doc_cover.py | 4 |
@@ -30902,14 +30904,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1246 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:840 |
+| Needs hardware | docs/roadmap/LEDGER.md:839 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:832 |
+| Owner calls | docs/roadmap/LEDGER.md:831 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31090,7 +31092,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1037 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1036 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31145,25 +31147,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:73 |
-| chat | docs/roadmap/LEDGER.md:1053 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1137 |
+| chat | docs/roadmap/LEDGER.md:1052 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1136 |
 | documents | docs/roadmap/LEDGER.md:376 |
-| documents | docs/roadmap/LEDGER.md:1077 |
-| general | docs/roadmap/LEDGER.md:791 |
+| documents | docs/roadmap/LEDGER.md:1076 |
+| general | docs/roadmap/LEDGER.md:790 |
 | graph | docs/roadmap/LEDGER.md:37 |
-| graph | docs/roadmap/LEDGER.md:1041 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1149 |
+| graph | docs/roadmap/LEDGER.md:1040 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1148 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
-| mindmap | docs/roadmap/LEDGER.md:398 |
-| mindmap | docs/roadmap/LEDGER.md:1089 |
-| timeline | docs/roadmap/LEDGER.md:552 |
-| timeline | docs/roadmap/LEDGER.md:1113 |
-| ui-modernisation | docs/roadmap/LEDGER.md:435 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1101 |
+| mindmap | docs/roadmap/LEDGER.md:397 |
+| mindmap | docs/roadmap/LEDGER.md:1088 |
+| timeline | docs/roadmap/LEDGER.md:551 |
+| timeline | docs/roadmap/LEDGER.md:1112 |
+| ui-modernisation | docs/roadmap/LEDGER.md:434 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1100 |
 | whiteboard | docs/roadmap/LEDGER.md:330 |
-| whiteboard | docs/roadmap/LEDGER.md:1065 |
-| world-class | docs/roadmap/LEDGER.md:555 |
-| world-class | docs/roadmap/LEDGER.md:1125 |
+| whiteboard | docs/roadmap/LEDGER.md:1064 |
+| world-class | docs/roadmap/LEDGER.md:554 |
+| world-class | docs/roadmap/LEDGER.md:1124 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

@@ -140,15 +140,16 @@
       toast(`Couldn't read this document's history: ${error.message}`, true);
       return false;
     }
+    const other = { label: "ph:files Another document…", title: "Compare this file with one of your other documents", run: () => docIdeCompareOther() };
     const items = entries.length
-      ? entries.slice(0, 30).map((entry) => ({
+      ? [other, ...entries.slice(0, 30).map((entry) => ({
         label: `ph:clock-counter-clockwise ${formatDocHistoryWhen(entry.created_at)}`,
         title: `${nounCount(entry.words, "word")} changed`,
         run: () => docIdeCompareWith(entry.id, formatDocHistoryWhen(entry.created_at)),
-      }))
-      : [{ label: "ph:info No saved versions yet", disabled: true, run: () => {} }];
+      }))]
+      : [other, { label: "ph:info No saved versions yet", disabled: true, run: () => {} }];
     const at = view.coordsAtPos(view.state.selection.main.head) || view.contentDOM.getBoundingClientRect();
-    openMenuAtPoint(items, "Compare with a saved version", at.left, at.bottom);
+    openMenuAtPoint(items, "Compare with a saved version or another document", at.left, at.bottom);
     return true;
   }
 
@@ -165,6 +166,35 @@
     docIde.compare = { docId, label, text: String(full.content ?? "") };
     docIdeReconfigure();
     toast(`Comparing with the version from ${label}. Reject puts a hunk back; Stop comparing ends it.`);
+    return true;
+  }
+
+  //: L-documents-3: another document's text stands where a saved version's does, so the hunks, Reject and Stop comparing are the same.
+  async function docIdeCompareOther() {
+    const view = docIdeCodeView();
+    if (!view) return false;
+    const mine = currentDoc.id;
+    let docs = [];
+    try {
+      docs = (await apiJson("/documents?limit=30")).filter((d) => d.id !== mine);
+    } catch (error) {
+      toast(`Couldn't list your documents: ${error.message}`, true);
+      return false;
+    }
+    const items = docs.length
+      ? docs.map((d) => ({
+        label: `ph:file-text ${d.title || "Untitled"}`,
+        run: async () => {
+          const full = await apiJson(`/documents/${d.id}`);
+          if (!currentDoc || currentDoc.id !== mine) return;
+          docIde.compare = { docId: mine, label: `\u201c${d.title || "Untitled"}\u201d`, text: String(full.content ?? "") };
+          docIdeReconfigure();
+          toast(`Comparing with \u201c${d.title || "Untitled"}\u201d. Reject puts a hunk back; Stop comparing ends it.`);
+        },
+      }))
+      : [{ label: "ph:info No other documents yet", disabled: true, run: () => {} }];
+    const at = view.coordsAtPos(view.state.selection.main.head) || view.contentDOM.getBoundingClientRect();
+    openMenuAtPoint(items, "Compare with another document", at.left, at.bottom);
     return true;
   }
 

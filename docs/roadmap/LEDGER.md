@@ -11,28 +11,28 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 16 | 3 | 0 | 20 | 89 |
-| documents | 70 | 16 | 3 | 0 | 20 | 89 |
-| documents | 70 | 16 | 3 | 0 | 20 | 89 |
-| documents | 70 | 16 | 3 | 0 | 20 | 89 |
-| documents | 70 | 16 | 3 | 0 | 20 | 89 |
-| documents | 70 | 16 | 3 | 0 | 20 | 89 |
+| documents | 70 | 15 | 3 | 0 | 20 | 88 |
+| documents | 70 | 15 | 3 | 0 | 20 | 88 |
+| documents | 70 | 15 | 3 | 0 | 20 | 88 |
+| documents | 70 | 15 | 3 | 0 | 20 | 88 |
+| documents | 70 | 15 | 3 | 0 | 20 | 88 |
+| documents | 70 | 15 | 3 | 0 | 20 | 88 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 627 | 141 | 3 | 192 | 1321 |
-| all | 553 | 627 | 141 | 3 | 192 | 1321 |
-| all | 553 | 627 | 141 | 3 | 192 | 1321 |
+| all | 553 | 626 | 141 | 3 | 192 | 1320 |
+| all | 553 | 626 | 141 | 3 | 192 | 1320 |
+| all | 553 | 626 | 141 | 3 | 192 | 1320 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 627 | 141 | 3 | 192 | 1321 |
+| all | 553 | 626 | 141 | 3 | 192 | 1320 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 627 | 141 | 3 | 192 | 1321 |
-| all | 553 | 627 | 141 | 3 | 192 | 1321 |
-| all | 553 | 627 | 141 | 3 | 192 | 1321 |
+| all | 553 | 626 | 141 | 3 | 192 | 1320 |
+| all | 553 | 626 | 141 | 3 | 192 | 1320 |
+| all | 553 | 626 | 141 | 3 | 192 | 1320 |
 
 ## graph
 
@@ -389,7 +389,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L342** `documents` partly, M: Meet the 4x typing gate (rest in a29i-1102.md). From OPEN.md:4489. Evidence: a29i-1102.md holds the rest; 4x typing gate stays open
 - [ ] **L351** `documents` partly, L: Re-check run/debug tools and skeletons for every language after snippet drag. From INBOX.md:904 B19. Evidence: documents-codekit.js:530 docSnippetDragStart; tests/test_snippet_drag.py; run/debug tools for every language not re-checked
 - [ ] **L352** `documents` partly, L: Documents: Autocorrect status-bar switch, deferred-large rows, DC1/DC2 lock, old audit rows re-verify. From ledger-1112 O27; ledger-1112 X14.
-- [ ] **L-documents-3** `documents` open, M: Compare two documents side by side. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:568. Evidence: there is version diff within a document but no compare of two documents; untracked
 - [ ] **L-documents-9** `documents` open, M: Code block runner leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1100. Evidence: Open line in the plan's prose a session could miss. Unmined pointer leftovers.
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
 - [ ] **L-documents-26** `documents` open, M: Per-key cost in the document editor is about twice a bare CodeMirror (native part, not script): find which style invalidation per key (doc-block-handle and drop class writes, caret and complete-list writes) costs it. From L323. Evidence: /tmp/docsF-s/key323.js: live view 35 to 43 ms a key at 4x CPU against 19 for a bare CodeMirror and 17 for a bare contenteditable; trace EventDispatch 56 against 25 bare, FunctionCall 20 against 10, JS self time under 6 ms a key, so the rest is native editing and style
