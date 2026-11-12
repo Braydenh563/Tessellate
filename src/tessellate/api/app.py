@@ -723,6 +723,7 @@ def _startup_maintenance() -> None:
             ("_check_data_folder", "Check the data folder"),
             ("_purge_expired_bin_entries", "Clear expired notes from the bin"),
             ("_compact_event_log", "Tidy the edit history"),
+            ("_clear_dangling_filing_pointers", "Clear stale duplicate warnings"),
             ("_backup_if_due", "Back up if today's is due"),
             ("_choose_chat_model_if_missing", "Choose a chat model you have"),
             ("_install_pending_extras", "Install the packages picked in Setup"),
@@ -739,6 +740,17 @@ def _startup_maintenance() -> None:
                 run.say(f"That step did not finish: {words.lower()}. The server log has the detail.")
             run.step(index + 1)
         run.result = "at start"
+
+
+def _clear_dangling_filing_pointers() -> None:
+    """Drop `filing_similar_id` values whose note is gone (`entry/filing_sweep.py`)."""
+    from tessellate.entry import filing_sweep
+
+    session = deps.get_db().session()
+    try:
+        filing_sweep.clear_dangling(session)
+    finally:
+        session.close()
 
 
 def _read_note_dates() -> None:

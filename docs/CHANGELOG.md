@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: stale duplicate-warning pointers (`filing_similar_id` naming a deleted note) are cleared in the launch housekeeping (`tests/test_filing_sweep.py`).
 - Docs: RELEASING names the lint that checks pyproject's version, the optional search engine (fastembed, not torch) and where the 1.0 criterion is written.
 - Docs: ARCHITECTURE no longer says documents lack revisions, that the packaged app has no stdio MCP, that the MSI ships, or that assets are never immutable.
 - CLI: `python -m tessellate tool [NAME] [--args JSON] --json` lists or runs one of the tools the MCP server offers, with the same gates (`tests/test_tool_cli.py`).
