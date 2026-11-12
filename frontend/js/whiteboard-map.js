@@ -3520,6 +3520,9 @@ function wbMapOpenReference(d) {
 let wbMapNodeSizeCache = null;
 
 function wbMapNodeSize(d) {
+  //: A structured branch's whole block stands in for its root while the map
+  //: around it is laid out (`wbMapStructuredPositions`).
+  if (d._block) return d._block;
   const size = wbMapNodeSize.measured(d);
   const narrow = wbMapNodeSize.narrow(d);
   return narrow && size.w > narrow ? { w: narrow, h: size.h } : size;
