@@ -107,6 +107,7 @@
       const b = h.smallButton(icon, tip, run);
       b.setAttribute("aria-label", label);
       b.classList.add("dgm-hist");
+      if (label === "Redo") b.classList.add("dgm-redo");
       return b;
     });
     const actions = el("div", "dock-actions");

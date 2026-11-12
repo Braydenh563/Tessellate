@@ -27,6 +27,8 @@ const ROUTE_OBJECTS = {
   note: { tab: "notes", prefix: "note:", path: "notes" },
   chat: { tab: "chat", prefix: "conv:", path: "chat" },
   document: { tab: "documents", prefix: "doc:", path: "docs" },
+  //: A diagram is a document file: the tray's Open row and Copy app link reach it (`appAddressLabel` finds `document` first).
+  diagram: { tab: "documents", prefix: "doc:", path: "docs" },
   board: { tab: "library", prefix: "board:", path: "library/board" },
   map: { tab: "library", prefix: "board:", path: "library/board" },
   graph: { tab: "graph", prefix: "focus:", path: "graph/focus" },

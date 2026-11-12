@@ -11786,7 +11786,16 @@ async function wbApplyHistoryEntry(from, to) {
     if (!item) return true;
     const payload = toPayload(item);
     const links = wbLinksTouching(entry.kind, entry.id);
-    const res = await apiJson(`${base}/${entry.id}`, { method: "DELETE" });
+    //: Marked first: a save of this item still on its way (a topic just added, then undone) is dropped by
+    //: `wbSaveObject` instead of racing the DELETE into a stale write (L-whiteboard-18).
+    item._undoing = true;
+    let res;
+    try {
+      res = await apiJson(`${base}/${entry.id}`, { method: "DELETE" });
+    } catch (err) {
+      delete item._undoing;
+      throw err;
+    }
     //: **A topic that has gained a branch since goes, and comes back, whole**
     //: (INBOX 537). The server takes a map topic's subtree with it; this step
     //: used to keep only the one row, so the branch under it was lost for good.
@@ -23701,6 +23710,7 @@ async function wbSaveObject(d) {
   //: A topic still on its way to the server (`wbMapAddChild`'s optimistic
   //: add) is saved once it has its real id.
   if (d._creating) return d._creating.then((ok) => (ok ? wbSaveObject(d) : undefined));
+  if (d._undoing) return;
   delete d._unsaved;
   const body = {
     kind: d.kind, data: d.data, board_id: d.board_id,

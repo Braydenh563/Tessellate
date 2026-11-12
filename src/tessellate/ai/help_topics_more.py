@@ -1835,7 +1835,7 @@ TOPIC_META: dict[str, dict] = {
         "Open a code document (.js, .ts, .sql, .py, .html, .css, .svg).",
         "Press Run, or Ctrl+Shift+Enter.",
         "Read the Output panel under the editor; Line N goes to the line.",
-        "Ctrl+Shift+Y opens the Console tab: type a line and press Enter. It runs in its own worker, apart from any page the file shows.")},
+        "Ctrl+Shift+Y opens the Console tab: type a line and press Enter. It runs in its own worker, apart from any page the file shows. A line still running after 10 seconds is stopped, and the console says so; the output above stays.", "On a CSV document, Query as SQL opens a new SQL document that selects its first 50 rows as a table, and runs it.")},
     "code-panel": {"title": "The code panel: assistant, snippets and text sections", "path": "A code document, Assistant or Snippets (beside Run); a text document, Sections"},
     "debugger": {"title": "Debugging code", "path": "A code document, the gutter beside a line number, F5", "steps": (
         "Open a JavaScript, TypeScript or Python document.",
@@ -2347,9 +2347,9 @@ MORE_TOPICS.extend([
             "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
             "opens the builder empty, and Done saves it as a new diagram file; Open an existing diagram there lists yours. Cancel changes nothing. "
-            "On a flowchart, the picture outlines the block you point at and the ones picked. "
+            "On a flowchart, the picture outlines the block you point at. "
             "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
-            "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag pans). "
+            "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag, or right-drag, pans). "
             "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
             "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects; Escape cancels). "
             "Double-click a block, an arrow or a group's border or title to rename it in place; click a group's border or title to pick it. Right-click any of them (long press on a phone) for a menu; a picked arrow takes Enter to change its words and Delete, and a dot at either end drags to another block. A connector row's words (or Enter) go to its block; its ... opens the menu."
@@ -2375,11 +2375,11 @@ MORE_TOPICS.extend([
             "them, a group's body takes it inside. Under a block, "
             "a connector reads Start to Next and its label. "
             "The shape swatch picks it. A divider sizes the blocks and the picture (drag or "
-            "arrows; Shift for more). Direction (a menu) turns the flow. An empty one lists "
+            "arrows; Shift for more). Direction (a menu) turns the flow (in ... on a phone). An empty one lists "
             "three steps: Add a shape, Name it, Connect it. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel and a pinch; "
             "its percentage is typeable and 100% is the drawing's own size; Shift+arrow keys pan. "
-            "Shift+click picks a range, Ctrl+click adds one; Escape lets go of the pick; a bar offers Delete, "
+            "Shift+click picks a range, Ctrl+click adds one; Escape lets go; a bar offers Delete, "
             "Duplicate, Box them, Select all, Clear; any picked grip moves all. "
             "Press or drag a block from the shelf onto the picture to join the nearest box (touch: hold); long press a block for its menu. "
             "Keys "
@@ -2862,7 +2862,7 @@ MORE_TOPICS.append({
         "A flowchart's ... menu sets how arrows are drawn (Straight lines, Curved lines, "
         "Stepped lines, Usual lines) and how far apart the blocks sit (Compact, Roomy, "
         "Normal spacing). Both are kept in the diagram's own text as front matter and Undo "
-        "takes them back; the picture is then drawn by the dagre layout. Wrap long lines, in the ... menu, folds long Source lines onto the next row and hides their numbers. A diagram's page "
+        "takes them back; the picture is then drawn by the dagre layout. Wrap long lines, in the ... menu or by the Wrap button beside Source, folds long Source lines onto the next row and hides their numbers. A diagram's page "
         "menu keeps Download or print, Connections and History, and leaves out the "
         "writing switches, Read aloud and Extract notes. Export, beside Picture, List and "
         "Source, saves it as a PNG or an SVG, or copies it as a picture, as Mermaid or as SVG. "

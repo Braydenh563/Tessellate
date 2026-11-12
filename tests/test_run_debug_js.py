@@ -218,3 +218,15 @@ def test_a_list_or_an_object_opens_into_its_children():
         {"name": "[1]", "value": '"a"', "type": "string"},
     ]
     assert [c["name"] for c in by["o"]["children"]] == ["k", "f"]
+
+
+def test_a_nested_list_or_object_opens_down_to_three_levels_and_a_watch_opens_too():
+    """L312: Variables opened one level; each child that is a list or object opens in turn."""
+    src = "var o = {a: [1, {b: 2}], c: 3};\nvar x = 1;\nx;\n"
+    out = _node({"s": ["session", src, [{"line": 3}], ["o.a"], [{"cmd": "stop"}]]})["s"]
+    stop = next(m for m in out if m["t"] == "stop")
+    by = {row["name"]: row for row in stop["locals"]}
+    a = next(c for c in by["o"]["children"] if c["name"] == "a")
+    assert [c["name"] for c in a["children"]] == ["[0]", "[1]"]
+    assert a["children"][1]["children"] == [{"name": "b", "value": "2", "type": "number"}]
+    assert [c["name"] for c in stop["watches"][0]["children"]] == ["[0]", "[1]"]

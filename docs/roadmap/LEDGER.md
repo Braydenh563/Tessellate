@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 37 | 13 | 0 | 18 | 120 |
-| documents | 70 | 37 | 13 | 0 | 18 | 120 |
-| documents | 70 | 37 | 13 | 0 | 18 | 120 |
+| documents | 70 | 30 | 13 | 0 | 18 | 113 |
+| documents | 70 | 30 | 13 | 0 | 18 | 113 |
+| documents | 70 | 30 | 13 | 0 | 18 | 113 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 677 | 153 | 3 | 195 | 1383 |
-| all | 553 | 677 | 153 | 3 | 195 | 1383 |
-| all | 553 | 677 | 153 | 3 | 195 | 1383 |
+| all | 553 | 670 | 153 | 3 | 195 | 1376 |
+| all | 553 | 670 | 153 | 3 | 195 | 1376 |
+| all | 553 | 670 | 153 | 3 | 195 | 1376 |
 
 ## graph
 
@@ -364,14 +364,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## documents
 
-- [ ] **L293** `documents` open, S: Preserve run state when a never-ending console loop is killed after 10 s. From OPEN.md:1468. Evidence: Design limit; worker terminate path unchanged, no preservation found
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines.
 - [ ] **L309** `documents` open, M: Keep Python runtime frame persistent across documents to avoid 5-7 s cold reload per document. From OPEN.md:1219; OPEN.md:1224; OPEN.md:2829; OPEN.md:2907. Evidence: Row: needs the Pyodide extra, not installed here; cold Debug cannot be timed.
-- [ ] **L312** `documents` open, M: Debug variables: expand into children. From OPEN.md:2824. Evidence: _mm_names / run_sandbox.py:186 show; verified open
 - [ ] **L313** `documents` open, M: Step JS watches instead of evaluating natively. From OPEN.md:2825. Evidence: run_sandbox.py:250 evaluate; known limitation, verified
 - [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10
-- [ ] **L317** `documents` open, M: Load a CSV document as a SQL table from a panel action. From OPEN.md:2903. Evidence: run-core.js:169 accepts tables; no panel action sends a CSV doc
 - [ ] **L318** `documents` open, M: Comment threads: edit/delete replies, per-device author, reply to resolved, code-doc comments. From a30h-1102.md Left. Evidence: documents-comments.js:275 replies never edited; no edit/delete path found
 - [ ] **L319** `documents` open, M: Verify code editor: Python run, SQL/p5, Emmet/hover docs, conflict dialog, multi-cursor, Console eval. From audit-1031-code.md. Evidence: No later code audit; Python extra not installed here
 - [ ] **L320** `documents` open, M: Verify docs: read-view mermaid, print/PDF, docx, import, comments, phone editor entry. From audit-1031-docs.md. Evidence: audit-1102-docs covered part; print dialog and phone remain
@@ -402,14 +399,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L350** `documents` partly, M: Document gutter writes height and reads layout per gutter. From OPEN.md:1479. Evidence: Row says menu exit closed (HISTORY 'OPEN.md rows closed'); gutter batching not confirmed
 - [ ] **L351** `documents` partly, L: Re-check run/debug tools and skeletons for every language after snippet drag. From INBOX.md:904 B19. Evidence: documents-codekit.js:530 docSnippetDragStart; tests/test_snippet_drag.py; run/debug tools for every language not re-checked
 - [ ] **L352** `documents` partly, L: Documents: Autocorrect status-bar switch, deferred-large rows, DC1/DC2 lock, old audit rows re-verify. From ledger-1112 O27; ledger-1112 X14.
-- [ ] **L-documents-1** `documents` open, S: Pan the diagram builder by dragging with the right mouse button, as draw.io does. From INBOX 904 B36. Evidence: no button 2 pan in the diagram code; the whiteboard's right-pan decision 258 is superseded there, the diagram builder has no decision
-- [ ] **L-documents-2** `documents` open, S: Set a word goal and keep a streak for writing sessions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:564. Evidence: documents have a word count but no per-session goal; untracked
 - [ ] **L-documents-3** `documents` open, M: Compare two documents side by side. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:568. Evidence: there is version diff within a document but no compare of two documents; untracked
 - [ ] **L-documents-4** `documents` open, M: Turn a board's frames into a document draft. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:843. Evidence: no command turns a board into a document draft; lines 843 to 846 are untracked
-- [ ] **L-documents-7** `documents` open, S: Fit the diagram builder dock on one row at 390. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:349. Evidence: Open line in the plan's prose a session could miss. Size target and phone layout open.
 - [ ] **L-documents-8** `documents` open, M: Diagram builder a30u and a30y leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:350. Evidence: Open line in the plan's prose a session could miss. a30u/a30y leftovers incl. clipboard read-back, ghost-row contrast in dark.
 - [ ] **L-documents-9** `documents` open, M: Code block runner leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1100. Evidence: Open line in the plan's prose a session could miss. Unmined pointer leftovers.
-- [ ] **L-documents-10** `documents` open, S: Tray Open row for diagrams. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1430. Evidence: Open line in the plan's prose a session could miss. No ROUTE_OBJECTS row; script cap at 260,620 bytes.
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
 - [ ] **L-documents-15** `documents` open, M: Diagram builder at 390: first paint, Tab stops, tap scroll and 44 px targets (R11). From DOCUMENTS_PLAN R11 blind test 2026-11-04. Evidence: diagram-embed.js: first paint blank about 1 s; 27 Tab stops to the first block; 390 px tap scrolls the toolbar under the header; tabs 28, grips 14x19, swatches 24, Connect 44x40 under 44 px
 - [ ] **L-documents-17** `documents` open, M: Board Mermaid import keeps block colour and edge labels (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: board Mermaid import (wbImportMermaid, whiteboard-interchange.js) drops block colour and stacks edge labels

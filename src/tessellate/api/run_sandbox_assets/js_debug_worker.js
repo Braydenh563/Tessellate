@@ -46,23 +46,32 @@
     if (v instanceof I.Object) return v.class === "Function" ? "function" : v.class === "Array" ? "array" : "object";
     return typeof v;
   }
-  //: A list or an object opens one level into its children (OPEN row 1058),
-  //: CHILDREN at most; a child's own children are its short form.
-  var CHILDREN = 50;
-  function children(v) {
+  //: A list or an object opens into its children (OPEN row 1058), CHILDREN at
+  //: most, and a child that is one opens in turn, DEPTH levels down with
+  //: DEEPER rows each level (L312). A value already on the way down (an
+  //: object holding itself) keeps its short form, so the walk ends.
+  var CHILDREN = 50, DEEPER = 20, DEPTH = 3;
+  function children(v, depth, path) {
+    depth = depth || 1; path = path || [];
     if (!(v instanceof I.Object) || (v.class !== "Array" && v.class !== "Object")) return null;
-    var p = v.properties || {}, rows = [], total = 0;
+    var p = v.properties || {}, rows = [], total = 0, limit = depth === 1 ? CHILDREN : DEEPER, way = path.concat([v]);
+    function row(name, item) {
+      var r = { name: name, value: clip(show(item, 1)), type: kind(item) };
+      var kids = depth < DEPTH && way.indexOf(item) < 0 ? children(item, depth + 1, way) : null;
+      if (kids) r.children = kids;
+      return r;
+    }
     if (v.class === "Array") {
       total = Number(p.length) || 0;
-      for (var i = 0; i < Math.min(total, CHILDREN); i++) rows.push({ name: "[" + i + "]", value: clip(show(p[i], 1)), type: kind(p[i]) });
+      for (var i = 0; i < Math.min(total, limit); i++) rows.push(row("[" + i + "]", p[i]));
     } else {
       for (var k in p) {
         if (!own(p, k)) continue;
         total++;
-        if (rows.length < CHILDREN) rows.push({ name: k, value: clip(show(p[k], 1)), type: kind(p[k]) });
+        if (rows.length < limit) rows.push(row(k, p[k]));
       }
     }
-    if (total > CHILDREN) rows.push({ name: "...", value: (total - CHILDREN) + " more", type: "" });
+    if (total > limit) rows.push({ name: "...", value: (total - limit) + " more", type: "" });
     return rows.length ? rows : null;
   }
   function names(props, skip) {
@@ -114,6 +123,21 @@
     });
     return Function("__mmScope", "with (__mmScope) { return (" + expr + "\n); }")(view);
   }
+  //: A watch's value is a native value (the proxy hands code real objects), so
+  //: it opens by the same rule over plain arrays and objects.
+  function nativeChildren(v, depth, path) {
+    depth = depth || 1; path = path || [];
+    if (!v || typeof v !== "object" || (!Array.isArray(v) && Object.getPrototypeOf(v) !== Object.prototype)) return null;
+    var keys = Object.keys(v), limit = depth === 1 ? CHILDREN : DEEPER, way = path.concat([v]), rows = [];
+    keys.slice(0, limit).forEach(function (k) {
+      var item = v[k], r = { name: Array.isArray(v) ? "[" + k + "]" : k, value: showNative(item), type: item === null ? "null" : Array.isArray(item) ? "array" : typeof item };
+      var kids = depth < DEPTH && way.indexOf(item) < 0 ? nativeChildren(item, depth + 1, way) : null;
+      if (kids) r.children = kids;
+      rows.push(r);
+    });
+    if (keys.length > limit) rows.push({ name: "...", value: (keys.length - limit) + " more", type: "" });
+    return rows.length ? rows : null;
+  }
   function showNative(r) {
     if (typeof r === "string") return clip(JSON.stringify(r));
     if (r && typeof r === "object") { try { return clip(JSON.stringify(r)); } catch (e) { return clip(String(r)); } }
@@ -130,7 +154,12 @@
     }
     var w = [];
     for (var i = 0; i < watches.length; i++) {
-      try { w.push({ expr: watches[i], value: showNative(evaluate(watches[i], top.scope)) }); }
+      try {
+        var got = evaluate(watches[i], top.scope), entry = { expr: watches[i], value: showNative(got) };
+        var kids = nativeChildren(got);
+        if (kids) entry.children = kids;
+        w.push(entry);
+      }
       catch (e) { w.push({ expr: watches[i], error: String(e && e.name || "Error") + ": " + String(e && e.message || e) }); }
     }
     return {

@@ -6,6 +6,15 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a daily word goal (250 to 2,000 words, set from the word count's menu) and a writing streak of days that reached it, counted on this device (L-documents-2)
+- Whiteboard: a save that reaches an item an undo just deleted answers 404 instead of a 500, and the board drops a save for an item it is undoing (L-whiteboard-18)
+- Documents: a CSV document's panel has Query as SQL, which opens a new SQL document selecting the table's first 50 rows and runs it (L317)
+- Documents: Variables and Watch rows expand into children of children, three levels down, and a value holding itself stops there (L312)
+- Documents: a console line stopped after 10 seconds says so in the console, and the output and Problems above it stay (L293)
+- Documents: the diagram builder pans by dragging with the right mouse button, as well as Space and drag (L-documents-1)
+- Diagrams: a Wrap toggle beside the Source view button folds long Source lines (the ... menu is hidden in Source); 85 by 32 px, pressed while lines fold, shared with the menu row (L304)
+- Diagrams: a diagram in the tray has an Open row, like a document (a router row for the diagram kind; the tray offered only Attach to the chat before) (L-documents-10)
+- Diagrams: at 480 px or less the builder dock is one row (110 to 62 px at 390, six targets of 44 px): Direction, Redo and Ask for a change moved into the ... menu (L-documents-7)
 - Documents: Format selection beautifies only the selected lines in a js file (L300)
 - Documents: Python breakpoints persist across a reload (L315)
 - Documents: a word touching a suggestion marker is a spelling finding (L311)

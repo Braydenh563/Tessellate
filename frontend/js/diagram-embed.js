@@ -340,8 +340,10 @@
     srcwrap.append(gutter, field);
     //: Long source lines fold onto the next row when asked (L304): the numbers are hidden while they do, because a
     //: number is beside its line only while lines do not wrap. Kept on the device, off by default.
+    let wrapBtn = null;
     const setWrap = (on) => {
       field.setAttribute("wrap", on ? "soft" : "off");
+      wrapBtn?.setAttribute("aria-pressed", String(on));
       srcwrap.classList.toggle("is-wrapped", on);
       try {
         prefs.set("dgm-source-wrap", on ? "on" : "off");
@@ -593,9 +595,14 @@
     //: On a phone the views are the sheet's top row, not the foot's first (DD-6, 1107): the foot is one row of Keys, Cancel and Done.
     const viewbar = el("div", "dgm-viewbar");
     const phone = matchMedia("(max-width: 599.98px)");
+    //: Wrap, in Source only: the ... menu is in the dock, which Source hides (L304).
+    wrapBtn = smallButton("ph:text-align-left Wrap", "Fold long Source lines onto the next row. Line numbers hide while lines fold", () => setWrap(field.getAttribute("wrap") === "off"));
+    wrapBtn.classList.add("dgm-wrapbtn");
+    wrapBtn.setAttribute("aria-pressed", String(field.getAttribute("wrap") !== "off"));
     const place = () => {
       (phone.matches ? viewbar : foot).prepend(seg);
       seg.after(note);
+      note.after(wrapBtn);
     };
     phone.addEventListener("change", place);
     place();
