@@ -87,6 +87,58 @@ function notificationActionButton(item) {
   return button;
 }
 
+//: **Done on a reminder's row** (TIMELINE_PLAN, W7-3): the reminders tab's own
+//: complete route, so a repeating one rolls to its next time. The row stays,
+//: saying what happened, instead of offering the button a second time.
+function reminderDoneButton(item) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "ghost small quiet notif-cta notif-reminder-done";
+  button.textContent = "Done";
+  button.setAttribute("aria-label", `Done: ${item.title}`);
+  //: The row's own stored line, set to `done` (or back) so the panel says what happened.
+  const mark = (done, detail) => {
+    const items = storedNotifications();
+    const row = items.find((n) => n.id === item.id);
+    if (row) {
+      if (done) row.reminderDone = true;
+      else delete row.reminderDone;
+      row.detail = detail;
+      prefs.set(NOTIFICATIONS_KEY, JSON.stringify(items));
+    }
+  };
+  const was = item.detail;
+  button.addEventListener("click", async (event) => {
+    event.stopPropagation();
+    button.disabled = true;
+    let rolled;
+    try {
+      rolled = await apiJson(`/reminders/${item.reminderId}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { method: "POST" });
+    } catch {
+      button.disabled = false;
+      toast("Couldn't complete that reminder. Press Done to try again.", "info");
+      return;
+    }
+    const said = rolled.done ? "Done" : `Done, next ${whenText(rolled.due_at)}`;
+    mark(true, said);
+    //: Undo puts the due time back and reopens it (`restore`: that time is past);
+    //: redo sets the rolled time, the same pair the Reminders tab's tick pushes.
+    const put = (body, done, detail) => async () => {
+      await apiJson(`/reminders/${item.reminderId}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
+      mark(done, detail);
+      loadReminders().catch(() => {});
+    };
+    if (item.reminderDue) {
+      pushUndo(rolled.done ? "Completed a reminder" : "Rescheduled a reminder",
+        put({ due_at: item.reminderDue, done: false }, false, was),
+        put({ due_at: rolled.due_at, done: rolled.done }, true, said));
+    }
+    loadReminders().catch(() => {});
+    openNotifications({ keepWatermark: true });
+  });
+  return button;
+}
+
 //: `keepWatermark`: a re-render from a row's own read/unread toggle must
 //: not also stamp the "seen everything" watermark: that is what made one
 //: tick mark every unread row as read (reported twice).
@@ -113,6 +165,8 @@ async function openNotifications({ keepWatermark = false } = {}) {
       detail: `Due ${relativeTime(reminder.due_at)}`,
       key: reminderNoticeKey(reminder),
       action: { tab: "reminders" },
+      reminderId: reminder.id,
+      reminderDue: reminder.due_at,
     });
   }
 
@@ -259,6 +313,7 @@ async function openNotifications({ keepWatermark = false } = {}) {
     foot.append(time);
     const cta = notificationActionButton(item);
     if (cta) foot.append(cta);
+    if (item.kind === "reminder" && item.reminderId && !item.reminderDone) foot.append(reminderDoneButton(item));
     //: The third column of the row, centred on it (INBOX 874): not on the
     //: meta line, where a two-line row put them at its bottom.
     row.append(actions);
