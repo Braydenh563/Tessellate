@@ -5345,7 +5345,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcTooltipMatches` | frontend/js/graph-canvas.js:5773 |
 | `gcTopicColour` | frontend/js/graph-canvas.js:1992 |
 | `gcTopicCore` | frontend/js/graph-canvas.js:1979 |
-| `gcTopicEdit` | frontend/js/graph-canvas.js:1753 |
+| `gcTopicEditUndo` | frontend/js/graph-canvas.js:1753 |
 | `gcTopicMembers` | frontend/js/graph-canvas.js:1972 |
 | `gcTopicMenuRows` | frontend/js/graph-canvas.js:1769 |
 | `gcTopicPost` | frontend/js/graph-canvas.js:1760 |
@@ -13478,7 +13478,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/graph/path` | GET | `graph_path` | src/tessellate/api/routes_graph.py:1856 |
 | `/graph/pin/{node_id}` | PUT | `pin_node` | src/tessellate/api/routes_graph.py:2105 |
 | `/graph/pins` | PUT | `pin_nodes` | src/tessellate/api/routes_graph.py:2162 |
-| `/graph/projection` | GET | `graph_projection` | src/tessellate/api/routes_graph_projection.py:51 |
+| `/graph/projection` | GET | `graph_projection` | src/tessellate/api/routes_graph_projection.py:58 |
 | `/graph/structure` | GET | `graph_structure` | src/tessellate/api/routes_graph.py:1544 |
 | `/graph/topics/edits` | PUT | `set_topic_edits` | src/tessellate/api/routes_graph.py:1682 |
 | `/graph/topics/merge` | POST | `merge_topics` | src/tessellate/api/routes_graph.py:1665 |
@@ -22349,8 +22349,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `graph_projection` | src/tessellate/api/routes_graph_projection.py:52 |
-| `project` | src/tessellate/api/routes_graph_projection.py:25 |
+| `graph_projection` | src/tessellate/api/routes_graph_projection.py:59 |
+| `project` | src/tessellate/api/routes_graph_projection.py:29 |
 
 ### src/tessellate/api/routes_hello.py (15)
 

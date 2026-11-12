@@ -11,13 +11,17 @@ vector), only the current embedding backend's vectors.
 
 from __future__ import annotations
 
-import numpy as np
-from fastapi import APIRouter, Depends
+from typing import TYPE_CHECKING
+
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from tessellate.api import routes_graph
 from tessellate.core import deps
 from tessellate.core.deps import get_session
+
+if TYPE_CHECKING:
+    import numpy as np
 
 router = APIRouter(tags=["graph"])
 
@@ -25,6 +29,9 @@ router = APIRouter(tags=["graph"])
 def project(vectors: dict[int, np.ndarray]) -> dict[int, tuple[float, float]]:
     """`{id: (x, y)}` in the unit square, one scale on both axes so the
     picture is not stretched."""
+    # Imported here: numpy stays out of the app's start (test_lazy_heavy_imports).
+    import numpy as np
+
     if not vectors:
         return {}
     ids = sorted(vectors)
@@ -49,10 +56,13 @@ def project(vectors: dict[int, np.ndarray]) -> dict[int, tuple[float, float]]:
 
 
 @router.get("/graph/projection")
-def graph_projection(session: Session = Depends(get_session)) -> dict:
+def graph_projection(
+    session: Session = Depends(get_session),
+    limit: int = Query(20000, ge=1, le=20000),
+) -> dict:
     backend = deps.get_embeddings().backend_id()
     fingerprint = (*routes_graph._graph_fingerprint(session), backend)
     points = routes_graph._cached(
         "projection", fingerprint, lambda: project(routes_graph._note_vectors(session, backend))
     )
-    return {"points": [{"id": i, "x": x, "y": y} for i, (x, y) in points.items()]}
+    return {"points": [{"id": i, "x": x, "y": y} for i, (x, y) in list(points.items())[:limit]]}

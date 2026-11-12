@@ -1693,7 +1693,7 @@
     const home = topic.category?.name || "";
     const homeLine = document.createElement("p");
     homeLine.className = "muted graph-topic-terms";
-    if (home) homeLine.textContent = `Mostly in ${home} (${topic.category.count} of ${topic.size} notes).`;
+    if (home) homeLine.textContent = `Mostly in ${home} (${topic.category.count} of ${nounCount(topic.size, "note")}).`;
     const summary = document.createElement("p");
     summary.className = "graph-topic-summary";
     summary.setAttribute("aria-live", "polite");
@@ -1750,8 +1750,8 @@
     await renderGraph();
   }
 
-  async function gcTopicEdit(label, request) {
-    const row = await request().catch((e) => { toast(`The topics were not changed: ${e?.message || e}`, true, { action: ["Try again", () => gcTopicEdit(label, request)] }); return null; });
+  async function gcTopicEditUndo(label, request) {
+    const row = await request().catch((e) => { toast(`The topics were not changed: ${e?.message || e}`, true, { action: ["Try again", () => gcTopicEditUndo(label, request)] }); return null; });
     if (!row) return;
     pushRequestUndo(label, "/graph/topics/edits", "PUT", row.was, row.edits, gcTopicsRepaint);
     await gcTopicsRepaint();
@@ -1760,7 +1760,7 @@
   const gcTopicPost = (route, ids) => () => apiJson(route, { method: "POST", body: JSON.stringify({ ids }) });
 
   function gcResetTopicEdits() {
-    return gcTopicEdit("Reset the topic edits", () => apiJson("/graph/topics/edits", { method: "PUT", body: JSON.stringify({ merges: [], excluded: [] }) }));
+    return gcTopicEditUndo("Reset the topic edits", () => apiJson("/graph/topics/edits", { method: "PUT", body: JSON.stringify({ merges: [], excluded: [] }) }));
   }
 
   //: The topic card's ⋯ (`kebabMenu`): merge into another topic (a submenu of
@@ -1776,14 +1776,14 @@
         items: others.map((t) => ({
           label: `${t.name} (${t.size})`,
           title: `Join these notes and ${nounCount(t.size, "note")} into one topic`,
-          run: () => gcTopicEdit(`Merged the topics “${topic.name}” and “${t.name}”`, gcTopicPost("/graph/topics/merge", [...topic.ids, ...t.ids])),
+          run: () => gcTopicEditUndo(`Merged the topics “${topic.name}” and “${t.name}”`, gcTopicPost("/graph/topics/merge", [...topic.ids, ...t.ids])),
         })),
       });
     }
     rows.push({
       label: "ph:eye-slash Remove topic",
       title: "Ungroup these notes: none is deleted, and Undo or a reset brings the topic back",
-      run: () => gcTopicEdit(`Removed the topic “${topic.name}”`, gcTopicPost("/graph/topics/remove", topic.ids)),
+      run: () => gcTopicEditUndo(`Removed the topic “${topic.name}”`, gcTopicPost("/graph/topics/remove", topic.ids)),
     });
     return rows;
   }
