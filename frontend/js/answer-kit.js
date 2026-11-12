@@ -752,12 +752,28 @@ function renderEvidenceView(view, sentences, support, rawResults, answerEl, numb
       if (facts.length) card.append(evidenceSpan("library-file-meta answer-evidence-meta", facts.join(" · ")));
       card.setAttribute("aria-label", `Open source ${number}: ${title}`);
       card.addEventListener("click", () => openNoteAtPassage(g.note_id, passage));
-      sources.append(card);
+      //: I7: the card and its verdict pair side by side, never a button in a button.
+      const holder = evidenceSpan("answer-evidence-item", "", "div");
+      holder.append(card);
+      if (g.kind !== "document") evidenceCardVerdict(holder, g, content, row.sentence);
+      sources.append(holder);
     }
     item.append(evidenceSpan("answer-evidence-sentence", plainText(row.sentence), "p"), sources);
     list.append(item);
   }
   view.replaceChildren(list);
+}
+
+//: **Wrong on an evidence card** (WORLD_CLASS I7): the verdict pair a cited
+//: line's peek carries (`citationVerdictRow`), on the passage the card shows.
+//: Not right is a correction the next answer and the next filing leave out;
+//: Confirm pins it; each is a row in What the notebook learned, whose Delete
+//: is the toast's Undo.
+function evidenceCardVerdict(holder, g, content, line) {
+  ensureModule("askCompose").then(() => {
+    const verdicts = citationVerdictRow({ ...g, noteId: g.note_id, line: plainText(line) }, content);
+    if (verdicts) holder.append(verdicts);
+  }).catch(() => {});
 }
 
 function answerFigure(entry, n, k, alts, sizes) {

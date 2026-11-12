@@ -174,6 +174,7 @@ function buildConnectionGroups(list, kind, data, beforeOpen = () => {}) {
           ["ph:file-text In these documents", data.documents, docRow, "documents"],
           ["ph:squares-four On these boards and maps", data.boards, boardRow, "boards"],
           ["ph:image Files it uses", data.files, fileRow, "files"],
+          ["ph:users People and projects it names", data.names, nameRow, "names"],
         ]
       : [
           ["ph:note Notes attached", data.notes, noteRow, "notes"],
@@ -250,6 +251,12 @@ function buildConnectionGroups(list, kind, data, beforeOpen = () => {}) {
     return row(`${icon} ${board.title}`, `Open “${board.title}”`, () =>
       openWhiteboardBoard(board.id ?? null), board.kind === "map" ? "Mind map" : "Whiteboard"
     );
+  }
+  //: WORLD_CLASS B4: a name the note says opens its person or project page.
+  function nameRow(entity) {
+    const icon = { person: "ph:user", project: "ph:kanban", place: "ph:map-pin", organisation: "ph:buildings" }[entity.kind] || "ph:at";
+    const kind = entity.kind ? entity.kind[0].toUpperCase() + entity.kind.slice(1) : "Name";
+    return row(`${icon} ${entity.name}`, `Open the page for ${entity.name}`, () => openEntityPage(entity.id), kind);
   }
   function bookmarkRow(mark) {
     return row(`ph:bookmark-simple ${mark.title || mark.url}`, `Open ${mark.url}`, () =>

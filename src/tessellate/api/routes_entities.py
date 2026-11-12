@@ -22,7 +22,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai.entities import MergeUndoError, merge_with_undo, undo_merge
-from tessellate.core.database import ENTITY_KINDS, Entity, EntityMention, Entry, EntryDate
+from tessellate.core.database import ENTITY_KINDS, Entity, EntityMention, Entry, EntryDate, EntryLink, Reminder
 from tessellate.core.deps import get_session
 from tessellate.entry.manager_text import plain_label
 from tessellate.entry.mentions import sentence_around
@@ -169,9 +169,117 @@ def entity_page(entity_id: int, session: Session = Depends(get_session)) -> dict
         "mentions": mentions,
         "related": related_rows,
         "dates": dates,
+        "open_items": _open_items(session, entity, notes, names),
+        "timeline": _timeline(notes),
+        "links": _linked_notes(session, notes, visible),
         "first_seen": min(seen).isoformat() if seen else None,
         "last_seen": max(seen).isoformat() if seen else None,
     }
+
+
+#: WORLD_CLASS B4: what makes the page a person's or a project's.
+PAGE_OPEN_ITEMS = 30
+PAGE_MONTHS = 24
+PAGE_MONTH_NOTES = 3
+PAGE_LINKS = 12
+#: A markdown task line, the shape the editor writes (`entry/meetings.py`).
+_TASK = re.compile(r"^[ \t]*(?:[-*+]|\d{1,3}[.)])[ \t]+\[([ xX])\][ \t]*(.*)$")
+
+
+def _names_line(line: str, names: list[str]) -> bool:
+    """Whether a line says one of the names, or `@` and its first word (the
+    app's way of naming the owner of a task: "Sam Lee" is written `@Sam`)."""
+    if _hit(line, names):
+        return True
+    firsts = {n.split()[0].casefold() for n in names if n.split()}
+    return any(m.casefold() in firsts for m in re.findall(r"(?<![\w@])@([A-Za-z][\w.'-]{0,39})", line))
+
+
+def _open_items(session: Session, entity: Entity, notes: dict, names: list[str]) -> list[dict]:
+    """The unticked tasks in its notes and the reminders on them, not done.
+    A person's page keeps only the task lines and reminders that name them: a meeting note
+    that names Sam holds ten tasks, and two are Sam's; a project's notes are
+    about the project, so every open task in them is the project's."""
+    only_named = entity.kind == "person"
+    items: list[dict] = []
+    for entry in sorted(notes.values(), key=lambda e: e.created_at, reverse=True):
+        title = plain_label(entry.content or "", 60) or "Untitled note"
+        for line in (entry.content or "").splitlines():
+            m = _TASK.match(line)
+            text = " ".join(m.group(2).split()) if m and m.group(1) == " " else ""
+            if text and (not only_named or _names_line(text, names)):
+                items.append({"kind": "task", "entry_id": entry.id, "title": title, "text": text})
+    reminders = session.scalars(
+        select(Reminder)
+        .where(Reminder.entry_id.in_(list(notes)), Reminder.done.is_(False), Reminder.deleted_at.is_(None))
+        .order_by(Reminder.due_at)
+    ) if notes else []
+    items += [
+        {"kind": "reminder", "id": r.id, "entry_id": r.entry_id, "text": r.text, "due_at": r.due_at.isoformat()}
+        for r in reminders
+        if not only_named or _names_line(r.text, names)
+    ]
+    return items[:PAGE_OPEN_ITEMS]
+
+
+def _timeline(notes: dict) -> list[dict]:
+    """Its notes by the month they were written, newest month first, each
+    with its newest few notes: when it came up, and how much."""
+    months: dict[str, list[Entry]] = {}
+    for entry in sorted(notes.values(), key=lambda e: e.created_at, reverse=True):
+        if entry.created_at:
+            months.setdefault(entry.created_at.strftime("%Y-%m"), []).append(entry)
+    return [
+        {
+            "month": month,
+            "count": len(rows),
+            "notes": [{"id": e.id, "title": plain_label(e.content or "", 60) or "Untitled note"} for e in rows[:PAGE_MONTH_NOTES]],
+        }
+        for month, rows in sorted(months.items(), reverse=True)[:PAGE_MONTHS]
+    ]
+
+
+def _linked_notes(session: Session, notes: dict, visible: set[int]) -> list[dict]:
+    """The notes a link joins to its notes and that do not name it, most
+    joined first: the wiring diagram a project's plan links to belongs on
+    the project's page even though it never says the project's name."""
+    if not notes:
+        return []
+    ids = list(notes)
+    joined: Counter[int] = Counter()
+    for source, target in session.execute(
+        select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(
+            EntryLink.source_entry_id.in_(ids) | EntryLink.target_entry_id.in_(ids)
+        )
+    ):
+        other = target if source in notes else source
+        if other not in notes and other in visible:
+            joined[other] += 1
+    top = sorted(joined.items(), key=lambda kv: (-kv[1], kv[0]))[:PAGE_LINKS]
+    rows = {e.id: e for e in session.scalars(select(Entry).where(Entry.id.in_([i for i, _ in top])))}
+    return [
+        {"id": i, "title": plain_label(rows[i].content or "", 60) or "Untitled note", "links": n}
+        for i, n in top if i in rows
+    ]
+
+
+def names_in_note(session: Session, entry: Entry) -> list[dict]:
+    """The people, projects and things a note names, for its Connections
+    (B4: a page reachable from the mention). A private note lends no names."""
+    if entry.is_private:
+        return []
+    ids = set(session.scalars(select(EntityMention.entity_id).where(EntityMention.entry_id == entry.id)))
+    named = {}
+    for entity_id in ids:
+        try:
+            live = _live(session, entity_id)
+        except HTTPException:
+            continue
+        named[live.id] = live
+    return [
+        {"id": e.id, "name": e.name, "kind": e.kind}
+        for e in sorted(named.values(), key=lambda e: e.name.casefold())
+    ]
 
 
 class EntityPatch(BaseModel):
