@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 193 | 60 | 2 | 59 | 429 |
+| chat | 176 | 192 | 59 | 2 | 59 | 427 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 700 | 157 | 3 | 195 | 1410 |
+| all | 553 | 699 | 156 | 3 | 195 | 1408 |
 
 ## graph
 
@@ -82,7 +82,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L43** `chat` open, S: Fix 'summarise today' per-note 'From today:' lines. From OPEN.md:3849. Evidence: composer_digest recall lines unchanged
 - [ ] **L44** `chat` open, S: Stop fragment lines reading as joined events. From OPEN.md:3851. Evidence: composer_digest join unchanged
 - [ ] **L45** `chat` open, S: Add a model-needed message for 'make it simpler' with no model. From a30e-1102.md Found, not fixed. Evidence: No 'simpler' in capability.py/commands.py/composer_help.py
-- [ ] **L46** `chat` open, S: Match 'tell me about this' in composer_digest.about_this. From a30e-1102.md Found, not fixed. Evidence: about_this used at composer_digest.py:1144; _THIS extension not found
 - [ ] **L47** `chat` open, S: Fix rename 'X to Y' splitting at the first ' to '. From acts-1108.md Left. Evidence: No later fix commit found
 - [ ] **L48** `chat` open, S: Add chips to 'thanks'/'hello' replies (F5). From fc56-1110.md Left. Evidence: No closing-chip change found in composer_talk.py
 - [ ] **L49** `chat` open, S: Stop 'Remind me about Dentist the day before' asking what it is for. From fc56-1110.md Left. Evidence: No test with 'the day before' reminder phrase found
@@ -222,7 +221,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L187** `chat` partly, S: Stop verb word becoming a required term; fix footer wording (Z16). From OPEN.md:4044. Evidence: Quoted-figure answers drop footer (d1c5a1265); frame-word list in composer_unfound.py. Verb-as-term case not shown closed.
 - [ ] **L188** `chat` partly, S: Count sentence should count what notes said, not the largest theme (C6). From OPEN.md:4087. Evidence: Rechecked 2026-11-11: small notebook now agrees (eight/eight); 207-note count still disagrees.
 - [ ] **L189** `chat` partly, S: Fix the run-on line for 'what did I do on 3 October' (E16). From OPEN.md:4140. Evidence: Line run-on (Phone 020... Dentist check-up) left, see bc6-1111.md.
-- [ ] **L190** `chat` partly, S: Name a title-less note one way everywhere (R3-15). From OPEN.md:4150. Evidence: 1111 note: left, naming not unified.
 - [ ] **L191** `chat` partly, S: Fix single-note '[your note, date]' endings, repeated chips and 24-note overview. From OPEN.md:814. Evidence: No literal '[your note, ' found in composer*.py; chip repeats and 24-note wording unverified
 - [ ] **L192** `chat` partly, S: Show open checklist items for 'what is still open on X' (P16). From OPEN.md:848. Evidence: composer.py:46 handles checklist ticked counts; open-items question not found
 - [ ] **L193** `chat` partly, S: Magic add 'tonight around 7pm'; equalise edit button heights. From OPEN.md:3826. Evidence: reminder_parser.py:218 hedges parse 'probably around 7pm'; button heights unverified

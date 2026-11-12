@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The composer reads "tell me about this" and "give me a summary of this note" as a question about the attached note
+- Tidy, tool labels and insights name a title-less note the way the composer does (its first sentence), not a raw clip
 - Chat plan phase 5 (a) and (c) verified built: the model reads the composer's chosen sentences, and a composed bubble carries the From your notes chip
 - Chat: a picture attached to a note as a file now reaches the composer as a picture reading by its stored caption, not only a picture inside a mostly-picture note (CHAT_PLAN phase 5 d); `tests/test_chat_attachments.py`.
 - Link reasons (CHAT_PLAN phase 5 g, L95): when two linked notes share no tag, name or rare word, Tidy's Add reasons and a new link quote one sentence from each that say the same, cut to 31 characters each; `tests/test_link_wording.py`.

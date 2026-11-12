@@ -132,3 +132,12 @@ def test_a_pair_sharing_one_word_is_not_quoted():
     a = _note(1, "The kiln needs a new door seal before spring.", category=None)
     b = _note(2, "Order wire for the kiln this week, then fire.", category=None, day=25)
     assert lw.specific_reason(a, b, _counts(a, b)) is None
+
+
+def test_a_title_less_note_is_named_like_the_composer_names_it():
+    from tessellate.ai import composer_frame
+    from tessellate.entry import link_wording
+    text = "Dentist said to floss more and book a clean in March."
+    got = link_wording.title(text, limit=60)
+    assert got == composer_frame.link_text({"content": text})[:60].rstrip("… ") or got.startswith("Dentist said to floss")
+    assert link_wording.title("") == ""

@@ -210,12 +210,20 @@ _ITALIC = re.compile(r"(?<![\w*])\*(?=\S)([^*\n]*?\S)\*(?![\w*])")
 
 
 def title(text: str, limit: int = 30) -> str:
-    """A note's name: its first line with the markdown marks off, clipped."""
-    for line in (text or "").splitlines():
-        shown = _ITALIC.sub(r"\1", _MARKS.sub("", _LEAD.sub("", _WIKI.sub(lambda m: m.group(1), line).strip()))).strip()
-        if shown:
-            return shown if len(shown) <= limit else shown[: limit - 1].rstrip() + "…"
-    return ""
+    """A note's name: its heading, else the composer's name for a title-less
+    note (its first clause, six words at most, `composer_frame.link_text`), the
+    quotes off for the caller to add, clipped. One name on every surface
+    (R3-15, L190): a link reason, a Tidy row, a tool label and the Chat list
+    say "Dentist said to floss more and…" for the same note."""
+    from tessellate.ai import composer_frame  # lazy: this module imports nothing at load
+
+    named = composer_frame.link_text({"content": text or ""}).strip()
+    if named in ("“An empty note”", ""):
+        return ""
+    shown = _ITALIC.sub(r"\1", _MARKS.sub("", _LEAD.sub("", _WIKI.sub(lambda m: m.group(1), named).strip()))).strip().strip("“”").strip()
+    if not shown:
+        return ""
+    return shown if len(shown) <= limit else shown[: limit - 1].rstrip() + "…"
 
 
 def _mentions(a: PairNote, b: PairNote) -> str | None:
