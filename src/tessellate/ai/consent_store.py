@@ -64,13 +64,13 @@ def _read_log() -> list[dict]:
 
 def log_undo(undo: list[dict] | None, title: str) -> None:
     """Add the note a rename or move changed (from the `edit_note` Undo step) to the on-disk log."""
-    from tessellate.ai import commands
+    from tessellate.ai.composer_frame import note_title  # the name reader itself: commands would close an import cycle
 
     rows = []
     for step in undo or []:
         args = step.get("arguments") or {}
         if step.get("name") == "edit_note" and args.get("note_id"):
-            rows.append({"at": time.time(), "note_id": args["note_id"], "title": commands.note_title(str(args.get("content") or ""), size=120), "category": args.get("category") or "", "label": title})
+            rows.append({"at": time.time(), "note_id": args["note_id"], "title": note_title(str(args.get("content") or ""), size=120), "category": args.get("category") or "", "label": title})
     if not rows:
         return
     with _lock:
