@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8373, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2698, tests 21910, plan headings 687, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8373, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2699, tests 21913, plan headings 687, app scripts 29, boot scripts 38, script files 301.
 
 ## Frontend functions (8373)
 
@@ -3223,7 +3223,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `blockItems` | frontend/js/diagram-builder.js:302 |
 | `blockKeys` | frontend/js/diagram-builder.js:141 |
 | `buildBlock` | frontend/js/diagram-builder.js:209 |
-| `buildPalette` | frontend/js/diagram-builder.js:560 |
+| `buildPalette` | frontend/js/diagram-builder.js:562 |
 | `buildRow` | frontend/js/diagram-builder.js:222 |
 | `commit` | frontend/js/diagram-builder.js:44 |
 | `drawPicture` | frontend/js/diagram-builder.js:59 |
@@ -3233,16 +3233,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `joinChip` | frontend/js/diagram-builder.js:285 |
 | `joinPick` | frontend/js/diagram-builder.js:511 |
 | `joins` | frontend/js/diagram-builder.js:507 |
-| `kindOf` | frontend/js/diagram-builder.js:659 |
+| `kindOf` | frontend/js/diagram-builder.js:661 |
 | `menuAt` | frontend/js/diagram-builder.js:491 |
 | `more` | frontend/js/diagram-builder.js:528 |
-| `mount` | frontend/js/diagram-builder.js:562 |
+| `mount` | frontend/js/diagram-builder.js:564 |
 | `nameOf` | frontend/js/diagram-builder.js:37 |
 | `nameOnPicture` | frontend/js/diagram-builder.js:367 |
 | `nestBlock` | frontend/js/diagram-builder.js:423 |
 | `onKey` | frontend/js/diagram-builder.js:445 |
 | `reconcile` | frontend/js/diagram-builder.js:133 |
-| `refreshMore` | frontend/js/diagram-builder.js:551 |
+| `refreshMore` | frontend/js/diagram-builder.js:553 |
 | `relabel` | frontend/js/diagram-builder.js:371 |
 | `removeBlock` | frontend/js/diagram-builder.js:431 |
 | `render` | frontend/js/diagram-builder.js:93 |
@@ -3252,13 +3252,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `shapeGlyph` | frontend/js/diagram-builder.js:149 |
 | `shapeItems` | frontend/js/diagram-builder.js:157 |
 | `shapeRow` | frontend/js/diagram-builder.js:170 |
-| `show` | frontend/js/diagram-builder.js:669 |
+| `show` | frontend/js/diagram-builder.js:671 |
 | `stepBlock` | frontend/js/diagram-builder.js:421 |
 | `stops` | frontend/js/diagram-builder.js:121 |
 | `styleDo` | frontend/js/diagram-builder.js:513 |
 | `suggest` | frontend/js/diagram-builder.js:501 |
 | `suggestMenu` | frontend/js/diagram-builder.js:519 |
-| `sync` | frontend/js/diagram-builder.js:634 |
+| `sync` | frontend/js/diagram-builder.js:636 |
 | `titleOf` | frontend/js/diagram-builder.js:36 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -13207,7 +13207,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 233 |
-| frontend/css/diagram-lazy.css | 2736 |
+| frontend/css/diagram-lazy.css | 2754 |
 | frontend/css/doc-base-lazy.css | 141 |
 | frontend/css/doc-graph-lazy.css | 221 |
 | frontend/css/file-drop-lazy.css | 51 |
@@ -27730,7 +27730,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21910)
+## Tests (21913)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28557,6 +28557,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_dgpolish_1109.py | 8 |
 | tests/test_diagram_dgsel_1111.py | 8 |
 | tests/test_diagram_doc_expand_1111.py | 10 |
+| tests/test_diagram_dock_320.py | 3 |
 | tests/test_diagram_dock_480_l_documents_7.py | 3 |
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_door_light_1722.py | 6 |

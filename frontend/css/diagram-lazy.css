@@ -1482,6 +1482,24 @@
   display: none;
 }
 
+/* 360 px or less (`dgm-tight`, set by `more`): the kind button, Add and its caret, the blocks list, Undo and the menu are 280 px
+   at 44 px each, and a 320 dialog gives the dock 270. The caret goes, the dock's side padding and gaps shrink, and the empty
+   direction group (it left a gap) is gone, so the dock is one row (it was two, 110 px tall). */
+.dgm-narrow .dock-group:has(> .dgm-dirs) {
+  display: none;
+}
+
+.dgm-tight .dgm-kindbtn .ph-caret-down {
+  display: none;
+}
+
+.dgm-dialog .dgm-tight .dgm-dock,
+.dgm-dialog .dgm-tight .dgm-dock:has(> .dgm-addsplit) {
+  flex-wrap: nowrap;
+  column-gap: 0;
+  padding-inline: 2px;
+}
+
 /* The sheet's rows give every glyph about the same width, so the names line up. */
 .dgm-add-glyph {
   flex: none;
