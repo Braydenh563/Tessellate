@@ -226,6 +226,9 @@ def _place_notes(
                 "date": at.date().isoformat(),
                 "time": at.strftime("%H:%M") if timed else None,
                 "all_day": not timed,
+                #: A written range's last day (decision 13): the row sits on
+                #: the first and the calendar draws it through to this one.
+                "until": until.date().isoformat() if (until := getattr(mention, "until", None)) else None,
             }
         else:
             when = {"at": at.isoformat()}
@@ -745,7 +748,9 @@ def _entries_in_window(query: Select, since: datetime | None, until: datetime | 
     clauses = [and_(first.is_(None), *written), and_(first.is_not(None), *placed)]
     if also:
         named = [EntryDate.entry_id == Entry.id]
-        named += [EntryDate.at >= since + wall] if since is not None else []
+        #: A span overlaps the window when it starts before the window ends and
+        #: ends after it starts (decision 13); a day's end is its own start.
+        named += [func.coalesce(EntryDate.until, EntryDate.at) >= since + wall] if since is not None else []
         named += [EntryDate.at <= until + wall] if until is not None else []
         clauses.append(select(EntryDate.id).where(*named).correlate(Entry).exists())
     return query.where(or_(*clauses))

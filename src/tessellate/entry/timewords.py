@@ -37,6 +37,9 @@ YEAR = "year"
 # UX-02). Before, the 3pm was dropped and the day stored as a midnight that a
 # browser west of UTC then drew on the evening before.
 MINUTE = "minute"
+#: A written range ("3 to 7 March"): `at` is its first day, `until` its last
+#: (TIMELINE_PLAN decision 13). The row still sits on the first day.
+RANGE = "range"
 
 MAX_MENTIONS = 8  # a note is not a calendar; this only guards runaway text
 
@@ -69,6 +72,8 @@ class Mention:
     #: The clock said beside a day phrase, as written (the writer's own wall
     #: clock, no zone): set only with precision MINUTE.
     time: time | None = None
+    #: The last day of a RANGE; None for every other precision.
+    until: date | None = None
 
 
 def _week_first() -> int:
@@ -130,6 +135,35 @@ def _written_date(year: str | None, month: int, day: int, today: date):
     return nearest, DAY
 
 
+_ORD = r"(?:st|nd|rd|th)?"
+_TO = r"\s*(?:-|–|to|until|till|through)\s*"
+_YEAR = r"(?:,?\s+(\d{4})\b)?"
+
+
+def _span(first: date, last: date):
+    """A range only when it runs forwards and stays under a year; anything
+    else is two numbers next to a month, not a span."""
+    if not first < last or (last - first).days > 366:
+        return None
+    return first, RANGE, last
+
+
+def _range_in_month(day1: str, day2: str, month: str, year: str | None, today: date):
+    """"3 to 7 March": both days in the month, the year the first one takes."""
+    first, _ = _written_date(year, _MONTHS[month.lower()], int(day1), today)
+    return _span(first, first.replace(day=int(day2)))
+
+
+def _range_across(m, t):
+    """"30 December 2030 to 2 January 2031", "28 July until 2 August"."""
+    first, _ = _written_date(m.group(3), _MONTHS[m.group(2).lower()], int(m.group(1)), t)
+    last_month, last_year = _MONTHS[m.group(5).lower()], m.group(6)
+    last = date(int(last_year), last_month, int(m.group(4))) if last_year else date(first.year, last_month, int(m.group(4)))
+    if not last_year and last < first:
+        last = last.replace(year=first.year + 1)
+    return _span(first, last)
+
+
 def _day_of_month(m, t):
     shift = {"last": -1, "next": 1, "this": 0}[m.group(2).lower()]
     month = _add_months(t.replace(day=1), shift)
@@ -148,6 +182,13 @@ _RULES: list[tuple[str, object]] = [
     # first, so the weekday inside it is never read as "on friday".
     (r"(?<![\d-])(\d{4})-(\d{2})-(\d{2})(?![\d-])",
      lambda m, t: (date(int(m.group(1)), int(m.group(2)), int(m.group(3))), DAY)),
+    # A range, before the single dates it contains (decision 13).
+    (r"\b(?:from\s+)?(\d{1,2})" + _ORD + r"\s+(?:of\s+)?(" + _MONTH_PATTERN + r")\b\.?" + _YEAR + _TO
+     + r"(\d{1,2})" + _ORD + r"\s+(?:of\s+)?(" + _MONTH_PATTERN + r")\b\.?" + _YEAR, _range_across),
+    (r"\b(?:from\s+)?(\d{1,2})" + _ORD + _TO + r"(\d{1,2})" + _ORD + r"\s+(?:of\s+)?(" + _MONTH_PATTERN + r")\b\.?" + _YEAR,
+     lambda m, t: _range_in_month(m.group(1), m.group(2), m.group(3), m.group(4), t)),
+    (r"\b(" + _MONTH_PATTERN + r")\b\.?\s+(\d{1,2})" + _ORD + _TO + r"(\d{1,2})" + _ORD + r"\b" + _YEAR,
+     lambda m, t: _range_in_month(m.group(2), m.group(3), m.group(1), m.group(4), t)),
     (_WEEKDAY_BEFORE + r"\b(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?(" + _MONTH_PATTERN + r")\b\.?(?:,?\s+(\d{4})\b)?",
      lambda m, t: _written_date(m.group(3), _MONTHS[m.group(2).lower()], int(m.group(1)), t)),
     (_WEEKDAY_BEFORE + r"\b(" + _MONTH_PATTERN + r")\b\.?\s+(\d{1,2})(?:st|nd|rd|th)?\b(?!:)(?:,?\s+(\d{4})\b)?",
@@ -339,8 +380,8 @@ def find(text: str, now: datetime | date) -> list[Mention]:
                 continue  # a phrase we thought we understood and didn't
             if answer is None:
                 continue
-            at, precision = answer
-            span, mention = _with_clock(text or "", span, Mention(match.group(0), at, precision))
+            at, precision, *last = answer
+            span, mention = _with_clock(text or "", span, Mention(match.group(0), at, precision, until=last[0] if last else None))
             claimed.append(span)
             found.append((span[0], mention))
     found.sort(key=lambda pair: pair[0])

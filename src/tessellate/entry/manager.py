@@ -855,6 +855,7 @@ def record_dates(session: Session, entry: Entry, now: datetime | None = None) ->
                     # every mention a day early west of UTC (UX-02).
                     at=datetime.combine(mention.at, mention.time or datetime.min.time()),
                     precision=mention.precision,
+                    until=datetime.combine(mention.until, datetime.min.time()) if mention.until else None,
                 )
             )
             resolved.append(
