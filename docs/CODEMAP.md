@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8341, frontend ids 2763, CSS sections 524, backend routes 699, backend modules 10766, test files 2677, tests 21842, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8341, frontend ids 2763, CSS sections 524, backend routes 699, backend modules 10766, test files 2677, tests 21843, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8341)
 
@@ -9104,22 +9104,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wbApplyMapTemplate` | frontend/js/whiteboard-templates.js:654 |
-| `wbBlankThumbSpec` | frontend/js/whiteboard-templates.js:340 |
-| `wbBoardThumbSpec` | frontend/js/whiteboard-templates.js:250 |
-| `wbMapEditRootAfterTemplate` | frontend/js/whiteboard-templates.js:669 |
-| `wbMapThumbSpec` | frontend/js/whiteboard-templates.js:80 |
-| `wbOpenTemplateGallery` | frontend/js/whiteboard-templates.js:428 |
-| `wbRenderMapTemplates` | frontend/js/whiteboard-templates.js:621 |
-| `wbTemplateChoices` | frontend/js/whiteboard-templates.js:378 |
-| `wbTemplateEntry` | frontend/js/whiteboard-templates.js:374 |
-| `wbTemplateMatches` | frontend/js/whiteboard-templates.js:395 |
-| `wbTemplatePicture` | frontend/js/whiteboard-templates.js:400 |
+| `wbApplyMapTemplate` | frontend/js/whiteboard-templates.js:662 |
+| `wbBlankThumbSpec` | frontend/js/whiteboard-templates.js:348 |
+| `wbBoardThumbSpec` | frontend/js/whiteboard-templates.js:258 |
+| `wbMapEditRootAfterTemplate` | frontend/js/whiteboard-templates.js:677 |
+| `wbMapThumbSpec` | frontend/js/whiteboard-templates.js:88 |
+| `wbOpenTemplateGallery` | frontend/js/whiteboard-templates.js:436 |
+| `wbRenderMapTemplates` | frontend/js/whiteboard-templates.js:629 |
+| `wbTemplateChoices` | frontend/js/whiteboard-templates.js:386 |
+| `wbTemplateEntry` | frontend/js/whiteboard-templates.js:382 |
+| `wbTemplateMatches` | frontend/js/whiteboard-templates.js:403 |
+| `wbTemplatePicture` | frontend/js/whiteboard-templates.js:408 |
 | `wbThumbLook` | frontend/js/whiteboard-templates.js:48 |
 | `wbThumbRound` | frontend/js/whiteboard-templates.js:37 |
 | `wbThumbShapePart` | frontend/js/whiteboard-templates.js:60 |
-| `wbThumbSvg` | frontend/js/whiteboard-templates.js:345 |
-| `wbUntitledNames` | frontend/js/whiteboard-templates.js:413 |
+| `wbThumbSvg` | frontend/js/whiteboard-templates.js:353 |
+| `wbUntitledNames` | frontend/js/whiteboard-templates.js:421 |
 
 ### frontend/js/whiteboard.js (677)
 
@@ -27689,7 +27689,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21842)
+## Tests (21843)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29244,7 +29244,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_map_suggest.py | 6 |
 | tests/test_map_summary.py | 5 |
 | tests/test_map_template_focus_1031.py | 4 |
-| tests/test_map_templates_k15.py | 5 |
+| tests/test_map_templates_k15.py | 6 |
 | tests/test_map_theme_palette.py | 13 |
 | tests/test_map_to_document.py | 3 |
 | tests/test_map_topics.py | 3 |
@@ -30789,14 +30789,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:900 |
+| Needs hardware | docs/roadmap/LEDGER.md:899 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1363 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:892 |
+| Owner calls | docs/roadmap/LEDGER.md:891 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30977,7 +30977,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1100 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1099 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31031,25 +31031,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1769 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1116 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1200 |
+| chat | docs/roadmap/LEDGER.md:1115 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1199 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:1140 |
-| general | docs/roadmap/LEDGER.md:852 |
+| documents | docs/roadmap/LEDGER.md:1139 |
+| general | docs/roadmap/LEDGER.md:851 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1104 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1212 |
+| graph | docs/roadmap/LEDGER.md:1103 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1211 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:1152 |
-| timeline | docs/roadmap/LEDGER.md:581 |
-| timeline | docs/roadmap/LEDGER.md:1176 |
-| ui-modernisation | docs/roadmap/LEDGER.md:464 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1164 |
+| mindmap | docs/roadmap/LEDGER.md:1151 |
+| timeline | docs/roadmap/LEDGER.md:580 |
+| timeline | docs/roadmap/LEDGER.md:1175 |
+| ui-modernisation | docs/roadmap/LEDGER.md:463 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1163 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1128 |
-| world-class | docs/roadmap/LEDGER.md:616 |
-| world-class | docs/roadmap/LEDGER.md:1188 |
+| whiteboard | docs/roadmap/LEDGER.md:1127 |
+| world-class | docs/roadmap/LEDGER.md:615 |
+| world-class | docs/roadmap/LEDGER.md:1187 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

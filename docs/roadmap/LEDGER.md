@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 16 | 4 | 1 | 5 | 53 |
+| mindmap | 33 | 15 | 4 | 1 | 5 | 52 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 687 | 156 | 3 | 195 | 1396 |
+| all | 553 | 686 | 156 | 3 | 195 | 1395 |
 
 ## graph
 
@@ -441,7 +441,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## mindmap
 
 - [ ] **L355** `mindmap` open, S: Time tree, timeline and fishbone whole-map tidy per add at 200 topics and scope it. From OPEN.md:1383; OPEN.md:2803. Evidence: whiteboard-map.js:6115 still tidies whole map via wbMapTidyBranchScope; no 200-topic timing recorded.
-- [ ] **L356** `mindmap` open, S: Tint monochrome map library schematics and stop the hollow diamond drawing its shaft. From OPEN.md:1110; OPEN.md:2677. Evidence: wbMapThumbSpec still in whiteboard-templates.js/whiteboard-library.js; no tint change found
 - [ ] **L363** `mindmap` open, S: Name a saved Tree/Arc layout on a map as a dock chip when not Force. From OPEN.md:2659. Evidence: Recommendation not built; verified 2026-11-10
 - [ ] **L365** `mindmap` open, M: Make PNG/SVG export draw map topics with levels, shapes, icons, shadow and glow. From OPEN.md:1241; OPEN.md:3488; OPEN.md:2415. Evidence: whiteboard.js:14033 shadow and :14133 glyph/emoji icon handled; levels and shapes in map-node export not confirmed.
 - [ ] **L366** `mindmap` open, M: Give the size stepper words and Classic level sizes S/M/L/XL instead of 17px/22px. From OPEN.md:1114. Evidence: No fix commit found for stepper words; needs a sweep to confirm

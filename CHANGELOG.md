@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map library pictures: a diamond, hexagon, circle or cloud topic is drawn as that shape (a closed polygon the card fill covers) instead of a rounded box, so no connector shaft shows through it (L356); `tests/test_map_templates_k15.py`.
 - Fix: the slash menu's Web link on a line of its own writes `[text](<url>)`, which stays an inline link rather than turning into a Link card (L-mindmap-7, the owner 2026-11-12); `tests/test_weblink_inline_lmm7.py`.
 - Mind map (gap audit): a brainstorm timer, copy and paste a topic's shape, topic templates, a picture from a link (`POST /links/image`, public addresses and images only), Save this branch as Markdown, a second central topic joined by a labelled link (label kept in FreeMind and OPML), and chat's Make a mind map opens with a Keep or Discard bar.
 - Mind map: INBOX 1342 (links attach only top or bottom) checked: radial and free use sides for 7 of 13 lines, tree-right and tree-both 13 of 13; no change.
