@@ -8,6 +8,10 @@ import pytest
 
 from tessellate.ai import help_chat
 
+#: A switch topic reads its preference through deps.get_config(); without a
+#: temp data dir that config is the repo's own data/ folder (conftest guard).
+pytestmark = pytest.mark.usefixtures("app_state")
+
 
 def say(question: str, tab: str | None = None, history: list[dict] | None = None) -> dict:
     return help_chat.offline_answer(question, tab, None, history=history)

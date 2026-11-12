@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: the Guide lead tests run on a temp data dir, so a switch topic no longer writes the repo's data/ folder in a serial run (`tests/test_guide_lead_1110.py`).
 - Docs: the timeline's two waits (the owner's look at the day strip, INBOX 561; date ranges as spans, decision 13) move to BACKLOG "Timeline, parked 2026-11-12"; a reminder's detail line reads "Open." rather than "Not done yet.".
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
