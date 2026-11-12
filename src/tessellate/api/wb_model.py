@@ -628,6 +628,10 @@ class WhiteboardObjectData(BaseModel):
     #: and the words over it. Content, like `note`.
     boundary: str | None = Field(default=None, pattern="^(rounded|dashed|cloud)$")
     boundary_label: str | None = Field(default=None, max_length=80)
+    #: **A boundary round a lasso'd set** (MINDMAP_PLAN 12.2 item 1): the ids of
+    #: the topics it encloses, kept on the first of them beside `boundary`. Absent,
+    #: the boundary is the topic's branch, as before.
+    boundary_set: list[int] | None = Field(default=None, max_length=200)
     #: **A summary of a run of siblings** starting here (decision 20): the
     #: words, and how many siblings the run takes, this topic first.
     summary: str | None = Field(default=None, max_length=80)

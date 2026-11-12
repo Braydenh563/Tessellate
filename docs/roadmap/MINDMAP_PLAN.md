@@ -392,8 +392,8 @@ Closed 2026-10-05 (op5): moved whole to HISTORY.md ("Moved from the plans,
 
 1. **Boundaries** and 2. **Summaries**: built (decisions 19 and 20;
    HISTORY.md, "Moved from the plans, 2026-10-05 (boundaries and
-   summaries)"). A boundary round a lasso'd set that is not one branch is
-   not built.
+   summaries)"). A boundary round a lasso'd set that is not one branch:
+   built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 3. **Relationships**: built (§13c, the cross-link; HISTORY.md, op5's
    §12.1 record).
 4. **Markers and task info**: priority 1 to 5, progress 0 to 100, flags,
@@ -404,7 +404,8 @@ Closed 2026-10-05 (op5): moved whole to HISTORY.md ("Moved from the plans,
    the filter are built (decision 34; HISTORY.md, "Moved from the plans,
    2026-10-05 (markers)"); due dates with a reminder are built (decision
    37; HISTORY.md, "Moved from the plans, 2026-10-05 (due dates, op5)");
-   tags on a topic are open.
+   tags on a topic are built as the `labels` field (HISTORY.md, "Moved from
+   the plans, 2026-11-12 (mindmap-plan)", decision 34 extended).
 5. **Notes on nodes**: a node that is a notebook note shows the note's
    own text here, editable both ways. The text note behind a topic is
    built (decision 18; HISTORY.md, "Moved from the plans, 2026-10-04").
@@ -976,8 +977,9 @@ topic: a control that wide has nowhere to go.
    carries it as `- [ ]` / `- [x]`, the one thing a node wears that Markdown
    has a word for (decision 12's reasoning about that file holds: every
    reader draws those as boxes), and reads it back; OPML and FreeMind carry
-   `_task`. No key: Space is the hand tool's hold. Priority, progress
-   percentages, flags and due dates (the rest of item 4) stay open.
+   `_task`. No key: Space is the hand tool's hold. The rest of item 4 is
+   built (decisions 34 and 37; HISTORY.md, "Moved from the plans,
+   2026-10-05 (markers)" and "(due dates, op5)").
 16. **The board's Insert and Arrange menus stay in the markup** (taken
    2026-10-04, §13f's remainder). Read as dead markup on a map; measured, it
    is the board's own: one top bar serves both kinds and a board uses all 20
@@ -1679,10 +1681,8 @@ whiteboard half of 641's research (beyond stickers).
 Phases 14a to 14e are built (HISTORY.md, "Moved from the plans, 2026-10-05
 (MINDMAP_PLAN §14, mc1)"). Open, from INBOX 641 and §14.2's "not taken now":
 
-- **Linked stickers** (Illustrator's symbols): edit one placed icon or emoji
-  and every copy follows. Needs a `library_ref` that is followed, which
-  decision 25 of WHITEBOARD_PLAN keeps as "kept, never followed".
-- Reaction stamps and voting: on a topic, built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"); on a board card, open.
+- **Linked stickers** (Illustrator's symbols): built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)"). Left open: swapping an icon for another icon everywhere (L-mindmap-14).
+- Reaction stamps and voting: on a topic, built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"); on a board card, built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 - **The whiteboard half of 641's research**, beyond stickers.
 
 ## Placed from the owner's list, 2026-10-10
@@ -1733,7 +1733,7 @@ Zen mode, pitch mode, and every topic act one undo step.
 
 The owner: "make sure all the vendored repositories are made full use of. I want maximum utility." Ranked by the utility to the surface; `scratchpad/vendor_use.py` prints the counts ("available N, called M") and `tests/test_vendor_utilisation.py` ratchets them, so a row that lands raises its floor in the same commit. Each is a lead from a lower-bound count: grep the call site before building (CLAUDE.md section 1).
 
-- **VC12, Harper on node labels** (S, rank 12). The mind map's labels are prose that no checker reads; the worker already exists and takes any string. Measure: a label with a seeded agreement error is flagged and its suggestion applies as one undo step; no lint call on a drag.
+- **VC12, Harper on node labels:** built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 
 ## Placed from Brief 60, 2026-10-10 (the measured census)
 

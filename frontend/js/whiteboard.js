@@ -1959,6 +1959,7 @@ function wbSvgVotes(obj) {
 }
 
 function wbPaintVotes(el, d) {
+  wbMapLazy.paintStamps(el, d);
   const n = d.data?.votes || 0;
   let badge = el.querySelector(":scope > .wb-votes");
   if (!n) {
@@ -9728,6 +9729,7 @@ function wbBuildContextMenu(kind) {
       //: Markers (MINDMAP_PLAN decision 34): priority, progress, a flag, icons.
       sub(wbMapMarkerWords(wbMapMarkerParts(mapNode.data)) ? "Change the markers…" : "Markers…",
         "A priority, how far along it is, a flag and icons", () => wbMapOpenMarkers(mapNode.id));
+      for (const fix of wbMapLazy.grammarFixes(mapNode)) sub(fix.label, fix.title, fix.run);
       const comments = wbItemComments("object", mapNode).length;
       sub(comments ? `Comments (${comments})…` : "Comment…", "A thread on this topic, behind the mark on its corner", () =>
         wbOpenComments("object", mapNode.id)
@@ -9845,6 +9847,9 @@ function wbBuildContextMenu(kind) {
       );
       //: A boundary round the branch (MINDMAP_PLAN decision 19).
       const boundary = mapNode.data?.boundary;
+      if (!boundary && wbMapLazy.boundaryTargets().length > 1) {
+        sub("Draw a boundary round the selected topics", "One shape round just these topics, whichever branches they are on", () => wbMapLazy.boundaryDraw());
+      }
       if (!boundary) {
         sub("Draw a boundary round this branch", "A shaded shape round this topic and everything under it, in the branch colour", () =>
           wbMapSetStructure(mapNode, { boundary: "rounded" }, "Boundary drawn."));
@@ -9855,7 +9860,7 @@ function wbBuildContextMenu(kind) {
         sub(mapNode.data?.boundary_label ? "Change the boundary's label…" : "Label the boundary…", "Words over its top edge", () =>
           wbMapAskStructureWords(mapNode, "boundary_label", "What should the boundary say?", "Label it"));
         sub("Remove the boundary", "The topics stay; Ctrl+Z brings it back", () =>
-          wbMapSetStructure(mapNode, { boundary: null, boundary_label: null }, "Boundary removed."));
+          wbMapSetStructure(mapNode, { boundary: null, boundary_label: null, boundary_set: null }, "Boundary removed."));
       }
       //: A summary beside a run of siblings (decision 20); a root takes none.
       if (!rooted && mapNode.data?.summary) {
@@ -14215,6 +14220,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       parts.push(wbSvgTable(objectEls.get(String(obj.id)), obj));
     }
     if (obj.data?.votes) parts.push(wbSvgVotes(obj));
+    if (obj.data?.stamps) parts.push(wbMapLazy.svgStamps(obj));
     parts.push("</g>");
   };
   for (const e of stack) {

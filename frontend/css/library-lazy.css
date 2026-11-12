@@ -8178,6 +8178,22 @@ input[type="color"].wb-mixed {
   font-variant-numeric: tabular-nums;
   pointer-events: none;
 }
+/* Reaction stamps on a note, card or frame (MINDMAP_PLAN 14.4): the topic's
+   chips, in a row under the item's bottom edge. The accent stands in for the
+   branch colour a topic supplies. */
+.wb-stamps {
+  --wb-branch: var(--accent);
+  --wb-branch-edge: var(--accent);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  font-size: var(--text-base);
+}
 .wb-timer-bar {
   left: 50%;
   top: var(--space-5);
