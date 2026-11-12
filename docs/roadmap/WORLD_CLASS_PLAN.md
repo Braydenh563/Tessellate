@@ -3037,7 +3037,7 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
 
 ## Placed from Brief 40, 2026-10-10 (the phone over HTTPS)
 
-Built; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (Brief 40, the phone over HTTPS)". Left: a QR code to a `/lan/trust` page, a plain-http-on-purpose option (plain http redirects to https instead), and a failed-TLS-handshake count in Settings (`lanserve.py:302` drops them uncounted).
+Built; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (Brief 40, the phone over HTTPS)" and "(Brief 40 leftovers)".
 
 ## 24. Codebase census, 2026-10-10
 

@@ -141,6 +141,8 @@ def load(data_dir: Path) -> dict:
         # Only a literal True opens anything; only a literal False stops asking.
         "any_network": raw.get("any_network") is True,
         "ask_new_devices": raw.get("ask_new_devices") is not False,
+        #: Brief 40: the app over plain http on this network, off unless a literal True.
+        "plain_http": raw.get("plain_http") is True,
         "untrusted": untrusted[:MAX_NETWORKS],
         "turned_on": when("turned_on"),
         "last_used": when("last_used"),
@@ -547,7 +549,7 @@ def touch_version() -> None:
 
 
 def set_flag(data_dir: Path, name: str, value: bool) -> None:
-    if name not in ("any_network", "ask_new_devices"):
+    if name not in ("any_network", "ask_new_devices", "plain_http"):
         raise ValueError(name)
     with _lock:
         state = load(data_dir)

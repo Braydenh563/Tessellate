@@ -7,6 +7,27 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (Brief 40 leftovers)
+
+- **A QR code to `/lan/trust`.** `lanserve.trust_response` answers a plain-http
+  GET of `/lan/trust` (guide, fingerprint, link) and `/lan/trust/ca.crt` (the
+  public authority certificate) for a Host naming this computer, only while
+  `POST /auth/lan-trust-page` (this computer, 15 minutes) has opened the
+  window; otherwise the redirect answers. Settings, Other devices has "Phone
+  setup QR code" beside the address's own QR button, drawn by the existing
+  `/privacy/lan-qr.svg` (which now also accepts `netbind.trust_urls`).
+- **A failed-handshake count.** `lanserve._route` counts a TLS handshake that
+  fails (`handshake_failures()`); Settings says "N secure connections refused
+  by a device since the app started". `test_a_handshake_a_client_refuses_is_counted`
+  drives a real client that distrusts the certificate: 0 to 1.
+- **The plain-http option.** Brief 40's text (fix shape 3) asks for it, so it
+  is built: `plain_http` in the trust file (off unless a literal True, the
+  looser direction, so this computer and the password); on, a plain first byte
+  goes to uvicorn's protocol without TLS (`test_plain_http_serves_the_app_when_it_is_on`:
+  200 `http /notes`; off: 301). The switch's line says anyone on the Wi-Fi can
+  read the password. Not built: the Windows firewall rule (fix shape 5, already
+  the printed `netsh` line). Not verified: a real phone.
+
 ## Moved from the plans, 2026-11-12 (section 20, the dock model pill)
 
 - **A model pill in the writing desk's and the documents assistant's dock**
