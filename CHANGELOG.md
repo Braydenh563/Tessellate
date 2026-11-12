@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Code: the graph's document and entity layer queries moved into repo/documents.py and repo/graph_layers.py (router ORM calls 707 to under the cap).
 - Docs: GRAPH_PLAN's last lines that only read as open are reworded; the open-work scanner skips a reminder's default "Follow up:" text.
 - Graph: Play on the time slider is off, and says why, when every note shares one date; the Map of meaning layout has its line under the map.
 - Notes: on card view the last card you clicked counts as the open note, so search ranks its linked notes higher.

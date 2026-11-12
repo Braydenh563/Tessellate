@@ -31,10 +31,7 @@ from tessellate.core import cjk, companion_events
 from tessellate.core import deps
 from tessellate.core.database import (
     Attachment,
-    Document,
-    DocumentLink,
     EmbeddingRecord,
-    EntityMention,
     Entry,
     NoteType,
 )
@@ -44,6 +41,7 @@ from tessellate.entry import manager_wiki
 from tessellate.entry import manager_links
 from tessellate.entry import manager_text
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import graph_layers
 from tessellate.repo import properties as properties_repo
 from tessellate.repo import categories as categories_repo
 from tessellate.repo import relation_types
@@ -314,17 +312,8 @@ def _note_vectors(session: Session, backend: str) -> dict:
     """The stored vectors of the notes a similarity line means something for:
     live, not a draft, not a board. A private note has none (`store_for_entry`
     never writes one), so nothing sealed reaches a sweep from here."""
-    wanted = set(
-        session.scalars(
-            select(Entry.id).where(
-                Entry.is_deleted == False,  # noqa: E712
-                Entry.is_draft == False,  # noqa: E712
-                Entry.is_board == False,  # noqa: E712
-                Entry.is_private == False,  # noqa: E712
-            )
-        )
-    )
-    records = session.scalars(select(EmbeddingRecord).where(EmbeddingRecord.model_version == backend))
+    wanted = graph_layers.vector_note_ids(session)
+    records = graph_layers.vectors_for(session, backend)
     return {r.entry_id: bytes_to_vector(r.embedding) for r in records if r.entry_id in wanted}
 
 
@@ -335,15 +324,10 @@ def _layer_members(session: Session, documents: bool, entities: bool) -> dict[st
     gets no similarity line."""
     members: dict[str, set[int]] = {}
     if documents:
-        query = (
-            select(DocumentLink.document_id, DocumentLink.entry_id)
-            .join(Document, Document.id == DocumentLink.document_id)
-            .where(Document.archived_at.is_(None), Document.deleted_at.is_(None), Document.is_private == False)  # noqa: E712
-        )
-        for document_id, entry_id in session.execute(query):
+        for document_id, entry_id in documents_repo.open_link_pairs(session):
             members.setdefault(f"document:{document_id}", set()).add(entry_id)
     if entities:
-        for entity_id, entry_id in session.execute(select(EntityMention.entity_id, EntityMention.entry_id)):
+        for entity_id, entry_id in graph_layers.mention_pairs(session):
             members.setdefault(f"entity:{entity_id}", set()).add(entry_id)
     return members
 
@@ -398,18 +382,9 @@ def _layer_fingerprint(session: Session, documents: bool, entities: bool) -> tup
     attach, a detach, an archive or a new mention must show here."""
     key: tuple = ()
     if documents:
-        key += (
-            session.scalar(select(func.count(DocumentLink.id))) or 0,
-            session.scalar(select(func.max(DocumentLink.created_at))),
-            session.scalar(select(func.count(Document.id)).where(Document.archived_at.is_(None), Document.deleted_at.is_(None))) or 0,
-            session.scalar(select(func.max(Document.updated_at))),
-        )
+        key += documents_repo.link_fingerprint(session)
     if entities:
-        key += (
-            session.scalar(select(func.count(EntityMention.id))) or 0,
-            session.scalar(select(func.max(EntityMention.id))),
-            session.scalar(select(func.sum(EntityMention.id))),
-        )
+        key += graph_layers.mention_fingerprint(session)
     return key
 
 
@@ -1988,7 +1963,7 @@ def _path_similarity(session: Session, similarity: bool, documents: bool = False
     """The "read alike" edges a route may hop along, only when asked for."""
     if not similarity or deps.get_config().get_preference("battery_efficient_mode"):
         return []
-    node_ids = set(session.scalars(select(Entry.id).where(Entry.is_deleted == False)))  # noqa: E712
+    node_ids = graph_layers.live_note_ids(session)
     return _similarity_edges(session, node_ids, set()) + _layer_similarity_edges(session, documents, entities)
 
 
@@ -2005,16 +1980,13 @@ def _node_key(raw: str) -> int | str:
 
 def _extra_path_nodes(session: Session, index: paths.Connections, wanted: list) -> dict[str, dict]:
     """The document and entity stops on a route, in the shape of `_path_node`."""
-    from tessellate.core.database import Entity
-
     found: dict[str, dict] = {}
     for node in wanted:
         kind = index.extra.get(node)
         if kind is None:
             continue
         number = int(node.partition(":")[2])
-        row = session.get(Document if kind == "document" else Entity, number)
-        label = (row.title if kind == "document" else row.name) if row is not None else ""
+        label = documents_repo.any_title(session, number) if kind == "document" else graph_layers.entity_name(session, number)
         found[node] = {
             "id": node,
             "type": kind,
