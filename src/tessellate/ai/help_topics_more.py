@@ -1652,7 +1652,9 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "Settings, About, Install as an app gives Tessellate its own window "
             "and icon, and adds it to your phone's share sheet, so a page or a "
-            "selection shared to it lands in Capture. The button appears only "
+            "selection shared to it lands in Capture, and so does a picture or a "
+            "file shared from the camera roll or another app, staged to be "
+            "saved with the note. The button appears only "
             "when your browser offers the install and the app is not installed "
             "yet; on an iPhone, tap Share, then Add to Home Screen. It is the "
             "same app, still served by the copy running on this computer. When "

@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
-| ui-modernisation | 96 | 109 | 4 | 0 | 17 | 209 |
+| ui-modernisation | 96 | 108 | 4 | 0 | 17 | 208 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 699 | 157 | 3 | 195 | 1409 |
+| all | 553 | 698 | 157 | 3 | 195 | 1408 |
 
 ## graph
 
@@ -578,7 +578,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-4** `ui-modernisation` open, S: Shorten the lock setup note and rename its button. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:32. Evidence: index.html:346 #lock-setup-note is still 58 words and app.js:723 still reads "Set password & start"; there is no LEDGER row or plan item for it
 - [ ] **L-ui-modernisation-5** `ui-modernisation` open, S: Keep the welcome footer buttons on one row at 390 px. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:36. Evidence: no change to the welcome slide footer layout at narrow width was found and nothing tracks it
 - [ ] **L-ui-modernisation-6** `ui-modernisation` open, S: Quiet the Activity count beside Everything 0 on a new Library. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:37. Evidence: library.js:419 and 580 still count the Activity chip separately from Everything; no tracking row
-- [ ] **L-ui-modernisation-7** `ui-modernisation` open, M: Add a POST share target so a phone can share an image file in. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:556. Evidence: Open line in the plan's prose a session could miss. An 'Open' sentence inside a 'built, moved to HISTORY' pointer line. It is not in the brief or LEDGER.
 - [ ] **L-ui-modernisation-10** `ui-modernisation` open, M: Draw the missing desk frames: hang by feet, sloth, chair, lean, tail-curl pot. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. compalive-1109.md (git history) still lists missing desk frames with no LEDGER row: hang_by_feet, sloth, chair, lean, back_float, the pot in the tail curl, and a card box for the card nap. dangle and kick were built in W31.
 - [ ] **L-ui-modernisation-11** `ui-modernisation` open, S: Bring desk note and search reactions to app parity: glasses, shy hands, bubble. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. The events feed is built, but compalive-1109 says the desk reactions fall short of the app: no reading glasses, no hands over the eyes, no remark bubble. There is no row.
 - [ ] **L-ui-modernisation-12** `ui-modernisation` open, S: Close the px spacing-literal escape in test_style_scale. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1004. Evidence: Open line in the plan's prose a session could miss. A 13.1 table judgement with no numbered decision, so the 13a list does not carry it.

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Phones: a picture or file shared to the installed app (the camera roll, another app) now lands in Capture with the note, staged as a paste would be; the share target is the POST form, taken by the service worker, with the files kept in their own cache until the notebook is unlocked (L-ui-modernisation-7).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
 - Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.
