@@ -13542,7 +13542,10 @@ function wbSvgText(lines, x, y, { fontSize = 13, fill = "#1f2430", lineHeight, f
   const tspans = lines
     .map((l, i) => `<tspan x="${x}" dy="${i === 0 ? 0 : dy}">${wbSvgEscape(l)}</tspan>`)
     .join("");
-  return `<text x="${x}" y="${y}" font-family="${wbSvgEscape(fontFamily)}" font-size="${fontSize}"${fontWeight && fontWeight !== "400" && fontWeight !== "normal" ? ` font-weight="${wbSvgEscape(String(fontWeight))}"` : ""}${fontStyle === "italic" ? ` font-style="italic"` : ""} fill="${fill}">${tspans}</text>`;
+  return `<text x="${x}" y="${y}" font-family="${wbSvgEscape(fontFamily)}" font-size="${fontSize}"${Object.entries({
+    "font-weight": fontWeight && fontWeight !== "400" && fontWeight !== "normal" ? String(fontWeight) : "",
+    "font-style": fontStyle === "italic" ? "italic" : "",
+  }).filter(([, v]) => v).map(([k, v]) => ` ${k}="${wbSvgEscape(v)}"`).join("")} fill="${fill}">${tspans}</text>`;
 }
 
 
