@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 68 | 4 | 0 | 17 | 168 |
+| ui-modernisation | 96 | 66 | 4 | 0 | 17 | 166 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 13 | 0 | 0 | 0 | 13 |
-| all | 553 | 640 | 158 | 3 | 191 | 1351 |
+| all | 553 | 638 | 158 | 3 | 191 | 1349 |
 
 ## graph
 
@@ -488,10 +488,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L385** `ui-modernisation` open, S: Give #chat-results second half a head with actions or drop the panel-head. From OPEN.md:953. Evidence: No change found; index.html:2339 #chat-results head unchanged; no-op until a head wants a control
 - [ ] **L386** `ui-modernisation` open, S: Share one recipe between web link cards in chat/web reader and markdown.js linkCard. From OPEN.md:988. Evidence: markdown.js linkCard still separate; no recipe lint found in test_ui_recipes
 - [ ] **L388** `ui-modernisation` open, S: Stop the topic bar wrapping to two rows at 390. From OPEN.md:1952. Evidence: Measured identical on base; no fix
-- [ ] **L389** `ui-modernisation` open, S: Isolate and fix .skill-fact-reads chip dy +4px at 1440. From OPEN.md:3471. Evidence: Instance not isolated; no fix commit found.
 - [ ] **L390** `ui-modernisation` open, S: Measure 390 px layout of Tidy Patterns rows and Chat pattern line. From OPEN.md:3730. Evidence: Never measured at 390; no recorded sweep
 - [ ] **L392** `ui-modernisation` open, S: Measure broom accent contrast and run the automatic contrast pass in a browser; check Tags Atlas review with a real model. From OPEN.md:624; OPEN.md:3562. Evidence: contrast.js measurement and browser run not recorded; pytest only
-- [ ] **L393** `ui-modernisation` open, S: Fix phone collapsed row buttons overflowing the right edge by 87.8px. From OPEN.md:744; OPEN.md:3549. Evidence: Measured, unchanged per row; no fix commit found
 - [ ] **L395** `ui-modernisation` open, S: Fix select-btn and notes-filter-menu dock-word clipping at 320-1024. From OPEN.md:1837. Evidence: No CSS rule for these selectors found by grep
 - [ ] **L400** `ui-modernisation` open, S: Flatten Library > Contents > Probe document > Outline from depth 4. From OPEN.md:3706. Evidence: One destination at depth 4; no flattening commit found
 - [ ] **L402** `ui-modernisation` open, S: Redesign code document dock at 390 (238px, four rows). From OPEN.md:1454; OPEN.md:2616. Evidence: Measurement; no redesign found in HISTORY
