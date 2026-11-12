@@ -199,6 +199,10 @@ _FEEL = re.compile(
     rf"^(?:i(?:'m| am|'ve been| have been| feel| felt| am feeling|'m feeling| feel so| feel really| keep feeling)|im|feeling|i just feel|i think i'm)\s+(?:(?:so|really|very|quite|a bit|a little|kind of|kinda|just|pretty|totally|super) )*"
     rf"(?:feeling )?(?P<what>{_FEELING_WORDS})(?: [a-z]+)?(?: (?:about|with|over|because of|from) (?:the |my |our |this |that )?(?P<about>[a-z][a-z' ]{{1,30}}?))?{_END}"
 )
+_UNHELPFUL = re.compile(
+    rf"^(?:(?:well|honestly|ok|okay|so|hmm+|ugh|but) )*(?:you(?:'re| are| were|'ve been)|that(?:'s| is| was)|this(?:'s| is)|the (?:answer|reply|help)(?:'s| is| was))\s+(?:(?:really|just|so|very|too|all that|that|quite|being) )*"
+    rf"(?:not (?:(?:very|that|so|all that|really|at all|much) )*(?:helpful|useful|any help|much help|any use)(?: at all)?|unhelpful|no help|no use|not helping|of no help|not much help){_END}"
+)
 _CANT = re.compile(rf"^i (?:can't|cannot|can not|couldn't|could not) (?:seem to )?(?:focus|concentrate|sleep|cope|relax|switch off|stop worrying|get going|get started)(?: [a-z]+)?{_END}")
 
 _HOW_LINES = [
@@ -234,6 +238,11 @@ _CANT_LINES = [
     "Some days are like that. Want me to pull out just one thing from your notes to start with?",
     "I am sorry, that is hard. We can keep it to a single task and leave the rest.",
 ]
+_UNHELPFUL_LINES = [
+    "Fair, that did not help. Tell me what you were after, in any words, and I will look again.",
+    "Sorry that missed. Name the note, the date or the thing you want and I will start there.",
+    "Point taken. Say it another way, or ask for one note by its title, and I will have another go.",
+]
 _MISS_LINES = [
     "Missing someone is hard. I can pull up what you have written about {who} if that would help.",
     "That is a real feeling, and a kind one. Shall I show what your notes say about {who}?",
@@ -260,6 +269,8 @@ def _remark(said: str, history: list[dict] | None, seed: str) -> str | None:
         return _lead(_THANKS_LINES, said, history, seed)
     if _LOVE.match(said):
         return _lead(_LOVE_LINES, said, history, seed)
+    if _UNHELPFUL.match(said):
+        return _lead(_UNHELPFUL_LINES, said, history, seed)
     missed = _MISS.match(said)
     if missed:
         return _lead(_MISS_LINES, said, history, seed).format(who=missed.group("who").title())
