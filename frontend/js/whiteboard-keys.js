@@ -125,13 +125,57 @@
 
   //: True when the key is for the canvas: a board is open (not a map, whose Home and Delete walk the tree),
   //: no field is being typed in and no list, tab row or menu has the focus (they take Home themselves).
-  function forCanvas(e) {
+  function forCanvas(e, mapToo = false) {
     const view = document.getElementById("library-view-whiteboard");
-    if (!view || view.classList.contains("hidden") || wbIsMap()) return false;
+    if (!view || view.classList.contains("hidden") || (wbIsMap() && !mapToo)) return false;
     const active = document.activeElement;
     const tag = (active?.tagName || "").toLowerCase();
     if (active && (tag === "input" || tag === "textarea" || tag === "select" || active.isContentEditable) && active.offsetParent !== null) return false;
     return !e.target?.closest?.("[role=tablist], [role=listbox], [role=menu], [role=grid], [role=dialog], dialog");
+  }
+
+  //: **The keys draw.io has that the board lacked** (WHITEBOARD_PLAN section 11, 2026-11-12). Each command's
+  //: own `keys` in `WB_COMMANDS` is the chord, so the palette, the menus and this reader never disagree; a
+  //: second chord for a command (`ALSO`) is listed on the help sheet. Taken in the capture phase, so the app's
+  //: Ctrl+Shift+A (ask the agent), E (selection actions), R (record) and Y (companion) step aside while a board
+  //: has the keys, as Ctrl+Shift+G already does. A key with a meaning of its own when it would do nothing
+  //: (Ctrl+R reloads, Ctrl+Shift+Plus zooms) goes on to that meaning unless the command applies.
+  const BOUND = ["edit-data", "select-shapes", "select-connectors", "select-none", "turn-90", "auto-size", "clear-default-style",
+    "copy-image", "copy-svg", "copy-size", "paste-size", "copy-data", "paste-data", "clear-waypoints", "enter-group", "font-bigger", "font-smaller"];
+  const ALSO = { ungroup: "Ctrl+Shift+U", "leave-group": "Ctrl+Shift+Home" };
+  const PASS_WHEN_IDLE = new Set(["turn-90", "auto-size", "select-none", "font-bigger", "font-smaller", "enter-group", "leave-group", "ungroup"]);
+  //: Words in a chord that name a key's code: the rest is a letter.
+  const CODES = { Plus: ["Equal", "NumpadAdd"], Minus: ["Minus", "NumpadSubtract"], Home: ["Home"], End: ["End"] };
+
+  function chordMatches(e, chord) {
+    const parts = chord.split("+");
+    const key = parts.pop();
+    const mods = new Set(parts);
+    if (Boolean(e.ctrlKey || e.metaKey) !== mods.has("Ctrl") || Boolean(e.altKey) !== mods.has("Alt") || Boolean(e.shiftKey) !== mods.has("Shift")) return false;
+    if (CODES[key]) return CODES[key].includes(e.code);
+    return e.code ? e.code === `Key${key}` : e.key.toLowerCase() === key.toLowerCase();
+  }
+
+  //: The command id this keydown is for, or "".
+  function commandFor(e) {
+    if (!e.code && !e.key) return "";
+    const ids = [...BOUND, ...Object.keys(ALSO)];
+    for (const id of ids) {
+      const chord = ALSO[id] || WB_COMMAND_BY_ID.get(id)?.keys;
+      if (chord && chordMatches(e, chord)) return id;
+    }
+    return "";
+  }
+
+  function boardKey(e) {
+    const id = commandFor(e);
+    const command = id && WB_COMMAND_BY_ID.get(id);
+    if (!command || !forCanvas(e, command.surface === "both") || !wbBoardHasFocus()) return false;
+    if (PASS_WHEN_IDLE.has(id) && !wbCommandApplies(command)) return false;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    wbRunCommand(id);
+    return true;
   }
 
   function onKey(e) {
@@ -142,6 +186,7 @@
       repeat();
       return;
     }
+    if ((e.ctrlKey || e.metaKey || e.altKey) && boardKey(e)) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const home = e.key === "Home";
     const clear = e.key === "Delete" && e.shiftKey;
@@ -154,5 +199,5 @@
   }
   window.addEventListener("keydown", onKey, true);
 
-  wbFmtState.keys = { viewAt, home: () => go(false), reset: () => go(true), clearLabels, onKey, record, recordDrag: (primary) => record(dragDelta(primary)), repeat, describe, canRepeat: () => Boolean(last) };
+  wbFmtState.keys = { viewAt, home: () => go(false), reset: () => go(true), clearLabels, onKey, record, recordDrag: (primary) => record(dragDelta(primary)), repeat, describe, commandFor, canRepeat: () => Boolean(last) };
 })();

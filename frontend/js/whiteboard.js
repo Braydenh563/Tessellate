@@ -5791,7 +5791,24 @@ function wbSizeItemTo(entry, dim, target, factor, rows) {
 //: of its own grows or shrinks by `dw` or `dh`, never under the smallest a
 //: grip allows, through `wbSizeItemTo` so it undoes as a move does.
 async function wbResizeSelectionBy(dw, dh) {
+  //: One press at a time: a held key's repeats arrive faster than the save, and each reads the size the last left.
+  const prior = wbBoardState.resizeChain || Promise.resolve();
+  let release = null;
+  wbBoardState.resizeChain = new Promise((resolve) => { release = resolve; });
+  await prior;
+  try {
+    await wbBoardState.resizeOnce(dw, dh);
+  } finally {
+    release();
+  }
+}
+
+//: The one press, as an object method so the page's global names stay as they were.
+wbBoardState.resizeOnce = async function wbResizeOnce(dw, dh) {
   const dim = dw ? "width" : "height";
+  const box = wbFmtBox(wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item)));
+  const along = box && (dw ? box.maxX - box.minX : box.maxY - box.minY);
+  if (along > 0) wbFmtState.keys?.record({ kind: "scale", axis: dw ? "w" : "h", factor: Math.max(8, along + (dw || dh)) / along });
   const delta = dw || dh;
   const pushed = [];
   const rows = [];
@@ -5805,9 +5822,21 @@ async function wbResizeSelectionBy(dw, dh) {
     const done = wbSizeItemTo(e, dim, target, target / from, rows);
     if (done) pushed.push(done);
   }
-  await wbCommitMoves(rows, pushed);
+  //: **One Undo step for a burst of presses** (as the nudge): a press within the burst window on the same
+  //: selection saves its rows and leaves the first press's entry, which holds the sizes from before the burst.
+  const key = pushed.map((p) => `${p.kind}:${p.id}`).sort().join(",");
+  const burst = wbBoardState.resizeBurst;
+  const joining = burst && burst.key === key && Date.now() - burst.at < WB_NUDGE_BURST_MS
+    && wbUndoStack[wbUndoStack.length - 1] === burst.entry;
+  if (joining) {
+    burst.at = Date.now();
+    await wbSaveMany(rows);
+  } else if (await wbSaveMany(rows) && pushed.length) {
+    wbPushMoveBatch(pushed);
+    wbBoardState.resizeBurst = { key, at: Date.now(), entry: wbUndoStack[wbUndoStack.length - 1] };
+  }
   wbScheduleRender();
-}
+};
 
 // Extract notes (BACKLOG.md §62): the selected note cards' own content IS
 // the "notes-in-context", their combined text is what gets split, and each
@@ -5885,6 +5914,8 @@ function wbOwnsChord(e) {
   if (!e.ctrlKey && !e.metaKey && !e.altKey && ["m", "t"].includes(e.key.toLowerCase())) {
     return !wbIsMap();
   }
+  //: "/" is the Library search on a board; the app's "/" would jump to the notes search and leave the board.
+  if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) return true;
   //: Ctrl+Shift+G is Ungroup here (agent mode in the app); Ctrl+Shift+P is
   //: the Format panel here (clip a note in the app, decision 19).
   //: And Ctrl+Shift+V is Paste in place while the board holds a copy.
@@ -17566,10 +17597,10 @@ async function initWhiteboard() {
       wbToggleNavigator();
       return;
     }
-    // "/" is the other find idiom, and costs nothing to support.
+    //: "/" goes to the Library search (draw.io's sidebar search); Ctrl+F is the board's find.
     if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
-      wbOpenBoardSearch();
+      wbOpenSidebar("library");
       return;
     }
     if (e.code === "Space") {
@@ -17880,15 +17911,14 @@ async function initWhiteboard() {
       wbMindMapAddChild(wbSelectedItem.id);
       return;
     }
-    if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && !wbIsMap() && wbKeyboardEnter()) {
+    //: F2 starts editing like Enter (draw.io's second key); a map topic's Enter and F2 differ below.
+    const editKey = (e.key === "Enter" || e.key === "F2") && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey;
+    if (editKey && !wbIsMap() && wbKeyboardEnter()) {
       e.preventDefault();
       return;
     }
     //: Enter on one selected shape types into it (decision 12; tldraw's key).
-    if (
-      e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey
-      && wbSelectedItem?.kind === "sketch" && wbMultiSelection.size <= 1
-    ) {
+    if (editKey && wbSelectedItem?.kind === "sketch" && wbMultiSelection.size <= 1) {
       const sketch = (wbState.sketches || []).find((s) => s.id === wbSelectedItem.id);
       if (sketch && wbShapeLabelKind(wbSketchParsedData(sketch))) {
         e.preventDefault();
@@ -17913,14 +17943,14 @@ async function initWhiteboard() {
       wbMindMapAddSibling(wbSelectedItem.id);
       return;
     }
-    //: **Ctrl+Shift+arrows resize** (draw.io's keys): right and down grow,
-    //: left and up shrink, by a grid cell with snap on, else 10, from the
-    //: top-left corner; one Undo per press.
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey && !wbIsMap()
+    //: **Ctrl+arrows resize** (draw.io's keys): right and down grow, left and
+    //: up shrink, from the top-left corner. Ctrl alone is 1 px; with Shift a
+    //: grid cell with snap on, else 10. A burst of presses is one Undo step.
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !wbIsMap()
       && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)
       && (wbSelectedItem || wbMultiSelection.size > 0)) {
       e.preventDefault();
-      const step = wbSnapOn() ? WB_GRID_SPACING : 10;
+      const step = e.shiftKey ? (wbSnapOn() ? WB_GRID_SPACING : 10) : 1;
       const dw = e.key === "ArrowRight" ? step : e.key === "ArrowLeft" ? -step : 0;
       const dh = e.key === "ArrowDown" ? step : e.key === "ArrowUp" ? -step : 0;
       wbResizeSelectionBy(dw, dh);

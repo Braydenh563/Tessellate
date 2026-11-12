@@ -45,6 +45,7 @@ const wbSketchSetProps = (s, patch) => { log.saved.push([s.id, Object.keys(patch
 const wbSaveMany = async () => true;
 const wbRecordGesture = async (run) => { log.gestures += 1; await run(); };
 const wbScheduleRender = () => { log.rendered += 1; };
+const WB_COMMAND_BY_ID = new Map();
 const wbFmtState = {};
 %(src)s
 const inList = %(in_list)s;

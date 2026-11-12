@@ -853,7 +853,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Turn 90 degrees | yes, 2026-10-18 (whiteboard-1018; HISTORY), no Ctrl+R (the browser's reload) | `turn` action (Ctrl+R) | a command that adds 90 to `rotation` | S |
 | Align (six), distribute (two) | yes (eight commands) | `addAlign` (Format.js 2575), `addDistribute` (2856) | done | none |
 | Arrow shape geometry (width of a block arrow connector) | no | `addArrowGeometry` (Format.js 3972) | needs the `flexArrow` connector shape, section 4 | M |
-| Edit data, copy and paste data, edit tooltip, note, link, open link | edit data yes (`edit-data`, whiteboard-commands.js:253), tooltip and links yes; copy data and paste data (Alt+Shift+B, V) absent | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | two commands that copy and paste `data.props` | S |
+| Edit data, edit tooltip, note, link, open link | edit data yes (`edit-data`, Ctrl+M), tooltip and links yes; copy and paste data built 2026-11-12 (`wbFmtState.dataKeys`, whiteboard-format.js, Alt+Shift+B, E) | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | note and link keys remain | S |
 
 ### 3. Edit style, Edit data, placeholders, tooltips
 
@@ -1013,44 +1013,31 @@ clash is listed so the choice is made once.
 | Delete, Backspace | delete | Del | Backspace: add on the board only |
 | Ctrl+D | duplicate | Ctrl+D | same |
 | Ctrl+A | select all | same | |
-| Ctrl+Shift+I | select vertices | none, 2026-10-18: a command without the key (whiteboard-1018) | one command, "Select all shapes" |
-| Ctrl+Shift+E | select edges | none, 2026-10-18: a command without the key (whiteboard-1018) | one command, "Select all connectors" |
-| Ctrl+Shift+A | select none | none | Esc deselects |
-| Ctrl+G, Ctrl+Shift+U | group, ungroup | Ctrl+G, Ctrl+Shift+G | differs on ungroup; keep ours, accept both |
+| Ctrl+G, Ctrl+Shift+U | group, ungroup | Ctrl+G, Ctrl+Shift+G, Ctrl+Shift+U | both ungroup keys built 2026-11-12 |
 | Ctrl+L | lock | Ctrl+Shift+L | differs (ours is the lint-held key) |
 | Ctrl+Shift+F, Ctrl+Shift+B | to front, to back | Ctrl+], Ctrl+[ | keep ours; accept both |
 | Ctrl+B, Ctrl+I, Ctrl+U | bold, italic, underline | bold and italic only on text | underline with section 2 |
-| Ctrl+M | edit data | none (Ctrl+E edit style is built, whiteboard-commands.js:142) | Ctrl+M is free; bare M is the highlighter |
-| Ctrl+M | edit data | none | section 3 |
 | Ctrl+Shift+M | edit geometry | the Format panel (Ctrl+Shift+P) | |
 | Ctrl+Shift+P | format panel | same | |
 | Ctrl+Shift+L | layers panel | lock (clash) | the layers panel opens from the side tab and keeps no key |
 | Ctrl+Shift+O | outline | Shift+N | differs |
 | Ctrl+Shift+D | set as default style | none | section 1 |
-| Ctrl+Shift+R | clear default style | command `clear-default-style` exists (whiteboard-commands.js:144), no key | S |
-| Ctrl+R | turn 90 degrees | none, 2026-10-18: a command without the key (whiteboard-1018) | S |
-| Ctrl+Shift+Y | autosize | none, 2026-10-18: a command without the key (whiteboard-1018) | S |
 | Ctrl+Shift+G | grid on and off | ungroup (clash) | grid stays on the View menu |
 | Ctrl+F | find and replace | find only | section 9 |
-| Ctrl+K | tags | none | |
+| Ctrl+K | tags | none | skipped: Ctrl+K is the app's command palette; the tags batch picks the key |
 | Ctrl+Shift+K | toggle shape sidebar | none | |
 | Ctrl+Shift+H | fit window | Shift+1 | differs |
 | Ctrl+J, Ctrl+Shift+J | fit page, fit two pages | none | with page frames |
 | Ctrl+0 | custom zoom | 100 percent | differs |
 | Ctrl+plus, Ctrl+minus | zoom in, out | Ctrl+=, Ctrl+- | same |
 | Ctrl+Home, Ctrl+End | collapse, expand | none | with collapse |
-| Ctrl+Shift+Home, Ctrl+Shift+End | exit group, enter group | none | with enter group |
-| Ctrl+Shift+Plus, Ctrl+Shift+Minus, Ctrl+{ , Ctrl+} | font size up, down | none | section 2 |
-| Ctrl+., Ctrl+, | superscript, subscript | none | |
-| Enter, F2 | start editing the selection | Enter | add F2 |
-| Arrow keys, Shift+arrow, Ctrl+arrow | move 1 px, move by the grid size, resize (`nudge`, EditorUi.js 8249) | arrows 1 px, Shift 10 px | add Ctrl+arrow resize |
+| Ctrl+{ , Ctrl+} | font size up, down (a second pair) | none | skipped: Ctrl+Shift+Plus and Ctrl+Shift+Minus do it (built 2026-11-12) |
+| Ctrl+., Ctrl+, | superscript, subscript | none | skipped: Ctrl+. stops an answer and Ctrl+, opens settings in the app; with the text batch |
+| Arrow keys, Shift+arrow, Ctrl+arrow | move 1 px, move by the grid size, resize (`nudge`, EditorUi.js 8249) | arrows 1 px, Shift 10 px, Ctrl 1 px resize, Ctrl+Shift a cell or 10 | same; resize built 2026-11-12 |
 | Alt+Shift+arrow | clone and connect (`connectVertex`) | Alt+Shift+Arrow | same |
-| Alt+Shift+R, L, T, N | clear waypoints, edit link, edit tooltip, edit note (`altShiftActions`, EditorUi.js 8129) | none | with sections 3 and 4 |
-| Alt+Shift+F, V, B, E | copy size, paste size, copy data, paste data | copy-size and paste-size commands exist without keys; copy and paste data absent | S each |
+| Alt+Shift+L, T, N | edit link, edit tooltip, edit note (`altShiftActions`, EditorUi.js 8129) | none | with sections 3 and 4 (Alt+Shift+R, clear waypoints, built 2026-11-12) |
 | Alt+Shift+A, O, Q | connection arrows, connection points, edit connection points | none | with section 5 |
 | Ctrl+Alt+Shift+F, B | bring forward, send backward | ] and [ | differs |
-| Ctrl+Alt+X, Ctrl+Alt+Shift+X | copy as image, as SVG | commands `copy-image` and `copy-svg` exist (whiteboard-commands.js:314), no keys | S |
-| / | focus the sidebar search (`geOmniSearch`) | Ctrl+F finds on the board | the Library search could take / |
 | Tab, Shift+Tab | next and previous cell | map topics only | S: cycle through items in z order on a board |
 | Ctrl+Shift+6 | adaptive colours | none | drop |
 | A, S, D, F, L, R, C, X (draw.io's one-letter inserts) | text, note, rectangle, ellipse, link, rhombus, connector, freehand | N sticky, T text, R rect, O circle, D diamond, C connector, L line, A arrow, P pen | clash by design: ours stay (decision 8) |
