@@ -10057,7 +10057,7 @@ function wbBuildContextMenu(kind) {
   }
   //: Into the library's "Yours" (decision 25): the rows the table says apply.
   subItem("Library", (sub) => {
-    for (const id of ["save-selection", "update-from-library", "unlink-library", "save-branch", "save-shape", "save-style", "save-preset", "save-palette"]) {
+    for (const id of ["save-selection", "save-branch", "save-shape", "save-style", "save-preset", "save-palette"]) {
       const row = wbCommandMenuRow(id);
       if (row) sub(...row);
     }
@@ -25723,8 +25723,6 @@ async function openWhiteboardBoard(boardId, opts = null) {
   wbScheduleRender();
   await wbMigrateBackground();
   wbApplyBackground();
-  //: Linked library copies whose source changed since the board was last open are brought up to date (library-more.js).
-  wbFmtState.libraryMore?.copies.refresh();
   renderWbGestureHints();
   //: Rendered now rather than on the next frame, because the framing below
   //: measures the nodes it is about to fit (a map node is `height: auto`, so

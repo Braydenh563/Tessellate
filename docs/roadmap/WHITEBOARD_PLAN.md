@@ -911,9 +911,12 @@ whiteboard-library.js 400). draw.io: `Sidebar.prototype.addStencilPalette`
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | JS-drawn shape classes (cylinder, cube, callout, step, hexagon, UML actor and lifeline, folder, note, tape, document, process...) | no | `Shapes.js`: 99 `mxCellRenderer.registerShape` classes (for example `cylinder3` at Shapes.js, `umlActor`, `callout`) drawn by `redrawPath` | a `wbShapePath(kind, w, h)` table of 40 of them that returns M/L/C/Z, with the shape name stored in `data.shape` so the path regenerates on resize (stencils scale; these keep corner radii) | M |
+| More-shapes dialog (tick libraries on and off) | no | `shapes` action, `moreShapes` dialog (diagramly/Menus.js 2924) | a "Shape libraries" dialog on the Library tab: one row per set, count, on or off; written to a user preference | S |
 | Scratchpad (a user shelf, drag in to save) | yes: the Library tab's "Save to the library" (`save-selection`, Ctrl+Shift+S) and the favourites | `scratchpad` action (diagramly/Menus.js 3164), `addToScratchpad` (3718) | done | none |
+| Library search by name and tag | yes (name, tags, set) | tag index `Sidebar.taglist`, `searchEntries` (Sidebar.js 1634): compound-token split, soundex and translated tag fallback, strict AND then OR | add stemming for the 9,090 names; tags come from the converter (words of the name plus the library) | S |
 | Custom shape editor (draw a stencil from XML) | partly (`save-shape` from a drawing) | `EditShapeDialog`, `createShape` (diagramly/Menus.js 2938) | done in effect | none |
 | Preview thumbnails | yes (`wbThumbSvg`) | `Sidebar.createThumb`, per-set PNGs (`images/sidebar-*.png`) | done | none |
+| Drag a library item into a connector to insert it in the line | no | `Sidebar.dropAndConnect` (Sidebar.js 4321), edge drop target | drop onto a link splits it at the item's ports | M |
 
 **The stencil XML format** (what the converter reads; `mxStencil.drawNode`,
 mxgraph `shape/mxStencil.js`). A `<shape name w h aspect strokewidth>` (w and
@@ -1074,6 +1077,7 @@ clash is listed so the choice is made once.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Insert menu: polygon | yes except polygon (table built: `insert-table`) | diagramly/Menus.js 4516 to 4574 | add "Polygon" (click points, double-click to close) writing a closed `d` | S |
+| Sidebar search: tags, soundex, translations, "mxgraph.x.y" names | name, tag, set and word-start matching, ranked (library-more.js `rankEntries`); no stemming or soundex | `searchEntries` (Sidebar.js 1634), `addSearchPalette` (1878), `splitCompoundToken`, `Editor.soundex` | synonyms come with the converter's tags; low value | S |
 | Text to diagram (Mermaid, PlantUML, "from text", "generate") | partly: Mermaid import; the AI's `generate_diagram` (HISTORY section 61) | `fromText`, `generate` (diagramly/Menus.js 1393) AI action | done by the assistant, which already places a diagram | none |
 | Freehand | yes (pen, highlighter) | `insertFreehand`, `mxFreehand.js` | done | none |
 

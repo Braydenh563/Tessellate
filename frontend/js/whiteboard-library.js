@@ -43,10 +43,7 @@ const wbLibFolds = new Map();
 //: `libPress` where a tile was pressed, before the drag began;
 //: `libLastClick` is where the last click placed, for the next one to step
 //: off it.
-const wbLibState = { libQuery: "", lib: null, libIcons: null, libIconShown: WB_ICON_PAGE, libLastClick: null, libDragging: null, libGrab: null, libPress: null, layersDrag: null, pagesDrag: null, sideRefreshTimer: 0,
-  //: **Shape libraries the person turned off, per device** ("Shape libraries" dialog, library-more.js): an off set is not
-  //: fetched, listed or searched. The two template sets feed the new-board galleries, so they have no switch.
-  isOff: (key) => !["templates", "maps"].includes(key) && prefs.json("wb-lib-sets-off", []).includes(key) };
+const wbLibState = { libQuery: "", lib: null, libIcons: null, libIconShown: WB_ICON_PAGE, libLastClick: null, libDragging: null, libGrab: null, libPress: null, layersDrag: null, pagesDrag: null, sideRefreshTimer: 0 };
 
 function wbSideState() {
   const saved = prefs.json(WB_SIDE_KEY, {});
@@ -168,7 +165,7 @@ async function wbLoadLibrary({ force = false } = {}) {
   //: index and each set are fetched before a tile is drawn, and the list sat
   //: empty the whole while. `showSkeletons` draws only into an empty list, so
   //: a reopen keeps the tiles it has; `wbRenderLibrary` clears them.
-  if (!wbLibState.lib || force || (wbLibState.lib.sets || []).some((s) => s.key !== "icons" && !wbLibSets.has(s.key) && !wbLibState.isOff(s.key))) {
+  if (!wbLibState.lib || force || (wbLibState.lib.sets || []).some((s) => s.key !== "icons" && !wbLibSets.has(s.key))) {
     showSkeletons(document.getElementById("wb-lib-list"), 6);
   }
   if (!wbLibState.lib || force) {
@@ -180,7 +177,7 @@ async function wbLoadLibrary({ force = false } = {}) {
       return;
     }
   }
-  const sets = (wbLibState.lib.sets || []).filter((s) => s.key !== "icons" && !wbLibState.isOff(s.key));
+  const sets = (wbLibState.lib.sets || []).filter((s) => s.key !== "icons");
   await Promise.all(sets.filter((s) => !wbLibSets.has(s.key)).map(async (s) => {
     try {
       const res = await api(`/board-library/${s.key}.json${lazyAssetStamp()}`, { silent: true });
@@ -200,7 +197,7 @@ async function wbLoadLibrary({ force = false } = {}) {
 //: them when a search is typed, so a search finds a router or a gateway
 //: without the person knowing which set holds it.
 async function wbLoadShapeSets(keys = null) {
-  const want = (wbLibState.lib?.shape_sets || []).filter((s) => !wbLibSets.has(s.key) && !wbLibState.isOff(s.key) && (!keys || keys.includes(s.key)));
+  const want = (wbLibState.lib?.shape_sets || []).filter((s) => !wbLibSets.has(s.key) && (!keys || keys.includes(s.key)));
   if (!want.length) return;
   await Promise.all(want.map(async (s) => {
     try {
@@ -230,7 +227,6 @@ function wbLibEntries() {
   const out = [];
   const marks = wbLibState.lib?.marks || {};
   for (const [key, set] of wbLibSets) {
-    if (wbLibState.isOff(key)) continue;
     for (const entry of set.items || []) {
       const ref = `builtin:${key}/${entry.key}`;
       out.push({
@@ -488,11 +484,9 @@ function wbRenderLibrary() {
   const query = (document.getElementById("wb-lib-search")?.value || "").trim().toLowerCase();
   const words = query.split(/\s+/).filter(Boolean);
   const all = wbLibEntries().filter(wbLibFits);
-  //: Light stemming (plural, -ing, -ed, -er): "arrows" finds "arrow" (`wordForms`, library-more.js).
-  const forms = (w) => wbFmtState.libraryMore?.wordForms(w) || [w];
   const matches = (e) => {
     const text = `${e.name} ${(e.tags || []).join(" ")} ${e.set}`.toLowerCase();
-    return words.every((w) => forms(w).some((f) => text.includes(f)));
+    return words.every((w) => text.includes(w));
   };
   const active = list.querySelector(".wb-lib-tile.is-active")?.dataset.ref;
   const hadFocus = list.contains(document.activeElement);
@@ -515,26 +509,26 @@ function wbRenderLibrary() {
       return name.startsWith(query) ? 0 : words.every((w) => name.includes(w)) ? 1 : 2;
     };
     let found = all.filter(matches).sort((a, b) => rank(a) - rank(b));
-    if (!map && wbLibState.libIcons && !wbLibState.isOff("icons")) {
-      const icons = Object.keys(wbLibState.libIcons).filter((n) => words.every((w) => forms(w).some((f) => n.replace(/-/g, " ").includes(f)))).slice(0, 60);
+    if (!map && wbLibState.libIcons) {
+      const icons = Object.keys(wbLibState.libIcons).filter((n) => words.every((w) => n.replace(/-/g, " ").includes(w))).slice(0, 60);
       found = found.concat(icons.map(wbLibIconEntry).filter(Boolean));
     }
     wbLibGroup(list, "search", found.length ? `Results for "${query}"` : "Nothing matches", found);
-    if (!map && !wbLibState.libIcons && !wbLibState.isOff("icons")) wbLoadIcons().then(() => wbRenderLibrary());
+    if (!map && !wbLibState.libIcons) wbLoadIcons().then(() => wbRenderLibrary());
     if (!map) wbLoadShapeSets();
   } else {
     const byRef = new Map(all.map((e) => [e.ref, e]));
     const favourites = all.filter((e) => e.favourite);
     wbLibGroup(list, "favourites", "Favourites", favourites);
-    const recent = (wbLibState.lib.recent || []).map((r) => byRef.get(r.replace(/^builtin:/, "builtin:")) || (r.startsWith("builtin:icons/") && !wbLibState.isOff("icons") ? wbLibIconEntry(r.slice(14)) : null)).filter(Boolean);
+    const recent = (wbLibState.lib.recent || []).map((r) => byRef.get(r.replace(/^builtin:/, "builtin:")) || (r.startsWith("builtin:icons/") ? wbLibIconEntry(r.slice(14)) : null)).filter(Boolean);
     wbLibGroup(list, "recent", "Recent", recent);
     //: In the index's order (Templates first), not the order the files
     //: happened to arrive in. On a map too (INBOX 596): `wbLibFits` leaves a
     //: map the one built-in set that applies there, its templates, which are
     //: branches; an empty set draws nothing.
     const order = (wbLibState.lib.sets || []).map((x) => x.key);
-    const shapeSets = (wbLibState.lib.shape_sets || []).filter((s) => !wbLibState.isOff(s.key));
-    const sets = [...wbLibSets].filter(([key]) => order.includes(key) && !wbLibState.isOff(key)).sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0]));
+    const shapeSets = wbLibState.lib.shape_sets || [];
+    const sets = [...wbLibSets].filter(([key]) => order.includes(key)).sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0]));
     for (const [key, set] of sets) {
       wbLibGroup(list, `set:${key}`, set.name, all.filter((e) => e.group === `set:${key}`), { open: ["templates", "maps", "general", "flowchart"].includes(key) });
     }
@@ -556,7 +550,7 @@ function wbRenderLibrary() {
         more.className = "muted wb-lib-note";
         more.textContent = "1,530 icons, drawn as shapes. Search finds one by name.";
       }
-      if (!wbLibState.isOff("icons")) wbLibGroup(list, "set:icons", "Icons", iconEntries, { open: false, extra: more });
+      wbLibGroup(list, "set:icons", "Icons", iconEntries, { open: false, extra: more });
       for (const s of shapeSets) {
         const loaded = wbLibSets.has(s.key);
         let note = null;
@@ -709,7 +703,7 @@ function wbLibRefBody(ref) {
 //: which point of the drawing goes at `at`, as a fraction of its box (where
 //: its tile was held for a drag; the middle otherwise). See "Where a placed
 //: thing lands" in whiteboard.js.
-async function wbLibPlace(entry, at = null, { connect = false, onto = null, grab = null, here = false, intoLink = null, linked = false } = {}) {
+async function wbLibPlace(entry, at = null, { connect = false, onto = null, grab = null, here = false } = {}) {
   if (!entry) return;
   if (entry.kind === "style") return wbLibApplyStyle(entry);
   if (entry.kind === "palette") return wbLibApplyPalette(entry, entry.payload?.colours?.[0]);
@@ -750,7 +744,6 @@ async function wbLibPlace(entry, at = null, { connect = false, onto = null, grab
   }
   const boardId = window.currentBoardId ?? 0;
   let made = null;
-  let split = false;
   await wbRecordGesture(async () => {
     try {
       made = await apiJson(`/whiteboard/boards/${boardId}/place`, { method: "POST", body: JSON.stringify(body) });
@@ -760,20 +753,10 @@ async function wbLibPlace(entry, at = null, { connect = false, onto = null, grab
     }
     wbState.sketches = [...(wbState.sketches || []), ...made.sketches];
     wbState.objects = [...(wbState.objects || []), ...made.objects];
-    const first = made.objects.find((o) => o.kind !== "frame") || made.sketches.find((s) => !/"type"\s*:\s*"link-/.test(s.data));
-    const firstKind = first && made.objects.includes(first) ? "object" : "sketch";
-    //: Dropped on a line: the item goes in it (library-more.js `splitLink`), in this same gesture.
-    const line = intoLink != null && !map && first ? wbFindItem("sketch", intoLink) : null;
-    if (line) {
-      try {
-        split = await wbFmtState.libraryMore.splitLink(line, firstKind, first);
-      } catch {
-        // The item is placed either way; the split is a convenience.
-      }
-    }
     if (connect && wasItem && !map) {
+      const first = made.objects.find((o) => o.kind !== "frame") || made.sketches.find((s) => !/"type"\s*:\s*"link-/.test(s.data));
       if (first) {
-        const targetKind = firstKind;
+        const targetKind = made.objects.includes(first) ? "object" : "sketch";
         try {
           const link = await apiJson("/whiteboard/sketches", {
             method: "POST",
@@ -788,8 +771,6 @@ async function wbLibPlace(entry, at = null, { connect = false, onto = null, grab
         }
       }
     }
-    //: A linked placement carries its source's signature, so a change to the item reaches it (library-more.js `copies`).
-    if (linked && !map) await wbFmtState.libraryMore.copies.mark(made, entry);
     if (map) await wbRefreshMapState();
     renderWhiteboardNow();
     //: Then put what was drawn where the rule says, inside this gesture so
@@ -819,7 +800,7 @@ async function wbLibPlace(entry, at = null, { connect = false, onto = null, grab
   }
   wbApplySelectionHighlight();
   wbUpdateSelectionBar();
-  wbAnnounce(`Placed ${entry.name}${connect && wasItem ? ", joined to the selected item" : ""}${split ? ", in the line" : ""}${linked && !wbIsMap() ? ", linked to the library" : ""}.`);
+  wbAnnounce(`Placed ${entry.name}${connect && wasItem ? ", joined to the selected item" : ""}.`);
   wbLibState.lib = null; // Recent moved.
 }
 
@@ -926,9 +907,6 @@ function wbLibMenuItems(entry) {
     if (entry.payload?.element && !wbIsMap()) items.push({ label: "ph:arrow-square-in Place on this board", title: "Its shapes, in the middle of the view", run: () => wbLibPlace(entry, null, { here: true }), group: "use" });
   } else {
     items.push({ label: "ph:plus Place in the middle", title: "Enter", run: () => wbLibPlace(entry), group: "use" });
-    if (entry.kind !== "branch" && !wbIsMap()) {
-      items.push({ label: "ph:link Place linked", title: "Updates by itself when this library item changes", run: () => wbLibPlace(entry, null, { linked: true }), group: "use" });
-    }
     if (entry.kind !== "branch") {
       items.push({ label: "ph:flow-arrow Place joined to the selection", title: "Shift+Enter", run: () => wbLibPlace(entry, null, { connect: true }), group: "use" });
     }
@@ -1052,8 +1030,6 @@ async function wbLibReplace(entry) {
   const put = (body) => async () => {
     await apiJson(`/board-library/${entry.ref.slice(5)}`, { method: "PUT", body: JSON.stringify({ payload: body }) });
     await wbLoadLibrary({ force: true });
-    //: Linked copies on this board follow the edit (library-more.js `copies.refresh`).
-    wbFmtState.libraryMore?.copies.refresh();
   };
   await put(payload)();
   if (was) wbPushCall(`Replaced “${entry.name}” in the library`, put(was), put(payload));
@@ -1387,7 +1363,6 @@ function wbLibPanelMenu() {
   const libs = wbLibState.lib?.libraries || [];
   const items = [
     { label: "ph:folder-plus New library…", title: "A library of your own to save into", run: () => wbLibNewLibrary(), group: "lib" },
-    { label: "ph:books Shape libraries…", title: "Turn the built-in sets on or off", run: () => wbFmtState.libraryMore.sets.open(), group: "lib" },
     { label: "ph:upload-simple Import a library file…", title: "A .memorymap-library.json file, or a draw.io library", run: () => document.getElementById("wb-lib-import")?.click(), group: "file" },
   ];
   for (const lib of libs) {
@@ -1589,9 +1564,7 @@ onSurface("board", () => {
     e.stopPropagation();
     wbMapClearDropTarget();
     const onto = Number(e.target.closest?.(".wb-object[data-id]")?.dataset.id) || null;
-    //: A line under the pointer (and no card or shape over it) takes the item into itself.
-    const lineId = onto == null && ["element", "shape", "preset"].includes(wbLibState.libDragging.kind) ? Number(e.target.closest?.(".sketch-group[data-id]")?.dataset.id) || null : null;
-    wbLibPlace(wbLibState.libDragging, wbClientToBoard(e.clientX, e.clientY), { onto, grab: wbLibState.libGrab, intoLink: lineId });
+    wbLibPlace(wbLibState.libDragging, wbClientToBoard(e.clientX, e.clientY), { onto, grab: wbLibState.libGrab });
     wbLibState.libDragging = null;
     wbLibState.libGrab = null;
   }, true);

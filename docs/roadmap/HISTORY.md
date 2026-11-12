@@ -7,13 +7,6 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
-## Moved from the plans, 2026-11-12 (wblibrary3: Shape libraries, stemming, drop on a line, linked copies)
-
-- More-shapes dialog: "Shape libraries" in the Library menu (`wbFmtState.libraryMore.sets.open`, frontend/js/whiteboard-library-more.js); one row per set with its count and a switch, kept per device (`wb-lib-sets-off`, `wbLibState.isOff`, whiteboard-library.js). A set that is off is not listed, searched or fetched; turning it on fetches it.
-- Library search stemming: plural, -ing, -ed, -er (`wordForms`, `rankEntries`); the typed word still ranks first. Soundex, translated tags and compound-token splits were weighed and left out as low value.
-- Drag a library item onto a connector: the line becomes A to item and item to B at the item's ports (`splitLink`), one undo step; the old line is replaced, not edited, so the undo order holds.
-- Insert a template: "Place on this board" checked in the browser (wblibrary3.js): a template's shapes land on the open board and no board is made.
-
 ## Moved from the plans, 2026-11-12 (wbdrawio3)
 
 From WHITEBOARD_PLAN sections 8 and 14 and step 10 (draw.io interchange). Evidence per row:
@@ -55352,8 +55345,6 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
-- [x] **L275** `whiteboard` open, M: Build Illustrator-style linked symbols and Photoshop-style topic effects. From OPEN.md:1240. Evidence: library_ref only deleted on copy (whiteboard-library.js:1062-1224); no linked symbol feature. Built: Linked half built: Place linked, library_ref.linked sig, refresh on board load and library edit, Unlink (whiteboard-library-more.js copies, wblibrary3.js); topic effects split to a mindmap row
-- [x] **L-whiteboard-9** `whiteboard` open, M: Update a placed library copy from its source. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:634. Evidence: library_ref is stored on placed items, but no update command exists; untracked Built: Update from the library: wbFmtState.libraryMore.copies.update (frontend/js/whiteboard-library-more.js), command update-from-library (whiteboard-commands.js); sweep scratchpad/ui-sweeps/wblibrary3.js
 - [x] **L-whiteboard-23** `whiteboard` open, S: Give four board commands a key or exempt them in the help sheet test. From wbformat2 gate. Evidence: tests/test_wb_help_sheet.py::test_every_command_row_names_a_command_with_a_key fails on the base (847a4398): select-none, select-connectors, auto-size and clear-default-style have no keys Built: Already fixed in 9df47809 (the agent branched before it): the four rows left the help sheet, tests/test_wb_help_sheet.py passes on the merge
 - [x] **L-whiteboard-19** `whiteboard` open, S: Keep connectors between group members live while editing inside a group, and drive group edit, first-use hints and workspaces in a Playwright sweep. From wbcmds report 2026-11-12. Evidence: whiteboard-workspace.js edit-inside-group dims non-members only; connectors joining two members are dimmed too; no browser sweep was run for group edit, tool hints or workspaces Built: Closed 2026-11-12: joinsMembers in whiteboard-workspace.js keeps a connector between two members undimmed; tests/test_wb_workspace.py; scratchpad/ui-sweeps/wbgroupedit.js 22/22 (group edit, tool hints, workspaces)
 - [x] **L-whiteboard-18** `whiteboard` open, M: Record a drawn shape's rotate-grip turn for Repeat last. From wbcmds L-whiteboard-6. Evidence: frontend/js/whiteboard.js sketch rotate grip bakes the turn into the path; no delta is recorded for Repeat last Built: Closed 2026-11-12: the sketch rotate grip records { kind: turn, deg } at drag end; tests/test_wb_repeat_last.py::test_the_drawn_shapes_rotate_grip_records_its_turn_when_the_drag_ends

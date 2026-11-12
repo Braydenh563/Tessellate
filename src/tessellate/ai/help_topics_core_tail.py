@@ -297,12 +297,6 @@ TAIL_TOPICS.extend(
                 "map templates",
                 "this map tab",
                 "map stats",
-                "shape libraries",
-                "more shapes",
-                "update from the library",
-                "linked copy",
-                "unlink from the library",
-                "drop on a line",
             ),
             "body": (
                 "A board's sidebar (the Sidebar button in its top bar, or the rail on its left edge) has "
@@ -359,7 +353,8 @@ TAIL_TOPICS.extend(
                 "or text preset, a palette of the selection's colours, or on a mind map a branch; Board, "
                 "Save this board as a template keeps the whole board. New board then offers your templates "
                 "beside the built-in ones. The library's ⋮ makes a new library, imports a library file and "
-                "exports one. A placed item is a copy until you choose Update from the library or Place linked. Drag a tile you made, or a Layers row, onto the bin that shows to delete it (Undo brings it back). In Agent mode the assistant can search the library and place from it, draw "
+                "exports one. A placed item is an ordinary copy: changing the library later never changes "
+                "a board. Drag a tile you made, or a Layers row, onto the bin that shows to delete it (Undo brings it back). In Agent mode the assistant can search the library and place from it, draw "
                 "shapes and frames, and move, edit or delete what is on a board, asking first. "
                 "A PNG export joins the image library only when Also add to the image library is ticked in the "
                 "export dialog, which opens on Whole board when nothing is selected (On screen is one press away); Board, Show hints brings the first-steps card back (an empty board keeps a one-line cue meanwhile). "
