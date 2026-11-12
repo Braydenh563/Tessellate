@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 47 | 13 | 0 | 18 | 130 |
-| documents | 70 | 47 | 13 | 0 | 18 | 130 |
-| documents | 70 | 47 | 13 | 0 | 18 | 130 |
+| documents | 70 | 46 | 13 | 0 | 18 | 129 |
+| documents | 70 | 46 | 13 | 0 | 18 | 129 |
+| documents | 70 | 46 | 13 | 0 | 18 | 129 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 687 | 153 | 3 | 195 | 1393 |
-| all | 553 | 687 | 153 | 3 | 195 | 1393 |
-| all | 553 | 687 | 153 | 3 | 195 | 1393 |
+| all | 553 | 686 | 153 | 3 | 195 | 1392 |
+| all | 553 | 686 | 153 | 3 | 195 | 1392 |
+| all | 553 | 686 | 153 | 3 | 195 | 1392 |
 
 ## graph
 
@@ -375,7 +375,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L305** `documents` open, S: Probe Documents in dark run; map add undo flaky between runs. From OPEN.md:3696. Evidence: Re-run both before quoting; no re-run record found
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines.
 - [ ] **L309** `documents` open, M: Keep Python runtime frame persistent across documents to avoid 5-7 s cold reload per document. From OPEN.md:1219; OPEN.md:1224; OPEN.md:2829; OPEN.md:2907. Evidence: Row: needs the Pyodide extra, not installed here; cold Debug cannot be timed.
-- [ ] **L310** `documents` open, M: Feed sucrase's own parse errors into the Problems panel. From OPEN.md:1467. Evidence: documents-code.js:246 uses syntaxTree; no sucrase error feed found by grep
 - [ ] **L311** `documents` open, M: Allow words touching a suggestion marker to be spelling findings (docSpellable). From OPEN.md:1491. Evidence: documents.js:11609 docSpellable still rejects + on either side; no change found
 - [ ] **L312** `documents` open, M: Debug variables: expand into children. From OPEN.md:2824. Evidence: _mm_names / run_sandbox.py:186 show; verified open
 - [ ] **L313** `documents` open, M: Step JS watches instead of evaluating natively. From OPEN.md:2825. Evidence: run_sandbox.py:250 evaluate; known limitation, verified

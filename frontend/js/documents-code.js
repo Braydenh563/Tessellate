@@ -345,6 +345,20 @@ function docCodeLintSource(CM) {
     const text = docStr(state.doc);
     const unit = type.indent || "  ";
     let found = [];
+    //: What a Run would stop on (sucrase, the TypeScript pass) and the tree called clean: its
+    //: "(line:col)" is the underline (L310). Loaded with the run scripts on the first such check.
+    const sucraseFound = async () => {
+      try {
+        if (!(await ensureModule("run"))) return [];
+        const sucrase = await runVendorScript("/vendor/sucrase/sucrase.min.js", "SUCRASE");
+        sucrase.transform(text, { transforms: ["typescript"], production: true });
+      } catch (error) {
+        const where = /^(.*?)\s*\((\d+):(\d+)\)$/.exec(String(error?.message || ""));
+        if (!where) return [];
+        return [{ ...docDiagnosticRange(state.doc, Number(where[2]), Number(where[3])), severity: "error", source: "TypeScript", message: where[1] }];
+      }
+      return [];
+    };
     if (ext === "json") {
       found = docJsonDiagnostics(state.doc);
       if (found.length) {
@@ -359,6 +373,7 @@ function docCodeLintSource(CM) {
       }
     } else if (DOC_CHECK_TREE.has(ext)) {
       found = docTreeDiagnostics(CM, state);
+      if (!found.length && ext === "ts") found = await sucraseFound();
       if (found.length && !(ext === "js" && docTreeHasJsx(CM, state))) {
         const scanned = docCodeFixes(text, ext, unit);
         if (scanned.length) found = docCodeActions("scan", scanned);
