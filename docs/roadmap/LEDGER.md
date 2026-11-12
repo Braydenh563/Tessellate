@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 172 | 58 | 0 | 72 | 360 |
+| world-class | 130 | 171 | 58 | 0 | 72 | 359 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 698 | 157 | 3 | 195 | 1408 |
+| all | 553 | 697 | 157 | 3 | 195 | 1407 |
 
 ## graph
 
@@ -641,7 +641,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L505** `world-class` open, S: Audit jobruns detail strings that carry {exc}. From OPEN.md:1950; OPEN.md:3542. Evidence: Audit not recorded
 - [ ] **L506** `world-class` open, S: Build the core/background.py registry. From OPEN.md:1975. Evidence: No core/background.py in src/tessellate/core; lint only counts sites
 - [ ] **L507** `world-class` open, S: Persist pending device requests in core/lantrust.py across restart. From OPEN.md:1985. Evidence: core/lantrust.py:69 _pending dict still in-memory; W34 skipped
-- [ ] **L509** `world-class` open, S: Handle deleted_at on import of binned notes. From OPEN.md:1764. Evidence: Export writes deleted_at (routes_settings_transfer.py:109-113); routes_import.py has no deleted handling to change it
 - [ ] **L510** `world-class` open, S: Trace how 'conversation' is derived as a topic for a gym note. From OPEN.md:4332. Evidence: Ledger open; needs the owner's note to trace topic derivation.
 - [ ] **L511** `world-class` open, S: Drive the dictionary spelling offer in a live empty search result. From OPEN.md:604; OPEN.md:2789. Evidence: Server correction answered every typo tried; finderSpellingOffer path undriven
 - [ ] **L512** `world-class` open, S: Show last_at instead of updated_at on Library chat rows and Shelved list. From OPEN.md:998. Evidence: routes_library.py:298 returns chat updated_at; library.js:1738 shows item.updated_at; last_at only in sheets-selects.js:1950
