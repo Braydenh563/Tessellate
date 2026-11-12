@@ -288,10 +288,16 @@ disagree.
 | --- | --- | --- |
 | 1 to 4 | the month grid, the week and day grids and the phone agenda, reminders and day pages on the grid with drag and undo, ICS export and import | Built 2026-10-11 (Brief 55): HISTORY.md, "Moved from the plans, 2026-10-11 (TIMELINE Brief 55)" |
 
-Not verified (Brief 55, still): the dot density at 5,000 notes in one month
-(1,000 in a month is measured, HISTORY "TIMELINE timeline-1018"), and touch
-drag (HTML drag and drop has none on a phone, where the calendar is the
-agenda; a coarse pointer at 1024 keeps it).
+Measured 2026-11-12 (Brief 55's two checks): 5,007 items in one calendar
+month at 1440 paint in 1,422 ms with one 62 ms long task; the 28 busy cells hold
+144 to 205 notes each, show 3 chips and a "+N more" label (for example "+158
+more"), 0 cells fall back to dots, 2,376 nodes, no horizontal overflow. At 1024
+with a coarse pointer (`isMobile`, `hasTouch`; `(pointer: coarse)` and
+`(hover: none)` both match) the month keeps its 30 cells and a reminder chip is
+`draggable` (125 by 24 px); the dragstart, dragover and drop path moves it one
+day (Fri 13 to Sat 14, time kept, toast "Moved ... to Sat, Nov 14, 3:30 PM").
+The browser's own long-press-to-drag is the one step emulation cannot press;
+that is LEDGER L910.
 
 ### Vendored capabilities to use, 2026-10-10 (Brief 75)
 

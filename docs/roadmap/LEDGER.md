@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 7 | 1 | 0 | 5 | 11 |
+| timeline | 3 | 0 | 0 | 0 | 5 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 679 | 156 | 3 | 195 | 1388 |
+| all | 553 | 672 | 155 | 3 | 195 | 1380 |
 
 ## graph
 
@@ -595,14 +595,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## timeline
 
-- [ ] **L478** `timeline` open, S: Fix timelinepaging.js strip-click check failing on base and 100 ms frame flake. From OPEN.md:654. Evidence: scratchpad/ui-sweeps/timelinepaging.js exists; no fix commit found
-- [ ] **L479** `timeline` open, S: Fold the 'On this day' row on phone so it stops shifting the list 44px at 390. From OPEN.md:734; OPEN.md:2781. Evidence: timeline.js:645 recall row; css only has calendar-mode rule 06-timeline-dialogs.css:3488; no phone fold
-- [ ] **L481** `timeline` open, S: Run contrast and errors sweeps on the calendar view. From OPEN.md:1374. Evidence: No calendar sweep in scratchpad/ui-sweeps recorded; runnable without hardware.
-- [ ] **L482** `timeline` open, S: Make feed Last-year range filter by calendar date, not written date. From OPEN.md:1375; OPEN.md:2570. Evidence: No change found in timeline-calendar.js/timeline.js for date vs written-date filtering.
-- [ ] **L485** `timeline` open, S: Add a mark column to the timeline table view so meetings do not read as Note. From OPEN.md:3564. Evidence: grep meeting in timeline*.js shows no table mark column; only calendar/add paths
-- [ ] **L486** `timeline` open, S: Fix deepen72b.js timeline row at 390 timing out waiting for .timeline-rows. From OPEN.md:735; OPEN.md:2782. Evidence: scratchpad/ui-sweeps/deepen72b.js:61 still waits on .timeline-rows; phone keeps table view
-- [ ] **L487** `timeline` open, S: timelinepaging.js strip-click fails on base; frame check flaky. From OPEN.md:2784. Evidence: Sweep script fails on base; verified open
-- [ ] **L496** `timeline` partly, M: Re-check timeline pinned bucket head flake and 4 off-screen ghost buttons. From OPEN.md:3902. Evidence: Pointer note to other OPEN rows (44px On this day shift, meeting mark in table, map under Boards chip), each tracked separately; flaky pinned-head sweep and Notes off-screen buttons not re-checked.
 
 ## world-class
 

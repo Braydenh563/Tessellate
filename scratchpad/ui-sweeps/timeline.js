@@ -166,18 +166,19 @@ const check = (label, ok, detail) => {
     await page.waitForTimeout(200);
 
     // Search filters the array rather than dimming it, so the row count falls.
+    // Rows the feed holds (timelineVisibleRows), not the DOM's windowed slice of them.
     const search = await page.evaluate(async () => {
-      const before = document.querySelectorAll('.timeline-row').length;
+      const before = timelineVisibleRows().length;
       const box = document.getElementById('timeline-search');
       if (!box) return { before, after: -1, restored: -1 };
       box.value = 'kyoto';
       box.dispatchEvent(new Event('input', { bubbles: true }));
       await new Promise((r) => setTimeout(r, 500));
-      const after = document.querySelectorAll('.timeline-row').length;
+      const after = timelineVisibleRows().length;
       box.value = '';
       box.dispatchEvent(new Event('input', { bubbles: true }));
       await new Promise((r) => setTimeout(r, 500));
-      return { before, after, restored: document.querySelectorAll('.timeline-row').length };
+      return { before, after, restored: timelineVisibleRows().length };
     });
     check(`${w} search reduces the row count`, search.after > 0 && search.after < search.before && search.restored === search.before,
       `${search.before} -> ${search.after} -> ${search.restored}`);

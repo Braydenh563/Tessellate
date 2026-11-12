@@ -519,6 +519,14 @@
   font-weight: 600;
   color: var(--ink);
 }
+/* The feed's kind mark, in front of the title: a meeting, a map and a reminder
+   read as what they are at any width, including the phone where the Kind
+   column is gone (INBOX 341, LEDGER L485). */
+.timeline-col-title > .timeline-row-mark {
+  display: inline-grid;
+  margin-right: var(--space-3);
+  vertical-align: middle;
+}
 /* Numbers line up on the right, which is the only way a column of them can be
    compared at a glance. Written at the same weight as the rule above it
    (`.timeline-table th, .timeline-table td`), which sets every cell to the
@@ -554,12 +562,6 @@
 @media (max-width: 599.98px) {
   .timeline-table .timeline-col-wide {
     display: none;
-  }
-  /* The Kind column is gone, so a meeting says what it is in its title (INBOX 341). */
-  .timeline-trow[data-placed="meeting"] .timeline-col-title::before {
-    content: "Meeting: ";
-    font-weight: 400;
-    color: var(--muted);
   }
   /* The Date column is only as wide as its words: "Nov 21" when every row is
      this year (`paintTimelineTable` says so), "Nov 21, 2025" when one is not
@@ -3523,6 +3525,11 @@ aside[data-resizable="1"] {
 #tab-timeline.is-calendar .timeline-recall,
 #tab-timeline.is-calendar .timeline-scrubber {
   display: none;
+}
+/* A phone holds the recall row's one-chip slot while the chips are asked for,
+   so they do not push the list down (LEDGER L479). */
+.timeline-recall.is-held {
+  min-height: calc(max(var(--control-h), var(--target-min)) + 2 * var(--ring-room));
 }
 .timeline-daystrip {
   display: flex;
