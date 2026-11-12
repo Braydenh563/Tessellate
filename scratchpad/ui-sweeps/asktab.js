@@ -36,7 +36,8 @@ const http = require('http');
 const ROOT = path.resolve(__dirname, '..', '..');
 // Absolute, and never a symlink into the worktree: a `.venv` link committed
 // from a worktree destroyed the real environment once tonight.
-const PY = process.env.SWEEP_PY || require('path').resolve(__dirname, '..', '..', '.venv', 'bin', 'python');
+// CI has no .venv: it exports VENV (sys.prefix of its Python), as serve.sh reads.
+const PY = process.env.SWEEP_PY || path.join(process.env.VENV || path.resolve(ROOT, '.venv'), 'bin', 'python');
 const FAKE_PORT = Number(process.env.FAKE_PORT || 8811);
 const FAKE = `http://127.0.0.1:${FAKE_PORT}/v1`;
 // Slow enough that a stream is a state the page is *in* rather than an event

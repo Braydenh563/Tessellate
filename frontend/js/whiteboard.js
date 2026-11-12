@@ -15187,7 +15187,7 @@ function wbStampMenuRoles(menu) {
   //: group label, a file input. `role="none"` is what makes the container a
   //: valid menu, and it is the honest answer for each of them: none of them
   //: is a command.
-  for (const row of menu.querySelectorAll(".wb-menu-row, .wb-panel-group-label, input[type=\"file\"]")) {
+  for (const row of menu.querySelectorAll(".wb-menu-col, .wb-menu-row, .wb-panel-group-label, input[type=\"file\"]")) {
     if (!row.hasAttribute("role")) row.setAttribute("role", "none");
   }
 }

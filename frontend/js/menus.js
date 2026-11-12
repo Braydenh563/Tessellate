@@ -1283,7 +1283,9 @@ function wireMenuKeyboard(menu, opener) {
         //: only the class in this list, ArrowDown in those five found no items
         //: at all and left the focus where it was, which is the one thing a
         //: person who has just opened a menu will try.
-        ':scope > [role="group"] > [role="menuitem"]'
+        ':scope > [role="group"] > [role="menuitem"], ' +
+        //: and a group inside a layout column (the board's View menu).
+        ':scope > [role="none"] > [role="group"] > [role="menuitem"]'
       ),
     ]
       //: An item nobody can see is not one the arrows may land on. It never
@@ -1380,6 +1382,8 @@ function buildMenuGroupButton(label, subItems) {
   let openedByHoverAt = 0;
   const groupWrap = document.createElement("div");
   groupWrap.className = "menu-group";
+  // A wrapper in a role="menu" must say it is none of the menu's business.
+  groupWrap.setAttribute("role", "none");
 
   const trigger = document.createElement("button");
   trigger.setAttribute("role", "menuitem");
