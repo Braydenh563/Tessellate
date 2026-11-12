@@ -739,6 +739,119 @@
     wbAnnounce("Label corrected.");
   }
 
+
+  // --- Stamps on board items ----------------------------------------------
+  //
+  //: The topic's reaction stamps (`WB_MAP_STAMPS`, `wbMapStampPatch`,
+  //: whiteboard-map.js) on any other item the vote dots take: the same
+  //: toggle per person, the same data (`stamps`, `stamped`), a row of chips
+  //: under the item's bottom edge. A press on a chip is one Undo step.
+  async function wbStampSet(entries, name, how) {
+    const said = [];
+    await wbRecordGesture(async () => {
+      for (const e of entries) {
+        const patch = wbMapStampPatch(e.item.data, name, how);
+        if (!patch) continue;
+        const data = { ...e.item.data };
+        for (const key of ["stamps", "stamped"]) {
+          if (patch[key]) data[key] = patch[key];
+          else delete data[key];
+        }
+        e.item.data = data;
+        said.push(patch.said);
+      }
+      if (said.length) await wbSaveMany(entries.map((e) => ({ kind: "object", item: e.item })));
+    });
+    wbScheduleRender();
+    if (said.length) wbAnnounce(said[0]);
+  }
+
+  async function wbStampPress(id, name, how) {
+    const item = (wbState.objects || []).find((o) => o.id === id);
+    if (item && !wbIsLocked("object", item)) await wbStampSet([{ kind: "object", item }], name, how);
+  }
+
+  function wbStampPaint(el, d) {
+    const held = WB_MAP_STAMPS.filter(([name]) => d.data?.stamps?.[name] > 0);
+    let row = el.querySelector(":scope > .wb-stamps");
+    if (!held.length) {
+      row?.remove();
+      return;
+    }
+    const mine = Array.isArray(d.data.stamped) ? d.data.stamped : [];
+    const key = held.map(([name]) => `${name}${d.data.stamps[name]}${mine.includes(name) ? "m" : ""}`).join(",");
+    if (!row) {
+      row = document.createElement("div");
+      row.className = "wb-stamps";
+      //: A chip is a button on a draggable item: its presses stay its own.
+      for (const type of ["pointerdown", "dblclick", "contextmenu"]) row.addEventListener(type, (event) => event.stopPropagation());
+      el.appendChild(row);
+    }
+    if (row.dataset.key === key) return;
+    row.dataset.key = key;
+    row.replaceChildren(...held.map(([name, glyph, said]) => {
+      const yours = mine.includes(name);
+      const wrap = document.createElement("span");
+      wrap.className = "wb-map-stamp-wrap";
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "wb-map-stamp";
+      chip.dataset.stamp = name;
+      chip.setAttribute("aria-pressed", String(yours));
+      chip.title = `${said}: ${yours ? "press to take yours back" : "press to add yours"}`;
+      chip.setAttribute("aria-label", `${said}, ${d.data.stamps[name]}${yours ? ", yours included" : ""}. ${yours ? "Press to take yours back." : "Press to add yours."}`);
+      const icon = document.createElement("i");
+      icon.className = `ph ph-${glyph}`;
+      icon.setAttribute("aria-hidden", "true");
+      chip.append(icon, String(d.data.stamps[name]));
+      chip.addEventListener("click", () => wbStampPress(d.id, name, "toggle"));
+      wrap.append(chip, kebabMenu([
+        { label: "Remove one", title: "Takes one off the count", run: () => wbStampPress(d.id, name, "one") },
+        { label: "Clear all", title: "Every count of this stamp; Ctrl+Z brings them back", danger: true, run: () => wbStampPress(d.id, name, "all") },
+      ], `${said} stamp options`));
+      return wrap;
+    }));
+  }
+
+  //: "React with a stamp": a menu of the six, applied to the whole selection.
+  function wbStampMenu() {
+    const targets = wbVoteTargets();
+    if (!targets.length) return toast("Select a note, text box, picture or frame to react to.");
+    const box = (document.querySelector("#wb-html-layer .wb-object.wb-selected") || document.body).getBoundingClientRect();
+    openMenuAtPoint(WB_MAP_STAMPS.map(([name, , said]) => makeMenuItem(said, `Add or take back your ${said.toLowerCase()} stamp`,
+      () => wbStampSet(targets, name, "toggle"))), "Reaction stamps", box.left, box.bottom);
+  }
+
+  async function wbStampClear() {
+    const held = (wbState.objects || []).filter((o) => !WB_MAP_KINDS.has(o.kind) && o.data?.stamps && !wbIsLocked("object", o));
+    if (!held.length) return toast("No item on this board has a stamp.");
+    await wbRecordGesture(async () => {
+      for (const item of held) {
+        const data = { ...item.data };
+        delete data.stamps;
+        delete data.stamped;
+        item.data = data;
+      }
+      await wbSaveMany(held.map((item) => ({ kind: "object", item })));
+    });
+    wbScheduleRender();
+    wbAnnounce(`Stamps cleared from ${nounCount(held.length, "item")}.`);
+  }
+
+  //: The chips in an SVG export: a small pill per stamp under the item (the
+  //: live chip's glyph is a font, which an export lacks, so the words stand in).
+  function wbStampSvg(obj) {
+    let x = 0;
+    return WB_MAP_STAMPS.filter(([name]) => obj.data?.stamps?.[name] > 0).map(([name, , said]) => {
+      const text = `${said} ${obj.data.stamps[name]}`;
+      const w = 12 + text.length * 6.5;
+      const out = `<rect x="${x}" y="${obj.height + 4}" width="${w}" height="16" rx="8" fill="#eef1fb" stroke="#2f5bd3" />` +
+        `<text x="${x + w / 2}" y="${obj.height + 12}" font-size="10" font-weight="600" text-anchor="middle" dominant-baseline="central" fill="#1d2433">${wbSvgEscape(text)}</text>`;
+      x += w + 4;
+      return out;
+    }).join("");
+  }
+
   //: The file's whole surface, one object, so the shared scope gains one name rather than one per entry point.
   const wbMapLazy = {
     openGantt: wbMapOpenGantt,
@@ -755,6 +868,10 @@
     imageFromLink: wbTopicImageFromLink,
     secondRoot: wbSecondRoot,
     saveBranch: wbBranchSaveMarkdown,
+    paintStamps: wbStampPaint,
+    stampMenu: wbStampMenu,
+    clearStamps: wbStampClear,
+    svgStamps: wbStampSvg,
     paintGrammar: wbGrammarPaint,
     grammarFixes: wbGrammarFixes,
     grammarState: wbGrammar,

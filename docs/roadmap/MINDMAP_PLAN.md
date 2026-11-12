@@ -1684,7 +1684,7 @@ Phases 14a to 14e are built (HISTORY.md, "Moved from the plans, 2026-10-05
 - **Linked stickers** (Illustrator's symbols): edit one placed icon or emoji
   and every copy follows. Needs a `library_ref` that is followed, which
   decision 25 of WHITEBOARD_PLAN keeps as "kept, never followed".
-- Reaction stamps and voting: on a topic, built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"); on a board card, open.
+- Reaction stamps and voting: on a topic, built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"); on a board card, built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 - **The whiteboard half of 641's research**, beyond stickers.
 
 ## Placed from the owner's list, 2026-10-10

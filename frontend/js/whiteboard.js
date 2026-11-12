@@ -1959,6 +1959,7 @@ function wbSvgVotes(obj) {
 }
 
 function wbPaintVotes(el, d) {
+  wbMapLazy.paintStamps(el, d);
   const n = d.data?.votes || 0;
   let badge = el.querySelector(":scope > .wb-votes");
   if (!n) {
@@ -14213,6 +14214,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       parts.push(wbSvgTable(objectEls.get(String(obj.id)), obj));
     }
     if (obj.data?.votes) parts.push(wbSvgVotes(obj));
+    if (obj.data?.stamps) parts.push(wbMapLazy.svgStamps(obj));
     parts.push("</g>");
   };
   for (const e of stack) {

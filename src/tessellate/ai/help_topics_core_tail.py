@@ -613,12 +613,16 @@ TAIL_TOPICS.extend(
                 "timebox",
                 "retro",
                 "brainstorm",
+                "reaction stamps on a note",
+                "react with a stamp",
             ),
             "body": (
                 "Voting dots and a timer, for a workshop. Select notes, text boxes, pictures or frames and "
                 "choose Board, Workshop, Add a vote dot: each takes a dot, drawn as a count on its top-right "
                 "corner, and each press adds one (up to 99). Ctrl+K, Take a vote dot off, removes one; "
-                "Clear all vote dots empties the board; one Undo takes back a press. Workshop timer… opens "
+                "Clear all vote dots empties the board; one Undo takes back a press. React with a stamp adds "
+                "a thumb, heart, star, tick, question or flame chip under the item (a press on it takes yours "
+                "back), as on a mind map topic. Workshop timer… opens "
                 "1, 3, 5, 10, 15 or 30 minutes: a clock under the board's top bar counts down and says "
                 "when time is up; its X stops it. The timer is for this window only and is not saved."
             ),
