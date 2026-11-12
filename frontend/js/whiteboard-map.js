@@ -1531,6 +1531,7 @@ function wbMapIndex() {
   // array's, so two renders of an unchanged map are identical.
   for (const list of childrenOf.values()) list.sort(wbMapBySiblingOrder);
   roots.sort(wbMapBySiblingOrder);
+  for (const obj of nodes) obj._leaf = !childrenOf.has(obj.id);
   const index = { nodes, byId, childrenOf, roots };
   wbMapMarkBranchLayouts(index);
   return index;
@@ -3518,6 +3519,21 @@ function wbMapOpenReference(d) {
 let wbMapNodeSizeCache = null;
 
 function wbMapNodeSize(d) {
+  const size = wbMapNodeSize.measured(d);
+  const narrow = wbMapNodeSize.narrow(d);
+  return narrow && size.w > narrow ? { w: narrow, h: size.h } : size;
+}
+
+//: **A radial map's leaves are drawn narrower** (L373): a leaf is the widest
+//: thing on the outer ring, and the ring's arc is spent on box widths, so a
+//: 31-topic map of 6 branches of 4 laid out 1927 x 1791 and fitted at 31%.
+//: Only an unsized leaf below the centre (`_leaf` is set by `wbMapIndex`);
+//: the render writes the same width (`renderWbObjects`), so the layout and the
+//: drawn box agree. 0 means the topic keeps its own width.
+wbMapNodeSize.narrow = (d) =>
+  d._leaf && d.parent_id != null && !d.data?.sized && !d.data?.collapsed && wbMapLayout() === "radial" ? 120 : 0;
+
+wbMapNodeSize.measured = (d) => {
   //: A branch with its own structure, standing in for its whole box while
   //: the map around it is laid out (`wbMapStructuredPositions`).
   if (d._block) return d._block;
@@ -3531,7 +3547,7 @@ function wbMapNodeSize(d) {
     return size;
   }
   return { w: d.width || WB_MAP_NODE_W, h: d.height || WB_MAP_NODE_H };
-}
+};
 
 function wbClearMapNodeSizeCache() {
   wbMapNodeSizeCache = null;

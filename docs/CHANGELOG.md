@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: a radial map's unsized leaves draw 120px wide (was 200), so 31 topics (6 branches of 4) lay out 1235 x 1202 instead of 1927 x 1791 and fit at 46.3% zoom instead of 31.1%; 0 overlapping boxes in the browser.
 - Mind map: a branch line's label takes the board connector's look (size, bold, colour, chip) from four rows on the Branch line menu; measured 12px/400/ink/3px stroke before, 20px/700/#aa0000/12px stroke after. The label's dragged offset (edge_label_dx, edge_label_dy) was missing from the data model and is now kept on reload.
 - Mind map: a fishbone's line to a main topic's 2nd and later causes no longer runs behind the cause above (causes stand one indent in, lines drop half an indent in; 0 of 5 cause lines cross a box in a node test, 4 of 5 before).
 - The document editor's :shortcode: completion now reads the icon picker's emoji through an alias map (one emoji table, resolved when the picker script is in).

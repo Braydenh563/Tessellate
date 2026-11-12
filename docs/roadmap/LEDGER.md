@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 7 | 4 | 1 | 5 | 44 |
+| mindmap | 33 | 6 | 4 | 1 | 5 | 43 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 678 | 156 | 3 | 195 | 1387 |
+| all | 553 | 677 | 156 | 3 | 195 | 1386 |
 
 ## graph
 
@@ -443,7 +443,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L355** `mindmap` open, S: Time tree, timeline and fishbone whole-map tidy per add at 200 topics and scope it. From OPEN.md:1383; OPEN.md:2803. Evidence: whiteboard-map.js:6115 still tidies whole map via wbMapTidyBranchScope; no 200-topic timing recorded.
 - [ ] **L370** `mindmap` open, M: Cut press-to-editable at 390 from 140-159 ms toward 50 ms (renderWbObjects). From OPEN.md:2800. Evidence: Cause not isolated (renderWbObjects); verified open
 - [ ] **L372** `mindmap` open, M: mapcull: cull freehand and link sketches. From OPEN.md:1227. Evidence: Row conditional on a measured many-stroke board; no culling of strokes found.
-- [ ] **L373** `mindmap` open, M: Narrow radial leaf boxes so large maps fit above 45 percent zoom. From agent-remaining/mapdog-1026.md. Evidence: Radial layout is large: 31 topics (6 branches of 4) lay out 1927x1771 board units, fit zoom 31% (words 4.4px); 57 topics
 - [ ] **L374** `mindmap` open, L: Make picture node resize to its picture; fix mindmap3 timeout and AI half; curve probe at 390. From OPEN.md:1112; OPEN.md:3041. Evidence: mindmapimage.js removed 2026-10-12; picture-fit not confirmed; sweep script gone
 - [ ] **L376** `mindmap` partly, S: Close mind map gaps: structure per branch, labels under topic, .xmind export, stickers. From OPEN.md:1109. Evidence: Callouts whiteboard-map.js:1803, votes :8537, .xmind import wb_import.py:356; .xmind export not found
 - [ ] **L377** `mindmap` partly, M: Drive the undriven checks: dark hand-drawn look, tables, Data tab, XMind, multi-page draw.io, callout export (touch double-tap needs hardware). From OPEN.md:589; OPEN.md:2562. Evidence: Dark theme/tables drivable in Playwright; touch double-tap needs touch hardware

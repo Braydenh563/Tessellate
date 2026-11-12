@@ -24436,7 +24436,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     .attr("class", (d) => `wb-object wb-object-${d.kind}`)
     .attr("data-id", (d) => d.id)
     .style("transform", wbItemTransform)
-    .style("width", (d) => `${d.width}px`)
+    .style("width", (d) => `${(WB_MAP_KINDS.has(d.kind) && wbMapNodeSize.narrow(d)) || d.width}px`)
     .style("height", objectHeight)
     .style("z-index", (d) => stackRank.get(`object:${d.id}`))
     .call(objDrag)
@@ -24722,7 +24722,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     if (this.classList.contains("wb-culled")) this.classList.remove("wb-culled");
     const el = d3.select(this);
     this.style.transform = wbItemTransform(d);
-    this.style.width = `${d.width}px`;
+    this.style.width = `${(WB_MAP_KINDS.has(d.kind) && wbMapNodeSize.narrow(d)) || d.width}px`;
     this.style.height = objectHeight(d);
     if (!WB_MAP_KINDS.has(d.kind)) {
       this.style.opacity = d.data?.alpha != null && d.data.alpha < 1 ? String(d.data.alpha) : "";

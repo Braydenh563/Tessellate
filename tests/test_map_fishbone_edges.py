@@ -71,3 +71,30 @@ def test_causes_lines_cross_no_other_topic(tmp_path):
     causes = [r for r in rows if r["id"] not in (2, 6)]
     assert len(causes) == 5
     assert all(r["hits"] == [] for r in causes), causes
+
+
+RADIAL = r"""
+wbMapGapBreadth = () => 24; wbMapGapDepth = () => 80;
+window.wbMapState = { layout: "radial" };
+const mk = (id, parent_id) => ({ id, parent_id, x: 0, y: 0, width: 200, height: 64, data: {} });
+const nodes = [mk(1, null)];
+let id = 2;
+for (let b = 0; b < 6; b++) { const bid = id++; nodes.push(mk(bid, 1)); for (let l = 0; l < 4; l++) nodes.push(mk(id++, bid)); }
+const bounds = (narrow) => {
+  const idx = { nodes, byId: new Map(nodes.map((n) => [n.id, n])), roots: [nodes[0]], childrenOf: new Map() };
+  for (const n of nodes) { idx.childrenOf.set(n.id, nodes.filter((k) => k.parent_id === n.id)); n._leaf = narrow && !idx.childrenOf.get(n.id).length; }
+  const pos = wbMapTidyPositions(idx, "radial");
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  for (const n of nodes) { const p = pos.get(n.id), s = wbMapNodeSize(n); x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x + s.w); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y + s.h); }
+  return { w: Math.round(x1 - x0), h: Math.round(y1 - y0), n: nodes.length };
+};
+__out({ wide: bounds(false), narrow: bounds(true) });
+"""
+
+
+@needs_node
+def test_radial_leaves_are_narrower_so_a_31_topic_map_is_smaller(tmp_path):
+    out = run(tmp_path, RADIAL)
+    assert out["narrow"]["n"] == 31
+    #: Measured in this harness: 1911 wide before the leaf cap, 1240 after.
+    assert out["narrow"]["w"] < out["wide"]["w"] * 0.8, out
