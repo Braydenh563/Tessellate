@@ -22430,6 +22430,9 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
             //: The running total `wbResetRotation` turns the shape back by.
             const turned = ((Number(parsed.turned) || 0) + rotateLiveAngle) % 360;
             await wbSaveSketchProps(sketch, { d: finalD, turned });
+            //: Repeat last turns the next selection by what this drag turned by (the turn is baked into the path, so there
+            //: is no stored rotation to read it back from).
+            wbFmtState.keys?.record({ kind: "turn", deg: rotateLiveAngle });
             if (before) wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
             //: Only after a real turn. A render rebuilds this grip, and a
             //: press that turned nothing (half of a double-click) then left
