@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8366, frontend ids 2770, CSS sections 524, backend routes 702, backend modules 10795, test files 2702, tests 21960, plan headings 689, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8366, frontend ids 2770, CSS sections 524, backend routes 702, backend modules 10798, test files 2702, tests 21966, plan headings 689, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8366)
 
@@ -13338,7 +13338,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/import` | POST | `import_board` | src/tessellate/api/wb_make.py:315 |
 | `/boards/propose` | POST | `propose_map` | src/tessellate/api/wb_make.py:123 |
 | `/boards/{board_id}` | PUT | `rename_board` | src/tessellate/api/wb_boards.py:523 |
-| `/boards/{board_id}/affinity` | POST | `affinity_sort` | src/tessellate/api/routes_board_affinity.py:177 |
+| `/boards/{board_id}/affinity` | POST | `affinity_sort` | src/tessellate/api/routes_board_affinity.py:202 |
 | `/boards/{board_id}/duplicate` | POST | `duplicate_board` | src/tessellate/api/wb_boards.py:357 |
 | `/boards/{board_id}/export` | GET | `export_board` | src/tessellate/api/wb_export.py:685 |
 | `/boards/{board_id}/nodes` | POST | `create_map_node` | src/tessellate/api/wb_map.py:98 |
@@ -13876,7 +13876,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{document_id}/bookmarks` | GET | `document_bookmarks` | src/tessellate/api/routes_documents.py:272 |
 | `/{document_id}/bookmarks` | POST | `attach_bookmark` | src/tessellate/api/routes_documents.py:285 |
 | `/{document_id}/bookmarks/{bookmark_id}` | DELETE | `detach_bookmark` | src/tessellate/api/routes_documents.py:295 |
-| `/{document_id}/claim-check` | POST | `claim_check` | src/tessellate/api/routes_document_claims.py:177 |
+| `/{document_id}/claim-check` | POST | `claim_check` | src/tessellate/api/routes_document_claims.py:204 |
 | `/{document_id}/connections` | GET | `document_connections` | src/tessellate/api/routes_documents.py:947 |
 | `/{document_id}/export.md` | GET | `export_markdown` | src/tessellate/api/routes_documents.py:973 |
 | `/{document_id}/export.zip` | GET | `export_bundle` | src/tessellate/api/routes_documents.py:1015 |
@@ -13959,7 +13959,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10795)
+## Backend modules (10798)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21361,20 +21361,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stop` | src/tessellate/api/routes_bench.py:251 |
 | `time_share` | src/tessellate/api/routes_bench.py:70 |
 
-### src/tessellate/api/routes_board_affinity.py (10)
+### src/tessellate/api/routes_board_affinity.py (11)
 
 | Name | File:line |
 |---|---|
-| `AffinityBody` | src/tessellate/api/routes_board_affinity.py:50 |
-| `_all_groups` | src/tessellate/api/routes_board_affinity.py:163 |
-| `_ask_model` | src/tessellate/api/routes_board_affinity.py:84 |
-| `_backing` | src/tessellate/api/routes_board_affinity.py:128 |
-| `_by_words` | src/tessellate/api/routes_board_affinity.py:58 |
-| `_model_groups` | src/tessellate/api/routes_board_affinity.py:106 |
-| `_stem` | src/tessellate/api/routes_board_affinity.py:124 |
-| `_sticky_rows` | src/tessellate/api/routes_board_affinity.py:143 |
-| `_words` | src/tessellate/api/routes_board_affinity.py:54 |
-| `affinity_sort` | src/tessellate/api/routes_board_affinity.py:178 |
+| `AffinityBody` | src/tessellate/api/routes_board_affinity.py:51 |
+| `_all_groups` | src/tessellate/api/routes_board_affinity.py:188 |
+| `_ask_model` | src/tessellate/api/routes_board_affinity.py:109 |
+| `_backing` | src/tessellate/api/routes_board_affinity.py:153 |
+| `_by_words` | src/tessellate/api/routes_board_affinity.py:59 |
+| `_model_groups` | src/tessellate/api/routes_board_affinity.py:131 |
+| `_stem` | src/tessellate/api/routes_board_affinity.py:149 |
+| `_sticky_rows` | src/tessellate/api/routes_board_affinity.py:168 |
+| `_words` | src/tessellate/api/routes_board_affinity.py:55 |
+| `affinity_sort` | src/tessellate/api/routes_board_affinity.py:203 |
+| `bounded_chat` | src/tessellate/api/routes_board_affinity.py:91 |
 
 ### src/tessellate/api/routes_board_history.py (28)
 
@@ -21777,19 +21778,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `counts` | src/tessellate/api/routes_diag.py:37 |
 | `diagnostics` | src/tessellate/api/routes_diag.py:80 |
 
-### src/tessellate/api/routes_document_claims.py (9)
+### src/tessellate/api/routes_document_claims.py (10)
 
 | Name | File:line |
 |---|---|
 | `ClaimBody` | src/tessellate/api/routes_document_claims.py:51 |
-| `_ask_model` | src/tessellate/api/routes_document_claims.py:118 |
+| `_ask_model` | src/tessellate/api/routes_document_claims.py:145 |
 | `_claims` | src/tessellate/api/routes_document_claims.py:70 |
 | `_front_matter_end` | src/tessellate/api/routes_document_claims.py:55 |
-| `_message` | src/tessellate/api/routes_document_claims.py:169 |
-| `_model_verdicts` | src/tessellate/api/routes_document_claims.py:145 |
-| `_notes_for` | src/tessellate/api/routes_document_claims.py:93 |
-| `_words_rule` | src/tessellate/api/routes_document_claims.py:111 |
-| `claim_check` | src/tessellate/api/routes_document_claims.py:178 |
+| `_message` | src/tessellate/api/routes_document_claims.py:196 |
+| `_model_verdicts` | src/tessellate/api/routes_document_claims.py:172 |
+| `_notes_for` | src/tessellate/api/routes_document_claims.py:120 |
+| `_sentences` | src/tessellate/api/routes_document_claims.py:101 |
+| `_words_rule` | src/tessellate/api/routes_document_claims.py:138 |
+| `claim_check` | src/tessellate/api/routes_document_claims.py:205 |
 
 ### src/tessellate/api/routes_documents.py (64)
 
@@ -26187,13 +26189,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `note_properties` | src/tessellate/core/webclip.py:557 |
 | `page_facts` | src/tessellate/core/webclip.py:544 |
 
-### src/tessellate/core/webimage.py (3)
+### src/tessellate/core/webimage.py (4)
 
 | Name | File:line |
 |---|---|
 | `_check` | src/tessellate/core/webimage.py:31 |
-| `_read` | src/tessellate/core/webimage.py:45 |
-| `fetch_image` | src/tessellate/core/webimage.py:59 |
+| `_read` | src/tessellate/core/webimage.py:64 |
+| `_sniffed` | src/tessellate/core/webimage.py:45 |
+| `fetch_image` | src/tessellate/core/webimage.py:78 |
 
 ### src/tessellate/core/window_hook.py (4)
 
@@ -27763,7 +27766,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21960)
+## Tests (21966)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27957,7 +27960,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_block_bar_gutter_1111.py | 3 |
 | tests/test_board2_1028.py | 9 |
 | tests/test_board_acts.py | 6 |
-| tests/test_board_affinity.py | 7 |
+| tests/test_board_affinity.py | 8 |
 | tests/test_board_background.py | 8 |
 | tests/test_board_bpmn_icons.py | 3 |
 | tests/test_board_coordinates_1031.py | 6 |
@@ -28727,7 +28730,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doctor_offline.py | 4 |
 | tests/test_document_archive.py | 5 |
 | tests/test_document_bookmarks.py | 7 |
-| tests/test_document_claim_check.py | 6 |
+| tests/test_document_claim_check.py | 9 |
 | tests/test_document_diff.py | 3 |
 | tests/test_document_export_html.py | 5 |
 | tests/test_document_import.py | 12 |
@@ -30418,7 +30421,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_web_tool_kept_on_small_windows.py | 3 |
 | tests/test_webclip.py | 20 |
 | tests/test_webclip_page.py | 14 |
-| tests/test_webimage_topic.py | 8 |
+| tests/test_webimage_topic.py | 10 |
 | tests/test_weblink_inline_lmm7.py | 5 |
 | tests/test_websearch_api.py | 9 |
 | tests/test_websearch_diagnosis.py | 23 |
