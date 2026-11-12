@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings, Search and index has a dated currency rate table you can edit; currency answers use it and say its date.
 - Undoing a fresh read puts back who read the old reading too.
 - A transcription still running after a reload says when it finishes.
 - A quick note saved while the server is away keeps its reminder and sets it when the note goes in.

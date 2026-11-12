@@ -270,7 +270,10 @@ function showSettingsSection(name) {
   }
   if (name === "tasks") renderTasks(); // fill it in now, then poll
   if (name === "extras") renderExtras();
-  if (name === "searchindex") renderEmbedChoices();
+  if (name === "searchindex") {
+    renderEmbedChoices();
+    showSettingsSection.loadCurrencyRates();
+  }
   //: The Atlas row's starter chips, with the chat's bundle (help-chat.js).
   if (name === "help") renderAtlasStarters();
   //: Settings, About, Maintenance: settings-controls.js, the window's lazy file.
@@ -4064,3 +4067,78 @@ document.addEventListener("click", (event) => {
     }
   }
 });
+
+// --- currency rates (decision 43, L519) ----------------------------------------
+//: The dated table currency answers use, as "EUR 0.88" lines: read from and
+//: saved to `/utilities/rates`. Undo puts the table that was there back.
+//: One IIFE hung on `showSettingsSection`, so the shared scope does not grow.
+(() => {
+  function currencyRatesText(rates) {
+    return Object.entries(rates).filter(([code]) => code !== "USD").map(([code, rate]) => `${code} ${rate}`).join("\n");
+  }
+
+  function currencyRatesPaint(body) {
+    $("currency-rates-date").value = body.date;
+    $("currency-rates-text").value = currencyRatesText(body.rates);
+    $("currency-rates-status").textContent = body.built_in ? `The built-in table, dated ${body.date}.` : `Your table, dated ${body.date}.`;
+  }
+
+  //: "EUR 0.88" or "EUR: 0.88" per line; answers `{ rates }` or `{ error }`.
+  function currencyRatesParse(text) {
+    const rates = {};
+    for (const raw of text.split("\n")) {
+      const line = raw.trim();
+      if (!line) continue;
+      const match = line.match(/^([A-Za-z]{3})\s*[:=]?\s*([0-9]+(?:\.[0-9]+)?)$/);
+      if (!match || Number(match[2]) <= 0) return { error: `Write each line as a code and a rate above 0, like EUR 0.88: "${line}".` };
+      rates[match[1].toUpperCase()] = Number(match[2]);
+    }
+    return { rates };
+  }
+
+  async function loadCurrencyRates() {
+    if (!$("currency-rates-group")) return;
+    if (!$("currency-rates-group").dataset.wired) {
+      $("currency-rates-group").dataset.wired = "1";
+      $("currency-rates-save").addEventListener("click", () => saveCurrencyRates());
+      $("currency-rates-reset").addEventListener("click", () => saveCurrencyRates({ reset: true }));
+    }
+    try {
+      currencyRatesPaint(await apiJson("/utilities/rates", { silent: true }));
+    } catch (error) {
+      $("currency-rates-status").textContent = `Couldn't load the rates: ${error.message}`;
+    }
+  }
+
+  async function writeCurrencyRates(table) {
+    const body = table
+      ? await apiJson("/utilities/rates", { method: "PUT", body: JSON.stringify(table) })
+      : await apiJson("/utilities/rates", { method: "DELETE" });
+    currencyRatesPaint(body);
+    return body;
+  }
+
+  async function saveCurrencyRates({ reset = false } = {}) {
+    const status = $("currency-rates-status");
+    const parsed = reset ? { rates: null } : currencyRatesParse($("currency-rates-text").value);
+    if (parsed.error) {
+      status.textContent = parsed.error;
+      return;
+    }
+    if (!reset && !$("currency-rates-date").value) {
+      status.textContent = "Say the date these rates are from.";
+      return;
+    }
+    try {
+      const before = await apiJson("/utilities/rates", { silent: true });
+      const after = reset ? null : { date: $("currency-rates-date").value, rates: parsed.rates };
+      await writeCurrencyRates(after);
+      const was = before.built_in ? null : { date: before.date, rates: before.rates };
+      offerUndo(reset ? "Use the built-in rates" : "Save currency rates", reset ? "Currency rates are the built-in table." : "Saved the currency rates.", () => writeCurrencyRates(was), () => writeCurrencyRates(after));
+    } catch (error) {
+      status.textContent = error.message;
+    }
+  }
+
+  showSettingsSection.loadCurrencyRates = loadCurrencyRates;
+})();

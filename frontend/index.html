@@ -11028,6 +11028,38 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
             </div>
+            <!-- Decision 43 (L519): the currency table the calculator and Chat
+                 answer with, dated and set by hand, never fetched. Filled and
+                 saved by `loadCurrencyRates` / `saveCurrencyRates` (settings.js). -->
+            <div id="currency-rates-group" class="settings-group flash-target">
+              <div class="row help-head">
+                <h3>Currency rates</h3>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="currency-rates-help" aria-controls="currency-rates-help" aria-expanded="false"
+                  title="About currency rates" aria-label="About currency rates">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="help-body hidden" id="currency-rates-help" role="dialog" aria-label="About currency rates">
+                <p>
+                  Currency answers in Chat and the calculator use this table,
+                  never a rate fetched from the internet, and say its date.
+                  One currency per line: its code and how many of it make one
+                  US dollar. A currency left out keeps the built-in rate.
+                </p>
+              </div>
+              <div class="row">
+                <label for="currency-rates-date" class="muted">Rates as of</label>
+                <input id="currency-rates-date" type="date">
+              </div>
+              <label for="currency-rates-text" class="muted">Per US dollar, one per line</label>
+              <textarea id="currency-rates-text" rows="6" spellcheck="false"></textarea>
+              <div class="row">
+                <button id="currency-rates-save" class="ghost small" type="button">Save rates</button>
+                <button id="currency-rates-reset" class="ghost small" type="button">Use the built-in table</button>
+              </div>
+              <p id="currency-rates-status" class="status" role="status"></p>
+            </div>
           </section>
 
           <!-- Personas: who the AI is when it answers -->

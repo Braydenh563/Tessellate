@@ -1310,7 +1310,7 @@ MORE_TOPICS: list[dict] = [
             "and Copy is the way out. The keypad is one Tab stop: the "
             "arrow keys move around it. Units picks a kind (length, "
             "weight, currency and more), an amount and two units, with a swap "
-            "button; currency rates are set by hand and dated, not today's rate. "
+            "button; currency rates are dated, set in Settings, Search and index. "
             "Time zone takes a time and two places (09:00, London, Tokyo), "
             "offline. "
             "The Equation tab is the equation editor (see Equation editor): when "

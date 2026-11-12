@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 136 | 45 | 0 | 17 | 311 |
+| world-class | 130 | 135 | 45 | 0 | 17 | 310 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 662 | 144 | 3 | 140 | 1359 |
+| all | 553 | 661 | 144 | 3 | 140 | 1358 |
 
 ## graph
 
@@ -642,7 +642,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L515** `world-class` open, S: Extend Live Text to the scroll layout of PDFs. From OPEN.md:1471. Evidence: library.js:6746 ocrBuildScrollPages still builds scroll pages; layer per row says single-page only, no later change found
 - [ ] **L516** `world-class` open, S: Drive the attached-image thumbnail preview path. From OPEN.md:1620. Evidence: note-pick-preview.js:43 attachmentObjectUrl; no sweep drive found
 - [ ] **L518** `world-class` open, S: Live captions '0 of 1 installed' needs an Install button; fix duplicate 'No model connected' in Writing room. From audit-1029-extras.md Re-verified. Evidence: captions.js:84 branches on status.installed; no fix commit found; W27 string not re-located
-- [ ] **L519** `world-class` open, S: Build a Settings editor for the dated currency rate table (decision 43). From OPEN.md:1497; OPEN.md:1893. Evidence: utilities.py:62 RATES_DATE only; no editor in settings code
 - [ ] **L527** `world-class` open, S: Restyle Connections unlinked-mention Link button and tool-confirm pair away from bordered ghost. From OPEN.md:1677; OPEN.md:2670. Evidence: connections.js:226 smallButton('ph:link Link', ...) defaults ghost small (app.js:1497-1499)
 - [ ] **L529** `world-class` open, S: Drive code IDE, OCR workspace, phone More sheet, lock screen, board tools and Present. From OPEN.md:587. Evidence: Drivable with Playwright; no later sweep cited for all surfaces (phone More row measured HISTORY:3268)
 - [ ] **L530** `world-class` open, S: Fix flaky test_relations_kg2 10k timing under load. From OPEN.md:660; OPEN.md:3282. Evidence: No fix located; timing test remains in tests/test_relations_kg2.py
