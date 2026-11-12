@@ -4666,7 +4666,10 @@ details[open] > :is(.fold-summary, .agent-step-group-summary)::after {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.link-card-host {
+/* One host line for every web link (L386): a note's link card and a web
+   search result name the site the same way. */
+.link-card-host,
+.web-result-site {
   color: var(--muted);
   font-size: var(--text-sm);
 }

@@ -117,9 +117,6 @@
   font-weight: 600;
   overflow-wrap: anywhere;
 }
-.web-result-site {
-  font-size: var(--text-xs);
-}
 .web-result-line {
   margin: var(--space-1) 0 0;
   display: -webkit-box;

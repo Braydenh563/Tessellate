@@ -7962,3 +7962,14 @@ def test_a_sticky_commit_foot_holds_one_line_and_never_hides_the_focus() -> None
     lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
     foot = re.search(r"#capture > :not\(\.capture-commit-row\) :is\([^)]*\) \{([^}]*)\}", lazy)
     assert foot and "scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2))" in foot.group(1)
+
+
+def test_a_web_link_names_its_site_one_way() -> None:
+    """Source text: a note's link card and a web search result share one host
+    line rule and both name the site with `sourceHost` (L386)."""
+    chat_css = (ROOT / "frontend" / "css" / "02-chat-graph.css").read_text(encoding="utf-8")
+    assert re.search(r"\.link-card-host,\s*\.web-result-site\s*\{", chat_css)
+    lazy = (ROOT / "frontend" / "css" / "ask-compose-lazy.css").read_text(encoding="utf-8")
+    assert not re.search(r"\.web-result-site\s*\{", lazy), "a second host-line rule"
+    assert "sourceHost(url)" in (ROOT / "frontend" / "js" / "markdown.js").read_text(encoding="utf-8")
+    assert "sourceHost(source.url)" in (ROOT / "frontend" / "js" / "ask-compose.js").read_text(encoding="utf-8")

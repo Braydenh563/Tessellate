@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Web links: a note's link card and a web search result name the site in one shared style (L386; the result's site line was a size smaller). Kept: the Ask results' second head, which names the list and needs no control (L385).
 - CI: the three UI sweep failures fixed. Board top-bar menus: submenu wrappers and View's layout columns are `role="none"`, so each menu holds only items, and ArrowDown reaches View's items. The Ask tab sweep finds CI's Python through `VENV`; the companion emote sweep sits the companion before checking the night cap, which shows only sitting or lying.
 - Notes list view on a phone: under 600px a row's facts take a line of their own, so the title keeps its width (190px at 320, was about 10px) and no row's buttons run off the screen (L393). L395 closed: the Select and Filter words below 1400px are visually hidden labels, not clipped text.
 - CI: the seven py3.11 failures from c054446f fixed (rename row is contextual, characters bundle test follows its stylesheet, reminder note lookup moved to the repo layer, bin-all triage has an Undo, two settings tab strips fade, toast copy). The reminder brief now reads JSON (`apiJson`), so a meeting-prep brief shows when a reminder fires; before, it never did.

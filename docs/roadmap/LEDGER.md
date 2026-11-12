@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 65 | 4 | 0 | 17 | 165 |
+| ui-modernisation | 96 | 63 | 4 | 0 | 17 | 163 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 606 | 159 | 3 | 186 | 1318 |
+| all | 553 | 604 | 159 | 3 | 186 | 1316 |
 
 ## graph
 
@@ -485,8 +485,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## ui-modernisation
 
 - [ ] **L381** `ui-modernisation` open, S: Pixel-sample the 6 of 31 topic elements culled at 390. From OPEN.md:3903. Evidence: Verification gap: contrast measured from computed styles only; culled topics not measured. Low risk.
-- [ ] **L385** `ui-modernisation` open, S: Give #chat-results second half a head with actions or drop the panel-head. From OPEN.md:953. Evidence: No change found; index.html:2339 #chat-results head unchanged; no-op until a head wants a control
-- [ ] **L386** `ui-modernisation` open, S: Share one recipe between web link cards in chat/web reader and markdown.js linkCard. From OPEN.md:988. Evidence: markdown.js linkCard still separate; no recipe lint found in test_ui_recipes
 - [ ] **L388** `ui-modernisation` open, S: Stop the topic bar wrapping to two rows at 390. From OPEN.md:1952. Evidence: Measured identical on base; no fix
 - [ ] **L390** `ui-modernisation` open, S: Measure 390 px layout of Tidy Patterns rows and Chat pattern line. From OPEN.md:3730. Evidence: Never measured at 390; no recorded sweep
 - [ ] **L392** `ui-modernisation` open, S: Measure broom accent contrast and run the automatic contrast pass in a browser; check Tags Atlas review with a real model. From OPEN.md:624; OPEN.md:3562. Evidence: contrast.js measurement and browser run not recorded; pytest only
