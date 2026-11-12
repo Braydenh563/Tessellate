@@ -245,9 +245,13 @@ def _const_block(name: str) -> str:
 
 @needs_node
 def test_every_camera_move_glides_on_the_token_and_cuts_with_less_motion():
-    moves = re.findall(r"\.transition\(\)\.duration\(([^)]*\)?)\)\.call\((?:zoomBehavior|graphZoom|s\.zoom)", GRAPH_JS + CANVAS)
-    assert len(moves) >= 7 and all(m.startswith("graphGlideMs(") for m in moves), moves
-    assert "const sel = animate ? graphSvg.transition().duration(graphGlideMs(250)) : graphSvg;" in GRAPH_JS
+    # Every camera move is one `graphGlide(...)` call (L10: it also hands an interrupted glide's speed
+    # on), and that takes its length from `graphGlideMs`; no call builds its own transition.
+    moves = re.findall(r"graphGlide\((?:s\.)?(?:svg|graphSvg)[^;]*", GRAPH_JS + CANVAS)
+    assert len(moves) >= 9, moves
+    assert ".transition().duration(" not in re.sub(r"function graphGlide\(.*?^\}", "", GRAPH_JS, flags=re.S | re.M) + CANVAS
+    assert "const ms = graphGlideMs(base);" in GRAPH_JS
+    assert 'if (animate) graphGlide(graphSvg, graphZoom, "transform", [target], 250);' in GRAPH_JS
     glide = re.search(r"^function graphGlideMs\(.*?^\}", GRAPH_JS, re.S | re.M).group(0)
     out = _node(
         glide
