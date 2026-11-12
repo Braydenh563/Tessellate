@@ -93,3 +93,31 @@ def test_fetch_icon_keeps_a_small_image_and_refuses_the_rest(net):  # noqa: F811
     assert webclip.fetch_icon("https://x.example/f.png") == ""
     pages["x.example"] = FakeResponse(404, b"", {"content-type": "image/png"})
     assert webclip.fetch_icon("https://x.example/f.png") == ""
+
+
+def test_saving_a_link_fetches_its_icon_when_the_web_is_on(client, app_state, net, monkeypatch):  # noqa: F811
+    app_state.set_preference("web_search_enabled", True)
+    _site(net)
+    monkeypatch.setattr(webclip, "fetch_icon", lambda url: "data:image/png;base64,AAAA")
+    made = _make(client)
+    listed = client.get("/bookmarks").json()[0]
+    assert listed["id"] == made["id"] and listed["favicon"] == "data:image/png;base64,AAAA"
+    moved = client.put(f"/bookmarks/{made['id']}", json={"url": "https://bread.example/other"}).json()
+    assert moved["favicon"] == "", "the old address's icon goes at once"
+    assert client.get("/bookmarks").json()[0]["favicon"] == "data:image/png;base64,AAAA", "and the new one arrives"
+
+
+def test_saving_a_link_requests_nothing_while_the_web_is_off(client, net):  # noqa: F811
+    _names, _pages, log = net
+    _make(client)
+    assert log == []
+    assert client.get("/bookmarks").json()[0]["favicon"] == ""
+
+
+def test_a_page_that_will_not_load_leaves_the_saved_link_alone(client, app_state, net):  # noqa: F811
+    app_state.set_preference("web_search_enabled", True)
+    names, pages, _log = net
+    names["bread.example"] = ["93.184.216.34"]
+    pages["bread.example"] = FakeResponse(500, b"")
+    made = _make(client)
+    assert client.get("/bookmarks").json()[0]["id"] == made["id"]

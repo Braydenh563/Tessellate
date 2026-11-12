@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Recordings: the empty state has an icon, Record and Import audio, and a line on meeting recordings (INBOX 827 L2, `tests/test_recordings_empty_827.py`).
+- Links: a bookmark keeps a look (icon, colour) and what its last fetch found (the site's icon, a short excerpt, the page text); saving a link or changing its address fetches them in the background when the web is on, and a new address drops the old icon at once (the stale-icon bug); `POST /bookmarks/{id}/refresh`, `GET /bookmarks/{id}/text` (INBOX 827 L3, L5, `tests/test_bookmarks_look_827.py`).
 - Files: a file's extracted text opens as a reading column (body size, 1.6 line, 50vh with a fade, a Page N mark per page, a find box once it scrolls) under a quiet disclosure row; Copy text drops the page separators (INBOX 827 L1, `tests/test_library_827_reading.py`).
 - Fix: `select.focus()` on an enhanced select focuses its opener button (it focused nothing); a key listener on the native select still cannot fire and stays under `tests/test_select_focus.py`.
 - Verified: the spelling menu draws its five candidate words bare (0 icons, first row marked best); the check icon is only on the suggested-change menu's Accept rows (`tests/test_suggest_candidate_rows.py`).
