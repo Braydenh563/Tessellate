@@ -148,3 +148,16 @@ def test_the_dead_graph_svg_element_is_gone():
     assert "graph-svg" not in app_js_text()
     for rel in ("index.html", "css/02-chat-graph.css", "css/motion-still.css"):
         assert "graph-svg" not in (ROOT / "frontend" / rel).read_text(encoding="utf-8"), rel
+
+
+def test_a_topic_card_merges_removes_and_resets_as_saved_overrides():
+    """Ledger L711 and L11: merge and remove are a menu on the card, each one
+    undo of the same edits PUT; the card names the category most notes sit in."""
+    card = CANVAS[CANVAS.index("function gcShowTopic(") : CANVAS.index("async function gcSaveTopicName(")]
+    assert "kebabMenu(gcTopicMenuRows(topic)" in card
+    assert "Mostly in ${home}" in card and "home || topic.name" in card
+    assert '"ph:arrows-merge Merge with"' in CANVAS and '"ph:eye-slash Remove topic"' in CANVAS
+    assert 'pushRequestUndo(label, "/graph/topics/edits", "PUT", row.was, row.edits' in CANVAS
+    assert "Reset topic edits" in CANVAS
+    guide = help_chat_text()
+    assert "Merge with" in guide and "Remove topic" in guide and "Reset topic edits" in guide
