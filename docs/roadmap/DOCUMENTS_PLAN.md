@@ -522,11 +522,6 @@ candidate list is computed when the menu opens, not during the pass: doing
 it per unknown word per pass measured 29ms on a 276-character document.
 
 **Found while doing this, not fixed.**
-- `scratchpad/ui-sweeps/docviews.js` fails on "the view menu has no
-  line-numbers row" and then throws on a null click. Reproduced against the
-  branch before any of this landed, so it is an older gap in the view menu
-  rather than a regression: either the row goes back or the sweep stops
-  asking for it.
 - The suggestion menu draws the same check icon on every one of its five
   word rows, so the words read as five identical actions rather than as the
   answer with the actions underneath. The separating rule is there and it is

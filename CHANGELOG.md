@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Verified: scratchpad/ui-sweeps/docviews.js already asks for the formatting strip's line-numbers button, not the removed view-menu row; that part passes (0, then 7, then 0 numbers). The sweep still fails elsewhere (swift, r, ini and Python token colours read 0), see LEDGER.
 - Fix: the Notes Capture formatting strip opens when pressed. Its handler was bound at load, before the Notes surface existed, so it never ran; it is bound on the surface build (strip 40px with no tools before, 42px with all tools after).
 - Verified: two-finger / Ctrl-wheel pinch zoom already works on the OCR page pane (Fit to 150%), lightbox pictures and lightbox PDF pages (scale 1.648 from five -10 wheel events); pinned by `tests/test_pinch_zoom_viewers.py` (DOCUMENTS_PLAN owner bug). Real touch pinch not driven.
 - Test: the spell checker (ai/spelling.py and the editor word list) is pinned to load and tell "thier" from "their" (`tests/test_spellcheck_present.py`); no spellchecker.py ever existed in the repo, so nothing was removed (DOCUMENTS_PLAN owner bug).

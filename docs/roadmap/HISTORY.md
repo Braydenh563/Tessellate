@@ -55298,3 +55298,10 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 - "The note capture subtab formatting toolbar wont open :("
   Recommendation: reproduce from the Notes Capture subtab, then fix the toolbar's open state and measure it. No brief carries it; Brief 42 is the nearest.
   **Fixed/closed (ownbugs):** reproduced 2026-11-12 (port 8794): a press on the folded Capture strip did nothing (strip 40px, 0 tools, startNewNote not called). Cause: #note-toolbar lives in the Notes surface template, so foldNoteToolbarForFirstPaint at load found no bar and bound no handler; the earlier fix and its string test never ran. Now bound on the surface build (`onSurface("notes", ...)`, notes-list.js). Measured after: the press mounts the editor, strip 42px with the tools (Bold at x 326). tests/test_capture_strip_first_paint.py.
+
+- `scratchpad/ui-sweeps/docviews.js` fails on "the view menu has no
+  line-numbers row" and then throws on a null click. Reproduced against the
+  branch before any of this landed, so it is an older gap in the view menu
+  rather than a regression: either the row goes back or the sweep stops
+  asking for it.
+  **Fixed/closed (ownbugs):** already fixed in the sweep (it asserts the strip button #doc-toolbar .doc-toolbar-gutter, the removed view-menu row stays removed per INBOX "remove the line numbers view option"). Re-run 2026-11-12 on port 8794: strip_has_line_numbers true, md_numbers_after_ask 7, off again 0, no null click. Four unrelated failures remain (LEDGER row).
