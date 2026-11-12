@@ -645,8 +645,6 @@ function wbDrawioPlan(cells) {
   return { items, links, dropped };
 }
 
-//: The board's end marks to draw.io's (the import's table, turned round).
-const WB_DRAWIO_CAPS_OUT = { arrow: "classic", circle: "oval", "er-one-only": "ERone", "er-one": "ERmandOne", "er-many": "ERmany", "er-one-many": "ERoneToMany", "er-zero-one": "ERzeroToOne", "er-zero-many": "ERzeroToMany", cross: "cross", "half-arrow": "openAsync", "double-arrow": "doubleBlock" };
 const WB_DRAWIO_SHAPES_OUT = { circle: "ellipse", diamond: "rhombus", triangle: "triangle", rect: "rounded=0" };
 
 //: **A board as a `.drawio` file** (OPEN 807: the import had no way back).
@@ -739,7 +737,9 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
     if (!joined("source") || !joined("target")) { skip("loose connectors"); continue; }
     //: A .drawio edge carries one value here; the second label (`label2`) has no cell of its own to ride, so the notice names it.
     if (d.label2) skip("second connector labels");
-    const capOf = (cap, flag) => (cap && cap !== "none" ? WB_DRAWIO_CAPS_OUT[cap] || "classic" : flag ? "classic" : "none");
+    //: The board's end marks to draw.io's (the import's table, turned round).
+    const capsOut = { arrow: "classic", circle: "oval", "er-one-only": "ERone", "er-one": "ERmandOne", "er-many": "ERmany", "er-one-many": "ERoneToMany", "er-zero-one": "ERzeroToOne", "er-zero-many": "ERzeroToMany", cross: "cross", "half-arrow": "openAsync", "double-arrow": "doubleBlock" };
+    const capOf = (cap, flag) => (cap && cap !== "none" ? capsOut[cap] || "classic" : flag ? "classic" : "none");
     const end = capOf(d.endCap, d.endStyle === "end" || d.endStyle === "both");
     const start = capOf(d.startCap, d.endStyle === "both");
     const way = Array.isArray(d.points) && !["elbow", "er", "iso"].includes(d.route) ? `<Array as="points">${d.points.map((p) => `<mxPoint x="${Math.round(p.x)}" y="${Math.round(p.y)}"/>`).join("")}</Array>` : "";
@@ -1436,8 +1436,7 @@ async function wbDrawioPlace(plan, dx, dy, ink) {
 }
 
 //: Room round a page inside its frame, and between two page frames.
-const WB_DRAWIO_PAGE_PAD = 48;
-const WB_DRAWIO_PAGE_GAP = 160;
+const WB_DRAWIO_PAGE = { pad: 48, gap: 160 };
 
 //: A `.drawio` file onto this board, centred in the view, one undo step:
 //: swimlanes as frames, text as text boxes, the rest as shapes with their
@@ -1467,9 +1466,9 @@ async function wbImportDrawio(text, at = wbViewCentre(), csv = null) {
     return 0;
   }
   const framed = pages.length > 1;
-  const pad = framed ? WB_DRAWIO_PAGE_PAD : 0;
+  const pad = framed ? WB_DRAWIO_PAGE.pad : 0;
   for (const page of pages) page.box = wbDrawioBox(page.plan);
-  const rowW = pages.reduce((sum, page) => sum + page.box.w + pad * 2, 0) + WB_DRAWIO_PAGE_GAP * (pages.length - 1);
+  const rowW = pages.reduce((sum, page) => sum + page.box.w + pad * 2, 0) + WB_DRAWIO_PAGE.gap * (pages.length - 1);
   const rowH = Math.max(...pages.map((page) => page.box.h + pad * 2));
   const ink = window.currentStrokeColor && /^#[0-9a-f]{6}$/i.test(window.currentStrokeColor) ? window.currentStrokeColor : "#335599";
   let left = at[0] - rowW / 2;
@@ -1481,7 +1480,7 @@ async function wbImportDrawio(text, at = wbViewCentre(), csv = null) {
           Math.round(page.box.w + pad * 2), Math.round(page.box.h + pad * 2));
       }
       await wbDrawioPlace(page.plan, left + pad - page.box.minX, top + pad - page.box.minY, ink);
-      left += page.box.w + pad * 2 + WB_DRAWIO_PAGE_GAP;
+      left += page.box.w + pad * 2 + WB_DRAWIO_PAGE.gap;
     }
   });
   renderWhiteboardNow();
