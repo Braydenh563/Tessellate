@@ -6,6 +6,37 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: a headless sweep checks saved views, focus and global switching, the keyboard ring, reduced motion and the hover draw cost with numbers (L815 to L818).
+- Graph: a sweep draws the Tessellation view beside the chosen layout as one PNG with numbers (L-graph-12); a Map or Tessellation header no longer sits under the minimap.
+- Graph: in the Tessellation view a new note's cell drifts in and settles like the logo's third cell, 1.4 s, still under reduced motion (L-graph-10).
+- Graph: gcDraw, gcWireInteraction and gcStartWorker split into helpers under 130 lines each (L14); ring tuning measured and closed (L15).
+- Graph: focus mode and the note pane walk boards only with the Maps switch on, as the whole map does (L-graph-8).
+- Graph: a 2,000-note map settles in about 5 s at 4x CPU slowdown (was 11 to 14 s); the cleanup scan reads each dot's size once.
+- Code: the graph's document and entity layer queries moved into repo/documents.py and repo/graph_layers.py (router ORM calls 707 to under the cap).
+- Docs: GRAPH_PLAN's last lines that only read as open are reworded; the open-work scanner skips a reminder's default "Follow up:" text.
+- Graph: Play on the time slider is off, and says why, when every note shares one date; the Map of meaning layout has its line under the map.
+- Notes: on card view the last card you clicked counts as the open note, so search ranks its linked notes higher.
+- Graph: a topic's card names the category most of its notes sit in, and File as a category offers it first.
+- Graph: topics can be merged and removed from the topic card's menu; each has an Undo, and Reset topic edits in the legend brings the automatic grouping back.
+- Graph: saved views and Reset now carry the link-kind chips; the node popup's topic chip is 44 px on touch.
+- Graph: a Map of meaning layout places notes by a PCA of their stored vectors.
+- Graph: Compose into a draft: the selection bar's menu makes one document from the selected notes, a section each.
+- Similar notes name what they share (a tag, name or week), else "similar in meaning", on hover of the chip.
+- Graph: leaving focus puts every note back where it was (2,000 notes: moved up to 755 px before, 0 now).
+- Graph: the line-clearance push is cheaper on big maps: a long line pushes every second tick at twice the strength (2,000 notes 66 to 40 ms a call, overlaps still 0 on the 36-note seeds).
+- Graph: a big map's settle repaint after a zoom or pan is painted in eight bands, one per frame, under the scaled layer, so it no longer lands as one 110 ms task (2,000 notes, CPU 4x).
+- Graph: Escape closing a lightbox opened over the full-screen map no longer also leaves full screen.
+- Graph similarity: documents and entities get a derived vector (the mean of their notes' vectors), so they join similarity lines, centrality and trace hops; lines are marked derived.
+- Graph: with Trace on, clicking a document or entity node picks it as a trace end, and the trace asks /graph/path for the layers the map shows.
+- Documents: Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z in a document now say 'Undone' or 'Redone' even with notifications muted (C32).
+- Graph: a node's card beside its dot stays clear of the minimap, zoom strip and legend (0 px2 overlap at 1440x900, was 2250).
+- Graph: a camera glide cut off by another (arrow keys, zoom buttons, a fit) continues at its speed on a spring instead of stalling and restarting.
+- Graph: letting go of a dragged note no longer kicks the notes it links to in a single tick (the leash eases back in over half a second).
+- Graph: big maps settle faster and untangle better. A category turn past 160 lines is skipped (it never won), the passes stop past 1,000 notes, and crossings are counted on a grid of lines: untangle gain at 500 notes 0% to 8.6%, 2,000-note settle under node 5.7 s to 3.4 s.
+- Graph: removed the dead hidden graph-svg element with its click handlers, styles, lock-list entries and motion and avatar selectors.
+- Graph: document and entity nodes join centrality and the trace path (`include_documents`/`include_entities` on /graph, `documents`/`entities` on /graph/path, ids `document:N`/`entity:N`).
+- Graph hover: the note card fills once the pointer rests (120 ms) instead of on every note crossed; hover p50 about 47 to 34 ms at 500 notes and 4x CPU, the highlight unchanged.
+- Graph: a hub's lines cross about 40 to 50% less on a 36-note map; its neighbours take the order their other links lead, and the least tangled layout of the untangle passes is the one kept (`tests/test_graph_hub_crossings.py`).
 - Fixes from CI on PR 225: `entry_dates.until` has its alembic revision; Done on a reminder in the bell says when it fails and offers Undo (the due time back, reopened) with redo.
 - Fixes from CI on PR 225: a legacy zone name (Asia/Calcutta) is stored as its current name on every tz database; the span review lists at most 200 notes and says how many more; its refusals read as sentences; the gap line and the span count use the plural helper.
 - Timeline: the span review is said by the model when one runs (the span's notes, the utility model, librarian's prompt budget) and by the composer otherwise or when the call fails, so model on and off both answer (CHAT_PLAN decision 75); the Review button waits busy while it reads (`tests/test_timeline_span_digest.py`, four fake-transport tests).

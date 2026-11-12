@@ -44,18 +44,18 @@
 :root[data-motion="reduced"]:where(:not([data-ui-motion="on"])) *,
 :root[data-motion="reduced"]:where(:not([data-ui-motion="on"])) *::before,
 :root[data-motion="reduced"]:where(:not([data-ui-motion="on"])) *::after,
-:root[data-motion="reduced"] :where(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure),
-:root[data-motion="reduced"] :where(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *,
-:root[data-motion="reduced"] :where(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *::before,
-:root[data-motion="reduced"] :where(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *::after {
+:root[data-motion="reduced"] :where(.graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure),
+:root[data-motion="reduced"] :where(.graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *,
+:root[data-motion="reduced"] :where(.graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *::before,
+:root[data-motion="reduced"] :where(.graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *::after {
   transition-duration: 0s !important;
   transition-delay: 0s !important;
 }
 /* Interface animations off: every transition of the interface is instant,
    reduced motion or not; the decorative surfaces keep their own switches. */
-:root[data-ui-motion="off"] *:where(:not(:is(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure), :is(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *)),
-:root[data-ui-motion="off"] *:where(:not(:is(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *))::before,
-:root[data-ui-motion="off"] *:where(:not(:is(#graph-svg, .graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *))::after {
+:root[data-ui-motion="off"] *:where(:not(:is(.graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure), :is(.graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *)),
+:root[data-ui-motion="off"] *:where(:not(:is(.graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *))::before,
+:root[data-ui-motion="off"] *:where(:not(:is(.graph-minimap, #whiteboard-container, #nm-buddy, .name-mark, .nm-atlas, .nm-figure) *))::after {
   transition-duration: 0s !important;
   transition-delay: 0s !important;
 }

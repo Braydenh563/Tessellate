@@ -687,6 +687,8 @@ function markFollowers(node, on) {
     const other = link.source === node ? link.target : link.target === node ? link.source : null;
     if (!other || typeof other !== "object") continue;
     other.following = on;
+    //: Let go, the leash comes back over `TETHER_EASE_TICKS`, not in one tick.
+    if (!on) other.tetherEase = 0;
     if (on && other.fx == null) carry.followers.push({ node: other, dx: other.x - node.x, dy: other.y - node.y });
   }
 }
@@ -778,7 +780,18 @@ function nudgeReach(distance) {
   const t = Math.min(1, nudge.reach / DRAG_FULL_DISTANCE);
   nudge.w = 1 - t * t * (3 - 2 * t);
 }
+//: A held note stands still, but the forces that act at no heat (the tether)
+//: keep adding to its velocity under the hold: let go, that stored velocity
+//: was a single-tick step (LEDGER L8). It leaves still, with the leash eased in.
+function nudgeLetGo(list) {
+  for (const f of list) {
+    f.node.vx = 0;
+    f.node.vy = 0;
+    f.node.tetherEase = 0;
+  }
+}
 function nudgeEnd() {
+  nudgeLetGo(nudge.held);
   nudge.held = [];
   nudge.movers = [];
   nudge.w = 0;
@@ -1772,10 +1785,16 @@ const CLEAR_LEAN_TICKS = 60;
 const CLEAR_LEAN_GAIN = 2;
 //: A chord longer than this many cells reads each column's cells as one run.
 const CLEAR_LONG_CELLS = 4;
+//: **A long line pushes on every second tick, twice as hard** (L-graph-5, the
+//: owner 2026-11-12: a coarser push if dot overlaps stay 0). Lines longer than
+//: `CLEAR_SPLIT_CELLS` cells hold most of the hits; half of them take each tick.
+const CLEAR_SPLIT_CELLS = 3;
 const clear = {
   curved: true,
   lean: 0,
   gain: 1,
+  push: 1,
+  tick: 0,
   stamp: 0,
   start: new Int32Array(1),
   items: new Int32Array(0),
@@ -1872,7 +1891,7 @@ function clearPush(node, a, b) {
     nx = -(b.y - a.y) / len;
     ny = (b.x - a.x) / len;
   }
-  const push = (need - dist) * CLEAR_STRENGTH * clear.gain;
+  const push = (need - dist) * CLEAR_STRENGTH * clear.push;
   // A held note does not move; whoever is free takes the whole step.
   const along = clearNear[3];
   const nodeFree = node.fx == null ? 1 : 0;
@@ -1888,6 +1907,14 @@ function clearPush(node, a, b) {
   b.vy -= (ny * push * bFree) / (2 * share);
 }
 
+//: Whether a line pushes this tick, and how hard (`clear.push`): a long one on
+//: every second tick at twice the tick's gain.
+function clearSplitTurn(a, b) {
+  const split = Math.abs(b.x - a.x) + Math.abs(b.y - a.y) > CLEAR_SPLIT_CELLS * CLEAR_CELL;
+  clear.push = split ? clear.gain * 2 : clear.gain;
+  return !split || (clear.tick + a.index + b.index) % 2 === 0;
+}
+
 function clearanceForce() {
   clear.gain = 1;
   if (clear.lean > 0) {
@@ -1900,6 +1927,7 @@ function clearanceForce() {
   let widest = 0;
   for (const node of nodes) widest = Math.max(widest, node.r || 8);
   const reach = widest + CLEAR_GAP;
+  clear.tick += 1;
   //: **The notes by cell in two typed arrays, not a Map of lists** (audit
   //: 1029 row 35): a long line's corridor reads hundreds of cells, nearly
   //: all empty, and a Map lookup on a number key was most of this force's
@@ -1974,8 +2002,9 @@ function clearanceForce() {
   for (const link of links) {
     const a = link.source;
     const b = link.target;
-    const points = clearCurve(a, b);
     const stamp = ++clear.stamp;
+    if (!clearSplitTurn(a, b)) continue;
+    const points = clearCurve(a, b);
     const ai = a.index;
     const bi = b.index;
     //: Chord by chord, not the whole line's box: a note within `reach` of the
@@ -2082,6 +2111,14 @@ const TETHER_SLACK = 1.4;
 const TETHER_FLOOR = 70;
 const TETHER_PULL = 0.4;
 const TETHER_MIN_GROUP = 3;
+//: **The leash comes back over a few ticks after a drag** (LEDGER L8: a 7 px
+//: single-tick step after a release). A note the held one linked to is off the
+//: tether for the drag (`following`); the tether is not scaled by alpha, so on
+//: release a neighbour left far past its limit took the whole excess as one
+//: velocity kick: one tick still, 43 world units the next (tests/
+//: test_graph_release_step.py). `tetherEase` climbs 0 to 1 and scales the pull;
+//: the notes a drag froze (`thaw`) start it too.
+const TETHER_EASE_TICKS = 30;
 const tether = { groups: new Map() };
 const median = (values) => {
   const sorted = values.slice().sort((a, b) => a - b);
@@ -2107,11 +2144,16 @@ function tetherForce() {
     const limit = Math.max(TETHER_FLOOR, typical * TETHER_SLACK);
     for (const node of list) {
       if (!node.degree || node.fx != null || node.placed || node.following) continue;
+      let ease = 1;
+      if (node.tetherEase < 1) {
+        node.tetherEase = Math.min(1, node.tetherEase + 1 / TETHER_EASE_TICKS);
+        ease = smoothstep(node.tetherEase);
+      }
       const dx = cx - node.x;
       const dy = cy - node.y;
       const d = Math.hypot(dx, dy);
       if (d <= limit) continue;
-      const k = ((d - limit) * TETHER_PULL) / d;
+      const k = ((d - limit) * TETHER_PULL * ease) / d;
       node.vx += dx * k;
       node.vy += dy * k;
     }
@@ -2402,6 +2444,11 @@ const UNTANGLE_PASSES = 3;
 const UNTANGLE_BIG = 100;
 const UNTANGLE_BIG_PASSES = 2;
 const UNTANGLE_MIN_SHARE = 0.03;
+//: **Past `UNTANGLE_PASS_NOTES` the passes are skipped and only the cleanup
+//: runs** (W34 "Incremental crossing count"): three passes of 600 ms took 1.2%
+//: of the crossings at 1,200 notes and 0.5% at 2,000 (`scratchpad/hub/size.py`),
+//: most of it counting crossings, against 3.2% at 800 and 8.6% at 500.
+const UNTANGLE_PASS_NOTES = 1000;
 function untanglePasses() {
   return nodes.length > UNTANGLE_BIG ? UNTANGLE_BIG_PASSES : UNTANGLE_PASSES;
 }
@@ -2445,6 +2492,7 @@ function untangleSetup(edges) {
   untangle.cleaned = false;
   untangle.holding = false;
   untangle.mark = null;
+  untangle.best = null;
   //: Past the edge cap the stage is skipped, but its buffers are still built (empty),
   //: sized for this run: a dependent (`untangleCleanup`, `lineGridBuild`) reached on a
   //: skipped stage then sees no lines instead of null or the last run's arrays (the
@@ -2486,6 +2534,11 @@ function crossingsOn(mine) {
     ys[i] = nodes[i].y;
   }
   for (const i of mine) mark[i] = 1;
+  if (mine.length >= CROSS_GRID_MIN && count0 >= CROSS_GRID_MIN * 4) {
+    const count = crossingsGridded(mine, mark);
+    for (const i of mine) mark[i] = 0;
+    return count;
+  }
   let count = 0;
   for (const i of mine) {
     const a = ea[i];
@@ -2517,12 +2570,146 @@ function crossingsOn(mine) {
   return count;
 }
 
+//: **Many lines at once are counted through a grid** (W34 "Incremental crossing count"). The count already
+//: takes only pairs with a line in `mine`, but it read every line of the map for each of them: a category
+//: turn at 2,000 notes is about 1,000 lines by 3,800, and `crossingsOn` was 587 ms of a 2.6 s settle under
+//: node (96% of the untangle pass). Past `CROSS_GRID_MIN` lines, every line goes into the cells of a
+//: `CROSS_GRID` square grid its box touches (a line over `CROSS_GRID_SPAN` cells a side goes on a short list
+//: read by all), and each line of `mine` reads only the lines in its own cells, once each (`stamp`). The
+//: pairs and the test are the brute loop's, so the count is the same (tests/test_graph_crossings_grid.py).
+const CROSS_GRID_MIN = 16;
+const CROSS_GRID = 48;
+const CROSS_GRID_SPAN = 12;
+const crossGrid = { start: null, items: null, long: null, stamp: null, seen: 0 };
+function crossingsGridded(mine, mark) {
+  const ea = untangle.ea;
+  const eb = untangle.eb;
+  const xs = untangle.xs;
+  const ys = untangle.ys;
+  const count0 = ea.length;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (let i = 0; i < nodes.length; i++) {
+    if (xs[i] < minX) minX = xs[i];
+    if (xs[i] > maxX) maxX = xs[i];
+    if (ys[i] < minY) minY = ys[i];
+    if (ys[i] > maxY) maxY = ys[i];
+  }
+  const G = CROSS_GRID;
+  const sx = G / Math.max(1e-9, maxX - minX);
+  const sy = G / Math.max(1e-9, maxY - minY);
+  const cellX = (x) => Math.min(G - 1, Math.max(0, Math.floor((x - minX) * sx)));
+  const cellY = (y) => Math.min(G - 1, Math.max(0, Math.floor((y - minY) * sy)));
+  if (!crossGrid.start || crossGrid.start.length !== G * G + 1) crossGrid.start = new Int32Array(G * G + 1);
+  if (!crossGrid.stamp || crossGrid.stamp.length !== count0) {
+    crossGrid.stamp = new Int32Array(count0);
+    crossGrid.seen = 0;
+  }
+  const start = crossGrid.start;
+  start.fill(0);
+  const long = [];
+  const box = new Int32Array(count0 * 4);
+  let total = 0;
+  for (let j = 0; j < count0; j++) {
+    const ax = xs[ea[j]];
+    const bx = xs[eb[j]];
+    const ay = ys[ea[j]];
+    const by = ys[eb[j]];
+    const x0 = cellX(Math.min(ax, bx));
+    const x1 = cellX(Math.max(ax, bx));
+    const y0 = cellY(Math.min(ay, by));
+    const y1 = cellY(Math.max(ay, by));
+    box[j * 4] = x0;
+    box[j * 4 + 1] = x1;
+    box[j * 4 + 2] = y0;
+    box[j * 4 + 3] = y1;
+    if (x1 - x0 >= CROSS_GRID_SPAN || y1 - y0 >= CROSS_GRID_SPAN) {
+      long.push(j);
+      box[j * 4] = -1;
+      continue;
+    }
+    for (let gy = y0; gy <= y1; gy++) for (let gx = x0; gx <= x1; gx++) start[gy * G + gx + 1] += 1;
+    total += (x1 - x0 + 1) * (y1 - y0 + 1);
+  }
+  for (let c = 1; c <= G * G; c++) start[c] += start[c - 1];
+  if (!crossGrid.items || crossGrid.items.length < total) crossGrid.items = new Int32Array(Math.max(total, count0 * 2));
+  const items = crossGrid.items;
+  const fill = start.slice(0, G * G);
+  for (let j = 0; j < count0; j++) {
+    if (box[j * 4] < 0) continue;
+    for (let gy = box[j * 4 + 2]; gy <= box[j * 4 + 3]; gy++) {
+      for (let gx = box[j * 4]; gx <= box[j * 4 + 1]; gx++) items[fill[gy * G + gx]++] = j;
+    }
+  }
+  const stamp = crossGrid.stamp;
+  let count = 0;
+  const pair = (i, j, a, b, ax, ay, bx, by, loX, hiX, loY, hiY) => {
+    if (j === i) return 0;
+    const c = ea[j];
+    const d = eb[j];
+    if (c === a || c === b || d === a || d === b) return 0;
+    if (j < i && mark[j]) return 0;
+    const cx = xs[c];
+    const cy = ys[c];
+    const dx = xs[d];
+    const dy = ys[d];
+    if ((cx < loX && dx < loX) || (cx > hiX && dx > hiX) || (cy < loY && dy < loY) || (cy > hiY && dy > hiY)) return 0;
+    return segmentsCross(ax, ay, bx, by, cx, cy, dx, dy) ? 1 : 0;
+  };
+  for (const i of mine) {
+    if (++crossGrid.seen >= 0x7fffffff) {
+      stamp.fill(0);
+      crossGrid.seen = 1;
+    }
+    const seen = crossGrid.seen;
+    const a = ea[i];
+    const b = eb[i];
+    const ax = xs[a];
+    const ay = ys[a];
+    const bx = xs[b];
+    const by = ys[b];
+    const loX = Math.min(ax, bx);
+    const hiX = Math.max(ax, bx);
+    const loY = Math.min(ay, by);
+    const hiY = Math.max(ay, by);
+    if (box[i * 4] < 0) {
+      // A long line meets lines anywhere: it reads them all, as the brute loop does.
+      for (let j = 0; j < count0; j++) count += pair(i, j, a, b, ax, ay, bx, by, loX, hiX, loY, hiY);
+      continue;
+    }
+    for (const j of long) {
+      stamp[j] = seen;
+      count += pair(i, j, a, b, ax, ay, bx, by, loX, hiX, loY, hiY);
+    }
+    for (let gy = box[i * 4 + 2]; gy <= box[i * 4 + 3]; gy++) {
+      for (let gx = box[i * 4]; gx <= box[i * 4 + 1]; gx++) {
+        const cell = gy * G + gx;
+        for (let k = start[cell]; k < start[cell + 1]; k++) {
+          const j = items[k];
+          if (stamp[j] === seen) continue;
+          stamp[j] = seen;
+          count += pair(i, j, a, b, ax, ay, bx, by, loX, hiX, loY, hiY);
+        }
+      }
+    }
+  }
+  return count;
+}
+
 //: A whole category turns or mirrors about its middle when that lowers the
 //: crossings on its lines: its links out then face the categories they join.
 const UNTANGLE_TURN_STEPS = 8;
 //: Within the pass's budget (`until`, audit 1029 row 35): each turn counts the
 //: crossings on all of a category's lines, and at 2,000 notes the 10 x 16
 //: turns took 7.2 s in one call against a budget of 0.6 s.
+//: **A turn only where it can pay** (W34 "Incremental crossing count"): past
+//: `UNTANGLE_TURN_LINES` lines a category's turn never won (gain 0 at 500,
+//: 800, 1,200 and 2,000 notes, `scratchpad/hub/size.py`) and each try counted
+//: every line it touches, most of the pass's budget at 2,000 notes. Such a
+//: category is left to the per-note moves.
+const UNTANGLE_TURN_LINES = 160;
 function* untangleGroupsSteps(still, until = Infinity) {
   const groups = new Map();
   nodes.forEach((node, i) => {
@@ -2536,7 +2723,7 @@ function* untangleGroupsSteps(still, until = Infinity) {
     if (sliceOver()) yield;
     if (members.length < 2) continue;
     const lines = [...new Set(members.flatMap((i) => untangle.incident[i]))];
-    if (!lines.length) continue;
+    if (!lines.length || lines.length > UNTANGLE_TURN_LINES) continue;
     const x0 = members.map((i) => nodes[i].x);
     const y0 = members.map((i) => nodes[i].y);
     const cx = x0.reduce((a, b) => a + b, 0) / members.length;
@@ -2735,7 +2922,7 @@ function untangleNearCurve(note, a, b, points, need) {
 function untangleNear(note, a, b) {
   const d2 = untangleChordD2(note, a, b);
   const need = (note.r || 8) + untangle.margin;
-  // The curve bows at most `UNTANGLE_LINE_BOW` from its chord: a note farther than that is not near, and the curve is not built.
+  // The curve bows at most `UNTANGLE_LINE_BOW` from its chord: a note farther than that is not near, and the curve is skipped.
   const far = need + UNTANGLE_LINE_BOW;
   if (d2 >= far * far) return false;
   return untangleNearCurve(note, a, b, clearCurve(a, b), need);
@@ -3072,12 +3259,18 @@ function* untangleCleanupSteps() {
   untangle.margin = UNTANGLE_CLEAN_MARGIN;
   for (let i = 0; i < nodes.length && !stuck; i++) stuck = untangleOnLine(i);
   const meet = [];
-  const spread = collideRadius;
+  // Every pair is looked at (n²/2: 2M at 2,000 notes), so the radii are read once and the square test comes before the root.
+  const spread = stuck ? nodes.map(collideRadius) : [];
+  const gap = 2 * UNTANGLE_CLEAN_SLACK;
   for (let i = 0; stuck && i < nodes.length; i++) {
+    const ni = nodes[i];
     for (let j = i + 1; j < nodes.length; j++) {
       // The collision force's own radii: a smaller gap would be pushed back open by the next tick.
-      const need = spread(nodes[i]) + spread(nodes[j]);
-      if (Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y) < need + 2 * UNTANGLE_CLEAN_SLACK) meet.push([i, j, need]);
+      const need = spread[i] + spread[j];
+      const dx = ni.x - nodes[j].x;
+      const dy = ni.y - nodes[j].y;
+      const reach = need + gap;
+      if (dx * dx + dy * dy < reach * reach * 1.000001 && Math.hypot(dx, dy) < reach) meet.push([i, j, need]);
     }
   }
   for (let iter = 0; stuck && iter < UNTANGLE_CLEAN_ITERS && workNow() < until; iter++) {
@@ -3419,12 +3612,100 @@ function* untangleLayoutSteps() {
       if (bestAt) gained += before - best;
     }
     for (let i = 0; i < nodes.length && workNow() < until; i++) {
-      if (!still(nodes[i]) && untangle.incident[i].length > UNTANGLE_MOVE_LINKS) gained += yield* untangleFanSteps(i, still, until);
+      if (still(nodes[i]) || untangle.incident[i].length <= UNTANGLE_MOVE_LINKS) continue;
+      gained += yield* untangleOrderSteps(i, still, until);
+      gained += yield* untangleFanSteps(i, still, until);
     }
     untangle.gain += gained;
     if (!gained) break;
   }
   return untangleGlide(startX, startY);
+}
+
+//: **A hub's neighbours take the order their other lines lead** (INBOX 1306, W34 "Hub crossings"). The pair
+//: swaps below are local: a hub whose fan is turned or mirrored as a whole needs many swaps that each cost
+//: crossings, so they never start. Here the neighbours keep the spots they hold, sorted by angle round the
+//: hub, and are dealt into them in the order of the angle to each one's other neighbours (its own angle when
+//: it has none), at every turn of the deal and in both directions; the deal with the fewest crossings on
+//: their lines is kept when it beats the start. Spots are reused, never made, so no note lands on another.
+function* untangleOrderSteps(i, still, until = Infinity) {
+  const hub = nodes[i];
+  const around = [];
+  for (const line of untangle.incident[i]) {
+    const j = untangle.ea[line] === i ? untangle.eb[line] : untangle.ea[line];
+    if (j !== i && !still(nodes[j]) && !around.includes(j)) around.push(j);
+  }
+  const n = around.length;
+  if (n < 3) return 0;
+  const angle = (x, y) => Math.atan2(y - hub.y, x - hub.x);
+  const want = around.map((j) => {
+    let sx = 0;
+    let sy = 0;
+    let k = 0;
+    for (const line of untangle.incident[j]) {
+      const o = untangle.ea[line] === j ? untangle.eb[line] : untangle.ea[line];
+      if (o === i || o === j) continue;
+      sx += nodes[o].x;
+      sy += nodes[o].y;
+      k += 1;
+    }
+    return k ? angle(sx / k, sy / k) : angle(nodes[j].x, nodes[j].y);
+  });
+  const slots = around.map((j) => [nodes[j].x, nodes[j].y]).sort((a, b) => angle(a[0], a[1]) - angle(b[0], b[1]));
+  const order = around.map((_, k) => k).sort((a, b) => want[a] - want[b]);
+  const lines = [...new Set(around.flatMap((j) => untangle.incident[j]))];
+  const start = around.map((j) => [nodes[j].x, nodes[j].y]);
+  const before = crossingsOn(lines);
+  if (!before) return 0;
+  let best = before;
+  let bestDeal = null;
+  for (let dir = 1; dir >= -1; dir -= 2) {
+    for (let turn = 0; turn < n; turn++) {
+      if (workNow() >= until) break;
+      if (sliceOver()) yield;
+      order.forEach((k, at) => {
+        const slot = slots[(((dir * at + turn) % n) + n) % n];
+        nodes[around[k]].x = slot[0];
+        nodes[around[k]].y = slot[1];
+      });
+      const after = crossingsOn(lines);
+      if (after < best && around.every((j) => untangleInside(nodes[j]))) {
+        best = after;
+        bestDeal = around.map((j) => [nodes[j].x, nodes[j].y]);
+      }
+    }
+  }
+  const keep = bestDeal || start;
+  around.forEach((j, k) => {
+    nodes[j].x = keep[k][0];
+    nodes[j].y = keep[k][1];
+  });
+  //: Then a run of the fan turned end to end (a 2-opt on the order round the hub): the notes on the spots
+  //: from `a` to `b` take them in reverse, kept when that lowers the crossings and all stay in reach.
+  const seat = around.slice().sort((p, q) => angle(nodes[p].x, nodes[p].y) - angle(nodes[q].x, nodes[q].y));
+  for (let a = 0; a < n - 1; a++) {
+    for (let b = a + 1; b < n; b++) {
+      if (workNow() >= until) return before - best;
+      if (sliceOver()) yield;
+      const run = seat.slice(a, b + 1);
+      const at = run.map((j) => [nodes[j].x, nodes[j].y]);
+      run.forEach((j, k) => {
+        nodes[j].x = at[run.length - 1 - k][0];
+        nodes[j].y = at[run.length - 1 - k][1];
+      });
+      const after = crossingsOn(lines);
+      if (after < best && run.every((j) => untangleInside(nodes[j]))) {
+        best = after;
+        seat.splice(a, run.length, ...run.slice().reverse());
+        continue;
+      }
+      run.forEach((j, k) => {
+        nodes[j].x = at[k][0];
+        nodes[j].y = at[k][1];
+      });
+    }
+  }
+  return before - best;
 }
 
 //: **A hub's neighbours trade places** (graph-1030:35: the rings move the hub, nothing moved the order its lines
@@ -3516,13 +3797,36 @@ function untangleOwed() {
 //: out of sight, `pendingStep`). `cap`: no pass is begun that would leave the
 //: cleanup no time before it; the passes left are given up, the cleanup runs
 //: (notes left on a line show more than a crossing a pass would have saved).
+//: **The least crossed layout of the passes is the one cleaned** (W34 "Hub crossings"). Each relax after a
+//: pass lets the links pull the moved notes back: on the 36-note hub seeds a pass took 71 crossings to 28
+//: and the relax gave back 38 of them. So the layout is kept after each pass and each relax, and the one
+//: with the fewest crossings goes to the cleanup, which clears what a pass brought close (notes that meet,
+//: a line through a dot) as it does after a relax.
+function untangleKeepBest() {
+  const all = untangle.edges.map((_, k) => k);
+  const now = crossingsOn(all);
+  if (untangle.best && untangle.best.count <= now) return;
+  untangle.best = { count: now, xs: nodes.map((n) => n.x), ys: nodes.map((n) => n.y) };
+}
+function untangleTakeBest() {
+  const best = untangle.best;
+  untangle.best = null;
+  if (!best || best.xs.length !== nodes.length) return;
+  if (best.count >= crossingsOn(untangle.edges.map((_, k) => k))) return;
+  nodes.forEach((node, i) => {
+    if (node.fx != null) return;
+    node.x = best.xs[i];
+    node.y = best.ys[i];
+  });
+}
+
 function settleUntangled(until, deadline, cap) {
   if (!coolToRest(until)) return false;
   const late = () => deadline && Date.now() + untangleBudget() > deadline;
   while (untangle.run || !untangle.done || (untangle.passes > 0 && untangle.passes < untanglePasses())) {
     if (!untangle.run) {
       if (late()) return "late";
-      if (cap && Date.now() + 2 * untangleBudget() > cap) {
+      if ((cap && Date.now() + 2 * untangleBudget() > cap) || nodes.length > UNTANGLE_PASS_NOTES) {
         untangle.done = true;
         untangle.passes = UNTANGLE_PASSES;
         break;
@@ -3538,12 +3842,15 @@ function settleUntangled(until, deadline, cap) {
     landTargets();
     untangle.passes += 1;
     if (untangle.gain < Math.max(2, untangle.total * UNTANGLE_MIN_SHARE)) untangle.passes = UNTANGLE_PASSES;
+    untangleKeepBest();
     // A low heat lets the collision and the line clearance settle what the
     // moves brought close (a swap can put a hub where a small note stood).
     simulation.alpha(UNTANGLE_RELAX);
     if (!coolToRest(until)) return false;
+    untangleKeepBest();
   }
   untangle.done = true;
+  if (untangle.passes > 0 && !untangle.cleaned && !untangle.tidy) untangleTakeBest();
   if (untangle.passes > 0 && !untangle.cleaned) {
     if (!untangle.tidy) {
       if (late()) return "late";
@@ -4301,6 +4608,7 @@ self.onmessage = (event) => {
           //: pulled a dropped one 296px back toward its category.
           node.placed = true;
           // Its own links ease round where it was put; the rest stay held.
+          nudgeLetGo(nudge.held.filter((f) => f.linked));
           nudge.held = nudge.held.filter((f) => !f.linked);
           if (ring.params) applyGrouping(ring.params);
         }
@@ -4326,6 +4634,7 @@ self.onmessage = (event) => {
         node.fx = null;
         node.fy = null;
         node.frozenByDrag = false;
+        node.tetherEase = 0;
       }
       run();
       break;
