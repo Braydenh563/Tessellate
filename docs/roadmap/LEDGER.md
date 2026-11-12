@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 121 | 42 | 0 | 18 | 293 |
+| world-class | 130 | 119 | 42 | 0 | 18 | 291 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 618 | 139 | 3 | 136 | 1310 |
+| all | 553 | 616 | 139 | 3 | 136 | 1308 |
 
 ## graph
 
@@ -651,7 +651,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L587** `world-class` open, M: Add installer progress, minimise and close for optional package downloads, and janitor default-model warm. From OPEN.md:699; e19-1110.md Tier F. Evidence: Installer UI on Windows; scripts/splash.ps1 exists, behaviour unverified
 - [ ] **L588** `world-class` open, M: Settings import should merge skills/personas/templates; verify the desktop save path. From OPEN.md:961; OPEN.md:2591. Evidence: Merge fixed: routes_settings.py:1300 _MERGED_LISTS (row 558); desktop save dialog still needs the Windows desktop
 - [ ] **L589** `world-class` open, M: Frontend audit leftovers: coverage-driven unused CSS deletion (FE-09) and FE-10. From OPEN.md:1818. Evidence: Coverage-driven CSS deletion not started per row; no commit found
-- [ ] **L590** `world-class` open, M: Clear dismissed suggestions must clear per-note 'Not suggested' tags; fix lagging Undo toast and top-bar theme button. From OPEN.md:1674; OPEN.md:2498. Evidence: settings-data.js:951 now clears ids, tensions and note_tags; top-bar theme button in Recent changes and Undo toast lag not shown fixed
 - [ ] **L591** `world-class` open, M: Show backup schedule with last success beyond Settings, About and Health (e.g. dashboard). From OPEN.md:1776; OPEN.md:3797. Evidence: settings-data.js:333 'Last backup ...' line and settings-health.js:101 last_backup exist; not shown elsewhere (dashboard)
 - [ ] **L592** `world-class` open, M: Add a search field to the Notes sidebar (Brief 47). From OPEN.md:3739. Evidence: Routes built are no-match button and saved-search rows; field not added
 - [ ] **L593** `world-class` open, M: Drive lightbox Escape, reminders add form and graph node panel back. From OPEN.md:3876. Evidence: Not driven; chat undo not reproduced
@@ -749,7 +748,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-7** `world-class` open, S: Measure footnotes, Mermaid and rich paste in the note composers. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:966. Evidence: docRichPasteEvent is wired only in documents-view.js:313; the capture-stage paste handler takes only files, so rich paste in note composers was never measured or fixed
 - [ ] **L-world-class-8** `world-class` open, M: Group notes by type in the Library. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:372. Evidence: Open line in the plan's prose a session could miss. Left fragment inside a built dossier; repeated in the section 8 table at 797.
 - [ ] **L-world-class-9** `world-class` open, S: Re-run the Settings prose length metric. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:442. Evidence: Open line in the plan's prose a session could miss. Measurement promised in D13 never re-run after the copy pass.
-- [ ] **L-world-class-10** `world-class` open, S: Hide uninstalled controls using /capabilities. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:664. Evidence: Open line in the plan's prose a session could miss. Left fragment in a built block.
 - [ ] **L-world-class-11** `world-class` open, M: Add limits to unbounded list routes. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:666. Evidence: Open line in the plan's prose a session could miss. Marked (open) inline; the client still pages by offset (FE-05).
 - [ ] **L-world-class-12** `world-class` open, M: Run MCP tool tests and confirm outside agents' destructive calls. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:800. Evidence: Open line in the plan's prose a session could miss. Section 8 table row left open (also at 1796).
 - [ ] **L-world-class-13** `world-class` open, S: Sweep the five whiteboard menus. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:986. Evidence: Open line in the plan's prose a session could miss. Hand-off to other plans that no LEDGER row records (the SVG graph flag part is stale).

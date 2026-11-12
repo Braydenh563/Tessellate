@@ -195,3 +195,15 @@ def test_the_packaged_app_offers_its_own_mcp_flag_not_a_python_command(client, m
     assert source["installed"] is True and source["command"] == "python -m tessellate.mcp_server"
     assert source["config"]["args"] == ["-m", "tessellate.mcp_server"]
     assert source["config"]["env"]["TESSELLATE_DATA_DIR"]
+
+
+# L-world-class-10: the page hides a control whose backend /capabilities says is not installed.
+def test_the_document_importer_is_hidden_when_capabilities_says_markitdown_is_missing():
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    block = js.split('apiJson("/capabilities", { silent: true })', 1)[1].split("});", 1)[0]
+    #: Only an explicit false hides it: a failed read must leave the importer where it was.
+    assert "office_import?.installed === false" in block
+    assert '$("import-document").closest(".fold-help-wrap")' in block and 'classList.add("hidden")' in block
+    assert ".catch(() => {})" in js.split('apiJson("/capabilities", { silent: true })', 1)[1][:500]

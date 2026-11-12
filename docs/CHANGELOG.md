@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings hides Import a document until its package is installed, and clearing dismissed suggestions is covered end to end (L-world-class-10, L590).
 - Tests no longer wait 5 seconds each for the autonomous loop at teardown (CI ran past its 90-minute limit).
 - Chat's side routes have their own file, every file over 800 lines has a cap that only falls, and no Python function passes 150 lines (L624, L640). An import cycle between media cleanup and note text is gone.
 - The Clock's timer and stopwatch help popover and the Count words Guide topic are covered by tests.

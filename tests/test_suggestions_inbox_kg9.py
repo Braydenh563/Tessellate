@@ -386,3 +386,19 @@ def test_tags_turned_down_on_notes_are_counted_cleared_and_restored(client):
     assert client.get(f"/entries/{a['id']}").json()["discarded_tags"] == ["Study", "uni"]
     assert client.get(f"/entries/{b['id']}").json()["discarded_tags"] == ["Study"]
     assert client.get("/suggestions/dismissed").json()["note_tags"] == 3
+
+
+# L590: clearing dismissed suggestions clears per-note "Not suggested" tags (server, above) and the
+# client carries them through Undo; an Undo of a look change reaches the top-bar theme button at once.
+def test_the_clear_button_carries_note_tags_and_a_look_undo_repaints_the_theme_button():
+    from pathlib import Path
+
+    js = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    data = (js / "settings-data.js").read_text(encoding="utf-8")
+    assert "note_tags: done.note_tags" in data.split('$("clear-dismissed")', 1)[1][:600]
+    look = data.split('kept.kind === "look") {', 1)[1].split("} else if", 1)[0]
+    assert "applyThemeChoice(" in look and "await" not in look.split("applyThemeChoice(", 1)[0].split("\n")[-1]
+    settings = (js / "settings.js").read_text(encoding="utf-8")
+    choice = settings.split("function applyThemeChoice(", 1)[1].split("\n}\n", 1)[0]
+    assert "applyResolvedMode()" in choice
+    assert "renderThemeToggle();" in settings.split("function applyResolvedMode()", 1)[1].split("\n}\n", 1)[0]
