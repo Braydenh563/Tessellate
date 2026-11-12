@@ -11,28 +11,28 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 24 | 5 | 0 | 18 | 99 |
-| documents | 70 | 24 | 5 | 0 | 18 | 99 |
-| documents | 70 | 24 | 5 | 0 | 18 | 99 |
-| documents | 70 | 24 | 5 | 0 | 18 | 99 |
-| documents | 70 | 24 | 5 | 0 | 18 | 99 |
-| documents | 70 | 24 | 5 | 0 | 18 | 99 |
+| documents | 70 | 23 | 5 | 0 | 18 | 98 |
+| documents | 70 | 23 | 5 | 0 | 18 | 98 |
+| documents | 70 | 23 | 5 | 0 | 18 | 98 |
+| documents | 70 | 23 | 5 | 0 | 18 | 98 |
+| documents | 70 | 23 | 5 | 0 | 18 | 98 |
+| documents | 70 | 23 | 5 | 0 | 18 | 98 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 635 | 143 | 3 | 190 | 1331 |
-| all | 553 | 635 | 143 | 3 | 190 | 1331 |
-| all | 553 | 635 | 143 | 3 | 190 | 1331 |
+| all | 553 | 634 | 143 | 3 | 190 | 1330 |
+| all | 553 | 634 | 143 | 3 | 190 | 1330 |
+| all | 553 | 634 | 143 | 3 | 190 | 1330 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 635 | 143 | 3 | 190 | 1331 |
+| all | 553 | 634 | 143 | 3 | 190 | 1330 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 635 | 143 | 3 | 190 | 1331 |
-| all | 553 | 635 | 143 | 3 | 190 | 1331 |
-| all | 553 | 635 | 143 | 3 | 190 | 1331 |
+| all | 553 | 634 | 143 | 3 | 190 | 1330 |
+| all | 553 | 634 | 143 | 3 | 190 | 1330 |
+| all | 553 | 634 | 143 | 3 | 190 | 1330 |
 
 ## graph
 
@@ -401,7 +401,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-4** `documents` open, M: Turn a board's frames into a document draft. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:843. Evidence: no command turns a board into a document draft; lines 843 to 846 are untracked
 - [ ] **L-documents-9** `documents` open, M: Code block runner leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1100. Evidence: Open line in the plan's prose a session could miss. Unmined pointer leftovers.
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
-- [ ] **L-documents-20** `documents` open, S: Connect handle over a diamond at 390 (L-documents-18 remainder). From L-documents-18. Evidence: At 390 a 4-block flowchart opens at 84 percent (the 47 to 59 percent was a larger one, fit by design); the connect handle over a diamond (box 144x144 at 186,388) is not measured: tap the handle on a diamond in the picture and check it does not cover the decision's text
 - [ ] **L-documents-21** `documents` open, M: Diagram Ask and Suggestions for mind map, timeline and sequence (L321 remainder). From L321. Evidence: Ask and Suggestions are flowchart-only; mind map, timeline and sequence get Versions only (diagram-ai.js lint/show use the flowchart model)
 - [ ] **L-documents-22** `documents` open, S: Drag a shape from the diagram Add sheet onto the picture on a touch screen (L-documents-8 remainder). From L-documents-8. Evidence: Add sheet opens from the kinds' Add button at 390 (measured: no target under 44 px, fits the width); the drag of a shape from the sheet onto the picture on a real touch screen is not driven
 
