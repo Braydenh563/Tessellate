@@ -97,3 +97,11 @@ def test_the_chord_is_free_listed_and_every_end_of_a_gesture_records():
     assert js.count('record({ kind: "turn", deg: (d.rotation') == 2
     src = script_file_text("whiteboard-keys.js")
     assert _js_scope.is_wrapped(src) and _js_scope.global_names(src) == set()
+
+
+def test_the_drawn_shapes_rotate_grip_records_its_turn_when_the_drag_ends():
+    #: L-whiteboard-18: the grip bakes the turn into the path, so the delta is what the drag turned by (rotateLiveAngle).
+    js = script_file_text("whiteboard.js")
+    end = js.split("let rotateOriginalD = null")[1].split(".on(\"end\"")[1].split("shapeGrip.append(\"title\")")[0]
+    assert end.count("keys?.record({ kind: \"turn\", deg: rotateLiveAngle })") == 1
+    assert end.index("keys?.record") > end.index("wbSaveSketchProps") and end.index("keys?.record") < end.index("wbScheduleRender()")

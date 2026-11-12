@@ -14,7 +14,18 @@
     const chain = wbGroupChain(item);
     return prefix.every((seg, i) => chain[i] === seg);
   };
-  const outside = (kind, item) => prefix.length > 0 && !inside(item);
+  //: A connector joining two members of the open group belongs to the edit too (L-whiteboard-19): it has no group of its
+  //: own, so it is judged by its two ends, both of which must be attached and inside. One with a free end stands back.
+  const joinsMembers = (sketch) => {
+    if (!wbIsLinkSketch(sketch)) return false;
+    const data = wbSketchData(sketch) || {};
+    return ["source", "target"].every((end) => {
+      const id = data[`${end}Id`];
+      const ends = id == null ? null : wbFindItem(data[`${end}Kind`] || "node", id);
+      return Boolean(ends) && inside(ends);
+    });
+  };
+  const outside = (kind, item) => prefix.length > 0 && !inside(item) && !(kind === "sketch" && joinsMembers(item));
 
   function paint() {
     //: A group whose members are gone (ungrouped, deleted, another board) is left rather than kept open on nothing.

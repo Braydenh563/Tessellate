@@ -34,6 +34,9 @@ const document = { activeElement: %(active)s,
 const WB_LIST_BY_KIND = { sketch: "sketches", node: "nodes", object: "objects" };
 const WB_SELECTOR_BY_KIND = { sketch: (id) => `.s[data-id="${id}"]`, node: (id) => `.n[data-id="${id}"]`, object: (id) => `.o[data-id="${id}"]` };
 const wbState = { sketches: items, nodes: [], objects: [] };
+const wbIsLinkSketch = (s) => /"type"\\s*:\\s*"link-/.test(s.data || "");
+const wbSketchData = (s) => JSON.parse(s.data);
+const wbFindItem = (kind, id) => (kind === "sketch" ? items : []).find((i) => i.id === id) || null;
 const wbGroupChain = (item) => (item.group_id ? String(item.group_id).split(">") : []);
 const wbItemsWithGroupPrefix = (p) => items.filter((i) => p.every((s, n) => wbGroupChain(i)[n] === s)).map((item) => ({ kind: "sketch", item }));
 const wbCommonGroupPrefix = (list) => { const c = list.map(wbGroupChain); const out = []; for (let i = 0; i < c[0].length; i++) { if (!c.every((x) => x[i] === c[0][i])) break; out.push(c[0][i]); } return out; };
@@ -158,3 +161,19 @@ def test_the_wiring_is_in_the_source():
     assert 'id="wb-workspaces"' in INDEX.read_text(encoding="utf-8")
     css = (INDEX.parent / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert ".wb-dimmed" in css and "pointer-events: none" in css.split(".wb-dimmed")[1].split("}")[0]
+
+
+def _link(id, source, target, **extra):
+    data = {"type": "link-straight", "sourceKind": "sketch", "targetKind": "sketch", "sourceId": source, "targetId": target, **extra}
+    return {"id": id, "group_id": None, "data": json.dumps(data)}
+
+
+def test_a_connector_between_two_members_stays_undimmed_and_in_reach_inside_a_group():
+    #: L-whiteboard-19: items 1 and 2 are in group a>b; a link joining them is not dimmed, one to item 4 (outside) or with a free end is.
+    links = [_link(5, 1, 2), _link(6, 1, 4), _link(7, 1, None)]
+    got = _run(
+        f"items.push(...{json.dumps(links)}); wbFmtState.isolate.enter(['a', 'b']);"
+        "console.log(JSON.stringify({ dimmed: dimmed(), out: [5, 6, 7].map((id) => wbFmtState.isolate.outside('sketch', items.find((i) => i.id === id))) }));"
+    )
+    assert got["dimmed"] == [".s3", ".s4", ".s6", ".s7"]
+    assert got["out"] == [False, True, True]

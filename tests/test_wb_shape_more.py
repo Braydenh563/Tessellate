@@ -141,3 +141,34 @@ def test_the_points_editor_is_a_command_in_the_menus_and_it_saves_one_undo_step_
     assert '"edit-points"' in frontend_text("whiteboard.js")  # also in the context menu's Arrange list
     source = frontend_text("whiteboard-shape-more.js")
     assert source.count('wbPushUndo({ action: "move"') == 1  # one place saves, so a move, an addition and a removal are each one step
+
+
+def test_row_ports_follow_unequal_row_heights_and_a_connector_on_row_three_lands_on_its_middle():
+    #: Weights 1, 2, 1, 4 (total 8): row 3's middle is (1 + 2 + 1 + 2) / 8 = 0.75, row 1's is (1 + 1) / 8 = 0.25.
+    got = _run(
+        "const m = wbFmtState.shapeMore; const w = [1, 2, 1, 4];"
+        "const ports = m.tableRowPorts(w);"
+        "console.log(JSON.stringify([ports.map((p) => p.y), m.rowOf({ x: 1, y: 0.75 }, w), m.rowOf({ x: 0, y: 0.25 }, w), m.rowOf({ x: 0, y: 0.5 }, w)]));"
+    )
+    assert got[0] == [0.0625, 0.0625, 0.25, 0.25, 0.4375, 0.4375, 0.75, 0.75, 0, 1]
+    assert got[1:] == [3, 1, -1]
+
+
+def test_a_row_added_to_a_table_with_row_heights_moves_the_connector_to_the_new_middle_of_its_row():
+    #: The row rule is the renderer's wbTableRules (here a copy of its two functions, since the stand-in has no board).
+    got = _run(
+        "const m = wbFmtState.shapeMore;"
+        "globalThis.wbTableRules = { wbTableRowWeights: (t) => t.data.row_heights,"
+        " wbTableAxisWeights: (w, at, remove) => { const total = w.reduce((a, n) => a + n, 0);"
+        "  const g = remove ? w.filter((_, i) => i !== at) : [...w.slice(0, at), total / w.length, ...w.slice(at)];"
+        "  const mean = g.reduce((a, n) => a + n, 0) / g.length; return g.map((n) => Math.round((n / mean) * 1000) / 1000); } };"
+        "wbState.sketches = [link(1, { sourceId: 7, sourceKind: 'object', targetId: 2, sourceAnchor: { x: 1, y: 0.75 } })];"
+        "const run = m.carryRowPorts({ id: 7, data: { row_heights: [1, 2, 1, 4] } }, 1, false, 4); await run();"
+        "console.log(JSON.stringify(saved));"
+    )
+    #: Weights 1, 2, 2, 1, 4 at mean 1 are 0.5, 1, 1, 0.5, 2: the old row 3 is row 4, its middle (0.5 + 1 + 1 + 0.5 + 1) / 5 = 0.8.
+    assert got == [{"id": 1, "patch": {"sourceAnchor": {"x": 1, "y": 0.8}}}]
+
+
+def test_the_port_lookup_asks_the_table_renderers_row_rule():
+    assert "tableRowPorts(wbTableRules.wbTableRowWeights(item))" in frontend_text("whiteboard.js")
