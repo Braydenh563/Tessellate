@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 174 | 58 | 0 | 72 | 362 |
+| world-class | 130 | 173 | 58 | 0 | 72 | 361 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 700 | 157 | 3 | 195 | 1410 |
+| all | 553 | 699 | 157 | 3 | 195 | 1409 |
 
 ## graph
 
@@ -635,7 +635,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L499** `world-class` open, S: Refresh README palette.png which still shows notes, a document, a board. From OPEN.md:1248. Evidence: palette.png last committed 97ba7d73b 2026-10-12; no later retake in git log.
 - [ ] **L500** `world-class` open, S: Stop a titled note's every sentence scoring on title in the brief (TITLE_WEIGHT). From OPEN.md:1947. Evidence: Brief keeps up to four dated sentences; TITLE_WEIGHT fix not found in brief code
 - [ ] **L501** `world-class` open, S: Add a count kind to recognise and make factgraph _QUANTITY use it. From OPEN.md:3713. Evidence: factgraph.py:166 _QUANTITY still own regex; recognise.py has count_of but factgraph delegates only money (:576)
-- [ ] **L502** `world-class` open, S: Stop the reminder notifier on quit without waiting out the pool's 5 s deadline. From OPEN.md:1376. Evidence: __main__.py:1828 stop_notifier() still called after the pool shutdown path.
 - [ ] **L503** `world-class` open, S: Cover request-bound long tasks with core/activity.track and extend the THREAD_SITES lint. From OPEN.md:1498. Evidence: tests/test_activity.py THREAD_SITES covers thread sites only; core/activity.track not added at import/summary sites
 - [ ] **L504** `world-class` open, S: Speed up the night shift pairing phase (120 s) and stop the bar resetting. From OPEN.md:1945. Evidence: No speed-up commit found
 - [ ] **L505** `world-class` open, S: Audit jobruns detail strings that carry {exc}. From OPEN.md:1950; OPEN.md:3542. Evidence: Audit not recorded

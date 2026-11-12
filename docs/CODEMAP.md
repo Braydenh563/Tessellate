@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10765, test files 2669, tests 21800, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10765, test files 2669, tests 21801, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8325)
 
@@ -13922,78 +13922,78 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_ancestor_console_hwnds` | src/tessellate/__main__.py:1144 |
-| `_app_icon_path` | src/tessellate/__main__.py:1890 |
+| `_app_icon_path` | src/tessellate/__main__.py:1891 |
 | `_apply_console_visibility` | src/tessellate/__main__.py:1275 |
-| `_attach_desk_companion` | src/tessellate/__main__.py:1934 |
+| `_attach_desk_companion` | src/tessellate/__main__.py:1935 |
 | `_boot_and_swap` | src/tessellate/__main__.py:760 |
 | `_bootloader_splash` | src/tessellate/__main__.py:412 |
-| `_bring_forward` | src/tessellate/__main__.py:1475 |
-| `_capture` | src/tessellate/__main__.py:2560 |
+| `_bring_forward` | src/tessellate/__main__.py:1476 |
+| `_capture` | src/tessellate/__main__.py:2561 |
 | `_claim_notebook` | src/tessellate/__main__.py:738 |
 | `_close_bootloader_splash` | src/tessellate/__main__.py:450 |
 | `_close_launch_splash` | src/tessellate/__main__.py:509 |
-| `_close_to_tray` | src/tessellate/__main__.py:1860 |
+| `_close_to_tray` | src/tessellate/__main__.py:1861 |
 | `_console_window_targets` | src/tessellate/__main__.py:1260 |
-| `_desktop_close_to_tray` | src/tessellate/__main__.py:1700 |
-| `_desktop_console` | src/tessellate/__main__.py:1599 |
+| `_desktop_close_to_tray` | src/tessellate/__main__.py:1701 |
+| `_desktop_console` | src/tessellate/__main__.py:1600 |
 | `_desktop_port` | src/tessellate/__main__.py:682 |
-| `_desktop_preflight` | src/tessellate/__main__.py:1555 |
-| `_desktop_window` | src/tessellate/__main__.py:1633 |
+| `_desktop_preflight` | src/tessellate/__main__.py:1556 |
+| `_desktop_window` | src/tessellate/__main__.py:1634 |
 | `_ensure_std_streams` | src/tessellate/__main__.py:182 |
-| `_existing_instance` | src/tessellate/__main__.py:1482 |
-| `_export_markdown` | src/tessellate/__main__.py:2399 |
+| `_existing_instance` | src/tessellate/__main__.py:1483 |
+| `_export_markdown` | src/tessellate/__main__.py:2400 |
 | `_finish_splash_start_step` | src/tessellate/__main__.py:538 |
 | `_focus_window` | src/tessellate/__main__.py:860 |
 | `_get_console_hwnd` | src/tessellate/__main__.py:893 |
-| `_hand_off_to_running` | src/tessellate/__main__.py:1496 |
+| `_hand_off_to_running` | src/tessellate/__main__.py:1497 |
 | `_localhost_works` | src/tessellate/__main__.py:60 |
 | `_mark_start_step_done` | src/tessellate/__main__.py:608 |
 | `_maybe_relaunch_hidden` | src/tessellate/__main__.py:1105 |
-| `_open_window_onto` | src/tessellate/__main__.py:1528 |
-| `_password_exists` | src/tessellate/__main__.py:2438 |
+| `_open_window_onto` | src/tessellate/__main__.py:1529 |
+| `_password_exists` | src/tessellate/__main__.py:2439 |
 | `_port_from_env` | src/tessellate/__main__.py:137 |
 | `_port_holder` | src/tessellate/__main__.py:624 |
 | `_push_status_to_window` | src/tessellate/__main__.py:591 |
 | `_pythonw_path` | src/tessellate/__main__.py:911 |
-| `_quit_from_app` | src/tessellate/__main__.py:1833 |
+| `_quit_from_app` | src/tessellate/__main__.py:1834 |
 | `_reassert_window_state` | src/tessellate/__main__.py:841 |
 | `_relaunch_argv` | src/tessellate/__main__.py:1017 |
-| `_repair_install` | src/tessellate/__main__.py:2521 |
-| `_replace_process` | src/tessellate/__main__.py:1351 |
-| `_reset_password` | src/tessellate/__main__.py:2451 |
-| `_run_desktop` | src/tessellate/__main__.py:1734 |
-| `_run_mcp` | src/tessellate/__main__.py:2373 |
+| `_repair_install` | src/tessellate/__main__.py:2522 |
+| `_replace_process` | src/tessellate/__main__.py:1352 |
+| `_reset_password` | src/tessellate/__main__.py:2452 |
+| `_run_desktop` | src/tessellate/__main__.py:1735 |
+| `_run_mcp` | src/tessellate/__main__.py:2374 |
 | `_run_server` | src/tessellate/__main__.py:209 |
-| `_run_server_holding_lock` | src/tessellate/__main__.py:2686 |
-| `_run_tray_loop` | src/tessellate/__main__.py:2359 |
+| `_run_server_holding_lock` | src/tessellate/__main__.py:2687 |
+| `_run_tray_loop` | src/tessellate/__main__.py:2360 |
 | `_serve_with_lan` | src/tessellate/__main__.py:291 |
 | `_serves_this_notebook` | src/tessellate/__main__.py:665 |
-| `_set_windows_app_id` | src/tessellate/__main__.py:1913 |
+| `_set_windows_app_id` | src/tessellate/__main__.py:1914 |
 | `_spawn_desktop` | src/tessellate/__main__.py:922 |
 | `_spawn_detached` | src/tessellate/__main__.py:1035 |
 | `_splash_status` | src/tessellate/__main__.py:435 |
 | `_start_frozen_splash` | src/tessellate/__main__.py:468 |
-| `_start_reminder_notifier` | src/tessellate/__main__.py:1975 |
-| `_start_tray` | src/tessellate/__main__.py:2230 |
+| `_start_reminder_notifier` | src/tessellate/__main__.py:1976 |
+| `_start_tray` | src/tessellate/__main__.py:2231 |
 | `_stop_background_work` | src/tessellate/__main__.py:1311 |
 | `_stop_lingering_worker_threads` | src/tessellate/__main__.py:347 |
 | `_track_window_state` | src/tessellate/__main__.py:816 |
-| `_tray_go` | src/tessellate/__main__.py:2084 |
-| `_tray_image` | src/tessellate/__main__.py:2011 |
-| `_tray_new_note` | src/tessellate/__main__.py:2197 |
-| `_tray_open` | src/tessellate/__main__.py:2039 |
-| `_tray_quit` | src/tessellate/__main__.py:2176 |
-| `_tray_restart` | src/tessellate/__main__.py:2151 |
-| `_tray_toggle_console` | src/tessellate/__main__.py:2047 |
-| `_tray_view_logs` | src/tessellate/__main__.py:2131 |
+| `_tray_go` | src/tessellate/__main__.py:2085 |
+| `_tray_image` | src/tessellate/__main__.py:2012 |
+| `_tray_new_note` | src/tessellate/__main__.py:2198 |
+| `_tray_open` | src/tessellate/__main__.py:2040 |
+| `_tray_quit` | src/tessellate/__main__.py:2177 |
+| `_tray_restart` | src/tessellate/__main__.py:2152 |
+| `_tray_toggle_console` | src/tessellate/__main__.py:2048 |
+| `_tray_view_logs` | src/tessellate/__main__.py:2132 |
 | `_wait_for_exit` | src/tessellate/__main__.py:1090 |
 | `_wait_for_server` | src/tessellate/__main__.py:383 |
 | `_wait_for_server_with_progress` | src/tessellate/__main__.py:710 |
-| `_warn_webview2_missing` | src/tessellate/__main__.py:1441 |
-| `_webview2_runtime_missing` | src/tessellate/__main__.py:1377 |
+| `_warn_webview2_missing` | src/tessellate/__main__.py:1442 |
+| `_webview2_runtime_missing` | src/tessellate/__main__.py:1378 |
 | `_window_class_name` | src/tessellate/__main__.py:1244 |
 | `_window_url` | src/tessellate/__main__.py:115 |
-| `main` | src/tessellate/__main__.py:2578 |
+| `main` | src/tessellate/__main__.py:2579 |
 | `restart_app` | src/tessellate/__main__.py:1066 |
 | `restart_in_console_mode` | src/tessellate/__main__.py:994 |
 | `window_host` | src/tessellate/__main__.py:95 |
@@ -27671,7 +27671,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21800)
+## Tests (21801)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27841,7 +27841,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_background_registry.py | 2 |
 | tests/test_background_registry_shutdown.py | 1 |
 | tests/test_background_rows_keep_their_space.py | 3 |
-| tests/test_background_workers.py | 4 |
+| tests/test_background_workers.py | 5 |
 | tests/test_backlog_status_rows.py | 5 |
 | tests/test_backup_bundle.py | 12 |
 | tests/test_backup_copy.py | 8 |
@@ -30763,14 +30763,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:914 |
+| Needs hardware | docs/roadmap/LEDGER.md:913 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:906 |
+| Owner calls | docs/roadmap/LEDGER.md:905 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30951,7 +30951,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1114 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1113 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31005,25 +31005,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1130 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1214 |
+| chat | docs/roadmap/LEDGER.md:1129 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1213 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:1154 |
-| general | docs/roadmap/LEDGER.md:866 |
+| documents | docs/roadmap/LEDGER.md:1153 |
+| general | docs/roadmap/LEDGER.md:865 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1118 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1226 |
+| graph | docs/roadmap/LEDGER.md:1117 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1225 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:1166 |
+| mindmap | docs/roadmap/LEDGER.md:1165 |
 | timeline | docs/roadmap/LEDGER.md:596 |
-| timeline | docs/roadmap/LEDGER.md:1190 |
+| timeline | docs/roadmap/LEDGER.md:1189 |
 | ui-modernisation | docs/roadmap/LEDGER.md:478 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1178 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1177 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1142 |
+| whiteboard | docs/roadmap/LEDGER.md:1141 |
 | world-class | docs/roadmap/LEDGER.md:631 |
-| world-class | docs/roadmap/LEDGER.md:1202 |
+| world-class | docs/roadmap/LEDGER.md:1201 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

@@ -58,3 +58,11 @@ def test_the_reminder_notifier_registers_and_stops_with_the_registry(monkeypatch
     finally:
         notifier.stop()
 
+
+def test_quit_stops_the_registry_before_the_pool_deadline():
+    """Both quit paths signal the registry first, so the notifier's loop is not left for the pool's 5 s join."""
+    root = Path(__file__).resolve().parents[1] / "src" / "tessellate"
+    lifespan = (root / "api" / "app.py").read_text(encoding="utf-8")
+    assert lifespan.index("background.stop_all()") < lifespan.index("jobs.stop_all()")
+    main = (root / "__main__.py").read_text(encoding="utf-8")
+    assert "background.stop_all()\n        jobs.stop_all()" in main
