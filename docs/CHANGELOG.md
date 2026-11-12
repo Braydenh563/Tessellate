@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ledger: hardware and release-gate rows (L-general-19, 23, 29) moved to BACKLOG's device checks; bookkeeping rows L-general-15 and 16 closed with their evidence.
 - MCP: VS Code uses the tool server directly through .vscode/mcp.json (docs/MCP.md, Settings help); grouping by hand, many categories, on-disk compression and an in-app browser are decided against or parked (L-general-36 to 38, 41, 42).
 - Reminders: one that names a person or topic lists the last notes about it when it fires, to open from the notice (L-general-11).
 - Background librarian review: Keep all accepts the last run, Undo all puts every change back, last first; each row keeps its diff and Undo (L-general-45).
