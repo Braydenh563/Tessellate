@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8359, frontend ids 2772, CSS sections 524, backend routes 698, backend modules 10763, test files 2676, tests 21873, plan headings 687, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8360, frontend ids 2772, CSS sections 524, backend routes 698, backend modules 10763, test files 2676, tests 21876, plan headings 687, app scripts 29, boot scripts 38, script files 301.
 
-## Frontend functions (8359)
+## Frontend functions (8360)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -9075,29 +9075,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbWireMapIconMore` | frontend/js/whiteboard-map.js:7401 |
 | `wbWireMapMulti` | frontend/js/whiteboard-map.js:7548 |
 
-### frontend/js/whiteboard-shape-more.js (19)
+### frontend/js/whiteboard-shape-more.js (20)
 
 | Name | File:line |
 |---|---|
-| `bindPointEditor` | frontend/js/whiteboard-shape-more.js:220 |
-| `carryPatch` | frontend/js/whiteboard-shape-more.js:43 |
-| `carryRowPorts` | frontend/js/whiteboard-shape-more.js:59 |
-| `commitPoints` | frontend/js/whiteboard-shape-more.js:212 |
-| `drawHandles` | frontend/js/whiteboard-shape-more.js:152 |
-| `editPoints` | frontend/js/whiteboard-shape-more.js:186 |
-| `nearestCorner` | frontend/js/whiteboard-shape-more.js:116 |
-| `nearestOnSide` | frontend/js/whiteboard-shape-more.js:127 |
-| `pointsTarget` | frontend/js/whiteboard-shape-more.js:142 |
-| `polygonD` | frontend/js/whiteboard-shape-more.js:113 |
-| `polygonPoints` | frontend/js/whiteboard-shape-more.js:81 |
-| `round2` | frontend/js/whiteboard-shape-more.js:112 |
-| `rowAfter` | frontend/js/whiteboard-shape-more.js:35 |
-| `rowMiddle` | frontend/js/whiteboard-shape-more.js:9 |
-| `rowOf` | frontend/js/whiteboard-shape-more.js:25 |
-| `showPoints` | frontend/js/whiteboard-shape-more.js:203 |
-| `stopPoints` | frontend/js/whiteboard-shape-more.js:178 |
-| `tableRowPorts` | frontend/js/whiteboard-shape-more.js:14 |
-| `zoomK` | frontend/js/whiteboard-shape-more.js:149 |
+| `bindPointEditor` | frontend/js/whiteboard-shape-more.js:235 |
+| `carryPatch` | frontend/js/whiteboard-shape-more.js:54 |
+| `carryRowPorts` | frontend/js/whiteboard-shape-more.js:70 |
+| `commitPoints` | frontend/js/whiteboard-shape-more.js:227 |
+| `drawHandles` | frontend/js/whiteboard-shape-more.js:167 |
+| `editPoints` | frontend/js/whiteboard-shape-more.js:201 |
+| `nearestCorner` | frontend/js/whiteboard-shape-more.js:131 |
+| `nearestOnSide` | frontend/js/whiteboard-shape-more.js:142 |
+| `pointsTarget` | frontend/js/whiteboard-shape-more.js:157 |
+| `polygonD` | frontend/js/whiteboard-shape-more.js:128 |
+| `polygonPoints` | frontend/js/whiteboard-shape-more.js:96 |
+| `round2` | frontend/js/whiteboard-shape-more.js:127 |
+| `rowAfter` | frontend/js/whiteboard-shape-more.js:46 |
+| `rowMiddle` | frontend/js/whiteboard-shape-more.js:12 |
+| `rowOf` | frontend/js/whiteboard-shape-more.js:35 |
+| `showPoints` | frontend/js/whiteboard-shape-more.js:218 |
+| `stopPoints` | frontend/js/whiteboard-shape-more.js:193 |
+| `tableRowPorts` | frontend/js/whiteboard-shape-more.js:22 |
+| `weightsOf` | frontend/js/whiteboard-shape-more.js:10 |
+| `zoomK` | frontend/js/whiteboard-shape-more.js:164 |
 
 ### frontend/js/whiteboard-templates.js (16)
 
@@ -27712,7 +27713,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21873)
+## Tests (21876)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30309,7 +30310,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_rotate_links.py | 2 |
 | tests/test_wb_route_more.py | 9 |
 | tests/test_wb_runs_1027.py | 13 |
-| tests/test_wb_shape_more.py | 10 |
+| tests/test_wb_shape_more.py | 13 |
 | tests/test_wb_size_link_and_groups.py | 5 |
 | tests/test_wb_stack_migration.py | 3 |
 | tests/test_wb_stack_order.py | 13 |
@@ -30811,14 +30812,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4394 |
-| Needs hardware | docs/roadmap/LEDGER.md:901 |
+| Needs hardware | docs/roadmap/LEDGER.md:900 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:893 |
+| Owner calls | docs/roadmap/LEDGER.md:892 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4267 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30999,7 +31000,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1101 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1100 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2643 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31053,25 +31054,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1316 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1117 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1201 |
-| documents | docs/roadmap/LEDGER.md:347 |
-| documents | docs/roadmap/LEDGER.md:1141 |
-| general | docs/roadmap/LEDGER.md:853 |
+| chat | docs/roadmap/LEDGER.md:1116 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1200 |
+| documents | docs/roadmap/LEDGER.md:346 |
+| documents | docs/roadmap/LEDGER.md:1140 |
+| general | docs/roadmap/LEDGER.md:852 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1105 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1213 |
+| graph | docs/roadmap/LEDGER.md:1104 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1212 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4403 |
-| mindmap | docs/roadmap/LEDGER.md:427 |
-| mindmap | docs/roadmap/LEDGER.md:1153 |
-| timeline | docs/roadmap/LEDGER.md:582 |
-| timeline | docs/roadmap/LEDGER.md:1177 |
-| ui-modernisation | docs/roadmap/LEDGER.md:464 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1165 |
+| mindmap | docs/roadmap/LEDGER.md:426 |
+| mindmap | docs/roadmap/LEDGER.md:1152 |
+| timeline | docs/roadmap/LEDGER.md:581 |
+| timeline | docs/roadmap/LEDGER.md:1176 |
+| ui-modernisation | docs/roadmap/LEDGER.md:463 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1164 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1129 |
-| world-class | docs/roadmap/LEDGER.md:617 |
-| world-class | docs/roadmap/LEDGER.md:1189 |
+| whiteboard | docs/roadmap/LEDGER.md:1128 |
+| world-class | docs/roadmap/LEDGER.md:616 |
+| world-class | docs/roadmap/LEDGER.md:1188 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2813 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2864 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2971 |

@@ -5,29 +5,40 @@
   // points (draw.io's `editPolygon`) for a closed shape of straight sides. The pure parts take plain data, so a node test
   // runs them without a board.
 
-  //: A row's middle is a fraction of the table's height, rows being of equal height.
-  const rowMiddle = (row, rows) => Math.round(((row + 0.5) / rows) * 1e4) / 1e4;
+  //: A table's row heights as weights: an array is used as it is (the table renderer's own rule, wbTableRowWeights, hands
+  //: it over), a count means equal rows.
+  const weightsOf = (rows) => (Array.isArray(rows) ? rows : Array(Math.max(1, Math.floor(rows) || 1)).fill(1));
+  //: A row's middle is a fraction of the table's height: the rows above it plus half of its own.
+  const rowMiddle = (row, rows) => {
+    const w = weightsOf(rows);
+    const total = w.reduce((a, n) => a + n, 0);
+    const above = w.slice(0, row).reduce((a, n) => a + n, 0);
+    return Math.round(((above + w[row] / 2) / total) * 1e4) / 1e4;
+  };
   const held = new Map();
 
-  //: The ports of a table with `rows` rows, as fractions of its box: the left and right ends of every row, then the
-  //: middles of the top and the bottom edge, so a connector can still come in from above or below.
+  //: The ports of a table with these rows (a count, or the row weights), as fractions of its box: the left and right ends
+  //: of every row, then the middles of the top and the bottom edge, so a connector can still come in from above or below.
   function tableRowPorts(rows) {
-    const n = Math.max(1, Math.floor(rows) || 1);
-    if (held.has(n)) return held.get(n);
+    const w = weightsOf(rows);
+    const key = w.join(",");
+    if (held.has(key)) return held.get(key);
     const out = [];
-    for (let r = 0; r < n; r += 1) out.push({ x: 0, y: rowMiddle(r, n) }, { x: 1, y: rowMiddle(r, n) });
+    for (let r = 0; r < w.length; r += 1) out.push({ x: 0, y: rowMiddle(r, w) }, { x: 1, y: rowMiddle(r, w) });
     out.push({ x: 0.5, y: 0 }, { x: 0.5, y: 1 });
-    held.set(n, out);
+    held.set(key, out);
     return out;
   }
 
-  //: The row a stored anchor sits on in a table of `rows` rows, or -1 when it is not at a row's end.
+  //: The row a stored anchor sits on in a table of these rows (a count, or the row weights), or -1 when it is not at a
+  //: row's end.
   function rowOf(anchor, rows) {
     if (!anchor || !Number.isFinite(anchor.x) || !Number.isFinite(anchor.y)) return -1;
     if (Math.abs(anchor.x) > 0.001 && Math.abs(anchor.x - 1) > 0.001) return -1;
-    const at = anchor.y * rows - 0.5;
-    const row = Math.round(at);
-    return Math.abs(at - row) < 0.02 && row >= 0 && row < rows ? row : -1;
+    const w = weightsOf(rows);
+    const total = w.reduce((a, n) => a + n, 0);
+    for (let r = 0; r < w.length; r += 1) if (Math.abs(anchor.y - rowMiddle(r, w)) < (0.02 * w[r]) / total) return r;
+    return -1;
   }
 
   //: Pure: the row an anchor on row `row` is on after a row is added at `at` (before the row now there) or removed
@@ -38,11 +49,11 @@
   }
 
   //: Pure: the patch a connector needs so its ends stay on their table rows. `ends` is [[name, kind, id]]; `table`
-  //: is the table's id. A removed row's end lets go of the table's side (it floats), the rest move to the row's new
-  //: middle. Returns {} when nothing is on a row.
-  function carryPatch(data, tableId, rows, at, remove) {
+  //: is the table's id; `rows` the row weights before (or a count), `after` the weights after. A removed row's end lets
+  //: go of the table's side (it floats), the rest move to the row's new middle. Returns {} when nothing is on a row.
+  function carryPatch(data, tableId, rows, at, remove, after) {
     const patch = {};
-    const total = rows + (remove ? -1 : 1);
+    const total = weightsOf(after || (Array.isArray(rows) ? rows.length : rows) + (remove ? -1 : 1));
     for (const name of ["source", "target"]) {
       if (data[`${name}Id`] !== tableId || (data[`${name}Kind`] || "node") !== "object") continue;
       const anchor = data[`${name}Anchor`];
@@ -56,11 +67,15 @@
 
   //: For `wbTableReshape`: null when no connector is on a row of this table, else a function that moves the ends
   //: (to run inside the same gesture as the table's own change, so it is one Undo).
-  function carryRowPorts(table, at, remove, rows) {
+  function carryRowPorts(table, at, remove, count) {
+    //: The rows' heights come from the table renderer's rule (one source); the new row takes an average share there too.
+    const rules = typeof wbTableRules !== "undefined" ? wbTableRules : null;
+    const rows = rules ? rules.wbTableRowWeights(table) : count;
+    const after = rules ? rules.wbTableAxisWeights(rows, at, remove) : undefined;
     const jobs = [];
     for (const sketch of wbState.sketches || []) {
       if (!wbIsLinkSketch(sketch)) continue;
-      const patch = carryPatch(wbSketchData(sketch) || {}, table.id, rows, at, remove);
+      const patch = carryPatch(wbSketchData(sketch) || {}, table.id, rows, at, remove, after);
       if (Object.keys(patch).length) jobs.push([sketch, patch]);
     }
     if (!jobs.length) return null;
