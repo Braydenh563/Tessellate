@@ -74,7 +74,7 @@ let wbMapKeysArmed = false;
 let wbMidPanHeld = false;
 
 //: Paste and hover-lock bookkeeping, one name in the shared scope.
-const wbBoardState = { pasteArrived: false, lockHintSaid: false, wheel: { at: -1e9, pad: false } };
+const wbBoardState = { pasteArrived: false, lockHintSaid: false, wheel: { at: -1e9, pad: false }, lane: null };
 
 //: A two-finger trackpad scroll pans (both axes); a pinch (ctrlKey, which
 //: browsers synthesise for it) and a mouse wheel zoom. The decision is made
@@ -10071,7 +10071,7 @@ function wbBuildContextMenu(kind) {
   //: map: a topic's place in a tree is its order (FEAT-17).
   if (!wbIsMap()) {
     subItem("Arrange", (sub) => {
-      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "flip-layout-h", "flip-layout-v", "parallel-edges", "change-shape", "replace-library", "edit-ports", "edit-points", "reset-ports", "tidy-down", "tidy-right"]) {
+      for (const id of ["group", "ungroup", "lock", "flip-h", "flip-v", "flip-layout-h", "flip-layout-v", "parallel-edges", "change-shape", "replace-library", "edit-ports", "edit-points", "reset-ports", "tidy-down", "tidy-right", "layout-flow-h", "layout-flow-v", "layout-radial", "layout-org", "layout-organic", "layout-circle"]) {
         const row = wbCommandMenuRow(id);
         if (row) sub(...row);
       }
@@ -10615,6 +10615,8 @@ function wbOnFrame(fn, after = false) {
 
 function wbPushUndo(entry) {
   wbHistoryFor();
+  //: A lane marked Stack stacks its children after any change; the moves join this step (outside a gesture, which does it itself).
+  if (wbRecordDepth === 0) entry = wbBoardState.lane?.settle(entry) || entry;
   wbUndoStack.push(entry);
   if (wbUndoStack.length > WB_UNDO_MAX) wbUndoStack.shift();
   // A fresh action makes whatever redo history existed unreachable, the
@@ -10792,7 +10794,9 @@ async function wbRecordGesture(run, args = []) {
   const had = new Set(wbUndoStack);
   wbRecordDepth += 1;
   try {
-    return await run(...args);
+    const out = await run(...args);
+    await wbBoardState.lane?.settleNow();
+    return out;
   } finally {
     wbRecordDepth -= 1;
     if (window.currentBoardId === boardId) {

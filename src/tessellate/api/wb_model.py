@@ -486,6 +486,8 @@ class WhiteboardObjectData(BaseModel):
     #: the grid and apart). `stripes` tints every other body row.
     merges: list[TableMerge] | None = Field(default=None, max_length=200)
     stripes: bool | None = None
+    #: A frame marked as a lane keeps what it holds in a column (`stack`; whiteboard-layouts-more.js).
+    stack: bool | None = None
     #: **Edit data** (draw.io's custom properties; canvasdepth2): up to 30
     #: named values on an item, edited in the Format panel's Data tab.
     props: dict[

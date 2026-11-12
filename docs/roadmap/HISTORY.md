@@ -7,6 +7,13 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (wblayouts3: board layouts and the lane stack)
+
+From WHITEBOARD_PLAN sections 15 and 16 and step 9. Evidence per row:
+
+- Board layouts (flow horizontal and vertical, radial tree, org chart, organic, circle): `wbFmtState.layoutMore` (frontend/js/whiteboard-layouts-more.js), Arrange, Layout and the selection's More; one Undo each, link bends and pinned ends cleared. `tests/test_wb_layouts_more.py` (overlaps 0, rank order, crossings not up, determinism); `scratchpad/ui-sweeps/wblayouts3.js` on a 12-node graph: overlaps 0 for all six, crossings 16 to 0/2/0/4/0/35 (flow-h, flow-v, radial, org, organic, circle), about 50 ms each.
+- Stack layout on lanes: the Stack toggle on a frame's Format panel (`data.stack`); `wbBoardState.lane.settle` rides on `wbPushUndo` and `wbRecordGesture`, so an add, move or resize restacks as one Undo step with the change. Sweep: equal 16 gaps after the initial settle, an add, a move and a resize.
+
 ## Moved from the plans, 2026-11-12 (wbconnectors3: obstacle router, connector shapes, text on path)
 
 From WHITEBOARD_PLAN section 4 (connectors) and step 6. Evidence per row:

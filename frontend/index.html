@@ -7103,6 +7103,14 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="flip-layout-h"><i class="ph ph-arrows-left-right ph-lead" aria-hidden="true"></i><span>Layout, left to right</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="flip-layout-v"><i class="ph ph-arrows-down-up ph-lead" aria-hidden="true"></i><span>Layout, top to bottom</span></button>
             </div>
+            <div class="wb-menu-section" data-wb-submenu="ph:graph Layout" data-wb-submenu-title="Lay the connected shapes out; with nothing selected, the whole board">
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-flow-h"><i class="ph ph-arrow-right ph-lead" aria-hidden="true"></i><span>Flow, left to right</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-flow-v"><i class="ph ph-arrow-down ph-lead" aria-hidden="true"></i><span>Flow, top to bottom</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-radial"><i class="ph ph-target ph-lead" aria-hidden="true"></i><span>Radial tree</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-org"><i class="ph ph-users-three ph-lead" aria-hidden="true"></i><span>Org chart</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-organic"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>Organic</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-circle"><i class="ph ph-circle-dashed ph-lead" aria-hidden="true"></i><span>Circle</span></button>
+            </div>
             <div class="wb-menu-section" data-wb-submenu="ph:tree-structure Tidy and connect" data-wb-submenu-title="Lay shapes out as a tree, join them or measure">
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-down"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i><span>Top to bottom</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-right"><i class="ph ph-tree-view ph-lead" aria-hidden="true"></i><span>Left to right</span></button>
@@ -8051,9 +8059,15 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" id="wb-mindmap-radial" title="Radial layout, root at the centre"><i class="ph ph-target ph-lead" aria-hidden="true"></i><span>Radial</span></button>
             </div>
             <div class="wb-menu-section hidden" data-wb-ctx="more-tidy">
-              <span class="wb-panel-group-label">Tidy as a tree</span>
+              <span class="wb-panel-group-label">Layout and tidy</span>
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-down"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i><span>Top to bottom</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="tidy-right"><i class="ph ph-tree-view ph-lead" aria-hidden="true"></i><span>Left to right</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-flow-h"><i class="ph ph-arrow-right ph-lead" aria-hidden="true"></i><span>Flow, left to right</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-flow-v"><i class="ph ph-arrow-down ph-lead" aria-hidden="true"></i><span>Flow, top to bottom</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-radial"><i class="ph ph-target ph-lead" aria-hidden="true"></i><span>Radial tree</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-org"><i class="ph ph-users-three ph-lead" aria-hidden="true"></i><span>Org chart</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-organic"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>Organic</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="layout-circle"><i class="ph ph-circle-dashed ph-lead" aria-hidden="true"></i><span>Circle</span></button>
             </div>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">This selection</span>
@@ -8588,6 +8602,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Save to Library</b>: a picture on a board stays on the board, unlisted and unread; this files it in the Library, where it is searched and captioned. <b>Captions</b>, in the next row, draws a saved picture's caption under it, on every board and under the pictures in a note's popup in the Graph and its timeline view (the popup's menu has the same switch).</p>
               <p><b>Corner radii</b>: each corner's own rounding in pixels; all empty is the default.</p>
               <p><b>Padding</b>: space between the box's edge and its words, or a frame's edge and what it holds when fitted, in pixels.</p>
+              <p><b>Stack</b>: marks a frame as a lane. What it holds stays in one column, 16 pixels apart (or its Padding), top to bottom as they sit now; add, move or resize something inside and the column closes up, and the frame grows to hold it. The change and the stacking are one Undo step.</p>
             </div>
             <label class="wb-fmt-row" data-fmt="crop"><span class="wb-fmt-label">Crop to</span>
               <select id="wb-fmt-crop" aria-label="Crop the picture to a shape" title="Crop the picture to a shape; a square picture cropped to an ellipse is a circle">
@@ -8646,6 +8661,7 @@ Link to another note with [[its first few words]]."></textarea>
               <span class="wb-fmt-buttons"><input type="color" id="wb-fmt-ibcolor" class="wb-color-picker" aria-label="Border colour" title="Border colour"><input type="number" id="wb-fmt-ibwidth" min="0" max="40" step="1" placeholder="None" aria-label="Border width, in pixels" title="Border width in pixels; empty takes the border off"></span>
             </div>
             <label class="wb-fmt-row" data-fmt="pad" data-unit="px"><span class="wb-fmt-label">Padding</span><input type="number" id="wb-fmt-pad" min="0" max="80" step="1" placeholder="Auto" aria-label="Padding, in pixels" title="Space between a box's edge and its text, or between a frame's edge and what it holds when you fit it, in pixels; empty is the default"></label>
+            <div class="wb-fmt-row" data-fmt="stack"><span class="wb-fmt-label">Stack</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Keep what this frame holds in one column with an even gap, whenever something is added, moved or resized"><input type="checkbox" id="wb-fmt-stack" aria-label="Stack what the frame holds in a column"></label></span></div>
           </div>
           <div class="wb-fmt-group" data-fmt-group="connector">
             <h4 class="wb-fmt-head"><i class="ph ph-flow-arrow" aria-hidden="true"></i><span>Connector</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-connector" aria-controls="wb-fmt-help-connector" aria-expanded="false" title="About connector" aria-label="About connector"><i class="ph ph-question" aria-hidden="true"></i></button></h4>

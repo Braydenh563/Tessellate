@@ -1041,7 +1041,7 @@ clash is listed so the choice is made once.
 | --- | --- | --- | --- | --- |
 | Rubber-band, lasso, shift-add, select all of a kind | yes (select, lasso K; Ctrl+A); select all shapes and select all connectors, 2026-10-18 (whiteboard-1018; HISTORY) | `mxRubberband`, `selectVertices`, `selectEdges` (Actions.js 517, 518) | two commands | S |
 | Containers (a shape that holds children, drop target highlight, children move with it, auto-resize) | `fit-frame` yes (whiteboard-commands.js:170); no drop highlight on frames, no collapse | `container=1`, `isContainer` (Graph.js 11233), `getDropTarget` (26334), `dropTarget`, `recursiveResize`, `collapsible`, `foldCells` (15610) | a drop highlight class on a frame while an item is dragged over it, and collapse | M |
-| Child layouts (stack, tree, flow, rack) | tree tidy (`tidy-down`, `tidy-right`), flip layout, join chain and fan yes; no stack layout on lanes | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | the stack layout on lanes only; others are the Layout menu (section 16) | M |
+| Child layouts (stack, tree, flow, rack) | tree tidy (`tidy-down`, `tidy-right`), flip layout, join chain and fan, the Layout menu (section 16) and a Stack toggle on a lane frame yes; rack no | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | rack stays out (not doing) | none |
 | Lock, hide and "locked" cursor | yes | `lockUnlock` (Actions.js 521), `locked=1` | done | none |
 | Z-order within a container | yes (z per item) | child order | done | none |
 
@@ -1083,7 +1083,7 @@ clash is listed so the choice is made once.
 | --- | --- | --- | --- | --- |
 | Tidy a board | yes (Tidy in the top bar, `whiteboard-map.js`) | `runLayout` (diagramly/Menus.js 1666), `runLastLayout` | done | none |
 | Mind map layouts (radial, tree, left, right) | yes (layout select, MINDMAP_PLAN) | n/a | done | none |
-| Flow (horizontal, vertical), tree (vertical, horizontal, radial), organic, circle, org chart | no on boards | `insertLayout` menu, `mxHierarchicalLayout`, `mxCompactTreeLayout`, `mxRadialTreeLayout`, `mxFastOrganicLayout`, `mxCircleLayout`, ELK (`ElkLayout.js`, `layout: 'elkLayered'`, `elkTree`, `elkOrganic`) | the layered layout (Sugiyama in 150 lines) and the existing map tree layout over a selection of shapes joined by links; circle is ten lines; organic is a force pass | L |
+| Flow (horizontal, vertical), tree (vertical, horizontal, radial), organic, circle, org chart | yes (Arrange, Layout; `whiteboard-layouts-more.js`) | `insertLayout` menu, `mxHierarchicalLayout`, `mxCompactTreeLayout`, `mxRadialTreeLayout`, `mxFastOrganicLayout`, `mxCircleLayout` | done: layered flow, radial tree, org chart, fixed-seed organic and circle over the selection, one Undo each | none |
 
 ### 17. The Format panel with nothing selected, and diagram options
 
@@ -1142,12 +1142,12 @@ commit. Help moves with each control (standing order 13).
    a 100-item board.
 9. **Layers, containers, swimlanes.** Named layers with visibility and
    lock, frames as containers (drop highlight, fit to children, collapse),
-   a Lane preset with a stack layout. Gate: `wb1005-layers.js`,
+   a Lane preset with a stack layout (built: the Stack toggle on a frame). Gate: `wb1005-layers.js`,
    `wbframes.js`.
 10. **`.drawio` import and export, then the templates.** Built 2026-11-12 (HISTORY, "Moved from the plans, 2026-11-12 (wbdrawio3)"):
     nothing open; VSDX, Lucid and Gliffy are dropped (the not-doing list).
 
-After the ten: tables (L), math (L), layered and organic layouts (L), the
+After the ten: tables (L), math (L), the
 JS-drawn shape classes, the shape picker, and the shortcut gaps in section 11.
 
 ### Decisions, 2026-10-10
