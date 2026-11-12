@@ -19,7 +19,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import gc_frame, unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 GRAPH = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
@@ -106,7 +106,7 @@ def test_a_search_is_drawn_over_the_dimmed_scene_not_as_a_whole_new_frame() -> N
     body = _function(CANVAS, "gcHighlight")
     assert 'paintMode === "rest"' in body or 'paintMode === "dim"' in body
     # A node or a line is lit in the over layer by being a match, with no hover to light it.
-    draw = _function(CANVAS, "gcDraw")
+    draw = gc_frame(CANVAS)
     assert "s.searchOver" in draw
 
 
