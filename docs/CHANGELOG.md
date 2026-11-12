@@ -6,6 +6,10 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
+- Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.
+- Code: `api/routes_chat.py` is back under its line cap (2,465) with no change in behaviour.
+- Cleanup: 45 one-off sweeps, `wrap_scope.py` and `tests/browser` are removed; nothing called them.
 - Docs (INBOX 1784): one place for open work. `docs/roadmap/LEDGER.md` holds every open item outside the plans and BACKLOG (1,020 rows from OPEN.md, about 980 agent-remaining and archive files, the nine retired roadmap docs and INBOX), each tagged by plan, with counts per plan and a paste-in brief per plan session; `scripts/ledger.py` adds, closes and recounts rows; `tests/test_ledger.py` keeps open work out of any other file. agent-remaining, OPEN.md, SESSION_BRIEFS, ANALYSIS, AUDIT, MODERNISATION_AUDIT, REDESIGN, PLAN, AGENT_SKILLS_REFORM and FABLE_BRIEF are removed (decisions to ARCHITECTURE.md, record to HISTORY.md); HANDOVER is the owner's standing notes and one Now line.
 - Fix (INBOX 1785): every Ask chart answers the pointer and the keyboard with its value, bar labels fit their slot, the per-hour strip is the chart recipe, and a chart asked by name is the app's chart with a model up too.
 - The companion answers being caught in the air: a click while it falls or flies makes it clutch and go wide-eyed, then relax once it lands or stands, in the app (a Little habits row, `caught`) and on the desk (`caught`, `clutch_relief`) (I21, `int.catch_midair`).
