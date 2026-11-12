@@ -12562,10 +12562,13 @@ const contentsOpenDocs = new Set();
 
 //: A heading in a document, or the document, in the editor: the Library's own
 //: card does `switchTab` then `openDocument`, and a heading adds the jump the
-//: editor's Outline row does (`jumpToDocLine`, zero-based).
-function contentsOpenDocument(docId, line) {
+//: editor's Outline row does (`jumpToDocLine`, zero-based). A document with
+//: headings opens on its Outline tab: you came from its outline here, and the
+//: editor's was a fourth click away (L400).
+function contentsOpenDocument(docId, line, outline = false) {
   switchTab("documents");
   openDocument(docId).then(() => {
+    if (outline) showDocSidebarSection("outline");
     if (line !== null && line !== undefined) setTimeout(() => jumpToDocLine(line), 80);
   });
 }
@@ -12708,7 +12711,7 @@ function contentsDocRow(doc, heads, shallowest, forceOpen) {
       row.appendChild(label);
       row.addEventListener("click", (event) => {
         event.preventDefault();
-        contentsOpenDocument(doc.id, head.line);
+        contentsOpenDocument(doc.id, head.line, true);
       });
       item.appendChild(row);
       group.appendChild(item);
@@ -12728,7 +12731,7 @@ function contentsDocRow(doc, heads, shallowest, forceOpen) {
       //: The caret folds; the rest of the row opens the document, so the
       //: pointer has both and the keyboard has Right and Enter.
       if (event.target.closest(".contents-doc-caret")) setOpen(group.hidden);
-      else contentsOpenDocument(doc.id, null);
+      else contentsOpenDocument(doc.id, null, true);
     });
   } else {
     link.addEventListener("click", (event) => {
