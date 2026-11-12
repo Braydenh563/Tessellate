@@ -18,7 +18,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
 | all | 553 | 673 | 153 | 2 | 195 | 1379 |
-| all | 553 | 673 | 153 | 2 | 195 | 1379 |
 
 ## graph
 

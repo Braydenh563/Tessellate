@@ -30858,14 +30858,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:883 |
+| Needs hardware | docs/roadmap/LEDGER.md:882 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:876 |
+| Owner calls | docs/roadmap/LEDGER.md:875 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31046,7 +31046,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1083 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1082 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31099,26 +31099,26 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Why the app feels "off" even where each screen is fine | docs/roadmap/WORLD_CLASS_PLAN.md:54 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
-| chat | docs/roadmap/LEDGER.md:59 |
-| chat | docs/roadmap/LEDGER.md:1099 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1183 |
-| documents | docs/roadmap/LEDGER.md:362 |
-| documents | docs/roadmap/LEDGER.md:1123 |
-| general | docs/roadmap/LEDGER.md:836 |
-| graph | docs/roadmap/LEDGER.md:23 |
-| graph | docs/roadmap/LEDGER.md:1087 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1195 |
+| chat | docs/roadmap/LEDGER.md:58 |
+| chat | docs/roadmap/LEDGER.md:1098 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1182 |
+| documents | docs/roadmap/LEDGER.md:361 |
+| documents | docs/roadmap/LEDGER.md:1122 |
+| general | docs/roadmap/LEDGER.md:835 |
+| graph | docs/roadmap/LEDGER.md:22 |
+| graph | docs/roadmap/LEDGER.md:1086 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1194 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
-| mindmap | docs/roadmap/LEDGER.md:442 |
-| mindmap | docs/roadmap/LEDGER.md:1135 |
-| timeline | docs/roadmap/LEDGER.md:565 |
-| timeline | docs/roadmap/LEDGER.md:1159 |
-| ui-modernisation | docs/roadmap/LEDGER.md:448 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1147 |
-| whiteboard | docs/roadmap/LEDGER.md:316 |
-| whiteboard | docs/roadmap/LEDGER.md:1111 |
-| world-class | docs/roadmap/LEDGER.md:600 |
-| world-class | docs/roadmap/LEDGER.md:1171 |
+| mindmap | docs/roadmap/LEDGER.md:441 |
+| mindmap | docs/roadmap/LEDGER.md:1134 |
+| timeline | docs/roadmap/LEDGER.md:564 |
+| timeline | docs/roadmap/LEDGER.md:1158 |
+| ui-modernisation | docs/roadmap/LEDGER.md:447 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1146 |
+| whiteboard | docs/roadmap/LEDGER.md:315 |
+| whiteboard | docs/roadmap/LEDGER.md:1110 |
+| world-class | docs/roadmap/LEDGER.md:599 |
+| world-class | docs/roadmap/LEDGER.md:1170 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |
