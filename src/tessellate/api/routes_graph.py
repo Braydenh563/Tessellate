@@ -29,7 +29,15 @@ from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
 from tessellate.api import bounds
 from tessellate.core import cjk, companion_events
 from tessellate.core import deps
-from tessellate.core.database import Attachment, EmbeddingRecord, Entry, NoteType
+from tessellate.core.database import (
+    Attachment,
+    Document,
+    DocumentLink,
+    EmbeddingRecord,
+    EntityMention,
+    Entry,
+    NoteType,
+)
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
 from tessellate.entry import manager_wiki
@@ -318,7 +326,30 @@ def _similarity_edges(
     return scored[:MAX_SIMILARITY_EDGES]
 
 
-def _centrality(session: Session, similarity: bool, maps: bool) -> dict:
+def _layer_fingerprint(session: Session, documents: bool, entities: bool) -> tuple:
+    """What the document and entity layers add to a cache key: neither table
+    moves `_graph_fingerprint` (a link or a mention is not a note edit), so an
+    attach, a detach, an archive or a new mention must show here."""
+    key: tuple = ()
+    if documents:
+        key += (
+            session.scalar(select(func.count(DocumentLink.id))) or 0,
+            session.scalar(select(func.max(DocumentLink.created_at))),
+            session.scalar(select(func.count(Document.id)).where(Document.archived_at.is_(None), Document.deleted_at.is_(None))) or 0,
+            session.scalar(select(func.max(Document.updated_at))),
+        )
+    if entities:
+        key += (
+            session.scalar(select(func.count(EntityMention.id))) or 0,
+            session.scalar(select(func.max(EntityMention.id))),
+            session.scalar(select(func.sum(EntityMention.id))),
+        )
+    return key
+
+
+def _centrality(
+    session: Session, similarity: bool, maps: bool, documents: bool = False, entities: bool = False
+) -> dict:
     """PageRank over the map's own picture, once per version of the notebook.
 
     **One number per note, the map's** (GRAPH_PLAN, "Decision made,
@@ -333,12 +364,16 @@ def _centrality(session: Session, similarity: bool, maps: bool) -> dict:
     on, built here from columns (`paths.build_light`) and never from a
     caller's index. A note is the same size in focus mode as on the map.
 
+    With `documents` / `entities` (owner, 2026-11-12) those nodes join the
+    ranked graph under their prefixed ids, so a document two notes share
+    lends them rank and carries its own; `/graph/local` never asks for them.
+
     Not a PageRank of the focus neighbourhood: centrality is a global
     property, and a local one would make the centre of every focus view its
     biggest dot whatever the notebook says about it.
     """
     use_similarity = similarity and not deps.get_config().get_preference("battery_efficient_mode")
-    fingerprint = (*_graph_fingerprint(session), use_similarity, maps)
+    fingerprint = (*_graph_fingerprint(session), use_similarity, maps, *_layer_fingerprint(session, documents, entities))
     if use_similarity:
         fingerprint = (*fingerprint, deps.get_embeddings().backend_id())
 
@@ -355,10 +390,13 @@ def _centrality(session: Session, similarity: bool, maps: bool) -> dict:
                 )
             )
             extra = _similarity_edges(session, ids, set())
-        index = paths.build_light(session, extra_edges=extra, drafts=False, boards=maps)
+        index = paths.build_light(
+            session, extra_edges=extra, drafts=False, boards=maps, documents=documents, entities=entities
+        )
         return paths.pagerank(index)
 
-    return _cached(f"centrality_{int(use_similarity)}_{int(maps)}", fingerprint, build)
+    name = f"centrality_{int(use_similarity)}_{int(maps)}_{int(documents)}{int(entities)}"
+    return _cached(name, fingerprint, build)
 
 
 @router.get("/graph/match")
@@ -459,9 +497,9 @@ def _add_document_nodes(
     """The documents attached to the notes, as their own nodes and edges.
 
     Lifted out of `graph` unchanged (WORLD_CLASS_PLAN A5). Same shape and
-    same reason as `_add_entity_nodes`: a prefixed id, an edge per real
-    `DocumentLink`, and nothing wired into centrality or the path index,
-    both of which are built entirely around Entry.
+    same reason as `_add_entity_nodes`: a prefixed id and an edge per real
+    `DocumentLink`; centrality and the path index take the same links
+    (`paths._add_layer_edges`).
     """
     doc_links = documents_repo.link_pairs(session, node_ids)
     #: **Every live document, not only the attached ones** (the owner: "the
@@ -1058,6 +1096,22 @@ def _add_degree(nodes: list[dict], edges: list[dict], centrality_scores: dict) -
     return categories
 
 
+def _stamp_layer_nodes(nodes: list[dict], edges: list[dict], scores: dict, flags: dict[str, bool]) -> None:
+    """Degree and centrality for the document and entity nodes `_add_degree`
+    ran before. Notes keep the degree they had (the hub colour reads it);
+    these nodes' own degree counts the edges the payload carries."""
+    if not (flags["documents"] or flags["entities"]):
+        return
+    degree: dict = {}
+    for edge in edges:
+        degree[edge["source"]] = degree.get(edge["source"], 0) + 1
+        degree[edge["target"]] = degree.get(edge["target"], 0) + 1
+    for node in nodes:
+        if node.get("type") in ("document", "entity") and "centrality" not in node:
+            node["degree"] = degree.get(node["id"], 0)
+            node["centrality"] = scores.get(node["id"], 0)
+
+
 def _add_optional_layers(
     session: Session,
     entries: list,
@@ -1084,11 +1138,12 @@ def _add_optional_layers(
     # already has a real connection to the notes it draws on; this is that
     # relationship rendered, not a new one invented for the graph.
     #
-    # Deliberately not wired into centrality, similarity, or the trace-path
-    # BFS (paths.build/_centrality) this pass: both are built entirely
-    # around Entry, and extending either to a second node type is a
-    # materially bigger, separate change from making a document visible and
-    # connected in the first place.
+    # Owner, 2026-11-12: document and entity nodes join centrality (`_centrality`
+    # ranks them with the notes) and the trace path (`/graph/path?documents=`
+    # / `entities=`, via `paths.build`), each under its prefixed id, so
+    # nothing that reads an Entry id sees them unasked. Similarity stays
+    # note-to-note: it is cosine over note embeddings, and a document has no
+    # vector (the embeddings table is keyed by entry id).
     if flags["documents"]:
         _add_document_nodes(session, nodes, edges, node_ids)
     #: **A mind map, and the notes it is made of** (MINDMAP_PLAN.md §5 item
@@ -1148,7 +1203,7 @@ def _build_graph(
 
     #: The map's PageRank, shared with focus mode (`_centrality`); a warm call
     #: no longer builds an index at all.
-    centrality_scores = _centrality(session, similarity, include_maps)
+    centrality_scores = _centrality(session, similarity, include_maps, include_documents, include_entities)
     categories = _add_degree(nodes, edges, centrality_scores)
     flags = {
         "entities": include_entities,
@@ -1159,6 +1214,7 @@ def _build_graph(
         "attachments": include_attachments,
     }
     _add_optional_layers(session, entries, nodes, edges, node_ids, taken, flags)
+    _stamp_layer_nodes(nodes, edges, centrality_scores, flags)
     _add_sealed_link_nodes(session, nodes, edges, node_ids)
     #: A type's own colour, so "Note type" paints a Person the colour the
     #: person gave Person rather than the next one in the scheme.
@@ -1679,10 +1735,12 @@ def _build_structure(session: Session) -> dict:
 
 @router.get("/graph/path")
 def graph_path(
-    source: int,
-    target: int,
+    source: str,
+    target: str,
     similarity: bool = False,
     routes: int = paths.MAX_ALTERNATE_PATHS,
+    documents: bool = False,
+    entities: bool = False,
     session: Session = Depends(get_session),
 ) -> dict:
     """The chain of connections between two notes (§9).
@@ -1704,17 +1762,16 @@ def graph_path(
     than the one asked, `SIMILAR_WEIGHT` makes them the last resort within a
     route, but a route made only of them is "these are both about cooking"
     dressed up as a connection the user made.
-    """
-    extra_edges = []
-    if similarity and not deps.get_config().get_preference("battery_efficient_mode"):
-        node_ids = set(
-            session.scalars(
-                select(Entry.id).where(Entry.is_deleted == False)  # noqa: E712
-            )
-        )
-        extra_edges = _similarity_edges(session, node_ids, set())
 
-    index = paths.build(session, extra_edges=extra_edges)
+    `source` and `target` are a note id (`12`) or, with `documents` /
+    `entities` on, a prefixed node id (`document:3`, `entity:5`); those
+    layers make a document two notes are attached to, or an entity both name,
+    a stop on the route (owner, 2026-11-12). Off by default, so the old
+    answer is unchanged. Similarity stays note-to-note (see `_similarity_edges`).
+    """
+    source, target = _node_key(source), _node_key(target)
+    extra_edges = _path_similarity(session, similarity)
+    index = paths.build(session, extra_edges=extra_edges, documents=documents, entities=entities)
     refused = _path_refusal(index, source, target)
     if refused:
         return {"found": False, "source": source, "target": target, "reason": refused}
@@ -1737,14 +1794,11 @@ def graph_path(
 
     #: Every note on *any* of the routes, named once. `bulk_category_names` is
     #: a query, so calling it per route would issue three where one does.
-    everywhere: list[int] = []
-    for one in chains:
-        for note_id in [source] + [step.target for step in one]:
-            if note_id not in everywhere:
-                everywhere.append(note_id)
+    everywhere = list(dict.fromkeys([source, *(step.target for one in chains for step in one)]))
     category_names = manager.bulk_category_names(
-        session, [index.entries[note_id] for note_id in everywhere]
+        session, [index.entries[note_id] for note_id in everywhere if note_id in index.entries]
     )
+    extra_nodes = _extra_path_nodes(session, index, everywhere)
 
     also = _hop_reasons(session, index, [(step.source, step.target) for one in chains for step in one])
 
@@ -1754,7 +1808,10 @@ def graph_path(
             "hops": len(one),
             "cost": sum(step.weight for step in one),
             "nodes": [
-                _path_node(index.entries[note_id], category_names) for note_id in order
+                extra_nodes[note_id]
+                if note_id in extra_nodes
+                else _path_node(index.entries[note_id], category_names)
+                for note_id in order
             ],
             "steps": [
                 {
@@ -1787,9 +1844,49 @@ def graph_path(
     }
 
 
-def _path_refusal(index: paths.Connections, source: int, target: int) -> str | None:
+def _path_similarity(session: Session, similarity: bool) -> list[dict]:
+    """The "read alike" edges a route may hop along, only when asked for."""
+    if not similarity or deps.get_config().get_preference("battery_efficient_mode"):
+        return []
+    node_ids = set(session.scalars(select(Entry.id).where(Entry.is_deleted == False)))  # noqa: E712
+    return _similarity_edges(session, node_ids, set())
+
+
+def _node_key(raw: str) -> int | str:
+    """A path end from the query: a note id, or a prefixed `document:N` / `entity:N`."""
+    text = raw.strip()
+    if text.isdigit():
+        return int(text)
+    kind, _, number = text.partition(":")
+    if kind in ("document", "entity") and number.isdigit():
+        return f"{kind}:{int(number)}"
+    raise HTTPException(status_code=422, detail="A path end is a note id, document:N or entity:N.")
+
+
+def _extra_path_nodes(session: Session, index: paths.Connections, wanted: list) -> dict[str, dict]:
+    """The document and entity stops on a route, in the shape of `_path_node`."""
+    from tessellate.core.database import Entity
+
+    found: dict[str, dict] = {}
+    for node in wanted:
+        kind = index.extra.get(node)
+        if kind is None:
+            continue
+        number = int(node.partition(":")[2])
+        row = session.get(Document if kind == "document" else Entity, number)
+        label = (row.title if kind == "document" else row.name) if row is not None else ""
+        found[node] = {
+            "id": node,
+            "type": kind,
+            "preview": (label or "Untitled")[:60],
+            "category": kind.capitalize(),
+        }
+    return found
+
+
+def _path_refusal(index: paths.Connections, source: int | str, target: int | str) -> str | None:
     """Why a path is not even asked for: an end is not in the map, or both ends are one note."""
-    missing = [note_id for note_id in (source, target) if note_id not in index.entries]
+    missing = [note_id for note_id in (source, target) if not index.has(note_id)]
     if missing:
         return (
             "That note isn't in the map, it may have been deleted."
