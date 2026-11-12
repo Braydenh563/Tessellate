@@ -30,7 +30,7 @@
     if (row.kind === "reminder") {
       const line = document.createElement("p");
       line.className = "timeline-row-body";
-      line.textContent = row.done ? "Done." : "Not done yet.";
+      line.textContent = row.done ? "Done." : "Open.";
       detail.appendChild(line);
       //: A reminder attached to a note can reach it, which is the one link the
       //: Reminders tab has that a row here would otherwise lose.

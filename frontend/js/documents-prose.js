@@ -2911,12 +2911,6 @@ function pasteUrl(text) {
   return PASTE_URL.test(value) ? value : "";
 }
 
-function pasteLinkLabel(url) {
-  if (/^mailto:/i.test(url)) return url.slice(7);
-  const m = /^https?:\/\/(?:www\.)?([^/?#]+)/i.exec(url);
-  return m ? m[1] : url;
-}
-
 function pasteLines(text) {
   return pasteClean(text).split("\n").filter((line) => line.trim());
 }
@@ -3031,22 +3025,6 @@ function docPasteMatch(text, linePrefix) {
   return lines.map((line, i) => (i && line.trim() ? lead + line : line)).join("\n");
 }
 
-//: Block spacing: a table, a fence or a list needs its own lines. `kind` is
-//: "block" (a blank line either side) or "lines" (a line break either side).
-function docPasteBlockPad(doc, from, to, kind) {
-  const lineStart = doc.lastIndexOf("\n", from - 1) + 1;
-  const lineEnd = doc.indexOf("\n", to) === -1 ? doc.length : doc.indexOf("\n", to);
-  const textBefore = doc.slice(lineStart, from).trim();
-  const textAfter = doc.slice(to, lineEnd).trim();
-  const above = lineStart > 0 ? doc.slice(doc.lastIndexOf("\n", lineStart - 2) + 1, lineStart - 1).trim() : "";
-  const below = lineEnd < doc.length ? doc.slice(lineEnd + 1, doc.indexOf("\n", lineEnd + 1) === -1 ? doc.length : doc.indexOf("\n", lineEnd + 1)).trim() : "";
-  const gap = kind === "block" ? "\n\n" : "\n";
-  return {
-    before: textBefore ? gap : above && kind === "block" ? "\n" : "",
-    after: textAfter ? gap : below && kind === "block" ? "\n" : "",
-  };
-}
-
 const DOC_PASTE_MODES = {
   plain: (text) => pasteClean(text),
   source: (text) => String(text || "").replace(/\r\n?/g, "\n"),
@@ -3062,7 +3040,11 @@ const DOC_PASTE_MODES = {
   },
   link: (text, ctx) => {
     const url = pasteUrl(text);
-    return url ? `[${ctx.selected || pasteLinkLabel(url)}](${url})` : "";
+    if (!url) return "";
+    //: The label: the selection, else the address without its scheme (a host, or a mail address).
+    const host = /^https?:\/\/(?:www\.)?([^/?#]+)/i.exec(url);
+    const label = ctx.selected || (/^mailto:/i.test(url) ? url.slice(7) : host ? host[1] : url);
+    return `[${label}](${url})`;
   },
   match: (text, ctx) => docPasteMatch(text, ctx.linePrefix),
 };
@@ -3073,6 +3055,22 @@ const DOC_PASTE_PAD = { code: "block", table: "block", quote: "lines", checklist
 //: What `mode` writes for this clipboard text, padded for the document around
 //: the range it replaces. Empty when the clipboard cannot be read that way.
 function docPasteTransform(mode, text, doc, from, to) {
+  //: Block spacing: a table, a fence or a list needs its own lines. `kind` is
+  //: "block" (a blank line either side) or "lines" (a line break either side).
+  function docPasteBlockPad(doc, from, to, kind) {
+    const lineStart = doc.lastIndexOf("\n", from - 1) + 1;
+    const lineEnd = doc.indexOf("\n", to) === -1 ? doc.length : doc.indexOf("\n", to);
+    const textBefore = doc.slice(lineStart, from).trim();
+    const textAfter = doc.slice(to, lineEnd).trim();
+    const above = lineStart > 0 ? doc.slice(doc.lastIndexOf("\n", lineStart - 2) + 1, lineStart - 1).trim() : "";
+    const below = lineEnd < doc.length ? doc.slice(lineEnd + 1, doc.indexOf("\n", lineEnd + 1) === -1 ? doc.length : doc.indexOf("\n", lineEnd + 1)).trim() : "";
+    const gap = kind === "block" ? "\n\n" : "\n";
+    return {
+      before: textBefore ? gap : above && kind === "block" ? "\n" : "",
+      after: textAfter ? gap : below && kind === "block" ? "\n" : "",
+    };
+  }
+
   const ctx = {
     selected: doc.slice(from, to).replace(/\s+/g, " ").trim(),
     linePrefix: doc.slice(doc.lastIndexOf("\n", from - 1) + 1, from),
