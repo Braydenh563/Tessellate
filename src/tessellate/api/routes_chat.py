@@ -1892,7 +1892,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
     routing (`_composed`) is unchanged by it."""
     recognise.note_locale(req.body.locale)
     follow = _follow_up(req)
-    charted = None if req.skill or req.images_raw else composer_talk.chart_ask(req.session, req.body.question or "", req.history or [], user_now(deps.get_config()).date())
+    charted = None if req.skill or req.images_raw or req.body.note_ids or req.body.document_ids else composer_talk.chart_ask(req.session, req.body.question or "", req.history or [], user_now(deps.get_config()).date())
     early = charted or _app_first_events(req, follow, req.ollama.is_running())
     scoped = _cited_scope(req, follow)
     prepared = _prepare(

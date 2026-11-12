@@ -148,6 +148,20 @@ def _strip_day(d: date, today: date) -> str:
     return "Today" if d == today else f"{d.day} {d:%b}" + (f" {d.year}" if d.year != today.year else "")
 
 
+def _month(d: date | datetime) -> int:
+    return d.year * 12 + d.month - 1
+
+
+def _strip_labels(by: str, size: int, start: date, first: date) -> list[str]:
+    """Each point's period, in the chart recipe's keys (an hour, an ISO day or week start, a "YYYY-MM" month),
+    so a mark can say its value."""
+    if by == "hour":
+        return [f"{h:02d}:00" for h in range(size)]
+    if by in ("day", "week"):
+        return [(start + timedelta(days=i * (1 if by == "day" else 7))).isoformat() for i in range(size)]
+    return [f"{(_month(first) + i) // 12}-{(_month(first) + i) % 12 + 1:02d}" for i in range(size)]
+
+
 def timeline_panel(session: Session, start: date, end: date, today: date) -> dict | None:
     """The small timeline strip a time answer carries (INBOX 1333 b): notes
     counted over `start` to `end`, a point a day, a week or a month by how
@@ -170,23 +184,15 @@ def timeline_panel(session: Session, start: date, end: date, today: date) -> dic
     elif span <= _STRIP_WEEKS:
         by, size, slot = "week", -(-span // 7), (lambda d: (d.date() - start).days // 7)
     else:
-        month = lambda d: d.year * 12 + d.month - 1  # noqa: E731
-        base = max(month(start), month(end) - _STRIP_MOST + 1)
-        by, size, slot = "month", month(end) - base + 1, (lambda d: month(d) - base)
-        first = start if base == month(start) else date(base // 12, base % 12 + 1, 1)
+        base = max(_month(start), _month(end) - _STRIP_MOST + 1)
+        by, size, slot = "month", _month(end) - base + 1, (lambda d: _month(d) - base)
+        first = start if base == _month(start) else date(base // 12, base % 12 + 1, 1)
     points = [0] * size
     for stamp in stamps:
         if 0 <= slot(stamp) < size:
             points[slot(stamp)] += 1
     ends = ("00:00", "23:00") if by == "hour" else (_strip_day(first, today), _strip_day(end, today))
-    #: Each point's period, in the chart recipe's keys (an hour, an ISO day or
-    #: week start, a "YYYY-MM" month), so a mark can say its value.
-    if by == "hour":
-        labels = [f"{h:02d}:00" for h in range(size)]
-    elif by in ("day", "week"):
-        labels = [(start + timedelta(days=i * (1 if by == "day" else 7))).isoformat() for i in range(size)]
-    else:
-        labels = [f"{(month(first) + i) // 12}-{(month(first) + i) % 12 + 1:02d}" for i in range(size)]
+    labels = _strip_labels(by, size, start, first)
     return {"type": "panel", "panel": "timeline", "by": by, "title": f"Notes per {by}", "points": points, "labels": labels, "from": ends[0], "to": ends[1]}
 
 

@@ -68,6 +68,32 @@ def test_f13_a_the_same_after_an_answer_about_something_else(notebook):
     assert notebook("when is the dentist", "who am I going with")[1].startswith("Travelling with Sam")
 
 
+def _concert(session):
+    from tessellate.entry import manager
+
+    manager.create_entry(session, "# Concert\n\nThe concert is on Friday 13 November at 8pm. Going with Priya. Tickets are in the email.", category_name="Life", tags=["concert"])
+    session.commit()
+
+
+def test_f13_a_going_with_after_an_answer_stays_on_the_framed_note(client, session):
+    """A framed note that holds its own "Going with" line is the answer, not the trip note (review of PR 216)."""
+    seed.seed(session)
+    _concert(session)
+    said = talk(client, "when is the concert", "who am I going with")
+    assert "Priya" in said[1], said
+    assert "Travelling with Sam" not in said[1], said
+
+
+@pytest.mark.parametrize("question", ["what did I write", "what did I make", "what did I just add"])
+def test_f13_a_what_did_i_write_after_a_subject_turn_stays_bound_to_that_note(question):
+    from tessellate.ai import composer_dialogue
+
+    turns = [{"question": "when is the concert", "answer": "On Friday.", "frame": {"subject": "concert", "note_ids": [1], "ask": "when is the concert"}}]
+    got = composer_dialogue.follow_on(question, turns)
+    assert got is not None and got.kind == "bound" and got.note_ids == (1,) and got.question.endswith("about the concert?"), got
+    assert composer_dialogue.follow_on(question, []).question == "what is my newest note"
+
+
 # --- F13 h -------------------------------------------------------------------
 
 

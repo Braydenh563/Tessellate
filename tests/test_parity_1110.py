@@ -251,6 +251,22 @@ def test_contradictions_with_no_model_are_composed_from_the_dated_notes(client, 
     assert "needs a model" not in said and "change of mind" in said, said
 
 
+SCHEDULE_CLASHES = ["do I have anything that conflicts with the dentist on saturday", "is there anything conflicting with booking the dentist",
+                    "is something conflicting with my phone bill today", "anything conflicting on friday?"]
+
+
+@pytest.mark.parametrize("question", SCHEDULE_CLASHES)
+def test_a_schedule_clash_is_not_a_change_of_mind(client, seeded, question):
+    """"Conflicts with the dentist" is the calendar, not notes that disagree (review of PR 216)."""
+    said = stream(client, question)["text"]
+    assert "change of mind" not in said, said
+
+
+@pytest.mark.parametrize("question", ["is anything in my notes inconsistent", "are any of my notes contradictory", "do any of my notes conflict with each other"])
+def test_the_notes_wordings_still_reach_the_changes_of_mind(client, seeded, question):
+    assert "change of mind" in stream(client, question)["text"]
+
+
 @pytest.mark.parametrize("question", CONTRADICTION_ASKS)
 def test_contradictions_with_a_model_are_handed_the_same_facts(ai_client, fake_ollama, seeded, question):
     stream(ai_client, question, use_tools=True)

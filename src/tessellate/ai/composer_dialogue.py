@@ -304,6 +304,10 @@ def said_plainly(question: str) -> FollowOn | None:
 _ABOUT_THE_TALK = lazy_compile(r"^\s*(?:thanks|thank you|thx|cheers)\b|\b(?:did|are|were) you\b(?! mean)|\bwhere(?:'d| did) you\b", re.I)
 
 
+def _spoken_turns(history: list[dict] | None) -> list[dict]:
+    return [t for t in (history or []) if str(t.get("question") or "").strip() and not question_noise.social_kind(str(t.get("question") or ""))]
+
+
 def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     """"Tell me more", "what about the second one", "when was that": a
     follow-up that only means something against the turn before (INBOX 725,
@@ -317,11 +321,8 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     #: Small talk between ("ty", "lol ok") is not the turn a follow-on leans
     #: on: "what about the boiler?" after "ty" still means the question
     #: before the thanks (measured in Chat, INBOX 741).
-    turns = [
-        t for t in (history or [])
-        if str(t.get("question") or "").strip() and not question_noise.social_kind(str(t.get("question") or ""))
-    ]
-    defining = _defining_ask(question, turns) or said_plainly(question)
+    turns = _spoken_turns(history)
+    defining = _defining_ask(question, turns) or (None if turns else said_plainly(question))
     if defining is not None:
         return defining
     #: "I don't need that" is a reply, not a question about "that" (INBOX 1668 b); "thanks that's
@@ -329,7 +330,9 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     if not turns or repair_turn.is_repair(question) or _ABOUT_THE_TALK.search(question or ""):
         return None
     standing = _standing(turns)
-    return _follow_one(question, standing) or _follow_one_repaired(question, standing)
+    #: Said plainly last: after an answer these bind to the framed note first (F13 a); the server
+    #: lets the binding go when that note has no such line (`chat_turn._framed_scope`).
+    return _follow_one(question, standing) or _follow_one_repaired(question, standing) or said_plainly(question)
 
 
 def _follow_one_repaired(question: str, standing: list[dict]) -> FollowOn | None:

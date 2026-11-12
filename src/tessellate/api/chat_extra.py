@@ -54,7 +54,7 @@ _PATTERNS = re.compile(
     re.IGNORECASE,
 )
 _CONTRADICTIONS = re.compile(r"\b(?:contradict\w*|conflicting notes?|changed my mind|change of mind|disagree\w*)\b|\b(?:conflicts?|disagreements?) (?:in|between|among|across) (?:my |the |these )?notes\b"
-                             r"|\b(?:anything|something|any (?:of )?(?:my |the )?notes?)\b[^?.]{0,30}\b(?:inconsistent|contradictory|conflict(?:s|ing)?)\b", re.IGNORECASE)
+                             r"|\b(?:any (?:of )?(?:my |the )?notes?|(?:anything|something)\b[^?.]{0,30}\bnotes?)\b[^?.]{0,30}\b(?:inconsistent|contradictory|conflict(?:s|ing)?\b(?!\s+with\b(?!\s+(?:each|one|another|other))))", re.IGNORECASE)  # notes among themselves, never "conflicts with the dentist"
 #: "What am I forgetting" is what is still open; "what have I forgotten" is the faded notes
 #: (second eye F13d), which the older readers list as titles.
 _FORGETTING = re.compile(r"\bwhat (?:am i|have i been|did i) forget\w*\b|\banything (?:i(?:'m| am)|i have) forgett\w+\b", re.IGNORECASE)
