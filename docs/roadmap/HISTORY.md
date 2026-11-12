@@ -55290,3 +55290,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 - "Gemini might have removed the spell checker??" (the owner's words in the Gemini thread: "you removed spellchecker.py")
   Recommendation: keep src/tessellate/vendor spellchecker.py and make Brief 35 (unused vendoring gone) leave it in, with a test that it loads; writing checks are Brief 42 (DOCUMENTS_PLAN section 21).
   **Fixed/closed (ownbugs):** no spellchecker.py ever existed in this repo (git log --all: no such path); the checker is ai/spelling.py plus frontend/vendor/wordlist/en.txt, both present; tests/test_spellcheck_present.py loads and exercises them.
+
+- "I cant two finger trackpad zoom in or out on documents or images on the ocr workspace?"
+  Recommendation: pinch zoom (ctrl+wheel from a trackpad) on the PDF and OCR viewer and on images; test with a synthetic wheel event at the viewer. No brief carries it; Brief 42 is the nearest document brief.
+  **Fixed/closed (ownbugs):** already working, verified 2026-11-12 against the running app (port 8794): Ctrl wheel of -10 x5 took the OCR page pane Fit to 150% (ocr79.js ONLY=zoom, drift 0.001), the lightbox picture to scale 1.648 and a lightbox PDF page column to scale 1.648 (pdf pages stubbed, no rasteriser here), default prevented. Touch pinch exists in both (library.js ocr-page-pane touchstart/move; lightbox pointer pinch) but was not driven with real touch. Pinned by tests/test_pinch_zoom_viewers.py and test_lightbox_pinch_1694.py.

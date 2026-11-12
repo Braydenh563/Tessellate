@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Verified: two-finger / Ctrl-wheel pinch zoom already works on the OCR page pane (Fit to 150%), lightbox pictures and lightbox PDF pages (scale 1.648 from five -10 wheel events); pinned by `tests/test_pinch_zoom_viewers.py` (DOCUMENTS_PLAN owner bug). Real touch pinch not driven.
 - Test: the spell checker (ai/spelling.py and the editor word list) is pinned to load and tell "thier" from "their" (`tests/test_spellcheck_present.py`); no spellchecker.py ever existed in the repo, so nothing was removed (DOCUMENTS_PLAN owner bug).
 - Documents: the code panel help and the Guide's Running code topic say the Console runs in its own worker, apart from any page the file shows (LEDGER L752, owner decided 2026-11-12: keep the separate worker).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.

@@ -1244,8 +1244,6 @@ Entries are the owner's words, then the recommendation. Bugs come first.
 
 ### Bugs
 
-- "I cant two finger trackpad zoom in or out on documents or images on the ocr workspace?"
-  Recommendation: pinch zoom (ctrl+wheel from a trackpad) on the PDF and OCR viewer and on images; test with a synthetic wheel event at the viewer. No brief carries it; Brief 42 is the nearest document brief.
 - "The note capture subtab formatting toolbar wont open :("
   Recommendation: reproduce from the Notes Capture subtab, then fix the toolbar's open state and measure it. No brief carries it; Brief 42 is the nearest.
 - "I saved a website as a bookmark but the icon didnt change"
