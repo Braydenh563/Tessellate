@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Health: `/health` carries source_commit, started_at, data_dir_id and data_dir_writable, and Settings, About shows the build and warns when the notebook folder cannot be written (`tests/test_health_build_stamp.py`).
 - Vendored code: `frontend/vendor/PROVENANCE.json` lists every vendored file with its sha256, size, version, upstream, licence and notice; a test recomputes the hashes (`scripts/vendor_provenance.py` regenerates it).
 - Docker: the image has a HEALTHCHECK on /health, a .dockerignore keeps .git, the venv and data out of the build context, and hadolint runs in CI (`tests/test_docker_files.py`).
 - Packaging: LICENSE and THIRD_PARTY.md ship inside the Windows installer and MSI, the Linux tarball and the Docker image (`tests/test_licence_shipped.py`).
