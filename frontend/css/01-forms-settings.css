@@ -1587,6 +1587,15 @@ input.md-task-inline:disabled,
   grid-column: 3;
   grid-row: 1;
 }
+/* Under 600 the facts take a line of their own (L393): beside the title,
+   the `fit-content(26rem)` track took the whole 220px row at 360 and left
+   the title one letter wide. The third track is then empty and 0px. */
+@media (max-width: 599.98px) {
+  .entry-list.is-rows li:not(:has(textarea)) > .entry-meta {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
 /* Anything else a row grows later (an actions strip, a badge) spans the
    width on its own line rather than silently landing in a text column.
    `.row-expand` is excluded on purpose: it is `position: absolute` (below),

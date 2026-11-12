@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 67 | 4 | 0 | 17 | 167 |
+| ui-modernisation | 96 | 65 | 4 | 0 | 17 | 165 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 608 | 159 | 3 | 186 | 1320 |
+| all | 553 | 606 | 159 | 3 | 186 | 1318 |
 
 ## graph
 
@@ -490,8 +490,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L388** `ui-modernisation` open, S: Stop the topic bar wrapping to two rows at 390. From OPEN.md:1952. Evidence: Measured identical on base; no fix
 - [ ] **L390** `ui-modernisation` open, S: Measure 390 px layout of Tidy Patterns rows and Chat pattern line. From OPEN.md:3730. Evidence: Never measured at 390; no recorded sweep
 - [ ] **L392** `ui-modernisation` open, S: Measure broom accent contrast and run the automatic contrast pass in a browser; check Tags Atlas review with a real model. From OPEN.md:624; OPEN.md:3562. Evidence: contrast.js measurement and browser run not recorded; pytest only
-- [ ] **L393** `ui-modernisation` open, S: Fix phone collapsed row buttons overflowing the right edge by 87.8px. From OPEN.md:744; OPEN.md:3549. Evidence: Measured, unchanged per row; no fix commit found. Re-measured 2026-11-12 (viewport 390 and 360, Notes rows view, rows scrolled into view): the rows grid `auto minmax(0,1fr) fit-content(26rem)` (01-forms-settings.css:1537) gives the meta lane all 220px and the title and text 0px, so titles show one letter and chips stack; the ⋯ overflows 66px at 360. Fix: under 600px a one-column grid, title row 1, meta row 2
-- [ ] **L395** `ui-modernisation` open, S: Fix select-btn and notes-filter-menu dock-word clipping at 320-1024. From OPEN.md:1837. Evidence: No CSS rule for these selectors found by grep
 - [ ] **L400** `ui-modernisation` open, S: Flatten Library > Contents > Probe document > Outline from depth 4. From OPEN.md:3706. Evidence: One destination at depth 4; no flattening commit found
 - [ ] **L402** `ui-modernisation` open, S: Redesign code document dock at 390 (238px, four rows). From OPEN.md:1454; OPEN.md:2616. Evidence: Measurement; no redesign found in HISTORY
 - [ ] **L403** `ui-modernisation` open, S: Drive and fix doc-focus panels covering the page at 720-819px. From OPEN.md:1825; OPEN.md:3477. Evidence: tests/test_doc_focus_resize_1408.py, test_doc_panels_154x exist; 720-819 sweep not confirmed

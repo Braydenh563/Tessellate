@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes list view on a phone: under 600px a row's facts take a line of their own, so the title keeps its width (190px at 320, was about 10px) and no row's buttons run off the screen (L393). L395 closed: the Select and Filter words below 1400px are visually hidden labels, not clipped text.
 - CI: the seven py3.11 failures from c054446f fixed (rename row is contextual, characters bundle test follows its stylesheet, reminder note lookup moved to the repo layer, bin-all triage has an Undo, two settings tab strips fade, toast copy). The reminder brief now reads JSON (`apiJson`), so a meeting-prep brief shows when a reminder fires; before, it never did.
 - A tick row in a dock menu (Settings, Logs, More) matches the menu's items: same padding, corner and type size (L412).
 - Recent places opened from the phone bar's sheet sits under the header beside Back instead of flush on the screen's left edge (L410).
