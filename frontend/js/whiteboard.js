@@ -16155,6 +16155,7 @@ async function initWhiteboard() {
   $("wb-delete-board")?.addEventListener("click", wbDeleteCurrentBoard);
   $("wb-add-to-note")?.addEventListener("click", wbAddBoardToNote);
   $("wb-map-to-doc")?.addEventListener("click", () => wbMapWriteDocument());
+  $("wb-board-to-doc")?.addEventListener("click", () => wbMapWriteDocument());
   $("wb-map-study")?.addEventListener("click", () => wbMapStartStudy());
   $("wb-map-build")?.addEventListener("click", () => wbMapBuild.start());
   $("wb-copy-link")?.addEventListener("click", () => {
