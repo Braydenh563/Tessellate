@@ -2172,7 +2172,8 @@ kbd {
    (`data-motion="reduced"`, the blanket in motion-still.css) would stop the
    ring dead, so unless progress motion is "always" the ring breathes through
    it; and "always" turns it regardless, last, so it wins when both are set. */
-:root[data-motion="reduced"]:not([data-progress-motion="always"]) .spinner {
+:root[data-motion="reduced"]:not([data-progress-motion="always"]) .spinner,
+:root[data-progress-motion="still"] .spinner {
   animation: spinner-pulse var(--spinner-pulse) ease-in-out infinite !important;
 }
 :root[data-progress-motion="always"] .spinner {

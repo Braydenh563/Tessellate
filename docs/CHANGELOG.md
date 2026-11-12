@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Progress motion: "Still" now makes the status bar's working ring breathe instead of turn, as reduced motion does; "Auto" measured: it breathes under the OS reduced-motion setting and turns otherwise (L415).
 - Notifications: the bell's panel is fetched soon after start-up, so its first press opens at once on a slow link (L409; it waited for the file with nothing drawn). The moved Library rules checked in dark at four widths: no findings.
 - Documents, focus mode: from 720px wide the sidebar and the suggestions panel sit beside the page instead of over it (L403; the line was 820).
 - Library: a document with headings opened from Contents opens on its Outline tab, a click sooner than before (L400).
