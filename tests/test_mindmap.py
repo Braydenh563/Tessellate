@@ -2435,3 +2435,34 @@ def test_a_due_time_rides_beside_the_due_day_checked_kept_and_carried(client):
     assert "09:30" not in client.get(f"/whiteboard/boards/{board['id']}/export?format=markdown").text
     client.post(f"/whiteboard/boards/{board['id']}/nodes/clear-style")
     assert _styles_by_text(client, board["id"])["Book"]["due_time"] == "09:30"
+
+
+def test_a_freemind_authored_arrowlink_imports_and_comes_back_out(client):
+    """L368: the importer had only met this app's own spelling of a link. A
+    file FreeMind wrote carries its own ids (`Freemind_Link_...`), the arrow's
+    colour, inclinations and an `ID`, and the link starts on one node and
+    names another that is later in the file."""
+    content = (
+        '<map version="1.0.1">'
+        '<node CREATED="1500000000000" ID="ID_1000" MODIFIED="1500000000001" TEXT="Plan">'
+        '<node CREATED="1500000000002" ID="Freemind_Link_1111" MODIFIED="1500000000003" POSITION="right" TEXT="Design">'
+        '<arrowlink COLOR="#b0b0b0" DESTINATION="Freemind_Link_2222" ENDARROW="Default" '
+        'ENDINCLINATION="45;-20" ID="Freemind_Arrow_Link_9" STARTARROW="None" STARTINCLINATION="45;20"/>'
+        "</node>"
+        '<node CREATED="1500000000004" ID="Freemind_Link_2222" MODIFIED="1500000000005" POSITION="left" TEXT="Build"/>'
+        "</node></map>"
+    )
+    imported = client.post(
+        "/whiteboard/boards/import", json={"format": "freemind", "content": content, "name": "FM"}
+    )
+    assert imported.status_code == 201, imported.text
+    board_id = imported.json()["id"]
+    tree = client.get(f"/whiteboard/boards/{board_id}/tree").json()
+    names = {node["id"]: node["text"] for node in tree["roots"][0]["children"]}
+    assert sorted(names.values()) == ["Build", "Design"]
+    assert len(tree["cross_links"]) == 1
+    link = tree["cross_links"][0]
+    assert (names[link["from_id"]], names[link["to_id"]]) == ("Design", "Build")
+    # And out again, in the spelling this app writes, to the right node.
+    text = client.get(f"/whiteboard/boards/{board_id}/export?format=freemind").text
+    assert f'DESTINATION="ID_{link["to_id"]}"' in text
