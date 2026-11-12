@@ -10570,7 +10570,7 @@ function wbOutlineRowEl(node, depth) {
   tags.className = "wb-outline-tags";
   cells.append(marks, tags);
   row.appendChild(cells);
-  wbMapFilter.cells(row);
+  wbMarkerUi.match.cells(row);
   return row;
 }
 
@@ -10644,7 +10644,7 @@ function wbOutlineSync(force = false) {
     const label = wbMapLabel(row._node);
     if (!(field === now && wbOutlineEditing(row)) && field.value !== label) field.value = label;
     row.setAttribute("aria-selected", String(row._node.id === selected));
-    wbMapFilter.cells(row, rows[at++].node);
+    wbMarkerUi.match.cells(row, rows[at++].node);
   }
 }
 
@@ -11256,7 +11256,7 @@ function wbMapMarkerKeyWords(key) {
   return [WB_MAP_MARKER_ICON_NAMES.get(icon) || icon, `ph:${icon}`];
 }
 
-const wbMapFilter = {
+wbMarkerUi.match = {
   //: Lit when nothing is chosen, or the topic carries any chosen key.
   lit: (keys, filters) => !filters.size || keys.some((key) => filters.has(key)),
   //: The bar's words: the first three by name, then how many more.
@@ -11378,7 +11378,7 @@ function wbMapSetMarkerFilter(key) {
   wbMapPaintMarkerFilter();
   const bar = document.getElementById("wb-map-filter");
   const on = wbMarkerUi.filters.size > 0;
-  wbAnnounce(on ? `Showing the topics marked ${wbMapFilter.words(wbMarkerUi.filters).toLowerCase()}.` : "Showing every topic.");
+  wbAnnounce(on ? `Showing the topics marked ${wbMarkerUi.match.words(wbMarkerUi.filters).toLowerCase()}.` : "Showing every topic.");
   if (bar && !on) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
 }
 
@@ -11416,7 +11416,7 @@ function wbMapPaintMarkerFilter() {
     bar.hidden = !on;
     if (on) {
       const label = document.getElementById("wb-map-filter-label");
-      if (label) label.textContent = `Marked: ${wbMapFilter.words(wbMarkerUi.filters)}`;
+      if (label) label.textContent = `Marked: ${wbMarkerUi.match.words(wbMarkerUi.filters)}`;
     }
   }
   const container = document.getElementById("whiteboard-container");
@@ -11428,7 +11428,7 @@ function wbMapPaintMarkerFilter() {
     for (const el of container.querySelectorAll(".wb-map-filtered-out")) el.classList.remove("wb-map-filtered-out");
     return;
   }
-  const out = (node) => (on ? !wbMapFilter.lit(wbMapMarkerKeys(node.data), wbMarkerUi.filters) : !lit.has(node.id));
+  const out = (node) => (on ? !wbMarkerUi.match.lit(wbMapMarkerKeys(node.data), wbMarkerUi.filters) : !lit.has(node.id));
   for (const node of index.nodes) {
     const el = container.querySelector(`.wb-object[data-id="${node.id}"]`);
     if (el) el.classList.toggle("wb-map-filtered-out", out(node));

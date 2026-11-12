@@ -23,7 +23,7 @@ def _run(expr: str) -> object:
         pytest.skip("node is not installed")
     parts = MAP_JS[MAP_JS.index("const WB_MAP_MARKER_ICONS") : MAP_JS.index("function wbMapPaintMarkers")]
     region = MAP_JS[MAP_JS.index("// WB-MAP-FILTER-BEGIN") : MAP_JS.index("// WB-MAP-FILTER-END")]
-    script = parts + region + f"\nconsole.log(JSON.stringify({expr}));"
+    script = "const wbMarkerUi = {};\n" + parts + region + f"\nconsole.log(JSON.stringify({expr}));"
     out = subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=30, check=True)
     return json.loads(out.stdout)
 
@@ -35,15 +35,15 @@ def test_labels_are_filter_keys_beside_the_markers():
 
 def test_several_filters_light_a_topic_that_carries_any_of_them():
     node = '{ priority: 1, labels: ["home"] }'
-    assert _run(f"wbMapFilter.lit(wbMapMarkerKeys({node}), new Set(['p1', 'flag']))") is True
-    assert _run(f"wbMapFilter.lit(wbMapMarkerKeys({node}), new Set(['t:home']))") is True
-    assert _run(f"wbMapFilter.lit(wbMapMarkerKeys({node}), new Set(['flag', 'done']))") is False
-    assert _run(f"wbMapFilter.lit(wbMapMarkerKeys({node}), new Set())") is True
+    assert _run(f"wbMarkerUi.match.lit(wbMapMarkerKeys({node}), new Set(['p1', 'flag']))") is True
+    assert _run(f"wbMarkerUi.match.lit(wbMapMarkerKeys({node}), new Set(['t:home']))") is True
+    assert _run(f"wbMarkerUi.match.lit(wbMapMarkerKeys({node}), new Set(['flag', 'done']))") is False
+    assert _run(f"wbMarkerUi.match.lit(wbMapMarkerKeys({node}), new Set())") is True
 
 
 def test_the_bar_names_every_filter_chosen():
-    assert _run("wbMapFilter.words(new Set(['p1', 't:home', 'flag']))") == "Priority 1, home, Flagged"
-    assert _run("wbMapFilter.words(new Set(['p1', 't:a', 't:b', 'flag', 'done']))") == "Priority 1, a, b and 2 more"
+    assert _run("wbMarkerUi.match.words(new Set(['p1', 't:home', 'flag']))") == "Priority 1, home, Flagged"
+    assert _run("wbMarkerUi.match.words(new Set(['p1', 't:a', 't:b', 'flag', 'done']))") == "Priority 1, a, b and 2 more"
 
 
 def test_a_filter_toggles_and_the_filter_is_a_set_not_one_key():
@@ -54,4 +54,4 @@ def test_a_filter_toggles_and_the_filter_is_a_set_not_one_key():
 def test_the_outline_row_has_a_cell_for_markers_and_one_for_labels():
     row = MAP_JS[MAP_JS.index("function wbOutlineRowEl") : MAP_JS.index("function wbOutlineEditing")]
     assert "wb-outline-marks" in row and "wb-outline-tags" in row
-    assert "wbMapFilter.cells(" in MAP_JS[MAP_JS.index("function wbOutlineSync") : MAP_JS.index("function wbOutlineRowOf")]
+    assert "wbMarkerUi.match.cells(" in MAP_JS[MAP_JS.index("function wbOutlineSync") : MAP_JS.index("function wbOutlineRowOf")]

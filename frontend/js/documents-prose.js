@@ -1607,19 +1607,17 @@ function docFillSig(name) {
   };
 }
 
-let docEmojiTable = null;
-
 //: `[name, glyph]` pairs. They are the icon picker's (`window.iconShortcodes`,
 //: icon-picker.js, GitHub's names as aliases of its emoji), which is a lazy
 //: script that this one cannot assume: until it is in the list is empty and
 //: asking loads it, so the next keystroke finds the names. Not kept across
 //: that gap, so a list read too early is never remembered as empty.
 function docEmojiList() {
-  if (!docEmojiTable) {
-    docEmojiTable = window.iconShortcodes?.() || null;
-    if (!docEmojiTable) ensureModule("iconPicker");
+  if (!docEmojiList.table) {
+    docEmojiList.table = window.iconShortcodes?.() || null;
+    if (!docEmojiList.table) ensureModule("iconPicker");
   }
-  return docEmojiTable || [];
+  return docEmojiList.table || [];
 }
 
 //: The shortcodes matching what was typed after the colon: names that start
