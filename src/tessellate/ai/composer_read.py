@@ -56,6 +56,9 @@ class Sentence:
     done: bool | None = None
     order: int = 0
     score: float = 0.0
+    #: Whether the sentence's own words match the question; False when it
+    #: scores only on its note's name or tags (`composer_select.relevance`).
+    own: bool = True
     #: How far a list item is indented under the one before it (a map's
     #: children, an outline's sub-points); 0 for everything else.
     depth: int = 0
