@@ -590,12 +590,17 @@ function wbDrawioPlan(cells) {
       edgeLabels.set(parent.id, wbDrawioText(c.value, s.html !== "0"));
       continue;
     }
-    for (const k of WB_DRAWIO_DROPPED) if (s[k] && s[k] !== "0") drop(k);
+    const ownPicture = s.shape === "image" && /^\/media\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(s.image || "");
+    for (const k of WB_DRAWIO_DROPPED) if (s[k] && s[k] !== "0" && !(ownPicture && k === "image")) drop(k);
     if (s._kind === "group") continue;
     const at = origin(c.id);
     const box = { x: at.x, y: at.y, w: Math.max(1, Number(c.geo?.width) || 0), h: Math.max(1, Number(c.geo?.height) || 0) };
     const label = wbDrawioText(c.value, s.html !== "0");
-    if (s._kind === "swimlane" || s.swimlane === "1") items.push({ id: c.id, kind: "frame", ...box, label });
+    if (ownPicture) {
+      //: Only a picture already on this notebook comes back; an outside address would make the board call out.
+      const border = /^#[0-9a-f]{6}$/i.test(s.imageBorder || "") ? { border_color: s.imageBorder.toLowerCase(), border_width: Math.max(1, Math.min(40, Math.round(Number(s.strokeWidth) || 1))) } : {};
+      items.push({ id: c.id, kind: "image", ...box, url: s.image, look: border });
+    } else if (s._kind === "swimlane" || s.swimlane === "1") items.push({ id: c.id, kind: "frame", ...box, label });
     else if (s._kind === "text") items.push({ id: c.id, kind: "text", ...box, label, look: { font_size: Math.round(Number(s.fontSize) || 16), ...(wbDrawioLook(s).label_color ? { color: wbDrawioLook(s).label_color } : {}) } });
     else {
       const shape = wbDrawioShape(s);
@@ -683,6 +688,9 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
         const fill = cell.head ? "#eef1f6" : cell.stripe ? "#f4f6fa" : "#ffffff";
         vertex(`object:${o.id}:${cell.r}:${cell.c}`, `rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;fillColor=${fill};strokeColor=#9aa3b5;${cell.head ? "fontStyle=1;" : ""}`, cell.text, { x: b.x + cell.x, y: b.y + cell.y, w: cell.w, h: cell.h });
       }
+    } else if (o.kind === "image" && /^\/media\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(d.url || "")) {
+      //: A picture of this notebook's: its address and its border (draw.io's `imageBorder` and `strokeWidth`).
+      vertex(`object:${o.id}`, `shape=image;html=0;aspect=fixed;image=${d.url};${hex(d.border_color) && d.border_width > 0 ? `imageBorder=${hex(d.border_color)};strokeWidth=${Math.round(d.border_width)};` : ""}`, "", b);
     } else if (o.kind === "image" || o.kind === "table") skip(o.kind === "image" ? "pictures" : "tables");
     else skip("other items");
   }
@@ -1101,6 +1109,10 @@ async function wbDrawioPlace(plan, dx, dy, ink) {
     const made = await wbCreateObject("frame", { content: f.label || "Lane" }, Math.round(f.x + dx), Math.round(f.y + dy), Math.round(f.w), Math.round(f.h));
     if (made) ids.set(f.id, ["object", made.id]);
   }
+  for (const item of plan.items.filter((i) => i.kind === "image")) {
+    const made = await wbCreateObject("image", { url: item.url, ...item.look }, Math.round(item.x + dx), Math.round(item.y + dy), Math.round(Math.max(20, item.w)), Math.round(Math.max(20, item.h)));
+    if (made) ids.set(item.id, ["object", made.id]);
+  }
   for (const item of plan.items.filter((i) => i.kind === "text")) {
     const made = await wbCreateObject("text", { content: item.label, ...item.look }, Math.round(item.x + dx), Math.round(item.y + dy), Math.round(Math.max(40, item.w)), Math.round(Math.max(24, item.h)));
     if (made) ids.set(item.id, ["object", made.id]);
@@ -1207,6 +1219,14 @@ onDomReady(() => {
     const chosen = file.files?.[0];
     file.value = "";
     if (!chosen) return;
+    //: A PNG exported with "Include a copy of the diagram" carries its board in a chunk.
+    if (chosen.type === "image/png" || /\.png$/i.test(chosen.name)) {
+      const rows = wbFmtState.exporters.rowsOf(new Uint8Array(await chosen.arrayBuffer()));
+      dialog.close();
+      if (rows) await wbImportBoardRows(rows);
+      else toast("That PNG has no board inside it. Export a PNG with Include a copy of the diagram on, or insert it as a picture.", "info");
+      return;
+    }
     const text = await chosen.text();
     dialog.close();
     await wbImportText(text);
@@ -1463,17 +1483,35 @@ async function wbDiagramToShapes(d, source) {
 //: library: nothing vendored writes PDF, and a page of one picture is a dozen
 //: lines of structure.
 const wbPdf = (() => {
-  const SIZES = { a4: [595.28, 841.89], letter: [612, 792] };
+  //: Every paper size, in points (short side, long side), A4 the fallback: the one table the PDF export, the board's
+  //: paper setting and the page view all read.
+  const SIZES = { a4: [595.28, 841.89], a3: [841.89, 1190.55], letter: [612, 792], legal: [612, 1008] };
+  const MM = 72 / 25.4;
+  //: A paper's short and long side in points: a known size, or a board's custom one (`paper_w`, `paper_h`, millimetres).
+  function sideOf(size, custom) {
+    if (size === "custom" && custom?.paper_w > 0 && custom?.paper_h > 0) {
+      return [custom.paper_w * MM, custom.paper_h * MM].sort((a, b) => a - b);
+    }
+    return SIZES[size] || SIZES.a4;
+  }
   const MARGIN = 28;
   const TILE_SCALE = 0.75;
   const MAX_PAGES = 40;
+
+  //: A board's page in board units (96 to the inch; the table is in points): its paper and orientation, A4 portrait
+  //: when it sets none. Page view draws these frames.
+  function pagePx(bg = {}) {
+    const [short, long] = sideOf(bg.paper, bg);
+    const [w, h] = bg.orientation === "landscape" ? [long, short] : [short, long];
+    return [Math.round((w * 96) / 72), Math.round((h * 96) / 72)];
+  }
 
   //: The pages for a board: `bounds` is the export's viewBox ({x, y, w, h}),
   //: `frames` the frames to give a page each ({x, y, width, height}). Every page
   //: has its size in points, the part of the board it shows (`crop`, board
   //: units) and where that sits on the page (`place`, points, from the top-left).
-  function plan({ bounds, frames = [], size = "a4", orientation = "auto", layout = "fit" }) {
-    const [short, long] = SIZES[size] || SIZES.a4;
+  function plan({ bounds, frames = [], size = "a4", orientation = "auto", layout = "fit", custom = null }) {
+    const [short, long] = sideOf(size, custom);
     const pageFor = (w, h) => {
       const landscape = orientation === "landscape" || (orientation === "auto" && w > h);
       return landscape ? [long, short] : [short, long];
@@ -1562,7 +1600,7 @@ const wbPdf = (() => {
 
   //: The choices the export dialog offers, and the last ones made.
   const CHOICES = {
-    size: [{ value: "a4", label: "A4" }, { value: "letter", label: "Letter" }],
+    size: [{ value: "a4", label: "A4" }, { value: "a3", label: "A3" }, { value: "letter", label: "Letter" }, { value: "legal", label: "Legal" }],
     orientation: [
       { value: "auto", label: "Auto", title: "Landscape for a wide board, portrait for a tall one" },
       { value: "portrait", label: "Portrait" },
@@ -1580,9 +1618,22 @@ const wbPdf = (() => {
     return { size: pick("size", "a4"), orientation: pick("orientation", "auto"), layout: pick("layout", "fit") };
   }
 
+  //: The export dialog's starting point: the board's own paper and direction when it sets them (Format > Board), else
+  //: the last choice made here. A custom paper carries its millimetres along for the plan.
+  function boardChoice(bg, saved) {
+    const out = { ...saved };
+    if (bg.paper) {
+      out.size = bg.paper;
+      if (bg.paper === "custom") out.custom = { paper_w: bg.paper_w, paper_h: bg.paper_h };
+    }
+    if (bg.orientation) out.orientation = bg.orientation;
+    return out;
+  }
+
   function saveChoice(choice) {
     try {
-      prefs.set("wb-export-pdf", JSON.stringify(choice));
+      const { size, orientation, layout } = choice;
+      prefs.set("wb-export-pdf", JSON.stringify({ size, orientation, layout }));
     } catch {
       // Private mode: the choice holds for this export.
     }
@@ -1616,5 +1667,5 @@ const wbPdf = (() => {
     return pages;
   }
 
-  return { plan, build, pictures, choices: CHOICES, savedChoice, saveChoice };
+  return { plan, build, pictures, choices: CHOICES, savedChoice, saveChoice, boardChoice, SIZES, pagePx };
 })();

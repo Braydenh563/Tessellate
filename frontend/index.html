@@ -1139,9 +1139,9 @@
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-import-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
     </div>
-    <p class="muted wb-import-about" id="wb-import-about">Paste a Mermaid diagram, or choose a .mmd, a draw.io file, or an SVG a board here exported.</p>
+    <p class="muted wb-import-about" id="wb-import-about">Paste a Mermaid diagram, or choose a .mmd, a draw.io file, or an SVG or PNG a board here exported.</p>
     <textarea id="wb-import-text" class="wb-import-text" rows="8" spellcheck="false" aria-label="Mermaid diagram" aria-describedby="wb-import-about" placeholder="flowchart TD&#10;  A[Start] --> B{Ready?}&#10;  B -->|yes| C[Ship it]"></textarea>
-    <input type="file" id="wb-import-file" accept=".mmd,.mermaid,.txt,.md,.svg,.drawio,.xml,text/plain,image/svg+xml" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a diagram file" title="Choose a diagram file">
+    <input type="file" id="wb-import-file" accept=".mmd,.mermaid,.txt,.md,.svg,.png,.drawio,.xml,text/plain,image/svg+xml,image/png" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a diagram file" title="Choose a diagram file">
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost quiet small" id="wb-import-choose">Choose a file…</button>
       <button type="button" class="ghost small" data-close-dialog="wb-import-dialog">Cancel</button>
@@ -7171,6 +7171,7 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <label class="wb-menu-row wb-snap-label" title="Snap items to the grid while dragging"><span><i class="ph ph-magnet ph-lead" aria-hidden="true"></i>Snap to grid</span><input type="checkbox" id="wb-snap-toggle"></label>
+              <label class="wb-menu-row wb-snap-label" title="Show a ruler along the top and down the left, in this board's unit (Format, Board)"><span><i class="ph ph-ruler ph-lead" aria-hidden="true"></i>Rulers</span><input type="checkbox" id="wb-view-rulers"></label>
               <label class="wb-menu-row wb-snap-label" title="Show the four arrows round a selected shape that copy it and join the copy"><span><i class="ph ph-arrows-out-cardinal ph-lead" aria-hidden="true"></i>Connection arrows</span><input type="checkbox" id="wb-view-grips" checked></label>
               <label class="wb-menu-row wb-snap-label" title="Show the dots where a line can join a shape while you draw one; joining still snaps to them when hidden"><span><i class="ph ph-crosshair-simple ph-lead" aria-hidden="true"></i>Connection points</span><input type="checkbox" id="wb-view-ports" checked></label>
               <label class="wb-menu-row wb-snap-label" data-wb-surface="board" title="Draw the bottom corner of this board's sticky notes folded over; a note's Format panel can differ"><span><i class="ph ph-note ph-lead" aria-hidden="true"></i>Folded sticky corners</span><input type="checkbox" id="wb-sticky-fold" checked></label>
@@ -8456,6 +8457,21 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
           <div id="wb-board-style-list" class="wb-board-style-list" role="group" aria-label="Board styles"></div>
         </section>
+        <section id="wb-board-options" class="wb-fmt-section" aria-label="Board options" hidden>
+          <h4 class="wb-fmt-head"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span>Board</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-boardopts" aria-controls="wb-fmt-help-boardopts" aria-expanded="false" title="About board options" aria-label="About board options"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+          <div class="help-body hidden" id="wb-fmt-help-boardopts" role="dialog" aria-label="About board options">
+            <p><b>Board options</b> belong to this board, not to this device. The grid size and colour are what Snap to grid, Shift and the arrow keys, and the drawn grid all use. Guides are the alignment lines while you drag. Page view shows the page frames. Shadow gives new shapes and text boxes a shadow. Paper and Direction set the page frames and where a PDF export starts; a custom size is in millimetres. Units set what the rulers (View, Rulers) and the position and size fields show.</p>
+          </div>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Grid size</span><input type="number" id="wb-bo-grid-size" min="4" max="200" step="1" placeholder="24" aria-label="Grid size, in pixels" title="Space between grid lines in pixels; empty is 24"></label>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Guides</span><input type="checkbox" id="wb-bo-guides" aria-label="Alignment guides" title="Lines that appear and pull a shape into line with others while you drag or resize; off, only the grid snaps"></label>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Page view</span><input type="checkbox" id="wb-bo-pageview" aria-label="Page view" title="Show the printed page frames on the board; they are the pages a PDF export uses"></label>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Shadow</span><input type="checkbox" id="wb-bo-shadow" aria-label="Shadow for new shapes" title="New shapes and text boxes on this board start with a shadow"></label>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Paper</span><select id="wb-bo-paper" aria-label="Paper size" title="The page the page view draws and a PDF export starts from"><option value="a4">A4</option><option value="a3">A3</option><option value="letter">Letter</option><option value="legal">Legal</option><option value="custom">Custom</option></select></label>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Direction</span><select id="wb-bo-orient" aria-label="Paper direction" title="Portrait or landscape"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></label>
+          <div class="wb-fmt-row" id="wb-bo-custom" role="group" aria-label="Custom paper size in millimetres" hidden><span class="wb-fmt-label">Size (mm)</span><span class="wb-fmt-buttons"><input type="number" id="wb-bo-paper-w" min="50" max="2000" step="1" placeholder="210" aria-label="Paper width, millimetres" title="Paper width in millimetres"><input type="number" id="wb-bo-paper-h" min="50" max="2000" step="1" placeholder="297" aria-label="Paper height, millimetres" title="Paper height in millimetres"></span></div>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Units</span><select id="wb-bo-units" aria-label="Units for lengths" title="The unit the rulers and the position and size fields show; boards store pixels, 96 to the inch"><option value="px">Pixels</option><option value="mm">Millimetres</option><option value="cm">Centimetres</option><option value="in">Inches</option><option value="pt">Points</option></select></label>
+          <div class="wb-fmt-row" role="group" aria-label="Grid colour"><span class="wb-fmt-label">Grid colour</span><span class="wb-fmt-buttons"><input type="color" id="wb-bo-grid-color" class="wb-color-picker" aria-label="Grid colour" title="Grid colour"><button type="button" id="wb-bo-grid-reset" class="ghost small" aria-label="Default grid colour" title="Use the theme's own grid colour">Default</button></span></div>
+        </section>
         <p id="wb-format-none" class="muted wb-lib-keys" hidden>Nothing on this tab for what is selected.</p>
         <section class="wb-fmt-section" data-format-panel="style" aria-label="Style">
           <div class="wb-fmt-group" data-fmt-group="fill">
@@ -8616,6 +8632,9 @@ Link to another note with [[its first few words]]."></textarea>
                 <label class="wb-fmt-num"><span class="wb-fmt-label">BL</span><input type="number" id="wb-fmt-r3" min="0" max="200" step="1" placeholder="Auto" aria-label="Bottom left corner radius" title="Bottom left corner radius in pixels"></label>
                 <label class="wb-fmt-num"><span class="wb-fmt-label">BR</span><input type="number" id="wb-fmt-r2" min="0" max="200" step="1" placeholder="Auto" aria-label="Bottom right corner radius" title="Bottom right corner radius in pixels"></label>
               </span>
+            </div>
+            <div class="wb-fmt-row" data-fmt="imageborder" role="group" aria-label="Picture border"><span class="wb-fmt-label">Border</span>
+              <span class="wb-fmt-buttons"><input type="color" id="wb-fmt-ibcolor" class="wb-color-picker" aria-label="Border colour" title="Border colour"><input type="number" id="wb-fmt-ibwidth" min="0" max="40" step="1" placeholder="None" aria-label="Border width, in pixels" title="Border width in pixels; empty takes the border off"></span>
             </div>
             <label class="wb-fmt-row" data-fmt="pad" data-unit="px"><span class="wb-fmt-label">Padding</span><input type="number" id="wb-fmt-pad" min="0" max="80" step="1" placeholder="Auto" aria-label="Padding, in pixels" title="Space between a box's edge and its text, or between a frame's edge and what it holds when you fit it, in pixels; empty is the default"></label>
           </div>

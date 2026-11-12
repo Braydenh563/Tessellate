@@ -896,7 +896,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Page background colour and image | yes (board background, `wb1005-bg.js`) | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
-| Units (points, inches, mm, cm, m) | no | `units` menu (diagramly/Menus.js 370) | drop: the board has no print scale | none |
 
 ### 7. Shape libraries and the stencil format
 
@@ -995,7 +994,6 @@ product; the NOTICE says so).
 | --- | --- | --- | --- | --- |
 | Outline window (a minimap) | yes (`wb-navigator`, Shift+N) | `outline` action (Actions.js 2187), Ctrl+Shift+O, `mxOutline` | done | none |
 | Home, enter and exit group, expand and collapse | `view-home` yes (whiteboard-commands.js:286); no enter or exit group, no canvas collapse | `home`, `enterGroup`, `exitGroup`, `collapse`, `expand` (Actions.js 562 to 566) | enter group dims everything else; collapse folds a frame to its title bar | M |
-| Grid size and colour, guides, page view, connection arrows, tooltips toggles | grid style, snap, connection arrows and points, tooltip field yes; grid spacing fixed (`WB_GRID_SPACING` 24), page view absent | `grid`, `guides`, `tooltips`, `connectionArrows`, `connectionPoints`, `pageView`, `animations`, `zoomWheel` (Actions.js 1313 to 1403) | add grid size (matrix row) | S |
 | Fullscreen | yes | `fullscreen` (diagramly/Menus.js 399) | done | none |
 | Presentation mode | yes (`present`) | `presentationMode` (diagramly/Menus.js 3954) | done | none |
 | Light, dark and automatic appearance, adaptive colours | yes (the app's themes; the board's ink follows) | `adaptiveColors`, `light-dark()` colours (Format.js `defaultStripeColor`) | done | none |
@@ -1060,7 +1058,6 @@ clash is listed so the choice is made once.
 | --- | --- | --- | --- | --- |
 | Insert an image (file, URL, drag, paste), embedded data URI | yes (`insert-image`, I; media rows) | `image...` (Actions.js 1998), `shape=image;image=data:...` | done | none |
 | Image as a shape fill (`image` style on any shape) | no | `STYLE_IMAGE`, `shape=image` | drop; an image is its own item | none |
-| Crop, replace, border | crop (rectangle, ellipse, rounded radii), replace and edit image yes; border open | `crop` (Actions.js 2112), `editImage` | add stroke and width to the image fields, render in the node and the export | S |
 | Math typesetting (LaTeX in labels) | no | `mathematicalTypesetting` action (diagramly/Menus.js 840), `Editor.initMath` (diagramly/Editor.js 4701) loads MathJax | KaTeX is MIT and offline-friendly; a `$...$` span in text objects and shape labels rendered to SVG `foreignObject`; Tessellate's markdown has no math today, so it would come with notes | L |
 | Hyperlinks on shapes, to a URL, a page, or a note | yes for objects; links to a note are the app's own | `editLink`, `link=` | add to sketches; targets: note, frame, URL | S |
 | Embedded notes | no (comments) | `editNote` | comments cover it | none |
@@ -1070,11 +1067,9 @@ clash is listed so the choice is made once.
 
 | Format | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| PNG with scale and transparent | yes (`wbExportPng`, `WB_EXPORT_FORMATS`) | `ExportDialog` (grapheditor/Dialogs.js 3582) zoom, width, height, dpi, transparent, grid, border width; "include a copy of my diagram" embeds the XML in the PNG | add border width, DPI; embedding the board JSON in a PNG `tEXt` chunk makes the PNG re-importable | S |
-| GIF | JPG and WebP yes (`WB_EXPORT_FORMATS`, whiteboard.js:14828); GIF open | `exportAnimatedGif` (diagramly/Menus.js 1181) | no animated source on a board; recommend a decision to drop | S |
+| GIF | JPG and WebP yes (`WB_EXPORT_FORMATS`, whiteboard.js:14828); GIF open | `exportAnimatedGif` (diagramly/Menus.js 1181) | no animated source on a board yet: waits for the ink replay (L-whiteboard-4), which gives it frames to write | S |
 | SVG (re-editable, with the model embedded) | yes (`wbExportSvg`; `<metadata>` carries the board, `wbBoardSvgMetadata`) | `exportSvg` (diagramly/Menus.js 1101) with `content=` attribute | done | none |
 | PDF | yes (`wbExportPdf`) | `exportPdf` (692), server side | done (print path) | none |
-| HTML, embedded viewer, iframe, link | no | `exportHtml` (669), `embed` menu (4208) | an HTML export is the SVG in a page; embedding is out of scope | S |
 | `.drawio` import: map rotation, images, gradient | import and export yes (whiteboard-interchange.js:970 writer, :999 reader, pages and deflate-raw); `WB_DRAWIO_DROPPED` still lists rotation, image, gradientColor, shadow | `Editor.getGraphXml` (grapheditor/Editor.js 1563), `setGraphXml` (1508) | map rotation, gradient and shadow in the style reader near whiteboard-interchange.js:503 and the writer near :641, now that the board has counterparts | M |
 | VSDX import and export, Gliffy, Lucidchart, draw.io CSV import | no | `vsdx/importer.js` (15,344 lines), `exportVsdx` (1431), `importFrom` (3410), `csv` action | drop VSDX and Lucid; the CSV importer is S to M and gives the AI a way to draw org charts | M |
 | Mermaid in and out; PlantUML | yes for Mermaid flowcharts (`whiteboard-interchange.js`); no PlantUML | `mermaid`, `plantUml` actions (insertAdvanced menu) | keep the Mermaid subset; PlantUML needs a server, drop | none |
@@ -1104,9 +1099,7 @@ clash is listed so the choice is made once.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Background colour or image | yes | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
-| Grid: size, colour, on or off | partly (style, snap) | `addGridOption` (Format.js 9103) | grid size | S |
-| Options: connection arrows, connection points, guides, tooltips, page view, shadow default, "Edit data" of the diagram | connection arrows and points, tooltip field yes; guides, page view, shadow default open | `addOptions` (Format.js 9016) | the toggles in section 10 | S |
-| Paper size, orientation | no | `addPaperSize` (Format.js 9231) | section 6 | S |
+| Options: "Edit data" of the diagram | connection arrows and points, tooltips, guides, page view, shadow default built (Format > Board) | `addOptions` (Format.js 9016) | the toggles in section 10 | S |
 
 ### 18. Out of scope, with the reason
 
@@ -1418,7 +1411,7 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 6. Dimension lines with a live length: built; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
 7. Crop a picture to a circle or rounded box: built; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
 9. Pages inside one board: decided; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
-10. Rulers and units. M, not planned for a student's board.
+10. Rulers and units: built; HISTORY.md, "Moved from the plans, 2026-11-12 (wbformat2)".
 
 ## Placed from INBOX, 2026-10-26
 

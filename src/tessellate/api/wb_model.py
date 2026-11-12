@@ -537,6 +537,9 @@ class WhiteboardObjectData(BaseModel):
     bg_alpha: float | None = Field(default=None, ge=0, le=1)
     line_alpha: float | None = Field(default=None, ge=0, le=1)
     border_color: str | None = Field(default=None, max_length=20)
+    #: A picture's border width in pixels (the Format panel's Border; its colour is `border_color`).
+    #: Absent or 0 is no border.
+    border_width: int | None = Field(default=None, ge=0, le=40)
     #: How the text sits in its box, and whether it is shown as rendered
     #: markdown: asked for directly ("text alignment, font size etc", "rendered
     #: md which is togglable in text boxes and sticky notes"). A field the

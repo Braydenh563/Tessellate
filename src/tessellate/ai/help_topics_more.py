@@ -1960,7 +1960,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-draw-io-keys", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-group-edit", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-group-edit", "board-format-options", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2991,3 +2991,30 @@ MORE_TOPICS.append({
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here"}
+
+#: WHITEBOARD_PLAN, wbformat2: the board's own format options, one topic that grows with each row.
+MORE_TOPICS.append({
+    "id": "board-format-options",
+    "keywords": (
+        "picture border", "image border", "border on a picture", "outline a picture",
+        "grid size", "grid colour", "grid color", "change the grid", "board options",
+        "rulers", "show rulers", "units", "millimetres", "inches", "centimetres", "points", "png resolution", "png dpi", "include a copy of the diagram", "reopen a png", "html export", "export as a web page", "paper size", "page size", "landscape", "A3", "Legal", "custom paper", "alignment guides", "turn off guides", "page view", "page frames", "default shadow", "shadow for new shapes",
+    ),
+    "body": (
+        "Picture border: select a picture, then in the Format panel set Border to a width in pixels and pick its colour; "
+        "an empty width takes the border off. The border is drawn inside the picture's edge, follows its rounded corners, "
+        "and is kept in SVG, PNG and PDF exports and in a .drawio file (as imageBorder and strokeWidth). "
+        "Board options: with nothing selected, the Format panel's Style tab has a Board section. Grid size (4 to 200, empty is 24) "
+        "and Grid colour belong to this board; Snap to grid, Shift with the arrow keys and the drawn grid all use that size. "
+        "The same section has three switches, each kept on the board: Guides (the alignment lines while you drag, on by default), "
+        "Page view (dashed frames for the printed pages, drawn under the cards) and Shadow (new shapes and text boxes start with a shadow). "
+        "Paper and Direction (A4, A3, Letter, Legal or a custom size in millimetres; portrait or landscape) set the page frames and are where a PDF export starts. "
+        "Export: PNG adds Border (space round the picture), Resolution (72, 96, 150 or 300 dots per inch, written into the file) and "
+        "Include a copy of the diagram, which puts the board inside the PNG so Insert, Diagram can open it again; HTML saves one web page "
+        "of the board that opens offline in any browser, with scroll to zoom and drag to pan. "
+        "Rulers and units: View, Rulers shows a ruler along the top and down the left that follows pan and zoom; Units in the Board section "
+        "(pixels, millimetres, centimetres, inches or points, 96 pixels to the inch) sets what the rulers and the Format panel's position and size fields show."
+    ),
+    "badge": {"label": "Whiteboard", "tab": "library"},
+})
+TOPIC_META["board-format-options"] = {"title": "Board format options", "path": "Whiteboard, Format panel"}
