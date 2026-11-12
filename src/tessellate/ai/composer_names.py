@@ -47,6 +47,15 @@ def names_of(notes: list[dict]) -> frozenset[str]:
     return (frozenset(capital) - frozenset(_LOWER.findall(text))) | titles
 
 
+def _subject_slot(tokens: list[str], i: int) -> bool:
+    """Whether the word at `i` can be the subject asked about: last, after a subject-introducing word, or the
+    word before a bare "list" after "my" ("my shoping list": the note's name, F8)."""
+    before = tokens[i - 1].lower() if i else ""
+    if all(not t.strip("?.!,;:") for t in tokens[i + 1:]) or before in _BEFORE_SUBJECT:
+        return True
+    return before in _POSSESSIVE and i + 1 < len(tokens) and tokens[i + 1].strip("?.!,;:").lower() == "list"
+
+
 def respell(question: str, names: frozenset[str], fixed: list | None = None) -> str:
     """`question` with a subject word that is one slip from one of `names` put right; `fixed` gets
     (typed, chosen) as the speller's repairs do, which is what lets the answer say how it read the question."""
@@ -55,10 +64,7 @@ def respell(question: str, names: frozenset[str], fixed: list | None = None) -> 
     tokens = question.split(" ")
     for i, token in enumerate(tokens):
         word = token.strip("?.!,;:").lower()
-        last = all(not t.strip("?.!,;:") for t in tokens[i + 1:])
-        #: "my shoping list": the word before a bare "list" is the note's name as much as the last word is (F8).
-        listed = i > 0 and i + 1 < len(tokens) and tokens[i + 1].strip("?.!,;:").lower() == "list" and tokens[i - 1].lower() in _POSSESSIVE
-        if len(word) < 4 or not word.isalpha() or word in names or not (last or listed or (i and tokens[i - 1].lower() in _BEFORE_SUBJECT)):
+        if len(word) < 4 or not word.isalpha() or word in names or not _subject_slot(tokens, i):
             continue
         chosen = question_noise.nearest(word, names)
         if chosen:
@@ -66,4 +72,3 @@ def respell(question: str, names: frozenset[str], fixed: list | None = None) -> 
             if fixed is not None:
                 fixed.append((token, tokens[i]))
     return " ".join(tokens)
-
