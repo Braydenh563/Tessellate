@@ -270,3 +270,21 @@ def test_a_minute_mention_reads_as_a_day_and_a_time_to_the_note(client):
     assert dates[0]["precision"] == "minute"
     assert dates[0]["time"] == "15:00"
     assert len(dates[0]["at"]) == 10
+
+
+def test_week_phrases_start_on_monday_by_default():
+    """L470: on a Sunday, "this week" is the Monday six days back and "next
+    week" the Monday after it (a fixed clock, no settings loaded)."""
+    sunday = datetime(2026, 8, 2, 9, 0)
+    got = {m.phrase: m.at for p in ("this week", "next week", "last week") for m in timewords.find(p, sunday)}
+    assert got == {"this week": date(2026, 7, 27), "next week": date(2026, 8, 3), "last week": date(2026, 7, 20)}
+    assert timewords.find("next friday", sunday)[0].at == date(2026, 8, 7)
+
+
+def test_week_phrases_follow_the_first_day_setting(monkeypatch):
+    """A Sunday-first week starts "this week" on the Sunday itself."""
+    monkeypatch.setattr(timewords, "_week_first", lambda: 6)
+    sunday = datetime(2026, 8, 2, 9, 0)
+    assert timewords.find("this week", sunday)[0].at == date(2026, 8, 2)
+    assert timewords.find("next week", sunday)[0].at == date(2026, 8, 9)
+    assert timewords.find("next friday", sunday)[0].at == date(2026, 8, 14)

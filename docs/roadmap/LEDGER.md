@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 29 | 3 | 0 | 5 | 35 |
+| timeline | 3 | 28 | 3 | 0 | 5 | 34 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 700 | 157 | 3 | 195 | 1410 |
 
 ## graph
 
@@ -595,7 +595,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## timeline
 
-- [ ] **L470** `timeline` open, S: Make the week Monday-first on user_now (1524). From a30c-1102.md Still open small. Evidence: No locale week-start code found in ai/user_now.py or core
 - [ ] **L471** `timeline` open, S: Limit the reminders poll payload (status.js still fetches 200 rows a minute). From OPEN.md:4214; OPEN.md:4277. Evidence: status.js:585 still fetches /reminders?include_done=false with no limit; tab-hidden stop exists (status.js:556-566).
 - [ ] **L472** `timeline` open, S: Backfill done_at for reminders ticked before it existed so they count in a week. From OPEN.md:1384. Evidence: review_digest.py:94 filters on done_at; no backfill of old done rows found in src.
 - [ ] **L473** `timeline` open, S: Add a stored birthday setting so 'on my birthday' works. From OPEN.md:863. Evidence: No birthday setting found; context['birthday'] only

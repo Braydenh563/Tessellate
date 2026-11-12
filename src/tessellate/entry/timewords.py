@@ -71,8 +71,21 @@ class Mention:
     time: time | None = None
 
 
+def _week_first() -> int:
+    """The person's first day of the week (0 Monday) from the settings the app
+    has loaded (`config.week_first_day`); Monday with none (a unit test)."""
+    import sys
+
+    from tessellate.core import config
+
+    deps = sys.modules.get("tessellate.core.deps")
+    loaded = deps.peek_config() if deps else None
+    return config.week_first_day(loaded) if loaded is not None else 0
+
+
 def _monday(day: date) -> date:
-    return day - timedelta(days=day.weekday())
+    """The first day of `day`'s week: Monday unless Settings say otherwise."""
+    return day - timedelta(days=(day.weekday() - _week_first()) % 7)
 
 
 def _add_months(day: date, months: int) -> date:
@@ -233,7 +246,7 @@ def _weekday(match: re.Match, today: date):
         behind = (today.weekday() - target) % 7 or 7
         return (today - timedelta(days=behind), DAY)
     if which == "next":
-        return (_monday(today) + timedelta(days=7 + target), DAY)
+        return (_monday(today) + timedelta(days=7 + (target - _week_first()) % 7), DAY)
     if which == "on" and _happened(match):
         return (today - timedelta(days=(today.weekday() - target) % 7), DAY)
     return (today + timedelta(days=ahead), DAY)  # "this"/"on": the coming one
