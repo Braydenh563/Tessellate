@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 194 | 60 | 2 | 59 | 430 |
+| chat | 176 | 191 | 60 | 2 | 59 | 427 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 698 | 157 | 3 | 195 | 1408 |
 
 ## graph
 
@@ -89,7 +89,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L50** `chat` open, S: Fix title for 'new note called Christmas with mum, dad and Sara' (B26 Q5). From w9b-1110.md Left. Evidence: No test with that phrase found; commands._PLAIN_NAME splits at 'with'
 - [ ] **L51** `chat` open, S: Make tab-level Guide topics ring each topic's own control, not the tab's main control. From OPEN.md:963; OPEN.md:2709. Evidence: No per-topic ring found in help-chat.js (grep ring/highlight empty); topics carry tab-level path only
 - [ ] **L52** `chat` open, S: Read the Guide fallback log line (help_chat.answer_stream) when the Guide fails with a model. From OPEN.md:968; OPEN.md:987; OPEN.md:2858. Evidence: Only reproduces with a real model; help-chat.js catch needs a model-run server log
-- [ ] **L53** `chat` open, S: Add 'I took that to mean' to the no-model Guide answer (help_chat.system_answer). From OPEN.md:808; a30c-1102.md Left unmarked. Evidence: Phrase only in ai/composer_ack.py:20; help_chat.system_answer has none
 - [ ] **L54** `chat` open, S: Drive Brief 84 Guide first line and act topics in a browser. From OPEN.md:606; OPEN.md:2861. Evidence: API/unit tests only; browser drive of Guide not recorded
 - [ ] **L55** `chat` open, S: Draw run budget usage in the chat-agent.js result box. From OPEN.md:648; OPEN.md:2584. Evidence: grep budget in frontend/js/chat-agent.js returns nothing
 - [ ] **L56** `chat` open, S: Drive an Ask chip click in a sweep with a corrected selector. From OPEN.md:836; OPEN.md:3518. Evidence: Sweep selector missed the chip; no corrected run recorded
@@ -144,7 +143,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L105** `chat` open, M: Understand 'which of A, B and C is the newest' with three names. From a30e-1102.md Found, not fixed. Evidence: composer_versus.py _versus(key, rows) two-name form only
 - [ ] **L106** `chat` open, M: Fix R3-2 lead dropping label, R3-18 dentist time, E23 repeated provenance, E17 'when did I last run' seed. From composer-r4-1108.md Still open. Evidence: No tests naming R3-2/R3-18/E23 found; E17 has tests but probe-seed source unresolved
 - [ ] **L107** `chat` open, M: Trim ask-chat Guide topic (1916 of 1919 chars) so it can name Agent-with-no-model. From OPEN.md:804; OPEN.md:2237. Evidence: help_topics_more.py:1712 ask-chat; reply cap test_help_controls.py:342; no cap relief found
-- [ ] **L108** `chat` open, M: Make Guide 'how do I set a reminder' start with the step. From OPEN.md:821. Evidence: No fix found; topic text and retrieval unchanged (test_help_retrieval.py)
 - [ ] **L109** `chat` open, M: Browser-drive the Chat plan card, per-write undo and edit diff in chat-attach.js. From OPEN.md:602; OPEN.md:2773. Evidence: Browser drive not recorded; pytest only. Drivable with serve.sh, no hardware
 - [ ] **L110** `chat` open, M: Give model turns composer next chips and add no-model contradictions and list_bin tool. From OPEN.md:4519; parity-1110.md Remaining. Evidence: Needs composer result frame (chat_chips.continue_chips); a model turn has none
 - [ ] **L111** `chat` open, M: Strip trailing backslash from Chat title and user bubble (Brief 97). From OPEN.md:407; OPEN.md:2557. Evidence: No title-backslash fix or test found in src/tessellate/ai
@@ -286,7 +284,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-9** `chat` partly, M: "and the dentist" after "when is the passport renewal" keeps the when ask, live and in a reopened chat. From ledger-1112 O4 (L239); review 2026-11-12. Evidence: composer_dialogue.py _swap_reading drops an "and X" with no "?", so it falls to a topic dump with dates=[]; two strict-xfail route tests in tests/test_composer_pa_1112.py
 - [ ] **L737** `chat` open, S: Decide whether plain Ask answers from notes by default at 3B and below (decision 75). From INBOX.md:1779. Evidence: Decision 75 kept for PR 216; figures in CHAT_PLAN 'Open from Phase 6' for the owner to overrule Owner decided 2026-11-12: A Settings choice (Add a setting to pick who answers Ask; default stays the model). Build: Settings, Models gains a choice of who answers plain Ask (model or notes answerer), default the model; help, Guide topic and manual parity move with it.
 - [ ] **L716** `chat` open, M: Decide model on/off disagreement on money and checklist answers (F6). From OPEN.md:4314. Evidence: Ledger owner call; needs a real model to compare. Owner decided 2026-11-12: Check on a small model (Run a few money and checklist questions on the small downloaded model (llama-dev.sh, your decision 11), then close). Build: run scratchpad/llama-dev.sh serve, ask 5 money and 5 checklist questions in Chat model on and off, compare figures, record in CHAT_PLAN.
-- [ ] **L725** `chat` open, M: Decide whether Guide answers stay verbatim topic chunks without a model (E33). From OPEN.md:4208. Evidence: Ledger marks owner call; Guide without model returns chunks by design. Owner decided 2026-11-12: Lead with the click path (First line like 'Settings, Models, Suggested downloads', then one sentence from the help; still offline). Build: help_chat.py offline path: add a click-path lead per topic from help_topics_*, one sentence after; update tests/test_manual_parity.py.
 - [ ] **L736** `chat` open, S: Answer the owner question on showing match numbers while the AI thinks. From INBOX.md:904 B41. Evidence: Not reproduced (85/78/95 percent shown beside thinking panel); owner question open Owner decided 2026-11-12: Hide them while thinking (Found notes show without numbers until the answer is done; the percentage stays in the hover text). Build: frontend/js/answer-kit.js:2984 similarity chip: omit the % text while the turn is streaming, keep it in title; a frontend test.
 - [ ] **L742** `chat` open, M: Atlas wisps and nebula: constant layered motion, more body wrap and texture (owner call). From OPEN.md:4405; OPEN.md:1076; OPEN.md:1077. Evidence: Look/feel call; w34-unv2-1111.md owner-call; w34-gap4-1111.md:17 Owner decided 2026-11-12: Redraw, rest setting rules (Wisps wrap behind the body and the lower body gets texture; motion still pauses at rest per 'Motion at rest'). Build: atlas.js feminine wisp paths split into back and front layers, lower-body texture layer; motion stays gated by atlasTailCalm.rest; desk frames re-rendered.
 - [ ] **L746** `chat` open, L: Two tracks: Atlas more detailed, generated companions own behaviour. From OPEN.md:4398. Evidence: Design call; w34-unv1-1111.md:81 (1692 c/g design passes, no check to run) Owner decided 2026-11-12: Table first, then build (List Atlas-only and generated-only behaviours for your review, then build the agreed ones). Build: a table of Atlas-only vs generated-only acts in the companion plan, then acts in avatars.js NMB_TRAITS/decide and behaviour.py.
