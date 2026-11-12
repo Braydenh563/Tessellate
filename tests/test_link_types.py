@@ -135,3 +135,12 @@ def test_an_undo_on_a_board_or_document_says_so_even_when_muted() -> None:
     for verb in ("Undone", "Redone"):
         assert f'toast("{verb}: last change on this board", "info")' in board
         assert f'toast("{verb}: last change on this document", "info")' in doc
+
+
+def test_the_document_keyboard_undo_and_redo_go_through_the_noticed_path() -> None:
+    """C32 sweep (gsweep): Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z in the document's own view said nothing
+    while the status bar's undo did; the chord handler now calls docUndo/docRedo for that view."""
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-view.js").read_text(encoding="utf-8")
+    body = js[js.index("function docRedoChord(CM)") : js.index("//: The chords the fallback textarea")]
+    assert "view === docCmView" in body
+    assert "docUndo();" in body and "docRedo();" in body

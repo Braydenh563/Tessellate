@@ -15,7 +15,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import gc_frame, unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
@@ -93,11 +93,13 @@ console.log(JSON.stringify({ back, otherShape, pane, focused, threw, blockedRead
 def test_the_cache_is_read_on_a_first_draw_and_written_at_rest():
     render = _fn("renderGraphCanvas")
     assert (
-        'graphPendingViewPositions || (s.layoutKind === "force" && !prior.size ? gcCachedPositions(s) : null);'
+        'graphPendingViewPositions || back || (s.layoutKind === "force" && !prior.size ? gcCachedPositions(s) : null);'
         in render
     ), "a page's first force draw starts from the kept positions, through the saved-view path"
-    end = CANVAS[CANVAS.index('} else if (message.type === "end") {') :]
-    assert "gcSavePositions(s);" in end[:600], "the positions are kept when the layout comes to rest"
+    # L14: the "end" branch hands over to `gcOnWorkerEnd`, which keeps them.
+    assert '} else if (message.type === "end") {\n        gcOnWorkerEnd(s);' in CANVAS
+    end = CANVAS[CANVAS.index("function gcOnWorkerEnd(") :]
+    assert "gcSavePositions(s);" in end[: end.index("\n  }\n")], "the positions are kept when the layout comes to rest"
 
 
 def test_the_map_arrives_over_a_fade_the_reader_can_see():
@@ -176,12 +178,12 @@ def test_an_update_reheats_like_a_drag_and_leaving_notes_keep_their_look():
     mark = _fn("gcMarkLeaving")
     assert "sprite: n._sprite || null," in mark and "lines.lineTo(b.x, b.y);" in mark
     assert _const("GC_LEAVING_MAX") == "const GC_LEAVING_MAX = 2500;", "a category of hundreds fades too"
-    draw = _fn("gcDraw")
+    draw = gc_frame(CANVAS)
     assert draw.index("gcDrawLeavingLines(ctx, s, performance.now());") < draw.index("gcDrawLeaving(ctx, s, bornAt);")
 
 
 def test_a_frame_of_a_hover_fade_builds_no_style_objects_or_keys():
-    draw = _fn("gcDraw")
+    draw = gc_frame(CANVAS)
     assert "{ ...style" not in draw, "an edge's look is worked out once per render (gcEdgeLook)"
     assert "edge._keys[slot] ||" in draw
     assert "gcBowPoint(a, b, gcBowScratch, edge._side)" in draw
@@ -217,7 +219,7 @@ def test_the_node_gets_a_shaded_core_and_a_rim_and_the_glow_is_unchanged():
 
 
 def test_the_note_whose_card_is_open_wears_the_focus_ring():
-    draw = _fn("gcDraw")
+    draw = gc_frame(CANVAS)
     assert 'const openId = s.size === "full" && typeof graphPopupId !== "undefined" ? graphPopupId : null;' in draw
     assert "node.id === gcKeyboardId(s) || node.id === openId" in draw
     graph = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
@@ -245,9 +247,13 @@ def _const_block(name: str) -> str:
 
 @needs_node
 def test_every_camera_move_glides_on_the_token_and_cuts_with_less_motion():
-    moves = re.findall(r"\.transition\(\)\.duration\(([^)]*\)?)\)\.call\((?:zoomBehavior|graphZoom|s\.zoom)", GRAPH_JS + CANVAS)
-    assert len(moves) >= 7 and all(m.startswith("graphGlideMs(") for m in moves), moves
-    assert "const sel = animate ? graphSvg.transition().duration(graphGlideMs(250)) : graphSvg;" in GRAPH_JS
+    # Every camera move is one `graphGlide(...)` call (L10: it also hands an interrupted glide's speed
+    # on), and that takes its length from `graphGlideMs`; no call builds its own transition.
+    moves = re.findall(r"graphGlide\((?:s\.)?(?:svg|graphSvg)[^;]*", GRAPH_JS + CANVAS)
+    assert len(moves) >= 9, moves
+    assert ".transition().duration(" not in re.sub(r"function graphGlide\(.*?^\}", "", GRAPH_JS, flags=re.S | re.M) + CANVAS
+    assert "const ms = graphGlideMs(base);" in GRAPH_JS
+    assert 'if (animate) graphGlide(graphSvg, graphZoom, "transform", [target], 250);' in GRAPH_JS
     glide = re.search(r"^function graphGlideMs\(.*?^\}", GRAPH_JS, re.S | re.M).group(0)
     out = _node(
         glide

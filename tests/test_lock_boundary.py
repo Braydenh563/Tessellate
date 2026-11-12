@@ -36,7 +36,6 @@ USER_CONTENT_IDS = [
     "timeline-table-body",
     "reminder-groups",
     "timeline-calendar",
-    "graph-svg",
     "palette-list",
     "palette-preview",
 ]

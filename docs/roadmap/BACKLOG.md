@@ -641,6 +641,15 @@ filters, and `related_notes(id, depth)`. Not found by grep, **since built** (`ap
 cluster** (cluster detection exists, a name from the model does not).
 GRAPH_PLAN.md owns the rest of this section.
 
+**Parked from the graph plan, 2026-11-12 (graph-plan session).** Each row names the exact check left.
+
+- **3B model entity extraction.** Needs a real 3B model: run `pytest -m evals` with `scratchpad/llama-dev.sh serve` on a 3B (granite4.1:3b) and record `name|kind` recall of 22, junk names and the topic sentence's usability, against the 1.5B's 17 of 22, 4 junk, 4 of 4 (2026-11-11).
+- **The board's 138 compositor layers at rest** (L-graph-6). Chrome's sparsity rule will not merge far-apart cards; a transparent backdrop measured 54 but relies on an internal heuristic. Check: layer count in DevTools on a real GPU before any change.
+- **Tessellation side by side** (L-graph-12). Owner looks at `shots/tess-pair.png` (run `scratchpad/ui-sweeps/tess-pair.js` against their notebook; `LAYOUT=` picks the other view, default their saved one).
+- **Hand checks on the owner's device** (L816 to L818). The rest is automated in `scratchpad/ui-sweeps/graph-handchecks.js`. Left for the owner: drag feel by hand; Close in meaning with a real embedding model; the hover frame at 2,000 notes on an idle machine with a GPU (headless draw cost 8.1 ms, 2026-11-12; 16 ms target).
+- **A model polish for Compose into a draft** (L-graph-1). The draft is built with no model (`POST /documents/from-notes`); a polish step needs a real model: serve one with `scratchpad/llama-dev.sh serve`, compose 5 notes, and check the polished text cites every source note.
+- **Map of meaning on real embeddings** (L-graph-2). Measured on hand-inserted vectors only (clusters 72 to 100 px wide, 506 to 513 px apart); run it on a notebook embedded by the real model and check topic clusters stay at least 3 times as far apart as they are wide.
+
 ---
 
 ## 10. Timeline tab, and time-aware notes
