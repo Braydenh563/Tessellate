@@ -1040,7 +1040,7 @@ watchFullscreenSurface("ocr", "ocr-workspace", (el) => !el.classList.contains("h
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
   if (!document.getElementById("graph-card")?.classList.contains("graph-fullscreen")) return;
-  if (activeOverlay() || event.helpPopoverSpent) return;
+  if (activeOverlay() || event.helpPopoverSpent || event.overlaySpent) return;
   toggleGraphFullscreen();
 });
 

@@ -2340,7 +2340,8 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     const above = document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden), .confirm-overlay:not(.hidden)");
     if (e.key === "Escape") {
       //: Escape in the zoom field puts its number back (value-field.js); it does not close the viewer.
-      if (!above && !e.target.closest?.(".value-field")) close();
+      //: Spent: closed in capture, the full screen map must not also leave (L-graph-13).
+      if (!above && !e.target.closest?.(".value-field")) (close(), (e.overlaySpent = true));
       return;
     }
     if (copyKey(e, above)) return;
