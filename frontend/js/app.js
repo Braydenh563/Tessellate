@@ -1576,7 +1576,7 @@ const LAZY_MODULES = {
   appPalette: ["/js/meaning.js", "/js/app-features.js", "/js/app-palette.js"],
   notePanels: ["/js/note-panels.js", "/js/note-edit-panels.js", "/js/note-pick-preview.js"],
   //: Every listener inside the Settings window, awaited on first open: settings-controls.js.
-  settingsControls: ["/css/settings-controls-lazy.css", "/js/settings-controls.js", "/js/settings-prefs.js"],
+  settingsControls: ["/css/settings-controls-lazy.css", "/js/settings-prefs.js", "/js/settings-controls.js"],
   attachTo: ["/js/pick-row.js", "/js/attach-to.js"],
   vault: ["/js/vault-unlock.js"],
   //: The one icon and emoji picker, on first use (MINDMAP_PLAN decision 43): see icon-picker.js.
