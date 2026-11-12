@@ -183,6 +183,8 @@ async function resolveCategoryChoice(select) {
 //   is:favourite        favourite (is:pinned too) / private / linked / untagged
 //   is:review           filings to check: unsure, or left in Uncategorised
 //   tags:<2             fewer than 2 tags, also <=, >, >=, = (or bare N)
+//   before:tuesday      made before / after a day: 2026-09-14, today, yesterday,
+//   after:2026-06       a weekday, a month name, or 7d, 2w, 3m ago (`parseNoteQuery.day`)
 //   -picnic             notes that do NOT mention "picnic"
 //   "exact phrase"      that phrase, verbatim
 //   type: prop: links: rel: entity:   the structure (GRAPH_PLAN KG7), asked
@@ -351,9 +353,10 @@ function parseNoteQuery(raw) {
     else if (lower.startsWith("cat:")) query.categories.push(lower.slice(4));
     else if (lower.startsWith("in:")) query.categories.push(lower.slice(3));
     else if (lower.startsWith("title:")) query.titles.push(lower.slice(6));
-    else if (/^(before|after):\d{4}-\d{2}(-\d{2})?$/.test(lower)) {
-      const [key, day] = lower.split(":");
-      query[key] = day.length === 7 ? `${day}-01` : day;
+    else if (/^(before|after):\S+$/.test(lower) && parseNoteQuery.day(lower.split(":")[1])) {
+      //: A span leaves its whole extent out: before March is before the 1st, after March is after the 31st (as Find anything does).
+      const [key, word] = lower.split(":");
+      query[key] = parseNoteQuery.day(word)[key === "before" ? "first" : "last"];
     }
     else if (lower.startsWith("is:")) query.flags.push(lower.slice(3));
     else if (tagCountMatch) {
@@ -363,6 +366,29 @@ function parseNoteQuery(raw) {
   }
   return query;
 }
+
+//: The day a `before:` or `after:` word names, as the first and last local day of its span (Find anything reads the same words, `search/query.py`): 2026-09 or 2026-09-14, today, yesterday, tomorrow, a weekday (the latest one up to today, today included), a month name (the latest one up to this month, the whole month), or 7d, 2w, 3m ago. Null for any other word, which stays a plain word.
+parseNoteQuery.day = function (word, now = new Date()) {
+  const NOTE_WEEKDAYS = "sunday monday tuesday wednesday thursday friday saturday".split(" ");
+  const NOTE_MONTHS = "january february march april may june july august september october november december".split(" ");
+  const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const shifted = (days) => new Date(today.getFullYear(), today.getMonth(), today.getDate() - days);
+  const single = (d) => ({ first: iso(d), last: iso(d) });
+  const stated = /^(\d{4})-(\d{2})(?:-(\d{2}))?$/.exec(word);
+  if (stated) return stated[3] ? single(new Date(+stated[1], +stated[2] - 1, +stated[3])) : { first: `${word}-01`, last: iso(new Date(+stated[1], +stated[2], 0)) };
+  const named = { today: 0, yesterday: 1, tomorrow: -1 };
+  if (Object.hasOwn(named, word)) return single(shifted(named[word]));
+  const ago = /^(\d{1,3})([dwm])$/.exec(word);
+  if (ago) return single(ago[2] === "m" ? new Date(today.getFullYear(), today.getMonth() - +ago[1], today.getDate()) : shifted(+ago[1] * (ago[2] === "w" ? 7 : 1)));
+  const prefix = (names) => (word.length >= 3 ? names.findIndex((n) => n.startsWith(word)) : -1);
+  const weekday = prefix(NOTE_WEEKDAYS);
+  if (weekday >= 0) return single(shifted((today.getDay() - weekday + 7) % 7));
+  const month = prefix(NOTE_MONTHS);
+  if (month < 0) return null;
+  const year = month > today.getMonth() ? today.getFullYear() - 1 : today.getFullYear();
+  return { first: iso(new Date(year, month, 1)), last: iso(new Date(year, month + 1, 0)) };
+};
 
 function noteQueryIsEmpty(query) {
   return (

@@ -17,7 +17,9 @@ def test_phone_settings_drops_the_heading_the_jump_list_already_shows():
     assert "jump-echo" in js
     css = css_text()
     block = re.search(r"#settings-modal h3\.jump-echo\s*\{([^}]*)\}", css)
-    assert block and "display: none" in block.group(1)
+    # P32: the heading is clipped (visually hidden), no longer display: none, so a
+    # screen reader keeps the pane's heading; tests/test_jump_echo_keeps_heading_p32.py.
+    assert block and "clip-path: inset(50%)" in block.group(1)
 
 
 def test_suggested_tag_take_has_a_target_min_hit_area():

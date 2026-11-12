@@ -4767,9 +4767,17 @@ Link to another note with [[its first few words]]."></textarea>
           aria-label="Add a note to the map">
           <div class="row space-between dialog-head">
             <strong id="graph-new-title" class="dialog-head-title"><i class="ph ph-plus pop-glyph" aria-hidden="true"></i> New note</strong>
+            <!-- The head's '?' (DESIGN.md, a dialog's head): what happens to what is typed. -->
+            <button type="button" class="icon-only ghost small dialog-head-btn"
+              data-help-for="graph-new-help" aria-controls="graph-new-help" aria-expanded="false"
+              title="About adding a note" aria-label="About adding a note"><i class="ph ph-question" aria-hidden="true"></i></button>
             <div class="dialog-head-actions">
               <button id="graph-new-close" class="icon-only ghost small dialog-head-btn" type="button" aria-label="Close" title="Close (Esc)"><i class="ph ph-x" aria-hidden="true"></i></button>
             </div>
+          </div>
+          <div class="help-body hidden" id="graph-new-help" role="dialog" aria-label="About adding a note">
+            <p>The note is saved as you typed it and joins the map at once. Atlas files it in the background; a #tag in the text, or a tag you add here, is kept.</p>
+            <p>Private seals this one note: it stays out of search and out of Atlas.</p>
           </div>
           <p class="muted" id="graph-new-hint"></p>
           <input id="graph-new-note-title" data-autocorrect type="text" maxlength="200"

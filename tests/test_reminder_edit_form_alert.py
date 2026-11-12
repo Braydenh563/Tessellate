@@ -38,3 +38,16 @@ def test_save_sends_the_alert_and_undo_puts_the_old_one_back():
 
 def test_an_alert_the_menu_has_no_word_for_is_kept():
     assert "alertPresets.push([alertNow" in _form()
+
+
+def test_every_field_in_the_edit_row_takes_one_height_and_no_margin():
+    #: Sh1 P4: driven on a live server (1440 wide), the time, priority, repeat
+    #: and alert fields all measured top 585.3 and height 32 with 0px margins,
+    #: so the "time field 0.2 rem high" report does not reproduce. The loop
+    #: that sets the shared height is what keeps it so; a field added outside
+    #: it, or a margin on one, is what would bring the step back.
+    form = _form()
+    loop = re.search(r"for \(const field of \[dueInput, prioritySelect, recurringSelect, alertSelect\]\) \{(.*?)\n    \}", form, re.S)
+    assert loop, "the shared-height loop is gone"
+    assert 'field.style.height = "var(--control-h)"' in loop.group(1)
+    assert "margin" not in form.replace("marginTop = \"var(--space-2)\"", "")

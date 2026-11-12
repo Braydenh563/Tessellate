@@ -189,15 +189,25 @@ function valueField(host, opts = {}) {
         field.set(Number(slider.value));
       },
     });
-    const sync = () => field.set(Number(slider.value));
+    //: A slider reads its number and unit ("55%", "3 of 12"), not the bare value (APG slider, Radix Slider `aria-valuetext`); a surface that already set its own words keeps them.
+    const say = () => {
+      if (slider.dataset.valueTextOwn === undefined) slider.dataset.valueTextOwn = slider.hasAttribute("aria-valuetext") ? "1" : "";
+      if (!slider.dataset.valueTextOwn) slider.setAttribute("aria-valuetext", `${Math.round(Number(slider.value) * 100) / 100}${slider.hasAttribute("data-value-of") ? ` of ${max()}` : unit}`);
+    };
+    const sync = () => {
+      field.set(Number(slider.value));
+      say();
+    };
     slider.addEventListener("input", sync);
     slider.addEventListener("change", sync);
     //: Settled on what the readout says, or the slider where it has none. Also the refresh a surface that writes the
     //: readout or `slider.value` without an event gets (on the next reach, or `valueField.refresh()`).
     slider.vfRefresh = () => {
       const said = source ? valueFieldParse(source.textContent) : null;
-      if (said !== null) field.set(said);
-      else sync();
+      if (said !== null) {
+        field.set(said);
+        say();
+      } else sync();
     };
     host.vfSlider = slider;
     slider.vfRefresh();

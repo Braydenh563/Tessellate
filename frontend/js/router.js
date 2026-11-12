@@ -13,7 +13,7 @@
 // load but the listener and the address the page was opened with, which the
 // boot opens after the unlock (`routerRestore`, app.js).
 
-const ROUTE_TABS = { dashboard: "dashboard", notes: "notes", chat: "chat", docs: "documents", library: "library", graph: "graph", timeline: "timeline", reminders: "reminders", settings: "settings" };
+const ROUTE_TABS = { dashboard: "dashboard", notes: "notes", chat: "chat", docs: "documents", library: "library", graph: "graph", timeline: "timeline", reminders: "reminders", settings: "settings", Manual: "Manual", Statistics: "Statistics" };
 const ROUTE_NOTES_SECTIONS = ["capture", "writing-room", "ask", "questions"];
 //: The Library's sub-tabs by the word the address uses. Images and Files are
 //: one view (`library-view-media`) in two kinds, so their sections carry the
@@ -112,6 +112,9 @@ function appAddressLabel(hash) {
 //: The entry a hash names, or null when the hash is not a route (an empty
 //: one, an in-page anchor, a tab that does not exist, an id that is not one).
 function routeEntry(hash) {
+  //: The manual and Statistics are overlays with an address of their own (`#/Manual`, in either case), kept as `{tab: "Manual"}` (router-overlays.js opens them).
+  const overlay = /^#\/(manual|statistics)$/i.exec(String(hash || ""));
+  if (overlay) return { tab: overlay[1][0].toUpperCase() + overlay[1].slice(1).toLowerCase(), section: null };
   const match = /^#\/([a-z-]+)(?:\/(.*))?$/.exec(String(hash || ""));
   if (!match) return null;
   const tab = ROUTE_TABS[match[1]];
@@ -240,5 +243,10 @@ window.addEventListener("popstate", async (event) => {
 async function routerRestore() {
   const entry = routeEntry(routerBootHash);
   if (!entry || (entry.tab === "dashboard" && !entry.section)) return false;
+  //: An overlay opens over the tab the boot draws, as a visit of its own so closing steps back off it; the file that opens it is the quick-note bundle's.
+  if (entry.tab === "Manual" || entry.tab === "Statistics") {
+    ensureModule("quickNote").then(() => openHistoryEntry(entry));
+    return false;
+  }
   return routerOpen(entry);
 }
