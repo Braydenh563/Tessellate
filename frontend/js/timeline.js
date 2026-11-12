@@ -596,6 +596,7 @@ async function renderTimeline() {
   }
   fillTimelineBandOptions();
   renderTimelineKinds();
+  timelineRecall.hold();
   paintTimeline();
   if (timelineViewMode() === "feed") timelineScrollToToday();
   //: The rows are the answer to the click (TIMELINE_PLAN 10 row 8): they
@@ -628,9 +629,22 @@ async function renderTimeline() {
 //: How long after the rows the recall row and the second page are asked.
 const TIMELINE_LATE_MS = 1500;
 const timelineRecall = { day: "", memories: [], years: {} };
+//: **No 44px jump on a phone** (LEDGER L479). The chips arrive after the rows,
+//: so on a phone the row pushed the list down by one chip. The day's answer
+//: is remembered ("MM-DD:1" had chips, ":0" had none); a later open that day
+//: holds the row's one-chip slot from the first frame, and the chips fill it.
+//: Only the first open of a day can still move the list.
+timelineRecall.today = (now = new Date()) => `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+timelineRecall.hold = () => {
+  const row = $("timeline-recall");
+  if (!row || !window.matchMedia("(max-width: 599.98px)").matches || row.children.length) return;
+  const held = prefs.get("timeline-recall-day", "") === `${timelineRecall.today()}:1`;
+  row.classList.toggle("is-held", held);
+  row.classList.toggle("hidden", !held);
+};
 async function renderTimelineRecall() {
   const now = new Date();
-  const md = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const md = timelineRecall.today(now);
   if (timelineRecall.day !== md) {
     const [on, all] = await Promise.all([
       apiJson(`/timeline?days=0&on=${md}&tz=${-now.getTimezoneOffset()}&group=none&kind=note&limit=20`, { silent: true }).catch(() => null),
@@ -671,7 +685,9 @@ async function renderTimelineRecall() {
   }
   syncTimelineYears(range);
   row.replaceChildren(...chips);
+  row.classList.remove("is-held");
   row.classList.toggle("hidden", !chips.length);
+  prefs.set("timeline-recall-day", `${md}:${chips.length ? 1 : 0}`);
 }
 
 //: **The years, in the strip's head** (INBOX 842: "that year button in the

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: on a phone the Timeline's On this day row no longer pushes the list down 44px on a later open of the same day (it holds its one-chip slot from the remembered answer); first row at 427 before and after the chips at 390, was 383 to 427 (`tests/test_timeline_recall_hold.py`).
 - Tests: `deepen72b.js` waits for the timeline's real rows (`#timeline-table-body` on a phone, which keeps the table view), so the 390 run no longer times out; 390: rows in 69 ms, 1440: 126 ms.
 - Tests: `timelinepaging.js` counts loaded rows (`timelineRows`), not the windowed DOM slice, so the next-page and strip-click checks pass; 3 runs green at 2,000 notes, worst frame 17 ms.
 - Tests: the Guide lead tests run on a temp data dir, so a switch topic no longer writes the repo's data/ folder in a serial run (`tests/test_guide_lead_1110.py`).

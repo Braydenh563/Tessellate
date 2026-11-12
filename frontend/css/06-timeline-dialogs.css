@@ -3491,6 +3491,11 @@ aside[data-resizable="1"] {
 }
 .timeline-daystrip {
   display: flex;
+/* A phone holds the recall row's one-chip slot while the chips are asked for,
+   so they do not push the list down (LEDGER L479). */
+.timeline-recall.is-held {
+  min-height: calc(max(var(--control-h), var(--target-min)) + 2 * var(--ring-room));
+}
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3) var(--space-5);
