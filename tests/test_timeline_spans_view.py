@@ -22,9 +22,9 @@ CALENDAR = (JS / "timeline-calendar.js").read_text()
 
 
 def _function(text: str, name: str) -> str:
-    start = re.search(rf"^\s*function {name}\(", text, re.M).start()
-    end = text.index("\n  }\n" if text[start:].startswith("  ") else "\n}\n", start)
-    return text[start : end + 4]
+    start = re.search(rf"^\s*(?:\S+ = )?function {name}\(", text, re.M).start()
+    end = re.compile(r"\n  }\n" if text[start:].startswith("  ") else r"\n};?\n").search(text, start).end()
+    return text[start:end]
 
 
 def _node(body: str) -> object:
@@ -65,8 +65,8 @@ def test_a_single_day_has_no_ghosts_and_a_span_is_capped_at_a_year():
 
 def test_the_label_says_the_range_with_the_year_only_when_it_is_not_this_one():
     out = _node(
-        "console.log(JSON.stringify([timelineSpanLabel(new Date(2026, 2, 3), \"2026-03-07\"),"
-        " timelineSpanLabel(new Date(2027, 2, 3), \"2027-03-07\")]))"
+        "console.log(JSON.stringify([TIMELINE_ROW_FULL_DATE.span(new Date(2026, 2, 3), \"2026-03-07\"),"
+        " TIMELINE_ROW_FULL_DATE.span(new Date(2027, 2, 3), \"2027-03-07\")]))"
     )
     assert out == ["3 Mar to 7 Mar", "3 Mar 2027 to 7 Mar 2027"]
 
@@ -77,4 +77,4 @@ def test_rows_carry_until_and_the_calendar_draws_span_ghosts_not_draggable():
     assert "span: true" in CALENDAR and 'if (row.span) return "ph:arrows-horizontal";' in CALENDAR
     assert "item.draggable = !row.also;" in CALENDAR  # a span ghost is `also`, so it does not drag
     # Both the feed row and the table label a span by its range.
-    assert TIMELINE.count("row.until ? timelineSpanLabel(row.when, row.until)") == 2
+    assert TIMELINE.count("row.until ? TIMELINE_ROW_FULL_DATE.span(row.when, row.until)") == 2

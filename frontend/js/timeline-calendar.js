@@ -597,7 +597,7 @@
     //: A written note's moment is when it was typed, which is not its time on the grid.
     const clocked = row.kind === "reminder" || row.placedBy === "meeting" || row.placedBy === "mentioned";
     const time = row.allDay || !clocked ? "" : TIMELINE_CAL_TIME.format(row.when);
-    const item = smallButton(`${timelineCalGlyph(row)} ${time ? `${time} ` : ""}${row.title}`, row.span ? `Continues, ${timelineSpanLabel(row.from, row.until)}: ${row.title}` : row.also ? `Also on this day: ${row.title}` : `${row.title}${time ? `, ${time}` : ""}${row.reminded ? ", with a reminder" : ""}`, () => timelineCalOpenRow(row));
+    const item = smallButton(`${timelineCalGlyph(row)} ${time ? `${time} ` : ""}${row.title}`, row.span ? `Continues, ${TIMELINE_ROW_FULL_DATE.span(row.from, row.until)}: ${row.title}` : row.also ? `Also on this day: ${row.title}` : `${row.title}${time ? `, ${time}` : ""}${row.reminded ? ", with a reminder" : ""}`, () => timelineCalOpenRow(row));
     item.classList.toggle("is-also", Boolean(row.also));
     const timed = row.kind === "reminder" || row.placedBy === "meeting";
     item.classList.add("timeline-cal-item", `is-${timed ? row.kind === "reminder" ? "reminder" : "meeting" : "note"}`);

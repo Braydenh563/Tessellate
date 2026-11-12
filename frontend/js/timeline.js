@@ -115,13 +115,14 @@ const TIMELINE_ROW_FULL_DATE = new Intl.DateTimeFormat(undefined, { day: "numeri
 TIMELINE_ROW_FULL_DATE.thisYear = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
 
 //: A written range as "3 Mar to 7 Mar" (decision 13): the year only when the
-//: last day is not in this one. `until` is the server's "YYYY-MM-DD".
-function timelineSpanLabel(from, until) {
+//: last day is not in this one. `until` is the server's "YYYY-MM-DD". A
+//: property like `thisYear`, not a global of its own (the scope ratchet).
+TIMELINE_ROW_FULL_DATE.span = function timelineSpanLabel(from, until) {
   const [y, m, d] = until.split("-").map(Number);
   const last = new Date(y, m - 1, d);
   const format = last.getFullYear() === new Date().getFullYear() && from.getFullYear() === last.getFullYear() ? TIMELINE_ROW_FULL_DATE.thisYear : TIMELINE_ROW_FULL_DATE;
   return `${format.format(from)} to ${format.format(last)}`;
-}
+};
 
 function timelineRow(entry) {
   // A board *is* an `Entry` (MINDMAP_PLAN.md §2) and `/timeline` has always
@@ -1611,10 +1612,10 @@ function timelineRowElement(row, density) {
   when.textContent =
     density === "full"
       ? row.until ? `To ${TIMELINE_ROW_DAY.format(new Date(`${row.until}T00:00:00`))}` : row.allDay ? "All day" : TIMELINE_ROW_TIME.format(row.when)
-      : row.until ? timelineSpanLabel(row.when, row.until) : TIMELINE_ROW_DAY.format(row.when);
+      : row.until ? TIMELINE_ROW_FULL_DATE.span(row.when, row.until) : TIMELINE_ROW_DAY.format(row.when);
   when.title =
     row.until
-      ? `“${row.phrase}” in this note meant ${timelineSpanLabel(row.when, row.until)}. Written ${shortDate(row.writtenAt)}.`
+      ? `“${row.phrase}” in this note meant ${TIMELINE_ROW_FULL_DATE.span(row.when, row.until)}. Written ${shortDate(row.writtenAt)}.`
       : row.placedBy === "mentioned"
       ? `“${row.phrase}” in this note meant ${TIMELINE_ROW_FULL_DATE.format(row.when)}. Written ${shortDate(row.writtenAt)}.`
       : row.placedBy === "meeting"
@@ -2210,10 +2211,10 @@ function timelineTableRow(row) {
   const time = document.createElement("time");
   time.dateTime = row.whenIso;
   //: The year only when it is not this one; the hover below keeps the whole date either way.
-  time.textContent = row.until ? timelineSpanLabel(row.when, row.until) : (row.when.getFullYear() === new Date().getFullYear() ? TIMELINE_ROW_FULL_DATE.thisYear : TIMELINE_ROW_FULL_DATE).format(row.when);
+  time.textContent = row.until ? TIMELINE_ROW_FULL_DATE.span(row.when, row.until) : (row.when.getFullYear() === new Date().getFullYear() ? TIMELINE_ROW_FULL_DATE.thisYear : TIMELINE_ROW_FULL_DATE).format(row.when);
   time.title =
     row.until
-      ? `“${row.phrase}” in this note meant ${timelineSpanLabel(row.when, row.until)}. Written ${shortDate(row.writtenAt)}.`
+      ? `“${row.phrase}” in this note meant ${TIMELINE_ROW_FULL_DATE.span(row.when, row.until)}. Written ${shortDate(row.writtenAt)}.`
       : row.placedBy === "mentioned"
       ? `“${row.phrase}” in this note meant ${TIMELINE_ROW_FULL_DATE.format(row.when)}. Written ${shortDate(row.writtenAt)}.`
       : row.placedBy === "meeting"
