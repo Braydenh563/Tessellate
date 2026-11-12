@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 194 | 60 | 2 | 59 | 430 |
+| chat | 176 | 193 | 60 | 2 | 59 | 429 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 700 | 157 | 3 | 195 | 1410 |
 
 ## graph
 
@@ -83,7 +83,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L44** `chat` open, S: Stop fragment lines reading as joined events. From OPEN.md:3851. Evidence: composer_digest join unchanged
 - [ ] **L45** `chat` open, S: Add a model-needed message for 'make it simpler' with no model. From a30e-1102.md Found, not fixed. Evidence: No 'simpler' in capability.py/commands.py/composer_help.py
 - [ ] **L46** `chat` open, S: Match 'tell me about this' in composer_digest.about_this. From a30e-1102.md Found, not fixed. Evidence: about_this used at composer_digest.py:1144; _THIS extension not found
-- [ ] **L47** `chat` open, S: Fix rename 'X to Y' splitting at the first ' to '. From acts-1108.md Left. Evidence: No later fix commit found
 - [ ] **L48** `chat` open, S: Add chips to 'thanks'/'hello' replies (F5). From fc56-1110.md Left. Evidence: No closing-chip change found in composer_talk.py
 - [ ] **L49** `chat` open, S: Stop 'Remind me about Dentist the day before' asking what it is for. From fc56-1110.md Left. Evidence: No test with 'the day before' reminder phrase found
 - [ ] **L50** `chat` open, S: Fix title for 'new note called Christmas with mum, dad and Sara' (B26 Q5). From w9b-1110.md Left. Evidence: No test with that phrase found; commands._PLAIN_NAME splits at 'with'

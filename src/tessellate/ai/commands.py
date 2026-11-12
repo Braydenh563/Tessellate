@@ -1040,8 +1040,21 @@ def _rename(text: str) -> dict | None:
     found = _one_target(target.strip(), bare=True)
     title = title.strip(" '\"“”")
     if found and title and len(title) <= 200:
-        return {"intent": "rename", **found, "title": title}
+        return {"intent": "rename", **found, "title": title, **_other_splits(body, cut.start(1))}
     return None
+
+
+def _other_splits(body: str, first: int) -> dict:
+    """Every later " to " of an unquoted rename is another place the old name could end
+    ("rename Trip to Spain to Trip to Portugal"): `plan` keeps the longest one that names a note (L47)."""
+    alts = []
+    for later in re.finditer(r"(?i)\s(?:to|as)\s", body):
+        if later.start() <= first:
+            continue
+        found, title = _one_target(body[: later.start()].strip(), bare=True), body[later.end():].strip(" '\"“”")
+        if found and found.get("about") and title and len(title) <= 200:
+            alts.append({"about": found["about"], "title": title})
+    return {"alts": alts} if alts else {}
 
 
 #: Verbs that put words on a note; the flag says the target must be a note or
@@ -1747,7 +1760,10 @@ def _already_there(session: Session, parsed: dict, note_ids: list[int] | None) -
 def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> dict:
     """What the command would do: {"line", "card"?, "tool"?}. Writes nothing."""
     if parsed["intent"] == "rename" and parsed.get("alts"):
-        parsed = object_acts.pick_note_split(parsed, lambda about: bool(_notes_about(session, about, False)))
+        #: A split whose old name is a note's whole title wins ("rename Trip to Spain to Trip to Portugal"), else the longest that matches by words.
+        exact = lambda about: any(note_title(n.content, size=200).lower() == about.lower() for n in _notes_about(session, about, False))  # noqa: E731
+        picked = object_acts.pick_note_split(parsed, exact)
+        parsed = picked if picked is not parsed else object_acts.pick_note_split(parsed, lambda about: bool(_notes_about(session, about, False)))
     said = _already_there(session, parsed, note_ids) if parsed["intent"] == "append" else ""
     if said:
         return {"line": said}
