@@ -28,7 +28,7 @@ from __future__ import annotations
 import re
 
 from tests._app_js import app_js_text
-from tests._css_paths import CSS_DIR
+from tests._css_paths import CSS_DIR, FORMER_10, sheets
 from tests._js_scope import unwrapped
 
 ROOT = CSS_DIR.parents[1]
@@ -127,7 +127,7 @@ def test_the_small_popups_and_the_hover_card_arrive_on_the_menu_recipe():
     """INBOX 1462: the selection popup, the spelling menu and the OCR region popover
     join the shared fade and grow (no per-surface rule); the graph's hover card
     fades by opacity alone, since its own `transform` places it."""
-    resp = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    resp = sheets(*FORMER_10)
     at = resp.index(".action-menu:not(.hidden),\n.dock-menu[open]")
     head = resp[at : resp.index("{", at)]
     for sel in (".selection-popup", ".doc-suggest-menu", ".ocr-region-popover"):

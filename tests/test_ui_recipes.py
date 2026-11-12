@@ -28,7 +28,7 @@ from pathlib import Path
 from tests import _js_scope
 from tests._app_js import app_js_family, app_js_text, frontend_text, with_pieces, documents_text
 from tests._js_scope import unwrapped
-from tests._css_paths import FORMER_08, sheets
+from tests._css_paths import FORMER_08, FORMER_10, sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = sorted((ROOT / "frontend" / "css").glob("*.css"))
@@ -2262,7 +2262,7 @@ def test_the_phone_top_bar_menu_is_the_kebab_recipe_and_hides_nothing():
     for verb in ("toggleTheme()", "openSettingsModal()", "lockNow()", "quitApp()"):
         assert verb in body, f"the phone header menu lost {verb}, which the desktop bar has"
 
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     band = css[css.index("Phase 11 item 1: the phone top bar") :]
     band = band[: band.index("}\n}") + 3]
     assert "@media (max-width: 599.98px)" in band
@@ -2285,8 +2285,9 @@ def test_every_sidebar_gets_the_phone_opener_from_the_one_function():
     assert rows, "PHONE_SIDEBAR_OPENERS is missing"
     covered = set(re.findall(r'aside: "([^"]+)"', rows.group(1)))
     assert covered == sidebars, f"sidebars without a phone opener: {sorted(sidebars - covered)}"
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
-    band = css[css.index("Phase 11 items 2 and 3: no rail on a phone") :]
+    css = sheets(*FORMER_10)
+    # One phone block of 10-responsive.css until UI plan 13b moved it beside the sidebars (07).
+    band = "\n".join(re.findall(r"@media \(max-width: 599\.98px\) \{\n(.*?)\n\}\n", css, flags=re.S))
     for ident in sidebars:
         assert f"#{ident}:not(.sidebar-sheet-open)" in band, f"#{ident} keeps its rail on a phone"
 
@@ -2790,7 +2791,7 @@ def test_every_status_bar_control_has_a_way_in_on_a_phone() -> None:
         f"status-bar controls with no way in on a phone: {missing}; add each to "
         "PHONE_STATUS_ROWS (app.js), which makes it a row of the header menu"
     )
-    responsive = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    responsive = sheets(*FORMER_10)
     assert "--status-bar-h: 0px" in responsive, (
         "the phone band no longer takes the status bar's height back"
     )
@@ -4426,7 +4427,7 @@ def test_a_menu_fades_out_through_the_one_class_every_close_path_sets() -> None:
     a node cancels a transition. `scratchpad/ui-sweeps/kebabfirst.js` samples
     the frames: 4 part way, gone by about 150ms, on all eight kebab and select
     close paths."""
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     # The motion pass (2026-10-05): the exit runs on Interface animations'
     # `--ui-exit` and shrinks back as it fades; on the closed state only.
     at = css.index(".action-menu.hidden {\n  opacity: 0;\n  scale: 0.96;\n  pointer-events: none;")
@@ -4449,7 +4450,7 @@ FLOATING_PANELS = (
 
 
 def test_floating_panels_open_and_close_on_the_menu_recipe() -> None:
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     enter = css.index(":is(.space-menu, .notif-panel,")
     enter_block = css[enter : css.index("}", enter)]
     assert "animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-slow) var(--ease-spring) 1ms;" in enter_block
@@ -4973,7 +4974,7 @@ def test_the_ocr_toolbars_segment_track_grows_round_its_touch_buttons() -> None:
     the 32px page-size track sat 12px short of its 44px buttons and the
     buttons 6px below their neighbours (`wbtopbar.js` with `ONLY=ocr`). The
     track grows round them on the same band."""
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     at = css.index("  .sheet-card-page .ocr-toolbar .seg-compact {\n")
     block = css[at : css.index("}", at)]
     assert "height: auto;" in block and "min-height: var(--target-min);" in block
@@ -6049,7 +6050,7 @@ def test_the_local_chip_shows_the_privacy_verdict_and_opens_the_record() -> None
     phone = (ROOT / "frontend" / "js" / "phone-shell.js").read_text(encoding="utf-8")
     rows = re.search(r"const PHONE_STATUS_ROWS = \[(.*?)\];", phone, re.S).group(1)
     assert '"privacy-chip"' in rows
-    responsive = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    responsive = sheets(*FORMER_10)
     assert "#top-bar #privacy-chip" in responsive
 
 
@@ -6711,7 +6712,7 @@ def test_a_popup_head_keeps_its_tools_with_close_at_the_end() -> None:
     `.dialog-head-actions` must put the title's slack on the title, not
     between the buttons, and the buttons panel-movable.js adds (reset, push,
     minimise) go beside Close, never after it."""
-    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    css = sheets(*FORMER_10)
     head = re.search(r"\.sheet-head \{([^}]*)\}", css)
     assert head and "space-between" not in head.group(1), "a sheet head spreads its buttons; the title takes the slack"
     title = re.search(r"\.sheet-head > \.sheet-title,\s*\.sheet-title \{([^}]*)\}", css)
@@ -6811,7 +6812,9 @@ def test_the_motion_vocabulary_is_one_set() -> None:
     assert 1.1 <= y1 <= 1.4, f"the overshoot is gentle, not {y1}"
 
     # A menu: grows on the spring, its first eight rows arrive a step apart, no more.
-    responsive = css["10-responsive.css"]
+    # In 10-responsive.css until UI plan 13b moved the menu recipe beside the
+    # menus (07) and its keyframes to 09's closing block.
+    responsive = css["07-whiteboard-misc.css"] + css["09-editor.css"]
     assert "ui-grow var(--ui-slow) var(--ease-spring) 1ms" in responsive
     assert ".action-menu:not(.hidden) > :nth-child(-n + 8)" in responsive
     delays = re.findall(r"\.action-menu:not\(\.hidden\) > :nth-child\((\d+)\)\{animation-delay:([^}]*)\}", responsive)

@@ -16,6 +16,7 @@ from __future__ import annotations
 import re
 
 from tests._app_js import JS_DIR
+from tests._css_paths import FORMER_10, sheets
 
 CSS_DIR = JS_DIR.parent / "css"
 
@@ -69,7 +70,7 @@ def test_the_time_is_the_lines_last_fact_everywhere():
     assert "meta.insertBefore(fileChip, date);" in cards
     # One auto margin on the phone's line (the time's), not two: two split the
     # room and moved the time on every card.
-    phone = _css("10-responsive.css")
+    phone = sheets(*FORMER_10)
     actions = phone[phone.index("#entry-list > li :is(.entry-actions, .entry-meta-end) {\n    position: static;"):][:120]
     assert "margin-left: 0;" in actions
     assert "#entry-list > li .entry-meta > .entry-date {\n  margin-inline-start: auto;" in "\n".join(_css(n) for n in ("01-forms-settings.css", "05-sidebars-themes.css", "07-whiteboard-misc.css"))

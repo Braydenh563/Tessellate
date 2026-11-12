@@ -1947,6 +1947,16 @@ header#top-bar select,
   contain-intrinsic-size: auto 6rem;
 }
 
+/* The heatmap's gap was costing more than its cells (the owner: "the heatmap
+   on the dashboard is a little small"). Measured in a 306px column: 53 weekly
+   columns at a 3px gap spend 156px on gaps and leave 2.8px per cell. At 1px
+   the same column gives 4.8px, and in the full-width section the widget now
+   starts in, the cells reach their 12px cap. A denser grid is also the right
+   shape for the thing: this is a year read as a texture, not a table. */
+.heatmap {
+  gap: 1px;
+}
+
 .heat-cell {
   /* Square by ratio rather than by a fixed pair, because the width is now
      decided by the column and the height has to follow it. */
@@ -2827,6 +2837,17 @@ button.answer-figure-open {
   margin-bottom: 0.8rem;
 }
 
+/* Reminders below 1100: the list is the page, and the add form is the sheet
+   "New reminder" opens (`openReminderCompose`, app.js; the floating + below
+   600, the dock's filled button above). While the form is on the page it is
+   not shown in this band; in the sheet it sheds its card, since the sheet is
+   the card. */
+@media (max-width: 1099.98px) {
+  #tab-reminders > #reminder-compose {
+    display: none;
+  }
+}
+
 @media (max-width: 599.98px) {
   .reminders-card {
     /* The horizontal inset is `.tab-page`'s job (--page-gutter). Setting one
@@ -3052,6 +3073,19 @@ button.answer-figure-open {
 @media (hover: none) {
   #tab-reminders .entry-actions > :not(.menu-wrap) {
     opacity: 1;
+  }
+}
+
+/* 6. **The last reminder can be scrolled clear of "New reminder".** The
+       floating button (`.dock-fab`, 07-whiteboard-misc.css) kept 8px of
+       page foot, a button is 44px and stands 20px above the tab bar, so at
+       the end of the list (360x740, scrolled to the bottom) it covered the
+       bottom 10px of the last card and its date. The foot is the button's
+       height and its offset, the same figure `scroll-padding-bottom` uses
+       there for a focused row. */
+@media (max-width: 599.98px) {
+  #tab-reminders:has(> .dock-fab) {
+    padding-bottom: calc(var(--target-min) + var(--space-5) + var(--space-3));
   }
 }
 
@@ -3770,6 +3804,21 @@ button.answer-figure-open {
 .graph-legend-row .legend-item:hover,
 .graph-legend-row .legend-item:is(:focus-visible, :has(:focus-visible)) {
   background: var(--chip-bg);
+}
+
+/* --- the graph's floating controls clear its New note (INBOX 430) -----------
+   "The controls overlap the legend and the New note FAB": measured at 390x844
+   with `graphphone.js`, the legend ran 38px under the floating New note and
+   the zoom strip 23px into it. Below 600 the New note floats at the page's
+   foot (`.dock-fab`, 07-whiteboard-misc.css), so the legend and the zoom
+   strip stand on a line one target and a step above the map's bottom edge,
+   where the button is, and the legend stops short of the zoom strip's column
+   as before. */
+@media (max-width: 599.98px) {
+  #tab-graph:has(.dock-fab) .graph-legend-row,
+  #tab-graph:has(.dock-fab) .graph-zoom {
+    bottom: calc(var(--target-min) + var(--space-5));
+  }
 }
 
 /* Segmented Controls (replaces native radio buttons) */

@@ -14,7 +14,7 @@ import re
 from pathlib import Path
 
 from tests._app_js import with_pieces
-from tests._css_paths import css_text, FORMER_08, sheets
+from tests._css_paths import FORMER_08, FORMER_10, css_text, sheets
 from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -137,7 +137,7 @@ def test_focus_is_never_hidden_under_sticky_or_floating_furniture():
     assert ".tab-page:has(> .dock-fab) .tab-main {\n    scroll-padding-bottom:" in misc
     side = (CSS / "05-sidebars-themes.css").read_text(encoding="utf-8")
     assert "#tab-notes .tab-main,\n#tab-library,\n#tab-library .tab-main {\n  scroll-padding-top:" in side
-    resp = (CSS / "10-responsive.css").read_text(encoding="utf-8")
+    resp = sheets(*FORMER_10)
     short = resp[resp.index("@media (max-height: 420px) {"):]
     assert ".notes-subtabs,\n  .library-subtabs {\n    position: static;" in short
     assert 'const PHONE_FAB = "(max-width: 599.98px) and (min-height: 421px)";' in _read("phone-shell.js")

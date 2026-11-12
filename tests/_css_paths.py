@@ -193,6 +193,13 @@ FORMER_08 = (
     "04-chat-dock-appearance.css", "05-sidebars-themes.css", "06-timeline-dialogs.css",
     "07-whiteboard-misc.css", "characters-lazy.css",
 )
+#: Where 10-responsive.css's component rules went (UI plan 13b, decision 19):
+#: the boot component files; 10 keeps the shell bands.
+FORMER_10 = (
+    "00-tokens-shell.css", "01-forms-settings.css", "02-chat-graph.css", "03-dashboard-widgets.css",
+    "04-chat-dock-appearance.css", "05-sidebars-themes.css", "06-timeline-dialogs.css",
+    "07-whiteboard-misc.css", "09-editor.css", "10-responsive.css",
+)
 
 
 def sheets(*names: str) -> str:

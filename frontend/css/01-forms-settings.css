@@ -3238,6 +3238,12 @@ li.link-source {
 #most-used .count {
   color: var(--muted);
 }
+
+@media (max-width: 599.98px) {
+  #category-list li:has(.category-actions) .count {
+    opacity: 1;
+  }
+}
 #toast-box {
   position: fixed;
   right: 1rem;
@@ -3350,6 +3356,29 @@ li.link-source {
   body:not([data-tab=chat]) #toast-box {
     top: auto;
     bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + env(safe-area-inset-bottom, 0px) + var(--space-2));
+  }
+}
+
+/* **Nothing lands on the tab bar.** Measured at 390 (INBOX 392): a toast sat
+   at `bottom: status bar + 10px`, over the tab bar's captions and over the
+   floating +, and the agent activity panel, a bottom sheet here, was pinned
+   to `bottom: 0` over the whole bar, so the one way between tabs went while
+   an agent ran. The panel stands on the bar now.
+   A toast comes from the top below 1100, under the header, the way a
+   phone's own banners do. The foot of a narrow screen is where the thing
+   being worked with is: the tab bar, the floating +, and the chat composer,
+   whose Send and microphone a due-reminder toast covered at 390 once it had
+   been lifted clear of the bar (touch.js), and whose mode switch it covered
+   at 768 from the corner a desktop gives it. The top has only the head of a
+   list for the few seconds a toast lasts, and it takes the width, since a
+   340px card in a 390px window is the width anyway less a crooked gap. */
+@media (max-width: 1099.98px) {
+  #toast-box {
+    left: var(--space-4);
+    right: var(--space-4);
+    top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + var(--space-2));
+    bottom: auto;
+    align-items: center;
   }
 }
 .toast-more > .toast-more-open {
@@ -3731,6 +3760,11 @@ mark.global-find-hit.global-find-current {
   grid-auto-rows: 1fr;
   gap: 0.5rem;
   margin: 0.5rem 0;
+}
+
+/* 12. **A theme card's name has room for "Quiet utilitarian".** */
+.theme-presets {
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
 }
 /* The saved-themes grid and the "name it, save it" row beside `.setting-label`
    - one flex child, not two. `.setting-row-stack` only changes align-items,

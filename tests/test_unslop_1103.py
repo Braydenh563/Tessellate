@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 
 from tests._js_scope import unwrapped
+from tests._css_paths import FORMER_10, sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS_DIR = ROOT / "frontend" / "css"
@@ -64,7 +65,7 @@ def test_4_dashboard_find_label_drops_its_scope_on_a_phone():
     """93px of text room cut "Search your notes, ..." to "Search your..."."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert '<span class="dash-find-scope"> your notes, documents, files and the app</span>' in html
-    assert "display: none" in _body(_css("10-responsive.css"), ".dash-find-scope")
+    assert "display: none" in _body(re.sub(r"/\*.*?\*/", "", sheets(*FORMER_10), flags=re.S), ".dash-find-scope")
 
 
 def test_5_map_toolbar_selects_take_the_quiet_inset_not_radius_inner():

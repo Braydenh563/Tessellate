@@ -1215,6 +1215,21 @@ button.map-chip:focus-visible {
 .rich-picker-row.active :is(.rich-picker-about, .rich-picker-keys) {
   color: var(--ink);
 }
+
+/* --- the palette on a touch screen (INBOX 464) ------------------------------
+   Its foot ("↑↓ to choose · Enter to run · Esc to close · ? for shortcuts")
+   and every row's key chip ("M D") describe a keyboard a phone does not have:
+   measured at 390, one hint line and 20 chips, while the field's own words
+   ran 20px past its box (323px of placeholder in 303px). The copy is shorter
+   at every width (index.html) and the keyboard's words go where there is no
+   keyboard. `pointer: coarse` as well as `hover: none`, so a tablet with a
+   trackpad keeps them. */
+@media (hover: none) and (pointer: coarse) {
+  .palette-hint,
+  .rich-picker-keys {
+    display: none;
+  }
+}
 /* A row that is a button (a dialog of choices walked by Tab): the browser's
    own button paint taken off so it is the same row, and the fill follows the
    pointer and the keyboard's focus, since there is no `.active` to move. */
@@ -2542,6 +2557,33 @@ body.resizing-sidebar {
   height: 1.1rem;
   margin: 0 0.25rem;
   background: var(--border);
+}
+
+@media (max-width: 599.98px) {
+  #tab-documents .doc-back-label,
+  #tab-documents .doc-ai-label,
+  #tab-documents .doc-dock-status,
+  #tab-documents .doc-actions > .doc-toolbar-sep,
+  #tab-documents .doc-hint,
+  #tab-documents #doc-caret {
+    display: none;
+  }
+}
+
+/* And on a touch-first tablet, the keyboard help too: the same Ctrl chords,
+   on a screen that is held rather than typed at (INBOX 430, "rework its
+   controls for phone and tablet"). A tablet with a keyboard attached reports
+   a fine pointer and keeps it. */
+@media (hover: none) and (pointer: coarse) {
+  #tab-documents .doc-hint {
+    display: none;
+  }
+}
+
+@media (min-width: 600px) and (max-height: 720px) {
+  #tab-documents .doc-hint {
+    display: none;
+  }
 }
 /* An inline explanation under a setting, shown only when that setting is
    being overridden by something else, so a control that looks like it did
@@ -4621,6 +4663,12 @@ html[data-chrome="native"] #top-bar #brand-logo {
 }
 .doc-statusbar > * {
   flex: 0 0 auto;
+}
+
+@media (max-width: 599.98px) {
+  #tab-documents .doc-statusbar {
+    overflow: hidden;
+  }
 }
 #doc-counts {
   flex: 1 1 auto;

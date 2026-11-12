@@ -7,6 +7,13 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (UI plan 13b, the stylesheet's structure)
+
+- **Built, 13b decision 18 (L463, 3144ca0f):** 08-consistency.css dissolved: its rules went beside their components in 00 to 07, and its 758 character rules (faces, companion, Atlas) to the lazy characters-lazy.css. The rule multiset is unchanged and no conflicting pair changed order (a cascade check over every rule); `getComputedStyle` of every element on Notes, Library, Chat, Settings and Dashboard at 1440 and 390, light and dark: 0 diffs past the relative-time text. Boot CSS gzip 178,870 to 165,450.
+- **Built, L459 (d961c27a):** 110 boot rules only the Library bundle's surfaces can match moved to library-lazy.css; boot CSS gzip 163,749.
+- **Built, 13b decision 19 (L463):** 10-responsive.css's 254 component rules moved beside their components (most to 07 and 09; the rules that must load after every component file end 09); 10 keeps the shell bands. 10 went from 3,048 to 797 lines; the numbered files from 64,750 to 62,800 lines (08 and 10 together were 14,129), all 78 sheets from 88,786 to 90,815 (the faces and the Library rules moved to lazy sheets). Boot CSS gzip 164,254 under a cap lowered from 179,300 to 164,300 (L464's cap part); the literal ratchets moved with their rules, totals unchanged.
+- **Measured, the 236 unused selectors:** a static check found none removable (template-built names, nested variants, `:not()` specificity); LEDGER L-ui-modernisation-26.
+
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
 - **Built, Sh1 P4:** the reminder edit form's time, priority, repeat and alert share one height (32px, equal top); `tests/test_reminder_edit_form_alert.py` holds the shared-height loop (cb83f2ed3).

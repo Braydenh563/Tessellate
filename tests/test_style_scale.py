@@ -789,10 +789,13 @@ def test_the_nested_surfaces_are_concentric():
 #: 2026-11-12: 08 dissolved (UI plan 13b); its 43 moved with their rules, none
 #: added: 01 21 to 26, 02 32 to 36, 03 19 to 20, 06 23 to 24, 07 44 to 64,
 #: characters-lazy.css 0 to 12 (296 in all before and after).
+#: 2026-11-12: 10's component rules moved beside their components (UI plan
+#: 13b, decision 19); its six moved with them, none added: 07 64 to 68, 09 6
+#: to 8, 10 6 to 0 (296 in all before and after).
 LITERAL_HEIGHTS = {
     "01-forms-settings.css": 26, "02-chat-graph.css": 36, "03-dashboard-widgets.css": 20,
     "04-chat-dock-appearance.css": 25, "05-sidebars-themes.css": 34, "06-timeline-dialogs.css": 24,
-    "07-whiteboard-misc.css": 64, "09-editor.css": 6, "10-responsive.css": 6,
+    "07-whiteboard-misc.css": 68, "09-editor.css": 8,
     "library-lazy.css": 22, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
     "inbox-lazy.css": 1, "chord-guide-lazy.css": 3, "characters-lazy.css": 12,
 }
@@ -881,8 +884,10 @@ COLOUR_LITERALS_LEFT = {
     "library-lazy.css": 31,
     "06-timeline-dialogs.css": 23,
     "03-dashboard-widgets.css": 6,
-    "10-responsive.css": 9,
-    "09-editor.css": 6,
+    #: 10's component rules moved beside their components (UI plan 13b,
+    #: decision 19): its nine went with them, all to 09's closing block, the
+    #: rules that must load after every component file (10 9 to 0, 09 4 to 13).
+    "09-editor.css": 13,
     "04-chat-dock-appearance.css": 5,
     #: Moved from 07-whiteboard-misc.css with the lightbox CSS (4668f1456): the
     #: HTML preview's white page ground, on purpose.

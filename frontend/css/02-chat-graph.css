@@ -2390,6 +2390,17 @@ kbd {
 #graph-empty.empty-state.hidden {
   display: none;
 }
+
+/* 9. **The Recent head's title is the tab above it.** "Recent" over a row of
+      four buttons is 261px in a 166 to 226px column, up to 1200 wide, and the
+      sidebar tab already says "Documents": the heading stays for a screen reader
+      (rules in the 1199.98 band at the top of this file, `#doc-sidebar-list`). */
+/* 10. **A sidebar's empty line fits the column.** "No saved chats yet" is 140px
+       and the 150 to 175 % rail leaves 134 inside 1rem of padding each side. */
+#chat-sidebar .empty-state,
+#doc-sidebar .empty-state {
+  padding-inline: var(--space-3);
+}
 /* The two things the map's empty state can say (index.html, `gcShowEmpty`)
    are each a wrapper, and `display: contents` keeps their title, sentence and
    button the empty state's own grid items, laid out exactly as they were
@@ -3237,6 +3248,22 @@ mark.lightbox-hit {
 .lightbox .lightbox-actions button.ghost:not(.menu-item):focus-visible {
   background: rgba(255, 255, 255, 0.14);
   border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* --- the lightbox on a phone (INBOX 430) ------------------------------------
+   "The lightbox on phone needs a better layout": at 390 the action row
+   wrapped, five controls on one line and the image's ⋯ alone on a second.
+   The zoom readout is the one control that is only a number (the buttons
+   either side of it say what they do, and the picture shows the zoom), so it
+   goes below 600 and the row takes the tighter step: one line of 44px
+   targets under the picture. */
+@media (max-width: 599.98px) {
+  .lightbox .lightbox-zoom-label {
+    display: none;
+  }
+  .lightbox .lightbox-actions {
+    gap: var(--space-1);
+  }
 }
 
 .menu-item > .menu-item-words {

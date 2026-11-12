@@ -1537,6 +1537,15 @@
   overflow: visible;
   text-overflow: clip;
 }
+
+/* 8. **Settings' "On this page" head stays on one line.** The label (72px) and
+      "Show all 8 sections" (116px) need 194px and the rail's head had 180 after
+      its link indent, so the toggle dropped under the label at 125 to 175 %.
+      The head's indent closes up a step and its gap and right edge give way. */
+.settings-nav-groups-head {
+  gap: var(--space-1);
+  padding-inline: var(--space-5) 0;
+}
 .settings-nav-groups:not(.is-open) .settings-nav-group:not([aria-current="location"]) {
   display: none;
 }

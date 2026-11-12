@@ -86,6 +86,9 @@ BOOT_JS_CAP = 448_400
 #: reordered) moved to library-lazy.css. Measured 163,749; the cap is that
 #: plus 551, of which the next step (10-responsive.css dissolved, about 460
 #: bytes of lost gzip context) takes about 460.
+#: 2026-11-12, UI plan 13b, decision 19: 10-responsive.css's component rules
+#: moved beside their components; 10 keeps the shell bands. Measured 164,254;
+#: the cap holds (a margin of 46) and is not raised.
 BOOT_CSS_CAP = 164_300
 
 

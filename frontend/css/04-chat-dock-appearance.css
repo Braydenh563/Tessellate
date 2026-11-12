@@ -1052,6 +1052,12 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   }
 }
 
+@container chat-dock (width < 64rem) {
+  .chat-mode-long {
+    display: none;
+  }
+}
+
 .chat-dock-controls .seg {
   display: inline-flex;
   align-items: center;
@@ -5747,6 +5753,13 @@ input.doc-title-input::placeholder {
   }
 }
 
+@media (max-width: 599.98px) {
+  #tab-documents .doc-actions,
+  #tab-documents .doc-view-cluster {
+    gap: var(--space-1);
+  }
+}
+
 /* DOCUMENTS_PLAN Phase 1, the chrome: three questions, three places.
    Measured before: the header held ten controls at four heights (44, 39,
    36, 28), the file-type select and two icon buttons sat beside the title,
@@ -6507,6 +6520,28 @@ button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
   max-height: min(36rem, 80dvh);
 }
 
+/* A dialog stamped a sheet on a phone (`phoneSheetDialogs`) takes the
+   sheet's width even where its id gave the card one: History and
+   Connections measured 359 of 390 wide, 16px off the edge they rise from. */
+:is(#history-card, #connections-card).sheet-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+.sheet-overlay.sheet-leaving .sheet-card { transform: translateY(var(--space-4)); }
+
+/* The attach popup inside its own sheet (`openNotePicker`'s phone path,
+   chat-attach.js): same reasoning as `.chat-answers-card` below, the sheet
+   is the surface now, so the popover sheds its own box, width and shadow
+   and becomes the sheet's plain content; its own `.dialog-head` is hidden
+   by the JS that moves it in, the sheet's head already carries a title and
+   a Close. */
+/* One height for every source here too: a sheet sized to its content jumped
+   by a third between Notes and Maps. */
+.sheet-card.attach-card {
+  height: 66dvh;
+}
+
 .sheet-card-corner .sheet-head .atlas-menu {
   display: inline-flex;
 }
@@ -6757,6 +6792,41 @@ button.manage-cat-count:is(:focus-visible, :has(:focus-visible)) {
   box-shadow: var(--glass-rim);
   backdrop-filter: var(--glass-filter);
   -webkit-backdrop-filter: var(--glass-filter);
+}
+
+/* --- the chat dock follows its own width (INBOX 694) ------------------------
+   The owner: "the bottom chat dock isnt responsive in design for the sidebar
+   sizes", with the dock in a narrow column, Skills, Web, Plan, the model
+   picker and Ask|Agent wrapped onto four ragged rows. The chat sits in a
+   column that is a window's width minus a rail, a panel or a sidebar, so no
+   viewport query can know how wide the dock is; the dock says so itself
+   (`container: chat-dock`), and the rules below are written in its width.
+   The range syntax is deliberate: these are a component's own widths, not
+   the page's four bands (tests/test_breakpoints.py counts only `max-width:`).
+   Widths are the container's content box (the dock less its 12px padding and
+   its border, so a 800px dock queries as 774), in rem at 16px. Rows, by what
+   the dock can hold:
+   - 47rem and over: the strip is one line, toggles left, model, mode and
+     gear right, the free space between (the spacer), as it was at 1440.
+   - under 47rem: the spacer goes and the mode group shares the toggles'
+     line on a 16rem basis, the model picker taking whatever the Ask|Agent
+     switch and the gear leave, ellipsised. Where even the squares below
+     leave it less, it is the line under them, never a third line.
+   - under 35rem: the toggles are icon-only squares, so the mode group
+     keeps their line. Their words stay as the accessible names (`font-size:
+     0` keeps the text in the tree, unlike `display: none`) and the titles
+     are untouched.
+   - under 24rem: Ask and Agent give up their icons to the model picker.
+   - the composer: one line (box grows, the icon buttons are fixed, Send
+     last) while the box keeps 12rem or more; under 27rem it is the box on a
+     line of its own and the attach buttons left with the mic and Send right
+     on the line under it. A phone below 600 has already moved the two attach
+     buttons and the model picker out of the strip (`dockChatAttachments`,
+     `dockChatTools`), so its composer is the box, the mic and Send and its
+     strip is the mode, the two attachments and the gear: one line each,
+     which the `:has(> .select-shell)` conditions below leave alone. */
+.chat-dock {
+  container: chat-dock / inline-size;
 }
 
 /* **An insight's verdicts: one compact pair on the sentence's own row**
