@@ -5,9 +5,12 @@ query is `repo/bookmarks.py`'s (INBOX 1499). Nothing here needs the AI.
 
 from __future__ import annotations
 
+import base64
+import binascii
+import hashlib
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 
 from tessellate.api import paging
 from pydantic import BaseModel, Field
@@ -32,6 +35,9 @@ class BookmarkCreate(BaseModel):
     is_read: bool = False
     icon: str = Field(default="", max_length=80)
     color: str = Field(default="", max_length=20)
+    #: Fetch the page's icon and text after the save. Only the app's own Save sends it (the person pressed
+    #: it with the web on); an agent, the MCP server or a script saving a link never goes online by itself.
+    fetch: bool = False
 
 
 class BookmarkUpdate(BaseModel):
@@ -44,6 +50,8 @@ class BookmarkUpdate(BaseModel):
     tags: list[str] | None = Field(default=None, max_length=40)
     icon: str | None = Field(default=None, max_length=80)
     color: str | None = Field(default=None, max_length=20)
+    #: As on create: a new address is fetched only when the app's own edit asks.
+    fetch: bool = False
 
 
 def _to_out(bookmark, duplicate_of: int | None = None) -> dict:
@@ -58,9 +66,10 @@ def _to_out(bookmark, duplicate_of: int | None = None) -> dict:
         "tags": bookmarks.tag_list(bookmark.tags),
         "icon": bookmark.icon or "",
         "color": bookmark.color or "",
-        "favicon": bookmark.favicon or "",
+        #: An address, not the bytes (PR 226 review): the list stays light and the icon is cached apart.
+        "favicon": f"/bookmarks/{bookmark.id}/icon" if bookmark.has_icon else "",
         "excerpt": bookmark.excerpt or "",
-        "has_text": bool(bookmark.page_text),
+        "has_text": bool(bookmark.has_text),
         "created_at": bookmark.created_at.isoformat(),
     }
     if duplicate_of is not None:
@@ -129,9 +138,9 @@ def _web_on() -> bool:
     return bool(deps.get_config().get_preference("web_search_enabled", False))
 
 
-def _fetch_into(bookmark) -> None:
-    """Fetch the page and keep its icon, excerpt and text on the row (raises `webclip.ClipRefused`)."""
-    fetched = webclip.fetch_page(bookmark.url)
+def _fetch(url: str) -> dict:
+    """Fetch the page and return what to keep: its title, excerpt, text and icon (raises `webclip.ClipRefused`)."""
+    fetched = webclip.fetch_page(url)
     extracted = webclip.extract(fetched["html"], fetched["url"])
     text = extracted["markdown"]
     favicon = ""
@@ -141,9 +150,24 @@ def _fetch_into(bookmark) -> None:
             favicon = webclip.fetch_icon(href)
         except webclip.ClipRefused:
             favicon = ""
-    bookmarks.apply_fetch(
-        bookmark, title=extracted["title"], excerpt=bookmarks.excerpt_of(text), text=text, favicon=favicon
-    )
+    return {"title": extracted["title"], "excerpt": bookmarks.excerpt_of(text), "text": text, "favicon": favicon}
+
+
+def _fetch_for(session: Session, bookmark) -> bool:
+    """Fetch the link's page and keep what it found, unless its address changed meanwhile.
+
+    The read transaction ends before the fetch (nothing is pending), so the row read after it is the
+    current one: a fetch that took seconds never writes an old page's icon onto a link moved since.
+    """
+    url = bookmark.url
+    session.commit()
+    found = _fetch(url)
+    session.refresh(bookmark)
+    if bookmark.url != url:
+        return False
+    bookmarks.apply_fetch(bookmark, **found)
+    session.commit()
+    return True
 
 
 def _refresh_after_save(bookmark_id: int) -> None:
@@ -156,8 +180,7 @@ def _refresh_after_save(bookmark_id: int) -> None:
         bookmark = session.get(bookmarks.Bookmark, bookmark_id)
         if bookmark is None or urlparse(bookmark.url).scheme not in ("http", "https"):
             return
-        _fetch_into(bookmark)
-        session.commit()
+        _fetch_for(session, bookmark)
     except Exception:  # noqa: BLE001 - a background refresh must never surface; the card keeps its glyph
         session.rollback()
     finally:
@@ -173,9 +196,11 @@ def _refresh_later(bookmark_id: int) -> None:
 def create_bookmark(
     body: BookmarkCreate, session: Session = Depends(get_session)
 ) -> dict:
-    bookmark, twin = bookmarks.create(session, **body.model_dump())
+    fields = body.model_dump()
+    fetch = fields.pop("fetch")
+    bookmark, twin = bookmarks.create(session, **fields)
     session.commit()
-    if twin is None and _web_on():
+    if fetch and twin is None and _web_on():
         _refresh_later(bookmark.id)
     return _to_out(bookmark, duplicate_of=twin)
 
@@ -185,13 +210,16 @@ def update_bookmark(
     bookmark_id: int, body: BookmarkUpdate, session: Session = Depends(get_session)
 ) -> dict:
     before = bookmarks.get(session, bookmark_id).url
-    bookmark = bookmarks.update(session, bookmark_id, **body.model_dump())
+    fields = body.model_dump()
+    fetch = fields.pop("fetch")
+    bookmark = bookmarks.update(session, bookmark_id, **fields)
     session.commit()
-    if bookmark.url != before and _web_on():
+    if fetch and bookmark.url != before and _web_on():
         _refresh_later(bookmark.id)
     return _to_out(bookmark)
 
 
+MOVED = "The link's address changed while its page was being fetched, so nothing was kept. Fetch it again."
 WEB_OFF = "Fetching a page needs the web, and the web is turned off. Allow it in Settings, Web search."
 
 
@@ -209,11 +237,42 @@ def refresh_bookmark(bookmark_id: int, session: Session = Depends(get_session)) 
     if urlparse(bookmark.url).scheme not in ("http", "https"):
         raise HTTPException(status_code=400, detail="Only a web page can be fetched.")
     try:
-        _fetch_into(bookmark)
+        kept = _fetch_for(session, bookmark)
     except webclip.ClipRefused as exc:
         raise HTTPException(status_code=exc.status, detail=str(exc)) from exc
-    session.commit()
+    if not kept:
+        raise HTTPException(status_code=409, detail=MOVED)
     return _to_out(bookmark)
+
+
+@router.get("/{bookmark_id}/icon")
+def bookmark_icon(
+    bookmark_id: int, if_none_match: str | None = Header(default=None), session: Session = Depends(get_session)
+) -> Response:
+    """The site's icon the last fetch kept, as an image of its own (the list carries only this address).
+
+    An ETag over the bytes, so a card asks again cheaply and a changed icon shows; `nosniff` and a
+    CSP that runs nothing, since an SVG opened from here would otherwise be a page of this origin.
+    """
+    data = bookmarks.get(session, bookmark_id).favicon or ""
+    head, _, payload = data.partition(",")
+    kind = head.removeprefix("data:").removesuffix(";base64")
+    try:
+        body = base64.b64decode(payload, validate=True) if head.endswith(";base64") else b""
+    except (binascii.Error, ValueError):
+        body = b""
+    if not body or not kind.startswith("image/"):
+        raise HTTPException(status_code=404, detail="This link has no icon.")
+    etag = '"' + hashlib.sha256(body).hexdigest()[:16] + '"'
+    headers = {
+        "ETag": etag,
+        "Cache-Control": "private, max-age=3600, must-revalidate",
+        "X-Content-Type-Options": "nosniff",
+        "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+    }
+    if if_none_match == etag:
+        return Response(status_code=304, headers=headers)
+    return Response(content=body, media_type=kind, headers=headers)
 
 
 @router.get("/{bookmark_id}/text")

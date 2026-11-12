@@ -11019,6 +11019,8 @@ onDomReady(() => {
       const created = await apiJson("/bookmarks", {
         method: "POST",
         body: JSON.stringify({
+          //: The person's own Save: the server may fetch the icon (with the web on); API saves do not.
+          fetch: true,
           url,
           title: titleInput.value.trim(),
           group_name: groupInput.value.trim(),
@@ -12296,7 +12298,7 @@ function bookmarkRow(bookmark) {
           note: noteInput.value.trim(),
         };
         const wasFields = { title: bookmark.title || "", url: bookmark.url, group_name: bookmark.group_name || "", tags: bookmark.tags || [], note: bookmark.note || "" };
-        await apiJson(`/bookmarks/${bookmark.id}`, { method: "PUT", body: JSON.stringify(edited) });
+        await apiJson(`/bookmarks/${bookmark.id}`, { method: "PUT", body: JSON.stringify({ ...edited, fetch: true }) });
         pushBookmarksPutUndo("Edited a bookmark", [{ id: bookmark.id, before: wasFields, after: edited }]);
         renderBookmarks();
         if (url !== bookmark.url) LinkShelf.afterSave();

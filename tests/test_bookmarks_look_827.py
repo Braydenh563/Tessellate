@@ -62,7 +62,8 @@ def test_refresh_keeps_the_icon_excerpt_and_text(client, app_state, net, monkeyp
     made = _make(client)
     bid = made["id"]
     out = client.post(f"/bookmarks/{bid}/refresh").json()
-    assert out["favicon"] == "data:image/png;base64,AAAA"
+    #: The list and the reply carry the icon's address; the bytes are its own route (PR 226 review).
+    assert out["favicon"] == f"/bookmarks/{bid}/icon"
     assert out["excerpt"] and len(out["excerpt"]) <= 400 and out["has_text"] is True
     assert out["title"], "a link saved with no title takes the page's"
     reply = client.get(f"/bookmarks/{bid}/text").json()["text"]
@@ -115,15 +116,17 @@ def test_saving_a_link_fetches_its_icon_when_the_web_is_on(client, app_state, ne
     app_state.set_preference("web_search_enabled", True)
     _site(net)
     monkeypatch.setattr(webclip, "fetch_icon", lambda url: "data:image/png;base64,AAAA")
-    made = _make(client)
+    #: `fetch: true` is what the app's own Save sends; an API save without it stays offline (PR 226 review).
+    made = _make(client, fetch=True)
+    bid = made["id"]
     _icon_fetched()
     listed = client.get("/bookmarks").json()[0]
-    assert listed["id"] == made["id"] and listed["favicon"] == "data:image/png;base64,AAAA"
-    moved = client.put(f"/bookmarks/{made['id']}", json={"url": "https://bread.example/other"}).json()
+    assert listed["id"] == bid and listed["favicon"] == f"/bookmarks/{bid}/icon"
+    moved = client.put(f"/bookmarks/{bid}", json={"url": "https://bread.example/other", "fetch": True}).json()
     assert moved["favicon"] == "", "the old address's icon goes at once"
     _icon_fetched()
     reply = client.get("/bookmarks").json()[0]["favicon"]
-    assert reply == "data:image/png;base64,AAAA", "and the new one arrives"
+    assert reply == f"/bookmarks/{bid}/icon", "and the new one arrives"
 
 
 def test_saving_a_link_requests_nothing_while_the_web_is_off(client, net):  # noqa: F811

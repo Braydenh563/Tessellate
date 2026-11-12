@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Links: the list no longer carries each site's icon and page text (the icon has its own cached address); a fetch that finishes after the address changed keeps nothing; only the app's own Save fetches a page by itself; an icon fetch stops at 3 seconds or at a too-large size header (PR 226 review).
 - Documents: Connect handles on a diamond sit fully outside the block at 390 px (L-documents-20).
 - Documents: the code editor and the documents surfaces were driven at 1440 and 390 px, with two stale sweeps corrected (L319, L320).
 - Documents: the status bar skips an identical repaint, so typing does less work (L323).

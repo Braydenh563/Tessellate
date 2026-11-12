@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8378, frontend ids 2770, CSS sections 524, backend routes 701, backend modules 10780, test files 2718, tests 22002, plan headings 688, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8378, frontend ids 2770, CSS sections 524, backend routes 702, backend modules 10782, test files 2719, tests 22011, plan headings 688, app scripts 29, boot scripts 38, script files 301.
 
 ## Frontend functions (8378)
 
@@ -5879,49 +5879,49 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `activityDetailText` | frontend/js/library.js:1550 |
 | `activitySettingValue` | frontend/js/library.js:1534 |
-| `allBookmarkGroups` | frontend/js/library.js:11665 |
+| `allBookmarkGroups` | frontend/js/library.js:11667 |
 | `analyseMediaRow` | frontend/js/library.js:8625 |
 | `applyLibraryMediaView` | frontend/js/library.js:4034 |
-| `attachBoardTick` | frontend/js/library.js:11269 |
+| `attachBoardTick` | frontend/js/library.js:11271 |
 | `binRoutes` | frontend/js/library.js:1305 |
 | `bookmarkAddress` | frontend/js/library.js:4240 |
-| `bookmarkRow` | frontend/js/library.js:12064 |
-| `bookmarkSiteSection` | frontend/js/library.js:12027 |
-| `bookmarkSort` | frontend/js/library.js:11945 |
+| `bookmarkRow` | frontend/js/library.js:12066 |
+| `bookmarkSiteSection` | frontend/js/library.js:12029 |
+| `bookmarkSort` | frontend/js/library.js:11947 |
 | `buildFileReadingSummary` | frontend/js/library.js:8783 |
-| `bulkDeleteLibraryBoards` | frontend/js/library.js:11308 |
-| `bulkDeleteLibraryLinks` | frontend/js/library.js:11561 |
+| `bulkDeleteLibraryBoards` | frontend/js/library.js:11310 |
+| `bulkDeleteLibraryLinks` | frontend/js/library.js:11563 |
 | `bulkDeleteLibraryMedia` | frontend/js/library.js:8950 |
-| `bulkMoveLibraryLinks` | frontend/js/library.js:11609 |
-| `bulkUpdateLibraryLinks` | frontend/js/library.js:11583 |
-| `clearLibraryBoardsSelection` | frontend/js/library.js:11300 |
-| `clearLibraryLinksSelection` | frontend/js/library.js:11465 |
+| `bulkMoveLibraryLinks` | frontend/js/library.js:11611 |
+| `bulkUpdateLibraryLinks` | frontend/js/library.js:11585 |
+| `clearLibraryBoardsSelection` | frontend/js/library.js:11302 |
+| `clearLibraryLinksSelection` | frontend/js/library.js:11467 |
 | `clearLibraryMediaSelection` | frontend/js/library.js:8944 |
 | `closeBinnedReader` | frontend/js/library.js:1931 |
 | `closeOcrWorkspace` | frontend/js/library.js:6012 |
-| `contentsBuildSection` | frontend/js/library.js:12795 |
-| `contentsDocRow` | frontend/js/library.js:12708 |
-| `contentsGlyph` | frontend/js/library.js:12643 |
-| `contentsGroupMark` | frontend/js/library.js:12779 |
-| `contentsGroups` | frontend/js/library.js:12487 |
-| `contentsMonthKey` | frontend/js/library.js:12480 |
-| `contentsNoteFacts` | frontend/js/library.js:12670 |
-| `contentsNoteMark` | frontend/js/library.js:12650 |
-| `contentsNoteName` | frontend/js/library.js:12583 |
-| `contentsNoteRow` | frontend/js/library.js:12682 |
-| `contentsOpenDocument` | frontend/js/library.js:12601 |
-| `contentsOrderedKeys` | frontend/js/library.js:12556 |
-| `contentsRenameTopic` | frontend/js/library.js:12871 |
-| `contentsRowBody` | frontend/js/library.js:12630 |
-| `contentsSectionLabel` | frontend/js/library.js:12536 |
-| `contentsSetAll` | frontend/js/library.js:13081 |
-| `contentsTopicNames` | frontend/js/library.js:12545 |
-| `contentsTreeItem` | frontend/js/library.js:12616 |
-| `contentsTreeKeys` | frontend/js/library.js:13096 |
-| `contentsWireTopicHeading` | frontend/js/library.js:12845 |
-| `createLibrarySelectbar` | frontend/js/library.js:11204 |
-| `deleteBookmarkGroup` | frontend/js/library.js:11704 |
-| `deleteBookmarksWithUndo` | frontend/js/library.js:11520 |
+| `contentsBuildSection` | frontend/js/library.js:12797 |
+| `contentsDocRow` | frontend/js/library.js:12710 |
+| `contentsGlyph` | frontend/js/library.js:12645 |
+| `contentsGroupMark` | frontend/js/library.js:12781 |
+| `contentsGroups` | frontend/js/library.js:12489 |
+| `contentsMonthKey` | frontend/js/library.js:12482 |
+| `contentsNoteFacts` | frontend/js/library.js:12672 |
+| `contentsNoteMark` | frontend/js/library.js:12652 |
+| `contentsNoteName` | frontend/js/library.js:12585 |
+| `contentsNoteRow` | frontend/js/library.js:12684 |
+| `contentsOpenDocument` | frontend/js/library.js:12603 |
+| `contentsOrderedKeys` | frontend/js/library.js:12558 |
+| `contentsRenameTopic` | frontend/js/library.js:12873 |
+| `contentsRowBody` | frontend/js/library.js:12632 |
+| `contentsSectionLabel` | frontend/js/library.js:12538 |
+| `contentsSetAll` | frontend/js/library.js:13083 |
+| `contentsTopicNames` | frontend/js/library.js:12547 |
+| `contentsTreeItem` | frontend/js/library.js:12618 |
+| `contentsTreeKeys` | frontend/js/library.js:13098 |
+| `contentsWireTopicHeading` | frontend/js/library.js:12847 |
+| `createLibrarySelectbar` | frontend/js/library.js:11206 |
+| `deleteBookmarkGroup` | frontend/js/library.js:11706 |
+| `deleteBookmarksWithUndo` | frontend/js/library.js:11522 |
 | `deleteSkillWithUndo` | frontend/js/library.js:2867 |
 | `docSizeText` | frontend/js/library.js:202 |
 | `docTypeFilter` | frontend/js/library.js:173 |
@@ -5931,11 +5931,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docTypeItems` | frontend/js/library.js:117 |
 | `docTypeMenu` | frontend/js/library.js:191 |
 | `duplicateSkill` | frontend/js/library.js:2839 |
-| `emptyBookmarkGroups` | frontend/js/library.js:11642 |
+| `emptyBookmarkGroups` | frontend/js/library.js:11644 |
 | `ensureLibraryGridStop` | frontend/js/library.js:1793 |
-| `fetchAllBookmarks` | frontend/js/library.js:11422 |
+| `fetchAllBookmarks` | frontend/js/library.js:11424 |
 | `fileMetaLine` | frontend/js/library.js:4221 |
-| `filterBookmarks` | frontend/js/library.js:11960 |
+| `filterBookmarks` | frontend/js/library.js:11962 |
 | `filterLibraryImagesGallery` | frontend/js/library.js:9208 |
 | `flashLibraryItem` | frontend/js/library.js:1977 |
 | `focusLibraryFile` | frontend/js/library.js:4168 |
@@ -5967,7 +5967,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `linkNoteFromLibrary` | frontend/js/library.js:1323 |
 | `loadDocTypeTable` | frontend/js/library.js:100 |
 | `loadLibrary` | frontend/js/library.js:455 |
-| `manageBookmarkGroups` | frontend/js/library.js:11711 |
+| `manageBookmarkGroups` | frontend/js/library.js:11713 |
 | `mediaFileIcon` | frontend/js/library.js:4182 |
 | `mediaFileKind` | frontend/js/library.js:4264 |
 | `mediaHasBeenRead` | frontend/js/library.js:8653 |
@@ -5977,8 +5977,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mediaRowDeleteEndpoint` | frontend/js/library.js:8916 |
 | `mediaRowKey` | frontend/js/library.js:8909 |
 | `metaLine` | frontend/js/library.js:4204 |
-| `noteAnyImage` | frontend/js/library.js:13271 |
-| `noteFirstImage` | frontend/js/library.js:13260 |
+| `noteAnyImage` | frontend/js/library.js:13273 |
+| `noteFirstImage` | frontend/js/library.js:13262 |
 | `ocrAllText` | frontend/js/library.js:7931 |
 | `ocrApplyFind` | frontend/js/library.js:7292 |
 | `ocrApplyPageCount` | frontend/js/library.js:5637 |
@@ -6098,15 +6098,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openLibraryItem` | frontend/js/library.js:1816 |
 | `openOcrWorkspace` | frontend/js/library.js:6342 |
 | `openPageReader` | frontend/js/library.js:6058 |
-| `pushBookmarksPutUndo` | frontend/js/library.js:11573 |
+| `pushBookmarksPutUndo` | frontend/js/library.js:11575 |
 | `refreshLibraryPhrase` | frontend/js/library.js:2056 |
 | `refreshLibrarySemantic` | frontend/js/library.js:674 |
 | `refreshLibraryServerSearch` | frontend/js/library.js:2030 |
-| `remindAbout` | frontend/js/library.js:13222 |
-| `renameBookmarkGroup` | frontend/js/library.js:11677 |
-| `renderBookmarkGroupChips` | frontend/js/library.js:11815 |
-| `renderBookmarks` | frontend/js/library.js:11433 |
-| `renderContents` | frontend/js/library.js:12925 |
+| `remindAbout` | frontend/js/library.js:13224 |
+| `renameBookmarkGroup` | frontend/js/library.js:11679 |
+| `renderBookmarkGroupChips` | frontend/js/library.js:11817 |
+| `renderBookmarks` | frontend/js/library.js:11435 |
+| `renderContents` | frontend/js/library.js:12927 |
 | `renderIncrementally` | frontend/js/library.js:245 |
 | `renderLibrary` | frontend/js/library.js:748 |
 | `renderLibraryContextBars` | frontend/js/library.js:1342 |
@@ -6123,24 +6123,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `reopenOcrWorkspace` | frontend/js/library.js:6031 |
 | `runLibrarySearch` | frontend/js/library.js:2069 |
 | `seedLibraryDocsAll` | frontend/js/library.js:3509 |
-| `setEmptyBookmarkGroups` | frontend/js/library.js:11653 |
+| `setEmptyBookmarkGroups` | frontend/js/library.js:11655 |
 | `setLibraryCardStop` | frontend/js/library.js:1789 |
 | `setLibraryMediaKind` | frontend/js/library.js:4106 |
 | `setLibraryMediaView` | frontend/js/library.js:4064 |
-| `showDetailDialog` | frontend/js/library.js:13173 |
-| `shownTicksIn` | frontend/js/library.js:11173 |
+| `showDetailDialog` | frontend/js/library.js:13175 |
+| `shownTicksIn` | frontend/js/library.js:11175 |
 | `skillCard` | frontend/js/library.js:2630 |
 | `skillColumnCount` | frontend/js/library.js:2893 |
 | `skillLastRunIndex` | frontend/js/library.js:2619 |
 | `skillSort` | frontend/js/library.js:2826 |
 | `startLibraryImagesPoll` | frontend/js/library.js:3969 |
 | `stopLibraryImagesPoll` | frontend/js/library.js:3982 |
-| `syncLibraryBoardsTicks` | frontend/js/library.js:11255 |
+| `syncLibraryBoardsTicks` | frontend/js/library.js:11257 |
 | `syncLibraryDocsSelectbar` | frontend/js/library.js:3857 |
 | `syncLibraryFilterButton` | frontend/js/library.js:2106 |
 | `syncLibraryMediaSelectbar` | frontend/js/library.js:8933 |
-| `syncSelectAllLabels` | frontend/js/library.js:11177 |
-| `syncSelectbarCount` | frontend/js/library.js:11150 |
+| `syncSelectAllLabels` | frontend/js/library.js:11179 |
+| `syncSelectbarCount` | frontend/js/library.js:11152 |
 | `toggleLibrarySelection` | frontend/js/library.js:1384 |
 | `trackOcrRead` | frontend/js/library.js:4408 |
 | `updateLibraryCreateButton` | frontend/js/library.js:2568 |
@@ -8269,13 +8269,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `bookmarkWebResult` | frontend/js/web-results.js:188 |
 | `buildWebResultRow` | frontend/js/web-results.js:76 |
-| `pushWebSearchHistory` | frontend/js/web-results.js:220 |
-| `renderWebSearchHistory` | frontend/js/web-results.js:239 |
-| `runWebSearch` | frontend/js/web-results.js:371 |
-| `searxngDownRow` | frontend/js/web-results.js:306 |
-| `setWebSearxngRunning` | frontend/js/web-results.js:287 |
-| `startSearxng` | frontend/js/web-results.js:279 |
-| `waitForSearxng` | frontend/js/web-results.js:361 |
+| `pushWebSearchHistory` | frontend/js/web-results.js:221 |
+| `renderWebSearchHistory` | frontend/js/web-results.js:240 |
+| `runWebSearch` | frontend/js/web-results.js:372 |
+| `searxngDownRow` | frontend/js/web-results.js:307 |
+| `setWebSearxngRunning` | frontend/js/web-results.js:288 |
+| `startSearxng` | frontend/js/web-results.js:280 |
+| `waitForSearxng` | frontend/js/web-results.js:362 |
 | `webEngineWords` | frontend/js/web-results.js:13 |
 | `webQueryTerms` | frontend/js/web-results.js:63 |
 | `webResultMark` | frontend/js/web-results.js:42 |
@@ -13267,7 +13267,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
-## Backend routes (701)
+## Backend routes (702)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -13278,7 +13278,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | DELETE | `forget` | src/tessellate/api/routes_kept_words.py:79 |
 |  | DELETE | `forget_everything` | src/tessellate/api/routes_learned.py:268 |
 |  | GET | `list_ask_history` | src/tessellate/api/routes_ask_history.py:48 |
-|  | GET | `list_bookmarks` | src/tessellate/api/routes_bookmarks.py:81 |
+|  | GET | `list_bookmarks` | src/tessellate/api/routes_bookmarks.py:90 |
 |  | GET | `list_categories` | src/tessellate/api/routes_categories.py:142 |
 |  | GET | `list_conversations` | src/tessellate/api/routes_conversations.py:488 |
 |  | GET | `list_documents` | src/tessellate/api/routes_documents.py:391 |
@@ -13299,7 +13299,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `today` | src/tessellate/api/routes_resurface.py:106 |
 |  | POST | `chat` | src/tessellate/api/routes_chat.py:501 |
 |  | POST | `count` | src/tessellate/api/routes_usage.py:30 |
-|  | POST | `create_bookmark` | src/tessellate/api/routes_bookmarks.py:172 |
+|  | POST | `create_bookmark` | src/tessellate/api/routes_bookmarks.py:195 |
 |  | POST | `create_category` | src/tessellate/api/routes_categories.py:154 |
 |  | POST | `create_conversation` | src/tessellate/api/routes_conversations.py:618 |
 |  | POST | `create_document` | src/tessellate/api/routes_documents.py:499 |
@@ -13453,7 +13453,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/entries/{entry_id}/properties` | PUT | `put_properties` | src/tessellate/api/routes_properties.py:61 |
 | `/events` | GET | `event_feed` | src/tessellate/api/routes_settings.py:2079 |
 | `/events/undo` | POST | `undo_actor` | src/tessellate/api/routes_settings.py:2050 |
-| `/export` | GET | `export_bookmarks` | src/tessellate/api/routes_bookmarks.py:102 |
+| `/export` | GET | `export_bookmarks` | src/tessellate/api/routes_bookmarks.py:111 |
 | `/export` | GET | `export_learned` | src/tessellate/api/routes_learned.py:206 |
 | `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:414 |
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings_transfer.py:52 |
@@ -13528,7 +13528,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/history/{event_id}` | GET | `board_at` | src/tessellate/api/routes_board_history.py:385 |
 | `/history/{event_id}/restore` | POST | `restore_board` | src/tessellate/api/routes_board_history.py:528 |
 | `/images` | GET | `list_images` | src/tessellate/api/wb_boards.py:247 |
-| `/import` | POST | `import_bookmarks` | src/tessellate/api/routes_bookmarks.py:116 |
+| `/import` | POST | `import_bookmarks` | src/tessellate/api/routes_bookmarks.py:125 |
 | `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:612 |
 | `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:488 |
 | `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:97 |
@@ -13853,10 +13853,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/when` | POST | `read_when` | src/tessellate/api/routes_reminders.py:586 |
 | `/whiteboard/boards/{board_id}/paste` | POST | `paste_board_items` | src/tessellate/api/routes_board_library.py:1343 |
 | `/whiteboard/boards/{board_id}/place` | POST | `place_library_item` | src/tessellate/api/routes_board_library.py:1226 |
-| `/{bookmark_id}` | DELETE | `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:225 |
-| `/{bookmark_id}` | PUT | `update_bookmark` | src/tessellate/api/routes_bookmarks.py:183 |
-| `/{bookmark_id}/refresh` | POST | `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:198 |
-| `/{bookmark_id}/text` | GET | `bookmark_text` | src/tessellate/api/routes_bookmarks.py:219 |
+| `/{bookmark_id}` | DELETE | `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:284 |
+| `/{bookmark_id}` | PUT | `update_bookmark` | src/tessellate/api/routes_bookmarks.py:208 |
+| `/{bookmark_id}/icon` | GET | `bookmark_icon` | src/tessellate/api/routes_bookmarks.py:248 |
+| `/{bookmark_id}/refresh` | POST | `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:226 |
+| `/{bookmark_id}/text` | GET | `bookmark_text` | src/tessellate/api/routes_bookmarks.py:278 |
 | `/{category_id}` | DELETE | `delete_category` | src/tessellate/api/routes_categories.py:338 |
 | `/{category_id}` | PUT | `rename_category` | src/tessellate/api/routes_categories.py:327 |
 | `/{category_id}/colour` | PUT | `set_category_colour` | src/tessellate/api/routes_categories.py:316 |
@@ -13975,7 +13976,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10780)
+## Backend modules (10782)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21494,26 +21495,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `transform_path` | src/tessellate/api/routes_board_library.py:887 |
 | `update_library_item` | src/tessellate/api/routes_board_library.py:632 |
 
-### src/tessellate/api/routes_bookmarks.py (16)
+### src/tessellate/api/routes_bookmarks.py (18)
 
 | Name | File:line |
 |---|---|
-| `BookmarkCreate` | src/tessellate/api/routes_bookmarks.py:23 |
-| `BookmarkUpdate` | src/tessellate/api/routes_bookmarks.py:37 |
-| `BookmarksImport` | src/tessellate/api/routes_bookmarks.py:97 |
-| `_fetch_into` | src/tessellate/api/routes_bookmarks.py:132 |
-| `_refresh_after_save` | src/tessellate/api/routes_bookmarks.py:149 |
-| `_refresh_later` | src/tessellate/api/routes_bookmarks.py:167 |
-| `_to_out` | src/tessellate/api/routes_bookmarks.py:49 |
-| `_web_on` | src/tessellate/api/routes_bookmarks.py:128 |
-| `bookmark_text` | src/tessellate/api/routes_bookmarks.py:220 |
-| `create_bookmark` | src/tessellate/api/routes_bookmarks.py:173 |
-| `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:226 |
-| `export_bookmarks` | src/tessellate/api/routes_bookmarks.py:103 |
-| `import_bookmarks` | src/tessellate/api/routes_bookmarks.py:117 |
-| `list_bookmarks` | src/tessellate/api/routes_bookmarks.py:82 |
-| `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:199 |
-| `update_bookmark` | src/tessellate/api/routes_bookmarks.py:184 |
+| `BookmarkCreate` | src/tessellate/api/routes_bookmarks.py:26 |
+| `BookmarkUpdate` | src/tessellate/api/routes_bookmarks.py:43 |
+| `BookmarksImport` | src/tessellate/api/routes_bookmarks.py:106 |
+| `_fetch` | src/tessellate/api/routes_bookmarks.py:141 |
+| `_fetch_for` | src/tessellate/api/routes_bookmarks.py:156 |
+| `_refresh_after_save` | src/tessellate/api/routes_bookmarks.py:173 |
+| `_refresh_later` | src/tessellate/api/routes_bookmarks.py:190 |
+| `_to_out` | src/tessellate/api/routes_bookmarks.py:57 |
+| `_web_on` | src/tessellate/api/routes_bookmarks.py:137 |
+| `bookmark_icon` | src/tessellate/api/routes_bookmarks.py:249 |
+| `bookmark_text` | src/tessellate/api/routes_bookmarks.py:279 |
+| `create_bookmark` | src/tessellate/api/routes_bookmarks.py:196 |
+| `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:285 |
+| `export_bookmarks` | src/tessellate/api/routes_bookmarks.py:112 |
+| `import_bookmarks` | src/tessellate/api/routes_bookmarks.py:126 |
+| `list_bookmarks` | src/tessellate/api/routes_bookmarks.py:91 |
+| `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:227 |
+| `update_bookmark` | src/tessellate/api/routes_bookmarks.py:209 |
 
 ### src/tessellate/api/routes_capabilities.py (3)
 
@@ -23901,84 +23904,84 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `AskTurn` | src/tessellate/core/database.py:1323 |
-| `Attachment` | src/tessellate/core/database.py:1245 |
-| `AuditLog` | src/tessellate/core/database.py:2431 |
-| `Base` | src/tessellate/core/database.py:141 |
-| `BinnedReading` | src/tessellate/core/database.py:1949 |
-| `BoardLibrary` | src/tessellate/core/database.py:2197 |
-| `BoardLibraryItem` | src/tessellate/core/database.py:2215 |
-| `BoardLibraryMark` | src/tessellate/core/database.py:2239 |
-| `Bookmark` | src/tessellate/core/database.py:1373 |
-| `Category` | src/tessellate/core/database.py:468 |
-| `ChunkVector` | src/tessellate/core/database.py:1170 |
-| `Conversation` | src/tessellate/core/database.py:1287 |
-| `DateTime` | src/tessellate/core/database.py:103 |
-| `DerivedFact` | src/tessellate/core/database.py:1536 |
-| `DerivedTension` | src/tessellate/core/database.py:1602 |
-| `Document` | src/tessellate/core/database.py:1738 |
-| `DocumentAiEdit` | src/tessellate/core/database.py:1807 |
-| `DocumentBookmark` | src/tessellate/core/database.py:1443 |
-| `DocumentLink` | src/tessellate/core/database.py:1784 |
-| `DocumentRevision` | src/tessellate/core/database.py:2033 |
-| `DurableJob` | src/tessellate/core/database.py:2360 |
-| `EmbeddingRecord` | src/tessellate/core/database.py:1155 |
-| `Entity` | src/tessellate/core/database.py:741 |
-| `EntityMention` | src/tessellate/core/database.py:781 |
-| `Entry` | src/tessellate/core/database.py:503 |
-| `EntryBookmark` | src/tessellate/core/database.py:1423 |
-| `EntryDate` | src/tessellate/core/database.py:1713 |
-| `EntryLink` | src/tessellate/core/database.py:981 |
-| `EntryOpen` | src/tessellate/core/database.py:1692 |
-| `EntryProperty` | src/tessellate/core/database.py:1053 |
-| `EntryRevision` | src/tessellate/core/database.py:1674 |
-| `JobRun` | src/tessellate/core/database.py:2333 |
-| `LinkProps` | src/tessellate/core/database.py:855 |
-| `LinkReason` | src/tessellate/core/database.py:806 |
-| `MediaUpload` | src/tessellate/core/database.py:2251 |
-| `NightRun` | src/tessellate/core/database.py:1645 |
-| `NoteScore` | src/tessellate/core/database.py:1506 |
-| `NoteType` | src/tessellate/core/database.py:1075 |
-| `PageRead` | src/tessellate/core/database.py:1847 |
-| `Recording` | src/tessellate/core/database.py:1982 |
-| `RelationType` | src/tessellate/core/database.py:1035 |
-| `Reminder` | src/tessellate/core/database.py:1459 |
-| `SealMe` | src/tessellate/core/database.py:891 |
-| `SealedText` | src/tessellate/core/database.py:901 |
-| `SealedTitle` | src/tessellate/core/database.py:942 |
-| `SealedWriteRefused` | src/tessellate/core/database.py:896 |
-| `Space` | src/tessellate/core/database.py:144 |
-| `StagedEmbedding` | src/tessellate/core/database.py:1218 |
-| `User` | src/tessellate/core/database.py:417 |
-| `UserPreference` | src/tessellate/core/database.py:2403 |
-| `Vault` | src/tessellate/core/database.py:444 |
-| `WebPage` | src/tessellate/core/database.py:428 |
-| `WhiteboardNode` | src/tessellate/core/database.py:2075 |
-| `WhiteboardObject` | src/tessellate/core/database.py:2134 |
-| `WhiteboardSketch` | src/tessellate/core/database.py:2117 |
-| `WorkspaceMixin` | src/tessellate/core/database.py:169 |
-| `_add_workspace_filter` | src/tessellate/core/database.py:192 |
-| `_already_sealed` | src/tessellate/core/database.py:304 |
-| `_forget_private_space_joins` | src/tessellate/core/database.py:413 |
-| `_forget_private_spaces` | src/tessellate/core/database.py:284 |
-| `_hide_binned` | src/tessellate/core/database.py:246 |
-| `_joined_space` | src/tessellate/core/database.py:364 |
-| `_note_private_space_joins` | src/tessellate/core/database.py:372 |
-| `_only_a_person_moves_a_boards_time` | src/tessellate/core/database.py:966 |
-| `_private_space_ids` | src/tessellate/core/database.py:275 |
-| `_seal_private_space_joins` | src/tessellate/core/database.py:404 |
-| `_seal_private_writes` | src/tessellate/core/database.py:338 |
-| `_sealed_owner_private` | src/tessellate/core/database.py:290 |
-| `_set_workspace` | src/tessellate/core/database.py:349 |
-| `_stamp_done_at` | src/tessellate/core/database.py:1499 |
-| `impersonate_workspace` | src/tessellate/core/database.py:51 |
-| `like_escape` | src/tessellate/core/database.py:75 |
-| `link_strength` | src/tessellate/core/database.py:1132 |
-| `plain_reason` | src/tessellate/core/database.py:798 |
-| `seal_row` | src/tessellate/core/database.py:311 |
-| `unseal_row` | src/tessellate/core/database.py:327 |
-| `utcnow` | src/tessellate/core/database.py:64 |
-| `workspace_scoped_models` | src/tessellate/core/database.py:175 |
+| `AskTurn` | src/tessellate/core/database.py:1325 |
+| `Attachment` | src/tessellate/core/database.py:1247 |
+| `AuditLog` | src/tessellate/core/database.py:2437 |
+| `Base` | src/tessellate/core/database.py:143 |
+| `BinnedReading` | src/tessellate/core/database.py:1955 |
+| `BoardLibrary` | src/tessellate/core/database.py:2203 |
+| `BoardLibraryItem` | src/tessellate/core/database.py:2221 |
+| `BoardLibraryMark` | src/tessellate/core/database.py:2245 |
+| `Bookmark` | src/tessellate/core/database.py:1375 |
+| `Category` | src/tessellate/core/database.py:470 |
+| `ChunkVector` | src/tessellate/core/database.py:1172 |
+| `Conversation` | src/tessellate/core/database.py:1289 |
+| `DateTime` | src/tessellate/core/database.py:105 |
+| `DerivedFact` | src/tessellate/core/database.py:1542 |
+| `DerivedTension` | src/tessellate/core/database.py:1608 |
+| `Document` | src/tessellate/core/database.py:1744 |
+| `DocumentAiEdit` | src/tessellate/core/database.py:1813 |
+| `DocumentBookmark` | src/tessellate/core/database.py:1449 |
+| `DocumentLink` | src/tessellate/core/database.py:1790 |
+| `DocumentRevision` | src/tessellate/core/database.py:2039 |
+| `DurableJob` | src/tessellate/core/database.py:2366 |
+| `EmbeddingRecord` | src/tessellate/core/database.py:1157 |
+| `Entity` | src/tessellate/core/database.py:743 |
+| `EntityMention` | src/tessellate/core/database.py:783 |
+| `Entry` | src/tessellate/core/database.py:505 |
+| `EntryBookmark` | src/tessellate/core/database.py:1429 |
+| `EntryDate` | src/tessellate/core/database.py:1719 |
+| `EntryLink` | src/tessellate/core/database.py:983 |
+| `EntryOpen` | src/tessellate/core/database.py:1698 |
+| `EntryProperty` | src/tessellate/core/database.py:1055 |
+| `EntryRevision` | src/tessellate/core/database.py:1680 |
+| `JobRun` | src/tessellate/core/database.py:2339 |
+| `LinkProps` | src/tessellate/core/database.py:857 |
+| `LinkReason` | src/tessellate/core/database.py:808 |
+| `MediaUpload` | src/tessellate/core/database.py:2257 |
+| `NightRun` | src/tessellate/core/database.py:1651 |
+| `NoteScore` | src/tessellate/core/database.py:1512 |
+| `NoteType` | src/tessellate/core/database.py:1077 |
+| `PageRead` | src/tessellate/core/database.py:1853 |
+| `Recording` | src/tessellate/core/database.py:1988 |
+| `RelationType` | src/tessellate/core/database.py:1037 |
+| `Reminder` | src/tessellate/core/database.py:1465 |
+| `SealMe` | src/tessellate/core/database.py:893 |
+| `SealedText` | src/tessellate/core/database.py:903 |
+| `SealedTitle` | src/tessellate/core/database.py:944 |
+| `SealedWriteRefused` | src/tessellate/core/database.py:898 |
+| `Space` | src/tessellate/core/database.py:146 |
+| `StagedEmbedding` | src/tessellate/core/database.py:1220 |
+| `User` | src/tessellate/core/database.py:419 |
+| `UserPreference` | src/tessellate/core/database.py:2409 |
+| `Vault` | src/tessellate/core/database.py:446 |
+| `WebPage` | src/tessellate/core/database.py:430 |
+| `WhiteboardNode` | src/tessellate/core/database.py:2081 |
+| `WhiteboardObject` | src/tessellate/core/database.py:2140 |
+| `WhiteboardSketch` | src/tessellate/core/database.py:2123 |
+| `WorkspaceMixin` | src/tessellate/core/database.py:171 |
+| `_add_workspace_filter` | src/tessellate/core/database.py:194 |
+| `_already_sealed` | src/tessellate/core/database.py:306 |
+| `_forget_private_space_joins` | src/tessellate/core/database.py:415 |
+| `_forget_private_spaces` | src/tessellate/core/database.py:286 |
+| `_hide_binned` | src/tessellate/core/database.py:248 |
+| `_joined_space` | src/tessellate/core/database.py:366 |
+| `_note_private_space_joins` | src/tessellate/core/database.py:374 |
+| `_only_a_person_moves_a_boards_time` | src/tessellate/core/database.py:968 |
+| `_private_space_ids` | src/tessellate/core/database.py:277 |
+| `_seal_private_space_joins` | src/tessellate/core/database.py:406 |
+| `_seal_private_writes` | src/tessellate/core/database.py:340 |
+| `_sealed_owner_private` | src/tessellate/core/database.py:292 |
+| `_set_workspace` | src/tessellate/core/database.py:351 |
+| `_stamp_done_at` | src/tessellate/core/database.py:1505 |
+| `impersonate_workspace` | src/tessellate/core/database.py:53 |
+| `like_escape` | src/tessellate/core/database.py:77 |
+| `link_strength` | src/tessellate/core/database.py:1134 |
+| `plain_reason` | src/tessellate/core/database.py:800 |
+| `seal_row` | src/tessellate/core/database.py:313 |
+| `unseal_row` | src/tessellate/core/database.py:329 |
+| `utcnow` | src/tessellate/core/database.py:66 |
+| `workspace_scoped_models` | src/tessellate/core/database.py:177 |
 
 ### src/tessellate/core/database_indexes.py (1)
 
@@ -26152,30 +26155,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `ClipRefused` | src/tessellate/core/webclip.py:61 |
-| `_Markdown` | src/tessellate/core/webclip.py:443 |
-| `_Node` | src/tessellate/core/webclip.py:276 |
-| `_Tree` | src/tessellate/core/webclip.py:286 |
+| `_Markdown` | src/tessellate/core/webclip.py:447 |
+| `_Node` | src/tessellate/core/webclip.py:280 |
+| `_Tree` | src/tessellate/core/webclip.py:290 |
 | `_check_clippable` | src/tessellate/core/webclip.py:124 |
 | `_clip_hop` | src/tessellate/core/webclip.py:86 |
-| `_descendants` | src/tessellate/core/webclip.py:545 |
-| `_link_text` | src/tessellate/core/webclip.py:373 |
-| `_main` | src/tessellate/core/webclip.py:395 |
+| `_descendants` | src/tessellate/core/webclip.py:549 |
+| `_link_text` | src/tessellate/core/webclip.py:377 |
+| `_main` | src/tessellate/core/webclip.py:399 |
 | `_new_session` | src/tessellate/core/webclip.py:72 |
-| `_read` | src/tessellate/core/webclip.py:554 |
+| `_read` | src/tessellate/core/webclip.py:558 |
 | `_read_clip_body` | src/tessellate/core/webclip.py:143 |
 | `_redirect_url` | src/tessellate/core/webclip.py:112 |
-| `_safe_href` | src/tessellate/core/webclip.py:424 |
-| `_score` | src/tessellate/core/webclip.py:381 |
-| `_score_deep` | src/tessellate/core/webclip.py:420 |
-| `_text` | src/tessellate/core/webclip.py:367 |
+| `_safe_href` | src/tessellate/core/webclip.py:428 |
+| `_score` | src/tessellate/core/webclip.py:385 |
+| `_score_deep` | src/tessellate/core/webclip.py:424 |
+| `_text` | src/tessellate/core/webclip.py:371 |
 | `clean_url` | src/tessellate/core/webclip.py:82 |
-| `extract` | src/tessellate/core/webclip.py:567 |
-| `fetch_icon` | src/tessellate/core/webclip.py:205 |
+| `extract` | src/tessellate/core/webclip.py:571 |
+| `fetch_icon` | src/tessellate/core/webclip.py:207 |
 | `fetch_page` | src/tessellate/core/webclip.py:157 |
-| `note_content` | src/tessellate/core/webclip.py:623 |
-| `note_properties` | src/tessellate/core/webclip.py:608 |
-| `page_facts` | src/tessellate/core/webclip.py:595 |
-| `page_icon_href` | src/tessellate/core/webclip.py:187 |
+| `note_content` | src/tessellate/core/webclip.py:627 |
+| `note_properties` | src/tessellate/core/webclip.py:612 |
+| `page_facts` | src/tessellate/core/webclip.py:599 |
+| `page_icon_href` | src/tessellate/core/webclip.py:189 |
 
 ### src/tessellate/core/window_hook.py (4)
 
@@ -27749,7 +27752,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22002)
+## Tests (22011)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27979,6 +27982,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_bookmarks_html.py | 6 |
 | tests/test_bookmarks_library.py | 3 |
 | tests/test_bookmarks_look_827.py | 11 |
+| tests/test_bookmarks_review_226.py | 9 |
 | tests/test_bookmarks_said_once.py | 1 |
 | tests/test_boot_budget.py | 4 |
 | tests/test_boot_diet3.py | 11 |
