@@ -121,6 +121,7 @@ TOPIC_LEADS: dict[str, str] = {
     "documents-replace": "Find and replace words across all your documents in one go, with one Undo.",
     "live-view-marks": "Formatting stays drawn as you write, showing its markdown only where you edit.",
     "documents-features": "Extra editing tools, such as word statistics, sorting lines and numbered headings.",
+    "writing-streak": "Set a daily word goal and keep a streak of days that reach it.",
     "documents-list-styles": "Pick dots, circles, squares or dashes, or number a list in digits or letters.",
     "documents-paste": "Choose how pasted text lands, such as plain text, a table or a checklist.",
     "documents-comments": "Leave remarks on words in a document, reply to them and resolve them.",

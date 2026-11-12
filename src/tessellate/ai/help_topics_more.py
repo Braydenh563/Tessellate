@@ -1861,6 +1861,7 @@ TOPIC_META: dict[str, dict] = {
     "documents-replace": {"title": "Replace in every document", "path": "Library tab, Documents, document menu"},
     "live-view-marks": {"title": "Markdown marks in Live view", "path": "Library tab, Documents, Edit, Live"},
     "documents-features": {"title": "Document editor features", "path": "Library tab, Documents"},
+    "writing-streak": {"title": "Daily word goal and writing streak", "path": "Library tab, Documents, right-click the status bar counts"},
     "documents-list-styles": {"title": "List styles: dots, circles, squares, dashes and numbering", "path": "Library tab, Documents, List and Numbered buttons"},
     "documents-paste": {"title": "Paste options and Paste special", "path": "Library tab, Documents, document menu"},
     "documents-comments": {"title": "Comments in a document", "path": "Library tab, Documents, sidebar Outline, Comments"},
@@ -1955,7 +1956,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2341,14 +2342,14 @@ MORE_TOPICS.extend([
         ),
         "body": (
             "The Diagram builder makes a flowchart, mind map, timeline or sequence diagram from "
-            "blocks. Mermaid is only its file format (.mmd). Every door is the same row, "
+            "blocks. Mermaid is only its file format. Every door is the same row, "
             "Diagram builder, with the same icon; in Documents and the Library's document list it is the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
             "and features and Quick access list it too. Over a note, a document or a Chat box, "
             "Insert (or / then diagram) opens the builder and Done saves a diagram file and writes a link to it, "
             "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
             "opens the builder empty, and Done saves it as a new diagram file; Open an existing diagram there lists yours. Cancel changes nothing. "
-            "On a flowchart, the picture outlines the block you point at. "
+            "On a flowchart, the picture outlines the block you point at and the ones picked. "
             "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
             "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag, or right-drag, pans). "
             "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
@@ -2380,7 +2381,7 @@ MORE_TOPICS.extend([
             "three steps: Add a shape, Name it, Connect it. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel and a pinch; "
             "its percentage is typeable and 100% is the drawing's own size; Shift+arrow keys pan. "
-            "Shift+click picks a range, Ctrl+click adds one; Escape lets go; a bar offers Delete, "
+            "Shift+click picks a range, Ctrl+click adds one; Escape lets go of the pick; a bar offers Delete, "
             "Duplicate, Box them, Select all, Clear; any picked grip moves all. "
             "Press or drag a block from the shelf onto the picture to join the nearest box (touch: hold); long press a block for its menu. "
             "Keys "
