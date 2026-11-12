@@ -1190,8 +1190,9 @@ topic: a control that wide has nowhere to go.
    a skipped level hangs one level down, never two. The way back is a
    document topic under the centre pointing at the document (it opens it, as
    any document topic does), so it travels with the map into every export
-   that keeps references. A twin kept in step both ways is the audit's idea,
-   not built.
+   that keeps references. Decision not taken: a twin kept in step both ways
+   (the audit's idea); the document topic is the only link, and a headings
+   map is made once.
 36. **Studying a map is presenting with each branch hidden until recalled**
    (taken 2026-10-05, §12.3 item 5, under standing order 3; op5). The board
    menu's Study the map (maps only; the View menu is at its 450px ceiling)
