@@ -1867,6 +1867,49 @@ const timelineSpans = {
     const key = (time) => timelineBucketKey(new Date(time), "day");
     return { start: key(at(Math.max(y0, y1))), end: key(at(Math.min(y0, y1))) };
   },
+  //: The brush is a mouse gesture and the strip is hidden on a phone, so
+  //: Options, Review some days asks for the two days on the sheet recipe:
+  //: the keyboard's and the phone's way to the same review. The last week
+  //: is filled in; From after To is turned round rather than refused.
+  ask() {
+    const key = (offset) => timelineBucketKey(new Date(Date.now() - offset * 86400000), "day");
+    openSheet({
+      label: "Review some days",
+      sub: "What you wrote between two days, with the notes beside it.",
+      name: "timeline-span-ask",
+      build: (card, close) => {
+        card.classList.add("inbox-card");
+        const body = document.createElement("div");
+        body.className = "inbox-body";
+        const field = (label, id, value) => {
+          const row = document.createElement("div");
+          row.className = "prop-row";
+          const name = Object.assign(document.createElement("label"), { className: "prop-key muted", textContent: label, htmlFor: id });
+          const input = Object.assign(document.createElement("input"), { type: "date", id, value, className: "prop-value" });
+          row.append(name, input);
+          body.appendChild(row);
+          return input;
+        };
+        const from = field("From", "timeline-span-from", key(6));
+        const to = field("To", "timeline-span-to", key(0));
+        const go = () => {
+          if (!from.value || !to.value) return;
+          const [start, end] = [from.value, to.value].sort();
+          close();
+          timelineSpans.open(start, end);
+        };
+        for (const input of [from, to]) input.addEventListener("keydown", (event) => event.key === "Enter" && (event.preventDefault(), go()));
+        const actions = document.createElement("div");
+        actions.className = "row right space-dialog-actions";
+        const cancel = smallButton("Cancel", "Close without reviewing", close, false);
+        cancel.className = "ghost small";
+        const review = smallButton("ph:magnifying-glass Review", "Review what you wrote in these days", go, false);
+        review.className = "accent small";
+        actions.append(cancel, review);
+        card.append(body, actions);
+      },
+    });
+  },
   //: The brushed span on the sheet recipe: the composed review (no model,
   //: `/timeline/digest`) with the span's notes listed beside it, each one a
   //: connection row that opens the note. Nothing is written.
@@ -2549,6 +2592,10 @@ onSurface("timeline", () => {
   };
   $("timeline-scrubber").addEventListener("pointerup", (event) => endBrush(event, true));
   $("timeline-scrubber").addEventListener("pointercancel", (event) => endBrush(event, false));
+  $("timeline-span-btn").addEventListener("click", () => {
+    $("timeline-options-menu").open = false;
+    timelineSpans.ask();
+  });
   $("timeline-select-btn").addEventListener("click", () => {
     if (selectMode) exitSelectMode();
     else enterSelectMode();

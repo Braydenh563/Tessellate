@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline: Options, Review some days opens the span review from two dates, the keyboard's and the phone's way to what Shift and drag on the strip does (L-timeline-2 follow-up; measured at 1440 by keyboard and 390 by touch, item 44 px tall on the phone, `tests/test_timeline_span_ask.py`).
 - Timeline: a ranged note shows as a span: the feed and table label it "3 Mar to 7 Mar", the calendar draws a "continues" chip on each later day (not draggable), and the help and Guide say so; the BACKLOG row for spans is removed (`tests/test_timeline_spans_view.py`).
 - Timeline: the startup `done_at` backfill is removed and L472 and L495 close under TIMELINE_PLAN decision 22 (no invented done moment, no streak count on the timeline; the streak stays on the Dashboard).
 - Timeline: a written range ("3 to 7 March", "28 July until 2 August") is one mention with its last day stored (`EntryDate.until`); its row sits on the first day and carries `until`, and a calendar window inside the range holds the note (TIMELINE_PLAN decision 13, `tests/test_timeline_spans.py`).
