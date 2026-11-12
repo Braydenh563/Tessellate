@@ -8,16 +8,16 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 29 | 4 | 0 | 4 | 48 |
+| graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 28 | 3 | 0 | 5 | 34 |
+| timeline | 3 | 27 | 3 | 0 | 5 | 33 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 700 | 157 | 3 | 195 | 1410 |
+| general | 0 | 36 | 2 | 0 | 4 | 38 |
+| all | 553 | 699 | 158 | 3 | 195 | 1410 |
 
 ## graph
 
@@ -29,7 +29,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L6** `graph` open, S: graphfslightbox.js reads .lightbox before lazy openLightbox resolves; add await. From OPEN.md:2334. Evidence: scratchpad/ui-sweeps/graphfslightbox.js exists; await not added
 - [ ] **L7** `graph` open, M: Add dirty-rectangle draw per worker tick and sample gcRequestDraw callers while the graph settles. From OPEN.md:4553; a30p-1103.md Found, not fixed. Evidence: Fixed 20ed22a (label fades); dirty rectangle per worker tick open (gcRequestDraw, graph-canvas.js:1045)
 - [ ] **L8** `graph` open, M: Trace and remove the 7.1px single-tick step after graph drag release. From OPEN.md:1333; OPEN.md:2235. Evidence: graph-worker.js:826 dragHeat only change; residual step stated unresolved.
-- [ ] **L9** `graph` open, M: Fix timeline layout 39x/s, Atlas arm behind hair and mood blend. From OPEN.md:3019. Evidence: content-visibility trade and drawing-order changes not done
+- [ ] **L9** `graph` partly, M: Fix timeline layout 39x/s, Atlas arm behind hair and mood blend. From OPEN.md:3019. Evidence: timeline layout part done with L492 (content-visibility off the windowed feed rows, 31-37 to 11-14 layouts/s wheel scrolling); Atlas arm and mood blend drawing-order changes not done
 - [ ] **L10** `graph` open, M: Retarget an interrupted graph glide with a spring instead of restarting at ease peak speed. From OPEN.md:3532. Evidence: Not asked for; a spring retarget not built.
 - [ ] **L11** `graph` open, M: Link graph topics to categories and add the hand-off to section 23. From OPEN.md:3622. Evidence: No code linking graph topics to categories; not started
 - [ ] **L12** `graph` open, M: Audit graph time slider, link-kind chips, saved views, physics folds, minimap, trace route, private graph, dark phone. From audit-1029-graph.md 4. Evidence: No later graph audit file; list stands
@@ -616,7 +616,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L488** `timeline` open, M: Persist the reminder action token key so notification buttons survive restart. From OPEN.md:2608. Evidence: No persisted signing secret found; verified 2026-11-10
 - [ ] **L489** `timeline` open, M: Sweep Tour: Timeline Options and reminders More at 600-1100 widths. From OPEN.md:1386. Evidence: No wider-width sweep result found in HISTORY/CHANGELOG; needs a Playwright pass at 600-1100
 - [ ] **L490** `timeline` open, M: Get timeline bar click to rows under 300 ms at 96 notes (329 measured). From OPEN.md:2780. Evidence: timeline.js drawTimelineWindow; boot CSS budget tight; verified open
-- [ ] **L492** `timeline` open, L: Timeline feed lays out ~39x/s while scrolling. From OPEN.md:1385. Evidence: content-visibility: auto still in css (03-dashboard-widgets.css:1927, library-lazy.css:6866); no layout-rate fix or measurement after
 - [ ] **L493** `timeline` partly, S: Verify every weekday, every other friday and yearly repeats save once in Recurring model. From OPEN.md:1400. Evidence: routes_reminders.py:215-224 reads WEEKLY/MONTHLY/YEARLY and every weekday/every other; Recurring model itself not re-verified
 - [ ] **L495** `timeline` partly, M: Add the Timeline dock streak surface for D6 streak count. From OPEN.md:1388. Evidence: dashboard.js:50 has a Streak widget; the Timeline dock/streak surface the row asks for not found
 - [ ] **L496** `timeline` partly, M: Re-check timeline pinned bucket head flake and 4 off-screen ghost buttons. From OPEN.md:3902. Evidence: Pointer note to other OPEN rows (44px On this day shift, meeting mark in table, map under Boards chip), each tracked separately; flaky pinned-head sweep and Notes off-screen buttons not re-checked.
@@ -902,6 +901,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
+- [ ] **L-general-34** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
 
 ## Owner calls
 
