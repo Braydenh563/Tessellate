@@ -1131,6 +1131,15 @@ properties and types) → `e5a1c8f3b7d2` (locked board items) → `f3c7a9e1d5b8`
 **`b4e8d2a6f1c9`** (`entries.map_topic`, the head). `tests/test_alembic_baseline.py`
 holds it; the stamp step is skipped under pytest.
 
+**Which schema path a change takes (owner 2026-11-12, LEDGER L794: keep both):**
+a new nullable column or one with a constant default goes through the additive
+migrator (`_add_missing_columns`) and needs no migration; a new table comes from
+`create_all`; an index goes in `_ensure_indexes`; anything that renames, drops,
+retypes, adds a constraint or rewrites data gets an Alembic revision in
+`migrations/versions/`, chained onto the single head. A one-off data mend that
+is idempotent may instead run at startup in `DatabaseManager` (as
+`_drop_orphan_links` and `_mend_broken_bar_names` do).
+
 ### Why SQLite holds the notes (a decision, with its limits)
 
 Asked directly, more than once: "why is storing in an sqlite database the
