@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
+from tessellate.ai.embeddings import bytes_to_vector, derived_pairs as derive_pairs, similar_pairs
 from tessellate.api import bounds
 from tessellate.core import cjk, companion_events
 from tessellate.core import deps
@@ -298,23 +298,7 @@ def _similarity_edges(
     #: pairs inside its own set: one sweep per version of the notebook, and
     #: the same answer in any order.
     def build() -> list[tuple[int, int, float]]:
-        wanted = set(
-            session.scalars(
-                select(Entry.id).where(
-                    Entry.is_deleted == False,  # noqa: E712
-                    Entry.is_draft == False,  # noqa: E712
-                    Entry.is_board == False,  # noqa: E712
-                )
-            )
-        )
-        records = session.scalars(
-            select(EmbeddingRecord).where(EmbeddingRecord.model_version == backend)
-        )
-        vectors = {
-            r.entry_id: bytes_to_vector(r.embedding)
-            for r in records
-            if r.entry_id in wanted
-        }
+        vectors = _note_vectors(session, backend)
         return similar_pairs(vectors, SIMILARITY_EDGE_THRESHOLD, per_node=SIMILAR_PER_NODE)
 
     # Already sorted best-first, so the cap below keeps the strongest edges.
@@ -322,6 +306,88 @@ def _similarity_edges(
         {"source": a, "target": b, "kind": "similar", "score": round(score, 2)}
         for a, b, score in _cached("similarity", fingerprint, build)
         if a in node_ids and b in node_ids and frozenset((a, b)) not in taken
+    ]
+    return scored[:MAX_SIMILARITY_EDGES]
+
+
+def _note_vectors(session: Session, backend: str) -> dict:
+    """The stored vectors of the notes a similarity line means something for:
+    live, not a draft, not a board. A private note has none (`store_for_entry`
+    never writes one), so nothing sealed reaches a sweep from here."""
+    wanted = set(
+        session.scalars(
+            select(Entry.id).where(
+                Entry.is_deleted == False,  # noqa: E712
+                Entry.is_draft == False,  # noqa: E712
+                Entry.is_board == False,  # noqa: E712
+                Entry.is_private == False,  # noqa: E712
+            )
+        )
+    )
+    records = session.scalars(select(EmbeddingRecord).where(EmbeddingRecord.model_version == backend))
+    return {r.entry_id: bytes_to_vector(r.embedding) for r in records if r.entry_id in wanted}
+
+
+def _layer_members(session: Session, documents: bool, entities: bool) -> dict[str, set[int]]:
+    """Which notes make up each document and entity node (`document:N`,
+    `entity:N`): the notes attached to a document, the notes naming an entity.
+    A private document is left out: its title and text are sealed, so it
+    gets no similarity line."""
+    members: dict[str, set[int]] = {}
+    if documents:
+        query = (
+            select(DocumentLink.document_id, DocumentLink.entry_id)
+            .join(Document, Document.id == DocumentLink.document_id)
+            .where(Document.archived_at.is_(None), Document.deleted_at.is_(None), Document.is_private == False)  # noqa: E712
+        )
+        for document_id, entry_id in session.execute(query):
+            members.setdefault(f"document:{document_id}", set()).add(entry_id)
+    if entities:
+        for entity_id, entry_id in session.execute(select(EntityMention.entity_id, EntityMention.entry_id)):
+            members.setdefault(f"entity:{entity_id}", set()).add(entry_id)
+    return members
+
+
+def _layer_similarity_edges(
+    session: Session, documents: bool, entities: bool, present: set[str] | None = None
+) -> list[dict]:
+    """"Reads alike" lines for document and entity nodes (owner, 2026-11-12).
+
+    These nodes have no vector of their own: a document's is the mean of its
+    attached notes' vectors, an entity's the mean of the notes naming it, so
+    the line is *derived* (`"derived": true` on the edge) and says "about the
+    same things as". Only stored note vectors are averaged, and a private note
+    has none, so a sealed note can never lend a document its meaning, locked
+    vault or open. A node is never lined to a note it is already joined to.
+    `present` keeps only lines whose layer ends are on the map.
+    """
+    if not (documents or entities):
+        return []
+    backend = deps.get_embeddings().backend_id()
+    fingerprint = (*_graph_fingerprint(session), backend, *_layer_fingerprint(session, documents, entities))
+
+    def build() -> list[tuple]:
+        import numpy as np
+
+        vectors = _note_vectors(session, backend)
+        derived: dict[str, np.ndarray] = {}
+        joined: set[tuple[str, int]] = set()
+        for node, notes in _layer_members(session, documents, entities).items():
+            rows = []
+            for note in notes:
+                vector = vectors.get(note)
+                norm = float(np.linalg.norm(vector)) if vector is not None else 0.0
+                if norm:
+                    rows.append(vector / norm)
+                    joined.add((node, note))
+            if rows:
+                derived[node] = np.mean(rows, axis=0)
+        return derive_pairs(derived, vectors, SIMILARITY_EDGE_THRESHOLD, SIMILAR_PER_NODE, joined)
+
+    scored = [
+        {"source": a, "target": b, "kind": "similar", "score": round(score, 2), "derived": True}
+        for a, b, score in _cached(f"layer_similarity_{int(documents)}{int(entities)}", fingerprint, build)
+        if present is None or all(end in present for end in (a, b) if isinstance(end, str))
     ]
     return scored[:MAX_SIMILARITY_EDGES]
 
@@ -390,6 +456,7 @@ def _centrality(
                 )
             )
             extra = _similarity_edges(session, ids, set())
+            extra += _layer_similarity_edges(session, documents, entities)
         index = paths.build_light(
             session, extra_edges=extra, drafts=False, boards=maps, documents=documents, entities=entities
         )
@@ -1214,6 +1281,9 @@ def _build_graph(
         "attachments": include_attachments,
     }
     _add_optional_layers(session, entries, nodes, edges, node_ids, taken, flags)
+    if with_similarity:
+        on_map = {n["id"] for n in nodes if n.get("type") in ("document", "entity")}
+        edges.extend(_layer_similarity_edges(session, include_documents, include_entities, on_map))
     _stamp_layer_nodes(nodes, edges, centrality_scores, flags)
     _add_sealed_link_nodes(session, nodes, edges, node_ids)
     #: A type's own colour, so "Note type" paints a Person the colour the
@@ -1767,10 +1837,11 @@ def graph_path(
     `entities` on, a prefixed node id (`document:3`, `entity:5`); those
     layers make a document two notes are attached to, or an entity both name,
     a stop on the route (owner, 2026-11-12). Off by default, so the old
-    answer is unchanged. Similarity stays note-to-note (see `_similarity_edges`).
+    answer is unchanged. With `similarity`, a document or entity may hop to a note that reads
+    like it (`_layer_similarity_edges`).
     """
     source, target = _node_key(source), _node_key(target)
-    extra_edges = _path_similarity(session, similarity)
+    extra_edges = _path_similarity(session, similarity, documents, entities)
     index = paths.build(session, extra_edges=extra_edges, documents=documents, entities=entities)
     refused = _path_refusal(index, source, target)
     if refused:
@@ -1844,12 +1915,12 @@ def graph_path(
     }
 
 
-def _path_similarity(session: Session, similarity: bool) -> list[dict]:
+def _path_similarity(session: Session, similarity: bool, documents: bool = False, entities: bool = False) -> list[dict]:
     """The "read alike" edges a route may hop along, only when asked for."""
     if not similarity or deps.get_config().get_preference("battery_efficient_mode"):
         return []
     node_ids = set(session.scalars(select(Entry.id).where(Entry.is_deleted == False)))  # noqa: E712
-    return _similarity_edges(session, node_ids, set())
+    return _similarity_edges(session, node_ids, set()) + _layer_similarity_edges(session, documents, entities)
 
 
 def _node_key(raw: str) -> int | str:
