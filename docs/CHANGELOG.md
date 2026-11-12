@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: a big map's settle repaint after a zoom or pan is painted in eight bands, one per frame, under the scaled layer, so it no longer lands as one 110 ms task (2,000 notes, CPU 4x).
+- Graph: Escape closing a lightbox opened over the full-screen map no longer also leaves full screen.
 - Graph similarity: documents and entities get a derived vector (the mean of their notes' vectors), so they join similarity lines, centrality and trace hops; lines are marked derived.
 - Graph: with Trace on, clicking a document or entity node picks it as a trace end, and the trace asks /graph/path for the layers the map shows.
 - Documents: Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z in a document now say 'Undone' or 'Redone' even with notifications muted (C32).

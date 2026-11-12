@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 16 | 1 | 0 | 0 | 32 |
+| graph | 15 | 14 | 1 | 0 | 0 | 30 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
@@ -17,11 +17,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 688 | 154 | 3 | 191 | 1395 |
+| all | 553 | 686 | 154 | 3 | 191 | 1393 |
 
 ## graph
 
-- [ ] **L7** `graph` open, M: Add dirty-rectangle draw per worker tick and sample gcRequestDraw callers while the graph settles. From OPEN.md:4553; a30p-1103.md Found, not fixed. Evidence: Fixed 20ed22a (label fades); dirty rectangle per worker tick open (gcRequestDraw, graph-canvas.js:1045)
 - [ ] **L9** `graph` open, M: Fix timeline layout 39x/s, Atlas arm behind hair and mood blend. From OPEN.md:3019. Evidence: content-visibility trade and drawing-order changes not done
 - [ ] **L11** `graph` open, M: Link graph topics to categories and add the hand-off to section 23. From OPEN.md:3622. Evidence: No code linking graph topics to categories; not started
 - [ ] **L12** `graph` open, M: Audit graph time slider, link-kind chips, saved views, physics folds, minimap, trace route, private graph, dark phone. From audit-1029-graph.md 4. Evidence: No later graph audit file; list stands
@@ -35,9 +34,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L711** `graph` open, M: Define manual topics so graph topics can be merged and removed like tags. From OPEN.md:4554. Evidence: Rename stored (routes_graph.py:1472); merge/remove need owner to define a manual topic Owner decided 2026-11-12: Store them as overrides (Merge and remove are saved like rename, on top of the worked-out topics; a reset brings back the automatic grouping). Build: routes_graph.py next to the rename at :1472: stored merge map and per-note exclusions applied after topic derivation, plus reset; graph topic menu rows; tests.
 - [ ] **L-graph-5** `graph` open, M: Get the owner's quality call on a coarser clearanceForce, then cut its 28 ms. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:61. Evidence: Open line in the plan's prose a session could miss. A perf item gated on an owner quality call. It is not one of the 109 answered owner calls and is not in the graph brief. Owner decided 2026-11-12: yes, a coarser push if measured dot and label overlaps stay 0 on the 36-note seed.
 - [ ] **L-graph-11** `graph` open, S: Check Map link weighting in the browser on a notebook with real links. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The q31 left list says link weighting was never seen in a browser on a notebook with real links.
-- [ ] **L-graph-13** `graph` open, S: Escape closing a lightbox over the full-screen graph should not leave full screen. From graphfslightbox.js run 2026-11-12. Evidence: Escape closing a lightbox opened over the full-screen graph also leaves full screen (stillFullscreen false); graph.js Escape handler near 1939 or lightbox-view.js:2341 not stopping propagation
-- [ ] **L-graph-16** `graph` open, M: Cut the wheel settle repaint at 2,000 notes (scale the cached layer or paint the settle in slices). From ghover-1112 measurement, GRAPH_PLAN audit row 19. Evidence: 2,000 notes 4x: each wheel stop repaints the whole rest layer ~160 ms later (GC_SCENE_SETTLE_MS, graph-canvas.js:2733 to 2748, gcPaintLayer rest :2707), wheel p50 43 ms, long task 110 ms
 - [ ] **L-graph-17** `graph` open, S: Leaving graph focus keeps the global map's positions. From gsweep 2026-11-12. Evidence: Leaving focus back to global re-simulates (max 472, mean 216 px); gcCachedPositions used only with no prior nodes, graph-canvas.js ~6482
+- [ ] **L-graph-18** `graph` open, M: Measure the 2,000-note worker settle in the browser after the untangle gates and cut the d3 charge and collide. From audit row 19, GRAPH_PLAN. Evidence: Worker settle at 2,000 notes was 11 to 14 s in the browser at 4x; untangle gates cut node 5.7 to 3.4 s; force 856 ms + collideRadius 304 ms self of 3.4 s
 
 ## chat
 
