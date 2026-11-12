@@ -55188,7 +55188,135 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
+## Moved from the plans, 2026-11-12 (Brief 40, the phone over HTTPS)
+
+Evidence (verified in code 2026-11-12): core/lancert.py makes an EC P-256 authority (_new_authority :242, CA_VALID_DAYS 3650) and signs the leaf (generate :292, keyUsage :333); ensure() :384 remakes the leaf when missing_names :378 finds an address the SAN lacks; the CA downloads from GET /auth/lan-certificate.pem (routes_auth.py:1338) and Settings regenerates it (POST /auth/lan-certificate :1359, settings-controls.js:132-143) with the fingerprint shown; the lock screen carries the per-phone guide (index.html:370-373 lock-lan-cert-help); core/netbind.py:495-506 gives the private-profile netsh rule; core/lanserve.py answers plain http with a 301 to https (the plain-http option was built the other way round).
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+## Placed from Brief 40, 2026-10-10 (the phone over HTTPS)
+
+The owner: "https://192.168.0.107:8443 ... safari said the page was
+unsecure, I clicked continue, and it said safari can't open the page because
+the connection was lost", the same in Brave on the phone, AdGuard DNS active.
+
+**What was measured on this computer** (`scratchpad` probe, a
+`uvicorn` server with the app's own `core/lancert.py` certificate, driven with
+`openssl s_client` and `curl`; no phone was available):
+- TLS 1.2 and 1.3 both negotiate (`TLS_AES_256_GCM_SHA384`, a 256-bit key); no
+  ALPN, so HTTP/1.1 only. Neither is a plausible cause.
+- The certificate names the LAN address as an IP SAN and a request to a name
+  it does not carry fails (`curl: no alternative certificate subject name
+  matches target host name '192.168.0.231'`). **`lancert.ensure()` never
+  compares the names with the machine's current addresses** (it checks only
+  the expiry), so after a router hands the computer a new address the
+  certificate on disk keeps the old one for up to 825 days and the phone is
+  told "wrong name". Measured: a second `ensure()` with a new address list
+  returned the original names and the same fingerprint.
+- The leaf is self-issued, 825 days, with SAN, basicConstraints and EKU
+  serverAuth but no keyUsage. Apple limits certificates that chain to a
+  trusted root to 398 days; the exemption is for roots the user installed,
+  and a clicked-through self-signed leaf is not one.
+- The front end uses NDJSON over `fetch`, not WebSocket or EventSource
+  (`capture-ask.js` line 2544, `settings.js` line 1018), so a WebSocket over
+  an untrusted certificate is not the cause. The session token travels in a
+  header; only the media cookie is `Secure` and `SameSite=Strict`
+  (`routes_auth.py` lines 156 to 272), and what Safari does with a `Secure`
+  cookie on a clicked-through page is not verified.
+- `HostCheckMiddleware` lets any numeric Host through, so the rebinding
+  guard is not refusing the phone.
+
+**Likely causes, ranked** (none reproduced; "connection was lost" is
+`NSURLErrorNetworkConnectionLost`, the server or something between closing a
+connection that had opened):
+1. The phone's per-connection trust: Safari opens several parallel
+   connections and a clicked-through exception on a self-signed leaf is
+   per-session, so the page's later connections can fail the handshake and be
+   dropped. A certificate the phone trusts properly removes this.
+2. A stale name (above), after a DHCP change, shown the same way as a plain
+   untrusted warning.
+3. AdGuard on the phone: a DNS profile does not touch an IP address, but the
+   AdGuard app's local VPN mode and iOS 14's Local Network permission for
+   Safari and Brave can drop traffic to a private address; Brave on iOS is
+   WebKit too, which is why both browsers fail alike.
+4. The Windows firewall profile (Public blocks, Private allows) answering the
+   first request and not the next; the launchers add no rule.
+
+**Fix shape, in order** (one brief, Opus):
+1. **A local CA, mkcert style, made with `cryptography` (already a
+   dependency)**: an EC P-256 CA kept in `lan-tls/` (0600), a leaf signed by
+   it for 397 days with keyUsage and the SAN, remade by `ensure()` whenever
+   the current addresses are not all in the SAN (the stale-name fix) and 30
+   days before expiry. The phone installs the CA once; every later address
+   change is invisible to it.
+2. **Settings, Other devices, "Trust this notebook on your phone"**: a QR
+   code to `http://<ip>:8000/lan/trust` (a plain-http route that serves only
+   the public CA certificate and the guide, nothing else, and is on only
+   while the panel is open), the CA's SHA-256 fingerprint beside it to compare
+   after installing, and a one-page guide per phone: iPhone and iPad
+   (download the profile, Settings, Profile Downloaded, Install, then
+   General, About, Certificate Trust Settings, switch on full trust), Android
+   (Settings, Security, Install a certificate, CA certificate), and a note
+   that Brave on iOS uses the system trust.
+3. **A plain-http option for the home network**, off by default, with the
+   password warning in one sentence ("anyone on this Wi-Fi can read it") and
+   the existing refusal without a password. It is also the bisect: if
+   `http://<ip>:8000` works on the phone and https does not, it is trust; if
+   neither, it is the network, the firewall or AdGuard's local VPN.
+4. **A diagnostics line in Settings, Network**: the addresses now, the names
+   the certificate carries (green when every address is covered, amber with
+   "Regenerate" when not), days left, the CA fingerprint, and a count of
+   failed TLS handshakes since start (from uvicorn's log), so "connection
+   lost" has a number beside it.
+5. Add a Windows Defender Firewall rule at the opt-in (private profile only),
+   or print the one-line `netsh` command when turning the switch on.
+Help moves with it (standing order 13): `ai/help_topics_more.py` "lock"
+topic, the `data-help-for` on the switch, `tests/test_manual_parity.py`.
+- (Odysseus, fourth read 2026-10-10) 
+
+## Moved from the plans, 2026-11-12 (22.2 and 22.3, the baseline list checked item by item)
+
+Evidence (verified in code 2026-11-12): 22.2 built: window title (router.js, 22.1.1); recent queries (search-suggest.js:29-38 searchRecent); drop files onto any page (file-drop.js:107, LAZY_MODULES.fileDrop); type to filter a long list (sheets-selects.js:1297-1309 listFilter, threshold 12); Copy diagnostics (app-features.js:321); the Default space chip only when notes span spaces (entry-card.js:893). 22.3 built: empty states (DESIGN.md recipe rows 827 and 'p.muted.empty-line', tests/test_ui_recipes.py); toasts in one stack (DESIGN.md:449 toastStack, status.js); the glass lints (tests/test_glass_controls_1027.py).
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+### 22.2 Small things people expect (each S, Sonnet unless noted)
+
+- The window title names the view and the open item (22.1.1).
+- Ctrl+S, Ctrl+Z and Escape behave the same in every editor and dialog
+  (the key contract, 1.6, has no lint for Escape yet).
+- Search highlights the match inside the note it opens, and remembers the
+  last few queries.
+- Every destructive action has an Undo toast, not only deletes of notes.
+- Every date and time follows one setting (12 or 24 hour, the locale's
+  order); the status bar clock, the timeline and the reminders do not agree
+  today on whether seconds show.
+- Drag and drop of files onto any page imports them (Library only today).
+- Every list with more than 20 rows can be filtered by typing.
+- Right-click works on every card and row, with a hold as its twin on touch.
+- A "Copy diagnostics" button on the About page (versions, model, recent
+  errors) for bug reports from test users.
+- The status bar's "!" dot says what it means on hover and click.
+- The "Default Space" chip is hidden when only one space exists (it is on
+  every card today and says nothing).
+
+### 22.3 Where the design is below standard (measured or seen, 2026-09-27)
+
+- **Density and rhythm.** Cards carry 24px of padding and 17px body text at
+  every width; on a laptop the list reads like a phone app scaled up.
+- **Hierarchy in Settings.** Section heads are the same weight as labels
+  (in the Sonnet batch).
+- **Icon consistency.** Mixed stroke weights between Phosphor regular and
+  the bold ones on the status bar; one weight app-wide.
+- **Empty states.** The Chats sidebar's empty text is body size and grey on
+  grey; empty states should use one recipe (icon, one line, one action).
+- **Toasts** overlap content (the reminder toast covers the dashboard head
+  at 1093x614); they belong in a reserved corner above the status bar.
+- **Glass** is still on some surfaces the performance plan listed for
+  removal; the glass-off list lint should cover every blurred surface.
+
 ## Moved from the LEDGER
+- [x] **L-world-class-16** `world-class` open, L: Verify the 22.2 baseline list before striking it. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:2352. Evidence: Open line in the plan's prose a session could miss. Excluded from the LEDGER count of 79, so invisible to a ledger-driven session. Built: 22.2 and 22.3 checked item by item 2026-11-12: built six and three, the rest are one line each in the plan
 - [x] **L800** `world-class` owner-call, S: Decide what the evidence_checks switch gates and build its runner. From OPEN.md:2944. Evidence: Only facts.py:88 default; decision needed on what it gates Built: owner decision 2026-11-12: Keep it as built, no build needed
 - [x] **L796** `world-class` owner-call, S: Decide and build server restore routes for media deletes, ask-history, learned and tidy undo. From OPEN.md:532. Evidence: Row marks owner-call (w34-L1-1111.md); server restore routes needing a design decision; some exist (HISTORY:653) Built: owner decision 2026-11-12: Keep the built Undo, no build needed
 - [x] **L793** `world-class` owner-call, M: Decide auth and write-tool scope for the MCP server. From OPEN.md:4211. Evidence: Ledger owner call on MCP auth/scope. Built: owner decision 2026-11-12: Keep token, read-only, no build needed
