@@ -1203,7 +1203,9 @@ def _similar(text: str) -> dict | None:
     found = _SIMILAR.match(text)
     if not found or not re.search(r"\bsimilar\b|\bnotes? like\b|\bthose like\b|\bnotes? (?:related|close) to\b", text, re.I):
         return None
-    target = _target(found.group("t")) or _one_target(found.group("t"), bare=True)
+    #: Only a note named as one ("the boiler note", "note 12", "the lisbon one"): "similar to my dentist
+    #: one you know" is the owner's search for the dentist (B27), never a bare-word target.
+    target = _target(found.group("t"))
     return {"intent": "similar", **target} if target and target.get("single", True) else None
 
 
@@ -1289,6 +1291,9 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
     #: speller only serves the verb and the target (audit 1029 C40).
     if found is not None and fixed != text:
         found = _as_typed(_words_as_typed(found, text, now, locale), text, fixed, fixes)
+    narrower = _narrower(question_noise.tidy(text or ""), found, now, locale) if text else None
+    if narrower is not None:
+        return narrower
     if found is not None or not text:
         return found
     #: One word a slip from a word the commands read ("pin the dentist noe",
@@ -1304,6 +1309,25 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
     real = question_noise.guided(tidy, takes, real_to=parity_acts.words())
     parsed = read(real, now, locale) if real else None
     return parsed if parsed and parsed.get("intent") in parity_acts.INTENTS | {"untag"} else None
+
+
+#: Acts named by a noun the broad acts would swallow on a slip: "delete the
+#: skull Weekly tidy" is the skill, not a note called "skull Weekly tidy";
+#: "find noes similar to" is similar notes, "make a mid map" a mind map.
+_NARROW = {"delete": {"delete_skill", "delete_document"}, "find": {"similar"}, None: {"make_map", "similar", "board_card", "set_theme"}}
+
+
+def _narrower(tidy: str, found: dict | None, now: datetime, locale: str | None) -> dict | None:
+    """The narrower act one slipped word away, when the sentence read as a
+    broad one (or none); None when no such reading exists."""
+    from tessellate.ai import question_noise
+
+    wanted = _NARROW.get(found.get("intent") if found else None)
+    if not wanted:
+        return None
+    phrases = " ".join(f"{a.label} {a.example}" for a in act_registry.ACTS.values() if a.intent in wanted).lower()
+    reading = question_noise.guided(tidy, lambda t: (read(t, now, locale) or {}).get("intent") in wanted, real_to=frozenset(re.findall(r"[a-z]{4,}", phrases)))
+    return read(reading, now, locale) if reading else None
 
 
 #: Intent reads the typed commands through the leaf (act_registry.py says why).

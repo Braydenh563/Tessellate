@@ -231,7 +231,9 @@ def _plain_lower(text: str) -> str:
 
 #: What a note's first line is when it is a name: a heading's or bold
 #: marks, the colon after "Ice Breakers:", a split "Follow- Up" (INBOX 1420).
-_MARK = lazy_compile(r"[*_`]")
+#: Only real marks: "**", "__" and "~~" runs, backticks, and a "*" or "_"
+#: at a word's edge. "my_file_name", "2 * 3" and "5*" keep theirs (1696).
+_MARK = lazy_compile(r"\*\*|~~|`+|(?<!\w)__|__(?!\w)|(?<![\w*])[*_](?=\w)|(?<=[^\W\d])[*_](?![\w*])")
 _SPLIT_HYPHEN = lazy_compile(r"(?<=[A-Za-z])- (?=[A-Z][a-z])")
 _ARTICLE = lazy_compile(r"(?:the|a|an)\b", re.I)
 #: Searched on right-stripped text with no leading `\s*`: `\s*(face)\s*$`

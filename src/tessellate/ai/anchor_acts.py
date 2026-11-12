@@ -61,5 +61,5 @@ def settle(session: Session, parsed: dict, now: datetime) -> dict:
     ahead = [at.replace(tzinfo=None) for at, content in rows if at.replace(tzinfo=None) - offset > now and what in (content or "").casefold()]
     if not ahead:
         return {**parsed, "ask": f"I found no time for “{anchor['what']}” in your notes. When is it, so I can set the reminder against it?"}
-    clock = ahead[0].strftime("%-I:%M %p").lower()
+    clock = f"{ahead[0].hour % 12 or 12}:{ahead[0].minute:02d} {'pm' if ahead[0].hour >= 12 else 'am'}"  # "%-I" is glibc-only
     return {**parsed, "due_at": ahead[0] - offset, "said": f"{parsed['said']} ({anchor['phrase']}, at {clock})" if parsed["said"] != anchor["phrase"] else f"{anchor['phrase']} (at {clock})"}

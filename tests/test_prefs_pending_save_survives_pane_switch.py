@@ -40,6 +40,7 @@ const apiJson = async () => {{ order.push('get'); return {{ profile_enabled: fal
 const paintUserMarks = () => {{}};
 const extraNoticeMount = () => {{}};
 const afterCharacters = () => {{}};
+const showCurrencyRates = async () => {{}};
 const updateProfileCount = () => {{}};
 const markPrefsSaved = () => {{ prefsDirty = false; }};
 {match.group(0)}
