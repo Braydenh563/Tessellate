@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 49 | 13 | 0 | 18 | 132 |
-| documents | 70 | 49 | 13 | 0 | 18 | 132 |
-| documents | 70 | 49 | 13 | 0 | 18 | 132 |
+| documents | 70 | 47 | 13 | 0 | 18 | 130 |
+| documents | 70 | 47 | 13 | 0 | 18 | 130 |
+| documents | 70 | 47 | 13 | 0 | 18 | 130 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 689 | 153 | 3 | 195 | 1395 |
-| all | 553 | 689 | 153 | 3 | 195 | 1395 |
-| all | 553 | 689 | 153 | 3 | 195 | 1395 |
+| all | 553 | 687 | 153 | 3 | 195 | 1393 |
+| all | 553 | 687 | 153 | 3 | 195 | 1393 |
+| all | 553 | 687 | 153 | 3 | 195 | 1393 |
 
 ## graph
 
@@ -371,7 +371,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
 - [ ] **L298** `documents` open, S: Decide and vendor an indent-guides extension for the CodeMirror bundle. From OPEN.md:1508. Evidence: Active line built; no indent-markers extension found in vendor; needs vendoring decision
 - [ ] **L300** `documents` open, S: Use js-beautify on a selection instead of conservative re-indent. From OPEN.md:1968. Evidence: Selection keeps conservative re-indent; no change
-- [ ] **L303** `documents` open, S: Measure Writing Room stretch on graph note boxes. From OPEN.md:3143. Evidence: Graph note boxes not opened/measured
 - [ ] **L304** `documents` open, S: Make diagram Source view text fold. From diagklm-1108.md Left. Evidence: diagram-lazy.css fold block / diagram-embed.js srcwrap unchanged per source; no later commit found
 - [ ] **L305** `documents` open, S: Probe Documents in dark run; map add undo flaky between runs. From OPEN.md:3696. Evidence: Re-run both before quoting; no re-run record found
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines.
@@ -391,7 +390,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L323** `documents` open, M: Typing in a 230-note list costs ~12 ms per key in CodeMirror. From OPEN.md:1478. Evidence: Perf measurement; no fix found in HISTORY/CHANGELOG
 - [ ] **L324** `documents` open, M: Write binomial coefficients as OMML in Word export, not a barred fraction. From agent-remaining/a29g-1102.md. Evidence: next: `\binom` is written as a barred fraction (documents-word.js `docWordBlob.math`, mfrac with linethickness 0).
 - [ ] **L325** `documents` open, M: Write matrices and accents as OMML objects in Word export. From agent-remaining/a29g-1102.md. Evidence: next: matrices (`mtable`) and accents (`mover` accent) are written as their symbols in a row, not OMML matrix or accent
-- [ ] **L326** `documents` open, L: Measure Writing Room stretch on graph note boxes. From OPEN.md:1343. Evidence: Measurement coverage gap; no later sweep of graph note boxes found.
 - [ ] **L327** `documents` open, L: Split documents.js, documents-code.js and run_sandbox.py into lazy chunks (Opus design step) and fix listener imbalance. From OPEN.md:4468; OPEN.md:4482; OPEN.md:4485; OPEN.md:4493. Evidence: documents.js 16,598 lines now; lazy-chunk split needs Opus design step, not done
 - [ ] **L328** `documents` open, L: Build spreadsheet grid view for csv/tsv documents. From OPEN.md:4476. Evidence: Deferred L grid view for csv/tsv; not built
 - [ ] **L329** `documents` open, L: Owner decisions on D46 comment ratio, D47 drop or keep textarea fallback, D45 worker; then remove fallback aliases. From OPEN.md:4480; v1028-1.md Remaining. Evidence: Deferred L; drop of textarea fallback (documents.js) not done

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the Writing Room's thoughts and draft boxes end on one line (326.8 and 294.8 px before, 294.8 and 294.8 at 1440, 1280 and 1160), and the graph's two note boxes were measured: 146 px empty, 352 px at 60 lines, no scroll in a 900 px window (L303, L326).
 - Documents: choosing Source again on a code file clears a stored Plain view, so the next file no longer opens uncoloured; the docviews sweep ignores bracket colours (L-documents-12).
 - Diagrams: the document head's Export menu has every export the builder has (L-documents-16).
 - Documents: the phone's selection bar carries Selection to a note (New note from selection, Add to note), measured at 390 px (L-documents-13).
