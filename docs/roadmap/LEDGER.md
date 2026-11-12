@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 0 | 0 | 0 | 3 | 3 |
+| timeline | 3 | 0 | 0 | 0 | 2 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 672 | 155 | 3 | 193 | 1380 |
+| all | 553 | 672 | 155 | 3 | 192 | 1380 |
 
 ## graph
 
@@ -980,7 +980,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L907** `ui-modernisation` blocked-hardware, M: Check forced colours, 200% zoom, screen reader; fix applyThemeChoice('light') leaving data-mode dark. From audit-1031-ux.md. Evidence: Screen reader and forced-colours need human/OS; theme data-mode case not re-driven
 - [ ] **L908** `ui-modernisation` blocked-hardware, S: Reproduce dashboard scroll jump (426 u) with owner's preferences. From OPEN.md:2310. Evidence: Needs the owner's preferences (LS=) to reproduce; scrolljump.js reference
 - [ ] **L909** `ui-modernisation` blocked-hardware, M: Frame-cost numbers need GPU; background slider effect unmeasured. From OPEN.md:1234; OPEN.md:3383. Evidence: Needs real GPU hardware to confirm absolute milliseconds.
-- [ ] **L912** `timeline` blocked-hardware, M: Timeline row 8 bar click to rows under 300 ms at 96 notes. From OPEN.md:1378. Evidence: Load-dependent timing on loaded headless machine; needs idle/real hardware to confirm. Measured 2026-11-12 (L490, headless, load 3.8-4.5, 96 notes, fresh browser per run, dashboard then `#tab-btn-timeline` to first `.timeline-rows > *`): 125-249 ms over 10 runs, app side 77-172 ms; 137-365 ms at load 6.3. Still needs real hardware.
 - [ ] **L913** `timeline` blocked-hardware, M: Windows and macOS toast/notification behaviour not run. From OPEN.md:2631. Evidence: Needs owner's Windows desktop and a Mac
 - [ ] **L914** `timeline` blocked-hardware, M: Verify Firefox/Safari permission help, webview denied state, hidden-tab firing, non-UTC browser. From OPEN.md:2785. Evidence: Needs other browsers/webview/timezone
 - [ ] **L915** `world-class` blocked-hardware, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device
