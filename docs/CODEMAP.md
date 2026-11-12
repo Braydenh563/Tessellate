@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2691, tests 21879, plan headings 687, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2692, tests 21882, plan headings 687, app scripts 29, boot scripts 38, script files 301.
 
 ## Frontend functions (8369)
 
@@ -3311,10 +3311,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `draftsRead` | frontend/js/diagram-embed.js:247 |
 | `draftsWrite` | frontend/js/diagram-embed.js:257 |
 | `el` | frontend/js/diagram-embed.js:10 |
-| `expand` | frontend/js/diagram-embed.js:711 |
+| `expand` | frontend/js/diagram-embed.js:718 |
 | `freshTitle` | frontend/js/diagram-embed.js:229 |
 | `hashOf` | frontend/js/diagram-embed.js:276 |
-| `headExport` | frontend/js/diagram-embed.js:697 |
+| `headExport` | frontend/js/diagram-embed.js:704 |
 | `historyKey` | frontend/js/diagram-embed.js:90 |
 | `link` | frontend/js/diagram-embed.js:133 |
 | `mount` | frontend/js/diagram-embed.js:309 |
@@ -13203,7 +13203,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 233 |
-| frontend/css/diagram-lazy.css | 2723 |
+| frontend/css/diagram-lazy.css | 2736 |
 | frontend/css/doc-base-lazy.css | 141 |
 | frontend/css/doc-graph-lazy.css | 221 |
 | frontend/css/file-drop-lazy.css | 51 |
@@ -27726,7 +27726,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21879)
+## Tests (21882)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28585,6 +28585,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_review_1108.py | 10 |
 | tests/test_diagram_review_1679.py | 4 |
 | tests/test_diagram_shelf_menu_glyph.py | 2 |
+| tests/test_diagram_source_wrap_button.py | 3 |
 | tests/test_diagram_source_wrap_l304.py | 3 |
 | tests/test_diagram_spacing.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |

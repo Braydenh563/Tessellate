@@ -1726,6 +1726,19 @@
   border-end-start-radius: var(--radius-md);
 }
 
+/* The Wrap toggle (diagram-embed.js): in Source only, where the dock and its ... menu are hidden. */
+.dgm-wrapbtn {
+  display: none;
+}
+
+.dgm-dialog[data-view="source"] .dgm-wrapbtn {
+  display: inline-flex;
+}
+
+.dgm-wrapbtn[aria-pressed="true"] {
+  background: var(--accent-soft);
+}
+
 .dgm-gutter-bad {
   color: var(--error);
   font-weight: 700;

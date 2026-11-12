@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagrams: a Wrap toggle beside the Source view button folds long Source lines (the ... menu is hidden in Source); 85 by 32 px, pressed while lines fold, shared with the menu row (L304)
 - Diagrams: a diagram in the tray has an Open row, like a document (a router row for the diagram kind; the tray offered only Attach to the chat before) (L-documents-10)
 - Diagrams: at 480 px or less the builder dock is one row (110 to 62 px at 390, six targets of 44 px): Direction, Redo and Ask for a change moved into the ... menu (L-documents-7)
 - Documents: Format selection beautifies only the selected lines in a js file (L300)

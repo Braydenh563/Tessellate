@@ -2862,7 +2862,7 @@ MORE_TOPICS.append({
         "A flowchart's ... menu sets how arrows are drawn (Straight lines, Curved lines, "
         "Stepped lines, Usual lines) and how far apart the blocks sit (Compact, Roomy, "
         "Normal spacing). Both are kept in the diagram's own text as front matter and Undo "
-        "takes them back; the picture is then drawn by the dagre layout. Wrap long lines, in the ... menu, folds long Source lines onto the next row and hides their numbers. A diagram's page "
+        "takes them back; the picture is then drawn by the dagre layout. Wrap long lines, in the ... menu or by the Wrap button beside Source, folds long Source lines onto the next row and hides their numbers. A diagram's page "
         "menu keeps Download or print, Connections and History, and leaves out the "
         "writing switches, Read aloud and Extract notes. Export, beside Picture, List and "
         "Source, saves it as a PNG or an SVG, or copies it as a picture, as Mermaid or as SVG. "
