@@ -35,7 +35,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import address, find_topic, note_recency, object_acts, parity_acts, reminder_parser, task_acts, when
+from tessellate.ai import address, anchor_acts, find_topic, note_recency, object_acts, parity_acts, reminder_parser, surface_acts, task_acts, when
 from tessellate.ai import act_registry, act_steps
 from tessellate.ai import composer_calendar
 from tessellate.ai.composer_frame import note_title
@@ -46,14 +46,14 @@ from tessellate.ai.filed_name import filed_listing
 VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rename", "restore", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
 #: The intents `read` gives, each with its verb.
 _VERB_OF = {
-    "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "create_category": "create", "delete_category": "delete", "merge_categories": "rename", "delete_tag": "delete", "edit_text": "rename", "to_reminders": "remind", "run_skill": "open", "restore": "restore", "pin": "pin",
+    "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "create_category": "create", "delete_category": "delete", "merge_categories": "rename", "delete_tag": "delete", "edit_text": "rename", "to_reminders": "remind", "run_skill": "open", "delete_document": "delete", "delete_skill": "delete", "board_card": "add", "make_map": "create", "restore": "restore", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
-    "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "set_name": "rename", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
+    "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "set_name": "rename", "set_theme": "change", "summarise": "summarise", "find": "find", "similar": "find", "open": "open", "navigate": "open",
 }
 #: The intents that write: each is shown as a card.
-WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze", "set_name"})
+WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze", "set_name"}) | surface_acts.INTENTS
 #: Read only: answered at once, nothing to confirm.
-READ_INTENTS = frozenset({"find", "open", "navigate", "summarise"})
+READ_INTENTS = frozenset({"find", "similar", "open", "navigate", "summarise"})
 #: The writes that wait for Confirm: anything that removes, renames, moves or
 #: rewrites. The rest (a reminder, a new note, a pin) run at once with Undo
 #: beside the line that says what was done.
@@ -73,7 +73,8 @@ def __getattr__(name: str) -> str:
 #: others are this module's own, for what no registry tool does.
 RUNNABLE = frozenset(
     {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "move_notes",
-     "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder", "set_display_name"}
+     "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder", "set_display_name",
+     "delete_document", "create_document", "delete_skill", "save_skill", "add_whiteboard_card", "delete_board_item", "restore_board_item", "map_from_note", "create_mindmap", "set_theme"}
 )
 
 _MAX_TEXT = 300
@@ -1001,6 +1002,9 @@ def _pinned_form(text: str) -> dict | None:
     return {"intent": "pin", **found} if found else None
 
 
+_NOTE_ABOUT = re.compile(r"^(?:the |this |my )?(?:note|entry) (?:about|on|called|named|titled) (.+)$", re.I)
+
+
 def _untag(text: str) -> dict | None:
     """"untag the budget note finance", "remove the tag travel from X",
     "take the urgent tag off this note", "strip the tag money from X"."""
@@ -1010,6 +1014,9 @@ def _untag(text: str) -> dict | None:
     lead = _TAG_WORD.match(body)
     split = _split_last(body[lead.end():] if lead else body, (" from ", " off "))
     if not split:
+        named = _NOTE_ABOUT.match(body)  # "untag the note about boiler" names a note and no tag (L-chat-29)
+        if named and verb.lower() in ("untag", "unlabel"):
+            return {"intent": "untag", "about": _drop_article(named.group(1).strip()), "single": True, "tags": []}
         found = _note_then_tags(body) if verb.lower() in ("untag", "unlabel") else None
         return {**found, "intent": "untag"} if found else None
     tags, target = split
@@ -1177,12 +1184,27 @@ def _summarise(text: str) -> dict | None:
             rest = _WROTE.sub(r"\1 ", text[len(head):].strip())
             found = _target(rest) or (_one_target(rest, bare=True) if rest.lower().startswith(("my ", "our ")) else None)
             if found and found.get("about"):
-                return {"intent": "summarise", "about": found["about"]}
+                return {"intent": "summarise", "about": found["about"], **({"note_id": found["note_id"]} if found.get("note_id") is not None else {})}
             whole = re.match(r"(?:all )?(?:of )?(?:my |the )?notes\b(?: (?:from|for|in) )?(.*)$", rest, re.I)
             if whole:
                 #: "summarise my notes from this week": the notes of a while.
                 return {"intent": "summarise", "about": whole.group(1).strip() or "notes"}
     return None
+
+
+_SIMILAR = re.compile(
+    r"^(?:(?:please|can you|could you)\s+)?(?:(?:find|show|get|list|give)(?:\s+me)?\s+)?(?:(?:the|any|all|some|other|more)\s+)*(?:notes?\s+)?(?:that\s+(?:are|is)\s+)?(?:similar to|like|related to|close to)\s+(?P<t>.+?)[?.!]*$",
+    re.I,
+)
+
+
+def _similar(text: str) -> dict | None:
+    """"find notes similar to the boiler note", "similar to note 12": the notes close in meaning to one (L-chat-29)."""
+    found = _SIMILAR.match(text)
+    if not found or not re.search(r"\bsimilar\b|\bnotes? like\b|\bthose like\b|\bnotes? (?:related|close) to\b", text, re.I):
+        return None
+    target = _target(found.group("t")) or _one_target(found.group("t"), bare=True)
+    return {"intent": "similar", **target} if target and target.get("single", True) else None
 
 
 #: Arguments of an act that are the person's own words (never respelt).
@@ -1343,9 +1365,9 @@ def _bare_call(text: str, now: datetime, locale: str | None) -> dict | None:
 
 
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
-    for reader in (address.read_set, object_acts.read_make, lambda t: parity_acts.read(t, _one_target, lambda w: _time_of(w, now, locale)), task_acts.read_checklist_note, _meeting, _clock_ask, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
+    for reader in (address.read_set, object_acts.read_make, lambda t: parity_acts.read(t, _one_target, lambda w: _time_of(w, now, locale)), lambda t: surface_acts.read(t, _one_target), anchor_acts.read, task_acts.read_checklist_note, _meeting, _clock_ask, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
                    task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
-                   _append, _summarise, _navigate, _find):
+                   _append, _similar, _summarise, _navigate, _find):
         found = reader(command)
         if found is None:
             continue
@@ -1372,34 +1394,36 @@ class Command:
     args: dict = field(default_factory=dict)
 
 
+#: The slot that names the object of an act, by intent.
+_OBJECT_KEY = {
+    "navigate": "surface", "rename_tag": "old", "rename_category": "old", "merge_categories": "from", "to_reminders": "source",
+    **dict.fromkeys(("new_note", "append"), "content"),
+    **dict.fromkeys(("set_name", "create_category", "delete_category", "delete_tag", "run_skill", "delete_document", "delete_skill"), "name"),
+}
+
+
+def _object_of(found: dict, intent: str) -> str:
+    """What the act is done to, as the card and the history name it."""
+    if intent == "reminder":
+        #: The reminder's own words as typed after the time came off, first
+        #: letter as typed ("call Sam"); the reminder stores them capitalised.
+        return found.get("said") or found["text"]
+    if intent == "meeting":
+        return found.get("title") or "meeting"
+    if intent in _OBJECT_KEY:
+        return found[_OBJECT_KEY[intent]]
+    if found.get("note_id") is not None:
+        return f"note {found['note_id']}"
+    return found.get("about") or found.get("title") or ("these notes" if found.get("these") else "")
+
+
 def parse(text: str, now: datetime) -> Command | None:
     """The `Command` `text` is, or None for a sentence that is not one."""
     found = read(text, now)
     if found is None:
         return None
     intent = found["intent"]
-    if intent == "reminder":
-        #: The reminder's own words as typed after the time came off, first
-        #: letter as typed ("call Sam"); the reminder stores them capitalised.
-        obj = found.get("said") or found["text"]
-    elif intent in ("new_note", "append"):
-        obj = found["content"]
-    elif intent == "meeting":
-        obj = found.get("title") or "meeting"
-    elif intent == "navigate":
-        obj = found["surface"]
-    elif intent in ("rename_tag", "rename_category"):
-        obj = found["old"]
-    elif intent in ("set_name", "create_category", "delete_category", "delete_tag", "run_skill"):
-        obj = found["name"]
-    elif intent == "merge_categories":
-        obj = found["from"]
-    elif intent == "to_reminders":
-        obj = found["source"]
-    elif found.get("note_id") is not None:
-        obj = f"note {found['note_id']}"
-    else:
-        obj = found.get("about") or ("these notes" if found.get("these") else "")
+    obj = _object_of(found, intent)
     return Command(
         verb=_VERB_OF[intent],
         object=obj,
@@ -1658,9 +1682,11 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
     from tessellate.core import deps
     from tessellate.core.config import user_now
 
+    if parsed.get("anchor"):
+        parsed = anchor_acts.settle(session, parsed, user_now(deps.get_config()).replace(tzinfo=None))
     due = parsed["due_at"]
     if due is None:
-        return {"line": _ASK_WHAT_AND_WHEN}
+        return {"line": parsed.get("ask", _ASK_WHAT_AND_WHEN)}
     when_said = reminder_when(due, user_now(deps.get_config()).replace(tzinfo=None), bool(parsed.get("clock_unsaid")))
     if parsed.get("no_subject"):
         #: Only a time was said: the words are asked, not stored as "5pm".
@@ -1788,6 +1814,8 @@ def _plan_untag(session: Session, parsed: dict, note_ids: list[int] | None) -> d
     ok, skipped = _split_allowed(entries)
     if not ok:
         return {"line": f"I found no note {which} to take the tag off." if not skipped else summarise_done([], skipped)}
+    if not parsed["tags"]:
+        return {"line": f"Which tag should come off the note {which}? Say it again with the tag, like: untag the {parsed.get('about') or 'boiler'} note finance."}
     tags = " ".join(f"#{t}" for t in parsed["tags"])
     label = f"Take {tags} off {len(ok)} note{'' if len(ok) == 1 else 's'} {which}"
     steps = [{"name": "tag_note", "arguments": {"note_ids": [e.id for e in ok], "remove": parsed["tags"]}}]
@@ -1855,11 +1883,13 @@ def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> 
     raise ValueError(intent)
 
 
-_OBJECT_INTENTS = frozenset({"rename_tag", "rename_category", "create_category", "restore", "set_name"}) | parity_acts.INTENTS
+_OBJECT_INTENTS = frozenset({"rename_tag", "rename_category", "create_category", "restore", "set_name"}) | parity_acts.INTENTS | surface_acts.INTENTS
 
 
 def _plan_object(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
     """The acts on a kind of thing (a tag, a category, a note's text): `object_acts` and `parity_acts`."""
+    if parsed["intent"] in surface_acts.INTENTS:
+        return surface_acts.plan(session, parsed, note_ids, _parity_helpers())
     if parsed["intent"] in parity_acts.INTENTS:
         return parity_acts.plan(session, parsed, note_ids, _parity_helpers(), _now_for_plan())
     return object_acts.plan(session, parsed, object_acts.Helpers(_card, _confirm, _item, note_title, summarise_done))
@@ -2119,6 +2149,39 @@ def _item(entry) -> str:  # noqa: ANN001
     return note_title(entry.content, size=48) or "Untitled note"
 
 
+def _read_numbered(session: Session, parsed: dict) -> tuple | str:
+    """("get_note", its arguments, its result, the line) for a note named by its number, or the line that says it is not there."""
+    from tessellate.ai import tools
+
+    result = tools.execute_tool(session, "get_note", {"note_id": parsed["note_id"]})
+    if "error" in result:
+        return "I could not open that note: it does not exist, or it is private."
+    title = note_title(str(result.get("content") or ""), size=60) or "that note"
+    line = f"Here is “{title}”. Open it from the row below."
+    if parsed["intent"] == "summarise":  # a numbered note is summarised from its own text, never searched for by its number (L-chat-29)
+        body = " ".join(str(result.get("content") or "").split("\n", 1)[-1].split())
+        line = f"“{title}” says: {_clip(body, 240)}" if body else f"“{title}” is empty."
+    return "get_note", {"note_id": parsed["note_id"]}, result, line
+
+
+def _plan_similar(session: Session, parsed: dict) -> dict:
+    """"find notes similar to the boiler note": the agent's own `find_similar_notes` over the one note named (L-chat-29)."""
+    from tessellate.ai import agent_policy, cards, tools
+
+    entry, question = _resolve_one(session, parsed.get("about"), None, False, parsed.get("note_id"))
+    if entry is None:
+        return {"line": question}
+    result = tools.execute_tool(session, "find_similar_notes", {"note_id": entry.id})
+    title = note_title(entry.content, size=60)
+    if "error" in result or not result.get("similar"):
+        return {"line": f"I found no note similar to “{title}”."}
+    found = result["similar"]
+    names = ", ".join(f"“{note_title(str(n.get('content') or n.get('title') or ''), size=40)}”" for n in found[:5])
+    event = {"type": "tool", "name": "find_similar_notes", "arguments": {"note_id": entry.id}, "label": result.get("label") or "find_similar_notes", "ok": True,
+             "touched": agent_policy._touched_items(result), "cards": cards.result_cards("find_similar_notes", result)}
+    return {"line": f"Notes close in meaning to “{title}”: {names}.", "tool": event}
+
+
 def _clip(text: str, cap: int) -> str:
     return text if len(text) <= cap else text[: cap - 1].rstrip() + "…"
 
@@ -2142,12 +2205,13 @@ def _plan_read(session: Session, parsed: dict) -> dict:
     from tessellate.ai import cards, tool_say, tools
     from tessellate.ai import agent_policy
 
+    if parsed["intent"] == "similar":
+        return _plan_similar(session, parsed)
     if parsed.get("note_id") is not None:
-        result = tools.execute_tool(session, "get_note", {"note_id": parsed["note_id"]})
-        if "error" in result:
-            return {"line": "I could not open that note: it does not exist, or it is private."}
-        name, args = "get_note", {"note_id": parsed["note_id"]}
-        line = f"Here is “{note_title(str(result.get('content') or ''), size=60) or 'that note'}”. Open it from the row below."
+        numbered = _read_numbered(session, parsed)
+        if isinstance(numbered, str):
+            return {"line": numbered}
+        name, args, result, line = numbered
     elif parsed.get("filed") and (listed := _filed_notes(session, parsed["filed"])):
         name, args, result, line = listed
     else:
@@ -2238,6 +2302,8 @@ def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: A
         return _bin_reminder(session, args)
     if name in task_acts.OWN_STEPS:
         return task_acts.run_step(session, name, args)
+    if name == "set_theme":
+        return surface_acts.run_step(args)
     if name == "set_display_name":
         from tessellate.core import deps
 

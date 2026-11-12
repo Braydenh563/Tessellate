@@ -29,6 +29,11 @@ _results: dict[str, tuple[float, dict]] = {}
 _declined: dict[str, float] = {}
 
 
+#: The last pressed card's label and Undo steps: what "undo that" says back for an act whose old value is
+#: not in its sentence (a rename's old title, a move's old category; L-chat-29). One person, one chat.
+_latest: tuple[float, str, list[dict]] | None = None
+
+
 def _now() -> float:
     return time.monotonic()
 
@@ -94,6 +99,20 @@ def remember(key: str | None, result: dict) -> dict:
     return result
 
 
+def note_latest(label: str, undo: list[dict] | None) -> None:
+    """Keep the Undo steps of the card just run, for the sentence that takes it back."""
+    global _latest  # noqa: PLW0603
+    with _lock:
+        _latest = (_now() + TTL_SECONDS, label, list(undo or []))
+
+
+def latest_undo() -> list[dict]:
+    """The Undo steps of the last card run, or [] when none or past its life."""
+    with _lock:
+        held = _latest
+    return held[2] if held is not None and held[0] > _now() else []
+
+
 def result_of(key: str | None) -> dict | None:
     """What the pressed card `key` did, or None (never pressed, or past its life)."""
     with _lock:
@@ -126,7 +145,9 @@ def was_spent(key: str | None) -> bool:
 
 
 def reset_for_tests() -> None:
+    global _latest  # noqa: PLW0603
     with _lock:
+        _latest = None
         _parked.clear()
         _spent.clear()
         _results.clear()

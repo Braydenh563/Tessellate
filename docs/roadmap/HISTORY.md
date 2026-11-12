@@ -54653,6 +54653,8 @@ Bullets already marked closed in OPEN.md, moved verbatim, grouped by their OPEN.
 
 1795. **Composer closeout, 2026-11-12 (what counts as a kind, LEDGER L32; owner-judgement, recommendation taken):** recommend a "count" is a number before a plural noun that is not a measure unit ("5 sets", "three times"), a "quantity" a number with a recognise unit or "%" ("80 kg", "5 km"). **Fixed cdc64a5f.** Measured: `factgraph` now emits `count` for "5 sets" and "three times", `quantity` for "80 kg"; `tests/test_composer_closeout_1112.py`.
 
+1800. **acts2, 2026-11-12 (decisions with recommendation, taken per standing order 3):** (a) Act card label (L-chat-25, L23): keep the label an action title ("Remind you tomorrow at 9:00 am: call mum") and make the composed Confirm line the full sentence, because tests and the palette read the title; every reminder time now reads "9:00 am" or "3:00 pm", never "at 9". (b) Theme act (L-chat-28): the theme is the page's preference, so the server step `set_theme` only acknowledges and the page applies it with `applyThemeChoice` and patches the Undo with the theme it replaced. (c) "An hour before the dentist": there is no calendar model, so the time comes from the named note's minute-precision `EntryDate`; with none, the composer asks when it is. (d) Rename and move are undone by sentence ("undo that") from the last confirmed act's own Undo step.
+
 ## HANDOVER session record (moved 2026-11-12)
 
 Moved from HANDOVER.md when it was slimmed to the owner's standing notes and one Now line (INBOX 1784).

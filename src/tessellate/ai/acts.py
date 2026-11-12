@@ -123,6 +123,8 @@ def run_confirmed(session: Session, steps: list[dict], skipped: list[dict], cons
     parked = consent_store.take(consent_id)
     if parked and parked.get("steps"):
         done = run_said(session, parked["label"], parked["steps"], parked["skipped"], parked.get("say"))
+        if done["ok"]:
+            consent_store.note_latest(parked["label"], done.get("undo"))
         return consent_store.remember(consent_id, done) if done["ok"] else done
     return run(session, steps, skipped)
 

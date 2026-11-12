@@ -12,7 +12,7 @@ import pytest
 from sqlalchemy import select
 
 from tessellate.ai import acts, commands, help_chat
-from tessellate.core.database import Entry, EntryLink, Reminder
+from tessellate.core.database import Document, Entry, EntryLink, Reminder, WhiteboardNode
 from tessellate.entry import manager
 
 NOW = datetime(2026, 10, 10, 12, 0)
@@ -50,7 +50,14 @@ def _state(session, categories: bool = False, by_name: bool = False) -> tuple:
     from tessellate.core.database import Category
 
     made = tuple(sorted(c.name for c in session.scalars(select(Category)))) if categories else ()
-    return notes, links, reminders, deps.get_config().get_preference("display_name", ""), made
+    #: The surface acts (L-chat-26): documents, saved skills and the cards on the board.
+    surfaces = (
+        tuple(sorted((d.title, d.content) for d in session.scalars(select(Document)))),
+        #: By name: Undo saves the skill again with its defaults filled in.
+        tuple(sorted(str(s.get("name")) for s in deps.get_config().get_preference("skills", []))),
+        tuple(sorted(n.entry_id for n in session.scalars(select(WhiteboardNode)))),
+    )
+    return notes, links, reminders, deps.get_config().get_preference("display_name", ""), made, surfaces
 
 
 def test_every_act_has_parse_preview_run_and_a_help_line():
@@ -72,6 +79,7 @@ _BEFORE = {
     "delete_category": ("move the gym note to Hobbies",), "delete_tag": ("tag the gym note with harbor",),
     "merge_categories": ("move the gym note to Work", "move the running note to Job"),
 }
+_PAGE_SIDE = frozenset({"set_theme"})
 #: A category row is made again by Undo with a new id, so these compare the categories by name.
 _BY_NAME = frozenset({"delete_category", "merge_categories"})
 
@@ -79,6 +87,13 @@ _BY_NAME = frozenset({"delete_category", "merge_categories"})
 @pytest.mark.parametrize("act", WRITES, ids=[a.intent for a in WRITES])
 def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, session, act):
     _seed(session)
+    if act.intent == "delete_document":
+        session.add(Document(title="Harbor report", content="Findings for the harbor."))
+        session.commit()
+    if act.intent == "delete_skill":
+        from tessellate.core import deps
+
+        deps.get_config().set_preference("skills", [{"name": "Weekly tidy", "prompt": "Tidy my notes.", "steps": []}])
     if act.intent == "restore":
         manager.create_entry(session, "# Passport\n\nRenew in May.")
         session.commit()
@@ -112,7 +127,8 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
     done = acts.run(session, card["steps"], card.get("skipped"))
     session.commit()
     assert done["ok"], (act.intent, done)
-    assert _state(session, act.intent in ("create_category", *_BY_NAME), act.intent in _BY_NAME) != before, f"{act.intent} changed nothing"
+    #: The theme is the page's preference, not the server's: the step acknowledges it (tests/test_chat_acts_2_1112_d.py).
+    assert act.intent in _PAGE_SIDE or _state(session, act.intent in ("create_category", *_BY_NAME), act.intent in _BY_NAME) != before, f"{act.intent} changed nothing"
     assert done["undo"] and done["undo"][0]["name"] == act.inverse, (act.intent, done["undo"])
     undone = acts.run(session, done["undo"])
     session.commit()

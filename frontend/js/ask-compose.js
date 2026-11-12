@@ -141,6 +141,17 @@ function markSaidSentences(targets, sentences) {
 //: a rename, a move or a tag waits for them) or, once it ran (a reminder, a
 //: new note, a pin), what was done and Undo. Confirm and Undo both post the
 //: steps to `/chat/command/run`, which runs only the tools an act may use.
+//: The theme is a preference of this page (`applyThemeChoice`), so the server's `set_theme` step only
+//: acknowledges it: the page applies it here, and the step that undoes it names the theme that was showing.
+function applyThemeSteps(steps, result) {
+  const step = (steps || []).find((one) => one.name === "set_theme");
+  if (!step || !result) return result;
+  const before = prefs.get("theme", null) || "system";
+  applyThemeChoice(step.arguments.theme, true);
+  for (const inverse of result.undo || []) if (inverse.name === "set_theme") inverse.arguments = { theme: before };
+  return result;
+}
+
 function renderActCard(holder, event) {
   //: The card a typed yes or no answered: found by its id, which stays on it after a send marks it not pending.
   const waitingCard = (reply) => [...document.querySelectorAll(".tool-confirm")].filter((card) => (reply.consent_id ? card.consentId === reply.consent_id : !reply.label || card.dataset.askedAct === reply.label)).at(-1);
@@ -165,7 +176,7 @@ function renderActCard(holder, event) {
   card.className = "tool-confirm";
   const run = (steps, then) =>
     apiJson("/chat/command/run", { method: "POST", body: JSON.stringify({ steps, skipped: event.skipped || [], consent_id: steps === event.steps ? event.consent_id || null : null }) })
-      .then((result) => (refreshAfterToolChanges(), then(result)))
+      .then((result) => (refreshAfterToolChanges(), then(applyThemeSteps(steps, result))))
       .catch((error) => toast(error.message, true));
   const line = (label, ...more) => {
     const text = document.createElement("p");
@@ -179,7 +190,7 @@ function renderActCard(holder, event) {
   const post = (steps) =>
     apiJson("/chat/command/run", { method: "POST", body: JSON.stringify({ steps, skipped: event.skipped || [] }) }).then((result) => {
       refreshAfterToolChanges();
-      return result;
+      return applyThemeSteps(steps, result);
     });
   //: `said`: the answer above already read this sentence (a reminder, a new
   //: note or a pin ran at once), so the card carries only Undo; drawing the
@@ -222,6 +233,8 @@ function renderActCard(holder, event) {
     }
     line(`ph:check-circle ${summary}`, row);
   };
+  //: A typed yes ran the step on the server; the page applies the theme it named, once (a restored card already did).
+  if (event.done && !restored) applyThemeSteps(event.steps, event);
   if (event.done || event.state === "done") done(event.summary || event.label, event.undo, event.steps, Boolean(event.done), restored);
   else {
     const notice = document.createElement("p");

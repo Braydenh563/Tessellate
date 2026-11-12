@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat acts without a model: delete a document or a saved skill, put a note on the whiteboard, make a mind map, switch the theme (light, dark or system, the page applies it), "remind me an hour before the dentist" against the note's own time, "similar to X", "untag the note about X", "summarise note 12", and rename or move undone by sentence; every act waits for Confirm and has an Undo, on the composer and the model's tool path (`tests/test_chat_acts_2_1112_b.py` to `_e.py`, L-chat-25 to 31).
 - The Guide's "did you mean" reads the 92,972-word list (`ai/help_words.py` `forgive`): 28 of 30 misspelt questions reach the right topic, up from 25; the no-model answer leads with the click path then one sentence from the help (owner call L725), and the plain side opens with how the question was read (L53); "how do I set a reminder" starts with step 1 (L108) (`tests/test_guide_wordlist_vc15.py`, `tests/test_guide_read_as_system.py`).
 - With a model running, the model picks among the engine's numbered readings by number and never writes one; the engine answers over the chosen note (`api/chat_pick.py`, CHAT_PLAN decision 45; `tests/test_reading_pick_d45.py`).
 - Currency rates are a dated preference with an editor in Settings, Search and index (CHAT_PLAN decision 43): conversions say the saved date, Reset puts the built-in table back; Guide topic Currency rates (`tests/test_currency_rates_pref.py`).

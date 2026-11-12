@@ -229,10 +229,12 @@ def _delete_document(session: Session, args: dict) -> dict:
     document = session.get(Document, int(args.get("document_id") or 0))
     if document is None:
         raise ToolError(f"No document with id {args.get('document_id')}")
-    title = document.title
+    title, kept = document.title, document.content or ""
     session.delete(document)
     manager.log_action(session, "deleted", "document", None, title[:80])
     session.commit()
-    return {"title": title, "label": f"ph:trash Deleted the document “{_clip(title, 40)}”"}
+    from tessellate.ai.tools.undo_inverses import document_restore
+
+    return {"title": title, "label": f"ph:trash Deleted the document “{_clip(title, 40)}”", "undo": document_restore(title, kept)}
 
 

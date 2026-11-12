@@ -73,6 +73,7 @@ def propose(session, text: str, now, note_ids: list[int] | None = None) -> dict 
 CONFIRM_INTENTS = frozenset({
     "reminder", "complete", "uncomplete", "cancel", "snooze", "new_note", "meeting", "pin", "unpin",
     "delete", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "move", "tag", "untag", "link", "unlink", "append", "set_name",
+    "delete_document", "delete_skill", "board_card", "make_map", "set_theme",
 })
 
 
@@ -158,7 +159,18 @@ _ACTS = (
         "call me Sam", ("name",), "set_display_name", stem="Call me "),
     Act("run_skill", "open", "run a skill", "Names a saved skill; the card asks before the run starts, and every change it makes can be undone.",
         "run the daily review skill", ("name",), writes=False, stem="Run the skill "),
+    Act("delete_document", "delete", "delete a document", "Names the document; it is deleted after you confirm, and Undo writes it back with its text.",
+        "delete the document Harbor report", ("name",), "create_document"),
+    Act("delete_skill", "delete", "delete a saved skill", "Names one of your saved skills; it is deleted after you confirm, and Undo saves it again. Built-in skills stay.",
+        "delete the skill Weekly tidy", ("name",), "save_skill"),
+    Act("board_card", "add", "put a note on the whiteboard", "Names the note; it becomes a card on the board after you confirm, and Undo takes the card off (the note stays).",
+        "put the boiler note on the whiteboard", (), "delete_board_item"),
+    Act("make_map", "create", "make a mind map", "Names a note, or a title for an empty map; the map is made after you confirm, and Undo bins it.",
+        "make a mind map from the boiler note", (), "delete_note"),
+    Act("set_theme", "switch", "switch the theme", "Say light, dark or system; the app changes after you confirm, and Undo puts the earlier theme back.",
+        "switch to dark mode", ("name",), "set_theme"),
     Act("find", "find", "find a note", "Lists the notes that match.", "find my note about the passport", (), writes=False),
+    Act("similar", "find", "find similar notes", "Lists the notes closest in meaning to the one named, from the notes.", "find notes similar to the boiler note", (), writes=False),
     Act("open", "open", "open a note", "Opens the one note named.", "open the note about the boiler", (), writes=False),
     Act("navigate", "open", "open a part of the app", "Goes to Settings, the graph, the timeline and the rest.",
         "open settings", ("surface",), writes=False),
@@ -174,8 +186,8 @@ ACTS: dict[str, Act] = {a.intent: a for a in _ACTS}
 def capability_line() -> str:
     """Agent mode with no model, for a sentence that is not an act: every
     write act the registry has, in order, and one example."""
-    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "delete", "link", "pin", "set_name")]
-    single = "pin, link, rename or delete a note, rename a tag or category, make a category, merge or delete one, delete a tag, replace a note\'s text, turn its open lines into reminders, restore a note from the bin (each after you confirm)"
+    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "delete", "link", "pin", "set_name", "delete_document", "delete_skill", "board_card", "make_map", "set_theme")]
+    single = "pin, link, rename or delete a note, rename a tag or category, make a category, merge or delete one, delete a tag, replace a note\'s text, turn its open lines into reminders, restore a note from the bin, delete a document or a saved skill, put a note on the whiteboard, make a mind map, switch the theme (each after you confirm)"
     reads = "find or open a note"
     return (
         "With no model running I can do these myself: "
@@ -240,14 +252,15 @@ def palette_rows() -> list[dict]:
 
 def guide_topic() -> dict:
     """The Guide's topic on acts, generated from the registry."""
-    lines = [f"{a.label[:1].upper() + a.label[1:]}: \"{a.example}\"." for a in _ACTS]
+    #: The examples alone: each says what it does, and the labelled list outgrew the Guide's reply budget.
+    lines = [f"\"{a.example}\"" for a in _ACTS]
     return {
         "id": "chat-acts",
         "title": "Things Chat does for you",
         "keywords": ("what can chat do", "chat commands", "commands in chat", "do it for me", "acts", "an act",
                      "with no model running", "undo an act", "things chat does"),
         "badge": {"label": "Chat", "tab": "chat"},
-        "body": "Chat does these from one sentence, with no model. " + " ".join(lines)
+        "body": "Chat does these from one sentence, with no model: " + "; ".join(lines) + "."
         + " Every one waits for Confirm: press it, or type yes or go ahead; Cancel or no drops it. Undo on the card, or Ctrl+Z, takes any of them back. Say add buy milk to today's note to put a bullet in the daily note, or put it in today's note to add a note itself.",
     }
 
@@ -261,7 +274,8 @@ ACT_TOOLS: dict[str, str] = {
     "reminder": "set_reminder", "complete": "complete_reminder", "uncomplete": "complete_reminder", "cancel": "bin_reminder", "snooze": "snooze_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
     "new_note": "create_note", "meeting": "create_note", "pin": "pin_note", "unpin": "pin_note",
     "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "rename_tag": "rename_tag", "rename_category": "rename_category", "create_category": "create_category", "delete_category": "delete_category", "merge_categories": "merge_categories", "delete_tag": "delete_tag", "edit_text": "edit_note", "to_reminders": "set_reminder", "run_skill": "run_skill", "restore": "restore_note", "append": "edit_note",
-    "delete": "delete_note", "set_name": "set_display_name", "find": "search_notes", "open": "get_note", "summarise": "summarize_notes",
+    "delete_document": "delete_document", "delete_skill": "delete_skill", "board_card": "add_whiteboard_card", "make_map": "map_from_note",
+    "delete": "delete_note", "set_name": "set_display_name", "find": "search_notes", "similar": "find_similar_notes", "open": "get_note", "summarise": "summarize_notes",
 }
 
 #: A utility's kind (`utilities.kind_of`) to the tool a model would call for it.
@@ -382,9 +396,10 @@ ACT_HELP_TOPICS: dict[str, tuple[str, ...]] = {
     "unlink": ("links",), "tag": ("tags-categories", "tag-manager", "suggested-tags"),
     "untag": ("tags-categories", "tag-manager"), "move": ("tags-categories",), "delete": ("undo-bin",), "restore": ("undo-bin",),
     "rename_tag": ("tags-categories", "tag-manager"), "rename_category": ("tags-categories",), "create_category": ("tags-categories",), "delete_category": ("tags-categories",), "merge_categories": ("tags-categories",), "delete_tag": ("tags-categories", "tag-manager"), "edit_text": ("undo-bin",), "to_reminders": ("reminders",),
+    "delete_document": ("documents",), "delete_skill": ("skills",), "board_card": ("whiteboard",), "make_map": ("mind-maps",), "set_theme": ("appearance",),
     #: Not pin: Favourites says what a pinned note is, not how to pin one, so
     #: the act's line leads "how do I pin a note" and Favourites follows.
-    "find": ("ask-chat",), "summarise": ("ask-chat",),
+    "find": ("ask-chat",), "similar": ("ask-chat",), "summarise": ("ask-chat",),
     "new_note": ("capture",),
 }
 

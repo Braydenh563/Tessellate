@@ -19,6 +19,7 @@ from tessellate.entry import manager
 from tessellate.entry import manager_text
 from tessellate.entry.properties import strip as strip_properties
 
+from .undo_inverses import board_card_removed, board_note_binned
 from ._common import DEFAULT_LIST_LIMIT, PREVIEW_CHARS, ToolError, _clip, _limit_arg, _require_note, board_top_z, mark_outside
 
 def _whiteboard_board_filter(model, board_id: int | None):
@@ -425,6 +426,7 @@ def _add_whiteboard_card(session: Session, args: dict) -> dict:
         "x": node.x,
         "y": node.y,
         "label": f"ph:folders Placed “{_clip(entry.content, 40)}” on the whiteboard",
+        "undo": board_card_removed(node.id),
     }
 
 
@@ -900,6 +902,7 @@ def _create_mindmap(session: Session, args: dict) -> dict:
         "title": title,
         "next": "Add nodes with add_map_node, passing this board_id and parent_id.",
         "label": f"ph:tree-structure Created the mindmap “{_clip(title, 40)}”",
+        "undo": board_note_binned(entry.id),
     }
 
 
@@ -929,6 +932,7 @@ def _map_from_note(session: Session, args: dict) -> dict:
         "title": name,
         "nodes": count,
         "label": f"ph:tree-structure Made the mind map “{_clip(name, 40)}” from the note",
+        "undo": board_note_binned(board.id),
     }
 
 
