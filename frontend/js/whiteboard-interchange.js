@@ -1411,3 +1411,170 @@ async function wbDiagramToShapes(d, source) {
     if (made) await wbDeleteObject(d);
   });
 }
+
+//: **A PDF written here, not by the browser's print window** (LEDGER L270).
+//: The old export opened Print and left the page size, the orientation and
+//: the page count to whatever the print dialog chose, so a board came out as
+//: one shrunken page. This writes the file itself: `wbPdf.plan` decides the
+//: pages (fit on one, one per frame, or tiled across several), `wbExportPdf`
+//: (whiteboard.js) draws each page from the export SVG as a JPEG, and
+//: `wbPdf.build` wraps the JPEGs in a minimal PDF 1.4 (catalog, page tree, and
+//: per page a page, a content stream and a DCT image, then an xref table). No
+//: library: nothing vendored writes PDF, and a page of one picture is a dozen
+//: lines of structure.
+const wbPdf = (() => {
+  const SIZES = { a4: [595.28, 841.89], letter: [612, 792] };
+  const MARGIN = 28;
+  const TILE_SCALE = 0.75;
+  const MAX_PAGES = 40;
+
+  //: The pages for a board: `bounds` is the export's viewBox ({x, y, w, h}),
+  //: `frames` the frames to give a page each ({x, y, width, height}). Every page
+  //: has its size in points, the part of the board it shows (`crop`, board
+  //: units) and where that sits on the page (`place`, points, from the top-left).
+  function plan({ bounds, frames = [], size = "a4", orientation = "auto", layout = "fit" }) {
+    const [short, long] = SIZES[size] || SIZES.a4;
+    const pageFor = (w, h) => {
+      const landscape = orientation === "landscape" || (orientation === "auto" && w > h);
+      return landscape ? [long, short] : [short, long];
+    };
+    const clip = (r) => {
+      const x = Math.max(bounds.x, r.x), y = Math.max(bounds.y, r.y);
+      const w = Math.min(bounds.x + bounds.w, r.x + r.w) - x, h = Math.min(bounds.y + bounds.h, r.y + r.h) - y;
+      return w > 0 && h > 0 ? { x, y, w, h } : null;
+    };
+    const fitPage = (crop) => {
+      const [pw, ph] = pageFor(crop.w, crop.h);
+      const cw = pw - 2 * MARGIN, ch = ph - 2 * MARGIN;
+      const k = Math.min(cw / crop.w, ch / crop.h);
+      const w = crop.w * k, h = crop.h * k;
+      return { page: [pw, ph], crop, place: { x: (pw - w) / 2, y: (ph - h) / 2, w, h } };
+    };
+    if (layout === "frames") {
+      //: Reading order: rows of frames top to bottom, each row left to right.
+      const crops = frames
+        .map((f) => clip({ x: f.x - 12, y: f.y - 28, w: f.width + 24, h: f.height + 40 }))
+        .filter(Boolean)
+        .sort((a, b) => (Math.abs(a.y - b.y) > 40 ? a.y - b.y : a.x - b.x));
+      if (crops.length) return crops.slice(0, MAX_PAGES).map(fitPage);
+    }
+    if (layout === "tiles") {
+      const [pw, ph] = pageFor(bounds.w, bounds.h);
+      const cw = pw - 2 * MARGIN, ch = ph - 2 * MARGIN;
+      let scale = TILE_SCALE;
+      while (Math.ceil((bounds.w * scale) / cw) * Math.ceil((bounds.h * scale) / ch) > MAX_PAGES) scale *= 0.8;
+      const tw = cw / scale, th = ch / scale;
+      const pages = [];
+      for (let y = bounds.y; y < bounds.y + bounds.h - 0.5; y += th) {
+        for (let x = bounds.x; x < bounds.x + bounds.w - 0.5; x += tw) {
+          const crop = { x, y, w: Math.min(tw, bounds.x + bounds.w - x), h: Math.min(th, bounds.y + bounds.h - y) };
+          pages.push({ page: [pw, ph], crop, place: { x: MARGIN, y: MARGIN, w: crop.w * scale, h: crop.h * scale } });
+        }
+      }
+      return pages;
+    }
+    return [fitPage({ ...bounds })];
+  }
+
+  //: The file: `pages` are `{page: [w, h], place: {x, y, w, h}, image: {jpeg: Uint8Array, w, h}}`.
+  function build(pages) {
+    const enc = new TextEncoder();
+    const chunks = [];
+    const offsets = [];
+    let length = 0;
+    const put = (part) => {
+      const bytes = typeof part === "string" ? enc.encode(part) : part;
+      chunks.push(bytes);
+      length += bytes.length;
+    };
+    const num = (n) => String(Math.round(n * 100) / 100);
+    const object = (id, ...parts) => {
+      offsets[id] = length;
+      put(`${id} 0 obj\n`);
+      for (const part of parts) put(part);
+      put("\nendobj\n");
+    };
+    put("%PDF-1.4\n");
+    object(1, "<< /Type /Catalog /Pages 2 0 R >>");
+    object(2, `<< /Type /Pages /Kids [${pages.map((_, i) => `${3 + 3 * i} 0 R`).join(" ")}] /Count ${pages.length} >>`);
+    pages.forEach((p, i) => {
+      const id = 3 + 3 * i;
+      const [w, h] = p.page;
+      const { x, y, w: pw, h: ph } = p.place;
+      const draw = `q ${num(pw)} 0 0 ${num(ph)} ${num(x)} ${num(h - y - ph)} cm /Im0 Do Q`;
+      object(id, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(w)} ${num(h)}] /Resources << /XObject << /Im0 ${id + 2} 0 R >> >> /Contents ${id + 1} 0 R >>`);
+      object(id + 1, `<< /Length ${draw.length} >>\nstream\n${draw}\nendstream`);
+      object(id + 2, `<< /Type /XObject /Subtype /Image /Width ${p.image.w} /Height ${p.image.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.image.jpeg.length} >>\nstream\n`, p.image.jpeg, "\nendstream");
+    });
+    const total = 3 + 3 * pages.length;
+    const xref = length;
+    put(`xref\n0 ${total}\n0000000000 65535 f \n`);
+    for (let id = 1; id < total; id++) put(`${String(offsets[id]).padStart(10, "0")} 00000 n \n`);
+    put(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+    const out = new Uint8Array(length);
+    let at = 0;
+    for (const chunk of chunks) {
+      out.set(chunk, at);
+      at += chunk.length;
+    }
+    return out;
+  }
+
+  //: The choices the export dialog offers, and the last ones made.
+  const CHOICES = {
+    size: [{ value: "a4", label: "A4" }, { value: "letter", label: "Letter" }],
+    orientation: [
+      { value: "auto", label: "Auto", title: "Landscape for a wide board, portrait for a tall one" },
+      { value: "portrait", label: "Portrait" },
+      { value: "landscape", label: "Landscape" },
+    ],
+    layout: [
+      { value: "fit", label: "One page", title: "The whole export scaled onto one page" },
+      { value: "frames", label: "Per frame", title: "One page for each frame, in reading order" },
+      { value: "tiles", label: "Tiled", title: "Full-size pages side by side across the board" },
+    ],
+  };
+  function savedChoice() {
+    const saved = prefs.json("wb-export-pdf", {});
+    const pick = (key, fallback) => (CHOICES[key].some((o) => o.value === saved[key]) ? saved[key] : fallback);
+    return { size: pick("size", "a4"), orientation: pick("orientation", "auto"), layout: pick("layout", "fit") };
+  }
+
+  function saveChoice(choice) {
+    try {
+      prefs.set("wb-export-pdf", JSON.stringify(choice));
+    } catch {
+      // Private mode: the choice holds for this export.
+    }
+  }
+
+  //: The frames that get a page in "Per frame": those in the export's scope.
+  function framesIn(scope, bounds) {
+    const onlyKeys = scope === "selection" ? wbSelectedKeys() : null;
+    return (wbState.objects || []).filter((f) =>
+      f.kind === "frame" && !wbItemHidden("object", f) &&
+      (!onlyKeys || onlyKeys.has(wbMultiKey("object", f.id))) &&
+      f.x < bounds.x + bounds.w && f.x + f.width > bounds.x && f.y < bounds.y + bounds.h && f.y + f.height > bounds.y);
+  }
+
+  //: The pages of a PDF, drawn from the export SVG: each page is the same
+  //: picture with its viewBox moved to that page's part of the board.
+  async function pictures(scope, choice) {
+    const { svg } = wbBuildExportSvg(scope);
+    const box = /viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"/.exec(svg);
+    const bounds = { x: Number(box[1]), y: Number(box[2]), w: Number(box[3]), h: Number(box[4]) };
+    const pages = [];
+    const inlined = await wbInlineSvgImages(svg);
+    for (const p of plan({ bounds, frames: framesIn(scope, bounds), ...choice })) {
+      //: About 216 dpi on paper, held to what a canvas will hold.
+      const w = Math.min(3000, Math.max(1, Math.round(p.place.w * 3)));
+      const h = Math.max(1, Math.round((w * p.place.h) / p.place.w));
+      const crop = inlined.replace(/viewBox="[^"]*"/, `viewBox="${p.crop.x} ${p.crop.y} ${p.crop.w} ${p.crop.h}"`);
+      const blob = await wbRasterizeSvg(crop, w, h, "image/jpeg", 0.92);
+      pages.push({ ...p, image: { jpeg: new Uint8Array(await blob.arrayBuffer()), w, h } });
+    }
+    return pages;
+  }
+
+  return { plan, build, pictures, choices: CHOICES, savedChoice, saveChoice };
+})();

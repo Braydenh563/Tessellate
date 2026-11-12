@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
+| whiteboard | 30 | 37 | 4 | 0 | 11 | 71 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 700 | 157 | 3 | 195 | 1410 |
+| all | 553 | 699 | 157 | 3 | 195 | 1409 |
 
 ## graph
 
@@ -324,10 +324,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L264** `whiteboard` open, S: Fix wb-tool-section-label text overflowing its box by 49-56px. From OPEN.md:1118; OPEN.md:3697. Evidence: Selector still styled in 08-consistency.css:3067 and whiteboard-map.js; no overflow fix commit found
 - [ ] **L265** `whiteboard` open, S: Remove search/navigator toggles that duplicate View switches; add wbcontextphone.js sweep. From OPEN.md:3068. Evidence: UI_MODERNISATION Phase 8; wbcontextphone.js sweep not added
 - [ ] **L266** `whiteboard` open, S: Resolve .wb-shape-caret pointer-events none leaving the closest branch dead. From OPEN.md:3554. Evidence: 06-timeline-dialogs.css:2910 and whiteboard.js:16834 both present; product choice left, branch still dead.
-- [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Stale sweep not re-checked.
+- [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Built here: wbExportBoard({ branch: true }) titles the dialog "Export this branch" (tests/test_wb_export_pdf.py, wbexport-pdf.js). Left: whiteboard-map.js:5072 in wbMapExportBranch must call wbExportBoard({ branch: true }) (file owned by another session). The mmd2 sweeps do not touch export; wbexport-pdf.js covers the dialog.
 - [ ] **L268** `whiteboard` open, S: Fix stale comment at whiteboard.js:22313 on next edit. From v1028-2.md Remaining. Evidence: Trivial; waits on next whiteboard.js edit
 - [ ] **L269** `whiteboard` open, M: Cut board toolbar tab stops from 33 with a roving tabindex. From OPEN.md:4266. Evidence: Ledger row 261 marked new, M; no roving-tabindex fix found.
-- [ ] **L270** `whiteboard` open, M: Build native multi-page PDF export instead of the browser print window, and verify it. From OPEN.md:4441; OPEN.md:1235; OPEN.md:3408. Evidence: whiteboard.js:14793 still builds a print window for pdf; no page size or multi-page export
 - [ ] **L271** `whiteboard` open, M: Unify the four overlapping drag and pointer-capture mechanisms in whiteboard.js. From OPEN.md:4442. Evidence: whiteboard.js still has mixed pointer capture and mouse handlers (27 matches); not unified
 - [ ] **L273** `whiteboard` open, M: Add merged cells to board tables. From OPEN.md:1210; OPEN.md:2564. Evidence: Row: 5f75052 built .drawio export, placeholders and layer order; merged cells in tables still missing (M).
 - [ ] **L274** `whiteboard` open, M: Merge agent and other-tab changes into board and map history; write redo sweeps for map gestures. From OPEN.md:1230; OPEN.md:3152. Evidence: WHITEBOARD_PLAN decision 17 (line 266) says the event log is long memory; no stack merge of external changes found.

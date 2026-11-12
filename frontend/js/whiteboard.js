@@ -14859,27 +14859,9 @@ async function wbCopyAsSvg() {
 }
 
 async function wbExportPdf(scope) {
-  const { svg, width, height } = wbBuildExportSvg(scope);
-  const blob = await wbRasterizeSvg(svg, width, height, "image/png");
-  const url = URL.createObjectURL(blob);
-  const win = window.open("", "_blank");
-  if (!win) {
-    URL.revokeObjectURL(url);
-    toast("Allow pop-ups to export as PDF, it opens Print, then Save as PDF.", "info");
-    return;
-  }
-  win.document.write(
-    `<!doctype html><html><head><title>${wbSvgEscape(wbExportFileName(scope, "pdf").replace(/\.pdf$/, ""))}</title><style>` +
-      `@page { margin: 0; } html,body{margin:0;padding:0;background:#fff;}` +
-      `img{display:block;width:100%;height:auto;}</style></head>` +
-      `<body><img src="${url}" alt="Whiteboard export"></body></html>`
-  );
-  win.document.close();
-  win.onload = () => {
-    win.focus();
-    win.print();
-  };
-  toast('Opened Print: choose "Save as PDF" as the destination.');
+  const pages = await wbPdf.pictures(scope, wbPdf.savedChoice());
+  await saveFile(wbExportFileName(scope, "pdf"), new Blob([wbPdf.build(pages)], { type: "application/pdf" }));
+  toast(pages.length === 1 ? "Board exported as a PDF." : `Board exported as a PDF of ${pages.length} pages.`);
 }
 
 //: **Export is a dialog, not a popover** (WHITEBOARD_PLAN.md decision 4).
@@ -14955,7 +14937,7 @@ const WB_EXPORT_FORMATS = [
   },
   {
     value: "pdf", label: "PDF", scopes: ["selection", "visible", "whole"],
-    note: "Opens Print: choose “Save as PDF” as the destination.",
+    note: "A PDF file: pick the page size, the direction and how the board is cut into pages.",
     run: (scope) => wbExportPdf(scope),
   },
   {
@@ -15058,7 +15040,9 @@ function wbExportFrame(frame) {
   wbExportBoard();
 }
 
-function wbExportBoard() {
+function wbExportBoard({ branch = false } = {}) {
+  //: Opened from a map branch's menu (the branch is the selection): the dialog says so.
+  const heading = branch ? "Export this branch" : "Export this board";
   const hasSelection = wbMultiSelection.size > 0 || Boolean(wbSelectedItem);
   const isMap = wbIsMap();
   const formats = WB_EXPORT_FORMATS.filter((f) => (!f.map || isMap) && (!f.board || !isMap));
@@ -15071,7 +15055,7 @@ function wbExportBoard() {
   overlay.className = "modal-overlay confirm-overlay wb-export-overlay";
   overlay.setAttribute("role", "dialog");
   overlay.setAttribute("aria-modal", "true");
-  overlay.setAttribute("aria-label", "Export this board");
+  overlay.setAttribute("aria-label", heading);
 
   const card = document.createElement("div");
   card.className = "card modal-card confirm-card wb-export-card";
@@ -15098,6 +15082,19 @@ function wbExportBoard() {
       sync();
     }
   );
+  //: A PDF's page size, direction and cut (L270), one labelled row each.
+  const pdfPrefs = wbPdf.savedChoice();
+  const pdfRows = ["size", "orientation", "layout"].map((key) => {
+    const label = document.createElement("span");
+    label.className = "wb-export-label";
+    label.textContent = { size: "Page size", orientation: "Direction", layout: "Pages" }[key];
+    const seg = wbExportSegment(label.textContent, wbPdf.choices[key], pdfPrefs[key], (value) => {
+      pdfPrefs[key] = value;
+      wbPdf.saveChoice(pdfPrefs);
+      sync();
+    });
+    return { key, label, seg };
+  });
   const clearRow = document.createElement("label");
   clearRow.className = "setting-check wb-export-clear";
   const clearBox = document.createElement("input");
@@ -15153,6 +15150,10 @@ function wbExportBoard() {
     //: A JPEG has no alpha, so the ground choice is not offered for it.
     clearRow.hidden = !picture || Boolean(format.noAlpha);
     libraryRow.hidden = format.value !== "png";
+    for (const row of pdfRows) {
+      row.label.hidden = row.seg.hidden = format.value !== "pdf";
+      wbSyncExportSeg(row.seg, pdfPrefs[row.key], null);
+    }
     if (picture) wbSyncExportSeg(sizeSeg, String(pngPrefs.scale), null);
     const chosenScope = WB_EXPORT_SCOPES.find((s) => s.value === scope);
     // Two sentences, the format's and the scope's, so the line reads the same
@@ -15206,7 +15207,7 @@ function wbExportBoard() {
   const exportBtn = smallButton("Export", "Export", go, false);
   exportBtn.id = "wb-export-go";
   row.append(smallButton("Cancel", "Cancel", close), exportBtn);
-  card.append(dialogHead("Export this board", close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, clearRow, libraryRow, note, warning, row);
+  card.append(dialogHead(heading, close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, clearRow, libraryRow, ...pdfRows.flatMap((r) => [r.label, r.seg]), note, warning, row);
   overlay.appendChild(card);
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);
