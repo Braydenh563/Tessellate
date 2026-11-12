@@ -463,7 +463,7 @@
   let wbBrainstormTimer = null;
 
   function wbBrainstormStop() {
-    if (wbBrainstormTimer) clearInterval(wbBrainstormTimer.tick);
+    if (wbBrainstormTimer) clearTimeout(wbBrainstormTimer.tick);
     wbBrainstormTimer?.chip.remove();
     wbBrainstormTimer = null;
   }
@@ -489,12 +489,13 @@
       const left = wbBrainstormLeft(startedAt, minutes, Date.now());
       clock.textContent = left ? `Brainstorm ${wbBrainstormClock(left)}` : "Time is up";
       if (!left) {
-        clearInterval(wbBrainstormTimer?.tick);
         wbAnnounce("The brainstorm time is up.");
         toast("The brainstorm time is up.");
+      } else if (wbBrainstormTimer) {
+        wbBrainstormTimer.tick = setTimeout(paint, 1000);
       }
     };
-    wbBrainstormTimer = { chip, tick: setInterval(paint, 1000) };
+    wbBrainstormTimer = { chip, tick: 0 };
     paint();
     wbAnnounce(`A ${minutes} minute brainstorm timer started.`);
   }
