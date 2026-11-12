@@ -2445,6 +2445,7 @@ function untangleSetup(edges) {
   untangle.cleaned = false;
   untangle.holding = false;
   untangle.mark = null;
+  untangle.best = null;
   //: Past the edge cap the stage is skipped, but its buffers are still built (empty),
   //: sized for this run: a dependent (`untangleCleanup`, `lineGridBuild`) reached on a
   //: skipped stage then sees no lines instead of null or the last run's arrays (the
@@ -3419,12 +3420,100 @@ function* untangleLayoutSteps() {
       if (bestAt) gained += before - best;
     }
     for (let i = 0; i < nodes.length && workNow() < until; i++) {
-      if (!still(nodes[i]) && untangle.incident[i].length > UNTANGLE_MOVE_LINKS) gained += yield* untangleFanSteps(i, still, until);
+      if (still(nodes[i]) || untangle.incident[i].length <= UNTANGLE_MOVE_LINKS) continue;
+      gained += yield* untangleOrderSteps(i, still, until);
+      gained += yield* untangleFanSteps(i, still, until);
     }
     untangle.gain += gained;
     if (!gained) break;
   }
   return untangleGlide(startX, startY);
+}
+
+//: **A hub's neighbours take the order their other lines lead** (INBOX 1306, W34 "Hub crossings"). The pair
+//: swaps below are local: a hub whose fan is turned or mirrored as a whole needs many swaps that each cost
+//: crossings, so they never start. Here the neighbours keep the spots they hold, sorted by angle round the
+//: hub, and are dealt into them in the order of the angle to each one's other neighbours (its own angle when
+//: it has none), at every turn of the deal and in both directions; the deal with the fewest crossings on
+//: their lines is kept when it beats the start. Spots are reused, never made, so no note lands on another.
+function* untangleOrderSteps(i, still, until = Infinity) {
+  const hub = nodes[i];
+  const around = [];
+  for (const line of untangle.incident[i]) {
+    const j = untangle.ea[line] === i ? untangle.eb[line] : untangle.ea[line];
+    if (j !== i && !still(nodes[j]) && !around.includes(j)) around.push(j);
+  }
+  const n = around.length;
+  if (n < 3) return 0;
+  const angle = (x, y) => Math.atan2(y - hub.y, x - hub.x);
+  const want = around.map((j) => {
+    let sx = 0;
+    let sy = 0;
+    let k = 0;
+    for (const line of untangle.incident[j]) {
+      const o = untangle.ea[line] === j ? untangle.eb[line] : untangle.ea[line];
+      if (o === i || o === j) continue;
+      sx += nodes[o].x;
+      sy += nodes[o].y;
+      k += 1;
+    }
+    return k ? angle(sx / k, sy / k) : angle(nodes[j].x, nodes[j].y);
+  });
+  const slots = around.map((j) => [nodes[j].x, nodes[j].y]).sort((a, b) => angle(a[0], a[1]) - angle(b[0], b[1]));
+  const order = around.map((_, k) => k).sort((a, b) => want[a] - want[b]);
+  const lines = [...new Set(around.flatMap((j) => untangle.incident[j]))];
+  const start = around.map((j) => [nodes[j].x, nodes[j].y]);
+  const before = crossingsOn(lines);
+  if (!before) return 0;
+  let best = before;
+  let bestDeal = null;
+  for (let dir = 1; dir >= -1; dir -= 2) {
+    for (let turn = 0; turn < n; turn++) {
+      if (workNow() >= until) break;
+      if (sliceOver()) yield;
+      order.forEach((k, at) => {
+        const slot = slots[(((dir * at + turn) % n) + n) % n];
+        nodes[around[k]].x = slot[0];
+        nodes[around[k]].y = slot[1];
+      });
+      const after = crossingsOn(lines);
+      if (after < best && around.every((j) => untangleInside(nodes[j]))) {
+        best = after;
+        bestDeal = around.map((j) => [nodes[j].x, nodes[j].y]);
+      }
+    }
+  }
+  const keep = bestDeal || start;
+  around.forEach((j, k) => {
+    nodes[j].x = keep[k][0];
+    nodes[j].y = keep[k][1];
+  });
+  //: Then a run of the fan turned end to end (a 2-opt on the order round the hub): the notes on the spots
+  //: from `a` to `b` take them in reverse, kept when that lowers the crossings and all stay in reach.
+  const seat = around.slice().sort((p, q) => angle(nodes[p].x, nodes[p].y) - angle(nodes[q].x, nodes[q].y));
+  for (let a = 0; a < n - 1; a++) {
+    for (let b = a + 1; b < n; b++) {
+      if (workNow() >= until) return before - best;
+      if (sliceOver()) yield;
+      const run = seat.slice(a, b + 1);
+      const at = run.map((j) => [nodes[j].x, nodes[j].y]);
+      run.forEach((j, k) => {
+        nodes[j].x = at[run.length - 1 - k][0];
+        nodes[j].y = at[run.length - 1 - k][1];
+      });
+      const after = crossingsOn(lines);
+      if (after < best && run.every((j) => untangleInside(nodes[j]))) {
+        best = after;
+        seat.splice(a, run.length, ...run.slice().reverse());
+        continue;
+      }
+      run.forEach((j, k) => {
+        nodes[j].x = at[k][0];
+        nodes[j].y = at[k][1];
+      });
+    }
+  }
+  return before - best;
 }
 
 //: **A hub's neighbours trade places** (graph-1030:35: the rings move the hub, nothing moved the order its lines
@@ -3516,6 +3605,29 @@ function untangleOwed() {
 //: out of sight, `pendingStep`). `cap`: no pass is begun that would leave the
 //: cleanup no time before it; the passes left are given up, the cleanup runs
 //: (notes left on a line show more than a crossing a pass would have saved).
+//: **The least crossed layout of the passes is the one cleaned** (W34 "Hub crossings"). Each relax after a
+//: pass lets the links pull the moved notes back: on the 36-note hub seeds a pass took 71 crossings to 28
+//: and the relax gave back 38 of them. So the layout is kept after each pass and each relax, and the one
+//: with the fewest crossings goes to the cleanup, which clears what a pass brought close (notes that meet,
+//: a line through a dot) as it does after a relax.
+function untangleKeepBest() {
+  const all = untangle.edges.map((_, k) => k);
+  const now = crossingsOn(all);
+  if (untangle.best && untangle.best.count <= now) return;
+  untangle.best = { count: now, xs: nodes.map((n) => n.x), ys: nodes.map((n) => n.y) };
+}
+function untangleTakeBest() {
+  const best = untangle.best;
+  untangle.best = null;
+  if (!best || best.xs.length !== nodes.length) return;
+  if (best.count >= crossingsOn(untangle.edges.map((_, k) => k))) return;
+  nodes.forEach((node, i) => {
+    if (node.fx != null) return;
+    node.x = best.xs[i];
+    node.y = best.ys[i];
+  });
+}
+
 function settleUntangled(until, deadline, cap) {
   if (!coolToRest(until)) return false;
   const late = () => deadline && Date.now() + untangleBudget() > deadline;
@@ -3538,12 +3650,15 @@ function settleUntangled(until, deadline, cap) {
     landTargets();
     untangle.passes += 1;
     if (untangle.gain < Math.max(2, untangle.total * UNTANGLE_MIN_SHARE)) untangle.passes = UNTANGLE_PASSES;
+    untangleKeepBest();
     // A low heat lets the collision and the line clearance settle what the
     // moves brought close (a swap can put a hub where a small note stood).
     simulation.alpha(UNTANGLE_RELAX);
     if (!coolToRest(until)) return false;
+    untangleKeepBest();
   }
   untangle.done = true;
+  if (untangle.passes > 0 && !untangle.cleaned && !untangle.tidy) untangleTakeBest();
   if (untangle.passes > 0 && !untangle.cleaned) {
     if (!untangle.tidy) {
       if (late()) return "late";
