@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 171 | 57 | 0 | 72 | 358 |
+| world-class | 130 | 172 | 56 | 0 | 72 | 358 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 697 | 156 | 3 | 195 | 1406 |
+| all | 553 | 698 | 155 | 3 | 195 | 1406 |
 
 ## graph
 
@@ -785,7 +785,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L653** `world-class` partly, S: test_typo_routing writes ./data serially; boot JS 588516 over cap 588400. From OPEN.md:3891. Evidence: Boot cap stale: BOOT_JS_CAP now 448_400 (tests/test_boot_budget.py:64). Serial ./data write in tests/test_typo_routing.py not re-run (read-only); unverified.
 - [ ] **L656** `world-class` partly, M: Finish palette rows for note/meeting acts and search chip. From OPEN.md:3721. Evidence: palette.js:178 now draws /read/acts rows; per-act note/meeting rows and the search chip unverified
 - [ ] **L657** `world-class` partly, M: Add duplicates, entities and dates as fact kinds in ai/facts.py. From OPEN.md:1226. Evidence: Tensions built (ai/facts.py:1197 _pair_passes); duplicates/entities/dates kinds not present.
-- [ ] **L658** `world-class` partly, M: Add a stop step to night shift, backup, resurfacing and embeddings backfill. From OPEN.md:1697; OPEN.md:3538. Evidence: core/passes.py:95,201 stop_requested only checked in maintenance; backfill loop and others have no stop step
 - [ ] **L659** `world-class` partly, M: Add an egress lint that makes each outbound call site name its purpose and confirm remaining trust-contract rules. From OPEN.md:2023; OPEN.md:2513. Evidence: 72a/72b/73/74 landed (HISTORY 'Moved from the plans' Brief 72b); leftover rules unconfirmed, egress lint absent
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L661** `world-class` partly, M: Make Library boards and mind maps filter return boards, not only note cards. From OPEN.md:1120; OPEN.md:3749. Evidence: library.js:383 handles is_board entries; libraryPhrase filter result not confirmed to include boards
@@ -858,6 +857,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-21** `world-class` open, S: Add a partial index on live entries. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3934. Evidence: Open line in the plan's prose a session could miss. Index work open alongside audit_log.entity_id.
 - [ ] **L-world-class-22** `world-class` open, L: Build the 27.1 remainder: templates, pin and archive, space tools. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3975. Evidence: Open line in the plan's prose a session could miss. Section 27.1 items besides bulk edit and exports have no rows.
 - [ ] **L-world-class-23** `world-class` open, M: Filing leftovers from the 1010 pass. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4173. Evidence: Open line in the plan's prose a session could miss. Pointer leftovers lost when pointer files were deleted.
+- [ ] **L-world-class-25** `world-class` open, M: Add a stop step to the backup pass (night shift, resurfacing, embeddings backfill and maintenance now stop). From L658 remainder. Evidence: core/backup.py:260 backup_now has no stop step between copy, check and second copy; callers use the returned path, so a stop needs a decided shape
 
 ## general
 

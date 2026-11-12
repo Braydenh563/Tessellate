@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Stop (L658): Stop on the night shift ends it between notes and Stop on resurfacing ends it every 50 notes, keeping what was scored; the backup pass is a new LEDGER row (`tests/test_passes_stop.py`).
 - Activity (L679, L503): the topic and branch summaries and the calendar and bookmarks imports are listed in Activity while they run, and `tests/test_activity.py::REQUEST_BOUND_LONG` fails a named request-bound long task that stops registering.
 - LAN (L507): a new device's held sign-in request is kept in `lan-pending.json` (0600) and comes back when the app restarts, until its ten minutes are up (`tests/test_lan.py`).
 - Quit (L502): the registry (`background.stop_all`) is signalled first on every quit path, the server lifespan and the abrupt desktop exits, so the reminder notifier no longer waits out the job pool's 5 s deadline (`tests/test_background_workers.py`).

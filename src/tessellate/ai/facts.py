@@ -622,6 +622,16 @@ def _derive_note(  # noqa: ANN001
     return added
 
 
+_HALT_LINES = {"stopped": "Stopped between notes.", "budget": "Reached the token budget, so it stopped reading."}
+
+
+def _halt_reason(spent: int, budget: int) -> str:
+    """Why the note loop ends before the next note: "stopped" (asked), "budget", or ""."""
+    if "night-shift" in jobruns.stop_asked:
+        return "stopped"
+    return "budget" if spent + TOKENS_PER_NOTE > budget else ""
+
+
 def run(
     session: Session,
     *,
@@ -692,9 +702,10 @@ def run(
         progress.step(0, reachable, "Reading notes")
         progress.say(f"{len(to_read)} note{'' if len(to_read) == 1 else 's'} to read.")
         for entry in to_read:
-            if spent + TOKENS_PER_NOTE > budget:
-                stopped = "budget"
-                progress.say("Reached the token budget, so it stopped reading.")
+            #: Stop (Background jobs) is honoured between notes; the pair passes are skipped.
+            if halt := _halt_reason(spent, budget):
+                stopped = halt
+                progress.say(_HALT_LINES[halt])
                 break
             content = entry.content or ""
             spent += TOKENS_PER_NOTE
