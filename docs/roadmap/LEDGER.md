@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 124 | 42 | 0 | 17 | 296 |
+| world-class | 130 | 123 | 42 | 0 | 17 | 295 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 650 | 141 | 3 | 140 | 1344 |
+| all | 553 | 649 | 141 | 3 | 140 | 1343 |
 
 ## graph
 
@@ -680,7 +680,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L583** `world-class` open, M: Sweep the remaining literal toast("...", true) error calls so each carries a what-to-do action instead of the default Open the logs. From OPEN.md:4247; OPEN.md:1389; OPEN.md:1396; OPEN.md:3465. Evidence: toast action support exists (status.js:347); per-error call-site sweep not done.
 - [ ] **L584** `world-class` open, M: Finish A68 learned-audit leftovers: per-flag Keep it and the Settings switch. From OPEN.md:4309. Evidence: W34 true (part), w34-L2r-1111.md; remainder unbuilt.
 - [ ] **L585** `world-class` open, M: Build live sync between two open windows (only a spaces-find storage listener exists). From OPEN.md:691; OPEN.md:2575. Evidence: Only spaces-find.js:573 storage listener; no general cross-window sync
-- [ ] **L586** `world-class` open, M: Give timer, stopwatch and Count words utilities a data-help-for popover. From OPEN.md:694. Evidence: utility-tools.js exists; palette-row-only utilities lack own help surface, not confirmed fixed
 - [ ] **L587** `world-class` open, M: Add installer progress, minimise and close for optional package downloads, and janitor default-model warm. From OPEN.md:699; e19-1110.md Tier F. Evidence: Installer UI on Windows; scripts/splash.ps1 exists, behaviour unverified
 - [ ] **L588** `world-class` open, M: Settings import should merge skills/personas/templates; verify the desktop save path. From OPEN.md:961; OPEN.md:2591. Evidence: Merge fixed: routes_settings.py:1300 _MERGED_LISTS (row 558); desktop save dialog still needs the Windows desktop
 - [ ] **L589** `world-class` open, M: Frontend audit leftovers: coverage-driven unused CSS deletion (FE-09) and FE-10. From OPEN.md:1818. Evidence: Coverage-driven CSS deletion not started per row; no commit found
