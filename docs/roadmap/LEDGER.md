@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 22 | 3 | 0 | 5 | 28 |
+| timeline | 3 | 20 | 3 | 0 | 5 | 26 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 694 | 157 | 3 | 195 | 1404 |
+| all | 553 | 692 | 157 | 3 | 195 | 1402 |
 
 ## graph
 
@@ -598,7 +598,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L470** `timeline` open, S: Make the week Monday-first on user_now (1524). From a30c-1102.md Still open small. Evidence: No locale week-start code found in ai/user_now.py or core
 - [ ] **L472** `timeline` open, S: Backfill done_at for reminders ticked before it existed so they count in a week. From OPEN.md:1384. Evidence: review_digest.py:94 filters on done_at; no backfill of old done rows found in src.
 - [ ] **L473** `timeline` open, S: Add a stored birthday setting so 'on my birthday' works. From OPEN.md:863. Evidence: No birthday setting found; context['birthday'] only
-- [ ] **L477** `timeline` open, S: Verify in a browser: Alert menu, Undo then Ctrl+Z, timeline range change. From OPEN.md:443. Evidence: Source and node tests only per row; no browser drive logged
 - [ ] **L478** `timeline` open, S: Fix timelinepaging.js strip-click check failing on base and 100 ms frame flake. From OPEN.md:654. Evidence: scratchpad/ui-sweeps/timelinepaging.js exists; no fix commit found
 - [ ] **L479** `timeline` open, S: Fold the 'On this day' row on phone so it stops shifting the list 44px at 390. From OPEN.md:734; OPEN.md:2781. Evidence: timeline.js:645 recall row; css only has calendar-mode rule 06-timeline-dialogs.css:3488; no phone fold
 - [ ] **L481** `timeline` open, S: Run contrast and errors sweeps on the calendar view. From OPEN.md:1374. Evidence: No calendar sweep in scratchpad/ui-sweeps recorded; runnable without hardware.
@@ -608,7 +607,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L486** `timeline` open, S: Fix deepen72b.js timeline row at 390 timing out waiting for .timeline-rows. From OPEN.md:735; OPEN.md:2782. Evidence: scratchpad/ui-sweeps/deepen72b.js:61 still waits on .timeline-rows; phone keeps table view
 - [ ] **L487** `timeline` open, S: timelinepaging.js strip-click fails on base; frame check flaky. From OPEN.md:2784. Evidence: Sweep script fails on base; verified open
 - [ ] **L488** `timeline` open, M: Persist the reminder action token key so notification buttons survive restart. From OPEN.md:2608. Evidence: No persisted signing secret found; verified 2026-11-10
-- [ ] **L489** `timeline` open, M: Sweep Tour: Timeline Options and reminders More at 600-1100 widths. From OPEN.md:1386. Evidence: No wider-width sweep result found in HISTORY/CHANGELOG; needs a Playwright pass at 600-1100
 - [ ] **L490** `timeline` open, M: Get timeline bar click to rows under 300 ms at 96 notes (329 measured). From OPEN.md:2780. Evidence: timeline.js drawTimelineWindow; boot CSS budget tight; verified open
 - [ ] **L491** `timeline` open, M: Window the Timeline table view rows like the feed. From agent-remaining/listwin-1031.md. Evidence: The Timeline table view (`timelineTableRow`, paintTimelineTable) still builds every loaded row; only the feed is windowe
 - [ ] **L492** `timeline` open, L: Timeline feed lays out ~39x/s while scrolling. From OPEN.md:1385. Evidence: content-visibility: auto still in css (03-dashboard-widgets.css:1927, library-lazy.css:6866); no layout-rate fix or measurement after
