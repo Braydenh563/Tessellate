@@ -54,6 +54,56 @@
     return items.length;
   }
 
+  //: **Repeat last** (the owner's open-work sweep, "repeat the last move, rotate or scale"): the board keeps
+  //: the last move, turn or size change as a delta, and the command (Ctrl+Alt+Y; Ctrl+Alt+R is the app's reload)
+  //: does it again to whatever is selected now. A repeat does not record itself, so it never drifts.
+  let last = null;
+  let replaying = false;
+
+  //: Called from the places a move, turn or size change ends. A null or zero delta keeps the one before it.
+  function record(delta) {
+    if (replaying || !delta) return;
+    if (delta.kind === "move" && !delta.dx && !delta.dy) return;
+    if (delta.kind === "turn" && !(delta.deg % 360)) return;
+    if (delta.kind === "scale" && !(delta.factor > 0 && Math.abs(delta.factor - 1) > 0.001)) return;
+    last = { ...delta };
+  }
+
+  //: Says what Repeat last would do, for the menu's disabled reason and the announcement.
+  function describe(delta = last) {
+    if (!delta) return "";
+    if (delta.kind === "move") return `Moved ${Math.round(delta.dx)} across and ${Math.round(delta.dy)} down.`;
+    if (delta.kind === "turn") return `Turned ${Math.round(delta.deg)} degrees.`;
+    return `${delta.axis === "w" ? "Width" : "Height"} scaled by ${Math.round(delta.factor * 100)}%.`;
+  }
+
+  async function repeat() {
+    if (!last) {
+      toast("Move, turn or resize something first, then repeat it.", "info");
+      return false;
+    }
+    if (!wbSelectedKeys().size) {
+      toast("Select something to repeat the last change on.", "info");
+      return false;
+    }
+    const delta = last;
+    replaying = true;
+    try {
+      if (delta.kind === "move") wbNudgeSelection(delta.dx, delta.dy);
+      else if (delta.kind === "turn") await wbTurnSelection(delta.deg);
+      else {
+        const box = wbFmtBox(wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item)));
+        const size = box && (delta.axis === "w" ? box.maxX - box.minX : box.maxY - box.minY);
+        if (size > 0) await wbRecordGesture(() => wbFmtSizeAxis(delta.axis, Math.max(8, Math.round(size * delta.factor))));
+      }
+    } finally {
+      replaying = false;
+    }
+    wbScheduleRender();
+    wbAnnounce(`Repeated. ${describe(delta)}`);
+    return true;
+  }
+
   //: True when the key is for the canvas: a board is open (not a map, whose Home and Delete walk the tree),
   //: no field is being typed in and no list, tab row or menu has the focus (they take Home themselves).
   function forCanvas(e) {
@@ -66,7 +116,14 @@
   }
 
   function onKey(e) {
-    if (typeof e.key !== "string" || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (typeof e.key !== "string") return;
+    if ((e.ctrlKey || e.metaKey) && e.altKey && !e.shiftKey && e.key.toLowerCase() === "y" && forCanvas(e)) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      repeat();
+      return;
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
     const home = e.key === "Home";
     const clear = e.key === "Delete" && e.shiftKey;
     if ((!home && !clear) || !forCanvas(e)) return;
@@ -78,5 +135,5 @@
   }
   window.addEventListener("keydown", onKey, true);
 
-  wbFmtState.keys = { viewAt, home: () => go(false), reset: () => go(true), clearLabels, onKey };
+  wbFmtState.keys = { viewAt, home: () => go(false), reset: () => go(true), clearLabels, onKey, record, repeat, describe, canRepeat: () => Boolean(last) };
 })();

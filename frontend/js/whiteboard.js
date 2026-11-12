@@ -5912,6 +5912,7 @@ function wbNudgeSelection(dx, dy) {
         })()
       : [];
   if (entries.length === 0) return;
+  wbFmtState.keys?.record({ kind: "move", dx, dy });
   const key = entries.map((e) => wbMultiKey(e.kind, e.id)).sort().join(",");
   const joining = wbNudgeBurst && wbNudgeBurst.key === key
     && wbUndoStack[wbUndoStack.length - 1] === wbNudgeBurst.entry;
@@ -8812,9 +8813,29 @@ function wbPushDragUndo(entries) {
   wbPushUndo(all.length === 1 ? all[0] : { action: "batch", entries: all });
 }
 
+//: How far the item under the pointer moved, for Repeat last (whiteboard-keys.js): its box now against the
+//: payload the undo step keeps. Null for a drag that went nowhere or an item that is gone.
+function wbDragDelta(primary) {
+  const before = primary?.before;
+  const item = before && wbFindItem(primary.kind, primary.id);
+  if (!item) return null;
+  let dx = 0, dy = 0;
+  if (primary.kind === "sketch") {
+    let was = null;
+    try { was = wbPathBBox(JSON.parse(before.data).d); } catch { return null; }
+    const now = was && wbItemBBox("sketch", item);
+    if (!now) return null;
+    [dx, dy] = [now.minX - was.minX, now.minY - was.minY];
+  } else {
+    [dx, dy] = [(item.x || 0) - (before.x || 0), (item.y || 0) - (before.y || 0)];
+  }
+  return dx || dy ? { kind: "move", dx: Math.round(dx), dy: Math.round(dy) } : null;
+}
+
 //: Everything a drag that ends has to do after its own item is saved: the
 //: carried members saved, the copies made, and one undo step pushed for it.
 async function wbFinishDrag(primary, bulkOrigin, altCopy) {
+  wbFmtState.keys?.record(wbDragDelta(primary));
   const carried = wbBulkUndoEntries(bulkOrigin);
   if (bulkOrigin) await wbSaveBulkMove(bulkOrigin);
   const bends = await wbCarryWaypoints(primary, bulkOrigin);
@@ -23104,6 +23125,7 @@ function renderWhiteboard() {
         //: the double-click that fits the text is one) is not a resize.
         if (cancelled || (before && before.width === (d.width ?? null) && before.height === (d.height ?? null))) return;
         await wbSaveNode(d);
+        wbFmtState.keys?.record({ kind: "turn", deg: (d.rotation || 0) - (before?.rotation || 0) });
         if (before) wbPushUndo({ action: "move", kind: "node", id: d.id, before });
         wbScheduleRender();
       });
@@ -24342,6 +24364,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
           return;
         }
         await wbSaveObject(d);
+        wbFmtState.keys?.record({ kind: "turn", deg: (d.rotation || 0) - (before?.rotation || 0) });
         if (!d._turnOrigin) {
           if (before) wbPushUndo({ action: "move", kind: "object", id: d.id, before });
           return;

@@ -136,6 +136,7 @@ const WB_COMMANDS = [
   { id: "paste-no-comments", group: "Edit", icon: "ph:clipboard", label: "Paste without comments", keys: "Ctrl+Alt+Shift+V", surface: "board", needs: "copied", run: () => wbPasteClipboard({ noComments: true }) },
   { id: "duplicate", group: "Edit", icon: "ph:copy", label: "Duplicate", keys: "Ctrl+D", surface: "both", needs: "selection", run: () => wbDuplicateSelection() },
   { id: "delete", group: "Edit", icon: "ph:trash", label: "Delete", keys: "Del", surface: "both", needs: "selection", run: () => deleteWbSelection() },
+  { id: "repeat-last", group: "Edit", icon: "ph:arrow-clockwise", label: "Repeat the last move, turn or resize", menu: "Repeat last move, turn or resize", keys: "Ctrl+Alt+Y", surface: "board", needs: "selection", run: () => wbFmtState.keys.repeat() },
   { id: "clear-labels", group: "Edit", icon: "ph:tag", label: "Clear the labels, keep the shapes", keys: "Shift+Del", surface: "board", needs: "selection", run: () => wbFmtState.keys.clearLabels() },
   { id: "copy-style", group: "Edit", icon: "ph:eyedropper", label: "Copy style", keys: "Ctrl+Alt+C", surface: "board", needs: "one", run: () => wbCopySelectedStyle() },
   { id: "paste-style", group: "Edit", icon: "ph:paint-bucket", label: "Paste style", keys: "Ctrl+Alt+V", surface: "board", needs: "selection", run: () => wbPasteCopiedStyle() },

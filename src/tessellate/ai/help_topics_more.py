@@ -2253,7 +2253,8 @@ MORE_TOPICS.extend([
             "the Sticky note, Text or Frame tool, then Enter to drop one in the middle "
             "of the view (Insert, Sticky note does too). Tab walks the items; Enter on a selected "
             "text box or sticky puts the caret at the end of its words, and Enter on a "
-            "selected shape writes in it. Escape leaves the words."
+            "selected shape writes in it. Escape leaves the words. Ctrl+Alt+Y (Edit, Repeat last move, "
+            "turn or resize) does the last move, turn or resize again to what is selected now."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
