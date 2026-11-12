@@ -2413,3 +2413,25 @@ def test_a_hand_written_text_outline_imports_by_indentation(client):
         {"text": "Book", "children": [{"text": "flights", "children": []}]},
         {"text": "Pack", "children": []},
     ]}]
+
+
+def test_a_due_time_rides_beside_the_due_day_checked_kept_and_carried(client):
+    """LEDGER L371: the Due row's picker also sets a time of day. Decision 37
+    keeps `due` a calendar day; the time is its own optional `due_time`
+    ("HH:MM", a wall-clock time like the day), content, private `_due_time`."""
+    board = _map(client, name="Due time")
+    root = _node(client, board["id"], text="Plan")
+    node = _node(client, board["id"], parent_id=root["id"], text="Book")
+    for bad in ("9:30", "24:00", "09:60", "9am", "09:30:00"):
+        assert _set_data(client, board, node, {"due": "2026-10-12", "due_time": bad}).status_code == 422, bad
+    assert _set_data(client, board, node, {"due": "2026-10-12", "due_time": "09:30"}).status_code == 200
+    got = _styles_by_text(client, board["id"])["Book"]
+    assert (got["due"], got["due_time"]) == ("2026-10-12", "09:30")
+    for fmt in ("opml", "freemind"):
+        text = client.get(f"/whiteboard/boards/{board['id']}/export?format={fmt}").text
+        assert '_due_time="09:30"' in text, fmt
+        back = client.post("/whiteboard/boards/import", json={"format": fmt, "content": text, "name": fmt})
+        assert _styles_by_text(client, back.json()["id"])["Book"].get("due_time") == "09:30", fmt
+    assert "09:30" not in client.get(f"/whiteboard/boards/{board['id']}/export?format=markdown").text
+    client.post(f"/whiteboard/boards/{board['id']}/nodes/clear-style")
+    assert _styles_by_text(client, board["id"])["Book"]["due_time"] == "09:30"

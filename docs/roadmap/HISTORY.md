@@ -10,6 +10,7 @@ that answers "has this been done?" before anyone starts.
 ## Moved from the plans, 2026-11-12 (mindmap-plan)
 
 - **Built, decision 34 (extended):** Filter by marker takes several at once and the topic's labels (its tags; the labels field is reused, so OPML and FreeMind already carry it as `_labels`), and the outline shows each topic's markers, due day and labels as cells; `tests/test_map_filter_columns.py`.
+- **Built, LEDGER L371:** the Due row is the date-field picker with an optional time (`data.due_time`, `_due_time`; the day stays a day, decision 37); the markers popover stays open while the calendar is used, so the day and the time are set in four presses; `tests/test_map_due_time.py`, `tests/test_mindmap.py`.
 
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
@@ -55193,6 +55194,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L371** `mindmap` open, M: Replace native due date on map topics with a picker that sets time too. From OPEN.md:3807. Evidence: whiteboard-map.js due date stays native Built: maptopic-1112 due-time commit, tests/test_map_due_time.py + test_mindmap.py
 - [x] **L800** `world-class` owner-call, S: Decide what the evidence_checks switch gates and build its runner. From OPEN.md:2944. Evidence: Only facts.py:88 default; decision needed on what it gates Built: owner decision 2026-11-12: Keep it as built, no build needed
 - [x] **L796** `world-class` owner-call, S: Decide and build server restore routes for media deletes, ask-history, learned and tidy undo. From OPEN.md:532. Evidence: Row marks owner-call (w34-L1-1111.md); server restore routes needing a design decision; some exist (HISTORY:653) Built: owner decision 2026-11-12: Keep the built Undo, no build needed
 - [x] **L793** `world-class` owner-call, M: Decide auth and write-tool scope for the MCP server. From OPEN.md:4211. Evidence: Ledger owner call on MCP auth/scope. Built: owner decision 2026-11-12: Keep token, read-only, no build needed

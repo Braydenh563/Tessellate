@@ -36,9 +36,9 @@ def _run(body: str) -> dict:
 
 def test_start_is_a_marker_read_painted_and_kept_by_a_look_reset():
     assert re.search(r"const start = typeof data\?\.start === \"string\"", MAP)
-    assert "return { priority, progress, flag, icons, due, start };" in MAP
+    assert "return { priority, progress, flag, icons, due, dueTime, start };" in MAP
     keys = re.search(r"const WB_MAP_CONTENT_KEYS = \[(.*?)\];", MAP, re.S).group(1)
-    assert '"due", "start"' in keys
+    assert '"due_time", "start"' in keys
     assert "wbMapDateRow(live, parts, set, \"Start\", \"start\")" in MAP
     assert "wbMapDateRow(live, parts, set, \"Due\", \"due\")" in MAP
 

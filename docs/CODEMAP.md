@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8326, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2669, tests 21801, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8326, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2670, tests 21805, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8326)
 
@@ -8723,12 +8723,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbIsMap` | frontend/js/whiteboard-map.js:99 |
 | `wbMapAccentInk` | frontend/js/whiteboard-map.js:2201 |
 | `wbMapAddChild` | frontend/js/whiteboard-map.js:4869 |
-| `wbMapAddChosenBranches` | frontend/js/whiteboard-map.js:11496 |
+| `wbMapAddChosenBranches` | frontend/js/whiteboard-map.js:11517 |
 | `wbMapAddReference` | frontend/js/whiteboard-map.js:5353 |
 | `wbMapAddRootAt` | frontend/js/whiteboard-map.js:5324 |
 | `wbMapAddSibling` | frontend/js/whiteboard-map.js:5384 |
 | `wbMapAdoptProvisional` | frontend/js/whiteboard-map.js:5267 |
-| `wbMapAfterRender` | frontend/js/whiteboard-map.js:11203 |
+| `wbMapAfterRender` | frontend/js/whiteboard-map.js:11224 |
 | `wbMapAgeBucket` | frontend/js/whiteboard-map.js:515 |
 | `wbMapAskStructureWords` | frontend/js/whiteboard-map.js:9831 |
 | `wbMapAutoEdgeEnds` | frontend/js/whiteboard-map.js:9194 |
@@ -8736,10 +8736,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapBraceGeometry` | frontend/js/whiteboard-map.js:9700 |
 | `wbMapBranchBox` | frontend/js/whiteboard-map.js:9658 |
 | `wbMapBranchDragOrigin` | frontend/js/whiteboard-map.js:2964 |
-| `wbMapBranchPicker` | frontend/js/whiteboard-map.js:11414 |
+| `wbMapBranchPicker` | frontend/js/whiteboard-map.js:11435 |
 | `wbMapBySiblingOrder` | frontend/js/whiteboard-map.js:1512 |
 | `wbMapCatchTypeahead` | frontend/js/whiteboard-map.js:4838 |
-| `wbMapChooseMarkerFilter` | frontend/js/whiteboard-map.js:11058 |
+| `wbMapChooseMarkerFilter` | frontend/js/whiteboard-map.js:11079 |
 | `wbMapClearDropTarget` | frontend/js/whiteboard-map.js:3101 |
 | `wbMapClearEveryTopic` | frontend/js/whiteboard-map.js:998 |
 | `wbMapClearEveryTopicNow` | frontend/js/whiteboard-map.js:1002 |
@@ -8747,7 +8747,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapClearLinkCue` | frontend/js/whiteboard-map.js:3351 |
 | `wbMapClearToOneTopic` | frontend/js/whiteboard-map.js:5768 |
 | `wbMapClearToOneTopicNow` | frontend/js/whiteboard-map.js:5772 |
-| `wbMapCloseMarkers` | frontend/js/whiteboard-map.js:10820 |
+| `wbMapCloseMarkers` | frontend/js/whiteboard-map.js:10840 |
 | `wbMapCloseNote` | frontend/js/whiteboard-map.js:2543 |
 | `wbMapCloudD` | frontend/js/whiteboard-map.js:9681 |
 | `wbMapColors` | frontend/js/whiteboard-map.js:1626 |
@@ -8764,15 +8764,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapCubicAt` | frontend/js/whiteboard-map.js:3931 |
 | `wbMapCutCrossLink` | frontend/js/whiteboard-map.js:9404 |
 | `wbMapCutCrossLinkNow` | frontend/js/whiteboard-map.js:9408 |
-| `wbMapDateRow` | frontend/js/whiteboard-map.js:10770 |
+| `wbMapDateRow` | frontend/js/whiteboard-map.js:10779 |
 | `wbMapDeleteEmptiesMap` | frontend/js/whiteboard-map.js:5744 |
 | `wbMapDeleteSubtree` | frontend/js/whiteboard-map.js:5798 |
-| `wbMapDimLit` | frontend/js/whiteboard-map.js:11161 |
+| `wbMapDimLit` | frontend/js/whiteboard-map.js:11182 |
 | `wbMapDrawn` | frontend/js/whiteboard-map.js:332 |
 | `wbMapDropAmongSiblings` | frontend/js/whiteboard-map.js:3070 |
 | `wbMapDropStale` | frontend/js/whiteboard-map.js:4160 |
 | `wbMapDropTargetAt` | frontend/js/whiteboard-map.js:2983 |
-| `wbMapDueWords` | frontend/js/whiteboard-map.js:10688 |
+| `wbMapDueWords` | frontend/js/whiteboard-map.js:10691 |
 | `wbMapDuplicateTopic` | frontend/js/whiteboard-map.js:5413 |
 | `wbMapEdgeAnchors` | frontend/js/whiteboard-map.js:3549 |
 | `wbMapEdgeApply` | frontend/js/whiteboard-map.js:4487 |
@@ -8806,7 +8806,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapElbowPoints` | frontend/js/whiteboard-map.js:3744 |
 | `wbMapEndStudy` | frontend/js/whiteboard-map.js:10236 |
 | `wbMapExpandAll` | frontend/js/whiteboard-map.js:2857 |
-| `wbMapExpandFromNote` | frontend/js/whiteboard-map.js:11380 |
+| `wbMapExpandFromNote` | frontend/js/whiteboard-map.js:11401 |
 | `wbMapExportBranch` | frontend/js/whiteboard-map.js:5063 |
 | `wbMapFacets` | frontend/js/whiteboard-map.js:500 |
 | `wbMapFacingSide` | frontend/js/whiteboard-map.js:3542 |
@@ -8816,10 +8816,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapFoldToLevel` | frontend/js/whiteboard-map.js:2877 |
 | `wbMapFontStack` | frontend/js/whiteboard-map.js:350 |
 | `wbMapFreshPlace` | frontend/js/whiteboard-map.js:5208 |
-| `wbMapFromDocument` | frontend/js/whiteboard-map.js:11264 |
+| `wbMapFromDocument` | frontend/js/whiteboard-map.js:11285 |
 | `wbMapGapBreadth` | frontend/js/whiteboard-map.js:77 |
 | `wbMapGapDepth` | frontend/js/whiteboard-map.js:80 |
-| `wbMapHeadingsOutline` | frontend/js/whiteboard-map.js:11229 |
+| `wbMapHeadingsOutline` | frontend/js/whiteboard-map.js:11250 |
 | `wbMapHidden` | frontend/js/whiteboard-map.js:1710 |
 | `wbMapIconOption` | frontend/js/whiteboard-map.js:7383 |
 | `wbMapIndex` | frontend/js/whiteboard-map.js:1459 |
@@ -8827,7 +8827,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapInsertBetween` | frontend/js/whiteboard-map.js:4699 |
 | `wbMapInsertParent` | frontend/js/whiteboard-map.js:5528 |
 | `wbMapIsFollow` | frontend/js/whiteboard-map.js:7172 |
-| `wbMapIsNoteTopic` | frontend/js/whiteboard-map.js:11372 |
+| `wbMapIsNoteTopic` | frontend/js/whiteboard-map.js:11393 |
 | `wbMapJoinByLink` | frontend/js/whiteboard-map.js:3278 |
 | `wbMapJoinPlan` | frontend/js/whiteboard-map.js:3292 |
 | `wbMapKeyBetween` | frontend/js/whiteboard-map.js:1525 |
@@ -8843,14 +8843,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapLinkCue` | frontend/js/whiteboard-map.js:3330 |
 | `wbMapLiveDatum` | frontend/js/whiteboard-map.js:1788 |
 | `wbMapMarkBranchLayouts` | frontend/js/whiteboard-map.js:1487 |
-| `wbMapMarkerGlyph` | frontend/js/whiteboard-map.js:10891 |
-| `wbMapMarkerKeyWords` | frontend/js/whiteboard-map.js:11025 |
-| `wbMapMarkerKeys` | frontend/js/whiteboard-map.js:11011 |
+| `wbMapMarkerGlyph` | frontend/js/whiteboard-map.js:10911 |
+| `wbMapMarkerKeyWords` | frontend/js/whiteboard-map.js:11046 |
+| `wbMapMarkerKeys` | frontend/js/whiteboard-map.js:11032 |
 | `wbMapMarkerParts` | frontend/js/whiteboard-map.js:10672 |
-| `wbMapMarkerSeg` | frontend/js/whiteboard-map.js:10833 |
-| `wbMapMarkerToggle` | frontend/js/whiteboard-map.js:10864 |
-| `wbMapMarkerWords` | frontend/js/whiteboard-map.js:10704 |
-| `wbMapMarkersInUse` | frontend/js/whiteboard-map.js:11047 |
+| `wbMapMarkerSeg` | frontend/js/whiteboard-map.js:10853 |
+| `wbMapMarkerToggle` | frontend/js/whiteboard-map.js:10884 |
+| `wbMapMarkerWords` | frontend/js/whiteboard-map.js:10712 |
+| `wbMapMarkersInUse` | frontend/js/whiteboard-map.js:11068 |
 | `wbMapMoveAmongSiblings` | frontend/js/whiteboard-map.js:1538 |
 | `wbMapMoveUnder` | frontend/js/whiteboard-map.js:5484 |
 | `wbMapMultiState` | frontend/js/whiteboard-map.js:7477 |
@@ -8862,14 +8862,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapNumbers` | frontend/js/whiteboard-map.js:2379 |
 | `wbMapOpenIconPicker` | frontend/js/whiteboard-map.js:7370 |
 | `wbMapOpenLink` | frontend/js/whiteboard-map.js:2746 |
-| `wbMapOpenMarkers` | frontend/js/whiteboard-map.js:10908 |
+| `wbMapOpenMarkers` | frontend/js/whiteboard-map.js:10928 |
 | `wbMapOpenNote` | frontend/js/whiteboard-map.js:2445 |
 | `wbMapOpenReference` | frontend/js/whiteboard-map.js:3361 |
 | `wbMapOrderKey` | frontend/js/whiteboard-map.js:1507 |
 | `wbMapOutdent` | frontend/js/whiteboard-map.js:5441 |
 | `wbMapPaintExtras` | frontend/js/whiteboard-map.js:8590 |
-| `wbMapPaintMarkerFilter` | frontend/js/whiteboard-map.js:11170 |
-| `wbMapPaintMarkers` | frontend/js/whiteboard-map.js:10721 |
+| `wbMapPaintMarkerFilter` | frontend/js/whiteboard-map.js:11191 |
+| `wbMapPaintMarkers` | frontend/js/whiteboard-map.js:10729 |
 | `wbMapPalette` | frontend/js/whiteboard-map.js:526 |
 | `wbMapPasteText` | frontend/js/whiteboard-map.js:4952 |
 | `wbMapPerspective` | frontend/js/whiteboard-map.js:477 |
@@ -8904,14 +8904,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapReverseEdgeNow` | frontend/js/whiteboard-map.js:9436 |
 | `wbMapRibbonD` | frontend/js/whiteboard-map.js:3943 |
 | `wbMapSetBranchLayout` | frontend/js/whiteboard-map.js:9622 |
-| `wbMapSetDim` | frontend/js/whiteboard-map.js:11152 |
+| `wbMapSetDim` | frontend/js/whiteboard-map.js:11173 |
 | `wbMapSetExtra` | frontend/js/whiteboard-map.js:8666 |
 | `wbMapSetFocus` | frontend/js/whiteboard-map.js:769 |
 | `wbMapSetLayout` | frontend/js/whiteboard-map.js:9569 |
 | `wbMapSetLayoutNow` | frontend/js/whiteboard-map.js:9592 |
 | `wbMapSetLevelField` | frontend/js/whiteboard-map.js:1173 |
 | `wbMapSetLinkStyle` | frontend/js/whiteboard-map.js:9585 |
-| `wbMapSetMarkerFilter` | frontend/js/whiteboard-map.js:11134 |
+| `wbMapSetMarkerFilter` | frontend/js/whiteboard-map.js:11155 |
 | `wbMapSetNodeStyle` | frontend/js/whiteboard-map.js:7817 |
 | `wbMapSetNumbered` | frontend/js/whiteboard-map.js:2410 |
 | `wbMapSetNumberedNow` | frontend/js/whiteboard-map.js:2414 |
@@ -8953,9 +8953,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapStudyTally` | frontend/js/whiteboard-map.js:10145 |
 | `wbMapStyleMany` | frontend/js/whiteboard-map.js:7456 |
 | `wbMapSubtree` | frontend/js/whiteboard-map.js:1597 |
-| `wbMapSuggestBranches` | frontend/js/whiteboard-map.js:11342 |
+| `wbMapSuggestBranches` | frontend/js/whiteboard-map.js:11363 |
 | `wbMapSummarise` | frontend/js/whiteboard-map.js:9841 |
-| `wbMapSummariseBranch` | frontend/js/whiteboard-map.js:11315 |
+| `wbMapSummariseBranch` | frontend/js/whiteboard-map.js:11336 |
 | `wbMapSummaryRun` | frontend/js/whiteboard-map.js:9672 |
 | `wbMapTakePicture` | frontend/js/whiteboard-map.js:7900 |
 | `wbMapTaskTally` | frontend/js/whiteboard-map.js:2341 |
@@ -23574,19 +23574,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `WhiteboardComment` | src/tessellate/api/wb_model.py:258 |
 | `WhiteboardNodeBase` | src/tessellate/api/wb_model.py:311 |
 | `WhiteboardNodeOut` | src/tessellate/api/wb_model.py:334 |
-| `WhiteboardObjectBase` | src/tessellate/api/wb_model.py:872 |
+| `WhiteboardObjectBase` | src/tessellate/api/wb_model.py:876 |
 | `WhiteboardObjectData` | src/tessellate/api/wb_model.py:412 |
-| `WhiteboardObjectOut` | src/tessellate/api/wb_model.py:895 |
+| `WhiteboardObjectOut` | src/tessellate/api/wb_model.py:899 |
 | `WhiteboardSketchBase` | src/tessellate/api/wb_model.py:343 |
 | `WhiteboardSketchIn` | src/tessellate/api/wb_model.py:393 |
 | `WhiteboardSketchOut` | src/tessellate/api/wb_model.py:403 |
-| `WhiteboardStateOut` | src/tessellate/api/wb_model.py:997 |
+| `WhiteboardStateOut` | src/tessellate/api/wb_model.py:1001 |
 | `_bad_sketch_field` | src/tessellate/api/wb_model.py:361 |
 | `_clamp` | src/tessellate/api/wb_model.py:294 |
 | `_is_one_emoji` | src/tessellate/api/wb_model.py:211 |
-| `_object_to_out` | src/tessellate/api/wb_model.py:942 |
-| `_require_object_data` | src/tessellate/api/wb_model.py:969 |
-| `_require_table_cells` | src/tessellate/api/wb_model.py:959 |
+| `_object_to_out` | src/tessellate/api/wb_model.py:946 |
+| `_require_object_data` | src/tessellate/api/wb_model.py:973 |
+| `_require_table_cells` | src/tessellate/api/wb_model.py:963 |
 | `check_sketch_data` | src/tessellate/api/wb_model.py:377 |
 
 ### src/tessellate/api/wb_preview.py (28)
@@ -23626,13 +23626,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `MapTreeOut` | src/tessellate/api/wb_tree.py:389 |
-| `_build_tree` | src/tessellate/api/wb_tree.py:282 |
-| `_cross_links` | src/tessellate/api/wb_tree.py:357 |
+| `MapTreeOut` | src/tessellate/api/wb_tree.py:390 |
+| `_build_tree` | src/tessellate/api/wb_tree.py:283 |
+| `_cross_links` | src/tessellate/api/wb_tree.py:358 |
 | `_map_kind_ok` | src/tessellate/api/wb_tree.py:56 |
-| `_map_node_dict` | src/tessellate/api/wb_tree.py:254 |
-| `_map_node_style` | src/tessellate/api/wb_tree.py:240 |
-| `_map_objects` | src/tessellate/api/wb_tree.py:326 |
+| `_map_node_dict` | src/tessellate/api/wb_tree.py:255 |
+| `_map_node_style` | src/tessellate/api/wb_tree.py:241 |
+| `_map_objects` | src/tessellate/api/wb_tree.py:327 |
 | `_note_reference_label` | src/tessellate/api/wb_tree.py:122 |
 | `_object_data` | src/tessellate/api/wb_tree.py:179 |
 | `_other_reference_label` | src/tessellate/api/wb_tree.py:135 |
@@ -23640,7 +23640,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_reference_label` | src/tessellate/api/wb_tree.py:106 |
 | `_referenced` | src/tessellate/api/wb_tree.py:94 |
 | `_require_reference` | src/tessellate/api/wb_tree.py:68 |
-| `_sibling_key` | src/tessellate/api/wb_tree.py:348 |
+| `_sibling_key` | src/tessellate/api/wb_tree.py:349 |
 
 ### src/tessellate/core/activity.py (21)
 
@@ -27660,7 +27660,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21801)
+## Tests (21805)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29173,6 +29173,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_map_build_up_1774.py | 18 |
 | tests/test_map_callout.py | 7 |
 | tests/test_map_drag_cost.py | 12 |
+| tests/test_map_due_time.py | 3 |
 | tests/test_map_edge_cache.py | 5 |
 | tests/test_map_expand.py | 9 |
 | tests/test_map_filter_columns.py | 5 |
@@ -29257,7 +29258,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_mic_row_fits_c21.py | 2 |
 | tests/test_middleware_disconnect.py | 3 |
 | tests/test_middleware_table_1031.py | 5 |
-| tests/test_mindmap.py | 117 |
+| tests/test_mindmap.py | 118 |
 | tests/test_mindmap_colour_discoverability.py | 5 |
 | tests/test_mindmap_dashed_bar.py | 1 |
 | tests/test_mindmap_fill.py | 3 |
@@ -30422,17 +30423,17 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 13.4 Phases with gates | docs/roadmap/UI_MODERNISATION_PLAN.md:1083 |
 | 13.4 What can be customised, against what a map tool offers | docs/roadmap/MINDMAP_PLAN.md:765 |
 | 13.5 Clean and professional: the same measurements section 17 took | docs/roadmap/MINDMAP_PLAN.md:789 |
-| 14. Core nodes, levels and the icon library (INBOX 641, 642; mc1, 2026-10-05) | docs/roadmap/MINDMAP_PLAN.md:1573 |
+| 14. Core nodes, levels and the icon library (INBOX 641, 642; mc1, 2026-10-05) | docs/roadmap/MINDMAP_PLAN.md:1576 |
 | 14. Export and import formats | docs/roadmap/WHITEBOARD_PLAN.md:1175 |
 | 14. More tools worth adding | docs/roadmap/BACKLOG.md:1075 |
 | 14. The core algorithms, read line by line (2026-09-08) | docs/roadmap/WORLD_CLASS_PLAN.md:997 |
 | 14. What a document daily note is: decided 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:666 |
-| 14.1 Measured before anything was designed | docs/roadmap/MINDMAP_PLAN.md:1582 |
-| 14.2 What the five apps do, and what is taken | docs/roadmap/MINDMAP_PLAN.md:1586 |
-| 14.3 Decisions made (do not remake) | docs/roadmap/MINDMAP_PLAN.md:1601 |
-| 14.4 What is open | docs/roadmap/MINDMAP_PLAN.md:1684 |
+| 14.1 Measured before anything was designed | docs/roadmap/MINDMAP_PLAN.md:1585 |
+| 14.2 What the five apps do, and what is taken | docs/roadmap/MINDMAP_PLAN.md:1589 |
+| 14.3 Decisions made (do not remake) | docs/roadmap/MINDMAP_PLAN.md:1604 |
+| 14.4 What is open | docs/roadmap/MINDMAP_PLAN.md:1687 |
 | 15. Appearance: more of everything | docs/roadmap/BACKLOG.md:1111 |
-| 15. Deepened 2026-10-10 (Brief 72a, decision 71) | docs/roadmap/MINDMAP_PLAN.md:1705 |
+| 15. Deepened 2026-10-10 (Brief 72a, decision 71) | docs/roadmap/MINDMAP_PLAN.md:1708 |
 | 15. Insert menu, shape picker and the sidebar search | docs/roadmap/WHITEBOARD_PLAN.md:1192 |
 | 15. Inventions: eight things no notebook does, specified for Opus and Sonnet | docs/roadmap/WORLD_CLASS_PLAN.md:1055 |
 | 15. The code block's own bar, and where it belongs: measured 2026-09-20 | docs/roadmap/DOCUMENTS_PLAN.md:715 |
@@ -30722,7 +30723,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E. Polish worth doing as one pass | docs/roadmap/BACKLOG.md:2442 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4151 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:594 |
-| Gap audit against XMind and MindNode, 2026-10-25 (wb2) | docs/roadmap/MINDMAP_PLAN.md:1815 |
+| Gap audit against XMind and MindNode, 2026-10-25 (wb2) | docs/roadmap/MINDMAP_PLAN.md:1818 |
 | Gap audit against draw.io, 2026-10-25 (wb2) | docs/roadmap/WHITEBOARD_PLAN.md:1519 |
 | Gates | docs/roadmap/TIMELINE_PLAN.md:295 |
 | Guides: curated instructions the AI writes to | docs/roadmap/BACKLOG.md:2496 |
@@ -30752,14 +30753,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:915 |
+| Needs hardware | docs/roadmap/LEDGER.md:914 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
-| Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1353 |
+| Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1356 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:907 |
+| Owner calls | docs/roadmap/LEDGER.md:906 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30793,33 +30794,33 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1090 |
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
-| Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1219 |
+| Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1222 |
 | Placed (last 20, newest first) | docs/roadmap/INBOX.md:144 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4057 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3125 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/CHAT_PLAN.md:1714 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/DOCUMENTS_PLAN.md:1284 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/GRAPH_PLAN.md:582 |
-| Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1751 |
+| Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/MINDMAP_PLAN.md:1754 |
 | Placed from Brief 60, 2026-10-10 (the measured census) | docs/roadmap/WHITEBOARD_PLAN.md:1403 |
 | Placed from INBOX 561 (2026-10-17) | docs/roadmap/TIMELINE_PLAN.md:204 |
 | Placed from INBOX 904 (the owner, 2026-10-17) | docs/roadmap/BACKLOG.md:4281 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/CHAT_PLAN.md:592 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/GRAPH_PLAN.md:173 |
-| Placed from INBOX, 2026-09-09 | docs/roadmap/MINDMAP_PLAN.md:1373 |
+| Placed from INBOX, 2026-09-09 | docs/roadmap/MINDMAP_PLAN.md:1376 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/WHITEBOARD_PLAN.md:594 |
 | Placed from INBOX, 2026-09-09 | docs/roadmap/WORLD_CLASS_PLAN.md:1539 |
 | Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/CHAT_PLAN.md:616 |
 | Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/DOCUMENTS_PLAN.md:361 |
 | Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/GRAPH_PLAN.md:179 |
-| Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/MINDMAP_PLAN.md:1378 |
+| Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/MINDMAP_PLAN.md:1381 |
 | Placed from INBOX, 2026-09-09 (the owner's evening batch) | docs/roadmap/WHITEBOARD_PLAN.md:616 |
 | Placed from INBOX, 2026-09-13 | docs/roadmap/GRAPH_PLAN.md:277 |
-| Placed from INBOX, 2026-09-13 | docs/roadmap/MINDMAP_PLAN.md:1385 |
+| Placed from INBOX, 2026-09-13 | docs/roadmap/MINDMAP_PLAN.md:1388 |
 | Placed from INBOX, 2026-09-13 | docs/roadmap/WORLD_CLASS_PLAN.md:1720 |
 | Placed from INBOX, 2026-09-21 | docs/roadmap/DOCUMENTS_PLAN.md:1194 |
 | Placed from INBOX, 2026-09-21 | docs/roadmap/GRAPH_PLAN.md:285 |
-| Placed from INBOX, 2026-09-21 | docs/roadmap/MINDMAP_PLAN.md:1390 |
+| Placed from INBOX, 2026-09-21 | docs/roadmap/MINDMAP_PLAN.md:1393 |
 | Placed from INBOX, 2026-09-21 | docs/roadmap/WHITEBOARD_PLAN.md:621 |
 | Placed from INBOX, 2026-09-21 | docs/roadmap/WORLD_CLASS_PLAN.md:2058 |
 | Placed from INBOX, 2026-09-21 (the Ask sub-tab, four reports in one pass) | docs/roadmap/CHAT_PLAN.md:624 |
@@ -30829,7 +30830,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-09-25 | docs/roadmap/WHITEBOARD_PLAN.md:723 |
 | Placed from INBOX, 2026-09-27 | docs/roadmap/WHITEBOARD_PLAN.md:755 |
 | Placed from INBOX, 2026-09-27 (399) | docs/roadmap/WORLD_CLASS_PLAN.md:2432 |
-| Placed from INBOX, 2026-10-03 (445 (2) audit, found not fixed) | docs/roadmap/MINDMAP_PLAN.md:1408 |
+| Placed from INBOX, 2026-10-03 (445 (2) audit, found not fixed) | docs/roadmap/MINDMAP_PLAN.md:1411 |
 | Placed from INBOX, 2026-10-03 (INBOX 213) | docs/roadmap/BACKLOG.md:3857 |
 | Placed from INBOX, 2026-10-03 (INBOX 266) | docs/roadmap/BACKLOG.md:3901 |
 | Placed from INBOX, 2026-10-03 (INBOX 303, music) | docs/roadmap/BACKLOG.md:3837 |
@@ -30841,7 +30842,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-03 (the tray at its cap) | docs/roadmap/WORLD_CLASS_PLAN.md:2568 |
 | Placed from INBOX, 2026-10-04 (design work for the next Opus slots) | docs/roadmap/WORLD_CLASS_PLAN.md:3024 |
 | Placed from INBOX, 2026-10-04: parity with Obsidian's graph | docs/roadmap/GRAPH_PLAN.md:485 |
-| Placed from INBOX, 2026-10-05 | docs/roadmap/MINDMAP_PLAN.md:1412 |
+| Placed from INBOX, 2026-10-05 | docs/roadmap/MINDMAP_PLAN.md:1415 |
 | Placed from INBOX, 2026-10-05 | docs/roadmap/WHITEBOARD_PLAN.md:770 |
 | Placed from INBOX, 2026-10-05 (boardmap-1005) | docs/roadmap/WHITEBOARD_PLAN.md:785 |
 | Placed from INBOX, 2026-10-05 (ledger triage) | docs/roadmap/CHAT_PLAN.md:651 |
@@ -30854,7 +30855,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-10 (code as documents) | docs/roadmap/DOCUMENTS_PLAN.md:1288 |
 | Placed from INBOX, 2026-10-10 (filing suggestions) | docs/roadmap/WORLD_CLASS_PLAN.md:4171 |
 | Placed from INBOX, 2026-10-10 (the coverage pass over 729 to 744) | docs/roadmap/CHAT_PLAN.md:1705 |
-| Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/MINDMAP_PLAN.md:1755 |
+| Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/MINDMAP_PLAN.md:1758 |
 | Placed from INBOX, 2026-10-10 (the owner on feature depth) | docs/roadmap/WHITEBOARD_PLAN.md:1407 |
 | Placed from INBOX, 2026-10-10 (the owner on the graph, again) | docs/roadmap/GRAPH_PLAN.md:586 |
 | Placed from INBOX, 2026-10-10 (the owner's afternoon reports) | docs/roadmap/UI_MODERNISATION_PLAN.md:1193 |
@@ -30869,14 +30870,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-11 (the owner on dragging the force graph) | docs/roadmap/GRAPH_PLAN.md:591 |
 | Placed from INBOX, 2026-10-11 (the owner's sweep request) | docs/roadmap/UI_MODERNISATION_PLAN.md:1207 |
 | Placed from INBOX, 2026-10-11 (the owner: Atlas as the app's assistant) | docs/roadmap/CHAT_PLAN.md:1718 |
-| Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1772 |
+| Placed from INBOX, 2026-10-11 (the topic's tools) | docs/roadmap/MINDMAP_PLAN.md:1775 |
 | Placed from INBOX, 2026-10-11 (voice notes, live captions, the focus timer; voiceup) | docs/roadmap/UI_MODERNISATION_PLAN.md:1225 |
 | Placed from INBOX, 2026-10-12 (grammar in digest answers) | docs/roadmap/BACKLOG.md:4177 |
 | Placed from INBOX, 2026-10-19 | docs/roadmap/DOCUMENTS_PLAN.md:1329 |
 | Placed from INBOX, 2026-10-19 (INBOX 1307, 1308: elements, templates, the W/H link; the gap audit) | docs/roadmap/WHITEBOARD_PLAN.md:1501 |
 | Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/DOCUMENTS_PLAN.md:1306 |
-| Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/MINDMAP_PLAN.md:1790 |
-| Placed from INBOX, 2026-10-19 (edge sides; next PR) | docs/roadmap/MINDMAP_PLAN.md:1810 |
+| Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit) | docs/roadmap/MINDMAP_PLAN.md:1793 |
+| Placed from INBOX, 2026-10-19 (edge sides; next PR) | docs/roadmap/MINDMAP_PLAN.md:1813 |
 | Placed from INBOX, 2026-10-19 (mobile1314) | docs/roadmap/UI_MODERNISATION_PLAN.md:1243 |
 | Placed from INBOX, 2026-10-19 (peek sidebar header, split button; next PR) | docs/roadmap/UI_MODERNISATION_PLAN.md:1251 |
 | Placed from INBOX, 2026-10-19 (per-board view, Format on a map; next PR) | docs/roadmap/WHITEBOARD_PLAN.md:1513 |
@@ -30903,7 +30904,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4324 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/BACKLOG.md:4368 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/DOCUMENTS_PLAN.md:1472 |
-| Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1825 |
+| Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1828 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1579 |
 | Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1273 |
 | Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision) | docs/roadmap/GRAPH_PLAN.md:615 |
@@ -30932,7 +30933,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:779 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/DOCUMENTS_PLAN.md:1242 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/GRAPH_PLAN.md:569 |
-| Placed from the owner's list, 2026-10-10 | docs/roadmap/MINDMAP_PLAN.md:1701 |
+| Placed from the owner's list, 2026-10-10 | docs/roadmap/MINDMAP_PLAN.md:1704 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/TIMELINE_PLAN.md:198 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/UI_MODERNISATION_PLAN.md:901 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/WHITEBOARD_PLAN.md:801 |
@@ -30940,7 +30941,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1115 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1114 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -30959,7 +30960,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | The deterministic foundation, 2026-10-10 (INBOX 746) | docs/roadmap/CHAT_PLAN.md:1525 |
 | The dock grammar (the rule the whole phase enforces) | docs/roadmap/UI_MODERNISATION_PLAN.md:404 |
 | The draw.io programme, 2026-10-10 | docs/roadmap/WHITEBOARD_PLAN.md:805 |
-| The features audit's Phase G, what is left (placed 2026-10-05, op3-1005) | docs/roadmap/MINDMAP_PLAN.md:1554 |
+| The features audit's Phase G, what is left (placed 2026-10-05, op3-1005) | docs/roadmap/MINDMAP_PLAN.md:1557 |
 | The instruction, verbatim | docs/roadmap/UI_MODERNISATION_PLAN.md:8 |
 | The knowledge graph, 2026-10-04 (INBOX 528) | docs/roadmap/GRAPH_PLAN.md:491 |
 | The moves that would outshine everything else, in order of leverage | docs/roadmap/WORLD_CLASS_PLAN.md:1018 |
@@ -30975,7 +30976,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/CHAT_PLAN.md:1698 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/DOCUMENTS_PLAN.md:1273 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/GRAPH_PLAN.md:576 |
-| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/MINDMAP_PLAN.md:1745 |
+| Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/MINDMAP_PLAN.md:1748 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/TIMELINE_PLAN.md:306 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/UI_MODERNISATION_PLAN.md:1096 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/WHITEBOARD_PLAN.md:1396 |
@@ -30991,28 +30992,28 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | What was deliberately left out | docs/roadmap/WORLD_CLASS_PLAN.md:1381 |
 | What was wrong, and is fixed this session | docs/roadmap/WORLD_CLASS_PLAN.md:1014 |
 | Why the app feels "off" even where each screen is fine | docs/roadmap/WORLD_CLASS_PLAN.md:54 |
-| canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1759 |
+| canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1762 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1131 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1215 |
+| chat | docs/roadmap/LEDGER.md:1130 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1214 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:1155 |
-| general | docs/roadmap/LEDGER.md:867 |
+| documents | docs/roadmap/LEDGER.md:1154 |
+| general | docs/roadmap/LEDGER.md:866 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1119 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1227 |
+| graph | docs/roadmap/LEDGER.md:1118 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1226 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:1167 |
-| timeline | docs/roadmap/LEDGER.md:596 |
-| timeline | docs/roadmap/LEDGER.md:1191 |
-| ui-modernisation | docs/roadmap/LEDGER.md:478 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1179 |
+| mindmap | docs/roadmap/LEDGER.md:1166 |
+| timeline | docs/roadmap/LEDGER.md:595 |
+| timeline | docs/roadmap/LEDGER.md:1190 |
+| ui-modernisation | docs/roadmap/LEDGER.md:477 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1178 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1143 |
-| world-class | docs/roadmap/LEDGER.md:631 |
-| world-class | docs/roadmap/LEDGER.md:1203 |
+| whiteboard | docs/roadmap/LEDGER.md:1142 |
+| world-class | docs/roadmap/LEDGER.md:630 |
+| world-class | docs/roadmap/LEDGER.md:1202 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

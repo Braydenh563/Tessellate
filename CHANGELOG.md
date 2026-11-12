@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map (L371): a topic's Due row is the date picker with an optional time (`due_time`, kept with the day, carried as `_due_time`), Remind me uses it, and the Markers popover stays open while the calendar is used (`tests/test_map_due_time.py`).
 - Mind map: Filter by marker takes several markers and labels at once (a popover of pressed choices; a topic stays lit if it has any), and the outline shows each topic's markers, due day and labels under its words (decision 34; `tests/test_map_filter_columns.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).

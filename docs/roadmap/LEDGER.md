@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
+| mindmap | 33 | 28 | 5 | 1 | 5 | 66 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 700 | 157 | 3 | 195 | 1410 |
 
 ## graph
 
@@ -458,7 +458,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L368** `mindmap` open, M: Resolve map theme per node on export and test a FreeMind-authored arrowlink. From OPEN.md:1685; OPEN.md:3037. Evidence: wb_export.py:567-581 writes arrowlink; tests/test_mindmap.py only covers own export and a dangling destination, no FreeMind-authored file
 - [ ] **L369** `mindmap` open, M: Make wbSyncMapStrip ring the map's look, and add options for 17px size and level fill. From OPEN.md:1773; OPEN.md:3558. Evidence: whiteboard-map.js:7559 wbSyncMapStrip unchanged by evidence; 17px size and level fill gap remain
 - [ ] **L370** `mindmap` open, M: Cut press-to-editable at 390 from 140-159 ms toward 50 ms (renderWbObjects). From OPEN.md:2800. Evidence: Cause not isolated (renderWbObjects); verified open
-- [ ] **L371** `mindmap` open, M: Replace native due date on map topics with a picker that sets time too. From OPEN.md:3807. Evidence: whiteboard-map.js due date stays native
 - [ ] **L372** `mindmap` open, M: mapcull: cull freehand and link sketches. From OPEN.md:1227. Evidence: Row conditional on a measured many-stroke board; no culling of strokes found.
 - [ ] **L373** `mindmap` open, M: Narrow radial leaf boxes so large maps fit above 45 percent zoom. From agent-remaining/mapdog-1026.md. Evidence: Radial layout is large: 31 topics (6 branches of 4) lay out 1927x1771 board units, fit zoom 31% (words 4.4px); 57 topics
 - [ ] **L374** `mindmap` open, L: Make picture node resize to its picture; fix mindmap3 timeout and AI half; curve probe at 390. From OPEN.md:1112; OPEN.md:3041. Evidence: mindmapimage.js removed 2026-10-12; picture-fit not confirmed; sweep script gone

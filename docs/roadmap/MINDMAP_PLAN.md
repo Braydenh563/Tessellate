@@ -1210,10 +1210,13 @@ topic: a control that wide has nowhere to go.
    `data.due` is a calendar day (`YYYY-MM-DD`, no time: a topic is due on a
    day wherever the map is opened), content like decision 34's markers (a
    look reset keeps it; OPML and FreeMind carry `_due`; Markdown does not).
-   Set in the Markers popover's Due row (the browser's date field, Clear),
-   drawn in the marker row as words ("14 Mar") in the ink, a day gone in the
+   Set in the Markers popover's Due row (the date-field picker, Clear, and
+   an optional time: `data.due_time`, `HH:MM`, a wall-clock time like the day,
+   kept only beside a day and carried as `_due_time`; the day stays a day),
+   drawn in the marker row as words ("14 Mar", "14 Mar, 9:30 am" with a time,
+   gone only once that time has) in the ink, a day gone in the
    error ink and read "was due"; View, Filter by marker lists "With a due
-   date". Remind me makes an ordinary reminder at 9:00 that day; a day gone
+   date". Remind me makes an ordinary reminder at the due time, or 9:00 with none; a day gone
    makes none and says why. No reminder is made by setting a date.
 
 ### Phases, each with the gate it is finished against

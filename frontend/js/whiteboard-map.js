@@ -8531,7 +8531,7 @@ const WB_MAP_STYLE_KEYS = [
 //: And a boundary and a summary (decisions 19, 20): what the map says.
 const WB_MAP_CONTENT_KEYS = [
   "image", "task", "note", "boundary", "boundary_label", "summary", "summary_span",
-  "priority", "progress", "flag", "markers", "due", "start", "recording", "branch_layout", "callout", "labels", "stamps", "stamped",
+  "priority", "progress", "flag", "markers", "due", "due_time", "start", "recording", "branch_layout", "callout", "labels", "stamps", "stamped",
 ];
 
 //: **Reaction stamps and votes** (Miro; MINDMAP_PLAN 14.4): six Phosphor
@@ -10680,13 +10680,17 @@ function wbMapMarkerParts(data) {
   const due = typeof data?.due === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.due) ? data.due : null;
   //: A start day (the Gantt view), the same shape; a bar needs both.
   const start = typeof data?.start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.start) ? data.start : null;
-  return { priority, progress, flag, icons, due, start };
+  //: The time on the due day (L371), only beside a due day.
+  const dueTime = due && typeof data?.due_time === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(data.due_time) ? data.due_time : null;
+  return { priority, progress, flag, icons, due, dueTime, start };
 }
 
 //: "12 Oct", and whether that day has gone (local midnight to midnight).
 //: With a `start` too, "5 Oct to 12 Oct"; a `start` alone (no due day), "from 5 Oct".
-function wbMapDueWords(due, start = null) {
-  const today = new Date();
+//: With a `time` ("09:30") the due day reads "20 Nov, 9:30 am" and is gone only once that time has.
+function wbMapDueWords(due, start = null, time = null) {
+  const now = new Date();
+  const today = new Date(now);
   today.setHours(0, 0, 0, 0);
   const say = (text) => {
     const [y, m, d] = text.split("-").map(Number);
@@ -10696,7 +10700,11 @@ function wbMapDueWords(due, start = null) {
   const end = say(due || start);
   const from = due && start ? say(start).words : null;
   const words = from ? `${from} to ${end.words}` : due ? end.words : `from ${end.words}`;
-  return { words, past: Boolean(due) && end.day < today };
+  if (!time || !due || from) return { words, past: Boolean(due) && end.day < today };
+  const [h, m] = time.split(":").map(Number);
+  const at = new Date(end.day);
+  at.setHours(h, m);
+  return { words: `${words}, ${at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`, past: at < now };
 }
 
 //: What the row says to a screen reader and in its tooltip, in the order it
@@ -10707,7 +10715,7 @@ function wbMapMarkerWords(parts) {
   if (parts.progress != null) words.push(parts.progress === 100 ? "done" : parts.progress === 0 ? "not started" : `${parts.progress}% done`);
   if (parts.flag) words.push("flagged");
   if (parts.due) {
-    const due = wbMapDueWords(parts.due);
+    const due = wbMapDueWords(parts.due, null, parts.dueTime);
     words.push(due.past ? `was due ${due.words}` : `due ${due.words}`);
   }
   if (parts.start) words.push(`starts ${wbMapDueWords(parts.start).words}`);
@@ -10720,7 +10728,7 @@ function wbMapMarkerWords(parts) {
 //: render of an unchanged map writes nothing here.
 function wbMapPaintMarkers(host, data) {
   const parts = wbMapMarkerParts(data);
-  const key = `${parts.priority}|${parts.progress}|${parts.flag}|${parts.icons.join(",")}|${parts.due}|${parts.start}`;
+  const key = `${parts.priority}|${parts.progress}|${parts.flag}|${parts.icons.join(",")}|${parts.due}|${parts.dueTime}|${parts.start}`;
   if (host.dataset.key === key) return;
   host.dataset.key = key;
   host.replaceChildren();
@@ -10755,7 +10763,7 @@ function wbMapPaintMarkers(host, data) {
   };
   if (parts.flag) glyph("flag", " wb-map-mark-flag");
   if (parts.due || parts.start) {
-    const when = wbMapDueWords(parts.due, parts.start);
+    const when = wbMapDueWords(parts.due, parts.start, parts.dueTime);
     const chip = document.createElement("span");
     chip.className = `wb-map-mark wb-map-mark-due${when.past ? " is-past" : ""}`;
     chip.textContent = when.words;
@@ -10764,9 +10772,10 @@ function wbMapPaintMarkers(host, data) {
   for (const icon of parts.icons) glyph(icon);
 }
 
-//: The Due and Start rows (decision 37; the Gantt view): the browser's own
-//: date field and Clear; Due also has Remind me. Each field stops at the
-//: other's day (`min` and `max`), so the pair cannot be set backwards here.
+//: The Due and Start rows (decision 37; the Gantt view): the date-field
+//: recipe's picker (`enhanceDateField`) and Clear; Due also has a time field
+//: (L371, `due_time`, kept only with a day) and Remind me. Each field stops
+//: at the other's day (`min` and `max`), so the pair cannot be set backwards.
 function wbMapDateRow(node, parts, set, label, key) {
   const wrap = document.createElement("div");
   wrap.className = "wb-map-markers-row";
@@ -10779,34 +10788,45 @@ function wbMapDateRow(node, parts, set, label, key) {
   if (key === "start" && parts.due) field.max = parts.due;
   if (key === "due" && parts.start) field.min = parts.start;
   field.setAttribute("aria-label", `${label} date`);
-  field.addEventListener("change", () => set({ [key]: field.value || null }));
+  field.addEventListener("change", () => set(key === "due" && !field.value ? { due: null, due_time: null } : { [key]: field.value || null }));
   wrap.append(name, field);
+  enhanceDateField(field);
   if (!parts[key]) return wrap;
+  if (key === "due") {
+    const time = document.createElement("input");
+    time.type = "time";
+    time.value = parts.dueTime || "";
+    time.setAttribute("aria-label", "Due time");
+    time.addEventListener("change", () => set({ due_time: time.value || null }));
+    wrap.append(time);
+    enhanceDateField(time);
+  }
   const clear = document.createElement("button");
   clear.type = "button";
   clear.className = "ghost small";
   clear.textContent = "Clear";
   clear.setAttribute("aria-label", `Clear ${label.toLowerCase()} date`);
-  clear.addEventListener("click", () => set({ [key]: null }));
+  clear.addEventListener("click", () => set(key === "due" ? { due: null, due_time: null } : { [key]: null }));
   wrap.append(clear);
   if (key !== "due") return wrap;
-  //: Remind me makes an ordinary reminder at 9:00 on the due day.
+  //: Remind me makes an ordinary reminder at the due time, or 9:00 with none.
   const remind = document.createElement("button");
   remind.type = "button";
   remind.className = "ghost small";
   remind.textContent = "Remind me";
-  remind.title = "A reminder at 9:00 on the due day, in Reminders";
+  remind.title = "A reminder at the due time (9:00 with none), in Reminders";
   remind.addEventListener("click", async () => {
     const [y, m, d] = parts.due.split("-").map(Number);
-    const at = new Date(y, m - 1, d, 9, 0, 0);
+    const [h, min] = (parts.dueTime || "09:00").split(":").map(Number);
+    const at = new Date(y, m - 1, d, h, min, 0);
     if (at < new Date()) {
-      toast("That day has gone: pick a later due date for a reminder.", "info");
+      toast("That time has gone: pick a later due date for a reminder.", "info");
       return;
     }
     try {
       const made = await apiJson("/reminders", { method: "POST", body: JSON.stringify({ text: wbMapLabel(node) || "Map topic", due_at: at.toISOString() }) });
       reminderMadeUndo(made);
-      toast(`Reminder set for ${wbMapDueWords(parts.due).words}, 9:00.`);
+      toast(`Reminder set for ${wbMapDueWords(parts.due, null, parts.dueTime).words}${parts.dueTime ? "" : ", 9:00"}.`);
     } catch (error) {
       toast(error.message || voiceLine("failed", { what: "set that reminder" }), true);
     }
@@ -10992,7 +11012,8 @@ function wbMapOpenMarkers(id, anchor = null) {
     }
   });
   const outside = (event) => {
-    if (panel.contains(event.target) || target.contains(event.target)) return;
+    //: The Due field's calendar is a popover of its own, drawn in the page.
+    if (panel.contains(event.target) || target.contains(event.target) || event.target.closest?.(".timeline-monthpop")) return;
     wbMapCloseMarkers();
   };
   document.addEventListener("pointerdown", outside, true);

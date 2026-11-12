@@ -675,6 +675,10 @@ class WhiteboardObjectData(BaseModel):
     #: so a topic is due on a day wherever the map is opened. Content, like
     #: the markers; a reminder is made from it on request, never by itself.
     due: str | None = Field(default=None, pattern=r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$")
+    #: **A time on the due day** (LEDGER L371): optional `HH:MM`, a wall-clock
+    #: time like the day itself (no zone), so decision 37's "a day" stands and
+    #: a topic without a time is unchanged. Content, carried as `_due_time`.
+    due_time: str | None = Field(default=None, pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
     #: **A start day**, beside `due` (the Gantt view draws a bar from one to the
     #: other for a topic that has both). The same shape and the same kind of
     #: field: content, so a look reset keeps it. Which comes first is not
