@@ -19,7 +19,7 @@ CANVAS = unwrapped((Path(__file__).resolve().parent.parent / "frontend" / "js" /
 
 def _handler(name: str) -> str:
     start = CANVAS.index(f'      .on("{name}", (event) => {{')
-    return CANVAS[start : CANVAS.index("\n      })\n", start)]
+    return CANVAS[start : re.compile(r"\n      \}\);?\n").search(CANVAS, start).start()]
 
 
 def test_a_press_waits_for_the_threshold_before_it_is_a_drag():
@@ -28,15 +28,15 @@ def test_a_press_waits_for_the_threshold_before_it_is_a_drag():
     press = _handler("start")
     assert "gcPost" not in press and "fx" not in press and "dragNode" not in press
     move = _handler("drag")
-    assert "GC_DRAG_THRESHOLD_PX" in move and "gcDragBegin(pressed)" in move
+    assert "GC_DRAG_THRESHOLD_PX" in move and "gcDragBegin(pressed, s)" in move
 
 
 def test_a_click_tells_the_worker_nothing():
     release = _handler("end")
-    click = release[: release.index("gcDragEnd(event)")]
+    click = release[: release.index("gcDragEnd(event, s)")]
     assert "gcClickNode" in click and "gcPost" not in click
     # The begin step is what freezes the map and reheats the worker, and only
     # the move past the threshold calls it.
-    begin = CANVAS[CANVAS.index("  function gcDragBegin(event) {") :][:6000]
+    begin = CANVAS[CANVAS.index("function gcDragBegin(event, s) {") :][:6000]
     assert 'type: "drag", phase: "start"' in begin and 'type: "freeze"' in begin
     assert CANVAS.count("gcDragBegin(") == 2  # the definition and the one call

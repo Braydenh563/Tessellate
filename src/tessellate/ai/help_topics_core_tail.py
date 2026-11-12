@@ -1343,13 +1343,15 @@ TAIL_TOPICS.extend(
                 "the tag, person or word its notes share most, and its legend entry "
                 "finds those notes and opens its card, where Summarise asks your "
                 "local model for one sentence (with none, Summary (no AI)), "
-                "File as a category files its notes under one category, "
-                "and the pencil renames it (the arrow brings the found name back). "
+                "File as a category files its notes under one category (the card names where most sit), "
+                "and the pencil renames it (the arrow restores it). "
+                "Its dots hold Merge with and Remove topic; "
+                "the legend's Reset topic edits undoes both. "
                 "On the map, drag a topic's name to move all its notes together "
-                "(they stay put; Unpin all releases them), double-click it to rename, "
+                "(they stay put until Unpin all), double-click to rename, "
                 "click it for its card. A note's card and its panel show its topic; "
                 "pressing it opens the graph on that topic. "
-                "No note's name is drawn over a topic's name. Filter holds a chip per "
+                "Filter holds a chip per "
                 "kind of link on the map (press one to take those links off, again "
                 "to bring them back) and per property value (press to light those "
                 "notes). Colour: Note type paints each note its type's colour "
@@ -1387,6 +1389,32 @@ TAIL_TOPICS.extend(
                 "(off by default) keeps dots off the lines but a large notebook settles slower. Show, "
                 "Display, Filter, Time, Groups and Minimap fold away; open one to change it, and "
                 "Reset to defaults puts them all back."
+            ),
+            "badge": {"label": "Graph", "tab": "graph"},
+        },
+        #: L-graph-1 and L-graph-2: its own entry, since graph-controls and
+        #: graph-display both sit at the reply budget.
+        {
+            "id": "graph-draft-map",
+            "keywords": (
+                "compose into a draft",
+                "draft from notes",
+                "notes into a document",
+                "cluster to document",
+                "map of meaning",
+                "map of my notes",
+                "notes by meaning",
+                "projection",
+                "similar notes reason",
+            ),
+            "body": (
+                "Select notes on the graph (Shift and drag on empty map), open the selection bar's ⋯ "
+                "menu and choose Compose into a draft: one document opens with a section per note, "
+                "oldest first, and a line naming the notes it came from. The notes stay as they are, "
+                "private notes are left out, and no AI is needed. Options, View, Layout, Map of meaning "
+                "places each note by what it means, so notes about the same thing sit together; "
+                "notes with no meaning data yet wait in a row at the bottom. In Similar notes, hover "
+                "a note to see why it is offered: a shared tag, name or week, else similar in meaning."
             ),
             "badge": {"label": "Graph", "tab": "graph"},
         },

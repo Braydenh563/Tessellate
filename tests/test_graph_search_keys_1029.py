@@ -11,7 +11,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import gc_frame, unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 GRAPH = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
@@ -99,7 +99,7 @@ def test_the_search_box_has_a_polite_count_in_the_dock_and_the_help_says_the_key
 def test_the_current_match_is_ringed_and_labelled_and_a_match_is_named_with_labels_off() -> None:
     body = _function(CANVAS, "gcHighlight")
     assert "current" in body
-    draw = _function(CANVAS, "gcDraw")
+    draw = gc_frame(CANVAS)
     assert "hl.current" in draw
     assert "|| matched)) || focused" not in draw  # a match is named whatever the tickbox says
     assert "(labelsOn && (labelsForAll || k > labelZoom)) || matched || focused" in draw

@@ -126,6 +126,8 @@ from tessellate.api import (
     routes_document_claims,
     routes_map_suggest,
     routes_map_from_notes,
+    routes_graph_projection,
+    routes_documents_from_notes,
 )
 from tessellate.ai.provider import ProviderError
 from tessellate.api.routes_auth import require_unlock
@@ -1589,6 +1591,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_resurface.router, LOCKED),
     (routes_insights.router, LOCKED),
     (routes_graph.router, LOCKED),
+    (routes_graph_projection.router, LOCKED),
     (routes_help.router, LOCKED),
     (routes_reminders.router, LOCKED),
     # A notification's Done and Snooze, pressed by the service worker with a
@@ -1616,6 +1619,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_board_affinity.router, LOCKED),
     (routes_document_claims.router, LOCKED),
     (routes_map_from_notes.router, LOCKED),
+    (routes_documents_from_notes.router, LOCKED),
     (routes_debug.router, LOCKED),
     (routes_privacy.router, LOCKED),
     (routes_capabilities.router, LOCKED),

@@ -1,5 +1,5 @@
 """A note's `---` properties block is never printed as its words (GRAPH_PLAN,
-"Still open after KG1 to KG9").
+"After KG1 to KG9").
 
 KG7 fixed the graph label, the link chip and the mentions line; a search
 snippet, the Library's card preview, a reminder's note line, a document's card

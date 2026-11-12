@@ -17,7 +17,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import gc_frame, unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
@@ -119,7 +119,7 @@ def test_anything_that_moved_since_the_base_was_kept_falls_back_to_a_whole_frame
 
 
 def test_the_draw_tries_the_label_frame_before_composing_and_keeps_the_base_only_for_a_label_fade():
-    draw = _fn("gcDraw")
+    draw = gc_frame(CANVAS)
     assert draw.index("gcDrawLabels.frame(s)") < draw.index("gcDrawComposed(s)")
     # The copy is taken between the names' update and their paint, and only while fading.
     assert "gcDrawLabels(ctx, s, placedLabels, fadeStep, k, " in draw
