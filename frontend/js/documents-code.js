@@ -3615,6 +3615,7 @@ function docRunPanel(view) {
     if (!table) return toast("Give the file a name to query it as a table.", "info");
     const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: `${table} query`, content: `select * from ${table} limit 50;\n`, file_type: "sql" }) });
     await loadDocuments(made.id);
+    offerCreateUndo(made);
     docRunCode();
   }, "Query this table in a new SQL document: its first 50 rows, run now");
   query.classList.add("cm-run-query");
