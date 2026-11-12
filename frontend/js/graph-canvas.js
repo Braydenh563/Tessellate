@@ -5384,6 +5384,27 @@
     return card;
   }
 
+  //: How long the pointer must stay on one note before its card fills. Under a
+  //: deliberate hover (~300 ms) and over the 60 to 100 ms a note takes to
+  //: cross at sweep speed, so a sweep fills nothing and a stop fills at once.
+  const GC_CARD_REST_MS = 120;
+
+  //: Whether the card for `id` may fill at time `now` (a parameter, so a test
+  //: passes its own clock). The keyboard (`pointer` false) is never made to
+  //: wait. Not yet: one redraw is asked for when the rest is due.
+  function gcCardRested(s, id, pointer, now) {
+    if (!pointer) return true;
+    if (s._restId !== id) {
+      s._restId = id;
+      s._restAt = now;
+      s._restTimer = null;
+    }
+    const left = GC_CARD_REST_MS - (now - s._restAt);
+    if (left <= 0) return true;
+    if (!s._restTimer) s._restTimer = setTimeout(() => { s._restTimer = null; gcRequestDraw(s, true); }, left + 1);
+    return false;
+  }
+
   function gcHoverCardFill(card, node, s) {
     const entry = typeof allEntries !== "undefined" ? allEntries.find((e) => e.id === node.id) : null;
     const facts = gcHoverCardFacts(
@@ -5448,6 +5469,20 @@
     const card = show ? gcHoverCardEl(s) : s._hoverCard;
     if (!card) return;
     if (!show) {
+      if (!card.hidden) {
+        card.hidden = true;
+        s.canvas.removeAttribute("aria-describedby");
+      }
+      card._for = null;
+      s._restId = null;
+      return;
+    }
+    //: **A pointer's card waits for the pointer to rest** (GRAPH_PLAN, hover
+    //: decision): the refill is ~17 ms of a 50 ms hover at 500 notes and 4x, and
+    //: a sweep across a cluster refilled it for every note it crossed. The dot's
+    //: highlight stays instant; the card is hidden meanwhile, never left showing
+    //: the last note, and the keyboard's card is not delayed.
+    if (!gcCardRested(s, node.id, s.hoveredId != null, performance.now())) {
       if (!card.hidden) {
         card.hidden = true;
         s.canvas.removeAttribute("aria-describedby");
