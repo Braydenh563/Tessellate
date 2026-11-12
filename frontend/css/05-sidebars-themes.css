@@ -4080,6 +4080,18 @@ button.is-on {
   border-radius: 0;
   box-shadow: inset 0 -1px 0 var(--border);
 }
+/* A Notes sub-tab's panel fades in over the one before it (L414). Only under
+   `.section-switch`, which `showNotesSection` sets for a switch made inside
+   Notes: the page arriving has its own fade, and a second one inside it
+   measured as the frames the switch missed (08-consistency.css, `.tab-page`). */
+#tab-notes.section-switch :is(#browse, #capture, #writing-room, #ask, #questions):not(.hidden) {
+  transition: opacity var(--ui-base) var(--ease-out);
+}
+@starting-style {
+  #tab-notes.section-switch :is(#browse, #capture, #writing-room, #ask, #questions):not(.hidden) {
+    opacity: 0.4;
+  }
+}
 .notes-subtabs,
 .library-subtabs {
   position: sticky;

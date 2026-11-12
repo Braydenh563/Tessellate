@@ -2324,6 +2324,13 @@ function showNotesSection(name, { focus = false } = {}) {
   if ((prefs.get("activeTab", null) || "dashboard") === "notes") {
     recordTabVisit("notes", wanted);
   }
+  //: A switch inside Notes cross-fades the panel (L414): marked on the page for the frame that
+  //: shows it, since `@starting-style` cannot tell this from the page arriving (05-sidebars-themes.css).
+  const page = $("tab-notes");
+  if (page && !page.classList.contains("hidden") && $(wanted)?.classList.contains("hidden")) {
+    page.classList.add("section-switch");
+    setTimeout(() => page.classList.remove("section-switch"), 400);
+  }
   for (const id of NOTES_SECTIONS) {
     const card = $(id);
     if (card) card.classList.toggle("hidden", id !== wanted);

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Motion: a Notes sub-tab panel fades in (0.4 to 1 over the base motion time) when you switch between sub-tabs; `showNotesSection` marks the page `.section-switch` for the switch so the page arriving does not fade twice (L414; Ask measured 0.40 to 1.00 over 9 frames).
 - Shortcuts: F2 (rename the list item you are on) is a row of the shortcut table, so the shortcuts sheet, rebinding and the collision check see it; the loose listener in navigation.js is gone (L-ui-modernisation-14, first key; 36 rows to 37).
 - Fix: a confirm or name prompt opened from inside a modal dialog mounts in that dialog, so it is no longer beneath it and unreachable (L453; `dialogHost` in app.js, measured: the confirm button is the element at its own centre, in the dialog).
 - Fix: a Settings deep link (a notice button, a "Find a setting" row) finishes at the control: the smooth scroll is re-aimed when it ends, since the pane grows under it (L447; a reopened link left the row 8,561px down at 390, now 481).
