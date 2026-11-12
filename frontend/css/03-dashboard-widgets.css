@@ -2848,14 +2848,7 @@ button.answer-figure-open {
   }
 }
 
-@media (max-width: 599.98px) {
-  .reminders-card {
-    /* The horizontal inset is `.tab-page`'s job (--page-gutter). Setting one
-       here put the card 1rem inside a gutter that had already been applied,
-       so this one card sat narrower than every other card on narrow windows. */
-    margin: 0 0 var(--space-6);
-  }
-}
+/* The horizontal inset is `.tab-page`'s job (--page-gutter), not the card's. */
 
 /* The add form as a grid, so the fields line up instead of drifting. */
 /* Columns that fill the width they are given rather than six fixed ones:

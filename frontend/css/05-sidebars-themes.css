@@ -4414,7 +4414,7 @@ html[data-chrome="native"] #top-bar #brand-logo {
 /* The bar's icon buttons are squares of the bar's one height. */
 #top-bar :is(.header-cluster, .notif-wrap) > button.icon-only {
   width: var(--header-control-h);
-  min-width: var(--header-control-h);
+  min-width: max(var(--header-control-h), var(--target-min));
 }
 /* --- assistant message layout ------------------------------------------------
    Asked for: bring the generated content further left, and stop long links
@@ -6209,6 +6209,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
    place and the name read as "Documents / This document". */
 .doc-dock-identity > .doc-back {
   flex: none;
+  min-width: var(--target-min);
   color: var(--muted);
   padding-inline: var(--space-2) var(--space-3);
   margin-inline-end: var(--space-2);

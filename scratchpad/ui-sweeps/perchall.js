@@ -53,7 +53,7 @@ async function measure(page) {
     const b = buddy.getBoundingClientRect();
     const pose = buddy.dataset.pose || nmb.pose;
     const legs = buddy.dataset.legs || nmb.legs || "";
-    const [cx, line] = nameMarkBuddyOrigin(b.left, b.top, pose);
+    const [cx, line] = nmb.inner.nameMarkBuddyOrigin(b.left, b.top, pose);
     const name = (el) => (el ? `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ""}${el.classList.length ? `.${[...el.classList].slice(0, 2).join(".")}` : ""}` : "-");
     const glue = nmb.glue?.el;
     let claim = null;
@@ -94,7 +94,7 @@ async function measure(page) {
       }
       if (paint) break;
     }
-    const shape = nameMarkBuddyShape(b.left, b.top, pose, legs);
+    const shape = nmb.inner.nameMarkBuddyShape(b.left, b.top, pose, legs);
     const over = [];
     const sel = "button, a[href], input:not([type='hidden']), select, textarea, [role='tab'], [role='button']";
     for (const el of document.querySelectorAll(sel)) {
@@ -124,12 +124,12 @@ async function measure(page) {
     let free = null;
     if (["bar", "hang", "corner"].includes(nmb.perch)) {
       const tab = nameMarkBuddyTab();
-      nameMarkBuddyIndexReset();
-      const ob = nameMarkBuddyObstacles(tab);
-      for (const p of nameMarkBuddyPerches(tab)) {
+      nmb.inner.nameMarkBuddyIndexReset();
+      const ob = nmb.inner.nameMarkBuddyObstacles(tab);
+      for (const p of nmb.inner.nameMarkBuddyPerches(tab)) {
         if (["bar", "hang"].includes(p.kind) || p.y < 0 || p.y + NMB_H > innerHeight) continue;
-        if (nameMarkBuddyHits(p.x, p.y, p.pose, ob, p.legs) || nameMarkBuddyCovers(p.x, p.y, p.pose, p.legs)) continue;
-        if (nameMarkBuddyWordsUnder(p.x, p.y, p.pose, p.legs) > 12) continue;
+        if (nmb.inner.nameMarkBuddyHits(p.x, p.y, p.pose, ob, p.legs) || nmb.inner.nameMarkBuddyCovers(p.x, p.y, p.pose, p.legs)) continue;
+        if (nmb.inner.nameMarkBuddyWordsUnder(p.x, p.y, p.pose, p.legs) > 12) continue;
         free = `${p.kind} ${name(p.edge.el)} at ${p.x},${Math.round(p.y)}`;
         break;
       }
@@ -163,11 +163,13 @@ function verdict(r, label = "") {
   const opts = { viewport: { width: W, height: H } };
   if (phone) Object.assign(opts, { hasTouch: true, isMobile: true });
   const { browser, page } = await boot(opts);
-  await page.evaluate((k) => {
+  // The Settings select (#avatar-buddy) is not in the page until Settings opens, so
+  // choose the companion the way the other companion sweeps do: the pref, then the module.
+  await page.evaluate(async (k) => {
     localStorage.removeItem("nm-buddy-spots");
-    const b = document.getElementById("avatar-buddy");
-    b.value = k;
-    b.dispatchEvent(new Event("change", { bubbles: true }));
+    prefs.set("avatar-buddy", k);
+    await ensureModule("characters");
+    syncNameMarkBuddy();
   }, process.env.KIND || "atlas");
   const boards = await page.evaluate(async () => {
     const r = await (await api("/whiteboard/boards")).json();
