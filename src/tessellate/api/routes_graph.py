@@ -25,17 +25,23 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
+from tessellate.ai.embeddings import bytes_to_vector, derived_pairs as derive_pairs, similar_pairs
 from tessellate.api import bounds
 from tessellate.core import activity, cjk, companion_events
 from tessellate.core import deps
-from tessellate.core.database import Attachment, EmbeddingRecord, Entry, NoteType
+from tessellate.core.database import (
+    Attachment,
+    EmbeddingRecord,
+    Entry,
+    NoteType,
+)
 from tessellate.core.deps import get_session
 from tessellate.entry import manager, paths
 from tessellate.entry import manager_wiki
 from tessellate.entry import manager_links
 from tessellate.entry import manager_text
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import graph_layers
 from tessellate.repo import properties as properties_repo
 from tessellate.repo import categories as categories_repo
 from tessellate.repo import relation_types
@@ -290,23 +296,7 @@ def _similarity_edges(
     #: pairs inside its own set: one sweep per version of the notebook, and
     #: the same answer in any order.
     def build() -> list[tuple[int, int, float]]:
-        wanted = set(
-            session.scalars(
-                select(Entry.id).where(
-                    Entry.is_deleted == False,  # noqa: E712
-                    Entry.is_draft == False,  # noqa: E712
-                    Entry.is_board == False,  # noqa: E712
-                )
-            )
-        )
-        records = session.scalars(
-            select(EmbeddingRecord).where(EmbeddingRecord.model_version == backend)
-        )
-        vectors = {
-            r.entry_id: bytes_to_vector(r.embedding)
-            for r in records
-            if r.entry_id in wanted
-        }
+        vectors = _note_vectors(session, backend)
         return similar_pairs(vectors, SIMILARITY_EDGE_THRESHOLD, per_node=SIMILAR_PER_NODE)
 
     # Already sorted best-first, so the cap below keeps the strongest edges.
@@ -318,7 +308,89 @@ def _similarity_edges(
     return scored[:MAX_SIMILARITY_EDGES]
 
 
-def _centrality(session: Session, similarity: bool, maps: bool) -> dict:
+def _note_vectors(session: Session, backend: str) -> dict:
+    """The stored vectors of the notes a similarity line means something for:
+    live, not a draft, not a board. A private note has none (`store_for_entry`
+    never writes one), so nothing sealed reaches a sweep from here."""
+    wanted = graph_layers.vector_note_ids(session)
+    records = graph_layers.vectors_for(session, backend)
+    return {r.entry_id: bytes_to_vector(r.embedding) for r in records if r.entry_id in wanted}
+
+
+def _layer_members(session: Session, documents: bool, entities: bool) -> dict[str, set[int]]:
+    """Which notes make up each document and entity node (`document:N`,
+    `entity:N`): the notes attached to a document, the notes naming an entity.
+    A private document is left out: its title and text are sealed, so it
+    gets no similarity line."""
+    members: dict[str, set[int]] = {}
+    if documents:
+        for document_id, entry_id in documents_repo.open_link_pairs(session):
+            members.setdefault(f"document:{document_id}", set()).add(entry_id)
+    if entities:
+        for entity_id, entry_id in graph_layers.mention_pairs(session):
+            members.setdefault(f"entity:{entity_id}", set()).add(entry_id)
+    return members
+
+
+def _layer_similarity_edges(
+    session: Session, documents: bool, entities: bool, present: set[str] | None = None
+) -> list[dict]:
+    """"Reads alike" lines for document and entity nodes (owner, 2026-11-12).
+
+    These nodes have no vector of their own: a document's is the mean of its
+    attached notes' vectors, an entity's the mean of the notes naming it, so
+    the line is *derived* (`"derived": true` on the edge) and says "about the
+    same things as". Only stored note vectors are averaged, and a private note
+    has none, so a sealed note can never lend a document its meaning, locked
+    vault or open. A node is never lined to a note it is already joined to.
+    `present` keeps only lines whose layer ends are on the map.
+    """
+    if not (documents or entities):
+        return []
+    backend = deps.get_embeddings().backend_id()
+    fingerprint = (*_graph_fingerprint(session), backend, *_layer_fingerprint(session, documents, entities))
+
+    def build() -> list[tuple]:
+        import numpy as np
+
+        vectors = _note_vectors(session, backend)
+        derived: dict[str, np.ndarray] = {}
+        joined: set[tuple[str, int]] = set()
+        for node, notes in _layer_members(session, documents, entities).items():
+            rows = []
+            for note in notes:
+                vector = vectors.get(note)
+                norm = float(np.linalg.norm(vector)) if vector is not None else 0.0
+                if norm:
+                    rows.append(vector / norm)
+                    joined.add((node, note))
+            if rows:
+                derived[node] = np.mean(rows, axis=0)
+        return derive_pairs(derived, vectors, SIMILARITY_EDGE_THRESHOLD, SIMILAR_PER_NODE, joined)
+
+    scored = [
+        {"source": a, "target": b, "kind": "similar", "score": round(score, 2), "derived": True}
+        for a, b, score in _cached(f"layer_similarity_{int(documents)}{int(entities)}", fingerprint, build)
+        if present is None or all(end in present for end in (a, b) if isinstance(end, str))
+    ]
+    return scored[:MAX_SIMILARITY_EDGES]
+
+
+def _layer_fingerprint(session: Session, documents: bool, entities: bool) -> tuple:
+    """What the document and entity layers add to a cache key: neither table
+    moves `_graph_fingerprint` (a link or a mention is not a note edit), so an
+    attach, a detach, an archive or a new mention must show here."""
+    key: tuple = ()
+    if documents:
+        key += documents_repo.link_fingerprint(session)
+    if entities:
+        key += graph_layers.mention_fingerprint(session)
+    return key
+
+
+def _centrality(
+    session: Session, similarity: bool, maps: bool, documents: bool = False, entities: bool = False
+) -> dict:
     """PageRank over the map's own picture, once per version of the notebook.
 
     **One number per note, the map's** (GRAPH_PLAN, "Decision made,
@@ -333,12 +405,16 @@ def _centrality(session: Session, similarity: bool, maps: bool) -> dict:
     on, built here from columns (`paths.build_light`) and never from a
     caller's index. A note is the same size in focus mode as on the map.
 
+    With `documents` / `entities` (owner, 2026-11-12) those nodes join the
+    ranked graph under their prefixed ids, so a document two notes share
+    lends them rank and carries its own; `/graph/local` never asks for them.
+
     Not a PageRank of the focus neighbourhood: centrality is a global
     property, and a local one would make the centre of every focus view its
     biggest dot whatever the notebook says about it.
     """
     use_similarity = similarity and not deps.get_config().get_preference("battery_efficient_mode")
-    fingerprint = (*_graph_fingerprint(session), use_similarity, maps)
+    fingerprint = (*_graph_fingerprint(session), use_similarity, maps, *_layer_fingerprint(session, documents, entities))
     if use_similarity:
         fingerprint = (*fingerprint, deps.get_embeddings().backend_id())
 
@@ -355,10 +431,14 @@ def _centrality(session: Session, similarity: bool, maps: bool) -> dict:
                 )
             )
             extra = _similarity_edges(session, ids, set())
-        index = paths.build_light(session, extra_edges=extra, drafts=False, boards=maps)
+            extra += _layer_similarity_edges(session, documents, entities)
+        index = paths.build_light(
+            session, extra_edges=extra, drafts=False, boards=maps, documents=documents, entities=entities
+        )
         return paths.pagerank(index)
 
-    return _cached(f"centrality_{int(use_similarity)}_{int(maps)}", fingerprint, build)
+    name = f"centrality_{int(use_similarity)}_{int(maps)}_{int(documents)}{int(entities)}"
+    return _cached(name, fingerprint, build)
 
 
 @router.get("/graph/match")
@@ -459,9 +539,9 @@ def _add_document_nodes(
     """The documents attached to the notes, as their own nodes and edges.
 
     Lifted out of `graph` unchanged (WORLD_CLASS_PLAN A5). Same shape and
-    same reason as `_add_entity_nodes`: a prefixed id, an edge per real
-    `DocumentLink`, and nothing wired into centrality or the path index,
-    both of which are built entirely around Entry.
+    same reason as `_add_entity_nodes`: a prefixed id and an edge per real
+    `DocumentLink`; centrality and the path index take the same links
+    (`paths._add_layer_edges`).
     """
     doc_links = documents_repo.link_pairs(session, node_ids)
     #: **Every live document, not only the attached ones** (the owner: "the
@@ -1058,6 +1138,22 @@ def _add_degree(nodes: list[dict], edges: list[dict], centrality_scores: dict) -
     return categories
 
 
+def _stamp_layer_nodes(nodes: list[dict], edges: list[dict], scores: dict, flags: dict[str, bool]) -> None:
+    """Degree and centrality for the document and entity nodes `_add_degree`
+    ran before. Notes keep the degree they had (the hub colour reads it);
+    these nodes' own degree counts the edges the payload carries."""
+    if not (flags["documents"] or flags["entities"]):
+        return
+    degree: dict = {}
+    for edge in edges:
+        degree[edge["source"]] = degree.get(edge["source"], 0) + 1
+        degree[edge["target"]] = degree.get(edge["target"], 0) + 1
+    for node in nodes:
+        if node.get("type") in ("document", "entity") and "centrality" not in node:
+            node["degree"] = degree.get(node["id"], 0)
+            node["centrality"] = scores.get(node["id"], 0)
+
+
 def _add_optional_layers(
     session: Session,
     entries: list,
@@ -1084,11 +1180,12 @@ def _add_optional_layers(
     # already has a real connection to the notes it draws on; this is that
     # relationship rendered, not a new one invented for the graph.
     #
-    # Deliberately not wired into centrality, similarity, or the trace-path
-    # BFS (paths.build/_centrality) this pass: both are built entirely
-    # around Entry, and extending either to a second node type is a
-    # materially bigger, separate change from making a document visible and
-    # connected in the first place.
+    # Owner, 2026-11-12: document and entity nodes join centrality (`_centrality`
+    # ranks them with the notes) and the trace path (`/graph/path?documents=`
+    # / `entities=`, via `paths.build`), each under its prefixed id, so
+    # nothing that reads an Entry id sees them unasked. Similarity stays
+    # note-to-note: it is cosine over note embeddings, and a document has no
+    # vector (the embeddings table is keyed by entry id).
     if flags["documents"]:
         _add_document_nodes(session, nodes, edges, node_ids)
     #: **A mind map, and the notes it is made of** (MINDMAP_PLAN.md §5 item
@@ -1148,7 +1245,7 @@ def _build_graph(
 
     #: The map's PageRank, shared with focus mode (`_centrality`); a warm call
     #: no longer builds an index at all.
-    centrality_scores = _centrality(session, similarity, include_maps)
+    centrality_scores = _centrality(session, similarity, include_maps, include_documents, include_entities)
     categories = _add_degree(nodes, edges, centrality_scores)
     flags = {
         "entities": include_entities,
@@ -1159,6 +1256,10 @@ def _build_graph(
         "attachments": include_attachments,
     }
     _add_optional_layers(session, entries, nodes, edges, node_ids, taken, flags)
+    if with_similarity:
+        on_map = {n["id"] for n in nodes if n.get("type") in ("document", "entity")}
+        edges.extend(_layer_similarity_edges(session, include_documents, include_entities, on_map))
+    _stamp_layer_nodes(nodes, edges, centrality_scores, flags)
     _add_sealed_link_nodes(session, nodes, edges, node_ids)
     #: A type's own colour, so "Note type" paints a Person the colour the
     #: person gave Person rather than the next one in the scheme.
@@ -1189,7 +1290,7 @@ def _build_graph(
 
 
 #: **The slim payload** (`/graph?slim=1`, the map's own read; GRAPH_PLAN
-#: "Still open after KG1 to KG9", a slimmer node). Measured at 5,000 notes
+#: "After KG1 to KG9", a slimmer node). Measured at 5,000 notes
 #: (`scratchpad/kg1005_graph_bench.py`): 3.1 MB, of which about a third was
 #: a value every note carries at its default and an unreasoned link's three
 #: nulls, plus timestamps to the microsecond. A note node leaves out each key
@@ -1247,7 +1348,7 @@ def _load_entries(session: Session, ids) -> dict[int, Entry]:  # noqa: ANN001
     return found
 
 
-def _local_topology(session: Session, similarity: bool) -> tuple[paths.Connections, dict, bool]:
+def _local_topology(session: Session, similarity: bool, maps: bool = False) -> tuple[paths.Connections, dict, bool]:
     """Who is joined to whom, and which way each line runs, once per version.
 
     BACKLOG 29b item 4: focus mode loaded every note as an ORM object, built
@@ -1262,7 +1363,7 @@ def _local_topology(session: Session, similarity: bool) -> tuple[paths.Connectio
     one value can be handed to concurrent requests.
     """
     use_similarity = similarity and not deps.get_config().get_preference("battery_efficient_mode")
-    key = (*_graph_fingerprint(session), use_similarity)
+    key = (*_graph_fingerprint(session), use_similarity, maps)
     if use_similarity:
         key = (*key, deps.get_embeddings().backend_id())
 
@@ -1273,7 +1374,9 @@ def _local_topology(session: Session, similarity: bool) -> tuple[paths.Connectio
                 session.scalars(select(Entry.id).where(Entry.is_deleted == False))  # noqa: E712
             )
             extra_edges = _similarity_edges(session, node_ids, set())
-        index = paths.build_light(session, extra_edges=extra_edges)
+        #: L-graph-8: boards are walked only with the map's Maps switch on,
+        #: as on `/graph`, so a board no longer joins two notes it holds.
+        index = paths.build_light(session, extra_edges=extra_edges, boards=maps)
         #: Which way each link and thread runs. The index keeps one step per
         #: direction, so the stored row says which end wrote it (a thread runs
         #: from the note to its reply, as on `/graph`); tags and similarity
@@ -1286,7 +1389,7 @@ def _local_topology(session: Session, similarity: bool) -> tuple[paths.Connectio
                 directed.setdefault(frozenset((entry.parent_id, entry.id)), (entry.parent_id, entry.id))
         return index, directed, bool(extra_edges)
 
-    return _cached(f"local_topology_{use_similarity}", key, build)
+    return _cached(f"local_topology_{use_similarity}_{maps}", key, build)
 
 
 def _ring_edges(index: paths.Connections, oriented, distance: dict[int, int], taken: set) -> list[dict]:
@@ -1372,10 +1475,14 @@ def graph_local(
     incoming: bool = True,
     outgoing: bool = True,
     neighbours: bool = True,
+    include_maps: bool = False,
     session: Session = Depends(get_session)
 ) -> dict:
     """Focus Mode API: Gets the local neighborhood up to N degrees."""
-    index, directed, _with_similarity = _local_topology(session, similarity)
+    index, directed, _with_similarity = _local_topology(session, similarity, include_maps)
+    if entry_id not in index.entries and not include_maps:
+        # Focus on a board itself: its own neighbourhood, boards and all.
+        index, directed, _with_similarity = _local_topology(session, similarity, True)
 
     if entry_id not in index.entries:
         raise HTTPException(status_code=404, detail="No such note.")
@@ -1458,10 +1565,29 @@ def graph_structure(
     found = _cached("topics", fingerprint, lambda: _build_topics(session))
     #: INBOX 547: the names the person gave, laid over after the cache, so a
     #: rename shows at once without recomputing a single topic.
-    named = topic_finder.apply_names(
-        found["topics"], deps.get_config().get_preference(TOPIC_NAMES_KEY, [])
-    )
-    return {**structure, **found, "topics": named}
+    named, topic_of, edits = _topics_laid(found)
+    return {
+        **structure,
+        "topics": named,
+        "topic_of": topic_of,
+        "topic_edits": {"merges": len(edits["merges"]), "removed": len(edits["excluded"])},
+    }
+
+
+#: The preference holding merges and removals: `{"merges": [[ids]], "excluded": [ids]}`.
+TOPIC_EDITS_KEY = "graph_topic_edits"
+
+
+def _topics_laid(found: dict) -> tuple[list[dict], dict, dict]:
+    """The cached topics with the person's removals, merges and names laid
+    over, after the cache so each shows at once without recomputing a topic
+    (INBOX 547, ledger L711). Also the note -> topic map of the result."""
+    config = deps.get_config()
+    edits = topic_finder.clean_edits(config.get_preference(TOPIC_EDITS_KEY, {}))
+    edited = topic_finder.apply_edits(found["topics"], edits)
+    named = topic_finder.apply_names(edited, config.get_preference(TOPIC_NAMES_KEY, []))
+    named = topic_finder.with_categories(named, found.get("category_of", {}))
+    return named, topic_finder.topic_of(named), edits
 
 
 #: The preference holding renamed topics: `[{"ids": [...], "name": "..."}]`.
@@ -1488,13 +1614,11 @@ def graph_topics_of(
         return {"topics": {}}
     fingerprint = _graph_fingerprint(session)
     found = _cached("topics", fingerprint, lambda: _build_topics(session))
-    named = topic_finder.apply_names(
-        found["topics"], deps.get_config().get_preference(TOPIC_NAMES_KEY, [])
-    )
+    named, topic_of, _ = _topics_laid(found)
     by_id = {topic["id"]: topic for topic in named}
     out = {}
     for note in wanted:
-        topic = by_id.get(found["topic_of"].get(str(note)))
+        topic = by_id.get(topic_of.get(str(note)))
         if topic is not None:
             row = {"id": topic["id"], "name": topic["name"], "size": topic["size"]}
             #: The words that named it, for the chip's hover (INBOX 1620: "idk
@@ -1522,6 +1646,45 @@ def name_topic(body: TopicNameBody) -> dict:
     stored = config.get_preference(TOPIC_NAMES_KEY, [])
     config.set_preference(TOPIC_NAMES_KEY, topic_finder.store_name(stored, body.ids, name))
     return {"name": name}
+
+
+class TopicIdsBody(BaseModel):
+    ids: list[int] = Field(min_length=1, max_length=5000)
+
+
+class TopicEditsBody(BaseModel):
+    merges: list[list[int]] = Field(default_factory=list, max_length=100)
+    excluded: list[int] = Field(default_factory=list, max_length=5000)
+
+
+def _save_edits(edits: dict, was: dict) -> dict:
+    deps.get_config().set_preference(TOPIC_EDITS_KEY, edits)
+    return {"edits": edits, "was": was}
+
+
+@router.post("/graph/topics/merge")
+def merge_topics(body: TopicIdsBody) -> dict:
+    """Join topics: `ids` is the notes of every topic being joined. Saved as an
+    override on top of the worked-out topics (ledger L711, owner 2026-11-12);
+    `was` is the state before, which the same `PUT /graph/topics/edits` puts back."""
+    was = topic_finder.clean_edits(deps.get_config().get_preference(TOPIC_EDITS_KEY, {}))
+    return _save_edits(topic_finder.store_merge(was, body.ids), was)
+
+
+@router.post("/graph/topics/remove")
+def remove_topic(body: TopicIdsBody) -> dict:
+    """Take a topic's notes out of every topic (the notes stay; only the
+    grouping goes). Saved like a merge, and undone like one."""
+    was = topic_finder.clean_edits(deps.get_config().get_preference(TOPIC_EDITS_KEY, {}))
+    return _save_edits(topic_finder.store_remove(was, body.ids), was)
+
+
+@router.put("/graph/topics/edits")
+def set_topic_edits(body: TopicEditsBody) -> dict:
+    """Put the merges and removals back to a given state: Undo, Redo, and the
+    reset (both lists empty) that brings the automatic grouping back."""
+    was = topic_finder.clean_edits(deps.get_config().get_preference(TOPIC_EDITS_KEY, {}))
+    return _save_edits(topic_finder.clean_edits(body.model_dump()), was)
 
 
 class TopicSummaryBody(BaseModel):
@@ -1628,7 +1791,20 @@ def _build_topics(session: Session) -> dict:
             terms_of[entry_id].add(("entity", name.strip()))
     found = topic_finder.build(index, terms_of, titles)
     topic_of = {str(node): topic["id"] for topic in found for node in topic["ids"]}
-    return {"topics": found, "topic_of": topic_of}
+    category_of = _category_of(session, index)
+    return {"topics": found, "topic_of": topic_of, "category_of": category_of}
+
+
+def _category_of(session: Session, index) -> dict[str, str]:  # noqa: ANN001
+    """Which category each readable note is filed in (a private note's is not
+    said, nor is "Uncategorised"), for the topic card's "mostly in" line (L11)."""
+    readable = [e for e in index.entries.values() if not e.is_private and e.category_id is not None]
+    names = manager.bulk_category_names(session, readable)
+    return {
+        str(e.id): names[e.category_id]
+        for e in readable
+        if names.get(e.category_id) not in (None, manager.UNCATEGORISED)
+    }
 
 
 def _build_structure(session: Session) -> dict:
@@ -1681,10 +1857,12 @@ def _build_structure(session: Session) -> dict:
 
 @router.get("/graph/path")
 def graph_path(
-    source: int,
-    target: int,
+    source: str,
+    target: str,
     similarity: bool = False,
     routes: int = paths.MAX_ALTERNATE_PATHS,
+    documents: bool = False,
+    entities: bool = False,
     session: Session = Depends(get_session),
 ) -> dict:
     """The chain of connections between two notes (§9).
@@ -1706,17 +1884,17 @@ def graph_path(
     than the one asked, `SIMILAR_WEIGHT` makes them the last resort within a
     route, but a route made only of them is "these are both about cooking"
     dressed up as a connection the user made.
-    """
-    extra_edges = []
-    if similarity and not deps.get_config().get_preference("battery_efficient_mode"):
-        node_ids = set(
-            session.scalars(
-                select(Entry.id).where(Entry.is_deleted == False)  # noqa: E712
-            )
-        )
-        extra_edges = _similarity_edges(session, node_ids, set())
 
-    index = paths.build(session, extra_edges=extra_edges)
+    `source` and `target` are a note id (`12`) or, with `documents` /
+    `entities` on, a prefixed node id (`document:3`, `entity:5`); those
+    layers make a document two notes are attached to, or an entity both name,
+    a stop on the route (owner, 2026-11-12). Off by default, so the old
+    answer is unchanged. With `similarity`, a document or entity may hop to a note that reads
+    like it (`_layer_similarity_edges`).
+    """
+    source, target = _node_key(source), _node_key(target)
+    extra_edges = _path_similarity(session, similarity, documents, entities)
+    index = paths.build(session, extra_edges=extra_edges, documents=documents, entities=entities)
     refused = _path_refusal(index, source, target)
     if refused:
         return {"found": False, "source": source, "target": target, "reason": refused}
@@ -1739,14 +1917,11 @@ def graph_path(
 
     #: Every note on *any* of the routes, named once. `bulk_category_names` is
     #: a query, so calling it per route would issue three where one does.
-    everywhere: list[int] = []
-    for one in chains:
-        for note_id in [source] + [step.target for step in one]:
-            if note_id not in everywhere:
-                everywhere.append(note_id)
+    everywhere = list(dict.fromkeys([source, *(step.target for one in chains for step in one)]))
     category_names = manager.bulk_category_names(
-        session, [index.entries[note_id] for note_id in everywhere]
+        session, [index.entries[note_id] for note_id in everywhere if note_id in index.entries]
     )
+    extra_nodes = _extra_path_nodes(session, index, everywhere)
 
     also = _hop_reasons(session, index, [(step.source, step.target) for one in chains for step in one])
 
@@ -1756,7 +1931,10 @@ def graph_path(
             "hops": len(one),
             "cost": sum(step.weight for step in one),
             "nodes": [
-                _path_node(index.entries[note_id], category_names) for note_id in order
+                extra_nodes[note_id]
+                if note_id in extra_nodes
+                else _path_node(index.entries[note_id], category_names)
+                for note_id in order
             ],
             "steps": [
                 {
@@ -1789,9 +1967,46 @@ def graph_path(
     }
 
 
-def _path_refusal(index: paths.Connections, source: int, target: int) -> str | None:
+def _path_similarity(session: Session, similarity: bool, documents: bool = False, entities: bool = False) -> list[dict]:
+    """The "read alike" edges a route may hop along, only when asked for."""
+    if not similarity or deps.get_config().get_preference("battery_efficient_mode"):
+        return []
+    node_ids = graph_layers.live_note_ids(session)
+    return _similarity_edges(session, node_ids, set()) + _layer_similarity_edges(session, documents, entities)
+
+
+def _node_key(raw: str) -> int | str:
+    """A path end from the query: a note id, or a prefixed `document:N` / `entity:N`."""
+    text = raw.strip()
+    if text.isdigit():
+        return int(text)
+    kind, _, number = text.partition(":")
+    if kind in ("document", "entity") and number.isdigit():
+        return f"{kind}:{int(number)}"
+    raise HTTPException(status_code=422, detail="A path end is a note id, document:N or entity:N.")
+
+
+def _extra_path_nodes(session: Session, index: paths.Connections, wanted: list) -> dict[str, dict]:
+    """The document and entity stops on a route, in the shape of `_path_node`."""
+    found: dict[str, dict] = {}
+    for node in wanted:
+        kind = index.extra.get(node)
+        if kind is None:
+            continue
+        number = int(node.partition(":")[2])
+        label = documents_repo.any_title(session, number) if kind == "document" else graph_layers.entity_name(session, number)
+        found[node] = {
+            "id": node,
+            "type": kind,
+            "preview": (label or "Untitled")[:60],
+            "category": kind.capitalize(),
+        }
+    return found
+
+
+def _path_refusal(index: paths.Connections, source: int | str, target: int | str) -> str | None:
     """Why a path is not even asked for: an end is not in the map, or both ends are one note."""
-    missing = [note_id for note_id in (source, target) if note_id not in index.entries]
+    missing = [note_id for note_id in (source, target) if not index.has(note_id)]
     if missing:
         return (
             "That note isn't in the map, it may have been deleted."

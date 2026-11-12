@@ -62,4 +62,5 @@ def test_a_repeated_stream_replays_the_first_lines(ai_client, monkeypatch):
 
 
 def test_a_turn_id_that_is_not_an_id_is_refused(ai_client):
-    assert ai_client.post("/chat", json={"question": "hi", "turn_id": "no spaces allowed!"}).status_code == 422
+    bad = ai_client.post("/chat", json={"question": "hi", "turn_id": "no spaces allowed!"})
+    assert bad.status_code == 422

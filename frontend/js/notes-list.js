@@ -2191,6 +2191,17 @@ function setNotesViewMode(mode) {
 const expandedRows = new Set();
 
 onSurface("notes", () => {
+  //: **The open note on card view is the last card clicked or focused**
+  //: (L709, the owner 2026-11-12): it stays open until another card is
+  //: clicked or Notes is left (`switchTab`), and search ranks its linked
+  //: notes higher (`refreshNoteSearchWhy`).
+  const list = $("entry-list");
+  const remember = (event) => {
+    const li = event.target.closest?.("li[data-id]");
+    if (li && list?.contains(li)) list.dataset.lastCard = li.dataset.id;
+  };
+  list?.addEventListener("pointerdown", remember);
+  list?.addEventListener("focusin", remember);
   $("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
   $("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
   $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));

@@ -287,3 +287,12 @@ def test_actual_size_shows_pressed_when_the_picture_is_already_there():
     as Back to fit does at fit, and the dock's pressed style shows it."""
     assert 'actualBtn.setAttribute("aria-pressed", String(Math.abs(zoom - actualZoom()) < 0.01));' in JS
     assert '.lightbox .lightbox-dock button[aria-pressed="true"]' in CSS
+
+
+def test_escape_closing_the_viewer_marks_the_event_spent_for_the_full_screen_handler():
+    """L-graph-13: the viewer closes in the capture phase, so by the bubble the
+    graph's own Escape handler saw no overlay and left full screen too."""
+    onkey = JS[JS.index("const onKey = (e) => {") :][:900]
+    assert "e.overlaySpent = true" in onkey
+    wiring = frontend_text("js/wiring.js")
+    assert "event.overlaySpent" in wiring[wiring.index("Escape leaves full screen") :][:900]
