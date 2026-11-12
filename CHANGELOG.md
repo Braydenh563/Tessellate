@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Brief: a titled note's title weight goes to the sentence that says the title's words, not to every sentence of the note (L500).
 - Timers: the chat timer, focus timer, meeting recorder and status bar clock share one one-second clock (L-world-class-15).
 - Tests: property tests for the time reader and the realiser, a few hundred seeded cases each against a fixed clock (L-world-class-19).
 - Silent excepts: the ratchet now also counts a broad except that returns a fallback ("", [], False) without a word; 59 seeded, the list only shrinks (L797).

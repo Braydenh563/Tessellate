@@ -98,7 +98,7 @@ def test_every_part_of_the_brief_is_the_notes_own_words(rows):
             flat = _flat(old["content"])
             #: A checklist's items are read without their "- [x]" marks (the
             #: words are still the note's own), so compare against that too.
-            unticked = _flat(re.sub(r"(?m)^\s*[-*+]\s+\[[ xX]\]\s+", "", old["content"]))
+            unticked = _flat(re.sub(r"(?m)^\s*[-*+]\s+(?:\[[ xX]\]\s+)?", "", old["content"]))
             for part in new["content"].split(" … "):
                 part = part.strip(" …").removeprefix(composer.read_note(old, 0).title).strip()
                 if part:
@@ -192,3 +192,19 @@ def test_a_composed_turn_has_no_preview(ai_client, fake_ollama, session):
     _seed(session)
     events = _stream(ai_client, "When is the boiler service due?", notes_only=True, use_tools=False, answer_from="notes")
     assert "composed_preview" not in [e["type"] for e in events]
+
+
+def test_a_titled_notes_other_sentences_do_not_score_on_its_title():
+    """L500: in the brief only the sentence that says the title's words takes the title weight."""
+    from tessellate.ai.composer_select import _score
+
+    note = {"id": 7, "content": "# Boiler service\n\nThe boiler service is due on 12 November. The cat sits on the sill.", "category": "Home"}
+    view = composer.read_note(note, 0)
+
+    def scores(carrier):
+        return {s.text: s.score for s in _score("when", ["boiler", "service"], [view], carrier=carrier)}
+
+    plain, carrier = scores(False), scores(True)
+    assert "The cat sits on the sill." in plain
+    assert "The cat sits on the sill." not in carrier
+    assert carrier["The boiler service is due on 12 November."] > 0
