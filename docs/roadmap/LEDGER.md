@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 169 | 49 | 0 | 72 | 348 |
+| world-class | 130 | 164 | 49 | 0 | 72 | 343 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 695 | 148 | 3 | 195 | 1396 |
+| all | 553 | 690 | 148 | 3 | 195 | 1391 |
 
 ## graph
 
@@ -641,8 +641,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L505** `world-class` open, S: Audit jobruns detail strings that carry {exc}. From OPEN.md:1950; OPEN.md:3542. Evidence: Audit not recorded
 - [ ] **L506** `world-class` open, S: Build the core/background.py registry. From OPEN.md:1975. Evidence: No core/background.py in src/tessellate/core; lint only counts sites
 - [ ] **L507** `world-class` open, S: Persist pending device requests in core/lantrust.py across restart. From OPEN.md:1985. Evidence: core/lantrust.py:69 _pending dict still in-memory; W34 skipped
-- [ ] **L508** `world-class` open, S: Batch commits in 5,000-note import (45.9 s) while keeping Stop. From OPEN.md:1763. Evidence: routes_import.py:108 'each one is committed as it is made' (deliberate for Stop); no batching found
-- [ ] **L509** `world-class` open, S: Handle deleted_at on import of binned notes. From OPEN.md:1764. Evidence: Export writes deleted_at (routes_settings_transfer.py:109-113); routes_import.py has no deleted handling to change it
 - [ ] **L510** `world-class` open, S: Trace how 'conversation' is derived as a topic for a gym note. From OPEN.md:4332. Evidence: Ledger open; needs the owner's note to trace topic derivation.
 - [ ] **L511** `world-class` open, S: Drive the dictionary spelling offer in a live empty search result. From OPEN.md:604; OPEN.md:2789. Evidence: Server correction answered every typo tried; finderSpellingOffer path undriven
 - [ ] **L512** `world-class` open, S: Show last_at instead of updated_at on Library chat rows and Shelved list. From OPEN.md:998. Evidence: routes_library.py:298 returns chat updated_at; library.js:1738 shows item.updated_at; last_at only in sheets-selects.js:1950
@@ -697,8 +695,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L566** `world-class` open, M: Sign parked tool calls so /chat/tools/execute stops running client-supplied args. From OPEN.md:4499. Evidence: routes_chat.py:2434 execute_confirmed_tool; signing the parked call needs composer_*.py to sign what it parks
 - [ ] **L567** `world-class` open, M: Move the remaining 13 thread modules onto core/jobs.py and verify second device and calendar app. From OPEN.md:611; OPEN.md:2998. Evidence: tests/test_flaw_class_lints.py:11 ratchet still lists Thread( outside core/jobs.py
 - [ ] **L568** `world-class` open, M: Audit other [^\]\n] scanners for ReDoS and add a JS link-stripping oracle test. From OPEN.md:1249; OPEN.md:3543. Evidence: Python oracles exist (tests/test_doc_graph.py:136, test_file_editing.py:252); JS link stripping has no oracle.
-- [ ] **L569** `world-class` open, M: Add a migration for FK and filtered-column indexes with EXPLAIN at 5,000 notes. From OPEN.md:1506; OPEN.md:3784. Evidence: core/database_indexes.py:261-262 adds entity_mentions indexes; document_bookmarks/entry_bookmarks and filtered columns not confirmed
-- [ ] **L570** `world-class` open, M: Key lexical_filing stamps on edited_at instead of updated_at. From OPEN.md:1699. Evidence: lexical_filing.py:1009,1060,1217 still key stamps on updated_at; edited_at (database.py:581) not used there
+- [ ] **L570** `world-class` open, M: Key lexical_filing stamps on edited_at instead of updated_at. From OPEN.md:1699. Evidence: lexical_filing.py:1009,1060,1217 still key stamps on updated_at; edited_at (database.py:581) not used there. Not done 2026-11-12: edited_at is set only by manager.mark_edited at per-note edit paths (database.py:572-577), so AI-tool, import and merge writes would leave the corpus stale; updated_at over-reads one note per open (access_count bump), cheap. Needs a decision on whether every content write calls mark_edited first
 - [ ] **L571** `world-class` open, M: Preserve the note type id on Undo after POST /note-types then delete. From OPEN.md:1771. Evidence: routes_properties.py:145 POST /note-types; no id-preserving restore found; not reproduced here
 - [ ] **L572** `world-class` open, M: Add redo for /events/undo AI-change undo so it folds into pushUndo. From OPEN.md:1775. Evidence: note-history.js:340 undoSkillRun and dashboard activityUndoControl still use /events/undo; no server redo found
 - [ ] **L573** `world-class` open, M: Build wiki-link hover preview, tag counts on chips, empty-state recipe, icons and card styles. From OPEN.md:4240; bs-1111.md. Evidence: New feature (M); citation-peek.js and attachment-peek.js are the recipe; no wiki-link peek file.
@@ -740,7 +737,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L609** `world-class` open, M: Server grew to 8.5 GB resident over 35 min of seeding/sweeps. From OPEN.md:2064. Evidence: Row says not reproduced, cause not found; no fix or test located
 - [ ] **L610** `world-class` open, M: Boot gzip budget leftovers (chord guide in settings-wiring.js ~3 KB etc.). From OPEN.md:2248. Evidence: Candidates measured and left; test_static_compression.py holds numbers
 - [ ] **L611** `world-class` open, M: App scripts gzip cap has no room (320,589 of 320,600); unblock chat-agent.js budget line and helpers. From OPEN.md:2499; OPEN.md:3909; OPEN.md:3818. Evidence: Budget at 11 bytes headroom; guard paths not driven
-- [ ] **L612** `world-class` open, M: 5,000-note import takes 45.9 s (commit per note). From OPEN.md:2683. Evidence: Verified open 2026-11-10; no batching commit
 - [ ] **L613** `world-class` open, M: Smaller backend/gate rows: note-types undo id, gate --changed, palette test, CSS budgets. From OPEN.md:3289. Evidence: Undo id loss unreproduced; budgets near limit; palette undecided
 - [ ] **L614** `world-class` open, M: Night shift pairing phase slow (120 s) and bar resets between phases. From OPEN.md:3501. Evidence: No commit or test addressing pairing speed or bar reset found.
 - [ ] **L615** `world-class` open, M: 49 routes need a test or removal. From OPEN.md:3783. Evidence: tests/test_routes_named.py SEED still present
@@ -845,7 +841,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-18** `world-class` open, M: Write the threat model. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3772. Evidence: Open line in the plan's prose a session could miss. No threat-model doc exists; open in 25 and 26 (3877).
 - [ ] **L-world-class-19** `world-class` open, S: Property tests for the realiser and when.py. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3879. Evidence: Open line in the plan's prose a session could miss. Testing gap.
 - [ ] **L-world-class-20** `world-class` open, S: Measure memory and _to_out with a large notebook. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3931. Evidence: Open line in the plan's prose a session could miss. Not measured (also _to_out at 5,000 notes at 3950).
-- [ ] **L-world-class-21** `world-class` open, S: Add a partial index on live entries. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3934. Evidence: Open line in the plan's prose a session could miss. Index work open alongside audit_log.entity_id.
 - [ ] **L-world-class-22** `world-class` open, L: Build the 27.1 remainder: templates, pin and archive, space tools. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3975. Evidence: Open line in the plan's prose a session could miss. Section 27.1 items besides bulk edit and exports have no rows.
 - [ ] **L-world-class-23** `world-class` open, M: Filing leftovers from the 1010 pass. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4173. Evidence: Open line in the plan's prose a session could miss. Pointer leftovers lost when pointer files were deleted.
 

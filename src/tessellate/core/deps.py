@@ -682,6 +682,23 @@ def store_quietly(session: Session, entry: Entry) -> bool:
         )
         return False
 
+def store_quietly_many(session: Session, entries: list[Entry]) -> int:
+    """`store_quietly` for a batch: one encode and one commit for the lot.
+
+    A bulk import used to call `store_quietly` per note, and that commits, so
+    5,000 notes paid 5,000 fsyncs (L508). Returns how many vectors were stored.
+    """
+    try:
+        return get_embeddings().store_for_entries(session, entries)
+    except Exception:  # noqa: BLE001  # nothing here may fail the import
+        logging.getLogger("tessellate.embeddings").warning(
+            "couldn't embed a batch of %s entries; they stay keyword-searchable only",
+            len(entries),
+            exc_info=True,
+        )
+        return 0
+
+
 #: How many notes have to arrive or vanish at once before the app says the
 #: search index is worth rebuilding. Twenty is roughly "an import or a restore
 #: happened", not "you had a productive afternoon", a suggestion that fires

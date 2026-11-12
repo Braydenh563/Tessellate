@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2668, tests 21796, plan headings 686, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10759, test files 2670, tests 21802, plan headings 686, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8325)
 
@@ -13392,7 +13392,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:414 |
 | `/export/backup` | GET | `export_backup` | src/tessellate/api/routes_settings_transfer.py:52 |
 | `/export/csv` | GET | `export_csv` | src/tessellate/api/routes_settings_transfer.py:767 |
-| `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:165 |
+| `/export/folder` | GET | `export_notebook_folder` | src/tessellate/api/routes_import.py:169 |
 | `/export/json` | GET | `export_json` | src/tessellate/api/routes_settings_transfer.py:76 |
 | `/export/markdown` | GET | `export_markdown` | src/tessellate/api/routes_settings_transfer.py:204 |
 | `/extract/commit` | POST | `extract_commit` | src/tessellate/api/routes_entries.py:2935 |
@@ -13465,11 +13465,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/import` | POST | `import_bookmarks` | src/tessellate/api/routes_bookmarks.py:104 |
 | `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:612 |
 | `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:488 |
-| `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:97 |
+| `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:99 |
 | `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings_transfer.py:544 |
 | `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings_transfer.py:671 |
 | `/import/markdown` | POST | `import_markdown` | src/tessellate/api/routes_settings_transfer.py:564 |
-| `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:156 |
+| `/import/reports/{report_id}` | GET | `import_report_page` | src/tessellate/api/routes_import.py:160 |
 | `/improve` | POST | `improve_writing` | src/tessellate/api/routes_entries.py:1635 |
 | `/inspect` | POST | `inspect_model` | src/tessellate/api/routes_models.py:1030 |
 | `/instance` | GET | `instance` | src/tessellate/api/app.py:1645 |
@@ -13907,7 +13907,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10758)
+## Backend modules (10759)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22313,14 +22313,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_excluded` | src/tessellate/api/routes_import.py:69 |
-| `_progress` | src/tessellate/api/routes_import.py:52 |
-| `_received` | src/tessellate/api/routes_import.py:36 |
-| `_refuse_open_private_while_locked` | src/tessellate/api/routes_import.py:83 |
-| `_summary` | src/tessellate/api/routes_import.py:63 |
-| `export_notebook_folder` | src/tessellate/api/routes_import.py:166 |
-| `import_app` | src/tessellate/api/routes_import.py:98 |
-| `import_report_page` | src/tessellate/api/routes_import.py:157 |
+| `_excluded` | src/tessellate/api/routes_import.py:71 |
+| `_progress` | src/tessellate/api/routes_import.py:54 |
+| `_received` | src/tessellate/api/routes_import.py:38 |
+| `_refuse_open_private_while_locked` | src/tessellate/api/routes_import.py:85 |
+| `_summary` | src/tessellate/api/routes_import.py:65 |
+| `export_notebook_folder` | src/tessellate/api/routes_import.py:170 |
+| `import_app` | src/tessellate/api/routes_import.py:100 |
+| `import_report_page` | src/tessellate/api/routes_import.py:161 |
 
 ### src/tessellate/api/routes_inbox.py (28)
 
@@ -23924,7 +23924,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `guard` | src/tessellate/core/deadline.py:66 |
 | `seconds_for` | src/tessellate/core/deadline.py:55 |
 
-### src/tessellate/core/deps.py (38)
+### src/tessellate/core/deps.py (39)
 
 | Name | File:line |
 |---|---|
@@ -23944,7 +23944,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_watch_spaces` | src/tessellate/core/deps.py:416 |
 | `brief_session` | src/tessellate/core/deps.py:586 |
 | `build_llm_client` | src/tessellate/core/deps.py:118 |
-| `clear_index_stale` | src/tessellate/core/deps.py:714 |
+| `clear_index_stale` | src/tessellate/core/deps.py:731 |
 | `forget_space_ids` | src/tessellate/core/deps.py:408 |
 | `get_config` | src/tessellate/core/deps.py:328 |
 | `get_db` | src/tessellate/core/deps.py:338 |
@@ -23953,9 +23953,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `get_ollama` | src/tessellate/core/deps.py:365 |
 | `get_or_404` | src/tessellate/core/deps.py:632 |
 | `get_session` | src/tessellate/core/deps.py:574 |
-| `index_stale_notes` | src/tessellate/core/deps.py:719 |
+| `index_stale_notes` | src/tessellate/core/deps.py:736 |
 | `init_app_state` | src/tessellate/core/deps.py:176 |
-| `mark_index_stale` | src/tessellate/core/deps.py:692 |
+| `mark_index_stale` | src/tessellate/core/deps.py:709 |
 | `override_ai` | src/tessellate/core/deps.py:316 |
 | `peek_config` | src/tessellate/core/deps.py:355 |
 | `peek_db` | src/tessellate/core/deps.py:344 |
@@ -23966,6 +23966,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `requests_in_flight` | src/tessellate/core/deps.py:570 |
 | `reset_app_state` | src/tessellate/core/deps.py:269 |
 | `store_quietly` | src/tessellate/core/deps.py:658 |
+| `store_quietly_many` | src/tessellate/core/deps.py:685 |
 
 ### src/tessellate/core/desk_companion.py (47)
 
@@ -26182,34 +26183,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `ExportResult` | src/tessellate/entry/export_folder.py:381 |
-| `Progress` | src/tessellate/entry/export_folder.py:886 |
+| `Progress` | src/tessellate/entry/export_folder.py:887 |
 | `_Parts` | src/tessellate/entry/export_folder.py:488 |
 | `_Related` | src/tessellate/entry/export_folder.py:169 |
 | `_attachment_names` | src/tessellate/entry/export_folder.py:140 |
 | `_attachment_record` | src/tessellate/entry/export_folder.py:153 |
 | `_categories` | src/tessellate/entry/export_folder.py:387 |
-| `_categories_in` | src/tessellate/entry/export_folder.py:874 |
+| `_categories_in` | src/tessellate/entry/export_folder.py:875 |
 | `_decoded` | src/tessellate/entry/export_folder.py:453 |
 | `_documents_in` | src/tessellate/entry/export_folder.py:587 |
-| `_existing_documents` | src/tessellate/entry/export_folder.py:836 |
+| `_existing_documents` | src/tessellate/entry/export_folder.py:837 |
 | `_existing_notes` | src/tessellate/entry/export_folder.py:629 |
 | `_fingerprint` | src/tessellate/entry/export_folder.py:624 |
-| `_fix_object_links` | src/tessellate/entry/export_folder.py:763 |
+| `_fix_object_links` | src/tessellate/entry/export_folder.py:764 |
 | `_fresh_bin_period` | src/tessellate/entry/export_folder.py:669 |
 | `_from_markdown` | src/tessellate/entry/export_folder.py:533 |
 | `_front_matter` | src/tessellate/entry/export_folder.py:317 |
 | `_group` | src/tessellate/entry/export_folder.py:513 |
 | `_grouped` | src/tessellate/entry/export_folder.py:180 |
-| `_hang_canvas` | src/tessellate/entry/export_folder.py:721 |
-| `_hang_cards` | src/tessellate/entry/export_folder.py:737 |
-| `_hang_connector_ends` | src/tessellate/entry/export_folder.py:783 |
-| `_hang_links` | src/tessellate/entry/export_folder.py:704 |
-| `_hang_rows` | src/tessellate/entry/export_folder.py:752 |
+| `_hang_canvas` | src/tessellate/entry/export_folder.py:722 |
+| `_hang_cards` | src/tessellate/entry/export_folder.py:738 |
+| `_hang_connector_ends` | src/tessellate/entry/export_folder.py:784 |
+| `_hang_links` | src/tessellate/entry/export_folder.py:705 |
+| `_hang_rows` | src/tessellate/entry/export_folder.py:753 |
 | `_imported` | src/tessellate/entry/export_folder.py:567 |
 | `_iso` | src/tessellate/entry/export_folder.py:72 |
 | `_json` | src/tessellate/entry/export_folder.py:460 |
-| `_json_dict` | src/tessellate/entry/export_folder.py:803 |
-| `_keep_updated` | src/tessellate/entry/export_folder.py:811 |
+| `_json_dict` | src/tessellate/entry/export_folder.py:804 |
+| `_keep_updated` | src/tessellate/entry/export_folder.py:812 |
 | `_link_ends` | src/tessellate/entry/export_folder.py:271 |
 | `_link_record` | src/tessellate/entry/export_folder.py:160 |
 | `_make_entry` | src/tessellate/entry/export_folder.py:649 |
@@ -26224,13 +26225,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_restore` | src/tessellate/entry/export_folder.py:95 |
 | `_row` | src/tessellate/entry/export_folder.py:76 |
 | `_safe_name` | src/tessellate/entry/export_folder.py:108 |
-| `_second_pass` | src/tessellate/entry/export_folder.py:824 |
+| `_second_pass` | src/tessellate/entry/export_folder.py:825 |
 | `_sha1_file` | src/tessellate/entry/export_folder.py:114 |
 | `_stored_names` | src/tessellate/entry/export_folder.py:371 |
 | `_strip_attachments` | src/tessellate/entry/export_folder.py:482 |
-| `_write_attachments` | src/tessellate/entry/export_folder.py:687 |
+| `_write_attachments` | src/tessellate/entry/export_folder.py:688 |
 | `_write_documents` | src/tessellate/entry/export_folder.py:396 |
-| `_write_documents_in` | src/tessellate/entry/export_folder.py:847 |
+| `_write_documents_in` | src/tessellate/entry/export_folder.py:848 |
 | `_write_note` | src/tessellate/entry/export_folder.py:352 |
 | `board_canvas` | src/tessellate/entry/export_folder.py:229 |
 | `document_record` | src/tessellate/entry/export_folder.py:222 |
@@ -26239,7 +26240,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `note_record` | src/tessellate/entry/export_folder.py:203 |
 | `read` | src/tessellate/entry/export_folder.py:599 |
 | `snapshot` | src/tessellate/entry/export_folder.py:293 |
-| `write` | src/tessellate/entry/export_folder.py:894 |
+| `write` | src/tessellate/entry/export_folder.py:895 |
 
 ### src/tessellate/entry/folder_sync.py (29)
 
@@ -27659,7 +27660,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21796)
+## Tests (21802)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28974,7 +28975,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_idle_style_1103.py | 3 |
 | tests/test_image_layout.py | 10 |
 | tests/test_image_read_once.py | 8 |
-| tests/test_import_bin_clock.py | 1 |
+| tests/test_import_bin_clock.py | 2 |
+| tests/test_import_commit_batches.py | 2 |
 | tests/test_import_dates.py | 4 |
 | tests/test_import_directory_roots.py | 7 |
 | tests/test_import_idempotent.py | 5 |
@@ -28993,6 +28995,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_inbox_675_hero.py | 11 |
 | tests/test_inbox_677_quick_access.py | 3 |
 | tests/test_inbox_732_733.py | 14 |
+| tests/test_indexes_at_5000.py | 3 |
 | tests/test_injection_fence.py | 17 |
 | tests/test_injection_guard.py | 3 |
 | tests/test_inline_citations.py | 11 |
@@ -30749,14 +30752,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3036 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:900 |
+| Needs hardware | docs/roadmap/LEDGER.md:895 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:892 |
+| Owner calls | docs/roadmap/LEDGER.md:887 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30937,7 +30940,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4021 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1100 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1095 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -30991,25 +30994,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1116 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1200 |
+| chat | docs/roadmap/LEDGER.md:1111 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1195 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:1140 |
-| general | docs/roadmap/LEDGER.md:852 |
+| documents | docs/roadmap/LEDGER.md:1135 |
+| general | docs/roadmap/LEDGER.md:847 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1104 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1212 |
+| graph | docs/roadmap/LEDGER.md:1099 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1207 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:1152 |
+| mindmap | docs/roadmap/LEDGER.md:1147 |
 | timeline | docs/roadmap/LEDGER.md:596 |
-| timeline | docs/roadmap/LEDGER.md:1176 |
+| timeline | docs/roadmap/LEDGER.md:1171 |
 | ui-modernisation | docs/roadmap/LEDGER.md:478 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1164 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1159 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1128 |
+| whiteboard | docs/roadmap/LEDGER.md:1123 |
 | world-class | docs/roadmap/LEDGER.md:631 |
-| world-class | docs/roadmap/LEDGER.md:1188 |
+| world-class | docs/roadmap/LEDGER.md:1183 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |
