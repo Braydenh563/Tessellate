@@ -83,7 +83,7 @@ const WB_FMT_FIELDS = {
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
-  image: ["alpha", "shadow", "shadowset", "radii", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props"],
+  image: ["alpha", "shadow", "shadowset", "radii", "imageborder", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props"],
   frame: ["pad", "geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "tableheader", "stripes", "geometry", "props"],
   note: ["geometry", "angle"],
@@ -147,6 +147,8 @@ function wbFmtValue(entry, field) {
     case "round": return Number(s?.round) || 0;
     case "linestyle": return s?.curve ? "curved" : s?.round ? "rounded" : "sharp";
     case "crop": return o?.crop || "";
+    case "ibcolor": return o?.border_color && o.border_color !== "transparent" ? o.border_color : "#333333";
+    case "ibwidth": return o?.border_width || "";
     case "turn": return Number(o?.turn) || 0;
     case "flipx": return o?.flip_x === true;
     case "flipy": return o?.flip_y === true;
@@ -704,6 +706,7 @@ function wbFormatSync() {
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-linestyle", "linestyle", "linestyle"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
     ["wb-fmt-bright", "bright", "pixels"], ["wb-fmt-contrast", "contrast", "pixels"], ["wb-fmt-trim0", "trim0", "trim"], ["wb-fmt-trim1", "trim1", "trim"], ["wb-fmt-trim2", "trim2", "trim"], ["wb-fmt-trim3", "trim3", "trim"],
+    ["wb-fmt-ibcolor", "ibcolor", "imageborder"], ["wb-fmt-ibwidth", "ibwidth", "imageborder"],
     ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"], ["wb-fmt-dir", "dir", "text"], ["wb-fmt-inkalpha", "inkalpha", "text"],
   ]) {
@@ -1208,6 +1211,13 @@ onSurface("board", () => {
     const value = boxNumber(e.target, 0, 80);
     wbFmtApply("pad", () => ({ pad: value }), value === undefined ? "Padding default." : `Padding ${value}px.`);
   });
+  //: A picture's border: the width turns it on (the colour defaults to a dark grey), a blank width takes it off.
+  on("wb-fmt-ibwidth", "change", (e) => {
+    const value = boxNumber(e.target, 0, 40);
+    const colour = document.getElementById("wb-fmt-ibcolor")?.value || "#333333";
+    wbFmtApply("imageborder", (entry) => ({ border_width: value || undefined, ...(value && !entry.item.data?.border_color ? { border_color: colour } : {}) }), value ? `Border ${value}px.` : "Border taken off.");
+  });
+  on("wb-fmt-ibcolor", "change", (e) => wbFmtApply("imageborder", () => ({ border_color: e.target.value }), "Border colour changed."));
   for (const corner of [0, 1, 2, 3]) {
     on(`wb-fmt-r${corner}`, "change", () => {
       const radii = [0, 1, 2, 3].map((i) => boxNumber(document.getElementById(`wb-fmt-r${i}`), 0, 200));

@@ -14228,6 +14228,12 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
           `preserveAspectRatio="xMidYMid slice"${clip ? ` clip-path="url(#${clip})"` : ""}` +
           `${turn ? ` transform="${turn}"` : ""}${filter ? ` filter="${filter}"` : ""} />`
       );
+      //: The picture's border (Format > Border), stroked inside the box over the picture.
+      const edge = obj.data.border_width > 0 ? obj.data.border_width : 0;
+      if (edge) {
+        const inner = wbSvgRoundedPath(Math.max(1, obj.width - edge), Math.max(1, obj.height - edge), radii);
+        parts.push(`<path d="${inner}" transform="translate(${edge / 2}, ${edge / 2})" fill="none" stroke="${wbSvgEscape(obj.data.border_color && obj.data.border_color !== "transparent" ? obj.data.border_color : "#333333")}" stroke-width="${edge}" />`);
+      }
     } else if (obj.kind === "diagram") {
       //: What the board shows, already drawn (`wbDiagramDataUrl`); an edge
       //: while it has not been drawn yet, never an empty gap.
@@ -24852,6 +24858,10 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     if (d.kind === "image") {
       const pix = wbPixel(d.data, d.width, d.height);
       const turned = pix.turn === 90 || pix.turn === 270;
+      //: The border is an outline drawn inside the box, so the picture keeps its size.
+      const edge = d.data.border_width > 0 ? d.data.border_width : 0;
+      this.style.outline = edge ? `${edge}px solid ${d.data.border_color && d.data.border_color !== "transparent" ? d.data.border_color : "#333333"}` : "";
+      this.style.outlineOffset = edge ? `-${edge}px` : "";
       el.select("img").attr("src", mediaSrc(d.data.url) || "").style("border-radius", d.data.radii ? "inherit" : null)
         .style("clip-path", wbCropClip(d.data.crop, d.data.trim) || null)
         .style("transform", pix.transform || null).style("filter", pix.filter || null)

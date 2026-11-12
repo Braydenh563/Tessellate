@@ -393,6 +393,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
     assert state["objects"][0]["data"] == {
         "content": "Meeting notes", "color": "#ffcc00", "font_size": 18, "url": None,
         "bg": None, "border_color": None,
+        # Added with the picture border (wbformat2); None until set.
+        "border_width": None,
         # Added with the Format panel's fill and line transparency; None until set.
         "bg_alpha": None,
         "line_alpha": None,

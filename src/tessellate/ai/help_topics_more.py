@@ -2991,3 +2991,18 @@ MORE_TOPICS.append({
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here"}
+
+#: WHITEBOARD_PLAN, wbformat2: the board's own format options, one topic that grows with each row.
+MORE_TOPICS.append({
+    "id": "board-format-options",
+    "keywords": (
+        "picture border", "image border", "border on a picture", "outline a picture",
+    ),
+    "body": (
+        "Picture border: select a picture, then in the Format panel set Border to a width in pixels and pick its colour; "
+        "an empty width takes the border off. The border is drawn inside the picture's edge, follows its rounded corners, "
+        "and is kept in SVG, PNG and PDF exports and in a .drawio file (as imageBorder and strokeWidth)."
+    ),
+    "badge": {"label": "Whiteboard", "tab": "library"},
+})
+TOPIC_META["board-format-options"] = {"title": "Board format options", "path": "Whiteboard, Format panel"}

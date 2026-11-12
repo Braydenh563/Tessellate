@@ -590,12 +590,17 @@ function wbDrawioPlan(cells) {
       edgeLabels.set(parent.id, wbDrawioText(c.value, s.html !== "0"));
       continue;
     }
-    for (const k of WB_DRAWIO_DROPPED) if (s[k] && s[k] !== "0") drop(k);
+    const ownPicture = s.shape === "image" && /^\/media\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(s.image || "");
+    for (const k of WB_DRAWIO_DROPPED) if (s[k] && s[k] !== "0" && !(ownPicture && k === "image")) drop(k);
     if (s._kind === "group") continue;
     const at = origin(c.id);
     const box = { x: at.x, y: at.y, w: Math.max(1, Number(c.geo?.width) || 0), h: Math.max(1, Number(c.geo?.height) || 0) };
     const label = wbDrawioText(c.value, s.html !== "0");
-    if (s._kind === "swimlane" || s.swimlane === "1") items.push({ id: c.id, kind: "frame", ...box, label });
+    if (ownPicture) {
+      //: Only a picture already on this notebook comes back; an outside address would make the board call out.
+      const border = /^#[0-9a-f]{6}$/i.test(s.imageBorder || "") ? { border_color: s.imageBorder.toLowerCase(), border_width: Math.max(1, Math.min(40, Math.round(Number(s.strokeWidth) || 1))) } : {};
+      items.push({ id: c.id, kind: "image", ...box, url: s.image, look: border });
+    } else if (s._kind === "swimlane" || s.swimlane === "1") items.push({ id: c.id, kind: "frame", ...box, label });
     else if (s._kind === "text") items.push({ id: c.id, kind: "text", ...box, label, look: { font_size: Math.round(Number(s.fontSize) || 16), ...(wbDrawioLook(s).label_color ? { color: wbDrawioLook(s).label_color } : {}) } });
     else {
       const shape = wbDrawioShape(s);
@@ -683,6 +688,9 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
         const fill = cell.head ? "#eef1f6" : cell.stripe ? "#f4f6fa" : "#ffffff";
         vertex(`object:${o.id}:${cell.r}:${cell.c}`, `rounded=0;whiteSpace=wrap;html=0;align=left;verticalAlign=top;fillColor=${fill};strokeColor=#9aa3b5;${cell.head ? "fontStyle=1;" : ""}`, cell.text, { x: b.x + cell.x, y: b.y + cell.y, w: cell.w, h: cell.h });
       }
+    } else if (o.kind === "image" && /^\/media\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(d.url || "")) {
+      //: A picture of this notebook's: its address and its border (draw.io's `imageBorder` and `strokeWidth`).
+      vertex(`object:${o.id}`, `shape=image;html=0;aspect=fixed;image=${d.url};${hex(d.border_color) && d.border_width > 0 ? `imageBorder=${hex(d.border_color)};strokeWidth=${Math.round(d.border_width)};` : ""}`, "", b);
     } else if (o.kind === "image" || o.kind === "table") skip(o.kind === "image" ? "pictures" : "tables");
     else skip("other items");
   }
@@ -1100,6 +1108,10 @@ async function wbDrawioPlace(plan, dx, dy, ink) {
   for (const f of plan.items.filter((i) => i.kind === "frame").reverse()) {
     const made = await wbCreateObject("frame", { content: f.label || "Lane" }, Math.round(f.x + dx), Math.round(f.y + dy), Math.round(f.w), Math.round(f.h));
     if (made) ids.set(f.id, ["object", made.id]);
+  }
+  for (const item of plan.items.filter((i) => i.kind === "image")) {
+    const made = await wbCreateObject("image", { url: item.url, ...item.look }, Math.round(item.x + dx), Math.round(item.y + dy), Math.round(Math.max(20, item.w)), Math.round(Math.max(20, item.h)));
+    if (made) ids.set(item.id, ["object", made.id]);
   }
   for (const item of plan.items.filter((i) => i.kind === "text")) {
     const made = await wbCreateObject("text", { content: item.label, ...item.look }, Math.round(item.x + dx), Math.round(item.y + dy), Math.round(Math.max(40, item.w)), Math.round(Math.max(24, item.h)));
