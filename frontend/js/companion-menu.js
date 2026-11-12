@@ -895,6 +895,11 @@
         const shake = (x) => ({ translate: `${x}px 0px` });
         buddy.querySelector(".nm-buddy-char")?.animate?.([shake(0), shake(-1.6), shake(1.6), shake(-1.1), shake(0.8), shake(0)], { duration: 640, easing: "ease-in-out" });
         nameMarkBuddyExpress(atlas ? "happy" : nmb.carriedMs > 5000 ? "dizzy" : "happy", 1800, { drift: atlas });
+      } else if (kind === "caught") {
+        //: Clutched (a sink and a small shiver), wide-eyed, then relieved (translate only, as the shake-off is).
+        buddy.querySelector(".nm-buddy-char")?.animate?.([{ translate: "0 0" }, { translate: "0 1.6px", offset: 0.25 }, { translate: "0.8px 1.4px", offset: 0.4 }, { translate: "-0.8px 1.4px", offset: 0.55 }, { translate: "0 -1px", offset: 0.8 }, { translate: "0 0" }], { duration: 760, easing: "ease-in-out" });
+        nameMarkBuddyExpress("surprised", 700);
+        setTimeout(() => buddy.isConnected && !nameMarkBuddyStill() && nameMarkBuddyExpress("happy", 1100), 720);
       } else if (kind === "binned") {
         nameMarkBuddyTilt(side * 0.6, 1200);
         if (atlas) setAtlasMood("worried", 1600, { quiet: true, backEaseMs: 900 });

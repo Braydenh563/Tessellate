@@ -8615,6 +8615,8 @@
       nameMarkBuddyAct(next);
       //: Held a while, it shakes itself off once it has landed (INBOX 1581).
       if (act === "land" && nmb.carriedMs >= 2500) setTimeout(() => nameMarkBuddyReact("carried"), 250);
+      if (act === "land" && nmb.caughtMid && performance.now() - nmb.caughtMid < 15000) setTimeout(() => nameMarkBuddyReact("caught"), 250);
+      if (act === "land") nmb.caughtMid = 0;
       if (act === "land") nmb.carriedMs = 0;
     }), (ms || spec?.ms || 1200) * (act === "land" ? 1 : 1 + Math.random() * 0.3)));
   }
@@ -9416,6 +9418,8 @@
     whoosh: { cool: 30000, habit: true },
     carried: { cool: 20000, habit: true, over: ["look"] },
     binned: { cool: 30000, habit: true },
+    //: Pressed while it falls (I21, `int.catch_midair`): a clutch, wide eyes, then relief, on the landing that follows.
+    caught: { cool: 20000, habit: true, over: ["land", "look"] },
     //: **What the desk companion notices on the desk, the browser's version** (INBOX 1710, the owner: "they need to be just as
     //: good as each other"; the same five rows as the desk's `REACTIONS`, with the same cooldowns): the hour struck while
     //: the page is open (a nod), the page back after ten minutes away (a wave), the battery low and not charging (a shiver of
@@ -11000,6 +11004,8 @@
       //: so a sleeping companion answered a click as if awake, at once
       //: (companionfeel.js: "wave" 200ms after clicking it asleep).
       drag = { box: null, sx: event.clientX, sy: event.clientY, x: event.clientX, y: event.clientY, moved: false };
+      //: A press that lands on a flight is a catch in the air: the next landing answers it (`caught`, I21).
+      nmb.caughtMid = nmb.flight ? performance.now() : 0;
       nmb.grabbed = true;
       face.setPointerCapture(event.pointerId);
     });

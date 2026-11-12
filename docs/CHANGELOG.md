@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The companion answers being caught in the air: a click while it falls or flies makes it clutch and go wide-eyed, then relax once it lands or stands, in the app (a Little habits row, `caught`) and on the desk (`caught`, `clutch_relief`) (I21, `int.catch_midair`).
 - The desk companion cheers when the note count passes a round number too (10, 25, 50, 100, 250, 500, every thousand): the server notes only the kind and the time, one cheer an hour (P7 follow-up, I17).
 - Companion (X8): the large view's fit asks a part for its style only when the part reaches past the counted box (455 style reads to 10 on Atlas, the same margins; about 2 ms of 10 at 4x). Measured at 4x with the view opened four times: the double-click handler 0.2 to 2.1 ms, the first frame 28 to 42 ms unloaded; the appendChild 92 to 144 ms of INBOX 1726 did not reproduce here.
 - Companion (P7, P6): it looks at a popup that lands on it before it steps aside (Brief 88 N8; eye aim -0.997 on the popup's side, released after 0.9 s), cheers and says the count when the note count passes 10, 25, 50, 100, 250, 500 or a thousand (N10), and keeps a reaction budget of four a minute (Brief 34 second part).
