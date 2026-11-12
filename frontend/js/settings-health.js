@@ -352,10 +352,13 @@
         clearTimeout(samplingSaveTimer);
         samplingSaveTimer = setTimeout(async () => {
           try {
-            await apiJson("/models/sampling", {
-              method: "PUT",
-              body: JSON.stringify({ overrides: samplingState.overrides }),
-            });
+            const now = { ...samplingState.overrides };
+            await apiJson("/models/sampling", { method: "PUT", body: JSON.stringify({ overrides: now }) });
+            //: A drag is one step back to where it began (L694).
+            if (samplingState.was && JSON.stringify(samplingState.was) !== JSON.stringify(now)) {
+              pushRequestUndo("A sampling setting", "/models/sampling", "PUT", { overrides: samplingState.was }, { overrides: now }, loadSamplingSettings);
+            }
+            samplingState.was = null;
           } catch {
             toast("Couldn't save that setting.", true);
           }
@@ -369,6 +372,7 @@
       const applyValue = (raw) => {
         const clamped = Math.min(Math.max(raw, Number(knob.min)), Number(knob.max));
         const value = knob.integer ? Math.round(clamped) : Number(clamped.toFixed(4));
+        samplingState.was ??= { ...samplingState.overrides };
         samplingState.overrides[knob.name] = value;
         samplingState.effective[knob.name] = value;
         samplingState.sources[knob.name] = "you";
@@ -383,6 +387,7 @@
       //: same act as the reset button beside it.
       number.addEventListener("change", () => {
         if (number.value.trim() === "") {
+          samplingState.was ??= { ...samplingState.overrides };
           delete samplingState.overrides[knob.name];
           paint();
           save();
@@ -395,12 +400,14 @@
       reset.addEventListener("click", async () => {
         // Deleting the override *is* the reset, there is no separate stored
         // "default", which is what lets a different model bring its own.
+        const before = { ...samplingState.overrides };
         delete samplingState.overrides[knob.name];
         try {
           await apiJson("/models/sampling", {
             method: "PUT",
             body: JSON.stringify({ overrides: samplingState.overrides }),
           });
+          pushRequestUndo("Reset a sampling setting", "/models/sampling", "PUT", { overrides: before }, { overrides: { ...samplingState.overrides } }, loadSamplingSettings);
         } catch {
           toast("Couldn't reset that setting.", true);
         }

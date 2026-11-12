@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 116 | 42 | 0 | 18 | 288 |
+| world-class | 130 | 116 | 41 | 0 | 18 | 287 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 613 | 139 | 3 | 136 | 1305 |
+| all | 553 | 613 | 138 | 3 | 136 | 1304 |
 
 ## graph
 
@@ -728,7 +728,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L691** `world-class` partly, L: Brief 87: build Silero VAD (Piper done) and measure listening pair/WER. From OPEN.md:1660; SESSION_BRIEFS.md:245. Evidence: Piper built: ai/natural_voice.py (optional piper-tts); no silero anywhere in src/tessellate, so Silero VAD not built
 - [ ] **L692** `world-class` partly, L: Redesign web clipper (clip.js, Settings > Import). From INBOX.md:904 B55. Evidence: Web menu fixed 1784757; clipper (clip.js, Settings > Import) redesign not done, placed
 - [ ] **L693** `world-class` partly, L: Add the missing palette rows (Notifications unread, Atlas files it, Draw keep note, Chat About, Library Boards) and the remaining destinations without a palette command. From OPEN.md:1086; OPEN.md:3704; OPEN.md:3705. Evidence: No Notifications unread row in app-palette.js; heuristic word-match rows not added
-- [ ] **L694** `world-class` partly, L: Make Settings switches and choices undoable with Ctrl+Z (most write functions lack pushUndo). From OPEN.md:1774; OPEN.md:3690. Evidence: pushUndo now appears 8 times across settings*.js (was 1); 48 write functions not all covered
 - [ ] **L695** `world-class` partly, L: Custom domain and Fable diagram dive wait on owner go. From INBOX.md:1748 Q34. Evidence: Sync, studio, pet built (dec4ec1a5, 603ba7780, 3ef770475); custom domain and Fable diagram dive wait on owner go (OPEN O54)
 - [ ] **L696** `world-class` partly, L: Add undo paths to write functions (whiteboard 14/43, map 7/25, graph 9/21, library 9/30, dashboard 1/9, timeline 1/5). From OPEN.md:3694. Evidence: Counts from measure-writes.py (script absent from scratchpad now); undo gaps remain on most surfaces
 - [ ] **L697** `world-class` partly, L: Recordings, bookmarks, files in a private space not sealed; deleting a locked space shows 423 message, no unlock prompt. From ledger-1112 P20.
