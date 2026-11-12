@@ -247,13 +247,13 @@ def _days_to_or_from(asked: tuple, today: date) -> list[tuple] | None:
         return None
     if asked[0] != "future":
         days = (today - found[0]).days
-        return [("computed", f"{_day_words(found[0])} was {_plural(days, 'day')} ago."), ("computed", f"\nRead as the days from {asked[1]} to today.")]
+        return [("computed", f"{_day_words(found[0])} was {_plural(days, 'day')} ago."), ("computed", f"\nRead as the days from {recognise.proper_days(asked[1])} to today.")]
     days = (found[0] - today).days
     if days < 0:
-        return [("computed", f"{_day_words(found[0])} was {_plural(-days, 'day')} ago."), ("computed", f"\nRead as the days from today to {asked[1]}.")]
+        return [("computed", f"{_day_words(found[0])} was {_plural(-days, 'day')} ago."), ("computed", f"\nRead as the days from today to {recognise.proper_days(asked[1])}.")]
     return [
         ("computed", f"{_day_words(found[0])} is {_plural(days, 'day')} away." if days else "That is today."),
-        ("computed", f"\nRead as the days from today to {asked[1]}."),
+        ("computed", f"\nRead as the days from today to {recognise.proper_days(asked[1])}."),
     ]
 
 
