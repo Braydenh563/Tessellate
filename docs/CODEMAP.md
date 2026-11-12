@@ -16765,22 +16765,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Option` | src/tessellate/ai/composer_suggest.py:103 |
-| `_app_tool` | src/tessellate/ai/composer_suggest.py:362 |
-| `_bare_kind` | src/tessellate/ai/composer_suggest.py:181 |
+| `_app_tool` | src/tessellate/ai/composer_suggest.py:370 |
+| `_bare_kind` | src/tessellate/ai/composer_suggest.py:189 |
 | `_catalogue` | src/tessellate/ai/composer_suggest.py:129 |
-| `_cosine` | src/tessellate/ai/composer_suggest.py:158 |
-| `_pick` | src/tessellate/ai/composer_suggest.py:279 |
+| `_cosine` | src/tessellate/ai/composer_suggest.py:166 |
+| `_pick` | src/tessellate/ai/composer_suggest.py:287 |
 | `_stem` | src/tessellate/ai/composer_suggest.py:110 |
 | `_tokens` | src/tessellate/ai/composer_suggest.py:117 |
-| `_unfilled` | src/tessellate/ai/composer_suggest.py:214 |
-| `_which_reply` | src/tessellate/ai/composer_suggest.py:322 |
+| `_unfilled` | src/tessellate/ai/composer_suggest.py:222 |
+| `_which_reply` | src/tessellate/ai/composer_suggest.py:330 |
 | `closest` | src/tessellate/ai/composer_suggest.py:139 |
-| `fill_slot` | src/tessellate/ai/composer_suggest.py:255 |
-| `open_ended` | src/tessellate/ai/composer_suggest.py:167 |
-| `pending_kind` | src/tessellate/ai/composer_suggest.py:244 |
-| `reference` | src/tessellate/ai/composer_suggest.py:233 |
-| `reply` | src/tessellate/ai/composer_suggest.py:336 |
-| `unknown_action` | src/tessellate/ai/composer_suggest.py:389 |
+| `fill_slot` | src/tessellate/ai/composer_suggest.py:263 |
+| `open_ended` | src/tessellate/ai/composer_suggest.py:175 |
+| `pending_kind` | src/tessellate/ai/composer_suggest.py:252 |
+| `reference` | src/tessellate/ai/composer_suggest.py:241 |
+| `reply` | src/tessellate/ai/composer_suggest.py:344 |
+| `unknown_action` | src/tessellate/ai/composer_suggest.py:397 |
 
 ### src/tessellate/ai/composer_sum.py (16)
 
@@ -19832,16 +19832,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_delete_document` | src/tessellate/ai/surface_acts.py:100 |
-| `_delete_skill` | src/tessellate/ai/surface_acts.py:112 |
+| `_delete_document` | src/tessellate/ai/surface_acts.py:103 |
+| `_delete_skill` | src/tessellate/ai/surface_acts.py:115 |
 | `_name` | src/tessellate/ai/surface_acts.py:47 |
 | `_named` | src/tessellate/ai/surface_acts.py:51 |
-| `_note` | src/tessellate/ai/surface_acts.py:127 |
-| `_one` | src/tessellate/ai/surface_acts.py:88 |
+| `_note` | src/tessellate/ai/surface_acts.py:130 |
+| `_one` | src/tessellate/ai/surface_acts.py:91 |
 | `_theme_of` | src/tessellate/ai/surface_acts.py:58 |
-| `plan` | src/tessellate/ai/surface_acts.py:135 |
+| `plan` | src/tessellate/ai/surface_acts.py:138 |
 | `read` | src/tessellate/ai/surface_acts.py:65 |
-| `run_step` | src/tessellate/ai/surface_acts.py:161 |
+| `run_step` | src/tessellate/ai/surface_acts.py:164 |
 
 ### src/tessellate/ai/tagging.py (35)
 

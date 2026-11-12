@@ -142,7 +142,15 @@ def closest(question: str, embed=None, limit: int = 3) -> list[Option]:  # noqa:
     and silently left out when it does not."""
     asked = _tokens(question)
     rows = _catalogue()
-    scores = [len(asked & words) / math.sqrt(max(len(words), 1)) for _, words, _ in rows]
+    #: A narrower act ("delete_document") shares its verb with the broad one
+    #: ("delete"); without its own noun asked it is not the closer act, however
+    #: short its word list ("delete the boiler note" is a note's delete).
+    broad = {act.intent: words for act, words, _ in rows}
+    scores = [
+        0.0 if (parent := broad.get(act.intent.split("_")[0])) is not None and act.intent != act.intent.split("_")[0] and not (asked & words) - parent
+        else len(asked & words) / math.sqrt(max(len(words), 1))
+        for act, words, _ in rows
+    ]
     if embed is not None:
         try:
             vectors = embed([question] + [text for _, _, text in rows])

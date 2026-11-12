@@ -281,7 +281,7 @@ def test_confirm_says_it_in_the_composers_words(client, session):
     _notebook(session)
     card = _card(_ask(client, "remind me to call mum tomorrow at 9am"))
     said = client.post("/chat/command/run", json={"steps": card["steps"], "consent_id": card["consent_id"]}).json()["summary"]
-    assert "remind you tomorrow at 9: call mum" in said.lower() and not said.startswith("Done: Updated"), said
+    assert "remind you tomorrow at 9am: call mum" in said.lower() and not said.startswith("Done: Updated"), said
 
 
 def test_a_yes_does_not_reach_a_card_that_is_not_in_the_last_turn(client, session):

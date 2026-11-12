@@ -77,6 +77,9 @@ def read(text: str, one_target) -> dict | None:  # noqa: ANN001
     if not found:
         return None
     said = _name(found.group("t"))
+    if re.search(r"\bnotes\b", said, re.I):
+        #: "a mind map of my garden notes" draws the notes on a subject (mermaid 1466), never an empty map named so.
+        return None
     if _NOTE_WORD.search(said) and (target := one_target(said, bare=False)) and target.get("single", True):
         return {"intent": "make_map", **target, "single": True}
     return {"intent": "make_map", "title": said} if said and found.re is _MAP_OF and said.lower() not in _NO_NAME else None
