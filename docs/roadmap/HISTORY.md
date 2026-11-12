@@ -55305,3 +55305,9 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
   rather than a regression: either the row goes back or the sweep stops
   asking for it.
   **Fixed/closed (ownbugs):** already fixed in the sweep (it asserts the strip button #doc-toolbar .doc-toolbar-gutter, the removed view-menu row stays removed per INBOX "remove the line numbers view option"). Re-run 2026-11-12 on port 8794: strip_has_line_numbers true, md_numbers_after_ask 7, off again 0, no null click. Four unrelated failures remain (LEDGER row).
+
+- The suggestion menu draws the same check icon on every one of its five
+  word rows, so the words read as five identical actions rather than as the
+  answer with the actions underneath. The separating rule is there and it is
+  doing the work on its own. A real spell menu differentiates them by more.
+  **Fixed/closed (ownbugs):** already fixed (the candidates are drawn bare, documents.js ~15145); measured 2026-11-12 on port 8794 for "recieve": 5 rows, 0 icons on each, first row doc-suggest-best. The remaining ph:check sits on the suggested-change menu Accept rows (documents-prose.js:883), where it means accept. Pinned by tests/test_suggest_candidate_rows.py.
