@@ -84,7 +84,7 @@ const WB_FMT_FIELDS = {
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "edgeshape", "textpath", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
   image: ["alpha", "shadow", "shadowset", "radii", "imageborder", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props"],
-  frame: ["pad", "geometry", "props"],
+  frame: ["pad", "stack", "geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "tableheader", "stripes", "geometry", "props"],
   note: ["geometry", "angle"],
   //: A Mermaid diagram object: the fill and the line it draws with (INBOX 1486).
@@ -738,6 +738,8 @@ function wbFormatSync() {
   }
   const sticky = entries.find((e) => e.kind === "object" && wbIsSticky(e.item));
   if (sticky) set("wb-fmt-fold", wbStickyFolds(sticky.item), "checked");
+  const lane = entries.find((e) => e.kind === "object" && e.item.kind === "frame");
+  if (lane) set("wb-fmt-stack", Boolean(lane.item.data?.stack), "checked");
   const table = entries.find((e) => e.kind === "object" && e.item.kind === "table");
   if (table) {
     set("wb-fmt-tableheader", Boolean(table.item.data?.header), "checked");
@@ -1291,6 +1293,11 @@ onSurface("board", () => {
   });
   on("wb-fmt-fold", "change", (e) => wbFmtApply("fold", (entry) => (entry.kind === "object" && wbIsSticky(entry.item) ? { fold: e.target.checked } : null), e.target.checked ? "Corner folded." : "Corner flat."));
   on("wb-fmt-tableheader", "change", (e) => wbFmtApply("tableheader", (entry) => (entry.item.kind === "table" ? { header: e.target.checked || undefined } : null), e.target.checked ? "First row is a header." : "First row is plain."));
+  //: A frame marked Stack keeps what it holds in a column; turning it on stacks at once, as one Undo step with the switch.
+  on("wb-fmt-stack", "change", (e) => wbRecordGesture(async () => {
+    await wbFmtApply("stack", (entry) => (entry.item.kind === "frame" ? { stack: e.target.checked || undefined } : null), e.target.checked ? "Frame stacks what it holds." : "Frame stacks nothing.");
+    await wbFmtState.layoutMore?.settleNow();
+  }));
   on("wb-fmt-stripes", "change", (e) => wbFmtApply("stripes", (entry) => (entry.item.kind === "table" ? { stripes: e.target.checked || undefined } : null), e.target.checked ? "Rows striped." : "Rows plain."));
   on("wb-fmt-shadow", "change", (e) => wbFmtApply("shadow", () => ({ shadow: e.target.checked || undefined }), e.target.checked ? "Shadow on." : "Shadow off."));
   //: An item that matches the board's look stores nothing, so it follows the

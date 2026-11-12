@@ -1,4 +1,4 @@
-"""The board's Arrange menu is five submenus, not 25 rows (INBOX 1564, U15).
+"""The board's Arrange menu is six submenus, not 25 rows (INBOX 1564, U15).
 
 The owner, 2026-11-03: "I think it is a good idea to make it subsectioned
 yeah". The rows stay in the markup under `data-wb-submenu` sections (every
@@ -26,11 +26,11 @@ def _arrange() -> str:
     return block[: block.index('<div class="wb-board-menu-wrap">')]
 
 
-def test_arrange_is_five_named_submenus_holding_every_row() -> None:
+def test_arrange_is_six_named_submenus_holding_every_row() -> None:
     block = _arrange()
     sections = re.findall(r'<div class="wb-menu-section" data-wb-submenu="ph:([a-z-]+) ([^"]+)"', block)
-    assert [name for _, name in sections] == ["Order", "Align", "Distribute, size and flip", "Tidy and connect", "Group and lock"]
-    assert len(re.findall(r'data-wb-cmd="', block)) == 28
+    assert [name for _, name in sections] == ["Order", "Align", "Distribute, size and flip", "Layout", "Tidy and connect", "Group and lock"]
+    assert len(re.findall(r'data-wb-cmd="', block)) == 34
     assert "wb-panel-group-label" not in block, "the trigger names the group; a label over it says it twice"
 
 
