@@ -71,8 +71,8 @@
 // where I can see notes visually by what time they were made. Maybe I can even
 // group them by events or related places etc."
 //
-// What this replaced, and why, because the shape that went is the shape the
-// next session would otherwise reach for again (TIMELINE_PLAN.md §2, measured
+// What this replaced, and why, because the shape that went is the shape a
+// later change would otherwise reach for again (TIMELINE_PLAN.md §2, measured
 // over 48 notes and six months): a **grid** of one column per bucket and one
 // card per note, 8,800px wide against a 1,358px viewport with 79% of its cells
 // empty, and a **line** view drawn in SVG, 14 text nodes for 48 notes, no

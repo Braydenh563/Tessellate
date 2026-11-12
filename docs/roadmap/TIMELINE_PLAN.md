@@ -107,9 +107,9 @@ the tab draws a colour, a font or a card that the rest of the app does not.
     seven-control ceiling and the strip under it walks days; a range is what
     the choice is. The server filters (`/timeline?on=MM-DD&tz=`), in the
     reader's own day, today left out: the Dashboard widget's rule.
-13. **Date ranges as spans are not built** (EntryDate ranges in the feed):
-    a feed row is one moment by decision 3, and no measured notebook here
-    holds ranged notes; left until one does.
+13. **Date ranges as spans wait for a ranged note** (EntryDate ranges in the feed):
+    a feed row is one moment by decision 3; the span view is parked in
+    BACKLOG ("Timeline, parked 2026-11-12").
 
 ## 5. Phases
 
@@ -203,18 +203,7 @@ The rail circle bug is built and moved to HISTORY.md ("Moved from the plans, 202
 
 ### Placed from INBOX 561 (2026-10-17)
 
-The day strip rework (543) is merged and waits on the owner's look; INBOX 904 B72 widened it into the calendar view: built 2026-10-17, HISTORY.md, "Moved from the plans, 2026-10-17 (TIMELINE B72)".
-
-Item 561, **The owner, 2026-10-05, verbatim.** "I dont like this section in th
-     timeline, it needs redesigning, restructuring, moving ro smth"
-     (screenshot: the "Sep to Oct 2026" month button over a row of seven
-     boxed day cells, Tue 29 to Mon 5, each its own bordered tile).
-     Placed: the design agent, whose 543 rework of this strip is not merged
-     yet; it is told this is still not right.
-     Merged 2026-10-05 (543): the month sits between its arrows and the days
-     are one well to the dock's edge, one Tab stop, arrows walk them
-     (daystrip.js 44/44). Waits on the owner's look before closing.
-     Owner: TIMELINE_PLAN, UI_MODERNISATION_PLAN 12 (the day strip becomes the week row); built in 543 and waiting on the owner's look, so it stays here until then.
+Built (543, then B72's calendar view, HISTORY.md "Moved from the plans, 2026-10-17 (TIMELINE B72)"); the owner's look is parked in BACKLOG ("Timeline, parked 2026-11-12").
 
 ## 9. Phase 5: the calendar as the third view (Fable, 2026-10-10; WORLD_CLASS_PLAN 25, decision 47; Brief 55)
 
@@ -352,7 +341,7 @@ Same sweep and fixture. Today: 1 click at 1440, 2 taps at 390 (More); click
 to list 218 to 551 ms at 1440, 1,194 ms at 390; 88 to 93 controls at 1440, 79
 at 390. Quick add: "dentist friday at 9am" saved in 235 to 496 ms with
 "Added "Dentist": in 6 days" (the right Friday); 0 chips while typing
-(decision 50 unbuilt); at 390 the quick-add row was not visible and the
+(decision 50 since built, row 7); at 390 the quick-add row was not visible and the
 phone's compose was not driven. Overflow: 0 past the edge at both widths; 7
 overlaps at 1440, the closed presets menu ("Tonight 7pm", "Tomorrow 9am")
 laid out over the Open, All and Done chips (the closed-menu shape Brief 72a

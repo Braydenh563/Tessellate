@@ -4406,3 +4406,8 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 - **One click, like the captions helper (INBOX 1777):** download a pinned `llama-server` per platform and accelerator (CPU first; Vulkan, CUDA, Metal where the release ships one), verified by sha256, run and stopped by the app on a localhost port, and set as the Models backend with a small default GGUF the owner picks.
 - **Reuse the captions route:** the same pinned-download, helper lifecycle and Settings row states, so the two helpers share one code path (replace, do not layer).
 - **Decide at design time:** whether `llama-cpp-python` in-process is still worth its per-accelerator wheel matrix once the managed `llama-server` exists (likely not: retire the `localllm` row).
+
+## Timeline, parked 2026-11-12
+
+- **Day strip and calendar view: the owner's look (INBOX 561).** Built in 543 (the month between its arrows, one well of days, one Tab stop) and widened into the calendar view by INBOX 904 B72 (HISTORY.md, "Moved from the plans, 2026-10-17 (TIMELINE B72)"). The only step left is the owner opening the timeline and saying whether the strip now reads right; a "no" becomes a TIMELINE_PLAN row.
+- **Date ranges as spans (TIMELINE_PLAN decision 13, L-timeline-4).** A feed row is one moment (decision 3) and no notebook here holds ranged notes; build the span view when a note carries an EntryDate range.
