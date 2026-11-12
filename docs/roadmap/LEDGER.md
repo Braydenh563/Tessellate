@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 127 | 44 | 2 | 59 | 347 |
+| chat | 176 | 113 | 44 | 2 | 59 | 333 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 634 | 141 | 3 | 195 | 1328 |
+| all | 553 | 620 | 141 | 3 | 195 | 1314 |
 
 ## graph
 
@@ -57,20 +57,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## chat
 
-- [ ] **L25** `chat` open, S: Read a one-line CJK note as content, not title-only (C10). From OPEN.md:4090. Evidence: Not probed (needs CJK note in seed); recorded in bc-1111.md.
-- [ ] **L26** `chat` open, S: Fix citation superscript landing mid-sentence (E51). From OPEN.md:4503. Evidence: Lead phrase table in composer_*.py, another agent's file; not changed
-- [ ] **L30** `chat` open, S: Record eval numbers for the voice track. From OPEN.md:829. Evidence: tests/_composer_eval.py and _voice_eval.py exist; before/after figures not recorded
-- [ ] **L48** `chat` open, S: Add chips to 'thanks'/'hello' replies (F5). From fc56-1110.md Left. Evidence: No closing-chip change found in composer_talk.py
-- [ ] **L51** `chat` open, S: Make tab-level Guide topics ring each topic's own control, not the tab's main control. From OPEN.md:963; OPEN.md:2709. Evidence: No per-topic ring found in help-chat.js (grep ring/highlight empty); topics carry tab-level path only
-- [ ] **L52** `chat` open, S: Read the Guide fallback log line (help_chat.answer_stream) when the Guide fails with a model. From OPEN.md:968; OPEN.md:987; OPEN.md:2858. Evidence: Only reproduces with a real model; help-chat.js catch needs a model-run server log
-- [ ] **L54** `chat` open, S: Drive Brief 84 Guide first line and act topics in a browser. From OPEN.md:606; OPEN.md:2861. Evidence: API/unit tests only; browser drive of Guide not recorded
-- [ ] **L64** `chat` open, S: Answer a no-model Chat question with an attached note (A44). From OPEN.md:4571. Evidence: Deferred; no commit names A44
-- [ ] **L65** `chat` open, S: Make non-stream /chat route answer capability questions from the list. From OPEN.md:406. Evidence: Real model unverified; route not changed for this per grep of routes_chat.py
-- [ ] **L66** `chat` open, S: Make Stop cover read-only tool calls mid-turn, not only write tools (agent.py). From OPEN.md:445. Evidence: w34-L2r-1111.md:15 TRUE: agent.py:185 only _WRITE_TOOLS check stop_requested; noted design limit, not patched
-- [ ] **L68** `chat` open, S: Reword or remove the dead 'managed runner killed' message (Rule 5). From OPEN.md:1966. Evidence: App starts no runner; message wording/dead path not confirmed removed
-- [ ] **L69** `chat` open, S: Block held-back skills from the agent run_skill tool. From OPEN.md:2583. Evidence: run_skill in agent_turn.py; label only in picker/Settings
-- [ ] **L78** `chat` open, S: Index chat turns so a search hit opens the turn, not just the chat. From OPEN.md:992. Evidence: search/index._conversation_row still one row per thread; no per-turn index found
-- [ ] **L80** `chat` open, S: Check askChartTicks across the 0 to 1,240 range. From OPEN.md:2811. Evidence: Hand-built ticks; verified open
 - [ ] **L82** `chat` open, S: Measure and fix Atlas arm angle range and downward arc over a walk cycle. From OPEN.md:1071; OPEN.md:3767; OPEN.md:1090. Evidence: atlasarms.js measures still poses only; walk swing in atlas-motion.js atlasRigFrame unmeasured
 - [ ] **L83** `chat` open, S: Generic faces' arms have no rig or speed cap; add and measure. From OPEN.md:1084; OPEN.md:3494. Evidence: avatars.js generic faces keyframed; speed of wave/hide keyframes unmeasured
 - [ ] **L84** `chat` open, S: Throw must not scroll the page (Playwright test). From OPEN.md:4350. Evidence: No scrollY throw test found; ledger open.
