@@ -197,7 +197,7 @@ def _names_line(line: str, names: list[str]) -> bool:
 
 def _open_items(session: Session, entity: Entity, notes: dict, names: list[str]) -> list[dict]:
     """The unticked tasks in its notes and the reminders on them, not done.
-    A person's page keeps only the task lines that name them: a meeting note
+    A person's page keeps only the task lines and reminders that name them: a meeting note
     that names Sam holds ten tasks, and two are Sam's; a project's notes are
     about the project, so every open task in them is the project's."""
     only_named = entity.kind == "person"
@@ -217,6 +217,7 @@ def _open_items(session: Session, entity: Entity, notes: dict, names: list[str])
     items += [
         {"kind": "reminder", "id": r.id, "entry_id": r.entry_id, "text": r.text, "due_at": r.due_at.isoformat()}
         for r in reminders
+        if not only_named or _names_line(r.text, names)
     ]
     return items[:PAGE_OPEN_ITEMS]
 

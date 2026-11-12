@@ -13561,7 +13561,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merge` | POST | `merge_tags` | src/tessellate/api/routes_tags.py:84 |
 | `/merges/accept` | POST | `accept_merge` | src/tessellate/api/routes_inbox.py:141 |
 | `/merges/dismiss` | POST | `dismiss_merge` | src/tessellate/api/routes_inbox.py:155 |
-| `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:335 |
+| `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:336 |
 | `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1726 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:68 |
 | `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2379 |
@@ -13845,8 +13845,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{document_id}/suggest-title` | POST | `suggest_document_title` | src/tessellate/api/routes_documents.py:1225 |
 | `/{document_id}/unarchive` | PUT | `unarchive_document` | src/tessellate/api/routes_documents.py:840 |
 | `/{entity_id}` | GET | `entity_page` | src/tessellate/api/routes_entities.py:104 |
-| `/{entity_id}` | PATCH | `patch_entity` | src/tessellate/api/routes_entities.py:290 |
-| `/{entity_id}/merge` | POST | `merge_into` | src/tessellate/api/routes_entities.py:323 |
+| `/{entity_id}` | PATCH | `patch_entity` | src/tessellate/api/routes_entities.py:291 |
+| `/{entity_id}/merge` | POST | `merge_into` | src/tessellate/api/routes_entities.py:324 |
 | `/{entry_id}` | DELETE | `delete_entry` | src/tessellate/api/routes_entries.py:2348 |
 | `/{entry_id}` | GET | `get_entry` | src/tessellate/api/routes_entries.py:2082 |
 | `/{entry_id}` | PUT | `update_entry` | src/tessellate/api/routes_entries.py:2262 |
@@ -21822,22 +21822,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `EntityPatch` | src/tessellate/api/routes_entities.py:284 |
-| `MergeInto` | src/tessellate/api/routes_entities.py:319 |
+| `EntityPatch` | src/tessellate/api/routes_entities.py:285 |
+| `MergeInto` | src/tessellate/api/routes_entities.py:320 |
 | `_hit` | src/tessellate/api/routes_entities.py:91 |
-| `_linked_notes` | src/tessellate/api/routes_entities.py:241 |
+| `_linked_notes` | src/tessellate/api/routes_entities.py:242 |
 | `_live` | src/tessellate/api/routes_entities.py:56 |
 | `_names_line` | src/tessellate/api/routes_entities.py:189 |
 | `_open_items` | src/tessellate/api/routes_entities.py:198 |
 | `_row` | src/tessellate/api/routes_entities.py:46 |
-| `_timeline` | src/tessellate/api/routes_entities.py:224 |
+| `_timeline` | src/tessellate/api/routes_entities.py:225 |
 | `_visible_ids` | src/tessellate/api/routes_entities.py:40 |
 | `entity_page` | src/tessellate/api/routes_entities.py:105 |
 | `list_entities` | src/tessellate/api/routes_entities.py:69 |
-| `merge_into` | src/tessellate/api/routes_entities.py:324 |
-| `names_in_note` | src/tessellate/api/routes_entities.py:265 |
-| `patch_entity` | src/tessellate/api/routes_entities.py:291 |
-| `undo_merge_route` | src/tessellate/api/routes_entities.py:336 |
+| `merge_into` | src/tessellate/api/routes_entities.py:325 |
+| `names_in_note` | src/tessellate/api/routes_entities.py:266 |
+| `patch_entity` | src/tessellate/api/routes_entities.py:292 |
+| `undo_merge_route` | src/tessellate/api/routes_entities.py:337 |
 
 ### src/tessellate/api/routes_entries.py (119)
 

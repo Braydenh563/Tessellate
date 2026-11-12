@@ -61,9 +61,13 @@ def test_a_person_page_lists_only_the_tasks_that_name_them(client, session):
         "Studio week\n- [ ] Order the new elements\n- [ ] Ask Sam Lee about wiring\n- [ ] Send the rota @Sam",
         datetime(2026, 9, 3, 10),
     )
+    session.add(Reminder(entry_id=note.id, text="Book the electrician", due_at=datetime(2026, 11, 20, 9)))
+    session.add(Reminder(entry_id=note.id, text="Call Sam about the kiln", due_at=datetime(2026, 11, 21, 9)))
     sam = _entity(session, "Sam Lee", note, kind="person", aliases=["Sam"])
     page = client.get(f"/entities/{sam}").json()
-    assert [i["text"] for i in page["open_items"]] == ["Ask Sam Lee about wiring", "Send the rota @Sam"]
+    assert [i["text"] for i in page["open_items"]] == [
+        "Ask Sam Lee about wiring", "Send the rota @Sam", "Call Sam about the kiln",
+    ]
 
 
 def test_the_timeline_groups_its_notes_by_month_newest_first(client, session):
