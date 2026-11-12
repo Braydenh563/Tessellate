@@ -13,7 +13,8 @@ def _read(*parts: str) -> str:
 
 def test_recordings_empty_state_records_and_imports():
     js = _read("frontend", "js", "meetings.js")
-    assert '" Record"' in js and '" Import audio"' in js
+    #: The record action is labelled by outcome, "Open recorder" (test_recording_is_unsaved_work_1029, the older rule).
+    assert '" Open recorder"' in js and '" Import audio"' in js
     assert "A meeting's recording and its transcript land here too." in js
     html = _read("frontend", "index.html")
     assert 'id="recordings-import"' in html and 'id="recordings-import-file"' in html
