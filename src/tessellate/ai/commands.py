@@ -174,7 +174,7 @@ _NOTE_HEADS = re.compile(
 
 #: A note by its number (OPEN 1522: "pin note 12", as "open note 12" already
 #: was); `about` keeps the words so a line that quotes it still reads.
-_NOTE_NUMBER = re.compile(r"(?:(?:the|this|my) )?(?:note|entry) ?#?(\d{1,9})", re.IGNORECASE)
+_NOTE_NUMBER = re.compile(r"(?:(?:the|this|my) )?(?:(?:note|entry)(?: (?:number|no\.?))? ?#?|#)(\d{1,9})", re.IGNORECASE)
 
 
 #: "the interesting bean one", "that gym one", "the one about the gym": a note
@@ -326,6 +326,47 @@ def _repeat_of(parsed: dict | None) -> dict:
     return {"recurring": parsed["recurring"]} if parsed and parsed.get("recurring") else {}
 
 
+_CLOCK = r"\d{1,2}(?::\d\d)?\s?(?:am|pm|a\.m\.|p\.m\.)?"
+_WINDOW = re.compile(rf"\s*\b(?:between|from)\s+(?P<a>{_CLOCK})\s+(?:and|to|until|till|-)\s+(?P<b>{_CLOCK})(?![\d:])", re.I)
+
+
+def _clock_window(rest: str) -> tuple[str, str]:
+    """"call mum tomorrow between 8 and 10": the reminder is for the start of the window, so the sentence is read
+    as "at 8" and the window stays in the words (L207: it was read as 9 with the numbers dropped from the text)."""
+    found = _WINDOW.search(rest)
+    if not found or re.search(r"\bat \d", rest, re.I):
+        return rest, ""
+    sign = found[0].lower().lstrip().startswith("from")
+    if sign and not re.search(r"[ap]m|[ap]\.m|:", found["a"] + found["b"], re.I):
+        return rest, ""  # "pages from 3 to 5" is not a time
+    start, end = found["a"].strip(), found["b"].strip()
+    if not re.search(r"[ap]", start, re.I) and (meridiem := re.search(r"([ap])\.?m", end, re.I)):
+        start += f"{meridiem.group(1).lower()}m"  # "between 2 and 4pm" is 2pm
+    return re.sub(r"\s+", " ", f"{rest[: found.start()]} at {start} {rest[found.end():]}").strip(), f" between {found['a'].strip()} and {end}"
+
+
+#: "... the day before", "... an hour before" with no thing it is before: a reminder whose time is still to ask.
+_BEFORE_TAIL = re.compile(r"\s+(?:the (?:day|night|week|morning|evening) before|(?:an?|one|1) (?:hour|hr) before)\s*$", re.I)
+
+
+def _read_when(rest: str, now: datetime, locale: str | None) -> tuple[str, dict | None]:
+    """`rest` with a "between 8 and 10" window read as its start, and the time and words it says (or None)."""
+    rest, window = _clock_window(rest)
+    parsed = reminder_parser.parse_relative(rest, now) or when.parse_reminder_text(rest, now, locale=locale)
+    if parsed is not None:
+        parsed = {**parsed, "text": (reminder_parser.without_conditions(parsed["text"]) or parsed["text"]) + window}
+    return rest, parsed
+
+
+def _before_without_a_time(rest: str, about: bool) -> dict | None:
+    """"about the dentist the day before" says what, not which day: asked for the day, never guessed (L49)."""
+    before = _BEFORE_TAIL.search(rest)
+    if not before or not rest[: before.start()].strip(" ,.;:-"):
+        return None
+    what = _without_lead(rest[: before.start()].strip(" ,.;:-"), ("to ", "about ", "that ", "for "), once=False)
+    return {"intent": "reminder", "text": _cap(what)[:500], "said": what[:500], "due_at": None, "time_given": False, **({"thing": True} if about else {})}
+
+
 def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | None:
     text, head = _reminder_head(text)
     if head is None:
@@ -338,9 +379,9 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     if not rest:
         return _bare_reminder(head)
     rest = reminder_parser.unhedged(rest)
-    parsed = reminder_parser.parse_relative(rest, now) or when.parse_reminder_text(rest, now, locale=locale)
-    if parsed is not None:
-        parsed = {**parsed, "text": reminder_parser.without_conditions(parsed["text"]) or parsed["text"]}
+    if (unanchored := _before_without_a_time(rest, about)) is not None:
+        return unanchored
+    rest, parsed = _read_when(rest, now, locale)
     gap = _reminder_gap(rest, parsed, now)
     if gap is not None:
         return gap
@@ -479,6 +520,9 @@ def _tag_these(body: str) -> dict | None:
 
 def _note_then_tags(body: str) -> dict | None:
     """"tag the dentist note health": the note, then the tags, no "with"."""
+    numbered = re.match(r"((?:the |this |my )?(?:note|entry)(?: (?:number|no\.?))? ?#?\d{1,9}|#\d{1,9}) (.+)$", body, re.I)
+    if numbered and (found := _target(numbered.group(1))) and (tags := _tags(numbered.group(2))):
+        return {"intent": "tag", **found, "tags": tags}  # "tag note 12 gym" (L71)
     cut = body.lower().rfind(" note ")
     if cut <= 0:
         return None
@@ -1721,6 +1765,7 @@ def _plan_new_note(session: Session, parsed: dict) -> dict:
     #: `“X”: Y`, never with the line break in the sentence.
     title, _, body = parsed["content"].partition("\n")
     title = title.lstrip("# ")
+    body = "" if re.fullmatch(r"(?:[-*+]\s+\[ \]\s*)+", body.strip()) else body  # an empty checklist line is not words to say (L194)
     label = f"Make a new note “{_clip(title, 50)}”: {_clip(body.strip(), 50)}" if body.strip() else f"Make a new note: “{_clip(title, 80)}”"
     card = _card(label, steps)
     if _has_note_saying(session, parsed["content"]):
@@ -1871,7 +1916,7 @@ def ask_when_for(parsed: dict) -> str:
         return f"There is no {parsed['impossible']}. Which day should I remind you on?"
     if not (parsed.get("said") or parsed.get("text")):
         return _ASK_WHAT_AND_WHEN
-    return ask_when(parsed.get("said") or parsed["text"])
+    return ask_when(parsed.get("said") or parsed["text"], thing=bool(parsed.get("thing")))
 
 
 #: A task said as a thing, not a doing ("don't let me forget the bins"):
@@ -1879,14 +1924,14 @@ def ask_when_for(parsed: dict) -> str:
 _THING = re.compile(r"^(?:the|my|a|an|your|our|his|her|their|this|that|these|those)\b", re.I)
 
 
-def ask_when(said: str) -> str:
+def ask_when(said: str, thing: bool = False) -> str:
     """"When should I remind you to call the dentist?", one of four."""
     from tessellate.ai import composer_replies, realise
 
     #: Said back to the person: "do my tax return" is "do your tax return".
     said = realise.shift_person(said.rstrip("."))
     line = composer_replies.act_line(composer_replies.ASK_WHEN, _voice(), tuple(_LAST), said=said)
-    if _THING.match(said):
+    if thing or _THING.match(said):
         line = line.replace(f" to {said}", f" about {said}")
     return _said(line)
 

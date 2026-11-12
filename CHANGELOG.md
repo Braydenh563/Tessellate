@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat acts, ledger sweep: a note by its number takes tags ('tag note 12 gym', 'pin #12'); 'remind me about X the day before' asks which day instead of what it is for; 'between 8 and 10' sets 8 and keeps the window in the words; 'make it simpler' with no model says a model is needed; the palette has stems for Unpin, Unlink, Call me and Run the skill; an empty checklist is not said on the new-note card; 'undo' after a tag, link or reminder says the inverse (L24 L45 L49 L50 L71 L72 L99 L194 L207 L240; `tests/test_chat_acts_gap_1112.py`).
 - Fix: a rename with a "to" in both names ('rename Trip to Spain to Trip to Portugal') plans the split whose old name is a note's whole title, not the first " to " (L47; `tests/test_chat_acts_gap_1112.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).

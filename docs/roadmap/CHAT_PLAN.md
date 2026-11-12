@@ -372,12 +372,8 @@ measured); (c) a "Your notes, no AI" label on a composed Chat bubble, as
 Ask's chip has; (d) a picture attached as a file (`files` captions), not only
 one inside a mostly-picture note; (e) re-capture the eval's retrieval when
 search changes (`tests/fixtures/composer/showcase_725.json`); (f) "the
-composer acts" (the owner: "or the composer can somehow call tools and act
-like an agent"): deterministic commands parsed from a Chat message ("make a
-reminder for X on Friday", "tag these notes Y"), shown as the action they
-would take and confirmed before anything is written, the same confirm card
-an agent's write uses; Agent mode then opens with no model for those verbs;
-(g) link reasons beyond "similar in meaning" (the owner: "can the composer be
+composer acts": built, moved to HISTORY.md ("Moved from the plans,
+2026-11-12 (CHAT_PLAN Phase 5 f)"); (g) link reasons beyond "similar in meaning" (the owner: "can the composer be
 user to write better link reasons"): INBOX 691's concrete overlaps first,
 then the composer's quoted sentence pair, a model's checked line when one
 runs, feeding Tidy's "Add reasons" and "Add reasons to all". Open items and
