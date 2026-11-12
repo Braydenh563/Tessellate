@@ -602,6 +602,9 @@ TAIL_TOPICS.extend(
                 "space the connectors",
                 "two lines between the same shapes",
                 "flip the layout",
+                "org chart layout",
+                "radial layout",
+                "circle layout",
                 "mirror a diagram",
             ),
             "body": (
@@ -611,19 +614,20 @@ TAIL_TOPICS.extend(
                 "left to right: a shape no connector points into is a root, siblings keep their order, and "
                 "one Undo takes it back. It is offered once the selection holds a connector. Change the "
                 "shape…, in a closed shape's More, the right-click Arrange and Ctrl+K, turns it into another "
-                "kind (rectangle, ellipse, diamond, cylinder, cloud and the rest) in the same box, keeping "
+                "kind (rectangle, ellipse, cloud and the rest) in the same box, keeping "
                 "its text, colours, line and connectors. Link…, in a shape's, text box's or picture's More "
                 "and its right-click menu, links it to one of your notes, a page (frame) of this board or a web page (or an app link "
                 "from Copy app link); a small mark on its top-left corner opens it, and the same Link… changes or removes it. Fit, in the Format "
-                "panel's Text tab for a shape (or Ctrl+K, Shrink the text to fit), makes long words shrink "
-                "until they fit inside the shape, never past the size you gave them. "
+                "panel's Text tab for a shape (or Ctrl+K, Shrink the text to fit), shrinks long words "
+                "to fit the shape, never past the size you gave them. "
                 "Home goes back to the top left of what is drawn at the zoom you have, and Shift+Home resets the view to 100% there. "
                 "Shift+Delete clears the labels of the selected shapes and connectors; one Undo puts them back. "
                 "In the find bar (Ctrl+H), Replace changes the current match and moves on; Replace all changes every one. "
                 "Arrange, Loop on the shape draws a connector from a shape back to itself; Format, Loop side moves it. "
                 "Arrange, Space parallel connectors fans the connectors that join the same two shapes so none hides another "
-                "(it leaves a connector with bends of its own alone), and Layout, left to right or top to bottom, "
-                "swaps the selected shapes' places across the middle of the group, with their connectors' bends, and turns no shape itself."
+                "(not one with bends of its own), and Arrange, Layout, flip left to right or top to bottom, "
+                "swaps the selected shapes' places across the middle, with their bends, turning no shape. "
+                "Layout also lays them out as a flow, a radial tree, an org chart, an organic network or a circle, one Undo step."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

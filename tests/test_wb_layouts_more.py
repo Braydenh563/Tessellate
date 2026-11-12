@@ -161,3 +161,11 @@ def test_a_change_to_a_lane_and_its_stacking_are_one_undo_step():
     assert "wbBoardState.lane?.settleNow()" in gesture
     fmt = frontend_text("whiteboard-format.js")
     assert 'frame: ["pad", "stack", "geometry", "props"]' in fmt and 'on("wb-fmt-stack", "change"' in fmt
+
+
+def test_the_guide_names_the_layouts() -> None:
+    """Standing order 13: the Layout menu's six layouts are in the Guide's diagram tools topic."""
+    from tessellate.ai import help_chat
+
+    body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "board-diagram-tools")
+    assert "a flow, a radial tree, an org chart, an organic network or a circle" in body and len(body) < 1900

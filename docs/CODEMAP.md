@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8440, frontend ids 2795, CSS sections 525, backend routes 699, backend modules 10775, test files 2697, tests 22040, plan headings 688, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8440, frontend ids 2795, CSS sections 525, backend routes 699, backend modules 10775, test files 2697, tests 22041, plan headings 688, app scripts 29, boot scripts 38, script files 304.
 
 ## Frontend functions (8440)
 
@@ -8389,21 +8389,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wbAutoSizeFactors` | frontend/js/whiteboard-format.js:1611 |
-| `wbAutoSizeSelection` | frontend/js/whiteboard-format.js:1647 |
-| `wbBuildTable` | frontend/js/whiteboard-format.js:2129 |
-| `wbClearTextFormat` | frontend/js/whiteboard-format.js:1464 |
-| `wbClearWaypoints` | frontend/js/whiteboard-format.js:1678 |
-| `wbColour` | frontend/js/whiteboard-format.js:2712 |
-| `wbColourButton` | frontend/js/whiteboard-format.js:2685 |
-| `wbColourHeading` | frontend/js/whiteboard-format.js:2700 |
-| `wbColourMenu` | frontend/js/whiteboard-format.js:2656 |
-| `wbColourName` | frontend/js/whiteboard-format.js:2578 |
-| `wbColourPairOf` | frontend/js/whiteboard-format.js:2589 |
-| `wbCopySize` | frontend/js/whiteboard-format.js:1552 |
-| `wbDrawsRough` | frontend/js/whiteboard-format.js:1739 |
-| `wbDropLoneGroups` | frontend/js/whiteboard-format.js:1536 |
-| `wbEditTableCell` | frontend/js/whiteboard-format.js:2312 |
+| `wbAutoSizeFactors` | frontend/js/whiteboard-format.js:1609 |
+| `wbAutoSizeSelection` | frontend/js/whiteboard-format.js:1645 |
+| `wbBuildTable` | frontend/js/whiteboard-format.js:2127 |
+| `wbClearTextFormat` | frontend/js/whiteboard-format.js:1462 |
+| `wbClearWaypoints` | frontend/js/whiteboard-format.js:1676 |
+| `wbColour` | frontend/js/whiteboard-format.js:2710 |
+| `wbColourButton` | frontend/js/whiteboard-format.js:2683 |
+| `wbColourHeading` | frontend/js/whiteboard-format.js:2698 |
+| `wbColourMenu` | frontend/js/whiteboard-format.js:2654 |
+| `wbColourName` | frontend/js/whiteboard-format.js:2576 |
+| `wbColourPairOf` | frontend/js/whiteboard-format.js:2587 |
+| `wbCopySize` | frontend/js/whiteboard-format.js:1550 |
+| `wbDrawsRough` | frontend/js/whiteboard-format.js:1737 |
+| `wbDropLoneGroups` | frontend/js/whiteboard-format.js:1534 |
+| `wbEditTableCell` | frontend/js/whiteboard-format.js:2310 |
 | `wbFmtAlphaKeys` | frontend/js/whiteboard-format.js:96 |
 | `wbFmtAngle` | frontend/js/whiteboard-format.js:423 |
 | `wbFmtApply` | frontend/js/whiteboard-format.js:220 |
@@ -8443,47 +8443,47 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbFormatSync` | frontend/js/whiteboard-format.js:626 |
 | `wbFormatSyncSoon` | frontend/js/whiteboard-format.js:561 |
 | `wbFormatToggle` | frontend/js/whiteboard-format.js:554 |
-| `wbGrowShapeToLabel` | frontend/js/whiteboard-format.js:1623 |
-| `wbHexOf` | frontend/js/whiteboard-format.js:2560 |
-| `wbInsertTable` | frontend/js/whiteboard-format.js:2281 |
-| `wbOpenColourMenu` | frontend/js/whiteboard-format.js:3015 |
-| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:3188 |
-| `wbPaintTable` | frontend/js/whiteboard-format.js:2232 |
-| `wbPasteSize` | frontend/js/whiteboard-format.js:1562 |
-| `wbRecentColours` | frontend/js/whiteboard-format.js:2538 |
-| `wbRememberColour` | frontend/js/whiteboard-format.js:2547 |
-| `wbRemoveFromGroup` | frontend/js/whiteboard-format.js:1516 |
-| `wbReverseSelection` | frontend/js/whiteboard-format.js:1705 |
-| `wbReversedLinkFields` | frontend/js/whiteboard-format.js:1689 |
-| `wbRoughD` | frontend/js/whiteboard-format.js:1784 |
-| `wbRoughProbe` | frontend/js/whiteboard-format.js:1756 |
-| `wbRoughRandom` | frontend/js/whiteboard-format.js:1745 |
-| `wbRoughSpline` | frontend/js/whiteboard-format.js:1771 |
-| `wbSampleColour` | frontend/js/whiteboard-format.js:3254 |
-| `wbSetColourField` | frontend/js/whiteboard-format.js:2606 |
+| `wbGrowShapeToLabel` | frontend/js/whiteboard-format.js:1621 |
+| `wbHexOf` | frontend/js/whiteboard-format.js:2558 |
+| `wbInsertTable` | frontend/js/whiteboard-format.js:2279 |
+| `wbOpenColourMenu` | frontend/js/whiteboard-format.js:3013 |
+| `wbOpenPaperMenu` | frontend/js/whiteboard-format.js:3186 |
+| `wbPaintTable` | frontend/js/whiteboard-format.js:2230 |
+| `wbPasteSize` | frontend/js/whiteboard-format.js:1560 |
+| `wbRecentColours` | frontend/js/whiteboard-format.js:2536 |
+| `wbRememberColour` | frontend/js/whiteboard-format.js:2545 |
+| `wbRemoveFromGroup` | frontend/js/whiteboard-format.js:1514 |
+| `wbReverseSelection` | frontend/js/whiteboard-format.js:1703 |
+| `wbReversedLinkFields` | frontend/js/whiteboard-format.js:1687 |
+| `wbRoughD` | frontend/js/whiteboard-format.js:1782 |
+| `wbRoughProbe` | frontend/js/whiteboard-format.js:1754 |
+| `wbRoughRandom` | frontend/js/whiteboard-format.js:1743 |
+| `wbRoughSpline` | frontend/js/whiteboard-format.js:1769 |
+| `wbSampleColour` | frontend/js/whiteboard-format.js:3252 |
+| `wbSetColourField` | frontend/js/whiteboard-format.js:2604 |
 | `wbSetLinkRoute` | frontend/js/whiteboard-format.js:455 |
-| `wbSetTable` | frontend/js/whiteboard-format.js:2297 |
-| `wbStartEyedrop` | frontend/js/whiteboard-format.js:3230 |
-| `wbStepFontSize` | frontend/js/whiteboard-format.js:1471 |
-| `wbStopEyedrop` | frontend/js/whiteboard-format.js:3243 |
-| `wbSvgBoxBackdrop` | frontend/js/whiteboard-format.js:2074 |
-| `wbSvgBoxRadii` | frontend/js/whiteboard-format.js:2067 |
-| `wbSvgFoldColours` | frontend/js/whiteboard-format.js:2090 |
-| `wbSvgRoundedPath` | frontend/js/whiteboard-format.js:2062 |
-| `wbSvgStickyFold` | frontend/js/whiteboard-format.js:2095 |
-| `wbSvgTable` | frontend/js/whiteboard-format.js:2114 |
-| `wbSvgTableCell` | frontend/js/whiteboard-format.js:2106 |
-| `wbTableCells` | frontend/js/whiteboard-format.js:1837 |
-| `wbTableColumnEdges` | frontend/js/whiteboard-format.js:1867 |
-| `wbTableMenuRows` | frontend/js/whiteboard-format.js:2474 |
-| `wbTableReshape` | frontend/js/whiteboard-format.js:2369 |
-| `wbTableResizeColumn` | frontend/js/whiteboard-format.js:1859 |
-| `wbTableRules` | frontend/js/whiteboard-format.js:1873 |
-| `wbTableWeights` | frontend/js/whiteboard-format.js:1849 |
-| `wbToggleLabelFit` | frontend/js/whiteboard-format.js:1458 |
-| `wbTurnSelection` | frontend/js/whiteboard-format.js:1486 |
-| `wbWellExpanded` | frontend/js/whiteboard-format.js:2601 |
-| `wbWriteColourPair` | frontend/js/whiteboard-format.js:2619 |
+| `wbSetTable` | frontend/js/whiteboard-format.js:2295 |
+| `wbStartEyedrop` | frontend/js/whiteboard-format.js:3228 |
+| `wbStepFontSize` | frontend/js/whiteboard-format.js:1469 |
+| `wbStopEyedrop` | frontend/js/whiteboard-format.js:3241 |
+| `wbSvgBoxBackdrop` | frontend/js/whiteboard-format.js:2072 |
+| `wbSvgBoxRadii` | frontend/js/whiteboard-format.js:2065 |
+| `wbSvgFoldColours` | frontend/js/whiteboard-format.js:2088 |
+| `wbSvgRoundedPath` | frontend/js/whiteboard-format.js:2060 |
+| `wbSvgStickyFold` | frontend/js/whiteboard-format.js:2093 |
+| `wbSvgTable` | frontend/js/whiteboard-format.js:2112 |
+| `wbSvgTableCell` | frontend/js/whiteboard-format.js:2104 |
+| `wbTableCells` | frontend/js/whiteboard-format.js:1835 |
+| `wbTableColumnEdges` | frontend/js/whiteboard-format.js:1865 |
+| `wbTableMenuRows` | frontend/js/whiteboard-format.js:2472 |
+| `wbTableReshape` | frontend/js/whiteboard-format.js:2367 |
+| `wbTableResizeColumn` | frontend/js/whiteboard-format.js:1857 |
+| `wbTableRules` | frontend/js/whiteboard-format.js:1871 |
+| `wbTableWeights` | frontend/js/whiteboard-format.js:1847 |
+| `wbToggleLabelFit` | frontend/js/whiteboard-format.js:1456 |
+| `wbTurnSelection` | frontend/js/whiteboard-format.js:1484 |
+| `wbWellExpanded` | frontend/js/whiteboard-format.js:2599 |
+| `wbWriteColourPair` | frontend/js/whiteboard-format.js:2617 |
 
 ### frontend/js/whiteboard-hints.js (3)
 
@@ -27845,7 +27845,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22040)
+## Tests (22041)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30418,7 +30418,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_laser.py | 7 |
 | tests/test_wb_layer_and_hollow_ends.py | 3 |
 | tests/test_wb_layer_order.py | 4 |
-| tests/test_wb_layouts_more.py | 13 |
+| tests/test_wb_layouts_more.py | 14 |
 | tests/test_wb_library_more.py | 12 |
 | tests/test_wb_library_scroll.py | 1 |
 | tests/test_wb_line_ends.py | 5 |

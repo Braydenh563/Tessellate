@@ -1293,11 +1293,9 @@ onSurface("board", () => {
   });
   on("wb-fmt-fold", "change", (e) => wbFmtApply("fold", (entry) => (entry.kind === "object" && wbIsSticky(entry.item) ? { fold: e.target.checked } : null), e.target.checked ? "Corner folded." : "Corner flat."));
   on("wb-fmt-tableheader", "change", (e) => wbFmtApply("tableheader", (entry) => (entry.item.kind === "table" ? { header: e.target.checked || undefined } : null), e.target.checked ? "First row is a header." : "First row is plain."));
-  //: A frame marked Stack keeps what it holds in a column; turning it on stacks at once, as one Undo step with the switch.
-  on("wb-fmt-stack", "change", (e) => wbRecordGesture(async () => {
-    await wbFmtApply("stack", (entry) => (entry.item.kind === "frame" ? { stack: e.target.checked || undefined } : null), e.target.checked ? "Frame stacks what it holds." : "Frame stacks nothing.");
-    await wbFmtState.layoutMore?.settleNow();
-  }));
+  //: A frame marked Stack keeps what it holds in a column; turning it on stacks at once, as one Undo step with the switch
+  //: (wbFmtApply's gesture settles the lane before it closes, `wbRecordGesture`).
+  on("wb-fmt-stack", "change", (e) => wbFmtApply("stack", (entry) => (entry.item.kind === "frame" ? { stack: e.target.checked || undefined } : null), e.target.checked ? "Frame stacks what it holds." : "Frame stacks nothing."));
   on("wb-fmt-stripes", "change", (e) => wbFmtApply("stripes", (entry) => (entry.item.kind === "table" ? { stripes: e.target.checked || undefined } : null), e.target.checked ? "Rows striped." : "Rows plain."));
   on("wb-fmt-shadow", "change", (e) => wbFmtApply("shadow", () => ({ shadow: e.target.checked || undefined }), e.target.checked ? "Shadow on." : "Shadow off."));
   //: An item that matches the board's look stores nothing, so it follows the
