@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 702 | 157 | 3 | 195 | 1412 |
+| general | 0 | 37 | 2 | 0 | 4 | 39 |
+| all | 553 | 704 | 157 | 3 | 195 | 1414 |
 
 ## graph
 
@@ -904,6 +904,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
 - [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
+- [ ] **L-general-34** `general` open, M: Add the SKILL.md intent-router snippet (with copy button, help, Guide) to Settings' MCP row. From L-general-8 remainder. Evidence: src/tessellate/mcp_server.py cli() built; frontend/js/settings-controls.js:2278 renderMcpSnippet still has no SKILL.md snippet
+- [ ] **L-general-35** `general` open, M: Re-verify the remaining frontend 'not built' or 'deferred' comments. From L-general-17 remainder. Evidence: frontend/js/documents-base.js:4 board and calendar views, library.js:2296, whiteboard.js:1486 not re-verified
 
 ## Owner calls
 
