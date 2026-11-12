@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Filing: a category's name is found in a note by its folded forms ("running" for Run, "stat" for Statistics); a first-person feeling ("felt anxious") grounds a #journal tag and "with Priya and Jordan" grounds #friends or #social (L-world-class-23).
+- Search: a picture's caption, OCR and vision text, and a document's page readings, are part of its note's search row, so the Ask composer and keyword search find a note by what its files say (L564).
 - Import: the people and places an imported note names become its tags (three of each at most); the recogniser also reads a name after Dr, Mr, Mrs, Ms, Prof, a phone with a (0) trunk digit and a tel: link (L575).
 - Note editor: a sum alone on its line with no "=" is offered its answer, and a "Total:" line with no amount is offered the column's sum (L577).
 - Night pass: dates a note names, the entities it mentions and a note that repeats another word for word are fact kinds, read by rule and not judged by the learned-store check (L657).
