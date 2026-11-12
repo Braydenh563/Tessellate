@@ -59,6 +59,17 @@ _PLAN = re.compile(
     rf"^{_LEAD}(?:give me |show me )?(?:an? )?(?:agenda|schedule|plan|timetable) for (?P<g>.+)$|"
     #: "make a study plan": no model writes it, so the notes' own dated items are laid out (F13 g).
     rf"^{_LEAD}(?:(?:can|could) you )?(?:make|create|build|write|draft|put together|give|get)(?: me)? (?:an? |my )?(?:study|revision|exam) (?:plan|schedule|timetable)(?P<st>.*)$", re.I)
+#: "organise everything about the harbor", "sort out my boiler stuff": a topic to file or read, not a week to plan (L-chat-32).
+_TOPIC = re.compile(r"\b(?:everything|all (?:my |the )?(?:notes?|things?|stuff)|anything) (?:about|on|to do with|regarding|related to)\b|\b(?:notes?|stuff|things) (?:about|on|to do with|regarding|related to)\b|^(?:my |the )?\w+ (?:stuff|things)$", re.I)
+_TIMED = re.compile(r"\b(?:week|day|today|tomorrow|weekend|month|morning|afternoon|evening|tonight|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b", re.I)
+
+
+def _topic_target(plan: re.Match | None) -> bool:
+    """True when the verb form of `_PLAN` was given a topic and no time to plan it in."""
+    target = (plan.group("t") if plan else None) or ""
+    return bool(target and _TOPIC.search(target) and not _TIMED.search(target))
+
+
 _UNTIL = re.compile(
     r"^(?:so |and |hey |ok |okay )*(?:how (?:long|many days|many weeks|much time|far)(?: is it| is there| do i have| have i got| have we got| left)?(?: until| till| to| before| left until| left till)"
     r"|(?:days|weeks) (?:until|till|to|before|left until)|countdown (?:to|until|for)|time (?:until|till|left until|left before)|how soon is|how close is)\s+(?:my |the |our |this )?(?P<t>.+?)\W*$", re.I)
@@ -963,8 +974,15 @@ def _answer_text(ctx: Ctx, text: str) -> Reply | None:
     if (reply := _when_reply(ctx, text)) is not None:
         return reply
     plan = _PLAN.match(text)
-    if plan and plan.group("st") is not None:
-        return _plan(ctx, ahead_default(today))
     if plan:
-        return _plan(ctx, _plan_window(text, " ".join(g for g in plan.groups() if g) or "this week", today))
+        return _plan_reply(ctx, text, plan, today)
     return _due_reply(ctx, text, today) if _asks_due(text, today) else None
+
+
+def _plan_reply(ctx: Ctx, text: str, plan: re.Match, today: date) -> Reply | None:
+    """The plan a `_PLAN` match asks for; None for a topic to organise, which is no week (L-chat-32)."""
+    if _topic_target(plan):
+        return None
+    if plan.group("st") is not None:
+        return _plan(ctx, ahead_default(today))
+    return _plan(ctx, _plan_window(text, " ".join(g for g in plan.groups() if g) or "this week", today))

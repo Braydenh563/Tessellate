@@ -1643,6 +1643,8 @@ function agentTimeline(holder, options = {}) {
         for (const change of changes) box.appendChild(changeRow(change, options));
       }
       if (check) box.appendChild(verificationRow(check));
+      const spent = budgetRow(event.budget);
+      if (spent) box.appendChild(spent);
       holder.appendChild(box);
       current = null;
     },

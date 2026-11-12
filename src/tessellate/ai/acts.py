@@ -125,6 +125,7 @@ def run_confirmed(session: Session, steps: list[dict], skipped: list[dict], cons
         done = run_said(session, parked["label"], parked["steps"], parked["skipped"], parked.get("say"))
         if done["ok"]:
             consent_store.note_latest(parked["label"], done.get("undo"))
+            consent_store.log_undo(done.get("undo"), parked["label"])
         return consent_store.remember(consent_id, done) if done["ok"] else done
     return run(session, steps, skipped)
 
@@ -149,7 +150,7 @@ def propose(session: Session, text: str, now: datetime, note_ids: list[int] | No
     planned = preview(session, parsed, note_ids)
     planned.pop("run", None)
     if planned.get("card"):
-        planned["card"] = {**planned["card"], "proposed": True}
+        planned["card"] = {**planned["card"], "proposed": True, "label_said": False}
     return planned
 
 

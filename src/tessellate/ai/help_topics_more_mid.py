@@ -779,7 +779,8 @@ MID_TOPICS.extend(
                 "In Chat, a run's What changed list has an Undo on each change, "
                 "and Undo the run puts back every note it changed at once, after "
                 "showing what will go back (a board item cannot be undone, and "
-                "the list says so)."
+                "the list says so). A muted line under the list says what the run "
+                "used of its steps, tokens and seconds."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
