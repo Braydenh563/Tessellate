@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 181 | 55 | 2 | 59 | 412 |
+| chat | 176 | 182 | 55 | 2 | 59 | 413 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 688 | 152 | 3 | 195 | 1393 |
+| all | 553 | 689 | 152 | 3 | 195 | 1394 |
 
 ## graph
 
@@ -293,6 +293,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
+- [ ] **L-chat-25** `chat` open, M: Parity (decision 75): check the model-on path for the compare table, bare 'and the thing' and the only-list question. From readers agent 2026-11-12. Evidence: composer_versus.table, composer_small.only_list_question, composer_dialogue._BARE_AND_THING are rules-only; no model-up path checked
 
 ## whiteboard
 
