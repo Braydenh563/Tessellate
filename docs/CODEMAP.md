@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2770, CSS sections 524, backend routes 698, backend modules 10765, test files 2681, tests 21845, plan headings 681, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2770, CSS sections 524, backend routes 698, backend modules 10765, test files 2682, tests 21847, plan headings 681, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -1380,22 +1380,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityActorName` | frontend/js/dashboard.js:3872 |
-| `activityUndoControl` | frontend/js/dashboard.js:3950 |
-| `activityUndoPlanText` | frontend/js/dashboard.js:3879 |
-| `activityUndoStarts` | frontend/js/dashboard.js:3935 |
+| `activityActorName` | frontend/js/dashboard.js:3874 |
+| `activityUndoControl` | frontend/js/dashboard.js:3952 |
+| `activityUndoPlanText` | frontend/js/dashboard.js:3881 |
+| `activityUndoStarts` | frontend/js/dashboard.js:3937 |
 | `afterFrames` | frontend/js/dashboard.js:1993 |
 | `applyDashDensity` | frontend/js/dashboard.js:1291 |
 | `cachedGreetingPhrase` | frontend/js/dashboard.js:316 |
 | `closeFeatures` | frontend/js/dashboard.js:1578 |
-| `dashActionRow` | frontend/js/dashboard.js:3665 |
-| `dashActivityItems` | frontend/js/dashboard.js:3783 |
+| `dashActionRow` | frontend/js/dashboard.js:3667 |
+| `dashActivityItems` | frontend/js/dashboard.js:3785 |
 | `dashContinueNote` | frontend/js/dashboard.js:1424 |
 | `dashCustomiseItems` | frontend/js/dashboard.js:1473 |
 | `dashDensity` | frontend/js/dashboard.js:1159 |
 | `dashDensityChosen` | frontend/js/dashboard.js:1165 |
 | `dashDragOverCard` | frontend/js/dashboard.js:23 |
-| `dashEmpty` | frontend/js/dashboard.js:3718 |
+| `dashEmpty` | frontend/js/dashboard.js:3720 |
 | `dashEntries` | frontend/js/dashboard.js:490 |
 | `dashFillingSkeleton` | frontend/js/dashboard.js:2004 |
 | `dashFillingSkeletonDone` | frontend/js/dashboard.js:2052 |
@@ -1409,7 +1409,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dashReminders` | frontend/js/dashboard.js:470 |
 | `dashStatsButton` | frontend/js/dashboard.js:2356 |
 | `dashStreak` | frontend/js/dashboard.js:2344 |
-| `dashTensionRow` | frontend/js/dashboard.js:4154 |
+| `dashTensionRow` | frontend/js/dashboard.js:4156 |
 | `dashWidgetRow` | frontend/js/dashboard.js:2108 |
 | `dashWidgetToggle` | frontend/js/dashboard.js:2082 |
 | `dashWidgetsSummary` | frontend/js/dashboard.js:2220 |
@@ -1421,17 +1421,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `fetchDashGraph` | frontend/js/dashboard.js:450 |
 | `fetchDashStats` | frontend/js/dashboard.js:425 |
 | `firstNoteImage` | frontend/js/dashboard.js:2438 |
-| `focusChime` | frontend/js/dashboard.js:3417 |
-| `focusRing` | frontend/js/dashboard.js:3351 |
-| `focusStep` | frontend/js/dashboard.js:3492 |
-| `focusTimeLabel` | frontend/js/dashboard.js:3333 |
-| `focusTimerEnded` | frontend/js/dashboard.js:3438 |
-| `focusTimerTick` | frontend/js/dashboard.js:3406 |
-| `focusTodaySeconds` | frontend/js/dashboard.js:3340 |
-| `generateDigest` | frontend/js/dashboard.js:2703 |
+| `focusChime` | frontend/js/dashboard.js:3419 |
+| `focusRing` | frontend/js/dashboard.js:3353 |
+| `focusStep` | frontend/js/dashboard.js:3494 |
+| `focusTimeLabel` | frontend/js/dashboard.js:3335 |
+| `focusTimerEnded` | frontend/js/dashboard.js:3440 |
+| `focusTimerTick` | frontend/js/dashboard.js:3408 |
+| `focusTodaySeconds` | frontend/js/dashboard.js:3342 |
+| `generateDigest` | frontend/js/dashboard.js:2704 |
 | `greetingBlock` | frontend/js/dashboard.js:255 |
 | `greetingCacheSlot` | frontend/js/dashboard.js:303 |
-| `loadDigestCache` | frontend/js/dashboard.js:2689 |
+| `loadDigestCache` | frontend/js/dashboard.js:2690 |
 | `miniEntryList` | frontend/js/dashboard.js:2475 |
 | `mountWidgetBody` | frontend/js/dashboard.js:1711 |
 | `moveDashWidget` | frontend/js/dashboard.js:2089 |
@@ -1443,8 +1443,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paintDashClock` | frontend/js/dashboard.js:392 |
 | `paintDashEmblem` | frontend/js/dashboard.js:1221 |
 | `paintDashFace` | frontend/js/dashboard.js:1208 |
-| `paintFadedNotes` | frontend/js/dashboard.js:3134 |
-| `paintFocusTimer` | frontend/js/dashboard.js:3375 |
+| `paintFadedNotes` | frontend/js/dashboard.js:3135 |
+| `paintFocusTimer` | frontend/js/dashboard.js:3377 |
 | `quickLinkButton` | frontend/js/dashboard.js:1359 |
 | `quickTintColours` | frontend/js/dashboard.js:1353 |
 | `quickTintKey` | frontend/js/dashboard.js:1342 |
@@ -1453,60 +1453,60 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `refreshAiGreeting` | frontend/js/dashboard.js:336 |
 | `refreshArtForTheme` | frontend/js/dashboard.js:2321 |
 | `refreshDashWidgets` | frontend/js/dashboard.js:1768 |
-| `renderActivityWidget` | frontend/js/dashboard.js:3796 |
-| `renderBoardsWidget` | frontend/js/dashboard.js:3739 |
-| `renderBookmarksWidget` | frontend/js/dashboard.js:4018 |
-| `renderCategoriesWidget` | frontend/js/dashboard.js:3033 |
+| `renderActivityWidget` | frontend/js/dashboard.js:3798 |
+| `renderBoardsWidget` | frontend/js/dashboard.js:3741 |
+| `renderBookmarksWidget` | frontend/js/dashboard.js:4020 |
+| `renderCategoriesWidget` | frontend/js/dashboard.js:3034 |
 | `renderDashGlance` | frontend/js/dashboard.js:721 |
 | `renderDashMore` | frontend/js/dashboard.js:1533 |
 | `renderDashSubmessage` | frontend/js/dashboard.js:506 |
 | `renderDashWidgetsList` | frontend/js/dashboard.js:2249 |
 | `renderDashboard` | frontend/js/dashboard.js:1797 |
 | `renderDashboardGreeting` | frontend/js/dashboard.js:564 |
-| `renderDigestWidget` | frontend/js/dashboard.js:2762 |
-| `renderDocumentsWidget` | frontend/js/dashboard.js:3981 |
+| `renderDigestWidget` | frontend/js/dashboard.js:2763 |
+| `renderDocumentsWidget` | frontend/js/dashboard.js:3983 |
 | `renderFeatures` | frontend/js/dashboard.js:1642 |
 | `renderFirstStepsLazy` | frontend/js/dashboard.js:1696 |
-| `renderFocusTimerWidget` | frontend/js/dashboard.js:3502 |
-| `renderHeatmapWidget` | frontend/js/dashboard.js:2917 |
-| `renderMostLinkedWidget` | frontend/js/dashboard.js:2609 |
-| `renderMostOpenedWidget` | frontend/js/dashboard.js:2572 |
-| `renderMostUsedWidget` | frontend/js/dashboard.js:2598 |
+| `renderFocusTimerWidget` | frontend/js/dashboard.js:3504 |
+| `renderHeatmapWidget` | frontend/js/dashboard.js:2918 |
+| `renderMostLinkedWidget` | frontend/js/dashboard.js:2610 |
+| `renderMostOpenedWidget` | frontend/js/dashboard.js:2573 |
+| `renderMostUsedWidget` | frontend/js/dashboard.js:2599 |
 | `renderNameNudge` | frontend/js/dashboard.js:785 |
-| `renderOnThisDayWidget` | frontend/js/dashboard.js:4212 |
-| `renderPaceWidget` | frontend/js/dashboard.js:4287 |
-| `renderPinnedWidget` | frontend/js/dashboard.js:2567 |
-| `renderQuestionsWidget` | frontend/js/dashboard.js:2658 |
-| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2867 |
-| `renderRandomNoteWidget` | frontend/js/dashboard.js:3106 |
-| `renderRandomShuffle` | frontend/js/dashboard.js:3189 |
-| `renderRecentNotesWidget` | frontend/js/dashboard.js:2628 |
-| `renderRemindersWidget` | frontend/js/dashboard.js:2879 |
-| `renderReviewWidget` | frontend/js/dashboard.js:2577 |
+| `renderOnThisDayWidget` | frontend/js/dashboard.js:4214 |
+| `renderPaceWidget` | frontend/js/dashboard.js:4289 |
+| `renderPinnedWidget` | frontend/js/dashboard.js:2568 |
+| `renderQuestionsWidget` | frontend/js/dashboard.js:2659 |
+| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2868 |
+| `renderRandomNoteWidget` | frontend/js/dashboard.js:3107 |
+| `renderRandomShuffle` | frontend/js/dashboard.js:3190 |
+| `renderRecentNotesWidget` | frontend/js/dashboard.js:2629 |
+| `renderRemindersWidget` | frontend/js/dashboard.js:2880 |
+| `renderReviewWidget` | frontend/js/dashboard.js:2578 |
 | `renderStatsWidget` | frontend/js/dashboard.js:2394 |
 | `renderStreakWidget` | frontend/js/dashboard.js:2362 |
-| `renderTagCloudWidget` | frontend/js/dashboard.js:3293 |
-| `renderTensionsWidget` | frontend/js/dashboard.js:4092 |
-| `renderTopTagsWidget` | frontend/js/dashboard.js:2637 |
-| `renderUnfinishedWidget` | frontend/js/dashboard.js:4044 |
+| `renderTagCloudWidget` | frontend/js/dashboard.js:3295 |
+| `renderTensionsWidget` | frontend/js/dashboard.js:4094 |
+| `renderTopTagsWidget` | frontend/js/dashboard.js:2638 |
+| `renderUnfinishedWidget` | frontend/js/dashboard.js:4046 |
 | `saveDashLayout` | frontend/js/dashboard.js:218 |
 | `saveQuickAccess` | frontend/js/dashboard.js:1397 |
 | `saveQuickTints` | frontend/js/dashboard.js:1406 |
-| `setFocusTimer` | frontend/js/dashboard.js:3481 |
+| `setFocusTimer` | frontend/js/dashboard.js:3483 |
 | `sizeDashWidgetSpan` | frontend/js/dashboard.js:841 |
 | `sizeDashWidgets` | frontend/js/dashboard.js:845 |
 | `skillRunTimes` | frontend/js/dashboard.js:1014 |
 | `startDashClock` | frontend/js/dashboard.js:365 |
-| `startFocusTimer` | frontend/js/dashboard.js:3461 |
+| `startFocusTimer` | frontend/js/dashboard.js:3463 |
 | `stopArt` | frontend/js/dashboard.js:2318 |
 | `stopDashClock` | frontend/js/dashboard.js:360 |
-| `stopFocusTimer` | frontend/js/dashboard.js:3470 |
-| `streamDigest` | frontend/js/dashboard.js:2722 |
-| `todayStamp` | frontend/js/dashboard.js:2685 |
+| `stopFocusTimer` | frontend/js/dashboard.js:3472 |
+| `streamDigest` | frontend/js/dashboard.js:2723 |
+| `todayStamp` | frontend/js/dashboard.js:2686 |
 | `toggleDashWidgetHidden` | frontend/js/dashboard.js:229 |
 | `toggleDashWidgetWide` | frontend/js/dashboard.js:237 |
-| `truncateMarkdownSafe` | frontend/js/dashboard.js:3091 |
-| `undoActorFrom` | frontend/js/dashboard.js:3897 |
+| `truncateMarkdownSafe` | frontend/js/dashboard.js:3092 |
+| `undoActorFrom` | frontend/js/dashboard.js:3899 |
 | `watchDashWidgets` | frontend/js/dashboard.js:876 |
 | `wireDashDensity` | frontend/js/dashboard.js:1327 |
 | `withDisplayName` | frontend/js/dashboard.js:279 |
@@ -27687,7 +27687,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21845)
+## Tests (21847)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28422,6 +28422,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_daily_strip.py | 9 |
 | tests/test_dash_counts_link_s87.py | 2 |
 | tests/test_dash_map_feature.py | 4 |
+| tests/test_dash_widget_markdown_l_general_39.py | 2 |
 | tests/test_dash_widget_stall.py | 3 |
 | tests/test_dashboard_art_cheap_1501.py | 4 |
 | tests/test_dashboard_art_offscreen_1029.py | 3 |
@@ -30791,13 +30792,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4382 |
-| Needs hardware | docs/roadmap/LEDGER.md:898 |
+| Needs hardware | docs/roadmap/LEDGER.md:897 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:212 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:890 |
+| Owner calls | docs/roadmap/LEDGER.md:889 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4255 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30973,7 +30974,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1098 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1097 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2632 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31027,25 +31028,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:59 |
-| chat | docs/roadmap/LEDGER.md:1114 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1198 |
+| chat | docs/roadmap/LEDGER.md:1113 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1197 |
 | documents | docs/roadmap/LEDGER.md:367 |
-| documents | docs/roadmap/LEDGER.md:1138 |
+| documents | docs/roadmap/LEDGER.md:1137 |
 | general | docs/roadmap/LEDGER.md:863 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1102 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1210 |
+| graph | docs/roadmap/LEDGER.md:1101 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1209 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4391 |
 | mindmap | docs/roadmap/LEDGER.md:447 |
-| mindmap | docs/roadmap/LEDGER.md:1150 |
+| mindmap | docs/roadmap/LEDGER.md:1149 |
 | timeline | docs/roadmap/LEDGER.md:592 |
-| timeline | docs/roadmap/LEDGER.md:1174 |
+| timeline | docs/roadmap/LEDGER.md:1173 |
 | ui-modernisation | docs/roadmap/LEDGER.md:485 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1162 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1161 |
 | whiteboard | docs/roadmap/LEDGER.md:320 |
-| whiteboard | docs/roadmap/LEDGER.md:1126 |
+| whiteboard | docs/roadmap/LEDGER.md:1125 |
 | world-class | docs/roadmap/LEDGER.md:627 |
-| world-class | docs/roadmap/LEDGER.md:1186 |
+| world-class | docs/roadmap/LEDGER.md:1185 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2802 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2853 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2960 |

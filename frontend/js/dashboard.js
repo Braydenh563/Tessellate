@@ -2509,7 +2509,8 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
     // the preview, the same shape the timeline card uses. It is what a person
     // calls the note, and without it every row in a widget starts with the
     // same three words of body text.
-    const flat = raw.replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "").trim();
+    //: A task's `[ ]` or `[x]` goes with its bullet (L-general-39: "[ ] buy bread" read literally).
+    const flat = raw.replace(/^\s*(?:#{1,6}\s+|>\s?|(?:[-*+]|\d+\.)\s+(?:\[[ xX]\]\s+)?)/gm, "").trim();
     const split = flat.indexOf("\n");
     const heading = (split === -1 ? flat : flat.slice(0, split)).trim();
     const rest = split === -1 ? "" : flat.slice(split + 1).replace(/\s+/g, " ").trim();
@@ -2518,7 +2519,7 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
       const title = document.createElement("span");
       title.className = "dash-list-title";
       const cut = safeMdSlice(heading, 70);
-      renderInlineMarkdown(title, cut.text, [], true);
+      renderInlineMarkdown(title, cut.text, [], true, { underscoreSyntax: true });
       if (cut.truncated) title.appendChild(document.createTextNode("…"));
       textEl.appendChild(title);
     }
@@ -2526,7 +2527,7 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
       const preview = document.createElement("span");
       preview.className = "dash-list-preview";
       const cut = safeMdSlice(rest, 110);
-      renderInlineMarkdown(preview, cut.text, [], true);
+      renderInlineMarkdown(preview, cut.text, [], true, { underscoreSyntax: true });
       if (cut.truncated) preview.appendChild(document.createTextNode("…"));
       textEl.appendChild(preview);
     }
@@ -3222,7 +3223,8 @@ async function renderRandomShuffle(body) {
     // paragraph early, which drops the styling this class carries.
     const text = document.createElement("div");
     text.className = "random-note";
-    renderMarkdown(text, truncateMarkdownSafe(stripFrontmatter(note.content), 239));
+    //: renderMarkdown has no `[[...]]`; the list rows unwrap it the same way (L-general-39).
+    renderMarkdown(text, truncateMarkdownSafe(stripFrontmatter(note.content).replace(/\[\[([^[\]]{1,120})\]\]/g, "$1"), 239));
     body.appendChild(text);
 
     // A sketch's picture is never in `note.content` at all: the sketch pad
