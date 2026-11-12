@@ -1382,7 +1382,7 @@ HELP_TOPICS.extend(
                 "continue or rewrite the draft, bullets to prose, prose to bullets, "
                 "a diagram, or translate), add notes as sources if you want it grounded in "
                 "them (a note dropped or pasted from the Tray into Your thoughts is added "
-                "as one), and press Draft. The draft stays in the box to edit; save it "
+                "as one), and press Draft (the pill in the bar names the model; press it to pick another). The draft stays in the box to edit; save it "
                 "as a note when it reads right. Which model writes is set on the "
                 "same row, or in Settings, Models. With no model Atlas does it by "
                 "rule, marked From your words, and offers only what that does well: tidy and "

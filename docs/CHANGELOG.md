@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Model pill (section 20): the Writing room's dock and the document editor's bar each show the model that feature runs on (its own pick, else its role's); pressing it opens the same picker sheet as the menu rows. Both measure 28px, the dock's control height.
 - Copy: the smart model routing switch in Settings, Models now says which jobs it moves (filing, the weekly digest, tidy suggestions, writing fixes); the guide's help says it stays on the utility model whether routing is on or off.
 - Indexes (L-world-class-21): two partial indexes over the rare live flags (`ix_entries_live_private`, `ix_entries_live_boards`, `WHERE is_deleted = 0 AND ...`), created at start-up on any notebook. At 5,000 notes the live-private and live-boards reads go from `SCAN entries` to a covering index read; the common `is_private = 0` stays a table read, since an index there put a sort back on /timeline (the first cut, caught by `tests/test_query_plans.py`). Partial on `is_deleted = 0`, not `deleted_at IS NULL`, because that is the filter the code sends.
 - Import (L509): a binned note in a Tessellate folder export already came back binned (`is_deleted` kept, `deleted_at` restarted at the import so the sweep cannot purge it); `tests/test_import_bin_clock.py` now pins the in-days case too, and `_fresh_bin_period`'s comment says what it guards.

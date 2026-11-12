@@ -1891,6 +1891,8 @@ Link to another note with [[its first few words]]."></textarea>
                    dock rather than with the draft's own options: it is a
                    choice about the surface, not about this draft, and beside
                    them it pushed "Use notes" onto a second row at 1440. -->
+              <button id="draft-model-pill" class="chat-usage chat-model-button" data-feature-pill="writing" type="button" hidden
+                title="The model the Writing room runs on, click to change it"></button>
               <select id="draft-feature-model" class="small-select feature-model-select"
                 aria-label="Model for the Writing room"
                 title="The model that writes here, the same choice as the Writing room row in Settings, Models"><option value="">Inherited</option></select>
@@ -1953,7 +1955,8 @@ Link to another note with [[its first few words]]."></textarea>
               mode writes by plain rule, marked From your words, and Refine
               takes shorter, add a summary, as bullets, as a list, as prose,
               plain, formal, tidy up or a diagram.
-              Suggest a title takes the title from your
+              The pill in the bar names the model the desk runs on:
+              press it to pick another. Suggest a title takes the title from your
               own words, and Split into notes cuts the text at its headings
               and paragraphs.</p>
           </div>
@@ -5188,6 +5191,8 @@ Link to another note with [[its first few words]]."></textarea>
                  only while the strip is hidden (`applyDocToolbarCollapsed`). -->
             <button id="doc-format-show" class="ghost small doc-format-show hidden" type="button"
               title="Show the formatting toolbar (Ctrl+Shift+X)" aria-label="Show the formatting toolbar (Ctrl+Shift+X)"><i class="ph ph-text-aa ph-lead" aria-hidden="true"></i> <span>Formatting</span></button>
+            <button id="doc-ai-model-pill" class="chat-usage chat-model-button" data-feature-pill="documents" type="button" hidden
+              title="The model Atlas runs on in documents, click to change it"></button>
             <button id="doc-ai" data-needs-model="AI editing needs the local AI" data-model-offer="The writing check, find, outline, export and history work without one." class="ghost small" type="button"
               title="Ask Atlas to rewrite this document, or the text you've selected" aria-label="AI edit"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> <span class="doc-ai-label">AI edit</span></button>
             <!-- A code document's Format (the owner, 2026-09-23: "a button
@@ -5240,7 +5245,7 @@ Link to another note with [[its first few words]]."></textarea>
                 itself (Source), a preview beside it (Split) or just the text
                 (Plain), and Read shows the finished page. Formatting shows the
                 formatting toolbar (Ctrl+Shift+X). AI edit asks Atlas to rewrite the
-                document or the selection. In Live, a grip appears beside the block under the pointer: drag it to move the block, or press Alt+Up or Alt+Down.</p>
+                document or the selection, and the pill beside it names the model it runs on: press it to pick another. In Live, a grip appears beside the block under the pointer: drag it to move the block, or press Alt+Up or Alt+Down.</p>
               <p>A code file adds Format (Shift+Alt+F), Run (Ctrl+Shift+Enter),
                 Go to line (Ctrl+G), Assistant and Snippets; on a phone the bar at
                 the foot holds Tab, Undo and the brackets instead of the writing buttons. Beside prose, Snippets reads Sections.

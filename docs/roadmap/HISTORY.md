@@ -7,6 +7,21 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (section 20, the dock model pill)
+
+- **A model pill in the writing desk's and the documents assistant's dock**
+  (the owner, 2026-11-12: "Yes, a dock pill"). Built: `#draft-model-pill` and
+  `#doc-ai-model-pill`, both `.chat-model-button` marked `data-feature-pill`,
+  filled by `syncFeatureModelPills` (ai-tools.js) from the feature's resolved
+  row (its own pick, else its role's), hidden while no model server answers,
+  pressing one opens `openFeatureModelSheet`. Driven on :8795 with a faked
+  `/models/status` (`tests/test_feature_model_pill.py` holds the markup): the
+  desk's pill read `llama3.2:latest` (its row's model), the documents pill
+  `qwen2.5:7b` (a per-feature pin); both are 28px tall, equal to the dock's
+  `#draft-feature-model` select and small ghost buttons; pressing the documents
+  pill opened the sheet listing Default, Same as chat model, Same as utility
+  model and both installed models. Not verified: a real model server.
+
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
 ### WORLD_CLASS_PLAN section 20, Still open (moved 2026-11-12)

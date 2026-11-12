@@ -2214,15 +2214,6 @@ added against, and what is still open.
    while the heading of the panel it opens already said "Write with Atlas",
    so the app contradicted itself on one screen.
 
-### Still open
-
-- **A model pill in the writing desk's and the documents assistant's dock**
-  (the owner, 2026-11-12: "Yes, a dock pill"; supersedes decision 4's "never a
-  new control in its chrome" for this one pill): the `#chat-active-model`
-  recipe, reading the feature's resolved model, opening the same picker sheet.
-  The routing switch copy and the Guide rows (the other two questions) are in
-  HISTORY.md, "Moved from the plans", 2026-11-12.
-
 ## 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21)
 
 The owner, verbatim: "make sure all features and alternatives are easily
