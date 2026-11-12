@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 140 | 45 | 0 | 17 | 315 |
+| world-class | 130 | 139 | 45 | 0 | 17 | 314 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 666 | 144 | 3 | 140 | 1363 |
+| all | 553 | 665 | 144 | 3 | 140 | 1362 |
 
 ## graph
 
@@ -798,7 +798,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L785** `world-class` open, M: Decide manual pictures only where needed, as WebP (1612c). From OPEN.md:4328. Evidence: W34 owner-call, w34-fix2-1111.md. Owner decided 2026-11-12: Add a few pictures. Build: Image field in help topic rendering (ai/help_topics_core.py, help_chat.py), sweep step writing WebP under frontend assets, a manual-parity lint for the image list.
 - [ ] **L787** `world-class` open, S: Decide docs/CHANGELOG, CONTRIBUTING, SECURITY mirrors nothing reads. From OPEN.md:739. Evidence: Mirrors identical to root (diff clean); tests/test_brand_name.py:78 and scripts/gate.sh:153 still use them; keep or retire is a decision Owner decided 2026-11-12: Retire the copies. Build: Delete docs/CHANGELOG.md, docs/CONTRIBUTING.md, docs/SECURITY.md; update tests/test_brand_name.py:78-82, test_docs_site.py mirror check, scripts/gate.sh:153, scripts/rebrand.py:49, scratchpad/changelog_union.py, database.py:193 comment.
 - [ ] **L806** `world-class` open, S: OCR workspace empty squashed box: needs owner's screenshot or state. From OPEN.md:1618. Evidence: Not reproduced in five states; needs the owner's screenshot or state Owner decided 2026-11-12: the right panel of the files and images viewer: its bottom scroll section is crushed very short by the sections above it (caption, description, model read). Build: OCR workspace right panel (files and images): the bottom scroll section is crushed very short by the sections above it (caption, description, model read); give the list a usable minimum height or let the panel scroll as one, measured at a laptop height.
-- [ ] **L-world-class-6** `world-class` open, S: Say the search model is loading instead of Filing on the first note. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:35. Evidence: notes-list.js:146 still shows the filing state ("Let Atlas decide") with no loading distinction; not in any plan or LEDGER row
 - [ ] **L-world-class-7** `world-class` open, S: Measure footnotes, Mermaid and rich paste in the note composers. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:966. Evidence: docRichPasteEvent is wired only in documents-view.js:313; the capture-stage paste handler takes only files, so rich paste in note composers was never measured or fixed
 - [ ] **L-world-class-8** `world-class` open, M: Group notes by type in the Library. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:372. Evidence: Open line in the plan's prose a session could miss. Left fragment inside a built dossier; repeated in the section 8 table at 797.
 - [ ] **L-world-class-9** `world-class` open, S: Re-run the Settings prose length metric. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:442. Evidence: Open line in the plan's prose a session could miss. Measurement promised in D13 never re-run after the copy pass.

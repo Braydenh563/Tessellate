@@ -747,6 +747,22 @@ def _queue_embedding(entry) -> None:
     )
 
 
+#: The search model still loading is what the first note waits on
+#: (L-world-class-6), so its activity row says so rather than "Filing a note".
+SEARCH_MODEL_LOADING = "Loading the search model"
+
+
+def _filing_label_now() -> str | None:
+    try:
+        return None if deps.get_embeddings().is_ready() else SEARCH_MODEL_LOADING
+    except Exception:  # noqa: BLE001 - a label must never break the panel
+        logger.debug("filing label: embeddings unreadable", exc_info=True)
+        return None
+
+
+jobs.LIVE_LABELS["file-entry"] = _filing_label_now
+
+
 def _queue_filing(entry) -> None:
     """One filing job per note in flight: the key makes a second call while
     the first is queued or running a no-op, so `filing_status` can ask again

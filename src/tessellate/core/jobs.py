@@ -227,6 +227,17 @@ LABELS: dict[str, str] = {
     "import": "Importing a folder of notes",
 }
 
+#: A kind whose label depends on the moment (L-world-class-6): the first
+#: note's filing waits on the search model loading, and "Filing a note" for
+#: those seconds read as the AI filing a note no AI could file yet. A reader
+#: here returns the label for now, or None for the kind's usual one.
+LIVE_LABELS: dict[str, Callable[[], str | None]] = {}
+
+
+def label_for(kind: str) -> str:
+    live = LIVE_LABELS.get(kind)
+    return (live() if live else None) or LABELS.get(kind, "Background job")
+
 
 #: Who started a job that a phone or another computer asked for (`core/origin.py`).
 ANOTHER_DEVICE = "another-device"
@@ -606,7 +617,7 @@ class Pool:
         hidden: dict[str, int] = {}
         for job in jobs:
             #: A pass's row is named for the pass ("Night shift").
-            label = job.name if job.kind == "pass" and job.name else LABELS.get(job.kind, "Background job")
+            label = job.name if job.kind == "pass" and job.name else label_for(job.kind)
             waiting = job.seq not in running
             if waiting:
                 shown[job.kind] = shown.get(job.kind, 0) + 1

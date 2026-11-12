@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The first note says the search model is loading, not Filing, while it warms.
 - Settings: Tools fills its Let MCP clients write switch when it opens, rather than showing it off until Background tasks had been opened (L523).
 - Selects: Settings wraps a pane's selects when the pane is shown, not at boot; measured 4 selects wrapped at boot, 10 more on opening Models, 0 left unwrapped there (L-world-class-14).
 - Complexity: no function in src is over 15 any more; the CI baseline is 0 (L812: janitor, the Ollama tool stream, the asset stripper and the PE reader split into named steps).

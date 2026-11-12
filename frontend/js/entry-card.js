@@ -526,8 +526,13 @@ function entryItem(entry, options = {}) {
   // background pass lands reads as the AI having failed. Say what is
   // actually happening instead.
   if (entry.filing_state === "pending") {
-    const filing = chip("ph:spin Filing…", "filing");
-    filing.title = "Atlas is deciding where this note goes. It's already saved.";
+    //: L-world-class-6: the first note waits on the search model loading,
+    //: and "Filing…" for those seconds read as an AI filing it.
+    const warming = modelStatus && modelStatus.embedding_ready === false;
+    const filing = chip(warming ? "ph:spin Search model loading…" : "ph:spin Filing…", "filing");
+    filing.title = warming
+      ? "The search model is loading so this note can be filed. It's already saved."
+      : "Atlas is deciding where this note goes. It's already saved.";
     meta.appendChild(filing);
     //: Any pending card is watched, not only the one just saved: a note
     //: left filing when the app closed, or listed after a reload, would
