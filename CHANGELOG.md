@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests no longer wait 5 seconds each for the autonomous loop at teardown (CI ran past its 90-minute limit).
 - Chat's side routes have their own file, every file over 800 lines has a cap that only falls, and no Python function passes 150 lines (L624, L640). An import cycle between media cleanup and note text is gone.
 - A package bundle that cannot be installed here says why.
 - Settings, Search and index has a dated currency rate table you can edit; currency answers use it and say its date.

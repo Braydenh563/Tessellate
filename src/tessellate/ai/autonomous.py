@@ -911,7 +911,14 @@ def start() -> None:
         from tessellate.core import jobs
 
         stop_event, wake_event = _stop_event, _wake_event
-        _loop_thread = jobs.thread("autonomous-agent", lambda: _loop(stop_event, wake_event))
+        #: A long-lived loop names its stop, so `jobs.join_threads` (every
+        #: test's teardown) skips it instead of waiting out its 5 s for a
+        #: thread that sleeps for hours: that wait slowed CI past its timeout.
+        _loop_thread = jobs.thread(
+            "autonomous-agent",
+            lambda: _loop(stop_event, wake_event),
+            stop=lambda: (stop_event.set(), wake_event.set()),
+        )
 
 
 def stop() -> None:
