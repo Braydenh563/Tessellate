@@ -122,6 +122,14 @@ const TABS = ['dashboard', 'notes', 'chat', 'graph', 'library', 'timeline', 'rem
   // hidden. Driven by scrolling a real region rather than by setting the
   // attribute, because what is being gated is the listener as much as the CSS.
   await page.setViewportSize({ width: 390, height: 844 });
+  // A near-empty notebook has nothing to scroll, so there is no scroll to
+  // recede on (L547: the three findings on an empty data dir). Seed to 40.
+  await page.evaluate(async () => {
+    const have = (await apiJson('/entries?limit=40')).length;
+    for (let i = have; i < 40; i++) {
+      await api('/entries', { method: 'POST', body: JSON.stringify({ content: `Phone tab recede note ${i}\n\n` + 'A line to scroll past.\n'.repeat(4) }) });
+    }
+  });
   await page.evaluate(() => switchTab('notes'));
   await page.waitForTimeout(1500);
 

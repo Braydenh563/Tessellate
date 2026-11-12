@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sweeps re-run on a fresh server: Quick add 60/60 (L532), the phone bar recede check seeds notes first (L547), Library-only sweeps finish (L548)
 - Seven JS test harnesses learn the 12 or 24 hour clock setting the base brought in; errors.js runs clean in dark and under faults (L539)
 - The lists the limit lint could not see (graph, suggestions, link suggestions, outline, live query) now name what bounds them (L-world-class-11)
 - A tool call the app did not offer (no card, no tag) is refused and runs nothing; Undo and Redo carry the server's tag (L-world-class-28)

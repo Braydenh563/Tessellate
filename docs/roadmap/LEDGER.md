@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 113 | 42 | 0 | 18 | 285 |
+| world-class | 130 | 110 | 42 | 0 | 18 | 282 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 610 | 139 | 3 | 136 | 1302 |
+| all | 553 | 607 | 139 | 3 | 136 | 1299 |
 
 ## graph
 
@@ -607,7 +607,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L529** `world-class` open, S: Drive code IDE, OCR workspace, phone More sheet, lock screen, board tools and Present. From OPEN.md:587. Evidence: Drivable with Playwright; no later sweep cited for all surfaces (phone More row measured HISTORY:3268)
 - [ ] **L530** `world-class` open, S: Fix flaky test_relations_kg2 10k timing under load. From OPEN.md:660; OPEN.md:3282. Evidence: No fix located; timing test remains in tests/test_relations_kg2.py
 - [ ] **L531** `world-class` open, S: Cold boot measure: add service worker, warm cache and phone width. From OPEN.md:796. Evidence: Measurement caveat; no phone-width cold boot run found
-- [ ] **L532** `world-class` open, S: Re-run Quick add 56/60 measure after F1 fixes. From OPEN.md:864. Evidence: scratchpad/ui-sweeps/quickadd.js exists; no re-run figure recorded
 - [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
 - [ ] **L534** `world-class` open, S: Undo counts per surface are static reads; drive documents/OCR/meetings and whiteboard 43/14. From OPEN.md:1116; OPEN.md:1485. Evidence: Undo ledger not closed; counts recorded, uncovered writes remain (see 587)
 - [ ] **L535** `world-class` open, S: decide is 34 ms/call at 5,000 notes vs 8-17 ms old tally. From OPEN.md:1496. Evidence: Perf measurement (scratchpad/filing-tools/perf.py); no optimisation found
@@ -617,8 +616,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L543** `world-class` open, S: undo.js trust sweep does not walk the OCR workspace. From OPEN.md:1634. Evidence: scratchpad/ui-sweeps/undo.js has no OCR step; ocr79.js measures it instead (still the case)
 - [ ] **L544** `world-class` open, S: Give scripts left in counted bundles (noteFirstImage etc.) a shared home. From OPEN.md:1643. Evidence: noteFirstImage still only in library.js:13226 and used at :13238; graph.js:2913 repeats the rule in a comment, no shared home
 - [ ] **L546** `world-class` open, S: deepen72a overlap measure change; run undo.js on agent surface. From OPEN.md:2776. Evidence: Verified open 2026-11-10
-- [ ] **L547** `world-class` open, S: phonetabs.js 3 findings on near-empty notebook. From OPEN.md:3336. Evidence: Found, not fixed; not compared against base
-- [ ] **L548** `world-class` open, S: Sweeps clicking only the Library tab time out. From OPEN.md:3472. Evidence: Sweep-script hygiene; only bm1005 scripts click Boards and maps first.
 - [ ] **L549** `world-class` open, S: Replace fixed 1.2 s whiteboard bundle wait in sweeps. From OPEN.md:3478. Evidence: Script hygiene; only op5-1005.js and mapviewmenu.js wait for the function.
 - [ ] **L550** `world-class` open, S: pickers.js throws pickNotesDialog not defined; segbars.js reads #graph-layout as seg. From OPEN.md:3530. Evidence: pickers.js, segbars.js still in scratchpad/ui-sweeps; script repair not recorded.
 - [ ] **L552** `world-class` open, S: Flake: test_composer_age_today_e17 fails only after other tests. From a28x-1102.md Left. Evidence: No later fix commit found; order dependence noted

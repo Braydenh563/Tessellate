@@ -852,5 +852,7 @@
   });
 
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  //: The per-field state, read by the quickadd.js sweep (L532); a property, not a new global.
+  quickAddAttach.fields = qaFields;
   Object.assign(window, { magicAddReminder, noteOffersAttach, quickAddAsk, quickAddAttach, quickAddClear, quickAddPaletteRow, quickAddSlots, reminderComposeAdd });
 })();
