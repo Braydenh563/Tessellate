@@ -22,6 +22,7 @@ that answers "has this been done?" before anyone starts.
 ## Moved from the plans, 2026-11-12 (CHAT_PLAN Open from Phase 6, engine6)
 
 - **Built, decision 43:** the currency table is the dated preference `currency_rates` (`{date, rates}`, laid over `utilities.RATES`, applied at start and on save by `utilities.configure_rates`); Settings, Search and index has a Currency rates group (date, one `EUR 0.88` line per code, Save rates, Reset to the built-in table); the answer says the saved date; Guide topic `currency-rates`; `tests/test_currency_rates_pref.py`.
+- **Built, decision 45:** with a model running, `api/chat_pick.py` asks it one constrained question (the numbered readings' labels, reply a number or none) and `routes_chat._compose_for` answers over the one note it chose; none, garbage, an error or no model leaves the engine's own question; the model's words never reach the answer; scripted-transport tests in `tests/test_reading_pick_d45.py`. Not verified: a real 1 to 3B model's choices.
 
 ## Moved from the plans, 2026-11-11 (K24, K25, BK11: god-module carves, k24-1111)
 

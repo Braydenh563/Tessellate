@@ -60,7 +60,7 @@ from tessellate.ai.grounding import (
     support as grounding_support,
 )
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.api import chat_extra, chat_web
+from tessellate.api import chat_chips, chat_extra, chat_pick, chat_web
 from tessellate.core import activity, deps, jobs, model_gate, private_turn
 from tessellate.core.database import (
     AuditLog,
@@ -82,7 +82,6 @@ from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGE
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
 from tessellate.api.chat_agent import _agent_events, consent_events, run_card_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _miss_events, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
-from tessellate.api import chat_chips
 from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
 
 
@@ -1300,9 +1299,13 @@ def _earlier_rows(question: str, current: list, today) -> list:  # noqa: ANN001
 
 
 def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, today) -> dict:  # noqa: ANN001
-    #: The conversation the history describes (decisions 34 and 35): its
-    #: turn and salt word this answer, a retry ("Try again") rewords it,
-    #: and the words earlier answers used are not used again.
+    """The composed answer; with a model running it picks among numbered readings (decision 45)."""
+    one = lambda pool: _compose_over(req, prepared, follow, pool, today)  # noqa: E731
+    return chat_pick.settle(req, one(current), current, one)
+
+
+def _compose_over(req: _StreamRequest, prepared: dict, follow, current: list, today) -> dict:  # noqa: ANN001
+    #: The conversation's turn and salt word this answer; a retry rewords it and earlier words are not reused (decisions 34, 35).
     dialogue = composer.Dialogue.from_history(req.history)
     attempt = req.body.attempt
     return composer.compose(
@@ -1332,10 +1335,7 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     """The composer's result with the follow-up it answered, the notes it read
     and the older ones those replaced."""
     follow = prepared.get("follow_on")
-    #: A follow-on that is a question in its own right ("what about
-    #: running?", "and last month?", "the second one") is answered the
-    #: same way as the first turn (B8); "tell me more", "shorter" and a
-    #: correction lean on the turn before and keep the composer's.
+    #: A follow-on that is a question in its own right ("and last month?") is answered like the first turn (B8); "tell me more" and corrections keep the composer's.
     restated = follow is not None and follow.kind in composer_dialogue._RESTATES
     today = user_now(deps.get_config()).date()
     #: O11: a newer note on the same thing is the current one.
@@ -1348,8 +1348,7 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
         result = composer_digest.all_said(follow.question, prepared["notes"], today=today, voice=_answer_voice()) or result
     if follow is None and result.get("grounding"):
         _remember_rows(req.question, current, today, result)
-    #: A question the answer itself suggests ("ask me “...”") is a chip too
-    #: (INBOX 1497): the sentence may stay, the chip is the action.
+    #: A question the answer suggests ("ask me “...”") is a chip too (INBOX 1497).
     suggested = ask_chips.lift(str(result.get("text") or ""))
     if suggested:
         result["next"] = list(dict.fromkeys([*suggested, *(result.get("next") or [])]))
