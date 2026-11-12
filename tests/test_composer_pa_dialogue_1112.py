@@ -113,3 +113,26 @@ def test_f13_j_a_linked_note_is_listed_with_its_reason(client, session):
     session.commit()
     said = talk(client, "open my kyoto ideas note", "what links to it")[1]
     assert "Tokyo food list" in said and "same trip" in said, said
+
+
+# --- X4: B24 undo sentences, B26 Q5 title, B27 find-similar (built earlier; pinned together here on the chat route) ---
+
+
+def test_x4_b24_every_confirm_names_both_buttons_and_undo_after_a_pin_takes_it_back(notebook):
+    pinned, undone = notebook("pin the kyoto ideas note", "undo")
+    assert "Confirm" in pinned and "Cancel" in pinned, pinned
+    assert "Favourites" in undone and "Confirm" in undone, undone
+
+
+def test_x4_b24_undo_with_no_act_before_it_gives_the_keys(notebook):
+    assert "Ctrl+Z" in notebook("undo")[0]
+
+
+def test_x4_b26_q5_called_x_with_y_keeps_the_whole_title(notebook):
+    said = notebook("make a note called Christmas with mum, dad and Sara")[0]
+    assert "“Christmas with mum, dad and Sara”" in said and "Confirm" in said, said
+
+
+def test_x4_b27_similar_to_searches_the_topic_not_the_sentence(notebook):
+    said = notebook("find notes simlar to my dentist one yk")[0]
+    assert said.startswith("I found two notes about “dentist”"), said

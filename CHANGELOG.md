@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Composer tests pin the confirm wordings, undo after a pin, a note called X with Y and find-similar on the chat route (ledger 1112, X4)
 Composer follow-ups: "who am I going with" is read from the trip note, and "what links to it", "what's related" and "why are they linked" name the note a command just opened (ledger 1112, F13)
 - Test (ledger 1112 D10): a bare yes after an answer whose cards are ask chips or open links makes no note and sets no reminder; the yes that does carry an act (reminder, checklist, pick, new list, gather, table) was already tested.
 - Fix (ledger 1112 F5): "Nothing is overdue." and an empty reminders count go on to "What's due this week?" and "What's due next week?" instead of the statistics chips; small-talk replies keep none by INBOX 1749 and an act card's buttons are its next step.
