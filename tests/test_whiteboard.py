@@ -495,6 +495,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "header": None,
         # And a table's column widths (wb5).
         "col_widths": None,
+        # And with merged cells, striped rows and row heights (L273).
+        "merges": None, "stripes": None, "row_heights": None,
         # Its custom properties, the Format panel's Data tab (canvasdepth2).
         "props": None,
         "page": None,
