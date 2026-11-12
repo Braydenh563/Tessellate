@@ -1627,7 +1627,7 @@
     const line = document.createElement("p");
     line.textContent = copy[2];
     li.append(icon, title, line);
-    //: Two actions (L2): Record is what the header's Open recorder does; Import audio keeps a file already on this computer.
+    //: Two actions (L2): Open recorder, as the header's button says, labelled by outcome; Import audio keeps a file already on this computer.
     if (kind === "none") {
       const actions = document.createElement("div");
       actions.className = "row empty-actions";
@@ -1637,7 +1637,7 @@
       const mic = document.createElement("i");
       mic.className = "ph ph-microphone ph-lead";
       mic.setAttribute("aria-hidden", "true");
-      record.append(mic, " Record");
+      record.append(mic, " Open recorder");
       record.addEventListener("click", () => openVoiceNote());
       const pick = document.createElement("button");
       pick.type = "button";

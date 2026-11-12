@@ -6,6 +6,8 @@ The network is the fake the clipper's tests use; nothing is requested while the 
 
 from __future__ import annotations
 
+import threading
+
 import pytest
 
 from tessellate.core import webclip
@@ -101,15 +103,24 @@ def test_fetch_icon_keeps_a_small_image_and_refuses_the_rest(net):  # noqa: F811
     assert webclip.fetch_icon("https://x.example/f.png") == ""
 
 
+def _icon_fetched() -> None:
+    #: The fetch after a save runs on a jobs thread; wait for it as the next list would.
+    for t in threading.enumerate():
+        if t.name.startswith("bookmark-icon-"):
+            t.join(5)
+
+
 def test_saving_a_link_fetches_its_icon_when_the_web_is_on(client, app_state, net, monkeypatch):  # noqa: F811
     app_state.set_preference("web_search_enabled", True)
     _site(net)
     monkeypatch.setattr(webclip, "fetch_icon", lambda url: "data:image/png;base64,AAAA")
     made = _make(client)
+    _icon_fetched()
     listed = client.get("/bookmarks").json()[0]
     assert listed["id"] == made["id"] and listed["favicon"] == "data:image/png;base64,AAAA"
     moved = client.put(f"/bookmarks/{made['id']}", json={"url": "https://bread.example/other"}).json()
     assert moved["favicon"] == "", "the old address's icon goes at once"
+    _icon_fetched()
     reply = client.get("/bookmarks").json()[0]["favicon"]
     assert reply == "data:image/png;base64,AAAA", "and the new one arrives"
 

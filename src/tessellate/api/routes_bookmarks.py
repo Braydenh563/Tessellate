@@ -7,13 +7,13 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from tessellate.api import paging
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.core import deps, webclip
+from tessellate.core import deps, jobs, webclip
 from tessellate.core.deps import get_session
 from tessellate.repo import bookmarks, bookmarks_html
 
@@ -164,26 +164,31 @@ def _refresh_after_save(bookmark_id: int) -> None:
         session.close()
 
 
+def _refresh_later(bookmark_id: int) -> None:
+    #: On a listed jobs thread (the background registry), so the save answers at once and the icon follows.
+    jobs.thread(f"bookmark-icon-{bookmark_id}", lambda: _refresh_after_save(bookmark_id))
+
+
 @router.post("", status_code=201)
 def create_bookmark(
-    body: BookmarkCreate, background: BackgroundTasks, session: Session = Depends(get_session)
+    body: BookmarkCreate, session: Session = Depends(get_session)
 ) -> dict:
     bookmark, twin = bookmarks.create(session, **body.model_dump())
     session.commit()
     if twin is None and _web_on():
-        background.add_task(_refresh_after_save, bookmark.id)
+        _refresh_later(bookmark.id)
     return _to_out(bookmark, duplicate_of=twin)
 
 
 @router.put("/{bookmark_id}")
 def update_bookmark(
-    bookmark_id: int, body: BookmarkUpdate, background: BackgroundTasks, session: Session = Depends(get_session)
+    bookmark_id: int, body: BookmarkUpdate, session: Session = Depends(get_session)
 ) -> dict:
     before = bookmarks.get(session, bookmark_id).url
     bookmark = bookmarks.update(session, bookmark_id, **body.model_dump())
     session.commit()
     if bookmark.url != before and _web_on():
-        background.add_task(_refresh_after_save, bookmark.id)
+        _refresh_later(bookmark.id)
     return _to_out(bookmark)
 
 

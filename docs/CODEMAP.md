@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10769, test files 2687, tests 21869, plan headings 687, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2687, tests 21869, plan headings 687, app scripts 29, boot scripts 38, script files 301.
 
 ## Frontend functions (8369)
 
@@ -13287,7 +13287,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `today` | src/tessellate/api/routes_resurface.py:106 |
 |  | POST | `chat` | src/tessellate/api/routes_chat.py:501 |
 |  | POST | `count` | src/tessellate/api/routes_usage.py:30 |
-|  | POST | `create_bookmark` | src/tessellate/api/routes_bookmarks.py:167 |
+|  | POST | `create_bookmark` | src/tessellate/api/routes_bookmarks.py:172 |
 |  | POST | `create_category` | src/tessellate/api/routes_categories.py:154 |
 |  | POST | `create_conversation` | src/tessellate/api/routes_conversations.py:618 |
 |  | POST | `create_document` | src/tessellate/api/routes_documents.py:499 |
@@ -13840,10 +13840,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/when` | POST | `read_when` | src/tessellate/api/routes_reminders.py:583 |
 | `/whiteboard/boards/{board_id}/paste` | POST | `paste_board_items` | src/tessellate/api/routes_board_library.py:1343 |
 | `/whiteboard/boards/{board_id}/place` | POST | `place_library_item` | src/tessellate/api/routes_board_library.py:1226 |
-| `/{bookmark_id}` | DELETE | `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:220 |
-| `/{bookmark_id}` | PUT | `update_bookmark` | src/tessellate/api/routes_bookmarks.py:178 |
-| `/{bookmark_id}/refresh` | POST | `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:193 |
-| `/{bookmark_id}/text` | GET | `bookmark_text` | src/tessellate/api/routes_bookmarks.py:214 |
+| `/{bookmark_id}` | DELETE | `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:225 |
+| `/{bookmark_id}` | PUT | `update_bookmark` | src/tessellate/api/routes_bookmarks.py:183 |
+| `/{bookmark_id}/refresh` | POST | `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:198 |
+| `/{bookmark_id}/text` | GET | `bookmark_text` | src/tessellate/api/routes_bookmarks.py:219 |
 | `/{category_id}` | DELETE | `delete_category` | src/tessellate/api/routes_categories.py:338 |
 | `/{category_id}` | PUT | `rename_category` | src/tessellate/api/routes_categories.py:327 |
 | `/{category_id}/colour` | PUT | `set_category_colour` | src/tessellate/api/routes_categories.py:316 |
@@ -13962,7 +13962,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10769)
+## Backend modules (10770)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21478,7 +21478,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `transform_path` | src/tessellate/api/routes_board_library.py:887 |
 | `update_library_item` | src/tessellate/api/routes_board_library.py:632 |
 
-### src/tessellate/api/routes_bookmarks.py (15)
+### src/tessellate/api/routes_bookmarks.py (16)
 
 | Name | File:line |
 |---|---|
@@ -21487,16 +21487,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `BookmarksImport` | src/tessellate/api/routes_bookmarks.py:97 |
 | `_fetch_into` | src/tessellate/api/routes_bookmarks.py:132 |
 | `_refresh_after_save` | src/tessellate/api/routes_bookmarks.py:149 |
+| `_refresh_later` | src/tessellate/api/routes_bookmarks.py:167 |
 | `_to_out` | src/tessellate/api/routes_bookmarks.py:49 |
 | `_web_on` | src/tessellate/api/routes_bookmarks.py:128 |
-| `bookmark_text` | src/tessellate/api/routes_bookmarks.py:215 |
-| `create_bookmark` | src/tessellate/api/routes_bookmarks.py:168 |
-| `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:221 |
+| `bookmark_text` | src/tessellate/api/routes_bookmarks.py:220 |
+| `create_bookmark` | src/tessellate/api/routes_bookmarks.py:173 |
+| `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:226 |
 | `export_bookmarks` | src/tessellate/api/routes_bookmarks.py:103 |
 | `import_bookmarks` | src/tessellate/api/routes_bookmarks.py:117 |
 | `list_bookmarks` | src/tessellate/api/routes_bookmarks.py:82 |
-| `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:194 |
-| `update_bookmark` | src/tessellate/api/routes_bookmarks.py:179 |
+| `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:199 |
+| `update_bookmark` | src/tessellate/api/routes_bookmarks.py:184 |
 
 ### src/tessellate/api/routes_capabilities.py (3)
 
