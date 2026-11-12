@@ -464,5 +464,42 @@ def _serve_lines(stdin: TextIO, stdout: TextIO) -> None:
             stdout.flush()
 
 
+def cli(argv: list[str], out: TextIO) -> int:
+    """`python -m tessellate tool [NAME] [--args JSON] [--json]`: list the
+    offered tools, or run one and print its result. Always JSON on `out`
+    (`--json` is accepted so a script states what it expects). Exit 0 on
+    success, 1 for a tool that is unavailable or errored, 2 for bad arguments.
+    The shell already has the notebook's files, the same boundary as stdio."""
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="tessellate tool", add_help=False)
+    parser.add_argument("name", nargs="?")
+    parser.add_argument("--args", default="{}")
+    parser.add_argument("--json", action="store_true")
+    try:
+        given = parser.parse_args(argv)
+    except SystemExit:
+        out.write(json.dumps({"error": "usage: tool [NAME] [--args JSON] [--json]"}) + "\n")
+        return 2
+    deps.init_app_state()
+    if not given.name:
+        out.write(json.dumps({"tools": _tool_list_payload()}) + "\n")
+        return 0
+    try:
+        arguments = json.loads(given.args)
+    except json.JSONDecodeError:
+        arguments = None
+    if not isinstance(arguments, dict):
+        out.write(json.dumps({"error": "--args must be a JSON object"}) + "\n")
+        return 2
+    reply = _call_tool(given.name, arguments)
+    text = json.loads(reply["content"][0]["text"]) if not reply["isError"] or reply["content"][0]["text"].startswith("{") else None
+    if text is None:
+        out.write(json.dumps({"tool": given.name, "error": reply["content"][0]["text"]}) + "\n")
+        return 1
+    out.write(json.dumps({"tool": given.name, "result": text}) + "\n")
+    return 1 if reply["isError"] else 0
+
+
 if __name__ == "__main__":
     serve()

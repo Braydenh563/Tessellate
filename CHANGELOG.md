@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CLI: `python -m tessellate tool [NAME] [--args JSON] --json` lists or runs one of the tools the MCP server offers, with the same gates (`tests/test_tool_cli.py`).
 - Docs: CONTRIBUTING agrees with CLAUDE.md on replacing rather than layering and on the test count (about 9,000).
 - Docs: SECURITY.md lists its known gaps; CONTRIBUTING.md sets a 30-day floor on adopting a new dependency, Action or vendored release.
 - Health: `/health` carries source_commit, started_at, data_dir_id and data_dir_writable, and Settings, About shows the build and warns when the notebook folder cannot be written (`tests/test_health_build_stamp.py`).

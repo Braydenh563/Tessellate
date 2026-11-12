@@ -2577,6 +2577,11 @@ def _capture() -> int:
 
 def main() -> None:
     _ensure_std_streams()
+    if sys.argv[1:2] == ["tool"]:
+        # A word, not a flag, and the parser below has no positionals.
+        from tessellate import mcp_server
+
+        raise SystemExit(mcp_server.cli(sys.argv[2:], sys.stdout))
     parser = argparse.ArgumentParser(prog="tessellate", description="Tessellate")
     parser.add_argument(
         "--desktop",
