@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 186 | 57 | 2 | 59 | 419 |
+| chat | 176 | 191 | 57 | 2 | 59 | 424 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 693 | 154 | 3 | 195 | 1400 |
+| all | 553 | 698 | 154 | 3 | 195 | 1405 |
 
 ## graph
 
@@ -300,6 +300,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
+- [ ] **L-chat-25** `chat` open, M: L23: composer act card time format and label wording. From acts-1112. Evidence: src/tessellate/ai/commands.py _clock: 'at 9' vs '3pm'; card label not a full sentence
+- [ ] **L-chat-26** `chat` open, M: L67 L216: board, map, document and skill act rows. From acts-1112. Evidence: tools already return undo; no act rows for board, map, document, skill
+- [ ] **L-chat-27** `chat` open, M: L100, L123, L220: not reached by acts agent, re-read rows. From acts-1112. Evidence: L100 L123 L220 not reached in acts-1112
+- [ ] **L-chat-28** `chat` open, M: L208: dark-mode act and meeting-anchored reminder. From acts-1112. Evidence: applyThemeChoice in settings.js is client-side; 'an hour before the meeting' anchoring
+- [ ] **L-chat-29** `chat` open, M: L223 remainder: similar-to, rename/move undo, untag parse, summarise note id. From acts-1112. Evidence: similar to X not parsed; rename/move have no undo by sentence; 'untag the note about boiler' parses about=the; 'summarise note 12' drops note_id
 
 ## whiteboard
 
