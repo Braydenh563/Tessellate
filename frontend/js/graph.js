@@ -5496,15 +5496,6 @@ onSurface("graph", () => {
   $("graph-popup-save").addEventListener("click", () => saveGraphPopup());
   // "Open in Notes" now lives in the popup's action row (renderGraphPopupActions).
   // Clicking empty canvas dismisses the popups.
-  $("graph-svg").addEventListener("click", () => {
-    closeGraphPopup();
-    closeGraphNewNote();
-  });
-  // Grow the map: double-click empty space to add a note right there.
-  $("graph-svg").addEventListener("dblclick", (event) => {
-    if (event.target.closest(".graph-node")) return; // node dblclick pins it
-    openGraphNewNote(event);
-  });
   $("graph-add-node").addEventListener("click", () => openGraphNewNote(null));
   $("graph-new-close").addEventListener("click", closeGraphNewNote);
   $("graph-new-save").addEventListener("click", saveGraphNewNote);

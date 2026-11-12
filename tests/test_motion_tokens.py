@@ -308,7 +308,7 @@ def test_the_blankets_leave_transitions_to_the_switch():
     rules = [(" ".join(m.group(1).split()), m.group(2))
              for m in re.finditer(r"([^{};]+)\{([^{}]*transition-duration:\s*0s !important[^{}]*)\}", text)]
     assert rules, "no transition blanket found"
-    decorative = ("#graph-svg", "#whiteboard-container", "#nm-buddy")
+    decorative = (".graph-minimap", "#whiteboard-container", "#nm-buddy")
     for selector, _ in rules:
         for part in [p.strip() for p in re.split(r",(?![^()]*\))", selector)]:
             assert ('data-ui-motion="on"' in part and ":not(" in part) or 'data-ui-motion="off"' in part or any(

@@ -777,7 +777,6 @@ const LOCK_PURGE_IDS = [
   "timeline-table-body",
   "reminder-groups", // reminders
   "timeline-calendar",
-  "graph-svg", // node labels are note titles
   "palette-list", // whatever was last searched for
   "palette-preview", // and the note it was showing
   "dash-glance", // the dashboard's recent note titles

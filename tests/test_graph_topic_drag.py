@@ -128,3 +128,23 @@ def test_the_floating_topic_rename_is_the_plate_s_height():
     assert "field.style.height = `${height}px`;" in body and "Math.round(plateH + 6)" in body
     rule = re.search(r"\.graph-topic-rename\.is-floating\s*\{([^}]*)\}", _css("graph-lazy.css")).group(1)
     assert "min-height: 0" in rule and "padding: 0 var(--space-2)" in rule
+
+
+def test_a_topic_rename_saves_on_blur_in_the_contents_outline_too():
+    """L1: the Contents heading's rename field saves when it loses focus, as
+    the graph's field does; Save and Cancel keep their mousedown off the field."""
+    lib = unwrapped((ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8"))
+    start = lib.index("function contentsRenameTopic(")
+    body = lib[start : lib.index("\n}\n", start)]
+    assert 'field.addEventListener("blur", () => finish(true));' in body
+    assert body.count('addEventListener("mousedown", (event) => event.preventDefault())') == 1
+
+
+def test_the_dead_graph_svg_element_is_gone():
+    """L-graph-4: the hidden SVG the removed renderer drew into, with its
+    handlers, styles and lock entry, left no reference in the frontend."""
+    from tests._app_js import app_js_text
+
+    assert "graph-svg" not in app_js_text()
+    for rel in ("index.html", "css/02-chat-graph.css", "css/motion-still.css"):
+        assert "graph-svg" not in (ROOT / "frontend" / rel).read_text(encoding="utf-8"), rel
