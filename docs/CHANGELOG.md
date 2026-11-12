@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tidy: the rename review also reads the person's own note titles; a word most of a category's titles share is offered as its name when the pack's topic is not (L513).
 - Filing: the pack's 30 word-sense rules now run in the filing decision ("bank" beside "river" is Geography, not Finance); the 50 context fixtures are a test with the seven the rules cannot yet tell listed as gaps (L663).
 - Facts: `recognise` reads counted things ("5 sets", "three loaves of bread") as a `count` kind, and the fact layer's quantity facts take it and the measure spans instead of a pattern of their own (L501).
 - Brief: a titled note's title weight goes to the sentence that says the title's words, not to every sentence of the note (L500).

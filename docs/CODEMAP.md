@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8331, frontend ids 2768, CSS sections 524, backend routes 700, backend modules 10818, test files 2689, tests 21889, plan headings 686, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8331, frontend ids 2768, CSS sections 524, backend routes 700, backend modules 10819, test files 2690, tests 21891, plan headings 686, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8331)
 
@@ -13920,7 +13920,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10818)
+## Backend modules (10819)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -26917,85 +26917,86 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `normalise_tags` | src/tessellate/entry/tagnames.py:30 |
 | `retagged` | src/tessellate/entry/tagnames.py:97 |
 
-### src/tessellate/entry/tidy.py (75)
+### src/tessellate/entry/tidy.py (76)
 
 | Name | File:line |
 |---|---|
 | `Review` | src/tessellate/entry/tidy.py:81 |
 | `_actor_words` | src/tessellate/entry/tidy.py:326 |
-| `_apply_bin` | src/tessellate/entry/tidy.py:885 |
-| `_apply_done` | src/tessellate/entry/tidy.py:896 |
-| `_apply_link_reasons` | src/tessellate/entry/tidy.py:741 |
-| `_apply_merge_categories` | src/tessellate/entry/tidy.py:841 |
-| `_apply_merge_notes` | src/tessellate/entry/tidy.py:824 |
-| `_apply_merge_tags` | src/tessellate/entry/tidy.py:778 |
-| `_apply_move` | src/tessellate/entry/tidy.py:794 |
-| `_apply_remove_tags` | src/tessellate/entry/tidy.py:768 |
-| `_apply_rename_categories` | src/tessellate/entry/tidy.py:870 |
-| `_apply_unlink` | src/tessellate/entry/tidy.py:753 |
+| `_apply_bin` | src/tessellate/entry/tidy.py:925 |
+| `_apply_done` | src/tessellate/entry/tidy.py:936 |
+| `_apply_link_reasons` | src/tessellate/entry/tidy.py:781 |
+| `_apply_merge_categories` | src/tessellate/entry/tidy.py:881 |
+| `_apply_merge_notes` | src/tessellate/entry/tidy.py:864 |
+| `_apply_merge_tags` | src/tessellate/entry/tidy.py:818 |
+| `_apply_move` | src/tessellate/entry/tidy.py:834 |
+| `_apply_remove_tags` | src/tessellate/entry/tidy.py:808 |
+| `_apply_rename_categories` | src/tessellate/entry/tidy.py:910 |
+| `_apply_unlink` | src/tessellate/entry/tidy.py:793 |
 | `_auto_added` | src/tessellate/entry/tidy.py:299 |
 | `_category_ids` | src/tessellate/entry/tidy.py:441 |
-| `_count_duplicates` | src/tessellate/entry/tidy.py:672 |
-| `_count_uncategorised` | src/tessellate/entry/tidy.py:569 |
+| `_count_duplicates` | src/tessellate/entry/tidy.py:712 |
+| `_count_uncategorised` | src/tessellate/entry/tidy.py:609 |
 | `_generic_links` | src/tessellate/entry/tidy.py:239 |
-| `_id_number` | src/tessellate/entry/tidy.py:737 |
+| `_id_number` | src/tessellate/entry/tidy.py:777 |
 | `_live_entries` | src/tessellate/entry/tidy.py:220 |
-| `_log` | src/tessellate/entry/tidy.py:937 |
+| `_log` | src/tessellate/entry/tidy.py:977 |
 | `_meaning_centroids` | src/tessellate/entry/tidy.py:447 |
-| `_merged_content` | src/tessellate/entry/tidy.py:814 |
-| `_merged_tags` | src/tessellate/entry/tidy.py:805 |
+| `_merged_content` | src/tessellate/entry/tidy.py:854 |
+| `_merged_tags` | src/tessellate/entry/tidy.py:845 |
 | `_new_tags` | src/tessellate/entry/tidy.py:295 |
 | `_percent` | src/tessellate/entry/tidy.py:231 |
-| `_restore_binned` | src/tessellate/entry/tidy.py:1039 |
+| `_restore_binned` | src/tessellate/entry/tidy.py:1079 |
 | `_row` | src/tessellate/entry/tidy.py:235 |
 | `_rows_auto_tags` | src/tessellate/entry/tidy.py:336 |
 | `_rows_category_names` | src/tessellate/entry/tidy.py:543 |
-| `_rows_duplicates` | src/tessellate/entry/tidy.py:582 |
+| `_rows_duplicates` | src/tessellate/entry/tidy.py:622 |
 | `_rows_link_reasons` | src/tessellate/entry/tidy.py:261 |
 | `_rows_lookalike_tags` | src/tessellate/entry/tidy.py:387 |
+| `_rows_own_titles` | src/tessellate/entry/tidy.py:569 |
 | `_rows_rare_tags` | src/tessellate/entry/tidy.py:377 |
-| `_rows_short_notes` | src/tessellate/entry/tidy.py:612 |
+| `_rows_short_notes` | src/tessellate/entry/tidy.py:652 |
 | `_rows_similar_categories` | src/tessellate/entry/tidy.py:482 |
-| `_rows_stale_reminders` | src/tessellate/entry/tidy.py:628 |
+| `_rows_stale_reminders` | src/tessellate/entry/tidy.py:668 |
 | `_rows_uncategorised` | src/tessellate/entry/tidy.py:403 |
 | `_rows_weak_links` | src/tessellate/entry/tidy.py:277 |
 | `_strength_detail` | src/tessellate/entry/tidy.py:253 |
 | `_tag_counts` | src/tessellate/entry/tidy.py:367 |
 | `_tag_states` | src/tessellate/entry/tidy.py:287 |
 | `_tags` | src/tessellate/entry/tidy.py:210 |
-| `_tied_ids` | src/tessellate/entry/tidy.py:600 |
+| `_tied_ids` | src/tessellate/entry/tidy.py:640 |
 | `_title` | src/tessellate/entry/tidy.py:214 |
 | `_top_topics` | src/tessellate/entry/tidy.py:477 |
-| `_touched_entry_ids` | src/tessellate/entry/tidy.py:945 |
-| `_undo_aliases` | src/tessellate/entry/tidy.py:1076 |
-| `_undo_binned` | src/tessellate/entry/tidy.py:1060 |
-| `_undo_done` | src/tessellate/entry/tidy.py:1085 |
-| `_undo_links` | src/tessellate/entry/tidy.py:995 |
-| `_undo_merged` | src/tessellate/entry/tidy.py:1048 |
-| `_undo_moved` | src/tessellate/entry/tidy.py:1027 |
-| `_undo_payload` | src/tessellate/entry/tidy.py:1102 |
-| `_undo_renamed` | src/tessellate/entry/tidy.py:1064 |
-| `_undo_tags` | src/tessellate/entry/tidy.py:1019 |
-| `_undo_unlinked` | src/tessellate/entry/tidy.py:1005 |
-| `apply` | src/tessellate/entry/tidy.py:968 |
-| `auto_settings` | src/tessellate/entry/tidy.py:1150 |
-| `cancel_link_reasons` | src/tessellate/entry/tidy.py:1279 |
-| `dismiss` | src/tessellate/entry/tidy.py:711 |
-| `dismissed_ids` | src/tessellate/entry/tidy.py:705 |
-| `history` | src/tessellate/entry/tidy.py:1125 |
-| `is_running` | src/tessellate/entry/tidy.py:1233 |
+| `_touched_entry_ids` | src/tessellate/entry/tidy.py:985 |
+| `_undo_aliases` | src/tessellate/entry/tidy.py:1116 |
+| `_undo_binned` | src/tessellate/entry/tidy.py:1100 |
+| `_undo_done` | src/tessellate/entry/tidy.py:1125 |
+| `_undo_links` | src/tessellate/entry/tidy.py:1035 |
+| `_undo_merged` | src/tessellate/entry/tidy.py:1088 |
+| `_undo_moved` | src/tessellate/entry/tidy.py:1067 |
+| `_undo_payload` | src/tessellate/entry/tidy.py:1142 |
+| `_undo_renamed` | src/tessellate/entry/tidy.py:1104 |
+| `_undo_tags` | src/tessellate/entry/tidy.py:1059 |
+| `_undo_unlinked` | src/tessellate/entry/tidy.py:1045 |
+| `apply` | src/tessellate/entry/tidy.py:1008 |
+| `auto_settings` | src/tessellate/entry/tidy.py:1190 |
+| `cancel_link_reasons` | src/tessellate/entry/tidy.py:1319 |
+| `dismiss` | src/tessellate/entry/tidy.py:751 |
+| `dismissed_ids` | src/tessellate/entry/tidy.py:745 |
+| `history` | src/tessellate/entry/tidy.py:1165 |
+| `is_running` | src/tessellate/entry/tidy.py:1273 |
 | `is_short` | src/tessellate/entry/tidy.py:188 |
 | `lookalike_groups` | src/tessellate/entry/tidy.py:174 |
 | `lookalike_key` | src/tessellate/entry/tidy.py:162 |
-| `request_stop` | src/tessellate/entry/tidy.py:1226 |
-| `respecify_all` | src/tessellate/entry/tidy.py:1237 |
-| `rows` | src/tessellate/entry/tidy.py:692 |
-| `run_automatic` | src/tessellate/entry/tidy.py:1193 |
-| `set_auto` | src/tessellate/entry/tidy.py:1155 |
-| `summary` | src/tessellate/entry/tidy.py:1167 |
+| `request_stop` | src/tessellate/entry/tidy.py:1266 |
+| `respecify_all` | src/tessellate/entry/tidy.py:1277 |
+| `rows` | src/tessellate/entry/tidy.py:732 |
+| `run_automatic` | src/tessellate/entry/tidy.py:1233 |
+| `set_auto` | src/tessellate/entry/tidy.py:1195 |
+| `summary` | src/tessellate/entry/tidy.py:1207 |
 | `tag_fit` | src/tessellate/entry/tidy.py:197 |
-| `undismiss` | src/tessellate/entry/tidy.py:725 |
-| `undo` | src/tessellate/entry/tidy.py:1106 |
+| `undismiss` | src/tessellate/entry/tidy.py:765 |
+| `undo` | src/tessellate/entry/tidy.py:1146 |
 
 ### src/tessellate/entry/timewords.py (14)
 
@@ -27752,7 +27753,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21889)
+## Tests (21891)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30112,6 +30113,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_throw_surfaces_1667.py | 5 |
 | tests/test_tidy.py | 28 |
 | tests/test_tidy_categories.py | 5 |
+| tests/test_tidy_own_titles.py | 2 |
 | tests/test_tidy_ui.py | 13 |
 | tests/test_tie_chip_b9.py | 5 |
 | tests/test_time_format.py | 4 |
@@ -30863,14 +30865,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:870 |
+| Needs hardware | docs/roadmap/LEDGER.md:869 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:862 |
+| Owner calls | docs/roadmap/LEDGER.md:861 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31051,7 +31053,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1015 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1014 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31105,25 +31107,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1031 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1115 |
+| chat | docs/roadmap/LEDGER.md:1030 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1114 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:1055 |
-| general | docs/roadmap/LEDGER.md:822 |
+| documents | docs/roadmap/LEDGER.md:1054 |
+| general | docs/roadmap/LEDGER.md:821 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1019 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1127 |
+| graph | docs/roadmap/LEDGER.md:1018 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1126 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:1067 |
+| mindmap | docs/roadmap/LEDGER.md:1066 |
 | timeline | docs/roadmap/LEDGER.md:596 |
-| timeline | docs/roadmap/LEDGER.md:1091 |
+| timeline | docs/roadmap/LEDGER.md:1090 |
 | ui-modernisation | docs/roadmap/LEDGER.md:478 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1079 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1078 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1043 |
+| whiteboard | docs/roadmap/LEDGER.md:1042 |
 | world-class | docs/roadmap/LEDGER.md:631 |
-| world-class | docs/roadmap/LEDGER.md:1103 |
+| world-class | docs/roadmap/LEDGER.md:1102 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

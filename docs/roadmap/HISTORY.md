@@ -55519,6 +55519,7 @@ keystroke-to-margin update.
 **State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
 
 ## Moved from the LEDGER
+- [x] **L513** `world-class` open, S: Add the person's own titles as a source for alternate category names in tidy.py. From OPEN.md:1703; OPEN.md:3615. Evidence: tidy.py:543-566 _rows_category_names uses profiles and taxonomy.name_topics only Built: tidy.py _rows_own_titles; tests/test_tidy_own_titles.py
 - [x] **L663** `world-class` partly, M: Left: wire the 30 context rules and 50 fixtures into decide. `taxonomy.context_rules()` (taxonomy.py:441) has no caller outside tests/test_taxonomy_pack.py:228. From OPEN.md:3618. Built: tests/test_taxonomy_context.py (50 fixtures, 7 listed gaps; decide wired via taxonomy.in_context)
 - [x] **L501** `world-class` open, S: Add a count kind to recognise and make factgraph _QUANTITY use it. From OPEN.md:3713. Evidence: factgraph.py:166 _QUANTITY still own regex; recognise.py has count_of but factgraph delegates only money (:576) Built: tests/test_recognise.py::test_count_kind_reads_counted_things_only_when_asked_for; factgraph tests green
 - [x] **L500** `world-class` open, S: Stop a titled note's every sentence scoring on title in the brief (TITLE_WEIGHT). From OPEN.md:1947. Evidence: Brief keeps up to four dated sentences; TITLE_WEIGHT fix not found in brief code Built: tests/test_composer_brief.py::test_a_titled_notes_other_sentences_do_not_score_on_its_title
