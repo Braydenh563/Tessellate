@@ -68,6 +68,7 @@ def test_an_arrow_head_is_wider_than_its_body_and_ends_in_a_point_at_the_end():
     pts = list(zip(nums[0::2], nums[1::2]))
     tip = max(pts, key=lambda p: p[0])
     assert tip == (200.0, 0.0)
+    assert x0 < 1 and x1 == tip[0] and y0 < 0 < y1  # the outline spans the line and sits on both sides of it
     body = [p for p in pts if p[0] < 60]
     assert max(abs(p[1]) for p in pts) > max(abs(p[1]) for p in body) + 2
 
