@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 17 | 3 | 0 | 5 | 23 |
+| timeline | 3 | 16 | 3 | 0 | 5 | 22 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 689 | 157 | 3 | 195 | 1399 |
+| all | 553 | 688 | 157 | 3 | 195 | 1398 |
 
 ## graph
 
@@ -603,7 +603,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L482** `timeline` open, S: Make feed Last-year range filter by calendar date, not written date. From OPEN.md:1375; OPEN.md:2570. Evidence: No change found in timeline-calendar.js/timeline.js for date vs written-date filtering.
 - [ ] **L483** `timeline` open, S: Stop timeline-days preference arriving after click rendering the timeline twice. From OPEN.md:1381; OPEN.md:2783. Evidence: timeline.js:2503 change handler unchanged; double render guard not found.
 - [ ] **L485** `timeline` open, S: Add a mark column to the timeline table view so meetings do not read as Note. From OPEN.md:3564. Evidence: grep meeting in timeline*.js shows no table mark column; only calendar/add paths
-- [ ] **L486** `timeline` open, S: Fix deepen72b.js timeline row at 390 timing out waiting for .timeline-rows. From OPEN.md:735; OPEN.md:2782. Evidence: scratchpad/ui-sweeps/deepen72b.js:61 still waits on .timeline-rows; phone keeps table view
 - [ ] **L488** `timeline` open, M: Persist the reminder action token key so notification buttons survive restart. From OPEN.md:2608. Evidence: No persisted signing secret found; verified 2026-11-10
 - [ ] **L490** `timeline` open, M: Get timeline bar click to rows under 300 ms at 96 notes (329 measured). From OPEN.md:2780. Evidence: timeline.js drawTimelineWindow; boot CSS budget tight; verified open
 - [ ] **L491** `timeline` open, M: Window the Timeline table view rows like the feed. From agent-remaining/listwin-1031.md. Evidence: The Timeline table view (`timelineTableRow`, paintTimelineTable) still builds every loaded row; only the feed is windowe

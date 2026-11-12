@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: `deepen72b.js` waits for the timeline's real rows (`#timeline-table-body` on a phone, which keeps the table view), so the 390 run no longer times out; 390: rows in 69 ms, 1440: 126 ms.
 - Tests: `timelinepaging.js` counts loaded rows (`timelineRows`), not the windowed DOM slice, so the next-page and strip-click checks pass; 3 runs green at 2,000 notes, worst frame 17 ms.
 - Tests: the Guide lead tests run on a temp data dir, so a switch topic no longer writes the repo's data/ folder in a serial run (`tests/test_guide_lead_1110.py`).
 - Docs: the timeline's two waits (the owner's look at the day strip, INBOX 561; date ranges as spans, decision 13) move to BACKLOG "Timeline, parked 2026-11-12"; a reminder's detail line reads "Open." rather than "Not done yet.".
