@@ -4871,10 +4871,11 @@ html.modal-open body {
   text-align: right;
 }
 /* A <summary> carries its own disclosure marker, so the heading inside it must
-   not also start a new block or the arrow and the text sit on separate lines. */
+   not also start a new block or the arrow and the text sit on separate lines.
+   No size of its own: all 25 sit in a card, whose `h3` eyebrow outranks a
+   single class, so a `--text-base` here never drew (L418). */
 .inline-h3 {
   display: inline;
-  font-size: var(--text-base);
 }
 /* The bookmark row's in-place edit form (library.js). Replaces a chain of
    two modal prompts - see that handler's comment for why sequencing the

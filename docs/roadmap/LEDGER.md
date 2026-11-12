@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 53 | 4 | 0 | 17 | 153 |
+| ui-modernisation | 96 | 51 | 4 | 0 | 17 | 151 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 594 | 159 | 3 | 186 | 1306 |
+| all | 553 | 592 | 159 | 3 | 186 | 1304 |
 
 ## graph
 
@@ -488,8 +488,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L388** `ui-modernisation` open, S: Stop the topic bar wrapping to two rows at 390. From OPEN.md:1952. Evidence: Measured identical on base; no fix
 - [ ] **L390** `ui-modernisation` open, S: Measure 390 px layout of Tidy Patterns rows and Chat pattern line. From OPEN.md:3730. Evidence: Never measured at 390; no recorded sweep
 - [ ] **L392** `ui-modernisation` open, S: Measure broom accent contrast and run the automatic contrast pass in a browser; check Tags Atlas review with a real model. From OPEN.md:624; OPEN.md:3562. Evidence: contrast.js measurement and browser run not recorded; pytest only
-- [ ] **L417** `ui-modernisation` open, S: Background jobs Report button waits for boot room; make Activity panel opaque at 390. From OPEN.md:1809; OPEN.md:2686. Evidence: No change found; row stands (unverified fix absent)
-- [ ] **L418** `ui-modernisation` open, S: Sweep other sheets' h3 titles for the same rank clash as .card h3 over .tidy-title. From OPEN.md:1989. Evidence: Tidy fix present (tidy-lazy.css:61 .tidy-nav .tidy-title); no sweep of other h3 titles found
 - [ ] **L421** `ui-modernisation` open, S: Restyle sidebar Comments, Linked from and Notes rows. From OPEN.md:2694. Evidence: Verified open 2026-11-10
 - [ ] **L425** `ui-modernisation` open, S: Verify CSS blank-line tests, picker and 390 layout. From OPEN.md:3810. Evidence: No recorded follow-up sweep
 - [ ] **L427** `ui-modernisation` open, S: Count title-only icon buttons outside the Notes list (other tabs, Settings). From OPEN.md:3610. Evidence: Measurement gap; no later count found
