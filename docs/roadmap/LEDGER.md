@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 22 | 1 | 0 | 4 | 38 |
+| graph | 15 | 16 | 1 | 0 | 0 | 32 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 694 | 154 | 3 | 195 | 1401 |
+| all | 553 | 688 | 154 | 3 | 191 | 1395 |
 
 ## graph
 
@@ -34,13 +34,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L709** `graph` open, M: Decide what an open note means for graph signal on card view. From OPEN.md:2930. Evidence: Needs decision on what 'open' means on card view (id search-open-note) Owner decided 2026-11-12: Last card clicked (The card you last clicked or focused counts as open until you click another or leave Notes; search ranks its linked notes higher). Build: notes-lazy.js:160 `open` falls back to a remembered last-clicked card id (cleared on leaving Notes) passed as &entry_id; targeted test on the search call.
 - [ ] **L711** `graph` open, M: Define manual topics so graph topics can be merged and removed like tags. From OPEN.md:4554. Evidence: Rename stored (routes_graph.py:1472); merge/remove need owner to define a manual topic Owner decided 2026-11-12: Store them as overrides (Merge and remove are saved like rename, on top of the worked-out topics; a reset brings back the automatic grouping). Build: routes_graph.py next to the rename at :1472: stored merge map and per-note exclusions applied after topic derivation, plus reset; graph topic menu rows; tests.
 - [ ] **L-graph-5** `graph` open, M: Get the owner's quality call on a coarser clearanceForce, then cut its 28 ms. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:61. Evidence: Open line in the plan's prose a session could miss. A perf item gated on an owner quality call. It is not one of the 109 answered owner calls and is not in the graph brief. Owner decided 2026-11-12: yes, a coarser push if measured dot and label overlaps stay 0 on the 36-note seed.
-- [ ] **L-graph-6** `graph` open, S: Reduce the board's 138 layers at rest or park the transparent backdrop in BACKLOG. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:62. Evidence: Open line in the plan's prose a session could miss. The leftover compositor layers and the transparent backdrop (54 layers) were left as remaining work, with no LEDGER row.
-- [ ] **L-graph-7** `graph` open, S: Move the graph ?since= cursor to BACKLOG as a deferred item. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:126. Evidence: Open line in the plan's prose a session could miss. The Phase 5 ?since= cursor is a conditional deferral, and the brief says not to build it. As a plan item it must move to BACKLOG, or it stays open forever.
-- [ ] **L-graph-8** `graph` open, M: Give /graph/local the Boards show switch or park it in BACKLOG. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:228. Evidence: Open line in the plan's prose a session could miss. Focus mode and the local pane still walk boards as notes. This is an explicit open note inside a built block.
-- [ ] **L-graph-9** `graph` open, S: Decide or build the fingerprint-keyed graph payload cache. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:480. Evidence: Open line in the plan's prose a session could miss. A Phase 5 'Left' fragment with no row. A later 'nothing left to build' may supersede it, so it needs verifying and then closing or building.
-- [ ] **L-graph-10** `graph` open, S: Draw the Tessellation logo's third-cell flourish. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The deleted q31-1110.md left list has the logo's third-cell flourish not done, and no LEDGER row.
 - [ ] **L-graph-11** `graph` open, S: Check Map link weighting in the browser on a notebook with real links. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The q31 left list says link weighting was never seen in a browser on a notebook with real links.
-- [ ] **L-graph-12** `graph` open, S: Show the owner Tessellation side by side with their pick. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The q31 left list needs a side-by-side with the owner's chosen layout. That is an owner check, not in any row.
 - [ ] **L-graph-13** `graph` open, S: Escape closing a lightbox over the full-screen graph should not leave full screen. From graphfslightbox.js run 2026-11-12. Evidence: Escape closing a lightbox opened over the full-screen graph also leaves full screen (stillFullscreen false); graph.js Escape handler near 1939 or lightbox-view.js:2341 not stopping propagation
 - [ ] **L-graph-16** `graph` open, M: Cut the wheel settle repaint at 2,000 notes (scale the cached layer or paint the settle in slices). From ghover-1112 measurement, GRAPH_PLAN audit row 19. Evidence: 2,000 notes 4x: each wheel stop repaints the whole rest layer ~160 ms later (GC_SCENE_SETTLE_MS, graph-canvas.js:2733 to 2748, gcPaintLayer rest :2707), wheel p50 43 ms, long task 110 ms
 - [ ] **L-graph-17** `graph` open, S: Leaving graph focus keeps the global map's positions. From gsweep 2026-11-12. Evidence: Leaving focus back to global re-simulates (max 472, mean 216 px); gcCachedPositions used only with no prior nodes, graph-canvas.js ~6482
@@ -906,10 +900,6 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 
 Rows that cannot close on this machine's fake transport or headless Chromium.
 
-- [ ] **L815** `graph` blocked-hardware, S: Verify on owner's screen: Saved views, local/global switching, reduced motion. From OPEN.md:595; OPEN.md:2662. Evidence: Needs the owner's screen to judge; reduced motion partly drivable
-- [ ] **L816** `graph` blocked-hardware, S: Verify drag feel by hand and open-card ring with a keyboard user. From OPEN.md:1977. Evidence: Tagged W34 unverifiable; needs a human
-- [ ] **L817** `graph` blocked-hardware, S: Test Close in meaning with a real embedding model. From OPEN.md:1719. Evidence: No torch/real embedding model in sandbox; W34 unverifiable
-- [ ] **L818** `graph` blocked-hardware, S: Hover frame at 2,000 notes 22-24 ms, 16 ms target not met. From OPEN.md:1261. Evidence: Row: needs an idle machine; drawImage/clearRect dominate in no-GPU headless.
 - [ ] **L819** `chat` blocked-hardware, S: Date and days-until questions in Ask with a model up answer 'couldn't find' (Z68). From OPEN.md:4081. Evidence: Needs a real model up to reproduce; fake transport cannot show it (CLAUDE.md section 4).
 - [ ] **L820** `chat` blocked-hardware, M: Check model-on parity with a real model (F14). From OPEN.md:4312. Evidence: Closed rows in parity-1110.md; real model output unverified on fake transport.
 - [ ] **L821** `chat` blocked-hardware, M: Verify composer with a real model, embedder, screen reader, locale, narrow widths, sources column, chips and Stop/regenerate. From OPEN.md:596; OPEN.md:3722; audit-1031-composer.md; composer-r9-1109.md Not verified. Evidence: Needs real embedder model; 390px portion drivable

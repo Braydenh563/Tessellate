@@ -59,7 +59,7 @@ community pass) and `/graph/path`. The dock is on the Phase 8 grammar.
    no export of the picture that matches the screen.
 
 - `clearanceForce` (2,000 notes, 3,999 links) costs 28 ms a call: the corridor walk and tests take 11 ms and the hits 17 ms. A coarser corridor cannot cut the hits, and fewer hits needs an owner quality decision (a long line's push every other tick was tried and reverted). (from `gr1b-1101.md` (git history))
-- The board's remaining layers: 138 at rest come from Chrome's sparsity rule, which will not merge far-apart cards into one layer. A transparent backdrop measured 54 layers, but it relies on an internal heuristic, so it was left. (from `graph-wb-0926.md` (git history))
+- The board's remaining layers: parked in BACKLOG.md §9 ("Parked from the graph plan, 2026-11-12").
 
 ## 3. The target, in one paragraph
 
@@ -120,10 +120,7 @@ gate. Two more rows of the original phase were re-read against the code on
   continued (positions on a saved view), 2026-09-21", GRAPH_PLAN.md); the
   decision it turned on ("Decision made, 2026-09-21: a restored view holds,
   it does not re-settle", below) stays here.
-- **A `?since=` cursor.** Still nothing polls `/graph`: every call is
-  `renderGraph()` behind a control, a tab activation or a save. A query
-  parameter with no caller is the "feature that never ran once" shape
-  CLAUDE.md section 6 puts second on its list. Left until something polls.
+- A `?since=` cursor: parked in BACKLOG.md §9 until something polls.
 
 ## 6. Consistency rules (learnability)
 
@@ -225,10 +222,8 @@ edge, and no board in the centrality pass or the path index. The switch is
 labelled Boards rather than Mind maps, because a whiteboard is a board too and
 a switch that hides one and not the other is the same confusion one step over.
 
-Still open, and deliberately: `/graph/local` has no such switch, so focus mode
-and the local pane still walk boards as notes. They are a neighbourhood of one
-note rather than a picture of the notebook, and nothing has been asked about
-them.
+`/graph/local` has no such switch (focus mode and the local pane walk boards
+as notes): parked in BACKLOG.md §9, 2026-11-12.
 
 ## Decision changed, 2026-09-09: a drag places, Shift pins
 
@@ -477,10 +472,7 @@ warm `/graph` p50 3,273 to 4,127 ms before, 720 to 1,017 ms after; cold 6.9 to
 1.1 s after; focus mode warm 80 to 101 ms either way; the payload is 3.0 MB
 (234 KB gzipped in the browser, ARCH-14). Profiled warm handler: 2.77 s to
 0.89 s, of which building the node dicts is now the largest part (0.37 s) and
-`json.dumps` 0.15 s. Left: the payload itself (a fingerprint-keyed cache of the
-encoded bytes needs the pins, access counts, attachments and board members in
-its key, none of which moves the fingerprint), and the canvas side at 5,000
-(FE-04, the frontend agent's).
+`json.dumps` 0.15 s. The fingerprint-keyed payload cache is since built (tests/test_graph_payload_cache.py: pins, access counts, attachments, board members and the vault in its key); the canvas side at 5,000 is FE-04's.
 
 ## Placed from INBOX, 2026-10-04: parity with Obsidian's graph
 
@@ -507,7 +499,8 @@ block. What stays here is the standing decisions and what is still open.
 
 - A real local model's `name|kind` entity extraction and a topic's sentence
   were run once, on a 1.5B (2026-11-11): recall 17 of 22, 4 junk names, topic
-  sentence usable 4 of 4, HTML entities in the output; a 3B is not measured.
+  sentence usable 4 of 4, HTML entities in the output. The 3B run is parked
+  in BACKLOG.md §9 (needs a real model).
 - `/graph` at 5,000 notes: the map's read is slim (`slim=1`, 1,767 KB from
   3,145; built, HISTORY.md "Moved from the plans, 2026-10-05 (op3-1005)").
   The generic encoder is skipped and the PageRank's links are read as
@@ -620,5 +613,5 @@ INBOX 1400 and 1306, measured with `gm.js` (numbers in `graph-1026.md` (git hist
 ## Placed from W34, 2026-11-11 (gap5: the open graph rows, sized)
 
 - Hub crossings: built 2026-11-12, moved to HISTORY.md ("Moved from the plans, 2026-11-12 (graph-plan session)").
-- **Balance pass riding the layer paint (M, a risk call).** At rest the chain is a whole frame, then composed, then a balance pass and composed again. Making pass 2 ride the layer paint (`again()` asking `gcRequestDraw(s, true)` once shown) removed one whole frame (30 ms) but left the composed frames at 46 and 59 ms: tasks over 50 ms unchanged, total 188 to 167 ms. Reverted (graph-1111.md:24) as a risk for 11% of the work. Needs the owner's yes that 21 ms of the total is worth the risk; first step then is a test that layer boxes keep their bounds after the balance runs inside the paint.
+- Balance pass riding the layer paint: the owner said no 2026-11-12; parked in BACKLOG.md §9.
 - Incremental crossing count: built 2026-11-12, moved to HISTORY.md ("Moved from the plans, 2026-11-12 (graph-plan session)").
