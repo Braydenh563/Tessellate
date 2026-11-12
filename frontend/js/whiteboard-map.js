@@ -2625,6 +2625,11 @@ function wbPaintMapNodeStyle(node, d) {
   //: one topic kept plain on a level that has one, drawn as no attribute.
   if (data.effect === "shadow" || data.effect === "glow") node.dataset.effect = data.effect;
   else delete node.dataset.effect;
+  //: A downward tree's siblings sit in a row, so the far-zoom + hangs under
+  //: the topic instead of on its left over the sibling (L360).
+  const downward = wbMapLayout() === "tree-down" || wbMapLayout() === "org";
+  if (downward) node.dataset.flow = "down";
+  else delete node.dataset.flow;
   const align = wbMapDrawn(data, "align");
   if (align) node.dataset.align = align;
   else delete node.dataset.align;

@@ -447,7 +447,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L357** `mindmap` open, S: Fix Ctrl+Z after Add top-level topic leaving lists differing. From OPEN.md:1115; OPEN.md:3692. Evidence: No undo fix commit found (only b3af75537 add at 390 recalc); undone state not re-verified
 - [ ] **L358** `mindmap` open, S: Fix fishbone rib running behind cause boxes and compare with XMind. From OPEN.md:1926; OPEN.md:2804. Evidence: whiteboard-map.js:3587 rib logic; no layering fix or XMind comparison found
 - [ ] **L359** `mindmap` open, S: Fix markers' Flag still showing two previews. From OPEN.md:1949; OPEN.md:3531. Evidence: whiteboard-map.js:10942 wbMapMarkerToggle Flag exists; two-preview state unverified
-- [ ] **L360** `mindmap` open, S: Fix 20px + overlapping parent by ~5px at 25% zoom; drive radial and tree-down. From OPEN.md:1798; OPEN.md:2531. Evidence: No later whiteboard-map measurement found for 25% zoom or radial/tree-down
 - [ ] **L361** `mindmap` open, S: Stop the topic bar wrapping to two rows at 390. From OPEN.md:3555. Evidence: Measured identical on base; no fix commit.
 - [ ] **L362** `mindmap` open, S: Sweep pointer reorder in tree-down, org and tree-both layouts. From OPEN.md:3906. Evidence: Layouts exist (tests/test_map_branch_structure.py uses tree-down) but pointer reorder sweep for them not found; unverified, needs a sweep.
 - [ ] **L363** `mindmap` open, S: Name a saved Tree/Arc layout on a map as a dock chip when not Force. From OPEN.md:2659. Evidence: Recommendation not built; verified 2026-11-10
@@ -474,6 +473,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-mindmap-7** `mindmap` open, S: Make Web link insert inline syntax distinct from Link card. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1526. Evidence: Open line in the plan's prose a session could miss. The slash menu's Link card and Web link render the same. The inline-syntax recommendation waits on the owner.
 - [ ] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row.
 - [ ] **L-mindmap-9** `mindmap` open, S: Measure idle and drag cost on a map of hundreds of nodes. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1751. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census gap, with no row.
+- [ ] **L-mindmap-11** `mindmap` open, S: Mind map link labels take the connector label look (size, bold, colour, chip, position). From MINDMAP_PLAN 2026-10-11 INBOX 819 (2). Evidence: whiteboard-format.js:1318 has label look for board connectors; mind map edge labels only edge_label_dx/dy (whiteboard-map.js:4328)
 
 ## ui-modernisation
 

@@ -1769,21 +1769,7 @@ and F2) is built; what is open:
 
 ## Placed from INBOX, 2026-10-11 (the topic's tools)
 
-Owner: the mapfix agent (Sonnet).
-
-- **The owner, 2026-10-11, verbatim.** "also when I change stuff in the
-  tools for a mindmap node, I cant actually see what the difference is
-  until I click off it 😅" (screenshot: a topic's Shape popover, rows Core
-  idea, Box, Edge bar, Fill, Effect; selected options drawn three ways
-  (accent fill, a bordered box, a grey fill) and the resets in two
-  colours). Placed: the Sonnet mapfix agent: a change paints the topic
-  at once while it stays selected, the popover never covers the topic it
-  edits, and one selected look and one reset look in the popover.
-- INBOX 816, the owner 2026-10-11, verbatim: "should thes ebuttons be that big??" (screenshot: a zoomed-out dark map; the selected topic "test" is about 60 px wide and its + and link buttons are each about 50 px squares under it, larger than the topic). Read: no. The topic's action buttons are drawn at a fixed screen size while the map is zoomed out. Target: they scale with the topic and are clamped between 20 and 28 px, sit beside the topic without covering a neighbour, and below 50% zoom only the + shows.
-- INBOX 817, the owner 2026-10-11, verbatim: "also that popup edit bar for when I try editing text doesn follow the selected text with scroll or zoom, and the panels and buttons kinda get in the way of me trying to edit the text in them" (screenshots: editing "Goal": the format bar, bold through comment, stays where it opened while the map pans, and in the second it sits across the topic; the + and link buttons and the fold toggle overlap the text box). Target: the format bar is anchored to the selection and re-placed on pan, zoom and scroll (one rAF per frame), above the topic, or below when there is no room, never over the text being edited; while a topic's text is edited its + and link buttons, fold toggle and resize grip are hidden.
-- INBOX 818, the owner 2026-10-11, verbatim: "labels on mind map links dont move with the links". Target: a link's label is placed on the link's path (the midpoint of the drawn curve, `getPointAtLength`) and re-placed in the same frame as the link on a topic drag, a layout change, a fold and a pan or zoom; measured: label centre within 2 px of the path midpoint after a 200 px topic drag.
-- INBOX 819, the owner 2026-10-11, verbatim: "also i dont think there is a way to label links on a whiteboard. also can link labels be customisable??" (screenshot: a selected board connector, its ends and midpoint handles, no label control). Read: a board connector takes a label today only by Enter on the selected link (`wbLinkTakesLabel`, decision 13), with nothing on screen saying so. Target: (1) the selected connector's context bar has "Label" (the tag icon), and a double-click on the line starts one at the click; (2) a label's look in the same bar: size, bold, text colour, a background chip on or off, and position along the line (start, middle, end, or dragged, kept as `t`); mind map link labels share the same controls and recipe; help moves with it (the Guide's board-connectors topic).
-  Decided 2026-10-11 (mapfix found the clash): a double-click on a line stays "add a bend", as the owner asked earlier; a label starts from the visible Label button (built 2026-10-11, mapfix) or Enter, and a double-click on the label itself edits it. Open: (2), the label look controls, owner: the cards agent with 825.
+Built: INBOX 814, 816, 817, 818, 819 (1) (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)"). Open: 819 (2) for mind map link labels is LEDGER L-mindmap-11.
 
 ## Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit)
 
