@@ -437,14 +437,6 @@ work found and did *not* fix, which is the part that is still open.
   the report comes back, ask which view it was in before touching the code.
 - "redesign and refine the outlines section of the documents tab as well"
   (two screenshots). Done: all five problems in them.
-  **Found while measuring and still open:** `enhanceSelect` (app.js ~18427)
-  rebuilds every `<select>` as a shell with a `<button>` opener and takes the
-  native element out of the tab order, so `select.focus()` anywhere in this
-  app focuses nothing and a `keydown` bound to a select never fires. Two
-  listeners in this batch were written that way before a sweep caught it.
-  The lint exists since 2026-10-04, `tests/test_select_focus.py` (`.focus()`
-  or a key listener on a page `<select>`, directly or through a binding; 0
-  offences, and proved against drift).
   The empty column above References is fixed: both sections carried
   `flex: 1 1 auto`, so with a two-heading document the outline was 312.4px of
   box around 68.3px of content and References 296.5px around 46px, leaving

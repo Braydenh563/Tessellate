@@ -55311,3 +55311,13 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
   answer with the actions underneath. The separating rule is there and it is
   doing the work on its own. A real spell menu differentiates them by more.
   **Fixed/closed (ownbugs):** already fixed (the candidates are drawn bare, documents.js ~15145); measured 2026-11-12 on port 8794 for "recieve": 5 rows, 0 icons on each, first row doc-suggest-best. The remaining ph:check sits on the suggested-change menu Accept rows (documents-prose.js:883), where it means accept. Pinned by tests/test_suggest_candidate_rows.py.
+
+  **Found while measuring and still open:** `enhanceSelect` (app.js ~18427)
+  rebuilds every `<select>` as a shell with a `<button>` opener and takes the
+  native element out of the tab order, so `select.focus()` anywhere in this
+  app focuses nothing and a `keydown` bound to a select never fires. Two
+  listeners in this batch were written that way before a sweep caught it.
+  The lint exists since 2026-10-04, `tests/test_select_focus.py` (`.focus()`
+  or a key listener on a page `<select>`, directly or through a binding; 0
+  offences, and proved against drift).
+  **Fixed/closed (ownbugs):** select.focus() now reaches the opener: enhanceSelect sets select.focus = opener.focus (sheets-selects.js), measured on port 8794 (note-sort: activeElement is BUTTON.select-opener; before, body). A keydown bound to the native select still never fires (the key goes to the opener); tests/test_select_focus.py keeps new code off that, tests/test_select_focus_delegates.py pins the forward.
