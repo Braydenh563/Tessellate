@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (compose agent: CHAT_PLAN phase 5, chat LEDGER rows)
+
+- **Built, CHAT_PLAN phase 5 (g):** link reasons beyond "similar in meaning": INBOX 691's concrete overlaps (`link_wording`: names, tags, rare words, same week) come first and the last resort is now the composer's quoted sentence pair, one sentence from each note sharing two plain words, each cut to 31 characters (`link_wording._quoted_pair`), so Tidy's "Add reasons" and "Add reasons to all" and a new link's own reason use it; a pair sharing one word is not quoted. `tests/test_link_wording.py`. Closes L95.
+
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
 - **Built, Sh1 P4:** the reminder edit form's time, priority, repeat and alert share one height (32px, equal top); `tests/test_reminder_edit_form_alert.py` holds the shared-height loop (cb83f2ed3).
@@ -55189,6 +55193,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L95** `chat` open, M: Add composer-written link reasons. From OPEN.md:837. Evidence: Row says not started; b6e5cbd58 only dedupes reasons Built: agent/compose-1112, tests/test_link_wording.py (quoted sentence pair, _quoted_pair)
 - [x] **L800** `world-class` owner-call, S: Decide what the evidence_checks switch gates and build its runner. From OPEN.md:2944. Evidence: Only facts.py:88 default; decision needed on what it gates Built: owner decision 2026-11-12: Keep it as built, no build needed
 - [x] **L796** `world-class` owner-call, S: Decide and build server restore routes for media deletes, ask-history, learned and tidy undo. From OPEN.md:532. Evidence: Row marks owner-call (w34-L1-1111.md); server restore routes needing a design decision; some exist (HISTORY:653) Built: owner decision 2026-11-12: Keep the built Undo, no build needed
 - [x] **L793** `world-class` owner-call, M: Decide auth and write-tool scope for the MCP server. From OPEN.md:4211. Evidence: Ledger owner call on MCP auth/scope. Built: owner decision 2026-11-12: Keep token, read-only, no build needed

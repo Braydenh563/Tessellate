@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 194 | 60 | 2 | 59 | 430 |
+| chat | 176 | 193 | 60 | 2 | 59 | 429 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 700 | 157 | 3 | 195 | 1410 |
 
 ## graph
 
@@ -131,7 +131,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L92** `chat` open, M: Fix statistics ask: summarise-my-week tag clause and week_review comparison (G9). From OPEN.md:4313. Evidence: Ledger says built apart from these two; no later commit found.
 - [ ] **L93** `chat` open, M: Make Regenerate for composer answers vary retrieval, not just wording (E62). From OPEN.md:4507. Evidence: Composer retrieval widening in composer_*.py, not done
 - [ ] **L94** `chat` open, M: Composer pulls from notes' time words and time references (INBOX 899). From OPEN.md:404. Evidence: w34-L2r-1111.md:14 TRUE: date asks work but notes' own time words not pulled generally
-- [ ] **L95** `chat` open, M: Add composer-written link reasons. From OPEN.md:837. Evidence: Row says not started; b6e5cbd58 only dedupes reasons
 - [ ] **L96** `chat` open, M: Restore or drop ai/tool_summary.py named on wip/composer-acts but missing. From OPEN.md:941. Evidence: src/tessellate/ai/tool_summary.py does not exist; no module references it
 - [ ] **L97** `chat` open, M: Add professional variants for next-question chips, citation phrases and other languages. From OPEN.md:3512. Evidence: No variants found in voice.py/composer_voice.py for mention_*, lists, echo; other languages absent.
 - [ ] **L98** `chat` open, M: Support 'on my birthday' with a stored birthday setting. From OPEN.md:3717. Evidence: routes_read.py:42 takes birthday=; no setting stores one

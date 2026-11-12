@@ -116,3 +116,19 @@ def test_generic_reasons_are_recognised():
     assert lw.is_generic("Similar in meaning, and around the same time")
     assert not lw.is_generic("Both tagged #porto")
     assert not lw.is_generic(None)
+
+
+def test_a_quoted_sentence_pair_is_the_last_resort():
+    a = _note(1, "Heading\nThe kiln needs a new thermocouple before spring.", category=None)
+    b = _note(2, "Pottery list\nOrder a thermocouple for the kiln this week, then fire.", category=None, day=25)
+    counts = _counts(a, b)
+    counts.word_df.update({"thermocouple": 6})  # not rare, so no word clue; the pair is what is left
+    reason = lw.specific_reason(a, b, counts)
+    assert reason == "Says “The kiln needs a new…” and “Order a thermocouple for the…”"
+    assert len(reason) <= lw.MAX_CHARS
+
+
+def test_a_pair_sharing_one_word_is_not_quoted():
+    a = _note(1, "The kiln needs a new door seal before spring.", category=None)
+    b = _note(2, "Order wire for the kiln this week, then fire.", category=None, day=25)
+    assert lw.specific_reason(a, b, _counts(a, b)) is None

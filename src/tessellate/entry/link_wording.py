@@ -21,7 +21,8 @@ a model:
 5. **Same category, written close together**: within a week, never
    Uncategorised. "Written two days apart, both in Travel".
 
-The first two clues found are joined; the sentence stays under `MAX_CHARS`
+When none of those is found, one sentence from each note that share two
+plain words is quoted (`_quoted_pair`). The first two clues found are joined; the sentence stays under `MAX_CHARS`
 (the AI audit's own cap, `ai/links.MAX_REASON_CHARS`). When none is found the
 caller keeps "similar in meaning" and shows its strength in words
 (`strength_word`).
@@ -329,12 +330,57 @@ def _clues(a: PairNote, b: PairNote, counts: Counts) -> list[str]:
     return clues
 
 
+#: The quoted pair's two sentences are cut to this many characters each, so
+#: both fit the reason's cap; a cut is marked and is always the line's start.
+PAIR_QUOTE = 31
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s+|\n+")
+
+
+def _sentences(text: str) -> list[str]:
+    out = []
+    for raw in _SENTENCE_END.split(_WIKI.sub(lambda m: m.group(1), text or "")):
+        line = _ITALIC.sub(r"\1", _MARKS.sub("", _LEAD.sub("", raw.strip()))).strip()
+        if len(line) >= 12:
+            out.append(line)
+    return out
+
+
+def _clip(line: str) -> str:
+    line = line.rstrip(".!?")
+    if len(line) <= PAIR_QUOTE:
+        return line
+    return line[:PAIR_QUOTE].rsplit(" ", 1)[0].rstrip(",;:") + "…"
+
+
+def _quoted_pair(a: PairNote, b: PairNote, counts: Counts) -> str | None:
+    """The last resort before "similar in meaning": one sentence from each
+    note that share at least two plain words, quoted as written (INBOX 725
+    g, the composer's own sentence pick). Words most of the notebook uses
+    do not count, so a pair is named only for what it shares."""
+    def keep(line: str) -> set[str]:
+        return {w for w in tokens(line) if w not in _PLAIN and w not in _CALENDAR and not counts.word_df.get(w, 0) > max(RARE_FLOOR, counts.total // 4)}
+
+    best: tuple[int, int, str, str] | None = None
+    for sa in _sentences(a.text):
+        wa = keep(sa)
+        for sb in _sentences(b.text):
+            shared = wa & keep(sb)
+            if len(shared) < 2:
+                continue
+            key = (len(shared), -(len(sa) + len(sb)))
+            if best is None or key > best[:2]:
+                best = (key[0], key[1], sa, sb)
+    if best is None:
+        return None
+    return f"Says “{_clip(best[2])}” and “{_clip(best[3])}”"
+
+
 def specific_reason(a: PairNote, b: PairNote, counts: Counts) -> str | None:
     """The most specific thing the two notes share, in one sentence, or None
     when all they share is meaning (the caller keeps the generic reason)."""
     clues = _clues(a, b, counts)
     if not clues:
-        return None
+        return _quoted_pair(a, b, counts)
     reason = "; ".join(clues[:2])
     if len(reason) > MAX_CHARS:
         reason = clues[0]
