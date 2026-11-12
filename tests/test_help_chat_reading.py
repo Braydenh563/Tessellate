@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import act_registry, composer, help_chat, reading
+from tests._help_text import after_path
 
 #: Importing `reading` sets the Guide's reader hook on the act registry (act_registry.py).
 READER_LOADED = reading.__name__
@@ -47,6 +48,6 @@ def test_the_offline_guide_answers_first_in_chats_help_line():
     question = "how do I export my notes"
     reply = help_chat.offline_answer(question)["content"]
     line, _ = composer.help_line(question, help_chat.topics_for(question))
-    assert reply.startswith(line)
+    assert after_path(reply).startswith(line)
     #: INBOX 1414: the "From the help" byline says where it came from, so the text does not.
     assert help_chat.OFFLINE_LEAD not in reply

@@ -7,10 +7,15 @@ from __future__ import annotations
 import pytest
 
 from tessellate.ai import help_chat
+from tests._help_text import after_path
 
 
 def say(question: str, tab: str | None = None, history: list[dict] | None = None) -> dict:
     return help_chat.offline_answer(question, tab, None, history=history)
+
+
+def said(question: str, tab: str | None = None) -> str:
+    return after_path(say(question, tab)["content"])
 
 
 def first_sentence(topic_id: str) -> str:
@@ -42,15 +47,15 @@ LEADS = [
 
 
 @pytest.mark.parametrize(("question", "tab", "start"), LEADS)
-def test_the_right_sentence_leads(question, tab, start):
-    assert say(question, tab)["content"].startswith(start), say(question, tab)["content"][:200]
+def test_the_right_sentence_leads(app_state, question, tab, start):
+    assert said(question, tab).startswith(start), said(question, tab)[:200]
 
 
 @pytest.mark.parametrize("tab", ["whiteboard", "settings", "statistics", "library", "notes", "chat"])
 @pytest.mark.parametrize("question", ["what does this page do", "what is this page"])
 def test_a_tab_question_leads_with_the_tab_topics_first_sentence(question, tab):
     topic_id = help_chat.TAB_TOPICS[tab][0]
-    assert say(question, tab)["content"].startswith(first_sentence(topic_id)[:60])
+    assert said(question, tab).startswith(first_sentence(topic_id)[:60])
 
 
 @pytest.mark.parametrize("question", ["how do I make a private note", "weekly review"])

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Guide's "did you mean" reads the 92,972-word list (`ai/help_words.py` `forgive`): 28 of 30 misspelt questions reach the right topic, up from 25; the no-model answer leads with the click path then one sentence from the help (owner call L725), and the plain side opens with how the question was read (L53); "how do I set a reminder" starts with step 1 (L108) (`tests/test_guide_wordlist_vc15.py`, `tests/test_guide_read_as_system.py`).
 - With a model running, the model picks among the engine's numbered readings by number and never writes one; the engine answers over the chosen note (`api/chat_pick.py`, CHAT_PLAN decision 45; `tests/test_reading_pick_d45.py`).
 - Currency rates are a dated preference with an editor in Settings, Search and index (CHAT_PLAN decision 43): conversions say the saved date, Reset puts the built-in table back; Guide topic Currency rates (`tests/test_currency_rates_pref.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.

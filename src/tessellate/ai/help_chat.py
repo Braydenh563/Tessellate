@@ -51,7 +51,7 @@ from collections.abc import Iterator
 
 from tessellate import SUPPORT_EMAIL
 from tessellate.ai import AI_NAME
-from tessellate.ai import act_registry, guide_lead, help_words, presets
+from tessellate.ai import act_registry, guide_lead, help_words, presets, variants
 from tessellate.ai.guide_lead import help_sentences  # the sentence cutter, a leaf with the lead rules (G5)
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
 from tessellate.ai.help_leads import TOPIC_LEADS
@@ -316,6 +316,9 @@ _WORD = re.compile(r"[a-z0-9]+")
 _TYPO_MIN = 5
 
 #: How many topics each keyword belongs to, for the rarity weight below.
+#: Every word the topics' keywords use: what a word the English list does not
+#: hold is read as (`help_words.forgive`).
+_KEYWORD_WORDS = frozenset(w for t in HELP_TOPICS for k in t["keywords"] for w in _WORD.findall(k.lower()) if len(w) >= 4)
 _KEYWORD_TOPICS: dict[str, int] = Counter(k for t in HELP_TOPICS for k in set(t["keywords"]))
 
 #: Body vocabulary per topic, for tie-breaking only (see `_matching_topics`).
@@ -428,6 +431,15 @@ def _repaired(question: str) -> str:
 _WHERE_FIND = re.compile(r"\bwhere (?:do|can|would|should|will) (?:i|you|we) (?:find|locate|get to)\b")
 
 
+def _forgiven(lowered: str, words: list[str]) -> tuple[str, list[str]]:
+    """The question with each word the English list does not hold read as the
+    topics' nearest word (VC15, `help_words.forgive`)."""
+    fixes = help_words.forgive(words, _KEYWORD_WORDS, variants.english())
+    if not fixes:
+        return lowered, words
+    return _WORD.sub(lambda m: fixes.get(m.group(), m.group()), lowered), [fixes.get(w, w) for w in words]
+
+
 def _matching_topics(question: str) -> list[dict]:
     """Which `HELP_TOPICS` entries this question is about, best first.
 
@@ -457,6 +469,7 @@ def _matching_topics(question: str) -> list[dict]:
     #: word the speller does not know.
     lowered = _WHERE_FIND.sub("where", _normalise_keys(_repaired(question).lower()))
     words = [w for w in _WORD.findall(lowered) if w not in _STOP]
+    lowered, words = _forgiven(lowered, words)
     total = len(HELP_TOPICS)
     scores: dict[str, float] = {}
     for topic in HELP_TOPICS:
@@ -545,12 +558,13 @@ def topic_title(topic: dict) -> str:
 #: link inside the Markdown could only be a URL, and a URL cannot open a
 #: settings row. The same text is the offline answer, so the Guide with no
 #: model answers exactly as the toggle's other side does.
-def system_answer(topics: list[dict]) -> dict:
+def system_answer(topics: list[dict], said: str = "") -> dict:
+    """The topic as written; `said` is the line that says how a misspelt question was read ("I took that to mean ...", L53)."""
     if not topics:
         return {"content": "", "open": None}
     first = topics[0]
     meta = TOPIC_META.get(first["id"], {})
-    lines = [f"### {topic_title(first)}"]
+    lines = ([said.strip()] if said.strip() else []) + [f"### {topic_title(first)}"]
     if meta.get("path"):
         lines.append(f"**Where:** {meta['path']}")
     lines.append(first["body"])
@@ -954,11 +968,6 @@ def _second_sentence(question: str, body: str, said: str) -> str:
     return ""
 
 
-def _place_follows(question: str, steps: tuple) -> bool:
-    """A find question, or a how-to with no steps, ends on its place, after the answer (Q23, E33)."""
-    return bool(_FIND_ASKED.search(question) or (not steps and _HOW_ASKED.match(question)))
-
-
 def _guide_lead(question: str, topics: list[dict]) -> str:
     """The help sentence that best answers `question` (`composer.help_line`).
     Before the composer is loaded (a bare import of this module), the
@@ -1038,8 +1047,9 @@ def composed_answer(question: str, topics: list[dict], led: guide_lead.Led | Non
     lines, where, walk = _guide_opening(question, path, steps, lead)
     more = "" if steps else _second_sentence(question, guide_lead.own_topic(topics, lead, help_sentences)["body"], lead)
     lines += ["\n".join(f"{n}. {step}" for n, step in enumerate(steps, 1))] if steps else [more] if more else []
-    if path and not where and not walk and _place_follows(question, steps):
-        lines.append(f"**Where:** {path}")
+    #: The click path leads (the owner, 2026-11-12, L725), then one sentence from the help.
+    if path and not where and not walk:
+        lines.insert(0, f"**Where:** {path}")
     related = guide_lead.related_titles(topics, " ".join(lines), topic_title)
     return "\n\n".join(lines + (["**Related:** " + ", ".join(related)] if related else []))
 
@@ -1149,7 +1159,7 @@ def offline_answer(
         "content": f"{said}{composed_answer(question, topics, led)}",
         "badges": badges_for(topics),
         "sources": source_names(topics),
-        "system": system_answer(topics),
+        "system": system_answer(topics, said),
     })
 
 

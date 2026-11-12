@@ -1697,7 +1697,7 @@ item lights), Raycast's and Notion's in-app help, Apple Tips.
 The owner: "make sure all the vendored repositories are made full use of. I want maximum utility." Ranked by the utility to the surface; `scratchpad/vendor_use.py` prints the counts ("available N, called M") and `tests/test_vendor_utilisation.py` ratchets them, so a row that lands raises its floor in the same commit. Each is a lead from a lower-bound count: grep the call site before building (CLAUDE.md section 1).
 
 - **VC1, Harper and the word list on the composer and the Ask box** (M, rank 1). Today Harper runs only in `documents-prose.js` (17 of 67 Harper members called) and the word list only in `documents.js` (2 of 9 uses). The composer is where most prose is typed and neither reaches it. Measure: a seeded typo and a seeded agreement error in the composer are underlined after a pause; lint time per 500 characters through `harper-worker.js` measured with the `p2-harper.js` method and held to decision 54's interaction budget; the composer keeps its caret and undo.
-- **VC15, the Guide's "did you mean" from the word list** (S, rank 15). `_matching_topics` in `ai/help_chat.py` forgives one typo by its own rules and never reads `frontend/vendor/wordlist/en.txt` (92,972 words). Measure: of 30 misspelt Guide questions (the `question_noise.py` table is the source), the count that reach the right topic, before and after.
+- **VC15, the Guide's "did you mean" from the word list.** Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-12 (CHAT_PLAN VC15 ...)").
 
 ## Placed from INBOX, 2026-10-10 (the coverage pass over 729 to 744)
 

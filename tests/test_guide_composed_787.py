@@ -20,6 +20,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import help_chat, reading
+from tests._help_text import after_path
 
 #: Importing `reading` wires the Guide's reader and the composer's help line.
 READER_LOADED = reading.__name__
@@ -121,7 +122,7 @@ FLOOR = 1.0
 
 
 def _lead(question: str) -> str:
-    paras = help_chat.offline_answer(question)["content"].split("\n\n")
+    paras = after_path(help_chat.offline_answer(question)["content"]).split("\n\n")
     return next(p for p in paras if not p.startswith(("My reading", "Reading that", "I read that"))).lower()
 
 
@@ -154,7 +155,7 @@ def test_a_help_sentence_ends_where_a_sentence_ends(body, want):
 def test_a_switch_topic_says_how_the_switch_is_set_now(monkeypatch):
     for on in (False, True):
         monkeypatch.setattr(help_chat, "_preference", lambda _key, _default, on=on: on)
-        lead = help_chat.offline_answer("how do i turn on web search")["content"].split("\n\n")[0]
+        lead = after_path(help_chat.offline_answer("how do i turn on web search")["content"]).split("\n\n")[0]
         #: One instruction per state (audit 1031 AI12): "is on now. Turn it
         #: on in ..." contradicted itself, so on says how to turn it off.
         assert lead.startswith(f"Web search is {'on' if on else 'off'} now. Turn it {'off' if on else 'on'} in Settings, Web search"), lead
