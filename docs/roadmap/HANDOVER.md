@@ -59,6 +59,6 @@
 
 # HANDOVER
 
-**Now (2026-11-12d, PR 216, closing):** wave 1 (companion, composer, shell) is merged, independently reviewed and its findings fixed; wave 2 was cancelled before it started. Every open item outside the plans and BACKLOG is one row in `docs/roadmap/LEDGER.md`, tagged by plan, with a paste-in brief per plan session at its end; INBOX is intake only; agent-remaining, OPEN.md and the retired roadmap docs are gone (their open rows in LEDGER, their facts in the plans, DESIGN or ARCHITECTURE, their record in HISTORY). Next: the owner merges PR 216, then starts one session per plan from its LEDGER brief.
+**Now (2026-11-12e, PR 216, closing):** all 109 owner calls answered and on their rows; `scripts/open_scan.py` lists open-work lines outside BACKLOG; the eight plan briefs at the end of LEDGER end only when nothing open is left outside BACKLOG. In flight: workflow wf_812f9e7b-276 (open-work sweep, 8 finders plus verifiers) finds open work tracked nowhere. Next: add its verified items as LEDGER rows (`scripts/ledger.py add`), write a ninth closing-session brief (full `open_scan.py` run, LEDGER and INBOX at zero, only BACKLOG left), regenerate CODEMAP, push, wait for CI green, then the owner merges and starts the nine sessions.
 
 The session record that stood here (morning summaries, the 2026-09-08 orders, the dated Now lines to 2026-11-12b) is in HISTORY.md, "HANDOVER session record (moved 2026-11-12)".
