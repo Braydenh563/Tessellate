@@ -10,6 +10,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Claim check: a sentence keeps its own leading number (only a list marker is stripped), and "e.g." or "3.5" no longer split a sentence.
 - Map topic pictures: the downloaded bytes must match the picture type the server declared (PNG, JPEG, GIF, WebP, AVIF, BMP), or the link is refused.
 - Group by theme and Check claims: the model has 45 seconds, then the words rule answers; the call is named on the privacy receipt, since the model can be a server off this computer.
+- Map: Tab to a new topic is faster again at 6x CPU on a phone-sized view (140 to 108 ms): the Library's tab strip no longer re-asks the whole tab about every hidden toggle.
 - Security: the claim check reads a document's front matter line by line (the regex was slow on crafted input, CodeQL 2285).
 - Mind map: on a phone, double-clicking a line's bend dot puts the line back again (the first click no longer reaches the canvas and brings the `+` back over the dot).
 - Map: Tab to a new topic is about twice as fast on a phone-sized view (207-235 ms to 107 ms at 6x CPU): a focus change no longer re-checks every action row, grip and line end on the map.

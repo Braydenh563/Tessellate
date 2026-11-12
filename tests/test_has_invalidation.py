@@ -185,3 +185,18 @@ def test_a_map_node_and_line_do_not_ask_every_ancestor_about_focus():
     for rule in (r"\.wb-map-node:is\([^)]*:has\(:focus-visible", r"\.wb-map-edge-group:is\([^)]*:has\(:focus-visible"):
         assert not re.search(rule, css), rule
     assert ".wb-map-actions:focus-within,\n.wb-map-node:focus-visible .wb-map-actions" in css
+
+
+def test_the_library_strip_asks_about_its_own_siblings_not_the_whole_tab():
+    """L-mindmap-13: `#tab-library:has(> #library-view-whiteboard:not(.hidden) > ...)` made every
+    `hidden` toggle anywhere in the Library (action rows on a Tab to a topic) re-ask the whole
+    tab: 79 'Affected by :has()' recalcs per Tab, 140 to 108 ms to editable at 390, 6x CPU. The
+    same job is done from the strip itself, looking forward at its siblings."""
+    css = "".join(p.read_text(encoding="utf-8") for p in CSS)
+    assert "#tab-library:has(> #library-view-whiteboard" not in css
+    assert "#tab-library:has(> #library-view-skills" not in css
+    assert "#tab-library > #library-subtabs:has(~ #library-view-whiteboard:not(.hidden) > #wb-canvas-view:not(.hidden))" in css
+    index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    tab = index[index.index('id="tab-library"') :]
+    # The sibling form only works while the strip precedes the views, at the same depth.
+    assert tab.index('id="library-subtabs"') < tab.index('id="library-view-whiteboard"')
