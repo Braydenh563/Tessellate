@@ -2712,7 +2712,8 @@ body.printing-doc #doc-preview p,
 }
 .wb-map-node:hover .wb-map-actions,
 .wb-map-node.wb-selected .wb-map-actions,
-.wb-map-node:is(:focus-visible, :has(:focus-visible)) .wb-map-actions {
+.wb-map-actions:focus-within,
+.wb-map-node:focus-visible .wb-map-actions {
   visibility: visible;
 }
 .wb-map-node.wb-radial-open .wb-map-actions {
@@ -7821,7 +7822,7 @@ input[type="color"].wb-mixed {
    and `.is-dragging` holds it open for a drag that has already left the line
    behind. */
 .wb-map-edge-group:hover .wb-map-edge-handle,
-.wb-map-edge-group:is(:focus-visible, :has(:focus-visible)) .wb-map-edge-handle,
+.wb-map-edge-group:focus-visible .wb-map-edge-handle,
 .wb-map-edge-handle.is-shown,
 .wb-map-edge-handle.is-dragging {
   opacity: 1;
@@ -7849,7 +7850,7 @@ input[type="color"].wb-mixed {
 }
 
 .wb-map-edge-group:hover .wb-map-edge-end,
-.wb-map-edge-group:is(:focus-visible, :has(:focus-visible)) .wb-map-edge-end,
+.wb-map-edge-group:focus-visible .wb-map-edge-end,
 .wb-map-edge-group.is-shown .wb-map-edge-end,
 .wb-map-edge-end.is-dragging {
   opacity: 1;

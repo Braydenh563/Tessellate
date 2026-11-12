@@ -174,3 +174,14 @@ def test_a_line_shows_its_ends_by_a_class_on_its_own_group():
     assert ".wb-map-edge-group:is(:focus-visible, :has(:focus-visible))" not in misc
     js = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
     assert 'handle.parentNode.classList.toggle("is-shown", on)' in js
+
+
+def test_a_map_node_and_line_do_not_ask_every_ancestor_about_focus():
+    """L-mindmap-13: `.wb-map-node:is(:focus-visible, :has(:focus-visible)) .wb-map-actions` (and the
+    same on a line's group, which can never take focus) made every focus change re-match every
+    action row, grip and line end under each ancestor of the focused topic: Tab to a new topic at
+    390, 6x CPU, 25-30 style recalcs over ~3000 elements, 207-235 ms to editable, 107 after."""
+    css = "".join((ROOT / "frontend" / "css" / n).read_text(encoding="utf-8") for n in ("07-whiteboard-misc.css", "library-lazy.css"))
+    for rule in (r"\.wb-map-node:is\([^)]*:has\(:focus-visible", r"\.wb-map-edge-group:is\([^)]*:has\(:focus-visible"):
+        assert not re.search(rule, css), rule
+    assert ".wb-map-actions:focus-within,\n.wb-map-node:focus-visible .wb-map-actions" in css

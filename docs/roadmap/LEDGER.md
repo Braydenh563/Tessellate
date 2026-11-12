@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 2 | 0 | 0 | 5 | 35 |
+| mindmap | 33 | 1 | 0 | 0 | 5 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 644 | 150 | 2 | 190 | 1347 |
+| all | 553 | 643 | 150 | 2 | 190 | 1346 |
 
 ## graph
 
@@ -440,8 +440,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## mindmap
 
-- [ ] **L-mindmap-13** `mindmap` open, M: Cut the style recalcs behind press-to-editable at 390 (6x throttle 135 ms toward 50). From L370 measurement 2026-11-12. Evidence: Tab to focus at 390, 6x CPU: 130-146 ms; 25-30 style recalcs per Tab (190 ms at 6x). Needs a Chrome trace with invalidation tracking (scratchpad/ui-sweeps/f2-trace.js INV=1) to name the invalidating class or property, then cut recalcs.
-- [ ] **L-mindmap-14** `mindmap` open, M: Swap an icon sticker for another icon in every copy: an icon is a scaled path per copy, so Swap everywhere handles emoji only; recolour and opacity already follow by Match all copies. From MINDMAP_PLAN 14.4 linked stickers. Evidence: frontend/js/whiteboard-map-more.js wbStickerSwap
+- [ ] **L-mindmap-13** `mindmap` open, M: Cut the style recalcs behind press-to-editable at 390 (6x throttle 135 ms toward 50). From L370 measurement 2026-11-12. Evidence: Tab to focus at 390, 6x CPU: 130-146 ms; 25-30 style recalcs per Tab (190 ms at 6x). Cut 2026-11-12 (INV trace, one/tabedit.js style, 390x844, 41 topics, 6x, median of 11): focus-change `:has(:focus-visible)` on map nodes and line groups re-matched every action row, grip and line end; dropped, 207-235 ms to 107 ms, elements restyled per Tab 3019 to 1943 (trace). Remaining toward 50: `:has` on #tab-library (10-responsive.css:1785, 334 recalc events), `.wb-object:is(:focus-visible, :has(:focus-visible)) .wb-resize-handle` (07-whiteboard-misc.css:367-394), `.dock-actions > :is(..., [class*="help"])` attribute set (08-consistency.css:770, ~550 matches).
 
 ## ui-modernisation
 
