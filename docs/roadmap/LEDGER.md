@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 60 | 17 | 0 | 18 | 147 |
+| documents | 70 | 58 | 17 | 0 | 18 | 145 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 699 | 157 | 3 | 195 | 1409 |
 
 ## graph
 
@@ -374,7 +374,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L298** `documents` open, S: Decide and vendor an indent-guides extension for the CodeMirror bundle. From OPEN.md:1508. Evidence: Active line built; no indent-markers extension found in vendor; needs vendoring decision
 - [ ] **L299** `documents` open, S: Fix console line border clash and doc assistant buttons/field/send height. From OPEN.md:1589. Evidence: No fix found in CHANGELOG/tests (backups part marked fixed in row)
 - [ ] **L300** `documents` open, S: Use js-beautify on a selection instead of conservative re-indent. From OPEN.md:1968. Evidence: Selection keeps conservative re-indent; no change
-- [ ] **L301** `documents` open, S: Number new documents 'Untitled document N'. From OPEN.md:2413. Evidence: grep finds only fixed 'Untitled document' fallbacks (dashboard.js:3994, chat-attach.js:578); no numbering
 - [ ] **L302** `documents` open, S: Separate F11 Step into from Focus mode and make keybindings sheet context aware. From OPEN.md:2830. Evidence: documents.js shared F11; Brief 71 sheet not updated
 - [ ] **L303** `documents` open, S: Measure Writing Room stretch on graph note boxes. From OPEN.md:3143. Evidence: Graph note boxes not opened/measured
 - [ ] **L304** `documents` open, S: Make diagram Source view text fold. From diagklm-1108.md Left. Evidence: diagram-lazy.css fold block / diagram-embed.js srcwrap unchanged per source; no later commit found
@@ -428,7 +427,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L352** `documents` partly, L: Documents: Autocorrect status-bar switch, deferred-large rows, DC1/DC2 lock, old audit rows re-verify. From ledger-1112 O27; ledger-1112 X14.
 - [ ] **L-documents-1** `documents` open, S: Pan the diagram builder by dragging with the right mouse button, as draw.io does. From INBOX 904 B36. Evidence: no button 2 pan in the diagram code; the whiteboard's right-pan decision 258 is superseded there, the diagram builder has no decision
 - [ ] **L755** `documents` open, S: Decide inlineAiUndo: editor history vs stack (rule 1.8). From OPEN.md:3793. Evidence: Recommendation awaiting owner decision Owner decided 2026-11-12: Editor's own history (The AI edit becomes one step in the editor's undo history, so Undo and Ctrl+Z, Ctrl+Y all agree). Build: editor.js:2776 inlineAiUndo and inlineAiSubmit write through the editor's undoable change path (execCommand insertText or the CodeMirror transaction) instead of textarea.value; test that Ctrl+Z reverts and redoes the AI edit.
-- [ ] **L752** `documents` open, S: Decide whether Console on .html/.css/.svg/.sql should run in the page global instead of a fresh worker. From OPEN.md:1220. Evidence: Row: html frame window not exposed to sandbox; a design change needing owner decision. Owner decided 2026-11-12: Keep the separate worker. Build: keep as is; add one help line (data-help-for on the console) saying it runs apart from the page, with its Guide topic and manual parity test.
 - [ ] **L-documents-2** `documents` open, S: Set a word goal and keep a streak for writing sessions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:564. Evidence: documents have a word count but no per-session goal; untracked
 - [ ] **L-documents-3** `documents` open, M: Compare two documents side by side. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:568. Evidence: there is version diff within a document but no compare of two documents; untracked
 - [ ] **L-documents-4** `documents` open, M: Turn a board's frames into a document draft. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:843. Evidence: no command turns a board into a document draft; lines 843 to 846 are untracked
