@@ -112,6 +112,22 @@ When you report, please include:
 You will get an acknowledgement, and we will work with you on a fix and a
 disclosure timeline. Thank you for helping keep Tessellate safe.
 
+## Known gaps
+
+What is not covered, so nobody has to find out the hard way:
+
+- The database and an unsealed backup are plain files; only private notes are
+  encrypted by the app. Use full-disk encryption (above).
+- A space is not a security boundary. Anyone who can reach the app can read
+  every space.
+- Every test of a model or provider runs against a fake transport, so how a
+  real model resists a hostile note or web page (prompt injection) is
+  unmeasured beyond the opt-in `evals` run.
+- The Docker image is checked as text and by hadolint in CI, but CI does not
+  build or scan it.
+- The self-signed LAN certificate protects against eavesdroppers, not against a
+  device that never checked the fingerprint it was shown.
+
 ## Scope notes
 
 The app is single-user and local, so multi-tenant data leaks do not apply. Web

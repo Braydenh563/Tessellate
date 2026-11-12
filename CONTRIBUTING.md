@@ -132,6 +132,15 @@ Three rules keep that from happening:
   the files that feature touches. An unexpectedly wide diff is the early warning
   sign of a regression.
 
+## Dependencies
+
+Do not adopt a release of a dependency, a GitHub Action or a vendored library
+younger than 30 days. A fresh release is the window in which a hijacked
+maintainer account or a malicious publish is found and pulled; waiting costs
+little. Pin to the exact version (an Action to its commit SHA, see
+`tests/test_workflow_pins.py`), and note the version and its release date in
+the commit. A security fix may skip the wait, and says so in the commit.
+
 ## Commit and PR conventions
 
 - Write clear commit messages that explain the *why*.
