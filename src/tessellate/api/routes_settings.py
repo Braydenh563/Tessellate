@@ -296,6 +296,17 @@ class SkillItem(BaseModel):
     useTools: bool = False  # noqa: N815  # the stored key, kept for old skills
 
 
+#: Names a browser still reports (Chromium says "Asia/Calcutta" for Kolkata) that
+#: a system tz database without the legacy links does not know. Without this the
+#: whole startup PUT, week start and season included, was refused in India (L914).
+_LEGACY_ZONES = {
+    "Asia/Calcutta": "Asia/Kolkata", "Asia/Katmandu": "Asia/Kathmandu", "Asia/Saigon": "Asia/Ho_Chi_Minh",
+    "Asia/Rangoon": "Asia/Yangon", "Asia/Dacca": "Asia/Dhaka", "Asia/Thimbu": "Asia/Thimphu",
+    "Europe/Kiev": "Europe/Kyiv", "America/Buenos_Aires": "America/Argentina/Buenos_Aires",
+    "Atlantic/Faeroe": "Atlantic/Faroe", "Pacific/Truk": "Pacific/Chuuk",
+}
+
+
 class PreferencesBody(BaseModel):
     #: Settings to put back to "never set" (their default), which a value cannot
     #: say: Settings, Recent changes uses it to undo a first change (INBOX 898).
@@ -650,7 +661,11 @@ class PreferencesBody(BaseModel):
         try:
             ZoneInfo(value)
         except (ZoneInfoNotFoundError, ValueError) as exc:
-            raise ValueError(f"Unknown timezone {value!r}") from exc
+            known = _LEGACY_ZONES.get(value)
+            if known is None:
+                raise ValueError(f"Unknown timezone {value!r}") from exc
+            ZoneInfo(known)
+            return known
         return value
 
     @field_validator("search_provider")

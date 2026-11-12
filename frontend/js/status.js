@@ -388,7 +388,10 @@ function syncNotifBlocked() {
   for (const line of document.querySelectorAll(".notif-blocked")) line.classList.toggle("hidden", !blocked);
 }
 
+//: Both lines are built lazily, so each surface syncs when it is built; the Reminders
+//: one stayed hidden until the next poll before (L914).
 onSurface("settings", syncNotifBlocked);
+onSurface("reminders", syncNotifBlocked);
 
 function askNotificationPermission() {
   if ("Notification" in window && Notification.permission === "default") {
