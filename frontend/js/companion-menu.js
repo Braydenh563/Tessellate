@@ -472,6 +472,9 @@
       if (!(el instanceof SVGElement) && el.children.length) continue;
       const r = el.getBoundingClientRect();
       if (!r.width || !r.height) continue;
+      //: Only a part that reaches past what is already counted can change the result, so only that part is asked for its
+      //: style (X8: 570 parts, 0 to a few of them past the figure's own box; the style read was most of the 46 ms at 4x).
+      if (r.top >= top && r.bottom <= bottom && r.left >= left && r.right <= right) continue;
       const cs = getComputedStyle(el);
       if (cs.visibility === "hidden" || cs.display === "none" || Number(cs.opacity) < 0.05) continue;
       top = Math.min(top, r.top);
