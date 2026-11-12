@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Code: the keybindings sheet's close (`docIdeCloseKeys`) is on `window`, so the `code-keys.js` sweep can close it (L-documents-14).
 - Fix: `select.focus()` on an enhanced select focuses its opener button (it focused nothing); a key listener on the native select still cannot fire and stays under `tests/test_select_focus.py`.
 - Verified: the spelling menu draws its five candidate words bare (0 icons, first row marked best); the check icon is only on the suggested-change menu's Accept rows (`tests/test_suggest_candidate_rows.py`).
 - Verified: scratchpad/ui-sweeps/docviews.js already asks for the formatting strip's line-numbers button, not the removed view-menu row; that part passes (0, then 7, then 0 numbers). The sweep still fails elsewhere (swift, r, ini and Python token colours read 0), see LEDGER.
