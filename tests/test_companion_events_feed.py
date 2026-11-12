@@ -1,5 +1,5 @@
-"""W31: the app-to-overlay events feed (compalive-1109). The server notes eight things the in-app companion reacts to
-(`graph_laid`, `long_note`, `note_binned`, `private_note`, `remark`, `reminder_bell`, `search_found`, `search_nothing`) in a
+"""W31: the app-to-overlay events feed (compalive-1109). The server notes nine things the in-app companion reacts to
+(`graph_laid`, `long_note`, `note_binned`, `private_note`, `remark`, `reminder_bell`, `search_found`, `search_nothing`, `note_milestone`) in a
 small ring of kind and time, never a title or a word of a note; the overlay reads what is new on its existing screen poll
 (`ScreenWatch.poll`, every 2 s, never on the fall tick) and answers with acts that already have desk frames.
 Fixed clock throughout. Real Windows is unverified: this is the ring, the routes and the engine's answer on a fake."""
@@ -13,7 +13,7 @@ import pytest
 from tessellate.core import companion_events as ce
 from tessellate.core.overlay import extras, screenwatch
 
-NOTE_KINDS = ("graph_laid", "long_note", "note_binned", "private_note", "remark", "reminder_bell", "search_found", "search_nothing")
+NOTE_KINDS = ("graph_laid", "long_note", "note_binned", "private_note", "remark", "reminder_bell", "search_found", "search_nothing", "note_milestone")
 
 
 @pytest.fixture(autouse=True)
@@ -130,6 +130,15 @@ def test_the_graph_and_the_remarks_record_their_kinds(client) -> None:
     assert "graph_laid" in kinds_after(last)
 
 
+def test_the_tenth_note_is_a_milestone_and_the_ninth_is_not(client) -> None:
+    last = ce.latest()
+    for n in range(1, 10):
+        client.post("/entries", json={"content": f"Plain note number {n} about tomatoes."})
+    assert "note_milestone" not in kinds_after(last)
+    client.post("/entries", json={"content": "Plain note number 10 about tomatoes."})
+    assert kinds_after(last).count("note_milestone") == 1
+
+
 def test_there_is_no_route_that_serves_the_ring(client) -> None:
     paths = {getattr(r, "path", "") for r in client.app.routes}
     assert not [p for p in paths if "companion-event" in p or "companion_event" in p]
@@ -177,9 +186,20 @@ def test_every_fed_kind_has_a_desk_reaction_made_of_poses_the_desk_ships(kind: s
         assert pose in sprites.FRAME_NAMES, (kind, r.act, pose)
 
 
-def test_the_ring_kinds_and_the_reactions_are_the_same_eight() -> None:
+def test_the_ring_kinds_and_the_reactions_are_the_same_nine() -> None:  # intent unchanged; P7 added the round-count cheer
     assert set(ce.KINDS) == set(NOTE_KINDS)
     assert set(NOTE_KINDS) <= set(extras.REACTIONS)
+
+
+def test_only_a_round_note_count_is_a_cheer_and_it_matches_the_apps_list() -> None:
+    import re  # noqa: PLC0415
+    from pathlib import Path  # noqa: PLC0415
+
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    app = [int(n) for n in re.search(r"NMB_MILESTONES = \[([\d, ]+)\]", js).group(1).split(",")]
+    assert list(ce.MILESTONES) == app
+    cheered = [n for n in (9, 10, 11, 25, 99, 100, 999, 1000, 1500, 2000) if ce.counted(n, now=1e6 + n * 5000.0)]
+    assert cheered == [10, 25, 100, 1000, 2000]
 
 
 @pytest.mark.parametrize("kind", NOTE_KINDS)

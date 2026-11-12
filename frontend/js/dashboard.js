@@ -537,7 +537,7 @@ async function renderDashSubmessage() {
     //: (avatars.js). Here since INBOX 436 took the stat strip that used to
     //: carry both calls off the first screen: this line reads the same figure.
     atlasStreak(streak);
-    nameMarkBuddyStreak(streak);
+    nameMarkBuddyStreak(streak, stats.total_entries);
   }
   //: A different pattern each day, not always the first (the owner, 2026-10-26:
   //: "I keep seeing this one pattern and nothing else").

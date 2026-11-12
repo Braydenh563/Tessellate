@@ -55173,3 +55173,8 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ## 34. Where I'd take this: an outside read (retired)
 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
+
+## Moved from the LEDGER
+- [x] **L242** `chat` partly, M: Thinking-dots reads in B55, throw-landing walk, opening-view appendChild 92-144 ms unverified in browser. From ledger-1112 X8. Built: 42e037951 (the large view's fit reads a part's style only past the counted box: 455 style reads to 10); the other hot spots, driven at 4x throttle, did not reproduce above 50 ms.
+- [x] **L200** `chat` partly, S: One Playwright drive of the atlas.js charactersArrived fix. From ledger-1112 P36. Built: verified 2026-11-12 with no code change: a drive holding the character scripts 9 s showed 4 saved turns with 0 avatar children while charactersLoaded was false, then 3 resting plus 1 live Atlas and 0 empty holders.
+- [x] **L182** `chat` open, L: Brief 88: dodge glance (N8), milestone cheer (N10), W31 E1 to E6 remainder. From SESSION_BRIEFS.md:258; ledger-1112 P7; ledger-1112 X18. Evidence: avatars.js:4155 nameMarkBuddyDodge has no glance; no milestone cheer found Built: 26092ac88 (nameMarkBuddyDodge.glance, NMB_MILESTONES and the milestone row) and a7e56bda1 (desk note_milestone); E1, E2, E3, E5 and E6 were already built, N9 is the typing_burst nod, E4 is L-chat-3. Desk looks are fake-transport tests only.

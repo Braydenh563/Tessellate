@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 8 | 17 | 5 | 5 | 4 | 30 |
-| chat | 38 | 167 | 71 | 36 | 53 | 276 |
+| chat | 38 | 163 | 71 | 38 | 54 | 272 |
 | whiteboard | 24 | 25 | 5 | 0 | 7 | 54 |
 | documents | 44 | 50 | 17 | 7 | 16 | 111 |
 | mindmap | 27 | 22 | 5 | 5 | 2 | 54 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 25 | 4 | 3 | 5 | 29 |
 | world-class | 79 | 146 | 61 | 31 | 68 | 286 |
 | general | 0 | 20 | 0 | 0 | 1 | 20 |
-| all | 289 | 557 | 174 | 106 | 169 | 1020 |
+| all | 289 | 553 | 174 | 108 | 170 | 1016 |
 
 ## graph
 
@@ -166,7 +166,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L138** `chat` open, M: Atlas idle cost: avatars.js timers, 670 recalcs/min, one 200 ms grid, nm-buddy layer stop under hint. From OPEN.md:2865; a30p-1103.md Found, not fixed; OPEN.md:2884. Evidence: Behaviour picker and perch checks not yet profiled; no later fix found
 - [ ] **L139** `chat` open, M: Companion trips to places with no window; trip frequency measured in visible modes. From OPEN.md:4430; OPEN.md:4431. Evidence: w34-unv2-1111.md marks true; trips to taskbar edge/free corner not confirmed built
 - [ ] **L140** `chat` open, M: Right-click to change companion in the enlarged popup view. From OPEN.md:1080; OPEN.md:3441. Evidence: contextmenu handlers exist for avatars.js:11286 and desk-companion.js:554 only; none in atlas*.js enlarged view
-- [ ] **L141** `chat` open, M: Life layer: micro-saccades, stand-loop drift, floater breath, media-playing reaction. From life-1109.md Remaining; ledger-1112 I17. Evidence: avatars.js:8729 saccade on look-at built in-app; desk eye-only look, stand drift, DRIFT_BREATH_S fixed period remain
+- [ ] **L141** `chat` partly, M: Life layer: the desk's micro-saccades (an eye-only look). Stand-loop drift and floater breath were built in E3 (`STAND_LEAN`, `_stand_breath`, `drift_phase`); the media-playing reaction is L-chat-4 (needs hardware). From life-1109.md Remaining; ledger-1112 I17. Evidence: avatars.js:8729 saccade on look-at built in-app; the desk side unverified.
 - [ ] **L142** `chat` open, M: Scrabble, pull-up, fling, miffed face and airborne flail on wall slide. From OPEN.md:4410; OPEN.md:4411. Evidence: w34-unv2-1111.md marks true; in-app motions not complete
 - [ ] **L143** `chat` open, M: Throw frame step with no layout reads, under 4 ms at 4x. From OPEN.md:4351. Evidence: W34 true, w34-unv2-1111.md.
 - [ ] **L144** `chat` open, M: Keep-up reads layout once a frame and stops when still. From OPEN.md:4352. Evidence: W34 true, w34-unv2-1111.md.
@@ -204,11 +204,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L176** `chat` open, L: Atlas/emblem animations keep style dirty each frame: remove per-frame getComputedStyle and custom-property writes. From a30m-1103.md Found, not fixed; w34-unv2-1111.md Found; OPEN.md:3892. Evidence: 36ecedeb1 band under html cut Blend sum 822-1315 to 136-226 ms; idle restyle remains (audit-1108-perf P1)
 - [ ] **L177** `chat` open, L: Companion climbs window sides and inspects window corner, clock, cursor. From OPEN.md:4336; OPEN.md:4340. Evidence: W34 true, w34-unv2-1111.md.
 - [ ] **L178** `chat` open, L: Own activities with props and ambient activities by hour and mood on both companions. From OPEN.md:4334; OPEN.md:4403. Evidence: W34 true, w34-unv2-1111.md; not built.
-- [ ] **L179** `chat` open, L: Wind-spirit travel visuals: new travel art (design pass, Windows look unverified). From OPEN.md:4335; ledger-1112 I12; ledger-1112 O16. Evidence: Ledger open, no later commit found.
 - [ ] **L180** `chat` open, L: Atlas expression changes, mood-change count, mouse gestures (rub, flip), enlarged view corner/oval/notice. From OPEN.md:1081; OPEN.md:3446; OPEN.md:1085; OPEN.md:3654 (+2). Evidence: Open-ended owner ask; Companion E1-E6 commits landed, success needs the owner's judgement
 - [ ] **L181** `chat` open, L: More lifelike, diverse companion movement, entrances and deeper behaviour tree. From OPEN.md:1082; OPEN.md:3448; OPEN.md:4341. Evidence: Open-ended owner ask; E5 own activities/wind-spirit travel (218be1f64) landed, rest is judgement
-- [ ] **L182** `chat` open, L: Brief 88: dodge glance (N8), milestone cheer (N10), W31 E1 to E6 remainder. From SESSION_BRIEFS.md:258; ledger-1112 P7; ledger-1112 X18. Evidence: avatars.js:4155 nameMarkBuddyDodge has no glance; no milestone cheer found
-- [ ] **L183** `chat` open, L: Brief 34: reaction budget, 1.5s debounce, snap-rate bar, one curve table and idle rule. From OPEN.md:3766; SESSION_BRIEFS.md:154; ledger-1112 P6; OPEN.md:2876. Evidence: Latency bar conflicts with the owner's debounce request
+- [ ] **L183** `chat` partly, L: Brief 34: the 1.5 s debounce, one curve table and the idle rule. The reaction budget is built (26092ac88, `NMB_REACT_BUDGET`, four a minute; browser-measured 0 snaps in 600 s, 21 distinct motions, 35 to 44 ms latency). From OPEN.md:3766; SESSION_BRIEFS.md:154; ledger-1112 P6; OPEN.md:2876. Evidence: Latency bar conflicts with the owner's debounce request.
 - [ ] **L184** `chat` open, L: Atlas motion measured leftovers: laughing end, blend, tail under 1 ms a minute, 390 fps, arm rig. From OPEN.md:1074; OPEN.md:3188; OPEN.md:3763. Evidence: Hand-stepped blend measurements outstanding; needs visual/human review of motion
 - [ ] **L185** `chat` open, L: Slow idle; non-Atlas walks, runs, climbs, crouches, sits, lies. From OPEN.md:4419. Evidence: w34-unv2-1111.md marks true; generated-companion behaviour set not complete
 - [ ] **L186** `chat` partly, S: Fix stale-plan line word order and mood (Z7). From OPEN.md:4043. Evidence: 'may still be open' wording fixed (composer_tables.py); quoted plan fragment in composer_digest.py still unfixed.
@@ -225,7 +223,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L197** `chat` partly, S: Fix web-down message repeating advice and dropping the port (A9). From OPEN.md:4564. Evidence: composer_web.py:152 prints the saved searxng_url (port included if saved); duplicate advice and agent_policy web_down not re-driven
 - [ ] **L198** `chat` partly, S: Improve Guide topic ranking when searching (top-3 38/60 gap). From OPEN.md:1512. Evidence: ai/help_chat.py:115,334,449 ranking by question-word overlap exists; top-3 38/60 gap not re-measured
 - [ ] **L199** `chat` partly, S: Make the status.js suggest code call meaningAlts (Brief 86). From OPEN.md:1509. Evidence: meaningAlts used by settings-find.js:117,135; status.js suggest code call not found
-- [ ] **L200** `chat` partly, S: One Playwright drive of the atlas.js charactersArrived fix. From ledger-1112 P36.
 - [ ] **L201** `chat` partly, S: Rows 839 and 841 never checked (no text located for either). From ledger-1112 P11.
 - [ ] **L202** `chat` partly, S: Bare 'yes' after an offer card not answered; add test. From ledger-1112 D10.
 - [ ] **L203** `chat` partly, S: Act cards and 'Nothing is overdue.' chips not checked. From ledger-1112 F5.
@@ -267,7 +264,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L239** `chat` partly, M: 'and the dentist' asks what is meant; frame not saved with a chat. From ledger-1112 O4.
 - [ ] **L240** `chat` partly, M: B26 Q5 title, Q6 list-add rule, B24 undo sentences, B27 similar-to ranking. From ledger-1112 X4.
 - [ ] **L241** `chat` partly, M: Name rules 5 and 4 wired only for first hello and dashboard; Guide profile topic lacks 'call me Sam'; no 20-turn eval. From ledger-1112 P27.
-- [ ] **L242** `chat` partly, M: Thinking-dots reads in B55, throw-landing walk, opening-view appendChild 92-144 ms unverified in browser. From ledger-1112 X8.
 - [ ] **L243** `chat` partly, M: 'how much more cheese than milk' returns Milk 1.20 only; no arithmetic route. From ledger-1112 G11.
 - [ ] **L244** `chat` partly, M: 'you're not very helpful' searched as a note; 'say that again', 'what did I just add' recheck. From ledger-1112 F4.
 - [ ] **L245** `chat` partly, M: Per-letter recheck; chip code and 'Something sometime' magic add not examined. From ledger-1112 G14.
@@ -280,7 +276,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L252** `chat` partly, L: Guide/Ask leads and poke-line table: G3, G5, G6, G8 to G14 wording unverified. From ledger-1112 P26; ledger-1112 G8; ledger-1112 G3; ledger-1112 G5.
 - [ ] **L253** `chat` partly, L: Close remaining unverified audit rows (C35, W21, Z*, K*, B*, S*, w34 spoke lists). From ledger-1112 X13; ledger-1112 X12; ledger-1112 FX2; ledger-1112 X24 (+2).
 - [ ] **L254** `chat` partly, L: Chart maker and answer shapes (only ask-chart.js exists); goals and lists have no surface at all. From ledger-1112 P15.
-- [ ] **L255** `chat` partly, L: Hold still, carry over, catch mid-air, tail pull, toss up, pointer chase have no code; drag skid only in companion-throw.js. From ledger-1112 I21.
+- [ ] **L255** `chat` partly, L: Hold still, carry over, tail pull, toss up, pointer chase and drag skid need new desk frames and a human rater (the catalogue refuses one-sided acts; engine.py and engine_input.py are at their line caps, so a desk hook lives in extras.py). Catch mid-air is built (05b51746d, `caught` both sides). From ledger-1112 I21.
 - [ ] **L256** `chat` partly, L: Ask reading what the last answer showed (state beyond last question and 5 titles) not verified or tested. From ledger-1112 F1.
 - [ ] **L-chat-1** `chat` open, M: Close the Guide answer gap so a question about the app gets an answer. From INBOX 904 B86 (W22). Evidence: the owner's Guide question went unanswered
 - [ ] **L-chat-2** `chat` open, S: Stop at the turn start with a plain sentence when a tool group the request needs is switched off in Settings, instead of a ToolError after the model tried. From ANALYSIS.md:4354. Evidence: ANALYSIS names CHAT_PLAN 'deterministic foundation' as home; grep 'turn contract' in plans returns nothing
@@ -887,6 +883,8 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 - [ ] **L812** `world-class` owner-call, M: complexity.yml uses --exit-zero: decide tracked cleanup or baseline. From OPEN.md:362. Evidence: .github/workflows/complexity.yml:31-32 still --exit-zero; decision pending
 - [ ] **L813** `world-class` owner-call, M: Decide first Notes recalc cost and 13-row first paint trade-off. From OPEN.md:3894. Evidence: Cutting rows changes settled list (60 to ~13) and Select all/Ctrl+F reads rendered rows; boot cap headroom 147 bytes then. Design trade-off, not taken.
 - [ ] **L814** `world-class` owner-call, M: test_name_mood asserts oklch(from var(--accent)); replace with fixed-palette test. From OPEN.md:1793; OPEN.md:2264. Evidence: tests/test_name_mood.py:405 still asserts it; needs the fixed palette values decided first
+- [ ] **L179** `chat` owner-call, L: Wind-spirit travel visuals: new travel art (B65 L9), a redraw only the owner can judge by eye on real Windows, with a human rater. From OPEN.md:4335; ledger-1112 I12; ledger-1112 O16. Evidence: the 2026-11-12 companion session left it as an owner call; L10 hop chain was done earlier.
+- [ ] **L-chat-3** `chat` owner-call, M: The masculine Atlas (E4): head, eyes and shoulder join wait for the owner's pick. From ledger-1112 O37; OPEN.md:294.
 
 ## Needs hardware
 
@@ -1061,6 +1059,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L981** `world-class` blocked-hardware, S: installer.iss ISPP version reader compiles only on Windows. From OPEN.md:3482. Evidence: Needs a Windows CI run or owner's Windows desktop; packaging/windows/installer.iss.
 - [ ] **L982** `world-class` blocked-hardware, M: settings-panes keydown 285 ms, chat pointerover 411 ms, tab clicks 304-352 ms, gcRequestDraw calls. From INBOX.md:1726. Evidence: lag-1110: settings-panes.js:1104 keydown returns on plain key; graph 0 draws in 5 s at 4x; not reproduced off Windows
 - [ ] **L983** `general` blocked-hardware, M: Owner's Windows lag lines not reproduced on Linux: desk overlay hide/show flips, desk window scan counted as invisible, avatars.js 1295 ms timer, settings-panes 285 ms keydown, chat pointerover. From INBOX 1716, 1726. Evidence: Needs the owner's Windows desktop; each line was measured as not reproducing at 4x CPU here
+- [ ] **L-chat-4** `chat` blocked-hardware, M: Desk companion reaction to media playing: needs the Windows audio session; the catalogue refuses an in-app-only entry. From ledger-1112 I17.
 
 ## Plan session briefs
 

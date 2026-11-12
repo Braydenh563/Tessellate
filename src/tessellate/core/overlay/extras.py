@@ -32,6 +32,8 @@ SMALL_AMPLITUDE = 0.08
 #: A gap in the ticks longer than this is a stall (a suspend, a test's clock jump): the next act is re-timed. And the
 #: least wait after the figure was busy with something else.
 LIFE_STALL, LIFE_SETTLE = 10.0, 8.0
+#: A catch in the air is answered once it stands within this many seconds (a long carry has forgotten it).
+CATCH_WAIT = 12.0
 #: The pointer is watched at this pace while it is near the figure (a gesture needs 15 samples a second).
 WATCH_MS = 100
 WATCH_REACH = 3.0  # box widths
@@ -133,6 +135,10 @@ REACTIONS: dict[str, Reaction] = {
     "reminder_bell": Reaction("bell_ring", "surprised", 2.6, "", 5.0),
     "search_nothing": Reaction("puzzle_tilt", "confused", 2.0, "", 45.0),
     "search_found": Reaction("nod_done", "smile", 1.4, "", 45.0),
+    # the note count passed a round number (`companion_events.counted`): the cheer the downloads use, a face to match
+    "note_milestone": Reaction("cheer", "joy", 2.0, "happy", 3600.0),
+    # pressed while falling, then standing again (`Extras.watch_catch`, I21 `int.catch_midair`): wide eyes, a clutch, relief
+    "caught": Reaction("clutch_relief", "surprised", 1.4, "happy", 20.0),
 }
 #: A poke by mood, as the app's: a happy one giggles, a tired or cross one is miffed, the rest are curious.
 POKE_BY_MOOD = {"happy": "poke_giggle", "proud": "poke_giggle", "sleepy": "poke_miffed", "startled": "poke_miffed", "bored": "poke_curious", "curious": "poke_curious"}
@@ -151,6 +157,8 @@ REACT_ACTS: dict[str, bh.Activity] = {
     "poke_miffed": bh.Activity("stand", (1.2, 1.6), _k((0, 1, 1, 0), (0.15, 1, 1.02, 0.06), (0.3, 1, 1.02, -0.06), (0.5, 1, 1.02, 0.04), (0.7, 1, 1, -0.02), (1, 1, 1, 0)), (), where="react"),
     "poke_curious": bh.Activity("look", (1.5, 2.0), _k((0, 1, 1, 0), (0.25, 0.97, 1.02, 0.04), (0.8, 0.97, 1.02, 0.04), (1, 1, 1, 0)), (("curiosity", -0.1),), where="react"),
     "flip_twirl": bh.Activity(((0, "hop"), (0.85, "land")), (1.2, 1.5), _TURN2, (("play", -0.4),), turns=(0.3, 0.6), where="react"),
+    # a clutch (squashed small, leaning in), then a long breath out
+    "clutch_relief": bh.Activity("stand", (1.2, 1.6), _k((0, 1, 1, 0), (0.12, 1.05, 0.88, 0.04), (0.4, 1.04, 0.9, 0.03), (0.65, 1, 1.07, 0), (0.85, 1, 0.97, 0), (1, 1, 1, 0)), (("rest", -0.05),), where="react"),
     "flinch": bh.Activity("look", (0.9, 1.2), _k((0, 1, 1, 0), (0.12, 0.96, 1.05, -0.07), (0.7, 0.97, 1.03, -0.05), (1, 1, 1, 0)), (), where="react"),
     "glance_window": bh.Activity("look", (2.0, 2.6), _k((0, 1, 1, 0), (0.15, 0.94, 1.09, 0.1), (0.45, 0.94, 1.09, 0.1), (0.55, 0.94, 1.09, -0.08), (0.85, 0.96, 1.04, -0.08), (1, 1, 1, 0)), (("curiosity", -0.1),), turns=(0.5,), where="react"),
     "relief": bh.Activity("stand", (1.6, 2.0), _k((0, 1, 1, 0), (0.3, 1.02, 1.07, 0), (0.6, 1.01, 0.94, 0), (1, 1, 1, 0)), (("rest", -0.05),), where="react"),
@@ -449,6 +457,8 @@ class Extras:
         #: Where the pointer was last and when it last moved: it is watched finely only while it moves near the figure.
         self.seen: tuple[int, int] | None = None
         self.moved_at = -1e9
+        #: When a press arrived on a fall or a flight (None: none owed): it clutches once it stands again.
+        self.caught_at: float | None = None
 
     # --- what to draw ------------------------------------------------------------------------
 
@@ -457,6 +467,7 @@ class Extras:
         e = self.e
         if e.reduced:
             return None, None
+        self.watch_catch(now)
         wind = self.wind.view(e, now)  # E5: a floater's ride (windspirit.py); an act's own prop wins where both are due
         if e.state not in FACE_STATES:
             return wind, None
@@ -473,6 +484,18 @@ class Extras:
             self.micro.tick(now, e.mind.mood(now, e.hour), self._free_for_micro())
             face = self.micro.view(now)
         return prop or wind, gaze.worn(face, self.saccade.tick(now, self._attending()))
+
+    def watch_catch(self, now: float) -> None:
+        """A press that arrives while it falls or flies is a catch (`int.catch_midair`): once it stands again within
+        `CATCH_WAIT` s it clutches and is relieved (`caught`). Seen on the draw, since nothing else ticks while it is held."""
+        e = self.e
+        if e.state == "pressed":
+            self.caught_at = now if e.pre_press in ("fall", "fly") else None
+        elif self.caught_at is not None and e.state in ("stand", "sit"):
+            late = now - self.caught_at > CATCH_WAIT
+            self.caught_at = None
+            if not late:
+                self.fire("caught", now)
 
     def _attending(self) -> bool:
         """Holding its eyes on something: a look between two blinks, or an act drawn on the look frame (`gaze.ATTEND_ACTS`)."""
