@@ -912,8 +912,6 @@ whiteboard-library.js 400). draw.io: `Sidebar.prototype.addStencilPalette`
 | --- | --- | --- | --- | --- |
 | JS-drawn shape classes (cylinder, cube, callout, step, hexagon, UML actor and lifeline, folder, note, tape, document, process...) | no | `Shapes.js`: 99 `mxCellRenderer.registerShape` classes (for example `cylinder3` at Shapes.js, `umlActor`, `callout`) drawn by `redrawPath` | a `wbShapePath(kind, w, h)` table of 40 of them that returns M/L/C/Z, with the shape name stored in `data.shape` so the path regenerates on resize (stencils scale; these keep corner radii) | M |
 | More-shapes dialog (tick libraries on and off) | no | `shapes` action, `moreShapes` dialog (diagramly/Menus.js 2924) | a "Shape libraries" dialog on the Library tab: one row per set, count, on or off; written to a user preference | S |
-| Library import: `mxlibrary` XML and JSON | partly: `wb-lib-import` takes `.json` (the app's own set format) | `<mxlibrary>[{"xml": "<mxGraphModel>...", "w": 80, "h": 40, "title": "x"}]</mxlibrary>`, `LibraryDialog`, `DesktopLibrary`, `RemoteLibrary` | an `mxlibrary` reader that feeds each entry through the `.drawio` cell importer (section 14) | M |
-| Library export | partly | `StorageLibrary`, "Export" in the library menu | exists in the app's JSON; add `.xml` mxlibrary out only with the cell exporter | S |
 | Scratchpad (a user shelf, drag in to save) | yes: the Library tab's "Save to the library" (`save-selection`, Ctrl+Shift+S) and the favourites | `scratchpad` action (diagramly/Menus.js 3164), `addToScratchpad` (3718) | done | none |
 | Library search by name and tag | yes (name, tags, set) | tag index `Sidebar.taglist`, `searchEntries` (Sidebar.js 1634): compound-token split, soundex and translated tag fallback, strict AND then OR | add stemming for the 9,090 names; tags come from the converter (words of the name plus the library) | S |
 | Custom shape editor (draw a stencil from XML) | partly (`save-shape` from a drawing) | `EditShapeDialog`, `createShape` (diagramly/Menus.js 2938) | done in effect | none |
@@ -976,8 +974,6 @@ product; the NOTICE says so).
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Insert a template into the current board | no | `insertTemplate` action (diagramly/Menus.js 257) | `import` of a library template entry at the viewport centre (the library already places items) | S |
-| draw.io's templates (basic 10, business 15, charts 6, engineering 3, flowcharts 9, layout 4, maps 5, network 13, other 12, software 12, tables 4, uml 8, venn 8, wireframes 5) | no | `templates/*/*.xml` are `mxfile` with a deflate-compressed `mxGraphModel` | convert 40 through the cell importer (section 14); licence is CC BY 4.0 (`templates/LICENSE`), so each carries "Template by JGraph, CC BY 4.0" in its library note | M, after the importer |
 | Save a board as a template | yes (`save-template`) | `File > Save as template` | done | none |
 
 ### 9. Find and replace
@@ -1070,8 +1066,7 @@ clash is listed so the choice is made once.
 | GIF | JPG and WebP yes (`WB_EXPORT_FORMATS`, whiteboard.js:14828); GIF open | `exportAnimatedGif` (diagramly/Menus.js 1181) | no animated source on a board yet: waits for the ink replay (L-whiteboard-4), which gives it frames to write | S |
 | SVG (re-editable, with the model embedded) | yes (`wbExportSvg`; `<metadata>` carries the board, `wbBoardSvgMetadata`) | `exportSvg` (diagramly/Menus.js 1101) with `content=` attribute | done | none |
 | PDF | yes (`wbExportPdf`) | `exportPdf` (692), server side | done (print path) | none |
-| `.drawio` import: map rotation, images, gradient | import and export yes (whiteboard-interchange.js:970 writer, :999 reader, pages and deflate-raw); `WB_DRAWIO_DROPPED` still lists rotation, image, gradientColor, shadow | `Editor.getGraphXml` (grapheditor/Editor.js 1563), `setGraphXml` (1508) | map rotation, gradient and shadow in the style reader near whiteboard-interchange.js:503 and the writer near :641, now that the board has counterparts | M |
-| VSDX import and export, Gliffy, Lucidchart, draw.io CSV import | no | `vsdx/importer.js` (15,344 lines), `exportVsdx` (1431), `importFrom` (3410), `csv` action | drop VSDX and Lucid; the CSV importer is S to M and gives the AI a way to draw org charts | M |
+| VSDX import and export, Gliffy, Lucidchart | dropped 2026-11-12 (the owner's line here, "drop VSDX and Lucid"; Gliffy with them, "revisit on request", the not-doing list near line 1114) | `vsdx/importer.js`, `exportVsdx`, `importFrom` | not built; reopen only on request | none |
 | Mermaid in and out; PlantUML | yes for Mermaid flowcharts (`whiteboard-interchange.js`); no PlantUML | `mermaid`, `plantUml` actions (insertAdvanced menu) | keep the Mermaid subset; PlantUML needs a server, drop | none |
 | Outline, Markdown, OPML, FreeMind, plain text | yes (for maps and outline) | no | Tessellate's own | none |
 | Export selection, visible area, whole board, one frame | yes | `selection only`, `crop`, page range | done | none |
@@ -1155,11 +1150,8 @@ commit. Help moves with each control (standing order 13).
    lock, frames as containers (drop highlight, fit to children, collapse),
    a Lane preset with a stack layout. Gate: `wb1005-layers.js`,
    `wbframes.js`.
-10. **`.drawio` import and export, then the templates.** The mxfile
-    parser and writer, `mxlibrary` through the same path, 40 of draw.io's
-    templates with CC BY 4.0 attribution, JPG, WebP, copy as image, PNG
-    with the board embedded. Gate: a round trip of five draw.io templates
-    (shape count, link count, label text equal) and `wb1005-interchange.js`.
+10. **`.drawio` import and export, then the templates.** Built 2026-11-12 (HISTORY, "Moved from the plans, 2026-11-12 (wbdrawio3)"):
+    nothing open; VSDX, Lucid and Gliffy are dropped (the not-doing list).
 
 After the ten: tables (L), math (L), layered and organic layouts (L), the
 JS-drawn shape classes, the shape picker, and the shortcut gaps in section 11.

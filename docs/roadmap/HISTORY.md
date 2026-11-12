@@ -7,6 +7,18 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (wbdrawio3)
+
+From WHITEBOARD_PLAN sections 8 and 14 and step 10 (draw.io interchange). Evidence per row:
+
+- `.drawio` import maps rotation, inline pictures, gradient and shadow, and the writer emits them again: `WB_DRAWIO_DROPPED` is now sketch, glass and comic; `wbDrawioStyle.more` in frontend/js/whiteboard-interchange.js; tests/test_wb_drawio_more.py.
+- `mxlibrary` import (plain or deflated) through the cell importer into the library (`wbLibImportFile`, frontend/js/whiteboard-library.js), and the `.xml` export from the panel menu (`wbLibExport.drawio`).
+- draw.io CSV import (label, style, connect, layout headers) from the board's import (`wbDrawioStyle.more.csv`); layouts use the Mermaid flow layout or a grid; the rest is reported as left out.
+- Insert a template into the current board: "Place on this board" in a template's menu (`wbLibPlace(..., { here: true })`).
+- draw.io's templates: 40 converted into frontend/board-library/drawio-templates.json by scripts/build_drawio_templates.py (source: jgraph/drawio `src/main/webapp/templates`, CC BY 4.0, note on each entry; frontend/board-library/DRAWIO-TEMPLATES-NOTICE.txt). Gate: tests/test_drawio_templates_build.py, a round trip of five (shape count, link count, label text equal).
+- Step 10 also named JPG, WebP, copy as image and PNG with the board embedded: already built. `WB_EXPORT_FORMATS` (frontend/js/whiteboard.js:15001, jpg at :14911), WebP with JPEG fallback (whiteboard-interchange.js:1600), `wbCopyAsImage` (whiteboard.js:14949), PNG with the board in a tEXt chunk (frontend/js/whiteboard-export-more.js:77-83, read back at :108).
+- Dropped, not built: VSDX, Lucid and Gliffy (the plan's own "drop VSDX and Lucid" and "revisit on request").
+
 ## Moved from the plans, 2026-11-12 (wbformat2)
 
 From WHITEBOARD_PLAN sections 6 to 10 (the format, export and view rows). Evidence per row below.
