@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 165 | 50 | 0 | 73 | 345 |
+| world-class | 130 | 164 | 50 | 0 | 73 | 344 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 691 | 149 | 3 | 196 | 1393 |
+| all | 553 | 690 | 149 | 3 | 196 | 1392 |
 
 ## graph
 
@@ -651,7 +651,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L517** `world-class` open, S: Restore previous model name when undoing a fresh read. From OPEN.md:1633; OPEN.md:2847. Evidence: library.js:8564 ocrTextWriter writes only {text}; no model restored on undo (:7390)
 - [ ] **L518** `world-class` open, S: Live captions '0 of 1 installed' needs an Install button; fix duplicate 'No model connected' in Writing room. From audit-1029-extras.md Re-verified. Evidence: captions.js:84 branches on status.installed; no fix commit found; W27 string not re-located
 - [ ] **L519** `world-class` open, S: Build a Settings editor for the dated currency rate table (decision 43). From OPEN.md:1497; OPEN.md:1893. Evidence: utilities.py:62 RATES_DATE only; no editor in settings code
-- [ ] **L520** `world-class` open, S: Most used in sidebar keeps a binned note up to 30 s (cacheMs). From OPEN.md:1804; OPEN.md:2599. Evidence: status.js:1829 still apiJson('/entries/most-accessed', {cacheMs: 30000})
 - [ ] **L521** `world-class` open, S: Handle first load after upgrade with no ui-synced mark. From OPEN.md:2576. Evidence: ai-tools.js:918-988 ui-synced logic; first-load case unhandled
 - [ ] **L522** `world-class` open, S: Palette learned order: add prefix matching at half weight. From OPEN.md:2792. Evidence: app-palette.js paletteRanked; recommendation not built
 - [ ] **L523** `world-class` open, S: renderAutonomousSettings fills checkboxes only when Background tasks/Web search opens. From OPEN.md:3499. Evidence: Documented behaviour in settings.js; no change recorded.
