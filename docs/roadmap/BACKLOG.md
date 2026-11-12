@@ -649,6 +649,8 @@ GRAPH_PLAN.md owns the rest of this section.
 - **Boards switch on `/graph/local`** (L-graph-8). Focus mode and the local pane walk boards as notes; a neighbourhood of one note, and nothing has asked. Build when asked.
 - **Tessellation side by side, and the logo's third-cell flourish** (L-graph-10, L-graph-12). An owner look: the Tessellation view next to the owner's chosen layout, and whether a new note should settle into its cell the way the logo's third cell does.
 - **Hand checks on the owner's screen** (L815 to L818): saved views, local and global switching and reduced motion by eye; drag feel by hand and the open-card ring with a keyboard user; Close in meaning with a real embedding model; the hover frame at 2,000 notes on an idle machine with a GPU (22 to 24 ms headless, 16 ms target).
+- **A model polish for Compose into a draft** (L-graph-1). The draft is built with no model (`POST /documents/from-notes`); a polish step needs a real model: serve one with `scratchpad/llama-dev.sh serve`, compose 5 notes, and check the polished text cites every source note.
+- **Map of meaning on real embeddings** (L-graph-2). Measured on hand-inserted vectors only (clusters 72 to 100 px wide, 506 to 513 px apart); run it on a notebook embedded by the real model and check topic clusters stay at least 3 times as far apart as they are wide.
 
 ---
 

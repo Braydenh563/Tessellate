@@ -6,6 +6,10 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: saved views and Reset now carry the link-kind chips; the node popup's topic chip is 44 px on touch.
+- Graph: a Map of meaning layout places notes by a PCA of their stored vectors.
+- Graph: Compose into a draft: the selection bar's menu makes one document from the selected notes, a section each.
+- Similar notes name what they share (a tag, name or week), else "similar in meaning", on hover of the chip.
 - Graph: leaving focus puts every note back where it was (2,000 notes: moved up to 755 px before, 0 now).
 - Graph: the line-clearance push is cheaper on big maps: a long line pushes every second tick at twice the strength (2,000 notes 66 to 40 ms a call, overlaps still 0 on the 36-note seeds).
 - Graph: a big map's settle repaint after a zoom or pan is painted in eight bands, one per frame, under the scaled layer, so it no longer lands as one 110 ms task (2,000 notes, CPU 4x).

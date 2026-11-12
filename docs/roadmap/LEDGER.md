@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 12 | 1 | 0 | 0 | 28 |
+| graph | 15 | 6 | 0 | 0 | 0 | 21 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
@@ -17,22 +17,15 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 684 | 154 | 3 | 191 | 1391 |
+| all | 553 | 678 | 153 | 3 | 191 | 1384 |
 
 ## graph
 
-- [ ] **L9** `graph` open, M: Fix timeline layout 39x/s, Atlas arm behind hair and mood blend. From OPEN.md:3019. Evidence: content-visibility trade and drawing-order changes not done
 - [ ] **L11** `graph` open, M: Link graph topics to categories and add the hand-off to section 23. From OPEN.md:3622. Evidence: No code linking graph topics to categories; not started
-- [ ] **L12** `graph` open, M: Audit graph time slider, link-kind chips, saved views, physics folds, minimap, trace route, private graph, dark phone. From audit-1029-graph.md 4. Evidence: No later graph audit file; list stands
-- [ ] **L13** `graph` open, M: Fix Library d3 mousemove forced layout (757 ms). From OPEN.md:4325. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L14** `graph` open, L: Split gcDraw (809 lines), gcWireInteraction (467) and gcStartWorker (290) in graph-canvas.js. From OPEN.md:4552. Evidence: graph-canvas.js 7,492 lines; multi-day refactor deferred
 - [ ] **L15** `graph` open, L: Reduce graph layout crossings, hub spokes and label density in applyGrouping. From OPEN.md:3882. Evidence: Tuning reverted; graph-worker.js applyGrouping untouched
-- [ ] **L20** `graph` partly, L: Write concrete link reasons (shared tag, name, week) instead of 'similar in meaning'. From OPEN.md:3519. Evidence: f6f71aa20 re-voiced reasons; deducedStrength in note-cards.js; concrete overlap reasons (shared tag/name/week) not confirmed.
-- [ ] **L-graph-1** `graph` open, M: Add 'compose these into a draft' for a selected graph cluster (many notes to one document). From ANALYSIS.md:1174. Evidence: no neighbourhood/cluster-to-draft in code or any plan; expandNoteIntoDocument takes one note only
-- [ ] **L-graph-2** `graph` open, S: Add a 2-D 'map of my notes' projection (PCA through numpy SVD) with the graph track. From ANALYSIS.md:4104. Evidence: no PCA/SVD projection in src or frontend/js; no doc mentions it
 - [ ] **L709** `graph` open, M: Decide what an open note means for graph signal on card view. From OPEN.md:2930. Evidence: Needs decision on what 'open' means on card view (id search-open-note) Owner decided 2026-11-12: Last card clicked (The card you last clicked or focused counts as open until you click another or leave Notes; search ranks its linked notes higher). Build: notes-lazy.js:160 `open` falls back to a remembered last-clicked card id (cleared on leaving Notes) passed as &entry_id; targeted test on the search call.
 - [ ] **L711** `graph` open, M: Define manual topics so graph topics can be merged and removed like tags. From OPEN.md:4554. Evidence: Rename stored (routes_graph.py:1472); merge/remove need owner to define a manual topic Owner decided 2026-11-12: Store them as overrides (Merge and remove are saved like rename, on top of the worked-out topics; a reset brings back the automatic grouping). Build: routes_graph.py next to the rename at :1472: stored merge map and per-note exclusions applied after topic derivation, plus reset; graph topic menu rows; tests.
-- [ ] **L-graph-11** `graph` open, S: Check Map link weighting in the browser on a notebook with real links. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The q31 left list says link weighting was never seen in a browser on a notebook with real links.
 - [ ] **L-graph-18** `graph` open, M: Measure the 2,000-note worker settle in the browser after the untangle gates and cut the d3 charge and collide. From audit row 19, GRAPH_PLAN. Evidence: Worker settle at 2,000 notes was 11 to 14 s in the browser at 4x; untangle gates cut node 5.7 to 3.4 s; force 856 ms + collideRadius 304 ms self of 3.4 s
 
 ## chat
