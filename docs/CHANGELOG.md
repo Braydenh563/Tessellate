@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: removed the dead hidden graph-svg element with its click handlers, styles, lock-list entries and motion and avatar selectors.
+- Graph: document and entity nodes join centrality and the trace path (`include_documents`/`include_entities` on /graph, `documents`/`entities` on /graph/path, ids `document:N`/`entity:N`).
+- Graph hover: the note card fills once the pointer rests (120 ms) instead of on every note crossed; hover p50 about 47 to 34 ms at 500 notes and 4x CPU, the highlight unchanged.
 - Graph: a hub's lines cross about 40 to 50% less on a 36-note map; its neighbours take the order their other links lead, and the least tangled layout of the untangle passes is the one kept (`tests/test_graph_hub_crossings.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).

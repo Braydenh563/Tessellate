@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 29 | 4 | 0 | 4 | 48 |
+| graph | 15 | 28 | 3 | 0 | 4 | 46 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
@@ -17,16 +17,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 700 | 156 | 3 | 195 | 1409 |
 
 ## graph
 
-- [ ] **L1** `graph` open, S: Fix contentsRenameTopic and graph note-panel rename saving on blur. From OPEN.md:2693. Evidence: Verified open 2026-11-10
 - [ ] **L2** `graph` open, S: Sweep the C31 link kind sheet and C32 document half. From OPEN.md:3873. Evidence: No recorded sweep
 - [ ] **L3** `graph` open, S: Sweep graph saved views and local/global switches through view change. From OPEN.md:643. Evidence: Layouts/Refresh measured; saved views switch sweep not recorded
-- [ ] **L4** `graph` open, S: Fold core-note pin write into batched PUT /graph/pins on topic drag. From OPEN.md:1334. Evidence: graph-canvas.js:4681 batches PUT /graph/pins; graph.js:60 single pin write still used for core note.
 - [ ] **L5** `graph` open, S: Fade notes out of the graph picture instead of vanishing. From OPEN.md:1338; OPEN.md:2660. Evidence: graph-canvas.js has fadeMs for UI but no exit fade for removed nodes found.
-- [ ] **L6** `graph` open, S: graphfslightbox.js reads .lightbox before lazy openLightbox resolves; add await. From OPEN.md:2334. Evidence: scratchpad/ui-sweeps/graphfslightbox.js exists; await not added
 - [ ] **L7** `graph` open, M: Add dirty-rectangle draw per worker tick and sample gcRequestDraw callers while the graph settles. From OPEN.md:4553; a30p-1103.md Found, not fixed. Evidence: Fixed 20ed22a (label fades); dirty rectangle per worker tick open (gcRequestDraw, graph-canvas.js:1045)
 - [ ] **L8** `graph` open, M: Trace and remove the 7.1px single-tick step after graph drag release. From OPEN.md:1333; OPEN.md:2235. Evidence: graph-worker.js:826 dragHeat only change; residual step stated unresolved.
 - [ ] **L9** `graph` open, M: Fix timeline layout 39x/s, Atlas arm behind hair and mood blend. From OPEN.md:3019. Evidence: content-visibility trade and drawing-order changes not done
@@ -36,7 +33,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L13** `graph` open, M: Fix Library d3 mousemove forced layout (757 ms). From OPEN.md:4325. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L14** `graph` open, L: Split gcDraw (809 lines), gcWireInteraction (467) and gcStartWorker (290) in graph-canvas.js. From OPEN.md:4552. Evidence: graph-canvas.js 7,492 lines; multi-day refactor deferred
 - [ ] **L15** `graph` open, L: Reduce graph layout crossings, hub spokes and label density in applyGrouping. From OPEN.md:3882. Evidence: Tuning reverted; graph-worker.js applyGrouping untouched
-- [ ] **L16** `graph` partly, S: Filter already-linked notes out of /entries/{id}/related. From OPEN.md:3561. Evidence: Message now says already linked/self (routes_entries_links.py:107); related list (routes_entries_relations.py:631) not seen to filter linked notes
 - [ ] **L18** `graph` partly, M: Re-measure and improve neighbours following a graph drag. From OPEN.md:1712. Evidence: graph-canvas.js:4598-4615 freezes all but the direct neighbourhood which is carried; the measured follow ratio not re-measured
 - [ ] **L19** `graph` partly, M: Fix blank minimap and node card overlap for a graph with no links. From OPEN.md:3868. Evidence: graph-canvas.js:6979 adds 'no links yet'; minimap, card overlap not shown fixed
 - [ ] **L20** `graph` partly, L: Write concrete link reasons (shared tag, name, week) instead of 'similar in meaning'. From OPEN.md:3519. Evidence: f6f71aa20 re-voiced reasons; deducedStrength in note-cards.js; concrete overlap reasons (shared tag/name/week) not confirmed.
@@ -44,8 +40,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-graph-2** `graph` open, S: Add a 2-D 'map of my notes' projection (PCA through numpy SVD) with the graph track. From ANALYSIS.md:4104. Evidence: no PCA/SVD projection in src or frontend/js; no doc mentions it
 - [ ] **L709** `graph` open, M: Decide what an open note means for graph signal on card view. From OPEN.md:2930. Evidence: Needs decision on what 'open' means on card view (id search-open-note) Owner decided 2026-11-12: Last card clicked (The card you last clicked or focused counts as open until you click another or leave Notes; search ranks its linked notes higher). Build: notes-lazy.js:160 `open` falls back to a remembered last-clicked card id (cleared on leaving Notes) passed as &entry_id; targeted test on the search call.
 - [ ] **L711** `graph` open, M: Define manual topics so graph topics can be merged and removed like tags. From OPEN.md:4554. Evidence: Rename stored (routes_graph.py:1472); merge/remove need owner to define a manual topic Owner decided 2026-11-12: Store them as overrides (Merge and remove are saved like rename, on top of the worked-out topics; a reset brings back the automatic grouping). Build: routes_graph.py next to the rename at :1472: stored merge map and per-note exclusions applied after topic derivation, plus reset; graph topic menu rows; tests.
-- [ ] **L-graph-3** `graph` open, M: Decide whether document and entity nodes join graph centrality, similarity and trace path. From open-work sweep 2026-11-12, src/tessellate/api/routes_graph.py:1087. Evidence: Document (and entity) nodes on /graph are scoped out of centrality, similarity and trace-path 'this pass', deferring a named separate change; no LEDGER row, GRAPH_PLAN item or BACKLOG entry carries it Owner decided 2026-11-12: all three (document and entity nodes join centrality, similarity and trace path).
-- [ ] **L-graph-4** `graph` open, S: Remove the dead hidden graph-svg element and its leftover handlers, styles, lock entries and guards. From open-work sweep 2026-11-12, frontend/index.html:4710. Evidence: HISTORY.md 'Moved from the plans, 2026-10-29 (audit 1029 row 60, G26)' says 'Left for a follow-up outside the graph files': the empty hidden <svg id="graph-svg"> in index.html, its click/dblclick hand
 - [ ] **L-graph-5** `graph` open, M: Get the owner's quality call on a coarser clearanceForce, then cut its 28 ms. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:61. Evidence: Open line in the plan's prose a session could miss. A perf item gated on an owner quality call. It is not one of the 109 answered owner calls and is not in the graph brief. Owner decided 2026-11-12: yes, a coarser push if measured dot and label overlaps stay 0 on the 36-note seed.
 - [ ] **L-graph-6** `graph` open, S: Reduce the board's 138 layers at rest or park the transparent backdrop in BACKLOG. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:62. Evidence: Open line in the plan's prose a session could miss. The leftover compositor layers and the transparent backdrop (54 layers) were left as remaining work, with no LEDGER row.
 - [ ] **L-graph-7** `graph` open, S: Move the graph ?since= cursor to BACKLOG as a deferred item. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:126. Evidence: Open line in the plan's prose a session could miss. The Phase 5 ?since= cursor is a conditional deferral, and the brief says not to build it. As a plan item it must move to BACKLOG, or it stays open forever.
@@ -54,6 +48,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-graph-10** `graph` open, S: Draw the Tessellation logo's third-cell flourish. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The deleted q31-1110.md left list has the logo's third-cell flourish not done, and no LEDGER row.
 - [ ] **L-graph-11** `graph` open, S: Check Map link weighting in the browser on a notebook with real links. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The q31 left list says link weighting was never seen in a browser on a notebook with real links.
 - [ ] **L-graph-12** `graph` open, S: Show the owner Tessellation side by side with their pick. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The q31 left list needs a side-by-side with the owner's chosen layout. That is an owner check, not in any row.
+- [ ] **L-graph-13** `graph` open, S: Escape closing a lightbox over the full-screen graph should not leave full screen. From graphfslightbox.js run 2026-11-12. Evidence: Escape closing a lightbox opened over the full-screen graph also leaves full screen (stillFullscreen false); graph.js Escape handler near 1939 or lightbox-view.js:2341 not stopping propagation
+- [ ] **L-graph-14** `graph` open, S: Graph UI: request document and entity layers for centrality and trace path, and let a document be a trace endpoint. From L-graph-3 follow-up, cd2f7a91. Evidence: graph.js does not pass include_documents/include_entities or let a document be a trace endpoint
+- [ ] **L-graph-15** `graph` open, M: Give documents and entities graph similarity (document embeddings) per the owner's all-three call. From L-graph-3 owner call (all three). Evidence: similarity is cosine over the entry-keyed embeddings table; documents have no vectors (routes_graph similarity)
+- [ ] **L-graph-16** `graph` open, M: Cut the wheel settle repaint at 2,000 notes (scale the cached layer or paint the settle in slices). From ghover-1112 measurement, GRAPH_PLAN audit row 19. Evidence: 2,000 notes 4x: each wheel stop repaints the whole rest layer ~160 ms later (GC_SCENE_SETTLE_MS, graph-canvas.js:2733 to 2748, gcPaintLayer rest :2707), wheel p50 43 ms, long task 110 ms
 
 ## chat
 
