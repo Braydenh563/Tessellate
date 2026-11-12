@@ -1211,6 +1211,21 @@ TAIL_TOPICS.extend(
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
+        #: L-documents-2: its own entry, the documents entry is at the reply cap.
+        {
+            "id": "writing-streak",
+            "keywords": ("daily goal", "daily word goal", "writing streak", "streak", "words today"),
+            "body": (
+                "Right-click the counts in a document's status bar (or press the menu key on them) "
+                "for the daily word goal: 250, 500, 1,000 or 2,000 words, or none. The bar then adds "
+                "how far today is, such as 120 of 500 today. Only words you add to a text document "
+                "count, a paste does not, and the tally starts again each day. A day that reaches the goal "
+                "adds to your streak; a missed day starts it again from one. The menu's first row "
+                "says today's words and the streak. It is counted on this device only. "
+                "The per-document word goal beside the counts is separate."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
         #: INBOX 486, the owner on a callout: "I have no clue how to use these
         #: things". Its own entry: the documents entry is at the reply cap.
         {

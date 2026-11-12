@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 31 | 13 | 0 | 18 | 114 |
-| documents | 70 | 31 | 13 | 0 | 18 | 114 |
-| documents | 70 | 31 | 13 | 0 | 18 | 114 |
+| documents | 70 | 30 | 13 | 0 | 18 | 113 |
+| documents | 70 | 30 | 13 | 0 | 18 | 113 |
+| documents | 70 | 30 | 13 | 0 | 18 | 113 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 671 | 153 | 3 | 195 | 1377 |
-| all | 553 | 671 | 153 | 3 | 195 | 1377 |
-| all | 553 | 671 | 153 | 3 | 195 | 1377 |
+| all | 553 | 670 | 153 | 3 | 195 | 1376 |
+| all | 553 | 670 | 153 | 3 | 195 | 1376 |
+| all | 553 | 670 | 153 | 3 | 195 | 1376 |
 
 ## graph
 
@@ -399,7 +399,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L350** `documents` partly, M: Document gutter writes height and reads layout per gutter. From OPEN.md:1479. Evidence: Row says menu exit closed (HISTORY 'OPEN.md rows closed'); gutter batching not confirmed
 - [ ] **L351** `documents` partly, L: Re-check run/debug tools and skeletons for every language after snippet drag. From INBOX.md:904 B19. Evidence: documents-codekit.js:530 docSnippetDragStart; tests/test_snippet_drag.py; run/debug tools for every language not re-checked
 - [ ] **L352** `documents` partly, L: Documents: Autocorrect status-bar switch, deferred-large rows, DC1/DC2 lock, old audit rows re-verify. From ledger-1112 O27; ledger-1112 X14.
-- [ ] **L-documents-2** `documents` open, S: Set a word goal and keep a streak for writing sessions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:564. Evidence: documents have a word count but no per-session goal; untracked
 - [ ] **L-documents-3** `documents` open, M: Compare two documents side by side. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:568. Evidence: there is version diff within a document but no compare of two documents; untracked
 - [ ] **L-documents-4** `documents` open, M: Turn a board's frames into a document draft. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:843. Evidence: no command turns a board into a document draft; lines 843 to 846 are untracked
 - [ ] **L-documents-8** `documents` open, M: Diagram builder a30u and a30y leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:350. Evidence: Open line in the plan's prose a session could miss. a30u/a30y leftovers incl. clipboard read-back, ghost-row contrast in dark.

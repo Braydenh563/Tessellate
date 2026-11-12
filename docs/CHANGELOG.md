@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a daily word goal (250 to 2,000 words, set from the word count's menu) and a writing streak of days that reached it, counted on this device (L-documents-2)
 - Whiteboard: a save that reaches an item an undo just deleted answers 404 instead of a 500, and the board drops a save for an item it is undoing (L-whiteboard-18)
 - Documents: a CSV document's panel has Query as SQL, which opens a new SQL document selecting the table's first 50 rows and runs it (L317)
 - Documents: Variables and Watch rows expand into children of children, three levels down, and a value holding itself stops there (L312)

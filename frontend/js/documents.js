@@ -9341,6 +9341,80 @@ $("doc-counts")?.addEventListener("keydown", (event) => {
 //: away in the document menu. Watched by `docGutterObserver`, whose callback
 //: knows this one element.
 watchDocGutter($("doc-counts"));
+//: **A word goal for the day, and a streak** (L-documents-2). Words added to prose documents are counted per local day in
+//: prefs (`docWriting`); a day that reaches the goal extends the streak, and a missed day starts it again. A jump of
+//: more than WB words in one count is a paste or a load, not writing, and is not credited. Set from the word count's
+//: menu (right-click, or the menu key); everything stays on this device. Fed by `renderDocCounts` with a `doc:counted` event.
+// writing-streak:begin
+(() => {
+  const counts = $("doc-counts");
+  if (!counts) return;
+  const KEY = "docWriting";
+  const GOALS = [250, 500, 1000, 2000];
+  const PASTE = 200;
+  let seen = { id: null, words: 0 };
+  const dayOf = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+  const today = () => dayOf(new Date());
+  const yesterday = () => {
+    const date = new Date();
+    date.setDate(date.getDate() - 1);
+    return dayOf(date);
+  };
+  const read = () => {
+    let state = {};
+    try {
+      state = JSON.parse(prefs.get(KEY, "{}")) || {};
+    } catch {
+      state = {};
+    }
+    const day = today();
+    return { goal: Number(state.goal) || 0, day, words: state.day === day ? Number(state.words) || 0 : 0, streak: Number(state.streak) || 0, last: state.last || "" };
+  };
+  const write = (state) => prefs.set(KEY, JSON.stringify(state));
+  //: A streak that was last extended before yesterday has ended, whatever it was.
+  const live = (state) => (state.last === state.day || state.last === yesterday() ? state.streak : 0);
+  const line = (state) => {
+    const days = live(state);
+    const streak = days ? `, ${days}-day streak` : "";
+    return state.goal ? `${state.words.toLocaleString()} of ${state.goal.toLocaleString()} words today${streak}` : `${state.words.toLocaleString()} words added today`;
+  };
+  counts.addEventListener("doc:counted", (event) => {
+    const { id, words } = event.detail;
+    const before = seen.id === id ? seen.words : null;
+    seen = { id, words };
+    const state = read();
+    const delta = before === null ? 0 : words - before;
+    if (delta > 0 && delta <= PASTE) {
+      state.words += delta;
+      if (state.goal && state.words >= state.goal && state.last !== state.day) {
+        state.streak = state.last === yesterday() ? state.streak + 1 : 1;
+        state.last = state.day;
+      }
+      write(state);
+    }
+    if (state.goal) counts.textContent += ` · ${state.words.toLocaleString()} of ${state.goal.toLocaleString()} today`;
+    counts.title = `${DOC_COUNTS_TITLE_PROSE}. Right-click for the daily word goal`;
+  });
+  const openMenu = (x, y) => {
+    if (docIsCodeFile()) return false;
+    const state = read();
+    const set = (goal) => () => write({ ...state, goal });
+    const items = [{ group: "Today", label: "ph:pencil-simple-line " + line(state), disabled: true, run: () => {} }];
+    for (const goal of GOALS) {
+      items.push({ group: "Daily word goal", label: `${state.goal === goal ? "ph:check" : "ph:flag"} ${goal.toLocaleString()} words`, run: set(goal) });
+    }
+    items.push({ group: "Daily word goal", label: "ph:x No daily goal", run: set(0) });
+    openMenuAtPoint(items, "Daily word goal", x, y, counts);
+    return true;
+  };
+  counts.addEventListener("contextmenu", (event) => {
+    const box = counts.getBoundingClientRect();
+    if (openMenu(event.clientX || box.left, event.clientY || box.top)) event.preventDefault();
+  });
+  //: A finger's twin of the right-click (a hold on the counts).
+  wireLongPress(counts, (event, point) => openMenu(point.x, point.y));
+})();
+// writing-streak:end
 $("doc-word-goal-submit").addEventListener("click", () => {
   if (!currentDoc) return;
   //: The field's own limits say what is wrong (1031 DC9: a negative goal
@@ -11285,6 +11359,8 @@ function renderDocCounts() {
   ]
     .filter(Boolean)
     .join(" · ");
+  //: The day's tally and streak read the same count (the writing-streak block above).
+  counts.dispatchEvent(new CustomEvent("doc:counted", { detail: { id: currentDoc?.id ?? null, words } }));
   //: Focus mode's floating dock carries the count too, since the status bar
   //: is hidden while it is on; and the title, which is how a document opened
   //: from the palette while the mode is on relabels the dock.
