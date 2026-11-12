@@ -235,7 +235,7 @@ extended with the numbers named.
 ### 12.0 Decisions made (do not remake)
 
 - **A whole-map tidy frames the map again, and only when it has to**
-  (decided 2026-09-13, the option the seventh run left open). Auto-arrange
+  (decided 2026-09-13, the option the seventh run had not settled). Auto-arrange
   is a command and not a constant, so nothing frames on its own; but a
   command that leaves the trunk off the canvas has not finished. Measured
   at 390x844 before this: after a tidy the root's box sat at x=-95 and
@@ -271,7 +271,7 @@ extended with the numbers named.
   can override the map's layout; auto-arrange is a command, not a
   constant, so a hand-placed node stays put until asked.
 - Everything the map shows is in the tree endpoint and the FreeMind and
-  OPML exports round-trip; a feature that cannot round-trip is not built.
+  OPML exports round-trip; a feature that cannot round-trip is refused.
   (Audit 2026-10-05 found FreeMind dropped a one-root map's centre; fixed
   the same day, decision 22.)
 - **The last topic cannot be deleted; clearing the map is offered
@@ -303,7 +303,7 @@ extended with the numbers named.
   it, so it would be a decoration that vanishes on the first export.
 
 - **Space keeps the pan; `C` folds a branch; Space works on the fold
-  control itself** (left open by the previous run, decided here). Held space
+  control itself** (unsettled by the previous run, decided here). Held space
   is this canvas's pan gesture from every tool (`wbZoomFilter`) and a map
   node is selected nearly all the time once someone is editing, so binding
   Space to collapse would take the pan away exactly when it is most used and
@@ -450,10 +450,11 @@ export that claims it.
 Gate: each AI action grounded (its sources listed) and faked in tests;
 the study mode measured on a 40-node map.
 
-### 12.4 Not built until asked
+### 12.4 Out of the map's scope (decided)
 
-Real-time collaboration, cloud sync, voice-to-map, AI image generation
-in nodes.
+Real-time collaboration, cloud sync, voice-to-map and AI image generation
+in nodes are outside an offline, local map; a request for one is a BACKLOG
+row, not plan work.
 
 ### 12.5 One place per action (INBOX 200 and 201, the owner, 2026-09-13 night)
 
