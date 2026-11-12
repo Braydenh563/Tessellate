@@ -990,6 +990,41 @@
     savePrefs();
   });
 
+  //: Currency rates (CHAT_PLAN decision 43): lines of "EUR 0.88" and the day they are from.
+  async function showCurrencyRates() {
+    const got = await apiJson("/utilities/units");
+    $("currency-rates-date").value = got.rates_date || "";
+    $("currency-rates-text").value = Object.entries(got.rates || {})
+      .filter(([code]) => code !== "USD")
+      .map(([code, rate]) => `${code} ${rate}`)
+      .join("\n");
+  }
+  async function saveCurrencyRates(clear) {
+    const status = $("currency-rates-status");
+    const rates = {};
+    for (const line of $("currency-rates-text").value.split("\n")) {
+      const [code, rate] = line.trim().split(/[\s:=,]+/);
+      if (code && Number(rate) > 0) rates[code.toUpperCase()] = Number(rate);
+    }
+    const day = $("currency-rates-date").value;
+    if (!clear && !day) {
+      status.textContent = "Pick the day these rates are from.";
+      return;
+    }
+    try {
+      await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify(clear ? { unset: ["currency_rates"] } : { currency_rates: { date: day, rates } }),
+      });
+      await showCurrencyRates();
+      status.textContent = clear ? "Back to the built-in table." : "Saved.";
+    } catch (e) {
+      status.textContent = e.message || "Could not save the rates.";
+    }
+  }
+  $("currency-rates-save").addEventListener("click", () => saveCurrencyRates(false));
+  $("currency-rates-reset").addEventListener("click", () => saveCurrencyRates(true));
+
   $("searxng-reinstall").addEventListener("click", async () => {
     if (
       !(await confirmDialog(

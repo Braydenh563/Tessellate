@@ -19,6 +19,10 @@ that answers "has this been done?" before anyone starts.
 - **Measured, Sh2 X16:** `scratchpad/ui-sweeps/bootcsscov.js`: boot sheets 949,008 B served, 167,474 gz; 77.6 percent of rule bytes never matched across eight tabs and Settings at 1440 and 390 (state CSS counts as unmatched). Largest runs: `nm-buddy` in 08 (39,395 B, 6,826 gz), `md-table`/code blocks in 05 (23,617 B, 4,434 gz), whiteboard topbar and map strip in 07 (14.6 KB each, 3.1 KB gz). D16 stale (OPEN.md:268); D18 is the owner's call (O32) (ad720d2d8).
 - **Checked, Wb1 I25:** `scratchpad/ui-sweeps/valuepresets.js`: the zoom percent chevron on the board (1440, 390) and the lightbox (1440): list inside the window, 44px rows on a phone, 200% gives 200% (lightbox picture 2801 of 1400 natural), typing and Escape, Fit. The lightbox drops its readout below 600 by design (INBOX 430). The present page field is covered by INBOX 1694 b3 and its test. Trackpad pinch rate needs the hardware (508f4c7c8).
 
+## Moved from the plans, 2026-11-12 (CHAT_PLAN Open from Phase 6, engine6)
+
+- **Built, decision 43:** the currency table is the dated preference `currency_rates` (`{date, rates}`, laid over `utilities.RATES`, applied at start and on save by `utilities.configure_rates`); Settings, Search and index has a Currency rates group (date, one `EUR 0.88` line per code, Save rates, Reset to the built-in table); the answer says the saved date; Guide topic `currency-rates`; `tests/test_currency_rates_pref.py`.
+
 ## Moved from the plans, 2026-11-11 (K24, K25, BK11: god-module carves, k24-1111)
 
 **Built** (Bk2 structure ratchets). Whole moves, no behaviour change; callers and the tests that read the old files follow the new homes.

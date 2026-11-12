@@ -65,6 +65,29 @@ RATES: dict[str, float] = {
     "CNY": 7.19, "INR": 85.5, "SEK": 9.6, "NOK": 10.1, "DKK": 6.56, "SGD": 1.29, "HKD": 7.85, "MXN": 19.2,
     "BRL": 5.6, "ZAR": 17.9, "KRW": 1370.0, "PLN": 3.75,
 }
+#: The person's own table (Settings, Search and index), laid over the built-in
+#: one; None is the built-in table and its date. Set by `configure_rates`.
+_SAVED: tuple[dict[str, float], date] | None = None
+
+
+def configure_rates(saved: dict | None) -> None:
+    """Take the `currency_rates` preference (`{"date", "rates"}`); anything unusable is the built-in table."""
+    global _SAVED  # noqa: PLW0603
+    _SAVED = None
+    if not isinstance(saved, dict) or not saved.get("rates"):
+        return
+    try:
+        when = date.fromisoformat(str(saved.get("date")))
+    except ValueError:
+        return
+    _SAVED = ({**RATES, **{k: float(v) for k, v in saved["rates"].items()}, "USD": 1.0}, when)
+
+
+def current_rates() -> tuple[dict[str, float], date]:
+    """The table an answer reads and the date it is said with."""
+    return _SAVED or (RATES, RATES_DATE)
+
+
 _CURRENCY_NAMES = recognise_units.CURRENCY_NAMES
 _MONEY_NAMES = "|".join(sorted((re.escape(n) for n in _CURRENCY_NAMES), key=len, reverse=True))
 def _compile_money() -> tuple:
@@ -871,7 +894,7 @@ _ANSWERERS = {
     "percent": _answer_percent,
     "clock": lambda ask: _clock(ask.text, ask.now),
     "units": lambda ask: _convert(ask.text),
-    "currency": lambda ask: _currency(ask.text, ask.rates or RATES, ask.rates_date or RATES_DATE),
+    "currency": lambda ask: _currency(ask.text, ask.rates or current_rates()[0], ask.rates_date or current_rates()[1]),
     "dates": lambda ask: _between_answer(*b) if (b := _between(ask.text, ask.now.date())) else _dates(ask.text, ask.now),
     "chance": _answer_chance,
     "translate": lambda ask: [("phrase", "utility_translate")],

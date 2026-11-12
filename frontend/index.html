@@ -11024,6 +11024,38 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
             </div>
+
+            <!-- Currency rates (CHAT_PLAN decision 43): the table "50 usd in eur"
+                 reads, dated, in the person's hands. One rate per line in a
+                 textarea; the date is said with every answer. -->
+            <div class="settings-group" id="currency-rates-group">
+              <div class="row space-between help-head">
+                <h3>Currency rates</h3>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="currency-rates-help" aria-controls="currency-rates-help" aria-expanded="false"
+                  title="About the currency rates" aria-label="About the currency rates">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="help-body hidden" id="currency-rates-help" role="dialog" aria-label="About the currency rates">
+                <p>Conversions between currencies use this table and say its date, for example "at the rates from 1 October".
+                  Nothing is fetched. Each line is a code and how many units of it make one US dollar. Codes you leave out keep their built-in rate.
+                  Reset to the built-in table puts back the rates this version shipped with.</p>
+              </div>
+              <div class="row">
+                <label for="currency-rates-date" class="muted">Rates from</label>
+                <input id="currency-rates-date" type="date">
+              </div>
+              <div class="row">
+                <label for="currency-rates-text" class="muted">Units per US dollar</label>
+                <textarea id="currency-rates-text" rows="8" spellcheck="false" autocomplete="off"></textarea>
+              </div>
+              <div class="row">
+                <button id="currency-rates-save" class="ghost small" type="button">Save rates</button>
+                <button id="currency-rates-reset" class="ghost small" type="button">Reset to the built-in table</button>
+                <span id="currency-rates-status" class="muted" role="status"></span>
+              </div>
+            </div>
           </section>
 
           <!-- Personas: who the AI is when it answers -->

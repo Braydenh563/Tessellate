@@ -207,6 +207,7 @@ TOPIC_LEADS: dict[str, str] = {
     # Small tools
     "timer": "Time a task, run a stopwatch or set an alarm without leaving the app.",
     "calculator": "Work out a sum, convert units or write an equation in one dialog.",
+    "currency-rates": "Edit the dated table that currency conversions read, in Settings, Search and index.",
     "count-words": "Count the words, characters and reading time of any text you select.",
     "insert-template": "Drop one of your templates where the cursor is, in any editor.",
     # Look and feel

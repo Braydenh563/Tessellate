@@ -1322,6 +1322,23 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Chat", "tab": "chat"},
     },
     {
+        "id": "currency-rates",
+        "keywords": (
+            "currency rates", "exchange rates", "edit the rates", "rates table",
+            "currency table", "update the currency", "exchange rate",
+        ),
+        "body": (
+            "Currency conversions ('50 usd in eur', Units, /calc) read one table and "
+            "say its date in the answer, for example 'at the rates from 1 October'. "
+            "Nothing is fetched. To change it, open Settings, Search and index, "
+            "Currency rates: pick the day the rates are from, then write one line per "
+            "currency, a code and how many units of it make one US dollar (EUR 0.92). "
+            "Save rates keeps it; a code you leave out keeps its built-in rate. Reset "
+            "to the built-in table puts back the rates this version shipped with."
+        ),
+        "badge": {"label": "Search and index", "section": "searchindex", "target": "currency-rates-group"},
+    },
+    {
         #: INBOX 1481: a chat that is not kept (chat-private.js, `ChatRequest.private`).
         "id": "chat-private",
         "keywords": (
@@ -1786,6 +1803,7 @@ TOPIC_META: dict[str, dict] = {
     "tools-setting": {"title": "Tools it can use", "path": "Settings, Tools it can use"},
     "learned": {"title": "What it learned", "path": "Settings, What it learned"},
     "general-settings": {"title": "General settings", "path": "Settings, General"},
+    "currency-rates": {"title": "Currency rates", "path": "Settings, Search and index, Currency rates"},
     "search-index": {"title": "Search and index", "path": "Settings, Search and index"},
     "search-engine-moved": {"title": "Old search files", "path": "Settings, Search and index, Old search files"},
     "answer-style": {"title": "Answer style", "path": "Settings, Personas, Answer style"},
@@ -1970,7 +1988,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "reminders-controls", "dashboard", "dashboard-controls", "patterns", "notifications", "spaces", "private-spaces", "statistics",
     )),
     ("Small tools", (
-        "timer", "calculator", "count-words", "insert-template",
+        "timer", "calculator", "currency-rates", "count-words", "insert-template",
     )),
     ("Look and feel", (
         "appearance", "appearance-panel", "themes", "simple-mode", "accessibility", "movable-panels", "performance", "background-art",
