@@ -687,6 +687,8 @@ function markFollowers(node, on) {
     const other = link.source === node ? link.target : link.target === node ? link.source : null;
     if (!other || typeof other !== "object") continue;
     other.following = on;
+    //: Let go, the leash comes back over `TETHER_EASE_TICKS`, not in one tick.
+    if (!on) other.tetherEase = 0;
     if (on && other.fx == null) carry.followers.push({ node: other, dx: other.x - node.x, dy: other.y - node.y });
   }
 }
@@ -778,7 +780,18 @@ function nudgeReach(distance) {
   const t = Math.min(1, nudge.reach / DRAG_FULL_DISTANCE);
   nudge.w = 1 - t * t * (3 - 2 * t);
 }
+//: A held note stands still, but the forces that act at no heat (the tether)
+//: keep adding to its velocity under the hold: let go, that stored velocity
+//: was a single-tick step (LEDGER L8). It leaves still, with the leash eased in.
+function nudgeLetGo(list) {
+  for (const f of list) {
+    f.node.vx = 0;
+    f.node.vy = 0;
+    f.node.tetherEase = 0;
+  }
+}
 function nudgeEnd() {
+  nudgeLetGo(nudge.held);
   nudge.held = [];
   nudge.movers = [];
   nudge.w = 0;
@@ -2082,6 +2095,14 @@ const TETHER_SLACK = 1.4;
 const TETHER_FLOOR = 70;
 const TETHER_PULL = 0.4;
 const TETHER_MIN_GROUP = 3;
+//: **The leash comes back over a few ticks after a drag** (LEDGER L8: a 7 px
+//: single-tick step after a release). A note the held one linked to is off the
+//: tether for the drag (`following`); the tether is not scaled by alpha, so on
+//: release a neighbour left far past its limit took the whole excess as one
+//: velocity kick: one tick still, 43 world units the next (tests/
+//: test_graph_release_step.py). `tetherEase` climbs 0 to 1 and scales the pull;
+//: the notes a drag froze (`thaw`) start it too.
+const TETHER_EASE_TICKS = 30;
 const tether = { groups: new Map() };
 const median = (values) => {
   const sorted = values.slice().sort((a, b) => a - b);
@@ -2107,11 +2128,16 @@ function tetherForce() {
     const limit = Math.max(TETHER_FLOOR, typical * TETHER_SLACK);
     for (const node of list) {
       if (!node.degree || node.fx != null || node.placed || node.following) continue;
+      let ease = 1;
+      if (node.tetherEase < 1) {
+        node.tetherEase = Math.min(1, node.tetherEase + 1 / TETHER_EASE_TICKS);
+        ease = smoothstep(node.tetherEase);
+      }
       const dx = cx - node.x;
       const dy = cy - node.y;
       const d = Math.hypot(dx, dy);
       if (d <= limit) continue;
-      const k = ((d - limit) * TETHER_PULL) / d;
+      const k = ((d - limit) * TETHER_PULL * ease) / d;
       node.vx += dx * k;
       node.vy += dy * k;
     }
@@ -4560,6 +4586,7 @@ self.onmessage = (event) => {
           //: pulled a dropped one 296px back toward its category.
           node.placed = true;
           // Its own links ease round where it was put; the rest stay held.
+          nudgeLetGo(nudge.held.filter((f) => f.linked));
           nudge.held = nudge.held.filter((f) => !f.linked);
           if (ring.params) applyGrouping(ring.params);
         }
@@ -4585,6 +4612,7 @@ self.onmessage = (event) => {
         node.fx = null;
         node.fy = null;
         node.frozenByDrag = false;
+        node.tetherEase = 0;
       }
       run();
       break;

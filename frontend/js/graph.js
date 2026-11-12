@@ -697,7 +697,7 @@ function frameTree(svg, zoomBehavior, nodes, width, height, radial, arc = false,
   //: As long as the notes' own glide (`GC_LAYOUT_MS`), so frame and notes
   //: arrive together.
   if (instant) svg.interrupt().call(zoomBehavior.transform, framed);
-  else svg.transition().duration(graphGlideMs(700)).call(zoomBehavior.transform, framed);
+  else graphGlide(svg, zoomBehavior, "transform", [framed], 700);
 }
 
 // --- tracing a path between two notes (§9) -----------------------------------
@@ -1997,7 +1997,7 @@ function initGraphKeyboard() {
     const zoomKeys = { "+": 1.3, "=": 1.3, "-": 1 / 1.3, _: 1 / 1.3 };
     if (Object.prototype.hasOwnProperty.call(zoomKeys, event.key) && graphSvg && graphZoom) {
       event.preventDefault();
-      graphSvg.transition().duration(graphGlideMs(200)).call(graphZoom.scaleBy, zoomKeys[event.key]);
+      graphGlide(graphSvg, graphZoom, "scaleBy", [zoomKeys[event.key]], 200);
       announce(zoomKeys[event.key] > 1 ? "Zoomed in." : "Zoomed out.");
       return;
     }
@@ -2015,7 +2015,7 @@ function initGraphKeyboard() {
       // fixed step would move a hair at high zoom and half the map at low.
       // Dividing by k keeps the movement a constant number of screen pixels.
       const k = d3.zoomTransform(graphSvg.node()).k || 1;
-      graphSvg.transition().duration(graphGlideMs(150)).call(graphZoom.translateBy, dx / k, dy / k);
+      graphGlide(graphSvg, graphZoom, "translateBy", [dx / k, dy / k], 150);
       return;
     }
 
@@ -2218,7 +2218,7 @@ function fitGraphToView(svg, zoomBehavior, nodes, width, height, instant = false
   if (instant) {
     svg.interrupt().call(zoomBehavior.transform, framed);
     balance();
-  } else svg.transition().duration(graphGlideMs(500)).call(zoomBehavior.transform, framed).on("end", balance);
+  } else graphGlide(svg, zoomBehavior, "transform", [framed], 500).on("end", balance);
 }
 
 // Dim everything except nodes that match the search box AND (when hovering)
@@ -2384,7 +2384,7 @@ function graphPanToNode(node) {
   const target = d3.zoomIdentity.translate(graphDims.w / 2, graphDims.h / 2).scale(k).translate(-node.x, -node.y);
   //: Moved by hand as far as the settle fit is concerned (INBOX 792).
   if (typeof gcTab !== "undefined" && gcTab.svg === graphSvg) gcTab.userZoomed = true;
-  graphSvg.transition().duration(graphGlideMs(300)).call(graphZoom.transform, target);
+  graphGlide(graphSvg, graphZoom, "transform", [target], 300);
 }
 
 function graphSearchGo(dir) {
@@ -3244,7 +3244,7 @@ async function graphShowNote(id, { document: isDocument = false } = {}) {
   }
   focusGraphNode(node);
   if (typeof graphSvg !== "undefined" && graphSvg && typeof graphZoom !== "undefined" && graphZoom) {
-    graphSvg.transition().duration(graphGlideMs(400)).call(graphZoom.translateTo, node.x, node.y);
+    graphGlide(graphSvg, graphZoom, "translateTo", [node.x, node.y], 400);
   }
 }
 
@@ -4243,6 +4243,99 @@ function graphGlideMs(base) {
   return Math.round((base * token) / 200);
 }
 
+//: **An interrupted glide hands its speed to the next** (LEDGER L10). A camera
+//: glide cut off by another (a second arrow key, a zoom button pressed in the
+//: middle of a fit) started the new one from rest on d3's cubic ease, so the
+//: view stalled at the join and then ramped up again. The new glide's ease is
+//: a critically damped spring entered at the speed the old one had: progress
+//: `1 - (1 + (w - s) t) e^(-w t)`, `s` the opening slope along the way to the
+//: new target (`graphGlideKit.slope`), `w` such that it has settled by the end of
+//: the glide. A glide that interrupts nothing keeps the cubic ease. The view
+//: is the vector (x, y, k * 400): a zoom step weighs about as much as a pan.
+const graphGlideKit = {
+  settle: 9,
+  kscale: 400,
+  last: { node: null, t: 0, tPrev: 0, view: null, live: false },
+  vec(view) {
+    return [view.x, view.y, view.k * graphGlideKit.kscale];
+  },
+  //: The opening slope, per second as a share of the way, of a glide from `from`
+  //: to `to` (views as vectors) entered at velocity `vel` (units per second).
+  slope(vel, from, to) {
+    const way = to.map((v, i) => v - from[i]);
+    const along = way.reduce((sum, v) => sum + v * v, 0);
+    if (along < 1e-6) return 0;
+    return way.reduce((sum, v, i) => sum + v * vel[i], 0) / along;
+  },
+  //: The spring as an ease: 0 at 0, 1 at 1, slope `slope` per second at the start.
+  spring(slope, ms) {
+    const omega = graphGlideKit.settle / (ms / 1000);
+    const open = Math.max(-omega, Math.min(2 * omega, slope));
+    return (t) => {
+      if (t <= 0) return 0;
+      if (t >= 1) return 1;
+      const tau = (t * ms) / 1000;
+      return 1 - (1 + (omega - open) * tau) * Math.exp(-omega * tau);
+    };
+  },
+  //: Where a glide of this kind ends, worked out the way d3-zoom does, to aim the
+  //: slope; d3 still computes its own end and the glide arrives there.
+  target(node, zoom, method, args, view) {
+    if (method === "transform") return args[0];
+    if (method === "translateBy") return view.translate(args[0], args[1]);
+    const [[x0, y0], [x1, y1]] = zoom.extent().call(node);
+    const cx = (x0 + x1) / 2;
+    const cy = (y0 + y1) / 2;
+    if (method === "translateTo") return d3.zoomIdentity.translate(cx - args[0] * view.k, cy - args[1] * view.k).scale(view.k);
+    const [lo, hi] = zoom.scaleExtent();
+    const k = Math.max(lo, Math.min(hi, view.k * args[0]));
+    const [px, py] = view.invert([cx, cy]);
+    return d3.zoomIdentity.translate(cx - px * k, cy - py * k).scale(k);
+  },
+  //: The speed the last glide had when this one began, or null when none was
+  //: running (it ended, or the view has been still for a while).
+  entry(node, view, now) {
+    const last = graphGlideKit.last;
+    const span = last.t - last.tPrev;
+    if (last.node !== node || !last.live || !last.view || now - last.t > 100 || span < 2 || span > 100) return null;
+    const before = graphGlideKit.vec(last.view);
+    const here = graphGlideKit.vec(view);
+    return here.map((v, i) => ((v - before[i]) * 1000) / span);
+  },
+};
+//: Glide the view: `zoom[method](...args)` on a transition of `base` ms (on the
+//: motion token, 0 for less motion), entering at the speed of a glide it cut off.
+function graphGlide(svg, zoom, method, args, base) {
+  const ms = graphGlideMs(base);
+  const trans = svg.transition().duration(ms);
+  if (ms <= 0) return trans.call(zoom[method], ...args);
+  const node = svg.node();
+  let ease = null;
+  let from = 0;
+  trans.ease((t) => {
+    const now = performance.now();
+    const view = d3.zoomTransform(node);
+    if (!ease) {
+      ease = d3.easeCubicInOut;
+      const vel = graphGlideKit.entry(node, view, now);
+      if (vel && Math.hypot(...vel) > 20) {
+        const kit = graphGlideKit;
+        const slope = kit.slope(vel, kit.vec(view), kit.vec(kit.target(node, zoom, method, args, view)));
+        //: The first frame's elapsed time was already spent by the glide cut off,
+        //: so the spring counts from there (else that frame moves twice).
+        if (slope !== 0) {
+          ease = kit.spring(slope, ms);
+          from = Math.min(t, 0.99);
+        }
+      }
+    }
+    const last = graphGlideKit.last;
+    Object.assign(last, { node, tPrev: last.node === node ? last.t : 0, t: now, view, live: t < 1 });
+    return ease(from ? (t - from) / (1 - from) : t);
+  });
+  return trans.call(zoom[method], ...args);
+}
+
 //: Every number that reaches an SVG attribute goes through here first. Named
 //: rather than inlined because it is checked in three places in this file and
 //: the shape of the bug it prevents (one NaN, four broken attributes, a
@@ -4460,8 +4553,8 @@ function initGraphMinimap() {
       .translate(graphDims.w / 2, graphDims.h / 2)
       .scale(scale)
       .translate(-cx, -cy);
-    const sel = animate ? graphSvg.transition().duration(graphGlideMs(250)) : graphSvg;
-    sel.call(graphZoom.transform, target);
+    if (animate) graphGlide(graphSvg, graphZoom, "transform", [target], 250);
+    else graphSvg.call(graphZoom.transform, target);
   };
 
   const jump = (event, animate = true) => {
@@ -4922,7 +5015,7 @@ function graphZoomBy(factor) {
   //: The zoom buttons move the camera as a gesture does: no settle fit or
   //: panel refit may take it back (INBOX 792).
   if (typeof gcTab !== "undefined" && gcTab.svg === graphSvg) gcTab.userZoomed = true;
-  graphSvg.transition().duration(graphGlideMs(200)).call(graphZoom.scaleBy, factor);
+  graphGlide(graphSvg, graphZoom, "scaleBy", [factor], 200);
 }
 //: **The zoom strip is one Tab stop** (audit 1031 G20: Tab from the map's box
 //: walked zoom in, zoom out, fit and full screen, four stops, before the status

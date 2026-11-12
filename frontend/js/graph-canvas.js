@@ -1986,7 +1986,7 @@
     if (still || s.canvas?.style.opacity === "0") {
       s.svg.interrupt().call(s.zoom.transform, framed);
       again();
-    } else s.svg.transition().duration(graphGlideMs(220)).call(s.zoom.transform, framed).on("end", again);
+    } else graphGlide(s.svg, s.zoom, "transform", [framed], 220).on("end", again);
   }
 
   //: The overlays a fit keeps the notes out from under, as the depth each one
