@@ -56,3 +56,22 @@ def test_f3_typed_undo_that_reaches_the_server_gets_the_keys_not_a_note_search(g
     said = say(go, "delete the todo note", "undo")
     assert "Ctrl+Z" in said or "Undo" in said, said
     assert "mention" not in said.lower()
+
+
+# --- D10: a bare yes after a card ----------------------------------------------------
+
+
+@pytest.mark.parametrize("opening", ["what is on my todo list", "what do I know about the dentist", "when is the dentist"])
+def test_d10_a_yes_after_an_answer_whose_cards_are_questions_to_ask_does_nothing_but_talk(go, session, opening):
+    """The cards of an answer are ask chips and open links: a typed yes agrees to nothing, so it makes no note and
+    sets no reminder, and is answered as the small talk it is (the offers that do carry an act are tested in
+    test_composer_talk_1110, test_composer_offer_ids_1111 and test_composer_batch2_1111)."""
+    from sqlalchemy import func, select
+
+    from tessellate.core.database import Entry
+
+    before = session.scalar(select(func.count()).select_from(Entry))
+    said = say(go, opening, "yes")
+    session.expire_all()
+    assert session.scalar(select(func.count()).select_from(Entry)) == before, said
+    assert "remind" not in said.lower() and "created" not in said.lower(), said
