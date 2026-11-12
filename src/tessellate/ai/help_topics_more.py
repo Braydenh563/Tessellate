@@ -2494,7 +2494,7 @@ MORE_TOPICS.extend([
             "one way out, a block with no way out or joined to nothing, blocks with the same words (one row numbers them), a group "
             "holding one block. Each row's button shows its fix the same way. On a diagram document every Apply is "
             "a named version (AI: added Refund). Versions..., in the ... menu, lists them: tick two to Compare, or "
-            "one to compare it with now, and Restore puts one back. "
+            "one to compare it with now, and Restore puts one back; Named only hides the plain saves. "
             "Suggest, Templates, on a diagram with blocks, offers Add its blocks (as ghosts) or Replace the diagram, which Ctrl+Z undoes."
         ),
         "badge": {"label": "Documents", "tab": "documents"},

@@ -371,7 +371,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10
 - [ ] **L319** `documents` open, M: Verify code editor: Python run, SQL/p5, Emmet/hover docs, conflict dialog, multi-cursor, Console eval. From audit-1031-code.md. Evidence: No later code audit; Python extra not installed here
 - [ ] **L320** `documents` open, M: Verify docs: read-view mermaid, print/PDF, docx, import, comments, phone editor entry. From audit-1031-docs.md. Evidence: audit-1102-docs covered part; print dialog and phone remain
-- [ ] **L321** `documents` open, M: Extend diagram Ask/Suggestions beyond flowcharts; build Versions 'Named only' filter. From dgai-1110.md Left. Evidence: Source: mind map, timeline, sequence get Versions only; filter not built
 - [ ] **L322** `documents` open, M: Frames with no script and CodeMirror requestMeasure (1667m). From OPEN.md:4327. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L323** `documents` open, M: Typing in a 230-note list costs ~12 ms per key in CodeMirror. From OPEN.md:1478. Evidence: Perf measurement; no fix found in HISTORY/CHANGELOG
 - [ ] **L327** `documents` open, L: Split documents.js, documents-code.js and run_sandbox.py into lazy chunks (Opus design step) and fix listener imbalance. From OPEN.md:4468; OPEN.md:4482; OPEN.md:4485; OPEN.md:4493. Evidence: documents.js 16,598 lines now; lazy-chunk split needs Opus design step, not done
@@ -403,6 +402,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
 - [ ] **L-documents-19** `documents` open, M: Comment threads: per-device author, and comments in code documents. From L318 split. Evidence: documents-comments.js docThreadAuthor: the name is the account's, one per account
 - [ ] **L-documents-20** `documents` open, S: Connect handle over a diamond at 390 (L-documents-18 remainder). From L-documents-18. Evidence: At 390 a 4-block flowchart opens at 84 percent (the 47 to 59 percent was a larger one, fit by design); the connect handle over a diamond (box 144x144 at 186,388) is not measured: tap the handle on a diamond in the picture and check it does not cover the decision's text
+- [ ] **L-documents-21** `documents` open, M: Diagram Ask and Suggestions for mind map, timeline and sequence (L321 remainder). From L321. Evidence: Ask and Suggestions are flowchart-only; mind map, timeline and sequence get Versions only (diagram-ai.js lint/show use the flowchart model)
 
 ## mindmap
 

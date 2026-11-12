@@ -2760,3 +2760,15 @@ button.ghost.disclosure-row.dgm-ai-lints-head {
 .dgm-versions-legend > .dgm-mark-chg::before {
   background: var(--warn);
 }
+
+/* L321: Named only hides the plain saves and their heading. */
+.dgm-versions-named .dgm-versions-save,
+.dgm-versions-named .dgm-versions-head {
+  display: none;
+}
+.dgm-versions-only {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 44px;
+}
