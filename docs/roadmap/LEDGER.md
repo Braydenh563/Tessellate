@@ -11,13 +11,15 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 59 | 16 | 0 | 18 | 145 |
+| documents | 70 | 56 | 16 | 0 | 18 | 142 |
+| documents | 70 | 56 | 16 | 0 | 18 | 142 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
-| ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
+| ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 700 | 156 | 3 | 195 | 1409 |
+| all | 553 | 696 | 156 | 3 | 195 | 1405 |
+| all | 553 | 696 | 156 | 3 | 195 | 1405 |
 
 ## graph
 
@@ -368,13 +370,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L292** `documents` open, S: Lift the 78ch cap on the code editor in 09-editor.css (724px panel at 1440). From OPEN.md:1455; OPEN.md:2692. Evidence: 09-editor.css:55,134 max-width: 78ch still set
 - [ ] **L293** `documents` open, S: Preserve run state when a never-ending console loop is killed after 10 s. From OPEN.md:1468. Evidence: Design limit; worker terminate path unchanged, no preservation found
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
-- [ ] **L295** `documents` open, S: Wait for the chord so Ctrl+K Ctrl+S opens only the keybindings sheet, not the palette first. From OPEN.md:1470; OPEN.md:2841. Evidence: No chord-wait handling found in documents-code.js by grep
 - [ ] **L296** `documents` open, S: Merge DOC_EMOJI_SOURCE into ICON_EMOJI_SOURCE. From OPEN.md:1487; OPEN.md:3489. Evidence: Both exist: documents-prose.js:1614 and icon-picker.js:27 (comment only, no merge)
 - [ ] **L297** `documents` open, S: Suppress prose grammar lint tooltip in code documents while the pointer menu is open. From OPEN.md:1492; OPEN.md:3552. Evidence: Only documents-cm-theme.js:200 styles it; no suppression while pointer menu open found
 - [ ] **L298** `documents` open, S: Decide and vendor an indent-guides extension for the CodeMirror bundle. From OPEN.md:1508. Evidence: Active line built; no indent-markers extension found in vendor; needs vendoring decision
 - [ ] **L299** `documents` open, S: Fix console line border clash and doc assistant buttons/field/send height. From OPEN.md:1589. Evidence: No fix found in CHANGELOG/tests (backups part marked fixed in row)
 - [ ] **L300** `documents` open, S: Use js-beautify on a selection instead of conservative re-indent. From OPEN.md:1968. Evidence: Selection keeps conservative re-indent; no change
-- [ ] **L302** `documents` open, S: Separate F11 Step into from Focus mode and make keybindings sheet context aware. From OPEN.md:2830. Evidence: documents.js shared F11; Brief 71 sheet not updated
 - [ ] **L303** `documents` open, S: Measure Writing Room stretch on graph note boxes. From OPEN.md:3143. Evidence: Graph note boxes not opened/measured
 - [ ] **L304** `documents` open, S: Make diagram Source view text fold. From diagklm-1108.md Left. Evidence: diagram-lazy.css fold block / diagram-embed.js srcwrap unchanged per source; no later commit found
 - [ ] **L305** `documents` open, S: Probe Documents in dark run; map add undo flaky between runs. From OPEN.md:3696. Evidence: Re-run both before quoting; no re-run record found
@@ -388,7 +388,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L313** `documents` open, M: Step JS watches instead of evaluating natively. From OPEN.md:2825. Evidence: run_sandbox.py:250 evaluate; known limitation, verified
 - [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10
 - [ ] **L315** `documents` open, M: Persist Python breakpoints across reload. From OPEN.md:2828. Evidence: DOC_DEBUG.breaks in documents-code.js; verified
-- [ ] **L316** `documents` open, M: Problems panel for prose documents showing Harper findings. From OPEN.md:2836. Evidence: Panel mounted for code files only; underlines and F8 only
 - [ ] **L317** `documents` open, M: Load a CSV document as a SQL table from a panel action. From OPEN.md:2903. Evidence: run-core.js:169 accepts tables; no panel action sends a CSV doc
 - [ ] **L318** `documents` open, M: Comment threads: edit/delete replies, per-device author, reply to resolved, code-doc comments. From a30h-1102.md Left. Evidence: documents-comments.js:275 replies never edited; no edit/delete path found
 - [ ] **L319** `documents` open, M: Verify code editor: Python run, SQL/p5, Emmet/hover docs, conflict dialog, multi-cursor, Console eval. From audit-1031-code.md. Evidence: No later code audit; Python extra not installed here
@@ -571,7 +570,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L773** `ui-modernisation` open, M: Rethink Notes dock wrapping (nine controls at 1440, two rows at 1280-1500 with rail open). From OPEN.md:3480; OPEN.md:3559. Evidence: Judgement for the dock grammar's owner; same dock as 3559. Owner decided 2026-11-12: Fewer worded buttons (Some buttons show icons only above 1400px or move into the menu, so the bar keeps one row). Build: Notes .dock: fold two worded controls to icon-only or the dock kebab; sweep docks.js at 1280, 1440, 1500 with rail open.
 - [ ] **L765** `ui-modernisation` open, M: Design pass to unify empty-state tone and illustration across views. From OPEN.md:4241. Evidence: Design pass across views, not a reproducible defect. Owner decided 2026-11-12: Align to the recipe. Build: inventory every .empty-state and ad hoc empty line, convert to the DESIGN.md Empty state recipe, add a lint in tests/test_ui_recipes.py.
 - [ ] **L778** `ui-modernisation` open, S: Decide cropping of tall maps in dashboard widget. From OPEN.md:3184. Evidence: Owner's judgement on cropping Owner decided 2026-11-12: Crop around the centre. Build: mapPreview for the dashboard widget: crop to a readable window around the root; sweep with a 25-topic tree-right map.
-- [ ] **L-ui-modernisation-2** `ui-modernisation` open, S: Measure the stuck-ground recipe on the timeline table head and empty its freeze. From open-work sweep 2026-11-12, tests/test_nested_surfaces_1489.py:34. Evidence: This freeze ratchet holds one known offender, and the comment states the intent to remove it once the stuck-ground recipe is measured on table cells. No LEDGER row or plan item names it.
 - [ ] **L-ui-modernisation-3** `ui-modernisation` open, M: Sweep every toolbar onto the control height tokens and drain the literal heights ratchet. From open-work sweep 2026-11-12, docs/DESIGN.md:1584. Evidence: The doc admits toolbars that do not use --control-h yet and calls them gaps. No row lists or tracks the sweep to find and convert them.
 - [ ] **L-ui-modernisation-4** `ui-modernisation` open, S: Shorten the lock setup note and rename its button. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:32. Evidence: index.html:346 #lock-setup-note is still 58 words and app.js:723 still reads "Set password & start"; there is no LEDGER row or plan item for it
 - [ ] **L-ui-modernisation-5** `ui-modernisation` open, S: Keep the welcome footer buttons on one row at 390 px. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:36. Evidence: no change to the welcome slide footer layout at narrow width was found and nothing tracks it

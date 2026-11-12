@@ -1131,8 +1131,8 @@ HELP_TOPICS: list[dict] = [
             'sentence with no mechanical fix, "Ask the AI for wordings" offers '
             "two or three alternatives; nothing changes until you choose. "
             "Manage the dictionary and the spelling preference (American, "
-            "British, Australian, Canadian or Indian) from the editor's own "
-            "dictionary dialog. LanguageTool, an optional second grammar "
+            "British, Australian, Canadian or Indian) from the "
+            "dictionary dialog (names are known). LanguageTool, an optional second grammar "
             "checker, is in Settings, Packages."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
@@ -1871,13 +1871,13 @@ HELP_TOPICS.extend(
                 "steps in (Focus mode otherwise), Shift+F11 steps out, Shift+F5 "
                 "stops); Stop ends it, and the panel's top edge drags its height "
                 "(kept for each tab). Blocks fold from the "
-                "gutter (Ctrl+Shift+[ and Ctrl+Shift+] fold and unfold, Ctrl+Alt+[ "
+                "gutter (Ctrl+Shift+[ and Ctrl+Shift+] fold and unfold, Ctrl+Alt+. toggles one, Ctrl+Alt+[ "
                 "and Ctrl+Alt+] all of them). "
                 "Its tabs: Output, Problems, Tests, Console (Python or JavaScript, "
                 "in what the run left) and Debug. Ctrl+J shows it, Ctrl+Shift+M "
                 "Problems, Ctrl+Shift+Y the Console, Ctrl+Shift+D Debug; "
                 "Ctrl+Shift+P or F1 runs a command by name (words that match none offer Search notes for), Ctrl+\\ splits the "
-                "editor, Ctrl+K Ctrl+S lists every key, and Outline follows the "
+                "editor, Ctrl+K Ctrl+S lists the keys here, and Outline follows the "
                 "caret. Minimap (Editor and layout, "
                 "off at first) maps the whole file; Compare with a saved version "
                 "(palette) shows the changes inline, with Reject to put a hunk back."

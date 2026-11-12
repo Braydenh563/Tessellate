@@ -97,7 +97,7 @@ async function docGrammarWhy() {
 
 //: One lint of `text`, or null when there is no checker.
 function docGrammarAsk(text) {
-  const asked = docGrammarSend({ text, dialect: docSpellingVariant() });
+  const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissedTexts() });
   //: LanguageTool, when installed (documents-languagetool.js), adds its findings.
   return asked.then((lints) => docSpell.languageTool(lints, text));
 }

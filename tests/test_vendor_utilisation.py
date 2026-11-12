@@ -31,7 +31,8 @@ pytestmark = pytest.mark.skipif(
 #: Called counts on 2026-10-10. Never lowered to make a change fit.
 CALLED_FLOOR = {
     #: 123 since the fenced-block colouring (code-colour.js: highlight.highlightTree, classHighlighter).
-    "codemirror": 123,
+    #: 132 since VC13: lint.lintKeymap, lint.openLintPanel and language.toggleFold.
+    "codemirror": 132,
     "emmet": 10,
     #: 4 since ledger 1565: a selection formatted at its first line's indent.
     "jsbeautify": 4,
@@ -41,7 +42,8 @@ CALLED_FLOOR = {
     "sqljs": 12,
     #: Brief 70: the JavaScript debugger's worker in api/run_sandbox.py.
     "jsinterpreter": 9,
-    "harper": 17,
+    #: 24 since VC6: import_words, clear_words, ignore_lints, clear_ignored_lints and the dialects.
+    "harper": 24,
     "phosphor": 260,
     "wordlist": 2,
     #: INBOX 1731: check, suggest, both dictionaries, frequency ranking, own words.
