@@ -1552,6 +1552,33 @@ function wbPasteSize() {
   }).then(() => wbScheduleRender());
 }
 
+//: Copy data and Paste data (draw.io's Alt+Shift+B and E): the custom properties
+//: (`data.props`) of one item put on every selected one, as one Undo step. A
+//: paste replaces what the target had, as the Data tab does when you retype it.
+wbFmtState.dataClip = null;
+wbFmtState.dataKeys = (() => {
+  function copy() {
+    const [entry] = wbFmtEntries();
+    const props = entry && (entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data || {}).props;
+    if (!props || typeof props !== "object" || !Object.keys(props).length) {
+      toast("That item has no data to copy.");
+      return;
+    }
+    wbFmtState.dataClip = { ...props };
+    const n = Object.keys(props).length;
+    wbAnnounce(`Data copied: ${n === 1 ? "1 property" : `${n} properties`}.`);
+  }
+  function paste() {
+    if (!wbFmtState.dataClip) {
+      toast("Copy an item's data first.");
+      return Promise.resolve();
+    }
+    const clip = wbFmtState.dataClip;
+    return wbFmtApply("props", () => ({ props: { ...clip } }), "Data pasted.");
+  }
+  return { copy, paste };
+})();
+
 //: How much a shape must grow for its words to fit: the factor on each axis,
 //: 1 when they already fit. The words' area scales with the shape, so the
 //: factor is the words' size over the area they have.
