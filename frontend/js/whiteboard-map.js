@@ -3590,13 +3590,16 @@ function wbMapEdgeAnchors(parent, child, mapLayout) {
     return { horizontal: true, x1: parent.x + WB_MAP_INDENT / 2, y1: parent.y + p.h, x2: child.x, y2: child.y + c.h / 2 };
   }
   //: A fishbone's rib leaves the spine at the head's left edge
-  //: (`wbMapEdgePathD` runs it along the spine to the rib's foot).
+  //: (`wbMapEdgePathD` runs it along the spine to the rib's foot). It meets the
+  //: main topic at its spine-side corner, not its middle: the causes stand
+  //: between the topic and the spine in its own column, and a rib to the middle
+  //: ran behind them (L358).
   if (layout === "fishbone" && fromRoot) {
     const up = child.y + c.h / 2 < parent.y + p.h / 2;
     //: A branch's fishbone faces away from its parent, so its bones may run
     //: right of the head (`wbMapStructuredPositions`).
     const right = child.x + c.w / 2 > parent.x + p.w;
-    return { horizontal: false, rib: true, right, x1: right ? parent.x + p.w : parent.x, y1: parent.y + p.h / 2, x2: child.x + c.w / 2, y2: up ? child.y + c.h : child.y };
+    return { horizontal: false, rib: true, right, x1: right ? parent.x + p.w : parent.x, y1: parent.y + p.h / 2, x2: right ? child.x : child.x + c.w, y2: up ? child.y + c.h : child.y };
   }
   if (layout === "radial" || layout === "free" || layout === "fishbone") {
     horizontal = Math.abs(child.x - parent.x) >= Math.abs(child.y - parent.y);

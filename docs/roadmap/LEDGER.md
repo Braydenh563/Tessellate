@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
+| mindmap | 33 | 22 | 5 | 1 | 5 | 60 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 694 | 157 | 3 | 195 | 1404 |
 
 ## graph
 
@@ -440,17 +440,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## mindmap
 
-- [ ] **L353** `mindmap` open, S: Read and fix the map grip's overlapping 'Add a child to' accessible name. From OPEN.md:614; OPEN.md:3454. Evidence: Accessible name not read; needs a browser check
-- [ ] **L354** `mindmap` open, S: Fix maplayouts.js 'tree-left carries branch bar' failing on base by 1px. From OPEN.md:656; OPEN.md:2563. Evidence: scratchpad/ui-sweeps/maplayouts.js exists; no fix commit found
 - [ ] **L355** `mindmap` open, S: Time tree, timeline and fishbone whole-map tidy per add at 200 topics and scope it. From OPEN.md:1383; OPEN.md:2803. Evidence: whiteboard-map.js:6115 still tidies whole map via wbMapTidyBranchScope; no 200-topic timing recorded.
 - [ ] **L356** `mindmap` open, S: Tint monochrome map library schematics and stop the hollow diamond drawing its shaft. From OPEN.md:1110; OPEN.md:2677. Evidence: wbMapThumbSpec still in whiteboard-templates.js/whiteboard-library.js; no tint change found
-- [ ] **L357** `mindmap` open, S: Fix Ctrl+Z after Add top-level topic leaving lists differing. From OPEN.md:1115; OPEN.md:3692. Evidence: No undo fix commit found (only b3af75537 add at 390 recalc); undone state not re-verified
-- [ ] **L358** `mindmap` open, S: Fix fishbone rib running behind cause boxes and compare with XMind. From OPEN.md:1926; OPEN.md:2804. Evidence: whiteboard-map.js:3587 rib logic; no layering fix or XMind comparison found
-- [ ] **L359** `mindmap` open, S: Fix markers' Flag still showing two previews. From OPEN.md:1949; OPEN.md:3531. Evidence: whiteboard-map.js:10942 wbMapMarkerToggle Flag exists; two-preview state unverified
-- [ ] **L361** `mindmap` open, S: Stop the topic bar wrapping to two rows at 390. From OPEN.md:3555. Evidence: Measured identical on base; no fix commit.
-- [ ] **L362** `mindmap` open, S: Sweep pointer reorder in tree-down, org and tree-both layouts. From OPEN.md:3906. Evidence: Layouts exist (tests/test_map_branch_structure.py uses tree-down) but pointer reorder sweep for them not found; unverified, needs a sweep.
 - [ ] **L363** `mindmap` open, S: Name a saved Tree/Arc layout on a map as a dock chip when not Force. From OPEN.md:2659. Evidence: Recommendation not built; verified 2026-11-10
-- [ ] **L364** `mindmap` open, S: maplayouts.js 'tree-left carries the branch bar' fails on base. From OPEN.md:1801. Evidence: scratchpad/ui-sweeps/maplayouts.js sweep check still measures the centre topic; not corrected
 - [ ] **L365** `mindmap` open, M: Make PNG/SVG export draw map topics with levels, shapes, icons, shadow and glow. From OPEN.md:1241; OPEN.md:3488; OPEN.md:2415. Evidence: whiteboard.js:14033 shadow and :14133 glyph/emoji icon handled; levels and shapes in map-node export not confirmed.
 - [ ] **L366** `mindmap` open, M: Give the size stepper words and Classic level sizes S/M/L/XL instead of 17px/22px. From OPEN.md:1114. Evidence: No fix commit found for stepper words; needs a sweep to confirm
 - [ ] **L367** `mindmap` open, M: Add search or filter to the More sheet on a map (59-62 rows at 390). From OPEN.md:1682; OPEN.md:2802. Evidence: No filter in the sheet (chat-attach.js sheet recipe unchanged for this); long list remains
@@ -474,6 +466,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row.
 - [ ] **L-mindmap-9** `mindmap` open, S: Measure idle and drag cost on a map of hundreds of nodes. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1751. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census gap, with no row.
 - [ ] **L-mindmap-11** `mindmap` open, S: Mind map link labels take the connector label look (size, bold, colour, chip, position). From MINDMAP_PLAN 2026-10-11 INBOX 819 (2). Evidence: whiteboard-format.js:1318 has label look for board connectors; mind map edge labels only edge_label_dx/dy (whiteboard-map.js:4328)
+- [ ] **L-mindmap-12** `mindmap` open, S: Fishbone: lines from a main topic to its 2nd and later causes cross the cause above. From mapquick L358 follow-up. Evidence: fishbone with 2 causes under one main topic: the line to the 2nd cause runs behind the 1st (4 of 4 mains, whiteboard-map.js:3600 radial rule, WB_MAP_LAYOUT_EDGE fishbone straight)
 
 ## ui-modernisation
 
