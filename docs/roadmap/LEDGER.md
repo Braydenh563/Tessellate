@@ -253,8 +253,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
-- [ ] **L-chat-25** `chat` open, M: Organise or sort-out asks about a named topic answer about that topic, not a week plan. From acts2 agent 2026-11-12. Evidence: composer_plan.py:53 plan-or-organise pattern: 'organise everything about the harbor', 'can you sort out my boiler stuff' get a week plan
-- [ ] **L-chat-26** `chat` open, M: Undo by sentence for rename and move survives more than the last act and a restart. From acts2 agent 2026-11-12. Evidence: consent_store.latest_undo holds only the last act in one server process
+- [ ] **L-chat-32** `chat` open, M: Organise or sort-out asks about a named topic answer about that topic, not a week plan. From acts2 agent 2026-11-12. Evidence: composer_plan.py:53 plan-or-organise pattern: 'organise everything about the harbor', 'can you sort out my boiler stuff' get a week plan
+- [ ] **L-chat-33** `chat` open, M: Undo by sentence for rename and move survives more than the last act and a restart. From acts2 agent 2026-11-12. Evidence: consent_store.latest_undo holds only the last act in one server process
 
 ## whiteboard
 
