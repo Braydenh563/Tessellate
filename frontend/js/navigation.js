@@ -174,16 +174,12 @@ wireLongPress(
 //: here because a double-click cannot: a single click on every one of these
 //: rows opens it, so the first half of a double-click would already have
 //: left the list. Runs the row's own Rename item, so there is one rename.
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "F2" || event.defaultPrevented) return;
-  const host = event.target instanceof Element ? event.target.closest(ROW_MENU_HOSTS) : null;
-  if (!host) return;
-  const wrap = host.querySelector(".menu-wrap");
-  const item = wrap?.rowMenu?.items.find((it) => /^ph:\S+ Rename\b/.test(it.label || ""));
-  if (!item) return;
-  event.preventDefault();
-  item.run();
-});
+//: The key is the `renameRow` row of the shortcut table (settings-wiring.js).
+function renameFocusedRow() {
+  const host = document.activeElement instanceof Element ? document.activeElement.closest(ROW_MENU_HOSTS) : null;
+  const item = host?.querySelector(".menu-wrap")?.rowMenu?.items.find((it) => /^ph:\S+ Rename\b/.test(it.label || ""));
+  item?.run();
+}
 
 //: **Arrow keys between cards and rows, Home and End to the ends.** Chosen by
 //: where the items are drawn rather than by their order in the DOM: the
@@ -2327,6 +2323,13 @@ function showNotesSection(name, { focus = false } = {}) {
   // runs, so by the time a real arrival calls this, it reads "notes".
   if ((prefs.get("activeTab", null) || "dashboard") === "notes") {
     recordTabVisit("notes", wanted);
+  }
+  //: A switch inside Notes cross-fades the panel (L414): marked on the page for the frame that
+  //: shows it, since `@starting-style` cannot tell this from the page arriving (05-sidebars-themes.css).
+  const page = $("tab-notes");
+  if (page && !page.classList.contains("hidden") && $(wanted)?.classList.contains("hidden")) {
+    page.classList.add("section-switch");
+    setTimeout(() => page.classList.remove("section-switch"), 400);
   }
   for (const id of NOTES_SECTIONS) {
     const card = $(id);

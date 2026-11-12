@@ -7,6 +7,11 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Phones: a picture or file shared to the installed app (the camera roll, another app) now lands in Capture with the note, staged as a paste would be; the share target is the POST form, taken by the service worker, with the files kept in their own cache until the notebook is unlocked (L-ui-modernisation-7).
+- Motion: a Notes sub-tab panel fades in (0.4 to 1 over the base motion time) when you switch between sub-tabs; `showNotesSection` marks the page `.section-switch` for the switch so the page arriving does not fade twice (L414; Ask measured 0.40 to 1.00 over 9 frames).
+- Shortcuts: F2 (rename the list item you are on) is a row of the shortcut table, so the shortcuts sheet, rebinding and the collision check see it; the loose listener in navigation.js is gone (L-ui-modernisation-14, first key; 36 rows to 37).
+- Fix: a confirm or name prompt opened from inside a modal dialog mounts in that dialog, so it is no longer beneath it and unreachable (L453; `dialogHost` in app.js, measured: the confirm button is the element at its own centre, in the dialog).
+- Fix: a Settings deep link (a notice button, a "Find a setting" row) finishes at the control: the smooth scroll is re-aimed when it ends, since the pane grows under it (L447; a reopened link left the row 8,561px down at 390, now 481).
+- Fix: finding "Palette" in Settings lands focus on the palette grid, not its label (L422; 121 of 292 index rows still land on a head, which is right for a group).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
 - Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.

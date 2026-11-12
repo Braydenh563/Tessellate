@@ -531,7 +531,7 @@ HELP_TOPICS: list[dict] = [
             "the command palette, Ctrl+P find anything, Ctrl+F find on this "
             "page, / jump to search (the chat box on Chat), Ctrl+Z undo, "
             "Ctrl+Shift+Z redo (on a phone, More then Commands opens the "
-            "palette), Alt+Left and Alt+Right back and forward, a double-click "
+            "palette), Alt+Left and Alt+Right back and forward, F2 rename the item you are on, a double-click "
             "on Notes or Library in the top bar back to its first sub-tab, Ctrl+, "
             "settings, Ctrl+Shift+L light or dark, Ctrl+Shift+Y show or hide the "
             "companion, Ctrl+Alt+R reload clearing "
