@@ -609,9 +609,11 @@
 
   //: Every item's box, read once per frame: a drag repaints several links in one frame, and a card's box comes from
   //: the page, so this keeps that to one pass.
+  //: It is kept for 10 ms by the clock (no frame callback of its own: a drag frame is 16 ms or more apart).
   let frameBoxes = null;
+  let frameBoxesAt = 0;
   function boardBoxes() {
-    if (frameBoxes) return frameBoxes;
+    if (frameBoxes && performance.now() - frameBoxesAt < 10) return frameBoxes;
     const out = [];
     const items = wbLinkCandidates();
     for (const o of wbState.objects || []) if (o.kind === "image" || o.kind === "diagram") items.push(["object", o]);
@@ -621,7 +623,7 @@
       if (b) out.push(b);
     }
     frameBoxes = out;
-    requestAnimationFrame(() => { frameBoxes = null; });
+    frameBoxesAt = performance.now();
     return out;
   }
 

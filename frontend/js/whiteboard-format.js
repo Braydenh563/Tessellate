@@ -81,7 +81,7 @@ const WB_FMT_FIELDS = {
   line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t", "edgeshape", "textpath"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "edgeshape", "textpath", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
   image: ["alpha", "shadow", "shadowset", "radii", "imageborder", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props"],
   frame: ["pad", "geometry", "props"],

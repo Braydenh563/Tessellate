@@ -8327,7 +8327,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `bindLoopRow` | frontend/js/whiteboard-draw-more.js:135 |
 | `bindPortEditor` | frontend/js/whiteboard-draw-more.js:385 |
 | `bindPortsRows` | frontend/js/whiteboard-draw-more.js:354 |
-| `boardBoxes` | frontend/js/whiteboard-draw-more.js:613 |
+| `boardBoxes` | frontend/js/whiteboard-draw-more.js:615 |
 | `clean` | frontend/js/whiteboard-draw-more.js:26 |
 | `editChosenPort` | frontend/js/whiteboard-draw-more.js:342 |
 | `editPorts` | frontend/js/whiteboard-draw-more.js:261 |
@@ -8350,7 +8350,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `portWords` | frontend/js/whiteboard-draw-more.js:306 |
 | `rawPorts` | frontend/js/whiteboard-draw-more.js:301 |
 | `resetPorts` | frontend/js/whiteboard-draw-more.js:283 |
-| `route` | frontend/js/whiteboard-draw-more.js:630 |
+| `route` | frontend/js/whiteboard-draw-more.js:632 |
 | `routeStops` | frontend/js/whiteboard-draw-more.js:66 |
 | `sameEnd` | frontend/js/whiteboard-draw-more.js:79 |
 | `savePorts` | frontend/js/whiteboard-draw-more.js:274 |
