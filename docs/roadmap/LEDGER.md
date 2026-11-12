@@ -11,21 +11,28 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 25 | 13 | 0 | 18 | 108 |
-| documents | 70 | 25 | 13 | 0 | 18 | 108 |
-| documents | 70 | 25 | 13 | 0 | 18 | 108 |
+| documents | 70 | 25 | 12 | 0 | 18 | 107 |
+| documents | 70 | 25 | 12 | 0 | 18 | 107 |
+| documents | 70 | 25 | 12 | 0 | 18 | 107 |
+| documents | 70 | 25 | 12 | 0 | 18 | 107 |
+| documents | 70 | 25 | 12 | 0 | 18 | 107 |
+| documents | 70 | 25 | 12 | 0 | 18 | 107 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 636 | 151 | 3 | 190 | 1340 |
-| all | 553 | 636 | 151 | 3 | 190 | 1340 |
-| all | 553 | 636 | 151 | 3 | 190 | 1340 |
+| all | 553 | 636 | 150 | 3 | 190 | 1339 |
+| all | 553 | 636 | 150 | 3 | 190 | 1339 |
+| all | 553 | 636 | 150 | 3 | 190 | 1339 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 636 | 151 | 3 | 190 | 1340 |
+| all | 553 | 636 | 150 | 3 | 190 | 1339 |
+| general | 0 | 36 | 2 | 0 | 4 | 38 |
+| all | 553 | 636 | 150 | 3 | 190 | 1339 |
+| all | 553 | 636 | 150 | 3 | 190 | 1339 |
+| all | 553 | 636 | 150 | 3 | 190 | 1339 |
 
 ## graph
 
@@ -395,7 +402,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L346** `documents` partly, M: Finish p5.js document kind and code completion (Briefs 69-71 remainder). From OPEN.md:1587. Evidence: documents-code.js:591 p5.js names in a sketch (OPEN 1139); DOCUMENTS_PLAN 23 / Briefs 69-71 remainder
 - [ ] **L347** `documents` partly, M: Generate and wire the Python stdlib completion table. From OPEN.md:2904. Evidence: scripts/gen_python_completions.py exists; table not generated/wired
 - [ ] **L348** `documents` partly, M: AI rename option for new boards and maps (documents already have suggest-title). From INBOX.md:904 B17. Evidence: Names 787f8a9; documents suggest-title fe169b9d8 (routes_documents); boards and maps have no AI rename (w34-gap3)
-- [ ] **L349** `documents` partly, M: Give #tag in documents a chip and search meaning. From doclist-1108.md Left. Evidence: documents-prose.js:1820 #tag name completion exists; no chip/search by it
 - [ ] **L350** `documents` partly, M: Document gutter writes height and reads layout per gutter. From OPEN.md:1479. Evidence: Row says menu exit closed (HISTORY 'OPEN.md rows closed'); gutter batching not confirmed
 - [ ] **L351** `documents` partly, L: Re-check run/debug tools and skeletons for every language after snippet drag. From INBOX.md:904 B19. Evidence: documents-codekit.js:530 docSnippetDragStart; tests/test_snippet_drag.py; run/debug tools for every language not re-checked
 - [ ] **L352** `documents` partly, L: Documents: Autocorrect status-bar switch, deferred-large rows, DC1/DC2 lock, old audit rows re-verify. From ledger-1112 O27; ledger-1112 X14.
