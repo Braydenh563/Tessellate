@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
+| whiteboard | 30 | 37 | 4 | 0 | 11 | 71 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 699 | 157 | 3 | 195 | 1409 |
 
 ## graph
 
@@ -317,9 +317,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L257** `whiteboard` open, S: Stop board preview labels (mapPreview) running over the next shape. From OPEN.md:1239. Evidence: note-cards.js:38 mapPreview draws via mapPreviewDraw; no label-clipping fix found.
 - [ ] **L258** `whiteboard` open, S: Confirm in the app that diagram handles reverse and the connector delete bar work. From OPEN.md:4526. Evidence: Never confirmed in the app; no test cited
 - [ ] **L259** `whiteboard` open, S: Enlarge the shape flyout trigger beyond the 10px caret for finger use. From OPEN.md:659; OPEN.md:2913. Evidence: Flyout built (c9712e1ab) but phone-size target not enlarged; no fix commit
-- [ ] **L260** `whiteboard` open, S: Fix wbtrash660.js 'Undo restores the board identically' failing on base. From OPEN.md:676. Evidence: scratchpad/ui-sweeps/wbtrash660.js exists; no fix commit found
 - [ ] **L261** `whiteboard` open, S: Fix wb-resize-handle title on non-frame objects and remove the dead .wb-map-actions coarse rule. From OPEN.md:1208; OPEN.md:2532. Evidence: whiteboard.js:23549 title text unchanged; .wb-map-actions rules live and pinned by tests/test_map_node_controls.py:126,235.
-- [ ] **L262** `whiteboard` open, S: Make dragging from the board sidebar (Library, Layers) onto trash delete. From OPEN.md:1236; OPEN.md:3464. Evidence: wbTrash (whiteboard.js:8500-8516) answers canvas gestures only; sidebar drag-to-trash not found.
 - [ ] **L263** `whiteboard` open, S: Compare converter stroke width (2 board px per stencil unit) against draw.io strokewidth=inherit. From OPEN.md:1323. Evidence: Row says not compared against draw.io strokewidth=inherit; no later comparison found.
 - [ ] **L264** `whiteboard` open, S: Fix wb-tool-section-label text overflowing its box by 49-56px. From OPEN.md:1118; OPEN.md:3697. Evidence: Selector still styled in 08-consistency.css:3067 and whiteboard-map.js; no overflow fix commit found
 - [ ] **L265** `whiteboard` open, S: Remove search/navigator toggles that duplicate View switches; add wbcontextphone.js sweep. From OPEN.md:3068. Evidence: UI_MODERNISATION Phase 8; wbcontextphone.js sweep not added

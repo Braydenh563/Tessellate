@@ -1479,6 +1479,11 @@ onSurface("board", () => {
     e.dataTransfer.setData("application/x-memorymap-library", tile._entry.ref);
     e.dataTransfer.effectAllowed = "copy";
     wbLibState.libDragging = tile._entry;
+    //: A tile you made (not a built-in) can be dragged to the delete target, as a board item can.
+    if (tile._entry.ref.startsWith("item:")) {
+      e.dataTransfer.effectAllowed = "copyMove";
+      wbTrash.dndBegin(() => wbLibDelete(tile._entry));
+    }
     //: **The tile's picture is what is carried, held where it was grabbed**
     //: (INBOX 664). The browser's own drag image was the whole tile, name
     //: and padding included, and where it was held meant nothing: the drop
@@ -1497,6 +1502,7 @@ onSurface("board", () => {
     if (grab && svg && e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(svg, grab.offset[0], grab.offset[1]);
   });
   list?.addEventListener("dragend", () => {
+    wbTrash.dndEnd();
     wbLibState.libDragging = null;
     wbLibState.libGrab = null;
     wbLibState.libPress = null;
@@ -1515,6 +1521,7 @@ onSurface("board", () => {
     wbMapShowDropTarget(topic && WB_MAP_KINDS.has(topic.kind) ? id : null);
   };
   canvas?.addEventListener("dragover", (e) => {
+    if (e.target.closest?.(".wb-trash")) return;
     if (e.dataTransfer?.types?.includes("application/x-memorymap-library")) {
       e.preventDefault();
       e.dataTransfer.dropEffect = "copy";
@@ -1526,6 +1533,7 @@ onSurface("board", () => {
   });
   canvas?.addEventListener("drop", (e) => {
     if (!e.dataTransfer?.types?.includes("application/x-memorymap-library") || !wbLibState.libDragging) return;
+    if (e.target.closest?.(".wb-trash")) return;
     e.preventDefault();
     e.stopPropagation();
     wbMapClearDropTarget();
@@ -2263,6 +2271,9 @@ onSurface("board", () => {
     wbLibState.layersDrag = li;
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/x-memorymap-layer", li.dataset.key);
+    //: Let go on the delete target and that object goes, as one Undo step (the same path as dragging it there on the board).
+    const key = li.dataset.key;
+    wbTrash.dndBegin(() => wbTrashDelete([key]).then(() => wbRenderLayers()));
   });
   const clearMarks = () => {
     for (const x of tree.querySelectorAll(".drop-above, .drop-below")) x.classList.remove("drop-above", "drop-below");
@@ -2286,6 +2297,7 @@ onSurface("board", () => {
     wbLibState.layersDrag = null;
   });
   tree.addEventListener("dragend", () => {
+    wbTrash.dndEnd();
     wbLibState.layersDrag = null;
     clearMarks();
   });

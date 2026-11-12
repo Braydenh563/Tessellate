@@ -4285,6 +4285,27 @@ def test_drag_to_delete_is_one_target_on_the_three_drags() -> None:
             assert "wb-trash" not in css.read_text(encoding="utf-8"), css.name
 
 
+def test_sidebar_drags_reach_the_delete_target() -> None:
+    """LEDGER L262 (INBOX 660 follow-up): a Layers row and a Library tile you made are the browser's own drag, which sends
+    no pointer moves, so the target answers dragover/drop itself and takes the pointer only for that drag
+    (`wb-trash-dnd`); a native drag's pointercancel must not hide it. A row deletes through `wbTrashDelete` (one Undo
+    step); a tile through `wbLibDelete` (its toast and Undo); built-in tiles offer nothing; the canvas's library drop
+    ignores a drop on the target. Measured: scratchpad/ui-sweeps/wbtrash660.js, 55/55 with the board and map."""
+    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    lib = (ROOT / "frontend" / "js" / "whiteboard-library.js").read_text(encoding="utf-8")
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    target = wb[wb.index("function wbTrashTarget(") :]
+    target = target[: target.index("\n}\n")]
+    for ev in ("dragover", "dragleave", "drop"):
+        assert f'addEventListener("{ev}"' in target, ev
+    assert "if (!wbTrash.drop) wbTrashHide();" in wb, "a native drag's pointercancel leaves the target up"
+    assert "wbTrash.dndBegin(() => wbTrashDelete([key])" in lib
+    assert 'if (tile._entry.ref.startsWith("item:"))' in lib and "wbTrash.dndBegin(() => wbLibDelete(tile._entry))" in lib
+    assert lib.count("wbTrash.dndEnd();") == 2, "both lists end the target on dragend"
+    assert lib.count('e.target.closest?.(".wb-trash")') == 2, "the canvas's library dragover and drop step aside"
+    assert ".wb-trash.wb-trash-dnd {" in lazy
+
+
 def test_presenting_is_one_mode_with_one_bar() -> None:
     """WHITEBOARD_PLAN decision 16 (DESIGN.md's presentation row): the View
     menu's row starts it, board only; one host class hides the chrome and

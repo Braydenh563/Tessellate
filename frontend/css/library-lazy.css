@@ -3712,6 +3712,11 @@ body.printing-doc #doc-preview p,
   transition: background-color var(--ui-fast) var(--ease-out), color var(--ui-fast) var(--ease-out), border-color var(--ui-fast) var(--ease-out), scale var(--ui-fast) var(--ease-out);
 }
 
+/* A Library tile or Layers row is the browser's own drag, so the target takes the pointer for that one. */
+.whiteboard-floating-panel.wb-trash.wb-trash-dnd {
+  pointer-events: auto;
+}
+
 .whiteboard-floating-panel.wb-trash .ph {
   font-size: 1.25em;
 }

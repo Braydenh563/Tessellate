@@ -8511,7 +8511,7 @@ function wbIsSecondTouch(event) {
 //: It sits above the edge auto-pan's band (3.5rem, `wbEdgePan.band`), so the
 //: board does not scroll away while the pointer travels to it, and the pan
 //: holds still while the pointer is over it.
-const wbTrash = { el: null, rect: null, down: [0, 0] };
+const wbTrash = { el: null, rect: null, down: [0, 0], drop: null };
 
 function wbTrashTarget() {
   if (wbTrash.el?.isConnected) return wbTrash.el;
@@ -8525,9 +8525,49 @@ function wbTrashTarget() {
   const label = document.createElement("span");
   label.className = "wb-trash-label";
   wbTrash.el.append(icon, label);
+  //: The sidebar's drags (Library tiles, Layers rows) are the browser's own drag and drop, which sends no pointer
+  //: moves, so the target answers dragover, dragleave and drop itself (INBOX 660 follow-up, LEDGER L262).
+  wbTrash.el.addEventListener("dragover", (e) => {
+    if (!wbTrash.drop) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (!wbTrash.el.classList.contains("wb-trash-hot")) wbTrashSetHot(true);
+  });
+  wbTrash.el.addEventListener("dragleave", (e) => {
+    if (!wbTrash.drop || wbTrash.el.contains(e.relatedTarget)) return;
+    //: Crossing from the icon to the label leaves a child with no related target in some engines: only the pointer's place says it left.
+    const r = wbTrash.el.getBoundingClientRect();
+    const inside = e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom;
+    if (!inside) wbTrashSetHot(false);
+  });
+  wbTrash.el.addEventListener("drop", (e) => {
+    if (!wbTrash.drop) return;
+    e.preventDefault();
+    const drop = wbTrash.drop;
+    wbTrash.dndEnd();
+    drop();
+  });
   host.appendChild(wbTrash.el);
   return wbTrash.el;
 }
+
+//: A sidebar item being dragged (a Library tile you made, a Layers row): `drop` runs if it is let go on the target.
+//: Called from that list's dragstart; its dragend calls `wbTrash.dndEnd`.
+wbTrash.dndBegin = (drop) => {
+  const el = wbTrashTarget();
+  if (!el) return;
+  wbTrash.drop = drop;
+  wbTrashSetHot(false);
+  el.classList.add("wb-trash-dnd");
+  el.classList.remove("hidden");
+};
+
+wbTrash.dndEnd = () => {
+  wbTrash.drop = null;
+  wbTrash.el?.classList.remove("wb-trash-dnd");
+  wbTrashSetHot(false);
+  wbTrashHide();
+};
 
 function wbTrashSetHot(hot) {
   const el = wbTrashTarget();
@@ -8566,7 +8606,8 @@ window.addEventListener("pointermove", (e) => {
     wbAnnounce(over ? "Over Delete. Release to delete, or move away to keep it." : "Off Delete.");
   }
 }, true);
-window.addEventListener("pointercancel", () => wbTrashHide(), true);
+//: A sidebar drag ends the pointer stream with a pointercancel the moment the browser takes the drag over, so that one leaves the target up.
+window.addEventListener("pointercancel", () => { if (!wbTrash.drop) wbTrashHide(); }, true);
 //: Any drag whose end returns before its own `wbTrashTake` and
 //: `wbEndGesture` would leave the target up and the move live until the next
 //: drag (INBOX 1405), so after every release, once the drags' own end
@@ -25426,7 +25467,10 @@ async function openWhiteboardBoard(boardId, opts = null) {
   //: `stay`: the caller has put `#library-view-whiteboard` where the board is wanted (a document's board panel, documents-board.js).
   if (!opts?.stay) {
     switchTab("library");
-    document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
+    //: Not pressed when it is already the chosen sub-tab: that press draws the boards list on a promise, which landed after
+    //: `wbShowCanvasView` below and hid the board just opened (a second open from a board, seen in wbtrash660.js).
+    const sub = document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]');
+    if (!sub?.classList.contains("active")) sub?.click();
   }
   wbShowCanvasView();
   const nudgeSaved = wbCancelBoardTimers();
