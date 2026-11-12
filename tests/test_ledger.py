@@ -81,3 +81,11 @@ def test_ready_to_merge_only_with_no_open_rows():
     named = [p for p in ledger.PLANS if f"`{p}`" in line] or list(ledger.PLANS)
     left = [rid for rid, plan, status in ledger.rows(TEXT) if plan in named and status in ("open", "partly")]
     assert not left, f"Now says ready to merge, but LEDGER still has {len(left)} open rows ({left[:5]})"
+
+
+def test_a_new_row_never_reuses_an_id_already_moved_to_history():
+    """`add` once reissued L-whiteboard-17 after the closed row had moved to HISTORY
+    (2026-11-12): two items shared one id. Ids closed into HISTORY stay taken."""
+    taken = ledger.taken_ids("whiteboard", "", "- [x] **L-whiteboard-17** `whiteboard` open, S: done.\n")
+    assert 17 in taken
+    assert ledger.next_id("whiteboard", "- [ ] **L-whiteboard-3** x\n", "- [x] **L-whiteboard-17** x\n") == "L-whiteboard-18"
