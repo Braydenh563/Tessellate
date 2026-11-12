@@ -58,6 +58,6 @@
 
 # HANDOVER
 
-**Now (2026-11-12c, PR 216, closing):** every open item outside the plans and BACKLOG is one row in `docs/roadmap/LEDGER.md`, tagged by plan, with a paste-in brief per plan session at its end; INBOX is intake only; agent-remaining, OPEN.md and the retired roadmap docs are gone (their open rows in LEDGER, their facts in the plans, DESIGN or ARCHITECTURE, their record in HISTORY). Next: the owner merges PR 216, then starts one session per plan from its LEDGER brief.
+**Now (2026-11-12d, PR 216, closing):** wave 1 (companion, composer, shell) is merged, independently reviewed and its findings fixed; wave 2 was cancelled before it started. Every open item outside the plans and BACKLOG is one row in `docs/roadmap/LEDGER.md`, tagged by plan, with a paste-in brief per plan session at its end; INBOX is intake only; agent-remaining, OPEN.md and the retired roadmap docs are gone (their open rows in LEDGER, their facts in the plans, DESIGN or ARCHITECTURE, their record in HISTORY). Next: the owner merges PR 216, then starts one session per plan from its LEDGER brief.
 
 The session record that stood here (morning summaries, the 2026-09-08 orders, the dated Now lines to 2026-11-12b) is in HISTORY.md, "HANDOVER session record (moved 2026-11-12)".

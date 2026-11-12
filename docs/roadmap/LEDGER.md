@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 8 | 17 | 4 | 5 | 4 | 29 |
-| chat | 38 | 167 | 59 | 38 | 55 | 264 |
+| chat | 38 | 167 | 60 | 38 | 55 | 265 |
 | whiteboard | 24 | 25 | 4 | 0 | 8 | 53 |
 | documents | 44 | 50 | 17 | 7 | 16 | 111 |
 | mindmap | 27 | 22 | 5 | 5 | 2 | 54 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 25 | 3 | 3 | 5 | 28 |
 | world-class | 79 | 146 | 58 | 31 | 68 | 283 |
 | general | 0 | 21 | 0 | 0 | 1 | 21 |
-| all | 289 | 558 | 154 | 109 | 172 | 1001 |
+| all | 289 | 558 | 155 | 109 | 172 | 1002 |
 
 ## graph
 
@@ -271,6 +271,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-6** `chat` open, S: 'which is oldest, Shopping or Todo' answers with the Shopping checklist line, not a date comparison. From composerA 2026-11-12.
 - [ ] **L-chat-7** `chat` open, S: Companion stretches (app and desk) when a long writing run ends. From Brief 88 N9; review 2026-11-12. Evidence: companion-menu.js:713 typing_burst plays a nod after 30 s, not a stretch after a minute
 - [ ] **L-chat-8** `chat` open, M: Contradiction answer: wire supersede.py in or record that the insights reader replaces it; the PAR1 imperative remainder. From ledger-1112 PAR1; review 2026-11-12. Evidence: chat_extra.py:57 contradiction asks reach the insights contrast reader; supersede.py feeds composer_select and composer_digest only; composer_suggest.py:52 _IMPERATIVE unchanged
+- [ ] **L-chat-9** `chat` partly, M: "and the dentist" after "when is the passport renewal" keeps the when ask, live and in a reopened chat. From ledger-1112 O4 (L239); review 2026-11-12. Evidence: composer_dialogue.py _swap_reading drops an "and X" with no "?", so it falls to a topic dump with dates=[]; two strict-xfail route tests in tests/test_composer_pa_1112.py
 
 ## whiteboard
 
