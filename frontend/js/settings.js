@@ -206,7 +206,18 @@ function showSettingsSection(name) {
   if (name === "personas") renderPersonas(read).catch(() => {});
   if (name === "skills") renderSkillSettings();
   if (name === "templates") renderTemplateSettings();
-  if (name === "tools") renderToolSettings();
+  if (name === "tools") {
+    renderToolSettings();
+    //: `#pref-mcp-writes` sits in Tools and was filled only by
+    //: `renderAutonomousSettings`, so Tools opened first showed it unchecked
+    //: over a preference that was on (L523, the Models case below over again).
+    apiJson("/preferences")
+      .then((prefs) => {
+        prefsCache = prefs;
+        $("pref-mcp-writes").checked = Boolean(prefs.mcp_writes_enabled);
+      })
+      .catch(() => {});
+  }
   if (name === "memory") renderMemorySettings().catch(() => {});
   //: The Learned section lives in settings-controls.js (lazy, 2026-11-02, eager gzip headroom).
   if (name === "learned") ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
