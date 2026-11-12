@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8366, frontend ids 2770, CSS sections 524, backend routes 702, backend modules 10798, test files 2702, tests 21966, plan headings 689, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8366, frontend ids 2770, CSS sections 524, backend routes 702, backend modules 10799, test files 2702, tests 21966, plan headings 689, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8366)
 
@@ -13338,7 +13338,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/import` | POST | `import_board` | src/tessellate/api/wb_make.py:315 |
 | `/boards/propose` | POST | `propose_map` | src/tessellate/api/wb_make.py:123 |
 | `/boards/{board_id}` | PUT | `rename_board` | src/tessellate/api/wb_boards.py:523 |
-| `/boards/{board_id}/affinity` | POST | `affinity_sort` | src/tessellate/api/routes_board_affinity.py:202 |
+| `/boards/{board_id}/affinity` | POST | `affinity_sort` | src/tessellate/api/routes_board_affinity.py:197 |
 | `/boards/{board_id}/duplicate` | POST | `duplicate_board` | src/tessellate/api/wb_boards.py:357 |
 | `/boards/{board_id}/export` | GET | `export_board` | src/tessellate/api/wb_export.py:685 |
 | `/boards/{board_id}/nodes` | POST | `create_map_node` | src/tessellate/api/wb_map.py:98 |
@@ -13959,7 +13959,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10798)
+## Backend modules (10799)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21365,17 +21365,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `AffinityBody` | src/tessellate/api/routes_board_affinity.py:51 |
-| `_all_groups` | src/tessellate/api/routes_board_affinity.py:188 |
-| `_ask_model` | src/tessellate/api/routes_board_affinity.py:109 |
-| `_backing` | src/tessellate/api/routes_board_affinity.py:153 |
-| `_by_words` | src/tessellate/api/routes_board_affinity.py:59 |
-| `_model_groups` | src/tessellate/api/routes_board_affinity.py:131 |
-| `_stem` | src/tessellate/api/routes_board_affinity.py:149 |
-| `_sticky_rows` | src/tessellate/api/routes_board_affinity.py:168 |
-| `_words` | src/tessellate/api/routes_board_affinity.py:55 |
-| `affinity_sort` | src/tessellate/api/routes_board_affinity.py:203 |
-| `bounded_chat` | src/tessellate/api/routes_board_affinity.py:91 |
+| `AffinityBody` | src/tessellate/api/routes_board_affinity.py:50 |
+| `_all_groups` | src/tessellate/api/routes_board_affinity.py:183 |
+| `_ask_model` | src/tessellate/api/routes_board_affinity.py:108 |
+| `_backing` | src/tessellate/api/routes_board_affinity.py:152 |
+| `_by_words` | src/tessellate/api/routes_board_affinity.py:58 |
+| `_model_groups` | src/tessellate/api/routes_board_affinity.py:130 |
+| `_stem` | src/tessellate/api/routes_board_affinity.py:148 |
+| `_sticky_rows` | src/tessellate/api/routes_board_affinity.py:167 |
+| `_words` | src/tessellate/api/routes_board_affinity.py:54 |
+| `affinity_sort` | src/tessellate/api/routes_board_affinity.py:198 |
+| `bounded_chat` | src/tessellate/api/routes_board_affinity.py:90 |
 
 ### src/tessellate/api/routes_board_history.py (28)
 
@@ -27354,11 +27354,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `recent` | src/tessellate/repo/voice.py:37 |
 | `this_day_before` | src/tessellate/repo/voice.py:41 |
 
-### src/tessellate/repo/whiteboard.py (1)
+### src/tessellate/repo/whiteboard.py (2)
 
 | Name | File:line |
 |---|---|
 | `preview_stamps` | src/tessellate/repo/whiteboard.py:15 |
+| `text_objects` | src/tessellate/repo/whiteboard.py:40 |
 
 ### src/tessellate/search/chunks.py (18)
 
