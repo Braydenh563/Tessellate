@@ -639,7 +639,8 @@ different problem than the list says.
     and measures 88 text elements at 390. Result: 33 surfaces per run, 0
     low-contrast, at 390, 820 and 1440 in light and dark.
 
-    Still open: the screenshot set for the owner.
+    The owner screenshot set was dropped (owner 2026-11-12, LEDGER L762):
+    anything needing the owner's eye is asked as its own question with numbers.
 
 12. **Content gets the screen: built** (2026-09-23, INBOX 392: "the mobile
     view is still very broken, takes up a lot of the screen"). Gate:
