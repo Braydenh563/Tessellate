@@ -3966,7 +3966,9 @@ const DOC_CONSOLE_INTERRUPT_MS = 3000;
 function docConsoleOvertime(seq, lang) {
   if (!docRun || docRun.evalId !== seq) return;
   if (lang !== "python" || docRun.interrupted === seq) {
-    docRunStop("Stopped: the line was still running.");
+    docRunStop(`Stopped after ${DOC_RUN_TIMEOUT_MS / 1000} seconds: the line was still running.`);
+    //: The worker is gone with the names the last run left (L293); what the page holds stays and the console says which is which.
+    docRunRow("info", `Stopped after ${DOC_RUN_TIMEOUT_MS / 1000} seconds. The output above is kept, and so is Problems; the names the last run left are gone. Run the file again to bring them back.`, null, docRun.consoleLog, false);
     return;
   }
   docRun.interrupted = seq;
