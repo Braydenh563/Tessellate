@@ -8809,6 +8809,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Aspect</b>: sets the height from the width to a common ratio.</p>
               <p><b>Angle</b>: turns it about its centre, in degrees.</p>
               <p><b>Flip</b>: mirrors it left to right or top to bottom.</p>
+              <p><b>Connection points</b> (one shape): the points a connector can join. Pick one to hold it on the outline when the shape is resized, or nudge it by pixels; add one by pressing the outline, or remove the chosen one. Each change is one Undo step, and draw.io files keep them.</p>
             </div>
             <div class="wb-fmt-row" data-fmt="geometry" data-unit="px" role="group" aria-label="Position"><span class="wb-fmt-label">Position</span>
               <span class="wb-fmt-pair">
@@ -8840,6 +8841,22 @@ Link to another note with [[its first few words]]."></textarea>
               <span class="wb-fmt-buttons">
                 <button type="button" id="wb-fmt-flip-h" class="ghost small icon-only" title="Flip left to right" aria-label="Flip left to right"><i class="ph ph-flip-horizontal" aria-hidden="true"></i></button>
                 <button type="button" id="wb-fmt-flip-v" class="ghost small icon-only" title="Flip top to bottom" aria-label="Flip top to bottom"><i class="ph ph-flip-vertical" aria-hidden="true"></i></button>
+              </span>
+            </div>
+            <label class="wb-fmt-row" data-fmt="ports" hidden><span class="wb-fmt-label">Connection point</span>
+              <select id="wb-fmt-port" aria-label="Connection point" title="The shape's connection points, where a connector can join; choose one to change it"></select>
+            </label>
+            <div class="wb-fmt-row" data-fmt="ports" hidden><span class="wb-fmt-label">Edit points</span>
+              <span class="wb-fmt-buttons">
+                <button type="button" id="wb-fmt-port-add" class="ghost small icon-only" title="Add a point: press the outline, then Escape to finish" aria-label="Add a connection point"><i class="ph ph-plus" aria-hidden="true"></i></button>
+                <button type="button" id="wb-fmt-port-del" class="ghost small icon-only" title="Remove the chosen point" aria-label="Remove the chosen connection point"><i class="ph ph-minus" aria-hidden="true"></i></button>
+                <label class="wb-snap-label" title="Keep the chosen point on the outline when the shape is resized"><input type="checkbox" id="wb-fmt-port-perim" aria-label="Chosen point on the outline"><span>On outline</span></label>
+              </span>
+            </div>
+            <div class="wb-fmt-row" data-fmt="ports"><span class="wb-fmt-label">Nudge</span>
+              <span class="wb-fmt-quad">
+                <label class="wb-fmt-num"><span class="wb-fmt-label">X</span><input type="number" id="wb-fmt-port-dx" min="-2000" max="2000" step="1" placeholder="0" aria-label="Chosen point, pixels across" title="Pixels across from its place on the shape; negative is left"></label>
+                <label class="wb-fmt-num"><span class="wb-fmt-label">Y</span><input type="number" id="wb-fmt-port-dy" min="-2000" max="2000" step="1" placeholder="0" aria-label="Chosen point, pixels down" title="Pixels down from its place on the shape; negative is up"></label>
               </span>
             </div>
           </div>

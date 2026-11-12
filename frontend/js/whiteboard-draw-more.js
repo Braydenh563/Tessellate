@@ -230,12 +230,22 @@
       return null;
     }
     if (!length) return null;
-    let best = null, bestDist = Infinity;
+    let best = null, bestDist = Infinity, bestAt = 0;
+    const at = (n) => wbLinkMeasurePath.getPointAtLength(n);
     for (let i = 0; i <= 240; i++) {
-      const q = wbLinkMeasurePath.getPointAtLength((length * i) / 240);
+      const q = at((length * i) / 240);
       const dist = Math.hypot(q.x - x, q.y - y);
-      if (dist < bestDist) { bestDist = dist; best = q; }
+      if (dist < bestDist) { bestDist = dist; best = q; bestAt = i; }
     }
+    //: Then a narrowing search between the two samples either side of the best, so a long outline is not off by half a step.
+    let lo = (length * Math.max(0, bestAt - 1)) / 240, hi = (length * Math.min(240, bestAt + 1)) / 240;
+    for (let i = 0; i < 14; i++) {
+      const a = lo + (hi - lo) / 3, b = hi - (hi - lo) / 3;
+      const qa = at(a), qb = at(b);
+      if (Math.hypot(qa.x - x, qa.y - y) < Math.hypot(qb.x - x, qb.y - y)) hi = b; else lo = a;
+    }
+    const fine = at((lo + hi) / 2);
+    if (Math.hypot(fine.x - x, fine.y - y) <= bestDist) { best = fine; bestDist = Math.hypot(fine.x - x, fine.y - y); }
     const w = box.maxX - box.minX || 1, h = box.maxY - box.minY || 1;
     const round = (n) => Math.round(n * 1e4) / 1e4;
     return best ? { x: round((best.x - box.minX) / w), y: round((best.y - box.minY) / h), dist: bestDist } : null;
@@ -280,6 +290,92 @@
     await savePorts(target.item, [], "Connection points back to the standard ones.");
   }
 
+  //: **Format's connection-point rows** (L-whiteboard-13; draw.io's `editConnectionPoints` and its `points` constraints): for
+  //: the one selected closed shape, a list of its points, Add (the outline editor above), Remove, "On outline" (`perimeter`)
+  //: and a pixel nudge (`dx`, `dy`) of the chosen point. Each edit is one `savePorts`, so one Undo step. A shape on its
+  //: standard points shows them; the first edit makes them its own, as the outline editor does.
+  const MAX_OFFSET = 2000;
+  const portRow = { i: 0 };
+
+  //: The points as stored (not slid to the outline), or the standard ones, as copies to change.
+  function rawPorts(target) {
+    const own = Array.isArray(target.parsed.ports) && target.parsed.ports.length ? target.parsed.ports : wbPortFractions("sketch", target.item);
+    return own.map((q) => ({ ...q }));
+  }
+
+  function portWords(q, i) {
+    const place = `${Math.round(q.x * 100)}%, ${Math.round(q.y * 100)}%`;
+    return `${i + 1}: ${q.name ? `${q.name}, ` : ""}${place}${q.perimeter ? ", on outline" : ""}`;
+  }
+
+  function fillPortFields(q) {
+    if (!q) return;
+    document.getElementById("wb-fmt-port-perim").checked = Boolean(q.perimeter);
+    for (const key of ["dx", "dy"]) {
+      const el = document.getElementById(`wb-fmt-port-${key}`);
+      if (document.activeElement !== el) el.value = Number(q[key]) ? String(q[key]) : "";
+    }
+  }
+
+  function syncPortsRow(takes, entries) {
+    if (!takes.has("ports")) return;
+    const target = entries.length === 1 && entries[0].kind === "sketch" ? wbSwapTarget() : null;
+    for (const row of document.querySelectorAll('[data-fmt="ports"]')) row.hidden = !target;
+    const select = document.getElementById("wb-fmt-port");
+    if (!target || !select || document.activeElement === select) return;
+    const ports = rawPorts(target);
+    portRow.i = Math.max(0, Math.min(ports.length - 1, portRow.i));
+    select.replaceChildren(...ports.map((q, i) => {
+      const option = document.createElement("option");
+      option.value = String(i);
+      option.textContent = portWords(q, i);
+      return option;
+    }));
+    select.value = String(portRow.i);
+    fillPortFields(ports[portRow.i]);
+  }
+
+  //: One edit of the chosen point: `change(port, ports)` may change it or the list; the list is saved in one step.
+  async function editChosenPort(change, said) {
+    const target = wbSwapTarget();
+    if (!target) return;
+    const ports = rawPorts(target);
+    const q = ports[Math.max(0, Math.min(ports.length - 1, portRow.i))];
+    if (!q) return;
+    change(q, ports);
+    await savePorts(target.item, ports, said);
+  }
+
+  function bindPortsRows() {
+    const field = (id) => document.getElementById(id);
+    field("wb-fmt-port")?.addEventListener("change", (e) => {
+      portRow.i = Math.max(0, Number(e.target.value) || 0);
+      const target = wbSwapTarget();
+      if (target) fillPortFields(rawPorts(target)[portRow.i]);
+    });
+    field("wb-fmt-port-add")?.addEventListener("click", () => editPorts());
+    field("wb-fmt-port-del")?.addEventListener("click", () => editChosenPort((q, ports) => {
+      ports.splice(portRow.i, 1);
+      portRow.i = Math.max(0, portRow.i - 1);
+    }, "Connection point taken out."));
+    field("wb-fmt-port-perim")?.addEventListener("change", (e) => {
+      const on = e.target.checked;
+      return editChosenPort((q) => {
+        if (on) q.perimeter = true; else delete q.perimeter;
+      }, on ? "Connection point held on the outline." : "Connection point free of the outline.");
+    });
+    for (const key of ["dx", "dy"]) {
+      field(`wb-fmt-port-${key}`)?.addEventListener("change", (e) => {
+        const n = Math.round(Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, Number(e.target.value) || 0)) * 100) / 100;
+        return editChosenPort((q) => {
+          if (n) q[key] = n; else delete q[key];
+        }, `Connection point moved ${n} pixels ${key === "dx" ? "across" : "down"}.`);
+      });
+    }
+  }
+
+  onSurface("board", bindPortsRows);
+
   function bindPortEditor() {
     const container = document.getElementById("whiteboard-container");
     if (!container) return;
@@ -292,7 +388,7 @@
       }
       const [x, y] = wbClientToBoard(e.clientX, e.clientY);
       const grab = GRAB_PX / zoomK();
-      const ports = wbPortFractions("sketch", target.item).map((q) => ({ ...q }));
+      const ports = rawPorts(target);
       const hit = wbAnchorPositions("sketch", target.item).findIndex((q) => Math.hypot(q.x - x, q.y - y) <= grab);
       const near = hit < 0 ? outlineNear(target.parsed.d, x, y) : null;
       if (hit < 0 && !(near && near.dist <= grab * 1.5)) {
@@ -306,6 +402,7 @@
         savePorts(target.item, ports, ports.length ? "Connection point taken out." : "No points left of its own: the standard connection points are back.");
       } else {
         ports.push({ x: near.x, y: near.y });
+        portRow.i = ports.length - 1;
         savePorts(target.item, ports, `Connection point added; the shape has ${ports.length}.`);
       }
     }, true);
@@ -365,5 +462,5 @@
     });
   }
 
-  wbFmtState.drawMore = { routeStops, entityStops, isometricStops, loopSegs, addLoop, syncLoopRow, sameEnd, SIDES, label2T, paintLabel2, layoutLabel2, snapToOutline, nameBeside, editPorts, resetPorts, outlineNear, frameOf, linkWords, pageLinkItem };
+  wbFmtState.drawMore = { routeStops, entityStops, isometricStops, loopSegs, addLoop, syncLoopRow, sameEnd, SIDES, label2T, paintLabel2, layoutLabel2, snapToOutline, nameBeside, editPorts, syncPortsRow, resetPorts, outlineNear, frameOf, linkWords, pageLinkItem };
 })();

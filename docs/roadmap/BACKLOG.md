@@ -252,7 +252,6 @@ in the Library's Whiteboards gallery. **Pointer:** every open whiteboard questio
 section 4 (the gap matrix), section 5 (draw.io) and section 8 (the object library).
 The raster-versus-structured reasoning that stood here is in this file's git history.
 
-- **Port offsets and a ports editor** (LEDGER L-whiteboard-13, WHITEBOARD_PLAN "Decisions, 2026-10-10" item 2): draw.io's `points` `dx`, `dy` pixel offsets become optional port fields, and `perimeter: 1` ports slide to the outline, once a shape needs them; the flag is already kept on import. Not now: no board shape needs either yet.
 
 ---
 

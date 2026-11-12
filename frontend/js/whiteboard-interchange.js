@@ -520,6 +520,38 @@ function wbDrawioLook(s) {
   return look;
 }
 
+//: **A shape's own connection points in a draw.io style** (a property of `wbDrawioStyle`, to add no global) (`points=[[x,y,perimeter,dx,dy],...]`, L-whiteboard-13): the two
+//: fractions of the box, whether the point slides to the outline, and a pixel offset from there. They are the shape's
+//: `ports` (the name is the board's own and has no place in the style). `read` is bounded as the server bounds them.
+wbDrawioStyle.points = {
+  MAX: 64,
+  OFFSET: 2000,
+  read(style) {
+    let list = null;
+    try { list = JSON.parse(style?.points); } catch { return []; }
+    if (!Array.isArray(list)) return [];
+    const round = (n) => Math.round(n * 1e4) / 1e4;
+    const out = [];
+    for (const q of list) {
+      if (!Array.isArray(q) || !Number.isFinite(q[0]) || !Number.isFinite(q[1]) || Math.abs(q[0]) > 4 || Math.abs(q[1]) > 4) continue;
+      const port = { x: round(q[0]), y: round(q[1]) };
+      if (Number(q[2]) === 1) port.perimeter = true;
+      for (const [key, i] of [["dx", 3], ["dy", 4]]) {
+        const n = Number(q[i]);
+        if (Number.isFinite(n) && n !== 0) port[key] = round(Math.max(-wbDrawioStyle.points.OFFSET, Math.min(wbDrawioStyle.points.OFFSET, n)));
+      }
+      out.push(port);
+      if (out.length >= wbDrawioStyle.points.MAX) break;
+    }
+    return out;
+  },
+  write(ports) {
+    const list = (Array.isArray(ports) ? ports : []).filter((q) => Number.isFinite(q?.x) && Number.isFinite(q?.y)).slice(0, wbDrawioStyle.points.MAX);
+    if (!list.length) return "";
+    return `points=${JSON.stringify(list.map((q) => [q.x, q.y, q.perimeter ? 1 : 0, Number(q.dx) || 0, Number(q.dy) || 0]))};`;
+  },
+};
+
 //: What a vertex is drawn as, from its style: the kinds the board has a
 //: path for, else a box (counted when its shape was something else).
 function wbDrawioShape(s) {
@@ -568,7 +600,8 @@ function wbDrawioPlan(cells) {
     else {
       const shape = wbDrawioShape(s);
       if (shape === "rect" && (s.shape || (s._kind && !["rounded", "whiteSpace", "html"].includes(s._kind)))) drop(`shape ${s.shape || s._kind}`);
-      items.push({ id: c.id, kind: "shape", ...box, shape, label, look: wbDrawioLook(s) });
+      const ports = wbDrawioStyle.points.read(s);
+      items.push({ id: c.id, kind: "shape", ...box, shape, label, look: wbDrawioLook(s), ...(ports.length ? { ports } : {}) });
     }
   }
   for (const c of cells) {
@@ -669,7 +702,7 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
     const shape = WB_DRAWIO_SHAPES_OUT[d.shape] || "rounded=0";
     const width = Math.max(1, Math.round((Number(d.width) || 2) / 2));
     vertex(`sketch:${sk.id}`,
-      `${shape};whiteSpace=wrap;html=0;${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}${hex(d.fill) ? `fillColor=${hex(d.fill)};` : "fillColor=none;"}${opacityKeys(d)}strokeWidth=${width};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}${font(d.label_size, d.label_bold, d.label_italic, d.label_underline, d.label_color)}`,
+      `${shape};whiteSpace=wrap;html=0;${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}${hex(d.fill) ? `fillColor=${hex(d.fill)};` : "fillColor=none;"}${opacityKeys(d)}strokeWidth=${width};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}${wbDrawioStyle.points.write(d.ports)}${font(d.label_size, d.label_bold, d.label_italic, d.label_underline, d.label_color)}`,
       d.label || "", { x: bb.minX, y: bb.minY, w: bb.maxX - bb.minX, h: bb.maxY - bb.minY });
   }
   for (const [sk, d] of links) {
@@ -1075,6 +1108,7 @@ async function wbDrawioPlace(plan, dx, dy, ink) {
   for (const item of plan.items.filter((i) => i.kind === "shape")) {
     const data = { d: wbDrawioPath(item.shape, item.x + dx, item.y + dy, item.w, item.h), shape: item.shape === "ellipse" ? "circle" : item.shape === "diamond" ? "diamond" : item.shape === "rect" ? "rect" : "custom", color: ink, ...item.look };
     if (item.label) data.label = item.label;
+    if (item.ports?.length) data.ports = item.ports;
     const made = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
     wbState.sketches.push(made);
     ids.set(item.id, ["sketch", made.id]);

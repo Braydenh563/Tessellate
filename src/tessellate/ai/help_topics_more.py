@@ -2330,7 +2330,10 @@ MORE_TOPICS.extend([
             "handle on each corner. Drag a handle to move that corner (it snaps to the grid when the grid is on), "
             "press the outline to add a corner there and drag it, press a corner without moving to take it out "
             "(three stay). The connectors on the shape follow. Each change is one Undo, Escape during a drag puts the corner "
-            "back, and Escape otherwise finishes. A shape with curves, an open line or two outlines has no corners to edit."
+            "back, and Escape otherwise finishes. A shape with curves, an open line or two outlines has no corners to edit. "
+            "Connection points are separate: Format, Position and size lists a shape's connection points. Pick one to hold it on the outline (On outline) "
+            "so it stays on the edge when the shape is resized, nudge it by pixels, add one or remove the chosen one, each change one Undo step; "
+            "a draw.io file's points, with their pixel offsets, come in and go back out."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

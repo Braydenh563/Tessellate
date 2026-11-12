@@ -743,3 +743,16 @@ def test_map_build_up_and_level_stepping_are_in_the_keys_sheet_the_menus_and_the
     assert "Alt+= and Alt+- show one more or one less level" in text
     assert "Build up branch by branch shows the centre, then each branch a level at a time" in text
     assert "End shows the whole map to take it apart" in text
+
+
+def test_the_format_panels_connection_point_rows_are_in_the_guide_in_the_controls_words() -> None:
+    """L-whiteboard-13: Format, Position and size lists a shape's connection points (pick, On outline, nudge, add, remove); the
+    Guide says so in the words the rows carry, and the rows are in the page."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = " ".join(str(t["body"]) for t in HELP_TOPICS if "Format, Position and size lists a shape's connection points" in str(t["body"]))
+    for words in ("On outline", "nudge it by pixels", "add one or remove the chosen one", "one Undo step", "draw.io file's points"):
+        assert words in body, words
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    for words in ("Connection point", "On outline", "Add a connection point", "Remove the chosen connection point", "Nudge"):
+        assert words in html, words

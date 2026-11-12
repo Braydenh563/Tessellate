@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: a shape's connection points keep draw.io's pixel offsets and "on outline" flag (`points=[[x,y,perimeter,dx,dy]]` comes in and goes back out on .drawio export), a point on the outline stays on it after a resize (nearest-point search refined between samples), and Format, Position and size lists a shape's points to add, remove, hold on the outline or nudge, one Undo step each (L-whiteboard-13, `scratchpad/ui-sweeps/wbports-offsets.js` 19/19).
 - Whiteboard: Export as PDF now writes the file itself instead of opening Print: A4 or Letter, auto, portrait or landscape, and one page, one page per frame, or tiled pages (`wbPdf.plan`, `wbPdf.build`; a two-frame board is a two-page PDF, `tests/test_wb_export_pdf.py`); the export dialog says "Export this branch" when opened for a branch (map menu passes `{ branch: true }`).
 - Code: the board export reads the drawn page in one place (`wbExportLook`), so `wbBuildExportSvg` builds the picture from board data and touches no element; the exported SVG is identical on a fixed board and map (`scratchpad/ui-sweeps/wbexport-parity.js`, 20 of 20, `tests/test_wb_export_builder.py`).
 - Board and map: when Atlas or another tab changes an item, only the Undo and Redo steps that name that item leave the history (a one-line toast says how many), and the rest stay (L274, `ext` check 5/5, Redo after add, collapse and delete on a map 13/13 in `mapdepth2.js mapredo`).

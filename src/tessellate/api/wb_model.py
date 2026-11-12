@@ -358,6 +358,34 @@ _SKETCH_NUMBERS = {"width": (0, 400), "opacity": (0, 1)}
 _SKETCH_COLOURS = ("color", "fill", "label_color")
 
 
+#: A shape's own connection points (draw.io's `points`): up to 64, each two fractions of the box (a little past the edge is
+#: allowed), an optional pixel offset, the flag that holds it on the outline and a name.
+_MAX_PORTS = 64
+_PORT_FRACTION = 4
+_PORT_OFFSET = 2000
+
+
+def _number(value: object) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and abs(value) < 1e9
+
+
+def _bad_port(port: object) -> bool:
+    """A port that is not `{x, y}` fractions with optional pixel offsets, a perimeter flag and a short name."""
+    if not isinstance(port, dict) or "x" not in port or "y" not in port:
+        return True
+    if not all(_number(port[k]) and abs(port[k]) <= _PORT_FRACTION for k in ("x", "y")):
+        return True
+    if not all(_number(port[k]) and abs(port[k]) <= _PORT_OFFSET for k in ("dx", "dy") if k in port):
+        return True
+    if "perimeter" in port and not isinstance(port["perimeter"], bool):
+        return True
+    return "name" in port and not (isinstance(port["name"], str) and len(port["name"]) <= 80)
+
+
+def _bad_ports(ports: object) -> bool:
+    return not isinstance(ports, list) or len(ports) > _MAX_PORTS or any(_bad_port(p) for p in ports)
+
+
 def _bad_sketch_field(parsed: dict) -> str | None:
     """The first field of a sketch's JSON that is not a value the page can draw."""
     path = parsed.get("d")
@@ -384,7 +412,9 @@ def check_sketch_data(data: str) -> str:
         raise Said("This drawing is nested too deeply to save.") from exc
     except ValueError:
         return data
-    bad = _bad_sketch_field(parsed) if isinstance(parsed, dict) else None
+    bad = None
+    if isinstance(parsed, dict):
+        bad = "ports" if "ports" in parsed and _bad_ports(parsed["ports"]) else _bad_sketch_field(parsed)
     if bad:
         raise Said(f"The drawing's {bad} is not something the board can draw.")
     return data
