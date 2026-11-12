@@ -1851,7 +1851,7 @@ const timelineSpans = {
     marker.dataset.gapFirst = gap.first;
     const line = document.createElement("span");
     line.className = "muted";
-    line.textContent = gap.days < 14 ? `Nothing written for ${gap.days} days` : `Nothing written for ${Math.floor(gap.days / 7)} weeks`;
+    line.textContent = gap.days < 14 ? `Nothing written for ${nounCount(gap.days, "day")}` : `Nothing written for ${nounCount(Math.floor(gap.days / 7), "week")}`;
     const long = new Date(`${gap.first}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
     marker.append(line, smallButton("ph:question What happened here?", `Start a page for ${long}`, () => openDayPage(gap.first)));
     return marker;
@@ -1928,7 +1928,7 @@ const timelineSpans = {
     const day = (key) => new Date(`${key}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
     openSheet({
       label: start === end ? day(start) : `${day(start)} to ${day(end)}`,
-      sub: body.notes.length === 1 ? "One note in these days." : `${body.notes.length} notes in these days.`,
+      sub: body.notes.length + (body.more || 0) === 1 ? "One note in these days." : `${nounCount(body.notes.length + (body.more || 0), "note")} in these days.`,
       name: "timeline-span",
       build: (card, close) => {
         card.classList.add("inbox-card");

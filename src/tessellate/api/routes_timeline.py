@@ -864,6 +864,9 @@ def _thread_bands(notes: list[dict]) -> list[dict]:
 #: The longest span a brush may ask about: a year and a day, the strip's own
 #: longest reach (`/entries/daily`'s window has the same bound).
 SPAN_DIGEST_MAX_DAYS = 366
+#: The sheet lists the span's notes beside the review; past this many it lists
+#: the oldest and `more` says how many were left out.
+SPAN_NOTES_MAX = 200
 
 
 SPAN_QUESTION = (
@@ -914,9 +917,9 @@ def span_digest(start: str, end: str, session: Session = Depends(get_session)) -
     try:
         first, last = date.fromisoformat(start), date.fromisoformat(end)
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="start and end are days, YYYY-MM-DD") from exc
+        raise HTTPException(status_code=422, detail="Pick a first day and a last day.") from exc
     if last < first or (last - first).days >= SPAN_DIGEST_MAX_DAYS:
-        raise HTTPException(status_code=422, detail=f"a span runs forwards and is at most {SPAN_DIGEST_MAX_DAYS} days")
+        raise HTTPException(status_code=422, detail=f"Pick a last day after the first, at most {SPAN_DIGEST_MAX_DAYS} days on.")
     now = user_now(deps.get_config())
     text, notes = review_digest.span(session, first, last, now)
     said = _span_said_by_model(notes, first, last, now)
@@ -927,6 +930,7 @@ def span_digest(start: str, end: str, session: Session = Depends(get_session)) -
         "composed": not said,
         "notes": [
             {"id": n["id"], "title": activity._note_name(n["content"]), "day": n["created_at"][:10], "category": n["category"]}
-            for n in notes
+            for n in notes[:SPAN_NOTES_MAX]
         ],
+        "more": max(0, len(notes) - SPAN_NOTES_MAX),
     }

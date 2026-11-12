@@ -224,7 +224,7 @@ def test_the_windowed_timeline_feed_does_not_lock_its_rows():
         _strip_comments(p.read_text(encoding="utf-8"))
         for p in sorted((FRONTEND_DIR / "css").glob("*.css"))
     )
-    for m in re.finditer(r"([^{}]*\.timeline-row[^{}]*)\{([^}]*)\}", css):
+    for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]*\.timeline-row[^{}]*)\{([^}]*)\}", css):
         assert "content-visibility" not in m.group(2), m.group(1).strip()
 
 
