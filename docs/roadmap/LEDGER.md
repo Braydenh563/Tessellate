@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 8 | 17 | 5 | 5 | 4 | 30 |
-| chat | 38 | 165 | 60 | 38 | 55 | 263 |
+| chat | 38 | 167 | 59 | 38 | 55 | 264 |
 | whiteboard | 24 | 25 | 5 | 0 | 7 | 54 |
 | documents | 44 | 50 | 17 | 7 | 16 | 111 |
 | mindmap | 27 | 22 | 5 | 5 | 2 | 54 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 25 | 4 | 3 | 5 | 29 |
 | world-class | 79 | 146 | 61 | 31 | 68 | 286 |
 | general | 0 | 20 | 0 | 0 | 1 | 20 |
-| all | 289 | 555 | 163 | 108 | 171 | 1007 |
+| all | 289 | 557 | 162 | 108 | 171 | 1008 |
 
 ## graph
 
@@ -166,7 +166,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L138** `chat` open, M: Atlas idle cost: avatars.js timers, 670 recalcs/min, one 200 ms grid, nm-buddy layer stop under hint. From OPEN.md:2865; a30p-1103.md Found, not fixed; OPEN.md:2884. Evidence: Behaviour picker and perch checks not yet profiled; no later fix found
 - [ ] **L139** `chat` open, M: Companion trips to places with no window; trip frequency measured in visible modes. From OPEN.md:4430; OPEN.md:4431. Evidence: w34-unv2-1111.md marks true; trips to taskbar edge/free corner not confirmed built
 - [ ] **L140** `chat` open, M: Right-click to change companion in the enlarged popup view. From OPEN.md:1080; OPEN.md:3441. Evidence: contextmenu handlers exist for avatars.js:11286 and desk-companion.js:554 only; none in atlas*.js enlarged view
-- [ ] **L141** `chat` partly, M: Life layer: the desk's micro-saccades (an eye-only look). Stand-loop drift and floater breath were built in E3 (`STAND_LEAN`, `_stand_breath`, `drift_phase`); the media-playing reaction is L-chat-4 (needs hardware). From life-1109.md Remaining; ledger-1112 I17. Evidence: avatars.js:8729 saccade on look-at built in-app; the desk side unverified.
 - [ ] **L142** `chat` open, M: Scrabble, pull-up, fling, miffed face and airborne flail on wall slide. From OPEN.md:4410; OPEN.md:4411. Evidence: w34-unv2-1111.md marks true; in-app motions not complete
 - [ ] **L143** `chat` open, M: Throw frame step with no layout reads, under 4 ms at 4x. From OPEN.md:4351. Evidence: W34 true, w34-unv2-1111.md.
 - [ ] **L144** `chat` open, M: Keep-up reads layout once a frame and stops when still. From OPEN.md:4352. Evidence: W34 true, w34-unv2-1111.md.
@@ -271,6 +270,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-2** `chat` open, S: Stop at the turn start with a plain sentence when a tool group the request needs is switched off in Settings, instead of a ToolError after the model tried. From ANALYSIS.md:4354. Evidence: ANALYSIS names CHAT_PLAN 'deterministic foundation' as home; grep 'turn contract' in plans returns nothing
 - [ ] **L-chat-5** `chat` open, M: A three-way 'which is oldest' over notes with little in common retrieves only the best match, so the answer names the other two as missing. From composerA 2026-11-12. Evidence: reading._follow_place makes the sentence; chat_turn._framed_scope binds ids; a follow-on that carried the cited note ids into the compare would fix it
 - [ ] **L-chat-6** `chat` open, S: 'which is oldest, Shopping or Todo' answers with the Shopping checklist line, not a date comparison. From composerA 2026-11-12.
+- [ ] **L-chat-7** `chat` open, S: Companion stretches (app and desk) when a long writing run ends. From Brief 88 N9; review 2026-11-12. Evidence: companion-menu.js:713 typing_burst plays a nod after 30 s, not a stretch after a minute
+- [ ] **L-chat-8** `chat` open, M: Contradiction answer: wire supersede.py in or record that the insights reader replaces it; the PAR1 imperative remainder. From ledger-1112 PAR1; review 2026-11-12. Evidence: chat_extra.py:57 contradiction asks reach the insights contrast reader; supersede.py feeds composer_select and composer_digest only; composer_suggest.py:52 _IMPERATIVE unchanged
 
 ## whiteboard
 
