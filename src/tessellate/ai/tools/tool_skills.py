@@ -58,7 +58,7 @@ def _search_chat_history(session: Session, args: dict) -> dict:
     """Past conversations. "What did we decide last week?" was unanswerable:
     each turn only ever saw its own thread, so the assistant had no memory of
     anything said in a different chat."""
-    from tessellate.api.routes_conversations import conversation_matches
+    from tessellate.core.conversation_text import conversation_matches
     from tessellate.core.database import Conversation
 
     limit = _limit_arg(args, default=5)

@@ -19,6 +19,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from tessellate.core import deps
+from tessellate.core.conversation_text import conversation_matches
 from tessellate.core.database import LIKE_ESCAPE, Conversation, like_escape, utcnow
 from tessellate.repo import uploads as uploads_repo
 from tessellate.core.deps import get_session
@@ -449,24 +450,6 @@ def _process_committed_media(session: Session, turn: TurnBody) -> None:
     media_process.process_committed_upload_ids(
         session, deps.get_config().data_dir / "media", turn.image_media_ids or []
     )
-
-
-def conversation_matches(conversation: Conversation, term: str) -> bool:
-    """Does this chat actually mention `term`?
-
-    Not a LIKE against the `messages` column. That column holds JSON, so its
-    own keys are searchable text: "tent" is a substring of "content", which
-    made every single conversation match. The decoded message text is the
-    only thing a user means by "what was said".
-    """
-    lowered = term.lower()
-    if lowered in conversation.title.lower():
-        return True
-    try:
-        messages = json.loads(conversation.messages)
-    except ValueError:
-        return False
-    return any(lowered in str(m.get("content", "")).lower() for m in messages)
 
 
 #: A page of the chat list, not a ceiling on how many chats a notebook may
