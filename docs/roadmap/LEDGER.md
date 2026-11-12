@@ -11,28 +11,28 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 23 | 5 | 0 | 18 | 98 |
-| documents | 70 | 23 | 5 | 0 | 18 | 98 |
-| documents | 70 | 23 | 5 | 0 | 18 | 98 |
-| documents | 70 | 23 | 5 | 0 | 18 | 98 |
-| documents | 70 | 23 | 5 | 0 | 18 | 98 |
-| documents | 70 | 23 | 5 | 0 | 18 | 98 |
+| documents | 70 | 23 | 5 | 0 | 19 | 98 |
+| documents | 70 | 23 | 5 | 0 | 19 | 98 |
+| documents | 70 | 23 | 5 | 0 | 19 | 98 |
+| documents | 70 | 23 | 5 | 0 | 19 | 98 |
+| documents | 70 | 23 | 5 | 0 | 19 | 98 |
+| documents | 70 | 23 | 5 | 0 | 19 | 98 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 634 | 143 | 3 | 190 | 1330 |
-| all | 553 | 634 | 143 | 3 | 190 | 1330 |
-| all | 553 | 634 | 143 | 3 | 190 | 1330 |
+| all | 553 | 634 | 143 | 3 | 191 | 1330 |
+| all | 553 | 634 | 143 | 3 | 191 | 1330 |
+| all | 553 | 634 | 143 | 3 | 191 | 1330 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 634 | 143 | 3 | 190 | 1330 |
+| all | 553 | 634 | 143 | 3 | 191 | 1330 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 634 | 143 | 3 | 190 | 1330 |
-| all | 553 | 634 | 143 | 3 | 190 | 1330 |
-| all | 553 | 634 | 143 | 3 | 190 | 1330 |
+| all | 553 | 634 | 143 | 3 | 191 | 1330 |
+| all | 553 | 634 | 143 | 3 | 191 | 1330 |
+| all | 553 | 634 | 143 | 3 | 191 | 1330 |
 
 ## graph
 
@@ -379,7 +379,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines.
 - [ ] **L309** `documents` open, M: Keep Python runtime frame persistent across documents to avoid 5-7 s cold reload per document. From OPEN.md:1219; OPEN.md:1224; OPEN.md:2829; OPEN.md:2907. Evidence: Row: needs the Pyodide extra, not installed here; cold Debug cannot be timed.
 - [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10. Looked at 2026-11-12 (docsD): Python debug already runs a test file through the harness (run-core.js py.debug, tests:); JS and TS debug run it as a plain script because the harness (run-tests.js runTestHarness) is modern JS and the debug worker is ES5 JS-Interpreter, so it needs an ES5 harness plus a bridge for test rows
-- [ ] **L319** `documents` open, M: Verify code editor: Python run, SQL/p5, Emmet/hover docs, conflict dialog, multi-cursor, Console eval. From audit-1031-code.md. Evidence: No later code audit; Python extra not installed here
 - [ ] **L320** `documents` open, M: Verify docs: read-view mermaid, print/PDF, docx, import, comments, phone editor entry. From audit-1031-docs.md. Evidence: audit-1102-docs covered part; print dialog and phone remain
 - [ ] **L322** `documents` open, M: Frames with no script and CodeMirror requestMeasure (1667m). From OPEN.md:4327. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L323** `documents` open, M: Typing in a 230-note list costs ~12 ms per key in CodeMirror. From OPEN.md:1478. Evidence: Perf measurement; no fix found in HISTORY/CHANGELOG
@@ -403,6 +402,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
 - [ ] **L-documents-21** `documents` open, M: Diagram Ask and Suggestions for mind map, timeline and sequence (L321 remainder). From L321. Evidence: Ask and Suggestions are flowchart-only; mind map, timeline and sequence get Versions only (diagram-ai.js lint/show use the flowchart model)
 - [ ] **L-documents-22** `documents` open, S: Drag a shape from the diagram Add sheet onto the picture on a touch screen (L-documents-8 remainder). From L-documents-8. Evidence: Add sheet opens from the kinds' Add button at 390 (measured: no target under 44 px, fits the width); the drag of a shape from the sheet onto the picture on a real touch screen is not driven
+- [ ] **L-documents-24** `documents` open, S: Repair the stale sweeps code-keys.js and doccodevs2.js guides section. From L319. Evidence: code-keys.js: docIde is no global (documents-ide.js:24) and 16 keyed rows lack expectations; doccodevs2.js:135 looks for .cm-indent-guide, guides are now line classes cm-indent-nN (documents-code.js:2262)
 
 ## mindmap
 
@@ -1040,6 +1040,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-18** `ui-modernisation` blocked-hardware, S: Verify phone tab scroll-to-top under reduced motion on a device. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1250. Evidence: Open line in the plan's prose a session could miss. L906 covers safe-area insets only. The reduced-motion scroll-to-top on a device has no row.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
+- [ ] **L-documents-23** `documents` blocked-hardware, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent
 
 ## Plan session briefs
 
