@@ -11,28 +11,28 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 19 | 5 | 0 | 20 | 94 |
-| documents | 70 | 19 | 5 | 0 | 20 | 94 |
-| documents | 70 | 19 | 5 | 0 | 20 | 94 |
-| documents | 70 | 19 | 5 | 0 | 20 | 94 |
-| documents | 70 | 19 | 5 | 0 | 20 | 94 |
-| documents | 70 | 19 | 5 | 0 | 20 | 94 |
+| documents | 70 | 18 | 5 | 0 | 20 | 93 |
+| documents | 70 | 18 | 5 | 0 | 20 | 93 |
+| documents | 70 | 18 | 5 | 0 | 20 | 93 |
+| documents | 70 | 18 | 5 | 0 | 20 | 93 |
+| documents | 70 | 18 | 5 | 0 | 20 | 93 |
+| documents | 70 | 18 | 5 | 0 | 20 | 93 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 630 | 143 | 3 | 192 | 1326 |
-| all | 553 | 630 | 143 | 3 | 192 | 1326 |
-| all | 553 | 630 | 143 | 3 | 192 | 1326 |
+| all | 553 | 629 | 143 | 3 | 192 | 1325 |
+| all | 553 | 629 | 143 | 3 | 192 | 1325 |
+| all | 553 | 629 | 143 | 3 | 192 | 1325 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 630 | 143 | 3 | 192 | 1326 |
+| all | 553 | 629 | 143 | 3 | 192 | 1325 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 630 | 143 | 3 | 192 | 1326 |
-| all | 553 | 630 | 143 | 3 | 192 | 1326 |
-| all | 553 | 630 | 143 | 3 | 192 | 1326 |
+| all | 553 | 629 | 143 | 3 | 192 | 1325 |
+| all | 553 | 629 | 143 | 3 | 192 | 1325 |
+| all | 553 | 629 | 143 | 3 | 192 | 1325 |
 
 ## graph
 
@@ -395,7 +395,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-4** `documents` open, M: Turn a board's frames into a document draft. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:843. Evidence: no command turns a board into a document draft; lines 843 to 846 are untracked
 - [ ] **L-documents-9** `documents` open, M: Code block runner leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1100. Evidence: Open line in the plan's prose a session could miss. Unmined pointer leftovers.
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
-- [ ] **L-documents-24** `documents` open, S: Repair the stale sweeps code-keys.js and doccodevs2.js guides section. From L319. Evidence: code-keys.js: docIde is no global (documents-ide.js:24) and 16 keyed rows lack expectations; doccodevs2.js:135 looks for .cm-indent-guide, guides are now line classes cm-indent-nN (documents-code.js:2262)
 - [ ] **L-documents-25** `documents` open, S: Live view line length measures 93 characters, past the 60 to 90 band (docpage17.js): re-measure, then fix the page width or the sweep. From L320. Evidence: scratchpad/ui-sweeps/docpage17.js on 8801: line length 93 at 1280, 1440, 1920 and 2560 against the 60 to 90 band
 - [ ] **L-documents-26** `documents` open, M: Per-key cost in the document editor is about twice a bare CodeMirror (native part, not script): find which style invalidation per key (doc-block-handle and drop class writes, caret and complete-list writes) costs it. From L323. Evidence: /tmp/docsF-s/key323.js: live view 35 to 43 ms a key at 4x CPU against 19 for a bare CodeMirror and 17 for a bare contenteditable; trace EventDispatch 56 against 25 bare, FunctionCall 20 against 10, JS self time under 6 ms a key, so the rest is native editing and style
 - [ ] **L-documents-27** `documents` open, L: Diagram Ask for mind map, timeline and sequence. From L-documents-21 remainder. Evidence: Suggestions for mind map, timeline and sequence built (diagram-ai.js kindLint). Left: Ask for these kinds needs a kind-aware /drafts/diagram-ask route plus kind ops, in a lazy sibling module
