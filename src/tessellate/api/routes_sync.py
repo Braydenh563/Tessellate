@@ -161,3 +161,18 @@ def sync_now(session: Session = Depends(get_session)) -> dict:
         return sync_pull.pull(session, data_dir)
     finally:
         sync_pull.RUNNING.release()
+
+
+@router.post("/sync/reset", dependencies=[Depends(this_computer_only)])
+def sync_reset() -> dict:
+    """A new sync id for this notebook (Settings, Sync): the cure for a notebook folder copied to a second computer.
+
+    From this computer only, like pairing, and not while a sync runs. Other computers pair again."""
+    data_dir = deps.get_config().data_dir
+    if not sync_pull.RUNNING.acquire(blocking=False):
+        raise HTTPException(status_code=409, detail=sync_pull.BUSY)
+    try:
+        device = sync_state.reset_device(data_dir)
+    finally:
+        sync_pull.RUNNING.release()
+    return {**sync_pull.status(data_dir), "device": device, "error": ""}

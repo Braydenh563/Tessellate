@@ -53,6 +53,16 @@ SEALED = {Document: ("title", "content", "threads"), WhiteboardSketch: ("data",)
 _ROW_LEFT_OUT = {"workspace_id", "board_id", "created_at"}
 
 
+#: The manifest hash of a document or board the folder withdraws (INBOX 1783): it matches no real hash.
+WITHHELD = "withheld"
+
+
+def withheld(state: dict) -> dict[str, Any]:
+    """A document or board made private after it went out in the clear: its name and time only."""
+    return {"kind": state["kind"], "sid": state["sid"], "is_private": True, "withheld": True,
+            "updated_at": state["updated_at"]}
+
+
 def iso(value: Any) -> str | None:
     return export_folder._iso(value) if value is not None else None  # noqa: SLF001  # one date format for both
 

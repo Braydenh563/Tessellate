@@ -30,7 +30,16 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.core import events
-from tessellate.core.database import AuditLog, Entry, EntryRevision, Space, impersonate_workspace
+from tessellate.core.database import (
+    AuditLog,
+    DocumentLink,
+    Entry,
+    EntryLink,
+    EntryRevision,
+    Space,
+    WhiteboardNode,
+    impersonate_workspace,
+)
 from tessellate.entry import manager, manager_purge, sync_keys
 
 FORMAT = 1
@@ -40,7 +49,8 @@ MAX_NOTES = 200
 KEY_PREFIX = "sync:"
 DAMAGED = "A sync segment arrived damaged or cut off; nothing from it was applied."
 SAME_ID = ("This computer and the other one have the same sync id, so one notebook folder was copied from the other; "
-           "nothing was synced. On one of them, delete the file named sync-state in its data folder, then sync again.")
+           "nothing was synced. On one of them, press Make a new sync id in Settings, Import & export, "
+           "Sync between computers, then sync again.")
 WITHHELD_KEPT = ("Made private on the other computer; kept here because it was written or changed on this computer, "
                  "so it is still readable here.")
 _FIELDS = {"sid": str, "content": str, "tags": list, "category": str, "space": str,
@@ -155,8 +165,9 @@ def _valid_note(item: object) -> bool:
     return ":" in item["sid"] and _when(item["updated_at"]) is not None
 
 
-def check(segment: object, me: str) -> list[dict]:
-    """The segment's notes, or SegmentError before anything is written (decision 8)."""
+def check(segment: object, me: str, folder: bool = False) -> list[dict]:
+    """The segment's notes, or SegmentError before anything is written (decision 8). A `withheld` marker is the
+    folder's alone (it carries no key); over the home network one is refused."""
     if not isinstance(segment, dict) or segment.get("format") != FORMAT:
         raise SegmentError(DAMAGED)
     notes, upto = segment.get("notes"), segment.get("upto")
@@ -165,6 +176,8 @@ def check(segment: object, me: str) -> list[dict]:
     if segment.get("device") == me or not isinstance(segment.get("device"), str):
         raise SegmentError("That segment came from this computer; nothing was applied.")
     if not all(_valid_note(item) for item in notes):
+        raise SegmentError(DAMAGED)
+    if not folder and any(item.get("withheld") for item in notes):
         raise SegmentError(DAMAGED)
     return notes
 
@@ -234,28 +247,48 @@ def _keep_theirs_as_version(session: Session, entry: Entry, item: dict) -> None:
     manager.log_action(session, "revised", "entry", entry.id, "the other computer's version")
 
 
-def _changed_here(session: Session, entry_id: int) -> tuple[bool, bool]:
-    """(a person or Atlas here ever changed the note, the keep was already said): only a sync or a system job did not."""
+def _referenced_here(session: Session, entry_id: int) -> bool:
+    """A link from or to the note, a card placing it on a board, or a document attached to it: work done here
+    that a purge would break, though none of it is in the note's own log."""
+    return any(session.scalar(query.limit(1)) is not None for query in (
+        select(EntryLink.id).where((EntryLink.source_entry_id == entry_id) | (EntryLink.target_entry_id == entry_id)),
+        select(WhiteboardNode.id).where(WhiteboardNode.entry_id == entry_id, WhiteboardNode.board_id != entry_id),
+        select(DocumentLink.document_id).where(DocumentLink.entry_id == entry_id)))
+
+
+def _changed_here(session: Session, entity_type: str, entity_id: int) -> tuple[bool, bool]:
+    """(a person or Atlas here ever changed the item, the keep was already said): only a sync or a system job did not.
+    A note something here points at counts as changed."""
     rows = session.execute(select(AuditLog.actor, AuditLog.action, AuditLog.detail).where(
-        AuditLog.entity_type == "entry", AuditLog.entity_id == entry_id)).all()
+        AuditLog.entity_type == entity_type, AuditLog.entity_id == entity_id)).all()
     said = any(detail == WITHHELD_KEPT for _, _, detail in rows)
     here = any(not (actor or "").startswith(("sync:", "system:")) and action not in events.QUIET_ACTIONS
                for actor, action, _ in rows)
-    return here, said
+    return here or (entity_type == "entry" and _referenced_here(session, entity_id)), said
 
 
-def _withdraw(session: Session, me: str, item: dict, uploads: Path | None) -> str:
-    """A note made private on the other computer after it came here in the clear (INBOX 1783): the copy, its
-    History and its words in the log go, unless it was written or changed here, which stays and says so once."""
+def withdraw_verdict(session: Session, me: str, sid: str, entity: tuple[str, int]) -> str:
+    """What a withheld marker does to the item (a note, document or board) it names, entity = (log type, id):
+    'same' when the keep was said already, 'conflicts' when it was written or changed here (kept, said now),
+    else 'purge'."""
+    here, said = _changed_here(session, *entity)
+    if said:
+        return "same"
+    if here or sid.partition(":")[0] == me:
+        manager.log_action(session, "kept", entity[0], entity[1], WITHHELD_KEPT)
+        return "conflicts"
+    return "purge"
+
+
+def withdraw(session: Session, me: str, item: dict, uploads: Path | None) -> str:
+    """A note or board made private on the other computer after it came here in the clear (INBOX 1783): the copy,
+    its History and its words in the log go, unless it was written or changed here, which stays and says so once."""
     entry = _find(session, me, item["sid"])
     if entry is None or entry.is_private:
         return "same"
-    here, said = _changed_here(session, entry.id)
-    if said:
-        return "same"
-    if here or item["sid"].partition(":")[0] == me:
-        manager.log_action(session, "kept", "entry", entry.id, WITHHELD_KEPT)
-        return "conflicts"
+    verdict = withdraw_verdict(session, me, item["sid"], ("entry", entry.id))
+    if verdict != "purge":
+        return verdict
     manager_purge.seal_private_events(session, [entry.id])
     manager_purge.purge_entries(session, [entry], uploads_dir=uploads)
     return "applied"
@@ -286,18 +319,20 @@ def _apply_one(session: Session, me: str, peer: str, item: dict, both: sync_keys
 
 
 def apply_segment(session: Session, me: str, segment: dict, both: sync_keys.Keys | None = None,
-                  uploads: Path | None = None) -> dict[str, int]:
+                  uploads: Path | None = None, folder: bool = False) -> dict[str, int]:
     """Apply a checked segment, one committed note at a time; counts by outcome.
 
     `both` (the other computer's data key and this one's) reseals its private notes here; `uploads` is where a
-    withdrawn note's files are deleted from."""
-    notes = check(segment, me)
+    withdrawn note's files are deleted from.
+    A withheld marker counts only from the folder and only for a note its sender wrote (the author withdraws
+    its own note; a computer that relayed it cannot)."""
+    notes = check(segment, me, folder)
     peer = segment["device"]
     report = {"applied": 0, "same": 0, "conflicts": 0}
     with events.acting_as(sync_actor(peer)), impersonate_workspace(session, ""):
         for item in notes:
             if item.get("withheld") is True:
-                report[_withdraw(session, me, item, uploads)] += 1
+                report[withdraw(session, me, item, uploads) if item["sid"].partition(":")[0] == peer else "same"] += 1
             else:
                 report[_apply_one(session, me, peer, sync_keys.opened(item, both), both)] += 1
             session.commit()

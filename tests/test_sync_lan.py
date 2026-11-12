@@ -26,7 +26,7 @@ from fastapi.testclient import TestClient
 
 from tessellate.api import routes_auth
 from tessellate.core import deps, lancert, lantrust, sync_state
-from tessellate.entry import sync_link, sync_segments
+from tessellate.entry import sync_link, sync_pull, sync_segments
 
 ROOT = Path(__file__).resolve().parent.parent
 PASSWORDS = {"a": "the first computer's password", "b": "the second computer's password"}
@@ -456,3 +456,27 @@ def test_a_pull_from_a_link_named_as_this_computer_applies_nothing(tmp_path):
 
     done = sync_pull.pull_from(None, here, Twin(), "network")
     assert done["error"] == sync_segments.SAME_ID
+
+
+def test_reset_sync_id_is_this_computer_only_and_gives_a_new_id(notebook):
+    data_dir = deps.get_config().data_dir
+    old = sync_state.device_id(data_dir)
+    reset = notebook.post("/sync/reset")
+    assert reset.status_code == 200 and reset.json()["device"] == sync_state.device_id(data_dir) != old
+    other = _other_computer(notebook)
+    lantrust.set_flag(data_dir, "ask_new_devices", False)
+    other.headers["X-Auth-Token"] = other.post("/auth/unlock", json={"password": PASSWORD}).json()["token"]
+    refused = other.post("/sync/reset")
+    assert refused.status_code == 403 and sync_state.device_id(data_dir) == reset.json()["device"]
+
+
+def test_reset_sync_id_waits_while_a_sync_runs(notebook):
+    data_dir = deps.get_config().data_dir
+    old = sync_state.device_id(data_dir)
+    sync_pull.RUNNING.acquire()
+    try:
+        busy = notebook.post("/sync/reset")
+    finally:
+        sync_pull.RUNNING.release()
+    assert busy.status_code == 409 and busy.json()["detail"] == sync_pull.BUSY
+    assert sync_state.device_id(data_dir) == old

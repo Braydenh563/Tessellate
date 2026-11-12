@@ -74,6 +74,19 @@ def device_id(data_dir: Path) -> str:
     return state["device"]
 
 
+@_locked
+def reset_device(data_dir: Path) -> str:
+    """A new sync id for this folder, for a notebook folder that was copied to a second computer (INBOX 1783).
+
+    What was tied to the old id goes: every peer's cursor and agreed hashes (so the next pull starts clean), the
+    paired computer and the passes issued to others (both pair again). `arrived` stays: it says where each item
+    from another computer landed here, and without it every document and file would be fetched a second time."""
+    state = _read(data_dir)
+    state = {"device": secrets.token_hex(6), **({"arrived": state["arrived"]} if "arrived" in state else {})}
+    _write(data_dir, state)
+    return state["device"]
+
+
 def peer(data_dir: Path, name: str) -> dict:
     """What is known about one peer; `cursor` 0 when it was never pulled."""
     found = _read(data_dir).get("peers", {}).get(name)

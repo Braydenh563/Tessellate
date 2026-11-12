@@ -13939,7 +13939,8 @@ Link to another note with [[its first few words]]."></textarea>
                   into the folder, and a note made private after it was shared
                   is withdrawn from the other computer (kept there only if it
                   was changed there). A copied notebook folder has the same
-                  sync id and is refused.
+                  sync id and is refused: on one copy, press Make a new sync id.
+                  Computers paired with it then pair again.
                 </p>
               </div>
               <h4 class="setting-subhead">Sync over the home network</h4>
@@ -13959,6 +13960,10 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="sync-now" class="ghost small" type="button">
                   <i class="ph ph-arrows-clockwise ph-lead" aria-hidden="true"></i> Sync now
                 </button>
+              </div>
+              <div class="row wrap">
+                <button id="sync-reset" class="ghost small" type="button"
+                  title="For a notebook folder copied to a second computer">Make a new sync id</button>
               </div>
               <h4 class="setting-subhead">Sync through a folder</h4>
               <p class="muted">For computers that are not on the same network: an encrypted file in a folder you choose.</p>

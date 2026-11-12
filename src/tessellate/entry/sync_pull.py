@@ -81,7 +81,8 @@ def _round(session: Session, data_dir: Path, link: Transport, me: str, totals: d
     segment = link.fetch(since, me)
     if not isinstance(segment, dict) or segment.get("device") != link.name:
         raise SegmentError(WRONG_PEER if isinstance(segment, dict) else DAMAGED)
-    for key, count in apply_segment(session, me, segment, sync_keys.keys(data_dir), data_dir / "uploads").items():
+    for key, count in apply_segment(session, me, segment, sync_keys.keys(data_dir), data_dir / "uploads",
+                                      folder=bool(getattr(link, "withdraws", False))).items():
         totals[key] += count
     sync_state.save_peer(data_dir, link.name, cursor=segment["upto"])
     return bool(segment.get("more")) and segment["upto"] > since
