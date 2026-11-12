@@ -73,6 +73,11 @@ def read(text: str, one_target) -> dict | None:  # noqa: ANN001
     if found := _BOARD.match(text):
         target = one_target(_name(found.group("t")), bare=False)
         return {"intent": "board_card", **target, "single": True} if target and target.get("single", True) else None
+    return _map(text, one_target)
+
+
+def _map(text: str, one_target) -> dict | None:  # noqa: ANN001
+    """"make a mind map from the boiler note", "start a mind map of Trips"."""
     found = _MAP_OF.match(text) or _MAP_INTO.match(text)
     if not found:
         return None

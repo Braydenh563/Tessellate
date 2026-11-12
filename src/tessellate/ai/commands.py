@@ -1296,9 +1296,15 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
         return narrower
     if found is not None or not text:
         return found
-    #: One word a slip from a word the commands read ("pin the dentist noe",
-    #: "unlnk the gym note"), read so when that makes it a command (O3).
-    tidy, takes = question_noise.tidy(text), lambda t: read(t, now, locale) is not None
+    return _slipped(question_noise.tidy(text), now, locale)
+
+
+def _slipped(tidy: str, now: datetime, locale: str | None) -> dict | None:
+    """One word a slip from a word the commands read ("pin the dentist noe",
+    "unlnk the gym note"), read so when that makes it a command (O3)."""
+    from tessellate.ai import question_noise
+
+    takes = lambda t: read(t, now, locale) is not None  # noqa: E731
     #: A slip that lands on another word ("remiders" is "re" and "mid" and "ers", "skull") is read as the
     #: command word only when the commands then take the sentence.
     guided = question_noise.guided(tidy, takes)
@@ -1309,7 +1315,6 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
     real = question_noise.guided(tidy, takes, real_to=parity_acts.words())
     parsed = read(real, now, locale) if real else None
     return parsed if parsed and parsed.get("intent") in parity_acts.INTENTS | {"untag"} else None
-
 
 #: Acts named by a noun the broad acts would swallow on a slip: "delete the
 #: skull Weekly tidy" is the skill, not a note called "skull Weekly tidy";

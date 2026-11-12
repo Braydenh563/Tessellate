@@ -14,8 +14,10 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from tessellate.ai import recognise
+
 _LEAD = r"^(?:(?:please|pls|can you|could you|would you)\s+)*(?:remind me|set a reminder|add a reminder)\s+"
-_AMOUNT = r"(?P<n>an?|one|half an?|\d+(?:\.\d+)?)\s*(?P<unit>hours?|hrs?|h|minutes?|mins?|m|days?)"
+_AMOUNT = recognise.AMOUNT_BEFORE
 _AFTER = r"\s+before\s+(?:the |my |our )?(?P<what>[\w' -]+?)(?:\s+(?:appointment|meeting|call|session))?$"
 _TASK_FIRST = re.compile(rf"{_LEAD}to\s+(?P<task>.+?)\s+{_AMOUNT}{_AFTER}", re.I)
 _PLAIN = re.compile(rf"{_LEAD}(?:to\s+(?P<task>.+?)\s+)?{_AMOUNT}{_AFTER}", re.I)
@@ -23,10 +25,7 @@ _NO_WHAT = frozenset({"it", "that", "this", "then", "now", "bed", "work", "lunch
 
 
 def _minutes(amount: str, unit: str) -> int:
-    word = amount.lower()
-    n = 0.5 if word.startswith("half") else 1.0 if word in ("a", "an", "one") else float(word)
-    per = 1440 if unit.lower().startswith("d") else 60 if unit.lower().startswith("h") else 1
-    return round(n * per)
+    return recognise.amount_minutes(amount, unit)
 
 
 def read(text: str) -> dict | None:

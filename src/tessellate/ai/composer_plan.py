@@ -61,13 +61,12 @@ _PLAN = re.compile(
     rf"^{_LEAD}(?:(?:can|could) you )?(?:make|create|build|write|draft|put together|give|get)(?: me)? (?:an? |my )?(?:study|revision|exam) (?:plan|schedule|timetable)(?P<st>.*)$", re.I)
 #: "organise everything about the harbor", "sort out my boiler stuff": a topic to file or read, not a week to plan (L-chat-32).
 _TOPIC = re.compile(r"\b(?:everything|all (?:my |the )?(?:notes?|things?|stuff)|anything) (?:about|on|to do with|regarding|related to)\b|\b(?:notes?|stuff|things) (?:about|on|to do with|regarding|related to)\b|^(?:my |the )?\w+ (?:stuff|things)$", re.I)
-_TIMED = re.compile(r"\b(?:week|day|today|tomorrow|weekend|month|morning|afternoon|evening|tonight|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b", re.I)
 
 
 def _topic_target(plan: re.Match | None) -> bool:
     """True when the verb form of `_PLAN` was given a topic and no time to plan it in."""
     target = (plan.group("t") if plan else None) or ""
-    return bool(target and _TOPIC.search(target) and not _TIMED.search(target))
+    return bool(target and _TOPIC.search(target) and not recognise.names_a_time(target))
 
 
 _UNTIL = re.compile(

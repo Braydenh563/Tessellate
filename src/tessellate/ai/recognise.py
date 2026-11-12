@@ -1860,3 +1860,25 @@ def measures(text: str) -> list[Measure]:
             found.append(Measure(dimension, _figure(m.group(1)) * size, name, m.start(), m.end()))
     return sorted(found, key=lambda x: x[3])
 
+
+# --- readers lent to the act modules (decision 46: one reader of date words and units) ---
+
+#: "an hour", "half an hour", "30 mins", "2 days": an amount of time before
+#: something (anchor_acts' "remind me an hour before the dentist").
+AMOUNT_BEFORE = r"(?P<n>an?|one|half an?|\d+(?:\.\d+)?)\s*(?P<unit>hours?|hrs?|h|minutes?|mins?|m|days?)"
+
+
+def amount_minutes(amount: str, unit: str) -> int:
+    """The minutes `AMOUNT_BEFORE`'s two groups say ("half an", "hour": 30)."""
+    word = amount.lower()
+    n = 0.5 if word.startswith("half") else 1.0 if word in ("a", "an", "one") else float(word)
+    per = 1440 if unit.lower().startswith("d") else 60 if unit.lower().startswith("h") else 1
+    return round(n * per)
+
+
+_NAMES_A_TIME = lazy_compile(r"\b(?:week|day|today|tomorrow|weekend|month|morning|afternoon|evening|tonight|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b", re.I)
+
+
+def names_a_time(text: str) -> bool:
+    """True when `text` names a day, a part of one, a week or a month."""
+    return bool(_NAMES_A_TIME.search(text or ""))
