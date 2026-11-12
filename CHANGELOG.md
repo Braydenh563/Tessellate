@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: the Notes Capture formatting strip opens when pressed. Its handler was bound at load, before the Notes surface existed, so it never ran; it is bound on the surface build (strip 40px with no tools before, 42px with all tools after).
 - Verified: two-finger / Ctrl-wheel pinch zoom already works on the OCR page pane (Fit to 150%), lightbox pictures and lightbox PDF pages (scale 1.648 from five -10 wheel events); pinned by `tests/test_pinch_zoom_viewers.py` (DOCUMENTS_PLAN owner bug). Real touch pinch not driven.
 - Test: the spell checker (ai/spelling.py and the editor word list) is pinned to load and tell "thier" from "their" (`tests/test_spellcheck_present.py`); no spellchecker.py ever existed in the repo, so nothing was removed (DOCUMENTS_PLAN owner bug).
 - Documents: the code panel help and the Guide's Running code topic say the Console runs in its own worker, apart from any page the file shows (LEDGER L752, owner decided 2026-11-12: keep the separate worker).

@@ -1244,8 +1244,6 @@ Entries are the owner's words, then the recommendation. Bugs come first.
 
 ### Bugs
 
-- "The note capture subtab formatting toolbar wont open :("
-  Recommendation: reproduce from the Notes Capture subtab, then fix the toolbar's open state and measure it. No brief carries it; Brief 42 is the nearest.
 - "I saved a website as a bookmark but the icon didnt change"
   Recommendation: a saved bookmark takes the site's icon at save time and refreshes it on the next fetch; the link card in Brief 42 shows it. No brief carries the bug itself; Brief 42 (link cards) is the nearest.
 
