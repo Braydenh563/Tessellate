@@ -98,7 +98,6 @@ from tessellate.ai.composer_intent import _ACT_VERBS, _lead_act_verb, plan, tag_
 from tessellate.ai.composer_help import _feature_instead, cannot_answer, _help_answer, _in_window, _result, _utility, help_line, offered
 from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, window_said
 from tessellate.ai.composer_recall import _BROAD, _overview_answer, _recall, _recall_next, trivia, window_as_topic
-from tessellate.core.lazyre import lazy_compile
 
 
 # --- a question in two parts, and one that could mean two things -------------
@@ -108,8 +107,8 @@ from tessellate.core.lazyre import lazy_compile
 #: dentist and what should I pack"). At most `MAX_PARTS` are answered.
 #: `split_parts` collapses whitespace first, so one space is the break;
 #: `\s+` here was quadratic on a run of whitespace (CodeQL).
-_PART_BREAK = lazy_compile(r"(?<=\?) ")
-_PART_AND = lazy_compile(
+_PART_BREAK = re.compile(r"(?<=\?) ")
+_PART_AND = re.compile(
     r",? (?:and|also|plus) (?=(?:what|when|who|where|why|how|which|is|are|do|does|did|can|should|will)\b)",
     re.I,
 )
