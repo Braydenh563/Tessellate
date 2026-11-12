@@ -472,13 +472,6 @@ still unverified on real macOS/Linux hardware rather than reasoned from the
 code: the honest status is "should work," not "confirmed." The PyInstaller
 builds above are the part with no cross-platform equivalent yet at all.
 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
-- (Odysseus, fourth read 2026-10-10) 
 
 ---
 
@@ -1247,7 +1240,6 @@ history. What's still weak:
   whether the tool registry can get there first before reaching for UI
   automation.
   **Next:** a decision for the owner (it needs its own cancellation and audit story); the `GET /chat/tools` and `POST /chat/tools/execute` registry (WORLD_CLASS_PLAN B8) is the cheaper route and is built.
-- (Odysseus, fourth read 2026-10-10) 
 
 ---
 
@@ -1852,7 +1844,6 @@ them are close to being built:
   worth asking what it would let someone do that the app's own web UI, PWA
   and desktop window don't, before scoping anything. **(needs owner)**
 - ~~**A browser clipper.**~~ **Built 2026-10-05** (WORLD_CLASS_PLAN row 24, D9): `POST /links/clip-page` (`routes_webclip.py`), the "Clip to MemoryMap" bookmarklet and `frontend/clip.html` / `clip.js`, `tests/test_webclip_page.py`. A packaged browser extension is not built; the bookmarklet is the capture path (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: BACKLOG)").
-- (Odysseus, fourth read 2026-10-10) 
 
 ## 29c. Whiteboard, brainstormed: not yet triaged
 
@@ -2242,7 +2233,6 @@ need its own answer, not an assumption it behaves like Linux. Worth
 deciding deliberately rather than discovering after building the rest.
 **Next:** `packaging/macos/` does not exist; the Apple Developer account and notarization are the owner's, so nothing is buildable here (the Linux spec, `packaging/linux/memorymap.spec`, is the template).
 
-- (Odysseus, fourth read 2026-10-10) 
 
 ---
 

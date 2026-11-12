@@ -210,8 +210,8 @@ survive its archiving; the numbering is that file's.
    ever called once, at load, against the whole document today; no
    dynamic render anywhere in the app calls it a second time yet), which
    is a real behaviour change worth its own render-path regression check
-   rather than a same-session, same-commit add. Left inline; `countjs.py`
-   will keep reporting TOTAL 2 until a future pass does that properly.
+   rather than a same-session, same-commit add. The later pass is done:
+   countjs 1+1 to 0 (HISTORY.md, briefs-1011, 2026-10-11).
 
 ## Phases 0 to 6: built
 
@@ -711,8 +711,6 @@ indentation lines." "Note metadata and chat bubble metadata still feels
 incredibly messy, not modern, and unrefined." "Some tooltip buttons are circles
 and some are rounded squares."
 
-- (Odysseus, fourth read 2026-10-10) 
-
 ### Decisions, 2026-10-10 (do not re-decide)
 1. **A density scale in tokens.** Control heights 28px (dense: docks, toolbars,
    sub-menu bars), 32px (default: forms, menus), 40px (touch, phone); icon
@@ -775,10 +773,7 @@ and some are rounded squares."
 7. DESIGN.md, help, CHANGELOG; the Built block to HISTORY.
 
 Steps 1 to 4 and 6, and step 5's pickers, built 2026-10-10 (Brief 41): moved to HISTORY.md ("Moved from the plans, 2026-10-10 (UI_MODERNISATION Phase 12)"). Open:
-- 5b, the calendar mode (decision 6): TIMELINE_PLAN section 9, Brief 55.
 - 7 on chat bubbles and library cards; 1's panel padding 12 and sidebar gutter 8, not yet measured.
-
-## Placed from INBOX, built (pointers)
 
 ## Settings information architecture (INBOX 444)
 
@@ -1248,10 +1243,6 @@ Rows: T3 (learnaudit); T1, T2 and T4 are built (HISTORY.md, "Moved from the plan
 - Built 2026-10-19: the order rules gone; the four columns; More's sheet in a lazy file (`phone-more.js`) with pages, a hairline, then tools, the page in hand `aria-current`; the header menu named "App menu"; the active tab pressed again scrolls its page to the top (`tabPageScroller`); the coarse-pointer floor 44; the timeline under 380 (the existing 380 block in 10-responsive.css) wraps its year menu and lets the day well take the card's padding (44.5px days). Guide topic `phone-nav`. After: `phonemore.js`, `phonetabs.js`, `phone.js` (390, 360, dark) 0 findings.
 - Not verified: a real phone (safe-area insets resolve to 0 in headless Chromium); the smooth scroll-to-top under reduced motion on a device.
 
-## Placed from INBOX, 2026-10-19 (peek sidebar header, split button; next PR)
-
-## Placed from INBOX, 2026-10-27
-
 ## Placed from INBOX, 2026-10-27 (speed and smoothness, 1415)
 
 **The owner, 2026-10-27, verbatim.** "can you work on optimising everything, making transitions and adjustments smoother, dropdown panels and popups that appear smoother, better transitions, fail states, no glitches or visible lag etc, very very fast to use and flick between everything". With a lag log from their machine (Windows, 2026-10-27 08:13 to 08:21 UTC).
@@ -1267,9 +1258,6 @@ Rows: T3 (learnaudit); T1, T2 and T4 are built (HISTORY.md, "Moved from the plan
 
 - 1351 (the owner, 2026-10-25, verbatim in HISTORY): usable daily for life and uni, fast, reliable, accurate, no bug found in five minutes of use; standing, served by every polish and speed agent.
 
-## Placed from INBOX, 2026-11-03
-
-
 ## Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left)
 
 - **1657 left.** At 4x CPU on the dashboard with Atlas walking: the tail beat is 1.85 to 2.2 ms a call (target under 1 ms, or the sway as a group transform on the compositor); the buddy arrival (`nameMarkBuddyArrive`, avatars.js, 216 ms) and shell-reminders.js (156 ms) are the first layout flush after other boot code dirtied the page, so the fix is to find the writer, not the reader; keydown max 136 ms over 22 keys (the owner's 1848 ms did not reproduce). Check: the same measures from `/tmp/lagw/lag.js` (copy it into `scratchpad/ui-sweeps/` first) with each under its target.
@@ -1279,10 +1267,6 @@ Rows: T3 (learnaudit); T1, T2 and T4 are built (HISTORY.md, "Moved from the plan
 1643. **Owner's log, 2026-11-04 02:23Z:** "raf 439ms on graph: graph-canvas.js gcRequestDraw 54 calls/s, 8.1ms each" for at least 10 s on the graph tab. Recommendation: the graph redraws only while something moves (layout settling, a drag, a hover change) and stops when still; measure calls/s idle after settle. 2026-11-04 later: not reproduced (idle 0 draws/s at 36 and 336 notes, 4x CPU); every self-requested frame (glides, fade-ins, the composed hover) now counts toward one 300-frame bound, reset by any outside request (eef88b5, d809297). Open until the owner's next log shows no gcRequestDraw line; the 03:08Z pointerout and atlas.js lines did not reproduce either (handlers 0 to 2 ms). **(b) Owner's log, 2026-11-08:** "input 312ms on notes: pointerup on span.tab-label in #tab-btn-notes" (twice, also on dashboard "on an element that has gone"); "frame 269ms on dashboard: inline TimerHandler:setTimeout 266ms"; "frame 207ms on dashboard: 172ms before rendering ... the page loading". Recommendation: profile the Notes tab switch and the dashboard 266 ms timer with the lag reporter's own trace. **(c) Owner's log, 2026-11-08 10:52:** "input 712ms on chat: keydown on textarea#chat-input" and "frame 589ms on chat: avatars.js nameMarkBuddyTempo 13ms; 7ms; 7ms" when sending the Agent-mode greeting (handed to the chat 1693 b agent). Lag pass 2026-11-08 (`lag-1108.md` (git history)): the Notes tab 312 ms is native style and layout over 9,228 elements (JS under 150 ms), the dashboard 266 ms timer did not reproduce, the chat Enter cost is one needed layout; 1634 d throw guard after a window is shown merged (cc0ca315). Open: a per-selector style trace on a quiet machine, `content-visibility` on old chat turns. **lag-1109:** the graph at 44 notes at 4x CPU: idle 0 gcRequestDraw/s, a 3 s hover 25 draws (8/s, 36 ms in all), idle again 4 s later; still not reproduced.
 
 1698-lag. **Owner, 2026-11-09, lag logs:** notes view frames of 270 to 1018 ms "before rendering with no script over 5ms" that grow over the session; "raf 166ms on graph: graph-canvas.js gcRequestDraw 55 calls/s"; "whiteboard-library.js BUTTON#wb-side-tab-library.onclick 194ms (forced layout 177ms)"; "library.js openDoc 148ms (forced layout 58ms)"; "panel-movable.js done 228ms (forced layout 224ms)", "diagram-split.js stop 167ms (forced layout 167ms)", "obj-drag.js objDragMove 206ms (forced layout 198ms)". **lag-1109 (850e0f0):** `avatars.js release` (forced layout 2965 ms) fixed (drop reads the ledges first; hover strokes judged once a frame); a 60-cycle soak of tab switches, Settings and drags kept elements flat (12.8k), so no leak: the growth is a larger page to lay out. Open: the library tab click, openDoc, panel-movable `done`, diagram-split `stop` and objDragMove forced layouts, each from a trace on a large notebook (none reproduced on 44 notes); count `document.querySelectorAll("*").length` each minute over an hour of real use.
-
-## Placed from INBOX, 2026-11-08
-
-1695. **Owner, 2026-11-08, verbatim:** "should there be an option to make all the user's notes private or to have like a private space?? and have new notes automatically be toggles private?? can the user select a toggle to make a note private before it is filed??" Found: a note is made private only after it exists (the note menu's "Make private", `entry-menu.js:77`, `routes_entries.py` `set_private`); `EntryCreate` has no private field, so a new note is saved, indexed and may be filed by the AI before it can be locked. There is no "new notes start private" setting, no bulk "make all private" and no private view beyond the `is:private` filter. **(b) built s10-1110 (HISTORY.md, "Moved from the plans, 2026-11-10 (s10-1110)").** Recommendation (taken): (a) a lock toggle in the new-note and quick-note composers, sent with the create so the note is sealed from the first write and never filed, indexed or embedded (test: a note created private never reaches the filer, the index or the embeddings); (b) Settings, Privacy, "New notes start private", which presets that toggle; (c) a "Private" view in the sidebar over `is:private`, not a second vault; (d) "Make all notes private" as a bulk action with a confirm that says private notes are out of Ask, chat, filing and meaning search. Help, Settings and the Guide move with it (standing order 13). **Then, 14:10Z, verbatim:** "private spaces as well?" Recommendation (taken): yes, a space can be marked private: its notes are private (locked with the vault, hidden from search, chat and the graph until unlocked), a note moved in becomes private, and moving one out asks first; one flag on the space, no second vault.
 
 ## Placed from INBOX, 2026-11-09 (the tray at its cap)
 

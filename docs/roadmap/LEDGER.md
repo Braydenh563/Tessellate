@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
-| ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
+| ui-modernisation | 96 | 109 | 4 | 0 | 17 | 209 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 699 | 157 | 3 | 195 | 1409 |
 
 ## graph
 
@@ -579,7 +579,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-5** `ui-modernisation` open, S: Keep the welcome footer buttons on one row at 390 px. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:36. Evidence: no change to the welcome slide footer layout at narrow width was found and nothing tracks it
 - [ ] **L-ui-modernisation-6** `ui-modernisation` open, S: Quiet the Activity count beside Everything 0 on a new Library. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:37. Evidence: library.js:419 and 580 still count the Activity chip separately from Everything; no tracking row
 - [ ] **L-ui-modernisation-7** `ui-modernisation` open, M: Add a POST share target so a phone can share an image file in. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:556. Evidence: Open line in the plan's prose a session could miss. An 'Open' sentence inside a 'built, moved to HISTORY' pointer line. It is not in the brief or LEDGER.
-- [ ] **L-ui-modernisation-9** `ui-modernisation` open, S: Remove the empty Odysseus bullets in Phase 12 and BACKLOG. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:714. Evidence: Open line in the plan's prose a session could miss. An orphaned empty bullet in Phase 12. Either content was lost or it is debris that must be removed.
 - [ ] **L-ui-modernisation-10** `ui-modernisation` open, M: Draw the missing desk frames: hang by feet, sloth, chair, lean, tail-curl pot. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. compalive-1109.md (git history) still lists missing desk frames with no LEDGER row: hang_by_feet, sloth, chair, lean, back_float, the pot in the tail curl, and a card box for the card nap. dangle and kick were built in W31.
 - [ ] **L-ui-modernisation-11** `ui-modernisation` open, S: Bring desk note and search reactions to app parity: glasses, shy hands, bubble. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. The events feed is built, but compalive-1109 says the desk reactions fall short of the app: no reading glasses, no hands over the eyes, no remark bubble. There is no row.
 - [ ] **L-ui-modernisation-12** `ui-modernisation` open, S: Close the px spacing-literal escape in test_style_scale. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1004. Evidence: Open line in the plan's prose a session could miss. A 13.1 table judgement with no numbered decision, so the 13a list does not carry it.
@@ -591,7 +590,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-19** `ui-modernisation` open, M: Finish the Appearance panel leftovers: deep links, door, search, peek. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1262. Evidence: Open line in the plan's prose a session could miss. The deleted list holds six untracked leftovers: deep links while popped out, a visible theme-button door, Settings search while popped out, peek dimming, panel height, a committed sweep.
 - [ ] **L-ui-modernisation-20** `ui-modernisation` open, M: Apply cheaper-equivalent passes to microbes, aurora and mycelium art. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. L460 covers contrast only. The microbes, aurora and mycelium cheaper-equivalent changes are untracked.
 - [ ] **L-ui-modernisation-22** `ui-modernisation` open, S: Give the desk companion menu feedback, greyed rows, a snooze countdown and a resize cursor. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1308. Evidence: Open line in the plan's prose a session could miss. The g3-size-1107 leftovers it points to have no row: figure_do refusal has no feedback, 'Sit on a window' is not greyed, the snooze has no countdown, and the resize cursor is missing.
-- [ ] **L-ui-modernisation-24** `ui-modernisation` open, S: Move stale UI plan pointers and empty headings to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:778. Evidence: Open line in the plan's prose a session could miss. Stale 'Open' pointers will mislead the session into rebuilding: - 5b is built (HISTORY, TIMELINE Brief 55). - The selection ticks (line 684) were built 2026-09-23. - 1695 (line 1285) is fully built. - Decision 6's countjs 'future pass' (line 213) is done. - Empty headings sit at lines 781, 1251, 1253 and 1270.
 
 ## timeline
 
