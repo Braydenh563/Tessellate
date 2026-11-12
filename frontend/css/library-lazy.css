@@ -385,6 +385,19 @@ textarea.has-gutter {
 .library-file-rows .library-image-reading > summary {
   width: fit-content;
 }
+.library-file-rows .library-image-reading > summary:not(.icon-only):not(.icon-button) {
+  /* A quiet disclosure row (DESIGN "Row actions"): no face, no edge at rest. */
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  padding-inline: 0;
+  color: var(--text);
+  font-weight: 500;
+}
+.library-file-rows .library-image-reading > summary:not(.icon-only):not(.icon-button):hover,
+.library-file-rows .library-image-reading > summary:not(.icon-only):not(.icon-button):is(:focus-visible, :has(:focus-visible)) {
+  background: var(--accent-soft);
+}
 
 .library-file-rows .library-image-tile > .library-file-facts :is(.library-file-meta, .library-read-strip, .library-read-badge, .library-image-usage, .library-image-usage > .muted) {
   font-size: inherit;
@@ -2883,18 +2896,42 @@ body.printing-doc #doc-preview p,
    the only thing on screen saying there is more to scroll. */
 .library-file-reading-text {
   margin: var(--space-2) 0 0;
-  /* Fits its text up to a real page's worth (the owner: "quite short when
-     there is quite a lot of text in it"); the old one-and-a-bit-line cap is
-     superseded. Files rows stand alone, so the rows below only move down. */
-  max-height: min(28rem, 55vh);
+  /* Half the window, at most a page's worth; a fade at the foot says more waits. */
+  max-height: min(28rem, 50vh);
   overflow: auto;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  font: inherit;
-  font-size: var(--text-sm);
-  line-height: 1.5;
+  font-size: var(--text-body);
+  line-height: 1.6;
   color: var(--ink);
   user-select: text;
+  max-width: 72ch;
+  padding-right: var(--space-2);
+}
+.library-file-reading-text:not(.is-at-end) {
+  mask-image: linear-gradient(to bottom, black calc(100% - 2.5rem), transparent);
+}
+.library-file-page-text {
+  margin: 0 0 var(--space-3);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.library-file-page-mark {
+  margin: var(--space-3) 0 var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.library-file-page-mark:first-child {
+  margin-top: 0;
+}
+.library-file-find {
+  max-width: 20rem;
+  margin-top: var(--space-2);
+}
+.library-file-find-count {
+  white-space: nowrap;
+}
+::highlight(reading-find) {
+  background-color: var(--accent-soft);
+  color: var(--ink);
 }
 
 /* **Text inside a shape** (WHITEBOARD_PLAN decision 12; `wbPaintShapeLabel`).

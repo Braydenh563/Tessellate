@@ -809,7 +809,7 @@ HELP_TOPICS: list[dict] = [
             "notification says when it is done; Stop ends it) and the "
             "transcript is offered to save; saved, the recorder shows its "
             "first lines with Open. "
-            "Library, Recordings searches names and transcripts (a hit plays from its line) and plays them "
+            "Library, Recordings searches names and transcripts (a hit plays from its line), Import audio keeps a file from this computer, and it plays them "
             "at 0.5 to 2x with a playhead and the time; drag the waveform to "
             "seek, press M to mark a moment with a comment, Trim, and Download audio (in the more menu); a "
             "transcribed one lists its lines with their times (press one to "

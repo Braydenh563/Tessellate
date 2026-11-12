@@ -8778,6 +8778,74 @@ const openRowReadings = new Set();
 //: top"). Written on the reading's own scroll, read back on the next build.
 const readingScrollTops = new Map();
 
+//: The find box over a long reading (L1): a count and Enter or the arrows to the
+//: next match, drawn with the CSS highlight where the browser has it. Nothing
+//: is rewritten, so the text and Copy stay exactly what was read.
+function buildReadingFind(box) {
+  const bar = document.createElement("div");
+  bar.className = "library-file-find search-field";
+  bar.addEventListener("click", (event) => event.stopPropagation());
+  const icon = document.createElement("i");
+  icon.className = "ph ph-magnifying-glass search-field-icon";
+  icon.setAttribute("aria-hidden", "true");
+  const input = document.createElement("input");
+  input.type = "search";
+  input.className = "search-field-input";
+  input.placeholder = "Find in this text";
+  input.setAttribute("aria-label", "Find in this text");
+  const count = document.createElement("span");
+  count.className = "muted text-xs library-file-find-count";
+  count.setAttribute("role", "status");
+  bar.append(icon, input, count);
+  let ranges = [];
+  let at = 0;
+  const show = () => {
+    if (!ranges.length) {
+      count.textContent = input.value.trim() ? "No matches" : "";
+      globalThis.CSS?.highlights?.delete("reading-find");
+      return;
+    }
+    count.textContent = `${at + 1} of ${ranges.length}`;
+    if (globalThis.CSS?.highlights && globalThis.Highlight) {
+      globalThis.CSS.highlights.set("reading-find", new globalThis.Highlight(...ranges));
+    }
+    const rect = ranges[at].getBoundingClientRect();
+    const frame = box.getBoundingClientRect();
+    box.scrollTop += rect.top - frame.top - frame.height / 3;
+  };
+  const search = () => {
+    ranges = [];
+    at = 0;
+    const needle = input.value.trim().toLowerCase();
+    if (needle) {
+      const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node && ranges.length < 500; node = walker.nextNode()) {
+        const hay = node.nodeValue.toLowerCase();
+        for (let i = hay.indexOf(needle); i >= 0 && ranges.length < 500; i = hay.indexOf(needle, i + needle.length)) {
+          const range = document.createRange();
+          range.setStart(node, i);
+          range.setEnd(node, i + needle.length);
+          ranges.push(range);
+        }
+      }
+    }
+    show();
+  };
+  input.addEventListener("input", search);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && ranges.length) {
+      event.preventDefault();
+      at = (at + (event.shiftKey ? ranges.length - 1 : 1)) % ranges.length;
+      show();
+    } else if (event.key === "Escape" && input.value) {
+      event.stopPropagation();
+      input.value = "";
+      search();
+    }
+  });
+  return bar;
+}
+
 function buildFileReadingSummary(image, summary, images) {
   const holder = document.createElement("div");
   holder.className = "library-file-reading";
@@ -8847,7 +8915,7 @@ function buildFileReadingSummary(image, summary, images) {
   copy.title = "Copy everything read from this file";
   copy.addEventListener("click", (event) => {
     event.stopPropagation();
-    copyToClipboard(mediaReading(image), copy);
+    copyToClipboard(mediaReading(image).replace(/\f/g, ""), copy);
   });
   //: The two controls travel together on the right, with the facts on the
   //: left (the owner, 2026-09-21: "move the files tab row copy text button
@@ -8858,25 +8926,47 @@ function buildFileReadingSummary(image, summary, images) {
   headActions.className = "row library-file-reading-actions";
   headActions.append(copy, open);
   head.append(meta, headActions);
-  //: The whole reading, in place. Reported directly: "the text extracted
-  //: from this file area and dropdown in the library files subtab is
-  //: broken, it only shows the first line on the first page extracted". It
-  //: was the Phase 7.5 one-line summary working as designed, and the design
-  //: was wrong. The box is capped and scrolls (`.library-file-reading-text`),
-  //: so a forty-page scan shows its first few lines and the rest is a scroll
+  //: **A reading column, not a code box** (INBOX 827, L1). Body size and a 1.6
+  //: line height in a measure a person reads, each page under its own "Page N"
+  //: mark when the reading came page by page (the server joins pages with a form
+  //: feed), up to half the window with a fade where more waits, and a find box
+  //: once the text scrolls. The box is capped, so a forty-page scan is a scroll
   //: rather than a column that pushes every other row off the page.
-  const fullText = document.createElement("pre");
+  const fullText = document.createElement("div");
   fullText.className = "library-file-reading-text";
-  fullText.textContent = mediaReading(image);
+  fullText.tabIndex = 0;
+  fullText.setAttribute("role", "region");
+  fullText.setAttribute("aria-label", `Text read from ${image.original_name || "this file"}`);
+  const pages = mediaReading(image).split("\f").map((part) => part.trim()).filter(Boolean);
+  pages.forEach((pageText, index) => {
+    if (pages.length > 1) {
+      const mark = document.createElement("p");
+      mark.className = "library-file-page-mark";
+      mark.textContent = `Page ${index + 1}`;
+      fullText.appendChild(mark);
+    }
+    const body = document.createElement("p");
+    body.className = "library-file-page-text";
+    body.textContent = pageText;
+    fullText.appendChild(body);
+  });
   fullText.addEventListener("scroll", () => {
     readingScrollTops.set(mediaRowKey(image), fullText.scrollTop);
+    fullText.classList.toggle("is-at-end", fullText.scrollTop + fullText.clientHeight >= fullText.scrollHeight - 2);
   });
   //: After layout, not now: this element is built before it is in the
   //: document, so it has no scroll height yet and `scrollTop` would be
   //: dropped on the floor. One frame is enough, the tile is appended
   //: synchronously in the same task.
   const savedScroll = readingScrollTops.get(mediaRowKey(image)) || 0;
-  if (savedScroll > 0) requestAnimationFrame(() => { fullText.scrollTop = savedScroll; });
+  requestAnimationFrame(() => {
+    if (savedScroll > 0) fullText.scrollTop = savedScroll;
+    fullText.classList.toggle("is-at-end", fullText.scrollTop + fullText.clientHeight >= fullText.scrollHeight - 2);
+    //: Find only earns its row when the text scrolls.
+    if (fullText.scrollHeight > fullText.clientHeight + 1 && !holder.querySelector(".library-file-find")) {
+      holder.insertBefore(buildReadingFind(fullText), fullText);
+    }
+  });
   fullText.addEventListener("click", (event) => event.stopPropagation());
   holder.append(head, fullText);
   return holder;
