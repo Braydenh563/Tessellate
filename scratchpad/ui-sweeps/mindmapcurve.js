@@ -32,7 +32,8 @@ const VIEWPORT = (() => {
 })();
 
 //: A point on the canvas that is neither a line nor a topic, kept inside the viewport (1380,860 is off screen at 390).
-const EMPTY = { x: Math.min(1380, VIEWPORT.width - 12), y: Math.min(860, VIEWPORT.height - 12) };
+//: Above the phone's tab bar: at 390x844 the old corner was its More button.
+const EMPTY = VIEWPORT.width < 700 ? { x: 12, y: VIEWPORT.height - 140 } : { x: Math.min(1380, VIEWPORT.width - 12), y: Math.min(860, VIEWPORT.height - 12) };
 const results = [];
 function check(label, ok, detail) {
   results.push({ label, ok: Boolean(ok) });
@@ -118,7 +119,9 @@ const READ = `(childId) => {
 
 (async () => {
   const { page, browser } = await boot({ viewport: VIEWPORT });
-  await page.click('[data-tab="library"]');
+  //: At a phone's width Library is behind More, and its sheet then sits over every click.
+  if (VIEWPORT.width < 700) await page.evaluate(() => switchTab("library"));
+  else await page.click('[data-tab="library"]');
   await page.waitForTimeout(800);
   await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
   await page.waitForTimeout(1500);
