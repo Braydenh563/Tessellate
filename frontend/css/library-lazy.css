@@ -227,6 +227,12 @@ textarea.has-gutter {
   display: none;
 }
 
+/* Edit inside a group (L-whiteboard-7): the rest of the board stands back and cannot be pressed. */
+#whiteboard-container .wb-dimmed {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
 .skill-card .skill-card-facts > :is(.chip, button).skill-fact > .ph-lead {
   margin-inline-end: 0;
 }

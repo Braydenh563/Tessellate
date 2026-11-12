@@ -4239,10 +4239,11 @@ def test_a_locked_item_is_out_of_reach_in_one_way() -> None:
     wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
     assert "#whiteboard-container .wb-locked,\n#whiteboard-container .wb-locked * {\n  pointer-events: none;" in css
-    assert "return out.filter(([kind, item]) => !wbIsLocked(kind, item) && !wbHiddenOnBoard(kind, item));" in wb
-    assert wb.count('if (wbIsLocked("object", obj)) continue;') == 2, "the marquee and the lasso"
-    assert wb.count("if (parsed.locked) continue;") == 2
-    assert wb.count("if (node.locked) continue;") == 2
+    #: Edit inside a group (L-whiteboard-7) shares each of these lines: what is outside the open group is out of reach the same way.
+    assert "return out.filter(([kind, item]) => !wbIsLocked(kind, item) && !wbHiddenOnBoard(kind, item) && !wbOutsideIsolation(kind, item));" in wb
+    assert wb.count('if (wbIsLocked("object", obj) || wbOutsideIsolation("object", obj)) continue;') == 2, "the marquee and the lasso"
+    assert wb.count('if (parsed.locked || wbOutsideIsolation("sketch", sketch)) continue;') == 2
+    assert wb.count('if (node.locked || wbOutsideIsolation("node", node)) continue;') == 2
     assert "!wbIsLocked(memberKind, candidate)" in wb
     assert "if (!withLocked && wbIsLocked(kind, item)) continue;" in wb[wb.index("function wbFrameContents(") :][:800]
     assert "function wbFrameContents(frame, { withLocked = false } = {})" in wb, "a drag passes locked items by; only Export this frame takes them"

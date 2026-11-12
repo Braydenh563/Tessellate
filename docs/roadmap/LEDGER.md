@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
+| whiteboard | 30 | 36 | 4 | 0 | 11 | 70 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 700 | 157 | 3 | 195 | 1410 |
+| all | 553 | 698 | 157 | 3 | 195 | 1408 |
 
 ## graph
 
@@ -347,8 +347,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-2** `whiteboard` open, M: Add a resizable PDF and document viewer object to the whiteboard. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:121. Evidence: BACKLOG claims it went to WHITEBOARD_PLAN, but no whiteboard plan item, LEDGER row or code exists for a resizable PDF or document viewer on the board
 - [ ] **L-whiteboard-3** `whiteboard` open, M: Turn rough ink strokes into clean shapes. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:293. Evidence: there is no shape recognition code in frontend/js; it exists only in this audit file, which BACKLOG points at only in general terms
 - [ ] **L-whiteboard-4** `whiteboard` open, M: Replay a board's ink strokes in drawing order. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:296. Evidence: no stroke replay exists in the code and no plan or LEDGER row covers it
-- [ ] **L-whiteboard-7** `whiteboard` open, M: Edit inside a group with the rest of the board dimmed. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:262. Evidence: groups can be nested (WHITEBOARD_PLAN item 1354), but no edit-inside-group isolation exists or is tracked
-- [ ] **L-whiteboard-8** `whiteboard` open, M: Save and switch board workspace presets. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:391. Evidence: no saved panel layout presets exist for the board editor and nothing tracks them
 - [ ] **L-whiteboard-9** `whiteboard` open, M: Update a placed library copy from its source. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:634. Evidence: library_ref is stored on placed items, but no update command exists; untracked
 - [ ] **L-whiteboard-12** `whiteboard` open, L: Bind board cards to note properties through their frame. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:768. Evidence: no shape that stays bound to live notebook content exists; lines 768 to 772 are untracked
 - [ ] **L-whiteboard-13** `whiteboard` open, S: Park port dx and dy offsets and the ports editor in BACKLOG. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1310. Evidence: Open line in the plan's prose a session could miss. A conditional deferral of the port offsets, and perimeter use waits on the ports editor. There is no row.

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard (L-whiteboard-7, L-whiteboard-8): double-click a grouped item, or Edit inside the group in Ctrl+K, to edit inside it with the rest of the board dimmed and out of reach of a click, a sweep, Select all and Tab; Escape leaves. View, Panels, Workspaces saves which panels are open and switches between up to eight, kept on this device. New `frontend/js/whiteboard-workspace.js`, `tests/test_wb_workspace.py`.
 - Whiteboard (L-whiteboard-10): the first time you hold each board tool, a one-line hint says what it does; it shows once per tool and is remembered on this device (`wb-tool-hint-<tool>`, `tests/test_wb_tool_hints.py`).
 - Whiteboard (L-whiteboard-6): Repeat last (Ctrl+Alt+Y, Edit menu and Ctrl+K) does the last move, turn or resize again to what is selected now; arrow nudges, drags, Turn, the card and picture rotate grips and the Format width and height record it (`tests/test_wb_repeat_last.py`). A drawn shape's rotate grip is not recorded yet.
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
