@@ -200,7 +200,6 @@ EXPECTED = {
         '"There is nothing in the outline to build."',
         '"That file is empty."',
         '`That outline is ${content.length.toLocaleString()} characters: the limit is ${WB_MAX_IMPORT_CHARS.toLocaleString()}.`',
-        '"Allow pop-ups to export as PDF, it opens Print, then Save as PDF."',
         '"The default board cannot change kind. Make a new board to start a mind map."',
         '"Drop a note from the Library onto the board. That was not a note."',
         '"Drop an outline to import it: OPML, FreeMind, XMind, Markdown or plain text."',

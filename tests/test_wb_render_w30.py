@@ -52,12 +52,14 @@ def test_shapes_and_connectors_repaint_only_when_their_look_can_have_changed():
 
 
 def test_the_export_finds_each_items_element_in_one_walk_not_one_walk_per_item():
-    start = WB.index("function wbBuildExportSvg(")
+    #: L272: the indexes live in `wbExportLook`, built once before the builder draws an item.
+    start = WB.index("function wbExportLook(")
     build = WB[start : WB.index("\nfunction ", start + 10)]
+    builder = WB[WB.index("function wbBuildExportSvg(") :][:20000]
+    assert builder.index("const look = wbExportLook()") < builder.index("drawFrame(e.item)")
     #: One index per kind, built before the first item is drawn.
     for part in ('idIndex("#wb-html-layer .wb-object")', 'idIndex(".sketch-group")', 'idIndex(".node-card")'):
         assert part in build, part
-    assert build.index("const objectEls") < build.index("drawFrame(e.item)")
     assert "if (!found.has(el.dataset.id)) found.set(el.dataset.id, el)" in build
     #: No per-item page walk by id remains in the export.
     assert 'document.querySelector(`' not in build

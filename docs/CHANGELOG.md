@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: Export as PDF now writes the file itself instead of opening Print: A4 or Letter, auto, portrait or landscape, and one page, one page per frame, or tiled pages (`wbPdf.plan`, `wbPdf.build`; a two-frame board is a two-page PDF, `tests/test_wb_export_pdf.py`); the export dialog says "Export this branch" when opened for a branch (map menu passes `{ branch: true }`).
+- Code: the board export reads the drawn page in one place (`wbExportLook`), so `wbBuildExportSvg` builds the picture from board data and touches no element; the exported SVG is identical on a fixed board and map (`scratchpad/ui-sweeps/wbexport-parity.js`, 20 of 20, `tests/test_wb_export_builder.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
 - Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.

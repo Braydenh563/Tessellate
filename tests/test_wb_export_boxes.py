@@ -101,4 +101,4 @@ def test_a_sticky_with_the_fold_off_or_a_plain_box_draws_none():
 
 def test_a_picture_is_clipped_to_the_corners_it_is_drawn_with():
     body = WB[WB.index('if (obj.kind === "image" && obj.data.url) {') :][:1400]
-    assert "wbSvgBoxRadii(" in body and "<clipPath" in body and 'clip-path="url(#' in body
+    assert "look.radii(" in body and "wbSvgBoxRadii(" in WB[WB.index("function wbExportLook("):][:9000] and "<clipPath" in body and 'clip-path="url(#' in body
