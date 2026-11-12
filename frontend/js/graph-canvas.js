@@ -172,6 +172,9 @@
       scene: null,
       sceneStale: true,
       paintMode: null,
+      paintBand: null,
+      restBuild: null,
+      restSpare: null,
       dimA: 0,
       overCentres: new Map(),
       overLit: new Map(),
@@ -2704,7 +2707,7 @@
   const GC_SCENE_PAD = 0.15;
   const GC_SCENE_SETTLE_MS = 160;
   const GC_NO_NEIGHBOURS = new Set();
-  function gcPaintLayer(s, mode, old) {
+  function gcPaintLayer(s, mode, old, band) {
     const pad = { x: Math.round(s.dims.w * GC_SCENE_PAD), y: Math.round(s.dims.h * GC_SCENE_PAD) };
     const canvas = old ? old.canvas : document.createElement("canvas");
     const w = Math.round((s.dims.w + 2 * pad.x) * s.dpr);
@@ -2713,19 +2716,62 @@
     if (canvas.height !== h) canvas.height = h;
     //: Painted with no hover at all: the hover is the layer on top.
     const keep = { ctx: s.ctx, hoveredId: s.hoveredId, hoverTo: s.hoverTo, hoverFrom: s.hoverFrom, hoverEase: s.hoverEase, hoverEdge: s.hoverEdge };
-    Object.assign(s, { ctx: canvas.getContext("2d"), paintMode: mode, paintPad: pad, paintFade: 1, hoveredId: null, hoverTo: null, hoverFrom: null, hoverEase: 1, hoverEdge: null });
+    const ctx = canvas.getContext("2d");
+    Object.assign(s, { ctx, paintMode: mode, paintPad: pad, paintBand: band || null, paintFade: 1, hoveredId: null, hoverTo: null, hoverFrom: null, hoverEase: 1, hoverEdge: null });
+    //: A band is held by a clip, taken and dropped here so no state leaks (`gcDraw`).
+    ctx.save();
     try {
       gcDraw(s);
     } finally {
-      Object.assign(s, keep, { paintMode: null, paintPad: null });
+      ctx.restore();
+      Object.assign(s, keep, { paintMode: null, paintPad: null, paintBand: null });
     }
     return { canvas, pad };
+  }
+
+  //: **A settle repaint of a big map is painted in bands, a frame apart**
+  //: (L-graph-16). At 2,000 notes and CPU 4x each wheel stop repainted the whole
+  //: rest layer 160 ms later as one task (a 110 ms long task, measured: the
+  //: script was 10 ms of it, the rest the raster at the next `drawImage`). The
+  //: scaled layer on screen stays until the new one is whole; a camera move,
+  //: or anything that repaints the frame (`sceneStale`), drops the build.
+  const GC_SLICE_NODES = 300;
+  const GC_SLICE_BANDS = 8;
+  let gcFlushPixel = null;
+  //: One band per composed draw (the composed draw asks for the next while a build
+  //: is open, so there is no frame loop of its own). A build is the camera, the scene and the
+  //: sizes it began with; if any has moved on, it starts again from band 0.
+  function gcRestBuild(s, scene) {
+    const t = s.transform || d3.zoomIdentity;
+    let b = s.restBuild;
+    if (!(b && b.scene === scene && b.t.k === t.k && b.t.x === t.x && b.t.y === t.y && b.w === s.dims.w && b.h === s.dims.h && b.dpr === s.dpr && b.tokens === gcTokens)) {
+      b = s.restBuild = { scene, t, i: 0, canvas: s.restSpare || null, w: s.dims.w, h: s.dims.h, dpr: s.dpr, tokens: gcTokens, pad: null };
+    }
+    const pad = { x: Math.round(s.dims.w * GC_SCENE_PAD), y: Math.round(s.dims.h * GC_SCENE_PAD) };
+    //: Edges on whole device pixels, or a dot over a seam is blended in twice.
+    const rows = Math.round((s.dims.h + 2 * pad.y) * s.dpr);
+    const edge = (i) => Math.round((rows * i) / GC_SLICE_BANDS) / s.dpr - pad.y;
+    const layer = gcPaintLayer(s, "rest", b.canvas ? { canvas: b.canvas } : null, { y0: edge(b.i), y1: edge(b.i + 1) });
+    b.canvas = layer.canvas;
+    b.pad = layer.pad;
+    //: Raster now, a band at a time, rather than all at the next `drawImage`.
+    gcFlushPixel ||= document.createElement("canvas").getContext("2d");
+    gcFlushPixel.drawImage(b.canvas, 0, 0, 1, 1, 0, 0, 1, 1);
+    //: Not done: the draw asks for its next frame while `s.restBuild` is set.
+    if (++b.i < GC_SLICE_BANDS) return scene;
+    s.restBuild = null;
+    s.restSpare = scene.rest.canvas;
+    return (s.scene = { t, w: b.w, h: b.h, dpr: b.dpr, tokens: b.tokens, dim: null, spare: scene.dim || scene.spare, rest: { canvas: b.canvas, pad: b.pad } });
   }
 
   function gcDrawComposed(s) {
     if (s.sceneStale || s.ctx.canvas !== s.canvas || !s.dims.w || !s.nodes.length) return false;
     const t = s.transform || d3.zoomIdentity;
     let scene = s.scene;
+    const settle = (ms) => {
+      clearTimeout(s.sceneSettle);
+      s.sceneSettle = setTimeout(() => gcRequestDraw(s, true), ms);
+    };
     if (scene && (scene.w !== s.dims.w || scene.h !== s.dims.h || scene.dpr !== s.dpr || scene.tokens !== gcTokens)) scene = null;
     if (scene && (t.k !== scene.t.k || t.x !== scene.t.x || t.y !== scene.t.y)) {
       const r = t.k / scene.t.k;
@@ -2734,11 +2780,23 @@
       const top = t.y - r * (scene.t.y + pad.y);
       const covers = left <= 0 && top <= 0 && left + r * (s.dims.w + 2 * pad.x) >= s.dims.w && top + r * (s.dims.h + 2 * pad.y) >= s.dims.h;
       const still = performance.now() - (s.cameraAt || 0) >= GC_SCENE_SETTLE_MS;
-      if (still || !covers || r > 2 || r < 0.5) {
+      const sliced = still && covers && r <= 2 && r >= 0.5 && s.size === "full" && s.nodes.length >= GC_SLICE_NODES && !s.layoutRunning && !s.dragNode;
+      if (sliced) {
+        const building = scene;
+        scene = gcRestBuild(s, scene);
+        //: The screen already shows this camera and nothing is dimmed or lit: a
+        //: band is all this frame owes, and composing again would cost a layer's `drawImage` a band.
+        const sh = s.shownCamera;
+        if (scene === building && sh && sh.k === t.k && sh.x === t.x && sh.y === t.y && s.hoveredId == null && !s.dimA && !s.overCentres.size && !s.warmDim && !gcSearchOver(s)) {
+          settle(0);
+          return true;
+        }
+      } else if (still || !covers || r > 2 || r < 0.5) {
+        s.restBuild = null;
         scene = null;
       } else {
-        clearTimeout(s.sceneSettle);
-        s.sceneSettle = setTimeout(() => gcRequestDraw(s, true), GC_SCENE_SETTLE_MS);
+        s.restBuild = null;
+        settle(GC_SCENE_SETTLE_MS);
       }
     }
     if (!scene) {
@@ -2755,7 +2813,7 @@
     const searching = gcSearchOver(s);
     s.searchOver = searching && !hovering;
     s.dimA = gcFadeToward(s.dimA, hovering || searching ? 1 : 0, step);
-    let moving = s.dimA > 0 && s.dimA < 1;
+    let moving = (s.dimA > 0 && s.dimA < 1) || Boolean(s.restBuild);
     if (hovering && !s.overCentres.has(s.hoveredId)) s.overCentres.set(s.hoveredId, 0);
     s.overLit = new Map();
     for (const [id, a] of s.overCentres) {
@@ -2809,6 +2867,7 @@
       s.paintMode = null;
     }
     s.composed = true;
+    s.shownCamera = { k: t.k, x: t.x, y: t.y };
     //: A composed frame that is still moving asks for itself like any other:
     //: it counts toward the same bound (INBOX 1643).
     if (moving && (s.selfFrames = (s.selfFrames || 0) + 1) <= gcRequestDraw.selfCap) {
@@ -3040,6 +3099,12 @@
     const k = t.k;
     const pad = s.paintPad || { x: 0, y: 0 };
     ctx.setTransform(s.dpr, 0, 0, s.dpr, s.dpr * pad.x, s.dpr * pad.y);
+    const band = s.paintBand;
+    if (band) {
+      ctx.beginPath();
+      ctx.rect(-pad.x, band.y0, s.dims.w + 2 * pad.x, band.y1 - band.y0);
+      ctx.clip();
+    }
     if (!over) ctx.clearRect(-pad.x, -pad.y, s.dims.w + 2 * pad.x, s.dims.h + 2 * pad.y);
     ctx.save();
     ctx.translate(t.x, t.y);
