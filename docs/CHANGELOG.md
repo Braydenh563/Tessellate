@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph review fixes: a private note lends no entity to a route and a private document is never a stop; the map of meaning samples evenly past 5,000 notes and runs in float32 through the covariance; vector-built caches follow a re-embed; mixed vector widths are logged.
 - The searxng status test starts from a fresh answer cache with no Docker to ask and waits for the route's 200, so it no longer depends on test order.
 - Tests: the private-space leak checks look for a word of the secret, not its digits, which a timestamp can hold.
 - Graph: a headless sweep checks saved views, focus and global switching, the keyboard ring, reduced motion and the hover draw cost with numbers (L815 to L818).
