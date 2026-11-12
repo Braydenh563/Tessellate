@@ -36,6 +36,7 @@ with its owner named in the entry.
 ## Open items
 
 ## Placed (last 20, newest first)
+- 2026-11-12: L-general-25 (question_noise misspelling table's source): recommendation taken under standing order 3, keep and credit as a CC BY-SA 4.0 adaptation (GPLv3-compatible one way, combinable under AGPLv3 section 13); docs/THIRD_PARTY.md and the block's comment say so.
 - 2026-11-05: 1685 (the shape bar, Filled keeps its colour, the app's own colour popover with hex and opacity) to WHITEBOARD_PLAN "Placed from INBOX, 2026-11-04"; 1686 (Atlas perches on every mind map node) to MINDMAP_PLAN "Placed from INBOX, 2026-11-04".
 
 - 2026-11-04: 1684 (every companion on the desk) to BACKLOG "Placed from INBOX, 2026-11-04", after 1683.
