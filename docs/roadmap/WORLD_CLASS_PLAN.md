@@ -273,22 +273,7 @@ of which the code is already half way to):
 6. **The offline studio.** Audio overview, recall cards, a "brief me before
    the meeting" from the notes, all local. (§114 combo 3.)
 
-**State 2026-09-24:** the Gap column read against the code. Built since the table
-was written: `[[` autocomplete (D2), the daily-note backend and `Ctrl+D` (D6),
-per-sentence citations with the unsupported-sentence line (CHAT_PLAN Phase
-1), version history per note (B1), the palette and shortcut sheet from one
-table, and a PWA manifest with a share target. Still a gap: typed properties
-on notes (D5), the web clipper (D9), PDF annotation (D10, DOCUMENTS_PLAN),
-recall cards (§114 A1), sync (B6), importers beyond Markdown (H6), and a
-plugin surface beyond the MCP server (B8). Of the six standouts, 2 and 4 are
-built, 1 and 3 are half built (I6, B4), and 5 (a privacy receipt page) and 6
-(the offline studio) are not built: no code names either.
-
-**State 2026-10-11 (by grep):** built since: typed properties (`entry/properties.py`),
-the web clipper (`clip.html`), importers for notion, obsidian, evernote and
-apple (`routes_import.py`), and the privacy receipt (5) as Settings, "Where
-your data went" (`core/egress.py`). Still gaps: sync (B6), PDF annotation
-(D10), recall cards (A1), the offline studio (6), a plugin surface (B8).
+**State 2026-11-12 (by code):** the Gap column is built except: PDF annotation (D10, DOCUMENTS_PLAN), spaced-repetition recall cards (§114 A1; `ai/study.py` makes study material but no review schedule was found) and a registered Python tool from the skills folder (B8). The two earlier State blocks moved to HISTORY.md, "Moved from the plans, 2026-11-12 (section 2, the Gap column's two State blocks)".
 
 ---
 
@@ -542,7 +527,7 @@ on 2026-09-14 (INBOX 220) so they survive its archiving.
 
 **Built 2026-10-04 for the pool's kinds.** Moved to HISTORY.md, "Moved from the plans, 2026-10-04 (B2 durable jobs)": the `jobs` table, leases with a heartbeat, resume after a kill (a real SIGKILL in `tests/test_jobstore.py`), `GET /jobs`, `GET /jobs/stream`, cancel of a queued job.
 
-**Left:** the other kinds onto the table (re-index, embed, skill run, import, backup, model download: each runs in its own thread with its own cancel today and needs a handler that resumes from a cursor rather than from the start); the activity panel reading `/jobs/stream` instead of polling `/tasks`; a running job cannot be cancelled (cooperative stop per handler). M, Opus.
+**Left:** a running job cannot be cancelled, only a queued one (`core/jobstore.py:356`, "a running job is not interrupted"; cooperative stop per handler). M, Opus. The other kinds on the table and the activity panel on `/jobs/stream` are built (table row 3 of section 8, HISTORY; `ai-tools.js:19`).
 
 ### B3 The retrieval engine: one index, three signals, explained
 
@@ -661,7 +646,7 @@ Sync is log shipping over the event log (B1): one computer pulls the other's cha
 
 One error shape (exists, B3 in the retired plan doc), cursor pagination on every list (finish D4 in the audit), ETags on entries, `If-Match` on writes (so the editor cannot clobber a background AI edit), an OpenAPI schema behind the auth gate, and a `/capabilities` endpoint the UI reads once so features appear only when their backend is there (OCR, embeddings, TTS).
 
-**State 2026-10-05:** built (cursors on every paged list, ETags and `If-Match` on entries, `/capabilities`); moved to HISTORY.md, "Moved from the plans, 2026-10-05 (B7)". Left: the page's own lists following `X-Next-Cursor` on scroll, and the page reading `/capabilities` once to hide a control whose backend is not installed. S.
+**State 2026-11-12:** built (cursors on every paged list, ETags and `If-Match` on entries, `/capabilities`); moved to HISTORY.md, "Moved from the plans, 2026-10-05 (B7)". The Notes list and the Timeline follow `X-Next-Cursor` and `next_cursor` on scroll (`notes-list.js:3115`, `timeline.js:715`) and Settings reads `/capabilities` for one control (`settings-controls.js:2281`). Left: the Library and Reminders lists paging by cursor on scroll, and the page hiding other controls whose backend is not installed. S.
 
 **Corrected 2026-10-05 (audit ARCH-12, ARCH-13, ARCH-04).** The error shape did not cover a request that failed validation: a 422 was FastAPI's own `{detail: [...]}` with no `code`, echoing the input (a password among them). It is one shape now (`tests/test_validation_error_shape.py`). "Every list takes a `limit`" holds only for functions named `list_*`, which is what the lint keys on: `/graph`, `/suggestions`, `/entries/link-suggestions`, `/documents/outline` and `/entries/query` are not covered (open). Cursor pagination exists for `GET /entries` (`after`, `X-Next-Cursor`; `tests/test_entries_keyset_paging.py`); the client still pages by offset (frontend audit FE-05).
 
@@ -791,28 +776,12 @@ Mirrored in LEDGER.md, table B.
 
 | # | Row | What is left | Size | Where |
 | --- | --- | --- | --- | --- |
-| 3 | ~~B2~~ | ~~durable jobs: a table, leases, resume after a kill, `/jobs/stream`~~ built 2026-10-04 for the pool's six kinds (`core/jobstore.py`, `tests/test_jobstore.py`); the other kinds and the panel on the stream built 2026-10-11 (Brief 9, briefs-1011); the folder import built 2026-10-17 | S | HISTORY; B2 |
-| 5 | ~~I1, H1~~ | ~~the tension and answered-question passes~~ built 2026-10-04 (`facts._pair_passes`, `tests/test_night_pairs.py`); 2,000 notes, a first run 39 to 57 s with no model, 130 to 215 s with a fake judge (gate 5 min), card 39 to 84 ms; left: pass 2's kinds (dates, duplicates, entities) as derived facts | done | HISTORY |
-| 6 | ~~§14.3, I6, H2~~ | ~~chunk vectors, then paragraph anchors, three signal bars per sentence and the side-by-side view~~ built 2026-10-04 (`chunk_vectors`, `search/chunks.py`, `tests/test_chunk_vectors.py`, `tests/test_evidence_spec.py`); seeded 1,000 notes, recall@5 0.01 to 0.42; left: "wrong" on a card as a correction (I7) | done | HISTORY |
-| 10 | ~~D5~~ | ~~typed properties on notes (documents have them)~~ built: the properties, the table under a note's title and note types with KG4 (2026-10-04); the five built-in kinds and the graph's Note type colour 2026-10-05 (`tests/test_note_kinds_d5.py`); left: the Library grouping notes by type (the graph colouring and a type's own colour: `tests/test_note_types_graph_d5.py`) | done | HISTORY |
-| 13 | ~~§1, D14~~ | ~~the lints not written: surface budget, one primary per modal, meta without border or hover, a menu item's rest background, every `data-action` in the palette~~ built 2026-10-04 (`tests/test_consistency_contract.py`); left: the two ratchets (5 modals with 2 to 3 filled buttons, 13 chip rules) | done | HISTORY |
-| 16 | ~~B7~~ | ~~cursor pagination, ETags and `If-Match` on entries, `/capabilities`~~ built 2026-10-05 (`api/paging.py`, `routes_capabilities.py`, `tests/test_api_contract_b7.py`); left: the page's own lists following the cursor on scroll, and the page reading `/capabilities` to hide what is not installed | done | HISTORY |
-| 17 | ~~B8, H4~~ | ~~a user skills folder picked up without a restart; `/api/v1`; the agent named on an external write~~ built 2026-10-05 (`ai/skill_folder.py`, `api/versioning.py`, `events.as_agent`, `tests/test_local_service_h4.py`); left: the MCP server running the same tool tests as the in-app agent, and confirm cards for an outside agent's destructive call | done | HISTORY |
-| 18 | ~~B4~~ | ~~typed links, a derived tensions table, rebuild determinism, the Tensions widget~~ built 2026-10-05 (`tensions` table rebuilt from events, night facts and links, `tests/test_tensions_table_b4.py`; typed links were KG3); left: derived person and project pages, per-claim citations, "what changed about X" | done | HISTORY |
 | 19 | B5, §9 | ~~per-tool pre and post conditions, grammar-forced JSON, concurrent tool calls, Ollama's native dialect~~ built 2026-10-05 (`ai/tools/contracts.py`, `OllamaClient.forced_call_format`, `tests/test_tool_contracts.py`, `tests/test_provider_sockets.py` over a real socket); left: evals at 3B and 4B on a real llama-server, and a real Ollama (1.5B run 2026-11-11: tool choice 0 of 10 on llama-cpp-python's handler, two server-compat bugs fixed) | M | HISTORY; `tests/test_skills_evals.py` |
-| 21 | ~~I8, H3~~ | ~~the model bench~~ built 2026-10-05: `ai/bench.py`, `/models/bench`, Settings, Models, Test my models (`tests/test_bench_spec.py`); a real-model run 2026-11-11 (1.5B, 12 items, two runs, temperature 0): 0.639 and 0.639, 149 and 155 s, both gates met | done | HISTORY |
-| 22 | ~~I2, H8~~ | ~~the margin reader~~ built 2026-10-05 for documents: `ai/margin.py`, `POST /editor/read`, `margin-reader.js` (`tests/test_margin_reader_spec.py`); the note editor built s10b-1110 (cards under the text); left: typing latency in Chromium | S | HISTORY; I2 |
-| 23 | ~~I5, H8~~ | ~~time travel: `as_of` on chat, then-and-now~~ built 2026-10-05 (`ai/timetravel.py`; 200 candidates rewound in under a second); left: a model's judgement over the pairs, past texts re-embedded, cards grouped by month | done | HISTORY |
 | 25 | H6, §5.7 | ~~Notion, Obsidian, Evernote and Apple Notes import; keyboard-complete; a WCAG audit; a first-run path timed to a first answer~~ built 2026-10-05 (HISTORY); left: multi-window | M | H6 |
-| 26 | ~~H7~~ | ~~boot JS under 1 MB~~ built (691,724 bytes as served, `tests/test_boot_budget.py` gates it; the corrected 2026-10-05 measure, H7); every list over 200 rows measured 2026-10-05 (chunk-on-scroll, scroll p95 under 25 ms, `ui-sweeps/s2-1005.js` MODE=rows); first paint measured 2026-10-05 (`boottime.js`, fresh data dir, 1440, five cold loads, load average 10 on four cores): DOMContentLoaded median 585 ms, first contentful paint median 272 ms, dashboard panel readable (text in it, splash gone) median 974 ms (920 to 1,326); not optimised; left: the 300 ms line on the reference laptop with a quiet machine, and the 974 ms to the dashboard's text | S | `boottime.js` |
-| 27 | ~~H9~~ | ~~usage ledger, time to first answer, simple mode, a perf budget in CI, an axe sweep, a global capture hotkey, fault injection in `errors.js`, speculative retrieval~~ built 2026-10-05 (HISTORY); left: `boottime.js` in the CI workflow | S | HISTORY |
-| 28 | §19 | torch still loads at launch for a notebook with notes (a preference, or ONNX); the Phosphor subset; lazy stylesheets; ~~the whole `EXPLAIN QUERY PLAN` pass; queue back-pressure~~ built 2026-10-05 (HISTORY, "Moved from the plans, 2026-10-05 (19.3, 19.5)"); the Windows frozen startup | S to M | `ai/embeddings.py`, `index.html` |
-| 29 | §10 | F1 a `prefs` module, F5 `api.stream`/`api.upload` and the no-bare-fetch lint, F7's threads onto the pool (the ratchet is built), F10 a `readings` table, F12 a store (F4 built 2026-09-26) | S to L | §10 |
+| 28 | §19 | the Phosphor subset (`Phosphor.woff2` is 147,380 bytes whole); lazy stylesheets (12 linked in `index.html`); the Windows frozen startup (torch is gone: fastembed, `requirements.txt:58`) | S to M | `index.html` |
+| 29 | §10 | F7's threads onto the pool (the ratchet is built), F10 one renderer, F12 the store's next slices (F1, F4 and F5 built: `app.js:506-507`, `tests/test_no_bare_fetch.py`) | S to L | §10 |
 | 32 | 301 | the navigation and undo audit table (written 2026-11-10, below); fixes: the manual and Statistics address; left: the rows marked "row" in the table | M | every surface |
-| 34 | ~~D1, D8, §13~~ | ~~drag on the grid; the reminder row recipe and a 10m snooze; the minimap's NaN rects, the tab bar at 600 to 819px, a whiteboard menu sweep, the tidy layout past five nodes (all not re-checked)~~ built or measured 2026-10-05: drag on the grid found built, the 10m snooze built, the rest measured clean (`nbf1005-recheck.js`); left with its owner: the whiteboard menu sweep (WHITEBOARD_PLAN) | done | HISTORY |
-| 35 | ~~§2~~ | ~~the offline studio~~ built 2026-11-11: an audio overview and a brief from the notes' own sentences, spoken on this computer into a saved recording (HISTORY, "Moved from the plans, 2026-11-11 (Q34, WORLD_CLASS rows 35 to 37)") | done | HISTORY |
 | 36 | B6, H5 | sync without a server: built 2026-11-11, over the home network and through a folder, one apply path (B6 decisions 1 to 14, HISTORY) | L | B6 |
-| 37 | ~~Audio~~ | ~~deferred until the owner says go~~ built 2026-11-11: the natural voice (Piper) for read aloud; the rest was built in 28.5 (HISTORY, "Moved from the plans, 2026-11-11 (Q34, WORLD_CLASS rows 35 to 37)") | done | HISTORY |
 | 38 | §20 | three open questions, each the owner's decision | none | §20 |
 
 Rows 1, 2, 4, 7, 8, 9, 11, 12, 14, 15, 20, 24, 30, 31 and 33 above are built and moved verbatim to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: WORLD_CLASS_PLAN)"; row numbers are kept so citations hold.
@@ -1873,19 +1842,9 @@ numbers go in the CHANGELOG with each step.
 
 **Found, not fixed.** The Graph tab's `GET /graph` is 600 ms and 2.5 MB at 5,000 notes (per-note dict building, two `readable_content` calls and a regex each; a payload cache keyed on `_graph_fingerprint` would need the vault and space state in the key). `p5.min.js` is the largest boot asset (247 KB on the wire, about 85 to 135 ms of parse and setup) and is still needed by the dashboard constellation and the emblem; porting those two to canvas 2D, as `bg-art.js` already was, removes it from boot. `enhanceAllSelects` wraps 99 `<select>`s at boot (about 50 ms), most inside Settings panes nobody has opened. Creating a note costs about 300 ms in this sandbox, all of it the embedding model.
 
-### H8 Time travel and the margin reader (I5, I2; M each, Opus)
+### H8 Time travel and the margin reader (I5, I2)
 
-I5: "what did I think about X in March" as a first-class query, the
-retrieval engine's date signal exposed as a slider on the Ask surface,
-with the answer's cards grouped by month. I2: the second reader in the
-document editor, a margin that fills with the person's own related notes
-as they write, from the same engine, with the link-strength explanation
-under each. Both reuse B3; both gate on the 150 ms budget for a
-keystroke-to-margin update.
-
-**State 2026-10-05:** I2, the margin reader, built for documents (HISTORY, "the margin reader"); I5 open (row 23).
-
-**State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
+Built; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (H8, time travel and the margin reader)". Left: the answer's cards grouped by month and a date slider (a day picker is built), and the margin's typing latency measured in Chromium.
 
 ### H9 Polish in use (the owner's question, 2026-09-14; S to M each)
 
@@ -1950,7 +1909,7 @@ Three directions, cheapest first, none yet taken:
    the scientific stack may be a load-time import only. If so it is 553
    shared objects mapped for nothing.
 
-**State 2026-09-24:** (b) direction 1 is half taken: numpy is imported lazily (`tests/test_lazy_heavy_imports.py`) and the warm-up waits for the first page and skips an empty notebook (`tests/test_embedding_warmup.py`), but a notebook with notes still loads torch at launch. Directions 2 (ONNX) and 3 (is scipy reachable) are (c). M.
+**State 2026-11-12:** (b) built: search by meaning runs on fastembed (ONNX, `requirements.txt:58`; no torch line), numpy is imported lazily (`tests/test_lazy_heavy_imports.py`) and the warm-up waits for the first page and skips an empty notebook (`tests/test_embedding_warmup.py`). Left: direction 3 (is scipy reachable), not re-checked. M.
 
 ### 19.2 The frontend is 5.9 MB decoded, and that is mostly fine
 
@@ -1989,7 +1948,7 @@ Two things are worth doing anyway, both small:
 the dashboard art runs), which is the right answer and is recorded here so
 nobody "discovers" it again.
 
-**State 2026-09-24:** (c) both: `Phosphor.woff2` is still 147 KB whole, and all twelve stylesheets are linked eagerly. S each.
+**State 2026-11-12:** (c) both, re-read: `Phosphor.woff2` is still 147,380 bytes whole and 12 stylesheets are linked eagerly in `index.html`. S each.
 
 ### 19.3 SQLite is the right store, and the reasons are not the obvious ones
 

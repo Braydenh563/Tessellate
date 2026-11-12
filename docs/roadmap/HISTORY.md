@@ -55315,6 +55315,100 @@ Text as it stood in WORLD_CLASS_PLAN.md:
 - **Glass** is still on some surfaces the performance plan listed for
   removal; the glass-off list lint should cover every blurred surface.
 
+## Moved from the plans, 2026-11-12 (section 2, the Gap column's two State blocks)
+
+Evidence (verified in code 2026-11-12): typed properties entry/properties.py; web clipper frontend/clip.html; importers routes_import.py; privacy receipt core/egress.py plus routes_privacy.py and settings-data.js; sync routes_sync.py:133 (POST /sync/pair, tests/test_sync_lan.py); the offline studio ai/studio.py plus frontend/js/studio.js:69 openStudio (table row 35 of section 8: built 2026-11-11); plugin surface: the user skills folder (B8, built 2026-10-05).
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+**State 2026-09-24:** the Gap column read against the code. Built since the table
+was written: `[[` autocomplete (D2), the daily-note backend and `Ctrl+D` (D6),
+per-sentence citations with the unsupported-sentence line (CHAT_PLAN Phase
+1), version history per note (B1), the palette and shortcut sheet from one
+table, and a PWA manifest with a share target. Still a gap: typed properties
+on notes (D5), the web clipper (D9), PDF annotation (D10, DOCUMENTS_PLAN),
+recall cards (§114 A1), sync (B6), importers beyond Markdown (H6), and a
+plugin surface beyond the MCP server (B8). Of the six standouts, 2 and 4 are
+built, 1 and 3 are half built (I6, B4), and 5 (a privacy receipt page) and 6
+(the offline studio) are not built: no code names either.
+
+**State 2026-10-11 (by grep):** built since: typed properties (`entry/properties.py`),
+the web clipper (`clip.html`), importers for notion, obsidian, evernote and
+apple (`routes_import.py`), and the privacy receipt (5) as Settings, "Where
+your data went" (`core/egress.py`). Still gaps: sync (B6), PDF annotation
+(D10), recall cards (A1), the offline studio (6), a plugin surface (B8).
+
+## Moved from the plans, 2026-11-12 (section 8, the built rows of 'What is left, 2026-09-24')
+
+Evidence (verified in code 2026-11-12): each row is struck through in the plan's own text with its test and commit evidence there (jobstore, facts._pair_passes, chunk_vectors, test_note_kinds_d5, test_consistency_contract, api/paging.py, skill_folder.py, tensions table, bench, margin, timetravel, boot budget, H9 items, nbf1005 recheck, studio, sync, Piper); B2's other kinds and the panel on /jobs/stream are read in frontend/js/ai-tools.js:19 and chat-tasks.js:129
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+| 3 | ~~B2~~ | ~~durable jobs: a table, leases, resume after a kill, `/jobs/stream`~~ built 2026-10-04 for the pool's six kinds (`core/jobstore.py`, `tests/test_jobstore.py`); the other kinds and the panel on the stream built 2026-10-11 (Brief 9, briefs-1011); the folder import built 2026-10-17 | S | HISTORY; B2 |
+| 5 | ~~I1, H1~~ | ~~the tension and answered-question passes~~ built 2026-10-04 (`facts._pair_passes`, `tests/test_night_pairs.py`); 2,000 notes, a first run 39 to 57 s with no model, 130 to 215 s with a fake judge (gate 5 min), card 39 to 84 ms; left: pass 2's kinds (dates, duplicates, entities) as derived facts | done | HISTORY |
+| 6 | ~~§14.3, I6, H2~~ | ~~chunk vectors, then paragraph anchors, three signal bars per sentence and the side-by-side view~~ built 2026-10-04 (`chunk_vectors`, `search/chunks.py`, `tests/test_chunk_vectors.py`, `tests/test_evidence_spec.py`); seeded 1,000 notes, recall@5 0.01 to 0.42; left: "wrong" on a card as a correction (I7) | done | HISTORY |
+| 10 | ~~D5~~ | ~~typed properties on notes (documents have them)~~ built: the properties, the table under a note's title and note types with KG4 (2026-10-04); the five built-in kinds and the graph's Note type colour 2026-10-05 (`tests/test_note_kinds_d5.py`); left: the Library grouping notes by type (the graph colouring and a type's own colour: `tests/test_note_types_graph_d5.py`) | done | HISTORY |
+| 13 | ~~§1, D14~~ | ~~the lints not written: surface budget, one primary per modal, meta without border or hover, a menu item's rest background, every `data-action` in the palette~~ built 2026-10-04 (`tests/test_consistency_contract.py`); left: the two ratchets (5 modals with 2 to 3 filled buttons, 13 chip rules) | done | HISTORY |
+| 16 | ~~B7~~ | ~~cursor pagination, ETags and `If-Match` on entries, `/capabilities`~~ built 2026-10-05 (`api/paging.py`, `routes_capabilities.py`, `tests/test_api_contract_b7.py`); left: the page's own lists following the cursor on scroll, and the page reading `/capabilities` to hide what is not installed | done | HISTORY |
+| 17 | ~~B8, H4~~ | ~~a user skills folder picked up without a restart; `/api/v1`; the agent named on an external write~~ built 2026-10-05 (`ai/skill_folder.py`, `api/versioning.py`, `events.as_agent`, `tests/test_local_service_h4.py`); left: the MCP server running the same tool tests as the in-app agent, and confirm cards for an outside agent's destructive call | done | HISTORY |
+| 18 | ~~B4~~ | ~~typed links, a derived tensions table, rebuild determinism, the Tensions widget~~ built 2026-10-05 (`tensions` table rebuilt from events, night facts and links, `tests/test_tensions_table_b4.py`; typed links were KG3); left: derived person and project pages, per-claim citations, "what changed about X" | done | HISTORY |
+
+## Moved from the plans, 2026-11-12 (section 8, the built rows of 'What is left, 2026-09-24')
+
+Evidence (verified in code 2026-11-12): each row is struck through in the plan's own text with its test and commit evidence there (jobstore, facts._pair_passes, chunk_vectors, test_note_kinds_d5, test_consistency_contract, api/paging.py, skill_folder.py, tensions table, bench, margin, timetravel, boot budget, H9 items, nbf1005 recheck, studio, sync, Piper); B2's other kinds and the panel on /jobs/stream are read in frontend/js/ai-tools.js:19 and chat-tasks.js:129
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+| 21 | ~~I8, H3~~ | ~~the model bench~~ built 2026-10-05: `ai/bench.py`, `/models/bench`, Settings, Models, Test my models (`tests/test_bench_spec.py`); a real-model run 2026-11-11 (1.5B, 12 items, two runs, temperature 0): 0.639 and 0.639, 149 and 155 s, both gates met | done | HISTORY |
+| 22 | ~~I2, H8~~ | ~~the margin reader~~ built 2026-10-05 for documents: `ai/margin.py`, `POST /editor/read`, `margin-reader.js` (`tests/test_margin_reader_spec.py`); the note editor built s10b-1110 (cards under the text); left: typing latency in Chromium | S | HISTORY; I2 |
+| 23 | ~~I5, H8~~ | ~~time travel: `as_of` on chat, then-and-now~~ built 2026-10-05 (`ai/timetravel.py`; 200 candidates rewound in under a second); left: a model's judgement over the pairs, past texts re-embedded, cards grouped by month | done | HISTORY |
+
+## Moved from the plans, 2026-11-12 (section 8, the built rows of 'What is left, 2026-09-24')
+
+Evidence (verified in code 2026-11-12): each row is struck through in the plan's own text with its test and commit evidence there (jobstore, facts._pair_passes, chunk_vectors, test_note_kinds_d5, test_consistency_contract, api/paging.py, skill_folder.py, tensions table, bench, margin, timetravel, boot budget, H9 items, nbf1005 recheck, studio, sync, Piper); B2's other kinds and the panel on /jobs/stream are read in frontend/js/ai-tools.js:19 and chat-tasks.js:129
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+| 26 | ~~H7~~ | ~~boot JS under 1 MB~~ built (691,724 bytes as served, `tests/test_boot_budget.py` gates it; the corrected 2026-10-05 measure, H7); every list over 200 rows measured 2026-10-05 (chunk-on-scroll, scroll p95 under 25 ms, `ui-sweeps/s2-1005.js` MODE=rows); first paint measured 2026-10-05 (`boottime.js`, fresh data dir, 1440, five cold loads, load average 10 on four cores): DOMContentLoaded median 585 ms, first contentful paint median 272 ms, dashboard panel readable (text in it, splash gone) median 974 ms (920 to 1,326); not optimised; left: the 300 ms line on the reference laptop with a quiet machine, and the 974 ms to the dashboard's text | S | `boottime.js` |
+| 27 | ~~H9~~ | ~~usage ledger, time to first answer, simple mode, a perf budget in CI, an axe sweep, a global capture hotkey, fault injection in `errors.js`, speculative retrieval~~ built 2026-10-05 (HISTORY); left: `boottime.js` in the CI workflow | S | HISTORY |
+
+## Moved from the plans, 2026-11-12 (section 8, the built rows of 'What is left, 2026-09-24')
+
+Evidence (verified in code 2026-11-12): each row is struck through in the plan's own text with its test and commit evidence there (jobstore, facts._pair_passes, chunk_vectors, test_note_kinds_d5, test_consistency_contract, api/paging.py, skill_folder.py, tensions table, bench, margin, timetravel, boot budget, H9 items, nbf1005 recheck, studio, sync, Piper); B2's other kinds and the panel on /jobs/stream are read in frontend/js/ai-tools.js:19 and chat-tasks.js:129
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+| 34 | ~~D1, D8, §13~~ | ~~drag on the grid; the reminder row recipe and a 10m snooze; the minimap's NaN rects, the tab bar at 600 to 819px, a whiteboard menu sweep, the tidy layout past five nodes (all not re-checked)~~ built or measured 2026-10-05: drag on the grid found built, the 10m snooze built, the rest measured clean (`nbf1005-recheck.js`); left with its owner: the whiteboard menu sweep (WHITEBOARD_PLAN) | done | HISTORY |
+| 35 | ~~§2~~ | ~~the offline studio~~ built 2026-11-11: an audio overview and a brief from the notes' own sentences, spoken on this computer into a saved recording (HISTORY, "Moved from the plans, 2026-11-11 (Q34, WORLD_CLASS rows 35 to 37)") | done | HISTORY |
+
+## Moved from the plans, 2026-11-12 (section 8, the built rows of 'What is left, 2026-09-24')
+
+Evidence (verified in code 2026-11-12): each row is struck through in the plan's own text with its test and commit evidence there (jobstore, facts._pair_passes, chunk_vectors, test_note_kinds_d5, test_consistency_contract, api/paging.py, skill_folder.py, tensions table, bench, margin, timetravel, boot budget, H9 items, nbf1005 recheck, studio, sync, Piper); B2's other kinds and the panel on /jobs/stream are read in frontend/js/ai-tools.js:19 and chat-tasks.js:129
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+| 37 | ~~Audio~~ | ~~deferred until the owner says go~~ built 2026-11-11: the natural voice (Piper) for read aloud; the rest was built in 28.5 (HISTORY, "Moved from the plans, 2026-11-11 (Q34, WORLD_CLASS rows 35 to 37)") | done | HISTORY |
+
+## Moved from the plans, 2026-11-12 (H8, time travel and the margin reader)
+
+Evidence (verified in code 2026-11-12): I5: ai/timetravel.py (as_of on /chat/stream, then-and-now routes); I2: ai/margin.py with frontend/js/margin-reader.js, POST /editor/read; both listed built in section 8 table rows 22 and 23.
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+### H8 Time travel and the margin reader (I5, I2; M each, Opus)
+
+I5: "what did I think about X in March" as a first-class query, the
+retrieval engine's date signal exposed as a slider on the Ask surface,
+with the answer's cards grouped by month. I2: the second reader in the
+document editor, a margin that fills with the person's own related notes
+as they write, from the same engine, with the link-strength explanation
+under each. Both reuse B3; both gate on the 150 ms budget for a
+keystroke-to-margin update.
+
+**State 2026-10-05:** I2, the margin reader, built for documents (HISTORY, "the margin reader"); I5 open (row 23).
+
+**State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
+
 ## Moved from the LEDGER
 - [x] **L661** `world-class` partly, M: Make Library boards and mind maps filter return boards, not only note cards. From OPEN.md:1120; OPEN.md:3749. Evidence: library.js:383 handles is_board entries; libraryPhrase filter result not confirmed to include boards Built: verified 2026-11-12: the Library kind chips Boards and Mind maps (library.js:383-392, is_board entries) list and count boards; no filter gap found
 - [x] **L653** `world-class` partly, S: test_typo_routing writes ./data serially; boot JS 588516 over cap 588400. From OPEN.md:3891. Evidence: Boot cap stale: BOOT_JS_CAP now 448_400 (tests/test_boot_budget.py:64). Serial ./data write in tests/test_typo_routing.py not re-run (read-only); unverified. Built: verified 2026-11-12: BOOT_JS_CAP is 448_400 (tests/test_boot_budget.py:64); tests/test_typo_routing.py run serially wrote no ./data
