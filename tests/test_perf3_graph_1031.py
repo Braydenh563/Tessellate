@@ -10,7 +10,7 @@ import subprocess
 
 import pytest
 from tests._app_js import JS_DIR, frontend_text
-from tests._js_scope import unwrapped
+from tests._js_scope import gc_fns, unwrapped
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
@@ -116,10 +116,11 @@ out.again = draws.length;
 
 def test_the_tick_handler_asks_the_cooling_gate_and_the_end_draws_what_was_held():
     canvas = frontend_text("graph-canvas.js")
-    handler = _body(canvas, "if (message.type === \"tick\") {", "} else if (message.type === \"frame\")")
+    handler = gc_fns(canvas, "gcOnWorkerTick")  # the tick branch of the worker's onmessage (L14 split)
     assert "const drift = gcAimNodes(s, positions, count);" in handler
     assert "if (gcTickSettles(s)) gcGlideFinish(s);" in handler  # a cooling tick does not start a glide
     assert "const gcTickSettles = (s) => gcTickSnaps(s) || gcCooling(s);" in canvas
     assert "gcTickDraw(s, now, drift);" in handler and "gcRequestDraw(s);" not in handler
-    end = _body(canvas, "} else if (message.type === \"end\") {", "s.settledSig = s.layoutSig;")
+    end = gc_fns(canvas, "gcOnWorkerEnd")
+    end = end[: end.index("s.settledSig = s.layoutSig;")]
     assert "gcGlideFinish(s);" in end and "gcDrawHeld(s);" in end

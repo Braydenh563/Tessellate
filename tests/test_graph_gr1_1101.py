@@ -1,6 +1,7 @@
 """Audit 1031 GR1 (ranked row 19): the 2,000-note map's cold settle. Each test names the cost it keeps out."""
 
 from tests._app_js import frontend_text
+from tests._js_scope import gc_frame
 
 
 def _between(text: str, start: str, end: str) -> str:
@@ -46,7 +47,7 @@ def test_a_moving_map_strokes_its_thin_links_as_hairlines_and_rests_on_true_stro
     hair = _between(js, "function gcSetStroke(", "\n}\n")
     assert "s.strokeMoving" in hair and "!dashed" in hair and "device <= GC_HAIR_PX" in hair
     assert "Math.min(1, alpha * device)" in hair
-    draw = _between(js, "function gcDraw(s = gcTab) {", "\n}\n")
+    draw = gc_frame(js)
     assert "s.strokeMoving = Boolean(s.layoutRunning || s.dragNode);" in draw
     bucket = _between(draw, "const strokeBucket = ", "};")
     assert "gcSetStroke(ctx, s, " in bucket and "ctx.lineWidth = (style.width" not in bucket.split("ctx.stroke(bucket.path)")[0]

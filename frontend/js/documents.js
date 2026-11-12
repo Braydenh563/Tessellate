@@ -2827,6 +2827,20 @@ async function docResolveConflict(current, mine, silent, fromSave = true) {
 // not a move, and quietly deleting someone's note to "convert" it is the
 // kind of helpfulness nobody asks for twice.
 async function expandNoteIntoDocument(entry) {
+  //: Several notes (a graph cluster or its selection) compose into one draft,
+  //: a section each, on the server; one note keeps the path below.
+  if (Array.isArray(entry)) {
+    try {
+      const doc = await apiJson("/documents/from-notes", { method: "POST", body: JSON.stringify({ note_ids: entry }) });
+      offerCreateUndo(doc);
+      switchTab("documents");
+      await loadDocuments(doc.id);
+      toast(`Started a draft from ${nounCount(entry.length, "note")}, the notes themselves are untouched.`);
+    } catch (error) {
+      toast(error.message, true);
+    }
+    return;
+  }
   const text = entry.content || "";
   // The first line makes a reasonable title; the rest is the body.
   const [firstLine, ...rest] = text.split("\n");
