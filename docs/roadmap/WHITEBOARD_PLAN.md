@@ -852,7 +852,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Rotation angle, flip horizontal and vertical | yes (`wb-fmt-angle`, `wb-fmt-flip-h/v`) | `addAngle` (Format.js 2913), `addFlip` (2612) | done | none |
 | Turn 90 degrees | yes, 2026-10-18 (whiteboard-1018; HISTORY), no Ctrl+R (the browser's reload) | `turn` action (Ctrl+R) | a command that adds 90 to `rotation` | S |
 | Align (six), distribute (two) | yes (eight commands) | `addAlign` (Format.js 2575), `addDistribute` (2856) | done | none |
-| Table: rows, columns, merge, stripes | no | `addTable` (Format.js 2162), section 12 below | section 12 | M |
 | Arrow shape geometry (width of a block arrow connector) | no | `addArrowGeometry` (Format.js 3972) | needs the `flexArrow` connector shape, section 4 | M |
 | Edit data, copy and paste data, edit tooltip, note, link, open link | edit data yes (`edit-data`, whiteboard-commands.js:253), tooltip and links yes; copy data and paste data (Alt+Shift+B, V) absent | `editData` (Actions.js 742), `editTooltip` (748), `editNote` (786), `editLink` (812) | two commands that copy and paste `data.props` | S |
 
@@ -1065,7 +1064,6 @@ clash is listed so the choice is made once.
 | Rubber-band, lasso, shift-add, select all of a kind | yes (select, lasso K; Ctrl+A); select all shapes and select all connectors, 2026-10-18 (whiteboard-1018; HISTORY) | `mxRubberband`, `selectVertices`, `selectEdges` (Actions.js 517, 518) | two commands | S |
 | Containers (a shape that holds children, drop target highlight, children move with it, auto-resize) | `fit-frame` yes (whiteboard-commands.js:170); no drop highlight on frames, no collapse | `container=1`, `isContainer` (Graph.js 11233), `getDropTarget` (26334), `dropTarget`, `recursiveResize`, `collapsible`, `foldCells` (15610) | a drop highlight class on a frame while an item is dragged over it, and collapse | M |
 | Child layouts (stack, tree, flow, rack) | tree tidy (`tidy-down`, `tidy-right`), flip layout, join chain and fan yes; no stack layout on lanes | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | the stack layout on lanes only; others are the Layout menu (section 16) | M |
-| Tables: rows, columns, cell merge, stripes, header | rows, columns, header and column widths yes (`data.col_widths`, menu Widen and Narrow); open: merge, stripes, row heights and a line dragged to size one row or column, Markdown (pipe) paste | `Graph.createTable` (Graph.js 18553), `insertTableRow` (29524), `insertTableColumn` (29349), `setTableRowHeight` (19762), `tableLine`, `tableRow` shapes, Arrange panel `addTable` (Format.js 2162) | `data.merges` and `data.stripes`, grips on the grid lines, a pipe-table parser in the paste helper | M |
 | Lock, hide and "locked" cursor | yes | `lockUnlock` (Actions.js 521), `locked=1` | done | none |
 | Z-order within a container | yes (z per item) | child order | done | none |
 
@@ -1328,7 +1326,7 @@ measure at 1440 and 390, or left here.
 5. Built 2026-10-10 (same HISTORY block): named layers with show, hide and lock. The current layer built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"). Open from section 6: layer order.
 6. Built 2026-10-10 (same HISTORY block): find reads labels and text boxes; Ctrl+H replaces. Open from section 9: regex, whole word, notes' own text.
 7. Built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"): the hand-drawn look, a board option and an item style.
-8. Built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"): tables (section 12). Open from section 12: a column's own width, merged cells.
+8. Built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"): tables (section 12). Merged cells, stripes, row heights, dragged grid lines and Markdown paste built 2026-11-12 (HISTORY "Moved from the plans, 2026-11-12 (wbtable)").
 9. Built 2026-10-10 (same HISTORY block): a laser pointer while presenting.
 10. Edit data built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"). Open from section 3: `%name%` placeholders in labels, find reading the values.
 

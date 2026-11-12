@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard tables: merged cells (Merge cells, Split cell; `data.merges`), Striped rows (Format panel and menu), row heights and grips on the grid lines to drag a row or column (one Undo step per drag), and a pasted Markdown pipe table becomes a table; SVG, PNG and draw.io export draw the spans and stripes. Measured: merged cell 2x wide and 2x tall, column drag +40px, row drag +20px (35 sweep checks).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
 - Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.

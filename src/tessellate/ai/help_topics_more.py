@@ -2278,6 +2278,7 @@ MORE_TOPICS.extend([
             "table", "tables", "add a table", "table on a board", "rows and columns",
             "add a row", "add a column", "delete a row", "delete a column", "grid of cells",
             "connect to a table row", "table row connection point",
+            "merge cells", "split a cell", "striped rows", "resize a row", "paste a markdown table",
         ),
         "body": (
             "A table on a board, as in draw.io: Insert, Table places three rows of "
@@ -2285,9 +2286,17 @@ MORE_TOPICS.extend([
             "Tab and Shift+Tab go to the next and previous cell, Enter keeps the "
             "words, Escape drops them. Right-click the table for Add a row below or "
             "above, Add a column to the right or left, Widen or Narrow this column, "
-            "Equal column widths, Delete this row or column (at the cell you "
-            "pressed last) and First row as a header. Resize it by its handles; "
-            "columns share the width equally until you widen or narrow one. "
+            "Equal column widths, Taller or Shorter row, Equal row heights, "
+            "Delete this row or column (at the cell you pressed last), First row "
+            "as a header and Striped rows. Drag a line between two columns or two "
+            "rows to size them, one Undo step per drag; the menu rows do the same "
+            "from the keyboard. Shift-click a second cell to pick a block, then "
+            "Merge cells in the menu joins them into one cell with their words; "
+            "Split cell on a merged cell undoes it. Striped rows (also in the Format "
+            "panel) tints every other body row, on the board and in an export. "
+            "Paste a Markdown table (pipes and a dashed rule) or cells copied from a "
+            "sheet onto the board and it becomes a table. Resize it by its handles; "
+            "columns and rows share the size equally until you drag a line. "
             "Pointing at a table while you drag a connector's end shows a connection point at each side of every row, so "
             "a connector can join one row; add or delete a row and the connectors on the rows below it stay on the same row."
         ),

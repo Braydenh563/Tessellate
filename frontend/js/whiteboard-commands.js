@@ -1026,11 +1026,11 @@ function wbPastedLines(text) {
 
 //: What a pasted text becomes by default: `{kind: "link" | "text" | "stickies" |
 //: "table", ...}`. Pure, so the rule can be tested without a board. A spreadsheet
-//: copy (tabs) is a table; a CSV is offered as one by the chip.
+//: copy (tabs) or a Markdown pipe table is a table; a CSV is offered as one by the chip.
 function wbPastePlan(text) {
   const lines = wbPastedLines(text);
   if (!lines.length) return null;
-  const grid = /\t/.test(String(text)) ? pasteGrid(text) : null;
+  const grid = /\t/.test(String(text)) || pastePipeGrid(text) ? pasteGrid(text) : null;
   if (grid) return { kind: "table", grid };
   if (lines.length === 1 && /^https?:\/\/\S+$/i.test(lines[0])) return { kind: "link", url: lines[0] };
   if (lines.length === 1) return { kind: "text", text: lines[0] };

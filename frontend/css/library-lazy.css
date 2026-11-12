@@ -6540,6 +6540,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .wb-table-grid {
   /* One cell until `wbPaintTable` sets the tracks from the table's cells. */
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
@@ -6571,6 +6572,48 @@ button.ghost.doc-template-choice.wb-template-choice {
 .wb-table-grid.has-header .wb-table-cell[data-r="0"] {
   background: color-mix(in srgb, var(--accent) 12%, var(--card));
   font-weight: 600;
+}
+
+/* Every other body row (data.stripes); the header keeps its own tint. */
+.wb-table-cell[data-stripe] {
+  background: color-mix(in srgb, var(--text) 5%, var(--card));
+}
+
+/* A range picked with Shift and a click, for Merge cells. */
+.wb-table-cell.is-picked {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--accent) 18%, var(--card));
+}
+
+/* The grid lines, draggable while the table is selected (a row's or column's size). */
+.wb-table-grip {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  background: transparent;
+}
+
+.wb-table-grip-col {
+  width: var(--space-2);
+  margin-left: calc(var(--space-2) / -2);
+  cursor: col-resize;
+}
+
+.wb-table-grip-row {
+  height: var(--space-2);
+  margin-top: calc(var(--space-2) / -2);
+  cursor: row-resize;
+}
+
+.wb-selected .wb-table-grip {
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.wb-selected .wb-table-grip:hover,
+.wb-table-grip.is-dragging {
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 /* Edit data (canvasdepth2): a name and a value per row, the value taking

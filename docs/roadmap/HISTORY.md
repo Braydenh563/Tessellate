@@ -7,6 +7,17 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (wbtable)
+
+Board tables, WHITEBOARD_PLAN section 2 "Table: rows, columns, merge, stripes" and section 12 "Tables" (LEDGER L273). Built:
+
+- **Merged cells:** `data.merges` ([{r,c,rs,cs}], validated by `wb_model.py`: inside the grid, two or more cells, no overlap). The origin cell spans with grid-row/column span, covered cells are not drawn, their words join into the origin on Merge cells (Split cell shows them empty). Menu rows: Merge cells (a block picked with shift-click), Merge with the cell on the right or below, Split cell. Add, delete and widen keep merges in step (`wbTableReshapeMerges`); Tab skips covered cells. One Undo step each.
+- **Stripes:** `data.stripes` (Format row Striped rows and a menu toggle); every other body row is tinted on the board, in SVG/PNG and in the draw.io export.
+- **Row heights and dragged lines:** `data.row_heights` (weights, mean 1) beside `col_widths`; grips on the grid lines (skipping merged interiors, `wbTableGripRuns`), one Undo step per drag; menu rows Taller row, Shorter row, Equal row heights stay as the keyboard way.
+- **Export:** SVG and draw.io draw every cell box with its span (`wbTableCellBoxes`); a draw.io table with cells is now cells, not a skipped table.
+- **Markdown paste:** a pipe table (header, dashed rule with optional colons, rows) pastes as a table (`pastePipeGrid`, `pasteGrid`).
+- **Checks:** `tests/test_wb_table_merge.py`, `tests/test_wb_table_paste.py`, sweep `scratchpad/ui-sweeps/wbtablemerge.js` (35 of 35: merge spans 2x width and 2x height by getBoundingClientRect, column drag +40px, row drag +20px, one Undo step each).
+
 ## Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)
 
 Re-grounded against the code on 2026-11-12; evidence is file:line at that date.
@@ -55305,6 +55316,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L273** `whiteboard` open, M: Add merged cells to board tables. From OPEN.md:1210; OPEN.md:2564. Evidence: Row: 5f75052 built .drawio export, placeholders and layer order; merged cells in tables still missing (M). Built: the wbtable commit (branch claude/whiteboard-plan), tests/test_wb_table_merge.py + test_wb_table_paste.py, sweep wbtablemerge.js 35/35
 - [x] **L-whiteboard-17** `whiteboard` open, S: Move stale whiteboard entries 1358, 258 and the contrast.js note to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1546. Evidence: Open line in the plan's prose a session could miss. Stale entries still read as open: the 1358 dogfood passes (merged), 'contrast.js never visits a board' (line 779, built), the 258 recommendation (line 623, superseded by 1452), and decision 36's ghost note. They need moving to HISTORY. Built: Done 2026-11-12: the 1358, 258 and contrast.js plan entries moved to HISTORY "Moved from the plans, 2026-11-12 (whiteboard plan, stale entries)" with pointers; decision 36's ghost note now says built (fixes7-1018); contrast.js visits boards and maps at scratchpad/ui-sweeps/contrast.js:170-207.
 - [x] **L-whiteboard-13** `whiteboard` open, S: Park port dx and dy offsets and the ports editor in BACKLOG. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1310. Evidence: Open line in the plan's prose a session could miss. A conditional deferral of the port offsets, and perimeter use waits on the ports editor. There is no row. Built: Parked 2026-11-12: one BACKLOG row in section 4a (port dx, dy offsets and the ports editor), as the plan defers them until a shape needs them.
 - [x] **L268** `whiteboard` open, S: Fix stale comment at whiteboard.js:22313 on next edit. From v1028-2.md Remaining. Evidence: Trivial; waits on next whiteboard.js edit Built: Closed 2026-11-12: the named site (whiteboard.js:22309-22313 now) reads correct after the line drift, and the source note v1028-2.md is no longer in the repo, so nothing stale is left to fix.

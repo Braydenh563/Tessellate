@@ -409,6 +409,15 @@ class WhiteboardSketchOut(WhiteboardSketchBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class TableMerge(BaseModel):
+    """One merged table cell: the cell at (r, c) spanning rs rows and cs columns."""
+
+    r: StrictInt = Field(ge=0, lt=MAX_TABLE_ROWS)
+    c: StrictInt = Field(ge=0, lt=MAX_TABLE_COLS)
+    rs: StrictInt = Field(ge=1, le=MAX_TABLE_ROWS)
+    cs: StrictInt = Field(ge=1, le=MAX_TABLE_COLS)
+
+
 class WhiteboardObjectData(BaseModel):
     """What `data` actually holds, validated by `kind` rather than left as an
     opaque string the way a sketch's own path data is, an image needs a real
@@ -440,6 +449,13 @@ class WhiteboardObjectData(BaseModel):
     #: [2, 1, 1] is a first column twice the others and the box's width the
     #: sum. Absent means equal; a length other than the columns is refused.
     col_widths: list[Annotated[float, Field(ge=0.1, le=20)]] | None = Field(default=None, max_length=20)
+    #: A table's row heights, the same kind of weights (one per row, mean 1).
+    row_heights: list[Annotated[float, Field(ge=0.1, le=20)]] | None = Field(default=None, max_length=50)
+    #: **Merged cells**: each `{r, c, rs, cs}` is the cell at row r, column c
+    #: spanning rs rows and cs columns (`_require_table_merges` keeps them inside
+    #: the grid and apart). `stripes` tints every other body row.
+    merges: list[TableMerge] | None = Field(default=None, max_length=200)
+    stripes: bool | None = None
     #: **Edit data** (draw.io's custom properties; canvasdepth2): up to 30
     #: named values on an item, edited in the Format panel's Data tab.
     props: dict[
@@ -966,6 +982,19 @@ def _require_table_cells(cells: list[list[str]] | None) -> None:
         )
 
 
+def _require_table_merges(data: WhiteboardObjectData) -> None:
+    """Merges lie inside the grid, span more than one cell and never overlap; row heights are one per row."""
+    rows, cols = len(data.cells), len(data.cells[0])
+    if data.row_heights is not None and len(data.row_heights) != rows:
+        raise HTTPException(status_code=422, detail="A table needs one height for each of its rows.")
+    taken: set[tuple[int, int]] = set()
+    for m in data.merges or []:
+        spots = {(r, c) for r in range(m.r, m.r + m.rs) for c in range(m.c, m.c + m.cs)}
+        if m.r + m.rs > rows or m.c + m.cs > cols or len(spots) < 2 or spots & taken:
+            raise HTTPException(status_code=422, detail="A merged cell has to lie inside the table, cover two cells or more and not overlap another.")
+        taken |= spots
+
+
 def _require_object_data(body: WhiteboardObjectBase) -> None:
     if body.kind == "image":
         if not body.data.url or not MEDIA_URL_RE.match(body.data.url):
@@ -983,6 +1012,7 @@ def _require_object_data(body: WhiteboardObjectBase) -> None:
         _require_table_cells(body.data.cells)
         if body.data.col_widths is not None and len(body.data.col_widths) != len(body.data.cells[0]):
             raise HTTPException(status_code=422, detail="A table needs one width for each of its columns.")
+        _require_table_merges(body.data)
     elif body.kind in MAP_REFERENCE_KINDS and body.data.ref_id is None:
         # A reference node with nothing to reference is the map equivalent of
         # a card pointing at note 9999 (this module's own opening comment): it
