@@ -441,6 +441,7 @@ LAZY_REACHED_AFTER_LOAD: dict[str, str] = {
     "reveal-targets.js:wbToggleNavigator": "the `board-overview` target runs it after `await revealBoard()`, which awaits ensureModule(\"boards\") first (D22)",
     "reveal-targets.js:wbOpenBoardSearch": "the `board-find` target runs it after `await revealBoard()`, which awaits ensureModule(\"boards\") first (D22)",
     "whiteboard-format.js:swatchPicker": "wbColourPalettes fills its rows in the .then of ensureModule('categories'), which carries categories-panel.js",
+    "library-links.js:swatchPicker": "swatches() draws its row in the .then of ensureModule('categories'), which carries categories-panel.js",
     "answer-kit.js:agentTimeline": "addAssistantBubble has two callers: chat-turn.js (its own file) and sheets-selects.js's replay, after `await ensureModule(\"chatTurn\")` (line 1991)",
     "answer-kit.js:nameMark": "inside the afterCharacters callback (avatarHead and chatHead paths) or reached from it",
     "settings-prefs.js:nameMark": "the same line is the afterCharacters callback (the profile head preview, moved from settings-panes.js)",

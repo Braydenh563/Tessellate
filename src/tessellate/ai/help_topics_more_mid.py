@@ -519,23 +519,36 @@ MID_TOPICS.extend(
             "keywords": (
                 "bookmark", "bookmarks", "reading list", "saved links", "saved link",
                 "read later", "by site", "web links", "my links", "mark read",
-                "bookmark link",
+                "bookmark link", "link folder", "bookmark folder", "duplicate bookmarks", "cards view",
             ),
             "body": (
                 "Library, Bookmarks is a reading list of web links; Add bookmark "
                 "saves one. Unread and Pinned narrow the list (with counts), and "
-                "opening a link marks it read. Sort by newest, oldest, title or By "
-                "site, which groups links under their site in folds you can close. "
-                "Each link shows its kind, Details opens in place with a note "
-                "field, and selecting several offers Move to group, Mark read and "
+                "opening a link marks it read; the menu's Read later puts a read "
+                "link back. Sort by newest, oldest, title or By site, which groups "
+                "links under their site in folds you can close, and view the shelf "
+                "as a List or as Cards. Details opens a card: icon, title, "
+                "site, two lines of the page, the note, and Show page text, a "
+                "reading column with find. With "
+                "the web on (Settings, Web search) a save fetches the page for its "
+                "icon, excerpt and text, and Refresh fetches again; with it off "
+                "nothing is requested. Icon and colour, in a link's menu or its card, picks an icon "
+                "or emoji and a highlight colour; a folder has the same in its menu. "
+                "Folders: drag a link onto a folder chip, onto another link "
+                "(filed together) or onto All to take it out; drag a folder onto "
+                "another to nest it, one level; double-click or F2 renames in "
+                "place; New folder makes one. Duplicates appears when the same "
+                "address is saved twice (a www, a trailing slash or tracking marks "
+                "do not make it different) and Keep one of each deletes the extra "
+                "copies. Selecting several offers Move to folder, Mark read and "
                 "Pin; pinned links lead every order but By site, and every delete "
                 "has Undo. In a note or document, the / menu's Bookmark link "
                 "inserts a saved bookmark as a link. The ... menu's Import "
                 "bookmarks file adds the links of a file your browser exported, "
-                "folders as groups, skipping ones already saved, with Undo; "
+                "folders as folders, skipping ones already saved, with Undo; "
                 "Export bookmarks saves them all as a file a browser can import. "
                 "A link can carry tags (commas, in the Add form or Edit): each tag is a chip "
-                "that filters across groups, search finds them, and the file keeps them."
+                "that filters across folders, search finds them, and the file keeps them."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

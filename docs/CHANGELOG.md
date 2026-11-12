@@ -7,6 +7,11 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Code: the keybindings sheet's close (`docIdeCloseKeys`) is on `window`, so the `code-keys.js` sweep can close it (L-documents-14).
+- Recordings: Import audio offers one Undo that bins the whole import.
+- Links: a link opens as a card (icon, title, site, a two-line excerpt, the page text behind Show page text), takes an icon and a highlight colour from its menu or the card, and a folder does too; drag a link onto a folder or another link, drag a folder to nest it one level, double-click or F2 to rename in place, New folder; sort, a List or Cards view, Read later, and Duplicates with Keep one of each (INBOX 827 L3 to L6, `tests/test_links_827.py`).
+- Recordings: the empty state has an icon, Record and Import audio, and a line on meeting recordings (INBOX 827 L2, `tests/test_recordings_empty_827.py`).
+- Links: a bookmark keeps a look (icon, colour) and what its last fetch found (the site's icon, a short excerpt, the page text); saving a link or changing its address fetches them in the background when the web is on, and a new address drops the old icon at once (the stale-icon bug); `POST /bookmarks/{id}/refresh`, `GET /bookmarks/{id}/text` (INBOX 827 L3, L5, `tests/test_bookmarks_look_827.py`).
+- Files: a file's extracted text opens as a reading column (body size, 1.6 line, 50vh with a fade, a Page N mark per page, a find box once it scrolls) under a quiet disclosure row; Copy text drops the page separators (INBOX 827 L1, `tests/test_library_827_reading.py`).
 - Fix: `select.focus()` on an enhanced select focuses its opener button (it focused nothing); a key listener on the native select still cannot fire and stays under `tests/test_select_focus.py`.
 - Verified: the spelling menu draws its five candidate words bare (0 icons, first row marked best); the check icon is only on the suggested-change menu's Accept rows (`tests/test_suggest_candidate_rows.py`).
 - Verified: scratchpad/ui-sweeps/docviews.js already asks for the formatting strip's line-numbers button, not the removed view-menu row; that part passes (0, then 7, then 0 numbers). The sweep still fails elsewhere (swift, r, ini and Python token colours read 0), see LEDGER.

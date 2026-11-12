@@ -5,12 +5,15 @@ query is `repo/bookmarks.py`'s (INBOX 1499). Nothing here needs the AI.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, Response
+from urllib.parse import urlparse
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response
 
 from tessellate.api import paging
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from tessellate.core import deps, webclip
 from tessellate.core.deps import get_session
 from tessellate.repo import bookmarks, bookmarks_html
 
@@ -27,6 +30,8 @@ class BookmarkCreate(BaseModel):
     #: it was, pin and read state included.
     pinned: bool = False
     is_read: bool = False
+    icon: str = Field(default="", max_length=80)
+    color: str = Field(default="", max_length=20)
 
 
 class BookmarkUpdate(BaseModel):
@@ -37,6 +42,8 @@ class BookmarkUpdate(BaseModel):
     is_read: bool | None = None
     group_name: str | None = Field(default=None, max_length=120)
     tags: list[str] | None = Field(default=None, max_length=40)
+    icon: str | None = Field(default=None, max_length=80)
+    color: str | None = Field(default=None, max_length=20)
 
 
 def _to_out(bookmark, duplicate_of: int | None = None) -> dict:
@@ -49,6 +56,11 @@ def _to_out(bookmark, duplicate_of: int | None = None) -> dict:
         "is_read": bool(bookmark.is_read),
         "group_name": bookmark.group_name,
         "tags": bookmarks.tag_list(bookmark.tags),
+        "icon": bookmark.icon or "",
+        "color": bookmark.color or "",
+        "favicon": bookmark.favicon or "",
+        "excerpt": bookmark.excerpt or "",
+        "has_text": bool(bookmark.page_text),
         "created_at": bookmark.created_at.isoformat(),
     }
     if duplicate_of is not None:
@@ -113,20 +125,96 @@ def import_bookmarks(body: BookmarksImport, session: Session = Depends(get_sessi
     return {"added": len(made), "ids": [b.id for b in made], "duplicates": twins, "skipped": skipped, "found": len(rows)}
 
 
+def _web_on() -> bool:
+    return bool(deps.get_config().get_preference("web_search_enabled", False))
+
+
+def _fetch_into(bookmark) -> None:
+    """Fetch the page and keep its icon, excerpt and text on the row (raises `webclip.ClipRefused`)."""
+    fetched = webclip.fetch_page(bookmark.url)
+    extracted = webclip.extract(fetched["html"], fetched["url"])
+    text = extracted["markdown"]
+    favicon = ""
+    href = webclip.page_icon_href(fetched["html"], fetched["url"])
+    if href:
+        try:
+            favicon = webclip.fetch_icon(href)
+        except webclip.ClipRefused:
+            favicon = ""
+    bookmarks.apply_fetch(
+        bookmark, title=extracted["title"], excerpt=bookmarks.excerpt_of(text), text=text, favicon=favicon
+    )
+
+
+def _refresh_after_save(bookmark_id: int) -> None:
+    """Best effort, after the save has answered: a page that will not load leaves the link as it was.
+
+    Runs on its own session (the request's is closed by now). Only when the web is on, so an offline
+    notebook never makes a request it was not asked to."""
+    session = deps.get_db().session()
+    try:
+        bookmark = session.get(bookmarks.Bookmark, bookmark_id)
+        if bookmark is None or urlparse(bookmark.url).scheme not in ("http", "https"):
+            return
+        _fetch_into(bookmark)
+        session.commit()
+    except Exception:  # noqa: BLE001 - a background refresh must never surface; the card keeps its glyph
+        session.rollback()
+    finally:
+        session.close()
+
+
 @router.post("", status_code=201)
-def create_bookmark(body: BookmarkCreate, session: Session = Depends(get_session)) -> dict:
+def create_bookmark(
+    body: BookmarkCreate, background: BackgroundTasks, session: Session = Depends(get_session)
+) -> dict:
     bookmark, twin = bookmarks.create(session, **body.model_dump())
     session.commit()
+    if twin is None and _web_on():
+        background.add_task(_refresh_after_save, bookmark.id)
     return _to_out(bookmark, duplicate_of=twin)
 
 
 @router.put("/{bookmark_id}")
 def update_bookmark(
-    bookmark_id: int, body: BookmarkUpdate, session: Session = Depends(get_session)
+    bookmark_id: int, body: BookmarkUpdate, background: BackgroundTasks, session: Session = Depends(get_session)
 ) -> dict:
+    before = bookmarks.get(session, bookmark_id).url
     bookmark = bookmarks.update(session, bookmark_id, **body.model_dump())
     session.commit()
+    if bookmark.url != before and _web_on():
+        background.add_task(_refresh_after_save, bookmark.id)
     return _to_out(bookmark)
+
+
+WEB_OFF = "Fetching a page needs the web, and the web is turned off. Allow it in Settings, Web search."
+
+
+@router.post("/{bookmark_id}/refresh")
+def refresh_bookmark(bookmark_id: int, session: Session = Depends(get_session)) -> dict:
+    """Fetch the page again and keep its icon, a short excerpt and its text (the link card, L3).
+
+    The only thing here that goes online, so it asks the same switch the clipper does
+    (`web_search_enabled`); with the web off nothing is requested and the card keeps the glyph of its kind.
+    A page that will not answer leaves the link as it was and says why.
+    """
+    bookmark = bookmarks.get(session, bookmark_id)
+    if not _web_on():
+        raise HTTPException(status_code=403, detail=WEB_OFF)
+    if urlparse(bookmark.url).scheme not in ("http", "https"):
+        raise HTTPException(status_code=400, detail="Only a web page can be fetched.")
+    try:
+        _fetch_into(bookmark)
+    except webclip.ClipRefused as exc:
+        raise HTTPException(status_code=exc.status, detail=str(exc)) from exc
+    session.commit()
+    return _to_out(bookmark)
+
+
+@router.get("/{bookmark_id}/text")
+def bookmark_text(bookmark_id: int, session: Session = Depends(get_session)) -> dict:
+    """The page text the last fetch kept, apart from the list so a long shelf stays light."""
+    return {"text": bookmarks.get(session, bookmark_id).page_text or ""}
 
 
 @router.delete("/{bookmark_id}")

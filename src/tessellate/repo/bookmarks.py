@@ -29,7 +29,34 @@ ALLOWED_URL_SCHEMES = ("http", "https", "mailto", "tel")
 _SCHEME_RE = re.compile(r"^([a-z][a-z0-9+.-]*):", re.IGNORECASE)
 
 #: The fields `update` may change, each already cleaned by `clean_fields`.
-EDITABLE = ("url", "title", "note", "pinned", "is_read", "group_name", "tags")
+EDITABLE = ("url", "title", "note", "pinned", "is_read", "group_name", "tags", "icon", "color")
+
+#: The highlight colours a link or folder may take (L5): palette keys the stylesheet draws from its tokens
+#: (`.look-<key>`), never a free colour, so a dark theme and a light one both stay readable.
+COLORS = ("red", "orange", "yellow", "green", "teal", "blue", "purple", "pink", "gray")
+#: An icon is a Phosphor name ("ph:star") or a few emoji; markup never gets in.
+_ICON_RE = re.compile(r"^ph:[a-z0-9-]{1,60}$")
+MAX_EXCERPT = 400
+MAX_PAGE_TEXT = 20_000
+#: A fetched icon larger than this (as a data address) is not stored.
+MAX_FAVICON = 60_000
+
+
+def clean_icon(raw: str) -> str:
+    """"" (automatic), a Phosphor name or a short emoji; anything else is refused."""
+    icon = (raw or "").strip()
+    if not icon or _ICON_RE.match(icon):
+        return icon
+    if len(icon) <= 16 and not any(ch in icon for ch in "<>&\"'\\") and not any(ch.isalnum() and ch.isascii() for ch in icon):
+        return icon
+    raise Invalid("Pick an icon from the list or an emoji.")
+
+
+def clean_color(raw: str) -> str:
+    color = (raw or "").strip().lower()
+    if color and color not in COLORS:
+        raise Invalid(f"Pick a colour from: {', '.join(COLORS)}.")
+    return color
 
 #: A link's tags: how many, and how long one may be. A tag never holds a comma (the stored form is comma-joined).
 MAX_TAGS = 12
@@ -94,6 +121,10 @@ def clean_fields(fields: dict) -> dict:
             out[name] = out[name].strip()
     if out.get("tags") is not None:
         out["tags"] = clean_tags(out["tags"])
+    if out.get("icon") is not None:
+        out["icon"] = clean_icon(out["icon"])
+    if out.get("color") is not None:
+        out["color"] = clean_color(out["color"])
     return out
 
 
@@ -186,8 +217,28 @@ def update(session: Session, bookmark_id: int, **fields) -> Bookmark:
     bookmark = get(session, bookmark_id)
     for name, value in clean_fields(fields).items():
         if name in EDITABLE and value is not None:
+            if name == "url" and value != bookmark.url:
+                # What was fetched belongs to the old address: a kept icon here was the "saved a website but the
+                # icon didn't change" bug. The next fetch (at save, or Refresh) fills it from the new page.
+                bookmark.favicon = bookmark.excerpt = bookmark.page_text = ""
             setattr(bookmark, name, value)
     return bookmark
+
+
+def excerpt_of(text: str) -> str:
+    """The first words of a page's text, markdown marks dropped, for the card's two lines."""
+    plain = re.sub(r"[#>*_`\[\]]|\(https?://[^)]*\)", " ", text or "")
+    return " ".join(plain.split())[:MAX_EXCERPT]
+
+
+def apply_fetch(bookmark: Bookmark, *, title: str, excerpt: str, text: str, favicon: str) -> None:
+    """Keep what a fetch found. The title is only filled in when the link has none (a name the person
+    typed is theirs); the icon, excerpt and text always replace the old ones, so a changed site shows."""
+    if title and not bookmark.title:
+        bookmark.title = title.strip()[:200]
+    bookmark.excerpt = " ".join(excerpt.split())[:MAX_EXCERPT]
+    bookmark.page_text = text.strip()[:MAX_PAGE_TEXT]
+    bookmark.favicon = favicon if len(favicon) <= MAX_FAVICON else ""
 
 
 def delete(session: Session, bookmark_id: int) -> None:

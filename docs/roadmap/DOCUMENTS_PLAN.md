@@ -1227,15 +1227,13 @@ Entries are the owner's words, then the recommendation. Bugs come first.
 
 ### Bugs
 
-- "I saved a website as a bookmark but the icon didnt change"
-  Recommendation: a saved bookmark takes the site's icon at save time and refreshes it on the next fetch; the link card in Brief 42 shows it. No brief carries the bug itself; Brief 42 (link cards) is the nearest.
+- Built 2026-11-12 (documents-plan: Links tab; INBOX 827 L1 to L6 and the stale bookmark icon): see HISTORY.md, "Moved from the plans, 2026-11-12 (documents-plan: Links tab)" (the bookmark icon bug).
 
 ### Design requests
 
+- The link-card request (icon and colour per bookmark, a viewer): built, see the pointer under Bugs.
 - "on vs code selected lines have their line number bolded, the line subtly bordered and there are also indentation lines on vs code as well"
   Recommendation: match VS Code's selected-line gutter, line border and indent guides in the code editor, measured against the VS Code screenshot set. Also carried by Brief 42 (the code editor to VS Code standard).
-- "also I want a better and more cardlike rendering of links or special liks like bookmarks and maybe even the ability to choose special icons or colours for bookmarked websites."
-  Recommendation: build link cards for bookmarks and embedded links with an icon and colour choice, and a viewer for them. Also carried by Brief 42 (embedded link cards with a viewer).
 - "The document editor and whiteboard and mindmap still have many design issues, functionality bugs, poor usability, lack features, and need improvement."
   Recommendation: audit the document editor against VS Code and wordcraft in DOCUMENTS_PLAN section 21, and take the whiteboard and map rows from Briefs 36. Also carried by Brief 42.
 - "And we should massively improve, expand, refine and better integrate long form note taking."
@@ -1266,17 +1264,7 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 ## Placed from INBOX, 2026-10-11 (Files, Recordings and Links; libraryup)
 
-- INBOX 827, the owner 2026-10-11, verbatim (screenshots: a file's "Text extracted from this file" box; the empty Recordings tab; a link's details): "it is also a little hard to read and view the extracted text on the file rows in the files subtab and I think that dropdown area is a little poorly designed. can there also be a better empty state and design for the recordings subtab?? also these link details are poorly designed as well and I want to be able to customise link highlights drag links together to form folders, change the icons on them, and more, the whole links/bookmarks tab needs an upgrade"
-
-Decisions made (the Links half extends WORLD_CLASS D9 and Brief 42; do not re-decide):
-- L1. Extracted text: the disclosure is a quiet row (DESIGN "Row actions"), not a bordered button; open, the text sits in a reading column (body size, 1.6 line height, page breaks marked "Page 2"), up to 50vh with a fade, Copy and Open reading as quiet buttons on the disclosure row, and a find box when the text passes one screen.
-- L2. Recordings empty state from DESIGN's empty-state recipe: an icon, one line, Record and Import audio, and a second line saying a meeting's recording and its transcript land here.
-- L3. A link's details: the card shows icon, title, site and a two-line excerpt; the full extract is behind "Show page text" in the L1 reader, never a wall of raw lines; the URL is a quiet copyable chip.
-- L4. Folders: drag a link onto another to make a folder (named "Folder", renamed in place), drag into and out of folders, and New folder in the bar; folders nest one level.
-- L5. Each link and folder takes an icon (the site's own, an app icon or an emoji) and a highlight colour from the palette tokens, from its kebab menu and from the details card.
-- L6. More from the read of Raindrop, Pocket and browser bookmark managers, ranked by how often a person meets it: sort and view (list, cards), tags, a read-later state, duplicate finding, import and export of browser bookmarks HTML. Built in that order after L1 to L5. Import, export and tags built 2026-11-11 (HISTORY.md, F1 graph block).
-
-Rows (owner: libraryup, Opus, after canvasdepth3): R1 to R6 build L1 to L6, each a commit with a test, measured at 1440 and 390, help moving with it (standing order 13).
+Built 2026-11-12 (documents-plan: Links tab; INBOX 827 L1 to L6 and the stale bookmark icon): see HISTORY.md, "Moved from the plans, 2026-11-12 (documents-plan: Links tab)".
 
 ## Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit)
 
