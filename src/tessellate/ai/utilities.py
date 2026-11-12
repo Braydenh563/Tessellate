@@ -816,7 +816,7 @@ def _web_capability(text: str) -> bool:
 #: Decision 54: a computed sentence always says how the question was read.
 #: A sum says its expression as the sentence's subject ("12 * 7 is 84."),
 #: which is its reading; everything else carries a "Read as" line.
-_CLOCK_READ = ("computed", "\nRead as the date and time on this computer's clock.")
+_CLOCK_READ = ("computed", "\nRead as this computer's clock.")
 
 
 class _Ask(NamedTuple):

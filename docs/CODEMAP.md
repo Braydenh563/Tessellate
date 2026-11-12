@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2771, CSS sections 524, backend routes 698, backend modules 10828, test files 2692, tests 21936, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2771, CSS sections 524, backend routes 698, backend modules 10828, test files 2692, tests 21937, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -27771,7 +27771,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21936)
+## Tests (21937)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28268,7 +28268,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_classes_1026f.py | 7 |
 | tests/test_composer_classes_1357.py | 1 |
 | tests/test_composer_clauses_shape_1104.py | 5 |
-| tests/test_composer_clock_1108.py | 14 |
+| tests/test_composer_clock_1108.py | 15 |
 | tests/test_composer_closeout_1112.py | 9 |
 | tests/test_composer_closing_chips_l48.py | 3 |
 | tests/test_composer_commands.py | 14 |
