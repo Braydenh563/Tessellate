@@ -197,7 +197,8 @@ TAIL_TOPICS.extend(
                 "slider's right end, comes back to now; the number beside it (3 of 12) types in to jump. Changes older than ninety days may be kept only "
                 "in summary, and such a moment cannot be shown. Board, Snapshots… names the board as it is "
                 "now (Snapshot and the time unless you type a name); each one shows its picture, and "
-                "Restore puts the board back as one Undo step."
+                "Restore puts the board back as one Undo step. When Atlas or another tab changes an item, "
+                "earlier Undo steps on that item leave the list so Ctrl+Z never undoes their work."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -353,7 +354,7 @@ TAIL_TOPICS.extend(
                 "Save this board as a template keeps the whole board. New board then offers your templates "
                 "beside the built-in ones. The library's ⋮ makes a new library, imports a library file and "
                 "exports one. A placed item is an ordinary copy: changing the library later never changes "
-                "a board. In Agent mode the assistant can search the library and place from it, draw "
+                "a board. Drag a tile you made, or a Layers row, onto the bin that shows to delete it (Undo brings it back). In Agent mode the assistant can search the library and place from it, draw "
                 "shapes and frames, and move, edit or delete what is on a board, asking first. "
                 "A PNG export joins the image library only when Also add to the image library is ticked in the "
                 "export dialog, which opens on Whole board when nothing is selected (On screen is one press away); Board, Show hints brings the first-steps card back (an empty board keeps a one-line cue meanwhile). "

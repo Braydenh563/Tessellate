@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board and map: when Atlas or another tab changes an item, only the Undo and Redo steps that name that item leave the history (a one-line toast says how many), and the rest stay (L274, `ext` check 5/5, Redo after add, collapse and delete on a map 13/13 in `mapdepth2.js mapredo`).
+- Fix (L260): opening a board while the Boards sub-tab is already chosen no longer presses it, whose list redraw landed after the board showed and hid it; the drag-to-delete sweep (`wbtrash660.js`) runs again, 39/39.
+- Board: a Layers row, or a Library tile you made, dragged onto the delete target that shows while you drag deletes it (a row as one Undo step, a tile with the existing Undo toast); built-in tiles offer no target (L262, `wbtrash660.js` 55/55).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
 - Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.
