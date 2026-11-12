@@ -1681,9 +1681,7 @@ whiteboard half of 641's research (beyond stickers).
 Phases 14a to 14e are built (HISTORY.md, "Moved from the plans, 2026-10-05
 (MINDMAP_PLAN §14, mc1)"). Open, from INBOX 641 and §14.2's "not taken now":
 
-- **Linked stickers** (Illustrator's symbols): edit one placed icon or emoji
-  and every copy follows. Needs a `library_ref` that is followed, which
-  decision 25 of WHITEBOARD_PLAN keeps as "kept, never followed".
+- **Linked stickers** (Illustrator's symbols): built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)"). Left open: swapping an icon for another icon everywhere (L-mindmap-14).
 - Reaction stamps and voting: on a topic, built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"); on a board card, built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 - **The whiteboard half of 641's research**, beyond stickers.
 

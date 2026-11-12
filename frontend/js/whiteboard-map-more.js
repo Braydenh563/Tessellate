@@ -852,6 +852,82 @@
     }).join("");
   }
 
+
+  // --- Linked stickers ------------------------------------------------------
+  //
+  //: MINDMAP_PLAN 14.4 (WHITEBOARD_PLAN decision 25 no longer holds for stickers):
+  //: a placed icon follows by its `library_ref` (`icons/<name>`, which is also
+  //: its `data.icon`) and an emoji by its glyph, since a duplicate drops the
+  //: ref. An edit to the selected one is carried to every copy in one Undo step.
+  function wbStickerKey(kind, item) {
+    if (kind === "sketch") return wbSketchData(item)?.icon ? `icon:${wbSketchData(item).icon}` : null;
+    if (kind === "object" && item?.kind === "text" && item.data?.sticker) return `emoji:${item.data.content}`;
+    return null;
+  }
+
+  function wbStickerCopiesOf(key, state) {
+    if (!key) return [];
+    const out = [];
+    for (const item of state.sketches || []) if (wbStickerKey("sketch", item) === key) out.push({ kind: "sketch", item });
+    for (const item of state.objects || []) if (wbStickerKey("object", item) === key) out.push({ kind: "object", item });
+    return out;
+  }
+
+  //: The selected sticker and every copy of it (itself included), or [].
+  function wbStickerCopies() {
+    if (wbMultiSelection.size > 1 || !wbSelectedItem) return [];
+    const item = wbFindItem(wbSelectedItem.kind, wbSelectedItem.id);
+    return wbStickerCopiesOf(wbStickerKey(wbSelectedItem.kind, item), wbState);
+  }
+
+  //: Make every copy look like the selected one: an icon's colour and opacity, an emoji's
+  //: size and turn (kept about each copy's own centre).
+  async function wbStickerMatch() {
+    const copies = wbStickerCopies();
+    const from = copies.find((e) => e.item.id === wbSelectedItem?.id && e.kind === wbSelectedItem?.kind);
+    if (copies.length < 2 || !from) return toast("Select a placed icon or emoji that has copies first.");
+    const others = copies.filter((e) => e !== from);
+    await wbRecordGesture(async () => {
+      for (const e of others) {
+        if (e.kind === "sketch") {
+          const data = wbSketchData(e.item) || {};
+          const source = wbSketchData(from.item) || {};
+          for (const key of ["fill", "color", "fillOpacity", "opacity"]) {
+            if (source[key] === undefined) delete data[key];
+            else data[key] = source[key];
+          }
+          e.item.data = JSON.stringify(data);
+        } else {
+          const cx = e.item.x + e.item.width / 2;
+          const cy = e.item.y + e.item.height / 2;
+          e.item.width = from.item.width;
+          e.item.height = from.item.height;
+          e.item.x = cx - from.item.width / 2;
+          e.item.y = cy - from.item.height / 2;
+          e.item.rotation = from.item.rotation ?? null;
+        }
+      }
+      await wbSaveMany(others.map((e) => ({ kind: e.kind, item: e.item })));
+    });
+    wbScheduleRender();
+    wbAnnounce(`${nounCount(others.length, "copy", "copies")} matched.`);
+  }
+
+  //: Swap an emoji sticker for another everywhere it is placed. An icon's
+  //: drawing is a path scaled to each copy, so an icon follows by Match only.
+  async function wbStickerSwap() {
+    const copies = wbStickerCopies();
+    if (!copies.length || copies[0].kind !== "object") return toast("Select a placed emoji first; an icon follows by Match all copies.");
+    const choice = await pickIconOrEmoji({ anchor: document.querySelector('[aria-controls="wb-insert-menu"]'), title: "Swap this emoji everywhere" });
+    if (!choice || choice.kind === "icon" || !choice.value) return;
+    await wbRecordGesture(async () => {
+      for (const e of copies) e.item.data = { ...e.item.data, content: choice.value };
+      await wbSaveMany(copies.map((e) => ({ kind: e.kind, item: e.item })));
+    });
+    wbScheduleRender();
+    wbAnnounce(`${nounCount(copies.length, "copy", "copies")} swapped.`);
+  }
+
   //: The file's whole surface, one object, so the shared scope gains one name rather than one per entry point.
   const wbMapLazy = {
     openGantt: wbMapOpenGantt,
@@ -868,6 +944,9 @@
     imageFromLink: wbTopicImageFromLink,
     secondRoot: wbSecondRoot,
     saveBranch: wbBranchSaveMarkdown,
+    stickerCopies: wbStickerCopies,
+    stickerMatch: wbStickerMatch,
+    stickerSwap: wbStickerSwap,
     paintStamps: wbStampPaint,
     stampMenu: wbStampMenu,
     clearStamps: wbStampClear,
