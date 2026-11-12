@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Undoing what Atlas or a skill run changed now has a server Redo (POST /events/redo) and joins the normal undo stack, so Ctrl+Z and Ctrl+Shift+Z work on it (L805, L572).
 - Redoing an added note type keeps its id, so a later Undo of an edit on it still finds it (L571).
 - Settings hides Import a document until its package is installed, and clearing dismissed suggestions is covered end to end (L-world-class-10, L590).
 - Tests no longer wait 5 seconds each for the autonomous loop at teardown (CI ran past its 90-minute limit).

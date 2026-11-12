@@ -2032,6 +2032,11 @@ def _feed_item(row: AuditLog) -> dict:
     undid = (row.payload or {}).get("undid") if row.action == "restored" else None
     if isinstance(undid, list):
         item["undid"] = [i for i in undid if isinstance(i, int)]
+    #: A redo names the undo it took back, so that undo no longer hides the
+    #: AI's changes from the "Undo what Atlas did" row.
+    redid = (row.payload or {}).get("redid") if row.action == "redone" else None
+    if isinstance(redid, list):
+        item["redid"] = [i for i in redid if isinstance(i, int)]
     return item
 
 
@@ -2074,6 +2079,24 @@ def undo_actor(body: UndoBody, session: Session = Depends(get_session)) -> dict:
         apply=not body.dry_run,
         force=body.force,
     )
+    if not body.dry_run:
+        session.commit()
+    return result
+
+
+class RedoBody(BaseModel):
+    #: The `restored` events an applied `/events/undo` returned.
+    restored: list[int] = Field(min_length=1, max_length=500)
+    dry_run: bool = False
+    force: bool = False
+
+
+@router.post("/events/redo")
+def redo_undo(body: RedoBody, session: Session = Depends(get_session)) -> dict:
+    """Take an AI-change undo back (`events.redo`): the server re-applies the
+    events that undo reversed, so those undos join the normal undo stack with
+    Redo (owner decision, L805)."""
+    result = events.redo(session, body.restored, apply=not body.dry_run, force=body.force)
     if not body.dry_run:
         session.commit()
     return result
