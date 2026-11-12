@@ -1073,6 +1073,14 @@ row does today.
   (standing order 3, 2026-11-12, L313): stepping them in the interpreter
   would need a nested run on its stack and would drop the read-only view
   of the frame, so a watch can never change the program it watches.
+- D11. **Comment ratio (D46) stays as built** (standing order 3, 2026-11-12,
+  L329): the row carried no written recommendation, so the shipped ratio is
+  kept and no setting is added.
+- D12. **No separate worker for the prose tools (D45)** (standing order 3,
+  2026-11-12, L329): the Harper worker already runs off the main thread; a
+  second worker is not built. D47 is decided "Keep it": the textarea
+  fallback stays, and only the dead surface aliases (`rect`, `scrollLeft`)
+  were removed.
 
 ### Phases
 

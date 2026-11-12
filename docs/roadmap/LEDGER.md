@@ -11,28 +11,28 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 626 | 141 | 3 | 192 | 1320 |
-| all | 553 | 626 | 141 | 3 | 192 | 1320 |
-| all | 553 | 626 | 141 | 3 | 192 | 1320 |
+| all | 553 | 625 | 141 | 3 | 192 | 1319 |
+| all | 553 | 625 | 141 | 3 | 192 | 1319 |
+| all | 553 | 625 | 141 | 3 | 192 | 1319 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 626 | 141 | 3 | 192 | 1320 |
+| all | 553 | 625 | 141 | 3 | 192 | 1319 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 626 | 141 | 3 | 192 | 1320 |
-| all | 553 | 626 | 141 | 3 | 192 | 1320 |
-| all | 553 | 626 | 141 | 3 | 192 | 1320 |
+| all | 553 | 625 | 141 | 3 | 192 | 1319 |
+| all | 553 | 625 | 141 | 3 | 192 | 1319 |
+| all | 553 | 625 | 141 | 3 | 192 | 1319 |
 
 ## graph
 
@@ -379,7 +379,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10. Looked at 2026-11-12 (docsD): Python debug already runs a test file through the harness (run-core.js py.debug, tests:); JS and TS debug run it as a plain script because the harness (run-tests.js runTestHarness) is modern JS and the debug worker is ES5 JS-Interpreter, so it needs an ES5 harness plus a bridge for test rows
 - [ ] **L327** `documents` open, L: Split documents.js, documents-code.js and run_sandbox.py into lazy chunks (Opus design step) and fix listener imbalance. From OPEN.md:4468; OPEN.md:4482; OPEN.md:4485; OPEN.md:4493. Evidence: documents.js 16,598 lines now; lazy-chunk split needs Opus design step, not done
 - [ ] **L328** `documents` open, L: Build spreadsheet grid view for csv/tsv documents. From OPEN.md:4476. Evidence: Deferred L grid view for csv/tsv; not built
-- [ ] **L329** `documents` open, L: Owner decisions on D46 comment ratio, D47 drop or keep textarea fallback, D45 worker; then remove fallback aliases. From OPEN.md:4480; v1028-1.md Remaining. Evidence: Deferred L; drop of textarea fallback (documents.js) not done
 - [ ] **L330** `documents` open, L: Code editor: multi-file tabs, split panes and inner palette. From OPEN.md:4481. Evidence: Deferred L; not built
 - [ ] **L331** `documents` open, L: Route document 'Translate this passage' to the offline engine instead of chat. From OPEN.md:817; OPEN.md:2750. Evidence: documents.js:15247 and 15492 still prompt for language then chat; no engine route
 - [ ] **L332** `documents` open, L: Decide and build document comments with the board's thread shape (Reply, Edit, Resolve, Attach). From OPEN.md:1202; OPEN.md:1258; OPEN.md:2414; OPEN.md:3677. Evidence: documents-comments.js models ==words== %%remark%% only; no wbCommentRow-style thread in documents*.js. Same as row 855, decision first.

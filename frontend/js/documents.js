@@ -731,8 +731,6 @@ function textareaSurface(el) {
     get dataset() { return el.dataset; },
     get scrollTop() { return el.scrollTop; },
     set scrollTop(at) { el.scrollTop = at; },
-    get scrollLeft() { return el.scrollLeft; },
-    set scrollLeft(at) { el.scrollLeft = at; },
     get scrollHeight() { return el.scrollHeight; },
     get clientHeight() { return el.clientHeight; },
     selection() { return { from: el.selectionStart, to: el.selectionEnd }; },
@@ -759,7 +757,6 @@ function textareaSurface(el) {
     },
     focus() { el.focus(); },
     blur() { el.blur(); },
-    rect() { return el.getBoundingClientRect(); },
     getBoundingClientRect() { return el.getBoundingClientRect(); },
     //: A programmatic write fires no `input`, and half this editor hangs off
     //: one. The name is the DOM's so the shared helpers need no edit.
@@ -827,8 +824,6 @@ function cmSurface(view, meta = null) {
     get dataset() { return view.dom.dataset; },
     get scrollTop() { return view.scrollDOM.scrollTop; },
     set scrollTop(at) { view.scrollDOM.scrollTop = at; },
-    get scrollLeft() { return view.scrollDOM.scrollLeft; },
-    set scrollLeft(at) { view.scrollDOM.scrollLeft = at; },
     get scrollHeight() { return view.scrollDOM.scrollHeight; },
     get clientHeight() { return view.scrollDOM.clientHeight; },
     selection() {
@@ -881,7 +876,6 @@ function cmSurface(view, meta = null) {
     },
     focus() { view.focus(); },
     blur() { view.contentDOM.blur(); },
-    rect() { return view.dom.getBoundingClientRect(); },
     getBoundingClientRect() { return view.dom.getBoundingClientRect(); },
     //: **Nothing to dispatch, and that is not a stub.** Callers written for a
     //: textarea end a scripted write with an `input` event, because writing
