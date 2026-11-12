@@ -463,6 +463,7 @@ function changeRow(change, options = {}) {
             name: change.undo.tool,
             arguments: change.undo.arguments,
             steps: change.undo.steps,
+            sig: change.undo.sig,
           }),
         });
         if (result?.error) throw new Error(result.error);

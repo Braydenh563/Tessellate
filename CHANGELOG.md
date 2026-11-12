@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: the actions the server offers (parked tool calls and the undo it hands back) carry a signed tag, and a tool call whose name or arguments no longer match its tag is refused with 400 and runs nothing; a send carries a turn id and a repeated post with the same id gets the first result back instead of running the model twice.
+- Library: a chat card, and a shelved chat, shows when it was last spoken in rather than when its row last changed.
 - Backup: Stop on the backup pass ends it between the copy, the check and the second copy and deletes what it had made (no half-written file); the embedding model load row now has Stop too (a download ends after its file, nothing follows the load); every write to a note's text stamps its edited time in one place, and the lexical filing corpus keys on it instead of updated_at.
 - Threads: the update apply and exit watch, SearXNG autostart, install and output reader, the DNS probe, the LAN first-byte selector, the filing deadline, the auto-install watch, the model download, the autonomous loop and the desktop server and tray now start through core/jobs.py (listed, one place); the thread-site ratchet holds only the pool and the captions helper's child process.
 - Search: a note opened from a finder result has the words you searched marked in it.

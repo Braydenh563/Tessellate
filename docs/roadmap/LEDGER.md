@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 157 | 47 | 0 | 73 | 334 |
+| world-class | 130 | 154 | 46 | 0 | 73 | 330 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 683 | 146 | 3 | 196 | 1382 |
+| all | 553 | 680 | 145 | 3 | 196 | 1378 |
 
 ## graph
 
@@ -639,7 +639,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L505** `world-class` open, S: Audit jobruns detail strings that carry {exc}. From OPEN.md:1950; OPEN.md:3542. Evidence: Audit not recorded
 - [ ] **L510** `world-class` open, S: Trace how 'conversation' is derived as a topic for a gym note. From OPEN.md:4332. Evidence: Ledger open; needs the owner's note to trace topic derivation.
 - [ ] **L511** `world-class` open, S: Drive the dictionary spelling offer in a live empty search result. From OPEN.md:604; OPEN.md:2789. Evidence: Server correction answered every typo tried; finderSpellingOffer path undriven
-- [ ] **L512** `world-class` open, S: Show last_at instead of updated_at on Library chat rows and Shelved list. From OPEN.md:998. Evidence: routes_library.py:298 returns chat updated_at; library.js:1738 shows item.updated_at; last_at only in sheets-selects.js:1950
 - [ ] **L513** `world-class` open, S: Add the person's own titles as a source for alternate category names in tidy.py. From OPEN.md:1703; OPEN.md:3615. Evidence: tidy.py:543-566 _rows_category_names uses profiles and taxonomy.name_topics only
 - [ ] **L514** `world-class` open, S: Resume page watch and notify on running transcription after reload. From OPEN.md:1415. Evidence: status.js:756-762,3210 comments describe transcript-after-reload only; no resume-watch on reload found
 - [ ] **L515** `world-class` open, S: Extend Live Text to the scroll layout of PDFs. From OPEN.md:1471. Evidence: library.js:6746 ocrBuildScrollPages still builds scroll pages; layer per row says single-page only, no later change found
@@ -653,7 +652,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L524** `world-class` open, S: Add a test fixture for the Settings synonym table. From OPEN.md:3750. Evidence: filters.py:235 SETTING_FILLER; no settings phrase fixture in tests
 - [ ] **L526** `world-class` open, S: Stop '?' after a Dashboard click handing focus to a CodeMirror editor. From row21-1109.md Left. Evidence: reveal-targets.js openShortcuts; no fix commit found
 - [ ] **L527** `world-class` open, S: Restyle Connections unlinked-mention Link button and tool-confirm pair away from bordered ghost. From OPEN.md:1677; OPEN.md:2670. Evidence: connections.js:226 smallButton('ph:link Link', ...) defaults ghost small (app.js:1497-1499)
-- [ ] **L528** `world-class` open, S: Exclude binned and private notes from EntryLink row counts. From OPEN.md:2815. Evidence: notebook_stats._notebook_block; verified open
 - [ ] **L529** `world-class` open, S: Drive code IDE, OCR workspace, phone More sheet, lock screen, board tools and Present. From OPEN.md:587. Evidence: Drivable with Playwright; no later sweep cited for all surfaces (phone More row measured HISTORY:3268)
 - [ ] **L530** `world-class` open, S: Fix flaky test_relations_kg2 10k timing under load. From OPEN.md:660; OPEN.md:3282. Evidence: No fix located; timing test remains in tests/test_relations_kg2.py
 - [ ] **L531** `world-class` open, S: Cold boot measure: add service worker, warm cache and phone width. From OPEN.md:796. Evidence: Measurement caveat; no phone-width cold boot run found
@@ -687,7 +685,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L563** `world-class` open, M: Carry locale on Chat/Ask routes and finish currency table and day-first dates (decision 43). From OPEN.md:3877. Evidence: Ask 3/4 still day first; decision 43 editor pending
 - [ ] **L564** `world-class` open, M: Fold picture captions into their note for the composer and keyword search. From OPEN.md:3642. Evidence: search/index.py:851 caption+OCR+vision one body per picture row; not folded into its note's row
 - [ ] **L565** `world-class` open, M: Audit harness for destructive tool confirm, regenerate, model unload, embedding switch, support bundle and autonomous trigger. From audit-1031-harness.md. Evidence: Fake transport cannot call delete_note; no later harness audit
-- [ ] **L566** `world-class` open, M: Sign parked tool calls so /chat/tools/execute stops running client-supplied args. From OPEN.md:4499. Evidence: routes_chat.py:2434 execute_confirmed_tool; signing the parked call needs composer_*.py to sign what it parks
 - [ ] **L568** `world-class` open, M: Audit other [^\]\n] scanners for ReDoS and add a JS link-stripping oracle test. From OPEN.md:1249; OPEN.md:3543. Evidence: Python oracles exist (tests/test_doc_graph.py:136, test_file_editing.py:252); JS link stripping has no oracle.
 - [ ] **L571** `world-class` open, M: Preserve the note type id on Undo after POST /note-types then delete. From OPEN.md:1771. Evidence: routes_properties.py:145 POST /note-types; no id-preserving restore found; not reproduced here
 - [ ] **L572** `world-class` open, M: Add redo for /events/undo AI-change undo so it folds into pushUndo. From OPEN.md:1775. Evidence: note-history.js:340 undoSkillRun and dashboard activityUndoControl still use /events/undo; no server redo found
@@ -783,7 +780,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
 - [ ] **L678** `world-class` partly, M: Cut import cost 3.3 s to 1.5 s; ai.autonomous pulls ai.agent. From OPEN.md:1710; OPEN.md:3785. Evidence: autonomous.py:48 still imports ai.agent at module level; heavy imports not lazily deferred
 - [ ] **L681** `world-class` partly, M: BK12 200-row reminders payload remains (OPEN 4277); BK6 not evidenced; K27 dead routes owner call. From ledger-1112 O39.
-- [ ] **L682** `world-class` partly, M: E70 server idempotency by turn id not built; no turn_id guard in agent.py or chat routes. From ledger-1112 P19.
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
 - [ ] **L684** `world-class` partly, M: D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans. From ledger-1112 O30.
 - [ ] **L685** `world-class` partly, M: D18 server-side trim needs an owner call (O32: container writer, keep raw audio); boot CSS measured per sheet (`bootcsscov.js`): `nm-buddy`/`nm-atlas` moves are a cascade-order design call; sweeps `toursteps.js`, `tourdim.js`, `tour.js` read tour globals now inside tour.js's IIFE and stop on ReferenceError (walk the tour with `openTour()`). From ledger-1112 X16.
