@@ -7,6 +7,89 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (whiteboard plan, stale entries)
+
+From WHITEBOARD_PLAN (LEDGER L-whiteboard-17): the 1358 dogfood passes were run and merged; `contrast.js` visits boards and maps; the 258 right-drag pan recommendation was superseded by INBOX 1452; decision 36's ghost note is built (fixes7-1018).
+
+
+258. **Recommendation, not a change, 2026-09-19 (the session).** The
+    reverted outside commit added right-drag to pan the board, filtered so
+    a right-click still reaches a node's context menu
+    (`wbZoomFilter`: `event.button === 2` on a target that is not
+    `.node-card, .sketch-group, .wb-object`). It is a good gesture and
+    every canvas app has it, but nobody asked for it and a new gesture on
+    the surface that carries the app's only context menu is a decision, not
+    a patch. Not built here on purpose (standing order 8: a new need is an
+    entry, not an ad-hoc build).
+    Recommendation: take it, guarded as above, plus `contextmenu` suppressed
+    on the canvas only while such a drag actually moved (so a right *click*
+    on empty canvas keeps whatever it does today), and measured against
+    `scratchpad/ui-sweeps/wbpan.js`. The other two ideas from that commit,
+    a rotated group outline and alignment guides for a group drag, are built
+    (861e740, 5273bae).
+    **Tried 2026-09-19 and taken back out, with what was learned.** The pan
+    itself is four lines in `wbZoomFilter` (`event.button === 2` when
+    `event.target` is not inside `.node-card, .sketch-group, .wb-object,
+    .wb-map-edge-hit, [contenteditable]`, and the mousemove half gated on a
+    flag the mousedown set) and measured clean: a right-drag moved the board
+    150px, a right-click with no drag left the transform untouched.
+    The half that matters could not be measured. Three things were found
+    and are worth having written down:
+    - The `contextmenu` that ends a right-drag over this board is dispatched
+      at the `<section>` *around* it, not at anything inside it, so a
+      listener scoped to `#whiteboard-container` never sees it and
+      `event.target.closest("#library-view-whiteboard")` is null on it.
+    - It is dispatched **before** `pointerup`, not after, so clearing the
+      "this drag moved" flag on the release is safe and clearing it on a
+      `setTimeout(0)` from the release is not.
+    - With all of that accounted for, two runs of identical code disagreed
+      about whether the menu was dispatched at all. Non-deterministic here,
+      and the difference between "the gesture is polished" and "the gesture
+      leaves a menu open on your board" is exactly that dispatch.
+    So: not shipped. `scratchpad/ui-sweeps/wbrightpan.js` is the acceptance
+    test, written first and failing, with the three facts above in its
+    header. Whoever builds it makes that file pass on a board with a card on
+    it, which is also the case this run could not cover.
+    **Built and taken back out a second time, 2026-09-20, and this run found
+    why. Two of the three facts above are wrong.** Measured with every event
+    logged in the capture phase across a full right-drag:
+
+        pointerdown@wb-svg-layer
+        mousedown@wb-svg-layer
+        contextmenu@wb-svg-layer      <- on the press
+        pointerup@wb-svg-layer
+        mouseup@wb-svg-layer
+        auxclick@wb-svg-layer
+
+    `contextmenu` arrives **on the press, before the drag has moved a pixel**,
+    and at `#wb-svg-layer`, not at the `<section>`. So at the only moment the
+    decision can be made, nothing can know whether the gesture will become a
+    drag: "suppress the menu only when the drag moved" is not implementable,
+    which is why both attempts left a menu open. The non-determinism recorded
+    above did not reproduce: six runs across two attempts agreed every time,
+    so it should not be planned around.
+    The pan half measured clean again (0 to 150px, three runs identical), and
+    a probe bug was fixed while there: the card's position was read at setup,
+    before checks 1 and 2 pan the board, so check 3 pressed empty canvas and
+    reported a 120px pan "on a card" that never touched one.
+    **Recommendation, for the owner, because it is a decision and not a
+    patch.** One shape works: suppress the native menu on the canvas outright
+    and open the app's own pointer menu (`openMenuAtPoint`, which exists) in
+    its place. A right-click then gives board actions instead of Chrome's
+    menu, and a right-drag gives a clean pan. What goes in that menu is the
+    open question, and assertion 2 of the acceptance test ("a right-click
+    still opens whatever it opened before") changes with it.
+
+
+- **`contrast.js` never visits a board or a map** (documents was added
+  2026-10-04). Brief: add `whiteboard` and `mindmap` to its `TABS` with a seeded
+  board (cards, stickies, a frame, shapes) and a seeded map, run at 1440 and
+  390 in both themes, fix what it finds one surface per commit. Expect
+  pre-existing findings; a session of its own. Opus, M.
+
+1358. **The owner, 2026-10-26, verbatim.** "also keep improving all the main features like the whitebaord, mindmap and document editor, there are still A LOT of issues with them which keep being missed. as well as missing features or features that dont work properly, both of which I keep easily encountering."
+     Placed: after the current three agents, one dogfood-and-fix agent per surface (whiteboard, mind map, document editor): a blind-tester pass on everyday tasks first (find what is missed, not what is listed), each finding fixed as a class, then the surface's open inventory rows (.claude/inputs/open-inventory-1026.md) by impact. Missing features are measured against the competitor reads in the retired analysis doc and WORLD_CLASS_PLAN.
+
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
 - **Built, Sh1 P4:** the reminder edit form's time, priority, repeat and alert share one height (32px, equal top); `tests/test_reminder_edit_form_alert.py` holds the shared-height loop (cb83f2ed3).
@@ -55189,6 +55272,12 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L-whiteboard-17** `whiteboard` open, S: Move stale whiteboard entries 1358, 258 and the contrast.js note to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1546. Evidence: Open line in the plan's prose a session could miss. Stale entries still read as open: the 1358 dogfood passes (merged), 'contrast.js never visits a board' (line 779, built), the 258 recommendation (line 623, superseded by 1452), and decision 36's ghost note. They need moving to HISTORY. Built: Done 2026-11-12: the 1358, 258 and contrast.js plan entries moved to HISTORY "Moved from the plans, 2026-11-12 (whiteboard plan, stale entries)" with pointers; decision 36's ghost note now says built (fixes7-1018); contrast.js visits boards and maps at scratchpad/ui-sweeps/contrast.js:170-207.
+- [x] **L-whiteboard-13** `whiteboard` open, S: Park port dx and dy offsets and the ports editor in BACKLOG. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1310. Evidence: Open line in the plan's prose a session could miss. A conditional deferral of the port offsets, and perimeter use waits on the ports editor. There is no row. Built: Parked 2026-11-12: one BACKLOG row in section 4a (port dx, dy offsets and the ports editor), as the plan defers them until a shape needs them.
+- [x] **L268** `whiteboard` open, S: Fix stale comment at whiteboard.js:22313 on next edit. From v1028-2.md Remaining. Evidence: Trivial; waits on next whiteboard.js edit Built: Closed 2026-11-12: the named site (whiteboard.js:22309-22313 now) reads correct after the line drift, and the source note v1028-2.md is no longer in the repo, so nothing stale is left to fix.
+- [x] **L283** `whiteboard` partly, M: Add frame hint edit path and connector arrow-head set (Reset style exists). From OPEN.md:1205; OPEN.md:2418. Evidence: whiteboard.js:13260 handles frame hint edit/clear; arrow-head set on connectors not confirmed (whiteboard-map.js arrowhead is branch-only). Built: Already built, verified 2026-11-12: frame hint edit and clear in wbEditFrameTitle (whiteboard.js:13230-13290); connector arrow heads #wb-fmt-startcap/#wb-fmt-endcap with sizes (index.html:8660-8663, wbLinkCaps whiteboard.js:4809); Reset style in whiteboard-commands.js:145.
+- [x] **L276** `whiteboard` open, M: Build link label look controls (size, bold, colour, chip, position). From OPEN.md:1916; OPEN.md:2530. Evidence: Size, bold, colour, chip, position not found built Built: Already built, verified 2026-11-12: label_size, label_bold, label_color, label_chip, label_t rendered at whiteboard.js:20925-20931; controls #wb-fmt-lsize, lcolor, lbold, lchip, label-t in whiteboard-format.js:1318-1327.
+- [x] **L266** `whiteboard` open, S: Resolve .wb-shape-caret pointer-events none leaving the closest branch dead. From OPEN.md:3554. Evidence: 06-timeline-dialogs.css:2910 and whiteboard.js:16834 both present; product choice left, branch still dead. Built: Already built, verified 2026-11-12: .wb-shape-caret has no pointer-events:none (css/06-timeline-dialogs.css:2910 is margin only); wbToggleCaretHit closest('.wb-shape-caret') branch live (whiteboard.js:16830-16836).
 - [x] **L800** `world-class` owner-call, S: Decide what the evidence_checks switch gates and build its runner. From OPEN.md:2944. Evidence: Only facts.py:88 default; decision needed on what it gates Built: owner decision 2026-11-12: Keep it as built, no build needed
 - [x] **L796** `world-class` owner-call, S: Decide and build server restore routes for media deletes, ask-history, learned and tidy undo. From OPEN.md:532. Evidence: Row marks owner-call (w34-L1-1111.md); server restore routes needing a design decision; some exist (HISTORY:653) Built: owner decision 2026-11-12: Keep the built Undo, no build needed
 - [x] **L793** `world-class` owner-call, M: Decide auth and write-tool scope for the MCP server. From OPEN.md:4211. Evidence: Ledger owner call on MCP auth/scope. Built: owner decision 2026-11-12: Keep token, read-only, no build needed

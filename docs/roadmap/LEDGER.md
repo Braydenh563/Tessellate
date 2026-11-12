@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
+| whiteboard | 30 | 34 | 3 | 0 | 11 | 67 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 696 | 156 | 3 | 195 | 1405 |
 
 ## graph
 
@@ -323,9 +323,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L263** `whiteboard` open, S: Compare converter stroke width (2 board px per stencil unit) against draw.io strokewidth=inherit. From OPEN.md:1323. Evidence: Row says not compared against draw.io strokewidth=inherit; no later comparison found.
 - [ ] **L264** `whiteboard` open, S: Fix wb-tool-section-label text overflowing its box by 49-56px. From OPEN.md:1118; OPEN.md:3697. Evidence: Selector still styled in 08-consistency.css:3067 and whiteboard-map.js; no overflow fix commit found
 - [ ] **L265** `whiteboard` open, S: Remove search/navigator toggles that duplicate View switches; add wbcontextphone.js sweep. From OPEN.md:3068. Evidence: UI_MODERNISATION Phase 8; wbcontextphone.js sweep not added
-- [ ] **L266** `whiteboard` open, S: Resolve .wb-shape-caret pointer-events none leaving the closest branch dead. From OPEN.md:3554. Evidence: 06-timeline-dialogs.css:2910 and whiteboard.js:16834 both present; product choice left, branch still dead.
 - [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Stale sweep not re-checked.
-- [ ] **L268** `whiteboard` open, S: Fix stale comment at whiteboard.js:22313 on next edit. From v1028-2.md Remaining. Evidence: Trivial; waits on next whiteboard.js edit
 - [ ] **L269** `whiteboard` open, M: Cut board toolbar tab stops from 33 with a roving tabindex. From OPEN.md:4266. Evidence: Ledger row 261 marked new, M; no roving-tabindex fix found.
 - [ ] **L270** `whiteboard` open, M: Build native multi-page PDF export instead of the browser print window, and verify it. From OPEN.md:4441; OPEN.md:1235; OPEN.md:3408. Evidence: whiteboard.js:14793 still builds a print window for pdf; no page size or multi-page export
 - [ ] **L271** `whiteboard` open, M: Unify the four overlapping drag and pointer-capture mechanisms in whiteboard.js. From OPEN.md:4442. Evidence: whiteboard.js still has mixed pointer capture and mouse handlers (27 matches); not unified
@@ -333,13 +331,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L273** `whiteboard` open, M: Add merged cells to board tables. From OPEN.md:1210; OPEN.md:2564. Evidence: Row: 5f75052 built .drawio export, placeholders and layer order; merged cells in tables still missing (M).
 - [ ] **L274** `whiteboard` open, M: Merge agent and other-tab changes into board and map history; write redo sweeps for map gestures. From OPEN.md:1230; OPEN.md:3152. Evidence: WHITEBOARD_PLAN decision 17 (line 266) says the event log is long memory; no stack merge of external changes found.
 - [ ] **L275** `whiteboard` open, M: Build Illustrator-style linked symbols and Photoshop-style topic effects. From OPEN.md:1240. Evidence: library_ref only deleted on copy (whiteboard-library.js:1062-1224); no linked symbol feature.
-- [ ] **L276** `whiteboard` open, M: Build link label look controls (size, bold, colour, chip, position). From OPEN.md:1916; OPEN.md:2530. Evidence: Size, bold, colour, chip, position not found built
 - [ ] **L277** `whiteboard` open, M: Stop free lines and arrows drawing the shaft through hollow ends. From OPEN.md:1675; OPEN.md:2607. Evidence: whiteboard.js:2358-2365 wbHollowInset trims links only; free lines re-read path as endpoints (row's reason stands)
 - [ ] **L278** `whiteboard` open, M: Audit board frames/present flow, connector re-routing, touch eraser, image paste limits, PDF export. From audit-1031-board.md. Evidence: No later board audit found
 - [ ] **L279** `whiteboard` open, M: Close or record U19 U20 U23 U30 U31 U36 U37 U39 U41 U45 U49 across map, board, documents, code editor. From bs-1111.md. Evidence: Other agents' surfaces; no closing record found
 - [ ] **L280** `whiteboard` open, M: Add AI rename for boards and maps; drop weak meaning-only matches. From w34-gap3-1111.md Found. Evidence: Only documents have suggest-title (fe169b9d8); no board/map equivalent
 - [ ] **L281** `whiteboard` open, M: Time board open from a click, not direct openWhiteboardBoard(id). From OPEN.md:1328. Evidence: Methodology caveat; no click-driven timing sweep recorded.
-- [ ] **L283** `whiteboard` partly, M: Add frame hint edit path and connector arrow-head set (Reset style exists). From OPEN.md:1205; OPEN.md:2418. Evidence: whiteboard.js:13260 handles frame hint edit/clear; arrow-head set on connectors not confirmed (whiteboard-map.js arrowhead is branch-only).
 - [ ] **L284** `whiteboard` partly, M: Finish frame rotate reset, emoji scale and resize dimension label/lag. From OPEN.md:3828. Evidence: 25e10059b frame upright stands up contents; dimension label while resizing not found
 - [ ] **L285** `whiteboard` partly, L: Finish templates, styles, align and distribute, find, copy as picture and shortcuts for the board. From OPEN.md:4531. Evidence: Smart alignment guides and find exist in whiteboard.js; templates/styles/copy-as-picture set not confirmed complete
 - [ ] **L286** `whiteboard` partly, L: Whiteboard: D24 names left, split whiteboard.js and whiteboard-map.js. From ledger-1112 O34; ledger-1112 O33.
@@ -353,10 +349,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-9** `whiteboard` open, M: Update a placed library copy from its source. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:634. Evidence: library_ref is stored on placed items, but no update command exists; untracked
 - [ ] **L-whiteboard-10** `whiteboard` open, S: Show a one-line hint the first time each board tool is used. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:720. Evidence: no per-tool first-use hint with a remembered dismissal exists; untracked
 - [ ] **L-whiteboard-12** `whiteboard` open, L: Bind board cards to note properties through their frame. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:768. Evidence: no shape that stays bound to live notebook content exists; lines 768 to 772 are untracked
-- [ ] **L-whiteboard-13** `whiteboard` open, S: Park port dx and dy offsets and the ports editor in BACKLOG. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1310. Evidence: Open line in the plan's prose a session could miss. A conditional deferral of the port offsets, and perimeter use waits on the ports editor. There is no row.
 - [ ] **L-whiteboard-15** `whiteboard` open, S: Measure board idle and drag cost at 500 objects and with the companion on. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1405. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census leaves two measurements unmeasured, with no row.
 - [ ] **L-whiteboard-16** `whiteboard` open, S: Run the blind-tester timing for transparency and hex entry. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1583. Evidence: Open line in the plan's prose a session could miss. INBOX 1685's acceptance (find transparency and enter a hex in under 20 s) was never run.
-- [ ] **L-whiteboard-17** `whiteboard` open, S: Move stale whiteboard entries 1358, 258 and the contrast.js note to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1546. Evidence: Open line in the plan's prose a session could miss. Stale entries still read as open: the 1358 dogfood passes (merged), 'contrast.js never visits a board' (line 779, built), the 258 recommendation (line 623, superseded by 1452), and decision 36's ghost note. They need moving to HISTORY.
 
 ## documents
 

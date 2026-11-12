@@ -421,8 +421,8 @@ accessibility, and learnability") are why.
     says so. Previewed in the picker dialog (the Attach picker's rows, all
     ticked), never written until Add, which makes the ticked ones under the
     topic in one transaction with "From your note ..." as each one's note,
-    one Undo step. Ghosts drawn on the canvas wait for boot CSS room (the
-    cap is full); the picker is the recipe the app already has.
+    one Undo step. Ghosts are drawn under the topic as well (built
+    2026-10-18, fixes7-1018; MINDMAP_PLAN).
 37. **Stickers come from the one icon and emoji picker** (taken 2026-10-05,
     INBOX 642, mc1): MINDMAP_PLAN decisions 43 and 44 hold for a board as
     for a map. An emoji dropped or picked is a text object with `sticker:
@@ -619,74 +619,7 @@ Built; moved whole to HISTORY.md ("Moved from the plans, 2026-10-05 (placed
 blocks found built, op5)").
 
 ## Placed from INBOX, 2026-09-21
-
-258. **Recommendation, not a change, 2026-09-19 (the session).** The
-    reverted outside commit added right-drag to pan the board, filtered so
-    a right-click still reaches a node's context menu
-    (`wbZoomFilter`: `event.button === 2` on a target that is not
-    `.node-card, .sketch-group, .wb-object`). It is a good gesture and
-    every canvas app has it, but nobody asked for it and a new gesture on
-    the surface that carries the app's only context menu is a decision, not
-    a patch. Not built here on purpose (standing order 8: a new need is an
-    entry, not an ad-hoc build).
-    Recommendation: take it, guarded as above, plus `contextmenu` suppressed
-    on the canvas only while such a drag actually moved (so a right *click*
-    on empty canvas keeps whatever it does today), and measured against
-    `scratchpad/ui-sweeps/wbpan.js`. The other two ideas from that commit,
-    a rotated group outline and alignment guides for a group drag, are built
-    (861e740, 5273bae).
-    **Tried 2026-09-19 and taken back out, with what was learned.** The pan
-    itself is four lines in `wbZoomFilter` (`event.button === 2` when
-    `event.target` is not inside `.node-card, .sketch-group, .wb-object,
-    .wb-map-edge-hit, [contenteditable]`, and the mousemove half gated on a
-    flag the mousedown set) and measured clean: a right-drag moved the board
-    150px, a right-click with no drag left the transform untouched.
-    The half that matters could not be measured. Three things were found
-    and are worth having written down:
-    - The `contextmenu` that ends a right-drag over this board is dispatched
-      at the `<section>` *around* it, not at anything inside it, so a
-      listener scoped to `#whiteboard-container` never sees it and
-      `event.target.closest("#library-view-whiteboard")` is null on it.
-    - It is dispatched **before** `pointerup`, not after, so clearing the
-      "this drag moved" flag on the release is safe and clearing it on a
-      `setTimeout(0)` from the release is not.
-    - With all of that accounted for, two runs of identical code disagreed
-      about whether the menu was dispatched at all. Non-deterministic here,
-      and the difference between "the gesture is polished" and "the gesture
-      leaves a menu open on your board" is exactly that dispatch.
-    So: not shipped. `scratchpad/ui-sweeps/wbrightpan.js` is the acceptance
-    test, written first and failing, with the three facts above in its
-    header. Whoever builds it makes that file pass on a board with a card on
-    it, which is also the case this run could not cover.
-    **Built and taken back out a second time, 2026-09-20, and this run found
-    why. Two of the three facts above are wrong.** Measured with every event
-    logged in the capture phase across a full right-drag:
-
-        pointerdown@wb-svg-layer
-        mousedown@wb-svg-layer
-        contextmenu@wb-svg-layer      <- on the press
-        pointerup@wb-svg-layer
-        mouseup@wb-svg-layer
-        auxclick@wb-svg-layer
-
-    `contextmenu` arrives **on the press, before the drag has moved a pixel**,
-    and at `#wb-svg-layer`, not at the `<section>`. So at the only moment the
-    decision can be made, nothing can know whether the gesture will become a
-    drag: "suppress the menu only when the drag moved" is not implementable,
-    which is why both attempts left a menu open. The non-determinism recorded
-    above did not reproduce: six runs across two attempts agreed every time,
-    so it should not be planned around.
-    The pan half measured clean again (0 to 150px, three runs identical), and
-    a probe bug was fixed while there: the card's position was read at setup,
-    before checks 1 and 2 pan the board, so check 3 pressed empty canvas and
-    reported a 120px pan "on a card" that never touched one.
-    **Recommendation, for the owner, because it is a decision and not a
-    patch.** One shape works: suppress the native menu on the canvas outright
-    and open the app's own pointer menu (`openMenuAtPoint`, which exists) in
-    its place. A right-click then gives board actions instead of Chrome's
-    menu, and a right-drag gives a clean pan. What goes in that menu is the
-    open question, and assertion 2 of the acceptance test ("a right-click
-    still opens whatever it opened before") changes with it.
+258. Right-drag to pan: superseded by INBOX 1452; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard plan, stale entries)".
 
 276. The sketch pad's bar at 820 on Large text with Spacious: decided and
     closed 2026-10-05 (op5); moved to HISTORY.md ("Moved from the plans,
@@ -775,12 +708,8 @@ catalogue, the library spec and the phased briefs these become.
 557 and 558: built (decisions 19 to 36 below; the object library, the Layers tab, the draw.io pass). Moved whole to HISTORY.md ("Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WHITEBOARD_PLAN)"). Open from them: named layers (BACKLOG 29c) and ghost topics.
 
 ## Placed from INBOX, 2026-10-05 (ledger triage)
+- `contrast.js` on boards and maps: built; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard plan, stale entries)".
 
-- **`contrast.js` never visits a board or a map** (documents was added
-  2026-10-04). Brief: add `whiteboard` and `mindmap` to its `TABS` with a seeded
-  board (cards, stickies, a frame, shapes) and a seeded map, run at 1440 and
-  390 in both themes, fix what it finds one surface per commit. Expect
-  pre-existing findings; a session of its own. Opus, M.
 
 ## Placed from INBOX, 2026-10-05 (boardmap-1005)
 
@@ -1543,8 +1472,7 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 
 ## Placed from INBOX, 2026-10-26b
 
-1358. **The owner, 2026-10-26, verbatim.** "also keep improving all the main features like the whitebaord, mindmap and document editor, there are still A LOT of issues with them which keep being missed. as well as missing features or features that dont work properly, both of which I keep easily encountering."
-     Placed: after the current three agents, one dogfood-and-fix agent per surface (whiteboard, mind map, document editor): a blind-tester pass on everyday tasks first (find what is missed, not what is listed), each finding fixed as a class, then the surface's open inventory rows (.claude/inputs/open-inventory-1026.md) by impact. Missing features are measured against the competitor reads in the retired analysis doc and WORLD_CLASS_PLAN.
+1358. Dogfood passes per surface: done; moved to HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard plan, stale entries)".
 
 ## Placed from INBOX, 2026-10-27
 
