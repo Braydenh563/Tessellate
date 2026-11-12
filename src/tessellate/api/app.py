@@ -727,6 +727,7 @@ def _startup_maintenance() -> None:
             ("_choose_chat_model_if_missing", "Choose a chat model you have"),
             ("_install_pending_extras", "Install the packages picked in Setup"),
             ("_read_note_dates", "Queue reading the dates written in your notes"),
+            ("_seed_companion_milestone", "Note how many notes there are"),
         )
         run.plan([words for _, words in steps])
         for index, (step, words) in enumerate(steps):
@@ -746,6 +747,19 @@ def _read_note_dates() -> None:
     from tessellate.entry import redate
 
     redate.enqueue_if_pending()
+
+
+def _seed_companion_milestone() -> None:
+    """The notes already here are the desk companion's baseline, so a restart at 100 notes does not cheer the 100 again
+    (`core/companion_events.seed`)."""
+    from tessellate.api.routes_entries import _note_total
+    from tessellate.core import companion_events
+
+    session = deps.get_db().session()
+    try:
+        companion_events.seed(_note_total(session))
+    finally:
+        session.close()
 
 
 def _check_notebook_file() -> None:

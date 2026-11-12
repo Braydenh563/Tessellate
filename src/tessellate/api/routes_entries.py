@@ -934,6 +934,12 @@ def _note_total(session: Session) -> int:
     ) or 0
 
 
+def _cheer_note_count(session: Session, entry: Entry) -> None:
+    """Passing a round count is a cheer on the desk: a kind and a time (P7). A draft is no note yet, so the count moved not."""
+    if not entry.is_draft:
+        companion_events.counted(_note_total(session))
+
+
 @router.post("", response_model=EntryOut, status_code=201)
 def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> EntryOut:
     earlier = _already_delivered(session, body.client_key)
@@ -977,7 +983,7 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
     if sealed:
         manager_private.scrub_private_leftovers(session)
     else:
-        companion_events.counted(_note_total(session))  # a round count is a cheer on the desk: a kind and a time (P7)
+        _cheer_note_count(session, entry)
     _finish_new_entry(session, entry, body, defer)
     out = _to_out(
         session,
