@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 77 | 4 | 0 | 17 | 177 |
+| ui-modernisation | 96 | 75 | 4 | 0 | 17 | 175 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 13 | 0 | 0 | 0 | 13 |
-| all | 553 | 649 | 158 | 3 | 191 | 1360 |
+| all | 553 | 647 | 158 | 3 | 191 | 1358 |
 
 ## graph
 
@@ -493,8 +493,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L392** `ui-modernisation` open, S: Measure broom accent contrast and run the automatic contrast pass in a browser; check Tags Atlas review with a real model. From OPEN.md:624; OPEN.md:3562. Evidence: contrast.js measurement and browser run not recorded; pytest only
 - [ ] **L393** `ui-modernisation` open, S: Fix phone collapsed row buttons overflowing the right edge by 87.8px. From OPEN.md:744; OPEN.md:3549. Evidence: Measured, unchanged per row; no fix commit found
 - [ ] **L395** `ui-modernisation` open, S: Fix select-btn and notes-filter-menu dock-word clipping at 320-1024. From OPEN.md:1837. Evidence: No CSS rule for these selectors found by grep
-- [ ] **L396** `ui-modernisation` open, S: Fix rail-dot alignment at 390. From OPEN.md:1955. Evidence: 0px at 1440; 390 not fixed
-- [ ] **L398** `ui-modernisation` open, S: Show the Categories head at 390 so it can fold. From OPEN.md:3880. Evidence: Existing <600 rule; found not fixed
 - [ ] **L399** `ui-modernisation` open, S: Fix notes-tidy button and tab-notes 4px overflow. From OPEN.md:3700. Evidence: Sweep finding; no fix commit found
 - [ ] **L400** `ui-modernisation` open, S: Flatten Library > Contents > Probe document > Outline from depth 4. From OPEN.md:3706. Evidence: One destination at depth 4; no flattening commit found
 - [ ] **L401** `ui-modernisation` open, S: Measure closed .doc-dock-menu-list paint at 390 and record the number. From OPEN.md:613; OPEN.md:3453. Evidence: Rules exist in 02-chat-graph.css:2477,5080; closed-paint measurement not recorded
