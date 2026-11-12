@@ -144,13 +144,18 @@ PRIVATE_SPACE_NOTE = "A private note"
 
 MAX_CATEGORY_LENGTH = 100
 
+#: A broken bar where "&" belongs ("Food ¦ drink"), written by some model's
+#: output or an import (LEDGER L803; the writer was never found, so every
+#: name is mended where it is stored and once on load).
+BROKEN_BAR = "\u00a6"
 
 def category_label(name: str | None) -> str:
     """A category name as it is stored (audit 1031 N6): invisible characters
     gone, spacing collapsed, ends trimmed, clipped to 100, and a blank name is
     Uncategorised. The one rule every writer shares, as `normalise_tags` is for
     tags, so a note route cannot make a name `/categories` would refuse."""
-    return clean_name(name)[:MAX_CATEGORY_LENGTH].strip() or UNCATEGORISED
+    return clean_name((name or "").replace(BROKEN_BAR, "&"))[:MAX_CATEGORY_LENGTH].strip() or UNCATEGORISED
+
 
 
 def get_or_create_category(

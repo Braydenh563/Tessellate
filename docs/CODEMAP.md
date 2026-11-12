@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8331, frontend ids 2768, CSS sections 524, backend routes 700, backend modules 10797, test files 2680, tests 21851, plan headings 686, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8331, frontend ids 2768, CSS sections 524, backend routes 700, backend modules 10797, test files 2682, tests 21855, plan headings 686, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8331)
 
@@ -26405,60 +26405,60 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_list_entries_filter` | src/tessellate/entry/manager.py:346 |
-| `_placeholder_link` | src/tessellate/entry/manager.py:996 |
-| `_shown_link` | src/tessellate/entry/manager.py:1011 |
-| `_update_entry_fields` | src/tessellate/entry/manager.py:676 |
-| `_with_stand_ins` | src/tessellate/entry/manager.py:1006 |
-| `archive_entry` | src/tessellate/entry/manager.py:1138 |
-| `bulk_category_names` | src/tessellate/entry/manager.py:1176 |
-| `came_from_outside` | src/tessellate/entry/manager.py:1223 |
-| `category_label` | src/tessellate/entry/manager.py:148 |
-| `category_name_for` | src/tessellate/entry/manager.py:1168 |
+| `_list_entries_filter` | src/tessellate/entry/manager.py:351 |
+| `_placeholder_link` | src/tessellate/entry/manager.py:1001 |
+| `_shown_link` | src/tessellate/entry/manager.py:1016 |
+| `_update_entry_fields` | src/tessellate/entry/manager.py:681 |
+| `_with_stand_ins` | src/tessellate/entry/manager.py:1011 |
+| `archive_entry` | src/tessellate/entry/manager.py:1143 |
+| `bulk_category_names` | src/tessellate/entry/manager.py:1181 |
+| `came_from_outside` | src/tessellate/entry/manager.py:1228 |
+| `category_label` | src/tessellate/entry/manager.py:152 |
+| `category_name_for` | src/tessellate/entry/manager.py:1173 |
 | `category_space` | src/tessellate/entry/manager.py:107 |
-| `count_archived_entries` | src/tessellate/entry/manager.py:557 |
-| `count_deleted_entries` | src/tessellate/entry/manager.py:534 |
-| `count_notes` | src/tessellate/entry/manager.py:437 |
-| `create_entry` | src/tessellate/entry/manager.py:277 |
-| `document_came_from_outside` | src/tessellate/entry/manager.py:1260 |
-| `documents_for_entries_bulk` | src/tessellate/entry/manager.py:951 |
-| `documents_for_entry` | src/tessellate/entry/manager.py:937 |
-| `entries_for_document` | src/tessellate/entry/manager.py:1086 |
-| `entry_dates` | src/tessellate/entry/manager.py:736 |
-| `entry_dates_bulk` | src/tessellate/entry/manager.py:747 |
-| `entry_id_scope` | src/tessellate/entry/manager.py:467 |
+| `count_archived_entries` | src/tessellate/entry/manager.py:562 |
+| `count_deleted_entries` | src/tessellate/entry/manager.py:539 |
+| `count_notes` | src/tessellate/entry/manager.py:442 |
+| `create_entry` | src/tessellate/entry/manager.py:282 |
+| `document_came_from_outside` | src/tessellate/entry/manager.py:1265 |
+| `documents_for_entries_bulk` | src/tessellate/entry/manager.py:956 |
+| `documents_for_entry` | src/tessellate/entry/manager.py:942 |
+| `entries_for_document` | src/tessellate/entry/manager.py:1091 |
+| `entry_dates` | src/tessellate/entry/manager.py:741 |
+| `entry_dates_bulk` | src/tessellate/entry/manager.py:752 |
+| `entry_id_scope` | src/tessellate/entry/manager.py:472 |
 | `entry_space` | src/tessellate/entry/manager.py:126 |
-| `entry_tags` | src/tessellate/entry/manager.py:1198 |
-| `get_entry` | src/tessellate/entry/manager.py:565 |
-| `get_or_create_category` | src/tessellate/entry/manager.py:156 |
-| `holds_pasted_mail` | src/tessellate/entry/manager.py:1251 |
-| `link_document` | src/tessellate/entry/manager.py:895 |
-| `links_count_bulk` | src/tessellate/entry/manager.py:1057 |
-| `links_for_entries_bulk` | src/tessellate/entry/manager.py:1015 |
-| `list_archived_entries` | src/tessellate/entry/manager.py:540 |
-| `list_deleted_entries` | src/tessellate/entry/manager.py:520 |
-| `list_entries` | src/tessellate/entry/manager.py:372 |
-| `list_sort_key` | src/tessellate/entry/manager.py:418 |
+| `entry_tags` | src/tessellate/entry/manager.py:1203 |
+| `get_entry` | src/tessellate/entry/manager.py:570 |
+| `get_or_create_category` | src/tessellate/entry/manager.py:161 |
+| `holds_pasted_mail` | src/tessellate/entry/manager.py:1256 |
+| `link_document` | src/tessellate/entry/manager.py:900 |
+| `links_count_bulk` | src/tessellate/entry/manager.py:1062 |
+| `links_for_entries_bulk` | src/tessellate/entry/manager.py:1020 |
+| `list_archived_entries` | src/tessellate/entry/manager.py:545 |
+| `list_deleted_entries` | src/tessellate/entry/manager.py:525 |
+| `list_entries` | src/tessellate/entry/manager.py:377 |
+| `list_sort_key` | src/tessellate/entry/manager.py:423 |
 | `log_action` | src/tessellate/entry/manager.py:74 |
-| `mark_edited` | src/tessellate/entry/manager.py:232 |
-| `most_accessed_entries` | src/tessellate/entry/manager.py:503 |
-| `note_filter` | src/tessellate/entry/manager.py:423 |
-| `note_is_sealed` | src/tessellate/entry/manager.py:1203 |
-| `record_dates` | src/tessellate/entry/manager.py:811 |
-| `record_filing` | src/tessellate/entry/manager.py:594 |
-| `record_revision` | src/tessellate/entry/manager.py:1291 |
-| `reindex_properties` | src/tessellate/entry/manager.py:771 |
-| `restore_entry` | src/tessellate/entry/manager.py:1118 |
+| `mark_edited` | src/tessellate/entry/manager.py:237 |
+| `most_accessed_entries` | src/tessellate/entry/manager.py:508 |
+| `note_filter` | src/tessellate/entry/manager.py:428 |
+| `note_is_sealed` | src/tessellate/entry/manager.py:1208 |
+| `record_dates` | src/tessellate/entry/manager.py:816 |
+| `record_filing` | src/tessellate/entry/manager.py:599 |
+| `record_revision` | src/tessellate/entry/manager.py:1296 |
+| `reindex_properties` | src/tessellate/entry/manager.py:776 |
+| `restore_entry` | src/tessellate/entry/manager.py:1123 |
 | `review_queue_count` | src/tessellate/entry/manager.py:49 |
-| `revisions_for` | src/tessellate/entry/manager.py:1328 |
-| `sealed_stand_ins` | src/tessellate/entry/manager.py:974 |
-| `set_category` | src/tessellate/entry/manager.py:245 |
-| `shown_tags` | src/tessellate/entry/manager.py:1213 |
-| `soft_delete_entry` | src/tessellate/entry/manager.py:1100 |
-| `tags_from_json` | src/tessellate/entry/manager.py:1187 |
-| `unarchive_entry` | src/tessellate/entry/manager.py:1155 |
-| `unlink_document` | src/tessellate/entry/manager.py:918 |
-| `update_entry` | src/tessellate/entry/manager.py:625 |
+| `revisions_for` | src/tessellate/entry/manager.py:1333 |
+| `sealed_stand_ins` | src/tessellate/entry/manager.py:979 |
+| `set_category` | src/tessellate/entry/manager.py:250 |
+| `shown_tags` | src/tessellate/entry/manager.py:1218 |
+| `soft_delete_entry` | src/tessellate/entry/manager.py:1105 |
+| `tags_from_json` | src/tessellate/entry/manager.py:1192 |
+| `unarchive_entry` | src/tessellate/entry/manager.py:1160 |
+| `unlink_document` | src/tessellate/entry/manager.py:923 |
+| `update_entry` | src/tessellate/entry/manager.py:630 |
 
 ### src/tessellate/entry/manager_categories.py (5)
 
@@ -27721,7 +27721,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21851)
+## Tests (21855)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27992,6 +27992,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_catalogue_sliced_1108.py | 5 |
 | tests/test_catchup_recap_1111.py | 5 |
 | tests/test_categories_api.py | 9 |
+| tests/test_category_broken_bar_l803.py | 2 |
 | tests/test_category_colour.py | 16 |
 | tests/test_category_colours_1516.py | 2 |
 | tests/test_category_label_1031.py | 6 |
@@ -29136,6 +29137,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lan.py | 131 |
 | tests/test_lan_trust_page.py | 7 |
 | tests/test_languagetool_1731.py | 9 |
+| tests/test_last_week_is_monday_to_sunday.py | 2 |
 | tests/test_launch_splash.py | 25 |
 | tests/test_launch_status.py | 25 |
 | tests/test_launcher_port_stuck_1637.py | 8 |
@@ -30823,14 +30825,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:891 |
+| Needs hardware | docs/roadmap/LEDGER.md:889 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:883 |
+| Owner calls | docs/roadmap/LEDGER.md:881 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31011,7 +31013,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1092 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1090 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31065,25 +31067,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1108 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1192 |
+| chat | docs/roadmap/LEDGER.md:1106 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1190 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:1132 |
-| general | docs/roadmap/LEDGER.md:843 |
+| documents | docs/roadmap/LEDGER.md:1130 |
+| general | docs/roadmap/LEDGER.md:841 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1096 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1204 |
+| graph | docs/roadmap/LEDGER.md:1094 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1202 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:1144 |
+| mindmap | docs/roadmap/LEDGER.md:1142 |
 | timeline | docs/roadmap/LEDGER.md:596 |
-| timeline | docs/roadmap/LEDGER.md:1168 |
+| timeline | docs/roadmap/LEDGER.md:1166 |
 | ui-modernisation | docs/roadmap/LEDGER.md:478 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1156 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1154 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1120 |
+| whiteboard | docs/roadmap/LEDGER.md:1118 |
 | world-class | docs/roadmap/LEDGER.md:631 |
-| world-class | docs/roadmap/LEDGER.md:1180 |
+| world-class | docs/roadmap/LEDGER.md:1178 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

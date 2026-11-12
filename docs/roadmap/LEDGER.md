@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 160 | 48 | 0 | 73 | 338 |
+| world-class | 130 | 159 | 48 | 0 | 73 | 337 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 686 | 147 | 3 | 196 | 1386 |
+| all | 553 | 685 | 147 | 3 | 196 | 1385 |
 
 ## graph
 
@@ -815,7 +815,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L787** `world-class` open, S: Decide docs/CHANGELOG, CONTRIBUTING, SECURITY mirrors nothing reads. From OPEN.md:739. Evidence: Mirrors identical to root (diff clean); tests/test_brand_name.py:78 and scripts/gate.sh:153 still use them; keep or retire is a decision Owner decided 2026-11-12: Retire the copies. Build: Delete docs/CHANGELOG.md, docs/CONTRIBUTING.md, docs/SECURITY.md; update tests/test_brand_name.py:78-82, test_docs_site.py mirror check, scripts/gate.sh:153, scripts/rebrand.py:49, scratchpad/changelog_union.py, database.py:193 comment.
 - [ ] **L794** `world-class` open, L: Decide whether to consolidate ad hoc columns and migrations into one schema system. From OPEN.md:4212. Evidence: Ledger owner call; consolidation is a migration-policy decision. Owner decided 2026-11-12: Keep both, write rule. Build: A short rule paragraph in docs/ARCHITECTURE.md (database section) naming when _add_missing_columns vs migrations/versions is used; no code change.
 - [ ] **L797** `world-class` open, M: Decide whether decision 57 covers the 68 silent broad excepts and ratchet them. From OPEN.md:670; OPEN.md:3782. Evidence: Row asks to decide whether decision 57 covers them; flaw-class lint F4 exists Owner decided 2026-11-12: Yes, ratchet all 89. Build: tests/test_no_silent_except.py: widen _ends_quiet to include return-a-fallback, seed the 68 into SEED; fix as touched.
-- [ ] **L803** `world-class` open, S: Find what wrote the broken-bar character for '&' in categories (needs owner's data). From OPEN.md:4331. Evidence: No writer of ¦ in src/frontend (grep); source is model output or import, needs owner's data. Owner decided 2026-11-12: Replace ¦ with & in names. Build: category names convert the broken bar (¦) to & when saved or renamed, and existing names are fixed on load, with a test; the source is not traced.
 - [ ] **L806** `world-class` open, S: OCR workspace empty squashed box: needs owner's screenshot or state. From OPEN.md:1618. Evidence: Not reproduced in five states; needs the owner's screenshot or state Owner decided 2026-11-12: the right panel of the files and images viewer: its bottom scroll section is crushed very short by the sections above it (caption, description, model read). Build: OCR workspace right panel (files and images): the bottom scroll section is crushed very short by the sections above it (caption, description, model read); give the list a usable minimum height or let the panel scroll as one, measured at a laptop height.
 - [ ] **L812** `world-class` open, M: complexity.yml uses --exit-zero: decide tracked cleanup or baseline. From OPEN.md:362. Evidence: .github/workflows/complexity.yml:31-32 still --exit-zero; decision pending Owner decided 2026-11-12: Also plan a cleanup. Build: keep the ratchet and work the 14 complexity and perf findings worst first, lowering the baseline with each fix.
 - [ ] **L-world-class-6** `world-class` open, S: Say the search model is loading instead of Filing on the first note. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:35. Evidence: notes-list.js:146 still shows the filing state ("Let Atlas decide") with no loading distinction; not in any plan or LEDGER row
