@@ -15,7 +15,7 @@ def _open_global_find() -> str:
 
 def test_the_fallback_bar_has_both_reach_outs_on_the_documents_tab_only():
     body = _open_global_find()
-    assert 'id: "global-find-docs"' in body
+    assert 'className: "global-find-docs"' in body
     assert "docFindInDocuments(" in body and "openDocReplace({" in body
     assert 'name, textContent: label' in body or '"all-documents"' in body
     assert 'classList.contains("hidden")' in body.split("reach.hidden", 1)[1].split("\n", 1)[0]
