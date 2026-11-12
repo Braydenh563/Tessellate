@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 91 | 4 | 0 | 17 | 191 |
+| ui-modernisation | 96 | 88 | 4 | 0 | 17 | 188 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 13 | 0 | 0 | 0 | 13 |
-| all | 553 | 663 | 158 | 3 | 191 | 1374 |
+| all | 553 | 660 | 158 | 3 | 191 | 1371 |
 
 ## graph
 
@@ -534,7 +534,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L440** `ui-modernisation` open, M: Record Radix/shadcn/APG element comparison (Brief 92b). From SESSION_BRIEFS.md:291. Evidence: No Radix block in HISTORY; E19 W20
 - [ ] **L441** `ui-modernisation` open, M: Unify #attach-image 999px radius with #attach-note at 390 px. From OPEN.md:803; OPEN.md:2236. Evidence: 07-whiteboard-misc.css:3634 comment on spread; 04-chat-dock-appearance.css:2852 only has-attachments; radius equality unverified
 - [ ] **L442** `ui-modernisation` open, M: Decide and build a non-modal Guide sheet so the scrim stops dimming the app. From OPEN.md:973; OPEN.md:3016. Evidence: Only appearance-panel is non-modal (appearance-panel-own-lazy.css:3); Guide sheet scrim unchanged, no commit found
-- [ ] **L443** `ui-modernisation` open, M: Decide and fix the Notes dock wrapping to two rows at 1280-1500 with the rail open. From OPEN.md:1486; OPEN.md:1830. Evidence: Row calls it a judgement vs DESIGN.md seven-at-most; needs owner decision
 - [ ] **L444** `ui-modernisation` open, M: Align opened row first line with the chevron (2.6px offset, use 1lh line box). From OPEN.md:1951; OPEN.md:3546. Evidence: 2.6px offset, no fix recorded
 - [ ] **L445** `ui-modernisation` open, M: Fix entry-meta.note-meta and entry-list li overflow at 320/390. From OPEN.md:3698. Evidence: 08-consistency.css:2724 .entry-meta.note-meta; no fix commit found
 - [ ] **L446** `ui-modernisation` open, M: Drive the phone More-sheet paths (agent, Guide, timeline, reminders) at 390. From OPEN.md:746; OPEN.md:3573. Evidence: Touch phone walkthrough; headless drive left toggleAgentPalette hidden at 390
@@ -556,8 +555,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L469** `ui-modernisation` partly, L: Finish the uipolish-0924 surface-by-surface pass (item D). From OPEN.md:1914; OPEN.md:2314. Evidence: Icon-only floor done (iconfloor.js); the per-surface pass not recorded done
 - [ ] **L-ui-modernisation-1** `ui-modernisation` open, M: Adopt CSS cascade layers (@layer tokens, base, components, surfaces, overrides) so 08-consistency.css stops winning by specificity. From ANALYSIS.md:3680. Evidence: grep @layer frontend/css returns 0; UI_MODERNISATION_PLAN item 18 dissolves 08 into components but never names layers or the 'only shrinks' lint
 - [ ] **L767** `ui-modernisation` open, S: Decide whether Library and Notes card shadows, borders and radius should match. From OPEN.md:4243. Evidence: Measured 1111: differing border/tint/radius, design call whether to match. Owner decided 2026-11-12: Match them (Both use one card token for border, fill and corner radius). Build: library.js and note-cards.js card CSS onto one card token (border, tint, radius); measure both at 1440 light and dark.
-- [ ] **L770** `ui-modernisation` open, M: Tablet layouts: decide on Documents dock two rows at 1024, arc framing and Notes sub-tabs. From OPEN.md:1233; OPEN.md:3223. Evidence: No tablet-specific fix found; 07-whiteboard-misc.css:9656 only notes 1024 measurement for notes dock. Owner decided 2026-11-12: Fix the arc zoom only (The arc opens no smaller than a readable zoom, like the mind map; the two toolbars stay as they are). Build: graph arc layout: minimum readable zoom on first frame (reuse the mind map fit-floor); sweep at 1024x768.
-- [ ] **L773** `ui-modernisation` open, M: Rethink Notes dock wrapping (nine controls at 1440, two rows at 1280-1500 with rail open). From OPEN.md:3480; OPEN.md:3559. Evidence: Judgement for the dock grammar's owner; same dock as 3559. Owner decided 2026-11-12: Fewer worded buttons (Some buttons show icons only above 1400px or move into the menu, so the bar keeps one row). Build: Notes .dock: fold two worded controls to icon-only or the dock kebab; sweep docks.js at 1280, 1440, 1500 with rail open.
 - [ ] **L765** `ui-modernisation` open, M: Design pass to unify empty-state tone and illustration across views. From OPEN.md:4241. Evidence: Design pass across views, not a reproducible defect. Owner decided 2026-11-12: Align to the recipe. Build: inventory every .empty-state and ad hoc empty line, convert to the DESIGN.md Empty state recipe, add a lint in tests/test_ui_recipes.py.
 - [ ] **L-ui-modernisation-28** `ui-modernisation` open, S: Measure the stuck-ground recipe on the timeline table head and empty its freeze. From open-work sweep 2026-11-12, tests/test_nested_surfaces_1489.py:34. Evidence: This freeze ratchet holds one known offender, and the comment states the intent to remove it once the stuck-ground recipe is measured on table cells. No LEDGER row or plan item names it.
 - [ ] **L-ui-modernisation-3** `ui-modernisation` open, M: Sweep every toolbar onto the control height tokens and drain the literal heights ratchet. From open-work sweep 2026-11-12, docs/DESIGN.md:1584. Evidence: The doc admits toolbars that do not use --control-h yet and calls them gaps. No row lists or tracks the sweep to find and convert them.

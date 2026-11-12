@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2773, CSS sections 525, backend routes 700, backend modules 10772, test files 2694, tests 21880, plan headings 683, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2773, CSS sections 525, backend routes 700, backend modules 10772, test files 2695, tests 21882, plan headings 683, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -5504,152 +5504,152 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyGraphHighlight` | frontend/js/graph.js:2328 |
+| `applyGraphHighlight` | frontend/js/graph.js:2334 |
 | `arcPath` | frontend/js/graph.js:558 |
 | `arcRise` | frontend/js/graph.js:578 |
-| `askLinkDetails` | frontend/js/graph.js:1362 |
-| `clearGraphKeyboardFocus` | frontend/js/graph.js:3695 |
-| `clearTrace` | frontend/js/graph.js:924 |
-| `closeGraphLinkPeek` | frontend/js/graph.js:2640 |
-| `closeGraphNewNote` | frontend/js/graph.js:3837 |
-| `closeGraphPopup` | frontend/js/graph.js:3675 |
-| `drawTrace` | frontend/js/graph.js:1289 |
-| `exportGraphPng` | frontend/js/graph.js:3894 |
-| `fillTracePickers` | frontend/js/graph.js:742 |
-| `fitGraphToView` | frontend/js/graph.js:2146 |
-| `focusGraphNode` | frontend/js/graph.js:1890 |
+| `askLinkDetails` | frontend/js/graph.js:1368 |
+| `clearGraphKeyboardFocus` | frontend/js/graph.js:3701 |
+| `clearTrace` | frontend/js/graph.js:930 |
+| `closeGraphLinkPeek` | frontend/js/graph.js:2646 |
+| `closeGraphNewNote` | frontend/js/graph.js:3843 |
+| `closeGraphPopup` | frontend/js/graph.js:3681 |
+| `drawTrace` | frontend/js/graph.js:1295 |
+| `exportGraphPng` | frontend/js/graph.js:3900 |
+| `fillTracePickers` | frontend/js/graph.js:748 |
+| `fitGraphToView` | frontend/js/graph.js:2152 |
+| `focusGraphNode` | frontend/js/graph.js:1896 |
 | `frameTree` | frontend/js/graph.js:588 |
-| `graphApplySettings` | frontend/js/graph.js:5200 |
-| `graphApplyView` | frontend/js/graph.js:4668 |
-| `graphAutoFitOn` | frontend/js/graph.js:4849 |
-| `graphCalmScheme` | frontend/js/graph.js:1750 |
-| `graphCaptureSettings` | frontend/js/graph.js:5169 |
-| `graphCaptureView` | frontend/js/graph.js:4612 |
-| `graphCategoryScale` | frontend/js/graph.js:1760 |
-| `graphCloseOtherMenus` | frontend/js/graph.js:4906 |
-| `graphColourMode` | frontend/js/graph.js:1582 |
-| `graphControlsSheetParts` | frontend/js/graph.js:5319 |
-| `graphEndpoint` | frontend/js/graph.js:1800 |
-| `graphFill` | frontend/js/graph.js:1826 |
-| `graphFitFrame` | frontend/js/graph.js:2123 |
-| `graphGlideMs` | frontend/js/graph.js:4240 |
-| `graphGroupColour` | frontend/js/graph.js:1613 |
+| `graphApplySettings` | frontend/js/graph.js:5206 |
+| `graphApplyView` | frontend/js/graph.js:4674 |
+| `graphAutoFitOn` | frontend/js/graph.js:4855 |
+| `graphCalmScheme` | frontend/js/graph.js:1756 |
+| `graphCaptureSettings` | frontend/js/graph.js:5175 |
+| `graphCaptureView` | frontend/js/graph.js:4618 |
+| `graphCategoryScale` | frontend/js/graph.js:1766 |
+| `graphCloseOtherMenus` | frontend/js/graph.js:4912 |
+| `graphColourMode` | frontend/js/graph.js:1588 |
+| `graphControlsSheetParts` | frontend/js/graph.js:5325 |
+| `graphEndpoint` | frontend/js/graph.js:1806 |
+| `graphFill` | frontend/js/graph.js:1832 |
+| `graphFitFrame` | frontend/js/graph.js:2129 |
+| `graphGlideMs` | frontend/js/graph.js:4246 |
+| `graphGroupColour` | frontend/js/graph.js:1619 |
 | `graphGroupNode` | frontend/js/graph.js:253 |
-| `graphGroups` | frontend/js/graph.js:1598 |
+| `graphGroups` | frontend/js/graph.js:1604 |
 | `graphLayout` | frontend/js/graph.js:171 |
 | `graphLayoutIsComputed` | frontend/js/graph.js:195 |
-| `graphLinkKind` | frontend/js/graph.js:2647 |
-| `graphLocalQuery` | frontend/js/graph.js:1791 |
-| `graphMinimapCanShow` | frontend/js/graph.js:4030 |
-| `graphMinimapChildren` | frontend/js/graph.js:4059 |
-| `graphMinimapEdgePairs` | frontend/js/graph.js:3971 |
-| `graphMinimapFinite` | frontend/js/graph.js:4251 |
-| `graphMinimapFrame` | frontend/js/graph.js:4265 |
-| `graphMinimapPaint` | frontend/js/graph.js:4084 |
-| `graphMinimapQueuePaint` | frontend/js/graph.js:4037 |
-| `graphMinimapSet` | frontend/js/graph.js:4077 |
-| `graphMinimapShown` | frontend/js/graph.js:4008 |
-| `graphNeighbourInDirection` | frontend/js/graph.js:1869 |
-| `graphNodeById` | frontend/js/graph.js:1862 |
-| `graphNodeLabel` | frontend/js/graph.js:2761 |
-| `graphNodeMatches` | frontend/js/graph.js:2285 |
+| `graphLinkKind` | frontend/js/graph.js:2653 |
+| `graphLocalQuery` | frontend/js/graph.js:1797 |
+| `graphMinimapCanShow` | frontend/js/graph.js:4036 |
+| `graphMinimapChildren` | frontend/js/graph.js:4065 |
+| `graphMinimapEdgePairs` | frontend/js/graph.js:3977 |
+| `graphMinimapFinite` | frontend/js/graph.js:4257 |
+| `graphMinimapFrame` | frontend/js/graph.js:4271 |
+| `graphMinimapPaint` | frontend/js/graph.js:4090 |
+| `graphMinimapQueuePaint` | frontend/js/graph.js:4043 |
+| `graphMinimapSet` | frontend/js/graph.js:4083 |
+| `graphMinimapShown` | frontend/js/graph.js:4014 |
+| `graphNeighbourInDirection` | frontend/js/graph.js:1875 |
+| `graphNodeById` | frontend/js/graph.js:1868 |
+| `graphNodeLabel` | frontend/js/graph.js:2767 |
+| `graphNodeMatches` | frontend/js/graph.js:2291 |
 | `graphNodeRadius` | frontend/js/graph.js:139 |
-| `graphNodeScreenPoint` | frontend/js/graph.js:1911 |
-| `graphNodeUnder` | frontend/js/graph.js:1323 |
-| `graphPanToNode` | frontend/js/graph.js:2381 |
-| `graphPanelRoom` | frontend/js/graph.js:3005 |
+| `graphNodeScreenPoint` | frontend/js/graph.js:1917 |
+| `graphNodeUnder` | frontend/js/graph.js:1329 |
+| `graphPanToNode` | frontend/js/graph.js:2387 |
+| `graphPanelRoom` | frontend/js/graph.js:3011 |
 | `graphPinSave` | frontend/js/graph.js:58 |
 | `graphPinStep` | frontend/js/graph.js:110 |
 | `graphPinnedRows` | frontend/js/graph.js:88 |
-| `graphPopupActionList` | frontend/js/graph.js:3433 |
-| `graphPopupCap` | frontend/js/graph.js:3063 |
-| `graphPopupDragEnd` | frontend/js/graph.js:3193 |
-| `graphPopupDragMove` | frontend/js/graph.js:3180 |
-| `graphPopupDragStart` | frontend/js/graph.js:3170 |
-| `graphPopupFileCard` | frontend/js/graph.js:2941 |
-| `graphPopupFollowSpot` | frontend/js/graph.js:3135 |
-| `graphPopupIsDirty` | frontend/js/graph.js:3717 |
-| `graphPopupMayLeave` | frontend/js/graph.js:3727 |
-| `graphPopupMediaRefs` | frontend/js/graph.js:2918 |
-| `graphPopupShows` | frontend/js/graph.js:2494 |
-| `graphPreviewLower` | frontend/js/graph.js:2277 |
-| `graphRailOffset` | frontend/js/graph.js:4384 |
-| `graphReadPhrase` | frontend/js/graph.js:2244 |
-| `graphRemoveLink` | frontend/js/graph.js:2595 |
-| `graphRenderGroups` | frontend/js/graph.js:1635 |
-| `graphResetToDefaults` | frontend/js/graph.js:5235 |
-| `graphResolveGroups` | frontend/js/graph.js:1620 |
+| `graphPopupActionList` | frontend/js/graph.js:3439 |
+| `graphPopupCap` | frontend/js/graph.js:3069 |
+| `graphPopupDragEnd` | frontend/js/graph.js:3199 |
+| `graphPopupDragMove` | frontend/js/graph.js:3186 |
+| `graphPopupDragStart` | frontend/js/graph.js:3176 |
+| `graphPopupFileCard` | frontend/js/graph.js:2947 |
+| `graphPopupFollowSpot` | frontend/js/graph.js:3141 |
+| `graphPopupIsDirty` | frontend/js/graph.js:3723 |
+| `graphPopupMayLeave` | frontend/js/graph.js:3733 |
+| `graphPopupMediaRefs` | frontend/js/graph.js:2924 |
+| `graphPopupShows` | frontend/js/graph.js:2500 |
+| `graphPreviewLower` | frontend/js/graph.js:2283 |
+| `graphRailOffset` | frontend/js/graph.js:4390 |
+| `graphReadPhrase` | frontend/js/graph.js:2250 |
+| `graphRemoveLink` | frontend/js/graph.js:2601 |
+| `graphRenderGroups` | frontend/js/graph.js:1641 |
+| `graphResetToDefaults` | frontend/js/graph.js:5241 |
+| `graphResolveGroups` | frontend/js/graph.js:1626 |
 | `graphRestorePins` | frontend/js/graph.js:104 |
-| `graphRestoreSwitches` | frontend/js/graph.js:4829 |
-| `graphSaveCurrentView` | frontend/js/graph.js:4658 |
-| `graphSavedViews` | frontend/js/graph.js:4603 |
-| `graphSearchClear` | frontend/js/graph.js:2408 |
-| `graphSearchCountText` | frontend/js/graph.js:2311 |
-| `graphSearchFor` | frontend/js/graph.js:2295 |
-| `graphSearchGo` | frontend/js/graph.js:2390 |
-| `graphSearchKey` | frontend/js/graph.js:2418 |
-| `graphSearchNodes` | frontend/js/graph.js:2306 |
-| `graphSearchRefresh` | frontend/js/graph.js:2317 |
-| `graphSearchStepIndex` | frontend/js/graph.js:2375 |
-| `graphSearchTyped` | frontend/js/graph.js:2354 |
-| `graphSetGroups` | frontend/js/graph.js:1607 |
+| `graphRestoreSwitches` | frontend/js/graph.js:4835 |
+| `graphSaveCurrentView` | frontend/js/graph.js:4664 |
+| `graphSavedViews` | frontend/js/graph.js:4609 |
+| `graphSearchClear` | frontend/js/graph.js:2414 |
+| `graphSearchCountText` | frontend/js/graph.js:2317 |
+| `graphSearchFor` | frontend/js/graph.js:2301 |
+| `graphSearchGo` | frontend/js/graph.js:2396 |
+| `graphSearchKey` | frontend/js/graph.js:2424 |
+| `graphSearchNodes` | frontend/js/graph.js:2312 |
+| `graphSearchRefresh` | frontend/js/graph.js:2323 |
+| `graphSearchStepIndex` | frontend/js/graph.js:2381 |
+| `graphSearchTyped` | frontend/js/graph.js:2360 |
+| `graphSetGroups` | frontend/js/graph.js:1613 |
 | `graphSetPin` | frontend/js/graph.js:63 |
-| `graphSettingsEqual` | frontend/js/graph.js:5189 |
-| `graphShowNote` | frontend/js/graph.js:3225 |
-| `graphSizeMode` | frontend/js/graph.js:1545 |
-| `graphSizeRadius` | frontend/js/graph.js:1550 |
-| `graphSyncFocusChip` | frontend/js/graph.js:1707 |
-| `graphSyncSimilarityRow` | frontend/js/graph.js:5070 |
-| `graphTopicFor` | frontend/js/graph.js:3281 |
+| `graphSettingsEqual` | frontend/js/graph.js:5195 |
+| `graphShowNote` | frontend/js/graph.js:3231 |
+| `graphSizeMode` | frontend/js/graph.js:1551 |
+| `graphSizeRadius` | frontend/js/graph.js:1556 |
+| `graphSyncFocusChip` | frontend/js/graph.js:1713 |
+| `graphSyncSimilarityRow` | frontend/js/graph.js:5076 |
+| `graphTopicFor` | frontend/js/graph.js:3287 |
 | `graphUnpinAllNow` | frontend/js/graph.js:95 |
-| `graphZoomBy` | frontend/js/graph.js:4920 |
-| `graphZoomRoving` | frontend/js/graph.js:4932 |
+| `graphZoomBy` | frontend/js/graph.js:4926 |
+| `graphZoomRoving` | frontend/js/graph.js:4938 |
 | `hierarchyPath` | frontend/js/graph.js:540 |
-| `initGraphDockHeightToken` | frontend/js/graph.js:4352 |
-| `initGraphGroups` | frontend/js/graph.js:1669 |
-| `initGraphKeyboard` | frontend/js/graph.js:1929 |
-| `initGraphMinimap` | frontend/js/graph.js:4432 |
-| `initGraphRailToken` | frontend/js/graph.js:4389 |
-| `initGraphToastClearance` | frontend/js/graph.js:4415 |
-| `initGraphViews` | frontend/js/graph.js:4768 |
+| `initGraphDockHeightToken` | frontend/js/graph.js:4358 |
+| `initGraphGroups` | frontend/js/graph.js:1675 |
+| `initGraphKeyboard` | frontend/js/graph.js:1935 |
+| `initGraphMinimap` | frontend/js/graph.js:4438 |
+| `initGraphRailToken` | frontend/js/graph.js:4395 |
+| `initGraphToastClearance` | frontend/js/graph.js:4421 |
+| `initGraphViews` | frontend/js/graph.js:4774 |
 | `layoutHierarchy` | frontend/js/graph.js:408 |
 | `layoutTreemap` | frontend/js/graph.js:342 |
-| `linkByDrop` | frontend/js/graph.js:1471 |
-| `openGraphControlsSheet` | frontend/js/graph.js:5335 |
-| `openGraphLinkPanel` | frontend/js/graph.js:2776 |
-| `openGraphLinkPeek` | frontend/js/graph.js:2655 |
-| `openGraphNewNote` | frontend/js/graph.js:3789 |
-| `openGraphPopup` | frontend/js/graph.js:2498 |
-| `pickTraceEnd` | frontend/js/graph.js:818 |
-| `placeGraphNewNote` | frontend/js/graph.js:3815 |
-| `placeGraphPopup` | frontend/js/graph.js:3068 |
+| `linkByDrop` | frontend/js/graph.js:1477 |
+| `openGraphControlsSheet` | frontend/js/graph.js:5341 |
+| `openGraphLinkPanel` | frontend/js/graph.js:2782 |
+| `openGraphLinkPeek` | frontend/js/graph.js:2661 |
+| `openGraphNewNote` | frontend/js/graph.js:3795 |
+| `openGraphPopup` | frontend/js/graph.js:2504 |
+| `pickTraceEnd` | frontend/js/graph.js:824 |
+| `placeGraphNewNote` | frontend/js/graph.js:3821 |
+| `placeGraphPopup` | frontend/js/graph.js:3074 |
 | `radialRings` | frontend/js/graph.js:304 |
-| `renderGraph` | frontend/js/graph.js:1768 |
-| `renderGraphPopupActions` | frontend/js/graph.js:3619 |
-| `renderGraphPopupHeader` | frontend/js/graph.js:2457 |
-| `renderGraphPopupInfo` | frontend/js/graph.js:3365 |
-| `renderGraphPopupMedia` | frontend/js/graph.js:2945 |
-| `renderGraphPopupProps` | frontend/js/graph.js:3318 |
-| `renderGraphPopupTopic` | frontend/js/graph.js:3256 |
-| `renderGraphViews` | frontend/js/graph.js:4738 |
-| `renderTraceReadout` | frontend/js/graph.js:1120 |
-| `renderTraceState` | frontend/js/graph.js:846 |
+| `renderGraph` | frontend/js/graph.js:1774 |
+| `renderGraphPopupActions` | frontend/js/graph.js:3625 |
+| `renderGraphPopupHeader` | frontend/js/graph.js:2463 |
+| `renderGraphPopupInfo` | frontend/js/graph.js:3371 |
+| `renderGraphPopupMedia` | frontend/js/graph.js:2951 |
+| `renderGraphPopupProps` | frontend/js/graph.js:3324 |
+| `renderGraphPopupTopic` | frontend/js/graph.js:3262 |
+| `renderGraphViews` | frontend/js/graph.js:4744 |
+| `renderTraceReadout` | frontend/js/graph.js:1126 |
+| `renderTraceState` | frontend/js/graph.js:852 |
 | `replyLoops` | frontend/js/graph.js:324 |
-| `runTrace` | frontend/js/graph.js:950 |
-| `saveGraphNewNote` | frontend/js/graph.js:3846 |
-| `saveGraphPopup` | frontend/js/graph.js:3742 |
-| `selectTraceRoute` | frontend/js/graph.js:1019 |
+| `runTrace` | frontend/js/graph.js:956 |
+| `saveGraphNewNote` | frontend/js/graph.js:3852 |
+| `saveGraphPopup` | frontend/js/graph.js:3748 |
+| `selectTraceRoute` | frontend/js/graph.js:1025 |
 | `setGraphPhysicsEnabled` | frontend/js/graph.js:203 |
-| `setTraceEnd` | frontend/js/graph.js:903 |
-| `setTracePanelOpen` | frontend/js/graph.js:749 |
-| `showTopicInGraph` | frontend/js/graph.js:3300 |
-| `showTraceMessage` | frontend/js/graph.js:916 |
-| `storyPrompt` | frontend/js/graph.js:1107 |
-| `syncGraphPopupSave` | frontend/js/graph.js:2584 |
-| `toggleGraphFullscreen` | frontend/js/graph.js:4958 |
-| `traceLabel` | frontend/js/graph.js:839 |
-| `tracePath` | frontend/js/graph.js:1275 |
-| `watchGraphPopupSize` | frontend/js/graph.js:3040 |
+| `setTraceEnd` | frontend/js/graph.js:909 |
+| `setTracePanelOpen` | frontend/js/graph.js:755 |
+| `showTopicInGraph` | frontend/js/graph.js:3306 |
+| `showTraceMessage` | frontend/js/graph.js:922 |
+| `storyPrompt` | frontend/js/graph.js:1113 |
+| `syncGraphPopupSave` | frontend/js/graph.js:2590 |
+| `toggleGraphFullscreen` | frontend/js/graph.js:4964 |
+| `traceLabel` | frontend/js/graph.js:845 |
+| `tracePath` | frontend/js/graph.js:1281 |
+| `watchGraphPopupSize` | frontend/js/graph.js:3046 |
 
 ### frontend/js/harper-worker.js (3)
 
@@ -27700,7 +27700,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21880)
+## Tests (21882)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28878,6 +28878,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_grammar_classes_1026.py | 14 |
 | tests/test_grammar_filter_1407.py | 2 |
 | tests/test_graph_api.py | 33 |
+| tests/test_graph_arc_floor_l770.py | 2 |
 | tests/test_graph_attachment_click.py | 2 |
 | tests/test_graph_centrality_slot.py | 3 |
 | tests/test_graph_clearance_corridor_1029.py | 2 |
@@ -30819,13 +30820,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-general-41) | docs/roadmap/BACKLOG.md:4415 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4382 |
-| Needs hardware | docs/roadmap/LEDGER.md:878 |
+| Needs hardware | docs/roadmap/LEDGER.md:875 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:870 |
+| Owner calls | docs/roadmap/LEDGER.md:867 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4255 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31001,7 +31002,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1074 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1071 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2632 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31055,25 +31056,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:59 |
-| chat | docs/roadmap/LEDGER.md:1090 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1174 |
+| chat | docs/roadmap/LEDGER.md:1087 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1171 |
 | documents | docs/roadmap/LEDGER.md:367 |
-| documents | docs/roadmap/LEDGER.md:1114 |
-| general | docs/roadmap/LEDGER.md:854 |
+| documents | docs/roadmap/LEDGER.md:1111 |
+| general | docs/roadmap/LEDGER.md:851 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1078 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1186 |
+| graph | docs/roadmap/LEDGER.md:1075 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1183 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4391 |
 | mindmap | docs/roadmap/LEDGER.md:447 |
-| mindmap | docs/roadmap/LEDGER.md:1126 |
-| timeline | docs/roadmap/LEDGER.md:583 |
-| timeline | docs/roadmap/LEDGER.md:1150 |
+| mindmap | docs/roadmap/LEDGER.md:1123 |
+| timeline | docs/roadmap/LEDGER.md:580 |
+| timeline | docs/roadmap/LEDGER.md:1147 |
 | ui-modernisation | docs/roadmap/LEDGER.md:485 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1138 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1135 |
 | whiteboard | docs/roadmap/LEDGER.md:320 |
-| whiteboard | docs/roadmap/LEDGER.md:1102 |
-| world-class | docs/roadmap/LEDGER.md:618 |
-| world-class | docs/roadmap/LEDGER.md:1162 |
+| whiteboard | docs/roadmap/LEDGER.md:1099 |
+| world-class | docs/roadmap/LEDGER.md:615 |
+| world-class | docs/roadmap/LEDGER.md:1159 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2802 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2853 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2960 |
