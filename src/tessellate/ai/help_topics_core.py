@@ -891,7 +891,9 @@ HELP_TOPICS: list[dict] = [
             "It never deletes anything and skips itself on battery power. It "
             "also gives a second opinion on notes that were filed by your "
             "notebook's own words while no model was available, moving the "
-            "ones the model files elsewhere."
+            "ones the model files elsewhere. After a run, What the last run "
+            "changed lists each change with its lines out and in and an Undo; "
+            "Keep all accepts the run, Undo all puts every change back."
         ),
         "badge": {"label": "Background tasks", "section": "tasks"},
     },

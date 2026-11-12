@@ -4401,3 +4401,7 @@ Owner, verbatim: "also is llama.cpp still on the table?? maybe for later pr at e
 Each row is the one step that needs hardware or a real model; everything that runs here is built and tested.
 
 - **"ai is cool" with a real model (L-general-43).** No-model filing is pinned by `tests/test_short_note_filing_l_general_43.py` (AI, then Technology, else nothing; never Sketches). **Check:** `scratchpad/llama-dev.sh serve`, a notebook with Sketches, Work and Technology, save "ai is cool", and confirm it is not filed under Sketches.
+
+## Fable whole-app review (owner-named, 2026-11-10; parked 2026-11-12, L-general-31)
+
+The owner named Fable 5.2 for one task: a read-only review and deep dive of the whole app, in a session of its own. It is parked here, not run, because the UI modernisation session runs at tier `pro` (no Opus or Fable agents; CLAUDE.md standing order 4 and section 8). **Run:** in a fresh `max`-tier session the owner opens for it; the `deep-audit` skill's per-surface agents are the shape, findings to one file under `docs/roadmap/agent-remaining/`, each finding then a LEDGER row.

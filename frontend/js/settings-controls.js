@@ -822,6 +822,19 @@
     renderAutonomousReview();
   });
 
+  //: Discard the whole pass (L-general-45): every row's own Undo, last change
+  //: first, so an edit made twice goes back through its middle state.
+  $("autonomous-review-undo-all")?.addEventListener("click", async () => {
+    const undos = [...document.querySelectorAll("#autonomous-review-list [data-change-undo]")].reverse();
+    if (!undos.length) return toast("Nothing left to undo from the last run.");
+    if (!(await confirmDialog(`Undo all ${nounCount(undos.length, "change")} the last run made?`, { confirmLabel: "Undo all" }))) return;
+    for (const button of undos) {
+      button.click();
+      //: Each Undo is a request; the next waits for this one to settle (the row drops its button).
+      for (let i = 0; i < 50 && button.isConnected; i++) await new Promise((r) => setTimeout(r, 100));
+    }
+  });
+
   $("autonomous-trigger").addEventListener("click", () => {
     api("/tasks/trigger-autonomous", { method: "POST" })
       .then(async (response) => {

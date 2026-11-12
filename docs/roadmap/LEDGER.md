@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 101 | 4 | 0 | 17 | 201 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 16 | 2 | 0 | 4 | 18 |
-| all | 553 | 676 | 160 | 3 | 195 | 1389 |
+| general | 0 | 14 | 2 | 0 | 4 | 16 |
+| all | 553 | 674 | 160 | 3 | 195 | 1387 |
 
 ## graph
 
@@ -873,13 +873,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-11** `general` open, M: Build a meeting-prep brief: a reminder naming a person or topic pulls the last related notes into a card at fire time. From ANALYSIS.md:1217. Evidence: grep meeting.prep in src and frontend/js returns nothing
 - [ ] **L-general-15** `general` partly, L: W34 L1 remainder: 265 true, 125 owner-call, 22 hardware-only and 153 unverifiable rows by spoke, each confirmed as a LEDGER row or built. From ledger-1112 X20. Evidence: the w34-*.md spoke lists were retired into LEDGER rows (OPEN.md and w34 sources); recheck that each of the 265 true rows has its row
 - [ ] **L-general-16** `general` partly, M: Session briefs W5 and W16 to W18 have no outcome record; W32 left E9, E10 and E12. From ledger-1112 X23. Evidence: no record of W5, W16 to W18 found at the migration; W32 left E9 (hardware), E10 BK6, BK10, BK12, K36, E12 owner
-- [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-36** `general` open, M: Let notes be grouped by hand, apart from the main sort. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-37** `general` open, M: Let a note have more than one category. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-38** `general` open, M: Compress notes and data on disk. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-41** `general` open, L: An in-app browser with MCP tool abilities beside web search. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; the stdio MCP server is the other direction. Verify in code first.
 - [ ] **L-general-42** `general` open, L: A VS Code extension. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
-- [ ] **L-general-45** `general` open, M: A dry run for the background librarian: show the diff, apply or discard. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md From the audits: taskhistory records runs; there is no diff to apply or discard. Verify in code first.
 - [ ] **L-general-47** `general` open, L: Repair every failing ui sweep: fix the app where the sweep is right, the sweep where it rotted; each exits 0. From L-general-14, L-general-20 stability run 2026-11-12. Evidence: /tmp sweep run on port 8790 (70 sweeps, 240s cap): exit 1 or timeout for errors, fontmatrix, touch, phonesidebar, phonecapture, graphphone, wbexportimage, ctrlwheelzoom, libreadingfoot, libreader, doccodecopy, dockeyboard, doctoolbarstate, spinners, asktab, mapperf, mapmidpan, slashicons, uitrio, noteobject, maplayouts, maptheme, canvasconventions, mapviewmenu, companion* (12, all in 6s), profilelook, perchall, iconfloor, maplinkcue; plus tour.js (replay buttons 0 with Settings unopened), toursteps (5 step faults at 1440), anchorsmotion (5 gaps); deepflows flows note, private, link, graph (gcNodeAtWorld), settings, tabs, picker
 
 ## Owner calls
