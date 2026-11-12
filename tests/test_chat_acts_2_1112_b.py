@@ -12,7 +12,7 @@ from sqlalchemy import select
 from tessellate.ai import commands
 from tessellate.core.database import Entry
 from tessellate.entry import manager
-from tests.test_parity_acts_1110 import _fixed_now, card_of, confirm, stream, undo  # noqa: F401
+from tests.test_parity_acts_1110 import _fixed_now, card_of, confirm, stream  # noqa: F401  (_fixed_now is a fixture)
 
 NOW = datetime(2026, 11, 12, 10, 0, tzinfo=timezone.utc)
 
