@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 69 | 85 | 4 | 20 | 13 | 158 |
 | timeline | 0 | 25 | 3 | 3 | 5 | 28 |
 | world-class | 79 | 146 | 58 | 31 | 68 | 283 |
-| general | 0 | 21 | 0 | 0 | 1 | 21 |
-| all | 289 | 558 | 155 | 109 | 172 | 1002 |
+| general | 0 | 21 | 2 | 0 | 1 | 23 |
+| all | 289 | 558 | 157 | 109 | 172 | 1004 |
 
 ## graph
 
@@ -758,6 +758,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-12** `general` open, S: Add an overdue triage view (still matters / drop / reschedule) with a bulk action. From ANALYSIS.md:1219. Evidence: shell-reminders.js:974 only groups Overdue/Today/Upcoming/Done; no triage or bulk reschedule
 - [ ] **L-general-13** `general` open, S: Show a source-provenance chip on every row (imported from file, clipped from URL, extracted from document, transcribed from audio). From ANALYSIS.md:1204. Evidence: no provenance/source chip in frontend/js or routes_entries.py output; no plan holds it
 - [ ] **L-general-14** `general` open, S: Tour sweeps: drive the tour through openTour() instead of its old globals. From shell-1112 (Sh1). Evidence: scratchpad/ui-sweeps/toursteps.js, tourdim.js, tour.js read TOUR_SECTIONS and tourRun, now inside tour.js's IIFE; they stop on a ReferenceError
+- [ ] **L-general-15** `general` partly, L: W34 L1 remainder: 265 true, 125 owner-call, 22 hardware-only and 153 unverifiable rows by spoke, each confirmed as a LEDGER row or built. From ledger-1112 X20. Evidence: the w34-*.md spoke lists were retired into LEDGER rows (OPEN.md and w34 sources); recheck that each of the 265 true rows has its row
+- [ ] **L-general-16** `general` partly, M: Session briefs W5 and W16 to W18 have no outcome record; W32 left E9, E10 and E12. From ledger-1112 X23. Evidence: no record of W5, W16 to W18 found at the migration; W32 left E9 (hardware), E10 BK6, BK10, BK12, K36, E12 owner
 
 ## Owner calls
 
