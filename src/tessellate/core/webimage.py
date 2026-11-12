@@ -42,6 +42,25 @@ def _check(response, url: str) -> str:  # noqa: ANN001
     return _SUFFIX[kind]
 
 
+def _sniffed(body: bytes) -> str | None:
+    """The suffix the bytes themselves say, or None. The header is the
+    server's word; an HTML page or a script sent as `image/png` would
+    otherwise be stored and served from the app's own origin."""
+    if body.startswith(b"\x89PNG\r\n\x1a\n"):
+        return ".png"
+    if body.startswith(b"\xff\xd8\xff"):
+        return ".jpg"
+    if body[:6] in (b"GIF87a", b"GIF89a"):
+        return ".gif"
+    if body[:4] == b"RIFF" and body[8:12] == b"WEBP":
+        return ".webp"
+    if body[4:8] == b"ftyp" and body[8:12] in (b"avif", b"avis"):
+        return ".avif"
+    if body[:2] == b"BM":
+        return ".bmp"
+    return None
+
+
 def _read(response, deadline: float) -> bytes:  # noqa: ANN001
     body = bytearray()
     for chunk in response.iter_content(65536):
@@ -69,7 +88,10 @@ def fetch_image(url: str) -> dict:
                 url = webclip._redirect_url(response, url, deadline)
                 continue
             suffix = _check(response, url)
-            return {"url": url, "body": _read(response, deadline), "suffix": suffix}
+            body = _read(response, deadline)
+            if _sniffed(body) != suffix:
+                raise webclip.ClipRefused("That link isn't a picture the map can keep (PNG, JPEG, GIF, WebP, AVIF or BMP).")
+            return {"url": url, "body": body, "suffix": suffix}
         raise webclip.ClipRefused("That link redirected too many times.", 502)
     finally:
         session.close()

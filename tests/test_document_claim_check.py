@@ -114,3 +114,42 @@ def test_front_matter_is_skipped_and_parsed_in_linear_time():
     started = time.perf_counter()
     _front_matter_end(hostile)
     assert time.perf_counter() - started < 0.1
+
+
+def _said(text):
+    from tessellate.api.routes_document_claims import _claims
+
+    return [text[a:b] for a, b in _claims(text)]
+
+
+def test_a_sentence_keeps_its_own_number_and_only_a_list_marker_is_stripped():
+    text = "2024 revenue rose by a third against the plan.\n- 12 boxes of seed arrived on Monday morning.\n3. The shed roof leaks over the potting bench.\n"
+    assert _said(text) == [
+        "2024 revenue rose by a third against the plan.",
+        "12 boxes of seed arrived on Monday morning.",
+        "The shed roof leaks over the potting bench.",
+    ]
+
+
+def test_a_decimal_and_an_abbreviation_do_not_end_a_sentence():
+    text = "Use a mix of compost, e.g. leaf mould and bark, for the beds. The pH should sit near 6.5 for most of the vegetables here.\n"
+    assert _said(text) == [
+        "Use a mix of compost, e.g. leaf mould and bark, for the beds.",
+        "The pH should sit near 6.5 for most of the vegetables here.",
+    ]
+
+
+def test_a_slow_model_times_out_and_the_words_rule_answers(ai_client, fake_ollama, monkeypatch):
+    import time
+
+    from tessellate.api import routes_board_affinity
+
+    doc, note, other = _setup(ai_client)
+    real = fake_ollama.chat
+    monkeypatch.setattr(fake_ollama, "chat", lambda *a, **k: (time.sleep(1.0), real(*a, **k))[1])
+    monkeypatch.setattr(routes_board_affinity, "MODEL_SECONDS", 0.1)
+    started = time.perf_counter()
+    got = ai_client.post(f"/documents/{doc}/claim-check", json={"text": DOC}).json()
+    assert time.perf_counter() - started < 0.9
+    assert got["source"] == "words" and got["reason"] == "failed"
+    assert _verdicts(got)["Tomatoes need pruning"] == "supported"

@@ -27,7 +27,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.api.routes_board_affinity import _stem, _words
+from tessellate.api.routes_board_affinity import _stem, _words, bounded_chat
 from tessellate.api.routes_map_suggest import _candidates
 from tessellate.core import deps
 from tessellate.core.deps import get_session
@@ -81,13 +81,40 @@ def _claims(text: str) -> list[tuple[int, int]]:
             continue
         if fenced or start < skip_to or not stripped or stripped[0] in "#|":
             continue
-        for m in re.finditer(r"[^.!?]+[.!?]?", line):
-            sentence = m.group(0)
-            lead = len(sentence) - len(sentence.lstrip(" \t-*+>0123456789."))
+        marker = _LIST_MARKER.match(line)
+        for at, end in _sentences(line, marker.end() if marker else 0):
+            sentence = line[at:end]
+            lead = len(sentence) - len(sentence.lstrip())
             body = sentence[lead:].rstrip()
             if len(re.findall(r"[A-Za-z]{2,}", body)) >= MIN_WORDS:
-                spans.append((start + m.start() + lead, start + m.start() + lead + len(body)))
+                spans.append((start + at + lead, start + at + lead + len(body)))
     return spans[:MAX_CLAIMS]
+
+
+#: A real list or quote marker only: a sentence's own number ("2024 revenue
+#: rose") is part of the claim, not a marker to strip.
+_LIST_MARKER = re.compile(r"[ \t]*(?:[-*+>]|\d{1,3}[.)])[ \t]+")
+#: Words whose full stop ends no sentence.
+_ABBREVIATIONS = frozenset({"etc.", "vs.", "mr.", "mrs.", "ms.", "dr.", "st.", "no.", "approx.", "cf."})
+
+
+def _sentences(line: str, begin: int) -> list[tuple[int, int]]:
+    """(start, end) of each sentence in `line` from `begin`. A sentence ends at
+    `.`, `!` or `?` followed by a space or the line's end, so "3.5" holds
+    together; and not after an abbreviation ("e.g.", "U.S.", "etc.")."""
+    out, at = [], begin
+    for m in re.finditer(r"[.!?](?=\s|$)", line):
+        if m.start() < begin:
+            continue
+        if line[m.start()] == ".":
+            word = line[:m.end()].rsplit(None, 1)[-1].lower()
+            if "." in word[:-1] or word in _ABBREVIATIONS:
+                continue
+        out.append((at, m.end()))
+        at = m.end()
+    if line[at:].strip():
+        out.append((at, len(line.rstrip("\r\n"))))
+    return out
 
 
 def _notes_for(db: Session, claim: str) -> list[dict]:
@@ -129,8 +156,8 @@ def _ask_model(listed: list[tuple[str, list[dict]]]) -> dict[int, tuple[str, int
         lines = [f"[{n}] {claim}"]
         lines += [f"  ({_LETTERS[k]}) {note['title']}: {note['text'][:EXCERPT]}" for k, note in enumerate(notes)]
         blocks.append("\n".join(lines))
-    reply = deps.get_ollama().chat(
-        deps.get_model_manager().utility_model(),
+    reply = bounded_chat(
+        "Checking a document's claims against your notes",
         [{"role": "system", "content": system}, {"role": "user", "content": "Claims:\n" + "\n".join(blocks)}],
     )
     out: dict[int, tuple[str, int]] = {}

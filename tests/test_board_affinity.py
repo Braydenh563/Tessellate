@@ -126,3 +126,19 @@ def test_the_board_draws_one_frame_per_accepted_group_in_one_undo_step():
     assert "affinitySort: wbAffinityRun" in more
     commands = (js / "whiteboard-commands.js").read_text(encoding="utf-8")
     assert 'id: "affinity-sort"' in commands
+
+
+def test_a_slow_model_times_out_and_the_words_rule_sorts(ai_client, fake_ollama, monkeypatch):
+    import time
+
+    from tessellate.api import routes_board_affinity
+
+    bid, ids = _board(ai_client)
+    real = fake_ollama.chat
+    monkeypatch.setattr(fake_ollama, "chat", lambda *a, **k: (time.sleep(1.0), real(*a, **k))[1])
+    monkeypatch.setattr(routes_board_affinity, "MODEL_SECONDS", 0.1)
+    started = time.perf_counter()
+    got = ai_client.post(f"/whiteboard/boards/{bid}/affinity", json={"ids": ids}).json()
+    assert time.perf_counter() - started < 0.9
+    assert got["source"] == "words" and got["reason"] == "failed"
+    assert "Compost" in _names(got)

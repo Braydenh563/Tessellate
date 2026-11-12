@@ -96,3 +96,35 @@ def test_the_route_says_why_a_non_picture_is_not_kept(client, app_state, net):
     net[1]["pics.example"] = _image(kind="text/html")
     response = client.post("/links/image", json={"url": "https://pics.example/page"})
     assert response.status_code == 400 and "picture" in response.json()["detail"]
+
+
+@pytest.mark.parametrize(
+    ("body", "kind"),
+    [
+        (b"<html><script>alert(1)</script></html>", "image/png"),
+        (b"\xff\xd8\xff\xe0" + b"\x00" * 32, "image/png"),
+        (PNG, "image/gif"),
+        (b"", "image/jpeg"),
+    ],
+)
+def test_bytes_that_are_not_the_declared_picture_are_refused(net, body, kind):
+    """The review on PR 229: Content-Type is the server's word, so the bytes'
+    own signature must match it before the picture is kept."""
+    net[1]["pics.example"] = _image(body, kind)
+    with pytest.raises(webclip.ClipRefused):
+        webimage.fetch_image("https://pics.example/a")
+
+
+@pytest.mark.parametrize(
+    ("body", "kind", "suffix"),
+    [
+        (b"\xff\xd8\xff\xe0" + b"\x00" * 32, "image/jpeg", ".jpg"),
+        (b"GIF89a" + b"\x00" * 32, "image/gif", ".gif"),
+        (b"RIFF\x10\x00\x00\x00WEBPVP8 " + b"\x00" * 16, "image/webp", ".webp"),
+        (b"\x00\x00\x00\x1cftypavif" + b"\x00" * 16, "image/avif", ".avif"),
+        (b"BM" + b"\x00" * 32, "image/bmp", ".bmp"),
+    ],
+)
+def test_each_kept_kind_passes_on_its_own_signature(net, body, kind, suffix):
+    net[1]["pics.example"] = _image(body, kind)
+    assert webimage.fetch_image("https://pics.example/a")["suffix"] == suffix

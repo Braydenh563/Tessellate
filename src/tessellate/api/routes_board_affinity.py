@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -29,7 +30,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.api.routes_map_suggest import _candidates
-from tessellate.core import deps
+from tessellate.core import deps, egress
 from tessellate.core.database import WhiteboardObject
 from tessellate.core.deps import get_session
 
@@ -81,6 +82,30 @@ def _by_words(rows: list[tuple[int, str]]) -> list[tuple[str, list[int]]]:
             del left[i]
 
 
+#: How long a board or document AI call may take before the words rule
+#: answers instead: a slow or wedged model must not hold the request open.
+MODEL_SECONDS = 45.0
+_MODEL_POOL = ThreadPoolExecutor(max_workers=4, thread_name_prefix="board-ai")
+
+
+def bounded_chat(label: str, messages: list[dict]) -> dict:
+    """The utility model's reply within `MODEL_SECONDS`; raises TimeoutError
+    past it (the caller then falls back to the words rule).
+
+    `utility_model()` is not local only: the provider can be an
+    OpenAI-compatible server at any `llm_base_url`, so the call runs under
+    `egress.purpose`, and a connection that leaves the computer is named on
+    the privacy receipt like every other AI call. Set in the worker thread,
+    where the connection is made (the purpose is per thread)."""
+    provider, model = deps.get_ollama(), deps.get_model_manager().utility_model()
+
+    def call() -> dict:
+        with egress.purpose(label):
+            return provider.chat(model, messages)
+
+    return _MODEL_POOL.submit(call).result(timeout=MODEL_SECONDS)
+
+
 def _ask_model(rows: list[tuple[int, str]]) -> list[tuple[str, list[int]]]:
     """The model's groups as (name, row numbers). Pure of the database; raises
     when the model does."""
@@ -91,8 +116,8 @@ def _ask_model(rows: list[tuple[int, str]]) -> list[tuple[str, list[int]]]:
         "one line, no preamble, no sticky that is not listed."
     )
     listing = "\n".join(f"[{i + 1}] {text}" for i, (_, text) in enumerate(rows))
-    reply = deps.get_ollama().chat(
-        deps.get_model_manager().utility_model(),
+    reply = bounded_chat(
+        "Sorting stickies into themes",
         [{"role": "system", "content": system}, {"role": "user", "content": f"Stickies:\n{listing}"}],
     )
     out = []
