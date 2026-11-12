@@ -17839,8 +17839,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2574 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2727 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2575 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2728 |
 
 ### src/tessellate/ai/help_words.py (3)
 

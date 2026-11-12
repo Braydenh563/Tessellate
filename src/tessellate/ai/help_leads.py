@@ -192,6 +192,7 @@ TOPIC_LEADS: dict[str, str] = {
     "graph-categories": "Click a category band on the graph to select its notes, double-click to frame it.",
     "graph-display": "Show tags, files and unwritten links on the graph, and change how it is drawn.",
     "graph-options-help": "See in a line what each of the graph's options does to the map.",
+    "graph-draft-map": "Turn selected notes into one draft, or lay notes out by what they mean.",
     "entities": "See every note that names a person, place or project, gathered on one page.",
     "properties": "Give notes fields such as status or owner, and find every note with a value.",
     "timeline": "See everything you wrote by date, as a feed, a table or a calendar.",
