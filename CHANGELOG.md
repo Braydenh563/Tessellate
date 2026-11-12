@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: Check claims against my notes. In the Suggestions panel's ... menu: each full sentence is marked supported, contradicted or not found against your notes, with the note behind the verdict and a button that opens it; with no model, sentences are matched to notes by their words (Phase G).
+- Board: Group by theme. Select two or more stickies, then Edit, "Group by theme…" (or Ctrl+K): they are sorted into named themes, each sticky shown with the notes in your notebook that back it; tick (and rename) the themes to keep and each becomes a frame holding its stickies, in one Undo step. With no model running the stickies are grouped by the words they share (Phase G).
 - CI fixes: map inline links use the accent text colour, the map look help topic drops stored emphasis, the SVG export writes font attributes without an inline style pattern.
 - Mind map: a boundary round a lasso'd set of topics that are not one branch (select two or more, then "Draw a boundary round the selected topics" in the topic menu or Ctrl+K); it follows the topics, one Undo step (12.2).
 - Board: linked stickers. Select a placed icon or emoji with copies, then Insert, Shapes and icons, "Match all copies" (colour, size, turn) or "Swap everywhere" (emoji); one Undo step, and the copies follow by icon name or glyph (14.4; supersedes WHITEBOARD_PLAN decision 25 for stickers).

@@ -929,6 +929,146 @@
   }
 
 
+  // --- The affinity sort ----------------------------------------------------
+  //
+  //: MINDMAP_PLAN Phase G: the selected stickies, grouped by theme by
+  //: `/affinity` (a model's groups, else the words they share), each sticky
+  //: shown with the notes that back its place. The person ticks the groups to
+  //: keep (and may rename them); each ticked one becomes a frame with its
+  //: stickies laid out inside it, all in one `wbRecordGesture`, so one Undo
+  //: takes the lot back. Frames go to the right of the selection, which stays
+  //: where it was for the groups left unticked.
+  const WB_AFFINITY_GAP = 16;
+  const WB_AFFINITY_HEAD = 44;
+
+  function wbAffinityStickies() {
+    const out = [];
+    for (const key of wbMultiSelection) {
+      const [kind, id] = key.split(":");
+      const item = kind === "object" ? wbFindItem("object", Number(id)) : null;
+      if (item && item.kind === "text" && wbIsSticky(item) && String(item.data?.content || "").trim()) out.push(item);
+    }
+    return out;
+  }
+
+  function wbAffinityDialog(got) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement("div");
+      overlay.className = "modal-overlay confirm-overlay";
+      overlay.setAttribute("role", "dialog");
+      overlay.setAttribute("aria-modal", "true");
+      overlay.setAttribute("aria-label", "Group these stickies by theme");
+      const card = document.createElement("div");
+      card.className = "card modal-card confirm-card wb-affinity-card";
+      const about = document.createElement("p");
+      about.className = "confirm-text";
+      about.textContent = got.source === "model"
+        ? `${nounCount(got.count, "sticky", "stickies")} in ${nounCount(got.groups.length, "theme")}. Tick the ones to make into frames.`
+        : `${nounCount(got.count, "sticky", "stickies")} grouped by the words they share${got.reason === "offline" ? " (no model is running)" : ""}. Tick the ones to make into frames.`;
+      const list = document.createElement("div");
+      list.className = "wb-affinity-list";
+      const picks = got.groups.map((group) => {
+        const box = document.createElement("section");
+        box.className = "wb-affinity-group";
+        const head = document.createElement("label");
+        head.className = "setting-check wb-affinity-head";
+        const tick = document.createElement("input");
+        tick.type = "checkbox";
+        tick.checked = group.name !== "Other";
+        const name = document.createElement("input");
+        name.type = "text";
+        name.value = group.name;
+        name.maxLength = 120;
+        name.setAttribute("aria-label", `Frame name for ${group.name}`);
+        const count = document.createElement("span");
+        count.className = "wb-affinity-count";
+        count.textContent = nounCount(group.items.length, "sticky", "stickies");
+        head.append(tick, name, count);
+        const items = document.createElement("ul");
+        items.className = "wb-affinity-items";
+        for (const item of group.items) {
+          const li = document.createElement("li");
+          const text = document.createElement("span");
+          text.textContent = item.text;
+          const backed = document.createElement("span");
+          backed.className = "wb-affinity-backed";
+          backed.textContent = item.notes.length ? `Backed by ${item.notes.map((n) => `"${n.title}"`).join(", ")}` : "No note backs this";
+          li.append(text, backed);
+          items.append(li);
+        }
+        box.append(head, items);
+        list.append(box);
+        return { group, tick, name };
+      });
+      const close = (chosen) => {
+        document.removeEventListener("keydown", onKey, true);
+        overlay.remove();
+        resolve(chosen);
+      };
+      const onKey = (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          close(null);
+        }
+      };
+      const go = smallButton("Make frames", "Make a frame for each ticked theme", () => {
+        const chosen = picks.filter((p) => p.tick.checked).map((p) => ({ name: p.name.value.trim() || p.group.name, items: p.group.items }));
+        close(chosen.length ? chosen : null);
+      }, false);
+      const row = document.createElement("div");
+      row.className = "row confirm-actions";
+      row.append(smallButton("Cancel", "Cancel", () => close(null)), go);
+      card.append(dialogHead("Group by theme", () => close(null)), about, list, row);
+      overlay.append(card);
+      wireBackdropClose(overlay, () => close(null));
+      document.addEventListener("keydown", onKey, true);
+      document.body.append(overlay);
+      go.focus();
+    });
+  }
+
+  async function wbAffinityRun() {
+    const boardId = window.currentBoardId;
+    const stickies = wbAffinityStickies();
+    if (!boardId || stickies.length < 2) return toast("Select two or more stickies with words on them first.");
+    wbAnnounce("Grouping the stickies by theme.");
+    let got = null;
+    try {
+      got = await apiJson(`/whiteboard/boards/${boardId}/affinity`, { method: "POST", body: JSON.stringify({ ids: stickies.map((s) => s.id).slice(0, 60) }) });
+    } catch (err) {
+      return toast(err.message || "These stickies could not be grouped.", true);
+    }
+    const chosen = await wbAffinityDialog(got);
+    if (!chosen || window.currentBoardId !== boardId) return;
+    const byId = new Map(stickies.map((s) => [s.id, s]));
+    const box = stickies.reduce((b, s) => ({ x: Math.max(b.x, s.x + s.width), y: Math.min(b.y, s.y) }), { x: -Infinity, y: Infinity });
+    let left = box.x + 80;
+    let made = 0;
+    await wbRecordGesture(async () => {
+      for (const group of chosen) {
+        const members = group.items.map((i) => byId.get(i.id)).filter(Boolean);
+        const cell = { w: Math.max(...members.map((m) => m.width)), h: Math.max(...members.map((m) => m.height)) };
+        const cols = Math.min(4, Math.ceil(Math.sqrt(members.length)));
+        const rows = Math.ceil(members.length / cols);
+        const width = cols * (cell.w + WB_AFFINITY_GAP) + WB_AFFINITY_GAP;
+        const height = WB_AFFINITY_HEAD + rows * (cell.h + WB_AFFINITY_GAP) + WB_AFFINITY_GAP;
+        const frame = await wbCreateObject("frame", { content: group.name.slice(0, 120) }, Math.round(left), Math.round(box.y), width, height);
+        if (!frame) continue;
+        members.forEach((m, i) => {
+          m.x = left + WB_AFFINITY_GAP + (i % cols) * (cell.w + WB_AFFINITY_GAP);
+          m.y = box.y + WB_AFFINITY_HEAD + WB_AFFINITY_GAP + Math.floor(i / cols) * (cell.h + WB_AFFINITY_GAP);
+        });
+        await wbSaveMany(members.map((item) => ({ kind: "object", item })));
+        left += width + 40;
+        made += 1;
+      }
+    });
+    wbScheduleRender();
+    wbAnnounce(`${nounCount(made, "frame")} made. Ctrl+Z takes them back.`);
+  }
+
+
   // --- A boundary round a lasso'd set ---------------------------------------
   //
   //: MINDMAP_PLAN 12.2 item 1 (decision 19 extended): `boundary_set` on the
@@ -990,6 +1130,8 @@
     stickerCopies: wbStickerCopies,
     stickerMatch: wbStickerMatch,
     stickerSwap: wbStickerSwap,
+    affinitySort: wbAffinityRun,
+    affinityTargets: wbAffinityStickies,
     paintStamps: wbStampPaint,
     stampMenu: wbStampMenu,
     clearStamps: wbStampClear,

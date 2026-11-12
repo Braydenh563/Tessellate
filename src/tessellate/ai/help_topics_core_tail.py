@@ -615,6 +615,9 @@ TAIL_TOPICS.extend(
                 "brainstorm",
                 "reaction stamps on a note",
                 "react with a stamp",
+                "affinity sort",
+                "group stickies by theme",
+                "group by theme",
             ),
             "body": (
                 "Voting dots and a timer, for a workshop. Select notes, text boxes, pictures or frames and "
@@ -622,7 +625,10 @@ TAIL_TOPICS.extend(
                 "corner, and each press adds one (up to 99). Ctrl+K, Take a vote dot off, removes one; "
                 "Clear all vote dots empties the board; one Undo takes back a press. React with a stamp adds "
                 "a thumb, heart, star, tick, question or flame chip under the item (a press on it takes yours "
-                "back), as on a mind map topic. Workshop timer… opens "
+                "back), as on a mind map topic. Group by theme… sorts the selected stickies into named themes and shows "
+                "each sticky with the notes in your notebook that back it; tick the themes to keep, rename them if "
+                "you like, and each becomes a frame holding its stickies, in one Undo step. With no model running "
+                "the stickies are grouped by the words they share. Workshop timer… opens "
                 "1, 3, 5, 10, 15 or 30 minutes: a clock under the board's top bar counts down and says "
                 "when time is up; its X stops it. The timer is for this window only and is not saved."
             ),
