@@ -7237,6 +7237,7 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">Boards</span>
               <button id="wb-rename-board" type="button" class="wb-menu-item" title="Rename this board"><i class="ph ph-pencil-simple ph-lead" aria-hidden="true"></i><span>Rename this board</span></button>
+              <button id="wb-suggest-board-name" type="button" class="wb-menu-item" title="A name from what is on this board"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i><span>Suggest a name</span></button>
               <button id="wb-new-board" type="button" class="wb-menu-item" title="Create a new board"><i class="ph ph-plus ph-lead" aria-hidden="true"></i><span>New board</span></button>
             </div>
             <div class="wb-menu-section" data-wb-submenu="ph:users-three Workshop" data-wb-submenu-title="Vote dots and a timer" data-wb-surface="board">
@@ -7286,6 +7287,8 @@ Link to another note with [[its first few words]]."></textarea>
                      depth, then lists, notes as paragraphs, the map's card at
                      the head. Maps only. -->
                 <button id="wb-map-to-doc" data-wb-closes data-wb-surface="map" type="button" class="wb-menu-item" title="Write this map as a new document: its branches as headings, the rest as lists"><i class="ph ph-file-text ph-lead" aria-hidden="true"></i><span>Write as a document</span></button>
+                <!-- A board's frames as a document draft (L-documents-4): a heading per frame, a paragraph per sticky inside it. Boards only. -->
+                <button id="wb-board-to-doc" data-wb-closes data-wb-surface="board" type="button" class="wb-menu-item" title="Write this board as a new document: a heading for each frame, a paragraph for each sticky or note in it"><i class="ph ph-file-text ph-lead" aria-hidden="true"></i><span>Write as a document</span></button>
                 <button id="wb-copy-link" data-wb-closes type="button" class="wb-menu-item" title="Copy this board's or mind map's address to open it in the app"><i class="ph ph-link ph-lead" aria-hidden="true"></i><span>Copy app link</span></button>
                 <!-- The whole board into the library as a template (decision 25). -->
                 <button type="button" class="wb-menu-item" data-wb-cmd="save-template"><i class="ph ph-squares-four ph-lead" aria-hidden="true"></i><span>Save this board as a template…</span></button>

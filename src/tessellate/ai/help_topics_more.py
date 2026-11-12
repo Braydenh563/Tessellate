@@ -2960,7 +2960,8 @@ MORE_TOPICS.append({
         "Escape when the board has nothing of its own to cancel (a menu, a selection, full screen), to close the panel: "
         "the card shows the board as it now is and the Edit here button has the focus again. The Library keeps one board "
         "window, so while the panel is open the board is in it and not in the Library; closing puts the Library back as it "
-        "was, on the board it had open or on its list of boards."
+        "was, on the board it had open or on its list of boards. The other way: a board's Board menu, Write as a document, "
+        "makes a draft with a heading for each frame and a paragraph for each sticky, text box or note card in it."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })

@@ -11,7 +11,7 @@ import logging
 
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException
-from tessellate.core.database import Entry, WhiteboardObject
+from tessellate.core.database import Entry, WhiteboardNode, WhiteboardObject
 from sqlalchemy.orm import Session
 from tessellate.core import deps, events
 from tessellate.core.deps import get_session
@@ -247,6 +247,148 @@ def _record_map_creation(
             f"{obj.kind} on board {board_id}",
             payload={"after": _object_state(obj)},
         )
+
+
+#: How many topics or cards a name is asked for from, and how long the text handed over is.
+BOARD_NAME_ITEMS = 40
+BOARD_NAME_CHARS = 1500
+
+
+def _board_words(db: Session, board_id: int) -> list[str]:
+    """What is written on a board, one line each: a map's topics and a board's
+    stickies and text (an object's `content`), then the titles of the note cards
+    on it. A private or deleted note's title is left out, as everywhere the
+    model could read it."""
+    import json
+
+    from tessellate.entry import manager_text
+
+    lines: list[str] = []
+    for obj in db.scalars(
+        select(WhiteboardObject).where(WhiteboardObject.board_id == board_id).order_by(WhiteboardObject.id)
+    ):
+        try:
+            data = json.loads(obj.data or "{}")
+        except ValueError:
+            continue
+        text = " ".join(str(data.get("content") or data.get("text") or "").split()) if isinstance(data, dict) else ""
+        if text:
+            lines.append(text[:120])
+    cards = db.scalars(select(Entry).join(WhiteboardNode, WhiteboardNode.entry_id == Entry.id).where(WhiteboardNode.board_id == board_id))
+    for entry in cards:
+        if entry.is_deleted or entry.is_private:
+            continue
+        text = manager_text.readable_content(entry)
+        title = manager_text.extract_title(text) or text.strip().split("\n")[0]
+        if title.strip():
+            lines.append(title.strip()[:120])
+    return lines[:BOARD_NAME_ITEMS]
+
+
+@router.post("/boards/{board_id}/suggest-title")
+def suggest_board_title(board_id: int, db: Session = Depends(get_session)) -> dict:
+    """A name for this board or map, on request (L348), saving nothing: the
+    client renames through the board's own undoable path. The model writes it
+    when one runs; with none, the first words on the board are cut to a title
+    (`composer_voice.title_for`, as for a note and a document)."""
+    from tessellate.ai import composer_voice, librarian
+    from tessellate.ai.ollama_client import OllamaError
+    from tessellate.api.wb_board import _board_entry
+
+    _board_entry(db, board_id)
+    text = "\n".join(_board_words(db, board_id))[:BOARD_NAME_CHARS].strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="There is nothing on this board to name it from yet.")
+    if deps.get_ollama().is_running():
+        try:
+            title = librarian.generate_title(text, deps.get_model_manager(), deps.get_ollama())
+        except OllamaError:
+            logging.getLogger("tessellate.whiteboard").warning("board title generation failed", exc_info=True)
+            title = ""
+        if title:
+            return {"title": title, "by": "model"}
+    title = composer_voice.title_for(text)
+    if not title:
+        raise HTTPException(status_code=422, detail="There is no sentence here to take a name from yet.")
+    return {"title": title, "by": "composer"}
+
+
+_Box = tuple[float, float, float, float, str]
+
+
+def _draft_objects(db: Session, board_id: int) -> tuple[list[_Box], list[_Box]]:
+    """The frames and the text boxes of a board as `(x, y, width, height, text)`."""
+    import json
+
+    frames: list[_Box] = []
+    items: list[_Box] = []
+    for obj in db.scalars(select(WhiteboardObject).where(WhiteboardObject.board_id == board_id)):
+        if obj.kind not in ("frame", "text"):
+            continue
+        try:
+            data = json.loads(obj.data or "{}")
+        except ValueError:
+            continue
+        text = str(data.get("content") or "").strip() if isinstance(data, dict) else ""
+        if text:
+            (frames if obj.kind == "frame" else items).append((obj.x, obj.y, obj.width, obj.height, text))
+    return frames, items
+
+
+def _draft_cards(db: Session, board_id: int) -> list[_Box]:
+    """A board's note cards as `[[link]]` boxes; a private or deleted note is
+    left out, as everywhere the model could read it."""
+    from tessellate.entry import manager_text
+
+    cards: list[_Box] = []
+    for node in db.scalars(select(WhiteboardNode).where(WhiteboardNode.board_id == board_id)):
+        entry = db.get(Entry, node.entry_id)
+        if entry is None or entry.is_deleted or entry.is_private:
+            continue
+        text = manager_text.readable_content(entry)
+        title = (manager_text.extract_title(text) or text.strip().split("\n")[0]).strip()
+        if title:
+            cards.append((node.x, node.y, node.width or 250.0, node.height or 150.0, f"[[{title[:100]}]]"))
+    return cards
+
+
+def _draft_blocks(frames: list[_Box], items: list[_Box]) -> list[str]:
+    """Markdown blocks: a heading per frame in reading order, under it what
+    lies inside (the smallest frame holding an item's centre), then the rest."""
+    frames = sorted(frames, key=lambda f: (round(f[1] / 40), f[0]))
+    held: dict[int, list[tuple[float, float, str]]] = {i: [] for i in range(len(frames))}
+    loose: list[tuple[float, float, str]] = []
+    for x, y, w, h, text in items:
+        cx, cy = x + w / 2, y + h / 2
+        inside = [i for i, f in enumerate(frames) if f[0] <= cx <= f[0] + f[2] and f[1] <= cy <= f[1] + f[3]]
+        target = min(inside, key=lambda i: frames[i][2] * frames[i][3]) if inside else None
+        (held[target] if target is not None else loose).append((y, x, text))
+    blocks: list[str] = []
+    for i, frame in enumerate(frames):
+        blocks.append(f"## {' '.join(frame[4].split())}")
+        blocks.extend(text for _, _, text in sorted(held[i]))
+    if loose and frames:
+        blocks.append("## Outside the frames")
+    blocks.extend(text for _, _, text in sorted(loose))
+    return blocks
+
+
+@router.post("/boards/{board_id}/draft")
+def draft_board_document(board_id: int, db: Session = Depends(get_session)) -> dict:
+    """A board's frames as a document draft, saving nothing (L-documents-4): a
+    heading per frame, a paragraph per sticky, text box or note card in it, then
+    whatever is outside every frame. The client makes the document, so one undo
+    removes it."""
+    from tessellate.api.wb_board import _board_entry
+    from tessellate.entry import manager_text
+
+    entry = _board_entry(db, board_id)
+    frames, items = _draft_objects(db, board_id)
+    items += _draft_cards(db, board_id)
+    if not frames and not items:
+        raise HTTPException(status_code=422, detail="There is nothing on this board to draft from yet.")
+    title = (manager_text.extract_title(manager_text.readable_content(entry)) or "Board").strip()
+    return {"title": title, "body": "\n\n".join(_draft_blocks(frames, items)), "frames": len(frames), "items": len(items)}
 
 
 @router.post("/boards/generate", response_model=BoardOut, status_code=201)

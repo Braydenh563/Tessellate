@@ -6,6 +6,10 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: Suggest a name for a board or map from what is on it, also in the boards menu (L348).
+- Boards: Write as a document turns a board's frames and text into a document draft (L-documents-4).
+- Code files: Compare gains Another document..., with hunks, Reject and Stop comparing as before (L-documents-3).
+- Documents: the live view line length is held against the alphabet at four widths; the [[ menu and connections rail are confirmed and measured; the Add sheet is tap to add; three sweeps repaired (L-documents-25, L336, L-documents-22, L-documents-24).
 - Links: the list no longer carries each site's icon and page text (the icon has its own cached address); a fetch that finishes after the address changed keeps nothing; only the app's own Save fetches a page by itself; an icon fetch stops at 3 seconds or at a too-large size header (PR 226 review).
 - Documents: Connect handles on a diamond sit fully outside the block at 390 px (L-documents-20).
 - Documents: the code editor and the documents surfaces were driven at 1440 and 390 px, with two stale sweeps corrected (L319, L320).
