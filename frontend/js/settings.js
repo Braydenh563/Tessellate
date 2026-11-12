@@ -485,6 +485,15 @@ async function openSettingsModal(section = "models", scrollToId = null) {
       //: link to anything else scrolled and drew nothing. Measured while
       //: making the Tools and features rows land on their settings.
       flashRevealed(target);
+      //: **Re-aimed once the scroll ends** (L447: at 390 the row sat at y 1527 of 900, and
+      //: a reopen left a 9,000px row off screen). A smooth scroll aims at where the row was
+      //: when it began, and the pane grows under it; the end is checked and finished instantly.
+      const settle = () => {
+        const at = target.getBoundingClientRect();
+        if (at.top < 0 || at.bottom > innerHeight) target.scrollIntoView({ block: "center" });
+      };
+      document.addEventListener("scrollend", settle, { once: true, capture: true });
+      setTimeout(settle, 2500);
       // The helper takes it off again, the way flashEntry and flashReminder both already
       // do. Reported directly: "the search relevance settings section stays
       // highlighted permanently and doesn't return to normal."

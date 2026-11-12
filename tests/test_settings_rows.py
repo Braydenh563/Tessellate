@@ -235,3 +235,11 @@ def test_l422_a_label_outside_a_row_lands_on_the_control_that_follows_it():
     around them: focus fell on the label's div (measured: 1 of 170 rows)."""
     body = _fn(frontend_text("settings-find.js"), "openSettingRow")
     assert "el.nextElementSibling" in body
+
+
+def test_l447_a_deep_link_is_finished_when_its_smooth_scroll_ends():
+    """At 390 the pane grew under a smooth scroll and the row stayed off screen
+    (measured 8,561px down after a reopen); the end of the scroll re-aims it."""
+    text = frontend_text("settings.js")
+    block = text[text.index("flashRevealed(target);") :][:900]
+    assert '"scrollend"' in block and 'block: "center"' in block
