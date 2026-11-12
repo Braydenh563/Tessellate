@@ -7,6 +7,20 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (22.2, search terms marked in the note a result opens)
+
+- **Search highlights the match inside the note it opens.** `flashEntry`
+  clears the Notes filter so the card can be found, which also cleared the
+  highlight. The finder (`FINDER_OPEN.note`, search.js) now passes
+  `finderState.terms()` (its query's words and phrases) to
+  `flashEntry(id, { terms })`, which records them in `noteEngine.opened`;
+  `searchHighlightTerms(id)` (entry-card.js) returns them for that one note
+  while no filter is typed, and typing in the Notes filter forgets them. Driven
+  in Playwright: three notes holding "quillfeather", opened one from the
+  finder: that card had 2 `<mark>` ("Quillfeather", "quillfeather"), the other
+  two 0; typing "budget" in the filter cleared the opened terms and marked
+  "budget" 3 times. The finder's ? says so.
+
 ## Moved from the plans, 2026-11-12 (22.2, the 12 or 24 hour setting)
 
 - **Every date and time follows one 12 or 24 hour setting.** `time_format`

@@ -82,7 +82,7 @@ const finderState = { corrected: "", notices: [], page: 1, more: false, timer: n
 //: function already knows a board opens its board and not the empty note the
 //: board is stored in, which is exactly the mistake a fresh copy would make.
 const FINDER_OPEN = {
-  note: (hit) => { switchTab("notes"); flashEntry(hit.id); },
+  note: (hit) => { switchTab("notes"); flashEntry(hit.id, { terms: finderState.terms() }); },
   document: (hit) => { switchTab("documents"); openDocument(hit.id); },
   board: (hit) => ensureModule("boards").then(() => openLibraryItem({ kind: "board", id: hit.id })),
   map: (hit) => ensureModule("boards").then(() => openLibraryItem({ kind: "map", id: hit.id })),
@@ -102,6 +102,12 @@ const FINDER_OPEN = {
       openConversation(hit.id);
     }
   },
+};
+
+//: The query's words and phrases, as the Notes filter would mark them.
+finderState.terms = () => {
+  const query = parseNoteQuery(finderQuery);
+  return [...query.phrases, ...query.words].filter((t) => t.length > 1);
 };
 
 function finderOverlay() { return document.getElementById("finder-overlay"); }

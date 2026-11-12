@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Search: a note opened from a finder result has the words you searched marked in it.
 - Clock: Settings, General has a 12 or 24 hour choice that every time in the app follows (it was the browser's region only).
 - Escape: a lint checks every overlay and dialog closes on Escape; the graph's Manage this connection panel did not, and now does.
 - Other devices (Brief 40): Settings shows a Phone setup QR code to a plain-http `/lan/trust` page (the certificate and the steps, open for fifteen minutes), counts the secure connections a device refused, and has an off-by-default Also allow plain http choice (password to turn on, with its warning).

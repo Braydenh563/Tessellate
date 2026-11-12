@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 164 | 49 | 0 | 72 | 343 |
+| world-class | 130 | 164 | 49 | 0 | 73 | 343 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 690 | 148 | 3 | 195 | 1391 |
+| all | 553 | 690 | 148 | 3 | 196 | 1391 |
 
 ## graph
 
@@ -1091,6 +1091,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-18** `ui-modernisation` blocked-hardware, S: Verify phone tab scroll-to-top under reduced motion on a device. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1250. Evidence: Open line in the plan's prose a session could miss. L906 covers safe-area insets only. The reduced-motion scroll-to-top on a device has no row.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
+- [ ] **L-world-class-25** `world-class` blocked-hardware, S: Real-phone check of the LAN trust page and plain http: on an iPhone and an Android phone, scan Settings, Other devices, Phone setup QR code, install the certificate from /lan/trust, then open the https address with no warning; turn on Also allow plain http and open the address without https. From WORLD_CLASS_PLAN Brief 40. Evidence: tests/test_lan_trust_page.py drives a real TLS client and a plain-http client; no phone was used
 
 ## Plan session briefs
 

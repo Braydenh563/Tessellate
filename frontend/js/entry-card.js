@@ -397,7 +397,7 @@ function entryItem(entry, options = {}) {
   const fillContent = () => renderNoteText(
     content,
     content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body,
-    searchHighlightTerms(),
+    searchHighlightTerms(entry.id),
     //: Heading hashes are source, not words (dogfood item 18). Run on the
     //: prose only, not the whole note: a code fence keeps its own `#` and `-`.
     (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
@@ -456,7 +456,7 @@ function entryItem(entry, options = {}) {
       box.appendChild(line);
     }
     li.classList.add("meeting-card");
-    li.classList.toggle("meeting-open", expandedNotes.has(entry.id) || searchHighlightTerms().length > 0);
+    li.classList.toggle("meeting-open", expandedNotes.has(entry.id) || searchHighlightTerms(entry.id).length > 0);
     li.append(box, content);
     const more = document.createElement("button");
     more.type = "button";
@@ -1379,8 +1379,9 @@ function notesSpanSpaces() {
 }
 
 // The words worth highlighting in a result, operators aren't text to find.
-function searchHighlightTerms() {
-  if (!noteSearch) return [];
+//: With no filter typed, the note a finder result opened keeps the finder's words marked.
+function searchHighlightTerms(id = null) {
+  if (!noteSearch) return id !== null && noteEngine.opened.id === id ? noteEngine.opened.terms : [];
   const query = parseNoteQuery(noteSearch);
   return [...query.phrases, ...query.words].filter((t) => t.length > 1);
 }
