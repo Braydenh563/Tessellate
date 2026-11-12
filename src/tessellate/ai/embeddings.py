@@ -720,6 +720,29 @@ def similar_pairs(
     return found
 
 
+def _same_width(derived: dict, notes: dict) -> tuple[list[int], list[str]]:
+    """Note ids and derived keys whose vectors have the commonest note width."""
+    widths: dict[int, int] = {}
+    for vector in notes.values():
+        widths[vector.shape[0]] = widths.get(vector.shape[0], 0) + 1
+    width = max(widths, key=lambda w: widths[w])
+    return sorted(i for i, v in notes.items() if v.shape[0] == width), sorted(k for k, v in derived.items() if v.shape[0] == width)
+
+
+def _keep_best(best: dict[tuple, float], key: str, scores, candidates: list, threshold: float, per_node: int) -> None:
+    """One derived node's `per_node` best partners at or above `threshold`, into `best`."""
+    import numpy as np
+
+    keep = min(per_node, len(candidates) - 1)
+    for col in np.argpartition(-scores, keep - 1)[:keep]:
+        score = float(scores[col])
+        if score < threshold:
+            continue
+        other = candidates[int(col)]
+        pair = (key, other) if isinstance(other, int) or key < other else (other, key)
+        best[pair] = max(score, best.get(pair, -1.0))
+
+
 def derived_pairs(
     derived: dict[str, np.ndarray],
     notes: dict[int, np.ndarray],
@@ -740,12 +763,7 @@ def derived_pairs(
 
     if not derived or not notes:
         return []
-    widths: dict[int, int] = {}
-    for vector in notes.values():
-        widths[vector.shape[0]] = widths.get(vector.shape[0], 0) + 1
-    width = max(widths, key=lambda w: widths[w])
-    note_ids = sorted(i for i, v in notes.items() if v.shape[0] == width)
-    keys = sorted(k for k, v in derived.items() if v.shape[0] == width)
+    note_ids, keys = _same_width(derived, notes)
     if not note_ids or not keys:
         return []
 
@@ -766,17 +784,8 @@ def derived_pairs(
         scores = everything[len(note_ids) + start : len(note_ids) + start + len(block)] @ everything.T
         for row, key in enumerate(block):
             scores[row, len(note_ids) + start + row] = -np.inf
-            for note in joined.get(key, ()):
-                if note in column:
-                    scores[row, column[note]] = -np.inf
-            keep = min(per_node, len(candidates) - 1)
-            for col in np.argpartition(-scores[row], keep - 1)[:keep]:
-                score = float(scores[row, col])
-                if score < threshold:
-                    continue
-                other = candidates[int(col)]
-                pair = (key, other) if isinstance(other, int) or key < other else (other, key)
-                best[pair] = max(score, best.get(pair, -1.0))
+            scores[row, [column[n] for n in joined.get(key, ()) if n in column]] = -np.inf
+            _keep_best(best, key, scores[row], candidates, threshold, per_node)
     return sorted(((a, b, s) for (a, b), s in best.items()), key=lambda t: t[2], reverse=True)
 
 

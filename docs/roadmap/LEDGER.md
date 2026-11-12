@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 28 | 3 | 0 | 4 | 46 |
+| graph | 15 | 22 | 1 | 0 | 4 | 38 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
@@ -17,24 +17,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 700 | 156 | 3 | 195 | 1409 |
+| all | 553 | 694 | 154 | 3 | 195 | 1401 |
 
 ## graph
 
-- [ ] **L2** `graph` open, S: Sweep the C31 link kind sheet and C32 document half. From OPEN.md:3873. Evidence: No recorded sweep
-- [ ] **L3** `graph` open, S: Sweep graph saved views and local/global switches through view change. From OPEN.md:643. Evidence: Layouts/Refresh measured; saved views switch sweep not recorded
-- [ ] **L5** `graph` open, S: Fade notes out of the graph picture instead of vanishing. From OPEN.md:1338; OPEN.md:2660. Evidence: graph-canvas.js has fadeMs for UI but no exit fade for removed nodes found.
 - [ ] **L7** `graph` open, M: Add dirty-rectangle draw per worker tick and sample gcRequestDraw callers while the graph settles. From OPEN.md:4553; a30p-1103.md Found, not fixed. Evidence: Fixed 20ed22a (label fades); dirty rectangle per worker tick open (gcRequestDraw, graph-canvas.js:1045)
-- [ ] **L8** `graph` open, M: Trace and remove the 7.1px single-tick step after graph drag release. From OPEN.md:1333; OPEN.md:2235. Evidence: graph-worker.js:826 dragHeat only change; residual step stated unresolved.
 - [ ] **L9** `graph` open, M: Fix timeline layout 39x/s, Atlas arm behind hair and mood blend. From OPEN.md:3019. Evidence: content-visibility trade and drawing-order changes not done
-- [ ] **L10** `graph` open, M: Retarget an interrupted graph glide with a spring instead of restarting at ease peak speed. From OPEN.md:3532. Evidence: Not asked for; a spring retarget not built.
 - [ ] **L11** `graph` open, M: Link graph topics to categories and add the hand-off to section 23. From OPEN.md:3622. Evidence: No code linking graph topics to categories; not started
 - [ ] **L12** `graph` open, M: Audit graph time slider, link-kind chips, saved views, physics folds, minimap, trace route, private graph, dark phone. From audit-1029-graph.md 4. Evidence: No later graph audit file; list stands
 - [ ] **L13** `graph` open, M: Fix Library d3 mousemove forced layout (757 ms). From OPEN.md:4325. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L14** `graph` open, L: Split gcDraw (809 lines), gcWireInteraction (467) and gcStartWorker (290) in graph-canvas.js. From OPEN.md:4552. Evidence: graph-canvas.js 7,492 lines; multi-day refactor deferred
 - [ ] **L15** `graph` open, L: Reduce graph layout crossings, hub spokes and label density in applyGrouping. From OPEN.md:3882. Evidence: Tuning reverted; graph-worker.js applyGrouping untouched
-- [ ] **L18** `graph` partly, M: Re-measure and improve neighbours following a graph drag. From OPEN.md:1712. Evidence: graph-canvas.js:4598-4615 freezes all but the direct neighbourhood which is carried; the measured follow ratio not re-measured
-- [ ] **L19** `graph` partly, M: Fix blank minimap and node card overlap for a graph with no links. From OPEN.md:3868. Evidence: graph-canvas.js:6979 adds 'no links yet'; minimap, card overlap not shown fixed
 - [ ] **L20** `graph` partly, L: Write concrete link reasons (shared tag, name, week) instead of 'similar in meaning'. From OPEN.md:3519. Evidence: f6f71aa20 re-voiced reasons; deducedStrength in note-cards.js; concrete overlap reasons (shared tag/name/week) not confirmed.
 - [ ] **L-graph-1** `graph` open, M: Add 'compose these into a draft' for a selected graph cluster (many notes to one document). From ANALYSIS.md:1174. Evidence: no neighbourhood/cluster-to-draft in code or any plan; expandNoteIntoDocument takes one note only
 - [ ] **L-graph-2** `graph` open, S: Add a 2-D 'map of my notes' projection (PCA through numpy SVD) with the graph track. From ANALYSIS.md:4104. Evidence: no PCA/SVD projection in src or frontend/js; no doc mentions it
@@ -49,9 +42,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-graph-11** `graph` open, S: Check Map link weighting in the browser on a notebook with real links. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The q31 left list says link weighting was never seen in a browser on a notebook with real links.
 - [ ] **L-graph-12** `graph` open, S: Show the owner Tessellation side by side with their pick. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The q31 left list needs a side-by-side with the owner's chosen layout. That is an owner check, not in any row.
 - [ ] **L-graph-13** `graph` open, S: Escape closing a lightbox over the full-screen graph should not leave full screen. From graphfslightbox.js run 2026-11-12. Evidence: Escape closing a lightbox opened over the full-screen graph also leaves full screen (stillFullscreen false); graph.js Escape handler near 1939 or lightbox-view.js:2341 not stopping propagation
-- [ ] **L-graph-14** `graph` open, S: Graph UI: request document and entity layers for centrality and trace path, and let a document be a trace endpoint. From L-graph-3 follow-up, cd2f7a91. Evidence: graph.js does not pass include_documents/include_entities or let a document be a trace endpoint
-- [ ] **L-graph-15** `graph` open, M: Give documents and entities graph similarity (document embeddings) per the owner's all-three call. From L-graph-3 owner call (all three). Evidence: similarity is cosine over the entry-keyed embeddings table; documents have no vectors (routes_graph similarity)
 - [ ] **L-graph-16** `graph` open, M: Cut the wheel settle repaint at 2,000 notes (scale the cached layer or paint the settle in slices). From ghover-1112 measurement, GRAPH_PLAN audit row 19. Evidence: 2,000 notes 4x: each wheel stop repaints the whole rest layer ~160 ms later (GC_SCENE_SETTLE_MS, graph-canvas.js:2733 to 2748, gcPaintLayer rest :2707), wheel p50 43 ms, long task 110 ms
+- [ ] **L-graph-17** `graph` open, S: Leaving graph focus keeps the global map's positions. From gsweep 2026-11-12. Evidence: Leaving focus back to global re-simulates (max 472, mean 216 px); gcCachedPositions used only with no prior nodes, graph-canvas.js ~6482
 
 ## chat
 

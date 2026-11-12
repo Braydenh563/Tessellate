@@ -23,7 +23,7 @@ def test_the_map_request_carries_the_layer_flags():
 def test_the_trace_request_sends_the_layers_and_accepts_layer_ends():
     js = graph_js_text()
     assert "${graphPathLayerQuery()}" in js
-    body = js.split("function graphPathLayerQuery()", 1)[1].split("async function runTrace", 1)[0]
+    body = js.split("function graphPathLayerQuery()", 1)[1].split("\n  }\n", 1)[0]  # nested in runTrace (global-scope ratchet)
     for needle in ("graph-documents", "graph-entities", "&documents=true", "&entities=true"):
         assert needle in body
     assert 'startsWith("document:")' in body and 'startsWith("entity:")' in body

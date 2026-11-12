@@ -6,6 +6,12 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph similarity: documents and entities get a derived vector (the mean of their notes' vectors), so they join similarity lines, centrality and trace hops; lines are marked derived.
+- Graph: with Trace on, clicking a document or entity node picks it as a trace end, and the trace asks /graph/path for the layers the map shows.
+- Documents: Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z in a document now say 'Undone' or 'Redone' even with notifications muted (C32).
+- Graph: a node's card beside its dot stays clear of the minimap, zoom strip and legend (0 px2 overlap at 1440x900, was 2250).
+- Graph: a camera glide cut off by another (arrow keys, zoom buttons, a fit) continues at its speed on a spring instead of stalling and restarting.
+- Graph: letting go of a dragged note no longer kicks the notes it links to in a single tick (the leash eases back in over half a second).
 - Graph: big maps settle faster and untangle better. A category turn past 160 lines is skipped (it never won), the passes stop past 1,000 notes, and crossings are counted on a grid of lines: untangle gain at 500 notes 0% to 8.6%, 2,000-note settle under node 5.7 s to 3.4 s.
 - Graph: removed the dead hidden graph-svg element with its click handlers, styles, lock-list entries and motion and avatar selectors.
 - Graph: document and entity nodes join centrality and the trace path (`include_documents`/`include_entities` on /graph, `documents`/`entities` on /graph/path, ids `document:N`/`entity:N`).
