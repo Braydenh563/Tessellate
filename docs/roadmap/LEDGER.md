@@ -12,13 +12,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 3 | 4 | 0 | 5 | 40 |
+| mindmap | 33 | 3 | 3 | 0 | 5 | 39 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 674 | 156 | 2 | 195 | 1383 |
-| all | 553 | 674 | 156 | 2 | 195 | 1383 |
+| all | 553 | 674 | 155 | 2 | 195 | 1382 |
+| all | 553 | 674 | 155 | 2 | 195 | 1382 |
 
 ## graph
 
@@ -441,7 +441,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## mindmap
 
-- [ ] **L377** `mindmap` partly, M: Drive the undriven checks: dark hand-drawn look, tables, Data tab, XMind, multi-page draw.io, callout export (touch double-tap needs hardware). From OPEN.md:589; OPEN.md:2562. Evidence: Dark theme/tables drivable in Playwright; touch double-tap needs touch hardware
 - [ ] **L378** `mindmap` partly, M: Verify remaining map render and persistence leftovers. From OPEN.md:1935. Evidence: wbMapNodeSize row closed per HISTORY; rest of list not individually verified
 - [ ] **L379** `mindmap` partly, M: Name and finish the two remaining mind map leftover items. From OPEN.md:2388. Evidence: Four of six items done per row; remaining two not named in the first lines read
 - [ ] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row.

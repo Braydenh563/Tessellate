@@ -14159,6 +14159,32 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
         );
         labelTop = py + ph + 16;
       }
+      //: **A callout and labels travel as drawn** (L377; the export left both out): each is
+      //: placed from its live box inside the card, as the picture above is, and the words
+      //: move down to where the card really sets them when a callout sits over them.
+      const cardEl = objectEls.get(String(obj.id));
+      if (cardEl) {
+        const cardBox = cardEl.getBoundingClientRect();
+        const k = cardBox.width ? size.w / cardBox.width : 1;
+        const inCard = (el) => { const b = el.getBoundingClientRect(); return { x: (b.left - cardBox.left) * k, y: (b.top - cardBox.top) * k, w: b.width * k, h: b.height * k }; };
+        const callout = cardEl.querySelector(".wb-map-callout");
+        if (callout && !callout.hidden && callout.textContent.trim()) {
+          const c = inCard(callout);
+          parts.push(
+            `<rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="6" fill="${wbSvgEscape(wbExportColour(getComputedStyle(callout).backgroundColor) || "#eef1fb")}" stroke="${wbSvgEscape(colour)}" />` +
+            wbSvgText(wbSvgWrapLines(callout.textContent.trim(), c.w - 16, 4, 6.2), c.x + 8, c.y + 15, { fontSize: 12, fill: topicPaint?.ink || "#1f2430", lineHeight: 15 })
+          );
+          const words = cardEl.querySelector(".wb-map-text");
+          if (words) labelTop = inCard(words).y + 15;
+        }
+        for (const tag of cardEl.querySelectorAll(".wb-map-tags .wb-map-tag")) {
+          const t = inCard(tag);
+          parts.push(
+            `<rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="${t.h / 2}" fill="${wbSvgEscape(wbExportColour(getComputedStyle(tag).backgroundColor) || "#eef1fb")}" stroke="${wbSvgEscape(colour)}" />` +
+            wbSvgText([tag.textContent], t.x + t.w / 2, t.y + t.h / 2 + 4, { fontSize: 11, fill: topicPaint?.ink || "#1f2430" }).replace("<text ", '<text text-anchor="middle" ')
+          );
+        }
+      }
       //: A task's box travels as the ballot-box glyph (MINDMAP_PLAN.md
       //: decision 15): the icon font does not follow the topic into the file.
       const box = obj.data?.task === "done" ? "☑ " : obj.data?.task === "open" ? "☐ " : "";
