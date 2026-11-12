@@ -3214,8 +3214,15 @@ const QUIET_TASK_KINDS = new Set([
   "job-warm", "maintenance", "job-maintenance", "redate", "job-redate", "backup",
 ]);
 
+//: **A watched run that outlived its page** (L514): a transcription (or any
+//: run its own surface watches) still running on the first poll after a
+//: reload has no page watching it any more, so its ending is announced like
+//: any other job's rather than passing in silence. Its start is not news.
+let taskPollsSeen = 0;
+
 function noticeTaskTransitions(running, history) {
   const now = new Map(running.map((task) => [taskKey(task), task]));
+  const firstPoll = taskPollsSeen++ === 0;
 
   //: A running job's row keeps its fraction and its own status line up to
   //: date. It is the same run list the chat's skill runs land in, an
@@ -3233,6 +3240,7 @@ function noticeTaskTransitions(running, history) {
   for (const [key, task] of now) {
     if (seenRunningTasks.has(key)) continue;
     seenRunningTasks.set(key, task);
+    if (task.watched && firstPoll) task.orphaned = true;
     //: A chat answer, a transcription: the person is watching it where they
     //: started it. The status bar and Running jobs list it; nothing announces it.
     if (task.watched) continue;
@@ -3269,7 +3277,7 @@ function noticeTaskTransitions(running, history) {
     seenRunningTasks.delete(key);
     const row = backgroundRunRows.get(key);
     backgroundRunRows.delete(key);
-    if (task.watched) continue;
+    if (task.watched && !task.orphaned) continue;
     // The outcome comes from the server's own history, on this same payload, 
     // "it stopped appearing in the running list" is true of a job that died as
     // much as one that succeeded, and a cheerful toast over a failure is how

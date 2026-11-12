@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 138 | 45 | 0 | 17 | 313 |
+| world-class | 130 | 137 | 45 | 0 | 17 | 312 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 664 | 144 | 3 | 140 | 1361 |
+| all | 553 | 663 | 144 | 3 | 140 | 1360 |
 
 ## graph
 
@@ -639,7 +639,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L510** `world-class` open, S: Trace how 'conversation' is derived as a topic for a gym note. From OPEN.md:4332. Evidence: Ledger open; needs the owner's note to trace topic derivation.
 - [ ] **L511** `world-class` open, S: Drive the dictionary spelling offer in a live empty search result. From OPEN.md:604; OPEN.md:2789. Evidence: Server correction answered every typo tried; finderSpellingOffer path undriven
 - [ ] **L513** `world-class` open, S: Add the person's own titles as a source for alternate category names in tidy.py. From OPEN.md:1703; OPEN.md:3615. Evidence: tidy.py:543-566 _rows_category_names uses profiles and taxonomy.name_topics only
-- [ ] **L514** `world-class` open, S: Resume page watch and notify on running transcription after reload. From OPEN.md:1415. Evidence: status.js:756-762,3210 comments describe transcript-after-reload only; no resume-watch on reload found
 - [ ] **L515** `world-class` open, S: Extend Live Text to the scroll layout of PDFs. From OPEN.md:1471. Evidence: library.js:6746 ocrBuildScrollPages still builds scroll pages; layer per row says single-page only, no later change found
 - [ ] **L516** `world-class` open, S: Drive the attached-image thumbnail preview path. From OPEN.md:1620. Evidence: note-pick-preview.js:43 attachmentObjectUrl; no sweep drive found
 - [ ] **L517** `world-class` open, S: Restore previous model name when undoing a fresh read. From OPEN.md:1633; OPEN.md:2847. Evidence: library.js:8564 ocrTextWriter writes only {text}; no model restored on undo (:7390)
