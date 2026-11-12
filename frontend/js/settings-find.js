@@ -242,7 +242,7 @@
       const pick = (root) => root?.querySelector?.(FIELD) ||
         root?.querySelector?.('[aria-checked="true"], [aria-pressed="true"], button:not([disabled])');
       const control = el.matches("label") ? el.control || el.querySelector(FIELD)
-        : el.querySelector?.(FIELD) || (el.matches(".setting-label") ? pick(el.closest(".setting-row")) : null);
+        : el.querySelector?.(FIELD) || (el.matches(".setting-label") ? pick(el.closest(".setting-row")) || pick(el.nextElementSibling) : null);
       if (control && control.getClientRects().length) {
         (typeof focusSelect === "function" && control.tagName === "SELECT" ? focusSelect : (c) => c.focus({ preventScroll: true }))(control);
       } else {

@@ -228,3 +228,10 @@ def test_1407_a_found_setting_lands_on_its_control():
     body = _fn(frontend_text("settings-find.js"), "openSettingRow")
     assert 'pick(el.closest(".setting-row"))' in body
     assert '[aria-checked="true"], [aria-pressed="true"], button:not([disabled])' in body
+
+
+def test_l422_a_label_outside_a_row_lands_on_the_control_that_follows_it():
+    """"Palette" is a `.setting-label` followed by `#palette-grid`, no `.setting-row`
+    around them: focus fell on the label's div (measured: 1 of 170 rows)."""
+    body = _fn(frontend_text("settings-find.js"), "openSettingRow")
+    assert "el.nextElementSibling" in body
