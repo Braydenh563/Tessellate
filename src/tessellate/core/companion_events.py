@@ -42,20 +42,22 @@ FOUND_AFTER_MISS = 30.0
 
 clock: Callable[[], float] = time.time
 
-_lock = threading.Lock()
+_lock = threading.RLock()  # `counted` holds it across `record`
 _ring: deque[dict] = deque(maxlen=RING)
 _last_id = 0
 _last_at: dict[str, float] = {}
+_top = 0  # the highest note-count milestone cheered (or already passed at start-up): a cheer is for passing a new one
 _MISS = "_miss"  # the last empty search, kept in _last_at so it is read and set under the lock
 
 
 def reset() -> None:
     """Empty the ring (tests)."""
-    global _last_id
+    global _last_id, _top
     with _lock:
         _ring.clear()
         _last_at.clear()
         _last_id = 0
+        _top = 0
 
 
 def record(kind: str, now: float | None = None) -> int:
@@ -74,11 +76,33 @@ def record(kind: str, now: float | None = None) -> int:
         return _last_id
 
 
+def floor_milestone(total: int) -> int:
+    """The largest round number the notebook has reached (0 under the first): the app's `nameMarkBuddyMilestone` rule."""
+    if total >= 1000:
+        return total // 1000 * 1000
+    return max((m for m in MILESTONES if m <= total), default=0)
+
+
+def seed(total: int) -> None:
+    """Take the milestones the notebook already holds as seen (at start-up), so a restart cheers none of them again."""
+    global _top
+    with _lock:
+        _top = max(_top, floor_milestone(total))
+
+
 def counted(total: int, now: float | None = None) -> int:
-    """A note was made and the notebook now holds `total`: a round number is a cheer (`note_milestone`). The id, or 0."""
-    if total in MILESTONES or (total >= 1000 and total % 1000 == 0):
-        return record("note_milestone", now)
-    return 0
+    """A note was made and the notebook now holds `total`: passing a round number higher than any cheered is a cheer
+    (`note_milestone`), once, however the count dips and returns. One the gap refuses is not kept as seen, so the next
+    note tries it again. The id, or 0."""
+    global _top
+    reached = floor_milestone(total)
+    with _lock:
+        if reached <= _top:
+            return 0
+        made = record("note_milestone", now)
+        if made:
+            _top = reached
+        return made
 
 
 def searched(found: bool, now: float | None = None) -> None:

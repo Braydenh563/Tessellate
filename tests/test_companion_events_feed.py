@@ -198,8 +198,57 @@ def test_only_a_round_note_count_is_a_cheer_and_it_matches_the_apps_list() -> No
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
     app = [int(n) for n in re.search(r"NMB_MILESTONES = \[([\d, ]+)\]", js).group(1).split(",")]
     assert list(ce.MILESTONES) == app
-    cheered = [n for n in (9, 10, 11, 25, 99, 100, 999, 1000, 1500, 2000) if ce.counted(n, now=1e6 + n * 5000.0)]
-    assert cheered == [10, 25, 100, 1000, 2000]
+    # counted in order, as a growing notebook calls it: only the round numbers rise past the highest one cheered
+    cheered = [n for n in range(1, 2001) if ce.counted(n, now=1e6 + n * 5000.0)]
+    assert cheered == [10, 25, 50, 100, 250, 500, 1000, 2000]
+
+
+def test_a_milestone_is_cheered_once_even_when_the_count_dips_and_returns() -> None:
+    assert ce.counted(100, now=0.0)
+    assert ce.counted(100, now=4000.0) == 0  # a second look at 100, an hour later: not news
+    assert ce.counted(99, now=8000.0) == 0 and ce.counted(100, now=12000.0) == 0  # deleted one, added one
+    assert ce.counted(250, now=16000.0)
+
+
+def test_a_jump_over_a_round_number_still_cheers_it_once() -> None:
+    ce.seed(98)
+    assert ce.counted(103, now=0.0)  # an import took the count past 100
+    assert ce.counted(104, now=9000.0) == 0
+
+
+def test_a_milestone_refused_by_the_gap_is_tried_again_not_lost() -> None:
+    assert ce.counted(10, now=0.0)
+    assert ce.counted(25, now=10.0) == 0  # inside the hour's gap
+    assert ce.counted(26, now=4000.0)  # the next look after the gap cheers the 25 it missed
+
+
+def test_a_seeded_count_is_not_cheered_and_a_reset_forgets_it() -> None:
+    ce.seed(100)
+    assert ce.counted(101, now=0.0) == 0
+    assert ce.counted(250, now=9000.0)
+    ce.reset()
+    assert ce.counted(10, now=0.0)
+
+
+def test_a_draft_is_not_counted(client, monkeypatch) -> None:
+    seen: list[int] = []
+    monkeypatch.setattr(ce, "counted", lambda total, now=None: seen.append(total) or 0)
+    client.post("/entries", json={"content": "A draft about tomatoes.", "is_draft": True})
+    assert seen == []
+    client.post("/entries", json={"content": "A plain note about tomatoes."})
+    assert seen == [1]
+
+
+def test_the_notebook_total_at_start_is_the_baseline(client) -> None:
+    from tessellate.api import app as app_module  # noqa: PLC0415
+
+    for n in range(10):
+        client.post("/entries", json={"content": f"Plain note number {n} about tomatoes."})
+    ce.reset()
+    app_module._seed_companion_milestone()
+    last = ce.latest()
+    client.post("/entries", json={"content": "Plain note number 11 about tomatoes."})
+    assert "note_milestone" not in kinds_after(last)  # a restart at 10 notes does not cheer the 10 again
 
 
 @pytest.mark.parametrize("kind", NOTE_KINDS)

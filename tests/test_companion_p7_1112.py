@@ -63,18 +63,35 @@ def test_the_glance_aims_at_the_popups_middle_and_lets_go_after_a_beat() -> None
     assert out["timers"] == [900]
 
 
-def _milestone_run(total: int, kept: str | None) -> dict:
+def _milestone_run(total: int, kept: str | None, accepts: bool = True) -> dict:
     start = AV.index("const NMB_MILESTONES")
     end = AV.index("\n};\n", AV.index("nameMarkBuddyStreak.milestone = ")) + 4
     script = "\n".join([
         f"const store = {json.dumps({} if kept is None else {'nm-buddy-milestone': kept})};",
         "const prefs = { get: (k, d) => (k in store ? store[k] : d), set: (k, v) => { store[k] = v; } };",
         "const reacts = [];",
-        "const nameMarkBuddyReact = (k, t) => reacts.push([k, t]);",
+        f"const nameMarkBuddyReact = (k, t) => {{ reacts.push([k, t]); return {json.dumps(accepts)}; }};",
         "function nameMarkBuddyStreak() {}",
         AV[start:end],
         f"const got = nameMarkBuddyStreak.milestone({total});",
         "console.log(JSON.stringify({ got, reacts, store }));",
+    ])
+    return _node(script)
+
+
+def _streak_run(days: int, total: int, store: dict, accepts: list[bool]) -> dict:
+    """The real `nameMarkBuddyStreak` and its milestone, one dashboard render; `accepts` is what each reaction answers in turn."""
+    start = AV.index("const NMB_MILESTONES")
+    end = AV.index("\n};\n", AV.index("nameMarkBuddyStreak.milestone = ")) + 4
+    script = "\n".join([
+        f"const store = {json.dumps(store)};",
+        "const prefs = { get: (k, d) => (k in store ? store[k] : d), set: (k, v) => { store[k] = v; } };",
+        f"const answers = {json.dumps(accepts)}; const reacts = [];",
+        "const nameMarkBuddyReact = (k) => { reacts.push(k); return answers.length ? answers.shift() : false; };",
+        _fn("nameMarkBuddyStreak"),
+        AV[start:end],
+        f"nameMarkBuddyStreak({days}, {total});",
+        "console.log(JSON.stringify({ reacts, store }));",
     ])
     return _node(script)
 
@@ -102,3 +119,50 @@ def test_the_milestone_is_a_reaction_row_with_its_own_cool_down_and_the_dashboar
     assert 'kind === "streak" || kind === "milestone"' in AV
     dash = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
     assert "nameMarkBuddyStreak(streak, stats.total_entries)" in dash
+
+
+@NODE
+def test_a_new_notebook_under_ten_notes_stores_zero_so_its_first_milestone_cheers() -> None:
+    r = _milestone_run(5, None)
+    assert r["reacts"] == [] and r["store"] == {"nm-buddy-milestone": "0"}
+    first = _milestone_run(10, "0")
+    assert first["got"] == 10 and first["reacts"] == [["milestone", {"say": "10 notes. That is a lot of thinking."}]]
+    assert _milestone_run(0, None)["store"] == {"nm-buddy-milestone": "0"}
+
+
+@NODE
+def test_a_milestone_is_recorded_only_when_its_cheer_plays() -> None:
+    refused = _milestone_run(100, "50", accepts=False)
+    assert refused["got"] == 0 and refused["store"]["nm-buddy-milestone"] == "50"  # asleep, hidden, in the gap: tried again next render
+    played = _milestone_run(100, "50", accepts=True)
+    assert played["got"] == 100 and played["store"]["nm-buddy-milestone"] == "100"
+
+
+@NODE
+def test_a_count_that_is_not_a_number_records_nothing() -> None:
+    assert _milestone_run("undefined", None)["store"] == {}  # type: ignore[arg-type]
+
+
+@NODE
+def test_a_streak_is_recorded_only_when_its_cheer_plays() -> None:
+    refused = _streak_run(4, 5, {"nm-buddy-streak": "3", "nm-buddy-milestone": "0"}, [False])
+    assert refused["store"]["nm-buddy-streak"] == "3"  # not lost: the next render tries again
+    played = _streak_run(4, 5, {"nm-buddy-streak": "3", "nm-buddy-milestone": "0"}, [True])
+    assert played["reacts"] == ["streak"] and played["store"]["nm-buddy-streak"] == "4"
+    first = _streak_run(2, 5, {"nm-buddy-milestone": "0"}, [])
+    assert first["reacts"] == [] and first["store"]["nm-buddy-streak"] == "2"  # the first look only records
+    broke = _streak_run(2, 5, {"nm-buddy-streak": "6", "nm-buddy-milestone": "0"}, [])
+    assert broke["store"]["nm-buddy-streak"] == "2"  # a streak that restarted lower is kept as the new base
+
+
+@NODE
+def test_a_milestone_and_a_streak_in_one_render_do_not_drop_each_other() -> None:
+    both = {"nm-buddy-streak": "3", "nm-buddy-milestone": "10"}
+    first = _streak_run(4, 25, dict(both), [True, True])
+    assert first["reacts"] == ["milestone"]  # one cheer a render: the milestone plays
+    assert first["store"]["nm-buddy-milestone"] == "25" and first["store"]["nm-buddy-streak"] == "3"  # the streak waits, unrecorded
+    second = _streak_run(4, 25, dict(first["store"]), [True])
+    assert second["reacts"] == ["streak"] and second["store"]["nm-buddy-streak"] == "4"
+    refused = _streak_run(4, 25, dict(both), [False, True])
+    assert refused["reacts"] == ["milestone", "streak"]  # the milestone was refused: the streak may still play
+    assert refused["store"]["nm-buddy-milestone"] == "10" and refused["store"]["nm-buddy-streak"] == "4"

@@ -9517,38 +9517,38 @@
     return true;
   }
 
-  //: The capture streak, from the dashboard each time it counts: a cheer the
-  //: first time it is seen longer than before (kept on this computer), never
-  //: for the count the page merely loads with.
+  //: The capture streak, from the dashboard each time it counts: a cheer the first time it is seen longer than before
+  //: (kept on this computer), never for the count the page merely loads with. A streak is kept only once its cheer has
+  //: played, and one render plays one cheer: the milestone first, the streak on the next render.
   function nameMarkBuddyStreak(days, total) {
-    nameMarkBuddyStreak.milestone(total);
-    if (!(days >= 2)) return;
+    if (nameMarkBuddyStreak.milestone(total) || !(days >= 2)) return;
     let seen = 0;
     try {
       seen = Number(prefs.get("nm-buddy-streak", null)) || 0;
+      if (seen && days > seen && !nameMarkBuddyReact("streak")) return;
       prefs.set("nm-buddy-streak", String(days));
     } catch (e) {
       return;
     }
-    if (seen && days > seen) nameMarkBuddyReact("streak");
   }
   //: **A round number of notes** (Brief 88, N10): 10, 25, 50, 100, 250, 500, then every thousand. The highest one already
-  //: seen is kept on this computer; the count the page merely loads with is only recorded, so the cheer is for the note
-  //: that crossed it, never for a notebook opened at 100.
+  //: seen is kept on this computer, only once its cheer has played (a refused one is tried at the next render); the count
+  //: the page merely loads with is only recorded (a notebook under ten stores "0"), so the cheer is for the note that crossed it.
   const NMB_MILESTONES = [10, 25, 50, 100, 250, 500];
   nameMarkBuddyStreak.milestone = function nameMarkBuddyMilestone(total) {
-    if (!(total >= 10)) return 0;
-    const reached = total >= 1000 ? Math.floor(total / 1000) * 1000 : Math.max(...NMB_MILESTONES.filter((m) => m <= total));
-    let seen = -1;
+    if (!(total >= 0)) return 0;
+    const reached = total >= 1000 ? Math.floor(total / 1000) * 1000 : Math.max(0, ...NMB_MILESTONES.filter((m) => m <= total));
     try {
       const kept = prefs.get("nm-buddy-milestone", null);
-      seen = kept === null ? -1 : Number(kept) || 0;
-      if (reached > seen) prefs.set("nm-buddy-milestone", String(reached));
+      if (kept === null) {
+        prefs.set("nm-buddy-milestone", String(reached));
+        return 0;
+      }
+      if (reached <= (Number(kept) || 0) || !nameMarkBuddyReact("milestone", { say: `${reached} notes. That is a lot of thinking.` })) return 0;
+      prefs.set("nm-buddy-milestone", String(reached));
     } catch (e) {
       return 0;
     }
-    if (seen < 0 || reached <= seen) return 0;
-    nameMarkBuddyReact("milestone", { say: `${reached} notes. That is a lot of thinking.` });
     return reached;
   };
 
