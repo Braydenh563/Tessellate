@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8332, frontend ids 2778, CSS sections 524, backend routes 704, backend modules 10878, test files 2720, tests 22018, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8332, frontend ids 2778, CSS sections 524, backend routes 705, backend modules 10888, test files 2722, tests 22029, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8332)
 
@@ -1179,52 +1179,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activeOverlay` | frontend/js/settings-wiring.js:971 |
-| `captureCountText` | frontend/js/settings-wiring.js:1753 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1475 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2156 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1270 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1505 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1306 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2141 |
-| `fileDropBox` | frontend/js/settings-wiring.js:2004 |
+| `activeOverlay` | frontend/js/settings-wiring.js:973 |
+| `captureCountText` | frontend/js/settings-wiring.js:1755 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1477 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2158 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1272 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1507 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1308 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2143 |
+| `fileDropBox` | frontend/js/settings-wiring.js:2006 |
 | `flashSaved` | frontend/js/settings-wiring.js:523 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2188 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1288 |
-| `inEditable` | frontend/js/settings-wiring.js:969 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1603 |
-| `loadShortcuts` | frontend/js/settings-wiring.js:1140 |
-| `localizeStaticChords` | frontend/js/settings-wiring.js:1183 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2190 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1290 |
+| `inEditable` | frontend/js/settings-wiring.js:971 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1605 |
+| `loadShortcuts` | frontend/js/settings-wiring.js:1142 |
+| `localizeStaticChords` | frontend/js/settings-wiring.js:1185 |
 | `lockFail` | frontend/js/settings-wiring.js:286 |
 | `lockFailed` | frontend/js/settings-wiring.js:298 |
 | `lockOpened` | frontend/js/settings-wiring.js:354 |
 | `lockRequest` | frontend/js/settings-wiring.js:398 |
-| `mapEditorShown` | frontend/js/settings-wiring.js:966 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1324 |
-| `maybeShowOnboarding` | frontend/js/settings-wiring.js:992 |
+| `mapEditorShown` | frontend/js/settings-wiring.js:968 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1326 |
+| `maybeShowOnboarding` | frontend/js/settings-wiring.js:994 |
 | `notebookLocked` | frontend/js/settings-wiring.js:508 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:54 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1718 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1685 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1926 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1720 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1687 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1928 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1442 |
-| `restampShortcutHints` | frontend/js/settings-wiring.js:1193 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2129 |
-| `runShortcut` | frontend/js/settings-wiring.js:1333 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1444 |
+| `restampShortcutHints` | frontend/js/settings-wiring.js:1195 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2131 |
+| `runShortcut` | frontend/js/settings-wiring.js:1335 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:62 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1294 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1296 |
 | `saveWhatIsInFront` | frontend/js/settings-wiring.js:586 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1459 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1466 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2315 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2106 |
-| `stampShortcutTitles` | frontend/js/settings-wiring.js:1169 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1461 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1468 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2317 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2108 |
+| `stampShortcutTitles` | frontend/js/settings-wiring.js:1171 |
 | `submitLockForm` | frontend/js/settings-wiring.js:322 |
-| `textCounts` | frontend/js/settings-wiring.js:1743 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2165 |
-| `wordCount` | frontend/js/settings-wiring.js:1738 |
+| `textCounts` | frontend/js/settings-wiring.js:1745 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2167 |
+| `wordCount` | frontend/js/settings-wiring.js:1740 |
 
 ### frontend/js/spaces-find.js (24)
 
@@ -1379,137 +1379,137 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityActorName` | frontend/js/dashboard.js:3875 |
-| `activityUndoControl` | frontend/js/dashboard.js:3953 |
-| `activityUndoPlanText` | frontend/js/dashboard.js:3882 |
-| `activityUndoStarts` | frontend/js/dashboard.js:3938 |
-| `afterFrames` | frontend/js/dashboard.js:1994 |
-| `applyDashDensity` | frontend/js/dashboard.js:1292 |
-| `cachedGreetingPhrase` | frontend/js/dashboard.js:316 |
-| `closeFeatures` | frontend/js/dashboard.js:1579 |
-| `dashActionRow` | frontend/js/dashboard.js:3665 |
-| `dashActivityItems` | frontend/js/dashboard.js:3786 |
-| `dashContinueNote` | frontend/js/dashboard.js:1425 |
-| `dashCustomiseItems` | frontend/js/dashboard.js:1474 |
-| `dashDensity` | frontend/js/dashboard.js:1160 |
-| `dashDensityChosen` | frontend/js/dashboard.js:1166 |
+| `activityActorName` | frontend/js/dashboard.js:3900 |
+| `activityUndoControl` | frontend/js/dashboard.js:3997 |
+| `activityUndoPlanText` | frontend/js/dashboard.js:3907 |
+| `activityUndoStarts` | frontend/js/dashboard.js:3980 |
+| `afterFrames` | frontend/js/dashboard.js:2019 |
+| `applyDashDensity` | frontend/js/dashboard.js:1301 |
+| `cachedGreetingPhrase` | frontend/js/dashboard.js:325 |
+| `closeFeatures` | frontend/js/dashboard.js:1604 |
+| `dashActionRow` | frontend/js/dashboard.js:3690 |
+| `dashActivityItems` | frontend/js/dashboard.js:3811 |
+| `dashContinueNote` | frontend/js/dashboard.js:1450 |
+| `dashCustomiseItems` | frontend/js/dashboard.js:1499 |
+| `dashDensity` | frontend/js/dashboard.js:1169 |
+| `dashDensityChosen` | frontend/js/dashboard.js:1175 |
 | `dashDragOverCard` | frontend/js/dashboard.js:23 |
-| `dashEmpty` | frontend/js/dashboard.js:3718 |
-| `dashEntries` | frontend/js/dashboard.js:491 |
-| `dashFillingSkeleton` | frontend/js/dashboard.js:2005 |
-| `dashFillingSkeletonDone` | frontend/js/dashboard.js:2053 |
-| `dashGlanceFacts` | frontend/js/dashboard.js:611 |
-| `dashGridShape` | frontend/js/dashboard.js:1794 |
+| `dashEmpty` | frontend/js/dashboard.js:3743 |
+| `dashEntries` | frontend/js/dashboard.js:500 |
+| `dashFillingSkeleton` | frontend/js/dashboard.js:2030 |
+| `dashFillingSkeletonDone` | frontend/js/dashboard.js:2078 |
+| `dashGlanceFacts` | frontend/js/dashboard.js:620 |
+| `dashGridShape` | frontend/js/dashboard.js:1819 |
 | `dashLayout` | frontend/js/dashboard.js:185 |
-| `dashLineDraw` | frontend/js/dashboard.js:505 |
-| `dashMarkMenu` | frontend/js/dashboard.js:1260 |
-| `dashMeetingWhen` | frontend/js/dashboard.js:705 |
-| `dashMoreItems` | frontend/js/dashboard.js:1442 |
-| `dashReminders` | frontend/js/dashboard.js:471 |
-| `dashStatsButton` | frontend/js/dashboard.js:2357 |
-| `dashStreak` | frontend/js/dashboard.js:2345 |
-| `dashTensionRow` | frontend/js/dashboard.js:4157 |
-| `dashWidgetRow` | frontend/js/dashboard.js:2109 |
-| `dashWidgetToggle` | frontend/js/dashboard.js:2083 |
-| `dashWidgetsSummary` | frontend/js/dashboard.js:2221 |
-| `dashboardGreetingText` | frontend/js/dashboard.js:296 |
-| `dashboardMarkSeed` | frontend/js/dashboard.js:1196 |
-| `fallbackGreetingPhrase` | frontend/js/dashboard.js:264 |
-| `featureRow` | frontend/js/dashboard.js:1591 |
-| `featuresPaint` | frontend/js/dashboard.js:1609 |
-| `fetchDashGraph` | frontend/js/dashboard.js:451 |
-| `fetchDashStats` | frontend/js/dashboard.js:426 |
-| `firstNoteImage` | frontend/js/dashboard.js:2439 |
-| `focusChime` | frontend/js/dashboard.js:3418 |
-| `focusRing` | frontend/js/dashboard.js:3352 |
-| `focusStep` | frontend/js/dashboard.js:3492 |
-| `focusTimeLabel` | frontend/js/dashboard.js:3334 |
-| `focusTimerEnded` | frontend/js/dashboard.js:3439 |
-| `focusTimerTick` | frontend/js/dashboard.js:3407 |
-| `focusTodaySeconds` | frontend/js/dashboard.js:3341 |
-| `generateDigest` | frontend/js/dashboard.js:2704 |
-| `greetingBlock` | frontend/js/dashboard.js:255 |
-| `greetingCacheSlot` | frontend/js/dashboard.js:303 |
-| `loadDigestCache` | frontend/js/dashboard.js:2690 |
-| `miniEntryList` | frontend/js/dashboard.js:2476 |
-| `mountWidgetBody` | frontend/js/dashboard.js:1712 |
-| `moveDashWidget` | frontend/js/dashboard.js:2090 |
-| `noteRowFile` | frontend/js/dashboard.js:2471 |
-| `noteRowImage` | frontend/js/dashboard.js:2456 |
-| `noteSkillRun` | frontend/js/dashboard.js:1024 |
-| `openAskFromDashboard` | frontend/js/dashboard.js:930 |
-| `openFeatures` | frontend/js/dashboard.js:1564 |
-| `paintDashClock` | frontend/js/dashboard.js:392 |
-| `paintDashEmblem` | frontend/js/dashboard.js:1222 |
-| `paintDashFace` | frontend/js/dashboard.js:1209 |
-| `paintFadedNotes` | frontend/js/dashboard.js:3135 |
-| `paintFocusTimer` | frontend/js/dashboard.js:3376 |
-| `quickLinkButton` | frontend/js/dashboard.js:1360 |
-| `quickTintColours` | frontend/js/dashboard.js:1354 |
-| `quickTintKey` | frontend/js/dashboard.js:1343 |
-| `quickTints` | frontend/js/dashboard.js:1402 |
-| `recentSkillLinks` | frontend/js/dashboard.js:1095 |
-| `refreshAiGreeting` | frontend/js/dashboard.js:336 |
-| `refreshArtForTheme` | frontend/js/dashboard.js:2322 |
-| `refreshDashWidgets` | frontend/js/dashboard.js:1769 |
-| `renderActivityWidget` | frontend/js/dashboard.js:3799 |
-| `renderBoardsWidget` | frontend/js/dashboard.js:3739 |
-| `renderBookmarksWidget` | frontend/js/dashboard.js:4021 |
-| `renderCategoriesWidget` | frontend/js/dashboard.js:3034 |
-| `renderDashGlance` | frontend/js/dashboard.js:722 |
-| `renderDashMore` | frontend/js/dashboard.js:1534 |
-| `renderDashSubmessage` | frontend/js/dashboard.js:507 |
-| `renderDashWidgetsList` | frontend/js/dashboard.js:2250 |
-| `renderDashboard` | frontend/js/dashboard.js:1798 |
-| `renderDashboardGreeting` | frontend/js/dashboard.js:565 |
-| `renderDigestWidget` | frontend/js/dashboard.js:2763 |
-| `renderDocumentsWidget` | frontend/js/dashboard.js:3984 |
-| `renderFeatures` | frontend/js/dashboard.js:1643 |
-| `renderFirstStepsLazy` | frontend/js/dashboard.js:1697 |
-| `renderFocusTimerWidget` | frontend/js/dashboard.js:3502 |
-| `renderHeatmapWidget` | frontend/js/dashboard.js:2918 |
-| `renderMostLinkedWidget` | frontend/js/dashboard.js:2610 |
-| `renderMostOpenedWidget` | frontend/js/dashboard.js:2573 |
-| `renderMostUsedWidget` | frontend/js/dashboard.js:2599 |
-| `renderNameNudge` | frontend/js/dashboard.js:786 |
-| `renderOnThisDayWidget` | frontend/js/dashboard.js:4215 |
-| `renderPaceWidget` | frontend/js/dashboard.js:4290 |
-| `renderPinnedWidget` | frontend/js/dashboard.js:2568 |
-| `renderQuestionsWidget` | frontend/js/dashboard.js:2659 |
-| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2868 |
-| `renderRandomNoteWidget` | frontend/js/dashboard.js:3107 |
-| `renderRandomShuffle` | frontend/js/dashboard.js:3190 |
-| `renderRecentNotesWidget` | frontend/js/dashboard.js:2629 |
-| `renderRemindersWidget` | frontend/js/dashboard.js:2880 |
-| `renderReviewWidget` | frontend/js/dashboard.js:2578 |
-| `renderStatsWidget` | frontend/js/dashboard.js:2395 |
-| `renderStreakWidget` | frontend/js/dashboard.js:2363 |
-| `renderTagCloudWidget` | frontend/js/dashboard.js:3294 |
-| `renderTensionsWidget` | frontend/js/dashboard.js:4095 |
-| `renderTopTagsWidget` | frontend/js/dashboard.js:2638 |
-| `renderUnfinishedWidget` | frontend/js/dashboard.js:4047 |
+| `dashLineDraw` | frontend/js/dashboard.js:514 |
+| `dashMarkMenu` | frontend/js/dashboard.js:1269 |
+| `dashMeetingWhen` | frontend/js/dashboard.js:714 |
+| `dashMoreItems` | frontend/js/dashboard.js:1467 |
+| `dashReminders` | frontend/js/dashboard.js:480 |
+| `dashStatsButton` | frontend/js/dashboard.js:2382 |
+| `dashStreak` | frontend/js/dashboard.js:2370 |
+| `dashTensionRow` | frontend/js/dashboard.js:4201 |
+| `dashWidgetRow` | frontend/js/dashboard.js:2134 |
+| `dashWidgetToggle` | frontend/js/dashboard.js:2108 |
+| `dashWidgetsSummary` | frontend/js/dashboard.js:2246 |
+| `dashboardGreetingText` | frontend/js/dashboard.js:305 |
+| `dashboardMarkSeed` | frontend/js/dashboard.js:1205 |
+| `fallbackGreetingPhrase` | frontend/js/dashboard.js:273 |
+| `featureRow` | frontend/js/dashboard.js:1616 |
+| `featuresPaint` | frontend/js/dashboard.js:1634 |
+| `fetchDashGraph` | frontend/js/dashboard.js:460 |
+| `fetchDashStats` | frontend/js/dashboard.js:435 |
+| `firstNoteImage` | frontend/js/dashboard.js:2464 |
+| `focusChime` | frontend/js/dashboard.js:3443 |
+| `focusRing` | frontend/js/dashboard.js:3377 |
+| `focusStep` | frontend/js/dashboard.js:3517 |
+| `focusTimeLabel` | frontend/js/dashboard.js:3359 |
+| `focusTimerEnded` | frontend/js/dashboard.js:3464 |
+| `focusTimerTick` | frontend/js/dashboard.js:3432 |
+| `focusTodaySeconds` | frontend/js/dashboard.js:3366 |
+| `generateDigest` | frontend/js/dashboard.js:2729 |
+| `greetingBlock` | frontend/js/dashboard.js:264 |
+| `greetingCacheSlot` | frontend/js/dashboard.js:312 |
+| `loadDigestCache` | frontend/js/dashboard.js:2715 |
+| `miniEntryList` | frontend/js/dashboard.js:2501 |
+| `mountWidgetBody` | frontend/js/dashboard.js:1737 |
+| `moveDashWidget` | frontend/js/dashboard.js:2115 |
+| `noteRowFile` | frontend/js/dashboard.js:2496 |
+| `noteRowImage` | frontend/js/dashboard.js:2481 |
+| `noteSkillRun` | frontend/js/dashboard.js:1033 |
+| `openAskFromDashboard` | frontend/js/dashboard.js:939 |
+| `openFeatures` | frontend/js/dashboard.js:1589 |
+| `paintDashClock` | frontend/js/dashboard.js:401 |
+| `paintDashEmblem` | frontend/js/dashboard.js:1231 |
+| `paintDashFace` | frontend/js/dashboard.js:1218 |
+| `paintFadedNotes` | frontend/js/dashboard.js:3160 |
+| `paintFocusTimer` | frontend/js/dashboard.js:3401 |
+| `quickLinkButton` | frontend/js/dashboard.js:1369 |
+| `quickTintColours` | frontend/js/dashboard.js:1363 |
+| `quickTintKey` | frontend/js/dashboard.js:1352 |
+| `quickTints` | frontend/js/dashboard.js:1419 |
+| `recentSkillLinks` | frontend/js/dashboard.js:1104 |
+| `refreshAiGreeting` | frontend/js/dashboard.js:345 |
+| `refreshArtForTheme` | frontend/js/dashboard.js:2347 |
+| `refreshDashWidgets` | frontend/js/dashboard.js:1794 |
+| `renderActivityWidget` | frontend/js/dashboard.js:3824 |
+| `renderBoardsWidget` | frontend/js/dashboard.js:3764 |
+| `renderBookmarksWidget` | frontend/js/dashboard.js:4065 |
+| `renderCategoriesWidget` | frontend/js/dashboard.js:3059 |
+| `renderDashGlance` | frontend/js/dashboard.js:731 |
+| `renderDashMore` | frontend/js/dashboard.js:1559 |
+| `renderDashSubmessage` | frontend/js/dashboard.js:516 |
+| `renderDashWidgetsList` | frontend/js/dashboard.js:2275 |
+| `renderDashboard` | frontend/js/dashboard.js:1823 |
+| `renderDashboardGreeting` | frontend/js/dashboard.js:574 |
+| `renderDigestWidget` | frontend/js/dashboard.js:2788 |
+| `renderDocumentsWidget` | frontend/js/dashboard.js:4028 |
+| `renderFeatures` | frontend/js/dashboard.js:1668 |
+| `renderFirstStepsLazy` | frontend/js/dashboard.js:1722 |
+| `renderFocusTimerWidget` | frontend/js/dashboard.js:3527 |
+| `renderHeatmapWidget` | frontend/js/dashboard.js:2943 |
+| `renderMostLinkedWidget` | frontend/js/dashboard.js:2635 |
+| `renderMostOpenedWidget` | frontend/js/dashboard.js:2598 |
+| `renderMostUsedWidget` | frontend/js/dashboard.js:2624 |
+| `renderNameNudge` | frontend/js/dashboard.js:795 |
+| `renderOnThisDayWidget` | frontend/js/dashboard.js:4259 |
+| `renderPaceWidget` | frontend/js/dashboard.js:4334 |
+| `renderPinnedWidget` | frontend/js/dashboard.js:2593 |
+| `renderQuestionsWidget` | frontend/js/dashboard.js:2684 |
+| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2893 |
+| `renderRandomNoteWidget` | frontend/js/dashboard.js:3132 |
+| `renderRandomShuffle` | frontend/js/dashboard.js:3215 |
+| `renderRecentNotesWidget` | frontend/js/dashboard.js:2654 |
+| `renderRemindersWidget` | frontend/js/dashboard.js:2905 |
+| `renderReviewWidget` | frontend/js/dashboard.js:2603 |
+| `renderStatsWidget` | frontend/js/dashboard.js:2420 |
+| `renderStreakWidget` | frontend/js/dashboard.js:2388 |
+| `renderTagCloudWidget` | frontend/js/dashboard.js:3319 |
+| `renderTensionsWidget` | frontend/js/dashboard.js:4139 |
+| `renderTopTagsWidget` | frontend/js/dashboard.js:2663 |
+| `renderUnfinishedWidget` | frontend/js/dashboard.js:4091 |
 | `saveDashLayout` | frontend/js/dashboard.js:218 |
-| `saveQuickAccess` | frontend/js/dashboard.js:1398 |
-| `saveQuickTints` | frontend/js/dashboard.js:1407 |
-| `setFocusTimer` | frontend/js/dashboard.js:3481 |
-| `sizeDashWidgetSpan` | frontend/js/dashboard.js:842 |
-| `sizeDashWidgets` | frontend/js/dashboard.js:846 |
-| `skillRunTimes` | frontend/js/dashboard.js:1015 |
-| `startDashClock` | frontend/js/dashboard.js:365 |
-| `startFocusTimer` | frontend/js/dashboard.js:3462 |
-| `stopArt` | frontend/js/dashboard.js:2319 |
-| `stopDashClock` | frontend/js/dashboard.js:360 |
-| `stopFocusTimer` | frontend/js/dashboard.js:3471 |
-| `streamDigest` | frontend/js/dashboard.js:2723 |
-| `todayStamp` | frontend/js/dashboard.js:2686 |
-| `toggleDashWidgetHidden` | frontend/js/dashboard.js:229 |
-| `toggleDashWidgetWide` | frontend/js/dashboard.js:237 |
-| `truncateMarkdownSafe` | frontend/js/dashboard.js:3092 |
-| `undoActorFrom` | frontend/js/dashboard.js:3900 |
-| `watchDashWidgets` | frontend/js/dashboard.js:877 |
-| `wireDashDensity` | frontend/js/dashboard.js:1328 |
-| `withDisplayName` | frontend/js/dashboard.js:279 |
-| `withoutLeadingEmoji` | frontend/js/dashboard.js:1081 |
+| `saveQuickAccess` | frontend/js/dashboard.js:1407 |
+| `saveQuickTints` | frontend/js/dashboard.js:1424 |
+| `setFocusTimer` | frontend/js/dashboard.js:3506 |
+| `sizeDashWidgetSpan` | frontend/js/dashboard.js:851 |
+| `sizeDashWidgets` | frontend/js/dashboard.js:855 |
+| `skillRunTimes` | frontend/js/dashboard.js:1024 |
+| `startDashClock` | frontend/js/dashboard.js:374 |
+| `startFocusTimer` | frontend/js/dashboard.js:3487 |
+| `stopArt` | frontend/js/dashboard.js:2344 |
+| `stopDashClock` | frontend/js/dashboard.js:369 |
+| `stopFocusTimer` | frontend/js/dashboard.js:3496 |
+| `streamDigest` | frontend/js/dashboard.js:2748 |
+| `todayStamp` | frontend/js/dashboard.js:2711 |
+| `toggleDashWidgetHidden` | frontend/js/dashboard.js:238 |
+| `toggleDashWidgetWide` | frontend/js/dashboard.js:246 |
+| `truncateMarkdownSafe` | frontend/js/dashboard.js:3117 |
+| `undoActorFrom` | frontend/js/dashboard.js:3925 |
+| `watchDashWidgets` | frontend/js/dashboard.js:886 |
+| `wireDashDensity` | frontend/js/dashboard.js:1337 |
+| `withDisplayName` | frontend/js/dashboard.js:288 |
+| `withoutLeadingEmoji` | frontend/js/dashboard.js:1090 |
 
 ### frontend/js/timeline.js (79)
 
@@ -6504,18 +6504,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `fillQueryRollups` | frontend/js/note-properties.js:442 |
-| `noteTypeColourHex` | frontend/js/note-properties.js:273 |
-| `noteTypeDeleteUndo` | frontend/js/note-properties.js:331 |
-| `noteTypeFieldsParse` | frontend/js/note-properties.js:344 |
-| `noteTypePickColour` | frontend/js/note-properties.js:282 |
+| `fillQueryRollups` | frontend/js/note-properties.js:443 |
+| `noteTypeColourHex` | frontend/js/note-properties.js:274 |
+| `noteTypeDeleteUndo` | frontend/js/note-properties.js:332 |
+| `noteTypeFieldsParse` | frontend/js/note-properties.js:345 |
+| `noteTypePickColour` | frontend/js/note-properties.js:283 |
 | `openNotePropertiesSheet` | frontend/js/note-properties.js:39 |
 | `openNoteTypesSheet` | frontend/js/note-properties.js:170 |
-| `openQueryTable` | frontend/js/note-properties.js:355 |
+| `openQueryTable` | frontend/js/note-properties.js:356 |
 | `propInput` | frontend/js/note-properties.js:15 |
 | `propRead` | frontend/js/note-properties.js:31 |
-| `queryTableRollupFoot` | frontend/js/note-properties.js:418 |
-| `showQueryOnGraph` | frontend/js/note-properties.js:489 |
+| `queryTableRollupFoot` | frontend/js/note-properties.js:419 |
+| `showQueryOnGraph` | frontend/js/note-properties.js:490 |
 
 ### frontend/js/note-templates.js (9)
 
@@ -7211,148 +7211,148 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addMemoryByHand` | frontend/js/settings-controls.js:1850 |
-| `addPersona` | frontend/js/settings-controls.js:1461 |
-| `addSkill` | frontend/js/settings-controls.js:2099 |
-| `addTemplate` | frontend/js/settings-controls.js:1651 |
-| `appendToolRow` | frontend/js/settings-controls.js:3878 |
-| `applyBackendChoice` | frontend/js/settings-controls.js:1393 |
-| `applyChatModel` | frontend/js/settings-controls.js:1575 |
-| `applyContrast` | frontend/js/settings-controls.js:5295 |
-| `applyEmbeddingBackend` | frontend/js/settings-controls.js:5198 |
-| `applyHarmony` | frontend/js/settings-controls.js:5242 |
-| `applyOcrModel` | frontend/js/settings-controls.js:1591 |
-| `applyToolFilter` | frontend/js/settings-controls.js:3942 |
-| `applyUtilityModel` | frontend/js/settings-controls.js:1610 |
-| `applyVisionModel` | frontend/js/settings-controls.js:1629 |
-| `changePassword` | frontend/js/settings-controls.js:186 |
-| `chosenSkillTools` | frontend/js/settings-controls.js:2161 |
-| `chosenSkillVerify` | frontend/js/settings-controls.js:2140 |
-| `clearEmbeddingBackendLatch` | frontend/js/settings-controls.js:5321 |
-| `clearManualOverrides` | frontend/js/settings-controls.js:5286 |
-| `copyLogs` | frontend/js/settings-controls.js:5272 |
-| `decorateThemeCards` | frontend/js/settings-controls.js:3301 |
-| `deleteProfile` | frontend/js/settings-controls.js:2054 |
-| `ensureAppearancePopOut` | frontend/js/settings-controls.js:3495 |
-| `ensurePaneTabs` | frontend/js/settings-controls.js:3465 |
-| `ensureSettingsFoldAll` | frontend/js/settings-controls.js:3423 |
-| `exportFullBackup` | frontend/js/settings-controls.js:2042 |
-| `findDuplicates` | frontend/js/settings-controls.js:1808 |
-| `glassWake` | frontend/js/settings-controls.js:4061 |
-| `lanAllowHere` | frontend/js/settings-controls.js:2665 |
-| `lanCall` | frontend/js/settings-controls.js:2511 |
-| `lanEmptyRow` | frontend/js/settings-controls.js:2504 |
-| `lanListRow` | frontend/js/settings-controls.js:2486 |
-| `lanNetworkRows` | frontend/js/settings-controls.js:2575 |
+| `addMemoryByHand` | frontend/js/settings-controls.js:1859 |
+| `addPersona` | frontend/js/settings-controls.js:1470 |
+| `addSkill` | frontend/js/settings-controls.js:2108 |
+| `addTemplate` | frontend/js/settings-controls.js:1660 |
+| `appendToolRow` | frontend/js/settings-controls.js:3887 |
+| `applyBackendChoice` | frontend/js/settings-controls.js:1402 |
+| `applyChatModel` | frontend/js/settings-controls.js:1584 |
+| `applyContrast` | frontend/js/settings-controls.js:5311 |
+| `applyEmbeddingBackend` | frontend/js/settings-controls.js:5214 |
+| `applyHarmony` | frontend/js/settings-controls.js:5258 |
+| `applyOcrModel` | frontend/js/settings-controls.js:1600 |
+| `applyToolFilter` | frontend/js/settings-controls.js:3951 |
+| `applyUtilityModel` | frontend/js/settings-controls.js:1619 |
+| `applyVisionModel` | frontend/js/settings-controls.js:1638 |
+| `changePassword` | frontend/js/settings-controls.js:195 |
+| `chosenSkillTools` | frontend/js/settings-controls.js:2170 |
+| `chosenSkillVerify` | frontend/js/settings-controls.js:2149 |
+| `clearEmbeddingBackendLatch` | frontend/js/settings-controls.js:5337 |
+| `clearManualOverrides` | frontend/js/settings-controls.js:5302 |
+| `copyLogs` | frontend/js/settings-controls.js:5288 |
+| `decorateThemeCards` | frontend/js/settings-controls.js:3310 |
+| `deleteProfile` | frontend/js/settings-controls.js:2063 |
+| `ensureAppearancePopOut` | frontend/js/settings-controls.js:3504 |
+| `ensurePaneTabs` | frontend/js/settings-controls.js:3474 |
+| `ensureSettingsFoldAll` | frontend/js/settings-controls.js:3432 |
+| `exportFullBackup` | frontend/js/settings-controls.js:2051 |
+| `findDuplicates` | frontend/js/settings-controls.js:1817 |
+| `glassWake` | frontend/js/settings-controls.js:4070 |
+| `lanAllowHere` | frontend/js/settings-controls.js:2674 |
+| `lanCall` | frontend/js/settings-controls.js:2520 |
+| `lanEmptyRow` | frontend/js/settings-controls.js:2513 |
+| `lanListRow` | frontend/js/settings-controls.js:2495 |
+| `lanNetworkRows` | frontend/js/settings-controls.js:2584 |
 | `lanSwitch` | frontend/js/settings-controls.js:82 |
-| `lanTrustNetwork` | frontend/js/settings-controls.js:2612 |
-| `learnedBulk` | frontend/js/settings-controls.js:4633 |
-| `learnedCheckLine` | frontend/js/settings-controls.js:5071 |
-| `learnedCheckMark` | frontend/js/settings-controls.js:5103 |
-| `learnedCheckPutBack` | frontend/js/settings-controls.js:5151 |
-| `learnedCheckRefresh` | frontend/js/settings-controls.js:5114 |
-| `learnedCheckRun` | frontend/js/settings-controls.js:5122 |
-| `learnedCheckSentence` | frontend/js/settings-controls.js:5066 |
-| `learnedCheckShow` | frontend/js/settings-controls.js:5085 |
-| `learnedDelete` | frontend/js/settings-controls.js:4843 |
-| `learnedEdit` | frontend/js/settings-controls.js:4796 |
-| `learnedExport` | frontend/js/settings-controls.js:4885 |
-| `learnedForget` | frontend/js/settings-controls.js:4865 |
-| `learnedFromYouText` | frontend/js/settings-controls.js:4983 |
-| `learnedKindLabel` | frontend/js/settings-controls.js:4492 |
-| `learnedReset` | frontend/js/settings-controls.js:4822 |
-| `learnedRow` | frontend/js/settings-controls.js:4679 |
-| `learnedRunNow` | frontend/js/settings-controls.js:4904 |
-| `learnedSetSwitch` | frontend/js/settings-controls.js:4599 |
-| `looksLikeEmbeddingModel` | frontend/js/settings-controls.js:5331 |
-| `maintenanceDoctorRow` | frontend/js/settings-controls.js:3063 |
-| `maintenanceSay` | frontend/js/settings-controls.js:3039 |
-| `makeMaintenanceShortcut` | frontend/js/settings-controls.js:3136 |
-| `mergeDuplicateGroup` | frontend/js/settings-controls.js:1944 |
-| `mergeNamedPrompts` | frontend/js/settings-controls.js:2067 |
-| `nearLogBottom` | frontend/js/settings-controls.js:5311 |
-| `openMaintenanceFolder` | frontend/js/settings-controls.js:3127 |
-| `openTaskLog` | frontend/js/settings-controls.js:3347 |
-| `openUninstallSteps` | frontend/js/settings-controls.js:3147 |
-| `pickJsonFile` | frontend/js/settings-controls.js:2751 |
-| `previewTheme` | frontend/js/settings-controls.js:3227 |
-| `refreshSearxngHost` | frontend/js/settings-controls.js:1279 |
-| `releaseThemeHold` | frontend/js/settings-controls.js:3234 |
-| `renderAccount` | frontend/js/settings-controls.js:3609 |
-| `renderAddressNames` | frontend/js/settings-controls.js:2689 |
-| `renderAutoChoices` | frontend/js/settings-controls.js:3375 |
-| `renderAutonomousReview` | frontend/js/settings-controls.js:3693 |
-| `renderDuplicateGroups` | frontend/js/settings-controls.js:1886 |
-| `renderFeatureModelRows` | frontend/js/settings-controls.js:3511 |
-| `renderLanAccess` | frontend/js/settings-controls.js:2741 |
-| `renderLanAddresses` | frontend/js/settings-controls.js:2406 |
-| `renderLanFirewall` | frontend/js/settings-controls.js:2468 |
-| `renderLanState` | frontend/js/settings-controls.js:2313 |
-| `renderLanTrust` | frontend/js/settings-controls.js:2520 |
-| `renderLearned` | frontend/js/settings-controls.js:5004 |
-| `renderLearnedFromYou` | frontend/js/settings-controls.js:4995 |
-| `renderLearnedList` | frontend/js/settings-controls.js:4756 |
-| `renderLearnedSwitches` | frontend/js/settings-controls.js:4496 |
-| `renderMaintenance` | frontend/js/settings-controls.js:3043 |
-| `renderMcpSnippet` | frontend/js/settings-controls.js:2289 |
-| `renderMemorySettings` | frontend/js/settings-controls.js:2808 |
-| `renderPinSettings` | frontend/js/settings-controls.js:3664 |
-| `renderRunBudget` | frontend/js/settings-controls.js:3796 |
-| `renderSkillFolderLine` | frontend/js/settings-controls.js:5412 |
-| `renderSkillSettings` | frontend/js/settings-controls.js:5394 |
-| `renderSmallModelAuto` | frontend/js/settings-controls.js:3400 |
-| `renderSmallModelMode` | frontend/js/settings-controls.js:3784 |
-| `renderStatusBarSettings` | frontend/js/settings-controls.js:2226 |
-| `renderToolFocus` | frontend/js/settings-controls.js:3758 |
-| `renderToolSettings` | frontend/js/settings-controls.js:3709 |
-| `resetAllFeatureModels` | frontend/js/settings-controls.js:1558 |
-| `resetThemeOnly` | frontend/js/settings-controls.js:5304 |
-| `restartMemoryMap` | frontend/js/settings-controls.js:1759 |
-| `restoreFullBackup` | frontend/js/settings-controls.js:2005 |
-| `runEmbeddingFallback` | frontend/js/settings-controls.js:1494 |
-| `runMaintenanceDoctor` | frontend/js/settings-controls.js:3089 |
-| `saveAddressNames` | frontend/js/settings-controls.js:2708 |
-| `saveExportSaveDir` | frontend/js/settings-controls.js:1833 |
-| `saveModelContextWindow` | frontend/js/settings-controls.js:1428 |
-| `saveRunBudget` | frontend/js/settings-controls.js:1689 |
-| `saveToolGroup` | frontend/js/settings-controls.js:3847 |
-| `saveToolSwitch` | frontend/js/settings-controls.js:3807 |
-| `saveWebSearchSettings` | frontend/js/settings-controls.js:1726 |
-| `setCustomAccent` | frontend/js/settings-controls.js:4162 |
-| `setLanOption` | frontend/js/settings-controls.js:2635 |
-| `setMaintenanceReinstall` | frontend/js/settings-controls.js:3114 |
-| `showLanQr` | frontend/js/settings-controls.js:2370 |
-| `showVoiceSample` | frontend/js/settings-controls.js:681 |
-| `skillRow` | frontend/js/settings-controls.js:5338 |
-| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4621 |
-| `textToInputs` | frontend/js/settings-controls.js:2782 |
-| `textToSteps` | frontend/js/settings-controls.js:2775 |
-| `themeEyeButton` | frontend/js/settings-controls.js:3274 |
-| `themePreviewNotice` | frontend/js/settings-controls.js:3247 |
-| `toolGroupAllPaint` | frontend/js/settings-controls.js:3836 |
-| `toolGroupBoxes` | frontend/js/settings-controls.js:3827 |
-| `waitForRestart` | frontend/js/settings-controls.js:1785 |
-| `wireLearnedSection` | frontend/js/settings-controls.js:4938 |
+| `lanTrustNetwork` | frontend/js/settings-controls.js:2621 |
+| `learnedBulk` | frontend/js/settings-controls.js:4649 |
+| `learnedCheckLine` | frontend/js/settings-controls.js:5087 |
+| `learnedCheckMark` | frontend/js/settings-controls.js:5119 |
+| `learnedCheckPutBack` | frontend/js/settings-controls.js:5167 |
+| `learnedCheckRefresh` | frontend/js/settings-controls.js:5130 |
+| `learnedCheckRun` | frontend/js/settings-controls.js:5138 |
+| `learnedCheckSentence` | frontend/js/settings-controls.js:5082 |
+| `learnedCheckShow` | frontend/js/settings-controls.js:5101 |
+| `learnedDelete` | frontend/js/settings-controls.js:4859 |
+| `learnedEdit` | frontend/js/settings-controls.js:4812 |
+| `learnedExport` | frontend/js/settings-controls.js:4901 |
+| `learnedForget` | frontend/js/settings-controls.js:4881 |
+| `learnedFromYouText` | frontend/js/settings-controls.js:4999 |
+| `learnedKindLabel` | frontend/js/settings-controls.js:4503 |
+| `learnedReset` | frontend/js/settings-controls.js:4838 |
+| `learnedRow` | frontend/js/settings-controls.js:4695 |
+| `learnedRunNow` | frontend/js/settings-controls.js:4920 |
+| `learnedSetSwitch` | frontend/js/settings-controls.js:4610 |
+| `looksLikeEmbeddingModel` | frontend/js/settings-controls.js:5347 |
+| `maintenanceDoctorRow` | frontend/js/settings-controls.js:3072 |
+| `maintenanceSay` | frontend/js/settings-controls.js:3048 |
+| `makeMaintenanceShortcut` | frontend/js/settings-controls.js:3145 |
+| `mergeDuplicateGroup` | frontend/js/settings-controls.js:1953 |
+| `mergeNamedPrompts` | frontend/js/settings-controls.js:2076 |
+| `nearLogBottom` | frontend/js/settings-controls.js:5327 |
+| `openMaintenanceFolder` | frontend/js/settings-controls.js:3136 |
+| `openTaskLog` | frontend/js/settings-controls.js:3356 |
+| `openUninstallSteps` | frontend/js/settings-controls.js:3156 |
+| `pickJsonFile` | frontend/js/settings-controls.js:2760 |
+| `previewTheme` | frontend/js/settings-controls.js:3236 |
+| `refreshSearxngHost` | frontend/js/settings-controls.js:1288 |
+| `releaseThemeHold` | frontend/js/settings-controls.js:3243 |
+| `renderAccount` | frontend/js/settings-controls.js:3618 |
+| `renderAddressNames` | frontend/js/settings-controls.js:2698 |
+| `renderAutoChoices` | frontend/js/settings-controls.js:3384 |
+| `renderAutonomousReview` | frontend/js/settings-controls.js:3702 |
+| `renderDuplicateGroups` | frontend/js/settings-controls.js:1895 |
+| `renderFeatureModelRows` | frontend/js/settings-controls.js:3520 |
+| `renderLanAccess` | frontend/js/settings-controls.js:2750 |
+| `renderLanAddresses` | frontend/js/settings-controls.js:2415 |
+| `renderLanFirewall` | frontend/js/settings-controls.js:2477 |
+| `renderLanState` | frontend/js/settings-controls.js:2322 |
+| `renderLanTrust` | frontend/js/settings-controls.js:2529 |
+| `renderLearned` | frontend/js/settings-controls.js:5020 |
+| `renderLearnedFromYou` | frontend/js/settings-controls.js:5011 |
+| `renderLearnedList` | frontend/js/settings-controls.js:4772 |
+| `renderLearnedSwitches` | frontend/js/settings-controls.js:4507 |
+| `renderMaintenance` | frontend/js/settings-controls.js:3052 |
+| `renderMcpSnippet` | frontend/js/settings-controls.js:2298 |
+| `renderMemorySettings` | frontend/js/settings-controls.js:2817 |
+| `renderPinSettings` | frontend/js/settings-controls.js:3673 |
+| `renderRunBudget` | frontend/js/settings-controls.js:3805 |
+| `renderSkillFolderLine` | frontend/js/settings-controls.js:5428 |
+| `renderSkillSettings` | frontend/js/settings-controls.js:5410 |
+| `renderSmallModelAuto` | frontend/js/settings-controls.js:3409 |
+| `renderSmallModelMode` | frontend/js/settings-controls.js:3793 |
+| `renderStatusBarSettings` | frontend/js/settings-controls.js:2235 |
+| `renderToolFocus` | frontend/js/settings-controls.js:3767 |
+| `renderToolSettings` | frontend/js/settings-controls.js:3718 |
+| `resetAllFeatureModels` | frontend/js/settings-controls.js:1567 |
+| `resetThemeOnly` | frontend/js/settings-controls.js:5320 |
+| `restartMemoryMap` | frontend/js/settings-controls.js:1768 |
+| `restoreFullBackup` | frontend/js/settings-controls.js:2014 |
+| `runEmbeddingFallback` | frontend/js/settings-controls.js:1503 |
+| `runMaintenanceDoctor` | frontend/js/settings-controls.js:3098 |
+| `saveAddressNames` | frontend/js/settings-controls.js:2717 |
+| `saveExportSaveDir` | frontend/js/settings-controls.js:1842 |
+| `saveModelContextWindow` | frontend/js/settings-controls.js:1437 |
+| `saveRunBudget` | frontend/js/settings-controls.js:1698 |
+| `saveToolGroup` | frontend/js/settings-controls.js:3856 |
+| `saveToolSwitch` | frontend/js/settings-controls.js:3816 |
+| `saveWebSearchSettings` | frontend/js/settings-controls.js:1735 |
+| `setCustomAccent` | frontend/js/settings-controls.js:4171 |
+| `setLanOption` | frontend/js/settings-controls.js:2644 |
+| `setMaintenanceReinstall` | frontend/js/settings-controls.js:3123 |
+| `showLanQr` | frontend/js/settings-controls.js:2379 |
+| `showVoiceSample` | frontend/js/settings-controls.js:690 |
+| `skillRow` | frontend/js/settings-controls.js:5354 |
+| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4637 |
+| `textToInputs` | frontend/js/settings-controls.js:2791 |
+| `textToSteps` | frontend/js/settings-controls.js:2784 |
+| `themeEyeButton` | frontend/js/settings-controls.js:3283 |
+| `themePreviewNotice` | frontend/js/settings-controls.js:3256 |
+| `toolGroupAllPaint` | frontend/js/settings-controls.js:3845 |
+| `toolGroupBoxes` | frontend/js/settings-controls.js:3836 |
+| `waitForRestart` | frontend/js/settings-controls.js:1794 |
+| `wireLearnedSection` | frontend/js/settings-controls.js:4954 |
 
 ### frontend/js/settings-data.js (52)
 
 | Name | File:line |
 |---|---|
-| `backupNow` | frontend/js/settings-data.js:499 |
+| `backupNow` | frontend/js/settings-data.js:500 |
 | `backupScheduleWords` | frontend/js/settings-data.js:256 |
-| `clearPreviews` | frontend/js/settings-data.js:739 |
-| `dismissedWords` | frontend/js/settings-data.js:875 |
-| `guideTurns` | frontend/js/settings-data.js:745 |
+| `clearPreviews` | frontend/js/settings-data.js:740 |
+| `dismissedWords` | frontend/js/settings-data.js:876 |
+| `guideTurns` | frontend/js/settings-data.js:746 |
 | `humanBytes` | frontend/js/settings-data.js:434 |
-| `importDirectory` | frontend/js/settings-data.js:510 |
-| `importDocument` | frontend/js/settings-data.js:659 |
-| `importMarkdown` | frontend/js/settings-data.js:600 |
-| `importSummary` | frontend/js/settings-data.js:535 |
-| `markdownPreview` | frontend/js/settings-data.js:580 |
-| `noteSettingChange` | frontend/js/settings-data.js:1053 |
-| `paintClearRow` | frontend/js/settings-data.js:750 |
-| `previewCaches` | frontend/js/settings-data.js:725 |
-| `previewCount` | frontend/js/settings-data.js:734 |
+| `importDirectory` | frontend/js/settings-data.js:511 |
+| `importDocument` | frontend/js/settings-data.js:660 |
+| `importMarkdown` | frontend/js/settings-data.js:601 |
+| `importSummary` | frontend/js/settings-data.js:536 |
+| `markdownPreview` | frontend/js/settings-data.js:581 |
+| `noteSettingChange` | frontend/js/settings-data.js:1054 |
+| `paintClearRow` | frontend/js/settings-data.js:751 |
+| `previewCaches` | frontend/js/settings-data.js:726 |
+| `previewCount` | frontend/js/settings-data.js:735 |
 | `privacyAddressLine` | frontend/js/settings-data.js:39 |
 | `privacyDestinationRow` | frontend/js/settings-data.js:47 |
 | `privacyGroups` | frontend/js/settings-data.js:23 |
@@ -7364,32 +7364,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderIntegrityNotice` | frontend/js/settings-data.js:474 |
 | `renderPrivacyRange` | frontend/js/settings-data.js:93 |
 | `renderPrivacyReceipt` | frontend/js/settings-data.js:141 |
-| `renderSettingsClear` | frontend/js/settings-data.js:757 |
-| `renderSettingsHistory` | frontend/js/settings-data.js:1290 |
+| `renderSettingsClear` | frontend/js/settings-data.js:758 |
+| `renderSettingsHistory` | frontend/js/settings-data.js:1305 |
 | `renderStorageBreakdown` | frontend/js/settings-data.js:212 |
 | `renderStorageSpaceNotice` | frontend/js/settings-data.js:453 |
-| `restoreGuideTurns` | frontend/js/settings-data.js:937 |
+| `restoreGuideTurns` | frontend/js/settings-data.js:938 |
 | `saveBackupCopyDir` | frontend/js/settings-data.js:297 |
-| `searchRecentAll` | frontend/js/settings-data.js:1087 |
-| `searchRecentClearAll` | frontend/js/settings-data.js:1099 |
-| `searchRecentRestore` | frontend/js/settings-data.js:1105 |
-| `settingChangeWords` | frontend/js/settings-data.js:1018 |
-| `settingListWords` | frontend/js/settings-data.js:1001 |
-| `settingName` | frontend/js/settings-data.js:994 |
-| `settingShown` | frontend/js/settings-data.js:983 |
-| `settingsClearCount` | frontend/js/settings-data.js:719 |
-| `settingsClearDone` | frontend/js/settings-data.js:889 |
-| `settingsHistoryAdd` | frontend/js/settings-data.js:1146 |
-| `settingsHistoryApply` | frontend/js/settings-data.js:1162 |
-| `settingsHistoryEntry` | frontend/js/settings-data.js:1127 |
-| `settingsHistoryFind` | frontend/js/settings-data.js:1157 |
-| `settingsHistoryLoad` | frontend/js/settings-data.js:1116 |
-| `settingsHistoryRedo` | frontend/js/settings-data.js:1243 |
-| `settingsHistoryRow` | frontend/js/settings-data.js:1256 |
-| `settingsHistorySave` | frontend/js/settings-data.js:1120 |
-| `settingsHistoryUndo` | frontend/js/settings-data.js:1229 |
-| `settingsPrefsSeen` | frontend/js/settings-data.js:1032 |
-| `undoImport` | frontend/js/settings-data.js:545 |
+| `searchRecentAll` | frontend/js/settings-data.js:1098 |
+| `searchRecentClearAll` | frontend/js/settings-data.js:1110 |
+| `searchRecentRestore` | frontend/js/settings-data.js:1116 |
+| `settingChangeWords` | frontend/js/settings-data.js:1019 |
+| `settingListWords` | frontend/js/settings-data.js:1002 |
+| `settingName` | frontend/js/settings-data.js:995 |
+| `settingShown` | frontend/js/settings-data.js:984 |
+| `settingsClearCount` | frontend/js/settings-data.js:720 |
+| `settingsClearDone` | frontend/js/settings-data.js:890 |
+| `settingsHistoryAdd` | frontend/js/settings-data.js:1157 |
+| `settingsHistoryApply` | frontend/js/settings-data.js:1173 |
+| `settingsHistoryEntry` | frontend/js/settings-data.js:1138 |
+| `settingsHistoryFind` | frontend/js/settings-data.js:1168 |
+| `settingsHistoryLoad` | frontend/js/settings-data.js:1127 |
+| `settingsHistoryRedo` | frontend/js/settings-data.js:1257 |
+| `settingsHistoryRow` | frontend/js/settings-data.js:1271 |
+| `settingsHistorySave` | frontend/js/settings-data.js:1131 |
+| `settingsHistoryUndo` | frontend/js/settings-data.js:1240 |
+| `settingsPrefsSeen` | frontend/js/settings-data.js:1033 |
+| `undoImport` | frontend/js/settings-data.js:546 |
 
 ### frontend/js/settings-find.js (36)
 
@@ -13224,7 +13224,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
-## Backend routes (704)
+## Backend routes (705)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -13276,7 +13276,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/apply/status` | GET | `apply_status` | src/tessellate/api/routes_update.py:847 |
 | `/ask` | POST | `ask` | src/tessellate/api/routes_help.py:68 |
 | `/ask/stream` | POST | `ask_stream` | src/tessellate/api/routes_help.py:88 |
-| `/audit` | DELETE | `clear_audit_log` | src/tessellate/api/routes_settings.py:2140 |
+| `/audit` | DELETE | `clear_audit_log` | src/tessellate/api/routes_settings.py:2163 |
 | `/audit` | GET | `audit_log` | src/tessellate/api/routes_settings.py:1864 |
 | `/audit/export.csv` | GET | `audit_export_csv` | src/tessellate/api/routes_settings.py:1955 |
 | `/auto` | PUT | `tidy_auto` | src/tessellate/api/routes_tidy.py:60 |
@@ -13408,8 +13408,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/entries/{entry_id}/meeting/summarise` | POST | `summarise_meeting` | src/tessellate/api/routes_meetings.py:231 |
 | `/entries/{entry_id}/properties` | GET | `entry_properties` | src/tessellate/api/routes_properties.py:45 |
 | `/entries/{entry_id}/properties` | PUT | `put_properties` | src/tessellate/api/routes_properties.py:61 |
-| `/events` | GET | `event_feed` | src/tessellate/api/routes_settings.py:2082 |
-| `/events/undo` | POST | `undo_actor` | src/tessellate/api/routes_settings.py:2053 |
+| `/events` | GET | `event_feed` | src/tessellate/api/routes_settings.py:2105 |
+| `/events/redo` | POST | `redo_undo` | src/tessellate/api/routes_settings.py:2094 |
+| `/events/undo` | POST | `undo_actor` | src/tessellate/api/routes_settings.py:2058 |
 | `/export` | GET | `export_bookmarks` | src/tessellate/api/routes_bookmarks.py:91 |
 | `/export` | GET | `export_learned` | src/tessellate/api/routes_learned.py:206 |
 | `/export.ics` | GET | `export_ics` | src/tessellate/api/routes_reminders.py:414 |
@@ -13665,7 +13666,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/recover` | POST | `recover` | src/tessellate/api/routes_auth.py:2242 |
 | `/recovery-key` | POST | `make_recovery_key` | src/tessellate/api/routes_auth.py:2165 |
 | `/recovery-key/save` | POST | `save_recovery_key` | src/tessellate/api/routes_auth.py:2212 |
-| `/recycle-bin/empty` | POST | `empty_recycle_bin` | src/tessellate/api/routes_settings.py:2156 |
+| `/recycle-bin/empty` | POST | `empty_recycle_bin` | src/tessellate/api/routes_settings.py:2179 |
 | `/redo` | POST | `redo` | src/tessellate/api/routes_learned_audit.py:60 |
 | `/reference-counts` | GET | `entry_reference_counts` | src/tessellate/api/routes_entries.py:2048 |
 | `/reindex` | POST | `rebuild_search_index` | src/tessellate/api/routes_models.py:1331 |
@@ -13734,7 +13735,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/summary` | GET | `learned_summary` | src/tessellate/api/routes_learned.py:245 |
 | `/summary` | GET | `summary` | src/tessellate/api/routes_questions.py:53 |
 | `/summary` | POST | `summary` | src/tessellate/api/routes_usage.py:35 |
-| `/support-bundle` | GET | `support_bundle` | src/tessellate/api/routes_settings.py:2262 |
+| `/support-bundle` | GET | `support_bundle` | src/tessellate/api/routes_settings.py:2285 |
 | `/switches` | GET | `get_switches` | src/tessellate/api/routes_learned.py:253 |
 | `/switches` | PUT | `put_switches` | src/tessellate/api/routes_learned.py:259 |
 | `/sync/file` | GET | `sync_file` | src/tessellate/api/routes_sync.py:76 |
@@ -13935,7 +13936,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10878)
+## Backend modules (10888)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22987,7 +22988,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stats` | src/tessellate/api/routes_search.py:192 |
 | `warm` | src/tessellate/api/routes_search.py:38 |
 
-### src/tessellate/api/routes_settings.py (69)
+### src/tessellate/api/routes_settings.py (71)
 
 | Name | File:line |
 |---|---|
@@ -22999,12 +23000,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `PreferenceBody` | src/tessellate/api/routes_settings.py:1681 |
 | `PreferencesBody` | src/tessellate/api/routes_settings.py:310 |
 | `ProposalAnswer` | src/tessellate/api/routes_settings.py:1689 |
+| `RedoBody` | src/tessellate/api/routes_settings.py:2087 |
 | `SavedSearch` | src/tessellate/api/routes_settings.py:710 |
 | `SkillInput` | src/tessellate/api/routes_settings.py:258 |
 | `SkillItem` | src/tessellate/api/routes_settings.py:267 |
 | `SuggestThinkingWordsBody` | src/tessellate/api/routes_settings.py:182 |
 | `TemplateItem` | src/tessellate/api/routes_settings.py:114 |
-| `UndoBody` | src/tessellate/api/routes_settings.py:2038 |
+| `UndoBody` | src/tessellate/api/routes_settings.py:2043 |
 | `_FreshConfig` | src/tessellate/api/routes_settings.py:810 |
 | `_apply_preference` | src/tessellate/api/routes_settings.py:1213 |
 | `_clean_avatar_style` | src/tessellate/api/routes_settings.py:94 |
@@ -23014,7 +23016,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_feed_item` | src/tessellate/api/routes_settings.py:2011 |
 | `_import_skip_reason` | src/tessellate/api/routes_settings.py:1382 |
 | `_merged_list` | src/tessellate/api/routes_settings.py:1339 |
-| `_models_status_snapshot` | src/tessellate/api/routes_settings.py:2336 |
+| `_models_status_snapshot` | src/tessellate/api/routes_settings.py:2359 |
 | `_not_private_events` | src/tessellate/api/routes_settings.py:1929 |
 | `_preference_detail` | src/tessellate/api/routes_settings.py:1069 |
 | `_preference_out` | src/tessellate/api/routes_settings.py:1695 |
@@ -23023,7 +23025,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_prefs_notebook` | src/tessellate/api/routes_settings.py:818 |
 | `_prefs_profile_and_ai` | src/tessellate/api/routes_settings.py:874 |
 | `_prefs_web_updates_voice` | src/tessellate/api/routes_settings.py:903 |
-| `_redacted_preferences` | src/tessellate/api/routes_settings.py:2207 |
+| `_redacted_preferences` | src/tessellate/api/routes_settings.py:2230 |
 | `_refused_elsewhere` | src/tessellate/api/routes_settings.py:1149 |
 | `_settings_file_preferences` | src/tessellate/api/routes_settings.py:1366 |
 | `_small_class` | src/tessellate/api/routes_settings.py:1609 |
@@ -23042,10 +23044,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `audit_export_csv` | src/tessellate/api/routes_settings.py:1956 |
 | `audit_log` | src/tessellate/api/routes_settings.py:1865 |
 | `checked_restored_preferences` | src/tessellate/api/routes_settings.py:1195 |
-| `clear_audit_log` | src/tessellate/api/routes_settings.py:2141 |
+| `clear_audit_log` | src/tessellate/api/routes_settings.py:2164 |
 | `draft_template` | src/tessellate/api/routes_settings.py:215 |
-| `empty_recycle_bin` | src/tessellate/api/routes_settings.py:2157 |
-| `event_feed` | src/tessellate/api/routes_settings.py:2083 |
+| `empty_recycle_bin` | src/tessellate/api/routes_settings.py:2180 |
+| `event_feed` | src/tessellate/api/routes_settings.py:2106 |
 | `export_preferences` | src/tessellate/api/routes_settings.py:1354 |
 | `forget_memory` | src/tessellate/api/routes_settings.py:1855 |
 | `get_preference_defaults` | src/tessellate/api/routes_settings.py:1315 |
@@ -23053,11 +23055,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `import_preferences` | src/tessellate/api/routes_settings.py:1398 |
 | `list_memory` | src/tessellate/api/routes_settings.py:1723 |
 | `list_skills` | src/tessellate/api/routes_settings.py:1614 |
+| `redo_undo` | src/tessellate/api/routes_settings.py:2095 |
 | `restart_app` | src/tessellate/api/routes_settings.py:1503 |
 | `set_console_mode` | src/tessellate/api/routes_settings.py:1434 |
 | `suggest_persona_thinking_words` | src/tessellate/api/routes_settings.py:188 |
-| `support_bundle` | src/tessellate/api/routes_settings.py:2263 |
-| `undo_actor` | src/tessellate/api/routes_settings.py:2054 |
+| `support_bundle` | src/tessellate/api/routes_settings.py:2286 |
+| `undo_actor` | src/tessellate/api/routes_settings.py:2059 |
 | `update_memory` | src/tessellate/api/routes_settings.py:1834 |
 | `update_preferences` | src/tessellate/api/routes_settings.py:1291 |
 
@@ -24430,25 +24433,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `old_name` | src/tessellate/core/envnames.py:19 |
 | `pop` | src/tessellate/core/envnames.py:34 |
 
-### src/tessellate/core/events.py (39)
+### src/tessellate/core/events.py (47)
 
 | Name | File:line |
 |---|---|
 | `_Write` | src/tessellate/core/events.py:162 |
 | `_compact_one` | src/tessellate/core/events.py:570 |
-| `_fields_to_restore` | src/tessellate/core/events.py:920 |
+| `_edited_since` | src/tessellate/core/events.py:1075 |
+| `_fields_to_restore` | src/tessellate/core/events.py:952 |
 | `_fold` | src/tessellate/core/events.py:183 |
+| `_is_own_undo` | src/tessellate/core/events.py:878 |
 | `_item_data` | src/tessellate/core/events.py:749 |
+| `_later_by_others` | src/tessellate/core/events.py:886 |
 | `_owner_private` | src/tessellate/core/events.py:227 |
-| `_plan_undo` | src/tessellate/core/events.py:863 |
+| `_plan_undo` | src/tessellate/core/events.py:905 |
 | `_private_words` | src/tessellate/core/events.py:220 |
-| `_readable_now` | src/tessellate/core/events.py:836 |
-| `_refused_early` | src/tessellate/core/events.py:852 |
-| `_restore_entry` | src/tessellate/core/events.py:929 |
+| `_readable_now` | src/tessellate/core/events.py:851 |
+| `_redo_fields` | src/tessellate/core/events.py:1091 |
+| `_redo_status` | src/tessellate/core/events.py:1098 |
+| `_redo_taken` | src/tessellate/core/events.py:1114 |
+| `_refused_early` | src/tessellate/core/events.py:867 |
+| `_restore_entry` | src/tessellate/core/events.py:977 |
 | `_session_of` | src/tessellate/core/events.py:351 |
 | `_state_upto` | src/tessellate/core/events.py:558 |
 | `_turn_bookkeeping` | src/tessellate/core/events.py:198 |
 | `_undone_ids` | src/tessellate/core/events.py:825 |
+| `_write_fields` | src/tessellate/core/events.py:961 |
 | `acting_as` | src/tessellate/core/events.py:81 |
 | `agent_actor` | src/tessellate/core/events.py:117 |
 | `agent_name` | src/tessellate/core/events.py:112 |
@@ -24465,13 +24475,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `object_state` | src/tessellate/core/events.py:779 |
 | `payload_bytes` | src/tessellate/core/events.py:667 |
 | `record` | src/tessellate/core/events.py:241 |
+| `redo` | src/tessellate/core/events.py:1124 |
 | `replay` | src/tessellate/core/events.py:389 |
 | `sketch_state` | src/tessellate/core/events.py:767 |
 | `snapshot_span` | src/tessellate/core/events.py:536 |
 | `states_at` | src/tessellate/core/events.py:409 |
 | `suppressed` | src/tessellate/core/events.py:145 |
 | `tags_of` | src/tessellate/core/events.py:682 |
-| `undo` | src/tessellate/core/events.py:955 |
+| `undo` | src/tessellate/core/events.py:997 |
 | `writes` | src/tessellate/core/events.py:298 |
 
 ### src/tessellate/core/extra_downloads.py (23)
@@ -27842,7 +27853,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22018)
+## Tests (22029)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27859,7 +27870,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_act_phrasings_1030.py | 2 |
 | tests/test_activity.py | 11 |
 | tests/test_activity_narrator_guide.py | 2 |
-| tests/test_activity_undo_row.py | 4 |
+| tests/test_activity_undo_row.py | 6 |
 | tests/test_acts.py | 11 |
 | tests/test_adaptive_context_b6.py | 18 |
 | tests/test_add_column_sites_1031.py | 3 |
@@ -28594,6 +28605,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dashboard_greeting_g6_1110.py | 7 |
 | tests/test_dashboard_layout_cap.py | 3 |
 | tests/test_dashboard_said_lines.py | 3 |
+| tests/test_dashboard_save_undo_l696.py | 1 |
 | tests/test_dashboard_spans_hidden_1031.py | 2 |
 | tests/test_dashboard_stats_memo.py | 2 |
 | tests/test_dashboard_streak.py | 2 |
@@ -28903,7 +28915,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_error_toasts.py | 8 |
 | tests/test_escape_closes.py | 3 |
 | tests/test_events.py | 25 |
-| tests/test_events_undo.py | 13 |
+| tests/test_events_undo.py | 16 |
 | tests/test_every_route_is_locked.py | 4 |
 | tests/test_everyday_vocabulary.py | 6 |
 | tests/test_evidence_spec.py | 12 |
@@ -29539,7 +29551,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_note_flow_0432.py | 27 |
 | tests/test_note_form_property_block.py | 3 |
 | tests/test_note_headings_s74.py | 3 |
-| tests/test_note_kinds_d5.py | 7 |
+| tests/test_note_kinds_d5.py | 8 |
 | tests/test_note_language_1490.py | 12 |
 | tests/test_note_link_chips.py | 2 |
 | tests/test_note_lock_toggle_1110.py | 3 |
@@ -30035,6 +30047,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_body_1501.py | 9 |
 | tests/test_settings_bugs_1017.py | 14 |
 | tests/test_settings_close_no_redraw_1111.py | 5 |
+| tests/test_settings_ctrl_z_l694.py | 3 |
 | tests/test_settings_field_edge.py | 2 |
 | tests/test_settings_fills_its_own_controls_l523.py | 1 |
 | tests/test_settings_group_heads.py | 2 |
@@ -30049,7 +30062,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_panes_indexed_1111.py | 1 |
 | tests/test_settings_path_wording.py | 1 |
 | tests/test_settings_prefs_split.py | 3 |
-| tests/test_settings_recent_changes.py | 8 |
+| tests/test_settings_recent_changes.py | 9 |
 | tests/test_settings_reset_gaps.py | 3 |
 | tests/test_settings_row_bar.py | 7 |
 | tests/test_settings_row_heads.py | 2 |
@@ -30984,14 +30997,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:806 |
+| Needs hardware | docs/roadmap/LEDGER.md:797 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:798 |
+| Owner calls | docs/roadmap/LEDGER.md:789 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31172,7 +31185,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:947 |
+| Plan session briefs | docs/roadmap/LEDGER.md:938 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31227,25 +31240,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:963 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1047 |
+| chat | docs/roadmap/LEDGER.md:954 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1038 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:987 |
-| general | docs/roadmap/LEDGER.md:757 |
+| documents | docs/roadmap/LEDGER.md:978 |
+| general | docs/roadmap/LEDGER.md:748 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:951 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1059 |
+| graph | docs/roadmap/LEDGER.md:942 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1050 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:999 |
+| mindmap | docs/roadmap/LEDGER.md:990 |
 | timeline | docs/roadmap/LEDGER.md:596 |
-| timeline | docs/roadmap/LEDGER.md:1023 |
+| timeline | docs/roadmap/LEDGER.md:1014 |
 | ui-modernisation | docs/roadmap/LEDGER.md:478 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1011 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1002 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:975 |
+| whiteboard | docs/roadmap/LEDGER.md:966 |
 | world-class | docs/roadmap/LEDGER.md:599 |
-| world-class | docs/roadmap/LEDGER.md:1035 |
+| world-class | docs/roadmap/LEDGER.md:1026 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

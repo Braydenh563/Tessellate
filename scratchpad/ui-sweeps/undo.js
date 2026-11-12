@@ -52,7 +52,7 @@ async function snapshot(page, withStorage) {
     const docs = out['/documents'] || [];
     for (const d of docs.slice(0, 6)) out['/documents/' + d.id] = await get('/documents/' + d.id);
     for (const b of (out['/whiteboard/boards'] || []).filter((b) => /^Probe/.test(b.title || ''))) out['/whiteboard/?board_id=' + b.id] = await get('/whiteboard/?board_id=' + b.id);
-    if (withStorage) { const ls = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (!/^(token|nm-|undo|draft|recent|nav|last|tour|onboarding|boot)/i.test(k)) ls[k] = localStorage.getItem(k); } out.ls = ls; }
+    if (withStorage) { const ls = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (!/^(token|nm-|undo|draft|recent|nav|last|tour|onboarding|boot)/i.test(k) && !/settingsHistory/.test(k)) ls[k] = localStorage.getItem(k); } out.ls = ls; }
     return out;
   }, { base: L.BASE, withStorage });
   const parts = {};

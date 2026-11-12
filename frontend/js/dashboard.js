@@ -216,10 +216,19 @@ function dashLayout() {
 }
 
 async function saveDashLayout(layout) {
+  const before = prefsCache?.dashboard_layout || { order: [], hidden: [], wide: [], sizes: {} };
+  const was = prefsCache;
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
     body: JSON.stringify({ dashboard_layout: layout }),
   }).catch(() => prefsCache);
+  //: The dashboard's layout is a step on the stack (L696): Ctrl+Z puts it back.
+  if (prefsCache !== was && JSON.stringify(before) !== JSON.stringify(layout)) {
+    pushRequestUndo("Dashboard layout", "/preferences", "PUT", { dashboard_layout: before }, { dashboard_layout: layout }, async () => {
+      prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+      renderDashboard();
+    });
+  }
 }
 
 // Add/remove and wide/narrow, factored out of the inline "Edit layout" grid
@@ -1396,7 +1405,15 @@ function quickLinkButton(link, tint = "") {
 }
 
 async function saveQuickAccess(ids) {
+  const before = Array.isArray(prefsCache?.dashboard_quick_access) ? prefsCache.dashboard_quick_access : [];
+  const was = prefsCache;
   prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ dashboard_quick_access: ids }) }).catch(() => prefsCache);
+  if (prefsCache !== was && JSON.stringify(before) !== JSON.stringify(ids)) {
+    pushRequestUndo("Quick access", "/preferences", "PUT", { dashboard_quick_access: before }, { dashboard_quick_access: ids }, async () => {
+      prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+      renderQuickLinks();
+    });
+  }
 }
 
 function quickTints() {
@@ -1405,7 +1422,15 @@ function quickTints() {
 }
 
 async function saveQuickTints(tints) {
+  const before = quickTints();
+  const was = prefsCache;
   prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ dashboard_quick_tints: tints }) }).catch(() => prefsCache);
+  if (prefsCache !== was && JSON.stringify(before) !== JSON.stringify(tints)) {
+    pushRequestUndo("Quick access colours", "/preferences", "PUT", { dashboard_quick_tints: before }, { dashboard_quick_tints: tints }, async () => {
+      prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+      renderQuickLinks();
+    });
+  }
 }
 
 //: True while the row is being arranged: the editing view and its picker are
@@ -3918,10 +3943,27 @@ async function undoActorFrom(actor, since, byId, rerender) {
   );
   if (!ok) return;
   try {
-    const done = await apiJson("/events/undo", {
-      method: "POST",
-      body: JSON.stringify({ actor, since, dry_run: false }),
-    });
+    const body = JSON.stringify({ actor, since, dry_run: false });
+    const done = await apiJson("/events/undo", { method: "POST", body });
+    //: The server's redo (L805): Redo re-applies the reversed events, and the
+    //: next Undo reverses them again, so this joins the normal stack.
+    const settle = async () => {
+      await loadEntries().catch(() => {});
+      rerender();
+    };
+    if (done.restored?.length) {
+      pushUndo(
+        `Undid what ${name} changed`,
+        async () => {
+          await apiJson("/events/redo", { method: "POST", body: JSON.stringify({ restored: done.restored }) });
+          await settle();
+        },
+        async () => {
+          done.restored = (await apiJson("/events/undo", { method: "POST", body })).restored;
+          await settle();
+        }
+      );
+    }
     toast(`Put back ${nounCount(done.undone, "note")}.`);
     await loadEntries().catch(() => {});
     rerender();
@@ -3937,8 +3979,10 @@ async function undoActorFrom(actor, since, byId, rerender) {
 //: has put everything back instead of staying to say "Already undone".
 function activityUndoStarts(items) {
   const undone = new Set();
+  //: A redo names the undo it took back (`redid`): that undo no longer counts.
+  const redone = new Set(items.flatMap((item) => (item.action === "redone" && Array.isArray(item.redid) ? item.redid : [])));
   for (const item of items) {
-    if (item.action === "restored" && Array.isArray(item.undid)) item.undid.forEach((id) => undone.add(id));
+    if (item.action === "restored" && !redone.has(item.id) && Array.isArray(item.undid)) item.undid.forEach((id) => undone.add(id));
   }
   const from = new Map();
   for (const item of items) {

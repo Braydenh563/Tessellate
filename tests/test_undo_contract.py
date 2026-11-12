@@ -37,11 +37,9 @@ EDITOR_HISTORY = re.compile(r"^(docUndo|autocorrectUndo)")
 UNFOLDED: dict[str, str] = {
     "chat-agent.js:updateDraftUndoButton": "paints that button",
     "dashboard.js:activityUndoPlanText": "words for the activity undo's confirm",
-    "dashboard.js:undoActorFrom": "reverses an actor's changes through /events/undo, which has no redo",
     "dashboard.js:activityUndoStarts": "finds where that undo starts",
     "dashboard.js:activityUndoControl": "draws that undo's button",
     "editor.js:inlineAiUndo": "the inline AI bar's discard, on unsaved text in the field",
-    "note-history.js:undoSkillRun": "reverses a skill run's writes after a confirm, no redo",
 }
 
 

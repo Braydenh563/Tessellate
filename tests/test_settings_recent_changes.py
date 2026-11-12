@@ -61,6 +61,9 @@ globalThis.settingsOpen = () => open;
 globalThis.toastAction = (message, label, run, opts) => toasts.push({{ message, label, opts }});
 globalThis.toastHost = () => ({{ querySelectorAll: () => [{{ getAnimations: () => [{{ currentTime: 100 }}], remove: () => removed.push(1) }}] }});
 globalThis.settingsHistoryUndo = () => {{}};
+globalThis.settingsHistoryApply = () => {{}};
+globalThis.undoStack = [];
+globalThis.pushUndo = (label, undo, redo) => {{ const action = {{ label, undo, redo }}; undoStack.push(action); return action; }};
 globalThis.setTimeout = (fn, ms) => {{ timers.push({{ fn, ms }}); return timers.length; }};
 globalThis.clearTimeout = (id) => {{ if (timers[id - 1]) timers[id - 1].dead = true; }};
 globalThis.LOOK_KEYS = ["density", "radius"];
@@ -215,3 +218,22 @@ def test_a_recent_change_row_is_text_beside_a_quiet_action_that_never_wraps() ->
     action = css[css.index(".entry-list .recent-change .row-actions {") :].split("}")[0]
     assert "flex: none" in action and "white-space: nowrap" in action
     assert "opacity: 1" in action, "the entry list hides row actions until hover; this one is there at rest"
+
+
+def test_a_switch_is_a_step_on_the_stack_a_drag_is_one_and_a_quiet_change_adds_none_l694() -> None:
+    out = _run(
+        """
+noteSettingChange({ kind: "prefs", changes: [{ key: "a_b", old: 1, new: 2 }] });
+const afterSwitch = undoStack.map((a) => a.label);
+noteSettingChange({ kind: "look", changes: [{ key: "radius", old: "8", new: "9" }] });
+noteSettingChange({ kind: "look", changes: [{ key: "radius", old: "9", new: "12" }] });
+const afterDrag = undoStack.map((a) => a.label);
+noteSettingChange({ kind: "recents", changes: [], words: "Cleared", data: {} }, { quiet: true });
+console.log(JSON.stringify({ afterSwitch, afterDrag, quiet: undoStack.length, change: undoStack[0].settingChange.changes[0].key }));
+"""
+    )
+    got = json.loads(out)
+    assert got["afterSwitch"] == ["A b: 1 to 2"]
+    assert got["afterDrag"] == ["A b: 1 to 2", "Radius: 8 to 12"], "the drag leaves one step, back to where it began"
+    assert got["quiet"] == 2, "a caller that raised its own Undo adds none here"
+    assert got["change"] == "a_b"

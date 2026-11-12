@@ -12,6 +12,11 @@ below). Versioning is `0.x` while the app stabilises.
 - A tool call the app did not offer (no card, no tag) is refused and runs nothing; Undo and Redo carry the server's tag (L-world-class-28)
 - Two world-class checks were already true: every route is named by a test (L615) and the palette's Find anything handoff passes in Playwright (L538)
 - The staged gate is about a minute faster: the lazy-bundle lint tokenises each file once (L545).
+- Ctrl+Z now reaches a Settings change from inside Settings and from a focused switch or slider; the learning switches are undoable. Driven in a browser: 12 of 13 sampled settings undo and redo (0 before), documents 2 of 2, library 2 of 2 (L694, L534, L646, L651).
+- The dashboard's layout, quick access row and quick colours are undoable with Ctrl+Z (L696).
+- Settings switches, choices, sliders, backup retention and sampling are steps on the undo stack, so Ctrl+Z and Ctrl+Shift+Z reach them; a drag is one step (L694).
+- Undoing what Atlas or a skill run changed now has a server Redo (POST /events/redo) and joins the normal undo stack, so Ctrl+Z and Ctrl+Shift+Z work on it (L805, L572).
+- Redoing an added note type keeps its id, so a later Undo of an edit on it still finds it (L571).
 - Settings hides Import a document until its package is installed, and clearing dismissed suggestions is covered end to end (L-world-class-10, L590).
 - Tests no longer wait 5 seconds each for the autonomous loop at teardown (CI ran past its 90-minute limit).
 - Chat's side routes have their own file, every file over 800 lines has a cap that only falls, and no Python function passes 150 lines (L624, L640). An import cycle between media cleanup and note text is gone.

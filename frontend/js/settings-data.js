@@ -493,6 +493,7 @@ async function renderBackupRetention() {
   input.min = storage.backup_retention_min;
   input.max = storage.backup_retention_max;
   input.value = storage.backup_retention_count;
+  input.dataset.keep = String(storage.backup_retention_count);
   input.title = `Between ${storage.backup_retention_min} and ${storage.backup_retention_max}`;
 }
 
@@ -1067,10 +1068,20 @@ function noteSettingChange(change, { quiet = false } = {}) {
       if (before) change.changes[i] = { ...c, old: before.old };
     });
     clearTimeout(last.timer);
+    //: The tick this one continues leaves the stack: one Ctrl+Z for the whole drag.
+    const spent = undoStack.indexOf(last.action);
+    if (spent !== -1) undoStack.splice(spent, 1);
   }
   change.label = settingChangeWords(change);
-  settingFresh.last = { change, timer: 0 };
+  settingFresh.last = { change, timer: 0, action: null };
   settingsHistoryAdd(change);
+  //: A switch or a choice is a step on the one stack (L694), so Ctrl+Z and the
+  //: status bar reach it; a caller that raised its own Undo (`quiet`) has one.
+  if (!quiet) {
+    const action = pushUndo(change.label, () => settingsHistoryApply(change, "old"), () => settingsHistoryApply(change, "new"));
+    action.settingChange = change;
+    settingFresh.last.action = action;
+  }
   if (quiet) return;
   //: One notice, with the Undo and long enough to use: the toast the control
   //: raised for its own change (a "Saved", found by its enter animation still
@@ -1229,6 +1240,9 @@ async function settingsHistoryApply(change, side) {
 async function settingsHistoryUndo(change) {
   try {
     await settingsHistoryApply(change, "old");
+    //: The step `noteSettingChange` put on the stack is spent by this Undo.
+    const live = undoStack.findIndex((action) => action.settingChange === change);
+    if (live !== -1) undoStack.splice(live, 1);
     //: Through the one undo contract (status.js, rule 1.8): an undone change
     //: waits on the redo side, so Redo and Ctrl+Y reach it like any other.
     const action = pushUndo(change.label, () => settingsHistoryApply(change, "old"), () => settingsHistoryApply(change, "new"));
@@ -1245,7 +1259,8 @@ async function settingsHistoryRedo(change) {
     await settingsHistoryApply(change, "new");
     //: Done again here, so the redo that waited for it (above) is spent.
     const waiting = redoStack.findIndex((action) => action.settingChange === change);
-    if (waiting !== -1) redoStack.splice(waiting, 1);
+    //: Done again here, it is a step to undo once more.
+    if (waiting !== -1) undoStack.push(...redoStack.splice(waiting, 1));
     renderUndoBar();
     toast(`Done again: ${change.label}`);
   } catch (error) {

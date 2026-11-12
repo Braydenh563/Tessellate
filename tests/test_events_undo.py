@@ -276,3 +276,59 @@ def test_private_text_under_the_current_key_is_put_back(session, monkeypatch):
     session.commit()
     session.refresh(entry)
     assert crypto.decrypt(key, entry.content) == "before the AI"
+
+
+def test_a_redo_puts_the_ais_change_back_and_a_second_undo_works_l805(session):
+    entry = _note(session)
+    mark = _last_event_id(session)
+    _as_ai(session, entry, category_name="Hobbies", tags=["pond"])
+    done = events.undo(session, AI, since_id=mark, apply=True)
+    session.commit()
+    assert len(done["restored"]) == 1
+    assert manager.category_name_for(session, entry) == "Garden"
+
+    plan = events.redo(session, done["restored"], apply=False)
+    assert [item["status"] for item in plan["items"]] == ["redo"]
+    assert manager.category_name_for(session, entry) == "Garden"  # a dry run writes nothing
+
+    back = events.redo(session, done["restored"], apply=True)
+    session.commit()
+    session.refresh(entry)
+    assert back["redone"] == 1
+    assert manager.category_name_for(session, entry) == "Hobbies"
+    assert json.loads(entry.tags) == ["pond"]
+
+    twice = events.redo(session, done["restored"], apply=True)
+    assert [item["status"] for item in twice["items"]] == ["already redone"]
+
+    # The redo made the AI's events live again: the same undo runs once more,
+    # and the undo/redo pair is not read as the person's edit in between.
+    again = events.undo(session, AI, since_id=mark, apply=True)
+    session.commit()
+    session.refresh(entry)
+    assert again["undone"] == 1
+    assert manager.category_name_for(session, entry) == "Garden"
+
+
+def test_a_redo_leaves_a_note_the_person_changed_since_l805(session):
+    entry = _note(session)
+    mark = _last_event_id(session)
+    _as_ai(session, entry, category_name="Hobbies")
+    done = events.undo(session, AI, since_id=mark, apply=True)
+    manager.update_entry(session, entry, content="Mine now")
+    session.commit()
+    back = events.redo(session, done["restored"], apply=True)
+    assert [item["status"] for item in back["items"]] == ["changed since"]
+    assert back["redone"] == 0
+
+
+def test_the_redo_route_and_the_feed_name_what_it_took_back_l805(client, session):
+    entry = _note(session)
+    mark = _last_event_id(session)
+    _as_ai(session, entry, category_name="Hobbies")
+    undone = client.post("/events/undo", json={"actor": AI, "since": mark, "dry_run": False}).json()
+    assert undone["undone"] == 1
+    redone = client.post("/events/redo", json={"restored": undone["restored"]}).json()
+    assert redone["redone"] == 1
+    feed = client.get(f"/events?since={mark}&include_quiet=true").json()["items"]
+    assert [i["redid"] for i in feed if i["action"] == "redone"] == [undone["restored"]]

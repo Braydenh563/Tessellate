@@ -160,6 +160,15 @@
       status.textContent = result.removed
         ? `Saved: removed ${result.removed} old backup${result.removed === 1 ? "" : "s"}.`
         : "Saved.";
+      //: The number is a setting, so Ctrl+Z puts it back (L694); backups already removed stay removed.
+      const was = Number(e.target.dataset.keep);
+      e.target.dataset.keep = String(keep);
+      if (was && was !== keep) {
+        pushRequestUndo("Backups to keep", "/backups/retention", "PUT", { keep: was }, { keep }, () => {
+          renderBackups();
+          return renderBackupRetention();
+        });
+      }
       renderBackups();
     } catch (error) {
       status.textContent = error.message;
@@ -4407,11 +4416,13 @@
   $("log-terminal-hint").classList.toggle("hidden", logView !== "terminal");
 
   $("sampling-reset")?.addEventListener("click", async () => {
+    const was = { ...(samplingState?.overrides || {}) };
     try {
       await apiJson("/models/sampling", {
         method: "PUT",
         body: JSON.stringify({ overrides: {} }),
       });
+      if (Object.keys(was).length) pushRequestUndo("Reset the sampling settings", "/models/sampling", "PUT", { overrides: was }, { overrides: {} }, loadSamplingSettings);
       toast("Back to what each model recommends.");
     } catch {
       toast("Couldn't reset those settings.", true);
@@ -4598,10 +4609,15 @@
 
   async function learnedSetSwitch(name, value) {
     try {
+      //: Undo sends back the one switch (the master only masks the other seven in the reply, it does not store them off) (L694).
+      const before = await apiJson("/learned/switches", { silent: true }).catch(() => null);
       await apiJson("/learned/switches", {
         method: "PUT",
         body: JSON.stringify({ [name]: value }),
       });
+      if (before && Boolean(before[name]) !== Boolean(value)) {
+        pushRequestUndo("Learning switch", "/learned/switches", "PUT", { [name]: before[name] }, { [name]: value }, renderLearnedSwitches);
+      }
     } catch (error) {
       toast(error.message, true);
     }

@@ -72,3 +72,19 @@ def test_the_feed_names_the_events_a_restore_reversed(client, session):
     changed = [item["id"] for item in feed if item["actor"] == AI]
     assert restored[0]["undid"] == changed
     assert all("undid" not in item for item in feed if item["action"] != "restored")
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_a_redo_brings_the_row_back_l805():
+    items = [
+        _item(3, AI),
+        _item(5, "user", "restored", undid=[3]),
+        _item(6, "user", "redone", redid=[5]),
+    ]
+    assert _starts(items) == {AI: 3}
+
+
+def test_both_ai_undos_join_the_stack_with_a_redo_l805():
+    for name, marker in (("dashboard.js", "Undid what ${name} changed"), ("note-history.js", "Undid this run")):
+        source = (JS_DIR / name).read_text(encoding="utf-8")
+        assert marker in source and '"/events/redo"' in source, name
