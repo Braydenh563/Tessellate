@@ -55378,3 +55378,134 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 - [x] **L242** `chat` partly, M: Thinking-dots reads in B55, throw-landing walk, opening-view appendChild 92-144 ms unverified in browser. From ledger-1112 X8. Built: 42e037951 (the large view's fit reads a part's style only past the counted box: 455 style reads to 10); the other hot spots, driven at 4x throttle, did not reproduce above 50 ms.
 - [x] **L200** `chat` partly, S: One Playwright drive of the atlas.js charactersArrived fix. From ledger-1112 P36. Built: verified 2026-11-12 with no code change: a drive holding the character scripts 9 s showed 4 saved turns with 0 avatar children while charactersLoaded was false, then 3 resting plus 1 live Atlas and 0 empty holders.
 - [x] **L182** `chat` open, L: Brief 88: dodge glance (N8), milestone cheer (N10), W31 E1 to E6 remainder. From SESSION_BRIEFS.md:258; ledger-1112 P7; ledger-1112 X18. Evidence: avatars.js:4155 nameMarkBuddyDodge has no glance; no milestone cheer found Built: 26092ac88 (nameMarkBuddyDodge.glance, NMB_MILESTONES and the milestone row) and a7e56bda1 (desk note_milestone); E1, E2, E3, E5 and E6 were already built, N9 is still open as L-chat-7 (typing_burst is a nod, not the asked stretch), E4 is L-chat-3. Desk looks are fake-transport tests only.
+
+## Moved from the roadmap, 2026-11-12
+
+The three queues below were retired from `docs/ROADMAP.md` (L-general-30); verbatim.
+
+## Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap")
+
+Moved out of release 0.4.0, which no longer waits for them. In this order,
+each an Opus agent that audits what exists first (CLAUDE.md section 1):
+
+1. **OneNote ideas and the meeting notes redesign** (INBOX 643, 644 below).
+2. **The code editor to VS Code standard, and writing checks everywhere**
+   (INBOX 646; the audit and target are DOCUMENTS_PLAN section 21).
+3. **What is left of the Coggle, Miro, Illustrator and Photoshop ideas**
+   (INBOX 641) once the map-nodes and icon-library agent of 2026-10-05 has
+   landed: read its LEDGER rows first.
+
+The owner's words, moved here from INBOX whole:
+
+643. **The owner, 2026-10-05, verbatim.** "Can we take anything from
+     Microsoft onenote??" Placed: with 641, as a research pass over notes,
+     pages, sections, ink and tags, compared with what Tessellate has.
+
+644. **The owner, 2026-10-05, verbatim.** "Can you also redesign and expand
+     and improve the meeting notes feature?? I feel like it is neglected and a
+     bit left behind and tucked away." With it: "Hold the release until these
+     things are done. Just make sure all the open items are completed as well,
+     that there are no bugs, and that everything is polished." Placed: the
+     Opus research and design pass with 641 to 643, then a build agent.
+     Decision taken (superseded the same day: these moved to the next PR): release 0.4.0 waits for 640 to 644 and every buildable
+     non-backlog open item.
+
+646. **The owner, 2026-10-05, verbatim.** "Can you also make sure the code
+     editor and and grammar checker etc are really good and used across the
+     app and also cover a large range of code languages?? I want the code
+     editor to be on par with and even surpass vs code. With also styling and
+     formatting options, small things the user takes for granted and expects
+     to be there but aren't, code suggested prefills, shortcuts, key binds,
+     options for specific code elements like for example what css options are
+     available for a specific css feature, python, java, js, c#, c, c++,
+     Visual Basic, p5.js, and more" Placed: DOCUMENTS_PLAN section 21, an
+     Opus audit-then-build agent after the 641 to 644 design pass. Moved to
+     the next PR with 641's remainder, 643 and 644.
+
+641. **The owner, 2026-10-05, verbatim.** "can we take anything more from
+     applications like coggle.it, adobe illustrator, adobe photoshop, and miro
+     for the whiteboard and mind map?? I'm still not happy on the mindmap with
+     how the core nodes work and can be customised as well as with the icons
+     in them." Placed: an Opus research and design pass. It compares those
+     four apps against the board and the map, then redesigns the map's core
+     nodes and node icons, and writes the result into MINDMAP_PLAN and
+     WHITEBOARD_PLAN with decisions, before anything is built.
+     **Map-node part fixed 08d5829 to 87241de (mc1).** Measured before: the
+     centre, a branch and a leaf at 13.6px, weight 400, 31px tall; after,
+     22px/700 solid pill, 17px/700 tinted, 13.6px/400 (`mc1-maplevels.js`
+     13/13); per-level looks, Redefine and copy/paste style (`mc1-maplook.js`
+     13/13); a topic's icon from 1,530 Phosphor icons or 476 emoji
+     (`mc1-iconpicker.js` 12/12). Still open, so this stays: Illustrator's
+     linked symbols, Photoshop's layer effects, Miro's reactions and the
+     whiteboard half of the research (MINDMAP_PLAN §14.4).
+
+
+## How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line)
+
+PR 144 (0.3.0) closed the UI modernisation, the per-surface redesigns, the
+audit of 2026-09-13 and the owner's reports to INBOX 222. **PR 149 closed
+the week of outside changes and a night of measured fixes**: the whiteboard
+restored from a codemod that deleted ten live functions, the Windows console
+windows, the Tesseract probe, INBOX 225, 226, 232, 238, 246, 256, 257, 259
+and 260, and I9's Settings section, which had a complete backend and no
+screen at all.
+
+**The thing that PR taught, worth carrying into the next one.** A scan of
+every route the app serves against every path the frontend fetches
+(`scratchpad/probe_dead_routes.py`) found a whole plan item built, tested
+and unreachable, plus three more routes with no caller. Nothing in the
+suite could see it, because every piece of it passed. Run that probe at the
+start of a session that is about to build something new, and run the three
+sweeps that were added with it: `keyboard.js` walks the tab order,
+`requests.js` fails on a request that answers 4xx where nobody is told, and
+`leaks.js` watches listeners and nodes per round.
+
+What comes next, in order, each its own PR:
+
+1. **Read, in this order, at the start of every session:** `CLAUDE.md`,
+   HANDOVER's standing orders and "Now" line, INBOX, `LEDGER.md` for the
+   surface in hand, the plan for that surface. Merge any agent worktree
+   with commits not on the branch before anything else.
+2. **The speed budget first** (WORLD_CLASS_PLAN 18, H7): boot JS under
+   1 MB compressed, first paint under 300 ms, every long list virtualised.
+   It makes every later measurement honest.
+3. **The professional-use block** (BACKLOG 115, WORLD_CLASS_PLAN H6):
+   import from Obsidian, Notion and Apple Notes; print and PDF export;
+   keyboard-complete; WCAG AA; bulk operations; encrypted export. Rows 1,
+   2, 7 and 10 first.
+4. **Empty `LEDGER.md` plan by plan**, taking the plan's open phase
+   with it: Documents (Phase 4), Graph (Phase 5, the node panel), the phone
+   (UI Phase 11), then Chat Phase 1's other half once Brief 12's fixtures
+   exist.
+5. **The horizon** (WORLD_CLASS_PLAN 18): H1 the night shift finished, H2
+   evidence cards and open questions, H3 the model bench, H4 the notebook
+   as a local service, H8 time travel and the margin reader, H5 sync.
+6. **Section 9's dev-only llama.cpp runner** at the first quiet moment: it
+   is the single blocker behind every "not verified against a real model"
+   line in the plans.
+
+The rules that do not change: decisions in a plan's "Decisions made" are
+not remade; a mid-work report goes into INBOX verbatim and is triaged at
+the next boundary; a built phase's block moves to HISTORY the same commit;
+no new plan documents; every claim carries a number from a sweep.
+
+## Next up, ranked by what it unlocks
+
+1. H7 the speed budget (unlocks honest numbers for everything after).
+2. BACKLOG 115 rows 1, 2, 7, 10 (unlocks trust for daily professional use).
+   Row 7, keyboard-complete and WCAG AA, has its first tool now:
+   `scratchpad/ui-sweeps/keyboard.js` walks the tab order and passes, so
+   that row starts from a measured baseline rather than from nothing.
+3. `LEDGER.md` documents and graph sections with their plan phases.
+4. UI Phase 11, the phone done properly.
+5. H1 to H4 in that order; H8; H5 last. H1's manual half is wired now
+   ("Read my notes now", Settings, "What it learned"), so H1 is the
+   remaining kinds (tensions, duplicates, entities, dates) and the bulk
+   routes I9's table has buttons waiting for.
+6. The three things PR 149 left deliberately undone, each with its reason
+   written where it belongs: right-drag to pan the board (INBOX 258, the
+   acceptance test is written and failing in
+   `scratchpad/ui-sweeps/wbrightpan.js`), the faded-notes-near-this route
+   with nowhere to put it (INBOX 261, it wants a note detail view this app
+   does not have), and B1's event feed with no activity strip reading it.
+

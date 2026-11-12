@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
+| mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 702 | 157 | 3 | 195 | 1412 |
 
 ## graph
 
@@ -474,6 +474,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-mindmap-7** `mindmap` open, S: Make Web link insert inline syntax distinct from Link card. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1526. Evidence: Open line in the plan's prose a session could miss. The slash menu's Link card and Web link render the same. The inline-syntax recommendation waits on the owner.
 - [ ] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row.
 - [ ] **L-mindmap-9** `mindmap` open, S: Measure idle and drag cost on a map of hundreds of nodes. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1751. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census gap, with no row.
+- [ ] **L-mindmap-11** `mindmap` open, M: Illustrator linked symbols, Photoshop layer effects, Miro reactions and the whiteboard half of the 641 research. From docs/ROADMAP.md (retired Next PR queue, item 641). Evidence: HISTORY 'Moved from the roadmap, 2026-11-12'; MINDMAP_PLAN 14.4
 
 ## ui-modernisation
 
