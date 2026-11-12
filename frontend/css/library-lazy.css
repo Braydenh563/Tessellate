@@ -2771,7 +2771,7 @@ body.printing-doc #doc-preview p,
   transform: scale(calc(20 / 28 * var(--wb-inv-zoom)));
   right: calc(100% + 2px * var(--wb-inv-zoom));
 }
-#whiteboard-container .wb-map-node[data-flow="down"] .wb-map-actions {
+#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions {
   transform-origin: 50% 0;
   right: auto;
   left: 50%;

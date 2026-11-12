@@ -576,7 +576,9 @@
     wbAnnounce("Fetching the picture.");
     try {
       const uploaded = await apiJson("/links/image", { method: "POST", body: JSON.stringify({ url }) });
-      await wbMapSetNodeStyle(node, { image: uploaded.url });
+      //: The fetched file is kept like any board picture; setting it on the
+      //: topic is the write, one Undo step like every topic look.
+      await wbRecordGesture(wbMapSetNodeStyle, [node, { image: uploaded.url }]);
       renderWhiteboardNow();
     } catch (err) {
       toast(err.message || "That picture could not be fetched.", true);

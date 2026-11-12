@@ -894,6 +894,9 @@ const WB_INV_ZOOM_GRIPS = [
   ".wb-map-edge-handle",
   ".wb-map-resize-grip",
   ".wb-map-actions",
+  //: Their small-zoom and downward-flow placements (L360) read it too.
+  "#whiteboard-container[data-wb-zoom-far] .wb-map-actions",
+  "#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions",
   ".wb-map-collapse",
   ".wb-map-count",
   ".wb-sketch-rotate-handle",

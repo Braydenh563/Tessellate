@@ -628,7 +628,12 @@
         bar.remove();
         await refreshEntries([board.id]);
         switchTab("chat");
-        toast("Discarded the proposed map. Ctrl+Z brings it back.");
+        offerUndo(
+          "Discarded a proposed map",
+          "Discarded the proposed map.",
+          () => apiJson(`/entries/${board.id}/restore`, { method: "POST" }).then(() => refreshEntries([board.id])),
+          () => apiJson(`/entries/${board.id}`, { method: "DELETE" }).then(() => refreshEntries([board.id])),
+        );
       } catch (error) {
         toast(error.message || "The proposed map could not be discarded.", true);
       }
