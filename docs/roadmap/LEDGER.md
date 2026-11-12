@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 127 | 42 | 0 | 17 | 299 |
+| world-class | 130 | 125 | 42 | 0 | 17 | 297 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 653 | 141 | 3 | 140 | 1347 |
+| all | 553 | 651 | 141 | 3 | 140 | 1345 |
 
 ## graph
 
@@ -720,7 +720,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L621** `world-class` open, M: Lazy mount meeting recorder card and graph options panel (ids read at boot). From row21-1109.md Left. Evidence: Source: prefs.js, navigation.js, wiring.js read #graph-options ids; not started
 - [ ] **L622** `world-class` open, L: Build one LEDGER.md with per-plan tags and paste-in briefs; delete retired agent-remaining/roadmap files and unused code files. From INBOX.md:1784. Evidence: docs/roadmap/LEDGER.md does not exist; ~580 agent-remaining files still present; owner-ordered work for this PR
 - [ ] **L623** `world-class` open, L: Re-verify audit-1028 to 1107 rows marked Open in a dedicated ledger pass. From book1..book6-1109.md. Evidence: Not re-verified row by row here; many later fixed (see composer rows above); ledger needs a dedicated pass
-- [ ] **L624** `world-class` open, L: Split files over the 800-line bar (avatars.js, routes_chat.py and others). From OPEN.md:4511. Evidence: avatars.js, routes_chat.py and others still over; splits deferred
 - [ ] **L625** `world-class` open, L: Design a repository layer so routes stop holding ORM queries. From OPEN.md:4512. Evidence: Repository layer design pass deferred (repo/content.py exists only for content)
 - [ ] **L626** `world-class` open, L: Apply the tag: filter before the 200 keyword candidates cut in search/engine.py. From OPEN.md:867; OPEN.md:3738. Evidence: search/engine.py:1339-1345 filters rows after retrieval
 - [ ] **L627** `world-class` open, L: Move data out of code into src/tessellate/data and add test_import_time; add companion reaction budget. From SESSION_BRIEFS.md:216; e19-1110.md True. Evidence: No src/tessellate/data dir; question_noise.py/composer_tables.py hold data inline; no tests/test_import_time.py
@@ -736,7 +735,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L637** `world-class` open, L: ARCH-02: POST /entries p50 210 ms at 5,000 notes, get under 150. From OPEN.md:1480; OPEN.md:3246. Evidence: HISTORY covers search/similar_pairs wins only; no POST /entries 5k result under 150ms found
 - [ ] **L638** `world-class` open, L: Frontend audit leftovers FE-09/10/11/13/14. From OPEN.md:3267. Evidence: No coverage-driven CSS deletion or Settings lazy markup found
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, chat.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block
-- [ ] **L640** `world-class` open, L: K25: split ten functions over 150 lines. From v1028-1.md Remaining. Evidence: One step each per source; no completion record
 - [ ] **L643** `world-class` partly, S: Left: `aiIsOff()` (status.js:2122, already reading `model_ready`) is still called from 14 files; move those controls to read `model_ready` directly. From OPEN.md:1924.
 - [ ] **L646** `world-class` partly, S: Re-drive undo counts for documents, OCR, meetings. From OPEN.md:3455. Evidence: undo-kit.js, undo-store.js, standalone-undo.js now exist (Brief 74 landed); counts not re-driven.
 - [ ] **L651** `world-class` partly, S: Drive undo helpers in a browser (only node --check and scanner so far). From OPEN.md:512. Evidence: Scanner + node checks exist; no cited Playwright drive of every undo step; Playwright is available so can be driven

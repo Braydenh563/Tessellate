@@ -20,7 +20,6 @@ that one note.
 from __future__ import annotations
 
 import json
-import re
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -32,7 +31,7 @@ from tessellate.entry import manager_text
 # Same shape routes_whiteboard.py's own MEDIA_URL_RE validates on the way in, 
 # kept independent (not imported) since this only ever reads, never resolves
 # a path from user input.
-_MEDIA_NAME_RE = re.compile(r"/media/([A-Za-z0-9][A-Za-z0-9._-]{0,119})")
+_MEDIA_NAME_RE = manager_text.MEDIA_NAME_RE
 
 
 def referenced_names(text: str) -> set[str]:

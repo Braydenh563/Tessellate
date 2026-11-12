@@ -46,6 +46,7 @@ from tessellate.api import (
     routes_bookmarks,
     routes_categories,
     routes_chat,
+    routes_chat_meta,
     routes_conversations,
     routes_debug,
     routes_documents,
@@ -1536,6 +1537,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_properties.router, LOCKED),
     (routes_property_table.router, LOCKED),
     (routes_chat.router, LOCKED),
+    (routes_chat_meta.router, LOCKED),  # its side routes (L624)
     (routes_ask_history.router, LOCKED),
     (routes_models.router, LOCKED),
     (routes_settings.router, LOCKED),
