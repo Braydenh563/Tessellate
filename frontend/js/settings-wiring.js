@@ -1437,7 +1437,10 @@ function runShortcut(id) {
     // Same call the status bar's own Back/Forward buttons already make.
     navigateBack: () => stepTabHistory(-1),
     navigateForward: () => stepTabHistory(1),
-    renameRow: renameFocusedRow,
+    renameRow: () => {
+      const host = document.activeElement instanceof Element ? document.activeElement.closest(ROW_MENU_HOSTS) : null;
+      host?.querySelector(".menu-wrap")?.rowMenu?.items.find((it) => /^ph:\S+ Rename\b/.test(it.label || ""))?.run();
+    },
   };
   actions[id]?.();
 }

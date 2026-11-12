@@ -12,7 +12,7 @@ APP = frontend_text("app.js")
 
 
 def test_both_dialogs_mount_in_the_open_modal():
-    host = APP[APP.index("function dialogHost(") :][:400]
+    host = APP[APP.index("confirmDialog.host = ") :][:200]
     assert "dialog:modal" in host
-    assert APP.count("dialogHost().appendChild(overlay)") == 2
+    assert APP.count("confirmDialog.host().appendChild(overlay)") == 2
     assert "document.body.appendChild(overlay)" not in APP[APP.index("function confirmDialog(") : APP.index("function wireBackdropClose(")]

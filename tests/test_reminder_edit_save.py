@@ -88,3 +88,13 @@ def test_a_refused_save_says_why_and_keeps_the_form_open():
 def test_the_action_row_sits_one_gap_under_the_fields():
     form = _form()
     assert 'row.style.marginTop = "var(--space-2)"' in form
+
+
+def test_saving_an_edit_shows_an_undo_toast_like_delete_and_snooze():
+    """A saved edit was undoable by Ctrl+Z only; it now offers the Undo toast too."""
+    edit = (JS_DIR / "reminder-edit.js").read_text(encoding="utf-8")
+    shell = (JS_DIR / "shell-reminders.js").read_text(encoding="utf-8")
+    assert "return pushUndo(label, put({ ...before, restore: true })" in shell
+    save = edit[edit.index("const action = await reminderPutUndoably(") :][:800]
+    assert 'toastAction(`Saved ${toastName(text, "the reminder")}.`, "Undo"' in save
+    assert "settleUndoFromToast(action);" in save and "await action.undo()" in save

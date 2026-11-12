@@ -28,6 +28,80 @@
    masonry columns instead of becoming single-width rows. Cards ended up
    squeezed to column-width and their text wrapped to one character per
    line. `columns: unset` undoes the multi-column layout entirely. */
+/* Moved from 07-whiteboard-misc.css: only library.js draws a skill card (boot budget). */
+/* ======================= SKILLS TAB ======================= */
+/* Columns dealt by script in reading order (library.js `renderSkillCards`,
+   INBOX 450), each a stack on the grid's own gap, so a card is as tall as
+   its own content and no taller: a grid row stretched a short card's row to
+   its tallest neighbour and left the gap under it. */
+.skills-grid {
+  display: flex;
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+  /* Each column sizes to its own cards: opening one card's steps grows that
+     card and its column, never a neighbour (the reason the grid once had
+     `align-items: start`, which still left the row's height behind). */
+  align-items: flex-start;
+}
+.skill-card {
+  --skill-fact-h: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--inner);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: transform var(--ui-slow) var(--ease-out), border-color var(--ui-fast) var(--ease-out);
+}
+.skill-card-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* 11. A skill card (findings 15 to 17). The title was `--text-md`, the same
+       size as the description under it and smaller than the card titles
+       everywhere else in the Library; it is a card title now. "Built-in"
+       was a pill on every card, the same weight as the title beside it, for
+       a fact that is true of most of them: it is a small label in muted ink,
+       and "Yours" keeps the accent, since that is the one worth seeing. */
+.skill-card-title {
+  font-size: var(--text-body);
+}
+
+/* 13. A skill card's title is an `h3` inside a `.card`, so the eyebrow
+       recipe (`.card h3`) set it at 12px muted: measured 12px where the
+       title of every other Library card is 16px. (The Contents jump chips
+       this item also styled went with INBOX 496.) */
+.skill-card .skill-card-title {
+  color: var(--ink);
+  font-size: var(--text-body);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+/* Which kind of skill this is. "Yours" rather than "Custom": the distinction
+   that matters to a reader is whether they can edit it. */
+.skill-badge {
+  flex: 0 0 auto;
+}
+/* **What running this will actually do**, steps, tools, inputs. The card
+   used to carry a name and a description and nothing else, which is not
+   enough to decide whether to let something edit your notebook. */
+.skill-card-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+/* Both margins were for a search box that sat on its own between two cards.
+   It is in the Skills dock now, where `.dock`'s own gaps place it and
+   `.dock input` zeroes the margin, so only the width behaviour is left to
+   say: search takes the leftover width, the same as every other dock's. */
+.skills-search {
+  margin: 0;
+}
+
 .library-grid.library-list {
   columns: unset;
   display: flex;

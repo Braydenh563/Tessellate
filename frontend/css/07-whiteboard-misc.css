@@ -819,7 +819,10 @@ aside[data-resizable].sidebar-collapsed {
    been seen. Traced at 500 notes (`scratchpad/ui-sweeps/f2-trace.js`): 1,206
    of the 1,382 elements in the Notes list were more than a window below the
    fold, and entering the tab restyled all of them, 61ms; with this, 31ms.
-   The Timeline's feed, 1,946 of 2,116: a 48ms layout became 7ms.
+   Not the Timeline's feed (L492): it is windowed (`windowRows`), so only
+   rows near the window exist, and a row locking and unlocking as it crossed
+   the edge was a layout a frame: 38 to 44 layouts a second while scrolling,
+   6 to 10 without, entry unchanged (430 nodes, 6 to 15ms of layout).
    Not a row being edited, holding an open disclosure or holding focus:
    containment clips what a row paints to its own box, and the note editor's
    toolbar menus and a `<details>` list open past it. The ⋯ menus are not
@@ -829,10 +832,6 @@ aside[data-resizable].sidebar-collapsed {
 #entry-list > li:not(.row-shell, .list-window-sentinel, :focus-within):not(:has(textarea, details[open], .cm-editor)) {
   content-visibility: auto;
   contain-intrinsic-size: auto 8.25rem;
-}
-.timeline-feed .timeline-row:not(:focus-within) {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 2.6rem;
 }
 /* Each list's placeholders are its own rows' shape (`showSkeletons`,
    app.js; the look is `.skeleton`, 02-chat-graph.css): a Library card's
@@ -896,78 +895,6 @@ aside[data-resizable].sidebar-collapsed {
    in 00-tokens-shell.css. A row of chips that each rise 2px with a shadow was
    the other half of the "pills" tell (INBOX 394 h), and the cards above had
    already given up the lift for the reason their own comment gives. */
-/* ======================= SKILLS TAB ======================= */
-/* Columns dealt by script in reading order (library.js `renderSkillCards`,
-   INBOX 450), each a stack on the grid's own gap, so a card is as tall as
-   its own content and no taller: a grid row stretched a short card's row to
-   its tallest neighbour and left the gap under it. */
-.skills-grid {
-  display: flex;
-  gap: var(--space-5);
-  margin-top: var(--space-6);
-  /* Each column sizes to its own cards: opening one card's steps grows that
-     card and its column, never a neighbour (the reason the grid once had
-     `align-items: start`, which still left the row's height behind). */
-  align-items: flex-start;
-}
-.skill-card {
-  --skill-fact-h: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5);
-  background: var(--inner);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  transition: transform var(--ui-slow) var(--ease-out), border-color var(--ui-fast) var(--ease-out);
-}
-.skill-card-title {
-  margin: 0;
-  font-weight: 600;
-}
-
-/* 11. A skill card (findings 15 to 17). The title was `--text-md`, the same
-       size as the description under it and smaller than the card titles
-       everywhere else in the Library; it is a card title now. "Built-in"
-       was a pill on every card, the same weight as the title beside it, for
-       a fact that is true of most of them: it is a small label in muted ink,
-       and "Yours" keeps the accent, since that is the one worth seeing. */
-.skill-card-title {
-  font-size: var(--text-body);
-}
-
-/* 13. A skill card's title is an `h3` inside a `.card`, so the eyebrow
-       recipe (`.card h3`) set it at 12px muted: measured 12px where the
-       title of every other Library card is 16px. (The Contents jump chips
-       this item also styled went with INBOX 496.) */
-.skill-card .skill-card-title {
-  color: var(--ink);
-  font-size: var(--text-body);
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0;
-}
-/* Which kind of skill this is. "Yours" rather than "Custom": the distinction
-   that matters to a reader is whether they can edit it. */
-.skill-badge {
-  flex: 0 0 auto;
-}
-/* **What running this will actually do**, steps, tools, inputs. The card
-   used to carry a name and a description and nothing else, which is not
-   enough to decide whether to let something edit your notebook. */
-.skill-card-facts {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-/* Both margins were for a search box that sat on its own between two cards.
-   It is in the Skills dock now, where `.dock`'s own gaps place it and
-   `.dock input` zeroes the margin, so only the width behaviour is left to
-   say: search takes the leftover width, the same as every other dock's. */
-.skills-search {
-  margin: 0;
-}
 textarea.drag-over {
   border-color: var(--accent);
   background-color: var(--inner);

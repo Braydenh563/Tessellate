@@ -175,11 +175,8 @@ wireLongPress(
 //: rows opens it, so the first half of a double-click would already have
 //: left the list. Runs the row's own Rename item, so there is one rename.
 //: The key is the `renameRow` row of the shortcut table (settings-wiring.js).
-function renameFocusedRow() {
-  const host = document.activeElement instanceof Element ? document.activeElement.closest(ROW_MENU_HOSTS) : null;
-  const item = host?.querySelector(".menu-wrap")?.rowMenu?.items.find((it) => /^ph:\S+ Rename\b/.test(it.label || ""));
-  item?.run();
-}
+//: The function itself lives on the table's `renameRow` row (settings-wiring.js),
+//: not as a global name (the scope ratchet).
 
 //: **Arrow keys between cards and rows, Home and End to the ends.** Chosen by
 //: where the items are drawn rather than by their order in the DOM: the

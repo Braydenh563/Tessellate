@@ -1270,10 +1270,8 @@ function confirmVerb(message) {
 
 // One confirm at a time (HR20): a second ask waits for the first to close, so
 // each takes focus and Esc answers the one the person can see.
-//: Inside the open modal `<dialog>` (top layer, makes the rest inert), else the page: a confirm on <body> sat beneath it (L453).
-function dialogHost() {
-  return [...document.querySelectorAll("dialog:modal")].pop() || document.body;
-}
+//: `host`: inside the open modal `<dialog>` (top layer, makes the rest inert), else the page: a confirm on <body> sat beneath it (L453). A property, not a global (the scope ratchet).
+confirmDialog.host = () => [...document.querySelectorAll("dialog:modal")].pop() || document.body;
 
 function confirmDialog(message, options = {}) {
   confirmDialog.n = confirmDialog.n || 0;
@@ -1360,7 +1358,7 @@ function confirmDialog(message, options = {}) {
     // Clicking the backdrop cancels, the way every other overlay here behaves.
     wireBackdropClose(overlay, () => close());
     document.addEventListener("keydown", onKey, true);
-    dialogHost().appendChild(overlay);
+    confirmDialog.host().appendChild(overlay);
     // Cancel takes focus, not the dangerous one: a stray Enter or Space
     // arriving with the dialog must not be the thing that deletes the notes.
     cancel.focus();
@@ -1486,7 +1484,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     overlay.appendChild(card);
     wireBackdropClose(overlay, () => close(""));
     document.addEventListener("keydown", onKey, true);
-    dialogHost().appendChild(overlay);
+    confirmDialog.host().appendChild(overlay);
     // The text, selected: a rename usually replaces the name rather than
     // editing it, and a caret at position 0 makes you clear it by hand first.
     input.focus();

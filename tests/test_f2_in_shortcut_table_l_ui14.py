@@ -17,7 +17,8 @@ def test_f2_is_declared_in_the_table():
 
 def test_the_loose_f2_listener_is_gone():
     assert 'event.key !== "F2"' not in JS
-    assert "renameRow: renameFocusedRow" in JS
+    row = JS[JS.index("    renameRow: () => {") :][:300]
+    assert "closest(ROW_MENU_HOSTS)" in row and "Rename" in row and ".run()" in row
 
 
 def test_turning_single_keys_off_leaves_a_named_key_on():

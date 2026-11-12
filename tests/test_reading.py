@@ -151,3 +151,25 @@ def test_a_typed_reminder_command_reads_a_numeric_date_in_the_locales_order():
     us = reading.read("remind me 3/4 at 9am", now=now, context={"locale": "en-US"})
     assert gb.slots["due_at"] == datetime(2027, 4, 3, 9, 0)
     assert us.slots["due_at"] == datetime(2027, 3, 4, 9, 0)
+
+
+def test_a_stored_birthday_setting_wins_over_the_notes(client, session):
+    """L473: Settings, General, My birthday is stored (`birthday`), read by
+    `/read` before any note, and a day that does not exist is refused."""
+    from tessellate.entry import manager
+
+    manager.create_entry(session, "# About me\n\nMy birthday is on 20 November.")
+    session.commit()
+    token = client.post("/auth/setup", json={"password": "first-pass"}).json()["token"]
+    headers = {"X-Auth-Token": token}
+    before = client.get("/preferences", headers=headers).json()["birthday"]
+    assert before == ""
+    impossible = client.put("/preferences", json={"birthday": "1990-02-30"}, headers=headers)
+    assert impossible.status_code in (400, 422)
+    saved = client.put("/preferences", json={"birthday": "1990-12-03"}, headers=headers)
+    assert saved.status_code == 200
+    after = client.get("/preferences", headers=headers).json()["birthday"]
+    assert after == "1990-12-03"
+    params = {"q": "call Sam on my birthday", "surface": "reminder", "now": "2026-10-07T10:00:00+00:00"}
+    got = client.get("/read", params=params, headers=headers).json()
+    assert got["slots"]["due_at"].startswith("2026-12-03"), got

@@ -200,7 +200,7 @@ def test_long_lists_skip_rows_that_are_off_screen():
         _strip_comments(p.read_text(encoding="utf-8"))
         for p in sorted((FRONTEND_DIR / "css").glob("*.css"))
     )
-    for row in ("#entry-list > li", ".timeline-feed .timeline-row"):
+    for row in ("#entry-list > li",):
         bodies = [
             m.group(1)
             for m in re.finditer(re.escape(row) + r"[^{};]*\{([^}]*)\}", css)
@@ -211,6 +211,21 @@ def test_long_lists_skip_rows_that_are_off_screen():
             f"{row}: `auto` in the intrinsic size remembers the height a row "
             "last drew at, so the scrollbar does not jump once it has been seen"
         )
+
+
+def test_the_windowed_timeline_feed_does_not_lock_its_rows():
+    """L492: the feed is windowed, so `content-visibility` on its rows only cost layouts.
+
+    Each row locking and unlocking as it crossed the window's edge was a
+    layout a frame: 38 to 44 layouts a second scrolling 2,096 notes, 6 to 10
+    without it, with the tab's entry unchanged (430 nodes either way).
+    """
+    css = "\n".join(
+        _strip_comments(p.read_text(encoding="utf-8"))
+        for p in sorted((FRONTEND_DIR / "css").glob("*.css"))
+    )
+    for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]*\.timeline-row[^{}]*)\{([^}]*)\}", css):
+        assert "content-visibility" not in m.group(2), m.group(1).strip()
 
 
 def test_a_data_load_does_not_cross_fade_the_library():
