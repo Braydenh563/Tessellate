@@ -7152,7 +7152,9 @@
                 ? "each category's area in proportion to its links."
                 : layoutKind === "tessellation"
                   ? "every note a cell, a bigger one for more links; categories are the framed regions."
-                  : "";
+                  : layoutKind === "map"
+                    ? "placed by meaning: notes about the same thing sit together."
+                    : "";
     //: Notes with nothing joined to them draw as loose dots with no word on
     //: why (dog3-1026 row 17): say so, and say how to join two.
     const unlinked = noteCount > 0 && !edges.some((edge) => edge.kind === "link" || edge.kind === "thread");
@@ -7211,6 +7213,14 @@
     slider.step = (max - min) / 100 || 1;
     slider.value = wasAtEnd ? max : Math.min(Number(slider.value), max);
     slider.dataset.graphInit = "1";
+    //: Play had nothing to sweep when every note shares one date, and a press
+    //: did nothing at all (gaudit 2026-11-12): it says so instead.
+    const play = document.getElementById("graph-time-play");
+    if (play) {
+      play.disabled = !(max > min);
+      if (play.disabled) play.title = "Every note has the same date, so there is nothing to play through";
+      else if (play.getAttribute("aria-pressed") !== "true") play.title = "Play through time";
+    }
     const say = (value) => {
       if (!label) return;
       label.textContent =

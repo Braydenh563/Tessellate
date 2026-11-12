@@ -55189,6 +55189,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the plans, 2026-11-12 (graph-plan session)
+- - **Time Play with one date, and the Map stats line** (gaudit and gideas leftovers, 2026-11-12), built: Play is disabled with a title when min equals max; graphRenderStats describes the map layout. tests/test_graph_time_play_one_date.py.
 - - **Open note on card view** (L709, the owner 2026-11-12: last card clicked), built: `#entry-list` remembers the last card clicked or focused, `refreshNoteSearchWhy` passes it as `entry_id`, `switchTab` forgets it on leaving Notes. Driven: entry_id=1998 sent after clicking that card. tests/test_notes_last_card_open.py.
 - - **Topics to categories** (L11, gtopics), built: the card says which category most of its notes sit in, and File as a category offers it first.
 - - **Manual topic edits** (L711, gtopics), built: merge and remove from the topic card, saved over the found topics, Undo and Reset topic edits. Two 5-note topics merged into one of 10; Undo restored. tests/test_topic_edits.py.
