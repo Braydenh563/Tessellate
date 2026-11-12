@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 172 | 58 | 0 | 72 | 360 |
+| world-class | 130 | 170 | 58 | 0 | 72 | 358 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 698 | 157 | 3 | 195 | 1408 |
+| all | 553 | 696 | 157 | 3 | 195 | 1406 |
 
 ## graph
 
@@ -668,7 +668,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
 - [ ] **L534** `world-class` open, S: Undo counts per surface are static reads; drive documents/OCR/meetings and whiteboard 43/14. From OPEN.md:1116; OPEN.md:1485. Evidence: Undo ledger not closed; counts recorded, uncovered writes remain (see 587)
 - [ ] **L535** `world-class` open, S: decide is 34 ms/call at 5,000 notes vs 8-17 ms old tally. From OPEN.md:1496. Evidence: Perf measurement (scratchpad/filing-tools/perf.py); no optimisation found
-- [ ] **L537** `world-class` open, S: Frontend ids lint regex includes ids inside HTML comments. From OPEN.md:1610. Evidence: tests/test_frontend_ids.py:128,136 regex over _markup(); false hits unchecked
 - [ ] **L538** `world-class` open, S: Run shell.spec.js handoff test in Playwright (only node --check'd). From OPEN.md:1828; OPEN.md:3536. Evidence: tests-e2e/specs/shell.spec.js handoff comment at line 35; runner run not recorded
 - [ ] **L539** `world-class` open, S: Run errors.js in THEME=dark and FAULTS=1. From OPEN.md:1889. Evidence: No record of the dark/fault runs; cheap to run
 - [ ] **L540** `world-class` open, S: Caps measured loaded; re-measure idle and tighten. From OPEN.md:1919; OPEN.md:2652. Evidence: Needs idle re-measure; table/README/test move together
@@ -682,7 +681,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L548** `world-class` open, S: Sweeps clicking only the Library tab time out. From OPEN.md:3472. Evidence: Sweep-script hygiene; only bm1005 scripts click Boards and maps first.
 - [ ] **L549** `world-class` open, S: Replace fixed 1.2 s whiteboard bundle wait in sweeps. From OPEN.md:3478. Evidence: Script hygiene; only op5-1005.js and mapviewmenu.js wait for the function.
 - [ ] **L550** `world-class` open, S: pickers.js throws pickNotesDialog not defined; segbars.js reads #graph-layout as seg. From OPEN.md:3530. Evidence: pickers.js, segbars.js still in scratchpad/ui-sweeps; script repair not recorded.
-- [ ] **L551** `world-class` open, S: Update p5 API list in vendor_use.py from 1.9.4 to 1.11.13. From OPEN.md:3587. Evidence: scratchpad/vendor_use.py:15 still says pinned to 1.9.4; regenerate
 - [ ] **L552** `world-class` open, S: Flake: test_composer_age_today_e17 fails only after other tests. From a28x-1102.md Left. Evidence: No later fix commit found; order dependence noted
 - [ ] **L553** `world-class` open, S: 1662 key lint misses key.toLowerCase() === 'x' and switch(e.key). From a30c-1102.md Still open small. Evidence: No lint test matching toLowerCase() === in tests/test_key*.py
 - [ ] **L554** `world-class` open, S: Run the 249/251 unrun browser sweep scripts. From a30c-1102.md Left unmarked. Evidence: scratchpad/ui-sweeps scripts, not pytest; no run record
