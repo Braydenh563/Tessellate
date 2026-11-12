@@ -97,3 +97,16 @@ def test_a_map_folds_to_a_level_from_the_keys_the_table_and_the_sheet():
     assert 'keys: ["Alt+1 to 9"]' in COMMANDS
     help_text = help_chat_text()
     assert "Alt+1 to Alt+9 show that many levels" in help_text
+
+
+def test_the_more_sheet_takes_the_one_filter_field_and_keeps_rules_honest():
+    """L367: a map's More sheet is 59 to 62 rows at 390 px. It uses
+    `listFilter` (DESIGN.md's long-list recipe), clears it on every open, and
+    the separator sync skips the field and its empty note."""
+    body = COMMANDS[COMMANDS.index("function wbInitMoreMenu(") :]
+    body = body[: body.index("\n}\n")]
+    assert 'listFilter(menu, { label: "Filter commands", inside: true' in body
+    assert 'filter.input.value = "";' in body and "wbSyncMoreMenu(menu);" in body
+    sync = COMMANDS[COMMANDS.index("function wbSyncMoreMenu(") :]
+    sync = sync[: sync.index("\n}\n")]
+    assert '"list-filter"' in sync and '"list-filter-empty"' in sync

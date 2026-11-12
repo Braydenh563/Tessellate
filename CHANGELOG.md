@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: the phone More sheet (59 to 82 rows on a map) has the app filter field (`listFilter`); typing "layout" leaves 9 of 82 rows, separators hide while a query is set, and clearing restores all 82 (measured at 390, `scratchpad` sweep, L367); `tests/test_wb_commands.py`.
 - Mind map: a FreeMind-authored `<arrowlink>` (its own ids, colour and inclinations, pointing at a later node) is held by a test to import as a cross-link and export back; the per-node theme resolution on export was already in place (L368); `tests/test_mindmap.py`.
 - Mind map export: PNG and SVG now draw a topic at its level (size, weight, slant), and a diamond, hexagon or chevron topic as its polygon, an underline topic as its bar and a plain topic as words only; effects and Phosphor icons were already drawn (L365); `tests/test_map_export_topics_l365.py`.
 - Mind map library pictures: a diamond, hexagon, circle or cloud topic is drawn as that shape (a closed polygon the card fill covers) instead of a rounded box, so no connector shaft shows through it (L356); `tests/test_map_templates_k15.py`.
