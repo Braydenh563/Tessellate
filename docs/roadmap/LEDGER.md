@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 43 | 13 | 0 | 18 | 126 |
-| documents | 70 | 43 | 13 | 0 | 18 | 126 |
-| documents | 70 | 43 | 13 | 0 | 18 | 126 |
+| documents | 70 | 42 | 13 | 0 | 18 | 125 |
+| documents | 70 | 42 | 13 | 0 | 18 | 125 |
+| documents | 70 | 42 | 13 | 0 | 18 | 125 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 683 | 153 | 3 | 195 | 1389 |
-| all | 553 | 683 | 153 | 3 | 195 | 1389 |
-| all | 553 | 683 | 153 | 3 | 195 | 1389 |
+| all | 553 | 682 | 153 | 3 | 195 | 1388 |
+| all | 553 | 682 | 153 | 3 | 195 | 1388 |
+| all | 553 | 682 | 153 | 3 | 195 | 1388 |
 
 ## graph
 
@@ -364,7 +364,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## documents
 
-- [ ] **L292** `documents` open, S: Lift the 78ch cap on the code editor in 09-editor.css (724px panel at 1440). From OPEN.md:1455; OPEN.md:2692. Evidence: 09-editor.css:55,134 max-width: 78ch still set
 - [ ] **L293** `documents` open, S: Preserve run state when a never-ending console loop is killed after 10 s. From OPEN.md:1468. Evidence: Design limit; worker terminate path unchanged, no preservation found
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
 - [ ] **L298** `documents` open, S: Decide and vendor an indent-guides extension for the CodeMirror bundle. From OPEN.md:1508. Evidence: Active line built; no indent-markers extension found in vendor; needs vendoring decision
