@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 26 | 3 | 0 | 5 | 32 |
+| timeline | 3 | 25 | 3 | 0 | 5 | 31 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 698 | 157 | 3 | 195 | 1408 |
+| all | 553 | 697 | 157 | 3 | 195 | 1407 |
 
 ## graph
 
@@ -621,7 +621,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-timeline-1** `timeline` open, S: Mark empty weeks on the timeline with a one-click 'what happened here?' prompt. From ANALYSIS.md:1190. Evidence: grep gap|quiet timeline.js only finds TIMELINE_AUTO_MAX_GAP (bucket choice); TIMELINE_PLAN has no gap marker
 - [ ] **L-timeline-2** `timeline` open, M: Brush a date range on the timeline to get an AI digest of that span with its notes listed beside it. From ANALYSIS.md:1186. Evidence: no brush in timeline*.js; no 'date range digest' in code or plans
 - [ ] **L781** `timeline` open, M: Decide reminder with no time (tomorrow 9 guess): decisions 48 and 50 conflict. From OPEN.md:865. Evidence: Decisions 48 and 50 conflict per row; owner pick needed Owner decided 2026-11-12: Ask when, once. Build: commands.py:394 returns due_at None with missing slot 'when' so the reply asks 'Remind you when?' (reading.DATED_SURFACES); golden and composer tests move.
-- [ ] **L783** `timeline` open, S: Decide decision 32: recurrence insight only versus other rules and Patterns line. From OPEN.md:1441. Evidence: Row tagged W34 owner-call (tracked in the plans); drift rule exists in ai insights Owner decided 2026-11-12: Keep all six. Build: tests/test_engine_phase6_spec.py: spec cases for streak, drift, contrast, load, time-of-day and the slot lint; no behaviour change.
 - [ ] **L-timeline-3** `timeline` open, M: Let Done on a reminder in the notifications panel complete the reminder. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1808. Evidence: The notifications panel offers only dismiss and read-toggle on reminder rows, and its history lives in localStorage. W7-3 appears in no plan, LEDGER, BACKLOG or HISTORY entry. UI_MODERNISATION row 103
 - [ ] **L-timeline-4** `timeline` open, S: Park date ranges as spans in BACKLOG until a ranged note exists. From open-work sweep 2026-11-12, docs/roadmap/TIMELINE_PLAN.md:112. Evidence: Open line in the plan's prose a session could miss. Decision 13 puts off showing date ranges as spans until a ranged note exists. That conditional deferral has no LEDGER or BACKLOG row, so it is still open in a plan the brief counts as 0.
 
