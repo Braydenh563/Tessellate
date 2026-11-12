@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 155 | 48 | 0 | 17 | 333 |
+| world-class | 130 | 154 | 47 | 0 | 17 | 331 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 681 | 147 | 3 | 140 | 1381 |
+| all | 553 | 680 | 146 | 3 | 140 | 1379 |
 
 ## graph
 
@@ -650,7 +650,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L521** `world-class` open, S: Handle first load after upgrade with no ui-synced mark. From OPEN.md:2576. Evidence: ai-tools.js:918-988 ui-synced logic; first-load case unhandled
 - [ ] **L522** `world-class` open, S: Palette learned order: add prefix matching at half weight. From OPEN.md:2792. Evidence: app-palette.js paletteRanked; recommendation not built
 - [ ] **L523** `world-class` open, S: renderAutonomousSettings fills checkboxes only when Background tasks/Web search opens. From OPEN.md:3499. Evidence: Documented behaviour in settings.js; no change recorded.
-- [ ] **L524** `world-class` open, S: Add a test fixture for the Settings synonym table. From OPEN.md:3750. Evidence: filters.py:235 SETTING_FILLER; no settings phrase fixture in tests
 - [ ] **L526** `world-class` open, S: Stop '?' after a Dashboard click handing focus to a CodeMirror editor. From row21-1109.md Left. Evidence: reveal-targets.js openShortcuts; no fix commit found
 - [ ] **L527** `world-class` open, S: Restyle Connections unlinked-mention Link button and tool-confirm pair away from bordered ghost. From OPEN.md:1677; OPEN.md:2670. Evidence: connections.js:226 smallButton('ph:link Link', ...) defaults ghost small (app.js:1497-1499)
 - [ ] **L528** `world-class` open, S: Exclude binned and private notes from EntryLink row counts. From OPEN.md:2815. Evidence: notebook_stats._notebook_block; verified open
@@ -758,7 +757,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L638** `world-class` open, L: Frontend audit leftovers FE-09/10/11/13/14. From OPEN.md:3267. Evidence: No coverage-driven CSS deletion or Settings lazy markup found
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, chat.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block
 - [ ] **L640** `world-class` open, L: K25: split ten functions over 150 lines. From v1028-1.md Remaining. Evidence: One step each per source; no completion record
-- [ ] **L641** `world-class` partly, S: Left: SETTING_WORDS is still `meaning.GROUPS`, a hand table (filters.py:234); replace it with a measured source. From OPEN.md:1843.
 - [ ] **L643** `world-class` partly, S: Left: `aiIsOff()` (status.js:2122, already reading `model_ready`) is still called from 14 files; move those controls to read `model_ready` directly. From OPEN.md:1924.
 - [ ] **L646** `world-class` partly, S: Re-drive undo counts for documents, OCR, meetings. From OPEN.md:3455. Evidence: undo-kit.js, undo-store.js, standalone-undo.js now exist (Brief 74 landed); counts not re-driven.
 - [ ] **L650** `world-class` partly, S: Left: make the 30 s model job stoppable (model_manager has a cooperative cancel only for re-index, :883). The `/models/status` 3.2 s is fixed (tests/test_models_status_cold_1591.py, warm-up dispatch). From OPEN.md:4362.
