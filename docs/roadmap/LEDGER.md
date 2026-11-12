@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 58 | 17 | 0 | 18 | 145 |
+| documents | 70 | 58 | 16 | 0 | 18 | 144 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 699 | 157 | 3 | 195 | 1409 |
+| all | 553 | 699 | 156 | 3 | 195 | 1408 |
 
 ## graph
 
@@ -410,7 +410,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L335** `documents` open, L: Brief 45 part 2: split whiteboard.js/initWhiteboard and documents.js, fold 133 duplicate blocks. From SESSION_BRIEFS.md:176. Evidence: whiteboard.js still holds initWhiteboard (E19: 26,159 lines); no split commit found
 - [ ] **L336** `documents` partly, S: Record or build [[ autocomplete and connections rail (Brief 8). From OPEN.md:3591. Evidence: [[ code exists in answer-kit.js/app-features.js; HISTORY.md:51452 only the plan row, no Built block
 - [ ] **L337** `documents` partly, S: Add status-bar switch for typo autocorrect (Editor menu switch exists). From OPEN.md:4473. Evidence: Autocorrect switch in Editor menu (index.html:5424 #doc-autocorrect-row); status-bar switch not built
-- [ ] **L338** `documents` partly, S: Fix #doc-counts at 390 and enlarge the 18x18 task box. From OPEN.md:4490. Evidence: Fixed: documents.js:4757 sets tabIndex -1 at width 0 (ee5f5a033); task box still 18x18
 - [ ] **L339** `documents` partly, S: Confirm queue rows B21 to B27 and B40 individually. From OPEN.md:405. Evidence: B20 shipped (2bdd1af55 lock badge, 6087e6602 Alt+Up/Down); other rows not individually confirmed
 - [ ] **L340** `documents` partly, S: Link offers: persist ignore beyond session. From OPEN.md:3890. Evidence: Switch now exists: settings-panes.js:661 pref-link-offers, settings-rows.js:40, documents-prose.js:377. Ignore still per-session (docProseIgnored, documents-prose.js:486); tag offers dropped by design.
 - [ ] **L341** `documents` partly, S: Add All documents / Replace in all buttons to the textarea fallback find bar. From a30h-1102.md Left. Evidence: documents.js:3231 'Replace in every document' command exists; documents-view.js:125 Mod-f uses engine; fallback bar buttons not found
