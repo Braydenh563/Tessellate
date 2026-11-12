@@ -55286,3 +55286,39 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 - DOCUMENTS_PLAN 25 row 8, the minimap: built, `doc-minimap` toggle in View (`documents-view.js:206`, pref `codeMinimap`, off by default; `documents.js:547`).
 - DOCUMENTS_PLAN 21, Visual Basic: built, `vb` and `vbs` modes (`documents.js:16182`).
 
+## Moved from the plans, 2026-11-12 (documents-plan: owner bugs)
+
+- "Gemini might have removed the spell checker??" (the owner's words in the Gemini thread: "you removed spellchecker.py")
+  Recommendation: keep src/tessellate/vendor spellchecker.py and make Brief 35 (unused vendoring gone) leave it in, with a test that it loads; writing checks are Brief 42 (DOCUMENTS_PLAN section 21).
+  **Fixed/closed (ownbugs):** no spellchecker.py ever existed in this repo (git log --all: no such path); the checker is ai/spelling.py plus frontend/vendor/wordlist/en.txt, both present; tests/test_spellcheck_present.py loads and exercises them.
+
+- "I cant two finger trackpad zoom in or out on documents or images on the ocr workspace?"
+  Recommendation: pinch zoom (ctrl+wheel from a trackpad) on the PDF and OCR viewer and on images; test with a synthetic wheel event at the viewer. No brief carries it; Brief 42 is the nearest document brief.
+  **Fixed/closed (ownbugs):** already working, verified 2026-11-12 against the running app (port 8794): Ctrl wheel of -10 x5 took the OCR page pane Fit to 150% (ocr79.js ONLY=zoom, drift 0.001), the lightbox picture to scale 1.648 and a lightbox PDF page column to scale 1.648 (pdf pages stubbed, no rasteriser here), default prevented. Touch pinch exists in both (library.js ocr-page-pane touchstart/move; lightbox pointer pinch) but was not driven with real touch. Pinned by tests/test_pinch_zoom_viewers.py and test_lightbox_pinch_1694.py.
+
+- "The note capture subtab formatting toolbar wont open :("
+  Recommendation: reproduce from the Notes Capture subtab, then fix the toolbar's open state and measure it. No brief carries it; Brief 42 is the nearest.
+  **Fixed/closed (ownbugs):** reproduced 2026-11-12 (port 8794): a press on the folded Capture strip did nothing (strip 40px, 0 tools, startNewNote not called). Cause: #note-toolbar lives in the Notes surface template, so foldNoteToolbarForFirstPaint at load found no bar and bound no handler; the earlier fix and its string test never ran. Now bound on the surface build (`onSurface("notes", ...)`, notes-list.js). Measured after: the press mounts the editor, strip 42px with the tools (Bold at x 326). tests/test_capture_strip_first_paint.py.
+
+- `scratchpad/ui-sweeps/docviews.js` fails on "the view menu has no
+  line-numbers row" and then throws on a null click. Reproduced against the
+  branch before any of this landed, so it is an older gap in the view menu
+  rather than a regression: either the row goes back or the sweep stops
+  asking for it.
+  **Fixed/closed (ownbugs):** already fixed in the sweep (it asserts the strip button #doc-toolbar .doc-toolbar-gutter, the removed view-menu row stays removed per INBOX "remove the line numbers view option"). Re-run 2026-11-12 on port 8794: strip_has_line_numbers true, md_numbers_after_ask 7, off again 0, no null click. Four unrelated failures remain (LEDGER row).
+
+- The suggestion menu draws the same check icon on every one of its five
+  word rows, so the words read as five identical actions rather than as the
+  answer with the actions underneath. The separating rule is there and it is
+  doing the work on its own. A real spell menu differentiates them by more.
+  **Fixed/closed (ownbugs):** already fixed (the candidates are drawn bare, documents.js ~15145); measured 2026-11-12 on port 8794 for "recieve": 5 rows, 0 icons on each, first row doc-suggest-best. The remaining ph:check sits on the suggested-change menu Accept rows (documents-prose.js:883), where it means accept. Pinned by tests/test_suggest_candidate_rows.py.
+
+  **Found while measuring and still open:** `enhanceSelect` (app.js ~18427)
+  rebuilds every `<select>` as a shell with a `<button>` opener and takes the
+  native element out of the tab order, so `select.focus()` anywhere in this
+  app focuses nothing and a `keydown` bound to a select never fires. Two
+  listeners in this batch were written that way before a sweep caught it.
+  The lint exists since 2026-10-04, `tests/test_select_focus.py` (`.focus()`
+  or a key listener on a page `<select>`, directly or through a binding; 0
+  offences, and proved against drift).
+  **Fixed/closed (ownbugs):** select.focus() now reaches the opener: enhanceSelect sets select.focus = opener.focus (sheets-selects.js), measured on port 8794 (note-sort: activeElement is BUTTON.select-opener; before, body). A keydown bound to the native select still never fires (the key goes to the opener); tests/test_select_focus.py keeps new code off that, tests/test_select_focus_delegates.py pins the forward.

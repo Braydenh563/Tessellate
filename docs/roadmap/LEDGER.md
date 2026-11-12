@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 58 | 16 | 0 | 18 | 144 |
+| documents | 70 | 59 | 16 | 0 | 18 | 145 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 699 | 156 | 3 | 195 | 1408 |
+| all | 553 | 700 | 156 | 3 | 195 | 1409 |
 
 ## graph
 
@@ -434,6 +434,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-9** `documents` open, M: Code block runner leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1100. Evidence: Open line in the plan's prose a session could miss. Unmined pointer leftovers.
 - [ ] **L-documents-10** `documents` open, S: Tray Open row for diagrams. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1430. Evidence: Open line in the plan's prose a session could miss. No ROUTE_OBJECTS row; script cap at 260,620 bytes.
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
+- [ ] **L-documents-12** `documents` open, S: docviews.js sweep fails on swift, r, ini highlighting and the Python token-colour block after openDoc in sequence. From docviews.js re-run 2026-11-12 (ownbugs). Evidence: scratchpad/ui-sweeps/docviews.js:200-246, port 8794: .swift/.r/.ini styledTokens 0 and the Python contrast block draws 0 token kinds (earlier .py round trip shows 6 coloured); 3500ms waits change nothing; real regression or sweep staleness unknown
 
 ## mindmap
 

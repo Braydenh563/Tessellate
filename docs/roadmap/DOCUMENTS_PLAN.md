@@ -437,14 +437,6 @@ work found and did *not* fix, which is the part that is still open.
   the report comes back, ask which view it was in before touching the code.
 - "redesign and refine the outlines section of the documents tab as well"
   (two screenshots). Done: all five problems in them.
-  **Found while measuring and still open:** `enhanceSelect` (app.js ~18427)
-  rebuilds every `<select>` as a shell with a `<button>` opener and takes the
-  native element out of the tab order, so `select.focus()` anywhere in this
-  app focuses nothing and a `keydown` bound to a select never fires. Two
-  listeners in this batch were written that way before a sweep caught it.
-  The lint exists since 2026-10-04, `tests/test_select_focus.py` (`.focus()`
-  or a key listener on a page `<select>`, directly or through a binding; 0
-  offences, and proved against drift).
   The empty column above References is fixed: both sections carried
   `flex: 1 1 auto`, so with a two-heading document the outline was 312.4px of
   box around 68.3px of content and References 296.5px around 46px, leaving
@@ -522,15 +514,6 @@ candidate list is computed when the menu opens, not during the pass: doing
 it per unknown word per pass measured 29ms on a 276-character document.
 
 **Found while doing this, not fixed.**
-- `scratchpad/ui-sweeps/docviews.js` fails on "the view menu has no
-  line-numbers row" and then throws on a null click. Reproduced against the
-  branch before any of this landed, so it is an older gap in the view menu
-  rather than a regression: either the row goes back or the sweep stops
-  asking for it.
-- The suggestion menu draws the same check icon on every one of its five
-  word rows, so the words read as five identical actions rather than as the
-  answer with the actions underneath. The separating rule is there and it is
-  doing the work on its own. A real spell menu differentiates them by more.
 - The checker still reads only the shape of a sentence. Its/it's, agreement
   and tense are behind "Check with AI", which is a button press rather than
   a pass, for the reason `docProseHeader` records.
@@ -1244,12 +1227,6 @@ Entries are the owner's words, then the recommendation. Bugs come first.
 
 ### Bugs
 
-- "I cant two finger trackpad zoom in or out on documents or images on the ocr workspace?"
-  Recommendation: pinch zoom (ctrl+wheel from a trackpad) on the PDF and OCR viewer and on images; test with a synthetic wheel event at the viewer. No brief carries it; Brief 42 is the nearest document brief.
-- "The note capture subtab formatting toolbar wont open :("
-  Recommendation: reproduce from the Notes Capture subtab, then fix the toolbar's open state and measure it. No brief carries it; Brief 42 is the nearest.
-- "Gemini might have removed the spell checker??" (the owner's words in the Gemini thread: "you removed spellchecker.py")
-  Recommendation: keep src/tessellate/vendor spellchecker.py and make Brief 35 (unused vendoring gone) leave it in, with a test that it loads; writing checks are Brief 42 (DOCUMENTS_PLAN section 21).
 - "I saved a website as a bookmark but the icon didnt change"
   Recommendation: a saved bookmark takes the site's icon at save time and refreshes it on the next fetch; the link card in Brief 42 shows it. No brief carries the bug itself; Brief 42 (link cards) is the nearest.
 
