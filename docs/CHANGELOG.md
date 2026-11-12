@@ -6,6 +6,11 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: Connect handles on a diamond sit fully outside the block at 390 px (L-documents-20).
+- Documents: the code editor and the documents surfaces were driven at 1440 and 390 px, with two stale sweeps corrected (L319, L320).
+- Documents: the status bar skips an identical repaint, so typing does less work (L323).
+- Diagrams: mind map, timeline and sequence diagrams get Suggestions with a preview and Apply (L-documents-21).
+- Documents: verified as already built, the split view's second half (L294) and the persistent Python frame (L309); frames with no script do not reproduce (L322).
 - Documents: a #tag in the Read view is a chip; pressing it finds documents with that tag (L349).
 - Fixes from CI on PR 225: `entry_dates.until` has its alembic revision; Done on a reminder in the bell says when it fails and offers Undo (the due time back, reopened) with redo.
 - Fixes from CI on PR 225: a legacy zone name (Asia/Calcutta) is stored as its current name on every tz database; the span review lists at most 200 notes and says how many more; its refusals read as sentences; the gap line and the span count use the plural helper.
