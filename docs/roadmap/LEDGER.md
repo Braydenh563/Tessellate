@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 30 | 13 | 0 | 18 | 113 |
-| documents | 70 | 30 | 13 | 0 | 18 | 113 |
-| documents | 70 | 30 | 13 | 0 | 18 | 113 |
+| documents | 70 | 28 | 13 | 0 | 18 | 111 |
+| documents | 70 | 28 | 13 | 0 | 18 | 111 |
+| documents | 70 | 28 | 13 | 0 | 18 | 111 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 670 | 153 | 3 | 195 | 1376 |
-| all | 553 | 670 | 153 | 3 | 195 | 1376 |
-| all | 553 | 670 | 153 | 3 | 195 | 1376 |
+| all | 553 | 668 | 153 | 3 | 195 | 1374 |
+| all | 553 | 668 | 153 | 3 | 195 | 1374 |
+| all | 553 | 668 | 153 | 3 | 195 | 1374 |
 
 ## graph
 
@@ -375,8 +375,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L321** `documents` open, M: Extend diagram Ask/Suggestions beyond flowcharts; build Versions 'Named only' filter. From dgai-1110.md Left. Evidence: Source: mind map, timeline, sequence get Versions only; filter not built
 - [ ] **L322** `documents` open, M: Frames with no script and CodeMirror requestMeasure (1667m). From OPEN.md:4327. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L323** `documents` open, M: Typing in a 230-note list costs ~12 ms per key in CodeMirror. From OPEN.md:1478. Evidence: Perf measurement; no fix found in HISTORY/CHANGELOG
-- [ ] **L324** `documents` open, M: Write binomial coefficients as OMML in Word export, not a barred fraction. From agent-remaining/a29g-1102.md. Evidence: next: `\binom` is written as a barred fraction (documents-word.js `docWordBlob.math`, mfrac with linethickness 0).
-- [ ] **L325** `documents` open, M: Write matrices and accents as OMML objects in Word export. From agent-remaining/a29g-1102.md. Evidence: next: matrices (`mtable`) and accents (`mover` accent) are written as their symbols in a row, not OMML matrix or accent
 - [ ] **L327** `documents` open, L: Split documents.js, documents-code.js and run_sandbox.py into lazy chunks (Opus design step) and fix listener imbalance. From OPEN.md:4468; OPEN.md:4482; OPEN.md:4485; OPEN.md:4493. Evidence: documents.js 16,598 lines now; lazy-chunk split needs Opus design step, not done
 - [ ] **L328** `documents` open, L: Build spreadsheet grid view for csv/tsv documents. From OPEN.md:4476. Evidence: Deferred L grid view for csv/tsv; not built
 - [ ] **L329** `documents` open, L: Owner decisions on D46 comment ratio, D47 drop or keep textarea fallback, D45 worker; then remove fallback aliases. From OPEN.md:4480; v1028-1.md Remaining. Evidence: Deferred L; drop of textarea fallback (documents.js) not done

@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2697, tests 21903, plan headings 687, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2698, tests 21909, plan headings 687, app scripts 29, boot scripts 38, script files 301.
 
 ## Frontend functions (8369)
 
@@ -4538,21 +4538,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `docWordBlob` | frontend/js/documents-word.js:195 |
-| `docWordBlocks` | frontend/js/documents-word.js:472 |
-| `docWordCallout` | frontend/js/documents-word.js:429 |
+| `docWordBlocks` | frontend/js/documents-word.js:497 |
+| `docWordCallout` | frontend/js/documents-word.js:454 |
 | `docWordCodeLang` | frontend/js/documents-word.js:52 |
-| `docWordExport` | frontend/js/documents-word.js:325 |
-| `docWordFlat` | frontend/js/documents-word.js:443 |
+| `docWordExport` | frontend/js/documents-word.js:350 |
+| `docWordFlat` | frontend/js/documents-word.js:468 |
 | `docWordHasRevisions` | frontend/js/documents-word.js:84 |
 | `docWordImport` | frontend/js/documents-word.js:124 |
 | `docWordLib` | frontend/js/documents-word.js:23 |
-| `docWordListShape` | frontend/js/documents-word.js:399 |
+| `docWordListShape` | frontend/js/documents-word.js:424 |
 | `docWordMarkSuggestions` | frontend/js/documents-word.js:144 |
 | `docWordPicture` | frontend/js/documents-word.js:160 |
-| `docWordRuns` | frontend/js/documents-word.js:355 |
-| `docWordSections` | frontend/js/documents-word.js:450 |
-| `docWordText` | frontend/js/documents-word.js:339 |
-| `docWordToc` | frontend/js/documents-word.js:422 |
+| `docWordRuns` | frontend/js/documents-word.js:380 |
+| `docWordSections` | frontend/js/documents-word.js:475 |
+| `docWordText` | frontend/js/documents-word.js:364 |
+| `docWordToc` | frontend/js/documents-word.js:447 |
 | `docWordUploadPicture` | frontend/js/documents-word.js:62 |
 
 ### frontend/js/documents.js (447)
@@ -27726,7 +27726,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21903)
+## Tests (21909)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30405,6 +30405,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_windowed_streams.py | 4 |
 | tests/test_word_count_cjk.py | 4 |
 | tests/test_word_files_b42.py | 4 |
+| tests/test_word_omml_binom_matrix_accent.py | 6 |
 | tests/test_word_toc_callout_columns.py | 6 |
 | tests/test_words_review.py | 7 |
 | tests/test_worker_guard.py | 6 |
@@ -30846,14 +30847,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1242 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:884 |
+| Needs hardware | docs/roadmap/LEDGER.md:882 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:876 |
+| Owner calls | docs/roadmap/LEDGER.md:874 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31034,7 +31035,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1084 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1082 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31088,25 +31089,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:62 |
-| chat | docs/roadmap/LEDGER.md:1100 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1184 |
+| chat | docs/roadmap/LEDGER.md:1098 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1182 |
 | documents | docs/roadmap/LEDGER.md:365 |
-| documents | docs/roadmap/LEDGER.md:1124 |
-| general | docs/roadmap/LEDGER.md:836 |
+| documents | docs/roadmap/LEDGER.md:1122 |
+| general | docs/roadmap/LEDGER.md:834 |
 | graph | docs/roadmap/LEDGER.md:26 |
-| graph | docs/roadmap/LEDGER.md:1088 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1196 |
+| graph | docs/roadmap/LEDGER.md:1086 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1194 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
-| mindmap | docs/roadmap/LEDGER.md:411 |
-| mindmap | docs/roadmap/LEDGER.md:1136 |
-| timeline | docs/roadmap/LEDGER.md:565 |
-| timeline | docs/roadmap/LEDGER.md:1160 |
-| ui-modernisation | docs/roadmap/LEDGER.md:448 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1148 |
+| mindmap | docs/roadmap/LEDGER.md:409 |
+| mindmap | docs/roadmap/LEDGER.md:1134 |
+| timeline | docs/roadmap/LEDGER.md:563 |
+| timeline | docs/roadmap/LEDGER.md:1158 |
+| ui-modernisation | docs/roadmap/LEDGER.md:446 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1146 |
 | whiteboard | docs/roadmap/LEDGER.md:319 |
-| whiteboard | docs/roadmap/LEDGER.md:1112 |
-| world-class | docs/roadmap/LEDGER.md:600 |
-| world-class | docs/roadmap/LEDGER.md:1172 |
+| whiteboard | docs/roadmap/LEDGER.md:1110 |
+| world-class | docs/roadmap/LEDGER.md:598 |
+| world-class | docs/roadmap/LEDGER.md:1170 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |
