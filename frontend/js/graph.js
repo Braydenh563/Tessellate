@@ -1799,11 +1799,12 @@ async function renderGraph() {
 
 //: The local graph's query (GRAPH_PLAN 514 (1)): depth and the three
 //: switches, stored per surface ("focus" in the gear, "pane" beside a note).
+//: Boards ride the map's own Maps switch on both (L-graph-8).
 function graphLocalQuery(prefix, depth) {
   const on = (id) => prefs.get(`graph-${prefix}-${id}`, null) !== "0";
   const stored = Number(prefs.get(`graph-${prefix}-depth`, null));
   const hops = stored >= 1 && stored <= 5 ? stored : depth;
-  return `depth=${hops}&incoming=${on("in")}&outgoing=${on("out")}&neighbours=${on("neighbours")}`;
+  return `depth=${hops}&incoming=${on("in")}&outgoing=${on("out")}&neighbours=${on("neighbours")}&include_maps=${Boolean(document.getElementById("graph-maps")?.checked)}`;
 }
 
 //: What the map asks for, from the Show switches; focus mode asks for one

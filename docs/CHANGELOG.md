@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: focus mode and the note pane walk boards only with the Maps switch on, as the whole map does (L-graph-8).
 - Graph: a 2,000-note map settles in about 5 s at 4x CPU slowdown (was 11 to 14 s); the cleanup scan reads each dot's size once.
 - Code: the graph's document and entity layer queries moved into repo/documents.py and repo/graph_layers.py (router ORM calls 707 to under the cap).
 - Docs: GRAPH_PLAN's last lines that only read as open are reworded; the open-work scanner skips a reminder's default "Follow up:" text.

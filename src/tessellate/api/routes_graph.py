@@ -1348,7 +1348,7 @@ def _load_entries(session: Session, ids) -> dict[int, Entry]:  # noqa: ANN001
     return found
 
 
-def _local_topology(session: Session, similarity: bool) -> tuple[paths.Connections, dict, bool]:
+def _local_topology(session: Session, similarity: bool, maps: bool = False) -> tuple[paths.Connections, dict, bool]:
     """Who is joined to whom, and which way each line runs, once per version.
 
     BACKLOG 29b item 4: focus mode loaded every note as an ORM object, built
@@ -1363,7 +1363,7 @@ def _local_topology(session: Session, similarity: bool) -> tuple[paths.Connectio
     one value can be handed to concurrent requests.
     """
     use_similarity = similarity and not deps.get_config().get_preference("battery_efficient_mode")
-    key = (*_graph_fingerprint(session), use_similarity)
+    key = (*_graph_fingerprint(session), use_similarity, maps)
     if use_similarity:
         key = (*key, deps.get_embeddings().backend_id())
 
@@ -1374,7 +1374,9 @@ def _local_topology(session: Session, similarity: bool) -> tuple[paths.Connectio
                 session.scalars(select(Entry.id).where(Entry.is_deleted == False))  # noqa: E712
             )
             extra_edges = _similarity_edges(session, node_ids, set())
-        index = paths.build_light(session, extra_edges=extra_edges)
+        #: L-graph-8: boards are walked only with the map's Maps switch on,
+        #: as on `/graph`, so a board no longer joins two notes it holds.
+        index = paths.build_light(session, extra_edges=extra_edges, boards=maps)
         #: Which way each link and thread runs. The index keeps one step per
         #: direction, so the stored row says which end wrote it (a thread runs
         #: from the note to its reply, as on `/graph`); tags and similarity
@@ -1387,7 +1389,7 @@ def _local_topology(session: Session, similarity: bool) -> tuple[paths.Connectio
                 directed.setdefault(frozenset((entry.parent_id, entry.id)), (entry.parent_id, entry.id))
         return index, directed, bool(extra_edges)
 
-    return _cached(f"local_topology_{use_similarity}", key, build)
+    return _cached(f"local_topology_{use_similarity}_{maps}", key, build)
 
 
 def _ring_edges(index: paths.Connections, oriented, distance: dict[int, int], taken: set) -> list[dict]:
@@ -1473,10 +1475,14 @@ def graph_local(
     incoming: bool = True,
     outgoing: bool = True,
     neighbours: bool = True,
+    include_maps: bool = False,
     session: Session = Depends(get_session)
 ) -> dict:
     """Focus Mode API: Gets the local neighborhood up to N degrees."""
-    index, directed, _with_similarity = _local_topology(session, similarity)
+    index, directed, _with_similarity = _local_topology(session, similarity, include_maps)
+    if entry_id not in index.entries and not include_maps:
+        # Focus on a board itself: its own neighbourhood, boards and all.
+        index, directed, _with_similarity = _local_topology(session, similarity, True)
 
     if entry_id not in index.entries:
         raise HTTPException(status_code=404, detail="No such note.")

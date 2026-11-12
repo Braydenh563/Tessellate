@@ -55189,6 +55189,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the plans, 2026-11-12 (graph-plan session)
+- - [x] **L-graph-8** built 2026-11-12: `/graph/local` takes `include_maps`; graphLocalQuery sends the Maps switch; tests/test_graph_local_boards.py.
 - - **2,000-note settle** (L-graph-18, audit row 19, g18), measured and cut: browser 4x CPU median 5.3 s from 11 to 14 s; the untangle cleanup's meet scan reads each radius once, node 8.9 to 8.0 s with identical positions. A coarser charge (theta 1.6) cost 2% more crossings for 146 ms and was dropped; d3 collide (330 ms) is left. tests/test_graph_untangle_scale.py.
 - - **Time Play with one date, and the Map stats line** (gaudit and gideas leftovers, 2026-11-12), built: Play is disabled with a title when min equals max; graphRenderStats describes the map layout. tests/test_graph_time_play_one_date.py.
 - - **Open note on card view** (L709, the owner 2026-11-12: last card clicked), built: `#entry-list` remembers the last card clicked or focused, `refreshNoteSearchWhy` passes it as `entry_id`, `switchTab` forgets it on leaving Notes. Driven: entry_id=1998 sent after clicking that card. tests/test_notes_last_card_open.py.
