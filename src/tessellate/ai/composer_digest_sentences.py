@@ -1170,12 +1170,14 @@ def _pin(text: str, written: date) -> str:
     for found in reversed(_spans(text, written)):
         if _in_a_title(text, found):
             continue
-        if found.kind in ("date", "datetime") and (found.text.lower() in _DEICTIC or (found.text.lower() == "tomorrow" and written != today)):
+        if found.kind in ("date", "datetime") and (found.text.lower() in _DEICTIC or (written != today and _RELATIVE_TIME.match(found.text))):
             day = found.value.date() if isinstance(found.value, datetime) else found.value
             if day == today and written == today:
                 #: Today's "today" and "tonight" are still true (INBOX 1461).
                 continue
-            on = f"on {_day(day, today)}"
+            #: "Tomorrow at 3pm" keeps its clock time: "on 6 October at 3pm" (L94).
+            at = re.search(r" at .+$", found.text, re.I) if found.kind == "datetime" else None
+            on = f"on {_day(day, today)}{at.group(0) if at else ''}"
             if day < today:
                 gone.append(_when_gone(on, day, today))
                 on = gone[-1]
@@ -1253,6 +1255,9 @@ def _said_gone(text: str, gone: list[str]) -> str:
 #: "Tomorrow" is said as its day too once that day is past (INBOX 1357, class
 #: D: "tomorrow you pick up your student card" from a July note).
 _DEICTIC = frozenset(("today", "tonight", "yesterday"))
+#: Time words that were true on the day a note was written and not after: "tomorrow", "tomorrow at 3pm",
+#: "in 3 days", "two weeks ago" (L94; the recogniser reads them, this only picks which to restate).
+_RELATIVE_TIME = re.compile(r"(?:tomorrow|yesterday)(?: at .+)?$|in \w+ (?:days?|weeks?)$|\w+ (?:days?|weeks?) ago$", re.I)
 
 
 @lru_cache(maxsize=4096)

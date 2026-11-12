@@ -329,6 +329,7 @@ PAIRED = {
     "wrote_on_b": "wrote_on_a", "mention_mid": "mention_lead", "summary_mid": "summary_lead",
     "ov_lead_b": "ov_lead_a", "ov_span_b": "ov_span_a", "ov_who_end": "ov_who_mid",
     "ov_shared_end": "ov_shared_mid", "ov_more_b": "ov_more_a",
+    "echo_end": "echo", "next_tag_b": "next_tag_a", "next_note_b": "next_note_a",
 }
 
 
@@ -736,13 +737,31 @@ _FAMILIES_ADDED: dict[str, dict[str, list[str]]] = {'open_notes': {'natural': ['
                               'The provided records do not address ',
                               'An absence of documentation was noted for ']},
  'nothing': {'natural': [], 'professional': []}}
-_PAIRS_ADDED: dict[str, dict[str, list[str]]] = {}
+#: The professional register for the fragments that had none (L97): how many notes mention a thing, an
+#: echoed sentence, a note that lists, the citation tail and the next-question chips. Natural keeps its one
+#: wording, so only the professional voice changes; each pair has equal lengths.
+_PAIRS_ADDED: dict[str, dict[str, list[str]]] = {
+    "mentions_one": {"natural": [], "professional": [" refers to ", " makes reference to ", " records "]},
+    "mention_many": {"natural": [], "professional": [" refer to ", " make reference to ", " record "]},
+    "echo": {"natural": [], "professional": [" (This statement is repeated ", " (The same statement appears "]},
+    "echo_end": {"natural": [], "professional": [" times in the records.)", " times across the entries.)"]},
+    "lists": {"natural": [], "professional": [" enumerates ", " itemises ", " sets out "]},
+    "cite_from": {"natural": [], "professional": [" Source: your ", " Recorded in your ", " Taken from your "]},
+    "cite_from_note": {"natural": [], "professional": [" Source: your note ", " Recorded in your note ", " Taken from your note "]},
+    "next_tag_a": {"natural": [], "professional": ["What further records exist on ", "Which other entries address "]},
+    "next_tag_b": {"natural": [], "professional": ["?", "?"]},
+    "next_note_a": {"natural": [], "professional": ["What does the entry “", "What is recorded in the entry “"]},
+    "next_note_b": {"natural": [], "professional": ["” state?", "” contain?"]},
+    "next_latest_a": {"natural": [], "professional": ["What is the most recent entry on ", "What is the latest record on "]},
+    "next_when_a": {"natural": [], "professional": ["On what date was an entry made on ", "When was a record made about "]},
+}
 #: Nothing found, eight ways a voice (the owner: "can it have more varied
 #: responses??"); the families start empty here and take their lines whole.
 for _key in composer_replies.NOTHING_FAMILIES:
     _FAMILIES.setdefault(_key, {"natural": [], "professional": []})
 for _table, _added in ((_FAMILIES, _FAMILIES_ADDED), (_PAIRS, _PAIRS_ADDED), (_FAMILIES, composer_replies.NOTHING_FAMILIES)):
     for _key, _by_voice in _added.items():
+        _table.setdefault(_key, {"natural": [], "professional": []})
         for _voice, _variants in _by_voice.items():
             _table[_key][_voice] = _table[_key][_voice] + _variants
 

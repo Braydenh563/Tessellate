@@ -1253,14 +1253,14 @@ def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, rest
     digest = None if follow else personal.answer(req.question, lambda: personal.notes_of(req.session), today)
     if digest is not None or (follow and not restated) or not _may_digest(prepared, req.question):
         return digest
+    ask = lambda pool: composer.offered(composer_digest.answer(  # noqa: E731
+        follow.question if restated else req.question, pool, today=today,
+        #: A retry rewords the answer (INBOX 1466) and, over one note, reads the others (L93).
+        voice=_answer_voice(), turn=len(req.history or []) + req.body.attempt,
+        insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
+    ), req.question)
     try:
-        return composer.offered(composer_digest.answer(
-            follow.question if restated else req.question, current, today=today,
-            #: A retry rewords the answer itself: since the closing offer became the
-            #: chips (INBOX 1466) the body is the only thing "Try again" can change.
-            voice=_answer_voice(), turn=len(req.history or []) + req.body.attempt,
-            insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
-        ), req.question)
+        return composer.retried(ask(current), current, ask, req.body.attempt)
     except Exception:  # noqa: BLE001  # the composer's answer stands
         logging.getLogger("tessellate.chat").exception("chat: the digest failed")
         return None
@@ -1325,7 +1325,7 @@ def _compose_over(req: _StreamRequest, prepared: dict, follow, current: list, to
         turn=len(req.history or []) + 1 + attempt,
         dialogue=dialogue,
         prefer=follow.prefer if follow else "",
-        resolved=True,
+        resolved=True, retry=attempt,
         #: Insights the person confirmed are said as their word; the
         #: ones they dismissed are not said (decision 60).
         learned=_insight_memory(req.session),

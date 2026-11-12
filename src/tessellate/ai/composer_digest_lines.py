@@ -736,11 +736,11 @@ def _wrote(body: str, i: int) -> str:
         #: Quoted as written, capital and all: it is the note's sentence.
         said = _DAY_NAME.sub(lambda m: m.group(0).capitalize(), body[:1].upper() + body[1:].rstrip("."))
         said, pinned = _unpinned(said)
-        return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{said}”{pinned}"
+        return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{composer_story.clipped(said)}”{pinned}"
     #: A noun phrase is what the note says, not a speech act ("You jotted
     #: down Dentist appointment on 4 November": audit 1031 C32). The quote
     #: is the note, so no unnamed "Your note says" (INBOX 1512).
-    return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{body[:1].upper() + body[1:].rstrip('.')}”"
+    return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{composer_story.clipped(body[:1].upper() + body[1:].rstrip('.'))}”"
 
 
 #: A note's own words quoted whole, with the one plain verb (fable-composer-1110 F7: a rotation of verbs read as a table).
@@ -2434,21 +2434,28 @@ def _storied(out: _Out, question: str, members, facts, today: date) -> bool:  # 
     """An overview of several dated notes written as paragraphs (INBOX 1743):
     the lead, a paragraph a stretch, the read of how it went, one insight.
     False, with `out` untouched, when the notes do not fit that shape."""
-    dated = sorted((v for v in members if v.written), key=lambda v: (v.written, v.id))
-    plan = composer_story.plan([v.written for v in dated], [v.note.get("content") or "" for v in dated]) if len(dated) == len(members) else None
+    #: Past MAX_NOTES the best-ranked note (the defining one leads `members`) is told first, on its own; the rest
+    #: follow oldest first (audit 1031 C4: filler with the word repeated is not what the story opens with).
+    lead = members[0] if len(members) > composer_story.MAX_NOTES else None
+    dated = sorted((v for v in members if v.written and v is not lead), key=lambda v: (v.written, v.id))
+    plan = composer_story.plan([v.written for v in dated], [v.note.get("content") or "" for v in dated]) if len(dated) == len(members) - (lead is not None) else None
     #: Under five notes the plain lines have no filler to lose; they are woven only when a frame would have
     #: told some of them as "More loosely related" or "More from X" (INBOX 1743 follow-up).
     if plan is None or (len(dated) < composer_story.PLAIN_NOTES and not _would_fill(dated)):
         return False
+    if lead is not None and lead.written:
+        #: The span says all the notes' days, the lead's too.
+        plan.first, plan.last = min(plan.first, lead.written), max(plan.last, lead.written)
     gisted = _gists(members, facts)
     units = [_story_unit(v, gisted, today) for v in dated]
-    if None in units:
+    first = _story_unit(lead, gisted, today) if lead is not None and lead.written else None
+    if None in units or (lead is not None and first is None):
         return False
     out.framed = True
-    composer_story.story(out, _count(composer_overview.pooled(len(dated))), units, [v.written for v in dated], _topic(question, members), plan, _themed(dated))
-    if (whole := composer_overview.pooled(len(dated))) > len(dated):
+    composer_story.story(out, _count(composer_overview.pooled(len(members))), units, [v.written for v in dated], _topic(question, members), plan, _themed(dated), (first, lead.written if first else None))
+    if (whole := composer_overview.pooled(len(members))) > len(dated) + (lead is not None):
         #: The lead counts every note; the story tells the pool it read, and says so.
-        out.lines.append(f"That tells {realise.count_word(len(dated))} of the {whole}; ask for a month or a tag to see the rest.")
+        out.lines.append(f"That tells {realise.count_word(len(dated) + (lead is not None))} of the {whole}; ask for a month or a tag to see the rest.")
     return True
 
 
