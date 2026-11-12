@@ -64,7 +64,6 @@ function applyStatusClock() {
 // case, open only while someone is actually looking at it, so it gets
 // its own 1s ticker, started on open and stopped on close rather than
 // running unconditionally in the background the way the bar's clock does.
-let statusClockDetailTimer = null;
 let statusClockDetailPinned = false;
 
 function paintStatusClockDetail() {
@@ -105,9 +104,7 @@ function openStatusClockDetail(pin) {
   panel.classList.remove("hidden");
   btn.setAttribute("aria-expanded", "true");
   paintStatusClockDetail();
-  if (!statusClockDetailTimer) {
-    statusClockDetailTimer = setInterval(paintStatusClockDetail, 1000);
-  }
+  secondTick.add(paintStatusClockDetail);
   // Positioned from the button's own rect, not a static CSS offset: the
   // clock's horizontal position among the bar's other optional slots
   // (STATUS_SLOTS) isn't fixed, so a hardcoded `right:` would drift out
@@ -133,10 +130,7 @@ function closeStatusClockDetail(force) {
   statusClockDetailPinned = false;
   $("status-clock-detail")?.classList.add("hidden");
   $("status-clock")?.setAttribute("aria-expanded", "false");
-  if (statusClockDetailTimer) {
-    clearInterval(statusClockDetailTimer);
-    statusClockDetailTimer = null;
-  }
+  secondTick.remove(paintStatusClockDetail);
 }
 
 (() => {

@@ -1036,7 +1036,6 @@ let chatStreaming = null;
 // ("can there be an active timer on responses"): ticked by a timer so it moves
 // while the model is silent, and drawn in the bubble it times, removed when
 // that bubble finishes; the metadata line keeps the final duration.
-let chatTimerInterval = null;
 let chatTimerStartedAt = 0;
 //: The live counter's node, mounted inside the assistant bubble being
 //: streamed. Null between turns: `paintChatTimer` is a no-op then.

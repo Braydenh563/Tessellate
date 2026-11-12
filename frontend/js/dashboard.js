@@ -3325,7 +3325,7 @@ async function renderTagCloudWidget(body) {
 // kept per day in this browser.
 //: `unsaved`: seconds focused since the last save to today's count, written
 //: on every pause and end rather than every second.
-let focusTimer = { remaining: 0, total: 25 * 60, running: false, handle: null, mode: "focus", focusTotal: 25 * 60, unsaved: 0 };
+let focusTimer = { remaining: 0, total: 25 * 60, running: false, mode: "focus", focusTotal: 25 * 60, unsaved: 0 };
 const FOCUS_PRESETS = [5, 15, 25, 50, 60];
 const FOCUS_BREAK_MIN = 5;
 const FOCUS_SVG = "http://www.w3.org/2000/svg";
@@ -3464,14 +3464,13 @@ function startFocusTimer() {
   if (focusTimer.remaining <= 0) focusTimer.remaining = focusTimer.total;
   focusTimer.running = true;
   askNotificationPermission();
-  focusTimer.handle = setInterval(focusTimerTick, 1000);
+  secondTick.add(focusTimerTick);
   paintFocusTimer();
 }
 
 function stopFocusTimer() {
   focusTimer.running = false;
-  if (focusTimer.handle) clearInterval(focusTimer.handle);
-  focusTimer.handle = null;
+  secondTick.remove(focusTimerTick);
   if (focusTimer.unsaved) {
     focusTodaySeconds(focusTimer.unsaved);
     focusTimer.unsaved = 0;

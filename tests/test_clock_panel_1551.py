@@ -43,7 +43,7 @@ class FakeDate extends Date {
   static now() { return now; }
 }
 const sandbox = {
-  prefsCache: {}, authToken: () => 'token', performance: { now: () => 1000 },
+  prefsCache: {}, clockOptions: () => ({}), authToken: () => 'token', performance: { now: () => 1000 },
   $: (id) => (id === 'lock-overlay' ? null : chip),
   setLabel: (el, text) => { chip.label = text; },
   toast: (t) => toasts.push(t),

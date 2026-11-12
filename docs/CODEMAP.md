@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8331, frontend ids 2768, CSS sections 524, backend routes 700, backend modules 10797, test files 2682, tests 21855, plan headings 686, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8331, frontend ids 2768, CSS sections 524, backend routes 700, backend modules 10797, test files 2683, tests 21864, plan headings 686, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8331)
 
@@ -521,21 +521,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachLibraryFile` | frontend/js/chat-attach.js:208 |
 | `attachSelectionContext` | frontend/js/chat-attach.js:348 |
 | `attachedNotes` | frontend/js/chat-attach.js:401 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:1167 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:1166 |
 | `chatDockMoreOpen` | frontend/js/chat-attach.js:910 |
-| `chatLeaveHeld` | frontend/js/chat-attach.js:1076 |
+| `chatLeaveHeld` | frontend/js/chat-attach.js:1075 |
 | `chatTidyTyped` | frontend/js/chat-attach.js:959 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:1196 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:1195 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:372 |
 | `closeChatDockMore` | frontend/js/chat-attach.js:947 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:54 |
 | `closeNotePicker` | frontend/js/chat-attach.js:894 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:1141 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:1201 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:1140 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:1200 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:430 |
 | `followupMatches` | frontend/js/chat-attach.js:1001 |
 | `followupTrail` | frontend/js/chat-attach.js:1004 |
-| `newChatConversation` | frontend/js/chat-attach.js:1087 |
+| `newChatConversation` | frontend/js/chat-attach.js:1086 |
 | `noteLabel` | frontend/js/chat-attach.js:407 |
 | `noteNamePlain` | frontend/js/chat-attach.js:467 |
 | `notePickerColumns` | frontend/js/chat-attach.js:754 |
@@ -551,8 +551,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
 | `openNotePicker` | frontend/js/chat-attach.js:856 |
 | `plainText` | frontend/js/chat-attach.js:445 |
-| `promptTitle` | frontend/js/chat-attach.js:1185 |
-| `releaseChatComposer` | frontend/js/chat-attach.js:1045 |
+| `promptTitle` | frontend/js/chat-attach.js:1184 |
+| `releaseChatComposer` | frontend/js/chat-attach.js:1044 |
 | `renderAttachments` | frontend/js/chat-attach.js:520 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:267 |
 | `renderDocumentAttachments` | frontend/js/chat-attach.js:313 |
@@ -563,7 +563,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setActiveChoice` | frontend/js/chat-attach.js:453 |
 | `setNoteLabel` | frontend/js/chat-attach.js:477 |
 | `setNotePickerSource` | frontend/js/chat-attach.js:829 |
-| `syncChatPrivate` | frontend/js/chat-attach.js:1082 |
+| `syncChatPrivate` | frontend/js/chat-attach.js:1081 |
 
 ### frontend/js/sheets-selects.js (54)
 
@@ -1233,28 +1233,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `applyStatusBarSlots` | frontend/js/spaces-find.js:20 |
 | `applyStatusClock` | frontend/js/spaces-find.js:41 |
-| `authHeaders` | frontend/js/spaces-find.js:206 |
-| `closeSpaceMenu` | frontend/js/spaces-find.js:413 |
-| `closeStatusClockDetail` | frontend/js/spaces-find.js:129 |
-| `customTemplates` | frontend/js/spaces-find.js:596 |
+| `authHeaders` | frontend/js/spaces-find.js:200 |
+| `closeSpaceMenu` | frontend/js/spaces-find.js:407 |
+| `closeStatusClockDetail` | frontend/js/spaces-find.js:126 |
+| `customTemplates` | frontend/js/spaces-find.js:590 |
 | `hiddenStatusSlots` | frontend/js/spaces-find.js:14 |
-| `initSpaceSwitcher` | frontend/js/spaces-find.js:483 |
-| `loadSpaces` | frontend/js/spaces-find.js:434 |
-| `openSpaceCreate` | frontend/js/spaces-find.js:424 |
-| `openStatusClockDetail` | frontend/js/spaces-find.js:100 |
+| `initSpaceSwitcher` | frontend/js/spaces-find.js:477 |
+| `loadSpaces` | frontend/js/spaces-find.js:428 |
+| `openSpaceCreate` | frontend/js/spaces-find.js:418 |
+| `openStatusClockDetail` | frontend/js/spaces-find.js:99 |
 | `paintStatusClock` | frontend/js/spaces-find.js:32 |
-| `paintStatusClockDetail` | frontend/js/spaces-find.js:70 |
-| `renderSpaceMenu` | frontend/js/spaces-find.js:349 |
-| `renderTemplateSettings` | frontend/js/spaces-find.js:685 |
-| `saveTemplateList` | frontend/js/spaces-find.js:630 |
-| `setActiveSpace` | frontend/js/spaces-find.js:215 |
-| `spaceIconPicker` | frontend/js/spaces-find.js:219 |
-| `spaceMenuOption` | frontend/js/spaces-find.js:245 |
-| `startEditingTemplate` | frontend/js/spaces-find.js:600 |
-| `stopEditingTemplate` | frontend/js/spaces-find.js:619 |
-| `templateRow` | frontend/js/spaces-find.js:644 |
-| `toggleSpaceHidden` | frontend/js/spaces-find.js:316 |
-| `updateCaptureSpaceLabel` | frontend/js/spaces-find.js:465 |
+| `paintStatusClockDetail` | frontend/js/spaces-find.js:69 |
+| `renderSpaceMenu` | frontend/js/spaces-find.js:343 |
+| `renderTemplateSettings` | frontend/js/spaces-find.js:679 |
+| `saveTemplateList` | frontend/js/spaces-find.js:624 |
+| `setActiveSpace` | frontend/js/spaces-find.js:209 |
+| `spaceIconPicker` | frontend/js/spaces-find.js:213 |
+| `spaceMenuOption` | frontend/js/spaces-find.js:239 |
+| `startEditingTemplate` | frontend/js/spaces-find.js:594 |
+| `stopEditingTemplate` | frontend/js/spaces-find.js:613 |
+| `templateRow` | frontend/js/spaces-find.js:638 |
+| `toggleSpaceHidden` | frontend/js/spaces-find.js:310 |
+| `updateCaptureSpaceLabel` | frontend/js/spaces-find.js:459 |
 
 ### frontend/js/agent-activity.js (17)
 
@@ -1380,22 +1380,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityActorName` | frontend/js/dashboard.js:3873 |
-| `activityUndoControl` | frontend/js/dashboard.js:3951 |
-| `activityUndoPlanText` | frontend/js/dashboard.js:3880 |
-| `activityUndoStarts` | frontend/js/dashboard.js:3936 |
+| `activityActorName` | frontend/js/dashboard.js:3872 |
+| `activityUndoControl` | frontend/js/dashboard.js:3950 |
+| `activityUndoPlanText` | frontend/js/dashboard.js:3879 |
+| `activityUndoStarts` | frontend/js/dashboard.js:3935 |
 | `afterFrames` | frontend/js/dashboard.js:1994 |
 | `applyDashDensity` | frontend/js/dashboard.js:1292 |
 | `cachedGreetingPhrase` | frontend/js/dashboard.js:316 |
 | `closeFeatures` | frontend/js/dashboard.js:1579 |
-| `dashActionRow` | frontend/js/dashboard.js:3666 |
-| `dashActivityItems` | frontend/js/dashboard.js:3784 |
+| `dashActionRow` | frontend/js/dashboard.js:3665 |
+| `dashActivityItems` | frontend/js/dashboard.js:3783 |
 | `dashContinueNote` | frontend/js/dashboard.js:1425 |
 | `dashCustomiseItems` | frontend/js/dashboard.js:1474 |
 | `dashDensity` | frontend/js/dashboard.js:1160 |
 | `dashDensityChosen` | frontend/js/dashboard.js:1166 |
 | `dashDragOverCard` | frontend/js/dashboard.js:23 |
-| `dashEmpty` | frontend/js/dashboard.js:3719 |
+| `dashEmpty` | frontend/js/dashboard.js:3718 |
 | `dashEntries` | frontend/js/dashboard.js:491 |
 | `dashFillingSkeleton` | frontend/js/dashboard.js:2005 |
 | `dashFillingSkeletonDone` | frontend/js/dashboard.js:2053 |
@@ -1409,7 +1409,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dashReminders` | frontend/js/dashboard.js:471 |
 | `dashStatsButton` | frontend/js/dashboard.js:2357 |
 | `dashStreak` | frontend/js/dashboard.js:2345 |
-| `dashTensionRow` | frontend/js/dashboard.js:4155 |
+| `dashTensionRow` | frontend/js/dashboard.js:4154 |
 | `dashWidgetRow` | frontend/js/dashboard.js:2109 |
 | `dashWidgetToggle` | frontend/js/dashboard.js:2083 |
 | `dashWidgetsSummary` | frontend/js/dashboard.js:2221 |
@@ -1423,7 +1423,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `firstNoteImage` | frontend/js/dashboard.js:2439 |
 | `focusChime` | frontend/js/dashboard.js:3418 |
 | `focusRing` | frontend/js/dashboard.js:3352 |
-| `focusStep` | frontend/js/dashboard.js:3493 |
+| `focusStep` | frontend/js/dashboard.js:3492 |
 | `focusTimeLabel` | frontend/js/dashboard.js:3334 |
 | `focusTimerEnded` | frontend/js/dashboard.js:3439 |
 | `focusTimerTick` | frontend/js/dashboard.js:3407 |
@@ -1453,9 +1453,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `refreshAiGreeting` | frontend/js/dashboard.js:336 |
 | `refreshArtForTheme` | frontend/js/dashboard.js:2322 |
 | `refreshDashWidgets` | frontend/js/dashboard.js:1769 |
-| `renderActivityWidget` | frontend/js/dashboard.js:3797 |
-| `renderBoardsWidget` | frontend/js/dashboard.js:3740 |
-| `renderBookmarksWidget` | frontend/js/dashboard.js:4019 |
+| `renderActivityWidget` | frontend/js/dashboard.js:3796 |
+| `renderBoardsWidget` | frontend/js/dashboard.js:3739 |
+| `renderBookmarksWidget` | frontend/js/dashboard.js:4018 |
 | `renderCategoriesWidget` | frontend/js/dashboard.js:3034 |
 | `renderDashGlance` | frontend/js/dashboard.js:722 |
 | `renderDashMore` | frontend/js/dashboard.js:1534 |
@@ -1464,17 +1464,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderDashboard` | frontend/js/dashboard.js:1798 |
 | `renderDashboardGreeting` | frontend/js/dashboard.js:565 |
 | `renderDigestWidget` | frontend/js/dashboard.js:2763 |
-| `renderDocumentsWidget` | frontend/js/dashboard.js:3982 |
+| `renderDocumentsWidget` | frontend/js/dashboard.js:3981 |
 | `renderFeatures` | frontend/js/dashboard.js:1643 |
 | `renderFirstStepsLazy` | frontend/js/dashboard.js:1697 |
-| `renderFocusTimerWidget` | frontend/js/dashboard.js:3503 |
+| `renderFocusTimerWidget` | frontend/js/dashboard.js:3502 |
 | `renderHeatmapWidget` | frontend/js/dashboard.js:2918 |
 | `renderMostLinkedWidget` | frontend/js/dashboard.js:2610 |
 | `renderMostOpenedWidget` | frontend/js/dashboard.js:2573 |
 | `renderMostUsedWidget` | frontend/js/dashboard.js:2599 |
 | `renderNameNudge` | frontend/js/dashboard.js:786 |
-| `renderOnThisDayWidget` | frontend/js/dashboard.js:4213 |
-| `renderPaceWidget` | frontend/js/dashboard.js:4288 |
+| `renderOnThisDayWidget` | frontend/js/dashboard.js:4212 |
+| `renderPaceWidget` | frontend/js/dashboard.js:4287 |
 | `renderPinnedWidget` | frontend/js/dashboard.js:2568 |
 | `renderQuestionsWidget` | frontend/js/dashboard.js:2659 |
 | `renderQuickCaptureWidget` | frontend/js/dashboard.js:2868 |
@@ -1486,13 +1486,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderStatsWidget` | frontend/js/dashboard.js:2395 |
 | `renderStreakWidget` | frontend/js/dashboard.js:2363 |
 | `renderTagCloudWidget` | frontend/js/dashboard.js:3294 |
-| `renderTensionsWidget` | frontend/js/dashboard.js:4093 |
+| `renderTensionsWidget` | frontend/js/dashboard.js:4092 |
 | `renderTopTagsWidget` | frontend/js/dashboard.js:2638 |
-| `renderUnfinishedWidget` | frontend/js/dashboard.js:4045 |
+| `renderUnfinishedWidget` | frontend/js/dashboard.js:4044 |
 | `saveDashLayout` | frontend/js/dashboard.js:218 |
 | `saveQuickAccess` | frontend/js/dashboard.js:1398 |
 | `saveQuickTints` | frontend/js/dashboard.js:1407 |
-| `setFocusTimer` | frontend/js/dashboard.js:3482 |
+| `setFocusTimer` | frontend/js/dashboard.js:3481 |
 | `sizeDashWidgetSpan` | frontend/js/dashboard.js:842 |
 | `sizeDashWidgets` | frontend/js/dashboard.js:846 |
 | `skillRunTimes` | frontend/js/dashboard.js:1015 |
@@ -1506,7 +1506,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toggleDashWidgetHidden` | frontend/js/dashboard.js:229 |
 | `toggleDashWidgetWide` | frontend/js/dashboard.js:237 |
 | `truncateMarkdownSafe` | frontend/js/dashboard.js:3092 |
-| `undoActorFrom` | frontend/js/dashboard.js:3898 |
+| `undoActorFrom` | frontend/js/dashboard.js:3897 |
 | `watchDashWidgets` | frontend/js/dashboard.js:877 |
 | `wireDashDensity` | frontend/js/dashboard.js:1328 |
 | `withDisplayName` | frontend/js/dashboard.js:279 |
@@ -2820,32 +2820,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBubble` | frontend/js/chat-turn.js:2508 |
+| `addBubble` | frontend/js/chat-turn.js:2506 |
 | `agentTimeline` | frontend/js/chat-turn.js:1331 |
-| `appendRunResumeControls` | frontend/js/chat-turn.js:2402 |
-| `assistantMessageActions` | frontend/js/chat-turn.js:2607 |
-| `chatAttachmentStrip` | frontend/js/chat-turn.js:2277 |
+| `appendRunResumeControls` | frontend/js/chat-turn.js:2400 |
+| `assistantMessageActions` | frontend/js/chat-turn.js:2605 |
+| `chatAttachmentStrip` | frontend/js/chat-turn.js:2275 |
 | `chatSendTurn` | frontend/js/chat-turn.js:16 |
 | `commitStagedImages` | frontend/js/chat-turn.js:2180 |
-| `continueRunControls` | frontend/js/chat-turn.js:2832 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2780 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2877 |
-| `manualPauseControls` | frontend/js/chat-turn.js:2906 |
-| `markFollowup` | frontend/js/chat-turn.js:2932 |
+| `continueRunControls` | frontend/js/chat-turn.js:2830 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2778 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2875 |
+| `manualPauseControls` | frontend/js/chat-turn.js:2904 |
+| `markFollowup` | frontend/js/chat-turn.js:2930 |
 | `mountChatTimer` | frontend/js/chat-turn.js:2229 |
 | `offerFollowups` | frontend/js/chat-turn.js:2115 |
 | `offerReminder` | frontend/js/chat-turn.js:2054 |
 | `paintChatTimer` | frontend/js/chat-turn.js:2216 |
-| `removeChatBubble` | frontend/js/chat-turn.js:2956 |
+| `removeChatBubble` | frontend/js/chat-turn.js:2954 |
 | `renderAgentQuestion` | frontend/js/chat-turn.js:1842 |
 | `renderMemoryProposal` | frontend/js/chat-turn.js:1926 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2737 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2735 |
 | `revalidateSelection` | frontend/js/chat-turn.js:1998 |
 | `saveFollowups` | frontend/js/chat-turn.js:2201 |
 | `selectionContextBlock` | frontend/js/chat-turn.js:2153 |
-| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2261 |
+| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2259 |
 | `startChatTimer` | frontend/js/chat-turn.js:2242 |
-| `stopChatTimer` | frontend/js/chat-turn.js:2251 |
+| `stopChatTimer` | frontend/js/chat-turn.js:2250 |
 
 ### frontend/js/chat-undo.js (10)
 
@@ -6254,110 +6254,110 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addMeetingMarker` | frontend/js/meetings.js:2474 |
-| `addRecordingMark` | frontend/js/meetings.js:1914 |
-| `binRecording` | frontend/js/meetings.js:2180 |
-| `closeMeetingRecorder` | frontend/js/meetings.js:1007 |
-| `discardMeetingTake` | frontend/js/meetings.js:1021 |
-| `editRecordingMark` | frontend/js/meetings.js:1929 |
-| `enhanceGain` | frontend/js/meetings.js:1252 |
-| `enhanceRecording` | frontend/js/meetings.js:1274 |
-| `fillMicDevices` | frontend/js/meetings.js:2640 |
-| `meetingAcceptOriginal` | frontend/js/meetings.js:1328 |
+| `addMeetingMarker` | frontend/js/meetings.js:2472 |
+| `addRecordingMark` | frontend/js/meetings.js:1912 |
+| `binRecording` | frontend/js/meetings.js:2178 |
+| `closeMeetingRecorder` | frontend/js/meetings.js:1005 |
+| `discardMeetingTake` | frontend/js/meetings.js:1019 |
+| `editRecordingMark` | frontend/js/meetings.js:1927 |
+| `enhanceGain` | frontend/js/meetings.js:1250 |
+| `enhanceRecording` | frontend/js/meetings.js:1272 |
+| `fillMicDevices` | frontend/js/meetings.js:2638 |
+| `meetingAcceptOriginal` | frontend/js/meetings.js:1326 |
 | `meetingActionRow` | frontend/js/meetings.js:266 |
 | `meetingAppendUndoable` | frontend/js/meetings.js:540 |
 | `meetingBinPair` | frontend/js/meetings.js:109 |
-| `meetingClockText` | frontend/js/meetings.js:630 |
-| `meetingContainerName` | frontend/js/meetings.js:654 |
+| `meetingClockText` | frontend/js/meetings.js:629 |
+| `meetingContainerName` | frontend/js/meetings.js:653 |
 | `meetingCreateUndoable` | frontend/js/meetings.js:559 |
-| `meetingElapsedMs` | frontend/js/meetings.js:625 |
-| `meetingElapsedText` | frontend/js/meetings.js:649 |
-| `meetingEnhanceTake` | frontend/js/meetings.js:1312 |
-| `meetingFailText` | frontend/js/meetings.js:647 |
-| `meetingFocusFirstField` | frontend/js/meetings.js:981 |
+| `meetingElapsedMs` | frontend/js/meetings.js:624 |
+| `meetingElapsedText` | frontend/js/meetings.js:648 |
+| `meetingEnhanceTake` | frontend/js/meetings.js:1310 |
+| `meetingFailText` | frontend/js/meetings.js:646 |
+| `meetingFocusFirstField` | frontend/js/meetings.js:979 |
 | `meetingFormRow` | frontend/js/meetings.js:90 |
-| `meetingLiveWords` | frontend/js/meetings.js:1119 |
-| `meetingLiveWordsStart` | frontend/js/meetings.js:1125 |
-| `meetingLiveWordsStop` | frontend/js/meetings.js:1140 |
+| `meetingLiveWords` | frontend/js/meetings.js:1117 |
+| `meetingLiveWordsStart` | frontend/js/meetings.js:1123 |
+| `meetingLiveWordsStop` | frontend/js/meetings.js:1138 |
 | `meetingNowValue` | frontend/js/meetings.js:19 |
-| `meetingPeaksSummary` | frontend/js/meetings.js:711 |
+| `meetingPeaksSummary` | frontend/js/meetings.js:710 |
 | `meetingPeopleField` | frontend/js/meetings.js:41 |
 | `meetingRecordInto` | frontend/js/meetings.js:574 |
 | `meetingRecordingLive` | frontend/js/meetings.js:607 |
-| `meetingRecordingStarted` | frontend/js/meetings.js:1090 |
-| `meetingRecordingStopped` | frontend/js/meetings.js:1149 |
+| `meetingRecordingStarted` | frontend/js/meetings.js:1088 |
+| `meetingRecordingStopped` | frontend/js/meetings.js:1147 |
 | `meetingRemind` | frontend/js/meetings.js:307 |
 | `meetingSaveTranscript` | frontend/js/meetings.js:520 |
-| `meetingSay` | frontend/js/meetings.js:1085 |
-| `meetingShowSaved` | frontend/js/meetings.js:1341 |
-| `meetingStatusLine` | frontend/js/meetings.js:640 |
+| `meetingSay` | frontend/js/meetings.js:1083 |
+| `meetingShowSaved` | frontend/js/meetings.js:1339 |
+| `meetingStatusLine` | frontend/js/meetings.js:639 |
 | `meetingSummarise` | frontend/js/meetings.js:425 |
-| `meetingTakeAppend` | frontend/js/meetings.js:678 |
-| `meetingTakeBegin` | frontend/js/meetings.js:658 |
-| `meetingTakeBin` | frontend/js/meetings.js:1376 |
-| `meetingTakeDiscard` | frontend/js/meetings.js:1359 |
-| `meetingTakeFinish` | frontend/js/meetings.js:723 |
-| `meetingTakeFlush` | frontend/js/meetings.js:686 |
-| `meetingTick` | frontend/js/meetings.js:936 |
-| `meetingTranscribeTake` | frontend/js/meetings.js:1195 |
+| `meetingTakeAppend` | frontend/js/meetings.js:677 |
+| `meetingTakeBegin` | frontend/js/meetings.js:657 |
+| `meetingTakeBin` | frontend/js/meetings.js:1374 |
+| `meetingTakeDiscard` | frontend/js/meetings.js:1357 |
+| `meetingTakeFinish` | frontend/js/meetings.js:722 |
+| `meetingTakeFlush` | frontend/js/meetings.js:685 |
+| `meetingTick` | frontend/js/meetings.js:934 |
+| `meetingTranscribeTake` | frontend/js/meetings.js:1193 |
 | `meetingWhenText` | frontend/js/meetings.js:30 |
-| `micControlsInto` | frontend/js/meetings.js:2580 |
-| `micLevelInto` | frontend/js/meetings.js:2700 |
-| `nameMeetingMic` | frontend/js/meetings.js:2741 |
-| `nameRecordingSpeakers` | frontend/js/meetings.js:2161 |
-| `noteRecoveredRecordings` | frontend/js/meetings.js:1474 |
-| `openLiveCaptionsFrom` | frontend/js/meetings.js:2500 |
-| `openMeetingRecorder` | frontend/js/meetings.js:966 |
+| `micControlsInto` | frontend/js/meetings.js:2578 |
+| `micLevelInto` | frontend/js/meetings.js:2698 |
+| `nameMeetingMic` | frontend/js/meetings.js:2739 |
+| `nameRecordingSpeakers` | frontend/js/meetings.js:2159 |
+| `noteRecoveredRecordings` | frontend/js/meetings.js:1472 |
+| `openLiveCaptionsFrom` | frontend/js/meetings.js:2498 |
+| `openMeetingRecorder` | frontend/js/meetings.js:964 |
 | `openMeetingSheet` | frontend/js/meetings.js:335 |
 | `openNewMeeting` | frontend/js/meetings.js:132 |
-| `openRecordingTrim` | frontend/js/meetings.js:2341 |
-| `openRecordings` | frontend/js/meetings.js:1511 |
-| `openVoiceNote` | frontend/js/meetings.js:991 |
-| `playRecordingFrom` | frontend/js/meetings.js:1878 |
-| `recordingCardsRun` | frontend/js/meetings.js:2297 |
-| `recordingFacts` | frontend/js/meetings.js:1595 |
-| `recordingMarksFill` | frontend/js/meetings.js:1853 |
-| `recordingMenu` | frontend/js/meetings.js:2085 |
-| `recordingPaint` | frontend/js/meetings.js:1810 |
-| `recordingReady` | frontend/js/meetings.js:1704 |
-| `recordingRow` | frontend/js/meetings.js:1620 |
-| `recordingRunLine` | frontend/js/meetings.js:2306 |
-| `recordingShowLine` | frontend/js/meetings.js:1888 |
-| `recordingSpeed` | frontend/js/meetings.js:1726 |
-| `recordingTranscript` | frontend/js/meetings.js:1956 |
-| `recordingTranscriptFill` | frontend/js/meetings.js:1972 |
-| `recordingTranscriptNow` | frontend/js/meetings.js:2072 |
-| `recordingTranscriptState` | frontend/js/meetings.js:1606 |
-| `recordingTranscriptionEnded` | frontend/js/meetings.js:2262 |
-| `recordingTrimField` | frontend/js/meetings.js:2398 |
-| `recordingWav` | frontend/js/meetings.js:2442 |
-| `recordingWave` | frontend/js/meetings.js:1745 |
-| `recordingsEmpty` | frontend/js/meetings.js:1561 |
-| `removeRecordingMark` | frontend/js/meetings.js:1939 |
-| `renameRecording` | frontend/js/meetings.js:2171 |
-| `renameRecordingSpeaker` | frontend/js/meetings.js:2137 |
-| `renderRecordings` | frontend/js/meetings.js:1527 |
-| `resetMeetingUI` | frontend/js/meetings.js:944 |
-| `saveMeetingDocument` | frontend/js/meetings.js:1427 |
-| `saveMeetingNote` | frontend/js/meetings.js:1463 |
-| `saveRecordingMarks` | frontend/js/meetings.js:1901 |
-| `saveVoiceNoteText` | frontend/js/meetings.js:1481 |
-| `setMeetingState` | frontend/js/meetings.js:895 |
-| `showMeetingRecorder` | frontend/js/meetings.js:996 |
-| `startMeetingWave` | frontend/js/meetings.js:756 |
-| `startRecordingTranscription` | frontend/js/meetings.js:2227 |
-| `stopMeetingTimer` | frontend/js/meetings.js:876 |
-| `stopMeetingTranscription` | frontend/js/meetings.js:1353 |
-| `stopRecordingTranscription` | frontend/js/meetings.js:2234 |
-| `syncCaptionsDoors` | frontend/js/meetings.js:2494 |
-| `syncMicSelects` | frontend/js/meetings.js:2652 |
-| `syncRecordingDock` | frontend/js/meetings.js:921 |
-| `testMicrophone` | frontend/js/meetings.js:2661 |
-| `toggleMeetingPause` | frontend/js/meetings.js:1397 |
-| `toggleMeetingRecording` | frontend/js/meetings.js:1038 |
-| `transcribeRecording` | frontend/js/meetings.js:2196 |
-| `trimRecording` | frontend/js/meetings.js:2418 |
-| `watchRecordingTranscription` | frontend/js/meetings.js:2243 |
+| `openRecordingTrim` | frontend/js/meetings.js:2339 |
+| `openRecordings` | frontend/js/meetings.js:1509 |
+| `openVoiceNote` | frontend/js/meetings.js:989 |
+| `playRecordingFrom` | frontend/js/meetings.js:1876 |
+| `recordingCardsRun` | frontend/js/meetings.js:2295 |
+| `recordingFacts` | frontend/js/meetings.js:1593 |
+| `recordingMarksFill` | frontend/js/meetings.js:1851 |
+| `recordingMenu` | frontend/js/meetings.js:2083 |
+| `recordingPaint` | frontend/js/meetings.js:1808 |
+| `recordingReady` | frontend/js/meetings.js:1702 |
+| `recordingRow` | frontend/js/meetings.js:1618 |
+| `recordingRunLine` | frontend/js/meetings.js:2304 |
+| `recordingShowLine` | frontend/js/meetings.js:1886 |
+| `recordingSpeed` | frontend/js/meetings.js:1724 |
+| `recordingTranscript` | frontend/js/meetings.js:1954 |
+| `recordingTranscriptFill` | frontend/js/meetings.js:1970 |
+| `recordingTranscriptNow` | frontend/js/meetings.js:2070 |
+| `recordingTranscriptState` | frontend/js/meetings.js:1604 |
+| `recordingTranscriptionEnded` | frontend/js/meetings.js:2260 |
+| `recordingTrimField` | frontend/js/meetings.js:2396 |
+| `recordingWav` | frontend/js/meetings.js:2440 |
+| `recordingWave` | frontend/js/meetings.js:1743 |
+| `recordingsEmpty` | frontend/js/meetings.js:1559 |
+| `removeRecordingMark` | frontend/js/meetings.js:1937 |
+| `renameRecording` | frontend/js/meetings.js:2169 |
+| `renameRecordingSpeaker` | frontend/js/meetings.js:2135 |
+| `renderRecordings` | frontend/js/meetings.js:1525 |
+| `resetMeetingUI` | frontend/js/meetings.js:942 |
+| `saveMeetingDocument` | frontend/js/meetings.js:1425 |
+| `saveMeetingNote` | frontend/js/meetings.js:1461 |
+| `saveRecordingMarks` | frontend/js/meetings.js:1899 |
+| `saveVoiceNoteText` | frontend/js/meetings.js:1479 |
+| `setMeetingState` | frontend/js/meetings.js:893 |
+| `showMeetingRecorder` | frontend/js/meetings.js:994 |
+| `startMeetingWave` | frontend/js/meetings.js:755 |
+| `startRecordingTranscription` | frontend/js/meetings.js:2225 |
+| `stopMeetingTimer` | frontend/js/meetings.js:875 |
+| `stopMeetingTranscription` | frontend/js/meetings.js:1351 |
+| `stopRecordingTranscription` | frontend/js/meetings.js:2232 |
+| `syncCaptionsDoors` | frontend/js/meetings.js:2492 |
+| `syncMicSelects` | frontend/js/meetings.js:2650 |
+| `syncRecordingDock` | frontend/js/meetings.js:919 |
+| `testMicrophone` | frontend/js/meetings.js:2659 |
+| `toggleMeetingPause` | frontend/js/meetings.js:1395 |
+| `toggleMeetingRecording` | frontend/js/meetings.js:1036 |
+| `transcribeRecording` | frontend/js/meetings.js:2194 |
+| `trimRecording` | frontend/js/meetings.js:2416 |
+| `watchRecordingTranscription` | frontend/js/meetings.js:2241 |
 
 ### frontend/js/mermaid-draw.js (28)
 
@@ -27721,7 +27721,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21855)
+## Tests (21864)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30368,6 +30368,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_when.py | 37 |
 | tests/test_when_ahead_1027.py | 5 |
 | tests/test_when_class_1026.py | 7 |
+| tests/test_when_realise_properties.py | 9 |
 | tests/test_when_windows.py | 7 |
 | tests/test_whiteboard.py | 51 |
 | tests/test_whiteboard_frame_turn.py | 7 |
@@ -30825,14 +30826,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:888 |
+| Needs hardware | docs/roadmap/LEDGER.md:881 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:880 |
+| Owner calls | docs/roadmap/LEDGER.md:873 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31013,7 +31014,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1089 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1026 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31067,25 +31068,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1105 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1189 |
+| chat | docs/roadmap/LEDGER.md:1042 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1126 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:1129 |
-| general | docs/roadmap/LEDGER.md:840 |
+| documents | docs/roadmap/LEDGER.md:1066 |
+| general | docs/roadmap/LEDGER.md:833 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1093 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1201 |
+| graph | docs/roadmap/LEDGER.md:1030 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1138 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:1141 |
+| mindmap | docs/roadmap/LEDGER.md:1078 |
 | timeline | docs/roadmap/LEDGER.md:596 |
-| timeline | docs/roadmap/LEDGER.md:1165 |
+| timeline | docs/roadmap/LEDGER.md:1102 |
 | ui-modernisation | docs/roadmap/LEDGER.md:478 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1153 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1090 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1117 |
+| whiteboard | docs/roadmap/LEDGER.md:1054 |
 | world-class | docs/roadmap/LEDGER.md:631 |
-| world-class | docs/roadmap/LEDGER.md:1177 |
+| world-class | docs/roadmap/LEDGER.md:1114 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

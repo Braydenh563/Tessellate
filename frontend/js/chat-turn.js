@@ -2243,14 +2243,12 @@ function startChatTimer() {
   // Started before the bubble exists, the clock has to include the wait for
   // the first byte, which on a cold local model is most of it. `mountChatTimer`
   // gives it somewhere to draw a moment later.
-  clearInterval(chatTimerInterval);
   chatTimerStartedAt = performance.now();
-  chatTimerInterval = setInterval(paintChatTimer, 1000);
+  secondTick.add(paintChatTimer);
 }
 
 function stopChatTimer() {
-  clearInterval(chatTimerInterval);
-  chatTimerInterval = null;
+  secondTick.remove(paintChatTimer);
   // Taken off screen, not left showing: the answer is finished, and its
   // metadata line already carries the final duration. A live-looking counter above a
   // finished answer is the bug this replaced.

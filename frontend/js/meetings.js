@@ -609,7 +609,6 @@
   }
   let meetingStream = null;
   let meetingChunks = [];
-  let meetingTimerHandle = null;
   let meetingStartedAt = 0;
 
   //: **The recording in hand is an object** (WORLD_CLASS_PLAN 28.5 row 1,
@@ -874,8 +873,7 @@
   }
 
   function stopMeetingTimer() {
-    if (meetingTimerHandle) clearInterval(meetingTimerHandle);
-    meetingTimerHandle = null;
+    secondTick.remove(meetingTick);
   }
 
   //: **One state at a time** (INBOX 708, "these panels feel badly designed and
@@ -1090,7 +1088,7 @@
   function meetingRecordingStarted(button) {
     meetingStartedAt = Date.now();
     $("meeting-timer").textContent = meetingElapsedText();
-    meetingTimerHandle = setInterval(meetingTick, 1000);
+    secondTick.add(meetingTick);
     button.classList.add("recording");
     setLabel(button, "ph:stop Stop");
     // Appended after setLabel, not before: setLabel's replaceChildren() wipes
@@ -1413,7 +1411,7 @@
       // Push the start forward by however long the pause lasted, so the timer
       // keeps reading as the length of the audio rather than of the sitting.
       meetingStartedAt += Date.now() - meetingPausedAt;
-      meetingTimerHandle = setInterval(meetingTick, 1000);
+      secondTick.add(meetingTick);
       setLabel(button, "ph:pause Pause");
       setMeetingState("recording");
       meetingSay(meetingStatusLine());

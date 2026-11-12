@@ -241,3 +241,30 @@ function shortcutTitle(base, action) {
 function nounCount(n, one, many = `${one}s`) {
   return `${n} ${n === 1 ? one : many}`;
 }
+
+//: **One second's clock for every ticking display** (L-world-class-15): the
+//: chat's answer timer, the focus timer, the meeting recorder and the status
+//: bar clock each ran their own one-second interval, four wakes a second
+//: where one does. A display adds its paint while it shows and removes it
+//: when it stops; the interval runs only while one is added.
+const secondTick = {
+  fns: new Set(),
+  id: 0,
+  add(fn) {
+    this.fns.add(fn);
+    if (!this.id) this.id = setInterval(() => this.fns.forEach((paint) => {
+      try {
+        paint();
+      } catch (err) {
+        console.error("A one-second display failed to paint", err);
+      }
+    }), 1000);
+  },
+  remove(fn) {
+    this.fns.delete(fn);
+    if (!this.fns.size && this.id) {
+      clearInterval(this.id);
+      this.id = 0;
+    }
+  },
+};
