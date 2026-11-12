@@ -298,3 +298,24 @@ def test_the_render_compares_the_key_before_it_works_out_the_geometry() -> None:
     body = "\n".join(line for line in match.group(0).splitlines() if not line.lstrip().startswith("//"))
     assert body.index("held.key !== geomKey") < body.index("wbMapEdgeGeometry(")
     assert "wbMapEdgeKey(" in body
+
+
+def test_a_click_on_the_bend_dot_stays_off_the_canvas() -> None:
+    """L-mindmap-15: the first click of a double-click on the dot reached the
+    canvas, cleared the selection and stood the mid-line `+` back over the dot,
+    so the second click hit the `+` and the line never straightened."""
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    src = MAP_JS.read_text(encoding="utf-8")
+    start = src.index("function wbWireMapEdgeHandle(")
+    end = src.index("\nfunction ", start + 1)
+    script = src[start:end] + r"""
+const on = {};
+const handle = { addEventListener: (type, fn) => { on[type] = fn; } };
+wbWireMapEdgeHandle(handle, "p", "c");
+let stopped = false;
+on.click?.({ stopPropagation: () => { stopped = true; } });
+console.log(JSON.stringify({ wired: typeof on.click === "function", stopped }));
+"""
+    out = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True)
+    assert json.loads(out.stdout) == {"wired": True, "stopped": True}

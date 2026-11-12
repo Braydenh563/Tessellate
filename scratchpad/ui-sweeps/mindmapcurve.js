@@ -16,11 +16,9 @@
 //   - and the stored pair is read back off the server, since two `data` fields
 //     on the child is the whole storage design.
 //
-// At VIEWPORT=390x844 the click no longer times out (the add row used to
-// cover the topic's label there, an app fault now fixed and measured by
-// mapaddcover.js), but 3 of 14 checks still fail: the map is laid out past a
-// phone's width, so the hover reveal and the straight-line kink point at
-// handles that are off screen. That is the probe's layout, not the app.
+// At VIEWPORT=390x844 all 14 pass (L-mindmap-15: the map is zoomed to fit; a
+// click on the dot no longer reaches the canvas, which had cleared the
+// selection and stood the `+` over the dot between a double-click's clicks).
 //
 //   BASE=http://127.0.0.1:8793 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
 //   timeout 110 node scratchpad/ui-sweeps/mindmapcurve.js
@@ -33,6 +31,8 @@ const VIEWPORT = (() => {
   return { width: w || 1440, height: h || 900 };
 })();
 
+//: A point on the canvas that is neither a line nor a topic, kept inside the viewport (1380,860 is off screen at 390).
+const EMPTY = { x: Math.min(1380, VIEWPORT.width - 12), y: Math.min(860, VIEWPORT.height - 12) };
 const results = [];
 function check(label, ok, detail) {
   results.push({ label, ok: Boolean(ok) });
@@ -185,7 +185,7 @@ const READ = `(childId) => {
   const park = async () => {
     // Somewhere that is neither a line nor a topic, so a "resting" reading is
     // a resting reading.
-    await page.mouse.move(1380, 860);
+    await page.mouse.move(EMPTY.x, EMPTY.y);
     await page.waitForTimeout(200);
   };
   // Point at the line first, then at the dot on it: that is the gesture, and
@@ -227,7 +227,7 @@ const READ = `(childId) => {
   const woken = await read(built.curved);
 
   const curve = await dragHandle(built.curved, 0, -110, { selected: true });
-  await page.mouse.click(1380, 860);
+  await page.mouse.click(EMPTY.x, EMPTY.y);
   await page.waitForTimeout(300);
   const straight = await dragHandle(built.straight, 0, 120);
   const elbow = await dragHandle(built.elbow, 95, 0);

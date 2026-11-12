@@ -9283,6 +9283,10 @@ function wbWireMapEdgeHandle(handle, parentId, childId) {
   //: Back to the line it was, without going to a menu for it. The same
   //: gesture a text grip uses to reset a size elsewhere in this file, and the
   //: node's own menu says so in words for anyone who does not try it.
+  //: A click on the dot must not reach the canvas: it cleared the selection,
+  //: which stood the mid-line `+` back over the dot (zoomed out it covers
+  //: it), so the second click of a double-click hit the `+` (L-mindmap-15).
+  handle.addEventListener("click", (event) => event.stopPropagation());
   handle.addEventListener("dblclick", (event) => {
     event.preventDefault();
     event.stopPropagation();
