@@ -123,6 +123,7 @@ from tessellate.api import (
     routes_code_assist,
     routes_board_history,
     routes_board_affinity,
+    routes_document_claims,
     routes_map_suggest,
     routes_map_from_notes,
 )
@@ -1613,6 +1614,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_board_history.router, LOCKED),
     (routes_map_suggest.router, LOCKED),
     (routes_board_affinity.router, LOCKED),
+    (routes_document_claims.router, LOCKED),
     (routes_map_from_notes.router, LOCKED),
     (routes_debug.router, LOCKED),
     (routes_privacy.router, LOCKED),

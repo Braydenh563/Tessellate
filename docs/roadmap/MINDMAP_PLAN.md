@@ -1558,9 +1558,7 @@ transport for its tests and the no-model fallback measured in a sweep:
 - ~~**Expand from my notes**~~ built 2026-10-18 (HISTORY.md, "Moved from the
   plans, 2026-10-18 (mindmap-1018)").
 - ~~**The affinity sort**~~ built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
-- **The claim check** (DOCUMENTS_PLAN's territory): a document's sentences
-  checked against the notebook, each marked supported, contradicted or not
-  found, with the note.
+- ~~**The claim check**~~ built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 
 
 ## 14. Core nodes, levels and the icon library (INBOX 641, 642; mc1, 2026-10-05)
@@ -1586,10 +1584,7 @@ Moved to HISTORY.md ("Moved from the plans, 2026-10-05 (MINDMAP_PLAN §14, mc1)"
 | Photoshop | Copy and Paste layer style; the Glyphs panel: search, recent, insert into text | Copy and paste a topic's style (decision 42); the picker's search and Recent row (decision 43) |
 | Miro | Copy style and Paste style (Ctrl+Alt+C, V); an icon and emoji panel dragged onto the board; reactions | Paste style reaches topics; drag from the picker onto the canvas |
 
-Not taken now, kept open under INBOX 641: Illustrator's linked symbol
-instances (edit one, every placed copy follows), Photoshop's layer effects
-(shadow, glow, stroke per topic), Miro's reaction stamps and voting, and the
-whiteboard half of 641's research (beyond stickers).
+Once "not taken now" under INBOX 641 (linked symbols, layer effects, reactions): all built, see 14.4 and HISTORY.md.
 
 ### 14.3 Decisions made (do not remake)
 
@@ -1681,7 +1676,7 @@ Phases 14a to 14e are built (HISTORY.md, "Moved from the plans, 2026-10-05
 
 - **Linked stickers** (Illustrator's symbols): built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)"). Left open: swapping an icon for another icon everywhere (L-mindmap-14).
 - Reaction stamps and voting: on a topic, built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"); on a board card, built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
-- **The whiteboard half of 641's research**, beyond stickers.
+- ~~**The whiteboard half of 641's research**~~ named nothing beyond stickers; recorded in HISTORY.md ("Moved from the plans, 2026-11-12 (mindmap-plan)").
 
 ## Placed from the owner's list, 2026-10-10
 
