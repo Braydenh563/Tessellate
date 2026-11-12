@@ -8,6 +8,11 @@
 // (lazy-entries.js). `sendChatMessage` does the same, and the chat box's first
 // focus warms it, so Send finds the file in.
 
+//: **A bare "undo" or "redo" typed in chat runs the app's own** (audit 1028
+//: E13), as Ctrl+Z does: sent as a question it got the Help line, and the
+//: change the person meant to take back stayed.
+const CHAT_UNDO_WORDS = /^(undo|redo)( that| it| the (last |previous )?(change|delete|deletion|one))?( please| now)?[.!]*$/i;
+
 async function chatSendTurn(preset, opts = {}) {
   const input = $("chat-input");
   const status = $("chat-status");
@@ -958,6 +963,9 @@ chatSendTurn.stage = {
         sentence_grounding: t.groundingSentences?.length ? t.groundingSentences : null,
         support: t.meta?.composed ? t.groundingSupport : null,
         acts: t.actCards?.length ? t.actCards : null,
+        //: What the answer showed and named, so a reopened chat still binds "and the other one" (O4).
+        frame: t.turnFrame,
+        objects: turnRecord.objects,
         // Which uploads this turn actually used, asked for directly: without
         // this, a sent chat image had no record anywhere that anything still
         // used it, so the Library's "Clean orphaned media" tool (which can

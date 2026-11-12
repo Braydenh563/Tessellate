@@ -997,11 +997,6 @@ async function sendChatMessage(preset, opts = {}) {
   }
 }
 
-//: **A bare "undo" or "redo" typed in chat runs the app's own** (audit 1028
-//: E13), as Ctrl+Z does: sent as a question it got the Help line, and the
-//: change the person meant to take back stayed.
-const CHAT_UNDO_WORDS = /^(undo|redo)( that| it)?\.?$/i;
-
 //: Saved content may carry Plan mode's block after the words.
 const followupMatches = (sent, ref) => Boolean(sent) && (sent === ref || sent.startsWith(ref));
 

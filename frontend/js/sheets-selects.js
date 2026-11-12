@@ -2230,7 +2230,7 @@ async function openConversation(id) {
         onEdit: () => editChatAnswer(handles, turnIndex, message.content),
       });
       if (lastQuestionText !== null) {
-        chatConv.turns.push({ question: lastQuestionText, answer: message.content });
+        chatConv.turns.push({ question: lastQuestionText, answer: message.content, objects: message.objects, frame: message.frame });
       }
     }
   }
