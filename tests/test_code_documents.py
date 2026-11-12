@@ -955,3 +955,20 @@ def test_a_template_fills_the_time_and_places_the_cursor():
     assert re.search(r"At \d{1,2}:\d{2}", with_cursor["content"])
     assert with_cursor["content"][with_cursor["cursor"] :].startswith("end")
     assert plain["cursor"] == -1
+
+
+# L349: a #tag in a document's Read view is a chip, and pressing it searches documents for it.
+def test_a_hash_tag_in_the_read_view_is_a_chip_that_searches_documents():
+    embeds = (JS / "documents-embeds.js").read_text(encoding="utf-8")
+    start = embeds.index("docEmbedFill.tagParts = ")
+    body = embeds[start : embeds.index("\n  };\n", start) + 6]
+    got = _node(
+        "const docEmbedFill = {};\n" + body,
+        "{ a: docEmbedFill.tagParts('fix #wip and C# plus ##x then #a-b, #9 done'),"
+        " b: docEmbedFill.tagParts('no tags here'), c: docEmbedFill.tagParts('#Start') }",
+    )
+    assert got["a"] == ["fix ", ["wip"], " and C# plus ##x then ", ["a-b"], ", #9 done"]
+    assert got["b"] == ["no tags here"] and got["c"] == [["Start"]]
+    assert "docEmbedFill.tagChips(preview)" in (JS / "documents.js").read_text(encoding="utf-8")
+    assert 'openFinder("#" + tag, { kind: "document" })' in embeds
+    assert "SKIP_TAG_CHIPS" in embeds and "closest(" in embeds

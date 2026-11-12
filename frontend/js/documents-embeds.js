@@ -426,6 +426,42 @@
     return surface && !surface.classList.contains("doc-content-code") ? surface : null;
   }
 
+  //: **A `#tag` in the Read view is a chip** (L349). `tagParts` splits a text
+  //: into plain strings and `[name]` tags, with the same rule as the editor's
+  //: `#tag` completion: a `#` that opens a word and a letter after it, so not
+  //: `C#`, `##x` or `#9`. Pressing a chip asks Find for documents with that tag.
+  docEmbedFill.tagParts = (text) => {
+    const parts = [];
+    let from = 0;
+    for (const m of text.matchAll(/(^|\s)#(\p{L}[\p{L}\p{N}_-]*)/gu)) {
+      const at = m.index + m[1].length;
+      if (at > from) parts.push(text.slice(from, at));
+      parts.push([m[2]]);
+      from = at + 1 + m[2].length;
+    }
+    if (from < text.length) parts.push(text.slice(from));
+    return parts;
+  };
+  const SKIP_TAG_CHIPS = "code, pre, a, button, h1, h2, h3, h4, h5, h6, .wiki-link, .doc-tag-chip, .katex, .mermaid";
+  docEmbedFill.tagChips = (root) => {
+    const found = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (node.nodeValue.includes("#") && !node.parentElement?.closest(SKIP_TAG_CHIPS)) found.push(node);
+    }
+    for (const node of found) {
+      const parts = docEmbedFill.tagParts(node.nodeValue);
+      if (!parts.some(Array.isArray)) continue;
+      node.replaceWith(...parts.map((part) => {
+        if (!Array.isArray(part)) return document.createTextNode(part);
+        const [tag] = part;
+        const el = chip(`#${tag}`, "tag doc-tag-chip", () => openFinder("#" + tag, { kind: "document" }));
+        el.title = `Find documents that mention #${tag}`;
+        return el;
+      }));
+    }
+  };
+
   //: The file's whole surface: what documents.js, documents-cm.js and markdown.js call.
   Object.assign(window, { docEmbedFill, docImageLive, docResolveWikiTarget, docWikiTargetLabel, docOpenResolvedWikiTarget, docOpenWikiTarget, docOpenLink, docFileDropBox });
 })();

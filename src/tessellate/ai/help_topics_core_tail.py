@@ -954,7 +954,8 @@ TAIL_TOPICS.extend(
                 "buttons picks the style: dots, circles, squares or dashes, and 1., 1), a. or i. "
                 "The marker is kept in the text, so every view and the export read it, and Enter at the end of an a., i. or dash item starts the next one. "
                 "A bullet pasted from elsewhere becomes a list item. In a markdown "
-                "document, typing # and a letter offers the tags you have used."
+                "document, typing # and a letter offers the tags you have used, and "
+                "in Read a #tag is a chip: press it to find the documents that have it."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

@@ -4308,6 +4308,7 @@ function renderDocPreview() {
   docMathRender.graphIn(preview);
   docMathRender.baseIn(preview);
   docEmbedFill.editButtons(preview);
+  docEmbedFill.tagChips(preview);
   docWireReadTasks(preview, text);
 }
 
