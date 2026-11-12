@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat ledger rows L21, L22, L28, L29, L32, L39, L116, L117, L191 carry the 2026-11-12 probe results
 - The composer reads "tell me about this" and "give me a summary of this note" as a question about the attached note
 - Tidy, tool labels and insights name a title-less note the way the composer does (its first sentence), not a raw clip
 - Chat plan phase 5 (a) and (c) verified built: the model reads the composer's chosen sentences, and a composed bubble carries the From your notes chip
