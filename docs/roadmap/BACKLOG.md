@@ -4405,3 +4405,7 @@ Each row is the one step that needs hardware or a real model; everything that ru
 ## Fable whole-app review (owner-named, 2026-11-10; parked 2026-11-12, L-general-31)
 
 The owner named Fable 5.2 for one task: a read-only review and deep dive of the whole app, in a session of its own. It is parked here, not run, because the UI modernisation session runs at tier `pro` (no Opus or Fable agents; CLAUDE.md standing order 4 and section 8). **Run:** in a fresh `max`-tier session the owner opens for it; the `deep-audit` skill's per-surface agents are the shape, findings to one file under `docs/roadmap/agent-remaining/`, each finding then a LEDGER row.
+
+## In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-general-41)
+
+- A browser pane inside Tessellate whose pages an MCP client could read and act on. Parked: a large security surface for a local-first app; web clip and web search cover reading the web now. Revisit only with an owner request.
