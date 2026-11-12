@@ -55,6 +55,7 @@ def page(
     entry_id: int | None = None,
     document_id: int | None = None,
     include_done: bool = True,
+    due_before: datetime | None = None,
 ) -> tuple[list[Reminder], int]:
     """A page soonest first and the total of the same filtered set: a total
     that answers a different question from the rows is worse than none."""
@@ -65,6 +66,8 @@ def page(
         filters.append(Reminder.document_id == document_id)
     if not include_done:
         filters.append(Reminder.done.is_(False))
+    if due_before is not None:
+        filters.append(Reminder.due_at <= due_before)
     total = session.scalar(select(func.count(Reminder.id)).where(*filters)) or 0
     rows = session.scalars(select(Reminder).where(*filters).order_by(*ORDER).limit(limit).offset(offset))
     return list(rows), total

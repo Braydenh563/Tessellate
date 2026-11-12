@@ -8,6 +8,9 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Tests: the Guide lead tests run on a temp data dir, so a switch topic no longer writes the repo's data/ folder in a serial run (`tests/test_guide_lead_1110.py`).
 - Docs: the timeline's two waits (the owner's look at the day strip, INBOX 561; date ranges as spans, decision 13) move to BACKLOG "Timeline, parked 2026-11-12"; a reminder's detail line reads "Open." rather than "Not done yet.".
+- Verified in Chromium, no change needed: the reminder Alert select saves (60 min), Ctrl+Z puts it back, the Timeline range sends days=90/0/365, and the Timeline Options and reminders More menus stay inside the window with no overflow at 600, 768, 900 and 1100.
+- New: a reminder's row in the bell has Done, which completes it (a repeating one moves to its next time); the Guide's Notifications topic says so. Measured at 390 and 1440: the phone add row, the + clear of the last row and the closed Quick set menu already hold, now guarded by `tests/test_reminders_phone_layout.py`.
+- Perf: the reminders minute poll asks for a month's window (`GET /reminders?due_within_days=`) instead of up to 200 open rows; the status bar's open count comes from `/reminders/due` (`tests/test_reminders_due_stamp_k32.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
 - Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.

@@ -45,9 +45,28 @@ def test_the_look_is_small(client):
 
 def test_the_page_fetches_the_list_only_when_the_stamp_moved():
     body = STATUS.split("const openReminderList = (() => {", 1)[1].split("\n})();\n", 1)[0]
-    assert body.index('"/reminders/due"') < body.index('"/reminders?include_done=false"')
+    assert body.index('"/reminders/due"') < body.index('"/reminders?include_done=false')
     assert "look.stamp === cache.stamp" in body
     assert "fetched: false" in body and "fetched: true" in body
     poll = STATUS.split("async function checkDueReminders() {", 1)[1].split("\n}\n", 1)[0]
     assert "openReminderList()" in poll and 'apiJson("/reminders?include_done=false"' not in poll
     assert "if (looked.fetched) reminderChannel?.postMessage(all)" in poll
+
+
+def test_the_list_can_be_limited_to_a_due_window(client):
+    from datetime import datetime, timedelta, timezone
+
+    soon = (datetime.now(timezone.utc) + timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    _make(client, "soon", soon)
+    _make(client, "far away", "2099-01-01T09:00:00")
+    everything = client.get("/reminders?include_done=false").json()
+    windowed = client.get("/reminders?include_done=false&due_within_days=31")
+    assert len(everything) == 2
+    assert [r["text"] for r in windowed.json()] == ["soon"]
+    assert windowed.headers["X-Total-Count"] == "1", "the total counts the same window"
+
+
+def test_the_minute_poll_asks_for_the_window_and_keeps_the_open_count():
+    body = STATUS.split("const openReminderList = (() => {", 1)[1].split("\n})();\n", 1)[0]
+    assert "include_done=false&due_within_days=" in body
+    assert "open: look?.open" in body
