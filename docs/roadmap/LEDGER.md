@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 71 | 4 | 0 | 17 | 171 |
+| ui-modernisation | 96 | 69 | 4 | 0 | 17 | 169 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 13 | 0 | 0 | 0 | 13 |
-| all | 553 | 643 | 158 | 3 | 191 | 1354 |
+| all | 553 | 641 | 158 | 3 | 191 | 1352 |
 
 ## graph
 
@@ -499,9 +499,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L404** `ui-modernisation` open, S: Fix focus ring touching viewport edge on body-level fixed sheet (phone Writing room draft textarea). From OPEN.md:3506. Evidence: No measured fix; phone Writing room draft textarea.
 - [ ] **L405** `ui-modernisation` open, S: Measure documents sidebar and board zoom pill at 390. From OPEN.md:3544. Evidence: Measurement gap; sidebar is a sheet at 390.
 - [ ] **L406** `ui-modernisation` open, S: Raise output grip to the 44px touch floor at 390 and cover run panel. From OPEN.md:3681. Evidence: No touch.js in frontend/js now; grip rule not found raised; unmeasured at 390
-- [ ] **L408** `ui-modernisation` open, S: Run the dark-theme axe sweep for target size and scrollable regions at 1024. From OPEN.md:627. Evidence: Measurable by axe sweep in dark at 1024; not recorded
 - [ ] **L409** `ui-modernisation` open, S: Check moved rules in dark and phone width, and first bell press on a slow link. From OPEN.md:638. Evidence: errors.js at 390 clean; dark and slow-link checks not recorded
-- [ ] **L411** `ui-modernisation` open, S: Check the Settings voice row in dark theme (only light checked). From OPEN.md:833; OPEN.md:3513. Evidence: Only light checked per row; THEME=dark run not recorded
 - [ ] **L412** `ui-modernisation` open, S: Re-measure Logs More menu .dock-menu-check rows and board Start/End menus against other menu items. From OPEN.md:1207; OPEN.md:2523. Evidence: 07-whiteboard-misc.css:9720 .dock-menu-check now token padding; re-measure of Logs menu and board menus not shown.
 - [ ] **L415** `ui-modernisation` open, S: Measure the status ring under 'auto' motion. From OPEN.md:1758. Evidence: No later measurement found; needs a sweep of the status ring in auto motion
 - [ ] **L416** `ui-modernisation` open, S: Stop the Bin row's long label wrapping when its reset appears; add per-row marker. From OPEN.md:1761; OPEN.md:2592. Evidence: No change found in settings rows for the bin reset label; unverified fix absent
