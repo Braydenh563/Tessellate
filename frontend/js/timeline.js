@@ -774,21 +774,25 @@ function timelineCountLine(shown, loaded, tail, rows = []) {
 //: 2,000 rows). `left` is how many of the first rows are built as they land,
 //: a screenful and some, the rest come with the first look. `guess` is a
 //: shell's height until its row has drawn once (`heights`, by key).
-const TIMELINE_ROW_GUESS = { full: 64, compact: 44, dense: 42 };
+const TIMELINE_ROW_GUESS = { full: 64, compact: 44, dense: 42, table: 34 };
 const TIMELINE_ROWS_BUILT_FIRST = 40;
 const timelineWindow = { win: null, heights: new Map(), density: "", left: 0 };
 
+//: The table is windowed the same way (L491): 1,214 rows were 13,375 nodes and
+//: a 246ms sort; its shells are `<tr>`s, its density "table".
 function newTimelineWindow(density) {
   timelineWindow.win?.stop();
   if (timelineWindow.density !== density) timelineWindow.heights.clear();
   timelineWindow.density = density;
   timelineWindow.left = TIMELINE_ROWS_BUILT_FIRST;
+  const table = density === "table";
   timelineWindow.win = windowRows($("timeline-scroll"), {
     heights: timelineWindow.heights,
     guess: TIMELINE_ROW_GUESS[density] || TIMELINE_ROW_GUESS.full,
+    shell: table ? "tr" : "li",
     keyOf: (row) => row.key,
     tag: (li, row) => { li.dataset.key = row.key; },
-    build: (row) => timelineRowElement(row, density),
+    build: table ? timelineTableRow : (row) => timelineRowElement(row, density),
     stays: (li) => li.contains(document.activeElement) || li.getAttribute("aria-expanded") === "true",
   });
   return timelineWindow.win;
@@ -2000,9 +2004,8 @@ function paintTimelineTable(rows) {
     ? timelineCountLine(rows.length, timelineRows.length, `by ${(column ? column.label : "date").toLowerCase()}`, rows)
     : "";
   const sorted = timelineSortedRows(rows);
-  const fragment = document.createDocumentFragment();
-  for (const row of sorted) fragment.appendChild(timelineTableRow(row));
-  body.appendChild(fragment);
+  const win = newTimelineWindow("table");
+  win.add(body, sorted, (row, i) => i < TIMELINE_ROWS_BUILT_FIRST);
   //: No other year on the page: the Date column can be narrow (06-timeline-dialogs.css).
   $("timeline-table").classList.toggle("timeline-this-year", sorted.every((row) => row.when.getFullYear() === new Date().getFullYear()));
 

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Speed: the Timeline table is windowed like the feed (L491); at 2,096 notes, 1,214 loaded rows went from 13,375 nodes to 1,985 and a sort repaint from 246ms to 43ms; End still reaches the last row (`tests/test_window_rows.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
 - Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.
