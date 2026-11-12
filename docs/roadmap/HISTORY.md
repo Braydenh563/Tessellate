@@ -9,6 +9,31 @@ that answers "has this been done?" before anyone starts.
 
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
+### WORLD_CLASS_PLAN section 20, Still open (moved 2026-11-12)
+
+- **The feature list is inside `#models-config`**, which Settings hides whole
+  when no backend is answering. So with the model server down there is no way
+  to see or clear a feature override, and the app's own "no model" advice is
+  what shows instead. Defensible (every other model picker is in there too)
+  but worth revisiting if anyone reports it.
+- **The Guide's row is the answer to INBOX 288 but not to its cause.** Smart
+  model routing off silently moves the Guide, an interactive panel, onto the
+  chat model, because the switch is written for background jobs. Either the
+  switch's copy should say which surfaces it moves, or the Guide should stop
+  being one of them. **Decided by the owner 2026-09-24: the Guide stays on
+  the utility model whatever the switch says** (`utility_resolution`,
+  `test_with_smart_routing_off_the_guide_keeps_the_utility_model`).
+- **A per-feature model is shown on the Chat tab and nowhere else.** The
+  chat pill (`#chat-active-model`) reads the pinned model now, but the
+  writing desk and the documents assistant say which model they are on only
+  inside their own menus. Neither has a pill to put it in, so this is a
+  design question (does a writing desk want a model badge in its dock?)
+  rather than an oversight.
+
+**State 2026-09-24:** (c) three open questions, each a decision rather than built work; none has been reported since.
+
+**Built 2026-11-12:** the routing switch says which surfaces it moves (`index.html` `#pref-smart-model-routing` line: filing, the weekly digest, tidy suggestions, writing fixes), and the Guide popover, the guide topic (`help_topics_core.py`) and `help_chat.py` say the Guide stays on the utility model with routing on or off (`tests/test_help_chat.py`). The feature list inside `#models-config`: kept as is (standing order 3, no report since 2026-09-24).
+
 - **Built, Sh1 P4:** the reminder edit form's time, priority, repeat and alert share one height (32px, equal top); `tests/test_reminder_edit_form_alert.py` holds the shared-height loop (cb83f2ed3).
 - **Built, Sh1 P12:** the APG comparison record (`tests/test_apg_comparison_p12.py`): menu type-ahead and Tab-closes, Down on a menu button opens it, select listbox label and Arrow-open, `role=switch` stamping, slider `aria-valuetext`, dialog `aria-labelledby` and `-describedby`. `settings-prefs.js` is a lazy file loaded ahead of `settings-controls.js` (it calls `wirePrefsDirtyMarks()` at load; found live as `ensureSettingsFoldAll is not defined`, `tests/test_settings_prefs_split.py`). Boot gzip 250,089 of 250,450 (efc1d2c8b, fc806ad6d).
 - **Built, Sh1 P16 and X6:** `parseNoteQuery.day`: `before:` and `after:` take today, yesterday, tomorrow, Nd, Nw, Nm, weekday and month names and ISO; typed in a real browser (e162c3725).

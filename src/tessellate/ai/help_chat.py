@@ -14,9 +14,9 @@ in full is not cut off mid-list (INBOX 410).
 
 **The model is the utility model, and it is the utility model's own
 fallbacks that decide what that means.** `ModelManager.utility_model()`
-answers the chat model in two cases: smart model routing turned off, and no
-utility model chosen. Both are the documented behaviour and neither is a bug
-here, but together they are why the Guide can be seen running the chat model
+answers the chat model when no utility model is chosen; smart model routing
+off does not move the Guide (the owner's decision, 2026-09-24). That fallback
+is why the Guide can be seen running the chat model
 while every line of copy around it says "your utility model", so
 `tests/test_help_chat.py` pins which model a real request takes in each of
 the three cases rather than leaving it to be read off this sentence.

@@ -876,8 +876,11 @@ def test_the_panel_does_not_promise_a_model_it_may_not_use():
     ).read_text(encoding="utf-8")
     assert "from your utility model" not in index
     popover = index[index.index('id="help-chat-help"') :][:900]
-    assert "smart model routing is on" in popover
-    assert "on the chat model while it is off" in popover
+    #: The owner's decision of 2026-09-24 (WORLD_CLASS_PLAN section 20) keeps
+    #: the guide on the utility model whatever the routing switch says
+    #: (`utility_resolution`), so the popover now says that instead.
+    assert "smart model routing on or" in popover
+    assert "on the chat model while it is off" not in popover
 
 
 def test_the_composer_is_not_gated_on_a_model_the_guide_does_not_need(client):

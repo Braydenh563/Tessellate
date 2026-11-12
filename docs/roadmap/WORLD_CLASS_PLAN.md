@@ -2216,26 +2216,12 @@ added against, and what is still open.
 
 ### Still open
 
-- **The feature list is inside `#models-config`**, which Settings hides whole
-  when no backend is answering. So with the model server down there is no way
-  to see or clear a feature override, and the app's own "no model" advice is
-  what shows instead. Defensible (every other model picker is in there too)
-  but worth revisiting if anyone reports it.
-- **The Guide's row is the answer to INBOX 288 but not to its cause.** Smart
-  model routing off silently moves the Guide, an interactive panel, onto the
-  chat model, because the switch is written for background jobs. Either the
-  switch's copy should say which surfaces it moves, or the Guide should stop
-  being one of them. **Decided by the owner 2026-09-24: the Guide stays on
-  the utility model whatever the switch says** (`utility_resolution`,
-  `test_with_smart_routing_off_the_guide_keeps_the_utility_model`).
-- **A per-feature model is shown on the Chat tab and nowhere else.** The
-  chat pill (`#chat-active-model`) reads the pinned model now, but the
-  writing desk and the documents assistant say which model they are on only
-  inside their own menus. Neither has a pill to put it in, so this is a
-  design question (does a writing desk want a model badge in its dock?)
-  rather than an oversight.
-
-**State 2026-09-24:** (c) three open questions, each a decision rather than built work; none has been reported since.
+- **A model pill in the writing desk's and the documents assistant's dock**
+  (the owner, 2026-11-12: "Yes, a dock pill"; supersedes decision 4's "never a
+  new control in its chrome" for this one pill): the `#chat-active-model`
+  recipe, reading the feature's resolved model, opening the same picker sheet.
+  The routing switch copy and the Guide rows (the other two questions) are in
+  HISTORY.md, "Moved from the plans", 2026-11-12.
 
 ## 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21)
 
