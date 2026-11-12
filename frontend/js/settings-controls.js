@@ -667,6 +667,7 @@
   $("pref-week-start").addEventListener("change", (e) => setPreference("week_start", e.target.value));
   $("pref-date-order").addEventListener("change", (e) => setPreference("date_order", e.target.value));
   $("pref-before-includes-day").addEventListener("change", (e) => setPreference("before_includes_day", e.target.checked));
+  $("pref-birthday").addEventListener("change", (e) => setPreference("birthday", e.target.value));
   $("pref-season-hemisphere").addEventListener("change", (e) => setPreference("season_hemisphere", e.target.value));
   //: The voice's live sample (CHAT_PLAN decision 72): the same three lines
   //: `composer_digest.sample` writes, kept equal by tests/test_answer_voice.py.

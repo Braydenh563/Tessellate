@@ -330,6 +330,8 @@ class PreferencesBody(BaseModel):
     #: Which half of the year "summer" and "last winter" mean: the person's
     #: pick, or "auto" to follow the locale the browser reports (`season_locale`).
     season_hemisphere: Literal["auto", "north", "south"] | None = None
+    #: "on my birthday" (reading.py `_known`): a real YYYY-MM-DD, or "" to clear.
+    birthday: str | None = Field(default=None, max_length=10, pattern=r"^(\d{4}-\d{2}-\d{2})?$")
     season_locale: str | None = Field(default=None, max_length=35)
     #: Minutes of no use after which the search-by-meaning model is dropped from
     #: memory (decision 62; it loads again on the next search or save). 0 keeps it.
@@ -823,6 +825,7 @@ def _prefs_notebook(config) -> dict:
         "before_includes_day": config.get_preference("before_includes_day", False),
         "date_order": config.get_preference("date_order", "auto"),
         "season_hemisphere": config.get_preference("season_hemisphere", "auto"),
+        "birthday": config.get_preference("birthday", ""),
         "season_locale": config.get_preference("season_locale", ""),
         "embedder_idle_unload_minutes": config.get_preference("embedder_idle_unload_minutes", 60),
         "insight_level": config.get_preference("insight_level", "one"),
@@ -1142,6 +1145,19 @@ def _refused_elsewhere(request: Request | None, key: str, value: object, current
     return safe is None or value != safe
 
 
+def _validated_birthday(value):  # noqa: ANN001, ANN202
+    """A day that exists (not 2026-02-30), or "" for none."""
+    from datetime import date
+
+    text = str(value or "")
+    if text:
+        try:
+            date.fromisoformat(text)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="Not a date.") from exc
+    return text
+
+
 def _validated_preference(key: str, value):  # noqa: ANN001, ANN202
     """The value as it is stored. A skill saved from the editor goes through
     exactly what `save_skill` goes through, so a skill the AI can write is a
@@ -1154,6 +1170,7 @@ def _validated_preference(key: str, value):  # noqa: ANN001, ANN202
         "dashboard_quick_access": _validated_quick_access,
         "dashboard_quick_tints": _validated_quick_tints,
         "model_context_windows": _validated_context_windows,
+        "birthday": _validated_birthday,
     }.get(key)
     return check(value) if check else value
 

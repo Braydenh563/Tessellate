@@ -129,6 +129,9 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     # pick, "north" or "south" (ai/recognise.py `configure_hemisphere`).
     "season_hemisphere": "auto",
     "season_locale": "",
+    # The person's birthday as YYYY-MM-DD (the year is free to be 2000), so "on my
+    # birthday" resolves without a note saying it (`ai/reading.py` `_known`). Empty: unset.
+    "birthday": "",
     # `before:` in a search leaves its own day out unless this is on (Q25;
     # search/query.py `configure_before`).
     "before_includes_day": False,
