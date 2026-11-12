@@ -6,6 +6,10 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the Autocorrect switch stays in the Editor menu, not the status bar, per the standing decision (L337).
+- Link offers: Never offer a link to this name is kept on the notebook, not per session (L340).
+- Documents: the lazy-order tests pass; docCmView is read only after documents.js has run (L306).
+- Code console and document assistant: one height and no border clash, pinned by a test (L299).
 - Code documents: lint tooltips stay out of the way while the pointer menu is open (L297).
 - Guide: the diagram-blocks topic has 48 characters of room under its budget; the Kind menu rows are checked (L290).
 - Emoji: the icon picker holds every glyph the :shortcode: menu types, guarded by a test, so the two tables cannot drift (L296).

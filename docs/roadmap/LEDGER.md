@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 54 | 15 | 0 | 18 | 139 |
-| documents | 70 | 54 | 15 | 0 | 18 | 139 |
-| documents | 70 | 54 | 15 | 0 | 18 | 139 |
+| documents | 70 | 52 | 13 | 0 | 18 | 135 |
+| documents | 70 | 52 | 13 | 0 | 18 | 135 |
+| documents | 70 | 52 | 13 | 0 | 18 | 135 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 694 | 155 | 3 | 195 | 1402 |
-| all | 553 | 694 | 155 | 3 | 195 | 1402 |
-| all | 553 | 694 | 155 | 3 | 195 | 1402 |
+| all | 553 | 692 | 153 | 3 | 195 | 1398 |
+| all | 553 | 692 | 153 | 3 | 195 | 1398 |
+| all | 553 | 692 | 153 | 3 | 195 | 1398 |
 
 ## graph
 
@@ -370,12 +370,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L293** `documents` open, S: Preserve run state when a never-ending console loop is killed after 10 s. From OPEN.md:1468. Evidence: Design limit; worker terminate path unchanged, no preservation found
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
 - [ ] **L298** `documents` open, S: Decide and vendor an indent-guides extension for the CodeMirror bundle. From OPEN.md:1508. Evidence: Active line built; no indent-markers extension found in vendor; needs vendoring decision
-- [ ] **L299** `documents` open, S: Fix console line border clash and doc assistant buttons/field/send height. From OPEN.md:1589. Evidence: No fix found in CHANGELOG/tests (backups part marked fixed in row)
 - [ ] **L300** `documents` open, S: Use js-beautify on a selection instead of conservative re-indent. From OPEN.md:1968. Evidence: Selection keeps conservative re-indent; no change
 - [ ] **L303** `documents` open, S: Measure Writing Room stretch on graph note boxes. From OPEN.md:3143. Evidence: Graph note boxes not opened/measured
 - [ ] **L304** `documents` open, S: Make diagram Source view text fold. From diagklm-1108.md Left. Evidence: diagram-lazy.css fold block / diagram-embed.js srcwrap unchanged per source; no later commit found
 - [ ] **L305** `documents` open, S: Probe Documents in dark run; map add undo flaky between runs. From OPEN.md:3696. Evidence: Re-run both before quoting; no re-run record found
-- [ ] **L306** `documents` open, S: Fix test_lazy_order_1530: documents-view.js reads docCmView after await. From dec-1111-d2.md Found. Evidence: documents-view.js:202-205 comment shows partial handling; not re-run (read-only)
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines.
 - [ ] **L309** `documents` open, M: Keep Python runtime frame persistent across documents to avoid 5-7 s cold reload per document. From OPEN.md:1219; OPEN.md:1224; OPEN.md:2829; OPEN.md:2907. Evidence: Row: needs the Pyodide extra, not installed here; cold Debug cannot be timed.
 - [ ] **L310** `documents` open, M: Feed sucrase's own parse errors into the Problems panel. From OPEN.md:1467. Evidence: documents-code.js:246 uses syntaxTree; no sucrase error feed found by grep
@@ -404,9 +402,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L334** `documents` open, L: Lower more JS constructs for the stepper (class fields, destructuring, spread, async). From OPEN.md:1767; OPEN.md:2826. Evidence: run-debug.js:97 lowers classes; RUN_DEBUG_REFUSED (:23-26) still names class fields, static blocks, private members etc.
 - [ ] **L335** `documents` open, L: Brief 45 part 2: split whiteboard.js/initWhiteboard and documents.js, fold 133 duplicate blocks. From SESSION_BRIEFS.md:176. Evidence: whiteboard.js still holds initWhiteboard (E19: 26,159 lines); no split commit found
 - [ ] **L336** `documents` partly, S: Record or build [[ autocomplete and connections rail (Brief 8). From OPEN.md:3591. Evidence: [[ code exists in answer-kit.js/app-features.js; HISTORY.md:51452 only the plan row, no Built block
-- [ ] **L337** `documents` partly, S: Add status-bar switch for typo autocorrect (Editor menu switch exists). From OPEN.md:4473. Evidence: Autocorrect switch in Editor menu (index.html:5424 #doc-autocorrect-row); status-bar switch not built
 - [ ] **L339** `documents` partly, S: Confirm queue rows B21 to B27 and B40 individually. From OPEN.md:405. Evidence: B20 shipped (2bdd1af55 lock badge, 6087e6602 Alt+Up/Down); other rows not individually confirmed
-- [ ] **L340** `documents` partly, S: Link offers: persist ignore beyond session. From OPEN.md:3890. Evidence: Switch now exists: settings-panes.js:661 pref-link-offers, settings-rows.js:40, documents-prose.js:377. Ignore still per-session (docProseIgnored, documents-prose.js:486); tag offers dropped by design.
 - [ ] **L342** `documents` partly, M: Meet the 4x typing gate (rest in a29i-1102.md). From OPEN.md:4489. Evidence: a29i-1102.md holds the rest; 4x typing gate stays open
 - [ ] **L343** `documents` partly, M: Confirm Documents delete restore via Ctrl+Z / toast Undo. From OPEN.md:1399. Evidence: status.js:1627-1672 surfaceHistory has a Documents branch with one timeline (DOCUMENTS 24 row 1); delete restore via Ctrl+Z not confirmed
 - [ ] **L344** `documents` partly, M: Replace in every document: batch requests and add a dock-menu row. From OPEN.md:1458; OPEN.md:2759. Evidence: documents.js:3231 command 'Replace in every document' exists; per-doc request batching/dock row unverified
