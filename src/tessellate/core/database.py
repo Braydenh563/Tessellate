@@ -1738,6 +1738,9 @@ class EntryDate(Base):
     phrase: Mapped[str] = mapped_column(String(60))
     at: Mapped[datetime] = mapped_column(DateTime)
     precision: Mapped[str] = mapped_column(String(10), default="day")
+    #: A written range's last day ("3 to 7 March"), precision "range"; the
+    #: calendar draws the note across the days between (decision 13).
+    until: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 

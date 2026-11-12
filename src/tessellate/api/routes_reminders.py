@@ -112,7 +112,7 @@ def _reject_if_in_the_past(due_at: datetime) -> None:
     a "reminder" that isn't reminding of anything upcoming. A minute of
     slack covers submit latency and clock skew, not a real mistake.
     """
-    now = datetime.now(timezone.utc)
+    now = utcnow()  # the module's one clock, so a test fixes both checks at once
     compare_at = due_at if due_at.tzinfo else due_at.replace(tzinfo=timezone.utc)
     if compare_at < now - timedelta(minutes=1):
         raise HTTPException(
@@ -524,6 +524,7 @@ def list_reminders(
     entry_id: int | None = Query(default=None, description="Only this note's reminders"),
     document_id: int | None = Query(default=None, description="Only this document's reminders"),
     include_done: bool = True,
+    due_within_days: int | None = Query(default=None, ge=0, le=3650, description="Only reminders due within this many days (overdue ones included)"),
     session: Session = Depends(get_session),
 ) -> list[dict]:
     """A page of reminders, soonest first; the frontend groups them.
@@ -540,8 +541,10 @@ def list_reminders(
     the Reminders tab pages on it.
     """
     offset = paging.start(cursor, offset)
+    due_before = utcnow().replace(tzinfo=None) + timedelta(days=due_within_days) if due_within_days is not None else None
     rows, total = reminder_repo.page(
-        session, limit=limit, offset=offset, entry_id=entry_id, document_id=document_id, include_done=include_done
+        session, limit=limit, offset=offset, entry_id=entry_id, document_id=document_id,
+        include_done=include_done, due_before=due_before,
     )
     response.headers["X-Total-Count"] = str(total)
     paging.finish(response, offset, limit, total)

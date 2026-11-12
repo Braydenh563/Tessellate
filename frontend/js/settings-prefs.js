@@ -37,6 +37,7 @@ async function renderPrefs() {
   $("pref-voice").value = prefsCache.composer_voice;
   $("pref-week-start").value = prefsCache.week_start || "auto";
   $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
+  $("pref-birthday").value = prefsCache.birthday || "";
   $("pref-date-order").value = prefsCache.date_order || "auto";
   $("pref-time-format").value = prefsCache.time_format || "auto";
   $("pref-before-includes-day").checked = prefsCache.before_includes_day === true;

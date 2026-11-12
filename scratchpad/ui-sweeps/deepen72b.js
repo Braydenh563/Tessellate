@@ -56,13 +56,14 @@ const visible = (sel) => `(() => { const e = document.querySelector(${JSON.strin
     return r;
   });
 
+  // A phone keeps the table (timelineViewMode), so its rows are #timeline-table-body > *, not .timeline-rows.
   await run("timeline", async () => {
     const r = {};
     await dash();
     const t0 = Date.now(); r.clicks = await tabClick("timeline");
-    await page.waitForFunction(() => document.querySelectorAll("#tab-timeline .timeline-rows > *").length > 0, null, { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelectorAll("#tab-timeline .timeline-rows > *, #timeline-table-body > *").length > 0, null, { timeout: 15000 });
     r.clickToRowsMs = Date.now() - t0; await page.waitForTimeout(1500);
-    r.rows = await page.evaluate(() => document.querySelectorAll("#tab-timeline .timeline-rows > *").length);
+    r.rows = await page.evaluate(() => document.querySelectorAll("#tab-timeline .timeline-rows > *, #timeline-table-body > *").length);
     r.m = await page.evaluate(() => __m("#tab-timeline"));
     r.views = await page.evaluate(() => [...document.querySelectorAll('#timeline-view-seg button, #timeline-view-seg [role=radio]')].filter((e) => e.offsetParent).map((e) => (e.getAttribute("aria-label") || e.textContent).trim().slice(0, 20)));
     r.dotAlign = await page.evaluate(() => { const d = document.querySelector("#tab-timeline .timeline-day-dot"); if (!d) return null; const row = d.closest("li, .timeline-day, section") || d.parentElement; const t = [...row.querySelectorAll("*")].find((e) => e !== d && e.childElementCount === 0 && e.textContent.trim().length > 2 && e.offsetParent); if (!t) return null; const a = d.getBoundingClientRect(), b = t.getBoundingClientRect(); const lh = parseFloat(getComputedStyle(t).lineHeight) || b.height; return { dotCentre: Math.round(a.top + a.height / 2), firstLineCentre: Math.round(b.top + lh / 2), deltaPx: Math.round(a.top + a.height / 2 - (b.top + lh / 2)) }; });

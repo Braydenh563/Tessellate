@@ -16,7 +16,7 @@ STATUS = Path(__file__).resolve().parents[1] / "frontend" / "js" / "status.js"
 
 def _run(script: str) -> dict:
     src = STATUS.read_text(encoding="utf-8")
-    start = src.index("let taskPollsSeen = 0;")
+    start = src.index("function noticeTaskTransitions(")
     end = src.index("\n}\n", src.index("function noticeTaskTransitions(")) + 3
     harness = (
         "const notices = [];\n"

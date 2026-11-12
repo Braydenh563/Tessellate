@@ -128,7 +128,12 @@ if(process.env.ONLY==='pr'){
   await page.keyboard.press('Escape');await page.fill('#chat-input','').catch(()=>{});
   for(const span of ['month','week','day']){
     await page.evaluate((sp)=>{localStorage.setItem('timeline-view','calendar');localStorage.setItem('timeline-cal-span',sp);switchTab('timeline');if(typeof timelineCal!=='undefined'){timelineCal.url='';timelineCal.span=sp;}paintTimeline();},span);
-    await page.waitForTimeout(1500);await run('pr/timeline calendar '+span);
+    // Wait for the calendar's own cells (a bare 1.5 s measured the tab before they drew:
+    // "4 text elements" in light 1440), then say how many it has, so "ok" is backed by them.
+    await page.waitForSelector('#tab-timeline .timeline-cal-month .timeline-cal-cellhead, #tab-timeline .timeline-cal-week .timeline-cal-hourcell, #tab-timeline .timeline-cal-hours .timeline-cal-hourcell',{timeout:8000}).catch(()=>{});
+    await page.waitForTimeout(600);
+    console.log('   calendar '+span+' cells: '+await page.evaluate(()=>document.querySelectorAll('#tab-timeline [class*="timeline-cal-"]').length));
+    await run('pr/timeline calendar '+span);
     if(span==='month'){
       await page.focus('.timeline-cal-monthcell[tabindex="0"]').catch(()=>{});await page.keyboard.press('n');await page.waitForTimeout(900);
       await page.keyboard.type('Dentist at 3pm');await page.waitForTimeout(900);await run('pr/calendar add sheet');

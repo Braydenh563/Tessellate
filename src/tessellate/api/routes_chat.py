@@ -770,7 +770,7 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     early = _filed_or_counted_events(req, asked, now)
     if early:
         return early
-    got = reading.read(asked, now=now)
+    got = reading.read(asked, now=now, context={"birthday": b} if (b := str(deps.get_config().get_preference("birthday", "") or "")) else None)
     if got.tool not in act_registry.NO_MODEL_READS or got.intent in act_registry.ACTS or composer_slots.asks_state(asked):
         return []  # "which tasks are done" is a checklist's state (E21), never the reminders list
     result = agent_tools.execute_tool(req.session, got.tool, {})

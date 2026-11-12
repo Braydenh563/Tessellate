@@ -36,6 +36,7 @@
     { key: "before_includes_day", id: "pref-before-includes-day" },
     { key: "date_order", id: "pref-date-order" },
     { key: "time_format", id: "pref-time-format" },
+    { key: "birthday", id: "pref-birthday" },
     { key: "insight_level", id: "pref-insight" },
     { key: "smart_punctuation", id: "pref-smart-punctuation" },
     { key: "link_offers", id: "pref-link-offers" },

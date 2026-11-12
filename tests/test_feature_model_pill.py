@@ -41,8 +41,8 @@ def test_the_pill_is_inside_the_dock_not_the_menu():
 
 def test_the_pill_reads_the_resolved_row_and_opens_the_shared_sheet():
     js = app_js_text()
-    body = js[js.index("function syncFeatureModelPills"):]
+    body = js[js.index("function syncFeatureModelPills("):]
     body = body[: body.index("\nfunction ", 10)]
     assert "featureModelRow(" in body and "row.model" in body
     assert "openFeatureModelSheet(" in js[js.index("[data-feature-pill]"):]
-    assert "syncFeatureModelPills()" in js[js.index("function syncFeatureModelSelects"):]
+    assert "syncFeatureModelSelects.pills()" in js[js.index("function syncFeatureModelSelects"):]

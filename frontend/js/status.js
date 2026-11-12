@@ -94,14 +94,14 @@ function storedNotifications() {
 // runs every thirty seconds and must not add the same fired reminder twice.
 //: Returns the row's id (null when nothing was recorded), so a toast's live
 //: action can be tied to its row (`keepToastAction`).
-function recordNotification({ kind, title, detail = "", key = "", action = null, runId = "" }) {
+function recordNotification({ kind, title, detail = "", key = "", action = null, runId = "", reminderId = null, reminderDue = null }) {
   if (kind !== "reminder" && notificationsMuted()) return null;
   const items = storedNotifications();
   const id = key || `${kind}:${title}:${Date.now()}`;
   if (key && items.some((n) => n.id === id)) return null;
   if (key && dismissedNotificationIds().has(id)) return null;
   //: `runId` ties a "Started:" row to its run, so the ending can replace it.
-  items.push({ id, kind, title, detail, at: Date.now(), action, ...(runId ? { runId } : {}) });
+  items.push({ id, kind, title, detail, at: Date.now(), action, ...(runId ? { runId } : {}), ...(reminderId ? { reminderId, reminderDue } : {}) });
   if (!prefs.set(NOTIFICATIONS_KEY, JSON.stringify(items.slice(-MAX_NOTIFICATIONS)))) {
     return null; // storage refused: the toast still shows, the row is not kept
   }
@@ -388,7 +388,10 @@ function syncNotifBlocked() {
   for (const line of document.querySelectorAll(".notif-blocked")) line.classList.toggle("hidden", !blocked);
 }
 
+//: Both lines are built lazily, so each surface syncs when it is built; the Reminders
+//: one stayed hidden until the next poll before (L914).
 onSurface("settings", syncNotifBlocked);
+onSurface("reminders", syncNotifBlocked);
 
 function askNotificationPermission() {
   if ("Notification" in window && Notification.permission === "default") {
@@ -581,13 +584,14 @@ const openReminderList = (() => {
   let cache = { stamp: "", all: null };
   return async () => {
     const look = await apiJson("/reminders/due", { silent: true }).catch(() => null);
-    if (look?.stamp && cache.all && look.stamp === cache.stamp) return { all: cache.all, fetched: false };
-    const all = await apiJson("/reminders?include_done=false", { silent: true }).catch(() => null);
+    if (look?.stamp && cache.all && look.stamp === cache.stamp) return { all: cache.all, fetched: false, open: look?.open };
+    //: A month covers the longest early alert (43200 minutes); later ones are not announced yet.
+    const all = await apiJson("/reminders?include_done=false&due_within_days=31", { silent: true }).catch(() => null);
     if (!all) return null;
     //: The stamp was read first, so a change in between leaves the cache looking
     //: older than the list, and the next look fetches again: the safe side.
     cache = { stamp: look?.stamp || "", all };
-    return { all, fetched: true };
+    return { all, fetched: true, open: look?.open };
   };
 })();
 
@@ -610,6 +614,11 @@ async function checkDueReminders() {
   if (!looked) return; // server asleep or locked, say nothing rather than guess
   const all = looked.all;
   const due = paintReminderList(all);
+  //: The list is a month's window; the status bar's open count is the whole notebook's.
+  if (Number.isInteger(looked.open) && reminderCounts.open !== looked.open) {
+    reminderCounts = { ...reminderCounts, open: looked.open };
+    renderStatusBar();
+  }
   //: Painting only: announcing stays with the tab that asked. An unchanged
   //: list was already sent when it was fetched.
   if (looked.fetched) reminderChannel?.postMessage(all);
@@ -640,6 +649,9 @@ async function checkDueReminders() {
       detail: `${reminder.early ? "Coming up" : "Came due"}${reminder.target_title ? `, about ${toastName(reminder.target_title)}` : ""}`,
       key: reminderNoticeKey(reminder),
       action: { tab: "reminders" },
+      //: Done from the bell (an early alert is not due yet, so it has none).
+      reminderId: reminder.early ? null : reminder.id,
+      reminderDue: reminder.due_at,
     });
   }
 
@@ -3218,11 +3230,11 @@ const QUIET_TASK_KINDS = new Set([
 //: run its own surface watches) still running on the first poll after a
 //: reload has no page watching it any more, so its ending is announced like
 //: any other job's rather than passing in silence. Its start is not news.
-let taskPollsSeen = 0;
-
+//: (`polled` is a property, not a global: tests/test_global_scope_ratchet.py.)
 function noticeTaskTransitions(running, history) {
   const now = new Map(running.map((task) => [taskKey(task), task]));
-  const firstPoll = taskPollsSeen++ === 0;
+  const firstPoll = !noticeTaskTransitions.polled;
+  noticeTaskTransitions.polled = true;
 
   //: A running job's row keeps its fraction and its own status line up to
   //: date. It is the same run list the chat's skill runs land in, an

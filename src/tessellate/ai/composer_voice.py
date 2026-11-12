@@ -172,6 +172,9 @@ VOICE: dict[str, str] = {
     "v_review_open_in": ", in ",
     "v_review_loose": "Linked to nothing yet: ",
     "v_review_none": "Nothing was saved in the last 7 days.",
+    "v_span_from": " from ",
+    "v_span_on": " on ",
+    "v_span_none": "Nothing was written in these days.",
     # Find anything's one line.
     "v_more_below": " More below.",
     # Suggested searches.
@@ -645,7 +648,7 @@ def _today_opening(v: _Voice, dated: list, today: date, k: int, counts: dict[dat
         v.m(_count_word(n_today))
         #: An untitled note names itself "your note from today", which cannot
         #: follow "the latest": the count then ends the sentence on its own.
-        if todays[0].titled:
+        if todays and todays[0].titled:
             v.t(("v_today_notes", "v_today_notes_b", "v_today_notes_c", "v_today_notes_d", "v_today_notes_e", "v_today_notes_f")[k])
             v.name(todays[0])
         else:
@@ -677,6 +680,33 @@ def week_review(notes: list[dict], *, today: date, unlinked: set[int] | None = N
         v.t("v_review_none")
         return v.done("week_review")
     _review_span(v, views, today)
+    _review_rest(v, views, unlinked)
+    return v.done("week_review")
+
+
+def span_review(notes: list[dict], *, start: date, end: date, today: date, unlinked: set[int] | None = None) -> dict:
+    """The days a reader brushed on the timeline (L-timeline-2), said as the
+    week is: the count and the span's own ends, where they went, what stands
+    out, what is open. `today` only words the days ("yesterday")."""
+    views = [w for w in _views(notes) if w.written and start <= w.written <= end]
+    v = _Voice({w.id: w for w in views}, today)
+    if not views:
+        v.t("v_span_none")
+        return v.done("span_review")
+    if len(views) == 1:
+        v.t("v_review_lead_one")
+    else:
+        v.t("v_review_lead").m(_count_word(len(views))).t("v_review_notes")
+    if start == end:
+        v.t("v_span_on").m(v.day(start)).t("stop")
+    else:
+        v.t("v_span_from").m(v.day(start)).t("to_span").m(v.day(end)).t("stop")
+    _review_rest(v, views, unlinked)
+    return v.done("span_review")
+
+
+def _review_rest(v: _Voice, views: list[NoteView], unlinked: set[int] | None) -> None:
+    """Everything after the lead, shared by the week and a brushed span."""
     _review_filed(v, views)
     ordered = sorted(views, key=lambda w: (w.written, -w.rank), reverse=True)
     _review_standouts(v, _standouts(ordered))
@@ -684,7 +714,6 @@ def week_review(notes: list[dict], *, today: date, unlinked: set[int] | None = N
     loose = [w for w in ordered if unlinked and w.id in unlinked][:4]
     if loose:
         v.t("para", "v_review_loose").names(loose).t("stop")
-    return v.done("week_review")
 
 
 def _review_span(v: _Voice, views: list[NoteView], today: date) -> None:

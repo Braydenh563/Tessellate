@@ -1520,7 +1520,7 @@ async function reminderPutUndoably(id, label, before, after) {
   };
   await put(after)();
   //: `restore`: the time it goes back to may be past (an overdue one edited).
-  pushUndo(label, put({ ...before, restore: true }), put({ ...after, restore: true }));
+  return pushUndo(label, put({ ...before, restore: true }), put({ ...after, restore: true }));
 }
 
 //: Create's inverse is the bin, and its redo the bin's restore, so the
