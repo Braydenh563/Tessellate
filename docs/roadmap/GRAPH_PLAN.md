@@ -591,6 +591,16 @@ Owner: the graph agent (Opus), when a slot frees.
 
 Built 2026-11-10 (q31-1110): the Tessellation layout with Cells and Hexes, and the Map's link-weighted tiles and uncut names; see HISTORY.md, "Moved from the plans, 2026-11-10 (q31-1110)". Left: `q31-1110.md` (git history).
 
+## Decisions made, 2026-11-12 (graph-plan session)
+
+1. **No balance pass riding the layer paint** (the owner, 2026-11-12: no).
+   Measured: it removed one 30 ms frame but left composed frames at 46 and
+   59 ms (total 188 to 167 ms) and put the layer boxes' bounds at risk.
+2. **No `?since=` cursor on `/graph`** (the task's own rule, standing order
+   3). Nothing polls `/graph`: the map reloads on a notebook-version change
+   and the payload is cached per version (`tests/test_graph_payload_cache.py`),
+   so a delta parameter would have no caller and would never run.
+
 ## Placed from INBOX, 2026-10-26 (the owner: the force view is messy, popups and controls hard to learn)
 
 - INBOX 1400, the owner 2026-10-26, verbatim: "Also see if you can fix or better redesign the composition of the force graph and also how the node popup panels work and other stuff, idk the graph just feels very messy to look at on the force view, the popup panels could be improved, alse access to the tools and controls and different mechanisms in it aren't really easy to understand and I do it just feels a little off. Keep improving the other main features. Do other features also need an upgrade?? Like the code editor l, recordings and other things?? Can the composer be expanded and improved any more?? I'm just chucking things at you. Please make sure you hit all high impact items, be very token efficient! I'm going so sleep so impress me. And I'll give you to 43% weekly usage" Placed with INBOX 1306 (default settings messy, toast faint over the legend). Run: an Opus redesign of force composition (layout defaults, label density, hub edges), the node popup panel, and the control surface (discoverable tools, one dock per DESIGN.md), measured before and after; then a dogfood pass on the code editor and recordings; composer expansion continues in composer9-1026.md. Budget: stop at 43% weekly.

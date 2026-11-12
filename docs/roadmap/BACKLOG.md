@@ -642,8 +642,6 @@ GRAPH_PLAN.md owns the rest of this section.
 
 **Parked from the graph plan, 2026-11-12 (graph-plan session).** Each row names the exact check left.
 
-- **Balance pass riding the layer paint.** The owner, 2026-11-12: no. Making pass 2 ride the layer paint removed one 30 ms frame but left composed frames at 46 and 59 ms (total 188 to 167 ms) and risks the layer boxes' bounds. Check if reopened: a test that layer boxes keep their bounds after the balance runs inside the paint.
-- **A `?since=` cursor on `/graph`.** Nothing polls `/graph`; a parameter with no caller is a feature that never ran. Build when something polls.
 - **3B model entity extraction.** Needs a real 3B model: run `pytest -m evals` with `scratchpad/llama-dev.sh serve` on a 3B (granite4.1:3b) and record `name|kind` recall of 22, junk names and the topic sentence's usability, against the 1.5B's 17 of 22, 4 junk, 4 of 4 (2026-11-11).
 - **The board's 138 compositor layers at rest** (L-graph-6). Chrome's sparsity rule will not merge far-apart cards; a transparent backdrop measured 54 but relies on an internal heuristic. Check: layer count in DevTools on a real GPU before any change.
 - **Boards switch on `/graph/local`** (L-graph-8). Focus mode and the local pane walk boards as notes; a neighbourhood of one note, and nothing has asked. Build when asked.
