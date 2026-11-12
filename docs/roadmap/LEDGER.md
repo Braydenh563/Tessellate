@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 101 | 4 | 0 | 17 | 201 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 14 | 0 | 0 | 0 | 14 |
-| all | 553 | 674 | 158 | 3 | 191 | 1385 |
+| general | 0 | 13 | 0 | 0 | 0 | 13 |
+| all | 553 | 673 | 158 | 3 | 191 | 1384 |
 
 ## graph
 
@@ -863,7 +863,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## general
 
-- [ ] **L702** `general` open, M: Cut math-editor.js onload forced layout (calculator panel). From agent-remaining/lag-1103.md. Evidence: `math-editor.js` onload 224ms (forced layout 187ms) and the mathlive keydown 530ms: the calculator panel belongs to the
 - [ ] **L704** `general` open, M: Remove the forced style flush in nameMarkBuddyTempo. From agent-remaining/chatspasm-1108.md. Evidence: `nameMarkBuddyTempo` (avatars.js:5580) forced style flush (54-187 ms at 4x, 1 frame in 3.5 s) still appears
 - [ ] **L705** `general` open, M: Remove remaining forced layouts inside the tab flip (timelineScrollToToday, startArt, renderNotesRail). From agent-remaining/lag-1029.md. Evidence: Still forced inside the flip: `timelineScrollToToday` (timeline.js:2431, 43 ms at 4x), `startArt` > `currentAccentHex` (
 - [ ] **L706** `general` open, M: Cut the cost of --nmb-ex/ey/hx writes in nameMarkBuddyAim. From agent-remaining/a30m-1103.md. Evidence: `--nmb-ex/ey/hx` writes on `#nm-buddy` (avatars.js `nameMarkBuddyAim`, about 7389): 109ms at 4x a write (647
