@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8366, frontend ids 2770, CSS sections 524, backend routes 702, backend modules 10794, test files 2702, tests 21956, plan headings 689, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8366, frontend ids 2770, CSS sections 524, backend routes 702, backend modules 10794, test files 2702, tests 21957, plan headings 689, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8366)
 
@@ -8683,9 +8683,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wbAffinityDialog` | frontend/js/whiteboard-map-more.js:954 |
-| `wbAffinityRun` | frontend/js/whiteboard-map-more.js:1031 |
-| `wbAffinityStickies` | frontend/js/whiteboard-map-more.js:944 |
+| `wbAffinityDialog` | frontend/js/whiteboard-map-more.js:981 |
+| `wbAffinityRun` | frontend/js/whiteboard-map-more.js:1058 |
+| `wbAffinityStickies` | frontend/js/whiteboard-map-more.js:971 |
 | `wbAudioClose` | frontend/js/whiteboard-map-more.js:371 |
 | `wbAudioLength` | frontend/js/whiteboard-map-more.js:276 |
 | `wbAudioLive` | frontend/js/whiteboard-map-more.js:293 |
@@ -8694,9 +8694,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbAudioPlay` | frontend/js/whiteboard-map-more.js:384 |
 | `wbAudioRemove` | frontend/js/whiteboard-map-more.js:362 |
 | `wbAudioRows` | frontend/js/whiteboard-map-more.js:286 |
-| `wbBoundaryDraw` | frontend/js/whiteboard-map-more.js:1104 |
-| `wbBoundarySetBox` | frontend/js/whiteboard-map-more.js:1078 |
-| `wbBoundaryTargets` | frontend/js/whiteboard-map-more.js:1093 |
+| `wbBoundaryDraw` | frontend/js/whiteboard-map-more.js:1131 |
+| `wbBoundarySetBox` | frontend/js/whiteboard-map-more.js:1105 |
+| `wbBoundaryTargets` | frontend/js/whiteboard-map-more.js:1120 |
 | `wbBrainstormClock` | frontend/js/whiteboard-map-more.js:461 |
 | `wbBrainstormLeft` | frontend/js/whiteboard-map-more.js:457 |
 | `wbBrainstormStart` | frontend/js/whiteboard-map-more.js:473 |
@@ -8737,7 +8737,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbStickerCopiesOf` | frontend/js/whiteboard-map-more.js:868 |
 | `wbStickerKey` | frontend/js/whiteboard-map-more.js:862 |
 | `wbStickerMatch` | frontend/js/whiteboard-map-more.js:885 |
-| `wbStickerSwap` | frontend/js/whiteboard-map-more.js:918 |
+| `wbStickerSwap` | frontend/js/whiteboard-map-more.js:919 |
 | `wbTemplateAdd` | frontend/js/whiteboard-map-more.js:564 |
 | `wbTemplateOutline` | frontend/js/whiteboard-map-more.js:544 |
 | `wbTemplatePick` | frontend/js/whiteboard-map-more.js:549 |
@@ -27762,7 +27762,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21956)
+## Tests (21957)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29232,7 +29232,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_link_two_way.py | 5 |
 | tests/test_link_types.py | 8 |
 | tests/test_link_wording.py | 12 |
-| tests/test_linked_stickers.py | 4 |
+| tests/test_linked_stickers.py | 5 |
 | tests/test_list_endpoints_page.py | 5 |
 | tests/test_list_limits.py | 2 |
 | tests/test_list_paging_f2.py | 4 |

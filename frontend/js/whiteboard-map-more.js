@@ -913,15 +913,42 @@
     wbAnnounce(`${nounCount(others.length, "copy", "copies")} matched.`);
   }
 
-  //: Swap an emoji sticker for another everywhere it is placed. An icon's
-  //: drawing is a path scaled to each copy, so an icon follows by Match only.
+  //: Swap a sticker for another everywhere it is placed. An emoji is a glyph; an
+  //: icon is a path scaled to each copy, so the chosen icon's path is fitted into
+  //: each copy's own box (centred, uniform) and keeps its colour and opacity.
   async function wbStickerSwap() {
     const copies = wbStickerCopies();
-    if (!copies.length || copies[0].kind !== "object") return toast("Select a placed emoji first; an icon follows by Match all copies.");
-    const choice = await pickIconOrEmoji({ anchor: document.querySelector('[aria-controls="wb-insert-menu"]'), title: "Swap this emoji everywhere" });
-    if (!choice || choice.kind === "icon" || !choice.value) return;
+    if (!copies.length) return toast("Select a placed icon or emoji that has copies first.");
+    const icons = copies[0].kind === "sketch";
+    const choice = await pickIconOrEmoji({ anchor: document.querySelector('[aria-controls="wb-insert-menu"]'), title: icons ? "Swap this icon everywhere" : "Swap this emoji everywhere" });
+    if (!choice || !choice.value) return;
+    if ((choice.kind === "icon") !== icons) return toast(icons ? "Pick an icon to swap an icon." : "Pick an emoji to swap an emoji.");
+    let fresh = null;
+    if (icons) {
+      const d = (await wbLoadIcons())[choice.value];
+      const to = d && wbPathBBox(d);
+      if (!to || !(to.maxX > to.minX) || !(to.maxY > to.minY)) return toast("That icon is not in the library's set.", "info");
+      fresh = { d, to };
+    }
     await wbRecordGesture(async () => {
-      for (const e of copies) e.item.data = { ...e.item.data, content: choice.value };
+      for (const e of copies) {
+        if (!icons) {
+          e.item.data = { ...e.item.data, content: choice.value };
+          continue;
+        }
+        const data = wbSketchData(e.item) || {};
+        const from = wbPathBBox(data.d || "");
+        if (!from) continue;
+        const k = Math.min((from.maxX - from.minX) / (fresh.to.maxX - fresh.to.minX), (from.maxY - from.minY) / (fresh.to.maxY - fresh.to.minY));
+        const cx = (from.minX + from.maxX) / 2;
+        const cy = (from.minY + from.maxY) / 2;
+        const nx = (fresh.to.minX + fresh.to.maxX) / 2;
+        const ny = (fresh.to.minY + fresh.to.maxY) / 2;
+        data.d = wbTransformPathD(fresh.d, { sx: k, sy: k, anchorX: nx, anchorY: ny, dx: cx - nx, dy: cy - ny });
+        data.icon = choice.value;
+        if (data.library_ref) data.library_ref = `icons/${choice.value}`;
+        e.item.data = JSON.stringify(data);
+      }
       await wbSaveMany(copies.map((e) => ({ kind: e.kind, item: e.item })));
     });
     wbScheduleRender();

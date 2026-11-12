@@ -1107,7 +1107,7 @@ MID_TOPICS.extend(
                 "in the middle of the view, or drag it where it goes. An emoji lands "
                 "as a sticker (no card, resize it like any item), an icon as a shape "
                 "you can recolour (select one with copies, then Insert, Emoji and icons, "
-                "Match all copies, makes every copy look like it; Swap everywhere changes an emoji in every place); dropped on a map topic, either becomes that "
+                "Match all copies, makes every copy look like it; Swap everywhere changes an icon or an emoji in every place); dropped on a map topic, either becomes that "
                 "topic's icon. Each is one Undo step. In a note or a document, the "
                 "smiley in a note's formatting toolbar, the Insert button or "
                 "Emoji or icon in the / menu puts one at the caret: an emoji as "
