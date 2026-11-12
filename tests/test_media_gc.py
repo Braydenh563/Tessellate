@@ -339,3 +339,44 @@ def test_the_gallery_reads_only_rows_that_could_name_a_file(ai_client):
         scans = [s for s in seen if f"FROM {table} " in s and f"{table}.id" in s and "count(" not in s]
         assert scans, f"no scan of {table} seen"
         assert all("LIKE" in s for s in scans), scans
+
+
+def test_an_upload_in_a_binned_note_is_not_orphaned(ai_client):
+    # The bin restores a note with its pictures; L-general-46 found the check read live notes only.
+    uploaded = _upload(ai_client)
+    created = ai_client.post("/entries", json={"content": f"![img]({uploaded['url']})"}).json()
+    binned = ai_client.delete(f"/entries/{created['id']}")
+    assert binned.status_code < 300
+
+    listed = ai_client.get("/media/orphans").json()
+    assert not any(o["url"] == uploaded["url"] for o in listed["orphans"])
+
+
+def test_an_upload_only_an_older_version_shows_is_not_orphaned(ai_client):
+    # Restoring a revision brings its picture back, so the picture has to be there.
+    uploaded = _upload(ai_client)
+    created = ai_client.post("/entries", json={"content": f"before ![img]({uploaded['url']})"}).json()
+    ai_client.put(f"/entries/{created['id']}", json={"content": "after, no picture"})
+
+    listed = ai_client.get("/media/orphans").json()
+    assert not any(o["url"] == uploaded["url"] for o in listed["orphans"])
+
+
+def test_a_locked_private_document_blocks_deletion(ai_client, session):
+    # A sealed column reads "" while locked; read as "no picture", its upload was an orphan.
+    from tessellate.core import crypto
+    from tessellate.core.database import Document
+
+    vault.close()
+    vault.set_key(crypto.new_dek())
+    uploaded = _upload(ai_client, "doc-private.png")
+    session.add(Document(title="Safe", content=f"![img]({uploaded['url']})", is_private=True))
+    session.commit()
+    vault.close()
+
+    listed = ai_client.get("/media/orphans").json()
+    assert listed["skipped_private"] is True
+    result = ai_client.delete("/media/orphans").json()
+    assert result["deleted"] == 0
+    remaining = {row["url"] for row in ai_client.get("/media").json()}
+    assert uploaded["url"] in remaining

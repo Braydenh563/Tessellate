@@ -36,6 +36,7 @@ with its owner named in the entry.
 ## Open items
 
 ## Placed (last 20, newest first)
+- 2026-11-12: L-general-46 (sweep orphaned attachments on the background pass): recommendation taken under standing order 3, the pass never deletes uploads (a gallery-only picture is wanted); Settings, About counts them and deletes on a confirmed click. Found and fixed with it: the orphan check skipped the bin, revisions and locked private documents.
 - 2026-11-12: L-general-25 (question_noise misspelling table's source): recommendation taken under standing order 3, keep and credit as a CC BY-SA 4.0 adaptation (GPLv3-compatible one way, combinable under AGPLv3 section 13); docs/THIRD_PARTY.md and the block's comment say so.
 - 2026-11-05: 1685 (the shape bar, Filled keeps its colour, the app's own colour popover with hex and opacity) to WHITEBOARD_PLAN "Placed from INBOX, 2026-11-04"; 1686 (Atlas perches on every mind map node) to MINDMAP_PLAN "Placed from INBOX, 2026-11-04".
 

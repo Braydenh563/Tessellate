@@ -658,7 +658,7 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Settings, About, Health says how the notebook is, each line dated: "
-            "the last backup and when it was taken, the data folder's size, Files on disk (a bar of the notebook, attached files, pictures, backups and optional features), what "
+            "the last backup and when it was taken, the data folder's size, Files on disk (a bar of the notebook, attached files, pictures, backups and optional features), Files nothing uses (uploads no note, document, board or chat points at, counting the bin and older versions; Delete them asks first), what "
             "is running now, the last error in the log, and Integrity, whose "
             "Check now has the database check itself and counts the search index "
             "beside your notes. The palette's Health goes straight there. The "
