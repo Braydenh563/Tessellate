@@ -1522,30 +1522,7 @@ function timelineRowElement(row, density) {
   li.tabIndex = -1;
   li.setAttribute("aria-expanded", "false");
 
-  const mark = document.createElement("span");
-  mark.className = "timeline-row-mark";
-  mark.setAttribute("aria-hidden", "true");
-  const glyph = document.createElement("i");
-  //: The kind is carried by the glyph, and the *placement* by the clock: a
-  //: note plotted on a Friday it mentions is a different fact from one
-  //: plotted on the day it was typed, and the old view said so only in a
-  //: tooltip. Colour is deliberately not the signal here (decision 10 asks
-  //: for category tokens, and this app has none: the Library's chips are
-  //: accent-and-surface, not one hue per category), so the marker takes its
-  //: colour from `--accent` or `--ink-soft` and the icon does the work.
-  //: One glyph per kind (TIMELINE_PLAN Phase 4), with the two placement cases
-  //: keeping theirs: a note plotted on a Friday it mentions and a reminder due
-  //: on that Friday are both "here for what it is about", and the clock is
-  //: what says so. A document and a board are always plotted where they were
-  //: made, so their own glyph is free to say what they are.
-  glyph.className = `ph ${TIMELINE_KIND_GLYPHS[row.kind] || "ph-note"}`;
-  if (row.kind === "note" && row.placedBy === "mentioned") glyph.className = "ph ph-clock-countdown";
-  //: A meeting sits at its own `date:` (INBOX 644), and says it is a meeting.
-  if (row.kind === "note" && row.placedBy === "meeting") glyph.className = "ph ph-users-three";
-  //: The day's page carries the calendar whichever store holds it
-  //: (DOCUMENTS_PLAN section 14); `timelineIsDailyNote` is what knows the set.
-  if (timelineIsDailyNote(row)) glyph.className = "ph ph-calendar-dot";
-  mark.appendChild(glyph);
+  const mark = timelineKindMark(row);
 
   const main = document.createElement("span");
   main.className = "timeline-row-main";
@@ -2069,6 +2046,36 @@ function syncTimelineDetailSpans() {
   }
 }
 
+//: **The kind's marker, one builder for the feed rail and the table** (LEDGER
+//: L485: the table said "Note" for a meeting until it wore the feed's mark).
+function timelineKindMark(row) {
+  const mark = document.createElement("span");
+  mark.className = "timeline-row-mark";
+  mark.setAttribute("aria-hidden", "true");
+  const glyph = document.createElement("i");
+  //: The kind is carried by the glyph, and the *placement* by the clock: a
+  //: note plotted on a Friday it mentions is a different fact from one
+  //: plotted on the day it was typed, and the old view said so only in a
+  //: tooltip. Colour is deliberately not the signal here (decision 10 asks
+  //: for category tokens, and this app has none: the Library's chips are
+  //: accent-and-surface, not one hue per category), so the marker takes its
+  //: colour from `--accent` or `--ink-soft` and the icon does the work.
+  //: One glyph per kind (TIMELINE_PLAN Phase 4), with the two placement cases
+  //: keeping theirs: a note plotted on a Friday it mentions and a reminder due
+  //: on that Friday are both "here for what it is about", and the clock is
+  //: what says so. A document and a board are always plotted where they were
+  //: made, so their own glyph is free to say what they are.
+  glyph.className = `ph ${TIMELINE_KIND_GLYPHS[row.kind] || "ph-note"}`;
+  if (row.kind === "note" && row.placedBy === "mentioned") glyph.className = "ph ph-clock-countdown";
+  //: A meeting sits at its own `date:` (INBOX 644), and says it is a meeting.
+  if (row.kind === "note" && row.placedBy === "meeting") glyph.className = "ph ph-users-three";
+  //: The day's page carries the calendar whichever store holds it
+  //: (DOCUMENTS_PLAN section 14); `timelineIsDailyNote` is what knows the set.
+  if (timelineIsDailyNote(row)) glyph.className = "ph ph-calendar-dot";
+  mark.appendChild(glyph);
+  return mark;
+}
+
 function timelineKindName(row) {
   return row.kind === "note" && row.placedBy === "meeting" ? "Meeting" : TIMELINE_KIND_NAMES[row.kind] || "Note";
 }
@@ -2124,7 +2131,13 @@ function timelineTableRow(row) {
 
   const title = document.createElement("td");
   title.className = "timeline-col-title";
-  title.textContent = row.title;
+  //: The Kind column is hidden on a phone, so the mark rides with the title and
+  //: names the kind for a screen reader (a meeting is not a Note).
+  const mark = timelineKindMark(row);
+  mark.removeAttribute("aria-hidden");
+  mark.setAttribute("role", "img");
+  mark.setAttribute("aria-label", timelineKindName(row));
+  title.append(mark, row.title);
   title.title = row.title;
   tr.appendChild(title);
 

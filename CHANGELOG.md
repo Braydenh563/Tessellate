@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix: the Timeline table marks each row with the feed's kind glyph in the title cell (a meeting shows the meeting mark, a mention the mentioned mark) at every width, so a meeting no longer reads as a Note; the phone-only "Meeting:" text prefix is gone (`tests/test_timeline_table_meeting.py`).
 - Tests: the timeline sweep counts visible rows (`timelineVisibleRows()`) for its search check, and the pinned bucket head and Notes ghost buttons are measured: head offset 0px in 9 of 9 runs on two datasets, 0 off-screen buttons in Notes (`CAL=1 errors.js`).
 - Fix: the dashboard line under the greeting no longer fails with a server error when the notebook count says several notes were written today but none of them is in the newest-notes sample (`/insights/today-line` 500 to 200; `tests/test_composer_voice.py`).
 - Tests: the contrast and errors sweeps now cover the Timeline calendar (`CAL=1 errors.js`; `ONLY=pr contrast.js` waits for the calendar's cells and prints their count). Measured, light and dark at 1440 and 390: 0 low-contrast text (month 91, week 48, day 36 text elements at 1440; the 390 calendar is the agenda, 132), errors 0 and layout findings 0 at 1440, 1024, 820 and 390; the sr-only headings and a zero-height heading no longer read as clipped.
