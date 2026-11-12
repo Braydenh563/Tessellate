@@ -9,11 +9,14 @@ after a press runs nothing twice)."""
 from __future__ import annotations
 
 import json
+import logging
 import os
 import secrets
 import threading
 import time
 from pathlib import Path
+
+_logger = logging.getLogger(__name__)
 
 TTL_SECONDS = 1800
 MAX_PARKED = 64
@@ -203,7 +206,8 @@ def reset_for_tests() -> None:
         try:
             _log_path().unlink()
         except (OSError, ImportError):
-            pass
+            #: No log file yet (or no data dir in this test): nothing to clear.
+            _logger.debug("consent log not cleared", exc_info=True)
         _parked.clear()
         _spent.clear()
         _results.clear()

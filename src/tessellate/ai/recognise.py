@@ -1865,11 +1865,16 @@ def measures(text: str) -> list[Measure]:
 
 #: "an hour", "half an hour", "30 mins", "2 days": an amount of time before
 #: something (anchor_acts' "remind me an hour before the dentist").
-AMOUNT_BEFORE = r"(?P<n>an?|one|half an?|\d+(?:\.\d+)?)\s*(?P<unit>hours?|hrs?|h|minutes?|mins?|m|days?)"
+_AMOUNT_BEFORE = r"(?P<n>an?|one|half an?|\d+(?:\.\d+)?)\s*(?P<unit>hours?|hrs?|h|minutes?|mins?|m|days?)"
+
+
+def amount_before() -> str:
+    """The source of `_AMOUNT_BEFORE`, for a pattern built around it (groups `n` and `unit`)."""
+    return _AMOUNT_BEFORE
 
 
 def amount_minutes(amount: str, unit: str) -> int:
-    """The minutes `AMOUNT_BEFORE`'s two groups say ("half an", "hour": 30)."""
+    """The minutes `_AMOUNT_BEFORE`'s two groups say ("half an", "hour": 30)."""
     word = amount.lower()
     n = 0.5 if word.startswith("half") else 1.0 if word in ("a", "an", "one") else float(word)
     per = 1440 if unit.lower().startswith("d") else 60 if unit.lower().startswith("h") else 1

@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import recognise
 
 _LEAD = r"^(?:(?:please|pls|can you|could you|would you)\s+)*(?:remind me|set a reminder|add a reminder)\s+"
-_AMOUNT = recognise.AMOUNT_BEFORE
+_AMOUNT = recognise.amount_before()
 _AFTER = r"\s+before\s+(?:the |my |our )?(?P<what>[\w' -]+?)(?:\s+(?:appointment|meeting|call|session))?$"
 _TASK_FIRST = re.compile(rf"{_LEAD}to\s+(?P<task>.+?)\s+{_AMOUNT}{_AFTER}", re.I)
 _PLAIN = re.compile(rf"{_LEAD}(?:to\s+(?P<task>.+?)\s+)?{_AMOUNT}{_AFTER}", re.I)

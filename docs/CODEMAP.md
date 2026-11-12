@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2770, CSS sections 524, backend routes 698, backend modules 10826, test files 2691, tests 21931, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2770, CSS sections 524, backend routes 698, backend modules 10827, test files 2691, tests 21931, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -13918,7 +13918,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10826)
+## Backend modules (10827)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17212,23 +17212,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_log_path` | src/tessellate/ai/consent_store.py:47 |
-| `_now` | src/tessellate/ai/consent_store.py:89 |
-| `_read_log` | src/tessellate/ai/consent_store.py:53 |
-| `decline` | src/tessellate/ai/consent_store.py:175 |
-| `latest_undo` | src/tessellate/ai/consent_store.py:161 |
-| `log_undo` | src/tessellate/ai/consent_store.py:62 |
-| `note_latest` | src/tessellate/ai/consent_store.py:154 |
-| `park` | src/tessellate/ai/consent_store.py:93 |
-| `peek` | src/tessellate/ai/consent_store.py:119 |
-| `refusal_for_press` | src/tessellate/ai/consent_store.py:126 |
-| `remember` | src/tessellate/ai/consent_store.py:144 |
-| `reset_for_tests` | src/tessellate/ai/consent_store.py:199 |
-| `result_of` | src/tessellate/ai/consent_store.py:168 |
-| `take` | src/tessellate/ai/consent_store.py:106 |
-| `undo_log` | src/tessellate/ai/consent_store.py:83 |
-| `was_declined` | src/tessellate/ai/consent_store.py:186 |
-| `was_spent` | src/tessellate/ai/consent_store.py:192 |
+| `_log_path` | src/tessellate/ai/consent_store.py:50 |
+| `_now` | src/tessellate/ai/consent_store.py:92 |
+| `_read_log` | src/tessellate/ai/consent_store.py:56 |
+| `decline` | src/tessellate/ai/consent_store.py:178 |
+| `latest_undo` | src/tessellate/ai/consent_store.py:164 |
+| `log_undo` | src/tessellate/ai/consent_store.py:65 |
+| `note_latest` | src/tessellate/ai/consent_store.py:157 |
+| `park` | src/tessellate/ai/consent_store.py:96 |
+| `peek` | src/tessellate/ai/consent_store.py:122 |
+| `refusal_for_press` | src/tessellate/ai/consent_store.py:129 |
+| `remember` | src/tessellate/ai/consent_store.py:147 |
+| `reset_for_tests` | src/tessellate/ai/consent_store.py:202 |
+| `result_of` | src/tessellate/ai/consent_store.py:171 |
+| `take` | src/tessellate/ai/consent_store.py:109 |
+| `undo_log` | src/tessellate/ai/consent_store.py:86 |
+| `was_declined` | src/tessellate/ai/consent_store.py:189 |
+| `was_spent` | src/tessellate/ai/consent_store.py:195 |
 
 ### src/tessellate/ai/context.py (6)
 
@@ -19041,7 +19041,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `weeks_gone` | src/tessellate/ai/realise.py:220 |
 | `wording` | src/tessellate/ai/realise.py:383 |
 
-### src/tessellate/ai/recognise.py (104)
+### src/tessellate/ai/recognise.py (105)
 
 | Name | File:line |
 |---|---|
@@ -19125,7 +19125,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_word_clock` | src/tessellate/ai/recognise.py:527 |
 | `_word_clock_ok` | src/tessellate/ai/recognise.py:545 |
 | `alert_words` | src/tessellate/ai/recognise.py:1426 |
-| `amount_minutes` | src/tessellate/ai/recognise.py:1871 |
+| `amount_before` | src/tessellate/ai/recognise.py:1871 |
+| `amount_minutes` | src/tessellate/ai/recognise.py:1876 |
 | `as_of_then` | src/tessellate/ai/recognise.py:1804 |
 | `asks_computed` | src/tessellate/ai/recognise.py:268 |
 | `asks_time` | src/tessellate/ai/recognise.py:280 |
@@ -19136,7 +19137,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `iso_figures` | src/tessellate/ai/recognise.py:397 |
 | `leap_year_asked` | src/tessellate/ai/recognise.py:309 |
 | `measures` | src/tessellate/ai/recognise.py:1846 |
-| `names_a_time` | src/tessellate/ai/recognise.py:1882 |
+| `names_a_time` | src/tessellate/ai/recognise.py:1887 |
 | `neighbour_day` | src/tessellate/ai/recognise.py:298 |
 | `part_of_day` | src/tessellate/ai/recognise.py:790 |
 | `recognise` | src/tessellate/ai/recognise.py:1730 |
