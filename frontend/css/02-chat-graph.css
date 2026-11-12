@@ -936,23 +936,8 @@ details.tool-chip[open] > .tool-chip-body {
     radial-gradient(120% 120% at 50% 0%, var(--accent-soft), transparent 60%),
     var(--card);
 }
-#graph-svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-  cursor: grab;
-  /* d3-zoom/d3-drag (v7) already listen for pointer events, so pan, pinch
-     and node-drag work on touch out of the box, but only once the browser
-     stops treating the same gesture as page-scroll/pinch-zoom first. */
-  touch-action: none;
-}
-#graph-svg:active {
-  cursor: grabbing;
-}
-/* The Canvas 2D renderer's surface (GRAPH_PLAN.md §5 Phase 1). Same box, same
-   gestures, same cursors as the SVG surface above it in this file, one of the
-   two is `.hidden` at any moment, so they can share the rules that describe
-   "the map fills the card and swallows the scroll gesture".
+/* The Canvas 2D renderer's surface (GRAPH_PLAN.md §5 Phase 1): the map fills
+   the card and swallows the scroll gesture.
    The pixel buffer is sized in JS (device pixel ratio times the CSS box) and
    the CSS box is set here, which is the split a canvas needs: give a canvas
    only one of the two and it either renders blurry or stretches. */

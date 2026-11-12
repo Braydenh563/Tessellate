@@ -172,6 +172,9 @@
       scene: null,
       sceneStale: true,
       paintMode: null,
+      paintBand: null,
+      restBuild: null,
+      restSpare: null,
       dimA: 0,
       overCentres: new Map(),
       overLit: new Map(),
@@ -1349,6 +1352,7 @@
     ctx.textBaseline = "middle";
     const inset = 1.5;
     const heads = (s.treemapHeads = {});
+    const overlays = gcOverlayBoxes(s, s.transform || d3.zoomIdentity);
     for (const rect of rects) {
       const x = rect.x0 + inset;
       const y = rect.y0 + inset;
@@ -1384,13 +1388,22 @@
       //: Room in screen px: the lines the header was made tall for, at a zoom
       //: where it is smaller than its text (k < 1) the same lines still draw.
       const lines = Math.round((head - 18) / 14) + 1;
-      const fit = gcTess.fit(measure, rect.category, rect.count, (w - 12 / k) * k, lines * 15);
+      //: Clear of the corner furniture (L-graph-12's pair: the minimap sat on
+      //: "Uncategorised (103)", the fitted Tessellation's top-left header).
+      //: The fit leaves the minimap and zoom strip alone (INBOX 802), so the
+      //: name starts past any overlay on its band, and drops out if no room is left.
+      let start = x + 6 / k;
+      for (const box of overlays) {
+        if (box.bottom > y && box.top < y + head / k && box.left <= start && box.right > start) start = box.right + 6 / k;
+      }
+      const room = x + w - 6 / k - start;
+      const fit = room > 0 ? gcTess.fit(measure, rect.category, rect.count, room * k, lines * 15) : null;
       heads[rect.category] = fit ? fit.lines.join(" ") : "";
       if (!fit) continue;
       ctx.globalAlpha = 1;
       ctx.fillStyle = gcTokens.ink;
       ctx.font = `600 ${fit.size / k}px ${gcTokens.font}`;
-      fit.lines.forEach((line, i) => ctx.fillText(line, x + 6 / k, y + ((i + 0.5) * (fit.size + 3) + 2) / k));
+      fit.lines.forEach((line, i) => ctx.fillText(line, start, y + ((i + 0.5) * (fit.size + 3) + 2) / k));
     }
     ctx.restore();
   }
@@ -1585,6 +1598,9 @@
     const kinds = document.getElementById("graph-link-kinds");
     const props = document.getElementById("graph-prop-chips");
     if (!kinds || !props) return;
+    //: A saved view or a reset writes the pref; the Set follows it here, once a render.
+    graphHiddenLinkKinds.clear();
+    for (const key of prefs.json("graph-hidden-link-kinds", [])) graphHiddenLinkKinds.add(key);
     const rows = gcLinkKindRows(data.edges, graphHiddenLinkKinds);
     kinds.replaceChildren(...rows.map(([key, row]) => {
       const shown = !graphHiddenLinkKinds.has(key);
@@ -1664,6 +1680,7 @@
       back.classList.add("icon-only");
       tools.append(back);
     }
+    tools.append(kebabMenu(gcTopicMenuRows(topic), `More actions for the topic ${topic.name}`));
     const close = smallButton("ph:x", "Close the topic", gcHideTopic);
     close.classList.add("icon-only");
     tools.append(close);
@@ -1671,6 +1688,12 @@
     const terms = document.createElement("p");
     terms.className = "muted graph-topic-terms";
     terms.textContent = topic.terms.length ? `Shared: ${topic.terms.map((t) => `${t.term} (${t.notes})`).join(", ")}` : "Nothing its notes share stands out.";
+    //: Ledger L11: the category most of its notes already sit in, said, so the
+    //: hand-off below can offer it rather than a name made up from the topic.
+    const home = topic.category?.name || "";
+    const homeLine = document.createElement("p");
+    homeLine.className = "muted graph-topic-terms";
+    if (home) homeLine.textContent = `Mostly in ${home} (${topic.category.count} of ${nounCount(topic.size, "note")}).`;
     const summary = document.createElement("p");
     summary.className = "graph-topic-summary";
     summary.setAttribute("aria-live", "polite");
@@ -1708,14 +1731,61 @@
     //: "Topics and categories": neither writes the other on its own). One
     //: move with one Undo, the batch bar's own (`moveNotesToCategory`).
     const file = smallButton("ph:folder-simple-plus File as a category", "File these notes under one category, named for the topic", async () => {
-      const wanted = (await promptDialog(`File these ${nounCount(topic.size, "note")} under the category`, topic.name.replace(/^#/, ""), { confirmLabel: "File" })).trim();
+      const wanted = (await promptDialog(`File these ${nounCount(topic.size, "note")} under the category`, home || topic.name.replace(/^#/, ""), { confirmLabel: "File" })).trim();
       if (wanted) await moveNotesToCategory(topic.ids, wanted);
     });
     actions.append(ask, file);
     const known = gcTopicSummaries.get(key);
     if (known) say(known);
-    box.replaceChildren(head, terms, summary, actions);
+    box.replaceChildren(head, terms, ...(home ? [homeLine] : []), summary, actions);
     box.classList.remove("hidden");
+  }
+
+  //: **Merge and remove, saved as overrides** (ledger L711, the owner,
+  //: 2026-11-12): laid over the worked-out topics by the notes they cover, one
+  //: Undo each; the reset brings the automatic grouping back.
+  async function gcTopicsRepaint() {
+    if (typeof noteTopicsCache !== "undefined") noteTopicsCache.clear();
+    gcHideTopic();
+    await renderGraph();
+  }
+
+  async function gcTopicEditUndo(label, request) {
+    const row = await request().catch((e) => { toast(`The topics were not changed: ${e?.message || e}`, true, { action: ["Try again", () => gcTopicEditUndo(label, request)] }); return null; });
+    if (!row) return;
+    pushRequestUndo(label, "/graph/topics/edits", "PUT", row.was, row.edits, gcTopicsRepaint);
+    await gcTopicsRepaint();
+  }
+
+  const gcTopicPost = (route, ids) => () => apiJson(route, { method: "POST", body: JSON.stringify({ ids }) });
+
+  function gcResetTopicEdits() {
+    return gcTopicEditUndo("Reset the topic edits", () => apiJson("/graph/topics/edits", { method: "PUT", body: JSON.stringify({ merges: [], excluded: [] }) }));
+  }
+
+  //: The topic card's ⋯ (`kebabMenu`): merge into another topic (a submenu of
+  //: the others, largest first), remove this one, and the reset when any edit
+  //: is saved. Removing ungroups the notes; none is deleted.
+  function gcTopicMenuRows(topic) {
+    const others = (graphStructure?.topics || []).filter((t) => t.id !== topic.id).slice(0, 12);
+    const rows = [];
+    if (others.length) {
+      rows.push({
+        label: "ph:arrows-merge Merge with",
+        title: "Join this topic and another into one",
+        items: others.map((t) => ({
+          label: `${t.name} (${t.size})`,
+          title: `Join these notes and ${nounCount(t.size, "note")} into one topic`,
+          run: () => gcTopicEditUndo(`Merged the topics “${topic.name}” and “${t.name}”`, gcTopicPost("/graph/topics/merge", [...topic.ids, ...t.ids])),
+        })),
+      });
+    }
+    rows.push({
+      label: "ph:eye-slash Remove topic",
+      title: "Ungroup these notes: none is deleted, and Undo or a reset brings the topic back",
+      run: () => gcTopicEditUndo(`Removed the topic “${topic.name}”`, gcTopicPost("/graph/topics/remove", topic.ids)),
+    });
+    return rows;
   }
 
   //: A topic's name, saved (INBOX 547's route): an empty name brings the found
@@ -1986,7 +2056,7 @@
     if (still || s.canvas?.style.opacity === "0") {
       s.svg.interrupt().call(s.zoom.transform, framed);
       again();
-    } else s.svg.transition().duration(graphGlideMs(220)).call(s.zoom.transform, framed).on("end", again);
+    } else graphGlide(s.svg, s.zoom, "transform", [framed], 220).on("end", again);
   }
 
   //: The overlays a fit keeps the notes out from under, as the depth each one
@@ -2704,7 +2774,7 @@
   const GC_SCENE_PAD = 0.15;
   const GC_SCENE_SETTLE_MS = 160;
   const GC_NO_NEIGHBOURS = new Set();
-  function gcPaintLayer(s, mode, old) {
+  function gcPaintLayer(s, mode, old, band) {
     const pad = { x: Math.round(s.dims.w * GC_SCENE_PAD), y: Math.round(s.dims.h * GC_SCENE_PAD) };
     const canvas = old ? old.canvas : document.createElement("canvas");
     const w = Math.round((s.dims.w + 2 * pad.x) * s.dpr);
@@ -2713,19 +2783,62 @@
     if (canvas.height !== h) canvas.height = h;
     //: Painted with no hover at all: the hover is the layer on top.
     const keep = { ctx: s.ctx, hoveredId: s.hoveredId, hoverTo: s.hoverTo, hoverFrom: s.hoverFrom, hoverEase: s.hoverEase, hoverEdge: s.hoverEdge };
-    Object.assign(s, { ctx: canvas.getContext("2d"), paintMode: mode, paintPad: pad, paintFade: 1, hoveredId: null, hoverTo: null, hoverFrom: null, hoverEase: 1, hoverEdge: null });
+    const ctx = canvas.getContext("2d");
+    Object.assign(s, { ctx, paintMode: mode, paintPad: pad, paintBand: band || null, paintFade: 1, hoveredId: null, hoverTo: null, hoverFrom: null, hoverEase: 1, hoverEdge: null });
+    //: A band is held by a clip, taken and dropped here so no state leaks (`gcDraw`).
+    ctx.save();
     try {
       gcDraw(s);
     } finally {
-      Object.assign(s, keep, { paintMode: null, paintPad: null });
+      ctx.restore();
+      Object.assign(s, keep, { paintMode: null, paintPad: null, paintBand: null });
     }
     return { canvas, pad };
+  }
+
+  //: **A settle repaint of a big map is painted in bands, a frame apart**
+  //: (L-graph-16). At 2,000 notes and CPU 4x each wheel stop repainted the whole
+  //: rest layer 160 ms later as one task (a 110 ms long task, measured: the
+  //: script was 10 ms of it, the rest the raster at the next `drawImage`). The
+  //: scaled layer on screen stays until the new one is whole; a camera move,
+  //: or anything that repaints the frame (`sceneStale`), drops the build.
+  const GC_SLICE_NODES = 300;
+  const GC_SLICE_BANDS = 8;
+  let gcFlushPixel = null;
+  //: One band per composed draw (the composed draw asks for the next while a build
+  //: is open, so there is no frame loop of its own). A build is the camera, the scene and the
+  //: sizes it began with; if any has moved on, it starts again from band 0.
+  function gcRestBuild(s, scene) {
+    const t = s.transform || d3.zoomIdentity;
+    let b = s.restBuild;
+    if (!(b && b.scene === scene && b.t.k === t.k && b.t.x === t.x && b.t.y === t.y && b.w === s.dims.w && b.h === s.dims.h && b.dpr === s.dpr && b.tokens === gcTokens)) {
+      b = s.restBuild = { scene, t, i: 0, canvas: s.restSpare || null, w: s.dims.w, h: s.dims.h, dpr: s.dpr, tokens: gcTokens, pad: null };
+    }
+    const pad = { x: Math.round(s.dims.w * GC_SCENE_PAD), y: Math.round(s.dims.h * GC_SCENE_PAD) };
+    //: Edges on whole device pixels, or a dot over a seam is blended in twice.
+    const rows = Math.round((s.dims.h + 2 * pad.y) * s.dpr);
+    const edge = (i) => Math.round((rows * i) / GC_SLICE_BANDS) / s.dpr - pad.y;
+    const layer = gcPaintLayer(s, "rest", b.canvas ? { canvas: b.canvas } : null, { y0: edge(b.i), y1: edge(b.i + 1) });
+    b.canvas = layer.canvas;
+    b.pad = layer.pad;
+    //: Raster now, a band at a time, rather than all at the next `drawImage`.
+    gcFlushPixel ||= document.createElement("canvas").getContext("2d");
+    gcFlushPixel.drawImage(b.canvas, 0, 0, 1, 1, 0, 0, 1, 1);
+    //: Bands remain: the draw asks for its next frame while `s.restBuild` is set.
+    if (++b.i < GC_SLICE_BANDS) return scene;
+    s.restBuild = null;
+    s.restSpare = scene.rest.canvas;
+    return (s.scene = { t, w: b.w, h: b.h, dpr: b.dpr, tokens: b.tokens, dim: null, spare: scene.dim || scene.spare, rest: { canvas: b.canvas, pad: b.pad } });
   }
 
   function gcDrawComposed(s) {
     if (s.sceneStale || s.ctx.canvas !== s.canvas || !s.dims.w || !s.nodes.length) return false;
     const t = s.transform || d3.zoomIdentity;
     let scene = s.scene;
+    const settle = (ms) => {
+      clearTimeout(s.sceneSettle);
+      s.sceneSettle = setTimeout(() => gcRequestDraw(s, true), ms);
+    };
     if (scene && (scene.w !== s.dims.w || scene.h !== s.dims.h || scene.dpr !== s.dpr || scene.tokens !== gcTokens)) scene = null;
     if (scene && (t.k !== scene.t.k || t.x !== scene.t.x || t.y !== scene.t.y)) {
       const r = t.k / scene.t.k;
@@ -2734,11 +2847,23 @@
       const top = t.y - r * (scene.t.y + pad.y);
       const covers = left <= 0 && top <= 0 && left + r * (s.dims.w + 2 * pad.x) >= s.dims.w && top + r * (s.dims.h + 2 * pad.y) >= s.dims.h;
       const still = performance.now() - (s.cameraAt || 0) >= GC_SCENE_SETTLE_MS;
-      if (still || !covers || r > 2 || r < 0.5) {
+      const sliced = still && covers && r <= 2 && r >= 0.5 && s.size === "full" && s.nodes.length >= GC_SLICE_NODES && !s.layoutRunning && !s.dragNode;
+      if (sliced) {
+        const building = scene;
+        scene = gcRestBuild(s, scene);
+        //: The screen already shows this camera and nothing is dimmed or lit: a
+        //: band is all this frame owes, and composing again would cost a layer's `drawImage` a band.
+        const sh = s.shownCamera;
+        if (scene === building && sh && sh.k === t.k && sh.x === t.x && sh.y === t.y && s.hoveredId == null && !s.dimA && !s.overCentres.size && !s.warmDim && !gcSearchOver(s)) {
+          settle(0);
+          return true;
+        }
+      } else if (still || !covers || r > 2 || r < 0.5) {
+        s.restBuild = null;
         scene = null;
       } else {
-        clearTimeout(s.sceneSettle);
-        s.sceneSettle = setTimeout(() => gcRequestDraw(s, true), GC_SCENE_SETTLE_MS);
+        s.restBuild = null;
+        settle(GC_SCENE_SETTLE_MS);
       }
     }
     if (!scene) {
@@ -2755,7 +2880,7 @@
     const searching = gcSearchOver(s);
     s.searchOver = searching && !hovering;
     s.dimA = gcFadeToward(s.dimA, hovering || searching ? 1 : 0, step);
-    let moving = s.dimA > 0 && s.dimA < 1;
+    let moving = (s.dimA > 0 && s.dimA < 1) || Boolean(s.restBuild);
     if (hovering && !s.overCentres.has(s.hoveredId)) s.overCentres.set(s.hoveredId, 0);
     s.overLit = new Map();
     for (const [id, a] of s.overCentres) {
@@ -2809,6 +2934,7 @@
       s.paintMode = null;
     }
     s.composed = true;
+    s.shownCamera = { k: t.k, x: t.x, y: t.y };
     //: A composed frame that is still moving asks for itself like any other:
     //: it counts toward the same bound (INBOX 1643).
     if (moving && (s.selfFrames = (s.selfFrames || 0) + 1) <= gcRequestDraw.selfCap) {
@@ -3034,12 +3160,17 @@
     s.composed = false;
     const fadeStep = s.paintMode ? s.paintFade : snap ? (gcFadeStep(s, true), 1) : gcFadeStep(s, gcStill());
     const litAlpha = over ? gcSmooth : gcLitAlpha;
-    let fading = false;
     const ctx = s.ctx;
     const t = s.transform || d3.zoomIdentity;
     const k = t.k;
     const pad = s.paintPad || { x: 0, y: 0 };
     ctx.setTransform(s.dpr, 0, 0, s.dpr, s.dpr * pad.x, s.dpr * pad.y);
+    const band = s.paintBand;
+    if (band) {
+      ctx.beginPath();
+      ctx.rect(-pad.x, band.y0, s.dims.w + 2 * pad.x, band.y1 - band.y0);
+      ctx.clip();
+    }
     if (!over) ctx.clearRect(-pad.x, -pad.y, s.dims.w + 2 * pad.x, s.dims.h + 2 * pad.y);
     ctx.save();
     ctx.translate(t.x, t.y);
@@ -3078,15 +3209,6 @@
     //: stands in for a pane, which has no switch.
     const curvedLinks = gcCurvedLinks(s);
 
-    // --- edges -------------------------------------------------------------
-    // Bucketed by recipe and by whether they are dimmed, so the context's
-    // stroke state is set once per bucket rather than once per edge. A dashed
-    // stroke is the expensive one, and there are only ever a handful of dashes.
-    const buckets = new Map();
-    //: Similarity lines in buckets of their own, stroked first so they sit
-    //: beneath every link (INBOX 412: the server appends them after the links,
-    //: so bucket order alone painted them on top).
-    const simBuckets = new Map();
     //: The note whose similarity scores are written on its lines: the one
     //: pointed at, else the one the keyboard is on, else the one whose panel is
     //: open. Its lines are the ones not dimmed, so the numbers sit on the only
@@ -3098,6 +3220,57 @@
         : gcKeyboardId(s) != null
           ? gcKeyboardId(s)
           : openId;
+    const f = {
+      s, ctx, t, k, over, layer, fadeStep, litAlpha, view, inView, hl, labelsOn, curvedLinks, openId, scoreFor,
+      easing, gliding, started, fading: false, labelZoom: 0, labelBase: null, othersFading: false, placedLabels: [],
+    };
+    gcDrawEdges(f);
+
+    // --- the traced path ----------------------------------------------------
+    if (!over) gcDrawTrace(ctx, k, s);
+
+    const { haloByColour, hotHalos, ringed, labelled, drawn } = gcCollectNodes(f);
+    gcAddLandmarkLabels(f, labelled, drawn);
+    gcPaintNodes(f, haloByColour, hotHalos);
+    gcDrawRings(f, ringed);
+    const { book, placedLabels } = gcSeatLabels(f, labelled, drawn);
+    //: A whole frame, on the visible canvas, whose only fade is the names: the
+    //: canvas as it stands before them is kept for the label frames
+    //: (`gcDrawLabels.frame`).
+    const othersFading = f.fading;
+    const keepable = !s.paintMode && s.ctx.canvas === s.canvas;
+    let labelBase = null;
+    if (s.paintMode !== "dim" && gcDrawLabels(ctx, s, placedLabels, fadeStep, k, keepable && !othersFading ? () => (labelBase = gcDrawLabels.keep(s)) : null)) f.fading = true;
+    if (!over && s.fitCheck > 0) {
+      const left = s.fitCheck - 1;
+      s.fitCheck = 0;
+      gcBalanceFit(s, placedLabels, left);
+    }
+    if (!over && s.revealAfterFit && !(s.fitCheck > 0)) {
+      s.revealAfterFit = false;
+      gcReveal(s);
+    }
+
+    f.othersFading = othersFading;
+    f.labelBase = labelBase;
+    f.placedLabels = placedLabels;
+    gcDrawScorePills(f, drawn, book);
+    gcFrameEnd(f, drawn);
+  }
+
+  //: The pieces of one `gcDraw` frame, in the order it paints them. `f` is the frame's
+  //: state (`s`, the context, the camera, the cull box, what is lit, what is still fading).
+  function gcDrawEdges(f) {
+    const { s, ctx, k, over, layer, hl, view, fadeStep, curvedLinks, scoreFor } = f;
+    // --- edges -------------------------------------------------------------
+    // Bucketed by recipe and by whether they are dimmed, so the context's
+    // stroke state is set once per bucket rather than once per edge. A dashed
+    // stroke is the expensive one, and there are only ever a handful of dashes.
+    const buckets = new Map();
+    //: Similarity lines in buckets of their own, stroked first so they sit
+    //: beneath every link (INBOX 412: the server appends them after the links,
+    //: so bucket order alone painted them on top).
+    const simBuckets = new Map();
     s.simScoreLabels = [];
     const arrows = !s.tree && gcArrows(s);
     //: A spark drifts along the pointed-at note's arrowed links, unless motion
@@ -3141,7 +3314,7 @@
       if (over && dim) continue;
       //: A scene layer is drawn as it will rest, and keeps nothing of it.
       const lit = over ? centre : layer ? (dim ? 0 : 1) : (edge._lit = gcFadeToward(edge._lit, dim ? 0 : 1, fadeStep));
-      if (!layer && !over && lit !== (dim ? 0 : 1)) fading = true;
+      if (!layer && !over && lit !== (dim ? 0 : 1)) f.fading = true;
       //: Eleven steps of lit-ness, so a fade still strokes in buckets.
       const level = Math.round(gcSmooth(lit) * 10);
       if (edge._styleEpoch !== s.epoch) gcEdgeLook(edge, a, b, simLo, simHi, s.epoch);
@@ -3214,17 +3387,17 @@
     if (!over) s.sparksDrawn = sparks;
     if (drift.length) {
       gcDrawDrift(ctx, drift, k);
-      fading = true;
+      f.fading = true;
     }
     ctx.globalAlpha = 1;
 
     if (!layer) {
-      if (gcDrawEdgeHover(ctx, s, k, fadeStep, curvedLinks)) fading = true;
+      if (gcDrawEdgeHover(ctx, s, k, fadeStep, curvedLinks)) f.fading = true;
     }
+  }
 
-    // --- the traced path ----------------------------------------------------
-    if (!over) gcDrawTrace(ctx, k, s);
-
+  function gcCollectNodes(f) {
+    const { s, k, over, layer, hl, inView, fadeStep, labelsOn, openId } = f;
     // --- nodes --------------------------------------------------------------
     // Two batched fills per colour (halo, then core) and one batched stroke for
     // the ordinary ring. Only the handful of nodes that are hovered, matched,
@@ -3248,7 +3421,7 @@
       //: frame after composed ones lands every fade at once (`snap`), so none
       //: of it leaks into a fade.
       node._lit = over ? lift : layer ? (dim ? 0 : 1) : gcFadeToward(node._lit, dim ? 0 : 1, fadeStep);
-      if (!layer && !over && node._lit !== (dim ? 0 : 1)) fading = true;
+      if (!layer && !over && node._lit !== (dim ? 0 : 1)) f.fading = true;
       const key = node.colour;
       let halo = haloByColour.get(key);
       if (!halo) {
@@ -3331,6 +3504,18 @@
         labelled.push(node);
       }
     }
+    f.labelZoom = labelZoom;
+    //: No card-coloured ring and no accent ring on hubs any more: the sprite
+    //: carries its own rim, and a hub is told by its size and its wider glow
+    //: rather than by a painted outline (`hubs` is still gathered so the
+    //: keyboard and hover paths that read it keep working).
+    void hubs;
+    void hubs;
+    return { haloByColour, hotHalos, ringed, labelled, drawn };
+  }
+
+  function gcAddLandmarkLabels(f, labelled, drawn) {
+    const { s, k, labelsOn, labelZoom } = f;
     //: The overview's landmarks: see GC_LABEL_LANDMARKS. Only when the zoom gate
     //: is what kept every other label off, and only notes with a real
     //: neighbourhood (degree 2 or more), so a map of islands does not name
@@ -3372,7 +3557,10 @@
       const landmarks = pool.slice(0, count);
       for (const node of landmarks) labelled.push(node);
     }
-    //: Sprites at the zoom's own pixel size, so a node stays crisp at any
+  }
+
+  function gcPaintNodes(f, haloByColour, hotHalos) {
+    const { s, ctx, k, over } = f;
     //: scale; the sizes are rounded to whole pixels, which keeps the cache to
     //: a few dozen entries per colour.
     const pixelScale = k * (s.dpr || 1);
@@ -3437,14 +3625,12 @@
       if (hot.node._dim) continue;
       gcHoverMark.draw(ctx, hot.node, hot.heat * gcSmooth(hot.node._lit), k, pixelScale);
     }
+  }
 
+  function gcDrawRings(f, ringed) {
+    const { s, ctx, k, over, litAlpha } = f;
     // The ordinary ring (`.graph-core { stroke: var(--card) }`) in one pass.
     ctx.globalAlpha = 1;
-    //: No card-coloured ring and no accent ring on hubs any more: the sprite
-    //: carries its own rim, and a hub is told by its size and its wider glow
-    //: rather than by a painted outline (`hubs` is still gathered so the
-    //: keyboard and hover paths that read it keep working).
-    void hubs;
 
     if (!over) gcDrawSelection(ctx, k, s);
     for (const item of ringed) {
@@ -3500,7 +3686,152 @@
       ctx.setLineDash([]);
     }
     ctx.globalAlpha = 1;
+  }
 
+  function gcLabelAlts(node, r, k, width, padX, half) {
+    return [
+        { x: node.x, y: node.y - r - 13 / k, align: "center" },
+        { x: node.x + r + 6 / k, y: node.y, align: "left" },
+        { x: node.x - r - 6 / k, y: node.y, align: "right" },
+        //: The four corners (INBOX 493), off the dot's diagonal: a hub's
+        //: lines leave it in every direction, and between two of them is
+        //: often the only place its name can stand clear of all of them.
+        { x: node.x + r * 0.72 + 3 / k, y: node.y + r * 0.72 + 9 / k, align: "left" },
+        { x: node.x - r * 0.72 - 3 / k, y: node.y + r * 0.72 + 9 / k, align: "right" },
+        { x: node.x + r * 0.72 + 3 / k, y: node.y - r * 0.72 - 9 / k, align: "left" },
+        { x: node.x - r * 0.72 - 3 / k, y: node.y - r * 0.72 - 9 / k, align: "right" },
+        //: Then a step further out (INBOX 693): a name may no longer sit
+        //: on a dot or a line, and a hub in the middle of its cluster
+        //: (the layout puts it there now) has a leaf or a spoke at every
+        //: near place. Measured on the showcase notebook at the fit:
+        //: without these, three of its seven category hubs went unnamed.
+        { x: node.x, y: node.y + r + 27 / k, align: "center" },
+        { x: node.x, y: node.y - r - 27 / k, align: "center" },
+        { x: node.x + r + 20 / k, y: node.y + 12 / k, align: "left" },
+        { x: node.x - r - 20 / k, y: node.y + 12 / k, align: "right" },
+        { x: node.x + r + 20 / k, y: node.y - 12 / k, align: "left" },
+        { x: node.x - r - 20 / k, y: node.y - 12 / k, align: "right" },
+      ].map((spot) => {
+        const l = spot.align === "center" ? spot.x - width / 2 : spot.align === "left" ? spot.x : spot.x - width;
+        return { ...spot, left: l - padX, right: l + width + padX, top: spot.y - half, bottom: spot.y + half };
+      });
+  }
+
+  function gcLabelItems(f, labelled, drawn, book, size, beside) {
+    const { s, k, hl } = f;
+    // **Labels do not stack.** Reported with a screenshot: with the Labels
+    // tickbox on, a fitted map drew all of them (every board under
+    // `GC_LABEL_ALL_MAX`), and in the dense middle of a force layout that is
+    // a pile of overlapping words that says less than no label at all.
+    //
+    // So a label is drawn only if its own text box is still free. The order
+    // decides which one wins the space, and it is not the order the nodes
+    // happen to be in: whatever the pointer or the keyboard is on first (it
+    // was asked for by name), then the search hits (the reason someone
+    // typed), then the best-connected notes, which are the ones a map is
+    // read by. Those two priority classes are drawn even when they clash,
+    // because a label you asked for and cannot see is a bug, not tidiness.
+    // The rest come back on hover or above `GC_LABEL_ZOOM`, which is the
+    // gesture the map already teaches.
+    //
+    // The overlap test is a linear scan of what has been placed: the placed
+    // set is bounded by the frame's area over a label's, a few dozen, so
+    // this is thousands of number comparisons and no allocation, not the
+    // quadtree it looks like it wants.
+    const labelRank = (node) =>
+      node.id === s.hoveredId || node.id === gcKeyboardId(s) || node.id === hl.current
+        ? 0
+        : hl.active && hl.searchOk(node)
+          ? 1
+          : 2;
+    // **A search that matches half the notebook is not a request for half the
+    // notebook's labels.** Found by the probe on the 300-note fixture:
+    // searching a word every note contains made all 264 hits rank 1, and rank
+    // 1 was drawn through any clash, so the pile the collision pass exists to
+    // prevent came straight back through the search box. A handful of hits is
+    // a question about those notes and each one keeps its label whatever it
+    // lands on; past that it is a filter, and a filter's job is done by the
+    // dimming, with the labels queued ahead of everything else and still
+    // subject to the same test as everything else. The hovered or
+    // keyboard-focused note is never in this trade: there is exactly one of
+    // it, and it was pointed at.
+    //: **The landmarks** are the ten best-connected notes in view, what the
+    //: map is read by. They were let sit on a dot (GRAPH_PLAN.md, "Decision
+    //: made, 2026-09-26"); since INBOX 693 they are not ("labels never over
+    //: dots or lines", the owner), and only keep the right to the place
+    //: crossing the fewest lines when none crosses none (`gcPlaceLabels`).
+    const landmarkIds = new Set(
+      drawn
+        .filter((node) => !node._dim && (s.adj.get(node.id) || { size: 0 }).size >= 2)
+        .sort((a, b) => (s.adj.get(b.id) || { size: 0 }).size - (s.adj.get(a.id) || { size: 0 }).size)
+        .slice(0, GC_LABEL_LANDMARK_HUBS)
+        .map((node) => node.id)
+    );
+    const hits = labelled.reduce((n, node) => n + (labelRank(node) === 1 ? 1 : 0), 0);
+    const forceHits = hits <= GC_LABEL_FORCE_MAX;
+    labelled.sort((a, b) => {
+      const rank = labelRank(a) - labelRank(b);
+      if (rank) return rank;
+      const degreeA = (s.adj.get(a.id) || { size: 0 }).size;
+      const degreeB = (s.adj.get(b.id) || { size: 0 }).size;
+      return degreeB - degreeA;
+    });
+    book.labelsWanted = labelled.length;
+    book.labelsPriority = 0;
+    const padX = 4 / k;
+    const padY = 2 / k;
+    const items = [];
+    for (const node of labelled) {
+      const text = gcLabelText(node, s);
+      // `measureText` is cheap but not free at a few hundred labels a frame,
+      // and the answer only changes when the text or the zoom does. The zoom
+      // is only a scale: see `gcLabelWidth` for why that is not a re-measure.
+      if (node._labelText !== text || node._labelSize !== size) {
+        node._labelText = text;
+        node._labelSize = size;
+        node._labelWidth = gcLabelWidth(text, size);
+      }
+      const width = node._labelWidth;
+      const x = beside ? node.x + node.r + 7 : node.x;
+      const y = beside ? node.y : node.y + node.r + 13;
+      const left = (beside ? x : x - width / 2) - padX;
+      const rank = labelRank(node);
+      if (rank < 2) book.labelsPriority += 1;
+      //: **Where else the name may go** when its own place is taken. Under the
+      //: dot is the web's reading position and stays first; then above it,
+      //: then to its right, then to its left. Measured on the 417-note
+      //: fixture at 2x: under-only named none of the ten best-connected notes
+      //: in view, because in the dense middle "under" is always another dot.
+      //: A tree keeps its one place (beside), which its row spacing is built
+      //: around.
+      const r = node.r + (node._grow || 0);
+      const half = size / 2 + padY;
+      const alts = beside ? [] : gcLabelAlts(node, r, k, width, padX, half);
+      // The id and the rank ride along with the geometry because the only
+      // way to ask "do the labels on screen overlap" from outside a canvas is
+      // to be handed the boxes: a screenshot of a pile of words and a
+      // screenshot of a clean map are the same bytes to a sweep.
+      items.push({
+        id: node.id,
+        rank,
+        force: rank === 0 || (rank === 1 && forceHits),
+        left,
+        right: left + width + padX * 2,
+        top: y - size / 2 - padY,
+        bottom: y + size / 2 + padY,
+        text,
+        x,
+        y,
+        align: beside ? "left" : "center",
+        alts,
+        landmark: landmarkIds.has(node.id),
+      });
+    }
+    return items;
+  }
+
+  function gcSeatLabels(f, labelled, drawn) {
+    const { s, ctx, k, t, over, curvedLinks } = f;
     // --- labels -------------------------------------------------------------
     //: What the debug surface and the fit balance read is the scene's labels.
     const book = over ? {} : s;
@@ -3531,141 +3862,7 @@
       ctx.lineWidth = 3 / k;
       ctx.strokeStyle = gcTokens.card;
       ctx.fillStyle = gcTokens.ink;
-      // **Labels do not stack.** Reported with a screenshot: with the Labels
-      // tickbox on, a fitted map drew all of them (every board under
-      // `GC_LABEL_ALL_MAX`), and in the dense middle of a force layout that is
-      // a pile of overlapping words that says less than no label at all.
-      //
-      // So a label is drawn only if its own text box is still free. The order
-      // decides which one wins the space, and it is not the order the nodes
-      // happen to be in: whatever the pointer or the keyboard is on first (it
-      // was asked for by name), then the search hits (the reason someone
-      // typed), then the best-connected notes, which are the ones a map is
-      // read by. Those two priority classes are drawn even when they clash,
-      // because a label you asked for and cannot see is a bug, not tidiness.
-      // The rest come back on hover or above `GC_LABEL_ZOOM`, which is the
-      // gesture the map already teaches.
-      //
-      // The overlap test is a linear scan of what has been placed: the placed
-      // set is bounded by the frame's area over a label's, a few dozen, so
-      // this is thousands of number comparisons and no allocation, not the
-      // quadtree it looks like it wants.
-      const labelRank = (node) =>
-        node.id === s.hoveredId || node.id === gcKeyboardId(s) || node.id === hl.current
-          ? 0
-          : hl.active && hl.searchOk(node)
-            ? 1
-            : 2;
-      // **A search that matches half the notebook is not a request for half the
-      // notebook's labels.** Found by the probe on the 300-note fixture:
-      // searching a word every note contains made all 264 hits rank 1, and rank
-      // 1 was drawn through any clash, so the pile the collision pass exists to
-      // prevent came straight back through the search box. A handful of hits is
-      // a question about those notes and each one keeps its label whatever it
-      // lands on; past that it is a filter, and a filter's job is done by the
-      // dimming, with the labels queued ahead of everything else and still
-      // subject to the same test as everything else. The hovered or
-      // keyboard-focused note is never in this trade: there is exactly one of
-      // it, and it was pointed at.
-      //: **The landmarks** are the ten best-connected notes in view, what the
-      //: map is read by. They were let sit on a dot (GRAPH_PLAN.md, "Decision
-      //: made, 2026-09-26"); since INBOX 693 they are not ("labels never over
-      //: dots or lines", the owner), and only keep the right to the place
-      //: crossing the fewest lines when none crosses none (`gcPlaceLabels`).
-      const landmarkIds = new Set(
-        drawn
-          .filter((node) => !node._dim && (s.adj.get(node.id) || { size: 0 }).size >= 2)
-          .sort((a, b) => (s.adj.get(b.id) || { size: 0 }).size - (s.adj.get(a.id) || { size: 0 }).size)
-          .slice(0, GC_LABEL_LANDMARK_HUBS)
-          .map((node) => node.id)
-      );
-      const hits = labelled.reduce((n, node) => n + (labelRank(node) === 1 ? 1 : 0), 0);
-      const forceHits = hits <= GC_LABEL_FORCE_MAX;
-      labelled.sort((a, b) => {
-        const rank = labelRank(a) - labelRank(b);
-        if (rank) return rank;
-        const degreeA = (s.adj.get(a.id) || { size: 0 }).size;
-        const degreeB = (s.adj.get(b.id) || { size: 0 }).size;
-        return degreeB - degreeA;
-      });
-      book.labelsWanted = labelled.length;
-      book.labelsPriority = 0;
-      const padX = 4 / k;
-      const padY = 2 / k;
-      const items = [];
-      for (const node of labelled) {
-        const text = gcLabelText(node, s);
-        // `measureText` is cheap but not free at a few hundred labels a frame,
-        // and the answer only changes when the text or the zoom does. The zoom
-        // is only a scale: see `gcLabelWidth` for why that is not a re-measure.
-        if (node._labelText !== text || node._labelSize !== size) {
-          node._labelText = text;
-          node._labelSize = size;
-          node._labelWidth = gcLabelWidth(text, size);
-        }
-        const width = node._labelWidth;
-        const x = beside ? node.x + node.r + 7 : node.x;
-        const y = beside ? node.y : node.y + node.r + 13;
-        const left = (beside ? x : x - width / 2) - padX;
-        const rank = labelRank(node);
-        if (rank < 2) book.labelsPriority += 1;
-        //: **Where else the name may go** when its own place is taken. Under the
-        //: dot is the web's reading position and stays first; then above it,
-        //: then to its right, then to its left. Measured on the 417-note
-        //: fixture at 2x: under-only named none of the ten best-connected notes
-        //: in view, because in the dense middle "under" is always another dot.
-        //: A tree keeps its one place (beside), which its row spacing is built
-        //: around.
-        const r = node.r + (node._grow || 0);
-        const half = size / 2 + padY;
-        const alts = beside
-          ? []
-          : [
-              { x: node.x, y: node.y - r - 13 / k, align: "center" },
-              { x: node.x + r + 6 / k, y: node.y, align: "left" },
-              { x: node.x - r - 6 / k, y: node.y, align: "right" },
-              //: The four corners (INBOX 493), off the dot's diagonal: a hub's
-              //: lines leave it in every direction, and between two of them is
-              //: often the only place its name can stand clear of all of them.
-              { x: node.x + r * 0.72 + 3 / k, y: node.y + r * 0.72 + 9 / k, align: "left" },
-              { x: node.x - r * 0.72 - 3 / k, y: node.y + r * 0.72 + 9 / k, align: "right" },
-              { x: node.x + r * 0.72 + 3 / k, y: node.y - r * 0.72 - 9 / k, align: "left" },
-              { x: node.x - r * 0.72 - 3 / k, y: node.y - r * 0.72 - 9 / k, align: "right" },
-              //: Then a step further out (INBOX 693): a name may no longer sit
-              //: on a dot or a line, and a hub in the middle of its cluster
-              //: (the layout puts it there now) has a leaf or a spoke at every
-              //: near place. Measured on the showcase notebook at the fit:
-              //: without these, three of its seven category hubs went unnamed.
-              { x: node.x, y: node.y + r + 27 / k, align: "center" },
-              { x: node.x, y: node.y - r - 27 / k, align: "center" },
-              { x: node.x + r + 20 / k, y: node.y + 12 / k, align: "left" },
-              { x: node.x - r - 20 / k, y: node.y + 12 / k, align: "right" },
-              { x: node.x + r + 20 / k, y: node.y - 12 / k, align: "left" },
-              { x: node.x - r - 20 / k, y: node.y - 12 / k, align: "right" },
-            ].map((spot) => {
-              const l = spot.align === "center" ? spot.x - width / 2 : spot.align === "left" ? spot.x : spot.x - width;
-              return { ...spot, left: l - padX, right: l + width + padX, top: spot.y - half, bottom: spot.y + half };
-            });
-        // The id and the rank ride along with the geometry because the only
-        // way to ask "do the labels on screen overlap" from outside a canvas is
-        // to be handed the boxes: a screenshot of a pile of words and a
-        // screenshot of a clean map are the same bytes to a sweep.
-        items.push({
-          id: node.id,
-          rank,
-          force: rank === 0 || (rank === 1 && forceHits),
-          left,
-          right: left + width + padX * 2,
-          top: y - size / 2 - padY,
-          bottom: y + size / 2 + padY,
-          text,
-          x,
-          y,
-          align: beside ? "left" : "center",
-          alts,
-          landmark: landmarkIds.has(node.id),
-        });
-      }
+      const items = gcLabelItems(f, labelled, drawn, book, size, beside);
       //: The dots a label may not cover: every note drawn this frame, at the
       //: size it is drawn (hover growth included).
       const discs = drawn.map((node) => ({
@@ -3704,23 +3901,11 @@
       book.labelBoxes = placed;
       book.labelsDrawn = placed.length;
     }
-    //: A whole frame, on the visible canvas, whose only fade is the names: the
-    //: canvas as it stands before them is kept for the label frames
-    //: (`gcDrawLabels.frame`).
-    const othersFading = fading;
-    const keepable = !s.paintMode && s.ctx.canvas === s.canvas;
-    let labelBase = null;
-    if (s.paintMode !== "dim" && gcDrawLabels(ctx, s, placedLabels, fadeStep, k, keepable && !othersFading ? () => (labelBase = gcDrawLabels.keep(s)) : null)) fading = true;
-    if (!over && s.fitCheck > 0) {
-      const left = s.fitCheck - 1;
-      s.fitCheck = 0;
-      gcBalanceFit(s, placedLabels, left);
-    }
-    if (!over && s.revealAfterFit && !(s.fitCheck > 0)) {
-      s.revealAfterFit = false;
-      gcReveal(s);
-    }
+    return { book, placedLabels };
+  }
 
+  function gcDrawScorePills(f, drawn, book) {
+    const { s, ctx, k, layer, fadeStep, scoreFor } = f;
     // --- the pointed-at note's similarity scores -------------------------------
     //: Kumu's focus and Obsidian's hover both answer "what is this one joined
     //: to"; a similarity line also has "how closely", which a line's weight
@@ -3740,7 +3925,7 @@
     if (!layer && s.pillGhost) {
       s.pillGhost.a = gcFadeToward(s.pillGhost.a, 0, fadeStep);
       if (s.pillGhost.a > 0) {
-        fading = true;
+        f.fading = true;
         ctx.font = `600 ${11 / k}px ${gcTokens.font}`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -3751,7 +3936,7 @@
     }
     if (s.simScoreLabels.length) {
       s.pillA = gcFadeToward(s.pillA || 0, 1, fadeStep);
-      if (s.pillA < 1) fading = true;
+      if (s.pillA < 1) f.fading = true;
       s.pillDrawn = [];
       const size = 11 / k;
       ctx.font = `600 ${size}px ${gcTokens.font}`;
@@ -3781,7 +3966,10 @@
         gcDrawPill(ctx, drawn, k, gcSmooth(s.pillA));
       }
     }
+  }
 
+  function gcFrameEnd(f, drawn) {
+    const { s, ctx, k, t, hl, over, layer, started, easing, gliding, labelBase, othersFading, placedLabels, fading } = f;
     ctx.restore();
     if (layer) return;
     gcHoverCardFrame(s);
@@ -4369,7 +4557,48 @@
     s.wired = true;
     const selection = d3.select(s.canvas);
 
-    const zoom = d3
+    const zoom = gcMakeZoom(s);
+    selection.call(zoom).on("dblclick.zoom", null);
+    //: A middle press that keeps its default starts the page's autoscroll
+    //: (Windows) before the first move; its release is a paste on Linux. The
+    //: board refuses both the same way (`initWhiteboard`).
+    //: Capture, because d3-zoom's own mousedown listener stops the event.
+    s.canvas.addEventListener("mousedown", (event) => {
+      if (event.button === 1) event.preventDefault();
+    }, true);
+    s.canvas.addEventListener("auxclick", (event) => {
+      if (event.button === 1) event.preventDefault();
+    }, true);
+
+    // The rest of the app drives zoom through `graphSvg`/`graphZoom`, the
+    // +/-/fit buttons, the keyboard, the minimap, saved views, `fitGraphToView`.
+    // Pointing those two at the canvas is what makes every one of them keep
+    // working without a line of change: `d3.zoom` does not care what element it
+    // is attached to, and `d3.zoomTransform` reads the transform off the node.
+    //: Only the tab publishes them. A pane keeps its camera on its own surface,
+    //: so the zoom strip and the minimap go on driving the tab while a pane is
+    //: open beside a note.
+    s.svg = selection;
+    s.zoom = zoom;
+    if (s.size === "full") {
+      graphSvg = selection;
+      graphZoom = zoom;
+    }
+
+    selection.call(gcMakeDrag(s));
+    gcWirePointer(s);
+    gcWireClicks(s);
+    //: The lasso, the right-click menu and the selection dock all read elements
+    //: that exist once, on the Graph tab. A pane wires none of them.
+    if (s.size === "full") {
+      gcWireLasso(s);
+      gcWireNodeMenu(s);
+      gcWireSelectionDock(s);
+    }
+  }
+
+  function gcMakeZoom(s) {
+    return d3
       .zoom()
       .scaleExtent([0.05, 5])
       //: The default extent reads `clientWidth` on every gesture's first use: a forced layout (30ms on 2,000 notes).
@@ -4443,35 +4672,10 @@
         s.panning = false;
         gcRequestDraw(s, true);
       });
-    selection.call(zoom).on("dblclick.zoom", null);
-    //: A middle press that keeps its default starts the page's autoscroll
-    //: (Windows) before the first move; its release is a paste on Linux. The
-    //: board refuses both the same way (`initWhiteboard`).
-    //: Capture, because d3-zoom's own mousedown listener stops the event.
-    s.canvas.addEventListener("mousedown", (event) => {
-      if (event.button === 1) event.preventDefault();
-    }, true);
-    s.canvas.addEventListener("auxclick", (event) => {
-      if (event.button === 1) event.preventDefault();
-    }, true);
+  }
 
-    // The rest of the app drives zoom through `graphSvg`/`graphZoom`, the
-    // +/-/fit buttons, the keyboard, the minimap, saved views, `fitGraphToView`.
-    // Pointing those two at the canvas is what makes every one of them keep
-    // working without a line of change: `d3.zoom` does not care what element it
-    // is attached to, and `d3.zoomTransform` reads the transform off the node.
-    //: Only the tab publishes them. A pane keeps its camera on its own surface,
-    //: so the zoom strip and the minimap go on driving the tab while a pane is
-    //: open beside a note.
-    s.svg = selection;
-    s.zoom = zoom;
-    if (s.size === "full") {
-      graphSvg = selection;
-      graphZoom = zoom;
-    }
-
-    selection.call(
-      d3
+  function gcMakeDrag(s) {
+    return d3
         .drag()
         // **The canvas, not its parent.** d3-drag's default container is
         // `this.parentNode`, so without this the pointer would be measured
@@ -4516,9 +4720,9 @@
           if (pressed) {
             if (Math.hypot(event.x - pressed.x, event.y - pressed.y) < GC_DRAG_THRESHOLD_PX) return;
             event.subject.pressed = null;
-            gcDragBegin(pressed);
+            gcDragBegin(pressed, s);
           }
-          gcDragMove(event);
+          gcDragMove(event, s);
         })
         .on("end", (event) => {
           if (event.subject.pressed) {
@@ -4532,202 +4736,204 @@
             gcRequestDraw(s);
             return;
           }
-          gcDragEnd(event);
-        })
-    );
-
-    function gcDragBegin(event) {
-      const node = event.subject.node;
-      s.dragNode = node;
-      node._dragStartX = node.x;
-      node._dragStartY = node.y;
-      node._wasPinned = node.fx != null;
-      //: **Shift is what pins.** INBOX 96, the owner: "my original annoyance
-      //: was that I'd try to drag a node or cluster around and it would just
-      //: snap back ... but I move a node a little and then I have to unpin
-      //: it and there's got to be a better way." Both halves of that are one
-      //: rule: a plain drag places a node and lets the map settle around it,
-      //: an explicit pin holds it against the simulation for good. Read at
-      //: `start` rather than at `end` because the modifier is part of the
-      //: gesture the reader began, and a Shift pressed or released mid-drag
-      //: would otherwise change what the gesture meant halfway through.
-      node._dragShift = Boolean(event.sourceEvent && event.sourceEvent.shiftKey);
-      //: **Alt is what links** (audit 1029 G15: a plain drag onto another note
-      //: opened "How are these connected?"). Shift already pins, so the link
-      //: takes the other modifier, read here for the same reason.
-      node._dragAlt = Boolean(event.sourceEvent && event.sourceEvent.altKey);
-      //: A topic moved by its name stays where it is put, as a group: a
-      //: released group would drift back into the layout one note at a time.
-      s.dragTopic = event.subject.topic || null;
-      if (s.dragTopic) node._dragShift = true;
-      const [wx, wy] = (s.transform || d3.zoomIdentity).invert([event.x, event.y]);
-      node.fx = wx;
-      node.fy = wy;
-      gcPost({ type: "drag", phase: "start", id: node.id, x: wx, y: wy }, s);
-      //: **A lasso selection moves as one** (GRAPH_PLAN, "Decision changed,
-      //: 2026-09-09", its one open line: "a dragged cluster moving together
-      //: the same way"). Grabbing a note that is part of a selection of two
-      //: or more carries the rest at their offsets from it, each under the
-      //: same rule as the note in hand: a plain drag places, Shift pins, and
-      //: a note that was pinned stays pinned at its new place. A note outside
-      //: the selection drags alone, as it always has.
-      const carriedNodes = s.dragTopic
-        ? gcTopicMembers(s.dragTopic, s)
-        : s.selected.has(node.id) && s.selected.size > 1
-          ? gcSelectedNodes(s)
-          : null;
-      s.dragGroup =
-        carriedNodes
-          ? carriedNodes
-              .filter((other) => other !== node && !other.isGroup)
-              .map((other) => ({
-                node: other,
-                dx: other.x - node.x,
-                dy: other.y - node.y,
-                startX: other.x,
-                startY: other.y,
-                wasPinned: other.fx != null,
-              }))
-          : [];
-      for (const mate of s.dragGroup) {
-        mate.node.fx = wx + mate.dx;
-        mate.node.fy = wy + mate.dy;
-        gcPost({ type: "drag", phase: "start", id: mate.node.id, x: mate.node.fx, y: mate.node.fy }, s);
-      }
-      // **Everything holds still except this note's own neighbours.**
-      //
-      // Two rules were in conflict here and both are real. The SVG renderer
-      // froze the entire map for the length of a drag, because drag-to-link
-      // asks you to aim at a note and aiming at a moving target is not a
-      // gesture: that was a direct report. But GRAPH_PLAN.md §3 asks for
-      // the opposite thing, and it is the whole point of this phase:
-      // "dragging feels physical (the neighbours follow and the rest
-      // settles)". Freezing everything makes a drag a pointer-follow with a
-      // simulation running behind it that cannot move anything.
-      //
-      // Freezing everything *except the direct neighbourhood* satisfies both:
-      // the notes attached to the one in your hand come along, which is the
-      // physicality, and every other note on the map holds the position you
-      // are aiming at, which is the gesture.
-      const following = s.adj.get(node.id) || new Set();
-      const carried = new Set(s.dragGroup.map((mate) => mate.node.id));
-      gcPost({
-        type: "freeze",
-        ids: s.nodes
-          .filter((n) => n !== node && n.fx == null && !following.has(n.id) && !carried.has(n.id))
-          .map((n) => n.id),
-      }, s);
-    }
-
-    function gcDragMove(event) {
-      const node = event.subject.node;
-      const [wx, wy] = (s.transform || d3.zoomIdentity).invert([event.x, event.y]);
-      node.fx = wx;
-      node.fy = wy;
-      node.x = wx;
-      node.y = wy;
-      s.quadtreeDirty = true;
-      gcPost({ type: "drag", phase: "move", id: node.id, x: wx, y: wy }, s);
-      for (const mate of s.dragGroup) {
-        mate.node.fx = mate.node.x = wx + mate.dx;
-        mate.node.fy = mate.node.y = wy + mate.dy;
-        gcPost({ type: "drag", phase: "move", id: mate.node.id, x: mate.node.fx, y: mate.node.fy }, s);
-      }
-      s.dropTarget = gcDropTargetFor(s, node, { x: wx, y: wy });
-      gcRequestDraw(s);
-    }
-
-    function gcDragEnd(event) {
-      const node = event.subject.node;
-      s.dragNode = null;
-      const over = s.dropTarget;
-      s.dropTarget = null;
-      const movedFar =
-        Math.abs(node.x - node._dragStartX) > 2 || Math.abs(node.y - node._dragStartY) > 2;
-      //: A plain drag places the node and releases it: the worker's own
-      //: `keep: false` path clears `fx`/`fy` and lets `alphaTarget(0)`
-      //: decay, so the node settles from where it was dropped with its
-      //: neighbours rather than snapping back to where it came from. That
-      //: decay is the "better way" the report asks for, and it was already
-      //: written; what was wrong is that a moved node never reached it,
-      //: because any drag over 2px counted as a pin.
-      //:
-      //: A zero-distance drag is still a click and pins nothing, and a node
-      //: that was already pinned stays pinned at its new place: dragging a
-      //: pinned node is a reposition, not a request to release it.
-      const keep = node._dragShift || node._wasPinned;
-      gcPost({ type: "drag", phase: "end", id: node.id, keep }, s);
-      const pins = [];
-      const steps = [];
-      for (const mate of s.dragGroup) {
-        const mateKeeps = node._dragShift || mate.wasPinned;
-        gcPost({ type: "drag", phase: "end", id: mate.node.id, keep: mateKeeps }, s);
-        const mateMoved =
-          Math.abs(mate.node.x - mate.startX) > 2 || Math.abs(mate.node.y - mate.startY) > 2;
-        if (!mateKeeps) {
-          mate.node.fx = null;
-          mate.node.fy = null;
-        } else if (mateMoved) {
-          //: The same "only a real pin is written down" rule as the note in
-          //: hand, below.
-          mate.node.graph_pin_x = mate.node.fx;
-          mate.node.graph_pin_y = mate.node.fy;
-          pins.push({ id: mate.node.id, x: mate.node.fx, y: mate.node.fy });
-          steps.push({ id: mate.node.id, before: mate.wasPinned ? { x: mate.startX, y: mate.startY } : null, after: { x: mate.node.fx, y: mate.node.fy } });
-        }
-      }
-      //: One write for the carried notes (`PUT /graph/pins`): a topic of forty
-      //: was forty requests.
-      const savePins = () => apiJson("/graph/pins", { method: "PUT", body: JSON.stringify({ pins }) })
-        .catch(() => toast("The moved notes were not pinned where you left them.", true, { action: ["Try again", savePins] }));
-      s.dragGroup = [];
-      const wasTopic = s.dragTopic;
-      s.dragTopic = null;
-      gcPost({ type: "thaw" }, s);
-      if (!keep) {
-        node.fx = null;
-        node.fy = null;
-      }
-      if (over && movedFar) {
-        linkByDrop(node, over);
-      } else if (!movedFar && !s.holdFired) {
-        //: **A hold is not a tap that took a while.** In a force layout a
-        //: click on a node *is* a zero-distance drag, and this is where it
-        //: is turned into one, so a long press that opened the node's menu
-        //: ended here as well and opened that node's panel underneath it:
-        //: measured at 390, the menu was still on screen with the panel in
-        //: front of it holding the focus. `holdFired` is set by the hold
-        //: and cleared by the next press on the canvas
-        //: (`gcWireNodeMenu`), so it says "this gesture was a hold" and
-        //: nothing about the one after it.
-        if (wasTopic) gcOpenTopic(wasTopic);
-        else gcClickNode(event.sourceEvent, node, s);
-      } else if (!node.isGroup && keep) {
-        //: Only a real pin is written down. A placement that the simulation
-        //: is free to relax has no position worth surviving a reload, and
-        //: saving one was what made every small nudge into a pin the reader
-        //: then had to find and undo.
-        node.graph_pin_x = node.fx;
-        node.graph_pin_y = node.fy;
-        //: A topic carried by its core note is one write with its mates
-        //: (ledger 931: it was the group's PUT plus this one).
-        steps.push({
-          id: node.id,
-          before: node._wasPinned ? { x: node._dragStartX, y: node._dragStartY } : null,
-          after: { x: node.fx, y: node.fy },
+          gcDragEnd(event, s);
         });
-        if (pins.length) pins.push({ id: node.id, x: node.fx, y: node.fy });
-        else graphPinSave(node.id, node.graph_pin_x, node.graph_pin_y).catch(() => {
-          // Best-effort, exactly as on the SVG path: the placement has
-          // already taken effect in memory, so a failed save costs the
-          // reload and nothing else.
-        });
-      }
-      if (steps.length) graphPinStep(steps.length === 1 ? "Moved a pinned note" : `Moved ${steps.length} pinned notes`, steps);
-      if (pins.length) savePins();
-      gcRequestDraw(s);
-    }
+  }
 
+  function gcDragBegin(event, s) {
+    const node = event.subject.node;
+    s.dragNode = node;
+    node._dragStartX = node.x;
+    node._dragStartY = node.y;
+    node._wasPinned = node.fx != null;
+    //: **Shift is what pins.** INBOX 96, the owner: "my original annoyance
+    //: was that I'd try to drag a node or cluster around and it would just
+    //: snap back ... but I move a node a little and then I have to unpin
+    //: it and there's got to be a better way." Both halves of that are one
+    //: rule: a plain drag places a node and lets the map settle around it,
+    //: an explicit pin holds it against the simulation for good. Read at
+    //: `start` rather than at `end` because the modifier is part of the
+    //: gesture the reader began, and a Shift pressed or released mid-drag
+    //: would otherwise change what the gesture meant halfway through.
+    node._dragShift = Boolean(event.sourceEvent && event.sourceEvent.shiftKey);
+    //: **Alt is what links** (audit 1029 G15: a plain drag onto another note
+    //: opened "How are these connected?"). Shift already pins, so the link
+    //: takes the other modifier, read here for the same reason.
+    node._dragAlt = Boolean(event.sourceEvent && event.sourceEvent.altKey);
+    //: A topic moved by its name stays where it is put, as a group: a
+    //: released group would drift back into the layout one note at a time.
+    s.dragTopic = event.subject.topic || null;
+    if (s.dragTopic) node._dragShift = true;
+    const [wx, wy] = (s.transform || d3.zoomIdentity).invert([event.x, event.y]);
+    node.fx = wx;
+    node.fy = wy;
+    gcPost({ type: "drag", phase: "start", id: node.id, x: wx, y: wy }, s);
+    //: **A lasso selection moves as one** (GRAPH_PLAN, "Decision changed,
+    //: 2026-09-09", its one open line: "a dragged cluster moving together
+    //: the same way"). Grabbing a note that is part of a selection of two
+    //: or more carries the rest at their offsets from it, each under the
+    //: same rule as the note in hand: a plain drag places, Shift pins, and
+    //: a note that was pinned stays pinned at its new place. A note outside
+    //: the selection drags alone, as it always has.
+    const carriedNodes = s.dragTopic
+      ? gcTopicMembers(s.dragTopic, s)
+      : s.selected.has(node.id) && s.selected.size > 1
+        ? gcSelectedNodes(s)
+        : null;
+    s.dragGroup =
+      carriedNodes
+        ? carriedNodes
+            .filter((other) => other !== node && !other.isGroup)
+            .map((other) => ({
+              node: other,
+              dx: other.x - node.x,
+              dy: other.y - node.y,
+              startX: other.x,
+              startY: other.y,
+              wasPinned: other.fx != null,
+            }))
+        : [];
+    for (const mate of s.dragGroup) {
+      mate.node.fx = wx + mate.dx;
+      mate.node.fy = wy + mate.dy;
+      gcPost({ type: "drag", phase: "start", id: mate.node.id, x: mate.node.fx, y: mate.node.fy }, s);
+    }
+    // **Everything holds still except this note's own neighbours.**
+    //
+    // Two rules were in conflict here and both are real. The SVG renderer
+    // froze the entire map for the length of a drag, because drag-to-link
+    // asks you to aim at a note and aiming at a moving target is not a
+    // gesture: that was a direct report. But GRAPH_PLAN.md §3 asks for
+    // the opposite thing, and it is the whole point of this phase:
+    // "dragging feels physical (the neighbours follow and the rest
+    // settles)". Freezing everything makes a drag a pointer-follow with a
+    // simulation running behind it that cannot move anything.
+    //
+    // Freezing everything *except the direct neighbourhood* satisfies both:
+    // the notes attached to the one in your hand come along, which is the
+    // physicality, and every other note on the map holds the position you
+    // are aiming at, which is the gesture.
+    const following = s.adj.get(node.id) || new Set();
+    const carried = new Set(s.dragGroup.map((mate) => mate.node.id));
+    gcPost({
+      type: "freeze",
+      ids: s.nodes
+        .filter((n) => n !== node && n.fx == null && !following.has(n.id) && !carried.has(n.id))
+        .map((n) => n.id),
+    }, s);
+  }
+
+  function gcDragMove(event, s) {
+    const node = event.subject.node;
+    const [wx, wy] = (s.transform || d3.zoomIdentity).invert([event.x, event.y]);
+    node.fx = wx;
+    node.fy = wy;
+    node.x = wx;
+    node.y = wy;
+    s.quadtreeDirty = true;
+    gcPost({ type: "drag", phase: "move", id: node.id, x: wx, y: wy }, s);
+    for (const mate of s.dragGroup) {
+      mate.node.fx = mate.node.x = wx + mate.dx;
+      mate.node.fy = mate.node.y = wy + mate.dy;
+      gcPost({ type: "drag", phase: "move", id: mate.node.id, x: mate.node.fx, y: mate.node.fy }, s);
+    }
+    s.dropTarget = gcDropTargetFor(s, node, { x: wx, y: wy });
+    gcRequestDraw(s);
+  }
+
+  function gcDragEnd(event, s) {
+    const node = event.subject.node;
+    s.dragNode = null;
+    const over = s.dropTarget;
+    s.dropTarget = null;
+    const movedFar =
+      Math.abs(node.x - node._dragStartX) > 2 || Math.abs(node.y - node._dragStartY) > 2;
+    //: A plain drag places the node and releases it: the worker's own
+    //: `keep: false` path clears `fx`/`fy` and lets `alphaTarget(0)`
+    //: decay, so the node settles from where it was dropped with its
+    //: neighbours rather than snapping back to where it came from. That
+    //: decay is the "better way" the report asks for, and it was already
+    //: written; what was wrong is that a moved node never reached it,
+    //: because any drag over 2px counted as a pin.
+    //:
+    //: A zero-distance drag is still a click and pins nothing, and a node
+    //: that was already pinned stays pinned at its new place: dragging a
+    //: pinned node is a reposition, not a request to release it.
+    const keep = node._dragShift || node._wasPinned;
+    gcPost({ type: "drag", phase: "end", id: node.id, keep }, s);
+    const pins = [];
+    const steps = [];
+    for (const mate of s.dragGroup) {
+      const mateKeeps = node._dragShift || mate.wasPinned;
+      gcPost({ type: "drag", phase: "end", id: mate.node.id, keep: mateKeeps }, s);
+      const mateMoved =
+        Math.abs(mate.node.x - mate.startX) > 2 || Math.abs(mate.node.y - mate.startY) > 2;
+      if (!mateKeeps) {
+        mate.node.fx = null;
+        mate.node.fy = null;
+      } else if (mateMoved) {
+        //: The same "only a real pin is written down" rule as the note in
+        //: hand, below.
+        mate.node.graph_pin_x = mate.node.fx;
+        mate.node.graph_pin_y = mate.node.fy;
+        pins.push({ id: mate.node.id, x: mate.node.fx, y: mate.node.fy });
+        steps.push({ id: mate.node.id, before: mate.wasPinned ? { x: mate.startX, y: mate.startY } : null, after: { x: mate.node.fx, y: mate.node.fy } });
+      }
+    }
+    //: One write for the carried notes (`PUT /graph/pins`): a topic of forty
+    //: was forty requests.
+    const savePins = () => apiJson("/graph/pins", { method: "PUT", body: JSON.stringify({ pins }) })
+      .catch(() => toast("The moved notes were not pinned where you left them.", true, { action: ["Try again", savePins] }));
+    s.dragGroup = [];
+    const wasTopic = s.dragTopic;
+    s.dragTopic = null;
+    gcPost({ type: "thaw" }, s);
+    if (!keep) {
+      node.fx = null;
+      node.fy = null;
+    }
+    if (over && movedFar) {
+      linkByDrop(node, over);
+    } else if (!movedFar && !s.holdFired) {
+      //: **A hold is not a tap that took a while.** In a force layout a
+      //: click on a node *is* a zero-distance drag, and this is where it
+      //: is turned into one, so a long press that opened the node's menu
+      //: ended here as well and opened that node's panel underneath it:
+      //: measured at 390, the menu was still on screen with the panel in
+      //: front of it holding the focus. `holdFired` is set by the hold
+      //: and cleared by the next press on the canvas
+      //: (`gcWireNodeMenu`), so it says "this gesture was a hold" and
+      //: nothing about the one after it.
+      if (wasTopic) gcOpenTopic(wasTopic);
+      else gcClickNode(event.sourceEvent, node, s);
+    } else if (!node.isGroup && keep) {
+      //: Only a real pin is written down. A placement that the simulation
+      //: is free to relax has no position worth surviving a reload, and
+      //: saving one was what made every small nudge into a pin the reader
+      //: then had to find and undo.
+      node.graph_pin_x = node.fx;
+      node.graph_pin_y = node.fy;
+      //: A topic carried by its core note is one write with its mates
+      //: (ledger 931: it was the group's PUT plus this one).
+      steps.push({
+        id: node.id,
+        before: node._wasPinned ? { x: node._dragStartX, y: node._dragStartY } : null,
+        after: { x: node.fx, y: node.fy },
+      });
+      if (pins.length) pins.push({ id: node.id, x: node.fx, y: node.fy });
+      else graphPinSave(node.id, node.graph_pin_x, node.graph_pin_y).catch(() => {
+        // Best-effort, exactly as on the SVG path: the placement has
+        // already taken effect in memory, so a failed save costs the
+        // reload and nothing else.
+      });
+    }
+    if (steps.length) graphPinStep(steps.length === 1 ? "Moved a pinned note" : `Moved ${steps.length} pinned notes`, steps);
+    if (pins.length) savePins();
+    gcRequestDraw(s);
+  }
+
+  //: The pointer over the canvas: what is under it is hovered, titled and ringed.
+  function gcWirePointer(s) {
     s.canvas.addEventListener("pointermove", (event) => {
       if (s.panning || s.dragNode) return;
       const [x, y] = gcWorldPoint(event, s);
@@ -4785,7 +4991,10 @@
       s.canvas.title = "";
       gcRequestDraw(s, true);
     });
+  }
 
+  //: A click and a double click on the canvas, by what is under the pointer.
+  function gcWireClicks(s) {
     s.canvas.addEventListener("click", (event) => {
       const [x, y] = gcWorldPoint(event, s);
       const hit = gcNodeAtWorld(x, y, s);
@@ -4858,13 +5067,6 @@
       if (s.layoutKind !== "force") return;
       gcTogglePin(node, s);
     });
-    //: The lasso, the right-click menu and the selection dock all read elements
-    //: that exist once, on the Graph tab. A pane wires none of them.
-    if (s.size === "full") {
-      gcWireLasso(s);
-      gcWireNodeMenu(s);
-      gcWireSelectionDock(s);
-    }
   }
 
   function gcTogglePin(node, s = gcTab) {
@@ -5384,6 +5586,27 @@
     return card;
   }
 
+  //: How long the pointer must stay on one note before its card fills. Under a
+  //: deliberate hover (~300 ms) and over the 60 to 100 ms a note takes to
+  //: cross at sweep speed, so a sweep fills nothing and a stop fills at once.
+  const GC_CARD_REST_MS = 120;
+
+  //: Whether the card for `id` may fill at time `now` (a parameter, so a test
+  //: passes its own clock). The keyboard (`pointer` false) is never made to
+  //: wait. Not yet: one redraw is asked for when the rest is due.
+  function gcCardRested(s, id, pointer, now) {
+    if (!pointer) return true;
+    if (s._restId !== id) {
+      s._restId = id;
+      s._restAt = now;
+      s._restTimer = null;
+    }
+    const left = GC_CARD_REST_MS - (now - s._restAt);
+    if (left <= 0) return true;
+    if (!s._restTimer) s._restTimer = setTimeout(() => { s._restTimer = null; gcRequestDraw(s, true); }, left + 1);
+    return false;
+  }
+
   function gcHoverCardFill(card, node, s) {
     const entry = typeof allEntries !== "undefined" ? allEntries.find((e) => e.id === node.id) : null;
     const facts = gcHoverCardFacts(
@@ -5448,6 +5671,20 @@
     const card = show ? gcHoverCardEl(s) : s._hoverCard;
     if (!card) return;
     if (!show) {
+      if (!card.hidden) {
+        card.hidden = true;
+        s.canvas.removeAttribute("aria-describedby");
+      }
+      card._for = null;
+      s._restId = null;
+      return;
+    }
+    //: **A pointer's card waits for the pointer to rest** (GRAPH_PLAN, hover
+    //: decision): the refill is ~17 ms of a 50 ms hover at 500 notes and 4x, and
+    //: a sweep across a cluster refilled it for every note it crossed. The dot's
+    //: highlight stays instant; the card is hidden meanwhile, never left showing
+    //: the last note, and the keyboard's card is not delayed.
+    if (!gcCardRested(s, node.id, s.hoveredId != null, performance.now())) {
       if (!card.hidden) {
         card.hidden = true;
         s.canvas.removeAttribute("aria-describedby");
@@ -5578,6 +5815,13 @@
     }
     if (node.type === "unresolved") {
       gcWriteUnresolved(node);
+      return;
+    }
+    //: While Trace is on, a document or entity is a stop like a note
+    //: (L-graph-14, owner 2026-11-12), so the click picks an end instead of
+    //: opening the page; `runTrace` sends the layer flags that name it.
+    if (traceModeActive && (node.type === "entity" || node.type === "document")) {
+      pickTraceEnd(node);
       return;
     }
     //: KG5: an entity opens its page (entity-page.js).
@@ -5778,133 +6022,11 @@
         //: one skipped frame's worth of pool.
         if (message.epoch !== s.epoch) return;
         if (message.type === "tick") {
-          s.ticksSeen = (s.ticksSeen || 0) + 1;
-          s.alpha = message.alpha;
-          s.ticks = message.ticks || 0;
-          s.tickMs = message.tickMs || 0;
-          s.layoutRunning = message.running !== false;
-          const positions = message.positions;
-          const count = Math.min(s.nodes.length, positions.length / 2);
-          //: **Drawn between ticks, not at them** (INBOX 586, "the graph is a
-          //: little jittery when nodes move around or adjust position"). The
-          //: worker steps on its own timer (16 ms, or as long as a tick took on
-          //: a big map) and the canvas paints on the display's: the two beat,
-          //: so a note moved two steps in one frame, none in the next, one in
-          //: the one after. Each tick is now kept with the one before it, and a
-          //: frame draws the point between them that its time says
-          //: (`gcGlideStep`): the motion one tick interval late, at an even
-          //: speed across the frames in between.
-          //: How long a glide lasts is the interval ticks have been arriving
-          //: at, smoothed (a timer's few milliseconds of jitter would otherwise
-          //: make every glide a different speed), and a gap after the layout was
-          //: at rest is not an interval at all.
-          const now = performance.now();
-          const gap = s.lastTickAt && now - s.lastTickAt < GC_GLIDE_MAX_MS * 2 ? now - s.lastTickAt : null;
-          s.lastTickAt = now;
-          if (gap !== null) {
-            const smoothed = s.tickGap ? s.tickGap * 0.8 + gap * 0.2 : gap;
-            s.tickGap = Math.min(GC_GLIDE_MAX_MS, Math.max(GC_GLIDE_MIN_MS, smoothed));
-          }
-          const drift = gcAimNodes(s, positions, count);
-          s.glideFrom = now;
-          s.glideMs = 0;
-          s.gliding = true;
-          if (gcTickSettles(s)) gcGlideFinish(s);
-          // The positions moved, so the hit-test index is stale. Marked here
-          // rather than at the end of every draw: a settled map redraws on
-          // hover without anything having moved, and rebuilding a 2,000-point
-          // quadtree per pointermove for nothing is a millisecond a frame.
-          s.quadtreeDirty = true;
-          gcTickDraw(s, now, drift);
-          // **Framed twice: once straight away, once when it settles.**
-          //
-          // The SVG renderer framed the map exactly once, when the simulation
-          // cooled below alpha 0.08, about 110 ticks. Measured on the 2,000-note
-          // fixture in this sandbox, a tick costs ~80 ms, so that is nine seconds
-          // of watching a graph whose notes are mostly outside the frame at
-          // zoom 1, with no way to know that is what you are looking at. The
-          // first tick is framed immediately instead, so the map is *visible*
-          // from the first moment, and the settle re-frames it once the layout
-          // has actually decided its shape.
-          //
-          // The second fit is skipped if the user has zoomed or panned in the
-          // meantime: recentring the camera out from under someone who has
-          // deliberately gone to look at something is the reported bug
-          // `graphAutoFitDone` exists for, and an early fit must not reintroduce
-          // it by making the late fit unconditional.
-          //: The warm-up's playback (`frame`, below) is framed already: the
-          //: fits wait for the live layout, which starts where it ends.
-          if (!message.intro) s.intro = false;
-          if (!gcAutoFitDone(s) && s.nodes.length && !s.intro) {
-            if (!s.fittedOnce) {
-              s.fittedOnce = true;
-              //: Instant (INBOX 738): a glide from the default camera is the
-              //: zoomed-in first frames the hiding exists to keep off screen.
-              //: And framed on where this tick put the notes, not where the
-              //: glide has them: `x`/`y` are still the starting spiral until
-              //: the next paint, which is what the first fit used to frame
-              //: (k 2.5, the clamp, on 60 notes).
-              gcGlideFinish(s);
-              fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h, true);
-              s.fitTicks = s.ticksSeen;
-              gcRevealAfterBalance(s);
-            } else if (message.alpha < 0.08) {
-              gcSetAutoFitDone(s, true);
-              if (!s.userZoomed) {
-                fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
-                //: The layout keeps drifting between alpha 0.08 and rest, so
-                //: this frame could end lopsided: a wide empty band along one
-                //: edge (owner, 0.3.31: "the graph auto size leaves quite a bit
-                //: of a gap at the bottom"). One more fit at "end", below.
-                s.fitAgainAtEnd = true;
-              }
-            }
-          }
-          // Hand the buffer back so the worker can reuse it (see its `pool`).
-          s.worker.postMessage({ type: "recycle", buffer: positions.buffer }, [positions.buffer]);
-          //: By the clock, not by the tick count: a tick is 16 ms on a small map
-          //: and 80 on a big one, so one paint in eight was eight a second on one
-          //: and one a second on the other, each rewriting up to 700 dots and 700
-          //: lines. The map at rest paints it again (`end`).
-          if (s.size === "full" && now - (s.minimapAt || 0) >= GC_MINIMAP_MS) {
-            s.minimapAt = now;
-            graphMinimapQueuePaint();
-          }
+          gcOnWorkerTick(s, message);
         } else if (message.type === "frame") {
           gcFrameIntro(s, message.positions, message.start);
         } else if (message.type === "end") {
-          s.layoutRunning = false;
-          //: At rest is where the last tick said: the glide is finished here,
-          //: not by the next paint, so the fit below frames the final shape.
-          gcGlideFinish(s);
-          gcDrawHeld(s);
-          //: What just came to rest, so the next render of exactly these
-          //: inputs can hold it instead of settling it again (`gcStartWorker`).
-          s.settledSig = s.layoutSig;
-          gcSavePositions(s);
-          //: Links drawn as hairlines while moving (`gcSetStroke`) are true at rest.
-          if (s.hairDrawn) gcRequestDraw(s);
-          if (s.size === "full") graphMinimapQueuePaint();
-          if (!gcAutoFitDone(s) && s.nodes.length) {
-            gcSetAutoFitDone(s, true);
-            //: Nothing moved since the first fit (the settled map as the one
-            //: frame, less motion): framing it again from the guess undid its
-            //: balance, a hop just after the cut-in.
-            if (s.ticksSeen !== s.fitTicks) fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
-          } else if (s.fitAgainAtEnd && !s.userZoomed && s.nodes.length) {
-            fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
-          }
-          s.fitAgainAtEnd = false;
-          if (!s.revealAfterFit) gcReveal(s);
-          // GRAPH_PLAN Phase 5: the settle a restored view's unplaced notes
-          // forced is over, so the notes it held still (`viewSeed.freezeIds`,
-          // below) are released the same way a drag's freeze is: `thaw`, no
-          // alpha change, so releasing them does not itself start another
-          // settle.
-          if (s._viewRestorePending) {
-            s._viewRestorePending = false;
-            gcPost({ type: "thaw" }, s);
-          }
+          gcOnWorkerEnd(s);
         }
       };
       s.worker.onerror = () => {
@@ -5936,6 +6058,186 @@
       setTimeout(() => gcReveal(s), 4000);
     }
     const hidden = s.canvas?.style.opacity === "0";
+    const init = gcWorkerInit(nodes, edges, world, s, viewSeed, reframe, hidden);
+    //: **A layout that already settled is held, not settled again** (INBOX
+    //: 424c/d). Every visit to the Graph tab refetched the map and restarted
+    //: the simulation at full heat from the positions it had already come to
+    //: rest in, so each visit paid a whole settle for a picture that ended up
+    //: where it started: measured at 4x CPU on a 400-note, 1,200-link graph,
+    //: about 7s of main-thread work in the eight seconds after arriving, and
+    //: the map visibly shuffling the whole time. The signature is everything
+    //: the worker's answer depends on apart from where the notes start (which
+    //: notes, their pins and sizes, every line, the forces, the world); when
+    //: it is the signature of the layout that last came to rest, and every
+    //: note is starting from where that layout left it (`holdIfSettled`, from
+    //: the render), the layout starts at rest, exactly the way a restored
+    //: view does. Anything that changes an input changes the signature, and
+    //: that render heats the layout as it always did.
+    const sig = JSON.stringify([
+      init.perf,
+      //: Not the radius (audit G4): the Size rule only changes how big a dot is drawn, and
+      //: a settled map stays where it is rather than re-laying out (12 s at 2,000 notes).
+      //: The new radii still reach the worker in `init`, for the next drag or real change.
+      init.nodes.map((n) => [n.id, n.fx, n.fy]),
+      init.edges.map((e) => [e.source, e.target, e.kind, e.score, e.curated]),
+      init.params,
+      world,
+    ]);
+    if (init.alpha && viewSeed?.holdIfSettled && s.settledSig === sig) init.alpha = 0;
+    //: **An update moves the map from where it is** (Brief 100 (a)): a filter,
+    //: a hidden category or a deleted note, every note still there already
+    //: placed and the forces unchanged, reheats as a drag does rather than
+    //: from full heat, which shuffled the whole map for one note's change.
+    const forces = gcForcesKey(s);
+    if (init.alpha === 1 && viewSeed?.holdIfSettled && s.lastForces === forces) init.alpha = GC_UPDATE_ALPHA;
+    s.lastForces = forces;
+    s.layoutSig = sig;
+    s.settledSig = null;
+    gcPost(init, s);
+    // Freeze the view's own notes *after* init, so the worker reads their
+    // current (just-seeded) x/y as the position to hold, exactly the "freeze
+    // holds where a note already is" contract `freeze` has for a drag.
+    if (viewSeed && viewSeed.freezeIds && viewSeed.freezeIds.length) {
+      gcPost({ type: "freeze", ids: viewSeed.freezeIds }, s);
+      s._viewRestorePending = true;
+    }
+  }
+
+  function gcOnWorkerTick(s, message) {
+    s.ticksSeen = (s.ticksSeen || 0) + 1;
+    s.alpha = message.alpha;
+    s.ticks = message.ticks || 0;
+    s.tickMs = message.tickMs || 0;
+    s.layoutRunning = message.running !== false;
+    const positions = message.positions;
+    const count = Math.min(s.nodes.length, positions.length / 2);
+    //: **Drawn between ticks, not at them** (INBOX 586, "the graph is a
+    //: little jittery when nodes move around or adjust position"). The
+    //: worker steps on its own timer (16 ms, or as long as a tick took on
+    //: a big map) and the canvas paints on the display's: the two beat,
+    //: so a note moved two steps in one frame, none in the next, one in
+    //: the one after. Each tick is now kept with the one before it, and a
+    //: frame draws the point between them that its time says
+    //: (`gcGlideStep`): the motion one tick interval late, at an even
+    //: speed across the frames in between.
+    //: How long a glide lasts is the interval ticks have been arriving
+    //: at, smoothed (a timer's few milliseconds of jitter would otherwise
+    //: make every glide a different speed), and a gap after the layout was
+    //: at rest is not an interval at all.
+    const now = performance.now();
+    const gap = s.lastTickAt && now - s.lastTickAt < GC_GLIDE_MAX_MS * 2 ? now - s.lastTickAt : null;
+    s.lastTickAt = now;
+    if (gap !== null) {
+      const smoothed = s.tickGap ? s.tickGap * 0.8 + gap * 0.2 : gap;
+      s.tickGap = Math.min(GC_GLIDE_MAX_MS, Math.max(GC_GLIDE_MIN_MS, smoothed));
+    }
+    const drift = gcAimNodes(s, positions, count);
+    s.glideFrom = now;
+    s.glideMs = 0;
+    s.gliding = true;
+    if (gcTickSettles(s)) gcGlideFinish(s);
+    // The positions moved, so the hit-test index is stale. Marked here
+    // rather than at the end of every draw: a settled map redraws on
+    // hover without anything having moved, and rebuilding a 2,000-point
+    // quadtree per pointermove for nothing is a millisecond a frame.
+    s.quadtreeDirty = true;
+    gcTickDraw(s, now, drift);
+    gcFitOnTick(s, message);
+    // Hand the buffer back so the worker can reuse it (see its `pool`).
+    s.worker.postMessage({ type: "recycle", buffer: positions.buffer }, [positions.buffer]);
+    //: By the clock, not by the tick count: a tick is 16 ms on a small map
+    //: and 80 on a big one, so one paint in eight was eight a second on one
+    //: and one a second on the other, each rewriting up to 700 dots and 700
+    //: lines. The map at rest paints it again (`end`).
+    if (s.size === "full" && now - (s.minimapAt || 0) >= GC_MINIMAP_MS) {
+      s.minimapAt = now;
+      graphMinimapQueuePaint();
+    }
+  }
+
+  function gcFitOnTick(s, message) {
+    // **Framed twice: once straight away, once when it settles.**
+    //
+    // The SVG renderer framed the map exactly once, when the simulation
+    // cooled below alpha 0.08, about 110 ticks. Measured on the 2,000-note
+    // fixture in this sandbox, a tick costs ~80 ms, so that is nine seconds
+    // of watching a graph whose notes are mostly outside the frame at
+    // zoom 1, with no way to know that is what you are looking at. The
+    // first tick is framed immediately instead, so the map is *visible*
+    // from the first moment, and the settle re-frames it once the layout
+    // has actually decided its shape.
+    //
+    // The second fit is skipped if the user has zoomed or panned in the
+    // meantime: recentring the camera out from under someone who has
+    // deliberately gone to look at something is the reported bug
+    // `graphAutoFitDone` exists for, and an early fit must not reintroduce
+    // it by making the late fit unconditional.
+    //: The warm-up's playback (`frame`, below) is framed already: the
+    //: fits wait for the live layout, which starts where it ends.
+    if (!message.intro) s.intro = false;
+    if (!gcAutoFitDone(s) && s.nodes.length && !s.intro) {
+      if (!s.fittedOnce) {
+        s.fittedOnce = true;
+        //: Instant (INBOX 738): a glide from the default camera is the
+        //: zoomed-in first frames the hiding exists to keep off screen.
+        //: And framed on where this tick put the notes, not where the
+        //: glide has them: `x`/`y` are still the starting spiral until
+        //: the next paint, which is what the first fit used to frame
+        //: (k 2.5, the clamp, on 60 notes).
+        gcGlideFinish(s);
+        fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h, true);
+        s.fitTicks = s.ticksSeen;
+        gcRevealAfterBalance(s);
+      } else if (message.alpha < 0.08) {
+        gcSetAutoFitDone(s, true);
+        if (!s.userZoomed) {
+          fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
+          //: The layout keeps drifting between alpha 0.08 and rest, so
+          //: this frame could end lopsided: a wide empty band along one
+          //: edge (owner, 0.3.31: "the graph auto size leaves quite a bit
+          //: of a gap at the bottom"). One more fit at "end", below.
+          s.fitAgainAtEnd = true;
+        }
+      }
+    }
+  }
+
+  function gcOnWorkerEnd(s) {
+    s.layoutRunning = false;
+    //: At rest is where the last tick said: the glide is finished here,
+    //: not by the next paint, so the fit below frames the final shape.
+    gcGlideFinish(s);
+    gcDrawHeld(s);
+    //: What just came to rest, so the next render of exactly these
+    //: inputs can hold it instead of settling it again (`gcStartWorker`).
+    s.settledSig = s.layoutSig;
+    gcSavePositions(s);
+    //: Links drawn as hairlines while moving (`gcSetStroke`) are true at rest.
+    if (s.hairDrawn) gcRequestDraw(s);
+    if (s.size === "full") graphMinimapQueuePaint();
+    if (!gcAutoFitDone(s) && s.nodes.length) {
+      gcSetAutoFitDone(s, true);
+      //: Nothing moved since the first fit (the settled map as the one
+      //: frame, less motion): framing it again from the guess undid its
+      //: balance, a hop just after the cut-in.
+      if (s.ticksSeen !== s.fitTicks) fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
+    } else if (s.fitAgainAtEnd && !s.userZoomed && s.nodes.length) {
+      fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
+    }
+    s.fitAgainAtEnd = false;
+    if (!s.revealAfterFit) gcReveal(s);
+    // GRAPH_PLAN Phase 5: the settle a restored view's unplaced notes
+    // forced is over, so the notes it held still (`viewSeed.freezeIds`,
+    // below) are released the same way a drag's freeze is: `thaw`, no
+    // alpha change, so releasing them does not itself start another
+    // settle.
+    if (s._viewRestorePending) {
+      s._viewRestorePending = false;
+      gcPost({ type: "thaw" }, s);
+    }
+  }
+
+  function gcWorkerInit(nodes, edges, world, s, viewSeed, reframe, hidden) {
     //: **A saved view's notes are held from the first step** (claim #238): the
     //: `freeze` below arrived after `init`, and an init that warmed (a view
     //: re-picks its layout, which clears the fit, so `reframe`) stepped every
@@ -5996,48 +6298,7 @@
       //: notes stand.
       bloom: hidden,
     };
-    //: **A layout that already settled is held, not settled again** (INBOX
-    //: 424c/d). Every visit to the Graph tab refetched the map and restarted
-    //: the simulation at full heat from the positions it had already come to
-    //: rest in, so each visit paid a whole settle for a picture that ended up
-    //: where it started: measured at 4x CPU on a 400-note, 1,200-link graph,
-    //: about 7s of main-thread work in the eight seconds after arriving, and
-    //: the map visibly shuffling the whole time. The signature is everything
-    //: the worker's answer depends on apart from where the notes start (which
-    //: notes, their pins and sizes, every line, the forces, the world); when
-    //: it is the signature of the layout that last came to rest, and every
-    //: note is starting from where that layout left it (`holdIfSettled`, from
-    //: the render), the layout starts at rest, exactly the way a restored
-    //: view does. Anything that changes an input changes the signature, and
-    //: that render heats the layout as it always did.
-    const sig = JSON.stringify([
-      init.perf,
-      //: Not the radius (audit G4): the Size rule only changes how big a dot is drawn, and
-      //: a settled map stays where it is rather than re-laying out (12 s at 2,000 notes).
-      //: The new radii still reach the worker in `init`, for the next drag or real change.
-      init.nodes.map((n) => [n.id, n.fx, n.fy]),
-      init.edges.map((e) => [e.source, e.target, e.kind, e.score, e.curated]),
-      init.params,
-      world,
-    ]);
-    if (init.alpha && viewSeed?.holdIfSettled && s.settledSig === sig) init.alpha = 0;
-    //: **An update moves the map from where it is** (Brief 100 (a)): a filter,
-    //: a hidden category or a deleted note, every note still there already
-    //: placed and the forces unchanged, reheats as a drag does rather than
-    //: from full heat, which shuffled the whole map for one note's change.
-    const forces = gcForcesKey(s);
-    if (init.alpha === 1 && viewSeed?.holdIfSettled && s.lastForces === forces) init.alpha = GC_UPDATE_ALPHA;
-    s.lastForces = forces;
-    s.layoutSig = sig;
-    s.settledSig = null;
-    gcPost(init, s);
-    // Freeze the view's own notes *after* init, so the worker reads their
-    // current (just-seeded) x/y as the position to hold, exactly the "freeze
-    // holds where a note already is" contract `freeze` has for a drag.
-    if (viewSeed && viewSeed.freezeIds && viewSeed.freezeIds.length) {
-      gcPost({ type: "freeze", ids: viewSeed.freezeIds }, s);
-      s._viewRestorePending = true;
-    }
+    return init;
   }
 
   //: **The camera is framed on where the warm-up ends, before it is played**
@@ -6445,8 +6706,19 @@
     // other re-render already does. Only meaningful for force: a tree/radial/
     // arc layout is recomputed deterministically below and never reads this.
     const restoring = Boolean(graphPendingViewPositions) && s.layoutKind === "force";
+    //: **Leaving focus puts the map back as it was** (L-graph-17, gsweep
+    //: 2026-11-12: back to the whole map, notes moved up to 472 px, mean 216,
+    //: because the focus view's few notes were the only prior). The whole
+    //: map's spots are kept on the way in and held like a saved view's on the
+    //: way out.
+    const focusing = Boolean(graphFocusModeId) && s.layoutKind === "force";
+    if (focusing && !s.focusAt && prior.size) {
+      s.focusAt = Object.fromEntries([...prior].filter(([, at]) => Number.isFinite(at.x) && Number.isFinite(at.y)));
+    }
+    const back = !focusing && s.focusAt && prior.size ? s.focusAt : null;
+    if (!focusing) s.focusAt = null;
     const viewPositions =
-      graphPendingViewPositions || (s.layoutKind === "force" && !prior.size ? gcCachedPositions(s) : null);
+      graphPendingViewPositions || back || (s.layoutKind === "force" && !prior.size ? gcCachedPositions(s) : null);
     graphPendingViewPositions = null;
     // Decision made, 2026-09-21 (GRAPH_PLAN): a restored arrangement holds, it
     // does not re-settle. A note the view captured gets exactly its saved
@@ -6785,6 +7057,11 @@
         );
         item.dataset.topic = topic.id;
       }
+      const edits = graphStructure.topic_edits;
+      if (edits && edits.merges + edits.removed) {
+        const reset = entry("Merges and removals you made are laid over the found topics; this brings the automatic grouping back", gcTokens.muted, "Reset topic edits", gcResetTopicEdits);
+        reset.dataset.action = "reset-topics";
+      }
       return;
     }
     gcHideTopic();
@@ -6972,7 +7249,9 @@
                 ? "each category's area in proportion to its links."
                 : layoutKind === "tessellation"
                   ? "every note a cell, a bigger one for more links; categories are the framed regions."
-                  : "";
+                  : layoutKind === "map"
+                    ? "placed by meaning: notes about the same thing sit together."
+                    : "";
     //: Notes with nothing joined to them draw as loose dots with no word on
     //: why (dog3-1026 row 17): say so, and say how to join two.
     const unlinked = noteCount > 0 && !edges.some((edge) => edge.kind === "link" || edge.kind === "thread");
@@ -7031,6 +7310,14 @@
     slider.step = (max - min) / 100 || 1;
     slider.value = wasAtEnd ? max : Math.min(Number(slider.value), max);
     slider.dataset.graphInit = "1";
+    //: Play had nothing to sweep when every note shares one date, and a press
+    //: did nothing at all (gaudit 2026-11-12): it says so instead.
+    const play = document.getElementById("graph-time-play");
+    if (play) {
+      play.disabled = !(max > min);
+      if (play.disabled) play.title = "Every note has the same date, so there is nothing to play through";
+      else if (play.getAttribute("aria-pressed") !== "true") play.title = "Play through time";
+    }
     const say = (value) => {
       if (!label) return;
       label.textContent =

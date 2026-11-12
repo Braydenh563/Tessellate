@@ -56,7 +56,9 @@ const asked = run("asked");
 run(`(() => {
   for (const n of nodes) { n.vx = 0; n.vy = 0; }
   for (const link of simulation.force("link").links()) {
-    const a = link.source, b = link.target, count = clearCurve(a, b);
+    const a = link.source, b = link.target;
+    if (!clearSplitTurn(a, b)) continue; // L-graph-5: a long line pushes every second tick
+    const count = clearCurve(a, b);
     for (const node of nodes) { if (node === a || node === b) continue; nearestReal(node, count); clearPush(node, a, b); }
   }
 })()`);
