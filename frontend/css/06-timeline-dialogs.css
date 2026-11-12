@@ -3762,3 +3762,20 @@ aside[data-resizable="1"] {
   opacity: 0.35;
 }
 
+
+/* --- the Shape libraries dialog (WHITEBOARD_PLAN, "More shapes") -----------
+   One switch row per set on the modal recipe: the name, then its count at the
+   end. The list scrolls inside the card rather than growing past the window. */
+.wb-sets-card .wb-sets-hint {
+  margin: 0;
+}
+.wb-sets-card .wb-sets-list {
+  display: flex;
+  flex-direction: column;
+  max-height: min(60vh, 28rem);
+  overflow-y: auto;
+}
+.wb-sets-card .wb-sets-count {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+}
