@@ -527,6 +527,8 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
     model_manager = deps.get_model_manager().for_feature(_feature_for(body))
     ollama = deps.get_ollama()
     ollama_running = ollama.is_running()
+    if _asks_capability(capable := _stream_request(body, session), prepared):  # L65: answered from the app's own list
+        return ChatResponse(ai_response=_capability_answer(capable, ollama_running), raw_results=[], search_mode=prepared["search_mode"], ollama_running=ollama_running)
     conversational = not intent.needs_retrieval(prepared["intent"])
     mode = _resolve_mode(body.mode)
     images_raw = _resolve_chat_images(session, body.image_media_ids)
@@ -881,10 +883,8 @@ def _capability_answer(req: _StreamRequest, ollama_running: bool) -> str:
     except Exception:  # noqa: BLE001  # an unreadable preference is off
         web = False
     recent, seed = _reply_seed(req)
-    return capability.answer(
-        req.question, prefs={"web_search_enabled": web}, model_running=ollama_running,
-        voice=_composer_voice(), recent=recent, seed=seed,
-    )
+    return capability.answer(req.question, prefs={"web_search_enabled": web}, model_running=ollama_running,
+                             voice=_composer_voice(), recent=recent, seed=seed)
 
 
 def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:

@@ -509,7 +509,18 @@ class Closing:
         if not asks and not self.offered and answer.strip() and not self.framed and social:
             #: "thanks" has no subject of its own: it offers the last answer's chips (F5).
             asks = composer_chips.resume_chips(self.session, self.history, self.today.isoformat(), self.question)
+            #: A hello or thanks with nothing before it has no answer to resume: the starters (L48).
+            asks = asks or self._starters()
         return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}] if asks else []
+
+    def _starters(self) -> list[str]:
+        """Where to begin, under a bare hello or thanks that follows no answer."""
+        from tessellate.ai import question_noise  # lazy: see `social_turn`
+
+        if question_noise.social_kind(self.question) not in ("greeting", "morning", "thanks"):
+            return []
+        asked = [self.question, *(str(t.get("question") or "") for t in self.history or [] if isinstance(t, dict))]
+        return [c for c in composer_chips.STARTERS if not composer_chips.spent(c, asked)]
 
     def apply(self, events: list[dict]) -> list[dict]:
         """A whole turn's events with the chips in."""
