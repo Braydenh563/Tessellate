@@ -6623,6 +6623,7 @@ button.ghost.doc-template-choice.wb-template-choice {
 }
 
 .wb-selected .wb-table-grip:hover,
+.wb-selected .wb-table-grip:focus-visible,
 .wb-table-grip.is-dragging {
   background: color-mix(in srgb, var(--accent) 45%, transparent);
   border-radius: var(--radius-sm);
