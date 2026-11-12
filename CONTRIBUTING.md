@@ -74,6 +74,11 @@ A set of lints exists because the test suite cannot see the DOM or the prose:
 `test_no_innerhtml_interpolation.py` and `test_markdown_link_schemes.py`. If one
 fails, it has found something real: fix the cause, never widen the rule.
 
+A test that only reads a source file (a grep for a string) proves the string is
+there, not that the app works. Prefer driving behaviour; when you cannot, start
+the module docstring with "Source text:" and say why
+(`tests/test_source_text_docstrings.py` checks it, and `scripts/gate.sh` prints the count).
+
 Every AI call in the suite is faked. That keeps a run fast and offline, and it
 means the suite cannot tell you how a real small model behaves. The tests that can
 are marked `evals` and are skipped unless you have a model running:

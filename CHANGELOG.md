@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: a new test that reads source text must open its docstring with "Source text:" and say why; `scripts/gate.sh` prints how many test files do (1,493 of 2,674 today; `tests/test_source_text_docstrings.py`).
 - Docs: the PR 216 work order is marked done so the Stop hook stops reading it as running.
 - Docs: IDEAS.md is retired; its built entries moved to HISTORY and its open ones to BACKLOG.
 - Docs: ROADMAP.md retires its three open-looking queues (text kept in HISTORY), and the README describes the file by what it holds now.
