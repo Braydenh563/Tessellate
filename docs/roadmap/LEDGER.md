@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 101 | 4 | 0 | 17 | 201 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 15 | 0 | 0 | 1 | 15 |
-| all | 553 | 675 | 158 | 3 | 192 | 1386 |
+| general | 0 | 14 | 0 | 0 | 0 | 14 |
+| all | 553 | 674 | 158 | 3 | 191 | 1385 |
 
 ## graph
 
@@ -864,7 +864,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## general
 
 - [ ] **L702** `general` open, M: Cut math-editor.js onload forced layout (calculator panel). From agent-remaining/lag-1103.md. Evidence: `math-editor.js` onload 224ms (forced layout 187ms) and the mathlive keydown 530ms: the calculator panel belongs to the
-- [ ] **L703** `general` open, M: Preprocess images before RapidOCR reads them (ocr.py _rapidocr_lines). From agent-remaining/a31p-1103.md. Evidence: Left: RapidOCR reads are not preprocessed (own detector; ocr.py _rapidocr_lines).
 - [ ] **L704** `general` open, M: Remove the forced style flush in nameMarkBuddyTempo. From agent-remaining/chatspasm-1108.md. Evidence: `nameMarkBuddyTempo` (avatars.js:5580) forced style flush (54-187 ms at 4x, 1 frame in 3.5 s) still appears
 - [ ] **L705** `general` open, M: Remove remaining forced layouts inside the tab flip (timelineScrollToToday, startArt, renderNotesRail). From agent-remaining/lag-1029.md. Evidence: Still forced inside the flip: `timelineScrollToToday` (timeline.js:2431, 43 ms at 4x), `startArt` > `currentAccentHex` (
 - [ ] **L706** `general` open, M: Cut the cost of --nmb-ex/ey/hx writes in nameMarkBuddyAim. From agent-remaining/a30m-1103.md. Evidence: `--nmb-ex/ey/hx` writes on `#nm-buddy` (avatars.js `nameMarkBuddyAim`, about 7389): 109ms at 4x a write (647
@@ -1059,7 +1058,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L980** `world-class` blocked-hardware, L: Provider tests use fake transport; real inference and Windows build unverified. From OPEN.md:3342; a31c-1103.md Not verified. Evidence: CLAUDE.md section 4; needs a real model (pytest -m evals)
 - [ ] **L981** `world-class` blocked-hardware, S: installer.iss ISPP version reader compiles only on Windows. From OPEN.md:3482. Evidence: Needs a Windows CI run or owner's Windows desktop; packaging/windows/installer.iss.
 - [ ] **L982** `world-class` blocked-hardware, M: settings-panes keydown 285 ms, chat pointerover 411 ms, tab clicks 304-352 ms, gcRequestDraw calls. From INBOX.md:1726. Evidence: lag-1110: settings-panes.js:1104 keydown returns on plain key; graph 0 draws in 5 s at 4x; not reproduced off Windows
-- [ ] **L983** `general` blocked-hardware, M: Owner's Windows lag lines not reproduced on Linux: desk overlay hide/show flips, desk window scan counted as invisible, avatars.js 1295 ms timer, settings-panes 285 ms keydown, chat pointerover. From INBOX 1716, 1726. Evidence: Needs the owner's Windows desktop; each line was measured as not reproducing at 4x CPU here
 - [ ] **L-chat-4** `chat` blocked-hardware, M: Desk companion reaction to media playing: needs the Windows audio session; the catalogue refuses an in-app-only entry. From ledger-1112 I17.
 - [ ] **L246** `chat` blocked-hardware, M: A real model's first token replaces a shown composed preview cleanly. The gate on the preview is built (651624f81, `chat_chips.shows_first`) and tested on the fake transport. From ledger-1112 P1. Evidence: `scratchpad/llama-dev.sh serve`, then `pytest -m evals`.
 - [ ] **L282** `whiteboard` blocked-hardware, S: Trackpad pinch rate per gesture in the lightbox needs a real trackpad (preset dropdowns and present page counter are driven and pass). From ledger-1112 I25.

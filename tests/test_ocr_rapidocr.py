@@ -211,3 +211,33 @@ def test_the_routes_say_a_local_reader_is_there(monkeypatch, no_tesseract, clien
     assert ocr_caps["tesseract"] is True and ocr_caps["engine"] == "rapidocr"
     readers = client.get("/ocr-readers").json()
     assert readers["tesseract"] is True and readers["engine"]["engine_name"] == "RapidOCR"
+
+
+def test_a_dark_page_is_inverted_before_rapidocr_reads_it(monkeypatch, no_tesseract, tmp_path):
+    """L703: light text on a dark ground is turned dark on light for RapidOCR,
+    and the prepared copy is removed after the read; a plain page is read as
+    it came."""
+    image = pytest.importorskip("PIL.Image")
+    dark = tmp_path / "dark.png"
+    image.new("RGB", (200, 100), (10, 10, 10)).save(dark)
+    seen: list[tuple[str, int]] = []
+
+    class Peeking(_Reader1):
+        def __call__(self, path):
+            with image.open(path) as img:
+                seen.append((path, img.convert("L").getpixel((5, 5))))
+            return super().__call__(path)
+
+    _install(monkeypatch, "rapidocr_onnxruntime", Peeking)
+    lines = ocr._rapidocr_lines(dark)
+    (read_path, ground), = seen
+    assert read_path != str(dark) and ground > 200
+    assert not Path(read_path).exists()
+    assert lines and lines[0][0][0] == [10.0, 5.0]
+
+
+def test_a_plain_page_is_read_as_it_came(monkeypatch, no_tesseract, page):
+    _Reader1.calls.clear()
+    _install(monkeypatch, "rapidocr_onnxruntime", _Reader1)
+    ocr._rapidocr_lines(page)
+    assert _Reader1.calls == [str(page)]
