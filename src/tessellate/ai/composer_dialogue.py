@@ -289,8 +289,16 @@ _JUST_MADE = lazy_compile(
 )
 
 
-def just_made(question: str) -> FollowOn | None:
-    return FollowOn("what is my newest note", "", "", "subject") if _JUST_MADE.fullmatch((question or "").strip()) else None
+#: A bare "who am I going with" is the line a trip note holds, "Travelling with Sam" (F13 a).
+_GOING_WITH = lazy_compile(r"who am i going with[?.!\s]*", re.I)
+
+
+def said_plainly(question: str) -> FollowOn | None:
+    """A question that needs no turn before it, said as the notes hold it ("what did I just add", "who am I going with")."""
+    text = (question or "").strip()
+    if _JUST_MADE.fullmatch(text):
+        return FollowOn("what is my newest note", "", "", "subject")
+    return FollowOn("who am I travelling with", "", "", "subject") if _GOING_WITH.fullmatch(text) else None
 
 
 _ABOUT_THE_TALK = lazy_compile(r"^\s*(?:thanks|thank you|thx|cheers)\b|\b(?:did|are|were) you\b(?! mean)|\bwhere(?:'d| did) you\b", re.I)
@@ -313,7 +321,7 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
         t for t in (history or [])
         if str(t.get("question") or "").strip() and not question_noise.social_kind(str(t.get("question") or ""))
     ]
-    defining = _defining_ask(question, turns) or just_made(question)
+    defining = _defining_ask(question, turns) or said_plainly(question)
     if defining is not None:
         return defining
     #: "I don't need that" is a reply, not a question about "that" (INBOX 1668 b); "thanks that's

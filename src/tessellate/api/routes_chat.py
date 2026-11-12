@@ -1850,7 +1850,7 @@ def _follow_up(req: _StreamRequest):
     `composer.follow_on`'s; None otherwise."""
     if acts_on_listed_task(req.question, req.history, user_now(deps.get_config())):
         return None  # "tick the first one" is the act on the task the list showed (R9-9), not a follow-on to rewrite
-    composed = (req.body.notes_only and req.body.answer_from == "notes") or not req.ollama.is_running()  # no history needed: `just_made`
+    composed = (req.body.notes_only and req.body.answer_from == "notes") or not req.ollama.is_running()  # no history needed: `said_plainly`
     more = composer.follow_on(req.question, req.history) if composed else None
     if more is not None and more.kind == "more":
         #: A composed "tell me more" is the turn before again at more length,
