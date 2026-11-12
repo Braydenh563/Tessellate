@@ -9299,7 +9299,7 @@ input[type="color"].wb-mixed {
    x 9): the strip above the split keeps the same rail clear as the column
    beside it, only while the Skills view is the one showing. */
 @media (min-width: 600px) and (max-width: 819.98px) {
-  #tab-library:has(> #library-view-skills:not(.hidden)) > #library-subtabs {
+  #tab-library > #library-subtabs:has(~ #library-view-skills:not(.hidden)) {
     padding-left: calc(max(var(--sidebar-toggle-size), var(--target-min)) + 2 * var(--sidebar-toggle-inset));
   }
 }

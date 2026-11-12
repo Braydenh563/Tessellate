@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Map: Tab to a new topic is faster again at 6x CPU on a phone-sized view (140 to 108 ms): the Library's tab strip no longer re-asks the whole tab about every hidden toggle.
 - Security: the claim check reads a document's front matter line by line (the regex was slow on crafted input, CodeQL 2285).
 - Mind map: on a phone, double-clicking a line's bend dot puts the line back again (the first click no longer reaches the canvas and brings the `+` back over the dot).
 - Map: Tab to a new topic is about twice as fast on a phone-sized view (207-235 ms to 107 ms at 6x CPU): a focus change no longer re-checks every action row, grip and line end on the map.
