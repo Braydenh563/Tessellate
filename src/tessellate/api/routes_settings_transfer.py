@@ -418,6 +418,19 @@ def _already_imported(session) -> dict:  # noqa: ANN001
     return known
 
 
+def _directory_import_detail(imported: int, already: int, skipped: int, skipped_oversize: int) -> str:
+    """The activity line a folder import leaves: what came in, what was
+    already in, and what was skipped and why."""
+    detail = f"markdown dir x{imported}"
+    if already:
+        detail += f", {already} already in"
+    if skipped:
+        detail += f", skipped {skipped}"
+        if skipped_oversize:
+            detail += f" ({skipped_oversize} over {MAX_IMPORT_BYTES // (1024 * 1024)} MB)"
+    return detail
+
+
 def _import_directory_files(directory_path: str, run: "jobruns.Run"):
     try:
         p = _validated_import_directory(directory_path)
@@ -519,14 +532,7 @@ def _import_directory_files(directory_path: str, run: "jobruns.Run"):
         #: at all, imported stayed 0 and the whole run vanished silently.
         _link_imported(session, made)
         if imported > 0 or skipped > 0 or already > 0:
-            detail = f"markdown dir x{imported}"
-            if already:
-                detail += f", {already} already in"
-            if skipped:
-                detail += f", skipped {skipped}"
-                if skipped_oversize:
-                    limit_mb = MAX_IMPORT_BYTES // (1024 * 1024)
-                    detail += f" ({skipped_oversize} over {limit_mb} MB)"
+            detail = _directory_import_detail(imported, already, skipped, skipped_oversize)
             manager.log_action(session, "imported", "data", detail=detail)
             session.commit()
             run.result = (
