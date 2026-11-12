@@ -1157,6 +1157,15 @@ function reminderItem(reminder, label) {
     await reminderPutUndoably(reminder.id, checkbox.checked ? "Completed a reminder" : "Reopened a reminder", before, { done: checkbox.checked });
     //: A reminder ticked off: Atlas looks proud (INBOX 742).
     if (checkbox.checked) atlasOn("done");
+    //: What came of it, one line written into the note it is about (L-general-10): offered, never asked.
+    if (checkbox.checked && reminder.entry_id && reminder.target_kind === "note") {
+      toastAction("Reminder done.", "Add outcome", async () => {
+        const text = await promptDialog("What came of it? One line, added to the end of the note.", "", { confirmLabel: "Add" });
+        if (!text?.trim()) return;
+        const added = await apiJson(`/reminders/${reminder.id}/outcome`, { method: "POST", body: JSON.stringify({ text }) }).catch(() => null);
+        toast(added ? "Added to the note." : "Could not add it to the note.");
+      });
+    }
   });
   row.appendChild(checkbox);
 

@@ -796,6 +796,39 @@ def complete_reminder(
     return {**_to_out(session, reminder), "was_due_at": was}
 
 
+class OutcomeBody(BaseModel):
+    text: Annotated[str, Field(min_length=1, max_length=500)]
+
+    @field_validator("text")
+    @classmethod
+    def _words(cls, value: str) -> str:
+        value = " ".join(value.split())
+        if not value:
+            raise ValueError("Write what came of it.")
+        return value
+
+
+@router.post("/{reminder_id}/outcome")
+def reminder_outcome(
+    reminder_id: int, body: OutcomeBody, response: Response, session: Session = Depends(get_session)
+) -> dict:
+    """What came of a reminder, one line at the end of the note it is about
+    (L-general-10), so the note keeps the result and not only the task. Goes
+    through `update_entry`, so a private note needs its space unlocked and
+    the edit is in the note's history like any other."""
+    from tessellate.api import routes_entries
+    from tessellate.api.schemas import EntryUpdate
+
+    reminder = _writable(session, reminder_id)
+    entry = session.get(Entry, reminder.entry_id) if reminder.entry_id is not None else None
+    if entry is None or entry.is_deleted or entry.is_board:
+        raise HTTPException(status_code=400, detail="This reminder is not about a note.")
+    content = readable_content(entry).rstrip()
+    line = f"Outcome of {' '.join(reminder.text.split())}: {body.text}"
+    routes_entries.update_entry(entry.id, EntryUpdate(content=f"{content}\n\n{line}"), response, session, None)
+    return {"entry_id": entry.id, "line": line}
+
+
 @router.post("/{reminder_id}/notification-token")
 def notification_token(reminder_id: int, session: Session = Depends(get_session)) -> dict:
     """A token for this reminder's notification: Done and Snooze for the next
