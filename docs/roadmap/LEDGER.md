@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 26 | 5 | 1 | 5 | 64 |
+| mindmap | 33 | 25 | 5 | 1 | 5 | 63 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 698 | 157 | 3 | 195 | 1408 |
+| all | 553 | 697 | 157 | 3 | 195 | 1407 |
 
 ## graph
 
@@ -466,7 +466,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L377** `mindmap` partly, M: Drive the undriven checks: dark hand-drawn look, tables, Data tab, XMind, multi-page draw.io, callout export (touch double-tap needs hardware). From OPEN.md:589; OPEN.md:2562. Evidence: Dark theme/tables drivable in Playwright; touch double-tap needs touch hardware
 - [ ] **L378** `mindmap` partly, M: Verify remaining map render and persistence leftovers. From OPEN.md:1935. Evidence: wbMapNodeSize row closed per HISTORY; rest of list not individually verified
 - [ ] **L379** `mindmap` partly, M: Name and finish the two remaining mind map leftover items. From OPEN.md:2388. Evidence: Four of six items done per row; remaining two not named in the first lines read
-- [ ] **L-mindmap-1** `mindmap` open, S: Save a custom mind map theme for reuse. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:491. Evidence: wbMapThemeDialog (whiteboard-map.js:1038) has no save action; untracked
 - [ ] **L-mindmap-2** `mindmap` open, M: Show equations and code blocks inside map topics. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:510. Evidence: map topics render plain text only; no plan or LEDGER row
 - [ ] **L-mindmap-7** `mindmap` open, S: Make Web link insert inline syntax distinct from Link card. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1526. Evidence: Open line in the plan's prose a session could miss. The slash menu's Link card and Web link render the same. The inline-syntax recommendation waits on the owner.
 - [ ] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row.

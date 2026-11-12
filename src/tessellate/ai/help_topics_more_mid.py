@@ -1152,7 +1152,7 @@ MID_TOPICS.extend(
                 "the Text menu's Icon row has eleven, and More icons and emoji… "
                 "opens every Phosphor icon and about 470 emoji, searchable, with "
                 "your recent ones first; an emoji or an icon, one per topic. How this map looks, Colour every level, "
-                "gives each depth its own colour, and Show a legend draws the branch colours and the markers in use."
+                "gives each depth its own colour, and Show a legend draws the branch colours and the markers in use. Save this look there names a map's whole look to apply to another map."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

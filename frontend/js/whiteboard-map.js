@@ -1081,6 +1081,63 @@ function wbMapThemeDialog() {
   body.append(scope, rows);
   show("map");
 
+  //: **Saved looks** (L-mindmap-1): the whole theme under a name, kept in `prefs` like the rest of what the board remembers about looking (a look is a preference, not a map's content, so it needs no migration and follows the device). Applying one is a single theme patch, so it is one Undo step; keys the saved look never set are cleared so the map ends up exactly as saved. The server drops anything it does not know, so a look from a newer build degrades instead of failing.
+  const looksKey = "wb-map-saved-looks";
+  const readLooks = () => prefs.json(looksKey, {});
+  const looks = document.createElement("div");
+  looks.className = "wb-menu-row wb-map-theme-row wb-map-theme-looks";
+  const looksName = document.createElement("span");
+  looksName.textContent = "Saved looks";
+  const looksSelect = document.createElement("select");
+  looksSelect.className = "ghost small";
+  looksSelect.setAttribute("aria-label", "Apply a saved look to this map");
+  const fillLooks = (picked = "") => {
+    const saved = Object.keys(readLooks());
+    looksSelect.replaceChildren(...[["", saved.length ? "Choose one to apply" : "None saved yet"], ...saved.map((n) => [n, n])].map(([value, label]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      return option;
+    }));
+    looksSelect.value = saved.includes(picked) ? picked : "";
+    forgetLook.disabled = !looksSelect.value;
+  };
+  const saveLook = smallButton("ph:floppy-disk Save this look", "Keep this map's look under a name, to apply to another map", async () => {
+    const name = String((await promptDialog("What should this look be called?", "", { confirmLabel: "Save the look" })) ?? "").trim().slice(0, 40);
+    if (!name) return;
+    const saved = readLooks();
+    if (!(name in saved) && Object.keys(saved).length >= 20) {
+      toast("Twenty saved looks is the most: forget one first.", "info");
+      return;
+    }
+    saved[name] = JSON.parse(JSON.stringify(wbMapTheme()));
+    if (!prefs.setJSON(looksKey, saved)) { toast("This browser would not keep the look.", "info"); return; }
+    fillLooks(name);
+    toast(`Saved the look "${name}".`);
+  });
+  const forgetLook = smallButton("ph:trash Forget", "Remove the chosen saved look (maps that use it keep their look)", () => {
+    const saved = readLooks();
+    const name = looksSelect.value;
+    if (!(name in saved)) return;
+    delete saved[name];
+    prefs.setJSON(looksKey, saved);
+    fillLooks();
+  });
+  looksSelect.addEventListener("change", async () => {
+    forgetLook.disabled = !looksSelect.value;
+    const look = readLooks()[looksSelect.value];
+    if (!look) return;
+    const patch = Object.fromEntries(Object.keys(wbMapTheme()).map((key) => [key, null]));
+    if (await wbMapSetTheme({ ...patch, ...look })) {
+      scopeSelect.value = "map";
+      show("map");
+      toast(`Applied the look "${looksSelect.value}".`);
+    }
+  });
+  fillLooks();
+  looks.append(looksName, looksSelect, saveLook, forgetLook);
+  body.insertBefore(looks, body.children[1]);
+
   const foot = document.createElement("div");
   foot.className = "row wb-map-theme-foot";
   const reset = smallButton(
