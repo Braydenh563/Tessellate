@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 100 | 4 | 0 | 17 | 200 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 26 | 2 | 0 | 4 | 28 |
-| all | 553 | 685 | 160 | 3 | 195 | 1398 |
+| general | 0 | 25 | 2 | 0 | 4 | 27 |
+| all | 553 | 684 | 160 | 3 | 195 | 1397 |
 
 ## graph
 
@@ -888,7 +888,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-41** `general` open, L: An in-app browser with MCP tool abilities beside web search. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; the stdio MCP server is the other direction. Verify in code first.
 - [ ] **L-general-42** `general` open, L: A VS Code extension. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-43** `general` open, S: Check filing of short notes against the notebook's categories. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open: 'ai is cool' was filed under sketches. Verify in code first.
-- [ ] **L-general-44** `general` open, S: Check docs/index.html's text against the README. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-45** `general` open, M: A dry run for the background librarian: show the diff, apply or discard. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md From the audits: taskhistory records runs; there is no diff to apply or discard. Verify in code first.
 
 ## Owner calls
