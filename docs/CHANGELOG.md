@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the diagram builder at 390 re-measured (dock in 152 ms, five Tab stops to the first block, a tap does not scroll the dock, targets 44 px but the zoom readout, now 44 on a touch screen) (L-documents-15)
 - Documents: the diagram builder's dock is one row at 320 px as at 390 (62 px tall, was 110; the kind button drops its caret and the dock its side padding at 360 px or less), every target 44 px; measured on a flowchart, mind map, timeline and sequence
 - Documents: a reply in a comment thread can be reworded or deleted (Undo brings it back), and a resolved thread can still be replied to (L318)
 - Documents: Word export writes a binomial as a bracketed fraction with no bar, a matrix as a Word matrix inside its brackets, and an accent as a Word accent (L324, L325)

@@ -2562,6 +2562,14 @@
   font-size: var(--text-sm);
 }
 
+/* A touch screen's zoom readout is a 44 px target too (it measured 42 x 54 at 390: its 3 characters and padding). */
+@media (pointer: coarse) {
+  .dgm-zoom .dgm-zoom-level .value-field-input {
+    min-inline-size: 2.75rem;
+    box-sizing: border-box;
+  }
+}
+
 /* Find (diagram-multi.js, quick ways): a small dock at the picture's top corner; a found box is ringed dashed. */
 .dgm-find {
   position: absolute;
