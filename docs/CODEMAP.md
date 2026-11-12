@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8359, frontend ids 2772, CSS sections 524, backend routes 698, backend modules 10763, test files 2676, tests 21872, plan headings 687, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8359, frontend ids 2772, CSS sections 524, backend routes 698, backend modules 10763, test files 2676, tests 21873, plan headings 687, app scripts 29, boot scripts 38, script files 301.
 
 ## Frontend functions (8359)
 
@@ -8322,22 +8322,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `addLoop` | frontend/js/whiteboard-draw-more.js:90 |
 | `bindLabel2Rows` | frontend/js/whiteboard-draw-more.js:189 |
 | `bindLoopRow` | frontend/js/whiteboard-draw-more.js:135 |
-| `bindPortEditor` | frontend/js/whiteboard-draw-more.js:379 |
-| `bindPortsRows` | frontend/js/whiteboard-draw-more.js:349 |
+| `bindPortEditor` | frontend/js/whiteboard-draw-more.js:385 |
+| `bindPortsRows` | frontend/js/whiteboard-draw-more.js:354 |
 | `clean` | frontend/js/whiteboard-draw-more.js:26 |
-| `editChosenPort` | frontend/js/whiteboard-draw-more.js:339 |
+| `editChosenPort` | frontend/js/whiteboard-draw-more.js:342 |
 | `editPorts` | frontend/js/whiteboard-draw-more.js:261 |
 | `entityStops` | frontend/js/whiteboard-draw-more.js:35 |
 | `fillPortFields` | frontend/js/whiteboard-draw-more.js:311 |
-| `frameOf` | frontend/js/whiteboard-draw-more.js:445 |
+| `frameOf` | frontend/js/whiteboard-draw-more.js:451 |
 | `isometricStops` | frontend/js/whiteboard-draw-more.js:54 |
 | `label2T` | frontend/js/whiteboard-draw-more.js:149 |
 | `layoutLabel2` | frontend/js/whiteboard-draw-more.js:154 |
-| `linkWords` | frontend/js/whiteboard-draw-more.js:451 |
+| `linkWords` | frontend/js/whiteboard-draw-more.js:457 |
 | `loopSegs` | frontend/js/whiteboard-draw-more.js:83 |
-| `nameBeside` | frontend/js/whiteboard-draw-more.js:427 |
+| `nameBeside` | frontend/js/whiteboard-draw-more.js:433 |
 | `outlineNear` | frontend/js/whiteboard-draw-more.js:223 |
-| `pageLinkItem` | frontend/js/whiteboard-draw-more.js:457 |
+| `pageLinkItem` | frontend/js/whiteboard-draw-more.js:463 |
 | `paintLabel2` | frontend/js/whiteboard-draw-more.js:164 |
 | `portWords` | frontend/js/whiteboard-draw-more.js:306 |
 | `rawPorts` | frontend/js/whiteboard-draw-more.js:301 |
@@ -27712,7 +27712,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21872)
+## Tests (21873)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30296,7 +30296,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_place_box.py | 5 |
 | tests/test_wb_place_ghost.py | 2 |
 | tests/test_wb_ports.py | 7 |
-| tests/test_wb_ports_drawio.py | 13 |
+| tests/test_wb_ports_drawio.py | 14 |
 | tests/test_wb_ports_more.py | 14 |
 | tests/test_wb_present_picker_open.py | 2 |
 | tests/test_wb_prune_selection.py | 4 |

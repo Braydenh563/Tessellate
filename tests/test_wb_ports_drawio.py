@@ -219,3 +219,14 @@ def test_add_starts_the_outline_editor_and_clearing_perimeter_drops_the_key():
     )
     assert got["said"] == 1
     assert got["saves"][0][1][1] == {"x": 1, "y": 0.5, "dx": 4}
+
+
+def test_port_edits_queue_so_none_is_lost():
+    """A nudge's change fires on blur as On outline is pressed: two saves in flight shared one Undo step and the
+    later PATCH could land first and lose the edit (sweep wbports-offsets.js, 2026-11-12). Edits queue, and a
+    nudge to the value already stored saves nothing."""
+    src = (ROOT / "frontend" / "js" / "whiteboard-draw-more.js").read_text(encoding="utf-8")
+    body = src[src.index("function editChosenPort(") : src.index("function bindPortsRows(")]
+    assert "portQueue = portQueue.then(" in body
+    assert "change(q, ports) === false" in body
+    assert "if ((Number(q[key]) || 0) === n) return false;" in src

@@ -335,15 +335,20 @@
     fillPortFields(ports[portRow.i]);
   }
 
-  //: One edit of the chosen point: `change(port, ports)` may change it or the list; the list is saved in one step.
-  async function editChosenPort(change, said) {
-    const target = wbSwapTarget();
-    if (!target) return;
-    const ports = rawPorts(target);
-    const q = ports[Math.max(0, Math.min(ports.length - 1, portRow.i))];
-    if (!q) return;
-    change(q, ports);
-    await savePorts(target.item, ports, said);
+  //: One edit of the chosen point: `change(port, ports)` may change it or the list (false: nothing changed); the list is
+  //: saved in one step. Edits queue behind each other: a nudge's change fires on blur as the next control is pressed, and
+  //: two saves in flight shared one Undo step and could land out of order, losing the second (sweep wbports-offsets.js).
+  let portQueue = Promise.resolve();
+  function editChosenPort(change, said) {
+    portQueue = portQueue.then(async () => {
+      const target = wbSwapTarget();
+      if (!target) return;
+      const ports = rawPorts(target);
+      const q = ports[Math.max(0, Math.min(ports.length - 1, portRow.i))];
+      if (!q || change(q, ports) === false) return;
+      await savePorts(target.item, ports, said);
+    }).catch((error) => console.error(error));
+    return portQueue;
   }
 
   function bindPortsRows() {
@@ -368,6 +373,7 @@
       field(`wb-fmt-port-${key}`)?.addEventListener("change", (e) => {
         const n = Math.round(Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, Number(e.target.value) || 0)) * 100) / 100;
         return editChosenPort((q) => {
+          if ((Number(q[key]) || 0) === n) return false;
           if (n) q[key] = n; else delete q[key];
         }, `Connection point moved ${n} pixels ${key === "dx" ? "across" : "down"}.`);
       });
