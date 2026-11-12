@@ -128,4 +128,5 @@ const positions = {};
 scenario.nodes.forEach((n, i) => {
   positions[n.id] = [last[i * 2], last[i * 2 + 1]];
 });
-process.stdout.write(JSON.stringify({ positions, firstAlpha, framed, introTicks, firstIntroAlpha, settled, endedAt }));
+const untangled = vm.runInContext("({ total: untangle.total, gain: untangle.gain, passes: untangle.passes })", sandbox);
+process.stdout.write(JSON.stringify({ untangled, positions, firstAlpha, framed, introTicks, firstIntroAlpha, settled, endedAt }));

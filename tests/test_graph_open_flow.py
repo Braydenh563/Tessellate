@@ -142,7 +142,7 @@ def test_less_motion_gets_the_settled_map_as_its_one_and_only_frame() -> None:
     assert "const deadline = pending.open && !still ? pending.from + WARM_MS : 0;" in step
     # No pass is begun that would leave the cleanup no time before the cap.
     settle = _fn("settleUntangled")
-    assert "if (cap && Date.now() + 2 * untangleBudget() > cap) {" in settle
+    assert "if ((cap && Date.now() + 2 * untangleBudget() > cap) || nodes.length > UNTANGLE_PASS_NOTES) {" in settle  # and none past 1,000 notes
     assert settle.index("2 * untangleBudget() > cap") < settle.index("untangleCleanupSteps()")
 
 

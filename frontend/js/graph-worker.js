@@ -2402,6 +2402,11 @@ const UNTANGLE_PASSES = 3;
 const UNTANGLE_BIG = 100;
 const UNTANGLE_BIG_PASSES = 2;
 const UNTANGLE_MIN_SHARE = 0.03;
+//: **Past `UNTANGLE_PASS_NOTES` the passes are skipped and only the cleanup
+//: runs** (W34 "Incremental crossing count"): three passes of 600 ms took 1.2%
+//: of the crossings at 1,200 notes and 0.5% at 2,000 (`scratchpad/hub/size.py`),
+//: most of it counting crossings, against 3.2% at 800 and 8.6% at 500.
+const UNTANGLE_PASS_NOTES = 1000;
 function untanglePasses() {
   return nodes.length > UNTANGLE_BIG ? UNTANGLE_BIG_PASSES : UNTANGLE_PASSES;
 }
@@ -2487,6 +2492,11 @@ function crossingsOn(mine) {
     ys[i] = nodes[i].y;
   }
   for (const i of mine) mark[i] = 1;
+  if (mine.length >= CROSS_GRID_MIN && count0 >= CROSS_GRID_MIN * 4) {
+    const count = crossingsGridded(mine, mark);
+    for (const i of mine) mark[i] = 0;
+    return count;
+  }
   let count = 0;
   for (const i of mine) {
     const a = ea[i];
@@ -2518,12 +2528,146 @@ function crossingsOn(mine) {
   return count;
 }
 
+//: **Many lines at once are counted through a grid** (W34 "Incremental crossing count"). The count already
+//: takes only pairs with a line in `mine`, but it read every line of the map for each of them: a category
+//: turn at 2,000 notes is about 1,000 lines by 3,800, and `crossingsOn` was 587 ms of a 2.6 s settle under
+//: node (96% of the untangle pass). Past `CROSS_GRID_MIN` lines, every line goes into the cells of a
+//: `CROSS_GRID` square grid its box touches (a line over `CROSS_GRID_SPAN` cells a side goes on a short list
+//: read by all), and each line of `mine` reads only the lines in its own cells, once each (`stamp`). The
+//: pairs and the test are the brute loop's, so the count is the same (tests/test_graph_crossings_grid.py).
+const CROSS_GRID_MIN = 16;
+const CROSS_GRID = 48;
+const CROSS_GRID_SPAN = 12;
+const crossGrid = { start: null, items: null, long: null, stamp: null, seen: 0 };
+function crossingsGridded(mine, mark) {
+  const ea = untangle.ea;
+  const eb = untangle.eb;
+  const xs = untangle.xs;
+  const ys = untangle.ys;
+  const count0 = ea.length;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (let i = 0; i < nodes.length; i++) {
+    if (xs[i] < minX) minX = xs[i];
+    if (xs[i] > maxX) maxX = xs[i];
+    if (ys[i] < minY) minY = ys[i];
+    if (ys[i] > maxY) maxY = ys[i];
+  }
+  const G = CROSS_GRID;
+  const sx = G / Math.max(1e-9, maxX - minX);
+  const sy = G / Math.max(1e-9, maxY - minY);
+  const cellX = (x) => Math.min(G - 1, Math.max(0, Math.floor((x - minX) * sx)));
+  const cellY = (y) => Math.min(G - 1, Math.max(0, Math.floor((y - minY) * sy)));
+  if (!crossGrid.start || crossGrid.start.length !== G * G + 1) crossGrid.start = new Int32Array(G * G + 1);
+  if (!crossGrid.stamp || crossGrid.stamp.length !== count0) {
+    crossGrid.stamp = new Int32Array(count0);
+    crossGrid.seen = 0;
+  }
+  const start = crossGrid.start;
+  start.fill(0);
+  const long = [];
+  const box = new Int32Array(count0 * 4);
+  let total = 0;
+  for (let j = 0; j < count0; j++) {
+    const ax = xs[ea[j]];
+    const bx = xs[eb[j]];
+    const ay = ys[ea[j]];
+    const by = ys[eb[j]];
+    const x0 = cellX(Math.min(ax, bx));
+    const x1 = cellX(Math.max(ax, bx));
+    const y0 = cellY(Math.min(ay, by));
+    const y1 = cellY(Math.max(ay, by));
+    box[j * 4] = x0;
+    box[j * 4 + 1] = x1;
+    box[j * 4 + 2] = y0;
+    box[j * 4 + 3] = y1;
+    if (x1 - x0 >= CROSS_GRID_SPAN || y1 - y0 >= CROSS_GRID_SPAN) {
+      long.push(j);
+      box[j * 4] = -1;
+      continue;
+    }
+    for (let gy = y0; gy <= y1; gy++) for (let gx = x0; gx <= x1; gx++) start[gy * G + gx + 1] += 1;
+    total += (x1 - x0 + 1) * (y1 - y0 + 1);
+  }
+  for (let c = 1; c <= G * G; c++) start[c] += start[c - 1];
+  if (!crossGrid.items || crossGrid.items.length < total) crossGrid.items = new Int32Array(Math.max(total, count0 * 2));
+  const items = crossGrid.items;
+  const fill = start.slice(0, G * G);
+  for (let j = 0; j < count0; j++) {
+    if (box[j * 4] < 0) continue;
+    for (let gy = box[j * 4 + 2]; gy <= box[j * 4 + 3]; gy++) {
+      for (let gx = box[j * 4]; gx <= box[j * 4 + 1]; gx++) items[fill[gy * G + gx]++] = j;
+    }
+  }
+  const stamp = crossGrid.stamp;
+  let count = 0;
+  const pair = (i, j, a, b, ax, ay, bx, by, loX, hiX, loY, hiY) => {
+    if (j === i) return 0;
+    const c = ea[j];
+    const d = eb[j];
+    if (c === a || c === b || d === a || d === b) return 0;
+    if (j < i && mark[j]) return 0;
+    const cx = xs[c];
+    const cy = ys[c];
+    const dx = xs[d];
+    const dy = ys[d];
+    if ((cx < loX && dx < loX) || (cx > hiX && dx > hiX) || (cy < loY && dy < loY) || (cy > hiY && dy > hiY)) return 0;
+    return segmentsCross(ax, ay, bx, by, cx, cy, dx, dy) ? 1 : 0;
+  };
+  for (const i of mine) {
+    if (++crossGrid.seen >= 0x7fffffff) {
+      stamp.fill(0);
+      crossGrid.seen = 1;
+    }
+    const seen = crossGrid.seen;
+    const a = ea[i];
+    const b = eb[i];
+    const ax = xs[a];
+    const ay = ys[a];
+    const bx = xs[b];
+    const by = ys[b];
+    const loX = Math.min(ax, bx);
+    const hiX = Math.max(ax, bx);
+    const loY = Math.min(ay, by);
+    const hiY = Math.max(ay, by);
+    if (box[i * 4] < 0) {
+      // A long line meets lines anywhere: it reads them all, as the brute loop does.
+      for (let j = 0; j < count0; j++) count += pair(i, j, a, b, ax, ay, bx, by, loX, hiX, loY, hiY);
+      continue;
+    }
+    for (const j of long) {
+      stamp[j] = seen;
+      count += pair(i, j, a, b, ax, ay, bx, by, loX, hiX, loY, hiY);
+    }
+    for (let gy = box[i * 4 + 2]; gy <= box[i * 4 + 3]; gy++) {
+      for (let gx = box[i * 4]; gx <= box[i * 4 + 1]; gx++) {
+        const cell = gy * G + gx;
+        for (let k = start[cell]; k < start[cell + 1]; k++) {
+          const j = items[k];
+          if (stamp[j] === seen) continue;
+          stamp[j] = seen;
+          count += pair(i, j, a, b, ax, ay, bx, by, loX, hiX, loY, hiY);
+        }
+      }
+    }
+  }
+  return count;
+}
+
 //: A whole category turns or mirrors about its middle when that lowers the
 //: crossings on its lines: its links out then face the categories they join.
 const UNTANGLE_TURN_STEPS = 8;
 //: Within the pass's budget (`until`, audit 1029 row 35): each turn counts the
 //: crossings on all of a category's lines, and at 2,000 notes the 10 x 16
 //: turns took 7.2 s in one call against a budget of 0.6 s.
+//: **A turn only where it can pay** (W34 "Incremental crossing count"): past
+//: `UNTANGLE_TURN_LINES` lines a category's turn never won (gain 0 at 500,
+//: 800, 1,200 and 2,000 notes, `scratchpad/hub/size.py`) and each try counted
+//: every line it touches, most of the pass's budget at 2,000 notes. Such a
+//: category is left to the per-note moves.
+const UNTANGLE_TURN_LINES = 160;
 function* untangleGroupsSteps(still, until = Infinity) {
   const groups = new Map();
   nodes.forEach((node, i) => {
@@ -2537,7 +2681,7 @@ function* untangleGroupsSteps(still, until = Infinity) {
     if (sliceOver()) yield;
     if (members.length < 2) continue;
     const lines = [...new Set(members.flatMap((i) => untangle.incident[i]))];
-    if (!lines.length) continue;
+    if (!lines.length || lines.length > UNTANGLE_TURN_LINES) continue;
     const x0 = members.map((i) => nodes[i].x);
     const y0 = members.map((i) => nodes[i].y);
     const cx = x0.reduce((a, b) => a + b, 0) / members.length;
@@ -3634,7 +3778,7 @@ function settleUntangled(until, deadline, cap) {
   while (untangle.run || !untangle.done || (untangle.passes > 0 && untangle.passes < untanglePasses())) {
     if (!untangle.run) {
       if (late()) return "late";
-      if (cap && Date.now() + 2 * untangleBudget() > cap) {
+      if ((cap && Date.now() + 2 * untangleBudget() > cap) || nodes.length > UNTANGLE_PASS_NOTES) {
         untangle.done = true;
         untangle.passes = UNTANGLE_PASSES;
         break;

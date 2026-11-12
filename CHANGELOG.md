@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: big maps settle faster and untangle better. A category turn past 160 lines is skipped (it never won), the passes stop past 1,000 notes, and crossings are counted on a grid of lines: untangle gain at 500 notes 0% to 8.6%, 2,000-note settle under node 5.7 s to 3.4 s.
 - Graph: removed the dead hidden graph-svg element with its click handlers, styles, lock-list entries and motion and avatar selectors.
 - Graph: document and entity nodes join centrality and the trace path (`include_documents`/`include_entities` on /graph, `documents`/`entities` on /graph/path, ids `document:N`/`entity:N`).
 - Graph hover: the note card fills once the pointer rests (120 ms) instead of on every note crossed; hover p50 about 47 to 34 ms at 500 notes and 4x CPU, the highlight unchanged.
