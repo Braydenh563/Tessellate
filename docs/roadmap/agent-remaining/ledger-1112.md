@@ -49,20 +49,20 @@
 - X13 (M): C35 citation bracket (composer spoke) and remaining rows not individually closed
 
 ### Cp1
-- I17 (M): stand-loop drift, floater breath, media-playing reaction (life-1109.md:75 c)
-- P6 (M): no snap-per-ten-minutes budget or reaction-row code in avatars.js or atlas-*.js
-- P7 (S): nameMarkBuddyDodge (avatars.js:4205) has no glance step; no milestone cheer or count
-- P36 (S): one Playwright drive of atlas.js charactersArrived fix
-- X8 (M): thinking-dots reads in B55, throw-landing walk, opening-view appendChild 92-144 ms (INBOX 1726), unverified in browser
+- I17 (M): **Fixed a7e56bda1** (with 26092ac88). Stand-loop drift and floater breath were already built (E3: `STAND_LEAN`, `_stand_breath`, `drift_phase` on vitals); the round-count cheer now runs on both sides. Left: the media-playing reaction, **blocked-hardware**: it needs the Windows audio session (an in-app half alone is refused by the catalogue's one-sided lint)
+- P6 (M): **Fixed 26092ac88** (reaction budget of four a minute, `NMB_REACT_BUDGET`; measured in a browser: 0 snaps in 600 s, 21 distinct motions, 35 to 44 ms reaction latency)
+- P7 (S): **Fixed 26092ac88** (glance before the dodge, `milestone` row) and a7e56bda1 (the desk cheers too)
+- P36 (S): **Verified, no code change needed** (2026-11-12 drive with the character scripts held 9 s: 4 saved assistant turns had 0 avatar children while `charactersLoaded` was false, then 3 resting plus 1 live Atlas and 0 empty holders)
+- X8 (M): **Fixed 42e037951** (the large view's fit reads a part's style only when it reaches past the counted box: 455 style reads to 10). The other hot spots were driven at 4x throttle and did not reproduce above 50 ms
 
 ### Cp1, Cp2
-- X18 (L): W31 E1 to E6 not started (E4 waits for owner); Brief 88 N8, N10 open; desk parts need Windows checks
+- X18 (L): **Fixed 26092ac88, a7e56bda1**. E1, E2, E3, E5, E6 were already built (OPEN.md:291-296); N8 and N10 are built on both sides; N9 is covered by `typing_burst`. E4 is the owner-call (O37). The desk looks are fake-transport tests only, not seen on real Windows
 
 ### Cp2
-- I12 (L): Opus design pass, new travel art (B65 L9), real-Windows look unverified. Built: E1,E2,E3,E5,E6
-- I21 (L): hold still, carry over, catch mid-air, tail pull, toss up, pointer chase (no code hit); drag skid only in companion-throw.js
-- O16 (M): L9 new travel art (design work). L10 hop chain done
-- O37 (M): E4 masculine Atlas head/eyes/shoulder join owner-call (OPEN:294)
+- I12 (L): **Left, owner-call and a human rater**: the travel art redraw (B65 L9) is design work whose look only the owner can judge on Windows. E1, E2, E3, E5, E6 are built; E4 is O37
+- I21 (L): **Partly, Fixed 05b51746d** for catch mid-air (`caught`, both sides; driven in a browser: a click on a flight, the reaction on the landing 1.9 s later). Left, **needs new art and a human rater**: hold still (legs dangle), carry over, tail pull, drag skid, toss up, pointer chase. Each needs frames the desk does not ship, and the catalogue refuses a one-sided act
+- O16 (M): **Left, owner-call and a human rater**: L9 new travel art is a redraw judged by eye on Windows; L10 hop chain was done earlier
+- O37 (M): **Left, owner-call** (OPEN.md:294, w34-L1-1111.md): the masculine Atlas head, eyes and shoulder join wait for the owner's pick
 
 ### Da1
 - I8 (L): 380ms style-and-layout first frame (13k nodes); dashboard.js widget fill callbacks 98-119ms (lag-1111.md:8,16 Not fixed). Done: named timers, heatmap scroll reads, resize observer

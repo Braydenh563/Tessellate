@@ -257,7 +257,7 @@ Decisions: (a) a prop or icon on Atlas (`atlasPropsFrame`, atlas-life.js; the pr
 
 ### Brief 88 continues: behaviours ranked by value over cost (INBOX 1581, 2026-11-03)
 
-**E19 2026-11-10: true, batch W31.** N1 to N7 built (HISTORY, "Moved from the plans, 2026-11-03 (a31b-1103)"). N8 open: `nameMarkBuddyDodge` (`frontend/js/avatars.js:4155`) has no glance before it steps aside. N10 open: no milestone cheer or count in the companion files. N9 not checked.
+**E19 2026-11-10: true, batch W31.** N1 to N7 built (HISTORY, "Moved from the plans, 2026-11-03 (a31b-1103)"). N8 built 26092ac88 (`nameMarkBuddyDodge.glance`, avatars.js). N10 built 26092ac88 and a7e56bda1 (`NMB_MILESTONES`, the `milestone` row, `companion_events.counted` for the desk). N9 is covered by the `typing_burst` nod (a stretch was not built).
 
 The owner: "is there more behaviour and npc improvements we can add". Read against what runs first: a saved note (`nameMarkBuddyCue("carry")`, `atlasOn("saved")`), the streak, a long silence (drowsy at 3 min, asleep at 8, boredom wander, a wave on return), pointer attention (`nameMarkBuddyNotice`), the open view (`nameMarkBuddyGlanceAtPage`), card-edge perches, the peek under the top bar and behind the bottom bar, pokes (five pools, grumpy, pout) and a drag (flip, throw) all exist. Every row: no `pointer-events`, never while a field is typed in (waits 1.5 s, dropped after four tries), transform and opacity only on the existing timers, nothing under `data-motion="reduced"`, layout read once per act at most; behind Settings, Companion, What it does, "Little habits and reactions" (`habits`).
 
@@ -265,9 +265,9 @@ N1 to N7 built: HISTORY.md, "Moved from the plans, 2026-11-03 (a31b-1103: INBOX 
 
 | # | Behaviour | What exists | Cost | State |
 | --- | --- | --- | --- | --- |
-| N8 | A menu or dialog opening: a glance at it before it steps aside | it steps aside (`nameMarkBuddyDodge`) | S | open |
+| N8 | A menu or dialog opening: a glance at it before it steps aside | `nameMarkBuddyDodge.glance` | S | built 26092ac88 |
 | N9 | A long writing run ends (a minute of typing, then a pause): a stretch | a nod while typing fast | S | open |
-| N10 | Milestones (the 10th, 100th note): a cheer, and Atlas's cast | none; needs the count | M | open |
+| N10 | Milestones (the 10th, 100th note): a cheer, and Atlas's cast | the `milestone` row; desk `note_milestone` | M | built 26092ac88, a7e56bda1 |
 
 ## Brief 89 (Sonnet): Add tags on lightly tagged notes (INBOX 836)
 
