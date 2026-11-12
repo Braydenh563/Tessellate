@@ -75,7 +75,8 @@ def test_a_press_on_a_kind_puts_focus_back_on_the_kind_bar():
 def test_the_door_opens_on_a_drawn_starter_with_its_first_box_selected_and_clear_in_the_menu():
     # DD-3b: the blank walkthrough was a lesson next to an empty picture.
     door = MERMAID[MERMAID.index("async function diagramDoor") : MERMAID.index("diagramModel.starter =")]
-    assert door.count("source: diagramModel.starter") == 2
+    #: Intent moved (R12, owner 2026-11-12): a text box asks first and New diagram opens an empty builder; the starter stays for the palette door.
+    assert door.count("source: diagramModel.starter") == 1 and door.count('source: "",') == 1
     assert 'source: "flowchart TD"' not in door
     assert 'makeMenuItem("ph:eraser Clear"' in EMBED
     assert "diagramModel.builder.select(S, firstBox.dataset.key, true)" in EMBED

@@ -1926,6 +1926,11 @@
     min-inline-size: 2.75rem;
     inline-size: auto;
   }
+
+  /* Key hints are for a keyboard (R12): a touch screen's foot is Cancel and Done; ? and the ... menu still list the keys. */
+  .dgm-keychip {
+    display: none;
+  }
 }
 
 /* The two layouts of the one view (R7, 1621 D6). Blocks is the list at its old width with the picture beside it. Canvas

@@ -1359,10 +1359,10 @@ async function wbDiagramSize(source) {
   return { width: Math.round(w), height: Math.round(Math.max(40, w / ratio)) };
 }
 
-async function wbInsertDiagram(source) {
+async function wbInsertDiagram(source, diagramId = null) {
   const [cx, cy] = wbViewCentre();
   const { width, height } = await wbDiagramSize(source);
-  const made = await wbCreateObject("diagram", { mermaid: source }, cx - width / 2, cy - height / 2, width, height);
+  const made = await wbCreateObject("diagram", { mermaid: source, ...(diagramId ? { diagram_id: diagramId } : {}) }, cx - width / 2, cy - height / 2, width, height);
   if (!made) return null;
   clearWbSelection();
   wbHandleItemClick("object", made.id, { shiftKey: false });
@@ -1372,9 +1372,18 @@ async function wbInsertDiagram(source) {
 
 //: Insert opens the builder on a sample; a double-click opens it on an item (1546 D6: the one block
 //: editor, in a dialog; the textarea dialog this was is gone). Done saves, Cancel changes nothing.
-function wbEditDiagram(d = null) {
+async function wbEditDiagram(d = null) {
+  //: Insert asks first (R12, owner 2026-11-12): a diagram already made lands linked to its document at once, "New diagram" opens the empty builder.
+  if (!d) {
+    const pick = await chooseDiagram({ verb: "Insert" });
+    if (!pick) return;
+    if (pick !== true) {
+      const row = await apiJson(`/documents/${pick.id}`).catch(() => null);
+      return row ? wbInsertDiagram(String(row.content || "").trim(), pick.id) : toast("That diagram did not open. Try again.", "info");
+    }
+  }
   openDiagramBuilder({
-    source: d?.data?.mermaid || diagramModel.starter,
+    source: d?.data?.mermaid || "",
     title: d ? "Edit diagram" : "Diagram builder",
     draft: d ? `board:${d.id}` : "board-new",
     shapes: d ? (source) => (wbMermaidKind(source) ? wbDiagramToShapes(d, source) : toast("Shapes cover flowchart, state, class and sequence diagrams.")) : null,

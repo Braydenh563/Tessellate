@@ -38,7 +38,8 @@
     return both;
   }
 
-  const PURPOSE = "Your blocks, in the order the chart flows. Tab on the last adds a box. F6 leaves the blocks.";
+  //: Key hints are for a keyboard; a touch screen is told what a tap does (R12).
+  const PURPOSE = `Your blocks, in the order the chart flows. ${matchMedia("(pointer: coarse)").matches ? "Tap one to find it in the picture." : "Tab on the last adds a box. F6 leaves the blocks."}`;
   //: A touch screen has no double-click and often no Enter (dgbt-1109 3: the sheet said "Double-click" on a phone).
   const touch = () => matchMedia("(pointer: coarse)").matches;
   const LABEL_WORDS = () => (touch() ? "Double-tap the name to rename it." : "Double-click the name, or press Enter, to rename it.");

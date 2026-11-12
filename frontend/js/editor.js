@@ -1699,6 +1699,31 @@ function editorRunItem(position) {
   }
 }
 
+//: The `[[` list opens on notes alone and gains documents and files a moment later; an empty first list closes the menu, so the
+//: late arrival reopens it while the token is still under the caret (the Embed row opened it with nothing cached: bare `![[`, R12).
+function editorWarmLinkCaches() {
+  const again = () => {
+    if (editorMenuState.open) editorRefreshMenu();
+    else if (editorMenuState.trigger === "[[" && editorMenuState.textarea && editorTokenAt(editorMenuState.textarea, "[[")) editorOpenMenu(editorMenuState.textarea, "[[");
+  };
+  if (editorDocumentCache === null) {
+    editorDocumentCache = [];
+    //: Paged to the end: a document missing from this list is a `[[link]]` the menu cannot offer, silently.
+    apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
+      .then((docs) => {
+        editorDocumentCache = Array.isArray(docs) ? docs : [];
+        again();
+      })
+      .catch(() => {
+        editorDocumentCache = [];
+      });
+  }
+  if (editorFileCache === null) {
+    editorFileCache = [];
+    editorLoadFiles().then(again);
+  }
+}
+
 function editorOpenMenu(textarea, trigger) {
   //: The word list the documents editor draws at the caret gives way.
   if (typeof hideDocComplete === "function") hideDocComplete();
@@ -1707,6 +1732,7 @@ function editorOpenMenu(textarea, trigger) {
   editorLinkBox(textarea, true);
   editorMenuState.trigger = trigger;
   editorMenuState.index = 0;
+  if (trigger === "[[") editorWarmLinkCaches();
   const pane = $("editor-menu-preview");
   if (pane) delete pane.dataset.for;
   editorRefreshMenu();
@@ -1811,33 +1837,6 @@ function editorHandleInput(textarea) {
   //: caret by `editorPlaceMenu`.
   for (const trigger of ["/", "[["]) {
     if (editorTokenAt(textarea, trigger)) {
-      if (trigger === "[[") {
-        // Fetch documents once, then redraw, the list opens on notes alone
-        // and gains documents a moment later rather than blocking on a fetch.
-        if (editorDocumentCache === null) {
-          editorDocumentCache = [];
-          //: Paged to the end, same reason as the file cache above: a
-          //: document missing from this list is a `[[link]]` the menu
-          //: cannot offer, silently.
-          apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
-            .then((docs) => {
-              editorDocumentCache = Array.isArray(docs) ? docs : [];
-              if (editorMenuState.open) editorRefreshMenu();
-            })
-            .catch(() => {
-              editorDocumentCache = [];
-            });
-        }
-        //: Files and images the same way: the menu opens on what is already
-        //: in memory and gains the rest a moment later, rather than making
-        //: the first keystroke wait on two requests.
-        if (editorFileCache === null) {
-          editorFileCache = [];
-          editorLoadFiles().then(() => {
-            if (editorMenuState.open) editorRefreshMenu();
-          });
-        }
-      }
       editorOpenMenu(textarea, trigger);
       return;
     }
