@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Seven JS test harnesses learn the 12 or 24 hour clock setting the base brought in; errors.js runs clean in dark and under faults (L539)
 - The lists the limit lint could not see (graph, suggestions, link suggestions, outline, live query) now name what bounds them (L-world-class-11)
 - A tool call the app did not offer (no card, no tag) is refused and runs nothing; Undo and Redo carry the server's tag (L-world-class-28)
 - Two world-class checks were already true: every route is named by a test (L615) and the palette's Find anything handoff passes in Playwright (L538)

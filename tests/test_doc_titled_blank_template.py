@@ -38,6 +38,7 @@ function $() { return { value: titleValue, focus() {}, select() {} }; }
 function docText() { return text; }
 const docNextName = () => "Untitled document";
 function renderDocList() {}
+function clockOptions() { return {}; }
 function startBlankDocument() { throw new Error("not a blank start"); }
 function loadCaptureDocuments() {}
 async function loadDocuments() {}

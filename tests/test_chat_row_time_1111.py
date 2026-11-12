@@ -16,7 +16,7 @@ def _row_builder() -> str:
 
 def test_the_chat_row_hover_leads_with_the_exact_time_of_the_last_message() -> None:
     row = _row_builder()
-    assert "meta.title = [parseServerTime(conversation.last_at)?.toLocaleString(undefined, { dateStyle: \"full\", timeStyle: \"short\" }), ...bits.slice(1)].filter(Boolean).join(\" · \");" in row
+    assert "meta.title = [parseServerTime(conversation.last_at)?.toLocaleString(undefined, { dateStyle: \"full\", timeStyle: \"short\", ...clockOptions() }), ...bits.slice(1)].filter(Boolean).join(\" · \");" in row
 
 
 def test_the_chat_row_text_stays_relative() -> None:
