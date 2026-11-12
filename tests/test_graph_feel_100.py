@@ -93,7 +93,7 @@ console.log(JSON.stringify({ back, otherShape, pane, focused, threw, blockedRead
 def test_the_cache_is_read_on_a_first_draw_and_written_at_rest():
     render = _fn("renderGraphCanvas")
     assert (
-        'graphPendingViewPositions || (s.layoutKind === "force" && !prior.size ? gcCachedPositions(s) : null);'
+        'graphPendingViewPositions || back || (s.layoutKind === "force" && !prior.size ? gcCachedPositions(s) : null);'
         in render
     ), "a page's first force draw starts from the kept positions, through the saved-view path"
     end = CANVAS[CANVAS.index('} else if (message.type === "end") {') :]
