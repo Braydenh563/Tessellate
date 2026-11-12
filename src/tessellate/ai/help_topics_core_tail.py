@@ -1127,6 +1127,28 @@ TAIL_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "documents-to-note",
+            "keywords": (
+                "selection to a note",
+                "new note from selection",
+                "add to note",
+                "append to a note",
+                "turn a selection into a note",
+                "highlight text and make a note",
+                "send text to a note",
+            ),
+            "body": (
+                "Select text in a document or a code file and choose New note from "
+                "selection to start a note from it, or Add to note to pick an "
+                "existing note and append it. Both are on the selection bar (the "
+                "note button) and in the right-click menu. The text lands as a "
+                "quote, or as a code block in a code file, with a From [[Title]] "
+                "line under it that links back to the document. Undo on the "
+                "notice, or Ctrl+Z, takes it back."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "documents-features",
             "keywords": (
                 "history of a document",

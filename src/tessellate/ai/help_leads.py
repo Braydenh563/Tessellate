@@ -125,6 +125,7 @@ TOPIC_LEADS: dict[str, str] = {
     "documents-paste": "Choose how pasted text lands, such as plain text, a table or a checklist.",
     "documents-comments": "Leave remarks on words in a document, reply to them and resolve them.",
     "documents-turn-into": "Reshape the lines you selected without retyping their markers.",
+    "documents-to-note": "Turn selected text into a new note, or add it to one, with a link back.",
     "callouts": "Set off a note, tip or warning in a tinted box that can fold.",
     "equation-editor": "Write an equation and put it in a note, a document, a board or a chat.",
     "document-history": "Go back to any earlier version of a document, or keep one under a name.",

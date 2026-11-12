@@ -14083,11 +14083,15 @@ function docEditorMenuAtPoint(event, point) {
   if (event.shiftKey || !(event.target instanceof Element)) return false;
   const surface = docToolsBoxFor(event.target);
   const view = surface && surface.view;
-  if (!view || view.dom.classList.contains("doc-content-code") || typeof docEditorMenuItems !== "function") return false;
+  if (!view || typeof docEditorMenuItems !== "function") return false;
+  //: A code file keeps the browser's menu, except over a selection: there the menu carries the two note rows.
+  const code = view.dom.classList.contains("doc-content-code");
   const sel = view.state.selection.main;
+  if (code && sel.empty) return false;
   const at = view.posAtCoords(point);
-  if (at != null && (at < sel.from || at > sel.to)) view.dispatch({ selection: { anchor: at } });
-  openMenuAtPoint(docEditorMenuItems(view, point.x, point.y), "Document editor actions", point.x, point.y, view.contentDOM);
+  if (!code && at != null && (at < sel.from || at > sel.to)) view.dispatch({ selection: { anchor: at } });
+  const items = code ? [...docClipboardMenuItems(view), ...docSelectionNoteItems(surface)] : docEditorMenuItems(view, point.x, point.y);
+  openMenuAtPoint(items, "Document editor actions", point.x, point.y, view.contentDOM);
   return true;
 }
 
