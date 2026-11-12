@@ -99,6 +99,23 @@ def birthday(notes: Iterable[dict], now: datetime) -> str | None:
     return None
 
 
+#: What a typed birthday may be made of: a day and a month in words or digits.
+_BIRTHDAY_TYPED = re.compile(r"^(?=.*\d)[A-Za-z0-9 ,.'-]{3,30}$")
+
+
+def stored_birthday(typed: str | None, now: datetime) -> str | None:
+    """The birthday the person typed in Settings ("3 December"), as the same
+    year-free ISO day `birthday` gives; None when it is empty or names no real
+    day ("March" has no day, "31 February" has none either)."""
+    from tessellate.ai import recognise
+
+    text = str(typed or "").strip()
+    if not _BIRTHDAY_TYPED.match(text):
+        return None
+    day = recognise.resolve(text, now)
+    return f"2000-{day.month:02d}-{day.day:02d}" if day is not None else None
+
+
 def facts(notes: Iterable[dict]) -> list[Fact]:
     """Every first-person fact the notes hold, newest note first, one per
     key and value."""

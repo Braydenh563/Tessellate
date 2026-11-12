@@ -680,6 +680,7 @@ async function savePrefs(options = {}) {
     // form never rendered this session sent stale defaults and overwrote them).
     const payload = {
       display_name: $("pref-display-name").value.trim(),
+      birthday: $("pref-birthday").value.trim(),
       avatar_style: typeof ownNameMarkStyle === "function" ? ownNameMarkStyle() : undefined,
       recycle_bin_days: recycleBinDays,
       conversation_retention_days: Number($("pref-chat-retention").value) || 0,

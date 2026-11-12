@@ -140,6 +140,7 @@ NO_ROW = {
     "update_choice_made": "the answer to the ask-once update question",
     # The person's own words, not a choice with a default to go back to.
     "display_name": "your name, typed",
+    "birthday": "your birthday, typed",
     "user_profile": "your profile, typed",
 }
 

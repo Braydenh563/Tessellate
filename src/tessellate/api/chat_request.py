@@ -664,6 +664,13 @@ def _image_caption_context(
     )
 
 
+def _images_for_chat(images_raw: list, model_manager, ollama) -> tuple[list[str], str]:  # noqa: ANN001
+    """(images the chat model sees, captions for it when it cannot see them)."""
+    if images_raw and _chat_model_sees_images(model_manager, ollama):
+        return [uri for _, uri in images_raw], ""
+    return [], _image_caption_context(images_raw, model_manager, ollama)
+
+
 def _small_model_mode() -> bool | None:
     """Whether this run gets the small-model treatment: one tool per step and
     a worked example of the call.

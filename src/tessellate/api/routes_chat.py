@@ -76,7 +76,7 @@ from tessellate.search import chunks as search_chunks
 from tessellate.search import search_manager
 from sqlalchemy import func
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_media_files, _attached_notes, _files_on, _grounding_candidates, _note_dates, _time_words
-from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, CompressBody, FollowupBody, RememberBody, ToolExecuteBody, _StreamRequest, _Turn, take_up_offer, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
+from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, CompressBody, FollowupBody, RememberBody, ToolExecuteBody, _StreamRequest, _Turn, take_up_offer, _apply_open, _apply_scope, _chat_model_sees_images, _images_for_chat, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _window_documents, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
@@ -527,16 +527,12 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
     model_manager = deps.get_model_manager().for_feature(_feature_for(body))
     ollama = deps.get_ollama()
     ollama_running = ollama.is_running()
-    if _asks_capability(capable := _stream_request(body, session), prepared):  # L65: answered from the app's own list
-        return ChatResponse(ai_response=_capability_answer(capable, ollama_running), raw_results=[], search_mode=prepared["search_mode"], ollama_running=ollama_running)
+    if (plain := _capability_response(body, session, prepared, ollama_running)) is not None:
+        return plain
     conversational = not intent.needs_retrieval(prepared["intent"])
     mode = _resolve_mode(body.mode)
     images_raw = _resolve_chat_images(session, body.image_media_ids)
-    chat_sees_images = bool(images_raw) and _chat_model_sees_images(model_manager, ollama)
-    images = [uri for _, uri in images_raw] if chat_sees_images else []
-    image_context = (
-        "" if chat_sees_images else _image_caption_context(images_raw, model_manager, ollama)
-    )
+    images, image_context = _images_for_chat(images_raw, model_manager, ollama)
     #: A counted answer *is* an answer, and it does not need a model running to
     #: be one: which is the whole point of computing it. Without this the
     #: response would carry a correct sentence and simultaneously report that
@@ -875,6 +871,11 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     if chart:
         out.append({"type": "chart", "chart": chart})
     return out
+
+
+def _capability_response(body: ChatRequest, session: Session, prepared: dict, ollama_running: bool) -> ChatResponse | None:
+    answer = _capability_answer(req, ollama_running) if _asks_capability(req := _stream_request(body, session), prepared) else None
+    return answer and ChatResponse(ai_response=answer, raw_results=[], search_mode=prepared["search_mode"], ollama_running=ollama_running)
 
 
 def _capability_answer(req: _StreamRequest, ollama_running: bool) -> str:

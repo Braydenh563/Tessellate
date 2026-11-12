@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.ai import offers, personal, reading
+from tessellate.core import deps
 from tessellate.core.database import utcnow
 from tessellate.core.deps import get_session
 
@@ -46,11 +47,16 @@ def read_text(
     """The `Reading` of `q` on the person's own clock (`tz_offset_minutes`,
     as `/reminders/parse` takes it), as JSON. `now` (ISO 8601 with an offset)
     fixes the clock for a sweep that measures against a fixture date; one
-    that does not parse, or has no offset, is ignored. "My birthday" is the
-    one the notes give when none is sent."""
+    that does not parse, or has no offset, is ignored. "My birthday" is the one sent, else the one stored in
+    Settings, else the one the notes give."""
     clock = _clock(tz_offset_minutes, now)
     if not birthday and "birthday" in q.lower():
-        birthday = personal.birthday(personal.notes_of(session), clock.replace(tzinfo=None)) or ""
+        naive = clock.replace(tzinfo=None)
+        birthday = (
+            personal.stored_birthday(deps.get_config().get_preference("birthday", ""), naive)
+            or personal.birthday(personal.notes_of(session), naive)
+            or ""
+        )
     context = {key: value for key, value in (("locale", locale), ("surface", surface), ("birthday", birthday)) if value}
     return reading.read(q, now=clock, context=context).json()
 

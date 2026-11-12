@@ -313,11 +313,13 @@ MORE_TOPICS: list[dict] = [
         "id": "profile",
         "keywords": (
             "profile", "my profile", "my name", "display name", "your look",
-            "shuffle", "change my name", "what to call me", "greeting name",
+            "shuffle", "change my name", "what to call me", "greeting name", "my birthday", "birthday setting",
         ),
         "body": (
             "Settings, Profile is you, kept on this computer: Your name (shown "
-            "in the greeting and on your mark), Your look (your face, drawn "
+            "in the greeting and on your mark), Your birthday (a day and month "
+            "like 3 December, so \"remind me on my birthday\" knows the day; "
+            "without it a note that says \"my birthday is ...\" is used), Your look (your face, drawn "
             "from your name; Shuffle redraws it and Back to my name's own "
             "undoes that, Choose parts yourself sets each part), and About me, "
             "which Atlas reads for more personal answers only while \"Let Atlas "

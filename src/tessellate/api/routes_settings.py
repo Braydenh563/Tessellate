@@ -377,6 +377,9 @@ class PreferencesBody(BaseModel):
     autocorrect: bool | None = None
     # Display name for the dashboard greeting (empty string clears it).
     display_name: str | None = Field(default=None, max_length=60)
+    #: The day "on my birthday" means ("3 December"); empty clears it. The
+    #: notes' own "my birthday is ..." line is the fallback (`/read`).
+    birthday: str | None = Field(default=None, max_length=30)
     # Optional context about the user for the librarian.
     # profile_enabled is the opt-out switch; the delete button in the UI
     # simply saves an empty string.
@@ -631,6 +634,20 @@ class PreferencesBody(BaseModel):
             return value
         return " ".join(re.sub(r"[<>\x00-\x1f\x7f\u200b-\u200f\u202a-\u202e\u2066-\u2069]", " ", value).split())
 
+    @field_validator("birthday")
+    @classmethod
+    def _a_real_day(cls, value: str | None) -> str | None:
+        """A day and a month that exist, kept as typed ("31 February" is refused)."""
+        from datetime import datetime
+
+        from tessellate.ai import personal
+
+        if not value or not value.strip():
+            return "" if value is not None else None
+        if personal.stored_birthday(value, datetime(2026, 1, 1)) is None:
+            raise ValueError("Type a day and a month, like 3 December.")
+        return " ".join(value.split())
+
     @field_validator("ui_state")
     @classmethod
     def _small_ui_state(cls, value: dict | None) -> dict | None:
@@ -841,6 +858,7 @@ def _prefs_notebook(config) -> dict:
         "link_offer_ignored": config.get_preference("link_offer_ignored", []),
         "autocorrect": config.get_preference("autocorrect", True),
         "display_name": config.get_preference("display_name", ""),
+        "birthday": config.get_preference("birthday", ""),
         #: Echoed so Settings can draw the boxes with what is in them rather
         #: than empty, which is the bug this file's other comments keep
         #: recording: a preference that saves and does not come back reads as
@@ -1050,7 +1068,7 @@ _QUIET_PREFERENCE_KEYS = frozenset(
 #: go into it only when they are a short plain value. A name, a profile, a
 #: dictionary of the person's words, a whole skill or persona were each copied
 #: in full at every save (the profile was the one exception).
-_PERSONAL_PREFERENCE_KEYS = frozenset({"user_profile", "display_name"})
+_PERSONAL_PREFERENCE_KEYS = frozenset({"user_profile", "display_name", "birthday"})
 
 
 def _preference_detail(key: str, value: object) -> str:

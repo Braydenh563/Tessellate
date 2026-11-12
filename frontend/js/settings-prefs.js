@@ -22,6 +22,7 @@ async function renderPrefs() {
   if (prefsSaveInFlight) await prefsSaveInFlight.catch(() => {});
   prefsCache = await apiJson("/preferences");
   $("pref-display-name").value = prefsCache.display_name || "";
+  $("pref-birthday").value = prefsCache.birthday || "";
   $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? false;
   //: The saved look, and its controls (avatars.js, once it is in).
   const savedLook = prefsCache.avatar_style || {};
@@ -171,7 +172,7 @@ async function saveSearchProvider(provider) {
 //: `input` both, because a `<select>` and a checkbox fire the first and a
 //: text field is worth marking on the keystroke rather than on the blur.
 const PREFS_FIELD_IDS = [
-  "pref-display-name", "pref-bin-days", "pref-chat-retention",
+  "pref-display-name", "pref-birthday", "pref-bin-days", "pref-chat-retention",
   "pref-search-min-sim", "pref-search-z-margin", "pref-style",
   "pref-profile", "pref-profile-enabled", "pref-notif-mute-except-reminders",
   "pref-smart-punctuation", "pref-autocorrect",
