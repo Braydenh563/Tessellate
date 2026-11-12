@@ -710,7 +710,7 @@ blocks found built, op5)").
   without asking; a convention the app breaks on purpose keeps its reason
   written next to it.
   **The whiteboard and map half is built**: the checklist, with before and
-  after for each convention, is `archive/agent-remaining/mapux2.md` (agent M,
+  after for each convention, is `mapux2.md` (git history) (agent M,
   `canvasconventions.js` 54/54). Its one row left, Escape during a marquee or
   lasso, was measured 2026-09-23 and was wrong: it took the rectangle away
   and then cleared the selection as well, and the release's click cleared
@@ -774,7 +774,7 @@ catalogue, the library spec and the phased briefs these become.
 
 557 and 558: built (decisions 19 to 36 below; the object library, the Layers tab, the draw.io pass). Moved whole to HISTORY.md ("Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WHITEBOARD_PLAN)"). Open from them: named layers (BACKLOG 29c) and ghost topics.
 
-## Placed from INBOX, 2026-10-05 (OPEN.md triage)
+## Placed from INBOX, 2026-10-05 (ledger triage)
 
 - **`contrast.js` never visits a board or a map** (documents was added
   2026-10-04). Brief: add `whiteboard` and `mindmap` to its `TABS` with a seeded
@@ -807,9 +807,9 @@ Every entry built 2026-10-10 (boardmap-1010). Moved to HISTORY.md ("Moved from t
 The owner, 2026-10-10: "deep analyse and catalog everything in draw.io as
 well, use, replicate, take and implement it and then build on it and make it
 the best editor the world has ever seen." This section is the catalogue
-(SESSION_BRIEFS Brief 44, part 1); part 2 builds from it. draw.io is
+(the retired session briefs Brief 44, part 1); part 2 builds from it. draw.io is
 Apache-2.0, so code and shape data may come in with the notice kept
-(`frontend/board-library/drawio/NOTICE.txt`); the ANALYSIS.md licence line
+(`frontend/board-library/drawio/NOTICE.txt`); the the retired analysis doc licence line
 (this project is AGPL-3.0) is unchanged.
 
 **What was read.** The fork `Braydenh563/drawio` (upstream `jgraph/drawio`),
@@ -839,7 +839,7 @@ caps), one SVG surface (`#wb-zoom-group`), every edit through `wbFmtApply`
 (`whiteboard-commands.js`), every library entry a `memorymap-library-set`
 item.
 
-**Corrections to the 2026-10-10 parity matrix** (ANALYSIS.md), found while
+**Corrections to the 2026-10-10 parity matrix** (the retired analysis doc), found while
 checking each row (CLAUDE.md "already exists" rule):
 - Connection points exist. `WB_FIXED_ANCHORS`, `wbPortFractions`,
   `wbPortsForPath`, `wbAnchorPositions` (whiteboard.js 2321 to 2510) give
@@ -1233,7 +1233,7 @@ clash is listed so the choice is made once.
 Ten phases for Brief 44 part 2 (Opus), in this order. Every phase is gated
 by `bash scratchpad/ui-sweeps/wbregress.sh` (and `wbports.js`,
 `wbrotatelinks.js` where ports or links move), the matrix rows it names in
-ANALYSIS.md "Parity matrix, 2026-10-10", and a measurement written in the
+the retired analysis doc "Parity matrix, 2026-10-10", and a measurement written in the
 commit. Help moves with each control (standing order 13).
 
 1. **Ports from the shape.** `wbPortFractions` returns `parsed.ports` when
@@ -1347,8 +1347,8 @@ JS-drawn shape classes, the shape picker, and the shortcut gaps in section 11.
    observed (Tessellate is not an Atlassian product); templates are CC BY
    4.0 and each converted template names its source in its library note.
    No THIRD_PARTY.md exists in this tree, so the entry is the NOTICE plus
-   `archive/agent-remaining/drawio-1010.md`.
-6. **Parity rows are corrected here, not in ANALYSIS.md.** The five
+   `drawio-1010.md` (git history).
+6. **Parity rows are corrected here, not in the retired analysis doc.** The five
    corrections at the top of this section replace the matrix's wrong rows
    (connection points, templates, find, hover arrows, same size) until the
    next matrix pass.
@@ -1406,11 +1406,11 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 ## Placed from INBOX, 2026-10-10 (the owner on feature depth)
 
-- INBOX 797, the owner 2026-10-10 23:02Z: "Also I feel like the mindmap and whiteboard are still missing a lot of features and options and stuff that draw.io and other things like the craft repos have :(" Owner: an Opus brief (canvasdepth), next Opus slot: re-audit the whiteboard against draw.io, designcraft and the other craft references in ANALYSIS.md ("Whiteboard, against draw.io and designcraft", "Mind map, against designcraft's canvas"), plus tldraw, Excalidraw, XMind and MindNode; rank every gap by how often a person meets it; build the top ones measured (connection points, the shape library at scale, named layers with visibility, swimlanes, more Mermaid kinds, and for maps: themes, branch styles, relationship lines, boundaries, summaries, outline import and export, presentation mode), each a commit with a test.
+- INBOX 797, the owner 2026-10-10 23:02Z: "Also I feel like the mindmap and whiteboard are still missing a lot of features and options and stuff that draw.io and other things like the craft repos have :(" Owner: an Opus brief (canvasdepth), next Opus slot: re-audit the whiteboard against draw.io, designcraft and the other craft references in the retired analysis doc ("Whiteboard, against draw.io and designcraft", "Mind map, against designcraft's canvas"), plus tldraw, Excalidraw, XMind and MindNode; rank every gap by how often a person meets it; build the top ones measured (connection points, the shape library at scale, named layers with visibility, swimlanes, more Mermaid kinds, and for maps: themes, branch styles, relationship lines, boundaries, summaries, outline import and export, presentation mode), each a commit with a test.
 
 ### canvasdepth, ranked by how often a person meets the gap (2026-10-10)
 
-From ANALYSIS.md "Whiteboard, against draw.io and designcraft", re-read from
+From the retired analysis doc "Whiteboard, against draw.io and designcraft", re-read from
 the code. Each row is built as one commit with a test and a Playwright
 measure at 1440 and 390, or left here.
 
@@ -1531,7 +1531,7 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 ## Placed from INBOX, 2026-10-26
 
 1352. **The owner, 2026-10-26, verbatim** (screenshot: PaintZ, a dark two-row icon toolbar with file, undo and redo on the left; select, lasso, eraser, picker, pencil, fill, spray, brush, text, line, curve, polygon, rectangle, rounded rectangle and ellipse tools; a line-width dropdown; outline, fill and both toggles; a two-row palette with a large current-colour swatch; fullscreen, info, settings and help on the right; a status bar with canvas size, cursor position and a zoom slider). "hey btw Ive just looked up simple paint web apps asn some of them have A LOT more refined functionality and ui and look soooo much more professional than tessellate. can you use them to update the whiteboard AND quick sketch in both UI/UX as well as functionality, features, quality, utility, how each feature works etc?? look at these repos: https://paintz.app/ (https://github.com/ZMYaro/paintz.git - I also just forked this repo), https://github.com/uthsobcb/ongkon.git, also small things for when the user tries to draw a shape like does it draw from the corner or middle and are all the format object properties that should be there present? do they funtion as they should? are the controls formatted properly?? the whiteboard, mindmap and quicksketch all need a ui improved UX usability and learnability redesign and upgrade"
-    Placed: agent `paint-1026` (Opus, design judgement): audit PaintZ and Ongkon against the board, the map and Quick sketch (tools, shape drawing origin and modifiers, format properties and whether each works, control layout, status bar, palette), a measured gap table in `archive/agent-remaining/paint-1026.md`, then build the top gaps by impact with sweeps. Licence: ideas only unless the source licence allows AGPL inclusion (ANALYSIS.md). **Per part, s58left3-1110 (from the paint-1026 ledger, not re-driven):** the audit and gap table, shape origin and modifiers (cc95bf4) and the popup width cap (05c9fce) built; Quick sketch rebuilt (`sketch-pad.js`). Open: per-corner radius, text padding, shadow offset and blur (wb3-1026 Remaining).
+    Placed: agent `paint-1026` (Opus, design judgement): audit PaintZ and Ongkon against the board, the map and Quick sketch (tools, shape drawing origin and modifiers, format properties and whether each works, control layout, status bar, palette), a measured gap table in `paint-1026.md` (git history), then build the top gaps by impact with sweeps. Licence: ideas only unless the source licence allows AGPL inclusion (the retired analysis doc). **Per part, s58left3-1110 (from the paint-1026 ledger, not re-driven):** the audit and gap table, shape origin and modifiers (cc95bf4) and the popup width cap (05c9fce) built; Quick sketch rebuilt (`sketch-pad.js`). Open: per-corner radius, text padding, shadow offset and blur (wb3-1026 Remaining).
 
 1354. **The owner, 2026-10-26, verbatim** (the board half of CHAT_PLAN 1353). "the whiteboards, mindmap and quicksketch needs a lot better modern and professional ui and ux and design of controls and they need refinement, often I find the actual interaction with objects themselves like rotating them, resizing, moving them, editing them, using the popup tool bars is very finikey and sometimes those popup toolbars stretch nearly the whole width fo the screen. the usage of tools, functionality, learnability, thinsg like active and non active like group changes to ungroup when objects are grouped instead of showing both buttons, can groups be stacked? so if I have 7 items and group 5 but then highlight the grouped 5 and the other two can It group them all again and then if I ungroup them the 5 will also remain grouped?? its all the small features and functions and refinements like these that make or break the functionality and reliabilkity of an application, causing the user to not want to use it as it is unreliable."
     Placed: added to agent `paint-1026`'s brief: handle hit areas and drag feel (rotate, resize, move, edit), popup toolbar width cap, Group/Ungroup as one state-aware control, nested groups (group of groups; ungrouping the outer keeps the inner). **Per part, s58left3-1110:** handle hit areas and drag feel (fcd1cbd), popup width cap (05c9fce), one state-aware Group and Ungroup (`wbGroupButtonState`) and nested groups (883fc62) all built, with sweeps `paint1026-feel.js` and `paint1026-groups.js` in their ledger; not re-driven.
@@ -1544,7 +1544,7 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 ## Placed from INBOX, 2026-10-26b
 
 1358. **The owner, 2026-10-26, verbatim.** "also keep improving all the main features like the whitebaord, mindmap and document editor, there are still A LOT of issues with them which keep being missed. as well as missing features or features that dont work properly, both of which I keep easily encountering."
-     Placed: after the current three agents, one dogfood-and-fix agent per surface (whiteboard, mind map, document editor): a blind-tester pass on everyday tasks first (find what is missed, not what is listed), each finding fixed as a class, then the surface's open inventory rows (.claude/inputs/open-inventory-1026.md) by impact. Missing features are measured against the competitor reads in ANALYSIS.md and WORLD_CLASS_PLAN.
+     Placed: after the current three agents, one dogfood-and-fix agent per surface (whiteboard, mind map, document editor): a blind-tester pass on everyday tasks first (find what is missed, not what is listed), each finding fixed as a class, then the surface's open inventory rows (.claude/inputs/open-inventory-1026.md) by impact. Missing features are measured against the competitor reads in the retired analysis doc and WORLD_CLASS_PLAN.
 
 ## Placed from INBOX, 2026-10-27
 

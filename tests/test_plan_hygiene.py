@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parent.parent
 _SKIP_PARTS = {".git", ".venv", "node_modules", "__pycache__", ".gate", "shots", "worktrees"}
 
 
-PLANS = sorted(ROADMAP.glob("*_PLAN.md")) + [ROADMAP / "AGENT_SKILLS_REFORM.md"]
+PLANS = sorted(ROADMAP.glob("*_PLAN.md"))
 
 
 #: Line caps per planning file: today's count rounded up to the next 100, plus
@@ -46,11 +46,9 @@ PLAN_LINE_CAPS = {
     "UI_MODERNISATION_PLAN.md": 1600,
     "WHITEBOARD_PLAN.md": 1800,
     "WORLD_CLASS_PLAN.md": 4200,
-    "AGENT_SKILLS_REFORM.md": 600,
     "ROADMAP.md": 600,
     "BACKLOG.md": 4500,
-    "ANALYSIS.md": 4500,
-    "SESSION_BRIEFS.md": 2100,
+    "LEDGER.md": 1300,
 }
 
 

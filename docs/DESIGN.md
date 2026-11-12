@@ -212,7 +212,7 @@ Literal colours are still correct in exactly one place: the sketch palette,
 where the hex value *is* the data, and the accent presets, which are
 definitions.
 
-**A field and a track** (decided 2026-10-05, op4-1005, OPEN.md consistency
+**A field and a track** (decided 2026-10-05, op4-1005, consistency
 and docks). A text field's fill, `--field-inset`, is a recess; a `.seg`
 track's, `--chip-bg`, is a tint. They are two tones in both themes, the field
 the deeper: dark draws the field in black (0.28) and the track in white
@@ -246,7 +246,7 @@ would be wrong there) and the accent-glow on the CTA button family, which
 carries the user's chosen accent colour via `color-mix()` rather than the
 neutral elevation scale, a coloured glow, not a depth cue.
 
-**What the shadow slider means** (decided 2026-10-05, op4-1005, OPEN.md
+**What the shadow slider means** (decided 2026-10-05, op4-1005,
 visual-c). Settings, Appearance's shadow strength runs 0 to 50% in 5% steps
 and means strength from none (0%) through the look as it ships (5%, the
 default) to the strongest each theme's ink usefully draws (50%), every step
@@ -825,7 +825,7 @@ this table and its lint in the same commit as the feature, never after.
 | A bar of actions for the things you have selected | `.library-contextbar.selectbar`: the count first, every action inside one `.library-contextbar-end` group, and `position: sticky` at `--selectbar-top` so the bar stays with you while the selection lasts. The ground is the accent tint stacked over `--modal-bg-opaque`, never the tint alone: a 14% wash reads right at rest and turns into a window once the list scrolls under it | `tests/test_ui_recipes.py`, `scratchpad/ui-sweeps/selstick.js` |
 | Two versions of the same text, and what changed between them | `docRenderDiff(host, ops)` over `docDiffLines` in documents.js: one `.doc-diff-line` per line inside the app's `.diff-viewer` box, a marker column so every line starts on one edge, unchanged runs counted in a `.doc-diff-gap` rather than printed, `.diff-added` / `.diff-removed` for the ink (the same two colours the chat's before/after card uses), and a `.doc-diff-hunk-head` per change where a change can be kept or skipped. One builder: the history dialog and the AI edit panel are the same object at two moments, and a second builder is how they would come to disagree about what a change is | `tests/test_document_diff.py` |
 | Empty state | `.empty-state` with one sentence and one action | |
-| An empty line in a small panel (a short list with nothing in it, in a glance panel, a Settings section or a sidebar group) | `p.muted.empty-line` (07-whiteboard-misc.css): one sentence, `--muted`, `--text-md`, start-aligned, `margin: var(--space-3) 0`, no icon; at most one inline ghost action after it. `.empty-state`, a centred block with 2rem of padding, is for a surface whose whole content area is empty; in a 384px panel it pushes the panel's own controls apart. Decided 2026-10-05 (op4-1005, OPEN.md visual-c): fourteen such lines drew in four type sizes (11.2 to 14.72px) and five margins; the agent panel's line, already on `--text-md`, became the recipe. A heading's hint rule in Settings does not pull an empty line up under the heading (`:not(.empty-line)`). The Chats sidebar with no chats is the other recipe: its list is the whole content area, so `#conv-empty` is an `.empty-state` drawn by `loadConversationList` (icon, title, sentence, New chat; unslop 1103, 17) | `tests/test_ui_recipes.py` (every `<p id="...-empty">` is one of the two recipes, or named in a list that only shrinks) |
+| An empty line in a small panel (a short list with nothing in it, in a glance panel, a Settings section or a sidebar group) | `p.muted.empty-line` (07-whiteboard-misc.css): one sentence, `--muted`, `--text-md`, start-aligned, `margin: var(--space-3) 0`, no icon; at most one inline ghost action after it. `.empty-state`, a centred block with 2rem of padding, is for a surface whose whole content area is empty; in a 384px panel it pushes the panel's own controls apart. Decided 2026-10-05 (op4-1005, visual-c): fourteen such lines drew in four type sizes (11.2 to 14.72px) and five margins; the agent panel's line, already on `--text-md`, became the recipe. A heading's hint rule in Settings does not pull an empty line up under the heading (`:not(.empty-line)`). The Chats sidebar with no chats is the other recipe: its list is the whole content area, so `#conv-empty` is an `.empty-state` drawn by `loadConversationList` (icon, title, sentence, New chat; unslop 1103, 17) | `tests/test_ui_recipes.py` (every `<p id="...-empty">` is one of the two recipes, or named in a list that only shrinks) |
 | A mark generated from a name (a persona, the person) | `nameMark(seed, size)` in app.js: deterministic from the name, drawn as SVG from the categorical palette, never fetched. A persona's goes through `fillPersonaMark`; an assistant reply in the chat draws its writer's (saved per turn) through `paintPersonaAvatar`, which keeps the live emblem for the app's own voice. **The person's** is seeded by `userMarkSeed()` (the profile's display name, or "You"), and its holder carries `data-user-mark="<size>"` so `paintUserMarks()` redraws every one of them at once when the preferences arrive or are saved: the chat's own bubbles (`.msg-user-mark`), the Settings head and the profile's head (`.profile-mark`). Never a `ph-user` glyph, an `<img>` or a second builder | `tests/test_ui_recipes.py` |
 | A notice: one line the app says about what is on screen (the search index is stale, this answer is mostly the model) | `.notice`, with `.notice-warn` for something worth doubting (08-consistency.css). An icon from the vendored set as its first child, through `setLabel`, then one short line. A notice annotates what is beside it; an error is a toast, help is `data-help-for`, and `.empty-state` replaces content rather than annotating it. Two tones and no more, because a third needs a rule for when to use it. Neither tone uses a warn *fill*: a filled band over an answer reads as a failed answer, and an answer with less behind it than usual is not a failure. Added 2026-09-21 with CHAT_PLAN Phase 1's low-support line, which was the second surface to need one; the first, `.reindex-stale`, was built inline and now uses this | `tests/test_ui_recipes.py` |
 | A notice for a missing optional package (OCR, scanned PDFs, SearXNG, any registry package) | **One builder, `extraNoticeMount(parent, id)` in extra-notice.js** (lazy; a stand-in in app.js), never a notice built by the surface: `.notice.extra-notice` with the `ph:package` icon, one sentence from `EXTRA_NOTICE_WHAT` (under 90 characters, one per registry id), an `Install` button (the long half in its `title`; `Open Packages` for a package that cannot be installed yet) and the close last (`data-dismiss="notice"`, the recipe below). It shows while the package is missing; a dismissal is per package and kept in `localStorage`, forgotten the moment the package is seen installed, so an uninstall shows it again (INBOX 1748, Q27). **Once pressed the button turns to `Undo`** (the owner, 2026-11-11): the click is the consent, no dialog; while installing Undo stops the download (`/tasks/cancel`), once installed the notice stays ("Installed. Undo removes it.") and Undo uninstalls; SearXNG's Undo stops it. `needed: false` (a feature with another way to work) shows it only for an install pressed there | `tests/test_extra_notice.py`, `tests/test_ui_recipes.py` |
@@ -944,7 +944,7 @@ the slider thumb light up on drag, nothing else in a card blurs).
    containers": an inner radius is the outer radius minus the padding
    between them. Ours: `--radius-inner: calc(var(--radius) - var(--space-3))`
    and a lint that a `.card` child with its own radius uses it. INBOX 101.
-   **The rollout, decided 2026-10-05** (op4-1005, OPEN.md popup-redesigns):
+   **The rollout, decided 2026-10-05** (op4-1005, popup-redesigns):
    it applies to a *surface* (a painted box: a well, a preview, a swatch, a
    fold body) nested inside a rounded, painted container **closer to its
    edge than the container's own radius**. A control (button, field, chip,
@@ -1196,7 +1196,7 @@ a second sparkle; Atlas's look is `ph-coat-hanger`). `tests/test_icon_convention
 fails on either, and on the agent glyph anywhere not listed.
 
 **Deliberately not taken: a per-glyph optical offset** (decided 2026-10-05,
-op4-1005, OPEN.md holepoke). An icon is centred by its box (the one ink
+op4-1005, holepoke). An icon is centred by its box (the one ink
 nudge every icon-only control shares, `ee6289d`: mean glyph ink -0.19px).
 A few glyphs still draw high in their em box (the status bar's back and
 history carets 1.0px, the chat header's, the Timeline view switch's and the
@@ -1344,7 +1344,7 @@ The decision's scale (`--layer-raised` 2, `--layer-sticky` 10, `--layer-dock`
 z-indexes above 2 hold 49 distinct values from 3 to 100000, about thirty of
 them global layers, and folding them into eight changes what stacks over
 what (the lock screen is 50 today, under the toasts). The order map is in
-`archive/agent-remaining/grammar57-1011.md`; until it lands the count only falls.
+LEDGER.md (git history: grammar57-1011.md); until it lands the count only falls.
 Lint: `test_no_new_literal_layer` (`Z_LITERALS_LEFT`).
 
 ### Shadows are the elevation tokens and the focus ring (decision 13)
@@ -1760,7 +1760,7 @@ place it"*, misalignment is felt long before it is seen.
 > wants a grid, not that the element wants a margin.
 
 This is the acceptance criterion for the shell work in
-[roadmap/REDESIGN.md](roadmap/REDESIGN.md) §R6 item 6: **if a change does not
+the retired redesign doc §R6 item 6 (git history): **if a change does not
 reduce that count, it did not fix the thing it was for.**
 
 ### R: Repetition
@@ -1833,7 +1833,7 @@ uses them, and `tests/test_ux1005_copy.py` holds the first of them as a lint.
 
 ## Two columns of reading: the Ask results grid
 
-Decided 2026-10-05 (op4-1005, OPEN.md ask-head-ocr). A panel that holds
+Decided 2026-10-05 (op4-1005, ask-head-ocr). A panel that holds
 prose to read, an answer beside its sources, is two columns only from 1100
 (UI_MODERNISATION_PLAN Phase 9's band, where the sidebar opens) and one
 column below it. Measured (`#chat-results` with two columns): each half was
@@ -1893,7 +1893,7 @@ target. Those are excepted by name in `01-forms-settings.css`, not by
 accident.
 
 **The painted switches are still 32×18.4, and that is honest rather than a
-gap** (MODERNISATION_AUDIT.md Brief 8 measured the three ids above at
+gap** (the retired modernisation audit, Brief 8, measured the three ids above at
 32×18.4 after this section first claimed them fixed). The pill's paint must
 stay that size, a `min-height` on the input made it a 32×28 slab with the
 knob adrift, reported within the hour, so the *target* is a transparent

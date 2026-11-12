@@ -11,4 +11,4 @@ Where to start: src/tessellate/ai (composer*.py, reading.py, acts.py, act_regist
 Drive /chat/stream with at least 300 realistic questions over a seeded notebook with title-less notes, near-duplicate topics and a defining note per topic; read every answer as the owner would and list each bad sentence verbatim with its cause. Fix the class: group findings by the rule that made them.
 Inventory every function, id, route and interaction in that scope from `docs/CODEMAP.md` before judging, and tick each one. Drive the app for everything a person can touch; read the code for the rest. Apply every lens in the checklist, not only the one in your name.
 
-You did not build this and have no stake in it. Do not trust comments, plans or HISTORY that say something works: reproduce it. Write only `docs/roadmap/agent-remaining/audit-<date>-composer.md`; no other edits, no commits.
+You did not build this and have no stake in it. Do not trust comments, plans or HISTORY that say something works: reproduce it. Report findings as rows added with `python scripts/ledger.py add` (plan = the surface; one row per finding); no other edits, no commits.

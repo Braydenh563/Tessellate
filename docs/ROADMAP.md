@@ -4,9 +4,9 @@ This file is the entry point to the plans. It is short on purpose: the
 detail lives in `docs/roadmap/`, and what is finished lives in
 [roadmap/HISTORY.md](roadmap/HISTORY.md) (every section number in a code
 comment resolves through HISTORY's index). The standing backlog is
-[roadmap/BACKLOG.md](roadmap/BACKLOG.md); the judgements and competitor
-reads are [roadmap/ANALYSIS.md](roadmap/ANALYSIS.md), including the
-licence constraint: this project is AGPL-3.0, so odysseus's AGPL code may
+[roadmap/BACKLOG.md](roadmap/BACKLOG.md); every open item outside the plans is a row in
+[roadmap/LEDGER.md](roadmap/LEDGER.md), and the standing decisions are in
+[ARCHITECTURE.md](ARCHITECTURE.md). The licence constraint: this project is AGPL-3.0, so odysseus's AGPL code may
 come in with its notices and nothing may go out to an MIT project.
 
 **The standing caveat:** every provider test runs against a fake transport.
@@ -20,7 +20,7 @@ plainly that you could not.
 The sections this file carried from earlier sessions (the three "start
 here" blocks, the older live list, §87 to §90, the four tiers) are in
 HISTORY under "ROADMAP archive, 2026-09-14", verbatim. Everything still
-open from them is in the plans, `roadmap/agent-remaining/OPEN.md`, or
+open from them is in the plans, `roadmap/LEDGER.md`, or
 BACKLOG; nothing was dropped in the move.
 
 ## Direction, 2026-10-10 (Fable orchestrating): the thesis, the policies, the tracks
@@ -33,8 +33,8 @@ the vendored and forked repositories well, make the deterministic engine
 (composer, filing, understanding) something no notebook has, modernise and
 professionalise the UI again, keep the app light on old hardware, and lay
 out the direction for everything after. This section is that direction;
-the surface plans carry the phases it names; SESSION_BRIEFS Briefs 35 to 42
-are the agent briefs. Decisions here are taken (standing order 3).
+the surface plans carry the phases it names; LEDGER.md's plan session
+briefs are the agent briefs. Decisions here are taken (standing order 3).
 
 ### The thesis
 
@@ -73,7 +73,7 @@ companion) is a surface onto the same notebook and the same engine.
    a measured need exists. NLTK and WordNet are too heavy as shipped; a
    trimmed synonym table from the Perplexity pack and the app's own groups
    is the substitute, measured on the eval. Brief 40 does the research pass
-   once and records it in ANALYSIS.md.
+   once and records it in ARCHITECTURE.md.
 2b. **Taken, not transplanted** (the owner, 2026-10-10: "anything coming
    from repos like draw.io not directly the same but truly part of this
    app and uniquely fitted and redesigned and altered to be part of this
@@ -120,10 +120,10 @@ companion) is a surface onto the same notebook and the same engine.
 | 4 | Graph views, topics as first-class, note properties | 38 (Opus) | GRAPH_PLAN |
 | 5 | The deterministic engine: fact layer, planner, realiser, dialogue state, acts, insights | 39 (Opus) | CHAT_PLAN Phase 6 |
 | 6 | Filing and the taxonomy: candidates, decision, explanation, merge suggestions | 39b (Opus) | WORLD_CLASS_PLAN 23 |
-| 7 | Research and placement: repositories, forks, Docker, system site-packages, MCP, phone access, the owner's list placed | 40 (Sonnet) | ANALYSIS.md, the plans |
+| 7 | Research and placement: repositories, forks, Docker, system site-packages, MCP, phone access, the owner's list placed | 40 (Sonnet) | ARCHITECTURE.md, the plans |
 | 8 | UI density and refinement, WCAG 2.2, pickers, calendar | 41 (Opus) | UI_MODERNISATION_PLAN 12, TIMELINE_PLAN |
 | 9 | Documents: code editor to VS Code standard, highlights and annotations, comments with links, p5 kind | 42 (Opus) | DOCUMENTS_PLAN 21 and 22 |
-| 10 | Atlas and the companion: moods that change, gestures, lifelike motion, the enlarged view | 34 (Opus) | OPEN.md Atlas rows |
+| 10 | Atlas and the companion: moods that change, gestures, lifelike motion, the enlarged view | 34 (Opus) | LEDGER world-class Atlas rows |
 | 11 | Audio: meeting notes apart from dictation, voice memos, live captions; long-form preference at first run | WORLD_CLASS_PLAN "Audio in the notebook" | WORLD_CLASS_PLAN |
 | 12 | Packaging: Docker image, reuse of system Python packages, installer's optional packages | 40 then 17 | BACKLOG |
 | 13 | The code editor as an IDE: run, preview and test for TypeScript, SQL, CSS, SVG and p5; the Python and JavaScript debuggers; the panels, consoles and palette | 69 to 71 (Opus), after 42 | DOCUMENTS_PLAN 23 |
@@ -142,7 +142,7 @@ to adobe and microsoft applications, draw.io, vs code and more."
 Taken as a programme, in this shape:
 
 1. **A gap matrix per surface against a named reference**, written before
-   any building (Brief 40 produces it in ANALYSIS.md from each fork's feature
+   any building (Brief 40 produces it in ARCHITECTURE.md from each fork's feature
    list and command catalogue, then each surface's Opus brief carries its
    rows): whiteboard against draw.io and designcraft; mind map against the
    best of Coggle, XMind and Whimsical (MINDMAP_PLAN's research) plus
@@ -179,7 +179,7 @@ not on a menu).
 | --- | --- | --- |
 | 0.5 Reliable | the app never loses, lies or stalls | Brief 43's nine probes green: backup and restore round-trip equal on 500 notes; every export re-imports; migrations from 0.3.0; zero silent failures when the server dies; zero console errors on any surface; keyboard-only completion of every surface; axe clean; boot under 2.5 s at 4x throttle; idle CPU under 1 percent; offline run makes no outbound request; auth on every write route; CI green with no xfail newly added |
 | 0.6 Engine | the deterministic engine is the product | CHAT_PLAN Phase 6 steps 1 to 10 built; grounded 1.0 on every eval set; measured sentences 1.0; a 20-turn session with no repeated template; acts for the twelve verbs with confirm and undo; filing top-1 at or above 0.8 without a model on the 120-note fixture, every filing explained; the Guide and Chat one engine; a blind panel rating at or above the 1 to 3B model's on the owner's notebook |
-| 0.7 Surfaces | boards, maps, documents, graph at parity on what matters | the "build first" rows of every parity table in ANALYSIS.md built; one object model (properties, comments, links, slash menu, export, search) across note, board, map, document, reminder and clip, with a test that walks all six; the whiteboard regression suite and map sweeps green; documents' code editor at DOCUMENTS 21's bar |
+| 0.7 Surfaces | boards, maps, documents, graph at parity on what matters | the "build first" rows of every parity table in the plans built; one object model (properties, comments, links, slash menu, export, search) across note, board, map, document, reminder and clip, with a test that walks all six; the whiteboard regression suite and map sweeps green; documents' code editor at DOCUMENTS 21's bar |
 | 0.8 Design | one system, dense, accessible | UI Phase 12 complete: the density tokens with no literal heights outside them, the hover grammar lint, one radius per class, the axe sweep clean on every surface at 1440, 1024 and 390 in both themes, custom pickers, the calendar mode, metadata rows unified; the README screenshots recaptured last |
 | 0.9 Public beta | strangers can install it and come back | Windows, macOS and Linux launchers and the Docker image each installed on a clean machine by someone who is not the owner, timed, with the first-run queue measured (no overlaps, the tour on request); the phone over HTTPS trusted by the QR and guide flow on iOS and Android; the update path from 0.8 with data in place; a crash and feedback channel that is local and opt-in (a bundle the person sends by hand); ten testers for two weeks, their reports placed and the bugs closed |
 | 1.0 | publishable | 0.9's testers report no data loss and no blocker for a month; the full suite, the sweeps and the scripted session green on the tag; THIRD_PARTY.md complete; the manual (Guide topics) covers every control (test_manual_parity); AGPL notices in place; the release notes written for a reader who has never seen the app |
@@ -219,7 +219,7 @@ each an Opus agent that audits what exists first (CLAUDE.md section 1):
    (INBOX 646; the audit and target are DOCUMENTS_PLAN section 21).
 3. **What is left of the Coggle, Miro, Illustrator and Photoshop ideas**
    (INBOX 641) once the map-nodes and icon-library agent of 2026-10-05 has
-   landed: read its remaining file in `roadmap/agent-remaining/` first.
+   landed: read its LEDGER rows first.
 
 The owner's words, moved here from INBOX whole:
 
@@ -274,9 +274,8 @@ Work from the plans, in this order; look things up in the rest.
 | --- | --- |
 | [roadmap/HANDOVER.md](roadmap/HANDOVER.md) | The standing orders, the "Now" line (what is in flight and what its gate is) and the plan-progress table. Read first, every session. |
 | [roadmap/INBOX.md](roadmap/INBOX.md) | The owner's open reports, each with an owner. Bugs first. Under twenty items by lint. |
-| [roadmap/agent-remaining/OPEN.md](roadmap/agent-remaining/OPEN.md) | Every open item the agent files left, by surface, with file, id and next step. The finished files are in `roadmap/archive/agent-remaining/`. |
+| [roadmap/LEDGER.md](roadmap/LEDGER.md) | Every open item outside the plans and BACKLOG, one row each, tagged by plan, with a paste-in brief per plan session at its end. Rows are added and closed with `scripts/ledger.py`. |
 | [roadmap/WORLD_CLASS_PLAN.md](roadmap/WORLD_CLASS_PLAN.md) | The consistency contract (all lints), the competitor gap table, the backend moves and inventions, the security review, section 18's horizon. Every row was read against the code on 2026-09-24 (INBOX 399): the built ones are in HISTORY, each open row carries a "State 2026-09-24" line, and the ranked list of 38 is at the top of section 8. Built since: F3 (`semantic_search` on a matrix), `similar_pairs` cached, S1 to S3, S5 and S6's redirect half; the dev-only llama.cpp runner (section 9, `scratchpad/llama-dev.sh`). Open at the top: Brief 15's LAN hardening tail, B2 durable jobs, D2's connections rail, I1's night runs, chunk vectors then I6's evidence cards. |
-| [roadmap/SESSION_BRIEFS.md](roadmap/SESSION_BRIEFS.md) | The operating protocol and one brief per session (Briefs 1 to 34; the last is Brief 34, characters, faces, the companion and Atlas; Brief 33 and Brief 32 sit in the file out of numeric order). |
 | [roadmap/UI_MODERNISATION_PLAN.md](roadmap/UI_MODERNISATION_PLAN.md) | Phases 0 to 11 built (Phase 8's docks re-measured under the ceiling, the phone done properly on 2026-09-20, Phase 10's clear glass variant built on 2026-10-04 as the `--glass-filter-clear` token), plus the Settings information architecture (INBOX 444) and the 2026-10-03 consistency passes. The README screenshot set was retaken on 2026-10-04. |
 | [roadmap/DOCUMENTS_PLAN.md](roadmap/DOCUMENTS_PLAN.md) | Phases 0 to 8 built (CodeMirror 6 as the surface, blocks, the connected document, review and history, export, one editor everywhere), plus the slash menus as one system (section 18) and boards and maps as objects in a note (section 19). Open: the Phase 2, 6 and 8 tails, the engine's three deliberate omissions, the bottom formatting bar on a phone. |
 | [roadmap/GRAPH_PLAN.md](roadmap/GRAPH_PLAN.md) | Phases 1 to 6 built, the minimap (6b) and the local pane included, and the 2026-10-03 shape work (categories gather, the unlinked on a ring). Open: the `?since=` cursor (nothing polls `/graph` yet) and the local pane's Show switches, left by decision. |
@@ -284,12 +283,10 @@ Work from the plans, in this order; look things up in the rest.
 | [roadmap/CHAT_PLAN.md](roadmap/CHAT_PLAN.md) | Phases 1 to 4 built (Phase 1's grounding closed 2026-09-20 to 2026-09-23, Phase 4's harness items 2026-09-20). Open: the `evals` breadth (WORLD_CLASS_PLAN 9) and the 2026-10-03 chat stutter (INBOX 413) notes. |
 | [roadmap/TIMELINE_PLAN.md](roadmap/TIMELINE_PLAN.md) | Phases 1 to 4 built, section 7's two measurements taken (2026-09-20, each found and fixed a bug). The "auto" scale thresholds are tuned (2026-10-04). |
 | [roadmap/WHITEBOARD_PLAN.md](roadmap/WHITEBOARD_PLAN.md) | Phases 1 to 4 built. Map boundaries, summaries and presenting by branch built 2026-10-05 (MINDMAP_PLAN decisions 19 to 21); board frames, lock, presenting the frames and comment threads built 2026-10-04 (decisions 14 to 17), Export this frame and nesting 2026-10-05 (decision 18); decision 7, the phone context bar, sketch handles at zoom and the arrange panel were confirmed built and swept on 2026-10-04, with shape text and connector labels added (`scratchpad/wbmap-tails.md`). |
-| [roadmap/AGENT_SKILLS_REFORM.md](roadmap/AGENT_SKILLS_REFORM.md) | Phases A to D built; D verified against a real model on 2026-09-20 (`scratchpad/llama-dev.sh`, `tests/test_skills_evals.py`). Open: the same gate at 3B and 4B and an eval each for the rest of CLAUDE.md section 4's unproven list. |
 
 | Reference (look things up, do not start from) | |
 | --- | --- |
-| [roadmap/HISTORY.md](roadmap/HISTORY.md), [roadmap/BACKLOG.md](roadmap/BACKLOG.md), [roadmap/ANALYSIS.md](roadmap/ANALYSIS.md), [roadmap/MODERNISATION_AUDIT.md](roadmap/MODERNISATION_AUDIT.md) | What is built (with every retraction), the standing backlog (section 115 is the professional-use block), the judgements, the measured audit. |
-| [roadmap/PLAN.md](roadmap/PLAN.md), [roadmap/AUDIT.md](roadmap/AUDIT.md), [roadmap/REDESIGN.md](roadmap/REDESIGN.md), [roadmap/FABLE_BRIEF.md](roadmap/FABLE_BRIEF.md) | Superseded; each says so in its first line. |
+| [roadmap/HISTORY.md](roadmap/HISTORY.md), [roadmap/BACKLOG.md](roadmap/BACKLOG.md), [roadmap/LEDGER.md](roadmap/LEDGER.md) | What is built (with every retraction), the standing backlog (section 115 is the professional-use block), the judgements, the measured audit. |
 | [DESIGN.md](DESIGN.md), [ARCHITECTURE.md](ARCHITECTURE.md) | The design system (lint-enforced) and how the pieces fit. |
 
 ## How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line)
@@ -315,7 +312,7 @@ sweeps that were added with it: `keyboard.js` walks the tab order,
 What comes next, in order, each its own PR:
 
 1. **Read, in this order, at the start of every session:** `CLAUDE.md`,
-   HANDOVER's standing orders and "Now" line, INBOX, `OPEN.md` for the
+   HANDOVER's standing orders and "Now" line, INBOX, `LEDGER.md` for the
    surface in hand, the plan for that surface. Merge any agent worktree
    with commits not on the branch before anything else.
 2. **The speed budget first** (WORLD_CLASS_PLAN 18, H7): boot JS under
@@ -325,7 +322,7 @@ What comes next, in order, each its own PR:
    import from Obsidian, Notion and Apple Notes; print and PDF export;
    keyboard-complete; WCAG AA; bulk operations; encrypted export. Rows 1,
    2, 7 and 10 first.
-4. **Empty `OPEN.md` surface by surface**, taking the plan's open phase
+4. **Empty `LEDGER.md` plan by plan**, taking the plan's open phase
    with it: Documents (Phase 4), Graph (Phase 5, the node panel), the phone
    (UI Phase 11), then Chat Phase 1's other half once Brief 12's fixtures
    exist.
@@ -348,7 +345,7 @@ no new plan documents; every claim carries a number from a sweep.
    Row 7, keyboard-complete and WCAG AA, has its first tool now:
    `scratchpad/ui-sweeps/keyboard.js` walks the tab order and passes, so
    that row starts from a measured baseline rather than from nothing.
-3. `OPEN.md` Documents and Graph sections with their plan phases.
+3. `LEDGER.md` documents and graph sections with their plan phases.
 4. UI Phase 11, the phone done properly.
 5. H1 to H4 in that order; H8; H5 last. H1's manual half is wired now
    ("Read my notes now", Settings, "What it learned"), so H1 is the

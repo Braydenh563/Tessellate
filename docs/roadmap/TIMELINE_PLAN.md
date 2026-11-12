@@ -4,7 +4,7 @@
 process to the timeline line view and see if you can redesign the timeline
 table view as well"), by Fable, after the measured audit in
 `scratchpad/ui-sweeps/timeline-audit*.js`. Executed after GRAPH_PLAN.md
-in ROADMAP.md order; SESSION_BRIEFS.md Brief 5 is its hand-off.**
+in ROADMAP.md order; the retired session briefs Brief 5 is its hand-off.**
 
 Back to [../ROADMAP.md](../ROADMAP.md).
 
@@ -90,7 +90,7 @@ the tab draws a colour, a font or a card that the rest of the app does not.
 8. **Open in place.** A row's click opens the entry in the app's split
    panel (the same one Notes uses) rather than a bespoke popup; the
    bespoke popup and its media renderer are deleted.
-9. **Backend.** `/timeline` gains `cursor`/`limit` (SESSION_BRIEFS Brief 6
+9. **Backend.** `/timeline` gains `cursor`/`limit` (the retired session briefs Brief 6
    helper), `kind=note|document|board|reminder`, and returns `density`
    (counts per bucket for the whole range) so the scrubber needs no second
    call. `MAX_NOTES` goes; pagination replaces it.

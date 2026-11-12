@@ -2,7 +2,7 @@
 
 > Companions: [ROADMAP.md](../ROADMAP.md) · [HANDOVER.md](HANDOVER.md) ·
 > [UI_MODERNISATION_PLAN.md](UI_MODERNISATION_PLAN.md) ·
-> [AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md) · [PLAN.md](PLAN.md) ·
+> the retired agent-skills plan · the retired plan doc ·
 > [../ARCHITECTURE.md](../ARCHITECTURE.md) · [../DESIGN.md](../DESIGN.md)
 >
 > **Note for Fable: this plan is a first pass and is meant to be extended and
@@ -36,7 +36,7 @@ export, `.mm` import), **Kumu** (attributes, perspectives, focus mode, signed
 edges), **XMind** (output quality, structure templates) and **Obsidian Canvas
 Mindmap** (the keyboard set). They also named **Lucidchart** as a reference,
 "but that's more for the whiteboard", its smart connectors, containers,
-alignment tools and shape libraries map onto PLAN.md W1–W5, not this plan.
+alignment tools and shape libraries map onto the retired plan doc W1–W5, not this plan.
 
 **The scope call in §4 is made: option B** (confirmed by the user in the same
 exchange). Everything from §5 on assumes it.
@@ -464,7 +464,7 @@ radials are used is confusing and doesnt feel clean", and "I want more and
 better ways to differentiate core idea nodes in the mindmap".
 
 The audit that this is written from is in
-[`archive/agent-remaining/mindmap.md`](archive/agent-remaining/mindmap.md), measured by
+`mindmap.md` (git history), measured by
 `scratchpad/ui-sweeps/mapaudit.js` on a map of twelve topics: **112 controls
 across six surfaces**, add-a-child reachable from five places, a fold from
 four, a colour from four, six actions reachable only from a ring nobody finds
@@ -1752,11 +1752,11 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 ## Placed from INBOX, 2026-10-10 (the owner on feature depth)
 
-- INBOX 797, the owner 2026-10-10 23:02Z: "Also I feel like the mindmap and whiteboard are still missing a lot of features and options and stuff that draw.io and other things like the craft repos have :(" Owner: an Opus brief (canvasdepth), next Opus slot: re-audit the mind map against draw.io, designcraft and the other craft references in ANALYSIS.md ("Whiteboard, against draw.io and designcraft", "Mind map, against designcraft's canvas"), plus tldraw, Excalidraw, XMind and MindNode; rank every gap by how often a person meets it; build the top ones measured (connection points, the shape library at scale, named layers with visibility, swimlanes, more Mermaid kinds, and for maps: themes, branch styles, relationship lines, boundaries, summaries, outline import and export, presentation mode), each a commit with a test.
+- INBOX 797, the owner 2026-10-10 23:02Z: "Also I feel like the mindmap and whiteboard are still missing a lot of features and options and stuff that draw.io and other things like the craft repos have :(" Owner: an Opus brief (canvasdepth), next Opus slot: re-audit the mind map against draw.io, designcraft and the other craft references in the retired analysis doc ("Whiteboard, against draw.io and designcraft", "Mind map, against designcraft's canvas"), plus tldraw, Excalidraw, XMind and MindNode; rank every gap by how often a person meets it; build the top ones measured (connection points, the shape library at scale, named layers with visibility, swimlanes, more Mermaid kinds, and for maps: themes, branch styles, relationship lines, boundaries, summaries, outline import and export, presentation mode), each a commit with a test.
 
 ### canvasdepth, ranked by how often a person meets the gap (2026-10-10)
 
-From ANALYSIS.md "Mind map, against designcraft's canvas", re-read against
+From the retired analysis doc "Mind map, against designcraft's canvas", re-read against
 XMind and MindNode. The brief's list (themes, branch styles, relationship
 lines, boundaries, summaries, outline in and out, presentation, Tab, Enter
 and F2) is built; what is open:

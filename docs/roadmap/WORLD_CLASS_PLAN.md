@@ -9,8 +9,8 @@ small things that make an app feel professional rather than like a demo; make
 the backend revolutionary; revolutionise UI design, backend structure,
 agentic harnessing, and the app's abilities without AI.
 
-This document does not repeat `ANALYSIS.md §114` (the competitive teardown
-and the 90-day plan) or `MODERNISATION_AUDIT.md` (findings A to H with the
+This document does not repeat `the retired analysis doc §114` (the competitive teardown
+and the 90-day plan) or `the retired modernisation audit` (findings A to H with the
 measured numbers). It builds on both and goes where they stop: it names the
 system underneath the small things, gives every feature a dossier with a
 gate, and specifies a backend and an AI harness that are a generation ahead
@@ -353,7 +353,7 @@ open a detail sheet instead of expanding in place. Gate: card height
 uniform per view (± 4px), one head recipe, `docks.js` count = 1 per
 sub-tab.
 
-**State 2026-09-24:** (d) absorbed by UI_MODERNISATION Phases 8 to 11 and the Library passes (list conventions 18 of 18, OPEN.md); the Files row redesign is INBOX 79 below.
+**State 2026-09-24:** (d) absorbed by UI_MODERNISATION Phases 8 to 11 and the Library passes (list conventions 18 of 18, LEDGER.md); the Files row redesign is INBOX 79 below.
 
 ### D5 Properties and tags (M, Opus)
 
@@ -452,7 +452,7 @@ searchable list on the panel surface with flat rows; the palette generated
 from the same `ACTIONS` table the menus use, so nothing can be missing.
 Gate: every `data-action` in the DOM appears in the palette.
 
-**State 2026-10-04:** (b) the palette and the shortcut sheet come from one table (OPEN.md, DOCUMENTS_PLAN row); the gate is built as `tests/test_consistency_contract.py`: the app has no `data-action` attribute, so it reads the two places an action is declared (every `data-tab` button, every `DEFAULT_SHORTCUTS` chord) and fails on one the palette lacks. Four chords had no row and now do (today's note, go back, go forward, reload).
+**State 2026-10-04:** (b) the palette and the shortcut sheet come from one table (LEDGER.md, DOCUMENTS_PLAN row); the gate is built as `tests/test_consistency_contract.py`: the app has no `data-action` attribute, so it reads the two places an action is declared (every `data-tab` button, every `DEFAULT_SHORTCUTS` chord) and fails on one the palette lacks. Four chords had no row and now do (today's note, go back, go forward, reload).
 
 ### D15 The shell: top bar, tab bar, bottom bar, sidebars (M, Opus)
 
@@ -483,7 +483,7 @@ second database. Five moves, in dependency order.
 
 ### B1 The event log: every change is a fact, the tables are views
 
-**Built.** HISTORY.md, "From WORLD_CLASS_PLAN.md B1 and SESSION_BRIEFS Brief 7: the event log" and "Moved from the plans, 2026-10-10 (WORLD_CLASS B1 and B3 summaries)"; what the log does not yet feed is in `docs/roadmap/archive/agent-remaining/brief7-event-log.md`.
+**Built.** HISTORY.md, "From WORLD_CLASS_PLAN.md B1 and SESSION_BRIEFS Brief 7: the event log" and "Moved from the plans, 2026-10-10 (WORLD_CLASS B1 and B3 summaries)"; what the log does not yet feed is in `brief7-event-log.md` (git history).
 
 **Decisions made (do not remake).** Copied whole from the agent file
 on 2026-09-14 (INBOX 220) so they survive its archiving.
@@ -546,7 +546,7 @@ on 2026-09-14 (INBOX 220) so they survive its archiving.
 
 ### B3 The retrieval engine: one index, three signals, explained
 
-**Built.** HISTORY.md, "From WORLD_CLASS_PLAN.md B3 and SESSION_BRIEFS Brief 11: the retrieval engine" and "Moved from the plans, 2026-10-10 (WORLD_CLASS B1 and B3 summaries)"; what is left is in `docs/roadmap/archive/agent-remaining/brief11-retrieval-engine.md`.
+**Built.** HISTORY.md, "From WORLD_CLASS_PLAN.md B3 and SESSION_BRIEFS Brief 11: the retrieval engine" and "Moved from the plans, 2026-10-10 (WORLD_CLASS B1 and B3 summaries)"; what is left is in `brief11-retrieval-engine.md` (git history).
 
 **Corrected 2026-10-05 (audit ARCH-07, ARCH-03).** "Three signals" overstated
 recall: candidates came from the keyword pass alone, so cosine only re-ranked
@@ -604,8 +604,8 @@ facts; a person's `contradicts` link stays.
 
 ### B5 The AI harness: plan, act, verify, budget, learn
 
-Today: a step is a turn (MODERNISATION_AUDIT E1); tool contracts exist
-(AGENT_SKILLS_REFORM Phases A to C). Move:
+Today: a step is a turn (the retired modernisation audit E1); tool contracts exist
+(the retired agent-skills plan Phases A to C). Move:
 
 - **Typed tools with contracts** (exists) plus **pre/post conditions**
   checked in Python, not by the model: a `file_note` tool refuses a
@@ -659,7 +659,7 @@ Sync is log shipping over the event log (B1): one computer pulls the other's cha
 
 ### B7 The API contract
 
-One error shape (exists, B3 in PLAN.md), cursor pagination on every list (finish D4 in the audit), ETags on entries, `If-Match` on writes (so the editor cannot clobber a background AI edit), an OpenAPI schema behind the auth gate, and a `/capabilities` endpoint the UI reads once so features appear only when their backend is there (OCR, embeddings, TTS).
+One error shape (exists, B3 in the retired plan doc), cursor pagination on every list (finish D4 in the audit), ETags on entries, `If-Match` on writes (so the editor cannot clobber a background AI edit), an OpenAPI schema behind the auth gate, and a `/capabilities` endpoint the UI reads once so features appear only when their backend is there (OCR, embeddings, TTS).
 
 **State 2026-10-05:** built (cursors on every paged list, ETags and `If-Match` on entries, `/capabilities`); moved to HISTORY.md, "Moved from the plans, 2026-10-05 (B7)". Left: the page's own lists following `X-Next-Cursor` on scroll, and the page reading `/capabilities` once to hide a control whose backend is not installed. S.
 
@@ -783,11 +783,11 @@ re-measured here.
 
 ### What is left, 2026-09-24 (INBOX 399: "what is left in the world class plan??")
 
-Every row of this plan read against the code, HISTORY, OPEN.md and INBOX on
+Every row of this plan read against the code, HISTORY, LEDGER.md and INBOX on
 2026-09-24; each row below carries a "State 2026-09-24" line where it
 stands. Ranked by impact: what a person meets daily, then what unblocks the
 most, then the rest. Size in sessions (S half, M one, L two or more).
-Mirrored in `agent-remaining/OPEN.md`, table B.
+Mirrored in LEDGER.md, table B.
 
 | # | Row | What is left | Size | Where |
 | --- | --- | --- | --- | --- |
@@ -842,7 +842,7 @@ The 2026-09-08 week table that stood here is superseded by the list above
 The dev-only runner was built 2026-09-20; its record moved to HISTORY.md, "Moved from the plans, 2026-09-24".
 
 **What is still open here.** The evals themselves: `tests/test_skills_evals.py`
-holds the AGENT_SKILLS_REFORM acceptance gate and is the only eval module so
+holds the the retired agent-skills plan acceptance gate and is the only eval module so
 far. Everything else CLAUDE.md section 4 lists as unproven (concurrent tool
 calls at index 1 and beyond, Ollama's native tool-call dialect) is still
 unproven, and each wants its own eval beside that one.
@@ -860,13 +860,13 @@ should fix the class and add the lint that keeps it fixed.
 | # | Flaw | Evidence | Why it matters | Fix (and lint) |
 | --- | --- | --- | --- | --- |
 | F1 | 57 distinct `localStorage` keys read ad hoc, 14 of them `JSON.parse`d | `grep -o 'localStorage.getItem("[^"]*")' frontend/js/*.js \| sort -u \| wc -l` | This is the shape of the worst UI bug in the project's history (two settings missing from `APPEARANCE_DEFAULTS` wrote `NaN` into CSS): a value invalid where it is used, set somewhere else. Corrupt or missing storage throws inside JSON.parse and takes the caller's whole init with it. | One `prefs` module: a schema with defaults and a version per key, `prefs.get(key)` never throws and never returns undefined, migration on version bump. Lint: no direct `localStorage.getItem` outside `prefs.js`. |
-| F2 | 25 list endpoints, 3 accept `limit` | `grep -n "^def list_" -A 6 src/memorymap/api/routes_*.py \| grep -c limit` | Every list is O(notebook). A 5k-note notebook makes the Library, Timeline and Graph tabs multi-second. (MODERNISATION_AUDIT D4.) | Cursor pagination on all 25 with one helper, `?limit=&cursor=`, `next_cursor` in the body; the frontend's list renderers page on scroll. Lint: a test enumerates routers and asserts every `list_*` takes `limit`. |
+| F2 | 25 list endpoints, 3 accept `limit` | `grep -n "^def list_" -A 6 src/memorymap/api/routes_*.py \| grep -c limit` | Every list is O(notebook). A 5k-note notebook makes the Library, Timeline and Graph tabs multi-second. (the retired modernisation audit D4.) | Cursor pagination on all 25 with one helper, `?limit=&cursor=`, `next_cursor` in the body; the frontend's list renderers page on scroll. Lint: a test enumerates routers and asserts every `list_*` takes `limit`. |
 | F4 | **Re-measured 2026-09-13: 147 broad handlers, of which 52 say nothing at all.** `scratchpad/probe_excepts.py` reports both numbers, because the grep below counts every handler and the ones that cost something are the silent subset: a handler that logs with `exc_info` is the fix, not the flaw. Original figure: 88 `except Exception:` / bare `except:` in `src/` | `grep -rn "except Exception:\|except:" src/memorymap --include=*.py \| wc -l` | Failures become silence (the "features that never ran once" shape). | Each one either re-raises as the error contract, logs with `exc_info` to the logbuffer, or is narrowed. Lint: ruff `BLE001` enabled with a per-site `# noqa: BLE001 <reason>`. |
 | F5 | 13 raw `fetch()` calls beside `api()` | `grep -n 'fetch(\`\|fetch("' frontend/js/*.js \| grep -v "api\b"` | Each re-implements the auth header, the error contract and the offline path; one is `/chat/stream`, the most important call in the app. | `api.stream()` and `api.upload()` helpers; the 13 sites move onto them. Lint: no bare `fetch(` outside `api.js`. |
 | F7 | Threads in 16 modules share SQLAlchemy sessions created per call | `grep -rln "threading.Thread" src/tessellate` | SQLite is fine with this only while each thread opens its own session and nobody passes ORM objects across; nothing enforces it, and the "Could not refresh instance" 500 seen this session was exactly that shape. | B2 job runtime: one worker, jobs get a fresh session, results are plain dicts. Lint: `Thread(` allowed only in `core/jobs.py`. |
 | F10 | Extracted text, captions and OCR live in three columns with three UIs | `grep -n "vision_ocr_text\|ocr_text\|caption" src/tessellate/api/routes_files.py \| wc -l` | The Files card shows one, hides one, and the search indexes some; the owner's "only the first line" report was one symptom. | One `readings` table (`media_id, kind, page, text, model, ts`), one renderer, all kinds indexed (B3). |
 | F11 | The graph, dashboard constellation and map thumbnails are three renderers | `grep -c "forceSimulation" frontend/js/graph.js frontend/js/dashboard.js frontend/js/whiteboard.js` | Three physics, three colour maps, three sets of bugs. | GRAPH_PLAN §3: one renderer with `size: "pane" | "tile" | "full"`. |
-| F12 | Frontend state lives in module globals, DOM and localStorage with no single owner | MODERNISATION_AUDIT C2 | Every "the list did not refresh" bug. | A small store: `state.get/set/subscribe` per slice, renderers subscribe; introduced slice by slice (notes list first). |
+| F12 | Frontend state lives in module globals, DOM and localStorage with no single owner | the retired modernisation audit C2 | Every "the list did not refresh" bug. | A small store: `state.get/set/subscribe` per slice, renderers subscribe; introduced slice by slice (notes list first). |
 
 F3, F6, F8 and F9 are done and moved to HISTORY.md, "Moved from the plans, 2026-09-24".
 
@@ -960,7 +960,7 @@ audit is open.
 ## 13. Open bugs and gaps from the merged agent reports (with owners)
 
 Each of these was found by measuring and deferred with evidence; the
-`agent-remaining/*.md` file named carries the file, id and next step.
+`LEDGER.md rows` file named carries the file, id and next step.
 
 - Whiteboard board-preview minimap NaN rects: not reproduced 2026-10-05 (six
   boards, 0 errors at 1440 and 390, `errors.js`); see worldclass-1005c.md.
@@ -985,8 +985,8 @@ Each of these was found by measuring and deferred with evidence; the
 
 **State 2026-10-05:** measured (`scratchpad/ui-sweeps/nbf1005-recheck.js`): a board's preview draws its blocks with no NaN rect and no console error (the renderer was replaced, `mapPreview` in note-cards.js); the tab bar fits at 600, 640, 700, 760 and 819px (scrollWidth equals clientWidth); the tidy layout is measured past five nodes (maplayouts.js at 12 and 200 topics, 0 overlapping pairs, HISTORY.md). Still open with their owners: the whiteboard's menus driven by a sweep (the whiteboard agent), the SVG graph flag (GRAPH_PLAN Phase 2), a new map's root under the top bar (WHITEBOARD_PLAN 7).
 
-**State 2026-09-24:** re-read against OPEN.md and the code: the
-Notes and Graph docks are at 6 controls (OPEN.md B, 2026-09-20);
+**State 2026-09-24:** re-read against LEDGER.md and the code: the
+Notes and Graph docks are at 6 controls (LEDGER.md B, 2026-09-20);
 `#library-media-refresh` no longer exists; the Timeline was built
 (TIMELINE_PLAN); the Writing Room was rebuilt as the writing desk (D16, in
 HISTORY); the 54 paragraphs were Brief 4's. Not re-checked here, so still open
@@ -1130,7 +1130,7 @@ reason; (5) answered questions: for each open question, top-k similar
 claims written *later*; one model call asks "does this answer it". Stop
 when the budget is spent; record where; resume from the cursor next night.
 Small-model mode: passes 3 to 5 use the small prompt variants
-(`AGENT_SKILLS_REFORM` Phase B), one item per call.
+(`the retired agent-skills plan` Phase B), one item per call.
 
 **Tests first** (`tests/test_night_shift_spec.py`, strict xfail until each
 passes): a run over the fixture notebook with the fake model produces the
@@ -1269,7 +1269,7 @@ first pass of I1"); the Settings section 2026-09-19 (HISTORY.md, "Built,
 I9's Settings section").** What is still open here is the kinds I1's later
 passes add (tensions, duplicates, entities, dates) and the "Learned: manage"
 link (the bulk actions and `POST /learned/bulk` were built together on
-2026-09-23, agent-remaining/OPEN.md's Backend section has the measurement) from each invention's own surface. The text
+2026-09-23, LEDGER.md's Backend section has the measurement) from each invention's own surface. The text
 below is kept because it is the spec for those.
 
 Added by direct instruction: "give the user the ability to see what the
@@ -1376,7 +1376,7 @@ nothing         →  I4 resurfacing, I7 (with its own corrections table)
 Start with I9's switches and table together with I7, then I4 (no
 dependencies, both improve every existing feature), then §14.2 and I6,
 then I1, then I3, I2, I5, I8. Each adds its rows to I9 as it lands. Each is one
-brief row in SESSION_BRIEFS when its turn comes; none is built ad hoc.
+brief row in the retired session briefs when its turn comes; none is built ad hoc.
 
 ### What was deliberately left out
 
@@ -1428,7 +1428,7 @@ The embed-cache lock fixed 2026-09-08 moved to HISTORY.md, "Moved from the plans
   to HISTORY.md, "Moved from the plans, 2026-09-24".
 - `similar_pairs` computed per request for link suggestions and tensions:
   built 2026-09-24, moved to HISTORY.md, "Moved from the plans, 2026-09-24".
-- The frontend runs nine `setInterval` polls; MODERNISATION_AUDIT measured
+- The frontend runs nine `setInterval` polls; the retired modernisation audit measured
   14 idle requests a minute. Move: one `/events` SSE stream (B1's log is
   the natural source) and the polls become subscriptions. Size M, Opus.
 - Five route files exceed 1,750 lines (`routes_files.py` at 2,998). Not a
@@ -1735,7 +1735,7 @@ they pay back: B2's resume-after-kill, I3 open questions, I6 evidence
 cards, I8 the model bench, I2 the margin reader, I5 time travel, B7 the
 API contract, B8 extensions, B6 sync. The dossiers D1 to D15 were largely
 absorbed by UI phases 0 to 11 and the per-surface plans; what each still
-owes is one line in `agent-remaining/OPEN.md`.
+owes is one line in LEDGER.md.
 
 **What "revolutionary" has to mean now.** The two asymmetries in §15 hold:
 the model is free and idle, and the corpus is one mind. Every cloud
@@ -1896,7 +1896,7 @@ Built 2026-10-05, every row: moved to HISTORY.md, "Moved from the plans, 2026-10
 H7 first (it makes every later measurement honest), then H9's perf gate
 and usage ledger, then H1, H2, H3, H6, H4, H8, H5. One horizon item per PR, its Built block moved to HISTORY at
 the end, its numbers in the CHANGELOG. Nothing above is started until
-`OPEN.md` is empty for the surface it touches: a revolution on top of an
+`LEDGER.md` is empty for the surface it touches: a revolution on top of an
 unfixed report is how the "fixed again" rounds happened.
 
 ## 19. The architecture and framework review (2026-09-20, INBOX 266)
@@ -2121,7 +2121,7 @@ HISTORY.md, "Moved from the plans, 2026-09-24".
     an audit before any fix: every surface, what it pushes to history and
     what it makes undoable, as a table. Placed into WORLD_CLASS_PLAN.
 
-**State 2026-10-18:** the audit ran (`archive/agent-remaining/worldclass-1018.md`: 21 visits 16 of 16 on Back, Forward and reload; Escape closes 30 of 30 reached openers). Fixed: Back with an overlay open (7 of 7 at 1440 and 390), Escape on Settings, agent palette focus; the mind map's undo works on the board's own stack (objects 1 to 0 on Ctrl+Z), `undo.js` misreads it. Open: image lightbox, reminders add form, notes edit entry and graph node panel Escape; the chat undo line.
+**State 2026-10-18:** the audit ran (`worldclass-1018.md` (git history): 21 visits 16 of 16 on Back, Forward and reload; Escape closes 30 of 30 reached openers). Fixed: Back with an overlay open (7 of 7 at 1440 and 390), Escape on Settings, agent palette focus; the mind map's undo works on the board's own stack (objects 1 to 0 on Ctrl+Z), `undo.js` misreads it. Open: image lightbox, reminders add form, notes edit entry and graph node panel Escape; the chat undo line.
 
 ## Audio in the notebook: the architecture decided 2026-09-21, the build deferred
 
@@ -2238,7 +2238,7 @@ added against, and what is still open.
    chat tab's agent mode uses, so a "skills" row would have moved only
    `skill_runner._replan`'s small recovery call and left the model that runs
    every step where it was. Giving skills a model of their own means giving
-   `run_agent` a feature to run under, which belongs in AGENT_SKILLS_REFORM.
+   `run_agent` a feature to run under, which belongs in the retired agent-skills plan.
 3. **Settings is the canonical place**, because that is where a mass reset
    makes sense: one list, a row per feature naming the model and whether it
    is inherited, a per-row reset live only while that row is overridden, and
@@ -2461,7 +2461,7 @@ not too fast; the rule is simply one number per published release.
     (`tests/test_motion_tokens.py`), a hover is a colour never a filter
     (with INBOX 405), toasts and '?' popovers fade in with 4px of travel,
     toasts fade out, skeletons in the Library and Timeline. Menus' exit left
-    to the menu agent (archive/agent-remaining/perfpolish.md).
+    to the menu agent (`perfpolish.md` (git history)).
     **E20, s58left4-1110, per part:** (4) built (above). (1) to (3) were
     briefs, not parts: their outcomes are the rows built since (the finding
     table is 424). Nothing here is left open as a part.
@@ -2940,7 +2940,7 @@ INBOX 410 (check with AI in place, dockable suggestions, the dictionary sheet, t
 427. **Open from INBOX 426, 2026-09-26: two calls only the owner can make.**
     Everything else in 426 (a to cc) is built and in HISTORY, "INBOX
     resolved, 2026-09-26"; the agents' smaller leftovers are in
-    `agent-remaining/OPEN.md`, "Left by the 0.3.3 agents".
+    LEDGER.md, "Left by the 0.3.3 agents".
     (1) **Atlas's anatomy, the owner's read of rounds 3 and 4.** The trace
     proofs put the masculine look at 88% of the reference sprite's height
     and the feminine look's hair a third shorter than the definitive stand's;
@@ -3033,7 +3033,7 @@ Briefs 485, 496, 493, 484, 486 and 490 are all built (each carries its "Built:" 
      Reminders: one "Add" per card. The documents dock onto the shared dock
      recipe (DOCUMENTS_PLAN). Sonnet-sized except the zoom unification.
 
-## Placed from INBOX, 2026-10-05 (OPEN.md triage)
+## Placed from INBOX, 2026-10-05 (ledger triage)
 
 - ~~**Move a batch of notes to another space**~~ Built (row 30: `batch-space.js`, `POST /spaces/{id}/move-notes`, an Undo that moves them back, `tests/test_selection_actions_row30.py`; HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: WORLD_CLASS_PLAN)").
 - **The Guide's corpus and the Help accordion are kept in step by hand**
@@ -3103,7 +3103,7 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
 - "Also I feel like we should reference all the vendored repos and libraries somewhere to give them credit."
   Recommendation: a credits list in Help, generated from `docs/THIRD_PARTY.md`, with each licence file. Also carried by Brief 35 (the credits file).
 - "I also want to integrate and use the new vendored repositories and libraries better and also see if there are more complimentary libraries and repos we can vendor…"
-  Recommendation: each vendored library gets one named use in the engine, with a test, and a keep or drop row in ANALYSIS.md. Also carried by Brief 40 (candidate vendorable libraries) and ROADMAP Direction policy 1.
+  Recommendation: each vendored library gets one named use in the engine, with a test, and a keep or drop row in the retired analysis doc. Also carried by Brief 40 (candidate vendorable libraries) and ROADMAP Direction policy 1.
 - "Filing and suggested tags and categories and stuff need a lot of improving. Should we include a library of common possible categories and even ways to join words to make custom categories and then there can be a similaity search for new or existing category filing and concatenation for new categorie"
   Recommendation: a seed category library (the taxonomy pack) with joins for custom categories, and a similarity search over new and existing categories. Also carried by Brief 39b (candidates, decision and merge suggestions) and ROADMAP Direction policy 3.
 - "just continue and research categories and tags etc. make it extensive and also dynamic. some categories for example might not just be "gym" or 'Fitness" but "gym & fitness" yk??"
@@ -3114,11 +3114,11 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
 ### Ideas
 
 - "I want to deep analyse this repo and see if we can cake a use/replicate/take a lot from it https://github.com/haifengl/smile.git"
-  Recommendation: the smile read goes into ANALYSIS.md with the algorithms worth a small Python port (clustering, keyword extraction). Also carried by Brief 40 (haifengl/smile).
+  Recommendation: the smile read goes into the retired analysis doc with the algorithms worth a small Python port (clustering, keyword extraction). Also carried by Brief 40 (haifengl/smile).
 - "are there any other libraries that could be used that I and u havent found or mentioned??"
   Recommendation: the candidate-library table in Brief 40 answers this, with keep or drop for each. Also carried by Brief 40.
 - "did you vendor the other libraries and binaries?? do we need to?? what else is there to do??"
-  Recommendation: answer in ANALYSIS.md: which libraries are vendored, which are pip dependencies, and which are dropped under policy 1. Also carried by Brief 40 and ROADMAP Direction policy 1.
+  Recommendation: answer in the retired analysis doc: which libraries are vendored, which are pip dependencies, and which are dropped under policy 1. Also carried by Brief 40 and ROADMAP Direction policy 1.
 - "doesnt harper use a binary though?? are there any other repos or libraries that we can vendor??"
   Recommendation: Harper is a WebAssembly build in the frontend; the Brief 40 table records any other WASM or pure Python candidate. Also carried by Brief 40.
 
@@ -3829,7 +3829,7 @@ World class for a local notebook is five things, each measurable:
 | 25f Settings | built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (WORLD_CLASS 25f, Brief 52)") | every setting reachable by search; `test_settings_rows.py` walks every key (75, not 179) | 52, built: 60 of 60 shown rows found by search, 60 of 60 cleared by reset, 33 of 33 back to the server default, file round trip 0 differences |
 | 25g Budgets | built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (WORLD_CLASS 25g, Brief 53)") | the six numbers in the README's performance table; CI fails when one exceeds its cap | 53, built: first paint 713 ms, first interaction 4,639, list 139, search 30, board 108, document 359; caps 1.5 times each |
 
-Phase E of AGENT_SKILLS_REFORM (Brief 54) and TIMELINE Phase 5 (Brief 55)
+Phase E of the retired agent-skills plan (Brief 54) and TIMELINE Phase 5 (Brief 55)
 are written in their plans.
 
 ### 25.5 Not verified
@@ -3987,7 +3987,7 @@ sources; three export shapes per document and one per note.
 | Reminders and tasks | parse, due, snooze?, the tray, notifications | recurring, snooze with choices, natural dates in every date field, delivery when the window is closed, the calendar | Brief 55 |
 | Library | gallery, OCR, vision, filters, activity | split (45); bulk tag and move; a file's places (which notes, boards) | Briefs 45, 43 |
 | Dashboard | nine blocks | "continue and today" (decision 51) | Brief 59 |
-| Settings | 75 keys, panes, help on 105; search, reset, modified, export built (25f) | appearance keys kept per browser (see agent-remaining/settings52-1011.md) | Brief 52 |
+| Settings | 75 keys, panes, help on 105; search, reset, modified, export built (25f) | appearance keys kept per browser (see `settings52-1011.md` (git history)) | Brief 52 |
 | Import | Notion, Obsidian, Evernote, Apple Notes, web clip, media | the report page, progress, a markdown folder in, the round trip (25b) | Brief 48 |
 | Export | per note `.md`, per document md, zip, docx, the bundle | the whole notebook as a folder (25b); boards and maps as SVG and PNG with the notes they link; a document as PDF | Brief 48 |
 | Backups | create, list, restore, bundle, schedule line, second-copy folder | the tested restore, the boot check (25e, built) | Brief 51 |
@@ -4148,7 +4148,7 @@ Translate (offline language packs).
 | --- | --- | --- | --- | --- |
 | 1 to 7 | all | **Built 2026-10-10 (Briefs 80 and 81; HISTORY "WORLD_CLASS 28.5, Brief 80" and "Brief 81")**: a recording is an object; decisions and actions found with no model; the Audio group; undo on the five meeting acts; a 10 s slice recovered after a killed tab; Library, Recordings (play, speed, waveform, markers, trim); the timed transcript with SRT and VTT | measures in HISTORY | 1, 2, 3, 6, 12 |
 | 8 | fix | Transcription is a job with progress and Stop (decision 70) | a 60-minute file lists, reports, stops | 5 |
-| 9 | expansion | Live captions: one-click install built (INBOX 1777; HISTORY "Moved from the plans, 2026-11-11 (WORLD_CLASS 28.5 row 9, one-click captions, INBOX 1777)"); open: the run on the reference laptop, and Windows, macOS and aarch64 wheels run for real | Built by Brief 82; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (WORLD_CLASS 28.5 row 9, live captions, Brief 82)"); the open rows are in archive/agent-remaining/caption82-1010.md | |
+| 9 | expansion | Live captions: one-click install built (INBOX 1777; HISTORY "Moved from the plans, 2026-11-11 (WORLD_CLASS 28.5 row 9, one-click captions, INBOX 1777)"); open: the run on the reference laptop, and Windows, macOS and aarch64 wheels run for real | Built by Brief 82; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (WORLD_CLASS 28.5 row 9, live captions, Brief 82)"); the open rows are in `caption82-1010.md` (git history) | |
 | 10 | expansion | **Built 2026-10-10 (Brief 83; HISTORY "WORLD_CLASS 28.5, Brief 83")**: Translate this, offline (Bergamot, MPL-2.0, in a page Worker; English to Spanish as the package "Translate offline"); documents, notes, readings; a caption is a selection like any other; live captions translate under the dock's Translate button (libr-1011, fake translator in tests, needs device) | 94-word paragraph warm in Chromium: median 591 ms, 27 of 29 runs under 1 s (load 6 to 9 on 4 shared cores); 27.2 MB download, 41.8 MB on disk | 12 |
 | 11 | expansion | **Built 2026-10-10 (Brief 81; HISTORY "WORLD_CLASS 28.5, Brief 81")**: speaker labels behind the model gate (ANALYSIS keeps it) | 2 speakers labelled on the sample (fake transport) | 12 |
 
@@ -4166,11 +4166,11 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 - **VC8, the word list in search typo tolerance and the question-noise real-word check** (M, rank 8). `ai/question_noise.py` names `frontend/vendor/wordlist/en.txt` in a comment and never reads it; the search engine does not consult it either (the list is read by `documents.js` alone). A query word absent from the list and one edit from a word in the notebook is a typo. Measure: on the 30 misspelt queries of the existing noise table, recall at 10 before and after; no change on correctly spelt queries; the list loads once and costs under 50 ms at start.
 ### 28.6 T0 numbers, 2026-10-10
 
-Brief 74 measured rules 1, 2 and 7 on 12 surfaces (`undo.js`, `reach.js`, `overlap.js`, `measure-writes.py` in `scratchpad/ui-sweeps/`): 124 controls pressed, 25 changed the notebook, 5 undone (statically 80 of 274 server-writing functions name an undo path); 55 destinations, 1 deeper than 3 clicks, 16 without a palette command; overflow/clipped 95/6, 14/5, 28/17, 30/19, 23/15 at 320 to 1440, docks 0 intersections. The table by surface and the findings by selector are in [`archive/agent-remaining/trust-1010.md`](archive/agent-remaining/trust-1010.md) (section "T0 numbers").
+Brief 74 measured rules 1, 2 and 7 on 12 surfaces (`undo.js`, `reach.js`, `overlap.js`, `measure-writes.py` in `scratchpad/ui-sweeps/`): 124 controls pressed, 25 changed the notebook, 5 undone (statically 80 of 274 server-writing functions name an undo path); 55 destinations, 1 deeper than 3 clicks, 16 without a palette command; overflow/clipped 95/6, 14/5, 28/17, 30/19, 23/15 at 320 to 1440, docks 0 intersections. The table by surface and the findings by selector are in [`trust-1010.md` (git history)](`trust-1010.md` (git history)) (section "T0 numbers").
 
 ## Placed from INBOX, 2026-10-10 (filing suggestions)
 
-- INBOX 781: built 2026-10-11, HISTORY.md, "Moved from the plans, 2026-10-11 (WORLD_CLASS 23, INBOX 781, filing suggestions)". Open: `docs/roadmap/archive/agent-remaining/filing-1010.md`.
+- INBOX 781: built 2026-10-11, HISTORY.md, "Moved from the plans, 2026-10-11 (WORLD_CLASS 23, INBOX 781, filing suggestions)". Open: `filing-1010.md` (git history).
 
 ## Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3)
 

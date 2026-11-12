@@ -101,22 +101,3 @@ def test_skeletons_sweep_names_the_views_that_are_right_to_read_blank():
     # The phone-only exemption is bounded: documents/list is a drawer below 600.
     assert re.search(r"documents/list.*maxWidth: 599", block)
     assert "process.exit(failed ? 1 : 0)" in code
-
-
-def test_open_ledger_has_one_plan_tails_block_and_no_stub_runs():
-    """OPEN.md carried "B. Plan tails" twice and ~85 one-line struck stubs, each
-    saying only that a row's account is in HISTORY.md. The ledger keeps the open
-    rows; runs of stubs collapse into one pointer line per HISTORY section."""
-    text = (ROOT / "docs" / "roadmap" / "agent-remaining" / "OPEN.md").read_text(encoding="utf-8")
-    assert text.count("**B. Plan tails") == 1
-    run = 0
-    for line in text.splitlines():
-        if re.match(r"^- ~~.+~~ [A-Za-z ]+\.? ?(?:[^\"]*)The account is in HISTORY\.md", line):
-            run += 1
-            assert run < 2, f"two struck stub lines in a row: {line[:80]}"
-        else:
-            run = 0
-    # Every pointer the stubs carried still resolves to a heading in HISTORY.md.
-    history = (ROOT / "docs" / "roadmap" / "HISTORY.md").read_text(encoding="utf-8")
-    for pointer in set(re.findall(r'accounts? in HISTORY\.md, "([^"]+)"', text)):
-        assert f"## {pointer}" in history, pointer

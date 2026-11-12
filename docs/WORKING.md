@@ -47,8 +47,8 @@ disagree, the most recent dated entry wins.
    scan for bugs, keep docs current) means: read this file, the HANDOVER
    block and its "Now" line, and `docs/ROADMAP.md`'s opening table; merge
    any agent worktree with commits not on the branch; then work, in order,
-   `docs/roadmap/INBOX.md`, `docs/roadmap/agent-remaining/*.md`,
-   `docs/roadmap/SESSION_BRIEFS.md` Briefs in order, the plan phases in
+   `docs/roadmap/INBOX.md`, `docs/roadmap/LEDGER.md` rows by priority,
+   the plan phases in
    ROADMAP order, then ROADMAP's live list and BACKLOG by impact. Do not
    wait for a prompt or ask permission for work inside the plans.
 2. **Mid-work drops** (a screenshot, a bug, a request, a usage figure) go
@@ -73,9 +73,9 @@ disagree, the most recent dated entry wins.
    number. Each agent gets its own worktree, port and data dir. Its first
    step is `git merge --no-edit -q <working branch>`, because a worktree can
    be cut from an old base and a reset is refused. It commits per step and
-   at least every 20 minutes, so a usage limit never loses work, and writes
-   its remaining list before stopping. The orchestrator merges, gates and
-   pushes. Every brief begins with `docs/roadmap/agent-remaining/agent_common.md`
+   at least every 20 minutes, so a usage limit never loses work, and adds LEDGER rows
+   (`python scripts/ledger.py add`) for what it leaves, before stopping. The orchestrator merges, gates and
+   pushes. Every brief begins with `.claude/skills/orient/agent_common.md`
    and the `orient` skill.
 5. **Quality does not drop with the model.** Tests first, measure before
    claiming, one commit per step, push per batch, five-line reports
@@ -150,18 +150,17 @@ superseded. Then:
 | --- | --- |
 | [`docs/roadmap/HANDOVER.md`](docs/roadmap/HANDOVER.md) | The standing orders' latest additions, the orchestrator block, the "Now" line, plan progress, the agents table and merge recipe, the last session's traps. |
 | [`docs/roadmap/INBOX.md`](docs/roadmap/INBOX.md) | The owner's mid-work findings, placed. Bugs first. |
-| [`docs/roadmap/SESSION_BRIEFS.md`](docs/roadmap/SESSION_BRIEFS.md) | The operating protocol (section 0) and one complete brief per session. |
+| [`docs/roadmap/LEDGER.md`](docs/roadmap/LEDGER.md) | Every open item as a row; `python scripts/ledger.py add` / `done` / `counts`. |
 | [`docs/roadmap/WORLD_CLASS_PLAN.md`](docs/roadmap/WORLD_CLASS_PLAN.md) | The consistency contract with a lint per rule, competitor gaps, frontend dossiers, backend moves, security review, flaw classes with commands, execution order. |
 | [`docs/roadmap/UI_MODERNISATION_PLAN.md`](docs/roadmap/UI_MODERNISATION_PLAN.md) | Phases 0 to 9 of the UI work. |
-| [`DOCUMENTS_PLAN.md`](docs/roadmap/DOCUMENTS_PLAN.md), [`GRAPH_PLAN.md`](docs/roadmap/GRAPH_PLAN.md), [`TIMELINE_PLAN.md`](docs/roadmap/TIMELINE_PLAN.md), [`WHITEBOARD_PLAN.md`](docs/roadmap/WHITEBOARD_PLAN.md), [`CHAT_PLAN.md`](docs/roadmap/CHAT_PLAN.md), [`MINDMAP_PLAN.md`](docs/roadmap/MINDMAP_PLAN.md), [`AGENT_SKILLS_REFORM.md`](docs/roadmap/AGENT_SKILLS_REFORM.md) | One plan per surface: what exists, why it disappoints (measured), target, decisions made, gated phases, not verified. |
-| [`docs/roadmap/agent-remaining/`](docs/roadmap/agent-remaining/) | OPEN.md, the consolidated ledger, plus one file per running agent; finished ones are in `docs/roadmap/archive/agent-remaining/`. |
-| [`docs/roadmap/HISTORY.md`](docs/roadmap/HISTORY.md), [`BACKLOG.md`](docs/roadmap/BACKLOG.md), [`ANALYSIS.md`](docs/roadmap/ANALYSIS.md), [`MODERNISATION_AUDIT.md`](docs/roadmap/MODERNISATION_AUDIT.md) | What is built (with every retraction), the standing backlog, judgements and competitor reads, the measured audit. |
+| [`DOCUMENTS_PLAN.md`](docs/roadmap/DOCUMENTS_PLAN.md), [`GRAPH_PLAN.md`](docs/roadmap/GRAPH_PLAN.md), [`TIMELINE_PLAN.md`](docs/roadmap/TIMELINE_PLAN.md), [`WHITEBOARD_PLAN.md`](docs/roadmap/WHITEBOARD_PLAN.md), [`CHAT_PLAN.md`](docs/roadmap/CHAT_PLAN.md), [`MINDMAP_PLAN.md`](docs/roadmap/MINDMAP_PLAN.md) | One plan per surface: what exists, why it disappoints (measured), target, decisions made, gated phases, not verified. |
+| [`docs/roadmap/HISTORY.md`](docs/roadmap/HISTORY.md), [`BACKLOG.md`](docs/roadmap/BACKLOG.md) | What is built (with every retraction) and the standing backlog. Retired roadmap docs' standing decisions are in ARCHITECTURE.md's last section. |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | The design system; `tests/test_style_scale.py` fails the build otherwise. |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How the pieces fit. |
 | [`.claude/skills/README.md`](.claude/skills/README.md) | The one vendored design skill (`ui-ux-pro-max`); `docs/DESIGN.md` overrides it for anything in `frontend/`. |
 
 **Licence:** this project is AGPL-3.0. AGPL or MIT code may come in with its
-notices; nothing may go out to an MIT project (details in ANALYSIS.md).
+notices; nothing may go out to an MIT project (details in ARCHITECTURE.md, last section).
 
 Section numbers (`§21`) in code comments resolve through HISTORY.md's index;
 `tests/test_docs_layout.py` enforces the cross-links.

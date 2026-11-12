@@ -381,7 +381,7 @@ an agent's write uses; Agent mode then opens with no model for those verbs;
 user to write better link reasons"): INBOX 691's concrete overlaps first,
 then the composer's quoted sentence pair, a model's checked line when one
 runs, feeding Tidy's "Add reasons" and "Add reasons to all". Open items and
-numbers: agent-remaining/composer725-1006.md.
+numbers: `composer725-1006.md` (git history).
 INBOX 1301 D5 (an overview note as its gist, sections said as its shape, no "You asked:" echo, a reminder only for a stated task): built, see HISTORY.md "Moved from the plans, 2026-10-18 (design4-1018: how a no-model answer reads)".
 
 ### Phase 6: the deterministic engine (the owner, 2026-10-10; Brief 39)
@@ -501,10 +501,10 @@ What follows is the architecture that gets there; each decision is a step.
 Steps 0 to 10, the first tests and the specification moved there whole, with
 the numbers. Decisions 30 to 45 stay above: later briefs build on them.
 
-#### Open from Phase 6 (one line each; the agent's ledger is `agent-remaining/engine-1010.md`)
+#### Open from Phase 6 (one line each; the agent's ledger is `engine-1010.md` (git history))
 
 - The blind panel (decision 40), composer half run 2026-11-11 (PR 216 composer spoke; the 1 to 3B model half is rerun below once a GGUF is up; the owner's own-notebook rating is an owner check, not open work). Three independent blind-tester raters saw only the 25 showcase questions, the notes and two unlabelled answers each (the composer's and a naive baseline: the top note's first three sentences), scoring 0 to 5 on facts, grounded, human and useful. Composer (75 ratings): facts 4.28, grounded 4.31, human 3.19, useful 3.73 (sum 15.5 of 20). Baseline: 4.72, 4.84, 2.09, 3.13 (14.8). The composer beats it on human (+1.1) and useful (+0.6) and loses on facts and grounded (-0.4, -0.5): raters were not shown the notes' dates, so several measured dates read as unverifiable. Rater means within 0.16 of each other on every criterion. Marked down and fixed: a "latest" walk back in time used forward joiners ("Soon after, on 29 August" under 12 September; `composer_body._earlier`), and "Due in March." was left out of "when is the boiler service due" (`composer_select._Scorer.score`'s subject-only halving hit a sentence that carries the cue); `tests/test_composer_panel_216.py`. Also fixed from the panel (`tests/test_composer_panel_216.py`): Q10 no longer counts "Stay one night" as a hotel (`composer_unfound._VERB_SYNONYMS`), so the answer ends "None of these notes say anything about “hotel”."; Q6's comparison lead counts every found note that names a side ("four mention Lisbon and five mention Porto", not the lines shown; three older tests asserted the old singular count and now accept either number); Q17 an entry of a risks list is said as the nearest the notes come, not as the page's status. Q22's "That may be a hobby forming." stays: it is the owner's own insight hedge (INBOX 883, decision 60), computed from a count and dates, not a model's guess. **Model half run 2026-11-11** (Qwen2.5-1.5B on llama-cpp-python, `librarian.build_messages` over `composer.brief`; one blind-tester rater, same 25 questions, two unlabelled answers each, 0 to 5, dates shown): model on facts 2.92, grounded 2.76, human 3.20, useful 3.28 (12.2); the composer on the same pairs 4.72, 4.64, 2.72, 4.00 (16.1). The model rates worse on 17 of 25 (a misread checklist, two notes merged, a date or a hotel that no note holds) and ties or wins on 8 (Q2, Q4, Q10, Q12, Q13, Q16, Q24); the answer validators flag 4 of the 17. Decision 75 keeps the model leading, so no answer was swapped; recommendation: at 3B and below a plain Ask defaults to `answer_from: "notes"`.
-- Probe P15 (`archive/agent-remaining/engine-probe-1010.md`): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
+- Probe P15 (`engine-probe-1010.md` (git history)): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
 - The currency table's Settings editor (decision 43); the rates are dated and fixed.
 - The model choosing among the engine's numbered readings (decision 45): the readings are listed; with a model running it does not yet pick.
 - The currency table has no preference at all (`utilities.RATES` is a constant), so decision 43's editor has nothing to edit until the table is a preference.
@@ -648,7 +648,7 @@ twenty). Open until the owner's next run reports it gone or not.
     a 300 to 700px drag, 0 while still). Open until the owner's next run; the skill match being "not entirely accurate" is placed with
     the documents' Check with AI rework (INBOX 410).
 
-## Placed from INBOX, 2026-10-05 (OPEN.md triage)
+## Placed from INBOX, 2026-10-05 (ledger triage)
 
 - Built 2026-10-05: Ask honours `grounding_live` (HISTORY.md, "Moved from the plans, 2026-10-05 (backlog-1005)"); the placed lists' triage pass and the question hover row ("... (op3-1005)").
 
@@ -705,7 +705,7 @@ composer to be soooo good that users dont even need to install ai ... some of
 my friends dont like ai and probs wont want to install a local model so I want
 it to be the best and most capable and well spoken, coherent, well made
 composer the world has seen." Next session: the Phase 5 rows and
-`agent-remaining/composer725-1006.md` (link reasons from sentence pairs, the
+`composer725-1006.md` (git history) (link reasons from sentence pairs, the
 composer feeding a running model, "the composer acts"), each measured on the
 725 eval. The owner may run this phase with a Fable planning pass later, by
 their own call when usage allows (standing order 4 bars Fable agents unless
@@ -1533,9 +1533,9 @@ catalogue above specifies the engine for chat. This section is the layer under
 every surface: what the research says it should be made of, where it joins each
 surface, the decisions, and the briefs. It remakes nothing decided in 17 to 45.
 "Today" is read from the code and from the probe tables in
-`archive/agent-remaining/engine-probe-1010.md`, not observed in the app, except where a
+`engine-probe-1010.md` (git history), not observed in the app, except where a
 number is given. The probe tables were re-run on the merged head by F0: every row is
-unchanged (`archive/agent-remaining/found-1010.md` part 2).
+unchanged (`found-1010.md` (git history) part 2).
 
 - (Odysseus, fourth read 2026-10-10) 
 
@@ -1576,7 +1576,7 @@ unchanged (`archive/agent-remaining/found-1010.md` part 2).
 4. **`ai/realise.py`**, the realiser: templates with protected spans, two voices plus help, salt per chat and turn, the variety floor measured. Every system sentence may route through it; chat first, then toasts and empty states surface by surface.
 5. **`ai/validate.py`**, the validators: `source_check`, grounding marks, the maxims lint, slot completeness and the computed-sentence rule, run on the engine's answer and the model's alike.
 
-Rule: a surface never reads language itself. `tests/test_one_reader.py` ratchets the count of files outside `recognise.py` and `timewords.py` that compile a date-word or unit pattern, from today's count down to zero. Today's count, measured 2026-10-10 by `scratchpad/reader_count.py` (F0): **6 files** (`ai/when.py`, `ai/reminder_parser.py`, `search/query.py`, `ai/notebook_stats.py`, `api/routes_vision.py` by substring, `ai/composer.py` as a date cue), 0 in `frontend/js`, and no unit reader anywhere; the lines are in `archive/agent-remaining/found-1010.md`.
+Rule: a surface never reads language itself. `tests/test_one_reader.py` ratchets the count of files outside `recognise.py` and `timewords.py` that compile a date-word or unit pattern, from today's count down to zero. Today's count, measured 2026-10-10 by `scratchpad/reader_count.py` (F0): **6 files** (`ai/when.py`, `ai/reminder_parser.py`, `search/query.py`, `ai/notebook_stats.py`, `api/routes_vision.py` by substring, `ai/composer.py` as a date cue), 0 in `frontend/js`, and no unit reader anywhere; the lines are in `found-1010.md` (git history).
 
 ### 4. Decisions, 2026-10-10 (not to be remade; numbered after Phase 6's 45)
 

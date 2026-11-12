@@ -58,6 +58,9 @@ community pass) and `/graph/path`. The dock is on the Phase 8 grammar.
    timeline scrub with a *play*; no local-graph pane beside an open note;
    no export of the picture that matches the screen.
 
+- `clearanceForce` (2,000 notes, 3,999 links) costs 28 ms a call: the corridor walk and tests take 11 ms and the hits 17 ms. A coarser corridor cannot cut the hits, and fewer hits needs an owner quality decision (a long line's push every other tick was tried and reverted). (from `gr1b-1101.md` (git history))
+- The board's remaining layers: 138 at rest come from Chrome's sparsity rule, which will not merge far-apart cards into one layer. A transparent backdrop measured 54 layers, but it relies on an internal heuristic, so it was left. (from `graph-wb-0926.md` (git history))
+
 ## 3. The target, in one paragraph
 
 A full-tab canvas graph that renders 5,000 nodes at 60 fps, where notes
@@ -180,7 +183,7 @@ on 2026-09-20, with the measurement of each: a plan holds open work only.
 
 ## Decision made, 2026-09-20: three of the six options sections are folds
 
-The recommendation on record (archive/agent-remaining/graph.md, "Open, found
+The recommendation on record (`graph.md` (git history), "Open, found
 and not fixed") was that Groups and Minimap become one collapsed `details`
 each. Taken, and measured: it is no longer enough. The panel had grown from
 the 587px that recommendation was written against to 655px of list in a 488px
@@ -593,7 +596,7 @@ Owner: the graph agent (Opus), when a slot frees.
 
 ## Placed from the owner, 2026-10-11: a tessellation view (built)
 
-Built 2026-11-10 (q31-1110): the Tessellation layout with Cells and Hexes, and the Map's link-weighted tiles and uncut names; see HISTORY.md, "Moved from the plans, 2026-11-10 (q31-1110)". Left: `agent-remaining/q31-1110.md`.
+Built 2026-11-10 (q31-1110): the Tessellation layout with Cells and Hexes, and the Map's link-weighted tiles and uncut names; see HISTORY.md, "Moved from the plans, 2026-11-10 (q31-1110)". Left: `q31-1110.md` (git history).
 
 ## Placed from INBOX, 2026-10-26 (the owner: the force view is messy, popups and controls hard to learn)
 
@@ -601,7 +604,7 @@ Built 2026-11-10 (q31-1110): the Tessellation layout with Cells and Hexes, and t
 
 ## Decision made, 2026-10-26: a landscape map is laid out landscape, a hub's lines are rays
 
-INBOX 1400 and 1306, measured with `gm.js` (numbers in `agent-remaining/graph-1026.md`). The 430 rule shaped portrait only, so a 1440x900 map came out 0.49 of the canvas wide and 0.80 tall. Now the y pull rises and the x pull falls by one root (`landscapePull`, graph-worker.js, capped at 3), so the cloud keeps its size and takes the canvas's shape. A hub (`gcHubSpokeMin`: three times the mean degree, at least 8) draws its lines straight, and a line from it to another category at 0.55 of the quiet bridge until pointed at. The node panel's foot is worded at every width (Open, Focus, Pin, Link, then the ⋯), replacing Phase 6's nine bare icons.
+INBOX 1400 and 1306, measured with `gm.js` (numbers in `graph-1026.md` (git history)). The 430 rule shaped portrait only, so a 1440x900 map came out 0.49 of the canvas wide and 0.80 tall. Now the y pull rises and the x pull falls by one root (`landscapePull`, graph-worker.js, capped at 3), so the cloud keeps its size and takes the canvas's shape. A hub (`gcHubSpokeMin`: three times the mean degree, at least 8) draws its lines straight, and a line from it to another category at 0.55 of the quiet bridge until pointed at. The node panel's foot is worded at every width (Open, Focus, Pin, Link, then the ⋯), replacing Phase 6's nine bare icons.
 
 ## Placed from INBOX, 2026-10-31
 

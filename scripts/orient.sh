@@ -12,8 +12,8 @@ sed ':a;N;$!ba;s/\n/ /g;s/  */ /g' CLAUDE.md | grep -o 'The agent cap is[^.]*\.[
 echo "== Counts =="
 echo "open INBOX items: $(grep -c '^[0-9][0-9]*\. \*\*' docs/roadmap/INBOX.md)"
 echo "uncommitted paths: $(git status --short 2>/dev/null | wc -l)"
-echo "== Remaining files (newest 5) =="
-ls -t docs/roadmap/agent-remaining/ 2>/dev/null | grep -v -e '^OPEN\.md$' -e '^agent_common\.md$' | head -5
+echo "== LEDGER (docs/roadmap/LEDGER.md: every open item outside the plans) =="
+grep -E '^\| all \|' docs/roadmap/LEDGER.md | sed 's/^/plan open, ledger open, partly, owner calls, hardware, total: /'
 echo "== Last retro (.claude/skills/retro/ledger.md; run the retro skill at session end) =="
 tail -1 .claude/skills/retro/ledger.md 2>/dev/null | cut -c1-200
 exit 0

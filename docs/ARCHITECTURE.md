@@ -1199,7 +1199,7 @@ named next.
 ### Storage headroom, measured not guessed
 
 Asked directly whether storage becomes a problem for a notebook that grows
-for years. Measured with `scripts/scale_test.py` (roadmap ANALYSIS.md §34,
+for years. Measured with `scripts/scale_test.py` (git history: roadmap ANALYSIS.md §34,
 item 2) rather than estimated: a real 50,000-note SQLite file, checkpointed
 out of WAL before measuring, was **12MB**: its `embeddings` table is the
 only part that scales with vector size, and this fixture's vectors are 4
@@ -1463,7 +1463,7 @@ with no stand-in; `tests/test_lazy_bundle_calls.py` covers the lazy bundles.
 for a range of lines before it moves. The app's own code was one 50,000-line
 `app.js` until 0.3.3; it was cut into the 29 files above as contiguous
 ranges in their old order, so every reference that was backward stayed
-backward (`docs/roadmap/archive/agent-remaining/appjs-split.md`). A test
+backward (git history: appjs-split.md). A test
 that means "the app's code" reads all of them as one text through
 `tests/_app_js.py`. To find a function's file:
 `grep -n "^function name" frontend/js/*.js`.
@@ -1547,6 +1547,7 @@ focused element's `offsetParent`) catches far more than a screenshot.
    `SETTINGS_SECTIONS`, a `<section id="settings-NAME">`, and a
    `<button data-section="NAME">` in the nav. Miss the first and the section
    never hides; miss the third and it is unreachable.
+12. **The desk frames' canvas is wider than before** (masculine 289x304, feminine 275x298, was 263x302 and 263x299), so the centred crop and the wave swing's reach changed, and the window size at 100 percent follows it. Not verified on a real Windows desktop: PNG crops and targeted pytest only. (git history: deskframes-1108.md)
 
 ## 11. Configuration
 
@@ -1784,3 +1785,26 @@ thread; a plain save and an edit still embed on the request (corrected
 
 *This document tracks the codebase: if you change the architecture, update it in
 the same PR.*
+
+## Decisions and measurements kept from the retired roadmap docs (2026-11-12)
+
+ANALYSIS, AUDIT, MODERNISATION_AUDIT, REDESIGN, PLAN, AGENT_SKILLS_REFORM and FABLE_BRIEF were removed (INBOX 1784); their open items are LEDGER rows, and these standing facts moved here. Each names its old source for `git log -S`.
+
+- The backend stays synchronous: 230 sync `def` routes run in Starlette's threadpool; converting to `async def` without aiosqlite/AsyncSession would run blocking sqlite3 on the event loop. Revisit only if multi-user or a network DB arrives, database layer first. (was REDESIGN.md:661; topic: ARCHITECTURE.md section 8)
+- A second frontend (separate SPA) was decided against; the user agreed (Kortex read). (was ANALYSIS.md:937; topic: ARCHITECTURE.md decisions)
+- Declined for good: agent containment/effect-log runtime (no shell tool), ChromaDB/SearXNG/ntfy sidecars, ChatGPT/Copilot account bridges, ody_-style API tokens (one user, one password), offline service-worker cache (owner chose network-only so a stopped server fails loudly), CDN libraries at runtime, internal loopback bearer token, sharded CI (revisit past the 25-minute CI timeout). (was ANALYSIS.md:4364; topic: ARCHITECTURE.md decisions)
+- Licence rule for taking code in: MIT, ISC, BSD, Apache-2.0 and GPL-3.0 may come in with notices; EPL-2.0 (ELK.js), CC share-alike and non-commercial licences are refused; tldraw (own licence) and a ProseMirror/Tiptap swap are refused; model weights and voices are licensed per file. (was ANALYSIS.md:4420; topic: CLAUDE.md section 3 licence line / docs/THIRD_PARTY.md header)
+- Library verdicts: drop networkx, Whoosh, NLTK, textblob, snips-nlu, adapt-parser, hunspell, pyspellchecker, rapidfuzz, transformers.js, ruff-wasm, KaTeX; Pyodide, sql.js and eslint-linter stay optional downloads, never vendored; Harper's 16 MB stays lazy and off the boot gzip budget; model2vec potion is the torch-free embedding candidate, unmeasured against bge-small. (was ANALYSIS.md:4112; topic: ARCHITECTURE.md vendoring section or docs/THIRD_PARTY.md)
+- Algorithm verdicts: build bigram LLR collocations, pair-count co-occurrence, Naive Bayes (only if it beats TF-IDF on the filing eval), SimHash, K-means; skip BK-tree; drop t-SNE/UMAP/HMM/CRF/SVM. (was ANALYSIS.md:4096; topic: BACKLOG.md filing section)
+- Architecture review verdicts: keep FastAPI+SQLite in one process, the no-build frontend, imperative DOM helpers, the event log and job runtime as the spine (finish B2 before new background features); change to cascade layers, ES modules (rejected as of CLAUDE.md: 29 classic scripts stay), and move the 20 stable sweeps into CI. (was ANALYSIS.md:3676; topic: ARCHITECTURE.md decisions)
+- Vendor shortlist ranked: Silero VAD via faster-whisper plus browser audio constraints and language/initial_prompt (built), then Piper, Kokoro-82M via kokoro-onnx (no code yet), perfect-freehand, model2vec potion; rbush, dagre, MiniSearch, chrono-node, GLiNER, lingua-py, DeepFilterNet left until a measurement asks. (was ANALYSIS.md:4488; topic: BACKLOG.md voice/whiteboard sections)
+- A tool argument is either intent (the model's) or a fact the app can compute (never asked of the model): reminder arithmetic, dates, offsets are computed by the harness. (was AGENT_SKILLS_REFORM.md:134; topic: ARCHITECTURE.md agent harness section)
+- Real-model reach for tests is two env vars, TESSELLATE_EVALS_URL and TESSELLATE_EVALS_MODEL, read at import by the eval module; no pytest option or conftest hook, so 'every eval skipped' is the default. (was AGENT_SKILLS_REFORM.md:143; topic: CLAUDE.md section 4 / WORKING.md evals)
+- Measured on Qwen2.5-3B-Instruct Q4_K_M (llama-server --jinja): right first tool 9/10, finished 10/10; forced first call fires on 20/20 imperatives and 0/10 questions, right tool 14/20; two calls in one reply 2/20; picture placement 5/5 after fix. At 1.5B the stall on step 1 of 'Auto-tag my notes' is the model, not the scaffolding. 4B and Ollama's native dialect on a real Ollama are unmeasured. (was AGENT_SKILLS_REFORM.md:285; topic: CHAT_PLAN.md harness evals section)
+- MCP server measured: 56 of 67 registry tools offered over stdio (9 destructive withheld by design); initialize+tools/list+two calls in 1.6 s with embedder cached; packaged app has no Python so installer users have no stdio MCP. (was AGENT_SKILLS_REFORM.md:345; topic: ARCHITECTURE.md MCP section)
+- Windows ships an unsigned .msi built with WiX; an unsigned MSI or .exe raises the same SmartScreen prompt, only an Authenticode certificate removes it; idle memory work is lazy imports, not idle suspend (decided 2026-09-20). ANALYSIS later suggested finishing one installer format and dropping MSI until asked; not resolved. (was AGENT_SKILLS_REFORM.md:195; topic: ARCHITECTURE.md packaging section)
+- `filing_similar_id` on Entry is deliberately not a ForeignKey (see its docstring); a periodic dangling-id sweep would be tidier than resolve-and-shrug. (was REDESIGN.md:651; topic: ARCHITECTURE.md data model)
+- Bookmark groups are a name on a bookmark (group_name), not a table row; an empty group lives only in a localStorage placeholder in library.js, a deliberate patch not to copy. (was FABLE_BRIEF.md:158; topic: ARCHITECTURE.md data model / LINKS notes in BACKLOG)
+- Tessellate's notification history lives in localStorage while reminders are rows, so a reminder notification's Done cannot complete the reminder (AUDIT A15/B13, MODERNISATION H2c); W7-3 is the fix. (was MODERNISATION_AUDIT.md:803; topic: WORLD_CLASS_PLAN.md reminders section)
+- OpenAPI/docs/redoc are disabled (docs_url, redoc_url, openapi_url None in create_app) so the route surface is not served; do not re-raise. (was MODERNISATION_AUDIT.md:611; topic: ARCHITECTURE.md security section)
+- Assets are served no-cache with an ETag because the ?v= stamp is per release (hash-stamped in current head per CLAUDE.md); a content-hash stamp would permit immutable caching. (was MODERNISATION_AUDIT.md:536; topic: ARCHITECTURE.md static assets)

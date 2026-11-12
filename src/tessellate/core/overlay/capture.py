@@ -179,6 +179,7 @@ def draw_card(base: Any, lift: tuple[int, int]) -> Any:
 
 
 #: The page draws each frame 560 x 600 (`desk-frames.js`: a 280 x 300 box at scale 2); this is 6 times that area.
+# Pillow's own limit is 89 million pixels, so a 9000 x 9000 frame would pass it unchecked; this cap rejects it.
 MAX_FRAME_PIXELS = 2_000_000
 
 

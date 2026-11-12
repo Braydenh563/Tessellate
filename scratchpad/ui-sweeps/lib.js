@@ -3,6 +3,11 @@ const OUT = (process.env.SCRATCH||'.') + '/shots';
 require('fs').mkdirSync(OUT,{recursive:true});
 const PW = 'testpassword123';
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
+// Harness trap: a vm.createContext sandbox given Math, Float32Array and the other builtins
+// routes every global read through an interceptor, so a worker run that way is 2 to 3 times
+// slower than in a browser. Time workers with vm.runInThisContext instead.
+// Synthetic PointerEvents dispatched from page.evaluate never reach d3's drag behaviour (a
+// profile measured 0 ms per event). Use page.mouse.down, move and up, which are trusted events.
 // The browser-context options a sweep may ask for, beyond the viewport.
 //
 // This list is why INBOX 284 existed: `boot` used to pass `opts.viewport` and

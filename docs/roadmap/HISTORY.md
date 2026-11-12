@@ -1,7 +1,7 @@
 # What is already done
 
 
-> **The other three:** [ROADMAP.md](../ROADMAP.md) (live work) · [BACKLOG.md](BACKLOG.md) (§1–§29) · [ANALYSIS.md](ANALYSIS.md) (§30–§34, including the licence constraint, AGPL-3.0 now) · [HISTORY.md](HISTORY.md) (already built).
+> **The other three:** [ROADMAP.md](../ROADMAP.md) (live work) · [BACKLOG.md](BACKLOG.md) (§1–§29) · ANALYSIS.md (§30–§34, including the licence constraint, AGPL-3.0 now) · [HISTORY.md](HISTORY.md) (already built).
 
 Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
@@ -575,7 +575,7 @@ From MINDMAP_PLAN.md (lines 158 to 238 before the move), verbatim:
     is the form a small model handles best. Plus `create_mindmap`,
     `add_map_node`, `link_map_nodes`, gated behind the tool toggles, and
     written to the *contract* shape the skills reform (Phase A of
-    [AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md)) defines, so they are
+    AGENT_SKILLS_REFORM.md) defines, so they are
     usable by a 4B model.
 15. **AI generation**: "make a map of these notes", the agent proposes a tree,
     the user accepts or edits it. Every mainstream tool now has this; the
@@ -10991,7 +10991,7 @@ kept and fixed.
 The lesson is narrower than "review harder": **a branch that cannot run CI has
 not been reviewed, however carefully it has been read.** 46 tests and 4 lints
 were added so the next such branch is judged in minutes. Judgement criteria in
-[ANALYSIS.md §34b](ANALYSIS.md).
+ANALYSIS.md §34b.
 
 ## 41. The reported list, triaged, done, and the plan it produced
 
@@ -15822,7 +15822,7 @@ a highlight button belongs, and would carry the colour picker with it.
 ### From ROADMAP.md
 
 40. ~~Help page overhaul, plus an embedded mini AI chat for in-app guidance.~~
-    **Built**: see [roadmap/HISTORY.md](roadmap/HISTORY.md) for the
+    **Built**: see roadmap/HISTORY.md for the
     write-up: the docs/guides half was already a 13-topic accordion with
     cross-links, and the mini AI chat half is now `ai/help_chat.py` +
     `POST /help/ask`, wired into Settings → Help.
@@ -16155,7 +16155,7 @@ the same five panel signatures as before. Thirteen lints, `ruff`, and
   so it is not this batch; found, not fixed.
 
 The remaining list, per surface and breakpoint with files and next steps, is
-in [`archive/agent-remaining/responsive.md`](archive/agent-remaining/responsive.md).
+in `archive/agent-remaining/responsive.md`.
 
 ### Built, the map exports, the boards dock and the paint lint, 2026-09-09
 
@@ -17594,7 +17594,7 @@ sweeps. Six lints green.
   reasoned, not observed.
 
 The full remaining list, per surface and breakpoint with files, selectors and
-next steps, is in [`archive/agent-remaining/responsive.md`](archive/agent-remaining/responsive.md).
+next steps, is in `archive/agent-remaining/responsive.md`.
 
 ### From AGENT_SKILLS_REFORM.md
 
@@ -18040,7 +18040,7 @@ Each was found by measuring, not by reading, which is the point of the rule.
 ### 11. Built: the previews, Phase 4 and Phase 5
 
 The fourth run. §5 item 12's preview redesign (the report in
-[archive/agent-remaining/mindmap.md](archive/agent-remaining/mindmap.md) section F), then
+archive/agent-remaining/mindmap.md section F), then
 Phase 4 and Phase 5 in the plan's order. Everything below was driven in a real
 Chromium against the running app (`scratchpad/ui-sweeps/mindmap.js`, 76
 checks, and `mindmap3.js`, 57) rather than reasoned about; §11.3 says what
@@ -19339,7 +19339,7 @@ belongs in the file that registers the listener.**
   and the error colour; Tab indents four spaces; one menu shell; one shell
   gutter; the zoom readout became a HUD so mute cannot hide it.
   **Open, with plans written**: the skills/agent reform
-  ([AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md), all four phases) and six
+  (AGENT_SKILLS_REFORM.md, all four phases) and six
   UI items ([UI_MODERNISATION_PLAN.md](UI_MODERNISATION_PLAN.md) Phase 7):
   the document lightbox, line numbers as a setting in all three editors,
   captioning for documents rather than photographs, drag-to-select region OCR,
@@ -25106,7 +25106,7 @@ came in:
    and first `thinking`/`answer` SSE events) since the rest is model
    generation on real hardware, not search.
 
-> **The other four:** [ROADMAP.md](../ROADMAP.md) (live work) · [BACKLOG.md](BACKLOG.md) (§1–§29) · [ANALYSIS.md](ANALYSIS.md) (§30–§34, §59, §60, including the licence constraint, AGPL-3.0 now) · [HISTORY.md](HISTORY.md) (already built).
+> **The other four:** [ROADMAP.md](../ROADMAP.md) (live work) · [BACKLOG.md](BACKLOG.md) (§1–§29) · ANALYSIS.md (§30–§34, §59, §60, including the licence constraint, AGPL-3.0 now) · [HISTORY.md](HISTORY.md) (already built).
 
 ## Latest session: Dev view/User view console mode shipped, a live sign-out bug in that same feature found and fixed same-session, a real model-timeout fix, and a batch of user-reported quick fixes
 
@@ -27369,7 +27369,7 @@ picking this up.
 
 ## Next session: start here: a second odysseus read (§60), Tier 3 items 32/33/34 built, item 36 half-built, and ~20 live-reported UI bugs fixed in one long sitting
 
-**Read [ANALYSIS.md §60](ANALYSIS.md) first if picking up the odysseus/Tier-3
+**Read ANALYSIS.md §60 first if picking up the odysseus/Tier-3
 thread**: it records what changed since §33/34's read (odysseus tripled to
 ~200k lines) and the concrete findings (a real non-atomic-write bug, an MCP
 shape worth copying, its own admission the backend isn't better-organised).
@@ -36385,7 +36385,7 @@ line that carried a dash.
 
 # Handover
 
-**Next: [`PLAN.md`](PLAN.md)**: the scoped professional-grade plan (whiteboard, documents, backend, agent harness, performance), in ship order with measurements. Written by direct instruction; start there.
+**Next: `PLAN.md`**: the scoped professional-grade plan (whiteboard, documents, backend, agent harness, performance), in ship order with measurements. Written by direct instruction; start there.
 ## INBOX resolved, 2026-09-14
 
 203. **Mid-work drop, 2026-09-13 night, verbatim (the owner), AI features
@@ -37889,13 +37889,13 @@ response settings. Still open from it: concept-map learnability. **Built since:
 the whiteboard rethink and more dashboard widgets**, HISTORY.md §103.
 
 Six sessions of finished narrative used to sit above this line. It has moved
-to [roadmap/HISTORY.md](roadmap/HISTORY.md)'s "§80 to §86" index, because a
+to roadmap/HISTORY.md's "§80 to §86" index, because a
 live work plan should open with what is *live*, and because this file has a
 2,000-line ceiling that `tests/test_docs_layout.py` enforces, and narrating
 completed work at the top is how it got there.
 
 **Before starting anything below, read
-[roadmap/HISTORY.md](roadmap/HISTORY.md).** Four sessions have now rebuilt
+roadmap/HISTORY.md.** Four sessions have now rebuilt
 something that already existed, and the two most recent near-misses were both
 caught by one grep: the Reminders calendar view (listed as a gap, already
 built and wired) and the graph's own non-visual keyboard layer. A grep miss
@@ -38212,7 +38212,7 @@ same session is in §88.0 so nobody re-fixes it.
 
 | Report | Cause |
 | --- | --- |
-| *(38 older rows moved out)* | The oldest entries of this table were condensed into [roadmap/HISTORY.md](roadmap/HISTORY.md) to keep this file under its own length rule (`tests/test_docs_layout.py`). Nothing was lost: the rule exists because a roadmap nobody finishes reading is a roadmap that gets rebuilt |
+| *(38 older rows moved out)* | The oldest entries of this table were condensed into roadmap/HISTORY.md to keep this file under its own length rule (`tests/test_docs_layout.py`). Nothing was lost: the rule exists because a roadmap nobody finishes reading is a roadmap that gets rebuilt |
 
 ### 88.1 Reported and still open, work this list top-down
 
@@ -38561,7 +38561,7 @@ demand. This session's graph-toolbar work is (d); the pane system is (c).
 ### 88.3 The app.js split, done
 
 Four files split out, verified live, narrative in
-[HISTORY.md §88.3](roadmap/HISTORY.md#883--the-appjs-split-full-narrative-moved-from-roadmapmd-now-complete).
+HISTORY.md §88.3.
 
 ### 88.4 Context, memory and harness engineering, an analysis
 
@@ -39255,7 +39255,7 @@ full narrative and the measured numbers.
 | | What's in it |
 | --- | --- |
 | [roadmap/HANDOVER.md](roadmap/HANDOVER.md) | **The last session's handover.** What changed, what couldn't be checked and why. Read this first. |
-| [roadmap/HISTORY.md](roadmap/HISTORY.md) | Everything already built, and every backlog item already closed, with the reasoning, condensed. **Check here before building anything.** Four sessions have rebuilt something that already existed. |
+| roadmap/HISTORY.md | Everything already built, and every backlog item already closed, with the reasoning, condensed. **Check here before building anything.** Four sessions have rebuilt something that already existed. |
 | [roadmap/BACKLOG.md](roadmap/BACKLOG.md) | Standing backlog items not yet promoted to this file's live list. |
 | [roadmap/ANALYSIS.md](roadmap/ANALYSIS.md) | Judgements: the odysseus read, and the licence constraint, **this project is AGPL-3.0 now, not MIT**, so §34a's "no code crosses either way" is half-lifted. What was deliberately not taken. Also §59: the claude-obsidian/cognee/graphify read behind items 32–36 below, and §60: a second odysseus read after the repo tripled in size, a real non-atomic-write bug it found, an MCP shape worth copying, and its own admission that the backend isn't better designed. **New: §114**, a product-strategy read, a live competitor teardown (NotebookLM, Obsidian, Anytype, Capacities, Khoj, Granola, Kortex), an upgrade list for every existing feature, 18 new-feature proposals, a scored 90-day plan, and the answer to "how do you measure anything in an app with no telemetry". It also strikes three §111.2 items as already built. |
 | [DESIGN.md](DESIGN.md) | The design system. `tests/test_style_scale.py` enforces it. |
@@ -39291,7 +39291,7 @@ Things that are wrong, lose work, or make the app feel unreliable.
 
 **This tier is empty, and that is the point of saying so.** Every item that
 was here has been fixed and re-verified against source; the resolutions are in
-[roadmap/HISTORY.md](roadmap/HISTORY.md). Two carry a caveat worth keeping
+roadmap/HISTORY.md. Two carry a caveat worth keeping
 rather than a clean tick:
 
 - **Meeting transcription** now fails with a distinct 503 and a clear cause
@@ -51449,7 +51449,7 @@ conversations) page on scroll with an `IntersectionObserver` sentinel.
 `routes_entries.py` (lines ~688, ~817, ~1038) are Brief 11's, not this
 one's.
 
-### Brief 8 (Thu, Opus): `[[` autocomplete and the connections rail
+### Brief 8 (Thu, Opus): `[` autocomplete and the connections rail
 
 **Goal.** Typing `[[` in the capture, edit or document editors offers
 matching notes with keyboard selection and inserts a link; every open note
@@ -51527,7 +51527,7 @@ marker and its fixture set, which wants the dev model from WORLD_CLASS_PLAN
 9; a `verify` control in the skill editor; verify blocks on the other
 read-only built-ins; the page cap over a large notebook; `filing_state` on
 the recategorise path) is in
-[`archive/agent-remaining/brief-13-harness.md`](archive/agent-remaining/brief-13-harness.md).
+[`archive/agent-remaining/brief-13-harness.md`.
 
 ### Brief 14 (Sun, Sonnet): the docs, condensed
 
@@ -54605,3 +54605,571 @@ Bullets already marked closed in OPEN.md, moved verbatim, grouped by their OPEN.
 
 1783. **Owner review of PR 216, 2026-11-11 (decision asked for, not the owner's words):** (a) a note made private after the folder shipped it stays readable on the other computer, History included; (b) a notebook folder copied to a second computer shares its sync id, so each can pull the other as itself and delete originals. Recommendation (taken, standing order 3): (a) the folder keeps the names it shipped in the clear (`folder_sync_state.json` `shipped`; the first run after this seeds every private note) and sends a note made private since as a `withheld` marker, name and time only. The other computer cannot encrypt with this vault's key, so it deletes its plain copy by the bin's purge path (`purge_entries`: History, dates, files, vectors) and empties the logged words (`seal_private_events`), the way a purge already treats a private note. A copy a person or Atlas changed there, or a note first written there, is kept, logged once as kept and counted with the conflicts. (b) a folder file with this computer's own id, or filed under another name, is refused, and so is a pairing or pull whose other computer has this one's id; the sentence says to delete the sync-state file in one copy's data folder (Settings, Sync has Make a new sync id, `sync_state.reset_device`, `POST /sync/reset`); a document or board made private since is withdrawn the same way (`withheld` in the folder's items); two copies writing the one same-named file are found by a write token in the file (`folder_sync._written_by_a_copy`) and the run stops untouched. **Fixed (this branch).**
 
+
+
+## HANDOVER session record (moved 2026-11-12)
+
+Moved from HANDOVER.md when it was slimmed to the owner's standing notes and one Now line (INBOX 1784).
+
+## Morning summary
+
+Away run 2026-11-08 (weekly 34% of the 60% line), branch claude/next-queue-1102, PR 216 (not merged; the owner merges), head pushed past 100a9dba.
+
+- Done: desk companion (moods, routines, tail and lower body as layers, 9 tail poses and 8 lower states on both sides), in-app routines, composer rounds 4 and 5 (41 of 91 rows plus counting, compare, title pin, follow-on, a context leak between answers), diagram library and embed fixes, whiteboard and mind map (leave flushes edits, radial with several roots, Present Esc focus), CodeQL 2114.
+- Suite red found at session end (CI runs had been cancelled by each push): 20 of CI's 21 failures fixed (the 21st, test_overlay_x11, was CI's X server not starting; composer groceries total and own "today", undo scan, tray drag harness, Guide desktop asks, CSS lint stems, stretch pace, dash turn); 7 more were xdist workers killed for memory, so run the full suite at -n 3 here.
+- Owner decisions: a happy wag at rest is 6 a second (15 needs the 500 rest ceiling raised); "put it in today's note" as an append to the daily note; open-fit on a phone (1 of 5 topics in view at 390); diagram DD-5, DD-13, R12, R14.
+- Unverified: companion poses on a real desktop and in a real browser; the cold flow warp is 9 to 17 ms at dpi 192 against 8 ms.
+- Next (fresh session): composer-r5 leftovers (composer-r5-1108.md), atlascat D3 to D5, perf P6, P7, P9, the flow warp, audit-1031-ranked rows 19, 21, 22, 23, 36, 37, 42, 55, then BACKLOG smallest first.
+
+## Earlier morning summary (2026-11-04)
+
+Away run 2026-11-04, second half (lean-workflow away; weekly 76%, tier pro), branch claude/next-queue-1102, PR 212 (not merged; the owner merges), head pushed past 35863d4.
+
+- Done: Running copies 1641 (Shut down only asks, with its token), composer requests 1649 (app-verb requests get the how-to; edit answer names the row pencil and F2), graph 1643 frame bound (stuck state not reproduced), overlay gaps (click-away, runner death brings the card back, panel follows a drop, first-open right click), CI and CodeQL fixes, first-run E2E retry.
+- Owner checks on Windows: overlay O5 and the gaps above (fakes only), 1650 "held: True", Running copies Shut down.
+- Owner choice open: goose-like roaming (1) and a carried note card (3) were offered; nothing queued until picked.
+- Stopped at the context line (255k per turn); a fresh session takes the queue.
+- Next (`.claude/work-order.md`): diagram R3 to R5 (DOCUMENTS_PLAN 22), composer 1653 and the "Also:" cut, routes_whiteboard.py re-exports, 1634, mixed-DPI panel placement. conftest changed (autouse TESSELLATE_RUN_DIR): CI covers the full suite; run it locally first in the next session if CI is red.
+
+## Earlier morning summary (2026-10-30)
+
+Run 2026-10-30 (owner's line 80% weekly; stopped near it, the usage view stalled at 76%), branch claude/sharp-thompson-45hngp, PR 211, head 1b92202.
+
+- Built: quantities beyond money ("how far did I run", "how many hours did I spend on the deck", "what's my total distance") on the converter's unit table; goals are not counted.
+- Built: everyday verbs weigh below nouns ("how did we meet the plumber" answers from the plumber's note).
+- Built: "whens dentist now no the NEW one", "how much desk all up after that money back thing", "how many grocery items are checked off".
+- CI: complexity split, snooze clock pinned, CodeQL alert fixed (word-by-word readers).
+- Left: money onto `recognise.measures` (one engine), phrasing fixtures (built 2026-11-11: CLINC150, SGD, WildChat, which is not gated; 26 strict xfails open in CHAT_PLAN), stress classes: next appointment, PTO dates, note 44 dumps, comparisons, follow-ons, ambiguous names; audit 1030 rows; INBOX 1451.
+- Known flake: gold Lisbon shorthand under `-n 4` (pre-existing, leaked context).
+
+## 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv)
+
+- Done: tray start hardening (icon decoded up front, startup failure logged), whiteboard drag-select no longer highlights page text, Fill/Border colour popup keeps its place, skills menu "(edits)" tag. Not verified on a real Windows desktop.
+- Open: the whole bug list is in `agent-remaining/OPEN.md`, "Left by the 0.6.01 bug-document pass". The tray icon may be in the taskbar overflow (^) on Windows 11.
+- Custom domain: not built in; reverse proxy with TLS plus `TESSELLATE_ALLOWED_HOSTS` (Docker docs only).
+- Version number and CI fixes are owned by the threads on claude/project-thread-iv24e6; expect conflicts on the version files.
+- Usage stopped at 93% weekly (self-stop 85%).
+
+## Earlier morning summary (away run 2026-10-18b)
+
+Moved to HISTORY.md ("Earlier morning summary, away run 2026-10-18b, moved from HANDOVER 2026-11-04").
+
+## 2026-09-08, the third night: read this block first, whoever you are
+
+**If you are the Opus continuation of the Fable session** (same session,
+same branch, the owner's Fable window closed): the standard is the one
+in `SESSION_BRIEFS.md` §0 and it does not drop. Measure before claiming,
+tests first, one commit per step, push after every merged batch, no
+em-dashes, report in five lines. When unsure, the decision is already
+written in `WORLD_CLASS_PLAN.md` or a plan file; find it, do not remake
+it.
+
+### If Opus is the orchestrator (no Fable available)
+
+This is the expected case for most of the week. Everything Opus needs is
+already written; the rule is to work it, not to redesign it.
+
+1. **Open with:** read `CLAUDE.md`, this block, `ROADMAP.md`'s opening
+   table, the "Now" line below, `INBOX.md`, then the file the Now line
+   names. Nothing else before the first commit.
+2. **Order of work** is the standing orders' order: INBOX bugs (Sonnet
+   for the named-fix ones, Opus for the design ones), `agent-remaining/*.md`
+   (Opus), `SESSION_BRIEFS.md` Briefs 2 to 15 (by the specialty split),
+   then the plan phases in ROADMAP order (TIMELINE, WHITEBOARD, CHAT,
+   DOCUMENTS, GRAPH, MINDMAP), each against its plan's gates and, for the
+   backend, its spec tests (remove a strict-xfail marker only when the
+   test passes on its own).
+3. **Decisions are not remade.** Every plan carries a "Decisions made"
+   section; a session that finds itself choosing between two designs
+   looks there first, and if the answer is missing, records the question
+   in `INBOX.md` under "Design and feature requests" with a one-line
+   recommendation and takes the recommendation. Fable's next window
+   reviews those entries.
+4. **Review is Opus's job too.** Before merging any agent branch: read
+   the diff for the four failure shapes in `CLAUDE.md` (a working thing
+   rewritten riskier; a feature that never ran; a guard removed; a policy
+   silently refusing), run the lint set and the sweep the brief names,
+   and refuse a merge whose report has no numbers.
+5. **No new plan documents.** There are eleven; a new need becomes a brief
+   row in the plan it belongs to, or an INBOX entry. `HANDOVER.md`'s Now
+   line and this table are the only status surfaces; keep them true.
+6. **Agents:** at most two, by the specialty split below, each with its
+   own worktree, port and data dir, committing per step and writing its
+   remaining list before it stops.
+7. **The hourly check-in** (`send_later`) is re-armed at the end of every
+   turn; it carries the standing orders in its prompt, so a session that
+   went idle resumes itself.
+
+The opening prompt that does all of this: "Read CLAUDE.md, then the top
+of docs/roadmap/HANDOVER.md, and continue."
+
+### PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC)
+
+Tick these in order; the PR merges on the last tick. Everything added to
+the plans this session (DOCUMENTS Phase 8, MINDMAP §12, GRAPH 6b, INBOX
+100 to 104, CHAT and TIMELINE in full) is the next session's, not this
+PR's.
+
+- [x] 1. Documents Phase 2 steps 2 to 4 merged (2026-09-09;
+      `tests/test_doc_surface.py` carries no xfail marker): the CodeMirror surface is
+      the editor, Live as decorations, findings, undo, search, folding;
+      `tests/test_doc_surface.py` has no xfail markers left; doctype.js
+      under 30 ms; the vendor bundle absent at boot.
+- [x] 2. Graph Phase 6 merged: the node panel on the new recipe, measured
+      at 1440, 1024 and 390; graph4b.js passes. (Panel 416x439 to 448x348 at
+      1440 and 1024, three groups of three to nine buttons in one row,
+      shortest control 28 to 36px, no page scroll, and a 362x442 sheet at
+      390. Its header and its action footer were fixed later the same day:
+      close button back at 0,0 with an ellipsised title, and the actions as
+      a centred band 446px wide in a 448px panel.)
+- [x] 3. Library image cards and the whiteboard bottom bar and properties
+      panel merged (INBOX 52, 56, 64, 65), with their numbers. (Card 651.6
+      to 371.8px, font sizes 4 to 3, usage lines 2 to 1, scrim 3.6:1 to
+      6.8:1; whiteboard own backgrounds 16 to 1 and 15 to 3, overlapping
+      pairs 4 to 0, bar and pill both 46px, surface 0.549 to 0.96 opaque.
+      The Arrange group was restructured later the same day into three
+      named rows, 192px wide in a 200px panel.)
+- [x] 4. The owner's section-A bugs closed or ruled out at head: INBOX 66,
+      69, 70, 73, 77, 81, 83, 84, 86, 88, 89, 96 (each fixed and moved to
+      HISTORY, or marked "not reproduced" with the measurement). Eleven of
+      the twelve are in HISTORY with their numbers. 77 is the exception and
+      is half done on purpose: the badge is fixed and measured, the
+      per-model context size is the half the entry itself assigns to the
+      next session, and INBOX says so. It is the only item left in there.
+- [x] 5. The three "not verified in a browser" fixes measured: INBOX 75
+      (kebab first click), 82 (settings rows), 91 (chat header), plus
+      Ctrl+S and the profile group; errors.js, contrast.js, docks.js,
+      touch.js and weight.js green on the head.
+      **Where this stands, 2026-09-09.** Ctrl+S is measured and fixed (the
+      visible section had no reachable Save button, all six in the document
+      laid out at zero height). errors, contrast, docks and touch all passed
+      on the merged head. 82 is clean as far as it was checked: two settings
+      rows carrying both a field and a button, zero height mismatches, which
+      is thin coverage rather than a result. 91 is measured by the wrap
+      sweep, which took the answer header from three fragmented lines at
+      1280px to two clean rows. 75 is measured now
+      (`scratchpad/ui-sweeps/kebabfirst.js`): 58 kebab wraps on the Notes
+      tab, the first click opens exactly one menu at 375px tall, the second
+      closes it. The earlier probe reported "no kebab found" because it
+      looked for `[aria-haspopup]`; the recipe is `kebabMenu()`, which builds
+      a `.menu-wrap` around a `.action-menu` and a `smallButton`, so the wrap
+      is what to look for. Worth writing down: the same wrong selector would
+      fail the same way next time.
+      A note on the metric, so the next attempt does not repeat it: counting
+      distinct `top` values among a row's children does **not** detect
+      wrapping. A `nowrap` row whose children are baseline- or
+      centre-aligned reports several distinct tops and has not wrapped. Test
+      whether a child's `top` is at or below the first child's `bottom`.
+- [x] 5b. The README's screenshots recaptured, last of all. The owner:
+      "I think the screen shots on the readme need an update from all the ui
+      changes." Eight of them in `docs/images/` (chat, dashboard, documents,
+      graph, library, notes, reminders, timeline). Capture them only once
+      every UI batch has merged: taken mid-session they are stale within the
+      hour, which is how they got stale in the first place.
+- [x] 6. Mind map previews (INBOX 68) acceptable in the dashboard widget
+      and the Library gallery (the board's real shapes at its aspect, no
+      inner scrollbar). (Whiteboard card 5 blocks at one size to 5 at four
+      sizes with 5 of 5 labels inside their shapes; map card 0 of 6 labels
+      inside to 6 of 6, worst contrast 3.82:1 to 4.77:1; dashboard
+      thumbnail 293.2 square to 40.5 square with the widget's body no
+      longer scrolling, where it was 602 against 320.)
+- [x] 7. The full suite green on the final head (the one local run this
+      PR gets; CI covers every push in between); ruff and CodeQL green;
+      **Run, 2026-09-09:** `PYTHONPATH=src .venv/bin/python -m pytest
+      tests/` on the head, exit code 0, no F or E in the progress line, the
+      xfails still xfail. Worth knowing before the next reader thinks the
+      run was cut short: with `addopts = -q` from `pytest.ini`, the totals
+      line does not survive being read out of a redirect on a run this
+      long, while a single-file run prints it normally. The exit code is
+      the result. All sixteen CodeQL review threads on the PR are resolved,
+      the sweeps (errors, docks, contrast, touch) pass on the head, and
+      the branch is mergeable.
+      **Note, 2026-09-09:** `.github/workflows/ci.yml` runs `python -m
+      pytest` with no selection, so CI *is* the full suite, on every push,
+      and it has reported no failing suite on every head today. CodeQL has
+      come back green on each one it has finished. The local run this item
+      asks for is therefore a second opinion rather than the only evidence,
+      which is exactly why the owner's "not as routine" rule costs nothing.
+      no open CodeQL threads; the branch mergeable.
+- [x] 8. Documentation: every Built block of the merged phases in
+      HISTORY (the lint holds it), INBOX holding open items only, the
+      README's numbers passing `test_readme_freshness.py`, CHANGELOG's
+      "Since 0.2.2" carrying one line per merged item, this Now line
+      rewritten as "PR 144 merged; next: Brief 18 section A onward".
+- [ ] 9. The owner has run the updated build once: `start-desktop.bat`
+      launches, the splash reads right, the glass frosts the art.
+
+Then: tag the release (`__version__` is already 0.3.0, a minor bump by
+RELEASING.md's rule: new features, not fixes; rename "## [Unreleased]" to
+"## [0.3.0] - <date>" in both CHANGELOG copies, `git tag v0.3.0`, push the
+tag, watch the release workflow), merge PR 144, restart the branch from main for the next session
+(the branch rule at the top of the session prompt), and open with "Read
+CLAUDE.md, then the top of docs/roadmap/HANDOVER.md, and continue".
+
+### Fable's working notes for Opus (2026-09-09 05:10 UTC)
+
+What made this session's fixes land first time, written down so the method
+survives the model change. Use it verbatim.
+
+**The method, per report.** (1) Find the code by grep before reading any
+file whole; the sites below are already found. (2) Write a 20-line
+Playwright probe (`scratchpad/ui-sweeps/lib.js` `boot()`, then
+`page.evaluate` returning numbers: rects, computed styles, counts) and run
+it against `serve.sh 8784 /tmp/mm-8784`; never screenshot-and-look. (3)
+Fix the cause, not the symptom (the shape that recurs here: a handler
+re-renders over what it just opened; a rule set on the wrong class; a
+value measured while hidden). (4) Re-run the probe, then the lint set,
+`node --check`, ruff; errors.js in the background. (5) One commit per
+report with the measured numbers in the message, the INBOX line marked
+"Fixed" with the numbers, push. (6) Say "not verified" when a browser did
+not confirm it. Never widen a lint; a failing lint found something.
+
+**Where each open section-A item lives** (INBOX number: file, area,
+diagnosis):
+- 66 lightbox in graph fullscreen: `frontend/js/app.js` lightbox mount (grep
+  `lightbox`), `#graph-card` is the fullscreen element; mount the dialog
+  inside `document.fullscreenElement` while it is set.
+- 69 agent panel rows: `frontend/js/app.js` ~35850 (`agent-run-summary`,
+  `agent-run-name`); the caret's toggle handler is per-row and lost on
+  re-render; delegate it on the panel.
+- 70 notifications combobox: the panel's outside-click guard closes on a
+  click inside `.select-menu` (enhanceSelect at `app.js` ~18359); exclude
+  it.
+- 73 mute toggle resets: `frontend/js/settings.js`, grep `mute`; write the
+  value into `prefsCache` before the save round-trip, not after.
+- 74 profile panels and Ctrl+S: `frontend/index.html` "About you
+  (optional)" group; a `keydown` on `#settings-modal` for Ctrl/Cmd+S that
+  clicks the visible section's Save.
+- 77 token badge: `frontend/index.html` ~1238 `.chat-subline`; the pill's
+  padding is asymmetric and its text is `x% of window`; centre with
+  `inline-flex; align-items:center; line-height:1`.
+- 81 web links: the answer renderer's link rule (grep `renderMarkdown` in
+  `app.js`), accept `<https://...>` autolinks; number web sources after
+  the notes in the Sources list.
+- 83 Tools paragraphs: `frontend/index.html` Settings > Tools, "How many
+  are offered at once" and "Small model mode"; one line each, the rest
+  behind `data-help-for` (pattern at index.html ~5321).
+- 84 marquee behind objects: `frontend/js/whiteboard.js`, the selection
+  rectangle is drawn on the object canvas; draw it on the overlay canvas
+  (the one the guides use).
+- 86 zoom popup under dialogs: the zoom indicator's z-index (grep
+  `zoom-indicator` in CSS) is below `.modal-overlay`'s; raise it.
+- 88 fullscreen graph glass: `:fullscreen .graph-card` paints over
+  `--page` with nothing behind it; give it `--modal-bg` on purpose and a
+  comment.
+- 89 glass sliders: measure `--glass-blur` on `header#top-bar`'s computed
+  backdrop-filter, `--glass-opacity` on `.card` background alpha (palette
+  override order in `00-tokens-shell.css` 131/628/677), sheen on
+  `:root[data-glass-sheen="on"] .card` (3389); the card blur is off unless
+  `data-bg-art="on"` (INBOX 49), which is why "blur does nothing" on a
+  still page.
+- 96 drag without pin: `frontend/js/graph-canvas.js` drag end (grep `fx =`
+  and `gcTogglePin`); on drop set `x/y`, clear `fx/fy`, reheat at
+  alpha 0.1; pin only on Shift+drag or the menu.
+- 67 gravity: `frontend/js/graph-worker.js` `tuning()`; `pull` is 0.25x to
+  3.25x; if still spread at 100 on the owner's build, raise to 5x and add
+  the component ring.
+
+**The two agent briefs**, verbatim, are SESSION_BRIEFS Briefs 19 and 20 so
+an agent that dies can be relaunched by anyone with the same words.
+
+**What Opus should not do:** redesign what a plan decided; touch
+`documents.js`/`editor.js` while the documents agent runs; merge a report
+without numbers; run pkill on uvicorn; install torch; use inline
+`style=`; add a glass surface without the `[data-glass="off"]` list.
+
+### Standing orders for this session (whoever the model is)
+
+The owner will say "continue", or paste a batch of issues, possibly
+after a usage reset. Either way, without asking anything:
+
+1. **"Continue"** means, now and after every brief is done: read
+   `CLAUDE.md`, this block, `ROADMAP.md`'s opening table and `DESIGN.md`
+   (token-efficiently: first screens, then only what the next item
+   needs); merge any agent worktree that has commits not on the branch
+   (table below, recipe below); then take the next unfinished item in
+   this order: the owner's flagged items (this block and
+   `agent-remaining/*.md`, deferred not dropped), `SESSION_BRIEFS.md`
+   Briefs 1 to 15 in order, WORLD_CLASS_PLAN §11's quarter, then
+   `ROADMAP.md`'s live list and `BACKLOG.md` top-down by impact and
+   quality. Scan for bugs, flaws and stale docs on the way and fix or
+   record them. Keep `HANDOVER.md`, `ROADMAP.md` and `BACKLOG.md` true as
+   you go. Commit per step, push per batch, five-line reports. Never
+   wait for a prompt; never ask permission for work inside the plans.
+1a. **The "Now" line.** The first line under "State of the branch" below
+   always says what is in flight and what its gate is. Update it when a
+   step starts and when it ends. A session that resumes after a pile-up
+   reads it before the pile.
+1b. **Things the owner drops in mid-work** (a screenshot, a complaint, a
+   feature, "X% usage") are not a change of task: finish the step in
+   hand, add the new item to the task list with the owner's words, place
+   it by impact (a bug in something just built goes next; a new feature
+   goes into the relevant plan or BACKLOG with a brief row), and say in
+   one line where it landed. The mechanism is `INBOX.md`: append
+   verbatim on arrival, triage only at a step boundary, in one pass. A
+   usage figure means: commit and push now, then continue more tersely.
+   Never finish a step early, never drop quality, never lose the "Now"
+   line to the pile: the owner has said this is the recurring failure.
+2. **A batch of issues** means: for each one, reproduce it in the running
+   app first (Chromium, `scratchpad/ui-sweeps/lib.js`), fix it to the
+   standard (measured, a sweep check added where one exists), commit it
+   on its own with the owner's words in the message, and push the batch.
+   One that cannot be reproduced gets a line saying exactly what was
+   driven and what was seen, never "works for me". One that is bigger
+   than a fix gets a row in the relevant `agent-remaining` file or a
+   SESSION_BRIEFS brief, and the owner is told which.
+3. **Agents, by specialty, at most two at once** (the owner's rule):
+   **Sonnet** takes the mechanical and the verifiable: lints (Brief 2),
+   copy moves and popovers (Brief 4), docs condensation (Brief 14), test
+   fixture edits, sweeps, and bugs whose fix is already named in
+   `INBOX.md`; **Opus** takes anything with a design judgement in it:
+   frontend layout and visual fixes, the one-bar and alignment work, plan
+   phases (DOCUMENTS, GRAPH, TIMELINE, WHITEBOARD, CHAT, MINDMAP) and the
+   backend moves (Briefs 6 to 13), each against its spec tests
+   (`tests/test_events.py`, `test_search_engine_spec.py`,
+   `test_harness_verifier_spec.py`: strict-xfail, remove the marker as
+   each passes); **never Fable** (the owner, 2026-10-04: it kills usage); Opus writes plans and specs,
+   reviews merges line by line and root-causes the invisible bugs. Each
+   agent works in its own worktree cut from the branch with its own port
+   and data dir, commits per step, and writes its remaining list before
+   stopping. The orchestrator merges, gates, pushes.
+4. **Never stop on a red**: CI, CodeQL and review comments are fixed the
+   same hour; the hourly check-in re-arms itself (`send_later`), and the
+   subscription on PR #144 stays.
+5. **Quality does not drop with the model.** Tests first, measure before
+   claiming, no em-dashes, no scope creep, the four failure shapes checked
+   in every diff. If a decision seems needed, it is already written in a
+   plan file; find it.
+- (Odysseus, fourth read 2026-10-10) 
+
+### How far each plan actually is (honest, as of 2026-10-03)
+
+The owner: "many of the plan and ui redesign and modernisation documents
+are only just begun or half done." The 2026-09-08 version of this table said
+so and was right; the plans have since been built through, and this is the
+state now. The line-by-line ledger of what is left is
+`agent-remaining/OPEN.md`, section B.
+
+| Plan | Done | Left |
+| --- | --- | --- |
+| UI_MODERNISATION_PLAN | Phases 0 to 11 (tooling to the Liquid Glass adoptions to the phone done properly), the Settings information architecture (444), consistency pass 1 and the zoom sweep (2026-10-03) | Consistency pass 2 (Settings shell, Reminders on a phone, Library, Notes and Documents chrome, running), Phase 11 item 11's screenshot set, Phase 10's `.glass-clear` |
+| GRAPH_PLAN | Phases 1 to 6, the minimap (6b), the local pane, saved views restoring positions, the lasso as one drag, the 2026-10-03 shape (categories gather, unlinked on a ring) | The `?since=` cursor (nothing polls `/graph`), the local pane's Show switches (left by decision) |
+| DOCUMENTS_PLAN | Phases 0 to 8 (CodeMirror 6, blocks, the connected document, review and history, export, one editor everywhere), the slash menus as one system (section 18), boards and maps as objects in a note (section 19) | The Phase 2, 6 and 8 tails, the engine's three deliberate omissions, the phone's bottom formatting bar |
+| MINDMAP_PLAN | Phases 1 to 5, section 12's controls and structure, section 13's render pass (500 topics: render 47.8 to 149.1 ms, open 965.6 ms) | The 2026-10-03 audit's found-not-fixed list (445 (2)) and the mapux agent's leftovers |
+| AGENT_SKILLS_REFORM | Phases A to D, D verified against a real model (2026-09-20) | The same gate at 3B and 4B, an eval each for CLAUDE.md section 4's unproven list |
+| WHITEBOARD_PLAN | Phases 1 to 4 (the rail and keys, the context bar, export dialog and handles, mind map regressions and Tidy) | Decision 7's other half, the phone context bar comparison, sketch handles at zoom, the arrange panel items |
+| CHAT_PLAN | Phases 1 to 4 (grounding closed 2026-09-23, one composer, Ask unified and the popup agent, skills that finish) | The `evals` breadth (WORLD_CLASS_PLAN 9), the chat stutter notes (413) |
+| TIMELINE_PLAN | Phases 1 to 4, section 7's two measurements | Nothing (the "auto" scale thresholds were tuned 2026-10-04) |
+| WORLD_CLASS_PLAN / SESSION_BRIEFS | Briefs 1 to 34 written; the row check of 2026-09-24, F3, `similar_pairs`, S1 to S3 and S5, the llama.cpp runner | The ranked list of 38 (plan section 8): Brief 15's LAN tail, B2 durable jobs, D2, I1, chunk vectors then I6, I3 |
+
+### State of the branch (`claude/notes-flow-rebuild`, PR #162)
+
+**Away run (owner at work about 8 hours, 2026-10-18), branch claude/trusting-cannon-wrf8s5, PR 191, from main 3b9072c (PR 189 merged):** tier max (three Sonnet agents, no Opus, no Fable); stops at weekly usage 85%, 8 hours or 60 minutes with no commit. Order: red CI first, then the owner's known-open list (clock offsets, long-question cost, the `data/` writer, Library and Notes reveal cost, companion release frames, Harper beyond the popup, popup citations, typo fixtures), then INBOX, agent-remaining, briefs, plan phases in ROADMAP order, BACKLOG and OPEN, with bug, security and UI sweeps between. Done so far: 8cc6639 (`when.resolve` keeps the clock beside a day-sized offset; `utilities.kind_of` cached and bounded, route 4.1 to 0.7 s on a 20,000-character question), 6da55eb (Performance workflow frame spec opened the removed Documents tab and hung 180 s; six `test_mcp_server` tests wrote the repo's `data/`, a conftest guard now fails any test that does). Decisions: owner questions, B61 and B58 left as written; the dashboard's 62 rAF/s idle seen on the CI runner did not reproduce locally, so the frame spec now names the looping callback and the finding waits for the next run; no CI definitions touched. Later: the cite, companion, order and reveal agents merged (popup citations with numbered marks, reminder autocorrect underline, release read-before-write, Library `content-visibility`, 18 typo fixtures); boot JS back under its cap by deleting dead code (the budget has 1 byte of headroom, so the next boot change must be net zero or lazy); `kind_of`'s cache now keys on the web search setting (it served a stale route after the toggle); `test_ocr_regions` and the background-thread teardown were the last `data/` writers CI's serial PDF job named. Decisions: Notes' first reveal stays as measured (701 to 917 elements already `content-visibility` rows; a 13-row first paint changes the settled list and Select all), recorded found-not-fixed in `reveal-1018.md`; INBOX 735, 742, 771, 772, 804, 807, 808, 903 moved to HISTORY as placed. Harper in plain boxes (capture, chat, quick note) is not built, by decision: its 15.9 MB binary compiles in a worker on first use (measured in `p2-harper.js`) and a textarea has no overlay for lint underlines, so the table and dictionary corrector stays the thing that rewrites and Harper stays in the document editor and note edit form; the owner can reverse it. Then merged: composer-1018b (post-pass, 17 complexity rows, ghose, happyer), timeline-1018 (audit, tick labels from d3's time scale), order-1018. CI cancels an in-flight run on every push and a full Python run takes 15 to 25 minutes, so push once per batch and read the finished run's failure list before the next push. The run on 295c516 named nine real failures from those merges (not flakes): a data/ writer in test_bgtasks and test_janitor_warm, the speller warm-up job in /tasks, import cycles closed by the two cold-process fixes (the registries stay; conftest loads the Guide and commands, the cold-process tests load the app), timeline-ticks' stylesheet, observer and two lets, a renamed citation callback, a second date reader in composer_digest, silent excepts, and the scratchpad file cap. Fixed in fc37dff and 7e4c3d6 (the extras installer's record is reset around each app_state test). Then: `deps.peek_config()` lets prompt building read the clock without starting the app (the `test_connected_results` 3.11 failures); presets, prompt-budget, bgtasks and janitor tests use `app_state`; `test_ocr_engine` resets its language cache; `_generate_diagram` and `mcp_server.handle_request` split under the complexity line. INBOX 1297 kept as is (decision: it is the owner's wording, not a defect). graph-1018 and documents-1018 merged (owner questions B39 and B20 left as written; Tessellation layout chosen by the plan's decision; B70 did not reproduce); their one-off sweeps were removed to hold the scratchpad cap at 766. Agent dev servers may remain on ports 8791, 8792, 8796 and 8797 (kill by exact PID only). ui13a-1018 merged (drop shadows 19 to 7, `!important` 128 to 117; z-index and colour literals left, they need a pair sweep and a visual judgement). chat-1018 merged (topic read whole, computed answers for days until, order, mention counts, lists, due dates; live gold mean 76 to 87; INBOX 812 fixed; its date words now read through `recognise.ahead_window`). The one serial full run named eight tests that started the app in the repo's `data/`: they take `app_state` now and `tool_enabled` reads `deps.peek_config()`. Pushed ebc5a46 (31 commits) as one batch. whiteboard-1018 (draw.io steps 1 to 7 and 9; step 8 layer order left for an Opus pass, it needs a stacking sweep), mindmap-1018 (Expand from my notes, topic note answer, resize grip fix) and a read-only security review merged; the review's five confirmed findings fixed in 5691a83. The CI run on ebc5a46 named three failures on every Python version (wake-source seed for the snippet drag's two frame loops, the top-level let cap, two table-grip hover rules without a focus twin), fixed in 048584e (pushed). Agents running: worldclass-1018 (nav and undo audit), open-1018 (OPEN.md Library, Notes, shell, Timeline), left-1018 (mindmap strip cover, Ask due-date path); their lines land in `agent-remaining/`.
+
+**Away queue (owner asleep, 2026-10-17 late), state at the last push (5af1c03 on PR 189):** merged and green: both WIP branches, CI fixes, companion physics/perch/boot budget, Atlas stars and the companion mind (lazy companion-menu.js), timeline calendar add (B72), Harper hover (B04), the new-chat skeleton, composer O5 to O11, tab-entry costs (reduced-motion blankets now motion-still.css, timeline `:has()` anchors removed: timeline entry style 654 to 246 ms at 4x), accessibility WCAG 2.2 sweep, security review (graph pins, slash, ReDoS, LIKE wildcards), composer question cap (2,000 chars planned), `/improve` bounded, B80 new-tag suggestions, folder import as a durable pool job, word-boundary snippets, time-reader gaps (spoken clocks, 24-hour figures, `eod`, week offsets, midnight). Open, in order: B50 splash (Windows only, unverifiable here); Harper-driven autocorrect beyond the popup; Library/Notes reveal cost (first style of the revealed page, 1,389 and 1,186 elements; only a smaller first chunk helps); `when.resolve` ignores a clock after a day-sized offset; the route still takes about 5 s on a 20,000-character question (`question_noise.guided` on 2,000 characters, 7 times a turn); owner questions in bugs-1017.md (B32, B41, B49, B54, B77, B70, B53, B59, B07, B61 unsloth licence, B58 icon toggles needs a named example). The two remote WIP branches were merged and deleted by the owner. Two CI flakes seen on this PR were a timing test (`test_duplicates_scan_speed`, 2.20 s against 2.0) and a leaked `TESSELLATE_LAUNCHED` from `test_frozen_packaging` (fixed).
+
+**Now (2026-11-12b, PR 216, NOT ready: OPEN.md close-out ledger never handed out):** 135 rows (93 close-out at OPEN.md 4576+, 42 audit at 3917+) still open outside plans and backlog; the 11g hand-off covered named INBOX items only. Verified into agent-remaining/ledger-1112.md (74 left: 56 partly, 18 open). Build workflow wf_ee46a876-5a8: wave 1 composerA, companion, shell; wave 2 composerB, backend, surfaces; each wave merged, gated, Opus-reviewed, fixed, pushed. If the session ends, resume it with that run id or re-brief from ledger-1112.md. GAP found after launch: ledger-1112 verified only 42 of the audit inventory (OPEN.md "Open and owner inventory": 129 open, 31 partial, 55 deferred unstruck), and never re-verified "Everything open, 2026-10-11" (about 920 non-plan rows), the "Left by" sections (about 660) or the agent-remaining left lists; owner lifted the cap for the read-only sweep: wf_5cdd4494-7a0 verifies 1,785 rows (scratchpad sweep/chunk00-16) plus INBOX, SESSION_BRIEFS and recent agent-remaining leftovers into agent-remaining/ledger-1112b.md; its open rows are built next, in waves like wf_ee46a876-5a8. Then: CI fixes since: E21 month capital in "That is today." (576c9d31b); composer cold import back under budget, 339 module-scope patterns lazy (2004ff107, f0f2048f3, 57 ms local). Earlier: the owner's review of 756cfda (five sync findings) fixed, and an independent review of those fixes (seven confirmed defects) fixed too: state-file lock and unique temp, cached upload SHA-1 and one note query, arrival marks before commit, the data key only on request, withheld markers from the author over the folder only and above every cursor, copied-folder same id refused (folder, LAN, pull, pass) with Make a new sync id in Settings, documents and boards withdrawn, local links, cards and files keep a withdrawn note. Known limit: after Make a new sync id, notes the other computer already has arrive there once more under the new id (the confirm says so).
+
+**Now (2026-11-11k, PR 216, ready for merge pending CI):** the owner's evening items fixed: the Skills menu greys the skills that need a model and says why (INBOX 1780), document table grips clear the active cell ring and the add-row plus sits under the table (1782), chat consent cards survive a reopen in their server-read state and an expired consent can no longer run (1781); CODEMAP regenerated (CI). Tool-confirm and offer cards persist too (checked by API and tests; the Gather button draws only on the Ask digest path). Hardware-only items as listed in the PR body.
+
+**Now (2026-11-11g, PR 216, handed to the spokes):** owner: "pass everything still left to the other sessions". The hub stopped every agent and workflow; work is on `claude/pr216-hand-*` (WIP commits carry their remaining lists). Spokes merge their own finished work into `claude/next-queue-1102` (fetch, merge, check for conflict markers, targeted tests, `gate.sh --staged`, push; retry on reject). Owners: composer spoke: 1778 a b c, 1693; graph spoke: 1769, e2e; whiteboard spoke: 1772, 1773, 1774; docs spoke: 1771, 1775; settings spoke: 1776, 1777, 1748, open-rows-important/scope/cite; backend spoke: companion E1-E3 E5 E6 then 1770, 1778 d e, 1716, 1726, 1741, 1711. Blocked: real-model checks B69-B74 (no llama-server here: github downloads refused).
+
+**Now (2026-11-11f, PR 216, hub mode):** pushed 45c142507. Merged all four spokes (wb, settings, composer, graph: resting figure clipped at the bar edge on hang/bar perches), wrapzoom surfaces 6 to 10, the CodeQL `__all__` fix (41 notices; reviewed, public cross-module names added, dead `ONLY_WORDS` cut), CI leg 1 and lint fixes, Capture Filing options wired on the Notes surface. No worktrees left. Next: CI on the head, then the unblocked rows of `agent-remaining/OPEN.md` and INBOX (owner-blocked: Windows logs, real-model checks, touch hardware, GR9 art).
+
+**Now (2026-11-11e, PR 216, hub mode):** pushed ce5df4bd9. Merged: the owner's 09:40/09:50 decisions (extras notice Install turns to Undo, RapidOCR notice in OCR workspace and lightbox, fr/de/es spell packs, chat Stop keeps the queue, speaker labels by voice, filing bar 0.6 plus ask when unsure), composer real-conversation phrasing fixtures, wrapzoom fixes for shell, notes/reminders/timeline, documents/code/diagram, graph (reviewed; folded-button wording and grip rule fixed). Waiting: wrapzoom surface 10, settings spoke (re-merge), wb spoke (sweep + found-not-fixed), graph spoke (un-FINAL list). Left from review: diagram-lazy.css keeps an old @media block beside its new @container block (low; measure before removing); rows view hides the time while pointed at (strip takes its place), check with the owner if wanted otherwise.
+
+**Now (2026-11-11d, PR 216, hub mode):** pushed 37e7c3cfe. Spokes (Sonnet, own branch, no PR; may use agents): wb W12 navigation; docs W34 verify sweeps + fixes; graph W29 ratchets then W14/W15/W31; backend CodeQL (18 high, run the CLI locally); composer 1749, Q1-Q8/Q24, composer reds, W7-W10, C35; settings pkg mounts, Q10, Q11, Q25, Q30, W20, W33. Hub did sm rows 6, 8, 9 (local agent on 24, 25, 27). Done since 11c: W4, W17, W19, W21, W22, W23, W25, W26, W27, W28, W30, K32, BK10, W1/W11 verified, X15. Left: W24 CI time (needs a workflow edit: ask), the rest above, then HANDOVER retro.
+
+**Now (2026-11-11b, PR 216, 87% weekly, alert at 98%):** pushed through the CodeQL cyclic-import fix (compleft4, s11 K25 part, wc3 web store, BS1 part, verify sweep, ORM and global-name caps back under). Running after a container restart (resumed): composer dates 1739, Tessellation 1744, whiteboard image edit, documents citations, lag rest then BK1/BK2, BC1-3, K24/K25 structure, BG1 then BA1, BS2-4. Next: merge each as it reports; then the INBOX 1743 composer rewrite, BD1, BW1, BH1, BR1, BC4-8, BS5-8; owner-call list (OPEN.md) in one sitting.
+
+**Now (2026-11-11a, PR 216, no stop line; owner scope note above):** pushed through 1889fdc74 (1740 diagram multi-select, 1741 lag part, Matching records cards and dismissed list, Tessellation pan and Fit, s11 K34/S-rows found built). Container restarted ~00:50Z; all 11 agents resumed by message from their worktrees: composer dates 1739 (then start 1743 composer rewrite), Tessellation 1744 (+ q31 left), lag rest, compleft, docs citations/tables, whiteboard image edit/crop/BPMN, wc3 web store and retry, s11 refactors, verify sweep (+ W16), and two close-out inventories (audit+Fable; INBOX/HANDOVER/remaining) writing "PR 216 close-out" sections in OPEN.md. Next: merge each as it reports (resolve.sh, INBOX de-dup, CODEMAP, targeted tests, push); then run the close-out batches.
+
+**Now (2026-11-10h, PR 216, no stop line):** pushed d25da229f: Sessions 7, 9 (W18, F1 to F3 first slices; s9-1110.md), 11 (scout rows: stale ones closed, rest in s11-1110.md), regression fixes (11 of 31; 15 composer reds left). Running: composer reds (cfail2-1110.md), Session 10 (F4 to F7), Session 12 plus K34 and S51/S71/S74/S77, Sessions 5 to 8 leftovers (s58left-1110.md). Next: composer leftovers (consent2, parity, g13, g1014, left), then BACKLOG. Held for the owner: K38 single-use media links, K32 due-count endpoint, E43/K11/K13/K26 (Q22).
+
+**Now (2026-11-10g, PR 216, no stop line):** merged and pushed: consent fixes (server-held consent ids), F5/F6/F7/F10/F11, G1 to G14 and Name use, parity both ways (tests/test_parity_1110.py), code block colouring, Sessions 5 and 6 (partial: s5-1110.md, s6-1110.md). Running: regression fixes (test_realise variety, test_agent_context, typo [call me Sam], parity contradictions), composer leftovers (left-1110.md, incl. the ask_chips "four views" regression from 7159026db), Session 7. Next: Sessions 8 to 12, then BACKLOG. [!] Owner: Q20 asks complexity.yml to fail on ruff PERF; CI definition edits are guarded in away mode, so the workflow is unchanged and tests/test_complexity.py holds the zero baseline instead.
+
+**Now (2026-11-10f, PR 216, no stop line):** pushed 8b41f6d78 (spelling 1731, lag part, localhost everywhere plus fallback, W9 B22-B27, CI test fixes). Owner: "fix all the findings from the fable composer audit" (docs/roadmap/agent-remaining/fable-composer-1110.md). Running: F1 per-turn frame (Opus), F3 list acts, F2+F4 stats and social turns, F7+F10+F11 voice, naming, citations. Queue after those land: G2 (read questions write notes, snooze TypeError; first), G1, G3, F5 chips continue the conversation, F6 compare/count over what was shown (on the F1 frame), F12 reminder offers, F8 ranking, F9 agenda, F13 smaller, F14 model-on parity, then the eval spec. Then: desk companion flicker debounce, B62-B67, LanguageTool option, INBOX 1726 rest (lag-1110.md).
+
+**Now (2026-11-10e, PR 216, stop 80%):** pushed bfbf4ef69 (Hello review fixes, conv-1110: Next chips and follow-ons, the 8 W8 failures); local 6883425cb (desktop window on localhost with one-time storage carry-over). Running: lag (INBOX 1726), spelling (1731), localhost-everywhere plus fallback, W9 B22-B27. Fable composer audit blocked by the plugin until the owner names Fable again in chat. Next: push after CI on bfbf4ef69, merge agents, desk companion flicker debounce, B62-B67.
+
+**Now (2026-11-10d, PR 216, 62% weekly, stop 70%):** pushed ad8b182a9 (W11, W13, W14 rounds 1 and 2, diagram groups, private spaces part 2, diagram AI and versions dgai-1110, the graph label fix, CodeQL 2128 resolved). Running: W8, W14 round 3, private spaces round 2. No new agents (budget); merge these, then stop. Next session: Windows Hello, then Session 4 (W9, W15 with B66, W16, W17); diagram AI left is a DOCUMENTS_PLAN row.
+
+**Now (2026-11-10c, PR 216):** Session 3 running: W8, W13, W14 and private spaces (INBOX 1727, Opus) in the four slots; W5, W6, W7, W11, W12, gring, E17, E18, E19 landed (W11 merges next). Owner queue order, 2026-11-10: private spaces, then the diagram group selection row and the diagram builder AI and versions row (DOCUMENTS_PLAN, placed 2026-11-10), then Session 4 (W9, W15 with B66 the desk hang, W16, W17; E19 already done) once all of Session 3 has landed, then the sessions in order (OPEN.md "Work order").
+
+**Now (2026-11-10b, PR 216):** session closed; owner answers are recorded (owner note above), W0 merged. CI flakes fixed after b68ca11df: composer number shapes compile lazily (cold-import budget, 3.12), model status re-asks the list after a finished download (3.11), desk cursor test waits for the host thread (3.12). Next: a fresh session, "Continue", Session 1 of the work order from W1.
+
+**Now (2026-11-10a):** the work order exists: `agent-remaining/OPEN.md`, section "Work order (2026-11-09)" (34 owner questions with recommendations, 35 batches W0 to W34 plus F1 to F8, tiers A to F, a 12-session plan to the BACKLOG boundary). Ask the owner the "Answer these in one sitting" list first; the next session starts at its Session 1 (merge W0 `dglag-1109`, then W1, W2, W3, W4 with Haiku scouts E15 and E16). Each session strikes its rows there at merge.
+
+**Now (2026-11-09f, PR 216, stop at 70% weekly):** pushed 530933a9c: dgbt-1109 (diagram blind-test fixes), nap1711-1109 (in-app wave on pointer idle alone, card nap on a visible card edge; 1711 a, b), life2b-1109 (no idle edge while a look or blink shows: walk seed 1 516 to 490 under the 500 ceiling; the puff test reads seeds 4 to 79), zoom4-1109 (1717: a code document's tools fold into the kebab; 125 to 200 % 0 wraps light and dark), c12-1109 (composer r9 leftovers; the three c11 CI failures fixed). CI on 044e549: 3.12 cancelled at its 60 min limit at 98 % (no failure), 3.11 and 3.13 the three c11 failures. Blind test of composer and companion: agent-remaining/bt-compcomp-1109.md (25 items). Running: iife4 (harness-aware IIFE batch), compbt (in-app companion: chrome overlap, drag clamp, keyboard), zoom5 (widths 600/480/390), c13 (composer blind-test items, then c12-1109.md leftovers). Next: merge those, security round, docs pass, then BACKLOG.
+
+**Now (2026-11-09e, PR 216, stop at 70% weekly):** merged since b4e98d3: life-1109 (blinks and breath by mood, four daily reactions), c9 and c10 (composer r9 batches 1 and 2, the batch-1 regressions fixed), dgpolish-1109 (touch shelf, drop marker, phone toolbar; 1661 closed), row21-1109 (board canvas, OCR card, shortcuts sheet as templates: live elements 8,162 to 6,059) and r21fix-1109 (the review's five load-time wiring breaks), zoom3-1109 (125 to 175 % wraps 18/9/9 to 0; 1717 left at 200 %: a code document's tools row), iife3-1109 (global names cap 9,598 to 9,490). Fixed here: boot element cap, OCR shared miss (keyed by every input, real reads only), runner engine seeded in tests (react_1700 flakes), whiteboard resize before a board open, entrance warp state, CodeQL implicit concatenation. Running: c11 (composer r9 rest, review findings on composer_tally and yes/no windows, two CodeQL ReDoS alerts), life2b (Opus: walk seed 1 idle wakes 516 against the owner's 500 rest ceiling after the seed fix; not merged until under it), dgbt-1109 (blind-test findings: Move up adds an arrow, tall banner covers the last block, phone handles). Boot gzip sits exactly at its cap. Next: merge those, 1683 a, 1711 a and d, iife4 (files needing harness edits, iife3-1109.md), ux and security rounds, docs pass, then BACKLOG.
+
+**Now (2026-11-09d, PR 216, stop at 60% weekly, at 40% when last read):** merged and pushed (31bac2a) or local since: composer-r8, lag-1109 (1667), compalive-1109 (1709 built, 1710 and 1711 part), uifix-1109 (1708, 1713, 1714; 1712 not reproduced, needs the owner's window width and surface), dgml-1109 (1661 l part: mind map and timeline shelves; picture-side pick, rename and reorder for those two still open), the four new acts' arm, eye, tail and smile loops and their chains (sneeze to groom, foot tap to look round and think, hug to yawn and sit; hour chains 9 to 10 on eight seed-hours, base 18), hang regrip within half the figure's height (scrabble 1107 and hang_gone 1699 both hold), scroll-end listener lint, diagram builder back under 12 KB gzip. CodeQL 2117 to 2120 resolved. CI Tests time was runner variance, not a blocker (31 to 50 min since; one run cancelled at 60); cispeed-1109 merged anyway (overlay test CPU 710 to 401 s), never raise the cap. Locally test_embedding_offline/pull fail only for a missing huggingface_hub. Next, in order: cispeed merge, 1710/1711 leftovers (compalive-1109.md: meditate, lounge, rest_head to the desk; firefly, star pile, card nap, wave at pointer), 1696 lists (atlasf1696-1108c.md, ui1696c-1108c.md), 1661 l picture parts for mind map and timeline (dgml-1109.md), 1683 travel mix, 1607/1612 help summaries, audit rows 19, 21, 36, 37 (37a IIFE wrap), lag-1109.md leftovers; owner calls: 42, 55, D25, B10, test_companion_weights tolerance, P7, Enter vs Tab, Wide note measure, dgml default fold, 1712 window width. Then stop at BACKLOG.
+
+**Now (2026-11-09c, PR 216, stop at 60% weekly, at 40%):** merged locally since 2679d8f: composer-r7 (R3-20, R3-22, R3-33, r6 leftovers, INBOX 1705 a to h; "what can you do" now speaks as Atlas, B10 tests edited, owner may revert), deskface (INBOX 1704), audit row 22 (documents-callouts.js split), INBOX 1707 (diagram shelf in frame, Kind menu toggle). CI on 2f3088d: 3.11 failed on the docs/CHANGELOG.md mirror, fixed in 2679d8f. Running: composer-r8 (r5 to r7 leftovers, checklist of milk eggs bread, call Anna), lag-1109 (INBOX 1667, the growing avatars.js forced layout, 1643), compalive-1109 (INBOX 1709 in-app flow and lower body life, 1710 parity). Since: hang regrip fix (1699, CI 2679d8f), 1715 fixed; new INBOX 1708, 1711 (with compalive), 1712 (chat source rows with a picture run wider), 1713 (graph popup head), 1714 (Suggestions select alone on its row); 1691, 1645, 1671, 1612 placed in plans (tray cap). Package check on 658d0a4 and d8f8ddc: --install-extras failed, Pyodide download 504 from GitHub release assets, re-run once. Next: INBOX 1708 (List selection bar redesign, Select all and Clear; diagram-multi.js:21 to 52, diagram-split.js:172 List head), 1661 (l) leftovers (diagklm-1108.md), 1696 lists (atlasf1696-1108c.md, ui1696c-1108c.md), 1683, 1612/1607 help one-line summaries, audit rows 19, 21, 36, 37 (37a IIFE wrap first); owner calls: 42, 55, D25, B10, test_companion_weights tolerance, P7, Enter vs Tab, Wide note measure. Then stop at BACKLOG.
+
+**Now (2026-11-09b, PR 216, stop at 60% weekly):** merged since 09a: composer-r6 (today's note append, untick, multi-tick, per-subject, table number, D22, D19, R3-36), deskperf (cold warp 4.2 to 3.3 ms; P6, P7 (owner pick: probe vs parallel), P9 in deskperf-1109.md), atlascat D3, D4, D5 (DESK_ONLY 26 to 8; test_companion_weights TOLERANCE 2.5 to 3.6, app 39.1 acts an hour against 35.7: owner may want parity instead), cislow (overlay sims 2 to 4 times faster), rest-life helper fix (2900868). CI Tests hit the 60-minute timeout on 0612a52 at 99% with no failures; the tail is unexplained (run with -v or --durations=0 next). Left: composer R3-20, R3-22, R3-33, D25 (composer-r6-1109.md); audit rows 19, 21, 22, 36, 37, 42, 55 (fitaudit-1109.md); then BACKLOG smallest first.
+
+**Now (2026-11-09a, PR 216, owner decisions taken, stop at 60% weekly):** merged locally: fitaudit-1109 (phone mind map open-fit, min zoom 0.65; audit row 23 closed; rows 19, 21, 22, 36, 37, 42, 55 in fitaudit-1109.md), dgmdd-1109 (R14 cylinder and parallelogram, DD-5 completion list, DD-13 spacing via dagre; R12 and `<-->` were already built). Running: composer-r6-1109 (today's note append, E7, D10, E10, table number, R3 rows). Push after CI Tests on ef48429 reports (owner: one CI Tests run between pushes). Next: desk companion (atlascat D3 to D5, perf P6, P7, P9, flow warp, coil breath), then BACKLOG.
+
+**Now (2026-11-07c, PR 216, head after 6baf820e, owner asleep from 14:40Z, weekly 4%):** overnight queue in `.claude/work-order.md`: merge land1683, value-field and companion-s as each reports (overlay tests serially); coverage ledger of every owner ask (1683 a to y, 1692 a to q, 1694); the 1683 (x)(y) build (pull-up, fling off a moved window, poof or portal escape, tuck and peek from any taskbar edge, hidden taskbar, sidebars, in-app parity); 1667 perf; layered deep dives desk companion, in-app companion and Atlas, diagram builder. Morning summary at the top on stopping.
+
+**Now (2026-11-07b, PR 216, head 7756db67):** pushed: the 19 branches, 1666 and 1678 refixes, 1690 d, followups in Quick, B6 adaptive context (0b19bd54 merged), PR 216 CI fixes (022fae4f: reminder tests pin the seed's day, INBOX 1693 for the class; /insights/confirmed paged; Confirmed patterns built on first draw; CodeQL threads resolved). Running (worktrees under the session scratchpad): land1683 (agent/land1683-1107, the 25 overlay tests), G3 size handle (agent/g3-size-1107), throw lag (agent/throw-lag-1107, INBOX 1667's 5956 ms spotNow). Merge each, overlay tests serially, push; review and refix G3. Next: INBOX 1692 (owner 13:10Z: companions and diagram builder): (a) desk floor ignores a hidden taskbar, (b) deep dives one at a time (desk companion, in-app companion, diagram builder), (c) build from them. Then the 11-07 list below. Ask the owner: weekly usage; recheck 1690 a and d on Windows.
+
+**Now (2026-11-07, weekly usage unknown so the lower agent cap (three, Sonnet or Haiku), branch claude/next-queue-1102 restarted from main 610c05a, new PR; PR 212 merged, tag v0.7.0 pushed):** corrections to 2026-11-05b, these win: item 1 done (CI green on cf31a36 before the merge); CI Tests timeout is 60 minutes (4f9d8ba), the suite takes 26 to 46 minutes by runner; later CI fixes 2945823 (`Engine._frame` split for the complexity ratchet) and cf31a36 (fixed clock in the `/entries/changes` overlap test). Item 4b, INBOX 1690: (b) and (c) fixed in 1647e26 (no `KeyError` in `faces.eye_anchor` for a captured look; a click keeps a hanging figure hanging); (a) desk starts as Atlas instead of "You, from your name" and (d) card window flicker are still open, probably gone with (b): ask the owner to check on Windows, else trace `DeskCompanion._look_in_force` and `figure_key` at overlay start. Item 2: 19 branches, 59 commits, all on origin (`git cherry origin/main <branch>`): worktree-wf_7b58e2ac-3be-1 -2 -5 -11 -12 -13 -14 (CHAT_PLAN B1 to B9; -11 holds 9f7811e with agent-remaining/b1b5-1105.md); worktree-wf_493850b7-9af-6 -12 -17 -20 -21 -24 -25 (companions, documents, boards; -25 is the partly committed 1666 refix); worktree-wf_74a71699-c93-5 -7 -8 (companion-asks parity; -8 the partly committed G3 desk size handle); worktree-wf_9e57e5b6-f44-4; worktree-wf_00a71097-af8-1 (diagram slice 9, WIP). Already merged, skip: wf_493850b7-9af-1, wf_02c5cc2f-be1-1, wf_15cf256f-2a1-28, wf_d3882045-8a8-1, every worktree-agent-*, worktree-wf_7b58e2ac-3be-3. Merge one at a time (`git merge --no-edit -q origin/<branch>`), keep both CHANGELOG sides, CODEMAP after each, targeted tests serially, push in batches; expect the 2026-11-05a failure classes (Guide topic budget, import cycles, smoke reach) and fix each in the merge commit. Then: 1. HANDOVER items 3 and 4 (1666 refix, 1683l-1678 review and refix, G3 handle finish and review; `test_nothing_is_read_when_a_climb_cannot_happen[typing]`, desk-1670.md:111); 2. the 2026-11-05a list (README and screenshots, 1683 r and s, /chat/followups deadline, open CHAT_PLAN B rows); 3. agent-remaining (b2b7-1105.md:25; desk-1670.md:77, 82, 95, 100, 135; diagram-1679-1104.md:8 at 390 px; poses-1681.md:23; OPEN.md composer block, lint debt, shell block); 4. INBOX (18 open); 5. plans (WHITEBOARD, WORLD_CLASS, CHAT, MINDMAP, SESSION_BRIEFS, AUDIT, TIMELINE, UI_MODERNISATION); 6. ANALYSIS, AUDIT, FABLE_BRIEF findings, then BACKLOG.
+
+**Now (2026-11-05b, owner at 99% weekly, stopped; owner 08:10Z: "make sure they are all done beginning of next session and pr"):** the rollback is reverted (9b7b071), 12 of the 16 CI failures fixed (90ab77b, 2743751), every CodeQL thread resolved. Start the next session and PR with ALL of these, in order, before anything else:
+1. Done: the 4 CI failures on 2743751 (stale CODEMAP, two board opacity tests and the desk panel test pointed at the moved code, with "Intent moved" notes). Check CI is green on the new head.
+2. Merge the unmerged workflow branches (verify each by `git cherry`, some may be merged under other ids): wf_7b58e2ac-3be-1 -2 -3 -5 -11 -12 -13 -14 (CHAT_PLAN B1 to B9); wf_493850b7-9af-1 -6 -12 -17 -20 -21 -24 -25; wf_74a71699-c93-5 -7 -8; wf_9e57e5b6-f44-4; wf_00a71097-af8-1 (WIP diagram slice 9); wf_02c5cc2f-be1-1, wf_15cf256f-2a1-28, wf_d3882045-8a8-1; then `worktree-agent-*` (33).
+3. Stopped workflow steps: 1666 refix (tip wf_493850b7-9af-25), review and refix for 1683l-1678; G3 desk size handle build (tip wf_74a71699-c93-8), its review and refix. Recover agent-remaining/b1b5-1105.md from 9f7811e.
+4. Failing on the merged base: `test_nothing_is_read_when_a_climb_cannot_happen[typing]` (agent-remaining/desk-1670.md:111).
+4b. INBOX 1690 (desk: wrong look at start, captured look KeyError in faces.eye_anchor kills the overlay, hang pose dropped when the menu opens, card fallback flicker): owner-reported live, before the rest.
+5. Then the 2026-11-05a list below (README and screenshots, 1683 r and s, /chat/followups deadline, open CHAT_PLAN B rows), agent-remaining (b2b7-1105.md:25 hover row; desk-1670.md:77, 82, 95, 100, 135; diagram-1679-1104.md:8 at 390 px; poses-1681.md:23), then INBOX (18 open).
+
+**Now (2026-11-05a, owner at 97% weekly, wrap-up: "let the agents finish but dont start more, just log for next pr", branch claude/next-queue-1102, PR 212, version 0.7.0):** merged this run: Ask column heads and full-width folds everywhere (CHAT_PLAN A1, A2 and follow-up), attach panel lists Library uploads (1687), desk Come here (1683 t), desk nap holds and travel mix (1683 u), wisps, CI fixes (motion read, toast copy, model_cards pull race, ruff, CodeQL). Released 0.7.0 in the files (version, stamps, CHANGELOG heading); the tag `v0.7.0` is pushed from main after PR 212 merges (docs/RELEASING.md). Still running when this was written, merge each as it lands (`git merge --no-edit -q <branch>`, keepboth CHANGELOGs, regenerate CODEMAP, targeted tests, push): workflows wf_493850b7-9af (companions, documents, boards lanes), wf_74a71699-c93 (companion-asks ledger and parity), wf_7b58e2ac-3be (CHAT_PLAN B1 to B9: answer order, agent composer, answer foot, context window, patterns). Landed since: 1688 and 1683 w, g (319230c), 1683 v throw landing (3248b19), CI fix 49720e6 (upload reads to repo/uploads.py, router cap 687). Then 1689 (desk click-away, 3bf4fb7). Rolled back 2026-11-05 06:10Z: a fast-tracked merge of ten workflow branches (493850b7 -2 -3 -8 -9 -10 -11 -16 -17, 74a71699 -5, 7b58e2ac -3) went red in CI (16 failures: the desktop-companion Guide topic over its 1900 budget, a capture and sprites import cycle, desk-frames.js unreached by the smoke, wb snap-label hover, mindmap showPicker, wbRecordGesture, rest wakes 496 against 480, others), so the tree went back to 3bf4fb7 in one commit; git sees those branches as merged, so start the next PR by reverting that rollback commit, then fix the 16. Workflow wf_7b58e2ac-3be (CHAT_PLAN B1 to B9) finished 06:10Z, 14 of 14 agents, unmerged: its tips are `worktree-wf_7b58e2ac-3be-*` (B1 and B5 review fixes a5b5552, d0e2ff8; remaining list agent-remaining/b1b5-1105.md). Stopped 06:35Z at the owner's usage limit, to pick up next session (run only the steps left; a workflow cannot resume across sessions): wf_493850b7-9af (script workflows/scripts/queue-1105-three-lanes-wf_493850b7-9af.js): the refix for 1666 (branch tip worktree-wf_493850b7-9af-25, partly committed), then review and refix for 1683l-1678 (its build is done). wf_74a71699-c93 (companion-asks-1105): G3 desk size handle build (tip worktree-wf_74a71699-c93-8, partly committed), then its review and refix; its ledger, G1 and G2 are done. Next PR, in order: 1. merge whatever of the above did not land (branches `worktree-wf_*`, `worktree-agent-*`); 2. README rewrite and fresh screenshots (`scratchpad/ui-sweeps/readmeshots.js`, `seed-readme.js`; the Ask columns, folds, attach panel and desk companion changed since the last shots); 3. INBOX 1683 r (desk resize), s (the X11 test flake); 4. /chat/followups 15 s deadline failure (owner log 02:2xZ); 5. any CHAT_PLAN B row a workflow left open; 6. the rest of INBOX, then agent-remaining/*.md.
+
+**Now (2026-11-04k, owner asleep 17:12Z (away, "very token efficiently"), weekly 88%, stop at 95 to 96, branch claude/next-queue-1102, PR 212):** merged 1674 cat-perch, 1675 to 1677 (asked-act eyes, diagram rename box, re-doze). Running: desk refix 1670 (jitter, idle life, tumble; wf_001b3d32-e0c-3), lag 1667 (wf_8bf8ca21-3d5-1), diagram 1679 slices 1, 2, 5 (wf_4f6b3d5e-da5-1), Atlas lower body 1680 (wf_32cfa85e-e4a-1). Queue, one agent at a time after these land: 1. merge each (desk: _apply complexity, CODEMAP); 2. 1681 poses; 3. diagram slices 3, 4, 8; 4. 1666; 5. 1668; 6. 1678 companion mind.
+
+**Now (2026-11-04j, owner active, weekly 85%, stop at 93, branch claude/next-queue-1102, PR 212, pushed eda8fe0):** merged desk rows A to D (Linux X11 included), the 14 CI fixes, diagram 1661 slices (one-row toolbar, colour, shortcuts, blind-test fixes; outline, arrows on the picture and guidance still open), text-zone cache, cat 1673. Running: desk-smooth 1670 (wixngbvzn), cat-perch 1674 plus companion lag (w8o4wr84i). Queued: desk-life-throw-1670.js (owner 15:40Z idle life, 15:45Z every throw hangs) once desk-smooth lands; then 1667 tab-press layout class, diagram continuation, 1666, 1668.
+
+**Now (2026-11-04i, owner active, weekly 83%, stop at 93, branch claude/next-queue-1102, PR 212, pushed 74ce387):** merged diagram R5 to R10 (R9c committed by hand after a full disk), desk live fixes 1670 (bob, nebula blink, state 2 hide, stuck hang pose), Guide own-order class. Running: companion house cat 1673 (wpyezqzkz), diagram reimagine 1661 (w2cl4lx2t), desk row B (wm5i8vw67), open-findings. Next: merge each as it lands; then 1667 lag class, 1666, 1668.
+
+**Now (2026-11-04h, owner active, weekly 79%, stop at 90, branch claude/next-queue-1102, PR 212, pushed af3125a):** merged atlas rest motion 1659, SEC-A2 private media (with the restore path), companion 1656/1658/1660 (one panel placement, travelling float, edge hang, nebula frames; not verified on Windows). Running: full suite (migration), diagram chain wf_2e301dd8-719 at R7, lag round 1662 (agent). Next: merge each, then 1661 diagram redesign rows in DOCUMENTS_PLAN 22.
+
+**Now (2026-11-04g, owner active, three workflows, branch claude/next-queue-1102, PR 212):** running diagram R3 and R4 (wf_8a736aaf-d9e), composer 1653 (wf_d18057d0-636), companion roam, carry and mixed-DPI (wf_2fa1a3b1-ebb). Queue: R5, R6 (tester list), R7, R8a to c, R9a to c, R10; composer probe round; deep-audit perf, backend (security), ux, fixed in batches; routes_whiteboard.py re-exports; 1634.
+
+**Now (2026-11-04f, owner away (lean-workflow away), tier pro, branch claude/next-queue-1102, PR 212):** overlay gaps merged (41fc617, f05a3bb: click-away, runner death brings the card back, panel follows a drop, first-open right click; fakes only, not run on Windows; mixed-DPI panel placement still open). Next: diagram R3 to R5, composer 1653 and the "Also:" cut, routes_whiteboard.py re-exports, 1634; goose ideas wait for the owner.
+
+**Now (2026-11-04e, owner away again (lean-workflow away), weekly 76% tier pro, branch claude/next-queue-1102, PR 212, pushed 120b368):** CI fixes 22c0ce5 (motion wording) and 120b368 (CodeQL cycle via core/run_records.py) pushed, threads resolved. Running: workflow wf_9aa1f647-28d for 1649 (implement, review, fix). Queue: 1. merge 1649; 2. 1643 graph redraw at rest plus the 03:08Z lag lines; 3. routes_whiteboard.py re-exports; 4. overlay gaps; 5. 1634, diagram R3; 6. full suite (conftest changed), morning summary, retro.
+
+**Now (2026-11-04d, stopped at the context line, weekly 76%, branch claude/next-queue-1102, PR 212, pushed 58a1836):** 1641 Running copies done (ask-only Shut down). Next: 1649, 1643 and the lag lines, whiteboard re-exports, overlay gaps, 1634, diagram R3; full suite first (conftest changed).
+
+**Now (2026-11-04c, owner away (golf, about 2 hours), weekly 75% so tier pro (one agent, Sonnet), stop at 85%, branch claude/next-queue-1102, PR 212):** merged perch 1640 (0 of 28 throws float), composer 1599/1602, overlay O1 to O4 (1645, Windows unverified, owner check O5), stopwatch 1651, diagram zoom readout 1652, first-show re-place 1650. Running: blink 1644 plus the E2E heading-card failure. Queue (`.claude/work-order.md`): 1. merge blink/E2E; 2. 1641 Settings running copies; 3. 1649 composer act wording; 4. 1643 graph redraw and the 03:08Z dashboard lag; 5. overlay gaps; 6. 1634, diagram R3.
+
+**Now (2026-11-04b, owner active, three agents (Sonnet), branch claude/next-queue-1102, PR 212, pushed past a838735):** desktop companion: logical placement per monitor dpi, physical SetWindowPos on show, resize and drag, `min_size` (pywebview's 200 by 100 made the wide card), read-back log line, tray tick refresh on Hide (1642), CodeQL 2003 to 2007 fixed and resolved; launcher auto-port (1641 part); diagram R2 merged; tray ellipsis and minus (1646, 1647); docked panels clear of both bars (1648). Running: composer 1599/1602, perch 1640 (in-app Atlas never rests floating; worktree agent, port 8826), overlay 1645 (goose-style layered window, BACKLOG 16 rows O1 to O4, port 8828). Next free agent: 1644 Atlas blinks one eye (sweep `scratchpad/ui-sweeps/blink1644.js`, untracked; wake it first, it was asleep), 1641 rest (Settings "Running copies" with Shut down), 1649 composer act wording, 1643 graph redraw loop, then 1634 throw lag, diagram R3. Scratchpad at its 766 cap: keep new sweeps untracked.
+
+**Now (2026-11-04a, owner active, three agents (Sonnet), branch claude/next-queue-1102, PR 212, pushed b7e35fd):** 1603 tray done (close heads, chord t y, drop from a long list routes to carry, grip off popups, upward popover caret, detached opener closes its popover); merged 1619/1620 notes UI (edit form gaps, Manage panels scroll, tag popover, constellation repaint, topic chip words). Running: 1620 lag pass (plus the owner's 23:47 log), 1622 calculator (window fit, segmented toggles, "=" baseline, inline vs display), 1625 and 1626 mind map (glow undo and the undo audit, a menu opener toggles closed). Next free agent: 1607 Atlas eyes (one eye blinks while juggling, half lids look creepy; set the companion to Atlas first), then 1623 math editor superscript leftover box, 1624 companion resize while hanging, 1621 diagram builder redesign (DOCUMENTS_PLAN, design note first), then the 2026-11-03e queue below. Boot gzip cap raised to 260,520 (OPEN.md win-back). Scratchpad at its 766 cap: keep new sweeps untracked. **First after compact:** PR 212 E2E flows (Playwright) red on e63b606 (run 41741228993, job 126283369020) and b9bfa1e (run 41658641718): read the failing spec names (grep the job log for "failed" / "✘"), reproduce locally, fix; CodeQL 2002 already fixed and replied. Then merge the three agents as they report, 1627 board menus to the next free agent.
+
+(Now lines 2026-10-26i to 2026-10-31f moved to HISTORY.md, "Session record 2026-10-26 to 31", 2026-11-02.)
+
+the Gemini session's 12 commits are under triage (Brief 35: boot broken by a
+`thefuzz` import, 15 MB of unused vendoring, grounded 1.0 to 0.25); four Opus
+agents run (triage, boardmap, chatui, graph: Briefs 35 to 38) on the owner's
+2026-10-10 list, INBOX 727 to 745 and the plans' placed items; the direction
+for everything after is ROADMAP "Direction, 2026-10-10", with CHAT_PLAN Phase
+6 (the deterministic engine), WORLD_CLASS_PLAN 23 (filing and the taxonomy
+pack), UI_MODERNISATION Phase 12 (density, WCAG 2.2) and SESSION_BRIEFS 35 to
+42. The whole app against world class is WORLD_CLASS_PLAN 25 (every
+surface, its bar, its gap, its owner; Briefs 46 to 55), the design review
+UI_MODERNISATION Phase 13 (Briefs 56 to 59), the backend review
+WORLD_CLASS 26 (Briefs 60 to 63) and the features pass WORLD_CLASS 27. The deterministic layer under every surface (INBOX 746) is CHAT_PLAN "The deterministic foundation" (decisions 46 to 56, Briefs 64 to 68). The code editor as an IDE (INBOX 748) is DOCUMENTS_PLAN 23 (decisions D1 to D9, Briefs 69 to 71, after 42); the owner's "full improvement" ask (INBOX 749) is the programme already placed, plus learnability measured in UI_MODERNISATION 12z. The owner's trust conditions (INBOX 750) are WORLD_CLASS 28 (rules 1 to 14, decisions 67 to 71, Briefs 72 to 74).
+Merged by 14:30Z: 35, 36 to 38, 39, 39b, 42 steps 1 to 4, 56, 72a, 72b, 73,
+74, 75, chatui, the filing decision 6 hold on every path, CodeQL (46 alerts on
+the day, all at cause); by 15:10Z also 65 (the one reader, `ai/recognise.py`
+and `GET /read`) and 66 (quick add on five surfaces, 56 of 60 before 65's
+fixes: re-run `scratchpad/ui-sweeps/quickadd.js`) and 67 (the validators and
+the act registry; its sweep found every Chat send throwing on the pushed head
+after a ratchet commit took out a `let` another file read: a ratchet fix is
+checked in the browser, not only by the lint), and 47 (search everywhere:
+"Find anything" moved into lazy `search.js` with a chat kind, kind chips,
+paging, operator help and saved searches; WORLD_CLASS 25a built), and 42's
+remainder (python-docx retired, Word round trip with pictures and tracked
+changes, four file types, js-beautify, every code command keyed, the grip at
+24 px), and 41 (density: the top bar 64 to 44, docks at 28, icon hover on
+the glyph, the date picker; Phase 12 steps 1 to 4 and 6). Merged 51 (never lose a note, 16:30Z); 60, 50 and 34's first round by
+17:05Z; 68, 77 (rows 1 to 4) and 69 by 17:30Z, pushed as 07048214e with the CI
+fixes for c9e9a4ccc's ten red tests. 84 (Atlas everywhere) and 34's second round
+(the companion's faces, tail, reduce motion, arms) merged 18:40Z. Running:
+70 (the debugger, debug70), 71 (the IDE shell, shell71), 78 (the mind map,
+map78), 79 (the OCR workspace, ocr79) and a Sonnet cifix agent on the 21
+tests CI found red on 1fdf9d50d (brief-cifix.md). Next: 85, 89, 90, then 76
+after 71, 87 and 88 after 84's merge settles, 80 to 83; Sonnet 53 when load
+allows. Brief 75's script and ratchet already exist; its placed rows run
+inside each surface's brief. The PR merges when the gate,
+the sweeps and one full suite run are green.
+
+**A trap the batch merge paid for (2026-10-10).** `scripts/gate.sh` runs the
+lint set, not the ratchets: six agent squashes gated green and CI then failed
+17 suite ratchets (`test_global_scope_ratchet`, `test_list_limits`,
+`test_feature_catalog`, `test_error_toasts`, `test_prefs_module`,
+`test_vendor_utilisation`, `test_a11y_wcag22`, the Quick access and tag
+tests) plus 11 filing tests on a hold that read "Dad Jokes" as Relationships.
+Before pushing a batch, run `gate.sh --changed` (the tests that name the
+changed files) or the ratchet files above by hand; the lint gate alone is
+not a merge gate for a batch.
+
+**Before that (2026-10-03 night, PR 162):** merged since evening: Library pages and
+whiteboard/mind map audits (445), job last-run status (438), note making
+(434: Quick note Alt+N, offline outbox, paste/drop, `#tags`), mind map undo
+follow-ups, UI consistency pass 1 (Chat, Graph chrome, Dashboard, Timeline,
+Reminders, Settings jobs) and the zoom sweep: every tab 0 at 200% and 400%
+(433 resolved). Running: UI consistency pass 2 (Settings shell, Reminders
+phone, Library, Notes and Documents chrome, Opus). Next: refresh
+`docs/screenshots` with `readmeshots.js` after pass 2 (today's density pass
+made them stale), then 437 and 434's open parts. `gate.sh --staged` now
+includes the gzip boot budget (CI went red by 141 bytes once). Gate with
+`grep -q "^failed:  none"` before every commit. `smoke.js`,
+`selmenu-items.js` (removed 2026-10-12, recoverable from git history), `captureaudit.js` are the quick feature checks; run
+`zoom.js` one tab at a time (`ONLY=`).
+
+**Before that (2026-10-03 morning, PR 162, branch `claude/notes-flow-rebuild`):** the note
+flow (INBOX 432, in HISTORY "INBOX resolved, 2026-10-03") is fixed end to end
+and measured; a real model runs in the sandbox (`scratchpad/llama-dev.sh`,
+llama.cpp built from source, Qwen2.5-1.5B), so drive the popup agent and
+filing against it before claiming either works. Open after it: INBOX 431
+(5) companion stacking, (6) graph default forces, the companion motion
+work, then 430. Then, as before:
+
+**Before that (2026-09-27, v0.3.3 released from `fix/gemini-fixes-5`, PR 157):** start the
+next PR from the "Carry-over to the next PR (0.3.4)" list at the top of
+`archive/agent-remaining/wrapup-0927.md`, item 1
+first (the `frontend/js/` move).
+
+**A trap this session paid for, keep it.** In the shared worktree,
+`git add <file>` stages the *whole* file, including whatever an agent has
+half-written in it. Doing that to `frontend/index.html` committed an
+agent's mid-step removal of `#entry-document` without the matching handler
+removal in `app.js`, so a top-level `addEventListener` on a null element
+aborted the whole of `app.js`: `initAuth` never ran, the lock overlay never
+came out of `.hidden`, and the E2E suite failed on
+`waitForSelector("#lock-password")` with the element present but hidden 35
+times over 15 seconds. The app did not boot at all on that head. Stage by
+hunk, or commit only files no agent holds, and run `scripts/gate.sh
+--staged`, which exists because of this: it runs the lint set against the
+index rather than the working tree. `test_frontend_ids.py` was already in
+the lint set and already checks that every `$("id")` exists in the markup;
+it passed, because the gate was reading the working tree, where the pair
+was still whole. Proven on the same shape afterwards, with the break staged
+and the working tree clean: `lints` passed and `staged-lints` failed,
+naming the missing id.
+
+(The "twin" lesson on the shared index moved to HISTORY.md, "Moved from HANDOVER", 2026-11-04.)
+
+(The PR 149 plan and the session records to 2026-09-26 moved to HISTORY.md, "Moved from HANDOVER", 2026-10-31.)
+
+## Earlier sessions
+
+The session-by-session record that used to follow here (12k lines) is in HISTORY.md under "HANDOVER archive, 2026-09-09". This file is the current state only.
+
+
+## Retired with ANALYSIS.md (2026-11-12)
+
+## 30. External review, filtered (retired)
+
+ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
+
+## 31. Claude's own read (retired)
+
+ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
+
+## 32. Product direction (retired)
+
+ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
+
+## 33. Odysseus, read and triaged (retired)
+
+ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
+
+## 34. Where I'd take this: an outside read (retired)
+
+ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).

@@ -591,6 +591,8 @@ const openReminderList = (() => {
   };
 })();
 
+// Overdue reminders are at the front of the list only because it is ordered by due_at ascending.
+// Reading the first page is correct only while that ordering holds.
 async function checkDueReminders() {
   // Before the unlock there is no token, and asking anyway is a guaranteed 401
   // on every load: visible in the browser's network log, and in the server's

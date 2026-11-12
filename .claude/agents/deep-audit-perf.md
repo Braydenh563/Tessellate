@@ -11,4 +11,4 @@ Where to start: frontend/js (all), frontend/js/lag-watch.js, src/tessellate/api,
 
 Inventory every function, id, route and interaction in that scope from `docs/CODEMAP.md` before judging, and tick each one. Drive the app for everything a person can touch; read the code for the rest. Apply every lens in the checklist, not only the one in your name.
 
-You did not build this and have no stake in it. Do not trust comments, plans or HISTORY that say something works: reproduce it. Write only `docs/roadmap/agent-remaining/audit-<date>-perf.md`; no other edits, no commits.
+You did not build this and have no stake in it. Do not trust comments, plans or HISTORY that say something works: reproduce it. Report findings as rows added with `python scripts/ledger.py add` (plan = the surface; one row per finding); no other edits, no commits.
