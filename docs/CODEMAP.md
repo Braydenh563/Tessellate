@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2770, CSS sections 525, backend routes 699, backend modules 10767, test files 2686, tests 21855, plan headings 681, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2770, CSS sections 525, backend routes 699, backend modules 10767, test files 2688, tests 21859, plan headings 681, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -682,43 +682,43 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1545 |
+| `addReminder` | frontend/js/shell-reminders.js:1606 |
 | `armMinuteTick` | frontend/js/shell-reminders.js:41 |
-| `clearDoneReminders` | frontend/js/shell-reminders.js:1073 |
+| `clearDoneReminders` | frontend/js/shell-reminders.js:1134 |
 | `clipText` | frontend/js/shell-reminders.js:842 |
-| `curtainShell` | frontend/js/shell-reminders.js:1687 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1596 |
+| `curtainShell` | frontend/js/shell-reminders.js:1748 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1657 |
 | `edgeFadeWire` | frontend/js/shell-reminders.js:443 |
 | `glideStrip` | frontend/js/shell-reminders.js:310 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1710 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1771 |
 | `loadReminders` | frontend/js/shell-reminders.js:928 |
 | `markScrollEdge` | frontend/js/shell-reminders.js:514 |
 | `markTabBarRecede` | frontend/js/shell-reminders.js:589 |
 | `notePreviewText` | frontend/js/shell-reminders.js:877 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1491 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1552 |
 | `onScrollEdge` | frontend/js/shell-reminders.js:621 |
-| `openCalendarPage` | frontend/js/shell-reminders.js:1324 |
-| `paginateDoneReminders` | frontend/js/shell-reminders.js:1024 |
-| `presetDate` | frontend/js/shell-reminders.js:1380 |
+| `openCalendarPage` | frontend/js/shell-reminders.js:1385 |
+| `paginateDoneReminders` | frontend/js/shell-reminders.js:1085 |
+| `presetDate` | frontend/js/shell-reminders.js:1441 |
 | `previewBlocks` | frontend/js/shell-reminders.js:869 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1651 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1512 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1360 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1500 |
-| `reminderItem` | frontend/js/shell-reminders.js:1114 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1536 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1524 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1341 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1712 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1573 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1421 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1561 |
+| `reminderItem` | frontend/js/shell-reminders.js:1175 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1597 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1585 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1402 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:270 |
 | `safeMdSlice` | frontend/js/shell-reminders.js:756 |
-| `setDue` | frontend/js/shell-reminders.js:1429 |
+| `setDue` | frontend/js/shell-reminders.js:1490 |
 | `startClockTicker` | frontend/js/shell-reminders.js:77 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:60 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:81 |
 | `stripFrontmatter` | frontend/js/shell-reminders.js:852 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1443 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1504 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:414 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1435 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1496 |
 | `syncScrollEdges` | frontend/js/shell-reminders.js:669 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:233 |
 | `tabBarMode` | frontend/js/shell-reminders.js:227 |
@@ -726,9 +726,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tabContentWidth` | frontend/js/shell-reminders.js:204 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:139 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1373 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1455 |
-| `updateReminderBadge` | frontend/js/shell-reminders.js:1043 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1434 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1516 |
+| `updateReminderBadge` | frontend/js/shell-reminders.js:1104 |
 | `wikiLinkLabel` | frontend/js/shell-reminders.js:803 |
 | `wikiLinkShown` | frontend/js/shell-reminders.js:829 |
 | `wikiLinkTarget` | frontend/js/shell-reminders.js:820 |
@@ -27691,7 +27691,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21855)
+## Tests (21859)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28738,6 +28738,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_entry_history.py | 15 |
 | tests/test_entry_indexes.py | 5 |
 | tests/test_entry_list_keys_in_fields.py | 2 |
+| tests/test_entry_provenance_l_general_13.py | 2 |
 | tests/test_entry_references.py | 32 |
 | tests/test_entry_writers_whole_1525.py | 4 |
 | tests/test_equation_palette_row.py | 2 |
@@ -29744,6 +29745,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reminder_magic_hard_2210.py | 6 |
 | tests/test_reminder_notifier.py | 17 |
 | tests/test_reminder_outcome_l_general_10.py | 3 |
+| tests/test_reminder_overdue_triage_l_general_12.py | 2 |
 | tests/test_reminder_poll_shared.py | 3 |
 | tests/test_reminder_row_kebab.py | 3 |
 | tests/test_reminder_scoped_token.py | 16 |
@@ -30800,13 +30802,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4382 |
-| Needs hardware | docs/roadmap/LEDGER.md:897 |
+| Needs hardware | docs/roadmap/LEDGER.md:896 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:889 |
+| Owner calls | docs/roadmap/LEDGER.md:888 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4255 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30982,7 +30984,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1097 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1096 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2632 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31036,25 +31038,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:59 |
-| chat | docs/roadmap/LEDGER.md:1113 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1197 |
+| chat | docs/roadmap/LEDGER.md:1112 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1196 |
 | documents | docs/roadmap/LEDGER.md:367 |
-| documents | docs/roadmap/LEDGER.md:1137 |
+| documents | docs/roadmap/LEDGER.md:1136 |
 | general | docs/roadmap/LEDGER.md:864 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1101 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1209 |
+| graph | docs/roadmap/LEDGER.md:1100 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1208 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4391 |
 | mindmap | docs/roadmap/LEDGER.md:447 |
-| mindmap | docs/roadmap/LEDGER.md:1149 |
+| mindmap | docs/roadmap/LEDGER.md:1148 |
 | timeline | docs/roadmap/LEDGER.md:593 |
-| timeline | docs/roadmap/LEDGER.md:1173 |
+| timeline | docs/roadmap/LEDGER.md:1172 |
 | ui-modernisation | docs/roadmap/LEDGER.md:485 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1161 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1160 |
 | whiteboard | docs/roadmap/LEDGER.md:320 |
-| whiteboard | docs/roadmap/LEDGER.md:1125 |
+| whiteboard | docs/roadmap/LEDGER.md:1124 |
 | world-class | docs/roadmap/LEDGER.md:628 |
-| world-class | docs/roadmap/LEDGER.md:1185 |
+| world-class | docs/roadmap/LEDGER.md:1184 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2802 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2853 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2960 |

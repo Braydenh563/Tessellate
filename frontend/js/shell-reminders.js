@@ -1003,6 +1003,8 @@ async function loadReminders() {
     count.className = "group-count";
     count.textContent = items.length;
     heading.append(text, count);
+    //: Overdue piles up: one menu moves the lot on, ticks it off or bins it (L-general-12).
+    if (label === "Overdue" && items.length > 1) heading.append(loadReminders.overdueTriage(items));
     groupsBox.appendChild(heading);
     const ul = document.createElement("ul");
     ul.className = "entry-list";
@@ -1020,6 +1022,65 @@ async function loadReminders() {
   // loop above never reaches the branch that would.
   if (!groups.Done.length) donePagination.classList.add("hidden");
 }
+
+//: The Overdue heading's bulk menu (L-general-12). Leaving one where it is
+//: is "still matters"; the menu is for the rest. Each choice is one PUT per
+//: reminder and one Undo for the whole batch; Delete asks first.
+loadReminders.overdueTriage = function (items) {
+  const rows = items.map((r) => ({ id: r.id, due_at: r.due_at, done: r.done }));
+  const putAll = (bodyOf) => async () => {
+    await Promise.all(rows.map((r) => apiJson(`/reminders/${r.id}`, { method: "PUT", body: JSON.stringify({ ...bodyOf(r), restore: true }) })));
+    loadReminders();
+  };
+  const back = putAll((r) => ({ due_at: r.due_at, done: r.done }));
+  const n = `${rows.length} overdue reminders`;
+  const run = async (label, forward, done) => {
+    await forward();
+    const action = pushUndo(label, back, forward);
+    toastAction(done, "Undo", async () => {
+      settleUndoFromToast(action);
+      await back().catch((e) => toast(e.message, true));
+    });
+  };
+  const moveTo = (preset, words) => () => {
+    const due = presetDate(preset).toISOString();
+    return run(`Moved ${n}`, putAll(() => ({ due_at: due, done: false })), `Moved ${n} to ${words}.`);
+  };
+  const nextMonday = () => {
+    const d = presetDate("tomorrow");
+    d.setDate(d.getDate() + ((8 - d.getDay()) % 7));
+    return d;
+  };
+  const binAll = async () => {
+    if (!(await confirmDialog(`Move ${n} to the bin?`, { confirmLabel: "Delete", danger: true }))) return;
+    const drop = async () => {
+      await Promise.all(rows.map((r) => apiJson(`/reminders/${r.id}`, { method: "DELETE" })));
+      loadReminders();
+    };
+    const restore = async () => {
+      await Promise.all(rows.map((r) => apiJson(`/reminders/${r.id}/restore`, { method: "POST" })));
+      loadReminders();
+    };
+    await drop();
+    toastAction(`Moved ${n} to the bin.`, "Undo", () => restore().catch((e) => toast(e.message, true)));
+  };
+  return kebabMenu(
+    [
+      { label: "ph:sun-horizon Move all to tomorrow 9am", run: moveTo("tomorrow", "tomorrow 9am"), group: "move" },
+      {
+        label: "ph:calendar-dots Move all to next Monday 9am",
+        run: () => {
+          const due = nextMonday().toISOString();
+          return run(`Moved ${n}`, putAll(() => ({ due_at: due, done: false })), `Moved ${n} to next Monday 9am.`);
+        },
+        group: "move",
+      },
+      { label: "ph:check-circle Mark all done", run: () => run(`Completed ${n}`, putAll(() => ({ done: true })), `Marked ${n} done.`), group: "done" },
+      { label: "ph:trash Delete all", run: binAll, group: "remove", danger: true },
+    ],
+    "Triage overdue reminders"
+  );
+};
 
 function paginateDoneReminders(items) {
   const bar = $("reminders-done-pagination");
