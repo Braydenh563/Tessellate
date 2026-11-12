@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Map: Tab to a new topic is about twice as fast on a phone-sized view (207-235 ms to 107 ms at 6x CPU): a focus change no longer re-checks every action row, grip and line end on the map.
 - Board: Swap everywhere now also swaps an icon sticker. Select a placed icon with copies, Edit, Swap everywhere, pick an icon: every copy takes it, fitted to its own box and keeping its colour and opacity, in one Undo step.
 - Boards: an imported or code-opened board no longer gets hidden by the Boards list drawing late (the gallery landing stood down for five seconds after `openWhiteboardBoard`); the mindmap3 sweep is current again (57 of 57 at 1440) and the curve probe passes 13 of 14 at 390.
 - Documents: Check claims against my notes. In the Suggestions panel's ... menu: each full sentence is marked supported, contradicted or not found against your notes, with the note behind the verdict and a button that opens it; with no model, sentences are matched to notes by their words (Phase G).
