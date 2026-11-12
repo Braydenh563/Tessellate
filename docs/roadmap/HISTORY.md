@@ -55189,6 +55189,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L472** `timeline` open, S: Backfill done_at for reminders ticked before it existed so they count in a week. From OPEN.md:1384. Evidence: review_digest.py:94 filters on done_at; no backfill of old done rows found in src. Built: startup backfill _backfill_reminder_done_at; test_old_done_reminders_get_a_done_at_and_open_ones_stay_empty
 - [x] **L470** `timeline` open, S: Make the week Monday-first on user_now (1524). From a30c-1102.md Still open small. Evidence: No locale week-start code found in ai/user_now.py or core Built: week_first wired into entry/timewords; test_week_phrases_start_on_monday_by_default
 - [x] **L800** `world-class` owner-call, S: Decide what the evidence_checks switch gates and build its runner. From OPEN.md:2944. Evidence: Only facts.py:88 default; decision needed on what it gates Built: owner decision 2026-11-12: Keep it as built, no build needed
 - [x] **L796** `world-class` owner-call, S: Decide and build server restore routes for media deletes, ask-history, learned and tidy undo. From OPEN.md:532. Evidence: Row marks owner-call (w34-L1-1111.md); server restore routes needing a design decision; some exist (HISTORY:653) Built: owner decision 2026-11-12: Keep the built Undo, no build needed
