@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: the reminder action token key was already kept in `reminder_token.key` in the data folder and reused after a restart (Brief 101b); `tests/test_reminder_scoped_token.py::test_a_notification_s_buttons_survive_a_restart` guards it.
 - Change: a reminder with no time has no due time and asks "Remind you when?" once, never tomorrow at 9 (the owner's pick); `commands._reminder` returns due_at None (`tests/test_composer_commands.py::test_a_reminder_with_no_time_has_no_due_and_asks_when_once`).
 - Tests: "every weekday", "every other friday" and "yearly" are read as a repeat and saved once as their rule through the Recurring model (`tests/test_recurring_rules_l493.py`).
 - Tests: one spec case each for the six insight rules (streak, drift, contrast, load, time of day, slot lint) in `tests/test_engine_phase6_spec.py`; the owner keeps all six, no behaviour change.
