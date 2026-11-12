@@ -6,6 +6,19 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagrams: the document head's Export menu has every export the builder has (L-documents-16).
+- Documents: the phone's selection bar carries Selection to a note (New note from selection, Add to note), measured at 390 px (L-documents-13).
+- Documents: the Autocorrect switch stays in the Editor menu, not the status bar, per the standing decision (L337).
+- Link offers: Never offer a link to this name is kept on the notebook, not per session (L340).
+- Documents: the lazy-order tests pass; docCmView is read only after documents.js has run (L306).
+- Code console and document assistant: one height and no border clash, pinned by a test (L299).
+- Code documents: lint tooltips stay out of the way while the pointer menu is open (L297).
+- Guide: the diagram-blocks topic has 48 characters of room under its budget; the Kind menu rows are checked (L290).
+- Emoji: the icon picker holds every glyph the :shortcode: menu types, guarded by a test, so the two tables cannot drift (L296).
+- Documents: the fallback find bar (no editor engine) has All documents and Replace in all (L341).
+- Lists: i. numerals keep continuing past 59 in the renderer; the settings index no longer reads layout (L307).
+- Inline AI: an AI edit is one step on the app's undo stack, so the bar's Undo, the status bar's Undo and Ctrl+Z agree (L755) (L288).
+- Offers: the sum offer for a column of amounts under a Total: line was already built; the row is closed with its test (L287).
 - Code: the keybindings sheet's close (`docIdeCloseKeys`) is on `window`, so the `code-keys.js` sweep can close it (L-documents-14).
 - Recordings: Import audio offers one Undo that bins the whole import.
 - Links: a link opens as a card (icon, title, site, a two-line excerpt, the page text behind Show page text), takes an icon and a highlight colour from its menu or the card, and a folder does too; drag a link onto a folder or another link, drag a folder to nest it one level, double-click or F2 to rename in place, New folder; sort, a List or Cards view, Read later, and Duplicates with Keep one of each (INBOX 827 L3 to L6, `tests/test_links_827.py`).

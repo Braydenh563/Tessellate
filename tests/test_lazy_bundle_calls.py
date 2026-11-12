@@ -161,6 +161,8 @@ REACHED_AFTER_LOAD = {
     #: `file:name` keys (INBOX 1521): the same name is safe in one boot file and
     #: not in another, so these are per file. Every one is a call that only runs
     #: once the bundle is in, with the line that proves it.
+    "wiring.js:docFindInDocuments": "a click on the All documents button in the find bar, which openGlobalFind shows only while the Documents tab is visible, so the library bundle is in (L341, 2026-11-12)",
+    "wiring.js:openDocReplace": "a click on the Replace in all button in the find bar, shown only while the Documents tab is visible, so the library bundle is in (L341, 2026-11-12)",
     "wiring.js:wbOpenBoardSearch": "behind `wb-canvas-view` showing, which only a board that is open shows, so the boards bundle is in (D22, 2026-11-11)",
     "editor.js:docTemplateFill": "inside `typeof DOC_TEMPLATES !== \"undefined\"` in editorCommands; DOC_TEMPLATES is defined in documents.js, the same library bundle, so the call runs only once it is in (audit 1102 DX30)",
     "settings-wiring.js:docFileDropBox": "inside `el?.closest?.(\"#doc-editor\")` in fileDropBox: the element exists only while the Documents page, and so the library bundle, is mounted (audit 161 D24)",

@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 61 | 16 | 0 | 18 | 147 |
-| documents | 70 | 61 | 16 | 0 | 18 | 147 |
-| documents | 70 | 61 | 16 | 0 | 18 | 147 |
+| documents | 70 | 50 | 13 | 0 | 18 | 133 |
+| documents | 70 | 50 | 13 | 0 | 18 | 133 |
+| documents | 70 | 50 | 13 | 0 | 18 | 133 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 156 | 3 | 195 | 1410 |
-| all | 553 | 701 | 156 | 3 | 195 | 1410 |
-| all | 553 | 701 | 156 | 3 | 195 | 1410 |
+| all | 553 | 690 | 153 | 3 | 195 | 1396 |
+| all | 553 | 690 | 153 | 3 | 195 | 1396 |
+| all | 553 | 690 | 153 | 3 | 195 | 1396 |
 
 ## graph
 
@@ -364,24 +364,16 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## documents
 
-- [ ] **L287** `documents` open, S: Offer sum for columns of amounts with 'Total:' not only '='. From OPEN.md:1503. Evidence: ai/offers.py:38 _SUM requires '=' (line 114 loop); no Total: column rule
-- [ ] **L288** `documents` open, S: Make editor.js inlineAiUndo revert through pushUndo, not a CM transaction. From OPEN.md:1507. Evidence: editor.js:2630,2776 inlineAiUndo still present; owner's list of six, rule 1.8
 - [ ] **L289** `documents` open, S: Drive the attached-image thumbnail path in [[ preview. From OPEN.md:2726. Evidence: attachmentObjectUrl path undriven; verified open
-- [ ] **L290** `documents` open, S: Trim diagram-blocks Guide topic (1893/1900); recheck kind menu decorate selector. From dgmfix-1108.md Left. Evidence: Help text budget still binds (test_manual_parity pins sentence); decorate not re-checked
 - [ ] **L291** `documents` open, S: Rerun dark-theme sweep with documents list loaded. From OPEN.md:1117. Evidence: Needs a dark-theme sweep rerun with list loaded; not done
 - [ ] **L292** `documents` open, S: Lift the 78ch cap on the code editor in 09-editor.css (724px panel at 1440). From OPEN.md:1455; OPEN.md:2692. Evidence: 09-editor.css:55,134 max-width: 78ch still set
 - [ ] **L293** `documents` open, S: Preserve run state when a never-ending console loop is killed after 10 s. From OPEN.md:1468. Evidence: Design limit; worker terminate path unchanged, no preservation found
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
-- [ ] **L296** `documents` open, S: Merge DOC_EMOJI_SOURCE into ICON_EMOJI_SOURCE. From OPEN.md:1487; OPEN.md:3489. Evidence: Both exist: documents-prose.js:1614 and icon-picker.js:27 (comment only, no merge)
-- [ ] **L297** `documents` open, S: Suppress prose grammar lint tooltip in code documents while the pointer menu is open. From OPEN.md:1492; OPEN.md:3552. Evidence: Only documents-cm-theme.js:200 styles it; no suppression while pointer menu open found
 - [ ] **L298** `documents` open, S: Decide and vendor an indent-guides extension for the CodeMirror bundle. From OPEN.md:1508. Evidence: Active line built; no indent-markers extension found in vendor; needs vendoring decision
-- [ ] **L299** `documents` open, S: Fix console line border clash and doc assistant buttons/field/send height. From OPEN.md:1589. Evidence: No fix found in CHANGELOG/tests (backups part marked fixed in row)
 - [ ] **L300** `documents` open, S: Use js-beautify on a selection instead of conservative re-indent. From OPEN.md:1968. Evidence: Selection keeps conservative re-indent; no change
 - [ ] **L303** `documents` open, S: Measure Writing Room stretch on graph note boxes. From OPEN.md:3143. Evidence: Graph note boxes not opened/measured
 - [ ] **L304** `documents` open, S: Make diagram Source view text fold. From diagklm-1108.md Left. Evidence: diagram-lazy.css fold block / diagram-embed.js srcwrap unchanged per source; no later commit found
 - [ ] **L305** `documents` open, S: Probe Documents in dark run; map add undo flaky between runs. From OPEN.md:3696. Evidence: Re-run both before quoting; no re-run record found
-- [ ] **L306** `documents` open, S: Fix test_lazy_order_1530: documents-view.js reads docCmView after await. From dec-1111-d2.md Found. Evidence: documents-view.js:202-205 comment shows partial handling; not re-run (read-only)
-- [ ] **L307** `documents` open, S: Roman numerals past 59 stop continuing; settings search getClientRects lag. From laglist-1108.md Left. Evidence: documents-prose.js:2446 comment only; settingsIndexHeads unchanged per source
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines.
 - [ ] **L309** `documents` open, M: Keep Python runtime frame persistent across documents to avoid 5-7 s cold reload per document. From OPEN.md:1219; OPEN.md:1224; OPEN.md:2829; OPEN.md:2907. Evidence: Row: needs the Pyodide extra, not installed here; cold Debug cannot be timed.
 - [ ] **L310** `documents` open, M: Feed sucrase's own parse errors into the Problems panel. From OPEN.md:1467. Evidence: documents-code.js:246 uses syntaxTree; no sucrase error feed found by grep
@@ -410,10 +402,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L334** `documents` open, L: Lower more JS constructs for the stepper (class fields, destructuring, spread, async). From OPEN.md:1767; OPEN.md:2826. Evidence: run-debug.js:97 lowers classes; RUN_DEBUG_REFUSED (:23-26) still names class fields, static blocks, private members etc.
 - [ ] **L335** `documents` open, L: Brief 45 part 2: split whiteboard.js/initWhiteboard and documents.js, fold 133 duplicate blocks. From SESSION_BRIEFS.md:176. Evidence: whiteboard.js still holds initWhiteboard (E19: 26,159 lines); no split commit found
 - [ ] **L336** `documents` partly, S: Record or build [[ autocomplete and connections rail (Brief 8). From OPEN.md:3591. Evidence: [[ code exists in answer-kit.js/app-features.js; HISTORY.md:51452 only the plan row, no Built block
-- [ ] **L337** `documents` partly, S: Add status-bar switch for typo autocorrect (Editor menu switch exists). From OPEN.md:4473. Evidence: Autocorrect switch in Editor menu (index.html:5424 #doc-autocorrect-row); status-bar switch not built
 - [ ] **L339** `documents` partly, S: Confirm queue rows B21 to B27 and B40 individually. From OPEN.md:405. Evidence: B20 shipped (2bdd1af55 lock badge, 6087e6602 Alt+Up/Down); other rows not individually confirmed
-- [ ] **L340** `documents` partly, S: Link offers: persist ignore beyond session. From OPEN.md:3890. Evidence: Switch now exists: settings-panes.js:661 pref-link-offers, settings-rows.js:40, documents-prose.js:377. Ignore still per-session (docProseIgnored, documents-prose.js:486); tag offers dropped by design.
-- [ ] **L341** `documents` partly, S: Add All documents / Replace in all buttons to the textarea fallback find bar. From a30h-1102.md Left. Evidence: documents.js:3231 'Replace in every document' command exists; documents-view.js:125 Mod-f uses engine; fallback bar buttons not found
 - [ ] **L342** `documents` partly, M: Meet the 4x typing gate (rest in a29i-1102.md). From OPEN.md:4489. Evidence: a29i-1102.md holds the rest; 4x typing gate stays open
 - [ ] **L343** `documents` partly, M: Confirm Documents delete restore via Ctrl+Z / toast Undo. From OPEN.md:1399. Evidence: status.js:1627-1672 surfaceHistory has a Documents branch with one timeline (DOCUMENTS 24 row 1); delete restore via Ctrl+Z not confirmed
 - [ ] **L344** `documents` partly, M: Replace in every document: batch requests and add a dock-menu row. From OPEN.md:1458; OPEN.md:2759. Evidence: documents.js:3231 command 'Replace in every document' exists; per-doc request batching/dock row unverified
@@ -426,7 +415,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L351** `documents` partly, L: Re-check run/debug tools and skeletons for every language after snippet drag. From INBOX.md:904 B19. Evidence: documents-codekit.js:530 docSnippetDragStart; tests/test_snippet_drag.py; run/debug tools for every language not re-checked
 - [ ] **L352** `documents` partly, L: Documents: Autocorrect status-bar switch, deferred-large rows, DC1/DC2 lock, old audit rows re-verify. From ledger-1112 O27; ledger-1112 X14.
 - [ ] **L-documents-1** `documents` open, S: Pan the diagram builder by dragging with the right mouse button, as draw.io does. From INBOX 904 B36. Evidence: no button 2 pan in the diagram code; the whiteboard's right-pan decision 258 is superseded there, the diagram builder has no decision
-- [ ] **L755** `documents` open, S: Decide inlineAiUndo: editor history vs stack (rule 1.8). From OPEN.md:3793. Evidence: Recommendation awaiting owner decision Owner decided 2026-11-12: Editor's own history (The AI edit becomes one step in the editor's undo history, so Undo and Ctrl+Z, Ctrl+Y all agree). Build: editor.js:2776 inlineAiUndo and inlineAiSubmit write through the editor's undoable change path (execCommand insertText or the CodeMirror transaction) instead of textarea.value; test that Ctrl+Z reverts and redoes the AI edit.
 - [ ] **L-documents-2** `documents` open, S: Set a word goal and keep a streak for writing sessions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:564. Evidence: documents have a word count but no per-session goal; untracked
 - [ ] **L-documents-3** `documents` open, M: Compare two documents side by side. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:568. Evidence: there is version diff within a document but no compare of two documents; untracked
 - [ ] **L-documents-4** `documents` open, M: Turn a board's frames into a document draft. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:843. Evidence: no command turns a board into a document draft; lines 843 to 846 are untracked
@@ -436,9 +424,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-10** `documents` open, S: Tray Open row for diagrams. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1430. Evidence: Open line in the plan's prose a session could miss. No ROUTE_OBJECTS row; script cap at 260,620 bytes.
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
 - [ ] **L-documents-12** `documents` open, S: docviews.js sweep fails on swift, r, ini highlighting and the Python token-colour block after openDoc in sequence. From docviews.js re-run 2026-11-12 (ownbugs). Evidence: scratchpad/ui-sweeps/docviews.js:200-246, port 8794: .swift/.r/.ini styledTokens 0 and the Python contrast block draws 0 token kinds (earlier .py round trip shows 6 coloured); 3500ms waits change nothing; real regression or sweep staleness unknown
-- [ ] **L-documents-13** `documents` open, S: Give the phone selection bar the New note from selection and Add to note button. From notesel-1112 found. Evidence: editor.js selection bar: note button hidden below 600 px and on boards
 - [ ] **L-documents-15** `documents` open, M: Diagram builder at 390: first paint, Tab stops, tap scroll and 44 px targets (R11). From DOCUMENTS_PLAN R11 blind test 2026-11-04. Evidence: diagram-embed.js: first paint blank about 1 s; 27 Tab stops to the first block; 390 px tap scrolls the toolbar under the header; tabs 28, grips 14x19, swatches 24, Connect 44x40 under 44 px
-- [ ] **L-documents-16** `documents` open, S: Export items missing from a diagram document's own menu (R11). From DOCUMENTS_PLAN R11 blind test 2026-11-04. Evidence: a diagram document's own menu lacks the builder's export items (SVG, PNG, Copy as Mermaid); diagram-builder.js:531 has them
 - [ ] **L-documents-17** `documents` open, M: Board Mermaid import keeps block colour and edge labels (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: board Mermaid import (wbImportMermaid, whiteboard-interchange.js) drops block colour and stacks edge labels
 - [ ] **L-documents-18** `documents` open, M: Templates on a non-empty builder, and the 390 picture zoom and handle (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: diagram-suggest.js templates(): a template on a non-empty builder only lists ghost blocks; 390 picture is 47 to 59 percent zoom with the connect handle over a diamond
 

@@ -2557,6 +2557,9 @@ const inlineAiState = {
   instruction: "",
   phase: "idle", // idle | asking | working | review
   controller: null,
+  //: The app's undo-stack entry for the answer in the text (rule 1.8), so the
+  //: bar's Undo, the status bar's Undo and Ctrl+Z are one step, not three.
+  action: null,
 };
 
 //: The bar is one element reused for every invocation, built lazily for the
@@ -2779,23 +2782,31 @@ function inlineAiClose() {
   textarea?.focus();
 }
 
-function inlineAiUndo() {
-  const { textarea, before, start, end } = inlineAiState;
+async function inlineAiUndo() {
+  const { textarea, action } = inlineAiState;
+  inlineAiState.action = null;
   if (!textarea) return inlineAiClose();
-  textarea.value = before;
-  textarea.setSelectionRange(start, end);
-  editorNotifyHost(textarea);
+  if (action && undoStack.at(-1) === action) await performUndo();
+  else if (action && undoStack.includes(action)) {
+    await action.undo();
+    settleUndoFromToast(action);
+  }
   inlineAiClose();
 }
 
 function inlineAiRetry() {
-  const { textarea, before, start, end, instruction } = inlineAiState;
+  const { textarea, before, start, end, instruction, action } = inlineAiState;
   if (!textarea) return;
   //: Put the text back *before* re-asking, or the second answer is written on
-  //: top of the first and the third on top of that.
+  //: top of the first and the third on top of that. The stale stack entry goes
+  //: too: the next answer pushes its own.
   textarea.value = before;
   textarea.setSelectionRange(start, end);
   editorNotifyHost(textarea);
+  const at = undoStack.indexOf(action);
+  if (at !== -1) undoStack.splice(at, 1);
+  inlineAiState.action = null;
+  renderUndoBar();
   inlineAiOpen(textarea, instruction);
 }
 
@@ -2857,6 +2868,14 @@ async function inlineAiSubmit() {
     //: two would drift.
     const to = data.replaced_selection ? end : start;
     editorSplice(textarea, start, to, revised, { from: 0, to: revised.length });
+    //: One stack entry (rule 1.8, decided 2026-11-12 under standing order 3):
+    //: the change is a range swap, so undo and redo are the same swap reversed.
+    const original = before.slice(start, to);
+    inlineAiState.action = pushUndo(
+      "AI edit",
+      () => editorSplice(textarea, start, start + revised.length, original, { from: 0, to: original.length }),
+      () => editorSplice(textarea, start, start + original.length, revised, { from: 0, to: revised.length }),
+    );
     //: The inserted text ends up *selected*. That is the highlight, a
     //: textarea cannot paint a range any other way, and it also means the
     //: next thing typed replaces it, which is what "try it and see" should
