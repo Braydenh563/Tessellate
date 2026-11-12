@@ -3965,9 +3965,10 @@ async function wbBoardReplaceAll(find, to, only = null) {
   const undo = [];
   const rows = [];
   let changes = 0, cards = 0;
+  const inScope = wbFmtState.structure?.scope() || (() => true);
   for (const kind of ["object", "sketch", "node"]) {
     for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-      if (wbItemHidden(kind, item) || wbIsLocked(kind, item)) continue;
+      if (wbItemHidden(kind, item) || wbIsLocked(kind, item) || !inScope(kind, item)) continue;
       //: Replace (one) is the same pass over the item the find bar is on.
       if (only && (only.kind !== kind || only.id !== item.id)) continue;
       if (kind === "node") {
@@ -4038,9 +4039,11 @@ function wbBoardSearchRun(query) {
         e,
       ]),
     );
+    //: "This frame" limits the pass to what the pinned frame holds (whiteboard-structure-more.js); null is the whole board.
+    const inScope = wbFmtState.structure?.scope() || (() => true);
     for (const kind of ["node", "object", "sketch"]) {
       for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-        if (!wbItemHidden(kind, item) && pattern.has(wbSearchTextFor(kind, item, byId))) {
+        if (!wbItemHidden(kind, item) && inScope(kind, item) && pattern.has(wbSearchTextFor(kind, item, byId))) {
           wbBoardSearch.matches.push({ kind, id: item.id });
         }
       }
@@ -4125,6 +4128,7 @@ function wbCloseBoardSearch() {
   const bar = document.getElementById("wb-search-bar");
   if (!bar) return;
   bar.classList.add("hidden");
+  wbFmtState.structure?.closeSearch();
   wbBoardSearch.query = "";
   wbBoardSearch.matches = [];
   wbBoardSearch.index = -1;
@@ -4198,6 +4202,7 @@ function wbEnsureSearchOptions(bar) {
   const word = make("wb-search-word", "ph:text-a-underline", "Whole word", "word");
   const pattern = make("wb-search-regex", "ph:brackets-curly", "Pattern (a regular expression)", "regex");
   input?.after(word, pattern);
+  wbFmtState.structure?.searchControls(bar);
 }
 
 function wbToggleReplace(on = null) {
@@ -8150,7 +8155,8 @@ function wbItemHidden(kind, item) {
   if (!item) return false;
   if (kind === "node") return Boolean(item.hidden);
   const data = kind === "sketch" ? wbSketchData(item) : item.data;
-  return Boolean(data && (data.hidden || wbNamedLayerFlag(data.layer, "hidden")));
+  //: Out of sight inside a folded frame too (whiteboard-structure-more.js), so export, present and Select all skip it.
+  return Boolean(data && (data.hidden || wbNamedLayerFlag(data.layer, "hidden"))) || Boolean(typeof wbFmtState !== "undefined" && wbFmtState.structure?.folded(kind, item));
 }
 
 //: A named layer's flag (canvasdepth): an item on a hidden layer is hidden,
@@ -13144,7 +13150,8 @@ async function wbCreateFrame(x, y, box = null) {
 //: the frame carries. Read at the start of the drag, from where things are,
 //: so an item dragged out of a frame stops belonging to it with no bookkeeping.
 function wbFrameContents(frame, { withLocked = false } = {}) {
-  const fx = frame.x, fy = frame.y, fr = frame.x + frame.width, fb = frame.y + frame.height;
+  //: A folded frame holds what lay inside its full height (`data.collapsed`), so a drag of the bar still carries it.
+  const fx = frame.x, fy = frame.y, fr = frame.x + frame.width, fb = frame.y + ((frame.data?.collapsed && frame.data?.fold_h) || frame.height);
   const keys = [];
   for (const kind of ["node", "object", "sketch"]) {
     for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
@@ -13172,6 +13179,10 @@ const WB_FRAME_FIT_MARGIN = 32;
 
 async function wbFrameFit(frame, edges = "nesw") {
   if (!frame || frame.kind !== "frame") return false;
+  if (frame.data?.collapsed && frame.data?.fold_h) {
+    toast("Expand the frame first.", "info");
+    return false;
+  }
   const boxes = [];
   const touching = new Map();
   for (const key of wbFrameContents(frame, { withLocked: true })) {
@@ -23721,6 +23732,7 @@ function renderWhiteboard() {
   wbPaintLocks();
   wbPaintHidden();
   wbFmtState.isolate?.paint();
+  wbFmtState.structure?.paint();
   wbPaintCommentMarks();
   wbCloseOrphanedPopovers();
 

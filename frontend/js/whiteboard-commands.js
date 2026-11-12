@@ -109,6 +109,13 @@ const wbCommandNeeds = {
   },
   groupToEnter: () => wbFmtEntries().length > 0 && wbCommonGroupPrefix(wbFmtEntries().map((e) => e.item)).length > (wbFmtState.isolate?.depth() || 0),
   inGroupMode: () => Boolean(wbFmtState.isolate?.active()),
+  taggable: () => Boolean(wbFmtState.structure?.taggable()),
+  foldable: () => {
+    const frame = wbFmtState.structure?.selectedFrame();
+    return Boolean(frame) && !wbFmtState.structure.isFolded(frame);
+  },
+  folded: () => wbFmtState.structure?.isFolded(wbFmtState.structure.selectedFrame()) === true,
+  inFrame: () => Boolean(wbFmtState.structure?.inFrame()),
   textbox: () => {
     if (wbMultiSelection.size > 1 || wbSelectedItem?.kind !== "object") return false;
     return wbFindItem("object", wbSelectedItem.id)?.kind === "text";
@@ -183,6 +190,11 @@ const WB_COMMANDS = [
     run: () => wbOpenComments(wbSelectedItem.kind, wbSelectedItem.id) },
   { id: "fit-frame", group: "Item", icon: "ph:arrows-in", label: "Fit this frame to its contents", keys: "", surface: "board", needs: "frame",
     run: () => wbFrameFit(wbFindItem("object", wbSelectedItem.id), "nesw") },
+  { id: "collapse-frame", group: "Item", icon: "ph:caret-line-up", label: "Collapse this frame to its title bar", keys: "", surface: "board", needs: "foldable", run: () => wbFmtState.structure.setFolded(wbFmtState.structure.selectedFrame(), true) },
+  { id: "expand-frame", group: "Item", icon: "ph:caret-line-down", label: "Expand this frame", keys: "", surface: "board", needs: "folded", run: () => wbFmtState.structure.setFolded(wbFmtState.structure.selectedFrame(), false) },
+  { id: "edit-tags", group: "Item", icon: "ph:tag", label: "Edit tags", keys: "", surface: "board", needs: "taggable", run: () => wbFmtState.structure.editSelected() },
+  { id: "filter-tag", group: "View", icon: "ph:funnel", label: "Show only one tag", keys: "", surface: "board", run: () => wbFmtState.structure.openFilter() },
+  { id: "find-in-frame", group: "Edit", icon: "ph:frame-corners", label: "Find in this frame", keys: "", surface: "board", needs: "inFrame", run: () => { wbOpenBoardSearch(); wbFmtState.structure.setScope(true); } },
   { id: "export-frame", group: "Item", icon: "ph:frame-corners", label: "Export this frame", keys: "", surface: "board", needs: "frame",
     run: () => wbExportFrame(wbFindItem("object", wbSelectedItem.id)) },
   // The library (decision 25, whiteboard-library.js)
