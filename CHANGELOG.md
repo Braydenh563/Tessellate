@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Filters: a test pins "last week" as the Monday to Sunday before this one, in the filter box and in /made (L804).
 - Search: a note opened from a finder result has the words you searched marked in it.
 - Clock: Settings, General has a 12 or 24 hour choice that every time in the app follows (it was the browser's region only).
 - Escape: a lint checks every overlay and dialog closes on Escape; the graph's Manage this connection panel did not, and now does.

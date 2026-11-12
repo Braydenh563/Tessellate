@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 161 | 48 | 0 | 73 | 339 |
+| world-class | 130 | 160 | 48 | 0 | 73 | 338 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 687 | 147 | 3 | 196 | 1387 |
+| all | 553 | 686 | 147 | 3 | 196 | 1386 |
 
 ## graph
 
@@ -818,7 +818,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L803** `world-class` open, S: Find what wrote the broken-bar character for '&' in categories (needs owner's data). From OPEN.md:4331. Evidence: No writer of ¦ in src/frontend (grep); source is model output or import, needs owner's data. Owner decided 2026-11-12: Replace ¦ with & in names. Build: category names convert the broken bar (¦) to & when saved or renamed, and existing names are fixed on load, with a test; the source is not traced.
 - [ ] **L806** `world-class` open, S: OCR workspace empty squashed box: needs owner's screenshot or state. From OPEN.md:1618. Evidence: Not reproduced in five states; needs the owner's screenshot or state Owner decided 2026-11-12: the right panel of the files and images viewer: its bottom scroll section is crushed very short by the sections above it (caption, description, model read). Build: OCR workspace right panel (files and images): the bottom scroll section is crushed very short by the sections above it (caption, description, model read); give the list a usable minimum height or let the panel scroll as one, measured at a laptop height.
 - [ ] **L812** `world-class` open, M: complexity.yml uses --exit-zero: decide tracked cleanup or baseline. From OPEN.md:362. Evidence: .github/workflows/complexity.yml:31-32 still --exit-zero; decision pending Owner decided 2026-11-12: Also plan a cleanup. Build: keep the ratchet and work the 14 complexity and perf findings worst first, lowering the baseline with each fix.
-- [ ] **L804** `world-class` open, S: Owner decision on the meaning of 'last week' in filters. From OPEN.md:869. Evidence: Duplicate of OPEN 457/861; owner decision pending Owner decided 2026-11-12: Monday to Sunday. Build: filters: make the filter window use the Monday to Sunday reading if any path still uses seven days.
 - [ ] **L-world-class-6** `world-class` open, S: Say the search model is loading instead of Filing on the first note. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:35. Evidence: notes-list.js:146 still shows the filing state ("Let Atlas decide") with no loading distinction; not in any plan or LEDGER row
 - [ ] **L-world-class-7** `world-class` open, S: Measure footnotes, Mermaid and rich paste in the note composers. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:966. Evidence: docRichPasteEvent is wired only in documents-view.js:313; the capture-stage paste handler takes only files, so rich paste in note composers was never measured or fixed
 - [ ] **L-world-class-8** `world-class` open, M: Group notes by type in the Library. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:372. Evidence: Open line in the plan's prose a session could miss. Left fragment inside a built dossier; repeated in the section 8 table at 797.
