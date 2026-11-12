@@ -1684,7 +1684,7 @@ TAIL_TOPICS.extend(
                 "tomorrow 2pm, this weekend or next week. A due reminder can be "
                 "snoozed one hour or to tomorrow 9am (ten minutes is on its menu; Undo in the toast puts the time back), "
                 "edited in place (its early alert too), or ticked "
-                "done (one about a note offers Add outcome, a line added to the note); with two or more overdue, the Overdue heading's menu moves them all to tomorrow or next Monday, marks them done or deletes them; completed ones page at the foot. Add to calendar (.ics), on "
+                "done (one about a note offers Add outcome, a line added to the note); with two or more overdue, the Overdue heading's menu moves them all to tomorrow or next Monday, marks them done or deletes them; completed ones page at the foot. One that names a person or topic shows the last notes about it when it fires, to open from the notice. Add to calendar (.ics), on "
                 "a reminder's menu, saves it as a calendar file, and Add all to "
                 "calendar (.ics) in the More menu saves every upcoming one (each event "
                 "carries an alert at its due time, or its early alert); Add to Google "

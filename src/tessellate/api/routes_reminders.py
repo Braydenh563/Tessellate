@@ -829,6 +829,21 @@ def reminder_outcome(
     return {"entry_id": entry.id, "line": line}
 
 
+@router.get("/{reminder_id}/brief")
+def reminder_brief(reminder_id: int, session: Session = Depends(get_session)) -> dict:
+    """A meeting-prep brief (L-general-11): when a reminder fires, the last
+    notes its words point at (a person, a topic), so the meeting starts with
+    what was written last time. Keyword search, so it works with no model;
+    it already leaves out private notes and boards. The reminder's own note
+    is the one being opened anyway, so it is left out too. Newest first."""
+    from tessellate.search import search_manager
+
+    reminder = _existing(session, reminder_id)
+    hits = [e for e in search_manager.keyword_search(session, reminder.text, limit=8) if e.id != reminder.entry_id]
+    hits.sort(key=lambda e: e.updated_at or e.created_at, reverse=True)
+    return {"notes": [{"id": e.id, "title": plain_label(readable_content(e), 60)} for e in hits[:3]]}
+
+
 @router.post("/{reminder_id}/notification-token")
 def notification_token(reminder_id: int, session: Session = Depends(get_session)) -> dict:
     """A token for this reminder's notification: Done and Snooze for the next

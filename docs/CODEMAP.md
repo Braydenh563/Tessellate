@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2771, CSS sections 525, backend routes 699, backend modules 10769, test files 2690, tests 21863, plan headings 681, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2771, CSS sections 525, backend routes 700, backend modules 10770, test files 2691, tests 21866, plan headings 682, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -13215,7 +13215,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
-## Backend routes (699)
+## Backend routes (700)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -13904,16 +13904,17 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{key}/apply` | POST | `tidy_apply` | src/tessellate/api/routes_tidy.py:112 |
 | `/{key}/dismiss` | POST | `tidy_dismiss` | src/tessellate/api/routes_tidy.py:98 |
 | `/{key}/undismiss` | POST | `tidy_undismiss` | src/tessellate/api/routes_tidy.py:106 |
-| `/{reminder_id}` | DELETE | `delete_reminder` | src/tessellate/api/routes_reminders.py:872 |
+| `/{reminder_id}` | DELETE | `delete_reminder` | src/tessellate/api/routes_reminders.py:887 |
 | `/{reminder_id}` | PUT | `update_reminder` | src/tessellate/api/routes_reminders.py:729 |
+| `/{reminder_id}/brief` | GET | `reminder_brief` | src/tessellate/api/routes_reminders.py:832 |
 | `/{reminder_id}/calendar-links` | GET | `calendar_links` | src/tessellate/api/routes_reminders.py:429 |
 | `/{reminder_id}/complete` | POST | `complete_reminder` | src/tessellate/api/routes_reminders.py:775 |
 | `/{reminder_id}/export.ics` | GET | `export_one_ics` | src/tessellate/api/routes_reminders.py:422 |
-| `/{reminder_id}/notification-act` | POST | `act_from_notification` | src/tessellate/api/routes_reminders.py:849 |
-| `/{reminder_id}/notification-token` | POST | `notification_token` | src/tessellate/api/routes_reminders.py:832 |
+| `/{reminder_id}/notification-act` | POST | `act_from_notification` | src/tessellate/api/routes_reminders.py:864 |
+| `/{reminder_id}/notification-token` | POST | `notification_token` | src/tessellate/api/routes_reminders.py:847 |
 | `/{reminder_id}/outcome` | POST | `reminder_outcome` | src/tessellate/api/routes_reminders.py:811 |
-| `/{reminder_id}/purge` | DELETE | `purge_reminder` | src/tessellate/api/routes_reminders.py:888 |
-| `/{reminder_id}/restore` | POST | `restore_reminder` | src/tessellate/api/routes_reminders.py:881 |
+| `/{reminder_id}/purge` | DELETE | `purge_reminder` | src/tessellate/api/routes_reminders.py:903 |
+| `/{reminder_id}/restore` | POST | `restore_reminder` | src/tessellate/api/routes_reminders.py:896 |
 | `/{session_id}/audio` | POST | `audio` | src/tessellate/api/routes_captions.py:112 |
 | `/{session_id}/stop` | POST | `stop` | src/tessellate/api/routes_captions.py:137 |
 | `/{turn_id}` | DELETE | `delete_ask_turn` | src/tessellate/api/routes_ask_history.py:183 |
@@ -13921,7 +13922,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10769)
+## Backend modules (10770)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22820,12 +22821,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `list_types` | src/tessellate/api/routes_relations.py:44 |
 | `patch_type` | src/tessellate/api/routes_relations.py:71 |
 
-### src/tessellate/api/routes_reminders.py (45)
+### src/tessellate/api/routes_reminders.py (46)
 
 | Name | File:line |
 |---|---|
 | `MagicAddBody` | src/tessellate/api/routes_reminders.py:79 |
-| `NotificationAct` | src/tessellate/api/routes_reminders.py:842 |
+| `NotificationAct` | src/tessellate/api/routes_reminders.py:857 |
 | `OutcomeBody` | src/tessellate/api/routes_reminders.py:799 |
 | `ReminderCreate` | src/tessellate/api/routes_reminders.py:55 |
 | `ReminderUpdate` | src/tessellate/api/routes_reminders.py:90 |
@@ -22850,23 +22851,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_target` | src/tessellate/api/routes_reminders.py:124 |
 | `_to_out` | src/tessellate/api/routes_reminders.py:161 |
 | `_writable` | src/tessellate/api/routes_reminders.py:234 |
-| `act_from_notification` | src/tessellate/api/routes_reminders.py:850 |
+| `act_from_notification` | src/tessellate/api/routes_reminders.py:865 |
 | `calendar_links` | src/tessellate/api/routes_reminders.py:430 |
 | `complete_reminder` | src/tessellate/api/routes_reminders.py:776 |
 | `create_reminder` | src/tessellate/api/routes_reminders.py:551 |
-| `delete_reminder` | src/tessellate/api/routes_reminders.py:873 |
+| `delete_reminder` | src/tessellate/api/routes_reminders.py:888 |
 | `export_ics` | src/tessellate/api/routes_reminders.py:415 |
 | `export_one_ics` | src/tessellate/api/routes_reminders.py:423 |
 | `import_ics` | src/tessellate/api/routes_reminders.py:489 |
 | `list_reminders` | src/tessellate/api/routes_reminders.py:518 |
 | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:636 |
-| `notification_token` | src/tessellate/api/routes_reminders.py:833 |
-| `purge_reminder` | src/tessellate/api/routes_reminders.py:889 |
+| `notification_token` | src/tessellate/api/routes_reminders.py:848 |
+| `purge_reminder` | src/tessellate/api/routes_reminders.py:904 |
 | `read_when` | src/tessellate/api/routes_reminders.py:584 |
+| `reminder_brief` | src/tessellate/api/routes_reminders.py:833 |
 | `reminder_counts` | src/tessellate/api/routes_reminders.py:258 |
 | `reminder_outcome` | src/tessellate/api/routes_reminders.py:812 |
 | `reminders_due` | src/tessellate/api/routes_reminders.py:300 |
-| `restore_reminder` | src/tessellate/api/routes_reminders.py:882 |
+| `restore_reminder` | src/tessellate/api/routes_reminders.py:897 |
 | `suggest_reminder` | src/tessellate/api/routes_reminders.py:608 |
 | `update_reminder` | src/tessellate/api/routes_reminders.py:730 |
 
@@ -27694,7 +27696,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21863)
+## Tests (21866)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29739,6 +29741,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_release_smoke_step.py | 21 |
 | tests/test_remark_enter_1102.py | 8 |
 | tests/test_reminder_audio_deferred.py | 4 |
+| tests/test_reminder_brief_l_general_11.py | 3 |
 | tests/test_reminder_calendar_links.py | 8 |
 | tests/test_reminder_dupes_1102.py | 6 |
 | tests/test_reminder_duplicate_flag.py | 2 |
@@ -30391,7 +30394,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 21 |
 
-## Plan headings (681)
+## Plan headings (682)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -30777,6 +30780,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Direction, 2026-10-10 (Fable orchestrating): the thesis, the policies, the tracks | docs/ROADMAP.md:26 |
 | E. Polish worth doing as one pass | docs/roadmap/BACKLOG.md:2432 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4140 |
+| Fable whole-app review (owner-named, 2026-11-10; parked 2026-11-12, L-general-31) | docs/roadmap/BACKLOG.md:4405 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:594 |
 | Gap audit against XMind and MindNode, 2026-10-25 (wb2) | docs/roadmap/MINDMAP_PLAN.md:1813 |
 | Gap audit against draw.io, 2026-10-25 (wb2) | docs/roadmap/WHITEBOARD_PLAN.md:1519 |
@@ -30807,13 +30811,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4382 |
-| Needs hardware | docs/roadmap/LEDGER.md:893 |
+| Needs hardware | docs/roadmap/LEDGER.md:891 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:885 |
+| Owner calls | docs/roadmap/LEDGER.md:883 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4255 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30989,7 +30993,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1093 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1091 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2632 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31043,25 +31047,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:59 |
-| chat | docs/roadmap/LEDGER.md:1109 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1193 |
+| chat | docs/roadmap/LEDGER.md:1107 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1191 |
 | documents | docs/roadmap/LEDGER.md:367 |
-| documents | docs/roadmap/LEDGER.md:1133 |
+| documents | docs/roadmap/LEDGER.md:1131 |
 | general | docs/roadmap/LEDGER.md:864 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1097 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1205 |
+| graph | docs/roadmap/LEDGER.md:1095 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1203 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4391 |
 | mindmap | docs/roadmap/LEDGER.md:447 |
-| mindmap | docs/roadmap/LEDGER.md:1145 |
+| mindmap | docs/roadmap/LEDGER.md:1143 |
 | timeline | docs/roadmap/LEDGER.md:593 |
-| timeline | docs/roadmap/LEDGER.md:1169 |
+| timeline | docs/roadmap/LEDGER.md:1167 |
 | ui-modernisation | docs/roadmap/LEDGER.md:485 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1157 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1155 |
 | whiteboard | docs/roadmap/LEDGER.md:320 |
-| whiteboard | docs/roadmap/LEDGER.md:1121 |
+| whiteboard | docs/roadmap/LEDGER.md:1119 |
 | world-class | docs/roadmap/LEDGER.md:628 |
-| world-class | docs/roadmap/LEDGER.md:1181 |
+| world-class | docs/roadmap/LEDGER.md:1179 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2802 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2853 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2960 |

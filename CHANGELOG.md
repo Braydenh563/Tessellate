@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Reminders: one that names a person or topic lists the last notes about it when it fires, to open from the notice (L-general-11).
 - Background librarian review: Keep all accepts the last run, Undo all puts every change back, last first; each row keeps its diff and Undo (L-general-45).
 - Dashboard: a Notes by category widget (opt-in), a donut of the five biggest categories and Other in each category's dot colour, with share rows that open the category (L-general-40).
 - Notes say where they came from: a recording's transcript note carries a chip that opens the recording (`EntryOut.recording`), and a document's sections say Extracted from rather than Imported from (L-general-13).

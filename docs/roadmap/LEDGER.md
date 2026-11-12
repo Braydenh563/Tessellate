@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 101 | 4 | 0 | 17 | 201 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 14 | 2 | 0 | 4 | 16 |
-| all | 553 | 674 | 160 | 3 | 195 | 1387 |
+| general | 0 | 13 | 2 | 0 | 4 | 15 |
+| all | 553 | 673 | 160 | 3 | 195 | 1386 |
 
 ## graph
 
@@ -870,7 +870,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L706** `general` open, M: Cut the cost of --nmb-ex/ey/hx writes in nameMarkBuddyAim. From agent-remaining/a30m-1103.md. Evidence: `--nmb-ex/ey/hx` writes on `#nm-buddy` (avatars.js `nameMarkBuddyAim`, about 7389): 109ms at 4x a write (647
 - [ ] **L707** `general` open, M: Reduce extra layouts per tab switch from the companion transition keep-up. From agent-remaining/motion-1031.md. Evidence: Extra layouts: about 2 per switch on chat and reminders (the companion's `transitionrun`/`transitionend` keep-up, avatar
 - [ ] **L708** `general` open, M: Remaining tab-click and shown-surface lag: phone-shell tab click (97 to 201 ms), openDoc first layout, ocrScheduleFitDock with real Tesseract. From INBOX 1716, 1726. Evidence: phone-shell.js BUTTON#tab-btn-dashboard.onclick 201 ms (forced 146) on the owner's log
-- [ ] **L-general-11** `general` open, M: Build a meeting-prep brief: a reminder naming a person or topic pulls the last related notes into a card at fire time. From ANALYSIS.md:1217. Evidence: grep meeting.prep in src and frontend/js returns nothing
 - [ ] **L-general-15** `general` partly, L: W34 L1 remainder: 265 true, 125 owner-call, 22 hardware-only and 153 unverifiable rows by spoke, each confirmed as a LEDGER row or built. From ledger-1112 X20. Evidence: the w34-*.md spoke lists were retired into LEDGER rows (OPEN.md and w34 sources); recheck that each of the 265 true rows has its row
 - [ ] **L-general-16** `general` partly, M: Session briefs W5 and W16 to W18 have no outcome record; W32 left E9, E10 and E12. From ledger-1112 X23. Evidence: no record of W5, W16 to W18 found at the migration; W32 left E9 (hardware), E10 BK6, BK10, BK12, K36, E12 owner
 - [ ] **L-general-36** `general` open, M: Let notes be grouped by hand, apart from the main sort. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
