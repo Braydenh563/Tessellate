@@ -156,5 +156,5 @@ def test_the_wiring_is_in_the_source():
         assert f'id: "{ident}"' in cmds
     assert "/js/whiteboard-workspace.js" in frontend_text("lazy-entries.js")
     assert 'id="wb-workspaces"' in INDEX.read_text(encoding="utf-8")
-    css = frontend_text("../css/library-lazy.css") if False else (INDEX.parent / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    css = (INDEX.parent / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert ".wb-dimmed" in css and "pointer-events: none" in css.split(".wb-dimmed")[1].split("}")[0]
