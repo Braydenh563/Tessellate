@@ -721,7 +721,7 @@ def _assist(req: _StreamRequest, prepared: dict) -> None:
     except Exception:  # noqa: BLE001  # the model answers from the notes as they are
         logging.getLogger("tessellate.chat").exception("chat: the composer's brief failed")
         return
-    if composed.get("grounding"):
+    if chat_chips.shows_first(composed):
         today = user_now(deps.get_config()).date()
         composed["frame"] = composer_dialogue.turn_frame(req.question, composed, prepared["notes"], today)
         prepared["preview"] = {

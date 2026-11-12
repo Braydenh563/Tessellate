@@ -191,9 +191,11 @@ def _day_words(day: date, today: date) -> str:
 
 
 def _title_of(content: str) -> str:
-    from tessellate.ai import composer_read
+    """A note's name in the feed: the one reader's (`composer_frame.note_title`), so the feed, the composer and the
+    tools name a title-less note alike (D28), cut at 80 characters as before."""
+    from tessellate.ai import composer_frame
 
-    return realise.cut_title((composer_read._title(content or "")[0] or "Untitled").strip(), 80)
+    return realise.cut_title(composer_frame.note_title(content or "") or "Untitled", 80)
 
 
 def _bounds(start: date, end: date) -> tuple[datetime, datetime]:

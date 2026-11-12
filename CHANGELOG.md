@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+The activity feed names a title-less note with the same reader as the composer and the tools, so a checklist note is "milk" and not "[ ] milk" (ledger 1112, D28)
+A composed draft the notes back too little (the support judgement marked low) is no longer shown ahead of a model's answer (ledger 1112, P1)
 Composer follow-ons: "which one is the oldest" over notes whose titles hold commas names the right notes, and "is anything in my notes inconsistent" or "do any of my notes conflict" give the dated changes of mind (ledger 1112, F1, PAR1)
 Composer tests pin "what's on this week" listing the plumber note and leaving the mood note out (ledger 1112, P25)
 Composer tests pin the confirm wordings, undo after a pin, a note called X with Y and find-similar on the chat route (ledger 1112, X4)
