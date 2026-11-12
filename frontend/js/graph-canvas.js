@@ -3150,7 +3150,6 @@
     s.composed = false;
     const fadeStep = s.paintMode ? s.paintFade : snap ? (gcFadeStep(s, true), 1) : gcFadeStep(s, gcStill());
     const litAlpha = over ? gcSmooth : gcLitAlpha;
-    let fading = false;
     const ctx = s.ctx;
     const t = s.transform || d3.zoomIdentity;
     const k = t.k;
@@ -3200,15 +3199,6 @@
     //: stands in for a pane, which has no switch.
     const curvedLinks = gcCurvedLinks(s);
 
-    // --- edges -------------------------------------------------------------
-    // Bucketed by recipe and by whether they are dimmed, so the context's
-    // stroke state is set once per bucket rather than once per edge. A dashed
-    // stroke is the expensive one, and there are only ever a handful of dashes.
-    const buckets = new Map();
-    //: Similarity lines in buckets of their own, stroked first so they sit
-    //: beneath every link (INBOX 412: the server appends them after the links,
-    //: so bucket order alone painted them on top).
-    const simBuckets = new Map();
     //: The note whose similarity scores are written on its lines: the one
     //: pointed at, else the one the keyboard is on, else the one whose panel is
     //: open. Its lines are the ones not dimmed, so the numbers sit on the only
@@ -3220,6 +3210,57 @@
         : gcKeyboardId(s) != null
           ? gcKeyboardId(s)
           : openId;
+    const f = {
+      s, ctx, t, k, over, layer, fadeStep, litAlpha, view, inView, hl, labelsOn, curvedLinks, openId, scoreFor,
+      easing, gliding, started, fading: false, labelZoom: 0, labelBase: null, othersFading: false, placedLabels: [],
+    };
+    gcDrawEdges(f);
+
+    // --- the traced path ----------------------------------------------------
+    if (!over) gcDrawTrace(ctx, k, s);
+
+    const { haloByColour, hotHalos, ringed, labelled, drawn } = gcCollectNodes(f);
+    gcAddLandmarkLabels(f, labelled, drawn);
+    gcPaintNodes(f, haloByColour, hotHalos);
+    gcDrawRings(f, ringed);
+    const { book, placedLabels } = gcSeatLabels(f, labelled, drawn);
+    //: A whole frame, on the visible canvas, whose only fade is the names: the
+    //: canvas as it stands before them is kept for the label frames
+    //: (`gcDrawLabels.frame`).
+    const othersFading = f.fading;
+    const keepable = !s.paintMode && s.ctx.canvas === s.canvas;
+    let labelBase = null;
+    if (s.paintMode !== "dim" && gcDrawLabels(ctx, s, placedLabels, fadeStep, k, keepable && !othersFading ? () => (labelBase = gcDrawLabels.keep(s)) : null)) f.fading = true;
+    if (!over && s.fitCheck > 0) {
+      const left = s.fitCheck - 1;
+      s.fitCheck = 0;
+      gcBalanceFit(s, placedLabels, left);
+    }
+    if (!over && s.revealAfterFit && !(s.fitCheck > 0)) {
+      s.revealAfterFit = false;
+      gcReveal(s);
+    }
+
+    f.othersFading = othersFading;
+    f.labelBase = labelBase;
+    f.placedLabels = placedLabels;
+    gcDrawScorePills(f, drawn, book);
+    gcFrameEnd(f, drawn);
+  }
+
+  //: The pieces of one `gcDraw` frame, in the order it paints them. `f` is the frame's
+  //: state (`s`, the context, the camera, the cull box, what is lit, what is still fading).
+  function gcDrawEdges(f) {
+    const { s, ctx, k, over, layer, hl, view, fadeStep, curvedLinks, scoreFor } = f;
+    // --- edges -------------------------------------------------------------
+    // Bucketed by recipe and by whether they are dimmed, so the context's
+    // stroke state is set once per bucket rather than once per edge. A dashed
+    // stroke is the expensive one, and there are only ever a handful of dashes.
+    const buckets = new Map();
+    //: Similarity lines in buckets of their own, stroked first so they sit
+    //: beneath every link (INBOX 412: the server appends them after the links,
+    //: so bucket order alone painted them on top).
+    const simBuckets = new Map();
     s.simScoreLabels = [];
     const arrows = !s.tree && gcArrows(s);
     //: A spark drifts along the pointed-at note's arrowed links, unless motion
@@ -3263,7 +3304,7 @@
       if (over && dim) continue;
       //: A scene layer is drawn as it will rest, and keeps nothing of it.
       const lit = over ? centre : layer ? (dim ? 0 : 1) : (edge._lit = gcFadeToward(edge._lit, dim ? 0 : 1, fadeStep));
-      if (!layer && !over && lit !== (dim ? 0 : 1)) fading = true;
+      if (!layer && !over && lit !== (dim ? 0 : 1)) f.fading = true;
       //: Eleven steps of lit-ness, so a fade still strokes in buckets.
       const level = Math.round(gcSmooth(lit) * 10);
       if (edge._styleEpoch !== s.epoch) gcEdgeLook(edge, a, b, simLo, simHi, s.epoch);
@@ -3336,17 +3377,17 @@
     if (!over) s.sparksDrawn = sparks;
     if (drift.length) {
       gcDrawDrift(ctx, drift, k);
-      fading = true;
+      f.fading = true;
     }
     ctx.globalAlpha = 1;
 
     if (!layer) {
-      if (gcDrawEdgeHover(ctx, s, k, fadeStep, curvedLinks)) fading = true;
+      if (gcDrawEdgeHover(ctx, s, k, fadeStep, curvedLinks)) f.fading = true;
     }
+  }
 
-    // --- the traced path ----------------------------------------------------
-    if (!over) gcDrawTrace(ctx, k, s);
-
+  function gcCollectNodes(f) {
+    const { s, k, over, layer, hl, inView, fadeStep, labelsOn, openId } = f;
     // --- nodes --------------------------------------------------------------
     // Two batched fills per colour (halo, then core) and one batched stroke for
     // the ordinary ring. Only the handful of nodes that are hovered, matched,
@@ -3370,7 +3411,7 @@
       //: frame after composed ones lands every fade at once (`snap`), so none
       //: of it leaks into a fade.
       node._lit = over ? lift : layer ? (dim ? 0 : 1) : gcFadeToward(node._lit, dim ? 0 : 1, fadeStep);
-      if (!layer && !over && node._lit !== (dim ? 0 : 1)) fading = true;
+      if (!layer && !over && node._lit !== (dim ? 0 : 1)) f.fading = true;
       const key = node.colour;
       let halo = haloByColour.get(key);
       if (!halo) {
@@ -3453,6 +3494,18 @@
         labelled.push(node);
       }
     }
+    f.labelZoom = labelZoom;
+    //: No card-coloured ring and no accent ring on hubs any more: the sprite
+    //: carries its own rim, and a hub is told by its size and its wider glow
+    //: rather than by a painted outline (`hubs` is still gathered so the
+    //: keyboard and hover paths that read it keep working).
+    void hubs;
+    void hubs;
+    return { haloByColour, hotHalos, ringed, labelled, drawn };
+  }
+
+  function gcAddLandmarkLabels(f, labelled, drawn) {
+    const { s, k, labelsOn, labelZoom } = f;
     //: The overview's landmarks: see GC_LABEL_LANDMARKS. Only when the zoom gate
     //: is what kept every other label off, and only notes with a real
     //: neighbourhood (degree 2 or more), so a map of islands does not name
@@ -3494,7 +3547,10 @@
       const landmarks = pool.slice(0, count);
       for (const node of landmarks) labelled.push(node);
     }
-    //: Sprites at the zoom's own pixel size, so a node stays crisp at any
+  }
+
+  function gcPaintNodes(f, haloByColour, hotHalos) {
+    const { s, ctx, k, over } = f;
     //: scale; the sizes are rounded to whole pixels, which keeps the cache to
     //: a few dozen entries per colour.
     const pixelScale = k * (s.dpr || 1);
@@ -3559,14 +3615,12 @@
       if (hot.node._dim) continue;
       gcHoverMark.draw(ctx, hot.node, hot.heat * gcSmooth(hot.node._lit), k, pixelScale);
     }
+  }
 
+  function gcDrawRings(f, ringed) {
+    const { s, ctx, k, over, litAlpha } = f;
     // The ordinary ring (`.graph-core { stroke: var(--card) }`) in one pass.
     ctx.globalAlpha = 1;
-    //: No card-coloured ring and no accent ring on hubs any more: the sprite
-    //: carries its own rim, and a hub is told by its size and its wider glow
-    //: rather than by a painted outline (`hubs` is still gathered so the
-    //: keyboard and hover paths that read it keep working).
-    void hubs;
 
     if (!over) gcDrawSelection(ctx, k, s);
     for (const item of ringed) {
@@ -3622,7 +3676,152 @@
       ctx.setLineDash([]);
     }
     ctx.globalAlpha = 1;
+  }
 
+  function gcLabelAlts(node, r, k, width, padX, half) {
+    return [
+        { x: node.x, y: node.y - r - 13 / k, align: "center" },
+        { x: node.x + r + 6 / k, y: node.y, align: "left" },
+        { x: node.x - r - 6 / k, y: node.y, align: "right" },
+        //: The four corners (INBOX 493), off the dot's diagonal: a hub's
+        //: lines leave it in every direction, and between two of them is
+        //: often the only place its name can stand clear of all of them.
+        { x: node.x + r * 0.72 + 3 / k, y: node.y + r * 0.72 + 9 / k, align: "left" },
+        { x: node.x - r * 0.72 - 3 / k, y: node.y + r * 0.72 + 9 / k, align: "right" },
+        { x: node.x + r * 0.72 + 3 / k, y: node.y - r * 0.72 - 9 / k, align: "left" },
+        { x: node.x - r * 0.72 - 3 / k, y: node.y - r * 0.72 - 9 / k, align: "right" },
+        //: Then a step further out (INBOX 693): a name may no longer sit
+        //: on a dot or a line, and a hub in the middle of its cluster
+        //: (the layout puts it there now) has a leaf or a spoke at every
+        //: near place. Measured on the showcase notebook at the fit:
+        //: without these, three of its seven category hubs went unnamed.
+        { x: node.x, y: node.y + r + 27 / k, align: "center" },
+        { x: node.x, y: node.y - r - 27 / k, align: "center" },
+        { x: node.x + r + 20 / k, y: node.y + 12 / k, align: "left" },
+        { x: node.x - r - 20 / k, y: node.y + 12 / k, align: "right" },
+        { x: node.x + r + 20 / k, y: node.y - 12 / k, align: "left" },
+        { x: node.x - r - 20 / k, y: node.y - 12 / k, align: "right" },
+      ].map((spot) => {
+        const l = spot.align === "center" ? spot.x - width / 2 : spot.align === "left" ? spot.x : spot.x - width;
+        return { ...spot, left: l - padX, right: l + width + padX, top: spot.y - half, bottom: spot.y + half };
+      });
+  }
+
+  function gcLabelItems(f, labelled, drawn, book, size, beside) {
+    const { s, k, hl } = f;
+    // **Labels do not stack.** Reported with a screenshot: with the Labels
+    // tickbox on, a fitted map drew all of them (every board under
+    // `GC_LABEL_ALL_MAX`), and in the dense middle of a force layout that is
+    // a pile of overlapping words that says less than no label at all.
+    //
+    // So a label is drawn only if its own text box is still free. The order
+    // decides which one wins the space, and it is not the order the nodes
+    // happen to be in: whatever the pointer or the keyboard is on first (it
+    // was asked for by name), then the search hits (the reason someone
+    // typed), then the best-connected notes, which are the ones a map is
+    // read by. Those two priority classes are drawn even when they clash,
+    // because a label you asked for and cannot see is a bug, not tidiness.
+    // The rest come back on hover or above `GC_LABEL_ZOOM`, which is the
+    // gesture the map already teaches.
+    //
+    // The overlap test is a linear scan of what has been placed: the placed
+    // set is bounded by the frame's area over a label's, a few dozen, so
+    // this is thousands of number comparisons and no allocation, not the
+    // quadtree it looks like it wants.
+    const labelRank = (node) =>
+      node.id === s.hoveredId || node.id === gcKeyboardId(s) || node.id === hl.current
+        ? 0
+        : hl.active && hl.searchOk(node)
+          ? 1
+          : 2;
+    // **A search that matches half the notebook is not a request for half the
+    // notebook's labels.** Found by the probe on the 300-note fixture:
+    // searching a word every note contains made all 264 hits rank 1, and rank
+    // 1 was drawn through any clash, so the pile the collision pass exists to
+    // prevent came straight back through the search box. A handful of hits is
+    // a question about those notes and each one keeps its label whatever it
+    // lands on; past that it is a filter, and a filter's job is done by the
+    // dimming, with the labels queued ahead of everything else and still
+    // subject to the same test as everything else. The hovered or
+    // keyboard-focused note is never in this trade: there is exactly one of
+    // it, and it was pointed at.
+    //: **The landmarks** are the ten best-connected notes in view, what the
+    //: map is read by. They were let sit on a dot (GRAPH_PLAN.md, "Decision
+    //: made, 2026-09-26"); since INBOX 693 they are not ("labels never over
+    //: dots or lines", the owner), and only keep the right to the place
+    //: crossing the fewest lines when none crosses none (`gcPlaceLabels`).
+    const landmarkIds = new Set(
+      drawn
+        .filter((node) => !node._dim && (s.adj.get(node.id) || { size: 0 }).size >= 2)
+        .sort((a, b) => (s.adj.get(b.id) || { size: 0 }).size - (s.adj.get(a.id) || { size: 0 }).size)
+        .slice(0, GC_LABEL_LANDMARK_HUBS)
+        .map((node) => node.id)
+    );
+    const hits = labelled.reduce((n, node) => n + (labelRank(node) === 1 ? 1 : 0), 0);
+    const forceHits = hits <= GC_LABEL_FORCE_MAX;
+    labelled.sort((a, b) => {
+      const rank = labelRank(a) - labelRank(b);
+      if (rank) return rank;
+      const degreeA = (s.adj.get(a.id) || { size: 0 }).size;
+      const degreeB = (s.adj.get(b.id) || { size: 0 }).size;
+      return degreeB - degreeA;
+    });
+    book.labelsWanted = labelled.length;
+    book.labelsPriority = 0;
+    const padX = 4 / k;
+    const padY = 2 / k;
+    const items = [];
+    for (const node of labelled) {
+      const text = gcLabelText(node, s);
+      // `measureText` is cheap but not free at a few hundred labels a frame,
+      // and the answer only changes when the text or the zoom does. The zoom
+      // is only a scale: see `gcLabelWidth` for why that is not a re-measure.
+      if (node._labelText !== text || node._labelSize !== size) {
+        node._labelText = text;
+        node._labelSize = size;
+        node._labelWidth = gcLabelWidth(text, size);
+      }
+      const width = node._labelWidth;
+      const x = beside ? node.x + node.r + 7 : node.x;
+      const y = beside ? node.y : node.y + node.r + 13;
+      const left = (beside ? x : x - width / 2) - padX;
+      const rank = labelRank(node);
+      if (rank < 2) book.labelsPriority += 1;
+      //: **Where else the name may go** when its own place is taken. Under the
+      //: dot is the web's reading position and stays first; then above it,
+      //: then to its right, then to its left. Measured on the 417-note
+      //: fixture at 2x: under-only named none of the ten best-connected notes
+      //: in view, because in the dense middle "under" is always another dot.
+      //: A tree keeps its one place (beside), which its row spacing is built
+      //: around.
+      const r = node.r + (node._grow || 0);
+      const half = size / 2 + padY;
+      const alts = beside ? [] : gcLabelAlts(node, r, k, width, padX, half);
+      // The id and the rank ride along with the geometry because the only
+      // way to ask "do the labels on screen overlap" from outside a canvas is
+      // to be handed the boxes: a screenshot of a pile of words and a
+      // screenshot of a clean map are the same bytes to a sweep.
+      items.push({
+        id: node.id,
+        rank,
+        force: rank === 0 || (rank === 1 && forceHits),
+        left,
+        right: left + width + padX * 2,
+        top: y - size / 2 - padY,
+        bottom: y + size / 2 + padY,
+        text,
+        x,
+        y,
+        align: beside ? "left" : "center",
+        alts,
+        landmark: landmarkIds.has(node.id),
+      });
+    }
+    return items;
+  }
+
+  function gcSeatLabels(f, labelled, drawn) {
+    const { s, ctx, k, t, over, curvedLinks } = f;
     // --- labels -------------------------------------------------------------
     //: What the debug surface and the fit balance read is the scene's labels.
     const book = over ? {} : s;
@@ -3653,141 +3852,7 @@
       ctx.lineWidth = 3 / k;
       ctx.strokeStyle = gcTokens.card;
       ctx.fillStyle = gcTokens.ink;
-      // **Labels do not stack.** Reported with a screenshot: with the Labels
-      // tickbox on, a fitted map drew all of them (every board under
-      // `GC_LABEL_ALL_MAX`), and in the dense middle of a force layout that is
-      // a pile of overlapping words that says less than no label at all.
-      //
-      // So a label is drawn only if its own text box is still free. The order
-      // decides which one wins the space, and it is not the order the nodes
-      // happen to be in: whatever the pointer or the keyboard is on first (it
-      // was asked for by name), then the search hits (the reason someone
-      // typed), then the best-connected notes, which are the ones a map is
-      // read by. Those two priority classes are drawn even when they clash,
-      // because a label you asked for and cannot see is a bug, not tidiness.
-      // The rest come back on hover or above `GC_LABEL_ZOOM`, which is the
-      // gesture the map already teaches.
-      //
-      // The overlap test is a linear scan of what has been placed: the placed
-      // set is bounded by the frame's area over a label's, a few dozen, so
-      // this is thousands of number comparisons and no allocation, not the
-      // quadtree it looks like it wants.
-      const labelRank = (node) =>
-        node.id === s.hoveredId || node.id === gcKeyboardId(s) || node.id === hl.current
-          ? 0
-          : hl.active && hl.searchOk(node)
-            ? 1
-            : 2;
-      // **A search that matches half the notebook is not a request for half the
-      // notebook's labels.** Found by the probe on the 300-note fixture:
-      // searching a word every note contains made all 264 hits rank 1, and rank
-      // 1 was drawn through any clash, so the pile the collision pass exists to
-      // prevent came straight back through the search box. A handful of hits is
-      // a question about those notes and each one keeps its label whatever it
-      // lands on; past that it is a filter, and a filter's job is done by the
-      // dimming, with the labels queued ahead of everything else and still
-      // subject to the same test as everything else. The hovered or
-      // keyboard-focused note is never in this trade: there is exactly one of
-      // it, and it was pointed at.
-      //: **The landmarks** are the ten best-connected notes in view, what the
-      //: map is read by. They were let sit on a dot (GRAPH_PLAN.md, "Decision
-      //: made, 2026-09-26"); since INBOX 693 they are not ("labels never over
-      //: dots or lines", the owner), and only keep the right to the place
-      //: crossing the fewest lines when none crosses none (`gcPlaceLabels`).
-      const landmarkIds = new Set(
-        drawn
-          .filter((node) => !node._dim && (s.adj.get(node.id) || { size: 0 }).size >= 2)
-          .sort((a, b) => (s.adj.get(b.id) || { size: 0 }).size - (s.adj.get(a.id) || { size: 0 }).size)
-          .slice(0, GC_LABEL_LANDMARK_HUBS)
-          .map((node) => node.id)
-      );
-      const hits = labelled.reduce((n, node) => n + (labelRank(node) === 1 ? 1 : 0), 0);
-      const forceHits = hits <= GC_LABEL_FORCE_MAX;
-      labelled.sort((a, b) => {
-        const rank = labelRank(a) - labelRank(b);
-        if (rank) return rank;
-        const degreeA = (s.adj.get(a.id) || { size: 0 }).size;
-        const degreeB = (s.adj.get(b.id) || { size: 0 }).size;
-        return degreeB - degreeA;
-      });
-      book.labelsWanted = labelled.length;
-      book.labelsPriority = 0;
-      const padX = 4 / k;
-      const padY = 2 / k;
-      const items = [];
-      for (const node of labelled) {
-        const text = gcLabelText(node, s);
-        // `measureText` is cheap but not free at a few hundred labels a frame,
-        // and the answer only changes when the text or the zoom does. The zoom
-        // is only a scale: see `gcLabelWidth` for why that is not a re-measure.
-        if (node._labelText !== text || node._labelSize !== size) {
-          node._labelText = text;
-          node._labelSize = size;
-          node._labelWidth = gcLabelWidth(text, size);
-        }
-        const width = node._labelWidth;
-        const x = beside ? node.x + node.r + 7 : node.x;
-        const y = beside ? node.y : node.y + node.r + 13;
-        const left = (beside ? x : x - width / 2) - padX;
-        const rank = labelRank(node);
-        if (rank < 2) book.labelsPriority += 1;
-        //: **Where else the name may go** when its own place is taken. Under the
-        //: dot is the web's reading position and stays first; then above it,
-        //: then to its right, then to its left. Measured on the 417-note
-        //: fixture at 2x: under-only named none of the ten best-connected notes
-        //: in view, because in the dense middle "under" is always another dot.
-        //: A tree keeps its one place (beside), which its row spacing is built
-        //: around.
-        const r = node.r + (node._grow || 0);
-        const half = size / 2 + padY;
-        const alts = beside
-          ? []
-          : [
-              { x: node.x, y: node.y - r - 13 / k, align: "center" },
-              { x: node.x + r + 6 / k, y: node.y, align: "left" },
-              { x: node.x - r - 6 / k, y: node.y, align: "right" },
-              //: The four corners (INBOX 493), off the dot's diagonal: a hub's
-              //: lines leave it in every direction, and between two of them is
-              //: often the only place its name can stand clear of all of them.
-              { x: node.x + r * 0.72 + 3 / k, y: node.y + r * 0.72 + 9 / k, align: "left" },
-              { x: node.x - r * 0.72 - 3 / k, y: node.y + r * 0.72 + 9 / k, align: "right" },
-              { x: node.x + r * 0.72 + 3 / k, y: node.y - r * 0.72 - 9 / k, align: "left" },
-              { x: node.x - r * 0.72 - 3 / k, y: node.y - r * 0.72 - 9 / k, align: "right" },
-              //: Then a step further out (INBOX 693): a name may no longer sit
-              //: on a dot or a line, and a hub in the middle of its cluster
-              //: (the layout puts it there now) has a leaf or a spoke at every
-              //: near place. Measured on the showcase notebook at the fit:
-              //: without these, three of its seven category hubs went unnamed.
-              { x: node.x, y: node.y + r + 27 / k, align: "center" },
-              { x: node.x, y: node.y - r - 27 / k, align: "center" },
-              { x: node.x + r + 20 / k, y: node.y + 12 / k, align: "left" },
-              { x: node.x - r - 20 / k, y: node.y + 12 / k, align: "right" },
-              { x: node.x + r + 20 / k, y: node.y - 12 / k, align: "left" },
-              { x: node.x - r - 20 / k, y: node.y - 12 / k, align: "right" },
-            ].map((spot) => {
-              const l = spot.align === "center" ? spot.x - width / 2 : spot.align === "left" ? spot.x : spot.x - width;
-              return { ...spot, left: l - padX, right: l + width + padX, top: spot.y - half, bottom: spot.y + half };
-            });
-        // The id and the rank ride along with the geometry because the only
-        // way to ask "do the labels on screen overlap" from outside a canvas is
-        // to be handed the boxes: a screenshot of a pile of words and a
-        // screenshot of a clean map are the same bytes to a sweep.
-        items.push({
-          id: node.id,
-          rank,
-          force: rank === 0 || (rank === 1 && forceHits),
-          left,
-          right: left + width + padX * 2,
-          top: y - size / 2 - padY,
-          bottom: y + size / 2 + padY,
-          text,
-          x,
-          y,
-          align: beside ? "left" : "center",
-          alts,
-          landmark: landmarkIds.has(node.id),
-        });
-      }
+      const items = gcLabelItems(f, labelled, drawn, book, size, beside);
       //: The dots a label may not cover: every note drawn this frame, at the
       //: size it is drawn (hover growth included).
       const discs = drawn.map((node) => ({
@@ -3826,23 +3891,11 @@
       book.labelBoxes = placed;
       book.labelsDrawn = placed.length;
     }
-    //: A whole frame, on the visible canvas, whose only fade is the names: the
-    //: canvas as it stands before them is kept for the label frames
-    //: (`gcDrawLabels.frame`).
-    const othersFading = fading;
-    const keepable = !s.paintMode && s.ctx.canvas === s.canvas;
-    let labelBase = null;
-    if (s.paintMode !== "dim" && gcDrawLabels(ctx, s, placedLabels, fadeStep, k, keepable && !othersFading ? () => (labelBase = gcDrawLabels.keep(s)) : null)) fading = true;
-    if (!over && s.fitCheck > 0) {
-      const left = s.fitCheck - 1;
-      s.fitCheck = 0;
-      gcBalanceFit(s, placedLabels, left);
-    }
-    if (!over && s.revealAfterFit && !(s.fitCheck > 0)) {
-      s.revealAfterFit = false;
-      gcReveal(s);
-    }
+    return { book, placedLabels };
+  }
 
+  function gcDrawScorePills(f, drawn, book) {
+    const { s, ctx, k, layer, fadeStep, scoreFor } = f;
     // --- the pointed-at note's similarity scores -------------------------------
     //: Kumu's focus and Obsidian's hover both answer "what is this one joined
     //: to"; a similarity line also has "how closely", which a line's weight
@@ -3862,7 +3915,7 @@
     if (!layer && s.pillGhost) {
       s.pillGhost.a = gcFadeToward(s.pillGhost.a, 0, fadeStep);
       if (s.pillGhost.a > 0) {
-        fading = true;
+        f.fading = true;
         ctx.font = `600 ${11 / k}px ${gcTokens.font}`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -3873,7 +3926,7 @@
     }
     if (s.simScoreLabels.length) {
       s.pillA = gcFadeToward(s.pillA || 0, 1, fadeStep);
-      if (s.pillA < 1) fading = true;
+      if (s.pillA < 1) f.fading = true;
       s.pillDrawn = [];
       const size = 11 / k;
       ctx.font = `600 ${size}px ${gcTokens.font}`;
@@ -3903,7 +3956,10 @@
         gcDrawPill(ctx, drawn, k, gcSmooth(s.pillA));
       }
     }
+  }
 
+  function gcFrameEnd(f, drawn) {
+    const { s, ctx, k, t, hl, over, layer, started, easing, gliding, labelBase, othersFading, placedLabels, fading } = f;
     ctx.restore();
     if (layer) return;
     gcHoverCardFrame(s);

@@ -168,3 +168,30 @@ def unwrapped_copy(path):
         copy.write_text(unwrapped(path.read_text(encoding="utf-8")), encoding="utf-8")
         _COPIES[path] = copy
     return _COPIES[path]
+
+
+#: `gcDraw` hands one frame to these, in the order they follow it in graph-canvas.js
+#: (L14 split the 855-line function; nothing in them is new).
+GC_FRAME_PIECES = (
+    "gcDraw",
+    "gcDrawEdges",
+    "gcCollectNodes",
+    "gcAddLandmarkLabels",
+    "gcPaintNodes",
+    "gcDrawRings",
+    "gcLabelAlts",
+    "gcLabelItems",
+    "gcSeatLabels",
+    "gcDrawScorePills",
+    "gcFrameEnd",
+)
+
+
+def gc_frame(canvas: str) -> str:
+    """The text of `gcDraw` and the helpers it hands the frame to, for a test that
+    asserts a string was drawn somewhere in a frame and not where in the split."""
+    out = []
+    for name in GC_FRAME_PIECES:
+        start = re.search(rf"^function {name}\(", canvas, re.M).start()
+        out.append(canvas[start : canvas.index("\n}\n", start) + 2])
+    return "\n".join(out)

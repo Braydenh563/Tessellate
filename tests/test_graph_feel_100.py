@@ -15,7 +15,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import gc_frame, unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
@@ -176,12 +176,12 @@ def test_an_update_reheats_like_a_drag_and_leaving_notes_keep_their_look():
     mark = _fn("gcMarkLeaving")
     assert "sprite: n._sprite || null," in mark and "lines.lineTo(b.x, b.y);" in mark
     assert _const("GC_LEAVING_MAX") == "const GC_LEAVING_MAX = 2500;", "a category of hundreds fades too"
-    draw = _fn("gcDraw")
+    draw = gc_frame(CANVAS)
     assert draw.index("gcDrawLeavingLines(ctx, s, performance.now());") < draw.index("gcDrawLeaving(ctx, s, bornAt);")
 
 
 def test_a_frame_of_a_hover_fade_builds_no_style_objects_or_keys():
-    draw = _fn("gcDraw")
+    draw = gc_frame(CANVAS)
     assert "{ ...style" not in draw, "an edge's look is worked out once per render (gcEdgeLook)"
     assert "edge._keys[slot] ||" in draw
     assert "gcBowPoint(a, b, gcBowScratch, edge._side)" in draw
@@ -217,7 +217,7 @@ def test_the_node_gets_a_shaded_core_and_a_rim_and_the_glow_is_unchanged():
 
 
 def test_the_note_whose_card_is_open_wears_the_focus_ring():
-    draw = _fn("gcDraw")
+    draw = gc_frame(CANVAS)
     assert 'const openId = s.size === "full" && typeof graphPopupId !== "undefined" ? graphPopupId : null;' in draw
     assert "node.id === gcKeyboardId(s) || node.id === openId" in draw
     graph = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
