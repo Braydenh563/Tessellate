@@ -1,6 +1,6 @@
 ran:     staged-lints node-check ruff
-passed:  staged-lints node-check ruff
-failed:  none
+passed:  node-check ruff
+failed:  staged-lints
 skipped: lints (--staged lints the index once, as staged-lints) changed-tests (--changed) full-suite (--full) sweeps (--sweeps, needs BASE)
 logs:    /home/user/tessellate/.gate/<step>.log
-EXIT 0
+EXIT 1

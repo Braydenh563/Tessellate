@@ -333,7 +333,8 @@ def test_a_boards_units_are_kept_and_px_the_default_is_not(ai_client):
     out = ai_client.put(url, json={"background": {"units": "mm"}})
     assert out.status_code == 200, out.text
     assert out.json()["background"] == {"units": "mm"}
-    assert ai_client.put(url, json={"background": {"units": "px"}}).json()["background"] == {}
+    plain = ai_client.put(url, json={"background": {"units": "px"}})
+    assert plain.json()["background"] == {}
     refused = ai_client.put(url, json={"background": {"units": "furlong"}})
     assert refused.status_code == 422
 
