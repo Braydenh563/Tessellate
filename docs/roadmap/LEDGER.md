@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 161 | 50 | 2 | 59 | 387 |
+| chat | 176 | 150 | 46 | 2 | 59 | 372 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 668 | 147 | 3 | 195 | 1368 |
+| all | 553 | 657 | 143 | 3 | 195 | 1353 |
 
 ## graph
 
@@ -57,7 +57,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## chat
 
-- [ ] **L23** `chat` open, S: Write reminder confirmations as full sentences with one time format (Z62). From OPEN.md:4078. Evidence: Built in when.py/acts.py; was held by another agent, no fix found.
 - [ ] **L25** `chat` open, S: Read a one-line CJK note as content, not title-only (C10). From OPEN.md:4090. Evidence: Not probed (needs CJK note in seed); recorded in bc-1111.md.
 - [ ] **L26** `chat` open, S: Fix citation superscript landing mid-sentence (E51). From OPEN.md:4503. Evidence: Lead phrase table in composer_*.py, another agent's file; not changed
 - [ ] **L30** `chat` open, S: Record eval numbers for the voice track. From OPEN.md:829. Evidence: tests/_composer_eval.py and _voice_eval.py exist; before/after figures not recorded
@@ -78,7 +77,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L64** `chat` open, S: Answer a no-model Chat question with an attached note (A44). From OPEN.md:4571. Evidence: Deferred; no commit names A44
 - [ ] **L65** `chat` open, S: Make non-stream /chat route answer capability questions from the list. From OPEN.md:406. Evidence: Real model unverified; route not changed for this per grep of routes_chat.py
 - [ ] **L66** `chat` open, S: Make Stop cover read-only tool calls mid-turn, not only write tools (agent.py). From OPEN.md:445. Evidence: w34-L2r-1111.md:15 TRUE: agent.py:185 only _WRITE_TOOLS check stop_requested; noted design limit, not patched
-- [ ] **L67** `chat` open, S: Add act rows with inverses for write tools (create_category, rename_tag, board/map tools). From OPEN.md:1221. Evidence: Row left: seven act rows with inverses (INBOX 758), size M; not built.
 - [ ] **L68** `chat` open, S: Reword or remove the dead 'managed runner killed' message (Rule 5). From OPEN.md:1966. Evidence: App starts no runner; message wording/dead path not confirmed removed
 - [ ] **L69** `chat` open, S: Block held-back skills from the agent run_skill tool. From OPEN.md:2583. Evidence: run_skill in agent_turn.py; label only in picker/Settings
 - [ ] **L70** `chat` open, S: Keep modelStatus on a failed status poll so Agent does not grey and flicker. From OPEN.md:2733. Evidence: Verified open 2026-11-10
@@ -106,7 +104,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L96** `chat` open, M: Restore or drop ai/tool_summary.py named on wip/composer-acts but missing. From OPEN.md:941. Evidence: src/tessellate/ai/tool_summary.py does not exist; no module references it
 - [ ] **L97** `chat` open, M: Add professional variants for next-question chips, citation phrases and other languages. From OPEN.md:3512. Evidence: No variants found in voice.py/composer_voice.py for mention_*, lists, echo; other languages absent.
 - [ ] **L98** `chat` open, M: Support 'on my birthday' with a stored birthday setting. From OPEN.md:3717. Evidence: routes_read.py:42 takes birthday=; no setting stores one
-- [ ] **L100** `chat` open, M: Agent mode with no model should not answer with the whole sentence as subject. From OPEN.md:3843. Evidence: Found not fixed (composer-1011)
 - [ ] **L101** `chat` open, M: Hand the model linked_to and why. From OPEN.md:3845. Evidence: No linked_to in ai/librarian.py
 - [ ] **L102** `chat` open, M: Derive themes beyond shared tags and links. From OPEN.md:3846. Evidence: composer_frame.themes unchanged
 - [ ] **L103** `chat` open, M: Answer who/status questions over list notes instead of returning a quote. From OPEN.md:3847. Evidence: composer.py select not changed
@@ -123,7 +120,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L119** `chat` open, M: Draw Confirm/Not right in Ask so insights are read. From OPEN.md:3729. Evidence: grep insights in capture-ask.js finds nothing
 - [ ] **L121** `chat` open, M: Mention other matching records in answers (INBOX 744 b, c). From OPEN.md:3655. Evidence: Composer and grounding work (composer*.py, renderAnswerGrounding); no fix commit found
 - [ ] **L122** `chat` open, M: Fall back to the composed answer when the model fails mid-stream in routes_chat.py. From a30c-1102.md Still open small. Evidence: routes_chat.py still has no mid-stream composed fallback in grep
-- [ ] **L123** `chat` open, M: Add a typed reader for cancel/rename/restore/add-to-today on the model path. From acts-1108.md Left. Evidence: Source: with a model the model reads the words; no typed reader added
 - [ ] **L124** `chat` open, M: Apply stale-lock base_hash to every edit_note card, not only add-to-today. From acts-1108.md Left. Evidence: Source states; no later commit found
 - [ ] **L125** `chat` open, M: Save the F1 frame with a chat and fix the odd subject span. From fc1-1110.md Left. Evidence: chat_turn.py _framed_scope uses history frame; reopened chat persistence not found
 - [ ] **L126** `chat` open, M: Widen retrieval on regenerate (E62) and design the library bundle split (D22). From v1028-2.md Remaining. Evidence: E62 needs owner axes; D22 design first (a30g-1102.md:20)
@@ -197,19 +193,15 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L201** `chat` partly, S: Rows 839 and 841 never checked (no text located for either). From ledger-1112 P11.
 - [ ] **L204** `chat` partly, S: Repeat in 'milk' line still reproduced; 'what did I write about in October' restates a line. From ledger-1112 E18.
 - [ ] **L205** `chat` partly, S: 'compare Tokyo and Lisbon' opener 'Of the notes found...' and repeated cites need fixing. From ledger-1112 D20.
-- [ ] **L208** `chat` partly, M: Finish reminder, timer and dark-mode composer commands (E56). From OPEN.md:4026. Evidence: Timer/pomodoro/stopwatch done (tests/test_composer_bc1_1111.py). Missing: 'remind me ... an hour before' (when.py) and 'switch to dark mode' act.
 - [ ] **L210** `chat` partly, M: Fix the 'who is Priya' overview shape (R3-20). From OPEN.md:4152. Evidence: Owned by 1743 (overview answer shape); not closed.
 - [ ] **L211** `chat` partly, M: Lead with the defining note when the title only contains the subject (D1). From OPEN.md:4168. Evidence: Owned by 1743 (overview answer shape); not closed.
 - [ ] **L212** `chat` partly, M: Keep the subject in follow-ons in Ask and Chat (C12). From OPEN.md:4514. Evidence: CHANGELOG.md:229 (W9 B21, B29) fixed 'tell me more about it' for composer; Ask client sends no objects, still open
 - [ ] **L214** `chat` partly, M: Stop showing '100% sure' for a small model's filing pick. From OPEN.md:827; OPEN.md:3466. Evidence: Needs a real small model to calibrate certainty
 - [ ] **L215** `chat` partly, M: Fix engine-probe P1-P16 bugs and re-run the probe. From OPEN.md:942. Evidence: b9b13b7bb fixed P10-P13; rest of P1-P16 not re-run
-- [ ] **L216** `chat` partly, M: Add act rows for non-act write tools (category, tag, board, map). From OPEN.md:2856. Evidence: act_registry.py:139-149 has rename_tag, create_category, merge_categories, delete_tag; board and map tools have no act rows
 - [ ] **L217** `chat` partly, M: Web search down: give more than failure, add clarify-first flow. From OPEN.md:3825. Evidence: composer_extra.py:47 handles start-search-service; clarify-first and similarity alternatives not found
 - [ ] **L218** `chat` partly, M: Make composer replies more varied and less prepared (and the '?' question). From INBOX.md:904 B07. Evidence: Replies still from composer_smalltalk.py tables with variant picks; fully AI-like variation not built; '?' is an owner question
 - [ ] **L219** `chat` partly, M: Make composer compose in Ask rather than give the note back. From INBOX.md:904 B30. Evidence: Recency fixed; note-back is OPEN O1; composer batches r4 to r9 and tests/test_composer_chips_1110.py moved many replies
-- [ ] **L220** `chat` partly, M: Make composer do AI actions without a model. From INBOX.md:904 B33. Evidence: tests/test_composer_ai_actions.py exists; O7 (OPEN) still holds the quality bar
 - [ ] **L222** `chat` partly, M: Read typos in context with notebook word-pair scoring (Brief 104, W2). From SESSION_BRIEFS.md:359; e19-1110.md Tier F. Evidence: ai/spelling.py:56,:456,:580,:594 CONTEXT_READINGS; notebook word-pair scoring and before/after share missing
-- [ ] **L223** `chat` partly, M: Extend undo beyond pin/tick; duplicate-card wording; 'similar to X' ranking (B24, B27). From w9b-1110.md Left. Evidence: undo now says the inverse of tag, untag, link, unlink and reminder too (reading.py _INVERSE, tests/test_chat_acts_gap_1112.py); a rename or a move cannot be said back (old title unknown); 'similar to X' alone still reads as no act, commands.py:801 searches topic, no likeness ranking
 - [ ] **L224** `chat` partly, M: Verify Chat next-question chips (.chat-followups) in a browser with a real model; sweep stubs /chat/followups. From OPEN.md:952; OPEN.md:981; OPEN.md:2373; OPEN.md:3517. Evidence: Real chip text needs a real model; no-model path returns [] by design
 - [ ] **L225** `chat` partly, M: Design per-answer 'wrong' feedback (E59) and code editor tabs (D52). From OPEN.md:4505; v1028-4.md Remaining. Evidence: Thumbs/Not right store: what it teaches and consent are owner calls
 - [ ] **L226** `chat` partly, M: Show times for messages saved before stamps existed. From OPEN.md:995. Evidence: chat-time.js and routes_conversations.py:418 last_at fall back to updated_at; per-line old messages still unstamped by nature
@@ -261,13 +253,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
-- [ ] **L-chat-25** `chat` open, M: L23: composer act card time format and label wording. From acts-1112. Evidence: src/tessellate/ai/commands.py _clock: 'at 9' vs '3pm'; card label not a full sentence
-- [ ] **L-chat-26** `chat` open, M: L67 L216: board, map, document and skill act rows. From acts-1112. Evidence: tools already return undo; no act rows for board, map, document, skill
-- [ ] **L-chat-27** `chat` open, M: L100, L123, L220: not reached by acts agent, re-read rows. From acts-1112. Evidence: L100 L123 L220 not reached in acts-1112
-- [ ] **L-chat-28** `chat` open, M: L208: dark-mode act and meeting-anchored reminder. From acts-1112. Evidence: applyThemeChoice in settings.js is client-side; 'an hour before the meeting' anchoring
-- [ ] **L-chat-29** `chat` open, M: L223 remainder: similar-to, rename/move undo, untag parse, summarise note id. From acts-1112. Evidence: similar to X not parsed; rename/move have no undo by sentence; 'untag the note about boiler' parses about=the; 'summarise note 12' drops note_id
-- [ ] **L-chat-30** `chat` open, M: Strip the ask words from the subject of an overview question. From compose2 agent 2026-11-12. Evidence: probe: 'give me an overview of my sourdough notes' -> 'There are three notes on give me an overview of my sourdough.'
-- [ ] **L-chat-31** `chat` open, M: Drop the stray which-do-you-mean after a summarise-my-notes answer. From compose2 agent 2026-11-12. Evidence: probe: 'summarise my sourdough notes' ends 'Which do you mean: 1. Sourdough log; 2. More sourdough?'
 
 ## whiteboard
 
