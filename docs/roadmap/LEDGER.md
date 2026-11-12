@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 100 | 4 | 0 | 17 | 200 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 28 | 2 | 0 | 4 | 30 |
-| all | 553 | 687 | 160 | 3 | 195 | 1400 |
+| general | 0 | 27 | 2 | 0 | 4 | 29 |
+| all | 553 | 686 | 160 | 3 | 195 | 1399 |
 
 ## graph
 
@@ -880,7 +880,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-34** `general` open, M: Add the SKILL.md intent-router snippet (with copy button, help, Guide) to Settings' MCP row. From L-general-8 remainder. Evidence: src/tessellate/mcp_server.py cli() built; frontend/js/settings-controls.js:2278 renderMcpSnippet still has no SKILL.md snippet
-- [ ] **L-general-35** `general` open, M: Re-verify the remaining frontend 'not built' or 'deferred' comments. From L-general-17 remainder. Evidence: frontend/js/documents-base.js:4 board and calendar views, library.js:2296, whiteboard.js:1486 not re-verified
 - [ ] **L-general-36** `general` open, M: Let notes be grouped by hand, apart from the main sort. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-37** `general` open, M: Let a note have more than one category. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-38** `general` open, M: Compress notes and data on disk. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.

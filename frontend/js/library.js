@@ -53,8 +53,8 @@
 //    "library")` branch** in app.js (which already exists, and already
 //    calls loadLibrary()), merging the two would be a real behaviour
 //    change (one code path instead of two) riding along with a split, which
-//    the split's own rules forbid. Logged to ROADMAP.md instead as a
-//    worthwhile follow-up, not built here.
+//    the split's own rules forbid. The override has since gone: the AI
+//    Skills page renders from its sub-tab handler (see `librarySubtabs`).
 //  - whiteboard.js:82-91: two `Set()`s (the image gallery's expanded-caption
 //    set, since folded into `openRowReadings`, and libraryDocsSelection) that
 //    whiteboard.js declared alongside its own
@@ -2292,9 +2292,8 @@ $("library-refresh").addEventListener("click", loadLibrary);
 // matching button, everything else (Everything, Files, Tags, Drafts,
 // Activity, the bin) falls back to "+ New note", the fastest capture path
 // in the app, and a reasonable default when there's no single obvious
-// answer. A real "choose what to create" picker for the Everything view
-// specifically was asked for too but not built this pass, logged rather
-// than rushed; see BACKLOG.md.
+// answer. Everything and the kinds with no single answer open the
+// "choose what to create" picker (`openLibraryCreatePicker`, below).
 const LIBRARY_CREATE_BY_KIND = {
   note: {
     label: "ph:plus New note",

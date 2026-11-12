@@ -3207,9 +3207,8 @@ follows the active filter chip for the four unambiguous kinds
 (Notes/Documents/Chats/Meetings), and §105 item 1 already names the
 remaining gap precisely: a real "choose what to create" picker for
 Everything and every kind with no single obvious answer (Files, Tags,
-Drafts, Activity, the bin), not yet built, with the open question being
-dropdown-off-the-button vs. a real modal. Nothing new to add here; re-
-reading §105 rather than re-logging it.
+Drafts, Activity, the bin). Built since: `openLibraryCreatePicker`
+(library.js), a dialog of rich-picker rows (L-general-35, 2026-11-12).
 
 **A second competitor-analysis pass (Kortex/Granola/Mem.ai) was re-pasted
 this session, from a different subagent run than §102's**: cross-checked

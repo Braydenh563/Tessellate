@@ -1482,8 +1482,8 @@ function wbDrawOutSnap(sx, sy, x, y, event) {
 //: lining up, the draw.io/PowerPoint convention of a *different* colour so
 //: the two are never confused at a glance), and "spacing" (equal gaps).
 //: Overridable per the direct ask ("colours should be alterable"); the
-//: picker lives in the whiteboard's own shape-menu dropdown rather than a
-//: new top menu bar, see HISTORY.md for why that redesign is deferred.
+//: picker is the drawer's "Guide colours" group (whiteboard.js, the drawer
+//: section), beside "Draw with".
 //: The defaults live in CSS (`.wb-align-guide-<kind>`, one ink per theme, so
 //: each passes 3:1 on the canvas in light and dark); only a colour the owner
 //: picked is written here, and it wins over the class.
