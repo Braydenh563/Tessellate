@@ -1550,7 +1550,7 @@ function timelineRowElement(row, density) {
   li.tabIndex = -1;
   li.setAttribute("aria-expanded", "false");
 
-  const mark = timelineKindMark(row);
+  const mark = timelineRowElement.kindMark(row);
 
   const main = document.createElement("span");
   main.className = "timeline-row-main";
@@ -2163,7 +2163,8 @@ function syncTimelineDetailSpans() {
 
 //: **The kind's marker, one builder for the feed rail and the table** (LEDGER
 //: L485: the table said "Note" for a meeting until it wore the feed's mark).
-function timelineKindMark(row) {
+//: A property of the row builder, not a global of its own (the scope ratchet).
+timelineRowElement.kindMark = function timelineKindMark(row) {
   const mark = document.createElement("span");
   mark.className = "timeline-row-mark";
   mark.setAttribute("aria-hidden", "true");
@@ -2189,7 +2190,7 @@ function timelineKindMark(row) {
   if (timelineIsDailyNote(row)) glyph.className = "ph ph-calendar-dot";
   mark.appendChild(glyph);
   return mark;
-}
+};
 
 function timelineKindName(row) {
   return row.kind === "note" && row.placedBy === "meeting" ? "Meeting" : TIMELINE_KIND_NAMES[row.kind] || "Note";
@@ -2250,7 +2251,7 @@ function timelineTableRow(row) {
   title.className = "timeline-col-title";
   //: The Kind column is hidden on a phone, so the mark rides with the title and
   //: names the kind for a screen reader (a meeting is not a Note).
-  const mark = timelineKindMark(row);
+  const mark = timelineRowElement.kindMark(row);
   mark.removeAttribute("aria-hidden");
   mark.setAttribute("role", "img");
   mark.setAttribute("aria-label", timelineKindName(row));

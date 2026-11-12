@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8328, frontend ids 2765, CSS sections 524, backend routes 699, backend modules 10767, test files 2676, tests 21841, plan headings 688, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8327, frontend ids 2765, CSS sections 524, backend routes 699, backend modules 10767, test files 2676, tests 21841, plan headings 688, app scripts 29, boot scripts 38, script files 300.
 
-## Frontend functions (8328)
+## Frontend functions (8327)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -1510,7 +1510,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `withDisplayName` | frontend/js/dashboard.js:279 |
 | `withoutLeadingEmoji` | frontend/js/dashboard.js:1080 |
 
-### frontend/js/timeline.js (80)
+### frontend/js/timeline.js (79)
 
 | Name | File:line |
 |---|---|
@@ -1526,7 +1526,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `newTimelineWindow` | frontend/js/timeline.js:814 |
 | `openDayPage` | frontend/js/timeline.js:1178 |
 | `openTimelineRowDetail` | frontend/js/timeline.js:1716 |
-| `openTimelineTableDetail` | frontend/js/timeline.js:2321 |
+| `openTimelineTableDetail` | frontend/js/timeline.js:2322 |
 | `openTodaysPage` | frontend/js/timeline.js:1166 |
 | `paintTimeline` | frontend/js/timeline.js:974 |
 | `paintTimelineFeed` | frontend/js/timeline.js:1017 |
@@ -1536,22 +1536,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderTimelineKinds` | frontend/js/timeline.js:356 |
 | `renderTimelineMonthPop` | frontend/js/timeline.js:1419 |
 | `renderTimelineRecall` | frontend/js/timeline.js:660 |
-| `setTimelineRowSelected` | frontend/js/timeline.js:2309 |
+| `setTimelineRowSelected` | frontend/js/timeline.js:2310 |
 | `shortDate` | frontend/js/timeline.js:1767 |
 | `startDayNote` | frontend/js/timeline.js:1241 |
 | `startTodaysNote` | frontend/js/timeline.js:1237 |
 | `syncTimelineDetailSpans` | frontend/js/timeline.js:2157 |
 | `syncTimelineFilterChip` | frontend/js/timeline.js:941 |
 | `syncTimelineKindsLabel` | frontend/js/timeline.js:412 |
-| `syncTimelineSelectUi` | frontend/js/timeline.js:2338 |
-| `syncTimelineViewSeg` | frontend/js/timeline.js:2356 |
+| `syncTimelineSelectUi` | frontend/js/timeline.js:2339 |
+| `syncTimelineViewSeg` | frontend/js/timeline.js:2357 |
 | `syncTimelineYears` | frontend/js/timeline.js:713 |
 | `timelineAheadBuckets` | frontend/js/timeline.js:1071 |
 | `timelineAutoScale` | frontend/js/timeline.js:466 |
 | `timelineBucketKey` | frontend/js/timeline.js:231 |
 | `timelineBucketLabel` | frontend/js/timeline.js:248 |
 | `timelineBucketSection` | frontend/js/timeline.js:1083 |
-| `timelineCalendarCall` | frontend/js/timeline.js:2351 |
+| `timelineCalendarCall` | frontend/js/timeline.js:2352 |
 | `timelineCountLine` | frontend/js/timeline.js:790 |
 | `timelineDailyNote` | frontend/js/timeline.js:215 |
 | `timelineDayKeys` | frontend/js/timeline.js:1363 |
@@ -1565,8 +1565,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `timelineIsDailyNote` | frontend/js/timeline.js:322 |
 | `timelineJumpToDay` | frontend/js/timeline.js:1406 |
 | `timelineKindChoice` | frontend/js/timeline.js:306 |
-| `timelineKindMark` | frontend/js/timeline.js:2166 |
-| `timelineKindName` | frontend/js/timeline.js:2194 |
+| `timelineKindName` | frontend/js/timeline.js:2195 |
 | `timelineKindsText` | frontend/js/timeline.js:779 |
 | `timelineLoadMore` | frontend/js/timeline.js:738 |
 | `timelineMonthKeys` | frontend/js/timeline.js:1473 |
@@ -1581,13 +1580,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `timelineRowGroups` | frontend/js/timeline.js:897 |
 | `timelineRowMoment` | frontend/js/timeline.js:102 |
 | `timelineScaleChoice` | frontend/js/timeline.js:450 |
-| `timelineScrollToToday` | frontend/js/timeline.js:2386 |
+| `timelineScrollToToday` | frontend/js/timeline.js:2387 |
 | `timelineScrubTo` | frontend/js/timeline.js:2008 |
 | `timelineSortValue` | frontend/js/timeline.js:2075 |
 | `timelineSortedRows` | frontend/js/timeline.js:2086 |
 | `timelineStepScale` | frontend/js/timeline.js:1736 |
 | `timelineTableColumnCount` | frontend/js/timeline.js:2137 |
-| `timelineTableRow` | frontend/js/timeline.js:2198 |
+| `timelineTableRow` | frontend/js/timeline.js:2199 |
 | `timelineUnitText` | frontend/js/timeline.js:773 |
 | `timelineViewMode` | frontend/js/timeline.js:2048 |
 | `timelineVisibleRows` | frontend/js/timeline.js:954 |

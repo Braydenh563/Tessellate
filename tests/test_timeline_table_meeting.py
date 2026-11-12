@@ -20,9 +20,9 @@ def test_the_kind_cell_and_its_sort_share_one_name_that_knows_meetings():
 def test_the_table_title_cell_wears_the_feeds_kind_mark_at_every_width():
     """L485: one mark builder for the rail and the table, named for a screen reader."""
     assert "function timelineKindMark(row)" in JS
-    assert JS.count("timelineKindMark(row)") >= 3  # definition, the feed row, the table row
+    assert JS.count("timelineRowElement.kindMark(row)") >= 2  # the feed row and the table row (a property: the scope ratchet)
     table = JS[JS.index("function timelineTableRow(row)") :][:4000]
-    assert "const mark = timelineKindMark(row);" in table
+    assert "const mark = timelineRowElement.kindMark(row);" in table
     assert 'mark.setAttribute("aria-label", timelineKindName(row));' in table
     assert "title.append(mark, row.title);" in table
     css = (JS_DIR.parent / "css" / "06-timeline-dialogs.css").read_text(encoding="utf-8")
