@@ -2764,6 +2764,25 @@ body.printing-doc #doc-preview p,
 #whiteboard-container[data-wb-zoom-far] .wb-map-ref {
   display: none;
 }
+/* The one + left at far zoom is 20px and hangs flush on the topic's edge: a
+   level is 76 units apart, 19px at 25%, so the 24px button 8px off the box
+   covered the parent by 9px (L360, mapactions.js). */
+#whiteboard-container[data-wb-zoom-far] .wb-map-actions {
+  transform: scale(calc(20 / 28 * var(--wb-inv-zoom)));
+  right: calc(100% + 2px * var(--wb-inv-zoom));
+}
+#whiteboard-container .wb-map-node[data-flow="down"] .wb-map-actions {
+  transform-origin: 50% 0;
+  right: auto;
+  left: 50%;
+  top: calc(100% + 2px * var(--wb-inv-zoom));
+  translate: -50% 0;
+}
+@media (pointer: coarse) {
+  #whiteboard-container[data-wb-zoom-far] .wb-map-actions {
+    transform: scale(calc(20 / 44 * var(--wb-inv-zoom)));
+  }
+}
 /* **The controls follow the zoom, within bounds** (INBOX 1450, the owner:
    "buttons get oversized at zoom, they should adjust in size but only so
    much"). On screen the fold chevron and the topic's buttons are 28px at

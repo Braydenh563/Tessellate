@@ -8,6 +8,9 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Fix: the slash menu's Web link on a line of its own writes `[text](<url>)`, which stays an inline link rather than turning into a Link card (L-mindmap-7, the owner 2026-11-12); `tests/test_weblink_inline_lmm7.py`.
 - Mind map (gap audit): a brainstorm timer, copy and paste a topic's shape, topic templates, a picture from a link (`POST /links/image`, public addresses and images only), Save this branch as Markdown, a second central topic joined by a labelled link (label kept in FreeMind and OPML), and chat's Make a mind map opens with a Keep or Discard bar.
+- Mind map: INBOX 1342 (links attach only top or bottom) checked: radial and free use sides for 7 of 13 lines, tree-right and tree-both 13 of 13; no change.
+- Mind map: a fishbone's ribs meet each main topic at its spine-side corner, so none runs behind that topic's cause boxes (3 of 4 mains before, 0 after); the layouts sweep's branch-bar check measures a branch topic, not the centre.
+- Mind map: the + on a selected topic at 25% zoom is 20px and flush on the topic, so it no longer covers the parent (9px before); in a downward tree the buttons hang under the topic instead of over the left sibling (mapactions.js, radial and tree-down at 25%, 50%, 100%, 200%).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
 - Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.
