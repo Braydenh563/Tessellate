@@ -702,6 +702,8 @@ class VisionOcrBody(BaseModel):
     #: app. The Tesseract line has been editable since it shipped; this one
     #: was the odd one out.
     text: str | None = Field(default=None, max_length=10_000)
+    #: With `text`: who read it, put back by Undo of a fresh read (L517).
+    model: str | None = Field(default=None, max_length=200)
 
 
 def _store_typed_reading(session: Session, upload, body: VisionOcrBody) -> None:  # noqa: ANN001
@@ -713,6 +715,8 @@ def _store_typed_reading(session: Session, upload, body: VisionOcrBody) -> None:
         # Clearing the text clears the attribution with it, "Read by X"
         # under nothing is a claim about a reading that no longer exists.
         upload.vision_ocr_model = None
+    elif body.model is not None:
+        upload.vision_ocr_model = body.model or None
     session.commit()
     if body.edited:
         rf._set_edited_reading(rf._page_read_key(None, upload.id), upload.vision_ocr_text, "vision")

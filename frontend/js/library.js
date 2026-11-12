@@ -7376,6 +7376,7 @@ async function ocrReadImage(image, button) {
   try {
     const kind = ocrIsLocal(reader) ? "ocr" : "vision-ocr";
     const before = ocrFieldText(kind);
+    const beforeModel = image.vision_ocr_model || "";
     const row = await trackOcrRead(
       image,
       label,
@@ -7389,7 +7390,11 @@ async function ocrReadImage(image, button) {
     //: A fresh read replaces the reading that was there, the first read after
     //: an engine install included: undo puts the old one back.
     if (after !== before.trim()) {
-      pushUndo(`Read with ${ocrReaderNameFor(reader)}`, ocrTextWriter(image, kind, before), ocrTextWriter(image, kind, after));
+      pushUndo(
+        `Read with ${ocrReaderNameFor(reader)}`,
+        ocrTextWriter(image, kind, before, false, beforeModel),
+        ocrTextWriter(image, kind, after, false, row?.vision_ocr_model || ""),
+      );
     }
     //: Re-read rather than render the response: the regions endpoint is the
     //: one thing that knows how to turn either reader's answer into boxes, and
@@ -8563,9 +8568,13 @@ function ocrFieldText(kind) {
 
 //: `edited` is the redo's flag: an edit redone is still the person's
 //: correction (`VisionOcrBody.edited`), and the reading it undoes to is not.
-function ocrTextWriter(image, kind, text, edited = false) {
+//: `model` (L517): a vision reading's reader, put back with its text by Undo
+//: and Redo of a fresh read; undefined leaves the stored name alone.
+function ocrTextWriter(image, kind, text, edited = false, model = undefined) {
   return async () => {
-    await analyseMediaRow(image, kind, edited ? { text, edited: true } : { text });
+    const payload = edited ? { text, edited: true } : { text };
+    if (kind === "vision-ocr" && model !== undefined) payload.model = model;
+    await analyseMediaRow(image, kind, payload);
     await ocrRepaintReading(image);
   };
 }

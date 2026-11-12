@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 137 | 45 | 0 | 17 | 312 |
+| world-class | 130 | 136 | 45 | 0 | 17 | 311 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 663 | 144 | 3 | 140 | 1360 |
+| all | 553 | 662 | 144 | 3 | 140 | 1359 |
 
 ## graph
 
@@ -641,7 +641,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L513** `world-class` open, S: Add the person's own titles as a source for alternate category names in tidy.py. From OPEN.md:1703; OPEN.md:3615. Evidence: tidy.py:543-566 _rows_category_names uses profiles and taxonomy.name_topics only
 - [ ] **L515** `world-class` open, S: Extend Live Text to the scroll layout of PDFs. From OPEN.md:1471. Evidence: library.js:6746 ocrBuildScrollPages still builds scroll pages; layer per row says single-page only, no later change found
 - [ ] **L516** `world-class` open, S: Drive the attached-image thumbnail preview path. From OPEN.md:1620. Evidence: note-pick-preview.js:43 attachmentObjectUrl; no sweep drive found
-- [ ] **L517** `world-class` open, S: Restore previous model name when undoing a fresh read. From OPEN.md:1633; OPEN.md:2847. Evidence: library.js:8564 ocrTextWriter writes only {text}; no model restored on undo (:7390)
 - [ ] **L518** `world-class` open, S: Live captions '0 of 1 installed' needs an Install button; fix duplicate 'No model connected' in Writing room. From audit-1029-extras.md Re-verified. Evidence: captions.js:84 branches on status.installed; no fix commit found; W27 string not re-located
 - [ ] **L519** `world-class` open, S: Build a Settings editor for the dated currency rate table (decision 43). From OPEN.md:1497; OPEN.md:1893. Evidence: utilities.py:62 RATES_DATE only; no editor in settings code
 - [ ] **L527** `world-class` open, S: Restyle Connections unlinked-mention Link button and tool-confirm pair away from bordered ghost. From OPEN.md:1677; OPEN.md:2670. Evidence: connections.js:226 smallButton('ph:link Link', ...) defaults ghost small (app.js:1497-1499)

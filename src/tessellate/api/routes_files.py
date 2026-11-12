@@ -388,6 +388,9 @@ class AttachmentAnalyseBody(BaseModel):
     #: fixture, a clear, an import) just replaces the stored text and lets the
     #: sections be derived again.
     edited: bool = False
+    #: With `text` on a vision reading: who read it, put back by Undo of a
+    #: fresh read (L517), so "Read by" names the reader of the text restored.
+    model: str | None = Field(default=None, max_length=200)
     #: The local engine for `kind="ocr"` on a picture (INBOX 717): "" for the
     #: automatic pick, or "tesseract" / "rapidocr" by name.
     engine: str = Field(default="", max_length=20)
@@ -467,6 +470,8 @@ def _store_typed_reading(session: Session, attachment: Attachment, body: Attachm
         attachment.vision_ocr_text = stripped
         if not stripped:
             attachment.vision_ocr_model = None
+        elif body.model is not None:
+            attachment.vision_ocr_model = body.model or None
     session.commit()
     if body.edited and body.kind in {"ocr", "vision"}:
         _set_edited_reading(
