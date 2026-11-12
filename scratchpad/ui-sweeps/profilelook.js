@@ -12,8 +12,10 @@ const { boot } = require('./lib.js');
   await page.evaluate(() => openSettingsModal('preferences'));
   await page.waitForTimeout(800);
   await page.evaluate(() => {
-    prefsCache.avatar_style = { hand: 'middlefinger', hair: 'bob', mood: 'happy' };
-    nameMarkOwn = null;
+    // avatars.js keeps the own style in a closed-over `nameMarkOwn` that wins over
+    // prefsCache once set, so the old `nameMarkOwn = null` here only made a window
+    // global; the exported setter is the way in (same clean-on-read path).
+    setOwnNameMarkStyle({ hand: 'middlefinger', hair: 'bob', mood: 'happy' });
   });
   await page.evaluate(() => { const d = document.getElementById('profile-look')?.closest('details'); if (d) d.open = true; mountProfileLook(); });
   await page.waitForTimeout(300);

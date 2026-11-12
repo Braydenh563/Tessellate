@@ -3334,9 +3334,11 @@ body.printing-doc #doc-preview p,
 /* How much a collapsed branch is holding. On the node, in the branch's own
    colour, because the count belongs to the branch that is folded away rather
    than to the node it is folded into. */
+/* The 1.2 middle term: at a fit zoom just under 100% (0.98) a plain 1 left the buttons 43px on screen, a hair under
+   the 44 floor (iconfloor.js); the clamp's upper end still holds them at 44 from about 83% up. */
 @media (pointer: coarse) {
   .wb-map-collapse {
-    transform: scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
+    transform: scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1.2, var(--wb-inv-zoom)));
   }
 }
 
@@ -3652,7 +3654,7 @@ body.printing-doc #doc-preview p,
 }
 @media (pointer: coarse) {
   .wb-map-actions {
-    transform: scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
+    transform: scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1.2, var(--wb-inv-zoom)));
   }
 }
 /* **Away while the topic's text is edited** (INBOX 817): the + and link
@@ -7669,9 +7671,14 @@ input[type="color"].wb-mixed {
 /* --- moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule
    still names (a boot override would lose to a rule that loads after it). The workspace opens from the Library bundle (library.js `openOcrWorkspace`). --- */
 
-.ocr-card {
+/* `:not(.sheet-card-page)`: this sheet loads after the boot CSS, so at equal
+   weight its width and height beat the phone page variant's (the reader was
+   374 by 776 in a 390 by 844 window, not the screen). */
+.ocr-card:not(.sheet-card-page) {
   width: min(96vw, 1500px);
   height: min(92vh, 1000px);
+}
+.ocr-card {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -10137,4 +10144,22 @@ input[type="color"].wb-mixed {
   margin: 0;
   font-size: var(--text-xs);
   overflow-wrap: anywhere;
+}
+
+/* The document list's New split and the map's resize grip reach the 44px floor under a finger
+   (L-general-52, `iconfloor.js`). The grip keeps its 10px square; only the button around it grows. */
+@media (pointer: coarse) {
+  .split-button > .split-button-main,
+  .split-button .split-button-caret {
+    min-width: var(--target-min);
+    min-height: var(--target-min);
+  }
+  .wb-map-resize-grip {
+    width: var(--target-min);
+    height: var(--target-min);
+    inset: auto calc(var(--target-min) / -2) calc(var(--target-min) / -2) auto;
+  }
+  .wb-map-resize-grip::before {
+    inset: calc((var(--target-min) - 10px) / 2);
+  }
 }

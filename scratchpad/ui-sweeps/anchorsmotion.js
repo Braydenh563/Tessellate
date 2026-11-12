@@ -164,12 +164,28 @@ const OPEN = {
   async selection(page) {
     await page.evaluate(() => switchTab('notes'));
     await page.waitForTimeout(1000);
-    const rect = await page.evaluate(() => {
+    const found = await page.evaluate(() => {
       const body = [...document.querySelectorAll('#entry-list > li .entry-content, #entry-list > li .entry-body, #entry-list > li p')].find((el) => el.textContent.trim().length > 30 && el.getClientRects().length);
       if (!body) return null;
-      body.scrollIntoView({ block: 'center' });
+      body.scrollIntoView({ block: 'center', behavior: 'instant' });
+      return true;
+    });
+    // The list scrolls smoothly (the app's own scroll-behavior), so the card is measured after it has
+    // stopped; measured at once, the pointer went where the text had been 117px away.
+    await page.waitForTimeout(900);
+    const rect = !found ? null : await page.evaluate(() => {
+      const body = [...document.querySelectorAll('#entry-list > li .entry-content, #entry-list > li .entry-body, #entry-list > li p')].find((el) => el.textContent.trim().length > 30 && el.getClientRects().length);
       const r = body.getBoundingClientRect();
-      return [r.left + 4, r.top + Math.min(8, r.height / 2), r.left + Math.min(200, r.width - 4)];
+      // The popup sits at the pointer's release (selection.js, "off the cursor"), so the drag ends on the
+      // first line's own last character: a drag that runs past a short line parked the pointer, and the
+      // popup, 117px from the text the anchor is measured on.
+      const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+      let node = walker.nextNode();
+      while (node && !node.textContent.trim()) node = walker.nextNode();
+      const line = document.createRange();
+      line.selectNodeContents(node);
+      const first = line.getClientRects()[0];
+      return [r.left + 4, first.top + first.height / 2, Math.min(r.left + 200, first.right - 2)];
     });
     if (!rect) return null;
     await page.mouse.move(rect[0], rect[1]);

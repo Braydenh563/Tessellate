@@ -104,3 +104,17 @@ def test_the_gallery_file_is_in_both_bundles_that_call_it() -> None:
     app = _text("app.js")
     library = re.search(r"\n  library: \[(.*?)\],\n", app, re.S).group(1)
     assert '"/js/boards-gallery.js"' in library, "the board code calls the gallery, so every bundle that carries it carries the gallery"
+
+
+def test_a_board_opened_by_code_is_not_covered_by_the_gallery_landing():
+    # `openWhiteboardBoard` presses the sub-tab itself; the press draws the landing a step later
+    # (once the gallery file is in), which hid a board opened from a link on the first Library visit.
+    opener = _text("whiteboard.js")
+    start = opener.index("async function openWhiteboardBoard(")
+    body = opener[start : start + 1800]
+    assert "openWhiteboardBoard.holdLanding = true" in body
+    assert body.index("holdLanding = true") < body.index("wbShowCanvasView();")
+    gallery = _text("boards-gallery.js")
+    show = gallery[gallery.index("renderLibraryBoardsGallery.show = ") :][:600]
+    assert "openWhiteboardBoard?.holdLanding" in show
+    assert show.index("holdLanding") < show.index("wbShowBoardsLanding()")

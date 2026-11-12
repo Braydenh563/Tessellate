@@ -176,7 +176,10 @@ function outline(n, name) {
       const stored = listed.find((b) => b.id === window.currentBoardId)?.layout;
       const index = wbMapIndex();
       const mirrored = [...document.querySelectorAll(".wb-map-node.wb-map-node-mirrored")].length;
-      const sample = document.querySelector(".wb-map-node.wb-map-node-mirrored");
+      // Not the root: in tree-left every topic is mirrored, the first one is the centre, and the centre has no
+      // branch bar (it was measured, 1px each side, and read as the bar missing).
+      const rootIds = new Set(index.roots.map((r) => String(r.id)));
+      const sample = [...document.querySelectorAll(".wb-map-node.wb-map-node-mirrored")].find((n) => !rootIds.has(n.dataset.id));
       const cs = sample ? getComputedStyle(sample) : null;
       return {
         stored, want, mirrored, topics: index.nodes.length,

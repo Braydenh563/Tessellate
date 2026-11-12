@@ -308,6 +308,12 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     //: tour.js is lazy: until it loads, openTour and TOUR_ENABLED are app.js stand-ins.
     await page.evaluate(() => ensureModule("tour"));
     // --- every door is live --------------------------------------------------
+    // Settings is built when it is first opened, so its Help panel (the replay rows, the
+    // "Start the tour" button, About's button) is opened first, as a person would reach it.
+    await page.evaluate(() => openSettingsModal());
+    await page.waitForTimeout(500);
+    await page.evaluate(() => showSettingsSection("help"));
+    await page.waitForTimeout(300);
     const doors = await page.evaluate(() => {
       renderTourReplay();
       const replay = [...document.querySelectorAll("#tour-replay-buttons button")];
@@ -315,6 +321,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       return {
         enabled: typeof TOUR_ENABLED !== "undefined" && TOUR_ENABLED,
         replay: replay.length,
+        startDisabled: (document.getElementById("tour-start-btn") || { disabled: true }).disabled,
         replayDisabled: replay.filter((b) => b.disabled).length,
         about: Boolean(about),
         aboutDisabled: Boolean(about && about.disabled),
@@ -324,10 +331,13 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     check(doors.enabled, `${label} TOUR_ENABLED is on`);
     const sectionCount = await page.evaluate(() => openTour.inspect.sections.length);
     check(
-      doors.replay === sectionCount + 1 && doors.replayDisabled === 0,
-      `${label} the ${sectionCount + 1} replay buttons are live (${doors.replay})`
+      // One row per section, and "Start the tour" is its own button above them (INBOX 804).
+      doors.replay === sectionCount && doors.replayDisabled === 0 && !doors.startDisabled,
+      `${label} the ${sectionCount} replay rows and the start button are live (${doors.replay})`
     );
     check(doors.about && !doors.aboutDisabled, `${label} About's take-the-tour button is live`);
+    await page.evaluate(() => closeSettingsModal());
+    await page.waitForTimeout(300);
 
     // What the notebook holds before any tour runs: the tour may open a
     // board or a map, and must never make one (or anything else).
@@ -346,7 +356,9 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       switchTab("dashboard");
     });
     await page.waitForTimeout(700);
-    await page.evaluate(() => openOnboarding());
+    // showOnboarding, not openOnboarding: the latter now queues the welcome behind the first-run turns (firstRunTurn)
+    // and waits for a clear screen, so the sweep's next click waited on a card that had not been drawn.
+    await page.evaluate(() => showOnboarding());
     await page.waitForTimeout(400);
     const slides = await page.evaluate(() => ONBOARDING_SLIDES.length);
     for (let slide = 0; slide < slides - 1; slide += 1) {
@@ -414,7 +426,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
       await page.evaluate(() => showSettingsSection("help"));
       await page.waitForTimeout(300);
       await page.evaluate(() =>
-        [...document.querySelectorAll("#tour-replay-buttons button")].find((b) => b.textContent === "Start the tour").click()
+        document.getElementById("tour-start-btn").click()
       );
       await page.waitForTimeout(300);
       const whole = await walk(page, `${label} start the tour`, phone);
@@ -626,7 +638,7 @@ const SIZES = (process.env.SIZES || "1440x900,1184x760,390x844,1600x890@1.25")
     await page.evaluate(() => showSettingsSection("help"));
     await page.waitForTimeout(300);
     await page.evaluate(() =>
-      [...document.querySelectorAll("#tour-replay-buttons button")].find((b) => b.textContent === "Graph").click()
+      [...document.querySelectorAll("#tour-replay-buttons button")].find((b) => b.querySelector(".tour-row-name")?.textContent === "Graph").click()
     );
     await page.waitForTimeout(300);
     await settled(page);

@@ -160,7 +160,7 @@ Taken as a programme, in this shape:
    the shared recipe or not at all.
 3. **Reliability as a gate**: the full suite, the sweeps and a 30-minute
    scripted session (deepflows.js) green on every merge (CI's UI sweeps job,
-   `scripts/ci_sweeps.sh`: 50 steady sweeps and 10 deepflows flows; the rest
+   `scripts/ci_sweeps.sh`: 61 steady sweeps and 10 deepflows flows; the rest
    are L-general-47); no console error on
    any surface; a cold boot under the measured budget; "not a demo" means
    every empty state, error state and first-run state is designed and

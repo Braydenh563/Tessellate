@@ -175,11 +175,12 @@ function waitForFake() {
       raw_results: mine, search_mode: 'hybrid', connected_ids: [], match_info: {},
       answered_by: 'fake-answerer', ollama_running: true,
     });
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    // The record card replaces the note card's chips a moment after the rows land (`replyRecordCards`).
+    await new Promise((r) => setTimeout(r, 500));
     const li = document.querySelector(`#raw-results li[data-id="${mine[0].id}"]`);
     if (!li) return { ok: false, why: 'no row rendered for the attached note' };
-    const links = li.querySelector('.entry-links');
-    const meta = li.querySelector('.entry-meta');
+    const links = li.querySelector('.entry-links, .disclosure-row');
+    const meta = li.querySelector('.record-meta');
     const gap = links && meta
       ? Math.round((meta.getBoundingClientRect().top - links.getBoundingClientRect().bottom) * 10) / 10
       : null;
@@ -188,33 +189,14 @@ function waitForFake() {
     // reads. A count alone would hide *which* one is missing, which is the
     // half of "make sure all the badges show" that decides the fix.
     const entry = mine[0];
-    const want = [];
-    if (entry.is_private) want.push('private');
-    if (entry.pinned) want.push('favourite');
-    if (entry.is_draft) want.push('draft');
-    want.push(entry.category);
-    for (const tag of entry.tags) want.push(tag);
-    // A confident score is quiet text ("72%"); a low one reads "AI 40%: check this".
-    if (entry.ai_confidence > 0 && !entry.user_filed) want.push(`${entry.ai_confidence}%`);
-    for (const doc of entry.documents || []) want.push(doc.title);
-    if (entry.source_url) want.push(entry.source_title || entry.source_url);
-    for (const when of entry.dates || []) want.push(when.phrase);
-    // The space chip's own condition, asked of the API rather than of
-    // `spacesCache`: a top-level `const` in a classic script is not on
-    // `window`, so reading it from a probe silently answers undefined and the
-    // implied count comes back one short of a row that is in fact correct.
-    const spaces = await apiJson('/spaces').catch(() => []);
-    const active = typeof activeSpaceId === 'function' ? activeSpaceId() : null;
-    // Only when more than one space exists and the notes in view span them (entry-card.js).
-    if (entry.workspace_id && spaces.length > 1 && typeof notesSpanSpaces === 'function' && notesSpanSpaces() && (active === 'all' || entry.workspace_id !== Number(active))) {
-      const space = spaces.find((s) => s.id === entry.workspace_id);
-      want.push(space ? space.name : 'a space that no longer exists');
-    }
-    if (entry.source_path) want.push(entry.source_path.split('/').pop());
+    // Ask's Matching records are record cards now (INBOX 1735, DESIGN.md): one facts line,
+    // `.record-meta`, carries the category and the date, and the tags, files and dates stay on the
+    // note itself. So what the data implies for this row is the category and the date.
+    const want = [entry.category];
 
     const liBox = li.getBoundingClientRect();
     // A chip folded into "+N" is [hidden], not a badge that failed to draw.
-    const chips = [...li.querySelectorAll('.entry-meta > .chip:not([hidden]), .entry-meta .chip:not([hidden])')].map((c) => {
+    const chips = [...li.querySelectorAll('.record-meta > span:not([hidden])')].map((c) => {
       const r = c.getBoundingClientRect();
       return {
         text: c.textContent.replace(/\s+/g, ' ').trim(),
@@ -225,7 +207,7 @@ function waitForFake() {
       };
     });
     // A tag folded into "+N" is still on the card (its menu lists it).
-    const folded = [...li.querySelectorAll('.entry-meta [data-tag][hidden]')].map((c) => c.dataset.tag);
+    const folded = [];
     const shown = chips.map((c) => c.text).concat(folded).join(' | ');
     const missing = want.filter((label) => !shown.includes(String(label)));
     // A lane that scrolls is a lane that hides: the same measurement for the
@@ -264,7 +246,7 @@ function waitForFake() {
   // The same note, in the Ask column, chip for chip against Browse.
   const askSame = await page.evaluate((id) => {
     const li = document.querySelector(`#raw-results li[data-id="${id}"]`);
-    return li ? [...li.querySelectorAll('.entry-meta .chip:not([hidden])')]
+    return li ? [...li.querySelectorAll('.record-meta > span:not([hidden])')]
       .map((c) => c.textContent.replace(/\s+/g, ' ').trim()) : null;
   }, seeded.ids[2]);
   console.log(`297 ask row    (the same note):        ${JSON.stringify(askSame)}`);
@@ -274,7 +256,9 @@ function waitForFake() {
       .map((c) => c.text));
     // "Add tags" (a control in Browse) is "No tags yet" in Ask, where the row is read-only.
     const same = (t) => (t === 'Add tags' ? 'No tags yet' : t);
-    const lost = browse.filter((b) => !askSame.map(same).includes(same(b)) && !actionOnly.has(b));
+    // A record card keeps the category and the date only (INBOX 1735): the tags and the Browse
+    // controls ("Add tags") are not on it by design, so the category is what must carry across.
+    const lost = browse.slice(0, 1).filter((b) => !askSame.map(same).includes(same(b)) && !actionOnly.has(b));
     numbers.badgesInBrowse = browse.length;
     numbers.badgesInAsk = askSame.length;
     numbers.badgesLostInAsk = lost;
@@ -295,10 +279,10 @@ function waitForFake() {
     const at = await page.evaluate((id) => {
       const li = document.querySelector(`#raw-results li[data-id="${id}"]`);
       if (!li) return null;
-      const meta = li.querySelector('.entry-meta');
-      const links = li.querySelector('.entry-links');
+      const meta = li.querySelector('.record-meta');
+      const links = li.querySelector('.entry-links, .disclosure-row');
       const box = li.getBoundingClientRect();
-      const chips = [...li.querySelectorAll('.entry-meta .chip:not([hidden])')];
+      const chips = [...li.querySelectorAll('.record-meta > span:not([hidden])')];
       const cut = chips.filter((c) => {
         const r = c.getBoundingClientRect();
         return r.width < 1 || r.right > box.right + 1 || r.left < box.left - 1;
@@ -430,7 +414,9 @@ function waitForFake() {
         n: mark ? Number(mark.textContent.replace(/\D/g, '')) : null,
         visible: !!r && r.width > 0 && r.height > 0,
         // Horizontal intersection: the number sits in a gutter on either side.
-        overlap: r && br ? Math.round((Math.min(r.right, br.right) - Math.max(r.left, br.left)) * 10) / 10 : null,
+        // Both axes, against the words' own line boxes: the card puts the number in a corner of a
+        // body box that spans the card (INBOX 1735), so the box overlapping it is not the words.
+        overlap: r && body ? Math.round(Math.max(0, ...[...(() => { const g = document.createRange(); g.selectNodeContents(body); return g.getClientRects(); })()].map((t) => Math.min(r.right, t.right) - Math.max(r.left, t.left) > 0 && Math.min(r.bottom, t.bottom) - Math.max(r.top, t.top) > 0 ? Math.min(r.right, t.right) - Math.max(r.left, t.left) : 0)) * 10) / 10 : null,
       };
     });
     return { marks, rows };

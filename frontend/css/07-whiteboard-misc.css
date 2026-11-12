@@ -19952,10 +19952,6 @@ input[type="file"]:active::file-selector-button {
   .chat-dock-controls .select-shell:has(> .feature-model-select) {
     order: 1;
   }
-  .chat-dock-controls .select-shell:has(> .feature-model-select) .select-opener {
-    height: var(--target-min);
-    min-height: var(--target-min);
-  }
 }
 
 /* The quick-access tiles wrap from 600px up and nothing there clips a ring, so
@@ -20454,8 +20450,9 @@ header#top-bar[data-scrolled="1"],
 
 .capture-bar-row .capture-bar-input,
 .capture-bar-row .capture-bar-icon {
-  height: var(--control-h-body);
-  min-height: var(--control-h-body);
+  /* The floor: 44 under a finger (iconfloor.js), under the body height otherwise. */
+  height: max(var(--control-h-body), var(--target-min));
+  min-height: max(var(--control-h-body), var(--target-min));
   margin: 0;
 }
 

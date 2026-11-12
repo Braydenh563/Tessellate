@@ -16,12 +16,16 @@ STABLE=(docks contrast leaks keyboard diskspace vibecheck graphminimap wbgroupgu
   wbtopbar tagoffer imagecardfoot maptwokinds animcost mapdoors libtlscroll wbshapetext
   touch phonesidebar phonecapture spinners companionbeats companionactease companionblend
   companioncollapse companionemotes companionentry companionlegs companionsay
-  doccodecopy dockeyboard graphphone slashicons wbexportimage ctrlwheelzoom companionfade companiontabs)
+  doccodecopy dockeyboard graphphone slashicons wbexportimage ctrlwheelzoom companionfade companiontabs doctoolbarstate profilelook iconfloor
+  errors@1440,1024 errors@820,390 asktab noteobject canvasconventions
+  maplinkcue maplayouts mapmidpan)
 failed=()
 bash "$ROOT/scratchpad/ui-sweeps/serve.sh" ${SWEEP_PORT:-8781} "$DIR/sweeps" || exit 1
 for name in "${STABLE[@]}"; do
   start=$SECONDS
-  if BASE=http://127.0.0.1:${SWEEP_PORT:-8781} timeout 180 node "$ROOT/scratchpad/ui-sweeps/$name.js" > "$DIR/$name.log" 2>&1; then
+  # `sweep@1440,1024` runs the sweep at those widths only (errors.js takes 205s at four, so it is two entries).
+  file="${name%%@*}"; widths=""; [[ "$name" == *@* ]] && widths="${name#*@}"
+  if env BASE=http://127.0.0.1:${SWEEP_PORT:-8781} ${widths:+WIDTHS=$widths} timeout 180 node "$ROOT/scratchpad/ui-sweeps/$file.js" > "$DIR/${name//[@,]/_}.log" 2>&1; then
     echo "ok   $name $((SECONDS - start))s"
   else
     echo "FAIL $name $((SECONDS - start))s"; tail -n 20 "$DIR/$name.log"; failed+=("$name")
