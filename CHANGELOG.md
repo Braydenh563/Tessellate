@@ -7,6 +7,11 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Mind map: a middle-button drag to each window edge and past it was driven headless and headed (`mapmidedge.js`); not reproduced, so the owner's mouse check moved to BACKLOG (L759).
+- Mind map performance measured, no code change: a 291-topic map idles and drags at 16.7 ms a frame with no long task, a 500-stroke board pans at 16.7 ms even at 6x CPU, and press-to-editable at 390 is 17 to 34 ms unthrottled (L-mindmap-9, L372, L370).
+- Mind map: measured the whole-map tidy per add in the timeline, fishbone and tree table at 205 topics: 0.3 to 0.6 ms to plan and 13 to 29 topics moved, against 0.9 ms and 24 on the scoped tree; scoping them would save under 1 ms, so nothing changed (the add's 98 to 133 ms is the render, in every layout).
+- Mind map: a radial map's unsized leaves draw 120px wide (was 200), so 31 topics (6 branches of 4) lay out 1235 x 1202 instead of 1927 x 1791 and fit at 46.3% zoom instead of 31.1%; 0 overlapping boxes in the browser.
+- Mind map: a branch line's label takes the board connector's look (size, bold, colour, chip) from four rows on the Branch line menu; measured 12px/400/ink/3px stroke before, 20px/700/#aa0000/12px stroke after. The label's dragged offset (edge_label_dx, edge_label_dy) was missing from the data model and is now kept on reload.
+- Mind map: a fishbone's line to a main topic's 2nd and later causes no longer runs behind the cause above (causes stand one indent in, lines drop half an indent in; 0 of 5 cause lines cross a box in a node test, 4 of 5 before).
 - The document editor's :shortcode: completion now reads the icon picker's emoji through an alias map (one emoji table, resolved when the picker script is in).
 - Mind map: the level rows say a size in words where the level scale has one (Classic main topics L, the centre XL, not 17px and 22px), and a topic at a size the strip has no word for (17px) gets a one-off row so the strip rings it (L366, L369); the level fill was already named by `wbSyncMapFill`; `tests/test_map_node_controls.py`.
 - Mind map: the phone More sheet (59 to 82 rows on a map) has the app filter field (`listFilter`); typing "layout" leaves 9 of 82 rows, separators hide while a query is set, and clearing restores all 82 (measured at 390, `scratchpad` sweep, L367); `tests/test_wb_commands.py`.

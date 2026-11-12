@@ -15805,6 +15805,22 @@ async function initWhiteboard() {
     await wbMapSetNodeStyle(node, { edge_dashed: wbMapToggleValue(node, "edge_dashed") });
     renderWhiteboardNow();
   });
+  //: The label's look on that line (the board connector's four: size, colour,
+  //: bold, chip), written beside `edge_label` and painted by `wbRenderMapEdges`.
+  const labelLook = async (patch) => {
+    const node = wbSelectedMapNode();
+    if (!node) return;
+    await wbMapSetNodeStyle(node, patch);
+    renderWhiteboardNow();
+  };
+  $("wb-map-label-size")?.addEventListener("change", (e) => {
+    const size = Math.max(8, Math.min(72, Math.round(Number(e.target.value) || 0)));
+    labelLook({ edge_label_size: size && size !== 12 ? size : null });
+  });
+  $("wb-map-label-color")?.addEventListener("change", (e) => labelLook({ edge_label_color: e.target.value }));
+  for (const [id, key] of [["wb-map-label-bold", "edge_label_bold"], ["wb-map-label-chip", "edge_label_chip"]]) {
+    $(id)?.addEventListener("click", (e) => labelLook({ [key]: e.currentTarget.getAttribute("aria-pressed") === "true" ? null : true }));
+  }
   $("wb-map-edge-arrow")?.addEventListener("click", async () => {
     const node = wbSelectedMapNode();
     if (!node) return;
@@ -24420,7 +24436,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     .attr("class", (d) => `wb-object wb-object-${d.kind}`)
     .attr("data-id", (d) => d.id)
     .style("transform", wbItemTransform)
-    .style("width", (d) => `${d.width}px`)
+    .style("width", (d) => `${(WB_MAP_KINDS.has(d.kind) && wbMapNodeSize.narrow(d)) || d.width}px`)
     .style("height", objectHeight)
     .style("z-index", (d) => stackRank.get(`object:${d.id}`))
     .call(objDrag)
@@ -24706,7 +24722,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     if (this.classList.contains("wb-culled")) this.classList.remove("wb-culled");
     const el = d3.select(this);
     this.style.transform = wbItemTransform(d);
-    this.style.width = `${d.width}px`;
+    this.style.width = `${(WB_MAP_KINDS.has(d.kind) && wbMapNodeSize.narrow(d)) || d.width}px`;
     this.style.height = objectHeight(d);
     if (!WB_MAP_KINDS.has(d.kind)) {
       this.style.opacity = d.data?.alpha != null && d.data.alpha < 1 ? String(d.data.alpha) : "";

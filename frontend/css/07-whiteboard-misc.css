@@ -9264,6 +9264,11 @@ input[type="file"] {
   text-anchor: middle;
   pointer-events: none;
 }
+/* The chip, as on a board connector's label (`.wb-link-label-chip`). */
+.wb-map-edge-label.wb-map-edge-label-chip {
+  stroke-width: 12;
+  stroke-linejoin: round;
+}
 /* What the strip sets, drawn on the node. Weight and slant sit on the text
    rather than on the node so a node's icon and its count badge keep their own
    weight; alignment is the text's own, which is the only thing on the node

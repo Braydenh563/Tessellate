@@ -435,6 +435,12 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "icon": None,
         "link": None,
         "edge_label": None,
+        "edge_label_dx": None,
+        "edge_label_dy": None,
+        "edge_label_size": None,
+        "edge_label_bold": None,
+        "edge_label_color": None,
+        "edge_label_chip": None,
         "edge_style": None,
         "edge_dashed": None,
         # And with the hand-resized topic (MINDMAP_PLAN.md item 177).
