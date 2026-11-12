@@ -58,7 +58,8 @@ def test_the_mark_is_a_correction_and_its_delete_undoes_it_for_filing(app_state,
     assert any(c.kind == "wrong_fact" for c in learning.corrections(session))
     listed = client.get("/learned", params={"kind": "wrong"}).json()
     assert any(row["id"] == made["id"] for row in listed["items"])
-    assert client.delete(f"/learned/{made['id']}").status_code in (200, 204)
+    deleted = client.delete(f"/learned/{made['id']}")
+    assert deleted.status_code in (200, 204)
     session.expire_all()
     prompt = librarian.filing_prompt(session, BODY, ["Studio"], exclude_entry_id=note.id)
     assert "garden club" in prompt.split("Note:")[-1]
