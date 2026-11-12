@@ -3259,12 +3259,18 @@ function* untangleCleanupSteps() {
   untangle.margin = UNTANGLE_CLEAN_MARGIN;
   for (let i = 0; i < nodes.length && !stuck; i++) stuck = untangleOnLine(i);
   const meet = [];
-  const spread = collideRadius;
+  // Every pair is looked at (n²/2: 2M at 2,000 notes), so the radii are read once and the square test comes before the root.
+  const spread = stuck ? nodes.map(collideRadius) : [];
+  const gap = 2 * UNTANGLE_CLEAN_SLACK;
   for (let i = 0; stuck && i < nodes.length; i++) {
+    const ni = nodes[i];
     for (let j = i + 1; j < nodes.length; j++) {
       // The collision force's own radii: a smaller gap would be pushed back open by the next tick.
-      const need = spread(nodes[i]) + spread(nodes[j]);
-      if (Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y) < need + 2 * UNTANGLE_CLEAN_SLACK) meet.push([i, j, need]);
+      const need = spread[i] + spread[j];
+      const dx = ni.x - nodes[j].x;
+      const dy = ni.y - nodes[j].y;
+      const reach = need + gap;
+      if (dx * dx + dy * dy < reach * reach * 1.000001 && Math.hypot(dx, dy) < reach) meet.push([i, j, need]);
     }
   }
   for (let iter = 0; stuck && iter < UNTANGLE_CLEAN_ITERS && workNow() < until; iter++) {
