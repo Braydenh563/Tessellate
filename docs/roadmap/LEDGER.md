@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 69 | 4 | 0 | 17 | 169 |
+| ui-modernisation | 96 | 68 | 4 | 0 | 17 | 168 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 13 | 0 | 0 | 0 | 13 |
-| all | 553 | 641 | 158 | 3 | 191 | 1352 |
+| all | 553 | 640 | 158 | 3 | 191 | 1351 |
 
 ## graph
 
@@ -500,7 +500,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L405** `ui-modernisation` open, S: Measure documents sidebar and board zoom pill at 390. From OPEN.md:3544. Evidence: Measurement gap; sidebar is a sheet at 390.
 - [ ] **L406** `ui-modernisation` open, S: Raise output grip to the 44px touch floor at 390 and cover run panel. From OPEN.md:3681. Evidence: No touch.js in frontend/js now; grip rule not found raised; unmeasured at 390
 - [ ] **L409** `ui-modernisation` open, S: Check moved rules in dark and phone width, and first bell press on a slow link. From OPEN.md:638. Evidence: errors.js at 390 clean; dark and slow-link checks not recorded
-- [ ] **L412** `ui-modernisation` open, S: Re-measure Logs More menu .dock-menu-check rows and board Start/End menus against other menu items. From OPEN.md:1207; OPEN.md:2523. Evidence: 07-whiteboard-misc.css:9720 .dock-menu-check now token padding; re-measure of Logs menu and board menus not shown.
 - [ ] **L415** `ui-modernisation` open, S: Measure the status ring under 'auto' motion. From OPEN.md:1758. Evidence: No later measurement found; needs a sweep of the status ring in auto motion
 - [ ] **L416** `ui-modernisation` open, S: Stop the Bin row's long label wrapping when its reset appears; add per-row marker. From OPEN.md:1761; OPEN.md:2592. Evidence: No change found in settings rows for the bin reset label; unverified fix absent
 - [ ] **L417** `ui-modernisation` open, S: Background jobs Report button waits for boot room; make Activity panel opaque at 390. From OPEN.md:1809; OPEN.md:2686. Evidence: No change found; row stands (unverified fix absent)

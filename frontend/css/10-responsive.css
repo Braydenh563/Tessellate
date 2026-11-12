@@ -705,7 +705,7 @@
   #ask .ask-header-actions {
     display: contents;
   }
-  #ask > .row > h2 {
+  #ask h2 {
     flex: 1;
   }
   [data-dock-name="writing-room"] .dock-actions {

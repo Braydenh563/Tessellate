@@ -12,5 +12,5 @@ def test_ask_actions_join_the_title_line_on_a_phone():
     text = CSS.read_text(encoding="utf-8")
     block = text.split("#ask .ask-header-actions {", 1)[1].split("}", 1)[0]
     assert "display: contents;" in block
-    h2 = text.split("#ask > .row > h2 {", 1)[1].split("}", 1)[0]
+    h2 = text.split("#ask h2 {", 1)[1].split("}", 1)[0]
     assert "flex: 1;" in h2
