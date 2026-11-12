@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 
 from tessellate.core import webclip
-from tests.test_webclip import FakeResponse, FakeSession, net, page  # noqa: F401
+from tests.test_webclip import FakeResponse, net, page  # noqa: F401  (net and page are fixtures)
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"0" * 64
 
