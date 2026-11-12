@@ -229,3 +229,19 @@ def test_the_import_dialog_and_the_library_reach_the_new_readers() -> None:
 
 def test_a_saved_template_can_be_placed_on_the_open_board() -> None:
     assert 'entry.kind === "template" && !here' in LIBRARY and "{ here: true }" in LIBRARY
+
+
+def test_an_svg_picture_is_drawn_to_png_before_upload_and_a_lost_one_is_counted() -> None:
+    """Review 5883430964: `/media/upload` takes no `.svg` (MEDIA_SUFFIXES), so an inline SVG was accepted by the
+    reader and then dropped without a word. It is drawn to a PNG on a canvas; one that still fails is named."""
+    picture = SOURCE[SOURCE.index("async picture(") :]
+    picture = picture[: picture.index("async inflate(")]
+    assert 'mime === "image/svg+xml"' in picture and "svgToPng(file, box)" in picture
+    assert 'canvas.toBlob(done, "image/png")' in picture
+    assert '"svg"' not in picture, "no .svg ever goes to the upload"
+    place = SOURCE[SOURCE.index("async function wbDrawioPlace(") :]
+    place = place[: place.index("for (const item of plan.items.filter((i) => i.kind === \"text\"))")]
+    assert "plan.dropped.pictures = (plan.dropped.pictures || 0) + 1" in place
+    files = (ROOT / "src" / "tessellate" / "api" / "routes_files.py").read_text(encoding="utf-8")
+    suffixes = files[files.index("MEDIA_SUFFIXES = frozenset(") :]
+    assert '".svg"' not in suffixes[: suffixes.index(")")]

@@ -139,6 +139,22 @@ const XML = `<mxfile><diagram name="P"><mxGraphModel><root><mxCell id="0"/><mxCe
   const opts = await page.evaluate(() => document.getElementById("wb-fmt-port").options.length);
   check("the list shows the added port", opts === before + 1, opts);
 
+  // Add from the keyboard (review 5883430964): Enter on Add puts a point on the outline after the chosen one.
+  await page.selectOption("#wb-fmt-port", "0");
+  const u2 = await undoLen();
+  const n2 = (await stored()).length;
+  await page.focus("#wb-fmt-port-add");
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(([base]) => wbUndoStack.length >= base + 1, [u2], { timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(300);
+  p = await stored();
+  const keyed = await measure();
+  const shape = keyed.find((s) => s.id === id);
+  const focused = await page.evaluate(() => document.activeElement && document.activeElement.id);
+  check("Enter on Add adds one point after the chosen one, one Undo step, on the outline (under 0.5 px)",
+    p.length === n2 + 1 && (await undoLen()) === u2 + 1 && shape.off[1].d < 0.5, { before: n2, after: p.length, d: shape.off[1].d });
+  check("the new point is chosen and the nudge field has the keys", focused === "wb-fmt-port-dx" && (await page.inputValue("#wb-fmt-port")) === "1", { focused });
+
   // A multi-selection hides the rows.
   const hidden = await page.evaluate(() => {
     const ids = wbState.sketches.map((s) => s.id);

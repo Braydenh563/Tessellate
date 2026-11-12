@@ -351,6 +351,29 @@
     return portQueue;
   }
 
+  //: The keyboard Add (review 5883430964): halfway along the outline between the chosen point and the next one (with one
+  //: point, the outline nearest the middle of the box), measured in the unturned box as the outline editor's press is.
+  function addPortByKey() {
+    let added = -1;
+    return editChosenPort((q, ports) => {
+      const target = wbSwapTarget();
+      const box = target && wbItemBBox("sketch", target.item);
+      if (!box) return false;
+      const i = Math.max(0, Math.min(ports.length - 1, portRow.i));
+      const next = ports.length > 1 ? ports[(i + 1) % ports.length] : { x: 1 - q.x, y: 1 - q.y };
+      const w = box.maxX - box.minX, h = box.maxY - box.minY;
+      const near = outlineNear(target.parsed.d, box.minX + ((q.x + next.x) / 2) * w, box.minY + ((q.y + next.y) / 2) * h);
+      if (!near) return false;
+      ports.splice(i + 1, 0, { x: near.x, y: near.y });
+      added = i + 1;
+      portRow.i = added;
+    }, "Connection point added after the chosen one; X and Y nudge it.").then(() => {
+      if (added < 0) return;
+      wbFormatSync();
+      document.getElementById("wb-fmt-port-dx")?.focus();
+    });
+  }
+
   function bindPortsRows() {
     const field = (id) => document.getElementById(id);
     field("wb-fmt-port")?.addEventListener("change", (e) => {
@@ -358,7 +381,9 @@
       const target = wbSwapTarget();
       if (target) fillPortFields(rawPorts(target)[portRow.i]);
     });
-    field("wb-fmt-port-add")?.addEventListener("click", () => editPorts());
+    //: A pointer opens the outline editor; a key (a click with no `detail`) has no outline to press, so the point goes on
+    //: the outline halfway from the chosen point to the next, is chosen, and the nudge's X field takes the keys.
+    field("wb-fmt-port-add")?.addEventListener("click", (e) => (e?.detail === 0 ? addPortByKey() : editPorts()));
     field("wb-fmt-port-del")?.addEventListener("click", () => editChosenPort((q, ports) => {
       ports.splice(portRow.i, 1);
       portRow.i = Math.max(0, portRow.i - 1);

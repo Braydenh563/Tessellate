@@ -40,6 +40,15 @@ const CSV = "# label: %name%\n# style: rounded=1;fillColor=#fff2cc;\n# connect: 
   });
   check("the gradient and the shadow land on the shape", file.turned && file.turned.gradient && file.turned.gradient.dir === "n" && file.turned.shadow, file);
   check("the picture stored in the file lands as an uploaded board picture", file.images.length === 1 && /^\/media\//.test(file.images[0]), file.images);
+  // Review 5883430964: an SVG picture inside the file is drawn to a PNG (the upload takes no .svg), never lost.
+  const SVG = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#c33"/></svg>').toString("base64");
+  const svgFile = FILE.replace(`image/png,${PNG}`, `image/svg+xml,${SVG}`).replace('id="c"', 'id="c2"').replace(' source="a" target="b"', "");
+  const said = await page.evaluate(async (t) => { await wbImportText(t); return document.querySelector("#wb-live, [aria-live]")?.textContent || ""; }, svgFile);
+  await page.waitForTimeout(2500);
+  const svgImages = await page.evaluate(() => wbState.objects.filter((o) => o.kind === "image").map((o) => (o.data && o.data.url) || ""));
+  check("an SVG picture inside the file lands as an uploaded PNG", svgImages.length === 2 && svgImages.every((u) => /^\/media\//.test(u)), { svgImages, said });
+  await page.evaluate(() => wbUndo && wbUndo());
+  await page.waitForTimeout(1500);
   const after = await counts();
   check("the connector joins the two", after.links === 1, { links: after.links });
 

@@ -131,3 +131,9 @@ def test_the_apps_own_chords_stay_the_apps() -> None:
     bound = re.search(r"const BOUND = \[(.*?)\];", KEYS, re.S).group(1)
     for command in ("select-none", "select-connectors", "clear-default-style", "auto-size"):
         assert f'"{command}"' not in bound, command
+
+
+def test_enter_on_a_focused_button_is_the_buttons_own() -> None:
+    """Review 5883430964: with a shape selected, Enter on a Format panel button (Add point) opened the shape's label
+    instead of pressing the button, so the keyboard path never ran (sweep wbports-offsets.js)."""
+    assert "&& !(e.key === \"Enter\" && document.activeElement?.closest(\"button, [role='button'], a[href], summary\"))" in BOARD

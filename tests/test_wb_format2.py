@@ -171,6 +171,16 @@ def test_a_boards_paper_and_orientation_are_kept_and_the_defaults_are_not(ai_cli
     assert back.json()["background"] == {}
 
 
+def test_a_custom_size_is_dropped_when_the_paper_is_not_custom(ai_client):
+    """Review 5883430964: a stored paper_w and paper_h stayed behind a named paper, and came back unasked."""
+    url = f"/whiteboard/boards/{_board(ai_client)['id']}"
+    ai_client.put(url, json={"background": {"paper": "custom", "paper_w": 200, "paper_h": 120}})
+    named = ai_client.put(url, json={"background": {"paper": "letter"}})
+    assert named.json()["background"] == {"paper": "letter"}
+    stray = ai_client.put(url, json={"background": {"paper_w": 150}})
+    assert stray.json()["background"] == {"paper": "letter"}
+
+
 def test_a_paper_that_is_not_in_the_table_or_a_custom_size_out_of_range_is_refused(ai_client):
     board = _board(ai_client)
     for patch in ({"paper": "tabloid"}, {"orientation": "sideways"}, {"paper_w": 10}, {"paper_h": 9000}):
@@ -369,3 +379,13 @@ def test_the_rulers_are_a_view_switch_drawn_on_every_view_change_and_the_fields_
     assert "wbFmtState.opts?.show(" in fmt and "wbFmtState.opts?.read(" in fmt
     css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     assert ".wb-ruler" in css
+
+
+def test_the_grid_size_says_it_is_always_in_pixels():
+    """Review 5883430964, point 4: the grid is stored as whole pixels (4 to 200) so its lines and snapping land on whole
+    pixels; following the Units option would round every value through mm or inches. So it says pixels instead."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    row = html[html.index('id="wb-bo-grid-size"') - 120 : html.index('id="wb-bo-grid-size"') + 400]
+    assert "Grid size (px)" in row and "always in pixels whatever the units" in row
+    guide = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    assert "Grid size (4 to 200 pixels whatever the units" in guide

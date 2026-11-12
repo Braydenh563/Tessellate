@@ -718,6 +718,10 @@ def _store_board_background(entry: Entry, patch: BoardBackground) -> dict:
             merged.pop(field, None)
         else:
             merged[field] = value
+    # A custom size means nothing on a named paper; kept, it would come back the day the paper is custom again.
+    if merged.get("paper") != "custom":
+        merged.pop("paper_w", None)
+        merged.pop("paper_h", None)
     try:
         existing = json.loads(entry.board_settings or "{}")
     except (TypeError, ValueError):

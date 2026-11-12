@@ -18001,7 +18001,9 @@ async function initWhiteboard() {
       return;
     }
     //: F2 starts editing like Enter (draw.io's second key); a map topic's Enter and F2 differ below.
-    const editKey = (e.key === "Enter" || e.key === "F2") && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey;
+    //: Not on a focused button: Enter there is the button's own (the Format panel's Add point took the label edit instead).
+    const editKey = (e.key === "Enter" || e.key === "F2") && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey
+      && !(e.key === "Enter" && document.activeElement?.closest("button, [role='button'], a[href], summary"));
     if (editKey && !wbIsMap() && wbKeyboardEnter()) {
       e.preventDefault();
       return;

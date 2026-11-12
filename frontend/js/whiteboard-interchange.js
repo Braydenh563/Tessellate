@@ -810,16 +810,37 @@ wbDrawioStyle.more = {
     return data;
   },
   //: A picture inside a `.drawio` file, uploaded to this notebook as board-only media (as a pasted picture is); its address, or null.
-  async picture({ mime, base64 }) {
+  //: An SVG one is drawn to a PNG first: the upload takes no `.svg` (a script could ride in one), so it would be lost.
+  async picture({ mime, base64 }, box = { w: 256, h: 256 }) {
     try {
-      const bytes = Uint8Array.from(atob(base64), (ch) => ch.charCodeAt(0));
-      const ext = mime.slice(6).replace("jpeg", "jpg").replace("svg+xml", "svg");
+      let file = new Blob([Uint8Array.from(atob(base64), (ch) => ch.charCodeAt(0))], { type: mime });
+      if (mime === "image/svg+xml") file = await wbDrawioStyle.more.svgToPng(file, box);
+      if (!file) return null;
+      const ext = file.type.slice(6).replace("jpeg", "jpg");
       const form = new FormData();
-      form.append("file", new File([bytes], `drawio-picture.${ext}`, { type: mime }));
+      form.append("file", new File([file], `drawio-picture.${ext}`, { type: file.type }));
       form.append("board", "true");
       return (await apiJson("/media/upload", { method: "POST", headers: authHeaders(), body: form }))?.url || null;
     } catch {
       return null;
+    }
+  },
+  //: An SVG picture as a PNG at twice its box on the board (the SVG may carry no size of its own), or null.
+  async svgToPng(svg, { w, h }) {
+    const width = Math.round(Math.max(1, w) * 2), height = Math.round(Math.max(1, h) * 2);
+    if (width * height > 64e6) return null;
+    const url = URL.createObjectURL(svg);
+    try {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      const canvas = Object.assign(document.createElement("canvas"), { width, height });
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      return await new Promise((done) => canvas.toBlob(done, "image/png"));
+    } catch {
+      return null;
+    } finally {
+      URL.revokeObjectURL(url);
     }
   },
   //: draw.io's packing of XML: URI-encoded, deflated raw, base64.
@@ -1410,8 +1431,9 @@ async function wbDrawioPlace(plan, dx, dy, ink) {
     if (made) ids.set(f.id, ["object", made.id]);
   }
   for (const item of plan.items.filter((i) => i.kind === "image")) {
-    const url = item.url || (item.inline ? await wbDrawioStyle.more.picture(item.inline) : null);
-    if (!url) continue;
+    const url = item.url || (item.inline ? await wbDrawioStyle.more.picture(item.inline, item) : null);
+    //: A picture that would not upload is named in the import's report, never dropped silently.
+    if (!url) { plan.dropped.pictures = (plan.dropped.pictures || 0) + 1; plan.unplaced = (plan.unplaced || 0) + 1; continue; }
     const made = await wbCreateObject("image", { url, ...item.look }, Math.round(item.x + dx), Math.round(item.y + dy), Math.round(Math.max(20, item.w)), Math.round(Math.max(20, item.h)), undefined, item.rotation ? { rotation: item.rotation } : null);
     if (made) ids.set(item.id, ["object", made.id]);
   }
@@ -1488,7 +1510,7 @@ async function wbImportDrawio(text, at = wbViewCentre(), csv = null) {
     }
   });
   renderWhiteboardNow();
-  const items = pages.reduce((n, page) => n + page.plan.items.length, 0);
+  const items = pages.reduce((n, page) => n + page.plan.items.length - (page.plan.unplaced || 0), 0);
   const links = pages.reduce((n, page) => n + page.plan.links.length, 0);
   const dropped = {};
   for (const page of pages) for (const [k, n] of Object.entries(page.plan.dropped)) dropped[k] = (dropped[k] || 0) + n;

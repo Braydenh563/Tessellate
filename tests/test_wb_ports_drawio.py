@@ -230,3 +230,17 @@ def test_port_edits_queue_so_none_is_lost():
     assert "portQueue = portQueue.then(" in body
     assert "change(q, ports) === false" in body
     assert "if ((Number(q[key]) || 0) === n) return false;" in src
+
+
+def test_add_has_a_keyboard_path_that_puts_a_point_after_the_chosen_one() -> None:
+    """Review 5883430964: Add opened the outline editor, which only a pointer can press. A key's click (detail 0)
+    adds the point halfway along the outline to the next point, chooses it and puts the keys in the nudge field."""
+    src = (ROOT / "frontend" / "js" / "whiteboard-draw-more.js").read_text(encoding="utf-8")
+    assert 'addEventListener("click", (e) => (e?.detail === 0 ? addPortByKey() : editPorts()))' in src
+    body = src[src.index("function addPortByKey()") : src.index("function bindPortsRows()")]
+    assert "outlineNear(target.parsed.d" in body and "ports.splice(i + 1, 0," in body and "portRow.i = added" in body
+    assert 'getElementById("wb-fmt-port-dx")?.focus()' in body and "editChosenPort(" in body, "one Undo step, queued"
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert "from the keyboard, Enter adds one after the chosen point" in html
+    guide = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    assert "Enter on Add puts one after the chosen point" in guide

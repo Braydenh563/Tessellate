@@ -2335,7 +2335,7 @@ MORE_TOPICS.extend([
             "(three stay). The connectors on the shape follow. Each change is one Undo, Escape during a drag puts the corner "
             "back, and Escape otherwise finishes. A shape with curves, an open line or two outlines has no corners to edit. "
             "Connection points are separate: Format, Position and size lists a shape's connection points. Pick one to hold it on the outline (On outline) "
-            "so it stays on the edge when the shape is resized, nudge it by pixels, add one or remove the chosen one, each change one Undo step; "
+            "so it stays on the edge when the shape is resized, nudge it by pixels, add one or remove the chosen one (Enter on Add puts one after the chosen point), each change one Undo step; "
             "a draw.io file's points, with their pixel offsets, come in and go back out."
         ),
         "badge": {"label": "Library", "tab": "library"},
@@ -3006,7 +3006,7 @@ MORE_TOPICS.append({
         "Picture border: select a picture, then in the Format panel set Border to a width in pixels and pick its colour; "
         "an empty width takes the border off. The border is drawn inside the picture's edge, follows its rounded corners, "
         "and is kept in SVG, PNG and PDF exports and in a .drawio file (as imageBorder and strokeWidth). "
-        "Board options: with nothing selected, the Format panel's Style tab has a Board section. Grid size (4 to 200, empty is 24) "
+        "Board options: with nothing selected, the Format panel's Style tab has a Board section. Grid size (4 to 200 pixels whatever the units, empty is 24) "
         "and Grid colour belong to this board; Snap to grid, Shift with the arrow keys and the drawn grid all use that size. "
         "The same section has three switches, each kept on the board: Guides (the alignment lines while you drag, on by default), "
         "Page view (dashed frames for the printed pages, drawn under the cards) and Shadow (new shapes and text boxes start with a shadow). "

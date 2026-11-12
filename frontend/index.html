@@ -8471,7 +8471,7 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="help-body hidden" id="wb-fmt-help-boardopts" role="dialog" aria-label="About board options">
             <p><b>Board options</b> belong to this board, not to this device. The grid size and colour are what Snap to grid, Shift and the arrow keys, and the drawn grid all use. Guides are the alignment lines while you drag. Page view shows the page frames. Shadow gives new shapes and text boxes a shadow. Paper and Direction set the page frames and where a PDF export starts; a custom size is in millimetres. Units set what the rulers (View, Rulers) and the position and size fields show.</p>
           </div>
-          <label class="wb-fmt-row"><span class="wb-fmt-label">Grid size</span><input type="number" id="wb-bo-grid-size" min="4" max="200" step="1" placeholder="24" aria-label="Grid size, in pixels" title="Space between grid lines in pixels; empty is 24"></label>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Grid size (px)</span><input type="number" id="wb-bo-grid-size" min="4" max="200" step="1" placeholder="24" aria-label="Grid size, in pixels" title="Space between grid lines, always in pixels whatever the units, so grid lines and snapping land on whole pixels; empty is 24"></label>
           <label class="wb-fmt-row"><span class="wb-fmt-label">Guides</span><input type="checkbox" id="wb-bo-guides" aria-label="Alignment guides" title="Lines that appear and pull a shape into line with others while you drag or resize; off, only the grid snaps"></label>
           <label class="wb-fmt-row"><span class="wb-fmt-label">Page view</span><input type="checkbox" id="wb-bo-pageview" aria-label="Page view" title="Show the printed page frames on the board; they are the pages a PDF export uses"></label>
           <label class="wb-fmt-row"><span class="wb-fmt-label">Shadow</span><input type="checkbox" id="wb-bo-shadow" aria-label="Shadow for new shapes" title="New shapes and text boxes on this board start with a shadow"></label>
@@ -8890,7 +8890,7 @@ Link to another note with [[its first few words]]."></textarea>
             </label>
             <div class="wb-fmt-row" data-fmt="ports" hidden><span class="wb-fmt-label">Edit points</span>
               <span class="wb-fmt-buttons">
-                <button type="button" id="wb-fmt-port-add" class="ghost small icon-only" title="Add a point: press the outline, then Escape to finish" aria-label="Add a connection point"><i class="ph ph-plus" aria-hidden="true"></i></button>
+                <button type="button" id="wb-fmt-port-add" class="ghost small icon-only" title="Add a point: press the outline, then Escape to finish; from the keyboard, Enter adds one after the chosen point, ready to nudge" aria-label="Add a connection point"><i class="ph ph-plus" aria-hidden="true"></i></button>
                 <button type="button" id="wb-fmt-port-del" class="ghost small icon-only" title="Remove the chosen point" aria-label="Remove the chosen connection point"><i class="ph ph-minus" aria-hidden="true"></i></button>
                 <label class="wb-snap-label" title="Keep the chosen point on the outline when the shape is resized"><input type="checkbox" id="wb-fmt-port-perim" aria-label="Chosen point on the outline"><span>On outline</span></label>
               </span>
