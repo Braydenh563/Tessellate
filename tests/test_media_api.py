@@ -671,7 +671,8 @@ def test_a_page_by_page_reading_reaches_the_gallery_row(ai_client):
 
     rows = ai_client.get("/media").json()
     row = next(r for r in rows if r["id"] == upload_id)
-    assert row["vision_ocr_text"] == "first page\n\nsecond page"
+    #: A form feed between pages since INBOX 827 L1: the Files row draws a "Page N" mark at each.
+    assert row["vision_ocr_text"] == "first page\n\n\f\n\nsecond page"
 
 
 def test_a_whole_file_reading_still_wins_over_the_page_join(ai_client):
