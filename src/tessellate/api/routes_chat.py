@@ -527,8 +527,8 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
     model_manager = deps.get_model_manager().for_feature(_feature_for(body))
     ollama = deps.get_ollama()
     ollama_running = ollama.is_running()
-    if _asks_capability(capable := _stream_request(body, session), prepared):  # L65: answered from the app's own list
-        return ChatResponse(ai_response=_capability_answer(capable, ollama_running), raw_results=[], search_mode=prepared["search_mode"], ollama_running=ollama_running)
+    if (plain := _capability_response(body, session, prepared, ollama_running)) is not None:
+        return plain
     conversational = not intent.needs_retrieval(prepared["intent"])
     mode = _resolve_mode(body.mode)
     images_raw, images, image_context = _chat_images(session, body, model_manager, ollama)
@@ -880,6 +880,11 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
     if chart:
         out.append({"type": "chart", "chart": chart})
     return out
+
+
+def _capability_response(body: ChatRequest, session: Session, prepared: dict, ollama_running: bool) -> ChatResponse | None:
+    answer = _capability_answer(req, ollama_running) if _asks_capability(req := _stream_request(body, session), prepared) else None
+    return answer and ChatResponse(ai_response=answer, raw_results=[], search_mode=prepared["search_mode"], ollama_running=ollama_running)
 
 
 def _capability_answer(req: _StreamRequest, ollama_running: bool) -> str:
@@ -1257,14 +1262,14 @@ def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, rest
     digest = None if follow else personal.answer(req.question, lambda: personal.notes_of(req.session), today)
     if digest is not None or (follow and not restated) or not _may_digest(prepared, req.question):
         return digest
+    ask = lambda pool: composer.offered(composer_digest.answer(  # noqa: E731
+        follow.question if restated else req.question, pool, today=today,
+        #: A retry rewords the answer (INBOX 1466) and, over one note, reads the others (L93).
+        voice=_answer_voice(), turn=len(req.history or []) + req.body.attempt,
+        insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
+    ), req.question)
     try:
-        return composer.offered(composer_digest.answer(
-            follow.question if restated else req.question, current, today=today,
-            #: A retry rewords the answer itself: since the closing offer became the
-            #: chips (INBOX 1466) the body is the only thing "Try again" can change.
-            voice=_answer_voice(), turn=len(req.history or []) + req.body.attempt,
-            insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
-        ), req.question)
+        return composer.retried(ask(current), current, ask, req.body.attempt)
     except Exception:  # noqa: BLE001  # the composer's answer stands
         logging.getLogger("tessellate.chat").exception("chat: the digest failed")
         return None
@@ -1329,7 +1334,7 @@ def _compose_over(req: _StreamRequest, prepared: dict, follow, current: list, to
         turn=len(req.history or []) + 1 + attempt,
         dialogue=dialogue,
         prefer=follow.prefer if follow else "",
-        resolved=True,
+        resolved=True, retry=attempt,
         #: Insights the person confirmed are said as their word; the
         #: ones they dismissed are not said (decision 60).
         learned=_insight_memory(req.session),

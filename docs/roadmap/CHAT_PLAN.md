@@ -954,9 +954,8 @@ step 2 or Brief 35):
 5. **A correction is read as a new question.** "no, the gym one" is classified
    `list` and answered with the quoted sentences; `follow_on` has `more`,
    `ordinal`, `meant` and `it`, and no `correction` (decision 35 owns it).
-6. **`ai/tool_summary.py` does not exist**, and `ai/commands.py` exists only on
-   `origin/wip/composer-acts` (626 lines, 56 phrasings, never run); Phase 6
-   step 7 and decision 10 (one fixed result line per tool) both lean on them.
+6. **`ai/tool_summary.py` is dropped** (L96, 2026-11-12): nothing references it, and
+   the fixed result line per tool is `ai/tool_say.py`'s; `ai/commands.py` is built.
 
 ### 1. What the best rule-based and offline assistants do
 
@@ -1481,7 +1480,7 @@ capability.
 | 11 | Out-of-domain and the capability line (U18, A25, X18) | `ai/composer._nothing`, act registry | Plain no-answer, the closest note, and one line listing the acts and utilities that run, generated from the registry | S |
 | 12 | The fact layer, first six kinds (step 1) | new `ai/factgraph.py` | event, date, quantity, entity, negation and mode, list item, each with a span and cached by `entry_edited_at` | L |
 | 13 | Insights: recurrence, silence, first and last (A15) | new `ai/insights.py` | A topic in at least 3 notes across at least 3 weeks, one fixed hedge, every slot a count, date or quoted span | M |
-| 14 | Acts: remind, tag, make a note, add to today (X1, X2, X9, X10, X16, X17) | `ai/commands.py` from `origin/wip/composer-acts`, new `ai/tool_summary.py` | Parse, preview the exact change, confirm, run through the agent's tools, store the inverse for "undo" | L |
+| 14 | Acts: remind, tag, make a note, add to today (X1, X2, X9, X10, X16, X17) | `ai/commands.py` (built), result lines in `ai/tool_say.py` | Parse, preview the exact change, confirm, run through the agent's tools, store the inverse for "undo" | L |
 | 15 | The help register (C5, C8) | `ai/help_chat.offline_answer`, `composer.compose(voice="help")` | A how-to question gets the one step sentence; the rest of the topic sits behind "More about the Dashboard" | M |
 
 Proposed decisions for the orchestrator to take or drop (none is remade here):

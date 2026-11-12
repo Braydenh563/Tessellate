@@ -55226,6 +55226,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L98** `chat` open, M: Support 'on my birthday' with a stored birthday setting. From OPEN.md:3717. Evidence: routes_read.py:42 takes birthday=; no setting stores one Closed as a duplicate 2026-11-12: the base built the same setting as L473 (d599e519: `routes_settings._validated_birthday`, `#pref-birthday`, `/read` reads it; tests/test_reading.py); the chat copy (f9816f54) was dropped at the batch 4 merge
 - [x] **L80** `chat` open, S: Check askChartTicks across the 0 to 1,240 range. From OPEN.md:2811. Evidence: Hand-built ticks; verified open Built: f96fca69, test_code_documents
 - [x] **L78** `chat` open, S: Index chat turns so a search hit opens the turn, not just the chat. From OPEN.md:992. Evidence: search/index._conversation_row still one row per thread; no per-turn index found Built: f96fca69, test_library_chat_turn_l78
 - [x] **L69** `chat` open, S: Block held-back skills from the agent run_skill tool. From OPEN.md:2583. Evidence: run_skill in agent_turn.py; label only in picker/Settings Built: ae0523ab, test_skill_fixtures

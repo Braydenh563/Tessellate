@@ -291,9 +291,11 @@ def compose(
     resolved: bool = False,
     learned=None,  # noqa: ANN001
     register: str = "",
+    retry: int = 0,
 ) -> dict:
     """`{"text", "grounding", "support", "shape", "parts", "next", "next_parts"}`
-    for one question.
+    for one question. `retry` is Ask again's count: an answer that quoted one note is given again from the
+    other notes the search read, when one of them answers (E62, L93).
 
     `notes` are the route's retrieved notes, ranked (each with `id`,
     `content`, and `written` or `created_at`). `recent` is the retrieval's
@@ -335,8 +337,9 @@ def compose(
     minded = typo_context.CTX.set(typo_context.of_notes(notes, names, previous, history=dialogue.history if dialogue else ()))
     current = _ASKS_NOW.set(asks_now(question))
     try:
-        result = _answer_turn(question, notes, today=today, recent=recent, embed=embed, said=said, previous=previous,
-                              voice=voice, now=now, salt=salt, turn=turn, dialogue=dialogue, prefer=prefer)
+        answer = lambda pool: _answer_turn(question, pool, today=today, recent=recent, embed=embed, said=said, previous=previous,  # noqa: E731
+                                           voice=voice, now=now, salt=salt, turn=turn, dialogue=dialogue, prefer=prefer)
+        result = varied(answer(notes), notes, answer) if retry else answer(notes)
         result = offered(result, asked)
         result = _acknowledged(result, asked, voice=composer_tables.voice_of(voice), seed=f"{asked.strip().lower()}:{salt}:{turn}",
                                history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words, names=names)
@@ -660,10 +663,58 @@ def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, ty
     return None
 
 
+def unread(first: dict | None, notes: list[dict]) -> list[dict]:
+    """The notes an answer that quoted exactly one note did not use: what a retry may read instead (L93)."""
+    cited = {row["note_id"] for row in (first or {}).get("grounding") or []}
+    return [n for n in notes if n.get("id") not in cited] if len(cited) == 1 else []
+
+
+def varied(first: dict | None, notes: list[dict], answer) -> dict | None:  # noqa: ANN001
+    """Ask again on an answer that quoted one note (a "when is", a "what is"): the same question over the notes
+    the first answer did not use, kept only when one of them answers it the same way. An answer over several
+    notes (a count, an overview) is left as it was: its figures are the same on every retry (audit 1031 C25)."""
+    others = unread(first, notes)
+    if not others:
+        return first
+    again = answer(others)
+    return again if again and again.get("grounding") and again.get("shape") == first.get("shape") else first
+
+
+def retried(first: dict | None, notes: list[dict], answer, attempt: int) -> dict | None:  # noqa: ANN001
+    """A digest answer on a retry: over one quoted note it reads the others, or hands over to `compose`, which does (L93)."""
+    if not attempt:
+        return first
+    again = varied(first, notes, answer)
+    return None if again is first and unread(first, notes) else again
+
+
+#: The wording of each next-question chip in the natural voice, to the key whose variants the other voice has.
+_CHIP_KEYS = ("next_tag_a", "next_tag_b", "next_note_a", "next_note_b", "next_latest_a", "next_when_a")
+
+
+def _voiced_chips(out: "_Answer", chips: list[list[tuple]]) -> list[list[tuple]]:
+    """The chips' fixed words in the answer's voice (L97). A chip is built with the natural wording; the second
+    half of a pair takes the index its first half chose, so "What does the entry “X” state?" never splits."""
+    voice = composer_tables.VOICE_VARIANTS[out.voice]
+    keys = {PHRASES[k]: k for k in _CHIP_KEYS}
+    chosen: dict[str, int] = {}
+
+    def said(part: tuple) -> tuple:
+        key = keys.get(part[1]) if part[0] == "template" else None
+        if key is None:
+            return part
+        lead = composer_tables.PAIRED.get(key, key)
+        if lead == key:
+            chosen[key] = voice[key].index(out.voiced(key))
+        return ("template", PHRASES[voice[key][chosen.get(lead, 0)]])
+
+    return [[said(part) for part in chip] for chip in chips]
+
+
 def _answer_dict(out: "_Answer", shape: str, question: str, terms: list, views_list: list, unsure: list) -> dict:
     quotes = "\n\n".join(row["sentence"] for row in out.rows)
     cited = {row["note_id"] for row in out.rows}
-    next_parts = (_did_you_mean(unsure) + _next_questions(question, shape, terms, views_list, cited))[:3]
+    next_parts = _voiced_chips(out, (_did_you_mean(unsure) + _next_questions(question, shape, terms, views_list, cited))[:3])
     readings = [
         {"n": i, "note_id": out.views[v].note.get("source_id", v), "label": out.views[v].title}
         for i, v in enumerate(out.readings, 1)

@@ -157,10 +157,15 @@ def _lower(clause: str) -> str:
     return clause if re.match(r"I\b|[A-Z]{2,}", clause) else clause[:1].lower() + clause[1:]
 
 
-def _clipped(quote: str) -> str:
+def clipped(quote: str) -> str:
     """A long quote cut to its first six words and an ellipsis, so a quoted line stays a clause."""
     words = quote.split()
     return quote if len(words) <= 12 else " ".join(words[:6]).rstrip(",;:") + "…"
+
+
+def _short_quotes(body: str) -> str:
+    """Each quote in `body` cut like any other quote (`_clipped`): a filler note's whole run-on was quoted (audit 1031 C5)."""
+    return re.sub(r"“([^”]*)”", lambda m: f"“{clipped(m.group(1))}”", body)
 
 
 def _clean_quote(text: str) -> str:
@@ -216,8 +221,8 @@ def _clause(line: str, title: str, quote: str) -> str:
     #: One sentence a unit: the claim is the first, and a second would be uncited.
     body = re.split(r"(?<=[a-z0-9])\.\s+(?=[A-Z])", body, maxsplit=1)[0]
     if re.match(r"(?:you|your)\b", body, re.I):
-        return _caps_days(_lower(body))
-    said = _clean_quote(title) if title and len(title.split()) <= 6 else _clipped(quote)
+        return _caps_days(_lower(_short_quotes(body)))
+    said = _clean_quote(title) if title and len(title.split()) <= 6 else clipped(quote)
     return f"you wrote “{said}”"
 
 
@@ -252,7 +257,7 @@ def _clause_of(view, line: str, row: dict | None) -> Unit | None:  # noqa: ANN00
     if defined := _defined(view, first, title):
         return defined
     if _said_raw(first.text, quote):
-        return Unit(view, f"you wrote “{_clipped(quote)}”", first)
+        return Unit(view, f"you wrote “{clipped(quote)}”", first)
     source = next((s for s in view.sentences if row and s.start == row.get("start")), first)
     return Unit(view, _clause(line, title, quote), source, row) if line else None
 
@@ -346,7 +351,7 @@ def _beat(out, group: list[Unit], opener: str) -> str:  # noqa: ANN001
     return text
 
 
-def story(out, count: str, units: list[Unit], days: list[date], topic: str, p: Plan, themes: list[list[int]] | None = None) -> None:  # noqa: ANN001
+def story(out, count: str, units: list[Unit], days: list[date], topic: str, p: Plan, themes: list[list[int]] | None = None, first: tuple | None = None) -> None:  # noqa: ANN001
     """Fill `out.lines` and `out.rows` from the units, oldest first; the pace
     insight waits in `out.spare` for `_finish`, which says it only when no
     other rule found an insight. `themes` are the unit indexes that go together."""
@@ -357,6 +362,10 @@ def story(out, count: str, units: list[Unit], days: list[date], topic: str, p: P
         f"You have {count} about {topic}, written from {span}." if " to " in span else f"You have {count} about {topic}, all written in {span}.")
     out.lines.append(lead)
     out.rows.append(_row(lead_unit, lead))
+    if first and first[0] is not None:
+        #: The best-ranked note of a crowded notebook, told on its own ahead of the stretches (audit 1031 C4).
+        said.append(_when(None, first[1], said, True))
+        out.lines.append(_beat(out, [first[0]], said[-1]))
     for n, run in enumerate(p.chunks):
         sentences, prev = [], None
         for k, beat in enumerate(_beats(run, themes or [])):
