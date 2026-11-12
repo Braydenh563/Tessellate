@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 84 | 4 | 0 | 17 | 184 |
+| ui-modernisation | 96 | 78 | 4 | 0 | 17 | 178 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 13 | 0 | 0 | 0 | 13 |
-| all | 553 | 656 | 158 | 3 | 191 | 1367 |
+| all | 553 | 650 | 158 | 3 | 191 | 1361 |
 
 ## graph
 
@@ -484,16 +484,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## ui-modernisation
 
-- [ ] **L380** `ui-modernisation` open, S: Fix capture box moving 2.4px/1.6px on first click. From OPEN.md:1452. Evidence: No fix test found (grep 2.4px hits only an unrelated test_reply_cards note)
 - [ ] **L381** `ui-modernisation` open, S: Pixel-sample the 6 of 31 topic elements culled at 390. From OPEN.md:3903. Evidence: Verification gap: contrast measured from computed styles only; culled topics not measured. Low risk.
 - [ ] **L384** `ui-modernisation` open, S: Fix Ask head model picker sitting on its own short line at 390. From OPEN.md:835; OPEN.md:3516. Evidence: Pre-existing layout, no fix found; cosmetic
 - [ ] **L385** `ui-modernisation` open, S: Give #chat-results second half a head with actions or drop the panel-head. From OPEN.md:953. Evidence: No change found; index.html:2339 #chat-results head unchanged; no-op until a head wants a control
 - [ ] **L386** `ui-modernisation` open, S: Share one recipe between web link cards in chat/web reader and markdown.js linkCard. From OPEN.md:988. Evidence: markdown.js linkCard still separate; no recipe lint found in test_ui_recipes
-- [ ] **L387** `ui-modernisation` open, S: Fix single focus ring at 1:1 in Chat (button.active outline takes ground colour). From OPEN.md:994. Evidence: Bug recorded from focusring.js; no fix commit found
 - [ ] **L388** `ui-modernisation` open, S: Stop the topic bar wrapping to two rows at 390. From OPEN.md:1952. Evidence: Measured identical on base; no fix
 - [ ] **L389** `ui-modernisation` open, S: Isolate and fix .skill-fact-reads chip dy +4px at 1440. From OPEN.md:3471. Evidence: Instance not isolated; no fix commit found.
 - [ ] **L390** `ui-modernisation` open, S: Measure 390 px layout of Tidy Patterns rows and Chat pattern line. From OPEN.md:3730. Evidence: Never measured at 390; no recorded sweep
-- [ ] **L391** `ui-modernisation` open, S: Check and fix the chat dock settings button radius (Brief 91, E19). From SESSION_BRIEFS.md:285. Evidence: E19 not checked; no fix commit found
 - [ ] **L392** `ui-modernisation` open, S: Measure broom accent contrast and run the automatic contrast pass in a browser; check Tags Atlas review with a real model. From OPEN.md:624; OPEN.md:3562. Evidence: contrast.js measurement and browser run not recorded; pytest only
 - [ ] **L393** `ui-modernisation` open, S: Fix phone collapsed row buttons overflowing the right edge by 87.8px. From OPEN.md:744; OPEN.md:3549. Evidence: Measured, unchanged per row; no fix commit found
 - [ ] **L395** `ui-modernisation` open, S: Fix select-btn and notes-filter-menu dock-word clipping at 320-1024. From OPEN.md:1837. Evidence: No CSS rule for these selectors found by grep
@@ -524,9 +521,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L428** `ui-modernisation` open, S: Reproduce the pill bottom cut-off at DPR 1.25/dark; measure Pace pill. From OPEN.md:3652. Evidence: Try DPR 1.25 and dark; skills.js pill unmeasured; no repro
 - [ ] **L430** `ui-modernisation` open, S: Raise output grip above touch floor and fix entry-meta overflow at 320/390. From a30c-1102.md Still open small. Evidence: No fix commit found by grep; needs a 390 px measure
 - [ ] **L431** `ui-modernisation` open, S: Measure findings 5-12 in dark, 390 on a real device and the one-column gap at 900. From a30k-1103.md Left. Evidence: Source says unmeasured; no later sweep record found
-- [ ] **L432** `ui-modernisation` open, S: Fix constellation yellow stars contrast (~2.1:1 in light) and notes rows/cards toggle 28x24. From OPEN.md:1337; OPEN.md:2540. Evidence: No contrast fix located in graph-canvas.js; .notes-view-toggle at 03-dashboard-widgets.css:466 not rechecked.
-- [ ] **L433** `ui-modernisation` open, S: Fix .dash-find glyph-only hover and 28px meta button in 24px line. From OPEN.md:1807; OPEN.md:2669. Evidence: 07-whiteboard-misc.css:11224 .dash-find unchanged; meta button size not shown fixed
-- [ ] **L435** `ui-modernisation` open, S: Crossfade dashboard constellation on theme change; fix chat dock button radius. From SESSION_BRIEFS.md:285; e19-1110.md True. Evidence: dash-art.js:131 redraws in one frame, no crossfade
 - [ ] **L436** `ui-modernisation` open, S: Ring sweep flags fixed-sheet control at viewport edge as scroll clip. From OPEN.md:740. Evidence: Sweep-lint false positive for phone Writing room textarea; no exemption found
 - [ ] **L437** `ui-modernisation` open, S: Ring sweep skips end-of-scroller controls; fixed-height text cut unseen. From OPEN.md:1946; OPEN.md:3505. Evidence: Sweep limitation, no change recorded
 - [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
