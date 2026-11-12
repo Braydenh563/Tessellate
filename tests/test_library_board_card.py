@@ -31,7 +31,7 @@ def test_picture_spans_the_grid_whatever_element_it_is():
 
 
 def test_title_truncates_and_footer_is_one_line():
-    css = sheets("00-tokens-shell.css", "07-whiteboard-misc.css")
+    css = sheets("00-tokens-shell.css", "07-whiteboard-misc.css", "library-lazy.css")  # L459 moved the footer's rules
     base = ".library-grid:not(.library-list) .library-board-card > "
     title = _rule(css, base + ".library-card-title")
     for need in ("text-overflow: ellipsis", "white-space: nowrap", "min-width: 0"):

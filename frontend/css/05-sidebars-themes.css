@@ -1336,18 +1336,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
 .doc-block-kind {
   --callout-accent: var(--accent);
 }
-/* The Live view's kind picker is a tile the size of a letter, so under a
-   finger its target grows past its box without moving the line (INBOX 486). */
-@media (pointer: coarse) {
-  .cm-md-callout-kindbtn {
-    position: relative;
-  }
-  .cm-md-callout-kindbtn::after {
-    content: "";
-    position: absolute;
-    inset: calc((var(--target-min) - 1.5em) / -2);
-  }
-}
 /* The title is the ink, not the kind's colour: an amber or a green title on
    its own tint is the pair that fails contrast first, and the kind is already
    said twice, by the edge and by the tile. */
@@ -1634,14 +1622,6 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   margin: var(--space-4) 0;
   overflow-x: auto;
   text-align: center;
-}
-/* A numbered display equation, `\tag{1}`: the formula stays centred and its
-   number sits at the right edge of the line. */
-.md-math-numbered {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
 }
 .md-math-number {
   position: absolute;
@@ -2290,14 +2270,6 @@ body.resizing-sidebar {
 .doc-toolbar .icon-button {
   width: var(--control-h);
   padding-inline: 0;
-}
-/* The group separators are furniture, not controls: they take the strip's
-   height as a *rule*, and the sizing rule above must not turn them into 2rem
-   blocks. */
-.doc-toolbar-pair {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
 }
 .doc-toolbar .doc-toolbar-sep {
   align-self: center;
@@ -3064,17 +3036,6 @@ body.resizing-sidebar {
     min-height: var(--target-min);
   }
 }
-/* **The fold gutter** (DOCUMENTS_PLAN Phase 4 item 3). One column, the same
-   width on every row whether or not that row has anything to fold, because
-   the thing this outline's indent rules spend three paragraphs protecting is
-   that a row's left edge is decided by its depth and by nothing else. A
-   caret that appeared only on some rows would move every one of those rows'
-   text by 16px against its own level. */
-.outline-row {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
 .outline-twist {
   flex: none;
   width: 1rem;
@@ -3102,21 +3063,6 @@ button.outline-twist:focus-visible {
 .outline-row > .outline-link {
   flex: 1 1 auto;
   min-width: 0;
-}
-/* **Dragging a section to a new place** (DOCUMENTS_PLAN Phase 4 item 3). A
-   line where it would land, drawn with an inset shadow rather than a border
-   so the row's own box never changes size as the pointer crosses it: a 2px
-   border appearing on hover would push every row below it down by 2px, which
-   makes the list move under the drag. `--accent`, because this is a preview
-   of a thing about to happen, which is what the accent is for. */
-.outline-row.is-dragging {
-  opacity: 0.5;
-}
-.outline-row.is-drop-before {
-  box-shadow: inset 0 2px 0 0 var(--accent);
-}
-.outline-row.is-drop-after {
-  box-shadow: inset 0 -2px 0 0 var(--accent);
 }
 /* The filter box above the list. The sidebar's own inset field, at the
    control height every other input in this app uses, and `margin-bottom`
@@ -3149,48 +3095,6 @@ button.outline-twist:focus-visible {
   background: var(--accent-soft);
   color: var(--ink);
   font-weight: 600;
-}
-/* Indentation is the whole point of an outline: it shows the shape. One step,
-   declared once and multiplied by depth, because the four levels used to be
-   0.25, 1, 1.5 and 2.4rem: steps of 0.75, 0.5 and 0.9, which reads as an
-   outline whose nesting is uneven rather than as three levels. The owner
-   reported it as indenting "the wrong way", and centred entries (above) were
-   most of why: with the text centred, a deeper `padding-left` moves the whole
-   run right *and* a shorter heading starts further right still, so the
-   left edges came out in no order at all. Left-aligned and evenly stepped,
-   depth is the only thing that moves an entry. */
-/* **Depth is carried by weight, colour and a guide line, not by indent
-   alone.** Measured with a 21-heading document open: h1 and h2 rows were
-   13.6px and h3 rows 12.8px, every one of them weight 400 in the same
-   `rgb(76, 85, 99)`, so three levels differed by 0.8px of type and 12.8px of
-   indent and the panel read as one flat list. DESIGN.md's hierarchy section
-   says it outright: use weight, colour and case before reaching for another
-   size step. So the two top levels are the document's own ink, a step apart
-   in weight, and the two below them are muted at the smaller size, which is
-   two sizes and three levels of contrast rather than four sizes. */
-.outline-h1 .outline-link {
-  font-weight: 600;
-  color: var(--ink);
-}
-.outline-h2 .outline-link {
-  font-weight: 500;
-  color: var(--ink);
-}
-.outline-h3 .outline-link {
-  font-size: var(--text-base);
-}
-.outline-h4 .outline-link {
-  font-size: var(--text-base);
-}
-/* A row, not a stack. `.outline-link` is `width: 100%`, so a ✕ beside one had
-   nowhere to go but the next line: "References stacks a close button above
-   its own select". The link takes the room and shrinks; the action keeps its
-   own size. */
-.doc-outline-row,
-.doc-attach-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
 }
 /* `.select-shell` as well as the select itself: `enhanceSelect` in sheets-selects.js
    rebuilds every `<select>` inside one on a MutationObserver, so for the frame
@@ -4638,13 +4542,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   font-size: var(--text-sm);
   letter-spacing: 0.06em;
 }
-/* A Files row already names the kind first on its facts line, beside a
-   glyph that spells it (PDF, CSV, DOC): the label under the glyph made it
-   three times on one row (INBOX 437 (4)). The grid tile, which has no facts
-   line, keeps it. */
-.library-file-rows .library-file-thumb-kind {
-  display: none;
-}
 /* Direction on a link chip. Colour is deliberately *not* the only signal, 
    the arrow glyph carries it, and DESIGN.md's contrast rule (and WCAG's
    "don't convey information by colour alone") both say so. The tint is a
@@ -4749,16 +4646,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-statusbar-button:focus-visible {
   border-color: var(--border);
   color: var(--ink);
-}
-/* Only when there is something to look at. A count that is always coloured is
-   a count nobody reads, and a count that is always a chip is a chip nobody
-   presses: "No suggestions" is a statement and stays flat, while a real count
-   takes an edge and a wash so it reads as the control it has always been
-   (DOCUMENTS_PLAN Phase 0 item 3). */
-.doc-statusbar-button.has-findings {
-  color: var(--warn);
-  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
-  background: color-mix(in srgb, var(--warn) 12%, transparent);
 }
 /* The two writing switches, now rows of the document's own kebab menu
    (DOCUMENTS_PLAN Phase 0 item 3).
@@ -4915,10 +4802,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-prose-group:first-of-type {
   margin-top: 0;
 }
-.doc-prose-group-count {
-  font-variant-numeric: tabular-nums;
-  font-weight: 400;
-}
 /* **A row is its head over its answers** (INBOX 549). It was a flex row, so
    an opened row's answers sat beside it and squeezed the finding to "s…" in
    the right dock. */
@@ -4956,10 +4839,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   text-align: left;
   cursor: pointer;
 }
-.doc-prose-jump:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-}
 /* The row's own line: the jump, then one cell of actions centred on it. The
    ground arrives with the pointer, with no edge (the list-row recipe). */
 .doc-prose-rowhead {
@@ -4969,10 +4848,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   min-width: 0;
   padding-right: var(--space-1);
   border-radius: var(--radius-md);
-}
-.doc-prose-rowhead:hover,
-.doc-prose-rowhead:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--hover-veil);
 }
 .doc-prose-acts {
   display: flex;
@@ -5094,12 +4969,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .cm-suggest-marker {
   color: var(--muted);
 }
-/* The sentence being read aloud (INBOX 404): a ground, not an ink, so every
-   underline a finding or a suggestion draws stays readable on top of it. */
-.cm-read-aloud {
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
-  border-radius: var(--radius-sm);
-}
 /* The words carry the identity, so they hold the weight and they are the half
    that ellipsises: the reason is a sentence and can be read from the title. */
 .doc-finding-words {
@@ -5116,15 +4985,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   white-space: nowrap;
   color: var(--muted);
   font-size: var(--text-xs);
-}
-/* **The open row is where you are**, painted from `aria-current` so the mark
-   and its announcement are one thing (DESIGN.md's recipe index), a fill plus a
-   weight step and never an accent edge as well. */
-.doc-prose-row[aria-current] > .doc-prose-rowhead {
-  background: var(--accent-soft);
-}
-.doc-prose-row[aria-current] .doc-finding-words {
-  font-weight: 600;
 }
 /* The completion popup. `position: fixed` because it is placed in viewport
    coordinates against the caret, an absolutely-positioned list would be
@@ -5240,9 +5100,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   box-shadow: none;
   cursor: pointer;
 }
-.autocorrect-mark:is(:hover, :focus-visible) {
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-}
 /* --- the suggestion menu, the dictionary, and the goal ------------------------
    Asked for: "I cant click on the flagged word or phrase and see a popup for
    suggested fixes or other options like adding to dictionary (a way to manage
@@ -5318,39 +5175,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   margin-top: var(--space-1);
   padding-top: var(--space-1);
 }
-/* A candidate in a row of candidates is the width of its word, not the width of
-   the panel, and it is the tonal recipe: side by side with no edge, five words
-   read as a sentence rather than as five choices, which is the one thing the
-   list has to say. The menu's own rows stay the quiet full-width kind, where the
-   menu itself is the frame and each row owns a line. */
-.doc-suggest-list-inline > .doc-suggest-item,
-.doc-suggest-actions-inline > .doc-suggest-item {
-  width: auto;
-  border-color: transparent;
-  background: var(--chip-bg);
-}
-/* INBOX 549: the candidates are quiet pills, the first (Enter's) on the
-   accent's soft ground; the actions under them are quiet text. */
-.doc-suggest-list-inline > .doc-suggest-item {
-  border-radius: var(--radius-pill);
-  padding-inline: var(--space-3);
-}
-.doc-suggest-list-inline > .doc-suggest-best {
-  background: var(--accent-soft);
-  color: var(--accent-text);
-}
-.doc-suggest-actions-inline > .doc-suggest-item {
-  background: transparent;
-  color: var(--muted);
-}
-.doc-suggest-list-inline > .doc-suggest-item:hover,
-.doc-suggest-actions-inline > .doc-suggest-item:hover,
-.doc-suggest-list-inline > .doc-suggest-item:focus-visible,
-.doc-suggest-actions-inline > .doc-suggest-item:focus-visible {
-  border-color: transparent;
-  background: var(--ghost-btn-bg);
-  color: var(--ink);
-}
 .doc-suggest-item {
   display: flex;
   align-items: center;
@@ -5370,17 +5194,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   font-size: var(--text-sm);
   text-align: left;
   cursor: pointer;
-}
-.doc-suggest-item:hover,
-.doc-suggest-item:focus-visible {
-  border-color: var(--accent);
-  background: var(--chip-bg);
-}
-/* The first candidate is the one Enter and a double-click take, so it reads
-   as the answer and the rest as the alternatives. Weight only: a second
-   colour here would compete with the accent the hovered row already uses. */
-.doc-suggest-best {
-  font-weight: 600;
 }
 .doc-suggest-none {
   margin: 0;
@@ -5457,10 +5270,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   min-height: var(--row-h);
   padding: 0 var(--space-1) 0 var(--space-3);
   border-radius: var(--radius-sm);
-}
-.doc-dictionary-row:hover,
-.doc-dictionary-row:focus-within {
-  background: var(--hover-veil);
 }
 .doc-dictionary-word {
   min-width: 0;
@@ -5619,16 +5428,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-prose-panel .doc-prose-tools .doc-prose-tool.ghost.small:is(:focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg);
 }
-.doc-prose-more {
-  display: inline-flex;
-}
-/* The narrowest panel (the 240px right dock): Check with AI's icon gives
-   way to the ⋯, which holds it too, so the head stays one row. */
-@container doc-prose (max-width: 17rem) {
-  .doc-prose-tools > .doc-prose-ai-run {
-    display: none;
-  }
-}
 /* A narrow panel: Fix N gives up its words too (the `.toolbar-word` way,
    clipped, not dropped: its title and label say the number). */
 @container doc-prose (max-width: 26rem) {
@@ -5685,13 +5484,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
   text-overflow: ellipsis;
 }
 
-/* On the words only: a decoration on the flex row reaches its icon too. */
-.library-file-rows .library-image-tile .library-read-open:hover .ph-text,
-.library-file-rows .library-image-tile .library-read-open:is(:focus-visible, :has(:focus-visible)) .ph-text {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
 /* **Ask's record chips, centred and quiet** (K29, the owner: "these badges
    have poor styling ... the text in them isnt properly centred or aligned").
    A link chip's words sit in a `.ph-text` that clips (`overflow: hidden` for
@@ -5701,15 +5493,6 @@ html[data-chrome="native"] #top-bar #brand-logo {
    `align-items: center` keeps them level. */
 #raw-results :is(.chip.link, .result-reason-why) .ph-text {
   line-height: 1.4;
-}
-/* Nothing to flag: a mark, one line, and what was checked, quiet. */
-.doc-prose-empty {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  column-gap: var(--space-2);
-  align-items: baseline;
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--text-sm);
 }
 .doc-prose-empty p {
   margin: 0;
@@ -6119,13 +5902,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
   gap: var(--space-1);
   padding: var(--space-2) 0;
 }
-.doc-backlink + .doc-backlink {
-  border-top: 1px solid var(--border);
-}
-.doc-backlink > .doc-backlink-title {
-  font-weight: 600;
-  color: var(--ink);
-}
 /* Two lines of the sentence, then an ellipsis: a panel this narrow turns a
    long paragraph into a wall, and the point of the line is to say enough to
    recognise the connection, not to read the note in the sidebar. */
@@ -6191,12 +5967,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
    (CLAUDE.md's copy rule) and carries the muted empty-state ink. */
 .doc-mentions-help {
   margin-top: 0;
-}
-/* The empty collapse the three sections above already have, for the one the
-   script makes. */
-.doc-mentions-wrap:has(> .doc-mentions:empty) > .doc-outline-title,
-.doc-mentions-wrap:has(> .doc-mentions:empty) > .doc-mentions-help {
-  display: none;
 }
 /* ================= BREADCRUMBS: WHERE THE CARET IS =====================
    DOCUMENTS_PLAN Phase 4 item 3. One quiet line between the find bar and the

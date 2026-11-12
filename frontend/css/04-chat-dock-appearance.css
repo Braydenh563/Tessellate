@@ -3136,18 +3136,6 @@ span > .chip {
   display: block;
 }
 
-.note-picker-thumb.is-missing::after {
-  content: "\f27f"; /* ph-image-broken, the Phosphor glyph the app ships */
-  font-family: Phosphor, sans-serif;
-  color: var(--muted);
-  font-size: var(--text-h2);
-}
-
-.note-picker-cell:has(.note-picker-box:checked) .note-picker-thumb {
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
-}
-
 /* On a picture the check sits in its corner, on an opaque ground so it reads
    over any photo. Its offset is the cell's padding plus one step, so it sits
    inside the picture's corner rather than on its edge (the owner, 2026-10-11:
@@ -3158,12 +3146,6 @@ span > .chip {
   right: calc(var(--space-2) + var(--space-3));
   background: var(--modal-bg-opaque);
   box-shadow: var(--shadow-hair-lg);
-}
-
-/* Under a picture, one line: its caption, or where it is used. The name is
-   the cell's tooltip. */
-.note-picker-cell-text .note-picker-text {
-  display: none;
 }
 
 /* **A search field with a leading glyph.** Generalised from the Web panel's
@@ -4023,10 +4005,6 @@ span > .chip {
   overflow-y: auto;
 }
 
-.doc-item {
-  position: relative;
-}
-
 .doc-item-button {
   display: flex;
   flex-direction: column;
@@ -4055,17 +4033,6 @@ span > .chip {
   cursor: pointer;
 }
 
-@media (hover: hover) {
-  .doc-item-button:hover,
-  .doc-item-button:is(:focus-visible, :has(:focus-visible)) {
-    background: var(--surface-3);
-  }
-}
-
-.doc-item.active .doc-item-button {
-  background: var(--accent-soft);
-}
-
 /* **One line, so every row is one height.** The rows came out 56.5px and
    78.5px depending on whether the title wrapped, in a list where nothing else
    varies, and at 0.92rem full weight the title was also the largest thing in
@@ -4078,18 +4045,6 @@ span > .chip {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.doc-item-meta {
-  font-size: var(--text-sm);
-}
-
-/* The file type, first in the meta line because it is the one fact that says
-   what the row *is*: a .py and a .md were indistinguishable before it. Weight
-   rather than colour, so it separates from the count beside it without
-   becoming a second accent in a list of eight rows. */
-.doc-item-type {
-  font-weight: 600;
 }
 
 /* Same hover/focus reveal as `.menu-wrap.doc-list-menu` below - a kebab
@@ -4182,18 +4137,6 @@ span > .chip {
   opacity: 1;
 }
 
-/* `.menu-wrap.doc-list-menu`: the rule it overrides is a compound selector,
-   so the short name loses the cascade and this band did nothing at all.
-   Measured with `scratchpad/ui-sweeps/hoveronly.js` at 390 with `hover: none`
-   emulated: a 44x44 ⋯ at opacity 0 on every document row, still 0 after a
-   real tap. Same fault and same fix as `.menu-wrap.library-card-menu`
-   (00-tokens-shell.css). */
-@media (hover: none) {
-  .menu-wrap.doc-list-menu {
-    opacity: 1;
-  }
-}
-
 .doc-list-icon {
   flex: 0 0 auto;
   font-size: var(--text-h2);
@@ -4220,10 +4163,6 @@ span > .chip {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.doc-list-meta {
-  font-size: var(--text-base);
 }
 
 .doc-main {

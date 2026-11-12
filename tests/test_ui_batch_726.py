@@ -57,7 +57,8 @@ def test_boards_filter_gap_is_set_after_the_ring_room_rule():
 
 def test_autonomous_pass_jobs_have_no_rule_above_the_second_switch():
     text = _css("library-lazy.css")
-    body = _rule(text, ".skills-worker-toggles")
+    # The later of its two rules is the one that wins (UI plan 13b, L459, moved the first here too).
+    body = re.findall(r"(?m)^\.skills-worker-toggles\s*\{([^}]*)\}", text)[-1]
     assert "flex-direction: column" in body and "flex-wrap" not in body
     rule = _rule(text, ".skills-worker-toggles > .setting-check")
     assert "border-top-color: transparent" in rule
@@ -142,7 +143,7 @@ def test_a_link_row_underlines_its_words_not_its_icon():
     assert ".question-group-link:hover .ph-text" in questions
     hover = questions[questions.index(".question-group-link:hover,"):].split("}", 1)[0]
     assert "text-decoration" not in hover
-    consistency = "\n".join(_css(n) for n in ("02-chat-graph.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css", "characters-lazy.css"))
+    consistency = "\n".join(_css(n) for n in ("02-chat-graph.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css", "characters-lazy.css", "library-lazy.css"))
     assert ".library-read-open:hover .ph-text" in consistency
     #: The hover rule shares its block with the focus twin (the uisweep pass), so it ends in a comma.
     plain = consistency[consistency.index(".library-read-open:hover,"):].split("}", 1)[0]

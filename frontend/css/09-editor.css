@@ -174,13 +174,6 @@
 :root[data-read-leading="tight"] #doc-preview {
   line-height: 1.44;
 }
-/* The Live editor's lines (CodeMirror's scroller, 1.6): same two steps. A code file keeps its own. */
-:root[data-read-leading="tight"] .doc-editor .cm-editor:not(.doc-content-code) .cm-scroller {
-  line-height: 1.44;
-}
-:root[data-read-leading="roomy"] .doc-editor .cm-editor:not(.doc-content-code) .cm-scroller {
-  line-height: 1.84;
-}
 :root[data-read-leading="roomy"] #doc-preview {
   line-height: 1.84;
 }
@@ -294,15 +287,6 @@
   display: none;
 }
 
-/* One label column for every row, the same one every settings row in the app
-   reserves (`--form-label-col`), so the values start on one edge. */
-.doc-prop-row {
-  display: grid;
-  grid-template-columns: var(--form-label-col) minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-2);
-}
-
 .doc-prop-key {
   color: var(--muted);
   font-size: var(--text-sm);
@@ -319,24 +303,6 @@
   min-width: 0;
 }
 
-.doc-props input.doc-prop-input:hover,
-.doc-props input.doc-prop-add:hover {
-  border-color: var(--border);
-}
-
-.doc-props input.doc-prop-input:focus-visible,
-.doc-props input.doc-prop-add:focus-visible {
-  outline: none;
-  border-color: var(--accent);
-  background: var(--field-inset);
-}
-
-.doc-prop-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
 /* The chip's own remove button, and the row's: the app's icon-only ghost, at
    the size a chip can carry. */
 .doc-prop-btn {
@@ -347,32 +313,6 @@
   color: var(--muted);
   background: none;
   border: 0;
-}
-
-.doc-prop-btn:is(:hover, :focus-visible),
-.doc-prop-btn:is(:focus-visible, :has(:focus-visible)) {
-  color: var(--text);
-  background: none;
-}
-
-.doc-prop-row:hover > .doc-prop-btn,
-.doc-prop-row:focus-within > .doc-prop-btn {
-  opacity: 1;
-}
-
-.doc-prop-check {
-  margin: 0;
-}
-
-.doc-prop-new {
-  display: flex;
-  align-items: center;
-}
-
-/* Read view: the same rows without the fields. */
-.doc-props-read {
-  border-bottom: 1px solid var(--border);
-  padding-inline: 0;
 }
 
 /* =============================================================================
@@ -420,56 +360,6 @@
   margin-bottom: 0;
 }
 
-/* An image with a caption or an alignment: `![A river|400|center](…)` and
-   `![[river.jpg|400|center]]` both land here. Without either option an image
-   is still a bare `<img>` and this wrapper never exists. */
-/* **A task checkbox must not make its own line taller than every other
-   line.** Measured in the live view: a document's lines are 26px and a
-   `- [ ] task` line was 34px, because `input[type="checkbox"]` carries a 28px
-   target floor (01-forms-settings.css, and it is there for a good reason) and
-   an inline 28px control in 16px text pushes the line out by 8. A document's
-   vertical rhythm is the one thing a reader notices without being able to
-   name it, and two of these in a list of twenty break it twenty times.
-
-   The first answer kept the 28px box and gave its height back with negative
-   margins. That held the line on a desktop and not on a phone, where the
-   floor is 44px: the line grew to 36px and two tasks' boxes overlapped, and
-   a 28px square beside 15px text read as a form field, not a list. So the
-   floor now sizes the press area and not the box (the rules below).
-
-   `accent-color` because the alternative is the operating system's blue in an
-   app that has its own accent everywhere else, which is the plainest possible
-   sign of a control nobody styled.
-
-   Here rather than in `docCmTheme`: a CodeMirror theme injects a stylesheet
-   the page cannot read back with `cssRules`, so a rule written there can be
-   reasoned about but not measured, and this one exists because of a
-   measurement. */
-.cm-md-task {
-  accent-color: var(--accent);
-}
-
-/* The task box at the text's size, and its press area at the app's floor
-   (the reason is beside `DocTaskWidget` in documents.js). Two classes, so the
-   global `input[type="checkbox"]` floor (0,1,1) does not size the box again.
-   The strip is `--target-min` wide, its right edge where the text begins,
-   and one line tall (1.6em, the editor's line height), so it reaches left
-   over the list's bullet rather than over the words, and the strips of two
-   task lines meet without overlapping. The box sits above its strip so a
-   press on the box is a press on the box. */
-.cm-md-task-hit {
-  position: relative;
-  display: inline-block;
-  /* The list's whole hanging indent, so a wrapped line sits under the words. */
-  width: 1.6em;
-  line-height: 1;
-  vertical-align: -0.15em;
-  /* An inline-block is a block container, so it inherits the list line's
-     hanging `text-indent` (minus one indent) and drew the box a whole indent
-     left of its own span, out of the strip's reach. */
-  text-indent: 0;
-}
-
 .cm-md-task-hit::before {
   content: "";
   position: absolute;
@@ -514,33 +404,6 @@
     border-color var(--ui-fast) var(--ease-out);
 }
 
-.cm-md-task-hit > .cm-md-task:hover,
-.cm-md-task-hit > .cm-md-task:is(:focus-visible, :has(:focus-visible)) {
-  border-color: var(--accent);
-}
-
-.cm-md-task-hit > .cm-md-task:checked {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.cm-md-task-hit > .cm-md-task:checked::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 46%;
-  width: 0.28em;
-  height: 0.56em;
-  border: solid var(--on-accent);
-  border-width: 0 2px 2px 0;
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.cm-md-figure {
-  display: inline-block;
-  max-width: 100%;
-}
-
 .cm-md-figure-left,
 .cm-md-figure-center,
 .cm-md-figure-right {
@@ -569,22 +432,6 @@
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-5);
   }
-}
-
-/* An embedded block (DOCUMENTS_PLAN Phase 4 item 2).
-
-   Every other embed in this editor draws an *object* through the renderer
-   that owns it: a note card, a map chip, a file tile. A block is not an
-   object, it is a paragraph of this notebook's own writing, so it is drawn as
-   what it is: quoted text with a line saying where it came from. The quote
-   bar is the same 3px accent the callout and the blockquote use, so the three
-   quoted things in this editor agree. */
-.doc-embed-block {
-  margin: var(--space-2) 0;
-  padding: var(--space-2) var(--space-3);
-  border-left: 3px solid var(--accent);
-  background: var(--surface-2);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
 /* The source line is a link, not a caption: it opens the document at the
@@ -1103,14 +950,6 @@
   margin-top: var(--doc-margin-offset);
 }
 
-.doc-margin-card {
-  display: grid;
-  gap: var(--space-1);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--surface-2);
-}
-
 .doc-margin-card-text {
   margin: 0;
   font-size: var(--text-sm);
@@ -1140,4 +979,3 @@
     margin-top: 0;
   }
 }
-

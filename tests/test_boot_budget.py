@@ -80,7 +80,13 @@ BOOT_JS_CAP = 448_400
 #: it): 08-consistency.css dissolved into the component files and its 758
 #: character rules (faces, companion, Atlas) moved to the lazy
 #: characters-lazy.css. Measured 165,450 (was 178,870); the cap is that plus 450.
-BOOT_CSS_CAP = 165_900
+#: 2026-11-12, UI plan 13b, L459: 110 boot rules that only the Library
+#: bundle's own surfaces can match (a class outside every :is/:where/:has list
+#: that no other script, page or server file names; no conflicting pair
+#: reordered) moved to library-lazy.css. Measured 163,749; the cap is that
+#: plus 551, of which the next step (10-responsive.css dissolved, about 460
+#: bytes of lost gzip context) takes about 460.
+BOOT_CSS_CAP = 164_300
 
 
 def _served_gzip(url: str) -> int:

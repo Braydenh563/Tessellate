@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CSS boot weight (L459): 110 boot rules that only the Library bundle's surfaces can match move to the lazy `library-lazy.css` (a class outside every `:is`/`:where`/`:has` list that no other script, page or server file names; none is reordered against a rule it ties with). Boot CSS 165,450 to 163,749 bytes gzipped, and the cap comes down to 164,300.
 - CSS (UI plan 13b): `08-consistency.css` (11,081 lines) is dissolved into the component files 00 to 07, each rule beside its component and the cascade order kept (11,410 rules, none lost or reordered against a rule it overrides); its 758 face, companion and Atlas rules are the lazy `characters-lazy.css` in the `characters` bundle. Boot CSS 178,870 to 165,450 bytes gzipped, and the cap comes down to 165,900.
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).

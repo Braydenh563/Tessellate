@@ -2103,27 +2103,6 @@ button.scroll-row-arrow[hidden] {
 .library-chip.active .library-chip-count {
   color: inherit;
 }
-/* Activity answers "what did I do", not "what kind of thing is this", the
-   other ten chips all filter by kind, so it sat among them looking like an
-   eleventh kind rather than the different question it actually is. Set
-   apart with a divider ahead of it, the way the reminder view-toggle
-   already sits apart from the reminder filter beside it, rather than moved
-   to a second surface (a second place to remember is not a better one, 
-   reported live: "can the activity button be moved somewhere better").
-   It's still last in DOM order (renderLibraryFilters appends it after every
-   kind chip), so the divider alone reads as "separate from the row before
-   it" without needing to be pushed anywhere.
-   **No `margin-left: auto`.** `.library-filters` wraps (flex-wrap), and an
-   auto-margin item in a wrapping flex row gets shoved onto a lonely row of
-   its own the moment the chips before it don't all fit on one line, a
-   full-width row with one small pill on it, which is the exact "ugly,
-   taking up a whole row" reported live. Auto-margins and wrapping don't mix
-   in flexbox; dropping the margin is what lets it wrap in-line like every
-   chip beside it, divider and all. */
-.library-chip-activity {
-  padding-left: calc(var(--space-5) + var(--space-2));
-  border-left: 1px solid var(--border);
-}
 .library-grid {
   /* How wide a card's spine is. One value, so the seven kind-colours below
      cannot drift apart: see the note on the spine. */
@@ -2313,11 +2292,6 @@ button.scroll-row-arrow[hidden] {
 :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) :is(.library-note, .library-document, .library-chat, .library-file, .library-tag, .library-archived) {
   box-shadow: none;
 }
-/* A private note shows that it is one and nothing else. */
-.library-card.library-private .library-card-title {
-  color: var(--muted);
-  font-style: italic;
-}
 
 .library-grid:not(.library-list) .library-board-card > .library-card-title {
   padding-right: var(--space-8);
@@ -2326,14 +2300,6 @@ button.scroll-row-arrow[hidden] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* 6. A note whose words are all in its title (a one-sentence note with no
-      heading) has no preview under it, so its title may take the room the
-      preview would have: four lines rather than two. */
-.library-card-whole .library-card-title {
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
 }
 /* The image a file actually is. Fixed height so a shelf of photos keeps its
    rows level: a grid whose rows are different heights is the thing that reads
@@ -2390,10 +2356,6 @@ button.scroll-row-arrow[hidden] {
   outline-offset: 2px;
 }
 
-#library-grid.library-columns > .library-col > .library-card {
-  margin-bottom: 0;
-}
-
 #library-boards-grid:not(.library-list) > .library-card {
   margin-bottom: 0;
 }
@@ -2410,10 +2372,6 @@ button.scroll-row-arrow[hidden] {
 .library-list .library-card-top {
   flex: 0 0 22rem;
   min-width: 0;
-  padding-right: 0;
-}
-
-.library-grid:not(.library-list) .library-board-card > .library-card-top {
   padding-right: 0;
 }
 .library-list .library-card-preview {
@@ -2464,38 +2422,6 @@ button.scroll-row-arrow[hidden] {
   margin-top: 0;
   padding-top: 0;
   gap: var(--space-5);
-}
-/* **A Rows line starts with its kind icon, whatever else the list holds**
-   (INBOX 722: "theres a wierd gap at the start of the library all tab lines
-   view"). This used to reserve a 3rem `::before` slot on every row without a
-   picture (and `.has-thumbs` made it conditional) so the thumbnails would line
-   up; with one picture in the list that pushed every other row's icon 63px
-   in (measured at 1440: icon at x 75 against a 14px row padding). A leading
-   column is the wrong shape for something only some rows have. The thumbnail
-   now sits after the title and the preview, before the date, in a slot only
-   the row that has one pays for, so the icon is at the row's own padding on
-   every row and the date and the ⋯ still end at one x. `order` puts it there
-   without touching the DOM order the grid view's picture-on-top relies on. */
-.library-list .library-card-meta {
-  order: 2;
-}
-
-.library-card-meta > .library-card-category::before {
-  content: "";
-  flex: 0 0 auto;
-  width: 0.5em;
-  height: 0.5em;
-  border-radius: var(--radius-pill);
-  background: var(--category-dot);
-}
-
-/* The footer is one line: the count truncates, the time never wraps. */
-.library-grid:not(.library-list) .library-board-card > .library-card-meta {
-  min-width: 0;
-  white-space: nowrap;
-}
-.library-list .library-card-menu {
-  order: 3;
 }
 .library-list .library-card-thumb {
   width: 3rem;
@@ -2911,12 +2837,6 @@ button.scroll-row-arrow[hidden] {
   gap: var(--space-4);
   padding: 0 var(--space-4) var(--space-4);
 }
-/* With every field in it hidden (an image with no description asked for),
-   the box was its bottom padding alone: a 10px blank band under each
-   picture's caption (INBOX 437 (4)). */
-.library-image-fields:not(:has(> :not(.hidden))) {
-  display: none;
-}
 /* **One disclosure, on the app's own <details> recipe** (details.tool-chip,
    02-chat-graph.css): the marker is replaced by a caret that turns, and the
    body is hidden by an author rule when closed rather than by trusting the
@@ -2973,9 +2893,6 @@ button.scroll-row-arrow[hidden] {
   margin: 0;
   padding: 0;
   border-top: 0;
-}
-.library-image-reading-body > .library-image-provenance {
-  padding: 0;
 }
 /* A transcription has no length limit and a grid row is as tall as its
    tallest card, so one opened reading of a dense page would otherwise set the
@@ -3120,54 +3037,6 @@ button.scroll-row-arrow[hidden] {
 .library-image-ocr.library-image-ocr-clamped {
   line-height: 1.6;
 }
-/* **Two lines, and the same two on every card** (INBOX 118: "no two cards are
-   the same height and their bottoms do not align"). It was three for one
-   revision, on the reading that the paragraph is the card's one piece of
-   prose; three is what a card *can* hold rather than what a gallery wants,
-   and the cost is paid by the card beside it. Measured at 1440 on the six
-   seeded cards, the descriptions ran 3, 3, 3, 2, 1 and 0 lines: the tallest
-   foot stood 176.1px against 9.6px on the emptiest, and the grid pays that
-   difference out as a hole under the short cards (54.5px on the emptiest,
-   because the picture that absorbs the slack has a ceiling). Two lines is a
-   caption, the shape the rest of this card is built as, and the whole
-   description is one hover away in the element's own title, one click away
-   in the editor it opens, and in the lightbox.
-   **And no bottom padding while it is clamped.** `overflow: hidden` clips at
-   the *padding* box, not the content box, so the paragraph's own 8px of
-   bottom padding showed 8px of the next line under the ellipsis: a sliced
-   strip of letters, which is the "cut off half way through the letters"
-   report this rule's neighbour already records, arriving by a second route.
-   Measured when the clamp was three lines: box 65.6px against 3 x 19.2 =
-   57.6px of text, and the same 8px sits under two. The gap below is
-   the More button's own margin when there is one, and there always is one
-   when this class is present. */
-/* **Two lines, reserved, not just capped.** The clamp stops a long
-   description at two lines; a one-line description still left the card an
-   21.8px line shorter inside than the card beside it, and the grid pays that
-   out as a taller photograph on one of the two, which is the unevenness the
-   owner has now reported twice. Measured at 1440 on the seeded gallery: the
-   six feet ran 10.6, 54.1, 54.1, 73.9, 95.7 and 95.7px before this line and
-   the pictures 144 to 229.1px; with the second line held open, every card
-   carrying a description and a facts line is the same height inside and its
-   picture is the same size.
-   `lh` is the line box of this element, so it tracks the clamped line-height
-   above rather than restating it: two lines of whatever the description is set
-   in. Where the unit is not supported the declaration is dropped and the card
-   behaves as it did, capped but not reserved.
-   Picture cards only (`:has(> .library-image-frame)`, the same test the tile's
-   own layout uses): a Files row is full width, stands on its own, and has no
-   neighbour whose height it has to agree with, so reserving a line there would
-   buy nothing and cost every row 21.8px. */
-.library-image-caption.library-image-caption-clamped {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  padding-bottom: 0;
-}
-.library-image-tile:has(> .library-image-frame) .library-image-caption.library-image-caption-clamped {
-  min-height: 2lh;
-}
 
 /* --- a card that opens does not inflate the six beside it -----------------
    UI_MODERNISATION_PLAN.md Phase 11 (the INBOX 164 block's leftover), measured
@@ -3208,11 +3077,6 @@ button.scroll-row-arrow[hidden] {
   .skill-card
 ) {
   transition: none;
-}
-/* The same clip, the same cause, on the two readings inside the fold. */
-.library-image-ocr.library-image-ocr-clamped,
-.library-image-vision-ocr.library-image-vision-ocr-clamped {
-  padding-bottom: 0;
 }
 .library-image-caption-empty {
   font-style: italic;
@@ -3265,16 +3129,6 @@ button.scroll-row-arrow[hidden] {
 .library-image-ocr-empty {
   font-style: italic;
 }
-/* Same clamp/toggle shape as .library-image-caption above, asked for
-   directly ("make the ocr extracted text in the image gallery collapsible
-   and expandable like the image captions as well"), since a long
-   transcription previously grew the tile with no way to collapse it back. */
-.library-image-ocr.library-image-ocr-clamped {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 .library-image-vision-ocr.library-image-vision-ocr-clamped {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -3313,10 +3167,6 @@ button.scroll-row-arrow[hidden] {
   .library-grid {
     gap: var(--space-4);
   }
-}
-
-.library-grid:not(.library-list) .library-board-card > .library-card-meta > .library-card-when {
-  flex: 0 0 auto;
 }
 /* --- the status bar (§36D) ---------------------------------------------------
    A real flex row at the foot of the body, not a fixed overlay. The body is

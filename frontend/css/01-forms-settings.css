@@ -2480,13 +2480,6 @@ button:not(.ghost) > .spinner {
 .bookmark-pinned {
   color: var(--accent-text);
 }
-/* **Read state.** Unread is the shelf's reading list, so it is drawn three
-   ways that do not lean on colour alone: a heavier title, a dot on the tile,
-   and (for a reader with neither) the word "Unread" before the title. A read
-   link is the same row at body weight with no dot. */
-.bookmark-mark {
-  position: relative;
-}
 /* The dot makes the mark a positioned box, which paints over the tick that
    shares its grid cell (the tick takes the mark's place on hover, 08-
    consistency.css). The tick sits above it so the click lands on the tick. */
@@ -2594,13 +2587,6 @@ button:not(.ghost) > .spinner {
   overscroll-behavior: contain;
   margin-block: var(--space-3);
 }
-.bookmark-group-row {
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-}
 /* Name over count, so the row reads as one item rather than two columns of
    unrelated text: the same stacked shape `.bookmark-main` uses. */
 .bookmark-group-row-main {
@@ -2627,13 +2613,6 @@ button:not(.ghost) > .spinner {
   gap: var(--space-4);
   margin-top: var(--space-4);
 }
-/* No border, no card ground: a heading and its rows are a section of an
-   index, not an object to click. */
-.contents-section {
-  border: 0;
-  padding: 0;
-  background: none;
-}
 /* A button, because folding is an action. Sticky, so the group you are
    reading keeps saying which group it is: the card's own ground under the
    glass strip (the recipe `.library-subtabs` uses, on the glass-off list). */
@@ -2659,11 +2638,6 @@ button:not(.ghost) > .spinner {
   z-index: 1;
   /* Bare at rest, opaque only while stuck (07-whiteboard-misc.css, INBOX 1489). */
   background: none;
-}
-/* The hover tint; while stuck it sits over the opaque ground (07-whiteboard-misc.css). */
-.contents-heading:hover,
-.contents-heading:focus-visible {
-  background: var(--row-hover-bg);
 }
 .contents-heading-name {
   flex: 0 1 auto;
@@ -2751,13 +2725,6 @@ button:not(.ghost) > .spinner {
 .contents-row {
   min-height: var(--row-h);
 }
-.contents-row:hover,
-.contents-row:focus-visible,
-.contents-heading-row:hover,
-.contents-heading-row:focus-visible {
-  background: var(--row-hover-bg);
-  color: var(--ink);
-}
 .contents-doc-caret {
   position: absolute;
   inset-inline-start: 0;
@@ -2772,11 +2739,6 @@ button:not(.ghost) > .spinner {
   height: 2rem;
   border-radius: var(--radius-sm);
 }
-.contents-thumb {
-  object-fit: cover;
-  /* A quiet ground while it loads, not a flash of page in a hole. */
-  background: var(--chip-bg);
-}
 .contents-row > .contents-icon {
   display: inline-grid;
   place-items: center;
@@ -2787,15 +2749,6 @@ button:not(.ghost) > .spinner {
 .contents-heading > .contents-icon {
   flex: 0 0 auto;
   color: var(--muted);
-}
-
-/* The Contents index is the one list whose group names are headings over
-   whole groups, so in this look it takes the Timeline's day-head grammar
-   (ink, 600, the accent underline). */
-:root[data-palette="utilitarian"] .contents-heading {
-  font-size: var(--text-body);
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  box-shadow: inset 0 -2px 0 var(--accent-soft);
 }
 .contents-row-body {
   flex: 1 1 auto;
@@ -4908,9 +4861,6 @@ html.modal-open body {
 .bookmark-edit-field input {
   margin: 0;
   width: 100%;
-}
-.bookmark-edit-actions {
-  gap: var(--space-2);
 }
 /* The Links "+ Add" button sat shorter than the three inputs beside it -
    reported directly. `.small` trims a button's padding, which is right in a

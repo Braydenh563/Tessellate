@@ -921,21 +921,6 @@ aside[data-resizable].sidebar-collapsed {
   border-radius: var(--radius-md);
   transition: transform var(--ui-slow) var(--ease-out), border-color var(--ui-fast) var(--ease-out);
 }
-@media (hover: hover) {
-  .skill-card:hover,
-  .skill-card:is(:focus-visible, :has(:focus-visible)) {
-    border-color: var(--accent);
-  }
-}
-.skill-card-header {
-  display: flex;
-  justify-content: space-between;
-}
-
-.skill-card-header {
-  align-items: baseline;
-  gap: var(--space-3);
-}
 .skill-card-title {
   margin: 0;
   font-weight: 600;
@@ -975,9 +960,6 @@ aside[data-resizable].sidebar-collapsed {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-}
-.skill-fact {
-  font-size: var(--text-xs);
 }
 /* Both margins were for a search box that sat on its own between two cards.
    It is in the Skills dock now, where `.dock`'s own gaps place it and
@@ -5281,23 +5263,6 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
     border-color: var(--accent);
   }
 }
-
-/* --- the selection tick in Rows (INBOX 426 z, image 91) ---------------------
-   The tick's corner (top right, one ⋯ in from the edge) is the grid card's
-   corner. In Rows the ⋯ sits in the flow at the row's end and the date
-   right-aligned before it, so the tick landed on "2 weeks ago" and against
-   the ⋯ with no gap. In Rows it is centred on the row, a `--space-2` gap
-   before the ⋯, and the date track leaves it the room. */
-@media (hover: hover) {
-  .library-list .library-card .library-card-tick {
-    top: 50%;
-    translate: 0 -50%;
-    right: calc(var(--space-5) + var(--target-min) + var(--space-2));
-  }
-  .library-list .library-card:has(.library-card-tick) > .library-card-meta {
-    padding-right: calc(1.5rem + var(--space-2));
-  }
-}
 /* --- a list of rows reads as a list --------------------------------------
    The dashboard's category rows are `<button>`s with `background: none;
    border: none; box-shadow: none` set explicitly, and only a hover ground.
@@ -6828,12 +6793,6 @@ button.connection-row:is(:hover, :focus-visible) {
 .ocr-region.is-found {
   border-left: 3px solid var(--accent);
 }
-/* And its counterpart on the picture: a box whose row the filter dropped
-   fades rather than disappearing, because a page with half its boxes missing
-   reads as a failed read. */
-.ocr-box.is-dimmed {
-  opacity: 0.2;
-}
 .ocr-head h2 {
   margin: 0;
 }
@@ -6928,12 +6887,6 @@ button.connection-row:is(:hover, :focus-visible) {
      dragging across a page picks up the browser's own image-drag ghost. */
   touch-action: none;
   user-select: none;
-}
-/* A text file has no page raster to crop, so there is nothing here to outline
-   - and a crosshair over a wall of text promising a gesture that leads nowhere
-   is the affordance problem this workspace keeps fixing elsewhere. */
-.ocr-stage-text .ocr-select {
-  display: none;
 }
 /* A button, not a div: a region is clickable, and the thing that reads out
    "region 3: Invoice total" to a screen reader has to be focusable. No
@@ -7398,14 +7351,6 @@ button.connection-row:is(:hover, :focus-visible) {
   box-shadow: var(--shadow-md);
   transition: opacity var(--ui-slow) var(--ease-out);
 }
-/* Idle: gone, and out of the pointer's way, until a move brings it back.
-   Never while the pointer is on it or the focus is in it, which is what lets
-   Tab walk into a dock that had faded. Opacity only: a fade that moved or
-   resized the bar would be a layout change on every wake. */
-#tab-documents.doc-focus.doc-focus-idle > .doc-focus-bar:not(:hover):not(:focus-within) {
-  opacity: 0;
-  pointer-events: none;
-}
 /* Not the polish set: an idle fade of a whole bar, which keeps reduced
    motion (DESIGN.md, the whole-window mode). */
 :where(:root[data-motion="reduced"]) #tab-documents.doc-focus > .doc-focus-bar {
@@ -7723,18 +7668,6 @@ button.connection-row:is(:hover, :focus-visible) {
     max-width: calc(100vw - 2rem);
   }
 }
-/* The "show me this one" flash lived here as two rules: a keyframe pulse on
-   the Live view's `<mark>` and a `::selection` colour on the Source view's
-   textarea. DOCUMENTS_PLAN Phase 2 left one editor, and it answers the
-   question itself: `docProseJump` puts the selection on the flagged span and
-   the engine scrolls it into view as part of the same transaction, with the
-   underline already saying which words are meant. `.doc-selection-flash` is
-   kept below for the fallback textarea, which still cannot mark a range it
-   already holds any other way. */
-.doc-selection-flash::selection {
-  background: var(--accent);
-  color: var(--on-accent);
-}
 /* --- Inline AI (editor.js) ------------------------------------------------
    The AI at the caret. Positioned in viewport coordinates by
    `inlineAiPosition`, so `fixed`, like `.editor-menu` and `.selection-bar`.
@@ -8012,12 +7945,6 @@ button.connection-row:is(:hover, :focus-visible) {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: var(--text-sm);
-}
-/* Tonal, like every other row action in the app, the row already has one
-   filled control (the reading strip's own), and two would be two answers to
-   "what is this row for". */
-.library-file-open-reading {
-  margin-top: var(--space-1);
 }
 /* The bend point on a selected link, a sibling of the endpoint handles,
    filled with the accent so it reads as "the curve's own control", not a
@@ -9245,13 +9172,6 @@ button.connection-row:is(:hover, :focus-visible) {
   font-variant-numeric: tabular-nums;
   pointer-events: none;
 }
-/* The sections belonging to the page on screen, in the reading panel beside
-   it. A tone, not a border: this marks *where you are*, and the panel already
-   has a selected state (`.is-found`) that a second outline would compete
-   with. See `ocrRevealRegionsForPage` in library.js. */
-.ocr-region.is-current-page {
-  background: var(--surface-3);
-}
 /* --- the tab strip is centred on the window, not on whatever is left of it --
    Reported: "the top nav bar with all the tabs isnt actuallly centred and is
    aligned tot he right. is that an issue??" It is: though the drift is
@@ -9656,9 +9576,6 @@ header#top-bar > #tab-bar {
      than the box it numbers (measured 122 vs 112); the wrap owns the gap. */
   margin-bottom: 0;
 }
-.gutter-wrap {
-  margin-bottom: var(--space-2);
-}
 /* **A gutter numbers a box, so a hidden box has no numbers.** Reported (INBOX
    119, with a screenshot): "when I press preview in the capture a thought
    formatting toolbar and possibly other places with the toolbar as well, the
@@ -9725,12 +9642,6 @@ header#top-bar > #tab-bar {
 :root[data-note-gutter="on"] .note-composer > textarea#entry-content {
   margin-inline-start: calc(2.1ch + var(--space-4) + var(--space-3));
   width: calc(100% - 2.1ch - var(--space-4) - var(--space-3));
-}
-/* **Once the editor view is mounted, its own numbers are the column**
-   (`noteSurfaceGutter`, documents.js; INBOX 590), so the one beside it,
-   which numbered the hidden textarea, goes. */
-.gutter-wrap:has(> .note-surface > .cm-editor) > .doc-gutter {
-  display: none;
 }
 /* --- Settings at phone width: nothing scrolls sideways (Phase 5.1, 390px) ---
    Measured with scratchpad/ui-sweeps/errors.js at 390px: six of the
@@ -13478,58 +13389,6 @@ li:has(> .check-row) + li:has(> .check-row) > .check-row {
   label:is(.check-row, .setting-check):has(> input[type="checkbox"]):not(.row > *, .tool-picker > *) {
   margin-inline: calc(-1 * var(--space-3) - 1px);
 }
-/* **A Files row's fields start where its title starts.** Measured at 1440 on
-   the running app (2026-09-09): the title and the "PDF · 121 KB · added"
-   strip both began at x=172, the caption field and the transcription fold at
-   x=181, so the lower half of every row was nine pixels adrift of the upper
-   half. `.library-image-fields` carries its own horizontal padding for the
-   Images grid, where the tile itself has none; in the rows layout the tile
-   supplies the padding and the field block's own is a second inset on top of
-   it. Reported as "this text needs to be better aligned in the files".
-   **And then the whole lower half moved one step right, on purpose** (INBOX
-   160, verbatim: "in the files subtab files row, the metadata starts to the
-   left below the filename, I feel like the metadata should start indented to
-   the right of the filename"). The two reports agree rather than fighting: the
-   first is about three blocks at three different left edges, the second is
-   about where that one shared edge should be.
-   And it was literally to the left, which a glance at the box edges denies:
-   the filename is a `figcaption`, which carries `padding: var(--space-3)` of
-   its own (00-tokens-shell.css) for the Images grid, where the tile has no
-   padding at all. So with every block below it pinned at the tile's own edge,
-   the metadata began 8px **further left** than the name it belongs to.
-   Measured at 1440, 820 and 390 (`scratchpad/ui-sweeps/filesindent.js`, which
-   reads content edges rather than box edges for exactly this reason): the name
-   at x=179.6 and the facts, the meta line and the description all at x=171.6.
-   So the indent is the name's own inset plus one step, which states the
-   relationship rather than picking a number: everything under the name starts
-   12.8px to the right of it, at one edge, and the name is the only thing on
-   the row's own margin. `--space-5` rather than a bigger step because the text
-   column is 190.8px at 390, where the facts line already wraps, and an indent
-   is not worth a third line. `padding-right` stays at zero: the kebab's
-   clearance is the name's own (`figcaption`'s `padding-right` above), and a
-   right inset here would pull the facts line in from an edge nothing sits
-   at. */
-.library-file-rows .library-image-tile > .library-image-fields,
-.library-file-rows .library-image-tile > .library-file-facts,
-.library-file-rows .library-image-tile > .library-image-provenance {
-  padding-left: calc(var(--space-3) + var(--space-5));
-  padding-right: 0;
-}
-
-/* --- a Files row's facts line, one register (INBOX 421 f) -------------------
-   The owner: "this ui needs a bit more modern and ui refinement and the
-   second row elements arent aligned and dont really match". Measured at 1440
-   before this: the line held four sizes (meta 11.2px, state and usage 12px,
-   the button 13.6px), three heights (16.8, 18, 28px) on three tops (y278 to
-   280), and a boxed button in the middle of three plain facts. Now every
-   part is one size on one line box, the groups are split by the same middot
-   the meta uses inside itself, and "Read this" is the line's one link: the
-   accent says it can be clicked, which the box was only saying louder. */
-.library-file-rows .library-image-tile > .library-file-facts {
-  column-gap: 0;
-  font-size: var(--text-sm);
-  line-height: 1.5;
-}
 
 .library-file-rows .library-image-tile > .library-file-facts > * + *::before {
   content: "\00b7";
@@ -13563,10 +13422,6 @@ li:has(> .check-row) + li:has(> .check-row) > .check-row {
 .timeline-row-meta > .chip.hashtag::before {
   content: "#";
   opacity: 0.6;
-}
-
-.library-file-rows .library-image-tile > :is(figcaption, .library-file-facts, .library-image-fields) {
-  padding-inline-start: var(--space-2);
 }
 
 .chip > .unlink:last-child::before {
@@ -16375,21 +16230,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   margin: 0;
 }
 
-/* A tool is an identifier: a code chip, every one the same height on the
-   same line, starting at the card's content edge. */
-.skill-fact-list-tools {
-  align-items: center;
-  padding: 0;
-}
-
-.skill-fact-list-tools .skill-tool-token {
-  display: inline-flex;
-  align-items: center;
-  height: var(--skill-fact-h);
-  padding-block: 0;
-  line-height: 1;
-}
-
 /* "Never run." / "Last run ..." is a sentence about the card, not a control
    on it. A fill and a radius made it the fourth box in a row of three. */
 .skill-card-when {
@@ -16961,10 +16801,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 .library-lede {
   margin: 0 0 var(--space-4);
   font-size: var(--text-sm);
-}
-
-.skills-worker-toggles {
-  padding-left: 0;
 }
 
 .dash-reminder-text,
