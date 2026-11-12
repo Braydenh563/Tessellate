@@ -550,6 +550,13 @@ def _compare_shares(stems, own, picks) -> tuple[list, list]:  # noqa: ANN001
     return only, both
 
 
+def _compare_grid(out: _Answer, sides: tuple[str, ...], own: list[list[NoteView]]) -> None:
+    grid = composer_versus.table([heading_name(label) for label in sides], own, out.today)
+    if grid:
+        out.t("para")
+        out.parts.append(("template", grid))
+
+
 def _compare(out: _Answer, sides: tuple[str, ...], views: list[NoteView], meaning_for, question: str = "") -> bool:  # noqa: ANN001
     """A line that counts each side, each side its own short list, then what
     speaks of two or more of them."""
@@ -567,6 +574,7 @@ def _compare(out: _Answer, sides: tuple[str, ...], views: list[NoteView], meanin
     for label, side, side_terms in zip(sides, only, terms):
         if side or not any(only):
             _compare_side(out, label, side, side_terms)
+    _compare_grid(out, sides, own)
     if both:
         out.t("para", "bold", "both", "bold")
         for s in both:
@@ -987,7 +995,7 @@ def _until_note(out: _Answer, question: str, views: list[NoteView], today: date)
     for view in note_rank.lead_by(sorted(views, key=lambda v: v.rank), asked[1], lambda v: v.note):
         if not wanted or not wanted & {_stem(w) for w in _words(str(view.note.get("content") or ""))}:
             continue
-        dated = _days_named(view, today, asked[0])
+        dated, ahead = _dated_either_way(view, today, asked[0], ahead)
         if not dated:
             continue
         day, at = min(dated, key=lambda d: abs((d[0] - today).days))
@@ -1000,6 +1008,14 @@ def _until_note(out: _Answer, question: str, views: list[NoteView], today: date)
     return False
 
 
+def _dated_either_way(view: NoteView, today: date, tense: str, ahead: bool) -> tuple[list[tuple[date, int]], bool]:
+    """The days the note names in the tense asked; none there, the other tense, said the way it stands ("until" of a day gone by)."""
+    dated = _days_named(view, today, tense)
+    if dated:
+        return dated, ahead
+    return _days_named(view, today, "past" if ahead else "future"), not ahead
+
+
 def _say_until(out: _Answer, day: date, today: date, ahead: bool) -> None:
     """"Ten days from today, on 21 October", or "That's today"."""
     days = abs((day - today).days)
@@ -1007,7 +1023,8 @@ def _say_until(out: _Answer, day: date, today: date, ahead: bool) -> None:
         out.t("until_today")
         return
     unit = "day" if days == 1 else "days"
-    out.m(out.count(days).capitalize()).t(f"until_{'ahead' if ahead else 'ago'}_{unit}").m(out.day(day))
+    #: The day by its date, never "yesterday" after "one day ago".
+    out.m(out.count(days).capitalize()).t(f"until_{'ahead' if ahead else 'ago'}_{unit}").m(composer_versus._said_day(day, "day", today))  # noqa: SLF001
 
 
 def _days_named(view: NoteView, today: date, tense: str) -> list[tuple[date, int]]:

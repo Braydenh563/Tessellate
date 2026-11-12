@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+
+- Chat readers: a comparison of two notes now shows a side-by-side table, a day gone by is said once ("One day ago, on 9 November"), "what is on my list" answers over a list with an intro line, and "and the dentist" keeps the when ask. Spell guards no longer touch real words or all-caps acronyms (ledger L34, L104, L221, L-chat-9, L-chat-14).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
 - Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.

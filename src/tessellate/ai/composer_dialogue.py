@@ -523,9 +523,19 @@ def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any
     return _swap_reading(text, previous)
 
 
+#: "and the dentist" with no "?" after a question: a thing of its own (an article, then up to three words), so it
+#: asks the turn before again of it (L-chat-9); "and I went home" or "and then" is a statement.
+_BARE_AND_THING = lazy_compile(r"^(?:the|my|our|his|her|their)\s+[a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}$", re.I)
+
+
+def _statement_not_ask(swap: Any, text: str) -> bool:
+    """A swap with a side but no "?" is a statement, unless the side is a bare thing ("and the dentist")."""
+    return swap.group("y") is not None and not text.rstrip().endswith("?") and not _BARE_AND_THING.match(swap.group("y").strip())
+
+
 def _swap_reading(text: str, previous: str) -> Any:
     swap = _SWAP.match(text) or _SWAP.match(rephrase(text))
-    if swap and swap.group("y") is not None and not text.rstrip().endswith("?"):
+    if swap and _statement_not_ask(swap, text):
         swap = None
     if not swap:
         return _NOT_THIS
