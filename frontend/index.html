@@ -8655,7 +8655,9 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Line jumps</b>: a hop where this line crosses one under it; Jump size is its width.</p>
               <p><b>Start gap, End gap</b>: stop this far short of the shape at each end.</p>
               <p><b>Start, End</b>: the mark at each end of the line, and its size.</p>
+              <p><b>Connector shape</b>: draw the connector as a line, a double line, a block, flex or tapered arrow, a pipe or a wire; an arrow's head is at the end, or at any end that has a mark.</p>
               <p><b>Label along</b>: where the connector's label sits along it.</p>
+              <p><b>Text on path</b>: set the label along the line, turning with it.</p>
               <p><b>Second label, Second label along</b>: a second label for the other end of the connector, and where it sits along it (it takes the first label's size and colour).</p>
               <p><b>Label size, colour and look</b>: the connector label's own size, colour, bold, and a chip behind the words.</p>
             </div>
@@ -8666,6 +8668,17 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="elbow">Elbow</option>
                 <option value="er">Entity relation</option>
                 <option value="iso">Isometric</option>
+              </select>
+            </label>
+            <label class="wb-fmt-row" data-fmt="edgeshape"><span class="wb-fmt-label">Connector shape</span>
+              <select id="wb-fmt-edgeshape" aria-label="Connector shape" title="Draw the connector as a plain line, a double line, an arrow, a pipe or a wire">
+                <option value="line">Line</option>
+                <option value="double">Double line</option>
+                <option value="block">Block arrow</option>
+                <option value="flex">Flex arrow</option>
+                <option value="tapered">Tapered arrow</option>
+                <option value="pipe">Pipe</option>
+                <option value="wire">Wire</option>
               </select>
             </label>
             <label class="wb-fmt-row" data-fmt="loop"><span class="wb-fmt-label">Loop side</span>
@@ -8696,6 +8709,7 @@ Link to another note with [[its first few words]]."></textarea>
             <label class="wb-fmt-row" data-fmt="label-t"><span class="wb-fmt-label">Label along</span>
               <input type="range" id="wb-fmt-label-t" data-unit="%" min="5" max="95" step="5" aria-label="Label position along the line" title="Label position along the line">
             </label>
+            <div class="wb-fmt-row" data-fmt="textpath"><span class="wb-fmt-label">Text on path</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Set the label along the line, turning with it, instead of flat"><input type="checkbox" id="wb-fmt-textpath" aria-label="Text on path"></label></span></div>
             <label class="wb-fmt-row" data-fmt="label2"><span class="wb-fmt-label">Second label</span><input type="text" id="wb-fmt-label2" maxlength="120" placeholder="Near the end" aria-label="Second label" title="A second label on this connector"></label>
             <label class="wb-fmt-row" data-fmt="label2-t"><span class="wb-fmt-label">Second label along</span>
               <input type="range" id="wb-fmt-label2-t" data-unit="%" min="5" max="95" step="5" aria-label="Second label position along the line" title="Second label position along the line">

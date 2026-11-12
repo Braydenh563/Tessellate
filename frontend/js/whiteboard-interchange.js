@@ -626,6 +626,9 @@ function wbDrawioPlan(cells) {
     if (s.edgeStyle === "orthogonalEdgeStyle" || s.edgeStyle === "elbowEdgeStyle") data.route = "elbow";
     if (s.edgeStyle === "entityRelationEdgeStyle") data.route = "er";
     if (s.edgeStyle === "isometricEdgeStyle") data.route = "iso";
+    //: draw.io's edge shapes (`shape=` on an edge) are the board's connector shapes (`shape` on a link).
+    const edgeShape = { link: "double", arrow: "block", flexArrow: "flex", taperedArrow: "tapered", pipe: "pipe", wire: "wire" }[s.shape];
+    if (edgeShape) data.shape = edgeShape;
     const end = s.endArrow ?? "classic";
     if (end !== "none" && end !== "") data.endCap = WB_DRAWIO_CAPS[end] || "arrow";
     if (s.startArrow && s.startArrow !== "none") data.startCap = WB_DRAWIO_CAPS[s.startArrow] || "arrow";
@@ -743,7 +746,8 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
     const end = capOf(d.endCap, d.endStyle === "end" || d.endStyle === "both");
     const start = capOf(d.startCap, d.endStyle === "both");
     const way = Array.isArray(d.points) && !["elbow", "er", "iso"].includes(d.route) ? `<Array as="points">${d.points.map((p) => `<mxPoint x="${Math.round(p.x)}" y="${Math.round(p.y)}"/>`).join("")}</Array>` : "";
-    const style = `${{ elbow: "edgeStyle=orthogonalEdgeStyle;", er: "edgeStyle=entityRelationEdgeStyle;", iso: "edgeStyle=isometricEdgeStyle;" }[d.route] || ""}${d.type === "link-curved" ? "curved=1;" : ""}html=0;endArrow=${end};startArrow=${start};` +
+    const edgeShape = { double: "link", block: "arrow", flex: "flexArrow", tapered: "taperedArrow", pipe: "pipe", wire: "wire" }[d.shape];
+    const style = `${edgeShape ? `shape=${edgeShape};` : ""}${{ elbow: "edgeStyle=orthogonalEdgeStyle;", er: "edgeStyle=entityRelationEdgeStyle;", iso: "edgeStyle=isometricEdgeStyle;" }[d.route] || ""}${d.type === "link-curved" ? "curved=1;" : ""}html=0;endArrow=${end};startArrow=${start};` +
       `${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}strokeWidth=${Math.max(1, Math.round((Number(d.width) || 2) / 2))};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}`;
     cells.push(`<mxCell id="c${++n}" value="${esc(d.label || "")}" style="${style}" edge="1" parent="1"${ref("source")}${ref("target")}>` +
       `<mxGeometry relative="1" as="geometry">${point("source")}${point("target")}${way}</mxGeometry></mxCell>`);

@@ -4853,7 +4853,10 @@ function wbLinkPathD(type, sPt, tPt, caps, width, bend, shape = null) {
     //: along the way the route leaves it.
     const ends = wbElbowEnds(sPt, tPt, shape.points);
     const held = wbGapEnds(ends.source, ends.target, shape.gap);
-    return wbElbowPathD(wbElbowRoute(held.source, held.target, sPt.box, tPt.box, shape.points), caps, width);
+    //: With no waypoint the obstacle router (`wbFmtState.router`) goes round every item; it answers null when
+    //: there is no path or the grid would be too large, and the classic route below is drawn instead.
+    const routed = shape.points?.length ? null : wbFmtState.router?.route(held.source, held.target, sPt.box, tPt.box);
+    return wbElbowPathD(routed || wbElbowRoute(held.source, held.target, sPt.box, tPt.box, shape.points), caps, width);
   }
   if (shape?.gap) {
     const way = shape.points || [];
@@ -5244,7 +5247,7 @@ function wbApplyLineJumps(groups) {
     } catch {
       parsed = null;
     }
-    if (!parsed || !String(parsed.type || "").startsWith("link-") || wbMapCrossLinkLook(parsed)) continue;
+    if (!parsed || !String(parsed.type || "").startsWith("link-") || wbMapCrossLinkLook(parsed) || (parsed.shape && parsed.shape !== "line")) continue;
     links.push({ el, parsed });
     if (parsed.jumps && parsed.jumps !== "none") wanted = true;
   }
@@ -21099,7 +21102,41 @@ function wbLayoutLinkLabel(groupEl) {
   }
   const t = groupEl.dataset.labelT ? Number(groupEl.dataset.labelT) : 0.5;
   //: The plain line (the hitbox): a jump's gap would cut the drawn shaft.
-  const p = wbLinkMidpoint(groupEl.querySelector(".sketch-hitbox")?.getAttribute("d"), Number.isFinite(t) ? t : 0.5);
+  const lineD = groupEl.querySelector(".sketch-hitbox")?.getAttribute("d");
+  //: **Text on path** (`label_path`): the words are a `textPath` along a copy of the line, read left to right (the
+  //: copy runs backwards when the line does), and `startOffset` is where along it they centre. The copy lives in the
+  //: group's own `defs`, so the export's clone carries it.
+  const run = groupEl.dataset.labelPath === "1" ? wbShaftPoints(lineD) : [];
+  const own = label.querySelector("textPath");
+  if (run.length < 2) {
+    if (own) label.textContent = own.textContent;
+    label.removeAttribute("dy");
+  } else {
+    const flip = run[run.length - 1].x < run[0].x;
+    const path = flip ? run.slice().reverse() : run;
+    const id = `wb-tp-${groupEl.dataset.id}`;
+    let defs = groupEl.querySelector(":scope > defs.wb-tp-defs");
+    if (!defs) {
+      defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+      defs.setAttribute("class", "wb-tp-defs");
+      defs.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "path")).setAttribute("id", id);
+      groupEl.insertBefore(defs, groupEl.firstChild);
+    }
+    defs.firstChild.setAttribute("d", "M " + path.map((q) => `${Math.round(q.x * 100) / 100} ${Math.round(q.y * 100) / 100}`).join(" L "));
+    let along = own;
+    if (!along) {
+      const words = label.textContent;
+      label.textContent = "";
+      along = label.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "textPath"));
+      along.setAttribute("href", `#${id}`);
+      along.textContent = words;
+    }
+    const share = Number.isFinite(t) ? t : 0.5;
+    along.setAttribute("startOffset", `${Math.round((flip ? 1 - share : share) * 1000) / 10}%`);
+    label.setAttribute("dy", "-0.6em");
+    return;
+  }
+  const p = wbLinkMidpoint(lineD, Number.isFinite(t) ? t : 0.5);
   if (!p) return;
   label.setAttribute("x", String(p.x));
   label.setAttribute("y", String(p.y));
@@ -21179,6 +21216,7 @@ function wbPaintLinkLabel(groupEl, sketch, parsed) {
   label.style.fill = typeof parsed.label_color === "string" ? parsed.label_color : "";
   label.classList.toggle("wb-link-label-chip", Boolean(parsed.label_chip));
   groupEl.dataset.labelT = String(wbLinkLabelT(parsed));
+  groupEl.dataset.labelPath = parsed.label_path ? "1" : "";
   wbLayoutLinkLabel(groupEl);
 }
 
@@ -21191,7 +21229,7 @@ function wbEditLinkLabel(sketch) {
   }
   if (!wbLinkTakesLabel(sketch, parsed)) return;
   const group = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
-  const p = wbLinkMidpoint(group?.querySelector(".sketch-path")?.getAttribute("d"), wbLinkLabelT(parsed));
+  const p = wbLinkMidpoint((group?.querySelector(".sketch-hitbox") || group?.querySelector(".sketch-path"))?.getAttribute("d"), wbLinkLabelT(parsed));
   if (!p) return;
   const w = 180;
   const h = 32;
@@ -23133,6 +23171,7 @@ function renderWhiteboard() {
     if (strokeKey && this._wbStrokeKey === strokeKey && drawn?.getAttribute("d") === this._wbStrokeD) return;
     let pathData = d.data;
     let hitboxData = null;
+    let shapedLine = false;
     let stroke = "var(--text-color)";
     let strokeWidth = "3";
     let strokeOpacity = 1;
@@ -23190,6 +23229,20 @@ function renderWhiteboard() {
         } else {
           const endpoints = linkEnds.has(d.id) ? linkEnds.get(d.id) : wbResolveLinkEndpoints(parsed);
           pathData = endpoints ? wbLinkPathD(parsed.type, endpoints.source, endpoints.target, wbLinkCaps(parsed), parsed.width, parsed.bend, wbLinkShape(parsed)) : "";
+          //: A connector shape (double, arrows, pipe, wire; `wbFmtState.shapeMore`): the outline round the centre
+          //: line is what is drawn, the centre line stays the hit band and the label's path.
+          const shaped = endpoints && parsed.shape ? wbFmtState.shapeMore?.shapedLink(parsed, endpoints) : null;
+          if (shaped) {
+            shapedLine = true;
+            pathData = shaped.d;
+            hitboxData = shaped.centre;
+            strokeWidth = String(shaped.stroke);
+            dashArray = null;
+            if (shaped.paint !== "outline") {
+              fill = stroke;
+              fillOpacity = shaped.paint === "tube" ? 0.2 : 1;
+            }
+          }
         }
       }
     } catch(e) {}
@@ -23201,7 +23254,7 @@ function renderWhiteboard() {
     //: shape. A flowing line with no dashes of its own gets the dashed look,
     //: since the marching is the dashes moving.
     const styled = shapeData || linkData;
-    const plainLine = !(linkData && wbMapCrossLinkLook(linkData));
+    const plainLine = !(linkData && wbMapCrossLinkLook(linkData)) && !shapedLine;
     if (styled?.round && plainLine) pathData = wbRoundedPathD(pathData, styled.round, Boolean(linkData));
     else if (styled?.curve && plainLine) pathData = wbRoundedPathD.curved(pathData, Boolean(linkData));
     const flowing = Boolean(styled?.flow) && plainLine;
@@ -25203,9 +25256,12 @@ function wbUpdateLinkedSketches(nodeId, precomputed) {
     const look = wbMapCrossLinkLook(parsed);
     const endpoints = look ? null : wbResolveLinkEndpoints(parsed);
     if (!look && !endpoints) continue;
-    const pathData = look
+    const plainD = look
       ? look.d
       : wbLinkPathD(parsed.type, endpoints.source, endpoints.target, wbLinkCaps(parsed), parsed.width, parsed.bend, wbLinkShape(parsed));
+    //: A connector shape follows the drag as its outline (the plain line stays the hit band).
+    const shaped = !look && parsed.shape ? wbFmtState.shapeMore?.shapedLink(parsed, endpoints) : null;
+    const pathData = shaped ? shaped.d : plainD;
     //: **The two paths, found once per gesture rather than once per frame**
     //: (MINDMAP_PLAN.md §13a). Three document-wide queries per link per frame
     //: is thousands of walks of the document a second on a board that mixes a
@@ -25220,7 +25276,7 @@ function wbUpdateLinkedSketches(nodeId, precomputed) {
       entry.hitbox = entry.el?.querySelector(".sketch-hitbox") || null;
     }
     entry.path?.setAttribute("d", pathData);
-    entry.hitbox?.setAttribute("d", look ? look.line : pathData);
+    entry.hitbox?.setAttribute("d", look ? look.line : shaped ? shaped.centre : pathData);
     //: A connector's label rides on the line (decision 13), looked up once
     //: per gesture like the two paths.
     if (entry.label === undefined || (entry.label && !entry.label.isConnected)) {

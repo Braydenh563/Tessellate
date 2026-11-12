@@ -520,7 +520,7 @@ TAIL_TOPICS.extend(
                 "Every connector takes bends: drag the small ring in the middle "
                 "of a run (or double-click the line) to add one, drag a bend to move it, double-click it to "
                 "take it out. A straight line runs through its bends, a curved one curves through "
-                "them, an elbow turns at right angles round the shapes it joins; Entity relation and "
+                "them, an elbow turns at right angles round the shapes in its way; Entity relation and "
                 "Isometric take no bends; changing the line shape keeps them. "
                 "With Select, pointing at a shape, card or text box shows its connection points; drag from one to draw an "
                 "elbow connector to whatever you let go on, or to a free end. "
