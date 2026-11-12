@@ -61,6 +61,8 @@
 
 # HANDOVER
 
+**Now (2026-11-12f, mindmap-plan, PR 229, stopped at the 85% weekly line):** mindmap plan items and most `mindmap` LEDGER rows are built and in HISTORY (mapexport, mapperf, mapbuild, mapai, mapverify merged; base merged with timeline #225). Left: L-mindmap-13 (press-to-editable recalcs at 390), L-mindmap-14 (swap an icon sticker everywhere), L-mindmap-15 (390 px sweep runs; untested lead on the row), L267 (waits for the whiteboard dialog commit in the base), and the device or real-model checks L895, L896, L-mindmap-3, 4 and 10 (code side done; one BACKLOG row each when taken). Next session: those rows, then `open_scan.py --plan mindmap` at zero.
+
 **Now (2026-11-12e, PR 216, closing):** all 109 owner calls answered and on their rows; `scripts/open_scan.py` lists open-work lines outside BACKLOG; the eight plan briefs at the end of LEDGER end only when nothing open is left outside BACKLOG. In flight: workflow wf_812f9e7b-276 (open-work sweep, 8 finders plus verifiers) finds open work tracked nowhere. Next: add its verified items as LEDGER rows (`scripts/ledger.py add`), write a ninth closing-session brief (full `open_scan.py` run, LEDGER and INBOX at zero, only BACKLOG left), regenerate CODEMAP, push, wait for CI green, then the owner merges and starts the nine sessions.
 
 The session record that stood here (morning summaries, the 2026-09-08 orders, the dated Now lines to 2026-11-12b) is in HISTORY.md, "HANDOVER session record (moved 2026-11-12)".
