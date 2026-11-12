@@ -1219,6 +1219,14 @@ onDomReady(() => {
     const chosen = file.files?.[0];
     file.value = "";
     if (!chosen) return;
+    //: A PNG exported with "Include a copy of the diagram" carries its board in a chunk.
+    if (chosen.type === "image/png" || /\.png$/i.test(chosen.name)) {
+      const rows = wbFmtState.exporters.rowsOf(new Uint8Array(await chosen.arrayBuffer()));
+      dialog.close();
+      if (rows) await wbImportBoardRows(rows);
+      else toast("That PNG has no board inside it. Export a PNG with Include a copy of the diagram on, or insert it as a picture.", "info");
+      return;
+    }
     const text = await chosen.text();
     dialog.close();
     await wbImportText(text);

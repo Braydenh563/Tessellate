@@ -205,3 +205,102 @@ def test_the_pdf_export_starts_from_the_boards_paper_and_orientation():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     for ident in ("wb-bo-paper", "wb-bo-orient", "wb-bo-paper-w", "wb-bo-paper-h"):
         assert f'id="{ident}"' in html
+
+
+# --- 5 and 6. PNG resolution and embedded board, one-file HTML export -------------------------------------------
+
+EXPORT_MORE = ROOT / "frontend" / "js" / "whiteboard-export-more.js"
+
+
+def _tiny_png() -> bytes:
+    import struct
+    import zlib
+
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
+
+    header = struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0)
+    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(b"\x00\xff\x00\x00")) + chunk(b"IEND", b"")
+
+
+def _png_chunks(blob: bytes) -> list[tuple[bytes, bytes]]:
+    import struct
+    import zlib
+
+    assert blob[:8] == b"\x89PNG\r\n\x1a\n"
+    at, out = 8, []
+    while at < len(blob):
+        (length,) = struct.unpack(">I", blob[at : at + 4])
+        kind, data = blob[at + 4 : at + 8], blob[at + 8 : at + 8 + length]
+        (crc,) = struct.unpack(">I", blob[at + 8 + length : at + 12 + length])
+        assert crc == zlib.crc32(kind + data), kind  # every chunk written keeps a correct CRC
+        out.append((kind, data))
+        at += 12 + length
+    return out
+
+
+def _run_export_more(png: bytes, options: str) -> dict:
+    script = (
+        "const wbFmtState = {};\n" + EXPORT_MORE.read_text(encoding="utf-8") + "\n"
+        f"const input = Uint8Array.from(Buffer.from('{png.hex()}', 'hex'));\n"
+        f"const out = wbFmtState.exporters.pngWith(input, {options});\n"
+        "console.log(JSON.stringify({ hex: Buffer.from(out).toString('hex'), dpi: wbFmtState.exporters.dpiOf(out), rows: wbFmtState.exporters.rowsOf(out) }));"
+    )
+    return json.loads(_node(script))
+
+
+@pytest.mark.parametrize("dpi,per_metre", [(72, 2835), (96, 3780), (150, 5906), (300, 11811)])
+def test_a_png_export_writes_its_resolution_as_a_phys_chunk(dpi, per_metre):
+    import struct
+
+    out = _run_export_more(_tiny_png(), f"{{ dpi: {dpi} }}")
+    chunks = _png_chunks(bytes.fromhex(out["hex"]))
+    assert [kind for kind, _ in chunks] == [b"IHDR", b"pHYs", b"IDAT", b"IEND"]
+    x, y, unit = struct.unpack(">IIB", chunks[1][1])
+    assert (x, y, unit) == (per_metre, per_metre, 1)
+    assert out["dpi"] == dpi
+
+
+def test_a_png_can_carry_the_board_and_gives_it_back_with_every_character_kept():
+    rows = [{"kind": "object", "id": 1, "link": False, "payload": {"kind": "shape", "data": {"text": "café → 日本"}}}]
+    out = _run_export_more(_tiny_png(), f"{{ dpi: 96, rows: {json.dumps(rows)} }}")
+    chunks = _png_chunks(bytes.fromhex(out["hex"]))
+    assert [kind for kind, _ in chunks] == [b"IHDR", b"pHYs", b"tEXt", b"IDAT", b"IEND"]
+    keyword, _, body = chunks[2][1].partition(b"\0")
+    assert keyword == b"tessellate-board" and body.isascii()  # a tEXt chunk is Latin-1: the JSON is plain ASCII
+    assert out["rows"] == rows
+    # No resolution and no board: the file is returned as it was.
+    assert _run_export_more(_tiny_png(), "{}")["hex"] == _tiny_png().hex()
+
+
+def test_the_png_export_dialog_offers_a_border_a_resolution_and_a_copy_of_the_board():
+    js = app_js_text()
+    for needle in (
+        "wbFmtState.exporters.pngWith(",
+        "exporters.dpis",
+        "wb-export-border",
+        "wb-export-embed",
+        "wbFmtState.exporters.rowsOf(",
+        "pad = 0",
+    ):
+        assert needle in js, needle
+    assert "/js/whiteboard-export-more.js" in (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+
+
+def test_the_html_export_is_one_file_that_needs_nothing_from_the_network():
+    svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" width="200" height="100"><rect x="0" y="0" width="200" height="100" fill="#fff"/></svg>'
+    script = (
+        "const wbFmtState = {};\n" + EXPORT_MORE.read_text(encoding="utf-8")
+        + f"\nconsole.log(JSON.stringify(wbFmtState.exporters.htmlPage({json.dumps(svg)}, 'Plan <1> & \"two\"')));"
+    )
+    page = json.loads(_node(script))
+    assert page.startswith("<!DOCTYPE html>") and "<title>Plan &lt;1&gt; &amp; &quot;two&quot;</title>" in page
+    assert 'viewBox="0 0 200 100"' in page and '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100">' in page  # it fills the window; the viewBox is the size
+    lowered = page.lower()
+    # Offline and CSP-safe: no address anywhere, no external script, link or font, no inline style attribute or handler.
+    for banned in ("<link", " src=", "@import", "url(", " style=", " onclick=", "eval(", "fetch(", "xmlhttprequest"):
+        assert banned not in lowered, banned
+    assert lowered.count("<script") == 1 and lowered.count("<style") == 1
+    assert "https://" not in lowered and lowered.count("http://") == 1  # only the SVG namespace, which is a name and not an address
+    js = app_js_text()
+    assert "wbFmtState.exporters.htmlPage(" in js and 'value: "html"' in js

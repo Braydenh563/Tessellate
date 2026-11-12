@@ -1068,11 +1068,9 @@ clash is listed so the choice is made once.
 
 | Format | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| PNG with scale and transparent | yes (`wbExportPng`, `WB_EXPORT_FORMATS`) | `ExportDialog` (grapheditor/Dialogs.js 3582) zoom, width, height, dpi, transparent, grid, border width; "include a copy of my diagram" embeds the XML in the PNG | add border width, DPI; embedding the board JSON in a PNG `tEXt` chunk makes the PNG re-importable | S |
-| GIF | JPG and WebP yes (`WB_EXPORT_FORMATS`, whiteboard.js:14828); GIF open | `exportAnimatedGif` (diagramly/Menus.js 1181) | no animated source on a board; recommend a decision to drop | S |
+| GIF | JPG and WebP yes (`WB_EXPORT_FORMATS`, whiteboard.js:14828); GIF open | `exportAnimatedGif` (diagramly/Menus.js 1181) | no animated source on a board yet: waits for the ink replay (L-whiteboard-4), which gives it frames to write | S |
 | SVG (re-editable, with the model embedded) | yes (`wbExportSvg`; `<metadata>` carries the board, `wbBoardSvgMetadata`) | `exportSvg` (diagramly/Menus.js 1101) with `content=` attribute | done | none |
 | PDF | yes (`wbExportPdf`) | `exportPdf` (692), server side | done (print path) | none |
-| HTML, embedded viewer, iframe, link | no | `exportHtml` (669), `embed` menu (4208) | an HTML export is the SVG in a page; embedding is out of scope | S |
 | `.drawio` import: map rotation, images, gradient | import and export yes (whiteboard-interchange.js:970 writer, :999 reader, pages and deflate-raw); `WB_DRAWIO_DROPPED` still lists rotation, image, gradientColor, shadow | `Editor.getGraphXml` (grapheditor/Editor.js 1563), `setGraphXml` (1508) | map rotation, gradient and shadow in the style reader near whiteboard-interchange.js:503 and the writer near :641, now that the board has counterparts | M |
 | VSDX import and export, Gliffy, Lucidchart, draw.io CSV import | no | `vsdx/importer.js` (15,344 lines), `exportVsdx` (1431), `importFrom` (3410), `csv` action | drop VSDX and Lucid; the CSV importer is S to M and gives the AI a way to draw org charts | M |
 | Mermaid in and out; PlantUML | yes for Mermaid flowcharts (`whiteboard-interchange.js`); no PlantUML | `mermaid`, `plantUml` actions (insertAdvanced menu) | keep the Mermaid subset; PlantUML needs a server, drop | none |

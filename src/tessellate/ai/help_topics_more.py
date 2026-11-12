@@ -2998,7 +2998,7 @@ MORE_TOPICS.append({
     "keywords": (
         "picture border", "image border", "border on a picture", "outline a picture",
         "grid size", "grid colour", "grid color", "change the grid", "board options",
-        "paper size", "page size", "landscape", "A3", "Legal", "custom paper", "alignment guides", "turn off guides", "page view", "page frames", "default shadow", "shadow for new shapes",
+        "png resolution", "png dpi", "include a copy of the diagram", "reopen a png", "html export", "export as a web page", "paper size", "page size", "landscape", "A3", "Legal", "custom paper", "alignment guides", "turn off guides", "page view", "page frames", "default shadow", "shadow for new shapes",
     ),
     "body": (
         "Picture border: select a picture, then in the Format panel set Border to a width in pixels and pick its colour; "
@@ -3008,7 +3008,10 @@ MORE_TOPICS.append({
         "and Grid colour belong to this board; Snap to grid, Shift with the arrow keys and the drawn grid all use that size. "
         "The same section has three switches, each kept on the board: Guides (the alignment lines while you drag, on by default), "
         "Page view (dashed frames for the printed pages, drawn under the cards) and Shadow (new shapes and text boxes start with a shadow). "
-        "Paper and Direction (A4, A3, Letter, Legal or a custom size in millimetres; portrait or landscape) set the page frames and are where a PDF export starts."
+        "Paper and Direction (A4, A3, Letter, Legal or a custom size in millimetres; portrait or landscape) set the page frames and are where a PDF export starts. "
+        "Export: PNG adds Border (space round the picture), Resolution (72, 96, 150 or 300 dots per inch, written into the file) and "
+        "Include a copy of the diagram, which puts the board inside the PNG so Insert, Diagram can open it again; HTML saves one web page "
+        "of the board that opens offline in any browser, with scroll to zoom and drag to pan."
     ),
     "badge": {"label": "Whiteboard", "tab": "library"},
 })

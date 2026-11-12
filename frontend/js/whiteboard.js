@@ -14107,11 +14107,13 @@ function wbExportLook() {
   };
 }
 
-function wbBuildExportSvg(scope, { transparent = false } = {}) {
+function wbBuildExportSvg(scope, { transparent = false, pad = 0 } = {}) {
   //: A selection export is the selection plus 24px, not the bar's 40.
   const bounds = scope === "selection" ? wbSelectionBounds(24)
     : scope === "visible" ? wbVisibleBounds() : wbBoardBounds();
-  const { minX, minY, width, height } = bounds || wbBoardBounds();
+  //: `pad`: the PNG dialog's border, board units of ground all round the content.
+  const box = bounds || wbBoardBounds();
+  const minX = box.minX - pad, minY = box.minY - pad, width = box.width + pad * 2, height = box.height + pad * 2;
   const onlyKeys = scope === "selection" ? wbSelectedKeys() : null;
   //: Everything read off the drawn page comes through this one object.
   const look = wbExportLook();
@@ -14782,6 +14784,11 @@ function wbExportPngPrefs() {
     //: image library, two exports, two copies); "Save to the library" is its
     //: own row for a copy on purpose.
     library: saved.library === true,
+    //: The border round the picture (board units), the resolution written into the file, and whether the file
+    //: carries a copy of the board so it can be opened again (whiteboard-export-more.js).
+    border: Number.isInteger(saved.border) && saved.border >= 0 && saved.border <= 100 ? saved.border : 0,
+    dpi: wbFmtState.exporters.dpis.includes(saved.dpi) ? saved.dpi : 96,
+    embed: saved.embed === true,
   };
 }
 
@@ -14852,9 +14859,12 @@ async function uploadToLibrary(filename, blob, description = "") {
 }
 
 async function wbExportPng(scope) {
-  const { scale, transparent, library } = wbExportPngPrefs();
-  const { svg, width, height } = wbBuildExportSvg(scope, { transparent });
-  const blob = await wbRasterizeSvg(svg, width * scale, height * scale, "image/png");
+  const { scale, transparent, library, border, dpi, embed } = wbExportPngPrefs();
+  const { svg, width, height } = wbBuildExportSvg(scope, { transparent, pad: border });
+  const raster = await wbRasterizeSvg(svg, width * scale, height * scale, "image/png");
+  //: A map's topics are a tree, not rows to bring back, so only a free board carries its copy (as an SVG does).
+  const rows = embed && !wbIsMap() ? wbExportRows(scope) : null;
+  const blob = new Blob([wbFmtState.exporters.pngWith(new Uint8Array(await raster.arrayBuffer()), { dpi, rows })], { type: "image/png" });
   const filename = wbExportFileName(scope, "png");
   await saveFile(filename, blob);
   if (!library) {
@@ -15012,6 +15022,17 @@ const WB_EXPORT_FORMATS = [
     value: "library", label: "Image library", scopes: ["selection", "visible", "whole"], picture: true,
     note: "Straight into the gallery, with no file saved to disk.",
     run: (scope) => wbSaveToLibrary(scope),
+  },
+  {
+    //: One file for anyone with a browser: the board's SVG in a page that pans and zooms (whiteboard-export-more.js).
+    value: "html", label: "HTML", scopes: ["selection", "whole"],
+    note: "One web page that opens in any browser, offline: the board to zoom and drag.",
+    run: async (scope) => {
+      const { svg } = wbBuildExportSvg(scope);
+      const name = wbExportFileName(scope, "html");
+      await saveFile(name, new Blob([wbFmtState.exporters.htmlPage(await wbInlineSvgImages(svg), name.replace(/\.html$/, ""))], { type: "text/html" }));
+      toast("Board exported as an HTML page.");
+    },
   },
   {
     value: "svg", label: "SVG", scopes: ["selection", "whole"],
@@ -15221,6 +15242,50 @@ function wbExportBoard({ branch = false } = {}) {
   const libraryText = document.createElement("span");
   libraryText.textContent = "Also add to the image library";
   libraryRow.append(libraryBox, libraryText);
+  //: The PNG's border, resolution and embedded copy (wbformat2); shown for a PNG only.
+  const borderLabel = document.createElement("span");
+  borderLabel.className = "wb-export-label";
+  borderLabel.textContent = "Border";
+  const borderInput = document.createElement("input");
+  borderInput.type = "number";
+  borderInput.id = "wb-export-border";
+  borderInput.min = "0";
+  borderInput.max = "100";
+  borderInput.step = "1";
+  borderInput.value = String(pngPrefs.border);
+  borderInput.setAttribute("aria-label", "Border width, board units, round the picture");
+  borderInput.title = "Space round the picture, in board units; 0 is none";
+  borderInput.addEventListener("change", () => {
+    pngPrefs.border = Math.max(0, Math.min(100, Math.round(Number(borderInput.value) || 0)));
+    borderInput.value = String(pngPrefs.border);
+    wbSetExportPngPrefs(pngPrefs);
+  });
+  const dpiLabel = document.createElement("span");
+  dpiLabel.className = "wb-export-label";
+  dpiLabel.textContent = "Resolution";
+  const dpiSeg = wbExportSegment(
+    "Resolution, dots per inch",
+    wbFmtState.exporters.dpis.map((n) => ({ value: String(n), label: String(n), title: `${n} dots per inch written into the file, for the size it prints at` })),
+    String(pngPrefs.dpi),
+    (value) => {
+      pngPrefs.dpi = Number(value);
+      wbSetExportPngPrefs(pngPrefs);
+      sync();
+    }
+  );
+  const embedRow = document.createElement("label");
+  embedRow.className = "setting-check wb-export-clear";
+  const embedBox = document.createElement("input");
+  embedBox.type = "checkbox";
+  embedBox.id = "wb-export-embed";
+  embedBox.checked = pngPrefs.embed;
+  embedBox.addEventListener("change", () => {
+    pngPrefs.embed = embedBox.checked;
+    wbSetExportPngPrefs(pngPrefs);
+  });
+  const embedText = document.createElement("span");
+  embedText.textContent = "Include a copy of the diagram";
+  embedRow.append(embedBox, embedText);
   const note = document.createElement("p");
   note.className = "confirm-text wb-export-note";
   const warning = document.createElement("p");
@@ -15250,6 +15315,9 @@ function wbExportBoard({ branch = false } = {}) {
     //: A JPEG has no alpha, so the ground choice is not offered for it.
     clearRow.hidden = !picture || Boolean(format.noAlpha);
     libraryRow.hidden = format.value !== "png";
+    borderLabel.hidden = borderInput.hidden = dpiLabel.hidden = dpiSeg.hidden = format.value !== "png";
+    embedRow.hidden = format.value !== "png" || wbIsMap();
+    wbSyncExportSeg(dpiSeg, String(pngPrefs.dpi), null);
     for (const row of pdfRows) {
       row.label.hidden = row.seg.hidden = format.value !== "pdf";
       wbSyncExportSeg(row.seg, pdfPrefs[row.key], null);
@@ -15307,7 +15375,7 @@ function wbExportBoard({ branch = false } = {}) {
   const exportBtn = smallButton("Export", "Export", go, false);
   exportBtn.id = "wb-export-go";
   row.append(smallButton("Cancel", "Cancel", close), exportBtn);
-  card.append(dialogHead(heading, close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, clearRow, libraryRow, ...pdfRows.flatMap((r) => [r.label, r.seg]), note, warning, row);
+  card.append(dialogHead(heading, close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, borderLabel, borderInput, dpiLabel, dpiSeg, clearRow, embedRow, libraryRow, ...pdfRows.flatMap((r) => [r.label, r.seg]), note, warning, row);
   overlay.appendChild(card);
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);
