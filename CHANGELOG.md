@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The searxng status test starts from a fresh answer cache with no Docker to ask and waits for the route's 200, so it no longer depends on test order.
 - Tests: the private-space leak checks look for a word of the secret, not its digits, which a timestamp can hold.
 - Graph: a headless sweep checks saved views, focus and global switching, the keyboard ring, reduced motion and the hover draw cost with numbers (L815 to L818).
 - Graph: a sweep draws the Tessellation view beside the chosen layout as one PNG with numbers (L-graph-12); a Map or Tessellation header no longer sits under the minimap.
