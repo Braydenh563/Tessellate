@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8333, frontend ids 2762, CSS sections 524, backend routes 698, backend modules 10770, test files 2679, tests 21835, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8333, frontend ids 2762, CSS sections 524, backend routes 698, backend modules 10770, test files 2680, tests 21837, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8333)
 
@@ -5174,7 +5174,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcAdditionHolds` | frontend/js/graph-canvas.js:5851 |
 | `gcAimNodes` | frontend/js/graph-canvas.js:2381 |
 | `gcArmTouchLasso` | frontend/js/graph-canvas.js:4981 |
-| `gcArriving` | frontend/js/graph-canvas.js:7559 |
+| `gcArriving` | frontend/js/graph-canvas.js:7570 |
 | `gcArrows` | frontend/js/graph-canvas.js:881 |
 | `gcAutoFitDone` | frontend/js/graph-canvas.js:196 |
 | `gcAutoFitTurnedOn` | frontend/js/graph-canvas.js:2091 |
@@ -5245,8 +5245,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcLabelText` | frontend/js/graph-canvas.js:4266 |
 | `gcLabelWidth` | frontend/js/graph-canvas.js:4224 |
 | `gcLabelZoom` | frontend/js/graph-canvas.js:869 |
-| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6978 |
-| `gcLegendSizeKey` | frontend/js/graph-canvas.js:7024 |
+| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6989 |
+| `gcLegendSizeKey` | frontend/js/graph-canvas.js:7035 |
 | `gcLightFrame` | frontend/js/graph-canvas.js:2896 |
 | `gcLineGrid` | frontend/js/graph-canvas.js:679 |
 | `gcLinkKindHidden` | frontend/js/graph-canvas.js:1549 |
@@ -5280,7 +5280,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcRadius` | frontend/js/graph-canvas.js:268 |
 | `gcReadTokens` | frontend/js/graph-canvas.js:326 |
 | `gcRefitForPanels` | frontend/js/graph-canvas.js:2083 |
-| `gcRelinkPairs` | frontend/js/graph-canvas.js:7539 |
+| `gcRelinkPairs` | frontend/js/graph-canvas.js:7550 |
 | `gcRenameTopicInline` | frontend/js/graph-canvas.js:1756 |
 | `gcRenderFilterChips` | frontend/js/graph-canvas.js:1587 |
 | `gcRequestDraw` | frontend/js/graph-canvas.js:2521 |
@@ -5288,12 +5288,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcReshuffle` | frontend/js/graph-canvas.js:5809 |
 | `gcResize` | frontend/js/graph-canvas.js:966 |
 | `gcRestBuild` | frontend/js/graph-canvas.js:2744 |
-| `gcReveal` | frontend/js/graph-canvas.js:7584 |
-| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:7572 |
+| `gcReveal` | frontend/js/graph-canvas.js:7595 |
+| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:7583 |
 | `gcRimShare` | frontend/js/graph-canvas.js:1124 |
-| `gcRuleDomain` | frontend/js/graph-canvas.js:6764 |
-| `gcRuleKey` | frontend/js/graph-canvas.js:6746 |
-| `gcRuleScale` | frontend/js/graph-canvas.js:6770 |
+| `gcRuleDomain` | frontend/js/graph-canvas.js:6775 |
+| `gcRuleKey` | frontend/js/graph-canvas.js:6757 |
+| `gcRuleScale` | frontend/js/graph-canvas.js:6781 |
 | `gcSavePositions` | frontend/js/graph-canvas.js:6171 |
 | `gcSaveTopicName` | frontend/js/graph-canvas.js:1728 |
 | `gcSearchOver` | frontend/js/graph-canvas.js:2583 |
@@ -5331,7 +5331,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcTreeIndex` | frontend/js/graph-canvas.js:4340 |
 | `gcTweenFromPrior` | frontend/js/graph-canvas.js:2105 |
 | `gcUnframed` | frontend/js/graph-canvas.js:2517 |
-| `gcUnlinkPairs` | frontend/js/graph-canvas.js:7532 |
+| `gcUnlinkPairs` | frontend/js/graph-canvas.js:7543 |
 | `gcVisibleAtTime` | frontend/js/graph-canvas.js:2627 |
 | `gcWireInteraction` | frontend/js/graph-canvas.js:4432 |
 | `gcWireLasso` | frontend/js/graph-canvas.js:5002 |
@@ -5341,20 +5341,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcWorldFor` | frontend/js/graph-canvas.js:6231 |
 | `gcWorldPoint` | frontend/js/graph-canvas.js:4366 |
 | `gcWriteUnresolved` | frontend/js/graph-canvas.js:5737 |
-| `graphLegendRove` | frontend/js/graph-canvas.js:6789 |
-| `graphPaneColour` | frontend/js/graph-canvas.js:7324 |
-| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:7460 |
-| `graphPaneEnsure` | frontend/js/graph-canvas.js:7302 |
-| `graphPaneFollow` | frontend/js/graph-canvas.js:7414 |
-| `graphPaneRerender` | frontend/js/graph-canvas.js:7298 |
-| `graphPaneWire` | frontend/js/graph-canvas.js:7469 |
-| `graphRenderLegend` | frontend/js/graph-canvas.js:6806 |
-| `graphRenderStats` | frontend/js/graph-canvas.js:7048 |
-| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:7098 |
-| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:7125 |
-| `graphWireTimePlay` | frontend/js/graph-canvas.js:7164 |
+| `graphLegendRove` | frontend/js/graph-canvas.js:6800 |
+| `graphPaneColour` | frontend/js/graph-canvas.js:7335 |
+| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:7471 |
+| `graphPaneEnsure` | frontend/js/graph-canvas.js:7313 |
+| `graphPaneFollow` | frontend/js/graph-canvas.js:7425 |
+| `graphPaneRerender` | frontend/js/graph-canvas.js:7309 |
+| `graphPaneWire` | frontend/js/graph-canvas.js:7480 |
+| `graphRenderLegend` | frontend/js/graph-canvas.js:6817 |
+| `graphRenderStats` | frontend/js/graph-canvas.js:7059 |
+| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:7109 |
+| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:7136 |
+| `graphWireTimePlay` | frontend/js/graph-canvas.js:7175 |
 | `renderGraphCanvas` | frontend/js/graph-canvas.js:6373 |
-| `renderGraphPane` | frontend/js/graph-canvas.js:7330 |
+| `renderGraphPane` | frontend/js/graph-canvas.js:7341 |
 
 ### frontend/js/graph-tessellate.js (11)
 
@@ -27678,7 +27678,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21835)
+## Tests (21837)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28866,6 +28866,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_first_frame.py | 6 |
 | tests/test_graph_fit_balance.py | 7 |
 | tests/test_graph_flat_forces.py | 1 |
+| tests/test_graph_focus_exit.py | 2 |
 | tests/test_graph_furniture_1029b.py | 5 |
 | tests/test_graph_glide.py | 2 |
 | tests/test_graph_glide_spring_l10.py | 2 |
@@ -30780,14 +30781,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4403 |
-| Needs hardware | docs/roadmap/LEDGER.md:896 |
+| Needs hardware | docs/roadmap/LEDGER.md:895 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:888 |
+| Owner calls | docs/roadmap/LEDGER.md:887 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4276 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30968,7 +30969,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1092 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1091 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31021,26 +31022,26 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Why the app feels "off" even where each screen is fine | docs/roadmap/WORLD_CLASS_PLAN.md:54 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
-| chat | docs/roadmap/LEDGER.md:39 |
-| chat | docs/roadmap/LEDGER.md:1108 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1192 |
-| documents | docs/roadmap/LEDGER.md:342 |
-| documents | docs/roadmap/LEDGER.md:1132 |
-| general | docs/roadmap/LEDGER.md:848 |
+| chat | docs/roadmap/LEDGER.md:38 |
+| chat | docs/roadmap/LEDGER.md:1107 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1191 |
+| documents | docs/roadmap/LEDGER.md:341 |
+| documents | docs/roadmap/LEDGER.md:1131 |
+| general | docs/roadmap/LEDGER.md:847 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1096 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1204 |
+| graph | docs/roadmap/LEDGER.md:1095 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1203 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
-| mindmap | docs/roadmap/LEDGER.md:422 |
-| mindmap | docs/roadmap/LEDGER.md:1144 |
-| timeline | docs/roadmap/LEDGER.md:577 |
-| timeline | docs/roadmap/LEDGER.md:1168 |
-| ui-modernisation | docs/roadmap/LEDGER.md:459 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1156 |
-| whiteboard | docs/roadmap/LEDGER.md:296 |
-| whiteboard | docs/roadmap/LEDGER.md:1120 |
-| world-class | docs/roadmap/LEDGER.md:612 |
-| world-class | docs/roadmap/LEDGER.md:1180 |
+| mindmap | docs/roadmap/LEDGER.md:421 |
+| mindmap | docs/roadmap/LEDGER.md:1143 |
+| timeline | docs/roadmap/LEDGER.md:576 |
+| timeline | docs/roadmap/LEDGER.md:1167 |
+| ui-modernisation | docs/roadmap/LEDGER.md:458 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1155 |
+| whiteboard | docs/roadmap/LEDGER.md:295 |
+| whiteboard | docs/roadmap/LEDGER.md:1119 |
+| world-class | docs/roadmap/LEDGER.md:611 |
+| world-class | docs/roadmap/LEDGER.md:1179 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |

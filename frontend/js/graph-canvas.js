@@ -6552,8 +6552,19 @@
     // other re-render already does. Only meaningful for force: a tree/radial/
     // arc layout is recomputed deterministically below and never reads this.
     const restoring = Boolean(graphPendingViewPositions) && s.layoutKind === "force";
+    //: **Leaving focus puts the map back as it was** (L-graph-17, gsweep
+    //: 2026-11-12: back to the whole map, notes moved up to 472 px, mean 216,
+    //: because the focus view's few notes were the only prior). The whole
+    //: map's spots are kept on the way in and held like a saved view's on the
+    //: way out.
+    const focusing = Boolean(graphFocusModeId) && s.layoutKind === "force";
+    if (focusing && !s.focusAt && prior.size) {
+      s.focusAt = Object.fromEntries([...prior].filter(([, at]) => Number.isFinite(at.x) && Number.isFinite(at.y)));
+    }
+    const back = !focusing && s.focusAt && prior.size ? s.focusAt : null;
+    if (!focusing) s.focusAt = null;
     const viewPositions =
-      graphPendingViewPositions || (s.layoutKind === "force" && !prior.size ? gcCachedPositions(s) : null);
+      graphPendingViewPositions || back || (s.layoutKind === "force" && !prior.size ? gcCachedPositions(s) : null);
     graphPendingViewPositions = null;
     // Decision made, 2026-09-21 (GRAPH_PLAN): a restored arrangement holds, it
     // does not re-settle. A note the view captured gets exactly its saved

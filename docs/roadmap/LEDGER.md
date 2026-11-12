@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 13 | 1 | 0 | 0 | 29 |
+| graph | 15 | 12 | 1 | 0 | 0 | 28 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 685 | 154 | 3 | 191 | 1392 |
+| all | 553 | 684 | 154 | 3 | 191 | 1391 |
 
 ## graph
 
@@ -33,7 +33,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L709** `graph` open, M: Decide what an open note means for graph signal on card view. From OPEN.md:2930. Evidence: Needs decision on what 'open' means on card view (id search-open-note) Owner decided 2026-11-12: Last card clicked (The card you last clicked or focused counts as open until you click another or leave Notes; search ranks its linked notes higher). Build: notes-lazy.js:160 `open` falls back to a remembered last-clicked card id (cleared on leaving Notes) passed as &entry_id; targeted test on the search call.
 - [ ] **L711** `graph` open, M: Define manual topics so graph topics can be merged and removed like tags. From OPEN.md:4554. Evidence: Rename stored (routes_graph.py:1472); merge/remove need owner to define a manual topic Owner decided 2026-11-12: Store them as overrides (Merge and remove are saved like rename, on top of the worked-out topics; a reset brings back the automatic grouping). Build: routes_graph.py next to the rename at :1472: stored merge map and per-note exclusions applied after topic derivation, plus reset; graph topic menu rows; tests.
 - [ ] **L-graph-11** `graph` open, S: Check Map link weighting in the browser on a notebook with real links. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The q31 left list says link weighting was never seen in a browser on a notebook with real links.
-- [ ] **L-graph-17** `graph` open, S: Leaving graph focus keeps the global map's positions. From gsweep 2026-11-12. Evidence: Leaving focus back to global re-simulates (max 472, mean 216 px); gcCachedPositions used only with no prior nodes, graph-canvas.js ~6482
 - [ ] **L-graph-18** `graph` open, M: Measure the 2,000-note worker settle in the browser after the untangle gates and cut the d3 charge and collide. From audit row 19, GRAPH_PLAN. Evidence: Worker settle at 2,000 notes was 11 to 14 s in the browser at 4x; untangle gates cut node 5.7 to 3.4 s; force 856 ms + collideRadius 304 ms self of 3.4 s
 
 ## chat
