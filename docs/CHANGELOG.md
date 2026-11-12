@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: ARCHITECTURE no longer says documents lack revisions, that the packaged app has no stdio MCP, that the MSI ships, or that assets are never immutable.
 - CLI: `python -m tessellate tool [NAME] [--args JSON] --json` lists or runs one of the tools the MCP server offers, with the same gates (`tests/test_tool_cli.py`).
 - Docs: CONTRIBUTING agrees with CLAUDE.md on replacing rather than layering and on the test count (about 9,000).
 - Docs: SECURITY.md lists its known gaps; CONTRIBUTING.md sets a 30-day floor on adopting a new dependency, Action or vendored release.
