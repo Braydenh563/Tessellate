@@ -72,6 +72,11 @@ window.redrawLibraryBoardsGallery = redrawLibraryBoardsGallery;
 //: the board code is asked for in idle time, once they are up, so it never sits ahead of the first paint and a
 //: card or New board finds it in (INBOX 1772). A property of the function, not a new name in the shared scope.
 renderLibraryBoardsGallery.show = async function showBoardsGallery() {
+  //: A board opened by code (whiteboard.js `openWhiteboardBoard`) pressed this sub-tab itself; its landing is not wanted over the board.
+  if (window.openWhiteboardBoard?.holdLanding) {
+    openWhiteboardBoard.holdLanding = false;
+    return;
+  }
   if (window.initWhiteboard) return wbShowBoardsLanding();
   await renderLibraryBoardsGallery();
   const load = () => ensureModule("boards");

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sweeps: uitrio, asktab, noteobject, canvasconventions follow the current screens, errors.js runs as two CI entries (1440,1024 and 820,390) under 180s, and errors, asktab, noteobject, canvasconventions join the CI list, now 58 steady sweeps; a board opened from a link or chip on the first Library visit of a session is no longer covered by the boards list (L-general-53: tour, toursteps, anchorsmotion, fontmatrix moved to L-general-56).
 - Touch: the top bar's icon buttons, the privacy chip, the capture bar's icons, the document dock's back button and New split, and the map's resize grip and buttons reach the 44px floor under a finger (iconfloor.js: 70 under it to 0); profilelook and iconfloor join the CI list, now 53 steady sweeps (L-general-52: perchall moved to L-general-55).
 - Sweeps: doctoolbarstate follows the strip without heading and quote buttons (Turn into owns them) and joins the CI list, now 51 steady sweeps (L-general-51).
 - MCP: VS Code uses the tool server directly through .vscode/mcp.json (docs/MCP.md, Settings help); grouping by hand, many categories, on-disk compression and an in-app browser are decided against or parked (L-general-36 to 38, 41, 42).

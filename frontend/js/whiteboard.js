@@ -25427,6 +25427,12 @@ async function openWhiteboardBoard(boardId, opts = null) {
   if (!opts?.stay) {
     switchTab("library");
     document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
+    //: The sub-tab's press draws the boards landing once the gallery file is in (library.js), a step after this
+    //: call has shown the board, so the landing covered a board opened from a link or chip on the first Library visit
+    //: of a session. `show` (boards-gallery.js) lets that one landing go by; the flag lapses on its own if no press comes.
+    clearTimeout(openWhiteboardBoard.holdTimer);
+    openWhiteboardBoard.holdLanding = true;
+    openWhiteboardBoard.holdTimer = setTimeout(() => { openWhiteboardBoard.holdLanding = false; }, 4000);
   }
   wbShowCanvasView();
   const nudgeSaved = wbCancelBoardTimers();

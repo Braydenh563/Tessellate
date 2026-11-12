@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 101 | 4 | 0 | 17 | 201 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 15 | 2 | 0 | 4 | 17 |
-| all | 553 | 675 | 160 | 3 | 195 | 1388 |
+| general | 0 | 15 | 3 | 0 | 4 | 18 |
+| all | 553 | 675 | 161 | 3 | 195 | 1389 |
 
 ## graph
 
@@ -877,9 +877,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-49** `general` open, M: Map sweeps still failing: View menu at 587px, theme dialog fit, link cue, layouts, mid pan, perf. From L-general-47. Evidence: mapviewmenu.js exit=1 (View menu at 587px); maptheme.js exit=1 (dialog fit); maplinkcue.js, maplayouts.js, mapmidpan.js (52s) and mapperf.js (500ms wait times out after ensureModule boards plus initWhiteboard)
 - [ ] **L-general-50** `general` open, M: Library reader sweeps need a seeded OCR book and a 390px geometry fix. From L-general-47. Evidence: libreadingfoot.js and libreader.js need a seeded OCR book; libreader also fails the 390px full-screen geometry
 - [ ] **L-general-52** `general` partly, M: perchall, profilelook and iconfloor sweeps fail: a stale id, a profile hair setting not kept, icon buttons under the 44px touch floor. From L-general-47. Evidence: perchall.js: Cannot set properties of null (setting 'value'); profilelook.js: hair value empty after save; iconfloor.js: 65 of 304 icon-only buttons under 44px at 1024x768 touch (privacy-chip, notif-btn, capture-bar, doc-new, doc-back)
-- [ ] **L-general-53** `general` open, M: Sweeps not yet triaged: uitrio, asktab, noteobject, canvasconventions, tour, toursteps, anchorsmotion, fontmatrix; errors needs splitting under 180s. From L-general-47. Evidence: uitrio, asktab, noteobject, canvasconventions, tour, toursteps, anchorsmotion, fontmatrix not reached; errors.js passes but takes 205s, over the CI 180s timeout
+- [ ] **L-general-53** `general` partly, M: uitrio, asktab, noteobject, canvasconventions and the errors.js split are repaired (errors runs as two CI entries under 180s); tour, toursteps, anchorsmotion and fontmatrix moved to L-general-56. From L-general-47. Evidence: uitrio all checks passed (19s, needs a seeded notebook, so not in the CI list); asktab 17s, noteobject 40s, canvasconventions 55/55 in 63s, errors 1440,1024 in 63s and 820,390 pass on a fresh notebook
 - [ ] **L-general-54** `general` open, M: deepflows flows note, private, link, graph, settings, tabs, picker still unverified. From L-general-47. Evidence: deepflows flows note, private, link, graph, settings, tabs, picker not run on port 8821; deepflows-flows.js now reads gcRequestDraw.inspect for graph
 - [ ] **L-general-55** `general` open, M: Companion prefers a window bar over a free dock perch on Library, boards and tab switches; decide app or sweep, then close L-general-52. From L-general-52 perchall. Evidence: scratchpad/ui-sweeps/perchall.js 1440x900: 14 FAIL, all 'window bar while a panel was free' (library tabs, whiteboard, mind map, tab switches); companion rests on status-bar or top-bar hang while a dock perch is free; 131s, so not CI-stable
+- [ ] **L-general-56** `general` open, M: Tour sweeps, anchorsmotion and fontmatrix still failing or over 300s after the L-general-53 repairs. From L-general-53. Evidence: tour.js: doors now pass (11 rows, start button, About), then the walk runs past 600s with no output; toursteps.js: over 300s; anchorsmotion.js: graph popup 135px (1440x900) and 85px (1440x600) from its anchor against a 16 limit, row menu 14px against 4 at 1440x600, note kebab 3px apart between reduced and full motion at 1440x600, 161s; fontmatrix.js at 390: a 1px run in a note paragraph ('as well, and' after a board link) and the 'Install' button 2px past its padding
 
 ## Owner calls
 

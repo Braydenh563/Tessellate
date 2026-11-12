@@ -33,6 +33,8 @@ const near = (a, b, tol = 1.5) => a != null && b != null && Math.abs(a - b) <= t
   await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
   await wait(1200);
   await page.evaluate(async () => {
+    // The board code is its own lazy bundle (idle-loaded after the gallery), so a fresh notebook asks for it.
+    await ensureModule("boards");
     const v = document.getElementById("library-view-whiteboard");
     for (const s of document.querySelectorAll('[id^="library-view-"]')) s.classList.toggle("hidden", s !== v);
     await initWhiteboard();

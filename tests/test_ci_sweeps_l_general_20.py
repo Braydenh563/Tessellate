@@ -22,6 +22,8 @@ def test_every_listed_sweep_exists_and_deepflows_runs_last():
     names = _stable()
     assert len(names) >= 25 and len(set(names)) == len(names)
     for name in names:
-        assert (ROOT / "scratchpad" / "ui-sweeps" / f"{name}.js").exists(), name
+        # `sweep@1440,1024` runs one sweep at some widths only (errors.js, split to stay under CI's 180s).
+        file = name.split("@")[0]
+        assert (ROOT / "scratchpad" / "ui-sweeps" / f"{file}.js").exists(), name
     text = (ROOT / "scripts" / "ci_sweeps.sh").read_text(encoding="utf-8")
     assert text.index("deepflows-seed.js") > text.index("for name in")
