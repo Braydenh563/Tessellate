@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix (ledger 1112 F5): "Nothing is overdue." and an empty reminders count go on to "What's due this week?" and "What's due next week?" instead of the statistics chips; small-talk replies keep none by INBOX 1749 and an act card's buttons are its next step.
 - Fix (ledger 1112 G11): "how much more cheese than milk" and "how much more is rent than groceries in november" give the difference of the two figures from the one note that holds both (price tables and "Rent 650. Groceries 140." runs are read as lines), "total budget for november" adds the run of sentences to 955, and "how much more did I spend eating out in october than november" gives the 70 gap.
 - Fix (ledger 1112 F8): "wats on my shoping list" is read as "what is on my shopping list" and answered from the Shopping note (a word before a bare list is a name word, and a note's one-word heading counts as a name even when other notes use the word in lower case); "what's in my budget" is checked to lead with the latest Budget note.
 - Fix (ledger 1112 F4): "you are not helpful at all" and other complaints about the composer's own answers get a line instead of a note search, a bare reaction after an answer stays a reaction, and "what did I just add" with no chat before it says there is nothing yet.
