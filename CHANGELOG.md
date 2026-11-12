@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: a topic label with a subject-verb agreement slip ("He have a plan") gets a double line, and the topic menu offers the fix as one Undo step; no grammar check runs during a drag (VC12).
 - Mind map plan: two stale "stays open" lines (tags on a topic; priority, progress, flags and due dates) now point at the built records.
 - Mind map: a middle-button drag to each window edge and past it was driven headless and headed (`mapmidedge.js`); not reproduced, so the owner's mouse check moved to BACKLOG (L759).
 - Mind map performance measured, no code change: a 291-topic map idles and drags at 16.7 ms a frame with no long task, a 500-stroke board pans at 16.7 ms even at 6x CPU, and press-to-editable at 390 is 17 to 34 ms unthrottled (L-mindmap-9, L372, L370).

@@ -2207,7 +2207,8 @@ MORE_TOPICS.extend([
             "callout", "callout on a topic", "bubble over a topic", "speech bubble on a map",
             "add a callout", "remove the callout", "labels on a topic", "label a topic",
             "tags on a topic", "labels under a topic", "vote", "voting", "stamp",
-            "stamps", "reaction", "thumbs up a topic",
+            "stamps", "reaction", "thumbs up a topic", "grammar on a topic",
+            "agreement error in a label",
         ),
         "body": (
             "A callout is a few words in a bubble over a topic, as in XMind: a "
@@ -2222,7 +2223,9 @@ MORE_TOPICS.extend([
             "beside it): Remove one takes one off the count, Clear all takes "
             "the stamp off, and Undo brings either back. Clear the stamps, in "
             "the topic's menu, takes them all off. The map makes room for all three when it is "
-            "laid out, and the exports keep them."
+            "laid out, and the exports keep them. A label with a verb that does not "
+            "agree (He have a plan) gets a double line, and the topic's menu offers "
+            "the fix as one Undo step; it is checked on this computer."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

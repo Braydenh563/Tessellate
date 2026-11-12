@@ -8655,6 +8655,11 @@ input[type="file"] {
   cursor: inherit;
   user-select: none;
 }
+/* A label Harper flagged (VC12): the documents' grammar double line in the
+   warning ink; the topic menu offers the fix. */
+.wb-map-text[data-grammar] {
+  text-decoration: underline double var(--warn);
+}
 .wb-map-node.wb-text-editing .wb-map-text {
   cursor: text;
   user-select: text;

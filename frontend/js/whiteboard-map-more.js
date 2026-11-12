@@ -16,6 +16,8 @@
 // 2. An audio note on a topic (MINDMAP_PLAN gap 4, decided 2026-11-10): see
 // "The audio note" below.
 //
+// 3. Harper on topic labels (MINDMAP_PLAN VC12): see "Grammar on labels" below.
+//
 // Loaded in the Library bundle after whiteboard-map.js (`LAZY_MODULES`); the
 // map calls both through `wbMapLazy`.
 
@@ -642,6 +644,101 @@
     toast(`Saved “${title}” as ${name}.`);
   }
 
+
+  // --- Grammar on labels (VC12) --------------------------------------------
+  //
+  //: The documents' Harper worker (`docGrammarAsk`, documents-prose.js) takes
+  //: any string, so a topic's label is asked once per distinct text and the
+  //: answer is kept by text (a bounded map). Only agreement lints are kept: a
+  //: label is a fragment, and Harper's capital-letter and sentence rules would
+  //: flag nearly every one. The ask is made after a quiet pause and never
+  //: while a pointer is down, so a drag, which repaints every frame, costs no
+  //: lint call; the paint itself only reads the kept answers. A flagged label
+  //: wears a double line and the topic menu offers each suggestion, applied
+  //: through `wbMapSetNodeStyle` as one Undo step.
+  const WB_GRAMMAR_QUIET_MS = 900;
+  const WB_GRAMMAR_KEPT = 400;
+  const WB_GRAMMAR_PER_PASS = 24;
+  const wbGrammar = { found: new Map(), queue: new Set(), timer: 0, down: false, asks: 0 };
+  document.addEventListener("pointerdown", () => { wbGrammar.down = true; }, true);
+  document.addEventListener("pointerup", () => { wbGrammar.down = false; }, true);
+  document.addEventListener("pointercancel", () => { wbGrammar.down = false; }, true);
+
+  function wbGrammarAvailable() {
+    //: documents-prose.js is in the `library` files this bundle starts with, so no guard.
+    return docGrammarEnabled();
+  }
+
+  async function wbGrammarRun() {
+    wbGrammar.timer = 0;
+    if (wbGrammar.down) return wbGrammarSoon();
+    if (!wbGrammarAvailable()) return wbGrammar.queue.clear();
+    const texts = [...wbGrammar.queue].slice(0, WB_GRAMMAR_PER_PASS);
+    for (const text of texts) wbGrammar.queue.delete(text);
+    if (wbGrammar.found.size > WB_GRAMMAR_KEPT) wbGrammar.found.clear();
+    for (const text of texts) {
+      wbGrammar.asks += 1;
+      const lints = await docGrammarAsk(text).catch(() => null);
+      //: No answer (the worker is off or failed): leave the text unasked so a later pass can try.
+      if (lints === null) continue;
+      const hits = docGrammarFindings(lints, text).filter((f) => f.harperKind === "Agreement" && f.alternatives.length);
+      wbGrammar.found.set(text, hits[0] || null);
+    }
+    wbGrammarRepaint();
+    if (wbGrammar.queue.size) wbGrammarSoon();
+  }
+
+  function wbGrammarSoon() {
+    clearTimeout(wbGrammar.timer);
+    wbGrammar.timer = setTimeout(wbGrammarRun, WB_GRAMMAR_QUIET_MS);
+  }
+
+  //: Wear (or drop) the mark on one drawn label from the kept answer; a text
+  //: with no answer yet is queued, and nothing else is done here.
+  function wbGrammarPaint(node, datum) {
+    const el = node.querySelector(".wb-map-text");
+    if (!el || datum.kind !== "topic") return;
+    const text = String(datum.data?.content || "").trim();
+    const hit = text.length > 3 && !el.isContentEditable ? wbGrammar.found.get(text) : null;
+    if (hit) {
+      el.dataset.grammar = hit.message;
+      return;
+    }
+    if (el.dataset.grammar) delete el.dataset.grammar;
+    if (text.length > 3 && !wbGrammar.found.has(text) && wbGrammarAvailable()) {
+      wbGrammar.queue.add(text);
+      if (!wbGrammar.timer) wbGrammarSoon();
+    }
+  }
+
+  function wbGrammarRepaint() {
+    for (const el of document.querySelectorAll(".wb-map-node")) {
+      const datum = (wbState.objects || []).find((o) => String(o.id) === el.dataset.id);
+      if (datum) wbGrammarPaint(el, datum);
+    }
+  }
+
+  //: The menu rows for one topic: a suggestion each, "Use “has”" style.
+  function wbGrammarFixes(node) {
+    const text = String(node?.data?.content || "").trim();
+    const hit = node?.kind === "topic" ? wbGrammar.found.get(text) : null;
+    if (!hit) return [];
+    return hit.alternatives.slice(0, 3).map((option) => ({
+      label: option === "" ? `Remove “${hit.text}”` : `Use “${text.slice(0, hit.start) + option + text.slice(hit.end)}”`,
+      title: hit.message,
+      run: () => wbGrammarApply(node, hit, option),
+    }));
+  }
+
+  async function wbGrammarApply(node, hit, option) {
+    const live = (wbState.objects || []).find((o) => o.id === node.id) || node;
+    const text = String(live.data?.content || "").trim();
+    if (text.slice(hit.start, hit.end) !== hit.text) return toast("That label has changed since it was checked.", "info");
+    await wbMapSetNodeStyle(live, { content: text.slice(0, hit.start) + option + text.slice(hit.end) });
+    renderWhiteboardNow();
+    wbAnnounce("Label corrected.");
+  }
+
   //: The file's whole surface, one object, so the shared scope gains one name rather than one per entry point.
   const wbMapLazy = {
     openGantt: wbMapOpenGantt,
@@ -658,6 +755,9 @@
     imageFromLink: wbTopicImageFromLink,
     secondRoot: wbSecondRoot,
     saveBranch: wbBranchSaveMarkdown,
+    paintGrammar: wbGrammarPaint,
+    grammarFixes: wbGrammarFixes,
+    grammarState: wbGrammar,
   };
   Object.assign(window, { wbMapLazy });
 })();

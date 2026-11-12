@@ -2807,6 +2807,7 @@ function wbPaintMapNodeStyle(node, d) {
 
   wbMapPaintExtras(node, d.data || {});
   wbMapLazy.paintAudio(node, d.data || {});
+  wbMapLazy.paintGrammar(node, d);
   //: A note (decision 18): read off the topic's own data, never the theme's.
   const noteMark = node.querySelector(".wb-map-note");
   if (noteMark) {

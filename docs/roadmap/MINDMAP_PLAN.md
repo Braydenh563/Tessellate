@@ -1735,7 +1735,7 @@ Zen mode, pitch mode, and every topic act one undo step.
 
 The owner: "make sure all the vendored repositories are made full use of. I want maximum utility." Ranked by the utility to the surface; `scratchpad/vendor_use.py` prints the counts ("available N, called M") and `tests/test_vendor_utilisation.py` ratchets them, so a row that lands raises its floor in the same commit. Each is a lead from a lower-bound count: grep the call site before building (CLAUDE.md section 1).
 
-- **VC12, Harper on node labels** (S, rank 12). The mind map's labels are prose that no checker reads; the worker already exists and takes any string. Measure: a label with a seeded agreement error is flagged and its suggestion applies as one undo step; no lint call on a drag.
+- **VC12, Harper on node labels:** built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 
 ## Placed from Brief 60, 2026-10-10 (the measured census)
 
