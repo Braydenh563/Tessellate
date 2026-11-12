@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: Tools and Appearance get the jump row Skills has, one button per section (L771).
 - Notes: a card's menu keeps every AI act under AI actions; Similar notes, Add context and Continue thought moved there (L763).
 - Calculator: the equation palette opens without a forced layout (mount about 30 ms to 11 ms, L702).
 - OCR: RapidOCR now reads light-on-dark pages inverted and small text scaled up, as Tesseract already did (L703).

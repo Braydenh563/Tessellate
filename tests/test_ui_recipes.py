@@ -6657,10 +6657,12 @@ def test_a_pane_tab_row_names_sections_that_exist() -> None:
     count is a `.pop-count` with an id the script fills."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     navs = re.findall(r'<nav class="tabs-line popup-kinds pane-tabs" id="([a-z-]+)"[^>]*>(.*?)</nav>', html, flags=re.S)
-    assert {name for name, _ in navs} == {"skills-tabs", "tasks-tabs"}
+    #: Tools and Appearance joined with L771 (the owner 2026-11-12: keep one
+    #: pane each, add the jump row Skills has).
+    assert {name for name, _ in navs} == {"skills-tabs", "tasks-tabs", "tools-tabs", "appearance-tabs"}
     for name, inner in navs:
         buttons = re.findall(r"<button[^>]*data-target=(['\"])(.*?)\1[^>]*>(.*?)</button>", inner, flags=re.S)
-        assert len(buttons) == 3, name
+        assert 3 <= len(buttons) <= 7, name
         for _quote, target, body in buttons:
             assert 'class="ph ph-' in body and "pop-tab-glyph" in body, f"{name}: a tab without a glyph"
             if target.startswith("#"):
