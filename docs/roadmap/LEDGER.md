@@ -11,28 +11,28 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 25 | 12 | 0 | 18 | 107 |
-| documents | 70 | 25 | 12 | 0 | 18 | 107 |
-| documents | 70 | 25 | 12 | 0 | 18 | 107 |
-| documents | 70 | 25 | 12 | 0 | 18 | 107 |
-| documents | 70 | 25 | 12 | 0 | 18 | 107 |
-| documents | 70 | 25 | 12 | 0 | 18 | 107 |
+| documents | 70 | 24 | 5 | 0 | 18 | 99 |
+| documents | 70 | 24 | 5 | 0 | 18 | 99 |
+| documents | 70 | 24 | 5 | 0 | 18 | 99 |
+| documents | 70 | 24 | 5 | 0 | 18 | 99 |
+| documents | 70 | 24 | 5 | 0 | 18 | 99 |
+| documents | 70 | 24 | 5 | 0 | 18 | 99 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 636 | 150 | 3 | 190 | 1339 |
-| all | 553 | 636 | 150 | 3 | 190 | 1339 |
-| all | 553 | 636 | 150 | 3 | 190 | 1339 |
+| all | 553 | 635 | 143 | 3 | 190 | 1331 |
+| all | 553 | 635 | 143 | 3 | 190 | 1331 |
+| all | 553 | 635 | 143 | 3 | 190 | 1331 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 636 | 150 | 3 | 190 | 1339 |
+| all | 553 | 635 | 143 | 3 | 190 | 1331 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 636 | 150 | 3 | 190 | 1339 |
-| all | 553 | 636 | 150 | 3 | 190 | 1339 |
-| all | 553 | 636 | 150 | 3 | 190 | 1339 |
+| all | 553 | 635 | 143 | 3 | 190 | 1331 |
+| all | 553 | 635 | 143 | 3 | 190 | 1331 |
+| all | 553 | 635 | 143 | 3 | 190 | 1331 |
 
 ## graph
 
@@ -378,7 +378,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines.
 - [ ] **L309** `documents` open, M: Keep Python runtime frame persistent across documents to avoid 5-7 s cold reload per document. From OPEN.md:1219; OPEN.md:1224; OPEN.md:2829; OPEN.md:2907. Evidence: Row: needs the Pyodide extra, not installed here; cold Debug cannot be timed.
-- [ ] **L313** `documents` open, M: Step JS watches instead of evaluating natively. From OPEN.md:2825. Evidence: run_sandbox.py:250 evaluate; known limitation, verified. Looked at 2026-11-12 (docsD): watches run through js_debug_worker.js evaluate() with a Function over a read-only view of the frame; stepping them in the interpreter needs a nested State run on the interpreter's stack and loses the read-only guarantee, so it is a design call, not a quick fix
 - [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10. Looked at 2026-11-12 (docsD): Python debug already runs a test file through the harness (run-core.js py.debug, tests:); JS and TS debug run it as a plain script because the harness (run-tests.js runTestHarness) is modern JS and the debug worker is ES5 JS-Interpreter, so it needs an ES5 harness plus a bridge for test rows
 - [ ] **L319** `documents` open, M: Verify code editor: Python run, SQL/p5, Emmet/hover docs, conflict dialog, multi-cursor, Console eval. From audit-1031-code.md. Evidence: No later code audit; Python extra not installed here
 - [ ] **L320** `documents` open, M: Verify docs: read-view mermaid, print/PDF, docx, import, comments, phone editor entry. From audit-1031-docs.md. Evidence: audit-1102-docs covered part; print dialog and phone remain
@@ -394,15 +393,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L334** `documents` open, L: Lower more JS constructs for the stepper (class fields, destructuring, spread, async). From OPEN.md:1767; OPEN.md:2826. Evidence: run-debug.js:97 lowers classes; RUN_DEBUG_REFUSED (:23-26) still names class fields, static blocks, private members etc.
 - [ ] **L335** `documents` open, L: Brief 45 part 2: split whiteboard.js/initWhiteboard and documents.js, fold 133 duplicate blocks. From SESSION_BRIEFS.md:176. Evidence: whiteboard.js still holds initWhiteboard (E19: 26,159 lines); no split commit found
 - [ ] **L336** `documents` partly, S: Record or build [[ autocomplete and connections rail (Brief 8). From OPEN.md:3591. Evidence: [[ code exists in answer-kit.js/app-features.js; HISTORY.md:51452 only the plan row, no Built block
-- [ ] **L339** `documents` partly, S: Confirm queue rows B21 to B27 and B40 individually. From OPEN.md:405. Evidence: B20 shipped (2bdd1af55 lock badge, 6087e6602 Alt+Up/Down); other rows not individually confirmed
 - [ ] **L342** `documents` partly, M: Meet the 4x typing gate (rest in a29i-1102.md). From OPEN.md:4489. Evidence: a29i-1102.md holds the rest; 4x typing gate stays open
-- [ ] **L343** `documents` partly, M: Confirm Documents delete restore via Ctrl+Z / toast Undo. From OPEN.md:1399. Evidence: status.js:1627-1672 surfaceHistory has a Documents branch with one timeline (DOCUMENTS 24 row 1); delete restore via Ctrl+Z not confirmed
-- [ ] **L344** `documents` partly, M: Replace in every document: batch requests and add a dock-menu row. From OPEN.md:1458; OPEN.md:2759. Evidence: documents.js:3231 command 'Replace in every document' exists; per-doc request batching/dock row unverified
-- [ ] **L345** `documents` partly, M: Word import of tracked changes: handle deletions instead of Mammoth acceptance. From OPEN.md:1499. Evidence: documents-word.js:81 detects w:ins/w:del and server docx_has_revisions; import still via Mammoth acceptance
-- [ ] **L346** `documents` partly, M: Finish p5.js document kind and code completion (Briefs 69-71 remainder). From OPEN.md:1587. Evidence: documents-code.js:591 p5.js names in a sketch (OPEN 1139); DOCUMENTS_PLAN 23 / Briefs 69-71 remainder
-- [ ] **L347** `documents` partly, M: Generate and wire the Python stdlib completion table. From OPEN.md:2904. Evidence: scripts/gen_python_completions.py exists; table not generated/wired
 - [ ] **L348** `documents` partly, M: AI rename option for new boards and maps (documents already have suggest-title). From INBOX.md:904 B17. Evidence: Names 787f8a9; documents suggest-title fe169b9d8 (routes_documents); boards and maps have no AI rename (w34-gap3)
-- [ ] **L350** `documents` partly, M: Document gutter writes height and reads layout per gutter. From OPEN.md:1479. Evidence: Row says menu exit closed (HISTORY 'OPEN.md rows closed'); gutter batching not confirmed
 - [ ] **L351** `documents` partly, L: Re-check run/debug tools and skeletons for every language after snippet drag. From INBOX.md:904 B19. Evidence: documents-codekit.js:530 docSnippetDragStart; tests/test_snippet_drag.py; run/debug tools for every language not re-checked
 - [ ] **L352** `documents` partly, L: Documents: Autocorrect status-bar switch, deferred-large rows, DC1/DC2 lock, old audit rows re-verify. From ledger-1112 O27; ledger-1112 X14.
 - [ ] **L-documents-3** `documents` open, M: Compare two documents side by side. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:568. Evidence: there is version diff within a document but no compare of two documents; untracked
