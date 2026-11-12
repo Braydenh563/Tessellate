@@ -55189,6 +55189,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L507** `world-class` open, S: Persist pending device requests in core/lantrust.py across restart. From OPEN.md:1985. Evidence: core/lantrust.py:69 _pending dict still in-memory; W34 skipped Built: tests/test_lan.py::test_held_device_requests_survive_a_restart
 - [x] **L502** `world-class` open, S: Stop the reminder notifier on quit without waiting out the pool's 5 s deadline. From OPEN.md:1376. Evidence: __main__.py:1828 stop_notifier() still called after the pool shutdown path. Built: tests/test_background_workers.py
 - [x] **L506** `world-class` open, S: Build the core/background.py registry. From OPEN.md:1975. Evidence: No core/background.py in src/tessellate/core; lint only counts sites Built: tests/test_background_workers.py
 - [x] **L800** `world-class` owner-call, S: Decide what the evidence_checks switch gates and build its runner. From OPEN.md:2944. Evidence: Only facts.py:88 default; decision needed on what it gates Built: owner decision 2026-11-12: Keep it as built, no build needed

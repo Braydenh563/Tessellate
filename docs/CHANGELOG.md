@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- LAN (L507): a new device's held sign-in request is kept in `lan-pending.json` (0600) and comes back when the app restarts, until its ten minutes are up (`tests/test_lan.py`).
 - Quit (L502): the registry (`background.stop_all`) is signalled first on every quit path, the server lifespan and the abrupt desktop exits, so the reminder notifier no longer waits out the job pool's 5 s deadline (`tests/test_background_workers.py`).
 - Background (L506): `core/background.py` is the registry of named workers (register, start, stop, stop_all, status); the reminder notifier is its first entry (`tests/test_background_workers.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.

@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 173 | 58 | 0 | 72 | 361 |
+| world-class | 130 | 172 | 58 | 0 | 72 | 360 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 699 | 157 | 3 | 195 | 1409 |
+| all | 553 | 698 | 157 | 3 | 195 | 1408 |
 
 ## graph
 
@@ -638,7 +638,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L503** `world-class` open, S: Cover request-bound long tasks with core/activity.track and extend the THREAD_SITES lint. From OPEN.md:1498. Evidence: tests/test_activity.py THREAD_SITES covers thread sites only; core/activity.track not added at import/summary sites
 - [ ] **L504** `world-class` open, S: Speed up the night shift pairing phase (120 s) and stop the bar resetting. From OPEN.md:1945. Evidence: No speed-up commit found
 - [ ] **L505** `world-class` open, S: Audit jobruns detail strings that carry {exc}. From OPEN.md:1950; OPEN.md:3542. Evidence: Audit not recorded
-- [ ] **L507** `world-class` open, S: Persist pending device requests in core/lantrust.py across restart. From OPEN.md:1985. Evidence: core/lantrust.py:69 _pending dict still in-memory; W34 skipped
 - [ ] **L508** `world-class` open, S: Batch commits in 5,000-note import (45.9 s) while keeping Stop. From OPEN.md:1763. Evidence: routes_import.py:108 'each one is committed as it is made' (deliberate for Stop); no batching found
 - [ ] **L509** `world-class` open, S: Handle deleted_at on import of binned notes. From OPEN.md:1764. Evidence: Export writes deleted_at (routes_settings_transfer.py:109-113); routes_import.py has no deleted handling to change it
 - [ ] **L510** `world-class` open, S: Trace how 'conversation' is derived as a topic for a gym note. From OPEN.md:4332. Evidence: Ledger open; needs the owner's note to trace topic derivation.
