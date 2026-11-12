@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Atlas starters and the empty states' Ask Atlas offer are buttons, so they take the button's corner instead of a capsule; the pill lint now reads suggest and starter controls too (L407).
 - Ask on a phone: the header's buttons share the title's line, the model picker alone takes the next (L384; three lines to two at 390).
 - Empty states: every scripted "nothing here yet" line in a small panel is the empty-line recipe (saved looks, saved setups, map groups, bookmark groups, note history, board snapshots, board comments), with a lint (L765).
 - Notes and Library: a note card now draws the same border, fill and corner as a Library card (L767).

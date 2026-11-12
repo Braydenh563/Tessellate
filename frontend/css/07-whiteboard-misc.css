@@ -16992,7 +16992,7 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   min-height: var(--target-min);
   padding: var(--space-1) var(--space-4);
   border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: transparent;
   box-shadow: none;
   color: var(--ink);
@@ -17020,7 +17020,7 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   min-height: var(--target-min);
   padding: var(--space-1) var(--space-4);
   border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: transparent;
   box-shadow: none;
   color: var(--ink);

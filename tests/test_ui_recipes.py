@@ -3141,6 +3141,9 @@ PILL_CONTROLS = {
     ".chat-context-pill": "the context meter in the chat composer's row",
     ".minimised-pill": "a minimised panel's pill (INBOX 1475, the owner's reference: a rounded pill with the glyph, the name and an x)",
     ".minimised-pill-x": "the round x inside that pill",
+    ".entry-meta>.chip.suggested-tag>.suggested-tag-dismiss": "the round x inside a suggested tag, as in a minimised pill",
+    ".link-suggestion-bar": "a strength meter's track, not a control (the name matched the suggest rule, L407)",
+    ".doc-suggest-list-inline>.doc-suggest-item": "inline spelling candidates are quiet pills, the owner's decision (INBOX 549)",
     "#notif-btn.has-unread::after": "an unread dot",
     ".notif-unread-chip": "a count badge",
     ".selection-bar button": "a floating bar over a canvas",
@@ -3156,7 +3159,7 @@ PILL_CONTROLS = {
 
 _PILL_CONTROL = re.compile(
     r"(?<![\w-])(button|summary|select)(?![\w-])"
-    r"|chip|pill|btn|toggle|\.seg(?![\w-])|-close|-nav\b|jump|fab"
+    r"|chip|pill|btn|toggle|\.seg(?![\w-])|-close|-nav\b|jump|fab|suggest|starter"
 )
 
 
