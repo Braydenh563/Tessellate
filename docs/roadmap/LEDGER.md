@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 139 | 45 | 0 | 17 | 314 |
+| world-class | 130 | 138 | 45 | 0 | 17 | 313 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 665 | 144 | 3 | 140 | 1362 |
+| all | 553 | 664 | 144 | 3 | 140 | 1361 |
 
 ## graph
 
@@ -630,7 +630,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## world-class
 
-- [ ] **L497** `world-class` open, S: Keep the quick note reminder chip when saved through the outbox queue. From OPEN.md:1401; OPEN.md:3720. Evidence: No outbox/queued reminder handling found in quicknote code by grep
 - [ ] **L498** `world-class` open, S: Fix quick add fixture 56/60 and re-run quickadd.js for 60/60. From OPEN.md:3718. Evidence: tests/fixtures/composer/quickadd_1010.json; re-run needs a live server sweep, no recorded 60/60
 - [ ] **L499** `world-class` open, S: Refresh README palette.png which still shows notes, a document, a board. From OPEN.md:1248. Evidence: palette.png last committed 97ba7d73b 2026-10-12; no later retake in git log.
 - [ ] **L500** `world-class` open, S: Stop a titled note's every sentence scoring on title in the brief (TITLE_WEIGHT). From OPEN.md:1947. Evidence: Brief keeps up to four dated sentences; TITLE_WEIGHT fix not found in brief code
