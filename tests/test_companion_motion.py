@@ -407,7 +407,8 @@ def test_it_notices_the_app_rate_limited_and_never_under_reduced_motion() -> Non
     for kind in ("read", "graph", "streak", "yawn", "private", "toast"):
         assert f"{kind}: {{ cool:" in AV, kind
     # The streak: once, and only for a count longer than the last seen.
-    assert "if (seen && days > seen) nameMarkBuddyReact(\"streak\");" in _fn("nameMarkBuddyStreak")
+    # Recorded only once the cheer plays (review 2026-11-12), so a refused one is tried again.
+    assert "if (seen && days > seen && !nameMarkBuddyReact(\"streak\")) return;" in _fn("nameMarkBuddyStreak")
     dashboard = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
     assert "nameMarkBuddyStreak(streak, stats.total_entries)" in dashboard  # P6/N10 (1112): the call carries the note count for the milestone
     # Night: a tick yawns, and the yawn's early return comes after the mood

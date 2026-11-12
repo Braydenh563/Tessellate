@@ -95,11 +95,8 @@ const tick = () => new Promise((r) => setTimeout(r, 5));
 def test_stop_keeps_the_queue_and_send_resumes_it_in_order() -> None:
     queue = _fn(_read("palette.js"), "function composerQueue(")
     chat_attach = _read("chat-attach.js")
-    send = chat_attach[
-        chat_attach.index("async function sendChatMessage(") : chat_attach.index(
-            '//: **A bare "undo" or "redo"'
-        )
-    ]
+    start = chat_attach.index("async function sendChatMessage(")
+    send = chat_attach[start : chat_attach.index("\n}\n", start) + 2]  # the comment after it moved to chat-turn.js (29f06b285)
     proc = subprocess.run(
         ["node", "-e", HARNESS, queue, send],
         capture_output=True,

@@ -19,7 +19,8 @@ def _read(name: str) -> str:
 
 def test_a_send_mid_answer_queues_and_the_end_of_a_turn_sends_the_next():
     text = _read("chat-attach.js")
-    send = text[text.index("async function sendChatMessage("):text.index("//: **A bare \"undo\" or \"redo\" typed in chat")]
+    start = text.index("async function sendChatMessage(")
+    send = text[start:text.index("\n}\n", start) + 2]  # to its closing brace: the comment after it moved to chat-turn.js (29f06b285)
     assert "if (chatQueue.busy())" in send and "chatQueue.take(" in send
     assert "chatQueue.next()" in send.split("} finally {")[1]
     chat = _read("chat.js")

@@ -705,7 +705,7 @@ EXEMPT: dict[str, str] = {
     "settings-controls.js:changePassword": "auth: sign-in, recovery or lock; no user data",
     "settings-panes.js:reportTimezone": "settings: a setting with its own Reset or the settings history",
     "settings-panes.js:savePrefs": "settings: a setting with its own Reset or the settings history",
-    "settings-panes.js:saveSearchProvider": "settings: a setting with its own Reset or the settings history",
+    "settings-prefs.js:saveSearchProvider": "settings: a setting with its own Reset or the settings history",
     "settings-panes.js:setPreference": "settings: a setting with its own Reset or the settings history",
     "settings-wiring.js:persistSavedSearches": "settings: a setting with its own Reset or the settings history",
     "settings-wiring.js:lockRequest": "auth: sign-in, recovery or lock; no user data",
