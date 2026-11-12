@@ -703,11 +703,11 @@ function wbLibRefBody(ref) {
 //: which point of the drawing goes at `at`, as a fraction of its box (where
 //: its tile was held for a drag; the middle otherwise). See "Where a placed
 //: thing lands" in whiteboard.js.
-async function wbLibPlace(entry, at = null, { connect = false, onto = null, grab = null } = {}) {
+async function wbLibPlace(entry, at = null, { connect = false, onto = null, grab = null, here = false } = {}) {
   if (!entry) return;
   if (entry.kind === "style") return wbLibApplyStyle(entry);
   if (entry.kind === "palette") return wbLibApplyPalette(entry, entry.payload?.colours?.[0]);
-  if (entry.kind === "template") return wbLibNewBoardFrom(entry);
+  if (entry.kind === "template" && !here) return wbLibNewBoardFrom(entry);
   const map = wbIsMap();
   const was = wbSelectedItem ? { ...wbSelectedItem } : null;
   const wasItem = was ? wbFindItem(was.kind, was.id) : null;
@@ -903,6 +903,8 @@ function wbLibMenuItems(entry) {
     items.push({ label: "ph:paint-brush Apply to the selection", title: "Enter", run: () => wbLibApplyStyle(entry), group: "use" });
   } else if (entry.kind === "template") {
     items.push({ label: "ph:plus New board from this", title: "Enter", run: () => wbLibNewBoardFrom(entry), group: "use" });
+    //: A board template's shapes go onto the board that is open, in the middle of the view (draw.io's Insert template).
+    if (entry.payload?.element && !wbIsMap()) items.push({ label: "ph:arrow-square-in Place on this board", title: "Its shapes, in the middle of the view", run: () => wbLibPlace(entry, null, { here: true }), group: "use" });
   } else {
     items.push({ label: "ph:plus Place in the middle", title: "Enter", run: () => wbLibPlace(entry), group: "use" });
     if (entry.kind !== "branch") {
@@ -1306,20 +1308,43 @@ async function wbLibExport(libraryId) {
   }
 }
 
+//: A library as a draw.io library file, through the cell writer; what has no shapes (styles, palettes, branches) is left out and said.
+wbLibExport.drawio = async (lib) => {
+  try {
+    const res = await api(`/board-library/export?library_id=${lib.id}`);
+    const out = await wbDrawioStyle.more.mxlibrary.write(await res.json());
+    if (!out.count) return toast("Nothing in that library has shapes a draw.io library can hold.", "info");
+    await saveFile(`${String(lib.name).replace(/[^\w .-]+/g, "").trim() || "library"}.xml`, new Blob([out.xml], { type: "text/xml" }));
+    toast(`Saved ${nounCount(out.count, "shape")} for draw.io${out.left ? `; ${out.left} left out` : ""}.`);
+  } catch (err) {
+    toast(err.message || "Couldn't export that library.", true);
+  }
+};
+
 async function wbLibImportFile(file) {
   if (!file) return;
   if (file.size > 8 * 1024 * 1024) return toast("That file is too large to be a library (8 MB at most).", "info");
   let body;
-  try {
-    body = JSON.parse(await file.text());
-  } catch {
-    return toast("That file is not a Tessellate library.", "info");
+  let note = "";
+  const text = await file.text();
+  //: A draw.io library (`mxlibrary`): each entry through the `.drawio` cell reader, into the library's own import.
+  if (/<mxlibrary[\s>]/i.test(text)) {
+    const read = await wbDrawioStyle.more.mxlibrary.body(text, file.name.replace(/\.[^.]+$/, "") || "draw.io library");
+    if (!read || !read.body.items.length) return toast("That draw.io library has no shapes to bring in.", "info");
+    body = read.body;
+    note = read.skipped ? `${read.skipped} left out` : "";
+  } else {
+    try {
+      body = JSON.parse(text);
+    } catch {
+      return toast("That file is not a Tessellate library.", "info");
+    }
   }
   try {
     const out = await apiJson("/board-library/import", { method: "POST", body: JSON.stringify(body) });
     wbLibPairStep(`Imported the library “${out.library.name}”`, out.library.id, null, { created: true, withItems: true });
     await wbLoadLibrary({ force: true });
-    const extra = [out.skipped ? `${out.skipped} skipped` : "", out.dropped_media ? `${nounCount(out.dropped_media, "picture")} not in this notebook left out` : ""].filter(Boolean).join(", ");
+    const extra = [note, out.skipped ? `${out.skipped} skipped` : "", out.dropped_media ? `${nounCount(out.dropped_media, "picture")} not in this notebook left out` : ""].filter(Boolean).join(", ");
     toast(`Imported ${out.items} into "${out.library.name}"${extra ? ` (${extra})` : ""}.`);
   } catch (err) {
     toast(err.message || "Couldn't import that library.", true);
@@ -1338,10 +1363,11 @@ function wbLibPanelMenu() {
   const libs = wbLibState.lib?.libraries || [];
   const items = [
     { label: "ph:folder-plus New library…", title: "A library of your own to save into", run: () => wbLibNewLibrary(), group: "lib" },
-    { label: "ph:upload-simple Import a library file…", title: "A .memorymap-library.json file", run: () => document.getElementById("wb-lib-import")?.click(), group: "file" },
+    { label: "ph:upload-simple Import a library file…", title: "A .memorymap-library.json file, or a draw.io library", run: () => document.getElementById("wb-lib-import")?.click(), group: "file" },
   ];
   for (const lib of libs) {
     items.push({ label: `ph:download-simple Export ${lib.name}`, title: "Save it as a file to share or keep", run: () => wbLibExport(lib.id), group: "file" });
+    items.push({ label: `ph:file-code Export ${lib.name} for draw.io`, title: "A draw.io library file (.xml)", run: () => wbLibExport.drawio(lib), group: "file" });
   }
   for (const lib of libs.filter((l) => l.kind !== "yours")) {
     items.push({

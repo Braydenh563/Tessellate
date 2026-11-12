@@ -1139,9 +1139,9 @@
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-import-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
     </div>
-    <p class="muted wb-import-about" id="wb-import-about">Paste a Mermaid diagram, or choose a .mmd, a draw.io file, or an SVG or PNG a board here exported.</p>
+    <p class="muted wb-import-about" id="wb-import-about">Paste a Mermaid diagram, or choose a .mmd, a draw.io file or CSV, or an SVG or PNG a board here exported.</p>
     <textarea id="wb-import-text" class="wb-import-text" rows="8" spellcheck="false" aria-label="Mermaid diagram" aria-describedby="wb-import-about" placeholder="flowchart TD&#10;  A[Start] --> B{Ready?}&#10;  B -->|yes| C[Ship it]"></textarea>
-    <input type="file" id="wb-import-file" accept=".mmd,.mermaid,.txt,.md,.svg,.png,.drawio,.xml,text/plain,image/svg+xml,image/png" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a diagram file" title="Choose a diagram file">
+    <input type="file" id="wb-import-file" accept=".mmd,.mermaid,.txt,.md,.csv,.svg,.png,.drawio,.xml,text/plain,text/csv,image/svg+xml,image/png" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a diagram file" title="Choose a diagram file">
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost quiet small" id="wb-import-choose">Choose a file…</button>
       <button type="button" class="ghost small" data-close-dialog="wb-import-dialog">Cancel</button>
@@ -8382,7 +8382,7 @@ Link to another note with [[its first few words]]."></textarea>
           <span id="wb-lib-status" class="visually-hidden" role="status" aria-live="polite"></span>
           <div id="wb-lib-list" class="wb-lib-list" role="listbox" aria-label="Library" aria-describedby="wb-lib-keys"></div>
           <p id="wb-lib-keys" class="muted wb-lib-keys">Click or Enter places it, drag to put it anywhere, Shift+Enter joins it to the selection.</p>
-          <input type="file" id="wb-lib-import" accept=".json,application/json" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a library file" title="Choose a library file">
+          <input type="file" id="wb-lib-import" accept=".json,.xml,application/json,text/xml" class="hidden" aria-hidden="true" tabindex="-1" aria-label="Choose a library file" title="Choose a library file">
         </section>
         <section class="wb-side-section" data-side-panel="notes" aria-label="Notes" hidden>
           <p class="muted wb-lib-keys">Drag a note onto the board to place it as a card.</p>

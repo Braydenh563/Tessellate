@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard, draw.io: a .drawio file now keeps rotation, gradient, shadow and a picture stored inside it, and the board's .drawio export writes them back; a draw.io library (.xml) imports into the Library and a library exports for draw.io; Insert, Diagram, draw.io also reads a draw.io CSV (label, style and connect lines, with its layout); a saved template can be placed on the open board.
 - Whiteboard: View > Rulers (top and left, following pan and zoom) and a Units board setting that the rulers and the position and size fields show.
 - Whiteboard export: PNG border, resolution (pHYs) and an embedded copy of the board that Insert, Diagram opens again; a one-file HTML export that pans and zooms offline.
 - Whiteboard: paper size (A4, A3, Letter, Legal, custom) and direction as board settings, driving the page view and the PDF export's starting choice.

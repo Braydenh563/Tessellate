@@ -531,6 +531,31 @@ TAIL_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "board-drawio",
+            "keywords": (
+                "draw.io",
+                "drawio",
+                "draw.io csv",
+                "csv import",
+                "draw.io library",
+                "mxlibrary",
+                "import a draw.io library",
+                "export for draw.io",
+                "place on this board",
+                "insert a template",
+                "templates from draw.io",
+            ),
+            "body": (
+                "Insert, Diagram, Mermaid, draw.io or board SVG also takes a draw.io CSV: its label, style and connect lines "
+                "make shapes and connectors, laid out as its layout line says (a vertical or horizontal tree or flow, else a grid). "
+                "A .drawio file keeps turns, gradients, shadows and pictures inside the file. "
+                "In the Library, the panel menu imports a draw.io library (.xml) and exports a library as one, "
+                "and a template's menu has Place on this board, which puts its shapes in the middle of the view. "
+                "The set Templates from draw.io holds forty, each credited: Template by JGraph, CC BY 4.0."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "board-diagram-tools",
             "keywords": (
                 "tidy a diagram",

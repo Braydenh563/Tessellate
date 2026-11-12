@@ -11992,9 +11992,10 @@ async function wbRedo() {
 // than a copy per kind, since only the `kind`/`data` differ.
 //: Made on top of its own band of the stack (`wbStackNewZ`; a frame under
 //: the frames already there), so what was just made is what is on top.
-async function wbCreateObject(kind, data, x, y, width, height, z = wbStackNewZ("object", { kind })) {
+async function wbCreateObject(kind, data, x, y, width, height, z = wbStackNewZ("object", { kind }), extra = null) {
   if (kind === "text") data = wbFmtState.board?.withDefaults("text", data) ?? data;
-  const body = { kind, data, board_id: window.currentBoardId, x, y, z, width, height };
+  //: `extra`: row fields beside the data (an import's `rotation`).
+  const body = { kind, data, board_id: window.currentBoardId, x, y, z, width, height, ...(extra || {}) };
   try {
     const created = await apiJson("/whiteboard/objects", { method: "POST", body: JSON.stringify(body) });
     wbState.objects = wbState.objects || [];
