@@ -823,7 +823,9 @@ window.addEventListener("resize", wbScheduleCull);
 //: stays a square of the *board*, not of the screen, panning and zooming
 //: move the ruling with the content, which is the whole point of a grid you
 //: can snap to.
-const WB_GRID_SPACING = 24;
+//: A board may set its own (Format panel, Board: `background.grid_size`); `wbApplyBackground` assigns it, so snap,
+//: the nudge and the drawn grid all read the one value.
+let WB_GRID_SPACING = 24;
 
 //: A card's default size before a resize ever sets `width`/`height`
 //: explicitly: the CSS auto-size every card used before resize existed,
@@ -1600,6 +1602,12 @@ function wbApplyBackground() {
   el.style.setProperty("--wb-bg-image", bg.image ? `url("${mediaSrc(bg.image)}")` : "none");
   const picker = document.getElementById("wb-bg-color-picker");
   if (picker && (bg.color || themeHex)) picker.value = bg.color || themeHex;
+  //: The board's grid: its spacing and its colour (the theme's own tint when none is set).
+  WB_GRID_SPACING = bg.grid_size || 24;
+  if (bg.grid_color) el.style.setProperty("--wb-grid-ink", bg.grid_color);
+  else el.style.removeProperty("--wb-grid-ink");
+  wbSyncGridToTransform();
+  wbFmtState.opts?.sync(bg);
   const fold = document.getElementById("wb-sticky-fold");
   if (fold) fold.checked = bg.sticky_fold !== false;
   const rough = document.getElementById("wb-rough-toggle");
@@ -11792,7 +11800,7 @@ async function wbApplyHistoryEntry(from, to) {
   if (entry.action === "background") {
     const current = { ...wbBoardBackground() };
     const was = entry.before || {};
-    await wbSetBackground({ color: was.color ?? null, image: was.image ?? null, sticky_fold: was.sticky_fold ?? null, rough: was.rough ?? null, defaults: was.defaults ?? null }, { undo: false });
+    await wbSetBackground({ color: was.color ?? null, image: was.image ?? null, sticky_fold: was.sticky_fold ?? null, rough: was.rough ?? null, defaults: was.defaults ?? null, ...Object.fromEntries(["grid_size", "grid_color"].map((k) => [k, was[k] ?? null])) }, { undo: false });
     to.push({ action: "background", before: current });
     return true;
   }

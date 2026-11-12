@@ -1103,7 +1103,6 @@ clash is listed so the choice is made once.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Background colour or image | yes | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
-| Grid: size, colour, on or off | partly (style, snap) | `addGridOption` (Format.js 9103) | grid size | S |
 | Options: connection arrows, connection points, guides, tooltips, page view, shadow default, "Edit data" of the diagram | connection arrows and points, tooltip field yes; guides, page view, shadow default open | `addOptions` (Format.js 9016) | the toggles in section 10 | S |
 | Paper size, orientation | no | `addPaperSize` (Format.js 9231) | section 6 | S |
 

@@ -18,6 +18,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-format.js",
     "/js/whiteboard-label.js", //: After whiteboard-format.js: it joins that file's field lists and `wbFmtState`.
     "/js/whiteboard-hints.js", //: The View switches for the arrow grips and the connection dots; needs the page, `prefs`, `toast` and `wbFmtState`.
+    "/js/whiteboard-options.js", //: The Format panel's Board section; reads `wbSetBackground` and `onSurface` at run time only.
     "/js/whiteboard-keys.js",
     "/js/whiteboard-workspace.js", //: Edit inside a group and saved panel layouts; names whiteboard.js, whiteboard-library.js and whiteboard-format.js at run time only.
     "/js/whiteboard-layers-more.js",

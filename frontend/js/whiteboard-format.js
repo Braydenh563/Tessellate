@@ -655,6 +655,8 @@ function wbFormatSync() {
   }
   const boardStyle = document.getElementById("wb-board-style");
   if (boardStyle) wbFmtState.board.show(boardStyle, !entries.length && wbFmtState.fmtTab === "style");
+  const boardOptions = document.getElementById("wb-board-options");
+  if (boardOptions) boardOptions.hidden = entries.length > 0 || wbFmtState.fmtTab !== "style" || wbIsMap();
   const empty = document.getElementById("wb-format-empty");
   const map = kinds.has("topic");
   if (empty) {

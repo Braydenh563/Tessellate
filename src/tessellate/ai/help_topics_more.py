@@ -2997,11 +2997,14 @@ MORE_TOPICS.append({
     "id": "board-format-options",
     "keywords": (
         "picture border", "image border", "border on a picture", "outline a picture",
+        "grid size", "grid colour", "grid color", "change the grid", "board options",
     ),
     "body": (
         "Picture border: select a picture, then in the Format panel set Border to a width in pixels and pick its colour; "
         "an empty width takes the border off. The border is drawn inside the picture's edge, follows its rounded corners, "
-        "and is kept in SVG, PNG and PDF exports and in a .drawio file (as imageBorder and strokeWidth)."
+        "and is kept in SVG, PNG and PDF exports and in a .drawio file (as imageBorder and strokeWidth). "
+        "Board options: with nothing selected, the Format panel's Style tab has a Board section. Grid size (4 to 200, empty is 24) "
+        "and Grid colour belong to this board; Snap to grid, Shift with the arrow keys and the drawn grid all use that size."
     ),
     "badge": {"label": "Whiteboard", "tab": "library"},
 })

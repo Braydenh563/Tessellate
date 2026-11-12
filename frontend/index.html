@@ -8456,6 +8456,14 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
           <div id="wb-board-style-list" class="wb-board-style-list" role="group" aria-label="Board styles"></div>
         </section>
+        <section id="wb-board-options" class="wb-fmt-section" aria-label="Board options" hidden>
+          <h4 class="wb-fmt-head"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span>Board</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-boardopts" aria-controls="wb-fmt-help-boardopts" aria-expanded="false" title="About board options" aria-label="About board options"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
+          <div class="help-body hidden" id="wb-fmt-help-boardopts" role="dialog" aria-label="About board options">
+            <p><b>Board options</b> belong to this board, not to this device. The grid size and colour are what Snap to grid, Shift and the arrow keys, and the drawn grid all use.</p>
+          </div>
+          <label class="wb-fmt-row"><span class="wb-fmt-label">Grid size</span><input type="number" id="wb-bo-grid-size" min="4" max="200" step="1" placeholder="24" aria-label="Grid size, in pixels" title="Space between grid lines in pixels; empty is 24"></label>
+          <div class="wb-fmt-row" role="group" aria-label="Grid colour"><span class="wb-fmt-label">Grid colour</span><span class="wb-fmt-buttons"><input type="color" id="wb-bo-grid-color" class="wb-color-picker" aria-label="Grid colour" title="Grid colour"><button type="button" id="wb-bo-grid-reset" class="ghost small" title="Use the theme's own grid colour">Default</button></span></div>
+        </section>
         <p id="wb-format-none" class="muted wb-lib-keys" hidden>Nothing on this tab for what is selected.</p>
         <section class="wb-fmt-section" data-format-panel="style" aria-label="Style">
           <div class="wb-fmt-group" data-fmt-group="fill">
