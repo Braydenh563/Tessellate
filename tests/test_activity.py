@@ -135,18 +135,7 @@ def test_stop_the_model_stops_every_generation_first(client):
 #: `core/activity.py` or `jobruns.job_run`. Infrastructure that is not a job
 #: (the server, the tray icon, a heartbeat) says so.
 THREAD_SITES = {
-    "ai/embeddings.py": "collect: embeddings, embedding-model",
-    "ai/janitor.py": "collect: filing kinds",
-    "ai/autonomous.py": "collect: autonomous",
-    "search/searxng_manager.py": "infrastructure: the SearXNG output pump",
-    "search/searxng_install.py": "collect: searxng",
-    "api/routes_update.py": "collect: app-update",
-    "api/app.py": "jobruns: backup",
-    "__main__.py": "infrastructure: the server and the tray icon",
     "core/jobs.py": "collect: job- kinds (the pool) and its heartbeat; `jobs.thread`, the thread Jobs: threads() lists, stop_threads() at quit; callers reach Activity (transcription: activity.start, warm-up: collect embeddings)",
-    "core/embedmodels.py": "collect: embedding-model",
-    "core/security.py": "infrastructure: a DNS probe of two seconds",
-    "core/lanserve.py": "infrastructure: the one select thread that waits for a LAN connection first byte",
     "ai/captions_helper.py": "infrastructure: the captions helper is its own child process; its one thread watches stdin so it exits with the app (the app lists the helper itself: captions_process)",
 }
 

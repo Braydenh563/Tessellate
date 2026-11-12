@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Complexity: no function in src is over 15 any more; the CI baseline is 0 (L812: janitor, the Ollama tool stream, the asset stripper and the PE reader split into named steps).
 - Complexity: the board history replay, the folder import line, the map batch move and the shared-signal pairing are split into named steps (L812, C901 findings 8 to 4).
 - Map from notes: build_tree is split into a small builder class, so no part of it is over the complexity bar (L812, 9 findings to 8).
 - Timers: the chat timer, focus timer, meeting recorder and status bar clock share one one-second clock (L-world-class-15).

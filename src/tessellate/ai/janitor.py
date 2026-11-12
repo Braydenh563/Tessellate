@@ -901,6 +901,41 @@ def _stall_set(ollama: object, until: float | None) -> None:
         logger.debug("janitor: no stall memory for %r", type(ollama))
 
 
+def _take_model_slot(ollama: OllamaClient, waits_for_it: bool) -> bool:
+    """A call that does not wait for the model takes one of the filing slots,
+    or is refused when the model is stalled or every slot is taken. True when
+    a slot was taken (the caller releases it)."""
+    if waits_for_it:
+        return False
+    if _stalled(ollama):
+        raise ModelStalled("filing model stalled")
+    if not _model_slots.acquire(blocking=False):
+        logger.info("janitor: %d notes are already waiting on the model; filing this one by meaning", FILING_MODEL_CONCURRENCY)
+        raise ModelStalled("filing model busy")
+    return True
+
+
+def _takes_mode(chat) -> bool:  # noqa: ANN001
+    """Whether this provider's `chat` takes a `mode`."""
+    try:
+        return "mode" in inspect.signature(chat).parameters
+    except (TypeError, ValueError):
+        return False
+
+
+def _apply_late(reply: dict, on_late, late: int) -> None:  # noqa: ANN001
+    """A filing answer that came after the caller gave up: applied when there
+    is somewhere to apply it, and taken off the late count either way."""
+    try:
+        if on_late is not None:
+            on_late(reply)
+    except Exception:  # noqa: BLE001
+        logger.warning("janitor: applying a late filing answer failed", exc_info=True)
+        _uncount_late(late, "The late answer came but could not be applied", "failed")
+    finally:
+        _uncount_late(late, "The late answer came and was applied")
+
+
 def _chat_within_deadline(
     ollama: OllamaClient,
     model: str,
@@ -913,19 +948,9 @@ def _chat_within_deadline(
     provider takes a mode: a filing reply is one line of JSON, and a
     reasoning model left to think first is most of the minute."""
     waits_for_it = deadline >= BLOCKING_MODEL_DEADLINE_SECONDS
-    if not waits_for_it and _stalled(ollama):
-        raise ModelStalled("filing model stalled")
-    slot = False
-    if not waits_for_it:
-        if not _model_slots.acquire(blocking=False):
-            logger.info("janitor: %d notes are already waiting on the model; filing this one by meaning", FILING_MODEL_CONCURRENCY)
-            raise ModelStalled("filing model busy")
-        slot = True
+    slot = _take_model_slot(ollama, waits_for_it)
     try:
-        try:
-            takes_mode = "mode" in inspect.signature(ollama.chat).parameters
-        except (TypeError, ValueError):
-            takes_mode = False
+        takes_mode = _takes_mode(ollama.chat)
         outcome: dict = {}
         lock = threading.Lock()
 
@@ -961,14 +986,7 @@ def _chat_within_deadline(
                 raise
             if settle("reply", reply):
                 _stall_set(ollama, None)  # it answered after all: ask it again
-                try:
-                    if on_late is not None:
-                        on_late(reply)
-                except Exception:  # noqa: BLE001
-                    logger.warning("janitor: applying a late filing answer failed", exc_info=True)
-                    _uncount_late(outcome.get("late", 0), "The late answer came but could not be applied", "failed")
-                finally:
-                    _uncount_late(outcome.get("late", 0), "The late answer came and was applied")
+                _apply_late(reply, on_late, outcome.get("late", 0))
 
         #: The request's context too, so a call made for a request is named
         #: for it ("Create entry") rather than "AI request to <model>".

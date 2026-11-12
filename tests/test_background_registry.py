@@ -38,28 +38,16 @@ _KINDS = {
 
 SEED = frozenset(
     """
-__main__.py::_boot_and_swap::thread::1
 __main__.py::_serve_with_lan.serve_both::task::1
 __main__.py::_serve_with_lan.serve_both::task::2
-__main__.py::_start_tray::thread::1
-ai/autonomous.py::start::thread::1
-ai/embeddings.py::EmbeddingService._maybe_auto_install_missing_package::thread::1
-ai/janitor.py::_chat_within_deadline::thread::1
 ai/tools/tool_web.py::prefetch_web::executor::1
-api/app.py::_start_searxng_if_asked::thread::1
 api/routes_backups.py::export_bundle::request-task::1
 api/routes_chat.py::_stop_when_gone::task::1
 api/routes_import.py::export_notebook_folder::request-task::1
 api/routes_settings.py::restart_app::request-task::1
 api/routes_settings.py::set_console_mode::request-task::1
 api/routes_settings_transfer.py::export_backup::request-task::1
-api/routes_update.py::apply_update::thread::1
-api/routes_update.py::apply_update::thread::2
-core/embedmodels.py::_spawn_download::thread::1
 core/jobstore.py::_schedule::timer::1
-core/security.py::_backend_addresses::thread::1
-search/searxng_install.py::install_source::thread::1
-search/searxng_manager.py::_run_streaming::thread::1
 """.strip().splitlines()
 ) | frozenset(
     #: Registered 2026-10-11 with the work that started them, each one named in
@@ -72,7 +60,6 @@ core/lanlive.py::Listener.start::executor::1
 core/lanlive.py::Listener.start::task::1
 core/lanlive.py::supervise::executor::1
 core/lanserve.py::<module>::executor::1
-core/lanserve.py::_FirstByteWatcher.wait::thread::1
 core/lanserve.py::_route::executor::1
 core/lanserve.py::serve::executor::1
 core/lanserve.py::serve::task::1
