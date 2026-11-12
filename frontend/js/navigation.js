@@ -174,16 +174,12 @@ wireLongPress(
 //: here because a double-click cannot: a single click on every one of these
 //: rows opens it, so the first half of a double-click would already have
 //: left the list. Runs the row's own Rename item, so there is one rename.
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "F2" || event.defaultPrevented) return;
-  const host = event.target instanceof Element ? event.target.closest(ROW_MENU_HOSTS) : null;
-  if (!host) return;
-  const wrap = host.querySelector(".menu-wrap");
-  const item = wrap?.rowMenu?.items.find((it) => /^ph:\S+ Rename\b/.test(it.label || ""));
-  if (!item) return;
-  event.preventDefault();
-  item.run();
-});
+//: The key is the `renameRow` row of the shortcut table (settings-wiring.js).
+function renameFocusedRow() {
+  const host = document.activeElement instanceof Element ? document.activeElement.closest(ROW_MENU_HOSTS) : null;
+  const item = host?.querySelector(".menu-wrap")?.rowMenu?.items.find((it) => /^ph:\S+ Rename\b/.test(it.label || ""));
+  item?.run();
+}
 
 //: **Arrow keys between cards and rows, Home and End to the ends.** Chosen by
 //: where the items are drawn rather than by their order in the DOM: the

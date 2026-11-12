@@ -1133,6 +1133,7 @@ const DEFAULT_SHORTCUTS = {
   lanPanel: { keys: "Alt+L", label: "Other devices on this network: open the switch and the trusted networks" },
   navigateBack: { keys: "Alt+ArrowLeft", label: "Go back to the previous page or view" },
   navigateForward: { keys: "Alt+ArrowRight", label: "Go forward again" },
+  renameRow: { keys: "F2", label: "Rename the list item you are on" },
 };
 
 const SHORTCUT_STORE = "keyboardShortcuts";
@@ -1435,6 +1436,7 @@ function runShortcut(id) {
     // Same call the status bar's own Back/Forward buttons already make.
     navigateBack: () => stepTabHistory(-1),
     navigateForward: () => stepTabHistory(1),
+    renameRow: renameFocusedRow,
   };
   actions[id]?.();
 }
