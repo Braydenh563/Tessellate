@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 7 | 2 | 0 | 5 | 12 |
+| timeline | 3 | 7 | 1 | 0 | 5 | 11 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 679 | 157 | 3 | 195 | 1389 |
+| all | 553 | 679 | 156 | 3 | 195 | 1388 |
 
 ## graph
 
@@ -602,7 +602,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L485** `timeline` open, S: Add a mark column to the timeline table view so meetings do not read as Note. From OPEN.md:3564. Evidence: grep meeting in timeline*.js shows no table mark column; only calendar/add paths
 - [ ] **L486** `timeline` open, S: Fix deepen72b.js timeline row at 390 timing out waiting for .timeline-rows. From OPEN.md:735; OPEN.md:2782. Evidence: scratchpad/ui-sweeps/deepen72b.js:61 still waits on .timeline-rows; phone keeps table view
 - [ ] **L487** `timeline` open, S: timelinepaging.js strip-click fails on base; frame check flaky. From OPEN.md:2784. Evidence: Sweep script fails on base; verified open
-- [ ] **L495** `timeline` partly, M: Add the Timeline dock streak surface for D6 streak count. From OPEN.md:1388. Evidence: dashboard.js:50 has a Streak widget; the Timeline dock/streak surface the row asks for not found. Not built 2026-11-12 (tlperf): TIMELINE_PLAN.md:262 decision 22 "No streak count" (the dock is at its seven-control ceiling, `.dock-chip-row` held at zero uses), and decisions are not remade; needs an owner call to lift decision 22. The data is there: `/entries/daily` returns `streak` (routes_entries.py:1101), capped by its `days` window, so a surface would ask with days=366, not the strip's 7
 - [ ] **L496** `timeline` partly, M: Re-check timeline pinned bucket head flake and 4 off-screen ghost buttons. From OPEN.md:3902. Evidence: Pointer note to other OPEN rows (44px On this day shift, meeting mark in table, map under Boards chip), each tracked separately; flaky pinned-head sweep and Notes off-screen buttons not re-checked.
 
 ## world-class

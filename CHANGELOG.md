@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline: the startup `done_at` backfill is removed and L472 and L495 close under TIMELINE_PLAN decision 22 (no invented done moment, no streak count on the timeline; the streak stays on the Dashboard).
 - Timeline: a written range ("3 to 7 March", "28 July until 2 August") is one mention with its last day stored (`EntryDate.until`); its row sits on the first day and carries `until`, and a calendar window inside the range holds the note (TIMELINE_PLAN decision 13, `tests/test_timeline_spans.py`).
 - Tests: the reminders due-window test runs on a fixed clock; the past-time check reads the module's `utcnow`, so one patch fixes both.
 - Tests: the Guide lead tests run on a temp data dir, so a switch topic no longer writes the repo's data/ folder in a serial run (`tests/test_guide_lead_1110.py`).
@@ -18,7 +19,6 @@ below). Versioning is `0.x` while the app stabilises.
 - Tests: "every weekday", "every other friday" and "yearly" are read as a repeat and saved once as their rule through the Recurring model (`tests/test_recurring_rules_l493.py`).
 - Tests: one spec case each for the six insight rules (streak, drift, contrast, load, time of day, slot lint) in `tests/test_engine_phase6_spec.py`; the owner keeps all six, no behaviour change.
 - Feature: Settings, General, My birthday stores the day so "remind me on my birthday" resolves with no note saying it; a stored one wins over the notes (`tests/test_reading.py::test_a_stored_birthday_setting_wins_over_the_notes`).
-- Fix: reminders ticked before `done_at` existed are dated on start (updated, due or made time), so the review counts them (`tests/test_reminder_done_at_backfill.py`).
 - Fix: "this week", "next week" and "next friday" in a note start the week on the person's first day (Monday by default) (`tests/test_timewords.py::test_week_phrases_start_on_monday_by_default`).
 - Timeline: Shift and drag on the strip at the feed's edge reads a span, what you wrote in those days (composed, no model) with the notes listed beside it on one sheet; a plain click or drag still jumps (L-timeline-2, `/timeline/digest`).
 - Timeline: a week or more with nothing written shows a quiet line between the dates ("Nothing written for 2 weeks") on the day and week groupings, and its What happened here? opens the page for the first empty day; nothing is saved until Save (L-timeline-1).

@@ -215,7 +215,6 @@ class DatabaseManager(IndexesMixin):
         if not stamped:
             self._stamp_schema()
         self._backfill_inherited_workspaces()
-        self._backfill_reminder_done_at()
         self._drop_orphan_links()
         self._ensure_fts5()
         self._ensure_indexes()
@@ -425,21 +424,6 @@ class DatabaseManager(IndexesMixin):
                     f'   AND EXISTS (SELECT 1 FROM "{parent}" p WHERE p.id = "{table}".{fk}'
                     f"              AND p.workspace_id <> 'default')"
                 )
-
-    def _backfill_reminder_done_at(self) -> None:
-        """Date the reminders ticked before `done_at` existed.
-
-        The review and the statistics count a tick by `done_at`, so a reminder
-        done in the old days counted in no week. The honest dates are the last
-        time the row changed, else when it was due, else when it was made.
-        Idempotent: only done rows with no `done_at` match.
-        """
-        with self.engine.begin() as connection:
-            columns = {row[1] for row in connection.exec_driver_sql('PRAGMA table_info("reminders")')}
-            if "done_at" not in columns:
-                return
-            date_from = "COALESCE(" + ", ".join(c for c in ("updated_at", "due_at", "created_at") if c in columns) + ")"
-            connection.exec_driver_sql(f"UPDATE reminders SET done_at = {date_from} WHERE done = 1 AND done_at IS NULL")
 
     def _drop_orphan_links(self) -> None:
         """Remove link rows whose source or target note no longer exists.
