@@ -112,7 +112,7 @@ def _reject_if_in_the_past(due_at: datetime) -> None:
     a "reminder" that isn't reminding of anything upcoming. A minute of
     slack covers submit latency and clock skew, not a real mistake.
     """
-    now = datetime.now(timezone.utc)
+    now = utcnow()  # the module's one clock, so a test fixes both checks at once
     compare_at = due_at if due_at.tzinfo else due_at.replace(tzinfo=timezone.utc)
     if compare_at < now - timedelta(minutes=1):
         raise HTTPException(

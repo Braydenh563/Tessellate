@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: the reminders due-window test runs on a fixed clock; the past-time check reads the module's `utcnow`, so one patch fixes both.
 - Tests: the Guide lead tests run on a temp data dir, so a switch topic no longer writes the repo's data/ folder in a serial run (`tests/test_guide_lead_1110.py`).
 - Docs: the timeline's two waits (the owner's look at the day strip, INBOX 561; date ranges as spans, decision 13) move to BACKLOG "Timeline, parked 2026-11-12"; a reminder's detail line reads "Open." rather than "Not done yet.".
 - Verified in Chromium, no change needed: the reminder Alert select saves (60 min), Ctrl+Z puts it back, the Timeline range sends days=90/0/365, and the Timeline Options and reminders More menus stay inside the window with no overflow at 600, 768, 900 and 1100.
