@@ -7891,3 +7891,13 @@ def test_a_sticky_commit_foot_holds_one_line_and_never_hides_the_focus() -> None
     lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
     foot = re.search(r"#capture > :not\(\.capture-commit-row\) :is\([^)]*\) \{([^}]*)\}", lazy)
     assert foot and "scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2))" in foot.group(1)
+
+
+def test_a_confirmations_decline_is_the_quiet_text_action_not_a_bordered_ghost() -> None:
+    """L527: Cancel beside a tool-confirm's filled Confirm was a second bordered box."""
+    css = (ROOT / "frontend" / "css" / "02-chat-graph.css").read_text(encoding="utf-8")
+    m = re.search(r"\.tool-confirm \.row > button\.ghost \{([^}]*)\}", css)
+    assert m, "the confirmation's decline recipe is gone"
+    body = m.group(1)
+    assert re.search(r"border:\s*0", body) and "background: transparent" in body and "color: var(--accent-text)" in body
+    assert re.search(r"\.tool-confirm \.row > button\.ghost:is\(:hover, :focus-visible\):not\(:disabled\) \{\s*background: var\(--hover-veil\)", css)

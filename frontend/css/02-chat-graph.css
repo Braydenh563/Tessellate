@@ -609,6 +609,19 @@ details.tool-chip[open] > .tool-chip-body {
   margin: 0 0 0.5rem;
   font-size: var(--text-lg);
 }
+/* The decline beside a confirmation's filled button (Cancel, No thanks, Not now)
+   is the quiet text action, not a second bordered box (L527; DESIGN.md, the
+   button with no face and no edge): accent words, the veil on hover. */
+.tool-confirm .row > button.ghost {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--accent-text);
+  font-weight: 500;
+}
+.tool-confirm .row > button.ghost:is(:hover, :focus-visible):not(:disabled) {
+  background: var(--hover-veil);
+}
 /* --- the agent's run, as a timeline -------------------------------------------
    A turn used to render into three fixed slots, all the thinking, then all the
    tool chips, then the answer, which threw away the order the work actually

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A confirmation's Cancel (and No thanks, Not now) is a quiet text action, not a second bordered box.
 - The picker's preview of a note with an attached picture is covered by a test: fetched once, removed when it cannot load.
 - Live Text follows the page you scroll to in a PDF's scroll layout (checked, with a test).
 - A package bundle that cannot be installed here says why.
