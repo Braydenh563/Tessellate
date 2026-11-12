@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 101 | 4 | 0 | 17 | 201 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 17 | 2 | 0 | 4 | 19 |
-| all | 553 | 677 | 160 | 3 | 195 | 1390 |
+| general | 0 | 16 | 2 | 0 | 4 | 18 |
+| all | 553 | 676 | 160 | 3 | 195 | 1389 |
 
 ## graph
 
@@ -877,7 +877,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-36** `general` open, M: Let notes be grouped by hand, apart from the main sort. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-37** `general` open, M: Let a note have more than one category. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-38** `general` open, M: Compress notes and data on disk. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
-- [ ] **L-general-40** `general` open, S: Add a pie chart dashboard widget. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; bar and line widgets exist. Verify in code first.
 - [ ] **L-general-41** `general` open, L: An in-app browser with MCP tool abilities beside web search. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; the stdio MCP server is the other direction. Verify in code first.
 - [ ] **L-general-42** `general` open, L: A VS Code extension. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-45** `general` open, M: A dry run for the background librarian: show the diff, apply or discard. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md From the audits: taskhistory records runs; there is no diff to apply or discard. Verify in code first.
