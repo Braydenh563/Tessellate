@@ -33,7 +33,7 @@ logger = logging.getLogger("tessellate.passes")
 PASS_KINDS = ("autonomous", "night-shift", "learned-audit", "backup", "resurface", "embeddings-backfill", "maintenance")
 
 #: Passes Stop can end part way, at their next step.
-STOPPABLE = frozenset({"autonomous", "maintenance", "embeddings-backfill"})
+STOPPABLE = frozenset({"autonomous", "maintenance", "embeddings-backfill", "night-shift", "resurface"})
 
 _lock = threading.Lock()
 _running: set[str] = set()
@@ -144,7 +144,10 @@ def _resurface() -> None:
         with jobruns.job_run("resurface") as run:
             written = resurface.compute_scores(session)
             session.commit()
-            run.result = f"scored {written} note{'' if written == 1 else 's'}"
+            if stop_requested("resurface"):
+                run.cancel(f"stopped after scoring {written} note{'' if written == 1 else 's'}")
+            else:
+                run.result = f"scored {written} note{'' if written == 1 else 's'}"
     finally:
         session.close()
 

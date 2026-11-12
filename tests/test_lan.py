@@ -2309,3 +2309,28 @@ def test_the_watch_route_does_not_poll_and_the_window_pauses_when_hidden():
 
     assert "asyncio.sleep" not in inspect.getsource(routes_auth.lan_watch)
     assert "document.hidden" in _js("lan-watch.js").split("async function lanWatch()", 1)[1]
+
+
+def test_held_device_requests_survive_a_restart(tmp_path):
+    lantrust.reset_for_tests()
+    held = lantrust.hold("raw-token", "iPhone, Safari", "192.168.1.9", tmp_path)
+    assert (tmp_path / lantrust.PENDING_FILE).exists()
+    assert (tmp_path / lantrust.PENDING_FILE).stat().st_mode & 0o077 == 0
+    lantrust.reset_for_tests()  # the process is gone; the file stays
+    assert lantrust.pending() == []
+    lantrust.refresh(tmp_path, HOME)
+    assert [p["id"] for p in lantrust.pending()] == [held["id"]]
+    assert lantrust.decide(tmp_path, held["id"], True)
+    assert lantrust.wait_decision("raw-token", 0.1) == "allowed"
+    lantrust.settle("raw-token")
+    assert not (tmp_path / lantrust.PENDING_FILE).exists()
+    lantrust.reset_for_tests()
+
+
+def test_an_old_or_odd_held_request_is_not_brought_back(tmp_path):
+    lantrust.reset_for_tests()
+    old = {"id": "a", "name": "x", "address": "1", "at": 1.0, "decision": None}
+    (tmp_path / lantrust.PENDING_FILE).write_text(json.dumps([old, "junk", {"id": 5}]), encoding="utf-8")
+    lantrust.adopt(tmp_path)
+    assert lantrust.pending() == []
+    lantrust.reset_for_tests()

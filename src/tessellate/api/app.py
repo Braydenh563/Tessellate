@@ -1852,6 +1852,11 @@ def create_app() -> FastAPI:
         # Never raises: `stop_all` swallows per-job failures itself, and a
         # shutdown that fails to shut down is worse than one that leaves a
         # line in the log.
+        # The registry first (core/background.py): every named worker, the
+        # reminder notifier among them, is signalled before anything waits.
+        from tessellate.core import background
+
+        background.stop_all()
         jobs.stop_all()
         # The thread Jobs (`jobs.thread`): their watchers name how they
         # stop, and quitting is when to ask.

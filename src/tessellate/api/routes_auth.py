@@ -969,7 +969,7 @@ def _hold_new_device(request: Request, device: str, config: ConfigManager) -> JS
     """Hold this sign-in until this computer answers; None once allowed."""
     minted = "" if device else secrets.token_urlsafe(32)
     raw = device or minted
-    lantrust.hold(raw, lantrust.device_name(request.headers.get("user-agent")), _client_key(request))
+    lantrust.hold(raw, lantrust.device_name(request.headers.get("user-agent")), _client_key(request), config.data_dir)
     decision = None
     if _device_waits.acquire(blocking=False):
         try:

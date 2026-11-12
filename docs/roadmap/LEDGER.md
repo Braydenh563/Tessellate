@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 164 | 50 | 0 | 73 | 344 |
+| world-class | 130 | 161 | 48 | 0 | 73 | 339 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 690 | 149 | 3 | 196 | 1392 |
+| all | 553 | 687 | 147 | 3 | 196 | 1387 |
 
 ## graph
 
@@ -635,12 +635,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L499** `world-class` open, S: Refresh README palette.png which still shows notes, a document, a board. From OPEN.md:1248. Evidence: palette.png last committed 97ba7d73b 2026-10-12; no later retake in git log.
 - [ ] **L500** `world-class` open, S: Stop a titled note's every sentence scoring on title in the brief (TITLE_WEIGHT). From OPEN.md:1947. Evidence: Brief keeps up to four dated sentences; TITLE_WEIGHT fix not found in brief code
 - [ ] **L501** `world-class` open, S: Add a count kind to recognise and make factgraph _QUANTITY use it. From OPEN.md:3713. Evidence: factgraph.py:166 _QUANTITY still own regex; recognise.py has count_of but factgraph delegates only money (:576)
-- [ ] **L502** `world-class` open, S: Stop the reminder notifier on quit without waiting out the pool's 5 s deadline. From OPEN.md:1376. Evidence: __main__.py:1828 stop_notifier() still called after the pool shutdown path.
-- [ ] **L503** `world-class` open, S: Cover request-bound long tasks with core/activity.track and extend the THREAD_SITES lint. From OPEN.md:1498. Evidence: tests/test_activity.py THREAD_SITES covers thread sites only; core/activity.track not added at import/summary sites
 - [ ] **L504** `world-class` open, S: Speed up the night shift pairing phase (120 s) and stop the bar resetting. From OPEN.md:1945. Evidence: No speed-up commit found
 - [ ] **L505** `world-class` open, S: Audit jobruns detail strings that carry {exc}. From OPEN.md:1950; OPEN.md:3542. Evidence: Audit not recorded
-- [ ] **L506** `world-class` open, S: Build the core/background.py registry. From OPEN.md:1975. Evidence: No core/background.py in src/tessellate/core; lint only counts sites
-- [ ] **L507** `world-class` open, S: Persist pending device requests in core/lantrust.py across restart. From OPEN.md:1985. Evidence: core/lantrust.py:69 _pending dict still in-memory; W34 skipped
 - [ ] **L510** `world-class` open, S: Trace how 'conversation' is derived as a topic for a gym note. From OPEN.md:4332. Evidence: Ledger open; needs the owner's note to trace topic derivation.
 - [ ] **L511** `world-class` open, S: Drive the dictionary spelling offer in a live empty search result. From OPEN.md:604; OPEN.md:2789. Evidence: Server correction answered every typo tried; finderSpellingOffer path undriven
 - [ ] **L512** `world-class` open, S: Show last_at instead of updated_at on Library chat rows and Shelved list. From OPEN.md:998. Evidence: routes_library.py:298 returns chat updated_at; library.js:1738 shows item.updated_at; last_at only in sheets-selects.js:1950
@@ -771,7 +767,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L651** `world-class` partly, S: Drive undo helpers in a browser (only node --check and scanner so far). From OPEN.md:512. Evidence: Scanner + node checks exist; no cited Playwright drive of every undo step; Playwright is available so can be driven
 - [ ] **L656** `world-class` partly, M: Left: per-act note and meeting rows and the search chip in the palette. `/read/acts` rows are drawn (palette.js:177-187); no note, meeting or search-chip row found. From OPEN.md:3721.
 - [ ] **L657** `world-class` partly, M: Left: duplicates, entities and dates as fact kinds. `KINDS` is claim, question, tension, answered (ai/facts.py:109); tensions built. From OPEN.md:1226.
-- [ ] **L658** `world-class` partly, M: Add a stop step to night shift, backup, resurfacing and embeddings backfill. From OPEN.md:1697; OPEN.md:3538. Evidence: core/passes.py:95,201 stop_requested only checked in maintenance; backfill loop and others have no stop step
 - [ ] **L659** `world-class` partly, M: Add an egress lint that makes each outbound call site name its purpose and confirm remaining trust-contract rules. From OPEN.md:2023; OPEN.md:2513. Evidence: 72a/72b/73/74 landed (HISTORY 'Moved from the plans' Brief 72b); leftover rules unconfirmed, egress lint absent
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L662** `world-class` partly, M: Left: a meeting card preview of when, who and open actions. Meeting cards get actions only (entry-card.js:999, note-cards.js:324). From OPEN.md:3563.
@@ -790,7 +785,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L676** `world-class` partly, M: Reduce Dashboard DOM node count at boot and after dialogs (X15). From OPEN.md:4383. Evidence: CHANGELOG.md:234-236: 2,348 elements at first paint, Library menus/first chunk fixed; rest is stylesheet recalc, blocked on owner decision; x15-1111.md
 - [ ] **L677** `world-class` partly, M: Stop parsing the whole app on every boot (PF4). From OPEN.md:4462. Evidence: x15-1111: Guide chat, Reminders, Timeline, Graph, Documents panes and palette are templates (5,640 to 3,887 boot nodes); chat, library, notes still parse at boot
 - [ ] **L678** `world-class` partly, M: Cut import cost 3.3 s to 1.5 s; ai.autonomous pulls ai.agent. From OPEN.md:1710; OPEN.md:3785. Evidence: autonomous.py:48 still imports ai.agent at module level; heavy imports not lazily deferred
-- [ ] **L679** `world-class` partly, M: Register long tasks outside THREAD_SITES (imports, summary, jobs lane). From OPEN.md:3666. Evidence: tests/test_activity.py:137 THREAD_SITES table lint; request-bound long work not covered
 - [ ] **L681** `world-class` partly, M: BK12 200-row reminders payload remains (OPEN 4277); BK6 not evidenced; K27 dead routes owner call. From ledger-1112 O39.
 - [ ] **L682** `world-class` partly, M: E70 server idempotency by turn id not built; no turn_id guard in agent.py or chat routes. From ledger-1112 P19.
 - [ ] **L683** `world-class` partly, M: D4 --durations=0 needs one CI run (hardware-only CI); D3 slow tests true-deferred. From ledger-1112 O28.
@@ -844,6 +838,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-25** `world-class` partly, M: B4 knowledge kernel: per-claim citations, 'what changed about X' on an entity page, and the 'computed by <model> at <ts>' stamp on derived rows. From WORLD_CLASS_PLAN.md B4. Evidence: routes_entities.py entity_page has open_items, timeline, links (2b7d96fe); no per-claim citation rows, no what-changed view, no computed-by stamp
 - [ ] **L-world-class-26** `world-class` partly, M: I5 time travel: the model's judgement over then and now claim pairs, re-embedding past texts for as-of retrieval, and an as-of answer's cards grouped by month (H8). From WORLD_CLASS_PLAN.md I5. Evidence: ai/timetravel.py:179 then_and_now pairs claims by shared words; claims_as_of route (72ce2bca) resolves revisions at a day
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
+- [ ] **L-world-class-29** `world-class` open, M: Add a stop step to the backup pass (night shift, resurfacing, embeddings backfill and maintenance now stop). From L658 remainder. Evidence: core/backup.py:260 backup_now has no stop step between copy, check and second copy; callers use the returned path, so a stop needs a decided shape
 
 ## general
 

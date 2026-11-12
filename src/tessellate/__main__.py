@@ -1327,8 +1327,9 @@ def _stop_background_work() -> None:
 
     desk_companion.shutdown()
     try:
-        from tessellate.core import jobs
+        from tessellate.core import background, jobs
 
+        background.stop_all()
         jobs.stop_all()
     except Exception as exc:  # noqa: BLE001  # best effort on the way out
         logger.warning("couldn't stop background work before exiting: %s", exc)

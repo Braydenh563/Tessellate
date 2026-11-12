@@ -67,6 +67,10 @@ _gate: dict = {"open": False, "reason": "off", "network": None, "checked": 0.0}
 #: A holder rather than a bare module global: CodeQL read the global as unused.
 _run: dict[str, dict | None] = {"allowance": None}
 _pending: dict[str, dict] = {}
+#: The data folder the held requests are kept in (`lan-pending.json`), set the
+#: first time a call names it, so a restart gives the phone's wait back.
+_home: dict[str, Path | None] = {"dir": None}
+PENDING_FILE = "lan-pending.json"
 _version = 0
 #: Event-loop waiters (`wait_version_change`), woken by `_bump` rather than
 #: polling: a watch held open for 25 s used to wake 50 times to ask "yet?".
@@ -267,6 +271,7 @@ def refresh(data_dir: Path, network=_UNREAD, *, online: bool | None = None) -> d
         network = netid.read()
     if online is None:
         online = network is not None or _online()
+    adopt(data_dir)  # the requests a restart interrupted come back with the LAN listener
     with _lock:
         state = load(data_dir)
         allowance = _run["allowance"]
@@ -630,16 +635,70 @@ def device_name(user_agent: str | None) -> str:
     return f"{kind}, {browser}" if browser else kind
 
 
+def _write_pending() -> None:
+    """Keep the held requests on disk (0600, like the trust file); best effort."""
+    home = _home["dir"]
+    if home is None:
+        return
+    path = Path(home) / PENDING_FILE
+    try:
+        if not _pending:
+            path.unlink(missing_ok=True)
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        partial = path.with_suffix(f".{os.getpid()}.part")
+        fd = os.open(partial, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as out:
+            json.dump(list(_pending.values()), out)
+        os.replace(partial, path)
+    except OSError:
+        pass  # a request that is not kept only costs the phone one more tap after a restart
+
+
+def adopt(data_dir: Path) -> None:
+    """Bind to `data_dir` and take back the requests a restart interrupted
+    (those not yet past `PENDING_SECONDS`). Cheap after the first call."""
+    with _lock:
+        if _home["dir"] is not None and Path(_home["dir"]) == Path(data_dir):
+            return
+        _home["dir"] = Path(data_dir)
+        try:
+            raw = json.loads((Path(data_dir) / PENDING_FILE).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return
+        now = time.time()
+        for held in raw if isinstance(raw, list) else []:
+            if (
+                isinstance(held, dict)
+                and isinstance(held.get("id"), str)
+                and isinstance(held.get("at"), (int, float))
+                and now - held["at"] <= PENDING_SECONDS
+                and held.get("decision") in (None, "allowed", "denied")
+            ):
+                _pending.setdefault(
+                    held["id"],
+                    {k: held.get(k, "") for k in ("id", "name", "address")}
+                    | {"at": float(held["at"]), "decision": held["decision"]},
+                )
+        if _pending:
+            _bump()
+
+
 def _expire(now: float) -> None:
-    for key in [k for k, p in _pending.items() if now - p["at"] > PENDING_SECONDS]:
+    gone = [k for k, p in _pending.items() if now - p["at"] > PENDING_SECONDS]
+    for key in gone:
         del _pending[key]
+    if gone:
+        _write_pending()
 
 
-def hold(raw: str, name: str, address: str) -> dict:
+def hold(raw: str, name: str, address: str, data_dir: Path | None = None) -> dict:
     """Hold a sign-in from a new device until this computer answers."""
     found = device_hash(raw)
     address = plain_address(address)
     now = time.time()
+    if data_dir is not None:
+        adopt(data_dir)
     with _lock:
         _expire(now)
         held = _pending.get(found)
@@ -651,6 +710,7 @@ def hold(raw: str, name: str, address: str) -> dict:
                 del _pending[oldest]
             held = {"id": found, "name": name, "address": address, "at": now, "decision": None}
             _pending[found] = held
+            _write_pending()
             _bump()
         return dict(held)
 
@@ -672,6 +732,8 @@ def decide(data_dir: Path, device_id: str, allow: bool) -> bool:
         if held is None or held["decision"] is not None:
             return False
         held["decision"] = "allowed" if allow else "denied"
+        adopt(data_dir)
+        _write_pending()
         if allow:
             state = load(data_dir)
             if not any(d["id"] == device_id for d in state["devices"]):
@@ -707,6 +769,7 @@ def settle(raw: str) -> None:
     """The held sign-in got its answer to the device: forget the request."""
     with _lock:
         if _pending.pop(device_hash(raw), None) is not None:
+            _write_pending()
             _bump()
 
 
@@ -725,7 +788,8 @@ def forget_device(data_dir: Path, device_id: str) -> bool:
             return False
         state["devices"] = kept
         save(data_dir, state)
-        _pending.pop(device_id, None)
+        if _pending.pop(device_id, None) is not None:
+            _write_pending()
         _bump()
     return True
 
@@ -735,5 +799,6 @@ def reset_for_tests() -> None:
         _gate.update(open=False, reason="off", network=None, checked=0.0)
         _run["allowance"] = None
         _pending.clear()
+        _home["dir"] = None
         _used.update(at=0.0, written=0.0)
         _bump()

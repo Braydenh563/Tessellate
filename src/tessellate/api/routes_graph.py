@@ -27,7 +27,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
 from tessellate.api import bounds
-from tessellate.core import cjk, companion_events
+from tessellate.core import activity, cjk, companion_events
 from tessellate.core import deps
 from tessellate.core.database import Attachment, EmbeddingRecord, Entry, NoteType
 from tessellate.core.deps import get_session
@@ -1576,13 +1576,15 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
         lines.append(f"- {text[: topic_finder.SUMMARY_CHARS]}")
     hint = f"They share: {', '.join(body.terms[:5])}.\n" if body.terms else ""
     try:
-        reply = ollama.chat(
-            deps.get_model_manager().utility_model(),
-            [
-                {"role": "system", "content": topic_finder.SUMMARY_SYSTEM},
-                {"role": "user", "content": f"{hint}The notes:\n" + "\n".join(lines)},
-            ],
-        )
+        #: Listed while the model writes, as a Chat answer is (activity contract, rule 5).
+        with activity.track("generation", "Summarising a topic", stoppable=False):
+            reply = ollama.chat(
+                deps.get_model_manager().utility_model(),
+                [
+                    {"role": "system", "content": topic_finder.SUMMARY_SYSTEM},
+                    {"role": "user", "content": f"{hint}The notes:\n" + "\n".join(lines)},
+                ],
+            )
         # Small local models write `&#39;` and `&amp;` (B71, Qwen2.5-1.5B): shown as the characters meant.
         summary = " ".join(html.unescape(str(reply.get("content") or "")).split()).strip("\"' ")
     except Exception:  # noqa: BLE001  # any model failure reads as "no model"

@@ -705,6 +705,8 @@ def describe_night_pass(run: "Run", outcome: dict) -> None:
     run.result = f"read {' and '.join(parts)}, found {derived} fact{'' if derived == 1 else 's'}"
     if outcome.get("stopped_reason") == "budget":
         run.result += " (stopped at its budget)"
+    elif outcome.get("stopped_reason") == "stopped":
+        run.result += " (stopped when asked)"
 
 
 # --- The thread's current run, and every model call (INBOX 805, B77) --------
