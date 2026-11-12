@@ -35,8 +35,8 @@ def test_a_text_box_and_a_board_ask_before_the_builder_and_new_is_empty():
 
 def test_the_embed_row_reopens_the_picker_when_the_lists_arrive_late():
     editor = _js("editor.js")
-    assert 'if (trigger === "[[") editorWarmLinkCaches();' in editor
-    warm = editor[editor.index("function editorWarmLinkCaches") : editor.index("function editorOpenMenu(")]
+    start = editor.index("function editorOpenMenu(")
+    warm = editor[editor.index('if (trigger === "[[") {', start) : editor.index("\n}\n", start)]
     assert 'editorOpenMenu(editorMenuState.textarea, "[[")' in warm
 
 

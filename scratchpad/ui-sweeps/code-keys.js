@@ -63,7 +63,7 @@ const CODE = "function alpha(n) {\n  if (n) {\n    return n + 1;\n  }\n  return 
         if (el && !el.classList.contains("hidden")) {
           if (id === "palette-overlay") closePalette();
           else if (id === "finder-overlay") closeFinder();
-          else docIdeCloseKeys();
+          else document.querySelector("#doc-keys-overlay button[aria-label=\"Close\"]")?.click();
         }
       }
       if (docRun) docRunClose();
@@ -178,7 +178,7 @@ const CODE = "function alpha(n) {\n  if (n) {\n    return n + 1;\n  }\n  return 
       id: li.dataset.command,
       keys: [...li.querySelectorAll("kbd")].map((k) => k.textContent),
     }));
-    docIdeCloseKeys();
+    document.querySelector("#doc-keys-overlay button[aria-label=\"Close\"]")?.click();
     return rows;
   });
   const keyed = sheet.filter((r) => r.keys.length);

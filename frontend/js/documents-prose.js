@@ -95,9 +95,10 @@ async function docGrammarWhy() {
   return found.join("; ") || "every file it loads answered as JavaScript";
 }
 
-//: One lint of `text`, or null when there is no checker.
+//: One lint of `text`, or null when there is no checker. `ignored` is the grammar
+//: findings put away in this document (the worker keeps them dismissed, `ignore_lints`).
 function docGrammarAsk(text) {
-  const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissedTexts() });
+  const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text) });
   //: LanguageTool, when installed (documents-languagetool.js), adds its findings.
   return asked.then((lints) => docSpell.languageTool(lints, text));
 }

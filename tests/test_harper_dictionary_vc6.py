@@ -94,9 +94,7 @@ def test_each_dialect_flags_its_own_variant(run) -> None:
 
 def test_the_page_sends_the_dismissed_list_and_the_setting_lists_five_dialects() -> None:
     prose = (JS / "documents-prose.js").read_text(encoding="utf-8")
-    assert "ignored: docProseDismissedTexts()" in prose
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
-    assert "function docProseDismissedTexts" in docs
+    assert 'ignored: docProseDismissed().filter((row) => row.rule === "grammar")' in prose
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     block = html[html.index('id="doc-spelling-variant"') :].split("</select>")[0]
     assert len(re.findall(r"<option value=", block)) == 6  # five dialects and no preference

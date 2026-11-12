@@ -12701,13 +12701,6 @@ function docProseDismissed() {
   return rows;
 }
 
-//: The grammar findings put away in this document, as the problem texts the
-//: worker keeps dismissed (`ignore_lints`); the person's Restore removes one here
-//: and the next check clears it there.
-function docProseDismissedTexts() {
-  return docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text);
-}
-
 //: What the panel shows instead of the list: the hidden notice, or the
 //: dismissed list with a Restore on each row.
 function docProseSideView() {

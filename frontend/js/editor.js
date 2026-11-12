@@ -1701,29 +1701,6 @@ function editorRunItem(position) {
 
 //: The `[[` list opens on notes alone and gains documents and files a moment later; an empty first list closes the menu, so the
 //: late arrival reopens it while the token is still under the caret (the Embed row opened it with nothing cached: bare `![[`, R12).
-function editorWarmLinkCaches() {
-  const again = () => {
-    if (editorMenuState.open) editorRefreshMenu();
-    else if (editorMenuState.trigger === "[[" && editorMenuState.textarea && editorTokenAt(editorMenuState.textarea, "[[")) editorOpenMenu(editorMenuState.textarea, "[[");
-  };
-  if (editorDocumentCache === null) {
-    editorDocumentCache = [];
-    //: Paged to the end: a document missing from this list is a `[[link]]` the menu cannot offer, silently.
-    apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
-      .then((docs) => {
-        editorDocumentCache = Array.isArray(docs) ? docs : [];
-        again();
-      })
-      .catch(() => {
-        editorDocumentCache = [];
-      });
-  }
-  if (editorFileCache === null) {
-    editorFileCache = [];
-    editorLoadFiles().then(again);
-  }
-}
-
 function editorOpenMenu(textarea, trigger) {
   //: The word list the documents editor draws at the caret gives way.
   if (typeof hideDocComplete === "function") hideDocComplete();
@@ -1732,7 +1709,28 @@ function editorOpenMenu(textarea, trigger) {
   editorLinkBox(textarea, true);
   editorMenuState.trigger = trigger;
   editorMenuState.index = 0;
-  if (trigger === "[[") editorWarmLinkCaches();
+  if (trigger === "[[") {
+    const again = () => {
+      if (editorMenuState.open) editorRefreshMenu();
+      else if (editorMenuState.trigger === "[[" && editorMenuState.textarea && editorTokenAt(editorMenuState.textarea, "[[")) editorOpenMenu(editorMenuState.textarea, "[[");
+    };
+    if (editorDocumentCache === null) {
+      editorDocumentCache = [];
+      //: Paged to the end: a document missing from this list is a `[[link]]` the menu cannot offer, silently.
+      apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
+        .then((docs) => {
+          editorDocumentCache = Array.isArray(docs) ? docs : [];
+          again();
+        })
+        .catch(() => {
+          editorDocumentCache = [];
+        });
+    }
+    if (editorFileCache === null) {
+      editorFileCache = [];
+      editorLoadFiles().then(again);
+    }
+  }
   const pane = $("editor-menu-preview");
   if (pane) delete pane.dataset.for;
   editorRefreshMenu();

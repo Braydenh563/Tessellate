@@ -690,5 +690,5 @@
     return true;
   }
 
-  Object.assign(window, { docIdeCloseKeys, docIdeCompareMenu, docIdeCompareWith, docIdeExtensions, docIdeFoldAll, docIdeOpenKeys, docIdeProblemsInline, docIdeOpenPalette, docIdeRevertAtCaret, docIdeRunGrip, docIdeStopCompare, docIdeToggleMinimap, docIdeToggleSplit });
+  Object.assign(window, { docIdeCompareMenu, docIdeCompareWith, docIdeExtensions, docIdeFoldAll, docIdeOpenKeys, docIdeProblemsInline, docIdeOpenPalette, docIdeRevertAtCaret, docIdeRunGrip, docIdeStopCompare, docIdeToggleMinimap, docIdeToggleSplit });
 })();
