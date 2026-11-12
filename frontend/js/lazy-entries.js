@@ -26,6 +26,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-draw-more.js",
     "/js/whiteboard-arrange-more.js", //: After whiteboard-draw-more.js: it reads that file's loop sides at run time.
     "/js/whiteboard-layouts-more.js", //: After whiteboard-arrange-more.js: the board Layout menu and the lane stack; names whiteboard.js at run time only.
+    "/js/whiteboard-structure-more.js", //: Tags, folded frames, the frame drop highlight and the find bar's frame scope; joins `wbFmtState` and the field lists (whiteboard-format.js).
     "/js/whiteboard-shape-more.js", //: A table's row ports and the shape's points; names whiteboard.js and whiteboard-format.js at run time only.
     "/js/whiteboard-library-more.js", //: The shape picker and Replace with a library shape; names whiteboard.js and whiteboard-library.js at run time only.
     "/js/whiteboard-interchange.js",

@@ -169,6 +169,7 @@ TOPIC_LEADS: dict[str, str] = {
     "board-current-layer": "Send everything new you add on a board straight onto one layer.",
     "board-format-options": "Set grid, paper, rulers and units for a board, and export it as a PNG or web page.",
     "board-group-edit": "Edit inside one group with the rest of the board dimmed, and save which panels are open.",
+    "board-structure": "Tag items, dim the rest by tag, fold a frame, and find in one frame.",
     "board-keyboard-create":"Add stickies, text and frames to a board and write in them by keyboard.",
     "board-hand-drawn": "Make a board look sketched by hand, with rough strokes on every shape.",
     "board-tables": "Put a table on a board and type in its cells.",

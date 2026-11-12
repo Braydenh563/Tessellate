@@ -356,6 +356,16 @@ _PATH_RE = re.compile(r"^[MmLlHhVvCcSsQqTtAaZz0-9eE.,+\-\s]*$")
 _COLOUR_RE = re.compile(r"^[#A-Za-z0-9(),.%\s/-]{0,60}$")
 _SKETCH_NUMBERS = {"width": (0, 400), "opacity": (0, 1)}
 _SKETCH_COLOURS = ("color", "fill", "label_color")
+#: A tag is a word or two; an item holds a handful. Objects and sketches share the bounds.
+MAX_TAG_CHARS = 40
+MAX_TAGS_PER_ITEM = 20
+
+
+def _bad_tags(tags: object) -> bool:
+    return not (
+        isinstance(tags, list) and len(tags) <= MAX_TAGS_PER_ITEM
+        and all(isinstance(t, str) and 1 <= len(t) <= MAX_TAG_CHARS for t in tags)
+    )
 
 
 #: A shape's own connection points (draw.io's `points`): up to 64, each two fractions of the box (a little past the edge is
@@ -415,6 +425,8 @@ def check_sketch_data(data: str) -> str:
     bad = None
     if isinstance(parsed, dict):
         bad = "ports" if "ports" in parsed and _bad_ports(parsed["ports"]) else _bad_sketch_field(parsed)
+        if not bad and "tags" in parsed and _bad_tags(parsed["tags"]):
+            bad = "tags"
     if bad:
         raise Said(f"The drawing's {bad} is not something the board can draw.")
     return data
@@ -494,6 +506,12 @@ class WhiteboardObjectData(BaseModel):
         Annotated[str, StringConstraints(pattern=r"^[A-Za-z][\w .-]{0,39}$")],
         Annotated[str, StringConstraints(max_length=200)],
     ] | None = Field(default=None, max_length=30)
+    #: **Tags** (WHITEBOARD_PLAN structure rows): short words on an item, filtered by in the find bar
+    #: (`wbFmtState.structure`). A sketch's own JSON carries the same list (`_bad_sketch_field`).
+    tags: list[Annotated[str, StringConstraints(min_length=1, max_length=MAX_TAG_CHARS)]] | None = Field(default=None, max_length=MAX_TAGS_PER_ITEM)
+    #: A folded frame (`collapsed`, below, also a map branch's flag) keeps its height from before the fold here, so
+    #: Expand puts it back; the items wholly inside that full box are out of sight while it is folded.
+    fold_h: int | None = Field(default=None, ge=20, le=4000)
     #: The named layer it is on (canvasdepth); the board's settings hold them.
     #: `""` is "on no layer, said on purpose": an item brought back by Undo
     #: says it so it does not land on the current layer (`_on_current_layer`).

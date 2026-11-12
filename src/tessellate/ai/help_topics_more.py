@@ -1963,7 +1963,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-draw-io-keys", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-group-edit", "board-format-options", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-group-edit", "board-structure", "board-format-options", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2258,6 +2258,24 @@ MORE_TOPICS.extend([
             "items select one at a time. Escape leaves it. Workspaces, in the View menu's Panels, save which "
             "panels are open (the context bar, overview, search, Format and the sidebar with its tab) under a "
             "name, and switch between up to eight; they are kept on this device."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-structure",
+        "keywords": (
+            "tags on a shape", "tag a board item", "filter the board by tag", "show only one tag", "collapse a frame",
+            "expand a frame", "fold a frame", "find in this frame", "drop highlight on a frame",
+        ),
+        "body": (
+            "Tags: select a shape, drawing, connector or object and type words in the Format panel's Data tab "
+            "(Enter adds, a comma adds several, press a tag to remove it), or use Ctrl+K, Edit tags. In the "
+            "find bar (Ctrl+F) the tag list shows only one tag and dims everything without it; closing the bar "
+            "clears it. Collapse a frame with its Collapsed box in the Format panel or Ctrl+K, Collapse this "
+            "frame: it folds to its title bar, hides what it holds and shows a count; Expand puts it back, each "
+            "as one Undo step, and export and presenting skip what is hidden. A frame outlines while you carry "
+            "an item over it. The find bar's frame button limits matches and Replace all to the frame holding "
+            "the selection or the middle of the view."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2598,6 +2616,7 @@ TOPIC_META.update({
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-group-edit": {"title": "Edit inside a group, and workspaces", "path": "A board's View menu, Panels, Workspaces"},
+    "board-structure": {"title": "Tags, collapsing a frame and finding in one frame", "path": "A board's Format panel, Data tab"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},
     "mind-map-structure": {"title": "A structure per branch", "path": "A map topic's menu, Structure"},
     "mind-map-lines": {"title": "Map line style, line ends and topic shapes", "path": "A map, Layout, the line style picker"},

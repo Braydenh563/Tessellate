@@ -7913,3 +7913,17 @@ def test_a_sticky_commit_foot_holds_one_line_and_never_hides_the_focus() -> None
     lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
     foot = re.search(r"#capture > :not\(\.capture-commit-row\) :is\([^)]*\) \{([^}]*)\}", lazy)
     assert foot and "scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2))" in foot.group(1)
+
+
+def test_a_board_tag_is_a_chip_a_fold_is_a_view_rule_and_a_drop_target_has_no_blur() -> None:
+    """WHITEBOARD_PLAN section 12. A tag is the Library's chip, never a new pill; a folded frame hides what it holds
+    through `wbItemHidden` (so export and present skip it with no code of their own); the frame under a carried item
+    is an outline in a token colour, so it needs no glass-off entry; none of it adds a top-level name."""
+    struct = (ROOT / "frontend" / "js" / "whiteboard-structure-more.js").read_text(encoding="utf-8")
+    assert 'chip(tag, "tag wb-tag-chip"' in struct
+    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    assert "structure?.folded(kind, item)" in wb[wb.index("function wbItemHidden") :][:900]
+    lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
+    drop = re.search(r"\.wb-object-frame\.wb-drop-target \{([^}]*)\}", lazy)
+    assert drop and "var(--accent)" in drop.group(1) and "backdrop-filter" not in drop.group(1)
+    assert not re.search(r"^(?:const|let|var|function)\s", struct, re.M)

@@ -681,6 +681,7 @@ function wbFormatSync() {
   wbSyncCommandRows(arrange);
   wbFmtShowGroups(panel);
   if (fields.has("props")) wbFmtSyncProps(entries);
+  wbFmtState.structure?.sync(entries);
   if (fields.has("rawstyle")) wbFmtState.raw.sync(entries);
   const first = entries.find((e) => wbFmtKind(e) && wbFmtKind(e) !== "topic");
   if (!first) return;

@@ -977,16 +977,14 @@ product; the NOTICE says so).
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Regular expression, all pages, case | regex and whole word yes, 2026-10-18 (whiteboard-1018; HISTORY); "all frames" open: find already spans every frame of the board, so the row needs a decision (a "this frame only" scope?) | `regularExpression` and `allPages` checkboxes (Dialogs.js 9512 onward); matches in label text and, with regex, in metadata | regex toggle and "all frames" (not boards); case-insensitive by default | S |
+| Regular expression, all pages, case | regex and whole word yes, 2026-10-18 (whiteboard-1018; HISTORY); "this frame" scope yes, 2026-11-12 (`#wb-search-frame`, HISTORY) | `regularExpression` and `allPages` checkboxes (Dialogs.js 9512 onward); matches in label text and, with regex, in metadata | regex toggle and "all frames" (not boards); case-insensitive by default | S |
 | Find in custom data | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `testMeta` over the cell's attributes | with `data.props` | S |
-| Tags on shapes, filter by tag | no | `tags` action (Ctrl+K, diagramly/Menus.js 1299), `tags` style attribute | `data.tags` with a tag filter that dims the rest; the Library already has tags | M |
 
 ### 10. Outline, navigation and view
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Outline window (a minimap) | yes (`wb-navigator`, Shift+N) | `outline` action (Actions.js 2187), Ctrl+Shift+O, `mxOutline` | done | none |
-| Home, enter and exit group, expand and collapse | `view-home` yes (whiteboard-commands.js:286); no enter or exit group, no canvas collapse | `home`, `enterGroup`, `exitGroup`, `collapse`, `expand` (Actions.js 562 to 566) | enter group dims everything else; collapse folds a frame to its title bar | M |
 | Fullscreen | yes | `fullscreen` (diagramly/Menus.js 399) | done | none |
 | Presentation mode | yes (`present`) | `presentationMode` (diagramly/Menus.js 3954) | done | none |
 | Light, dark and automatic appearance, adaptive colours | yes (the app's themes; the board's ink follows) | `adaptiveColors`, `light-dark()` colours (Format.js `defaultStripeColor`) | done | none |
@@ -1040,7 +1038,6 @@ clash is listed so the choice is made once.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Rubber-band, lasso, shift-add, select all of a kind | yes (select, lasso K; Ctrl+A); select all shapes and select all connectors, 2026-10-18 (whiteboard-1018; HISTORY) | `mxRubberband`, `selectVertices`, `selectEdges` (Actions.js 517, 518) | two commands | S |
-| Containers (a shape that holds children, drop target highlight, children move with it, auto-resize) | `fit-frame` yes (whiteboard-commands.js:170); no drop highlight on frames, no collapse | `container=1`, `isContainer` (Graph.js 11233), `getDropTarget` (26334), `dropTarget`, `recursiveResize`, `collapsible`, `foldCells` (15610) | a drop highlight class on a frame while an item is dragged over it, and collapse | M |
 | Child layouts (stack, tree, flow, rack) | tree tidy (`tidy-down`, `tidy-right`), flip layout, join chain and fan, the Layout menu (section 16) and a Stack toggle on a lane frame yes; rack no | `childLayout` styles (Graph.js, 68 hits), `mxStackLayout`, `rackLayout` | rack stays out (not doing) | none |
 | Lock, hide and "locked" cursor | yes | `lockUnlock` (Actions.js 521), `locked=1` | done | none |
 | Z-order within a container | yes (z per item) | child order | done | none |
@@ -1141,7 +1138,7 @@ commit. Help moves with each control (standing order 13).
    frames, one undo step. Gate: `wbkeywalk.js` plus a replace-all test over
    a 100-item board.
 9. **Layers, containers, swimlanes.** Named layers with visibility and
-   lock, frames as containers (drop highlight, fit to children, collapse),
+   lock, frames as containers (built: drop highlight, fit to children, collapse),
    a Lane preset with a stack layout (built: the Stack toggle on a frame). Gate: `wb1005-layers.js`,
    `wbframes.js`.
 10. **`.drawio` import and export, then the templates.** Built 2026-11-12 (HISTORY, "Moved from the plans, 2026-11-12 (wbdrawio3)"):
