@@ -9,6 +9,7 @@ that answers "has this been done?" before anyone starts.
 
 ## Moved from the plans, 2026-11-12 (mindmap-plan)
 
+- **Built, LEDGER L375:** `[text](url)` in a topic draws as an anchor in `wbMapInlineText` (http, https, mailto; opens on Ctrl/Cmd+click or a selected topic's click); `tests/test_map_inline_links.py`, driven in Chromium.
 - **Built, LEDGER L-mindmap-1:** the theme dialog's Saved looks row (save the whole theme under a name in the prefs store as `wb-map-saved-looks`, apply in one patch and one Undo step, forget; 20 at most); `tests/test_map_saved_looks.py`, driven in Chromium.
 - **Built, LEDGER L-mindmap-6 (INBOX 431(b)):** palette rows `Topic fill colour` and `Map background colour` click the existing wells (`#wb-map-strip-color`, `#wb-bg-color-picker`); "fill" found neither before and now ranks both first; `tests/test_mindmap_colour_discoverability.py`.
 - **Built, decision 34 (extended):** Filter by marker takes several at once and the topic's labels (its tags; the labels field is reused, so OPML and FreeMind already carry it as `_labels`), and the outline shows each topic's markers, due day and labels as cells; `tests/test_map_filter_columns.py`.
@@ -55197,6 +55198,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L375** `mindmap` partly, S: Render inline `[text](url)` links in map topics (bold, italic, code already work). From OPEN.md:4446. Evidence: Bold, italic, code render via wbMapInlineText; inline `[text](url)` does not (Link door is the way) Built: maptopic-1112 item 6 commit, tests/test_map_inline_links.py
 - [x] **L-mindmap-1** `mindmap` open, S: Save a custom mind map theme for reuse. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:491. Evidence: wbMapThemeDialog (whiteboard-map.js:1038) has no save action; untracked Built: maptopic-1112 item 5 commit, tests/test_map_saved_looks.py
 - [x] **L-mindmap-6** `mindmap` open, S: Make map node fill and background colour controls discoverable. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1440. Evidence: Open line in the plan's prose a session could miss. 431(b), discoverability of the node fill and background colour controls, says it was placed as its own item. No such item exists. Built: maptopic-1112 item 4 commit, tests/test_mindmap_colour_discoverability.py
 - [x] **L-mindmap-5** `mindmap` open, M: Add a spaced order and the note as answer to map study mode. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1204. Evidence: Open line in the plan's prose a session could miss. Decision 36 lists spaced-order study mode as not built. Built: maptopic-1112 study-order commit, tests/test_map_study.py

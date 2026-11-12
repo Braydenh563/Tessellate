@@ -1804,7 +1804,8 @@ function wbMapLabel(obj) {
 //:
 //: Each alternative is anchored and bounded by a negated class, so there is no
 //: nested quantifier for CodeQL's polynomial-ReDoS shape to find.
-const WB_MAP_INLINE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`)/;
+//: A fourth alternative reads `[text](address)` (L375). Same shape as the others (a negated class on each side, no nested quantifier).
+const WB_MAP_INLINE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\s]+\))/;
 
 function wbMapInlineText(el, raw) {
   if (!el) return;
@@ -1813,6 +1814,25 @@ function wbMapInlineText(el, raw) {
     if (!piece) continue;
     let tag = null;
     let inner = piece;
+    const linked = /^\[([^\]\n]+)\]\(([^)\s]+)\)$/.exec(piece);
+    //: A link whose address is not http, https or mailto stays the words it was typed as (L375): the same three schemes as a topic's own link, so a `javascript:` or `data:` address is never made live. The anchor carries the real address (a middle click and the status bar tell the truth), but a plain click only selects, as on any topic: it opens from Ctrl/Cmd or from a topic that was already selected before the press, through `window.open` with `noopener`, the way the Link door does.
+    if (linked && WB_MAP_LINK_SCHEMES.test(linked[2])) {
+      const anchor = document.createElement("a");
+      anchor.className = "wb-map-inline-link";
+      anchor.textContent = linked[1];
+      anchor.href = linked[2];
+      anchor.target = "_blank";
+      anchor.rel = "noopener noreferrer";
+      let wasSelected = false;
+      anchor.addEventListener("pointerdown", () => { wasSelected = !!anchor.closest(".wb-selected"); });
+      anchor.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        if (el.isContentEditable) return;
+        if (ev.ctrlKey || ev.metaKey || wasSelected) window.open(linked[2], "_blank", "noopener,noreferrer");
+      });
+      el.append(anchor);
+      continue;
+    }
     if (piece.length > 4 && piece.startsWith("**") && piece.endsWith("**")) {
       tag = "strong";
       inner = piece.slice(2, -2);

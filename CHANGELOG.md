@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map (L375): `[words](https://address)` in a topic's text draws as a link (http, https and mailto only; anything else stays plain text); a click selects the topic, Ctrl/Cmd+click or a click on a selected topic opens it.
 - Mind map (L-mindmap-1): View, How this map looks has a Saved looks row: Save this look keeps the map's whole theme under a name on this device, picking one applies it to any map in one Undo step, Forget removes it (twenty at most).
 - Mind map (L-mindmap-6): the palette names the two colour wells, `Topic fill colour` (a selected topic) and `Map background colour`; a search for fill, colour, color or background used to find neither, now both rank in the top five. They click the existing wells; no new control.
 - Mind map study mode (decision 36): the next run is spaced, asking what you missed first, then what is due again (after 1, 3, 7, 14 or 30 days of knowing it), then new ones; the palette's Study the map in map order keeps the old order (`tests/test_map_study.py`, fixed clock).
