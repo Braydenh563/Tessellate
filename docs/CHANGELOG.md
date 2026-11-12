@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the phone's selection bar carries Selection to a note (New note from selection, Add to note), measured at 390 px (L-documents-13).
 - Documents: the Autocorrect switch stays in the Editor menu, not the status bar, per the standing decision (L337).
 - Link offers: Never offer a link to this name is kept on the notebook, not per session (L340).
 - Documents: the lazy-order tests pass; docCmView is read only after documents.js has run (L306).
