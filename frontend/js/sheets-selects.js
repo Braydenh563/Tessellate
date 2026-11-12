@@ -1182,7 +1182,12 @@ function focusSelect(select) {
 // New selects appear whenever a panel renders, so watch for them rather
 // than asking every render path to remember to call this.
 function watchForSelects() {
-  enhanceAllSelects(document);
+  //: **Settings panes wrap their selects as each is shown** (`showSettingsSection`
+  //: calls `enhanceAllSelects` on the pane), not here: the boot pass wrapped 99
+  //: selects, about 50 ms, most in panes nobody opened (WORLD_CLASS_PLAN 19,
+  //: L-world-class-14).
+  for (const select of document.querySelectorAll("select")) if (!select.closest("#settings-modal")) enhanceSelect(select);
+  enhanceAllSelects.stampSwitches?.(document);
   for (const field of document.querySelectorAll('input:is([type="date"], [type="time"])')) enhanceDateField(field);
   annotateSliders(document);
   new MutationObserver((records) => {

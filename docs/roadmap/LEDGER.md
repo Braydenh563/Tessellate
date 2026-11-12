@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
-| world-class | 130 | 145 | 45 | 0 | 17 | 320 |
+| world-class | 130 | 143 | 45 | 0 | 17 | 318 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 671 | 144 | 3 | 140 | 1368 |
+| all | 553 | 669 | 144 | 3 | 140 | 1366 |
 
 ## graph
 
@@ -647,7 +647,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L518** `world-class` open, S: Live captions '0 of 1 installed' needs an Install button; fix duplicate 'No model connected' in Writing room. From audit-1029-extras.md Re-verified. Evidence: captions.js:84 branches on status.installed; no fix commit found; W27 string not re-located
 - [ ] **L519** `world-class` open, S: Build a Settings editor for the dated currency rate table (decision 43). From OPEN.md:1497; OPEN.md:1893. Evidence: utilities.py:62 RATES_DATE only; no editor in settings code
 - [ ] **L521** `world-class` open, S: Handle first load after upgrade with no ui-synced mark. From OPEN.md:2576. Evidence: ai-tools.js:918-988 ui-synced logic; first-load case unhandled
-- [ ] **L522** `world-class` open, S: Palette learned order: add prefix matching at half weight. From OPEN.md:2792. Evidence: app-palette.js paletteRanked; recommendation not built
 - [ ] **L523** `world-class` open, S: renderAutonomousSettings fills checkboxes only when Background tasks/Web search opens. From OPEN.md:3499. Evidence: Documented behaviour in settings.js; no change recorded.
 - [ ] **L526** `world-class` open, S: Stop '?' after a Dashboard click handing focus to a CodeMirror editor. From row21-1109.md Left. Evidence: reveal-targets.js openShortcuts; no fix commit found
 - [ ] **L527** `world-class` open, S: Restyle Connections unlinked-mention Link button and tool-confirm pair away from bordered ghost. From OPEN.md:1677; OPEN.md:2670. Evidence: connections.js:226 smallButton('ph:link Link', ...) defaults ghost small (app.js:1497-1499)
@@ -810,7 +809,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-11** `world-class` open, M: Add limits to unbounded list routes. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:666. Evidence: Open line in the plan's prose a session could miss. Marked (open) inline; the client still pages by offset (FE-05).
 - [ ] **L-world-class-12** `world-class` open, M: Run MCP tool tests and confirm outside agents' destructive calls. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:800. Evidence: Open line in the plan's prose a session could miss. Section 8 table row left open (also at 1796).
 - [ ] **L-world-class-13** `world-class` open, S: Sweep the five whiteboard menus. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:986. Evidence: Open line in the plan's prose a session could miss. Hand-off to other plans that no LEDGER row records (the SVG graph flag part is stale).
-- [ ] **L-world-class-14** `world-class` open, S: Wrap selects lazily instead of at boot. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:1874. Evidence: Open line in the plan's prose a session could miss. Still in code at frontend/js/sheets-selects.js:1080.
 - [ ] **L-world-class-17** `world-class` open, M: Find and replace inside a note. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3747. Evidence: Open line in the plan's prose a session could miss. Gap listed in section 25 and 27 (3975).
 - [ ] **L-world-class-18** `world-class` open, M: Write the threat model. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3772. Evidence: Open line in the plan's prose a session could miss. No threat-model doc exists; open in 25 and 26 (3877).
 - [ ] **L-world-class-20** `world-class` open, S: Measure memory and _to_out with a large notebook. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:3931. Evidence: Open line in the plan's prose a session could miss. Not measured (also _to_out at 5,000 notes at 3950).

@@ -328,6 +328,8 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     await ensureModule("settingsControls");
   }
   $("settings-modal").classList.remove("hidden");
+  //: The window's own selects outside a pane; each pane wraps its own when shown (L-world-class-14).
+  for (const select of $("settings-modal").querySelectorAll("select")) if (!select.closest(".settings-section")) enhanceSelect(select);
   // Runs on open rather than once at load: several sections are built
   // lazily, and a pass that ran before they existed would leave exactly the
   // rows a user is most likely to be reading uncollapsed. Idempotent, so
