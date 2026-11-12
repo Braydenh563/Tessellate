@@ -46,7 +46,9 @@ jobs:
       tag: ${{ steps.resolve.outputs.tag }}
       version: ${{ steps.resolve.outputs.version }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          persist-credentials: false
 
       - name: Resolve from the tag push or the manual input
         id: resolve
@@ -85,7 +87,9 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          persist-credentials: false
 
       - name: Extract changelog entry for this version
         id: changelog
@@ -112,7 +116,7 @@ jobs:
           echo "$DELIM" >> "$GITHUB_OUTPUT"
 
       - name: Create release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3  # v3
         with:
           tag_name: ${{ needs.resolve-version.outputs.tag }}
           # Only meaningful on the manual-dispatch route — the tag doesn't
@@ -137,9 +141,11 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7
         with:
           python-version: "3.13"
 
@@ -242,7 +248,7 @@ jobs:
             -o "dist\installer\Tessellate-$env:TESSELLATE_VERSION-windows-x86_64.msi"
 
       - name: Upload installers to the release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3  # v3
         with:
           tag_name: ${{ needs.resolve-version.outputs.tag }}
           # The .msi line is out with the steps above: a glob with nothing to
@@ -261,9 +267,11 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7
         with:
           python-version: "3.13"
 
@@ -338,7 +346,7 @@ jobs:
           zip -qr "../Tessellate-${VERSION}-linux-x86_64.zip" "Tessellate"
 
       - name: Upload package to the release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3  # v3
         with:
           tag_name: ${{ needs.resolve-version.outputs.tag }}
           files: |
