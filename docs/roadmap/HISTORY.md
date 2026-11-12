@@ -55188,12 +55188,243 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
+## Moved from the plans, 2026-11-12 (Brief 40, the phone over HTTPS)
+
+Evidence (verified in code 2026-11-12): core/lancert.py makes an EC P-256 authority (_new_authority :242, CA_VALID_DAYS 3650) and signs the leaf (generate :292, keyUsage :333); ensure() :384 remakes the leaf when missing_names :378 finds an address the SAN lacks; the CA downloads from GET /auth/lan-certificate.pem (routes_auth.py:1338) and Settings regenerates it (POST /auth/lan-certificate :1359, settings-controls.js:132-143) with the fingerprint shown; the lock screen carries the per-phone guide (index.html:370-373 lock-lan-cert-help); core/netbind.py:495-506 gives the private-profile netsh rule; core/lanserve.py answers plain http with a 301 to https (the plain-http option was built the other way round).
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+## Placed from Brief 40, 2026-10-10 (the phone over HTTPS)
+
+The owner: "https://192.168.0.107:8443 ... safari said the page was
+unsecure, I clicked continue, and it said safari can't open the page because
+the connection was lost", the same in Brave on the phone, AdGuard DNS active.
+
+**What was measured on this computer** (`scratchpad` probe, a
+`uvicorn` server with the app's own `core/lancert.py` certificate, driven with
+`openssl s_client` and `curl`; no phone was available):
+- TLS 1.2 and 1.3 both negotiate (`TLS_AES_256_GCM_SHA384`, a 256-bit key); no
+  ALPN, so HTTP/1.1 only. Neither is a plausible cause.
+- The certificate names the LAN address as an IP SAN and a request to a name
+  it does not carry fails (`curl: no alternative certificate subject name
+  matches target host name '192.168.0.231'`). **`lancert.ensure()` never
+  compares the names with the machine's current addresses** (it checks only
+  the expiry), so after a router hands the computer a new address the
+  certificate on disk keeps the old one for up to 825 days and the phone is
+  told "wrong name". Measured: a second `ensure()` with a new address list
+  returned the original names and the same fingerprint.
+- The leaf is self-issued, 825 days, with SAN, basicConstraints and EKU
+  serverAuth but no keyUsage. Apple limits certificates that chain to a
+  trusted root to 398 days; the exemption is for roots the user installed,
+  and a clicked-through self-signed leaf is not one.
+- The front end uses NDJSON over `fetch`, not WebSocket or EventSource
+  (`capture-ask.js` line 2544, `settings.js` line 1018), so a WebSocket over
+  an untrusted certificate is not the cause. The session token travels in a
+  header; only the media cookie is `Secure` and `SameSite=Strict`
+  (`routes_auth.py` lines 156 to 272), and what Safari does with a `Secure`
+  cookie on a clicked-through page is not verified.
+- `HostCheckMiddleware` lets any numeric Host through, so the rebinding
+  guard is not refusing the phone.
+
+**Likely causes, ranked** (none reproduced; "connection was lost" is
+`NSURLErrorNetworkConnectionLost`, the server or something between closing a
+connection that had opened):
+1. The phone's per-connection trust: Safari opens several parallel
+   connections and a clicked-through exception on a self-signed leaf is
+   per-session, so the page's later connections can fail the handshake and be
+   dropped. A certificate the phone trusts properly removes this.
+2. A stale name (above), after a DHCP change, shown the same way as a plain
+   untrusted warning.
+3. AdGuard on the phone: a DNS profile does not touch an IP address, but the
+   AdGuard app's local VPN mode and iOS 14's Local Network permission for
+   Safari and Brave can drop traffic to a private address; Brave on iOS is
+   WebKit too, which is why both browsers fail alike.
+4. The Windows firewall profile (Public blocks, Private allows) answering the
+   first request and not the next; the launchers add no rule.
+
+**Fix shape, in order** (one brief, Opus):
+1. **A local CA, mkcert style, made with `cryptography` (already a
+   dependency)**: an EC P-256 CA kept in `lan-tls/` (0600), a leaf signed by
+   it for 397 days with keyUsage and the SAN, remade by `ensure()` whenever
+   the current addresses are not all in the SAN (the stale-name fix) and 30
+   days before expiry. The phone installs the CA once; every later address
+   change is invisible to it.
+2. **Settings, Other devices, "Trust this notebook on your phone"**: a QR
+   code to `http://<ip>:8000/lan/trust` (a plain-http route that serves only
+   the public CA certificate and the guide, nothing else, and is on only
+   while the panel is open), the CA's SHA-256 fingerprint beside it to compare
+   after installing, and a one-page guide per phone: iPhone and iPad
+   (download the profile, Settings, Profile Downloaded, Install, then
+   General, About, Certificate Trust Settings, switch on full trust), Android
+   (Settings, Security, Install a certificate, CA certificate), and a note
+   that Brave on iOS uses the system trust.
+3. **A plain-http option for the home network**, off by default, with the
+   password warning in one sentence ("anyone on this Wi-Fi can read it") and
+   the existing refusal without a password. It is also the bisect: if
+   `http://<ip>:8000` works on the phone and https does not, it is trust; if
+   neither, it is the network, the firewall or AdGuard's local VPN.
+4. **A diagnostics line in Settings, Network**: the addresses now, the names
+   the certificate carries (green when every address is covered, amber with
+   "Regenerate" when not), days left, the CA fingerprint, and a count of
+   failed TLS handshakes since start (from uvicorn's log), so "connection
+   lost" has a number beside it.
+5. Add a Windows Defender Firewall rule at the opt-in (private profile only),
+   or print the one-line `netsh` command when turning the switch on.
+Help moves with it (standing order 13): `ai/help_topics_more.py` "lock"
+topic, the `data-help-for` on the switch, `tests/test_manual_parity.py`.
+- (Odysseus, fourth read 2026-10-10) 
+
+## Moved from the plans, 2026-11-12 (22.2 and 22.3, the baseline list checked item by item)
+
+Evidence (verified in code 2026-11-12): 22.2 built: window title (router.js, 22.1.1); recent queries (search-suggest.js:29-38 searchRecent); drop files onto any page (file-drop.js:107, LAZY_MODULES.fileDrop); type to filter a long list (sheets-selects.js:1297-1309 listFilter, threshold 12); Copy diagnostics (app-features.js:321); the Default space chip only when notes span spaces (entry-card.js:893). 22.3 built: empty states (DESIGN.md recipe rows 827 and 'p.muted.empty-line', tests/test_ui_recipes.py); toasts in one stack (DESIGN.md:449 toastStack, status.js); the glass lints (tests/test_glass_controls_1027.py).
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+### 22.2 Small things people expect (each S, Sonnet unless noted)
+
+- The window title names the view and the open item (22.1.1).
+- Ctrl+S, Ctrl+Z and Escape behave the same in every editor and dialog
+  (the key contract, 1.6, has no lint for Escape yet).
+- Search highlights the match inside the note it opens, and remembers the
+  last few queries.
+- Every destructive action has an Undo toast, not only deletes of notes.
+- Every date and time follows one setting (12 or 24 hour, the locale's
+  order); the status bar clock, the timeline and the reminders do not agree
+  today on whether seconds show.
+- Drag and drop of files onto any page imports them (Library only today).
+- Every list with more than 20 rows can be filtered by typing.
+- Right-click works on every card and row, with a hold as its twin on touch.
+- A "Copy diagnostics" button on the About page (versions, model, recent
+  errors) for bug reports from test users.
+- The status bar's "!" dot says what it means on hover and click.
+- The "Default Space" chip is hidden when only one space exists (it is on
+  every card today and says nothing).
+
+### 22.3 Where the design is below standard (measured or seen, 2026-09-27)
+
+- **Density and rhythm.** Cards carry 24px of padding and 17px body text at
+  every width; on a laptop the list reads like a phone app scaled up.
+- **Hierarchy in Settings.** Section heads are the same weight as labels
+  (in the Sonnet batch).
+- **Icon consistency.** Mixed stroke weights between Phosphor regular and
+  the bold ones on the status bar; one weight app-wide.
+- **Empty states.** The Chats sidebar's empty text is body size and grey on
+  grey; empty states should use one recipe (icon, one line, one action).
+- **Toasts** overlap content (the reminder toast covers the dashboard head
+  at 1093x614); they belong in a reserved corner above the status bar.
+- **Glass** is still on some surfaces the performance plan listed for
+  removal; the glass-off list lint should cover every blurred surface.
+
+## Moved from the plans, 2026-11-12 (section 2, the Gap column's two State blocks)
+
+Evidence (verified in code 2026-11-12): typed properties entry/properties.py; web clipper frontend/clip.html; importers routes_import.py; privacy receipt core/egress.py plus routes_privacy.py and settings-data.js; sync routes_sync.py:133 (POST /sync/pair, tests/test_sync_lan.py); the offline studio ai/studio.py plus frontend/js/studio.js:69 openStudio (table row 35 of section 8: built 2026-11-11); plugin surface: the user skills folder (B8, built 2026-10-05).
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+**State 2026-09-24:** the Gap column read against the code. Built since the table
+was written: `[[` autocomplete (D2), the daily-note backend and `Ctrl+D` (D6),
+per-sentence citations with the unsupported-sentence line (CHAT_PLAN Phase
+1), version history per note (B1), the palette and shortcut sheet from one
+table, and a PWA manifest with a share target. Still a gap: typed properties
+on notes (D5), the web clipper (D9), PDF annotation (D10, DOCUMENTS_PLAN),
+recall cards (§114 A1), sync (B6), importers beyond Markdown (H6), and a
+plugin surface beyond the MCP server (B8). Of the six standouts, 2 and 4 are
+built, 1 and 3 are half built (I6, B4), and 5 (a privacy receipt page) and 6
+(the offline studio) are not built: no code names either.
+
+**State 2026-10-11 (by grep):** built since: typed properties (`entry/properties.py`),
+the web clipper (`clip.html`), importers for notion, obsidian, evernote and
+apple (`routes_import.py`), and the privacy receipt (5) as Settings, "Where
+your data went" (`core/egress.py`). Still gaps: sync (B6), PDF annotation
+(D10), recall cards (A1), the offline studio (6), a plugin surface (B8).
+
+## Moved from the plans, 2026-11-12 (section 8, the built rows of 'What is left, 2026-09-24')
+
+Evidence (verified in code 2026-11-12): each row is struck through in the plan's own text with its test and commit evidence there (jobstore, facts._pair_passes, chunk_vectors, test_note_kinds_d5, test_consistency_contract, api/paging.py, skill_folder.py, tensions table, bench, margin, timetravel, boot budget, H9 items, nbf1005 recheck, studio, sync, Piper); B2's other kinds and the panel on /jobs/stream are read in frontend/js/ai-tools.js:19 and chat-tasks.js:129
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+| 3 | ~~B2~~ | ~~durable jobs: a table, leases, resume after a kill, `/jobs/stream`~~ built 2026-10-04 for the pool's six kinds (`core/jobstore.py`, `tests/test_jobstore.py`); the other kinds and the panel on the stream built 2026-10-11 (Brief 9, briefs-1011); the folder import built 2026-10-17 | S | HISTORY; B2 |
+| 5 | ~~I1, H1~~ | ~~the tension and answered-question passes~~ built 2026-10-04 (`facts._pair_passes`, `tests/test_night_pairs.py`); 2,000 notes, a first run 39 to 57 s with no model, 130 to 215 s with a fake judge (gate 5 min), card 39 to 84 ms; left: pass 2's kinds (dates, duplicates, entities) as derived facts | done | HISTORY |
+| 6 | ~~§14.3, I6, H2~~ | ~~chunk vectors, then paragraph anchors, three signal bars per sentence and the side-by-side view~~ built 2026-10-04 (`chunk_vectors`, `search/chunks.py`, `tests/test_chunk_vectors.py`, `tests/test_evidence_spec.py`); seeded 1,000 notes, recall@5 0.01 to 0.42; left: "wrong" on a card as a correction (I7) | done | HISTORY |
+| 10 | ~~D5~~ | ~~typed properties on notes (documents have them)~~ built: the properties, the table under a note's title and note types with KG4 (2026-10-04); the five built-in kinds and the graph's Note type colour 2026-10-05 (`tests/test_note_kinds_d5.py`); left: the Library grouping notes by type (the graph colouring and a type's own colour: `tests/test_note_types_graph_d5.py`) | done | HISTORY |
+| 13 | ~~§1, D14~~ | ~~the lints not written: surface budget, one primary per modal, meta without border or hover, a menu item's rest background, every `data-action` in the palette~~ built 2026-10-04 (`tests/test_consistency_contract.py`); left: the two ratchets (5 modals with 2 to 3 filled buttons, 13 chip rules) | done | HISTORY |
+| 16 | ~~B7~~ | ~~cursor pagination, ETags and `If-Match` on entries, `/capabilities`~~ built 2026-10-05 (`api/paging.py`, `routes_capabilities.py`, `tests/test_api_contract_b7.py`); left: the page's own lists following the cursor on scroll, and the page reading `/capabilities` to hide what is not installed | done | HISTORY |
+| 17 | ~~B8, H4~~ | ~~a user skills folder picked up without a restart; `/api/v1`; the agent named on an external write~~ built 2026-10-05 (`ai/skill_folder.py`, `api/versioning.py`, `events.as_agent`, `tests/test_local_service_h4.py`); left: the MCP server running the same tool tests as the in-app agent, and confirm cards for an outside agent's destructive call | done | HISTORY |
+| 18 | ~~B4~~ | ~~typed links, a derived tensions table, rebuild determinism, the Tensions widget~~ built 2026-10-05 (`tensions` table rebuilt from events, night facts and links, `tests/test_tensions_table_b4.py`; typed links were KG3); left: derived person and project pages, per-claim citations, "what changed about X" | done | HISTORY |
+
+## Moved from the plans, 2026-11-12 (section 8, the built rows of 'What is left, 2026-09-24')
+
+Evidence (verified in code 2026-11-12): each row is struck through in the plan's own text with its test and commit evidence there (jobstore, facts._pair_passes, chunk_vectors, test_note_kinds_d5, test_consistency_contract, api/paging.py, skill_folder.py, tensions table, bench, margin, timetravel, boot budget, H9 items, nbf1005 recheck, studio, sync, Piper); B2's other kinds and the panel on /jobs/stream are read in frontend/js/ai-tools.js:19 and chat-tasks.js:129
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+| 21 | ~~I8, H3~~ | ~~the model bench~~ built 2026-10-05: `ai/bench.py`, `/models/bench`, Settings, Models, Test my models (`tests/test_bench_spec.py`); a real-model run 2026-11-11 (1.5B, 12 items, two runs, temperature 0): 0.639 and 0.639, 149 and 155 s, both gates met | done | HISTORY |
+| 22 | ~~I2, H8~~ | ~~the margin reader~~ built 2026-10-05 for documents: `ai/margin.py`, `POST /editor/read`, `margin-reader.js` (`tests/test_margin_reader_spec.py`); the note editor built s10b-1110 (cards under the text); left: typing latency in Chromium | S | HISTORY; I2 |
+| 23 | ~~I5, H8~~ | ~~time travel: `as_of` on chat, then-and-now~~ built 2026-10-05 (`ai/timetravel.py`; 200 candidates rewound in under a second); left: a model's judgement over the pairs, past texts re-embedded, cards grouped by month | done | HISTORY |
+
+## Moved from the plans, 2026-11-12 (section 8, the built rows of 'What is left, 2026-09-24')
+
+Evidence (verified in code 2026-11-12): each row is struck through in the plan's own text with its test and commit evidence there (jobstore, facts._pair_passes, chunk_vectors, test_note_kinds_d5, test_consistency_contract, api/paging.py, skill_folder.py, tensions table, bench, margin, timetravel, boot budget, H9 items, nbf1005 recheck, studio, sync, Piper); B2's other kinds and the panel on /jobs/stream are read in frontend/js/ai-tools.js:19 and chat-tasks.js:129
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+| 26 | ~~H7~~ | ~~boot JS under 1 MB~~ built (691,724 bytes as served, `tests/test_boot_budget.py` gates it; the corrected 2026-10-05 measure, H7); every list over 200 rows measured 2026-10-05 (chunk-on-scroll, scroll p95 under 25 ms, `ui-sweeps/s2-1005.js` MODE=rows); first paint measured 2026-10-05 (`boottime.js`, fresh data dir, 1440, five cold loads, load average 10 on four cores): DOMContentLoaded median 585 ms, first contentful paint median 272 ms, dashboard panel readable (text in it, splash gone) median 974 ms (920 to 1,326); not optimised; left: the 300 ms line on the reference laptop with a quiet machine, and the 974 ms to the dashboard's text | S | `boottime.js` |
+| 27 | ~~H9~~ | ~~usage ledger, time to first answer, simple mode, a perf budget in CI, an axe sweep, a global capture hotkey, fault injection in `errors.js`, speculative retrieval~~ built 2026-10-05 (HISTORY); left: `boottime.js` in the CI workflow | S | HISTORY |
+
+## Moved from the plans, 2026-11-12 (section 8, the built rows of 'What is left, 2026-09-24')
+
+Evidence (verified in code 2026-11-12): each row is struck through in the plan's own text with its test and commit evidence there (jobstore, facts._pair_passes, chunk_vectors, test_note_kinds_d5, test_consistency_contract, api/paging.py, skill_folder.py, tensions table, bench, margin, timetravel, boot budget, H9 items, nbf1005 recheck, studio, sync, Piper); B2's other kinds and the panel on /jobs/stream are read in frontend/js/ai-tools.js:19 and chat-tasks.js:129
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+| 34 | ~~D1, D8, §13~~ | ~~drag on the grid; the reminder row recipe and a 10m snooze; the minimap's NaN rects, the tab bar at 600 to 819px, a whiteboard menu sweep, the tidy layout past five nodes (all not re-checked)~~ built or measured 2026-10-05: drag on the grid found built, the 10m snooze built, the rest measured clean (`nbf1005-recheck.js`); left with its owner: the whiteboard menu sweep (WHITEBOARD_PLAN) | done | HISTORY |
+| 35 | ~~§2~~ | ~~the offline studio~~ built 2026-11-11: an audio overview and a brief from the notes' own sentences, spoken on this computer into a saved recording (HISTORY, "Moved from the plans, 2026-11-11 (Q34, WORLD_CLASS rows 35 to 37)") | done | HISTORY |
+
+## Moved from the plans, 2026-11-12 (section 8, the built rows of 'What is left, 2026-09-24')
+
+Evidence (verified in code 2026-11-12): each row is struck through in the plan's own text with its test and commit evidence there (jobstore, facts._pair_passes, chunk_vectors, test_note_kinds_d5, test_consistency_contract, api/paging.py, skill_folder.py, tensions table, bench, margin, timetravel, boot budget, H9 items, nbf1005 recheck, studio, sync, Piper); B2's other kinds and the panel on /jobs/stream are read in frontend/js/ai-tools.js:19 and chat-tasks.js:129
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+| 37 | ~~Audio~~ | ~~deferred until the owner says go~~ built 2026-11-11: the natural voice (Piper) for read aloud; the rest was built in 28.5 (HISTORY, "Moved from the plans, 2026-11-11 (Q34, WORLD_CLASS rows 35 to 37)") | done | HISTORY |
+
+## Moved from the plans, 2026-11-12 (H8, time travel and the margin reader)
+
+Evidence (verified in code 2026-11-12): I5: ai/timetravel.py (as_of on /chat/stream, then-and-now routes); I2: ai/margin.py with frontend/js/margin-reader.js, POST /editor/read; both listed built in section 8 table rows 22 and 23.
+
+Text as it stood in WORLD_CLASS_PLAN.md:
+
+### H8 Time travel and the margin reader (I5, I2; M each, Opus)
+
+I5: "what did I think about X in March" as a first-class query, the
+retrieval engine's date signal exposed as a slider on the Ask surface,
+with the answer's cards grouped by month. I2: the second reader in the
+document editor, a margin that fills with the person's own related notes
+as they write, from the same engine, with the link-strength explanation
+under each. Both reuse B3; both gate on the 150 ms budget for a
+keystroke-to-margin update.
+
+**State 2026-10-05:** I2, the margin reader, built for documents (HISTORY, "the margin reader"); I5 open (row 23).
+
+**State 2026-10-05:** I5 (b), built as row 23 (HISTORY.md, "Moved from the plans, 2026-10-05 (row 23: time travel)"), without the month grouping or a date slider (a day picker); I2 (c).
+
 ## Moved from the LEDGER
 - [x] **L551** `world-class` open, S: Update p5 API list in vendor_use.py from 1.9.4 to 1.11.13. From OPEN.md:3587. Evidence: scratchpad/vendor_use.py:15 still says pinned to 1.9.4; regenerate Built: scratchpad/vendor_use.py P5_FUNCTIONS (305) and P5_CLASSES (29) re-dumped from vendored p5 1.11.13 in Chromium; tests/test_vendor_utilisation.py passes
 - [x] **L537** `world-class` open, S: Frontend ids lint regex includes ids inside HTML comments. From OPEN.md:1610. Evidence: tests/test_frontend_ids.py:128,136 regex over _markup(); false hits unchecked Built: already built: tests/test_frontend_ids.py:68 _markup strips <!-- --> comments before the id scan
 - [x] **L556** `world-class` open, S: test_consent_1110 reads the real clock; use a fixed clock. From sm-1111.md Found. Evidence: tests/test_consent_1110.py still reads clock; standing rule says fixed clock Built: already built: tests/test_consent_1110.py:25 autouse _fixed_now pins routes_chat, chat_said, chat_turn, config.user_now and clock.today
 - [x] **L536** `world-class` open, S: clip.html/capture.html unhashed ?v=<version> stamps. From OPEN.md:1504. Evidence: frontend/clip.html:13,18 still ?v=0.7.0 static stamps Built: duplicate of L525; app.py:286 STAMPED_PAGES; tests/test_code_documents.py:868
 - [x] **L525** `world-class` open, S: Hash the ?v= stamps in clip.html and capture.html. From OPEN.md:3775. Evidence: clip.html:13-19 still ?v=0.7.0 Built: already built: app.py:286 STAMPED_PAGES stamps clip.html and capture.html per file hash at serve time; tests/test_code_documents.py:868
+- [x] **L661** `world-class` partly, M: Make Library boards and mind maps filter return boards, not only note cards. From OPEN.md:1120; OPEN.md:3749. Evidence: library.js:383 handles is_board entries; libraryPhrase filter result not confirmed to include boards Built: verified 2026-11-12: the Library kind chips Boards and Mind maps (library.js:383-392, is_board entries) list and count boards; no filter gap found
+- [x] **L653** `world-class` partly, S: test_typo_routing writes ./data serially; boot JS 588516 over cap 588400. From OPEN.md:3891. Evidence: Boot cap stale: BOOT_JS_CAP now 448_400 (tests/test_boot_budget.py:64). Serial ./data write in tests/test_typo_routing.py not re-run (read-only); unverified. Built: verified 2026-11-12: BOOT_JS_CAP is 448_400 (tests/test_boot_budget.py:64); tests/test_typo_routing.py run serially wrote no ./data
+- [x] **L649** `world-class` partly, S: Wire locale first-day into week_start so Sunday-first locales read right. From OPEN.md:2813. Evidence: notebook_stats.py:1269 week_start has first_day param; locale caller wiring unconfirmed Built: verified 2026-11-12: config.week_first_day (core/config.py:549, week_start_locale) feeds notebook_stats.week_start through routes_statistics.py:19 and stats_ask
+- [x] **L648** `world-class` partly, S: Extend the close-other-menus fix from graph's three head buttons to an app-wide handler. From OPEN.md:1339. Evidence: graph.js:4898 comment documents graph-only fix; no app-wide handler found. Built: verified 2026-11-12: openActionMenu calls closeActionMenus first (menus.js:532), so every action menu closes the others app-wide; the graph head's help popovers keep their own fix (graph.js:4898)
+- [x] **L647** `world-class` partly, S: Confirm .bat launcher parity for system site-packages (env var path tested). From OPEN.md:725. Evidence: Env var path tested (tests/test_no_system_torch_launcher.py); .bat parity not confirmed Built: verified 2026-11-12: moot, the system-site-packages opt-in and its script were removed 2026-10-27 (tests/test_no_system_torch_launcher.py holds the door shut)
+- [x] **L645** `world-class` partly, S: Restore notes list sort across reload. From OPEN.md:4302. Evidence: Filter words persist in sessionStorage 'note-filter' (notes-list.js:2302-2315); sort across reload unchecked. Built: verified 2026-11-12: the notes sort is stored as prefs notes-sort (settings-wiring.js:1613,1627) and read back at load
+- [x] **L644** `world-class` partly, S: Add per-destination 'why' text to the privacy receipt. From OPEN.md:2019. Evidence: Receipt built (settings-panes.js:507, index.html:14951, GET /privacy/receipt); per-destination 'why' text not confirmed Built: verified 2026-11-12: egress rows carry purposes (core/egress.py:408) and the receipt draws them per destination (settings-data.js:18-29), tests/test_egress_purposes.py
+- [x] **L652** `world-class` partly, S: Brief 3: api.stream/upload and no-bare-fetch lint. From OPEN.md:1959. Evidence: tests/test_no_bare_fetch.py exists; HISTORY still lists remainder Built: verified 2026-11-12: same as L642, app.js:506-507 and tests/test_no_bare_fetch.py
+- [x] **L642** `world-class` partly, S: Build api.stream/api.upload and the no-bare-fetch lint (Brief 3). From OPEN.md:3589. Evidence: app.js:506-507 define both (stream is alias of api); tests/test_raw_fetch_headers.py exists; HISTORY:46616 line still stale Built: verified 2026-11-12: api.upload and api.stream defined at app.js:506-507 (stream is an alias of api), tests/test_no_bare_fetch.py is the lint
+- [x] **L-world-class-16** `world-class` open, L: Verify the 22.2 baseline list before striking it. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:2352. Evidence: Open line in the plan's prose a session could miss. Excluded from the LEDGER count of 79, so invisible to a ledger-driven session. Built: 22.2 and 22.3 checked item by item 2026-11-12: built six and three, the rest are one line each in the plan
 - [x] **L800** `world-class` owner-call, S: Decide what the evidence_checks switch gates and build its runner. From OPEN.md:2944. Evidence: Only facts.py:88 default; decision needed on what it gates Built: owner decision 2026-11-12: Keep it as built, no build needed
 - [x] **L796** `world-class` owner-call, S: Decide and build server restore routes for media deletes, ask-history, learned and tidy undo. From OPEN.md:532. Evidence: Row marks owner-call (w34-L1-1111.md); server restore routes needing a design decision; some exist (HISTORY:653) Built: owner decision 2026-11-12: Keep the built Undo, no build needed
 - [x] **L793** `world-class` owner-call, M: Decide auth and write-tool scope for the MCP server. From OPEN.md:4211. Evidence: Ledger owner call on MCP auth/scope. Built: owner decision 2026-11-12: Keep token, read-only, no build needed
