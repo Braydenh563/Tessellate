@@ -364,3 +364,31 @@ def test_the_writes_switch_round_trips_through_the_settings_api(client):
     client.put("/preferences", json={"mcp_writes_enabled": True})
     assert client.get("/preferences").json()["mcp_writes_enabled"] is True
     assert writes_allowed() is True
+
+
+def test_the_skill_snippet_routes_intents_to_the_tool_command(client):
+    """L-general-34: Settings' MCP row also offers a SKILL.md an agent can drop in
+    its skills folder; it names every offered tool and the `tool NAME --json`
+    command, and never carries the server token (the shell is its own boundary)."""
+    from tessellate import mcp_server
+
+    mcp = client.get("/capabilities").json()["features"]["mcp"]
+    skill = mcp["skill"]
+    assert skill.startswith("---\nname: tessellate\ndescription: ")
+    assert " tool " in skill and "--json" in skill and "TESSELLATE_DATA_DIR" in skill
+    for spec in offered_tools():
+        assert f"`{spec.name}`" in skill
+    assert mcp_server.token() not in skill
+
+
+def test_settings_draws_the_skill_snippet_with_its_own_copy():
+    from pathlib import Path
+
+    from tests._app_js import frontend_text
+
+    html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert 'id="mcp-skill-snippet"' in html and 'id="mcp-skill-copy"' in html
+    js = frontend_text("settings-controls.js")
+    body = js[js.index("async function renderMcpSnippet()"):]
+    body = body[: body.index("\n}\n")]
+    assert "mcp.skill" in body and "mcp-skill-copy" in body and "mcp-skill-toggle" in body

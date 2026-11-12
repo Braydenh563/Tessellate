@@ -464,6 +464,25 @@ def _serve_lines(stdin: TextIO, stdout: TextIO) -> None:
             stdout.flush()
 
 
+def skill_md(command: str, data_dir: str) -> str:
+    """A SKILL.md an agent (Claude Code and the like) keeps in its skills folder
+    (L-general-34): its description routes "my notes" intents here, and its body
+    runs `tool NAME --json` per offered tool. No token: the CLI runs in the
+    person's own shell, the same boundary as stdio."""
+    rows = "\n".join(
+        f"- `{spec.name}`: {spec.description.strip().splitlines()[0]}" for spec in offered_tools()
+    )
+    return (
+        "---\nname: tessellate\ndescription: Read and search the person's Tessellate "
+        "notebook. Use when they ask about their notes, what they wrote, or what is due.\n---\n\n"
+        f"Run with TESSELLATE_DATA_DIR=\"{data_dir}\" set:\n\n"
+        f"    {command} tool NAME --args '{{\"key\": \"value\"}}' --json\n\n"
+        f"`{command} tool --json` lists every tool with its arguments. "
+        "Output is one JSON line; exit 1 means the tool failed.\n\n"
+        f"Tools:\n{rows}\n"
+    )
+
+
 def cli(argv: list[str], out: TextIO) -> int:
     """`python -m tessellate tool [NAME] [--args JSON] [--json]`: list the
     offered tools, or run one and print its result. Always JSON on `out`

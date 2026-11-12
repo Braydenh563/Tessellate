@@ -337,7 +337,8 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "Settings, Tools it can use also has Use these tools from another "
             "app: a snippet to paste into an MCP client such as Claude Desktop, "
-            "with a Copy button; that client can also read your notes (never "
+            "with a Copy button, and Copy skill, a SKILL.md for an agent; "
+            "that client can also read your notes (never "
             "a private one) and use your skills as prompts. It reads only until "
             "you tick Let that app add and change notes. "
             "A number Atlas would work out (a sum, a percentage, a conversion, a "

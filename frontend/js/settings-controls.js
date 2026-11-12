@@ -2295,6 +2295,19 @@
     const text = JSON.stringify({ mcpServers: { tessellate: mcp.config } }, null, 2);
     pre.textContent = text;
     copy.onclick = () => copyToClipboard(text, copy);
+    //: The same tools for an agent that reads skills (L-general-34): no token, a shell command.
+    const skill = $("mcp-skill-snippet");
+    const skillCopy = $("mcp-skill-copy");
+    skill.textContent = mcp.skill || "";
+    $("mcp-skill-row").classList.toggle("hidden", !mcp.skill);
+    skillCopy.onclick = () => copyToClipboard(mcp.skill, skillCopy);
+    //: Folded: 40 lines of tools would push the rest of the pane a screen down.
+    const toggle = $("mcp-skill-toggle");
+    toggle.onclick = () => {
+      const open = toggle.getAttribute("aria-expanded") !== "true";
+      toggle.setAttribute("aria-expanded", String(open));
+      skill.classList.toggle("hidden", !open);
+    };
   }
 
   //: The network pane's state line and certificate facts, lazy with the listeners that

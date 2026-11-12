@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings, Tools it can use: a SKILL.md for an agent that reads skills, routing notebook questions to `tool NAME --json` (Copy skill, folded text; L-general-34).
 - Fix: cleaning up unused pictures no longer deletes one a note in the bin, an older version of a note or document, or a locked private document still shows. Settings, About lists the files nothing uses and deletes them when you ask.
 - Shortcuts: with a list's ticks showing (Library, Notes), the palette offers Select all in this list, Clear the selection and Delete what is selected; the shortcuts sheet lists Ctrl A, Esc, Delete and the arrow keys for menus and lists.
 - Fix: F2 (rename the list item you are on) works again with single-key shortcuts turned off; the switch (WCAG 2.1.4) covers character keys only.
