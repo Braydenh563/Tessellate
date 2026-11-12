@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 117 | 40 | 0 | 18 | 287 |
+| world-class | 130 | 117 | 38 | 0 | 18 | 285 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 614 | 137 | 3 | 136 | 1304 |
+| all | 553 | 614 | 135 | 3 | 136 | 1302 |
 
 ## graph
 
@@ -609,7 +609,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L531** `world-class` open, S: Cold boot measure: add service worker, warm cache and phone width. From OPEN.md:796. Evidence: Measurement caveat; no phone-width cold boot run found
 - [ ] **L532** `world-class` open, S: Re-run Quick add 56/60 measure after F1 fixes. From OPEN.md:864. Evidence: scratchpad/ui-sweeps/quickadd.js exists; no re-run figure recorded
 - [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.
-- [ ] **L534** `world-class` open, S: Undo counts per surface are static reads; drive documents/OCR/meetings and whiteboard 43/14. From OPEN.md:1116; OPEN.md:1485. Evidence: Undo ledger not closed; counts recorded, uncovered writes remain (see 587)
 - [ ] **L535** `world-class` open, S: decide is 34 ms/call at 5,000 notes vs 8-17 ms old tally. From OPEN.md:1496. Evidence: Perf measurement (scratchpad/filing-tools/perf.py); no optimisation found
 - [ ] **L538** `world-class` open, S: Run shell.spec.js handoff test in Playwright (only node --check'd). From OPEN.md:1828; OPEN.md:3536. Evidence: tests-e2e/specs/shell.spec.js handoff comment at line 35; runner run not recorded
 - [ ] **L539** `world-class` open, S: Run errors.js in THEME=dark and FAULTS=1. From OPEN.md:1889. Evidence: No record of the dark/fault runs; cheap to run
@@ -697,8 +696,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L638** `world-class` open, L: Frontend audit leftovers FE-09/10/11/13/14. From OPEN.md:3267. Evidence: No coverage-driven CSS deletion or Settings lazy markup found
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, chat.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block
 - [ ] **L643** `world-class` partly, S: Left: `aiIsOff()` (status.js:2122, already reading `model_ready`) is still called from 14 files; move those controls to read `model_ready` directly. From OPEN.md:1924.
-- [ ] **L646** `world-class` partly, S: Re-drive undo counts for documents, OCR, meetings. From OPEN.md:3455. Evidence: undo-kit.js, undo-store.js, standalone-undo.js now exist (Brief 74 landed); counts not re-driven.
-- [ ] **L651** `world-class` partly, S: Drive undo helpers in a browser (only node --check and scanner so far). From OPEN.md:512. Evidence: Scanner + node checks exist; no cited Playwright drive of every undo step; Playwright is available so can be driven
 - [ ] **L656** `world-class` partly, M: Left: per-act note and meeting rows and the search chip in the palette. `/read/acts` rows are drawn (palette.js:177-187); no note, meeting or search-chip row found. From OPEN.md:3721.
 - [ ] **L659** `world-class` partly, M: Add an egress lint that makes each outbound call site name its purpose and confirm remaining trust-contract rules. From OPEN.md:2023; OPEN.md:2513. Evidence: 72a/72b/73/74 landed (HISTORY 'Moved from the plans' Brief 72b); leftover rules unconfirmed, egress lint absent
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
@@ -755,6 +752,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
 - [ ] **L-world-class-28** `world-class` open, M: Require a sig on every key-less /chat/tools/execute call and move the about 40 test call sites to send one. From L566 follow-on, 2026-11-12. Evidence: L566 allows a key-less /chat/tools/execute call without sig; a sig that does not match gets 400
 - [ ] **L-world-class-29** `world-class` open, M: Undo for preference writes made outside Settings (26 EXEMPT lines). From tests/test_undo_coverage.py EXEMPT. Evidence: 26 of 59 settings-class EXEMPT lines are outside settings*.js (setChatMode, toggleWebSearch, savePersonaList, saveSkillList, saveTemplateList, persistSavedFinds, ...); they write /preferences with Settings closed, so Recent changes never sees them
+- [ ] **L-world-class-30** `world-class` open, M: Settings sweep: two avatar look pickers and the web search switch do not undo. From scratchpad/ui-sweeps/undo.js ONLY=settings 2026-11-12. Evidence: profile-look-look and profile-look-mood (companion-settings.js:146 markPrefsDirty) and pref-web-search stay NOT UNDONE in the sweep; the first two keep the style in memory, so a later autosave re-sends it
 
 ## general
 

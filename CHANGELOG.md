@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ctrl+Z now reaches a Settings change from inside Settings and from a focused switch or slider; the learning switches are undoable. Driven in a browser: 12 of 13 sampled settings undo and redo (0 before), documents 2 of 2, library 2 of 2 (L694, L534, L646, L651).
 - The dashboard's layout, quick access row and quick colours are undoable with Ctrl+Z (L696).
 - Settings switches, choices, sliders, backup retention and sampling are steps on the undo stack, so Ctrl+Z and Ctrl+Shift+Z reach them; a drag is one step (L694).
 - Undoing what Atlas or a skill run changed now has a server Redo (POST /events/redo) and joins the normal undo stack, so Ctrl+Z and Ctrl+Shift+Z work on it (L805, L572).

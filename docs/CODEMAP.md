@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8332, frontend ids 2778, CSS sections 524, backend routes 705, backend modules 10888, test files 2721, tests 22022, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8332, frontend ids 2778, CSS sections 524, backend routes 705, backend modules 10888, test files 2722, tests 22025, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8332)
 
@@ -1179,52 +1179,52 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activeOverlay` | frontend/js/settings-wiring.js:971 |
-| `captureCountText` | frontend/js/settings-wiring.js:1753 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1475 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2156 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1270 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1505 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1306 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2141 |
-| `fileDropBox` | frontend/js/settings-wiring.js:2004 |
+| `activeOverlay` | frontend/js/settings-wiring.js:973 |
+| `captureCountText` | frontend/js/settings-wiring.js:1755 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1477 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2158 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1272 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1507 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1308 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2143 |
+| `fileDropBox` | frontend/js/settings-wiring.js:2006 |
 | `flashSaved` | frontend/js/settings-wiring.js:523 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2188 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1288 |
-| `inEditable` | frontend/js/settings-wiring.js:969 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1603 |
-| `loadShortcuts` | frontend/js/settings-wiring.js:1140 |
-| `localizeStaticChords` | frontend/js/settings-wiring.js:1183 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2190 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1290 |
+| `inEditable` | frontend/js/settings-wiring.js:971 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1605 |
+| `loadShortcuts` | frontend/js/settings-wiring.js:1142 |
+| `localizeStaticChords` | frontend/js/settings-wiring.js:1185 |
 | `lockFail` | frontend/js/settings-wiring.js:286 |
 | `lockFailed` | frontend/js/settings-wiring.js:298 |
 | `lockOpened` | frontend/js/settings-wiring.js:354 |
 | `lockRequest` | frontend/js/settings-wiring.js:398 |
-| `mapEditorShown` | frontend/js/settings-wiring.js:966 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1324 |
-| `maybeShowOnboarding` | frontend/js/settings-wiring.js:992 |
+| `mapEditorShown` | frontend/js/settings-wiring.js:968 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1326 |
+| `maybeShowOnboarding` | frontend/js/settings-wiring.js:994 |
 | `notebookLocked` | frontend/js/settings-wiring.js:508 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:54 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1718 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1685 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1926 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1720 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1687 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1928 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1442 |
-| `restampShortcutHints` | frontend/js/settings-wiring.js:1193 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2129 |
-| `runShortcut` | frontend/js/settings-wiring.js:1333 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1444 |
+| `restampShortcutHints` | frontend/js/settings-wiring.js:1195 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2131 |
+| `runShortcut` | frontend/js/settings-wiring.js:1335 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:62 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1294 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1296 |
 | `saveWhatIsInFront` | frontend/js/settings-wiring.js:586 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1459 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1466 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2315 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2106 |
-| `stampShortcutTitles` | frontend/js/settings-wiring.js:1169 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1461 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1468 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2317 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2108 |
+| `stampShortcutTitles` | frontend/js/settings-wiring.js:1171 |
 | `submitLockForm` | frontend/js/settings-wiring.js:322 |
-| `textCounts` | frontend/js/settings-wiring.js:1743 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2165 |
-| `wordCount` | frontend/js/settings-wiring.js:1738 |
+| `textCounts` | frontend/js/settings-wiring.js:1745 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2167 |
+| `wordCount` | frontend/js/settings-wiring.js:1740 |
 
 ### frontend/js/spaces-find.js (24)
 
@@ -7218,9 +7218,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `appendToolRow` | frontend/js/settings-controls.js:3887 |
 | `applyBackendChoice` | frontend/js/settings-controls.js:1402 |
 | `applyChatModel` | frontend/js/settings-controls.js:1584 |
-| `applyContrast` | frontend/js/settings-controls.js:5306 |
-| `applyEmbeddingBackend` | frontend/js/settings-controls.js:5209 |
-| `applyHarmony` | frontend/js/settings-controls.js:5253 |
+| `applyContrast` | frontend/js/settings-controls.js:5311 |
+| `applyEmbeddingBackend` | frontend/js/settings-controls.js:5214 |
+| `applyHarmony` | frontend/js/settings-controls.js:5258 |
 | `applyOcrModel` | frontend/js/settings-controls.js:1600 |
 | `applyToolFilter` | frontend/js/settings-controls.js:3951 |
 | `applyUtilityModel` | frontend/js/settings-controls.js:1619 |
@@ -7228,9 +7228,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `changePassword` | frontend/js/settings-controls.js:195 |
 | `chosenSkillTools` | frontend/js/settings-controls.js:2170 |
 | `chosenSkillVerify` | frontend/js/settings-controls.js:2149 |
-| `clearEmbeddingBackendLatch` | frontend/js/settings-controls.js:5332 |
-| `clearManualOverrides` | frontend/js/settings-controls.js:5297 |
-| `copyLogs` | frontend/js/settings-controls.js:5283 |
+| `clearEmbeddingBackendLatch` | frontend/js/settings-controls.js:5337 |
+| `clearManualOverrides` | frontend/js/settings-controls.js:5302 |
+| `copyLogs` | frontend/js/settings-controls.js:5288 |
 | `decorateThemeCards` | frontend/js/settings-controls.js:3310 |
 | `deleteProfile` | frontend/js/settings-controls.js:2063 |
 | `ensureAppearancePopOut` | frontend/js/settings-controls.js:3504 |
@@ -7246,31 +7246,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lanNetworkRows` | frontend/js/settings-controls.js:2584 |
 | `lanSwitch` | frontend/js/settings-controls.js:82 |
 | `lanTrustNetwork` | frontend/js/settings-controls.js:2621 |
-| `learnedBulk` | frontend/js/settings-controls.js:4644 |
-| `learnedCheckLine` | frontend/js/settings-controls.js:5082 |
-| `learnedCheckMark` | frontend/js/settings-controls.js:5114 |
-| `learnedCheckPutBack` | frontend/js/settings-controls.js:5162 |
-| `learnedCheckRefresh` | frontend/js/settings-controls.js:5125 |
-| `learnedCheckRun` | frontend/js/settings-controls.js:5133 |
-| `learnedCheckSentence` | frontend/js/settings-controls.js:5077 |
-| `learnedCheckShow` | frontend/js/settings-controls.js:5096 |
-| `learnedDelete` | frontend/js/settings-controls.js:4854 |
-| `learnedEdit` | frontend/js/settings-controls.js:4807 |
-| `learnedExport` | frontend/js/settings-controls.js:4896 |
-| `learnedForget` | frontend/js/settings-controls.js:4876 |
-| `learnedFromYouText` | frontend/js/settings-controls.js:4994 |
+| `learnedBulk` | frontend/js/settings-controls.js:4649 |
+| `learnedCheckLine` | frontend/js/settings-controls.js:5087 |
+| `learnedCheckMark` | frontend/js/settings-controls.js:5119 |
+| `learnedCheckPutBack` | frontend/js/settings-controls.js:5167 |
+| `learnedCheckRefresh` | frontend/js/settings-controls.js:5130 |
+| `learnedCheckRun` | frontend/js/settings-controls.js:5138 |
+| `learnedCheckSentence` | frontend/js/settings-controls.js:5082 |
+| `learnedCheckShow` | frontend/js/settings-controls.js:5101 |
+| `learnedDelete` | frontend/js/settings-controls.js:4859 |
+| `learnedEdit` | frontend/js/settings-controls.js:4812 |
+| `learnedExport` | frontend/js/settings-controls.js:4901 |
+| `learnedForget` | frontend/js/settings-controls.js:4881 |
+| `learnedFromYouText` | frontend/js/settings-controls.js:4999 |
 | `learnedKindLabel` | frontend/js/settings-controls.js:4503 |
-| `learnedReset` | frontend/js/settings-controls.js:4833 |
-| `learnedRow` | frontend/js/settings-controls.js:4690 |
-| `learnedRunNow` | frontend/js/settings-controls.js:4915 |
+| `learnedReset` | frontend/js/settings-controls.js:4838 |
+| `learnedRow` | frontend/js/settings-controls.js:4695 |
+| `learnedRunNow` | frontend/js/settings-controls.js:4920 |
 | `learnedSetSwitch` | frontend/js/settings-controls.js:4610 |
-| `looksLikeEmbeddingModel` | frontend/js/settings-controls.js:5342 |
+| `looksLikeEmbeddingModel` | frontend/js/settings-controls.js:5347 |
 | `maintenanceDoctorRow` | frontend/js/settings-controls.js:3072 |
 | `maintenanceSay` | frontend/js/settings-controls.js:3048 |
 | `makeMaintenanceShortcut` | frontend/js/settings-controls.js:3145 |
 | `mergeDuplicateGroup` | frontend/js/settings-controls.js:1953 |
 | `mergeNamedPrompts` | frontend/js/settings-controls.js:2076 |
-| `nearLogBottom` | frontend/js/settings-controls.js:5322 |
+| `nearLogBottom` | frontend/js/settings-controls.js:5327 |
 | `openMaintenanceFolder` | frontend/js/settings-controls.js:3136 |
 | `openTaskLog` | frontend/js/settings-controls.js:3356 |
 | `openUninstallSteps` | frontend/js/settings-controls.js:3156 |
@@ -7289,24 +7289,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderLanFirewall` | frontend/js/settings-controls.js:2477 |
 | `renderLanState` | frontend/js/settings-controls.js:2322 |
 | `renderLanTrust` | frontend/js/settings-controls.js:2529 |
-| `renderLearned` | frontend/js/settings-controls.js:5015 |
-| `renderLearnedFromYou` | frontend/js/settings-controls.js:5006 |
-| `renderLearnedList` | frontend/js/settings-controls.js:4767 |
+| `renderLearned` | frontend/js/settings-controls.js:5020 |
+| `renderLearnedFromYou` | frontend/js/settings-controls.js:5011 |
+| `renderLearnedList` | frontend/js/settings-controls.js:4772 |
 | `renderLearnedSwitches` | frontend/js/settings-controls.js:4507 |
 | `renderMaintenance` | frontend/js/settings-controls.js:3052 |
 | `renderMcpSnippet` | frontend/js/settings-controls.js:2298 |
 | `renderMemorySettings` | frontend/js/settings-controls.js:2817 |
 | `renderPinSettings` | frontend/js/settings-controls.js:3673 |
 | `renderRunBudget` | frontend/js/settings-controls.js:3805 |
-| `renderSkillFolderLine` | frontend/js/settings-controls.js:5423 |
-| `renderSkillSettings` | frontend/js/settings-controls.js:5405 |
+| `renderSkillFolderLine` | frontend/js/settings-controls.js:5428 |
+| `renderSkillSettings` | frontend/js/settings-controls.js:5410 |
 | `renderSmallModelAuto` | frontend/js/settings-controls.js:3409 |
 | `renderSmallModelMode` | frontend/js/settings-controls.js:3793 |
 | `renderStatusBarSettings` | frontend/js/settings-controls.js:2235 |
 | `renderToolFocus` | frontend/js/settings-controls.js:3767 |
 | `renderToolSettings` | frontend/js/settings-controls.js:3718 |
 | `resetAllFeatureModels` | frontend/js/settings-controls.js:1567 |
-| `resetThemeOnly` | frontend/js/settings-controls.js:5315 |
+| `resetThemeOnly` | frontend/js/settings-controls.js:5320 |
 | `restartMemoryMap` | frontend/js/settings-controls.js:1768 |
 | `restoreFullBackup` | frontend/js/settings-controls.js:2014 |
 | `runEmbeddingFallback` | frontend/js/settings-controls.js:1503 |
@@ -7323,8 +7323,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setMaintenanceReinstall` | frontend/js/settings-controls.js:3123 |
 | `showLanQr` | frontend/js/settings-controls.js:2379 |
 | `showVoiceSample` | frontend/js/settings-controls.js:690 |
-| `skillRow` | frontend/js/settings-controls.js:5349 |
-| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4632 |
+| `skillRow` | frontend/js/settings-controls.js:5354 |
+| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4637 |
 | `textToInputs` | frontend/js/settings-controls.js:2791 |
 | `textToSteps` | frontend/js/settings-controls.js:2784 |
 | `themeEyeButton` | frontend/js/settings-controls.js:3283 |
@@ -7332,7 +7332,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toolGroupAllPaint` | frontend/js/settings-controls.js:3845 |
 | `toolGroupBoxes` | frontend/js/settings-controls.js:3836 |
 | `waitForRestart` | frontend/js/settings-controls.js:1794 |
-| `wireLearnedSection` | frontend/js/settings-controls.js:4949 |
+| `wireLearnedSection` | frontend/js/settings-controls.js:4954 |
 
 ### frontend/js/settings-data.js (52)
 
@@ -27853,7 +27853,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22022)
+## Tests (22025)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30047,6 +30047,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_body_1501.py | 9 |
 | tests/test_settings_bugs_1017.py | 14 |
 | tests/test_settings_close_no_redraw_1111.py | 5 |
+| tests/test_settings_ctrl_z_l694.py | 3 |
 | tests/test_settings_field_edge.py | 2 |
 | tests/test_settings_fills_its_own_controls_l523.py | 1 |
 | tests/test_settings_group_heads.py | 2 |
@@ -30996,14 +30997,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:808 |
+| Needs hardware | docs/roadmap/LEDGER.md:806 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:800 |
+| Owner calls | docs/roadmap/LEDGER.md:798 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31184,7 +31185,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:949 |
+| Plan session briefs | docs/roadmap/LEDGER.md:947 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31239,25 +31240,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:965 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1049 |
+| chat | docs/roadmap/LEDGER.md:963 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1047 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:989 |
-| general | docs/roadmap/LEDGER.md:759 |
+| documents | docs/roadmap/LEDGER.md:987 |
+| general | docs/roadmap/LEDGER.md:757 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:953 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1061 |
+| graph | docs/roadmap/LEDGER.md:951 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1059 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:1001 |
+| mindmap | docs/roadmap/LEDGER.md:999 |
 | timeline | docs/roadmap/LEDGER.md:596 |
-| timeline | docs/roadmap/LEDGER.md:1025 |
+| timeline | docs/roadmap/LEDGER.md:1023 |
 | ui-modernisation | docs/roadmap/LEDGER.md:478 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1013 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1011 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:977 |
+| whiteboard | docs/roadmap/LEDGER.md:975 |
 | world-class | docs/roadmap/LEDGER.md:599 |
-| world-class | docs/roadmap/LEDGER.md:1037 |
+| world-class | docs/roadmap/LEDGER.md:1035 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

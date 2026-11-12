@@ -4609,10 +4609,15 @@
 
   async function learnedSetSwitch(name, value) {
     try {
+      //: Undo sends back the one switch (the master only masks the other seven in the reply, it does not store them off) (L694).
+      const before = await apiJson("/learned/switches", { silent: true }).catch(() => null);
       await apiJson("/learned/switches", {
         method: "PUT",
         body: JSON.stringify({ [name]: value }),
       });
+      if (before && Boolean(before[name]) !== Boolean(value)) {
+        pushRequestUndo("Learning switch", "/learned/switches", "PUT", { [name]: before[name] }, { [name]: value }, renderLearnedSwitches);
+      }
     } catch (error) {
       toast(error.message, true);
     }

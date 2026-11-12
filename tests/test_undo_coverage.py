@@ -706,7 +706,6 @@ EXEMPT: dict[str, str] = {
     "settings.js:clearLogs": "telemetry: telemetry or a background warm-up; no user data",
     "settings.js:deleteSavedTheme": "settings: a setting with its own Reset or the settings history",
     "settings-controls.js:learnedRunNow": "job: starts or stops work or a model; deletes no user data",
-    "settings-controls.js:learnedSetSwitch": "settings: a setting with its own Reset or the settings history",
     "settings.js:renderJobOverview": "job: starts or stops work or a model; deletes no user data",
     "settings.js:saveCurrentLook": "settings: a setting with its own Reset or the settings history",
     "personas-pane.js:renderPersonas": "read: reads or asks the model; shows a result, writes nothing",

@@ -690,8 +690,10 @@ document.addEventListener("keydown", (e) => {
   //: (`boardHistoryActive`), one owner for one shortcut.
   if (chorded && !(typeof wbOwnsChord === "function" && wbOwnsChord(e))) {
     //: A confirm or a picker in front is a pause, not a step: Ctrl+Z reached past "Switch to mind map?" and undid the last edit behind it (dgmlive2 1108). Read only for undo and redo.
-    const behindModal = () => [...document.querySelectorAll(".modal-overlay, dialog[open]")].some((m) => m.getClientRects().length);
-    const inTextField = inEditable(document.activeElement);
+    //: Settings itself is not a pause: its switches are steps on the stack, so Ctrl+Z reaches them from inside it (L694).
+    const behindModal = () => [...document.querySelectorAll(".modal-overlay:not(#settings-modal), dialog[open]")].some((m) => m.getClientRects().length);
+    //: A focused switch, radio or slider has no text to undo, so Ctrl+Z reaches the stack from it (L694).
+    const inTextField = inEditable(document.activeElement) && !document.activeElement.matches("input[type=checkbox],input[type=radio],input[type=range]");
     //: **Ctrl+Y is redo too** (the Windows habit; the board's Redo prints it): a text field keeps its own.
     if (!inTextField && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "y" && !behindModal()) {
       e.preventDefault();
