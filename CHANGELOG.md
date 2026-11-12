@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a word touching a suggestion marker is a spelling finding (L311)
 - Documents: the map add-then-undo probe is stable in light and dark (L305)
 - Documents: indent guides in code files and js-beautify on a selection are built and measured (L298, L300)
 - Documents: the code editor already fills the pane; no 78ch cap on code files (L292)
