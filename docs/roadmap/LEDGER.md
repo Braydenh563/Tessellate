@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 58 | 16 | 0 | 18 | 144 |
-| documents | 70 | 58 | 16 | 0 | 18 | 144 |
-| documents | 70 | 58 | 16 | 0 | 18 | 144 |
+| documents | 70 | 57 | 16 | 0 | 18 | 143 |
+| documents | 70 | 57 | 16 | 0 | 18 | 143 |
+| documents | 70 | 57 | 16 | 0 | 18 | 143 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 698 | 156 | 3 | 195 | 1407 |
-| all | 553 | 698 | 156 | 3 | 195 | 1407 |
-| all | 553 | 698 | 156 | 3 | 195 | 1407 |
+| all | 553 | 697 | 156 | 3 | 195 | 1406 |
+| all | 553 | 697 | 156 | 3 | 195 | 1406 |
+| all | 553 | 697 | 156 | 3 | 195 | 1406 |
 
 ## graph
 
@@ -379,7 +379,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L304** `documents` open, S: Make diagram Source view text fold. From diagklm-1108.md Left. Evidence: diagram-lazy.css fold block / diagram-embed.js srcwrap unchanged per source; no later commit found
 - [ ] **L305** `documents` open, S: Probe Documents in dark run; map add undo flaky between runs. From OPEN.md:3696. Evidence: Re-run both before quoting; no re-run record found
 - [ ] **L306** `documents` open, S: Fix test_lazy_order_1530: documents-view.js reads docCmView after await. From dec-1111-d2.md Found. Evidence: documents-view.js:202-205 comment shows partial handling; not re-run (read-only)
-- [ ] **L307** `documents` open, S: Roman numerals past 59 stop continuing; settings search getClientRects lag. From laglist-1108.md Left. Evidence: documents-prose.js:2446 comment only; settingsIndexHeads unchanged per source
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines.
 - [ ] **L309** `documents` open, M: Keep Python runtime frame persistent across documents to avoid 5-7 s cold reload per document. From OPEN.md:1219; OPEN.md:1224; OPEN.md:2829; OPEN.md:2907. Evidence: Row: needs the Pyodide extra, not installed here; cold Debug cannot be timed.
 - [ ] **L310** `documents` open, M: Feed sucrase's own parse errors into the Problems panel. From OPEN.md:1467. Evidence: documents-code.js:246 uses syntaxTree; no sucrase error feed found by grep

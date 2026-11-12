@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Lists: i. numerals keep continuing past 59 in the renderer; the settings index no longer reads layout (L307).
 - Inline AI: an AI edit is one step on the app's undo stack, so the bar's Undo, the status bar's Undo and Ctrl+Z agree (L755) (L288).
 - Offers: the sum offer for a column of amounts under a Total: line was already built; the row is closed with its test (L287).
 - Code: the keybindings sheet's close (`docIdeCloseKeys`) is on `window`, so the `code-keys.js` sweep can close it (L-documents-14).
