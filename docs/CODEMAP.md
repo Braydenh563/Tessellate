@@ -8692,7 +8692,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbBrainstormLeft` | frontend/js/whiteboard-map-more.js:455 |
 | `wbBrainstormStart` | frontend/js/whiteboard-map-more.js:471 |
 | `wbBrainstormStop` | frontend/js/whiteboard-map-more.js:465 |
-| `wbBranchSaveMarkdown` | frontend/js/whiteboard-map-more.js:616 |
+| `wbBranchSaveMarkdown` | frontend/js/whiteboard-map-more.js:617 |
 | `wbGanttAxis` | frontend/js/whiteboard-map-more.js:182 |
 | `wbGanttDayNumber` | frontend/js/whiteboard-map-more.js:27 |
 | `wbGanttDayText` | frontend/js/whiteboard-map-more.js:32 |
@@ -8707,14 +8707,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbGanttWireBar` | frontend/js/whiteboard-map-more.js:141 |
 | `wbGanttWords` | frontend/js/whiteboard-map-more.js:72 |
 | `wbMapOpenGantt` | frontend/js/whiteboard-map-more.js:227 |
-| `wbSecondRoot` | frontend/js/whiteboard-map-more.js:588 |
-| `wbShapeCopy` | frontend/js/whiteboard-map-more.js:513 |
-| `wbShapePaste` | frontend/js/whiteboard-map-more.js:519 |
-| `wbShapePatch` | frontend/js/whiteboard-map-more.js:505 |
-| `wbTemplateAdd` | frontend/js/whiteboard-map-more.js:561 |
-| `wbTemplateOutline` | frontend/js/whiteboard-map-more.js:541 |
-| `wbTemplatePick` | frontend/js/whiteboard-map-more.js:546 |
-| `wbTopicImageFromLink` | frontend/js/whiteboard-map-more.js:571 |
+| `wbSecondRoot` | frontend/js/whiteboard-map-more.js:589 |
+| `wbShapeCopy` | frontend/js/whiteboard-map-more.js:514 |
+| `wbShapePaste` | frontend/js/whiteboard-map-more.js:520 |
+| `wbShapePatch` | frontend/js/whiteboard-map-more.js:506 |
+| `wbTemplateAdd` | frontend/js/whiteboard-map-more.js:562 |
+| `wbTemplateOutline` | frontend/js/whiteboard-map-more.js:542 |
+| `wbTemplatePick` | frontend/js/whiteboard-map-more.js:547 |
+| `wbTopicImageFromLink` | frontend/js/whiteboard-map-more.js:572 |
 
 ### frontend/js/whiteboard-map.js (353)
 
