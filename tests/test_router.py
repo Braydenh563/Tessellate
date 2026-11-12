@@ -90,14 +90,24 @@ def test_an_address_that_is_not_a_view_is_ignored_or_lands_on_its_tab(hash_):
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 def test_an_overlay_with_an_entry_shows_its_own_address():
     # B43: the manual and Statistics wrote `#/dashboard` while open (Playwright,
-    # 2026-11-10). The lazy router-overlays.js gives them routes; router.js is
-    # at its gzip cap.
+    # 2026-11-10). They were routes added by the lazy router-overlays.js, which
+    # is not in yet when a pasted `#/Manual` is read at load (Sh1 P17), so the
+    # routes are in router.js now: the intent (the address names the overlay)
+    # is the same, it holds in the first seconds too.
     lazy = (ROOT / "frontend" / "js" / "router-overlays.js").read_text(encoding="utf-8")
-    line = 'Object.assign(ROUTE_TABS, { Manual: "Manual", Statistics: "Statistics" });'
-    assert line in lazy
+    assert "Object.assign(ROUTE_TABS" not in lazy
     for tab in ("Manual", "Statistics"):
-        script = _functions("routeHash") + f'\n{line}\nprocess.stdout.write(routeHash({{tab: "{tab}", section: null}}));'
-        assert subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout == f"#/{tab}"
+        assert _run(f'routeHash({{tab: "{tab}", section: null}})') == f"#/{tab}"
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_a_pasted_manual_or_statistics_address_is_an_entry_in_either_case():
+    for hash_, tab in (("#/Manual", "Manual"), ("#/manual", "Manual"), ("#/Statistics", "Statistics"), ("#/statistics", "Statistics")):
+        assert _run(f'routeEntry("{hash_}")') == {"tab": tab, "section": None}
+    assert _run('routeEntry("#/manual/x")') is None
+    source = ROUTER.read_text(encoding="utf-8")
+    restore = source[source.index("async function routerRestore(") :]
+    assert 'ensureModule("quickNote").then(() => openHistoryEntry(entry))' in restore[: restore.index("\n}\n")]
 
 
 def test_the_stack_is_mirrored_into_the_browsers_history():
