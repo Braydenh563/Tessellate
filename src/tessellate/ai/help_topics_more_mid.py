@@ -1028,8 +1028,9 @@ MID_TOPICS.extend(
                 "Not yet marks it and moves on. Branches with topics under "
                 "them are asked, and then each topic that has a note: its note is the "
                 "answer, read out in the bar when you press Show. Nothing on the map changes. Your marks are kept "
-                "for that map on this device, a branch you missed says so next "
-                "time, and the end says how many you recalled. Esc stops. "
+                "for that map on this device, and the next run is spaced: what you missed first, then what is due "
+                "again (a day, 3, a week, 2, a month), then new ones; the palette's Study the map in map order "
+                "asks in the map's order. The end says how many you recalled. Esc stops. "
                 "Build up branch by branch shows the centre, then each branch a level at a time; Previous takes the last part away, End shows the whole map to take it apart; the map is not changed."
             ),
             "badge": {"label": "Library", "tab": "library"},

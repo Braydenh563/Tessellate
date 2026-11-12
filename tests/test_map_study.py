@@ -103,3 +103,42 @@ def test_the_study_bar_and_the_guide_know_the_note_answer():
     wide = css[css.index(".wb-present-count.wb-present-pick-slot.is-wide {") :]
     assert "function wbPresentCaption(at, steps)" in board and '"is-wide"' in board
     assert "flex: 1 0 100%;" in wide[: wide.index("}")]
+
+
+#: A fixed clock for the spaced order: day 100 in milliseconds.
+DAY = 86400000
+NOW = 100 * DAY
+SPACED = {"roots": [1], "children": {"1": [2, 3, 4, 5, 6], "2": [7], "3": [8], "4": [9], "5": [10], "6": [11]}}
+
+
+def _order(marks: dict) -> list:
+    return _run(f"wbMapStudyQuestions(index, {json.dumps(marks)}, {NOW}).map((q) => q.id)", SPACED)
+
+
+def test_with_no_marks_the_order_is_the_maps_order():
+    assert _order({}) == [2, 3, 4, 5, 6]
+
+
+def test_the_spaced_order_asks_missed_first_then_overdue_then_new_then_not_yet_due():
+    marks = {
+        "2": {"last": "knew", "streak": 2, "at": NOW - 1 * DAY},  # waits 3 days: not due
+        "3": {"last": "missed", "streak": 0, "at": NOW - 10 * DAY},  # missed: first
+        # 4 never asked: new, after what is due for review
+        "5": {"last": "knew", "streak": 1, "at": NOW - 5 * DAY},  # waits 1 day, 4 over
+        "6": {"last": "knew", "streak": 1, "at": NOW - 2 * DAY},  # waits 1 day, 1 over
+    }
+    assert _order(marks) == [3, 5, 6, 4, 2]
+
+
+def test_a_longer_streak_waits_longer_and_a_mark_without_a_time_is_due():
+    marks = {
+        "2": {"last": "knew", "streak": 5, "at": NOW - 20 * DAY},  # waits 30 days: not due
+        "3": {"last": "knew", "streak": 1},  # an older record with no time: due
+    }
+    assert _order(marks) == [3, 4, 5, 6, 2]
+
+
+def test_a_mark_keeps_the_streak_and_the_time_it_was_made():
+    mapjs = MAP_JS.read_text(encoding="utf-8")
+    mark = mapjs[mapjs.index("function wbMapStudyMark") : mapjs.index("function wbMapEndStudy")]
+    assert "streak" in mark and "at: Date.now()" in mark

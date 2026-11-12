@@ -1203,8 +1203,13 @@ topic: a control that wide has nowhere to go.
    and moves on; the end says how many were recalled. The marks are kept
    per map on this device (`wbStudy:<id>` in local storage: a study record
    is the person's, not the map's), and a branch missed last time says so
-   in its step. Not built: a note behind the topic as the answer (the
-   plan's "the note's own text"), a spaced order.
+   in its step. The note behind a topic as the answer is built (item 5: a
+   topic with a note asks for it after the branches). Extended 2026-11-12:
+   from the second run the order is spaced (`wbMapStudyQuestions(index,
+   marks, now)`): a branch missed last time first, then those due again (a
+   streak of knowing it waits 0, 1, 3, 7, 14, 30 days), then new ones in map
+   order, then those not due yet; a mark keeps its `streak` and `at`; the
+   palette's Study the map in map order asks in the map's order.
 37. **A topic's due date is a day, a marker, and a reminder only when asked**
    (taken 2026-10-05, §12.2 item 4, under standing order 3; op5).
    `data.due` is a calendar day (`YYYY-MM-DD`, no time: a topic is due on a

@@ -11,6 +11,7 @@ that answers "has this been done?" before anyone starts.
 
 - **Built, decision 34 (extended):** Filter by marker takes several at once and the topic's labels (its tags; the labels field is reused, so OPML and FreeMind already carry it as `_labels`), and the outline shows each topic's markers, due day and labels as cells; `tests/test_map_filter_columns.py`.
 - **Built, LEDGER L371:** the Due row is the date-field picker with an optional time (`data.due_time`, `_due_time`; the day stays a day, decision 37); the markers popover stays open while the calendar is used, so the day and the time are set in four presses; `tests/test_map_due_time.py`, `tests/test_mindmap.py`.
+- **Built, decision 36 (L-mindmap-5):** the note-as-answer half was already built (`wbMapStudyQuestions`, `tests/test_map_study.py`; verified in code and test); the spaced order is built: a mark keeps `streak` and `at`, the next run asks missed, then due, then new, then not yet due (0.12 ms for 40 branches in node), and the palette has Study the map in map order; fixed-clock tests in `tests/test_map_study.py`.
 
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
@@ -55194,6 +55195,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L-mindmap-5** `mindmap` open, M: Add a spaced order and the note as answer to map study mode. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1204. Evidence: Open line in the plan's prose a session could miss. Decision 36 lists spaced-order study mode as not built. Built: maptopic-1112 study-order commit, tests/test_map_study.py
 - [x] **L371** `mindmap` open, M: Replace native due date on map topics with a picker that sets time too. From OPEN.md:3807. Evidence: whiteboard-map.js due date stays native Built: maptopic-1112 due-time commit, tests/test_map_due_time.py + test_mindmap.py
 - [x] **L800** `world-class` owner-call, S: Decide what the evidence_checks switch gates and build its runner. From OPEN.md:2944. Evidence: Only facts.py:88 default; decision needed on what it gates Built: owner decision 2026-11-12: Keep it as built, no build needed
 - [x] **L796** `world-class` owner-call, S: Decide and build server restore routes for media deletes, ask-history, learned and tidy undo. From OPEN.md:532. Evidence: Row marks owner-call (w34-L1-1111.md); server restore routes needing a design decision; some exist (HISTORY:653) Built: owner decision 2026-11-12: Keep the built Undo, no build needed

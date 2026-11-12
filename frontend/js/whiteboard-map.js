@@ -5172,6 +5172,7 @@ function mapPaletteCommands() {
   row("This map", "ph:presentation Present branches", () => wbStartPresenting());
   row("This map", "ph:steps Build up branch by branch", () => wbMapBuild.start());
   row("This map", "ph:student Study the map", () => wbMapStartStudy());
+  row("This map", "ph:list-numbers Study the map in map order", () => wbMapStartStudy({ inOrder: true }));
   row("This map", "ph:chart-bar-horizontal Gantt chart of the dated topics", () => wbMapLazy.openGantt());
   row("This map", "ph:funnel Filter by marker…", () => wbMapChooseMarkerFilter());
   if (wbMarkerUi.filters.size) row("This map", "ph:x-circle Stop filtering by marker", () => wbMapSetMarkerFilter(null));
@@ -10100,8 +10101,12 @@ const wbStudy = {
 // WB-MAP-STUDY-BEGIN
 //: The questions: each trunk's children with a branch under them, in sibling
 //: order (`childrenOf` is already sorted), and every topic under each one.
-//: Pure, so `tests/test_map_study.py` runs it in node.
-function wbMapStudyQuestions(index) {
+//: Pure, so `tests/test_map_study.py` runs it in node. With `marks` (the
+//: map's record on this device) the order is spaced (decision 36): a branch
+//: missed last time first, then those due for review (a streak of knowing it
+//: waits 0, 1, 3, 7, 14 then 30 days, most overdue first), then any never
+//: asked, in the map's order, then those not due yet, soonest first.
+function wbMapStudyQuestions(index, marks = null, now = 0) {
   const out = [];
   const under = (id) => {
     const all = [];
@@ -10138,7 +10143,17 @@ function wbMapStudyQuestions(index) {
     for (const child of index.childrenOf.get(node.id) || []) walk(child);
   };
   for (const root of index.roots) walk(root);
-  return out;
+  if (!marks || !Object.keys(marks).length) return out;
+  const rank = (q) => {
+    const m = marks[q.id];
+    if (!m) return [2, 0];
+    if (m.last === "missed") return [0, m.at || 0];
+    const over = now - (m.at || 0) - [0, 1, 3, 7, 14, 30][Math.min(m.streak || 1, 5)] * 86400000;
+    return over >= 0 ? [1, -over] : [3, -over];
+  };
+  const keyed = out.map((q, i) => ({ q, i, r: rank(q) }));
+  keyed.sort((a, b) => a.r[0] - b.r[0] || a.r[1] - b.r[1] || a.i - b.i);
+  return keyed.map((k) => k.q);
 }
 
 //: What "Recalled 3 of 5" counts, and the line a step carries from last time.
@@ -10176,8 +10191,10 @@ function wbMapStudyShown(q) {
   return q.answer ? wbStudy.revealed.has(q.id) : !q.hides.some((id) => wbStudy.hidden.has(id));
 }
 
-function wbMapStartStudy() {
-  const questions = wbMapStudyQuestions(wbMapIndex());
+//: `inOrder` asks in the map's order instead of the spaced one.
+function wbMapStartStudy({ inOrder = false } = {}) {
+  const marks = wbStudy.load();
+  const questions = wbMapStudyQuestions(wbMapIndex(), inOrder ? null : marks, Date.now());
   if (!questions.length) {
     toast("Nothing to recall yet: a branch with topics under it, or a topic with a note, is a question.");
     return;
@@ -10187,7 +10204,7 @@ function wbMapStartStudy() {
   wbStudy.steps = questions;
   wbStudy.hidden = new Set(questions.flatMap((q) => q.hides));
   wbStudy.revealed = new Set();
-  wbStudy.marks = wbStudy.load();
+  wbStudy.marks = marks;
   renderWhiteboardNow();
   wbStartPresenting();
   wbMapStudySyncBar();
@@ -10219,7 +10236,8 @@ function wbMapStudyMark(knew) {
   const step = wbPresent && wbStudy.steps[wbPresent.at];
   if (!step) return;
   const was = wbStudy.marks[step.id] || { knew: 0, missed: 0 };
-  wbStudy.marks[step.id] = { ...was, [knew ? "knew" : "missed"]: (was[knew ? "knew" : "missed"] || 0) + 1, last: knew ? "knew" : "missed" };
+  //: `streak` (times in a row it was known) and `at` (when) place it in the spaced order.
+  wbStudy.marks[step.id] = { ...was, [knew ? "knew" : "missed"]: (was[knew ? "knew" : "missed"] || 0) + 1, last: knew ? "knew" : "missed", streak: knew ? (was.last === "knew" ? was.streak || 1 : 0) + 1 : 0, at: Date.now() };
   wbStudy.save();
   if (wbPresent.at < wbStudy.steps.length - 1) {
     wbPresentShow(wbPresent.at + 1);
