@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import logging
 
-from tessellate.ai import composer, composer_chips
+from tessellate.ai import composer, composer_chips, grounding
 
 _log = logging.getLogger("tessellate.chat")
 #: Chips that act or open: not tried against the notes.
@@ -71,6 +71,7 @@ def continue_chips(result: dict, question: str, history: list[dict] | None, curr
 
 def shows_first(composed: dict) -> bool:
     """Whether the composed draft is sent ahead of a model's answer (`composed_preview`): it must quote the notes
-    and be backed by them, since a draft most of whose sentences no note backs would flash a claim the notebook
-    does not make (P1). The support judgement that marks the finished answer is the one used."""
-    return bool(composed.get("grounding")) and not (composed.get("support") or {}).get("low")
+    and not be mostly the app's reading of pictures, since that draft would flash a claim the notebook does not
+    make (P1). The judgement is `grounding.composed_support`'s, the one that marks the finished answer."""
+    rows = composed.get("grounding") or []
+    return bool(rows) and not grounding.composed_support(composed.get("support"), rows)["low"]

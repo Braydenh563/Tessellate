@@ -60,3 +60,22 @@ def test_o4_the_page_sends_and_restores_it():
     js = app_js_text()
     assert "frame: t.turnFrame," in js, "chat-turn persist sends the frame"
     assert "frame: message.frame" in js and "objects: message.objects" in js, "a reopened chat puts the frame back on its turns"
+
+
+# --- O4 / L239: "and the dentist" keeps the ask of the answer before it ------------
+
+
+def _two_turns(go, first):
+    history: list[dict] = []
+    text, events = go(first)
+    history.append({"question": first, "answer": text, **({"frame": f} if (f := next((e["frame"] for e in events if e.get("type") == "frame"), None)) else {})})
+    text, events = go("and the dentist", history=history)
+    return text, next((e["frame"] for e in events if e.get("type") == "frame"), {})
+
+
+@pytest.mark.xfail(strict=True, reason="'and the dentist' reads as a new topic ('There are two notes about dentist'), not the 'when' of the answer before (L239 reopened)")
+@pytest.mark.parametrize("first", ["when is the passport renewal", "when is the atlas beta"])
+def test_l239_and_the_dentist_keeps_the_when_of_the_answer_before(go, first):
+    text, frame = _two_turns(go, first)
+    assert "4 November 2026" in text, text
+    assert frame.get("dates") == ["2026-11-04"], frame

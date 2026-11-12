@@ -30,37 +30,35 @@ def test_p1_a_well_backed_draft_is_still_shown_before_the_model(ai_client, fake_
     assert "composed_preview" in [e["type"] for e in events]
 
 
-def test_p1_a_draft_the_notes_do_not_back_is_not_shown_ahead_of_the_model(ai_client, fake_ollama, session, monkeypatch):
-    """Sent first and replaced, a draft most of whose sentences no note backs would flash a claim the notebook does
-    not make: the support judgement (`grounding.support`'s `low`) that marks the finished answer gates it too."""
-    _seed(session)
+def _as_pictures(monkeypatch, said: str):
+    """Compose's real output with every grounding row read as `said` ("picture": the app's reading of an image)."""
     real = composer.compose
 
-    def weak(*args, **kwargs):
+    def changed(*args, **kwargs):
         got = real(*args, **kwargs)
-        got["support"] = {**(got.get("support") or {}), "sentences": 4, "supported": 1, "ratio": 0.25, "low": True}
+        got["grounding"] = [{**row, "said": said} for row in got.get("grounding") or []]
         return got
 
-    monkeypatch.setattr(composer, "compose", weak)
+    monkeypatch.setattr(composer, "compose", changed)
+
+
+def test_p1_a_draft_the_notes_do_not_back_is_not_shown_ahead_of_the_model(ai_client, fake_ollama, session, monkeypatch):
+    """Sent first and replaced, a draft that mostly quotes how the app read pictures would flash a claim the notebook
+    does not make: the judgement that marks the finished answer low (`grounding.composed_support`) gates it too."""
+    _seed(session)
+    _as_pictures(monkeypatch, "picture")
     events = _stream(ai_client, "When is the boiler service due?", use_tools=False)
     kinds = [e["type"] for e in events]
     assert "composed_preview" not in kinds
     assert "answer" in kinds, "the model still answers"
 
 
-@pytest.mark.parametrize("low", [False, True])
-def test_p1_the_gate_reads_the_judgement_the_support_carries(ai_client, fake_ollama, session, monkeypatch, low):
+@pytest.mark.parametrize("said", ["quoted", "picture"])
+def test_p1_the_gate_reads_the_judgement_the_finished_answer_carries(ai_client, fake_ollama, session, monkeypatch, said):
     _seed(session)
-    real = composer.compose
-
-    def judged(*args, **kwargs):
-        got = real(*args, **kwargs)
-        got["support"] = {**(got.get("support") or {}), "low": low}
-        return got
-
-    monkeypatch.setattr(composer, "compose", judged)
+    _as_pictures(monkeypatch, said)
     kinds = [e["type"] for e in _stream(ai_client, "When is the boiler service due?", use_tools=False)]
-    assert ("composed_preview" in kinds) is (not low)
+    assert ("composed_preview" in kinds) is (said != "picture")
 
 
 # --- D28: the name of a note with no heading is the same on every surface, and is what the model reads ---
