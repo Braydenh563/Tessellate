@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: the Timeline feed's Last year range already filters by the calendar date (meeting date, then mention date, then written date); proven by `tests/test_timeline_calendar_window.py`. TIMELINE_PLAN section 9 now holds the measured 5,007-note month (1,422 ms, 3 chips plus "+N more", 0 dot cells) and the 1024 coarse-pointer drop path.
 - Fix: saving a reminder edit now shows an Undo toast, as delete and snooze do; Undo puts the old text and time back (`tests/test_reminder_edit_save.py`).
 - Fix: the Timeline table marks each row with the feed's kind glyph in the title cell (a meeting shows the meeting mark, a mention the mentioned mark) at every width, so a meeting no longer reads as a Note; the phone-only "Meeting:" text prefix is gone (`tests/test_timeline_table_meeting.py`).
 - Tests: the timeline sweep counts visible rows (`timelineVisibleRows()`) for its search check, and the pinned bucket head and Notes ghost buttons are measured: head offset 0px in 9 of 9 runs on two datasets, 0 off-screen buttons in Notes (`CAL=1 errors.js`).

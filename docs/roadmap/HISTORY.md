@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (TIMELINE tlsweep: Brief 55 not-verified paragraph)
+
+TIMELINE_PLAN section 9's "Not verified (Brief 55, still)" paragraph is measured and rewritten as numbers there: 5,007 items in one month paint in 1,422 ms (3 chips plus "+N more", 0 dot cells); at 1024 with a coarse pointer the chip is draggable and the drop path moves a reminder one day.
+
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
 - **Built, Sh1 P4:** the reminder edit form's time, priority, repeat and alert share one height (32px, equal top); `tests/test_reminder_edit_form_alert.py` holds the shared-height loop (cb83f2ed3).
@@ -55189,6 +55193,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L482** `timeline` open, S: Make feed Last-year range filter by calendar date, not written date. From OPEN.md:1375; OPEN.md:2570. Evidence: No change found in timeline-calendar.js/timeline.js for date vs written-date filtering. Built: already built: _entries_in_window places by meeting, mention then written date; tests/test_timeline_calendar_window.py; no code change
 - [x] **L485** `timeline` open, S: Add a mark column to the timeline table view so meetings do not read as Note. From OPEN.md:3564. Evidence: grep meeting in timeline*.js shows no table mark column; only calendar/add paths Built: table title cell wears the feed kind mark (timelineKindMark) at every width; tests/test_timeline_table_meeting.py; meeting read as Note -> meeting glyph with aria-label
 - [x] **L496** `timeline` partly, M: Re-check timeline pinned bucket head flake and 4 off-screen ghost buttons. From OPEN.md:3902. Evidence: Pointer note to other OPEN rows (44px On this day shift, meeting mark in table, map under Boards chip), each tracked separately; flaky pinned-head sweep and Notes off-screen buttons not re-checked. Built: pinned head 0px 9/9 x2 datasets; no Notes off-screen buttons in errors CAL=1; timeline.js search check fixed (windowed rows), scratchpad/ui-sweeps/timeline.js
 - [x] **L481** `timeline` open, S: Run contrast and errors sweeps on the calendar view. From OPEN.md:1374. Evidence: No calendar sweep in scratchpad/ui-sweeps recorded; runnable without hardware. Built: contrast ONLY=pr (light, dark; 1440, 390) 0 low-contrast on calendar month/week/day; errors CAL=1 0 errors, 0 layout findings at 4 widths; sweeps fixed (sr-only h2 false positives, wait for cells)
