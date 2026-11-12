@@ -1824,6 +1824,8 @@ HELP_TOPICS.extend(
                 "Each row has two controls at its right edge: the circle "
                 "marks it read or unread, the cross removes just that one; the bin at the bottom "
                 "clears them all. "
+                "A reminder's row also has Done, which completes it here (a repeating "
+                "one moves to its next time). "
                 "Reminders also pop up on their own while a tab or the "
                 "desktop app is open."
             ),

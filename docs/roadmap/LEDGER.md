@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 28 | 3 | 0 | 5 | 34 |
+| timeline | 3 | 22 | 3 | 0 | 5 | 28 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 700 | 157 | 3 | 195 | 1410 |
+| all | 553 | 694 | 157 | 3 | 195 | 1404 |
 
 ## graph
 
@@ -598,17 +598,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L470** `timeline` open, S: Make the week Monday-first on user_now (1524). From a30c-1102.md Still open small. Evidence: No locale week-start code found in ai/user_now.py or core
 - [ ] **L472** `timeline` open, S: Backfill done_at for reminders ticked before it existed so they count in a week. From OPEN.md:1384. Evidence: review_digest.py:94 filters on done_at; no backfill of old done rows found in src.
 - [ ] **L473** `timeline` open, S: Add a stored birthday setting so 'on my birthday' works. From OPEN.md:863. Evidence: No birthday setting found; context['birthday'] only
-- [ ] **L474** `timeline` open, S: Stop floating #reminders-new overlapping the row under it at 390. From OPEN.md:1379. Evidence: 10-responsive.css:1868 #reminders-new rule present; no overlap guard or test for rows found.
-- [ ] **L475** `timeline` open, S: Fix reminder edit form time field bottom margin (~0.2rem high). From OPEN.md:364. Evidence: UI spacing not driven; boot JS cap note; no fix located
-- [ ] **L476** `timeline` open, S: Make the Reminders quick-add row visible at 390. From OPEN.md:3574. Evidence: No reminders*.js in frontend/js; no commit found resolving it; unmeasured
 - [ ] **L477** `timeline` open, S: Verify in a browser: Alert menu, Undo then Ctrl+Z, timeline range change. From OPEN.md:443. Evidence: Source and node tests only per row; no browser drive logged
 - [ ] **L478** `timeline` open, S: Fix timelinepaging.js strip-click check failing on base and 100 ms frame flake. From OPEN.md:654. Evidence: scratchpad/ui-sweeps/timelinepaging.js exists; no fix commit found
 - [ ] **L479** `timeline` open, S: Fold the 'On this day' row on phone so it stops shifting the list 44px at 390. From OPEN.md:734; OPEN.md:2781. Evidence: timeline.js:645 recall row; css only has calendar-mode rule 06-timeline-dialogs.css:3488; no phone fold
-- [ ] **L480** `timeline` open, S: Drive and measure the reminders quick-add row at 390. From OPEN.md:747. Evidence: No sweep drives phone reminders compose; unmeasured
 - [ ] **L481** `timeline` open, S: Run contrast and errors sweeps on the calendar view. From OPEN.md:1374. Evidence: No calendar sweep in scratchpad/ui-sweeps recorded; runnable without hardware.
 - [ ] **L482** `timeline` open, S: Make feed Last-year range filter by calendar date, not written date. From OPEN.md:1375; OPEN.md:2570. Evidence: No change found in timeline-calendar.js/timeline.js for date vs written-date filtering.
 - [ ] **L483** `timeline` open, S: Stop timeline-days preference arriving after click rendering the timeline twice. From OPEN.md:1381; OPEN.md:2783. Evidence: timeline.js:2503 change handler unchanged; double render guard not found.
-- [ ] **L484** `timeline` open, S: Stop reminders presets menu laying out while closed (7 overlaps at 1440). From OPEN.md:1393. Evidence: No fix/test found in tests/ or CHANGELOG for presets-menu closed layout; TIMELINE_PLAN 11 row 2
 - [ ] **L485** `timeline` open, S: Add a mark column to the timeline table view so meetings do not read as Note. From OPEN.md:3564. Evidence: grep meeting in timeline*.js shows no table mark column; only calendar/add paths
 - [ ] **L486** `timeline` open, S: Fix deepen72b.js timeline row at 390 timing out waiting for .timeline-rows. From OPEN.md:735; OPEN.md:2782. Evidence: scratchpad/ui-sweeps/deepen72b.js:61 still waits on .timeline-rows; phone keeps table view
 - [ ] **L487** `timeline` open, S: timelinepaging.js strip-click fails on base; frame check flaky. From OPEN.md:2784. Evidence: Sweep script fails on base; verified open
@@ -624,7 +619,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-timeline-2** `timeline` open, M: Brush a date range on the timeline to get an AI digest of that span with its notes listed beside it. From ANALYSIS.md:1186. Evidence: no brush in timeline*.js; no 'date range digest' in code or plans
 - [ ] **L781** `timeline` open, M: Decide reminder with no time (tomorrow 9 guess): decisions 48 and 50 conflict. From OPEN.md:865. Evidence: Decisions 48 and 50 conflict per row; owner pick needed Owner decided 2026-11-12: Ask when, once. Build: commands.py:394 returns due_at None with missing slot 'when' so the reply asks 'Remind you when?' (reading.DATED_SURFACES); golden and composer tests move.
 - [ ] **L783** `timeline` open, S: Decide decision 32: recurrence insight only versus other rules and Patterns line. From OPEN.md:1441. Evidence: Row tagged W34 owner-call (tracked in the plans); drift rule exists in ai insights Owner decided 2026-11-12: Keep all six. Build: tests/test_engine_phase6_spec.py: spec cases for streak, drift, contrast, load, time-of-day and the slot lint; no behaviour change.
-- [ ] **L-timeline-3** `timeline` open, M: Let Done on a reminder in the notifications panel complete the reminder. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1808. Evidence: The notifications panel offers only dismiss and read-toggle on reminder rows, and its history lives in localStorage. W7-3 appears in no plan, LEDGER, BACKLOG or HISTORY entry. UI_MODERNISATION row 103
 - [ ] **L-timeline-4** `timeline` open, S: Park date ranges as spans in BACKLOG until a ranged note exists. From open-work sweep 2026-11-12, docs/roadmap/TIMELINE_PLAN.md:112. Evidence: Open line in the plan's prose a session could miss. Decision 13 puts off showing date ranges as spans until a ranged note exists. That conditional deferral has no LEDGER or BACKLOG row, so it is still open in a plan the brief counts as 0.
 
 ## world-class
