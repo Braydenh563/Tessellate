@@ -55285,3 +55285,8 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 - DOCUMENTS_PLAN 25 row 8, the minimap: built, `doc-minimap` toggle in View (`documents-view.js:206`, pref `codeMinimap`, off by default; `documents.js:547`).
 - DOCUMENTS_PLAN 21, Visual Basic: built, `vb` and `vbs` modes (`documents.js:16182`).
 
+## Moved from the plans, 2026-11-12 (documents-plan: owner bugs)
+
+- "Gemini might have removed the spell checker??" (the owner's words in the Gemini thread: "you removed spellchecker.py")
+  Recommendation: keep src/tessellate/vendor spellchecker.py and make Brief 35 (unused vendoring gone) leave it in, with a test that it loads; writing checks are Brief 42 (DOCUMENTS_PLAN section 21).
+  **Fixed/closed (ownbugs):** no spellchecker.py ever existed in this repo (git log --all: no such path); the checker is ai/spelling.py plus frontend/vendor/wordlist/en.txt, both present; tests/test_spellcheck_present.py loads and exercises them.
