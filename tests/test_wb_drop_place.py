@@ -113,7 +113,7 @@ def test_a_hidden_or_empty_cover_changes_nothing() -> None:
 def test_a_tile_drag_carries_its_picture_held_where_it_was_pressed() -> None:
     assert "e.dataTransfer.setDragImage(svg, grab.offset[0], grab.offset[1])" in LIB
     assert "wbLibState.libPress?.tile === tile" in LIB
-    assert "{ onto, grab: wbLibState.libGrab }" in LIB
+    assert "{ onto, grab: wbLibState.libGrab" in LIB  # intoLink joined the call (drop on a line)
 
 
 def test_a_placement_is_anchored_inside_its_own_undo_step() -> None:
