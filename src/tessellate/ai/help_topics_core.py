@@ -10,7 +10,7 @@ this list.
 
 from __future__ import annotations
 
-from tessellate.ai import spelling
+from tessellate.ai import help_targets, spelling
 from tessellate.ai.help_topics_core_tail import TAIL_TOPICS
 from tessellate.ai.help_topics_more import MORE_TOPICS
 
@@ -255,7 +255,8 @@ HELP_TOPICS: list[dict] = [
             "hand over. Events about private notes are left out of it. The "
             "Library's search reads the same filters as the Graph's: "
             '"connected to Harbor", "untouched since June", "tagged '
-            'work", "pinned", "filed under Cooking". Drop files anywhere in '
+            'work", "pinned", "filed under Cooking". A chat found by words inside '
+            'it opens at the message that has them. Drop files anywhere in '
             "the app to add them: pictures and PDFs go to Images, anything "
             "else becomes a document. On the Notes tab, .md and .txt "
             "files become notes instead, with Undo."
@@ -1999,5 +2000,6 @@ HELP_TOPICS.extend(TAIL_TOPICS)
 #: (INBOX 430): the second half of the reference, in its own module
 #: (help_topics_more.py) so this one stays about how an answer is found.
 HELP_TOPICS.extend(MORE_TOPICS)
+help_targets.apply(HELP_TOPICS)  # each tab-level topic rings its own control (L51)
 # The speller reads the help text for the app's own vocabulary (see spelling.set_topic_source).
 spelling.set_topic_source(lambda: [*HELP_TOPICS, *MORE_TOPICS])

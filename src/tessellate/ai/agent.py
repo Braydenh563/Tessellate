@@ -246,10 +246,11 @@ def _run_and_record(
     Order: the taint, the ledgers, the write's change, the advice, the event.
     """
     spend = run_budget.current()
-    if name in _WRITE_TOOLS and spend is not None and spend.stop_requested():
+    if spend is not None and spend.stop_requested():
         #: Stop landed while the model was answering; the generator cannot be
-        #: interrupted there, so the write it asked for is refused here
-        #: instead of running before the next yield notices (Brief 101b).
+        #: interrupted there, so the call it asked for (a read as well as a
+        #: write: a long search is work the person stopped) is refused here
+        #: instead of running before the next yield notices (Brief 101b, L66).
         result = {"error": "Stopped before this ran: you pressed Stop."}
     else:
         yield from _query_said(name, arguments)

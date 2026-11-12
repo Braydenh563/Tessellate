@@ -17,6 +17,8 @@ MAX_CHIPS = 4
 #: The generic trio (`composer_talk.acts_for`): only on a first turn or after a stumped one.
 GENERIC = frozenset({"what did i write this week?", "notebook statistics", "what can you do?"})
 #: The answer to a reminder with no time says its own choices (`composer_replies.ASK_WHEN`).
+#: Under a hello or thanks that has no answer before it to resume (L48).
+STARTERS = ["What did I write this week?", "What is due soon?", "What can you do?"]
 TIME_CHIPS = ["Tomorrow at 9", "Friday afternoon", "In an hour"]
 _ASKS_TIME = re.compile(r"\b(?:when|what time|at what time)\b[^?\n]*\b(?:remind|reminder|reminded)\b[^?\n]*\?\s*$", re.I)
 _ABOUT = re.compile(r"^(?P<head>.*?\b(?:about|on|for|of)) (?P<subject>(?:the )?[^?]+?)\?$", re.I)
