@@ -52,6 +52,7 @@ def test_nothing_today_graphs_where_the_notes_run(client, clock, spread):
     assert (strip["by"], strip["from"], strip["to"], strip["title"]) == ("week", "16 Jul", "Today", "Notes per week")
     #: 107 days from 16 July to 30 October, a week a point; one note in each of three.
     assert len(strip["points"]) == 16 and sum(strip["points"]) == 3
+    assert len(strip["labels"]) == 16 and strip["labels"][1] > strip["labels"][0]
     assert [strip["points"][i] for i in (0, 6, 13)] == [1, 1, 1] and strip["points"][-1] == 0
 
 
@@ -61,6 +62,7 @@ def test_notes_today_draw_the_day_by_the_hour(client, clock, spread, session):
     strip = _strip(_ask(client, "/today", use_tools=False))
     assert (strip["by"], strip["from"], strip["to"]) == ("hour", "00:00", "23:00")
     assert len(strip["points"]) == 24 and strip["points"][8] == strip["points"][9] == 1 and sum(strip["points"]) == 2
+    assert strip["labels"][0] == "00:00" and strip["labels"][9] == "09:00" and len(strip["labels"]) == 24
 
 
 def test_recent_draws_the_span_of_the_notes_it_lists(client, clock, spread):
@@ -79,6 +81,7 @@ def test_a_long_notebook_is_drawn_by_the_month(client, clock, spread, session):
     _note(session, datetime(2025, 1, 15, 10), "Long ago")
     strip = _strip(_ask(client, "/today", use_tools=False))
     assert (strip["by"], strip["from"]) == ("month", "15 Jan 2025") and len(strip["points"]) == 22 and sum(strip["points"]) == 4
+    assert strip["labels"][0] == "2025-01" and len(strip["labels"]) == 22
 
 
 def test_the_words_with_no_model_carry_the_strip_too(client, clock, spread):
@@ -95,8 +98,41 @@ def test_nothing_to_draw_draws_nothing(client, clock, session):
     assert "panel" not in _ask(client, "/tags", use_tools=False)
 
 
-def test_the_reply_kit_draws_a_timeline_panel_with_the_stats_spark():
+#: The strip was a bare spark; the owner (2026-11-12) could not read a value
+#: off it, so it is the chart recipe's line now, with a tooltip and a table.
+def test_the_reply_kit_draws_a_timeline_panel_with_the_chart_recipe():
     kit = _js_scope.unwrapped((ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8"))
     assert "timeline: (event) => replyTimelinePanel(event)" in kit
     body = kit.split("function replyTimelinePanel", 1)[1].split("\n}\n", 1)[0]
-    assert "replySpark(" in body and "replyPanelShell(" in body and "event.points" in body
+    assert "drawAskChart(" in body and "event.points" in body and "event.labels" in body
+
+
+def test_every_chart_shows_its_values_and_fits_its_labels():
+    js = (ROOT / "frontend" / "js" / "ask-chart.js").read_text(encoding="utf-8")
+    draw = js.split("function drawAskChart", 1)[1].split("\n  }\n", 1)[0]
+    assert "interactive: true" in draw
+    assert "askChartFit(askChartLabel(chart, row.label), slot * every" in js
+    css = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
+    assert ".ask-chart-tip {" in css and ".ask-chart-hit {" in css
+
+
+#: "Show notes per week" in Agent mode listed this week's notes and said there
+#: were none (the owner, 2026-11-12: "I have notes across many weeks??"): a
+#: chart asked for by its period is the chart, in both modes.
+@pytest.mark.parametrize("tools", [False, True])
+@pytest.mark.parametrize("history", [[], [
+    {"question": "Show notes per weekday", "answer": "Here are your notes per weekday. I can also draw notes per tag."},
+    {"question": "Which tags do I use most?", "answer": "Your most-used tags: #gym (4), #study (3)."},
+]])
+def test_notes_per_week_draws_the_weeks_in_both_modes(client, clock, spread, tools, history):
+    out = _ask(client, "Show notes per week", use_tools=tools, history=history)
+    assert "no notes that fit" not in out["text"]
+    assert "Here are your notes" in out["text"], out["text"]
+    strip = _strip(out)
+    assert sum(strip["points"]) == 3
+
+
+def test_notes_per_week_is_the_chart_with_a_model_up(client, clock, spread, fake_ollama):
+    out = _ask(client, "Show notes per week", use_tools=True)
+    assert out["text"].startswith("Here are your notes per week"), out["text"]
+    assert sum(_strip(out)["points"]) == 3

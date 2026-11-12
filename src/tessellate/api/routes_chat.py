@@ -1892,7 +1892,10 @@ def _stream_prepare(req: _StreamRequest) -> dict:
     routing (`_composed`) is unchanged by it."""
     recognise.note_locale(req.body.locale)
     follow = _follow_up(req)
-    early = _app_first_events(req, follow, req.ollama.is_running())
+    #: A chart asked by name ("show notes per week") is the app's, with a model
+    #: up too (decision 75): a model listed the category "week" and found none.
+    charted = None if req.skill or req.images_raw else composer_talk.chart_ask(req.session, req.body.question or "", req.history or [], user_now(deps.get_config()).date())
+    early = charted or _app_first_events(req, follow, req.ollama.is_running())
     scoped = _cited_scope(req, follow)
     prepared = _prepare(
         req.session,
@@ -1918,6 +1921,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
     )
     prepared["follow_on"] = follow
     prepared["early_events"] = early
+    prepared["charted"] = charted is not None
     return prepared
 
 
@@ -1979,6 +1983,7 @@ def _choose_events(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
     can_agent = (
         not t.composed
         and not prepared.get("tool_read")
+        and not prepared.get("charted")
         and (t.ollama_running or t.tools_only)
         and req.use_tools
         and intent.needs_retrieval(prepared["intent"])

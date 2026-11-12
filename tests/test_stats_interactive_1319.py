@@ -85,14 +85,18 @@ def test_the_chart_marks_are_focusable_and_act_on_click():
     assert "onPick" in wire and "ask-chart-tip" in wire and "askChartStep" in wire
     assert "askChartWire(host, chart)" in _fn(CHART, "drawAskChart")
     assert "ArrowRight" in CHART
-    # the rule is opt-in, so the Ask box's chart is unchanged
-    assert "chart.interactive" in svg
+    # Every chart is wired now (the owner, 2026-11-12, could not read a value
+    # off a Chat chart), so `drawAskChart` turns it on; the svg still reads it.
+    assert "chart.interactive" in svg and "interactive: true" in _fn(CHART, "drawAskChart")
 
 
 def test_the_statistics_page_opts_in_and_styles_the_tooltip():
     assert "interactive: true" in STATS
-    for selector in (".stats-chart", ".ask-chart-tip", ".ask-chart-pt:focus-visible"):
-        assert selector in CSS
+    assert ".stats-chart" in CSS
+    # The marks' and tooltip's rules serve every chart, so they are in the boot sheet.
+    boot = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
+    for selector in (".ask-chart-tip", ".ask-chart-pt:focus-visible"):
+        assert selector in boot
 
 
 def test_a_click_acts_and_the_card_closes_first():

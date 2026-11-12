@@ -47,6 +47,26 @@
     return tick >= 10000 ? `${Math.round(tick / 1000)}k` : String(tick);
   }
 
+  //: How wide a label is drawn, from the axis text's own font; a cached
+  //: canvas, as the SVG is built before it is placed.
+  function askChartTextWidth(text) {
+    const ctx = (askChartTextWidth.ctx ||= document.createElement("canvas").getContext("2d"));
+    const probe = document.querySelector(".ask-chart-axis") || document.body;
+    const style = getComputedStyle(probe);
+    ctx.font = `${probe === document.body ? "12px" : style.fontSize} ${style.fontFamily}`;
+    return ctx.measureText(text).width;
+  }
+
+  //: A label cut to the room its mark has, so neighbours never run into each
+  //: other (the owner, 2026-11-12: "the titles at the bottom clash"); the
+  //: tooltip and the table keep the whole name.
+  function askChartFit(text, room) {
+    if (askChartTextWidth(text) <= room) return text;
+    let cut = text.length;
+    while (cut > 1 && askChartTextWidth(`${text.slice(0, cut).trimEnd()}…`) > room) cut -= 1;
+    return `${text.slice(0, cut).trimEnd()}…`;
+  }
+
   function askChartLabel(chart, label) {
     if (chart.by === "month") {
       const [y, m] = label.split("-").map(Number);
@@ -108,9 +128,11 @@
     }
     const slot = plotW / Math.max(1, rows.length);
     //: Every label when they fit, else every nth: a label per day of a month
-    //: is thirty words on top of each other.
-    const every = Math.max(1, Math.ceil(rows.length / Math.floor(plotW / 54)));
+    //: is thirty words on top of each other. A bar of a name needs less room
+    //: than a date, as `askChartFit` cuts it to its slot: skipping every other
+    //: one left bars with no name (the owner, 2026-11-12).
     const isBar = chart.kind === "bar";
+    const every = Math.max(1, Math.ceil(rows.length / Math.floor(plotW / (isBar ? 36 : 54))));
     const barW = Math.max(2, Math.min(48, slot * 0.7));
     if (!isBar) {
       const points = rows.map((row, i) => `${(pl + slot * i + slot / 2).toFixed(1)},${y(row.value).toFixed(1)}`).join(" ");
@@ -120,7 +142,7 @@
       const cx = pl + slot * i + slot / 2;
       if (i % every === 0) {
         const text = askChartSvgEl("text", { x: cx, y: ASK_CHART_H - pb + 16, "text-anchor": "middle", class: "ask-chart-axis" });
-        text.textContent = askChartLabel(chart, row.label);
+        text.textContent = askChartFit(askChartLabel(chart, row.label), slot * every - 6);
         svg.appendChild(text);
       }
       const mark = isBar
@@ -262,6 +284,10 @@
       host.classList.add("hidden");
       return;
     }
+    //: Every chart shows a mark's value under the pointer and the keyboard,
+    //: not only the Statistics page's (the owner, 2026-11-12: "I cant
+    //: interact with or see the values"); only `onPick` makes a mark a button.
+    chart = { ...chart, interactive: true };
     const head = document.createElement("div");
     head.className = "ask-chart-head";
     const title = document.createElement("strong");
@@ -284,7 +310,7 @@
     else askChartFollow(host, chart);
   }
 
-  //: The Statistics page's charts (`chart.interactive`): a tooltip with the
+  //: Every chart (`chart.interactive`, set by `drawAskChart`): a tooltip with the
   //: period and exact value under the pointer or the keyboard's focus, arrow
   //: keys between marks, a click or Enter handing the row to `chart.onPick`,
   //: and a redraw at the card's width as it resizes.

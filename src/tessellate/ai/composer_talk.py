@@ -286,6 +286,14 @@ def reply(session: Session, question: str, history: list[dict], today: date) -> 
     return None
 
 
+def chart_ask(session: Session, question: str, history: list[dict], today: date) -> list[dict] | None:
+    """"Show notes per week": the chart, with a model up too (CHAT_PLAN decision
+    75). A model handed the ask called the notes list with the category "week"
+    and said there were none (the owner, 2026-11-12)."""
+    said = _clean(question).rstrip("?!. ")
+    return _chart_by(session, said, from_history(history, today), today) if said else None
+
+
 # --- an offer taken up (B23) ----------------------------------------------------
 
 _YES = re.compile(

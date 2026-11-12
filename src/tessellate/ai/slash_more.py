@@ -179,7 +179,15 @@ def timeline_panel(session: Session, start: date, end: date, today: date) -> dic
         if 0 <= slot(stamp) < size:
             points[slot(stamp)] += 1
     ends = ("00:00", "23:00") if by == "hour" else (_strip_day(first, today), _strip_day(end, today))
-    return {"type": "panel", "panel": "timeline", "by": by, "title": f"Notes per {by}", "points": points, "from": ends[0], "to": ends[1]}
+    #: Each point's period, in the chart recipe's keys (an hour, an ISO day or
+    #: week start, a "YYYY-MM" month), so a mark can say its value.
+    if by == "hour":
+        labels = [f"{h:02d}:00" for h in range(size)]
+    elif by in ("day", "week"):
+        labels = [(start + timedelta(days=i * (1 if by == "day" else 7))).isoformat() for i in range(size)]
+    else:
+        labels = [f"{(month(first) + i) // 12}-{(month(first) + i) % 12 + 1:02d}" for i in range(size)]
+    return {"type": "panel", "panel": "timeline", "by": by, "title": f"Notes per {by}", "points": points, "labels": labels, "from": ends[0], "to": ends[1]}
 
 
 def empty_timeline(session: Session, today: date) -> dict | None:

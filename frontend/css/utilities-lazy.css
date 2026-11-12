@@ -132,44 +132,10 @@
   background: var(--surface-2);
 }
 
-/* The Statistics charts answer the pointer and the keyboard (INBOX 1319;
-   ask-chart.js `askChartWire`): a point or bar is one `.ask-chart-pt` with a
-   transparent hit area the height of its slot, a tooltip with the exact
-   value, and a ring where the arrow keys have put the focus. */
+/* The Statistics charts' card holds the tooltip; the marks' own rules are
+   with `.ask-chart` in 03-dashboard-widgets.css, as every chart has them. */
 .stats-chart {
   position: relative;
-}
-
-.ask-chart-pt {
-  cursor: pointer;
-  outline: none;
-}
-
-.ask-chart-hit {
-  fill: transparent;
-}
-
-.ask-chart-pt:hover .ask-chart-hit,
-.ask-chart-pt:focus .ask-chart-hit {
-  fill: var(--accent-soft);
-}
-
-.ask-chart-pt:focus-visible .ask-chart-hit {
-  stroke: var(--accent-text);
-  stroke-width: 2;
-}
-
-/* The group itself carries the ring too (UX audit 2026-10-19: a focusable
-   SVG `g` showed no outline, only the hit rect's stroke inside it). Inside
-   the slot, so the chart's own clip never cuts it. */
-.ask-chart-pt:focus-visible {
-  outline: 2px solid var(--accent-text);
-  outline-offset: -2px;
-}
-
-.ask-chart-pt:hover .ask-chart-dot,
-.ask-chart-pt:focus .ask-chart-dot {
-  r: 5;
 }
 
 /* A phone's targets (audit 1031 Z5): the marks are 21px wide at 390, so under
@@ -196,21 +162,6 @@
   }
 }
 
-.ask-chart-tip {
-  position: absolute;
-  transform: translate(-50%, -100%);
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--card);
-  box-shadow: var(--shadow-md);
-  color: var(--text);
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 2;
-}
 
 /* Counts that open what they count, the growth chart's range, and the week
    rows' small lines (INBOX 1319). A tile that opens something is a button in

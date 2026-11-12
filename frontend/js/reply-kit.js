@@ -290,19 +290,16 @@
 
   //: The strip's points arrive counted (`slash_more.timeline_panel`); the spark
   //: line is the Statistics card's, its two ends named under it.
+  //: The strip as the chart recipe's line (`drawAskChart`, ask-chart.js): a
+  //: value under the pointer and the keyboard, and the numbers in a fold (the
+  //: owner, 2026-11-12: "I cant interact with or see the values").
   function replyTimelinePanel(event) {
-    const { panel } = replyPanelShell("reply-timeline", event.title || "Notes over time", "ph:chart-line");
-    const points = (event.points || []).map((n) => Number(n) || 0);
-    panel.appendChild(replySpark(points, `${event.title}, ${event.from} to ${event.to}: ${points.join(", ")}`));
-    const ends = document.createElement("div");
-    ends.className = "muted reply-timeline-ends";
-    for (const text of [event.from, event.to]) {
-      const end = document.createElement("span");
-      end.textContent = text || "";
-      ends.appendChild(end);
-    }
-    panel.appendChild(ends);
-    return panel;
+    const host = document.createElement("div");
+    host.className = "ask-chart reply-timeline";
+    const labels = event.labels || [];
+    const rows = (event.points || []).map((n, i) => ({ label: labels[i] ?? String(i), value: Number(n) || 0 }));
+    ensureModule("askHistory").then(() => drawAskChart(host, { kind: "line", by: event.by, title: event.title || "Notes over time", rows, total: rows.reduce((sum, row) => sum + row.value, 0) }));
+    return host;
   }
 
   // --- the calculator ------------------------------------------------------------

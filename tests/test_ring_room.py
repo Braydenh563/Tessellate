@@ -173,8 +173,8 @@ def test_a_focusable_chart_mark_carries_its_own_ring():
     """UX audit 2026-10-19: a focusable SVG `g` (`.ask-chart-pt`, Statistics)
     showed no outline, only the hit rect's stroke inside it. Measured after:
     solid 2px, offset -2px (inside its slot, so the chart's clip cannot cut
-    it)."""
-    css = (CSS_DIR / "utilities-lazy.css").read_text(encoding="utf-8")
+    it). The marks' rules live with `.ask-chart` in 03 since INBOX 1785(c)."""
+    css = (CSS_DIR / "03-dashboard-widgets.css").read_text(encoding="utf-8")
     block = css[css.index(".ask-chart-pt:focus-visible {"):].split("}", 1)[0]
     assert "outline: 2px solid var(--accent-text);" in block
     assert "outline-offset: -2px;" in block
