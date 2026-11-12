@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 191 | 60 | 2 | 59 | 427 |
+| chat | 176 | 188 | 60 | 2 | 59 | 424 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 698 | 157 | 3 | 195 | 1408 |
+| all | 553 | 695 | 157 | 3 | 195 | 1405 |
 
 ## graph
 
@@ -70,9 +70,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L31** `chat` open, S: Choose lead-in before the parts, not after (P15). From OPEN.md:847. Evidence: Row says compare opener still chosen first; no later commit
 - [ ] **L32** `chat` open, S: Stop factgraph _QUANTITY reading counts of things. From OPEN.md:859. Evidence: ai/factgraph.py:166 _QUANTITY still in use (line 437); no count kind in recognise
 - [ ] **L33** `chat` open, S: Make 'last week' mean the same in search, recognise and Find anything (window or words). From OPEN.md:861; OPEN.md:1953. Evidence: Row says both written down; F1 owner decision unanswered (also OPEN 466)
-- [ ] **L34** `chat` open, S: Stop mis-repairing real words missing from word lists. From OPEN.md:2505. Evidence: Ongoing: add to ai/common_words.py and LEFT_ALONE (test_owner_typos.py)
-- [ ] **L35** `chat` open, S: Stop nearest-asking-word rule turning all-caps NASA into 'has'. From OPEN.md:2506. Evidence: Rule unchanged per prior verify
-- [ ] **L36** `chat` open, S: Fix guessed readings: liks, mut, odf, ro. From OPEN.md:2507. Evidence: Brief 90 standing; owner_typos.json present; guesses need owner reading
 - [ ] **L39** `chat` open, S: Stop a titled note's every sentence scoring on its title (TITLE_WEIGHT). From OPEN.md:3508. Evidence: TITLE_WEIGHT in composer_select.py still applies; no dated-sentence cap found.
 - [ ] **L40** `chat` open, S: Browser-check Ask/Chat with no model: Did you mean chip; merge voice741.js from wip branch. From OPEN.md:3510. Evidence: voice741.js not in scratchpad/ui-sweeps and no wip/composer-voice branch present; check not redone.
 - [ ] **L42** `chat` open, S: Fix 'five notes about knives' showing one; show total vs shown. From OPEN.md:3848. Evidence: tool_say _found_notes caller; no fixing commit found

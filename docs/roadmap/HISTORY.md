@@ -55189,6 +55189,9 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L36** `chat` open, S: Fix guessed readings: liks, mut, odf, ro. From OPEN.md:2507. Evidence: Brief 90 standing; owner_typos.json present; guesses need owner reading Built: this commit: tests/test_owner_typos.py pins liks=like, mut=must, ro=or, odf left alone
+- [x] **L35** `chat` open, S: Stop nearest-asking-word rule turning all-caps NASA into 'has'. From OPEN.md:2506. Evidence: Rule unchanged per prior verify Built: this commit: tests/test_owner_typos.py all-caps acronyms never an asking word (rule already held)
+- [x] **L34** `chat` open, S: Stop mis-repairing real words missing from word lists. From OPEN.md:2505. Evidence: Ongoing: add to ai/common_words.py and LEFT_ALONE (test_owner_typos.py) Built: this commit: kombucha, matcha, paneer, pinot, aperol, paddleboard etc. added to common_words, LEFT_ALONE in tests/test_owner_typos.py
 - [x] **L38** `chat` open, S: Read misspelled places such as 'westen australia'. From OPEN.md:2556. Evidence: Open per prior verify Built: built: utilities place repair, tests/test_code_documents.py:365 'westen australia' to Perth
 - [x] **L37** `chat` open, S: Country with several time zones should not name just one (Australia to Sydney). From OPEN.md:2555. Evidence: No code change seen Built: built: utilities.SEVERAL_ZONES names each zone, tests/test_utilities_zones.py
 - [x] **L41** `chat` open, S: Stop reading.py reading 'review budget friday' as sure at 09:00. From OPEN.md:3719. Evidence: tests/test_reading.py has no friday-without-time ask case Built: built earlier: tests/test_reading.py:125 asks 'What time on Friday 16 October?' (unsure 0.45)
