@@ -3690,6 +3690,18 @@ function wbMapEdgeAnchors(parent, child, mapLayout) {
     const right = child.x + c.w / 2 > parent.x + p.w;
     return { horizontal: false, rib: true, right, x1: right ? parent.x + p.w : parent.x, y1: parent.y + p.h / 2, x2: right ? child.x : child.x + c.w, y2: up ? child.y + c.h : child.y };
   }
+  //: A cause under a fishbone's main topic (or a cause under a cause) stands
+  //: one indent in. Its line drops from the parent's edge half an indent in,
+  //: left of every cause above it, whichever side the bones are turned to.
+  if (layout === "fishbone") {
+    const half = WB_MAP_INDENT / 2;
+    const near = (a, b) => Math.abs(a - b) < 1.5;
+    const down = child.y + c.h / 2 > parent.y + p.h / 2;
+    const y1 = down ? parent.y + p.h : parent.y;
+    const y2 = child.y + c.h / 2;
+    if (near(child.x, parent.x + WB_MAP_INDENT)) return { horizontal: true, x1: parent.x + half, y1, x2: child.x, y2 };
+    if (near(child.x + c.w, parent.x + p.w - WB_MAP_INDENT)) return { horizontal: true, x1: parent.x + p.w - half, y1, x2: child.x + c.w, y2 };
+  }
   if (layout === "radial" || layout === "free" || layout === "fishbone") {
     horizontal = Math.abs(child.x - parent.x) >= Math.abs(child.y - parent.y);
   } else if (!horizontal && layout !== "timeline" && wbMapBesideParent(parent, p, child, c)) {
@@ -6323,7 +6335,9 @@ function wbMapColumnPositions(index, layout) {
     let right = -gapD;
     for (let i = 0; i < kids.length; i += 2) {
       const pair = kids.slice(i, i + 2).map((kid) => {
-        const rows = rowsUnder(kid);
+        //: Indented one step, as a tree table's rows are, so the line to a
+        //: second cause drops beside the first instead of through it (L-mindmap-12).
+        const rows = rowsUnder(kid).map((r) => ({ o: r.o, depth: r.depth + 1 }));
         return { kid, rows, ext: extent(rows), ks: size(kid) };
       });
       const w = Math.max(...pair.map((b) => Math.max(b.ks.w, b.ext.w)));

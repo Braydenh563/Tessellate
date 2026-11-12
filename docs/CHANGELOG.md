@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: a fishbone's line to a main topic's 2nd and later causes no longer runs behind the cause above (causes stand one indent in, lines drop half an indent in; 0 of 5 cause lines cross a box in a node test, 4 of 5 before).
 - The document editor's :shortcode: completion now reads the icon picker's emoji through an alias map (one emoji table, resolved when the picker script is in).
 - Mind map: the level rows say a size in words where the level scale has one (Classic main topics L, the centre XL, not 17px and 22px), and a topic at a size the strip has no word for (17px) gets a one-off row so the strip rings it (L366, L369); the level fill was already named by `wbSyncMapFill`; `tests/test_map_node_controls.py`.
 - Mind map: the phone More sheet (59 to 82 rows on a map) has the app filter field (`listFilter`); typing "layout" leaves 9 of 82 rows, separators hide while a query is set, and clearing restores all 82 (measured at 390, `scratchpad` sweep, L367); `tests/test_wb_commands.py`.
