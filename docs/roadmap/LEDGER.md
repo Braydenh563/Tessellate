@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 92 | 4 | 0 | 17 | 192 |
+| ui-modernisation | 96 | 91 | 4 | 0 | 17 | 191 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 13 | 0 | 0 | 0 | 13 |
-| all | 553 | 664 | 158 | 3 | 191 | 1375 |
+| all | 553 | 663 | 158 | 3 | 191 | 1374 |
 
 ## graph
 
@@ -559,7 +559,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L770** `ui-modernisation` open, M: Tablet layouts: decide on Documents dock two rows at 1024, arc framing and Notes sub-tabs. From OPEN.md:1233; OPEN.md:3223. Evidence: No tablet-specific fix found; 07-whiteboard-misc.css:9656 only notes 1024 measurement for notes dock. Owner decided 2026-11-12: Fix the arc zoom only (The arc opens no smaller than a readable zoom, like the mind map; the two toolbars stay as they are). Build: graph arc layout: minimum readable zoom on first frame (reuse the mind map fit-floor); sweep at 1024x768.
 - [ ] **L773** `ui-modernisation` open, M: Rethink Notes dock wrapping (nine controls at 1440, two rows at 1280-1500 with rail open). From OPEN.md:3480; OPEN.md:3559. Evidence: Judgement for the dock grammar's owner; same dock as 3559. Owner decided 2026-11-12: Fewer worded buttons (Some buttons show icons only above 1400px or move into the menu, so the bar keeps one row). Build: Notes .dock: fold two worded controls to icon-only or the dock kebab; sweep docks.js at 1280, 1440, 1500 with rail open.
 - [ ] **L765** `ui-modernisation` open, M: Design pass to unify empty-state tone and illustration across views. From OPEN.md:4241. Evidence: Design pass across views, not a reproducible defect. Owner decided 2026-11-12: Align to the recipe. Build: inventory every .empty-state and ad hoc empty line, convert to the DESIGN.md Empty state recipe, add a lint in tests/test_ui_recipes.py.
-- [ ] **L778** `ui-modernisation` open, S: Decide cropping of tall maps in dashboard widget. From OPEN.md:3184. Evidence: Owner's judgement on cropping Owner decided 2026-11-12: Crop around the centre. Build: mapPreview for the dashboard widget: crop to a readable window around the root; sweep with a 25-topic tree-right map.
 - [ ] **L-ui-modernisation-28** `ui-modernisation` open, S: Measure the stuck-ground recipe on the timeline table head and empty its freeze. From open-work sweep 2026-11-12, tests/test_nested_surfaces_1489.py:34. Evidence: This freeze ratchet holds one known offender, and the comment states the intent to remove it once the stuck-ground recipe is measured on table cells. No LEDGER row or plan item names it.
 - [ ] **L-ui-modernisation-3** `ui-modernisation` open, M: Sweep every toolbar onto the control height tokens and drain the literal heights ratchet. From open-work sweep 2026-11-12, docs/DESIGN.md:1584. Evidence: The doc admits toolbars that do not use --control-h yet and calls them gaps. No row lists or tracks the sweep to find and convert them.
 - [ ] **L-ui-modernisation-4** `ui-modernisation` open, S: Shorten the lock setup note and rename its button. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:32. Evidence: index.html:346 #lock-setup-note is still 58 words and app.js:723 still reads "Set password & start"; there is no LEDGER row or plan item for it

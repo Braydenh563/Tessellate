@@ -35,13 +35,19 @@ function answerTags(entry, body) {
 //: gzip ratchet). The svg comes back empty at once, so every caller can class and
 //: place it, and the drawing lands in it when the file is in (a microtask later
 //: once it is). An empty board draws the empty state there, not nothing.
-function mapPreview(board, { size = "card" } = {}) {
+//: `crop`: a tall map fills the box from its centre (the dashboard, L778).
+function mapPreview(board, { size = "card", crop = false } = {}) {
   //: The stored thumbnail (board-raster.js, lazy) when this board has a current one.
-  if (board?.thumb_v && window.mapRaster) return mapRaster(board, size);
+  if (board?.thumb_v && window.mapRaster) {
+    const img = mapRaster(board, size);
+    //: Through the CSSOM: the boot stylesheets are at their cap, and CSP refuses a style attribute.
+    if (crop) img.style.objectFit = "cover";
+    return img;
+  }
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("class", `board-minimap board-minimap-${size}`);
   svg.setAttribute("aria-hidden", "true");
-  ensureModule("mapPreview").then((ok) => ok && mapPreviewDraw(svg, board, size));
+  ensureModule("mapPreview").then((ok) => ok && mapPreviewDraw(svg, board, size, { crop }));
   return svg;
 }
 

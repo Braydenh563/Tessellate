@@ -36,7 +36,7 @@
     //: No aria-label: the name is the visible caption (title and count, WCAG 2.5.3);
     //: the tooltip says what a press does.
     button.title = `Open the ${kind} ${board.title}`;
-    const svg = mapPreview(board, { size: "card" });
+    const svg = mapPreview(board, { size: "card", crop: true });
     svg.classList.add("dash-board-feature-map");
     button.appendChild(svg);
     //: Its name and what is on it, in the rows' own type, under the picture.
