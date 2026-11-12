@@ -81,3 +81,12 @@ def test_ready_to_merge_only_with_no_open_rows():
     named = [p for p in ledger.PLANS if f"`{p}`" in line] or list(ledger.PLANS)
     left = [rid for rid, plan, status in ledger.rows(TEXT) if plan in named and status in ("open", "partly")]
     assert not left, f"Now says ready to merge, but LEDGER still has {len(left)} open rows ({left[:5]})"
+
+
+def test_an_open_row_never_reuses_a_closed_id():
+    # `ledger.py add` once counted ids in LEDGER only, so a done row's id was handed out again.
+    history = (Path(__file__).resolve().parent.parent / "docs" / "roadmap" / "HISTORY.md").read_text(encoding="utf-8")
+    closed = set(re.findall(r"- \[x\] \*\*(L-[a-z-]+-\d+)\*\*", history))
+    ledger = (Path(__file__).resolve().parent.parent / "docs" / "roadmap" / "LEDGER.md").read_text(encoding="utf-8")
+    open_ids = set(re.findall(r"- \[ \] \*\*(L-[a-z-]+-\d+)\*\*", ledger))
+    assert not open_ids & closed, sorted(open_ids & closed)

@@ -1,4 +1,6 @@
-"""L414: a Notes sub-tab panel cross-fades, only on a switch inside Notes.
+"""Source text: an animation's keyframes and the class that starts it are CSS and JS text; the fade was measured in Chromium at merge.
+
+L414: a Notes sub-tab panel cross-fades, only on a switch inside Notes.
 
 `@starting-style` cannot tell a section switch from the page arriving (the
 page already fades, `.tab-page:not(.hidden)`), so `showNotesSection` marks the

@@ -195,6 +195,9 @@ def test_the_guard_refuses_every_way_in(monkeypatch):
     for address in (
         "10.0.0.5", "192.168.1.7", "169.254.169.254", "::1",
         "100.64.0.1", "100.100.100.200", "198.18.0.1", "::ffff:10.0.0.5",
+        # NAT64 (64:ff9b::/96) wraps an IPv4 address; Python 3.13 calls the
+        # wrapped metadata, loopback and LAN addresses global.
+        "64:ff9b::a9fe:a9fe", "64:ff9b::7f00:1", "64:ff9b::a00:5",
     ):
         resolves_to(address)
         with pytest.raises(security.UnsafeUrl, match="local address"):
@@ -211,3 +214,10 @@ def test_the_scan_sees_fetchers_that_do_not_use_requests():
         "    snapshot_download(repo_id='r')\n"
     )
     assert {"urllib.request.urlopen", "snapshot_download"} <= _calls(sample) & OUTBOUND
+
+
+def test_nat64_wrapping_a_public_address_stays_public(monkeypatch):
+    from tessellate.core import security
+
+    monkeypatch.setattr(security, "_resolve", lambda host: ["64:ff9b::808:808"])
+    assert security.public_addresses("https://example.com/")

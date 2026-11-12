@@ -1,0 +1,37 @@
+name: workflow-lint
+
+# Supply-chain check on the workflows themselves (L-general-2): zizmor flags
+# unpinned actions, a checkout that keeps its token, and template injection.
+on:
+  pull_request:
+    paths: [".github/workflows/**", "docker/**", ".dockerignore"]
+  push:
+    branches: [main]
+    paths: [".github/workflows/**", "docker/**", ".dockerignore"]
+
+permissions:
+  contents: read
+
+jobs:
+  zizmor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          persist-credentials: false
+      - uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd  # v0.8.1
+        with:
+          advanced-security: false
+
+  hadolint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          persist-credentials: false
+      - uses: hadolint/hadolint-action@2a66e89f53d0771bb131a7fa31f3136336094aa6  # v3.4.0
+        with:
+          dockerfile: docker/Dockerfile
+          failure-threshold: error

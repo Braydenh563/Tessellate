@@ -22,7 +22,7 @@ What it keeps, by rule rather than by list where it can:
   `MemoryMap-AI-Setup-`): files, folders and wire names that installed copies
   still look for; the internal identifiers move separately, with fallbacks;
 - "formerly MemoryMap ..." mentions;
-- in the roadmap docs, CLAUDE.md and IDEAS.md, anything in double quotes
+- in the roadmap docs and CLAUDE.md, anything in double quotes
   (the owner's words are quoted there);
 - a line carrying `brand: keep`, or the line after one carrying
   `brand: keep-next` (a data folder, a certificate subject, a stored value);
@@ -63,7 +63,7 @@ SKIP_PREFIXES = (
     "scratchpad/",
 )
 #: Where the owner's words are quoted inline: quoted spans stay as written.
-QUOTE_KEPT = ("docs/roadmap/", "CLAUDE.md", "IDEAS.md")
+QUOTE_KEPT = ("docs/roadmap/", "CLAUDE.md")
 TEXT_SUFFIXES = {
     ".md", ".html", ".js", ".mjs", ".css", ".py", ".sh", ".bat", ".cmd", ".ps1",
     ".iss", ".wxs", ".spec", ".yml", ".yaml", ".toml", ".txt", ".desktop",

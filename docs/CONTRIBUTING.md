@@ -49,7 +49,7 @@ Everything runs offline, with no Ollama and no models:
 ```bash
 bash scripts/gate.sh --changed   # lint set, node --check, ruff, and the tests that name your files
 ruff check .                     # lint (what CI runs)
-pytest -n auto                   # the whole suite: 13,300+ tests, under nine minutes on four cores
+pytest -n auto                   # the whole suite: about 9,000 tests, under nine minutes on four cores
 ```
 
 The full suite takes about 25 minutes serially, so run the gate while you work
@@ -73,6 +73,11 @@ A set of lints exists because the test suite cannot see the DOM or the prose:
 `test_readme_freshness.py`, `test_asset_cache_busting.py`, `test_no_em_dashes.py`,
 `test_no_innerhtml_interpolation.py` and `test_markdown_link_schemes.py`. If one
 fails, it has found something real: fix the cause, never widen the rule.
+
+A test that only reads a source file (a grep for a string) proves the string is
+there, not that the app works. Prefer driving behaviour; when you cannot, start
+the module docstring with "Source text:" and say why
+(`tests/test_source_text_docstrings.py` checks it, and `scripts/gate.sh` prints the count).
 
 Every AI call in the suite is faked. That keeps a run fast and offline, and it
 means the suite cannot tell you how a real small model behaves. The tests that can
@@ -126,11 +131,22 @@ Three rules keep that from happening:
 - **Reconcile before building.** Search for the feature first. If it exists,
   extend it, do not reimplement it. (Snooze, chat export, theming, the command
   palette, the skills bar and much more are already built.)
-- **Additive only.** Extend functions rather than replacing them, and never
-  delete a feature, widget or CSS rule to make room for a new one without asking.
+- **Replace, do not layer.** When new code supersedes an old path, remove the
+  old path in the same change unless saved data or a public interface still needs
+  it. Never delete a working feature, widget or CSS rule to make room for an
+  unrelated one without asking.
 - **One feature per commit.** After each commit, `git diff --stat` should list only
   the files that feature touches. An unexpectedly wide diff is the early warning
   sign of a regression.
+
+## Dependencies
+
+Do not adopt a release of a dependency, a GitHub Action or a vendored library
+younger than 30 days. A fresh release is the window in which a hijacked
+maintainer account or a malicious publish is found and pulled; waiting costs
+little. Pin to the exact version (an Action to its commit SHA, see
+`tests/test_workflow_pins.py`), and note the version and its release date in
+the commit. A security fix may skip the wait, and says so in the commit.
 
 ## Commit and PR conventions
 

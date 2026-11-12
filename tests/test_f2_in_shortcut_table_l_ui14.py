@@ -1,4 +1,6 @@
-"""L-ui-modernisation-14: F2 (rename the list item you are on) is a row in the
+"""Source text: the shortcut table and its listener are read as text; the keypress itself is driven in Chromium at merge (no browser in this suite).
+
+L-ui-modernisation-14: F2 (rename the list item you are on) is a row in the
 shortcut table, not a loose listener in navigation.js, so the shortcuts sheet,
 the rebinding list and the collision check all see it."""
 

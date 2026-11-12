@@ -14,6 +14,26 @@ below). Versioning is `0.x` while the app stabilises.
 - Fix: a confirm or name prompt opened from inside a modal dialog mounts in that dialog, so it is no longer beneath it and unreachable (L453; `dialogHost` in app.js, measured: the confirm button is the element at its own centre, in the dialog).
 - Fix: a Settings deep link (a notice button, a "Find a setting" row) finishes at the control: the smooth scroll is re-aimed when it ends, since the pane grows under it (L447; a reopened link left the row 8,561px down at 390, now 481).
 - Fix: finding "Palette" in Settings lands focus on the palette grid, not its label (L422; 121 of 292 index rows still land on a head, which is right for a group).
+- Ledger: two remainders (SKILL.md snippet for the MCP row, remaining stale comments) filed.
+- Docs: two frontend comments no longer call built features unbuilt (a topic's picture, resizing a multi-selection).
+- Tests: a new test that reads source text must open its docstring with "Source text:" and say why; `scripts/gate.sh` prints how many test files do (1,493 of 2,674 today; `tests/test_source_text_docstrings.py`).
+- Docs: the PR 216 work order is marked done so the Stop hook stops reading it as running.
+- Docs: IDEAS.md is retired; its built entries moved to HISTORY and its open ones to BACKLOG.
+- Docs: ROADMAP.md retires its three open-looking queues (text kept in HISTORY), and the README describes the file by what it holds now.
+- Docs: five placed INBOX items (1716, 1726, 1748, 1779, 904) move to HISTORY and the 904 list's stale built and not-built statuses are corrected.
+- Docs: the deep-audit skill briefs from and writes LEDGER rows, matching its checklist, instead of ranked audit files.
+- Fix: stale duplicate-warning pointers (`filing_similar_id` naming a deleted note) are cleared in the launch housekeeping (`tests/test_filing_sweep.py`).
+- Docs: RELEASING names the lint that checks pyproject's version, the optional search engine (fastembed, not torch) and where the 1.0 criterion is written.
+- Docs: ARCHITECTURE no longer says documents lack revisions, that the packaged app has no stdio MCP, that the MSI ships, or that assets are never immutable.
+- CLI: `python -m tessellate tool [NAME] [--args JSON] --json` lists or runs one of the tools the MCP server offers, with the same gates (`tests/test_tool_cli.py`).
+- Docs: CONTRIBUTING agrees with CLAUDE.md on replacing rather than layering and on the test count (about 9,000).
+- Docs: SECURITY.md lists its known gaps; CONTRIBUTING.md sets a 30-day floor on adopting a new dependency, Action or vendored release.
+- Health: `/health` carries source_commit, started_at, data_dir_id and data_dir_writable, and Settings, About shows the build and warns when the notebook folder cannot be written (`tests/test_health_build_stamp.py`).
+- Vendored code: `frontend/vendor/PROVENANCE.json` lists every vendored file with its sha256, size, version, upstream, licence and notice; a test recomputes the hashes (`scripts/vendor_provenance.py` regenerates it).
+- Docker: the image has a HEALTHCHECK on /health, a .dockerignore keeps .git, the venv and data out of the build context, and hadolint runs in CI (`tests/test_docker_files.py`).
+- Packaging: LICENSE and THIRD_PARTY.md ship inside the Windows installer and MSI, the Linux tarball and the Docker image (`tests/test_licence_shipped.py`).
+- CI: every workflow action is pinned to a commit SHA, every checkout drops its token, and a zizmor workflow lints the workflows (`tests/test_workflow_pins.py`).
+- Security: the outbound address test decodes NAT64 (64:ff9b::/96) to its embedded IPv4, so a wrapped metadata or loopback address is refused (`tests/test_outbound_fetch_guard.py`).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.
 - Fix: the chat's Web toggle no longer throws a ReferenceError while the page loads; `renderWebSearchToggle` is defined in status.js, above the chat mode strip that first calls it (`tests/test_web_search_toggle_order.py`).
 - Boot weight: the Skills pane's list (`renderSkillSettings` and its rows) moves into the lazy settings-controls.js, with a boot stand-in, so the boot scripts stay under the gzip cap.

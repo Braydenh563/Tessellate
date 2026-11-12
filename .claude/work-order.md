@@ -1,5 +1,6 @@
 mode: continue
-status: running
+status: done
+closed: 2026-11-12 (PR 216 merged; its unchecked boxes are built, placed in the plans or LEDGER rows, or superseded, see HISTORY and docs/roadmap/LEDGER.md)
 pr: 216
 max-continues: 60
 max-idle-minutes: 60

@@ -347,7 +347,9 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   const aboutHealth = await apiJson("/health").catch(() => null);
   //: Where it is served from, read from the page itself so it is the address in use (the owner, 2026-11-07).
   const served = `Running at ${location.host}${location.port ? "" : " (the default port)"}.`;
-  $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."} ${served}`;
+  const aboutBuild = aboutHealth?.source_commit ? ` Build ${aboutHealth.source_commit.slice(0, 7)}.` : "";
+  const aboutWrite = aboutHealth?.data_dir_writable === false ? " The notebook folder cannot be written to." : "";
+  $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."}${aboutBuild} ${served}${aboutWrite}`;
   //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
   afterCharacters(() => {
     const { mode, reason } = nameMarkBuddyMotion();

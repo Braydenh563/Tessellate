@@ -54621,6 +54621,108 @@ Bullets already marked closed in OPEN.md, moved verbatim, grouped by their OPEN.
 
 1784. **Owner, 2026-11-12 ~03:05Z, verbatim:** "can we keep eveything in like one place or a couple places so we stip missing thins because Im getting very frustrated" / "because rn we have things spread across (as far as I know) open ledger, backlog, roadmap, handover, agent remaining (many of the files), inbox, plans (all the different documents), and who else knows" / "oh yeah and open.md" / "can you cut all of the agent remaining files that arent needed to save space and remove all files not needed anymore??" / "any info in them that may be needed move it somewhere more relevant". Recommendation (taken, after the sweep wf_5cdd4494-7a0 and build wf_ee46a876-5a8 land): one `docs/roadmap/LEDGER.md` for every open non-plan item (built from ledger-1112 and 1112b), INBOX intake only, BACKLOG and plans design only (their open blocks move to LEDGER), HISTORY for done, HANDOVER orders and one Now line. Every agent-remaining and archive file (about 980) and the retired roadmap docs (OPEN, SESSION_BRIEFS, ANALYSIS, AUDIT, MODERNISATION_AUDIT, REDESIGN, PLAN, AGENT_SKILLS_REFORM, FABLE_BRIEF) are read and their content moved (open item to LEDGER, decisions to plans or DESIGN/ARCHITECTURE, measurements to the LEDGER row or a code comment, done to HISTORY), then `git rm`; tests that read them get fixtures; lints: open items only in LEDGER, INBOX ids within a step, "ready to merge" only at zero LEDGER open rows; CLAUDE.md section 3 and order 4 updated. Then, owner: "yes do the unused code files too": every src, frontend, scripts, scratchpad and tests file nothing references (imports, index.html script order, lazy loader tables, sw.js, CI workflows, gate.sh, pyproject entry points, tests, docs commands) is listed with its evidence, checked by an independent reviewer, removed in its own commit, full suite and E2E green. Owner, 2026-11-12 ~03:20Z (route chosen, supersedes "no leftover work" for PR 216): "can you focus on everything I need to start those plan agents?? I want to max my usage before saturday at 5pm"; chose "Merge sooner": PR 216 closes after wave 1 (merged, reviewed), the single LEDGER, the clean-up and green CI; wave 2 is cancelled before it starts and every open LEDGER row goes to the plan sessions by surface, one session per plan on its own machine. Owner, ~03:30Z, verbatim: "I want ABSOLUTELY EVERYTHING OPEN PUT INTO ONE SPOT WHERE EVERYTHING LEFT OVER AND OPEN IS, NO MULTIPLE FILES, NO MISSED OPEN STUFF, EVERYTHIGN IN ONE PLACE OTHER THAN THE PLAN FILES AND THE BACKLOG. Then I want to run multiple sessions at once, for each one Ill be like 'YOURE SOLE PURPOSE IS TO FINISH THE ENTIRE GRAPH PLAN" and any other open items for it as well." So: every LEDGER row carries a `plan` tag (graph, chat, whiteboard, documents, mindmap, ui-modernisation, timeline, world-class, or general), each plan gets a true open-row count from its own file, and one paste-in brief per plan session.
 
+1779. **Graph spoke, 2026-11-11 ~17:50Z (decision asked for, not the owner's words):** the composer panel with a model on (Qwen2.5-1.5B, one blind tester, 25 questions) rated the model's answer 12.2 of 20 against the composer's 16.1, worse on 17 and tied or better on 8; the existing validator flags only 4 of the 17. Asked: at 3B and below, should plain Ask answer from notes (the composer) by default? Recommendation (taken, standing order 3): keep decision 75 (the model leads when one is on) for PR 216, since changing it remakes a decision; the figures are in CHAT_PLAN "Open from Phase 6" for the owner to overrule. **Placed: CHAT_PLAN, Open from Phase 6.**
+1748. **Owner, 2026-11-11, answers to the one-sitting questions (LEDGER.md "Owner answers"), the non-recommended ones verbatim:** Q10 "maybe an advanced setting or smth?? idk I still want it to feel biological and have life". Q11 "cache for 30s but if it registers the event of ollama coming online or smth then it changes so we dont have it accidentally answering with the composer right after starting ollama within the 30s window". Q25 "i honestly dont know and it depends on the person, I feel like a bung of things may need to be calibrated to the user in settings or on first dowload or smth. maybe make it togglable?" Q27 "how big is rapid ocr?? I feel like it should be bundled if it is small but if not make it an optional extra but suggested if the user tries to use any of the features related to it and also have popups with buttons that allow for a quick install. the same needs to happen for searxng because nothing shows that suggest to the user to install it. and same with other things like the pdf viewer and other packages that are required. the user shouldnt have to think to install them, if they try to use a feature and it needs an optional package, the notice should show until they install the package and if the package is uninstalled for some reason then the notice should show again but the user should be able to close or dismiss them like the no ai model connected notices." Q30 "Settings switch, off ... but also based on if the notes are in a private space or not." Row 22 "Save to drafts, clear ... but also provide some easy way for the user to pick them all back up like a where you left off or the recently drafted or accessed or smth". Q34: go on sync, offline studio and audio, the desktop pet outside the window, and the custom domain and blind panel. Recommendation (taken): one agent builds the package notices (one recipe, every optional package, dismissable, back after an uninstall) together with the RapidOCR size check. One agent takes Q10, Q11 and Q25 (with a first-run preferences step listing the calibratable choices). Row 22 goes to the sm-1111 fix agent. The Q34 features go in that order after the PR 216 work. **Placed: LEDGER L686** (verify each part in code; built parts move to HISTORY).
+1726. **Owner, 2026-11-10 ~16:13 local, lag log (excerpt):** "frame 582ms on dashboard: atlas-motion.js after 6ms"; "input 320ms on dashboard: pointerup on button.nm-buddy-face in #nm-buddy"; "frame 201ms on dashboard: avatars.js BUTTON.ondblclick 106ms (forced layout 97ms); companion-menu.js openNameMarkViewer 12ms"; "raf 370ms on graph: atlas-motion.js atlasRigFrame 21 calls/s, 17.6ms each (370ms of every second)"; "frame 219ms on library: whiteboard-library.js Response.json.then 94ms; app.js Response.json.then 33ms; whiteboard.js publish 18ms". Also the desk overlay hid and showed four times in three seconds at 16:17:12 to 16:17:15 (due flips with "window away"). Later the same log, 16:19: "input 736ms on documents: pointerup on button in #doc-toolbar" with "frame 727ms on documents: app.js SCRIPT[src=/js/icon-picker.js].onload 7ms" (the first icon-picker load blocks a toolbar click), and "frame 211ms on library: phone-shell.js BUTTON#tab-btn-library.onclick 26ms". **Placed: LEDGER L708 and L983** (the rest, and the Windows-only lines). **w13-1110 (774640ed9 and the next commit, 4x, 44 notes):** the Settings head redraw on each open is gone (61 ms to 18 first, 0 after) and Ctrl chords no longer read every modal's layout (26 reads to 0); icon-picker onload is parse only (no JS in a CPU profile), tab clicks are 21 to 93 ms of script with the rest the shown tab's first layout, `/models/status` is 6 to 22 ms against a runner holding calls 5 s. Open: the companion lines (W14) and the Settings show and hide (`w13-1110.md` (git history)). **New lag lines, 2026-11-10 ~20:36 local (after W13, W14 r3), measured on real Windows:** typing in the chat box: "settings-panes.js #document.onkeydown 285ms (forced layout 281ms)" twice in one frame (564 ms frame, 752 ms input), again 243 and 152 ms; "avatars.js TimerHandler:setTimeout 516ms (forced layout 366ms)" and 372 ms (283); "app.js Response.json.then 213ms (forced layout 210ms) [apiJson /insights/remarks from companion-remark.js nameMarkBuddyRemark]"; "input 472ms on chat: pointerover on div#chat-messages" (411 ms waiting on style and layout); tab clicks 304 to 352 ms ("phone-shell.js BUTTON#tab-btn-dashboard.onclick 97ms"); dashboard "atlas-motion.js" frames 466 and 253 ms at boot. Recommendation (taken): a Sonnet perf agent next free slot: the settings-panes document keydown must not read layout on a plain key in another surface (it runs for every key), the avatars timer and the remark render batched to one read after a frame, the chat pointerover style recalc found with a CDP trace. **And ~20:48 local:** graph "gcRequestDraw 35 calls/s, 5.0ms each (175ms of every second)", up to "53 calls/s, 6.6ms each (349ms)"; "input 392ms on dashboard: pointerup on button#settings-close". The per-label save/restore and font set added by the label fix (2026-11-10) is now one font set and a setTransform per name (unmeasured on real Windows); the perf agent measures the draw at rest and on hover and stops redraws when nothing moves. **And ~21:02 local:** "input 400ms on notes: pointerup on button.active in #notes-subtabs" (276 ms waiting on style and layout, no script over 5 ms); "app.js Response.json.then 191ms (forced layout 137ms) [apiJson /health from settings.js openSettingsModal]". **lag-1110 (this branch, 4x CPU headless, not real Windows):** fixed: Settings close (123 ms, 105 forced layout to 12 and 3), Atlas mood same-value writes, the typing watch box read, the remark bubble read. Not reproduced, still open: the 285 ms settings-panes keydown (settings-panes.js:1093 returns on a plain key; the layout is the earlier key's dirt flushed at dispatch; keydown max 5 ms here), graph redraws at rest (0 calls in 5 s; 3.6 a second after a hover, 300-frame cap), chat pointerover and notes-subtabs style (a subtab switch re-adds 1,132 list rows to layout), tab clicks (chat focus() is the shown tab's first layout), the added boot and dashboard lines. Detail: `lag-1110.md` (git history). **Fixed 48b13ac41, 0dd019ea8 (atlasmotion-1111 agent).** Whiteboard Library `Response.json.then`: closed groups draw their tiles on first opening (220 to 73 tiles, `wbRenderLibrary` median 133 to 63 ms at 4x, 4 runs each). Not reproduced on this Linux machine: `atlasRigFrame` at 21 calls/s (2.4 to 2.8 ms a call here), the desk overlay flips (needs a Windows desktop). Found, not fixed: the pointerup 320 ms on `button.nm-buddy-face` is the frame behind the avatars.js `poke` timer (143 to 184 ms, two `nameMarkBuddyBlend` reads), another agent's file. **Fixed 2e8f22d3c (icon-picker.js first open on documents):** 72 tiles drawn in the open, the other 357 in idle slices of 48 (first-open forced layout 139 to 256 ms, median 183, to 34 to 60, median 39; largest task from the press to the shown panel 241 to 312 ms to 133 to 204 ms; 4x CPU, 5 runs each; Home, End and the arrows draw the rest first; `tests/test_lag_icon_picker_1726.py`). Detail and next steps: `atlasmotion-1111.md` (git history). **Fixed 36ecedeb1 (avatars2-1111 agent).** The companion band moved under `<html>`: Blend sum 822-1315 to 136-226 ms, Tempo first look max 127-264 to 7-14 ms, poke timer script/forced 137-218/111-195 to 17-61/5-30 ms (4x, 30k nodes, three alternating rounds). The pointerup 320 ms is that frame; pointerup/click event timings stay noisy (40 to 350 ms both ways, cold click highest). **Checked (lag agent, 200 notes, 4x):** the notes-subtabs press is a pointerup of 144 to 256 ms (event timing includes the next frame) and 43 to 57 ms of onclick script, 23 to 41 of it the one layout `autoGrowVisible` takes after the section toggle (already a single pass, INBOX 424h) and the rest the shown section's rows; moving that read a frame later only relocates it (document reopen, six interleaved runs each: frame sum 429 vs 439 ms, max 146 vs 163, not kept). Graph redraws at rest: 0 draw calls in 5 s at 4x. True blocker: the desk overlay hide and show flips need a Windows desktop and its window list (this machine is Linux with no Win32 window manager, so the due-flip path cannot run); the 285 ms settings-panes keydown and the chat pointerover are not reproduced (keydown max 5 ms here).
+1716. **Owner, 2026-11-09 10:21 to 10:48Z (Windows log, 2560x1504 at 192 dpi):** the lag lines, verbatim: "frame 1399ms on library: avatars.js TimerHandler:setTimeout 1295ms (forced layout 1248ms); library.js BUTTON.onclick 31ms (forced layout 21ms)"; "avatars.js TimerHandler:setTimeout 314ms (forced layout 174ms)" on timeline, 240 ms (193) and 206 ms (141) on library; "avatars.js release 239ms (forced layout 106ms)" after "pointerup on button.nm-buddy-face"; "atlas-motion.js atlasRigFrame 67ms (forced layout 60ms)" on dashboard; "input 1016ms on notes: pointerup on div.note-composer-foot in #capture" with "icon-picker.js BUTTON.onclick 196ms (forced layout 189ms)"; "settings-wiring.js #document.onkeydown 183ms (forced layout 179ms)" (208, 196, 97) on notes and library; "phone-shell.js BUTTON#tab-btn-dashboard.onclick 201ms (forced layout 146ms)" and "phone-shell.js write 66ms (forced layout 66ms)"; "app.js Response.json.then 486ms (forced layout 431ms) [apiJson /media/11/ocr-regions from library.js ocrLoadPage]; library.js ocrScheduleFitDock 56ms (forced layout 54ms)" (267/238, 111/88, 115/91, 88/69) and "request 5753ms on library: /files/4/ocr-regions"; "library.js openDoc 158ms (forced layout 73ms)", "app.js Response.json.then 244ms (forced layout 122ms) [apiJson /documents/7 from documents.js openDocument]"; "wiring.js BUTTON#web-reader-open.onclick 324ms"; "raf 224ms on graph: graph-canvas.js gcRequestDraw 60 calls/s, 3.7ms each"; "notes-list.js Response.json.then 96ms [apiJson /entries/most-accessed from dashboard.js, /chat/recent from dashboard.js]"; "request 16267ms on chat: /websearch/searxng/start"; "timeline-calendar.js BUTTON.onclick 139ms (forced layout 46ms)". The desk companion: "windows listed 11, standable top edges 0, worth the trip 0, hang spots 0 (506 invisible, 19 cloaked, 11 tool window, 9 minimised, 2 no frame, 1 own overlay)" all session, and "let go ... a CabinetWClass window, top 244, x 400 to 2434, counted as invisible", "a Chrome_WidgetWin_1 window, top -13, x -13 to 2573, counted as invisible", "a VanguardPanelClass window ... counted as invisible": open Explorer and Chrome windows are never stood on. Also the quick panel flips between two sizes: "placed at (1296, 824, 640, 680), asked (1296, 1312, 640, 192)" then "placed at (1296, 1312, 640, 192), asked (1296, 824, 640, 680)" four times in 0.6 s (and 547, 702/892). Recommendation: one agent on the desk window scan first (the invisible count on Windows, the 2x dpi rects) and the quick panel flip, then the avatars.js timer forced layout (1667 again at 1.2 s), then icon-picker, settings-wiring keydown, phone-shell tab and OCR fit dock forced layouts. **Part fixed (log1716):** the quick panel flip (two in-flight read-backs each re-set the window to their own place; only the newest ask re-sets now) and the window scan (classifier correct for the owner's rects in a fake-win32 test; a style read backs IsWindowVisible; a hidden foreground window is logged "invisible, yet foreground"; real cause on his machine still unknown). **Lag part (log1716):** icon-picker and the Tab trap reads reduced; **remains:** avatars.js timer at 1295 ms, phone-shell tab, ocrScheduleFitDock (not reproduced at 44 notes), listed in `log1716.md` (git history). **Part fixed (lag2-1109):** the OCR viewer (`Response.json.then` forced layout 45 to 91 ms to 0, the dock fit 10 to 23 ms to 1 to 3 ms, overlapping `/files/<id>/ocr-regions` asks now share one reading) and a repeat perch look; the 5753 ms request is the first Tesseract read of a big scan (cached after). **Remains:** avatars.js first look (25 to 40 ms at 4x on 320 notes, the 1295 ms needs the owner's dirty page), phone-shell tab, openDoc, web-reader-open, idle graph draws: not reproduced. **Part fixed (avatars-1111, 566023b26).** The poke no longer reads layout in its own task (`nameMarkSay` reads a frame on, `nameMarkReact` reflows only on a re-poke) and the drawing step's host is under `<html>`; at 4x, 2560x1504 at scale 2, 240 tiles: say 90 to 3ms and react 13 to 2ms over four pokes, express 269 to 143ms, a cold face 140 to 65ms (median of 16), the poke timer 229/176 and 245/217 to 31/9 at best (script/forced ms). The 1295ms timer itself did not reproduce; every body mutation on the Library Images tab costs 40 to 300ms there (the `:has()` rules over the tiles; not pinned): `avatars-1111.md` (git history). **Part fixed (has-1716), `86e47c3c2`.** The body-wide restyle was the two `body:has(#library-media-selectbar:not(.hidden))` rules (07-whiteboard-misc.css, 08-consistency.css), pinned by a trace of one `body.appendChild` (invalidation tracking: `has` on BODY, 976 related-rule recalcs, 480 tile and tick elements, 38 + 29ms of UpdateLayoutTree); the other `:has()` rules over the tiles were not in the trace (a CSSOM `deleteRule` bisect cannot see this: deleting all 420 `:has` rules left the median at 61 to 67ms, as the invalidation feature sets are not rebuilt by it). Now `body.library-media-selecting`, set in `syncLibraryMediaSelectbar`. At 4x, 2560x1504 at scale 2, 240 tiles (14,000 elements): a node appended to `<body>` and read back, median of 15, 77.8 to 2.3ms light and 76.7 to 2.4ms dark (a node under `<html>`: 2.4); computed styles of tiles and ticks identical at rest, hover, selecting and after Done in both themes. **Remains:** phone-shell tab, ocrScheduleFitDock, openDoc, web-reader-open, the owner's 1295ms timer (not reproduced): `hascss-1111.md` (git history). **Fixed 36ecedeb1 (avatars2-1111 agent).** The companion band moved under `<html>`: Blend sum 822-1315 to 136-226 ms, Tempo first look max 127-264 to 7-14 ms, poke timer script/forced 137-218/111-195 to 17-61/5-30 ms (4x, 30k nodes, three alternating rounds). The pointerup 320 ms is that frame; pointerup/click event timings stay noisy (40 to 350 ms both ways, cold click highest). **Checked and fixed (lag agent, 200 notes, 4x):** `wiring.js BUTTON#web-reader-open.onclick 324 ms` fixed in ac9c2d778 (Open and Copy no longer wait for the web bundle: press to new tab 151 to 206 ms became 1 to 8 ms). `openDoc`/`openDocument`: the reopen is 100 to 165 ms of frames, `Response.json.then` 54 to 134 ms (CodeMirror setting the text and measuring, 49 + 61 ms) and `docRememberPositionNow` 93 ms in `getBoundingClientRect`, which is the shown page's first layout (skipping the read moved it to the next frame, no gain, not kept); the first open also pays documents.js 234 ms and CodeMirror 292 ms. `ocrScheduleFitDock`: no Tesseract binary on this machine (`which tesseract` is empty), so no OCR regions can be produced here; its measured fix stands from lag2-1109 (dock fit 10 to 23 ms to 1 to 3). Idle graph draws: 0 in 5 s. True blockers: the desk window scan and the 1295 ms avatars timer are the owner's Windows desktop and dirty page (not reproducible here). **Placed: LEDGER L708 and L983.**
+904. **The owner, 2026-10-17, verbatim** (a OneNote bug list pasted into a Word document, 86 items, screenshots described in `bugs-1017.md` (git history); the pasted model-thinking transcript under B42 is elided). Triage and per-bug status: `bugs-1017.md` (git history). **Placed: LEDGER** (the open B rows from the E18 triage were swept into LEDGER; B04, B36, B83 and B86 are L-world-class-1, L-documents-1, L-world-class-2 and L-chat-1).
+
+     B01. A first install setup popup showed as I was looking through the app but I accidentally clicked off it and idk what it was, there should be some way to access it, like a get started dropdown checklist to complete and maybe they can go in the notifications as well?? **E18 fixed.** 0b082cb; frontend/js/first-run.js (Get started).
+     B02. The composer needs more understanding, it still has a lot of flaws **E18 true.** Coverage answer fixed (src/tessellate/ai/notebook_stats.py:948); the composer's general understanding is open (W7, O3).
+     B03. Use composer to refine magic add on reminders like with bad sentence grammar and spelling mistakes and intent etc **E18 true.** Composer refining magic add is not built; the single-line inputs' autocorrect is L-world-class-1, and the magic add check L245 (open).
+     B04. Autocorrect on reminders and other app surfaces with harper, maybe other libraries and the composer, but also subtly highlight or colour the change for the user to notice in case it is wrong, then the user can hover over it and confirm it, edit it, or rewind the change. **E18 true.** Harper runs in the note boxes (frontend/js/autocorrect.js); no harper hook on reminders or magic add.
+     B05. I think the connect a model buttons in the no ai available popups should have a mini dropdown arrow on the side of the button so the user can click it as the connect a model button, or they can click the dropdown menu and press a shortcut button for hiding the popups instead of having to go into settings to manually find and toggle it. **E18 fixed.** 86cb8e0; frontend/js/offline-split.js:31 and :39 (Hide these popups).
+     B06. When adding tags in the edit notes form, the tag textbox just keeps getting shorter and shortyer until it eventually goes to a new line, I feel like it should just permanently be on the line below with the tags being placed above **E18 fixed.** e70f11e (tag input sits on its own line below the chips).
+     B07. Should this have an '?'?? I want the composer to have more variation, could it be more dynamic and actually come up with responses like an ai and not just preprepared responses?? idk **E18 true.** Variation not built: replies come from fixed tables (src/tessellate/ai/composer_smalltalk.py); the '?' is an owner question.
+     B08. This is alright but I feel like it should have acknowledged that it could be a test note?? Don't just account for this exact example, the composer needs to respond well to anything like this or similar scenarios. Like what if the user just button mashes or does a random string of keyboard charracters?? The composer needs to be like apple's siri with the same utility and usefullness and decent responses but better **E18 fixed.** src/tessellate/ai/intent.py:341 is_mash and :366 is_test, used at :278 and composer_smalltalk.py:250.
+     B09. It autocorrected my spelling, and it underlined it blue which is good, but when I clicked the word that was underlinedd, it instantly reverted, it should probablu show a little undo icon popup button near the word for confirming or reverting if the word is clicked on instead. **E18 fixed.** fc388f3; frontend/js/autocorrect.js:238-239 (Put back, Edit the word).
+     B10. Also the composer is "Atlas's Assistant" and the ai models are Atlas themselves, it shouldn stay composer. Also it should probably tell the user that it is the assistant and if they want to talk to atlas, they should connect a model. And it should also give a composed general rundown of capabilities. This should be composed and not a set response, with variations, longer or shorter based on response style and user request etc. if the user asks about specific features or more yk?? **E18 fixed.** 008594fa5 and a9d427ce9 (Atlas's assistant; composed rundown).
+     B11. The guide should alo consider that some queries may not be related to the current page the user is on and needs to bnetter detect intent **E18 true.** Guide intent off the current page is L-chat-1 (open, with B86).
+     B12. Why does the quick access look so small on the full view?? **E18 fixed.** cec4e74 (a short window keeps Full).
+     B13. Unchecking a quick access option in the edit quick access panel navigates me to the unchecked option and then if I want to uncheck multiple I have to keep scrolling up. **E18 fixed.** ba7df45 (unticking keeps the manager's scroll).
+     B14. Each settings page should have an expand and collapse all sections button at the top **E18 fixed.** a29dfab; frontend/js/settings-controls.js:3260-3264 (Expand all / Collapse all in a pane's dock).
+     B15. I think we should market the application as "Tessellate Notes" but it is Tessellate for short… **E18 true.** Built: Settings, About is headed "Tessellate Notes" (frontend/index.html:15290).
+     B16. The properties panel popups like with the date select arent the custom style like sued in the reminders tab **E18 fixed.** 513f237 (custom picker on book type documents).
+     B17. When making ned documents, I shouldn’t have to enter a title, it should fill it with "Untitled Document #[number}" and then have it preselected and highlighted for the user to replace it. That way if the user cant be bothered or cant think of a name they don’t have to. Also there should be an option in the editor to have the composer and ai if it is available suggest and rename the document. This should be the same for boards and maps as well. **E18 true.** Names and selection fixed (787f8a9); the AI rename option in the editor is still placed in DOCUMENTS_PLAN.
+     B18. On the document editor, I want a library of prefileld templates and curated text sections and stuff like the code snippets but for general documents as well **E18 true.** A template picker is built (`DOC_TEMPLATES`, frontend/js/documents.js:2045); the larger curated section library is not (placed in DOCUMENTS_PLAN).
+     B19. Also there needs to be more debugging and running tools for the other offered document types and languages, and also there needs to be code snippets and prewritten code examples and skeletons for all document types and code languages. And I want to be able to have it like it is now  where I select somehwere in the document and click the snippet and it pastes there, but also I can drag the snippet from the library and paste it whwere I drag it to and there'll be a ghose cursor under my dragging cursor where it will place and if I drag my mouse to the bottom or top of the document then it wills begin to scroll up or down if the document is long and scrollable. **E18 true.** Snippet drag with ghost cursor not built (placed in DOCUMENTS_PLAN).
+     B20. On lined documents I want there to be a togglable temporary manage or edit mode or smth where it allows me to rearrange content by line and or elements **E18 true.** Keyboard half built: Alt+Up and Alt+Down move a block (frontend/js/documents.js:3454); a togglable manage mode is not (placed in DOCUMENTS_PLAN).
+     B21. I switched from a md document to a code document and then back to md but it still thought it was and treated it like a code document. **E18 fixed.** 9b9580c (a forced Source is no longer stored).
+     B22. Also live view on the document editor for md files should be default not source. **E18 fixed.** 9b9580c (live view is the default).
+     B23. Also the tables in the live view for document editor should have more management capability, like lines on the edges and rows and columns on the outside etc to select whole rows or columns, or to add new rows or columns or even dragging icons to drag and rearrange coumns and rows if they are selected yk?? I cant even highlight select the live view table or multiple rows, columns or cells, and Im not given a popup menu for tables when I righ click them. This needs expansion and probably the same for other elements and the whole luve view for md as well. **E18 true.** Live-view table row and column management not built (placed in DOCUMENTS_PLAN).
+     B24. Awkward popup in board **E18 fixed.** a6bc16d (one row of actions).
+     B25. I want to be able to make wireframes and diagrams like erd, orm, uml, class and other diagrams on the boards so I want the proper elements available for them and templates **E18 fixed.** frontend/board-library/templates.json:2349 (Class diagram), :2803 (erd), :3193 (wireframe).
+     B26. These dropdowns don’t show anything **E18 fixed.** 25f4a69 (the library list keeps its scroll on redraw).
+     B27. I shouldn’t be able to uninstall the desktop view in the packaged windows app **E18 fixed.** 04a1a7e; src/tessellate/core/extras.py:1118 removal_locked.
+     B28. Is it possible for tessellate to run on its own hosted and managed local server instead of on local host?? **E18 true.** Own managed local server not built (placed in ROADMAP and research).
+     B29. The whiteboard needs a lot of work, like the ungroup button on the popup tools doesn’t change, I cant widen objects on one axis when grouped, resizing or moving objects doesn’t update their xywh values in the format panel in real time, the popup controls are all over the place, it just needs soo much fixing, refining, redesigning and more. **E18 fixed.** 183ec07 (Group/Ungroup follow the selection; W/H scale; x/y/w/h live).
+     B30. Composer still needs a lot of refining and fixing. It is still very buggy, lacks a lot of understanding, and just straight up gives me the note back to me without any actual composing in the ask tab. **E18 true.** Composer answers and the note-back reply are O1 (open); recency alone does not close the row.
+     B31. Add tessellate as a taxonomy option **E18 fixed.** src/tessellate/ai/data/taxonomy/memorymap_taxonomy.json:1087 (Tessellate topic).
+     B32. It filed my newest note about uni assignments in the about tessellate category?? That's wrong and now I need to go and manually change it and probably make a uni or studies or smth category idk **E18 true.** Not reproducible from code; needs the model that filed the note (bugs-1017 question).
+     B33. Can the comoposer do these ai actions well and just as good?? And they arent ai actions If the comoser does them when the ai isnt available **E18 true.** Composer running AI actions without a model is O7 (open).
+     B34. More workflows and actions?? **E18 true.** Placed in AGENT_SKILLS_REFORM.
+     B35. Companion doesn’t scroll with what it is perched on if the thing it is perched on is scrollable sometimes on the dashboard. **E18 fixed.** 89cfc4e (scroll area adopted after the perch).
+     B36. On draw.io I can pan by holding down my right mouse button and dragging, scrolling on the mouse is zoom. **E18 true.** No right-button pan in the diagram code (grep of frontend/js for button 2 finds companion and whiteboard lines only).
+     B37. Pressing down the scroll wheel and dragging sometimes glitches a little initially when starting to drag. **E18 fixed.** f013e84 (wheel press pans; default prevented).
+     B38. Attaching a file or thing to a mind map node makes a node that I cant edit or even go to the thing attached. **E18 fixed.** de37669ac (mind map file and bookmark nodes open; captions).
+     B39. Rebuild or vendor jupyter notebook in tessellate document editor?? **E18 true.** Jupyter in the document editor not built (placed in DOCUMENTS_PLAN).
+     B40. The ai should be aware of the user's current time in its responses through ai harness context. **E18 fixed.** src/tessellate/ai/librarian.py:647 clock_hint, used at :454.
+     B41. No numbers on matching records while the ai is thinking **E18 true.** Not reproduced; the owner's question on numbers while thinking is open.
+     B42. I used plan mode and the model didn’t have access to the make_plan tool **E18 fixed.** src/tessellate/ai/tools/tool_sets.py:142 (make_plan in the plan tool set).
+     B43. Thinking **E18 stale.** A bare word from the paste with no behaviour; 5c0b10a60 already re-driven it as stale.
+     B44. The user wants me to plan a development of an app that acts as a "backpack on screen" - like Microsoft Sticky Notes, but where the user can store things (copy and paste regularly), then press one click "copy" on stored content to easily copy it. **E18 stale.** A pasted prompt for a different app, not a Tessellate behaviour.
+     B45. They say "Plan this before you do any of it. Call make_plan with the goal and the steps, then carry the plan out." **E18 stale.** A pasted prompt; its behaviour is B42 (fixed).
+     B46. […elided: the pasted model-thinking transcript, 82 paragraphs; its point: plan mode was on, the task said "Call make_plan", and the model's tool list had no make_plan, so it spent its turns reasoning about the missing tool and created no plan…] **E18 stale.** Elided transcript placeholder; its point is B42 (fixed).
+     B47. Poor agent harness design and needs a lot of improvement. **E18 true.** Harness design open (O10).
+     B48. Use composer to custom name tool calls?? The way tools are offered and other parts of the agentic harness need to be refined and improved. **E18 true.** Tool naming and offer refinement open (O10).
+     B49. The agent failed **E18 fixed.** The label 'Failed due to error' is gone from src/ and frontend/js; why it failed needs the model (bugs-1017 question).
+     B50. I think the splash needs a bit of refining in how it l;oosk and works visually, and I can't minimise it (if that is possible) **E18 true.** Minimise exists (scripts/splash.ps1:440-457); the visual refinement is open; Windows only, not run here.
+     B51. I think the user's should have a button or way to access the project's github from the settings pages. **E18 fixed.** frontend/index.html:14839 (about-github link).
+     B52. Easier way to set up docker and mcp server and get a link or smth I can use to connect claude or another ai to it if I wish. Can we give the mcp server the ability to restrict access to certain notes or things?? Like a custom settings or token that the user can use to give other ai's access through the mcp server but one that the user can control that the ai's have access to in their notebook through that token or url etc. **E18 true.** MCP is stdio only; a restricted token and remote access are not built (ROADMAP).
+     B53. Cant set up mcp server in settings?? **E18 fixed.** frontend/js/settings-controls.js:2214 (mcp-config-snippet in Settings, Tools).
+     B54. Is that side selection line on the right wrong?? **E18 true.** Not reproduced; the owner's question on which line is open.
+     B55. Idk how to use the web clipper, it is unintuitive to use and hidden in settings, can you redesign the ui and ux of how it can be used and accessed?? Also the button in the dropdown for starting searxng in the web sidebar in the chat tab is gone. **E18 true.** Web menu fix 1784757; the clipper redesign is placed (too large).
+     B56. When settings are on auto, I cant tell what it autoed to… **E18 fixed.** dd53c5f; tests/test_settings_bugs_1017.py:64 and :227 (Auto names its answer).
+     B57. If I change the app's appearance colour and then try to change back to default, it changes to indigo instead… **E18 fixed.** 5567c10be (Default no longer paints indigo).
+     B58. I want the hover time to preview themes to be slightly longer or add like a small eye icon button in the corner to preview. Also across the app, there are quite a few instances where clicking an icon button to toggle smth doesn’t change the icon's look so it is hard to tell if it worked or not. **E18 fixed.** 4f7f073e0 and 35b100d15 (theme eye; icon toggles swap their glyph).
+     B59. The app seemingly redownloaded the embedding model (I already had It but idk), except it still says it is connected to the internet which it isnt really right?? Idk **E18 true.** embeddings.py:1079 still fetches again when a stored copy fails to load; the owner's question is open.
+     B60. This dropdown combobox and the text next to it arent aligned properly **E18 fixed.** b0c7e36 (OCR caption centres on its select).
+     B61. For the dictation model size there is no idication for which ones are installed, does the app check which modesl are stored even if they arent offered?? Also gemma 2 embeddings doesn’t need the lisence if you use the unsloth version, unsloth versions I find are a lot better than the main versions. Also if I click a different dictation model size, does it download immediately?? What if I change my mind?? Can I delete or uninstall models like for dictation and embedding etc that I don’t want?? **E18 true.** Installed markers and Remove exist (settings-packages.js:110, :122); the unsloth licence variant is not offered.
+     B62. The profile avatar in the enlarged popup from double clicking the profile picture doesn’t have any life to it. **E18 fixed.** 7d9c563; tests/test_companion_viewer_face.py.
+     B63. When I change the theme or colour in settings, the animated app logo in the dashboard hero doesn’t update to the new colour until I reload or switch tabs and go back **E18 fixed.** ae7fc72; tests/test_settings_bugs_1017.py (crimson accent case).
+     B64. The quick access sometimes loses it's full form and then goes really small and short. **E18 fixed.** cec4e74 (see B12).
+     B65. Stop th emodel options should probs be disabled when no ai model is running **E18 fixed.** 6cb4ef988 (Use this model and Stop the model follow what exists).
+     B66. I didn’t even have the app running the whole day until less than 26 minutes ago **E18 fixed.** 94db83d73 (an interrupted run keeps its own start time).
+     B67. The top of the suggested models section should show the detected hardware of the user and allow the user to adjust or edit it if it is incorrect. Also I feel like the "fits" or "tight" suggestions etc should take into account the user's current memory and stuff if possible and what and how many ai models they already have installed. **E18 true.** 4f7f073e0 names the cores and free memory; editing the detected hardware is not built.
+     B68. Gemma4 26b is a4b **E18 fixed.** cc91af39d; src/tessellate/ai/model_manager.py:131 label 'gemma4:26b (a4b)'.
+     B69. Can the composer run skills and do them well?? The composer needs a lot of work and upgrading and making better. **E18 true.** Composer skills are O7 (open).
+     B70. Why does this node wanna be all  the way down there?? The graph force structuring is still a bit messy and uncool looking **E18 true.** tetherForce is a partial leash (frontend/js/graph-worker.js); the owner's data is not reproduced.
+     B71. This image is me separating them out as it was soo messy and stuck together before I couldn’t read it. **E18 stale.** An image of the owner's separated nodes; no behaviour to check.
+     B72. Have the timeline calendar on the timelone act and be more usable as a calendar, I wanna be able to double click on a date and be able to add an event and set a reminder and stuff. Also on the timeline I wanna be able to scroll above today's date to see future dates and also I want the app to be able to recognise future date and time mentions and suggest to use magic add to add it to the timeline, calendar and as a reminder **E18 fixed.** 1c7182d, f06de1e, 69064a7 (calendar add, week ahead, future-date offer).
+     B73. Cant select on separate attachment nodes in the graph?? **E18 fixed.** 0cf90ce13 (a graph click opens file and document nodes).
+     B74. Could there be a way to print out or render a document or attachment in the whiteboard?? Like a pdf or document viewer object that the user can resize and move around, or even print the documents as separate pages like images that the user can move around, like dragging a document on onenote and having the option to print it out or place as an attachment **E18 true.** No document or PDF object on the whiteboard (frontend/js/whiteboard-commands.js); placed in WHITEBOARD_PLAN.
+     B75. The text size in tooltip dropdowns across the app are always different and arent consistent (I think) **E18 fixed.** 24cf030e3 (one text size for help popovers).
+     B76. Should the drafting rotating animation and text be at the top of the ai side not the bottom of the user input side in the writing room?? **E18 fixed.** af021363d (drafting spinner at the top of the Atlas side).
+     B77. **Fixed 4261fca** (the late answer's row is "Waiting for a late filing answer" and ends on every way out; finished runs show "Finished in 2 ms at 12:03 AM"). The agent run still says the note is filing but it is finished. Though there needs to be some more metrics like how long it took to file and similar across the app. **E18 fixed.** 4261fca; frontend/js/activity-panel.js:103 ('Finished in'); src/tessellate/ai/janitor.py:713 (late filing end).
+     B78. 9:57:12 pm INFO:    tessellate.embeddings: retrieval matrix warm with 46 vector(s) **E18 fixed.** da49e08; src/tessellate/core/database.py:549-550 graph_pin_x and graph_pin_y.
+          10:02:29 pm ERROR:   browser: [HTTP 422] PUT /graph/pin/document:2: Check the entry id and try again.
+          10:04:57 pm INFO:    tessellate.jobruns: [run-7] Drafting started
+          10:05:27 pm INFO:    tessellate.jobruns: [run-7] Thinking.
+          10:07:01 pm INFO:    tessellate.jobruns: [run-7] Writing the answer.
+          10:07:03 pm INFO:    tessellate.jobruns: [run-7] Done: 1 word.
+          10:07:03 pm INFO:    tessellate.jobruns: [run-7] Drafting finished
+          10:08:18 pm INFO:    tessellate.jobruns: [run-8] Filing a note started
+          10:08:30 pm INFO:    tessellate.janitor: janitor: the model said 95% for 'Thoughts & Ideas'; shown as 78%
+     B79. The writing room translated note I filed got filed as a draft, is that intentional?? **E18 fixed.** e7bb5ff8c (Save files a note; the caret keeps a draft).
+     B80. Tag with atlas didn’t work right, it didn’t suggest tags, it doesn’t have a field for me to add more tags, it didn’t suggest alternate categories to make or move to if they  were viable, and all it gave me were suggested links… **E18 fixed.** e7bb5ff8c; frontend/js/tag-suggest.js:539 (categories and a tag field).
+     B81. Can you add the japanese emoticons library to the available emojis library?? **E18 fixed.** 5350dcd (Japanese emoticons group).
+     B82. Some emojis don’t appear in the search when the user tries to look for them and uses the wrong name like🙏 this is called folded hands but It should be both high five and pray orsmth yk?? **E18 fixed.** frontend/js/icon-picker.js:212-213 (aliases for folded hands).
+     B83. The composer written weekly digest sentences count as a clickable button in the weekly digest **E18 true.** Digest sentences as buttons is O9 (open); not re-driven.
+     B84. Do the patterns ever change?? What's the meaning or use of them?? Can I view them or smth?? {" **E18 fixed.** frontend/js/settings-controls.js:2659-2680 (confirmed patterns list); src/tessellate/ai/help_topics_more.py:3624 (meaning).
+          Patterns: university, 4 times since 16 July"}
+     B85. Composer's wording and grammar, especially around dates is a bit off and hard to read. And other things could be improved as well **E18 true.** Composer wording and dates are O4 (open).
+     B86. The compsoer guide didn’t answer my question :( **E18 true.** Guide answer gap is W22 (open).
+
 ## HANDOVER session record (moved 2026-11-12)
 
 Moved from HANDOVER.md when it was slimmed to the owner's standing notes and one Now line (INBOX 1784).
@@ -55189,6 +55291,25 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L-general-17** `general` open, S: Correct stale frontend comments that call built features unbuilt or deferred. From open-work sweep 2026-11-12, frontend/js/whiteboard-map.js:7028. Evidence: Not open work in itself: the topic image is built (whiteboard-map.js:7868-7934, MINDMAP_PLAN.md:328-335). But several frontend comments still state built things are unbuilt or deferred and would read  Built: gen1 agent: built part merged 2026-11-12; remainder is L-general-35
+- [x] **L-general-8** `general` open, S: Add `python -m tessellate tool NAME --json` over mcp_server.offered_tools() and a SKILL.md intent-router snippet on Settings' MCP row. From ANALYSIS.md:4353. Evidence: __main__.py argparse has no `tool` subcommand; renderMcpSnippet in settings-controls.js has no SKILL.md Built: gen1 agent: built part merged 2026-11-12; remainder is L-general-34
+- [x] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired. Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-30** `general` open, S: Retire the stale open sections of ROADMAP.md and repoint the README link. From open-work sweep 2026-11-12, docs/ROADMAP.md:212. Evidence: ROADMAP still has open-looking queues (lines 212, 268-280, 292 and 341), and README line 521 describes the file as 'What is open'. Those items are now in LEDGER or the plans, so the file presents open Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-28** `general` open, S: Move the placed INBOX items to HISTORY and correct the stale 904 statuses. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:36. Evidence: Five items are still listed under Open items although each has a Placed id. INBOX is intake only, so they should be in HISTORY. The 904 text also still says 'not built' for B03, B11, B15, B18, B20, B2 Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-27** `general` open, S: Align CONTRIBUTING with replace, do not layer and the current test count. From open-work sweep 2026-11-12, CONTRIBUTING.md:129. Evidence: This contradicts CLAUDE.md section 8, "Replace, do not layer: remove the old path". Line 52's "13,300+ tests" also disagrees with CLAUDE.md's "about 9,000". The docs/ mirror carries the same text. Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-26** `general` open, S: Update the deep-audit skill steps to brief from and write LEDGER rows, not ranked files. From open-work sweep 2026-11-12, .claude/skills/deep-audit/SKILL.md:38. Evidence: Steps 2 and 3 say to brief from and write audit-*-ranked.md files, which no longer exist. checklist.md says findings are LEDGER rows. The skill contradicts its own checklist. Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-24** `general` open, S: Correct stale RELEASING lines on the version check, torch and the 1.0 criterion. From open-work sweep 2026-11-12, docs/RELEASING.md:79. Evidence: This doc has three stale lines. :79: tests/test_version_agreement.py already checks pyproject. :158: says torch and sentence-transformers are an optional post-install, but they were replaced by fastem Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-22** `general` open, S: Correct stale ARCHITECTURE claims on document revisions, MCP, the MSI and immutable caching. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1068. Evidence: Several stale claims in this file contradict the code and need a doc fix. :1068: DocumentRevision exists (database.py:2019, repo/documents.py:313). :1804: the packaged app has no stdio MCP, but `Tesse Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-21** `general` open, S: Add a periodic sweep that clears dangling filing_similar_id values. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1806. Evidence: filing_similar_id is deliberately not a foreign key, and the doc's suggested follow-up, a periodic sweep, was never built or tracked. Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-9** `general` open, S: Make new source-text tests carry a docstring saying why behaviour cannot be asserted, and have gate.sh print the source-text test count. From ANALYSIS.md:4355. Evidence: grep read_text scripts/gate.sh returns nothing; 54% of test files read file text per the review Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-7** `general` open, S: Write a Known gaps list in docs/SECURITY.md and a 30-day dependency-age floor in CONTRIBUTING.md. From ANALYSIS.md:4356. Evidence: no 'Known gaps' heading in SECURITY.md or docs/SECURITY.md; CONTRIBUTING.md has no dependency-age rule Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-6** `general` open, S: Put a running-build stamp (source_commit, started_at, data dir id) and data_dir_writable in /health and Settings > About. From ANALYSIS.md:4352. Evidence: grep source_commit src returns nothing; app.py:1734 health() returns status/app/version/desktop only Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-5** `general` open, S: Add a Docker HEALTHCHECK on /health, hadolint in CI, and a static test for the Dockerfile (context, chown, dockerignore, healthcheck). From ANALYSIS.md:4351. Evidence: docker/Dockerfile has mkdir/chown (line 32) and compose context '..' but no HEALTHCHECK; no hadolint anywhere in .github or docker; no docker static test Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-4** `general` open, M: Add frontend/vendor/PROVENANCE.json (path, sha256, size, version, upstream URL, licence, notice) with a test that recomputes the hashes. From ANALYSIS.md:4262. Evidence: frontend/vendor/PROVENANCE.json does not exist; no doc holds the item Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-3** `general` open, S: Ship LICENSE and THIRD_PARTY.md inside the installer, MSI, Linux zip and Docker image, with a test per build file. From ANALYSIS.md:4260. Evidence: grep -ri 'licen|THIRD' packaging/ docker/Dockerfile returns nothing; tessellate.spec/installer.iss/installer.wxs bundle no licence text Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-2** `general` open, S: Harden CI supply chain: pin every action to a commit SHA, persist-credentials false on every checkout, add an actionlint/zizmor workflow. From ANALYSIS.md:4348. Evidence: 36 `uses:` lines in .github/workflows not pinned to a 40-char SHA; 9 workflow files lack persist-credentials; no zizmor/actionlint workflow; no doc mentions it Built: gen1 agent, merged 2026-11-12; commit and test in its report
+- [x] **L-general-1** `general` open, S: Decode NAT64 (64:ff9b::/96) addresses to their embedded IPv4 in the SSRF address test. From ANALYSIS.md:4350. Evidence: grep -ri 'ff9b|nat64' src returns nothing; core/security.py:942 relies on `not address.is_global`, which reports NAT64 of 169.254.169.254 and 127.0.0.1 as global on Python 3.13 Built: gen1 agent, merged 2026-11-12; commit and test in its report
 - [x] **L-ui-modernisation-25** `ui-modernisation` open, M: Bring the remaining loose key handlers (selection Ctrl+A/Escape/Delete, arrow navigation, Alt+=) into the shortcut table and give each a palette row. From L-ui-modernisation-14 remainder. Evidence: navigation.js:347 selection keys (Ctrl+A, Escape, Delete), :1595 arrow nav, phone-shell.js:467 tab arrows are loose key checks outside DEFAULT_SHORTCUTS; F2 done c2106ae0 Built: selection keys get palette rows through openSelectionScope and sheet rows; Chromium: rows only with ticks, Select all ticked 3 of 3, 3 sheet rows render; tests/test_selection_keys_listed_l_ui25.py
 - [x] **L434** `ui-modernisation` open, S: Extend close-other-menus fix from graph head buttons app-wide. From OPEN.md:2661. Evidence: App-wide needs ~98 bytes script room; verified open Built: not reproducible 2026-11-12: every help, dock-menu and haspopup opener pair on notes, library, timeline, documents, chat left one open; graph gear handled in graph.js
 - [x] **L-ui-modernisation-13** `ui-modernisation` open, S: Label note card task checkboxes and make the heatmap scroller focusable. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1007. Evidence: Open line in the plan's prose a session could miss. Axe findings in the 13.1 table with no row. Built: already built: task checkbox aria-label notes-list.js:1558,1695; heatmap tabIndex 0 in dashboard.js
@@ -55290,3 +55411,216 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 - [x] **L242** `chat` partly, M: Thinking-dots reads in B55, throw-landing walk, opening-view appendChild 92-144 ms unverified in browser. From ledger-1112 X8. Built: 42e037951 (the large view's fit reads a part's style only past the counted box: 455 style reads to 10); the other hot spots, driven at 4x throttle, did not reproduce above 50 ms.
 - [x] **L200** `chat` partly, S: One Playwright drive of the atlas.js charactersArrived fix. From ledger-1112 P36. Built: verified 2026-11-12 with no code change: a drive holding the character scripts 9 s showed 4 saved turns with 0 avatar children while charactersLoaded was false, then 3 resting plus 1 live Atlas and 0 empty holders.
 - [x] **L182** `chat` open, L: Brief 88: dodge glance (N8), milestone cheer (N10), W31 E1 to E6 remainder. From SESSION_BRIEFS.md:258; ledger-1112 P7; ledger-1112 X18. Evidence: avatars.js:4155 nameMarkBuddyDodge has no glance; no milestone cheer found Built: 26092ac88 (nameMarkBuddyDodge.glance, NMB_MILESTONES and the milestone row) and a7e56bda1 (desk note_milestone); E1, E2, E3, E5 and E6 were already built, N9 is still open as L-chat-7 (typing_burst is a nod, not the asked stretch), E4 is L-chat-3. Desk looks are fake-transport tests only.
+
+## Moved from the roadmap, 2026-11-12
+
+The three queues below were retired from `docs/ROADMAP.md` (L-general-30); verbatim.
+
+## Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap")
+
+Moved out of release 0.4.0, which no longer waits for them. In this order,
+each an Opus agent that audits what exists first (CLAUDE.md section 1):
+
+1. **OneNote ideas and the meeting notes redesign** (INBOX 643, 644 below).
+2. **The code editor to VS Code standard, and writing checks everywhere**
+   (INBOX 646; the audit and target are DOCUMENTS_PLAN section 21).
+3. **What is left of the Coggle, Miro, Illustrator and Photoshop ideas**
+   (INBOX 641) once the map-nodes and icon-library agent of 2026-10-05 has
+   landed: read its LEDGER rows first.
+
+The owner's words, moved here from INBOX whole:
+
+643. **The owner, 2026-10-05, verbatim.** "Can we take anything from
+     Microsoft onenote??" Placed: with 641, as a research pass over notes,
+     pages, sections, ink and tags, compared with what Tessellate has.
+
+644. **The owner, 2026-10-05, verbatim.** "Can you also redesign and expand
+     and improve the meeting notes feature?? I feel like it is neglected and a
+     bit left behind and tucked away." With it: "Hold the release until these
+     things are done. Just make sure all the open items are completed as well,
+     that there are no bugs, and that everything is polished." Placed: the
+     Opus research and design pass with 641 to 643, then a build agent.
+     Decision taken (superseded the same day: these moved to the next PR): release 0.4.0 waits for 640 to 644 and every buildable
+     non-backlog open item.
+
+646. **The owner, 2026-10-05, verbatim.** "Can you also make sure the code
+     editor and and grammar checker etc are really good and used across the
+     app and also cover a large range of code languages?? I want the code
+     editor to be on par with and even surpass vs code. With also styling and
+     formatting options, small things the user takes for granted and expects
+     to be there but aren't, code suggested prefills, shortcuts, key binds,
+     options for specific code elements like for example what css options are
+     available for a specific css feature, python, java, js, c#, c, c++,
+     Visual Basic, p5.js, and more" Placed: DOCUMENTS_PLAN section 21, an
+     Opus audit-then-build agent after the 641 to 644 design pass. Moved to
+     the next PR with 641's remainder, 643 and 644.
+
+641. **The owner, 2026-10-05, verbatim.** "can we take anything more from
+     applications like coggle.it, adobe illustrator, adobe photoshop, and miro
+     for the whiteboard and mind map?? I'm still not happy on the mindmap with
+     how the core nodes work and can be customised as well as with the icons
+     in them." Placed: an Opus research and design pass. It compares those
+     four apps against the board and the map, then redesigns the map's core
+     nodes and node icons, and writes the result into MINDMAP_PLAN and
+     WHITEBOARD_PLAN with decisions, before anything is built.
+     **Map-node part fixed 08d5829 to 87241de (mc1).** Measured before: the
+     centre, a branch and a leaf at 13.6px, weight 400, 31px tall; after,
+     22px/700 solid pill, 17px/700 tinted, 13.6px/400 (`mc1-maplevels.js`
+     13/13); per-level looks, Redefine and copy/paste style (`mc1-maplook.js`
+     13/13); a topic's icon from 1,530 Phosphor icons or 476 emoji
+     (`mc1-iconpicker.js` 12/12). Still open, so this stays: Illustrator's
+     linked symbols, Photoshop's layer effects, Miro's reactions and the
+     whiteboard half of the research (MINDMAP_PLAN §14.4).
+
+
+## How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line)
+
+PR 144 (0.3.0) closed the UI modernisation, the per-surface redesigns, the
+audit of 2026-09-13 and the owner's reports to INBOX 222. **PR 149 closed
+the week of outside changes and a night of measured fixes**: the whiteboard
+restored from a codemod that deleted ten live functions, the Windows console
+windows, the Tesseract probe, INBOX 225, 226, 232, 238, 246, 256, 257, 259
+and 260, and I9's Settings section, which had a complete backend and no
+screen at all.
+
+**The thing that PR taught, worth carrying into the next one.** A scan of
+every route the app serves against every path the frontend fetches
+(`scratchpad/probe_dead_routes.py`) found a whole plan item built, tested
+and unreachable, plus three more routes with no caller. Nothing in the
+suite could see it, because every piece of it passed. Run that probe at the
+start of a session that is about to build something new, and run the three
+sweeps that were added with it: `keyboard.js` walks the tab order,
+`requests.js` fails on a request that answers 4xx where nobody is told, and
+`leaks.js` watches listeners and nodes per round.
+
+What comes next, in order, each its own PR:
+
+1. **Read, in this order, at the start of every session:** `CLAUDE.md`,
+   HANDOVER's standing orders and "Now" line, INBOX, `LEDGER.md` for the
+   surface in hand, the plan for that surface. Merge any agent worktree
+   with commits not on the branch before anything else.
+2. **The speed budget first** (WORLD_CLASS_PLAN 18, H7): boot JS under
+   1 MB compressed, first paint under 300 ms, every long list virtualised.
+   It makes every later measurement honest.
+3. **The professional-use block** (BACKLOG 115, WORLD_CLASS_PLAN H6):
+   import from Obsidian, Notion and Apple Notes; print and PDF export;
+   keyboard-complete; WCAG AA; bulk operations; encrypted export. Rows 1,
+   2, 7 and 10 first.
+4. **Empty `LEDGER.md` plan by plan**, taking the plan's open phase
+   with it: Documents (Phase 4), Graph (Phase 5, the node panel), the phone
+   (UI Phase 11), then Chat Phase 1's other half once Brief 12's fixtures
+   exist.
+5. **The horizon** (WORLD_CLASS_PLAN 18): H1 the night shift finished, H2
+   evidence cards and open questions, H3 the model bench, H4 the notebook
+   as a local service, H8 time travel and the margin reader, H5 sync.
+6. **Section 9's dev-only llama.cpp runner** at the first quiet moment: it
+   is the single blocker behind every "not verified against a real model"
+   line in the plans.
+
+The rules that do not change: decisions in a plan's "Decisions made" are
+not remade; a mid-work report goes into INBOX verbatim and is triaged at
+the next boundary; a built phase's block moves to HISTORY the same commit;
+no new plan documents; every claim carries a number from a sweep.
+
+## Next up, ranked by what it unlocks
+
+1. H7 the speed budget (unlocks honest numbers for everything after).
+2. BACKLOG 115 rows 1, 2, 7, 10 (unlocks trust for daily professional use).
+   Row 7, keyboard-complete and WCAG AA, has its first tool now:
+   `scratchpad/ui-sweeps/keyboard.js` walks the tab order and passes, so
+   that row starts from a measured baseline rather than from nothing.
+3. `LEDGER.md` documents and graph sections with their plan phases.
+4. UI Phase 11, the phone done properly.
+5. H1 to H4 in that order; H8; H5 last. H1's manual half is wired now
+   ("Read my notes now", Settings, "What it learned"), so H1 is the
+   remaining kinds (tensions, duplicates, entities, dates) and the bulk
+   routes I9's table has buttons waiting for.
+6. The three things PR 149 left deliberately undone, each with its reason
+   written where it belongs: right-drag to pan the board (INBOX 258, the
+   acceptance test is written and failing in
+   `scratchpad/ui-sweeps/wbrightpan.js`), the faded-notes-near-this route
+   with nowhere to put it (INBOX 261, it wants a note detail view this app
+   does not have), and B1's event feed with no activity strip reading it.
+
+
+## Moved from IDEAS.md, retired 2026-11-12 (L-general-32)
+
+The file's Built list, verbatim; its open items are LEDGER rows sourced "IDEAS.md (retired 2026-11-12)" (L-chat-25 to 28, L-general-36 to 46, L-graph-13, L-ui-modernisation-26 and 27, L-whiteboard-18); the timeline branching line is built (Thread grouping, see above); the memory-stream screen and whiteboard card sweep were already marked built.
+
+## Built
+
+**Capture and the shell**
+
+- Handle image and file uploads, with drag and drop: attachments, the Library's
+  Images and Files views, captions, vision reads, Tesseract text and the OCR
+  workspace.
+- A guided setup on first install: the welcome card and the guided tour (Settings,
+  Help), which walks through the real controls.
+- A mini bar at the bottom with statuses and quick access to the command palette:
+  the status bar at the foot of the window, and the palette on `Ctrl`/`Cmd`+`K`.
+- Allow saving custom appearances and themes: thirteen themes and saved looks, in
+  Settings, Appearance.
+- Collapsible sidebars.
+- Make Tessellate cross-platform: a Windows installer and a Linux package, and
+  macOS from source.
+- Package the application, and improve the Settings models page: the installers,
+  and Settings, Models with fit badges and a model per feature.
+- Improve start.bat: no console window to keep open, and a tray icon. The launcher
+  has `--doctor`, `--logs` and `--shortcut`, and the desktop window has a tray menu
+  with Open, View logs, Restart and Quit.
+- A way to exit the app and quit the backend: Quit in the header, and Settings,
+  Background tasks.
+- An interface for managing the application (backend, console, update, packages,
+  restart, health): Settings, Background tasks, Packages, Logs and About.
+- Improve the console in settings and show all console messages: Settings, Logs.
+- A way to run the application on a phone: a layout built for the phone, the
+  Share to Tessellate action, and, for a phone on your own network, LAN mode over
+  HTTPS (Settings, Account & security).
+- The help area in settings has an ask-AI feature that knows the program's
+  documentation: the Guide, and Ask Atlas about the app (`Ctrl`+`Shift`+`H`).
+- A full security sweep: the audit of 2026-10-05 and its fixes are in the
+  changelog under Security, and [`SECURITY.md`](SECURITY.md) states the model.
+- Update the readme: rewritten on 2026-10-05, with every document in `docs/`.
+
+**The AI**
+
+- More tools, including managing categories (create, rename, merge, delete), and
+  better agentic workflow: 65 tools, a visible plan, a confirm card for anything
+  that changes or deletes.
+- More skills, and a way to make new ones, including a full audit and clean-up of
+  the notebook: 21 built-in skills (Notebook health check, Clean up my tags,
+  Reorganise my categories, Fix my links, Find notes worth combining, Build a
+  skill), and your own as Markdown files.
+- Quick, normal and detailed modes for chat and agent: response presets.
+- Reduce token usage in every AI interaction: the per-turn context budget, the
+  small-model mode and schema compaction.
+- Optimise outputs for what the current model can do: the small-model mode, and
+  per-model sampling defaults.
+- A nudge for the semantic search so "what did I save in the last two days" works:
+  date-aware search operators and time travel over meaning.
+- Reduce the cap on semantic search results, based on the model's context:
+  `search_notes` scales its default result count with the model's window. The
+  ceiling deliberately does not scale, because letting it do so meant a 128k model
+  could pull 768 note previews into one tool result.
+- Have the agent reachable from anywhere in the program: the popup agent
+  (`Ctrl`+`Shift`+`A`) over every tab, and the agent activity monitor.
+- Dynamically change models based on the task: background work uses the utility
+  model so it does not tie up the chat model (`smart_model_routing_enabled`).
+- Chat message metadata that survives a reload: the whole stats block is stored
+  per turn, and every message says how full the model's window got.
+- Make the notebook constellation regenerate on a light or dark change: it is
+  rebuilt on every mode, accent and palette change, keeping the same arrangement.
+- The background librarian: runs on an interval, tags, links and flags
+  duplicates, off by default, never deletes. The category work (rename, merge,
+  move) is done by the skills above.
+
+**Notes, documents and boards**
+
+- Expand and improve the sketches board, maybe a whiteboard tab: boards and mind
+  maps in the Library's Boards & maps view, with shapes, connectors, an object
+  library and mind maps.
+- Better documents UI and usability, and make notes and documents two halves of a
+  whole: the long-form editor, document links, backlinks and the Contents tree.
+- A visual timeline: the Timeline tab with feed, table and scrubber.
+- More dashboard widgets: the dashboard's widget set, including Boards & maps.
+

@@ -1,4 +1,6 @@
-"""L-ui-modernisation-25: the keys navigation.js answers outside the shortcut
+"""Source text: the sheet rows, handler keys and palette rows are markup and JS text; the palette was driven in Chromium at merge (Select all ticked 3 of 3).
+
+L-ui-modernisation-25: the keys navigation.js answers outside the shortcut
 table (Ctrl+A, Escape and Delete on a ticked list; the arrows, Home and End in
 menus and lists) are listed in the shortcuts sheet's "Always available" rows,
 which are not rebindable by design (index.html's help body says why), and the

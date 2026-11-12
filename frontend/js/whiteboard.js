@@ -6878,8 +6878,8 @@ function wbApplySelectionHighlight() {
   // A sketch's resize handles have nowhere else to live between renders
   // (unlike a card/object, which always has 8 handle children of its own), 
   // recomputed here so they track a fresh selection or a just-finished move.
-  // Only for the single-item selection, a multi-selection has no one
-  // bounding box to hang 8 handles off, and resizing a set isn't built.
+  // Only for the single-item selection: a multi-selection draws its own
+  // group box with corner anchors that scale the set (`wbMultiSelectionEntries`).
   wbRenderSketchHandles();
   //: And the box round a sweep that caught more than one thing, which is the
   //: same affordance for the same gesture (see `wbRenderMultiSelectionHandles`).

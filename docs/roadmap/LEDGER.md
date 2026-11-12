@@ -8,16 +8,16 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
+| graph | 15 | 30 | 4 | 0 | 4 | 49 |
+| chat | 176 | 195 | 63 | 2 | 59 | 434 |
+| whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
-| ui-modernisation | 96 | 98 | 4 | 0 | 17 | 198 |
+| mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
+| ui-modernisation | 96 | 100 | 4 | 0 | 17 | 200 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 688 | 157 | 3 | 195 | 1398 |
+| general | 0 | 29 | 2 | 0 | 4 | 31 |
+| all | 553 | 688 | 160 | 3 | 195 | 1401 |
 
 ## graph
 
@@ -54,6 +54,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-graph-10** `graph` open, S: Draw the Tessellation logo's third-cell flourish. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The deleted q31-1110.md left list has the logo's third-cell flourish not done, and no LEDGER row.
 - [ ] **L-graph-11** `graph` open, S: Check Map link weighting in the browser on a notebook with real links. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The q31 left list says link weighting was never seen in a browser on a notebook with real links.
 - [ ] **L-graph-12** `graph` open, S: Show the owner Tessellation side by side with their pick. From open-work sweep 2026-11-12, docs/roadmap/GRAPH_PLAN.md:599. Evidence: Open line in the plan's prose a session could miss. The q31 left list needs a side-by-side with the owner's chosen layout. That is an owner check, not in any row.
+- [ ] **L-graph-13** `graph` open, S: Make gravity and spread act on the graph's other layouts, or hide them there. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 
 ## chat
 
@@ -311,6 +312,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-21** `chat` open, M: Write the chat degrade tests. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:929. Evidence: Open line in the plan's prose a session could miss. Section 0 found list; tests/test_chat_degrades.py does not exist.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
+- [ ] **L-chat-25** `chat` partly, M: Show a before-and-after comparison for every agent edit, accepted as a suggestion in chat and documents. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Partly built: the confirm card exists for destructive changes; no before-and-after comparison per edit. Verify in code first.
+- [ ] **L-chat-26** `chat` partly, M: Choose the model by task complexity, not only by caller. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Partly built: routing is by caller. Verify in code first.
+- [ ] **L-chat-27** `chat` partly, M: Add a research mode that plans several web searches. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Partly built: web_search and read_url exist, with SearXNG. Verify in code first.
+- [ ] **L-chat-28** `chat` open, M: Group saved chats (by model or folder), with an agent tool and skill to manage them. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; sorting is built (sortConversations), grouping is not. Verify in code first.
 
 ## whiteboard
 
@@ -357,6 +362,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-15** `whiteboard` open, S: Measure board idle and drag cost at 500 objects and with the companion on. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1405. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census leaves two measurements unmeasured, with no row.
 - [ ] **L-whiteboard-16** `whiteboard` open, S: Run the blind-tester timing for transparency and hex entry. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1583. Evidence: Open line in the plan's prose a session could miss. INBOX 1685's acceptance (find transparency and enter a hex in under 20 s) was never run.
 - [ ] **L-whiteboard-17** `whiteboard` open, S: Move stale whiteboard entries 1358, 258 and the contrast.js note to HISTORY. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1546. Evidence: Open line in the plan's prose a session could miss. Stale entries still read as open: the 1358 dogfood passes (merged), 'contrast.js never visits a board' (line 779, built), the 258 recommendation (line 623, superseded by 1452), and decision 36's ghost note. They need moving to HISTORY.
+- [ ] **L-whiteboard-18** `whiteboard` open, S: Raise the sketch highlighter's opacity from 5%. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md From the audits: 5% opacity needs about twenty passes; a taste call left alone. Verify in code first.
 
 ## documents
 
@@ -474,6 +480,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-mindmap-7** `mindmap` open, S: Make Web link insert inline syntax distinct from Link card. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1526. Evidence: Open line in the plan's prose a session could miss. The slash menu's Link card and Web link render the same. The inline-syntax recommendation waits on the owner.
 - [ ] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row.
 - [ ] **L-mindmap-9** `mindmap` open, S: Measure idle and drag cost on a map of hundreds of nodes. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1751. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census gap, with no row.
+- [ ] **L-mindmap-11** `mindmap` open, M: Illustrator linked symbols, Photoshop layer effects, Miro reactions and the whiteboard half of the 641 research. From docs/ROADMAP.md (retired Next PR queue, item 641). Evidence: HISTORY 'Moved from the roadmap, 2026-11-12'; MINDMAP_PLAN 14.4
 
 ## ui-modernisation
 
@@ -564,7 +571,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L773** `ui-modernisation` open, M: Rethink Notes dock wrapping (nine controls at 1440, two rows at 1280-1500 with rail open). From OPEN.md:3480; OPEN.md:3559. Evidence: Judgement for the dock grammar's owner; same dock as 3559. Owner decided 2026-11-12: Fewer worded buttons (Some buttons show icons only above 1400px or move into the menu, so the bar keeps one row). Build: Notes .dock: fold two worded controls to icon-only or the dock kebab; sweep docks.js at 1280, 1440, 1500 with rail open.
 - [ ] **L765** `ui-modernisation` open, M: Design pass to unify empty-state tone and illustration across views. From OPEN.md:4241. Evidence: Design pass across views, not a reproducible defect. Owner decided 2026-11-12: Align to the recipe. Build: inventory every .empty-state and ad hoc empty line, convert to the DESIGN.md Empty state recipe, add a lint in tests/test_ui_recipes.py.
 - [ ] **L778** `ui-modernisation` open, S: Decide cropping of tall maps in dashboard widget. From OPEN.md:3184. Evidence: Owner's judgement on cropping Owner decided 2026-11-12: Crop around the centre. Build: mapPreview for the dashboard widget: crop to a readable window around the root; sweep with a 25-topic tree-right map.
-- [ ] **L-ui-modernisation-2** `ui-modernisation` open, S: Measure the stuck-ground recipe on the timeline table head and empty its freeze. From open-work sweep 2026-11-12, tests/test_nested_surfaces_1489.py:34. Evidence: This freeze ratchet holds one known offender, and the comment states the intent to remove it once the stuck-ground recipe is measured on table cells. No LEDGER row or plan item names it.
+- [ ] **L-ui-modernisation-28** `ui-modernisation` open, S: Measure the stuck-ground recipe on the timeline table head and empty its freeze. From open-work sweep 2026-11-12, tests/test_nested_surfaces_1489.py:34. Evidence: This freeze ratchet holds one known offender, and the comment states the intent to remove it once the stuck-ground recipe is measured on table cells. No LEDGER row or plan item names it.
 - [ ] **L-ui-modernisation-3** `ui-modernisation` open, M: Sweep every toolbar onto the control height tokens and drain the literal heights ratchet. From open-work sweep 2026-11-12, docs/DESIGN.md:1584. Evidence: The doc admits toolbars that do not use --control-h yet and calls them gaps. No row lists or tracks the sweep to find and convert them.
 - [ ] **L-ui-modernisation-4** `ui-modernisation` open, S: Shorten the lock setup note and rename its button. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:32. Evidence: index.html:346 #lock-setup-note is still 58 words and app.js:723 still reads "Set password & start"; there is no LEDGER row or plan item for it
 - [ ] **L-ui-modernisation-5** `ui-modernisation` open, S: Keep the welcome footer buttons on one row at 390 px. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:36. Evidence: no change to the welcome slide footer layout at narrow width was found and nothing tracks it
@@ -579,6 +586,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-19** `ui-modernisation` open, M: Finish the Appearance panel leftovers: deep links, door, search, peek. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1262. Evidence: Open line in the plan's prose a session could miss. The deleted list holds six untracked leftovers: deep links while popped out, a visible theme-button door, Settings search while popped out, peek dimming, panel height, a committed sweep.
 - [ ] **L-ui-modernisation-20** `ui-modernisation` open, M: Apply cheaper-equivalent passes to microbes, aurora and mycelium art. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. L460 covers contrast only. The microbes, aurora and mycelium cheaper-equivalent changes are untracked.
 - [ ] **L-ui-modernisation-22** `ui-modernisation` open, S: Give the desk companion menu feedback, greyed rows, a snooze countdown and a resize cursor. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1308. Evidence: Open line in the plan's prose a session could miss. The g3-size-1107 leftovers it points to have no row: figure_do refusal has no feedback, 'Sit on a window' is not greyed, the snooze has no countdown, and the resize cursor is missing.
+- [ ] **L-ui-modernisation-26** `ui-modernisation` open, S: Check every Settings page (and other pages) is reachable on a narrow phone view. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; check at 360 wide. Verify in code first.
+- [ ] **L-ui-modernisation-27** `ui-modernisation` open, S: Check the status dot's error state can be reached, or remove it. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open: the top bar status dot's X state was never seen. Verify in code first.
 
 ## timeline
 
@@ -860,15 +869,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L706** `general` open, M: Cut the cost of --nmb-ex/ey/hx writes in nameMarkBuddyAim. From agent-remaining/a30m-1103.md. Evidence: `--nmb-ex/ey/hx` writes on `#nm-buddy` (avatars.js `nameMarkBuddyAim`, about 7389): 109ms at 4x a write (647
 - [ ] **L707** `general` open, M: Reduce extra layouts per tab switch from the companion transition keep-up. From agent-remaining/motion-1031.md. Evidence: Extra layouts: about 2 per switch on chat and reminders (the companion's `transitionrun`/`transitionend` keep-up, avatar
 - [ ] **L708** `general` open, M: Remaining tab-click and shown-surface lag: phone-shell tab click (97 to 201 ms), openDoc first layout, ocrScheduleFitDock with real Tesseract. From INBOX 1716, 1726. Evidence: phone-shell.js BUTTON#tab-btn-dashboard.onclick 201 ms (forced 146) on the owner's log
-- [ ] **L-general-1** `general` open, S: Decode NAT64 (64:ff9b::/96) addresses to their embedded IPv4 in the SSRF address test. From ANALYSIS.md:4350. Evidence: grep -ri 'ff9b|nat64' src returns nothing; core/security.py:942 relies on `not address.is_global`, which reports NAT64 of 169.254.169.254 and 127.0.0.1 as global on Python 3.13
-- [ ] **L-general-2** `general` open, S: Harden CI supply chain: pin every action to a commit SHA, persist-credentials false on every checkout, add an actionlint/zizmor workflow. From ANALYSIS.md:4348. Evidence: 36 `uses:` lines in .github/workflows not pinned to a 40-char SHA; 9 workflow files lack persist-credentials; no zizmor/actionlint workflow; no doc mentions it
-- [ ] **L-general-3** `general` open, S: Ship LICENSE and THIRD_PARTY.md inside the installer, MSI, Linux zip and Docker image, with a test per build file. From ANALYSIS.md:4260. Evidence: grep -ri 'licen|THIRD' packaging/ docker/Dockerfile returns nothing; tessellate.spec/installer.iss/installer.wxs bundle no licence text
-- [ ] **L-general-4** `general` open, M: Add frontend/vendor/PROVENANCE.json (path, sha256, size, version, upstream URL, licence, notice) with a test that recomputes the hashes. From ANALYSIS.md:4262. Evidence: frontend/vendor/PROVENANCE.json does not exist; no doc holds the item
-- [ ] **L-general-5** `general` open, S: Add a Docker HEALTHCHECK on /health, hadolint in CI, and a static test for the Dockerfile (context, chown, dockerignore, healthcheck). From ANALYSIS.md:4351. Evidence: docker/Dockerfile has mkdir/chown (line 32) and compose context '..' but no HEALTHCHECK; no hadolint anywhere in .github or docker; no docker static test
-- [ ] **L-general-6** `general` open, S: Put a running-build stamp (source_commit, started_at, data dir id) and data_dir_writable in /health and Settings > About. From ANALYSIS.md:4352. Evidence: grep source_commit src returns nothing; app.py:1734 health() returns status/app/version/desktop only
-- [ ] **L-general-7** `general` open, S: Write a Known gaps list in docs/SECURITY.md and a 30-day dependency-age floor in CONTRIBUTING.md. From ANALYSIS.md:4356. Evidence: no 'Known gaps' heading in SECURITY.md or docs/SECURITY.md; CONTRIBUTING.md has no dependency-age rule
-- [ ] **L-general-8** `general` open, S: Add `python -m tessellate tool NAME --json` over mcp_server.offered_tools() and a SKILL.md intent-router snippet on Settings' MCP row. From ANALYSIS.md:4353. Evidence: __main__.py argparse has no `tool` subcommand; renderMcpSnippet in settings-controls.js has no SKILL.md
-- [ ] **L-general-9** `general` open, S: Make new source-text tests carry a docstring saying why behaviour cannot be asserted, and have gate.sh print the source-text test count. From ANALYSIS.md:4355. Evidence: grep read_text scripts/gate.sh returns nothing; 54% of test files read file text per the review
 - [ ] **L-general-10** `general` open, S: Completing a reminder prompts for a one-line outcome appended to the source note. From ANALYSIS.md:1216. Evidence: shell-reminders.js has no outcome prompt on complete; not in any plan
 - [ ] **L-general-11** `general` open, M: Build a meeting-prep brief: a reminder naming a person or topic pulls the last related notes into a card at fire time. From ANALYSIS.md:1217. Evidence: grep meeting.prep in src and frontend/js returns nothing
 - [ ] **L-general-12** `general` open, S: Add an overdue triage view (still matters / drop / reschedule) with a bulk action. From ANALYSIS.md:1219. Evidence: shell-reminders.js:974 only groups Overdue/Today/Upcoming/Done; no triage or bulk reschedule
@@ -876,20 +876,23 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-14** `general` open, S: Tour sweeps: drive the tour through openTour() instead of its old globals. From shell-1112 (Sh1). Evidence: scratchpad/ui-sweeps/toursteps.js, tourdim.js, tour.js read TOUR_SECTIONS and tourRun, now inside tour.js's IIFE; they stop on a ReferenceError
 - [ ] **L-general-15** `general` partly, L: W34 L1 remainder: 265 true, 125 owner-call, 22 hardware-only and 153 unverifiable rows by spoke, each confirmed as a LEDGER row or built. From ledger-1112 X20. Evidence: the w34-*.md spoke lists were retired into LEDGER rows (OPEN.md and w34 sources); recheck that each of the 265 true rows has its row
 - [ ] **L-general-16** `general` partly, M: Session briefs W5 and W16 to W18 have no outcome record; W32 left E9, E10 and E12. From ledger-1112 X23. Evidence: no record of W5, W16 to W18 found at the migration; W32 left E9 (hardware), E10 BK6, BK10, BK12, K36, E12 owner
-- [ ] **L-general-17** `general` open, S: Correct stale frontend comments that call built features unbuilt or deferred. From open-work sweep 2026-11-12, frontend/js/whiteboard-map.js:7028. Evidence: Not open work in itself: the topic image is built (whiteboard-map.js:7868-7934, MINDMAP_PLAN.md:328-335). But several frontend comments still state built things are unbuilt or deferred and would read 
 - [ ] **L-general-18** `general` open, S: Re-measure idle CPU with idlecpu.js after the emblem spin moved to CSS rotation. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1708. Evidence: The emblem spin moved to a CSS rotation to cut idle CPU, but idle CPU was never measured afterwards. ROADMAP 0.5 sets idle CPU under 1 percent as an exit criterion, and no row holds this measurement.
 - [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
-- [ ] **L-general-21** `general` open, S: Add a periodic sweep that clears dangling filing_similar_id values. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1806. Evidence: filing_similar_id is deliberately not a foreign key, and the doc's suggested follow-up, a periodic sweep, was never built or tracked.
-- [ ] **L-general-22** `general` open, S: Correct stale ARCHITECTURE claims on document revisions, MCP, the MSI and immutable caching. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1068. Evidence: Several stale claims in this file contradict the code and need a doc fix. :1068: DocumentRevision exists (database.py:2019, repo/documents.py:313). :1804: the packaged app has no stdio MCP, but `Tesse
-- [ ] **L-general-24** `general` open, S: Correct stale RELEASING lines on the version check, torch and the 1.0 criterion. From open-work sweep 2026-11-12, docs/RELEASING.md:79. Evidence: This doc has three stale lines. :79: tests/test_version_agreement.py already checks pyproject. :158: says torch and sentence-transformers are an optional post-install, but they were replaced by fastem
 - [ ] **L-general-25** `general` open, S: Confirm or replace the question_noise misspelling table's source. From open-work sweep 2026-11-12, docs/THIRD_PARTY.md:101. Evidence: The question_noise.py misspelling table may be CC BY-SA 4.0 from Wikipedia. Its provenance is unconfirmed, and nothing tracks confirming or replacing it. This is a licence risk under AGPL.
-- [ ] **L-general-26** `general` open, S: Update the deep-audit skill steps to brief from and write LEDGER rows, not ranked files. From open-work sweep 2026-11-12, .claude/skills/deep-audit/SKILL.md:38. Evidence: Steps 2 and 3 say to brief from and write audit-*-ranked.md files, which no longer exist. checklist.md says findings are LEDGER rows. The skill contradicts its own checklist.
-- [ ] **L-general-27** `general` open, S: Align CONTRIBUTING with replace, do not layer and the current test count. From open-work sweep 2026-11-12, CONTRIBUTING.md:129. Evidence: This contradicts CLAUDE.md section 8, "Replace, do not layer: remove the old path". Line 52's "13,300+ tests" also disagrees with CLAUDE.md's "about 9,000". The docs/ mirror carries the same text.
-- [ ] **L-general-28** `general` open, S: Move the placed INBOX items to HISTORY and correct the stale 904 statuses. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:36. Evidence: Five items are still listed under Open items although each has a Placed id. INBOX is intake only, so they should be in HISTORY. The 904 text also still says 'not built' for B03, B11, B15, B18, B20, B2
-- [ ] **L-general-30** `general` open, S: Retire the stale open sections of ROADMAP.md and repoint the README link. From open-work sweep 2026-11-12, docs/ROADMAP.md:212. Evidence: ROADMAP still has open-looking queues (lines 212, 268-280, 292 and 341), and README line 521 describes the file as 'What is open'. Those items are now in LEDGER or the plans, so the file presents open
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
-- [ ] **L-general-32** `general` open, S: Retire IDEAS.md into HISTORY, BACKLOG and LEDGER. From open-work sweep 2026-11-12, IDEAS.md:1. Evidence: The whole file is a parking lot of open ideas outside BACKLOG. Built entries should move to HISTORY and open ones to BACKLOG or LEDGER, so the file can be retired.
-- [ ] **L-general-33** `general` open, S: Close the stale PR 216 work order. From open-work sweep 2026-11-12, .claude/work-order.md:2. Evidence: The stale work order for PR 216 is still marked running, and the Stop hook reads it. Its unchecked boxes are now built (1719 a throwtop, 1711 fixed), placed (1696 j, v-w and dd in UI_MOD 1314), or fol
+- [ ] **L-general-34** `general` open, M: Add the SKILL.md intent-router snippet (with copy button, help, Guide) to Settings' MCP row. From L-general-8 remainder. Evidence: src/tessellate/mcp_server.py cli() built; frontend/js/settings-controls.js:2278 renderMcpSnippet still has no SKILL.md snippet
+- [ ] **L-general-35** `general` open, M: Re-verify the remaining frontend 'not built' or 'deferred' comments. From L-general-17 remainder. Evidence: frontend/js/documents-base.js:4 board and calendar views, library.js:2296, whiteboard.js:1486 not re-verified
+- [ ] **L-general-36** `general` open, M: Let notes be grouped by hand, apart from the main sort. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
+- [ ] **L-general-37** `general` open, M: Let a note have more than one category. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
+- [ ] **L-general-38** `general` open, M: Compress notes and data on disk. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
+- [ ] **L-general-39** `general` open, S: Render Markdown in every dashboard widget that shows note text. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
+- [ ] **L-general-40** `general` open, S: Add a pie chart dashboard widget. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; bar and line widgets exist. Verify in code first.
+- [ ] **L-general-41** `general` open, L: An in-app browser with MCP tool abilities beside web search. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; the stdio MCP server is the other direction. Verify in code first.
+- [ ] **L-general-42** `general` open, L: A VS Code extension. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
+- [ ] **L-general-43** `general` open, S: Check filing of short notes against the notebook's categories. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open: 'ai is cool' was filed under sketches. Verify in code first.
+- [ ] **L-general-44** `general` open, S: Check docs/index.html's text against the README. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
+- [ ] **L-general-45** `general` open, M: A dry run for the background librarian: show the diff, apply or discard. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md From the audits: taskhistory records runs; there is no diff to apply or discard. Verify in code first.
+- [ ] **L-general-46** `general` open, S: Sweep orphaned attachments on the background pass. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md From the audits: clean_orphaned_vectors and clean_orphaned_board_cards exist; attachments have no sweep. Verify in code first.
 
 ## Owner calls
 
@@ -1204,7 +1207,7 @@ Each step: tests first, scripts/gate.sh --changed, one commit, tick the LEDGER r
 ```text
 YOUR SOLE PURPOSE IS TO LEAVE NOTHING OPEN ANYWHERE IN THE REPO EXCEPT docs/roadmap/BACKLOG.md (the owner, 2026-11-12: "I want absolutely and I mean ABSOLUTELY nothing left outside of the backlog file").
 Start with the orient skill and CLAUDE.md. Branch claude/closing from main; a PR every 3 to 5 finished items, CI green before the next; the owner merges.
-1. Run `python scripts/open_scan.py` with no filter and read every hit; also read every *_PLAN.md, HANDOVER, INBOX, docs/ROADMAP.md, IDEAS.md and the scratchpad audits in full, and list open GitHub issues and pull requests. Signal words miss things: read, do not only grep.
+1. Run `python scripts/open_scan.py` with no filter and read every hit; also read every *_PLAN.md, HANDOVER, INBOX, docs/ROADMAP.md and the scratchpad audits in full, and list open GitHub issues and pull requests. Signal words miss things: read, do not only grep.
 2. Every open item found is done here (tests first, scripts/gate.sh --changed, one commit), or, only if its last step needs the owner's own device, a real model or the owner's input, moved to BACKLOG as one row naming that exact step.
 3. Lines that only read as open (history, feature names) are reworded so the scan is clean; never widen the scanner to hide a hit.
 4. A plan file with nothing open is retired: its standing decisions move to docs/ARCHITECTURE.md or docs/DESIGN.md, its record to HISTORY, and every link to it is updated.
