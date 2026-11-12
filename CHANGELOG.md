@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The dashboard's layout, quick access row and quick colours are undoable with Ctrl+Z (L696).
 - Settings switches, choices, sliders, backup retention and sampling are steps on the undo stack, so Ctrl+Z and Ctrl+Shift+Z reach them; a drag is one step (L694).
 - Undoing what Atlas or a skill run changed now has a server Redo (POST /events/redo) and joins the normal undo stack, so Ctrl+Z and Ctrl+Shift+Z work on it (L805, L572).
 - Redoing an added note type keeps its id, so a later Undo of an edit on it still finds it (L571).

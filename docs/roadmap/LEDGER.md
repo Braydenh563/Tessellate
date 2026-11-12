@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 116 | 41 | 0 | 18 | 287 |
+| world-class | 130 | 117 | 40 | 0 | 18 | 287 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 613 | 138 | 3 | 136 | 1304 |
+| all | 553 | 614 | 137 | 3 | 136 | 1304 |
 
 ## graph
 
@@ -729,7 +729,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L692** `world-class` partly, L: Redesign web clipper (clip.js, Settings > Import). From INBOX.md:904 B55. Evidence: Web menu fixed 1784757; clipper (clip.js, Settings > Import) redesign not done, placed
 - [ ] **L693** `world-class` partly, L: Add the missing palette rows (Notifications unread, Atlas files it, Draw keep note, Chat About, Library Boards) and the remaining destinations without a palette command. From OPEN.md:1086; OPEN.md:3704; OPEN.md:3705. Evidence: No Notifications unread row in app-palette.js; heuristic word-match rows not added
 - [ ] **L695** `world-class` partly, L: Custom domain and Fable diagram dive wait on owner go. From INBOX.md:1748 Q34. Evidence: Sync, studio, pet built (dec4ec1a5, 603ba7780, 3ef770475); custom domain and Fable diagram dive wait on owner go (OPEN O54)
-- [ ] **L696** `world-class` partly, L: Add undo paths to write functions (whiteboard 14/43, map 7/25, graph 9/21, library 9/30, dashboard 1/9, timeline 1/5). From OPEN.md:3694. Evidence: Counts from measure-writes.py (script absent from scratchpad now); undo gaps remain on most surfaces
 - [ ] **L697** `world-class` partly, L: Recordings, bookmarks, files in a private space not sealed; deleting a locked space shows 423 message, no unlock prompt. From ledger-1112 P20.
 - [ ] **L698** `world-class` partly, L: index.html 16,501 lines, status.js 3,321, notes-list.js 3,734, chat.js 1,661 not split. From ledger-1112 P8.
 - [ ] **L699** `world-class` partly, L: Brief 62: no src/tessellate/data, no tests/test_import_time.py; question_noise.py and composer_tables.py hold data inline. From ledger-1112 P9.
@@ -755,6 +754,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-26** `world-class` partly, M: I5 time travel: the model's judgement over then and now claim pairs, re-embedding past texts for as-of retrieval, and an as-of answer's cards grouped by month (H8). From WORLD_CLASS_PLAN.md I5. Evidence: ai/timetravel.py:179 then_and_now pairs claims by shared words; claims_as_of route (72ce2bca) resolves revisions at a day
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
 - [ ] **L-world-class-28** `world-class` open, M: Require a sig on every key-less /chat/tools/execute call and move the about 40 test call sites to send one. From L566 follow-on, 2026-11-12. Evidence: L566 allows a key-less /chat/tools/execute call without sig; a sig that does not match gets 400
+- [ ] **L-world-class-29** `world-class` open, M: Undo for preference writes made outside Settings (26 EXEMPT lines). From tests/test_undo_coverage.py EXEMPT. Evidence: 26 of 59 settings-class EXEMPT lines are outside settings*.js (setChatMode, toggleWebSearch, savePersonaList, saveSkillList, saveTemplateList, persistSavedFinds, ...); they write /preferences with Settings closed, so Recent changes never sees them
 
 ## general
 
