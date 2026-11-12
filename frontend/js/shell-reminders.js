@@ -451,10 +451,14 @@ function edgeFadeWire(bar) {
   const seen = new ResizeObserver(() => syncEdgeFade(bar));
   for (const box of [bar, ...bar.querySelectorAll("[data-status-zone]")]) seen.observe(box);
   bar.addEventListener("scroll", () => syncEdgeFade(bar));
-  bar.addEventListener("click", (event) => {
+  //: And the tab the keyboard reaches (L419): `focus()` leaves a half-shown
+  //: tab where it is, its ring cut by the strip's edge. Both events, as
+  //: Safari does not focus a pressed button.
+  const reveal = (event) => {
     const pick = event.target.closest?.("button, [role=tab]");
     if (pick && bar.contains(pick) && /(^|\s)fade-(start|end)(\s|$)/.test(bar.className)) pick.scrollIntoView({ block: "nearest", inline: "nearest" });
-  });
+  };
+  for (const type of ["click", "focusin"]) bar.addEventListener(type, reveal);
 }
 
 // The observer in edgeFadeWire also fires when a hidden (0-width) strip becomes

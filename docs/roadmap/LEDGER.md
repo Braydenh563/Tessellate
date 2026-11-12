@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 60 | 4 | 0 | 17 | 160 |
+| ui-modernisation | 96 | 59 | 4 | 0 | 17 | 159 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 601 | 159 | 3 | 186 | 1313 |
+| all | 553 | 600 | 159 | 3 | 186 | 1312 |
 
 ## graph
 
@@ -496,7 +496,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L416** `ui-modernisation` open, S: Stop the Bin row's long label wrapping when its reset appears; add per-row marker. From OPEN.md:1761; OPEN.md:2592. Evidence: No change found in settings rows for the bin reset label; unverified fix absent
 - [ ] **L417** `ui-modernisation` open, S: Background jobs Report button waits for boot room; make Activity panel opaque at 390. From OPEN.md:1809; OPEN.md:2686. Evidence: No change found; row stands (unverified fix absent)
 - [ ] **L418** `ui-modernisation` open, S: Sweep other sheets' h3 titles for the same rank clash as .card h3 over .tidy-title. From OPEN.md:1989. Evidence: Tidy fix present (tidy-lazy.css:61 .tidy-nav .tidy-title); no sweep of other h3 titles found
-- [ ] **L419** `ui-modernisation` open, S: Fix focus ring clipping: header buttons, Library sub-tab, chat composer at 390. From OPEN.md:2546. Evidence: Mechanical clipping open per row
 - [ ] **L421** `ui-modernisation` open, S: Restyle sidebar Comments, Linked from and Notes rows. From OPEN.md:2694. Evidence: Verified open 2026-11-10
 - [ ] **L425** `ui-modernisation` open, S: Verify CSS blank-line tests, picker and 390 layout. From OPEN.md:3810. Evidence: No recorded follow-up sweep
 - [ ] **L427** `ui-modernisation` open, S: Count title-only icon buttons outside the Notes list (other tabs, Settings). From OPEN.md:3610. Evidence: Measurement gap; no later count found

@@ -111,6 +111,8 @@ function surfaceBuild(name) {
   window.hideClosedDockMenuLists?.(host);
   window.localizeStaticChords?.(host);
   window.stampShortcutTitles?.(host);
+  //: And the scrolling strips' fade and reveal (L419: the Library tabs had neither).
+  for (const bar of host.querySelectorAll?.(".edge-fade") || []) window.edgeFadeWire?.(bar);
   for (const run of entry.after.splice(0)) try { run(); } catch (error) { console.error(error); }
   return true;
 }
