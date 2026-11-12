@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: choosing Source again on a code file clears a stored Plain view, so the next file no longer opens uncoloured; the docviews sweep ignores bracket colours (L-documents-12).
 - Diagrams: the document head's Export menu has every export the builder has (L-documents-16).
 - Documents: the phone's selection bar carries Selection to a note (New note from selection, Add to note), measured at 390 px (L-documents-13).
 - Documents: the Autocorrect switch stays in the Editor menu, not the status bar, per the standing decision (L337).

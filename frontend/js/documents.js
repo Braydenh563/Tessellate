@@ -1028,6 +1028,9 @@ function setDocView(mode, { persist = true } = {}) {
   docViewState.held = !type.previewable && (docView === "source" || type.ext === "mmd");
   if (persist) try {
     if (!docViewState.held) prefs.set(DOC_VIEW_KEY, docView);
+    //: Plain stored on a code file, then Source chosen back: Source is held (not stored), so the
+    //: old "plain" outlived the choice and every later file opened uncoloured (L-documents-12).
+    else if (docView === "source" && prefs.get(DOC_VIEW_KEY, null) === "plain") prefs.remove(DOC_VIEW_KEY);
   } catch {
     // A private window with storage blocked is not a reason to refuse to
     // change view: the choice just does not survive the reload.
