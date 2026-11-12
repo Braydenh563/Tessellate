@@ -8,7 +8,7 @@
 // this app (it polls reminders, model status and tasks), so every navigation
 // uses `domcontentloaded` plus an explicit wait; and the lock screen is ONE
 // field in two modes, so first run and a later unlock are the same two lines.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const PW = 'testpassword123';
 const BASE = process.env.BASE || 'http://127.0.0.1:8791';
 const OUT = process.env.SCRATCH || '/tmp/audit-out';

@@ -20,7 +20,7 @@
 // The rounds are compared against round one rather than against boot, and a
 // couple of nodes of jitter are allowed because a status clock and an idle
 // spinner are alive throughout.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const PW = 'testpassword123';
 const ROUNDS = Number(process.env.ROUNDS || 5);

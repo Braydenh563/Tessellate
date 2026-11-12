@@ -13,7 +13,7 @@
 //
 // STYLES, THEMES and INTENSITY (default 45, the app's default; 100 is the
 // slider's top) narrow it; TAB picks the tab (default dashboard).
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 
 const PW = 'testpassword123';
 const BASE = process.env.BASE || 'http://127.0.0.1:8797';

@@ -1,7 +1,7 @@
 // Brief 80 (WORLD_CLASS_PLAN 28.5 rows 1, 3 to 6): drives the recorder with
 // Chromium's fake microphone. ACT=record|recover|reach|undo|library, W=1440|390.
 // BASE=http://127.0.0.1:8837 node scratchpad/ui-sweeps/audio80.js
-const pw = require('/opt/node22/lib/node_modules/playwright');
+const pw = require('playwright');
 const launch = pw.chromium.launch.bind(pw.chromium);
 pw.chromium.launch = (opts = {}) => launch({ ...opts, args: [...(opts.args || []), '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--autoplay-policy=no-user-gesture-required'] });
 const L = require('./lib.js');

@@ -22,7 +22,7 @@
 //
 //   BASE=http://127.0.0.1:8797 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
 //     node scratchpad/ui-sweeps/graphcoldlayout.js
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const results = [];

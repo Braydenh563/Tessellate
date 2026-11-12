@@ -92,7 +92,9 @@ async function askUpdateChoiceOnce() {
   //: last in `FIRST_RUN_ORDER` (onboarding.js). Measured before: on a first
   //: start it took the welcome's Skip from under the pointer, and it opened
   //: with the tour's first card in the same 0.4 s.
-  const ask = () => confirmDialog(
+  //: Answered while it waited its turn in the first-run queue (another tab, or
+  //: Settings, About): never asked twice; `undefined` stores nothing below.
+  const ask = () => prefsCache?.update_choice_made !== false ? Promise.resolve(undefined) : confirmDialog(
     "Check for updates automatically?\n\nTessellate can look for a newer version each time it starts. " +
       "Nothing about your notes is sent. You can change this in Settings, About.",
     { confirmLabel: "Check automatically", cancelLabel: "Don't check", danger: false }

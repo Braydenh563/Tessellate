@@ -14,7 +14,7 @@
 // content cut off with no way to reach it. A scroller (`auto`) is reachable,
 // and counting it reported the phone's categories drawer, which scrolls, as
 // clipped (2026-10-03).
-const {chromium}=require('/opt/node22/lib/node_modules/playwright');
+const {chromium}=require('playwright');
 const PW='testpassword123'; const BASE=process.env.BASE||'http://127.0.0.1:8781';
 // Every tab page, not the seven with a button in the tab bar. Documents and
 // the whiteboard are reached from a dock or a Library row, so clicking

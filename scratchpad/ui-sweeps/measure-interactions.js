@@ -3,7 +3,7 @@
 //   BASE=http://127.0.0.1:8794 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scratchpad/ui-sweeps/measure-interactions.js
 //
 // Phases (PHASE=boot,list,search,keybox): each prints one JSON line. Times are ms, p50 of RUNS runs.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:8794';
 const RUNS = +(process.env.RUNS || 10);
 const PW = 'testpassword123';

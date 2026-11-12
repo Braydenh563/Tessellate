@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 100 | 4 | 0 | 17 | 200 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 21 | 2 | 0 | 4 | 23 |
-| all | 553 | 680 | 160 | 3 | 195 | 1393 |
+| general | 0 | 20 | 2 | 0 | 4 | 22 |
+| all | 553 | 679 | 160 | 3 | 195 | 1392 |
 
 ## graph
 
@@ -875,7 +875,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-13** `general` open, S: Show a source-provenance chip on every row (imported from file, clipped from URL, extracted from document, transcribed from audio). From ANALYSIS.md:1204. Evidence: no provenance/source chip in frontend/js or routes_entries.py output; no plan holds it
 - [ ] **L-general-15** `general` partly, L: W34 L1 remainder: 265 true, 125 owner-call, 22 hardware-only and 153 unverifiable rows by spoke, each confirmed as a LEDGER row or built. From ledger-1112 X20. Evidence: the w34-*.md spoke lists were retired into LEDGER rows (OPEN.md and w34 sources); recheck that each of the 265 true rows has its row
 - [ ] **L-general-16** `general` partly, M: Session briefs W5 and W16 to W18 have no outcome record; W32 left E9, E10 and E12. From ledger-1112 X23. Evidence: no record of W5, W16 to W18 found at the migration; W32 left E9 (hardware), E10 BK6, BK10, BK12, K36, E12 owner
-- [ ] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in
 - [ ] **L-general-31** `general` open, L: Run or park the Fable whole-app review the owner named. From open-work sweep 2026-11-12, docs/roadmap/HANDOVER.md:20. Evidence: The owner asked for this next-session task, but it is not in any plan, LEDGER row or BACKLOG entry
 - [ ] **L-general-36** `general` open, M: Let notes be grouped by hand, apart from the main sort. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-37** `general` open, M: Let a note have more than one category. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
@@ -884,7 +883,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-41** `general` open, L: An in-app browser with MCP tool abilities beside web search. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; the stdio MCP server is the other direction. Verify in code first.
 - [ ] **L-general-42** `general` open, L: A VS Code extension. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first.
 - [ ] **L-general-45** `general` open, M: A dry run for the background librarian: show the diff, apply or discard. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md From the audits: taskhistory records runs; there is no diff to apply or discard. Verify in code first.
-- [ ] **L-general-47** `general` open, L: Repair every failing ui sweep: fix the app where the sweep is right, the sweep where it rotted; each exits 0. From L-general-14, L-general-20 stability run 2026-11-12. Evidence: /tmp sweep run on port 8790 (70 sweeps, 240s cap): exit 1 or timeout for errors, fontmatrix, touch, phonesidebar, phonecapture, graphphone, wbexportimage, ctrlwheelzoom, libreadingfoot, libreader, doccodecopy, dockeyboard, doctoolbarstate, spinners, asktab, mapperf, mapmidpan, slashicons, uitrio, noteobject, maplayouts, maptheme, canvasconventions, mapviewmenu, companion* (12, all in 6s), profilelook, perchall, iconfloor, maplinkcue; plus tour.js (replay buttons 0 with Settings unopened), toursteps (5 step faults at 1440), anchorsmotion (5 gaps)
+- [ ] **L-general-47** `general` open, L: Repair every failing ui sweep: fix the app where the sweep is right, the sweep where it rotted; each exits 0. From L-general-14, L-general-20 stability run 2026-11-12. Evidence: /tmp sweep run on port 8790 (70 sweeps, 240s cap): exit 1 or timeout for errors, fontmatrix, touch, phonesidebar, phonecapture, graphphone, wbexportimage, ctrlwheelzoom, libreadingfoot, libreader, doccodecopy, dockeyboard, doctoolbarstate, spinners, asktab, mapperf, mapmidpan, slashicons, uitrio, noteobject, maplayouts, maptheme, canvasconventions, mapviewmenu, companion* (12, all in 6s), profilelook, perchall, iconfloor, maplinkcue; plus tour.js (replay buttons 0 with Settings unopened), toursteps (5 step faults at 1440), anchorsmotion (5 gaps); deepflows flows note, private, link, graph (gcNodeAtWorld), settings, tabs, picker
 
 ## Owner calls
 

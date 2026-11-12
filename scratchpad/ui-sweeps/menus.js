@@ -30,7 +30,7 @@
 // it; rows, labels and keys still are.
 //
 // Prints findings only, then one count line per width.
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const PW = 'testpassword123';
 const BASE = process.env.BASE || 'http://127.0.0.1:8781';
 const WIDTHS = (process.env.WIDTHS || '1440,1024,390').split(',').map(Number);

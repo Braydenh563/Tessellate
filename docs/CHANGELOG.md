@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI: a UI sweeps job runs 30 steady ui sweeps and 10 deepflows.js flows on fresh notebooks every push (`scripts/ci_sweeps.sh`); the update question re-reads the answer when its first-run turn comes, so it is never asked twice (L-general-20).
 - Tour sweeps read tour.js through `openTour.inspect` (its state moved into a closure); tourdim reads `color(srgb … / a)` alpha; tourfirst measures the ring's 6px pad and top clamp (L-general-14).
 - Dashboard: list widgets render `_italic_` and drop task boxes from the preview; Rediscover unwraps `[[links]]` (L-general-39).
 - Settings, Tools it can use: a SKILL.md for an agent that reads skills, routing notebook questions to `tool NAME --json` (Copy skill, folded text; L-general-34).

@@ -1,4 +1,4 @@
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const OUT = (process.env.SCRATCH||'.') + '/shots';
 require('fs').mkdirSync(OUT,{recursive:true});
 const PW = 'testpassword123';
@@ -193,6 +193,13 @@ async function boot(opts={}) {
   //: touches the network either way); UPDATE_ASK=1 leaves it for a sweep
   //: that measures the dialog itself.
   if (!process.env.UPDATE_ASK) {
+    //: Answered through the API first: the dialog waits its turn behind the first-run
+    //: queue and could open after the wait below had already returned (L-general-20).
+    await page.waitForFunction(() => typeof prefsCache !== 'undefined' && prefsCache, null, {timeout: 8000}).catch(() => {});
+    await page.evaluate(async () => {
+      if (typeof prefsCache === 'undefined' || prefsCache?.update_choice_made !== false) return;
+      Object.assign(prefsCache, await apiJson('/update/choice', { method: 'POST', body: JSON.stringify({ check: false }) }));
+    }).catch(() => {});
     await page.waitForFunction(() => {
       const card = [...document.querySelectorAll('.confirm-overlay')]
         .find((o) => /Check for updates automatically/.test(o.textContent));

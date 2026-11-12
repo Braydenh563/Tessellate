@@ -2,7 +2,7 @@
 // The beforeunload guard (navigation.js `recordingLive`) must ask while a
 // recording is live; dismissing keeps the page and the recorder, accepting
 // reloads. BASE=http://127.0.0.1:8793 node scratchpad/ui-sweeps/x1reload.js
-const pw = require('/opt/node22/lib/node_modules/playwright');
+const pw = require('playwright');
 const launch = pw.chromium.launch.bind(pw.chromium);
 pw.chromium.launch = (opts = {}) => launch({ ...opts, args: [...(opts.args || []), '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--autoplay-policy=no-user-gesture-required'] });
 const L = require('./lib.js');
