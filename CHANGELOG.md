@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents, focus mode: from 720px wide the sidebar and the suggestions panel sit beside the page instead of over it (L403; the line was 820).
+- Library: a document with headings opened from Contents opens on its Outline tab, a click sooner than before (L400).
 - Settings: from 820px wide a form row keeps room for its reset, so changing a setting no longer pushes the reset onto its own line or moves the field (L416). Kept: the Bin row's confirm ring sits 27px clear of the screen edges (L404).
 - Scrolling tab strips: the Library sub-tabs, and any strip in a surface built after start-up, now fade at a cut edge, and a tab reached with the keyboard scrolls fully into view, so its focus ring is never cut (L419).
 - Web links: a note's link card and a web search result name the site in one shared style (L386; the result's site line was a size smaller). Kept: the Ask results' second head, which names the list and needs no control (L385).

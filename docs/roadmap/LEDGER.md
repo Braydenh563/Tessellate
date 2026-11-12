@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 57 | 4 | 0 | 17 | 157 |
+| ui-modernisation | 96 | 55 | 4 | 0 | 17 | 155 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 598 | 159 | 3 | 186 | 1310 |
+| all | 553 | 596 | 159 | 3 | 186 | 1308 |
 
 ## graph
 
@@ -488,8 +488,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L388** `ui-modernisation` open, S: Stop the topic bar wrapping to two rows at 390. From OPEN.md:1952. Evidence: Measured identical on base; no fix
 - [ ] **L390** `ui-modernisation` open, S: Measure 390 px layout of Tidy Patterns rows and Chat pattern line. From OPEN.md:3730. Evidence: Never measured at 390; no recorded sweep
 - [ ] **L392** `ui-modernisation` open, S: Measure broom accent contrast and run the automatic contrast pass in a browser; check Tags Atlas review with a real model. From OPEN.md:624; OPEN.md:3562. Evidence: contrast.js measurement and browser run not recorded; pytest only
-- [ ] **L400** `ui-modernisation` open, S: Flatten Library > Contents > Probe document > Outline from depth 4. From OPEN.md:3706. Evidence: One destination at depth 4; no flattening commit found
-- [ ] **L403** `ui-modernisation` open, S: Drive and fix doc-focus panels covering the page at 720-819px. From OPEN.md:1825; OPEN.md:3477. Evidence: tests/test_doc_focus_resize_1408.py, test_doc_panels_154x exist; 720-819 sweep not confirmed
 - [ ] **L409** `ui-modernisation` open, S: Check moved rules in dark and phone width, and first bell press on a slow link. From OPEN.md:638. Evidence: errors.js at 390 clean; dark and slow-link checks not recorded
 - [ ] **L415** `ui-modernisation` open, S: Measure the status ring under 'auto' motion. From OPEN.md:1758. Evidence: No later measurement found; needs a sweep of the status ring in auto motion
 - [ ] **L417** `ui-modernisation` open, S: Background jobs Report button waits for boot room; make Activity panel opaque at 390. From OPEN.md:1809; OPEN.md:2686. Evidence: No change found; row stands (unverified fix absent)
