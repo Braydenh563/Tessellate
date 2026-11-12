@@ -996,7 +996,7 @@ async function wbMeasureSelection() {
 // (rows and columns, indentation, list marks) are documents-prose.js's `paste*` functions, shared with
 // the document editor; this file is the board's half. The pure half runs in
 // node (tests/test_wb_paste_text.py); the wiring is driven by
-// scratchpad/ui-sweeps/wbpaste.js. It sits in this file, after the command
+// wbpaste.js (git history). It sits in this file, after the command
 // table, because app.js's gzip cap leaves no room for another script line.
 
 // WB-PASTE-PURE-START

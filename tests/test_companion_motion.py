@@ -1393,7 +1393,7 @@ def test_it_does_what_the_apps_model_work_is_doing() -> None:
     # actions when things are happening like for the tag and file with atlas
     # note function running with atlas reading the note". One hook (fetch,
     # watched once) and a table of the model's addresses, not a call in each
-    # feature. Measured by scratchpad/ui-sweeps/companionwork.js.
+    # feature. Measured by scratchpad/ui-sweeps/companionwork.js (in git history).
     table = AV[AV.index("const NMB_WORK = [") : AV.index("];", AV.index("const NMB_WORK = ["))]
     for address in ("reevaluate", "suggest-tags", "improve", "vision-ocr", "caption", "chat|help\\/ask|drafts\\/compose"):
         assert address in table, address

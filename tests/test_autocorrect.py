@@ -196,7 +196,7 @@ def test_a_click_on_the_underline_opens_a_menu_and_does_not_revert():
     # reverted, it should show a little popup near the word for confirming or
     # reverting". The click opens `openMenuAtPoint`'s menu at the word (Keep,
     # Put back, Edit); only Put back reverts. Browser check:
-    # scratchpad/ui-sweeps/autocorrectmenu.js.
+    # scratchpad/ui-sweeps/autocorrectmenu.js (in git history).
     mark = SOURCE[SOURCE.index("function autocorrectMark(") :]
     mark = mark[: mark.index("\n}\n")]
     assert 'addEventListener("click", () => autocorrectMenu(entry))' in mark
