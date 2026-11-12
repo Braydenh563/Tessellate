@@ -877,6 +877,10 @@ details.tool-chip[open] > .tool-chip-body {
   border-radius: var(--radius);
   background: var(--card);
 }
+.skill-budget {
+  margin-top: 0.4rem;
+  font-size: var(--text-sm);
+}
 .skill-result-title {
   font-weight: 600;
   font-size: var(--text-md);

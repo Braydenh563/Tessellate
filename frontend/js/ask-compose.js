@@ -254,7 +254,12 @@ function renderActCard(holder, event) {
         card.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
       })
     );
-    line(`ph:warning ${event.label}`, notice, row);
+    //: The line above the card already says the change (L57: the bubble read it twice); the label stays on the group for a screen reader.
+    if (event.label_said) {
+      card.setAttribute("role", "group");
+      card.setAttribute("aria-label", event.label);
+      card.replaceChildren(notice, row);
+    } else line(`ph:warning ${event.label}`, notice, row);
     if (event.state === "expired") {
       for (const button of row.querySelectorAll("button")) button.disabled = true;
       return void holder.appendChild(card);

@@ -1532,6 +1532,10 @@ def _card(label: str, steps: list[dict], skipped: list[dict] | None = None, item
         "skipped": skipped or [],
         "items": items or [],
         "notice": CONFIRM_NOTICE,
+        #: The line the composer says above the card already reads the label (`_confirm`), so the card
+        #: does not repeat it (L57: the bubble said the same sentence twice). A model's proposed card
+        #: has no such line; `acts.propose` takes this back.
+        "label_said": True,
     }
 
 

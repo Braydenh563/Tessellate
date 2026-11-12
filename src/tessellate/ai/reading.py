@@ -539,20 +539,20 @@ def _untick_of(turn: dict, now: datetime) -> tuple[str, str] | None:
 
 def _put_back(done: dict | None) -> str | None:
     """A rename or a move said back as the sentence that restores the old title or category: the old value
-    is not in the sentence typed, so it comes from the Undo steps the last card kept (L-chat-29)."""
-    from tessellate.ai import commands, consent_store
+    is not in the sentence typed, so it comes from the log of Undo steps the cards kept (L-chat-29, 33)."""
+    from tessellate.ai import consent_store
 
     if not done or done["intent"] not in ("rename", "move"):
         return None
-    args = next((s.get("arguments") or {} for s in consent_store.latest_undo() if s.get("name") == "edit_note"), {})
-    if not args.get("note_id"):
-        return None
-    old = commands.note_title(str(args.get("content") or ""), size=120)
-    if done["intent"] == "move":
-        return f"move note {args['note_id']} to {args.get('category') or 'Uncategorised'}"
     named = {w for w in re.findall(r"[a-z0-9]+", str(done.get("about") or "").lower()) if w not in ("note", "the", "my")}
-    ours = done.get("note_id") in (None, args["note_id"]) and named <= set(re.findall(r"[a-z0-9]+", old.lower()))
-    return f"rename note {args['note_id']} to {old}" if ours else None  # else the last card was another note's
+    for kept in consent_store.undo_log():  # newest first: the last act, then the ones before it, across a restart
+        words = set(re.findall(r"[a-z0-9]+", str(kept["title"]).lower()))
+        if done.get("note_id") not in (None, kept["note_id"]) or (not done.get("note_id") and not named <= words):
+            continue
+        if done["intent"] == "move":
+            return f"move note {kept['note_id']} to {kept['category'] or 'Uncategorised'}"
+        return f"rename note {kept['note_id']} to {kept['title']}"
+    return None
 
 
 def cited_follow(text: str, turns: list[dict] | None, now: datetime) -> str | None:

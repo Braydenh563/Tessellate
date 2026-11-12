@@ -8,9 +8,12 @@ after a press runs nothing twice)."""
 
 from __future__ import annotations
 
+import json
+import os
 import secrets
 import threading
 import time
+from pathlib import Path
 
 TTL_SECONDS = 1800
 MAX_PARKED = 64
@@ -32,6 +35,55 @@ _declined: dict[str, float] = {}
 #: The last pressed card's label and Undo steps: what "undo that" says back for an act whose old value is
 #: not in its sentence (a rename's old title, a move's old category; L-chat-29). One person, one chat.
 _latest: tuple[float, str, list[dict]] | None = None
+
+
+#: Kept past a restart and past the next act (L-chat-33): for each rename or move the card ran, the note's
+#: id and the title and category it had, newest last. Only that, never the body, in a file beside the
+#: database (a private note is never touched from Chat), so "undo the rename of X" finds its own old value.
+LOG_MAX = 12
+LOG_DAYS = 3
+
+
+def _log_path() -> Path:
+    from tessellate.core.config import resolved_data_dir
+
+    return resolved_data_dir() / "chat_undo.json"
+
+
+def _read_log() -> list[dict]:
+    try:
+        rows = json.loads(_log_path().read_text("utf-8"))
+    except (OSError, ValueError):
+        return []
+    cutoff = time.time() - LOG_DAYS * 86400
+    return [r for r in rows if isinstance(r, dict) and isinstance(r.get("at"), (int, float)) and r["at"] > cutoff] if isinstance(rows, list) else []
+
+
+def log_undo(undo: list[dict] | None, title: str) -> None:
+    """Add the note a rename or move changed (from the `edit_note` Undo step) to the on-disk log."""
+    from tessellate.ai import commands
+
+    rows = []
+    for step in undo or []:
+        args = step.get("arguments") or {}
+        if step.get("name") == "edit_note" and args.get("note_id"):
+            rows.append({"at": time.time(), "note_id": args["note_id"], "title": commands.note_title(str(args.get("content") or ""), size=120), "category": args.get("category") or "", "label": title})
+    if not rows:
+        return
+    with _lock:
+        keep = (_read_log() + rows)[-LOG_MAX:]
+        path = _log_path()
+        try:
+            path.write_text(json.dumps(keep), "utf-8")
+            os.chmod(path, 0o600)
+        except OSError:
+            pass  # a log that cannot be written only costs the undo-by-sentence of older acts
+
+
+def undo_log() -> list[dict]:
+    """The renames and moves kept on disk, newest first (the last card's in-process steps are not needed here)."""
+    with _lock:
+        return list(reversed(_read_log()))
 
 
 def _now() -> float:
@@ -148,6 +200,10 @@ def reset_for_tests() -> None:
     global _latest  # noqa: PLW0603
     with _lock:
         _latest = None
+        try:
+            _log_path().unlink()
+        except (OSError, ImportError):
+            pass
         _parked.clear()
         _spent.clear()
         _results.clear()

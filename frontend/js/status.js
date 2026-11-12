@@ -2030,8 +2030,10 @@ async function refreshModelStatus() {
     //: status as before, so the pill shows the worst case.
     if (err?.name === "TimeoutError" || err?.name === "AbortError") modelStatusProblem = "slow";
     else {
-      modelStatus = null; // locked or unreachable: pill shows the worst case
+      //: A failed poll while the server answers keeps the last known status (L70, L79): nulling it greyed the Agent
+      //: panel until the next poll. Only a server that does not answer at all drops it, so the pill shows the worst case.
       const up = await fetch("/health", { signal: AbortSignal.timeout(3000) }).then((r) => r.ok).catch(() => false);
+      if (!up) modelStatus = null;
       modelStatusProblem = up ? "error" : "down";
     }
   }
