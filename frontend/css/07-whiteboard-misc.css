@@ -12025,3 +12025,18 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
 .wb-import-about {
   margin: 0 0 var(--space-2);
 }
+
+/* The brainstorm timer chip (MINDMAP_PLAN gap audit row 5): a small dock over the map's top edge. */
+.wb-map-brainstorm,
+.wb-map-proposal {
+  position: absolute;
+  top: calc(0.5rem + var(--wb-h-topbar) + var(--space-3));
+  left: 50%;
+  transform: translateX(-50%);
+    display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-variant-numeric: tabular-nums;
+}

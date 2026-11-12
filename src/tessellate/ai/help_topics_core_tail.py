@@ -798,6 +798,13 @@ TAIL_TOPICS.extend(
                 "audio note",
                 "audio on a topic",
                 "recording on a topic",
+                "brainstorm timer",
+                "copy the shape of a branch",
+                "topic template",
+                "picture from a link",
+                "second central topic",
+                "save a branch as markdown",
+                "proposed map",
             ),
             "body": (
                 "The layout picker: tree, radial, logic chart, "
@@ -808,6 +815,11 @@ TAIL_TOPICS.extend(
                 "flag, a start day, a due day and up to six icons; View, Gantt chart draws "
                 "a bar from start to due for each topic with both, and a dragged bar moves its dates; "
                 "a topic's menu, Audio note attaches a recording from Recordings, its mic mark plays it; "
+                "Put a picture from a link fetches an image address and keeps it with the board; Copy this topic's "
+                "shape and Paste the copied shape here carry a look and a branch layout over in one Undo step; "
+                "Add a template branch adds pros and cons, SWOT, the five questions or a meeting agenda; "
+                "Add a second central topic joins a new root to this one by a link that can carry words; "
+                "Save this branch as Markdown writes a .md file; chat's Make a mind map opens the map with a bar to keep or discard it; the palette's Start a five minute brainstorm timer shows a countdown; "
                 "View, Filter by marker dims every topic "
                 "without the one you pick, and View, Dim all but the selected branch "
                 "dims everything outside the selected branch and its path to "

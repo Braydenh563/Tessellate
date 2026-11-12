@@ -120,8 +120,8 @@ def _redirect_url(response, url: str, deadline: float) -> str:  # noqa: ANN001
     return url
 
 
-def _check_clippable(response, url: str) -> None:  # noqa: ANN001
-    """Refuse an error status, a non-page or a page declared too large."""
+def check_status(response, url: str) -> None:  # noqa: ANN001
+    """Refuse an error status (shared with `core/webimage.py`)."""
     try:
         response.raise_for_status()
     except requests.HTTPError as exc:
@@ -129,6 +129,11 @@ def _check_clippable(response, url: str) -> None:  # noqa: ANN001
             f"{urlparse(url).hostname} answered {response.status_code}, so there was nothing to clip.",
             502,
         ) from exc
+
+
+def _check_clippable(response, url: str) -> None:  # noqa: ANN001
+    """Refuse an error status, a non-page or a page declared too large."""
+    check_status(response, url)
     content_type = response.headers.get("content-type", "").lower()
     if "html" not in content_type and "text/plain" not in content_type:
         response.close()

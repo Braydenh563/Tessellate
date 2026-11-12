@@ -436,7 +436,7 @@ export that claims it.
    HISTORY.md, "Moved from the plans, 2026-10-18 (mindmap-1018)".)
 3. **From a question**: "Make a map of..." in chat proposes a map
    (exists, Phase 4) and now opens it in the map editor with the
-   proposal as floating topics to accept or discard. (Chat's Make a mind map
+   proposal as floating topics to accept or discard. **Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)")**: it opens with a Keep or Discard bar. (Chat's Make a mind map
    of an answer or a whole chat is built, 2026-10-18 fixes7: no model, the
    text's headings and lists; the floating-topics proposal is still open.)
 4. ~~**Graph sync**~~ **Built** (HISTORY.md, "Moved from the plans, 2026-10-05
@@ -1794,17 +1794,17 @@ Read from the code against XMind, MindManager and Miro mind maps. Sizes S, M, L;
 2. Import a .xmind file (the map already reads OPML, FreeMind and Markdown) - M.
 3. ~~A Gantt view of the topics that have dates (XMind) - L.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 4").
 4. ~~Audio notes on a topic, recorded and kept with the board - M.~~ Built 2026-11-10 as a link to an existing recording, not raw audio (HISTORY.md, "s9c-1110 part 4").
-5. A brainstorm timer on the map bar (XMind "Brainstorming") - S.
-6. Copy the shape of a branch (layout and look together) to another branch - S.
-7. Topic templates for one topic (a pros and cons topic from the topic's menu) - S.
-8. Topic image from a link, fetched and kept - M.
-9. Export a branch only, as PNG, PDF or Markdown - S.
+5. ~~A brainstorm timer on the map bar (XMind "Brainstorming") - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+6. ~~Copy the shape of a branch (layout and look together) to another branch - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+7. ~~Topic templates for one topic (a pros and cons topic from the topic's menu) - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+8. ~~Topic image from a link, fetched and kept - M.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+9. ~~Export a branch only, as PNG, PDF or Markdown - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 10. ~~Rainbow branches as a theme option for every branch, not only first level - S.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 3").
 11. ~~A legend for markers and colours, drawn on the map - M.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 3").
-12. A second root on one map, joined by a labelled link (floating topics exist; named roots do not) - M.
-13. Search inside topics' notes from the map's find bar - S.
-14. Fisheye and focus dimming of everything but the selected branch - S.
-15. Real-time presenter pointer in the present mode - L.
+12. ~~A second root on one map, joined by a labelled link (floating topics exist; named roots do not) - M.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+13. ~~Search inside topics' notes from the map's find bar - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+14. ~~Fisheye and focus dimming of everything but the selected branch - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+15. ~~Real-time presenter pointer in the present mode - L.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 
 ## Placed from INBOX, 2026-10-19 (edge sides; next PR)
 

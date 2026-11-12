@@ -19,6 +19,20 @@ that answers "has this been done?" before anyone starts.
 - **Measured, Sh2 X16:** `scratchpad/ui-sweeps/bootcsscov.js`: boot sheets 949,008 B served, 167,474 gz; 77.6 percent of rule bytes never matched across eight tabs and Settings at 1440 and 390 (state CSS counts as unmatched). Largest runs: `nm-buddy` in 08 (39,395 B, 6,826 gz), `md-table`/code blocks in 05 (23,617 B, 4,434 gz), whiteboard topbar and map strip in 07 (14.6 KB each, 3.1 KB gz). D16 stale (OPEN.md:268); D18 is the owner's call (O32) (ad720d2d8).
 - **Checked, Wb1 I25:** `scratchpad/ui-sweeps/valuepresets.js`: the zoom percent chevron on the board (1440, 390) and the lightbox (1440): list inside the window, 44px rows on a phone, 200% gives 200% (lightbox picture 2801 of 1400 natural), typing and Escape, Fit. The lightbox drops its readout below 600 by design (INBOX 430). The present page field is covered by INBOX 1694 b3 and its test. Trackpad pinch rate needs the hardware (508f4c7c8).
 
+## Moved from the plans, 2026-11-12 (mindmap-plan)
+
+MINDMAP_PLAN "Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit)", rows 5 to 9 and 12 to 15, and 12.3 item 3. Doors: the topic menu, the map palette and the Guide topic "Mind map".
+
+- **5, brainstorm timer:** a countdown chip over the map, started and stopped from the palette (`wbBrainstormStart`, `whiteboard-map-more.js`); the clock is passed in, so the test uses a fixed one. It is a chip and not a map-bar button because index.html is at its element cap.
+- **6, copy the shape of a branch:** Copy this topic's shape and Paste the copied shape here carry the look keys and the branch layout in one Undo step (`wbShapePatch`).
+- **7, topic templates:** pros and cons, SWOT, the five questions and a meeting agenda, picked in the ghost picker and added by the outline reader as one Undo step.
+- **8, picture from a link:** `POST /links/image` (`core/webimage.py`): http and https only, every hop checked for private addresses, images only (no svg), 10 MB cap, behind the web opt-in; kept through the board upload path. `tests/test_webimage_topic.py` runs on a fake transport.
+- **9, export a branch only:** already built (wb2: `wbMapExportBranch`, PNG and PDF); this adds Save this branch as Markdown.
+- **12, a second root:** Add a second central topic makes a root beside the topic and a labelled link to it; the label now round-trips through FreeMind (`MIDDLE_LABEL`) and OPML (`_link_labels`); Markdown carries no links (decision 12). `tests/test_map_two_roots_1112.py`.
+- **13, search inside notes, 14, dim all but the selected branch:** already built (wb2); struck.
+- **15, presenter pointer:** the laser in present mode is drawn on the presented canvas; there is no second window or other viewer, so there is nothing further to send. Struck.
+- **12.3 item 3:** a chat's Make a mind map opens the map with a Keep or Discard bar (discard goes to the bin; Undo restores).
+
 ## Moved from the plans, 2026-11-11 (K24, K25, BK11: god-module carves, k24-1111)
 
 **Built** (Bk2 structure ratchets). Whole moves, no behaviour change; callers and the tests that read the old files follow the new homes.
