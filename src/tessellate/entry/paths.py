@@ -362,6 +362,11 @@ def _connect(
             # Treat dynamic extra edges (like similarity) with their appropriate weight
             weight = SIMILAR_WEIGHT if edge.get("kind") == "similar" else LINK_WEIGHT
             index._add(edge["source"], edge["target"], edge.get("kind", "similar"), "is related to", "is related to", weight)
+            #: A document or entity end (a derived similarity line) is a
+            #: labelled stop even when the layer builder drops it (a hub entity).
+            for end in (edge["source"], edge["target"]):
+                if isinstance(end, str):
+                    index.extra.setdefault(end, end.partition(":")[0])
 
     if documents or entities:
         _add_layer_edges(session, index, documents, entities, private, cap_entities)

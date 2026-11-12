@@ -5615,6 +5615,13 @@
       gcWriteUnresolved(node);
       return;
     }
+    //: While Trace is on, a document or entity is a stop like a note
+    //: (L-graph-14, owner 2026-11-12), so the click picks an end instead of
+    //: opening the page; `runTrace` sends the layer flags that name it.
+    if (traceModeActive && (node.type === "entity" || node.type === "document")) {
+      pickTraceEnd(node);
+      return;
+    }
     //: KG5: an entity opens its page (entity-page.js).
     if (node.type === "entity") {
       openEntityPage(String(node.id).slice("entity:".length));
