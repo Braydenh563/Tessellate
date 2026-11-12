@@ -868,6 +868,11 @@ SPAN_DIGEST_MAX_DAYS = 366
 #: the oldest and `more` says how many were left out.
 SPAN_NOTES_MAX = 200
 
+#: Seconds the span sheet waits for the model before it shows the composed
+#: review instead: the call runs inside a GET the sheet is waiting on, and a
+#: cold or busy model would otherwise hold the sheet for minutes.
+SPAN_MODEL_TIMEOUT = 8.0
+
 
 SPAN_QUESTION = (
     "Today is {today}. Give me a short review of what I wrote from {start} to "
@@ -902,6 +907,28 @@ def _span_said_by_model(notes: list[dict], first, last, now) -> str:  # noqa: AN
     return trim_assistant_padding(said)
 
 
+def _span_said_in_time(notes: list[dict], first, last, now) -> str:  # noqa: ANN001
+    """`_span_said_by_model`, or "" when it takes longer than
+    SPAN_MODEL_TIMEOUT. A daemon thread, not an executor, for the reason in
+    `core/security.py`'s resolver: a late call is abandoned, never joined."""
+    import threading
+
+    said: list[str] = []
+    finished = threading.Event()
+
+    def _ask() -> None:
+        try:
+            said.append(_span_said_by_model(notes, first, last, now))
+        except Exception:  # noqa: BLE001  # a failed call is the composer's turn
+            said.append("")
+        finished.set()
+
+    threading.Thread(target=_ask, name="span-digest", daemon=True).start()
+    if not finished.wait(SPAN_MODEL_TIMEOUT):
+        return ""
+    return said[0] if said else ""
+
+
 @router.get("/digest")
 def span_digest(start: str, end: str, session: Session = Depends(get_session)) -> dict:
     """What was written from `start` to `end` (L-timeline-2): the review, said
@@ -922,7 +949,7 @@ def span_digest(start: str, end: str, session: Session = Depends(get_session)) -
         raise HTTPException(status_code=422, detail=f"Pick a last day after the first, at most {SPAN_DIGEST_MAX_DAYS} days on.")
     now = user_now(deps.get_config())
     text, notes = review_digest.span(session, first, last, now)
-    said = _span_said_by_model(notes, first, last, now)
+    said = _span_said_in_time(notes, first, last, now)
     return {
         "start": first.isoformat(),
         "end": last.isoformat(),

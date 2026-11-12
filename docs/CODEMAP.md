@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8327, frontend ids 2766, CSS sections 524, backend routes 699, backend modules 10768, test files 2682, tests 21867, plan headings 688, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8327, frontend ids 2766, CSS sections 524, backend routes 699, backend modules 10769, test files 2682, tests 21871, plan headings 688, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8327)
 
@@ -6557,15 +6557,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dismissNotification` | frontend/js/notifications.js:381 |
+| `dismissNotification` | frontend/js/notifications.js:407 |
 | `noticeLiveValid` | frontend/js/notifications.js:9 |
 | `notificationActionButton` | frontend/js/notifications.js:55 |
 | `notificationGoes` | frontend/js/notifications.js:46 |
-| `openExportsFromNotification` | frontend/js/notifications.js:401 |
-| `openNotifications` | frontend/js/notifications.js:145 |
+| `openExportsFromNotification` | frontend/js/notifications.js:427 |
+| `openNotifications` | frontend/js/notifications.js:171 |
 | `reminderDoneButton` | frontend/js/notifications.js:93 |
 | `runNotificationGo` | frontend/js/notifications.js:28 |
-| `setNotificationUnread` | frontend/js/notifications.js:371 |
+| `setNotificationUnread` | frontend/js/notifications.js:397 |
 
 ### frontend/js/obj-carry.js (9)
 
@@ -13357,7 +13357,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/desktop/fullscreen` | POST | `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:860 |
 | `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
 | `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:204 |
-| `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:905 |
+| `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:932 |
 | `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:949 |
 | `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:876 |
 | `/dismiss` | POST | `dismiss_insight` | src/tessellate/api/routes_insights.py:549 |
@@ -13897,15 +13897,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{key}/apply` | POST | `tidy_apply` | src/tessellate/api/routes_tidy.py:112 |
 | `/{key}/dismiss` | POST | `tidy_dismiss` | src/tessellate/api/routes_tidy.py:98 |
 | `/{key}/undismiss` | POST | `tidy_undismiss` | src/tessellate/api/routes_tidy.py:106 |
-| `/{reminder_id}` | DELETE | `delete_reminder` | src/tessellate/api/routes_reminders.py:842 |
+| `/{reminder_id}` | DELETE | `delete_reminder` | src/tessellate/api/routes_reminders.py:846 |
 | `/{reminder_id}` | PUT | `update_reminder` | src/tessellate/api/routes_reminders.py:732 |
 | `/{reminder_id}/calendar-links` | GET | `calendar_links` | src/tessellate/api/routes_reminders.py:429 |
 | `/{reminder_id}/complete` | POST | `complete_reminder` | src/tessellate/api/routes_reminders.py:778 |
 | `/{reminder_id}/export.ics` | GET | `export_one_ics` | src/tessellate/api/routes_reminders.py:422 |
-| `/{reminder_id}/notification-act` | POST | `act_from_notification` | src/tessellate/api/routes_reminders.py:819 |
-| `/{reminder_id}/notification-token` | POST | `notification_token` | src/tessellate/api/routes_reminders.py:802 |
-| `/{reminder_id}/purge` | DELETE | `purge_reminder` | src/tessellate/api/routes_reminders.py:858 |
-| `/{reminder_id}/restore` | POST | `restore_reminder` | src/tessellate/api/routes_reminders.py:851 |
+| `/{reminder_id}/notification-act` | POST | `act_from_notification` | src/tessellate/api/routes_reminders.py:823 |
+| `/{reminder_id}/notification-token` | POST | `notification_token` | src/tessellate/api/routes_reminders.py:806 |
+| `/{reminder_id}/purge` | DELETE | `purge_reminder` | src/tessellate/api/routes_reminders.py:862 |
+| `/{reminder_id}/restore` | POST | `restore_reminder` | src/tessellate/api/routes_reminders.py:855 |
 | `/{session_id}/audio` | POST | `audio` | src/tessellate/api/routes_captions.py:112 |
 | `/{session_id}/stop` | POST | `stop` | src/tessellate/api/routes_captions.py:137 |
 | `/{turn_id}` | DELETE | `delete_ask_turn` | src/tessellate/api/routes_ask_history.py:183 |
@@ -13913,7 +13913,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10768)
+## Backend modules (10769)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -19352,19 +19352,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_counts` | src/tessellate/ai/review_digest.py:90 |
-| `_listed` | src/tessellate/ai/review_digest.py:59 |
-| `_named` | src/tessellate/ai/review_digest.py:64 |
+| `_counts` | src/tessellate/ai/review_digest.py:94 |
+| `_listed` | src/tessellate/ai/review_digest.py:63 |
+| `_named` | src/tessellate/ai/review_digest.py:68 |
 | `_notes` | src/tessellate/ai/review_digest.py:20 |
-| `_reminder_lines` | src/tessellate/ai/review_digest.py:99 |
-| `_reminder_words` | src/tessellate/ai/review_digest.py:48 |
-| `_reminders` | src/tessellate/ai/review_digest.py:75 |
-| `_unlinked` | src/tessellate/ai/review_digest.py:81 |
-| `answer` | src/tessellate/ai/review_digest.py:164 |
-| `day` | src/tessellate/ai/review_digest.py:139 |
-| `reminder_note` | src/tessellate/ai/review_digest.py:156 |
-| `span` | src/tessellate/ai/review_digest.py:130 |
-| `week` | src/tessellate/ai/review_digest.py:116 |
+| `_reminder_lines` | src/tessellate/ai/review_digest.py:103 |
+| `_reminder_words` | src/tessellate/ai/review_digest.py:52 |
+| `_reminders` | src/tessellate/ai/review_digest.py:79 |
+| `_unlinked` | src/tessellate/ai/review_digest.py:85 |
+| `answer` | src/tessellate/ai/review_digest.py:168 |
+| `day` | src/tessellate/ai/review_digest.py:143 |
+| `reminder_note` | src/tessellate/ai/review_digest.py:160 |
+| `span` | src/tessellate/ai/review_digest.py:134 |
+| `week` | src/tessellate/ai/review_digest.py:120 |
 
 ### src/tessellate/ai/review_words.py (1)
 
@@ -22818,7 +22818,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `MagicAddBody` | src/tessellate/api/routes_reminders.py:79 |
-| `NotificationAct` | src/tessellate/api/routes_reminders.py:812 |
+| `NotificationAct` | src/tessellate/api/routes_reminders.py:816 |
 | `ReminderCreate` | src/tessellate/api/routes_reminders.py:55 |
 | `ReminderUpdate` | src/tessellate/api/routes_reminders.py:90 |
 | `SuggestBody` | src/tessellate/api/routes_reminders.py:605 |
@@ -22842,22 +22842,22 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_target` | src/tessellate/api/routes_reminders.py:124 |
 | `_to_out` | src/tessellate/api/routes_reminders.py:161 |
 | `_writable` | src/tessellate/api/routes_reminders.py:234 |
-| `act_from_notification` | src/tessellate/api/routes_reminders.py:820 |
+| `act_from_notification` | src/tessellate/api/routes_reminders.py:824 |
 | `calendar_links` | src/tessellate/api/routes_reminders.py:430 |
 | `complete_reminder` | src/tessellate/api/routes_reminders.py:779 |
 | `create_reminder` | src/tessellate/api/routes_reminders.py:554 |
-| `delete_reminder` | src/tessellate/api/routes_reminders.py:843 |
+| `delete_reminder` | src/tessellate/api/routes_reminders.py:847 |
 | `export_ics` | src/tessellate/api/routes_reminders.py:415 |
 | `export_one_ics` | src/tessellate/api/routes_reminders.py:423 |
 | `import_ics` | src/tessellate/api/routes_reminders.py:489 |
 | `list_reminders` | src/tessellate/api/routes_reminders.py:518 |
 | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:639 |
-| `notification_token` | src/tessellate/api/routes_reminders.py:803 |
-| `purge_reminder` | src/tessellate/api/routes_reminders.py:859 |
+| `notification_token` | src/tessellate/api/routes_reminders.py:807 |
+| `purge_reminder` | src/tessellate/api/routes_reminders.py:863 |
 | `read_when` | src/tessellate/api/routes_reminders.py:587 |
 | `reminder_counts` | src/tessellate/api/routes_reminders.py:258 |
 | `reminders_due` | src/tessellate/api/routes_reminders.py:300 |
-| `restore_reminder` | src/tessellate/api/routes_reminders.py:852 |
+| `restore_reminder` | src/tessellate/api/routes_reminders.py:856 |
 | `suggest_reminder` | src/tessellate/api/routes_reminders.py:611 |
 | `update_reminder` | src/tessellate/api/routes_reminders.py:733 |
 
@@ -23197,7 +23197,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `tidy_undismiss` | src/tessellate/api/routes_tidy.py:107 |
 | `tidy_undo` | src/tessellate/api/routes_tidy.py:71 |
 
-### src/tessellate/api/routes_timeline.py (33)
+### src/tessellate/api/routes_timeline.py (34)
 
 | Name | File:line |
 |---|---|
@@ -23228,11 +23228,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_ranged_entries` | src/tessellate/api/routes_timeline.py:716 |
 | `_requested_kinds` | src/tessellate/api/routes_timeline.py:105 |
 | `_source_pages` | src/tessellate/api/routes_timeline.py:574 |
-| `_span_said_by_model` | src/tessellate/api/routes_timeline.py:880 |
+| `_span_said_by_model` | src/tessellate/api/routes_timeline.py:885 |
+| `_span_said_in_time` | src/tessellate/api/routes_timeline.py:910 |
 | `_thread_bands` | src/tessellate/api/routes_timeline.py:810 |
 | `_window` | src/tessellate/api/routes_timeline.py:524 |
 | `_with_placement` | src/tessellate/api/routes_timeline.py:693 |
-| `span_digest` | src/tessellate/api/routes_timeline.py:906 |
+| `span_digest` | src/tessellate/api/routes_timeline.py:933 |
 | `timeline` | src/tessellate/api/routes_timeline.py:381 |
 
 ### src/tessellate/api/routes_translate.py (2)
@@ -26700,9 +26701,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_reread` | src/tessellate/entry/redate.py:46 |
-| `enqueue_if_pending` | src/tessellate/entry/redate.py:93 |
+| `enqueue_if_pending` | src/tessellate/entry/redate.py:97 |
 | `pending` | src/tessellate/entry/redate.py:38 |
-| `run` | src/tessellate/entry/redate.py:60 |
+| `run` | src/tessellate/entry/redate.py:64 |
 
 ### src/tessellate/entry/sample_notebook.py (3)
 
@@ -27675,7 +27676,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21867)
+## Tests (21871)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29690,7 +29691,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_records_a3.py | 16 |
 | tests/test_recurring_rules_l493.py | 1 |
 | tests/test_recycle_bin.py | 18 |
-| tests/test_redate.py | 6 |
+| tests/test_redate.py | 7 |
 | tests/test_redos_1031b.py | 6 |
 | tests/test_redos_1107.py | 2 |
 | tests/test_redos_r3_1107.py | 2 |
@@ -29933,7 +29934,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_starter_acts.py | 7 |
 | tests/test_starter_acts_tabs.py | 2 |
 | tests/test_startup_maintenance_off_path.py | 1 |
-| tests/test_state_machines_1747.py | 8 |
+| tests/test_state_machines_1747.py | 9 |
 | tests/test_static_compression.py | 6 |
 | tests/test_static_freshness.py | 5 |
 | tests/test_static_precompressed.py | 7 |
@@ -30044,7 +30045,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_timeline_recall_hold.py | 2 |
 | tests/test_timeline_render_superseded.py | 1 |
 | tests/test_timeline_span_ask.py | 3 |
-| tests/test_timeline_span_digest.py | 10 |
+| tests/test_timeline_span_digest.py | 12 |
 | tests/test_timeline_spans.py | 6 |
 | tests/test_timeline_spans_view.py | 5 |
 | tests/test_timeline_strip_ahead_1316.py | 3 |

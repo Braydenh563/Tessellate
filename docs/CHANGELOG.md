@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fixes from the review on PR 222: the span review reads only its own days from the database and stops waiting for the model after 8 seconds (the composed review instead); Done on a reminder in the bell names the time it was raised for, so one ticked elsewhere is not rolled twice, and the row then says where it is, with focus on that line; notes saved before a range's last day was kept are read again once, so the calendar runs them across their days.
 - Fixes from CI on PR 225: `entry_dates.until` has its alembic revision; Done on a reminder in the bell says when it fails and offers Undo (the due time back, reopened) with redo.
 - Fixes from CI on PR 225: a legacy zone name (Asia/Calcutta) is stored as its current name on every tz database; the span review lists at most 200 notes and says how many more; its refusals read as sentences; the gap line and the span count use the plural helper.
 - Timeline: the span review is said by the model when one runs (the span's notes, the utility model, librarian's prompt budget) and by the composer otherwise or when the call fails, so model on and off both answer (CHAT_PLAN decision 75); the Review button waits busy while it reads (`tests/test_timeline_span_digest.py`, four fake-transport tests).
