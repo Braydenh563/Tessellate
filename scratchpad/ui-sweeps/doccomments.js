@@ -387,7 +387,8 @@ const seed = (title, content) => `(async () => {
     await wait(200);
     const shelf = [...document.querySelectorAll("#doc-comments-resolved .doc-comment-item")];
     const shelfInfo = { rows: shelf.length, context: shelf[0]?.querySelector(".doc-comment-context")?.textContent, expanded: toggle.getAttribute("aria-expanded") };
-    shelf[0].querySelector(".doc-comment-action").click();
+    // A resolved row also has Reply (first in the row since resolved threads can be answered); Reopen is the last action.
+    shelf[0].querySelector(".doc-comment-action:last-of-type, [title^=\"Reopen\"]").click();
     await wait(700);
     return JSON.stringify({
       afterReload,
