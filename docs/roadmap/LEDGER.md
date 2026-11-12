@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 73 | 4 | 0 | 17 | 173 |
+| ui-modernisation | 96 | 71 | 4 | 0 | 17 | 171 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 13 | 0 | 0 | 0 | 13 |
-| all | 553 | 645 | 158 | 3 | 191 | 1356 |
+| all | 553 | 643 | 158 | 3 | 191 | 1354 |
 
 ## graph
 
@@ -494,7 +494,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L393** `ui-modernisation` open, S: Fix phone collapsed row buttons overflowing the right edge by 87.8px. From OPEN.md:744; OPEN.md:3549. Evidence: Measured, unchanged per row; no fix commit found
 - [ ] **L395** `ui-modernisation` open, S: Fix select-btn and notes-filter-menu dock-word clipping at 320-1024. From OPEN.md:1837. Evidence: No CSS rule for these selectors found by grep
 - [ ] **L400** `ui-modernisation` open, S: Flatten Library > Contents > Probe document > Outline from depth 4. From OPEN.md:3706. Evidence: One destination at depth 4; no flattening commit found
-- [ ] **L401** `ui-modernisation` open, S: Measure closed .doc-dock-menu-list paint at 390 and record the number. From OPEN.md:613; OPEN.md:3453. Evidence: Rules exist in 02-chat-graph.css:2477,5080; closed-paint measurement not recorded
 - [ ] **L402** `ui-modernisation` open, S: Redesign code document dock at 390 (238px, four rows). From OPEN.md:1454; OPEN.md:2616. Evidence: Measurement; no redesign found in HISTORY
 - [ ] **L403** `ui-modernisation` open, S: Drive and fix doc-focus panels covering the page at 720-819px. From OPEN.md:1825; OPEN.md:3477. Evidence: tests/test_doc_focus_resize_1408.py, test_doc_panels_154x exist; 720-819 sweep not confirmed
 - [ ] **L404** `ui-modernisation` open, S: Fix focus ring touching viewport edge on body-level fixed sheet (phone Writing room draft textarea). From OPEN.md:3506. Evidence: No measured fix; phone Writing room draft textarea.
@@ -502,7 +501,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L406** `ui-modernisation` open, S: Raise output grip to the 44px touch floor at 390 and cover run panel. From OPEN.md:3681. Evidence: No touch.js in frontend/js now; grip rule not found raised; unmeasured at 390
 - [ ] **L408** `ui-modernisation` open, S: Run the dark-theme axe sweep for target size and scrollable regions at 1024. From OPEN.md:627. Evidence: Measurable by axe sweep in dark at 1024; not recorded
 - [ ] **L409** `ui-modernisation` open, S: Check moved rules in dark and phone width, and first bell press on a slow link. From OPEN.md:638. Evidence: errors.js at 390 clean; dark and slow-link checks not recorded
-- [ ] **L410** `ui-modernisation` open, S: Measure nav history popup placement on a phone at 390 (status-bar button not drawn). From OPEN.md:728; OPEN.md:2239. Evidence: Status-bar button not drawn at 390; placement on a real phone unmeasured
 - [ ] **L411** `ui-modernisation` open, S: Check the Settings voice row in dark theme (only light checked). From OPEN.md:833; OPEN.md:3513. Evidence: Only light checked per row; THEME=dark run not recorded
 - [ ] **L412** `ui-modernisation` open, S: Re-measure Logs More menu .dock-menu-check rows and board Start/End menus against other menu items. From OPEN.md:1207; OPEN.md:2523. Evidence: 07-whiteboard-misc.css:9720 .dock-menu-check now token padding; re-measure of Logs menu and board menus not shown.
 - [ ] **L415** `ui-modernisation` open, S: Measure the status ring under 'auto' motion. From OPEN.md:1758. Evidence: No later measurement found; needs a sweep of the status ring in auto motion

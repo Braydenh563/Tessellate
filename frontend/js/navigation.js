@@ -930,10 +930,15 @@ async function openNavHistoryMenu(anchorEl) {
   // status bar): only `left` needs computing, and only after the menu is
   // visible and populated, so its real width is known.
   const margin = 8;
+  //: **On a phone the opener can be a row in a sheet** (L410): Recent places
+  //: in the bar's sheet clicks a button with no box at 390, which put the menu
+  //: flush on the left edge. It anchors to Back, as the header's long press
+  //: does, so nav-history-lazy.css's phone shift lands it under the header.
+  if (!anchorEl?.getClientRects().length) anchorEl = $("status-back") || anchorEl;
   const anchor = anchorEl.getBoundingClientRect();
   menu.style.left = "0px";
   const box = menu.getBoundingClientRect();
-  let left = anchor.left;
+  let left = Math.max(margin, anchor.left);
   if (left + box.width > window.innerWidth - margin) {
     left = Math.max(margin, window.innerWidth - margin - box.width);
   }

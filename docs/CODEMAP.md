@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2773, CSS sections 525, backend routes 700, backend modules 10772, test files 2697, tests 21886, plan headings 683, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2773, CSS sections 525, backend routes 700, backend modules 10772, test files 2698, tests 21887, plan headings 683, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -776,63 +776,63 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2469 |
-| `activeNotesSection` | frontend/js/navigation.js:2289 |
+| `aboveDockFab` | frontend/js/navigation.js:2474 |
+| `activeNotesSection` | frontend/js/navigation.js:2294 |
 | `arrowNavTarget` | frontend/js/navigation.js:203 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1820 |
-| `chatMidStream` | frontend/js/navigation.js:1752 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1825 |
+| `chatMidStream` | frontend/js/navigation.js:1757 |
 | `closeNavHistoryMenu` | frontend/js/navigation.js:903 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1782 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2602 |
-| `entryLabel` | frontend/js/navigation.js:1001 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2563 |
-| `goToTabHistory` | frontend/js/navigation.js:1092 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1731 |
-| `hideClosedDockMenuLists` | frontend/js/navigation.js:1501 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2359 |
-| `initScrollTopButton` | frontend/js/navigation.js:2622 |
-| `insideClosedDetails` | frontend/js/navigation.js:1555 |
-| `loadSurface` | frontend/js/navigation.js:1299 |
-| `measureSpacingPx` | frontend/js/navigation.js:2593 |
-| `menuOfOpener` | frontend/js/navigation.js:1577 |
-| `menuRowsOf` | frontend/js/navigation.js:1562 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1787 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2607 |
+| `entryLabel` | frontend/js/navigation.js:1006 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2568 |
+| `goToTabHistory` | frontend/js/navigation.js:1097 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1736 |
+| `hideClosedDockMenuLists` | frontend/js/navigation.js:1506 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2364 |
+| `initScrollTopButton` | frontend/js/navigation.js:2627 |
+| `insideClosedDetails` | frontend/js/navigation.js:1560 |
+| `loadSurface` | frontend/js/navigation.js:1304 |
+| `measureSpacingPx` | frontend/js/navigation.js:2598 |
+| `menuOfOpener` | frontend/js/navigation.js:1582 |
+| `menuRowsOf` | frontend/js/navigation.js:1567 |
 | `mermaidSoon` | frontend/js/navigation.js:368 |
-| `openHistoryEntry` | frontend/js/navigation.js:1152 |
+| `openHistoryEntry` | frontend/js/navigation.js:1157 |
 | `openNavHistoryMenu` | frontend/js/navigation.js:923 |
 | `openRowMenu` | frontend/js/navigation.js:150 |
 | `openSelectionScope` | frontend/js/navigation.js:316 |
-| `paintTabHistory` | frontend/js/navigation.js:950 |
-| `placeDockMenuInWindow` | frontend/js/navigation.js:1370 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2478 |
-| `recordTabVisit` | frontend/js/navigation.js:1038 |
-| `recordingLive` | frontend/js/navigation.js:1759 |
+| `paintTabHistory` | frontend/js/navigation.js:955 |
+| `placeDockMenuInWindow` | frontend/js/navigation.js:1375 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2483 |
+| `recordTabVisit` | frontend/js/navigation.js:1043 |
+| `recordingLive` | frontend/js/navigation.js:1764 |
 | `renameFocusedRow` | frontend/js/navigation.js:178 |
 | `renderMarkdown` | frontend/js/navigation.js:377 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2250 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2269 |
-| `restoreSettingsScroll` | frontend/js/navigation.js:1139 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2255 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2274 |
+| `restoreSettingsScroll` | frontend/js/navigation.js:1144 |
 | `revealTab` | frontend/js/navigation.js:813 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:127 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2445 |
-| `scrollingPage` | frontend/js/navigation.js:2398 |
-| `showNotesSection` | frontend/js/navigation.js:2294 |
-| `spacingPx` | frontend/js/navigation.js:2586 |
-| `stepTabHistory` | frontend/js/navigation.js:1082 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2196 |
-| `surfaceRecovered` | frontend/js/navigation.js:1277 |
-| `switchTab` | frontend/js/navigation.js:1869 |
-| `syncScrollLock` | frontend/js/navigation.js:2764 |
-| `tabLabel` | frontend/js/navigation.js:989 |
-| `tabPlaceholder` | frontend/js/navigation.js:2132 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2113 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2123 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2102 |
-| `usageCount` | frontend/js/navigation.js:1830 |
-| `usageFeatureName` | frontend/js/navigation.js:1826 |
-| `usageFlush` | frontend/js/navigation.js:1834 |
-| `watchDockMenuPlacement` | frontend/js/navigation.js:1432 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2450 |
+| `scrollingPage` | frontend/js/navigation.js:2403 |
+| `showNotesSection` | frontend/js/navigation.js:2299 |
+| `spacingPx` | frontend/js/navigation.js:2591 |
+| `stepTabHistory` | frontend/js/navigation.js:1087 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2201 |
+| `surfaceRecovered` | frontend/js/navigation.js:1282 |
+| `switchTab` | frontend/js/navigation.js:1874 |
+| `syncScrollLock` | frontend/js/navigation.js:2769 |
+| `tabLabel` | frontend/js/navigation.js:994 |
+| `tabPlaceholder` | frontend/js/navigation.js:2137 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2118 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2128 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2107 |
+| `usageCount` | frontend/js/navigation.js:1835 |
+| `usageFeatureName` | frontend/js/navigation.js:1831 |
+| `usageFlush` | frontend/js/navigation.js:1839 |
+| `watchDockMenuPlacement` | frontend/js/navigation.js:1437 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2782 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2787 |
 
 ### frontend/js/router.js (12)
 
@@ -27700,7 +27700,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21886)
+## Tests (21887)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29344,6 +29344,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_namemark_follow_cost.py | 2 |
 | tests/test_native_imports.py | 12 |
 | tests/test_natural_voice_q34.py | 14 |
+| tests/test_nav_history_phone_anchor_l410.py | 1 |
 | tests/test_nav_history_rows.py | 10 |
 | tests/test_nav_history_seed.py | 2 |
 | tests/test_nav_overlay_entries.py | 6 |
@@ -30822,13 +30823,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-general-41) | docs/roadmap/BACKLOG.md:4415 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4382 |
-| Needs hardware | docs/roadmap/LEDGER.md:860 |
+| Needs hardware | docs/roadmap/LEDGER.md:858 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:852 |
+| Owner calls | docs/roadmap/LEDGER.md:850 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4255 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31004,7 +31005,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1056 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1054 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2632 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31058,25 +31059,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:59 |
-| chat | docs/roadmap/LEDGER.md:1072 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1156 |
+| chat | docs/roadmap/LEDGER.md:1070 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1154 |
 | documents | docs/roadmap/LEDGER.md:367 |
-| documents | docs/roadmap/LEDGER.md:1096 |
-| general | docs/roadmap/LEDGER.md:836 |
+| documents | docs/roadmap/LEDGER.md:1094 |
+| general | docs/roadmap/LEDGER.md:834 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1060 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1168 |
+| graph | docs/roadmap/LEDGER.md:1058 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1166 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4391 |
 | mindmap | docs/roadmap/LEDGER.md:447 |
-| mindmap | docs/roadmap/LEDGER.md:1108 |
-| timeline | docs/roadmap/LEDGER.md:565 |
-| timeline | docs/roadmap/LEDGER.md:1132 |
+| mindmap | docs/roadmap/LEDGER.md:1106 |
+| timeline | docs/roadmap/LEDGER.md:563 |
+| timeline | docs/roadmap/LEDGER.md:1130 |
 | ui-modernisation | docs/roadmap/LEDGER.md:485 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1120 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1118 |
 | whiteboard | docs/roadmap/LEDGER.md:320 |
-| whiteboard | docs/roadmap/LEDGER.md:1084 |
-| world-class | docs/roadmap/LEDGER.md:600 |
-| world-class | docs/roadmap/LEDGER.md:1144 |
+| whiteboard | docs/roadmap/LEDGER.md:1082 |
+| world-class | docs/roadmap/LEDGER.md:598 |
+| world-class | docs/roadmap/LEDGER.md:1142 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2802 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2853 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2960 |
