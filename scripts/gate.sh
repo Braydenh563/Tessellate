@@ -80,6 +80,11 @@ step() {  # name, command...
   else failed+=("$name"); fi
 }
 LINTS=(tests/test_style_scale.py tests/test_ui_signatures.py tests/test_css_braces.py
+  # Repo-wide ratchets no one file's name selects for --changed: each went red
+  # only on CI on PR 225 (2026-11-12) after targeted tests and lints passed.
+  tests/test_silent_mutations.py tests/test_undo_coverage.py tests/test_add_column_sites_1031.py
+  tests/test_server_detail_wording.py tests/test_list_routes_by_shape.py tests/test_css_regex_anchor.py
+  tests/test_plural_helper.py
   tests/test_css_invalidation.py
   tests/test_frontend_ids.py tests/test_frontend_handlers.py tests/test_dock_grammar.py
   tests/test_status_bar_grammar.py
