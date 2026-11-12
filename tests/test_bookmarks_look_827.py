@@ -60,11 +60,12 @@ def test_refresh_keeps_the_icon_excerpt_and_text(client, app_state, net, monkeyp
     _site(net)
     monkeypatch.setattr(webclip, "fetch_icon", lambda url: "data:image/png;base64,AAAA")
     made = _make(client)
-    out = client.post(f"/bookmarks/{made['id']}/refresh").json()
+    bid = made["id"]
+    out = client.post(f"/bookmarks/{bid}/refresh").json()
     assert out["favicon"] == "data:image/png;base64,AAAA"
     assert out["excerpt"] and len(out["excerpt"]) <= 400 and out["has_text"] is True
     assert out["title"], "a link saved with no title takes the page's"
-    reply = client.get(f"/bookmarks/{made['id']}/text").json()["text"]
+    reply = client.get(f"/bookmarks/{bid}/text").json()["text"]
     assert reply
     listed = client.get("/bookmarks").json()
     assert "page_text" not in listed[0], "the list stays light"
@@ -141,3 +142,10 @@ def test_a_page_that_will_not_load_leaves_the_saved_link_alone(client, app_state
     made = _make(client)
     reply = client.get("/bookmarks").json()[0]["id"]
     assert reply == made["id"]
+
+
+def test_the_text_of_a_link_that_is_not_there_is_refused(client):
+    #: A plain id variable, the shape tests/test_routes_named.py reads.
+    bid = 987654
+    assert client.get(f"/bookmarks/{bid}/text").status_code == 404
+    assert client.post(f"/bookmarks/{bid}/refresh").status_code == 404
