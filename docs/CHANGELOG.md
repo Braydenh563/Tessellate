@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map: INBOX 1342 (links attach only top or bottom) checked: radial and free use sides for 7 of 13 lines, tree-right and tree-both 13 of 13; no change.
 - Mind map: a fishbone's ribs meet each main topic at its spine-side corner, so none runs behind that topic's cause boxes (3 of 4 mains before, 0 after); the layouts sweep's branch-bar check measures a branch topic, not the centre.
 - Mind map: the + on a selected topic at 25% zoom is 20px and flush on the topic, so it no longer covers the parent (9px before); in a downward tree the buttons hang under the topic instead of over the left sibling (mapactions.js, radial and tree-down at 25%, 50%, 100%, 200%).
 - Fix: Ask as of a day answers "what did I write" with the notebook as it stood, not the newest note; `TurnFrame` lives in `api/schemas.py`, so conversations no longer import the chat stack (import cycle); tests follow the Settings load code into settings-prefs.js.

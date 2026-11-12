@@ -9,6 +9,13 @@ that answers "has this been done?" before anyone starts.
 
 ## Moved from the plans, 2026-11-12 (mindmap-plan: mapquick)
 
+From MINDMAP_PLAN.md "Placed from INBOX, 2026-10-19 (edge sides; next PR)", verbatim:
+
+1342. **The owner, 2026-10-19, verbatim.** "also the mindmap links will always connect only to the top or bottom of nodes, never the sides, should they?"
+     Measured by code reading: `wbMapEdgeAnchors` (whiteboard-map.js:3224) uses the sides for tree-right, tree-left, tree-both and logic-right, and top and bottom for tree-down and org. For radial and free it picks the axis per edge, comparing top-left corners; a check of that rule shows a child beside its parent already gets a side edge, so the corner comparison is not the cause. Reproduce on the owner's map first (layout, `child._bl` branch layouts, and whether `wbMapEdgePathD` honours `horizontal`).
+
+- **Checked 2026-11-12 (mapquick), INBOX 1342 not reproduced:** `wbMapEdgeAnchors` (whiteboard-map.js:3549) on a 13-topic map: radial and free 7 side and 6 top or bottom anchors (a child straight above or below gets top or bottom, 6 of 6 there have |dy| > |dx|), tree-right and tree-both 13 of 13 side, tree-down 13 of 13 top or bottom by design (a topic beside its parent already gets a side through `wbMapBesideParent`), `child._bl` is read first so a branch takes its own layout's sides; `wbMapEdgeCubic` bends on `a.horizontal` (whiteboard-map.js:3703). A line can be pinned to any side by hand (`edge_from`, `edge_to`).
+
 From MINDMAP_PLAN.md "Placed from INBOX, 2026-10-11 (the topic's tools)", verbatim:
 
 Owner: the mapfix agent (Sonnet).
