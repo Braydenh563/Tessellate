@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: indent guides in code files and js-beautify on a selection are built and measured (L298, L300)
 - Documents: the code editor already fills the pane; no 78ch cap on code files (L292)
 - Documents: the documents list in the dark theme measured with rows loaded (L291)
 - Documents: an embedded note's attached-image thumbnail renders in a [[ preview, measured (L289)

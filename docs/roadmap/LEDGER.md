@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 42 | 13 | 0 | 18 | 125 |
-| documents | 70 | 42 | 13 | 0 | 18 | 125 |
-| documents | 70 | 42 | 13 | 0 | 18 | 125 |
+| documents | 70 | 41 | 13 | 0 | 18 | 124 |
+| documents | 70 | 41 | 13 | 0 | 18 | 124 |
+| documents | 70 | 41 | 13 | 0 | 18 | 124 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 682 | 153 | 3 | 195 | 1388 |
-| all | 553 | 682 | 153 | 3 | 195 | 1388 |
-| all | 553 | 682 | 153 | 3 | 195 | 1388 |
+| all | 553 | 681 | 153 | 3 | 195 | 1387 |
+| all | 553 | 681 | 153 | 3 | 195 | 1387 |
+| all | 553 | 681 | 153 | 3 | 195 | 1387 |
 
 ## graph
 
@@ -366,7 +366,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L293** `documents` open, S: Preserve run state when a never-ending console loop is killed after 10 s. From OPEN.md:1468. Evidence: Design limit; worker terminate path unchanged, no preservation found
 - [ ] **L294** `documents` open, S: Give the split second half completions, lint, snippets and run panel. From OPEN.md:1469. Evidence: No change found in documents split code; limitation recorded
-- [ ] **L298** `documents` open, S: Decide and vendor an indent-guides extension for the CodeMirror bundle. From OPEN.md:1508. Evidence: Active line built; no indent-markers extension found in vendor; needs vendoring decision
 - [ ] **L300** `documents` open, S: Use js-beautify on a selection instead of conservative re-indent. From OPEN.md:1968. Evidence: Selection keeps conservative re-indent; no change
 - [ ] **L305** `documents` open, S: Probe Documents in dark run; map add undo flaky between runs. From OPEN.md:3696. Evidence: Re-run both before quoting; no re-run record found
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines.
