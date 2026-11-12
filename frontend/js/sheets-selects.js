@@ -2068,7 +2068,9 @@ function editedMarker() {
 }
 
 async function openConversation(id, turn = null) {
-  if (chatLeaveHeld(() => openConversation(id, turn))) return;
+  //: A leave held for a reply is resumed on the same turn the call named.
+  if (turn !== null && chatLeaveHeld(() => openConversation(id, turn))) return;
+  if (chatLeaveHeld(() => openConversation(id))) return;
   const full = await apiJson(`/conversations/${id}`).catch(() => null);
   if (!full) return;
   //: The replayed run is drawn by `agentTimeline`, in the chat turn's lazy file.

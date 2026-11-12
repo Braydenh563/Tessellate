@@ -736,11 +736,11 @@ def _wrote(body: str, i: int) -> str:
         #: Quoted as written, capital and all: it is the note's sentence.
         said = _DAY_NAME.sub(lambda m: m.group(0).capitalize(), body[:1].upper() + body[1:].rstrip("."))
         said, pinned = _unpinned(said)
-        return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{composer_story.clipped(said)}”{pinned}"
+        return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{composer_story.clipped(said, 30)}”{pinned}"
     #: A noun phrase is what the note says, not a speech act ("You jotted
     #: down Dentist appointment on 4 November": audit 1031 C32). The quote
     #: is the note, so no unnamed "Your note says" (INBOX 1512).
-    return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{composer_story.clipped(body[:1].upper() + body[1:].rstrip('.'))}”"
+    return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{composer_story.clipped(body[:1].upper() + body[1:].rstrip('.'), 30)}”"
 
 
 #: A note's own words quoted whole, with the one plain verb (fable-composer-1110 F7: a rotation of verbs read as a table).

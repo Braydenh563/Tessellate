@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8331, frontend ids 2773, CSS sections 524, backend routes 699, backend modules 10847, test files 2708, tests 22014, plan headings 688, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2773, CSS sections 524, backend routes 699, backend modules 10847, test files 2708, tests 22014, plan headings 688, app scripts 29, boot scripts 38, script files 300.
 
-## Frontend functions (8331)
+## Frontend functions (8329)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -568,13 +568,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2357 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2359 |
 | `annotateSliders` | frontend/js/sheets-selects.js:1069 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:215 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:96 |
 | `applyWebPanelWidth` | frontend/js/sheets-selects.js:528 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2456 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2406 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2458 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2408 |
 | `clampToolbarMenu` | frontend/js/sheets-selects.js:1563 |
 | `dateFieldFace` | frontend/js/sheets-selects.js:1099 |
 | `eachSidebar` | frontend/js/sheets-selects.js:192 |
@@ -582,8 +582,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `enhanceAllSelects` | frontend/js/sheets-selects.js:1080 |
 | `enhanceDateField` | frontend/js/sheets-selects.js:1109 |
 | `enhanceSelect` | frontend/js/sheets-selects.js:735 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2482 |
-| `focusFirstIn` | frontend/js/sheets-selects.js:2494 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2484 |
+| `focusFirstIn` | frontend/js/sheets-selects.js:2496 |
 | `focusSelect` | frontend/js/sheets-selects.js:1172 |
 | `formatTokens` | frontend/js/sheets-selects.js:1791 |
 | `initResizableSidebars` | frontend/js/sheets-selects.js:473 |
@@ -593,7 +593,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `layoutIsStacked` | frontend/js/sheets-selects.js:42 |
 | `lightboxReadingsFor` | frontend/js/sheets-selects.js:1762 |
 | `listFilter` | frontend/js/sheets-selects.js:1305 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2284 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2286 |
 | `loadConversationList` | frontend/js/sheets-selects.js:1867 |
 | `makeMenuItem` | frontend/js/sheets-selects.js:622 |
 | `makeSidebarResizable` | frontend/js/sheets-selects.js:334 |
@@ -602,7 +602,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openConversation` | frontend/js/sheets-selects.js:2070 |
 | `openKebabSheet` | frontend/js/sheets-selects.js:1220 |
 | `parseServerTime` | frontend/js/sheets-selects.js:1800 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2363 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2365 |
 | `relativeTime` | frontend/js/sheets-selects.js:1810 |
 | `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1671 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:546 |
@@ -615,9 +615,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
 | `sortConversations` | frontend/js/sheets-selects.js:1847 |
 | `syncSidebarInert` | frontend/js/sheets-selects.js:205 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2422 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2424 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:313 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2443 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2445 |
 | `watchForSelects` | frontend/js/sheets-selects.js:1184 |
 | `webPanelIsNarrow` | frontend/js/sheets-selects.js:512 |
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:522 |
@@ -1801,16 +1801,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stopActivityModel` | frontend/js/activity-panel.js:142 |
 | `stopAllActivity` | frontend/js/activity-panel.js:153 |
 
-### frontend/js/answer-kit.js (88)
+### frontend/js/answer-kit.js (87)
 
 | Name | File:line |
 |---|---|
 | `actNavigate` | frontend/js/answer-kit.js:2295 |
 | `addAssistantBubble` | frontend/js/answer-kit.js:1839 |
 | `addInlineCitations` | frontend/js/answer-kit.js:195 |
-| `agentRunStep` | frontend/js/answer-kit.js:2924 |
+| `agentRunStep` | frontend/js/answer-kit.js:2911 |
 | `agentRunTitle` | frontend/js/answer-kit.js:2889 |
-| `agentRunTool` | frontend/js/answer-kit.js:2956 |
+| `agentRunTool` | frontend/js/answer-kit.js:2943 |
 | `answerFigure` | frontend/js/answer-kit.js:763 |
 | `answerObject` | frontend/js/answer-kit.js:856 |
 | `applyPendingChatTitle` | frontend/js/answer-kit.js:2863 |
@@ -1818,7 +1818,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `askNotesOnTheRight` | frontend/js/answer-kit.js:950 |
 | `askOpenContext` | frontend/js/answer-kit.js:21 |
 | `assistantLabel` | frontend/js/answer-kit.js:1385 |
-| `budgetRow` | frontend/js/answer-kit.js:2910 |
 | `buildFollowupStrip` | frontend/js/answer-kit.js:2772 |
 | `chatHistoryToSend` | frontend/js/answer-kit.js:1348 |
 | `chatMessageActions` | frontend/js/answer-kit.js:1390 |
@@ -2012,43 +2011,42 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `drawAskChart` | frontend/js/ask-chart.js:281 |
 | `renderAskChart` | frontend/js/ask-chart.js:265 |
 
-### frontend/js/ask-compose.js (34)
+### frontend/js/ask-compose.js (33)
 
 | Name | File:line |
 |---|---|
-| `announceAskFoot` | frontend/js/ask-compose.js:1459 |
-| `applyThemeSteps` | frontend/js/ask-compose.js:146 |
+| `announceAskFoot` | frontend/js/ask-compose.js:1458 |
 | `askAiOffCause` | frontend/js/ask-compose.js:38 |
 | `askAnswerFrom` | frontend/js/ask-compose.js:46 |
-| `askAnswerMenu` | frontend/js/ask-compose.js:660 |
-| `askAsOf` | frontend/js/ask-compose.js:1472 |
-| `askFromNotesFold` | frontend/js/ask-compose.js:884 |
-| `askKeepAsDocument` | frontend/js/ask-compose.js:692 |
-| `askKeepAsMap` | frontend/js/ask-compose.js:714 |
-| `askKeptTitle` | frontend/js/ask-compose.js:687 |
-| `askPreAnswerCard` | frontend/js/ask-compose.js:874 |
-| `askQuestion` | frontend/js/ask-compose.js:928 |
-| `askStatusBusy` | frontend/js/ask-compose.js:1397 |
-| `askStatusText` | frontend/js/ask-compose.js:1484 |
-| `citationVerdictRow` | frontend/js/ask-compose.js:631 |
-| `digestMore` | frontend/js/ask-compose.js:467 |
-| `digestOffer` | frontend/js/ask-compose.js:507 |
-| `digestShape` | frontend/js/ask-compose.js:427 |
-| `drawWhyTrail` | frontend/js/ask-compose.js:795 |
-| `fetchComposedPeek` | frontend/js/ask-compose.js:903 |
+| `askAnswerMenu` | frontend/js/ask-compose.js:659 |
+| `askAsOf` | frontend/js/ask-compose.js:1471 |
+| `askFromNotesFold` | frontend/js/ask-compose.js:883 |
+| `askKeepAsDocument` | frontend/js/ask-compose.js:691 |
+| `askKeepAsMap` | frontend/js/ask-compose.js:713 |
+| `askKeptTitle` | frontend/js/ask-compose.js:686 |
+| `askPreAnswerCard` | frontend/js/ask-compose.js:873 |
+| `askQuestion` | frontend/js/ask-compose.js:927 |
+| `askStatusBusy` | frontend/js/ask-compose.js:1396 |
+| `askStatusText` | frontend/js/ask-compose.js:1483 |
+| `citationVerdictRow` | frontend/js/ask-compose.js:630 |
+| `digestMore` | frontend/js/ask-compose.js:466 |
+| `digestOffer` | frontend/js/ask-compose.js:506 |
+| `digestShape` | frontend/js/ask-compose.js:426 |
+| `drawWhyTrail` | frontend/js/ask-compose.js:794 |
+| `fetchComposedPeek` | frontend/js/ask-compose.js:902 |
 | `markSaidSentences` | frontend/js/ask-compose.js:114 |
-| `readWebPage` | frontend/js/ask-compose.js:361 |
-| `renderActCard` | frontend/js/ask-compose.js:155 |
-| `renderAskBoth` | frontend/js/ask-compose.js:863 |
-| `renderAskFollowups` | frontend/js/ask-compose.js:813 |
-| `renderAskHint` | frontend/js/ask-compose.js:1434 |
-| `renderAskInsights` | frontend/js/ask-compose.js:741 |
-| `renderAskTrail` | frontend/js/ask-compose.js:1503 |
+| `readWebPage` | frontend/js/ask-compose.js:360 |
+| `renderActCard` | frontend/js/ask-compose.js:144 |
+| `renderAskBoth` | frontend/js/ask-compose.js:862 |
+| `renderAskFollowups` | frontend/js/ask-compose.js:812 |
+| `renderAskHint` | frontend/js/ask-compose.js:1433 |
+| `renderAskInsights` | frontend/js/ask-compose.js:740 |
+| `renderAskTrail` | frontend/js/ask-compose.js:1502 |
 | `renderAskUseAi` | frontend/js/ask-compose.js:51 |
-| `renderAskWhy` | frontend/js/ask-compose.js:765 |
-| `renderChatMeta` | frontend/js/ask-compose.js:1301 |
-| `renderWebSources` | frontend/js/ask-compose.js:285 |
-| `setAsking` | frontend/js/ask-compose.js:1493 |
+| `renderAskWhy` | frontend/js/ask-compose.js:764 |
+| `renderChatMeta` | frontend/js/ask-compose.js:1300 |
+| `renderWebSources` | frontend/js/ask-compose.js:284 |
+| `setAsking` | frontend/js/ask-compose.js:1492 |
 | `wireAskUseAi` | frontend/js/ask-compose.js:69 |
 
 ### frontend/js/ask-history.js (10)
@@ -2819,32 +2817,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBubble` | frontend/js/chat-turn.js:2510 |
+| `addBubble` | frontend/js/chat-turn.js:2522 |
 | `agentTimeline` | frontend/js/chat-turn.js:1331 |
-| `appendRunResumeControls` | frontend/js/chat-turn.js:2404 |
-| `assistantMessageActions` | frontend/js/chat-turn.js:2609 |
-| `chatAttachmentStrip` | frontend/js/chat-turn.js:2279 |
+| `appendRunResumeControls` | frontend/js/chat-turn.js:2416 |
+| `assistantMessageActions` | frontend/js/chat-turn.js:2621 |
+| `chatAttachmentStrip` | frontend/js/chat-turn.js:2291 |
 | `chatSendTurn` | frontend/js/chat-turn.js:16 |
-| `commitStagedImages` | frontend/js/chat-turn.js:2182 |
-| `continueRunControls` | frontend/js/chat-turn.js:2834 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2782 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2879 |
-| `manualPauseControls` | frontend/js/chat-turn.js:2908 |
-| `markFollowup` | frontend/js/chat-turn.js:2934 |
-| `mountChatTimer` | frontend/js/chat-turn.js:2231 |
-| `offerFollowups` | frontend/js/chat-turn.js:2117 |
-| `offerReminder` | frontend/js/chat-turn.js:2056 |
-| `paintChatTimer` | frontend/js/chat-turn.js:2218 |
-| `removeChatBubble` | frontend/js/chat-turn.js:2958 |
-| `renderAgentQuestion` | frontend/js/chat-turn.js:1844 |
-| `renderMemoryProposal` | frontend/js/chat-turn.js:1928 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2739 |
-| `revalidateSelection` | frontend/js/chat-turn.js:2000 |
-| `saveFollowups` | frontend/js/chat-turn.js:2203 |
-| `selectionContextBlock` | frontend/js/chat-turn.js:2155 |
-| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2263 |
-| `startChatTimer` | frontend/js/chat-turn.js:2244 |
-| `stopChatTimer` | frontend/js/chat-turn.js:2253 |
+| `commitStagedImages` | frontend/js/chat-turn.js:2194 |
+| `continueRunControls` | frontend/js/chat-turn.js:2846 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2794 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2891 |
+| `manualPauseControls` | frontend/js/chat-turn.js:2920 |
+| `markFollowup` | frontend/js/chat-turn.js:2946 |
+| `mountChatTimer` | frontend/js/chat-turn.js:2243 |
+| `offerFollowups` | frontend/js/chat-turn.js:2129 |
+| `offerReminder` | frontend/js/chat-turn.js:2068 |
+| `paintChatTimer` | frontend/js/chat-turn.js:2230 |
+| `removeChatBubble` | frontend/js/chat-turn.js:2970 |
+| `renderAgentQuestion` | frontend/js/chat-turn.js:1856 |
+| `renderMemoryProposal` | frontend/js/chat-turn.js:1940 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2751 |
+| `revalidateSelection` | frontend/js/chat-turn.js:2012 |
+| `saveFollowups` | frontend/js/chat-turn.js:2215 |
+| `selectionContextBlock` | frontend/js/chat-turn.js:2167 |
+| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2275 |
+| `startChatTimer` | frontend/js/chat-turn.js:2256 |
+| `stopChatTimer` | frontend/js/chat-turn.js:2265 |
 
 ### frontend/js/chat-undo.js (10)
 
@@ -16700,42 +16698,42 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Plan` | src/tessellate/ai/composer_story.py:68 |
-| `Unit` | src/tessellate/ai/composer_story.py:198 |
+| `Unit` | src/tessellate/ai/composer_story.py:199 |
 | `_arc` | src/tessellate/ai/composer_story.py:124 |
-| `_beat` | src/tessellate/ai/composer_story.py:344 |
-| `_beats` | src/tessellate/ai/composer_story.py:315 |
+| `_beat` | src/tessellate/ai/composer_story.py:345 |
+| `_beats` | src/tessellate/ai/composer_story.py:316 |
 | `_capped` | src/tessellate/ai/composer_story.py:106 |
-| `_caps_days` | src/tessellate/ai/composer_story.py:193 |
+| `_caps_days` | src/tessellate/ai/composer_story.py:194 |
 | `_chunks` | src/tessellate/ai/composer_story.py:81 |
-| `_clause` | src/tessellate/ai/composer_story.py:215 |
-| `_clause_of` | src/tessellate/ai/composer_story.py:253 |
-| `_clean_quote` | src/tessellate/ai/composer_story.py:173 |
-| `_defined` | src/tessellate/ai/composer_story.py:207 |
-| `_first` | src/tessellate/ai/composer_story.py:231 |
+| `_clause` | src/tessellate/ai/composer_story.py:216 |
+| `_clause_of` | src/tessellate/ai/composer_story.py:254 |
+| `_clean_quote` | src/tessellate/ai/composer_story.py:174 |
+| `_defined` | src/tessellate/ai/composer_story.py:208 |
+| `_first` | src/tessellate/ai/composer_story.py:232 |
 | `_gap` | src/tessellate/ai/composer_story.py:77 |
-| `_hard_run` | src/tessellate/ai/composer_story.py:294 |
-| `_joined` | src/tessellate/ai/composer_story.py:336 |
-| `_later` | src/tessellate/ai/composer_story.py:331 |
-| `_lead_line` | src/tessellate/ai/composer_story.py:356 |
+| `_hard_run` | src/tessellate/ai/composer_story.py:295 |
+| `_joined` | src/tessellate/ai/composer_story.py:337 |
+| `_later` | src/tessellate/ai/composer_story.py:332 |
+| `_lead_line` | src/tessellate/ai/composer_story.py:357 |
 | `_lower` | src/tessellate/ai/composer_story.py:158 |
 | `_month` | src/tessellate/ai/composer_story.py:139 |
-| `_pace` | src/tessellate/ai/composer_story.py:298 |
+| `_pace` | src/tessellate/ai/composer_story.py:299 |
 | `_part` | src/tessellate/ai/composer_story.py:143 |
-| `_row` | src/tessellate/ai/composer_story.py:284 |
-| `_said_raw` | src/tessellate/ai/composer_story.py:237 |
-| `_short_quotes` | src/tessellate/ai/composer_story.py:168 |
-| `_tell_run` | src/tessellate/ai/composer_story.py:364 |
-| `_when` | src/tessellate/ai/composer_story.py:267 |
-| `_would_fill` | src/tessellate/ai/composer_story.py:420 |
-| `clause_of` | src/tessellate/ai/composer_story.py:242 |
+| `_row` | src/tessellate/ai/composer_story.py:285 |
+| `_said_raw` | src/tessellate/ai/composer_story.py:238 |
+| `_short_quotes` | src/tessellate/ai/composer_story.py:169 |
+| `_tell_run` | src/tessellate/ai/composer_story.py:365 |
+| `_when` | src/tessellate/ai/composer_story.py:268 |
+| `_would_fill` | src/tessellate/ai/composer_story.py:421 |
+| `clause_of` | src/tessellate/ai/composer_story.py:243 |
 | `clipped` | src/tessellate/ai/composer_story.py:162 |
 | `plan` | src/tessellate/ai/composer_story.py:131 |
-| `plan_of` | src/tessellate/ai/composer_story.py:404 |
-| `quoted_if_slang` | src/tessellate/ai/composer_story.py:186 |
-| `sentence` | src/tessellate/ai/composer_story.py:280 |
+| `plan_of` | src/tessellate/ai/composer_story.py:405 |
+| `quoted_if_slang` | src/tessellate/ai/composer_story.py:187 |
+| `sentence` | src/tessellate/ai/composer_story.py:281 |
 | `span_words` | src/tessellate/ai/composer_story.py:147 |
-| `story` | src/tessellate/ai/composer_story.py:384 |
-| `themed` | src/tessellate/ai/composer_story.py:425 |
+| `story` | src/tessellate/ai/composer_story.py:385 |
+| `themed` | src/tessellate/ai/composer_story.py:426 |
 
 ### src/tessellate/ai/composer_study.py (45)
 
@@ -16904,8 +16902,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `held_offer` | src/tessellate/ai/composer_talk.py:333 |
 | `previous` | src/tessellate/ai/composer_talk.py:102 |
 | `reply` | src/tessellate/ai/composer_talk.py:279 |
-| `social_turn` | src/tessellate/ai/composer_talk.py:537 |
-| `stumped_asks` | src/tessellate/ai/composer_talk.py:532 |
+| `social_turn` | src/tessellate/ai/composer_talk.py:539 |
+| `stumped_asks` | src/tessellate/ai/composer_talk.py:534 |
 
 ### src/tessellate/ai/composer_tally.py (15)
 

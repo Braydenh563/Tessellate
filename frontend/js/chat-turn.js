@@ -1643,6 +1643,18 @@ function agentTimeline(holder, options = {}) {
         for (const change of changes) box.appendChild(changeRow(change, options));
       }
       if (check) box.appendChild(verificationRow(check));
+      //: **What the run spent against its budget** (L55): the result event's `budget`, one muted line under the
+      //: changes: "Used 2 of 12 steps, 3,100 of 20,000 tokens, 8 of 90 s." A cap of 0 is no cap and is left out.
+      function budgetRow(budget) {
+        const caps = budget?.caps || {};
+        const part = (used, cap, unit) => (cap > 0 ? `${used.toLocaleString("en")} of ${cap.toLocaleString("en")} ${unit}` : null);
+        const parts = [part(budget?.steps ?? 0, caps.steps, "steps"), part(budget?.tokens ?? 0, caps.tokens, "tokens"), part(budget?.seconds ?? 0, caps.seconds, "seconds")].filter(Boolean);
+        if (!parts.length) return null;
+        const row = document.createElement("div");
+        row.className = "skill-budget muted";
+        row.textContent = `Used ${parts.join(", ")}.`;
+        return row;
+      }
       const spent = budgetRow(event.budget);
       if (spent) box.appendChild(spent);
       holder.appendChild(box);

@@ -141,18 +141,17 @@ function markSaidSentences(targets, sentences) {
 //: a rename, a move or a tag waits for them) or, once it ran (a reminder, a
 //: new note, a pin), what was done and Undo. Confirm and Undo both post the
 //: steps to `/chat/command/run`, which runs only the tools an act may use.
-//: The theme is a preference of this page (`applyThemeChoice`), so the server's `set_theme` step only
-//: acknowledges it: the page applies it here, and the step that undoes it names the theme that was showing.
-function applyThemeSteps(steps, result) {
-  const step = (steps || []).find((one) => one.name === "set_theme");
-  if (!step || !result) return result;
-  const before = prefs.get("theme", null) || "system";
-  applyThemeChoice(step.arguments.theme, true);
-  for (const inverse of result.undo || []) if (inverse.name === "set_theme") inverse.arguments = { theme: before };
-  return result;
-}
-
 function renderActCard(holder, event) {
+  //: The theme is a preference of this page (`applyThemeChoice`), so the server's `set_theme` step only
+  //: acknowledges it: the page applies it here, and the step that undoes it names the theme that was showing.
+  function applyThemeSteps(steps, result) {
+    const step = (steps || []).find((one) => one.name === "set_theme");
+    if (!step || !result) return result;
+    const before = prefs.get("theme", null) || "system";
+    applyThemeChoice(step.arguments.theme, true);
+    for (const inverse of result.undo || []) if (inverse.name === "set_theme") inverse.arguments = { theme: before };
+    return result;
+  }
   //: The card a typed yes or no answered: found by its id, which stays on it after a send marks it not pending.
   const waitingCard = (reply) => [...document.querySelectorAll(".tool-confirm")].filter((card) => (reply.consent_id ? card.consentId === reply.consent_id : !reply.label || card.dataset.askedAct === reply.label)).at(-1);
   //: "cancel" said in the chat (CHAT_PLAN X17): the server's reply closes the

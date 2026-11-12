@@ -2905,19 +2905,6 @@ function verificationRow(check) {
   return row;
 }
 
-//: **What the run spent against its budget** (L55): the result event's `budget`, one muted line under the
-//: changes: "Used 2 of 12 steps, 3,100 of 20,000 tokens, 8 of 90 s." A cap of 0 is no cap and is left out.
-function budgetRow(budget) {
-  const caps = budget?.caps || {};
-  const part = (used, cap, unit) => (cap > 0 ? `${used.toLocaleString("en")} of ${cap.toLocaleString("en")} ${unit}` : null);
-  const parts = [part(budget?.steps ?? 0, caps.steps, "steps"), part(budget?.tokens ?? 0, caps.tokens, "tokens"), part(budget?.seconds ?? 0, caps.seconds, "seconds")].filter(Boolean);
-  if (!parts.length) return null;
-  const row = document.createElement("div");
-  row.className = "skill-budget muted";
-  row.textContent = `Used ${parts.join(", ")}.`;
-  return row;
-}
-
 //: One step event from the runner. `retrying` is Phase A's own state and is
 //: the reason this panel had to change: a step that is being re-prompted looks
 //: exactly like one that is running unless it says so.

@@ -517,7 +517,9 @@ class Closing:
         """Where to begin, under a bare hello or thanks that follows no answer."""
         from tessellate.ai import question_noise  # lazy: see `social_turn`
 
-        if question_noise.social_kind(self.question) not in ("greeting", "morning", "thanks"):
+        #: Nothing before it offers none (F5, R3: small talk opening a chat stays chip-free), and the starters are
+        #: not the generic trio, which a "thanks" never repeats (`composer_chips.GENERIC`).
+        if not self.history or question_noise.social_kind(self.question) not in ("greeting", "morning", "thanks"):
             return []
         asked = [self.question, *(str(t.get("question") or "") for t in self.history or [] if isinstance(t, dict))]
         return [c for c in composer_chips.STARTERS if not composer_chips.spent(c, asked)]

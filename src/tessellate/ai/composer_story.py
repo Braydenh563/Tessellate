@@ -159,10 +159,11 @@ def _lower(clause: str) -> str:
     return clause if re.match(r"I\b|[A-Z]{2,}", clause) else clause[:1].lower() + clause[1:]
 
 
-def clipped(quote: str) -> str:
-    """A long quote cut to its first six words and an ellipsis, so a quoted line stays a clause."""
+def clipped(quote: str, limit: int = 12) -> str:
+    """A long quote cut to its first six words and an ellipsis, so a quoted line stays a clause.
+    A line quoted whole keeps its two sentences up to `limit` words (R3-11)."""
     words = quote.split()
-    return quote if len(words) <= 12 else " ".join(words[:6]).rstrip(",;:") + "…"
+    return quote if len(words) <= limit else " ".join(words[:6]).rstrip(",;:") + "…"
 
 
 def _short_quotes(body: str) -> str:
