@@ -1810,47 +1810,59 @@ const WB_MAP_INLINE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\
 function wbMapInlineText(el, raw) {
   if (!el) return;
   el.replaceChildren();
-  for (const piece of String(raw || "").split(WB_MAP_INLINE)) {
-    if (!piece) continue;
-    let tag = null;
-    let inner = piece;
-    const linked = /^\[([^\]\n]+)\]\(([^)\s]+)\)$/.exec(piece);
-    //: A link whose address is not http, https or mailto stays the words it was typed as (L375): the same three schemes as a topic's own link, so a `javascript:` or `data:` address is never made live. The anchor carries the real address (a middle click and the status bar tell the truth), but a plain click only selects, as on any topic: it opens from Ctrl/Cmd or from a topic that was already selected before the press, through `window.open` with `noopener`, the way the Link door does.
-    if (linked && WB_MAP_LINK_SCHEMES.test(linked[2])) {
-      const anchor = document.createElement("a");
-      anchor.className = "wb-map-inline-link";
-      anchor.textContent = linked[1];
-      anchor.href = linked[2];
-      anchor.target = "_blank";
-      anchor.rel = "noopener noreferrer";
-      let wasSelected = false;
-      anchor.addEventListener("pointerdown", () => { wasSelected = !!anchor.closest(".wb-selected"); });
-      anchor.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        if (el.isContentEditable) return;
-        if (ev.ctrlKey || ev.metaKey || wasSelected) window.open(linked[2], "_blank", "noopener,noreferrer");
-      });
-      el.append(anchor);
-      continue;
+  //: **`$formula$` first** (L-mindmap-2), cut out before the bold, code and link grammar sees it, the way a note's inline text does: the same `INLINE_MATH_RE` rule (no space inside the dollars, "$5 and $10" stays money) and the same TeX-to-MathML drawing as the notes (`mdInlineMathElement`, which asks for the documents bundle itself if it has not loaded and redraws in place). Inline code needed nothing: `code` already draws as a code span above.
+  const text = String(raw || "");
+  const run = (chunk) => {
+    for (const piece of String(chunk || "").split(WB_MAP_INLINE)) {
+      if (!piece) continue;
+      let tag = null;
+      let inner = piece;
+      const linked = /^\[([^\]\n]+)\]\(([^)\s]+)\)$/.exec(piece);
+      //: A link whose address is not http, https or mailto stays the words it was typed as (L375): the same three schemes as a topic's own link, so a `javascript:` or `data:` address is never made live. The anchor carries the real address (a middle click and the status bar tell the truth), but a plain click only selects, as on any topic: it opens from Ctrl/Cmd or from a topic that was already selected before the press, through `window.open` with `noopener`, the way the Link door does.
+      if (linked && WB_MAP_LINK_SCHEMES.test(linked[2])) {
+        const anchor = document.createElement("a");
+        anchor.className = "wb-map-inline-link";
+        anchor.textContent = linked[1];
+        anchor.href = linked[2];
+        anchor.target = "_blank";
+        anchor.rel = "noopener noreferrer";
+        let wasSelected = false;
+        anchor.addEventListener("pointerdown", () => { wasSelected = !!anchor.closest(".wb-selected"); });
+        anchor.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          if (el.isContentEditable) return;
+          if (ev.ctrlKey || ev.metaKey || wasSelected) window.open(linked[2], "_blank", "noopener,noreferrer");
+        });
+        el.append(anchor);
+        continue;
+      }
+      if (piece.length > 4 && piece.startsWith("**") && piece.endsWith("**")) {
+        tag = "strong";
+        inner = piece.slice(2, -2);
+      } else if (piece.length > 2 && piece.startsWith("*") && piece.endsWith("*")) {
+        tag = "em";
+        inner = piece.slice(1, -1);
+      } else if (piece.length > 2 && piece.startsWith("`") && piece.endsWith("`")) {
+        tag = "code";
+        inner = piece.slice(1, -1);
+      }
+      if (!tag) {
+        el.append(document.createTextNode(piece));
+        continue;
+      }
+      const marked = document.createElement(tag);
+      marked.textContent = inner;
+      el.append(marked);
     }
-    if (piece.length > 4 && piece.startsWith("**") && piece.endsWith("**")) {
-      tag = "strong";
-      inner = piece.slice(2, -2);
-    } else if (piece.length > 2 && piece.startsWith("*") && piece.endsWith("*")) {
-      tag = "em";
-      inner = piece.slice(1, -1);
-    } else if (piece.length > 2 && piece.startsWith("`") && piece.endsWith("`")) {
-      tag = "code";
-      inner = piece.slice(1, -1);
-    }
-    if (!tag) {
-      el.append(document.createTextNode(piece));
-      continue;
-    }
-    const marked = document.createElement(tag);
-    marked.textContent = inner;
-    el.append(marked);
+  };
+  const math = typeof INLINE_MATH_RE === "undefined" || typeof mdInlineMathElement !== "function" ? null : new RegExp(INLINE_MATH_RE.source, "g");
+  let cursor = 0;
+  for (let hit = math?.exec(text); hit; hit = math.exec(text)) {
+    run(text.slice(cursor, hit.index));
+    el.append(mdInlineMathElement(hit[1].trim()));
+    cursor = math.lastIndex;
   }
+  run(text.slice(cursor));
 }
 
 //: **The topic's current object, not the one its handlers were built with.**

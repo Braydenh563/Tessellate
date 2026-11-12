@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Mind map (L-mindmap-2): `$x^2$` in a topic's text draws as an equation (the notes' own maths rule and renderer, so "$5 and $10" stays money); inline `code` already drew.
 - Mind map (L375): `[words](https://address)` in a topic's text draws as a link (http, https and mailto only; anything else stays plain text); a click selects the topic, Ctrl/Cmd+click or a click on a selected topic opens it.
 - Mind map (L-mindmap-1): View, How this map looks has a Saved looks row: Save this look keeps the map's whole theme under a name on this device, picking one applies it to any map in one Undo step, Forget removes it (twenty at most).
 - Mind map (L-mindmap-6): the palette names the two colour wells, `Topic fill colour` (a selected topic) and `Map background colour`; a search for fill, colour, color or background used to find neither, now both rank in the top five. They click the existing wells; no new control.

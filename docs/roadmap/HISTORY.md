@@ -9,6 +9,7 @@ that answers "has this been done?" before anyone starts.
 
 ## Moved from the plans, 2026-11-12 (mindmap-plan)
 
+- **Built, LEDGER L-mindmap-2:** `$formula$` in a topic draws as MathML through the notes' `INLINE_MATH_RE` and `mdInlineMathElement` (no KaTeX is vendored; the notes use MathML); inline code already drew; fenced multi-line code blocks are not drawn in a topic (a topic is one phrase); `tests/test_map_inline_math.py`.
 - **Built, LEDGER L375:** `[text](url)` in a topic draws as an anchor in `wbMapInlineText` (http, https, mailto; opens on Ctrl/Cmd+click or a selected topic's click); `tests/test_map_inline_links.py`, driven in Chromium.
 - **Built, LEDGER L-mindmap-1:** the theme dialog's Saved looks row (save the whole theme under a name in the prefs store as `wb-map-saved-looks`, apply in one patch and one Undo step, forget; 20 at most); `tests/test_map_saved_looks.py`, driven in Chromium.
 - **Built, LEDGER L-mindmap-6 (INBOX 431(b)):** palette rows `Topic fill colour` and `Map background colour` click the existing wells (`#wb-map-strip-color`, `#wb-bg-color-picker`); "fill" found neither before and now ranks both first; `tests/test_mindmap_colour_discoverability.py`.
@@ -55198,6 +55199,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L-mindmap-2** `mindmap` open, M: Show equations and code blocks inside map topics. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:510. Evidence: map topics render plain text only; no plan or LEDGER row Built: maptopic-1112 item 7 commit, tests/test_map_inline_math.py
 - [x] **L375** `mindmap` partly, S: Render inline `[text](url)` links in map topics (bold, italic, code already work). From OPEN.md:4446. Evidence: Bold, italic, code render via wbMapInlineText; inline `[text](url)` does not (Link door is the way) Built: maptopic-1112 item 6 commit, tests/test_map_inline_links.py
 - [x] **L-mindmap-1** `mindmap` open, S: Save a custom mind map theme for reuse. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:491. Evidence: wbMapThemeDialog (whiteboard-map.js:1038) has no save action; untracked Built: maptopic-1112 item 5 commit, tests/test_map_saved_looks.py
 - [x] **L-mindmap-6** `mindmap` open, S: Make map node fill and background colour controls discoverable. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1440. Evidence: Open line in the plan's prose a session could miss. 431(b), discoverability of the node fill and background colour controls, says it was placed as its own item. No such item exists. Built: maptopic-1112 item 4 commit, tests/test_mindmap_colour_discoverability.py
