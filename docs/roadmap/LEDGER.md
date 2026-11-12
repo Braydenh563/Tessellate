@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 67 | 4 | 0 | 17 | 167 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 608 | 159 | 3 | 186 | 1320 |
+| general | 0 | 19 | 3 | 0 | 0 | 22 |
+| all | 553 | 615 | 159 | 3 | 186 | 1327 |
 
 ## graph
 
@@ -812,6 +812,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-56** `general` open, M: Tour sweeps, anchorsmotion and fontmatrix still failing or over 300s after the L-general-53 repairs. From L-general-53. Evidence: tour.js: doors and the welcome hand-off now pass, then it runs past 400s at nine sizes (8456 lines) with FAILs left: 'with no map, Mind maps is one card on New mind map' at 1440x900 and 1184x760, '#tab-bar target is inside the window' at 1184x760 (top -2), and 390 'welcome boards count 4/4/3, 3 shown'; toursteps.js: over 300s; anchorsmotion.js: graph popup 135px (1440x900) and 85px (1440x600) from its anchor against a 16 limit, row menu 14px against 4 at 1440x600, note kebab 3px apart between reduced and full motion at 1440x600, 161s; fontmatrix.js at 390: a 1px run in a note paragraph ('as well, and' after a board link) and the 'Install' button 2px past its padding
 - [ ] **L-general-57** `general` open, M: Map View menu height, theme dialog fit and map perf budgets still failing after the L-general-49 repairs. From L-general-49. Evidence: mapviewmenu.js: the map's View menu is 587px (25 rows, columns 452 and 572) against a 450 ceiling, the board's is 427px, so the Map group (9 rows) wants a submenu and the columns a rebalance; maptheme.js: the theme dialog is 924px tall in a 900px window and scrolls (23 of 24 pass); mapperf.js: worst zoom frame 100ms at 200 topics and 667ms at 500, and open to painted 1238ms at 500, against 50ms and 1s on this runner (36 of 39, 78s)
 - [ ] **L-general-58** `general` open, S: Measure Notes list layout rate while scrolling and drop content-visibility from its windowed rows if it locks per frame. From L492 sweep. Evidence: frontend/css/07-whiteboard-misc.css:822 #entry-list rows keep content-visibility: auto though windowRows already windows them; the same pair on the Timeline feed cost 38-44 layouts/s scrolling (6-10 without)
+- [ ] **L-general-59** `general` open, S: Give the new shortcut a palette row (chord id) or a CONTEXTUAL_CHORDS reason. From CI c054446f py3.11 leg 2. Evidence: test_consistency_contract fails
+- [ ] **L-general-60** `general` open, S: Restore lazy-entries.js characters bundle: avatars.js, atlas.js, characters-ready.js. From CI c054446f py3.11 leg 2. Evidence: test_characters_lazy fails
+- [ ] **L-general-61** `general` open, S: Move the new ORM query (likely the reminders brief) into src/tessellate/repo/. From CI c054446f py3.11 leg 2. Evidence: test_repo_boundaries: 688 against cap 687
+- [ ] **L-general-62** `general` open, S: Add a test that calls the new unnamed route. From CI c054446f py3.11 leg 2. Evidence: test_routes_named fails
+- [ ] **L-general-63** `general` open, S: Give the new write an undo, or an EXEMPT entry with its reason. From CI c054446f py3.11 leg 2. Evidence: test_undo_coverage fails
+- [ ] **L-general-64** `general` open, S: Appearance-tabs and tools-tabs at phone width: scroll fade, or measured to fit. From CI c054446f py3.11 leg 2. Evidence: test_ux_1031_phone fails
+- [ ] **L-general-65** `general` open, S: shell-reminders.js outcome toast: Couldn't add it to the note. From CI c054446f py3.11 leg 2. Evidence: test_unslop_1103 fails on Could not
 
 ## Owner calls
 
