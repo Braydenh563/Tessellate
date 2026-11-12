@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Vendored code: `frontend/vendor/PROVENANCE.json` lists every vendored file with its sha256, size, version, upstream, licence and notice; a test recomputes the hashes (`scripts/vendor_provenance.py` regenerates it).
 - Docker: the image has a HEALTHCHECK on /health, a .dockerignore keeps .git, the venv and data out of the build context, and hadolint runs in CI (`tests/test_docker_files.py`).
 - Packaging: LICENSE and THIRD_PARTY.md ship inside the Windows installer and MSI, the Linux tarball and the Docker image (`tests/test_licence_shipped.py`).
 - CI: every workflow action is pinned to a commit SHA, every checkout drops its token, and a zizmor workflow lints the workflows (`tests/test_workflow_pins.py`).
