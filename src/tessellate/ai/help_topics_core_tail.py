@@ -598,6 +598,29 @@ TAIL_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "board-draw-io-keys",
+            "keywords": (
+                "draw.io keys",
+                "board keyboard shortcuts",
+                "select none",
+                "select all shapes",
+                "copy as image",
+                "copy as svg",
+                "copy size",
+                "paste size",
+                "copy data",
+                "paste data",
+                "turn 90",
+                "resize with the keyboard",
+                "ctrl+m",
+                "f2",
+            ),
+            "body": (
+                "Keys on a board that draw.io has too: Ctrl+M edits the data, F2 writes in the shape like Enter, Ctrl+Shift+A selects none, Ctrl+Shift+I all shapes and Ctrl+Shift+E all connectors, Ctrl+R turns 90 degrees, Ctrl+Shift+Y grows a shape to fit its words, Ctrl+Shift+R clears the default style, Ctrl+Shift+U ungroups, Ctrl+Shift+End opens a group and Ctrl+Shift+Home leaves it, Ctrl+Shift+Plus and Ctrl+Shift+Minus change the text size, Ctrl+Alt+X and Ctrl+Alt+Shift+X copy as an image or as SVG, Alt+Shift+F and V copy and paste a size, Alt+Shift+B and E copy and paste the data, Alt+Shift+R clears a connector's bends, Ctrl+arrows resize by 1 px (Ctrl+Shift: further) and / goes to the Library search; Ctrl+F finds on the board. On a board these win over the app's Ctrl+Shift+A, E, R and Y; Ctrl+R still reloads the page when nothing is selected."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "board-workshop",
             "keywords": (
                 "vote",
