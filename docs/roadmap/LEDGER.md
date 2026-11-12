@@ -12,12 +12,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 6 | 4 | 1 | 5 | 43 |
+| mindmap | 33 | 5 | 4 | 1 | 5 | 42 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 677 | 156 | 3 | 195 | 1386 |
+| all | 553 | 676 | 156 | 3 | 195 | 1385 |
 
 ## graph
 
@@ -440,7 +440,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## mindmap
 
-- [ ] **L355** `mindmap` open, S: Time tree, timeline and fishbone whole-map tidy per add at 200 topics and scope it. From OPEN.md:1383; OPEN.md:2803. Evidence: whiteboard-map.js:6115 still tidies whole map via wbMapTidyBranchScope; no 200-topic timing recorded.
 - [ ] **L370** `mindmap` open, M: Cut press-to-editable at 390 from 140-159 ms toward 50 ms (renderWbObjects). From OPEN.md:2800. Evidence: Cause not isolated (renderWbObjects); verified open
 - [ ] **L372** `mindmap` open, M: mapcull: cull freehand and link sketches. From OPEN.md:1227. Evidence: Row conditional on a measured many-stroke board; no culling of strokes found.
 - [ ] **L374** `mindmap` open, L: Make picture node resize to its picture; fix mindmap3 timeout and AI half; curve probe at 390. From OPEN.md:1112; OPEN.md:3041. Evidence: mindmapimage.js removed 2026-10-12; picture-fit not confirmed; sweep script gone
