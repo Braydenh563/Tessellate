@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 
 from tests._js_scope import unwrapped
+from tests._css_paths import FORMER_10, sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS_DIR = ROOT / "frontend" / "css"
@@ -30,7 +31,7 @@ def _body(css: str, selector: str) -> str:
 
 def test_1_reminder_time_is_its_own_phone_line():
     """Beside the words the time took 185px of 301 and left 48px for the text."""
-    css = _css("08-consistency.css")
+    css = "\n".join(_css(n) for n in ("01-forms-settings.css", "03-dashboard-widgets.css", "04-chat-dock-appearance.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css"))
     grid = _body(css, "#reminder-groups .entry-list li > .entry-meta")
     assert '"tick text"' in grid and '"tick when"' in grid and '"acts acts"' in grid
 
@@ -47,7 +48,7 @@ def test_2_skills_dock_builds_a_menu_to_fold_into():
     start = js.index("function foldDockArrange(")
     assert "doc-dock-menu dock-menu dock-more" in js[start : js.index("\n}\n", start)]
     assert "ensureDockMore" not in js, "a named helper is one more global (test_global_scope_ratchet)"
-    assert ".dock-more:has(> .dock-menu-list:empty)" in _css("08-consistency.css")
+    assert ".dock-more:has(> .dock-menu-list:empty)" in "\n".join(_css(n) for n in ("01-forms-settings.css", "03-dashboard-widgets.css", "04-chat-dock-appearance.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css"))
 
 
 def test_3_dashboard_spans_are_pixel_rows_with_the_card_gap_in_the_span():
@@ -64,7 +65,7 @@ def test_4_dashboard_find_label_drops_its_scope_on_a_phone():
     """93px of text room cut "Search your notes, ..." to "Search your..."."""
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert '<span class="dash-find-scope"> your notes, documents, files and the app</span>' in html
-    assert "display: none" in _body(_css("10-responsive.css"), ".dash-find-scope")
+    assert "display: none" in _body(re.sub(r"/\*.*?\*/", "", sheets(*FORMER_10), flags=re.S), ".dash-find-scope")
 
 
 def test_5_map_toolbar_selects_take_the_quiet_inset_not_radius_inner():
@@ -77,7 +78,7 @@ def test_5_map_toolbar_selects_take_the_quiet_inset_not_radius_inner():
 
 def test_6_dock_search_is_the_docks_control_height():
     """The search was 32 (`--control-h-lg`) in a bar of 28s; DESIGN says 28."""
-    body = _body(_css("08-consistency.css"), ".dock .dock-search")
+    body = _body("\n".join(_css(n) for n in ("01-forms-settings.css", "03-dashboard-widgets.css", "04-chat-dock-appearance.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css")), ".dock .dock-search")
     assert "height: max(var(--control-h), var(--target-min))" in body
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "(32px, 44 under touch; refresh" not in design
@@ -105,7 +106,7 @@ def test_9_settings_peek_is_beside_the_title_not_among_the_utilities():
     head = html[html.index('<h2 class="dialog-head-title"><i class="ph ph-gear'):]
     head = head[: head.index('id="settings-close"')]
     assert head.index('id="settings-peek"') < head.index('id="settings-profile-btn"')
-    assert "margin-inline-end: auto" in _body(_css("08-consistency.css"), ".dialog-head > #settings-peek")
+    assert "margin-inline-end: auto" in _body("\n".join(_css(n) for n in ("01-forms-settings.css", "03-dashboard-widgets.css", "04-chat-dock-appearance.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css")), ".dialog-head > #settings-peek")
 
 
 def test_10_settings_rail_head_wraps_instead_of_clipping_its_toggle():
@@ -126,7 +127,7 @@ def test_11_dashboard_has_one_filled_button_and_no_tinted_edge_at_rest():
 
 
 def test_12_reminder_when_row_takes_the_fields_height_and_corner():
-    css = _css("08-consistency.css")
+    css = "\n".join(_css(n) for n in ("01-forms-settings.css", "03-dashboard-widgets.css", "04-chat-dock-appearance.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css"))
     assert "--button-min-h: var(--control-h-body)" in _body(css, "#reminder-due-row")
     for selector in ("#reminder-due-row > details > summary", "#reminder-due-row .stepper"):
         assert "border-radius: var(--radius-md)" in _body(css, selector)
@@ -153,7 +154,8 @@ def test_boot_win_the_m_guide_panel_is_a_lazy_sheet():
     """The integration branch was 95 bytes over the boot CSS cap; the guide draws only after a first m."""
     lazy = _css("chord-guide-lazy.css")
     assert ".chord-guide-panel .chord-guide-row" in lazy and ".chord-guide {" in lazy
-    for boot in ("08-consistency.css", "10-responsive.css"):
+    for boot in ("00-tokens-shell.css", "01-forms-settings.css", "02-chat-graph.css", "03-dashboard-widgets.css",
+                 "04-chat-dock-appearance.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "10-responsive.css"):
         assert "chord-guide-panel" not in _css(boot) or boot == "07-whiteboard-misc.css"
     assert 'lazyScript("/css/chord-guide-lazy.css")' in _js("chord-guide.js")
 

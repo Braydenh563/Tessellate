@@ -13,7 +13,7 @@ simply not painted. Only a measurement sees it, which is what
 `scratchpad/ui-sweeps/clip685.js` does (every focusable on every surface, its
 ring's outer box against every clipping ancestor, 1440 and 390, both themes).
 
-The fix is by container, in one place (08-consistency.css, "Ring room"), in
+The fix is by container, in one place (07-whiteboard-misc.css, "Ring room", its last section), in
 one of two recipes, never by hiding the ring:
 
 - **room**: the container leaves `--ring-room` for the ring, as padding with
@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import re
 
-from tests._css_paths import CSS_DIR, css_text
+from tests._css_paths import CSS_DIR, css_text, sheets
 
 #: (what it is, a fragment of the selector, the recipe).
 RING_ROOM: list[tuple[str, str, str]] = [
@@ -95,7 +95,8 @@ SECTION_HEAD = "Ring room (INBOX 685"
 
 
 def _section() -> str:
-    text = (CSS_DIR / "08-consistency.css").read_text(encoding="utf-8")
+    # The last section of 07-whiteboard-misc.css since 08 dissolved (UI plan 13b).
+    text = sheets("07-whiteboard-misc.css")
     start = text.index(SECTION_HEAD)
     return text[start:]
 
@@ -166,7 +167,7 @@ def test_clipped_single_lines_keep_their_descenders():
 
 
 def test_1423_library_sections_keep_the_focus_ring_room():
-    assert re.search(r"\.dash-body,\s*\.library-view-section \{\s*scroll-padding-block: var\(--ring-room\);", (CSS_DIR / "08-consistency.css").read_text(encoding="utf-8"))
+    assert re.search(r"\.dash-body,\s*\.library-view-section \{\s*scroll-padding-block: var\(--ring-room\);", sheets("04-chat-dock-appearance.css", "05-sidebars-themes.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css"))
 
 
 def test_a_focusable_chart_mark_carries_its_own_ring():

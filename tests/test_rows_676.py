@@ -35,7 +35,7 @@ def _function(js: str, name: str) -> str:
 
 
 def test_a_collapsed_row_puts_its_metadata_on_the_title_line():
-    css = _css("08-consistency.css")
+    css = "\n".join(_css(n) for n in ("01-forms-settings.css", "04-chat-dock-appearance.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css"))
     assert (
         "#entry-list.is-rows > li:not(.row-expanded):not(.list-window-sentinel) > .entry-meta.entry-meta {\n"
         "  margin-top: 0;\n}"
@@ -43,7 +43,7 @@ def test_a_collapsed_row_puts_its_metadata_on_the_title_line():
 
 
 def test_the_chevron_and_the_cluster_share_one_anchor_in_both_states():
-    css = _css("08-consistency.css")
+    css = "\n".join(_css(n) for n in ("01-forms-settings.css", "04-chat-dock-appearance.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css"))
     assert "--row-anchor: calc(var(--space-3) + var(--target-min) / 2);" in css
     assert "grid-template-rows: minmax(var(--target-min), auto);" in css
     # The anchor, not the row's middle: a row growing through its animation
@@ -57,7 +57,7 @@ def test_the_chevron_is_one_ghost_whose_glyph_turns():
     js = app_js_text()
     item = _function(js, "entryItem")
     assert "ph:caret-up" not in item, "one glyph; the turn is CSS"
-    css = _css("08-consistency.css")
+    css = "\n".join(_css(n) for n in ("01-forms-settings.css", "04-chat-dock-appearance.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css"))
     assert "#entry-list li > .row-expand.ghost.ghost" in css
     assert re.search(
         r"#entry-list li > \.row-expand > \.ph \{\n  transition: transform var\(--ui-base\) var\(--ease-out\);",
@@ -95,6 +95,6 @@ def test_show_more_is_measured_whenever_the_text_has_a_size():
 def test_a_notes_buttons_stay_while_its_menu_is_open():
     """INBOX 679: the strip faded under its own open menu once the menu had
     moved to <body> (rows view: opacity 1 pressed, 0 on the menu)."""
-    css = _css("08-consistency.css")
+    css = "\n".join(_css(n) for n in ("01-forms-settings.css", "04-chat-dock-appearance.css", "06-timeline-dialogs.css", "07-whiteboard-misc.css"))
     assert "#entry-list > li .entry-actions.menu-open {\n  opacity: 1;\n}" in css
     assert 'menu.closest(".entry-actions, .library-card")?.classList.add("menu-open");' in app_js_text()

@@ -4533,7 +4533,7 @@
     host.appendChild(master.row);
 
     //: **The seven live in their own box, and that is a layout decision with a
-    //: rule behind it.** 08-consistency.css makes consecutive `.setting-check`
+    //: rule behind it.** 07-whiteboard-misc.css makes consecutive `.setting-check`
     //: rows one stack: hairline between, square where they meet, rounded only
     //: at the two outer ends. That is right for the seven, which are one set of
     //: choices. It is wrong across the master, which is set apart by a gap, and
@@ -5317,7 +5317,7 @@
     //: A title, a label and facts, not six pills of one weight (owner: "there
     //: is still missing distinguishing between titles that used to be
     //: badges"). The recipe is `.item-title`, `.item-label` and `.item-fact`
-    //: in 08-consistency.css, shared with the personas.
+    //: in 07-whiteboard-misc.css, shared with the personas.
     row.appendChild(chip(skill.name, "item-title"));
     if (skill.builtin) row.appendChild(chip("Built-in", "item-label"));
     if (skill.folder) {

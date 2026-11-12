@@ -43,7 +43,6 @@
   <link rel="stylesheet" href="/css/05-sidebars-themes.css?v=0.7.0">
   <link rel="stylesheet" href="/css/06-timeline-dialogs.css?v=0.7.0">
   <link rel="stylesheet" href="/css/07-whiteboard-misc.css?v=0.7.0">
-  <link rel="stylesheet" href="/css/08-consistency.css?v=0.7.0">
   <!-- The documents editor's own layout, last so it is the final word on the
        panes it lays out. CodeMirror's *internals* are styled from the theme
        object in documents.js instead: adopted stylesheets sort after document
@@ -1369,7 +1368,7 @@
   <!-- The one main landmark (WCAG 1.3.1 and 2.4.1, INBOX 433): the tab
        pages are the page's content, and before this a screen reader's "jump
        to main" found nothing on five tabs and a different region on the
-       other three. `display: contents` (08-consistency.css) keeps the tab
+       other three. `display: contents` (05-sidebars-themes.css) keeps the tab
        pages laid out as children of <body>, exactly as before. -->
   <main id="app-main">
   <!-- ======================= DASHBOARD TAB ======================= -->
@@ -3983,7 +3982,7 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- The label is in a span so it can come off below 1200, where
                  this dock's three zones overflow their row by nine pixels and
                  the whole actions group wraps to a second line. See
-                 `#graph-concept-maps .dock-link-label` in 08-consistency.css.
+                 `#graph-concept-maps .dock-link-label` in 07-whiteboard-misc.css.
                  `aria-label` is written out because a button whose only
                  remaining content is a decorative icon has no accessible name
                  otherwise, and `title` is a tooltip, not a name. -->

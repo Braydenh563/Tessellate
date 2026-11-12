@@ -7,6 +7,13 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (UI plan 13b, the stylesheet's structure)
+
+- **Built, 13b decision 18 (L463, 3144ca0f):** 08-consistency.css dissolved: its rules went beside their components in 00 to 07, and its 758 character rules (faces, companion, Atlas) to the lazy characters-lazy.css. The rule multiset is unchanged and no conflicting pair changed order (a cascade check over every rule); `getComputedStyle` of every element on Notes, Library, Chat, Settings and Dashboard at 1440 and 390, light and dark: 0 diffs past the relative-time text. Boot CSS gzip 178,870 to 165,450.
+- **Built, L459 (d961c27a):** 110 boot rules only the Library bundle's surfaces can match moved to library-lazy.css; boot CSS gzip 163,749.
+- **Built, 13b decision 19 (L463):** 10-responsive.css's 254 component rules moved beside their components (most to 07 and 09; the rules that must load after every component file end 09); 10 keeps the shell bands. 10 went from 3,048 to 797 lines; the numbered files from 64,750 to 62,800 lines (08 and 10 together were 14,129), all 78 sheets from 88,786 to 90,815 (the faces and the Library rules moved to lazy sheets). Boot CSS gzip 164,254 under a cap lowered from 179,300 to 164,300 (L464's cap part); the literal ratchets moved with their rules, totals unchanged.
+- **Measured, the 236 unused selectors:** a static check found none removable (template-built names, nested variants, `:not()` specificity); LEDGER L-ui-modernisation-30.
+
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
 - **Built, Sh1 P4:** the reminder edit form's time, priority, repeat and alert share one height (32px, equal top); `tests/test_reminder_edit_form_alert.py` holds the shared-height loop (cb83f2ed3).
@@ -55291,6 +55298,8 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L459** `ui-modernisation` open, M: Move 381 Library-only CSS rules out of the base bundle. From OPEN.md:675. Evidence: Optional follow-up not done; tie on specificity noted Built: css13b d961c27a: 110 Library-only boot rules to library-lazy.css; boot gzip 164,254; remainder L-ui-modernisation-31
+- [x] **L463** `ui-modernisation` open, L: Dissolve 08-consistency.css and 10-responsive.css (Brief 58). From SESSION_BRIEFS.md:194. Evidence: frontend/css/08-consistency.css still exists (header 'one recipe per repeated shape') Built: css13b 3144ca0f + faae2cf2: 08 dissolved (removed), 10 3048 to 797 lines; cascade check 0 flips; remainder L-ui-modernisation-29
 - [x] **L-general-20** `general` open, M: Run the stable ui sweeps and deepflows.js in CI on every merge. From open-work sweep 2026-11-12, docs/ROADMAP.md:161. Evidence: deepflows.js is not called by scripts/gate.sh or by any workflow. The ui-sweeps run only through the local `gate.sh --sweeps`, never in CI. ARCHITECTURE.md:1799 also says "move the 20 stable sweeps in Built: ci.yml ui-sweeps job -> scripts/ci_sweeps.sh; local dry run on fresh dirs: 30/30 sweeps ok after the update-question fix (docks was the one failure), deepflows 10 flows PASS; the 7 rotted flows and 30 failing sweeps are L-general-47; tests/test_ci_sweeps_l_general_20.py, test_update_ask_rechecks_l_general_20.py
 - [x] **L-general-14** `general` open, S: Tour sweeps: drive the tour through openTour() instead of its old globals. From shell-1112 (Sh1). Evidence: scratchpad/ui-sweeps/toursteps.js, tourdim.js, tour.js read TOUR_SECTIONS and tourRun, now inside tour.js's IIFE; they stop on a ReferenceError Built: openTour.inspect in tour.js; 6 sweeps rewired; Chromium: tourdim ALL PASS, tourmaps ok, tourfirst 18 ok, tourfollow ok; remaining tour.js/toursteps faults in the sweep-repair row; tests/test_tour_sweeps_inspect_l_general_14.py
 - [x] **L-general-39** `general` open, S: Render Markdown in every dashboard widget that shows note text. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open. Verify in code first. Built: dash-list underscoreSyntax + task marks; Rediscover unwraps [[ ]]; Chromium: 35 widgets, 0 with literal markdown; tests/test_dash_widget_markdown_l_general_39.py

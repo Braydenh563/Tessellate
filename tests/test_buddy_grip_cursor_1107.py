@@ -4,9 +4,9 @@ top-left to bottom-right arrow, not the standing handle's bottom-left to top-rig
 from __future__ import annotations
 
 import re
-from pathlib import Path
+from tests._css_paths import sheets
 
-CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets("07-whiteboard-misc.css", "characters-lazy.css")
 
 
 def _rule(selector: str) -> str:

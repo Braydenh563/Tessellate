@@ -10,12 +10,13 @@ away from coming back, and nothing else in the suite draws Atlas.
 import re
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._css_paths import FORMER_08, sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 #: atlas.js and its lazy halves, atlas-motion.js (the blink clock and the arm
 #: rig) and atlas-life.js (the living tail and the rings' loops), read as one.
 ATLAS = "\n".join(unwrapped((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")) for name in ("atlas.js", "atlas-motion.js", "atlas-life.js"))
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = sheets(*FORMER_08)
 AVATARS = unwrapped((ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8"))
 #: The large view's visit and home moved to companion-menu.js (boot budget).
 MENU = unwrapped((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"))
@@ -579,7 +580,8 @@ def test_the_feminine_hair_is_a_side_swept_fringe_not_a_cap():
     cap = ATLAS[ATLAS.index("function atlasHairCap(") : ATLAS.index("function atlasEars(")]
     assert "spec.fringePaths" in cap and '"atl-skin atl-lock atl-fringe-lock"' in cap
     for gone in ("fringeShade", "atl-fringe-shade", "frontLocks:", "hairline:", "atl-strand-light", "atl-hairline-shade"):
-        assert gone not in ATLAS and gone not in CSS, gone
+        # Rules only: 07-whiteboard-misc.css, where 08's rules went too, says "not a hairline:" in a comment.
+        assert gone not in ATLAS and gone not in re.sub(r"/\*.*?\*/", "", CSS, flags=re.S), gone
     x, y, k = (float(v) for v in re.search(r"browStar: \[([^\]]+)\]", feminine).group(1).split(","))
     assert abs(x - 31) >= 6 and k <= 1.2, "a small star off centre, an ornament at the parting, not a badge"
     for gone in ("rootDust:", "circlet:", "spec.rootDust", "spec.circlet"):

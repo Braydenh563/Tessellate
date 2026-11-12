@@ -2,9 +2,10 @@
 beside a 44px Edit / Read well). Measured 44 after, at 390, 700 and 819, with no sideways scroll."""
 
 import re
-from pathlib import Path
 
-CSS = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+from tests._css_paths import FORMER_10, sheets
+
+CSS = sheets(*FORMER_10)
 
 
 def test_the_title_takes_the_target_floor_below_820():

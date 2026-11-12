@@ -540,7 +540,8 @@ Tessellate/
 │   ├── task-steps.js · gesture-kit.js · lag-watch.js · screen-context.js # task steps,
 │   │                        #   shared pointer gestures, the slow-frame log, what the Guide sees
 │   ├── sw.js · manifest.webmanifest # PWA
-│   ├── css/                 # eleven files, 00-tokens-shell to 10-responsive;
+│   ├── css/                 # ten boot files, 00-tokens-shell to 10-responsive (no 08;
+│   │                        #   10 holds only the shell bands, UI plan 13b);
 │   │                        #   index.html's <link> order is load-bearing; and
 │   │                        #   about 65 lazy sheets (`*-lazy.css` and a few
 │   │                        #   others: icon-picker, sketch-pad, value-field)

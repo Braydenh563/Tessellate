@@ -11,7 +11,7 @@ from pathlib import Path
 from tests._js_scope import unwrapped
 
 ROOT = Path(__file__).resolve().parents[1]
-CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "characters-lazy.css").read_text(encoding="utf-8")
 
 
 def _rule(selector: str) -> str:

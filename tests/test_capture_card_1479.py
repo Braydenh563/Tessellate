@@ -14,6 +14,7 @@ from pathlib import Path
 
 from tests._app_js import APP_JS, INDEX_HTML, LAZY_PIECES, app_js_files
 from tests import _js_scope
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -162,7 +163,7 @@ def test_tags_take_hashes_spaces_and_commas():
 def test_a_note_card_is_tinted_by_its_colour_with_the_swatch_hex_from_the_one_palette():
     cards = ((JS / "note-cards.js").read_text(encoding="utf-8") + (JS / "entry-card.js").read_text(encoding="utf-8"))
     assert "CATEGORY_PALETTE[entry.colour]" in cards and '"--swatch"' in cards
-    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    css = sheets("03-dashboard-widgets.css", "07-whiteboard-misc.css")
     assert '#entry-list li[data-colour]' in css and "color-mix(in srgb, var(--swatch) 10%" in css
 
 

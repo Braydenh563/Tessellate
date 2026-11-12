@@ -371,7 +371,7 @@ let notesSpanMemo = { list: null, many: false };
 //: six of ten seeded cards wrapped, and the time sat on a line of its own on
 //: some and beside the facts on others. The line is `nowrap`; what does not
 //: fit folds, from the end, into one "+N" chip: suggestions first, then tags.
-//: The other facts ellipsise if it is still too long (08-consistency.css).
+//: The other facts ellipsise if it is still too long (a component file (08-consistency.css until UI plan 13b)).
 //: Every line on a resize is reset in one pass, read in one layout and folded
 //: in a third, so a list of a hundred cards costs two layouts, not a hundred.
 const noteMetaFit = new ResizeObserver((seen) => fitNoteMetas(seen.map((s) => s.target)));

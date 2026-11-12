@@ -21,6 +21,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from tests._js_scope import unwrapped
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = ROOT / "frontend" / "css"
@@ -49,7 +50,7 @@ def test_one_overhang_rule_serves_chips_the_link_menu_and_show_more():
 
 
 def test_wrapped_link_pills_keep_a_fingers_room_apart():
-    text = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    text = sheets("01-forms-settings.css", "07-whiteboard-misc.css")
     at = text.index("@media (pointer: coarse) {\n  #entry-list .entry-links {")
     assert "row-gap: calc(var(--target-min) - 1.5rem)" in text[at : at + 160]
 
@@ -62,7 +63,7 @@ def test_show_more_is_the_positioned_box_its_overhang_hangs_from():
 def test_a_connection_chip_is_clipped_across_only():
     """Its words are cut with an ellipsis across; above and below stay open so
     the hit overhang is not cut with them (the entry meta's chips, FE-14)."""
-    text = (CSS / "08-consistency.css").read_text(encoding="utf-8")
+    text = sheets("01-forms-settings.css", "07-whiteboard-misc.css")
     body = _rule(text, "#entry-list .link-connection > .chip.link")
     assert "overflow: clip visible" in body and "overflow: hidden" not in body
     assert "white-space: nowrap" in body

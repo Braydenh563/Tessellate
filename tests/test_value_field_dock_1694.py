@@ -17,11 +17,13 @@ def _dock_input_selectors(name: str) -> list[str]:
 
 
 def test_the_dock_field_rules_skip_value_fields_and_the_fill_skips_sliders():
-    found = _dock_input_selectors("07-whiteboard-misc.css")[:1] + _dock_input_selectors("08-consistency.css")
-    assert len(found) == 2, found
+    # 08's fill rule went after 07's two when 08 dissolved (UI plan 13b).
+    every = _dock_input_selectors("07-whiteboard-misc.css")
+    assert len(every) == 3, every
+    found = [every[0], every[-1]]
     for sel in found:
         assert ".value-field-input" in sel, sel
-    #: The fill is 08's; 07 sets only the height, which a slider in a dock keeps.
+    #: The fill was 08's; 07 sets only the height, which a slider in a dock keeps.
     assert '[type="range"]' in found[1], found[1]
 
 

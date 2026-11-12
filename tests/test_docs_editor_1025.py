@@ -92,7 +92,7 @@ def test_list_markers_are_a_fixed_hanging_indent():
     # bullets, numbers and tasks all start the words at the hang (0px apart; 11px, 9px and 4px before).
     assert '".cm-md-li-bullet": { display: "inline-block", width: "1.6em", textIndent: "0" }' in DOCS_JS
     assert '".cm-md-li-num": { display: "inline-block", minWidth: "1.6em", textIndent: "0" }' in DOCS_JS
-    css = (ROOT / "frontend" / "css" / "09-editor.css").read_text(encoding="utf-8")
+    css = "\n".join((ROOT / "frontend" / "css" / n).read_text(encoding="utf-8") for n in ("09-editor.css", "library-lazy.css"))  # L459
     hit = css[css.index(".cm-md-task-hit {") :]
     assert "width: 1.6em;" in hit[: hit.index("}")]
 

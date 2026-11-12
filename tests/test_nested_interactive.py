@@ -99,10 +99,14 @@ def test_the_overlay_covers_the_card_and_the_controls_sit_above_it():
         assert re.search(re.escape(host) + r"\s*\{[^}]*position:\s*relative", CSS), host
     # Above it: the ticks, the menus and any link in a preview.
     assert "z-index: 1" in after.group(1)
-    lifted = re.search(r"(?:(?<=[{}])|\A)([^{}]*)\{\s*z-index:\s*2;\s*\}", CSS[CSS.index(".card-open::after") :])
+    # The lift is its own rule and may sit before the overlay (UI plan 13b
+    # moved each beside its component): z-index on other elements, no tie.
+    controls = (".library-card-tick", ".doc-list-tick", ".menu-wrap", ".library-card-preview a")
+    lifts = [m.group(1) for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]*)\{\s*z-index:\s*2;\s*\}", CSS)]
+    lifted = [sel for sel in lifts if ".library-card-tick" in sel]
     assert lifted, "nothing is lifted above the overlay"
-    for control in (".library-card-tick", ".doc-list-tick", ".menu-wrap", ".library-card-preview a"):
-        assert control in lifted.group(1), control
+    for control in controls:
+        assert control in lifted[0], control
     # The card still shows where the keyboard is: the ring the card had.
     assert ":has(.card-open:focus-visible)" in CSS
 

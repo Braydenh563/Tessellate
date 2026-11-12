@@ -530,7 +530,7 @@ function flashSaved(el) {
   //: dropped that glow for its whole duration and snapped it back at the end,
   //: which reads as the button flickering rather than acknowledging. The
   //: resting value is handed to the keyframes as a custom property and they
-  //: draw it underneath the ring (08-consistency.css). Read before the class
+  //: draw it underneath the ring (07-whiteboard-misc.css). Read before the class
   //: goes on, or it is the animation's own first frame that comes back.
   const resting = getComputedStyle(el).boxShadow;
   el.style.setProperty("--just-saved-rest", resting && resting !== "none" ? resting : "0 0 #0000");

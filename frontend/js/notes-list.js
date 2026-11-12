@@ -2992,7 +2992,7 @@ function clearSkeletons(container) {
   //: rows' layout inside the press: 96ms style and 55 layout at 4x on opening Logs, 677 elements (INBOX 1111).
   if (held.length && container.id) setTimeout(skeletonRemember, 80, container);
   //: **What replaces them settles in** (the motion pass, 2026-10-05): the
-  //: first rows fade up a step, staggered (`.ui-settle`, 08-consistency.css),
+  //: first rows fade up a step, staggered (`.ui-settle`, 07-whiteboard-misc.css),
   //: instead of popping in where the skeletons were. Only on this first
   //: swap: the class is gone before any later redraw.
   if (held.length) {

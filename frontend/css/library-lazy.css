@@ -13,8 +13,8 @@
    with belong here: new surfaces (a map's outline and markers, a picture's
    grip in Live, the print step), not overrides of boot rules. */
 
-/* --- moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library
-   bundle's own classes, in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
+/* --- moved from the boot sheets (Brief 101a and UI plan 13b's L459, room under the boot CSS cap): rules whose selectors
+   name only the Library bundle's own classes (in no other script, page or server file), in their old order, ahead of the blocks below as they were ahead of them in the cascade --- */
 
 .library-image-reading[open] > summary::before {
   transform: rotate(90deg);
@@ -306,6 +306,884 @@ textarea.has-gutter {
      business, not this card's. */
   background: var(--chip-bg);
   border-color: var(--ghost-btn-border-hover);
+}
+
+/* Activity answers "what did I do", not "what kind of thing is this", the
+   other ten chips all filter by kind, so it sat among them looking like an
+   eleventh kind rather than the different question it actually is. Set
+   apart with a divider ahead of it, the way the reminder view-toggle
+   already sits apart from the reminder filter beside it, rather than moved
+   to a second surface (a second place to remember is not a better one, 
+   reported live: "can the activity button be moved somewhere better").
+   It's still last in DOM order (renderLibraryFilters appends it after every
+   kind chip), so the divider alone reads as "separate from the row before
+   it" without needing to be pushed anywhere.
+   **No `margin-left: auto`.** `.library-filters` wraps (flex-wrap), and an
+   auto-margin item in a wrapping flex row gets shoved onto a lonely row of
+   its own the moment the chips before it don't all fit on one line, a
+   full-width row with one small pill on it, which is the exact "ugly,
+   taking up a whole row" reported live. Auto-margins and wrapping don't mix
+   in flexbox; dropping the margin is what lets it wrap in-line like every
+   chip beside it, divider and all. */
+.library-chip-activity {
+  padding-left: calc(var(--space-5) + var(--space-2));
+  border-left: 1px solid var(--border);
+}
+
+/* A private note shows that it is one and nothing else. */
+.library-card.library-private .library-card-title {
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* 6. A note whose words are all in its title (a one-sentence note with no
+      heading) has no preview under it, so its title may take the room the
+      preview would have: four lines rather than two. */
+.library-card-whole .library-card-title {
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+#library-grid.library-columns > .library-col > .library-card {
+  margin-bottom: 0;
+}
+
+.library-grid:not(.library-list) .library-board-card > .library-card-top {
+  padding-right: 0;
+}
+
+/* **A Rows line starts with its kind icon, whatever else the list holds**
+   (INBOX 722: "theres a wierd gap at the start of the library all tab lines
+   view"). This used to reserve a 3rem `::before` slot on every row without a
+   picture (and `.has-thumbs` made it conditional) so the thumbnails would line
+   up; with one picture in the list that pushed every other row's icon 63px
+   in (measured at 1440: icon at x 75 against a 14px row padding). A leading
+   column is the wrong shape for something only some rows have. The thumbnail
+   now sits after the title and the preview, before the date, in a slot only
+   the row that has one pays for, so the icon is at the row's own padding on
+   every row and the date and the ⋯ still end at one x. `order` puts it there
+   without touching the DOM order the grid view's picture-on-top relies on. */
+.library-list .library-card-meta {
+  order: 2;
+}
+
+.library-card-meta > .library-card-category::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: var(--radius-pill);
+  background: var(--category-dot);
+}
+
+/* The footer is one line: the count truncates, the time never wraps. */
+.library-grid:not(.library-list) .library-board-card > .library-card-meta {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.library-list .library-card-menu {
+  order: 3;
+}
+
+/* With every field in it hidden (an image with no description asked for),
+   the box was its bottom padding alone: a 10px blank band under each
+   picture's caption (INBOX 437 (4)). */
+.library-image-fields:not(:has(> :not(.hidden))) {
+  display: none;
+}
+
+.library-image-reading-body > .library-image-provenance {
+  padding: 0;
+}
+
+/* **Two lines, and the same two on every card** (INBOX 118: "no two cards are
+   the same height and their bottoms do not align"). It was three for one
+   revision, on the reading that the paragraph is the card's one piece of
+   prose; three is what a card *can* hold rather than what a gallery wants,
+   and the cost is paid by the card beside it. Measured at 1440 on the six
+   seeded cards, the descriptions ran 3, 3, 3, 2, 1 and 0 lines: the tallest
+   foot stood 176.1px against 9.6px on the emptiest, and the grid pays that
+   difference out as a hole under the short cards (54.5px on the emptiest,
+   because the picture that absorbs the slack has a ceiling). Two lines is a
+   caption, the shape the rest of this card is built as, and the whole
+   description is one hover away in the element's own title, one click away
+   in the editor it opens, and in the lightbox.
+   **And no bottom padding while it is clamped.** `overflow: hidden` clips at
+   the *padding* box, not the content box, so the paragraph's own 8px of
+   bottom padding showed 8px of the next line under the ellipsis: a sliced
+   strip of letters, which is the "cut off half way through the letters"
+   report this rule's neighbour already records, arriving by a second route.
+   Measured when the clamp was three lines: box 65.6px against 3 x 19.2 =
+   57.6px of text, and the same 8px sits under two. The gap below is
+   the More button's own margin when there is one, and there always is one
+   when this class is present. */
+/* **Two lines, reserved, not just capped.** The clamp stops a long
+   description at two lines; a one-line description still left the card an
+   21.8px line shorter inside than the card beside it, and the grid pays that
+   out as a taller photograph on one of the two, which is the unevenness the
+   owner has now reported twice. Measured at 1440 on the seeded gallery: the
+   six feet ran 10.6, 54.1, 54.1, 73.9, 95.7 and 95.7px before this line and
+   the pictures 144 to 229.1px; with the second line held open, every card
+   carrying a description and a facts line is the same height inside and its
+   picture is the same size.
+   `lh` is the line box of this element, so it tracks the clamped line-height
+   above rather than restating it: two lines of whatever the description is set
+   in. Where the unit is not supported the declaration is dropped and the card
+   behaves as it did, capped but not reserved.
+   Picture cards only (`:has(> .library-image-frame)`, the same test the tile's
+   own layout uses): a Files row is full width, stands on its own, and has no
+   neighbour whose height it has to agree with, so reserving a line there would
+   buy nothing and cost every row 21.8px. */
+.library-image-caption.library-image-caption-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+.library-image-tile:has(> .library-image-frame) .library-image-caption.library-image-caption-clamped {
+  min-height: 2lh;
+}
+
+/* The same clip, the same cause, on the two readings inside the fold. */
+.library-image-ocr.library-image-ocr-clamped,
+.library-image-vision-ocr.library-image-vision-ocr-clamped {
+  padding-bottom: 0;
+}
+
+/* Same clamp/toggle shape as .library-image-caption above, asked for
+   directly ("make the ocr extracted text in the image gallery collapsible
+   and expandable like the image captions as well"), since a long
+   transcription previously grew the tile with no way to collapse it back. */
+.library-image-ocr.library-image-ocr-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.library-grid:not(.library-list) .library-board-card > .library-card-meta > .library-card-when {
+  flex: 0 0 auto;
+}
+
+/* **Read state.** Unread is the shelf's reading list, so it is drawn three
+   ways that do not lean on colour alone: a heavier title, a dot on the tile,
+   and (for a reader with neither) the word "Unread" before the title. A read
+   link is the same row at body weight with no dot. */
+.bookmark-mark {
+  position: relative;
+}
+
+.bookmark-group-row {
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+/* No border, no card ground: a heading and its rows are a section of an
+   index, not an object to click. */
+.contents-section {
+  border: 0;
+  padding: 0;
+  background: none;
+}
+
+/* The hover tint; while stuck it sits over the opaque ground (07-whiteboard-misc.css). */
+.contents-heading:hover,
+.contents-heading:focus-visible {
+  background: var(--row-hover-bg);
+}
+
+.contents-row:hover,
+.contents-row:focus-visible,
+.contents-heading-row:hover,
+.contents-heading-row:focus-visible {
+  background: var(--row-hover-bg);
+  color: var(--ink);
+}
+
+.contents-thumb {
+  object-fit: cover;
+  /* A quiet ground while it loads, not a flash of page in a hole. */
+  background: var(--chip-bg);
+}
+
+/* The Contents index is the one list whose group names are headings over
+   whole groups, so in this look it takes the Timeline's day-head grammar
+   (ink, 600, the accent underline). */
+:root[data-palette="utilitarian"] .contents-heading {
+  font-size: var(--text-body);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  box-shadow: inset 0 -2px 0 var(--accent-soft);
+}
+
+.bookmark-edit-actions {
+  gap: var(--space-2);
+}
+
+.note-picker-thumb.is-missing::after {
+  content: "\f27f"; /* ph-image-broken, the Phosphor glyph the app ships */
+  font-family: Phosphor, sans-serif;
+  color: var(--muted);
+  font-size: var(--text-h2);
+}
+
+.note-picker-cell:has(.note-picker-box:checked) .note-picker-thumb {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* Under a picture, one line: its caption, or where it is used. The name is
+   the cell's tooltip. */
+.note-picker-cell-text .note-picker-text {
+  display: none;
+}
+
+.doc-item {
+  position: relative;
+}
+
+@media (hover: hover) {
+  .doc-item-button:hover,
+  .doc-item-button:is(:focus-visible, :has(:focus-visible)) {
+    background: var(--surface-3);
+  }
+}
+
+.doc-item.active .doc-item-button {
+  background: var(--accent-soft);
+}
+
+.doc-item-meta {
+  font-size: var(--text-sm);
+}
+
+/* The file type, first in the meta line because it is the one fact that says
+   what the row *is*: a .py and a .md were indistinguishable before it. Weight
+   rather than colour, so it separates from the count beside it without
+   becoming a second accent in a list of eight rows. */
+.doc-item-type {
+  font-weight: 600;
+}
+
+/* `.menu-wrap.doc-list-menu`: the rule it overrides is a compound selector,
+   so the short name loses the cascade and this band did nothing at all.
+   Measured with `scratchpad/ui-sweeps/hoveronly.js` at 390 with `hover: none`
+   emulated: a 44x44 ⋯ at opacity 0 on every document row, still 0 after a
+   real tap. Same fault and same fix as `.menu-wrap.library-card-menu`
+   (00-tokens-shell.css). */
+@media (hover: none) {
+  .menu-wrap.doc-list-menu {
+    opacity: 1;
+  }
+}
+
+.doc-list-meta {
+  font-size: var(--text-base);
+}
+
+/* The Live view's kind picker is a tile the size of a letter, so under a
+   finger its target grows past its box without moving the line (INBOX 486). */
+@media (pointer: coarse) {
+  .cm-md-callout-kindbtn {
+    position: relative;
+  }
+  .cm-md-callout-kindbtn::after {
+    content: "";
+    position: absolute;
+    inset: calc((var(--target-min) - 1.5em) / -2);
+  }
+}
+
+/* A numbered display equation, `\tag{1}`: the formula stays centred and its
+   number sits at the right edge of the line. */
+.md-math-numbered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* The group separators are furniture, not controls: they take the strip's
+   height as a *rule*, and the sizing rule above must not turn them into 2rem
+   blocks. */
+.doc-toolbar-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* **The fold gutter** (DOCUMENTS_PLAN Phase 4 item 3). One column, the same
+   width on every row whether or not that row has anything to fold, because
+   the thing this outline's indent rules spend three paragraphs protecting is
+   that a row's left edge is decided by its depth and by nothing else. A
+   caret that appeared only on some rows would move every one of those rows'
+   text by 16px against its own level. */
+.outline-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* **Dragging a section to a new place** (DOCUMENTS_PLAN Phase 4 item 3). A
+   line where it would land, drawn with an inset shadow rather than a border
+   so the row's own box never changes size as the pointer crosses it: a 2px
+   border appearing on hover would push every row below it down by 2px, which
+   makes the list move under the drag. `--accent`, because this is a preview
+   of a thing about to happen, which is what the accent is for. */
+.outline-row.is-dragging {
+  opacity: 0.5;
+}
+
+.outline-row.is-drop-before {
+  box-shadow: inset 0 2px 0 0 var(--accent);
+}
+
+.outline-row.is-drop-after {
+  box-shadow: inset 0 -2px 0 0 var(--accent);
+}
+
+/* Indentation is the whole point of an outline: it shows the shape. One step,
+   declared once and multiplied by depth, because the four levels used to be
+   0.25, 1, 1.5 and 2.4rem: steps of 0.75, 0.5 and 0.9, which reads as an
+   outline whose nesting is uneven rather than as three levels. The owner
+   reported it as indenting "the wrong way", and centred entries (above) were
+   most of why: with the text centred, a deeper `padding-left` moves the whole
+   run right *and* a shorter heading starts further right still, so the
+   left edges came out in no order at all. Left-aligned and evenly stepped,
+   depth is the only thing that moves an entry. */
+/* **Depth is carried by weight, colour and a guide line, not by indent
+   alone.** Measured with a 21-heading document open: h1 and h2 rows were
+   13.6px and h3 rows 12.8px, every one of them weight 400 in the same
+   `rgb(76, 85, 99)`, so three levels differed by 0.8px of type and 12.8px of
+   indent and the panel read as one flat list. DESIGN.md's hierarchy section
+   says it outright: use weight, colour and case before reaching for another
+   size step. So the two top levels are the document's own ink, a step apart
+   in weight, and the two below them are muted at the smaller size, which is
+   two sizes and three levels of contrast rather than four sizes. */
+.outline-h1 .outline-link {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.outline-h2 .outline-link {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.outline-h3 .outline-link {
+  font-size: var(--text-base);
+}
+
+.outline-h4 .outline-link {
+  font-size: var(--text-base);
+}
+
+/* A row, not a stack. `.outline-link` is `width: 100%`, so a ✕ beside one had
+   nowhere to go but the next line: "References stacks a close button above
+   its own select". The link takes the room and shrinks; the action keeps its
+   own size. */
+.doc-outline-row,
+.doc-attach-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* A Files row already names the kind first on its facts line, beside a
+   glyph that spells it (PDF, CSV, DOC): the label under the glyph made it
+   three times on one row (INBOX 437 (4)). The grid tile, which has no facts
+   line, keeps it. */
+.library-file-rows .library-file-thumb-kind {
+  display: none;
+}
+
+/* Only when there is something to look at. A count that is always coloured is
+   a count nobody reads, and a count that is always a chip is a chip nobody
+   presses: "No suggestions" is a statement and stays flat, while a real count
+   takes an edge and a wash so it reads as the control it has always been
+   (DOCUMENTS_PLAN Phase 0 item 3). */
+.doc-statusbar-button.has-findings {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+}
+
+.doc-prose-group-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+
+.doc-prose-jump:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.doc-prose-rowhead:hover,
+.doc-prose-rowhead:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--hover-veil);
+}
+
+/* The sentence being read aloud (INBOX 404): a ground, not an ink, so every
+   underline a finding or a suggestion draws stays readable on top of it. */
+.cm-read-aloud {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+/* **The open row is where you are**, painted from `aria-current` so the mark
+   and its announcement are one thing (DESIGN.md's recipe index), a fill plus a
+   weight step and never an accent edge as well. */
+.doc-prose-row[aria-current] > .doc-prose-rowhead {
+  background: var(--accent-soft);
+}
+
+.doc-prose-row[aria-current] .doc-finding-words {
+  font-weight: 600;
+}
+
+.autocorrect-mark:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* A candidate in a row of candidates is the width of its word, not the width of
+   the panel, and it is the tonal recipe: side by side with no edge, five words
+   read as a sentence rather than as five choices, which is the one thing the
+   list has to say. The menu's own rows stay the quiet full-width kind, where the
+   menu itself is the frame and each row owns a line. */
+.doc-suggest-list-inline > .doc-suggest-item,
+.doc-suggest-actions-inline > .doc-suggest-item {
+  width: auto;
+  border-color: transparent;
+  background: var(--chip-bg);
+}
+
+/* INBOX 549: the candidates are quiet pills, the first (Enter's) on the
+   accent's soft ground; the actions under them are quiet text. */
+.doc-suggest-list-inline > .doc-suggest-item {
+  border-radius: var(--radius-pill);
+  padding-inline: var(--space-3);
+}
+
+.doc-suggest-list-inline > .doc-suggest-best {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.doc-suggest-actions-inline > .doc-suggest-item {
+  background: transparent;
+  color: var(--muted);
+}
+
+.doc-suggest-list-inline > .doc-suggest-item:hover,
+.doc-suggest-actions-inline > .doc-suggest-item:hover,
+.doc-suggest-list-inline > .doc-suggest-item:focus-visible,
+.doc-suggest-actions-inline > .doc-suggest-item:focus-visible {
+  border-color: transparent;
+  background: var(--ghost-btn-bg);
+  color: var(--ink);
+}
+
+.doc-suggest-item:hover,
+.doc-suggest-item:focus-visible {
+  border-color: var(--accent);
+  background: var(--chip-bg);
+}
+
+/* The first candidate is the one Enter and a double-click take, so it reads
+   as the answer and the rest as the alternatives. Weight only: a second
+   colour here would compete with the accent the hovered row already uses. */
+.doc-suggest-best {
+  font-weight: 600;
+}
+
+.doc-dictionary-row:hover,
+.doc-dictionary-row:focus-within {
+  background: var(--hover-veil);
+}
+
+.doc-prose-more {
+  display: inline-flex;
+}
+
+/* The narrowest panel (the 240px right dock): Check with AI's icon gives
+   way to the ⋯, which holds it too, so the head stays one row. */
+@container doc-prose (max-width: 17rem) {
+  .doc-prose-tools > .doc-prose-ai-run {
+    display: none;
+  }
+}
+
+/* On the words only: a decoration on the flex row reaches its icon too. */
+.library-file-rows .library-image-tile .library-read-open:hover .ph-text,
+.library-file-rows .library-image-tile .library-read-open:is(:focus-visible, :has(:focus-visible)) .ph-text {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* Nothing to flag: a mark, one line, and what was checked, quiet. */
+.doc-prose-empty {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--space-2);
+  align-items: baseline;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.doc-backlink + .doc-backlink {
+  border-top: 1px solid var(--border);
+}
+
+.doc-backlink > .doc-backlink-title {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* The empty collapse the three sections above already have, for the one the
+   script makes. */
+.doc-mentions-wrap:has(> .doc-mentions:empty) > .doc-outline-title,
+.doc-mentions-wrap:has(> .doc-mentions:empty) > .doc-mentions-help {
+  display: none;
+}
+
+@media (hover: hover) {
+  .skill-card:hover,
+  .skill-card:is(:focus-visible, :has(:focus-visible)) {
+    border-color: var(--accent);
+  }
+}
+
+.skill-card-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.skill-card-header {
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.skill-fact {
+  font-size: var(--text-xs);
+}
+
+/* --- the selection tick in Rows (INBOX 426 z, image 91) ---------------------
+   The tick's corner (top right, one ⋯ in from the edge) is the grid card's
+   corner. In Rows the ⋯ sits in the flow at the row's end and the date
+   right-aligned before it, so the tick landed on "2 weeks ago" and against
+   the ⋯ with no gap. In Rows it is centred on the row, a `--space-2` gap
+   before the ⋯, and the date track leaves it the room. */
+@media (hover: hover) {
+  .library-list .library-card .library-card-tick {
+    top: 50%;
+    translate: 0 -50%;
+    right: calc(var(--space-5) + var(--target-min) + var(--space-2));
+  }
+  .library-list .library-card:has(.library-card-tick) > .library-card-meta {
+    padding-right: calc(1.5rem + var(--space-2));
+  }
+}
+
+/* And its counterpart on the picture: a box whose row the filter dropped
+   fades rather than disappearing, because a page with half its boxes missing
+   reads as a failed read. */
+.ocr-box.is-dimmed {
+  opacity: 0.2;
+}
+
+/* A text file has no page raster to crop, so there is nothing here to outline
+   - and a crosshair over a wall of text promising a gesture that leads nowhere
+   is the affordance problem this workspace keeps fixing elsewhere. */
+.ocr-stage-text .ocr-select {
+  display: none;
+}
+
+/* Idle: gone, and out of the pointer's way, until a move brings it back.
+   Never while the pointer is on it or the focus is in it, which is what lets
+   Tab walk into a dock that had faded. Opacity only: a fade that moved or
+   resized the bar would be a layout change on every wake. */
+#tab-documents.doc-focus.doc-focus-idle > .doc-focus-bar:not(:hover):not(:focus-within) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The "show me this one" flash lived here as two rules: a keyframe pulse on
+   the Live view's `<mark>` and a `::selection` colour on the Source view's
+   textarea. DOCUMENTS_PLAN Phase 2 left one editor, and it answers the
+   question itself: `docProseJump` puts the selection on the flagged span and
+   the engine scrolls it into view as part of the same transaction, with the
+   underline already saying which words are meant. `.doc-selection-flash` is
+   kept below for the fallback textarea, which still cannot mark a range it
+   already holds any other way. */
+.doc-selection-flash::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Tonal, like every other row action in the app, the row already has one
+   filled control (the reading strip's own), and two would be two answers to
+   "what is this row for". */
+.library-file-open-reading {
+  margin-top: var(--space-1);
+}
+
+/* The sections belonging to the page on screen, in the reading panel beside
+   it. A tone, not a border: this marks *where you are*, and the panel already
+   has a selected state (`.is-found`) that a second outline would compete
+   with. See `ocrRevealRegionsForPage` in library.js. */
+.ocr-region.is-current-page {
+  background: var(--surface-3);
+}
+
+.gutter-wrap {
+  margin-bottom: var(--space-2);
+}
+
+/* **Once the editor view is mounted, its own numbers are the column**
+   (`noteSurfaceGutter`, documents.js; INBOX 590), so the one beside it,
+   which numbered the hidden textarea, goes. */
+.gutter-wrap:has(> .note-surface > .cm-editor) > .doc-gutter {
+  display: none;
+}
+
+/* **A Files row's fields start where its title starts.** Measured at 1440 on
+   the running app (2026-09-09): the title and the "PDF · 121 KB · added"
+   strip both began at x=172, the caption field and the transcription fold at
+   x=181, so the lower half of every row was nine pixels adrift of the upper
+   half. `.library-image-fields` carries its own horizontal padding for the
+   Images grid, where the tile itself has none; in the rows layout the tile
+   supplies the padding and the field block's own is a second inset on top of
+   it. Reported as "this text needs to be better aligned in the files".
+   **And then the whole lower half moved one step right, on purpose** (INBOX
+   160, verbatim: "in the files subtab files row, the metadata starts to the
+   left below the filename, I feel like the metadata should start indented to
+   the right of the filename"). The two reports agree rather than fighting: the
+   first is about three blocks at three different left edges, the second is
+   about where that one shared edge should be.
+   And it was literally to the left, which a glance at the box edges denies:
+   the filename is a `figcaption`, which carries `padding: var(--space-3)` of
+   its own (00-tokens-shell.css) for the Images grid, where the tile has no
+   padding at all. So with every block below it pinned at the tile's own edge,
+   the metadata began 8px **further left** than the name it belongs to.
+   Measured at 1440, 820 and 390 (`scratchpad/ui-sweeps/filesindent.js`, which
+   reads content edges rather than box edges for exactly this reason): the name
+   at x=179.6 and the facts, the meta line and the description all at x=171.6.
+   So the indent is the name's own inset plus one step, which states the
+   relationship rather than picking a number: everything under the name starts
+   12.8px to the right of it, at one edge, and the name is the only thing on
+   the row's own margin. `--space-5` rather than a bigger step because the text
+   column is 190.8px at 390, where the facts line already wraps, and an indent
+   is not worth a third line. `padding-right` stays at zero: the kebab's
+   clearance is the name's own (`figcaption`'s `padding-right` above), and a
+   right inset here would pull the facts line in from an edge nothing sits
+   at. */
+.library-file-rows .library-image-tile > .library-image-fields,
+.library-file-rows .library-image-tile > .library-file-facts,
+.library-file-rows .library-image-tile > .library-image-provenance {
+  padding-left: calc(var(--space-3) + var(--space-5));
+  padding-right: 0;
+}
+
+/* --- a Files row's facts line, one register (INBOX 421 f) -------------------
+   The owner: "this ui needs a bit more modern and ui refinement and the
+   second row elements arent aligned and dont really match". Measured at 1440
+   before this: the line held four sizes (meta 11.2px, state and usage 12px,
+   the button 13.6px), three heights (16.8, 18, 28px) on three tops (y278 to
+   280), and a boxed button in the middle of three plain facts. Now every
+   part is one size on one line box, the groups are split by the same middot
+   the meta uses inside itself, and "Read this" is the line's one link: the
+   accent says it can be clicked, which the box was only saying louder. */
+.library-file-rows .library-image-tile > .library-file-facts {
+  column-gap: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.library-file-rows .library-image-tile > :is(figcaption, .library-file-facts, .library-image-fields) {
+  padding-inline-start: var(--space-2);
+}
+
+/* A tool is an identifier: a code chip, every one the same height on the
+   same line, starting at the card's content edge. */
+.skill-fact-list-tools {
+  align-items: center;
+  padding: 0;
+}
+
+.skill-fact-list-tools .skill-tool-token {
+  display: inline-flex;
+  align-items: center;
+  height: var(--skill-fact-h);
+  padding-block: 0;
+  line-height: 1;
+}
+
+.skills-worker-toggles {
+  padding-left: 0;
+}
+
+/* The Live editor's lines (CodeMirror's scroller, 1.6): same two steps. A code file keeps its own. */
+:root[data-read-leading="tight"] .doc-editor .cm-editor:not(.doc-content-code) .cm-scroller {
+  line-height: 1.44;
+}
+
+:root[data-read-leading="roomy"] .doc-editor .cm-editor:not(.doc-content-code) .cm-scroller {
+  line-height: 1.84;
+}
+
+/* One label column for every row, the same one every settings row in the app
+   reserves (`--form-label-col`), so the values start on one edge. */
+.doc-prop-row {
+  display: grid;
+  grid-template-columns: var(--form-label-col) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.doc-props input.doc-prop-input:hover,
+.doc-props input.doc-prop-add:hover {
+  border-color: var(--border);
+}
+
+.doc-props input.doc-prop-input:focus-visible,
+.doc-props input.doc-prop-add:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--field-inset);
+}
+
+.doc-prop-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.doc-prop-btn:is(:hover, :focus-visible),
+.doc-prop-btn:is(:focus-visible, :has(:focus-visible)) {
+  color: var(--text);
+  background: none;
+}
+
+.doc-prop-row:hover > .doc-prop-btn,
+.doc-prop-row:focus-within > .doc-prop-btn {
+  opacity: 1;
+}
+
+.doc-prop-check {
+  margin: 0;
+}
+
+.doc-prop-new {
+  display: flex;
+  align-items: center;
+}
+
+/* Read view: the same rows without the fields. */
+.doc-props-read {
+  border-bottom: 1px solid var(--border);
+  padding-inline: 0;
+}
+
+/* An image with a caption or an alignment: `![A river|400|center](…)` and
+   `![[river.jpg|400|center]]` both land here. Without either option an image
+   is still a bare `<img>` and this wrapper never exists. */
+/* **A task checkbox must not make its own line taller than every other
+   line.** Measured in the live view: a document's lines are 26px and a
+   `- [ ] task` line was 34px, because `input[type="checkbox"]` carries a 28px
+   target floor (01-forms-settings.css, and it is there for a good reason) and
+   an inline 28px control in 16px text pushes the line out by 8. A document's
+   vertical rhythm is the one thing a reader notices without being able to
+   name it, and two of these in a list of twenty break it twenty times.
+The first answer kept the 28px box and gave its height back with negative
+   margins. That held the line on a desktop and not on a phone, where the
+   floor is 44px: the line grew to 36px and two tasks' boxes overlapped, and
+   a 28px square beside 15px text read as a form field, not a list. So the
+   floor now sizes the press area and not the box (the rules below).
+`accent-color` because the alternative is the operating system's blue in an
+   app that has its own accent everywhere else, which is the plainest possible
+   sign of a control nobody styled.
+Here rather than in `docCmTheme`: a CodeMirror theme injects a stylesheet
+   the page cannot read back with `cssRules`, so a rule written there can be
+   reasoned about but not measured, and this one exists because of a
+   measurement. */
+.cm-md-task {
+  accent-color: var(--accent);
+}
+
+/* The task box at the text's size, and its press area at the app's floor
+   (the reason is beside `DocTaskWidget` in documents.js). Two classes, so the
+   global `input[type="checkbox"]` floor (0,1,1) does not size the box again.
+   The strip is `--target-min` wide, its right edge where the text begins,
+   and one line tall (1.6em, the editor's line height), so it reaches left
+   over the list's bullet rather than over the words, and the strips of two
+   task lines meet without overlapping. The box sits above its strip so a
+   press on the box is a press on the box. */
+.cm-md-task-hit {
+  position: relative;
+  display: inline-block;
+  /* The list's whole hanging indent, so a wrapped line sits under the words. */
+  width: 1.6em;
+  line-height: 1;
+  vertical-align: -0.15em;
+  /* An inline-block is a block container, so it inherits the list line's
+     hanging `text-indent` (minus one indent) and drew the box a whole indent
+     left of its own span, out of the strip's reach. */
+  text-indent: 0;
+}
+
+.cm-md-task-hit > .cm-md-task:hover,
+.cm-md-task-hit > .cm-md-task:is(:focus-visible, :has(:focus-visible)) {
+  border-color: var(--accent);
+}
+
+.cm-md-task-hit > .cm-md-task:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.cm-md-task-hit > .cm-md-task:checked::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 0.28em;
+  height: 0.56em;
+  border: solid var(--on-accent);
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.cm-md-figure {
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* An embedded block (DOCUMENTS_PLAN Phase 4 item 2).
+Every other embed in this editor draws an *object* through the renderer
+   that owns it: a note card, a map chip, a file tile. A block is not an
+   object, it is a paragraph of this notebook's own writing, so it is drawn as
+   what it is: quoted text with a line saying where it came from. The quote
+   bar is the same 3px accent the callout and the blockquote use, so the three
+   quoted things in this editor agree. */
+.doc-embed-block {
+  margin: var(--space-2) 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--accent);
+  background: var(--surface-2);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.doc-margin-card {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
 }
 
 /* --- the Library, second pass: cards in reading order, one anatomy ----------
@@ -1458,7 +2336,7 @@ body.printing-doc #doc-preview p,
 
 /* **No rule above the second job** (INBOX 726, the owner: "random top border
    on link related notes??"). The two jobs sat side by side in a wrapping row,
-   and `.setting-check + .setting-check` (08-consistency.css, "one stack, one
+   and `.setting-check + .setting-check` (07-whiteboard-misc.css, "one stack, one
    line between its rows") drew its hairline on the second one's top edge
    alone: measured, Link related notes `border-top` 1px rgba(31,36,48,0.08)
    at the same y as Tag notes, whose was transparent. They are two jobs under
@@ -1482,7 +2360,7 @@ body.printing-doc #doc-preview p,
 }
 
 /* Does it write? The same warn ink Settings gives "Changes notes"
-   (`.item-writes`, 08-consistency.css); a read-only skill stays muted. */
+   (`.item-writes`, 07-whiteboard-misc.css); a read-only skill stays muted. */
 .skill-fact-writes {
   color: var(--warn);
 }
@@ -4323,7 +5201,7 @@ button.ghost.doc-template-choice.wb-template-choice {
    halves now share the hairline: the caret's start edge overlaps the main
    half's end edge by 1px so there is one seam, and the pair lifts together
    under the pointer or the keyboard. The caret's selector names its
-   `.menu-wrap` because `.dock .menu-wrap > button.ghost` (08-consistency.css)
+   `.menu-wrap` because `.dock .menu-wrap > button.ghost` (07-whiteboard-misc.css)
    quiets every opener in a bar and would otherwise win. */
 .split-button > .split-button-main.ghost,
 .split-button .menu-wrap > .split-button-caret.ghost {
@@ -8280,7 +9158,7 @@ input[type="color"].wb-mixed {
   transform: rotate(180deg);
 }
 /* --- motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in
-   08-consistency.css, "one vocabulary for what opens and folds") --------- */
+   01-forms-settings.css, "one vocabulary for what opens and folds") --------- */
 .ui-pm {
   position: relative;
   display: inline-block;

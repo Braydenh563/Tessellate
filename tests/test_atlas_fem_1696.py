@@ -14,10 +14,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from tests._css_paths import sheets
 
 ROOT = Path(__file__).resolve().parents[1]
 LAZY = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")
-BOOT = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+BOOT = sheets("07-whiteboard-misc.css", "characters-lazy.css")
 #: Colour literals live in the colour files (test_style_scale): her light palette is there.
 THEMES = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
 LIGHT_HER = ':root:not([data-mode="dark"]) .nm-atlas[data-atlas-look="feminine"]'

@@ -1,7 +1,7 @@
 """One disclosure marker (INBOX 464 (14), DESIGN.md "A disclosure marker").
 
 Settings folds, the help accordion and task logs drew a 5x6px triangle built
-from borders in `--muted` (08-consistency.css), crossed with a 2px rotated
+from borders in `--muted` (02-chat-graph.css), crossed with a 2px rotated
 border chevron from 07-whiteboard-misc.css; the Library's Contents, notes and
 outlines drew the 16px Phosphor caret. Every fold now draws the caret.
 """
@@ -23,7 +23,7 @@ FAMILIES = (
 
 
 def _marker_rule():
-    text = CSS["08-consistency.css"]
+    text = "\n".join(CSS[n] for n in ("02-chat-graph.css", "07-whiteboard-misc.css"))
     for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]*)\{([^}]*)\}", text):
         if "::before" in m.group(1) and all(f in m.group(1) for f in FAMILIES):
             return m.group(2)
@@ -63,7 +63,7 @@ def test_every_open_caret_outranks_its_closed_twin():
     specificity; an open selector without it lost to it, and every one of
     109 folds kept its caret turned while open. So each closed selector's
     `:not()` chain appears again in an open selector for the same family."""
-    css = CSS["08-consistency.css"]
+    css = "\n".join(CSS[n] for n in ("02-chat-graph.css", "07-whiteboard-misc.css"))
     start = css.index("The chevron the native marker was hiding: **one")
     block = css[start : start + 6000]
     closed_head = block[block.index("*/") : block.index("{")]
@@ -83,7 +83,7 @@ def test_the_sources_fold_shows_its_state_and_starts_shut():
     # turns upright open (`sources1300.js`, in git at d4dbd2f: -90deg shut, none open, on the
     # popup's panel and the Chat card panel alike), the list hangs from a
     # rail under it, and no surface opens it for you.
-    assert ".chat-sources[open] > .chat-sources-summary::before" in CSS["08-consistency.css"]
+    assert ".chat-sources[open] > .chat-sources-summary::before" in "\n".join(CSS[n] for n in ("02-chat-graph.css", "07-whiteboard-misc.css"))
     body = re.search(r"\.chat-sources-body \{([^}]*)\}", CSS["02-chat-graph.css"]).group(1)
     assert "border-left: 1px solid var(--border)" in body
     js = with_pieces("chat-agent.js")
