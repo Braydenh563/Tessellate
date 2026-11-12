@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
-| chat | 176 | 181 | 52 | 2 | 59 | 409 |
+| chat | 176 | 173 | 51 | 2 | 59 | 400 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 688 | 149 | 3 | 195 | 1390 |
+| all | 553 | 680 | 148 | 3 | 195 | 1381 |
 
 ## graph
 
@@ -68,19 +68,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L30** `chat` open, S: Record eval numbers for the voice track. From OPEN.md:829. Evidence: tests/_composer_eval.py and _voice_eval.py exist; before/after figures not recorded
 - [ ] **L31** `chat` open, S: Choose lead-in before the parts, not after (P15). From OPEN.md:847. Evidence: Row says compare opener still chosen first; no later commit
 - [ ] **L32** `chat` open, S: Stop factgraph _QUANTITY reading counts of things. From OPEN.md:859. Evidence: ai/factgraph.py:166 _QUANTITY still in use (line 437); no count kind in recognise Probed 2026-11-12: factgraph._counted_unit treats any plural after a number as a unit; what counts as a "kind" is ambiguous, needs an owner call.
-- [ ] **L33** `chat` open, S: Make 'last week' mean the same in search, recognise and Find anything (window or words). From OPEN.md:861; OPEN.md:1953. Evidence: Row says both written down; F1 owner decision unanswered (also OPEN 466)
-- [ ] **L34** `chat` open, S: Stop mis-repairing real words missing from word lists. From OPEN.md:2505. Evidence: Ongoing: add to ai/common_words.py and LEFT_ALONE (test_owner_typos.py)
-- [ ] **L35** `chat` open, S: Stop nearest-asking-word rule turning all-caps NASA into 'has'. From OPEN.md:2506. Evidence: Rule unchanged per prior verify
-- [ ] **L36** `chat` open, S: Fix guessed readings: liks, mut, odf, ro. From OPEN.md:2507. Evidence: Brief 90 standing; owner_typos.json present; guesses need owner reading
-- [ ] **L37** `chat` open, S: Country with several time zones should not name just one (Australia to Sydney). From OPEN.md:2555. Evidence: No code change seen
-- [ ] **L38** `chat` open, S: Read misspelled places such as 'westen australia'. From OPEN.md:2556. Evidence: Open per prior verify
 - [ ] **L39** `chat` open, S: Stop a titled note's every sentence scoring on its title (TITLE_WEIGHT). From OPEN.md:3508. Evidence: TITLE_WEIGHT in composer_select.py still applies; no dated-sentence cap found. Probed 2026-11-12: a titled note's non-matching dated sentence is quoted via title scoring; this is the designed behaviour for the "Due in March." panel test, not changed.
 - [ ] **L40** `chat` open, S: Browser-check Ask/Chat with no model: Did you mean chip; merge voice741.js from wip branch. From OPEN.md:3510. Evidence: voice741.js not in scratchpad/ui-sweeps and no wip/composer-voice branch present; check not redone.
-- [ ] **L41** `chat` open, S: Stop reading.py reading 'review budget friday' as sure at 09:00. From OPEN.md:3719. Evidence: tests/test_reading.py has no friday-without-time ask case
 - [ ] **L43** `chat` open, S: Fix 'summarise today' per-note 'From today:' lines. From OPEN.md:3849. Evidence: composer_digest recall lines unchanged
 - [ ] **L44** `chat` open, S: Stop fragment lines reading as joined events. From OPEN.md:3851. Evidence: composer_digest join unchanged
-- [ ] **L45** `chat` open, S: Add a model-needed message for 'make it simpler' with no model. From a30e-1102.md Found, not fixed. Evidence: No 'simpler' in capability.py/commands.py/composer_help.py
-- [ ] **L47** `chat` open, S: Fix rename 'X to Y' splitting at the first ' to '. From acts-1108.md Left. Evidence: No later fix commit found
 - [ ] **L48** `chat` open, S: Add chips to 'thanks'/'hello' replies (F5). From fc56-1110.md Left. Evidence: No closing-chip change found in composer_talk.py
 - [ ] **L51** `chat` open, S: Make tab-level Guide topics ring each topic's own control, not the tab's main control. From OPEN.md:963; OPEN.md:2709. Evidence: No per-topic ring found in help-chat.js (grep ring/highlight empty); topics carry tab-level path only
 - [ ] **L52** `chat` open, S: Read the Guide fallback log line (help_chat.answer_stream) when the Guide fails with a model. From OPEN.md:968; OPEN.md:987; OPEN.md:2858. Evidence: Only reproduces with a real model; help-chat.js catch needs a model-run server log
@@ -220,7 +211,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L201** `chat` partly, S: Rows 839 and 841 never checked (no text located for either). From ledger-1112 P11.
 - [ ] **L204** `chat` partly, S: Repeat in 'milk' line still reproduced; 'what did I write about in October' restates a line. From ledger-1112 E18.
 - [ ] **L205** `chat` partly, S: 'compare Tokyo and Lisbon' opener 'Of the notes found...' and repeated cites need fixing. From ledger-1112 D20.
-- [ ] **L206** `chat` partly, S: 'how far did I run' adds goal to distance (16 km for 6 km); no fix or test. From ledger-1112 G1.
 - [ ] **L208** `chat` partly, M: Finish reminder, timer and dark-mode composer commands (E56). From OPEN.md:4026. Evidence: Timer/pomodoro/stopwatch done (tests/test_composer_bc1_1111.py). Missing: 'remind me ... an hour before' (when.py) and 'switch to dark mode' act.
 - [ ] **L210** `chat` partly, M: Fix the 'who is Priya' overview shape (R3-20). From OPEN.md:4152. Evidence: Owned by 1743 (overview answer shape); not closed.
 - [ ] **L211** `chat` partly, M: Lead with the defining note when the title only contains the subject (D1). From OPEN.md:4168. Evidence: Owned by 1743 (overview answer shape); not closed.
@@ -290,6 +280,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-27** `chat` open, M: L100, L123, L220: not reached by acts agent, re-read rows. From acts-1112. Evidence: L100 L123 L220 not reached in acts-1112
 - [ ] **L-chat-28** `chat` open, M: L208: dark-mode act and meeting-anchored reminder. From acts-1112. Evidence: applyThemeChoice in settings.js is client-side; 'an hour before the meeting' anchoring
 - [ ] **L-chat-29** `chat` open, M: L223 remainder: similar-to, rename/move undo, untag parse, summarise note id. From acts-1112. Evidence: similar to X not parsed; rename/move have no undo by sentence; 'untag the note about boiler' parses about=the; 'summarise note 12' drops note_id
+- [ ] **L-chat-30** `chat` open, M: Parity (decision 75): check the model-on path for the compare table, bare 'and the thing' and the only-list question. From readers agent 2026-11-12. Evidence: composer_versus.table, composer_small.only_list_question, composer_dialogue._BARE_AND_THING are rules-only; no model-up path checked.
 
 ## whiteboard
 
