@@ -136,3 +136,13 @@ def test_x4_b26_q5_called_x_with_y_keeps_the_whole_title(notebook):
 def test_x4_b27_similar_to_searches_the_topic_not_the_sentence(notebook):
     said = notebook("find notes simlar to my dentist one yk")[0]
     assert said.startswith("I found two notes about “dentist”"), said
+
+
+# --- P25 F9: "this week" with no day names the plumber note and leaves the mood note out ---
+
+
+@pytest.mark.parametrize("question", ["what's on this week", "what do I have this week", "anything this week"])
+def test_p25_f9_this_week_lists_the_dated_note_and_not_the_mood_note(notebook, question):
+    said = notebook(question)[0]
+    assert "Plumber is coming Thursday between 8 and 10" in said and "Thursday 12 November" in said, said
+    assert "tired" not in said.lower(), said
