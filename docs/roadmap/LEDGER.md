@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 60 | 17 | 0 | 18 | 147 |
+| documents | 70 | 64 | 17 | 1 | 18 | 151 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 701 | 157 | 3 | 195 | 1411 |
+| all | 553 | 705 | 157 | 4 | 195 | 1415 |
 
 ## graph
 
@@ -437,6 +437,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-9** `documents` open, M: Code block runner leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1100. Evidence: Open line in the plan's prose a session could miss. Unmined pointer leftovers.
 - [ ] **L-documents-10** `documents` open, S: Tray Open row for diagrams. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1430. Evidence: Open line in the plan's prose a session could miss. No ROUTE_OBJECTS row; script cap at 260,620 bytes.
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
+- [ ] **L-documents-12** `documents` open, M: Diagram builder at 390: first paint, Tab stops, tap scroll and 44 px targets (R11). From DOCUMENTS_PLAN R11 blind test 2026-11-04. Evidence: diagram-embed.js: first paint blank about 1 s; 27 Tab stops to the first block; 390 px tap scrolls the toolbar under the header; tabs 28, grips 14x19, swatches 24, Connect 44x40 under 44 px
+- [ ] **L-documents-13** `documents` open, S: Export items missing from a diagram document's own menu (R11). From DOCUMENTS_PLAN R11 blind test 2026-11-04. Evidence: a diagram document's own menu lacks the builder's export items (SVG, PNG, Copy as Mermaid); diagram-builder.js:531 has them
+- [ ] **L-documents-14** `documents` open, M: Board Mermaid import keeps block colour and edge labels (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: board Mermaid import (wbImportMermaid, whiteboard-interchange.js) drops block colour and stacks edge labels
+- [ ] **L-documents-15** `documents` open, M: Templates on a non-empty builder, and the 390 picture zoom and handle (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: diagram-suggest.js templates(): a template on a non-empty builder only lists ghost blocks; 390 picture is 47 to 59 percent zoom with the connect handle over a diamond
 
 ## mindmap
 
@@ -911,6 +915,7 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 - [ ] **L744** `chat` owner-call, M: Desk companion lightweight: live drawing within CPU budget (idle <1%, moving <3%). From OPEN.md:4376; OPEN.md:4396; OPEN.md:4401. Evidence: No row-sized check; a CPU budget the owner judges on the desk (see N14, 1692p-budget) Owner decided 2026-11-12: I will send CPU numbers.
 - [ ] **L745** `chat` owner-call, S: Patting over Atlas's head must not lift it 30 px. From OPEN.md:4370. Evidence: a31q-1103.md:12: not reproduced in the enlarged viewer; waits on owner recording/window size (OPEN I30) Owner decided 2026-11-12: Send a recording later.
 - [ ] **L759** `mindmap` owner-call, M: 13g haywire middle-button pan and mapperf SIZES gate need the owner's mouse. From OPEN.md:1817; OPEN.md:3031. Evidence: Never reproduced headless; row says do not fix blind; needs owner's mouse Owner decided 2026-11-12: Send details later.
+- [ ] **L-documents-16** `documents` owner-call, S: Box in the Add menu adds at once: what should it do instead (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: diagram-library.js:46 every Add tile presses h.add at once; the report says only 'Box in the Add menu adds at once', not what it should do
 
 ## Needs hardware
 

@@ -7,6 +7,12 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (documents-plan: R11/R12)
+
+- **Built, R12 (owner decision 2026-11-12):** `/diagram` in a text box and the board's Insert ask first: a sheet (`choose` in diagram-suggest.js, the dialog-of-choices recipe, no preview) lists "New diagram" and every mmd document; a pick is embedded as `![[Title]]` or inserted as a board diagram linked by `diagram_id`, New opens an empty builder whose Done embeds that file (`tests/test_diagram_r12_1112.py`). `pickExistingDiagram` is gone; the builder's "Open an existing diagram" uses the same sheet. Driven at 1440: sheet 736x558, rows New + six, Enter embeds, board object `diagram_id` 11.
+- **Fixed, R12:** the Embed row inserted a bare `![[` and the picker closed on its empty first list (the document cache loads late); `editorWarmLinkCaches` reopens it when the lists arrive (editor.js). The first block added off a decision asks for the arrow's words like the second (driven: "Words for the arrow to Step"); key hints (purpose line, Keys chip) are hidden on `(pointer: coarse)`.
+- **Fixed, R11:** a diagram's list row says "Diagram" not "17 words", and its chat chip is a diagram (`docSizeText`, `attachDocumentToChat`). Kept by decision (2026-10-10): the Boards empty state offers only New mind map, the dock's New makes a board.
+
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 
 - **Built, Sh1 P4:** the reminder edit form's time, priority, repeat and alert share one height (32px, equal top); `tests/test_reminder_edit_form_alert.py` holds the shared-height loop (cb83f2ed3).

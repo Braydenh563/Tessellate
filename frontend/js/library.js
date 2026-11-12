@@ -200,6 +200,8 @@ function docTypeMenu(onPick, ariaLabel) {
 //: How big a list row says a document is: a code file's lines, a prose
 //: document's words (1031 CE8: "19 words" for a script). Both lists use it.
 function docSizeText(doc, withKind = false) {
+  //: A diagram's words are Mermaid keywords; the row says what it is instead (R11).
+  if (doc.file_type === "mmd") return "Diagram";
   const kind = docFileTypes.find((t) => t.ext === doc.file_type);
   if (kind && !kind.previewable && typeof doc.lines === "number") return withKind ? `${nounCount(doc.lines, "line")} · ${kind.label}` : nounCount(doc.lines, "line");
   return typeof doc.words === "number" ? nounCount(doc.words, "word") : "";
