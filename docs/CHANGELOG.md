@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Recordings: Import audio offers one Undo that bins the whole import.
+- Links: a link opens as a card (icon, title, site, a two-line excerpt, the page text behind Show page text), takes an icon and a highlight colour from its menu or the card, and a folder does too; drag a link onto a folder or another link, drag a folder to nest it one level, double-click or F2 to rename in place, New folder; sort, a List or Cards view, Read later, and Duplicates with Keep one of each (INBOX 827 L3 to L6, `tests/test_links_827.py`).
 - Recordings: the empty state has an icon, Record and Import audio, and a line on meeting recordings (INBOX 827 L2, `tests/test_recordings_empty_827.py`).
 - Links: a bookmark keeps a look (icon, colour) and what its last fetch found (the site's icon, a short excerpt, the page text); saving a link or changing its address fetches them in the background when the web is on, and a new address drops the old icon at once (the stale-icon bug); `POST /bookmarks/{id}/refresh`, `GET /bookmarks/{id}/text` (INBOX 827 L3, L5, `tests/test_bookmarks_look_827.py`).
 - Files: a file's extracted text opens as a reading column (body size, 1.6 line, 50vh with a fade, a Page N mark per page, a find box once it scrolls) under a quiet disclosure row; Copy text drops the page separators (INBOX 827 L1, `tests/test_library_827_reading.py`).

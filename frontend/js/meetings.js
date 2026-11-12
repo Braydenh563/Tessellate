@@ -1559,6 +1559,7 @@
   //: server will not keep says so in a toast.
   async function importAudioFiles(files) {
     let made = 0;
+    const ids = [];
     for (const file of files) {
       try {
         let duration = 0;
@@ -1578,11 +1579,17 @@
         await api.upload(`/recordings/${row.id}/chunk`, form);
         await apiJson(`/recordings/${row.id}/finish`, { method: "POST", body: JSON.stringify({ duration_ms: duration }) });
         made++;
+        ids.push(row.id);
       } catch (error) {
         toast(error.message || `Couldn't keep ${file.name}.`, true);
       }
     }
-    if (made) toast(`Imported ${nounCount(made, "recording")}.`);
+    if (made) {
+      toast(`Imported ${nounCount(made, "recording")}.`);
+      //: One Undo bins the whole import, one Redo brings it back.
+      const each = (path, method) => () => Promise.all(ids.map((id) => apiJson(`/recordings/${id}${path}`, { method }))).then(renderRecordings);
+      pushUndo(`Imported ${nounCount(made, "recording")}`, each("", "DELETE"), each("/restore", "POST"));
+    }
     renderRecordings();
   }
   onDomReady(() => {

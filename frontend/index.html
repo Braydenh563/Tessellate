@@ -9085,13 +9085,17 @@ Link to another note with [[its first few words]]."></textarea>
             <option value="za">Title Z → A</option>
             <option value="site">By site</option>
           </select>
+          <select id="bookmark-view" aria-label="View bookmarks as" title="Show the bookmarks as a list or as cards">
+            <option value="list">List</option>
+            <option value="cards">Cards</option>
+          </select>
         </div>
         <div class="dock-actions">
           <button type="button" id="bookmark-help-toggle" class="icon-only ghost small graph-help-toggle"
             data-help-for="bookmark-help" aria-controls="bookmark-help" aria-expanded="false"
             title="About bookmarks" aria-label="About bookmarks"><i class="ph ph-question" aria-hidden="true"></i></button>
           <div class="help-body hidden" id="bookmark-help" role="dialog" aria-label="About bookmarks">
-            <p>Links to websites you visit often, kept in the notebook instead of the browser. Add one, sort the shelf, and put bookmarks in groups and tag them (commas, then press a tag to filter): New group and Manage groups are in the more menu, with Import bookmarks file (from your browser's export) and Export bookmarks.</p>
+            <p>Links to websites you visit often, kept in the notebook instead of the browser. Add one, sort the shelf, view it as a list or cards, and file bookmarks in folders: drag a bookmark onto a folder, onto another bookmark or onto All, drag a folder onto another to nest it (one level), and double-click a folder to rename it. Icon and colour is in a bookmark's menu and in a folder's. Duplicates appears when the same address is saved twice. Import bookmarks file (from your browser's export) and Export bookmarks are in the more menu.</p>
           </div>
           <details class="doc-dock-menu dock-menu dock-more" id="bookmark-more-menu">
             <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
@@ -9101,9 +9105,9 @@ Link to another note with [[its first few words]]."></textarea>
                    rename or retire one was to edit every link carrying it, one
                    at a time. -->
               <button type="button" id="bookmark-group-new" class="doc-dock-menu-item">
-                <i class="ph ph-folder-plus ph-lead" aria-hidden="true"></i> New group</button>
+                <i class="ph ph-folder-plus ph-lead" aria-hidden="true"></i> New folder</button>
               <button type="button" id="bookmark-group-manage" class="doc-dock-menu-item">
-                <i class="ph ph-folders ph-lead" aria-hidden="true"></i> Manage groups</button>
+                <i class="ph ph-folders ph-lead" aria-hidden="true"></i> Manage folders</button>
               <button type="button" id="bookmark-import" class="doc-dock-menu-item" title="Add the links from a bookmarks file your browser exported">
                 <i class="ph ph-upload-simple ph-lead" aria-hidden="true"></i> Import bookmarks file</button>
               <button type="button" id="bookmark-export" class="doc-dock-menu-item" title="Save every bookmark as a file your browser can import">
@@ -9128,7 +9132,7 @@ Link to another note with [[its first few words]]."></textarea>
         <input id="bookmark-title-input" type="text"
           placeholder="Title (optional)" aria-label="Bookmark title">
         <input id="bookmark-group-input" type="text" list="bookmark-group-options"
-          placeholder="Group (optional, e.g. Work/Reading)" aria-label="Bookmark group">
+          placeholder="Folder (optional, e.g. Work/Reading)" aria-label="Bookmark folder">
         <datalist id="bookmark-group-options"></datalist>
         <input id="bookmark-tags-input" type="text"
           placeholder="Tags (optional, commas)" aria-label="Bookmark tags" maxlength="400">
@@ -9138,6 +9142,7 @@ Link to another note with [[its first few words]]."></textarea>
         <button type="button" id="bookmark-form-done" class="ghost small" title="Fold the form away (Esc)">Done</button>
       </form>
       <div id="bookmark-group-chips" class="row bookmark-group-chips" role="group" aria-label="Filter bookmarks"></div>
+      <div id="bookmark-folder-bar" class="row bookmark-folder-bar hidden"></div>
       <p id="bookmark-count" class="muted text-xs bookmark-count" role="status" aria-live="polite"></p>
       <div id="bookmark-list" class="bookmark-list"></div>
       <div id="bookmark-empty" class="empty-state hidden">
@@ -9183,6 +9188,9 @@ Link to another note with [[its first few words]]."></textarea>
           <!-- Live captions' door where a person looks for audio (V6). -->
           <button id="recordings-captions" class="small ghost" type="button" title="Live captions: what the microphone hears, written as it is said">
             <i class="ph ph-closed-captioning ph-lead" aria-hidden="true"></i> Captions</button>
+          <button id="recordings-import" class="small ghost" type="button" title="Keep an audio file from this computer as a recording">
+            <i class="ph ph-upload-simple ph-lead" aria-hidden="true"></i> Import audio</button>
+          <input type="file" id="recordings-import-file" accept="audio/*,.webm,.ogg,.mp4,.wav" multiple class="hidden" aria-label="Audio files to import">
           <button type="button" class="icon-only ghost small graph-help-toggle"
             data-help-for="recordings-help" aria-controls="recordings-help" aria-expanded="false"
             title="About recordings" aria-label="About recordings"><i class="ph ph-question" aria-hidden="true"></i></button>
@@ -9190,9 +9198,6 @@ Link to another note with [[its first few words]]."></textarea>
             <p>Everything recorded in the app: meetings, lectures and voice notes. Import audio keeps a file from this computer as a recording. Captions, beside this, writes what the microphone hears as it is said; it is shown once Live captions is installed (Settings, Packages). Search finds a recording by its name or by what was said in it; a hit shows the line, and pressing it plays from there. The audio is saved every 10 seconds while it records, so closing the tab keeps all but the last few seconds, and the next start says "Recording recovered".</p>
             <p>Play at 0.5 to 2x; press or drag the waveform to jump, the line on it and the time beside it say where you are. Press M or the pin to mark the playhead with an optional comment (M or Marker while recording marks the moment too); each mark under the player plays from its time and opens the transcript at that line. Download audio in the ⋯ saves the file. Trim keeps a part as a new recording; the original stays until you empty the bin. Delete puts a recording in the bin. Transcribe in the ⋯ runs in the background: the card shows how far it is with a Stop, and a notification says when it is done. Once transcribed, Transcript lists its lines with their times: press one to play from that moment, and the ⋯ menu downloads them as subtitles (SRT or VTT). With the Speakers bundle installed (Settings, Packages), the transcript labels who speaks, by voice, as Speaker 1, Speaker 2 and so on, all on this computer; Label speakers by voice does it for a transcript you already have, and Rename a speaker gives a label a name that stays for that recording. Without it, and with the local AI on, each turn is labelled with who spoke, read from what was said (Name the speakers does it again). Kept as the browser recorded it (webm or ogg), or wav after a trim.</p>
           </div>
-          <button id="recordings-import" class="small ghost" type="button" title="Keep an audio file from this computer as a recording">
-            <i class="ph ph-upload-simple ph-lead" aria-hidden="true"></i> Import audio</button>
-          <input type="file" id="recordings-import-file" accept="audio/*,.webm,.ogg,.mp4,.wav" multiple class="hidden" aria-label="Audio files to import">
           <button id="recordings-record" class="small" type="button" title="Open the recorder for a voice note">
             <i class="ph ph-microphone ph-lead" aria-hidden="true"></i> Open recorder</button>
         </div>

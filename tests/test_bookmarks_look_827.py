@@ -23,14 +23,17 @@ def test_a_link_takes_an_icon_and_a_colour(client):
     assert (made["icon"], made["color"]) == ("ph:star", "blue")
     changed = client.put(f"/bookmarks/{made['id']}", json={"icon": "\U0001F35E", "color": "orange"}).json()
     assert (changed["icon"], changed["color"]) == ("\U0001F35E", "orange")
-    assert client.put(f"/bookmarks/{made['id']}", json={"icon": "", "color": ""}).json()["icon"] == ""
-    assert client.get("/bookmarks").json()[0]["id"] == made["id"]
+    reply = client.put(f"/bookmarks/{made['id']}", json={"icon": "", "color": ""}).json()["icon"]
+    assert reply == ""
+    reply = client.get("/bookmarks").json()[0]["id"]
+    assert reply == made["id"]
 
 
 @pytest.mark.parametrize("body", [{"color": "chartreuse"}, {"icon": "<img src=x>"}, {"icon": "javascript"}, {"icon": "ph:Star Bad"}])
 def test_a_look_outside_the_palette_is_refused(client, body):
     made = _make(client)
-    assert client.put(f"/bookmarks/{made['id']}", json=body).status_code == 422
+    reply = client.put(f"/bookmarks/{made['id']}", json=body).status_code
+    assert reply == 422
 
 
 def test_refresh_is_refused_while_the_web_is_off(client, net):  # noqa: F811
@@ -59,8 +62,10 @@ def test_refresh_keeps_the_icon_excerpt_and_text(client, app_state, net, monkeyp
     assert out["favicon"] == "data:image/png;base64,AAAA"
     assert out["excerpt"] and len(out["excerpt"]) <= 400 and out["has_text"] is True
     assert out["title"], "a link saved with no title takes the page's"
-    assert client.get(f"/bookmarks/{made['id']}/text").json()["text"]
-    assert "page_text" not in client.get("/bookmarks").json()[0], "the list stays light"
+    reply = client.get(f"/bookmarks/{made['id']}/text").json()["text"]
+    assert reply
+    listed = client.get("/bookmarks").json()
+    assert "page_text" not in listed[0], "the list stays light"
 
 
 def test_a_named_link_keeps_its_name_and_a_new_address_drops_the_old_icon(client, app_state, net, monkeypatch):  # noqa: F811
@@ -68,7 +73,8 @@ def test_a_named_link_keeps_its_name_and_a_new_address_drops_the_old_icon(client
     _site(net)
     monkeypatch.setattr(webclip, "fetch_icon", lambda url: "data:image/png;base64,AAAA")
     made = _make(client, title="My bread")
-    assert client.post(f"/bookmarks/{made['id']}/refresh").json()["title"] == "My bread"
+    reply = client.post(f"/bookmarks/{made['id']}/refresh").json()["title"]
+    assert reply == "My bread"
     moved = client.put(f"/bookmarks/{made['id']}", json={"url": "https://other.example/"}).json()
     assert (moved["favicon"], moved["excerpt"], moved["has_text"]) == ("", "", False)
     same = client.put(f"/bookmarks/{made['id']}", json={"title": "Bread"}).json()
@@ -104,14 +110,16 @@ def test_saving_a_link_fetches_its_icon_when_the_web_is_on(client, app_state, ne
     assert listed["id"] == made["id"] and listed["favicon"] == "data:image/png;base64,AAAA"
     moved = client.put(f"/bookmarks/{made['id']}", json={"url": "https://bread.example/other"}).json()
     assert moved["favicon"] == "", "the old address's icon goes at once"
-    assert client.get("/bookmarks").json()[0]["favicon"] == "data:image/png;base64,AAAA", "and the new one arrives"
+    reply = client.get("/bookmarks").json()[0]["favicon"]
+    assert reply == "data:image/png;base64,AAAA", "and the new one arrives"
 
 
 def test_saving_a_link_requests_nothing_while_the_web_is_off(client, net):  # noqa: F811
     _names, _pages, log = net
     _make(client)
     assert log == []
-    assert client.get("/bookmarks").json()[0]["favicon"] == ""
+    reply = client.get("/bookmarks").json()[0]["favicon"]
+    assert reply == ""
 
 
 def test_a_page_that_will_not_load_leaves_the_saved_link_alone(client, app_state, net):  # noqa: F811
@@ -120,4 +128,5 @@ def test_a_page_that_will_not_load_leaves_the_saved_link_alone(client, app_state
     names["bread.example"] = ["93.184.216.34"]
     pages["bread.example"] = FakeResponse(500, b"")
     made = _make(client)
-    assert client.get("/bookmarks").json()[0]["id"] == made["id"]
+    reply = client.get("/bookmarks").json()[0]["id"]
+    assert reply == made["id"]
