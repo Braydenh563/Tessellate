@@ -11,6 +11,7 @@ that answers "has this been done?" before anyone starts.
 
 From WHITEBOARD_PLAN sections 6 to 10 (the format, export and view rows). Evidence per row below.
 
+- Guides, page view and shadow default (WHITEBOARD_PLAN "Grid size and colour, guides, page view..." and "Options" rows): three switches in the Format panel's Board section, kept per board in its background settings (`guides` off, `page_view` on, `shadow_default` on are stored; defaults are not): `wbGuideBoxes` returns nothing when guides are off, `withDefaults` gives new shapes and text boxes a shadow, `drawPages` (whiteboard-options.js) draws dashed page frames from `wbPdf.pagePx` in the board's zoom group. Tests: tests/test_wb_format2.py.
 - Grid size and colour (plan row Grid: size, colour, on or off): `grid_size` (4 to 200) and `grid_color` on the board's `background` (wb_board.py), the Format panel's Board section (whiteboard-options.js), `WB_GRID_SPACING` is now a `let` assigned from the board so snap, Shift+arrow nudge and the drawn grid read one value. Evidence: tests/test_wb_format2.py (grid tests).
 - Picture border (plan row Crop, replace, border): `border_width` beside `border_color` on an image object (wb_model.py, 0 to 40), Format panel Border row (`wb-fmt-ibwidth`, `wb-fmt-ibcolor`), drawn as an outline on the board, a stroked path in SVG, PNG and PDF export, and `shape=image;imageBorder;strokeWidth` in .drawio (pictures of this notebook now export and import). Evidence: tests/test_wb_format2.py (3 tests).
 ## Moved from the plans, 2026-11-12 (whiteboard keyboard gaps)

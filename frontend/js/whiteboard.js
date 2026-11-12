@@ -1013,6 +1013,8 @@ let wbGuideBoxCache = null;
 //: are targets only for a box whose centre is inside that frame, so a card
 //: far outside never snaps to a line it cannot see the use of.
 function wbGuideBoxes(excludeKeys, at = null) {
+  //: The board's Guides switch (Format > Board): off, nothing offers a line to snap to or draw.
+  if (wbBoardBackground().guides === false) return [];
   const key = excludeKeys ? [...excludeKeys].sort().join(",") : "";
   if (wbGuideBoxCache && wbGuideBoxCache.key === key) return wbGuideBoxes.within(wbGuideBoxCache.boxes, at);
   const boxes = [];
@@ -11800,7 +11802,7 @@ async function wbApplyHistoryEntry(from, to) {
   if (entry.action === "background") {
     const current = { ...wbBoardBackground() };
     const was = entry.before || {};
-    await wbSetBackground({ color: was.color ?? null, image: was.image ?? null, sticky_fold: was.sticky_fold ?? null, rough: was.rough ?? null, defaults: was.defaults ?? null, ...Object.fromEntries(["grid_size", "grid_color"].map((k) => [k, was[k] ?? null])) }, { undo: false });
+    await wbSetBackground({ color: was.color ?? null, image: was.image ?? null, sticky_fold: was.sticky_fold ?? null, rough: was.rough ?? null, defaults: was.defaults ?? null, ...Object.fromEntries(["grid_size", "grid_color", "guides", "page_view", "shadow_default"].map((k) => [k, was[k] ?? null])) }, { undo: false });
     to.push({ action: "background", before: current });
     return true;
   }
@@ -22530,6 +22532,7 @@ function wbScheduleRender() {
     wbUpdateSelectionBar();
     wbSyncBoardCount();
     wbMapAfterRender();
+    wbFmtState.opts?.afterRender();
   });
 }
 

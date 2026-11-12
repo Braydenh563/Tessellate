@@ -574,6 +574,8 @@ def _clean_defaults(value, *, strict: bool = False) -> dict:
 
 #: The grid's spacing when a board sets none (the client's `WB_GRID_SPACING`).
 BOARD_DEFAULT_GRID = 24
+#: The switches a board's settings keep, each with the one value that is stored (the other is the default and is not).
+BOARD_SWITCH_STORED = {"sticky_fold": False, "rough": True, "guides": False, "page_view": True, "shadow_default": True}
 
 
 class BoardBackground(BaseModel):
@@ -599,6 +601,11 @@ class BoardBackground(BaseModel):
     #: colour. Snap, Shift+arrow nudging and the drawn grid all read the spacing.
     grid_size: int | None = Field(default=None, ge=4, le=200)
     grid_color: str | None = Field(default=None, max_length=7)
+    #: **Board options, switches** (wbformat2). Each stores only its non-default value: alignment guides default on,
+    #: page view (the page frames) and the shadow new shapes start with default off.
+    guides: bool | None = None
+    page_view: bool | None = None
+    shadow_default: bool | None = None
 
     @field_validator("grid_color")
     @classmethod
@@ -639,10 +646,6 @@ class BoardBackground(BaseModel):
 def _background_flags_and_grid(stored: dict) -> dict:
     """The switches and the grid out of a stored background, only valid values."""
     out = {}
-    if stored.get("sticky_fold") is False:
-        out["sticky_fold"] = False
-    if stored.get("rough") is True:
-        out["rough"] = True
     if defaults := _clean_defaults(stored.get("defaults")):
         out["defaults"] = defaults
     size, grid = stored.get("grid_size"), stored.get("grid_color")
@@ -650,6 +653,7 @@ def _background_flags_and_grid(stored: dict) -> dict:
         out["grid_size"] = size
     if isinstance(grid, str) and BOARD_BG_COLOR_RE.match(grid):
         out["grid_color"] = grid
+    out.update({key: kept for key, kept in BOARD_SWITCH_STORED.items() if stored.get(key) is kept})
     return out
 
 
@@ -680,7 +684,7 @@ def _store_board_background(entry: Entry, patch: BoardBackground) -> dict:
     merged = _board_background(entry)
     for field in patch.model_fields_set:
         value = getattr(patch, field)
-        if value is None or value == {} or (field == "sticky_fold" and value is True) or (field == "rough" and value is False) or (field == "grid_size" and value == BOARD_DEFAULT_GRID):
+        if value is None or value == {} or (field in BOARD_SWITCH_STORED and value is not BOARD_SWITCH_STORED[field]) or (field == "grid_size" and value == BOARD_DEFAULT_GRID):
             merged.pop(field, None)
         else:
             merged[field] = value

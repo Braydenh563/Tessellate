@@ -2998,13 +2998,16 @@ MORE_TOPICS.append({
     "keywords": (
         "picture border", "image border", "border on a picture", "outline a picture",
         "grid size", "grid colour", "grid color", "change the grid", "board options",
+        "alignment guides", "turn off guides", "page view", "page frames", "default shadow", "shadow for new shapes",
     ),
     "body": (
         "Picture border: select a picture, then in the Format panel set Border to a width in pixels and pick its colour; "
         "an empty width takes the border off. The border is drawn inside the picture's edge, follows its rounded corners, "
         "and is kept in SVG, PNG and PDF exports and in a .drawio file (as imageBorder and strokeWidth). "
         "Board options: with nothing selected, the Format panel's Style tab has a Board section. Grid size (4 to 200, empty is 24) "
-        "and Grid colour belong to this board; Snap to grid, Shift with the arrow keys and the drawn grid all use that size."
+        "and Grid colour belong to this board; Snap to grid, Shift with the arrow keys and the drawn grid all use that size. "
+        "The same section has three switches, each kept on the board: Guides (the alignment lines while you drag, on by default), "
+        "Page view (dashed frames for the printed pages, drawn under the cards) and Shadow (new shapes and text boxes start with a shadow)."
     ),
     "badge": {"label": "Whiteboard", "tab": "library"},
 })

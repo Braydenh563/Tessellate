@@ -995,7 +995,6 @@ product; the NOTICE says so).
 | --- | --- | --- | --- | --- |
 | Outline window (a minimap) | yes (`wb-navigator`, Shift+N) | `outline` action (Actions.js 2187), Ctrl+Shift+O, `mxOutline` | done | none |
 | Home, enter and exit group, expand and collapse | `view-home` yes (whiteboard-commands.js:286); no enter or exit group, no canvas collapse | `home`, `enterGroup`, `exitGroup`, `collapse`, `expand` (Actions.js 562 to 566) | enter group dims everything else; collapse folds a frame to its title bar | M |
-| Grid size and colour, guides, page view, connection arrows, tooltips toggles | grid style, snap, connection arrows and points, tooltip field yes; grid spacing fixed (`WB_GRID_SPACING` 24), page view absent | `grid`, `guides`, `tooltips`, `connectionArrows`, `connectionPoints`, `pageView`, `animations`, `zoomWheel` (Actions.js 1313 to 1403) | add grid size (matrix row) | S |
 | Fullscreen | yes | `fullscreen` (diagramly/Menus.js 399) | done | none |
 | Presentation mode | yes (`present`) | `presentationMode` (diagramly/Menus.js 3954) | done | none |
 | Light, dark and automatic appearance, adaptive colours | yes (the app's themes; the board's ink follows) | `adaptiveColors`, `light-dark()` colours (Format.js `defaultStripeColor`) | done | none |
@@ -1103,7 +1102,7 @@ clash is listed so the choice is made once.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Background colour or image | yes | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
-| Options: connection arrows, connection points, guides, tooltips, page view, shadow default, "Edit data" of the diagram | connection arrows and points, tooltip field yes; guides, page view, shadow default open | `addOptions` (Format.js 9016) | the toggles in section 10 | S |
+| Options: "Edit data" of the diagram | connection arrows and points, tooltips, guides, page view, shadow default built (Format > Board) | `addOptions` (Format.js 9016) | the toggles in section 10 | S |
 | Paper size, orientation | no | `addPaperSize` (Format.js 9231) | section 6 | S |
 
 ### 18. Out of scope, with the reason

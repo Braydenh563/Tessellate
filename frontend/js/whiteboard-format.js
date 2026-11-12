@@ -3451,7 +3451,9 @@ wbFmtState.board = (() => {
   //: `data` as a new item of `group` should start: the defaults win for a shape or a connector (the board's
   //: style is explicit), the caller's values win for a text box (a sticky's own paper). A line takes no fill.
   function withDefaults(group, data, { fillable = true } = {}) {
-    const style = wbBoardBackground().defaults?.[group];
+    //: The board's Shadow switch (Format > Board): a new shape or text box starts with a shadow, unless its style says otherwise.
+    const bg = wbBoardBackground();
+    const style = bg.shadow_default && (group === "shape" || group === "text") ? { shadow: true, ...bg.defaults?.[group] } : bg.defaults?.[group];
     if (!style) return data;
     const own = { ...style };
     if (!fillable) for (const key of FILL_KEYS) delete own[key];

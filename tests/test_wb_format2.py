@@ -107,7 +107,7 @@ def test_snap_nudge_and_the_grid_all_read_the_boards_grid_setting():
     assert "const step = e.shiftKey ? (wbSnapOn() ? WB_GRID_SPACING : 10) : 1;" in js
     assert '`${WB_GRID_SPACING * t.k}px`' in js
     # Undo of a background change restores the grid too.
-    assert '["grid_size", "grid_color"].map' in js
+    assert '"grid_size", "grid_color"' in js
 
 
 def test_the_board_section_of_the_format_panel_has_the_grid_fields_and_help():
@@ -115,3 +115,42 @@ def test_the_board_section_of_the_format_panel_has_the_grid_fields_and_help():
     assert 'id="wb-board-options"' in html and 'id="wb-bo-grid-size"' in html and 'id="wb-bo-grid-color"' in html
     assert 'data-help-for="wb-fmt-help-boardopts"' in html
     assert "/js/whiteboard-options.js" in (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+
+
+# --- 3. Guides, page view and the shadow default ------------------------------------------------------------
+
+
+def _pdf_source() -> str:
+    """The `wbPdf` module on its own: it needs nothing from the page."""
+    start = INTERCHANGE.index("const wbPdf = (() => {")
+    return INTERCHANGE[start : INTERCHANGE.index("\n})();", start) + 6]
+
+
+def test_a_boards_switches_store_only_their_non_default_value(ai_client):
+    board = _board(ai_client)
+    url = f"/whiteboard/boards/{board['id']}"
+    out = ai_client.put(url, json={"background": {"guides": False, "page_view": True, "shadow_default": True}})
+    assert out.status_code == 200, out.text
+    assert out.json()["background"] == {"guides": False, "page_view": True, "shadow_default": True}
+    # The default values clear the setting, they are not stored.
+    back = ai_client.put(url, json={"background": {"guides": True, "page_view": False}})
+    assert back.json()["background"] == {"shadow_default": True}
+    cleared = ai_client.put(url, json={"background": {"shadow_default": None}})
+    assert cleared.json()["background"] == {}
+
+
+def test_the_switches_are_read_by_guides_new_shapes_and_the_page_frames():
+    js = app_js_text()
+    assert "if (wbBoardBackground().guides === false) return [];" in js
+    assert 'bg.shadow_default && (group === "shape" || group === "text")' in js
+    assert '["grid_size", "grid_color", "guides", "page_view", "shadow_default"].map' in js
+    options = (ROOT / "frontend" / "js" / "whiteboard-options.js").read_text(encoding="utf-8")
+    assert "wbPdf.pagePx(bg)" in options and 'class", "wb-page-frame"' in options
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    for ident in ("wb-bo-guides", "wb-bo-pageview", "wb-bo-shadow"):
+        assert f'id="{ident}"' in html
+
+
+def test_the_page_size_in_board_units_comes_from_the_one_size_table():
+    out = _node(_pdf_source() + ' console.log(JSON.stringify([...wbPdf.pagePx({}), ...wbPdf.pagePx({ orientation: "landscape" })]));')
+    assert json.loads(out) == [794, 1123, 1123, 794]

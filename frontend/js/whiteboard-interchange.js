@@ -1480,6 +1480,14 @@ const wbPdf = (() => {
   const TILE_SCALE = 0.75;
   const MAX_PAGES = 40;
 
+  //: A board's page in board units (96 to the inch; the table is in points): its paper and orientation, A4 portrait
+  //: when it sets none. Page view draws these frames.
+  function pagePx(bg = {}) {
+    const [short, long] = SIZES[bg.paper] || SIZES.a4;
+    const [w, h] = bg.orientation === "landscape" ? [long, short] : [short, long];
+    return [Math.round((w * 96) / 72), Math.round((h * 96) / 72)];
+  }
+
   //: The pages for a board: `bounds` is the export's viewBox ({x, y, w, h}),
   //: `frames` the frames to give a page each ({x, y, width, height}). Every page
   //: has its size in points, the part of the board it shows (`crop`, board
@@ -1628,5 +1636,5 @@ const wbPdf = (() => {
     return pages;
   }
 
-  return { plan, build, pictures, choices: CHOICES, savedChoice, saveChoice };
+  return { plan, build, pictures, choices: CHOICES, savedChoice, saveChoice, SIZES, pagePx };
 })();
