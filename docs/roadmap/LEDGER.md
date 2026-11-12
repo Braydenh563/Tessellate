@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 60 | 16 | 0 | 18 | 146 |
-| documents | 70 | 60 | 16 | 0 | 18 | 146 |
-| documents | 70 | 60 | 16 | 0 | 18 | 146 |
+| documents | 70 | 58 | 16 | 0 | 18 | 144 |
+| documents | 70 | 58 | 16 | 0 | 18 | 144 |
+| documents | 70 | 58 | 16 | 0 | 18 | 144 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 700 | 156 | 3 | 195 | 1409 |
-| all | 553 | 700 | 156 | 3 | 195 | 1409 |
-| all | 553 | 700 | 156 | 3 | 195 | 1409 |
+| all | 553 | 698 | 156 | 3 | 195 | 1407 |
+| all | 553 | 698 | 156 | 3 | 195 | 1407 |
+| all | 553 | 698 | 156 | 3 | 195 | 1407 |
 
 ## graph
 
@@ -364,7 +364,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## documents
 
-- [ ] **L288** `documents` open, S: Make editor.js inlineAiUndo revert through pushUndo, not a CM transaction. From OPEN.md:1507. Evidence: editor.js:2630,2776 inlineAiUndo still present; owner's list of six, rule 1.8
 - [ ] **L289** `documents` open, S: Drive the attached-image thumbnail path in [[ preview. From OPEN.md:2726. Evidence: attachmentObjectUrl path undriven; verified open
 - [ ] **L290** `documents` open, S: Trim diagram-blocks Guide topic (1893/1900); recheck kind menu decorate selector. From dgmfix-1108.md Left. Evidence: Help text budget still binds (test_manual_parity pins sentence); decorate not re-checked
 - [ ] **L291** `documents` open, S: Rerun dark-theme sweep with documents list loaded. From OPEN.md:1117. Evidence: Needs a dark-theme sweep rerun with list loaded; not done
@@ -425,7 +424,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L351** `documents` partly, L: Re-check run/debug tools and skeletons for every language after snippet drag. From INBOX.md:904 B19. Evidence: documents-codekit.js:530 docSnippetDragStart; tests/test_snippet_drag.py; run/debug tools for every language not re-checked
 - [ ] **L352** `documents` partly, L: Documents: Autocorrect status-bar switch, deferred-large rows, DC1/DC2 lock, old audit rows re-verify. From ledger-1112 O27; ledger-1112 X14.
 - [ ] **L-documents-1** `documents` open, S: Pan the diagram builder by dragging with the right mouse button, as draw.io does. From INBOX 904 B36. Evidence: no button 2 pan in the diagram code; the whiteboard's right-pan decision 258 is superseded there, the diagram builder has no decision
-- [ ] **L755** `documents` open, S: Decide inlineAiUndo: editor history vs stack (rule 1.8). From OPEN.md:3793. Evidence: Recommendation awaiting owner decision Owner decided 2026-11-12: Editor's own history (The AI edit becomes one step in the editor's undo history, so Undo and Ctrl+Z, Ctrl+Y all agree). Build: editor.js:2776 inlineAiUndo and inlineAiSubmit write through the editor's undoable change path (execCommand insertText or the CodeMirror transaction) instead of textarea.value; test that Ctrl+Z reverts and redoes the AI edit.
 - [ ] **L-documents-2** `documents` open, S: Set a word goal and keep a streak for writing sessions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:564. Evidence: documents have a word count but no per-session goal; untracked
 - [ ] **L-documents-3** `documents` open, M: Compare two documents side by side. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:568. Evidence: there is version diff within a document but no compare of two documents; untracked
 - [ ] **L-documents-4** `documents` open, M: Turn a board's frames into a document draft. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:843. Evidence: no command turns a board into a document draft; lines 843 to 846 are untracked

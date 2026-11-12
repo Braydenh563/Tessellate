@@ -40,7 +40,6 @@ UNFOLDED: dict[str, str] = {
     "dashboard.js:undoActorFrom": "reverses an actor's changes through /events/undo, which has no redo",
     "dashboard.js:activityUndoStarts": "finds where that undo starts",
     "dashboard.js:activityUndoControl": "draws that undo's button",
-    "editor.js:inlineAiUndo": "the inline AI bar's discard, on unsaved text in the field",
     "note-history.js:undoSkillRun": "reverses a skill run's writes after a confirm, no redo",
 }
 
