@@ -503,6 +503,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "library_ref": None,
         #: A map topic's due day (MINDMAP decision 37); None on a board text.
         "due": None,
+        # Added with a map topic's due time (L371); None until set.
+        "due_time": None,
         #: Its start day (the Gantt view) and its audio note (a recording id); None on a board text.
         "start": None,
         "recording": None,

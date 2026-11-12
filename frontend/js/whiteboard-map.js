@@ -10474,30 +10474,11 @@ function wbOutlineRowEl(node, depth) {
   tags.className = "wb-outline-tags";
   cells.append(marks, tags);
   row.appendChild(cells);
-  wbOutlineCells(row);
+  wbMapFilter.cells(row);
   return row;
 }
 
 //: Brings a row's cells up to date; each repaints only when its content changed.
-function wbOutlineCells(row, node = row._node) {
-  const data = node.data || {};
-  const [marks, tags] = row.lastChild.children;
-  wbMapPaintMarkers(marks, data);
-  const labels = Array.isArray(data.labels) ? data.labels.filter((l) => typeof l === "string" && l.trim()) : [];
-  const key = labels.join("\u0000");
-  if (tags.dataset.key !== key) {
-    tags.dataset.key = key;
-    tags.replaceChildren(...labels.map((label) => {
-      const chip = document.createElement("span");
-      chip.className = "wb-map-tag";
-      chip.textContent = label;
-      return chip;
-    }));
-    tags.title = labels.length ? "Labels" : "";
-  }
-  row.lastChild.hidden = marks.hidden && !labels.length;
-}
-
 function wbOutlineEditing(row) {
   return Boolean(row?.classList.contains("is-editing"));
 }
@@ -10567,7 +10548,7 @@ function wbOutlineSync(force = false) {
     const label = wbMapLabel(row._node);
     if (!(field === now && wbOutlineEditing(row)) && field.value !== label) field.value = label;
     row.setAttribute("aria-selected", String(row._node.id === selected));
-    wbOutlineCells(row, rows[at++].node);
+    wbMapFilter.cells(row, rows[at++].node);
   }
 }
 
@@ -11186,6 +11167,25 @@ const wbMapFilter = {
   words(filters) {
     const names = [...filters].map((key) => wbMapMarkerKeyWords(key)[0]);
     return names.length > 3 ? `${names.slice(0, 3).join(", ")} and ${names.length - 3} more` : names.join(", ");
+  },
+  //: An outline row's marker and label cells (outline columns).
+  cells(row, node = row._node) {
+    const data = node.data || {};
+    const [marks, tags] = row.lastChild.children;
+    wbMapPaintMarkers(marks, data);
+    const labels = Array.isArray(data.labels) ? data.labels.filter((l) => typeof l === "string" && l.trim()) : [];
+    const key = labels.join("\u0000");
+    if (tags.dataset.key !== key) {
+      tags.dataset.key = key;
+      tags.replaceChildren(...labels.map((label) => {
+        const chip = document.createElement("span");
+        chip.className = "wb-map-tag";
+        chip.textContent = label;
+        return chip;
+      }));
+      tags.title = labels.length ? "Labels" : "";
+    }
+    row.lastChild.hidden = marks.hidden && !labels.length;
   },
 };
 // WB-MAP-FILTER-END

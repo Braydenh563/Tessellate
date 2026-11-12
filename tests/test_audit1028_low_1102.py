@@ -155,8 +155,10 @@ def test_b38_a_selection_nudge_saves_through_one_request():
 
 def test_b29_map_topics_render_bold_italic_and_code_as_dom_nodes():
     wb = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text()
-    assert r"const WB_MAP_INLINE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`)/;" in wb
-    assert 'document.createElement(tag)' in wb[wb.index("function wbMapInlineText") :][:1400]
+    # Inline links (L375) joined bold, italic and code in the same pattern.
+    assert r"const WB_MAP_INLINE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`|" in wb
+    fn = wb[wb.index("function wbMapInlineText") :]
+    assert 'document.createElement(tag)' in fn[: fn.index("\n}\n")]
 
 
 def test_u40_an_empty_board_ghosts_loose_cards_not_a_mind_map_tree():

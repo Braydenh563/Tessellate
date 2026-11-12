@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8341, frontend ids 2763, CSS sections 524, backend routes 699, backend modules 10766, test files 2677, tests 21842, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8340, frontend ids 2763, CSS sections 524, backend routes 699, backend modules 10766, test files 2677, tests 21842, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
-## Frontend functions (8341)
+## Frontend functions (8340)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -8717,7 +8717,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbTemplatePick` | frontend/js/whiteboard-map-more.js:547 |
 | `wbTopicImageFromLink` | frontend/js/whiteboard-map-more.js:572 |
 
-### frontend/js/whiteboard-map.js (354)
+### frontend/js/whiteboard-map.js (353)
 
 | Name | File:line |
 |---|---|
@@ -8762,7 +8762,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapClearLinkCue` | frontend/js/whiteboard-map.js:3445 |
 | `wbMapClearToOneTopic` | frontend/js/whiteboard-map.js:5876 |
 | `wbMapClearToOneTopicNow` | frontend/js/whiteboard-map.js:5880 |
-| `wbMapCloseMarkers` | frontend/js/whiteboard-map.js:10965 |
+| `wbMapCloseMarkers` | frontend/js/whiteboard-map.js:10946 |
 | `wbMapCloseNote` | frontend/js/whiteboard-map.js:2632 |
 | `wbMapCloudD` | frontend/js/whiteboard-map.js:9789 |
 | `wbMapColors` | frontend/js/whiteboard-map.js:1683 |
@@ -8779,7 +8779,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapCubicAt` | frontend/js/whiteboard-map.js:4028 |
 | `wbMapCutCrossLink` | frontend/js/whiteboard-map.js:9512 |
 | `wbMapCutCrossLinkNow` | frontend/js/whiteboard-map.js:9516 |
-| `wbMapDateRow` | frontend/js/whiteboard-map.js:10904 |
+| `wbMapDateRow` | frontend/js/whiteboard-map.js:10885 |
 | `wbMapDeleteEmptiesMap` | frontend/js/whiteboard-map.js:5852 |
 | `wbMapDeleteSubtree` | frontend/js/whiteboard-map.js:5906 |
 | `wbMapDimLit` | frontend/js/whiteboard-map.js:11307 |
@@ -8787,7 +8787,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapDropAmongSiblings` | frontend/js/whiteboard-map.js:3164 |
 | `wbMapDropStale` | frontend/js/whiteboard-map.js:4257 |
 | `wbMapDropTargetAt` | frontend/js/whiteboard-map.js:3077 |
-| `wbMapDueWords` | frontend/js/whiteboard-map.js:10816 |
+| `wbMapDueWords` | frontend/js/whiteboard-map.js:10797 |
 | `wbMapDuplicateTopic` | frontend/js/whiteboard-map.js:5521 |
 | `wbMapEdgeAnchors` | frontend/js/whiteboard-map.js:3643 |
 | `wbMapEdgeApply` | frontend/js/whiteboard-map.js:4584 |
@@ -8858,13 +8858,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapLinkCue` | frontend/js/whiteboard-map.js:3424 |
 | `wbMapLiveDatum` | frontend/js/whiteboard-map.js:1877 |
 | `wbMapMarkBranchLayouts` | frontend/js/whiteboard-map.js:1544 |
-| `wbMapMarkerGlyph` | frontend/js/whiteboard-map.js:11036 |
-| `wbMapMarkerKeyWords` | frontend/js/whiteboard-map.js:11171 |
-| `wbMapMarkerKeys` | frontend/js/whiteboard-map.js:11157 |
-| `wbMapMarkerParts` | frontend/js/whiteboard-map.js:10797 |
-| `wbMapMarkerSeg` | frontend/js/whiteboard-map.js:10978 |
-| `wbMapMarkerToggle` | frontend/js/whiteboard-map.js:11009 |
-| `wbMapMarkerWords` | frontend/js/whiteboard-map.js:10837 |
+| `wbMapMarkerGlyph` | frontend/js/whiteboard-map.js:11017 |
+| `wbMapMarkerKeyWords` | frontend/js/whiteboard-map.js:11152 |
+| `wbMapMarkerKeys` | frontend/js/whiteboard-map.js:11138 |
+| `wbMapMarkerParts` | frontend/js/whiteboard-map.js:10778 |
+| `wbMapMarkerSeg` | frontend/js/whiteboard-map.js:10959 |
+| `wbMapMarkerToggle` | frontend/js/whiteboard-map.js:10990 |
+| `wbMapMarkerWords` | frontend/js/whiteboard-map.js:10818 |
 | `wbMapMarkersInUse` | frontend/js/whiteboard-map.js:11193 |
 | `wbMapMoveAmongSiblings` | frontend/js/whiteboard-map.js:1595 |
 | `wbMapMoveUnder` | frontend/js/whiteboard-map.js:5592 |
@@ -8877,14 +8877,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMapNumbers` | frontend/js/whiteboard-map.js:2468 |
 | `wbMapOpenIconPicker` | frontend/js/whiteboard-map.js:7478 |
 | `wbMapOpenLink` | frontend/js/whiteboard-map.js:2840 |
-| `wbMapOpenMarkers` | frontend/js/whiteboard-map.js:11053 |
+| `wbMapOpenMarkers` | frontend/js/whiteboard-map.js:11034 |
 | `wbMapOpenNote` | frontend/js/whiteboard-map.js:2534 |
 | `wbMapOpenReference` | frontend/js/whiteboard-map.js:3455 |
 | `wbMapOrderKey` | frontend/js/whiteboard-map.js:1564 |
 | `wbMapOutdent` | frontend/js/whiteboard-map.js:5549 |
 | `wbMapPaintExtras` | frontend/js/whiteboard-map.js:8698 |
 | `wbMapPaintMarkerFilter` | frontend/js/whiteboard-map.js:11316 |
-| `wbMapPaintMarkers` | frontend/js/whiteboard-map.js:10854 |
+| `wbMapPaintMarkers` | frontend/js/whiteboard-map.js:10835 |
 | `wbMapPalette` | frontend/js/whiteboard-map.js:526 |
 | `wbMapPasteText` | frontend/js/whiteboard-map.js:5049 |
 | `wbMapPerspective` | frontend/js/whiteboard-map.js:477 |
@@ -9005,27 +9005,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbOpenMapCrossLinkRadial` | frontend/js/whiteboard-map.js:9363 |
 | `wbOpenMapLinkRadial` | frontend/js/whiteboard-map.js:9342 |
 | `wbOpenMapRadial` | frontend/js/whiteboard-map.js:8483 |
-| `wbOutlineAddAfter` | frontend/js/whiteboard-map.js:10662 |
+| `wbOutlineAddAfter` | frontend/js/whiteboard-map.js:10643 |
 | `wbOutlineAfterSurface` | frontend/js/whiteboard-map.js:10410 |
-| `wbOutlineCells` | frontend/js/whiteboard-map.js:10482 |
-| `wbOutlineCommit` | frontend/js/whiteboard-map.js:10602 |
-| `wbOutlineEdit` | frontend/js/whiteboard-map.js:10507 |
-| `wbOutlineEditing` | frontend/js/whiteboard-map.js:10501 |
-| `wbOutlineFocus` | frontend/js/whiteboard-map.js:10581 |
+| `wbOutlineCommit` | frontend/js/whiteboard-map.js:10583 |
+| `wbOutlineEdit` | frontend/js/whiteboard-map.js:10488 |
+| `wbOutlineEditing` | frontend/js/whiteboard-map.js:10482 |
+| `wbOutlineFocus` | frontend/js/whiteboard-map.js:10562 |
 | `wbOutlineFocusSelected` | frontend/js/whiteboard-map.js:10416 |
-| `wbOutlineIndent` | frontend/js/whiteboard-map.js:10621 |
-| `wbOutlineMirror` | frontend/js/whiteboard-map.js:10595 |
-| `wbOutlineOutdent` | frontend/js/whiteboard-map.js:10642 |
-| `wbOutlineRemoveEmpty` | frontend/js/whiteboard-map.js:10680 |
+| `wbOutlineIndent` | frontend/js/whiteboard-map.js:10602 |
+| `wbOutlineMirror` | frontend/js/whiteboard-map.js:10576 |
+| `wbOutlineOutdent` | frontend/js/whiteboard-map.js:10623 |
+| `wbOutlineRemoveEmpty` | frontend/js/whiteboard-map.js:10661 |
 | `wbOutlineRowEl` | frontend/js/whiteboard-map.js:10433 |
-| `wbOutlineRowOf` | frontend/js/whiteboard-map.js:10574 |
+| `wbOutlineRowOf` | frontend/js/whiteboard-map.js:10555 |
 | `wbOutlineRowsNow` | frontend/js/whiteboard-map.js:10422 |
 | `wbOutlineShowing` | frontend/js/whiteboard-map.js:10391 |
-| `wbOutlineStep` | frontend/js/whiteboard-map.js:10696 |
-| `wbOutlineStopEdit` | frontend/js/whiteboard-map.js:10518 |
+| `wbOutlineStep` | frontend/js/whiteboard-map.js:10677 |
+| `wbOutlineStopEdit` | frontend/js/whiteboard-map.js:10499 |
 | `wbOutlineSwitchShows` | frontend/js/whiteboard-map.js:10397 |
-| `wbOutlineSync` | frontend/js/whiteboard-map.js:10533 |
-| `wbOutlineTakeNewTopic` | frontend/js/whiteboard-map.js:10674 |
+| `wbOutlineSync` | frontend/js/whiteboard-map.js:10514 |
+| `wbOutlineTakeNewTopic` | frontend/js/whiteboard-map.js:10655 |
 | `wbOutlineToggle` | frontend/js/whiteboard-map.js:10402 |
 | `wbPaintMapNode` | frontend/js/whiteboard-map.js:2322 |
 | `wbPaintMapNodeStyle` | frontend/js/whiteboard-map.js:2685 |

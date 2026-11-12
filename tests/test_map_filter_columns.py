@@ -54,4 +54,4 @@ def test_a_filter_toggles_and_the_filter_is_a_set_not_one_key():
 def test_the_outline_row_has_a_cell_for_markers_and_one_for_labels():
     row = MAP_JS[MAP_JS.index("function wbOutlineRowEl") : MAP_JS.index("function wbOutlineEditing")]
     assert "wb-outline-marks" in row and "wb-outline-tags" in row
-    assert "wbOutlineCells(" in MAP_JS[MAP_JS.index("function wbOutlineSync") : MAP_JS.index("function wbOutlineRowOf")]
+    assert "wbMapFilter.cells(" in MAP_JS[MAP_JS.index("function wbOutlineSync") : MAP_JS.index("function wbOutlineRowOf")]
