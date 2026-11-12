@@ -2287,7 +2287,7 @@ mobile first, as the owner's web design class teaches. Measured with
 
 Checked item by item 2026-11-12; the built ones moved to HISTORY.md, "Moved from the plans, 2026-11-12 (22.2 and 22.3, the baseline list checked item by item)". Still open, one line each:
 
-- Ctrl+S, Ctrl+Z and Escape behave the same in every editor and dialog: the key contract (1.6) has no Escape lint.
+- Ctrl+S and Ctrl+Z behave the same in every editor and dialog: not audited (Escape is linted, HISTORY.md, "Moved from the plans, 2026-11-12 (the Escape lint)").
 - Search highlights the match inside the note it opens: cards highlight terms (notes-list.js:1600), the opened note does not.
 - Every destructive action has an Undo toast: partial, tracked as LEDGER L694 and L696.
 - Every date and time follows one 12 or 24 hour setting: none exists; the clocks use the locale (`chat-time.js:15`, `status.js:1145`).

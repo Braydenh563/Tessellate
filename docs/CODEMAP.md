@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8326, frontend ids 2767, CSS sections 524, backend routes 699, backend modules 10769, test files 2672, tests 21815, plan headings 685, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8326, frontend ids 2767, CSS sections 524, backend routes 699, backend modules 10769, test files 2673, tests 21818, plan headings 685, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8326)
 
@@ -5507,31 +5507,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `arcPath` | frontend/js/graph.js:558 |
 | `arcRise` | frontend/js/graph.js:578 |
 | `askLinkDetails` | frontend/js/graph.js:1362 |
-| `clearGraphKeyboardFocus` | frontend/js/graph.js:3695 |
+| `clearGraphKeyboardFocus` | frontend/js/graph.js:3703 |
 | `clearTrace` | frontend/js/graph.js:924 |
 | `closeGraphLinkPeek` | frontend/js/graph.js:2640 |
-| `closeGraphNewNote` | frontend/js/graph.js:3837 |
-| `closeGraphPopup` | frontend/js/graph.js:3675 |
+| `closeGraphNewNote` | frontend/js/graph.js:3845 |
+| `closeGraphPopup` | frontend/js/graph.js:3683 |
 | `drawTrace` | frontend/js/graph.js:1289 |
-| `exportGraphPng` | frontend/js/graph.js:3894 |
+| `exportGraphPng` | frontend/js/graph.js:3902 |
 | `fillTracePickers` | frontend/js/graph.js:742 |
 | `fitGraphToView` | frontend/js/graph.js:2146 |
 | `focusGraphNode` | frontend/js/graph.js:1890 |
 | `frameTree` | frontend/js/graph.js:588 |
-| `graphApplySettings` | frontend/js/graph.js:5200 |
-| `graphApplyView` | frontend/js/graph.js:4668 |
-| `graphAutoFitOn` | frontend/js/graph.js:4849 |
+| `graphApplySettings` | frontend/js/graph.js:5208 |
+| `graphApplyView` | frontend/js/graph.js:4676 |
+| `graphAutoFitOn` | frontend/js/graph.js:4857 |
 | `graphCalmScheme` | frontend/js/graph.js:1750 |
-| `graphCaptureSettings` | frontend/js/graph.js:5169 |
-| `graphCaptureView` | frontend/js/graph.js:4612 |
+| `graphCaptureSettings` | frontend/js/graph.js:5177 |
+| `graphCaptureView` | frontend/js/graph.js:4620 |
 | `graphCategoryScale` | frontend/js/graph.js:1760 |
-| `graphCloseOtherMenus` | frontend/js/graph.js:4906 |
+| `graphCloseOtherMenus` | frontend/js/graph.js:4914 |
 | `graphColourMode` | frontend/js/graph.js:1582 |
-| `graphControlsSheetParts` | frontend/js/graph.js:5319 |
+| `graphControlsSheetParts` | frontend/js/graph.js:5327 |
 | `graphEndpoint` | frontend/js/graph.js:1800 |
 | `graphFill` | frontend/js/graph.js:1826 |
 | `graphFitFrame` | frontend/js/graph.js:2123 |
-| `graphGlideMs` | frontend/js/graph.js:4240 |
+| `graphGlideMs` | frontend/js/graph.js:4248 |
 | `graphGroupColour` | frontend/js/graph.js:1613 |
 | `graphGroupNode` | frontend/js/graph.js:253 |
 | `graphGroups` | frontend/js/graph.js:1598 |
@@ -5539,15 +5539,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `graphLayoutIsComputed` | frontend/js/graph.js:195 |
 | `graphLinkKind` | frontend/js/graph.js:2647 |
 | `graphLocalQuery` | frontend/js/graph.js:1791 |
-| `graphMinimapCanShow` | frontend/js/graph.js:4030 |
-| `graphMinimapChildren` | frontend/js/graph.js:4059 |
-| `graphMinimapEdgePairs` | frontend/js/graph.js:3971 |
-| `graphMinimapFinite` | frontend/js/graph.js:4251 |
-| `graphMinimapFrame` | frontend/js/graph.js:4265 |
-| `graphMinimapPaint` | frontend/js/graph.js:4084 |
-| `graphMinimapQueuePaint` | frontend/js/graph.js:4037 |
-| `graphMinimapSet` | frontend/js/graph.js:4077 |
-| `graphMinimapShown` | frontend/js/graph.js:4008 |
+| `graphMinimapCanShow` | frontend/js/graph.js:4038 |
+| `graphMinimapChildren` | frontend/js/graph.js:4067 |
+| `graphMinimapEdgePairs` | frontend/js/graph.js:3979 |
+| `graphMinimapFinite` | frontend/js/graph.js:4259 |
+| `graphMinimapFrame` | frontend/js/graph.js:4273 |
+| `graphMinimapPaint` | frontend/js/graph.js:4092 |
+| `graphMinimapQueuePaint` | frontend/js/graph.js:4045 |
+| `graphMinimapSet` | frontend/js/graph.js:4085 |
+| `graphMinimapShown` | frontend/js/graph.js:4016 |
 | `graphNeighbourInDirection` | frontend/js/graph.js:1869 |
 | `graphNodeById` | frontend/js/graph.js:1862 |
 | `graphNodeLabel` | frontend/js/graph.js:2761 |
@@ -5556,32 +5556,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `graphNodeScreenPoint` | frontend/js/graph.js:1911 |
 | `graphNodeUnder` | frontend/js/graph.js:1323 |
 | `graphPanToNode` | frontend/js/graph.js:2381 |
-| `graphPanelRoom` | frontend/js/graph.js:3005 |
+| `graphPanelRoom` | frontend/js/graph.js:3013 |
 | `graphPinSave` | frontend/js/graph.js:58 |
 | `graphPinStep` | frontend/js/graph.js:110 |
 | `graphPinnedRows` | frontend/js/graph.js:88 |
-| `graphPopupActionList` | frontend/js/graph.js:3433 |
-| `graphPopupCap` | frontend/js/graph.js:3063 |
-| `graphPopupDragEnd` | frontend/js/graph.js:3193 |
-| `graphPopupDragMove` | frontend/js/graph.js:3180 |
-| `graphPopupDragStart` | frontend/js/graph.js:3170 |
-| `graphPopupFileCard` | frontend/js/graph.js:2941 |
-| `graphPopupFollowSpot` | frontend/js/graph.js:3135 |
-| `graphPopupIsDirty` | frontend/js/graph.js:3717 |
-| `graphPopupMayLeave` | frontend/js/graph.js:3727 |
-| `graphPopupMediaRefs` | frontend/js/graph.js:2918 |
+| `graphPopupActionList` | frontend/js/graph.js:3441 |
+| `graphPopupCap` | frontend/js/graph.js:3071 |
+| `graphPopupDragEnd` | frontend/js/graph.js:3201 |
+| `graphPopupDragMove` | frontend/js/graph.js:3188 |
+| `graphPopupDragStart` | frontend/js/graph.js:3178 |
+| `graphPopupFileCard` | frontend/js/graph.js:2949 |
+| `graphPopupFollowSpot` | frontend/js/graph.js:3143 |
+| `graphPopupIsDirty` | frontend/js/graph.js:3725 |
+| `graphPopupMayLeave` | frontend/js/graph.js:3735 |
+| `graphPopupMediaRefs` | frontend/js/graph.js:2926 |
 | `graphPopupShows` | frontend/js/graph.js:2494 |
 | `graphPreviewLower` | frontend/js/graph.js:2277 |
-| `graphRailOffset` | frontend/js/graph.js:4384 |
+| `graphRailOffset` | frontend/js/graph.js:4392 |
 | `graphReadPhrase` | frontend/js/graph.js:2244 |
 | `graphRemoveLink` | frontend/js/graph.js:2595 |
 | `graphRenderGroups` | frontend/js/graph.js:1635 |
-| `graphResetToDefaults` | frontend/js/graph.js:5235 |
+| `graphResetToDefaults` | frontend/js/graph.js:5243 |
 | `graphResolveGroups` | frontend/js/graph.js:1620 |
 | `graphRestorePins` | frontend/js/graph.js:104 |
-| `graphRestoreSwitches` | frontend/js/graph.js:4829 |
-| `graphSaveCurrentView` | frontend/js/graph.js:4658 |
-| `graphSavedViews` | frontend/js/graph.js:4603 |
+| `graphRestoreSwitches` | frontend/js/graph.js:4837 |
+| `graphSaveCurrentView` | frontend/js/graph.js:4666 |
+| `graphSavedViews` | frontend/js/graph.js:4611 |
 | `graphSearchClear` | frontend/js/graph.js:2408 |
 | `graphSearchCountText` | frontend/js/graph.js:2311 |
 | `graphSearchFor` | frontend/js/graph.js:2295 |
@@ -5593,62 +5593,62 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `graphSearchTyped` | frontend/js/graph.js:2354 |
 | `graphSetGroups` | frontend/js/graph.js:1607 |
 | `graphSetPin` | frontend/js/graph.js:63 |
-| `graphSettingsEqual` | frontend/js/graph.js:5189 |
-| `graphShowNote` | frontend/js/graph.js:3225 |
+| `graphSettingsEqual` | frontend/js/graph.js:5197 |
+| `graphShowNote` | frontend/js/graph.js:3233 |
 | `graphSizeMode` | frontend/js/graph.js:1545 |
 | `graphSizeRadius` | frontend/js/graph.js:1550 |
 | `graphSyncFocusChip` | frontend/js/graph.js:1707 |
-| `graphSyncSimilarityRow` | frontend/js/graph.js:5070 |
-| `graphTopicFor` | frontend/js/graph.js:3281 |
+| `graphSyncSimilarityRow` | frontend/js/graph.js:5078 |
+| `graphTopicFor` | frontend/js/graph.js:3289 |
 | `graphUnpinAllNow` | frontend/js/graph.js:95 |
-| `graphZoomBy` | frontend/js/graph.js:4920 |
-| `graphZoomRoving` | frontend/js/graph.js:4932 |
+| `graphZoomBy` | frontend/js/graph.js:4928 |
+| `graphZoomRoving` | frontend/js/graph.js:4940 |
 | `hierarchyPath` | frontend/js/graph.js:540 |
-| `initGraphDockHeightToken` | frontend/js/graph.js:4352 |
+| `initGraphDockHeightToken` | frontend/js/graph.js:4360 |
 | `initGraphGroups` | frontend/js/graph.js:1669 |
 | `initGraphKeyboard` | frontend/js/graph.js:1929 |
-| `initGraphMinimap` | frontend/js/graph.js:4432 |
-| `initGraphRailToken` | frontend/js/graph.js:4389 |
-| `initGraphToastClearance` | frontend/js/graph.js:4415 |
-| `initGraphViews` | frontend/js/graph.js:4768 |
+| `initGraphMinimap` | frontend/js/graph.js:4440 |
+| `initGraphRailToken` | frontend/js/graph.js:4397 |
+| `initGraphToastClearance` | frontend/js/graph.js:4423 |
+| `initGraphViews` | frontend/js/graph.js:4776 |
 | `layoutHierarchy` | frontend/js/graph.js:408 |
 | `layoutTreemap` | frontend/js/graph.js:342 |
 | `linkByDrop` | frontend/js/graph.js:1471 |
-| `openGraphControlsSheet` | frontend/js/graph.js:5335 |
+| `openGraphControlsSheet` | frontend/js/graph.js:5343 |
 | `openGraphLinkPanel` | frontend/js/graph.js:2776 |
 | `openGraphLinkPeek` | frontend/js/graph.js:2655 |
-| `openGraphNewNote` | frontend/js/graph.js:3789 |
+| `openGraphNewNote` | frontend/js/graph.js:3797 |
 | `openGraphPopup` | frontend/js/graph.js:2498 |
 | `pickTraceEnd` | frontend/js/graph.js:818 |
-| `placeGraphNewNote` | frontend/js/graph.js:3815 |
-| `placeGraphPopup` | frontend/js/graph.js:3068 |
+| `placeGraphNewNote` | frontend/js/graph.js:3823 |
+| `placeGraphPopup` | frontend/js/graph.js:3076 |
 | `radialRings` | frontend/js/graph.js:304 |
 | `renderGraph` | frontend/js/graph.js:1768 |
-| `renderGraphPopupActions` | frontend/js/graph.js:3619 |
+| `renderGraphPopupActions` | frontend/js/graph.js:3627 |
 | `renderGraphPopupHeader` | frontend/js/graph.js:2457 |
-| `renderGraphPopupInfo` | frontend/js/graph.js:3365 |
-| `renderGraphPopupMedia` | frontend/js/graph.js:2945 |
-| `renderGraphPopupProps` | frontend/js/graph.js:3318 |
-| `renderGraphPopupTopic` | frontend/js/graph.js:3256 |
-| `renderGraphViews` | frontend/js/graph.js:4738 |
+| `renderGraphPopupInfo` | frontend/js/graph.js:3373 |
+| `renderGraphPopupMedia` | frontend/js/graph.js:2953 |
+| `renderGraphPopupProps` | frontend/js/graph.js:3326 |
+| `renderGraphPopupTopic` | frontend/js/graph.js:3264 |
+| `renderGraphViews` | frontend/js/graph.js:4746 |
 | `renderTraceReadout` | frontend/js/graph.js:1120 |
 | `renderTraceState` | frontend/js/graph.js:846 |
 | `replyLoops` | frontend/js/graph.js:324 |
 | `runTrace` | frontend/js/graph.js:950 |
-| `saveGraphNewNote` | frontend/js/graph.js:3846 |
-| `saveGraphPopup` | frontend/js/graph.js:3742 |
+| `saveGraphNewNote` | frontend/js/graph.js:3854 |
+| `saveGraphPopup` | frontend/js/graph.js:3750 |
 | `selectTraceRoute` | frontend/js/graph.js:1019 |
 | `setGraphPhysicsEnabled` | frontend/js/graph.js:203 |
 | `setTraceEnd` | frontend/js/graph.js:903 |
 | `setTracePanelOpen` | frontend/js/graph.js:749 |
-| `showTopicInGraph` | frontend/js/graph.js:3300 |
+| `showTopicInGraph` | frontend/js/graph.js:3308 |
 | `showTraceMessage` | frontend/js/graph.js:916 |
 | `storyPrompt` | frontend/js/graph.js:1107 |
 | `syncGraphPopupSave` | frontend/js/graph.js:2584 |
-| `toggleGraphFullscreen` | frontend/js/graph.js:4958 |
+| `toggleGraphFullscreen` | frontend/js/graph.js:4966 |
 | `traceLabel` | frontend/js/graph.js:839 |
 | `tracePath` | frontend/js/graph.js:1275 |
-| `watchGraphPopupSize` | frontend/js/graph.js:3040 |
+| `watchGraphPopupSize` | frontend/js/graph.js:3048 |
 
 ### frontend/js/harper-worker.js (3)
 
@@ -27676,7 +27676,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21815)
+## Tests (21818)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28726,6 +28726,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_error_contract.py | 4 |
 | tests/test_error_log_1549.py | 5 |
 | tests/test_error_toasts.py | 8 |
+| tests/test_escape_closes.py | 3 |
 | tests/test_events.py | 25 |
 | tests/test_events_undo.py | 13 |
 | tests/test_every_route_is_locked.py | 4 |

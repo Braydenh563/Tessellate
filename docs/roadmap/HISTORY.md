@@ -7,6 +7,18 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (the Escape lint)
+
+- **Every dialog, popover and sheet closes on Escape.** `tests/test_escape_closes.py`
+  holds three static checks: each overlay a script builds with
+  `wireBackdropClose` has an Escape handler in its function (or, for a fixed
+  id, beside that id); each `.overlay` in index.html is in
+  `router-overlays.js`'s table or beside an Escape handler (the lock screen is
+  the one gate, exempt); a native `<dialog>` is not made to ignore Escape.
+  It found one real miss: the graph's "Manage this connection" panel
+  (`openGraphLinkPanel`) closed only by its buttons and the backdrop; it now
+  closes on Escape. 31 `wireBackdropClose` sites and 16 page overlays checked.
+
 ## Moved from the plans, 2026-11-12 (Brief 40 leftovers)
 
 - **A QR code to `/lan/trust`.** `lanserve.trust_response` answers a plain-http
