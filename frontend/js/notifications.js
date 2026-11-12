@@ -102,7 +102,7 @@ function reminderDoneButton(item) {
     const rolled = await apiJson(`/reminders/${item.reminderId}/complete?tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { method: "POST" }).catch(() => null);
     if (!rolled) {
       button.disabled = false;
-      toast("Couldn't complete that reminder.", true);
+      toast("Couldn't complete that reminder. Press Done to try again.", "info");
       return;
     }
     const items = storedNotifications();

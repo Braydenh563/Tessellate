@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8325, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2668, tests 21798, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8326, frontend ids 2763, CSS sections 524, backend routes 698, backend modules 10758, test files 2669, tests 21802, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
-## Frontend functions (8325)
+## Frontend functions (8326)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -903,135 +903,135 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `agentActivityNotice` | frontend/js/status.js:739 |
-| `agentActivityQuiet` | frontend/js/status.js:731 |
-| `agentModeAvailable` | frontend/js/status.js:2855 |
-| `aiIsOff` | frontend/js/status.js:2128 |
-| `aiOffGlyph` | frontend/js/status.js:2500 |
-| `aiOfflineDismissed` | frontend/js/status.js:2301 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2297 |
-| `aiStatusState` | frontend/js/status.js:2386 |
+| `agentActivityNotice` | frontend/js/status.js:741 |
+| `agentActivityQuiet` | frontend/js/status.js:733 |
+| `agentModeAvailable` | frontend/js/status.js:2857 |
+| `aiIsOff` | frontend/js/status.js:2130 |
+| `aiOffGlyph` | frontend/js/status.js:2502 |
+| `aiOfflineDismissed` | frontend/js/status.js:2303 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2299 |
+| `aiStatusState` | frontend/js/status.js:2388 |
 | `announcedReminders` | frontend/js/status.js:42 |
-| `appStackIsNewer` | frontend/js/status.js:1653 |
+| `appStackIsNewer` | frontend/js/status.js:1655 |
 | `armReminderTimer` | frontend/js/status.js:531 |
 | `askNotificationPermission` | frontend/js/status.js:393 |
-| `backendLabel` | frontend/js/status.js:2945 |
-| `boardHistoryActive` | frontend/js/status.js:1618 |
+| `backendLabel` | frontend/js/status.js:2947 |
+| `boardHistoryActive` | frontend/js/status.js:1620 |
 | `checkDueReminders` | frontend/js/status.js:597 |
-| `closeModelGate` | frontend/js/status.js:2147 |
+| `closeModelGate` | frontend/js/status.js:2149 |
 | `closeNotifications` | frontend/js/status.js:368 |
-| `dismissAiOffline` | frontend/js/status.js:2309 |
-| `dismissToast` | frontend/js/status.js:956 |
+| `dismissAiOffline` | frontend/js/status.js:2311 |
+| `dismissToast` | frontend/js/status.js:958 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
-| `embeddingProblemDetail` | frontend/js/status.js:2571 |
-| `embeddingToastDue` | frontend/js/status.js:2577 |
+| `embeddingProblemDetail` | frontend/js/status.js:2573 |
+| `embeddingToastDue` | frontend/js/status.js:2579 |
 | `forcedReadIds` | frontend/js/status.js:187 |
 | `forcedUnreadIds` | frontend/js/status.js:156 |
-| `insightLine` | frontend/js/status.js:1535 |
-| `insightSend` | frontend/js/status.js:1506 |
-| `insightVerdictItems` | frontend/js/status.js:1501 |
-| `insightVerdicts` | frontend/js/status.js:1512 |
-| `integrityWords` | frontend/js/status.js:1337 |
+| `insightLine` | frontend/js/status.js:1537 |
+| `insightSend` | frontend/js/status.js:1508 |
+| `insightVerdictItems` | frontend/js/status.js:1503 |
+| `insightVerdicts` | frontend/js/status.js:1514 |
+| `integrityWords` | frontend/js/status.js:1339 |
 | `isNotificationUnread` | frontend/js/status.js:211 |
-| `jobsRunning` | frontend/js/status.js:1970 |
+| `jobsRunning` | frontend/js/status.js:1972 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `kickBackgroundTaskPoll` | frontend/js/status.js:3123 |
-| `lastAnswerLine` | frontend/js/status.js:2522 |
-| `loadMostUsed` | frontend/js/status.js:1833 |
-| `loadRecentQuestions` | frontend/js/status.js:1805 |
-| `lockFieldWants` | frontend/js/status.js:1012 |
-| `noteDamagedNotebook` | frontend/js/status.js:1341 |
-| `noteServerDown` | frontend/js/status.js:1397 |
-| `noteServerUp` | frontend/js/status.js:1406 |
-| `noticeTaskTransitions` | frontend/js/status.js:3223 |
-| `notificationsMuted` | frontend/js/status.js:716 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:3125 |
+| `lastAnswerLine` | frontend/js/status.js:2524 |
+| `loadMostUsed` | frontend/js/status.js:1835 |
+| `loadRecentQuestions` | frontend/js/status.js:1807 |
+| `lockFieldWants` | frontend/js/status.js:1014 |
+| `noteDamagedNotebook` | frontend/js/status.js:1343 |
+| `noteServerDown` | frontend/js/status.js:1399 |
+| `noteServerUp` | frontend/js/status.js:1408 |
+| `noticeTaskTransitions` | frontend/js/status.js:3225 |
+| `notificationsMuted` | frontend/js/status.js:718 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:474 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2587 |
-| `offerUndo` | frontend/js/status.js:1560 |
-| `openLanPanel` | frontend/js/status.js:667 |
-| `openModelGate` | frontend/js/status.js:2157 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2589 |
+| `offerUndo` | frontend/js/status.js:1562 |
+| `openLanPanel` | frontend/js/status.js:669 |
+| `openModelGate` | frontend/js/status.js:2159 |
 | `openReminderList` | frontend/js/status.js:580 |
-| `paintPrivacyChip` | frontend/js/status.js:3321 |
+| `paintPrivacyChip` | frontend/js/status.js:3323 |
 | `paintReminderList` | frontend/js/status.js:566 |
-| `paintStatusItem` | frontend/js/status.js:2643 |
+| `paintStatusItem` | frontend/js/status.js:2645 |
 | `paintTitle` | frontend/js/status.js:507 |
-| `paintUndoDoor` | frontend/js/status.js:1755 |
-| `performRedo` | frontend/js/status.js:1674 |
-| `performRedoNow` | frontend/js/status.js:1705 |
-| `performUndo` | frontend/js/status.js:1668 |
-| `performUndoNow` | frontend/js/status.js:1680 |
-| `plainHttpError` | frontend/js/status.js:1093 |
+| `paintUndoDoor` | frontend/js/status.js:1757 |
+| `performRedo` | frontend/js/status.js:1676 |
+| `performRedoNow` | frontend/js/status.js:1707 |
+| `performUndo` | frontend/js/status.js:1670 |
+| `performUndoNow` | frontend/js/status.js:1682 |
+| `plainHttpError` | frontend/js/status.js:1095 |
 | `playReminderChime` | frontend/js/status.js:436 |
 | `pollReminders` | frontend/js/status.js:560 |
-| `pollServerHealth` | frontend/js/status.js:1434 |
+| `pollServerHealth` | frontend/js/status.js:1436 |
 | `primeReminderAudio` | frontend/js/status.js:409 |
-| `pushEntryPutUndo` | frontend/js/status.js:1593 |
-| `pushUndo` | frontend/js/status.js:1471 |
+| `pushEntryPutUndo` | frontend/js/status.js:1595 |
+| `pushUndo` | frontend/js/status.js:1473 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:3142 |
-| `refreshModelStatus` | frontend/js/status.js:1998 |
-| `refreshPrivacyChip` | frontend/js/status.js:3335 |
+| `refreshBackgroundTasks` | frontend/js/status.js:3144 |
+| `refreshModelStatus` | frontend/js/status.js:2000 |
+| `refreshPrivacyChip` | frontend/js/status.js:3337 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
-| `renderAgentActivityMode` | frontend/js/status.js:796 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2324 |
-| `renderAiPill` | frontend/js/status.js:2530 |
-| `renderChatModeSeg` | frontend/js/status.js:2883 |
+| `renderAgentActivityMode` | frontend/js/status.js:798 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2326 |
+| `renderAiPill` | frontend/js/status.js:2532 |
+| `renderChatModeSeg` | frontend/js/status.js:2885 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2956 |
-| `renderStatusBar` | frontend/js/status.js:2686 |
-| `renderUndoBar` | frontend/js/status.js:1737 |
-| `renderWebSearchToggle` | frontend/js/status.js:2863 |
-| `reopenAnswerPanel` | frontend/js/status.js:774 |
-| `resetStatusCadence` | frontend/js/status.js:1921 |
-| `retryServerNow` | frontend/js/status.js:1447 |
-| `sayChatModelChosen` | frontend/js/status.js:1884 |
-| `scheduleServerDownRetry` | frontend/js/status.js:1421 |
-| `scheduleUndoBar` | frontend/js/status.js:1729 |
-| `setChatMode` | frontend/js/status.js:2929 |
+| `renderSettings` | frontend/js/status.js:2958 |
+| `renderStatusBar` | frontend/js/status.js:2688 |
+| `renderUndoBar` | frontend/js/status.js:1739 |
+| `renderWebSearchToggle` | frontend/js/status.js:2865 |
+| `reopenAnswerPanel` | frontend/js/status.js:776 |
+| `resetStatusCadence` | frontend/js/status.js:1923 |
+| `retryServerNow` | frontend/js/status.js:1449 |
+| `sayChatModelChosen` | frontend/js/status.js:1886 |
+| `scheduleServerDownRetry` | frontend/js/status.js:1423 |
+| `scheduleUndoBar` | frontend/js/status.js:1731 |
+| `setChatMode` | frontend/js/status.js:2931 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:512 |
 | `setTitleView` | frontend/js/status.js:517 |
-| `settingsOpen` | frontend/js/status.js:1937 |
+| `settingsOpen` | frontend/js/status.js:1939 |
 | `settleNotification` | frontend/js/status.js:116 |
-| `settleUndoFromToast` | frontend/js/status.js:1581 |
-| `showAgentNoModelHint` | frontend/js/status.js:2924 |
-| `showServerDownBanner` | frontend/js/status.js:1380 |
-| `startPrivacyChip` | frontend/js/status.js:3345 |
-| `startReminderWatch` | frontend/js/status.js:678 |
+| `settleUndoFromToast` | frontend/js/status.js:1583 |
+| `showAgentNoModelHint` | frontend/js/status.js:2926 |
+| `showServerDownBanner` | frontend/js/status.js:1382 |
+| `startPrivacyChip` | frontend/js/status.js:3347 |
+| `startReminderWatch` | frontend/js/status.js:680 |
 | `storedNotifications` | frontend/js/status.js:84 |
-| `surfaceHistory` | frontend/js/status.js:1635 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2368 |
-| `syncModelGatedControls` | frontend/js/status.js:2183 |
+| `surfaceHistory` | frontend/js/status.js:1637 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2370 |
+| `syncModelGatedControls` | frontend/js/status.js:2185 |
 | `syncNotifBlocked` | frontend/js/status.js:386 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3203 |
-| `toast` | frontend/js/status.js:1169 |
-| `toastAction` | frontend/js/status.js:1313 |
-| `toastActionButton` | frontend/js/status.js:1293 |
-| `toastActions` | frontend/js/status.js:1284 |
-| `toastAtTop` | frontend/js/status.js:820 |
-| `toastCloseButton` | frontend/js/status.js:977 |
-| `toastHold` | frontend/js/status.js:966 |
-| `toastHost` | frontend/js/status.js:1062 |
-| `toastLayout` | frontend/js/status.js:834 |
-| `toastLive` | frontend/js/status.js:824 |
-| `toastMark` | frontend/js/status.js:903 |
-| `toastMerge` | frontend/js/status.js:877 |
-| `toastName` | frontend/js/status.js:1157 |
-| `toastProgress` | frontend/js/status.js:1248 |
-| `toastReduced` | frontend/js/status.js:915 |
-| `toastStack` | frontend/js/status.js:919 |
-| `toastYield` | frontend/js/status.js:1034 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2829 |
+| `taskKey` | frontend/js/status.js:3205 |
+| `toast` | frontend/js/status.js:1171 |
+| `toastAction` | frontend/js/status.js:1315 |
+| `toastActionButton` | frontend/js/status.js:1295 |
+| `toastActions` | frontend/js/status.js:1286 |
+| `toastAtTop` | frontend/js/status.js:822 |
+| `toastCloseButton` | frontend/js/status.js:979 |
+| `toastHold` | frontend/js/status.js:968 |
+| `toastHost` | frontend/js/status.js:1064 |
+| `toastLayout` | frontend/js/status.js:836 |
+| `toastLive` | frontend/js/status.js:826 |
+| `toastMark` | frontend/js/status.js:905 |
+| `toastMerge` | frontend/js/status.js:879 |
+| `toastName` | frontend/js/status.js:1159 |
+| `toastProgress` | frontend/js/status.js:1250 |
+| `toastReduced` | frontend/js/status.js:917 |
+| `toastStack` | frontend/js/status.js:921 |
+| `toastYield` | frontend/js/status.js:1036 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2831 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
-| `voiceLine` | frontend/js/status.js:1163 |
-| `whenText` | frontend/js/status.js:1152 |
-| `withoutEndStop` | frontend/js/status.js:2567 |
+| `voiceLine` | frontend/js/status.js:1165 |
+| `whenText` | frontend/js/status.js:1154 |
+| `withoutEndStop` | frontend/js/status.js:2569 |
 
 ### frontend/js/ai-tools.js (30)
 
@@ -6553,18 +6553,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `notesSpyPick` | frontend/js/notes-rail-spy.js:45 |
 | `notesSpySchedule` | frontend/js/notes-rail-spy.js:83 |
 
-### frontend/js/notifications.js (8)
+### frontend/js/notifications.js (9)
 
 | Name | File:line |
 |---|---|
-| `dismissNotification` | frontend/js/notifications.js:326 |
+| `dismissNotification` | frontend/js/notifications.js:359 |
 | `noticeLiveValid` | frontend/js/notifications.js:9 |
 | `notificationActionButton` | frontend/js/notifications.js:55 |
 | `notificationGoes` | frontend/js/notifications.js:46 |
-| `openExportsFromNotification` | frontend/js/notifications.js:346 |
-| `openNotifications` | frontend/js/notifications.js:93 |
+| `openExportsFromNotification` | frontend/js/notifications.js:379 |
+| `openNotifications` | frontend/js/notifications.js:124 |
+| `reminderDoneButton` | frontend/js/notifications.js:93 |
 | `runNotificationGo` | frontend/js/notifications.js:28 |
-| `setNotificationUnread` | frontend/js/notifications.js:316 |
+| `setNotificationUnread` | frontend/js/notifications.js:349 |
 
 ### frontend/js/obj-carry.js (9)
 
@@ -27659,7 +27660,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21798)
+## Tests (21802)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29715,6 +29716,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reminders_api.py | 17 |
 | tests/test_reminders_due_stamp_k32.py | 6 |
 | tests/test_reminders_ics.py | 10 |
+| tests/test_reminders_phone_layout.py | 4 |
 | tests/test_reminders_reschedule.py | 5 |
 | tests/test_reminders_with_model.py | 2 |
 | tests/test_remote_image_note_1029.py | 5 |
@@ -30750,14 +30752,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:915 |
+| Needs hardware | docs/roadmap/LEDGER.md:906 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:907 |
+| Owner calls | docs/roadmap/LEDGER.md:898 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30938,7 +30940,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1115 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1106 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -30992,25 +30994,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:58 |
-| chat | docs/roadmap/LEDGER.md:1131 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1215 |
+| chat | docs/roadmap/LEDGER.md:1122 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1206 |
 | documents | docs/roadmap/LEDGER.md:361 |
-| documents | docs/roadmap/LEDGER.md:1155 |
-| general | docs/roadmap/LEDGER.md:867 |
+| documents | docs/roadmap/LEDGER.md:1146 |
+| general | docs/roadmap/LEDGER.md:858 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1119 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1227 |
+| graph | docs/roadmap/LEDGER.md:1110 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1218 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
 | mindmap | docs/roadmap/LEDGER.md:441 |
-| mindmap | docs/roadmap/LEDGER.md:1167 |
+| mindmap | docs/roadmap/LEDGER.md:1158 |
 | timeline | docs/roadmap/LEDGER.md:596 |
-| timeline | docs/roadmap/LEDGER.md:1191 |
+| timeline | docs/roadmap/LEDGER.md:1182 |
 | ui-modernisation | docs/roadmap/LEDGER.md:478 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1179 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1170 |
 | whiteboard | docs/roadmap/LEDGER.md:315 |
-| whiteboard | docs/roadmap/LEDGER.md:1143 |
-| world-class | docs/roadmap/LEDGER.md:631 |
-| world-class | docs/roadmap/LEDGER.md:1203 |
+| whiteboard | docs/roadmap/LEDGER.md:1134 |
+| world-class | docs/roadmap/LEDGER.md:622 |
+| world-class | docs/roadmap/LEDGER.md:1194 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |
