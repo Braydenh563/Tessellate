@@ -10,6 +10,7 @@ that answers "has this been done?" before anyone starts.
 ## Moved from the plans, 2026-11-12 (documents-plan: VC13, VC6, L295, L302)
 
 - **Built, VC13:** fold all, unfold all and the Problems tab were already in the palette with keys (Brief 42); added Toggle fold at the caret (`Ctrl+Alt+.`, `CM.language.toggleFold`), `CM.lint.lintKeymap` (F8, and `Mod-Shift-m` as the fallback behind the Problems tab's own chord) and "List every problem in this file, inside the editor" (`CM.lint.openLintPanel`). `tests/test_code_editor_vc13.py`. L316 closed with it: the prose document's list of Harper findings is the Writing suggestions panel (`renderDocProsePanel`).
+- **Built, VC6:** `harper-worker.js` hands the notebook's names and the person's dictionary to Harper (`clear_words` then `import_words`, per linter, whole list each time) and keeps a document's dismissed grammar findings dismissed (`ignore_lints` by problem text, redone only when the list changes; Restore clears it). Measured on 10 invented names: 10 spelling findings to 0; "The the" dismissed stays dismissed after an edit above it and returns on Restore. The five dialects (US, UK, Australian, Canadian, Indian) were already in the Spelling setting; each flags its own variant of colour and centre. `tests/test_harper_dictionary_vc6.py`.
 
 ## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
 

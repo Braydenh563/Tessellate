@@ -1131,8 +1131,8 @@ HELP_TOPICS: list[dict] = [
             'sentence with no mechanical fix, "Ask the AI for wordings" offers '
             "two or three alternatives; nothing changes until you choose. "
             "Manage the dictionary and the spelling preference (American, "
-            "British, Australian, Canadian or Indian) from the editor's own "
-            "dictionary dialog. LanguageTool, an optional second grammar "
+            "British, Australian, Canadian or Indian) from the "
+            "dictionary dialog (names are known). LanguageTool, an optional second grammar "
             "checker, is in Settings, Packages."
         ),
         "badge": {"label": "Documents", "tab": "documents"},

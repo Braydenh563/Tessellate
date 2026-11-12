@@ -42,7 +42,8 @@ CALLED_FLOOR = {
     "sqljs": 12,
     #: Brief 70: the JavaScript debugger's worker in api/run_sandbox.py.
     "jsinterpreter": 9,
-    "harper": 17,
+    #: 24 since VC6: import_words, clear_words, ignore_lints, clear_ignored_lints and the dialects.
+    "harper": 24,
     "phosphor": 260,
     "wordlist": 2,
     #: INBOX 1731: check, suggest, both dictionaries, frequency ranking, own words.
