@@ -11,17 +11,17 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 29 | 4 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 27 | 13 | 0 | 18 | 110 |
-| documents | 70 | 27 | 13 | 0 | 18 | 110 |
-| documents | 70 | 27 | 13 | 0 | 18 | 110 |
+| documents | 70 | 26 | 13 | 0 | 18 | 109 |
+| documents | 70 | 26 | 13 | 0 | 18 | 109 |
+| documents | 70 | 26 | 13 | 0 | 18 | 109 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 667 | 153 | 3 | 195 | 1373 |
-| all | 553 | 667 | 153 | 3 | 195 | 1373 |
-| all | 553 | 667 | 153 | 3 | 195 | 1373 |
+| all | 553 | 666 | 153 | 3 | 195 | 1372 |
+| all | 553 | 666 | 153 | 3 | 195 | 1372 |
+| all | 553 | 666 | 153 | 3 | 195 | 1372 |
 
 ## graph
 
@@ -401,9 +401,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-8** `documents` open, M: Diagram builder a30u and a30y leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:350. Evidence: Open line in the plan's prose a session could miss. a30u/a30y leftovers incl. clipboard read-back, ghost-row contrast in dark.
 - [ ] **L-documents-9** `documents` open, M: Code block runner leftovers. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1100. Evidence: Open line in the plan's prose a session could miss. Unmined pointer leftovers.
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
-- [ ] **L-documents-17** `documents` open, M: Board Mermaid import keeps block colour and edge labels (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: board Mermaid import (wbImportMermaid, whiteboard-interchange.js) drops block colour and stacks edge labels
-- [ ] **L-documents-18** `documents` open, M: Templates on a non-empty builder, and the 390 picture zoom and handle (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: diagram-suggest.js templates(): a template on a non-empty builder only lists ghost blocks; 390 picture is 47 to 59 percent zoom with the connect handle over a diamond
 - [ ] **L-documents-19** `documents` open, M: Comment threads: per-device author, and comments in code documents. From L318 split. Evidence: documents-comments.js docThreadAuthor: the name is the account's, one per account
+- [ ] **L-documents-20** `documents` open, S: Connect handle over a diamond at 390 (L-documents-18 remainder). From L-documents-18. Evidence: At 390 a 4-block flowchart opens at 84 percent (the 47 to 59 percent was a larger one, fit by design); the connect handle over a diamond (box 144x144 at 186,388) is not measured: tap the handle on a diamond in the picture and check it does not cover the decision's text
 
 ## mindmap
 
