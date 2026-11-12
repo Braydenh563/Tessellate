@@ -14,10 +14,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
-| timeline | 3 | 15 | 3 | 0 | 5 | 21 |
+| timeline | 3 | 14 | 3 | 0 | 5 | 20 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 553 | 687 | 157 | 3 | 195 | 1397 |
+| all | 553 | 686 | 157 | 3 | 195 | 1396 |
 
 ## graph
 
@@ -598,7 +598,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L470** `timeline` open, S: Make the week Monday-first on user_now (1524). From a30c-1102.md Still open small. Evidence: No locale week-start code found in ai/user_now.py or core
 - [ ] **L472** `timeline` open, S: Backfill done_at for reminders ticked before it existed so they count in a week. From OPEN.md:1384. Evidence: review_digest.py:94 filters on done_at; no backfill of old done rows found in src.
 - [ ] **L473** `timeline` open, S: Add a stored birthday setting so 'on my birthday' works. From OPEN.md:863. Evidence: No birthday setting found; context['birthday'] only
-- [ ] **L481** `timeline` open, S: Run contrast and errors sweeps on the calendar view. From OPEN.md:1374. Evidence: No calendar sweep in scratchpad/ui-sweeps recorded; runnable without hardware.
 - [ ] **L482** `timeline` open, S: Make feed Last-year range filter by calendar date, not written date. From OPEN.md:1375; OPEN.md:2570. Evidence: No change found in timeline-calendar.js/timeline.js for date vs written-date filtering.
 - [ ] **L483** `timeline` open, S: Stop timeline-days preference arriving after click rendering the timeline twice. From OPEN.md:1381; OPEN.md:2783. Evidence: timeline.js:2503 change handler unchanged; double render guard not found.
 - [ ] **L485** `timeline` open, S: Add a mark column to the timeline table view so meetings do not read as Note. From OPEN.md:3564. Evidence: grep meeting in timeline*.js shows no table mark column; only calendar/add paths
