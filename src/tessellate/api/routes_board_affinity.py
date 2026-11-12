@@ -26,13 +26,12 @@ from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.api.routes_map_suggest import _candidates
 from tessellate.core import deps, egress
-from tessellate.core.database import WhiteboardObject
 from tessellate.core.deps import get_session
+from tessellate.repo import whiteboard as whiteboard_repo
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
 
@@ -167,11 +166,7 @@ def _backing(db: Session, board_id: int, text: str) -> list[dict]:
 
 def _sticky_rows(db: Session, board_id: int, ids: list[int]) -> list[tuple[int, str]]:
     """(id, words) of the selected stickies that are on this board and have words."""
-    found = db.scalars(
-        select(WhiteboardObject).where(
-            WhiteboardObject.board_id == board_id, WhiteboardObject.id.in_(set(ids)), WhiteboardObject.kind == "text"
-        )
-    ).all()
+    found = whiteboard_repo.text_objects(db, board_id, ids)
     by_id = {obj.id: obj for obj in found}
     rows: list[tuple[int, str]] = []
     for oid in dict.fromkeys(ids):
