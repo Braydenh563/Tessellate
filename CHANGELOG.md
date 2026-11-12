@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Guide: the diagram-blocks topic has 48 characters of room under its budget; the Kind menu rows are checked (L290).
 - Emoji: the icon picker holds every glyph the :shortcode: menu types, guarded by a test, so the two tables cannot drift (L296).
 - Documents: the fallback find bar (no editor engine) has All documents and Replace in all (L341).
 - Lists: i. numerals keep continuing past 59 in the renderer; the settings index no longer reads layout (L307).
