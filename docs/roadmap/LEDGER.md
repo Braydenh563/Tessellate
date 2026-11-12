@@ -16,8 +16,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | ui-modernisation | 96 | 101 | 4 | 0 | 17 | 201 |
 | timeline | 3 | 29 | 3 | 0 | 5 | 35 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
-| general | 0 | 15 | 4 | 0 | 4 | 19 |
-| all | 553 | 675 | 162 | 3 | 195 | 1390 |
+| general | 0 | 13 | 5 | 0 | 4 | 18 |
+| all | 553 | 673 | 163 | 3 | 195 | 1389 |
 
 ## graph
 
@@ -875,7 +875,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-general-47** `general` open, L: Repair every failing ui sweep: fix the app where the sweep is right, the sweep where it rotted; each exits 0. From L-general-14, L-general-20 stability run 2026-11-12. Evidence: /tmp sweep run on port 8790 (70 sweeps, 240s cap): exit 1 or timeout for errors, fontmatrix, touch, phonesidebar, phonecapture, graphphone, wbexportimage, ctrlwheelzoom, libreadingfoot, libreader, doccodecopy, dockeyboard, doctoolbarstate, spinners, asktab, mapperf, mapmidpan, slashicons, uitrio, noteobject, maplayouts, maptheme, canvasconventions, mapviewmenu, companion* (12, all in 6s), profilelook, perchall, iconfloor, maplinkcue; plus tour.js (replay buttons 0 with Settings unopened), toursteps (5 step faults at 1440), anchorsmotion (5 gaps); deepflows flows note, private, link, graph (gcNodeAtWorld), settings, tabs, picker
 - [ ] **L-general-48** `general` open, M: Companion sweeps still failing (interact, life, menu, pin, sleeptab, scroll, smooth, react, perf): compare each asserted behaviour with the current buddy, then change the sweep or the app. From L-general-47. Evidence: scratchpad/ui-sweeps/companioninteract.js, companionlife.js, companionmenu.js, companionpin.js, companionsleeptab.js, companionscroll.js, companionsmooth.js, companionreact.js, companionperf.js fail after the nmb hooks; behaviour drifted
 - [ ] **L-general-49** `general` partly, M: maplinkcue, maplayouts and mapmidpan are repaired and in the CI list; mapviewmenu, maptheme and mapperf moved to L-general-57. From L-general-47. Evidence: maplinkcue 12 of 12 (16s), maplayouts 39 of 39 (21s), mapmidpan 12 of 12 (22s) on a fresh notebook
-- [ ] **L-general-50** `general` open, M: Library reader sweeps need a seeded OCR book and a 390px geometry fix. From L-general-47. Evidence: libreadingfoot.js and libreader.js need a seeded OCR book; libreader also fails the 390px full-screen geometry
 - [ ] **L-general-52** `general` partly, M: perchall, profilelook and iconfloor sweeps fail: a stale id, a profile hair setting not kept, icon buttons under the 44px touch floor. From L-general-47. Evidence: perchall.js: Cannot set properties of null (setting 'value'); profilelook.js: hair value empty after save; iconfloor.js: 65 of 304 icon-only buttons under 44px at 1024x768 touch (privacy-chip, notif-btn, capture-bar, doc-new, doc-back)
 - [ ] **L-general-53** `general` partly, M: uitrio, asktab, noteobject, canvasconventions and the errors.js split are repaired (errors runs as two CI entries under 180s); tour, toursteps, anchorsmotion and fontmatrix moved to L-general-56. From L-general-47. Evidence: uitrio all checks passed (19s, needs a seeded notebook, so not in the CI list); asktab 17s, noteobject 40s, canvasconventions 55/55 in 63s, errors 1440,1024 in 63s and 820,390 pass on a fresh notebook
 - [ ] **L-general-54** `general` open, M: deepflows flows note, private, link, graph, settings, tabs, picker still unverified. From L-general-47. Evidence: deepflows flows note, private, link, graph, settings, tabs, picker not run on port 8821; deepflows-flows.js now reads gcRequestDraw.inspect for graph

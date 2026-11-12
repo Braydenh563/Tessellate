@@ -7645,9 +7645,14 @@ input[type="color"].wb-mixed {
 /* --- moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule
    still names (a boot override would lose to a rule that loads after it). The workspace opens from the Library bundle (library.js `openOcrWorkspace`). --- */
 
-.ocr-card {
+/* `:not(.sheet-card-page)`: this sheet loads after the boot CSS, so at equal
+   weight its width and height beat the phone page variant's (the reader was
+   374 by 776 in a 390 by 844 window, not the screen). */
+.ocr-card:not(.sheet-card-page) {
   width: min(96vw, 1500px);
   height: min(92vh, 1000px);
+}
+.ocr-card {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);

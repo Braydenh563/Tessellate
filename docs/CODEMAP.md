@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8329, frontend ids 2771, CSS sections 525, backend routes 700, backend modules 10770, test files 2692, tests 21874, plan headings 683, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8329, frontend ids 2771, CSS sections 525, backend routes 700, backend modules 10770, test files 2693, tests 21875, plan headings 683, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8329)
 
@@ -12806,7 +12806,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a help popover opens over the surface that asked for it (INBOX 205) | frontend/css/07-whiteboard-misc.css:17273 |
 | a label that lost its capitals keeps its rank | frontend/css/07-whiteboard-misc.css:13528 |
 | a list of rows reads as a list | frontend/css/07-whiteboard-misc.css:5277 |
-| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:8630 |
+| a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:8635 |
 | a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:4515 |
 | a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/07-whiteboard-misc.css:11924 |
 | a model per feature (Settings, Models) | frontend/css/01-forms-settings.css:6017 |
@@ -12833,7 +12833,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1979 |
 | assistant message layout | frontend/css/05-sidebars-themes.css:4419 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2910 |
-| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:9541 |
+| audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:9546 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4126 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2711 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:81 |
@@ -12866,7 +12866,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:2075 |
 | documents tab | frontend/css/04-chat-dock-appearance.css:3811 |
 | documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2946 |
-| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:9646 |
+| documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:9651 |
 | drag to delete (INBOX 660) | frontend/css/library-lazy.css:4572 |
 | duplicate tidy-up | frontend/css/05-sidebars-themes.css:1821 |
 | editing a question in place | frontend/css/05-sidebars-themes.css:371 |
@@ -12912,10 +12912,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | motion: a note's hover card fades in (INBOX 1462) | frontend/css/graph-lazy.css:440 |
 | motion: a page arrives (INBOX 459 (2), 580) | frontend/css/07-whiteboard-misc.css:19207 |
 | motion: a panel or bar that a click shows fades in (INBOX 1565) | frontend/css/ui-reveal-lazy.css:8 |
-| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:9162 |
+| motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in | frontend/css/library-lazy.css:9167 |
 | motion: a popup arrives, and leaves the way it came (INBOX 580, 2026-10-05) | frontend/css/07-whiteboard-misc.css:19265 |
 | motion: a sidebar's contents arrive from its edge (INBOX 459 (2)) | frontend/css/07-whiteboard-misc.css:12431 |
-| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:9158 |
+| motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:9163 |
 | motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/07-whiteboard-misc.css:18928 |
 | motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/01-forms-settings.css:2666 |
 | motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/07-whiteboard-misc.css:19325 |
@@ -12977,7 +12977,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Ask box explaining itself (§35A) | frontend/css/06-timeline-dialogs.css:1305 |
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3428 |
 | the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:6418 |
-| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:9478 |
+| the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:9483 |
 | the Documents editor on a phone (INBOX 430) | frontend/css/07-whiteboard-misc.css:14646 |
 | the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/07-whiteboard-misc.css:14676 |
 | the Graph dock's second row, and the nine pixels that cause it | frontend/css/07-whiteboard-misc.css:17214 |
@@ -13005,9 +13005,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the bar: colours, size and style, the sheet | frontend/css/sketch-pad.css:114 |
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:1187 |
 | the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:6168 |
-| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:9058 |
+| the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:9063 |
 | the board's bar takes the floor of the whole touch band, not just 600 | frontend/css/10-responsive.css:685 |
-| the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:8273 |
+| the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:8278 |
 | the boot splash: one progress indicator, not two | frontend/css/07-whiteboard-misc.css:11004 |
 | the bottom docks | frontend/css/07-whiteboard-misc.css:11825 |
 | the chat dock follows its own width (INBOX 694) | frontend/css/04-chat-dock-appearance.css:6797 |
@@ -13021,7 +13021,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5452 |
 | the connections rail (WORLD_CLASS_PLAN D2; `renderNotesRail`) | frontend/css/04-chat-dock-appearance.css:290 |
 | the context bar (WHITEBOARD_PLAN.md Phase 2, decision 2) | frontend/css/07-whiteboard-misc.css:8345 |
-| the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:8306 |
+| the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:8311 |
 | the dashboard and the labels, de-vibecoded | frontend/css/07-whiteboard-misc.css:14787 |
 | the dashboard's greeting banner, on a phone | frontend/css/07-whiteboard-misc.css:13086 |
 | the dashboard's quick actions stop wrapping | frontend/css/07-whiteboard-misc.css:12968 |
@@ -13041,7 +13041,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4753 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1088 |
 | the file picker, in the app's own clothes | frontend/css/07-whiteboard-misc.css:18718 |
-| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:9099 |
+| the file type picker (INBOX 1482) | frontend/css/library-lazy.css:9104 |
 | the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3866 |
 | the flat looks carry no glow on a button | frontend/css/07-whiteboard-misc.css:17413 |
 | the flat looks: a selected tab is a place, not an action | frontend/css/07-whiteboard-misc.css:15496 |
@@ -13177,7 +13177,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 10134 |
+| frontend/css/library-lazy.css | 10139 |
 | frontend/css/lightbox-lazy.css | 449 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
@@ -27696,7 +27696,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21874)
+## Tests (21875)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29441,6 +29441,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ocr_old_cache_hint.py | 3 |
 | tests/test_ocr_page.py | 24 |
 | tests/test_ocr_pdf_regions.py | 6 |
+| tests/test_ocr_phone_page_geometry.py | 1 |
 | tests/test_ocr_prep_1568.py | 26 |
 | tests/test_ocr_rapidocr.py | 9 |
 | tests/test_ocr_reader_split.py | 4 |
@@ -30813,13 +30814,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-general-41) | docs/roadmap/BACKLOG.md:4409 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4382 |
-| Needs hardware | docs/roadmap/LEDGER.md:894 |
+| Needs hardware | docs/roadmap/LEDGER.md:893 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:886 |
+| Owner calls | docs/roadmap/LEDGER.md:885 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4255 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -30995,7 +30996,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1094 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1093 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2632 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31049,25 +31050,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:59 |
-| chat | docs/roadmap/LEDGER.md:1110 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1194 |
+| chat | docs/roadmap/LEDGER.md:1109 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1193 |
 | documents | docs/roadmap/LEDGER.md:367 |
-| documents | docs/roadmap/LEDGER.md:1134 |
+| documents | docs/roadmap/LEDGER.md:1133 |
 | general | docs/roadmap/LEDGER.md:864 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1098 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1206 |
+| graph | docs/roadmap/LEDGER.md:1097 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1205 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4391 |
 | mindmap | docs/roadmap/LEDGER.md:447 |
-| mindmap | docs/roadmap/LEDGER.md:1146 |
+| mindmap | docs/roadmap/LEDGER.md:1145 |
 | timeline | docs/roadmap/LEDGER.md:593 |
-| timeline | docs/roadmap/LEDGER.md:1170 |
+| timeline | docs/roadmap/LEDGER.md:1169 |
 | ui-modernisation | docs/roadmap/LEDGER.md:485 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1158 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1157 |
 | whiteboard | docs/roadmap/LEDGER.md:320 |
-| whiteboard | docs/roadmap/LEDGER.md:1122 |
+| whiteboard | docs/roadmap/LEDGER.md:1121 |
 | world-class | docs/roadmap/LEDGER.md:628 |
-| world-class | docs/roadmap/LEDGER.md:1182 |
+| world-class | docs/roadmap/LEDGER.md:1181 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2802 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2853 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2960 |
