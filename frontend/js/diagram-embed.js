@@ -338,6 +338,21 @@
     const gutter = el("div", "dgm-gutter");
     gutter.setAttribute("aria-hidden", "true");
     srcwrap.append(gutter, field);
+    //: Long source lines fold onto the next row when asked (L304): the numbers are hidden while they do, because a
+    //: number is beside its line only while lines do not wrap. Kept on the device, off by default.
+    const setWrap = (on) => {
+      field.setAttribute("wrap", on ? "soft" : "off");
+      srcwrap.classList.toggle("is-wrapped", on);
+      try {
+        prefs.set("dgm-source-wrap", on ? "on" : "off");
+      } catch {
+        // A private window can refuse storage; the fold still applies for now.
+      }
+    };
+    const wrapRow = () => field.getAttribute("wrap") === "off"
+      ? makeMenuItem("ph:text-align-left Wrap long lines", "Fold long Source lines onto the next row. Line numbers hide while lines fold", () => setWrap(true))
+      : makeMenuItem("ph:arrows-out-line-horizontal Stop wrapping", "Keep each Source line on one row again, with its number", () => setWrap(false));
+    if (prefs.get("dgm-source-wrap", "off") === "on") setWrap(true);
     const number = () => {
       const bad = Number(field.dataset.errorLine) || 0;
       const all = Array.from({ length: field.value.split("\n").length }, (_, i) => i + 1);
@@ -382,6 +397,7 @@
           makeMenuItem("ph:eraser Clear", "Start again from an empty diagram of this kind. Undo brings this one back", () => (io.set(`${STARTS[diagramModel.builder.kindOf(history[at])] || STARTS.flowchart}\n`), apply())),
           //: One look row, the one that is not on: the menu never says "Hand-drawn" while it is already drawn so, and it is rebuilt with every pane.
           lookRow(),
+          wrapRow(),
           ...spacingRows(),
           ...curveRows(),
           makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),

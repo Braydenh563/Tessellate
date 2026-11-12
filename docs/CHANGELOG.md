@@ -6,6 +6,18 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: Format selection beautifies only the selected lines in a js file (L300)
+- Documents: Python breakpoints persist across a reload (L315)
+- Documents: a word touching a suggestion marker is a spelling finding (L311)
+- Documents: the map add-then-undo probe is stable in light and dark (L305)
+- Documents: indent guides in code files and js-beautify on a selection are built and measured (L298, L300)
+- Documents: the code editor already fills the pane; no 78ch cap on code files (L292)
+- Documents: the documents list in the dark theme measured with rows loaded (L291)
+- Documents: an embedded note's attached-image thumbnail renders in a [[ preview, measured (L289)
+- Diagrams: the diagram editor's ... menu has Wrap long lines, which folds long Source lines instead of scrolling sideways (the line numbers hide while folded); the choice is kept on the device (L304)
+- Documents: a TypeScript file's Problems list carries sucrase's own parse errors when the editor's tree finds none, named TypeScript and linked to the line (L310).
+- Documents: the Writing Room's thoughts and draft boxes end on one line (326.8 and 294.8 px before, 294.8 and 294.8 at 1440, 1280 and 1160), and the graph's two note boxes were measured: 146 px empty, 352 px at 60 lines, no scroll in a 900 px window (L303, L326).
+- Documents: choosing Source again on a code file clears a stored Plain view, so the next file no longer opens uncoloured; the docviews sweep ignores bracket colours (L-documents-12).
 - Diagrams: the document head's Export menu has every export the builder has (L-documents-16).
 - Documents: the phone's selection bar carries Selection to a note (New note from selection, Add to note), measured at 390 px (L-documents-13).
 - Documents: the Autocorrect switch stays in the Editor menu, not the status bar, per the standing decision (L337).

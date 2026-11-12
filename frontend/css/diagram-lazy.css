@@ -1711,6 +1711,16 @@
   user-select: none;
 }
 
+/* Folded lines: a number would sit beside only the first row of a line, so the numbers go (L304). */
+.dgm-srcwrap.is-wrapped .dgm-gutter {
+  display: none;
+}
+
+.dgm-srcwrap.is-wrapped .dgm-source {
+  border-start-start-radius: var(--radius-md);
+  border-end-start-radius: var(--radius-md);
+}
+
 .dgm-gutter-bad {
   color: var(--error);
   font-weight: 700;
