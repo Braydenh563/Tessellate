@@ -491,6 +491,7 @@ EXEMPT: dict[str, str] = {
     "account-recovery.js:onclick": "inverse: restoring a backup on the lock screen snapshots the empty notebook first (POST /backups/restore), and that snapshot is the way back; there is no session to hold an Undo",
     "settings-health.js:onclick": "job: the data folder check only makes missing folders again and lists missing files; it deletes and overwrites nothing",
     "statistics.js:ask": "read: a counted answer to a question about the notebook (readOnly); nothing is written",
+    "whiteboard-interchange.js:picture": "board: stores a picture read out of a .drawio file; the import that places it is one undo step and the file is unused if that is undone",
     "whiteboard-interchange.js:wbThumbFlush": "board: stores the board's preview picture, rebuilt from the board itself; nothing of the person's changes",
     "documents-prose.js:docLinkOfferAsk": "read: asks which note names the text mentions; applying an offer is an editor change, undone by the editor's own history",
     "lan-watch.js:lanAnswerDevice": "auth: a sign-in decision for a device; Other devices lists it again to remove",

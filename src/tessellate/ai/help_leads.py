@@ -148,6 +148,7 @@ TOPIC_LEADS: dict[str, str] = {
     "board-templates": "Start a board or mind map from a ready layout for planning, deciding or meeting.",
     "board-format": "Fine-tune the colour, lines, fill and text of what you select on a board.",
     "board-connectors": "Bend connector lines where you want them, and bring in diagrams from other tools.",
+    "board-drawio": "Bring in draw.io files, CSV and libraries, send a library back, and place its templates.",
     "board-diagram-tools": "Quick tools that tidy a diagram, swap shapes and fit text on a board.",
     "board-draw-io-keys": "Extra board shortcuts for editing data, turning, resizing and copying sizes.",
     "board-workshop": "Run a workshop on a board with vote dots and a countdown clock.",
