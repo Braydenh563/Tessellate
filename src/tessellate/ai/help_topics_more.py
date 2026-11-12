@@ -1196,7 +1196,7 @@ MORE_TOPICS: list[dict] = [
             "then Import N. Closing it imports nothing. After the import, the "
             "toast's Undo moves exactly those notes to the recycle bin. Folders and notebooks become categories, "
             "tags and dates come along where the app wrote them, and links between "
-            "Notion pages become wiki links. Each note remembers where it came from, "
+            "Notion pages become wiki links. Each note remembers where it came from (a chip on its card: the file, the document it was extracted from, the page it was clipped from or the recording it was transcribed from), "
             "so importing the same export again adds nothing twice; the toast counts imported, skipped and failed. Imported text is treated as someone else's "
             "words: Atlas never follows instructions written in it. A note's day "
             "comes from the export where it says one with its year: a daily "

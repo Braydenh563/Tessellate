@@ -1018,10 +1018,19 @@ function entryItem(entry, options = {}) {
   }
   //: **Where an imported note came from**: the file name its `[[links]]`
   //: use. A chip, because the importer must not rewrite the file.
+  //: L-general-13: a document's sections say "Extracted from", a vault's files "Imported from".
   if (entry.source_path) {
-    const fileChip = chip(`ph:file-md ${entry.source_path.split("/").pop()}`, "source-path");
-    fileChip.title = `Imported from ${entry.source_path}`;
+    const extracted = /\.(pdf|docx?|odt|rtf|pptx?|epub)$/i.test(entry.source_path);
+    const fileChip = chip(`${extracted ? "ph:file-text" : "ph:file-md"} ${entry.source_path.split("/").pop()}`, "source-path");
+    fileChip.title = `${extracted ? "Extracted from" : "Imported from"} ${entry.source_path}`;
     meta.insertBefore(fileChip, date);
+  }
+  //: A recording's transcript note names its recording, and opens it (L-general-13).
+  if (entry.recording) {
+    const rec = entry.recording;
+    const recChip = chip(`ph:microphone ${rec.title}`, "source-path", () => ensureModule("meetings").then(() => openRecordings(rec.id)));
+    recChip.title = `Transcribed from the recording “${rec.title}”`;
+    meta.insertBefore(recChip, date);
   }
   li.appendChild(meta);
   noteMetaFit.observe(meta);
