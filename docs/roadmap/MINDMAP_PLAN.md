@@ -1521,8 +1521,8 @@ Built; moved whole to HISTORY.md ("Moved from the plans, 2026-10-03", "From MIND
      same on a line of their own (a lone link is a card, CHAT_PLAN decision
      12; the owner took the inline syntax 2026-11-12, built: HISTORY.md
      "Moved from the LEDGER", L-mindmap-7); a toggle in the note edit form's
-     preview reportedly exits preview (not reproduced in Chromium, capture's
-     half fixed in 31d5460).
+     preview reportedly exits preview (not reproduced, closed: HISTORY.md
+     "Moved from the plans", L-mindmap-8).
      Done the same day (commits 3d493ac to 2b721bd): capture preview and
      gutter, spinner under reduced motion, one-tab picker strip, unread-dot
      gap, popup agent "(no answer)" reasons and waiting line, Ask waiting

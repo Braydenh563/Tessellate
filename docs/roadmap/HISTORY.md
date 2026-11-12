@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (mapverify-1112: L-mindmap-8)
+
+From MINDMAP_PLAN.md ~1527, "a toggle in the note edit form's preview exits preview": the form has no Preview now (INBOX 430), its strip's Source button is the only such switch. Driven in Chromium at 1440 (an open note edit form, Source on, then every strip button, the dropdowns and the Escape key one by one): Source stayed on through all of them; only the Source button itself turns it off, and "Show line numbers" adds the gutter, as intended. Not reproduced, closed.
+
 ## Moved from the plans, 2026-11-12 (mapexport-1112)
 
 From MINDMAP_PLAN.md section 14's open list, the two stale export lines (L365):
@@ -55282,6 +55286,7 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its standing decisions are in docs/ARCHITECTURE.md, the full text is in git history (`git log -- docs/roadmap/ANALYSIS.md`).
 
 ## Moved from the LEDGER
+- [x] **L-mindmap-8** `mindmap` open, S: Reproduce a toggle in the note edit preview exiting preview. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1527. Evidence: Open line in the plan's prose a session could miss. A reported bug left unreproduced, with no row. Built: Driven in Playwright at 1440: open note edit form, Source on, pressed all 29 strip controls with Escape after each; Source only leaves via its own button. Not reproduced, plan line moved to HISTORY
 - [x] **L379** `mindmap` partly, M: Name and finish the two remaining mind map leftover items. From OPEN.md:2388. Evidence: Four of six items done per row; remaining two not named in the first lines read Built: The six gaps were structure per branch, callouts, labels, .xmind export, stickers, votes. L376 closed four; the remaining two are callouts and votes: mapcallout and mapstamps pass in dark, stamps and callout both appear in the SVG export (probe: votes pill + callout text present). No further code
 - [x] **L378** `mindmap` partly, M: Verify remaining map render and persistence leftovers. From OPEN.md:1935. Evidence: wbMapNodeSize row closed per HISTORY; rest of list not individually verified Built: Verified in the app: tidy frames a spilled map (wbMapTidy calls wbFrameSpilledMap); 31-topic tidy = 1 move-many request; open-all-folded (6) = 1 save-many; copy branch = clipboard only; mapstyle.js radial-slot check removed 2026-10-12 so moot. No code change
 - [x] **L377** `mindmap` partly, M: Drive the undriven checks: dark hand-drawn look, tables, Data tab, XMind, multi-page draw.io, callout export (touch double-tap needs hardware). From OPEN.md:589; OPEN.md:2562. Evidence: Dark theme/tables drivable in Playwright; touch double-tap needs touch hardware Built: Driven in Playwright in dark: hand-drawn look (stroke ratio read), tables, Data tab, XMind, multi-page draw.io, callout; found callout and labels missing from SVG/PNG export and fixed (tests/test_map_export_callout.py, svg now holds both). Touch double-tap is one BACKLOG row
