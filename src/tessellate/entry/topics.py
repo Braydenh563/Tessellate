@@ -326,3 +326,22 @@ def apply_edits(found: list[dict], edits: dict | None) -> list[dict]:
 def topic_of(found: list[dict]) -> dict[str, int]:
     return {str(node): topic["id"] for topic in found for node in topic["ids"]}
 
+
+def with_categories(found: list[dict], category_of: dict[str, str]) -> list[dict]:
+    """Each topic that has a category at least half its notes share gets
+    `category: {name, count}` (ledger L11: the hand-off to filing). A note in no
+    category counts against it. Copies; `found` is a cached value."""
+    out = []
+    for topic in found:
+        tally: dict[str, int] = defaultdict(int)
+        for node in topic["ids"]:
+            name = category_of.get(str(node))
+            if name:
+                tally[name] += 1
+        row = dict(topic)
+        if tally:
+            name, count = max(tally.items(), key=lambda kv: (kv[1], kv[0]))
+            if count * 2 >= topic["size"]:
+                row["category"] = {"name": name, "count": count}
+        out.append(row)
+    return out

@@ -1605,6 +1605,7 @@ def _topics_laid(found: dict) -> tuple[list[dict], dict, dict]:
     edits = topic_finder.clean_edits(config.get_preference(TOPIC_EDITS_KEY, {}))
     edited = topic_finder.apply_edits(found["topics"], edits)
     named = topic_finder.apply_names(edited, config.get_preference(TOPIC_NAMES_KEY, []))
+    named = topic_finder.with_categories(named, found.get("category_of", {}))
     return named, topic_finder.topic_of(named), edits
 
 
@@ -1807,7 +1808,20 @@ def _build_topics(session: Session) -> dict:
             terms_of[entry_id].add(("entity", name.strip()))
     found = topic_finder.build(index, terms_of, titles)
     topic_of = {str(node): topic["id"] for topic in found for node in topic["ids"]}
-    return {"topics": found, "topic_of": topic_of}
+    category_of = _category_of(session, index)
+    return {"topics": found, "topic_of": topic_of, "category_of": category_of}
+
+
+def _category_of(session: Session, index) -> dict[str, str]:  # noqa: ANN001
+    """Which category each readable note is filed in (a private note's is not
+    said, nor is "Uncategorised"), for the topic card's "mostly in" line (L11)."""
+    readable = [e for e in index.entries.values() if not e.is_private and e.category_id is not None]
+    names = manager.bulk_category_names(session, readable)
+    return {
+        str(e.id): names[e.category_id]
+        for e in readable
+        if names.get(e.category_id) not in (None, manager.UNCATEGORISED)
+    }
 
 
 def _build_structure(session: Session) -> dict:

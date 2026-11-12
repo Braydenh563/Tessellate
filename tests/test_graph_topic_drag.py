@@ -155,6 +155,7 @@ def test_a_topic_card_merges_removes_and_resets_as_saved_overrides():
     undo of the same edits PUT; the card names the category most notes sit in."""
     card = CANVAS[CANVAS.index("function gcShowTopic(") : CANVAS.index("async function gcSaveTopicName(")]
     assert "kebabMenu(gcTopicMenuRows(topic)" in card
+    assert "Mostly in ${home}" in card and "home || topic.name" in card
     assert '"ph:arrows-merge Merge with"' in CANVAS and '"ph:eye-slash Remove topic"' in CANVAS
     assert 'pushRequestUndo(label, "/graph/topics/edits", "PUT", row.was, row.edits' in CANVAS
     assert "Reset topic edits" in CANVAS

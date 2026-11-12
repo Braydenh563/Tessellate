@@ -1672,6 +1672,12 @@
     const terms = document.createElement("p");
     terms.className = "muted graph-topic-terms";
     terms.textContent = topic.terms.length ? `Shared: ${topic.terms.map((t) => `${t.term} (${t.notes})`).join(", ")}` : "Nothing its notes share stands out.";
+    //: Ledger L11: the category most of its notes already sit in, said, so the
+    //: hand-off below can offer it rather than a name made up from the topic.
+    const home = topic.category?.name || "";
+    const homeLine = document.createElement("p");
+    homeLine.className = "muted graph-topic-terms";
+    if (home) homeLine.textContent = `Mostly in ${home} (${topic.category.count} of ${topic.size} notes).`;
     const summary = document.createElement("p");
     summary.className = "graph-topic-summary";
     summary.setAttribute("aria-live", "polite");
@@ -1709,13 +1715,13 @@
     //: "Topics and categories": neither writes the other on its own). One
     //: move with one Undo, the batch bar's own (`moveNotesToCategory`).
     const file = smallButton("ph:folder-simple-plus File as a category", "File these notes under one category, named for the topic", async () => {
-      const wanted = (await promptDialog(`File these ${nounCount(topic.size, "note")} under the category`, topic.name.replace(/^#/, ""), { confirmLabel: "File" })).trim();
+      const wanted = (await promptDialog(`File these ${nounCount(topic.size, "note")} under the category`, home || topic.name.replace(/^#/, ""), { confirmLabel: "File" })).trim();
       if (wanted) await moveNotesToCategory(topic.ids, wanted);
     });
     actions.append(ask, file);
     const known = gcTopicSummaries.get(key);
     if (known) say(known);
-    box.replaceChildren(head, terms, summary, actions);
+    box.replaceChildren(head, terms, ...(home ? [homeLine] : []), summary, actions);
     box.classList.remove("hidden");
   }
 

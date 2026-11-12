@@ -113,3 +113,21 @@ def test_edits_reject_an_empty_or_huge_list(client):
     huge = client.post("/graph/topics/remove", json={"ids": list(range(5001))})
     assert (empty.status_code, huge.status_code) == (422, 422)
 
+
+
+def test_a_topic_says_the_category_most_of_its_notes_sit_in():
+    cats = {"1": "Pottery", "2": "Pottery", "3": "Pottery", "4": "Garden", "6": "Garden"}
+    out = topics.with_categories(FOUND, cats)
+    assert out[0]["category"] == {"name": "Pottery", "count": 3}
+    assert "category" not in out[1], "one of three is under half"
+    assert "category" not in FOUND[0], "the cached value is not changed"
+
+
+def test_the_category_shows_on_the_topic(client):
+    one, two = _group(client, "glazing"), _group(client, "gardening")
+    for note in one:
+        client.put(f"/entries/{note}", json={"category": "Pottery"})
+    shown = client.get("/graph/structure?topics=1").json()["topics"]
+    by_ids = {frozenset(t["ids"]): t for t in shown}
+    assert by_ids[frozenset(one)]["category"] == {"name": "Pottery", "count": 4}
+    assert "category" not in by_ids[frozenset(two)], "Uncategorised is no category"
