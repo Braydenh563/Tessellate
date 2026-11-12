@@ -13,7 +13,7 @@
 // cluster, and half a dozen like it, popup close/save, new-note save, the
 // resize handler) passes functions and reads `let`s defined below *as bare
 // identifiers, evaluated the moment that line of app.js runs*, not inside a
-// closure, not deferred to a later event. In the original single file this
+// closure, not put off to a later event. In the original single file this
 // worked regardless of position because function declarations hoist across
 // the whole script; split into two <script> tags, each tag is its own
 // hoisting scope, so if app.js ran first those lines would throw
@@ -3835,7 +3835,7 @@ async function saveGraphPopup() {
     if (graphPopupId === id) {
       status.textContent = "Saved.";
       //: What was just written is the new clean state, so the button puts
-      //: itself away for the 600ms the panel is still open.
+      //: itself away for the 600ms the panel stays up.
       graphPopupClean = { content, tags: tagsText };
       syncGraphPopupSave();
     }

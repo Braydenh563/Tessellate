@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8338, frontend ids 2763, CSS sections 524, backend routes 703, backend modules 10791, test files 2687, tests 21870, plan headings 687, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8338, frontend ids 2763, CSS sections 524, backend routes 703, backend modules 10791, test files 2687, tests 21871, plan headings 687, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8338)
 
@@ -27720,7 +27720,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21870)
+## Tests (21871)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29494,7 +29494,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_open_context_b10.py | 13 |
 | tests/test_open_document_failure_d35.py | 1 |
 | tests/test_open_note_lag_1667.py | 4 |
-| tests/test_open_scan.py | 3 |
+| tests/test_open_scan.py | 4 |
 | tests/test_openapi_gate.py | 3 |
 | tests/test_opener_toggles.py | 3 |
 | tests/test_optional_sign_in.py | 22 |
@@ -30702,6 +30702,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 9. Risks | docs/roadmap/DOCUMENTS_PLAN.md:258 |
 | 9. The graph: make it a tool, and give it a look | docs/roadmap/BACKLOG.md:568 |
 | A. Model and backend | docs/roadmap/BACKLOG.md:2366 |
+| After KG1 to KG9 | docs/roadmap/GRAPH_PLAN.md:498 |
 | After the bugs: the parity programme (the owner, 2026-10-10) | docs/ROADMAP.md:132 |
 | Asked for this session, not yet built | docs/roadmap/BACKLOG.md:304 |
 | Audio in the notebook: the architecture decided 2026-09-21, the build deferred | docs/roadmap/WORLD_CLASS_PLAN.md:2126 |
@@ -30858,7 +30859,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phase 4: mind map regressions and Tidy: BUILT, 2026-09-12 | docs/roadmap/WHITEBOARD_PLAN.md:511 |
 | Phase 4: skills that finish (one session; Brief 13) | docs/roadmap/CHAT_PLAN.md:351 |
 | Phase 4: the connected document (1 session) | docs/roadmap/DOCUMENTS_PLAN.md:135 |
-| Phase 5: backend (built; one row deliberately deferred, see below) | docs/roadmap/GRAPH_PLAN.md:102 |
+| Phase 5: backend (built; one row parked in BACKLOG §9, see below) | docs/roadmap/GRAPH_PLAN.md:102 |
 | Phase 5: review, history and AI (1 session) | docs/roadmap/DOCUMENTS_PLAN.md:147 |
 | Phase 5: the composer, after INBOX 725 (open) | docs/roadmap/CHAT_PLAN.md:366 |
 | Phase 6: responsive by device: done | docs/roadmap/DOCUMENTS_PLAN.md:163 |
@@ -31029,7 +31030,6 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:767 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1530 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2258 |
-| Still open after KG1 to KG9 | docs/roadmap/GRAPH_PLAN.md:498 |
 | Still open: the upload split, and what it collides with | docs/roadmap/BACKLOG.md:2775 |
 | The 2026-10-12 sweep: everything said and not done, so nothing is missed | docs/roadmap/BACKLOG.md:4246 |
 | The assistant catalogue, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:912 |

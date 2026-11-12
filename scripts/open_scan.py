@@ -41,6 +41,8 @@ SIGNAL = re.compile(
     re.I,
 )
 
+#: A reminder's default text ("Follow up: <note>") is app copy, not work.
+COPY = re.compile(r"`Follow up: \$\{")
 #: Which plan session owns a path (anything else goes to the closing session).
 OWNERS = {
     "graph": ("docs/roadmap/GRAPH_PLAN.md", "frontend/js/graph"),
@@ -70,7 +72,7 @@ def hits(paths: list[str]) -> list[tuple[str, int, str]]:
         for i, line in enumerate(lines, 1):
             if in_done_row and line.startswith("- [x]"):
                 continue
-            if SIGNAL.search(line):
+            if SIGNAL.search(line) and not COPY.search(line):
                 found.append((f, i, line.strip()[:200]))
     return found
 

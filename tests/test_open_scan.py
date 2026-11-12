@@ -31,3 +31,10 @@ def test_every_plan_session_owns_its_plan_file():
     for plan, owned in open_scan.OWNERS.items():
         assert any(o.startswith("docs/roadmap/") and o.endswith("_PLAN.md") for o in owned), plan
         assert all((ROOT / o).exists() or any(f.startswith(o) for f in open_scan.files()) for o in owned), plan
+
+
+def test_a_reminders_default_text_is_copy_not_work():
+    """The graph plan session, 2026-11-12: four surfaces prefill a reminder
+    with "Follow up: <note>"; that string is app copy and never a hit."""
+    assert open_scan.COPY.search('textInput.value = `Follow up: ${preview}`;')
+    assert not open_scan.COPY.search("follow up on the screenshot set next session")

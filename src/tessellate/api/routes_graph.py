@@ -1315,7 +1315,7 @@ def _build_graph(
 
 
 #: **The slim payload** (`/graph?slim=1`, the map's own read; GRAPH_PLAN
-#: "Still open after KG1 to KG9", a slimmer node). Measured at 5,000 notes
+#: "After KG1 to KG9", a slimmer node). Measured at 5,000 notes
 #: (`scratchpad/kg1005_graph_bench.py`): 3.1 MB, of which about a third was
 #: a value every note carries at its default and an unreasoned link's three
 #: nulls, plus timestamps to the microsecond. A note node leaves out each key

@@ -1,4 +1,4 @@
-"""Rollups over a live query's table (GRAPH_PLAN, "Still open after KG1 to
+"""Rollups over a live query's table (GRAPH_PLAN, "After KG1 to
 KG9": count, sum, min, max, earliest and latest).
 
 The table's footer reads `rollups` from `GET /entries/query`: one block per

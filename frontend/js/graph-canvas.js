@@ -2814,7 +2814,7 @@
     //: Raster now, a band at a time, rather than all at the next `drawImage`.
     gcFlushPixel ||= document.createElement("canvas").getContext("2d");
     gcFlushPixel.drawImage(b.canvas, 0, 0, 1, 1, 0, 0, 1, 1);
-    //: Not done: the draw asks for its next frame while `s.restBuild` is set.
+    //: Bands remain: the draw asks for its next frame while `s.restBuild` is set.
     if (++b.i < GC_SLICE_BANDS) return scene;
     s.restBuild = null;
     s.restSpare = scene.rest.canvas;

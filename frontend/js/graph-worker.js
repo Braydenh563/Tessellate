@@ -2922,7 +2922,7 @@ function untangleNearCurve(note, a, b, points, need) {
 function untangleNear(note, a, b) {
   const d2 = untangleChordD2(note, a, b);
   const need = (note.r || 8) + untangle.margin;
-  // The curve bows at most `UNTANGLE_LINE_BOW` from its chord: a note farther than that is not near, and the curve is not built.
+  // The curve bows at most `UNTANGLE_LINE_BOW` from its chord: a note farther than that is not near, and the curve is skipped.
   const far = need + UNTANGLE_LINE_BOW;
   if (d2 >= far * far) return false;
   return untangleNearCurve(note, a, b, clearCurve(a, b), need);

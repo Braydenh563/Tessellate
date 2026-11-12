@@ -99,7 +99,7 @@ the map's node graph, so the three cannot disagree.
 
 Phases 1, 2, 3 and 6 are built; their text moved to HISTORY.md ("Moved from the plans, 2026-11-02 (a30b: GRAPH phases 1, 2, 3 and 6)"), beside the Built blocks pointed to below.
 
-### Phase 5: backend (built; one row deliberately deferred, see below)
+### Phase 5: backend (built; one row parked in BACKLOG §9, see below)
 Built 2026-09-09 (HISTORY.md, "Built, Phase 5 (backend)"): the per-node
 fields, `/graph/structure` cached per notebook version, and the payload
 gate. Two more rows of the original phase were re-read against the code on
@@ -252,7 +252,7 @@ drag is still a click, and only a real pin is written to
 appears only on real pins, which is the last line of the owner's own
 description of what they wanted.
 
-The group drag this entry left open is built: moved to HISTORY.md ("Moved
+The group drag this entry had not covered is built: moved to HISTORY.md ("Moved
 from the plans, 2026-09-23", GRAPH_PLAN.md).
 
 ## Decision made, 2026-10-11: a drag moves, a double-click pins
@@ -284,7 +284,7 @@ fixed. Moved to HISTORY.md ("INBOX resolved, 2026-09-21").
 
 ## Decision made, 2026-09-21: a restored view holds, it does not re-settle
 
-The open question Phase 5's "positions on a saved view" row left ("whether a
+The question Phase 5's "positions on a saved view" row left ("whether a
 restored arrangement then holds or settles") is decided: **it holds.** A
 person saved a picture of the map; reopening it must give them that picture,
 not a fresh relaxation of the same forces that happens to start from it. So
@@ -393,7 +393,7 @@ INBOX 443 (1) (the owner: "the graph shape could look nicer"), measured with
   the nearest linked note, in the cluster's own median spacings: 3.0 to 1.8.
 - **Links wear a category.** Same colour at both ends takes that colour;
   a bridge stays neutral; a reasoned link is 1.9px at 0.62; curved by default
-  (a note that never touched the switch is on). Tapered strokes were not built:
+  (a note that never touched the switch is on). Tapered strokes were decided against:
   a taper is one polygon per link, and the batched stroke per colour is what
   keeps a 2,000-link map inside a frame.
 - **One size scale, 5 to 15**, and a glow at roughly two thirds of its old
@@ -493,9 +493,9 @@ Every phase, KG1 to KG9, is built (2026-10-04). The spec as it was written
 ((a) what existed, (b) research, (c) the gap table, (d) the target design,
 (e) the build order) moved whole to HISTORY.md, "Moved from the plans,
 2026-10-04 (the knowledge graph, INBOX 528)", beside each phase's Built
-block. What stays here is the standing decisions and what is still open.
+block. What stays here is the standing decisions and the KG residue, all closed or parked.
 
-### Still open after KG1 to KG9
+### After KG1 to KG9
 
 - A real local model's `name|kind` entity extraction and a topic's sentence
   were run once, on a 1.5B (2026-11-11): recall 17 of 22, 4 junk names, topic

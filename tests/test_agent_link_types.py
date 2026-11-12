@@ -1,5 +1,5 @@
 """The agent's link tool offers the notebook's own kinds of link
-(GRAPH_PLAN, "Still open after KG1 to KG9").
+(GRAPH_PLAN, "After KG1 to KG9").
 
 `link_notes` took no kind at all, while two prompts told the model to link
 "with link_type 'contradicts'". The parameter now exists, accepts a built-in
