@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2690, tests 21876, plan headings 687, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2690, tests 21877, plan headings 687, app scripts 29, boot scripts 38, script files 301.
 
 ## Frontend functions (8369)
 
@@ -27726,7 +27726,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21876)
+## Tests (21877)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27955,7 +27955,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_bookmarks_api.py | 15 |
 | tests/test_bookmarks_html.py | 6 |
 | tests/test_bookmarks_library.py | 3 |
-| tests/test_bookmarks_look_827.py | 10 |
+| tests/test_bookmarks_look_827.py | 11 |
 | tests/test_bookmarks_said_once.py | 1 |
 | tests/test_boot_budget.py | 4 |
 | tests/test_boot_diet3.py | 11 |
