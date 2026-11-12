@@ -1557,9 +1557,7 @@ transport for its tests and the no-model fallback measured in a sweep:
 - ~~**Ghost topics on the canvas**~~ built 2026-10-18 (HISTORY.md, "Moved from the plans, 2026-10-18 (fixes7-1018)").
 - ~~**Expand from my notes**~~ built 2026-10-18 (HISTORY.md, "Moved from the
   plans, 2026-10-18 (mindmap-1018)").
-- **The affinity sort** (a board, WHITEBOARD_PLAN's territory): thirty
-  stickies grouped into named frames by theme, each placement shown with the
-  notes that back it, accepted per frame, one Undo step.
+- ~~**The affinity sort**~~ built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 - **The claim check** (DOCUMENTS_PLAN's territory): a document's sentences
   checked against the notebook, each marked supported, contradicted or not
   found, with the note.
