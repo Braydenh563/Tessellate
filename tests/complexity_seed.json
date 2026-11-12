@@ -44,7 +44,6 @@
  "src/tessellate/api/routes_board_library.py::transform_path": 20,
  "src/tessellate/api/routes_categories.py::_ai_groups": 26,
  "src/tessellate/api/routes_categories.py::propose_split": 19,
- "src/tessellate/api/routes_chat.py::chat": 17,
  "src/tessellate/api/routes_conversations.py::_turn_messages": 22,
  "src/tessellate/api/routes_documents.py::ai_edit": 16,
  "src/tessellate/api/routes_entities.py::entity_page": 27,

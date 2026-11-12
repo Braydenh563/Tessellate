@@ -531,12 +531,7 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
         return ChatResponse(ai_response=_capability_answer(capable, ollama_running), raw_results=[], search_mode=prepared["search_mode"], ollama_running=ollama_running)
     conversational = not intent.needs_retrieval(prepared["intent"])
     mode = _resolve_mode(body.mode)
-    images_raw = _resolve_chat_images(session, body.image_media_ids)
-    chat_sees_images = bool(images_raw) and _chat_model_sees_images(model_manager, ollama)
-    images = [uri for _, uri in images_raw] if chat_sees_images else []
-    image_context = (
-        "" if chat_sees_images else _image_caption_context(images_raw, model_manager, ollama)
-    )
+    images_raw, images, image_context = _chat_images(session, body, model_manager, ollama)
     #: A counted answer *is* an answer, and it does not need a model running to
     #: be one: which is the whole point of computing it. Without this the
     #: response would carry a correct sentence and simultaneously report that
@@ -589,6 +584,16 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
         ollama_running=ollama_running,
         sentence_grounding=sentence_grounding,
     )
+
+
+def _chat_images(session: Session, body: ChatRequest, model_manager, ollama) -> tuple[list, list[str], str]:  # noqa: ANN001
+    """The attached pictures, those the chat model sees itself, and the
+    captions written for a model that cannot see them."""
+    images_raw = _resolve_chat_images(session, body.image_media_ids)
+    chat_sees_images = bool(images_raw) and _chat_model_sees_images(model_manager, ollama)
+    images = [uri for _, uri in images_raw] if chat_sees_images else []
+    image_context = "" if chat_sees_images else _image_caption_context(images_raw, model_manager, ollama)
+    return images_raw, images, image_context
 
 
 def _composed_chat(body: ChatRequest, session: Session) -> ChatResponse:
@@ -2165,12 +2170,7 @@ def _stream_request(body: ChatRequest, session: Session) -> _StreamRequest:
     history = [turn.model_dump(exclude_none=True) for turn in body.history]
     persona_prompt = _resolve_persona(body.persona, session)
     mode = _resolve_mode(body.mode)
-    images_raw = _resolve_chat_images(session, body.image_media_ids)
-    chat_sees_images = bool(images_raw) and _chat_model_sees_images(model_manager, ollama)
-    images = [uri for _, uri in images_raw] if chat_sees_images else []
-    image_context = (
-        "" if chat_sees_images else _image_caption_context(images_raw, model_manager, ollama)
-    )
+    images_raw, images, image_context = _chat_images(session, body, model_manager, ollama)
     use_tools = (
         body.use_tools
         if body.use_tools is not None
