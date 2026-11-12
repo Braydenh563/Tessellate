@@ -2375,7 +2375,7 @@ MORE_TOPICS.extend([
             "them, a group's body takes it inside. Under a block, "
             "a connector reads Start to Next and its label. "
             "The shape swatch picks it. A divider sizes the blocks and the picture (drag or "
-            "arrows; Shift for more). Direction (a menu) turns the flow. An empty one lists "
+            "arrows; Shift for more). Direction (a menu; with Redo, in ... on a narrow phone) turns the flow. An empty one lists "
             "three steps: Add a shape, Name it, Connect it. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel and a pinch; "
             "its percentage is typeable and 100% is the drawing's own size; Shift+arrow keys pan. "

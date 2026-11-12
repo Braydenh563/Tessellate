@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagrams: at 480 px or less the builder dock is one row (110 to 62 px at 390, six targets of 44 px): Direction, Redo and Ask for a change moved into the ... menu (L-documents-7)
 - Documents: Format selection beautifies only the selected lines in a js file (L300)
 - Documents: Python breakpoints persist across a reload (L315)
 - Documents: a word touching a suggestion marker is a spelling finding (L311)

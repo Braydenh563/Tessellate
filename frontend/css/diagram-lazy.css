@@ -1477,6 +1477,11 @@
   display: none;
 }
 
+/* 480 px or less (`dgm-narrow`, set by diagram-builder.js `more`): Direction, Ask for a change and Redo are rows of the ... menu, so the dock is one row (L-documents-7). A class, not a width query: test_breakpoints holds the set of widths. */
+.dgm-narrow .dgm-dock :is(.dgm-dirs, .dgm-askbtn, .dgm-redo) {
+  display: none;
+}
+
 /* The sheet's rows give every glyph about the same width, so the names line up. */
 .dgm-add-glyph {
   flex: none;

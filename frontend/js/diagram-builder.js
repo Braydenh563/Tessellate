@@ -530,17 +530,27 @@
     const fold = [];
     //: Suggest folds in here on a phone.
     if (S.suggestBtn && matchMedia(COMPACT).matches) fold.push({ label: "ph:sparkle Suggest…", group: "edit", run: () => suggestMenu(S, S.root.querySelector(".dgm-more button") || S.suggestBtn) });
+    //: 480 px or less: Direction, Redo and Ask leave the dock (diagram-lazy.css) so it is one row; their rows are here (L-documents-7).
+    const narrow = matchMedia("(max-width: 480px)").matches;
+    S.root.classList.toggle("dgm-narrow", narrow);
+    const ask = narrow && S.pane && (S.steps || S.k) && S.pane.querySelector(".dgm-ai-form");
+    if (narrow) {
+      const anchor = () => (S.root.querySelector(".dgm-more button") || S.root).getBoundingClientRect();
+      if (S.dirs) fold.push({ label: "ph:arrows-out-cardinal Direction…", group: "edit", run: () => { const r = anchor(); openMenuAtPoint(DIRS.map(([d, icon, name]) => ({ label: `${icon} ${name}`, run: () => S.turn(d) })), "Direction", r.right, r.bottom, S.root.querySelector(".dgm-more button")); } });
+      fold.push({ label: "ph:arrow-clockwise Redo", group: "edit", run: () => S.io.redo() });
+      if (ask) fold.push({ label: "ph:sparkle Ask for a change…", group: "edit", run: () => S.root.querySelector(".dgm-askbtn")?.click() });
+    }
     const mine = S.io.menu || [];
     const menu = kebabMenu([...mine, ...fold, makeMenuItem("ph:keyboard Keyboard shortcuts", "", () => styleDo(S, "shortcuts")), ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
     menu.classList.add("dgm-more");
-    menu.dataset.rows = mine.map((row) => row.label).join("|");
+    menu.dataset.rows = mine.map((row) => row.label).join("|") + (ask ? "|ask" : "");
     return menu;
   }
 
   //: The host's rows can depend on the diagram: after a redraw that changes them the menu is rebuilt.
   function refreshMore(S) {
     const old = S.root.querySelector(".dgm-more");
-    if (!old || old.dataset.rows === (S.io.menu || []).map((row) => row.label).join("|")) return;
+    if (!old || old.dataset.rows === (S.io.menu || []).map((row) => row.label).join("|") + (matchMedia("(max-width: 480px)").matches && S.pane && (S.steps || S.k) && S.pane.querySelector(".dgm-ai-form") ? "|ask" : "")) return;
     const next = more(S);
     next.querySelector("button").tabIndex = old.querySelector("button").tabIndex;
     old.replaceWith(next);
