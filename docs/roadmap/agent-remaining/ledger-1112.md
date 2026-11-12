@@ -88,20 +88,20 @@
 - O30 (M): D12 (500-note hover p50 83 ms) and D14 (redraw only while moving) owner-call tracked in plans
 
 ### Sh1
-- P4 (S): drive the reminder edit form and measure that time, priority, repeat, alert share one height
-- P12 (M): no Radix, shadcn or APG element comparison record
-- P16 (S): notes-list.js:331 date operators match only ISO before:/after:; filter box lacks day names
-- P17 (S): pasted #/Manual and #/Statistics ignored at load; no Manual handling in router.js
-- P22 (S): #graph-new popover (index.html:4766) has no data-help-for; refresh icon report not reproduced
-- P32 (M): tour 455px spill not investigated; Memory and Logs panes hide h3 on a phone (.jump-echo)
-- X6 (M): Notes filter box still ISO only (notes-list.js:331); real-browser typing unverified
+- P4 (S): drive the reminder edit form and measure that time, priority, repeat, alert share one height **Fixed cb83f2ed3** (measured 32px, equal top; the test holds the shared-height loop).
+- P12 (M): no Radix, shadcn or APG element comparison record **Fixed efc1d2c8b, fc806ad6d** (APG comparison record in tests/test_apg_comparison_p12.py; menus, selects, dialogs, sliders).
+- P16 (S): notes-list.js:331 date operators match only ISO before:/after:; filter box lacks day names **Fixed e162c3725** (before: and after: take day words; driven in a browser).
+- P17 (S): pasted #/Manual and #/Statistics ignored at load; no Manual handling in router.js **Fixed 83db6300c** (pasted #/Manual and #/Statistics open at load; driven).
+- P22 (S): #graph-new popover (index.html:4766) has no data-help-for; refresh icon report not reproduced **Fixed 95f37fd1d** (the New note popup has the head help button; the refresh-icon report did not reproduce).
+- P32 (M): tour 455px spill not investigated; Memory and Logs panes hide h3 on a phone (.jump-echo) **Fixed aebb84aef** (the pane h3 stays in the accessibility tree; the tour 455px is a sideways-scrolling tab row, not a spill).
+- X6 (M): Notes filter box still ISO only (notes-list.js:331); real-browser typing unverified **Fixed e162c3725** (day words typed in a real browser).
 
 ### Sh2
-- X1 (S): record then reload run not driven (static tests only)
-- X16 (M): D16 #graph-options and #meeting-overlay templates, D18 server trim needs a decision, remaining boot-CSS laziness unmeasured
+- X1 (S): record then reload run not driven (static tests only) **Fixed 809c64005** (record then reload driven with a fake microphone).
+- X16 (M): D16 #graph-options and #meeting-overlay templates, D18 server trim needs a decision, remaining boot-CSS laziness unmeasured **Fixed ad720d2d8; D18 left: owner-call O32** (boot CSS measured per sheet; D16 stale at OPEN.md:268; D18 server-side trim needs the owner: a container writer, keep raw audio?).
 
 ### Wb1
-- I25 (S): present-mode page counters and preset dropdowns not checked; trackpad zoom unmeasurable without hardware
+- I25 (S): present-mode page counters and preset dropdowns not checked; trackpad zoom unmeasurable without hardware **Fixed 508f4c7c8; trackpad zoom left: needs a real trackpad** (preset dropdowns and the present page counter driven).
 
 ### composer-acts
 - D23 (r2:62) (S): typed 'undo' after an act answers Undo key help (real undo client-side); confirm wordings unification not verified

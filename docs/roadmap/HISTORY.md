@@ -7,6 +7,18 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-12 (Sh1, Sh2, Wb1: shell build agent, PR 216)
+
+- **Built, Sh1 P4:** the reminder edit form's time, priority, repeat and alert share one height (32px, equal top); `tests/test_reminder_edit_form_alert.py` holds the shared-height loop (cb83f2ed3).
+- **Built, Sh1 P12:** the APG comparison record (`tests/test_apg_comparison_p12.py`): menu type-ahead and Tab-closes, Down on a menu button opens it, select listbox label and Arrow-open, `role=switch` stamping, slider `aria-valuetext`, dialog `aria-labelledby` and `-describedby`. `settings-prefs.js` is a lazy file loaded ahead of `settings-controls.js` (it calls `wirePrefsDirtyMarks()` at load; found live as `ensureSettingsFoldAll is not defined`, `tests/test_settings_prefs_split.py`). Boot gzip 250,089 of 250,450 (efc1d2c8b, fc806ad6d).
+- **Built, Sh1 P16 and X6:** `parseNoteQuery.day`: `before:` and `after:` take today, yesterday, tomorrow, Nd, Nw, Nm, weekday and month names and ISO; typed in a real browser (e162c3725).
+- **Built, Sh1 P17:** `#/Manual` and `#/Statistics` open that overlay at load (`router.js` ROUTE_TABS, `routerRestore`); driven (83db6300c).
+- **Built, Sh1 P22:** the New note popup on the map has the head's `?` and a `.help-body`; the refresh icon report did not reproduce (95f37fd1d).
+- **Built, Sh1 P32:** `.jump-echo` titles and the dock holding only one are clipped (inline-size and block-size 1px, `clip-path: inset(50%)`), not `display: none`; at 390 Models, Templates, Memory and Logs keep an h3 of 1 x 1 in the tree, docks 0px as before. The tour's 455px at 390 is the lit `#library-subtabs` (nine tabs, scrollWidth 826 in 364, `overflow-x: auto`), a scroller, pinned by test (aebb84aef). The older tour sweeps read `TOUR_SECTIONS` and `tourRun`, which are inside tour.js's IIFE now; they fail on a ReferenceError (not fixed here).
+- **Built, Sh2 X1:** record then reload driven with a fake microphone (`scratchpad/ui-sweeps/x1reload.js`): the guard asks, dismiss keeps the page and the recorder, accept reloads with no page error (809c64005).
+- **Measured, Sh2 X16:** `scratchpad/ui-sweeps/bootcsscov.js`: boot sheets 949,008 B served, 167,474 gz; 77.6 percent of rule bytes never matched across eight tabs and Settings at 1440 and 390 (state CSS counts as unmatched). Largest runs: `nm-buddy` in 08 (39,395 B, 6,826 gz), `md-table`/code blocks in 05 (23,617 B, 4,434 gz), whiteboard topbar and map strip in 07 (14.6 KB each, 3.1 KB gz). D16 stale (OPEN.md:268); D18 is the owner's call (O32) (ad720d2d8).
+- **Checked, Wb1 I25:** `scratchpad/ui-sweeps/valuepresets.js`: the zoom percent chevron on the board (1440, 390) and the lightbox (1440): list inside the window, 44px rows on a phone, 200% gives 200% (lightbox picture 2801 of 1400 natural), typing and Escape, Fit. The lightbox drops its readout below 600 by design (INBOX 430). The present page field is covered by INBOX 1694 b3 and its test. Trackpad pinch rate needs the hardware (508f4c7c8).
+
 ## Moved from the plans, 2026-11-11 (K24, K25, BK11: god-module carves, k24-1111)
 
 **Built** (Bk2 structure ratchets). Whole moves, no behaviour change; callers and the tests that read the old files follow the new homes.
