@@ -9428,3 +9428,6 @@ input[type="color"].wb-mixed {
 .bookmark-list.is-cards .bookmark-detail {
   grid-column: 1 / -1;
 }
+.doc-comment-reply-action {
+  margin-left: var(--space-1);
+}

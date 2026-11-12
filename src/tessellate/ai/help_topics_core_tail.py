@@ -1081,6 +1081,8 @@ TAIL_TOPICS.extend(
                 "remark",
                 "remarks",
                 "reply to a remark",
+                "edit a reply",
+                "delete a reply",
                 "resolve a remark",
                 "resolved remarks",
                 "reopen a remark",
@@ -1094,6 +1096,8 @@ TAIL_TOPICS.extend(
                 "The sidebar's Outline lists every remark with the words it is "
                 "about, who wrote it (your name from Settings, Profile) and when. "
                 "Reply on a row adds a line under it; Enter posts, Esc cancels. "
+                "A reply has a pencil to reword it and a bin to delete it (Undo "
+                "brings it back); a resolved remark can still be replied to. "
                 "Resolve takes the remark out of the text and keeps the thread: "
                 "Show resolved lists it, and Reopen puts the remark back on its "
                 "words (Ctrl+Z right after a resolve does the same). Replies and "

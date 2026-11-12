@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8369, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2698, tests 21909, plan headings 687, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8373, frontend ids 2767, CSS sections 524, backend routes 700, backend modules 10770, test files 2698, tests 21910, plan headings 687, app scripts 29, boot scripts 38, script files 301.
 
-## Frontend functions (8369)
+## Frontend functions (8373)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3980,40 +3980,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docColumnsBlocks` | frontend/js/documents-columns.js:63 |
 | `docColumnsField` | frontend/js/documents-columns.js:154 |
 
-### frontend/js/documents-comments.js (30)
+### frontend/js/documents-comments.js (34)
 
 | Name | File:line |
 |---|---|
-| `docAnnotateSelection` | frontend/js/documents-comments.js:821 |
-| `docCommentContext` | frontend/js/documents-comments.js:510 |
+| `docAnnotateSelection` | frontend/js/documents-comments.js:892 |
+| `docCommentContext` | frontend/js/documents-comments.js:530 |
 | `docCommentFootnotes` | frontend/js/documents-comments.js:208 |
-| `docCommentReplyForm` | frontend/js/documents-comments.js:542 |
+| `docCommentReplyForm` | frontend/js/documents-comments.js:577 |
 | `docCommentResolveEdit` | frontend/js/documents-comments.js:160 |
-| `docCommentRow` | frontend/js/documents-comments.js:567 |
+| `docCommentRow` | frontend/js/documents-comments.js:606 |
 | `docCommentSkipMask` | frontend/js/documents-comments.js:73 |
 | `docCommentStrip` | frontend/js/documents-comments.js:187 |
-| `docComments` | frontend/js/documents-comments.js:503 |
+| `docComments` | frontend/js/documents-comments.js:523 |
 | `docCommentsParse` | frontend/js/documents-comments.js:110 |
-| `docCommentsShell` | frontend/js/documents-comments.js:669 |
-| `docGoToComment` | frontend/js/documents-comments.js:737 |
-| `docReopenComment` | frontend/js/documents-comments.js:794 |
-| `docReplyToComment` | frontend/js/documents-comments.js:807 |
-| `docResolveComment` | frontend/js/documents-comments.js:771 |
-| `docResolvedRow` | frontend/js/documents-comments.js:644 |
-| `docShowComment` | frontend/js/documents-comments.js:755 |
-| `docThreadAuthor` | frontend/js/documents-comments.js:461 |
+| `docCommentsShell` | frontend/js/documents-comments.js:716 |
+| `docDeleteReply` | frontend/js/documents-comments.js:865 |
+| `docEditReply` | frontend/js/documents-comments.js:855 |
+| `docGoToComment` | frontend/js/documents-comments.js:785 |
+| `docReopenComment` | frontend/js/documents-comments.js:842 |
+| `docReplyToComment` | frontend/js/documents-comments.js:878 |
+| `docResolveComment` | frontend/js/documents-comments.js:819 |
+| `docResolvedRow` | frontend/js/documents-comments.js:683 |
+| `docShowComment` | frontend/js/documents-comments.js:803 |
+| `docThreadAuthor` | frontend/js/documents-comments.js:480 |
+| `docThreadDeleteReply` | frontend/js/documents-comments.js:375 |
+| `docThreadEditReply` | frontend/js/documents-comments.js:367 |
 | `docThreadHash` | frontend/js/documents-comments.js:247 |
 | `docThreadKeys` | frontend/js/documents-comments.js:256 |
-| `docThreadReopen` | frontend/js/documents-comments.js:381 |
-| `docThreadReopenEdit` | frontend/js/documents-comments.js:391 |
-| `docThreadReplies` | frontend/js/documents-comments.js:522 |
+| `docThreadReopen` | frontend/js/documents-comments.js:398 |
+| `docThreadReopenEdit` | frontend/js/documents-comments.js:408 |
+| `docThreadReplies` | frontend/js/documents-comments.js:542 |
 | `docThreadReply` | frontend/js/documents-comments.js:359 |
-| `docThreadResolve` | frontend/js/documents-comments.js:369 |
-| `docThreadWho` | frontend/js/documents-comments.js:465 |
-| `docThreadsForSave` | frontend/js/documents-comments.js:499 |
+| `docThreadResolve` | frontend/js/documents-comments.js:386 |
+| `docThreadWho` | frontend/js/documents-comments.js:484 |
+| `docThreadsForSave` | frontend/js/documents-comments.js:519 |
 | `docThreadsReconcile` | frontend/js/documents-comments.js:278 |
-| `docThreadsSync` | frontend/js/documents-comments.js:473 |
-| `renderDocComments` | frontend/js/documents-comments.js:694 |
+| `docThreadsSync` | frontend/js/documents-comments.js:492 |
+| `renderDocComments` | frontend/js/documents-comments.js:741 |
 
 ### frontend/js/documents-embeds.js (14)
 
@@ -13217,7 +13221,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 9430 |
+| frontend/css/library-lazy.css | 9433 |
 | frontend/css/lightbox-lazy.css | 449 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
@@ -27726,7 +27730,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (21909)
+## Tests (21910)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28707,7 +28711,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_document_rephrase.py | 9 |
 | tests/test_document_revisions.py | 14 |
 | tests/test_document_suggest_name_904.py | 5 |
-| tests/test_document_thread_model.py | 2 |
+| tests/test_document_thread_model.py | 3 |
 | tests/test_document_threads.py | 23 |
 | tests/test_document_tools.py | 6 |
 | tests/test_document_untitled_names.py | 9 |

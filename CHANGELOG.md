@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a reply in a comment thread can be reworded or deleted (Undo brings it back), and a resolved thread can still be replied to (L318)
 - Documents: Word export writes a binomial as a bracketed fraction with no bar, a matrix as a Word matrix inside its brackets, and an accent as a Word accent (L324, L325)
 - Documents: a daily word goal (250 to 2,000 words, set from the word count's menu) and a writing streak of days that reached it, counted on this device (L-documents-2)
 - Whiteboard: a save that reaches an item an undo just deleted answers 404 instead of a 500, and the board drops a save for an item it is undoing (L-whiteboard-18)

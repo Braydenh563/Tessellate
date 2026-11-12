@@ -369,7 +369,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L309** `documents` open, M: Keep Python runtime frame persistent across documents to avoid 5-7 s cold reload per document. From OPEN.md:1219; OPEN.md:1224; OPEN.md:2829; OPEN.md:2907. Evidence: Row: needs the Pyodide extra, not installed here; cold Debug cannot be timed.
 - [ ] **L313** `documents` open, M: Step JS watches instead of evaluating natively. From OPEN.md:2825. Evidence: run_sandbox.py:250 evaluate; known limitation, verified
 - [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10
-- [ ] **L318** `documents` open, M: Comment threads: edit/delete replies, per-device author, reply to resolved, code-doc comments. From a30h-1102.md Left. Evidence: documents-comments.js:275 replies never edited; no edit/delete path found
 - [ ] **L319** `documents` open, M: Verify code editor: Python run, SQL/p5, Emmet/hover docs, conflict dialog, multi-cursor, Console eval. From audit-1031-code.md. Evidence: No later code audit; Python extra not installed here
 - [ ] **L320** `documents` open, M: Verify docs: read-view mermaid, print/PDF, docx, import, comments, phone editor entry. From audit-1031-docs.md. Evidence: audit-1102-docs covered part; print dialog and phone remain
 - [ ] **L321** `documents` open, M: Extend diagram Ask/Suggestions beyond flowcharts; build Versions 'Named only' filter. From dgai-1110.md Left. Evidence: Source: mind map, timeline, sequence get Versions only; filter not built
@@ -405,6 +404,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-15** `documents` open, M: Diagram builder at 390: first paint, Tab stops, tap scroll and 44 px targets (R11). From DOCUMENTS_PLAN R11 blind test 2026-11-04. Evidence: diagram-embed.js: first paint blank about 1 s; 27 Tab stops to the first block; 390 px tap scrolls the toolbar under the header; tabs 28, grips 14x19, swatches 24, Connect 44x40 under 44 px
 - [ ] **L-documents-17** `documents` open, M: Board Mermaid import keeps block colour and edge labels (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: board Mermaid import (wbImportMermaid, whiteboard-interchange.js) drops block colour and stacks edge labels
 - [ ] **L-documents-18** `documents` open, M: Templates on a non-empty builder, and the 390 picture zoom and handle (R12). From DOCUMENTS_PLAN R12 blind test of 0931c35. Evidence: diagram-suggest.js templates(): a template on a non-empty builder only lists ghost blocks; 390 picture is 47 to 59 percent zoom with the connect handle over a diamond
+- [ ] **L-documents-19** `documents` open, M: Comment threads: per-device author, and comments in code documents. From L318 split. Evidence: documents-comments.js docThreadAuthor: the name is the account's, one per account
 
 ## mindmap
 
