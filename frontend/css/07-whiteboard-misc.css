@@ -12035,3 +12035,20 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
+
+/* Rulers (View > Rulers): a strip along the top and down the left, over the canvas, taking no pointer. */
+.wb-ruler {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: color-mix(in srgb, var(--modal-bg-opaque) 88%, transparent);
+  stroke: color-mix(in srgb, var(--ink) 45%, transparent);
+  stroke-width: 1;
+  fill: color-mix(in srgb, var(--ink) 70%, transparent);
+  font-size: var(--text-xs);
+}
+.wb-ruler text {
+  stroke: none;
+}

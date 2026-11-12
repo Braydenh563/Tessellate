@@ -896,7 +896,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Page background colour and image | yes (board background, `wb1005-bg.js`) | `DiagramFormatPanel.addView` (Format.js 8906) | done | none |
-| Units (points, inches, mm, cm, m) | no | `units` menu (diagramly/Menus.js 370) | drop: the board has no print scale | none |
 
 ### 7. Shape libraries and the stencil format
 
@@ -1412,7 +1411,7 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 6. Dimension lines with a live length: built; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
 7. Crop a picture to a circle or rounded box: built; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
 9. Pages inside one board: decided; HISTORY.md, "Moved from the plans, 2026-11-12 (whiteboard catalogue re-grounded)".
-10. Rulers and units. M, not planned for a student's board.
+10. Rulers and units: built; HISTORY.md, "Moved from the plans, 2026-11-12 (wbformat2)".
 
 ## Placed from INBOX, 2026-10-26
 

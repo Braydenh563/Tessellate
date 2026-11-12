@@ -775,10 +775,10 @@ function wbFormatSync() {
   }
   const box = wbFmtBox(entries);
   if (!box) return;
-  set("wb-fmt-x", Math.round(box.minX));
-  set("wb-fmt-y", Math.round(box.minY));
-  set("wb-fmt-w", Math.round(box.maxX - box.minX));
-  set("wb-fmt-h", Math.round(box.maxY - box.minY));
+  set("wb-fmt-x", wbFmtState.opts?.show(box.minX) ?? Math.round(box.minX));
+  set("wb-fmt-y", wbFmtState.opts?.show(box.minY) ?? Math.round(box.minY));
+  set("wb-fmt-w", wbFmtState.opts?.show(box.maxX - box.minX) ?? Math.round(box.maxX - box.minX));
+  set("wb-fmt-h", wbFmtState.opts?.show(box.maxY - box.minY) ?? Math.round(box.maxY - box.minY));
   set("wb-fmt-angle", Math.round(first.item.rotation || 0));
   wbFmtShowLink();
 }
@@ -801,10 +801,10 @@ function wbFormatLiveRead() {
     const el = document.getElementById(id);
     if (el && document.activeElement !== el) el.value = value;
   };
-  set("wb-fmt-x", Math.round(box.minX));
-  set("wb-fmt-y", Math.round(box.minY));
-  set("wb-fmt-w", Math.round(box.maxX - box.minX));
-  set("wb-fmt-h", Math.round(box.maxY - box.minY));
+  set("wb-fmt-x", wbFmtState.opts?.show(box.minX) ?? Math.round(box.minX));
+  set("wb-fmt-y", wbFmtState.opts?.show(box.minY) ?? Math.round(box.minY));
+  set("wb-fmt-w", wbFmtState.opts?.show(box.maxX - box.minX) ?? Math.round(box.maxX - box.minX));
+  set("wb-fmt-h", wbFmtState.opts?.show(box.maxY - box.minY) ?? Math.round(box.maxY - box.minY));
 }
 
 //: --- Edit data (draw.io's custom properties; canvasdepth2) ----------------
@@ -1412,7 +1412,7 @@ onSurface("board", () => {
   });
   on("wb-fmt-link", "click", wbFmtToggleLink);
   for (const axis of ["x", "y", "w", "h"]) {
-    on(`wb-fmt-${axis}`, "change", (e) => wbFmtGeometry(axis, Number(e.target.value)));
+    on(`wb-fmt-${axis}`, "change", (e) => wbFmtGeometry(axis, wbFmtState.opts?.read(e.target.value) ?? Number(e.target.value)));
   }
   on("wb-fmt-angle", "change", (e) => wbFmtAngle(Number(e.target.value) || 0));
   on("wb-fmt-aspect", "change", (e) => wbFmtAspect(Number(e.target.value)));

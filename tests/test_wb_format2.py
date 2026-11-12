@@ -304,3 +304,68 @@ def test_the_html_export_is_one_file_that_needs_nothing_from_the_network():
     assert "https://" not in lowered and lowered.count("http://") == 1  # only the SVG namespace, which is a name and not an address
     js = app_js_text()
     assert "wbFmtState.exporters.htmlPage(" in js and 'value: "html"' in js
+
+
+# --- 7. Rulers and units ----------------------------------------------------------------------------------
+
+OPTIONS = ROOT / "frontend" / "js" / "whiteboard-options.js"
+
+
+def _opts(expression: str):
+    """Run an expression against the options file's exports, with the page's names stubbed."""
+    script = "const wbFmtState = {}; const onSurface = () => {};\n" + OPTIONS.read_text(encoding="utf-8") + f"\nconsole.log(JSON.stringify({expression}));"
+    return json.loads(_node(script))
+
+
+def test_a_boards_units_are_kept_and_px_the_default_is_not(ai_client):
+    board = _board(ai_client)
+    url = f"/whiteboard/boards/{board['id']}"
+    out = ai_client.put(url, json={"background": {"units": "mm"}})
+    assert out.status_code == 200, out.text
+    assert out.json()["background"] == {"units": "mm"}
+    assert ai_client.put(url, json={"background": {"units": "px"}}).json()["background"] == {}
+    refused = ai_client.put(url, json={"background": {"units": "furlong"}})
+    assert refused.status_code == 422
+
+
+def test_a_length_converts_between_board_pixels_and_the_boards_unit_at_96_to_the_inch():
+    # 96 px is an inch, 25.4 mm, 2.54 cm and 72 pt; the display rounds to what the unit can say.
+    shown = _opts('["px", "mm", "cm", "in", "pt"].map((u) => wbFmtState.opts.show(96, u))')
+    assert shown == ["96", "25.4", "2.54", "1", "72"]
+    back = _opts('["px", "mm", "cm", "in", "pt"].map((u) => wbFmtState.opts.read(String(wbFmtState.opts.show(96, u)), u))')
+    assert back == [96, 96, 96, 96, 96]
+    assert _opts('wbFmtState.opts.read("not a number", "mm")') is None
+
+
+def test_ruler_ticks_follow_the_zoom_and_the_unit():
+    # At 1x in px a major tick is wide enough for its label (50 or more screen px apart) and sits on a round number.
+    one = _opts("wbFmtState.opts.ticks(0, 400, 1, 'px')")
+    majors = [t["v"] for t in one if t["major"]]
+    assert majors == [0, 100, 200, 300, 400]
+    assert all(t["at"] == t["v"] for t in one if t["major"])  # px: the value is the board position
+    # Zoomed in 4x the same board span needs finer steps, and a tick's screen gap never drops under the label width.
+    zoomed = _opts("wbFmtState.opts.ticks(0, 100, 4, 'px')")
+    zmajors = [t["v"] for t in zoomed if t["major"]]
+    assert zmajors == [0, 20, 40, 60, 80, 100]
+    assert min(b - a for a, b in zip(zmajors, zmajors[1:])) * 4 >= 50
+    # Millimetres: the ticks are millimetres on a round step, positioned in board pixels (96 / 25.4 each).
+    mm = _opts("wbFmtState.opts.ticks(0, 200, 1, 'mm')")
+    mm_major = [t for t in mm if t["major"]]
+    assert [t["v"] for t in mm_major][:3] == [0, 20, 40] or [t["v"] for t in mm_major][:3] == [0, 10, 20]
+    step = mm_major[1]["v"] - mm_major[0]["v"]
+    assert abs((mm_major[1]["at"] - mm_major[0]["at"]) - step * 96 / 25.4) < 1e-6
+    # Visible range in negative board space still ticks from the first round number inside it.
+    negative = _opts("wbFmtState.opts.ticks(-250, 50, 1, 'px')")
+    assert [t["v"] for t in negative if t["major"]][0] == -200
+
+
+def test_the_rulers_are_a_view_switch_drawn_on_every_view_change_and_the_fields_show_the_unit():
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    for ident in ("wb-view-rulers", "wb-bo-units"):
+        assert f'id="{ident}"' in html
+    js = app_js_text()
+    assert "wbFmtState.opts?.drawRulers(t);" in js  # the zoom and pan callback redraws them
+    fmt = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
+    assert "wbFmtState.opts?.show(" in fmt and "wbFmtState.opts?.read(" in fmt
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    assert ".wb-ruler" in css

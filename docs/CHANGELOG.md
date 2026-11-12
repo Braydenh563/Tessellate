@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: View > Rulers (top and left, following pan and zoom) and a Units board setting that the rulers and the position and size fields show.
 - Whiteboard export: PNG border, resolution (pHYs) and an embedded copy of the board that Insert, Diagram opens again; a one-file HTML export that pans and zooms offline.
 - Whiteboard: paper size (A4, A3, Letter, Legal, custom) and direction as board settings, driving the page view and the PDF export's starting choice.
 - Whiteboard: Board section switches for alignment guides, page view (dashed page frames) and a shadow for new shapes, kept per board.

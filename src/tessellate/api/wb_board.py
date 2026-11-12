@@ -578,8 +578,9 @@ BOARD_DEFAULT_GRID = 24
 #: The switches a board's settings keep, each with the one value that is stored (the other is the default and is not).
 BOARD_PAPERS = ("a4", "a3", "letter", "legal", "custom")
 BOARD_ORIENTATIONS = ("portrait", "landscape")
+BOARD_UNITS = ("px", "mm", "cm", "in", "pt")
 #: Choices whose default is not stored (A4, portrait), with the client's table of sizes in `wbPdf`.
-BOARD_CHOICE_DEFAULT = {"paper": "a4", "orientation": "portrait"}
+BOARD_CHOICE_DEFAULT = {"paper": "a4", "orientation": "portrait", "units": "px"}
 BOARD_CUSTOM_MM = (50, 2000)
 BOARD_SWITCH_STORED = {"sticky_fold": False, "rough": True, "guides": False, "page_view": True, "shadow_default": True}
 
@@ -616,6 +617,8 @@ class BoardBackground(BaseModel):
     #: and is not stored; a custom size is in millimetres.
     paper: Literal["a4", "a3", "letter", "legal", "custom"] | None = None
     orientation: Literal["portrait", "landscape"] | None = None
+    #: The unit the position and size fields and the rulers show lengths in (96 px to the inch); px is the default.
+    units: Literal["px", "mm", "cm", "in", "pt"] | None = None
     paper_w: int | None = Field(default=None, ge=BOARD_CUSTOM_MM[0], le=BOARD_CUSTOM_MM[1])
     paper_h: int | None = Field(default=None, ge=BOARD_CUSTOM_MM[0], le=BOARD_CUSTOM_MM[1])
 
@@ -674,7 +677,7 @@ def _background_paper(stored: dict) -> dict:
     """The paper fields out of a stored background: a known size or direction that is not the default, a custom
     size inside the bounds."""
     out = {}
-    for key, choices in (("paper", BOARD_PAPERS), ("orientation", BOARD_ORIENTATIONS)):
+    for key, choices in (("paper", BOARD_PAPERS), ("orientation", BOARD_ORIENTATIONS), ("units", BOARD_UNITS)):
         if stored.get(key) in choices and stored[key] != BOARD_CHOICE_DEFAULT[key]:
             out[key] = stored[key]
     for key in ("paper_w", "paper_h"):
