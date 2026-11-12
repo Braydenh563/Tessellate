@@ -879,7 +879,7 @@ _SURFACES = {
 
 
 _CLOCK_UNIT = r"(?:hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)"
-_CLOCK = re.compile(
+_CLOCK_ASK = re.compile(
     r"^(?:please )?(?:(?P<verb>set|start|begin|run|make|open|show)(?: me| up)?(?: a| an| the| my)?|(?=countdown|timer))"
     rf"(?: (?P<n1>\d+(?:\.\d+)?) ?(?P<u1>{_CLOCK_UNIT}))? ?(?P<kind>timer|countdown|pomodoro|stopwatch|clock)"
     rf"(?:(?: for| of)? (?P<n2>\d+(?:\.\d+)?) ?(?P<u2>{_CLOCK_UNIT}))?$")
@@ -888,7 +888,7 @@ _CLOCK = re.compile(
 def _clock_ask(text: str) -> dict | None:
     """"set a timer for 25 minutes", "start a pomodoro", "start a stopwatch": the Clock window
     opened on the right tab with the length ready. It starts nothing: Start is the person's press."""
-    found = _CLOCK.match(text.strip(" .!").lower())
+    found = _CLOCK_ASK.match(text.strip(" .!").lower())
     if not found:
         return None
     kind = found.group("kind")

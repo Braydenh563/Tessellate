@@ -1011,15 +1011,22 @@
       status.textContent = "Pick the day these rates are from.";
       return;
     }
-    try {
+    //: The rates kept before this save, so Undo puts them back (or the built-in table).
+    const before = (await apiJson("/preferences").catch(() => ({})))?.currency_rates || null;
+    const put = async (value) => {
       await apiJson("/preferences", {
         method: "PUT",
-        body: JSON.stringify(clear ? { unset: ["currency_rates"] } : { currency_rates: { date: day, rates } }),
+        body: JSON.stringify(value ? { currency_rates: value } : { unset: ["currency_rates"] }),
       });
       await showCurrencyRates();
+    };
+    const after = clear ? null : { date: day, rates };
+    try {
+      await put(after);
       status.textContent = clear ? "Back to the built-in table." : "Saved.";
+      offerUndo("Currency rates", clear ? "Built-in rates back." : "Rates saved.", () => put(before), () => put(after));
     } catch (e) {
-      status.textContent = e.message || "Could not save the rates.";
+      status.textContent = "Couldn't save the currency rates. Check each line reads like EUR 0.92.";
     }
   }
   $("currency-rates-save").addEventListener("click", () => saveCurrencyRates(false));

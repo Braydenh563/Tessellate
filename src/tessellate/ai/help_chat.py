@@ -1047,9 +1047,10 @@ def composed_answer(question: str, topics: list[dict], led: guide_lead.Led | Non
     lines, where, walk = _guide_opening(question, path, steps, lead)
     more = "" if steps else _second_sentence(question, guide_lead.own_topic(topics, lead, help_sentences)["body"], lead)
     lines += ["\n".join(f"{n}. {step}" for n, step in enumerate(steps, 1))] if steps else [more] if more else []
-    #: The click path leads (the owner, 2026-11-12, L725), then one sentence from the help.
+    #: The click path comes right under the lead sentence (the owner, 2026-11-12,
+    #: L725): a question naming an act is still led by the sentence naming it.
     if path and not where and not walk:
-        lines.insert(0, f"**Where:** {path}")
+        lines.insert(min(1, len(lines)), f"**Where:** {path}")
     related = guide_lead.related_titles(topics, " ".join(lines), topic_title)
     return "\n\n".join(lines + (["**Related:** " + ", ".join(related)] if related else []))
 

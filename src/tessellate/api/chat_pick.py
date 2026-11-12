@@ -12,8 +12,11 @@ reach the answer: it reorders and selects, it adds no sentence.
 
 from __future__ import annotations
 
+import logging
 import re
 from collections.abc import Callable
+
+_log = logging.getLogger(__name__)
 
 _DIGITS = re.compile(r"\d+")
 
@@ -47,7 +50,8 @@ def pick(question: str, readings: list[dict], chat: Callable[[list[dict]], str])
         return None
     try:
         return choice(chat(messages(question, readings)) or "", readings)
-    except Exception:  # noqa: BLE001  # a model that fails is a model that did not choose
+    except Exception as exc:  # noqa: BLE001  # a model that fails is a model that did not choose
+        _log.info("reading pick skipped, the engine's own reading stands: %s", exc)
         return None
 
 
