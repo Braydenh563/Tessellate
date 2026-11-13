@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 108 | 38 | 0 | 18 | 276 |
+| world-class | 130 | 107 | 38 | 0 | 18 | 275 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 577 | 130 | 3 | 132 | 1260 |
+| all | 553 | 576 | 130 | 3 | 132 | 1259 |
 
 ## graph
 
@@ -579,7 +579,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L541** `world-class` open, S: Exercise slow/failed app-features.js fetch and late Quick access paint. From OPEN.md:1921; OPEN.md:2719. Evidence: No fault test found
 - [ ] **L542** `world-class` open, S: Assign INBOX 266 usability/lightweight items to an owner. From OPEN.md:1932. Evidence: Unowned; emblem idle cost built but rest unassigned
 - [ ] **L543** `world-class` open, S: undo.js trust sweep does not walk the OCR workspace. From OPEN.md:1634. Evidence: scratchpad/ui-sweeps/undo.js has no OCR step; ocr79.js measures it instead (still the case)
-- [ ] **L544** `world-class` open, S: Give scripts left in counted bundles (noteFirstImage etc.) a shared home. From OPEN.md:1643. Evidence: noteFirstImage still only in library.js:13226 and used at :13238; graph.js:2913 repeats the rule in a comment, no shared home
 - [ ] **L546** `world-class` open, S: deepen72a overlap measure change; run undo.js on agent surface. From OPEN.md:2776. Evidence: Verified open 2026-11-10
 - [ ] **L549** `world-class` open, S: Replace fixed 1.2 s whiteboard bundle wait in sweeps. From OPEN.md:3478. Evidence: Script hygiene; only op5-1005.js and mapviewmenu.js wait for the function.
 - [ ] **L550** `world-class` open, S: pickers.js throws pickNotesDialog not defined; segbars.js reads #graph-layout as seg. From OPEN.md:3530. Evidence: pickers.js, segbars.js still in scratchpad/ui-sweeps; script repair not recorded.

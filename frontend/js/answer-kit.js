@@ -501,8 +501,8 @@ function renderAnswerSupport(answerEl, support) {
 
 function notePictures(entry) {
   const seen = new Map();
-  for (const m of String(entry?.content || "").matchAll(/!\[([^\]\n]{0,200})\]\((\/(?:media|files)\/[^)\s]{1,500})\)/g)) {
-    if (!seen.has(m[2])) seen.set(m[2], { url: m[2], alt: m[1] });
+  for (const [, bang, alt, url] of ownFileLinks(entry?.content)) {
+    if (bang && !seen.has(url)) seen.set(url, { url, alt });
   }
   for (const file of entry?.attachments || []) {
     const url = `/files/${file.id}`;

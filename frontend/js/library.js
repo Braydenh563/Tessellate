@@ -13229,15 +13229,11 @@ async function remindAbout({ title, entryId = null, documentId = null }) {
 //: note's images live: pasted, dropped and AI-attached pictures all end up as
 //: `![alt](/media/…)` in the body, and there is no column that mirrors them.
 //:
-//: Only this app's own stored files. An external `https://` image in a note is
-//: skipped on purpose: the CSP blocks it (`img-src 'self' data: blob:`), so a
-//: thumbnail built from one would be a guaranteed broken frame, which is worse
-//: than no thumbnail at all.
+//: Only this app's own stored files (`ownFileLinks` in att-chip.js keeps the rule).
 
 function noteFirstImage(content) {
-  const match = /!\[([^\]\n]{0,200})\]\((\/(?:media|files)\/[^)\n]{1,500})\)/.exec(content || "");
-  if (!match) return null;
-  return { alt: match[1] || "", url: match[2] };
+  const m = ownFileLinks(content).find((link) => link[1]);
+  return m ? { alt: m[2], url: m[3] } : null;
 }
 
 //: A note's picture, wherever it lives, the markdown, or the attachments

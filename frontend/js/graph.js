@@ -2930,10 +2930,7 @@ function openGraphLinkPanel(edge, nodes) {
 //: same thing about the other direction), so a panel that reads only
 //: `entry.attachments` is blind to the commonest kind of image note there is.
 //:
-//: Only this app's own stored files, the same rule `noteFirstImage` keeps: an
-//: external `https://` image is blocked by the CSP (`img-src 'self' data:
-//: blob:`), so drawing one would guarantee a broken frame.
-const GRAPH_POPUP_MEDIA_REF = /(!?)\[([^\]\n]{0,200})\]\((\/(?:media|files)\/[^)\s]{1,500})\)/g;
+//: Only this app's own stored files: `ownFileLinks` (att-chip.js) is the one rule.
 
 function graphPopupMediaRefs(entry) {
   const refs = [];
@@ -2941,11 +2938,10 @@ function graphPopupMediaRefs(entry) {
   //: An attachment's own url is `/files/<id>`, and a note can both carry the
   //: file and link to it in its text. Same url, one card.
   for (const attachment of entry.attachments || []) seen.add(`/files/${attachment.id}`);
-  for (const match of (entry.content || "").matchAll(GRAPH_POPUP_MEDIA_REF)) {
-    const url = match[3];
+  for (const [, bang, alt, url] of ownFileLinks(entry.content)) {
     if (seen.has(url)) continue;
     seen.add(url);
-    refs.push({ image: match[1] === "!", name: match[2] || url.split("/").pop(), url });
+    refs.push({ image: !!bang, name: alt || url.split("/").pop(), url });
   }
   return refs;
 }
