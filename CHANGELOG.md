@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard on a phone: the More sheet groups the Arrange commands into the desktop menu's submenus (Order, Align, Distribute, Layout, Tidy and connect, Group and lock), each opening as its own level with a back row, instead of 24 flat rows.
 - Other devices: a router that briefly drops out of this computer's address table no longer shuts the network port and cuts every phone off mid-request; the last network is kept for two missed reads while the route is still there.
 - Whiteboard: Edit, Replay the pen drawing plays the pen strokes back in the order they were drawn (skipped to the end with reduced motion), and Export, GIF saves the same as an animated picture, written by a small offline GIF encoder (L-whiteboard-4).
 - Whiteboard: select a pen stroke and choose Edit, Clean up the drawn shape (also in the command palette) to turn a rough line, arrow, rectangle, ellipse, triangle or diamond into the clean shape, in the same colour and width, as one Undo step; a scribble is left alone.

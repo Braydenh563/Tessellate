@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 1 | 0 | 0 | 0 | 16 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 24 | 4 | 0 | 10 | 58 |
+| whiteboard | 30 | 23 | 4 | 0 | 10 | 57 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 631 | 150 | 3 | 185 | 1334 |
+| all | 553 | 630 | 150 | 3 | 185 | 1333 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -307,7 +307,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-27** `whiteboard` open, S: Format panel: Subscript and Superscript buttons wrapping the selection in ~ ~ or ^ ^. From wbtext3 agent, 2026-11-13. Evidence: frontend/js/whiteboard-text-more.js; the run row in whiteboard-format.js has size, font, ink, hl but no sub or sup button
 - [ ] **L-whiteboard-28** `whiteboard` open, S: Drawn shapes: Replace with a shape and Change shape kind should draw the table outline for the box, not stretch the tile. From wbtext3 agent, 2026-11-13. Evidence: frontend/js/whiteboard-library-more.js replaceData stretches the new outline, so a drawn shape (shapeKind) swapped in at a non-tile size is only regenerated after the next point edit-free resize check fails; whiteboard-shape-table.js afterResize needs the old path to equal the table's
 - [ ] **L-whiteboard-29** `whiteboard` partly, M: Drawn shape table: the remaining 15 parametric shapes (to the plan's 40), with draw.io names. From WHITEBOARD_PLAN JS-drawn shape classes row, 2026-11-13. Evidence: frontend/js/whiteboard-shape-table.js holds 25 of the planned 40 (commit edba1a2f); tests/test_wb_shape_table.py
-- [ ] **L-whiteboard-30** `whiteboard` open, S: Phone More sheet: group the arrange commands into the desktop's five submenus. From hub, moved from chat, 2026-11-13. Evidence: frontend/js/whiteboard-commands.js:518 wbSyncMoreMenu builds 24 flat rows; the desktop has five submenus (U15). Measure at 390 px.
 - [ ] **L-whiteboard-31** `whiteboard` open, S: Make the width control and rotation work on smoothed ink strokes (rebuild the outline from pts, rotate pts). From whiteboard ink session 2026-11-13. Evidence: wbink3.js: ink strokes store a fixed filled outline, so the Format panel width control changes nothing on them; Clean up and rotated strokes: pts are not rotated
 
 ## documents
