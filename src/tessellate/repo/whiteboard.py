@@ -41,3 +41,24 @@ def text_objects(db: Session, board_id: int, ids: list[int]) -> list[WhiteboardO
     """The text objects (stickies) among `ids` that sit on this board."""
     where = (WhiteboardObject.board_id == board_id, WhiteboardObject.id.in_(set(ids)), WhiteboardObject.kind == "text")
     return list(db.scalars(select(WhiteboardObject).where(*where)).all())
+
+
+def objects_of_kinds(db: Session, board_id: int | None, kinds: tuple[str, ...]) -> list[WhiteboardObject]:
+    """The board's objects of these kinds (frames for bindings, words for a name)."""
+    where = (WhiteboardObject.board_id == board_id, WhiteboardObject.kind.in_(kinds))
+    return list(db.scalars(select(WhiteboardObject).where(*where)).all())
+
+
+def board_nodes(db: Session, board_id: int) -> list[WhiteboardNode]:
+    """The board's note cards, oldest first."""
+    return list(db.scalars(select(WhiteboardNode).where(WhiteboardNode.board_id == board_id).order_by(WhiteboardNode.id)).all())
+
+
+def entry(db: Session, entry_id: int) -> Entry | None:
+    """The note behind a card."""
+    return db.get(Entry, entry_id)
+
+
+def entries(db: Session, ids: list[int]) -> list[Entry]:
+    """The notes behind these cards."""
+    return list(db.scalars(select(Entry).where(Entry.id.in_(ids))).all()) if ids else []

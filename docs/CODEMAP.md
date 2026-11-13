@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8639, frontend ids 2800, CSS sections 525, backend routes 709, backend modules 10867, test files 2755, tests 22346, plan headings 691, app scripts 29, boot scripts 38, script files 314.
+Counts: frontend functions 8639, frontend ids 2800, CSS sections 525, backend routes 709, backend modules 10871, test files 2755, tests 22346, plan headings 691, app scripts 29, boot scripts 38, script files 314.
 
 ## Frontend functions (8639)
 
@@ -9302,13 +9302,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `ask` | frontend/js/whiteboard-pdf.js:44 |
 | `isPdf` | frontend/js/whiteboard-pdf.js:12 |
 | `onDblClick` | frontend/js/whiteboard-pdf.js:102 |
-| `open` | frontend/js/whiteboard-pdf.js:95 |
+| `openPdf` | frontend/js/whiteboard-pdf.js:95 |
 | `pageCount` | frontend/js/whiteboard-pdf.js:34 |
 | `pageShape` | frontend/js/whiteboard-pdf.js:16 |
 | `pageUrl` | frontend/js/whiteboard-pdf.js:13 |
-| `place` | frontend/js/whiteboard-pdf.js:76 |
 | `placeOne` | frontend/js/whiteboard-pdf.js:65 |
 | `placePages` | frontend/js/whiteboard-pdf.js:53 |
+| `placePdf` | frontend/js/whiteboard-pdf.js:76 |
 | `upload` | frontend/js/whiteboard-pdf.js:25 |
 
 ### frontend/js/whiteboard-shape-more.js (25)
@@ -13725,7 +13725,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/{board_id}/nodes/{node_id}/move` | PUT | `move_map_node` | src/tessellate/api/wb_map.py:269 |
 | `/boards/{board_id}/nodes/{node_id}/suggest` | POST | `suggest_branches` | src/tessellate/api/routes_map_suggest.py:185 |
 | `/boards/{board_id}/nodes/{node_id}/summary` | POST | `summarise_branch` | src/tessellate/api/routes_map_suggest.py:428 |
-| `/boards/{board_id}/suggest-title` | POST | `suggest_board_title` | src/tessellate/api/wb_boards.py:645 |
+| `/boards/{board_id}/suggest-title` | POST | `suggest_board_title` | src/tessellate/api/wb_boards.py:644 |
 | `/boards/{board_id}/thumbnail` | PUT | `put_thumbnail` | src/tessellate/api/wb_preview.py:913 |
 | `/boards/{board_id}/thumbnail/state` | GET | `thumbnail_state` | src/tessellate/api/wb_preview.py:902 |
 | `/boards/{board_id}/tree` | GET | `board_tree` | src/tessellate/api/wb_map.py:31 |
@@ -14340,7 +14340,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10867)
+## Backend modules (10871)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -23983,7 +23983,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `list_boards` | src/tessellate/api/wb_boards.py:130 |
 | `list_images` | src/tessellate/api/wb_boards.py:248 |
 | `rename_board` | src/tessellate/api/wb_boards.py:524 |
-| `suggest_board_title` | src/tessellate/api/wb_boards.py:646 |
+| `suggest_board_title` | src/tessellate/api/wb_boards.py:645 |
 
 ### src/tessellate/api/wb_export.py (17)
 
@@ -27823,10 +27823,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `recent` | src/tessellate/repo/voice.py:37 |
 | `this_day_before` | src/tessellate/repo/voice.py:41 |
 
-### src/tessellate/repo/whiteboard.py (2)
+### src/tessellate/repo/whiteboard.py (6)
 
 | Name | File:line |
 |---|---|
+| `board_nodes` | src/tessellate/repo/whiteboard.py:52 |
+| `entries` | src/tessellate/repo/whiteboard.py:62 |
+| `entry` | src/tessellate/repo/whiteboard.py:57 |
+| `objects_of_kinds` | src/tessellate/repo/whiteboard.py:46 |
 | `preview_stamps` | src/tessellate/repo/whiteboard.py:15 |
 | `text_objects` | src/tessellate/repo/whiteboard.py:40 |
 

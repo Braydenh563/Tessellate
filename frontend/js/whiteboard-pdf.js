@@ -73,7 +73,7 @@
       Math.round(x - PAGE_WIDTH / 2), Math.round(y - height / 2), PAGE_WIDTH, height);
   }
 
-  async function place(file, x, y) {
+  async function placePdf(file, x, y) {
     if (file.size > CAP) return toast("That PDF is over 50 MB, the most the notebook keeps.", "info");
     try {
       const info = await upload(file);
@@ -92,7 +92,7 @@
   }
 
   //: The file behind an object, in the viewer the Library uses.
-  function open(object) {
+  function openPdf(object) {
     const url = object?.data?.pdf;
     if (!url || typeof openLightbox !== "function") return false;
     openLightbox([{ filename: url.split("/").pop(), getUrl: () => mediaSrc(url) }], 0);
@@ -103,12 +103,12 @@
     if (event.target.closest?.(".wb-resize-handle, .wb-rotate-handle")) return;
     const el = event.target.closest?.(".wb-object");
     const object = el && (wbState?.objects || []).find((o) => o.id === Number(el.dataset.id));
-    if (object?.data?.pdf && open(object)) {
+    if (object?.data?.pdf && openPdf(object)) {
       event.preventDefault();
       event.stopPropagation();
     }
   }
   document.addEventListener("dblclick", onDblClick, true);
 
-  Object.assign(wbFmtState, { pdf: { isPdf, place, open, MAX_PAGES } });
+  Object.assign(wbFmtState, { pdf: { isPdf, place: placePdf, open: openPdf, MAX_PAGES } });
 })();

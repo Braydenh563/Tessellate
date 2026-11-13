@@ -2270,7 +2270,7 @@ function wbPaintTable(node, d) {
   }));
   const grip = (axis, i, from, to) => {
     const g = document.createElement("div");
-    g.className = `wb-table-grip wb-table-grip-${axis}`;
+    g.className = axis === "col" ? "wb-table-grip wb-table-grip-col" : "wb-table-grip wb-table-grip-row";
     Object.assign(g.dataset, { axis, i: String(i), from: String(from), to: String(to) });
     g.title = axis === "col" ? "Drag to size the columns either side" : "Drag to size the rows either side";
     //: The object's own drag listens for mouse and touch as well as pointer events.

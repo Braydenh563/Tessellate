@@ -624,7 +624,7 @@ _NAMED_KINDS = ("topic", "frame", "text", "sticky")
 def _board_words(db: Session, board_id: int) -> str:
     """What is written on a board, a map's centre topic first: the text a name
     is taken from. Pinned cards add their notes' titles."""
-    rows = db.scalars(select(WhiteboardObject).where(WhiteboardObject.board_id == board_id, WhiteboardObject.kind.in_(_NAMED_KINDS))).all()
+    rows = whiteboard_repo.objects_of_kinds(db, board_id, _NAMED_KINDS)
     rows = sorted(rows, key=lambda o: (o.parent_id is not None, o.kind != "topic", o.kind != "frame", o.z or 0, o.id))
     lines = []
     for obj in rows:
@@ -634,8 +634,7 @@ def _board_words(db: Session, board_id: int) -> str:
             continue
         if isinstance(content, str) and content.strip():
             lines.append(content.strip())
-    entry_ids = db.scalars(select(WhiteboardNode.entry_id).where(WhiteboardNode.board_id == board_id)).all()
-    for entry in db.scalars(select(Entry).where(Entry.id.in_(entry_ids))).all() if entry_ids else []:
+    for entry in whiteboard_repo.entries(db, [node.entry_id for node in whiteboard_repo.board_nodes(db, board_id)]):
         title = extract_title(entry.content or "")
         if title:
             lines.append(title)

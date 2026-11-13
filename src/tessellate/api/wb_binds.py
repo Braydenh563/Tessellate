@@ -11,11 +11,11 @@ from __future__ import annotations
 import json
 
 from fastapi import APIRouter, Depends, Response
-from sqlalchemy import select
+from tessellate.repo import whiteboard as whiteboard_repo
 from sqlalchemy.orm import Session
 
 from tessellate.core import events
-from tessellate.core.database import Entry, WhiteboardNode, WhiteboardObject
+from tessellate.core.database import WhiteboardNode, WhiteboardObject
 from tessellate.core.deps import get_session
 from tessellate.core.events import node_state
 from tessellate.entry import manager_text
@@ -32,7 +32,7 @@ _INSET_X, _INSET_Y, _STEP_Y = 16.0, 48.0, 24.0
 def bound_frames(db: Session, board_id: int | None) -> list[tuple[WhiteboardObject, dict]]:
     """The board's frames that carry a binding, each with it."""
     out = []
-    rows = db.scalars(select(WhiteboardObject).where(WhiteboardObject.board_id == board_id, WhiteboardObject.kind == "frame")).all()
+    rows = whiteboard_repo.objects_of_kinds(db, board_id, ("frame",))
     for frame in rows:
         try:
             binds = (json.loads(frame.data or "{}") or {}).get("binds")
@@ -60,7 +60,7 @@ def _held(found: dict[str, list[str]], prop: str) -> str:
 
 
 def _value(db: Session, entry_id: int, prop: str) -> str:
-    entry = db.get(Entry, entry_id)
+    entry = whiteboard_repo.entry(db, entry_id)
     if entry is None:
         return ""
     found, _ = note_properties.split(manager_text.readable_content(entry))
@@ -72,7 +72,7 @@ def write_binding(db: Session, entry_id: int, binds: dict) -> bool:
     from tessellate.api import routes_entries
     from tessellate.api.schemas import EntryUpdate
 
-    entry = db.get(Entry, entry_id)
+    entry = whiteboard_repo.entry(db, entry_id)
     if entry is None:
         return False
     found, _ = note_properties.split(manager_text.readable_content(entry))
@@ -102,7 +102,7 @@ def sync_board_binds(board_id: int, db: Session = Depends(get_session)) -> dict:
     if not frames:
         return {"moved": moved}
     landed: dict[int, int] = {}
-    for node in db.scalars(select(WhiteboardNode).where(WhiteboardNode.board_id == board_id).order_by(WhiteboardNode.id)).all():
+    for node in whiteboard_repo.board_nodes(db, board_id):
         #: Only a card on the kanban moves: one loose on the board was put there.
         here = frame_at(frames, node.x or 0.0, node.y or 0.0)
         if here is None:
