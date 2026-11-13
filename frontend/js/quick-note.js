@@ -597,10 +597,57 @@
         body: JSON.stringify({ name: name || "", text: body }),
       });
       pushBinPairUndo("Made a mind map from a chat", `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => refreshEntries([board.id]));
-      toastAction(`Mind map \u201c${board.title}\u201d made.`, "Open", () => openWhiteboardBoard(board.id), { go: { open: "board", id: board.id } });
+      //: Opened in the map editor as a proposal (MINDMAP_PLAN 12.3 item 3):
+      //: the topics are the map's own, and the bar over them keeps or
+      //: discards the whole proposal (discard is the bin, so Undo still has it).
+      await openWhiteboardBoard(board.id);
+      chatProposalBar(board);
     } catch (error) {
       toast(error.message || "Couldn't make a mind map from this chat.", true);
     }
+  }
+
+  function chatProposalBar(board) {
+    document.querySelector(".wb-map-proposal")?.remove();
+    const host = document.getElementById("whiteboard-container");
+    if (!host) return;
+    const bar = document.createElement("div");
+    bar.className = "wb-map-proposal dock";
+    bar.setAttribute("role", "group");
+    bar.setAttribute("aria-label", "A proposed map");
+    const words = document.createElement("span");
+    words.textContent = `A proposed map: ${board.title}`;
+    const keep = document.createElement("button");
+    keep.type = "button";
+    keep.className = "btn btn-primary btn-sm";
+    keep.textContent = "Keep the map";
+    keep.addEventListener("click", () => {
+      bar.remove();
+      toast(`Kept \u201c${board.title}\u201d.`);
+    });
+    const drop = document.createElement("button");
+    drop.type = "button";
+    drop.className = "btn btn-ghost btn-sm";
+    drop.textContent = "Discard it";
+    drop.addEventListener("click", async () => {
+      try {
+        await apiJson(`/entries/${board.id}`, { method: "DELETE" });
+        bar.remove();
+        await refreshEntries([board.id]);
+        switchTab("chat");
+        offerUndo(
+          "Discarded a proposed map",
+          "Discarded the proposed map.",
+          () => apiJson(`/entries/${board.id}/restore`, { method: "POST" }).then(() => refreshEntries([board.id])),
+          () => apiJson(`/entries/${board.id}`, { method: "DELETE" }).then(() => refreshEntries([board.id])),
+        );
+      } catch (error) {
+        toast(error.message || "The proposed map could not be discarded.", true);
+      }
+    });
+    bar.append(words, keep, drop);
+    host.append(bar);
+    keep.focus({ preventScroll: true });
   }
 
   async function saveChatAnswerAsNote(question, answer) {

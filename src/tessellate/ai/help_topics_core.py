@@ -1127,9 +1127,9 @@ HELP_TOPICS: list[dict] = [
             "one scrolls to it and opens its answers, the check on a row accepts "
             "its one clear fix and the crossed eye ignores it, and the arrow keys "
             "walk the rows. Fix applies every clear fix at once; the ... in the "
-            "panel's head holds Check with AI, Hide all suggestions (quiets every "
-            "underline and the list until shown), Dismissed (the "
-            "suggestions put away in this document, each with a Restore), the "
+            "panel's head holds Check with AI, Check claims against my notes "
+            "(each sentence marked supported, contradicted or not found, with "
+            "its note), Hide all suggestions, Dismissed, the "
             "Dictionary and which side the panel docks on. For an awkward "
             'sentence with no mechanical fix, "Ask the AI for wordings" offers '
             "two or three alternatives; nothing changes until you choose. "

@@ -520,8 +520,8 @@ class MapClearStyleOut(BaseModel):
 #: not list because a node has carried `color` as a key of its own since
 #: before any of this existed.
 MAP_CONTENT_FIELDS = frozenset({
-    "image", "task", "note", "boundary", "boundary_label", "summary", "summary_span", "branch_layout", "callout", "labels", "stamps",
-    "priority", "progress", "flag", "markers", "due", "start", "recording",
+    "image", "task", "note", "boundary", "boundary_label", "boundary_set", "summary", "summary_span", "branch_layout", "callout", "labels", "stamps",
+    "priority", "progress", "flag", "markers", "due", "due_time", "start", "recording",
 })
 MAP_CLEARABLE_FIELDS = frozenset(MAP_STYLE_FIELDS) - MAP_CONTENT_FIELDS | {"color"}
 

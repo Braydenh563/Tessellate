@@ -192,7 +192,7 @@ EXPECTED = {
         '`That branch has ${nounCount(subtree.length, "topic")}: copying stops at ${WB_MAP_COPY_MAX}.`',
         '`"${wbMapLabel(source)}" is already under "${wbMapLabel(target)}": turn the cross-link around first.`',
         '"A summary covers topics side by side under one parent."',
-        '"That day has gone: pick a later due date for a reminder."',
+        '"That time has gone: pick a later due date for a reminder."',
     ],
     'whiteboard.js': [
         '"The default board keeps the theme\'s look. Make a board of your own to give it one."',

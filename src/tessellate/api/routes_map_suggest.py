@@ -86,7 +86,7 @@ def _candidates(db: Session, board_id: int, query: str, skip_titles: set[str]) -
     from tessellate.search import engine
 
     try:
-        hits = engine.search(db, query, limit=CANDIDATES * 3)
+        hits = engine.search(db, query, limit=CANDIDATES * 3, kinds=["note"])
     except Exception:  # an index being rebuilt is a reason to suggest less, not to fail
         logging.getLogger("tessellate.whiteboard").warning("Branch suggestions: search failed", exc_info=True)
         hits = []
