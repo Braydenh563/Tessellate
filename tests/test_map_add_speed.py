@@ -158,9 +158,9 @@ def test_each_fallback_runs_the_whole_render_exactly_once():
 
 def test_the_new_topic_is_editable_before_the_measure_read():
     body = _body(WB_JS, "function renderWbObjects(")
-    set_at = body.index('typing.setAttribute("contenteditable", "plaintext-only")')
+    set_at = body.index("wbBeginTextEdit(typing, undefined, true)")
     assert "wbAddGate.renderHold?.editId === d.id" in body
     assert set_at < body.index("const h = this.offsetHeight")
     # The editor then does not repeat the write that restyles the tree.
     begin = _body(WB_JS, "function wbBeginTextEdit(")
-    assert "_wbPreEdit" in begin and 'getAttribute("contenteditable") !== "plaintext-only"' in begin
+    assert "_wbPreEdit" in begin and "if (early)" in begin and 'getAttribute("contenteditable") !== "plaintext-only"' in begin

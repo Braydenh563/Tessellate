@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Map: Tab on a topic draws the objects layer only (`wbMapCache.renderAdd`; the whole render stays as the fallback for an expanded fold, a drawn line, a live search or the outline), the new topic is made editable before the measure read, and the editor opens before the selection chrome; Tab to editable at 390, 6x, 41 topics, three alternating pairs, median of 9: 104/99/102 ms to 73/101/85 (the target of 50 is not met; warm repeats run 50-70 ms).
 - Claim check reads a line of many tabs or full stops in linear time (CodeQL 2290): the list marker is matched after the indent, and the abbreviation check reads back one word, not the line.
 - Group by theme and Check claims run their bounded model call on a listed `jobs.future` thread, not a private executor.
 - Map: a render with no board search live no longer walks every object to clear search marks (no change measurable in the Tab-to-editable median, 104-117 ms at 6x; the rest is the focus flush itself).

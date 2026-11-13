@@ -11145,8 +11145,16 @@ function wbBulletTextLines() {
   wbScheduleRender();
 }
 
-function wbBeginTextEdit(contentEl, ownText) {
+//: `early`: only the part that restyles (the attribute and the class), for a
+//: render to write before its measure read; the call that follows opens the editor.
+function wbBeginTextEdit(contentEl, ownText, early = false) {
   if (!contentEl || (contentEl.isContentEditable && !contentEl._wbPreEdit)) return;
+  if (early) {
+    contentEl.setAttribute("contenteditable", "plaintext-only");
+    contentEl._wbPreEdit = true;
+    contentEl.closest(".wb-object")?.classList.add("wb-text-editing");
+    return;
+  }
   //: Back to the source while editing, whatever the rendered view showed.
   //: `ownText`: a frame's title or hint line is not the object's `content` (C17).
   const objectEl = contentEl.closest(".wb-object");
@@ -24787,9 +24795,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
       //: the measure below reads, so the read is the one flush (`wbBeginTextEdit`).
       const typing = wbAddGate.renderHold?.editId === d.id ? this.querySelector(".wb-map-text") : null;
       if (typing) {
-        typing.setAttribute("contenteditable", "plaintext-only");
-        typing._wbPreEdit = true;
-        this.classList.add("wb-text-editing");
+        wbBeginTextEdit(typing, undefined, true);
         //: And selected, the old selection let go, in the same pass: the
         //: `selectWbItem` that follows then finds the classes already right.
         for (const old of wbApplySelectionHighlight.marked || []) old.classList.remove("wb-selected", "wb-in-group");
