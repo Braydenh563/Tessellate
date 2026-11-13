@@ -784,9 +784,19 @@ function wbCullNow(transform, size) {
     return x + bw + pad < x0 || x - pad > x1 || y + bh + pad < y0 || y - pad > y1;
   };
   const focused = document.activeElement;
+  //: **Too small on screen for its grips, it drags** (L-whiteboard-15). The
+  //: resize grips keep ten screen pixels at every zoom, so on a 500-box board
+  //: at the fit zoom (0.23) a 42 by 16 px text box was mostly grip and a
+  //: press on it resized nothing and moved nothing (wb500perf.js). Below
+  //: this size the grips are absent (07-whiteboard-misc.css); zoom in, or
+  //: the Format panel's size fields, to resize it.
+  const WB_TINY_SCREEN_W = 40;
+  const WB_TINY_SCREEN_H = 28;
   for (const el of layer.children) {
     const d = el.__data__;
     if (!d || typeof d.x !== "number") continue;
+    const tiny = (d.width || WB_CARD_DEFAULT_SIZE.w) * k < WB_TINY_SCREEN_W || (d.height || WB_CARD_DEFAULT_SIZE.h) * k < WB_TINY_SCREEN_H;
+    if (el.classList.contains("wb-tiny") !== tiny) el.classList.toggle("wb-tiny", tiny);
     const keep =
       el.classList.contains("wb-selected") ||
       el.classList.contains("dragging") ||

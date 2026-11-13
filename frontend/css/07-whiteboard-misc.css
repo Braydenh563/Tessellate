@@ -350,6 +350,12 @@
     opacity var(--motion-fast) var(--ease-out),
     display var(--motion-fast) linear allow-discrete;
 }
+/* Too small on screen to hold its grips: none, so a press drags the box
+   (L-whiteboard-15; the cull pass sets `wb-tiny`). Two ids, so it outranks
+   every reveal rule below. */
+#whiteboard-container #wb-html-layer > .wb-tiny .wb-resize-handle {
+  display: none;
+}
 /* Interactive (and visible) only in the Select tool, `:hover` alone fires
    for *any* tool the instant the cursor crosses the card, so without this
    gate a link/pan drag started near a corner still lost to the handle

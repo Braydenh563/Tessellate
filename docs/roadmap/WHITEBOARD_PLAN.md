@@ -1265,7 +1265,7 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 ## Placed from Brief 60, 2026-10-10 (the measured census)
 
-- Measured clean (WORLD_CLASS 26.5): the showcase board at rest has 0 long tasks and 0 gaps over 20 ms in 3 s; a drag of one object has 1 gap over 20 ms of 253 frames (`frames.js`, companion off). The 18 `requestAnimationFrame` sites and 15 `pointermove` handlers in `whiteboard.js` are the largest counts in the app, held per file by `tests/test_frontend_wake_sources.py`. Not measured: a board of 500 objects, or the companion on.
+- Measured clean (WORLD_CLASS 26.5): the showcase board at rest has 0 long tasks and 0 gaps over 20 ms in 3 s; a drag of one object has 1 gap over 20 ms of 253 frames (`frames.js`, companion off). The 18 `requestAnimationFrame` sites and 15 `pointermove` handlers in `whiteboard.js` are the largest counts in the app, held per file by `tests/test_frontend_wake_sources.py`. At 500 text boxes, companion off and on (`wb500perf.js` 14/14, L-whiteboard-15): 0 long tasks and 0 gaps over 20 ms in 3 s at rest, 0 gaps in about 150 frames of a one-box drag at the fit zoom; the measure found a box under about 40 by 28 px on screen covered by its grips, now absent there (`wb-tiny`).
 
 ## Placed from INBOX, 2026-10-10 (the owner on feature depth)
 
