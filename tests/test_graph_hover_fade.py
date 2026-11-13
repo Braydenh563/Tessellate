@@ -18,7 +18,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._js_scope import unwrapped
+from tests._js_scope import gc_frame, unwrapped
 
 ROOT = Path(__file__).resolve().parent.parent
 CANVAS = unwrapped((ROOT / "frontend" / "js" / "graph-canvas.js").read_text(encoding="utf-8"))
@@ -117,7 +117,7 @@ def test_the_first_frame_after_idle_is_one_ordinary_frame_not_a_jump():
 
 
 def test_dots_lines_rings_and_pills_all_draw_from_their_lit_ness():
-    draw = _fn("gcDraw")
+    draw = gc_frame(CANVAS)
     # Nodes: batched by colour only; alpha per node from its own lit-ness.
     assert "const key = node.colour;" in draw
     # Each node's alpha is its own lit-ness; FE-04's batched small dots carry
@@ -144,7 +144,7 @@ def test_a_line_answers_the_pointer_and_a_click_opens_its_peek():
     assert "if (!GC_PEEK_KINDS.has(edge.kind)) continue;" in CANVAS
     assert "openGraphLinkPeek(edge, event, s.nodes);" in CANVAS
     assert 's.canvas.classList.toggle("graph-edge-hover", Boolean(edge));' in CANVAS
-    assert "if (gcDrawEdgeHover(ctx, s, k, fadeStep, curvedLinks)) fading = true;" in CANVAS
+    assert "if (gcDrawEdgeHover(ctx, s, k, fadeStep, curvedLinks)) f.fading = true;" in CANVAS
     graph = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
     peek = graph[graph.index("function openGraphLinkPeek") :]
     peek = peek[: peek.index("\n}\n")]

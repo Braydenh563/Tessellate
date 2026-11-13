@@ -1886,6 +1886,8 @@ async function switchTab(name) {
   // creates a fresh simulation on the next visit regardless of whether the
   // old one was still running or already stopped.
   const leavingGraph = prefs.get("activeTab", null) === "graph" && name !== "graph";
+  //: Leaving Notes forgets the last card clicked (L709): it is the open note only while you are there.
+  if (name !== "notes") delete $("entry-list")?.dataset.lastCard;
   recordTabVisit(name);
   //: The next 400ms belong to the page arriving (INBOX 580): the companion's
   //: paced animations hold still through them (`nameMarkBuddyTempo`), so the

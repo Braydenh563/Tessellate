@@ -293,6 +293,9 @@ class EntryDateOut(BaseModel):
 class EntryOut(BaseModel):
     id: int
     content: str
+    #: Only on `/entries/{id}/related`: why this note is offered beside the
+    #: one asked about (a shared tag, name or week, else "similar in meaning").
+    link_reason: str | None = None
     #: `content` is the first part only (`GET /entries?preview=`).
     content_truncated: bool = False
     #: What the whole text holds, for a row whose `content` is a part (`GET /entries?preview=`): the

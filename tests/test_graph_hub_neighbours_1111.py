@@ -66,7 +66,8 @@ def test_two_neighbours_of_a_hub_trade_places_when_their_far_lines_cross() -> No
 def test_the_sweep_runs_for_every_hub_inside_the_pass_budget() -> None:
     body = WORKER[WORKER.index("function* untangleLayoutSteps()") :]
     body = body[: body.index("return untangleGlide(startX, startY);")]
-    assert "untangle.incident[i].length > UNTANGLE_MOVE_LINKS) gained += yield* untangleFanSteps(i, still, until);" in body
+    assert "untangle.incident[i].length <= UNTANGLE_MOVE_LINKS) continue;" in body
+    assert "gained += yield* untangleFanSteps(i, still, until);" in body
     assert "workNow() < until" in body[body.index("untangleFanSteps") - 200 : body.index("untangleFanSteps")]
     step = WORKER[WORKER.index("function* untangleFanSteps(") :]
     step = step[: step.index("\n}\n")]
