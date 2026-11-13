@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Map: Tab writes the new topic's selection and editing classes before its editable attribute, so the render restyles once, not twice (Tab-to-editable median at 390 and 6x about 67 to 60 ms).
 - Board stack order: an item still waiting for its id ties as the newest, so a new map topic no longer moves every sibling's z-index up by one and back on the server's answer (41 writes per Tab, now 0).
 - Map: a topic still waiting for its id colours as the newest branch, not the oldest, so Tab on a root no longer shifts every later branch one colour along until the server answers (41 of 41 topics repainted, now 1; Tab-to-editable median at 390 and 6x about 85 to 67 ms).
 - Map: Tab on a topic draws the objects layer only (`wbMapCache.renderAdd`; the whole render stays as the fallback for an expanded fold, a drawn line, a live search or the outline), the new topic is made editable before the measure read, and the editor opens before the selection chrome; Tab to editable at 390, 6x, 41 topics, three alternating pairs, median of 9: 104/99/102 ms to 73/101/85 (the target of 50 is not met; warm repeats run 50-70 ms).

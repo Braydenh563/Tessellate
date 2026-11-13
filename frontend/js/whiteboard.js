@@ -11154,9 +11154,12 @@ function wbBulletTextLines() {
 function wbBeginTextEdit(contentEl, ownText, early = false) {
   if (!contentEl || (contentEl.isContentEditable && !contentEl._wbPreEdit)) return;
   if (early) {
-    contentEl.setAttribute("contenteditable", "plaintext-only");
-    contentEl._wbPreEdit = true;
+    //: The class before the attribute: setting `contenteditable` restyles the
+    //: tree there and then, so a class written after it was a second restyle
+    //: at the measure (L-mindmap-13: 11 elements, 4 to 7 ms at 6x).
     contentEl.closest(".wb-object")?.classList.add("wb-text-editing");
+    contentEl._wbPreEdit = true;
+    contentEl.setAttribute("contenteditable", "plaintext-only");
     return;
   }
   //: Back to the source while editing, whatever the rendered view showed.
@@ -24799,12 +24802,13 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
       //: the measure below reads, so the read is the one flush (`wbBeginTextEdit`).
       const typing = wbAddGate.renderHold?.editId === d.id ? this.querySelector(".wb-map-text") : null;
       if (typing) {
-        wbBeginTextEdit(typing, undefined, true);
-        //: And selected, the old selection let go, in the same pass: the
-        //: `selectWbItem` that follows then finds the classes already right.
+        //: Selected, the old selection let go, in the same pass and before the
+        //: editable attribute (which restyles at once): the `selectWbItem` that
+        //: follows then finds the classes already right.
         for (const old of wbApplySelectionHighlight.marked || []) old.classList.remove("wb-selected", "wb-in-group");
         this.classList.add("wb-selected");
         (wbApplySelectionHighlight.marked ??= new Set()).add(this);
+        wbBeginTextEdit(typing, undefined, true);
       }
     } else if (d.kind === "frame") {
       const title = this.querySelector(".wb-frame-title");
