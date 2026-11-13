@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 3 | 1 | 0 | 10 | 34 |
+| whiteboard | 30 | 2 | 1 | 0 | 10 | 33 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 609 | 147 | 3 | 185 | 1309 |
+| all | 553 | 608 | 147 | 3 | 185 | 1308 |
 
 ## graph
 
@@ -281,7 +281,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## whiteboard
 
 - [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Built here: wbExportBoard({ branch: true }) titles the dialog "Export this branch" (tests/test_wb_export_pdf.py, wbexport-pdf.js). Left: whiteboard-map.js:5072 in wbMapExportBranch must call wbExportBoard({ branch: true }) (file owned by another session). The mmd2 sweeps do not touch export; wbexport-pdf.js covers the dialog.
-- [ ] **L271** `whiteboard` open, M: Unify the four overlapping drag and pointer-capture mechanisms in whiteboard.js. From OPEN.md:4442. Evidence: whiteboard.js still has mixed pointer capture and mouse handlers (27 matches); not unified
 - [ ] **L279** `whiteboard` open, M: Close or record U19 U20 U23 U30 U31 U36 U37 U39 U41 U45 U49 across map, board, documents, code editor. From bs-1111.md. Evidence: Other agents' surfaces; no closing record found
 - [ ] **L286** `whiteboard` partly, L: Whiteboard: D24 names left, split whiteboard.js and whiteboard-map.js. From ledger-1112 O34; ledger-1112 O33.
 

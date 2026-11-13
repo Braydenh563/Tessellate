@@ -3737,11 +3737,7 @@ function wbNavigatorDragStart(event) {
     pending: { x: event.clientX, y: event.clientY },
     frame: 0,
   };
-  try {
-    svg.setPointerCapture(event.pointerId);
-  } catch {
-    /* a synthetic event with no live pointer: the drag still works inside the box */
-  }
+  wbBoardState.capture(svg, event.pointerId);
   svg.classList.add("is-dragging");
   event.preventDefault();
   wbNavigatorDragFrame();
@@ -10598,6 +10594,30 @@ function wbUpdateUndoRedoButtons() {
   if (typeof scheduleUndoBar === "function") scheduleUndoBar();
 }
 
+//: **One way to hold a pointer for a drag** (L271). The board's raw pointer
+//: drags (marquee, placing a box, the selection drag, a port's connector,
+//: the lasso, the navigator's frame) each took capture in its own try block
+//: and ended on its own pair of window listeners. Capture keeps the moves and
+//: the release coming when the pointer leaves the container; a synthetic
+//: press (a test, an assistive tool) has no live pointer to capture, and the
+//: window listeners still end it. Item drags stay on d3.drag, which captures
+//: for itself, and the right-press gate stays on mouse events because that is
+//: what d3.zoom listens to.
+//: Held on `wbBoardState`, so the pair adds no name to the shared scope.
+wbBoardState.capture = (el, pointerId) => {
+  try {
+    el.setPointerCapture(pointerId);
+  } catch {
+    /* no live pointer: the gesture's window listeners end it */
+  }
+};
+//: A gesture taken away (the browser's pointercancel, a lost capture) ends
+//: the same way a release would.
+wbBoardState.onGestureLost = (end) => {
+  window.addEventListener("pointercancel", end);
+  window.addEventListener("lostpointercapture", end);
+};
+
 function wbDropUndoEntry(entry) {
   const at = wbUndoStack.lastIndexOf(entry);
   if (at !== -1) wbUndoStack.splice(at, 1);
@@ -16246,7 +16266,7 @@ async function initWhiteboard() {
 
     grip.addEventListener("pointerdown", (e) => {
       dragging = true;
-      grip.setPointerCapture(e.pointerId);
+      wbBoardState.capture(grip, e.pointerId);
       grip.classList.add("is-dragging");
       const panelRect = panel.getBoundingClientRect();
       const boundsRect = bounds.getBoundingClientRect();
@@ -18526,11 +18546,7 @@ async function initWhiteboard() {
     wbMarqueeEl.dataset.label = place === "frame" ? "Frame" : place === "sticky" ? "" : "Text";
     wbMarqueeEl.setAttribute("aria-hidden", "true");
     layer.appendChild(wbMarqueeEl);
-    try {
-      containerEl.setPointerCapture(pointerId);
-    } catch (err) {
-      // A synthetic press has no real pointer; the window listeners end it.
-    }
+    wbBoardState.capture(containerEl, pointerId);
   }
   function wbBeginMarqueeRect(pointerId) {
     wbMarqueeEl = document.createElement("canvas");
@@ -18551,12 +18567,7 @@ async function initWhiteboard() {
     // outside the container went to whatever element was under the cursor,
     // so a drag that ended over the top bar, over the left rail or off the
     // window simply never finished, and left its rectangle behind.
-    try {
-      containerEl.setPointerCapture(pointerId);
-    } catch (err) {
-      // A synthetic pointerdown (a test, an assistive tool) has no real
-      // pointer to capture. The window-level listeners below still end it.
-    }
+    wbBoardState.capture(containerEl, pointerId);
   }
   //: The selection drag's frames: the same 4-unit threshold as the marquee,
   //: then the whole selection by the pointer's travel from the press, Shift on
@@ -18569,11 +18580,7 @@ async function initWhiteboard() {
       start.origin = wbSelectionDragOrigin();
       if (!start.origin) return wbEndMarqueeDrag();
       start.pending = false;
-      try {
-        containerEl.setPointerCapture(start.pointerId);
-      } catch (err) {
-        // A synthetic press has no real pointer; the window listeners end it.
-      }
+      wbBoardState.capture(containerEl, start.pointerId);
     }
     const lock = wbAxisLock(x - start.x, y - start.y, e.shiftKey);
     wbApplyBulkMove(start.origin, lock === "y" ? 0 : wbSnap(x - start.x, e.altKey), lock === "x" ? 0 : wbSnap(y - start.y, e.altKey));
@@ -19049,11 +19056,7 @@ async function initWhiteboard() {
     document.getElementById("wb-zoom-group")?.appendChild(path);
     port.drag = { kind: port.kind, item: port.item, anchor, start, path, moved: false, id: e.pointerId };
     wbLinkDragActive = true;
-    try {
-      containerEl.setPointerCapture(e.pointerId);
-    } catch {
-      /* a synthetic event has no capture to take; the moves still arrive */
-    }
+    wbBoardState.capture(containerEl, e.pointerId);
   }, true);
   //: The line and `moved` follow every event (release reads `moved`); only
   //: the anchor hit test waits for the frame.
@@ -19134,8 +19137,7 @@ async function initWhiteboard() {
   // (`lostpointercapture`), a gesture can be taken over by the browser
   // (`pointercancel`), and a synthetic pointerdown was never captured at all.
   // Every one of those used to leave the rectangle on the board.
-  window.addEventListener("pointercancel", () => wbEndMarqueeDrag());
-  window.addEventListener("lostpointercapture", () => wbEndMarqueeDrag());
+  wbBoardState.onGestureLost(() => wbEndMarqueeDrag());
   window.addEventListener("pointerup", (e) => {
     if (!wbMarqueeStart) return;
     if (wbMarqueeStart.move) return wbEndSelectionDrag();
@@ -19288,14 +19290,9 @@ async function initWhiteboard() {
     // base SVG the loop was drawn *under* every card and sticky (reported:
     // "the lasso select tool is behind everything").
     document.getElementById("wb-overlay-zoom-group").appendChild(wbLassoEl);
-    try {
-      containerEl.setPointerCapture(e.pointerId);
-    } catch (err) {
-      // See the marquee's own comment: a synthetic pointer cannot be caught.
-    }
+    wbBoardState.capture(containerEl, e.pointerId);
   });
-  window.addEventListener("pointercancel", () => wbEndLassoDrag());
-  window.addEventListener("lostpointercapture", () => wbEndLassoDrag());
+  wbBoardState.onGestureLost(() => wbEndLassoDrag());
   window.addEventListener("pointermove", (e) => {
     if (!wbLassoPoints) return;
     const [x, y] = getLogicalMouse(e);

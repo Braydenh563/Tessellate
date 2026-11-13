@@ -10,6 +10,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Whiteboard: Select all (Ctrl+A) and the Tab walk take connectors too, and a connector is read out as "Connector" with its label (L-whiteboard-21).
 - Whiteboard: Alt+Shift+L, T and N edit a selected item's link, tooltip and comment, and Alt+Shift+K its tags, as in draw.io; Ctrl+K stays the command palette (L-whiteboard-22).
 - Whiteboard: resizing with Shift or Alt shows the size readout too (L284).
+- Whiteboard: the raw pointer drags (marquee, placing a box, selection, connector, lasso, panel grip, navigator) take capture and end through one pair of helpers (L271).
 - Whiteboard: one eraser swipe is one Undo step (L-whiteboard-35); pasting or dropping a file a board cannot hold says so (L-whiteboard-36).
 - Whiteboard: a frame can be bound to a note property; a card dropped in it sets that value on its note, and a note changed elsewhere moves its card when the board opens (L-whiteboard-12).
 - Boards and maps: the Library card menu offers Suggest a name, from the model when one runs or the board's own words, with Undo (L280).

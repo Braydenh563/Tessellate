@@ -38,7 +38,7 @@ def test_drag_is_coalesced_into_one_frame() -> None:
 
 def test_drag_freezes_its_projection_and_keeps_the_grab_point() -> None:
     start = code(function_text("wbNavigatorDragStart"))
-    assert "setPointerCapture(" in start
+    assert "wbBoardState.capture(svg, event.pointerId)" in start  # the one capture helper (L271)
     assert "getBoundingClientRect" in start  # measured once, at the press
     assert "grab" in start
     update = code(function_text("wbNavigatorUpdateViewport"))

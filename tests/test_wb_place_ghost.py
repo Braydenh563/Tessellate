@@ -17,7 +17,9 @@ def test_a_placing_drag_draws_a_ghost_not_the_marquee():
     body = WB[WB.index("function wbBeginPlaceGhost("):]
     body = body[:body.index("\n  }\n")]
     assert 'getElementById("wb-html-layer")' in body
-    assert "setPointerCapture" in body
+    #: The capture goes through the one helper (L271), which calls setPointerCapture.
+    assert "wbBoardState.capture(containerEl, pointerId)" in body
+    assert "el.setPointerCapture(pointerId)" in WB
 
 
 def test_each_kind_has_its_look():
