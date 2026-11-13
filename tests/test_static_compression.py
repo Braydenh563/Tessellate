@@ -165,6 +165,9 @@ PIECE_CAP = 32_000
 #: 2026-11-11, +15 (250,431 to 250,446): a reopened chat redraws its saved act, offer and tool-confirm
 #: cards; the loop lives in the lazy answer-kit.js (`renderToolConfirm.saved`), sheets-selects.js
 #: only calls it. The cap did not move.
+#: 2026-11-13, L610 and L611, -185 (250,429 to 250,244): `askAtlasAboutNote` into the lazy
+#: entry-menu.js and `updateProfileCount` into the lazy settings-prefs.js, each beside its one
+#: caller; the chord guide was already lazy (bundle `chordGuide`). The cap did not move.
 TOTAL_CAP = 250_450
 
 

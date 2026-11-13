@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 103 | 38 | 0 | 18 | 271 |
+| world-class | 130 | 101 | 38 | 0 | 18 | 269 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 572 | 130 | 3 | 132 | 1255 |
+| all | 553 | 570 | 130 | 3 | 132 | 1253 |
 
 ## graph
 
@@ -623,8 +623,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L607** `world-class` open, M: Exercise real log stream under load. From OPEN.md:1484. Evidence: Needs sustained load run; only seeded 275-record check recorded
 - [ ] **L608** `world-class` open, M: Sweep not reaching right-click menus, keyboard acts, pickers, library delete. From OPEN.md:1836; OPEN.md:3695. Evidence: Coverage gap; no sweep added found
 - [ ] **L609** `world-class` open, M: Server grew to 8.5 GB resident over 35 min of seeding/sweeps. From OPEN.md:2064. Evidence: Row says not reproduced, cause not found; no fix or test located
-- [ ] **L610** `world-class` open, M: Boot gzip budget leftovers (chord guide in settings-wiring.js ~3 KB etc.). From OPEN.md:2248. Evidence: Candidates measured and left; test_static_compression.py holds numbers
-- [ ] **L611** `world-class` open, M: App scripts gzip cap has no room (320,589 of 320,600); unblock chat-agent.js budget line and helpers. From OPEN.md:2499; OPEN.md:3909; OPEN.md:3818. Evidence: Budget at 11 bytes headroom; guard paths not driven
 - [ ] **L613** `world-class` open, M: Smaller backend/gate rows: note-types undo id, gate --changed, palette test, CSS budgets. From OPEN.md:3289. Evidence: Undo id loss unreproduced; budgets near limit; palette undecided
 - [ ] **L616** `world-class` open, M: Trigger the other 100 toast(...,true) call sites. From OPEN.md:3567. Evidence: Lint test_error_toasts.py covers them; situations never driven in a browser
 - [ ] **L617** `world-class` open, M: phone-shell tab click, openDoc, timeline-calendar onclick lag and 16 s searxng start. From INBOX.md:1716. Evidence: hascss-1111/lag-1110: 'remains', not reproduced at 44 to 200 notes; no later fix found

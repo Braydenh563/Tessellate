@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boot scripts 185 bytes lighter: two helpers moved beside their only lazy caller (L610, L611).
 - Night shift: one progress bar across its phases, and the pairing phase scored in one go: 12.6 to 1.9 s at 1,000 notes with the same findings (L614).
 - CI: the budgets spec no longer flaps; it runs alone on one worker, and the last 25 CI runs show no budget failure (L602).
 - Perf: listener growth on timeline and dashboard redraws re-measured; flat across 12 cycles at 40 notes, so PF6 no longer reproduces (L601).

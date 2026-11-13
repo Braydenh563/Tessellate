@@ -563,3 +563,12 @@ async function translateNoteInDesk(entry) {
   toast("Pick the language in the menu beside Draft, then press Draft.");
   $("draft-kind").closest(".select-shell")?.querySelector("button")?.focus();
 }
+
+// Moved from note-cards.js (boot gzip budget, L611): this menu row is its one caller.
+//: Start a chat about one note. Named by its title in the words a person
+//: would use, so the agent's own search tools find it, rather than pasting the
+//: whole note into the box.
+function askAtlasAboutNote(entry) {
+  const name = (entry.title || noteNamePlain(entry.content) || "this note").trim();
+  askAtlasAboutThing("note", name);
+}
