@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Map: a branch's Export opens the export dialog headed "Export this branch", not "Export this board" (L267).
+- Map: the tidy measures every topic in one walk when its size cache is cold, not one query and layout read per topic (3 to 6 ms of a 41-topic Tab at 6x, now about 2.5).
 - Map: a topic builds only the parts it shows; the task box, markers, icon, picture, number, progress, note and link marks, callout, labels, count, chevron and resize grip are made the first time a topic has something for them (a plain topic is 8 elements, was 25; the new topic's first style recalculation 9 elements, was 42; Tab to editable at 390 and 6x about 68 to 54 ms).
 - Map: Tab writes the new topic's selection and editing classes before its editable attribute, so the render restyles once, not twice (Tab-to-editable median at 390 and 6x about 67 to 60 ms).
 - Board stack order: an item still waiting for its id ties as the newest, so a new map topic no longer moves every sibling's z-index up by one and back on the server's answer (41 writes per Tab, now 0).
