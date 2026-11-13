@@ -15,7 +15,7 @@
  "src/tessellate/ai/entities.py::undo_merge": 21,
  "src/tessellate/ai/facts.py::run": 17,
  "src/tessellate/ai/grounding.py::SentenceGrounder.__init__": 22,
- "src/tessellate/ai/help_chat.py::_matching_topics": 26,
+ "src/tessellate/ai/help_chat.py::_matching_topics": 25,
  "src/tessellate/ai/inbox.py::type_candidates": 21,
  "src/tessellate/ai/janitor.py::_knn_match": 20,
  "src/tessellate/ai/lexical_filing.py::_tally": 25,

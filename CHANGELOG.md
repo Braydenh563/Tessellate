@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Chat row L101: the model's prompt now says why each note was shown and which other shown notes it links to, by number and with the person's reason ("(why shown: Has the word “skye”) (linked to note 3: same trip)"), the frame the composer already said (`librarian._shown_hint`).
+- CI fix: the tools-off line names Settings, Tools it can use; a phrasing spec that passes alone loses its xfail marker; the validate cases follow the L-chat-21 fallback.
+- Guide row L-chat-38: with no model the Guide answers any question in a line or two: "are you an AI?", sums ("2 + 2 is 4."), deleting a note, disk space and the search keys answer first, and the world's questions (weather, jokes, "how do I cook rice?") get one line saying they are outside the app, with no menu of unrelated topics (`ai/guide_outside.py`, 36 pinned questions).
 - CI fix: the companion catalogue lists `writing_stretch` (L-chat-7), and ruff E741 in `tests/test_model_sees_links_l101.py`.
 - Ask: a what-do-my-notes-say overview reads every record the search kept by meaning; the dated story tells a 'This note' line by its title and the person's present line as noted; a compare asked again varies its lead; an opener names only the first note (L-chat-37, L-chat-39).
 - Chat rows L-chat-10, L186, L187, L189, L204, L205: a quote never skips a sentence across notes; plans with need or should read as a plan; retrieval verbs are not missing terms; multi-line notes read as sentences in a day list; a one-word note is said once; a compare opens on its counts.

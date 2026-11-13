@@ -167,14 +167,50 @@ ADVICE: tuple[Advice, ...] = (
 )
 
 
+#: **Plain questions whose topic does not lead with the answer** (L-chat-38):
+#: "how do I delete a note?" got Undo's opening line, "how much space does it
+#: use?" the price, "what's the shortcut for search?" the skip link. Each
+#: answer is sentences its topics state, tried after the advice above.
+FACTS: tuple[Advice, ...] = (
+    Advice(
+        "delete-note",
+        _rx(r"^\W*(?:how (?:do|can|would) (?:i|you|we)|how to|can i|where do i) (?:delete|remove|bin|get rid of|throw away|trash) "
+            r"(?:a |an |the |this |that |my |one )?notes?\b"),
+        "Choose Delete in the note's own menu: it goes to the bin, not gone for good. Undo in the toast or "
+        "Restore in the bin brings it back, and the bin clears itself after the time set in Settings, General, Bin.",
+        ("delete-data", "undo-bin"),
+        plain=True,
+    ),
+    Advice(
+        "disk-space",
+        _rx(r"\bhow much (?:disk |storage |hard drive |drive )?(?:space|room|storage|disk)\b|\b(?:disk|storage|drive) space\b"
+            r"|\bhow (?:big|large) (?:is|are) (?:my |the )?(?:notebook|notes|data(?: folder)?)\b"),
+        "Settings, About, Health shows the data folder's size, and its Files on disk bar splits it into the "
+        "notebook, attached files, pictures, backups and optional features. While the app is open, the built-in "
+        "search engine uses about 300 MB of memory.",
+        ("health", "performance"),
+        plain=True,
+    ),
+    Advice(
+        "search-keys",
+        _rx(r"\b(?:shortcut|hotkey|key(?:board)? (?:shortcut|combo)|keys?)\b.{0,30}\b(?:search|find)\w*"
+            r"|\b(?:search|find)\w*\b.{0,20}\b(?:shortcut|hotkey)s?\b"),
+        "Ctrl+P opens Find anything, which searches notes, files, documents, chats and actions; Ctrl+F finds on "
+        "the page you are on, and / jumps to search (the chat box on Chat). On a Mac, Cmd works in place of Ctrl.",
+        ("find-anything", "shortcuts"),
+        plain=True,
+    ),
+)
+
+
 def match(question: str) -> Advice | None:
-    """The entry an advice question asks for; None for a how-to or anything else."""
+    """The entry an advice or plain question asks for; None for anything else."""
     q = " ".join((question or "").split())
     advising = bool(_ADVICE.search(q))
     for advice in ADVICE:
         if (advising or advice.plain) and advice.about.search(q):
             return advice
-    return None
+    return next((fact for fact in FACTS if fact.about.search(q)), None)
 
 
 def reply(question: str, by_id: dict[str, dict]) -> dict | None:

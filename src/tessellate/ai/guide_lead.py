@@ -227,6 +227,7 @@ _COST = re.compile(
     r"|\b(?:price|pricing|subscription|free of charge)\b|\bcosts?\b",
     re.I,
 )
+_SIZE = re.compile(r"\b(?:space|room|disk|storage|memory|ram|megabytes?|gigabytes?|mb|gb)\b", re.I)
 _PLATFORM = re.compile(r"\b(?P<p>android|ios|iphone|ipad)\b", re.I)
 _APP_FOR = re.compile(r"\b(?:app|apps|available|download|install|version)\b", re.I)
 
@@ -237,7 +238,8 @@ def yes_no(question: str) -> tuple[str, list[str]] | None:
     text = " ".join((question or "").split())
     if _NEEDS_MODEL.search(text):
         return "No. Everything except Chat, drafting and skills works without one, and Notes, Ask answers from your notes.", ["models", "troubleshooting"]
-    if _COST.search(text):
+    #: "how much space does it use" asks about the disk, not the price (L-chat-38).
+    if _COST.search(text) and not _SIZE.search(text):
         return (
             "There is nothing to buy in the app: Tessellate is AGPL-3.0 open source (Settings, Help, Credits). "
             "A hosted model you connect is billed by its own provider.",

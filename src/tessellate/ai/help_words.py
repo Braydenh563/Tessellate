@@ -69,6 +69,13 @@ class WordBand:
         return best
 
 
+def typo_of(word: str, keyword: str, english: frozenset[str] | set[str], least: int) -> bool:
+    """`word` read as a typo of `keyword`. A real word is not a swapped letter
+    ("mount" is not "count", L-chat-38); one letter more or less still reads
+    ("phone" for "iphone")."""
+    return len(word) >= least and not (word in english and len(word) == len(keyword)) and one_edit_apart(word, keyword)
+
+
 def one_edit_apart(a: str, b: str) -> bool:
     """True when `a` becomes `b` by one insertion, deletion, substitution or
     swap of two neighbours: the typos a person makes in a help box ("remnder",

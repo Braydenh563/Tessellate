@@ -56,6 +56,7 @@ from tessellate.ai.provider import ProviderError
 from tessellate.ai import act_registry, guide_lead, help_words, presets, variants
 from tessellate.ai.guide_lead import help_sentences  # the sentence cutter, a leaf with the lead rules (G5)
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
+from tessellate.ai import guide_outside
 from tessellate.ai.help_leads import TOPIC_LEADS
 from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
 from typing import TYPE_CHECKING
@@ -473,6 +474,7 @@ def _matching_topics(question: str) -> list[dict]:
     words = [w for w in _WORD.findall(lowered) if w not in _STOP]
     lowered, words = _forgiven(lowered, words)
     total = len(HELP_TOPICS)
+    english = variants.english()
     scores: dict[str, float] = {}
     for topic in HELP_TOPICS:
         score = 0.0
@@ -483,7 +485,7 @@ def _matching_topics(question: str) -> list[dict]:
             elif (
                 " " not in keyword
                 and len(keyword) >= _TYPO_MIN
-                and any(len(w) >= _TYPO_MIN - 1 and help_words.one_edit_apart(w, keyword) for w in words)
+                and any(help_words.typo_of(w, keyword, english, _TYPO_MIN - 1) for w in words)
             ):
                 score += 0.8 * rarity
         if (score := max(score, _WORD_BAND.score(words, lowered, topic["id"]))) > 0:
@@ -635,12 +637,6 @@ def _about_the_guide(question: str) -> list[dict]:
 
 #: A question that points at the screen ("how does this work", "what is here").
 _DEICTIC = re.compile(r"\b(?:this|here|these|that one|on screen|this page|this tab)\b", re.I)
-#: How-to forms that are about the app whatever else they name.
-_HOW_TO_APP = re.compile(r"^\s*(?:how (?:do|can|should|would|to)|where (?:do|can|is|are)|can i|is there a way|what can i do|what does|why (?:is|does|can't|won't))\b|^\s*help(?: me)?[\s?.!]*$", re.I)
-
-
-#: A request for writing or a performance, never a question about the app.
-_CREATIVE = re.compile(r"^\s*(?:please\s+)?(?:tell me (?:a|an|some) \w+|write|compose|draft|sing|recite|translate|give me (?:a|an) \w+|make me (?:a|an) \w+)\b", re.I)
 
 
 def _outside_the_app(question: str) -> bool:
@@ -653,9 +649,9 @@ def _outside_the_app(question: str) -> bool:
 
     if _DEICTIC.search(question):
         return False
-    if _off_topic(question) or _CREATIVE.match(question):
+    if _off_topic(question) or guide_outside.CREATIVE.match(question) or guide_outside.world_how_to(question):
         return True
-    return bool(personal.general(question) or (personal.about_own_record(question) and not _HOW_TO_APP.match(question)))
+    return bool(personal.general(question) or (personal.about_own_record(question) and not guide_outside.HOW_TO_APP.match(question)))
 
 
 _INJECTION = re.compile(r"\b(?:ignore|disregard|forget) (?:all |any |your |the )?(?:previous|prior|above|earlier|system) (?:instructions|rules|prompt)\b|\b(?:print|show|reveal|repeat) (?:me )?(?:your|the) (?:system )?prompt\b", re.I)
@@ -922,6 +918,8 @@ def social_reply(question: str) -> dict | None:
         return {"content": reply, "badges": [], "sources": [], "social": True}
     if _WHO.match(text):
         return {"content": WHO_REPLY, "badges": [], "sources": [], "social": True}
+    if guide_outside.WHAT_ARE_YOU.match(text):
+        return {"content": guide_outside.WHAT_ARE_YOU_REPLY, "badges": [], "sources": [], "social": True}
     if _CAPABLE.match(text):
         return {"content": CAPABLE_REPLY, "badges": [], "sources": [], "greeting": True}
     if _MISSED.match(text):
@@ -1117,9 +1115,11 @@ def _early_reply(question: str, tab: str | None) -> dict | None:
 
 def _unplaced(question: str, context: str | None, *, missed: bool) -> dict:
     """A question this could not place is still asked *from somewhere*, and
-    that somewhere describes itself (its help text, when there is any)."""
+    that somewhere describes itself (its help text, when there is any); the world's are outside the app (L-chat-38)."""
+    if (outside := _outside_the_app(question)) and not missed and guide_outside.about_the_world(question):
+        return {"content": guide_outside.outside_reply(question), "badges": [], "sources": [], "social": True}
     on_screen = (context or "").strip()[:MAX_CONTEXT_CHARS]
-    if on_screen and not missed and not _outside_the_app(question):
+    if on_screen and not missed and not outside:
         return {"content": on_screen, "badges": [], "sources": []}
     return {"content": _nothing_matched(question), "badges": [], "sources": []}
 
@@ -1144,7 +1144,7 @@ def offline_answer(
     if (fixed := composed_only(question)) is not None:
         return fixed
     question, said = _read_as(question)
-    if (fixed := composed_only(question) or _early_reply(question, tab)) is not None:
+    if (fixed := composed_only(question) or _early_reply(question, tab) or guide_outside.summed(question)) is not None:
         return fixed
     #: Understood by its words, so "Taking that as" is not said.
     said = "" if guide_intent.read(question) else said

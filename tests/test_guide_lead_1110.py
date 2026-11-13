@@ -82,7 +82,9 @@ def test_a_how_to_about_the_app_is_not_handed_over(question):
     assert not say(question)["content"].startswith("That is one for your notebook")
 
 
-@pytest.mark.parametrize("question", ["what's the weather", "asdfgh", "xyzzy plugh frobnicate"])
+#: "what's the weather" moved to the outside-the-app line (L-chat-38), which
+#: `tests/test_guide_offline_l38.py` holds to the same two rules.
+@pytest.mark.parametrize("question", ["asdfgh", "xyzzy plugh frobnicate"])
 def test_a_miss_never_blames_the_model(question):
     content = say(question)["content"]
     assert content.startswith("I don't have help on that.")
