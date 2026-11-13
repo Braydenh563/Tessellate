@@ -31,6 +31,21 @@ const { openFresh, checker } = require("./cdlib.js");
     const caret = await page.evaluate(() => { const c = document.querySelector("#wb-shape-toggle .wb-shape-caret").getBoundingClientRect(); const t = document.getElementById("wb-shape-toggle").getBoundingClientRect(); return { caret: [c.width, c.height], toggle: [t.width, t.height] }; });
     check(`${width}: a mouse keeps the 10px caret`, caret.caret[0] === 10 && caret.caret[1] === 10, caret);
 
+    // L265: Find and Overview are the View menu's switches only; the top bar has no copy.
+    const dup = await page.evaluate(() => ({ search: Boolean(document.getElementById("wb-search-toggle")), nav: Boolean(document.getElementById("wb-navigator-toggle")), topbarIcons: document.querySelectorAll(".wb-topbar-right > button.icon-button").length }));
+    check(`${width}: the top bar has no Find or Overview icon`, !dup.search && !dup.nav, dup);
+    const sw = await page.evaluate(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      const shown = (id) => !document.getElementById(id).classList.contains("hidden");
+      const out = {};
+      document.getElementById("wb-panel-search").click(); await wait(300); out.searchOn = shown("wb-search-bar");
+      document.getElementById("wb-panel-search").click(); await wait(300); out.searchOff = !shown("wb-search-bar");
+      document.getElementById("wb-panel-overview").click(); await wait(300); out.navOn = shown("wb-navigator");
+      document.getElementById("wb-panel-overview").click(); await wait(300); out.navOff = !shown("wb-navigator");
+      return out;
+    });
+    check(`${width}: the View switches open and close Find and Overview`, sw.searchOn && sw.searchOff && sw.navOn && sw.navOff, sw);
+
     const titles = await page.evaluate(() => ({ table: wbResizeHandleTitle("table"), diagram: wbResizeHandleTitle("diagram"), text: wbResizeHandleTitle("text") }));
     check(`${width}: a table's and a diagram's grip say what the double-click fits`, !/text/.test(titles.table) && !/text/.test(titles.diagram) && /text/.test(titles.text), titles);
 

@@ -7695,13 +7695,6 @@ button.connection-row:is(:hover, :focus-visible) {
   display: none;
 }
 @media (max-width: 819.98px) {
-  /* Search and Overview are also switches in the View menu; the two icons
-     and their divider are what pushed the bar onto a third row. */
-  .wb-topbar #wb-search-toggle,
-  .wb-topbar #wb-navigator-toggle,
-  .wb-topbar #wb-navigator-toggle + .wb-topbar-divider {
-    display: none;
-  }
   /* **Two more leave on a phone, and neither is lost.** Measured at 320 with
      the 44px touch floor on: the right half needs 5 menu toggles, a divider
      and the Library button at 44px each in 260px of content box, which is

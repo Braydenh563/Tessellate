@@ -114,8 +114,8 @@
       box.checked = Boolean(snap.props);
       box.dispatchEvent(new Event("change"));
     }
-    if (Boolean(snap.overview) !== open("wb-navigator")) document.getElementById("wb-navigator-toggle")?.click();
-    if (Boolean(snap.search) !== open("wb-search-bar")) document.getElementById("wb-search-toggle")?.click();
+    if (Boolean(snap.overview) !== open("wb-navigator")) wbToggleNavigator();
+    if (Boolean(snap.search) !== open("wb-search-bar")) (open("wb-search-bar") ? wbCloseBoardSearch() : wbOpenBoardSearch());
     if (Boolean(snap.format) !== open("wb-format")) wbFormatToggle();
     if (snap.side) wbOpenSidebar(snap.side, { focus: false });
     else if (open("wb-sidebar-panel")) wbCloseSidebar();

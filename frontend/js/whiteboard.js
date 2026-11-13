@@ -3786,13 +3786,11 @@ function wbNavigatorDragEnd(event) {
 
 function wbToggleNavigator(force) {
   const panel = document.getElementById("wb-navigator");
-  const button = document.getElementById("wb-navigator-toggle");
   if (!panel) return;
   const open = force === undefined ? panel.classList.contains("hidden") : force;
   // Shift+N mid-drag: the drag ends with the panel, not with a later pointer.
   if (!open && wbNavState.drag) wbNavigatorDragEnd();
   panel.classList.toggle("hidden", !open);
-  if (button) button.setAttribute("aria-expanded", open ? "true" : "false");
   try {
     prefs.set("wb-navigator-open", open ? "1" : "0");
   } catch {
@@ -15625,7 +15623,6 @@ async function initWhiteboard() {
   document.getElementById("wb-fullscreen")?.addEventListener("click", () => toggleWhiteboardFullscreen());
 
   // --- Navigator ----------------------------------------------------------
-  document.getElementById("wb-navigator-toggle")?.addEventListener("click", () => wbToggleNavigator());
   document.getElementById("wb-navigator-close")?.addEventListener("click", () => wbToggleNavigator(false));
   document.getElementById("wb-navigator-fit")?.addEventListener("click", () => wbZoomToFit());
   const navMap = document.getElementById("wb-navigator-map");
@@ -15647,11 +15644,6 @@ async function initWhiteboard() {
   }
 
   // --- Find a card on this board ------------------------------------------
-  document.getElementById("wb-search-toggle")?.addEventListener("click", () => {
-    const bar = document.getElementById("wb-search-bar");
-    if (bar && !bar.classList.contains("hidden")) wbCloseBoardSearch();
-    else wbOpenBoardSearch();
-  });
   document.getElementById("wb-search-close")?.addEventListener("click", wbCloseBoardSearch);
   document.getElementById("wb-search-prev")?.addEventListener("click", () => wbBoardSearchGo(-1));
   document.getElementById("wb-search-next")?.addEventListener("click", () => wbBoardSearchGo(1));
@@ -17471,9 +17463,10 @@ async function initWhiteboard() {
     applyPropsPref(propsPref.checked);
   });
   const panelSwitches = [
-    ["wb-panel-overview", "wb-navigator", "wb-navigator-toggle"],
-    ["wb-panel-library", "wb-sidebar-panel", "wb-add-note"],
-    ["wb-panel-search", "wb-search-bar", "wb-search-toggle"],
+    ["wb-panel-overview", "wb-navigator", () => wbToggleNavigator()],
+    ["wb-panel-library", "wb-sidebar-panel", () => document.getElementById("wb-add-note")?.click()],
+    //: The View menu's switch is the only control for Find now (the top bar's duplicate icon went, L265).
+    ["wb-panel-search", "wb-search-bar", () => (document.getElementById("wb-search-bar")?.classList.contains("hidden") ? wbOpenBoardSearch() : wbCloseBoardSearch())],
   ];
   function syncPanelSwitches() {
     for (const [switchId, panelId] of panelSwitches) {
@@ -17482,9 +17475,9 @@ async function initWhiteboard() {
       if (sw && panel) sw.checked = !panel.classList.contains("hidden");
     }
   }
-  for (const [switchId, , toggleId] of panelSwitches) {
+  for (const [switchId, , toggle] of panelSwitches) {
     document.getElementById(switchId)?.addEventListener("change", () => {
-      document.getElementById(toggleId)?.click();
+      toggle();
       syncPanelSwitches();
     });
   }

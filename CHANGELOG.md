@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: the top bar's Find and Overview icons are gone; the View menu's Find and Overview switches are the one control for each (L265).
 - Whiteboard: the Layers tab shows a child of a folded frame as folded (not hidden) and its eye says to expand the frame instead of writing a hidden flag (L-whiteboard-26); on a phone the shape list's caret is a 44 by 44 target (L259); a table's or diagram's resize grip no longer says it fits the text (L261); the rail's hidden section labels no longer overflow their boxes (L264).
 - Whiteboard: a smoothed pen stroke keeps each point's real pressure, so changing its width rebuilds it with that pressure and not a simulated one; strokes saved before still load (L-whiteboard-32).
 - Whiteboard: Replace with a shape draws a drawn shape's outline fresh for the box (corners and curves keep their size) instead of stretching the tile (L-whiteboard-28).
