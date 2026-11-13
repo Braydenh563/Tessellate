@@ -346,7 +346,16 @@ async function binNoteWithUndo(entry) {
   const rows = list ? entryListItems(list) : [];
   const at = rows.findIndex((row) => row.dataset.id === String(entry.id));
   const heirId = (rows[at + 1] || rows[at - 1])?.dataset.id;
+  //: **A row that goes fades out first** (L462, the removal half of ledger
+  //: 1538): the list redraws whole, so the row it is leaving fades while the
+  //: delete is sent, and the redraw takes it away. `--ui-slow` is 0s under
+  //: reduced motion, so there nothing plays. Script, not a class: the boot
+  //: sheet is at its cap.
+  const leaving = rows[at];
+  const leaveMs = leaving ? parseFloat(getComputedStyle(leaving).getPropertyValue("--ui-slow")) * 1000 || 0 : 0;
+  const faded = leaveMs ? leaving.animate([{ opacity: 1 }, { opacity: 0 }], { duration: leaveMs, easing: "ease-in", fill: "forwards" }).finished.catch(() => {}) : null;
   await api(`/entries/${entry.id}`, { method: "DELETE" });
+  await faded;
   await refreshEntries([entry.id]);
   const held = document.activeElement;
   if (at >= 0 && (!held || held === document.body || !held.isConnected)) {

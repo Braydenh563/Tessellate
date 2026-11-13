@@ -442,10 +442,11 @@ the edge it lives on, and nothing moves to decorate.
 - **A list settles in where its skeleton was**: `clearSkeletons`
   (notes-list.js), which every skeleton's owner calls, gives the list
   `.ui-settle` for that one swap; its rows fade up a step, `--ui-step`
-  (30ms) apart for the first eight and together after that. **Not added:**
-  a row fading in or out later. The lists re-render whole on a filter
-  keystroke, so CSS cannot tell a new row from a redrawn one, and every row
-  fading on every keystroke is the decoration this section rules out.
+  (30ms) apart for the first eight and together after that. **Later, by
+  id:** the Notes list remembers which ids were on screen, so a note that
+  arrives after the first render fades in (`.row-enter`, ledger 1538) and
+  one moved to the bin fades out before the redraw (`binNoteWithUndo`, by script, L462);
+  a filter keystroke fades nothing, since every row it shows was there.
 - **A toast** is one card in one stack (`toastStack`, status.js): the
   newest nearest the corner, the cards `--space-2` apart, positions measured,
   changed and played back by `translate` over `--ui-base`; an arrival rides

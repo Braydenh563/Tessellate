@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- A note moved to the bin from the Notes list fades out before the list redraws (L462).
+
 - Dashboard text over the Wander and Drift backgrounds measured: all of it meets AA in both themes (L460).
 
 - Atlas at full size draws the feminine look's hair behind her arms, so the arm held out is no longer covered by her locks (L461).
