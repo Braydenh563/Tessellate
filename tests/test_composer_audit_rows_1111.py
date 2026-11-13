@@ -37,3 +37,17 @@ def test_l186_a_need_or_should_is_said_as_a_plan_not_a_quoted_fragment(content, 
     text = _text(content)
     assert f"no later note picks up {said}. It may still be open." in text, text
     assert "this plan:" not in text
+
+
+@pytest.mark.parametrize("question", ["dig out the hotel notes", "display gym", "fetch dentist", "pull out the dentist note"])
+def test_l187_a_retrieval_verb_is_not_named_as_missing(client, session, monkeypatch, question):
+    """L187 (Z16): "fetch", "display", "dig out" order the answer; no note is "missing" them."""
+    import tests._seed_1031c as seed_c
+    from tessellate.entry import manager
+
+    for content in ("# Gym\n\nGym membership is £35 a month.", "# Hotel\n\nBooked the hotel in Lisbon for 3 nights.", "# Dentist\n\nDentist check-up on 4 November at 9am."):
+        entry = manager.create_entry(session, content)
+        entry.created_at = entry.updated_at = seed_c.NOW
+    session.commit()
+    said, _ = seed_c.asker(client, monkeypatch)(question)
+    assert "mention" not in said and "nothing in these notes" not in said and "find anything about" not in said and "say nothing about" not in said, said
