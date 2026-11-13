@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 31 | 4 | 0 | 19 | 131 |
+| ui-modernisation | 96 | 30 | 4 | 0 | 19 | 130 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 543 | 154 | 3 | 184 | 1250 |
+| all | 553 | 542 | 154 | 3 | 184 | 1249 |
 
 ## graph
 
@@ -450,7 +450,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## ui-modernisation
 
 - [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
-- [ ] **L454** `ui-modernisation` open, M: Make the eight dialogs bottom sheets at 390 (Brief 59). From OPEN.md:2918. Evidence: Brief 59; no bottom-sheet rule found for those dialogs in 10-responsive.css
 - [ ] **L455** `ui-modernisation` open, M: Brief 56 measures: 1024/820, dark counts, chat, doc AI panel. From OPEN.md:2920. Evidence: Measures not taken; sweep work
 - [ ] **L456** `ui-modernisation` open, M: Density decision 7: chat bubble metadata and library cards. From OPEN.md:3805. Evidence: Only note cards changed
 - [ ] **L457** `ui-modernisation` open, M: Give icon toggles (map toggles, ask-time-travel, ocr-zoom-fit) a glyph swap, not just pressed fill. From OPEN.md:3899. Evidence: wb-map-core still toggles a class only (whiteboard-map.js:2607, 7569); ask-time-travel and ocr-zoom-fit not given glyph swaps. Sweep also saw only 11 toggles with no content.
