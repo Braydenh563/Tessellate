@@ -81,3 +81,17 @@ def test_ready_to_merge_only_with_no_open_rows():
     named = [p for p in ledger.PLANS if f"`{p}`" in line] or list(ledger.PLANS)
     left = [rid for rid, plan, status in ledger.rows(TEXT) if plan in named and status in ("open", "partly")]
     assert not left, f"Now says ready to merge, but LEDGER still has {len(left)} open rows ({left[:5]})"
+
+
+def test_add_never_reuses_an_id_already_closed_into_history(tmp_path, monkeypatch):
+    """`add` once reused L-documents-29, whose row had moved to HISTORY."""
+    import argparse
+    import ledger as tool
+
+    led, hist = tmp_path / "LEDGER.md", tmp_path / "HISTORY.md"
+    led.write_text("## documents\n- [ ] **L-documents-3** `documents` open, S: a. From x.\n", encoding="utf-8")
+    hist.write_text("- [x] **L-documents-9** `documents` open, S: b. From x.\n", encoding="utf-8")
+    monkeypatch.setattr(tool, "LEDGER", led)
+    monkeypatch.setattr(tool, "HISTORY", hist)
+    a = argparse.Namespace(plan="documents", status="open", size="S", src="y", evidence="", title="c")
+    assert tool.add(a) == "L-documents-10"

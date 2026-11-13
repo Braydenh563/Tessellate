@@ -53,7 +53,9 @@ def recount(text: str) -> str:
 
 def add(a: argparse.Namespace) -> str:
     text = LEDGER.read_text(encoding="utf-8")
-    taken = [int(m.group(1)) for m in re.finditer(rf"\*\*L-{re.escape(a.plan)}-(\d+)\*\*", text)]
+    # Closed rows move to HISTORY, so an id taken there is still taken.
+    seen = text + (HISTORY.read_text(encoding="utf-8") if HISTORY.exists() else "")
+    taken = [int(m.group(1)) for m in re.finditer(rf"\*\*L-{re.escape(a.plan)}-(\d+)\*\*", seen)]
     rid = f"L-{a.plan}-{max(taken, default=0) + 1}"
     title = a.title.strip().rstrip(".")
     line = f"- [ ] **{rid}** `{a.plan}` {a.status}, {a.size}: {title}. From {a.src}." + (f" Evidence: {a.evidence}" if a.evidence else "")
