@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 9 | 1 | 0 | 19 | 106 |
+| ui-modernisation | 96 | 8 | 1 | 0 | 20 | 105 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 521 | 151 | 3 | 184 | 1225 |
+| all | 553 | 520 | 151 | 3 | 185 | 1224 |
 
 ## graph
 
@@ -458,7 +458,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-40** `ui-modernisation` open, M: Appearance panel: a visible door on the theme button, peek dimming the strip and body, a shorter default height on tall windows, a committed sweep. From L-ui-modernisation-19. Evidence: Left by L-ui-modernisation-19 (appearance-1435.md): the door is blocked by boot JS TOTAL_CAP (250,450; served total sits within 225 bytes of it), the sweep by the scratchpad file cap; peek dimming and the 788px height are conditional on a reading that the panel reads poorly, not yet measured.
 - [ ] **L-ui-modernisation-41** `ui-modernisation` open, M: Draw the remaining desk frames: lean, back_float, chair prop; each needs a spec in render_desk_frames.js, an EXTRA_FRAMES entry and an act that draws it. From L-ui-modernisation-10. Evidence: frontend/companion-catalogue.json: act.chair, pos.lean, pos.back_float, lower.drift, move.afield still desk missing; frames hang_sloth and hang_feet built, same route (scripts/render_desk_frames.js spec, sprites.EXTRA_FRAMES, an engine act)
 - [ ] **L-ui-modernisation-42** `ui-modernisation` open, S: Draw the pot in the tail curl and a card box for the desk card nap. From L-ui-modernisation-10. Evidence: tail curl: the card nap and the pot in the tail curl need a prop drawn into the frame (card0 and card1 come from scripts/render_card_frames.py, Pillow)
-- [ ] **L-ui-modernisation-44** `ui-modernisation` open, S: Desk companion: a snooze countdown and the X11 resize cursor. From L-ui-modernisation-22. Evidence: Split from L-ui-modernisation-22. Hide for 10 minutes hides the figure and the card, and the tray menu has no companion rows, so nothing on screen can carry a countdown yet: needs a place decided (tray item or the Appearance row). The diagonal resize cursor over the size handle is built on Windows (runner.py _hit_cursor, host.py _cursor); x11.py sets no cursor, unverifiable without an X11 desktop.
 
 ## timeline
 
@@ -913,6 +912,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
 - [ ] **L-ui-modernisation-32** `ui-modernisation` blocked-hardware, S: Check Tidy's 'Tags Atlas added' review against tags a real model wrote. From L392. Evidence: No GGUF or llama-server in the cloud container (scratchpad/llama-dev.sh needs a fetched model); the review is covered by fake-transport tests only
 - [ ] **L-ui-modernisation-34** `ui-modernisation` blocked-hardware, S: Check unslop findings 5 to 12 on a real phone in dark. From L431. Evidence: Emulated 390 measured clean 2026-11-13; no phone in the container
+- [ ] **L-ui-modernisation-45** `ui-modernisation` blocked-hardware, S: Desk companion: the diagonal resize cursor over the size handle on X11. From L-ui-modernisation-44. Evidence: Split from L-ui-modernisation-44. Windows has it (runner.py _hit_cursor, host.py _cursor); x11.py sets no cursor, and nothing can verify one without an X11 desktop.
 
 ## Plan session briefs
 
