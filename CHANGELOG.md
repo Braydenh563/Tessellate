@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the selection bar's per-key element lookup no longer walks unbuilt surfaces (about 2 ms a key at 4x CPU in the profile; wall time within noise; L-documents-26 stays open with the measured breakdown).
 - Documents, Run: a test covers input() asked mid-run (the answer reaches the blocked worker, Escape raises EOFError, the Input box note where SharedArrayBuffer is missing); L-documents-30 and -33 were already built.
 
 - Documents, CSV: a Grid button turns a .csv or .tsv file into a table of cells you edit in place (Tab, Enter and the arrow keys move; add or delete a row or column); each edit is one change to the text, quoted as needed, so the editor's undo and save see it (L328, D42).
