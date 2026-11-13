@@ -831,7 +831,6 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Font size | yes (`wb-fmt-size`) | `fontSize` menu (Menus.js 227) | done | none |
 | Bold, italic | yes | `fontStyle` bits, Ctrl+B, Ctrl+I | done | none |
 | Underline, strikethrough | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `fontStyle` bits 4 and 8, Ctrl+U | `label_underline`, `label_strike`, drawn as `text-decoration` on the SVG text | S |
-| Subscript, superscript | no | `subscript`, `superscript` (Actions.js 1911, 1918) | needs rich text inside shapes; text boxes already hold markdown | M |
 | Horizontal align (left, centre, right) | yes (`wb-fmt-align`) | `STYLE_ALIGN` | done | none |
 | Vertical align (top, middle, bottom) | yes, 2026-10-10 (HISTORY) | `STYLE_VERTICAL_ALIGN` | `label_valign`; the SVG label block is positioned by it; Brief 36 carries it | S |
 | Font colour | yes (`wb-fmt-ink`) | `fontColor...` (Actions.js 1525) | done | none |

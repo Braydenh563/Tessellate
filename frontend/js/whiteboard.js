@@ -10995,6 +10995,7 @@ function wbPaintTextContent(contentEl, d) {
     contentEl.replaceChildren();
     contentEl.classList.add("wb-text-md");
     renderMarkdown(contentEl, raw);
+    wbFmtState.textMore?.paintScripts(contentEl); // H~2~O and x^2^, board only (whiteboard-text-more.js)
     return;
   }
   contentEl.classList.remove("wb-text-md");
@@ -13659,7 +13660,7 @@ function wbSvgText(lines, x, y, { fontSize = 13, fill = "#1f2430", lineHeight, f
 function wbSvgRunLines(text, { x, y, maxWidth, maxLines, fontSize, fill, lineHeight, charWidth }) {
   const words = [];
   let word = null;
-  for (const c of wbRunChars(text)) {
+  for (const c of wbFmtState.textMore?.markScripts(wbRunChars(text)) ?? wbRunChars(text)) {
     if (/\s/.test(c.ch)) {
       word = null;
     } else {
@@ -13669,7 +13670,7 @@ function wbSvgRunLines(text, { x, y, maxWidth, maxLines, fontSize, fill, lineHei
       else word.push({ text: c.ch, attrs: c.attrs });
     }
   }
-  const wide = (piece) => piece.text.length * charWidth * ((piece.attrs.size || fontSize) / fontSize);
+  const wide = (piece) => piece.text.length * charWidth * ((piece.attrs.size || fontSize) / fontSize) * (piece.attrs.script ? 0.7 : 1);
   const lines = [];
   let line = [];
   let used = 0;
@@ -13696,14 +13697,15 @@ function wbSvgRunLines(text, { x, y, maxWidth, maxLines, fontSize, fill, lineHei
     words.forEach((pieces, index) => {
       if (index) at += charWidth;
       for (const piece of pieces) {
-        const size = piece.attrs.size || fontSize;
+        const size = (piece.attrs.size || fontSize) * (piece.attrs.script ? 0.7 : 1);
+        const rise = piece.attrs.script === "sup" ? -fontSize * 0.35 : piece.attrs.script === "sub" ? fontSize * 0.2 : 0;
         const w = wide(piece);
         if (piece.attrs.hl) {
           rects.push(`<rect x="${at}" y="${top - size * 0.85}" width="${w}" height="${size * 1.15}" rx="2" fill="${WB_RUN_SWATCHES[piece.attrs.hl]}" fill-opacity="0.25"/>`);
         }
         const face = piece.attrs.font ? ` font-family="${wbSvgEscape(MD_RUN_FONTS[piece.attrs.font])}"` : "";
         const ink = piece.attrs.ink ? WB_RUN_INK[piece.attrs.ink] : fill;
-        spans.push(`<tspan x="${at}" y="${top}" font-size="${size}"${face} fill="${ink}">${wbSvgEscape(piece.text)}</tspan>`);
+        spans.push(`<tspan x="${at}" y="${top + rise}" font-size="${size}"${face} fill="${ink}">${wbSvgEscape(piece.text)}</tspan>`);
         at += w;
       }
     });
@@ -14366,7 +14368,7 @@ function wbBuildExportSvg(scope, { transparent = false, pad = 0 } = {}) {
       parts.push(paper.fold);
       const inkFill = obj.data.color || paper.ink || "#1f2430";
       parts.push(
-        new RegExp(MD_RUN.source).test(obj.data.content || "")
+        new RegExp(MD_RUN.source).test(obj.data.content || "") || (obj.data.md && wbFmtState.textMore?.hasScripts(obj.data.content))
           ? wbSvgRunLines(obj.data.content, {
               x: pad, y: fontSize + pad - 2, maxWidth: obj.width - 2 * pad, maxLines: 20,
               fontSize, fill: inkFill, lineHeight: fontSize * 1.25, charWidth: fontSize * 0.55,
@@ -20660,6 +20662,7 @@ function wbLayoutShapeLabel(groupEl) {
         // A blank line keeps its height: an empty tspan collapses to nothing.
         span.textContent = line || " ";
         span.setAttribute("dy", i === 0 ? "0" : String(lineHeight));
+        wbFmtState.textMore?.scriptSpans(span, fontSize);
         return span;
       })
     );

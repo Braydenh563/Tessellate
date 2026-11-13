@@ -6,6 +6,8 @@
   const NS = "http://www.w3.org/2000/svg";
   const MIN_STEP = 3; // board units: a double-click's two presses are one corner
   const poly = { on: false, pts: [], el: null, cursor: null };
+  // The pen width lives in a closure of whiteboard.js, so it is read from its slider.
+  const penWidth = () => Number(document.getElementById("wb-stroke-width")?.value) || 3;
 
   //: Pure (node-tested): the points as one closed `d`, a corner dropped when it sits on the one before it.
   function polygonD(points) {
@@ -64,7 +66,7 @@
     poly.el = document.createElementNS(NS, "path");
     poly.el.setAttribute("fill", "none");
     poly.el.setAttribute("stroke", window.currentStrokeColor || "#4f8cff");
-    poly.el.setAttribute("stroke-width", String(WB_STROKE_WIDTH));
+    poly.el.setAttribute("stroke-width", String(penWidth()));
     poly.el.setAttribute("stroke-dasharray", "6 4");
     poly.el.setAttribute("pointer-events", "none");
     group.appendChild(poly.el);
@@ -102,7 +104,7 @@
     const d = polygonD(poly.pts);
     polygonEnd();
     if (!d) { wbAnnounce("A polygon needs three corners."); return null; }
-    const blob = { d, color: window.currentStrokeColor, width: WB_STROKE_WIDTH, shape: "custom" };
+    const blob = { d, color: window.currentStrokeColor, width: penWidth(), shape: "custom" };
     if (window.currentDashStyle && window.currentDashStyle !== "solid") blob.dash = window.currentDashStyle;
     if (window.currentStrokeNone) blob.noStroke = true;
     if (!window.currentFillNone) {

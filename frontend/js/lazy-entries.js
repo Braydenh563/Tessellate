@@ -29,6 +29,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-structure-more.js", //: Tags, folded frames, the frame drop highlight and the find bar's frame scope; joins `wbFmtState` and the field lists (whiteboard-format.js).
     "/js/whiteboard-shape-more.js", //: A table's row ports and the shape's points; names whiteboard.js and whiteboard-format.js at run time only.
     "/js/whiteboard-shapes-js.js", //: Insert, Polygon and the JS-drawn shape classes; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
+    "/js/whiteboard-text-more.js", //: Subscript, superscript and `$...$` maths in board words; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
     "/js/whiteboard-library-more.js", //: The shape picker and Replace with a library shape; names whiteboard.js and whiteboard-library.js at run time only.
     "/js/whiteboard-interchange.js",
     "/js/whiteboard-history.js",

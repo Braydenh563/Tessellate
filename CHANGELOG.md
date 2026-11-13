@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: write H~2~O or x^2^ in a text box that shows its markdown, or in a shape's text, and the 2 is drawn small and lowered or raised (also in SVG and PNG export); code and ~~strikethrough~~ are left alone.
 - Whiteboard: Insert, Polygon draws a new closed shape: click each corner, double-click or press Enter to close it, Backspace takes the last corner back, Escape cancels; one Undo step, and the corners are connection points.
 - Whiteboard: tags on shapes, drawings, connectors and objects (Format, Data tab, or Ctrl+K Edit tags) with a tag list in the find bar that dims everything else; a frame collapses to its title bar and hides what it holds (Collapsed in Format, or Ctrl+K), as one Undo step that export and present respect; the frame under a carried item is outlined; and the find bar has a frame button that limits matches and Replace all to one frame.
 - Whiteboard, review fixes: an SVG picture inside a .drawio file is drawn to a PNG before upload (the upload takes no .svg), and one that still fails is named in the import report; Add connection point works from the keyboard (Enter puts a point after the chosen one, ready to nudge), and Enter on any focused board button is the button's own; a custom paper size is dropped when the paper is not custom; Grid size says it is always in pixels.

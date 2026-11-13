@@ -1963,7 +1963,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-draw-io-keys", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-group-edit", "board-structure", "board-format-options", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-group-edit", "board-structure", "board-text-more", "board-format-options", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2276,6 +2276,20 @@ MORE_TOPICS.extend([
             "as one Undo step, and export and presenting skip what is hidden. A frame outlines while you carry "
             "an item over it. The find bar's frame button limits matches and Replace all to the frame holding "
             "the selection or the middle of the view."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-text-more",
+        "keywords": (
+            "subscript", "superscript", "h2o on a board", "x squared on a board", "small raised text",
+            "maths on a board", "latex on a board", "equation in a shape", "dollar sign maths",
+        ),
+        "body": (
+            "Subscript and superscript on a board, in a text box that shows its markdown and in a shape's text: "
+            "write H~2~O for a lowered 2 and x^2^ for a raised one (no spaces between the marks; a doubled ~~ is still "
+            "strikethrough). While you type you see the marks; when you finish they turn into small raised or lowered "
+            "characters, and an SVG or PNG export keeps them."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2618,6 +2632,7 @@ TOPIC_META.update({
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-group-edit": {"title": "Edit inside a group, and workspaces", "path": "A board's View menu, Panels, Workspaces"},
+    "board-text-more": {"title": "Subscript, superscript and maths on a board", "path": "A text box or a shape's text, type H~2~O or x^2^"},
     "board-structure": {"title": "Tags, collapsing a frame and finding in one frame", "path": "A board's Format panel, Data tab"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},
     "mind-map-structure": {"title": "A structure per branch", "path": "A map topic's menu, Structure"},
