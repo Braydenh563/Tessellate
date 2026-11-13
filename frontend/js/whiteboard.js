@@ -14134,7 +14134,7 @@ function wbExportLook() {
   };
 }
 
-function wbBuildExportSvg(scope, { transparent = false, pad = 0 } = {}) {
+function wbBuildExportSvg(scope, { transparent = false, pad = 0, skipSketches = null } = {}) {
   //: A selection export is the selection plus 24px, not the bar's 40.
   const bounds = scope === "selection" ? wbSelectionBounds(24)
     : scope === "visible" ? wbVisibleBounds() : wbBoardBounds();
@@ -14193,7 +14193,7 @@ function wbBuildExportSvg(scope, { transparent = false, pad = 0 } = {}) {
   // reinterpreted, so a stroke's colour/width/opacity (including the
   // highlighter's own translucency) survives into the export untouched.
   const drawSketch = (sketch) => {
-    if ((onlyKeys && !onlyKeys.has(wbMultiKey("sketch", sketch.id))) || wbSketchHiddenOnBoard(sketch)) return;
+    if ((onlyKeys && !onlyKeys.has(wbMultiKey("sketch", sketch.id))) || wbSketchHiddenOnBoard(sketch) || skipSketches?.has(sketch.id)) return;
     const markup = look.sketch(sketch);
     if (markup) parts.push(markup);
   };
@@ -15049,6 +15049,12 @@ const WB_EXPORT_FORMATS = [
     value: "library", label: "Image library", scopes: ["selection", "visible", "whole"], picture: true,
     note: "Straight into the gallery, with no file saved to disk.",
     run: (scope) => wbSaveToLibrary(scope),
+  },
+  {
+    //: The pen strokes drawn back in order, one frame per step (whiteboard-ink-replay.js; the writer is whiteboard-gif.js).
+    value: "gif", label: "GIF", scopes: ["selection", "whole"], board: true,
+    note: "An animated picture of the pen drawing, stroke by stroke.",
+    run: (scope) => wbFmtState.inkReplay.exportGif(scope),
   },
   {
     //: One file for anyone with a browser: the board's SVG in a page that pans and zooms (whiteboard-export-more.js).

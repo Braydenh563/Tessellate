@@ -2342,7 +2342,10 @@ MORE_TOPICS.extend([
             "pen stroke and choose Edit, Clean up the drawn shape (or find it in the command "
             "palette): a stroke drawn as a line, arrow, rectangle, ellipse, triangle or diamond "
             "becomes that shape in the same colour and width, as one Undo step. A scribble that "
-            "is none of them stays as it is."
+            "is none of them stays as it is. To watch a board being drawn, choose Edit, Replay "
+            "the pen drawing: the pen strokes disappear and come back one by one in the order "
+            "you drew them (with reduced motion on, it skips to the finished board). Export, "
+            "GIF saves the same thing as an animated picture."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

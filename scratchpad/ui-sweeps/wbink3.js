@@ -136,6 +136,26 @@ const { openFresh, checker } = require("./cdlib.js");
   const said = await page.evaluate(async () => { const ok = await WB_COMMAND_BY_ID.get("cleanup-ink").run(); return ok; });
   const scribble = await page.evaluate((id) => wbSketchParsedData(wbState.sketches.find((x) => x.id === id)).ink, scribbleId);
   check("clean up: a scribble stays ink", scribble === 1);
+  // --- Replay and the GIF -------------------------------------------------------------------------------------
+  const strokeCount = await page.evaluate(() => wbFmtState.inkReplay.strokes().length);
+  check("replay: the board's pen strokes are found (two or more)", strokeCount >= 2, strokeCount);
+  const rowShown = await page.evaluate(() => { const c = WB_COMMAND_BY_ID.get("replay-ink"); return Boolean(c && wbCommandNeeds[c.needs]()); });
+  check("replay: the command is offered on a board with pen strokes", rowShown);
+  await page.evaluate(() => WB_COMMAND_BY_ID.get("replay-ink").run());
+  await page.waitForTimeout(120);
+  const during = await page.evaluate(() => wbFmtState.inkReplay.strokes().map((s) => document.querySelector(`.sketch-group[data-id="${s.id}"]`)?.style.visibility));
+  check("replay: the strokes start hidden", during.every((v) => v === "hidden"), during);
+  await page.waitForTimeout(1500);
+  const after = await page.evaluate(() => wbFmtState.inkReplay.strokes().map((s) => document.querySelector(`.sketch-group[data-id="${s.id}"]`)?.style.visibility));
+  check("replay: every stroke is back at the end", after.every((v) => v === ""), after);
+  const gif = await page.evaluate(async () => {
+    let saved = null;
+    const real = window.saveFile;
+    window.saveFile = async (name, blob) => { saved = { name, size: blob.size, head: new TextDecoder().decode(new Uint8Array(await blob.arrayBuffer()).slice(0, 6)), type: blob.type }; };
+    try { await WB_EXPORT_FORMATS.find((f) => f.value === "gif").run("whole"); } finally { window.saveFile = real; }
+    return saved;
+  });
+  check("GIF: a .gif file of GIF89a bytes, over 1 KB, is written", gif && /\.gif$/.test(gif.name) && gif.head === "GIF89a" && gif.size > 1000 && gif.type === "image/gif", gif);
   check("no page errors", errors.length === 0, errors.slice(0, 3));
   await browser.close();
   process.exit(summary() ? 0 : 1);

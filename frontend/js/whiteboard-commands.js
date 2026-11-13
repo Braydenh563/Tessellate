@@ -103,6 +103,7 @@ const wbCommandNeeds = {
   notetopic: () => wbMapIsNoteTopic(wbSelectedMapNode()),
   drawing: () => Boolean(wbCommandOneSketch() && wbSketchParsedData(wbCommandOneSketch())?.d),
   //: A pen stroke that kept its points, which Clean up can read (whiteboard-ink-recognise.js).
+  penDrawing: () => Boolean(wbFmtState.inkReplay?.strokes().length),
   inkStroke: () => Boolean(wbFmtState.inkRecognise?.target()),
   styled: () => {
     if (wbMultiSelection.size > 1 || !wbSelectedItem || wbSelectedItem.kind === "node") return false;
@@ -172,6 +173,7 @@ const WB_COMMANDS = [
   { id: "copy-data", group: "Edit", icon: "ph:database", label: "Copy the data", keys: "Alt+Shift+B", surface: "board", needs: "one", run: () => wbFmtState.dataKeys.copy() },
   { id: "paste-data", group: "Edit", icon: "ph:database", label: "Paste the data", keys: "Alt+Shift+E", surface: "board", needs: "dataCopied", run: () => wbFmtState.dataKeys.paste() },
   { id: "cleanup-ink", group: "Edit", icon: "ph:shapes", label: "Clean up the drawn shape", menu: "Clean up the drawn shape", keys: "", surface: "board", needs: "inkStroke", run: () => wbFmtState.inkRecognise.cleanup() },
+  { id: "replay-ink", group: "Edit", icon: "ph:play-circle", label: "Replay the pen drawing", menu: "Replay the pen drawing", keys: "", surface: "board", needs: "penDrawing", run: () => wbFmtState.inkReplay.start() },
   { id: "auto-size", group: "Edit", icon: "ph:arrows-out", label: "Grow to fit the words", keys: "", surface: "board", needs: "selection", run: () => wbAutoSizeSelection() },
   { id: "find", group: "Edit", icon: "ph:magnifying-glass", label: "Find on this board", menu: "Find on this board", keys: "Ctrl+F", surface: "both", run: () => wbOpenBoardSearch() },
   { id: "replace", group: "Edit", icon: "ph:swap", label: "Find and replace on this board", menu: "Find and replace", keys: "Ctrl+H", surface: "board", run: () => wbOpenBoardSearch({ replace: true }) },

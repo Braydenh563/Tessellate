@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: Edit, Replay the pen drawing plays the pen strokes back in the order they were drawn (skipped to the end with reduced motion), and Export, GIF saves the same as an animated picture, written by a small offline GIF encoder (L-whiteboard-4).
 - Whiteboard: select a pen stroke and choose Edit, Clean up the drawn shape (also in the command palette) to turn a rough line, arrow, rectangle, ellipse, triangle or diamond into the clean shape, in the same colour and width, as one Undo step; a scribble is left alone.
 - Whiteboard: the pen and the marker draw smoothed ink (perfect-freehand): rough hand-drawn lines come out as one clean curve, and with a pen the stroke is thicker where you press harder; with a mouse or a finger the width follows how fast you draw. A dashed pen keeps the plain stroke.
 - Whiteboard: a free line or arrow with an outline diamond, circle or square end no longer draws its shaft through the shape; the line stops at the end's edge, as a connector does, and it still selects along its whole length.
