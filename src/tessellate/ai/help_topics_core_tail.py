@@ -740,6 +740,22 @@ TAIL_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "board-suggest-name",
+            "keywords": (
+                "name a board",
+                "suggest a board name",
+                "rename a map automatically",
+                "ai name for a board",
+                "untitled board",
+            ),
+            "body": (
+                "In the Library, a board or map card's ... menu has Suggest a name. The model writes one from "
+                "what is on the board when it runs; without one, the board's own words are cut to a name, a "
+                "map's centre topic first. It renames at once, and Undo puts the old name back."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "mind-map-controls",
             "keywords": (
                 "cross-link",

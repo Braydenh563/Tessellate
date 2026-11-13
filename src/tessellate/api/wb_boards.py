@@ -614,3 +614,55 @@ def rename_board(board_id: int, body: BoardRename, db: Session = Depends(get_ses
         layers=_board_layers(entry),
         **_preview_fields(db, board_id),
     )
+
+
+#: The kinds of board object whose `content` is words a name can come from:
+#: a map's topics, a frame's title, a text box, a sticky.
+_NAMED_KINDS = ("topic", "frame", "text", "sticky")
+
+
+def _board_words(db: Session, board_id: int) -> str:
+    """What is written on a board, a map's centre topic first: the text a name
+    is taken from. Pinned cards add their notes' titles."""
+    rows = db.scalars(select(WhiteboardObject).where(WhiteboardObject.board_id == board_id, WhiteboardObject.kind.in_(_NAMED_KINDS))).all()
+    rows = sorted(rows, key=lambda o: (o.parent_id is not None, o.kind != "topic", o.kind != "frame", o.z or 0, o.id))
+    lines = []
+    for obj in rows:
+        try:
+            content = (json.loads(obj.data or "{}") or {}).get("content")
+        except ValueError:
+            continue
+        if isinstance(content, str) and content.strip():
+            lines.append(content.strip())
+    entry_ids = db.scalars(select(WhiteboardNode.entry_id).where(WhiteboardNode.board_id == board_id)).all()
+    for entry in db.scalars(select(Entry).where(Entry.id.in_(entry_ids))).all() if entry_ids else []:
+        title = extract_title(entry.content or "")
+        if title:
+            lines.append(title)
+    return "\n".join(lines)
+
+
+@router.post("/boards/{board_id}/suggest-title")
+def suggest_board_title(board_id: int, db: Session = Depends(get_session)) -> dict:
+    """A name for this board or map, on request (L280), as a document's is
+    (`routes_documents.suggest_document_title`): the model writes it when one
+    runs, else the board's own words are cut to a title. Nothing is saved:
+    the client renames through the same undoable path as Rename."""
+    from tessellate.ai import composer_voice, librarian
+    from tessellate.ai.ollama_client import OllamaError
+
+    BOARDS.writable(db, board_id)
+    text = _board_words(db, board_id)
+    if not text:
+        raise HTTPException(status_code=422, detail="There is nothing on this board to name it from yet.")
+    if deps.get_ollama().is_running():
+        try:
+            title = librarian.generate_title(text[:4000], deps.get_model_manager(), deps.get_ollama())
+        except OllamaError:
+            title = ""
+        if title:
+            return {"title": title, "by": "model"}
+    title = composer_voice.title_for(text)
+    if not title:
+        raise HTTPException(status_code=422, detail="There is no sentence here to take a name from yet.")
+    return {"title": title, "by": "composer"}

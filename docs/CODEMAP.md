@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8600, frontend ids 2796, CSS sections 525, backend routes 704, backend modules 10824, test files 2732, tests 22224, plan headings 690, app scripts 29, boot scripts 38, script files 314.
+Counts: frontend functions 8600, frontend ids 2796, CSS sections 525, backend routes 705, backend modules 10826, test files 2733, tests 22229, plan headings 690, app scripts 29, boot scripts 38, script files 314.
 
 ## Frontend functions (8600)
 
@@ -2617,7 +2617,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `redrawLibraryBoardsGallery` | frontend/js/boards-gallery.js:149 |
 | `renderBoardTypeFilter` | frontend/js/boards-gallery.js:110 |
 | `renderLibraryBoardsGallery` | frontend/js/boards-gallery.js:154 |
-| `wbNewMenuMount` | frontend/js/boards-gallery.js:391 |
+| `wbNewMenuMount` | frontend/js/boards-gallery.js:407 |
 
 ### frontend/js/captions.js (15)
 
@@ -13581,7 +13581,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
-## Backend routes (704)
+## Backend routes (705)
 
 `@router.<method>(`, `@<name>_router.<method>(` and `@app.<method>(` decorators in `src/tessellate/api/*.py`, sorted by path. The line is the decorator's.
 
@@ -13680,6 +13680,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/{board_id}/nodes/{node_id}/move` | PUT | `move_map_node` | src/tessellate/api/wb_map.py:269 |
 | `/boards/{board_id}/nodes/{node_id}/suggest` | POST | `suggest_branches` | src/tessellate/api/routes_map_suggest.py:185 |
 | `/boards/{board_id}/nodes/{node_id}/summary` | POST | `summarise_branch` | src/tessellate/api/routes_map_suggest.py:428 |
+| `/boards/{board_id}/suggest-title` | POST | `suggest_board_title` | src/tessellate/api/wb_boards.py:645 |
 | `/boards/{board_id}/thumbnail` | PUT | `put_thumbnail` | src/tessellate/api/wb_preview.py:913 |
 | `/boards/{board_id}/thumbnail/state` | GET | `thumbnail_state` | src/tessellate/api/wb_preview.py:902 |
 | `/boards/{board_id}/tree` | GET | `board_tree` | src/tessellate/api/wb_map.py:31 |
@@ -14292,7 +14293,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10824)
+## Backend modules (10826)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18185,8 +18186,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2688 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2841 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2689 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2842 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -23873,7 +23874,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `current_layer` | src/tessellate/api/wb_board.py:508 |
 | `get_whiteboard_state` | src/tessellate/api/wb_board.py:116 |
 
-### src/tessellate/api/wb_boards.py (10)
+### src/tessellate/api/wb_boards.py (12)
 
 | Name | File:line |
 |---|---|
@@ -23881,12 +23882,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `BoardRename` | src/tessellate/api/wb_boards.py:478 |
 | `_apply_board_look` | src/tessellate/api/wb_boards.py:500 |
 | `_board_stats` | src/tessellate/api/wb_boards.py:42 |
+| `_board_words` | src/tessellate/api/wb_boards.py:624 |
 | `_boards_for_page` | src/tessellate/api/wb_boards.py:85 |
 | `create_board` | src/tessellate/api/wb_boards.py:317 |
 | `duplicate_board` | src/tessellate/api/wb_boards.py:359 |
 | `list_boards` | src/tessellate/api/wb_boards.py:130 |
 | `list_images` | src/tessellate/api/wb_boards.py:248 |
 | `rename_board` | src/tessellate/api/wb_boards.py:524 |
+| `suggest_board_title` | src/tessellate/api/wb_boards.py:646 |
 
 ### src/tessellate/api/wb_export.py (17)
 
@@ -28125,7 +28128,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22224)
+## Tests (22229)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28343,6 +28346,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_board_selection_batches.py | 3 |
 | tests/test_board_shape_sets.py | 6 |
 | tests/test_board_sidebar_596.py | 6 |
+| tests/test_board_suggest_name.py | 5 |
 | tests/test_board_swimlanes.py | 2 |
 | tests/test_board_templates_715.py | 12 |
 | tests/test_board_thumbnail.py | 9 |
@@ -31282,14 +31286,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4403 |
-| Needs hardware | docs/roadmap/LEDGER.md:817 |
+| Needs hardware | docs/roadmap/LEDGER.md:816 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:809 |
+| Owner calls | docs/roadmap/LEDGER.md:808 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4276 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31470,7 +31474,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1007 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1006 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31525,25 +31529,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1274 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:1023 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1107 |
-| documents | docs/roadmap/LEDGER.md:293 |
-| documents | docs/roadmap/LEDGER.md:1047 |
-| general | docs/roadmap/LEDGER.md:768 |
+| chat | docs/roadmap/LEDGER.md:1022 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1106 |
+| documents | docs/roadmap/LEDGER.md:292 |
+| documents | docs/roadmap/LEDGER.md:1046 |
+| general | docs/roadmap/LEDGER.md:767 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1011 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1119 |
+| graph | docs/roadmap/LEDGER.md:1010 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1118 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
-| mindmap | docs/roadmap/LEDGER.md:373 |
-| mindmap | docs/roadmap/LEDGER.md:1059 |
-| timeline | docs/roadmap/LEDGER.md:529 |
-| timeline | docs/roadmap/LEDGER.md:1083 |
-| ui-modernisation | docs/roadmap/LEDGER.md:411 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1071 |
+| mindmap | docs/roadmap/LEDGER.md:372 |
+| mindmap | docs/roadmap/LEDGER.md:1058 |
+| timeline | docs/roadmap/LEDGER.md:528 |
+| timeline | docs/roadmap/LEDGER.md:1082 |
+| ui-modernisation | docs/roadmap/LEDGER.md:410 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1070 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:1035 |
-| world-class | docs/roadmap/LEDGER.md:532 |
-| world-class | docs/roadmap/LEDGER.md:1095 |
+| whiteboard | docs/roadmap/LEDGER.md:1034 |
+| world-class | docs/roadmap/LEDGER.md:531 |
+| world-class | docs/roadmap/LEDGER.md:1094 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |

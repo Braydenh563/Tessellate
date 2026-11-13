@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 7 | 2 | 0 | 10 | 39 |
+| whiteboard | 30 | 6 | 2 | 0 | 10 | 38 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 613 | 148 | 3 | 185 | 1314 |
+| all | 553 | 612 | 148 | 3 | 185 | 1313 |
 
 ## graph
 
@@ -284,7 +284,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L271** `whiteboard` open, M: Unify the four overlapping drag and pointer-capture mechanisms in whiteboard.js. From OPEN.md:4442. Evidence: whiteboard.js still has mixed pointer capture and mouse handlers (27 matches); not unified
 - [ ] **L278** `whiteboard` open, M: Audit board frames/present flow, connector re-routing, touch eraser, image paste limits, PDF export. From audit-1031-board.md. Evidence: No later board audit found
 - [ ] **L279** `whiteboard` open, M: Close or record U19 U20 U23 U30 U31 U36 U37 U39 U41 U45 U49 across map, board, documents, code editor. From bs-1111.md. Evidence: Other agents' surfaces; no closing record found
-- [ ] **L280** `whiteboard` open, M: Add AI rename for boards and maps; drop weak meaning-only matches. From w34-gap3-1111.md Found. Evidence: Only documents have suggest-title (fe169b9d8); no board/map equivalent
 - [ ] **L285** `whiteboard` partly, L: Finish templates, styles, align and distribute, find, copy as picture and shortcuts for the board. From OPEN.md:4531. Evidence: Smart alignment guides and find exist in whiteboard.js; templates/styles/copy-as-picture set not confirmed complete
 - [ ] **L286** `whiteboard` partly, L: Whiteboard: D24 names left, split whiteboard.js and whiteboard-map.js. From ledger-1112 O34; ledger-1112 O33.
 - [ ] **L-whiteboard-12** `whiteboard` open, L: Bind board cards to note properties through their frame. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:768. Evidence: no shape that stays bound to live notebook content exists; lines 768 to 772 are untracked
