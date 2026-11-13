@@ -1525,6 +1525,11 @@ button.scroll-row-arrow {
 button.scroll-row-arrow[data-side="end"] {
   transform: translate(-100%, -50%);
 }
+/* The end arrow sits on its scroller's edge, which clipped 3.6px of an
+   outside ring at 390 (DESIGN.md: the ring goes inside). */
+button.scroll-row-arrow:focus-visible {
+  outline-offset: -2px;
+}
 button.scroll-row-arrow[hidden] {
   display: none;
 }

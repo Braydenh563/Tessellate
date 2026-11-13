@@ -5882,7 +5882,8 @@ rect.board-minimap-card,
   letter-spacing: -0.005em;
   /* One row (INBOX 552, above): the title is what gives way. */
   min-width: 0;
-  overflow: hidden;
+  /* x only: `hidden` also cut an accented capital's ink at the top. */
+  overflow-x: clip;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

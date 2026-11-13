@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Focus rings on the capture card swatches and the scroll-row end arrow are no longer cut, and dialog titles keep an accented capital whole (L-ui-modernisation-43).
 - Boot CSS: fourteen dead duplicate declarations removed (a later copy under the same selector always won), 110 gzip bytes; a test keeps them out.
 - The desk companion greys Sit on a window when no window fits, and a refused menu request always shows a sad look (L-ui-modernisation-22).
 - Library gallery tiles are built in eight named steps instead of one 1,500 line function (L-ui-modernisation-17).
