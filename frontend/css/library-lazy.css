@@ -9087,8 +9087,8 @@ input[type="color"].wb-mixed {
 
 @media (pointer: coarse) {
   .doc-editor .cm-search button[name="close"] {
-    min-width: 44px;
-    min-block-size: 44px;
+    min-width: var(--target-min);
+    min-block-size: var(--target-min);
   }
 }
 

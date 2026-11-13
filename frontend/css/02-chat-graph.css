@@ -2407,8 +2407,8 @@ kbd {
   .entry-actions button,
   .entry-actions .unlink,
   button.small {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: var(--target-min);
+    min-width: var(--target-min);
   }
   .entry-actions {
     gap: 0.4rem;

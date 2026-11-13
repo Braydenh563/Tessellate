@@ -778,9 +778,11 @@
 
 .thumb-bar > button {
   /* The band's own target rule (DOCUMENTS_PLAN Phase 6: the layout's targets
-     are 44px on a phone, DESIGN.md's global floor stays 28px). */
-  min-width: 44px;
-  min-height: 44px;
+     are 44px on a phone, DESIGN.md's global floor stays 28px). The bar is
+     drawn below 600 only, where `--target-min` is already 44 or more
+     (L-ui-modernisation-15). */
+  min-width: var(--target-min);
+  min-height: var(--target-min);
   flex: 0 1 auto;
   margin-bottom: 0;
 }

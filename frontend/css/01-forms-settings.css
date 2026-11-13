@@ -2257,7 +2257,7 @@ button:not(.ghost) > .spinner {
 }
 @media (pointer: coarse) {
   .lock-card .lock-forgot {
-    min-height: 44px;
+    min-height: var(--target-min);
   }
 }
 
