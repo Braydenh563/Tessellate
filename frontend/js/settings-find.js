@@ -68,9 +68,13 @@
     //: Asked for its side effect: the observer that marks a pane stale (settings.js).
     settingsSectionText(null);
     const rows = [];
-    for (const pane of document.querySelectorAll("#settings-modal .settings-section")) {
-      let part = settingRowsScan.panes.get(pane);
-      if (!part) settingRowsScan.panes.set(pane, (part = settingRowsScan.pane(pane)));
+    //: Popped out, Appearance's rows sit in its panel (L-ui-modernisation-19), outside
+    //: the window the observer watches, so they are read fresh on each scan.
+    for (const pane of document.querySelectorAll("#settings-modal .settings-section, .appearance-panel-body")) {
+      const loose = pane.matches(".appearance-panel-body");
+      let part = loose ? null : settingRowsScan.panes.get(pane);
+      if (!part) part = settingRowsScan.pane(pane);
+      if (!loose) settingRowsScan.panes.set(pane, part);
       rows.push(...part);
     }
     return rows;
@@ -79,7 +83,7 @@
   settingRowsScan.panes = new WeakMap();
   settingRowsScan.pane = function (pane) {
     const rows = [];
-    const name = pane.id.slice("settings-".length);
+    const name = pane.matches(".appearance-panel-body") ? "appearance" : pane.id.slice("settings-".length);
     const nav = document.querySelector(`#settings-nav [data-section="${name}"]`);
     const sectionLabel = nav ? nav.textContent.trim() : name;
     for (const el of pane.querySelectorAll(SETTING_ROW_SELECTOR)) {
@@ -224,7 +228,10 @@
   //: only when it is not already in the window and draws the same ring every
   //: catalogue deep link draws.
   function openSettingRow(row) {
-    showSettingsSection(row.section);
+    //: Popped out, the row is in the Appearance panel: the window steps aside for it.
+    const panel = row.el.closest(".appearance-panel-body");
+    if (!panel) showSettingsSection(row.section);
+    else if (settingsModalOpen()) closeSettingsModal();
     requestAnimationFrame(() => {
       const el = row.el;
       if (!el.isConnected) return;
@@ -232,6 +239,8 @@
         fold.open = true;
       }
       if (!el.getClientRects().length) return;
+      //: The panel scrolls inside the window, so "in the window" is not "in view" there.
+      if (panel) panel.scrollTop += el.getBoundingClientRect().top - panel.getBoundingClientRect().top - 12;
       flashRevealed(el);
       //: The row's control, not its words (OPEN, a11y: "Accent colour" landed
       //: on its DIV at both widths): a `.setting-label` stands beside its

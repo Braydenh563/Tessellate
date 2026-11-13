@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- With Appearance popped out, a link to one of its settings and a Settings search both land on the control in the panel (L-ui-modernisation-19).
 - A phone held sideways keeps the top bar on one row (L-ui-modernisation-37).
 - Focusing the notes filter shows an example of the query grammar that fits the box (L-ui-modernisation-16).
 - F8, Shift+F8 and Alt+Enter in a document's text are listed in the command palette and the shortcut sheet (L-ui-modernisation-14).

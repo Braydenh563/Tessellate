@@ -317,6 +317,16 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     const holder = $(scrollToId)?.closest(".settings-section");
     if (holder?.id.startsWith("settings-")) section = holder.id.slice("settings-".length);
   }
+  //: **Popped out, Appearance answers its own links** (L-ui-modernisation-19): a help
+  //: badge or the companion's menu landed on the window's "open in its own panel" note,
+  //: not on the control. The panel holds the control, so the panel is where it lands.
+  const popped = $("settings-appearance")?.classList.contains("appearance-popped-out");
+  if (popped && section === "appearance") {
+    const found = scrollToId && $(scrollToId);
+    if (found) openSettingRow({ el: found, section });
+    else $("appearance-panel")?.querySelector("button[aria-current]")?.focus();
+    return;
+  }
   overlayReturnFocus = document.activeElement;
   window.uiSettlingUntil = performance.now() + 400;
   surfaceBuild("settings");
