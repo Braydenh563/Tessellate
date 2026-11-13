@@ -315,9 +315,7 @@
         event.stopPropagation();
         wbAudioPlay(Number(el.dataset.id), mark);
       });
-      const after = el.querySelector(".wb-map-link");
-      if (after) after.after(mark);
-      else el.querySelector(".wb-map-body")?.append(mark);
+      wbMapCache.part(el, "link")?.after(mark);
     }
     mark.hidden = !id;
     if (id) {

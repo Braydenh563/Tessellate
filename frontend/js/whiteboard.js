@@ -6909,6 +6909,8 @@ function wbApplySelectionHighlight() {
   //: (INBOX 278, and the earlier report it has to keep answering).
   for (const [el, grouped] of wanted) {
     if (!grouped) wbEnsureHandles(el);
+    //: A topic's resize grip is made when it is first selected or pointed at (`wbMapCache.part`).
+    if (el.classList.contains("wb-map-node")) wbMapCache.part(el, "grip");
     marked.add(el);
     if (!el.classList.contains("wb-selected")) el.classList.add("wb-selected");
     if (el.classList.contains("wb-in-group") !== grouped) el.classList.toggle("wb-in-group", grouped);
@@ -15503,6 +15505,12 @@ async function initWhiteboard() {
   $("wb-rename-board")?.addEventListener("click", renameCurrentBoard);
   $("wb-map-layout")?.addEventListener("change", (e) => wbMapSetLayout(e.target.value));
   $("wb-map-link-style")?.addEventListener("change", (e) => wbMapSetLinkStyle(e.target.value));
+  for (const type of ["pointerover", "focusin"]) {
+    $("whiteboard-container")?.addEventListener(type, (e) => {
+      const node = e.target.closest?.(".wb-map-node");
+      if (node) wbMapCache.part(node, "grip");
+    }, { passive: true });
+  }
   //: Phase 5's controls (§5 items 18 to 21). Wired here with the rest of the
   //: board chrome rather than inside their own render functions, which is the
   //: shape `tests/test_frontend_handlers.py` exists to keep: a listener added
