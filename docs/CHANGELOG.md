@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Perf: listener growth on timeline and dashboard redraws re-measured; flat across 12 cycles at 40 notes, so PF6 no longer reproduces (L601).
 - Filing: decide re-measured at 6.8 ms a call on 5,000 notes, under the old 8 to 17 ms tally; the 34 ms figure was stale (L535).
 - Code: one rule for a link to the app's own files (ownFileLinks in att-chip.js), read by the Library thumbnail, the graph panel and answer pictures (L544).
 - Models: a finished download reads as still downloading until the runner lists it, so Downloaded never shows beside a list without the model (L-world-class-33).
