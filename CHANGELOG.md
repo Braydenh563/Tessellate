@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The theme button's tooltip says a right-click opens the Appearance panel (L-ui-modernisation-40).
 - While the desk companion is hidden for 10 minutes, the tray says when it comes back and can bring it back now (L-ui-modernisation-44).
 - On a phone the map strip's Reset button is round again, and the strip and drawing bar use the shared control heights (L-ui-modernisation-38).
 - Focus rings on the capture card swatches and the scroll-row end arrow are no longer cut, and dialog titles keep an accented capital whole (L-ui-modernisation-43).

@@ -476,7 +476,7 @@ HELP_TOPICS: list[dict] = [
             "background and slows the graph physics, for a slow or small machine; Auto "
             "switches it on by itself on a machine with 2 cores or 4 GB or fewer, "
             "and On or Off overrides that. The Appearance panel (Pop out at the top, "
-            "or Ctrl+K, Appearance) holds the same settings beside the app, with "
+            "or Ctrl+K, Appearance, or right-click the theme button) holds the same settings beside the app, with "
             "a strip of sections and a Peek button. The sliders' numbers (Zoom, "
             "Corner rounding, Glass blur) type in too."
         ),
