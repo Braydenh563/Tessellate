@@ -549,8 +549,8 @@ session that builds the phase should confirm it in the product first.
 - **Raycast AI, Spotlight-style agents** win on quick actions because
   each starter is a verb with a slot ("Remind me to ___"), not a full
   sentence, and the panel remembers the last three used. Implication:
-  decision 9's twelve starters should be verb-plus-slot chips, with the
-  three most recent first.
+  decision 9's twelve starters are verb-plus-slot chips, with the three
+  most recent first (built, L-chat-16, `tests/test_agent_starters_l_chat_16.py`).
 - **Small-model reality**: a 3B model asked to cite by number over 17
   sources will drop marks or invent numbers; the eval fixtures must
   include this case so decision 2's grounding, not the model's marks, is

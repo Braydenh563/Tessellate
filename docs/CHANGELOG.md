@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Chat row L101: the model's prompt now says why each note was shown and which other shown notes it links to, by number and with the person's reason ("(why shown: Has the word “skye”) (linked to note 3: same trip)"), the frame the composer already said (`librarian._shown_hint`).
+- Chat L-chat-16: the popup agent's verb-plus-slot starters and its three recents, ahead of the twelve, are pinned by a test (`tests/test_agent_starters_l_chat_16.py`).
 - Guide L-chat-1: "what is X" answers from the topic X is a keyword of, after any sentence that defines X; a spelling repair never breaks a help phrase ("note history" is not "not history").
 - Chat row L-chat-8: "do my notes contradict each other" also lists each subject a newer note changed, with both days and both values (`supersede.changes`, the pairing answers are read through), and "look for inconsistencies in my notes", "check for inconsistencies" or "scan my notes for conflicts" reach it; two notes that only share a label (two recipes' Ingredients) are not a change of mind.
 - CI fix: the tools-off line names Settings, Tools it can use; a phrasing spec that passes alone loses its xfail marker; the validate cases follow the L-chat-21 fallback.
