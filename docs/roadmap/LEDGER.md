@@ -9,15 +9,15 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 94 | 44 | 2 | 59 | 314 |
-| whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
+| chat | 176 | 95 | 44 | 2 | 59 | 315 |
+| whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 544 | 134 | 3 | 186 | 1231 |
+| all | 553 | 546 | 134 | 3 | 186 | 1233 |
 
 ## graph
 
@@ -160,10 +160,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-19** `chat` open, L: Close the rest of the 2026-10-10 chat bug list. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:779. Evidence: Open line in the plan's prose a session could miss. Owner bug list; also token count after deleted turn, destination history clear, match kind label, jokes source, caption sentences.
 - [ ] **L-chat-20** `chat` open, M: Composer bubble fade, accessed links first and auto retry. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:890. Evidence: Open line in the plan's prose a session could miss. Design items from the owner list.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
-- [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
+- [ ] **L-chat-37** `chat` open, M: Ask 'what else do my notes say about X' synthesises across the top records. From hub 2026-11-13 00:46Z, owner screenshots of Ask with no model. Evidence: Owner's 'What else do my notes say about university?' over five records: the answer led with [1]'s mid-argument 'however' sentence about what is missing, cited [1] only (also its Also line), ignored [2] to [5] (uni days Tue and Thu, the subjects, assignments, the uni friend), gave [1] the reason 'by the word "notes"' and offered 'Remind me the day before'. Fix: synthesise one fact per top record, each cited; strip or skip a leading connective; drop question stopwords from keyword reasons and scoring; no reminder chip on a summary. Test: the five-note fixture gives 3 to 4 sentences citing 3 or more records, with Tue/Thu and the subjects, no 'however' lead, no stopword reason; composer eval before and after.
+- [ ] **L-chat-38** `chat` open, M: Guide with no model answers any question through the composer, not only 14 advice subjects. From hub 2026-11-13 00:22Z send-back on L-chat-34. Evidence: guide_advice.py is 14 canned subjects. Needed: an unmatched question goes through the composer path grounded in help topics and the capability list; small talk and meta (hi, thanks, who are you, what can you do, I'm stuck) get a composed reply; a question about the user's own notes gets a short composer answer plus the hand-over to Chat; the eval grows to 30 or more questions, half outside the 14 subjects, first sentences pinned, 5 checked in the app.
 
 ## whiteboard
 
+- [ ] **L-chat-24** `whiteboard` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there; moved from chat 2026-11-13 (hub: whiteboard owns whiteboard-commands.js).
 - [ ] **L257** `whiteboard` open, S: Stop board preview labels (mapPreview) running over the next shape. From OPEN.md:1239. Evidence: note-cards.js:38 mapPreview draws via mapPreviewDraw; no label-clipping fix found.
 - [ ] **L258** `whiteboard` open, S: Confirm in the app that diagram handles reverse and the connector delete bar work. From OPEN.md:4526. Evidence: Never confirmed in the app; no test cited
 - [ ] **L259** `whiteboard` open, S: Enlarge the shape flyout trigger beyond the 10px caret for finger use. From OPEN.md:659; OPEN.md:2913. Evidence: Flyout built (c9712e1ab) but phone-size target not enlarged; no fix commit
@@ -423,7 +425,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L773** `ui-modernisation` open, M: Rethink Notes dock wrapping (nine controls at 1440, two rows at 1280-1500 with rail open). From OPEN.md:3480; OPEN.md:3559. Evidence: Judgement for the dock grammar's owner; same dock as 3559. Owner decided 2026-11-12: Fewer worded buttons (Some buttons show icons only above 1400px or move into the menu, so the bar keeps one row). Build: Notes .dock: fold two worded controls to icon-only or the dock kebab; sweep docks.js at 1280, 1440, 1500 with rail open.
 - [ ] **L765** `ui-modernisation` open, M: Design pass to unify empty-state tone and illustration across views. From OPEN.md:4241. Evidence: Design pass across views, not a reproducible defect. Owner decided 2026-11-12: Align to the recipe. Build: inventory every .empty-state and ad hoc empty line, convert to the DESIGN.md Empty state recipe, add a lint in tests/test_ui_recipes.py.
 - [ ] **L778** `ui-modernisation` open, S: Decide cropping of tall maps in dashboard widget. From OPEN.md:3184. Evidence: Owner's judgement on cropping Owner decided 2026-11-12: Crop around the centre. Build: mapPreview for the dashboard widget: crop to a readable window around the root; sweep with a 25-topic tree-right map.
-- [ ] **L-ui-modernisation-2** `ui-modernisation` open, S: Measure the stuck-ground recipe on the timeline table head and empty its freeze. From open-work sweep 2026-11-12, tests/test_nested_surfaces_1489.py:34. Evidence: This freeze ratchet holds one known offender, and the comment states the intent to remove it once the stuck-ground recipe is measured on table cells. No LEDGER row or plan item names it.
+- [ ] **L-ui-modernisation-25** `ui-modernisation` open, S: Measure the stuck-ground recipe on the timeline table head and empty its freeze. From open-work sweep 2026-11-12, tests/test_nested_surfaces_1489.py:34. Evidence: This freeze ratchet holds one known offender, and the comment states the intent to remove it once the stuck-ground recipe is measured on table cells. No LEDGER row or plan item names it.
 - [ ] **L-ui-modernisation-3** `ui-modernisation` open, M: Sweep every toolbar onto the control height tokens and drain the literal heights ratchet. From open-work sweep 2026-11-12, docs/DESIGN.md:1584. Evidence: The doc admits toolbars that do not use --control-h yet and calls them gaps. No row lists or tracks the sweep to find and convert them.
 - [ ] **L-ui-modernisation-4** `ui-modernisation` open, S: Shorten the lock setup note and rename its button. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:32. Evidence: index.html:346 #lock-setup-note is still 58 words and app.js:723 still reads "Set password & start"; there is no LEDGER row or plan item for it
 - [ ] **L-ui-modernisation-5** `ui-modernisation` open, S: Keep the welcome footer buttons on one row at 390 px. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:36. Evidence: no change to the welcome slide footer layout at narrow width was found and nothing tracks it
