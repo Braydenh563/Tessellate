@@ -128,6 +128,35 @@ def test_one_missed_router_read_does_not_shut_an_allowed_network(tmp_path, monke
     assert lantrust.refresh(tmp_path)["reason"] == "no_network"
 
 
+def test_the_missed_read_grace_never_covers_a_different_network_or_a_restart(tmp_path, monkeypatch):
+    lantrust.reset_for_tests()
+    lantrust.save(tmp_path, _state(networks=[{"key": HOME.key, "label": "home"}]))
+    monkeypatch.setattr(lantrust, "_online", lambda: True)
+    reads = iter([HOME, None, CAFE])
+    monkeypatch.setattr(lantrust.netid, "read", lambda: next(reads))
+    assert lantrust.refresh(tmp_path)["open"] is True
+    assert lantrust.refresh(tmp_path)["reason"] == "allowed"  # one missed read: kept
+    # A different router mid-grace closes at once.
+    assert lantrust.refresh(tmp_path)["reason"] == "new_network"
+    assert lantrust.is_open() is False
+    # A listener start reads fresh: no grace from the run before it.
+    monkeypatch.setattr(lantrust.netid, "read", lambda: HOME)
+    assert lantrust.refresh(tmp_path)["open"] is True
+    monkeypatch.setattr(lantrust.netid, "read", lambda: None)
+    assert lantrust.refresh(tmp_path, fresh=True)["reason"] == "unknown_network"
+    # A restart (empty module state) has no last network to keep.
+    monkeypatch.setattr(lantrust.netid, "read", lambda: HOME)
+    lantrust.refresh(tmp_path)
+    lantrust.reset_for_tests()
+    monkeypatch.setattr(lantrust.netid, "read", lambda: None)
+    assert lantrust.refresh(tmp_path)["reason"] == "unknown_network"
+
+
+def test_the_listener_start_reads_the_network_fresh():
+    src = (Path(__file__).resolve().parents[1] / "src" / "tessellate" / "core" / "lanlive.py").read_text(encoding="utf-8")
+    assert "lantrust.refresh(data_dir, fresh=True)" in src
+
+
 def test_a_network_the_port_stayed_closed_on_is_listed_to_trust_later(tmp_path):
     lantrust.reset_for_tests()
     lantrust.save(tmp_path, _state(networks=[{"key": HOME.key, "label": "home"}]))

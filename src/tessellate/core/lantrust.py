@@ -71,6 +71,9 @@ _run: dict[str, dict | None] = {"allowance": None}
 #: kept. Without it one stale entry shut the port and reset every open
 #: connection (CI, PR 223 ca77baf3); a different router answers at once, and
 #: no route at all is `no_network` at once, so only a silent router waits.
+#: Reads come every lanserve.REFRESH_SECONDS (30 s), sooner when the address
+#: set changes, so the grace is at most about 60 seconds; it never carries
+#: over a restart (module state starts empty) or a listener start (`fresh`).
 MISSED_READS_KEPT = 2
 _missed: dict = {"count": 0}
 _pending: dict[str, dict] = {}
@@ -268,23 +271,24 @@ def _online() -> bool:
 _UNREAD = object()
 
 
-def _read_network(online: bool | None) -> tuple[netid.Network | None, bool | None]:
+def _read_network(online: bool | None, *, fresh: bool = False) -> tuple[netid.Network | None, bool | None]:
     """A live reading, with the last network kept for MISSED_READS_KEPT reads
-    that found the route but not the router."""
+    that found the route but not the router; `fresh` keeps nothing."""
     network = netid.read()
     if online is None:
         online = network is not None or _online()
-    if network is None and online and _gate["network"] is not None and _missed["count"] < MISSED_READS_KEPT:
+    keep = not fresh and _gate["network"] is not None and _missed["count"] < MISSED_READS_KEPT
+    if network is None and online and keep:
         _missed["count"] += 1
         return _gate["network"], online
     _missed["count"] = 0
     return network, online
 
 
-def refresh(data_dir: Path, network=_UNREAD, *, online: bool | None = None) -> dict:  # noqa: ANN001  # a netid.Network, None, or unread
+def refresh(data_dir: Path, network=_UNREAD, *, online: bool | None = None, fresh: bool = False) -> dict:  # noqa: ANN001  # a netid.Network, None, or unread
     """Read the network again and decide whether the LAN port may be open."""
     if network is _UNREAD:
-        network, online = _read_network(online)
+        network, online = _read_network(online, fresh=fresh)
     if online is None:
         online = network is not None or _online()
     with _lock:
