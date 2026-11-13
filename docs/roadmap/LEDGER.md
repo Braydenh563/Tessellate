@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 93 | 39 | 2 | 59 | 308 |
+| chat | 176 | 92 | 39 | 2 | 59 | 307 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 544 | 129 | 3 | 186 | 1226 |
+| all | 553 | 543 | 129 | 3 | 186 | 1225 |
 
 ## graph
 
@@ -154,7 +154,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-19** `chat` open, L: Close the rest of the 2026-10-10 chat bug list. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:779. Evidence: Open line in the plan's prose a session could miss. Owner bug list; also token count after deleted turn, destination history clear, match kind label, jokes source, caption sentences.
 - [ ] **L-chat-20** `chat` open, M: Composer bubble fade, accessed links first and auto retry. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:890. Evidence: Open line in the plan's prose a session could miss. Design items from the owner list.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
-- [ ] **L-chat-38** `chat` open, M: Guide with no model answers any question through the composer, not only 14 advice subjects. From hub 2026-11-13 00:22Z send-back on L-chat-34. Evidence: guide_advice.py is 14 canned subjects. Needed: an unmatched question goes through the composer path grounded in help topics and the capability list; small talk and meta (hi, thanks, who are you, what can you do, I'm stuck) get a composed reply; a question about the user's own notes gets a short composer answer plus the hand-over to Chat; the eval grows to 30 or more questions, half outside the 14 subjects, first sentences pinned, 5 checked in the app.
 
 ## whiteboard
 
