@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 97 | 38 | 0 | 18 | 265 |
+| world-class | 130 | 96 | 38 | 0 | 18 | 264 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 566 | 130 | 3 | 132 | 1249 |
+| all | 553 | 565 | 130 | 3 | 132 | 1248 |
 
 ## graph
 
@@ -623,7 +623,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L618** `world-class` open, M: showNotesSection autoGrowVisible, syncScrollEdges, sizeDashWidgets first-reader costs. From a31c-1103.md Left, with numbers. Evidence: lag agent: moving the read a frame later only relocates it; not kept
 - [ ] **L619** `world-class` open, M: Verify perf at 2,000 notes, real model, phone boot, long-session PF6 growth. From audit-1031-perf.md. Evidence: Only perf2/perf3/GR1 hold 2,000-note numbers; load average 6 skews ms
 - [ ] **L620** `world-class` open, M: notesSpyPick/shell-reminders first-reader layout; PF4 lazy library bundle inflates typing. From audit-1108-perf.md. Evidence: Source 'still open, re-verified'; no later commit found
-- [ ] **L621** `world-class` open, M: Lazy mount meeting recorder card and graph options panel (ids read at boot). From row21-1109.md Left. Evidence: Source: prefs.js, navigation.js, wiring.js read #graph-options ids; not started
 - [ ] **L622** `world-class` open, L: Build one LEDGER.md with per-plan tags and paste-in briefs; delete retired agent-remaining/roadmap files and unused code files. From INBOX.md:1784. Evidence: docs/roadmap/LEDGER.md does not exist; ~580 agent-remaining files still present; owner-ordered work for this PR
 - [ ] **L623** `world-class` open, L: Re-verify audit-1028 to 1107 rows marked Open in a dedicated ledger pass. From book1..book6-1109.md. Evidence: Not re-verified row by row here; many later fixed (see composer rows above); ledger needs a dedicated pass
 - [ ] **L625** `world-class` open, L: Design a repository layer so routes stop holding ORM queries. From OPEN.md:4512. Evidence: Repository layer design pass deferred (repo/content.py exists only for content)

@@ -97,6 +97,12 @@ SURFACES = {
         ("toggleAgentPalette",),
         ("command-palette-close", "command-palette-input", "command-palette-send", "command-palette-results", "command-palette-status"),
     ),
+    "meeting": (
+        "meeting-overlay",
+        ("meetings.js", "router-overlays.js", "reveal-targets.js", "settings-wiring.js", "phone-shell.js"),
+        ("openMeetingRecorder",),
+        ("meeting-card", "meeting-close", "meeting-title", "meeting-transcript", "meeting-done"),
+    ),
     "shortcuts": (
         "shortcuts-overlay",
         ("reveal-targets.js", "settings-wiring.js"),
@@ -109,8 +115,9 @@ SURFACES = {
 #: (file, surface) of a partial IIFE the lint reads whole but whose chat-pane ids sit only inside
 #: functions that run later (atlas.js `retireOlder` reads the bubbles when a face rests, never at load)
 #: or inside `onSurface("chat", ...)` (answer-kit.js watches the message list once the pane is built).
+#: meetings.js loads on first use and builds the meeting card as its first statement, so its wiring reads it built.
 #: vault-unlock.js reads TYPED_IDS (chat, library, notes fields) only at lock time, inside functions.
-INSIDE_FUNCTIONS = {("atlas.js", "chat"), ("answer-kit.js", "chat"), ("vault-unlock.js", "chat")}
+INSIDE_FUNCTIONS = {("meetings.js", "meeting"), ("atlas.js", "chat"), ("answer-kit.js", "chat"), ("vault-unlock.js", "chat")}
 
 
 def _template(name: str) -> tuple[str, str]:

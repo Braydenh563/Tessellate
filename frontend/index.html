@@ -16153,6 +16153,8 @@ Link to another note with [[its first few words]]."></textarea>
        pad's own history recorded. -->
   <div id="meeting-overlay" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Meeting notes">
+    <!-- Built when meetings.js first loads (`surfaceBuild("meeting")`, settings-body.js; audit 1031 row 21, L621). -->
+    <script type="text/x-surface" data-surface="meeting">
     <div class="card modal-card" id="meeting-card">
       <!-- **One line in place, the rest behind the '?'** (INBOX 126, "same with
            the meeting notes popup", and standing order 6, which says exactly
@@ -16305,6 +16307,7 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
       </div>
     </div>
+    </script>
   </div>
 
   <!-- Everything the app can do, searchable, opened from the dashboard -->

@@ -6289,110 +6289,110 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addMeetingMarker` | frontend/js/meetings.js:2472 |
-| `addRecordingMark` | frontend/js/meetings.js:1912 |
-| `binRecording` | frontend/js/meetings.js:2178 |
-| `closeMeetingRecorder` | frontend/js/meetings.js:1005 |
-| `discardMeetingTake` | frontend/js/meetings.js:1019 |
-| `editRecordingMark` | frontend/js/meetings.js:1927 |
-| `enhanceGain` | frontend/js/meetings.js:1250 |
-| `enhanceRecording` | frontend/js/meetings.js:1272 |
-| `fillMicDevices` | frontend/js/meetings.js:2638 |
-| `meetingAcceptOriginal` | frontend/js/meetings.js:1326 |
-| `meetingActionRow` | frontend/js/meetings.js:266 |
-| `meetingAppendUndoable` | frontend/js/meetings.js:540 |
-| `meetingBinPair` | frontend/js/meetings.js:109 |
-| `meetingClockText` | frontend/js/meetings.js:629 |
-| `meetingContainerName` | frontend/js/meetings.js:653 |
-| `meetingCreateUndoable` | frontend/js/meetings.js:559 |
-| `meetingElapsedMs` | frontend/js/meetings.js:624 |
-| `meetingElapsedText` | frontend/js/meetings.js:648 |
-| `meetingEnhanceTake` | frontend/js/meetings.js:1310 |
-| `meetingFailText` | frontend/js/meetings.js:646 |
-| `meetingFocusFirstField` | frontend/js/meetings.js:979 |
-| `meetingFormRow` | frontend/js/meetings.js:90 |
-| `meetingLiveWords` | frontend/js/meetings.js:1117 |
-| `meetingLiveWordsStart` | frontend/js/meetings.js:1123 |
-| `meetingLiveWordsStop` | frontend/js/meetings.js:1138 |
-| `meetingNowValue` | frontend/js/meetings.js:19 |
-| `meetingPeaksSummary` | frontend/js/meetings.js:710 |
-| `meetingPeopleField` | frontend/js/meetings.js:41 |
-| `meetingRecordInto` | frontend/js/meetings.js:574 |
-| `meetingRecordingLive` | frontend/js/meetings.js:607 |
-| `meetingRecordingStarted` | frontend/js/meetings.js:1088 |
-| `meetingRecordingStopped` | frontend/js/meetings.js:1147 |
-| `meetingRemind` | frontend/js/meetings.js:307 |
-| `meetingSaveTranscript` | frontend/js/meetings.js:520 |
-| `meetingSay` | frontend/js/meetings.js:1083 |
-| `meetingShowSaved` | frontend/js/meetings.js:1339 |
-| `meetingStatusLine` | frontend/js/meetings.js:639 |
-| `meetingSummarise` | frontend/js/meetings.js:425 |
-| `meetingTakeAppend` | frontend/js/meetings.js:677 |
-| `meetingTakeBegin` | frontend/js/meetings.js:657 |
-| `meetingTakeBin` | frontend/js/meetings.js:1374 |
-| `meetingTakeDiscard` | frontend/js/meetings.js:1357 |
-| `meetingTakeFinish` | frontend/js/meetings.js:722 |
-| `meetingTakeFlush` | frontend/js/meetings.js:685 |
-| `meetingTick` | frontend/js/meetings.js:934 |
-| `meetingTranscribeTake` | frontend/js/meetings.js:1193 |
-| `meetingWhenText` | frontend/js/meetings.js:30 |
-| `micControlsInto` | frontend/js/meetings.js:2578 |
-| `micLevelInto` | frontend/js/meetings.js:2698 |
-| `nameMeetingMic` | frontend/js/meetings.js:2739 |
-| `nameRecordingSpeakers` | frontend/js/meetings.js:2159 |
-| `noteRecoveredRecordings` | frontend/js/meetings.js:1472 |
-| `openLiveCaptionsFrom` | frontend/js/meetings.js:2498 |
-| `openMeetingRecorder` | frontend/js/meetings.js:964 |
-| `openMeetingSheet` | frontend/js/meetings.js:335 |
-| `openNewMeeting` | frontend/js/meetings.js:132 |
-| `openRecordingTrim` | frontend/js/meetings.js:2339 |
-| `openRecordings` | frontend/js/meetings.js:1509 |
-| `openVoiceNote` | frontend/js/meetings.js:989 |
-| `playRecordingFrom` | frontend/js/meetings.js:1876 |
-| `recordingCardsRun` | frontend/js/meetings.js:2295 |
-| `recordingFacts` | frontend/js/meetings.js:1593 |
-| `recordingMarksFill` | frontend/js/meetings.js:1851 |
-| `recordingMenu` | frontend/js/meetings.js:2083 |
-| `recordingPaint` | frontend/js/meetings.js:1808 |
-| `recordingReady` | frontend/js/meetings.js:1702 |
-| `recordingRow` | frontend/js/meetings.js:1618 |
-| `recordingRunLine` | frontend/js/meetings.js:2304 |
-| `recordingShowLine` | frontend/js/meetings.js:1886 |
-| `recordingSpeed` | frontend/js/meetings.js:1724 |
-| `recordingTranscript` | frontend/js/meetings.js:1954 |
-| `recordingTranscriptFill` | frontend/js/meetings.js:1970 |
-| `recordingTranscriptNow` | frontend/js/meetings.js:2070 |
-| `recordingTranscriptState` | frontend/js/meetings.js:1604 |
-| `recordingTranscriptionEnded` | frontend/js/meetings.js:2260 |
-| `recordingTrimField` | frontend/js/meetings.js:2396 |
-| `recordingWav` | frontend/js/meetings.js:2440 |
-| `recordingWave` | frontend/js/meetings.js:1743 |
-| `recordingsEmpty` | frontend/js/meetings.js:1559 |
-| `removeRecordingMark` | frontend/js/meetings.js:1937 |
-| `renameRecording` | frontend/js/meetings.js:2169 |
-| `renameRecordingSpeaker` | frontend/js/meetings.js:2135 |
-| `renderRecordings` | frontend/js/meetings.js:1525 |
-| `resetMeetingUI` | frontend/js/meetings.js:942 |
-| `saveMeetingDocument` | frontend/js/meetings.js:1425 |
-| `saveMeetingNote` | frontend/js/meetings.js:1461 |
-| `saveRecordingMarks` | frontend/js/meetings.js:1899 |
-| `saveVoiceNoteText` | frontend/js/meetings.js:1479 |
-| `setMeetingState` | frontend/js/meetings.js:893 |
-| `showMeetingRecorder` | frontend/js/meetings.js:994 |
-| `startMeetingWave` | frontend/js/meetings.js:755 |
-| `startRecordingTranscription` | frontend/js/meetings.js:2225 |
-| `stopMeetingTimer` | frontend/js/meetings.js:875 |
-| `stopMeetingTranscription` | frontend/js/meetings.js:1351 |
-| `stopRecordingTranscription` | frontend/js/meetings.js:2232 |
-| `syncCaptionsDoors` | frontend/js/meetings.js:2492 |
-| `syncMicSelects` | frontend/js/meetings.js:2650 |
-| `syncRecordingDock` | frontend/js/meetings.js:919 |
-| `testMicrophone` | frontend/js/meetings.js:2659 |
-| `toggleMeetingPause` | frontend/js/meetings.js:1395 |
-| `toggleMeetingRecording` | frontend/js/meetings.js:1036 |
-| `transcribeRecording` | frontend/js/meetings.js:2194 |
-| `trimRecording` | frontend/js/meetings.js:2416 |
-| `watchRecordingTranscription` | frontend/js/meetings.js:2241 |
+| `addMeetingMarker` | frontend/js/meetings.js:2476 |
+| `addRecordingMark` | frontend/js/meetings.js:1916 |
+| `binRecording` | frontend/js/meetings.js:2182 |
+| `closeMeetingRecorder` | frontend/js/meetings.js:1009 |
+| `discardMeetingTake` | frontend/js/meetings.js:1023 |
+| `editRecordingMark` | frontend/js/meetings.js:1931 |
+| `enhanceGain` | frontend/js/meetings.js:1254 |
+| `enhanceRecording` | frontend/js/meetings.js:1276 |
+| `fillMicDevices` | frontend/js/meetings.js:2642 |
+| `meetingAcceptOriginal` | frontend/js/meetings.js:1330 |
+| `meetingActionRow` | frontend/js/meetings.js:269 |
+| `meetingAppendUndoable` | frontend/js/meetings.js:543 |
+| `meetingBinPair` | frontend/js/meetings.js:112 |
+| `meetingClockText` | frontend/js/meetings.js:632 |
+| `meetingContainerName` | frontend/js/meetings.js:656 |
+| `meetingCreateUndoable` | frontend/js/meetings.js:562 |
+| `meetingElapsedMs` | frontend/js/meetings.js:627 |
+| `meetingElapsedText` | frontend/js/meetings.js:651 |
+| `meetingEnhanceTake` | frontend/js/meetings.js:1314 |
+| `meetingFailText` | frontend/js/meetings.js:649 |
+| `meetingFocusFirstField` | frontend/js/meetings.js:983 |
+| `meetingFormRow` | frontend/js/meetings.js:93 |
+| `meetingLiveWords` | frontend/js/meetings.js:1121 |
+| `meetingLiveWordsStart` | frontend/js/meetings.js:1127 |
+| `meetingLiveWordsStop` | frontend/js/meetings.js:1142 |
+| `meetingNowValue` | frontend/js/meetings.js:22 |
+| `meetingPeaksSummary` | frontend/js/meetings.js:713 |
+| `meetingPeopleField` | frontend/js/meetings.js:44 |
+| `meetingRecordInto` | frontend/js/meetings.js:577 |
+| `meetingRecordingLive` | frontend/js/meetings.js:610 |
+| `meetingRecordingStarted` | frontend/js/meetings.js:1092 |
+| `meetingRecordingStopped` | frontend/js/meetings.js:1151 |
+| `meetingRemind` | frontend/js/meetings.js:310 |
+| `meetingSaveTranscript` | frontend/js/meetings.js:523 |
+| `meetingSay` | frontend/js/meetings.js:1087 |
+| `meetingShowSaved` | frontend/js/meetings.js:1343 |
+| `meetingStatusLine` | frontend/js/meetings.js:642 |
+| `meetingSummarise` | frontend/js/meetings.js:428 |
+| `meetingTakeAppend` | frontend/js/meetings.js:680 |
+| `meetingTakeBegin` | frontend/js/meetings.js:660 |
+| `meetingTakeBin` | frontend/js/meetings.js:1378 |
+| `meetingTakeDiscard` | frontend/js/meetings.js:1361 |
+| `meetingTakeFinish` | frontend/js/meetings.js:725 |
+| `meetingTakeFlush` | frontend/js/meetings.js:688 |
+| `meetingTick` | frontend/js/meetings.js:937 |
+| `meetingTranscribeTake` | frontend/js/meetings.js:1197 |
+| `meetingWhenText` | frontend/js/meetings.js:33 |
+| `micControlsInto` | frontend/js/meetings.js:2582 |
+| `micLevelInto` | frontend/js/meetings.js:2702 |
+| `nameMeetingMic` | frontend/js/meetings.js:2743 |
+| `nameRecordingSpeakers` | frontend/js/meetings.js:2163 |
+| `noteRecoveredRecordings` | frontend/js/meetings.js:1476 |
+| `openLiveCaptionsFrom` | frontend/js/meetings.js:2502 |
+| `openMeetingRecorder` | frontend/js/meetings.js:967 |
+| `openMeetingSheet` | frontend/js/meetings.js:338 |
+| `openNewMeeting` | frontend/js/meetings.js:135 |
+| `openRecordingTrim` | frontend/js/meetings.js:2343 |
+| `openRecordings` | frontend/js/meetings.js:1513 |
+| `openVoiceNote` | frontend/js/meetings.js:993 |
+| `playRecordingFrom` | frontend/js/meetings.js:1880 |
+| `recordingCardsRun` | frontend/js/meetings.js:2299 |
+| `recordingFacts` | frontend/js/meetings.js:1597 |
+| `recordingMarksFill` | frontend/js/meetings.js:1855 |
+| `recordingMenu` | frontend/js/meetings.js:2087 |
+| `recordingPaint` | frontend/js/meetings.js:1812 |
+| `recordingReady` | frontend/js/meetings.js:1706 |
+| `recordingRow` | frontend/js/meetings.js:1622 |
+| `recordingRunLine` | frontend/js/meetings.js:2308 |
+| `recordingShowLine` | frontend/js/meetings.js:1890 |
+| `recordingSpeed` | frontend/js/meetings.js:1728 |
+| `recordingTranscript` | frontend/js/meetings.js:1958 |
+| `recordingTranscriptFill` | frontend/js/meetings.js:1974 |
+| `recordingTranscriptNow` | frontend/js/meetings.js:2074 |
+| `recordingTranscriptState` | frontend/js/meetings.js:1608 |
+| `recordingTranscriptionEnded` | frontend/js/meetings.js:2264 |
+| `recordingTrimField` | frontend/js/meetings.js:2400 |
+| `recordingWav` | frontend/js/meetings.js:2444 |
+| `recordingWave` | frontend/js/meetings.js:1747 |
+| `recordingsEmpty` | frontend/js/meetings.js:1563 |
+| `removeRecordingMark` | frontend/js/meetings.js:1941 |
+| `renameRecording` | frontend/js/meetings.js:2173 |
+| `renameRecordingSpeaker` | frontend/js/meetings.js:2139 |
+| `renderRecordings` | frontend/js/meetings.js:1529 |
+| `resetMeetingUI` | frontend/js/meetings.js:945 |
+| `saveMeetingDocument` | frontend/js/meetings.js:1429 |
+| `saveMeetingNote` | frontend/js/meetings.js:1465 |
+| `saveRecordingMarks` | frontend/js/meetings.js:1903 |
+| `saveVoiceNoteText` | frontend/js/meetings.js:1483 |
+| `setMeetingState` | frontend/js/meetings.js:896 |
+| `showMeetingRecorder` | frontend/js/meetings.js:998 |
+| `startMeetingWave` | frontend/js/meetings.js:758 |
+| `startRecordingTranscription` | frontend/js/meetings.js:2229 |
+| `stopMeetingTimer` | frontend/js/meetings.js:878 |
+| `stopMeetingTranscription` | frontend/js/meetings.js:1355 |
+| `stopRecordingTranscription` | frontend/js/meetings.js:2236 |
+| `syncCaptionsDoors` | frontend/js/meetings.js:2496 |
+| `syncMicSelects` | frontend/js/meetings.js:2654 |
+| `syncRecordingDock` | frontend/js/meetings.js:922 |
+| `testMicrophone` | frontend/js/meetings.js:2663 |
+| `toggleMeetingPause` | frontend/js/meetings.js:1399 |
+| `toggleMeetingRecording` | frontend/js/meetings.js:1040 |
+| `transcribeRecording` | frontend/js/meetings.js:2198 |
+| `trimRecording` | frontend/js/meetings.js:2420 |
+| `watchRecordingTranscription` | frontend/js/meetings.js:2245 |
 
 ### frontend/js/mermaid-draw.js (28)
 
@@ -10634,9 +10634,9 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `duplicate-threshold` | frontend/index.html:14063 |
 | `duplicate-threshold-value` | frontend/index.html:14065 |
 | `duplicates-help` | frontend/index.html:14052 |
-| `editor-menu` | frontend/index.html:16431 |
-| `editor-menu-list` | frontend/index.html:16432 |
-| `editor-menu-preview` | frontend/index.html:16434 |
+| `editor-menu` | frontend/index.html:16434 |
+| `editor-menu-list` | frontend/index.html:16435 |
+| `editor-menu-preview` | frontend/index.html:16437 |
 | `embed-choices` | frontend/index.html:10921 |
 | `embed-choices-cache` | frontend/index.html:10923 |
 | `embed-choices-status` | frontend/index.html:10922 |
@@ -10713,12 +10713,12 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `feature-models-list` | frontend/index.html:10578 |
 | `feature-models-reset` | frontend/index.html:10580 |
 | `feature-models-reset-note` | frontend/index.html:10583 |
-| `features-card` | frontend/index.html:16313 |
-| `features-close` | frontend/index.html:16317 |
-| `features-count` | frontend/index.html:16329 |
-| `features-list` | frontend/index.html:16330 |
-| `features-overlay` | frontend/index.html:16311 |
-| `features-search` | frontend/index.html:16326 |
+| `features-card` | frontend/index.html:16316 |
+| `features-close` | frontend/index.html:16320 |
+| `features-count` | frontend/index.html:16332 |
+| `features-list` | frontend/index.html:16333 |
+| `features-overlay` | frontend/index.html:16314 |
+| `features-search` | frontend/index.html:16329 |
 | `find-duplicates` | frontend/index.html:14061 |
 | `finder-close` | frontend/index.html:823 |
 | `finder-filters` | frontend/index.html:873 |
@@ -11252,37 +11252,37 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `mcp-config-help` | frontend/index.html:11776 |
 | `mcp-config-note` | frontend/index.html:11796 |
 | `mcp-config-snippet` | frontend/index.html:11795 |
-| `meeting-captions` | frontend/index.html:16232 |
-| `meeting-card` | frontend/index.html:16156 |
-| `meeting-close` | frontend/index.html:16174 |
-| `meeting-controls` | frontend/index.html:16225 |
-| `meeting-copy` | frontend/index.html:16295 |
-| `meeting-discard` | frontend/index.html:16296 |
-| `meeting-discard-take` | frontend/index.html:16235 |
-| `meeting-done` | frontend/index.html:16300 |
-| `meeting-done-again` | frontend/index.html:16304 |
-| `meeting-done-lines` | frontend/index.html:16301 |
-| `meeting-done-open` | frontend/index.html:16303 |
-| `meeting-help` | frontend/index.html:16179 |
-| `meeting-live` | frontend/index.html:16256 |
-| `meeting-marker` | frontend/index.html:16229 |
-| `meeting-mic` | frontend/index.html:16213 |
-| `meeting-mic-controls` | frontend/index.html:16215 |
-| `meeting-mic-name` | frontend/index.html:16214 |
+| `meeting-captions` | frontend/index.html:16234 |
+| `meeting-card` | frontend/index.html:16158 |
+| `meeting-close` | frontend/index.html:16176 |
+| `meeting-controls` | frontend/index.html:16227 |
+| `meeting-copy` | frontend/index.html:16297 |
+| `meeting-discard` | frontend/index.html:16298 |
+| `meeting-discard-take` | frontend/index.html:16237 |
+| `meeting-done` | frontend/index.html:16302 |
+| `meeting-done-again` | frontend/index.html:16306 |
+| `meeting-done-lines` | frontend/index.html:16303 |
+| `meeting-done-open` | frontend/index.html:16305 |
+| `meeting-help` | frontend/index.html:16181 |
+| `meeting-live` | frontend/index.html:16258 |
+| `meeting-marker` | frontend/index.html:16231 |
+| `meeting-mic` | frontend/index.html:16215 |
+| `meeting-mic-controls` | frontend/index.html:16217 |
+| `meeting-mic-name` | frontend/index.html:16216 |
 | `meeting-overlay` | frontend/index.html:16154 |
-| `meeting-pause` | frontend/index.html:16227 |
-| `meeting-progress` | frontend/index.html:16260 |
-| `meeting-record` | frontend/index.html:16226 |
-| `meeting-save` | frontend/index.html:16284 |
-| `meeting-save-doc` | frontend/index.html:16290 |
-| `meeting-save-row` | frontend/index.html:16280 |
-| `meeting-stage` | frontend/index.html:16224 |
-| `meeting-status` | frontend/index.html:16265 |
-| `meeting-stop-transcribe` | frontend/index.html:16263 |
-| `meeting-timer` | frontend/index.html:16230 |
-| `meeting-title` | frontend/index.html:16208 |
-| `meeting-transcript` | frontend/index.html:16270 |
-| `meeting-wave` | frontend/index.html:16252 |
+| `meeting-pause` | frontend/index.html:16229 |
+| `meeting-progress` | frontend/index.html:16262 |
+| `meeting-record` | frontend/index.html:16228 |
+| `meeting-save` | frontend/index.html:16286 |
+| `meeting-save-doc` | frontend/index.html:16292 |
+| `meeting-save-row` | frontend/index.html:16282 |
+| `meeting-stage` | frontend/index.html:16226 |
+| `meeting-status` | frontend/index.html:16267 |
+| `meeting-stop-transcribe` | frontend/index.html:16265 |
+| `meeting-timer` | frontend/index.html:16232 |
+| `meeting-title` | frontend/index.html:16210 |
+| `meeting-transcript` | frontend/index.html:16272 |
+| `meeting-wave` | frontend/index.html:16254 |
 | `memory-add` | frontend/index.html:11469 |
 | `memory-budget` | frontend/index.html:11461 |
 | `memory-empty` | frontend/index.html:11473 |
@@ -11446,19 +11446,19 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `offline-indicator` | frontend/index.html:9469 |
 | `ollama-help` | frontend/index.html:10318 |
 | `ollama-status` | frontend/index.html:10303 |
-| `onboarding-actions` | frontend/index.html:16348 |
-| `onboarding-atlas` | frontend/index.html:16340 |
-| `onboarding-back` | frontend/index.html:16354 |
-| `onboarding-card` | frontend/index.html:16337 |
-| `onboarding-dots` | frontend/index.html:16350 |
-| `onboarding-emblem` | frontend/index.html:16339 |
-| `onboarding-icon` | frontend/index.html:16341 |
-| `onboarding-next` | frontend/index.html:16355 |
-| `onboarding-overlay` | frontend/index.html:16335 |
-| `onboarding-skip` | frontend/index.html:16352 |
-| `onboarding-slide` | frontend/index.html:16338 |
-| `onboarding-text` | frontend/index.html:16343 |
-| `onboarding-title` | frontend/index.html:16342 |
+| `onboarding-actions` | frontend/index.html:16351 |
+| `onboarding-atlas` | frontend/index.html:16343 |
+| `onboarding-back` | frontend/index.html:16357 |
+| `onboarding-card` | frontend/index.html:16340 |
+| `onboarding-dots` | frontend/index.html:16353 |
+| `onboarding-emblem` | frontend/index.html:16342 |
+| `onboarding-icon` | frontend/index.html:16344 |
+| `onboarding-next` | frontend/index.html:16358 |
+| `onboarding-overlay` | frontend/index.html:16338 |
+| `onboarding-skip` | frontend/index.html:16355 |
+| `onboarding-slide` | frontend/index.html:16341 |
+| `onboarding-text` | frontend/index.html:16346 |
+| `onboarding-title` | frontend/index.html:16345 |
 | `open-exports-folder` | frontend/index.html:13885 |
 | `open-exports-row` | frontend/index.html:13884 |
 | `packages-embed-link` | frontend/index.html:12884 |
@@ -12107,23 +12107,23 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `tool-list` | frontend/index.html:11760 |
 | `tools-toggle` | frontend/index.html:3298 |
 | `top-bar` | frontend/index.html:128 |
-| `tour-back` | frontend/index.html:16417 |
-| `tour-block` | frontend/index.html:16392 |
-| `tour-block-bottom` | frontend/index.html:16395 |
-| `tour-block-left` | frontend/index.html:16396 |
-| `tour-block-right` | frontend/index.html:16394 |
-| `tour-block-top` | frontend/index.html:16393 |
-| `tour-card` | frontend/index.html:16402 |
-| `tour-close` | frontend/index.html:16408 |
-| `tour-count` | frontend/index.html:16407 |
-| `tour-next` | frontend/index.html:16418 |
+| `tour-back` | frontend/index.html:16420 |
+| `tour-block` | frontend/index.html:16395 |
+| `tour-block-bottom` | frontend/index.html:16398 |
+| `tour-block-left` | frontend/index.html:16399 |
+| `tour-block-right` | frontend/index.html:16397 |
+| `tour-block-top` | frontend/index.html:16396 |
+| `tour-card` | frontend/index.html:16405 |
+| `tour-close` | frontend/index.html:16411 |
+| `tour-count` | frontend/index.html:16410 |
+| `tour-next` | frontend/index.html:16421 |
 | `tour-replay-buttons` | frontend/index.html:15267 |
-| `tour-section` | frontend/index.html:16405 |
-| `tour-skip` | frontend/index.html:16415 |
-| `tour-spot` | frontend/index.html:16398 |
+| `tour-section` | frontend/index.html:16408 |
+| `tour-skip` | frontend/index.html:16418 |
+| `tour-spot` | frontend/index.html:16401 |
 | `tour-start-btn` | frontend/index.html:15261 |
-| `tour-text` | frontend/index.html:16413 |
-| `tour-title` | frontend/index.html:16412 |
+| `tour-text` | frontend/index.html:16416 |
+| `tour-title` | frontend/index.html:16415 |
 | `ui-motion-row` | frontend/index.html:12321 |
 | `ui-motion-toggle` | frontend/index.html:12322 |
 | `undo-history-menu` | frontend/index.html:9591 |
@@ -31148,14 +31148,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:752 |
+| Needs hardware | docs/roadmap/LEDGER.md:751 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:744 |
+| Owner calls | docs/roadmap/LEDGER.md:743 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31336,7 +31336,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:889 |
+| Plan session briefs | docs/roadmap/LEDGER.md:888 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31390,25 +31390,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:905 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:989 |
+| chat | docs/roadmap/LEDGER.md:904 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:988 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:929 |
-| general | docs/roadmap/LEDGER.md:703 |
+| documents | docs/roadmap/LEDGER.md:928 |
+| general | docs/roadmap/LEDGER.md:702 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:893 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1001 |
+| graph | docs/roadmap/LEDGER.md:892 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1000 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:407 |
-| mindmap | docs/roadmap/LEDGER.md:941 |
+| mindmap | docs/roadmap/LEDGER.md:940 |
 | timeline | docs/roadmap/LEDGER.md:562 |
-| timeline | docs/roadmap/LEDGER.md:965 |
+| timeline | docs/roadmap/LEDGER.md:964 |
 | ui-modernisation | docs/roadmap/LEDGER.md:444 |
-| ui-modernisation | docs/roadmap/LEDGER.md:953 |
+| ui-modernisation | docs/roadmap/LEDGER.md:952 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:917 |
+| whiteboard | docs/roadmap/LEDGER.md:916 |
 | world-class | docs/roadmap/LEDGER.md:565 |
-| world-class | docs/roadmap/LEDGER.md:977 |
+| world-class | docs/roadmap/LEDGER.md:976 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

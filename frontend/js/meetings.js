@@ -16,6 +16,9 @@
 //: The datetime field's value for "now", to the nearest five minutes: a
 //: meeting starts at 14:00, not at 14:03:27.
 (() => {
+  //: The recorder's card is a surface (index.html, L621): this file loads on first use, so it is built here, before
+  //: the wiring below reads its ids.
+  surfaceBuild("meeting");
   function meetingNowValue(at = new Date()) {
     const d = new Date(at.getTime());
     d.setSeconds(0, 0);
@@ -962,6 +965,7 @@
   //: global-scope ratchet).
 
   async function openMeetingRecorder() {
+    surfaceBuild("meeting");
     //: A recording folded into the dock is brought back, not reset.
     if (meetingRecorder) return showMeetingRecorder();
     nameMeetingMic();
