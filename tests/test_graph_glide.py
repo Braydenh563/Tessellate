@@ -35,8 +35,9 @@ def _function(name: str) -> str:
 
 
 def _tick_body() -> str:
-    start = CANVAS.index("        const now = performance.now();\n        const gap = s.lastTickAt")
-    end = CANVAS.index("        s.gliding = true;", start) + len("        s.gliding = true;")
+    # L14: the tick body is `gcOnWorkerTick`, a helper one level in.
+    start = CANVAS.index("  const now = performance.now();\n  const gap = s.lastTickAt")
+    end = CANVAS.index("  s.gliding = true;", start) + len("  s.gliding = true;")
     return CANVAS[start:end]
 
 

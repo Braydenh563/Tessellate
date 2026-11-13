@@ -13,7 +13,7 @@
 // cluster, and half a dozen like it, popup close/save, new-note save, the
 // resize handler) passes functions and reads `let`s defined below *as bare
 // identifiers, evaluated the moment that line of app.js runs*, not inside a
-// closure, not deferred to a later event. In the original single file this
+// closure, not put off to a later event. In the original single file this
 // worked regardless of position because function declarations hoist across
 // the whole script; split into two <script> tags, each tag is its own
 // hoisting scope, so if app.js ran first those lines would throw
@@ -170,7 +170,7 @@ function graphNodeRadius(node) {
 
 function graphLayout() {
   const saved = prefs.get("graph-layout", null);
-  return ["force", "tree", "radial", "arc", "treemap", "tessellation"].includes(saved) ? saved : "force";
+  return ["force", "tree", "radial", "arc", "map", "treemap", "tessellation"].includes(saved) ? saved : "force";
 }
 
 //: **Tree, Radial and Arc compute every position, so nothing in them moves.**
@@ -406,6 +406,7 @@ function layoutTreemap(nodes, width, height, info) {
 }
 
 function layoutHierarchy(nodes, kind, width, height, info) {
+  if (kind === "map") return graphLate.layoutMap(nodes, width, height);
   if (kind === "treemap") return layoutTreemap(nodes, width, height, info);
   if (kind === "tessellation") return gcTess.layout(nodes, width, height, info, prefs.get("graph-tess-look", null));
   // Build parent → children from the notes themselves.
@@ -697,7 +698,7 @@ function frameTree(svg, zoomBehavior, nodes, width, height, radial, arc = false,
   //: As long as the notes' own glide (`GC_LAYOUT_MS`), so frame and notes
   //: arrive together.
   if (instant) svg.interrupt().call(zoomBehavior.transform, framed);
-  else svg.transition().duration(graphGlideMs(700)).call(zoomBehavior.transform, framed);
+  else graphGlide(svg, zoomBehavior, "transform", [framed], 700);
 }
 
 // --- tracing a path between two notes (§9) -----------------------------------
@@ -947,7 +948,17 @@ function clearTrace({ quiet = false } = {}) {
   applyGraphHighlight();
 }
 
+//: The layers the map shows are stops on a route too (L-graph-14): the same
+//: Show switches that widen `/graph` widen the trace, and an end that is a
+//: `document:N` / `entity:N` node needs its layer on or the server refuses it.
 async function runTrace() {
+  function graphPathLayerQuery() {
+    const on = (id) => Boolean(document.getElementById(id)?.checked);
+    const ends = [traceFromNode, traceToNode].map((n) => String(n?.id ?? ""));
+    const documents = on("graph-documents") || ends.some((id) => id.startsWith("document:"));
+    const entities = on("graph-entities") || ends.some((id) => id.startsWith("entity:"));
+    return `${documents ? "&documents=true" : ""}${entities ? "&entities=true" : ""}`;
+  }
   if (!traceFromNode || !traceToNode) {
     showTraceMessage("Pick two notes to trace between.");
     return;
@@ -965,7 +976,7 @@ async function runTrace() {
   }
   showTraceMessage("Tracing…");
   const result = await apiJson(
-    `/graph/path?source=${encodeURIComponent(from)}&target=${encodeURIComponent(to)}`
+    `/graph/path?source=${encodeURIComponent(from)}&target=${encodeURIComponent(to)}${graphPathLayerQuery()}`
   ).catch(() => null);
   if (!result) {
     showTraceMessage("Couldn't trace that: the server didn't answer.");
@@ -1316,7 +1327,7 @@ function drawTrace() {
 //:, dragging reheats the simulation, so everything else keeps moving while
 //: you aim. Fourteen makes it a comfortable 23px and is still far short of the
 //: nearest neighbour, so a drop in open space still links nothing.
-const DROP_SLOP = 14;
+//: The slop is the 14 in `graphNodeRadius(other) + 14` below (a constant of its own cost a shared-scope name).
 
 
 
@@ -1328,7 +1339,7 @@ function graphNodeUnder(dragged, event) {
     // Squared, not `Math.hypot`. This runs over every node on every pointer
     // event of a drag, so the square root is one transcendental call per note
     // per event for a comparison that does not need it.
-    const reach = graphNodeRadius(other) + DROP_SLOP;
+    const reach = graphNodeRadius(other) + 14;
     if (dx * dx + dy * dy <= reach * reach) return other;
   }
   return null;
@@ -1788,11 +1799,12 @@ async function renderGraph() {
 
 //: The local graph's query (GRAPH_PLAN 514 (1)): depth and the three
 //: switches, stored per surface ("focus" in the gear, "pane" beside a note).
+//: Boards ride the map's own Maps switch on both (L-graph-8).
 function graphLocalQuery(prefix, depth) {
   const on = (id) => prefs.get(`graph-${prefix}-${id}`, null) !== "0";
   const stored = Number(prefs.get(`graph-${prefix}-depth`, null));
   const hops = stored >= 1 && stored <= 5 ? stored : depth;
-  return `depth=${hops}&incoming=${on("in")}&outgoing=${on("out")}&neighbours=${on("neighbours")}`;
+  return `depth=${hops}&incoming=${on("in")}&outgoing=${on("out")}&neighbours=${on("neighbours")}&include_maps=${Boolean(document.getElementById("graph-maps")?.checked)}`;
 }
 
 //: What the map asks for, from the Show switches; focus mode asks for one
@@ -1997,7 +2009,7 @@ function initGraphKeyboard() {
     const zoomKeys = { "+": 1.3, "=": 1.3, "-": 1 / 1.3, _: 1 / 1.3 };
     if (Object.prototype.hasOwnProperty.call(zoomKeys, event.key) && graphSvg && graphZoom) {
       event.preventDefault();
-      graphSvg.transition().duration(graphGlideMs(200)).call(graphZoom.scaleBy, zoomKeys[event.key]);
+      graphGlide(graphSvg, graphZoom, "scaleBy", [zoomKeys[event.key]], 200);
       announce(zoomKeys[event.key] > 1 ? "Zoomed in." : "Zoomed out.");
       return;
     }
@@ -2015,7 +2027,7 @@ function initGraphKeyboard() {
       // fixed step would move a hair at high zoom and half the map at low.
       // Dividing by k keeps the movement a constant number of screen pixels.
       const k = d3.zoomTransform(graphSvg.node()).k || 1;
-      graphSvg.transition().duration(graphGlideMs(150)).call(graphZoom.translateBy, dx / k, dy / k);
+      graphGlide(graphSvg, graphZoom, "translateBy", [dx / k, dy / k], 150);
       return;
     }
 
@@ -2218,7 +2230,7 @@ function fitGraphToView(svg, zoomBehavior, nodes, width, height, instant = false
   if (instant) {
     svg.interrupt().call(zoomBehavior.transform, framed);
     balance();
-  } else svg.transition().duration(graphGlideMs(500)).call(zoomBehavior.transform, framed).on("end", balance);
+  } else graphGlide(svg, zoomBehavior, "transform", [framed], 500).on("end", balance);
 }
 
 // Dim everything except nodes that match the search box AND (when hovering)
@@ -2384,7 +2396,7 @@ function graphPanToNode(node) {
   const target = d3.zoomIdentity.translate(graphDims.w / 2, graphDims.h / 2).scale(k).translate(-node.x, -node.y);
   //: Moved by hand as far as the settle fit is concerned (INBOX 792).
   if (typeof gcTab !== "undefined" && gcTab.svg === graphSvg) gcTab.userZoomed = true;
-  graphSvg.transition().duration(graphGlideMs(300)).call(graphZoom.transform, target);
+  graphGlide(graphSvg, graphZoom, "transform", [target], 300);
 }
 
 function graphSearchGo(dir) {
@@ -3037,6 +3049,56 @@ const graphLate = {
   //: An edge resize is under way (`placeGraphPopup` waits it out).
   sizing: false,
 };
+//: **The map of my notes** (L-graph-2): the Map layout places each note where
+//: `/graph/projection` puts it (its meaning flattened to a plane), so notes
+//: that mean alike sit together. The layout is synchronous, so the first call
+//: starts the fetch and draws the notes in a row until it arrives; a note the
+//: server has no point for (no vector yet, private) stays in that row below
+//: the map. No lines: the picture is about distance.
+graphLate.projection = null;
+graphLate.layoutMap = function (nodes, width, height) {
+  const done = { nodes: [], links: [], radial: false, arc: false, vertical: false };
+  const fresh = graphLate.projection && Date.now() - graphLate.projection.at < 60000;
+  if (!graphLate.projection || (!fresh && !graphLate.projection.busy)) {
+    const held = graphLate.projection;
+    graphLate.projection = { at: held ? held.at : 0, busy: true, points: held ? held.points : new Map() };
+    apiJson("/graph/projection")
+      .then((data) => {
+        const points = new Map(data.points.map((p) => [p.id, p]));
+        graphLate.projection = { at: Date.now(), busy: false, points };
+        if (graphLayout() === "map") renderGraph();
+      })
+      .catch(() => {
+        graphLate.projection.busy = false;
+        graphLate.projection.at = Date.now();
+      });
+  }
+  const points = graphLate.projection.points;
+  const pad = 40;
+  const side = Math.max(60, Math.min(width, height * 0.9) - pad * 2);
+  const left = (width - side) / 2;
+  const loose = [];
+  for (const node of nodes) {
+    const p = points.get(node.id);
+    if (p) {
+      node.x = left + p.x * side;
+      node.y = pad + p.y * side;
+    } else loose.push(node);
+  }
+  loose.forEach((node, i) => {
+    node.x = pad + ((i + 0.5) / loose.length) * (width - pad * 2);
+    node.y = height - pad / 2;
+  });
+  for (const node of nodes) {
+    node.fx = node.x;
+    node.fy = node.y;
+    node.depth = 2;
+    node.isLeaf = true;
+    node.shared = false;
+    done.nodes.push(node);
+  }
+  return done;
+};
 function watchGraphPopupSize(popup, place) {
   if (typeof ResizeObserver !== "function" || popup.dataset.placeWatch) return;
   popup.dataset.placeWatch = "1";
@@ -3156,13 +3218,23 @@ function graphPopupFollowSpot(box, room, size, floor = 0) {
     [sx - w / 2, sy - r - gap - h],
   ];
   const clear = (x, y) => x + w < sx - r || x > sx + r || y + h < sy - r || y > sy + r;
+  //: The floating chrome that stays put (minimap, zoom strip, legend) is kept clear too: a card
+  //: on the right edge sat over the zoom buttons (graph gsweep, 2250 px2 at 1440x900).
+  const chrome = ["graph-minimap", "graph-zoom", "graph-legend"].map((id) => $(id)).filter((el) => el && el.offsetParent !== null)
+    .map((el) => el.getBoundingClientRect()).filter((q) => q.width > 0 && q.height > 0)
+    .map((q) => ({ l: q.left - box.left, t: q.top - box.top, r: q.right - box.left, b: q.bottom - box.top }));
+  const free = (x, y) => chrome.every((q) => x + w <= q.l || x >= q.r || y + h <= q.t || y >= q.b);
   let best = null;
+  let clearOnly = null;
   for (const [x, y] of tries) {
     const spot = { left: clampX(x), top: clampY(y) };
-    if (clear(spot.left, spot.top)) return spot;
+    if (clear(spot.left, spot.top)) {
+      if (free(spot.left, spot.top)) return spot;
+      clearOnly = clearOnly || spot;
+    }
     best = best || spot;
   }
-  return best;
+  return clearOnly || best;
 }
 
 //: The head drags the popup (pointer and touch); the buttons and fields keep
@@ -3244,7 +3316,7 @@ async function graphShowNote(id, { document: isDocument = false } = {}) {
   }
   focusGraphNode(node);
   if (typeof graphSvg !== "undefined" && graphSvg && typeof graphZoom !== "undefined" && graphZoom) {
-    graphSvg.transition().duration(graphGlideMs(400)).call(graphZoom.translateTo, node.x, node.y);
+    graphGlide(graphSvg, graphZoom, "translateTo", [node.x, node.y], 400);
   }
 }
 
@@ -3764,7 +3836,7 @@ async function saveGraphPopup() {
     if (graphPopupId === id) {
       status.textContent = "Saved.";
       //: What was just written is the new clean state, so the button puts
-      //: itself away for the 600ms the panel is still open.
+      //: itself away for the 600ms the panel stays up.
       graphPopupClean = { content, tags: tagsText };
       syncGraphPopupSave();
     }
@@ -3959,7 +4031,7 @@ const GRAPH_MINIMAP_H = 112;
 //: render rather than once per paint (a cooling layout paints every eighth
 //: tick), drawn at a hard cap, and a line is two coordinates with no hit
 //: testing, which is a different thing from the canvas's own edge pass.
-const GRAPH_MINIMAP_MAX_EDGES = 600;
+//: The cap is the 600 in `edgeStride` below.
 let graphMinimapPairs = null;
 let graphMinimapPairsFrom = null; // the adjacency map those pairs were built from
 
@@ -4133,7 +4205,7 @@ function graphMinimapPaint() {
   if (edgesGroup) {
     const byId = new Map(nodes.map((n) => [n.id, n]));
     const pairs = graphMinimapEdgePairs();
-    const edgeStride = Math.max(1, Math.ceil(pairs.length / GRAPH_MINIMAP_MAX_EDGES));
+    const edgeStride = Math.max(1, Math.ceil(pairs.length / 600));
     const ends = [];
     for (let i = 0; i < pairs.length; i += edgeStride) {
       const from = byId.get(pairs[i][0]);
@@ -4241,6 +4313,99 @@ function graphGlideMs(base) {
   if (typeof gcStill === "function" && gcStill()) return 0;
   const token = typeof gcTokens !== "undefined" && gcTokens.hoverMs != null ? gcTokens.hoverMs : 200;
   return Math.round((base * token) / 200);
+}
+
+//: **An interrupted glide hands its speed to the next** (LEDGER L10). A camera
+//: glide cut off by another (a second arrow key, a zoom button pressed in the
+//: middle of a fit) started the new one from rest on d3's cubic ease, so the
+//: view stalled at the join and then ramped up again. The new glide's ease is
+//: a critically damped spring entered at the speed the old one had: progress
+//: `1 - (1 + (w - s) t) e^(-w t)`, `s` the opening slope along the way to the
+//: new target (`graphGlideKit.slope`), `w` such that it has settled by the end of
+//: the glide. A glide that interrupts nothing keeps the cubic ease. The view
+//: is the vector (x, y, k * 400): a zoom step weighs about as much as a pan.
+const graphGlideKit = {
+  settle: 9,
+  kscale: 400,
+  last: { node: null, t: 0, tPrev: 0, view: null, live: false },
+  vec(view) {
+    return [view.x, view.y, view.k * graphGlideKit.kscale];
+  },
+  //: The opening slope, per second as a share of the way, of a glide from `from`
+  //: to `to` (views as vectors) entered at velocity `vel` (units per second).
+  slope(vel, from, to) {
+    const way = to.map((v, i) => v - from[i]);
+    const along = way.reduce((sum, v) => sum + v * v, 0);
+    if (along < 1e-6) return 0;
+    return way.reduce((sum, v, i) => sum + v * vel[i], 0) / along;
+  },
+  //: The spring as an ease: 0 at 0, 1 at 1, slope `slope` per second at the start.
+  spring(slope, ms) {
+    const omega = graphGlideKit.settle / (ms / 1000);
+    const open = Math.max(-omega, Math.min(2 * omega, slope));
+    return (t) => {
+      if (t <= 0) return 0;
+      if (t >= 1) return 1;
+      const tau = (t * ms) / 1000;
+      return 1 - (1 + (omega - open) * tau) * Math.exp(-omega * tau);
+    };
+  },
+  //: Where a glide of this kind ends, worked out the way d3-zoom does, to aim the
+  //: slope; d3 still computes its own end and the glide arrives there.
+  target(node, zoom, method, args, view) {
+    if (method === "transform") return args[0];
+    if (method === "translateBy") return view.translate(args[0], args[1]);
+    const [[x0, y0], [x1, y1]] = zoom.extent().call(node);
+    const cx = (x0 + x1) / 2;
+    const cy = (y0 + y1) / 2;
+    if (method === "translateTo") return d3.zoomIdentity.translate(cx - args[0] * view.k, cy - args[1] * view.k).scale(view.k);
+    const [lo, hi] = zoom.scaleExtent();
+    const k = Math.max(lo, Math.min(hi, view.k * args[0]));
+    const [px, py] = view.invert([cx, cy]);
+    return d3.zoomIdentity.translate(cx - px * k, cy - py * k).scale(k);
+  },
+  //: The speed the last glide had when this one began, or null when none was
+  //: running (it ended, or the view has been still for a while).
+  entry(node, view, now) {
+    const last = graphGlideKit.last;
+    const span = last.t - last.tPrev;
+    if (last.node !== node || !last.live || !last.view || now - last.t > 100 || span < 2 || span > 100) return null;
+    const before = graphGlideKit.vec(last.view);
+    const here = graphGlideKit.vec(view);
+    return here.map((v, i) => ((v - before[i]) * 1000) / span);
+  },
+};
+//: Glide the view: `zoom[method](...args)` on a transition of `base` ms (on the
+//: motion token, 0 for less motion), entering at the speed of a glide it cut off.
+function graphGlide(svg, zoom, method, args, base) {
+  const ms = graphGlideMs(base);
+  const trans = svg.transition().duration(ms);
+  if (ms <= 0) return trans.call(zoom[method], ...args);
+  const node = svg.node();
+  let ease = null;
+  let from = 0;
+  trans.ease((t) => {
+    const now = performance.now();
+    const view = d3.zoomTransform(node);
+    if (!ease) {
+      ease = d3.easeCubicInOut;
+      const vel = graphGlideKit.entry(node, view, now);
+      if (vel && Math.hypot(...vel) > 20) {
+        const kit = graphGlideKit;
+        const slope = kit.slope(vel, kit.vec(view), kit.vec(kit.target(node, zoom, method, args, view)));
+        //: The first frame's elapsed time was already spent by the glide cut off,
+        //: so the spring counts from there (else that frame moves twice).
+        if (slope !== 0) {
+          ease = kit.spring(slope, ms);
+          from = Math.min(t, 0.99);
+        }
+      }
+    }
+    const last = graphGlideKit.last;
+    Object.assign(last, { node, tPrev: last.node === node ? last.t : 0, t: now, view, live: t < 1 });
+    return ease(from ? (t - from) / (1 - from) : t);
+  });
+  return trans.call(zoom[method], ...args);
 }
 
 //: Every number that reaches an SVG attribute goes through here first. Named
@@ -4460,8 +4625,8 @@ function initGraphMinimap() {
       .translate(graphDims.w / 2, graphDims.h / 2)
       .scale(scale)
       .translate(-cx, -cy);
-    const sel = animate ? graphSvg.transition().duration(graphGlideMs(250)) : graphSvg;
-    sel.call(graphZoom.transform, target);
+    if (animate) graphGlide(graphSvg, graphZoom, "transform", [target], 250);
+    else graphSvg.call(graphZoom.transform, target);
   };
 
   const jump = (event, animate = true) => {
@@ -4618,6 +4783,8 @@ function graphCaptureView() {
     colour: prefs.get("graph-colour", null) || "",
     hiddenCategories: [...graphHiddenCategories],
     hiddenKeys: [...graphHiddenKeys],
+    //: The link-kind chips (a view saved with Contradicts off came back with it on).
+    hiddenLinkKinds: prefs.json("graph-hidden-link-kinds", []),
     groups: graphGroups(),
     // graph.md section 1: `#graph-physics` is the Physics *section*
     // (`.dock-menu-section`, index.html), not a checkbox -- it was never
@@ -4716,6 +4883,8 @@ function graphApplyView(view) {
   set("graph-time-slider", view.time);
   graphHiddenCategories = new Set(view.hiddenCategories || []);
   graphHiddenKeys = new Set(view.hiddenKeys || []);
+  //: Stored, then read back by `gcRenderFilterChips` on the render the changes above kick off.
+  if (Array.isArray(view.hiddenLinkKinds)) prefs.set("graph-hidden-link-kinds", JSON.stringify(view.hiddenLinkKinds));
   if (Array.isArray(view.groups)) {
     prefs.set(GRAPH_GROUPS_KEY, JSON.stringify(view.groups));
     graphRenderGroups();
@@ -4765,6 +4934,29 @@ function renderGraphViews() {
   }
 }
 
+//: The selection dock's ⋯ (`kebabMenu`): rows that act on the selected notes
+//: and are too many for the dock itself. "Compose into a draft" makes one
+//: document from them (`expandNoteIntoDocument` takes a list of ids).
+graphLate.wireSelectionMore = function () {
+  const slot = document.getElementById("graph-selection-more");
+  if (!slot || slot.firstChild) return;
+  slot.appendChild(
+    kebabMenu(
+      [
+        {
+          label: "ph:file-text Compose into a draft",
+          title: "Make one document from the selected notes, a section each; the notes stay as they are",
+          run: () => {
+            const ids = [...gcSelected].filter((id) => Number.isInteger(id));
+            if (!ids.length) return toast("Select some notes first.");
+            expandNoteIntoDocument(ids);
+          },
+        },
+      ],
+      "More actions for the selected notes"
+    )
+  );
+};
 function initGraphViews() {
   const select = document.getElementById("graph-view-picker");
   if (!select || select._wired) return;
@@ -4800,6 +4992,7 @@ function initGraphViews() {
 initGraphDockHeightToken();
 initGraphRailToken();
 initGraphToastClearance();
+graphLate.wireSelectionMore();
 //: Tidy spacing (INBOX 1529) is drawn on the first visit, beside Group by
 //: category, not shipped in index.html (the boot element cap, test_boot_diet3).
 (function graphTidyRow() {
@@ -4922,7 +5115,7 @@ function graphZoomBy(factor) {
   //: The zoom buttons move the camera as a gesture does: no settle fit or
   //: panel refit may take it back (INBOX 792).
   if (typeof gcTab !== "undefined" && gcTab.svg === graphSvg) gcTab.userZoomed = true;
-  graphSvg.transition().duration(graphGlideMs(200)).call(graphZoom.scaleBy, factor);
+  graphGlide(graphSvg, graphZoom, "scaleBy", [factor], 200);
 }
 //: **The zoom strip is one Tab stop** (audit 1031 G20: Tab from the map's box
 //: walked zoom in, zoom out, fit and full screen, four stops, before the status
@@ -5162,6 +5355,7 @@ const GRAPH_DEFAULTS = {
   "graph-minimap-size": "sm",
   hiddenCategories: [],
   hiddenKeys: [],
+  hiddenLinkKinds: [],
 };
 
 //: The same shape as `GRAPH_DEFAULTS`, read off the controls as they stand,
@@ -5175,6 +5369,8 @@ function graphCaptureSettings() {
       out.hiddenCategories = [...graphHiddenCategories];
     } else if (key === "hiddenKeys") {
       out.hiddenKeys = [...graphHiddenKeys];
+    } else if (key === "hiddenLinkKinds") {
+      out.hiddenLinkKinds = prefs.json("graph-hidden-link-kinds", []);
     } else {
       const el = document.getElementById(key);
       if (!el) out[key] = fallback;
@@ -5205,8 +5401,9 @@ function graphApplySettings(settings) {
   }
   graphHiddenCategories = new Set(settings.hiddenCategories || []);
   graphHiddenKeys = new Set(settings.hiddenKeys || []);
+  prefs.set("graph-hidden-link-kinds", JSON.stringify(settings.hiddenLinkKinds || []));
   for (const [key, value] of Object.entries(settings)) {
-    if (key === "layout" || key === "hiddenCategories" || key === "hiddenKeys") continue;
+    if (key === "layout" || key === "hiddenCategories" || key === "hiddenKeys" || key === "hiddenLinkKinds") continue;
     const el = document.getElementById(key);
     if (!el) continue;
     if (el.type === "checkbox") {
@@ -5496,15 +5693,6 @@ onSurface("graph", () => {
   $("graph-popup-save").addEventListener("click", () => saveGraphPopup());
   // "Open in Notes" now lives in the popup's action row (renderGraphPopupActions).
   // Clicking empty canvas dismisses the popups.
-  $("graph-svg").addEventListener("click", () => {
-    closeGraphPopup();
-    closeGraphNewNote();
-  });
-  // Grow the map: double-click empty space to add a note right there.
-  $("graph-svg").addEventListener("dblclick", (event) => {
-    if (event.target.closest(".graph-node")) return; // node dblclick pins it
-    openGraphNewNote(event);
-  });
   $("graph-add-node").addEventListener("click", () => openGraphNewNote(null));
   $("graph-new-close").addEventListener("click", closeGraphNewNote);
   $("graph-new-save").addEventListener("click", saveGraphNewNote);

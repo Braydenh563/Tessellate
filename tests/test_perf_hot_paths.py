@@ -114,7 +114,8 @@ def test_a_settled_layout_is_held_when_nothing_it_depends_on_changed() -> None:
     inputs are signed; the same signature as the last layout to settle, with
     every note starting where it left off, starts at rest."""
     canvas = _source("graph-canvas.js")
-    start = _body(canvas, "gcStartWorker")
+    # gcStartWorker with the pieces L14 split out of it (the end handler holds the settle).
+    start = "\n".join(_body(canvas, n) for n in ("gcStartWorker", "gcOnWorkerTick", "gcFitOnTick", "gcOnWorkerEnd", "gcWorkerInit"))
     assert "viewSeed?.holdIfSettled && s.settledSig === sig" in start
     assert "s.settledSig = null;" in start
     # Only a layout that really came to rest may be held.

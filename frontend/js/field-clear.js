@@ -10,10 +10,12 @@
 // title, the tags and the staged files, merging with anything typed since
 // rather than overwriting it. Escape is not touched: it keeps what it did.
 //
-// **No `value` setter is wrapped to notice a script clearing a box** (a send,
-// a save): Capture's own box already owns one (documents.js
-// `noteSurfaceOwnValue`), and a second would shadow it. A one-second check of
-// five booleans while the page is visible does the job instead.
+// A script writing a box (a send, "Ask about this") raises no `input` event,
+// so each box's `value` setter is wrapped (`fieldClearWatchValue`); there is no
+// poll. Capture's note is the exception: its setter is its own (documents.js
+// `noteSurfaceOwnValue`, reinstalled whenever the editor mounts), so it is left
+// alone. Its writers are covered anyway: a restored draft is in place before
+// the wire-time sync, and a save clears it with the buttons (both measured).
 
 (() => {
   const FIELD_CLEARS = [
@@ -22,6 +24,7 @@
       button: "capture-clear-title",
       fields: ["entry-title"],
       inline: "Clear the title",
+      surface: "notes",
       said: "Cleared the title.",
       undoLabel: "Cleared the title",
     },
@@ -29,6 +32,7 @@
       button: "capture-clear-body",
       fields: ["entry-content"],
       inline: "Clear the note",
+      surface: "notes",
       said: "Cleared the note.",
       undoLabel: "Cleared the note",
       //: Ends where Clear all ends (the third row): in the box, the tag suggestions drawn from the old words gone.
@@ -37,6 +41,7 @@
     {
       button: "capture-clear",
       fields: ["entry-content", "entry-title", "entry-tags"],
+      surface: "notes",
       said: "Cleared everything.",
       undoLabel: "Cleared the note box",
       //: Files staged for Save go with the words, and come back with them.
@@ -58,8 +63,8 @@
     },
     //: A modal dialog or overlay is drawn above the toasts, so its Undo is on its own status line.
     { button: "quick-note-clear", fields: ["quick-note-text"], status: "quick-note-status", surface: "quickNote" },
-    { button: "ask-clear", fields: ["question"] },
-    { button: "chat-clear", fields: ["chat-input"] },
+    { button: "ask-clear", fields: ["question"], surface: "notes" },
+    { button: "chat-clear", fields: ["chat-input"], surface: "chat" },
     { button: "command-palette-clear", fields: ["command-palette-input"], status: "command-palette-status", surface: "palette" },
   ];
 
@@ -204,7 +209,8 @@
       fieldClearSync(spec);
     }
 
-    //: A spec on a surface template (the quick note) is wired when the surface is built, not at load.
+    //: A spec on a surface template (Notes, Chat, the quick note, the palette) is wired when the surface is built,
+    //: not at load: a surface opened after this file loads had no box to wire (owner regression 2026-11-12).
     for (const spec of FIELD_CLEARS) {
       if (spec.surface) onSurface(spec.surface, () => fieldClearWire(spec));
       else fieldClearWire(spec);
