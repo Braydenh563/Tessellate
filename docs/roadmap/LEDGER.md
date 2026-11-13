@@ -11,65 +11,65 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
-| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
+| documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
-| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
+| all | 553 | 595 | 134 | 3 | 188 | 1282 |
 
 ## graph
 
@@ -391,7 +391,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-37** `documents` open, S: Debug: lower private class members (#x) and class getters/setters (getter/setter pairs need one defineProperty; privacy needs a WeakMap). From L334.
 - [ ] **L-documents-38** `documents` open, S: Debug: arrow functions whose parameter is a pattern with a default (lezer recovers with an error node), spread in new X(...xs), tagged templates. From L334.
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
-- [ ] **L-documents-40** `documents` open, S: Grid: phone touch targets and the one-row bar were set in CSS but not confirmed under a coarse pointer in the sweep (cell height measured 27px at 390). From L328.
 
 ## mindmap
 

@@ -141,3 +141,11 @@ def test_the_grid_is_wired_lazily_with_one_undo_step_and_help():
     #: One transaction per edit, never a second copy of the file.
     assert "docCmView.dispatch({ changes" in JS and "docViewState.csvGrid =" in JS
     assert "innerHTML" not in JS
+
+
+def test_a_cell_is_a_touch_target_by_its_height_not_its_min_height():
+    """L-documents-40: a table cell ignores `min-height`, so the coarse-pointer rule measured 27px at 390. The height is the
+    floor on a cell; measured 44 x 44 for cells, the row number and the four bar buttons after the fix."""
+    css = (ROOT / "frontend" / "css" / "doc-csv-grid-lazy.css").read_text(encoding="utf-8")
+    coarse = css.split("@media (pointer: coarse)", 1)[1]
+    assert "block-size: var(--target-min)" in coarse and "min-block-size" not in coarse
