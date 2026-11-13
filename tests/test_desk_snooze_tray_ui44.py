@@ -13,7 +13,7 @@ pytest.importorskip("PIL")
 
 from tessellate.core import desk_companion as dc  # noqa: E402
 from tests.test_desk_companion import prefs  # noqa: E402, F401
-from tests.test_desk_overlay_wiring import FakeRunner, over  # noqa: E402, F401
+from tests.test_desk_overlay_wiring import over  # noqa: E402, F401
 
 
 class Item:
