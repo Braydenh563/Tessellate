@@ -298,6 +298,20 @@ def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]
     return installed
 
 
+def _pulls_as_listed(pulls: dict[str, dict], installed: list[dict]) -> dict[str, dict]:
+    """A download the runner has finished but does not list yet still reads as running, all of it done:
+    "Downloaded" beside a list without the model was the flake on PR 212, 216 and 222. Only for
+    `PULL_LIST_RETRY_SECONDS`, so a model the runner never lists (a renamed tag) does not spin for ever."""
+    now = time.monotonic()
+    with _installed_lock:
+        waiting = {
+            n for n, job in pulls.items()
+            if job.get("status") == "success" and now - _pull_done_seen.get(n, now) < PULL_LIST_RETRY_SECONDS
+        }
+    waiting = {n for n in waiting if not _name_matches(n, installed)}
+    return {n: ({**job, "status": "running"} if n in waiting else job) for n, job in pulls.items()}
+
+
 def _name_matches(wanted: str, installed: list[dict]) -> bool:
     """'llama3.2' should match an installed 'llama3.2:latest'."""
     names = {m["name"] for m in installed}
@@ -692,6 +706,7 @@ def status(session: Session = Depends(get_session)) -> dict:
     pulls = jobs.pull_statuses()
     if running:
         installed = _installed_after_pulls(ollama, installed, pulls)
+        pulls = _pulls_as_listed(pulls, installed)
     chat_model = manager.chat_model()
     utility_resolved, utility_reason = manager.utility_resolution()
     # Resolved once. It walks the installed models asking each whether it can

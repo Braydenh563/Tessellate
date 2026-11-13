@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Models: a finished download reads as still downloading until the runner lists it, so Downloaded never shows beside a list without the model (L-world-class-33).
 - Review fixes: a plain-http phone keeps its device cookie, the LAN port reads a cached plain-http flag, chat turn slots are per sign-in and never evicted while running, a stream cut off partway is not run again, and a note's file text in search is capped at 20,000 characters.
 - The activity and skill-run undo re-read only the notes they touched (refreshEntries), keeping full notebook re-reads at the cap
 - After the base merge: the night pass reads entity mentions and duplicates once per pass, not twice per note (107 statements over 45 notes back to flat); AI-change redo moves to core/events_redo.py; tag stemming moves to ai/tag_stem.py so filing and tagging no longer import each other; the import help names the documents package in fewer words so 'import notes' still finds Import & export

@@ -873,3 +873,21 @@ def test_a_finished_download_is_in_the_installed_list_of_the_poll_that_reports_i
     assert started.status_code == 200
     body = _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success")
     assert any(m["name"] == "nomic-embed-text" for m in body["installed_models"]), body["installed_models"]
+
+
+def test_a_finished_download_reads_as_running_until_the_runner_lists_it(ai_client, fake_ollama, monkeypatch):
+    """The flake above, made certain: a runner whose list lags the pull. "Done" must mean "listed" in the
+    same poll, so until the list has the model the poll still reports the download running, all of it done."""
+    real = fake_ollama.list_models
+    hide = {"on": True}
+    monkeypatch.setattr(
+        fake_ollama, "list_models", lambda: [m for m in real() if not (hide["on"] and m["name"].startswith("nomic-embed-text"))]
+    )
+    _wait_for(ai_client, lambda b: any(m["name"] == "llama3.2:latest" for m in b["installed_models"]))
+    started = ai_client.post("/models/pull", json={"name": "nomic-embed-text"})
+    assert started.status_code == 200
+    body = _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("done", 0) > 0 and b["pulls"]["nomic-embed-text"]["done"] == b["pulls"]["nomic-embed-text"]["total"])
+    assert body["pulls"]["nomic-embed-text"]["status"] == "running"
+    hide["on"] = False
+    body = _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success")
+    assert any(m["name"] == "nomic-embed-text" for m in body["installed_models"])
