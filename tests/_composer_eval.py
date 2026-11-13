@@ -974,8 +974,26 @@ def sources_summary(rows: list[dict]) -> dict:
     }
 
 
+def run_windows() -> list[dict]:
+    """Each time phrase read against its own clock (`when.span`, tense past) beside the
+    first day, last day and grain the row's calendar arithmetic gives."""
+    from tessellate.ai import when
+
+    out = []
+    for row in _fixture("windows_1010.json")["rows"]:
+        got = when.span(row["phrase"], date.fromisoformat(row["now"]), "past")
+        want = (date.fromisoformat(row["start"]), date.fromisoformat(row["end"]), row["grain"])
+        out.append({"id": row["id"], "phrase": row["phrase"], "got": got, "want": want, "right": got == want})
+    return out
+
+
+def windows_summary(rows: list[dict]) -> dict:
+    return {"rows": len(rows), "exact": round(sum(r["right"] for r in rows) / len(rows), 3), "missed": [r["phrase"] for r in rows if not r["right"]]}
+
+
 def phase6_report() -> dict:
     return {
+        "windows": windows_summary(run_windows()),
         "insights": insights_summary(run_insights()),
         "dialogues": dialogues_summary(run_dialogues()),
         "acts": acts_summary(run_acts()),
