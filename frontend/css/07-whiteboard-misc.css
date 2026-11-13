@@ -20591,12 +20591,17 @@ header#top-bar[data-scrolled="1"],
   #entry-list > li:not(:has(textarea)) {
     padding-top: var(--space-4);
   }
-  /* The 44px touch floor made the menu button taller than the meta line it
-     sits in, so it hung 21px below the card's corner (owner, "half off the
-     corner"). It is the line's own height here, as the table meatball is. */
+  /* The meta line's height (a 44px box hung off the card's corner, owner);
+     the ::after, placed on .menu-wrap (positioned for its menu), gives a
+     finger the 44px (L425). */
   #entry-list > li .menu-wrap > button {
     min-height: 0;
     height: var(--control-h);
+  }
+  #entry-list > li .menu-wrap > button::after {
+    content: "";
+    position: absolute;
+    inset: calc((var(--control-h) - var(--target-min)) / 2) 0;
   }
   /* The list is the page: the card that framed it on a desktop is a second
      frame inside the window's own, and cost each row 33px of its width. */

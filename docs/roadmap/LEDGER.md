@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 46 | 4 | 0 | 18 | 146 |
+| ui-modernisation | 96 | 45 | 4 | 0 | 18 | 145 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 559 | 154 | 3 | 183 | 1266 |
+| all | 553 | 558 | 154 | 3 | 183 | 1265 |
 
 ## graph
 - [ ] **L-graph-19** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -450,7 +450,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## ui-modernisation
 
-- [ ] **L425** `ui-modernisation` open, S: Verify CSS blank-line tests, picker and 390 layout. From OPEN.md:3810. Evidence: No recorded follow-up sweep
 - [ ] **L427** `ui-modernisation` open, S: Count title-only icon buttons outside the Notes list (other tabs, Settings). From OPEN.md:3610. Evidence: Measurement gap; no later count found
 - [ ] **L428** `ui-modernisation` open, S: Reproduce the pill bottom cut-off at DPR 1.25/dark; measure Pace pill. From OPEN.md:3652. Evidence: Try DPR 1.25 and dark; skills.js pill unmeasured; no repro
 - [ ] **L430** `ui-modernisation` open, S: Raise output grip above touch floor and fix entry-meta overflow at 320/390. From a30c-1102.md Still open small. Evidence: No fix commit found by grep; needs a 390 px measure

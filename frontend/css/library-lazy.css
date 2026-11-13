@@ -10237,3 +10237,12 @@ input[type="color"].wb-mixed {
     inset: calc((var(--target-min) - 10px) / 2);
   }
 }
+
+/* The document's Edit and Read pair under a finger: the well is already 44px
+   tall, and each half was 37px wide at 390 (L425), so each takes the 44px floor
+   across as well. Measured: the dock keeps one row at 360 and 390. */
+@media (pointer: coarse) {
+  #tab-documents #doc-view-seg > button {
+    min-width: var(--target-min);
+  }
+}

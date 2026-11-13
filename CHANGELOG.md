@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Touch: the notes list's card menu at 599px and below is 32px tall with a 44px press area, and the document's Edit and Read pair is 44px wide under a finger; the dock stays one row at 360 and 390 (L425). The Timeline and Ask date pickers measured at 390: 352 by 500, days 44 by 44.
 - Reminders: the Overdue menu's four bulk choices load with the edit form (reminder-edit.js), not at boot, which brings the boot scripts back under their gzip ratchet after the merge (250,489 to under 250,450); measured: Mark all done ticks both and offers Undo.
 - Documents: the sidebar's Notes rows lead with the note icon, so their words start at the same pixel as Linked from's and the comments' (59 against 37 before, L421).
 - Tidy: a review switched on to run by itself now runs after a note filed on the save, not only after one filed in the background, so with no model it never ran at all (L392); the broom's count measured 8.01:1 dark and 5.9:1 light. Measured and closed: the map's off-screen topics at 390 (lowest 7.33:1, L381), the topic bar's two rows (one row needs 389px of a 340px strip at 44px targets, L388), Tidy's and chat's pattern lines at 360 and 390 (L390).
