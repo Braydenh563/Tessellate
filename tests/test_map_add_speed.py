@@ -104,7 +104,7 @@ def _run_render_add(case: str) -> list:
     fn = MAP_JS[start : MAP_JS.index("\n};\n", start) + 4]
     script = """
 const calls = [];
-const wbMapCache = {};
+const wbMapCache = { defer: (fn) => { calls.push("defer"); } };
 const c = (n, r) => (...a) => { calls.push(n); return r; };
 let map = true, layer = {}, hold = { moves: [], edges: false };
 const document = { getElementById: () => layer };

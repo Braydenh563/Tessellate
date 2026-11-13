@@ -5027,9 +5027,13 @@ wbMapCache.renderAdd = function (created, origin, expand) {
       renderWbObjects(d3.select(layer));
       wbAddGate.renderHold.edges = true;
       wbScheduleCull();
-      wbRenderNavigator();
-      wbSyncBoardCount();
-      wbMapAfterRender();
+      //: The board's count line, the overview and the outline follow a frame
+      //: later: written now they would dirty the tree the editor's focus reads.
+      wbMapCache.defer(() => {
+        wbRenderNavigator();
+        wbSyncBoardCount();
+        wbMapAfterRender();
+      }, 1);
       return true;
     } catch (error) {
       console.warn("map add: whole render instead", error);
@@ -5099,8 +5103,11 @@ async function wbMapAddChild(parentId, { order = null } = {}) {
   wbAddGate.renderHold = { moves: [], edges: false };
   try {
     wbMapCache.renderAdd(created, origin, expand);
-    selectWbItem("object", created.id);
+    //: Opened before the selection is announced: the editor's focus then finds
+    //: the tree the measure left clean, and the selection's chrome (the dock,
+    //: the bar) is restyled after the topic is typeable, in the same task.
     wbMapEditNode(created.id, { now: true });
+    selectWbItem("object", created.id);
     wbMapRevealTopic(created);
   } finally {
     wbRenderRelease();
