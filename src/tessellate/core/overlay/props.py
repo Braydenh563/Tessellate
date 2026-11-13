@@ -139,6 +139,15 @@ WIND_SPECS: dict[str, Spec] = {
     "spiral": Spec("spiral", 8.0, 4, "", (0.0, 0.5)),
     "eddy": Spec("eddy", 6.0, 4, "", (0.0, 0.92)),
 }
+#: What the notebook's reactions wear (L-ui-modernisation-11, the app's `nmp-glasses`, the `hide` hands and the speech bubble): reading
+#: glasses on a long note, both hands over the eyes for a private one, a bubble of dots for a remark (the feed carries no
+#: words, so the desk's is wordless). Reaction acts, not prop acts: `view` and `draw` look here, the mind never picks them.
+#: `at` is the eyes' height, about a third of the figure from its top, and a little left of its middle.
+REACT_PROPS: dict[str, Spec] = {
+    "read_glasses": Spec("glasses", 1.0, 2, "", (-0.035, 0.33)),
+    "cover_eyes": Spec("hands", 2.0, 2, "", (-0.035, 0.33)),
+    "remark_say": Spec("bubble", 2.5, 3, "", (0.3, 0.04)),
+}
 PLAIN_ACTS: dict[str, tuple[bh.Activity, int, str]] = {
     "hum": (_act("stand", (4.0, 7.0), ((0, 1, 1, 0), (0.25, 1, 1.01, 0.04), (0.75, 1, 1.01, -0.04), (1, 1, 1, 0)), (("play", -0.15),), "happy"), 3, "content"),
     "tiptoe": (_act("look", (2.0, 3.2), ((0, 1, 1, 0), (0.3, 0.98, 1.06, 0.03), (0.7, 0.98, 1.06, 0.03), (1, 1, 1, 0)), (("curiosity", -0.15),), "curious"), 3, "curious"),
@@ -194,7 +203,7 @@ def _fetch(length: float) -> float:
 
 def view(act: str | None, u: float, now_in: float, length: float = 0.0) -> tuple[str, int, int] | None:
     """The prop to draw for `act` at `u` (0 to 1 through it) and `now_in` seconds into it: `(name, phase, size)`."""
-    spec = spec_of(act)
+    spec = spec_of(act) or REACT_PROPS.get(act or "")
     if spec is None or not 0.0 <= u < 1.0:
         return None
     edge = min(u, 1.0 - u) / _fetch(length)
@@ -232,7 +241,7 @@ def draw(frame: sp.Frame, prop: tuple[str, int, int], flip: bool) -> sp.Frame:
     from PIL import Image, ImageDraw
 
     name, phase, size = prop
-    spec = next((sp_ for sp_, _a, _w in PROP_ACTS.values() if sp_.prop == name), None) or next((sp_ for sp_, _a in SPELL_ACTS.values() if sp_.prop == name), None) or WIND_SPECS.get(name)
+    spec = next((sp_ for sp_, _a, _w in PROP_ACTS.values() if sp_.prop == name), None) or next((sp_ for sp_, _a in SPELL_ACTS.values() if sp_.prop == name), None) or WIND_SPECS.get(name) or next((r for r in REACT_PROPS.values() if r.prop == name), None)
     if spec is None or frame.box[2] <= frame.box[0]:
         return frame
     lx, t, r, b = frame.box
@@ -250,6 +259,7 @@ def draw(frame: sp.Frame, prop: tuple[str, int, int], flip: bool) -> sp.Frame:
         "book": _book, "beanbag": _beanbag, "rod": _rod, "mat": _mat, "map": _map, "lantern": _lantern,
         "dumbbell": _dumbbell, "cup": _cup, "journal": _journal, "stars": _stars, "blanket": _blanket, "plant": _plant,
         "bowl": _bowl, "wand": _wand, "knit": _knit, "gust": _gust, "spiral": _spiral, "eddy": _eddy,
+        "glasses": _glasses, "hands": _hands, "bubble": _bubble,
     }[name](g, ax, ay, u, d, phase)
     whole = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     whole.paste(Image.frombytes("RGBA", (frame.width, frame.height), frame.bgra, "raw", "BGRa"), (m, m))
@@ -275,6 +285,40 @@ def _book(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
     lift = (phase % 4) * 1.2  # a page turning: its edge rises and falls
     if phase % 2:
         g.polygon([(x, y - 3 * u), (x + w * 0.8, y - lift * u), (x + w * 0.8, y + h - lift * u), (x, y + h - 3 * u)], fill=(*CREAM, 235), outline=(*INDIGO, 255))
+
+
+def _glasses(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """Round lenses about the eyes with a bridge between them and a glint that shifts as the page does."""
+    gap, r = 4.6 * u, 4.3 * u
+    for sx in (-1, 1):
+        g.ellipse((x + sx * gap - r, y - r, x + sx * gap + r, y + r), fill=(*TEAL, 60), outline=(*INDIGO, 255), width=max(1, int(u * 0.9)))
+        gx = x + sx * gap - r * (0.45 - 0.2 * (phase % 2))
+        g.ellipse((gx - 0.7 * u, y - 0.6 * r - 0.7 * u, gx + 0.7 * u, y - 0.6 * r + 0.7 * u), fill=(*CREAM, 255))
+    g.line((x - gap + r, y - 0.3 * u, x + gap - r, y - 0.3 * u), fill=(*INDIGO, 255), width=max(1, int(u * 0.9)))
+
+
+def _hands(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """Both hands flat over the eyes, the fingers showing; the second phase lets one pair of fingers part (a peek)."""
+    gap, w, h = 4.6 * u, 4.6 * u, 4.0 * u
+    for sx in (-1, 1):
+        cx = x + sx * gap
+        g.ellipse((cx - w, y - h, cx + w, y + h), fill=(*LILAC, 255), outline=(*INDIGO, 255), width=max(1, int(u * 0.8)))
+        for k in (-1, 0, 1):
+            g.line((cx + k * 1.8 * u, y - h * 0.9, cx + k * 1.8 * u, y - h * 0.1), fill=(*INDIGO, 200), width=max(1, int(u * 0.5)))
+    if phase % 2:
+        g.line((x + gap - 1.8 * u, y - h * 0.9, x + gap - 1.8 * u, y + h * 0.4), fill=(*CREAM, 255), width=max(1, int(u * 0.9)))
+
+
+def _bubble(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
+    """A speech bubble by the head with three dots that fill in one after another (no words: the feed carries none)."""
+    w, h = 12 * u, 7 * u
+    g.rounded_rectangle((x - w, y - h, x + w, y + h), radius=4 * u, fill=(*CREAM, 255), outline=(*INDIGO, 255), width=max(1, int(u * 0.9)))
+    g.polygon([(x - d * 6 * u, y + h - 0.5 * u), (x - d * 10 * u, y + h + 5 * u), (x - d * 2 * u, y + h - 0.5 * u)], fill=(*CREAM, 255), outline=(*INDIGO, 255))
+    g.line((x - d * 5.4 * u, y + h - 0.2 * u, x - d * 2.6 * u, y + h - 0.2 * u), fill=(*CREAM, 255), width=max(1, int(u * 1.2)))
+    for i in range(3):
+        cx = x + (i - 1) * 6 * u
+        on = i <= phase % 3
+        g.ellipse((cx - 1.5 * u, y - 1.5 * u, cx + 1.5 * u, y + 1.5 * u), fill=(*(INDIGO if on else LILAC), 255))
 
 
 def _beanbag(g: Any, x: float, y: float, u: float, d: int, phase: int) -> None:
