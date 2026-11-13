@@ -481,3 +481,22 @@ def test_a_placed_frame_goes_under_the_frames_already_there(ai_client):
     assert placed.status_code == 201
     _, objects = _zs(ai_client.get(f"/whiteboard/?board_id={board['id']}").json())
     assert min(objects.values()) < objects[old["id"]] == 4
+
+
+def test_a_pdf_page_saves_to_the_library_and_imports_with_its_file(ai_client):
+    """A placed PDF page (`/media/pdf-page/<name>.pdf/<n>`) is one of this notebook's uploads too."""
+    pdf = ai_client.post("/media/upload", files={"file": ("plan.pdf", b"%PDF-1.4\n%%EOF\n", "application/pdf")})
+    assert pdf.status_code in (200, 201), pdf.text
+    name = pdf.json()["url"].rsplit("/", 1)[1]
+    page = {"key": "p", "kind": "object", "type": "image", "data": {"url": f"/media/pdf-page/{name}/2", "pdf": f"/media/{name}", "pdf_name": "plan.pdf"}, "x": 0, "y": 0, "w": 100, "h": 140}
+    saved = _save(ai_client, payload={"box": {"w": 100, "h": 140}, "items": [page]}, name="A PDF page")
+    assert saved["payload"]["items"][0]["data"]["url"] == f"/media/pdf-page/{name}/2"
+    listed = ai_client.get("/board-library").json()
+    body = ai_client.get(f"/board-library/export?library_id={listed['yours_id']}").json()
+    stranger = dict(page, data={"url": "/media/pdf-page/gone.pdf/0", "pdf": "/media/gone.pdf"})
+    body["items"].append({"kind": "element", "name": "Stranger page", "payload": {"box": {"w": 1, "h": 1}, "items": [stranger, {"key": "t", "kind": "object", "type": "text", "data": {"content": "kept"}, "x": 0, "y": 0, "w": 20, "h": 20}]}})
+    result = ai_client.post("/board-library/import", json=body).json()
+    assert result["dropped_media"] == 1
+    imported = {i["name"]: i for i in ai_client.get(f"/board-library?library_id={result['library']['id']}").json()["items"]}
+    assert imported["A PDF page"]["payload"]["items"][0]["data"]["url"] == f"/media/pdf-page/{name}/2"
+    assert [it["key"] for it in imported["Stranger page"]["payload"]["items"]] == ["t"]
