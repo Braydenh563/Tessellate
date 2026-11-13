@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 12 | 1 | 0 | 19 | 109 |
+| ui-modernisation | 96 | 11 | 1 | 0 | 19 | 108 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 524 | 151 | 3 | 184 | 1228 |
+| all | 553 | 523 | 151 | 3 | 184 | 1227 |
 
 ## graph
 
@@ -450,7 +450,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## ui-modernisation
 
 - [ ] **L469** `ui-modernisation` partly, L: Finish the uipolish-0924 surface-by-surface pass (item D). From OPEN.md:1914; OPEN.md:2314. Evidence: Icon-only floor done (iconfloor.js); the per-surface pass not recorded done
-- [ ] **L-ui-modernisation-17** `ui-modernisation` open, L: Split filterLibraryImagesGallery along its seams. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1033. Evidence: Open line in the plan's prose a session could miss. A 13.2 Library row not in 13c, with no LEDGER row.
 - [ ] **L-ui-modernisation-20** `ui-modernisation` open, M: Apply cheaper-equivalent passes to microbes, aurora and mycelium art. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. L460 covers contrast only. The microbes, aurora and mycelium cheaper-equivalent changes are untracked.
 - [ ] **L-ui-modernisation-22** `ui-modernisation` open, S: Give the desk companion menu feedback, greyed rows, a snooze countdown and a resize cursor. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1308. Evidence: Open line in the plan's prose a session could miss. The g3-size-1107 leftovers it points to have no row: figure_do refusal has no feedback, 'Sit on a window' is not greyed, the snooze has no countdown, and the resize cursor is missing.
 - [ ] **L-ui-modernisation-29** `ui-modernisation` open, M: Move 10-responsive.css's last 31 component rules beside their components (UI plan 13b residue). From UI_MODERNISATION_PLAN.md:1089. Evidence: 10-responsive.css (797 lines) keeps 48 shell rules (242 lines) and 31 component rules (149 lines, listed by its header): each comes after .sheet-list > *, a tab-strip rule or a rule of its own block and sets the same property, so moving it flips a conflicting pair; boot CSS gzip margin under BOOT_CSS_CAP is 46 bytes
