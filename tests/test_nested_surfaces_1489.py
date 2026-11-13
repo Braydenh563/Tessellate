@@ -29,10 +29,11 @@ ROOT = Path(__file__).resolve().parent.parent
 CSS = sorted((ROOT / "frontend" / "css").glob("*.css"))
 
 #: Sticky elements that are allowed to paint the card's own ground. May only
-#: shrink: a table head's sticky cells are not a box the recipe has been
-#: measured on (a `container-type` on a table cell), so it keeps its composited
-#: ground until it is.
-FROZEN_STICKY_CARD_GROUND = {".timeline-table thead th"}
+#: shrink, and is empty: the timeline table head was the last, and the recipe
+#: was measured on its cells (L-ui-modernisation-28: `container-type:
+#: scroll-state` on a `th` at 1440 dark, bare at rest, the opaque ground
+#: (30, 30, 28) once `#timeline-scroll` scrolls 400px).
+FROZEN_STICKY_CARD_GROUND: set[str] = set()
 
 #: The sticky elements the recipe makes bare at rest (heads stick to the top,
 #: the two feet to the bottom).
@@ -43,6 +44,7 @@ BARE_STICKY = {
     ".note-edit-foot",
     "#capture .capture-commit-row",
     ".agent-monitor > .monitor-header",
+    ".timeline-table thead th",
 }
 
 

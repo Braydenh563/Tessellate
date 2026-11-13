@@ -20446,7 +20446,8 @@ header#top-bar[data-scrolled="1"],
   .timeline-bucket-head,
   .note-edit-foot,
   #capture .capture-commit-row,
-  .agent-monitor > .monitor-header {
+  .agent-monitor > .monitor-header,
+  .timeline-table thead th {
     container-type: scroll-state;
   }
   @container scroll-state(stuck: top) or scroll-state(stuck: bottom) {
@@ -20455,7 +20456,8 @@ header#top-bar[data-scrolled="1"],
     .timeline-bucket-head::before,
     .note-edit-foot::before,
     #capture .capture-commit-row::before,
-    .agent-monitor > .monitor-header::before {
+    .agent-monitor > .monitor-header::before,
+    .timeline-table thead th::before {
       content: "";
       position: absolute;
       inset: 0;
@@ -20475,7 +20477,8 @@ header#top-bar[data-scrolled="1"],
   .timeline-bucket-head,
   .note-edit-foot,
   #capture .capture-commit-row,
-  .agent-monitor > .monitor-header {
+  .agent-monitor > .monitor-header,
+  .timeline-table thead th {
     background: var(--card);
   }
 }

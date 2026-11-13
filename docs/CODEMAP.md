@@ -12668,7 +12668,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | A note card's text leads; its metadata steps back (INBOX 505) | frontend/css/07-whiteboard-misc.css:2017 |
 | A note's buttons stay while its own menu is open (INBOX 679) | frontend/css/07-whiteboard-misc.css:19764 |
 | A note's time: the same corner on every card | frontend/css/07-whiteboard-misc.css:11257 |
-| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3660 |
+| A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3656 |
 | A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/07-whiteboard-misc.css:20202 |
 | A row is a pointer target (INBOX 719) | frontend/css/07-whiteboard-misc.css:20058 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:3073 |
@@ -12721,7 +12721,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Phase 10, INBOX 100: the scroll edge effect | frontend/css/09-editor.css:1280 |
 | Phase 10, INBOX 101: concentric corners | frontend/css/09-editor.css:1309 |
 | Phase 11 item 12: a dock's head is one row on a phone | frontend/css/09-editor.css:862 |
-| Phase 11 item 12: a note row designed for a thumb | frontend/css/07-whiteboard-misc.css:20575 |
+| Phase 11 item 12: a note row designed for a thumb | frontend/css/07-whiteboard-misc.css:20578 |
 | Phase 11 item 12: one bar at the foot of a phone, not two | frontend/css/09-editor.css:1526 |
 | Phase 11 item 12: the status bar on a tablet is a touch bar | frontend/css/09-editor.css:1509 |
 | Phase 11 item 1: the phone top bar is three controls, not six | frontend/css/10-responsive.css:439 |
@@ -12748,7 +12748,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/07-whiteboard-misc.css:19333 |
 | Rosewood: dusty rose and wine. Warm without being orange. | frontend/css/05-sidebars-themes.css:3538 |
 | Rows: the default way a list of notes is shown | frontend/css/01-forms-settings.css:1515 |
-| Rules that used to be inline style="" attributes. | frontend/css/06-timeline-dialogs.css:729 |
+| Rules that used to be inline style="" attributes. | frontend/css/06-timeline-dialogs.css:725 |
 | SETTINGS: one control height, one right edge | frontend/css/01-forms-settings.css:5488 |
 | SETTINGS: spacing, hierarchy and proximity | frontend/css/01-forms-settings.css:5638 |
 | SIDEBAR COLLAPSE & PEEK | frontend/css/07-whiteboard-misc.css:522 |
@@ -12794,7 +12794,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The reference's glass, the parts that keep the words readable | frontend/css/popup-anatomy-lazy.css:159 |
 | The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:4101 |
 | The surface model pickers on a phone | frontend/css/07-whiteboard-misc.css:16331 |
-| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/07-whiteboard-misc.css:20559 |
+| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/07-whiteboard-misc.css:20562 |
 | The thumb bar (DESIGN.md's recipe index: a bar of actions above the | frontend/css/09-editor.css:739 |
 | The two dialogs reported as off the modal recipe | frontend/css/07-whiteboard-misc.css:4880 |
 | The two rows that still wrapped at 1024 | frontend/css/07-whiteboard-misc.css:5920 |
@@ -12806,8 +12806,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Timeline: the table view (TIMELINE_PLAN.md Phase 2) | frontend/css/06-timeline-dialogs.css:420 |
 | Trace mode on the graph (§41) | frontend/css/07-whiteboard-misc.css:2269 |
 | Two floating buttons that sit over content: opaque, readable hover | frontend/css/04-chat-dock-appearance.css:2765 |
-| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3435 |
-| WHITEBOARD TAB | frontend/css/06-timeline-dialogs.css:2504 |
+| WCAG 2.5.8 target size | frontend/css/06-timeline-dialogs.css:3431 |
+| WHITEBOARD TAB | frontend/css/06-timeline-dialogs.css:2500 |
 | Wave B: threads, inline actions, templates | frontend/css/02-chat-graph.css:444 |
 | Wave E: graph view | frontend/css/02-chat-graph.css:965 |
 | Wave F: command palette | frontend/css/02-chat-graph.css:1442 |
@@ -12856,7 +12856,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a note's connections: one pill each, its menu inside it | frontend/css/01-forms-settings.css:2334 |
 | a notice: one line the app says about what is on screen | frontend/css/07-whiteboard-misc.css:4846 |
 | a poke, a look, a large view and a companion (avatars.js) | frontend/css/01-forms-settings.css:4055 |
-| a segmented choice inside a dialog | frontend/css/06-timeline-dialogs.css:1151 |
+| a segmented choice inside a dialog | frontend/css/06-timeline-dialogs.css:1147 |
 | a settings group that says what depends on what | frontend/css/07-whiteboard-misc.css:5224 |
 | a settings row where nothing squashes anything else | frontend/css/07-whiteboard-misc.css:4716 |
 | a sheet (DESIGN.md's recipe index, "A sheet") | frontend/css/07-whiteboard-misc.css:16819 |
@@ -12918,7 +12918,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | every menu scrolls down, never sideways, and never runs off the page | frontend/css/07-whiteboard-misc.css:9307 |
 | fields answer the pointer too | frontend/css/07-whiteboard-misc.css:4007 |
 | filter help (the list inside `#search-help-hint`, a `.help-body`) | frontend/css/05-sidebars-themes.css:708 |
-| finding a setting (§36B) | frontend/css/06-timeline-dialogs.css:1496 |
+| finding a setting (§36B) | frontend/css/06-timeline-dialogs.css:1492 |
 | finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:6132 |
 | first-run onboarding tour | frontend/css/04-chat-dock-appearance.css:2359 |
 | forms | frontend/css/01-forms-settings.css:224 |
@@ -12966,7 +12966,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | moved from the boot sheets (Brief 101a and UI plan 13b's L459, room under the boot CSS cap): rules whose selectors | frontend/css/library-lazy.css:16 |
 | moved from the boot sheets (the boot CSS budget, test_boot_budget.py): rules only the Library | frontend/css/library-lazy.css:1956 |
 | narrow windows | frontend/css/sketch-pad.css:668 |
-| note card density (§36B) | frontend/css/06-timeline-dialogs.css:1731 |
+| note card density (§36B) | frontend/css/06-timeline-dialogs.css:1727 |
 | note history | frontend/css/05-sidebars-themes.css:1876 |
 | notes page polish | frontend/css/03-dashboard-widgets.css:2106 |
 | nothing interactive is bare text | frontend/css/07-whiteboard-misc.css:4519 |
@@ -12977,12 +12977,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | one line of facts: a note's meta row | frontend/css/01-forms-settings.css:6870 |
 | one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/07-whiteboard-misc.css:18782 |
 | one size for every dropdown | frontend/css/01-forms-settings.css:5211 |
-| one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2266 |
+| one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2262 |
 | one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4285 |
 | optional extras (Settings) | frontend/css/00-tokens-shell.css:1704 |
 | page margins (Appearance > Page Margins) | frontend/css/07-whiteboard-misc.css:2968 |
 | previews on the Library's document and board cards | frontend/css/library-lazy.css:2564 |
-| radio groups as choices, not as a list of dots (§35L) | frontend/css/06-timeline-dialogs.css:1363 |
+| radio groups as choices, not as a list of dots (§35L) | frontend/css/06-timeline-dialogs.css:1359 |
 | reading a scan against its own pages | frontend/css/lightbox-lazy.css:82 |
 | rebindable shortcuts | frontend/css/05-sidebars-themes.css:762 |
 | reminders page polish | frontend/css/03-dashboard-widgets.css:2831 |
@@ -13015,7 +13015,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the 464 round: Settings groups, switch rows, the phone's chrome | frontend/css/07-whiteboard-misc.css:4942 |
 | the AI skills dock: one row where it fits (INBOX 450, 599) | frontend/css/07-whiteboard-misc.css:16210 |
 | the AI status dot | frontend/css/00-tokens-shell.css:1567 |
-| the Ask box explaining itself (§35A) | frontend/css/06-timeline-dialogs.css:1342 |
+| the Ask box explaining itself (§35A) | frontend/css/06-timeline-dialogs.css:1338 |
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3355 |
 | the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:6345 |
 | the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:9583 |
@@ -13052,9 +13052,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the boot splash: one progress indicator, not two | frontend/css/07-whiteboard-misc.css:10939 |
 | the bottom docks | frontend/css/07-whiteboard-misc.css:11762 |
 | the chat dock follows its own width (INBOX 694) | frontend/css/04-chat-dock-appearance.css:6798 |
-| the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1452 |
+| the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1448 |
 | the chat sidebar on a phone | frontend/css/02-chat-graph.css:5139 |
-| the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1589 |
+| the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1585 |
 | the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:4004 |
 | the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4616 |
 | the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:6190 |
@@ -13078,7 +13078,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the documents editor | frontend/css/library-lazy.css:4442 |
 | the documents sidebar's vertical budget (§41) | frontend/css/07-whiteboard-misc.css:2381 |
 | the documents sidebar, redrawn as one tree (the owner, 2026-10-10: | frontend/css/library-lazy.css:6062 |
-| the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) | frontend/css/06-timeline-dialogs.css:2769 |
+| the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) | frontend/css/06-timeline-dialogs.css:2765 |
 | the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4753 |
 | the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1088 |
 | the file picker, in the app's own clothes | frontend/css/07-whiteboard-misc.css:18652 |
@@ -13095,22 +13095,22 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the guided tour (DESIGN.md, "A guided tour step") | frontend/css/04-chat-dock-appearance.css:5950 |
 | the head: identity, one fact as a dot, an all-icon group | frontend/css/03-dashboard-widgets.css:1028 |
 | the help popover is a popover, not a page (INBOX 206) | frontend/css/07-whiteboard-misc.css:9339 |
-| the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1231 |
+| the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1227 |
 | the lightbox on a phone (INBOX 430) | frontend/css/02-chat-graph.css:3238 |
 | the live action line | frontend/css/02-chat-graph.css:4304 |
 | the lock screen | frontend/css/07-whiteboard-misc.css:17360 |
-| the log console (§1) | frontend/css/06-timeline-dialogs.css:809 |
+| the log console (§1) | frontend/css/06-timeline-dialogs.css:805 |
 | the map is the tab, and its controls float over it | frontend/css/02-chat-graph.css:5163 |
 | the mind map's outline and markers (MINDMAP_PLAN decisions 33, 34) | frontend/css/library-lazy.css:4125 |
 | the node edit strip (MINDMAP_PLAN.md §12.1 item 2) | frontend/css/07-whiteboard-misc.css:10179 |
 | the node radial (MINDMAP_PLAN.md §12.1 item 3) | frontend/css/07-whiteboard-misc.css:10547 |
-| the note card's metadata, ordered (§36B) | frontend/css/06-timeline-dialogs.css:1639 |
-| the notifications centre (§36E) | frontend/css/06-timeline-dialogs.css:1828 |
+| the note card's metadata, ordered (§36B) | frontend/css/06-timeline-dialogs.css:1635 |
+| the notifications centre (§36E) | frontend/css/06-timeline-dialogs.css:1824 |
 | the one control in a dock that was not the dock's height | frontend/css/07-whiteboard-misc.css:6031 |
 | the one generating animation | frontend/css/01-forms-settings.css:5153 |
 | the one map chip (MINDMAP_PLAN.md §5 item 12) | frontend/css/05-sidebars-themes.css:854 |
 | the one popover shell (UI_MODERNISATION_PLAN.md, Phase 2) | frontend/css/07-whiteboard-misc.css:9366 |
-| the orphan-row pattern, everywhere else it appears (§36B) | frontend/css/06-timeline-dialogs.css:1810 |
+| the orphan-row pattern, everywhere else it appears (§36B) | frontend/css/06-timeline-dialogs.css:1806 |
 | the overview strip | frontend/css/00-tokens-shell.css:1915 |
 | the pad | frontend/css/sketch-pad.css:42 |
 | the page scrollers scroll on the compositor | frontend/css/07-whiteboard-misc.css:13819 |
@@ -13145,7 +13145,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the tab strip is centred on the window, not on whatever is left of it | frontend/css/07-whiteboard-misc.css:9196 |
 | the timeline, de-vibecoded | frontend/css/06-timeline-dialogs.css:217 |
 | the tool rail (WHITEBOARD_PLAN.md Phase 1, decision 1) | frontend/css/07-whiteboard-misc.css:13547 |
-| the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2924 |
+| the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2920 |
 | the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4717 |
 | the trace strip | frontend/css/04-chat-dock-appearance.css:1 |
 | the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3818 |
@@ -13183,8 +13183,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/03-dashboard-widgets.css | 5216 |
 | frontend/css/04-chat-dock-appearance.css | 6896 |
 | frontend/css/05-sidebars-themes.css | 6521 |
-| frontend/css/06-timeline-dialogs.css | 3915 |
-| frontend/css/07-whiteboard-misc.css | 20665 |
+| frontend/css/06-timeline-dialogs.css | 3911 |
+| frontend/css/07-whiteboard-misc.css | 20668 |
 | frontend/css/09-editor.css | 1792 |
 | frontend/css/10-responsive.css | 800 |
 | frontend/css/answer-foot-lazy.css | 161 |
@@ -31007,13 +31007,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-general-41) | docs/roadmap/BACKLOG.md:4424 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4391 |
-| Needs hardware | docs/roadmap/LEDGER.md:736 |
+| Needs hardware | docs/roadmap/LEDGER.md:735 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:728 |
+| Owner calls | docs/roadmap/LEDGER.md:727 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4264 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31189,7 +31189,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:925 |
+| Plan session briefs | docs/roadmap/LEDGER.md:924 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2641 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31243,25 +31243,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:941 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1025 |
+| chat | docs/roadmap/LEDGER.md:940 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1024 |
 | documents | docs/roadmap/LEDGER.md:332 |
-| documents | docs/roadmap/LEDGER.md:965 |
-| general | docs/roadmap/LEDGER.md:710 |
+| documents | docs/roadmap/LEDGER.md:964 |
+| general | docs/roadmap/LEDGER.md:709 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:929 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1037 |
+| graph | docs/roadmap/LEDGER.md:928 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1036 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4400 |
 | mindmap | docs/roadmap/LEDGER.md:412 |
-| mindmap | docs/roadmap/LEDGER.md:977 |
-| timeline | docs/roadmap/LEDGER.md:471 |
-| timeline | docs/roadmap/LEDGER.md:1001 |
+| mindmap | docs/roadmap/LEDGER.md:976 |
+| timeline | docs/roadmap/LEDGER.md:470 |
+| timeline | docs/roadmap/LEDGER.md:1000 |
 | ui-modernisation | docs/roadmap/LEDGER.md:450 |
-| ui-modernisation | docs/roadmap/LEDGER.md:989 |
+| ui-modernisation | docs/roadmap/LEDGER.md:988 |
 | whiteboard | docs/roadmap/LEDGER.md:285 |
-| whiteboard | docs/roadmap/LEDGER.md:953 |
-| world-class | docs/roadmap/LEDGER.md:474 |
-| world-class | docs/roadmap/LEDGER.md:1013 |
+| whiteboard | docs/roadmap/LEDGER.md:952 |
+| world-class | docs/roadmap/LEDGER.md:473 |
+| world-class | docs/roadmap/LEDGER.md:1012 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2811 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2862 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2969 |

@@ -472,14 +472,10 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  /* Opaque base, then the card's own wash over it: `--card` is glass, and a
-     sticky head painted in it alone has the rows sliding through the labels.
-     Same composite the feed's bucket headers use. */
-  /* One shorthand: `--bg` is a gradient in most themes, which
-     `background-color` cannot hold, so the old pair left the base
-     transparent and the rows showed through (INBOX 655). As the shorthand's
-     final layer it is valid whether a theme makes it a gradient or a colour. */
-  background: linear-gradient(var(--card), var(--card)), var(--bg);
+  /* Bare at rest: the card's own wash shows through. The opaque ground
+     while rows pass under it is the stuck-ground recipe in
+     07-whiteboard-misc.css (INBOX 1489, L-ui-modernisation-28). */
+  background: none;
   border-bottom: 2px solid var(--accent-soft);
   font-size: var(--text-sm);
   font-weight: 600;
