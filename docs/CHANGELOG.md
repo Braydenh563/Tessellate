@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- A lint now fails a top-bar control with no name or no Find anything row (L465).
+
 - The tab strip's room beside the header groups no longer charges the hidden h1 a flex gap (7.2px at 844x390); the Versions Named only filter was already built (L466).
 
 - The Notes rows view no longer clips the edges of its row buttons' hover and focus ring (L464).
