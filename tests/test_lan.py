@@ -108,17 +108,22 @@ def test_no_network_at_all_is_its_own_closed_state():
 def test_one_missed_router_read_does_not_shut_an_allowed_network(tmp_path, monkeypatch):
     # The router's hardware address comes from the ARP table, which drops a
     # quiet gateway's entry now and then; while the route is still there
-    # (online), a missed read keeps the last network for a few reads rather
-    # than shut the port and drop every phone mid-request (CI, ca77baf3).
+    # (online), a missed read keeps the last network for MISSED_KEEP_SECONDS
+    # rather than shut the port and drop every phone mid-request (CI, ca77baf3).
     lantrust.reset_for_tests()
+    clock = {"t": 1000.0}
+    monkeypatch.setattr(lantrust, "_now", lambda: clock["t"])
     lantrust.save(tmp_path, _state(networks=[{"key": HOME.key, "label": "home"}]))
-    reads = iter([HOME] + [None] * lantrust.MISSED_READS_KEPT + [None, HOME])
+    reads = iter([HOME, None, None, None, HOME])
     monkeypatch.setattr(lantrust.netid, "read", lambda: next(reads))
     monkeypatch.setattr(lantrust, "_online", lambda: True)
     assert lantrust.refresh(tmp_path)["open"] is True
-    for _ in range(lantrust.MISSED_READS_KEPT):
-        assert lantrust.refresh(tmp_path)["reason"] == "allowed"
+    clock["t"] += 30
+    assert lantrust.refresh(tmp_path)["reason"] == "allowed"
+    clock["t"] += lantrust.MISSED_KEEP_SECONDS - 1
+    assert lantrust.refresh(tmp_path)["reason"] == "allowed"
     # Missed for longer than that, the network really is unknown: closed.
+    clock["t"] += 2
     assert lantrust.refresh(tmp_path)["reason"] == "unknown_network"
     # A good read counts again from nothing.
     assert lantrust.refresh(tmp_path)["reason"] == "allowed"
@@ -126,6 +131,26 @@ def test_one_missed_router_read_does_not_shut_an_allowed_network(tmp_path, monke
     monkeypatch.setattr(lantrust.netid, "read", lambda: None)
     monkeypatch.setattr(lantrust, "_online", lambda: False)
     assert lantrust.refresh(tmp_path)["reason"] == "no_network"
+
+
+def test_rapid_reads_inside_the_grace_do_not_use_it_up(tmp_path, monkeypatch):
+    # CI, #226 477cbe0a: test_lan_mode_end_to_end reset mid-test. An address
+    # change (a container bridge coming up) makes the accept loop read the
+    # network at once, again and again; a grace counted in reads was spent
+    # in a second and shut the port. The grace is time, so ten quick misses
+    # inside it keep the port open.
+    lantrust.reset_for_tests()
+    clock = {"t": 1000.0}
+    monkeypatch.setattr(lantrust, "_now", lambda: clock["t"])
+    lantrust.save(tmp_path, _state(networks=[{"key": HOME.key, "label": "home"}]))
+    monkeypatch.setattr(lantrust, "_online", lambda: True)
+    monkeypatch.setattr(lantrust.netid, "read", lambda: HOME)
+    assert lantrust.refresh(tmp_path)["open"] is True
+    monkeypatch.setattr(lantrust.netid, "read", lambda: None)
+    for _ in range(10):
+        clock["t"] += 0.5
+        assert lantrust.refresh(tmp_path)["reason"] == "allowed"
+    assert lantrust.is_open() is True
 
 
 def test_the_missed_read_grace_never_covers_a_different_network_or_a_restart(tmp_path, monkeypatch):
