@@ -1240,9 +1240,9 @@ MID_TOPICS.extend(
                 "input() asks in the panel mid-run. Python debugging needs a window "
                 "that gives SharedArrayBuffer (the app's own does); JavaScript is "
                 "stepped by an interpreter that reads ES5, so let, const, arrow "
-                "functions and template strings are rewritten for it, and a class, "
-                "destructuring or async code is named with its line and only Run "
-                "takes it. A script that uses the page debugs against a stand-in "
+                "functions, template strings, classes with fields, destructuring "
+                "and spread are rewritten for it, and async code, generators and "
+                "getters are named with their line and only Run takes it. A script that uses the page debugs against a stand-in "
                 "document, so nothing is drawn."
             ),
             "badge": {"label": "Library", "tab": "library"},

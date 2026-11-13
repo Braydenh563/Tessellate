@@ -99,24 +99,26 @@ def test_the_pass_lowers_es2015_and_keeps_every_line():
 def test_what_the_pass_cannot_lower_is_named_with_its_line():
     out = _node({
         "getter": ["lower", "var a = 1;\nclass A {\n  get x() { return 1; }\n}\n"],
-        "field": ["lower", "class A {\n  x = 1;\n}"],
+        "private": ["lower", "class A {\n  #x = 1;\n}"],
         "computed": ["lower", "class A { [k]() {} }"],
-        "destructure": ["lower", "\n\nconst {a} = b;"],
-        "forofpattern": ["lower", "for (const [k, v] of pairs) {}"],
+        "newspread": ["lower", "\n\nnew A(...b);"],
+        "callspread": ["lower", "f()(...b);"],
         "default": ["lower", "function f(a = g()) {}"],
-        "arrowdefault": ["lower", "var f = (a = 1) => a;"],
         "async": ["lower", "async function f() { await 1; }"],
         "optional": ["lower", "var a = b?.c;"],
+        "gen": ["lower", "function* g() { yield 1; }"],
+        "arrowpattern": ["lower", "var h = ([a] = [1]) => a;"],
     })
     assert out["getter"] == {"error": "Debug cannot step getters and setters yet (line 3): Run runs this file as it is.", "line": 3}
-    assert "class fields" in out["field"]["error"]
+    assert "private class members" in out["private"]["error"]
     assert "computed or quoted names" in out["computed"]["error"]
-    assert out["destructure"]["line"] == 3 and "destructuring" in out["destructure"]["error"]
-    assert "destructuring" in out["forofpattern"]["error"]
+    assert out["newspread"]["line"] == 3 and "spread and rest" in out["newspread"]["error"]
+    assert "spread in a call to something other" in out["callspread"]["error"]
     assert "default parameter values other than a plain value" in out["default"]["error"]
-    assert "arrow function with no braces" in out["arrowdefault"]["error"]
     assert "async functions" in out["async"]["error"]
     assert "optional chaining" in out["optional"]["error"]
+    assert "generators" in out["gen"]["error"]
+    assert "parser could not read" in out["arrowpattern"]["error"]
 
 
 _MODERN = (
@@ -230,3 +232,71 @@ def test_a_nested_list_or_object_opens_down_to_three_levels_and_a_watch_opens_to
     assert [c["name"] for c in a["children"]] == ["[0]", "[1]"]
     assert a["children"][1]["children"] == [{"name": "b", "value": "2", "type": "number"}]
     assert [c["name"] for c in stop["watches"][0]["children"]] == ["[0]", "[1]"]
+
+
+#: One program per construct (L334): the lowered text stepped by the interpreter
+#: must say what node says about the original, and keep every line.
+_CONSTRUCTS = {
+    "fields": (
+        "class P {\n  a = 1;\n  b = this.a + 1;\n  c;\n  static s = 5;\n  static { P.t = P.s * 2; }\n"
+        "  show() { return [this.a, this.b, this.c, P.s, P.t].join('/'); }\n}\n"
+        "class Q extends P {\n  d = this.b * 10;\n  constructor() { super(); this.e = this.d + 1; }\n"
+        "  show() { return super.show() + '/' + this.d + '/' + this.e; }\n}\n"
+        "class R extends P { f = () => this.a; }\n"
+        "console.log(new P().show(), new Q().show(), new R().f());\n"
+        "console.log(Object.keys(new P()).join(','));\n"
+    ),
+    "destructure": (
+        "const { a, b: [c, d = 4], e = 5, ...rest } = { a: 1, b: [2], x: 7, y: 8 };\n"
+        "let [p, , q = 9, ...tail] = [1, 2, undefined, 4, 5];\n"
+        "const [[m], { n }] = [[6], { n: 7 }];\n"
+        "console.log(a, c, d, e, Object.keys(rest).join(','), p, q, tail.join(','), m, n);\n"
+        "const [h0, ...t0] = [];\nconsole.log(h0, t0.length);\n"
+        "let x = 1, y = 2;\n[x, y] = [y, x];\n"
+        "console.log(x, y);\n"
+        "for (const [k, v] of [['a', 1], ['b', 2]]) console.log(k + v);\n"
+        "for (const { id, tag = 't' } of [{ id: 1 }, { id: 2, tag: 'u' }]) { console.log(id + tag); }\n"
+    ),
+    "params": (
+        "function f({ a, b = 2 }, [c, d], e = 5, ...more) { return [a, b, c, d, e, more.join('+')].join(','); }\n"
+        "const g = ({ a }, ...r) => a + r.length;\n"
+        "function h([a, b] = [3, 4]) { return a * b; }\n"
+        "function k(...all) { return all.length; }\n"
+        "console.log(f({ a: 1 }, [3, 4]), f({ a: 1, b: 9 }, [3, 4], 6, 7, 8), g({ a: 10 }, 1, 2), h(), h([2, 5]), k(), k(1, 2, 3));\n"
+    ),
+    "spread": (
+        "const xs = [1, 2], ys = [3];\n"
+        "const all = [0, ...xs, ...ys, 9,];\n"
+        "function add(a, b, c) { return a + b + c; }\n"
+        "const o = { base: 10, sum(a, b) { return this.base + a + b; } };\n"
+        "const merged = { ...{ p: 1, q: 2 }, q: 3, ...null, r: 4 };\n"
+        "console.log(all.join(','), add(...xs, 5), add(1, ...xs), o.sum(...xs), Math.max(...all), 'hi'.length);\n"
+        "console.log(Object.keys(merged).join(','), merged.q, [...'ab'].join('-'));\n"
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(_CONSTRUCTS))
+def test_each_lowered_construct_steps_to_what_node_prints(name):
+    src = _CONSTRUCTS[name]
+    lowered = _node({"m": ["lower", src]})["m"]
+    assert "error" not in lowered, lowered
+    assert lowered["code"].count("\n") == src.count("\n")
+    stepped = [m["text"] for m in _node({"s": ["session", src, [], [], []]})["s"] if m["t"] == "log"]
+    real = subprocess.run(["node", "-e", src], capture_output=True, text=True, timeout=30)
+    assert real.returncode == 0, real.stderr
+    assert stepped == real.stdout.splitlines(), (stepped, real.stdout)
+
+
+def test_a_breakpoint_inside_a_field_initializer_and_a_destructured_body_keeps_its_line():
+    src = "class A {\n  n = 2;\n  m = this.n * 3;\n}\nfunction f({ a }) {\n  const s = a + 1;\n  return s;\n}\nconsole.log(new A().m, f({ a: 1 }));\n"
+    out = _node({"s": ["session", src, [{"line": 3}, {"line": 7}], [], [{"cmd": "continue"}, {"cmd": "stop"}]]})["s"]
+    stops = [m for m in out if m["t"] == "stop"]
+    assert [s["line"] for s in stops] == [3, 7]
+    assert {"name": "a", "value": "1", "type": "number"} in stops[1]["locals"]
+
+
+def test_spread_and_array_patterns_over_something_else_stop_and_say_so():
+    for src in ("const [a] = 5;\n", "function f() {}\nf(...5);\n"):
+        out = _node({"s": ["session", src, [], [], []]})["s"]
+        assert any("array or a string only" in m.get("text", "") for m in out), out

@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+
+- Documents, Debug: the stepper now lowers class fields and static blocks, destructuring (declarations, parameters, for-of, swaps), rest parameters and spread in lists, calls and objects, with a test per construct; async, generators, private members and getters stay named (L334).
 - Documents: Kinds of suggestion in the writing sheet turn off style, punctuation, capital-letter and word-choice suggestions from the grammar checker (L333).
 - Settings, Read aloud: a Browser voice picker chooses the voice for chat and document read-aloud (L333).
 - Diagram Ask: the ask route understands mind maps, timelines and sequence diagrams (rules and model, checked ops); the builder UI follows (L-documents-27, L-documents-35).

@@ -2,9 +2,9 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8417, frontend ids 2774, CSS sections 524, backend routes 709, backend modules 10850, test files 2747, tests 22128, plan headings 689, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8425, frontend ids 2774, CSS sections 524, backend routes 709, backend modules 10850, test files 2747, tests 22131, plan headings 689, app scripts 29, boot scripts 38, script files 301.
 
-## Frontend functions (8417)
+## Frontend functions (8425)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -7194,18 +7194,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `runVendorFetch` | frontend/js/run-core.js:35 |
 | `runVendorScript` | frontend/js/run-core.js:53 |
 
-### frontend/js/run-debug.js (8)
+### frontend/js/run-debug.js (16)
 
 | Name | File:line |
 |---|---|
-| `runDebugClass` | frontend/js/run-debug.js:102 |
-| `runDebugDefaults` | frontend/js/run-debug.js:77 |
-| `runDebugEdit` | frontend/js/run-debug.js:46 |
-| `runDebugKids` | frontend/js/run-debug.js:58 |
-| `runDebugLower` | frontend/js/run-debug.js:174 |
-| `runDebugPlainDefault` | frontend/js/run-debug.js:68 |
-| `runDebugQuote` | frontend/js/run-debug.js:53 |
-| `runDebugSuperCall` | frontend/js/run-debug.js:147 |
+| `runDebugAssign` | frontend/js/run-debug.js:203 |
+| `runDebugBind` | frontend/js/run-debug.js:90 |
+| `runDebugClass` | frontend/js/run-debug.js:369 |
+| `runDebugDeclaration` | frontend/js/run-debug.js:181 |
+| `runDebugEdit` | frontend/js/run-debug.js:50 |
+| `runDebugHead` | frontend/js/run-debug.js:174 |
+| `runDebugKids` | frontend/js/run-debug.js:62 |
+| `runDebugLower` | frontend/js/run-debug.js:486 |
+| `runDebugMark` | frontend/js/run-debug.js:81 |
+| `runDebugObjectSpread` | frontend/js/run-debug.js:312 |
+| `runDebugParams` | frontend/js/run-debug.js:222 |
+| `runDebugPlainDefault` | frontend/js/run-debug.js:72 |
+| `runDebugQuote` | frontend/js/run-debug.js:57 |
+| `runDebugSpreadCall` | frontend/js/run-debug.js:347 |
+| `runDebugSpreadList` | frontend/js/run-debug.js:269 |
+| `runDebugSuperCall` | frontend/js/run-debug.js:459 |
 
 ### frontend/js/run-tests.js (3)
 
@@ -27890,7 +27898,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22128)
+## Tests (22131)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30042,7 +30050,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_row_room_1696.py | 8 |
 | tests/test_rows_676.py | 6 |
 | tests/test_run_caps.py | 7 |
-| tests/test_run_debug_js.py | 11 |
+| tests/test_run_debug_js.py | 14 |
 | tests/test_run_debugger.py | 17 |
 | tests/test_run_job_heartbeat_d38.py | 2 |
 | tests/test_run_protocol.py | 17 |
@@ -31062,14 +31070,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:838 |
+| Needs hardware | docs/roadmap/LEDGER.md:840 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:830 |
+| Owner calls | docs/roadmap/LEDGER.md:832 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31250,7 +31258,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1031 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1033 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31304,25 +31312,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:76 |
-| chat | docs/roadmap/LEDGER.md:1047 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1131 |
+| chat | docs/roadmap/LEDGER.md:1049 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1133 |
 | documents | docs/roadmap/LEDGER.md:379 |
-| documents | docs/roadmap/LEDGER.md:1071 |
-| general | docs/roadmap/LEDGER.md:789 |
+| documents | docs/roadmap/LEDGER.md:1073 |
+| general | docs/roadmap/LEDGER.md:791 |
 | graph | docs/roadmap/LEDGER.md:74 |
-| graph | docs/roadmap/LEDGER.md:1035 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1143 |
+| graph | docs/roadmap/LEDGER.md:1037 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1145 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:396 |
-| mindmap | docs/roadmap/LEDGER.md:1083 |
-| timeline | docs/roadmap/LEDGER.md:550 |
-| timeline | docs/roadmap/LEDGER.md:1107 |
-| ui-modernisation | docs/roadmap/LEDGER.md:433 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1095 |
+| mindmap | docs/roadmap/LEDGER.md:398 |
+| mindmap | docs/roadmap/LEDGER.md:1085 |
+| timeline | docs/roadmap/LEDGER.md:552 |
+| timeline | docs/roadmap/LEDGER.md:1109 |
+| ui-modernisation | docs/roadmap/LEDGER.md:435 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1097 |
 | whiteboard | docs/roadmap/LEDGER.md:333 |
-| whiteboard | docs/roadmap/LEDGER.md:1059 |
-| world-class | docs/roadmap/LEDGER.md:553 |
-| world-class | docs/roadmap/LEDGER.md:1119 |
+| whiteboard | docs/roadmap/LEDGER.md:1061 |
+| world-class | docs/roadmap/LEDGER.md:555 |
+| world-class | docs/roadmap/LEDGER.md:1121 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
