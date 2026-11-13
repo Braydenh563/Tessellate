@@ -103,6 +103,56 @@ const { openFresh, checker } = require("./cdlib.js");
   check("the exported label is visible (the live hiding style is not cloned)", !vis);
   await page.evaluate(() => wbUndo());
 
+
+  // --- The JS-drawn shape table ---------------------------------------------------------------------------
+  const rows = await page.evaluate(async () => { await wbLoadLibrary({ force: true }); return wbLibEntries().filter((e) => e.set === "Drawn shapes").map((e) => e.name); });
+  check("the shape picker's rows include 20 or more drawn shapes", rows.length >= 20 && rows.includes("Step") && rows.includes("Cylinder"), rows.length);
+  const placed = await page.evaluate(async () => {
+    const entry = wbLibEntries().find((e) => e.ref === "builtin:shapes-js/step");
+    await wbLibPlace(entry, [300, 700]);
+    await new Promise((r) => setTimeout(r, 600));
+    const s = wbState.sketches[wbState.sketches.length - 1];
+    const p = wbSketchParsedData(s);
+    wbSelectedItem = null;
+    selectWbItem("sketch", s.id);
+    return { id: s.id, kind: p.shapeKind, shape: p.shape, box: wbPathBBox(p.d) };
+  });
+  check("a placed Step keeps its kind in shapeKind and is a fillable custom shape", placed.kind === "step" && placed.shape === "custom", placed);
+  await page.waitForTimeout(400);
+  const grip = await page.evaluate((id) => {
+    const h = document.querySelector('.wb-sketch-resize-handle[data-handle="e"]');
+    if (!h) return null;
+    const r = h.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  }, placed.id);
+  if (grip) {
+    await page.mouse.move(grip.x, grip.y);
+    await page.mouse.down();
+    await page.mouse.move(grip.x + 120, grip.y, { steps: 6 });
+    await page.mouse.up();
+    await page.waitForTimeout(700);
+  }
+  const grown = await page.evaluate((id) => { const p = wbSketchParsedData(wbState.sketches.find((x) => x.id === id)); const box = wbPathBBox(p.d); const t = wbFmtState.shapeTable; return { w: box.maxX - box.minX, h: box.maxY - box.minY, same: p.d === t.shapePathAt("step", box.minX, box.minY, box.maxX - box.minX, box.maxY - box.minY) }; }, placed.id);
+  check("dragging the east grip widens the Step by about 120 and draws the outline again (the notch keeps its size)", Boolean(grip) && grown.w > (placed.box.maxX - placed.box.minX) + 80 && grown.same, { grip: Boolean(grip), grown, was: placed.box });
+  const out = await page.evaluate(() => {
+    const t = wbFmtState.shapeTable;
+    return t.kinds.map((k) => t.toDrawio(k));
+  });
+  check("every kind has a draw.io shape word", out.every((w) => /^shape=[A-Za-z0-9.]+;/.test(w)), out.slice(0, 3));
+  const rt = await page.evaluate(async () => {
+    const made = wbBoardToDrawio(wbState, { title: "t", box: wbItemBBox, hidden: wbItemHidden });
+    const hasStep = /style="shape=step;/.test(made.xml);
+    const cells = (await wbDrawioCells(made.xml)).all[0].cells;
+    const plan = wbDrawioPlan(cells);
+    const item = plan.items.find((i) => i.shape === "step");
+    const data = item ? wbDrawioStyle.more.shapeData(item, 0, 0, "#333333") : null;
+    const file = '<mxfile><diagram name="p"><mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="a" value="db" style="shape=cylinder3;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="0" y="0" width="80" height="120" as="geometry"/></mxCell></root></mxGraphModel></diagram></mxfile>';
+    const cyl = wbDrawioPlan((await wbDrawioCells(file)).all[0].cells);
+    return { hasStep, kind: item?.shape, shapeKind: data?.shapeKind, closed: /Z/.test(data?.d || ""), cyl: cyl.items[0]?.shape, skipped: made.skipped, dropped: cyl.dropped };
+  });
+  check("the draw.io export writes the Step as shape=step and reading it back gives the Step", rt.hasStep && rt.kind === "step" && rt.shapeKind === "step" && rt.closed, rt);
+  check("shape=cylinder3 from draw.io becomes the table's cylinder, not a dropped box", rt.cyl === "cylinder" && !Object.keys(rt.dropped || {}).some((k) => /cylinder/.test(k)), rt);
+
   check("no page errors", errors.length === 0, errors.slice(0, 3));
   summary();
   await browser.close();

@@ -559,6 +559,9 @@ wbDrawioStyle.points = {
 //: What a vertex is drawn as, from its style: the kinds the board has a
 //: path for, else a box (counted when its shape was something else).
 function wbDrawioShape(s) {
+  //: cylinder3, cube, step, umlActor...: the JS-drawn kinds of whiteboard-shape-table.js, drawn again at any size.
+  const drawn = wbFmtState.shapeTable?.fromDrawio(s);
+  if (drawn) return drawn;
   const kind = s.shape || s._kind || "";
   if (kind === "ellipse" || s.ellipse === "1") return "ellipse";
   if (kind === "rhombus") return "diamond";
@@ -717,11 +720,13 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
     if (!d) continue;
     if (String(d.type || "").startsWith("link-")) { links.push([sk, d]); continue; }
     const closed = typeof d.d === "string" && /[Zz]\s*$/.test(d.d.trim());
-    if (typeof d.d !== "string" || !(WB_DRAWIO_SHAPES_OUT[d.shape] || d.shape === "custom" || closed)) { skip("drawn lines"); continue; }
+    //: A table shape (cylinder, cube, step...) goes out under its draw.io `shape=` word, open sub-paths and all.
+    const drawn = d.shapeKind ? wbFmtState.shapeTable?.toDrawio(d.shapeKind) || "" : "";
+    if (typeof d.d !== "string" || !(drawn || WB_DRAWIO_SHAPES_OUT[d.shape] || d.shape === "custom" || closed)) { skip("drawn lines"); continue; }
     const bb = bounds("sketch", sk);
     if (!bb) { skip("drawn lines"); continue; }
-    if (d.shape === "custom" || (!WB_DRAWIO_SHAPES_OUT[d.shape] && closed)) skip("shapes drawn as boxes");
-    const shape = WB_DRAWIO_SHAPES_OUT[d.shape] || "rounded=0";
+    if (!drawn && (d.shape === "custom" || (!WB_DRAWIO_SHAPES_OUT[d.shape] && closed))) skip("shapes drawn as boxes");
+    const shape = drawn ? drawn.replace(/;$/, "") : WB_DRAWIO_SHAPES_OUT[d.shape] || "rounded=0";
     const width = Math.max(1, Math.round((Number(d.width) || 2) / 2));
     vertex(`sketch:${sk.id}`,
       `${shape};whiteSpace=wrap;html=0;${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}${hex(d.fill) ? `fillColor=${hex(d.fill)};` : "fillColor=none;"}${opacityKeys(d)}${paintKeys(d)}strokeWidth=${width};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}${wbDrawioStyle.points.write(d.ports)}${font(d.label_size, d.label_bold, d.label_italic, d.label_underline, d.label_color)}`,
@@ -800,11 +805,17 @@ wbDrawioStyle.more = {
   },
   //: A shape's `sketch` data at `dx, dy`: its path (turned when it has a turn), its look, label and ports.
   shapeData(item, dx, dy, ink) {
-    const path = wbDrawioPath(item.shape, item.x + dx, item.y + dy, item.w, item.h);
+    const own = wbFmtState.shapeTable?.shapePathAt(item.shape, item.x + dx, item.y + dy, item.w, item.h);
+    const path = own || wbDrawioPath(item.shape, item.x + dx, item.y + dy, item.w, item.h);
     const data = {
       d: item.rotation ? wbDrawioStyle.more.turn(path, item.rotation, item.x + dx + item.w / 2, item.y + dy + item.h / 2) : path,
       shape: item.rotation ? "custom" : item.shape === "ellipse" ? "circle" : item.shape === "diamond" ? "diamond" : item.shape === "rect" ? "rect" : "custom", color: ink, ...item.look,
     };
+    if (own) {
+      data.shapeKind = item.shape;
+      data.label_area = wbFmtState.shapeTable.area(item.shape);
+      if (item.rotation) delete data.shapeKind; //: a turned outline is only stretched, never drawn again
+    }
     if (item.label) data.label = item.label;
     if (item.ports?.length) data.ports = item.ports;
     return data;

@@ -5790,12 +5790,14 @@ function wbSizeItemTo(entry, dim, target, factor, rows) {
   if (kind === "sketch") {
     const parsed = wbSketchParsedData(item);
     if (!parsed) return null;
-    wbSketchSetD(item, wbTransformPathD(parsed.d, {
+    const grow = {
       sx: dim === "width" ? factor : 1,
       sy: dim === "height" ? factor : 1,
       anchorX: bbox.minX,
       anchorY: bbox.minY,
-    }));
+    };
+    //: A shape the table draws (`shapeKind`, whiteboard-shape-table.js) is drawn again for its new box, not stretched.
+    wbSketchSetD(item, wbFmtState.shapeTable?.resized(parsed.d, grow, parsed.shapeKind, wbTransformPathD, wbPathBBox) ?? wbTransformPathD(parsed.d, grow));
   } else {
     // Rounded: both columns are integers on the row, and a card whose stored
     // width is 219.99997 reads back as a different number than it was set to.
@@ -22184,7 +22186,8 @@ function wbRenderMultiSelectionHandles() {
             const t = corner && !free ? { ...raw, sx: k, sy: k } : raw;
             for (const row of start) {
               if (row.entry.kind === "sketch") {
-                const newD = wbTransformPathD(row.d, t);
+                row.kind ??= wbSketchParsedData(row.entry.item)?.shapeKind || "";
+                const newD = (wbFmtState.shapeTable?.resized(row.d, t, row.kind, wbTransformPathD, wbPathBBox) ?? wbTransformPathD(row.d, t));
                 const selector = `.sketch-group[data-id="${row.entry.item.id}"]`;
                 document.querySelector(`${selector} .sketch-path`)?.setAttribute("d", newD);
                 document.querySelector(`${selector} .sketch-hitbox`)?.setAttribute("d", newD);
@@ -22496,7 +22499,7 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
             rawDX += event.dx;
             rawDY += event.dy;
             const t = wbSketchResizeTransform(bbox, handle, rawDX, rawDY, event.sourceEvent.shiftKey || wbKeepsRatio("sketch", sketch), event.sourceEvent.altKey);
-            const newD = wbTransformPathD(parsed.d, t);
+            const newD = (wbFmtState.shapeTable?.resized(parsed.d, t, parsed.shapeKind, wbTransformPathD, wbPathBBox) ?? wbTransformPathD(parsed.d, t));
             document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", newD);
             document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", newD);
             wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));

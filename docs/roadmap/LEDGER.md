@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 1 | 0 | 0 | 0 | 16 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 25 | 3 | 0 | 11 | 58 |
+| whiteboard | 30 | 26 | 3 | 0 | 11 | 59 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 632 | 149 | 3 | 186 | 1334 |
+| all | 553 | 633 | 149 | 3 | 186 | 1335 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -309,6 +309,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-22** `whiteboard` open, S: Keys still unbound: Ctrl+K tags (app palette key, needs a choice), Ctrl+. and Ctrl+, super/subscript (app keys; text batch), Alt+Shift+L, T, N link/tooltip/note. From WHITEBOARD_PLAN section 11 keys, 2026-11-12. Evidence: docs/roadmap/WHITEBOARD_PLAN.md shortcut table rows Ctrl+K, Ctrl+. Ctrl+, Ctrl+{ Ctrl+}, Alt+Shift+L T N
 - [ ] **L-whiteboard-26** `whiteboard` open, S: Layers tab: a child of a folded frame shows as folded (not hidden) and its eye says Expand the frame. From structure batch report, whiteboard-structure-more.js. Evidence: Layers tab lists a folded frame's children as hidden; its eye sets hidden=false with no visible change while the frame is folded
 - [ ] **L-whiteboard-27** `whiteboard` open, S: Format panel: Subscript and Superscript buttons wrapping the selection in ~ ~ or ^ ^. From wbtext3 agent, 2026-11-13. Evidence: frontend/js/whiteboard-text-more.js; the run row in whiteboard-format.js has size, font, ink, hl but no sub or sup button
+- [ ] **L-whiteboard-28** `whiteboard` open, S: Drawn shapes: Replace with a shape and Change shape kind should draw the table outline for the box, not stretch the tile. From wbtext3 agent, 2026-11-13. Evidence: frontend/js/whiteboard-library-more.js replaceData stretches the new outline, so a drawn shape (shapeKind) swapped in at a non-tile size is only regenerated after the next point edit-free resize check fails; whiteboard-shape-table.js afterResize needs the old path to equal the table's
 
 ## documents
 

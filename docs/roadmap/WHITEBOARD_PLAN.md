@@ -909,7 +909,6 @@ whiteboard-library.js 400). draw.io: `Sidebar.prototype.addStencilPalette`
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| JS-drawn shape classes (cylinder, cube, callout, step, hexagon, UML actor and lifeline, folder, note, tape, document, process...) | no | `Shapes.js`: 99 `mxCellRenderer.registerShape` classes (for example `cylinder3` at Shapes.js, `umlActor`, `callout`) drawn by `redrawPath` | a `wbShapePath(kind, w, h)` table of 40 of them that returns M/L/C/Z, with the shape name stored in `data.shape` so the path regenerates on resize (stencils scale; these keep corner radii) | M |
 | Scratchpad (a user shelf, drag in to save) | yes: the Library tab's "Save to the library" (`save-selection`, Ctrl+Shift+S) and the favourites | `scratchpad` action (diagramly/Menus.js 3164), `addToScratchpad` (3718) | done | none |
 | Custom shape editor (draw a stencil from XML) | partly (`save-shape` from a drawing) | `EditShapeDialog`, `createShape` (diagramly/Menus.js 2938) | done in effect | none |
 | Preview thumbnails | yes (`wbThumbSvg`) | `Sidebar.createThumb`, per-set PNGs (`images/sidebar-*.png`) | done | none |
@@ -1141,8 +1140,7 @@ commit. Help moves with each control (standing order 13).
 10. **`.drawio` import and export, then the templates.** Built 2026-11-12 (HISTORY, "Moved from the plans, 2026-11-12 (wbdrawio3)"):
     nothing open; VSDX, Lucid and Gliffy are dropped (the not-doing list).
 
-After the ten: tables (L), math (L), the
-JS-drawn shape classes, the shape picker, and the shortcut gaps in section 11.
+After the ten: tables (L), the shape picker, and the shortcut gaps in section 11.
 
 ### Decisions, 2026-10-10
 

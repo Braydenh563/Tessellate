@@ -1963,7 +1963,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-draw-io-keys", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-group-edit", "board-structure", "board-text-more", "board-format-options", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-group-edit", "board-structure", "board-text-more", "board-drawn-shapes", "board-format-options", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2292,6 +2292,21 @@ MORE_TOPICS.extend([
             "characters, and an SVG or PNG export keeps them. Maths: put a formula between dollar signs, like $x^2 + \\frac{a}{b}$, in a "
             "text box or a shape's text and it is typeset on the board (no space just inside the dollars, so \"$5 or $10\" stays plain); "
             "an export carries the source words instead."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "board-drawn-shapes",
+        "keywords": (
+            "cylinder", "cube", "database shape", "uml actor", "lifeline", "folder shape", "step shape", "chevron",
+            "tape", "document shape", "process shape", "drawn shapes", "resize keeps corners", "shape picker",
+        ),
+        "body": (
+            "Drawn shapes are a set of 25 outlines in the shape picker (Insert, Shape picker, or Ctrl+K and type the name) and in the "
+            "Library tab under Drawn shapes: cylinder, tube, cube, callout, step, UML actor and lifeline, folder, note, tape, document, "
+            "process and the flowchart set. Unlike a stretched picture, one is drawn again when you resize it, so a step keeps the size "
+            "of its notch and a folder its tab. Edit a point or turn it and it is stretched like any other shape from then on. A draw.io "
+            "file with shape=cylinder3, cube, step, umlActor and the rest brings them in as these shapes, and Export, draw.io writes them back."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2634,6 +2649,7 @@ TOPIC_META.update({
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-group-edit": {"title": "Edit inside a group, and workspaces", "path": "A board's View menu, Panels, Workspaces"},
+    "board-drawn-shapes": {"title": "Drawn shapes: cylinder, cube, step, actor", "path": "A board's Insert menu, Shape picker, or the Library tab, Drawn shapes"},
     "board-text-more": {"title": "Subscript, superscript and maths on a board", "path": "A text box or a shape's text, type H~2~O or x^2^"},
     "board-structure": {"title": "Tags, collapsing a frame and finding in one frame", "path": "A board's Format panel, Data tab"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},
