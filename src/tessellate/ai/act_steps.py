@@ -73,3 +73,16 @@ def lock_undo(session: Session, name: str, args: dict, undo: object) -> object:
 
     entry = session.get(Entry, int(args["note_id"]))
     return undo if entry is None else {**undo, "arguments": {**undo.get("arguments", {}), "base_hash": content_hash(entry.content)}}
+
+
+def text_hash(text: str | None) -> str:
+    """The `base_hash` of a text a card read, for the edit-conflict lock."""
+    from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
+
+    return content_hash(text)
+
+
+def locked_edit(note_id: int, read: str | None, content: str) -> dict:
+    """An `edit_note` step that writes `content` over the text `read`, locked to
+    it: a note changed after the card was made is refused, not overwritten (L124)."""
+    return {"name": "edit_note", "arguments": {"note_id": note_id, "content": content, "base_hash": text_hash(read)}}

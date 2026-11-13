@@ -251,13 +251,15 @@ def _model_stream_events(req: _StreamRequest, prepared: dict, messages: list) ->
             "chat: model call failed for %r: %s", req.model_manager.chat_model(), exc
         )
         preview = prepared.get("preview")
-        if preview and preview.get("text") and not streamed_any:
+        if preview and preview.get("text"):
             #: **The answer composed from the notes survives the model**
             #: (CHAT_PLAN Phase 6, the first tests: a model dying mid-answer
             #: used to leave only the error). The composed answer the page
             #: already drew as a draft is sent as the answer, under one line
-            #: saying the model stopped.
-            yield {"type": "answer", "delta": f"{preview['text']}\n\n{MODEL_STOPPED_NOTE}"}
+            #: saying the model stopped. After some words (L122) it replaces
+            #: them (`answer_final`) rather than following half a sentence.
+            said = f"{preview['text']}\n\n{MODEL_STOPPED_NOTE}"
+            yield {"type": "answer_final", "text": said} if streamed_any else {"type": "answer", "delta": said}
             return
         prefix = "\n\n" if streamed_any else ""
         yield {
@@ -599,15 +601,24 @@ def _note_kind(t: _Turn, kind: str, payload: dict) -> None:
         t.marks["answered"] = time.perf_counter() - t.started
 
 
+def _fold_break(t: _Turn, kind: str, payload: dict) -> None:
+    """A tool or step event ends the paragraph; a tool's touched notes are kept."""
+    t.in_prose = False
+    if kind == "tool":
+        for item in payload.get("touched") or []:
+            if item.get("kind") == "note" and isinstance(item.get("id"), int):
+                t.touched_note_ids.append(item["id"])
+
+
 def _fold_event(t: _Turn, kind: str, payload: dict, live_grounder) -> list:  # noqa: ANN001
     """Fold one event into the running answer; the live grounding rows when
     this delta could have closed a sentence."""
     if kind in _PARAGRAPH_BREAKS:
-        t.in_prose = False
-        if kind == "tool":
-            for item in payload.get("touched") or []:
-                if item.get("kind") == "note" and isinstance(item.get("id"), int):
-                    t.touched_note_ids.append(item["id"])
+        _fold_break(t, kind, payload)
+        return []
+    if kind == "answer_final":
+        #: The server's own replacement of what streamed (a model that died mid-answer).
+        t.answer_text, t.in_prose = payload.get("text") or t.answer_text, True
         return []
     if kind != "answer":
         return []

@@ -2106,11 +2106,11 @@ def _one_steps(session: Session, intent: str, parsed: dict, entry, name: str) ->
         label = f"Add the note {name} to Favourites" if intent == "pin" else f"Take the note {name} out of Favourites"
     elif intent == "rename":
         new_content = retitled(entry.content or "", parsed["title"])
-        steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new_content}}]
+        steps = [act_steps.locked_edit(entry.id, entry.content, new_content)]
         label = f"Rename the note {name} to “{parsed['title']}”"
     elif intent == "append":
         new_content = act_steps.appended(entry.content or "", parsed["content"])
-        steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new_content}}]
+        steps = [act_steps.locked_edit(entry.id, entry.content, new_content)]
         label = f"Add “{_clip(parsed['content'], 80)}” to the end of {name}"
     else:
         other, question = _resolve_one(session, parsed.get("other"), None, False, parsed.get("other_id"))

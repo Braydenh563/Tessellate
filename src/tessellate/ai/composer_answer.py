@@ -30,6 +30,10 @@ from tessellate.core.lazyre import lazy_compile
 _NUMBER_WORDS = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve")
 
 
+#: An opener that attributes the quote to the note or its writer.
+_OWNS_IT = re.compile(r"\b(?:in your note|you noted)\b", re.I)
+
+
 class _Answer:
     """The answer as tagged parts, the text being their join:
 
@@ -200,7 +204,7 @@ class _Answer:
         if not view.titled:
             #: Its first words are the quote itself; only a when-ask's day is new.
             return self.dated(view) if view.written and self.day_in_cite else self
-        if self._said_before(view.title):
+        if self._said_before(view.title) or self._opener_names_the_note():
             return self
         bold = view.title
         if again:
@@ -215,6 +219,11 @@ class _Answer:
         self.t("cite_from", "bold")
         self.parts.append(("title", bold, view.id))
         return self.t("bold", "cite_note")
+
+    def _opener_names_the_note(self) -> bool:
+        """Whether the opener already says whose words these are ("The day in your note: "), so "From your Dentist
+        note." after the quote would say the same twice (E23)."""
+        return any(p[0] == "template" and _OWNS_IT.search(p[1]) for p in self.parts)
 
     def _said_before(self, title: str) -> bool:
         """Whether an earlier answer in this chat already named the note."""

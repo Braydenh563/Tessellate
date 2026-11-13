@@ -630,7 +630,7 @@ _ASKS = {
     "compare": re.compile(r"^\s*+(?:the\s+)?(?P<a>[\w' -]{2,30}?)\s+or\s+(?:the\s+)?(?P<b>[\w' -]{2,30}?)\s*\??\s*$", re.I),
     #: "who is coming for Christmas" asks who does something: its first word is a verb in -ing, not a name.
     "who": re.compile(r"^\s*who(?:'s| is| was)\s+(?!\w+ing\s)(?P<name>[A-Za-z][\w' -]{0,30}?)\s*\??\s*$", re.I),
-    "when": re.compile(r"^\s*(?:when|what (?:days?|dates?)|which (?:days?|dates?))\b", re.I),
+    "when": re.compile(r"^\s*(?:when|what (?:days?|dates?|times?)|which (?:days?|dates?))\b", re.I),
     #: "How many notes mention Lisbon" counts notes: the overview, which leads
     #: with that count (2026-10-30 sweep: it answered with a dated line).
     "count": re.compile(r"^\s*how (?:much|many)\b(?! (?:of my )?(?:notes|entries)\b)", re.I),

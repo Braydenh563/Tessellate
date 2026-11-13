@@ -38,7 +38,7 @@ from datetime import date, datetime, timedelta
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, glossary, question_noise, realise
 from tessellate.ai import composer_ages, composer_answer, composer_nth, composer_oneword, composer_property, composer_small
-from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer_event_verdict, factgraph
+from tessellate.ai import composer_ahead, composer_ask, composer_notime, composer_clean, composer_event_verdict, factgraph
 from tessellate.ai import composer_aliases, composer_chip_subject, composer_overview
 from tessellate.ai import composer_select
 from tessellate.ai import composer_credit, composer_each, composer_label, composer_refer, composer_tally
@@ -330,7 +330,7 @@ def _say_fact_ahead(out: _Out, lead: Fact, today: date, question: str) -> None:
     """`_say_fact` for a "when" ask, where a day still ahead is said by its distance (R9-17), not by the write date."""
     token = _WHEN_ASK.set(True)
     try:
-        _say_fact(out, lead, today, question)
+        composer_notime.say_noted(_say_fact, out, lead, today, clean(question), question)
     finally:
         _WHEN_ASK.reset(token)
 
