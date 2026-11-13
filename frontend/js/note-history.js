@@ -367,16 +367,18 @@ async function undoSkillRun(span, button, onDone) {
     const done = await apiJson("/events/undo", { method: "POST", body: applied });
     //: Redo re-applies the reversed events (`POST /events/redo`, L805), so the
     //: run's Undo is a step on the normal stack.
+    //: Only the notes the undo touched are re-read (test_refresh_entries).
+    const ids = (done.items || []).filter((item) => item.entity_type === "entry").map((item) => item.entity_id);
     if (done.restored?.length) {
       pushUndo(
         "Undid this run",
         async () => {
           await apiJson("/events/redo", { method: "POST", body: JSON.stringify({ restored: done.restored }) });
-          await loadEntries().catch(() => {});
+          await refreshEntries(ids).catch(() => {});
         },
         async () => {
           done.restored = (await apiJson("/events/undo", { method: "POST", body: applied })).restored;
-          await loadEntries().catch(() => {});
+          await refreshEntries(ids).catch(() => {});
         }
       );
     }

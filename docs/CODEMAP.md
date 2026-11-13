@@ -1380,9 +1380,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `activityActorName` | frontend/js/dashboard.js:3900 |
-| `activityUndoControl` | frontend/js/dashboard.js:3997 |
+| `activityUndoControl` | frontend/js/dashboard.js:3998 |
 | `activityUndoPlanText` | frontend/js/dashboard.js:3907 |
-| `activityUndoStarts` | frontend/js/dashboard.js:3980 |
+| `activityUndoStarts` | frontend/js/dashboard.js:3981 |
 | `afterFrames` | frontend/js/dashboard.js:2019 |
 | `applyDashDensity` | frontend/js/dashboard.js:1301 |
 | `cachedGreetingPhrase` | frontend/js/dashboard.js:325 |
@@ -1408,7 +1408,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dashReminders` | frontend/js/dashboard.js:480 |
 | `dashStatsButton` | frontend/js/dashboard.js:2382 |
 | `dashStreak` | frontend/js/dashboard.js:2370 |
-| `dashTensionRow` | frontend/js/dashboard.js:4201 |
+| `dashTensionRow` | frontend/js/dashboard.js:4202 |
 | `dashWidgetRow` | frontend/js/dashboard.js:2134 |
 | `dashWidgetToggle` | frontend/js/dashboard.js:2108 |
 | `dashWidgetsSummary` | frontend/js/dashboard.js:2246 |
@@ -1454,7 +1454,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `refreshDashWidgets` | frontend/js/dashboard.js:1794 |
 | `renderActivityWidget` | frontend/js/dashboard.js:3824 |
 | `renderBoardsWidget` | frontend/js/dashboard.js:3764 |
-| `renderBookmarksWidget` | frontend/js/dashboard.js:4065 |
+| `renderBookmarksWidget` | frontend/js/dashboard.js:4066 |
 | `renderCategoriesWidget` | frontend/js/dashboard.js:3059 |
 | `renderDashGlance` | frontend/js/dashboard.js:731 |
 | `renderDashMore` | frontend/js/dashboard.js:1559 |
@@ -1463,7 +1463,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderDashboard` | frontend/js/dashboard.js:1823 |
 | `renderDashboardGreeting` | frontend/js/dashboard.js:574 |
 | `renderDigestWidget` | frontend/js/dashboard.js:2788 |
-| `renderDocumentsWidget` | frontend/js/dashboard.js:4028 |
+| `renderDocumentsWidget` | frontend/js/dashboard.js:4029 |
 | `renderFeatures` | frontend/js/dashboard.js:1668 |
 | `renderFirstStepsLazy` | frontend/js/dashboard.js:1722 |
 | `renderFocusTimerWidget` | frontend/js/dashboard.js:3527 |
@@ -1472,8 +1472,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderMostOpenedWidget` | frontend/js/dashboard.js:2598 |
 | `renderMostUsedWidget` | frontend/js/dashboard.js:2624 |
 | `renderNameNudge` | frontend/js/dashboard.js:795 |
-| `renderOnThisDayWidget` | frontend/js/dashboard.js:4259 |
-| `renderPaceWidget` | frontend/js/dashboard.js:4334 |
+| `renderOnThisDayWidget` | frontend/js/dashboard.js:4260 |
+| `renderPaceWidget` | frontend/js/dashboard.js:4335 |
 | `renderPinnedWidget` | frontend/js/dashboard.js:2593 |
 | `renderQuestionsWidget` | frontend/js/dashboard.js:2684 |
 | `renderQuickCaptureWidget` | frontend/js/dashboard.js:2893 |
@@ -1485,9 +1485,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderStatsWidget` | frontend/js/dashboard.js:2420 |
 | `renderStreakWidget` | frontend/js/dashboard.js:2388 |
 | `renderTagCloudWidget` | frontend/js/dashboard.js:3319 |
-| `renderTensionsWidget` | frontend/js/dashboard.js:4139 |
+| `renderTensionsWidget` | frontend/js/dashboard.js:4140 |
 | `renderTopTagsWidget` | frontend/js/dashboard.js:2663 |
-| `renderUnfinishedWidget` | frontend/js/dashboard.js:4091 |
+| `renderUnfinishedWidget` | frontend/js/dashboard.js:4092 |
 | `saveDashLayout` | frontend/js/dashboard.js:218 |
 | `saveQuickAccess` | frontend/js/dashboard.js:1407 |
 | `saveQuickTints` | frontend/js/dashboard.js:1424 |

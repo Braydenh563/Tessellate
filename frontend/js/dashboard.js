@@ -3947,8 +3947,10 @@ async function undoActorFrom(actor, since, byId, rerender) {
     const done = await apiJson("/events/undo", { method: "POST", body });
     //: The server's redo (L805): Redo re-applies the reversed events, and the
     //: next Undo reverses them again, so this joins the normal stack.
+    //: Only the notes the undo touched are re-read (test_refresh_entries).
+    const ids = (done.items || []).filter((item) => item.entity_type === "entry").map((item) => item.entity_id);
     const settle = async () => {
-      await loadEntries().catch(() => {});
+      await refreshEntries(ids).catch(() => {});
       rerender();
     };
     if (done.restored?.length) {
@@ -3965,8 +3967,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
       );
     }
     toast(`Put back ${nounCount(done.undone, "note")}.`);
-    await loadEntries().catch(() => {});
-    rerender();
+    await settle();
   } catch (error) {
     toast(error.message || `Couldn't undo what ${name} changed.`, true);
   }
