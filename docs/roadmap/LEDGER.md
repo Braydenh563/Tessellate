@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 94 | 44 | 2 | 59 | 314 |
+| chat | 176 | 93 | 39 | 2 | 59 | 308 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 545 | 134 | 3 | 186 | 1232 |
+| all | 553 | 544 | 129 | 3 | 186 | 1226 |
 
 ## graph
 
@@ -94,10 +94,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L183** `chat` partly, L: Brief 34: the 1.5 s debounce, one curve table and the idle rule. The reaction budget is built (26092ac88, `NMB_REACT_BUDGET`, four a minute; browser-measured 0 snaps in 600 s, 21 distinct motions, 35 to 44 ms latency). From OPEN.md:3766; SESSION_BRIEFS.md:154; ledger-1112 P6; OPEN.md:2876. Evidence: Latency bar conflicts with the owner's debounce request.
 - [ ] **L184** `chat` open, L: Atlas motion measured leftovers: laughing end, blend, tail under 1 ms a minute, 390 fps, arm rig. From OPEN.md:1074; OPEN.md:3188; OPEN.md:3763. Evidence: Hand-stepped blend measurements outstanding; needs visual/human review of motion
 - [ ] **L185** `chat` open, L: Slow idle; non-Atlas walks, runs, climbs, crouches, sits, lies. From OPEN.md:4419. Evidence: w34-unv2-1111.md marks true; generated-companion behaviour set not complete
-- [ ] **L186** `chat` partly, S: Fix stale-plan line word order and mood (Z7). From OPEN.md:4043. Evidence: 'may still be open' wording fixed (composer_tables.py); quoted plan fragment in composer_digest.py still unfixed.
-- [ ] **L187** `chat` partly, S: Stop verb word becoming a required term; fix footer wording (Z16). From OPEN.md:4044. Evidence: Quoted-figure answers drop footer (d1c5a1265); frame-word list in composer_unfound.py. Verb-as-term case not shown closed.
 - [ ] **L188** `chat` partly, S: Count sentence should count what notes said, not the largest theme (C6). From OPEN.md:4087. Evidence: Rechecked 2026-11-11: small notebook now agrees (eight/eight); 207-note count still disagrees.
-- [ ] **L189** `chat` partly, S: Fix the run-on line for 'what did I do on 3 October' (E16). From OPEN.md:4140. Evidence: Line run-on (Phone 020... Dentist check-up) left, see bc6-1111.md.
 - [ ] **L192** `chat` partly, S: Show open checklist items for 'what is still open on X' (P16). From OPEN.md:848. Evidence: composer.py:46 handles checklist ticked counts; open-items question not found
 - [ ] **L193** `chat` partly, S: Magic add 'tonight around 7pm'; equalise edit button heights. From OPEN.md:3826. Evidence: reminder_parser.py:218 hedges parse 'probably around 7pm'; button heights unverified
 - [ ] **L195** `chat` partly, S: Check that each Guide topic answers its question (only the head was read). From OPEN.md:984. Evidence: tests/test_help_coverage.py checks topics_for per question; not read end to end by a human rater
@@ -106,8 +103,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L198** `chat` partly, S: Improve Guide topic ranking when searching (top-3 38/60 gap). From OPEN.md:1512. Evidence: ai/help_chat.py:115,334,449 ranking by question-word overlap exists; top-3 38/60 gap not re-measured
 - [ ] **L199** `chat` partly, S: Make the status.js suggest code call meaningAlts (Brief 86). From OPEN.md:1509. Evidence: meaningAlts used by settings-find.js:117,135; status.js suggest code call not found
 - [ ] **L201** `chat` partly, S: Rows 839 and 841 never checked (no text located for either). From ledger-1112 P11.
-- [ ] **L204** `chat` partly, S: Repeat in 'milk' line still reproduced; 'what did I write about in October' restates a line. From ledger-1112 E18.
-- [ ] **L205** `chat` partly, S: 'compare Tokyo and Lisbon' opener 'Of the notes found...' and repeated cites need fixing. From ledger-1112 D20.
 - [ ] **L210** `chat` partly, M: Fix the 'who is Priya' overview shape (R3-20). From OPEN.md:4152. Evidence: Owned by 1743 (overview answer shape); not closed.
 - [ ] **L211** `chat` partly, M: Lead with the defining note when the title only contains the subject (D1). From OPEN.md:4168. Evidence: Owned by 1743 (overview answer shape); not closed.
 - [ ] **L212** `chat` partly, M: Keep the subject in follow-ons in Ask and Chat (C12). From OPEN.md:4514. Evidence: CHANGELOG.md:229 (W9 B21, B29) fixed 'tell me more about it' for composer; Ask client sends no objects, still open
@@ -154,7 +149,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L728** `chat` open, S: Decide the other 13 verbs, confirm card, undo, no-model Agent mode and web search tool (decision 38). From OPEN.md:1060. Evidence: Row note: W34 owner-call tracked in the plans (w34-L1-1111.md) Owner decided 2026-11-12: Keep as decided. Build: tests only: extend tests/test_engine_phase6_spec.py for decision 38's verbs, confirm card, undo and the web search tool.
 - [ ] **L730** `chat` open, S: Decide map/document/web-page sources and a scrollable web source list (decision 37). From OPEN.md:1613. Evidence: Row tagged W34 owner-call (tracked in the plans) Owner decided 2026-11-12: Keep and build. Build: spec tests for decision 37 source kinds; scrollable web source list in the answer bubble (frontend/js/chat-turn.js, answer-kit.js).
 - [ ] **L731** `chat` open, S: Decide light rewrite rules: tense, number agreement, comma capitalisation, Oxford comma, quotes (decision 33). From OPEN.md:2067. Evidence: Row tagged W34 owner-call tracked in plans (w34-L1-1111.md) Owner decided 2026-11-12: Keep, add tests. Build: tests only: decision 33 tables for past_plan, count_noun, join_items, after_comma, cut_title in tests/test_engine_phase6_spec.py.
-- [ ] **L-chat-10** `chat` open, S: Stop a quotation from skipping a sentence inside its own marks (round 1 D8). From open-work sweep 2026-11-12, tests/test_composer_r1_dates_1107.py:65. Evidence: This strict xfail is an unbuilt spec. CHANGELOG line 915 says it is "still open, pinned by a strict xfail". No LEDGER row or CHAT_PLAN item names it. L91 covers gluing whole notes with commas and elli
 - [ ] **L-chat-13** `chat` open, L: Make the agent activity monitor movable and let the agent drive the interface. From open-work sweep 2026-11-12, IDEAS.md:100. Evidence: Listed as partly built, with no LEDGER row or plan item for the remainder
 - [ ] **L-chat-16** `chat` open, M: Starters as verb-plus-slot chips. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:558. Evidence: Open line in the plan's prose a session could miss. Open sub-points.
 - [ ] **L-chat-19** `chat` open, L: Close the rest of the 2026-10-10 chat bug list. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:779. Evidence: Open line in the plan's prose a session could miss. Owner bug list; also token count after deleted turn, destination history clear, match kind label, jokes source, caption sentences.
