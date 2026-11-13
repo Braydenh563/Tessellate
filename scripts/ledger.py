@@ -46,6 +46,17 @@ def table(text: str) -> dict[str, tuple[int, ...]]:
 
 
 def recount(text: str) -> str:
+    #: One row per plan: a union merge of two branches' tables once stacked 38 `| all |` rows.
+    seen: set[str] = set()
+    kept = []
+    for line in text.split("\n"):
+        m = COUNT.match(line)
+        if m and m.group(1) in seen:
+            continue
+        if m:
+            seen.add(m.group(1))
+        kept.append(line)
+    text = "\n".join(kept)
     for p, v in table(text).items():
         text = re.sub(rf"^\| {re.escape(p)} \|( \d+ \|){{6}}$", f"| {p} | " + " | ".join(map(str, v)) + " |", text, flags=re.M)
     return text

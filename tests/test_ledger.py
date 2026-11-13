@@ -95,3 +95,9 @@ def test_add_never_reuses_an_id_already_closed_into_history(tmp_path, monkeypatc
     monkeypatch.setattr(tool, "HISTORY", hist)
     a = argparse.Namespace(plan="documents", status="open", size="S", src="y", evidence="", title="c")
     assert tool.add(a) == "L-documents-10"
+
+
+def test_the_counts_table_has_one_row_per_plan():
+    """A union merge once left 38 `| all |` rows, which flooded orient.sh past its 40 lines."""
+    names = [m.group(1) for m in ledger.COUNT.finditer(TEXT)]
+    assert len(names) == len(set(names)), sorted({n for n in names if names.count(n) > 1})
