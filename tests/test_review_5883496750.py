@@ -121,7 +121,8 @@ def test_an_attached_image_is_captioned_once(ai_client, fake_ollama, monkeypatch
     calls = []
     monkeypatch.setattr(captioning, "caption_and_store", lambda *a, **k: calls.append(a) or "a photo of a pond")
     sent = ai_client.post("/media/upload", files={"file": ("photo.png", b"\x89PNG\r\n\x1a\n", "image/png")})
-    assert ai_client.post("/chat", json={"question": question, "image_media_ids": [sent.json()["id"]]}).status_code == 200
+    answered = ai_client.post("/chat", json={"question": question, "image_media_ids": [sent.json()["id"]]})
+    assert answered.status_code == 200
     assert len(calls) == 1
 
 
