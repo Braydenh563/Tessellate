@@ -160,7 +160,7 @@
       return false;
     }
     const width = parsed.width || 3;
-    const patch = { d: found.d, shape: SHAPE_OF[found.kind], ink: undefined, pts: undefined, pbox: undefined };
+    const patch = { d: found.d, shape: SHAPE_OF[found.kind], ink: undefined, pts: undefined, pbox: undefined, prs: undefined };
     if (found.kind === "line") Object.assign(patch, { startCap: "none", endCap: "none" });
     if (found.kind === "arrow") {
       Object.assign(patch, { startCap: "none", endCap: "arrow", d: wbRegenerateShapeCaps(found.d, "none", "arrow", width * 4 + 6) });

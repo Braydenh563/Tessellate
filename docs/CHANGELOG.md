@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: a smoothed pen stroke keeps each point's real pressure, so changing its width rebuilds it with that pressure and not a simulated one; strokes saved before still load (L-whiteboard-32).
 - Whiteboard: Replace with a shape draws a drawn shape's outline fresh for the box (corners and curves keep their size) instead of stretching the tile (L-whiteboard-28).
 - Whiteboard: the Text style menu on selected card text has Subscript and Superscript, which wrap the words in ~ ~ or ^ ^ (and take the marks off again), as one Undo step (L-whiteboard-27).
 - Whiteboard: the Format panel's width control and a turn now work on smoothed pen strokes: the outline is rebuilt from the stroke's own points at the new width, and a rotation turns the points with the outline, as one Undo step (L-whiteboard-31).
