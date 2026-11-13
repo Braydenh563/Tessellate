@@ -11,65 +11,65 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
-| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
-| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 597 | 134 | 3 | 188 | 1284 |
 
 ## graph
 
@@ -379,15 +379,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## documents
 
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines. Analysis 2026-11-12 (docsG): "doc" selector lines per file: 00:35, 01:50, 02:86, 03:41, 04:353, 05:451, 06:33, 07:475, 08:319, 09:173, 10:277. Moving them into 09-editor.css reorders the cascade against 08-consistency and 10-responsive (later files override earlier ones at equal specificity), so a move needs a computed-style diff sweep per surface first; too wide to land safely in one step.
-- [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10. Looked at 2026-11-12 (docsD): Python debug already runs a test file through the harness (run-core.js py.debug, tests:); JS and TS debug run it as a plain script because the harness (run-tests.js runTestHarness) is modern JS and the debug worker is ES5 JS-Interpreter, so it needs an ES5 harness plus a bridge for test rows
+- [ ] **L314** `documents` open, L: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10. Looked at 2026-11-12 (docsD): Python debug already runs a test file through the harness (run-core.js py.debug, tests:); JS and TS debug run it as a plain script because the harness (run-tests.js runTestHarness) is modern JS and the debug worker is ES5 JS-Interpreter, so it needs an ES5 harness plus a bridge for test rows Blocker (docsJ 2026-11-13): the harness is async (await, Promise, arrow functions in 41 lines of run-tests.js) and JS-Interpreter has no Promise or event loop, so it needs a synchronous ES5 harness written separately plus a bridge that posts each test row from inside the interpreter; not a bounded change, size L.
 - [ ] **L327** `documents` open, L: Split documents.js, documents-code.js and run_sandbox.py into lazy chunks (Opus design step) and fix listener imbalance. From OPEN.md:4468; OPEN.md:4482; OPEN.md:4485; OPEN.md:4493. Evidence: documents.js 16,598 lines now; lazy-chunk split needs Opus design step, not done
 - [ ] **L330** `documents` open, L: Code editor: multi-file tabs, split panes and inner palette. From OPEN.md:4481. Evidence: Deferred L; not built
 - [ ] **L335** `documents` open, L: Brief 45 part 2: split whiteboard.js/initWhiteboard and documents.js, fold 133 duplicate blocks. From SESSION_BRIEFS.md:176. Evidence: whiteboard.js still holds initWhiteboard (E19: 26,159 lines); no split commit found
 - [ ] **L342** `documents` partly, M: Meet the 4x typing gate (rest in a29i-1102.md). From OPEN.md:4489. Evidence: a29i-1102.md holds the rest; 4x typing gate stays open Analysis 2026-11-12 (docsG): the 4x CPU typing gate (p95 under 50 ms, no long task over 50 ms) needs a quiet machine; this shared four-core box runs agents and servers at once, so a figure here would be noise. Check: run the typing sweep with CDP Emulation.setCPUThrottlingRate 4 on an idle machine.
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
 - [ ] **L-documents-26** `documents` open, M: Per-key cost in the document editor is about twice a bare CodeMirror (native part, not script): find which style invalidation per key (doc-block-handle and drop class writes, caret and complete-list writes) costs it. From L323. Evidence: /tmp/docsF-s/key323.js: live view 35 to 43 ms a key at 4x CPU against 19 for a bare CodeMirror and 17 for a bare contenteditable; trace EventDispatch 56 against 25 bare, FunctionCall 20 against 10, JS self time under 6 ms a key, so the rest is native editing and style Analysis 2026-11-12 (docsG): needs a Chromium trace with style-invalidation counts per key (devtools timeline, Recalculate Style), compared against a bare CodeMirror page; not done, a measured number is required before any fix.
-- [ ] **L-documents-33** `documents` open, M: Run: input() answered mid-run, not only from the Input box before the run (COOP/COEP from D2 are in place; run_sandbox.py). From L-documents-9 mining (ide1-1010, debug70-1010 and shell71-1010, from git history).
-- [ ] **L-documents-30** `documents` open, M: Debug: expand a list or an object variable into its children (one level shown today: _mm_names in PY_RUNNER, show in _JS_DEBUG_WORKER). From L-documents-9 mining (ide1-1010, debug70-1010 and shell71-1010, from git history).
 - [ ] **L-documents-35** `documents` open, M: Diagram Ask UI for mind map, timeline and sequence: lazy sibling to diagram-ai.js that flattens S.m, posts kind and kind_model, previews and applies the returned ops with the kind's own model functions, and un-hides the Ask form. From L-documents-27. Evidence: diagram-ai.js:350 hides the Ask form when S.k is set; POST /drafts/diagram-ask now takes kind + kind_model (flat uid/type/text/parent/id/from/to blocks) and returns add/rename/move/delete ops by uid. diagram-builder.js is at its gzip cap
 - [ ] **L-documents-34** `documents` open, M: Tracked-change author and date shown on the suggestion menu and list: needs a stored form (CriticMarkup comment {>>name, date<<}) read by docSuggestParse, written by docSuggestEdit, kept by the Word export. From L333. Evidence: documents-prose.js docSuggestParse: CriticMarkup {++x++} carries no author or date; the mark menu is documents-prose.js docSuggestMenu (~1135)
 - [ ] **L-documents-36** `documents` open, M: Debug: lower async/await and generators (needs a promise queue and a resumable stepper; refused today). From L334.
