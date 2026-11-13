@@ -311,3 +311,12 @@ def test_a_fit_goes_into_the_canvas_the_person_can_see():
     assert "e.sourceEvent" in zoom and "wbFit.on = false" in zoom
     assert 'for (const id of ["whiteboard-container", "wb-sidebar", "wb-format", "wb-tools-panel"])' in js
     assert "setTimeout(wbRefitIfFitted, 200)" in js
+
+
+def test_the_map_panel_help_points_at_where_the_templates_are() -> None:
+    """Source text: the map panel's help said templates are dragged in from the Library tab; they are the From a template row in the arrow beside New (L439)."""
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    body = html[html.index('id="wb-side-map-help"') :]
+    body = body[: body.index("</div>")]
+    assert "From a template" in body and "drag" not in body
+    assert "From a template" in (ROOT / "js" / "boards-gallery.js").read_text(encoding="utf-8")

@@ -12,6 +12,7 @@ Output:
            phrases of every topic that names a Settings pane, checked by the
            sweep against the text of each pane that topic names
   popovers: ids of every `data-help-for` target the static HTML declares
+  slash:   the name of every chat "/" command in the registry (the menu has a row for each)
 """
 
 from __future__ import annotations
@@ -22,7 +23,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
+sys.path[:0] = [str(ROOT), str(ROOT / "src"), str(ROOT / "tests")]
 
 import test_help_settings_paths as lint  # noqa: E402
 from tessellate.ai import help_chat  # noqa: E402
@@ -92,7 +93,10 @@ def main() -> None:
         body = " ".join(_strings(topic.get("body", "")))
         phrases.append({"topic": topic["id"], "sections": sorted(sections), "phrases": sorted(_phrases(body))})
     popovers = sorted(set(re.findall(r'data-help-for="([^"]+)"', lint.INDEX)))
-    print(json.dumps({"paths": paths, "phrases": phrases, "popovers": popovers}, indent=1))
+    from tessellate.ai.slash_table import TABLE
+
+    slash = [usage.split()[0].lstrip("/") for _, usage, _, _ in TABLE]
+    print(json.dumps({"paths": paths, "phrases": phrases, "popovers": popovers, "slash": slash}, indent=1))
 
 
 if __name__ == "__main__":
