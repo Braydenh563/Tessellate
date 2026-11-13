@@ -4,15 +4,18 @@ tool call checked before it runs (L566). Kept out of `routes_chat.py`, which is 
 from __future__ import annotations
 
 import functools
+import hashlib
+import inspect
 from collections.abc import Callable
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from starlette.responses import StreamingResponse
 
 from tessellate.ai import consent_store, turn_once
 from tessellate.core import private_turn
 
 _NDJSON = "application/x-ndjson"
+_REQ = "once_request"
 _HEADERS = {"X-Accel-Buffering": "no", "Cache-Control": "no-cache"}
 
 
@@ -25,21 +28,36 @@ def _tracked(body: object) -> bool:
     )
 
 
+def _takes_request(handler: Callable, wrapped: Callable) -> Callable:
+    """Add the request to the signature FastAPI reads, so the wrapper knows who sent the turn."""
+    sig = inspect.signature(handler)
+    extra = inspect.Parameter(_REQ, inspect.Parameter.KEYWORD_ONLY, annotation=Request)
+    wrapped.__signature__ = sig.replace(parameters=[*sig.parameters.values(), extra])
+    return wrapped
+
+
+def _caller(request: Request) -> str:
+    """One sign-in's slots are its own: two devices that pick the same turn id never share an answer."""
+    token = request.headers.get("x-auth-token") or ""
+    return hashlib.sha256(token.encode()).hexdigest()[:16]
+
+
 def json_route(handler: Callable) -> Callable:
     """`POST /chat`: a repeat of the same `turn_id`, even while the first still runs, waits and gets its result."""
 
     @functools.wraps(handler)
     def wrapped(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
         body = kwargs.get("body")
+        request = kwargs.pop(_REQ)
         if not _tracked(body):
             return handler(*args, **kwargs)
-        held = turn_once.slot(body.turn_id)
+        held = turn_once.slot(body.turn_id, _caller(request))
         with held.lock:
             if held.value is None:
                 held.value = handler(*args, **kwargs)
             return held.value
 
-    return private_turn.route(wrapped)
+    return private_turn.route(_takes_request(handler, wrapped))
 
 
 async def _remember(held: turn_once.Slot, lines):  # noqa: ANN001, ANN202
@@ -52,7 +70,7 @@ async def _remember(held: turn_once.Slot, lines):  # noqa: ANN001, ANN202
             yield line
         whole = True
     finally:
-        turn_once.end_stream(held, got if whole else None)
+        turn_once.end_stream(held, got if whole else None, partial=bool(got) and not whole)
 
 
 def stream_route(handler: Callable) -> Callable:
@@ -61,9 +79,12 @@ def stream_route(handler: Callable) -> Callable:
     @functools.wraps(handler)
     def wrapped(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
         body = kwargs.get("body")
+        request = kwargs.pop(_REQ)
         if not _tracked(body):
             return handler(*args, **kwargs)
-        held = turn_once.slot(body.turn_id)
+        held = turn_once.slot(body.turn_id, _caller(request))
+        if held.partial:
+            raise HTTPException(status_code=409, detail="That answer stopped partway, so it was not run again.")
         if held.value is not None:
             return StreamingResponse(iter(held.value), media_type=_NDJSON, headers=_HEADERS)
         if not turn_once.begin_stream(held):
@@ -76,7 +97,7 @@ def stream_route(handler: Callable) -> Callable:
         response.body_iterator = _remember(held, response.body_iterator)
         return response
 
-    return private_turn.route(wrapped)
+    return private_turn.route(_takes_request(handler, wrapped))
 
 
 def check_tag(body: object) -> None:

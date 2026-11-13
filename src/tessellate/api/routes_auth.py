@@ -931,8 +931,11 @@ def _device_cookie(request: Request) -> str:
     return raw if 20 <= len(raw) <= 100 and raw.replace("-", "").replace("_", "").isalnum() else ""
 
 
-def _set_device_cookie(response: Response, raw: str) -> None:
-    #: Only the LAN port is https, and only a device on the network has one.
+def _set_device_cookie(response: Response, raw: str, *, secure: bool = True) -> None:
+    #: A device on the network has one. Over the LAN port's https it is
+    #: `Secure`; in plain-http mode (`secure=False`, `_cookie_secure`) a
+    #: `Secure` cookie is dropped by the phone, which was then asked about
+    #: on every sign-in (review 5883463715).
     #: Written only with an id this server minted, never echoed back from a
     #: request (CodeQL: cookie built from user input), so it lasts 400 days
     #: from first issue and an older device is asked about once again.
@@ -940,7 +943,7 @@ def _set_device_cookie(response: Response, raw: str) -> None:
         return
     response.set_cookie(
         lantrust.DEVICE_COOKIE, raw, max_age=400 * 24 * 3600, path="/auth",
-        httponly=True, secure=True, samesite="strict",
+        httponly=True, secure=secure, samesite="strict",
     )
 
 
@@ -991,7 +994,7 @@ def _hold_new_device(request: Request, device: str, config: ConfigManager) -> JS
         )
     refused = JSONResponse(status_code=403, content={"detail": detail, "device_pending": decision is None})
     if minted:
-        _set_device_cookie(refused, minted)
+        _set_device_cookie(refused, minted, secure=_cookie_secure(request))
     return refused
 
 

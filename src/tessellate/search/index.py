@@ -407,6 +407,10 @@ def _boards_touched_by_objects(
     return out
 
 
+#: At most this much file text joins a note's row: a scanned book's OCR made
+#: every save of its note re-index megabytes, and search needs no more.
+FILE_WORDS_CAP = 20_000
+
 #: The columns of a file a note's row now carries (`_file_words`).
 _READ_COLUMNS = ("caption", "ocr_text", "vision_ocr_text")
 
@@ -688,7 +692,7 @@ def _file_words(entry) -> str:  # noqa: ANN001
             parts.extend((body, caption))
     seen: set[str] = set()
     kept = [p for p in (str(part or "").strip() for part in parts) if p and not (p in seen or seen.add(p))]
-    return "\n".join(kept)
+    return "\n".join(kept)[:FILE_WORDS_CAP]
 
 
 def _entry_row(entry, *, want: str) -> Row | None:  # noqa: ANN001

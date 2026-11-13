@@ -1089,7 +1089,7 @@ MORE_TOPICS: list[dict] = [
             "needs your password. The first "
             "visit warns that the certificate is not trusted: compare its "
             "SHA-256 fingerprint with the one under the switch before you "
-            "continue. Trust this certificate on your phone installs it once (its ? has the steps); Regenerate certificate makes a new one. Also allow plain http is off: on, anyone on the Wi-Fi can read your password. Change your password (private "
+            "continue. Trust this certificate on your phone installs it once (its ? has the steps); Regenerate certificate makes a new one. Also allow plain http is off: on, anyone on the Wi-Fi can read your password and sign-in cookies. Change your password (private "
             "notes move across; a new one needs at least 8 characters, and an "
             "easy one gets a warning). Re-encrypt private notes (Settings, Account & security) makes "
             "a new encryption key and moves every private note onto it, so an old "

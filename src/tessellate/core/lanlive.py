@@ -242,7 +242,7 @@ class Listener:
                 self.server, sock, port=port, gate=lantrust.is_open,
                 refresh=lambda: lantrust.refresh(data_dir), reopen=lambda: make_socket(port),
                 on_addresses=self._reissue,
-                plain_http=lambda: lantrust.load(data_dir)["plain_http"],
+                plain_http=lambda: lantrust.plain_http_on(data_dir),
                 trust=lambda: _trust_material(data_dir),
             )
         )

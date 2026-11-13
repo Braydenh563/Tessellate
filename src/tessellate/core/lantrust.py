@@ -154,6 +154,19 @@ def load(data_dir: Path) -> dict:
     }
 
 
+#: data dir -> the plain-http flag: the LAN port asks it on every connection,
+#: on the event loop, so it is read from disk once and again after each save
+#: (review 5883463715), not parsed per connection.
+_plain_http: dict[str, bool] = {}
+
+
+def plain_http_on(data_dir: Path) -> bool:
+    key = str(data_dir)
+    if key not in _plain_http:
+        _plain_http[key] = load(data_dir)["plain_http"]
+    return _plain_http[key]
+
+
 def save(data_dir: Path, state: dict) -> None:
     path = _path(data_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -162,6 +175,7 @@ def save(data_dir: Path, state: dict) -> None:
     with os.fdopen(fd, "w", encoding="utf-8") as out:
         json.dump(state, out, indent=1)
     os.replace(partial, path)
+    _plain_http.pop(str(data_dir), None)
     with contextlib.suppress(OSError):
         os.chmod(path, 0o600)
 
