@@ -2345,7 +2345,8 @@ MORE_TOPICS.extend([
             "is none of them stays as it is. To watch a board being drawn, choose Edit, Replay "
             "the pen drawing: the pen strokes disappear and come back one by one in the order "
             "you drew them (with reduced motion on, it skips to the finished board). Export, "
-            "GIF saves the same thing as an animated picture."
+            "GIF saves the same thing as an animated picture. The Format panel's width control "
+            "and turning a pen stroke work on smoothed ink too, each as one Undo step."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

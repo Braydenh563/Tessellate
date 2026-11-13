@@ -130,3 +130,67 @@ def test_the_board_draws_pen_and_marker_through_it():
     assert "[x, y, e.pressure]" in wb
     entries = frontend_text("lazy-entries.js")
     assert entries.index("/vendor/perfect-freehand/perfect-freehand.min.js") < entries.index("/js/whiteboard-ink-more.js")
+
+
+_BBOX = (
+    "const bbox = (d) => { const n = (d.match(/-?\\d*\\.?\\d+/g) || []).map(Number); const xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2); "
+    "const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys); return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY }; };\n"
+)
+_STROKE = (
+    "const m = wbFmtState.inkMore; const hand = []; for (let i = 0; i <= 30; i++) hand.push([100 + i * 8, 100 + Math.sin(i / 4) * 30]);\n"
+    "const d0 = m.outline(hand, 'draw', 3, 'mouse', true, window.perfectFreehand);\n"
+    "const parsed = { d: d0, ink: 1, width: 3, shape: 'draw', ...m.keepPoints(hand, bbox(d0)) };\n"
+)
+
+
+def test_a_new_width_draws_the_outline_again_from_the_kept_points_l_whiteboard_31():
+    out = _node(
+        _BBOX + _STROKE + "const r = m.rebuild(parsed, 12, bbox, window.perfectFreehand);\n"
+        "console.log(JSON.stringify({ before: bbox(d0).height, after: bbox(r.d).height, pts: r.pts.length > 10, pbox: Array.isArray(r.pbox) }));",
+        vendor=True,
+    )
+    assert out["after"] > out["before"] + 8  # a 12 wide pen is fatter than a 3 wide one
+    assert out["pts"] and out["pbox"]
+
+
+def test_a_stroke_without_kept_points_only_changes_its_number():
+    out = _node(
+        _BBOX + "const m = wbFmtState.inkMore; console.log(JSON.stringify([m.rebuild({ d: 'M 0 0 L 5 5', ink: 1 }, 9, bbox, window.perfectFreehand), m.rebuild({ d: 'M 0 0', shape: 'rect' }, 9, bbox, window.perfectFreehand)]));",
+        vendor=True,
+    )
+    assert out == [{}, {}]
+
+
+def test_a_quarter_turn_turns_the_kept_points_with_the_outline_l_whiteboard_31():
+    out = _node(
+        _BBOX + _STROKE +
+        "const nums = d0.match(/-?\\d*\\.?\\d+/g).map(Number); let cx = 0, cy = 0;\n"
+        "const b = bbox(d0); cx = (b.minX + b.maxX) / 2; cy = (b.minY + b.maxY) / 2;\n"
+        "let k = 0; const d1 = d0.replace(/-?\\d*\\.?\\d+/g, () => { const i = k++; const x = nums[i - (i % 2)], y = nums[i - (i % 2) + 1]; return String(i % 2 ? Math.round((cy + (x - cx)) * 10) / 10 : Math.round((cx - (y - cy)) * 10) / 10); });\n"
+        "const before = JSON.stringify(parsed.pts); m.follow(parsed, d1, bbox); parsed.d = d1;\n"
+        "const placed = m.placePoints(parsed.pts, parsed.pbox, bbox(d1));\n"
+        "const first = [cx - (hand[0][1] - cy), cy + (hand[0][0] - cx)];\n"
+        "console.log(JSON.stringify({ changed: before !== JSON.stringify(parsed.pts), dx: Math.abs(placed[0][0] - first[0]), dy: Math.abs(placed[0][1] - first[1]) }));",
+        vendor=True,
+    )
+    assert out["changed"] and out["dx"] < 1.5 and out["dy"] < 1.5
+
+
+def test_a_move_or_a_stretch_leaves_the_kept_points_to_the_box_mapping():
+    out = _node(
+        _BBOX + _STROKE +
+        "let k = 0; const moved = d0.replace(/-?\\d*\\.?\\d+/g, (t) => String(Number(t) + (k++ % 2 ? 0 : 50)));\n"
+        "const before = JSON.stringify(parsed.pts); m.follow(parsed, moved, bbox);\n"
+        "console.log(JSON.stringify(before === JSON.stringify(parsed.pts)));",
+        vendor=True,
+    )
+    assert out is True
+
+
+def test_the_width_control_and_every_path_change_reach_the_ink_helpers():
+    board = frontend_text("whiteboard.js")
+    fmt = frontend_text("whiteboard-format.js")
+    assert "wbFmtState.inkMore.rebuild(" in fmt
+    for name in ("function wbSketchSetD", "function wbSketchSetProps", "async function wbSaveSketchProps"):
+        body = board[board.index(name) :][:900]
+        assert "inkMore?.follow(" in body, name

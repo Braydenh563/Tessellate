@@ -21340,6 +21340,7 @@ async function wbSaveSketchProps(sketch, partial) {
     Object.assign(sketch, saved);
   } catch {
     recordBrowserLog("WARN", [`[Whiteboard] sketch ${sketch.id} is stale: reloading the board`]);
+  wbFmtState.inkMore?.follow(parsed, partial.d, wbPathBBox);
     await fetchWhiteboardState();
     wbScheduleRender();
   }
@@ -24177,6 +24178,7 @@ function wbSketchSetProps(sketch, partial) {
     if (candidate && (typeof candidate.d === "string" || (candidate.type || "").startsWith("link-"))) parsed = candidate;
   } catch {
     parsed = null;
+  wbFmtState.inkMore?.follow(parsed, d, wbPathBBox);
   }
   if (!parsed) return false;
   Object.assign(parsed, partial);
@@ -24192,6 +24194,7 @@ function wbTakeMoveRun(pending) {
   return n > 1 ? pending.splice(0, n) : [];
 }
 
+  wbFmtState.inkMore?.follow(parsed, partial.d, wbPathBBox);
 async function wbApplyMoveRun(run) {
   const rows = [];
   const reverse = [];
