@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI: the budgets spec no longer flaps; it runs alone on one worker, and the last 25 CI runs show no budget failure (L602).
 - Perf: listener growth on timeline and dashboard redraws re-measured; flat across 12 cycles at 40 notes, so PF6 no longer reproduces (L601).
 - Filing: decide re-measured at 6.8 ms a call on 5,000 notes, under the old 8 to 17 ms tally; the 34 ms figure was stale (L535).
 - Code: one rule for a link to the app's own files (ownFileLinks in att-chip.js), read by the Library thumbnail, the graph panel and answer pictures (L544).

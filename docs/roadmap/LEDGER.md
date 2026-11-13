@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 105 | 38 | 0 | 18 | 273 |
+| world-class | 130 | 104 | 38 | 0 | 18 | 272 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 574 | 130 | 3 | 132 | 1257 |
+| all | 553 | 573 | 130 | 3 | 132 | 1256 |
 
 ## graph
 
@@ -616,7 +616,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L598** `world-class` open, M: Notes tab-switch pointerup 312 ms and dashboard timer frames (1643b). From OPEN.md:4330. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L599** `world-class` open, M: Settings backdrop click 880 ms and card pointerout 312-344 ms (1620lag). From OPEN.md:4333. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L600** `world-class` open, M: Remove sub-16 ms forced layout per press (tab, Settings, pointerenter, atlas.js step). From OPEN.md:4423. Evidence: w34-unv2-1111.md marks true; no number under 16 ms recorded for all four paths
-- [ ] **L602** `world-class` open, M: Fix budgets spec flapping in CI when sharing the runner. From OPEN.md:645; OPEN.md:2491. Evidence: No fix commit located; flakiness from shared runner remains
 - [ ] **L603** `world-class` open, M: Cut first interaction 4.4 s, re-measure 5,000-note list/search, add budgets UI. From OPEN.md:650; OPEN.md:2653. Evidence: No budgets UI in Settings found; re-measure not recorded
 - [ ] **L604** `world-class` open, M: Re-run measure-interactions.js off load (wall times were at load 8-10). From OPEN.md:685. Evidence: Needs unloaded re-run of measure-interactions.js; not recorded
 - [ ] **L605** `world-class` open, M: Fix errors.js at 390 login race (second login check, fixed wait; wait for #lock-password hidden). From OPEN.md:731; OPEN.md:736; OPEN.md:2420; OPEN.md:2794. Evidence: Sweep tooling issue at 390; 1440/1024/820 clean; no fix commit found
