@@ -7898,7 +7898,11 @@ function wbStackCompare(a, b) {
   return wbStackBand(a.kind, a.item) - wbStackBand(b.kind, b.item)
     || (Number(a.item.z) || 0) - (Number(b.item.z) || 0)
     || WB_STACK_KIND_RANK[a.kind] - WB_STACK_KIND_RANK[b.kind]
-    || a.item.id - b.item.id;
+    //: An item still waiting for its id holds a negative one and is the newest
+    //: of its tie, not the oldest: by its own number a new map topic moved every
+    //: sibling's rank up by one, and back on the server's answer (L-mindmap-13).
+    || (a.item.id < 0) - (b.item.id < 0)
+    || (a.item.id < 0 ? b.item.id - a.item.id : a.item.id - b.item.id);
 }
 
 //: Every item on the board, bottom first, as `{ kind, item, key }`.
