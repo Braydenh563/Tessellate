@@ -64,7 +64,8 @@ def recount(text: str) -> str:
 
 def add(a: argparse.Namespace) -> str:
     text = LEDGER.read_text(encoding="utf-8")
-    # Closed rows move to HISTORY, so an id taken there is still taken.
+    #: HISTORY too: a done row's id is still cited from code comments and
+    #: commits, so it is never handed out again (2026-11-13: L-timeline-1 was).
     seen = text + (HISTORY.read_text(encoding="utf-8") if HISTORY.exists() else "")
     taken = [int(m.group(1)) for m in re.finditer(rf"\*\*L-{re.escape(a.plan)}-(\d+)\*\*", seen)]
     rid = f"L-{a.plan}-{max(taken, default=0) + 1}"

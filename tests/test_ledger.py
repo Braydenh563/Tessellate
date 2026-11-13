@@ -83,18 +83,22 @@ def test_ready_to_merge_only_with_no_open_rows():
     assert not left, f"Now says ready to merge, but LEDGER still has {len(left)} open rows ({left[:5]})"
 
 
-def test_add_never_reuses_an_id_already_closed_into_history(tmp_path, monkeypatch):
-    """`add` once reused L-documents-29, whose row had moved to HISTORY."""
+def test_a_new_row_never_reuses_an_id_already_moved_to_history(tmp_path, monkeypatch):
+    """`ledger.py add` numbered from the LEDGER alone, so once every timeline row was done and
+    moved to HISTORY it handed out L-timeline-1 again (2026-11-13), an id code comments cite."""
     import argparse
-    import ledger as tool
+    import importlib.util
 
-    led, hist = tmp_path / "LEDGER.md", tmp_path / "HISTORY.md"
-    led.write_text("## documents\n- [ ] **L-documents-3** `documents` open, S: a. From x.\n", encoding="utf-8")
-    hist.write_text("- [x] **L-documents-9** `documents` open, S: b. From x.\n", encoding="utf-8")
-    monkeypatch.setattr(tool, "LEDGER", led)
-    monkeypatch.setattr(tool, "HISTORY", hist)
-    a = argparse.Namespace(plan="documents", status="open", size="S", src="y", evidence="", title="c")
-    assert tool.add(a) == "L-documents-10"
+    spec = importlib.util.spec_from_file_location("ledger_cli", ROOT / "scripts" / "ledger.py")
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    ledger, history = tmp_path / "LEDGER.md", tmp_path / "HISTORY.md"
+    ledger.write_text("## timeline\n\n", encoding="utf-8")
+    history.write_text("## Moved from the LEDGER\n- [x] **L-timeline-4** `timeline` open, S: old.\n", encoding="utf-8")
+    monkeypatch.setattr(cli, "LEDGER", ledger)
+    monkeypatch.setattr(cli, "HISTORY", history)
+    args = argparse.Namespace(plan="timeline", status="open", size="S", src="a test", evidence=None, title="New row")
+    assert cli.add(args) == "L-timeline-5"
 
 
 def test_the_counts_table_has_one_row_per_plan():
