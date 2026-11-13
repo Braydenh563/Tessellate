@@ -930,7 +930,7 @@ def _one_note_lines(groups: dict[str, list[Fact]]) -> list[tuple[str, list[Fact]
             by_note: dict[int, list[Fact]] = {}
             for f in held:
                 by_note.setdefault(f.view.id, []).append(f)
-            items += [(label, h) for h in by_note.values()]
+            items += [(label, run) for h in by_note.values() for run in _contiguous(h)]
         else:
             items += [(label, run) for run in _contiguous(held)]
     return items
