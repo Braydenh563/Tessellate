@@ -212,7 +212,8 @@ def hands_over(question: str) -> dict | None:
     if not text:
         return None
     if review_kind(text) or any(rx.search(text) for rx in _MINE):
-        return {"content": NOTEBOOK, "badges": [], "sources": [], "asks": [text], "asks_to": "chat"}
+        #: The chip is the question as a button says it: a capital first (L-chat-35).
+        return {"content": NOTEBOOK, "badges": [], "sources": [], "asks": [text[:1].upper() + text[1:]], "asks_to": "chat"}
     return None
 
 

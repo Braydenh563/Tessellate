@@ -73,7 +73,8 @@ def test_the_recovery_and_template_sentences_no_longer_lead(question):
 def test_a_question_about_the_persons_notes_is_handed_to_chat(question):
     reply = say(question)
     assert reply["content"].startswith("That is one for your notebook")
-    assert reply["asks"] == [question] and reply["asks_to"] == "chat"
+    #: The chip asks the same question, with a capital first (L-chat-35, the owner 2026-11-13).
+    assert reply["asks"] == [question[:1].upper() + question[1:]] and reply["asks_to"] == "chat"
 
 
 @pytest.mark.parametrize("question", ["what is my name", "how do I change my name", "how do I set a reminder", "how do I see my notes"])

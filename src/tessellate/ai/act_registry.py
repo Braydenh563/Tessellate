@@ -100,6 +100,12 @@ class Act:
     def confirm(self) -> bool:
         return self.intent in CONFIRM_INTENTS
 
+    @property
+    def chip(self) -> str:
+        """The example as a button says it: a capital first (L-chat-35). The
+        example itself stays as typed, since prose quotes it mid-sentence."""
+        return self.example[:1].upper() + self.example[1:]
+
 
 #: In the order the capability line says them.
 _ACTS = (
