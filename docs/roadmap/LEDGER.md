@@ -12,13 +12,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 1 | 0 | 0 | 5 | 34 |
+| mindmap | 33 | 1 | 0 | 0 | 1 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 616 | 145 | 2 | 186 | 1314 |
-| all | 553 | 616 | 145 | 2 | 186 | 1314 |
+| all | 553 | 616 | 145 | 2 | 182 | 1314 |
+| all | 553 | 616 | 145 | 2 | 182 | 1314 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -894,7 +894,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L892** `documents` blocked-hardware, M: Verify diagram shelf on real touch; 390px shelf kinds hidden. From dgml-1109.md Left. Evidence: Needs real touch device; touch uses Add sheet
 - [ ] **L893** `documents` blocked-hardware, M: Verify diagram with real inference, touch, light 390, >10 blocks perf, Windows, screen reader, print/PDF. From diagram-fable-1679.md 4. Evidence: Source Not verified: needs real model/touch/Windows/human
 - [ ] **L894** `documents` blocked-hardware, S: CodeMirror 12 ms per key; ClearType greyscale. From OPEN.md:3053. Evidence: Needs a Windows display; rest is CodeMirror cost
-- [ ] **L895** `mindmap` blocked-hardware, M: Verify the AI half of the map with a real model. From OPEN.md:1228. Evidence: Row: needs a real model; all provider tests use fake transport (CLAUDE.md section 4).
 - [ ] **L896** `mindmap` blocked-hardware, S: Verify ghost topics on touch, at 390 and with reduced motion. From OPEN.md:3878. Evidence: Touch part needs hardware; rest sweepable
 - [ ] **L897** `ui-modernisation` blocked-hardware, S: Measure phone toggle first frames (50-80 ms) on a real phone. From OPEN.md:3548. Evidence: Needs a real phone; headless emulation only.
 - [ ] **L898** `ui-modernisation` blocked-hardware, S: Verify light theme, 390 sidebar sheet and screen reader. From OPEN.md:3879. Evidence: Screen reader needs a human; others sweepable
@@ -997,9 +996,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-chat-23** `chat` blocked-hardware, M: Chat latency budgets and small-model tool use. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1614. Evidence: Open line in the plan's prose a session could miss. Budgets unmet and small-model tool use unverified.
 - [ ] **L-documents-6** `documents` blocked-hardware, S: Verify the LanguageTool download with the real program. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:310. Evidence: Open line in the plan's prose a session could miss. Real-model and real-binary checks open.
 - [ ] **L-whiteboard-14** `whiteboard` blocked-hardware, S: Verify the rail long-press flyout and marker pen pressure on a tablet. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:529. Evidence: Open line in the plan's prose a session could miss. Touch and pen behaviour is listed as unverified, with no hardware row.
-- [ ] **L-mindmap-3** `mindmap` blocked-hardware, S: Verify read_mindmap output with a real 4B local model. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:182. Evidence: Open line in the plan's prose a session could miss. A section 7 acceptance line that needs a real local model. No LEDGER row names it.
-- [ ] **L-mindmap-4** `mindmap` blocked-hardware, S: Measure map key-to-editable under 100 ms on a quiet machine. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1102. Evidence: Open line in the plan's prose a session could miss. L370 covers 390 px press-to-editable only. The desktop 100 ms gate on a quiet machine has no row.
-- [ ] **L-mindmap-10** `mindmap` blocked-hardware, S: Verify companion perches on touch, phone width and diagram blocks. From open-work sweep 2026-11-12, docs/roadmap/MINDMAP_PLAN.md:1825. Evidence: Open line in the plan's prose a session could miss. INBOX 1686 companion perches on map nodes are unverified on touch, at phone width and on diagram blocks.
 - [ ] **L-ui-modernisation-8** `ui-modernisation` blocked-hardware, S: Check the composer above a soft keyboard and iPad landscape on real devices. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:619. Evidence: Open line in the plan's prose a session could miss. A phone gate left unmeasured, with phone.md's real iPad landscape look. There is no hardware row.
 - [ ] **L-ui-modernisation-18** `ui-modernisation` blocked-hardware, S: Verify phone tab scroll-to-top under reduced motion on a device. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1250. Evidence: Open line in the plan's prose a session could miss. L906 covers safe-area insets only. The reduced-motion scroll-to-top on a device has no row.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
