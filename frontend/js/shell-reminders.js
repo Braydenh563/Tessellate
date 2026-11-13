@@ -147,7 +147,9 @@ function tabRowSpace() {
   let others = 0;
   let siblings = 0;
   for (const child of header.children) {
-    if (child === bar || child.classList.contains("hidden")) continue;
+    //: An item with no box takes no flex gap: the header's `display: none`
+    //: h1 was charged one, 7.2px the strip never lost (844x390, L466).
+    if (child === bar || !child.getClientRects().length) continue;
     others += child.getBoundingClientRect().width;
     siblings += 1;
   }

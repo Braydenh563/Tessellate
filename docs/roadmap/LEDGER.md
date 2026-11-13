@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 24 | 3 | 0 | 19 | 123 |
+| ui-modernisation | 96 | 25 | 2 | 0 | 19 | 123 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 536 | 153 | 3 | 184 | 1242 |
+| all | 553 | 537 | 152 | 3 | 184 | 1242 |
 
 ## graph
 
@@ -451,7 +451,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
 - [ ] **L465** `ui-modernisation` partly, M: Add a lint measuring every rail and top-bar control has a data-help-for popover and palette row. From OPEN.md:1813. Evidence: app-features.js:563-567 added top-bar palette rows (ledger 1410); the 0-missing coverage lint/measure not found
-- [ ] **L466** `ui-modernisation` partly, M: C4 Connect words on sideways phone (no 480 step) and door dialog repeat (design); Versions 'Named only' filter. From ledger-1112 O19.
 - [ ] **L469** `ui-modernisation` partly, L: Finish the uipolish-0924 surface-by-surface pass (item D). From OPEN.md:1914; OPEN.md:2314. Evidence: Icon-only floor done (iconfloor.js); the per-surface pass not recorded done
 - [ ] **L-ui-modernisation-1** `ui-modernisation` open, M: Adopt CSS cascade layers (@layer tokens, base, components, surfaces, overrides) so 08-consistency.css stops winning by specificity. From ANALYSIS.md:3680. Evidence: grep @layer frontend/css returns 0; UI_MODERNISATION_PLAN item 18 dissolves 08 into components but never names layers or the 'only shrinks' lint
 - [ ] **L-ui-modernisation-28** `ui-modernisation` open, S: Measure the stuck-ground recipe on the timeline table head and empty its freeze. From open-work sweep 2026-11-12, tests/test_nested_surfaces_1489.py:34. Evidence: This freeze ratchet holds one known offender, and the comment states the intent to remove it once the stuck-ground recipe is measured on table cells. No LEDGER row or plan item names it.
@@ -476,6 +475,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-31** `ui-modernisation` open, M: Move the remaining Library-only boot CSS rules to library-lazy.css (L459 remainder). From LEDGER L459. Evidence: 13b moved 110 Library-only boot rules to library-lazy.css (d961c27a); about 264 more name only Library surfaces but conflict with a universal-child rule or a later override in the boot files, or carry a ratcheted literal, so moving them flips the cascade or grows a ratchet
 - [ ] **L-ui-modernisation-35** `ui-modernisation` open, S: Fix or exempt the clip685 findings at 390 dark. From clip685.js 390 dark 2026-11-13. Evidence: ring 2 (.swatch-picker on notes, .tab-main left/right on chat and the Pace pill), border 8 (library tab-page and body left, settings modal-body bottom, notes and library subtab strips left), text 4 (sheet and dialog head titles top, a .ph-text on library and settings); SCROLL_END=1 adds ring 3 (.calc-panes bottom on dashboard) and border 1 (#settings-modal top)
 - [ ] **L-ui-modernisation-36** `ui-modernisation` open, S: Measure the document AI panel at 1024 and 820 dark (labels, focus, contrast); not rendered in the Brief 56 census. From L455 census.
+- [ ] **L-ui-modernisation-37** `ui-modernisation` open, M: Sideways phone: tab strip wraps by 4.1px at 844x390. From L466. Evidence: 844x390 touch: tabs need 413.8px, room 409.7 after the h1 gap fix, so the strip wraps and the header is 108 of 390 tall; the doc preview pane is then 37px. 4.1px to find without a 480 height step; candidates: the space switcher word (63px), the nav history cluster (100px). Door dialog repeat: source text lost with ledger-1112.
 
 ## timeline
 
