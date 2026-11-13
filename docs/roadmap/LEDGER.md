@@ -12,13 +12,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
-| mindmap | 33 | 1 | 0 | 0 | 1 | 34 |
+| mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 616 | 145 | 2 | 182 | 1314 |
-| all | 553 | 616 | 145 | 2 | 182 | 1314 |
+| all | 553 | 616 | 145 | 2 | 181 | 1314 |
+| all | 553 | 616 | 145 | 2 | 181 | 1314 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -894,7 +894,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L892** `documents` blocked-hardware, M: Verify diagram shelf on real touch; 390px shelf kinds hidden. From dgml-1109.md Left. Evidence: Needs real touch device; touch uses Add sheet
 - [ ] **L893** `documents` blocked-hardware, M: Verify diagram with real inference, touch, light 390, >10 blocks perf, Windows, screen reader, print/PDF. From diagram-fable-1679.md 4. Evidence: Source Not verified: needs real model/touch/Windows/human
 - [ ] **L894** `documents` blocked-hardware, S: CodeMirror 12 ms per key; ClearType greyscale. From OPEN.md:3053. Evidence: Needs a Windows display; rest is CodeMirror cost
-- [ ] **L896** `mindmap` blocked-hardware, S: Verify ghost topics on touch, at 390 and with reduced motion. From OPEN.md:3878. Evidence: Touch part needs hardware; rest sweepable
 - [ ] **L897** `ui-modernisation` blocked-hardware, S: Measure phone toggle first frames (50-80 ms) on a real phone. From OPEN.md:3548. Evidence: Needs a real phone; headless emulation only.
 - [ ] **L898** `ui-modernisation` blocked-hardware, S: Verify light theme, 390 sidebar sheet and screen reader. From OPEN.md:3879. Evidence: Screen reader needs a human; others sweepable
 - [ ] **L899** `ui-modernisation` blocked-hardware, S: Verify phone foot bar touch and scroll-driven animation in webview. From OPEN.md:3860. Evidence: Needs touch device and desktop webview
