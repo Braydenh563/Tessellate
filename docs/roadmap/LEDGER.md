@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 13 | 1 | 0 | 19 | 110 |
+| ui-modernisation | 96 | 12 | 1 | 0 | 19 | 109 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 525 | 151 | 3 | 184 | 1229 |
+| all | 553 | 524 | 151 | 3 | 184 | 1228 |
 
 ## graph
 
@@ -460,7 +460,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-30** `ui-modernisation` open, M: Remove the 236 unused CSS selectors after a runtime coverage sweep (UI plan 13b). From UI_MODERNISATION_PLAN.md:1089. Evidence: 13b static check: 256 class and id names in the CSS have no word match in JS, HTML or Python; concatenation pieces explain 235; the 21 left are built by template (nm-${mood}, wb-nav-item-${kind}), nested side variants (nm-foot-l/r) or sit inside :not() where removal changes specificity. None removable without a runtime coverage sweep (scratchpad/ui-sweeps/bootcsscov.js) over every surface and state
 - [ ] **L-ui-modernisation-31** `ui-modernisation` open, M: Move the remaining Library-only boot CSS rules to library-lazy.css (L459 remainder). From LEDGER L459. Evidence: 13b moved 110 Library-only boot rules to library-lazy.css (d961c27a); about 264 more name only Library surfaces but conflict with a universal-child rule or a later override in the boot files, or carry a ratcheted literal, so moving them flips the cascade or grows a ratchet
 - [ ] **L-ui-modernisation-35** `ui-modernisation` open, S: Fix or exempt the clip685 findings at 390 dark. From clip685.js 390 dark 2026-11-13. Evidence: ring 2 (.swatch-picker on notes, .tab-main left/right on chat and the Pace pill), border 8 (library tab-page and body left, settings modal-body bottom, notes and library subtab strips left), text 4 (sheet and dialog head titles top, a .ph-text on library and settings); SCROLL_END=1 adds ring 3 (.calc-panes bottom on dashboard) and border 1 (#settings-modal top)
-- [ ] **L-ui-modernisation-36** `ui-modernisation` open, S: Measure the document AI panel at 1024 and 820 dark (labels, focus, contrast); not rendered in the Brief 56 census. From L455 census.
 - [ ] **L-ui-modernisation-38** `ui-modernisation` open, S: Put the map strip, table menu and drawing bar controls on the control height tokens, measured at 390 touch. From L-ui-modernisation-3. Evidence: Left by L-ui-modernisation-3: .wb-map-strip > button.icon-only and .wb-map-strip .wb-menu-toggle (07-whiteboard-misc.css) and .cm-md-table-menu (library-lazy.css) are 1.75rem; --control-h-dense becomes 40px under 820 or a coarse pointer, so the swap needs a map at 390 touch measured first (width too, or the icon button turns oval). .wb-tool-group button (06) is 36px, a px literal under a rem token.
 - [ ] **L-ui-modernisation-39** `ui-modernisation` open, L: Fold the note editor's four surfaces (bar, selection bar, inline AI, slash menu) into two, bar and slash, and show the capture text first. From L-ui-modernisation-16. Evidence: Left by L-ui-modernisation-16 (plan 13.2 table, Note editor row): a design change across editor-toolbar, the selection bar and inline AI; needs a design pass (judge rung), not available on the pro tier.
 
