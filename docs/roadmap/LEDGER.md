@@ -11,36 +11,36 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
-| documents | 70 | 15 | 3 | 0 | 20 | 88 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
+| documents | 70 | 14 | 3 | 0 | 20 | 87 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
-| all | 553 | 598 | 136 | 3 | 188 | 1287 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
+| all | 553 | 597 | 136 | 3 | 188 | 1286 |
 
 ## graph
 
@@ -365,7 +365,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-27** `documents` open, L: Diagram Ask for mind map, timeline and sequence. From L-documents-21 remainder. Evidence: Suggestions for mind map, timeline and sequence built (diagram-ai.js kindLint). Left: Ask for these kinds needs a kind-aware /drafts/diagram-ask route plus kind ops, in a lazy sibling module
 - [ ] **L-documents-33** `documents` open, M: Run: input() answered mid-run, not only from the Input box before the run (COOP/COEP from D2 are in place; run_sandbox.py). From L-documents-9 mining (ide1-1010, debug70-1010 and shell71-1010, from git history).
 - [ ] **L-documents-30** `documents` open, M: Debug: expand a list or an object variable into its children (one level shown today: _mm_names in PY_RUNNER, show in _JS_DEBUG_WORKER). From L-documents-9 mining (ide1-1010, debug70-1010 and shell71-1010, from git history).
-- [ ] **L-documents-31** `documents` open, M: Debug: Python breakpoints kept across a reload (DOC_DEBUG.breaks lasts only for the tab's life). From L-documents-9 mining (ide1-1010, debug70-1010 and shell71-1010, from git history).
 - [ ] **L-documents-32** `documents` open, M: IDE split: the second half gets the first half's completions, lint and snippets (documents-ide.js docIdeToggleSplit). From L-documents-9 mining (ide1-1010, debug70-1010 and shell71-1010, from git history).
 
 ## mindmap
