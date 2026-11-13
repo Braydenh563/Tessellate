@@ -482,6 +482,7 @@ EXEMPT: dict[str, str] = {
     "chat-turn.js:offerReminder": "read: reads a reminder out of the message (/reminders/suggest); the chip that makes one pushes Undo",
     "lightbox-view.js:openLightbox": "auth: a two-minute link to one file for the system browser; no user data",
     "diagram-ai.js:ask": "read: asks /drafts/diagram-ask for a change to show as a preview; nothing is written until Apply",
+    "diagram-ai-kinds.js:ask": "read: the same /drafts/diagram-ask preview for a mind map, timeline or sequence; Apply is the one write, with its Undo",
     "diagram-ai.js:applyPreview": "board: the change goes in through the builder's own history (h.commit, Ctrl+Z); the POST only names the saved version",
     "private-spaces.js:unlock": "auth: sign-in, recovery or lock; no user data",
     "private-spaces.js:report": "auth: sign-in, recovery or lock; no user data",

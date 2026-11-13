@@ -90,8 +90,13 @@
 }
 
 @media (pointer: coarse) {
+  /* A table cell ignores min-height; its height is already a floor, so the touch target is set as the height (27px before, 44px after at 390). */
   .csv-grid-cell,
   .csv-grid-num {
-    min-block-size: var(--target-min);
+    block-size: var(--target-min);
+  }
+
+  .csv-grid-num {
+    min-inline-size: var(--target-min);
   }
 }

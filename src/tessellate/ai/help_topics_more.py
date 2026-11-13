@@ -2505,7 +2505,7 @@ MORE_TOPICS.extend([
             "and changed in amber. Apply makes it (Ctrl+Z undoes it in one step); Discard leaves the diagram as it was. "
             "Suggestions, under Ask, opens like a fold (its arrow turns) and lists what looks wrong: an arrow out of a decision with no words, a decision with "
             "one way out, a block with no way out or joined to nothing, blocks with the same words (one row numbers them), a group "
-            "holding one block. Each row's button shows its fix the same way. A mind map, timeline or sequence has Suggestions too (no Ask yet): a topic repeated, a period with no events, a participant that never sends. On a diagram document every Apply is "
+            "holding one block. Each row's button shows its fix the same way. A mind map, timeline or sequence has Ask too (add Rent under Budget, add event Launch under 2024, add message Pay from Shop to Bank; rename, move and remove work too), and Suggestions: a topic repeated, a period with no events, a participant that never sends. On a diagram document every Apply is "
             "a named version (AI: added Refund). Versions..., in the ... menu, lists them: tick two to Compare, or "
             "one to compare it with now, and Restore puts one back; Named only hides the plain saves. "
             "Suggest, Templates, on a diagram with blocks, offers Add its blocks (as ghosts) or Replace the diagram, which Ctrl+Z undoes."
@@ -2577,7 +2577,7 @@ TOPIC_META.update({
     "diagram-reading": {"title": "Reading a diagram: list order, fit and direction", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
-    "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A flowchart's blocks list, Ask; the ... menu, Versions..."},
+    "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A diagram's blocks list, Ask; the ... menu, Versions..."},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},
