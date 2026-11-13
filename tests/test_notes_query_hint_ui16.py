@@ -35,4 +35,4 @@ def test_every_example_starts_with_try_and_is_sentence_case() -> None:
     examples = [part.split('"')[1] for part in tries.split(",\n") if '"' in part]
     assert len(examples) >= 3
     assert all(example.startswith("Try ") for example in examples)
-    assert all("!" not in example and "—" not in example for example in examples)
+    assert all("!" not in example and "\u2014" not in example for example in examples)

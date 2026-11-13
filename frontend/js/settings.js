@@ -323,8 +323,8 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   const popped = $("settings-appearance")?.classList.contains("appearance-popped-out");
   if (popped && section === "appearance") {
     const found = scrollToId && $(scrollToId);
-    if (found) openSettingRow({ el: found, section });
-    else $("appearance-panel")?.querySelector("button[aria-current]")?.focus();
+    if (found && (await ensureModule("settingsUi"))) openSettingRow({ el: found, section });
+    else document.querySelector(".appearance-panel button[aria-current]")?.focus();
     return;
   }
   overlayReturnFocus = document.activeElement;
