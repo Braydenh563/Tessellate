@@ -33,7 +33,7 @@ def test_a_note_says_why_it_was_shown():
 
 
 def test_a_note_with_no_links_or_why_reads_as_before():
-    line = next(l for l in _prompt(_notes()).splitlines() if "walking boots" in l)
+    line = next(s for s in _prompt(_notes()).splitlines() if "walking boots" in s)
     assert "linked to" not in line and "why shown" not in line
 
 
