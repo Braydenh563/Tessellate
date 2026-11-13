@@ -223,6 +223,8 @@ select optgroup {
   --space-7: calc(1.25rem * var(--density));
   --space-8: calc(1.5rem * var(--density));
   --space-9: calc(2rem * var(--density));
+  /* Panel inset (UI plan Phase 12 decision 1): 12px, between --space-5 and --space-6. */
+  --panel-pad: calc(0.75rem * var(--density));
   /* A changed Settings row's bar, from the row's text edge (INBOX 1696 c):
      inside the group, never on its edge (two gutters put it on the border). */
   --setting-bar-inset: var(--space-3);
@@ -3735,8 +3737,9 @@ header#top-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-p
      from the window to a card, 12px under the top bar, 10px between the
      sidebar and the content -- three shell gaps, three sizes. One token,
      one gap, which is what makes a shell read as designed rather than
-     assembled. */
-  gap: var(--page-gutter);
+     assembled. The column gap is the 8px step since UI plan Phase 12
+     decision 1 (2026-10-10, L450): "the sidebar gutter 8px". */
+  gap: var(--space-3);
   /* The gutter belongs to .tab-page now; this is only the column gap. */
   padding: 0;
   /* stretch, not start: with `start` the sidebar shrank to its content and sat
@@ -3857,8 +3860,10 @@ header#top-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-p
   /* 16/20, was 20/24 (INBOX 446 (5)): a panel's inset is the frame, not the
      content, and the bigger pair cost every tab 8px of height and 8px a side
      for nothing a reader could name. */
-  --card-pad-y: var(--space-6);
-  --card-pad-x: var(--space-7);
+  /* 12 both ways since UI plan Phase 12 decision 1 (2026-10-10, L450):
+     "panel padding 12px", one inset for a panel and a widget alike. */
+  --card-pad-y: var(--panel-pad);
+  --card-pad-x: var(--panel-pad);
   padding: var(--card-pad-y) var(--card-pad-x);
   margin-bottom: var(--space-6);
   /* Cards are flex/grid items nearly everywhere they appear, and a flex item's
@@ -3873,8 +3878,8 @@ header#top-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-p
 .card.compact,
 .sidebar-panel,
 .dash-widget {
-  --card-pad-y: var(--space-6);
-  --card-pad-x: var(--space-6);
+  --card-pad-y: var(--panel-pad);
+  --card-pad-x: var(--panel-pad);
 }
 /* **A card inside a card is a tone, never a second bordered pane.** The
    border budget (DESIGN.md → Surface tiers): one hairline on the outermost

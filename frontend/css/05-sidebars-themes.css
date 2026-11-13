@@ -3990,12 +3990,6 @@ button.is-on {
   #dash-grid {
     grid-template-columns: minmax(0, 1fr);
   }
-  /* The card tightens through its own tokens, so the compact recipe and
-     anything cancelling the padding (the sidebar head) follow it. */
-  .card {
-    --card-pad-y: var(--space-5);
-    --card-pad-x: var(--space-6);
-  }
   /* Rows of controls wrap instead of pushing the page sideways. */
   .doc-actions,
   .chat-toolbar {

@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 33 | 4 | 0 | 19 | 133 |
+| ui-modernisation | 96 | 32 | 4 | 0 | 19 | 132 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 545 | 154 | 3 | 184 | 1252 |
+| all | 553 | 544 | 154 | 3 | 184 | 1251 |
 
 ## graph
 
@@ -450,7 +450,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## ui-modernisation
 
 - [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
-- [ ] **L450** `ui-modernisation` open, M: Density decision 1: apply panel padding 12 and gutter 8 and fix Notes dock wrap at 1440. From OPEN.md:1845; OPEN.md:3806. Evidence: Design decision pending; Notes dock wrap tied to row 1830
 - [ ] **L451** `ui-modernisation` open, M: Reduce the first-run queue (welcome, recovery key, updates) from 3 acts before dashboard. From OPEN.md:1805; OPEN.md:2600. Evidence: No change found to the first-run queue; row stands
 - [ ] **L454** `ui-modernisation` open, M: Make the eight dialogs bottom sheets at 390 (Brief 59). From OPEN.md:2918. Evidence: Brief 59; no bottom-sheet rule found for those dialogs in 10-responsive.css
 - [ ] **L455** `ui-modernisation` open, M: Brief 56 measures: 1024/820, dark counts, chat, doc AI panel. From OPEN.md:2920. Evidence: Measures not taken; sweep work

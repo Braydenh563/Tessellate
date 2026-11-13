@@ -720,7 +720,7 @@ EXEMPT: dict[str, str] = {
     "personas-pane.js:renderPersonas": "read: reads or asks the model; shows a result, writes nothing",
     "personas-pane.js:savePersonaList": "settings: a setting with its own Reset or the settings history",
     "shell-reminders.js:refreshMediaSession": "auth: sign-in, recovery or lock; no user data",
-    "shell-reminders.js:(anonymous /reminders/${r.id})": "inverse: putAll's batch PUT is both the step and the way back that run() hands to pushUndo (overdue triage, one Undo per batch)",
+    "reminder-edit.js:(anonymous /reminders/${r.id})": "inverse: putAll's batch PUT is both the step and the way back that run() hands to pushUndo (overdue triage, one Undo per batch)",
     "settings-data.js:onclick": "job: deletes media files no note, document, board or chat points at, after a confirm that says it cannot be undone (the bin and older versions are counted as users)",
     "settings-controls.js:onchange": "settings: a setting with its own Reset or the settings history",
     "skills.js:saveFile": "job: writes an export the person asked for to the exports folder, as a download does; it deletes nothing",

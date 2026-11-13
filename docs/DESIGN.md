@@ -1450,11 +1450,12 @@ Added by the modernisation pass; every rule here was measured before and
 after in Chromium (`scratchpad/ui-sweeps/`), and `tests/test_ui_signatures.py`
 ratchets the counts so they cannot drift back.
 
-- **Two card sizes, as tokens.** `.card` sets `--card-pad-y`/`--card-pad-x`
-  (panel: `--space-6`/`--space-7`, was `--space-7`/`--space-8` before INBOX 446 (5)); `.card.compact`, `.sidebar-panel` and
-  `.dash-widget` set both to `--space-6`. Anything that has to cancel the
+- **One card inset, as tokens.** `.card` and the compact cards (`.card.compact`,
+  `.sidebar-panel`, `.dash-widget`) set `--card-pad-y`/`--card-pad-x` to
+  `--panel-pad` (12px, UI plan Phase 12 decision 1, L450; was 16/20 after
+  INBOX 446 (5)), and the phone keeps it. Anything that has to cancel the
   padding to reach the card edge (the sidebar head row) references the token,
-  never a step. The 720px block tightens the tokens, not `padding`.
+  never a step. A layout's sidebar gutter is `--space-3` (8px, the same decision).
 - **A card inside a card is a tone** (`--surface-2`, transparent edge, no
   shadow, no blur), never a second bordered pane.
 - **One head row.** `.card > .row:has(> h2)` is `--control-h-lg` tall with
