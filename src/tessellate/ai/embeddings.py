@@ -726,6 +726,11 @@ def _same_width(derived: dict, notes: dict) -> tuple[list[int], list[str]]:
     for vector in notes.values():
         widths[vector.shape[0]] = widths.get(vector.shape[0], 0) + 1
     width = max(widths, key=lambda w: widths[w])
+    dropped = sum(n for w, n in widths.items() if w != width) + sum(1 for v in derived.values() if v.shape[0] != width)
+    if dropped:
+        # Two backends' vectors side by side (a model switch mid-re-embed):
+        # the minority is left out of the lines, which should show somewhere.
+        logger.info("similarity: left out %d vectors not %d wide (widths seen: %s)", dropped, width, sorted(widths))
     return sorted(i for i, v in notes.items() if v.shape[0] == width), sorted(k for k, v in derived.items() if v.shape[0] == width)
 
 

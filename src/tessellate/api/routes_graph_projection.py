@@ -1,9 +1,11 @@
 """A 2-D "map of my notes" (L-graph-2): where each note sits when its stored
 meaning vector is flattened to a plane.
 
-PCA through numpy's SVD: centre the vectors, keep the two directions they
-vary most along. Nothing is trained and nothing is sent anywhere, and the
-same notes always give the same picture (each axis's sign is fixed). Notes
+PCA: centre the vectors, keep the two directions they vary most along, read
+from the d x d covariance (`eigh`) in float32 rather than an SVD of the n x d
+matrix in float64 (review 5883476033; 384 wide, measured here: 0.03 s against
+0.23 s at 5,000 notes, 0.09 s against 0.61 s at 20,000). Nothing is trained
+and nothing is sent anywhere, and the same notes always give the same picture (each axis's sign is fixed). Notes
 come from `routes_graph._note_vectors`, so the rules are the similarity
 lines' own: live, not a draft or a board, never a private note (it has no
 vector), only the current embedding backend's vectors.
@@ -25,8 +27,24 @@ if TYPE_CHECKING:
 
 router = APIRouter(tags=["graph"])
 
+#: The most notes one picture places. Past it the notes are sampled evenly
+#: over their ids, so the map shows the whole notebook's spread rather than
+#: its oldest corner; a note left out sits in the row under the map, as a
+#: note with no vector does.
+MAX_PROJECTED = 5000
 
-def project(vectors: dict[int, np.ndarray]) -> dict[int, tuple[float, float]]:
+
+def sample(ids: list[int], cap: int) -> list[int]:
+    """At most `cap` of the sorted `ids`, evenly spaced, first and last kept."""
+    if len(ids) <= cap:
+        return ids
+    if cap == 1:
+        return ids[:1]
+    step = (len(ids) - 1) / (cap - 1)
+    return [ids[round(k * step)] for k in range(cap)]
+
+
+def project(vectors: dict[int, np.ndarray], cap: int = MAX_PROJECTED) -> dict[int, tuple[float, float]]:
     """`{id: (x, y)}` in the unit square, one scale on both axes so the
     picture is not stretched."""
     # Imported here: numpy stays out of the app's start (test_lazy_heavy_imports).
@@ -34,17 +52,18 @@ def project(vectors: dict[int, np.ndarray]) -> dict[int, tuple[float, float]]:
 
     if not vectors:
         return {}
-    ids = sorted(vectors)
+    ids = sample(sorted(vectors), cap)
     if len(ids) == 1:
         return {ids[0]: (0.5, 0.5)}
-    matrix = np.array([np.asarray(vectors[i], dtype=float) for i in ids])
+    matrix = np.stack([np.asarray(vectors[i], dtype=np.float32) for i in ids])
     centred = matrix - matrix.mean(axis=0)
-    _, _, axes = np.linalg.svd(centred, full_matrices=False)
-    plane = centred @ axes[:2].T
+    # `eigh` answers in ascending order: the last two columns are the axes.
+    _, eigvecs = np.linalg.eigh(centred.T @ centred)
+    plane = centred @ eigvecs[:, ::-1][:, :2]
     if plane.shape[1] < 2:
-        plane = np.hstack([plane, np.zeros((len(ids), 2 - plane.shape[1]))])
+        plane = np.hstack([plane, np.zeros((len(ids), 2 - plane.shape[1]), dtype=np.float32)])
     for k in range(2):
-        # An SVD axis is only defined up to its sign: pin it to the notes.
+        # An axis is only defined up to its sign: pin it to the notes.
         if plane[np.argmax(np.abs(plane[:, k])), k] < 0:
             plane[:, k] = -plane[:, k]
     low = plane.min(axis=0)
@@ -58,11 +77,11 @@ def project(vectors: dict[int, np.ndarray]) -> dict[int, tuple[float, float]]:
 @router.get("/graph/projection")
 def graph_projection(
     session: Session = Depends(get_session),
-    limit: int = Query(20000, ge=1, le=20000),
+    limit: int = Query(MAX_PROJECTED, ge=1, le=MAX_PROJECTED),
 ) -> dict:
     backend = deps.get_embeddings().backend_id()
-    fingerprint = (*routes_graph._graph_fingerprint(session), backend)
+    fingerprint = (*routes_graph._vector_fingerprint(session, backend), limit)
     points = routes_graph._cached(
-        "projection", fingerprint, lambda: project(routes_graph._note_vectors(session, backend))
+        "projection", fingerprint, lambda: project(routes_graph._note_vectors(session, backend), limit)
     )
-    return {"points": [{"id": i, "x": x, "y": y} for i, (x, y) in list(points.items())[:limit]]}
+    return {"points": [{"id": i, "x": x, "y": y} for i, (x, y) in points.items()]}
