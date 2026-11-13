@@ -40,7 +40,7 @@ from tessellate.ai import composer, composer_doings, composer_done, composer_fra
 from tessellate.ai import composer_ages, composer_answer, composer_nth, composer_oneword, composer_property, composer_small
 from tessellate.ai import composer_ahead, composer_ask, composer_notime, composer_clean, composer_event_verdict, factgraph
 from tessellate.ai import composer_aliases, composer_chip_subject, composer_overview
-from tessellate.ai import composer_select
+from tessellate.ai import composer_close, composer_select
 from tessellate.ai import composer_credit, composer_each, composer_label, composer_refer, composer_tally
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser, recognise_questions
@@ -1389,35 +1389,10 @@ def _kind_if_mine(asked: str) -> str | None:
     return None if kind != "compare" and composer.compare_sides(asked) else kind
 
 
-#: The search's own "closely by meaning" (`composer_frame`, 0.75 and up).
-_CLOSE = 0.75
-#: "what (else) do my notes say about uni", "what do I know about uni".
-_SAY_ABOUT = re.compile(r"\bwhat (?:else )?(?:do|does|did) (?:my|the) (?:notes|entries) (?:say|tell me|have|mention|know|cover)\b|\bwhat (?:else )?do i know (?:about|on)\b", re.I)
-
-
-def _close_by_meaning(question: str, views: list, members: list) -> list:
-    """A broad "what do my notes say about X" reads every record the search
-    found close by meaning, not only the notes that say X's word (L-chat-37:
-    "I'm taking one IT subject and three Design subjects" is about uni without
-    the word, and the answer quoted one note twice instead)."""
-    if not members or not _SAY_ABOUT.search(question):
-        return members
-    have = {v.id for v in members}
-    close = [v for v in views if v.id not in have and _match_score(v) >= _CLOSE]
-    return members + sorted(close, key=lambda v: (v.written or date.min, v.rank))
-
-
-def _match_score(view) -> float:  # noqa: ANN001
-    info = view.note.get("match_info") or {}
-    return float(info.get("score") or 0) if info.get("type") in ("semantic", "hybrid") else 0.0
-
-
 def _chosen(asked: str, kind: str, views: list, wants_context: bool, question: str = "") -> tuple[list, tuple | None]:
     """The notes the answer is about, the defining one first, and the tie an
     overview splits on (None when there is none)."""
-    members = _corrected_first(asked, _defining_first(asked, _pick_members(asked, views, wants_context)))
-    if kind == "overview":
-        members = _close_by_meaning(question or asked, views, members)
+    members = composer_close.close_by_meaning(kind, question or asked, views, _corrected_first(asked, _defining_first(asked, _pick_members(asked, views, wants_context))))
     tie = _tie(asked, members) if members and kind == "overview" else None
     return (tie[0] if tie else members), tie
 
