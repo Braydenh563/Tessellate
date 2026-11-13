@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- A test now pins the AI status pill's Can't reach Tessellate state, checked in the app with the status route refused (L-ui-modernisation-27).
+
 - Four phone and touch rules take their 44px target from --target-min instead of a literal (L-ui-modernisation-15).
 
 - The spacing lint now reads px values too; three px paddings and margins moved onto the scale (L-ui-modernisation-12).

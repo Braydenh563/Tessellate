@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 19 | 1 | 0 | 19 | 116 |
+| ui-modernisation | 96 | 18 | 1 | 0 | 19 | 115 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 531 | 151 | 3 | 184 | 1235 |
+| all | 553 | 530 | 151 | 3 | 184 | 1234 |
 
 ## graph
 
@@ -462,7 +462,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-20** `ui-modernisation` open, M: Apply cheaper-equivalent passes to microbes, aurora and mycelium art. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. L460 covers contrast only. The microbes, aurora and mycelium cheaper-equivalent changes are untracked.
 - [ ] **L-ui-modernisation-22** `ui-modernisation` open, S: Give the desk companion menu feedback, greyed rows, a snooze countdown and a resize cursor. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1308. Evidence: Open line in the plan's prose a session could miss. The g3-size-1107 leftovers it points to have no row: figure_do refusal has no feedback, 'Sit on a window' is not greyed, the snooze has no countdown, and the resize cursor is missing.
 - [ ] **L-ui-modernisation-26** `ui-modernisation` open, S: Check every Settings page (and other pages) is reachable on a narrow phone view. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; check at 360 wide. Verify in code first.
-- [ ] **L-ui-modernisation-27** `ui-modernisation` open, S: Check the status dot's error state can be reached, or remove it. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open: the top bar status dot's X state was never seen. Verify in code first.
 - [ ] **L-ui-modernisation-29** `ui-modernisation` open, M: Move 10-responsive.css's last 31 component rules beside their components (UI plan 13b residue). From UI_MODERNISATION_PLAN.md:1089. Evidence: 10-responsive.css (797 lines) keeps 48 shell rules (242 lines) and 31 component rules (149 lines, listed by its header): each comes after .sheet-list > *, a tab-strip rule or a rule of its own block and sets the same property, so moving it flips a conflicting pair; boot CSS gzip margin under BOOT_CSS_CAP is 46 bytes
 - [ ] **L-ui-modernisation-30** `ui-modernisation` open, M: Remove the 236 unused CSS selectors after a runtime coverage sweep (UI plan 13b). From UI_MODERNISATION_PLAN.md:1089. Evidence: 13b static check: 256 class and id names in the CSS have no word match in JS, HTML or Python; concatenation pieces explain 235; the 21 left are built by template (nm-${mood}, wb-nav-item-${kind}), nested side variants (nm-foot-l/r) or sit inside :not() where removal changes specificity. None removable without a runtime coverage sweep (scratchpad/ui-sweeps/bootcsscov.js) over every surface and state
 - [ ] **L-ui-modernisation-31** `ui-modernisation` open, M: Move the remaining Library-only boot CSS rules to library-lazy.css (L459 remainder). From LEDGER L459. Evidence: 13b moved 110 Library-only boot rules to library-lazy.css (d961c27a); about 264 more name only Library surfaces but conflict with a universal-child rule or a later override in the boot files, or carry a ratcheted literal, so moving them flips the cascade or grows a ratchet
