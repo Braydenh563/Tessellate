@@ -104,15 +104,13 @@ class FramesMixin:
     def _edge_frame(self, now: float) -> str:
         if self.state == "rise":
             frame = "hop" if self.gait == "walk" else self._stream_frame(now)
-            if self.then == "peek_top":
-                return "hang"
-            if self.then == "hang" and self._rise_drawn(now) + self._box(frame)[1] < self.current_monitor().area[1]:
+            if self.then == "peek_top" or (self.then == "hang" and self._rise_drawn(now) + self._box(frame)[1] < self.current_monitor().area[1]):
                 return "hang"  # its head would pass the top of the screen: hands up, in the pose that fits
             return frame
         if self.peek_edge == "top":
             return "spin24" if self.peek_flip else "hang"
         if self.peek_edge in ("left", "right") and "lean" in self.extra_frames:
-            return "lean"  # against the side edge (L-ui-modernisation-41), the arm up on it
+            return "lean"  # the side edge, arm up on it (L-ui-modernisation-41)
         return "stand" if self.sink < self.sink_max * 0.5 or now - self.peek_started < 0.8 else "look"
 
     def _blink_step(self, now: float) -> tuple[int | None, float]:

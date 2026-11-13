@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 11 | 1 | 0 | 19 | 108 |
+| ui-modernisation | 96 | 10 | 1 | 0 | 19 | 107 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 523 | 151 | 3 | 184 | 1227 |
+| all | 553 | 522 | 151 | 3 | 184 | 1226 |
 
 ## graph
 
@@ -458,9 +458,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-38** `ui-modernisation` open, S: Put the map strip, table menu and drawing bar controls on the control height tokens, measured at 390 touch. From L-ui-modernisation-3. Evidence: Left by L-ui-modernisation-3: .wb-map-strip > button.icon-only and .wb-map-strip .wb-menu-toggle (07-whiteboard-misc.css) and .cm-md-table-menu (library-lazy.css) are 1.75rem; --control-h-dense becomes 40px under 820 or a coarse pointer, so the swap needs a map at 390 touch measured first (width too, or the icon button turns oval). .wb-tool-group button (06) is 36px, a px literal under a rem token.
 - [ ] **L-ui-modernisation-39** `ui-modernisation` open, L: Fold the note editor's four surfaces (bar, selection bar, inline AI, slash menu) into two, bar and slash, and show the capture text first. From L-ui-modernisation-16. Evidence: Left by L-ui-modernisation-16 (plan 13.2 table, Note editor row): a design change across editor-toolbar, the selection bar and inline AI; needs a design pass (judge rung), not available on the pro tier.
 - [ ] **L-ui-modernisation-40** `ui-modernisation` open, M: Appearance panel: a visible door on the theme button, peek dimming the strip and body, a shorter default height on tall windows, a committed sweep. From L-ui-modernisation-19. Evidence: Left by L-ui-modernisation-19 (appearance-1435.md): the door is blocked by boot JS TOTAL_CAP (250,450; served total sits within 225 bytes of it), the sweep by the scratchpad file cap; peek dimming and the 788px height are conditional on a reading that the panel reads poorly, not yet measured.
-- [ ] **L-ui-modernisation-41** `ui-modernisation` open, M: Draw the remaining desk frames: lean, back_float, chair prop; each needs a spec in render_desk_frames.js, an EXTRA_FRAMES entry and an act that draws it. From L-ui-modernisation-10. Evidence: frontend/companion-catalogue.json: act.chair, pos.lean, pos.back_float, lower.drift, move.afield still desk missing; frames hang_sloth and hang_feet built, same route (scripts/render_desk_frames.js spec, sprites.EXTRA_FRAMES, an engine act)
-- [ ] **L-ui-modernisation-42** `ui-modernisation` open, S: Draw the pot in the tail curl and a card box for the desk card nap. From L-ui-modernisation-10. Evidence: tail curl: the card nap and the pot in the tail curl need a prop drawn into the frame (card0 and card1 come from scripts/render_card_frames.py, Pillow)
 - [ ] **L-ui-modernisation-43** `ui-modernisation` open, M: Fix the clip685 390 dark findings left by L-ui-modernisation-35: dialog head titles, swatch rings, chat input ring, library arrow ring, subtab borders. From L-ui-modernisation-35. Evidence: clip685.js 390 dark 2026-11-13, unique: text 3 (.dialog-head .dialog-head-title top 1.0 on every sheet and dialog: an accented capital's ink is cut, measured by canvas actualBoundingBoxAscent; overflow-x: clip fixes it but costs 7 gzipped boot bytes, 4 are left under BOOT_CSS_CAP), ring 3 (.swatch-option in capture-card-lazy.css .swatch-picker, ring 8.4px past a 4.8px padding; #chat-input in .layout > .tab-main overflow-x clip left/right 3.0; .scroll-row-arrow in .library-view-section right 3.6), border 8 (an active subtab scrolled 1.5 to 2.2px past the left edge of .notes-subtabs, .library-subtabs, .tab-page and body).
+- [ ] **L-ui-modernisation-44** `ui-modernisation` open, S: Weights test: model act length in the app sim so the long chair act stays within tolerance. From deskframes2 agent. Evidence: tests/test_companion_weights_1108.py::test_the_app_factor_reproduces_the_seeded_hours gap 4.08 vs TOLERANCE 3.6 once act.chair (20-40 s, desk built) joins both streams; the app sim treats every act as 1 s, so a long act cuts the desk count. Fix the test model, not the cap.
 
 ## timeline
 
