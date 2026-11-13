@@ -39,6 +39,18 @@ def vectors_for(session: Session, backend: str) -> list[EmbeddingRecord]:
     return list(session.scalars(select(EmbeddingRecord).where(EmbeddingRecord.model_version == backend)))
 
 
+def embedding_fingerprint(session: Session, backend: str) -> tuple:
+    """What moves when a stored vector changes (review 5883476033): a note's
+    vector is rewritten as a new row (`_write_vector` deletes, then inserts),
+    so a re-embed moves the newest id even when no note was edited."""
+    mine = EmbeddingRecord.model_version == backend
+    return (
+        session.scalar(select(func.count(EmbeddingRecord.id)).where(mine)) or 0,
+        session.scalar(select(func.max(EmbeddingRecord.id)).where(mine)),
+        session.scalar(select(func.max(EmbeddingRecord.created_at)).where(mine)),
+    )
+
+
 def mention_pairs(session: Session) -> list[tuple[int, int]]:
     """(entity id, note id) for every mention."""
     return list(session.execute(select(EntityMention.entity_id, EntityMention.entry_id)))

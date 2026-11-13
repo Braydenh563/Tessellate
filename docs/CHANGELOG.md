@@ -75,6 +75,9 @@ below). Versioning is `0.x` while the app stabilises.
 - LAN (L507): a new device's held sign-in request is kept in `lan-pending.json` (0600) and comes back when the app restarts, until its ten minutes are up (`tests/test_lan.py`).
 - Quit (L502): the registry (`background.stop_all`) is signalled first on every quit path, the server lifespan and the abrupt desktop exits, so the reminder notifier no longer waits out the job pool's 5 s deadline (`tests/test_background_workers.py`).
 - Background (L506): `core/background.py` is the registry of named workers (register, start, stop, stop_all, status); the reminder notifier is its first entry (`tests/test_background_workers.py`).
+- Graph review fixes: a private note lends no entity to a route and a private document is never a stop; the map of meaning samples evenly past 5,000 notes and runs in float32 through the covariance; vector-built caches follow a re-embed; mixed vector widths are logged.
+- The searxng status test starts from a fresh answer cache with no Docker to ask and waits for the route's 200, so it no longer depends on test order.
+- Tests: the private-space leak checks look for a word of the secret, not its digits, which a timestamp can hold.
 - Graph: a headless sweep checks saved views, focus and global switching, the keyboard ring, reduced motion and the hover draw cost with numbers (L815 to L818).
 - Graph: a sweep draws the Tessellation view beside the chosen layout as one PNG with numbers (L-graph-12); a Map or Tessellation header no longer sits under the minimap.
 - Graph: in the Tessellation view a new note's cell drifts in and settles like the logo's third cell, 1.4 s, still under reduced motion (L-graph-10).

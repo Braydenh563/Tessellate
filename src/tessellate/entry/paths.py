@@ -182,7 +182,8 @@ def build(
     to, or an entity both name. Off by default: the AI tools and the
     structure views read `entries[id]` for every node and stay notes-only.
     Neither layer reaches a private note when `include_private` is False (the
-    edge needs both ends known), nor a private document.
+    edge needs both ends known); no private document is a node, and no
+    private note lends an entity its mention, for any caller.
     """
     if entries is None or not include_private:
         query = select(Entry).where(Entry.is_deleted == False)  # noqa: E712
@@ -190,8 +191,7 @@ def build(
             query = query.where(Entry.is_private == False)  # noqa: E712
         entries = list(session.scalars(query))
     return _connect(
-        session, entries, extra_edges, documents=documents, entities=entities,
-        private=include_private, cap_entities=True,
+        session, entries, extra_edges, documents=documents, entities=entities, cap_entities=True,
     )
 
 
@@ -276,7 +276,7 @@ def _add_tag_edges(index: Connections, entries: list) -> None:
 
 
 def _add_layer_edges(
-    session: Session, index: Connections, documents: bool, entities: bool, private: bool, cap_entities: bool
+    session: Session, index: Connections, documents: bool, entities: bool, cap_entities: bool
 ) -> None:
     """Document and entity nodes, joined to the notes they touch.
 
@@ -288,14 +288,18 @@ def _add_layer_edges(
     many notes share is exactly a hub.
     """
     known = index.entries
+    #: **No private document, no private note's names** (review 5883476033).
+    #: A private document's title is sealed, so it is never a stop, for any
+    #: caller, the same as `_layer_members`. An entity is a name read out of a
+    #: note's text, so a private note's mentions stay out even when the note
+    #: itself is on the map: an entity only private notes name is no node.
+    #: `private` governs only which notes are on the map (`build`).
     if documents:
         query = (
             select(DocumentLink.document_id, DocumentLink.entry_id)
             .join(Document, Document.id == DocumentLink.document_id)
-            .where(Document.archived_at.is_(None), Document.deleted_at.is_(None))
+            .where(Document.archived_at.is_(None), Document.deleted_at.is_(None), Document.is_private == False)  # noqa: E712
         )
-        if not private:
-            query = query.where(Document.is_private == False)  # noqa: E712
         for document_id, entry_id in session.execute(query):
             if entry_id in known:
                 node = f"document:{document_id}"
@@ -303,7 +307,12 @@ def _add_layer_edges(
                 index._add(node, entry_id, "document", "is attached to", "has attached", LINK_WEIGHT)
     if entities:
         by_entity: dict[int, set[int]] = defaultdict(set)
-        for entity_id, entry_id in session.execute(select(EntityMention.entity_id, EntityMention.entry_id)):
+        mentions = (
+            select(EntityMention.entity_id, EntityMention.entry_id)
+            .join(Entry, Entry.id == EntityMention.entry_id)
+            .where(Entry.is_private == False)  # noqa: E712
+        )
+        for entity_id, entry_id in session.execute(mentions):
             if entry_id in known:
                 by_entity[entity_id].add(entry_id)
         for entity_id, notes in by_entity.items():
@@ -321,7 +330,6 @@ def _connect(
     extra_edges: list[dict] | None,
     documents: bool = False,
     entities: bool = False,
-    private: bool = True,
     cap_entities: bool = False,
 ) -> Connections:
     """The indexing both builders share. `entries` need only carry `id`,
@@ -369,7 +377,7 @@ def _connect(
                     index.extra.setdefault(end, end.partition(":")[0])
 
     if documents or entities:
-        _add_layer_edges(session, index, documents, entities, private, cap_entities)
+        _add_layer_edges(session, index, documents, entities, cap_entities)
     return index
 
 

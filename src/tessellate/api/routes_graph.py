@@ -284,7 +284,7 @@ def _similarity_edges(
     invalidate this even when no note changed.
     """
     backend = deps.get_embeddings().backend_id()
-    fingerprint = (*_graph_fingerprint(session), backend)
+    fingerprint = _vector_fingerprint(session, backend)
 
     #: **One sweep, over the map's notes, whoever asks** (GRAPH_PLAN, 2026-10-05).
     #: The build used to read the caller's `node_ids` while the slot's key did
@@ -305,6 +305,13 @@ def _similarity_edges(
         if a in node_ids and b in node_ids and frozenset((a, b)) not in taken
     ]
     return scored[:MAX_SIMILARITY_EDGES]
+
+
+def _vector_fingerprint(session: Session, backend: str) -> tuple:
+    """The key of anything computed from stored vectors: the notebook's
+    version, the backend, and the vectors themselves, since an embedding
+    written after a note's last edit moves no `updated_at`."""
+    return (*_graph_fingerprint(session), backend, *graph_layers.embedding_fingerprint(session, backend))
 
 
 def _note_vectors(session: Session, backend: str) -> dict:
@@ -347,7 +354,7 @@ def _layer_similarity_edges(
     if not (documents or entities):
         return []
     backend = deps.get_embeddings().backend_id()
-    fingerprint = (*_graph_fingerprint(session), backend, *_layer_fingerprint(session, documents, entities))
+    fingerprint = (*_vector_fingerprint(session, backend), *_layer_fingerprint(session, documents, entities))
 
     def build() -> list[tuple]:
         import numpy as np
@@ -415,7 +422,8 @@ def _centrality(
     use_similarity = similarity and not deps.get_config().get_preference("battery_efficient_mode")
     fingerprint = (*_graph_fingerprint(session), use_similarity, maps, *_layer_fingerprint(session, documents, entities))
     if use_similarity:
-        fingerprint = (*fingerprint, deps.get_embeddings().backend_id())
+        backend = deps.get_embeddings().backend_id()
+        fingerprint = (*fingerprint, backend, *graph_layers.embedding_fingerprint(session, backend))
 
     def build() -> dict:
         extra: list[dict] = []
