@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 89 | 39 | 2 | 59 | 304 |
+| chat | 176 | 89 | 37 | 2 | 59 | 302 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 540 | 129 | 3 | 186 | 1222 |
+| all | 553 | 540 | 127 | 3 | 186 | 1220 |
 
 ## graph
 
@@ -95,11 +95,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L184** `chat` open, L: Atlas motion measured leftovers: laughing end, blend, tail under 1 ms a minute, 390 fps, arm rig. From OPEN.md:1074; OPEN.md:3188; OPEN.md:3763. Evidence: Hand-stepped blend measurements outstanding; needs visual/human review of motion
 - [ ] **L185** `chat` open, L: Slow idle; non-Atlas walks, runs, climbs, crouches, sits, lies. From OPEN.md:4419. Evidence: w34-unv2-1111.md marks true; generated-companion behaviour set not complete
 - [ ] **L188** `chat` partly, S: Count sentence should count what notes said, not the largest theme (C6). From OPEN.md:4087. Evidence: Rechecked 2026-11-11: small notebook now agrees (eight/eight); 207-note count still disagrees.
-- [ ] **L192** `chat` partly, S: Show open checklist items for 'what is still open on X' (P16). From OPEN.md:848. Evidence: composer.py:46 handles checklist ticked counts; open-items question not found
 - [ ] **L193** `chat` partly, S: Magic add 'tonight around 7pm'; equalise edit button heights. From OPEN.md:3826. Evidence: reminder_parser.py:218 hedges parse 'probably around 7pm'; button heights unverified
 - [ ] **L195** `chat` partly, S: Check that each Guide topic answers its question (only the head was read). From OPEN.md:984. Evidence: tests/test_help_coverage.py checks topics_for per question; not read end to end by a human rater
 - [ ] **L196** `chat` partly, S: Stop saved-chat list refetch per checkpoint (E58). From OPEN.md:4504. Evidence: List does not flash (showSkeletons, notes-list.js:2991); refetch per checkpoint stays (sheets-selects.js:1833)
-- [ ] **L197** `chat` partly, S: Fix web-down message repeating advice and dropping the port (A9). From OPEN.md:4564. Evidence: composer_web.py:152 prints the saved searxng_url (port included if saved); duplicate advice and agent_policy web_down not re-driven
 - [ ] **L198** `chat` partly, S: Improve Guide topic ranking when searching (top-3 38/60 gap). From OPEN.md:1512. Evidence: ai/help_chat.py:115,334,449 ranking by question-word overlap exists; top-3 38/60 gap not re-measured
 - [ ] **L199** `chat` partly, S: Make the status.js suggest code call meaningAlts (Brief 86). From OPEN.md:1509. Evidence: meaningAlts used by settings-find.js:117,135; status.js suggest code call not found
 - [ ] **L201** `chat` partly, S: Rows 839 and 841 never checked (no text located for either). From ledger-1112 P11.
