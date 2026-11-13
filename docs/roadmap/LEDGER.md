@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 1 | 0 | 0 | 0 | 16 |
-| chat | 176 | 99 | 44 | 2 | 59 | 319 |
+| chat | 176 | 98 | 44 | 2 | 59 | 318 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 550 | 134 | 3 | 186 | 1237 |
+| all | 553 | 549 | 134 | 3 | 186 | 1236 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -159,7 +159,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L731** `chat` open, S: Decide light rewrite rules: tense, number agreement, comma capitalisation, Oxford comma, quotes (decision 33). From OPEN.md:2067. Evidence: Row tagged W34 owner-call tracked in plans (w34-L1-1111.md) Owner decided 2026-11-12: Keep, add tests. Build: tests only: decision 33 tables for past_plan, count_noun, join_items, after_comma, cut_title in tests/test_engine_phase6_spec.py.
 - [ ] **L-chat-10** `chat` open, S: Stop a quotation from skipping a sentence inside its own marks (round 1 D8). From open-work sweep 2026-11-12, tests/test_composer_r1_dates_1107.py:65. Evidence: This strict xfail is an unbuilt spec. CHANGELOG line 915 says it is "still open, pinned by a strict xfail". No LEDGER row or CHAT_PLAN item names it. L91 covers gluing whole notes with commas and elli
 - [ ] **L-chat-13** `chat` open, L: Make the agent activity monitor movable and let the agent drive the interface. From open-work sweep 2026-11-12, IDEAS.md:100. Evidence: Listed as partly built, with no LEDGER row or plan item for the remainder
-- [ ] **L-chat-15** `chat` open, S: Show one empty state in Notes Ask when no model is set. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:33. Evidence: index.html:2335 still has "Ask your own notes a question" beside the no-model state; no fix found in code and no tracking row
 - [ ] **L-chat-16** `chat` open, M: Starters as verb-plus-slot chips. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:558. Evidence: Open line in the plan's prose a session could miss. Open sub-points.
 - [ ] **L-chat-18** `chat` open, S: Reconcile and build the decision 72 voice presets. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1317. Evidence: Open line in the plan's prose a session could miss. Conflicts with decision 72's Playful preset at 1811; needs reconciling.
 - [ ] **L-chat-19** `chat` open, L: Close the rest of the 2026-10-10 chat bug list. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:779. Evidence: Open line in the plan's prose a session could miss. Owner bug list; also token count after deleted turn, destination history clear, match kind label, jokes source, caption sentences.
