@@ -49,6 +49,45 @@ const { openFresh, checker } = require("./cdlib.js");
     const titles = await page.evaluate(() => ({ table: wbResizeHandleTitle("table"), diagram: wbResizeHandleTitle("diagram"), text: wbResizeHandleTitle("text") }));
     check(`${width}: a table's and a diagram's grip say what the double-click fits`, !/text/.test(titles.table) && !/text/.test(titles.diagram) && /text/.test(titles.text), titles);
 
+    // --- L269: a roving tab stop per rail section -----------------------------------------------------------
+    if (width === 1440) {
+      const stops = await page.evaluate(() => {
+        const vis = (e) => { const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0 && getComputedStyle(e).visibility !== "hidden" && !e.closest("[hidden],.hidden,[inert]"); };
+        const sel = 'a[href], button:not([disabled]), input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea, [tabindex]';
+        const count = (root) => [...root.querySelectorAll(sel)].filter((e) => e.tabIndex >= 0 && vis(e)).length;
+        const toolsIn = (s) => [...s.querySelectorAll("button")].filter((b) => !b.closest(".wb-shape-menu") && vis(b)).length;
+        const sections = [...document.querySelectorAll("#wb-tool-group .wb-tool-section")].filter((s) => s.getClientRects().length > 0);
+        const buttons = [...document.querySelectorAll("#wb-tool-group .wb-tool-section")].reduce((n, s) => n + [...s.querySelectorAll("button")].filter((b) => !b.closest(".wb-shape-menu") && vis(b)).length, 0);
+        const perSection = sections.filter((s) => toolsIn(s) > 0).map((s) => [...s.querySelectorAll("button")].filter((b) => b.tabIndex === 0 && vis(b)).length);
+        return { rail: count(document.getElementById("wb-tool-group")), board: count(document.getElementById("library-view-whiteboard")), sections: sections.length, buttons, perSection };
+      });
+      // Before: rail 17, whole board 37 (measured on this empty board before the change).
+      check("rail: one tab stop per section (every section holds exactly one button stop)", stops.perSection.every((n) => n === 1), stops);
+      check("rail: tab stops fell from 17 to the number of sections (plus its inputs)", stops.rail < 17 && stops.rail <= stops.sections + 4, stops);
+      check("board: the whole surface has fewer tab stops than the 37 it had", stops.board < 37, stops.board);
+      const k0 = await page.evaluate(() => d3.zoomTransform(document.getElementById("whiteboard-container")).k + ":" + d3.zoomTransform(document.getElementById("whiteboard-container")).x);
+      await page.focus('#wb-tool-group [data-tool="select"]');
+      const at = () => page.evaluate(() => document.activeElement?.dataset?.tool || document.activeElement?.id || document.activeElement?.tagName);
+      await page.keyboard.press("ArrowRight");
+      const second = await at();
+      await page.keyboard.press("End");
+      const last = await at();
+      await page.keyboard.press("ArrowRight");
+      const wrapped = await at();
+      await page.keyboard.press("Home");
+      const first = await at();
+      check("ArrowRight moves to the next tool of the section, End to the last, wrap, Home to the first", second === "pan" && last === "lasso" && wrapped === "select" && first === "select", { second, last, wrapped, first });
+      await page.keyboard.press("ArrowRight");
+      await page.keyboard.press("Tab");
+      const next = await page.evaluate(() => { const a = document.activeElement; return { section: a.closest(".wb-tool-section")?.getAttribute("aria-label"), tool: a.dataset?.tool || a.id }; });
+      check("Tab from a section lands on the next section's one stop", next.section === "Draw", next);
+      await page.keyboard.press("Shift+Tab");
+      const back = await page.evaluate(() => document.activeElement.dataset?.tool);
+      check("Shift+Tab returns to the tool last focused in the section before (pan)", back === "pan", back);
+      const k1 = await page.evaluate(() => d3.zoomTransform(document.getElementById("whiteboard-container")).k + ":" + d3.zoomTransform(document.getElementById("whiteboard-container")).x);
+      check("Home on the rail did not move the canvas", k0 === k1, [k0, k1]);
+    }
+
     // --- L-whiteboard-26 -----------------------------------------------------------------------------------
     if (width === 1440) {
       const ids = await page.evaluate(async () => {

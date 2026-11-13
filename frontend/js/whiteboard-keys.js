@@ -124,14 +124,14 @@
   }
 
   //: True when the key is for the canvas: a board is open (not a map, whose Home and Delete walk the tree),
-  //: no field is being typed in and no list, tab row or menu has the focus (they take Home themselves).
+  //: no field is being typed in and no list, tab row, menu or the tool rail has the focus (they take Home themselves).
   function forCanvas(e, mapToo = false) {
     const view = document.getElementById("library-view-whiteboard");
     if (!view || view.classList.contains("hidden") || (wbIsMap() && !mapToo)) return false;
     const active = document.activeElement;
     const tag = (active?.tagName || "").toLowerCase();
     if (active && (tag === "input" || tag === "textarea" || tag === "select" || active.isContentEditable) && active.offsetParent !== null) return false;
-    return !e.target?.closest?.("[role=tablist], [role=listbox], [role=menu], [role=grid], [role=dialog], dialog");
+    return !e.target?.closest?.("[role=tablist], [role=listbox], [role=menu], [role=grid], [role=dialog], dialog, #wb-tool-group");
   }
 
   //: **The keys draw.io has that the board lacked** (WHITEBOARD_PLAN section 11, 2026-11-12). Each command's

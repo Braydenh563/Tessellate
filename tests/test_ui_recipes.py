@@ -7927,3 +7927,17 @@ def test_a_board_tag_is_a_chip_a_fold_is_a_view_rule_and_a_drop_target_has_no_bl
     drop = re.search(r"\.wb-object-frame\.wb-drop-target \{([^}]*)\}", lazy)
     assert drop and "var(--accent)" in drop.group(1) and "backdrop-filter" not in drop.group(1)
     assert not re.search(r"^(?:const|let|var|function)\s", struct, re.M)
+
+
+def test_a_tool_rail_is_one_tab_stop_per_section() -> None:
+    """DESIGN.md "A toolbar of many tools" (L269): the board's rail is a `role=toolbar` of labelled `role=group`
+    sections, roved by `whiteboard-toolbar.js`; the recipe row and the file must not drift apart."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    rail = html[html.index('id="wb-tool-group"') : html.index('id="wb-history-bar"')]
+    assert 'role="toolbar" aria-label="Whiteboard tools"' in html
+    sections = re.findall(r'<div class="wb-tool-section(?:\s[^"]*)?"[^>]*>', rail)
+    assert sections and all('role="group"' in s and "aria-label=" in s for s in sections)
+    src = (ROOT / "frontend" / "js" / "whiteboard-toolbar.js").read_text(encoding="utf-8")
+    assert "tabIndex = button === keep ? 0 : -1" in src and '"Home"' in src and '"End"' in src
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "A toolbar of many tools" in design and "whiteboard-toolbar.js" in design

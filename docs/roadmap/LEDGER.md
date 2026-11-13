@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 15 | 4 | 0 | 10 | 49 |
+| whiteboard | 30 | 14 | 4 | 0 | 10 | 48 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 621 | 150 | 3 | 185 | 1324 |
+| all | 553 | 620 | 150 | 3 | 185 | 1323 |
 
 ## graph
 
@@ -283,7 +283,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L257** `whiteboard` open, S: Stop board preview labels (mapPreview) running over the next shape. From OPEN.md:1239. Evidence: note-cards.js:38 mapPreview draws via mapPreviewDraw; no label-clipping fix found.
 - [ ] **L263** `whiteboard` open, S: Compare converter stroke width (2 board px per stencil unit) against draw.io strokewidth=inherit. From OPEN.md:1323. Evidence: Row says not compared against draw.io strokewidth=inherit; no later comparison found.
 - [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Built here: wbExportBoard({ branch: true }) titles the dialog "Export this branch" (tests/test_wb_export_pdf.py, wbexport-pdf.js). Left: whiteboard-map.js:5072 in wbMapExportBranch must call wbExportBoard({ branch: true }) (file owned by another session). The mmd2 sweeps do not touch export; wbexport-pdf.js covers the dialog.
-- [ ] **L269** `whiteboard` open, M: Cut board toolbar tab stops from 33 with a roving tabindex. From OPEN.md:4266. Evidence: Ledger row 261 marked new, M; no roving-tabindex fix found.
 - [ ] **L271** `whiteboard` open, M: Unify the four overlapping drag and pointer-capture mechanisms in whiteboard.js. From OPEN.md:4442. Evidence: whiteboard.js still has mixed pointer capture and mouse handlers (27 matches); not unified
 - [ ] **L278** `whiteboard` open, M: Audit board frames/present flow, connector re-routing, touch eraser, image paste limits, PDF export. From audit-1031-board.md. Evidence: No later board audit found
 - [ ] **L279** `whiteboard` open, M: Close or record U19 U20 U23 U30 U31 U36 U37 U39 U41 U45 U49 across map, board, documents, code editor. From bs-1111.md. Evidence: Other agents' surfaces; no closing record found
