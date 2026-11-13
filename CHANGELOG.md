@@ -56,6 +56,9 @@ below). Versioning is `0.x` while the app stabilises.
 - Mind map study mode (decision 36): the next run is spaced, asking what you missed first, then what is due again (after 1, 3, 7, 14 or 30 days of knowing it), then new ones; the palette's Study the map in map order keeps the old order (`tests/test_map_study.py`, fixed clock).
 - Mind map (L371): a topic's Due row is the date picker with an optional time (`due_time`, kept with the day, carried as `_due_time`), Remind me uses it, and the Markers popover stays open while the calendar is used (`tests/test_map_due_time.py`).
 - Mind map: Filter by marker takes several markers and labels at once (a popover of pressed choices; a topic stays lit if it has any), and the outline shows each topic's markers, due day and labels under its words (decision 34; `tests/test_map_filter_columns.py`).
+- Graph review fixes: a private note lends no entity to a route and a private document is never a stop; the map of meaning samples evenly past 5,000 notes and runs in float32 through the covariance; vector-built caches follow a re-embed; mixed vector widths are logged.
+- The searxng status test starts from a fresh answer cache with no Docker to ask and waits for the route's 200, so it no longer depends on test order.
+- Tests: the private-space leak checks look for a word of the secret, not its digits, which a timestamp can hold.
 - Graph: a headless sweep checks saved views, focus and global switching, the keyboard ring, reduced motion and the hover draw cost with numbers (L815 to L818).
 - Graph: a sweep draws the Tessellation view beside the chosen layout as one PNG with numbers (L-graph-12); a Map or Tessellation header no longer sits under the minimap.
 - Graph: in the Tessellation view a new note's cell drifts in and settles like the logo's third cell, 1.4 s, still under reduced motion (L-graph-10).
