@@ -9,7 +9,7 @@ CONTROLS = (JS_DIR / "settings-controls.js").read_text(encoding="utf-8")
 
 
 def test_the_settings_dialog_is_not_a_pause_for_undo():
-    assert '.modal-overlay:not(#settings-modal), dialog[open]' in WIRING
+    assert '.modal-overlay:not(#settings-modal):not(#ocr-workspace), dialog[open]' in WIRING
 
 
 def test_a_focused_switch_or_slider_does_not_keep_the_chord():

@@ -52,6 +52,7 @@ async function snapshot(page, withStorage) {
     const docs = out['/documents'] || [];
     for (const d of docs.slice(0, 6)) out['/documents/' + d.id] = await get('/documents/' + d.id);
     for (const b of (out['/whiteboard/boards'] || []).filter((b) => /^Probe/.test(b.title || ''))) out['/whiteboard/?board_id=' + b.id] = await get('/whiteboard/?board_id=' + b.id);
+    if (window.undoProbeMedia) out['/media/meta'] = await get('/media/meta/' + encodeURIComponent(window.undoProbeMedia.split('/').pop()));
     if (withStorage) { const ls = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (!/^(token|nm-|undo|draft|recent|nav|last|tour|onboarding|boot)/i.test(k) && !/settingsHistory/.test(k)) ls[k] = localStorage.getItem(k); } out.ls = ls; }
     return out;
   }, { base: L.BASE, withStorage });
@@ -227,7 +228,30 @@ const EXTRA = [
   // The Escape that closes one menu before the next is tried also ends the
   // selection (navigation.js's Escape stack): put it back.
   again: tickTwo },
+  // The OCR workspace (L543; ocr79.js measures its three acts one by one): one
+  // probe image with a reading, opened in the workspace. `undoProbeMedia` puts its
+  // media row (the readings) in every snapshot, so an edit there counts.
+  { name: 'ocr workspace', root: '#ocr-workspace', mut: /(clean|delete|edit|save|clear|reading)/i, open: openOcrProbe },
 ];
+async function openOcrProbe(p) {
+  await p.waitForFunction(() => typeof openOcrWorkspace === 'function', null, { timeout: 20000 });
+  await p.evaluate(async () => {
+    if (!window.undoProbeMedia) {
+      const c = document.createElement('canvas'); c.width = 600; c.height = 200;
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, 600, 200); g.fillStyle = '#000'; g.font = '28px serif'; g.fillText('Read chapter 7 before Friday.', 20, 100);
+      const blob = await new Promise((r) => c.toBlob(r, 'image/png'));
+      const fd = new FormData(); fd.append('file', new File([blob], 'undo-probe.png', { type: 'image/png' })); fd.append('direct', 'true');
+      const res = await fetch('/media/upload', { method: 'POST', body: fd, headers: { 'X-Auth-Token': authToken(), 'X-Workspace-ID': activeSpaceId() } });
+      window.undoProbeMedia = (await res.json()).url;
+    }
+    const row = await apiJson('/media/meta/' + encodeURIComponent(window.undoProbeMedia.split('/').pop()));
+    if (!row.vision_ocr_text) await apiJson(`/media/${row.id}/vision-ocr`, { method: 'POST', body: JSON.stringify({ text: Array(6).fill('Test, Test').join('\n') + '\nRead chapter 7 before Friday.' }) });
+    const fresh = await apiJson('/media/meta/' + encodeURIComponent(window.undoProbeMedia.split('/').pop()));
+    openOcrWorkspace({ ...fresh, _isImage: true }, [{ ...fresh, _isImage: true }]);
+  });
+  await p.waitForFunction(() => { const w = document.getElementById('ocr-workspace'); return w && !w.classList.contains('hidden'); }, null, { timeout: 15000 });
+  await p.waitForTimeout(1200);
+}
 async function tickTwo(p) {
   await p.evaluate(() => {
     if (!selectMode) enterSelectMode();
