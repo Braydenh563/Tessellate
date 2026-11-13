@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 36 | 4 | 0 | 19 | 136 |
+| ui-modernisation | 96 | 35 | 4 | 0 | 19 | 135 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 549 | 154 | 3 | 184 | 1256 |
+| all | 553 | 548 | 154 | 3 | 184 | 1255 |
 
 ## graph
 - [ ] **L-graph-19** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -451,7 +451,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## ui-modernisation
 
 - [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
-- [ ] **L446** `ui-modernisation` open, M: Drive the phone More-sheet paths (agent, Guide, timeline, reminders) at 390. From OPEN.md:746; OPEN.md:3573. Evidence: Touch phone walkthrough; headless drive left toggleAgentPalette hidden at 390
 - [ ] **L448** `ui-modernisation` open, M: Rework Band 3 (600-820) header, two rows and 128px at 819. From OPEN.md:1451. Evidence: No change to the band design found in CHANGELOG/HISTORY; design call recorded in row
 - [ ] **L449** `ui-modernisation` open, M: Give the 110 controls with no keyboard focus change a visible focus state (a11yname.js, status-item, ghost.small). From OPEN.md:1815; OPEN.md:1833; OPEN.md:2917. Evidence: No HISTORY/test closing it found by grep; repeats row 1833 (1430). Not re-run
 - [ ] **L450** `ui-modernisation` open, M: Density decision 1: apply panel padding 12 and gutter 8 and fix Notes dock wrap at 1440. From OPEN.md:1845; OPEN.md:3806. Evidence: Design decision pending; Notes dock wrap tied to row 1830
