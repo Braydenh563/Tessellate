@@ -3229,7 +3229,7 @@
   cursor: pointer;
   overflow: hidden;
   flex-shrink: 0;
-  margin: 0 4px;
+  margin: 0 var(--space-1);
 }
 #wb-color-picker:hover,
 #wb-bg-color-picker:hover,

@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The spacing lint now reads px values too; three px paddings and margins moved onto the scale (L-ui-modernisation-12).
+
 - A new Library no longer shows an Activity count beside Everything 0 (L-ui-modernisation-6).
 
 - The welcome card's last footer stays on one row on a phone down to 360 (L-ui-modernisation-5).

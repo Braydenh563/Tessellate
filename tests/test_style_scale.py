@@ -1055,3 +1055,67 @@ def test_important_only_falls():
         re.sub(r"/\*.*?\*/", "", p.read_text(encoding="utf-8"), flags=re.S).count("!important") for p in CSS_FILES
     )
     assert total <= IMPORTANT_LEFT, f"{total} !important (ratchet {IMPORTANT_LEFT}): win by specificity instead"
+
+
+#: **The px escape, closed** (L-ui-modernisation-12; UI_MODERNISATION_PLAN
+#: 13.1 row 3: "spacing literals off the scale ... the scale lint allows them
+#: because they are not in the spacing properties it reads"). The rem check
+#: above never saw a px value. Above a 2px hairline offset, a px margin,
+#: padding or gap is a --space-* step, or one of these, each with its reason.
+PX_FILES_DRAWN = {
+    # The companion's travel effects: sprites placed round a figure drawn in
+    # px, so their offsets are the drawing's own geometry, not spacing.
+    "companion-travel-lazy.css",
+    # The diagram's resize and join handles: each margin is minus half the
+    # handle's own px size, centring it on the point it marks.
+    "diagram-lazy.css",
+}
+PX_ALLOWED = {
+    # The activity strip's bars: a chart's bar spacing, fixed against the
+    # bars' own px widths.
+    ("01-forms-settings.css", "gap: 3px"),
+    # The help popover's caret: minus half its 10px square.
+    ("03-dashboard-widgets.css", "margin-left: -5px"),
+    # The companion's burst ring and dots: minus half their 56px and 9px.
+    ("07-whiteboard-misc.css", "margin: -28px"),
+    ("07-whiteboard-misc.css", "margin: -4.5px"),
+    # The phone document bar's own height: a 44px touch target, its padding
+    # and its rule, which the card's margin has to equal.
+    ("07-whiteboard-misc.css", "margin-bottom: calc(44px + 2 * var(--space-1) + 1px)"),
+    # Scroll room under a list, a share of the window capped in px.
+    ("library-lazy.css", "padding-bottom: min(24dvh, 220px)"),
+    ("library-lazy.css", "padding-bottom: min(52dvh, 460px)"),
+}
+PX = re.compile(r"(?<![\w.-])(-?[0-9]*\.?[0-9]+)px\b")
+#: `overflow-clip-margin` is how far paint may spill, not space between things.
+PX_SPACING = re.compile(
+    r"(?<![\w-])((?:margin|padding|gap|row-gap|column-gap)"
+    r"(?:-top|-right|-bottom|-left|-inline|-block)?\s*:\s*[^;{}]+);"
+)
+
+
+def test_no_spacing_is_written_in_px():
+    from tests._css_paths import CSS_FILES
+
+    found = []
+    for path in CSS_FILES:
+        name = path.name
+        if name in PX_FILES_DRAWN:
+            continue
+        text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+        for declaration in PX_SPACING.findall(text):
+            declaration = " ".join(declaration.split())
+            if any(abs(float(v)) > 2 for v in PX.findall(declaration)) and (name, declaration) not in PX_ALLOWED:
+                found.append(f"{name}: {declaration}")
+    assert not found, "Spacing in px, off the --space-* scale:\n  " + "\n  ".join(found)
+
+
+def test_every_px_exception_is_still_there():
+    from tests._css_paths import CSS_FILES
+
+    seen = set()
+    for path in CSS_FILES:
+        text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+        for declaration in PX_SPACING.findall(text):
+            seen.add((path.name, " ".join(declaration.split())))
+    assert not PX_ALLOWED - seen, PX_ALLOWED - seen

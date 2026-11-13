@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 21 | 1 | 0 | 19 | 118 |
+| ui-modernisation | 96 | 20 | 1 | 0 | 19 | 117 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 533 | 151 | 3 | 184 | 1237 |
+| all | 553 | 532 | 151 | 3 | 184 | 1236 |
 
 ## graph
 
@@ -455,7 +455,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-3** `ui-modernisation` open, M: Sweep every toolbar onto the control height tokens and drain the literal heights ratchet. From open-work sweep 2026-11-12, docs/DESIGN.md:1584. Evidence: The doc admits toolbars that do not use --control-h yet and calls them gaps. No row lists or tracks the sweep to find and convert them.
 - [ ] **L-ui-modernisation-10** `ui-modernisation` open, M: Draw the missing desk frames: hang by feet, sloth, chair, lean, tail-curl pot. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. compalive-1109.md (git history) still lists missing desk frames with no LEDGER row: hang_by_feet, sloth, chair, lean, back_float, the pot in the tail curl, and a card box for the card nap. dangle and kick were built in W31.
 - [ ] **L-ui-modernisation-11** `ui-modernisation` open, S: Bring desk note and search reactions to app parity: glasses, shy hands, bubble. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. The events feed is built, but compalive-1109 says the desk reactions fall short of the app: no reading glasses, no hands over the eyes, no remark bubble. There is no row.
-- [ ] **L-ui-modernisation-12** `ui-modernisation` open, S: Close the px spacing-literal escape in test_style_scale. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1004. Evidence: Open line in the plan's prose a session could miss. A 13.1 table judgement with no numbered decision, so the 13a list does not carry it.
 - [ ] **L-ui-modernisation-14** `ui-modernisation` open, M: Bring hidden key handlers into the shortcut table and palette. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1008. Evidence: Open line in the plan's prose a session could miss. A 13.1 recognition-over-recall finding with no decision or row.
 - [ ] **L-ui-modernisation-15** `ui-modernisation` open, S: Fold the five literal 44px targets into --target-min. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1011. Evidence: Open line in the plan's prose a session could miss. A 13.1 Fitts row judgement with no decision number.
 - [ ] **L-ui-modernisation-16** `ui-modernisation` open, M: Show query help in the notes search box and fold editor bars into two. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1025. Evidence: Open line in the plan's prose a session could miss. 13c lists only some 13.2 rows. The Notes list query help and the editor's four-surfaces-to-two are not in it.

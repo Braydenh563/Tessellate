@@ -1087,7 +1087,7 @@ body.has-agent-monitor #timeline-scroll {
 .monitor-log-item {
   animation: fade-in var(--ui-slow) ease-out;
   border-left: 3px solid var(--accent);
-  padding-left: 8px;
+  padding-left: var(--space-3);
 }
 .monitor-log-item.error {
   border-left-color: var(--error);

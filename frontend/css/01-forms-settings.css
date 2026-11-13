@@ -3659,7 +3659,7 @@ mark.global-find-hit.global-find-current {
      §3), so with zero horizontal padding the focus ring's own
      `outline-offset` (2px, on top of a 2px outline) was clipped flat
      against the left edge on the active/focused section button. */
-  padding: 2px 4px;
+  padding: 2px var(--space-1);
 }
 .modal-nav>div {
   display: flex;
