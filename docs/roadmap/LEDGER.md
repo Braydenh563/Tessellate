@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 27 | 4 | 0 | 19 | 127 |
+| ui-modernisation | 96 | 26 | 4 | 0 | 19 | 126 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 539 | 154 | 3 | 184 | 1246 |
+| all | 553 | 538 | 154 | 3 | 184 | 1245 |
 
 ## graph
 
@@ -451,7 +451,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
 - [ ] **L460** `ui-modernisation` open, M: Measure dashboard muted text contrast over Wander and Drift backgrounds. From agent-remaining/bgart-1436.md. Evidence: Contrast of the dashboard's muted text over Wander and Drift (`bgartcontrast.js` not run).
-- [ ] **L461** `ui-modernisation` open, M: Draw the Atlas feminine right arm in front of the hair. From agent-remaining/libtl-0926.md. Evidence: Atlas: the feminine right arm (held out, sowing seeds) sits behind the
 - [ ] **L462** `ui-modernisation` open, L: Fade rows added or removed after first render (needs keyed rendering). From OPEN.md:1941; OPEN.md:3467. Evidence: Needs keyed rendering first; lists redraw whole
 - [ ] **L464** `ui-modernisation` partly, M: uipolish leftovers: rows-view 28px meta button, tool-confirm pair, lower BOOT_CSS_CAP. From OPEN.md:1806; OPEN.md:2609. Evidence: BOOT_CSS_CAP lowered 2026-10-11 (test_boot_budget.py:68-79); tool-confirm (02-chat-graph.css:601) and meta button remain
 - [ ] **L465** `ui-modernisation` partly, M: Add a lint measuring every rail and top-bar control has a data-help-for popover and palette row. From OPEN.md:1813. Evidence: app-features.js:563-567 added top-bar palette rows (ledger 1410); the 0-missing coverage lint/measure not found

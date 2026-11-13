@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Atlas at full size draws the feminine look's hair behind her arms, so the arm held out is no longer covered by her locks (L461).
+
 - Icon toggles on maps, Ask's time travel and the OCR fit button now change their glyph as well as their fill (L457). The dashboard overflow sweep found nothing to fix (L458).
 
 - Brief 56 measures recorded at 1024 and 820 dark: no visible unlabelled controls, no contrast failures (L455).

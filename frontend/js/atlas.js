@@ -3476,8 +3476,13 @@ function atlasDraw(size = 20, mood = atlasMoodNow, level = atlasLevelFor(size)) 
   const rig = atlasGroup(moodLoop, "atl-rig", anchor);
   if (spec.body) {
     ATLAS_GEO.rings.forEach((ring, k) => atlasRing(rig, id, ring, k, false));
-    atlasBody(rig, id, figure, look);
   }
+  //: **The mane under the body** (L461): drawn with the head, after the
+  //: body, its locks covered her right arm held out at the full size. It
+  //: takes the layered figure's order, its own `atl-head` and `atl-sway`
+  //: chain under the body, so every rule that turns the head turns it too.
+  const hairAt = spec.body && !figure ? atlasGroup(atlasGroup(rig, "atl-head", ATLAS_GEO.neck), "atl-sway", ATLAS_GEO.neck) : null;
+  if (spec.body) atlasBody(rig, id, figure, look);
   //: The companion turns the head where it sits on the body
   //: (`.nm-buddy-head`) and looks for its face (`.name-mark`, with
   //: `.nm-eyes` and `.nm-blinks` in it).
@@ -3486,7 +3491,7 @@ function atlasDraw(size = 20, mood = atlasMoodNow, level = atlasLevelFor(size)) 
     host = atlasGroup(rig, "nm-buddy-head", ATLAS_GEO.neck);
     host = atlasGroup(host, "name-mark atl-face");
   }
-  atlasHead(host, id, level, look);
+  atlasHead(host, id, level, look, hairAt);
   if (spec.body) {
     ATLAS_GEO.rings.forEach((ring, k) => atlasRing(rig, id, ring, k, true));
     atlasBand(rig, id, "front", look);
