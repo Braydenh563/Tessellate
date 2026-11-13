@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 89 | 37 | 2 | 59 | 302 |
+| chat | 176 | 89 | 36 | 2 | 59 | 301 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 540 | 127 | 3 | 186 | 1220 |
+| all | 553 | 540 | 126 | 3 | 186 | 1219 |
 
 ## graph
 
@@ -100,7 +100,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L196** `chat` partly, S: Stop saved-chat list refetch per checkpoint (E58). From OPEN.md:4504. Evidence: List does not flash (showSkeletons, notes-list.js:2991); refetch per checkpoint stays (sheets-selects.js:1833)
 - [ ] **L198** `chat` partly, S: Improve Guide topic ranking when searching (top-3 38/60 gap). From OPEN.md:1512. Evidence: ai/help_chat.py:115,334,449 ranking by question-word overlap exists; top-3 38/60 gap not re-measured
 - [ ] **L199** `chat` partly, S: Make the status.js suggest code call meaningAlts (Brief 86). From OPEN.md:1509. Evidence: meaningAlts used by settings-find.js:117,135; status.js suggest code call not found
-- [ ] **L201** `chat` partly, S: Rows 839 and 841 never checked (no text located for either). From ledger-1112 P11.
 - [ ] **L210** `chat` partly, M: Fix the 'who is Priya' overview shape (R3-20). From OPEN.md:4152. Evidence: Owned by 1743 (overview answer shape); not closed.
 - [ ] **L211** `chat` partly, M: Lead with the defining note when the title only contains the subject (D1). From OPEN.md:4168. Evidence: Owned by 1743 (overview answer shape); not closed.
 - [ ] **L212** `chat` partly, M: Keep the subject in follow-ons in Ask and Chat (C12). From OPEN.md:4514. Evidence: CHANGELOG.md:229 (W9 B21, B29) fixed 'tell me more about it' for composer; Ask client sends no objects, still open
