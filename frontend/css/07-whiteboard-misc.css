@@ -3333,6 +3333,12 @@ dialog::backdrop {
 .ask-idle.hidden {
   display: none;
 }
+/* One empty state with no model (L-chat-15): the no-model notice and its
+   "Try asking" chips already say what Ask does, so the idle card steps aside
+   while the notice shows and returns when it is dismissed. */
+#ask-offline:not(.hidden) ~ .ask-idle {
+  display: none;
+}
 .ask-query-row {
   --control-h: var(--control-h-body);
 }
