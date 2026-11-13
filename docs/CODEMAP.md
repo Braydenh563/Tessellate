@@ -7849,11 +7849,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `spaceEnterFor` | frontend/js/space-swap.js:254 |
+| `spaceEnterFor` | frontend/js/space-swap.js:255 |
 | `spaceLeave` | frontend/js/space-swap.js:155 |
-| `spaceReload` | frontend/js/space-swap.js:172 |
-| `spaceSwapNow` | frontend/js/space-swap.js:215 |
-| `swapSpace` | frontend/js/space-swap.js:196 |
+| `spaceReload` | frontend/js/space-swap.js:173 |
+| `spaceSwapNow` | frontend/js/space-swap.js:216 |
+| `swapSpace` | frontend/js/space-swap.js:197 |
 
 ### frontend/js/spell-second.js (16)
 

@@ -3,7 +3,7 @@
    takes the editor's place in `#doc-panes` (the editor stays mounted underneath: the grid writes to its text). */
 
 #doc-panes.csv-grid-on > .doc-source-wrap,
-#doc-panes.csv-grid-on > .doc-preview-wrap {
+#doc-panes.csv-grid-on > #doc-preview {
   display: none;
 }
 
