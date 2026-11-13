@@ -99,3 +99,9 @@ def test_a_new_row_never_reuses_an_id_already_moved_to_history(tmp_path, monkeyp
     monkeypatch.setattr(cli, "HISTORY", history)
     args = argparse.Namespace(plan="timeline", status="open", size="S", src="a test", evidence=None, title="New row")
     assert cli.add(args) == "L-timeline-5"
+
+
+def test_the_counts_table_has_one_row_per_plan():
+    """A union merge once left 38 `| all |` rows, which flooded orient.sh past its 40 lines."""
+    names = [m.group(1) for m in ledger.COUNT.finditer(TEXT)]
+    assert len(names) == len(set(names)), sorted({n for n in names if names.count(n) > 1})
