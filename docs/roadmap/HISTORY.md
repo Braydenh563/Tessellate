@@ -7,6 +7,22 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Radix, shadcn and APG comparison (Brief 92 (b), L467 and L440)
+
+Each element against the WAI-ARIA APG pattern and the Radix and shadcn
+primitives (keyboard, focus, ARIA, states), driven 2026-11-13 at 1280 dark;
+each gap was fixed with a test in `tests/test_apg_comparison_p12.py`.
+
+- Menu (`kebabMenu`, menus.js): named, arrows open a closed menu button (Up on the last row), Tab closes, letters find a row (typeahead). Gaps fixed in efc1d2c8b.
+- Select (`.select-shell`, sheets-selects.js): the listbox is named like its button, arrows open it closed. Gaps fixed in efc1d2c8b.
+- Dialog (`confirmDialog`, `promptDialog`, app.js): labelled and described; opens inside an open modal dialog (L453). Gaps fixed in fc806ad6d.
+- Switch: every switch-styled checkbox takes `role="switch"` (one selector list, CSS and JS). Fixed in fc806ad6d.
+- Slider (value-field.js): `aria-valuetext` says the unit. Fixed in fc806ad6d.
+- Tabs (`#tab-bar`, `#notes-subtabs`): named tablists, one `aria-selected`, `aria-controls` on every tab, roving tabindex (one tab at 0), arrows move and select (automatic activation, as Radix's default). No gap.
+- Popover (`data-help-for`): `aria-expanded` true while open, a `role="dialog"` panel, Escape closes and the focus returns to the button. No gap.
+- Tooltip: the app's tooltips are `title` text (1,137 on the page) plus one `role="tooltip"`; a longer help is a popover, as DESIGN says. No gap.
+- Toast (status.js): `#toast-box` is a polite region and a toast never takes the focus; an error toast was polite too, where Radix's foreground toast and the app's other failures (load-failed.js) are alerts. Fixed 2026-11-13: an error toast takes `role="alert"` (L440).
+
 ## Moved from the plans, 2026-11-12 (UI plan 13b, the stylesheet's structure)
 
 - **Built, 13b decision 18 (L463, 3144ca0f):** 08-consistency.css dissolved: its rules went beside their components in 00 to 07, and its 758 character rules (faces, companion, Atlas) to the lazy characters-lazy.css. The rule multiset is unchanged and no conflicting pair changed order (a cascade check over every rule); `getComputedStyle` of every element on Notes, Library, Chat, Settings and Dashboard at 1440 and 390, light and dark: 0 diffs past the relative-time text. Boot CSS gzip 178,870 to 165,450.
@@ -55324,6 +55340,8 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 - **Hub crossings (W34, INBOX 1306).** A hub's neighbours are dealt into their spots in the order their other lines lead, every turn and both directions, then 2-opt runs of the fan (`untangleOrderSteps`, graph-worker.js); the least crossed layout of the passes and relaxes is the one cleaned (`untangleKeepBest`/`untangleTakeBest`: a relax gave back 38 of a pass's 43). Ten 36-note two-hub seeds each shape: hub crossings 90 to 44 and 256 to 150, total 133 to 75 and 359 to 202, 0 overlaps (`tests/test_graph_hub_crossings.py`, counter clock `clockStep` in the harness).
 
 ## Moved from the LEDGER
+- [x] **L440** `ui-modernisation` open, M: Record Radix/shadcn/APG element comparison (Brief 92b). From SESSION_BRIEFS.md:291. Evidence: No Radix block in HISTORY; E19 W20 Built: Recorded in HISTORY 'Radix, shadcn and APG comparison': menu, select, dialog, switch, slider (fixed earlier), tabs, popover, tooltip (no gap, driven at 1280 dark), toast (error toasts now role=alert); tests/test_apg_comparison_p12.py::test_an_error_toast_is_an_alert
+- [x] **L436** `ui-modernisation` open, S: Ring sweep flags fixed-sheet control at viewport edge as scroll clip. From OPEN.md:740. Evidence: Sweep-lint false positive for phone Writing room textarea; no exemption found Built: clip685.js at 390 dark with touch, 2026-11-13, 56 surfaces: no ring finding on a body-level fixed sheet or at the viewport edge (the Writing room draft is in the page now, L404); the only ring groups are .swatch-picker and .tab-main
 - [x] **L445** `ui-modernisation` open, M: Fix entry-meta.note-meta and entry-list li overflow at 320/390. From OPEN.md:3698. Evidence: 08-consistency.css:2724 .entry-meta.note-meta; no fix commit found Built: Same lines as L430, each of 18 cards scrolled into view (drawn, so fitted): 320 and 390 dark, 0 li overflow, 0 meta children past the line, page 320/390 wide (probe l445.js)
 - [x] **L441** `ui-modernisation` open, M: Unify #attach-image 999px radius with #attach-note at 390 px. From OPEN.md:803; OPEN.md:2236. Evidence: 07-whiteboard-misc.css:3634 comment on spread; 04-chat-dock-appearance.css:2852 only has-attachments; radius equality unverified Built: At 390 the phone shell moves the note picker into the dock's attach group: #attach-note was 4.8px beside #attach-image's 999px pill; the dock pill rule now reaches .note-picker>button, both 999px 44x44 at 390, both radius-md at 1280 (in the composer). tests/test_attach_pair_one_shape_l441.py
 - [x] **L431** `ui-modernisation` open, S: Measure findings 5-12 in dark, 390 on a real device and the one-column gap at 900. From a30k-1103.md Left. Evidence: Source says unmeasured; no later sweep record found Built: Measured 2026-11-13, dark, emulated: at 390 chat sidebar search transparent edge on field-inset, dock search 44px, Library section inset 9/9 with no overflow, Settings profile button at x614 on every section (peek beside the title), reminder due row Quick set and both steppers 44px with the field's 4.8px corner like the text field, row 335 of 335px; dashboard: no filled button besides the quick links, tinted card edge the rest colour; at 900 Settings rail head unclipped (72/72, 110/110) and the dashboard is 2 columns with 16px gaps. Real-device half: L-ui-modernisation-34

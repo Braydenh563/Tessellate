@@ -76,3 +76,12 @@ def test_a_slider_with_a_value_field_says_its_unit():
     field = _js("value-field.js")
     assert 'slider.setAttribute("aria-valuetext"' in field
     assert "valueTextOwn" in field, "a surface's own words are kept"
+
+
+def test_an_error_toast_is_an_alert():
+    """Source text: a failure toast takes `role="alert"` (Radix's foreground
+    toast, the app's own load-failed.js), a plain one stays in #toast-box's
+    polite region (L440)."""
+    status = _js("status.js")
+    body = status[status.index("function toast(message") :]
+    assert 'if (isError) note.setAttribute("role", "alert");' in body[:3000]

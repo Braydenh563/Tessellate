@@ -1195,6 +1195,9 @@ function toast(message, isError = false, { exempt = false, action = null } = {})
   if (isError && typeof nameMarkBuddyCue === "function") nameMarkBuddyCue("startle", "error");
   const note = document.createElement("div");
   note.className = isError ? "toast error" : "toast";
+  //: A failure is said at once, as the app's other failures are (load-failed.js); the
+  //: nearest live region wins, so it is not said twice by #toast-box (APG record, L440).
+  if (isError) note.setAttribute("role", "alert");
   const text = document.createElement("span");
   text.className = "toast-msg";
   text.textContent = message;

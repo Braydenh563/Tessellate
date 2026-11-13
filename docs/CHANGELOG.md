@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Accessibility: an error toast is an alert, said at once (Radix's foreground toast, the app's other failures); the Radix, shadcn and APG comparison is recorded in HISTORY, element by element (L440). The 390 focus and edge sweep finds no ring cut on a fixed sheet (L436).
 - Chat: at 390 the attach-existing button, moved into the dock beside Attach image, takes the dock's pill shape too (was a 4.8px corner beside a pill, L441); boot CSS kept under its cap by merging a duplicate hover selector. Measured and closed: no title-only or nameless icon button on any tab (L427), no pill cut at DPR 1.25 (L428), the note meta line at 320 and 390 (L430, L445), unslop findings 5 to 12 at 390 and 900 (L431).
 - Touch: the notes list's card menu at 599px and below is 32px tall with a 44px press area, and the document's Edit and Read pair is 44px wide under a finger; the dock stays one row at 360 and 390 (L425). The Timeline and Ask date pickers measured at 390: 352 by 500, days 44 by 44.
 - Reminders: the Overdue menu's four bulk choices load with the edit form (reminder-edit.js), not at boot, which brings the boot scripts back under their gzip ratchet after the merge (250,489 to under 250,450); measured: Mark all done ticks both and offers Undo.

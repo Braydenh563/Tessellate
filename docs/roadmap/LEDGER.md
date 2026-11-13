@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 39 | 4 | 0 | 19 | 139 |
+| ui-modernisation | 96 | 38 | 4 | 0 | 19 | 138 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 552 | 154 | 3 | 184 | 1259 |
+| all | 553 | 551 | 154 | 3 | 184 | 1258 |
 
 ## graph
 - [ ] **L-graph-19** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -450,10 +450,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## ui-modernisation
 
-- [ ] **L436** `ui-modernisation` open, S: Ring sweep flags fixed-sheet control at viewport edge as scroll clip. From OPEN.md:740. Evidence: Sweep-lint false positive for phone Writing room textarea; no exemption found
 - [ ] **L437** `ui-modernisation` open, S: Ring sweep skips end-of-scroller controls; fixed-height text cut unseen. From OPEN.md:1946; OPEN.md:3505. Evidence: Sweep limitation, no change recorded
 - [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
-- [ ] **L440** `ui-modernisation` open, M: Record Radix/shadcn/APG element comparison (Brief 92b). From SESSION_BRIEFS.md:291. Evidence: No Radix block in HISTORY; E19 W20
 - [ ] **L444** `ui-modernisation` open, M: Align opened row first line with the chevron (2.6px offset, use 1lh line box). From OPEN.md:1951; OPEN.md:3546. Evidence: 2.6px offset, no fix recorded
 - [ ] **L446** `ui-modernisation` open, M: Drive the phone More-sheet paths (agent, Guide, timeline, reminders) at 390. From OPEN.md:746; OPEN.md:3573. Evidence: Touch phone walkthrough; headless drive left toggleAgentPalette hidden at 390
 - [ ] **L448** `ui-modernisation` open, M: Rework Band 3 (600-820) header, two rows and 128px at 819. From OPEN.md:1451. Evidence: No change to the band design found in CHANGELOG/HISTORY; design call recorded in row
@@ -493,6 +491,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-29** `ui-modernisation` open, M: Move 10-responsive.css's last 31 component rules beside their components (UI plan 13b residue). From UI_MODERNISATION_PLAN.md:1089. Evidence: 10-responsive.css (797 lines) keeps 48 shell rules (242 lines) and 31 component rules (149 lines, listed by its header): each comes after .sheet-list > *, a tab-strip rule or a rule of its own block and sets the same property, so moving it flips a conflicting pair; boot CSS gzip margin under BOOT_CSS_CAP is 46 bytes
 - [ ] **L-ui-modernisation-30** `ui-modernisation` open, M: Remove the 236 unused CSS selectors after a runtime coverage sweep (UI plan 13b). From UI_MODERNISATION_PLAN.md:1089. Evidence: 13b static check: 256 class and id names in the CSS have no word match in JS, HTML or Python; concatenation pieces explain 235; the 21 left are built by template (nm-${mood}, wb-nav-item-${kind}), nested side variants (nm-foot-l/r) or sit inside :not() where removal changes specificity. None removable without a runtime coverage sweep (scratchpad/ui-sweeps/bootcsscov.js) over every surface and state
 - [ ] **L-ui-modernisation-31** `ui-modernisation` open, M: Move the remaining Library-only boot CSS rules to library-lazy.css (L459 remainder). From LEDGER L459. Evidence: 13b moved 110 Library-only boot rules to library-lazy.css (d961c27a); about 264 more name only Library surfaces but conflict with a universal-child rule or a later override in the boot files, or carry a ratcheted literal, so moving them flips the cascade or grows a ratchet
+- [ ] **L-ui-modernisation-35** `ui-modernisation` open, S: Fix or exempt the clip685 findings at 390 dark. From clip685.js 390 dark 2026-11-13. Evidence: ring 2 (.swatch-picker on notes, .tab-main left/right on chat and the Pace pill), border 8 (library tab-page and body left, settings modal-body bottom, notes and library subtab strips left), text 4 (sheet and dialog head titles top, a .ph-text on library and settings)
 
 ## timeline
 
