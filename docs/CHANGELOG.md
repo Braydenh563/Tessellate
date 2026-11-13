@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Social turns read right: "that worked" and "it works" are gladness, "wrong again" and "still wrong" frustration, "you are brilliant" praise, and "briefly" alone asks for a shorter answer (chat row L-chat-22).
+- Composer evals L-chat-22: the recall (30), social (80), out-of-domain (30) and Guide how-to (40) sets, with floor tests; recall and social meet their floors, out-of-domain and Guide are ratchets on rows L-chat-40 and L-chat-41.
 - Chat row L-chat-22: `windows_1010.json`, 60 time phrases (with "since March", "the week before last", "on 3 March" read as past and "last friday" as the past Friday) read against their own clocks, exact 60 of 60; floor in `tests/test_composer_eval_1113.py`.
 - Chat row L-chat-22 (windows): "the weekend before last" is read as the Saturday and Sunday two weekends back (`recognise_windows._BEFORE_LAST`), found by the new `windows_1010.json` set.
 - Chat row L101: the model's prompt now says why each note was shown and which other shown notes it links to, by number and with the person's reason ("(why shown: Has the word “skye”) (linked to note 3: same trip)"), the frame the composer already said (`librarian._shown_hint`).

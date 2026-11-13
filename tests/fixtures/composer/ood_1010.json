@@ -1,0 +1,188 @@
+{
+ "about": "Questions the notebook cannot answer and the app cannot do (CHAT_PLAN section 4, U18, A25): the answer must be the plain no-answer, with a line on what the app can do, and a note it shows must be called the closest. The notebook has decoy notes sharing a word with some questions.",
+ "today": "2026-10-06",
+ "notes": [
+  {
+   "id": 1,
+   "content": "# Football\n\nFive a side with Sam on Saturday, we lost 4 to 2.",
+   "created_at": "2026-10-03"
+  },
+  {
+   "id": 2,
+   "content": "# Paris trip\n\nHotel booked in Paris for May, near the river.",
+   "created_at": "2026-09-12"
+  },
+  {
+   "id": 3,
+   "content": "# Pizza night\n\nPizza dough needs a day to rest.",
+   "created_at": "2026-09-28"
+  },
+  {
+   "id": 4,
+   "content": "# Weather station\n\nFit the rain gauge to the shed wall.",
+   "created_at": "2026-09-20"
+  },
+  {
+   "id": 5,
+   "content": "# Mum\n\nCall mum on Sunday about the party.",
+   "created_at": "2026-10-04"
+  },
+  {
+   "id": 6,
+   "content": "# Reading\n\nFinished the play, it was Hamlet at the old theatre.",
+   "created_at": "2026-08-30"
+  }
+ ],
+ "rows": [
+  {
+   "id": "ood-01",
+   "group": "weather",
+   "question": "what's the weather today"
+  },
+  {
+   "id": "ood-02",
+   "group": "weather",
+   "question": "will it rain tomorrow"
+  },
+  {
+   "id": "ood-03",
+   "group": "weather",
+   "question": "what's the weather in Paris"
+  },
+  {
+   "id": "ood-04",
+   "group": "weather",
+   "question": "is it going to snow this weekend"
+  },
+  {
+   "id": "ood-05",
+   "group": "weather",
+   "question": "how hot is it outside"
+  },
+  {
+   "id": "ood-06",
+   "group": "weather",
+   "question": "what's the temperature in Perth"
+  },
+  {
+   "id": "ood-07",
+   "group": "weather",
+   "question": "weather forecast for Friday"
+  },
+  {
+   "id": "ood-08",
+   "group": "weather",
+   "question": "do I need an umbrella"
+  },
+  {
+   "id": "ood-09",
+   "group": "scores",
+   "question": "who won the football last night"
+  },
+  {
+   "id": "ood-10",
+   "group": "scores",
+   "question": "what's the score of the Lakers game"
+  },
+  {
+   "id": "ood-11",
+   "group": "scores",
+   "question": "who won the world cup in 2018"
+  },
+  {
+   "id": "ood-12",
+   "group": "scores",
+   "question": "what were the cricket results"
+  },
+  {
+   "id": "ood-13",
+   "group": "scores",
+   "question": "when do Arsenal play next"
+  },
+  {
+   "id": "ood-14",
+   "group": "scores",
+   "question": "who is top of the league"
+  },
+  {
+   "id": "ood-15",
+   "group": "trivia",
+   "question": "what is the capital of France"
+  },
+  {
+   "id": "ood-16",
+   "group": "trivia",
+   "question": "who wrote Hamlet"
+  },
+  {
+   "id": "ood-17",
+   "group": "trivia",
+   "question": "how tall is Mount Everest"
+  },
+  {
+   "id": "ood-18",
+   "group": "trivia",
+   "question": "when did the Berlin wall fall"
+  },
+  {
+   "id": "ood-19",
+   "group": "trivia",
+   "question": "what is the population of Japan"
+  },
+  {
+   "id": "ood-20",
+   "group": "trivia",
+   "question": "who painted the Mona Lisa"
+  },
+  {
+   "id": "ood-21",
+   "group": "trivia",
+   "question": "how many planets are there"
+  },
+  {
+   "id": "ood-22",
+   "group": "trivia",
+   "question": "what year did the Titanic sink"
+  },
+  {
+   "id": "ood-23",
+   "group": "cannot",
+   "question": "book me a flight to Rome"
+  },
+  {
+   "id": "ood-24",
+   "group": "cannot",
+   "question": "order me a pizza"
+  },
+  {
+   "id": "ood-25",
+   "group": "cannot",
+   "question": "call my mum"
+  },
+  {
+   "id": "ood-26",
+   "group": "cannot",
+   "question": "play some jazz"
+  },
+  {
+   "id": "ood-27",
+   "group": "cannot",
+   "question": "send an email to Sam"
+  },
+  {
+   "id": "ood-28",
+   "group": "cannot",
+   "question": "turn off the lights"
+  },
+  {
+   "id": "ood-29",
+   "group": "cannot",
+   "question": "buy a ticket to the concert"
+  },
+  {
+   "id": "ood-30",
+   "group": "cannot",
+   "question": "post this on twitter"
+  }
+ ]
+}
