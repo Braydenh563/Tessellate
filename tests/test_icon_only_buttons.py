@@ -38,7 +38,7 @@ ALLOWED = {
     # (`renderTimelineDayStrip`), so the markup's empty span is not an
     # icon-only button: it reads "October 2026" plus a caret.
     "timeline-daystrip-label",
-    # Sized 2rem square by `.graph-help-toggle` itself (03-dashboard-widgets.css),
+    # Sized square by `button.graph-help-toggle` (07-whiteboard-misc.css),
     # which also rounds it to a circle. Adding `icon-only` would put this in a
     # cascade fight with that rule for no gain.
     "graph-help-toggle",

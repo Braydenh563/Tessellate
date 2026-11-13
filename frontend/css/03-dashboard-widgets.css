@@ -3947,24 +3947,8 @@ button.answer-figure-open {
    regardless of how many controls sit before it at a given width. */
 .graph-help-toggle {
   margin-left: auto;
-  /* A literal, not var(--control-h): that token is only declared inside a
-     handful of scopes (.graph-toolbar among them), so on the Skills/
-     Whiteboards/Image Gallery copies of this button, which sit in a plain
-     card header with no such scope, var(--control-h) resolved to nothing
-     and the property fell back to its initial value: `auto` for both width
-     and height, sized off `button.small`'s asymmetric padding instead
-     (0.25rem block / 0.8rem inline), an oval, reported live and
-     photographed. This wasn't `padding: 0` failing to override that
-     asymmetry (it can't: button.small is a tag+class selector, higher
-     specificity than this single class); it was width/height never
-     actually being fixed at all outside .graph-toolbar. A var() fallback
-     would dodge that, but the token IS declared elsewhere in the sheet, so
-     the project's own lint (test_style_scale.py) correctly refuses it as
-     dead code hiding a scope bug, this button wants one fixed size
-     everywhere it appears, not the locally-scoped control height, so a
-     literal is the honest fix, not a workaround. */
-  width: 2rem;
-  height: 2rem;
+  /* Its one size everywhere is `button.graph-help-toggle` in
+     07-whiteboard-misc.css, which outscores `button.small`'s padding. */
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -3991,7 +3975,7 @@ button.answer-figure-open {
 .setting-hint-toggle,
 #wb-help-btn {
   width: 2rem;
-  height: 2rem;
+  height: var(--control-h-lg);
   padding: 0;
   display: inline-flex;
   align-items: center;

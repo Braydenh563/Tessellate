@@ -792,10 +792,14 @@ def test_the_nested_surfaces_are_concentric():
 #: 2026-11-12: 10's component rules moved beside their components (UI plan
 #: 13b, decision 19); its six moved with them, none added: 07 64 to 68, 09 6
 #: to 8, 10 6 to 0 (296 in all before and after).
+#: 2026-11-13: bar controls whose literal equalled a token read it
+#: (L-ui-modernisation-3: the board menus, the floating panel's select, the
+#: help toggles, the lightbox arrows), and the ceilings drop to what is
+#: served, which had slack in eight sheets: 296 to 264.
 LITERAL_HEIGHTS = {
-    "01-forms-settings.css": 26, "02-chat-graph.css": 36, "03-dashboard-widgets.css": 20,
-    "04-chat-dock-appearance.css": 25, "05-sidebars-themes.css": 34, "06-timeline-dialogs.css": 24,
-    "07-whiteboard-misc.css": 68, "09-editor.css": 8,
+    "01-forms-settings.css": 25, "02-chat-graph.css": 34, "03-dashboard-widgets.css": 18,
+    "04-chat-dock-appearance.css": 23, "05-sidebars-themes.css": 32, "06-timeline-dialogs.css": 23,
+    "07-whiteboard-misc.css": 62, "09-editor.css": 7,
     "library-lazy.css": 22, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
     "inbox-lazy.css": 1, "chord-guide-lazy.css": 3, "characters-lazy.css": 12,
 }

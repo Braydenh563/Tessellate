@@ -3003,7 +3003,7 @@
 .whiteboard-floating-panel button,
 .whiteboard-floating-panel select,
 .whiteboard-floating-panel .wb-snap-label {
-  height: 2.25rem;
+  height: var(--control-h-body);
   /* The base `select` rule (01-forms-settings.css) carries a stacked-form
      margin-bottom meant for a column of fields, not a toolbar row, left in
      place here it pulled #wb-board-select a few pixels above its own

@@ -3579,7 +3579,7 @@ mark.lightbox-hit {
   top: 50%;
   transform: translateY(-50%);
   width: 2.5rem;
-  height: 2.5rem;
+  height: var(--control-h-touch);
   /* Reported live: the arrow glyphs sat visibly right of centre. The global
      `button` rule's `padding: 0.5rem 1rem` was never reset here (unlike
      `.lightbox-close`, which is why *that* circle centres correctly at the

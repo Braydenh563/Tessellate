@@ -1592,6 +1592,12 @@ Not every toolbar has been through this yet, treat a row that hasn't as a
 gap, not as a deliberate exception, and give it its own `--control-h` before
 adding a control to it:
 
+- The board menus (`.wb-topbar #wb-board-select`, `.wb-board-menu` select,
+  button and rows), the floating panel's select, the help toggles and the
+  lightbox arrows read `--control-h-lg`, `--control-h-body` or
+  `--control-h-touch` (L-ui-modernisation-3, value for value). Left, with
+  their row: the map strip and the table menu's 1.75rem (the dense token
+  grows to 40 under a finger), and the drawing bar's 36px.
 - `.chat-dock-controls` (`04-chat-dock-appearance.css`), the original.
 - `.graph-toolbar` (`03-dashboard-widgets.css`), shared by the Graph and
   Timeline tabs' primary rows. Added after measuring a real ~15px gap

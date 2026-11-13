@@ -3800,8 +3800,8 @@ button.setting-hint-toggle {
    pushed the glyph off centre inside the fixed box. */
 button.graph-help-toggle,
 button.setting-hint-toggle {
-  width: 2rem;
-  height: 2rem;
+  width: var(--control-h-lg);
+  height: var(--control-h-lg);
 }
 
 #settings-modal .setting-check .setting-hint-toggle {
@@ -8037,7 +8037,7 @@ button.connection-row:is(:hover, :focus-visible) {
 .wb-topbar #wb-board-select {
   max-width: 14rem;
   min-width: 6rem;
-  height: 2rem;
+  height: var(--control-h-lg);
 }
 .wb-topbar .wb-panel-primary.is-on {
   background: var(--accent-soft);
@@ -8111,10 +8111,10 @@ button.connection-row:is(:hover, :focus-visible) {
 }
 .wb-board-menu select {
   flex: 1 1 8rem;
-  height: 2rem;
+  height: var(--control-h-lg);
 }
 .wb-board-menu button {
-  height: 2rem;
+  height: var(--control-h-lg);
 }
 /* The tool dock: centred on the bottom edge, one row of icons with a thin
    rule between groups: the shape every app the user named uses. The
@@ -8254,7 +8254,7 @@ button.connection-row:is(:hover, :focus-visible) {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-3);
-  min-height: 2rem;
+  min-height: var(--control-h-lg);
   font-size: var(--text-sm);
   color: var(--ink);
   cursor: default;
@@ -8460,7 +8460,7 @@ button.connection-row:is(:hover, :focus-visible) {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   width: 100%;
-  height: 2rem;
+  height: var(--control-h-lg);
   padding: 0 var(--space-2);
   border: none;
   border-radius: var(--radius-sm);
