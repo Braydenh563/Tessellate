@@ -1695,6 +1695,10 @@ body.printing-doc #doc-preview p,
 .wb-map-theme-row > select {
   width: min(11rem, 45vw);
 }
+.wb-map-theme-looks {
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
 .wb-map-theme-check > span {
   font-size: var(--text-sm);
 }
@@ -2708,7 +2712,8 @@ body.printing-doc #doc-preview p,
 }
 .wb-map-node:hover .wb-map-actions,
 .wb-map-node.wb-selected .wb-map-actions,
-.wb-map-node:is(:focus-visible, :has(:focus-visible)) .wb-map-actions {
+.wb-map-actions:focus-within,
+.wb-map-node:focus-visible .wb-map-actions {
   visibility: visible;
 }
 .wb-map-node.wb-radial-open .wb-map-actions {
@@ -2763,6 +2768,25 @@ body.printing-doc #doc-preview p,
    topic they hang from. `wbPublishInvZoom` sets the attribute. */
 #whiteboard-container[data-wb-zoom-far] .wb-map-ref {
   display: none;
+}
+/* The one + left at far zoom is 20px and hangs flush on the topic's edge: a
+   level is 76 units apart, 19px at 25%, so the 24px button 8px off the box
+   covered the parent by 9px (L360, mapactions.js). */
+#whiteboard-container[data-wb-zoom-far] .wb-map-actions {
+  transform: scale(calc(20 / 28 * var(--wb-inv-zoom)));
+  right: calc(100% + 2px * var(--wb-inv-zoom));
+}
+#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions {
+  transform-origin: 50% 0;
+  right: auto;
+  left: 50%;
+  top: calc(100% + 2px * var(--wb-inv-zoom));
+  translate: -50% 0;
+}
+@media (pointer: coarse) {
+  #whiteboard-container[data-wb-zoom-far] .wb-map-actions {
+    transform: scale(calc(20 / 44 * var(--wb-inv-zoom)));
+  }
 }
 /* **The controls follow the zoom, within bounds** (INBOX 1450, the owner:
    "buttons get oversized at zoom, they should adjust in size but only so
@@ -7092,6 +7116,66 @@ input[type="color"].wb-mixed {
   display: none;
 }
 
+/* The affinity sort's dialog (whiteboard-map-more.js `wbAffinityDialog`): one
+   section per proposed frame, a tick, an editable name and its stickies, each
+   with the notes behind it. The list scrolls inside the card so Make frames
+   stays on screen with thirty stickies. */
+.wb-affinity-card {
+  width: min(34rem, 92vw);
+  max-width: none;
+}
+
+.wb-affinity-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 55vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-block: var(--space-3);
+}
+
+.wb-affinity-group {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.wb-affinity-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.wb-affinity-head input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.wb-affinity-count {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.wb-affinity-items {
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+.wb-affinity-items li {
+  display: flex;
+  flex-direction: column;
+  padding-block: var(--space-1);
+}
+
+.wb-affinity-backed {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
 /* The library peek (INBOX 1301 D8): a larger drawing of the tile under the
    pointer, beside the sidebar. The help popover's shell without its caret,
    which points at a trigger above or below; this one sits to the side. It
@@ -7738,7 +7822,7 @@ input[type="color"].wb-mixed {
    and `.is-dragging` holds it open for a drag that has already left the line
    behind. */
 .wb-map-edge-group:hover .wb-map-edge-handle,
-.wb-map-edge-group:is(:focus-visible, :has(:focus-visible)) .wb-map-edge-handle,
+.wb-map-edge-group:focus-visible .wb-map-edge-handle,
 .wb-map-edge-handle.is-shown,
 .wb-map-edge-handle.is-dragging {
   opacity: 1;
@@ -7766,7 +7850,7 @@ input[type="color"].wb-mixed {
 }
 
 .wb-map-edge-group:hover .wb-map-edge-end,
-.wb-map-edge-group:is(:focus-visible, :has(:focus-visible)) .wb-map-edge-end,
+.wb-map-edge-group:focus-visible .wb-map-edge-end,
 .wb-map-edge-group.is-shown .wb-map-edge-end,
 .wb-map-edge-end.is-dragging {
   opacity: 1;
@@ -8154,6 +8238,22 @@ input[type="color"].wb-mixed {
   text-align: center;
   font-variant-numeric: tabular-nums;
   pointer-events: none;
+}
+/* Reaction stamps on a note, card or frame (MINDMAP_PLAN 14.4): the topic's
+   chips, in a row under the item's bottom edge. The accent stands in for the
+   branch colour a topic supplies. */
+.wb-stamps {
+  --wb-branch: var(--accent);
+  --wb-branch-edge: var(--accent);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  font-size: var(--text-base);
 }
 .wb-timer-bar {
   left: 50%;
@@ -9199,7 +9299,7 @@ input[type="color"].wb-mixed {
    x 9): the strip above the split keeps the same rail clear as the column
    beside it, only while the Skills view is the one showing. */
 @media (min-width: 600px) and (max-width: 819.98px) {
-  #tab-library:has(> #library-view-skills:not(.hidden)) > #library-subtabs {
+  #tab-library > #library-subtabs:has(~ #library-view-skills:not(.hidden)) {
     padding-left: calc(max(var(--sidebar-toggle-size), var(--target-min)) + 2 * var(--sidebar-toggle-inset));
   }
 }
@@ -9233,4 +9333,31 @@ input[type="color"].wb-mixed {
   margin: 0;
   font-size: var(--text-xs);
   overflow-wrap: anywhere;
+}
+
+/* The outline's cells (decision 34): a topic's markers, due day and labels
+   under its words, the canvas's own painting at the row's text size. */
+#wb-outline-tree .wb-outline-cells {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  padding: 0 var(--space-2) var(--space-1);
+  font-size: var(--text-xs);
+}
+
+#wb-outline-tree .wb-outline-cells[hidden] {
+  display: none;
+}
+
+#wb-outline-tree .wb-outline-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.wb-map-filter-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
 }

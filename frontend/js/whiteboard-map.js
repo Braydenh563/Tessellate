@@ -1081,6 +1081,63 @@ function wbMapThemeDialog() {
   body.append(scope, rows);
   show("map");
 
+  //: **Saved looks** (L-mindmap-1): the whole theme under a name, kept in `prefs` like the rest of what the board remembers about looking (a look is a preference, not a map's content, so it needs no migration and follows the device). Applying one is a single theme patch, so it is one Undo step; keys the saved look never set are cleared so the map ends up exactly as saved. The server drops anything it does not know, so a look from a newer build degrades instead of failing.
+  const looksKey = "wb-map-saved-looks";
+  const readLooks = () => prefs.json(looksKey, {});
+  const looks = document.createElement("div");
+  looks.className = "wb-menu-row wb-map-theme-row wb-map-theme-looks";
+  const looksName = document.createElement("span");
+  looksName.textContent = "Saved looks";
+  const looksSelect = document.createElement("select");
+  looksSelect.className = "ghost small";
+  looksSelect.setAttribute("aria-label", "Apply a saved look to this map");
+  const fillLooks = (picked = "") => {
+    const saved = Object.keys(readLooks());
+    looksSelect.replaceChildren(...[["", saved.length ? "Choose one to apply" : "None saved yet"], ...saved.map((n) => [n, n])].map(([value, label]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      return option;
+    }));
+    looksSelect.value = saved.includes(picked) ? picked : "";
+    forgetLook.disabled = !looksSelect.value;
+  };
+  const saveLook = smallButton("ph:floppy-disk Save this look", "Keep this map's look under a name, to apply to another map", async () => {
+    const name = String((await promptDialog("What should this look be called?", "", { confirmLabel: "Save the look" })) ?? "").trim().slice(0, 40);
+    if (!name) return;
+    const saved = readLooks();
+    if (!(name in saved) && Object.keys(saved).length >= 20) {
+      toast("Twenty saved looks is the most: forget one first.", "info");
+      return;
+    }
+    saved[name] = JSON.parse(JSON.stringify(wbMapTheme()));
+    if (!prefs.setJSON(looksKey, saved)) { toast("This browser would not keep the look.", "info"); return; }
+    fillLooks(name);
+    toast(`Saved the look "${name}".`);
+  });
+  const forgetLook = smallButton("ph:trash Forget", "Remove the chosen saved look (maps that use it keep their look)", () => {
+    const saved = readLooks();
+    const name = looksSelect.value;
+    if (!(name in saved)) return;
+    delete saved[name];
+    prefs.setJSON(looksKey, saved);
+    fillLooks();
+  });
+  looksSelect.addEventListener("change", async () => {
+    forgetLook.disabled = !looksSelect.value;
+    const look = readLooks()[looksSelect.value];
+    if (!look) return;
+    const patch = Object.fromEntries(Object.keys(wbMapTheme()).map((key) => [key, null]));
+    if (await wbMapSetTheme({ ...patch, ...look })) {
+      scopeSelect.value = "map";
+      show("map");
+      toast(`Applied the look "${looksSelect.value}".`);
+    }
+  });
+  fillLooks();
+  looks.append(looksName, looksSelect, saveLook, forgetLook);
+  body.insertBefore(looks, body.children[1]);
+
   const foot = document.createElement("div");
   foot.className = "row wb-map-theme-foot";
   const reset = smallButton(
@@ -1140,7 +1197,7 @@ function wbMapThemeLevelRows(level) {
     const said = preset[field.key];
     const shown = said === undefined ? "the app's own"
       : field.bool ? (said ? "on" : "off")
-        : field.number ? `${said}px`
+        : field.number ? wbMapSizeStepper.say(said)
           : (options.find(([v]) => v === String(said))?.[1] || String(said)).toLowerCase();
     const row = document.createElement("div");
     row.className = "wb-menu-row wb-map-theme-row";
@@ -1474,6 +1531,7 @@ function wbMapIndex() {
   // array's, so two renders of an unchanged map are identical.
   for (const list of childrenOf.values()) list.sort(wbMapBySiblingOrder);
   roots.sort(wbMapBySiblingOrder);
+  for (const obj of nodes) obj._leaf = !childrenOf.has(obj.id);
   const index = { nodes, byId, childrenOf, roots };
   wbMapMarkBranchLayouts(index);
   return index;
@@ -1747,33 +1805,65 @@ function wbMapLabel(obj) {
 //:
 //: Each alternative is anchored and bounded by a negated class, so there is no
 //: nested quantifier for CodeQL's polynomial-ReDoS shape to find.
-const WB_MAP_INLINE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`)/;
+//: A fourth alternative reads `[text](address)` (L375). Same shape as the others (a negated class on each side, no nested quantifier).
+const WB_MAP_INLINE = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\s]+\))/;
 
 function wbMapInlineText(el, raw) {
   if (!el) return;
   el.replaceChildren();
-  for (const piece of String(raw || "").split(WB_MAP_INLINE)) {
-    if (!piece) continue;
-    let tag = null;
-    let inner = piece;
-    if (piece.length > 4 && piece.startsWith("**") && piece.endsWith("**")) {
-      tag = "strong";
-      inner = piece.slice(2, -2);
-    } else if (piece.length > 2 && piece.startsWith("*") && piece.endsWith("*")) {
-      tag = "em";
-      inner = piece.slice(1, -1);
-    } else if (piece.length > 2 && piece.startsWith("`") && piece.endsWith("`")) {
-      tag = "code";
-      inner = piece.slice(1, -1);
+  //: **`$formula$` first** (L-mindmap-2), cut out before the bold, code and link grammar sees it, the way a note's inline text does: the same `INLINE_MATH_RE` rule (no space inside the dollars, "$5 and $10" stays money) and the same TeX-to-MathML drawing as the notes (`mdInlineMathElement`, which asks for the documents bundle itself if it has not loaded and redraws in place). Inline code needed nothing: `code` already draws as a code span above.
+  const text = String(raw || "");
+  const run = (chunk) => {
+    for (const piece of String(chunk || "").split(WB_MAP_INLINE)) {
+      if (!piece) continue;
+      let tag = null;
+      let inner = piece;
+      const linked = /^\[([^\]\n]+)\]\(([^)\s]+)\)$/.exec(piece);
+      //: A link whose address is not http, https or mailto stays the words it was typed as (L375): the same three schemes as a topic's own link, so a `javascript:` or `data:` address is never made live. The anchor carries the real address (a middle click and the status bar tell the truth), but a plain click only selects, as on any topic: it opens from Ctrl/Cmd or from a topic that was already selected before the press, through `window.open` with `noopener`, the way the Link door does.
+      if (linked && WB_MAP_LINK_SCHEMES.test(linked[2])) {
+        const anchor = document.createElement("a");
+        anchor.className = "wb-map-inline-link";
+        anchor.textContent = linked[1];
+        anchor.href = linked[2];
+        anchor.target = "_blank";
+        anchor.rel = "noopener noreferrer";
+        let wasSelected = false;
+        anchor.addEventListener("pointerdown", () => { wasSelected = !!anchor.closest(".wb-selected"); });
+        anchor.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          if (el.isContentEditable) return;
+          if (ev.ctrlKey || ev.metaKey || wasSelected) window.open(linked[2], "_blank", "noopener,noreferrer");
+        });
+        el.append(anchor);
+        continue;
+      }
+      if (piece.length > 4 && piece.startsWith("**") && piece.endsWith("**")) {
+        tag = "strong";
+        inner = piece.slice(2, -2);
+      } else if (piece.length > 2 && piece.startsWith("*") && piece.endsWith("*")) {
+        tag = "em";
+        inner = piece.slice(1, -1);
+      } else if (piece.length > 2 && piece.startsWith("`") && piece.endsWith("`")) {
+        tag = "code";
+        inner = piece.slice(1, -1);
+      }
+      if (!tag) {
+        el.append(document.createTextNode(piece));
+        continue;
+      }
+      const marked = document.createElement(tag);
+      marked.textContent = inner;
+      el.append(marked);
     }
-    if (!tag) {
-      el.append(document.createTextNode(piece));
-      continue;
-    }
-    const marked = document.createElement(tag);
-    marked.textContent = inner;
-    el.append(marked);
+  };
+  const math = typeof INLINE_MATH_RE === "undefined" || typeof mdInlineMathElement !== "function" ? null : new RegExp(INLINE_MATH_RE.source, "g");
+  let cursor = 0;
+  for (let hit = math?.exec(text); hit; hit = math.exec(text)) {
+    run(text.slice(cursor, hit.index));
+    el.append(mdInlineMathElement(hit[1].trim()));
+    cursor = math.lastIndex;
   }
+  run(text.slice(cursor));
 }
 
 //: **The topic's current object, not the one its handlers were built with.**
@@ -2625,6 +2715,11 @@ function wbPaintMapNodeStyle(node, d) {
   //: one topic kept plain on a level that has one, drawn as no attribute.
   if (data.effect === "shadow" || data.effect === "glow") node.dataset.effect = data.effect;
   else delete node.dataset.effect;
+  //: A downward tree's siblings sit in a row, so the far-zoom + hangs under
+  //: the topic instead of on its left over the sibling (L360).
+  const downward = wbMapLayout() === "tree-down" || wbMapLayout() === "org";
+  if (downward) node.dataset.flow = "down";
+  else delete node.dataset.flow;
   const align = wbMapDrawn(data, "align");
   if (align) node.dataset.align = align;
   else delete node.dataset.align;
@@ -2712,6 +2807,7 @@ function wbPaintMapNodeStyle(node, d) {
 
   wbMapPaintExtras(node, d.data || {});
   wbMapLazy.paintAudio(node, d.data || {});
+  wbMapLazy.paintGrammar(node, d);
   //: A note (decision 18): read off the topic's own data, never the theme's.
   const noteMark = node.querySelector(".wb-map-note");
   if (noteMark) {
@@ -3424,6 +3520,24 @@ function wbMapOpenReference(d) {
 let wbMapNodeSizeCache = null;
 
 function wbMapNodeSize(d) {
+  //: A structured branch's whole block stands in for its root while the map
+  //: around it is laid out (`wbMapStructuredPositions`).
+  if (d._block) return d._block;
+  const size = wbMapNodeSize.measured(d);
+  const narrow = wbMapNodeSize.narrow(d);
+  return narrow && size.w > narrow ? { w: narrow, h: size.h } : size;
+}
+
+//: **A radial map's leaves are drawn narrower** (L373): a leaf is the widest
+//: thing on the outer ring, and the ring's arc is spent on box widths, so a
+//: 31-topic map of 6 branches of 4 laid out 1927 x 1791 and fitted at 31%.
+//: Only an unsized leaf below the centre (`_leaf` is set by `wbMapIndex`);
+//: the render writes the same width (`renderWbObjects`), so the layout and the
+//: drawn box agree. 0 means the topic keeps its own width.
+wbMapNodeSize.narrow = (d) =>
+  d._leaf && d.parent_id != null && !d.data?.sized && !d.data?.collapsed && wbMapLayout() === "radial" ? 120 : 0;
+
+wbMapNodeSize.measured = (d) => {
   //: A branch with its own structure, standing in for its whole box while
   //: the map around it is laid out (`wbMapStructuredPositions`).
   if (d._block) return d._block;
@@ -3437,7 +3551,7 @@ function wbMapNodeSize(d) {
     return size;
   }
   return { w: d.width || WB_MAP_NODE_W, h: d.height || WB_MAP_NODE_H };
-}
+};
 
 function wbClearMapNodeSizeCache() {
   wbMapNodeSizeCache = null;
@@ -3585,13 +3699,28 @@ function wbMapEdgeAnchors(parent, child, mapLayout) {
     return { horizontal: true, x1: parent.x + WB_MAP_INDENT / 2, y1: parent.y + p.h, x2: child.x, y2: child.y + c.h / 2 };
   }
   //: A fishbone's rib leaves the spine at the head's left edge
-  //: (`wbMapEdgePathD` runs it along the spine to the rib's foot).
+  //: (`wbMapEdgePathD` runs it along the spine to the rib's foot). It meets the
+  //: main topic at its spine-side corner, not its middle: the causes stand
+  //: between the topic and the spine in its own column, and a rib to the middle
+  //: ran behind them (L358).
   if (layout === "fishbone" && fromRoot) {
     const up = child.y + c.h / 2 < parent.y + p.h / 2;
     //: A branch's fishbone faces away from its parent, so its bones may run
     //: right of the head (`wbMapStructuredPositions`).
     const right = child.x + c.w / 2 > parent.x + p.w;
-    return { horizontal: false, rib: true, right, x1: right ? parent.x + p.w : parent.x, y1: parent.y + p.h / 2, x2: child.x + c.w / 2, y2: up ? child.y + c.h : child.y };
+    return { horizontal: false, rib: true, right, x1: right ? parent.x + p.w : parent.x, y1: parent.y + p.h / 2, x2: right ? child.x : child.x + c.w, y2: up ? child.y + c.h : child.y };
+  }
+  //: A cause under a fishbone's main topic (or a cause under a cause) stands
+  //: one indent in. Its line drops from the parent's edge half an indent in,
+  //: left of every cause above it, whichever side the bones are turned to.
+  if (layout === "fishbone") {
+    const half = WB_MAP_INDENT / 2;
+    const near = (a, b) => Math.abs(a - b) < 1.5;
+    const down = child.y + c.h / 2 > parent.y + p.h / 2;
+    const y1 = down ? parent.y + p.h : parent.y;
+    const y2 = child.y + c.h / 2;
+    if (near(child.x, parent.x + WB_MAP_INDENT)) return { horizontal: true, x1: parent.x + half, y1, x2: child.x, y2 };
+    if (near(child.x + c.w, parent.x + p.w - WB_MAP_INDENT)) return { horizontal: true, x1: parent.x + p.w - half, y1, x2: child.x + c.w, y2 };
   }
   if (layout === "radial" || layout === "free" || layout === "fishbone") {
     horizontal = Math.abs(child.x - parent.x) >= Math.abs(child.y - parent.y);
@@ -4278,7 +4407,7 @@ function wbMapEdgeKey(parent, child, layout, colors) {
   const c = wbMapNodeSize(child);
   const themed = wbMapThemedData(child);
   const own = child.data || WB_MAP_NO_THEME;
-  return `${layout}|${child._bl}|${child._blTop}|${parent.id}|${parent.parent_id == null}|${parent.x},${parent.y},${p.w},${p.h}|${child.x},${child.y},${c.w},${c.h}|${themed.edge_style}|${themed.edge_dashed}|${themed.edge_width}|${themed.edge_arrow}|${own.edge_from}|${own.edge_to}|${own.edge_slide}|${own.edge_bend}|${own.edge_label}|${own.edge_label_dx}|${own.edge_label_dy}|${colors.get(child.id)}`;
+  return `${layout}|${child._bl}|${child._blTop}|${parent.id}|${parent.parent_id == null}|${parent.x},${parent.y},${p.w},${p.h}|${child.x},${child.y},${c.w},${c.h}|${themed.edge_style}|${themed.edge_dashed}|${themed.edge_width}|${themed.edge_arrow}|${own.edge_from}|${own.edge_to}|${own.edge_slide}|${own.edge_bend}|${own.edge_label}|${own.edge_label_dx}|${own.edge_label_dy}|${own.edge_label_size}|${own.edge_label_bold}|${own.edge_label_color}|${own.edge_label_chip}|${colors.get(child.id)}`;
 }
 
 //: Everything one tree edge draws, worked out from the two topics it joins,
@@ -4324,9 +4453,13 @@ function wbMapEdgeGeometry(parent, child, layout, colors) {
   const ldy = Number(child.data?.edge_label_dy) || 0;
   const lx = grip.x + ldx;
   const ly = grip.y + ldy;
+  //: The label's look is the board connector's (size, bold, colour, chip;
+  //: `wbPaintLinkLabel`), kept on the topic beside the label itself.
+  const own = child.data || WB_MAP_NO_THEME;
+  const look = `${Number(own.edge_label_size) > 0 ? Number(own.edge_label_size) : ""}|${own.edge_label_bold ? 1 : ""}|${typeof own.edge_label_color === "string" ? own.edge_label_color : ""}|${own.edge_label_chip ? 1 : ""}`;
   return {
-    className, d, line, grip, ends, colour, label, lx, ly,
-    paint: `${className}|${d}|${line}|${grip.x},${grip.y}|${ends.from.x},${ends.from.y},${ends.to.x},${ends.to.y}|${colour}|${label}|${lx},${ly}`,
+    className, d, line, grip, ends, colour, label, lx, ly, look,
+    paint: `${className}|${d}|${line}|${grip.x},${grip.y}|${ends.from.x},${ends.from.y},${ends.to.x},${ends.to.y}|${colour}|${label}|${lx},${ly}|${look}`,
   };
 }
 
@@ -4535,6 +4668,11 @@ function wbMapEdgeApply(wrap, geom) {
   text.setAttribute("x", String(geom.lx));
   text.setAttribute("y", String(geom.ly));
   text.textContent = geom.label;
+  const [size, bold, ink, chip] = geom.look.split("|");
+  text.style.fontSize = size ? `${size}px` : "";
+  text.style.fontWeight = bold ? "700" : "";
+  text.style.fill = ink;
+  text.classList.toggle("wb-map-edge-label-chip", Boolean(chip));
 }
 
 //: Where the mid-line `+` sits: a short step along the line from the handle,
@@ -5129,6 +5267,8 @@ function mapPaletteCommands() {
     row("This topic", "ph:arrow-down Add a sibling topic", () => wbMapAddSibling(node.id), "Enter");
     //: The topic's grips by name (row 9): the library `+` and the corner.
     row("This topic", "ph:link-simple Add a child that points at a note, document, file or link", () => wbMapAddReference(node.id));
+    //: The fill and the canvas colour by name (INBOX 431(b)): both wells were wired but only a right-click or the View menu led to them, and a search for fill, colour or background found neither.
+    row("This topic", "ph:paint-bucket Topic fill colour", () => document.getElementById("wb-map-strip-color")?.click(), "", "Colours this topic's card; the branch colour is in the right-click menu. Also found by colour, color or background.");
     row("This topic", "ph:corners-in Resize this topic to the usual width", () => wbMapResetTopicSize(node.id));
     //: The line's mid `+` by name: a touch screen has no hover to find it.
     if (node.parent_id != null) row("This topic", "ph:arrow-elbow-left-up Put a topic between this and its parent", () => wbMapInsertBetween(node.parent_id, node.id));
@@ -5137,6 +5277,12 @@ function mapPaletteCommands() {
     row("This topic", "ph:crosshair Focus on this branch", () => wbMapSetFocus(node.id));
     row("This topic", "ph:flag Markers on this topic…", () => wbMapOpenMarkers(node.id));
     row("This topic", "ph:microphone Audio note: pick a recording…", () => wbMapLazy.pickAudio(node));
+    row("This topic", "ph:image Picture from a link…", () => wbMapLazy.imageFromLink(node));
+    row("This topic", "ph:copy-simple Copy this topic's shape", () => wbMapLazy.copyShape(node));
+    row("This topic", "ph:clipboard Paste the copied shape onto this topic", () => wbMapLazy.pasteShape(node));
+    row("This topic", "ph:stack-plus Add a template branch…", () => wbMapLazy.pickTemplate(node));
+    row("This topic", "ph:file-md Save this branch as Markdown", () => wbMapLazy.saveBranch(node));
+    row("This topic", "ph:flow-arrow Add a second central topic joined to this one…", () => wbMapLazy.secondRoot(node));
     if (node.data?.recording) {
       row("This topic", "ph:play Play the audio note", () => wbMapLazy.playAudio(node.id, document.querySelector(`.wb-object[data-id="${node.id}"] .wb-map-audio`) || document.getElementById("whiteboard-container")));
       row("This topic", "ph:microphone-slash Remove the audio note", () => wbMapLazy.removeAudio(node));
@@ -5151,6 +5297,7 @@ function mapPaletteCommands() {
     row("This topic", "ph:trash Delete the topic and its branch", () => wbMapDeleteSubtree(node.id), "Delete");
   }
   row("This map", "ph:plus-circle Add a top-level topic", () => wbMapAddChild(null));
+  row("This map", "ph:paint-bucket Map background colour", () => document.getElementById("wb-bg-color-picker")?.click(), "", "The canvas colour behind the map, also in View. Also found by colour, color or fill.");
   row("This map", "ph:broom Tidy the map", () => wbMapTidy());
   row("This map", "ph:arrows-out-simple Open every folded branch", () => wbMapExpandAll());
   row("This map", "ph:arrows-in-line-vertical Fold every branch", () => wbMapFoldToLevel(1), "Alt+1");
@@ -5172,9 +5319,11 @@ function mapPaletteCommands() {
   row("This map", "ph:presentation Present branches", () => wbStartPresenting());
   row("This map", "ph:steps Build up branch by branch", () => wbMapBuild.start());
   row("This map", "ph:student Study the map", () => wbMapStartStudy());
+  row("This map", "ph:list-numbers Study the map in map order", () => wbMapStartStudy({ inOrder: true }));
   row("This map", "ph:chart-bar-horizontal Gantt chart of the dated topics", () => wbMapLazy.openGantt());
+  row("This map", wbMapLazy.timerOn() ? "ph:timer Stop the brainstorm timer" : "ph:timer Start a five minute brainstorm timer", () => (wbMapLazy.timerOn() ? wbMapLazy.stopTimer() : wbMapLazy.startTimer(5)));
   row("This map", "ph:funnel Filter by marker…", () => wbMapChooseMarkerFilter());
-  if (wbMarkerUi.filter) row("This map", "ph:x-circle Stop filtering by marker", () => wbMapSetMarkerFilter(null));
+  if (wbMarkerUi.filters.size) row("This map", "ph:x-circle Stop filtering by marker", () => wbMapSetMarkerFilter(null));
   row("This map", wbOutlineShowing() ? "ph:list-dashes Hide the outline" : "ph:list-dashes Show the map as an outline", () => wbOutlineToggle());
   row("This map", "ph:frame-corners Zoom to fit the map", () => wbZoomToFit());
   for (const [value, name] of WB_MAP_LAYOUT_NAMES) {
@@ -6215,7 +6364,9 @@ function wbMapColumnPositions(index, layout) {
     let right = -gapD;
     for (let i = 0; i < kids.length; i += 2) {
       const pair = kids.slice(i, i + 2).map((kid) => {
-        const rows = rowsUnder(kid);
+        //: Indented one step, as a tree table's rows are, so the line to a
+        //: second cause drops beside the first instead of through it (L-mindmap-12).
+        const rows = rowsUnder(kid).map((r) => ({ o: r.o, depth: r.depth + 1 }));
         return { kid, rows, ext: extent(rows), ks: size(kid) };
       });
       const w = Math.max(...pair.map((b) => Math.max(b.ks.w, b.ext.w)));
@@ -6453,10 +6604,16 @@ function wbMapLayoutPositions(index, layout) {
   //: is folded in here for the same reason, so the distance function keeps
   //: working in one unit.
   const radial = layout === "radial";
+  //: How much of a ring a topic takes: its width, or for a structured branch standing in as one
+  //: box (`_block`) its longer side, because a tall block taken for its width overlapped its neighbour.
+  const wbMapRadialSpan = (obj, size) => {
+    const s = size || { w: WB_MAP_NODE_W, h: WB_MAP_NODE_H };
+    return obj?._block ? Math.max(s.w, s.h) : s.w;
+  };
   const breadthOf = (w) => {
     if (!w.obj) return 0; // the virtual root below has no size of its own
     const s = sizes.get(w.obj.id) || { w: WB_MAP_NODE_W, h: WB_MAP_NODE_H };
-    if (radial) return (s.w + wbMapGapBreadth()) / Math.max(1, w.depth);
+    if (radial) return (wbMapRadialSpan(w.obj, s) + wbMapGapBreadth()) / Math.max(1, w.depth);
     return vertical ? s.w : s.h;
   };
   const gap = radial ? 0 : wbMapGapBreadth();
@@ -6522,7 +6679,7 @@ function wbMapLayoutPositions(index, layout) {
     // was wrong for the same reason the breadths above are divided by depth:
     // it is not a quantity in this unit at all.
     const extentOf = (f) =>
-      ((sizes.get(f.obj.id)?.w || WB_MAP_NODE_W) + wbMapGapBreadth()) / Math.max(1, f.depth);
+      (wbMapRadialSpan(f.obj, sizes.get(f.obj.id)) + wbMapGapBreadth()) / Math.max(1, f.depth);
     const min = Math.min(...flat.map((f) => f.breadth));
     const max = Math.max(...flat.map((f) => f.breadth));
     const span = max - min + Math.min(...flat.map(extentOf)) || 1;
@@ -6539,16 +6696,28 @@ function wbMapLayoutPositions(index, layout) {
     //: map small enough that the base spacing was already sufficient.
     //: Measured (WHITEBOARD_PLAN Phase 4, `wbphase4.js`): 30 nodes in radial
     //: gave 6 overlapping pairs, the worst 38x28 board units, and 0 after.
-    const ringRadius = Math.max(ring, span / (2 * Math.PI));
-    for (const f of flat) {
-      const size = sizes.get(f.obj.id) || { w: WB_MAP_NODE_W, h: WB_MAP_NODE_H };
-      const angle = ((f.breadth - min) / span) * 2 * Math.PI - Math.PI / 2;
-      const radius = f.depth * ringRadius;
-      // Centres, then back to the top-left corner an object's `x`/`y` mean.
-      positions.set(f.obj.id, {
-        x: radius * Math.cos(angle) - size.w / 2,
-        y: radius * Math.sin(angle) - size.h / 2,
-      });
+    //: Arc length is the centres' distance, but boxes meet at their corners, so a
+    //: wide block beside a narrow topic can still touch (a structured branch
+    //: standing in as one box, measured 6 units). The rings widen by a tenth
+    //: until no two boxes overlap, at most twelve times; a no-op on a clear map.
+    let ringRadius = Math.max(ring, span / (2 * Math.PI));
+    for (let tries = 0; tries < 12; tries += 1) {
+      positions.clear();
+      for (const f of flat) {
+        const size = sizes.get(f.obj.id) || { w: WB_MAP_NODE_W, h: WB_MAP_NODE_H };
+        const angle = ((f.breadth - min) / span) * 2 * Math.PI - Math.PI / 2;
+        const radius = f.depth * ringRadius;
+        // Centres, then back to the top-left corner an object's `x`/`y` mean.
+        positions.set(f.obj.id, {
+          x: radius * Math.cos(angle) - size.w / 2,
+          y: radius * Math.sin(angle) - size.h / 2,
+        });
+      }
+      const boxes = flat.map((f) => ({ ...positions.get(f.obj.id), ...(sizes.get(f.obj.id) || { w: WB_MAP_NODE_W, h: WB_MAP_NODE_H }) }));
+      const touching = boxes.some((a, i) => boxes.slice(i + 1).some((c) =>
+        Math.min(a.x + a.w, c.x + c.w) - Math.max(a.x, c.x) > 1 && Math.min(a.y + a.h, c.y + c.h) - Math.max(a.y, c.y) > 1));
+      if (!touching) break;
+      ringRadius *= 1.1;
     }
   } else {
     for (const f of flat) {
@@ -7025,9 +7194,8 @@ function wbSyncMapToolState() {
 //:
 //: Coggle's four are text, link, image and icon. Text and icon are here in
 //: full; link is a web address on the topic, drawn as a marker that opens it;
-//: **image is not built** (it needs the upload path a board image uses, and a
-//: node whose body is a picture rather than a label), and
-//: `archive/agent-remaining/mindmap.md` carries the next step for it.
+//: image is the `image` style, set from a pasted web address through
+//: `POST /links/image` (wbTopicImageFromLink, whiteboard-map-more.js).
 //:
 //: Size and alignment reuse `font_size` and `align`, which a text box already
 //: stores in the same units, rather than inventing a second vocabulary for
@@ -7279,6 +7447,14 @@ wbMapSizeStepper.sizeName = function wbMapSizeName(size, steps) {
   if (!steps.length) return `${size}px`;
   const below = [...steps].reverse().find((step) => step.px <= size) || steps[0];
   return below.px === size || size < steps[0].px ? below.name : `${below.name}+`;
+};
+
+//: **A size in words** (L366): Classic's levels are 17 and 22px, which the
+//: sentences used to say as "17px" beside a bar that reads S, M, L, XL. A size
+//: on the level scale is its word; one off it stays a number.
+wbMapSizeStepper.say = function wbMapSay(size) {
+  const row = WB_MAP_LEVEL_ROWS.find((r) => r.key === "font_size");
+  return row.options.find(([v]) => Number(v) === Number(size))?.[1] || `${size}px`;
 };
 
 function wbMapSizeStepper(select) {
@@ -7658,7 +7834,26 @@ function wbSyncMapStrip(node) {
       }
       return value == null || value === "" ? "" : String(value);
     };
-    setSelect("wb-map-text-size", shown("font_size"));
+    //: **A size the strip has no word for gets a row of its own** (L369):
+    //: Classic's main topics are 17px, which none of S, M, L, XL is, so the
+    //: select could not hold it and the strip rang nothing (the pick row
+    //: rings what the select holds). The row is added while the topic uses
+    //: that size and removed after, as the icon slot adds its one-off
+    //: (`wbMapIconOption`), and named in pixels: its word on the level scale
+    //: would collide with the strip's own L.
+    const sizeSelect = document.getElementById("wb-map-text-size");
+    const wantSize = shown("font_size");
+    if (sizeSelect) {
+      sizeSelect.querySelector("option[data-off-scale]")?.remove();
+      if (wantSize && ![...sizeSelect.options].some((o) => o.value === wantSize)) {
+        const extra = document.createElement("option");
+        extra.value = wantSize;
+        extra.textContent = `${wantSize}px`;
+        extra.dataset.offScale = "";
+        sizeSelect.append(extra);
+      }
+    }
+    setSelect("wb-map-text-size", wantSize);
     setSelect("wb-map-align", shown("align"));
     wbMapIconOption(data.icon || "");
     setSelect("wb-map-strip-icon", data.icon || "");
@@ -7695,6 +7890,14 @@ function wbSyncMapStrip(node) {
         dash.classList.toggle("active", on);
         dash.setAttribute("aria-pressed", on ? "true" : "false");
         dash.title = on ? "Draw the line into this topic solid again" : "Dash the line into this topic";
+      }
+      //: The label's look rows, on the line menu; they read the stored look.
+      const size = document.getElementById("wb-map-label-size");
+      if (size) size.value = Number(data.edge_label_size) > 0 ? String(data.edge_label_size) : "";
+      const ink = document.getElementById("wb-map-label-color");
+      if (ink) ink.value = typeof data.edge_label_color === "string" ? data.edge_label_color : "#000000";
+      for (const [id, key] of [["wb-map-label-bold", "edge_label_bold"], ["wb-map-label-chip", "edge_label_chip"]]) {
+        document.getElementById(id)?.setAttribute("aria-pressed", data[key] ? "true" : "false");
       }
       const arrow = document.getElementById("wb-map-edge-arrow");
       if (arrow) {
@@ -8509,7 +8712,7 @@ const WB_MAP_COPY_MAX = 120;
 //: line's look travelling with a copy is worse than none of it.
 const WB_MAP_STYLE_KEYS = [
   "color", "bold", "italic", "font_size", "align", "icon", "link", "edge_label",
-  "edge_label_dx", "edge_label_dy",
+  "edge_label_dx", "edge_label_dy", "edge_label_size", "edge_label_bold", "edge_label_color", "edge_label_chip",
   "shape", "core", "spine", "fill", "effect", "edge_style", "edge_dashed", "edge_width", "edge_arrow",
   //: The waypoint on the line (§12.1 item 5's third) belongs with the other
   //: four for the same reason: it is written from the line itself onto the
@@ -8530,8 +8733,8 @@ const WB_MAP_STYLE_KEYS = [
 //: And a note (decision 18): a reset is about looks, never about words.
 //: And a boundary and a summary (decisions 19, 20): what the map says.
 const WB_MAP_CONTENT_KEYS = [
-  "image", "task", "note", "boundary", "boundary_label", "summary", "summary_span",
-  "priority", "progress", "flag", "markers", "due", "start", "recording", "branch_layout", "callout", "labels", "stamps", "stamped",
+  "image", "task", "note", "boundary", "boundary_label", "boundary_set", "summary", "summary_span",
+  "priority", "progress", "flag", "markers", "due", "due_time", "start", "recording", "branch_layout", "callout", "labels", "stamps", "stamped",
 ];
 
 //: **Reaction stamps and votes** (Miro; MINDMAP_PLAN 14.4): six Phosphor
@@ -9080,6 +9283,10 @@ function wbWireMapEdgeHandle(handle, parentId, childId) {
   //: Back to the line it was, without going to a menu for it. The same
   //: gesture a text grip uses to reset a size elsewhere in this file, and the
   //: node's own menu says so in words for anyone who does not try it.
+  //: A click on the dot must not reach the canvas: it cleared the selection,
+  //: which stood the mid-line `+` back over the dot (zoomed out it covers
+  //: it), so the second click of a double-click hit the `+` (L-mindmap-15).
+  handle.addEventListener("click", (event) => event.stopPropagation());
   handle.addEventListener("dblclick", (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -9769,7 +9976,8 @@ function wbRenderMapStructure() {
     if (hidden.has(node.id)) continue;
     const style = node.data?.boundary;
     if (style) {
-      const box = wbMapBranchBox(index, hidden, node.id);
+      //: A lasso'd set (`boundary_set`) is the union of those topics; else the branch.
+      const box = Array.isArray(node.data?.boundary_set) ? wbMapLazy.setBox(index, hidden, node.data.boundary_set) : wbMapBranchBox(index, hidden, node.id);
       if (box) {
         const x = box.minX - WB_MAP_BOUNDARY_PAD;
         const y = box.minY - WB_MAP_BOUNDARY_PAD;
@@ -10100,8 +10308,12 @@ const wbStudy = {
 // WB-MAP-STUDY-BEGIN
 //: The questions: each trunk's children with a branch under them, in sibling
 //: order (`childrenOf` is already sorted), and every topic under each one.
-//: Pure, so `tests/test_map_study.py` runs it in node.
-function wbMapStudyQuestions(index) {
+//: Pure, so `tests/test_map_study.py` runs it in node. With `marks` (the
+//: map's record on this device) the order is spaced (decision 36): a branch
+//: missed last time first, then those due for review (a streak of knowing it
+//: waits 0, 1, 3, 7, 14 then 30 days, most overdue first), then any never
+//: asked, in the map's order, then those not due yet, soonest first.
+function wbMapStudyQuestions(index, marks = null, now = 0) {
   const out = [];
   const under = (id) => {
     const all = [];
@@ -10138,7 +10350,17 @@ function wbMapStudyQuestions(index) {
     for (const child of index.childrenOf.get(node.id) || []) walk(child);
   };
   for (const root of index.roots) walk(root);
-  return out;
+  if (!marks || !Object.keys(marks).length) return out;
+  const rank = (q) => {
+    const m = marks[q.id];
+    if (!m) return [2, 0];
+    if (m.last === "missed") return [0, m.at || 0];
+    const over = now - (m.at || 0) - [0, 1, 3, 7, 14, 30][Math.min(m.streak || 1, 5)] * 86400000;
+    return over >= 0 ? [1, -over] : [3, -over];
+  };
+  const keyed = out.map((q, i) => ({ q, i, r: rank(q) }));
+  keyed.sort((a, b) => a.r[0] - b.r[0] || a.r[1] - b.r[1] || a.i - b.i);
+  return keyed.map((k) => k.q);
 }
 
 //: What "Recalled 3 of 5" counts, and the line a step carries from last time.
@@ -10176,8 +10398,10 @@ function wbMapStudyShown(q) {
   return q.answer ? wbStudy.revealed.has(q.id) : !q.hides.some((id) => wbStudy.hidden.has(id));
 }
 
-function wbMapStartStudy() {
-  const questions = wbMapStudyQuestions(wbMapIndex());
+//: `inOrder` asks in the map's order instead of the spaced one.
+function wbMapStartStudy({ inOrder = false } = {}) {
+  const marks = wbStudy.load();
+  const questions = wbMapStudyQuestions(wbMapIndex(), inOrder ? null : marks, Date.now());
   if (!questions.length) {
     toast("Nothing to recall yet: a branch with topics under it, or a topic with a note, is a question.");
     return;
@@ -10187,7 +10411,7 @@ function wbMapStartStudy() {
   wbStudy.steps = questions;
   wbStudy.hidden = new Set(questions.flatMap((q) => q.hides));
   wbStudy.revealed = new Set();
-  wbStudy.marks = wbStudy.load();
+  wbStudy.marks = marks;
   renderWhiteboardNow();
   wbStartPresenting();
   wbMapStudySyncBar();
@@ -10219,7 +10443,8 @@ function wbMapStudyMark(knew) {
   const step = wbPresent && wbStudy.steps[wbPresent.at];
   if (!step) return;
   const was = wbStudy.marks[step.id] || { knew: 0, missed: 0 };
-  wbStudy.marks[step.id] = { ...was, [knew ? "knew" : "missed"]: (was[knew ? "knew" : "missed"] || 0) + 1, last: knew ? "knew" : "missed" };
+  //: `streak` (times in a row it was known) and `at` (when) place it in the spaced order.
+  wbStudy.marks[step.id] = { ...was, [knew ? "knew" : "missed"]: (was[knew ? "knew" : "missed"] || 0) + 1, last: knew ? "knew" : "missed", streak: knew ? (was.last === "knew" ? was.streak || 1 : 0) + 1 : 0, at: Date.now() };
   wbStudy.save();
   if (wbPresent.at < wbStudy.steps.length - 1) {
     wbPresentShow(wbPresent.at + 1);
@@ -10339,9 +10564,21 @@ function wbOutlineRowEl(node, depth) {
     setLabel(pencil, "ph:pencil-simple");
     row.appendChild(pencil);
   }
+  //: The topic's markers and due day, then its labels, as cells under its
+  //: words (decision 34): the canvas's own painting, so the two agree.
+  const cells = document.createElement("div");
+  cells.className = "wb-outline-cells";
+  const marks = document.createElement("span");
+  marks.className = "wb-map-markers wb-outline-marks";
+  const tags = document.createElement("span");
+  tags.className = "wb-outline-tags";
+  cells.append(marks, tags);
+  row.appendChild(cells);
+  wbMarkerUi.match.cells(row);
   return row;
 }
 
+//: Brings a row's cells up to date; each repaints only when its content changed.
 function wbOutlineEditing(row) {
   return Boolean(row?.classList.contains("is-editing"));
 }
@@ -10405,11 +10642,13 @@ function wbOutlineSync(force = false) {
     }
   }
   const now = tree.contains(document.activeElement) ? document.activeElement : null;
+  let at = 0;
   for (const row of tree.children) {
     const field = row.firstChild;
     const label = wbMapLabel(row._node);
     if (!(field === now && wbOutlineEditing(row)) && field.value !== label) field.value = label;
     row.setAttribute("aria-selected", String(row._node.id === selected));
+    wbMarkerUi.match.cells(row, rows[at++].node);
   }
 }
 
@@ -10647,13 +10886,17 @@ function wbMapMarkerParts(data) {
   const due = typeof data?.due === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.due) ? data.due : null;
   //: A start day (the Gantt view), the same shape; a bar needs both.
   const start = typeof data?.start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.start) ? data.start : null;
-  return { priority, progress, flag, icons, due, start };
+  //: The time on the due day (L371), only beside a due day.
+  const dueTime = due && typeof data?.due_time === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(data.due_time) ? data.due_time : null;
+  return { priority, progress, flag, icons, due, dueTime, start };
 }
 
 //: "12 Oct", and whether that day has gone (local midnight to midnight).
 //: With a `start` too, "5 Oct to 12 Oct"; a `start` alone (no due day), "from 5 Oct".
-function wbMapDueWords(due, start = null) {
-  const today = new Date();
+//: With a `time` ("09:30") the due day reads "20 Nov, 9:30 am" and is gone only once that time has.
+function wbMapDueWords(due, start = null, time = null) {
+  const now = new Date();
+  const today = new Date(now);
   today.setHours(0, 0, 0, 0);
   const say = (text) => {
     const [y, m, d] = text.split("-").map(Number);
@@ -10663,7 +10906,11 @@ function wbMapDueWords(due, start = null) {
   const end = say(due || start);
   const from = due && start ? say(start).words : null;
   const words = from ? `${from} to ${end.words}` : due ? end.words : `from ${end.words}`;
-  return { words, past: Boolean(due) && end.day < today };
+  if (!time || !due || from) return { words, past: Boolean(due) && end.day < today };
+  const [h, m] = time.split(":").map(Number);
+  const at = new Date(end.day);
+  at.setHours(h, m);
+  return { words: `${words}, ${at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`, past: at < now };
 }
 
 //: What the row says to a screen reader and in its tooltip, in the order it
@@ -10674,7 +10921,7 @@ function wbMapMarkerWords(parts) {
   if (parts.progress != null) words.push(parts.progress === 100 ? "done" : parts.progress === 0 ? "not started" : `${parts.progress}% done`);
   if (parts.flag) words.push("flagged");
   if (parts.due) {
-    const due = wbMapDueWords(parts.due);
+    const due = wbMapDueWords(parts.due, null, parts.dueTime);
     words.push(due.past ? `was due ${due.words}` : `due ${due.words}`);
   }
   if (parts.start) words.push(`starts ${wbMapDueWords(parts.start).words}`);
@@ -10687,7 +10934,7 @@ function wbMapMarkerWords(parts) {
 //: render of an unchanged map writes nothing here.
 function wbMapPaintMarkers(host, data) {
   const parts = wbMapMarkerParts(data);
-  const key = `${parts.priority}|${parts.progress}|${parts.flag}|${parts.icons.join(",")}|${parts.due}|${parts.start}`;
+  const key = `${parts.priority}|${parts.progress}|${parts.flag}|${parts.icons.join(",")}|${parts.due}|${parts.dueTime}|${parts.start}`;
   if (host.dataset.key === key) return;
   host.dataset.key = key;
   host.replaceChildren();
@@ -10722,7 +10969,7 @@ function wbMapPaintMarkers(host, data) {
   };
   if (parts.flag) glyph("flag", " wb-map-mark-flag");
   if (parts.due || parts.start) {
-    const when = wbMapDueWords(parts.due, parts.start);
+    const when = wbMapDueWords(parts.due, parts.start, parts.dueTime);
     const chip = document.createElement("span");
     chip.className = `wb-map-mark wb-map-mark-due${when.past ? " is-past" : ""}`;
     chip.textContent = when.words;
@@ -10731,9 +10978,10 @@ function wbMapPaintMarkers(host, data) {
   for (const icon of parts.icons) glyph(icon);
 }
 
-//: The Due and Start rows (decision 37; the Gantt view): the browser's own
-//: date field and Clear; Due also has Remind me. Each field stops at the
-//: other's day (`min` and `max`), so the pair cannot be set backwards here.
+//: The Due and Start rows (decision 37; the Gantt view): the date-field
+//: recipe's picker (`enhanceDateField`) and Clear; Due also has a time field
+//: (L371, `due_time`, kept only with a day) and Remind me. Each field stops
+//: at the other's day (`min` and `max`), so the pair cannot be set backwards.
 function wbMapDateRow(node, parts, set, label, key) {
   const wrap = document.createElement("div");
   wrap.className = "wb-map-markers-row";
@@ -10746,34 +10994,45 @@ function wbMapDateRow(node, parts, set, label, key) {
   if (key === "start" && parts.due) field.max = parts.due;
   if (key === "due" && parts.start) field.min = parts.start;
   field.setAttribute("aria-label", `${label} date`);
-  field.addEventListener("change", () => set({ [key]: field.value || null }));
+  field.addEventListener("change", () => set(key === "due" && !field.value ? { due: null, due_time: null } : { [key]: field.value || null }));
   wrap.append(name, field);
+  enhanceDateField(field);
   if (!parts[key]) return wrap;
+  if (key === "due") {
+    const time = document.createElement("input");
+    time.type = "time";
+    time.value = parts.dueTime || "";
+    time.setAttribute("aria-label", "Due time");
+    time.addEventListener("change", () => set({ due_time: time.value || null }));
+    wrap.append(time);
+    enhanceDateField(time);
+  }
   const clear = document.createElement("button");
   clear.type = "button";
   clear.className = "ghost small";
   clear.textContent = "Clear";
   clear.setAttribute("aria-label", `Clear ${label.toLowerCase()} date`);
-  clear.addEventListener("click", () => set({ [key]: null }));
+  clear.addEventListener("click", () => set(key === "due" ? { due: null, due_time: null } : { [key]: null }));
   wrap.append(clear);
   if (key !== "due") return wrap;
-  //: Remind me makes an ordinary reminder at 9:00 on the due day.
+  //: Remind me makes an ordinary reminder at the due time, or 9:00 with none.
   const remind = document.createElement("button");
   remind.type = "button";
   remind.className = "ghost small";
   remind.textContent = "Remind me";
-  remind.title = "A reminder at 9:00 on the due day, in Reminders";
+  remind.title = "A reminder at the due time (9:00 with none), in Reminders";
   remind.addEventListener("click", async () => {
     const [y, m, d] = parts.due.split("-").map(Number);
-    const at = new Date(y, m - 1, d, 9, 0, 0);
+    const [h, min] = (parts.dueTime || "09:00").split(":").map(Number);
+    const at = new Date(y, m - 1, d, h, min, 0);
     if (at < new Date()) {
-      toast("That day has gone: pick a later due date for a reminder.", "info");
+      toast("That time has gone: pick a later due date for a reminder.", "info");
       return;
     }
     try {
       const made = await apiJson("/reminders", { method: "POST", body: JSON.stringify({ text: wbMapLabel(node) || "Map topic", due_at: at.toISOString() }) });
       reminderMadeUndo(made);
-      toast(`Reminder set for ${wbMapDueWords(parts.due).words}, 9:00.`);
+      toast(`Reminder set for ${wbMapDueWords(parts.due, null, parts.dueTime).words}${parts.dueTime ? "" : ", 9:00"}.`);
     } catch (error) {
       toast(error.message || voiceLine("failed", { what: "set that reminder" }), true);
     }
@@ -10782,7 +11041,7 @@ function wbMapDateRow(node, parts, set, label, key) {
   return wrap;
 }
 
-const wbMarkerUi = { pop: null, filter: null };
+const wbMarkerUi = { pop: null, filters: new Set(), choose: null };
 
 function wbMapCloseMarkers({ restoreFocus = false } = {}) {
   const state = wbMarkerUi.pop;
@@ -10959,7 +11218,8 @@ function wbMapOpenMarkers(id, anchor = null) {
     }
   });
   const outside = (event) => {
-    if (panel.contains(event.target) || target.contains(event.target)) return;
+    //: The Due field's calendar is a popover of its own, drawn in the page.
+    if (panel.contains(event.target) || target.contains(event.target) || event.target.closest?.(".timeline-monthpop")) return;
     wbMapCloseMarkers();
   };
   document.addEventListener("pointerdown", outside, true);
@@ -10970,9 +11230,11 @@ function wbMapOpenMarkers(id, anchor = null) {
 }
 
 //: --- Filter by marker ---------------------------------------------------
-//: One marker at a time; every topic without it is dimmed, never hidden, so
-//: the tree stays readable around what is lit. For this visit only.
-
+//: Several at once (decision 34): a topic stays lit when it carries any of
+//: the chosen markers or labels (a label is the topic's tag); every other
+//: topic is dimmed, never hidden, so the tree stays readable around what is
+//: lit. For this visit only.
+// WB-MAP-FILTER-BEGIN
 function wbMapMarkerKeys(data) {
   const parts = wbMapMarkerParts(data);
   const keys = [];
@@ -10981,10 +11243,14 @@ function wbMapMarkerKeys(data) {
   if (parts.flag) keys.push("flag");
   if (parts.due) keys.push("due");
   for (const icon of parts.icons) keys.push(`i:${icon}`);
+  for (const label of Array.isArray(data?.labels) ? data.labels : []) {
+    if (typeof label === "string" && label.trim()) keys.push(`t:${label.trim()}`);
+  }
   return keys;
 }
 
 function wbMapMarkerKeyWords(key) {
+  if (key.startsWith("t:")) return [key.slice(2), "ph:tag"];
   if (key.startsWith("p")) return [`Priority ${key.slice(1)}`, "ph:number-circle-one"];
   if (key === "done") return ["Done", "ph:check-circle"];
   if (key === "going") return ["Under way", "ph:circle-half"];
@@ -10994,37 +11260,130 @@ function wbMapMarkerKeyWords(key) {
   return [WB_MAP_MARKER_ICON_NAMES.get(icon) || icon, `ph:${icon}`];
 }
 
+wbMarkerUi.match = {
+  //: Lit when nothing is chosen, or the topic carries any chosen key.
+  lit: (keys, filters) => !filters.size || keys.some((key) => filters.has(key)),
+  //: The bar's words: the first three by name, then how many more.
+  words(filters) {
+    const names = [...filters].map((key) => wbMapMarkerKeyWords(key)[0]);
+    return names.length > 3 ? `${names.slice(0, 3).join(", ")} and ${names.length - 3} more` : names.join(", ");
+  },
+  //: An outline row's marker and label cells (outline columns).
+  cells(row, node = row._node) {
+    const data = node.data || {};
+    const [marks, tags] = row.lastChild.children;
+    wbMapPaintMarkers(marks, data);
+    const labels = Array.isArray(data.labels) ? data.labels.filter((l) => typeof l === "string" && l.trim()) : [];
+    const key = labels.join("\u0000");
+    if (tags.dataset.key !== key) {
+      tags.dataset.key = key;
+      tags.replaceChildren(...labels.map((label) => {
+        const chip = document.createElement("span");
+        chip.className = "wb-map-tag";
+        chip.textContent = label;
+        return chip;
+      }));
+      tags.title = labels.length ? "Labels" : "";
+    }
+    row.lastChild.hidden = marks.hidden && !labels.length;
+  },
+};
+// WB-MAP-FILTER-END
+
 function wbMapMarkersInUse() {
   const used = new Map();
   for (const node of wbMapIndex().nodes) {
     for (const key of wbMapMarkerKeys(node.data)) used.set(key, (used.get(key) || 0) + 1);
   }
-  const rank = (k) => (k.startsWith("p") ? 0 : k === "flag" ? 1 : k === "going" || k === "done" ? 2 : 3);
+  const rank = (k) => (k.startsWith("t:") ? 4 : k.startsWith("p") ? 0 : k === "flag" ? 1 : k === "going" || k === "done" ? 2 : 3);
   return [...used].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]));
 }
 
+//: A popover of pressed-or-not choices (the Markers popover's recipe), one
+//: press adds or takes away one filter and the map follows at once.
 function wbMapChooseMarkerFilter(anchor = null) {
-  const used = wbMapMarkersInUse();
-  if (!used.length) {
-    toast("No topic on this map has a marker yet. A topic's menu, Content, Markers adds one.");
+  if (wbMarkerUi.choose) {
+    wbMarkerUi.choose.close();
     return;
   }
-  const items = used.map(([key, count]) => {
-    const [words, icon] = wbMapMarkerKeyWords(key);
-    return makeMenuItem(`${icon} ${words} (${count})`, `Dim every topic that is not marked ${words.toLowerCase()}`, () => wbMapSetMarkerFilter(key));
+  const used = wbMapMarkersInUse();
+  if (!used.length) {
+    toast("No topic on this map has a marker or a label yet. A topic's menu, Content, Markers adds one.");
+    return;
+  }
+  const target = anchor || document.querySelector('[aria-controls="wb-view-menu"]') || document.getElementById("whiteboard-container");
+  const panel = document.createElement("div");
+  panel.className = "help-popover wb-map-markers-pop wb-map-filter-pop";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", "Filter by marker");
+  const fill = () => {
+    const chips = used.map(([key, count]) => {
+      const [words, icon] = wbMapMarkerKeyWords(key);
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "ghost small";
+      b.setAttribute("aria-pressed", String(wbMarkerUi.filters.has(key)));
+      b.title = `Light the topics marked ${words.toLowerCase()}`;
+      setLabel(b, `${icon} ${words} (${count})`);
+      b.addEventListener("click", () => {
+        if (!wbMarkerUi.filters.delete(key)) wbMarkerUi.filters.add(key);
+        wbMapSetMarkerFilter(undefined);
+        const again = [...panel.querySelectorAll("button")].indexOf(b);
+        fill();
+        panel.querySelectorAll("button")[again]?.focus({ preventScroll: true });
+      });
+      return b;
+    });
+    const group = document.createElement("div");
+    group.className = "wb-map-filter-choices";
+    group.setAttribute("role", "group");
+    group.setAttribute("aria-label", "Markers and labels in use");
+    group.append(...chips);
+    const hint = document.createElement("p");
+    hint.className = "muted wb-map-markers-hint";
+    hint.textContent = "A topic stays lit if it has any you press. Esc closes.";
+    const clear = document.createElement("button");
+    clear.type = "button";
+    clear.className = "ghost small";
+    clear.textContent = "Show every topic";
+    clear.disabled = !wbMarkerUi.filters.size;
+    clear.addEventListener("click", () => {
+      wbMapSetMarkerFilter(null);
+      fill();
+    });
+    panel.replaceChildren(group, hint, clear);
+  };
+  panel.addEventListener("keydown", (event) => {
+    event.stopPropagation();
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+    }
   });
-  if (wbMarkerUi.filter) items.unshift(makeMenuItem("ph:x-circle Show every topic", "Stop filtering", () => wbMapSetMarkerFilter(null)));
-  const box = (anchor || document.querySelector('[aria-controls="wb-view-menu"]') || document.getElementById("whiteboard-container"))?.getBoundingClientRect();
-  openMenuAtPoint(items, "Filter by marker", box ? box.left : 80, box ? box.bottom + 4 : 80);
+  const close = () => {
+    wbMarkerUi.choose = null;
+    document.removeEventListener("pointerdown", outside, true);
+    panel.remove();
+  };
+  const outside = (event) => {
+    if (!panel.contains(event.target) && !target.contains?.(event.target)) close();
+  };
+  document.addEventListener("pointerdown", outside, true);
+  document.body.appendChild(panel);
+  wbMarkerUi.choose = { close };
+  fill();
+  placeHelpPopover(panel, target);
+  panel.querySelector("button")?.focus({ preventScroll: true });
 }
 
+//: `null` ends the filter; `undefined` repaints for the set as it now stands.
 function wbMapSetMarkerFilter(key) {
-  wbMarkerUi.filter = key;
+  if (key === null) wbMarkerUi.filters.clear();
   wbMapPaintMarkerFilter();
   const bar = document.getElementById("wb-map-filter");
-  if (key) wbAnnounce(`Showing the topics marked ${wbMapMarkerKeyWords(key)[0].toLowerCase()}.`);
-  else wbAnnounce("Showing every topic.");
-  if (bar && !key) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
+  const on = wbMarkerUi.filters.size > 0;
+  wbAnnounce(on ? `Showing the topics marked ${wbMarkerUi.match.words(wbMarkerUi.filters).toLowerCase()}.` : "Showing every topic.");
+  if (bar && !on) document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
 }
 
 //: After every render (`wbMapAfterRender`): a class on each topic the filter
@@ -11056,13 +11415,12 @@ function wbMapDimLit(index) {
 
 function wbMapPaintMarkerFilter() {
   const bar = document.getElementById("wb-map-filter");
-  const on = Boolean(wbMarkerUi.filter) && wbIsMap();
+  const on = wbMarkerUi.filters.size > 0 && wbIsMap();
   if (bar) {
     bar.hidden = !on;
     if (on) {
-      const [words] = wbMapMarkerKeyWords(wbMarkerUi.filter);
       const label = document.getElementById("wb-map-filter-label");
-      if (label) label.textContent = `Marked: ${words}`;
+      if (label) label.textContent = `Marked: ${wbMarkerUi.match.words(wbMarkerUi.filters)}`;
     }
   }
   const container = document.getElementById("whiteboard-container");
@@ -11074,7 +11432,7 @@ function wbMapPaintMarkerFilter() {
     for (const el of container.querySelectorAll(".wb-map-filtered-out")) el.classList.remove("wb-map-filtered-out");
     return;
   }
-  const out = (node) => (on ? !wbMapMarkerKeys(node.data).includes(wbMarkerUi.filter) : !lit.has(node.id));
+  const out = (node) => (on ? !wbMarkerUi.match.lit(wbMapMarkerKeys(node.data), wbMarkerUi.filters) : !lit.has(node.id));
   for (const node of index.nodes) {
     const el = container.querySelector(`.wb-object[data-id="${node.id}"]`);
     if (el) el.classList.toggle("wb-map-filtered-out", out(node));
@@ -11090,7 +11448,7 @@ function wbMapPaintMarkerFilter() {
 //: What follows every render of a map: the outline and the marker filter.
 function wbMapAfterRender() {
   wbOutlineSync();
-  if (wbMarkerUi.filter || wbMapDim.on || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
+  if (wbMarkerUi.filters.size || wbMapDim.on || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
     wbMapPaintMarkerFilter();
   }
 }

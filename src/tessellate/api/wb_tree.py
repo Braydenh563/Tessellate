@@ -232,6 +232,7 @@ MAP_STYLE_FIELDS = (
     "flag",
     "markers",
     "due",
+    "due_time",
     "start",
     "recording",
 )

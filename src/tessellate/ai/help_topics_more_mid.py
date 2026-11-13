@@ -1029,8 +1029,9 @@ MID_TOPICS.extend(
                 "Not yet marks it and moves on. Branches with topics under "
                 "them are asked, and then each topic that has a note: its note is the "
                 "answer, read out in the bar when you press Show. Nothing on the map changes. Your marks are kept "
-                "for that map on this device, a branch you missed says so next "
-                "time, and the end says how many you recalled. Esc stops. "
+                "for that map on this device, and the next run is spaced: what you missed first, then what is due "
+                "again (a day, 3, a week, 2, a month), then new ones; the palette's Study the map in map order "
+                "asks in the map's order. The end says how many you recalled. Esc stops. "
                 "Build up branch by branch shows the centre, then each branch a level at a time; Previous takes the last part away, End shows the whole map to take it apart; the map is not changed."
             ),
             "badge": {"label": "Library", "tab": "library"},
@@ -1106,7 +1107,8 @@ MID_TOPICS.extend(
                 "Emoji and icons… keeps it open: press one to place it "
                 "in the middle of the view, or drag it where it goes. An emoji lands "
                 "as a sticker (no card, resize it like any item), an icon as a shape "
-                "you can recolour; dropped on a map topic, either becomes that "
+                "you can recolour (select one with copies, then Insert, Emoji and icons, "
+                "Match all copies, makes every copy look like it; Swap everywhere changes an icon or an emoji in every place); dropped on a map topic, either becomes that "
                 "topic's icon. Each is one Undo step. In a note or a document, the "
                 "smiley in a note's formatting toolbar, the Insert button or "
                 "Emoji or icon in the / menu puts one at the caret: an emoji as "
@@ -1152,7 +1154,7 @@ MID_TOPICS.extend(
                 "the Text menu's Icon row has eleven, and More icons and emoji… "
                 "opens every Phosphor icon and about 470 emoji, searchable, with "
                 "your recent ones first; an emoji or an icon, one per topic. How this map looks, Colour every level, "
-                "gives each depth its own colour, and Show a legend draws the branch colours and the markers in use."
+                "gives each depth its own colour, and Show a legend draws the branch colours and the markers in use. Save this look there names a map's whole look to apply to another map. In a topic's text, bold, italic, code, an equation and a link written in Markdown draw as such; Ctrl+click opens a link."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

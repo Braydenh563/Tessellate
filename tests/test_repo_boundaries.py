@@ -49,8 +49,9 @@ CROSS_RESOURCE = {"routes_spaces.py"}
 #: category, the graph fingerprint, exports and counts, the map's and the
 #: board's category names) to repo/categories.py: 694; the spaces' id, list, find
 #: and count reads to repo/spaces.py: 688; the chat attach paths' Library upload
-#: reads to repo/uploads.py: 687.
-ORM_CALLS_CAP = 687
+#: reads to repo/uploads.py: 687; the affinity sort's sticky read to
+#: repo/whiteboard.py: 686.
+ORM_CALLS_CAP = 686
 
 _ORM = re.compile(
     r"\b(?:session|db)\.(?:query|get|execute|scalar|scalars|add|add_all|delete|merge)\("

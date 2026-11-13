@@ -1060,6 +1060,10 @@
           backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
           borderRadius: "3px",
         },
+        ".cm-finding-claim:hover": {
+          backgroundColor: "color-mix(in srgb, var(--warn) 14%, transparent)",
+          borderRadius: "3px",
+        },
         ".cm-finding-access:hover": {
           backgroundColor: "color-mix(in srgb, var(--accent) 12%, transparent)",
           borderRadius: "3px",
@@ -1097,6 +1101,19 @@
           textDecoration: "underline dotted",
           textDecorationThickness: "2px",
           textDecorationColor: "color-mix(in srgb, var(--accent) 80%, transparent)",
+        },
+        //: A claim no note backs (Phase G): dotted in the warning ink, the model's
+        //: dotted shape but not its accent, because it is about the notebook.
+        ".cm-finding-claim": {
+          textDecoration: "underline dotted",
+          textDecorationThickness: "2px",
+          textDecorationColor: "var(--warn)",
+        },
+        //: A claim a note supports: a thin quiet line, marked but not a warning.
+        ".cm-finding-backed": {
+          textDecoration: "underline solid",
+          textDecorationThickness: "1px",
+          textDecorationColor: "color-mix(in srgb, var(--muted) 60%, transparent)",
         },
         ".cm-finding-access": {
           textDecoration: "underline dashed",
