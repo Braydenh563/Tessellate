@@ -22,6 +22,7 @@ condition), and the contrast insight reads preferences, which are typed here.
 
 from __future__ import annotations
 
+import calendar
 import hashlib
 import re
 from collections import OrderedDict
@@ -219,10 +220,23 @@ def _anchor(note: dict) -> date | None:
     written = _written(note)
     edited = str(note.get("entry_edited_at") or note.get("edited_at") or note.get("updated_at") or "")
     try:
-        later = date.fromisoformat(edited[:10]) if re.match(r"\d{4}-\d{2}-\d{2}", edited) else None
+        later = date.fromisoformat(edited[:10]) if re.match(r"\d{4}-\d{2}-\d{2}", edited) else _edited_in_words(note)
     except ValueError:
         later = None
-    return max(written, later) if written and later else written
+    return max(written, later) if written and later else (written or later)
+
+
+_EDITED_WORDS = re.compile(r", edited \w+ (\d{1,2}) (\w+) (\d{4})")
+
+
+def _edited_in_words(note: dict) -> date | None:
+    """The edit day the chat route states in the note's `written` words ("..., edited Monday 2 November 2026,
+    10:00"), the only form a retrieved note carries it in (L106 E17)."""
+    found = _EDITED_WORDS.search(str(note.get("written") or ""))
+    months = [m.lower() for m in calendar.month_name]
+    if not found or found.group(2).lower() not in months:
+        return None
+    return date(int(found.group(3)), months.index(found.group(2).lower()), int(found.group(1)))
 
 
 def _line_units(content: str, line: str, start: int, body_end: int) -> list[tuple[int, int, str, bool | None]]:

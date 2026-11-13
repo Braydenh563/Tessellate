@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer, round 4 leftovers (L106): "what time is the dentist" is read as a when ("in 4 days", not "written back in October") and, when the note gives a day but no clock time, says so; an opener that already names the note ("The day in your note:") is no longer followed by "From your X note." (E23); a yearless date in a log extended later is read against the edit in the real chat route too, which carries the edit day only in its `written` words (E17: "about a year ago" for a run two weeks back). R3-2 (lead drops the label) could not be reproduced.
 - Chat row L107: the Guide's ask-chat topic now says Agent mode needs a model (the topic is 1,867 of the 1,900 characters its reply budget allows; the row's 1,916 was a stale count).
 - Chat row L124: every confirm card that rewrites a note's text (rename, add to the end, add or tick a todo line) is locked to the text it read (`base_hash`, `act_steps.locked_edit`), so a note edited after the card was made is refused, not overwritten; before, only add-to-today was.
 - Chat row L122: a model that fails after some words now leaves the answer composed from the notes (under the one-line stopped note) in place of the half sentence and an error; the server sends it as `answer_final`.
