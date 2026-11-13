@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sweeps: overlap.js no longer counts a deliberate overhang (an absolute badge, a negative-margin scroll row) as overflow: the three 4 px rows (#notes-tidy, timeline-body, library-controls) are gone, light totals 390 34 to 23 and 1440 24 to 18; errors.js clean at 1440, 1024, 820 and 390 (0 errors, 0 findings); revealcell.js passes 1440 live and source, 390 live, so nothing was broken (L606).
 - Sweeps: errors.js and touch.js wait for the lock to hide instead of a fixed 2.5 s (errors.js at 390: 0 errors, 0 findings; touch.js 390: no timeout), touch.js answers the first-run search offer and adds the Search and index and Tools sections; opening Search and index no longer throws `loadCurrencyRates is not a function` after the Settings controls load (touch.js findings 10 to 1) (L605, L606).
 - Filing: decide re-measured at 6.8 ms a call on 5,000 notes, under the old 8 to 17 ms tally; the 34 ms figure was stale (L535).
 - Code: one rule for a link to the app's own files (ownFileLinks in att-chip.js), read by the Library thumbnail, the graph panel and answer pictures (L544).
