@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat row L124: every confirm card that rewrites a note's text (rename, add to the end, add or tick a todo line) is locked to the text it read (`base_hash`, `act_steps.locked_edit`), so a note edited after the card was made is refused, not overwritten; before, only add-to-today was.
 - Chat row L122: a model that fails after some words now leaves the answer composed from the notes (under the one-line stopped note) in place of the half sentence and an error; the server sends it as `answer_final`.
 - Review 5883496750: "delete the X document" in Chat moves it to the recycle bin (`delete_document`, Undo is the new `restore_document` of the same row) and never matches a private document; an anchored reminder ("an hour before the gym") reads only public, non-board notes with a time still ahead (limit 500) and matches whole words; `/chat` captions an attached picture once; the on-disk undo log is written 0600 to a temp file and swapped in (RLock); the reading pick takes only a bare number.
 - Chat row L89 (Z49): Decision 54 stands (a computed sentence always says how it was read); the lines that only repeated their own answer are shorter: "Read as this computer's clock." for the time and date, "Read as the day after today." and "the day before today." for tomorrow and yesterday.

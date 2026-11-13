@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10890, test files 2732, tests 22109, plan headings 689, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10892, test files 2733, tests 22111, plan headings 689, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8365)
 
@@ -13963,7 +13963,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10890)
+## Backend modules (10892)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14070,7 +14070,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `propose` | src/tessellate/ai/act_registry.py:63 |
 | `typed_reader` | src/tessellate/ai/act_registry.py:43 |
 
-### src/tessellate/ai/act_steps.py (5)
+### src/tessellate/ai/act_steps.py (7)
 
 | Name | File:line |
 |---|---|
@@ -14078,7 +14078,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `appended` | src/tessellate/ai/act_steps.py:24 |
 | `daily_note` | src/tessellate/ai/act_steps.py:44 |
 | `lock_undo` | src/tessellate/ai/act_steps.py:66 |
+| `locked_edit` | src/tessellate/ai/act_steps.py:85 |
 | `settle_step` | src/tessellate/ai/act_steps.py:52 |
+| `text_hash` | src/tessellate/ai/act_steps.py:78 |
 
 ### src/tessellate/ai/activity.py (39)
 
@@ -19984,11 +19986,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_kind_of` | src/tessellate/ai/task_acts.py:308 |
 | `_match` | src/tessellate/ai/task_acts.py:539 |
 | `_name` | src/tessellate/ai/task_acts.py:458 |
-| `_named` | src/tessellate/ai/task_acts.py:695 |
+| `_named` | src/tessellate/ai/task_acts.py:697 |
 | `_names_in` | src/tessellate/ai/task_acts.py:566 |
 | `_not_ticked` | src/tessellate/ai/task_acts.py:533 |
 | `_on_note` | src/tessellate/ai/task_acts.py:496 |
-| `_plan_each` | src/tessellate/ai/task_acts.py:626 |
+| `_plan_each` | src/tessellate/ai/task_acts.py:628 |
 | `_reminders` | src/tessellate/ai/task_acts.py:430 |
 | `_snooze_split` | src/tessellate/ai/task_acts.py:376 |
 | `_split_kind` | src/tessellate/ai/task_acts.py:291 |
@@ -19998,29 +20000,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_task_found` | src/tessellate/ai/task_acts.py:315 |
 | `_the_names` | src/tessellate/ai/task_acts.py:599 |
 | `_unquote` | src/tessellate/ai/task_acts.py:54 |
-| `_without_line` | src/tessellate/ai/task_acts.py:660 |
-| `counted_from` | src/tessellate/ai/task_acts.py:796 |
-| `item_in` | src/tessellate/ai/task_acts.py:816 |
-| `items_in` | src/tessellate/ai/task_acts.py:804 |
+| `_without_line` | src/tessellate/ai/task_acts.py:662 |
+| `counted_from` | src/tessellate/ai/task_acts.py:798 |
+| `item_in` | src/tessellate/ai/task_acts.py:818 |
+| `items_in` | src/tessellate/ai/task_acts.py:806 |
 | `note_called` | src/tessellate/ai/task_acts.py:172 |
-| `ordinal_of` | src/tessellate/ai/task_acts.py:786 |
+| `ordinal_of` | src/tessellate/ai/task_acts.py:788 |
 | `pick` | src/tessellate/ai/task_acts.py:476 |
 | `pick_each` | src/tessellate/ai/task_acts.py:575 |
-| `plan_cancel` | src/tessellate/ai/task_acts.py:653 |
-| `plan_complete` | src/tessellate/ai/task_acts.py:635 |
+| `plan_cancel` | src/tessellate/ai/task_acts.py:655 |
+| `plan_complete` | src/tessellate/ai/task_acts.py:637 |
 | `plan_into_list` | src/tessellate/ai/task_acts.py:182 |
-| `plan_snooze` | src/tessellate/ai/task_acts.py:667 |
-| `plan_task_line` | src/tessellate/ai/task_acts.py:753 |
-| `plan_uncomplete` | src/tessellate/ai/task_acts.py:645 |
+| `plan_snooze` | src/tessellate/ai/task_acts.py:669 |
+| `plan_task_line` | src/tessellate/ai/task_acts.py:755 |
+| `plan_uncomplete` | src/tessellate/ai/task_acts.py:647 |
 | `read_add` | src/tessellate/ai/task_acts.py:89 |
 | `read_cancel` | src/tessellate/ai/task_acts.py:354 |
 | `read_checklist_note` | src/tessellate/ai/task_acts.py:155 |
 | `read_complete` | src/tessellate/ai/task_acts.py:252 |
 | `read_snooze` | src/tessellate/ai/task_acts.py:391 |
 | `read_uncomplete` | src/tessellate/ai/task_acts.py:278 |
-| `run_step` | src/tessellate/ai/task_acts.py:703 |
-| `todo_note` | src/tessellate/ai/task_acts.py:743 |
-| `undo_step` | src/tessellate/ai/task_acts.py:730 |
+| `run_step` | src/tessellate/ai/task_acts.py:705 |
+| `todo_note` | src/tessellate/ai/task_acts.py:745 |
+| `undo_step` | src/tessellate/ai/task_acts.py:732 |
 
 ### src/tessellate/ai/taxonomy.py (50)
 
@@ -27902,7 +27904,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22109)
+## Tests (22111)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28205,6 +28207,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_checkpoint_race.py | 2 |
 | tests/test_chat_chips_cost_d28_1111.py | 1 |
 | tests/test_chat_dock.py | 12 |
+| tests/test_chat_edit_lock_1112.py | 2 |
 | tests/test_chat_failed_step.py | 1 |
 | tests/test_chat_flows_1031.py | 4 |
 | tests/test_chat_followups.py | 14 |
