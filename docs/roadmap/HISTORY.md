@@ -55546,3 +55546,9 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
 ## Moved from the plans, 2026-11-12 (TIMELINE spans)
 
 - **Date ranges as spans (TIMELINE_PLAN decision 13, L-timeline-4; the hub's review of PR 225).** `timewords` reads "3 to 7 March", "3-7 March", "March 3 to 7", "28 July until 2 August" and a range across a year end (forwards, at most 366 days); `EntryDate.until` stores the last day; `/timeline` serves `until` and a window inside the span holds the note. The feed and table label the row "3 Mar to 7 Mar"; the calendar draws a non-draggable "continues" ghost (`timelineCalSpanKeys`) on each later day. Measured at 1440: a note "Conference 10 to 13 November 2026" gave 1 chip and 3 ghosts, feed "To Nov 13". Tests: test_timeline_spans.py (13), test_timeline_spans_view.py (5). The BACKLOG row is removed.
+
+## Moved from the plans, 2026-11-13 (CHAT_PLAN C11)
+
+| C11 | Personality across voices | `natural` and `professional` (`VOICE_VARIANTS`); Gen Z voice to be removed (owner) | A third voice named in decision 26 ("playful") | Not built: needs the owner's yes after removing the Gen Z voice; until then two voices, each with a phrasebook test | none | n/a |
+
+Reconciled with decision 72 (L-chat-18): the four voices Warm and concise, Neutral, Playful and Plain are built in `composer_digest_sentences.VOICES` and `composer_compose.VOICE_OF`, chosen in Settings, Chat (`#pref-voice`, live sample `#pref-voice-sample`); `tests/test_answer_voice.py` pins the four options, the sample, facts and shape unchanged across voices, and five turns that never open the same way.
