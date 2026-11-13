@@ -20665,4 +20665,6 @@ header#top-bar[data-scrolled="1"],
    control's own `text-overflow: ellipsis` never reached the words: it was
    cut flat at the edge. The span shrinks and carries the ellipsis itself;
    it truncates only where the control already does not wrap. */
-.ph-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* Clipped across only (L-ui-modernisation-35): `hidden` cut a descender's
+   last pixel at 390 (Library, Skills). */
+.ph-text { min-width: 0; overflow-x: clip; text-overflow: ellipsis; }

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Short labels with an ellipsis no longer lose the bottom pixel of a descender (L-ui-modernisation-35).
 - With Appearance popped out, a link to one of its settings and a Settings search both land on the control in the panel (L-ui-modernisation-19).
 - A phone held sideways keeps the top bar on one row (L-ui-modernisation-37).
 - Focusing the notes filter shows an example of the query grammar that fits the box (L-ui-modernisation-16).
