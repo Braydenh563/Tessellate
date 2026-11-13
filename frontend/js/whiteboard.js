@@ -8427,6 +8427,7 @@ function wbApplyBulkMove(origin, dx, dy) {
       // A shape's text rides along (decision 12; `wbNudgeShapeLabel`).
       entry.labelEl?.setAttribute("transform", `translate(${dx} ${dy})`);
       entry.labelBgEl?.setAttribute("transform", `translate(${dx} ${dy})`);
+      entry.labelEl?.parentNode?.querySelector(":scope > .sketch-label-math")?.setAttribute("transform", `translate(${dx} ${dy})`);
       entry.item._liveD = newD;
     } else {
       entry.item.x = entry.x + dx;
@@ -14048,6 +14049,8 @@ function wbExportLook() {
       if (!el) return null;
       const clone = el.cloneNode(true);
       clone.removeAttribute("class");
+      //: Maths in a label (whiteboard-text-more.js) is a live overlay; the picture keeps the label's source words.
+      clone.querySelectorAll(":scope > .sketch-label-math").forEach((node) => node.remove());
       const labels = el.querySelectorAll(":scope > .sketch-label, :scope > .wb-link-label");
       const copies = clone.querySelectorAll(":scope > .sketch-label, :scope > .wb-link-label");
       labels.forEach((label, i) => {
@@ -20686,6 +20689,7 @@ function wbLayoutShapeLabel(groupEl) {
   for (const span of label.children) span.setAttribute("x", String(x));
   if (label.dataset.dir === "vertical") label.setAttribute("transform", `rotate(-90 ${area.cx} ${area.cy})`);
   wbFmtState.label?.backdrop(groupEl, label);
+  wbFmtState.textMore?.mathLabel(groupEl, label, area, fontSize);
 }
 
 //: **Text that shrinks to fit its shape** (`label_fit`; draw.io's autosize
@@ -20724,6 +20728,7 @@ function wbNudgeShapeLabel(groupEl, dx, dy) {
   const label = groupEl?.querySelector?.(":scope > .sketch-label");
   if (label) label.setAttribute("transform", `translate(${dx} ${dy})`);
   groupEl?.querySelector?.(":scope > .sketch-label-bg")?.setAttribute("transform", `translate(${dx} ${dy})`);
+  groupEl?.querySelector?.(":scope > .sketch-label-math")?.setAttribute("transform", `translate(${dx} ${dy})`);
 }
 
 //: The ink the label is written in: the theme's own text colour on an
@@ -20935,6 +20940,7 @@ function wbPaintShapeLabel(groupEl, parsed, sketch) {
   let label = groupEl.querySelector(":scope > .sketch-label");
   if (!text) {
     label?.remove();
+    groupEl.querySelector(":scope > .sketch-label-math")?.remove();
     wbFmtState.label?.drop(groupEl);
     return;
   }

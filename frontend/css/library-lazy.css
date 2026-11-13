@@ -2916,6 +2916,16 @@ body.printing-doc #doc-preview p,
   user-select: none;
 }
 
+.wb-label-math {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  line-height: 1.2;
+}
+
 /* The one-line editor over a connector sits on the line, so it takes the
    card's ground to stay readable over it. */
 .wb-shape-label-editor.wb-link-label-editor {

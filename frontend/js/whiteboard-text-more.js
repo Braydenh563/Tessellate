@@ -84,5 +84,74 @@
     return out;
   }
 
-  wbFmtState.textMore = { splitScripts, hasScripts, paintScripts, scriptSpans, markScripts };
+  // --- Maths in a shape's words ----------------------------------------------------------------------------
+  //: A `$...$` span the document renderer accepts as maths (`docMathLooksLikeMath`: no space inside the dollars, so "$5 and
+  //: $10" stays prose). A text box that shows its markdown already draws these through `renderMarkdown`.
+  const DOLLARS = /(?<![\\$])\$([^$\n]+?)\$(?!\d)/g;
+  const looksLikeMath = (body) => Boolean(window.docMathLooksLikeMath?.(body));
+
+  //: Pure given the test: the text as `{ text }` and `{ math }` pieces.
+  function mathPieces(text, looks = looksLikeMath) {
+    const source = String(text ?? "");
+    const out = [];
+    let cursor = 0;
+    for (const hit of source.matchAll(DOLLARS)) {
+      if (!looks(hit[1])) continue;
+      if (hit.index > cursor) out.push({ text: source.slice(cursor, hit.index) });
+      out.push({ math: hit[1] });
+      cursor = hit.index + hit[0].length;
+    }
+    if (cursor < source.length) out.push({ text: source.slice(cursor) });
+    return out;
+  }
+  const hasMath = (text, looks) => mathPieces(text, looks).some((p) => p.math !== undefined);
+
+  //: Draws a label that holds maths over the shape as a foreignObject of MathML (`docMathRender`, documents-math.js, in the
+  //: Library bundle that the board bundle includes). The SVG <text> underneath keeps the source and the layout and is
+  //: hidden by `opacity` on the live board; the export clone drops the style and the foreignObject, so a picture
+  //: carries the source words (`$x^2$`) rather than a MathML island no image reader can draw. No maths, or no renderer:
+  //: the object is taken away and the text shows as before.
+  function mathLabel(groupEl, label, area, fontSize) {
+    let fo = groupEl.querySelector(":scope > .sketch-label-math");
+    const text = label.__wbText;
+    if (!area || !window.docMathRender || label.dataset.dir === "vertical" || !hasMath(text)) {
+      fo?.remove();
+      label.style.opacity = "";
+      return;
+    }
+    if (!fo) {
+      fo = document.createElementNS(NS, "foreignObject");
+      fo.setAttribute("class", "sketch-label-math");
+      fo.setAttribute("pointer-events", "none");
+      label.after(fo);
+      const box = document.createElement("div");
+      box.className = "wb-label-math";
+      fo.append(box);
+    }
+    fo.removeAttribute("transform");
+    fo.setAttribute("x", String(area.cx - area.w / 2));
+    fo.setAttribute("y", String(area.cy - area.h / 2));
+    fo.setAttribute("width", String(area.w));
+    fo.setAttribute("height", String(area.h));
+    const box = fo.firstElementChild;
+    const align = label.dataset.align;
+    box.style.justifyContent = align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center";
+    box.style.textAlign = align || "center";
+    box.style.fontSize = `${fontSize}px`;
+    box.style.color = getComputedStyle(label).fill;
+    const parts = [];
+    for (const piece of mathPieces(text)) {
+      if (piece.math === undefined) parts.push(document.createTextNode(piece.text));
+      else {
+        const span = document.createElement("span");
+        span.className = "md-math-inline";
+        span.append(window.docMathRender(piece.math, false));
+        parts.push(span);
+      }
+    }
+    box.replaceChildren(...parts);
+    label.style.opacity = "0";
+  }
+
+  wbFmtState.textMore = { splitScripts, hasScripts, paintScripts, scriptSpans, markScripts, mathPieces, hasMath, mathLabel };
 })();

@@ -53,3 +53,23 @@ def test_the_board_calls_it_at_the_three_places_words_are_drawn():
     assert "wbFmtState.textMore?.scriptSpans(span, fontSize)" in wb
     assert "wbFmtState.textMore?.markScripts(" in wb
     assert "/js/whiteboard-text-more.js" in frontend_text("lazy-entries.js")
+
+
+def test_dollar_spans_split_into_text_and_maths_and_prose_dollars_stay_text():
+    looks = "(body) => !/^\\s|\\s$/.test(body)"
+    out = _node(f"console.log(JSON.stringify(wbFmtState.textMore.mathPieces('Area $x^2$ and $5 or $10', {looks})));")
+    assert out == [{"text": "Area "}, {"math": "x^2"}, {"text": " and $5 or $10"}]
+    out = _node(f"console.log(JSON.stringify(wbFmtState.textMore.mathPieces('costs $5 or $10', {looks})));")
+    assert out == [{"text": "costs $5 or $10"}]
+
+
+def test_has_maths_is_false_without_a_span_or_a_renderer():
+    assert _node("console.log(JSON.stringify(wbFmtState.textMore.hasMath('no dollars here', () => true)));") is False
+    assert _node("console.log(JSON.stringify(wbFmtState.textMore.hasMath('$a$', () => true)));") is True
+
+
+def test_the_label_math_overlay_is_called_laid_out_and_dropped_from_the_export():
+    wb = frontend_text("whiteboard.js")
+    assert "wbFmtState.textMore?.mathLabel(groupEl, label, area, fontSize)" in wb
+    assert '":scope > .sketch-label-math"' in wb
+    assert "innerHTML" not in frontend_text("whiteboard-text-more.js")
