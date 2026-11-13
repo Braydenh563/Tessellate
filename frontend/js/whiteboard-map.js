@@ -5004,6 +5004,41 @@ function wbMapCatchTypeahead(e) {
 //: under it waits for the same thing here.
 let wbMapProvisionalSeq = 0;
 
+//: **The add's render: the objects layer only, when that is all a new topic
+//: changes** (L-mindmap-13). `renderWhiteboardNow` redrew the cards, the
+//: sketches, the frames and the bounds for one new topic (76 of 121ms at 390,
+//: 6x CPU, 41 topics). The join in `renderWbObjects` adds the one element and
+//: its paint key skips every topic that did not change; the lines are drawn by
+//: `wbRenderRelease` (`renderHold.edges`), the overview by the cull. The new
+//: topic's `contenteditable` is written inside that pass (`renderHold.editId`),
+//: before its measure read, so the editor's focus finds a clean tree. Anything
+//: else (an expanded fold, a drawn line in the plan, a live search, the
+//: outline taking the topic) and any throw is the whole render, as before.
+wbMapCache.renderAdd = function (created, origin, expand) {
+  const layer = document.getElementById("wb-html-layer");
+  const searching = wbBoardSearch.matches.length || wbBoardSearch.query.trim();
+  const plain = origin ? [...origin.values()].every((entry) => entry.kind !== "sketch") : true;
+  if (wbIsMap() && layer && !expand && plain && !searching && !wbOutlineState.adding && wbAddGate.renderHold) {
+    try {
+      wbItemElCache.clear();
+      wbItemElIndex.count = -1;
+      wbNavState.stale = true;
+      wbAddGate.renderHold.editId = created.id;
+      renderWbObjects(d3.select(layer));
+      wbAddGate.renderHold.edges = true;
+      wbScheduleCull();
+      wbRenderNavigator();
+      wbSyncBoardCount();
+      wbMapAfterRender();
+      return true;
+    } catch (error) {
+      console.warn("map add: whole render instead", error);
+    }
+  }
+  renderWhiteboardNow();
+  return false;
+};
+
 async function wbMapAddChild(parentId, { order = null } = {}) {
   const boardId = window.currentBoardId;
   if (!boardId) return null;
@@ -5063,7 +5098,7 @@ async function wbMapAddChild(parentId, { order = null } = {}) {
   wbAddGate.barDeferred = true;
   wbAddGate.renderHold = { moves: [], edges: false };
   try {
-    renderWhiteboardNow();
+    wbMapCache.renderAdd(created, origin, expand);
     selectWbItem("object", created.id);
     wbMapEditNode(created.id, { now: true });
     wbMapRevealTopic(created);
