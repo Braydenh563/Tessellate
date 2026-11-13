@@ -104,7 +104,8 @@ const chatTimeWatch = new MutationObserver((records) => {
       continue;
     }
     const bubble = record.target;
-    if (bubble.dataset.at && bubble.querySelector(":scope > .msg-meta:not(.msg-meta-solo)")) {
+    //: The foot bar too: the cost row moves there before this runs (L456).
+    if (bubble.dataset.at && bubble.querySelector(":scope > .msg-meta:not(.msg-meta-solo), :scope > .answer-foot-bar > .msg-meta:not(.msg-meta-solo)")) {
       paintChatTime(bubble, bubble.dataset.at);
     }
   }

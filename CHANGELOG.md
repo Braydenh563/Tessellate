@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat: a live answer shows its time at the end of its meta line again; the line moved into the answer's foot bar before the time was looked for (L456).
 - First run: the welcome's preferences card asks whether to check for a newer version, so the separate update question no longer follows it; a new install takes two acts (welcome, recovery key) before the dashboard, not three (L451).
 - Panels pad 12px and a sidebar sits 8px from its content, as UI plan Phase 12 decision 1 set (L450); the Notes dock stays one row from 820 to 1640.
 - Accessibility: an error toast is an alert, said at once (Radix's foreground toast, the app's other failures); the Radix, shadcn and APG comparison is recorded in HISTORY, element by element (L440). The 390 focus and edge sweep finds no ring cut on a fixed sheet (L436).

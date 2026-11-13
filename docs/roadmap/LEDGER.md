@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 30 | 4 | 0 | 19 | 130 |
+| ui-modernisation | 96 | 29 | 4 | 0 | 19 | 129 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 542 | 154 | 3 | 184 | 1249 |
+| all | 553 | 541 | 154 | 3 | 184 | 1248 |
 
 ## graph
 
@@ -451,7 +451,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
 - [ ] **L455** `ui-modernisation` open, M: Brief 56 measures: 1024/820, dark counts, chat, doc AI panel. From OPEN.md:2920. Evidence: Measures not taken; sweep work
-- [ ] **L456** `ui-modernisation` open, M: Density decision 7: chat bubble metadata and library cards. From OPEN.md:3805. Evidence: Only note cards changed
 - [ ] **L457** `ui-modernisation` open, M: Give icon toggles (map toggles, ask-time-travel, ocr-zoom-fit) a glyph swap, not just pressed fill. From OPEN.md:3899. Evidence: wb-map-core still toggles a class only (whiteboard-map.js:2607, 7569); ask-time-travel and ocr-zoom-fit not given glyph swaps. Sweep also saw only 11 toggles with no content.
 - [ ] **L458** `ui-modernisation` open, M: Name and fix dashboard overflow at 320/390/820+ by rerunning the sweep. From OPEN.md:1839; OPEN.md:3701. Evidence: Selectors not named; no fix recorded
 - [ ] **L460** `ui-modernisation` open, M: Measure dashboard muted text contrast over Wander and Drift backgrounds. From agent-remaining/bgart-1436.md. Evidence: Contrast of the dashboard's muted text over Wander and Drift (`bgartcontrast.js` not run).
