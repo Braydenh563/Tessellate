@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Claim check reads a line of many tabs or full stops in linear time (CodeQL 2290): the list marker is matched after the indent, and the abbreviation check reads back one word, not the line.
 - Group by theme and Check claims run their bounded model call on a listed `jobs.future` thread, not a private executor.
 - Map: a render with no board search live no longer walks every object to clear search marks (no change measurable in the Tab-to-editable median, 104-117 ms at 6x; the rest is the focus flush itself).
 - The affinity sort reads its stickies through `repo/whiteboard.py`; the router ORM cap drops to 686.

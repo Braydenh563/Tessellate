@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 DOC = (
     "# Garden plan\n\n"
     "Tomatoes need pruning every single week in summer. The compost heap must be turned monthly by hand. "
@@ -154,3 +156,19 @@ def test_a_slow_model_times_out_and_the_words_rule_answers(ai_client, fake_ollam
     assert time.perf_counter() - started < 0.9
     assert got["source"] == "words" and got["reason"] == "failed"
     assert _verdicts(got)["Tomatoes need pruning"] == "supported"
+
+
+@pytest.mark.parametrize(
+    "hostile",
+    ["\t" * 100_000, " \t" * 50_000 + "x", "- " + "\t" * 100_000, "a." * 50_000, "x" + ". " * 50_000],
+)
+def test_a_line_of_many_tabs_or_stops_is_read_in_linear_time(hostile):
+    """CodeQL 2290: the list-marker pattern ran slow on many tabs; the
+    abbreviation check re-read the line before every full stop."""
+    import time
+
+    from tessellate.api.routes_document_claims import _claims
+
+    started = time.perf_counter()
+    _claims(hostile + "\n")
+    assert time.perf_counter() - started < 0.5

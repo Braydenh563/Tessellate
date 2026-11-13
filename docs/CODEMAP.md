@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8402, frontend ids 2770, CSS sections 524, backend routes 707, backend modules 10841, test files 2724, tests 22049, plan headings 690, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8402, frontend ids 2770, CSS sections 524, backend routes 707, backend modules 10841, test files 2724, tests 22050, plan headings 690, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8402)
 
@@ -13917,7 +13917,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{document_id}/bookmarks` | GET | `document_bookmarks` | src/tessellate/api/routes_documents.py:272 |
 | `/{document_id}/bookmarks` | POST | `attach_bookmark` | src/tessellate/api/routes_documents.py:285 |
 | `/{document_id}/bookmarks/{bookmark_id}` | DELETE | `detach_bookmark` | src/tessellate/api/routes_documents.py:295 |
-| `/{document_id}/claim-check` | POST | `claim_check` | src/tessellate/api/routes_document_claims.py:204 |
+| `/{document_id}/claim-check` | POST | `claim_check` | src/tessellate/api/routes_document_claims.py:211 |
 | `/{document_id}/connections` | GET | `document_connections` | src/tessellate/api/routes_documents.py:947 |
 | `/{document_id}/export.md` | GET | `export_markdown` | src/tessellate/api/routes_documents.py:973 |
 | `/{document_id}/export.zip` | GET | `export_bundle` | src/tessellate/api/routes_documents.py:1015 |
@@ -21827,15 +21827,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `ClaimBody` | src/tessellate/api/routes_document_claims.py:51 |
-| `_ask_model` | src/tessellate/api/routes_document_claims.py:145 |
+| `_ask_model` | src/tessellate/api/routes_document_claims.py:152 |
 | `_claims` | src/tessellate/api/routes_document_claims.py:70 |
 | `_front_matter_end` | src/tessellate/api/routes_document_claims.py:55 |
-| `_message` | src/tessellate/api/routes_document_claims.py:196 |
-| `_model_verdicts` | src/tessellate/api/routes_document_claims.py:172 |
-| `_notes_for` | src/tessellate/api/routes_document_claims.py:120 |
-| `_sentences` | src/tessellate/api/routes_document_claims.py:101 |
-| `_words_rule` | src/tessellate/api/routes_document_claims.py:138 |
-| `claim_check` | src/tessellate/api/routes_document_claims.py:205 |
+| `_message` | src/tessellate/api/routes_document_claims.py:203 |
+| `_model_verdicts` | src/tessellate/api/routes_document_claims.py:179 |
+| `_notes_for` | src/tessellate/api/routes_document_claims.py:127 |
+| `_sentences` | src/tessellate/api/routes_document_claims.py:106 |
+| `_words_rule` | src/tessellate/api/routes_document_claims.py:145 |
+| `claim_check` | src/tessellate/api/routes_document_claims.py:212 |
 
 ### src/tessellate/api/routes_documents.py (64)
 
@@ -27865,7 +27865,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22049)
+## Tests (22050)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28830,7 +28830,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doctor_offline.py | 4 |
 | tests/test_document_archive.py | 5 |
 | tests/test_document_bookmarks.py | 7 |
-| tests/test_document_claim_check.py | 9 |
+| tests/test_document_claim_check.py | 10 |
 | tests/test_document_diff.py | 3 |
 | tests/test_document_export_html.py | 5 |
 | tests/test_document_import.py | 12 |
@@ -31203,7 +31203,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1008 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1004 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31232,7 +31232,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | The thesis | docs/ROADMAP.md:39 |
 | The tracks, in order (each a brief; the agent model in brackets) | docs/ROADMAP.md:113 |
 | The two bars that are not docks (added by direct instruction) | docs/roadmap/UI_MODERNISATION_PLAN.md:448 |
-| Timeline, parked 2026-11-12 | docs/roadmap/BACKLOG.md:4425 |
+| Timeline, parked 2026-11-12 | docs/roadmap/BACKLOG.md:4429 |
 | Traps that have each cost real time | docs/ROADMAP.md:380 |
 | Vector index: sqlite-vec when the notebook outgrows brute force (owner question, 2026-11-11, INBOX 1733) | docs/roadmap/BACKLOG.md:4387 |
 | Vendored capabilities to use, 2026-10-10 (Brief 75) | docs/roadmap/CHAT_PLAN.md:1698 |
@@ -31257,25 +31257,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:26 |
-| chat | docs/roadmap/LEDGER.md:1024 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1108 |
+| chat | docs/roadmap/LEDGER.md:1020 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1104 |
 | documents | docs/roadmap/LEDGER.md:329 |
-| documents | docs/roadmap/LEDGER.md:1048 |
+| documents | docs/roadmap/LEDGER.md:1044 |
 | general | docs/roadmap/LEDGER.md:769 |
 | graph | docs/roadmap/LEDGER.md:23 |
-| graph | docs/roadmap/LEDGER.md:1012 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1120 |
+| graph | docs/roadmap/LEDGER.md:1008 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1116 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:409 |
-| mindmap | docs/roadmap/LEDGER.md:1060 |
+| mindmap | docs/roadmap/LEDGER.md:1056 |
 | timeline | docs/roadmap/LEDGER.md:530 |
-| timeline | docs/roadmap/LEDGER.md:1084 |
+| timeline | docs/roadmap/LEDGER.md:1080 |
 | ui-modernisation | docs/roadmap/LEDGER.md:413 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1072 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1068 |
 | whiteboard | docs/roadmap/LEDGER.md:283 |
-| whiteboard | docs/roadmap/LEDGER.md:1036 |
+| whiteboard | docs/roadmap/LEDGER.md:1032 |
 | world-class | docs/roadmap/LEDGER.md:533 |
-| world-class | docs/roadmap/LEDGER.md:1096 |
+| world-class | docs/roadmap/LEDGER.md:1092 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

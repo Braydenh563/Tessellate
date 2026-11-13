@@ -81,7 +81,8 @@ def _claims(text: str) -> list[tuple[int, int]]:
             continue
         if fenced or start < skip_to or not stripped or stripped[0] in "#|":
             continue
-        marker = _LIST_MARKER.match(line)
+        indent = len(line) - len(line.lstrip(" \t"))
+        marker = _LIST_MARKER.match(line, indent)
         for at, end in _sentences(line, marker.end() if marker else 0):
             sentence = line[at:end]
             lead = len(sentence) - len(sentence.lstrip())
@@ -92,8 +93,12 @@ def _claims(text: str) -> list[tuple[int, int]]:
 
 
 #: A real list or quote marker only: a sentence's own number ("2024 revenue
-#: rose") is part of the claim, not a marker to strip.
-_LIST_MARKER = re.compile(r"[ \t]*(?:[-*+>]|\d{1,3}[.)])[ \t]+")
+#: rose") is part of the claim, not a marker to strip. Matched after the
+#: indent is skipped by `lstrip`, so no pattern repeats over the tabs
+#: (CodeQL 2290: a leading `[ \t]*` was polynomial on many tabs).
+_LIST_MARKER = re.compile(r"(?:[-*+>]|\d{1,3}[.)])[ \t]+")
+#: The longest word the abbreviation check reads back from a full stop.
+_WORD_BACK = 24
 #: Words whose full stop ends no sentence.
 _ABBREVIATIONS = frozenset({"etc.", "vs.", "mr.", "mrs.", "ms.", "dr.", "st.", "no.", "approx.", "cf."})
 
@@ -107,7 +112,9 @@ def _sentences(line: str, begin: int) -> list[tuple[int, int]]:
         if m.start() < begin:
             continue
         if line[m.start()] == ".":
-            word = line[:m.end()].rsplit(None, 1)[-1].lower()
+            #: Read back at most `_WORD_BACK` characters, not the whole line
+            #: before each stop: linear on a line of many stops.
+            word = line[max(begin, m.end() - _WORD_BACK) : m.end()].rsplit(None, 1)[-1].lower()
             if "." in word[:-1] or word in _ABBREVIATIONS:
                 continue
         out.append((at, m.end()))
