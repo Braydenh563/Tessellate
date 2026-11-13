@@ -322,8 +322,11 @@ function trackSeparatorValue(handle, panel, min, max, axis = "width") {
     handle.setAttribute("aria-valuenow", Math.min(Math.max(now, min), max));
     handle.setAttribute("aria-valuetext", `${now} pixels ${tall ? "tall" : "wide"}`);
   };
-  write(size() || min);
-  if (typeof ResizeObserver === "function") {
+  //: The observer reports the first size itself, so only a browser without one reads layout here
+  //: (a sync read on the first Chat open forced 13ms of layout inside the press).
+  if (typeof ResizeObserver !== "function") write(size() || min);
+  else {
+    write(min); // a placeholder until the observer's first report (a hidden panel never reports a size)
     new ResizeObserver((entries) => {
       const box = entries[entries.length - 1].borderBoxSize?.[0];
       write((tall ? box?.blockSize : box?.inlineSize) ?? size());

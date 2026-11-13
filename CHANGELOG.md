@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Perf: the first Chat open no longer reads the sidebar's size in the press (forced layout 21.6 to 9 ms), and a hidden Chat no longer forces the Notes tab's layout as it goes away (29 to 13 ms at 5,000 notes) (L600).
 - Boot scripts 185 bytes lighter: two helpers moved beside their only lazy caller (L610, L611).
 - Night shift: one progress bar across its phases, and the pairing phase scored in one go: 12.6 to 1.9 s at 1,000 notes with the same findings (L614).
 - CI: the budgets spec no longer flaps; it runs alone on one worker, and the last 25 CI runs show no budget failure (L602).

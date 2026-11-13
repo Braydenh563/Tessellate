@@ -615,7 +615,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L597** `world-class` open, M: Trace Settings > Models long tasks and pointerdown lag and cut its 15,191 elements. From OPEN.md:4267; OPEN.md:4284; bs-1111.md. Evidence: Needs a performance trace; same as HR18, no fix recorded.
 - [ ] **L598** `world-class` open, M: Notes tab-switch pointerup 312 ms and dashboard timer frames (1643b). From OPEN.md:4330. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L599** `world-class` open, M: Settings backdrop click 880 ms and card pointerout 312-344 ms (1620lag). From OPEN.md:4333. Evidence: W34 true-deferred, w34-fix2-1111.md.
-- [ ] **L600** `world-class` open, M: Remove sub-16 ms forced layout per press (tab, Settings, pointerenter, atlas.js step). From OPEN.md:4423. Evidence: w34-unv2-1111.md marks true; no number under 16 ms recorded for all four paths
 - [ ] **L603** `world-class` open, M: Cut first interaction 4.4 s, re-measure 5,000-note list/search, add budgets UI. From OPEN.md:650; OPEN.md:2653. Evidence: No budgets UI in Settings found; re-measure not recorded
 - [ ] **L607** `world-class` open, M: Exercise real log stream under load. From OPEN.md:1484. Evidence: Needs sustained load run; only seeded 275-record check recorded
 - [ ] **L608** `world-class` open, M: Sweep not reaching right-click menus, keyboard acts, pickers, library delete. From OPEN.md:1836; OPEN.md:3695. Evidence: Coverage gap; no sweep added found
@@ -702,6 +701,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-32** `world-class` open, M: Settings sweep: two avatar look pickers and the web search switch do not undo. From scratchpad/ui-sweeps/undo.js ONLY=settings 2026-11-12. Evidence: profile-look-look and profile-look-mood (companion-settings.js:146 markPrefsDirty) and pref-web-search stay NOT UNDONE in the sweep; the first two keep the style in memory, so a later autosave re-sends it
 - [ ] **L-world-class-35** `world-class` open, M: Finder chip row: a scroll-row arrow covers a chip's centre at 390 (touch.js). From touch.js 390 Find anything. Evidence: scratchpad/ui-sweeps/touch.js: button.library-chip.finder-chip at 208,178 is covered by button.scroll-row-arrow (1 covered finding at 390)
 - [ ] **L-world-class-36** `world-class` open, M: Overlap sweep left real overflows: doc-statusbar, Settings xn-localllm button, note-meta-more chip, reminder date at 320. From overlap.js 2026-11-13 after L606. Evidence: scratchpad/ui-sweeps/overlap-a: 390 o23 c1, 1440 o18; #doc-statusbar 80px at 320-820, #xn-localllm button 21px at 320/390, .chip.note-meta-more 10px at 390, #reminder-groups entry-date 2px at 320
+- [ ] **L-world-class-37** `world-class` open, M: First Settings open forces 25-33 ms layout in nameMarkRasterise (over the 16 ms line once per session). From perf-1113 probe. Evidence: frontend/js/avatars.js:1327 nameMarkRasterise getBoundingClientRect 23-28 ms forced inside the first Settings open (31-33 ms total; repeat open 0.1-2 ms)
 
 ## general
 

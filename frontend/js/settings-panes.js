@@ -291,6 +291,9 @@ function fitChatEmpty() {
   const pane = document.getElementById("chat-messages");
   const empty = pane?.querySelector(".chat-empty");
   if (!empty) return;
+  //: A hidden Chat has no room to read, and reading it forced the whole page's layout (the Notes tab's
+  //: 5,000 rows, 20ms) from the observer's frame as Chat went away. The class test costs no layout.
+  if (pane.closest(".tab-page.hidden")) return;
   const room = pane.clientHeight;
   if (!room) return;
   const short = empty.classList.contains("is-short");
