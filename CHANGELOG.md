@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Library gallery tiles are built in eight named steps instead of one 1,500 line function (L-ui-modernisation-17).
 - Short labels with an ellipsis no longer lose the bottom pixel of a descender (L-ui-modernisation-35).
 - With Appearance popped out, a link to one of its settings and a Settings search both land on the control in the panel (L-ui-modernisation-19).
 - A phone held sideways keeps the top bar on one row (L-ui-modernisation-37).

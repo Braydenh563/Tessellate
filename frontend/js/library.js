@@ -9188,60 +9188,13 @@ function renderLibraryImageOrigins() {
   }
 }
 
-function filterLibraryImagesGallery() {
-  const grid = $("library-images-grid");
-  const empty = $("library-images-empty");
-  const noMatch = $("library-images-no-match");
-  if (!grid) return;
-  const query = ($("library-images-search")?.value || "").trim().toLowerCase();
-  // Kind first, then the search box. Both the "nothing here" and the "nothing
-  // matches" states below are about *this* sub-tab, so the count they test
-  // has to be the kind-filtered one, otherwise a notebook holding only PDFs
-  // would show the Images tab as "no match for your search" with an empty
-  // search box.
-  const readState = libraryMediaKind === "files" ? $("library-media-read")?.value || "all" : "all";
-  const ofKind = libraryImagesCache
-    .filter((i) => (libraryMediaKind === "files" ? !i._isImage : i._isImage))
-    //: Applied with the kind rather than with the search box, deliberately:
-    //: the empty-state copy below distinguishes "nothing in this sub-tab" from
-    //: "nothing matches your search", and a read filter is part of *which
-    //: files this sub-tab is showing*, not part of the query.
-    .filter((i) => {
-      if (readState === "read") return mediaHasBeenRead(i);
-      if (readState === "unread") return !mediaHasBeenRead(i);
-      return true;
-    })
-    //: The Images half of the same idea: which kind of picture is part of
-    //: which pictures this sub-tab shows, so it is applied with the kind and
-    //: the sort still runs over what is left.
-    .filter((i) => libraryMediaKind === "files" || libraryImageOriginsOn.has(libraryImageOrigin(i)));
-  renderLibraryImageOrigins();
-  nounCount.dock("library-media", ofKind.length, libraryMediaKind === "files" ? "file" : "image");
-  //: The empty state's Upload is the action while there is nothing (unslop 1103, 18); the dock's steps aside.
-  $("library-images-upload")?.classList.toggle("hidden", !ofKind.length);
-  const matched = query
-    ? ofKind.filter(
-        (i) =>
-          (i.original_name || "").toLowerCase().includes(query) ||
-          (i.ocr_text || "").toLowerCase().includes(query) ||
-          (i.caption || "").toLowerCase().includes(query)
-      )
-    : ofKind;
-  //: Sorted last, on a copy. A copy because `ofKind` can *be*
-  //: `libraryImagesCache` when nothing is filtered, and sorting in place would
-  //: silently reorder the cache every other reader shares, including the
-  //: lightbox's own "N of M" and its prev/next, which index into the array
-  //: this function hands them.
-  const images = [...matched].sort(LIBRARY_MEDIA_SORTS[libraryMediaSort()]);
-  grid.replaceChildren();
-  if (!ofKind.length) {
-    empty?.classList.remove("hidden");
-    noMatch?.classList.add("hidden");
-    return;
-  }
-  empty?.classList.add("hidden");
-  noMatch?.classList.toggle("hidden", images.length > 0);
-  for (const image of images) {
+//: **The gallery, split along its seams** (Brief 45, UI_MODERNISATION 13.2): one
+//: tile was 1,500 lines inside one function. Each step below builds one part of
+//: a tile and leaves on `t` what a later step reads. Wrapped so the steps add no
+//: names to the shared scope.
+const filterLibraryImagesGallery = (() => {
+  function galleryTileThumb(t) {
+    const { image, images } = t;
     const fig = document.createElement("figure");
     fig.className = "library-image-tile";
     //: A picture is staged by its media row, a note's attachment as `file`, an upload that is no picture (a PDF) as `upload`: the two tables number their rows apart (obj-ref.js).
@@ -9553,6 +9506,11 @@ function filterLibraryImagesGallery() {
     // written automatically in the background when a vision model is
     // available (routes_files.py's upload trigger), regenerated here only
     // on an explicit click, never silently overwritten.
+    Object.assign(t, { cap, del, fig, img, openThisRow, rename });
+  }
+
+  function galleryTileCaption(t) {
+    const { image, fig } = t;
     const captionBtn = document.createElement("button");
     captionBtn.type = "button";
     captionBtn.className = "ghost small icon-button library-image-caption-btn";
@@ -9654,10 +9612,10 @@ function filterLibraryImagesGallery() {
     //: build site: `setCaptionState` runs long before that point and has to
     //: be able to ask whether there is a section to hide yet, and reading a
     //: `const` before its own line throws rather than answering `undefined`.
-    let captionField = null;
+    t.captionField = null;
     function syncCaptionVisibility() {
-      if (!captionField) return;
-      captionField.classList.toggle(
+      if (!t.captionField) return;
+      t.captionField.classList.toggle(
         "hidden",
         !(image.caption || "") && !captionText.querySelector("textarea"),
       );
@@ -9694,7 +9652,7 @@ function filterLibraryImagesGallery() {
       //: Reached from the menu on a card whose description is empty, where
       //: the field is not rendered at all: showing it has to come before
       //: focusing it, or the caret lands in a `display: none` box.
-      captionField?.classList.remove("hidden");
+      t.captionField?.classList.remove("hidden");
       // Reported: the caption visibly collapsed the moment you clicked to
       // edit it. The clamp (-webkit-line-clamp, still on captionText from
       // whatever it was displaying a moment ago) treats its child as flowed
@@ -9815,6 +9773,11 @@ function filterLibraryImagesGallery() {
     // text." Same always-visible, click-to-edit shape as captionText above
     //, `POST /media/{id}/ocr` has no write-once guard, so the retry
     // button always re-reads rather than needing a force flag.
+    Object.assign(t, { captionBtn, captionText, provenance, startEditingCaption, syncCaptionVisibility, syncProvenance });
+  }
+
+  function galleryTileOcr(t) {
+    const { image, images } = t;
     const ocrBtn = document.createElement("button");
     ocrBtn.type = "button";
     ocrBtn.className = "ghost small icon-button library-image-ocr-btn";
@@ -9968,6 +9931,11 @@ function filterLibraryImagesGallery() {
     // this button is the manual re-read. Unlike the caption there is
     // nothing to prompt someone to type by hand here, so it stays hidden
     // until a read has actually happened (automatic or manual).
+    Object.assign(t, { ocrBtn, ocrOpenBtn, ocrText, ocrToggle });
+  }
+
+  function galleryTileVisionOcr(t) {
+    const { image, syncProvenance } = t;
     const visionOcrBtn = document.createElement("button");
     visionOcrBtn.type = "button";
     visionOcrBtn.className = "ghost small icon-button library-image-vision-ocr-btn";
@@ -10106,7 +10074,7 @@ function filterLibraryImagesGallery() {
     visionOcrBtn.addEventListener("click", async (event) => {
       event.stopPropagation();
       //: Same reason as `ocrBtn`'s: the spinner has to be somewhere visible.
-      revealReading();
+      t.revealReading();
       visionOcrBtn.disabled = true;
       setLabel(visionOcrText, "ph:spin Reading text…");
       try {
@@ -10158,6 +10126,11 @@ function filterLibraryImagesGallery() {
     //: authorised. `download` is what makes a `/media/{name}` row (served
     //: `inline`) save rather than open, and it is same-origin, so it is
     //: honoured.
+    Object.assign(t, { startEditingVisionOcr, visionOcrBtn, visionOcrText, visionOcrToggle });
+  }
+
+  function galleryTileActions(t) {
+    const { image, openThisRow, del, rename, captionBtn, startEditingCaption, ocrBtn, ocrOpenBtn, visionOcrBtn, startEditingVisionOcr } = t;
     const save = document.createElement("button");
     save.type = "button";
     save.className = "ghost small icon-button library-image-download";
@@ -10237,8 +10210,8 @@ function filterLibraryImagesGallery() {
     //: needed. A function declaration, so the click handlers registered above
     //: `fields` can call it once the card is built.
     function revealReading() {
-      if (!visionField.isConnected) fields.append(visionField);
-      visionField.open = true;
+      if (!t.visionField.isConnected) t.fields.append(t.visionField);
+      t.visionField.open = true;
     }
 
     //: Typing a reading by hand on a picture no reader has touched. The
@@ -10355,6 +10328,11 @@ function filterLibraryImagesGallery() {
     // and are now named as such. `library-image-field` is one block per
     // claim: a small label, the (editable) value, and the byline saying who
     // produced it.
+    Object.assign(t, { actions, revealReading });
+  }
+
+  function galleryTileFields(t) {
+    const { image, images, captionText, syncCaptionVisibility, ocrBtn, ocrText, ocrToggle, visionOcrText, visionOcrToggle, revealReading } = t;
     const field = (labelText, ...children) => {
       const section = document.createElement("section");
       section.className = "library-image-field";
@@ -10370,9 +10348,9 @@ function filterLibraryImagesGallery() {
     //: toggle belong together) and loses the "Description" heading: with the
     //: filename now on the picture and the readings folded away, this is the
     //: only prose left on the card and nothing else could be mistaken for it.
-    captionField = document.createElement("section");
-    captionField.className = "library-image-field library-image-describe";
-    captionField.append(captionText);
+    t.captionField = document.createElement("section");
+    t.captionField.className = "library-image-field library-image-describe";
+    t.captionField.append(captionText);
     syncCaptionVisibility();
     //: A PDF is not an image, and the heading said so anyway. Reported: "in
     //: the files tab, the ocr heading still says 'text in this image' when it
@@ -10468,7 +10446,7 @@ function filterLibraryImagesGallery() {
     readingBody.appendChild(ocrField);
     const fields = document.createElement("div");
     fields.className = "library-image-fields";
-    fields.append(captionField, visionField);
+    fields.append(t.captionField, visionField);
 
     // **Where this file is actually used.** Asked for as the Files tab being
     // "properly integrated" rather than just redesigned, and it was the one
@@ -10482,6 +10460,11 @@ function filterLibraryImagesGallery() {
     // (`media_gc.usage_map`), built from the same `referenced_names` the
     // orphan collector uses: if the two disagreed, a file this called "used"
     // could be one the collector deletes.
+    Object.assign(t, { fields, visionField });
+  }
+
+  function galleryTileUsage(t) {
+    const { image, grid, fig, img, cap, provenance, actions, fields } = t;
     const usage = document.createElement("div");
     usage.className = "library-image-usage";
     const links = Array.isArray(image.used_by) ? image.used_by : [];
@@ -10611,7 +10594,7 @@ function filterLibraryImagesGallery() {
       facts.append(fileMetaLine(image), strip, usage);
       fig.append(img, actions, cap, facts, fields, provenance);
       grid.appendChild(fig);
-      continue;
+      return true;
     }
     //: **The filename sits on the picture, not under it.** An image card is
     //: a picture and what is known about it; the name is what the picture is
@@ -10619,6 +10602,11 @@ function filterLibraryImagesGallery() {
     //: keeps it legible over a light photograph without a second surface.
     //: Files (the rows layout above) keep the name as a sibling: that layout
     //: puts the thumbnail out of flow and lays the text out beside it.
+    Object.assign(t, { links, usageFact });
+  }
+
+  function galleryTileFrame(t) {
+    const { image, images, grid, fig, img, cap, revealReading, actions, fields, links, usageFact } = t;
     const frame = document.createElement("div");
     frame.className = "library-image-frame";
     frame.append(img, cap);
@@ -10702,7 +10690,7 @@ function filterLibraryImagesGallery() {
     //:
     //: `fields` was built above for the Files rows, which stack the same two
     //: blocks unconditionally; an image card composes its own.
-    fields.replaceChildren(captionField);
+    fields.replaceChildren(t.captionField);
     const metaRow = document.createElement("div");
     //: The shared class plus a handle of its own, which is how all three of
     //: the Library's facts lines are built (`metaLine` above does the same for
@@ -10755,7 +10743,75 @@ function filterLibraryImagesGallery() {
     fig.append(frame, actions, fields);
     grid.appendChild(fig);
   }
-}
+
+  function galleryTile(image, images, grid) {
+    const t = { image, images, grid };
+    galleryTileThumb(t);
+    galleryTileCaption(t);
+    galleryTileOcr(t);
+    galleryTileVisionOcr(t);
+    galleryTileActions(t);
+    galleryTileFields(t);
+    if (galleryTileUsage(t)) return; // a file row is complete without the picture frame
+    galleryTileFrame(t);
+  }
+
+  return function filterLibraryImagesGallery() {
+    const grid = $("library-images-grid");
+    const empty = $("library-images-empty");
+    const noMatch = $("library-images-no-match");
+    if (!grid) return;
+    const query = ($("library-images-search")?.value || "").trim().toLowerCase();
+    // Kind first, then the search box. Both the "nothing here" and the "nothing
+    // matches" states below are about *this* sub-tab, so the count they test
+    // has to be the kind-filtered one, otherwise a notebook holding only PDFs
+    // would show the Images tab as "no match for your search" with an empty
+    // search box.
+    const readState = libraryMediaKind === "files" ? $("library-media-read")?.value || "all" : "all";
+    const ofKind = libraryImagesCache
+      .filter((i) => (libraryMediaKind === "files" ? !i._isImage : i._isImage))
+      //: Applied with the kind rather than with the search box, deliberately:
+      //: the empty-state copy below distinguishes "nothing in this sub-tab" from
+      //: "nothing matches your search", and a read filter is part of *which
+      //: files this sub-tab is showing*, not part of the query.
+      .filter((i) => {
+        if (readState === "read") return mediaHasBeenRead(i);
+        if (readState === "unread") return !mediaHasBeenRead(i);
+        return true;
+      })
+      //: The Images half of the same idea: which kind of picture is part of
+      //: which pictures this sub-tab shows, so it is applied with the kind and
+      //: the sort still runs over what is left.
+      .filter((i) => libraryMediaKind === "files" || libraryImageOriginsOn.has(libraryImageOrigin(i)));
+    renderLibraryImageOrigins();
+    nounCount.dock("library-media", ofKind.length, libraryMediaKind === "files" ? "file" : "image");
+    //: The empty state's Upload is the action while there is nothing (unslop 1103, 18); the dock's steps aside.
+    $("library-images-upload")?.classList.toggle("hidden", !ofKind.length);
+    const matched = query
+      ? ofKind.filter(
+          (i) =>
+            (i.original_name || "").toLowerCase().includes(query) ||
+            (i.ocr_text || "").toLowerCase().includes(query) ||
+            (i.caption || "").toLowerCase().includes(query)
+        )
+      : ofKind;
+    //: Sorted last, on a copy. A copy because `ofKind` can *be*
+    //: `libraryImagesCache` when nothing is filtered, and sorting in place would
+    //: silently reorder the cache every other reader shares, including the
+    //: lightbox's own "N of M" and its prev/next, which index into the array
+    //: this function hands them.
+    const images = [...matched].sort(LIBRARY_MEDIA_SORTS[libraryMediaSort()]);
+    grid.replaceChildren();
+    if (!ofKind.length) {
+      empty?.classList.remove("hidden");
+      noMatch?.classList.add("hidden");
+      return;
+    }
+    empty?.classList.add("hidden");
+    noMatch?.classList.toggle("hidden", images.length > 0);
+    for (const image of images) galleryTile(image, images, grid);
+  };
+})();
 
 // The Library's own sub-tab switcher, plus the Documents/Media sub-tabs'
 // refresh, search and upload controls, moved here from whiteboard.js's
