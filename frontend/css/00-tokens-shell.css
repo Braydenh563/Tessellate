@@ -1799,10 +1799,8 @@ button.scroll-row-arrow[hidden] {
   min-height: var(--control-h-lg);
 }
 .extras-row .entry-actions {
-  flex: 0 0 auto;
-  margin-left: auto;
   align-items: center;
-  /* INBOX 273: `flex: 0 0 auto` above never shrinks this column, and a row
+  /* INBOX 273: `flex: 0 0 auto` (07-whiteboard-misc.css) never shrinks this column, and a row
      whose title has shrunk to its own minimum (a long name plus the
      "Installed" chip) can still leave a two-button Reinstall/Remove pair
      with nowhere to go but past the frame's right edge -- measured on the

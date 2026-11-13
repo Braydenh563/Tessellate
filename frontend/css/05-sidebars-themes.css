@@ -3992,9 +3992,6 @@ button.is-on {
   :root {
     --page-gutter: var(--space-5);
   }
-  #dash-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
   /* Rows of controls wrap instead of pushing the page sideways. */
   .doc-actions,
   .chat-toolbar {

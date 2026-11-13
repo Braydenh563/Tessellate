@@ -1425,6 +1425,9 @@ class DeskCompanion:
             "still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True)), "stay": bool(_pref(STAY_PREF, False)),
             "lively": _lively_pref(), "size": self.size_pref, "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
         }
+        perch_free = getattr(engine, "perch_free", None)
+        if callable(perch_free):
+            out["perch"] = perch_free()  # "Sit on a window" greyed when it cannot be done (L-ui-modernisation-22)
         doing = getattr(engine, "doing", None)
         if callable(doing) and (said := doing()):
             out["doing"] = said  # the menu's first line while a prop or spell is in hand (INBOX 1718 b)

@@ -101,6 +101,9 @@ REACTIONS: dict[str, Reaction] = {
     # right after waking, a long run of pets
     "confused": Reaction("", "confused", 1.8, "", 20.0, True, 1, True),
     "refused": Reaction("", "sad", 2.4, "", 10.0, True),
+    # a menu request it cannot do now (L-ui-modernisation-22): its own cooldown, so a lonely sad face just before
+    # does not swallow the answer, and rank 2 so a sit or a walk still shows it
+    "declined": Reaction("", "sad", 2.4, "", 1.0, True, 2),
     "pat_shy": Reaction("pat_happy", "shy", 2.2, "happy", 3.0, True),
     "rub_shy": Reaction("rub_purr", "shy", 3.4, "happy", 6.0, True),
     "pat_love": Reaction("pat_happy", "love", 2.6, "happy", 3.0, True),

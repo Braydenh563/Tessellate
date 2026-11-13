@@ -405,12 +405,6 @@
   border-radius: var(--radius-md);
   font-size: var(--text-lg);
 }
-@media (hover: hover) {
-  #conversation-list li:hover,
-  #conversation-list li:is(:focus-visible, :has(:focus-visible)) {
-    background: var(--row-hover-bg);
-  }
-}
 #conversation-list li.active-conv {
   font-weight: 600;
 }
@@ -1525,9 +1519,6 @@ body.graph-fullscreen-on .sidebar-panel {
   }
   #tab-bar {
     padding: 0 1rem;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
   #tab-bar button {
     white-space: nowrap;
@@ -2895,10 +2886,6 @@ html {
      (Phase 9): the shorthand here then supplied `padding-bottom` alone and
      the phone header rendered 6.4px above the logo and 8px below it.
      Measured at 700px, which is the only place it showed. */
-  header#top-bar {
-    gap: 0.6rem;
-    flex-wrap: wrap;
-  }
   /* No `#tab-bar` rule here: below 600 the strip lives in `#phone-tab-dock`
      (`dockTabBar`), and the `order: 3` this block gave it for a row of its
      own in the header drew More as the dock's first column (INBOX 1314). */
@@ -2932,7 +2919,6 @@ html {
     --card-pad-y: var(--space-3);
   }
   #sidebar ul#category-list {
-    flex-wrap: nowrap;
     overflow-x: auto;
     margin-top: 0;
     scrollbar-width: none;

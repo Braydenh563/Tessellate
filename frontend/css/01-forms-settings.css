@@ -2915,11 +2915,6 @@ button:not(.ghost) > .spinner {
 #entry-list li:focus-within .link-connection > .menu-wrap {
   opacity: 1;
 }
-@media (hover: none) {
-  #entry-list .link-connection > .menu-wrap {
-    opacity: 1;
-  }
-}
 
 #entry-list .link-connection {
   gap: 0;
@@ -2967,11 +2962,6 @@ button:not(.ghost) > .spinner {
 #entry-list .chip.link .unlink:is(:focus-visible, :has(:focus-visible)) {
   opacity: 1;
   color: var(--error);
-}
-@media (hover: none) {
-  #entry-list .chip.link .unlink {
-    opacity: 0.7;
-  }
 }
 
 .chip > .unlink:last-child:hover,
