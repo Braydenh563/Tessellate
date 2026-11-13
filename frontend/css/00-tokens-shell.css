@@ -1351,8 +1351,12 @@ header#top-bar h1 {
   }
 }
 @media (max-width: 940px) {
+  /* **A sideways phone keeps one row** (L-ui-modernisation-37): the band
+     below 820 already spaces the bar at `--space-2`. At `--space-4` a phone
+     at 844x390 needed 824.2px of 820, so the tabs wrapped and the header was
+     108 of 390 tall; at `--space-2` it is 56. */
   header#top-bar {
-    gap: var(--space-4);
+    gap: var(--space-2);
   }
   #tab-bar button {
     padding-inline: var(--space-3);

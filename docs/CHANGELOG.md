@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- A phone held sideways keeps the top bar on one row (L-ui-modernisation-37).
 - Focusing the notes filter shows an example of the query grammar that fits the box (L-ui-modernisation-16).
 - F8, Shift+F8 and Alt+Enter in a document's text are listed in the command palette and the shortcut sheet (L-ui-modernisation-14).
 - Board menus, the floating panel's select, the help toggles and the lightbox arrows read the control height tokens; the literal heights ceiling drops from 296 to 264 (L-ui-modernisation-3).
