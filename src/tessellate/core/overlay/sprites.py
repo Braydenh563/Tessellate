@@ -47,9 +47,10 @@ WAVE_FRAMES = tuple(f"wave{i}" for i in range(WAVE_COUNT))
 #: and swung (`dangle`, and `kick0` and `kick1` thrown forward and back), the hang with one hand let go (`hang_one`)
 #: and the long sit with the eyes shut (`meditate`). Optional like the wave's: a set without them draws `EXTRA_FALLBACK`
 #: (the sit, the hang), and a companion made from the person's own name has none (`capture.CAPTURED`).
-EXTRA_FRAMES = ("dangle", "kick0", "kick1", "hang_one", "meditate", "hang_sloth", "hang_feet")
-#: `hang_sloth` is the hang asleep by one hand and `hang_feet` the hang flipped (L-ui-modernisation-10).
-EXTRA_FALLBACK = {"dangle": "sit", "kick0": "sit", "kick1": "sit", "hang_one": "hang", "meditate": "sit", "hang_sloth": "hang", "hang_feet": "hang"}
+EXTRA_FRAMES = ("dangle", "kick0", "kick1", "hang_one", "meditate", "hang_sloth", "hang_feet", "lean", "back_float")
+#: `hang_sloth` is the hang asleep by one hand and `hang_feet` the hang flipped (L-ui-modernisation-10). `lean` is the stand against a
+#: side edge (a side peek) and `back_float` the floater on its back in the air (L-ui-modernisation-41).
+EXTRA_FALLBACK = {"dangle": "sit", "kick0": "sit", "kick1": "sit", "hang_one": "hang", "meditate": "sit", "hang_sloth": "hang", "hang_feet": "hang", "lean": "stand", "back_float": "idle0"}
 #: Every frame of a look, in the order they are rendered. Walking is `walk0` to
 #: `walk11`; the others are what the engine's states draw. `card0` and `card1` are the
 #: figure holding a reminder's card (`scripts/render_card_frames.py`, Pillow, from
