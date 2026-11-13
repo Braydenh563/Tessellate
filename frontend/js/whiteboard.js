@@ -10601,6 +10601,8 @@ function wbUpdateUndoRedoButtons() {
 function wbDropUndoEntry(entry) {
   const at = wbUndoStack.lastIndexOf(entry);
   if (at !== -1) wbUndoStack.splice(at, 1);
+  //: An eraser swipe folds its deletes into one batch (L-whiteboard-35), so a failed one is found inside it.
+  else for (const top of wbUndoStack) if (top.action === "batch" && top.entries.includes(entry)) top.entries.splice(top.entries.indexOf(entry), 1);
   wbUpdateUndoRedoButtons();
 }
 
@@ -18249,6 +18251,7 @@ async function initWhiteboard() {
   containerEl.addEventListener("pointerdown", (e) => {
     if (window.currentTool === "eraser") {
       wbErasing = true;
+      wbEraseHad = new Set(wbUndoStack);
       // Reported directly: "with the eraser, I can't touch and drag to
       // delete items" (the pen works fine touch-dragged the same way).
       // Touch, unlike a mouse, implicitly captures the pointer to
@@ -18266,10 +18269,23 @@ async function initWhiteboard() {
   });
   window.addEventListener("pointerup", () => {
     wbErasing = false;
+    wbEraseSettle();
   });
   //: Every sample the browser coalesced into this event is hit-tested, so a
   //: fast finger or pen stroke between two events erases what it crossed
   //: (audit B21); `pointerenter` alone never fires reliably on touch or pen.
+  //: One swipe, one Undo step (L-whiteboard-35): each delete pushes its own
+  //: entry as it lands, and the swipe's end folds them into one batch.
+  let wbEraseHad = null;
+  function wbEraseSettle() {
+    if (!wbEraseHad) return;
+    const had = wbEraseHad;
+    wbEraseHad = null;
+    const mine = wbUndoStack.filter((entry) => !had.has(entry) && entry.action === "delete");
+    if (mine.length < 2) return;
+    for (const entry of mine) wbUndoStack.splice(wbUndoStack.indexOf(entry), 1);
+    wbPushUndo({ action: "batch", entries: mine });
+  }
   function wbEraseAt(clientX, clientY) {
     const el = document.elementFromPoint(clientX, clientY);
     const sketchEl = el?.closest(".sketch-group");
@@ -19383,7 +19399,9 @@ async function initWhiteboard() {
 
   async function wbPlaceUploadedImage(file, x, y) {
     if (wbFmtState.pdf?.isPdf(file)) return wbFmtState.pdf.place(file, x, y);
-    if (!file || !file.type?.startsWith("image/")) return;
+    if (!file) return;
+    //: Said, not dropped silently (L-whiteboard-36): a board takes pictures and PDFs.
+    if (!file.type?.startsWith("image/")) return toast(`A board takes pictures and PDFs; ${file.name || "that file"} is neither.`, "info");
     if (file.size > wbPictureCap) return wbPictureTooBig();
     try {
       const formData = new FormData();

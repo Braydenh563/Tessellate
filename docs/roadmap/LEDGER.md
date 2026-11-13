@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 5 | 1 | 0 | 10 | 36 |
+| whiteboard | 30 | 3 | 1 | 0 | 10 | 34 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 611 | 147 | 3 | 185 | 1311 |
+| all | 553 | 609 | 147 | 3 | 185 | 1309 |
 
 ## graph
 
@@ -284,8 +284,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L271** `whiteboard` open, M: Unify the four overlapping drag and pointer-capture mechanisms in whiteboard.js. From OPEN.md:4442. Evidence: whiteboard.js still has mixed pointer capture and mouse handlers (27 matches); not unified
 - [ ] **L279** `whiteboard` open, M: Close or record U19 U20 U23 U30 U31 U36 U37 U39 U41 U45 U49 across map, board, documents, code editor. From bs-1111.md. Evidence: Other agents' surfaces; no closing record found
 - [ ] **L286** `whiteboard` partly, L: Whiteboard: D24 names left, split whiteboard.js and whiteboard-map.js. From ledger-1112 O34; ledger-1112 O33.
-- [ ] **L-whiteboard-35** `whiteboard` open, S: Eraser swipe over three strokes is three Undo steps; one swipe must be one batch (wbDeleteSketch pushes per item, whiteboard.js eraser gesture ~18233). From L278 audit 2026-11-13.
-- [ ] **L-whiteboard-36** `whiteboard` open, S: Pasting a non-image, non-PDF file on a board does nothing and says nothing (wbPlaceUploadedImage returns at whiteboard.js ~19369 after preventDefault); say what can be pasted. From L278 audit 2026-11-13.
 
 ## documents
 
