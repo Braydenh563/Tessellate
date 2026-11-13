@@ -314,6 +314,8 @@ class Run:
         self._done = 0
         self._total = 0
         self._what = ""
+        #: The share of the whole bar `step` fills now (`within`), so a run of phases is one bar.
+        self._span = (0.0, 1.0)
         self._plan: list[str] = []
         #: (when, words): the time is what makes a line a process line.
         self._log: deque[tuple[float, str]] = deque(maxlen=LOG_LINES)
@@ -334,6 +336,11 @@ class Run:
         if what:
             self._what = what
 
+    def within(self, start: float, end: float) -> None:
+        """The steps that follow fill the bar from `start` to `end` (0 to 1): a pass in phases, each
+        counting its own `done of total`, reads as one bar that never runs back (L614)."""
+        self._span = (max(0.0, min(1.0, start)), max(0.0, min(1.0, end)))
+
     def say(self, line: object) -> None:
         """Add one plain sentence to the log; only the last `LOG_LINES` stay."""
         text = _clip(line)
@@ -348,7 +355,8 @@ class Run:
     def snapshot(self) -> dict:
         total = self._total
         done = min(self._done, total) if total else self._done
-        progress = max(0.0, min(1.0, done / total)) if total else None
+        low, high = self._span
+        progress = low + (high - low) * max(0.0, min(1.0, done / total)) if total else (low or None)
         if total:
             counts = f"{done} of {total}"
             detail = f"{self._what}: {counts}" if self._what else counts

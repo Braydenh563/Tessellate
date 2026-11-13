@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 104 | 38 | 0 | 18 | 272 |
+| world-class | 130 | 103 | 38 | 0 | 18 | 271 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 573 | 130 | 3 | 132 | 1256 |
+| all | 553 | 572 | 130 | 3 | 132 | 1255 |
 
 ## graph
 
@@ -626,7 +626,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L610** `world-class` open, M: Boot gzip budget leftovers (chord guide in settings-wiring.js ~3 KB etc.). From OPEN.md:2248. Evidence: Candidates measured and left; test_static_compression.py holds numbers
 - [ ] **L611** `world-class` open, M: App scripts gzip cap has no room (320,589 of 320,600); unblock chat-agent.js budget line and helpers. From OPEN.md:2499; OPEN.md:3909; OPEN.md:3818. Evidence: Budget at 11 bytes headroom; guard paths not driven
 - [ ] **L613** `world-class` open, M: Smaller backend/gate rows: note-types undo id, gate --changed, palette test, CSS budgets. From OPEN.md:3289. Evidence: Undo id loss unreproduced; budgets near limit; palette undecided
-- [ ] **L614** `world-class` open, M: Night shift pairing phase slow (120 s) and bar resets between phases. From OPEN.md:3501. Evidence: No commit or test addressing pairing speed or bar reset found.
 - [ ] **L616** `world-class` open, M: Trigger the other 100 toast(...,true) call sites. From OPEN.md:3567. Evidence: Lint test_error_toasts.py covers them; situations never driven in a browser
 - [ ] **L617** `world-class` open, M: phone-shell tab click, openDoc, timeline-calendar onclick lag and 16 s searxng start. From INBOX.md:1716. Evidence: hascss-1111/lag-1110: 'remains', not reproduced at 44 to 200 notes; no later fix found
 - [ ] **L618** `world-class` open, M: showNotesSection autoGrowVisible, syncScrollEdges, sizeDashWidgets first-reader costs. From a31c-1103.md Left, with numbers. Evidence: lag agent: moving the read a frame later only relocates it; not kept

@@ -717,6 +717,7 @@ def run(
         #: notes this run will reach, which the token budget may cut short.
         progress = jobruns.current("night-shift")
         reachable = min(len(to_read), max(budget // TOKENS_PER_NOTE, 0))
+        progress.within(0.0, 0.7)
         progress.step(0, reachable, "Reading notes")
         progress.say(f"{len(to_read)} note{'' if len(to_read) == 1 else 's'} to read.")
         for entry in to_read:
@@ -917,12 +918,17 @@ class _Similar:
         self.by_meaning = self._embeddings is not None
         self.embedded = 0
         self._vectors: dict[str, Any] = {}
+        import numpy as np
+
         self._pool = pool
         self._terms = [_terms(row.text) for row in pool]
-        self._postings: dict[str, list[int]] = {}
+        postings: dict[str, list[int]] = {}
         for index, terms in enumerate(self._terms):
             for term in terms:
-                self._postings.setdefault(term, []).append(index)
+                postings.setdefault(term, []).append(index)
+        self._postings = {term: np.asarray(rows, dtype=np.int64) for term, rows in postings.items()}
+        self._lengths = np.asarray([len(terms) for terms in self._terms], dtype=np.float64)
+        self._ids = np.asarray([row.id or 0 for row in pool], dtype=np.int64)
 
     def _vector(self, text: str):  # noqa: ANN202
         if text not in self._vectors:
@@ -944,12 +950,32 @@ class _Similar:
     def nearest(self, text: str, allowed, k: int = PAIR_NEIGHBOURS) -> list[tuple[float, DerivedFact]]:  # noqa: ANN001
         """Up to `k` pool rows for which `allowed(row)` holds, best first."""
         terms = _terms(text)
-        #: `Counter.update` counts in C; the per-posting dict get and set was
-        #: the next biggest cost in this loop (ledger 1542).
-        shared: Counter[int] = Counter()
-        for term in terms:
-            shared.update(self._postings.get(term, ()))
-        by_words = []
+        by_words = self._by_words(text, terms, allowed, max(k, self.RESCORE))
+        if not self.by_meaning:
+            return [pair for pair in by_words if pair[0] >= PAIR_WORDS][:k]
+        query = self._vector(text)
+        if query is None:
+            return [pair for pair in by_words if pair[0] >= PAIR_WORDS][:k]
+        return self._by_cosine(query, by_words)[:k]
+
+    def _by_words(self, text: str, terms: set[str], allowed, want: int) -> list[tuple[float, DerivedFact]]:  # noqa: ANN001
+        """The best `want` pool rows by shared words (Jaccard over terms), best first, one per wording.
+
+        Scored for the whole pool at once in numpy and read in order until `want` are found: the loop
+        over every candidate in Python was most of the pairing phase (L614: 12 of 14 s at 1,000 notes,
+        2,000 claims that all share a few words). Only the rows that could make the cut are asked
+        `allowed`; the order is the old one, score then id."""
+        import numpy as np
+
+        hits = [self._postings[term] for term in terms if term in self._postings]
+        if not hits:
+            return []
+        shared = np.bincount(np.concatenate(hits), minlength=len(self._pool)).astype(np.float64)
+        union = len(terms) + self._lengths - shared
+        scores = np.divide(shared, union, out=np.zeros_like(shared), where=union > 0)
+        #: The intersection is `shared` (one posting hit per shared term), so the union is a sum.
+        candidates = np.flatnonzero((shared > 0) & (scores >= self.PREFILTER))
+        order = candidates[np.lexsort((self._ids[candidates], -scores[candidates]))]
         #: **The same sentence again is not a neighbour.** A notebook that
         #: says "the rent is 950" in three notes has three identical claims,
         #: and by meaning they are each other's nearest (cosine 1.0): they
@@ -957,29 +983,19 @@ class _Similar:
         #: them was never compared (nightpairs.js, the fifth seeding). One
         #: copy of each wording, and never the query's own.
         seen_texts = {" ".join(text.lower().split())}
-        for index, count in shared.items():
-            #: `count` is the size of the intersection (one posting hit per
-            #: shared term), so the union is a sum, not a new set per
-            #: candidate: the set built here was most of the pairing phase
-            #: (ledger 1542, 4.4 of 7.4 s at 800 claims).
-            union = len(terms) + len(self._terms[index]) - count
-            score = count / union if union > 0 else 0.0
-            if score >= self.PREFILTER and allowed(self._pool[index]):
-                by_words.append((score, self._pool[index]))
-        by_words.sort(key=lambda pair: (-pair[0], pair[1].id))
-        unique = []
-        for score, row in by_words:
+        found: list[tuple[float, DerivedFact]] = []
+        for index in order.tolist():
+            row = self._pool[index]
+            if not allowed(row):
+                continue
             wording = " ".join(row.text.lower().split())
-            if wording not in seen_texts:
-                seen_texts.add(wording)
-                unique.append((score, row))
-        by_words = unique
-        if not self.by_meaning:
-            return [pair for pair in by_words if pair[0] >= PAIR_WORDS][:k]
-        query = self._vector(text)
-        if query is None:
-            return [pair for pair in by_words if pair[0] >= PAIR_WORDS][:k]
-        return self._by_cosine(query, by_words)[:k]
+            if wording in seen_texts:
+                continue
+            seen_texts.add(wording)
+            found.append((float(scores[index]), row))
+            if len(found) >= want:
+                break
+        return found
 
     def _by_cosine(self, query, by_words: list[tuple[float, DerivedFact]]) -> list[tuple[float, DerivedFact]]:  # noqa: ANN001
         """The best word matches re-scored by meaning, best first, those under the cosine floor dropped."""
@@ -1156,6 +1172,7 @@ def _claim_pairs(pairs: _PairPass, claim: DerivedFact) -> bool:
 
 def _compare_claims(pairs: _PairPass, new_claims: list[DerivedFact]) -> bool:
     """Pass 4: each new claim against the claims of other notes. True on a budget stop."""
+    pairs.progress.within(0.7, 0.9)
     for claim_index, claim in enumerate(new_claims):
         pairs.progress.step(claim_index, len(new_claims), "Comparing claims")
         if _claim_pairs(pairs, claim):
@@ -1209,6 +1226,7 @@ def _match_questions(pairs: _PairPass, questions: list[DerivedFact], questions_o
     True on a budget stop."""
     answered = _answered_question_ids(pairs.session)
     pending = _for_the_model(questions, questions_on, pairs.provider, pairs.model)
+    pairs.progress.within(0.9, 1.0)
     pairs.progress.step(0, len(pending) or None, "Matching questions to answers")
     for question_index, question in enumerate(pending):
         pairs.progress.step(question_index, len(pending))

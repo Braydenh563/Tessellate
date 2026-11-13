@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8369, frontend ids 2778, CSS sections 524, backend routes 710, backend modules 10940, test files 2746, tests 22126, plan headings 688, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8369, frontend ids 2778, CSS sections 524, backend routes 710, backend modules 10940, test files 2747, tests 22130, plan headings 688, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8369)
 
@@ -17528,91 +17528,91 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Candidate` | src/tessellate/ai/facts.py:183 |
-| `_PairPass` | src/tessellate/ai/facts.py:1070 |
-| `_Similar` | src/tessellate/ai/facts.py:893 |
-| `_answer_to` | src/tessellate/ai/facts.py:1177 |
-| `_answered_ids` | src/tessellate/ai/facts.py:1289 |
+| `_PairPass` | src/tessellate/ai/facts.py:1086 |
+| `_Similar` | src/tessellate/ai/facts.py:894 |
+| `_answer_to` | src/tessellate/ai/facts.py:1194 |
+| `_answered_ids` | src/tessellate/ai/facts.py:1307 |
 | `_answered_like_a_joke` | src/tessellate/ai/facts.py:330 |
 | `_answered_next` | src/tessellate/ai/facts.py:282 |
-| `_answered_question_ids` | src/tessellate/ai/facts.py:1166 |
-| `_answers_by_rule` | src/tessellate/ai/facts.py:1360 |
-| `_asked_notes` | src/tessellate/ai/facts.py:1339 |
-| `_claim_pairs` | src/tessellate/ai/facts.py:1136 |
-| `_compare_claims` | src/tessellate/ai/facts.py:1157 |
+| `_answered_question_ids` | src/tessellate/ai/facts.py:1183 |
+| `_answers_by_rule` | src/tessellate/ai/facts.py:1378 |
+| `_asked_notes` | src/tessellate/ai/facts.py:1357 |
+| `_claim_pairs` | src/tessellate/ai/facts.py:1152 |
+| `_compare_claims` | src/tessellate/ai/facts.py:1173 |
 | `_derive_note` | src/tessellate/ai/facts.py:580 |
-| `_due_questions` | src/tessellate/ai/facts.py:1332 |
+| `_due_questions` | src/tessellate/ai/facts.py:1350 |
 | `_entries_to_read` | src/tessellate/ai/facts.py:530 |
 | `_fingerprint` | src/tessellate/ai/facts.py:451 |
-| `_for_the_model` | src/tessellate/ai/facts.py:1326 |
-| `_forgotten_event_type` | src/tessellate/ai/facts.py:1647 |
+| `_for_the_model` | src/tessellate/ai/facts.py:1344 |
+| `_forgotten_event_type` | src/tessellate/ai/facts.py:1665 |
 | `_halt_reason` | src/tessellate/ai/facts.py:645 |
-| `_heading` | src/tessellate/ai/facts.py:1298 |
+| `_heading` | src/tessellate/ai/facts.py:1316 |
 | `_in_context` | src/tessellate/ai/facts.py:377 |
-| `_in_qa_list` | src/tessellate/ai/facts.py:1820 |
-| `_judge` | src/tessellate/ai/facts.py:869 |
-| `_known_pairs` | src/tessellate/ai/facts.py:1002 |
-| `_later_and_earlier` | src/tessellate/ai/facts.py:1113 |
+| `_in_qa_list` | src/tessellate/ai/facts.py:1838 |
+| `_judge` | src/tessellate/ai/facts.py:870 |
+| `_known_pairs` | src/tessellate/ai/facts.py:1018 |
+| `_later_and_earlier` | src/tessellate/ai/facts.py:1129 |
 | `_line_around` | src/tessellate/ai/facts.py:273 |
-| `_links` | src/tessellate/ai/facts.py:1317 |
-| `_local_answer` | src/tessellate/ai/facts.py:851 |
-| `_local_disagreement` | src/tessellate/ai/facts.py:830 |
-| `_located` | src/tessellate/ai/facts.py:1800 |
-| `_match_questions` | src/tessellate/ai/facts.py:1206 |
+| `_links` | src/tessellate/ai/facts.py:1335 |
+| `_local_answer` | src/tessellate/ai/facts.py:852 |
+| `_local_disagreement` | src/tessellate/ai/facts.py:831 |
+| `_located` | src/tessellate/ai/facts.py:1818 |
+| `_match_questions` | src/tessellate/ai/facts.py:1223 |
 | `_narrow` | src/tessellate/ai/facts.py:475 |
 | `_narrowed` | src/tessellate/ai/facts.py:566 |
-| `_open_claims_and_questions` | src/tessellate/ai/facts.py:1020 |
-| `_pair_fact` | src/tessellate/ai/facts.py:1034 |
-| `_pair_json` | src/tessellate/ai/facts.py:1583 |
-| `_pair_key` | src/tessellate/ai/facts.py:997 |
-| `_pair_passes` | src/tessellate/ai/facts.py:1226 |
+| `_open_claims_and_questions` | src/tessellate/ai/facts.py:1036 |
+| `_pair_fact` | src/tessellate/ai/facts.py:1050 |
+| `_pair_json` | src/tessellate/ai/facts.py:1601 |
+| `_pair_key` | src/tessellate/ai/facts.py:1013 |
+| `_pair_passes` | src/tessellate/ai/facts.py:1244 |
 | `_pasted_text` | src/tessellate/ai/facts.py:323 |
-| `_plain_words` | src/tessellate/ai/facts.py:826 |
+| `_plain_words` | src/tessellate/ai/facts.py:827 |
 | `_pref_key` | src/tessellate/ai/facts.py:100 |
 | `_proposed` | src/tessellate/ai/facts.py:361 |
 | `_qa_pairs` | src/tessellate/ai/facts.py:388 |
-| `_quoted` | src/tessellate/ai/facts.py:1810 |
+| `_quoted` | src/tessellate/ai/facts.py:1828 |
 | `_read_note` | src/tessellate/ai/facts.py:371 |
 | `_release` | src/tessellate/ai/facts.py:515 |
 | `_retire_not_own_questions` | src/tessellate/ai/facts.py:423 |
-| `_rule_answer` | src/tessellate/ai/facts.py:1348 |
-| `_rule_notes` | src/tessellate/ai/facts.py:1305 |
-| `_run_json` | src/tessellate/ai/facts.py:1420 |
+| `_rule_answer` | src/tessellate/ai/facts.py:1366 |
+| `_rule_notes` | src/tessellate/ai/facts.py:1323 |
+| `_run_json` | src/tessellate/ai/facts.py:1438 |
 | `_sentence_spans` | src/tessellate/ai/facts.py:126 |
 | `_template_questions` | src/tessellate/ai/facts.py:349 |
-| `_tension_between` | src/tessellate/ai/facts.py:1121 |
-| `_terms` | src/tessellate/ai/facts.py:816 |
-| `_visible` | src/tessellate/ai/facts.py:1498 |
-| `_words_alike` | src/tessellate/ai/facts.py:822 |
-| `_written` | src/tessellate/ai/facts.py:1025 |
-| `as_json` | src/tessellate/ai/facts.py:1564 |
+| `_tension_between` | src/tessellate/ai/facts.py:1137 |
+| `_terms` | src/tessellate/ai/facts.py:817 |
+| `_visible` | src/tessellate/ai/facts.py:1516 |
+| `_words_alike` | src/tessellate/ai/facts.py:823 |
+| `_written` | src/tessellate/ai/facts.py:1041 |
+| `as_json` | src/tessellate/ai/facts.py:1582 |
 | `candidates` | src/tessellate/ai/facts.py:400 |
-| `context_reason` | src/tessellate/ai/facts.py:1786 |
-| `edit` | src/tessellate/ai/facts.py:1601 |
+| `context_reason` | src/tessellate/ai/facts.py:1804 |
+| `edit` | src/tessellate/ai/facts.py:1619 |
 | `enabled` | src/tessellate/ai/facts.py:234 |
-| `entry_tags` | src/tessellate/ai/facts.py:1764 |
+| `entry_tags` | src/tessellate/ai/facts.py:1782 |
 | `fingerprint_of` | src/tessellate/ai/facts.py:462 |
-| `forget` | src/tessellate/ai/facts.py:1702 |
-| `json_payload_value` | src/tessellate/ai/facts.py:1404 |
+| `forget` | src/tessellate/ai/facts.py:1720 |
+| `json_payload_value` | src/tessellate/ai/facts.py:1422 |
 | `kept_question` | src/tessellate/ai/facts.py:338 |
-| `latest_card` | src/tessellate/ai/facts.py:1466 |
-| `listing` | src/tessellate/ai/facts.py:1516 |
+| `latest_card` | src/tessellate/ai/facts.py:1484 |
+| `listing` | src/tessellate/ai/facts.py:1534 |
 | `own_question` | src/tessellate/ai/facts.py:293 |
-| `remove` | src/tessellate/ai/facts.py:1621 |
-| `reset` | src/tessellate/ai/facts.py:1611 |
-| `restore` | src/tessellate/ai/facts.py:1641 |
+| `remove` | src/tessellate/ai/facts.py:1639 |
+| `reset` | src/tessellate/ai/facts.py:1629 |
+| `restore` | src/tessellate/ai/facts.py:1659 |
 | `run` | src/tessellate/ai/facts.py:652 |
-| `run_facts` | src/tessellate/ai/facts.py:1445 |
-| `runner_enabled` | src/tessellate/ai/facts.py:1744 |
+| `run_facts` | src/tessellate/ai/facts.py:1463 |
+| `runner_enabled` | src/tessellate/ai/facts.py:1762 |
 | `sentences` | src/tessellate/ai/facts.py:242 |
 | `set_switches` | src/tessellate/ai/facts.py:219 |
-| `snapshot` | src/tessellate/ai/facts.py:1654 |
+| `snapshot` | src/tessellate/ai/facts.py:1672 |
 | `stored_switches` | src/tessellate/ai/facts.py:196 |
 | `switches` | src/tessellate/ai/facts.py:204 |
-| `tag_words` | src/tessellate/ai/facts.py:1775 |
-| `tombstoned` | src/tessellate/ai/facts.py:1627 |
-| `unforget` | src/tessellate/ai/facts.py:1675 |
-| `visible` | src/tessellate/ai/facts.py:1557 |
-| `visible_counts` | src/tessellate/ai/facts.py:1435 |
+| `tag_words` | src/tessellate/ai/facts.py:1793 |
+| `tombstoned` | src/tessellate/ai/facts.py:1645 |
+| `unforget` | src/tessellate/ai/facts.py:1693 |
+| `visible` | src/tessellate/ai/facts.py:1575 |
+| `visible_counts` | src/tessellate/ai/facts.py:1453 |
 
 ### src/tessellate/ai/facts_kinds.py (6)
 
@@ -24798,32 +24798,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Run` | src/tessellate/core/jobruns.py:271 |
 | `_bump` | src/tessellate/core/jobruns.py:191 |
-| `_calling` | src/tessellate/core/jobruns.py:769 |
+| `_calling` | src/tessellate/core/jobruns.py:777 |
 | `_clip` | src/tessellate/core/jobruns.py:117 |
 | `_database` | src/tessellate/core/jobruns.py:150 |
 | `_failure_reason` | src/tessellate/core/jobruns.py:122 |
-| `_named` | src/tessellate/core/jobruns.py:778 |
-| `_open_call` | src/tessellate/core/jobruns.py:785 |
-| `_purpose` | src/tessellate/core/jobruns.py:749 |
-| `_seconds` | src/tessellate/core/jobruns.py:761 |
-| `active` | src/tessellate/core/jobruns.py:734 |
-| `begin` | src/tessellate/core/jobruns.py:561 |
-| `bound` | src/tessellate/core/jobruns.py:724 |
+| `_named` | src/tessellate/core/jobruns.py:786 |
+| `_open_call` | src/tessellate/core/jobruns.py:793 |
+| `_purpose` | src/tessellate/core/jobruns.py:757 |
+| `_seconds` | src/tessellate/core/jobruns.py:769 |
+| `active` | src/tessellate/core/jobruns.py:742 |
+| `begin` | src/tessellate/core/jobruns.py:569 |
+| `bound` | src/tessellate/core/jobruns.py:732 |
 | `clear_finished` | src/tessellate/core/jobruns.py:224 |
 | `clear_live` | src/tessellate/core/jobruns.py:243 |
 | `current` | src/tessellate/core/jobruns.py:259 |
-| `describe_night_pass` | src/tessellate/core/jobruns.py:692 |
+| `describe_night_pass` | src/tessellate/core/jobruns.py:700 |
 | `finished` | src/tessellate/core/jobruns.py:218 |
-| `for_request` | src/tessellate/core/jobruns.py:741 |
-| `job_run` | src/tessellate/core/jobruns.py:571 |
+| `for_request` | src/tessellate/core/jobruns.py:749 |
+| `job_run` | src/tessellate/core/jobruns.py:579 |
 | `lane_of` | src/tessellate/core/jobruns.py:107 |
-| `last_runs` | src/tessellate/core/jobruns.py:650 |
+| `last_runs` | src/tessellate/core/jobruns.py:658 |
 | `live` | src/tessellate/core/jobruns.py:252 |
-| `mark_interrupted` | src/tessellate/core/jobruns.py:621 |
-| `merged_history` | src/tessellate/core/jobruns.py:530 |
-| `model_call` | src/tessellate/core/jobruns.py:798 |
-| `model_stream` | src/tessellate/core/jobruns.py:835 |
-| `note_finished` | src/tessellate/core/jobruns.py:593 |
+| `mark_interrupted` | src/tessellate/core/jobruns.py:629 |
+| `merged_history` | src/tessellate/core/jobruns.py:538 |
+| `model_call` | src/tessellate/core/jobruns.py:806 |
+| `model_stream` | src/tessellate/core/jobruns.py:843 |
+| `note_finished` | src/tessellate/core/jobruns.py:601 |
 | `origin_now` | src/tessellate/core/jobruns.py:200 |
 | `peek_database` | src/tessellate/core/jobruns.py:154 |
 | `set_database_source` | src/tessellate/core/jobruns.py:143 |
@@ -27972,7 +27972,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22126)
+## Tests (22130)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29657,6 +29657,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_new_note_called_1102.py | 3 |
 | tests/test_new_notes_recency_1102.py | 5 |
 | tests/test_new_untitled.py | 2 |
+| tests/test_night_bar_614.py | 4 |
 | tests/test_night_card_grows.py | 1 |
 | tests/test_night_pairs.py | 12 |
 | tests/test_night_runs.py | 12 |
@@ -31142,14 +31143,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:759 |
+| Needs hardware | docs/roadmap/LEDGER.md:758 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:751 |
+| Owner calls | docs/roadmap/LEDGER.md:750 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31330,7 +31331,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:896 |
+| Plan session briefs | docs/roadmap/LEDGER.md:895 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31384,25 +31385,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:912 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:996 |
+| chat | docs/roadmap/LEDGER.md:911 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:995 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:936 |
-| general | docs/roadmap/LEDGER.md:710 |
+| documents | docs/roadmap/LEDGER.md:935 |
+| general | docs/roadmap/LEDGER.md:709 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:900 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1008 |
+| graph | docs/roadmap/LEDGER.md:899 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1007 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:407 |
-| mindmap | docs/roadmap/LEDGER.md:948 |
+| mindmap | docs/roadmap/LEDGER.md:947 |
 | timeline | docs/roadmap/LEDGER.md:562 |
-| timeline | docs/roadmap/LEDGER.md:972 |
+| timeline | docs/roadmap/LEDGER.md:971 |
 | ui-modernisation | docs/roadmap/LEDGER.md:444 |
-| ui-modernisation | docs/roadmap/LEDGER.md:960 |
+| ui-modernisation | docs/roadmap/LEDGER.md:959 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:924 |
+| whiteboard | docs/roadmap/LEDGER.md:923 |
 | world-class | docs/roadmap/LEDGER.md:565 |
-| world-class | docs/roadmap/LEDGER.md:984 |
+| world-class | docs/roadmap/LEDGER.md:983 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
