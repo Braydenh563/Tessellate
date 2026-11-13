@@ -552,6 +552,7 @@ EXEMPT: dict[str, str] = {
     "whiteboard-pdf.js:upload": "board: the PDF is placed by wbCreateObject inside one wbRecordGesture, so Undo takes the pages back; the file stays on disk like a placed picture",
     "whiteboard.js:wbPlaceUploadedImage":"board: the image is placed by wbCreateObject, which pushes the board's create step; the file stays in the Library",
     "whiteboard.js:wbApplyHistoryEntry": "inverse: applies the board history's own undo and redo",
+    "whiteboard.js:openWhiteboardBoard": "board: the bind sync moves cards to match notes edited elsewhere, the notes' state, not a user edit to undo",
     "whiteboard.js:initWhiteboard": "board: the background image is set through wbSetBackground, which pushes the board step; the file stays in the Library",
     "whiteboard-map.js:wbMapTakePicture": "board: the picture is set on the topic through wbMapSetNodeStyle, which pushes the board step; the file stays in the Library",
     "tidy.js:tidyRunLinkReasons": "job: starts a background pass",

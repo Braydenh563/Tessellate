@@ -544,6 +544,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "votes": None,
         # And with tags, a frame's folded height (structure batch) and a lane's Stack (layouts batch).
         "tags": None, "fold_h": None, "stack": None,
+        # And with a PDF page's file (L-whiteboard-2) and a frame's property binding (L-whiteboard-12).
+        "pdf": None, "pdf_name": None, "binds": None,
     }
 
     moved = board_client.put(

@@ -740,6 +740,24 @@ TAIL_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "board-frame-binds",
+            "keywords": (
+                "kanban",
+                "bind a frame",
+                "frame property",
+                "status column",
+                "move a card to done",
+                "board edits my notes",
+            ),
+            "body": (
+                "Right-click a frame and choose Bind to a property, then name the property (status, owner, phase). "
+                "A note card dropped in that frame gets the frame's title as that property's value on its note. "
+                "When a note's value changes elsewhere, its card moves to the matching frame the next time the "
+                "board opens. Right-click again to unbind. One property per frame; loose cards are never moved."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "board-suggest-name",
             "keywords": (
                 "name a board",

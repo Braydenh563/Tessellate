@@ -47,7 +47,7 @@ from tessellate.api import wb_board
 from tessellate.api.wb_preview import MAP_BRANCH_PALETTE, MAP_BRANCH_PALETTES, PREVIEW_ASPECT_RANGE, PREVIEW_CACHE_STATS, PREVIEW_POINTS, _map_branch_colors, _preview_fields, _preview_items, _preview_points, _sketch_preview, _thumb_writable, media_router, put_thumbnail  # noqa: F401  (moved; re-exported)
 from tessellate.api import wb_preview
 from tessellate.api.wb_boards import create_board, duplicate_board, list_boards, rename_board  # noqa: F401  (moved; re-exported)
-from tessellate.api import wb_boards
+from tessellate.api import wb_binds, wb_boards
 from tessellate.api.wb_items import create_node, create_object, create_sketch, delete_node, delete_object, delete_sketch, update_node, update_object, update_sketch  # noqa: F401  (moved; re-exported)
 from tessellate.api import wb_items
 from tessellate.api.wb_tree import MAP_COL, MAP_ROW, MAX_IMPORT_DEPTH, MAX_MAP_DEPTH, _build_tree, _map_objects, _reference_label  # noqa: F401  (moved; re-exported)
@@ -60,5 +60,5 @@ from tessellate.api.wb_make import _record_map_creation, generate_map, import_bo
 from tessellate.api import wb_make
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
-for _layer in (wb_board, wb_preview, wb_boards, wb_items, wb_map, wb_export, wb_make):
+for _layer in (wb_board, wb_preview, wb_boards, wb_items, wb_map, wb_export, wb_make, wb_binds):
     router.include_router(_layer.router)

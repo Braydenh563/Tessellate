@@ -462,6 +462,14 @@ class TableMerge(BaseModel):
     cs: StrictInt = Field(ge=1, le=MAX_TABLE_COLS)
 
 
+class FrameBinds(BaseModel):
+    """A frame bound to one note property (L-whiteboard-12): a card dropped
+    inside writes `value` to its note's `property`; one field per frame."""
+
+    property: str = Field(min_length=1, max_length=60, pattern=r"^[^:\n]+$")
+    value: str = Field(min_length=1, max_length=300, pattern=r"^[^\n]+$")
+
+
 class WhiteboardObjectData(BaseModel):
     """What `data` actually holds, validated by `kind` rather than left as an
     opaque string the way a sketch's own path data is, an image needs a real
@@ -703,6 +711,8 @@ class WhiteboardObjectData(BaseModel):
     #: and the words over it. Content, like `note`.
     boundary: str | None = Field(default=None, pattern="^(rounded|dashed|cloud)$")
     boundary_label: str | None = Field(default=None, max_length=80)
+    #: **A frame's binding to a note property** (L-whiteboard-12, `FrameBinds`).
+    binds: FrameBinds | None = None
     #: **A summary of a run of siblings** starting here (decision 20): the
     #: words, and how many siblings the run takes, this topic first.
     summary: str | None = Field(default=None, max_length=80)

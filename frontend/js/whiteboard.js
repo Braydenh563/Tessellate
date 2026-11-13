@@ -10077,6 +10077,23 @@ function wbBuildContextMenu(kind) {
   const frameOn = commentOn?.kind === "object" && commentItem?.kind === "frame" ? commentItem : null;
   if (frameOn) item("Fit to contents", "Snug the frame to what is inside it, with a margin all round", () => wbFrameFit(frameOn, "nesw"));
   if (frameOn) item("Export this frame…", "The frame and what is inside it, as a picture, PDF or SVG", () => wbExportFrame(frameOn));
+  //: L-whiteboard-12: a frame bound to a note property is a kanban column; a
+  //: card dropped inside sets that property on its note to the frame's title.
+  if (frameOn) item(frameOn.data?.binds ? `Unbind from ${frameOn.data.binds.property}` : "Bind to a property…", "Cards dropped in this frame set a property on their note to the frame's title", async () => {
+    const title = String(frameOn.data?.content || "").trim();
+    let binds = null;
+    if (!frameOn.data?.binds) {
+      if (!title) return toast("Name the frame first: its title is the value cards take.", "info");
+      const prop = (await promptDialog("Bind to which note property?", "status"))?.trim();
+      if (!prop) return;
+      if (prop.includes(":")) return toast("A property's name can't hold a colon.", "info");
+      binds = { property: prop, value: title };
+    }
+    wbPushUndo({ action: "move", kind: "object", id: frameOn.id, before: WB_KIND_INFO.object.payload(frameOn) });
+    frameOn.data = { ...frameOn.data, binds };
+    await wbSaveObject(frameOn);
+    toast(binds ? `Cards dropped here get ${binds.property}: ${binds.value}.` : "Unbound. Cards dropped here leave their notes alone.");
+  });
   //: A selection leaves the board as a picture (K33): the dialog on its
   //: Selection scope, or straight to the clipboard as a PNG or as SVG text.
   if (wbMultiSelection.size > 0 || wbSelectedItem) {
@@ -25888,6 +25905,10 @@ async function openWhiteboardBoard(boardId, opts = null) {
   wbApplyBackground();
   //: Linked library copies whose source changed since the board was last open are brought up to date (library-more.js).
   wbFmtState.libraryMore?.copies.refresh();
+  //: Bound frames (L-whiteboard-12): a card whose note changed elsewhere moves to its column.
+  if (boardId != null && (wbState.objects || []).some((o) => o.kind === "frame" && o.data?.binds)) {
+    apiJson(`/whiteboard/boards/${boardId}/binds/sync`, { method: "POST" }).then((got) => got?.moved?.length && fetchWhiteboardState().then(wbScheduleRender)).catch(() => {});
+  }
   renderWbGestureHints();
   //: Rendered now rather than on the next frame, because the framing below
   //: measures the nodes it is about to fit (a map node is `height: auto`, so

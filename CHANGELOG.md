@@ -10,6 +10,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Whiteboard: Select all (Ctrl+A) and the Tab walk take connectors too, and a connector is read out as "Connector" with its label (L-whiteboard-21).
 - Whiteboard: Alt+Shift+L, T and N edit a selected item's link, tooltip and comment, and Alt+Shift+K its tags, as in draw.io; Ctrl+K stays the command palette (L-whiteboard-22).
 - Whiteboard: resizing with Shift or Alt shows the size readout too (L284).
+- Whiteboard: a frame can be bound to a note property; a card dropped in it sets that value on its note, and a note changed elsewhere moves its card when the board opens (L-whiteboard-12).
 - Boards and maps: the Library card menu offers Suggest a name, from the model when one runs or the board's own words, with Undo (L280).
 - Board library: a placed PDF page saves to the library, and an import keeps it when the PDF is in this notebook (L-whiteboard-2).
 - Whiteboard: a box too small on screen for its resize grips (a 500-box board at the fit zoom) drags when pressed instead of catching a grip; 500 boxes measured at rest and in a drag with the companion off and on, no long tasks and no frame gaps (L-whiteboard-15).

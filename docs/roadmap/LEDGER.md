@@ -282,10 +282,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 - [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Built here: wbExportBoard({ branch: true }) titles the dialog "Export this branch" (tests/test_wb_export_pdf.py, wbexport-pdf.js). Left: whiteboard-map.js:5072 in wbMapExportBranch must call wbExportBoard({ branch: true }) (file owned by another session). The mmd2 sweeps do not touch export; wbexport-pdf.js covers the dialog.
 - [ ] **L271** `whiteboard` open, M: Unify the four overlapping drag and pointer-capture mechanisms in whiteboard.js. From OPEN.md:4442. Evidence: whiteboard.js still has mixed pointer capture and mouse handlers (27 matches); not unified
-- [ ] **L278** `whiteboard` open, M: Audit board frames/present flow, connector re-routing, touch eraser, image paste limits, PDF export. From audit-1031-board.md. Evidence: No later board audit found
 - [ ] **L279** `whiteboard` open, M: Close or record U19 U20 U23 U30 U31 U36 U37 U39 U41 U45 U49 across map, board, documents, code editor. From bs-1111.md. Evidence: Other agents' surfaces; no closing record found
 - [ ] **L286** `whiteboard` partly, L: Whiteboard: D24 names left, split whiteboard.js and whiteboard-map.js. From ledger-1112 O34; ledger-1112 O33.
-- [ ] **L-whiteboard-12** `whiteboard` open, L: Bind board cards to note properties through their frame. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:768. Evidence: no shape that stays bound to live notebook content exists; lines 768 to 772 are untracked
+- [ ] **L-whiteboard-35** `whiteboard` open, S: Eraser swipe over three strokes is three Undo steps; one swipe must be one batch (wbDeleteSketch pushes per item, whiteboard.js eraser gesture ~18233). From L278 audit 2026-11-13.
+- [ ] **L-whiteboard-36** `whiteboard` open, S: Pasting a non-image, non-PDF file on a board does nothing and says nothing (wbPlaceUploadedImage returns at whiteboard.js ~19369 after preventDefault); say what can be pasted. From L278 audit 2026-11-13.
 
 ## documents
 
