@@ -569,59 +569,59 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2359 |
-| `annotateSliders` | frontend/js/sheets-selects.js:1069 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2362 |
+| `annotateSliders` | frontend/js/sheets-selects.js:1072 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:215 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:96 |
-| `applyWebPanelWidth` | frontend/js/sheets-selects.js:528 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2458 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2408 |
-| `clampToolbarMenu` | frontend/js/sheets-selects.js:1568 |
-| `dateFieldFace` | frontend/js/sheets-selects.js:1099 |
+| `applyWebPanelWidth` | frontend/js/sheets-selects.js:531 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2461 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2411 |
+| `clampToolbarMenu` | frontend/js/sheets-selects.js:1571 |
+| `dateFieldFace` | frontend/js/sheets-selects.js:1102 |
 | `eachSidebar` | frontend/js/sheets-selects.js:192 |
-| `editedMarker` | frontend/js/sheets-selects.js:2067 |
-| `enhanceAllSelects` | frontend/js/sheets-selects.js:1080 |
-| `enhanceDateField` | frontend/js/sheets-selects.js:1109 |
-| `enhanceSelect` | frontend/js/sheets-selects.js:735 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2484 |
-| `focusFirstIn` | frontend/js/sheets-selects.js:2496 |
-| `focusSelect` | frontend/js/sheets-selects.js:1172 |
-| `formatTokens` | frontend/js/sheets-selects.js:1796 |
-| `initResizableSidebars` | frontend/js/sheets-selects.js:473 |
+| `editedMarker` | frontend/js/sheets-selects.js:2070 |
+| `enhanceAllSelects` | frontend/js/sheets-selects.js:1083 |
+| `enhanceDateField` | frontend/js/sheets-selects.js:1112 |
+| `enhanceSelect` | frontend/js/sheets-selects.js:738 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2487 |
+| `focusFirstIn` | frontend/js/sheets-selects.js:2499 |
+| `focusSelect` | frontend/js/sheets-selects.js:1175 |
+| `formatTokens` | frontend/js/sheets-selects.js:1799 |
+| `initResizableSidebars` | frontend/js/sheets-selects.js:476 |
 | `initSidebarSheetDismissal` | frontend/js/sheets-selects.js:278 |
-| `kebabMenu` | frontend/js/sheets-selects.js:1472 |
-| `labelledMenu` | frontend/js/sheets-selects.js:642 |
+| `kebabMenu` | frontend/js/sheets-selects.js:1475 |
+| `labelledMenu` | frontend/js/sheets-selects.js:645 |
 | `layoutIsStacked` | frontend/js/sheets-selects.js:42 |
-| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1767 |
-| `listFilter` | frontend/js/sheets-selects.js:1310 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2286 |
-| `loadConversationList` | frontend/js/sheets-selects.js:1872 |
-| `makeMenuItem` | frontend/js/sheets-selects.js:622 |
-| `makeSidebarResizable` | frontend/js/sheets-selects.js:334 |
-| `makeWebPanelResizable` | frontend/js/sheets-selects.js:565 |
-| `menuRowFits` | frontend/js/sheets-selects.js:1377 |
-| `openConversation` | frontend/js/sheets-selects.js:2075 |
-| `openKebabSheet` | frontend/js/sheets-selects.js:1225 |
-| `parseServerTime` | frontend/js/sheets-selects.js:1805 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2365 |
-| `relativeTime` | frontend/js/sheets-selects.js:1815 |
-| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1676 |
-| `resetWebPanelWidth` | frontend/js/sheets-selects.js:546 |
-| `rowActions` | frontend/js/sheets-selects.js:1285 |
-| `selectFaceText` | frontend/js/sheets-selects.js:726 |
+| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1770 |
+| `listFilter` | frontend/js/sheets-selects.js:1313 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2289 |
+| `loadConversationList` | frontend/js/sheets-selects.js:1875 |
+| `makeMenuItem` | frontend/js/sheets-selects.js:625 |
+| `makeSidebarResizable` | frontend/js/sheets-selects.js:337 |
+| `makeWebPanelResizable` | frontend/js/sheets-selects.js:568 |
+| `menuRowFits` | frontend/js/sheets-selects.js:1380 |
+| `openConversation` | frontend/js/sheets-selects.js:2078 |
+| `openKebabSheet` | frontend/js/sheets-selects.js:1228 |
+| `parseServerTime` | frontend/js/sheets-selects.js:1808 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2368 |
+| `relativeTime` | frontend/js/sheets-selects.js:1818 |
+| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1679 |
+| `resetWebPanelWidth` | frontend/js/sheets-selects.js:549 |
+| `rowActions` | frontend/js/sheets-selects.js:1288 |
+| `selectFaceText` | frontend/js/sheets-selects.js:729 |
 | `setSidebarSheet` | frontend/js/sheets-selects.js:209 |
-| `shortModelName` | frontend/js/sheets-selects.js:1722 |
+| `shortModelName` | frontend/js/sheets-selects.js:1725 |
 | `sidebarDefault` | frontend/js/sheets-selects.js:23 |
 | `sidebarFittedWidth` | frontend/js/sheets-selects.js:82 |
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
-| `sortConversations` | frontend/js/sheets-selects.js:1852 |
+| `sortConversations` | frontend/js/sheets-selects.js:1855 |
 | `syncSidebarInert` | frontend/js/sheets-selects.js:205 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2424 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2427 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:313 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2445 |
-| `watchForSelects` | frontend/js/sheets-selects.js:1184 |
-| `webPanelIsNarrow` | frontend/js/sheets-selects.js:512 |
-| `webPanelMaxWidth` | frontend/js/sheets-selects.js:522 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2448 |
+| `watchForSelects` | frontend/js/sheets-selects.js:1187 |
+| `webPanelIsNarrow` | frontend/js/sheets-selects.js:515 |
+| `webPanelMaxWidth` | frontend/js/sheets-selects.js:525 |
 | `wireInPlaceSheetDismissal` | frontend/js/sheets-selects.js:260 |
 
 ### frontend/js/skills.js (49)
@@ -859,31 +859,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autoGrowLimit` | frontend/js/settings-panes.js:32 |
 | `autoGrowStillFits` | frontend/js/settings-panes.js:170 |
 | `autoGrowVisible` | frontend/js/settings-panes.js:201 |
-| `catalogueRun` | frontend/js/settings-panes.js:921 |
-| `chatDockReleaseRing` | frontend/js/settings-panes.js:348 |
-| `chatDockSuppressRing` | frontend/js/settings-panes.js:329 |
-| `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:622 |
-| `currentZoom` | frontend/js/settings-panes.js:822 |
-| `downloadExport` | frontend/js/settings-panes.js:796 |
+| `catalogueRun` | frontend/js/settings-panes.js:924 |
+| `chatDockReleaseRing` | frontend/js/settings-panes.js:351 |
+| `chatDockSuppressRing` | frontend/js/settings-panes.js:332 |
+| `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:625 |
+| `currentZoom` | frontend/js/settings-panes.js:825 |
+| `downloadExport` | frontend/js/settings-panes.js:799 |
 | `fitChatEmpty` | frontend/js/settings-panes.js:290 |
 | `fitComposerToDock` | frontend/js/settings-panes.js:244 |
-| `hud` | frontend/js/settings-panes.js:868 |
-| `initAutoGrow` | frontend/js/settings-panes.js:450 |
-| `initComposerResize` | frontend/js/settings-panes.js:364 |
-| `loadPreferences` | frontend/js/settings-panes.js:597 |
-| `markPrefsDirty` | frontend/js/settings-panes.js:770 |
-| `markPrefsSaved` | frontend/js/settings-panes.js:786 |
-| `nudgeZoom` | frontend/js/settings-panes.js:889 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1010 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:987 |
-| `paletteKeys` | frontend/js/settings-panes.js:996 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1021 |
+| `hud` | frontend/js/settings-panes.js:871 |
+| `initAutoGrow` | frontend/js/settings-panes.js:453 |
+| `initComposerResize` | frontend/js/settings-panes.js:367 |
+| `loadPreferences` | frontend/js/settings-panes.js:600 |
+| `markPrefsDirty` | frontend/js/settings-panes.js:773 |
+| `markPrefsSaved` | frontend/js/settings-panes.js:789 |
+| `nudgeZoom` | frontend/js/settings-panes.js:892 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1013 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:990 |
+| `paletteKeys` | frontend/js/settings-panes.js:999 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1024 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
-| `reportTimezone` | frontend/js/settings-panes.js:541 |
-| `savePrefs` | frontend/js/settings-panes.js:663 |
-| `setPreference` | frontend/js/settings-panes.js:645 |
-| `setZoom` | frontend/js/settings-panes.js:826 |
-| `watchOverlays` | frontend/js/settings-panes.js:462 |
+| `reportTimezone` | frontend/js/settings-panes.js:544 |
+| `savePrefs` | frontend/js/settings-panes.js:666 |
+| `setPreference` | frontend/js/settings-panes.js:648 |
+| `setZoom` | frontend/js/settings-panes.js:829 |
+| `watchOverlays` | frontend/js/settings-panes.js:465 |
 
 ### frontend/js/media.js (9)
 
@@ -31148,14 +31148,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:750 |
+| Needs hardware | docs/roadmap/LEDGER.md:754 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:742 |
+| Owner calls | docs/roadmap/LEDGER.md:746 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31336,7 +31336,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:887 |
+| Plan session briefs | docs/roadmap/LEDGER.md:891 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31389,26 +31389,26 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | World-class plan: the checks that need a real device or a real model (2026-11-12) | docs/roadmap/BACKLOG.md:4419 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
-| chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:903 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:987 |
-| documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:927 |
-| general | docs/roadmap/LEDGER.md:701 |
-| graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:891 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:999 |
+| chat | docs/roadmap/LEDGER.md:27 |
+| chat | docs/roadmap/LEDGER.md:907 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:991 |
+| documents | docs/roadmap/LEDGER.md:330 |
+| documents | docs/roadmap/LEDGER.md:931 |
+| general | docs/roadmap/LEDGER.md:705 |
+| graph | docs/roadmap/LEDGER.md:25 |
+| graph | docs/roadmap/LEDGER.md:895 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1003 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:407 |
-| mindmap | docs/roadmap/LEDGER.md:939 |
-| timeline | docs/roadmap/LEDGER.md:562 |
-| timeline | docs/roadmap/LEDGER.md:963 |
-| ui-modernisation | docs/roadmap/LEDGER.md:444 |
-| ui-modernisation | docs/roadmap/LEDGER.md:951 |
-| whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:915 |
-| world-class | docs/roadmap/LEDGER.md:565 |
-| world-class | docs/roadmap/LEDGER.md:975 |
+| mindmap | docs/roadmap/LEDGER.md:410 |
+| mindmap | docs/roadmap/LEDGER.md:943 |
+| timeline | docs/roadmap/LEDGER.md:565 |
+| timeline | docs/roadmap/LEDGER.md:967 |
+| ui-modernisation | docs/roadmap/LEDGER.md:447 |
+| ui-modernisation | docs/roadmap/LEDGER.md:955 |
+| whiteboard | docs/roadmap/LEDGER.md:284 |
+| whiteboard | docs/roadmap/LEDGER.md:919 |
+| world-class | docs/roadmap/LEDGER.md:568 |
+| world-class | docs/roadmap/LEDGER.md:979 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
