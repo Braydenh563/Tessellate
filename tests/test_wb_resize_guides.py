@@ -103,9 +103,11 @@ def test_show_less_only_when_collapsing_would_hide_text() -> None:
 
 
 def test_each_grip_says_what_its_double_click_does() -> None:
-    script = _function("wbResizeHandleTitle") + "console.log(JSON.stringify(['frame','image','text','shape'].map(wbResizeHandleTitle)));"
-    frame, image, text, shape = _node(script)
+    script = _function("wbResizeHandleTitle") + "console.log(JSON.stringify(['frame','image','text','shape','table','diagram'].map(wbResizeHandleTitle)));"
+    frame, image, text, shape, table, diagram = _node(script)
     assert "fit this edge" in frame and "fits the picture" in image and "fits the text" in text and text == shape
+    # A table and a diagram have no words (L261): they fit the height to what is inside.
+    assert table == diagram and "fits the height to what is inside" in table and "text" not in table
 
 
 def test_a_shape_resize_moves_its_grips_and_shows_its_size_live() -> None:

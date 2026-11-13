@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 20 | 4 | 0 | 10 | 54 |
+| whiteboard | 30 | 16 | 4 | 0 | 10 | 50 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 626 | 150 | 3 | 185 | 1329 |
+| all | 553 | 622 | 150 | 3 | 185 | 1325 |
 
 ## graph
 
@@ -281,10 +281,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## whiteboard
 
 - [ ] **L257** `whiteboard` open, S: Stop board preview labels (mapPreview) running over the next shape. From OPEN.md:1239. Evidence: note-cards.js:38 mapPreview draws via mapPreviewDraw; no label-clipping fix found.
-- [ ] **L259** `whiteboard` open, S: Enlarge the shape flyout trigger beyond the 10px caret for finger use. From OPEN.md:659; OPEN.md:2913. Evidence: Flyout built (c9712e1ab) but phone-size target not enlarged; no fix commit
-- [ ] **L261** `whiteboard` open, S: Fix wb-resize-handle title on non-frame objects and remove the dead .wb-map-actions coarse rule. From OPEN.md:1208; OPEN.md:2532. Evidence: whiteboard.js:23549 title text unchanged; .wb-map-actions rules live and pinned by tests/test_map_node_controls.py:126,235.
 - [ ] **L263** `whiteboard` open, S: Compare converter stroke width (2 board px per stencil unit) against draw.io strokewidth=inherit. From OPEN.md:1323. Evidence: Row says not compared against draw.io strokewidth=inherit; no later comparison found.
-- [ ] **L264** `whiteboard` open, S: Fix wb-tool-section-label text overflowing its box by 49-56px. From OPEN.md:1118; OPEN.md:3697. Evidence: Selector still styled in 08-consistency.css:3067 and whiteboard-map.js; no overflow fix commit found
 - [ ] **L265** `whiteboard` open, S: Remove search/navigator toggles that duplicate View switches; add wbcontextphone.js sweep. From OPEN.md:3068. Evidence: UI_MODERNISATION Phase 8; wbcontextphone.js sweep not added
 - [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Built here: wbExportBoard({ branch: true }) titles the dialog "Export this branch" (tests/test_wb_export_pdf.py, wbexport-pdf.js). Left: whiteboard-map.js:5072 in wbMapExportBranch must call wbExportBoard({ branch: true }) (file owned by another session). The mmd2 sweeps do not touch export; wbexport-pdf.js covers the dialog.
 - [ ] **L269** `whiteboard` open, M: Cut board toolbar tab stops from 33 with a roving tabindex. From OPEN.md:4266. Evidence: Ledger row 261 marked new, M; no roving-tabindex fix found.
@@ -302,7 +299,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-16** `whiteboard` open, S: Run the blind-tester timing for transparency and hex entry. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1583. Evidence: Open line in the plan's prose a session could miss. INBOX 1685's acceptance (find transparency and enter a hex in under 20 s) was never run.
 - [ ] **L-whiteboard-21** `whiteboard` open, S: Include connectors in Select all and the board Tab walk. From wbgroupedit sweep 2026-11-12. Evidence: frontend/js/whiteboard.js wbSelectableItems takes wbLinkCandidates, which leaves out link sketches, so Select all and the Tab walk skip connectors
 - [ ] **L-whiteboard-22** `whiteboard` open, S: Keys still unbound: Ctrl+K tags (app palette key, needs a choice), Ctrl+. and Ctrl+, super/subscript (app keys; text batch), Alt+Shift+L, T, N link/tooltip/note. From WHITEBOARD_PLAN section 11 keys, 2026-11-12. Evidence: docs/roadmap/WHITEBOARD_PLAN.md shortcut table rows Ctrl+K, Ctrl+. Ctrl+, Ctrl+{ Ctrl+}, Alt+Shift+L T N
-- [ ] **L-whiteboard-26** `whiteboard` open, S: Layers tab: a child of a folded frame shows as folded (not hidden) and its eye says Expand the frame. From structure batch report, whiteboard-structure-more.js. Evidence: Layers tab lists a folded frame's children as hidden; its eye sets hidden=false with no visible change while the frame is folded
 - [ ] **L-whiteboard-29** `whiteboard` partly, M: Drawn shape table: the remaining 15 parametric shapes (to the plan's 40), with draw.io names. From WHITEBOARD_PLAN JS-drawn shape classes row, 2026-11-13. Evidence: frontend/js/whiteboard-shape-table.js holds 25 of the planned 40 (commit edba1a2f); tests/test_wb_shape_table.py
 
 ## documents

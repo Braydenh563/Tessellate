@@ -136,15 +136,23 @@
     return boxCache;
   }
 
-  //: Whether a folded frame hides the item (`wbItemHidden`'s extra rule, so export, present, Select all and find all skip it).
-  function folded(kind, item) {
+  //: The id of the folded frame that hides the item, or null (`wbItemHidden`'s extra rule, so export, present, Select all and
+  //: find all skip it; the Layers tab names the frame, L-whiteboard-26).
+  function foldedBy(kind, item) {
     const boxes = foldBoxes();
-    if (!boxes.length || !item) return false;
+    if (!boxes.length || !item) return null;
     const box = wbItemBBox(kind, item);
-    if (!box) return false;
-    return boxes.some((f) => !(kind === "object" && item.id === f.id)
+    if (!box) return null;
+    const hit = boxes.find((f) => !(kind === "object" && item.id === f.id)
       && box.minX >= f.minX && box.minY >= f.minY && box.maxX <= f.maxX && box.maxY <= f.maxY);
+    return hit ? hit.id : null;
   }
+  const folded = (kind, item) => foldedBy(kind, item) !== null;
+  //: The folded frame itself (an object) that holds the item out of sight, or null.
+  const foldFrame = (kind, item) => {
+    const id = foldedBy(kind, item);
+    return id == null ? null : wbFindItem("object", id) || null;
+  };
 
   const heldBy = (frame) => {
     let n = 0;
@@ -384,7 +392,7 @@
 
   wbFmtState.structure = {
     parseTags, tagsOf, editTags, editSelected, taggable: () => taggable().length > 0, filter: setFilter, openFilter, tagCounts,
-    folded, setFolded, selectedFrame, foldBoxes: () => foldBoxes().length, isFolded, paint, sync, scope, setScope, searchControls, closeSearch,
+    folded, foldedBy, foldFrame, setFolded, selectedFrame, foldBoxes: () => foldBoxes().length, isFolded, paint, sync, scope, setScope, searchControls, closeSearch,
     inFrame: () => Boolean(scopeFrame()),
   };
 })();

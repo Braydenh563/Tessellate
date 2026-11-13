@@ -92,3 +92,12 @@ def test_the_drop_highlight_is_a_token_coloured_outline_without_blur():
 def test_the_filter_dims_without_taking_the_pointer():
     rule = re.search(r"#whiteboard-container \.wb-tag-dim \{([^}]*)\}", CSS)
     assert rule and "opacity" in rule.group(1) and "pointer-events" not in rule.group(1)
+
+
+def test_the_layers_tab_calls_a_folded_childs_row_folded_not_hidden_l_whiteboard_26():
+    lib = (JS / "whiteboard-library.js").read_text(encoding="utf-8")
+    assert "foldedBy" in STRUCT and "wbItemHidden(row.kind, row.item, { ignoreFold: true })" in lib
+    assert "Expand the frame to see it." in lib and "is-folded" in lib
+    # The eye must not write hidden=false for a fold: it names the frame instead.
+    toggle = lib[lib.index("async function wbLayerToggleHidden") :]
+    assert toggle.index("structure?.foldFrame") < toggle.index("wbSetHidden")
