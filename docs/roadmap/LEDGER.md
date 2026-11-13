@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 25 | 2 | 0 | 19 | 123 |
+| ui-modernisation | 96 | 24 | 2 | 0 | 19 | 122 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 537 | 152 | 3 | 184 | 1242 |
+| all | 553 | 536 | 152 | 3 | 184 | 1241 |
 
 ## graph
 
@@ -449,7 +449,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## ui-modernisation
 
-- [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
 - [ ] **L465** `ui-modernisation` partly, M: Add a lint measuring every rail and top-bar control has a data-help-for popover and palette row. From OPEN.md:1813. Evidence: app-features.js:563-567 added top-bar palette rows (ledger 1410); the 0-missing coverage lint/measure not found
 - [ ] **L469** `ui-modernisation` partly, L: Finish the uipolish-0924 surface-by-surface pass (item D). From OPEN.md:1914; OPEN.md:2314. Evidence: Icon-only floor done (iconfloor.js); the per-surface pass not recorded done
 - [ ] **L-ui-modernisation-1** `ui-modernisation` open, M: Adopt CSS cascade layers (@layer tokens, base, components, surfaces, overrides) so 08-consistency.css stops winning by specificity. From ANALYSIS.md:3680. Evidence: grep @layer frontend/css returns 0; UI_MODERNISATION_PLAN item 18 dissolves 08 into components but never names layers or the 'only shrinks' lint

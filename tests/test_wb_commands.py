@@ -97,3 +97,13 @@ def test_a_map_folds_to_a_level_from_the_keys_the_table_and_the_sheet():
     assert 'keys: ["Alt+1 to 9"]' in COMMANDS
     help_text = help_chat_text()
     assert "Alt+1 to Alt+9 show that many levels" in help_text
+
+
+def test_the_narrow_menu_uses_the_desktop_words_the_guide_names() -> None:
+    """Source text: the Guide names Keys and controls, Export, Clear everything on it and Copy app link; at 390 the More menu showed the long palette labels instead (L439)."""
+    table = _table()
+    more = COMMANDS[COMMANDS.index("function wbInitMoreMenu") :]
+    assert "command.menu || command.label" in more[:900]
+    for command, words in (("clear", "Clear everything on it"), ("export", "Export…"), ("add-to-note", "Add to a note…"), ("delete-board", "Delete this board")):
+        assert table[command]["menu"] == words, command
+    assert "Write this map as a document" not in (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
