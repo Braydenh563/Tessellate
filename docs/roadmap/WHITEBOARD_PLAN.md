@@ -1011,7 +1011,7 @@ clash is listed so the choice is made once.
 | Ctrl+Shift+D | set as default style | none | section 1 |
 | Ctrl+Shift+G | grid on and off | ungroup (clash) | grid stays on the View menu |
 | Ctrl+F | find and replace | find only | section 9 |
-| Ctrl+K | tags | none | skipped: Ctrl+K is the app's command palette; the tags batch picks the key |
+| Ctrl+K | tags | Alt+Shift+K | built 2026-11-13 (L-whiteboard-22): Ctrl+K stays the app's command palette; tags take Alt+Shift+K beside L, T and N |
 | Ctrl+Shift+K | toggle shape sidebar | none | |
 | Ctrl+Shift+H | fit window | Shift+1 | differs |
 | Ctrl+J, Ctrl+Shift+J | fit page, fit two pages | none | with page frames |
@@ -1019,10 +1019,10 @@ clash is listed so the choice is made once.
 | Ctrl+plus, Ctrl+minus | zoom in, out | Ctrl+=, Ctrl+- | same |
 | Ctrl+Home, Ctrl+End | collapse, expand | none | with collapse |
 | Ctrl+{ , Ctrl+} | font size up, down (a second pair) | none | skipped: Ctrl+Shift+Plus and Ctrl+Shift+Minus do it (built 2026-11-12) |
-| Ctrl+., Ctrl+, | superscript, subscript | none | skipped: Ctrl+. stops an answer and Ctrl+, opens settings in the app; with the text batch |
+| Ctrl+., Ctrl+, | superscript, subscript | none | decided 2026-11-13 (L-whiteboard-22): Ctrl+. stops an answer and Ctrl+, opens Settings, so they stay the app's; Subscript and Superscript are on the Text style menu (L-whiteboard-27) |
 | Arrow keys, Shift+arrow, Ctrl+arrow | move 1 px, move by the grid size, resize (`nudge`, EditorUi.js 8249) | arrows 1 px, Shift 10 px, Ctrl 1 px resize, Ctrl+Shift a cell or 10 | same; resize built 2026-11-12 |
 | Alt+Shift+arrow | clone and connect (`connectVertex`) | Alt+Shift+Arrow | same |
-| Alt+Shift+L, T, N | edit link, edit tooltip, edit note (`altShiftActions`, EditorUi.js 8129) | none | with sections 3 and 4 (Alt+Shift+R, clear waypoints, built 2026-11-12) |
+| Alt+Shift+L, T, N | edit link, edit tooltip, edit note (`altShiftActions`, EditorUi.js 8129) | Alt+Shift+L, T, N | built 2026-11-13 (L-whiteboard-22): Link…, the Data tab's Tooltip field, and Comment on the item (the board's note on an item) |
 | Alt+Shift+A, O, Q | connection arrows, connection points, edit connection points | none | with section 5 |
 | Ctrl+Alt+Shift+F, B | bring forward, send backward | ] and [ | differs |
 | Tab, Shift+Tab | next and previous cell | map topics only | S: cycle through items in z order on a board |

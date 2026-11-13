@@ -142,7 +142,8 @@
   //: key, as the plan's table already said for select none (Esc). A key with a meaning of its own when it would do nothing
   //: (Ctrl+R reloads, Ctrl+Shift+Plus zooms) goes on to that meaning unless the command applies.
   const BOUND = ["edit-data", "select-shapes", "turn-90",
-    "copy-image", "copy-svg", "copy-size", "paste-size", "copy-data", "paste-data", "clear-waypoints", "enter-group", "font-bigger", "font-smaller"];
+    "copy-image", "copy-svg", "copy-size", "paste-size", "copy-data", "paste-data", "clear-waypoints", "enter-group", "font-bigger", "font-smaller",
+    "item-link", "edit-tooltip", "comment", "edit-tags"];
   const ALSO = { ungroup: "Ctrl+Shift+U", "leave-group": "Ctrl+Shift+Home" };
   const PASS_WHEN_IDLE = new Set(["turn-90", "font-bigger", "font-smaller", "enter-group", "leave-group", "ungroup"]);
   //: Words in a chord that name a key's code: the rest is a letter.

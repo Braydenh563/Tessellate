@@ -31,6 +31,12 @@ NEW_KEYS = {
     "enter-group": "Ctrl+Shift+End",
     "font-bigger": "Ctrl+Shift+Plus",
     "font-smaller": "Ctrl+Shift+Minus",
+    #: L-whiteboard-22: draw.io's Alt+Shift+L, T and N (edit link, tooltip, note: the board's note on an item is its comment
+    #: thread), and the tags key: Ctrl+K stays the app's command palette, so tags take Alt+Shift+K beside them.
+    "item-link": "Alt+Shift+L",
+    "edit-tooltip": "Alt+Shift+T",
+    "comment": "Alt+Shift+N",
+    "edit-tags": "Alt+Shift+K",
 }
 
 
@@ -137,3 +143,19 @@ def test_enter_on_a_focused_button_is_the_buttons_own() -> None:
     """Review 5883430964: with a shape selected, Enter on a Format panel button (Add point) opened the shape's label
     instead of pressing the button, so the keyboard path never ran (sweep wbports-offsets.js)."""
     assert "&& !(e.key === \"Enter\" && document.activeElement?.closest(\"button, [role='button'], a[href], summary\"))" in BOARD
+
+
+def test_ctrl_k_and_the_app_keys_for_super_and_subscript_stay_the_apps() -> None:
+    """L-whiteboard-22 (INBOX decision taken 2026-11-13): Ctrl+K is the palette, Ctrl+. stops an answer and Ctrl+,
+    opens Settings, so no board command takes them; superscript and subscript are on the Text style menu."""
+    for chord in ("Ctrl+K", "Ctrl+.", "Ctrl+,"):
+        assert all(row["keys"] != chord for row in _rows().values()), chord
+
+
+def test_the_tooltip_key_opens_the_data_tab_on_the_tooltip_field() -> None:
+    row = COMMANDS[COMMANDS.index('{ id: "edit-tooltip"') :]
+    assert "run: () => wbFmtState.dataKeys.tooltip() }" in row[: row.index("\n")]
+    fmt = (JS / "whiteboard-format.js").read_text(encoding="utf-8")
+    body = fmt[fmt.index("  function tooltip() {") :]
+    body = body[: body.index("\n  }\n")]
+    assert 'wbFormatOpen("data", { focus: false })' in body and '"wb-fmt-tip"' in body and "field.focus()" in body

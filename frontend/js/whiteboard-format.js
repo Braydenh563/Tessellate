@@ -1602,7 +1602,14 @@ wbFmtState.dataKeys = (() => {
     const clip = wbFmtState.dataClip;
     return wbFmtApply("props", () => ({ props: { ...clip } }), "Data pasted.");
   }
-  return { copy, paste };
+  //: draw.io's Alt+Shift+T (edit tooltip): the Data tab, on its Tooltip field when the selection has one (WB_FMT_FIELDS "tip").
+  function tooltip() {
+    wbFormatOpen("data", { focus: false });
+    const field = document.getElementById("wb-fmt-tip");
+    if (field && !field.closest("[data-fmt]")?.hidden) field.focus();
+    else toast("That item has no tooltip. Shapes, lines and connectors do.");
+  }
+  return { copy, paste, tooltip };
 })();
 
 //: How much a shape must grow for its words to fit: the factor on each axis,
