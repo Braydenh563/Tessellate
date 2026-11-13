@@ -909,24 +909,19 @@ def _span_said_by_model(notes: list[dict], first, last, now) -> str:  # noqa: AN
 
 def _span_said_in_time(notes: list[dict], first, last, now) -> str:  # noqa: ANN001
     """`_span_said_by_model`, or "" when it takes longer than
-    SPAN_MODEL_TIMEOUT. A daemon thread, not an executor, for the reason in
-    `core/security.py`'s resolver: a late call is abandoned, never joined."""
-    import threading
+    SPAN_MODEL_TIMEOUT or fails. On `jobs.future`, so the call is listed and a
+    late one is left to finish, never joined."""
+    from concurrent.futures import TimeoutError as FutureTimeout
 
-    said: list[str] = []
-    finished = threading.Event()
+    from tessellate.core import jobs
 
-    def _ask() -> None:
-        try:
-            said.append(_span_said_by_model(notes, first, last, now))
-        except Exception:  # noqa: BLE001  # a failed call is the composer's turn
-            said.append("")
-        finished.set()
-
-    threading.Thread(target=_ask, name="span-digest", daemon=True).start()
-    if not finished.wait(SPAN_MODEL_TIMEOUT):
+    flight = jobs.future("span digest", _span_said_by_model, notes, first, last, now)
+    try:
+        return flight.result(timeout=SPAN_MODEL_TIMEOUT) or ""
+    except FutureTimeout:
         return ""
-    return said[0] if said else ""
+    except Exception:  # noqa: BLE001  # a failed call is the composer's turn
+        return ""
 
 
 @router.get("/digest")
