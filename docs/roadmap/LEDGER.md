@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 1 | 0 | 0 | 0 | 16 |
-| chat | 176 | 103 | 44 | 2 | 59 | 323 |
+| chat | 176 | 99 | 44 | 2 | 59 | 319 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 554 | 134 | 3 | 186 | 1241 |
+| all | 553 | 550 | 134 | 3 | 186 | 1237 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -31,18 +31,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L86** `chat` open, S: Face sheet: crowns spill 6 px past card top. From OPEN.md:1092. Evidence: facesheet.js removed 2026-10-12; spill not rechecked; needs a fresh sheet run
 - [ ] **L102** `chat` open, M: Derive themes beyond shared tags and links. From OPEN.md:3846. Evidence: composer_frame.themes unchanged; tried 2026-11-13: joining loose notes by shared category, then by a shared title word, broke 44 composer tests because both mostly restate the question's own subject ('all mention sara', 'all filed under Fun' for a Fun-category question); needs the question's subject and category passed into themes() and excluded as keys
 - [ ] **L103** `chat` open, M: Answer who/status questions over list notes instead of returning a quote. From OPEN.md:3847. Evidence: composer.py select not changed
-- [ ] **L106** `chat` open, M: Fix R3-2 lead dropping label, R3-18 dentist time, E23 repeated provenance, E17 'when did I last run' seed. From composer-r4-1108.md Still open. Evidence: No tests naming R3-2/R3-18/E23 found; E17 has tests but probe-seed source unresolved
-- [ ] **L107** `chat` open, M: Trim ask-chat Guide topic (1916 of 1919 chars) so it can name Agent-with-no-model. From OPEN.md:804; OPEN.md:2237. Evidence: help_topics_more.py:1712 ask-chat; reply cap test_help_controls.py:342; no cap relief found
 - [ ] **L110** `chat` open, M: Give model turns composer next chips and add no-model contradictions and list_bin tool. From OPEN.md:4519; parity-1110.md Remaining. Evidence: Needs composer result frame (chat_chips.continue_chips); a model turn has none
 - [ ] **L112** `chat` open, M: Ask cannot show a relevant map as a map; add maps to ChatResponse if owner agrees. From OPEN.md:840; OPEN.md:3584. Evidence: Decision taken: retrieval notes only; owner reply pending in row
 - [ ] **L114** `chat` open, M: Drive parity tools (boards/maps, rename_tag/delete_tag by sentence, save_user_preference) beyond fake transport. From OPEN.md:4379. Evidence: Only fake-transport tests (tests/test_acts.py:70, test_agent_tools_api.py:50); no driven parity run for boards/maps tools found
 - [ ] **L118** `chat` open, M: Add other tabs' starters to ai/starter_acts.py. From OPEN.md:2774. Evidence: Verified open; palette.js AGENT_TAB_STARTERS fallback
 - [ ] **L119** `chat` open, M: Draw Confirm/Not right in Ask so insights are read. From OPEN.md:3729. Evidence: grep insights in capture-ask.js finds nothing
 - [ ] **L121** `chat` open, M: Mention other matching records in answers (INBOX 744 b, c). From OPEN.md:3655. Evidence: Composer and grounding work (composer*.py, renderAnswerGrounding); no fix commit found
-- [ ] **L122** `chat` open, M: Fall back to the composed answer when the model fails mid-stream in routes_chat.py. From a30c-1102.md Still open small. Evidence: routes_chat.py still has no mid-stream composed fallback in grep
-- [ ] **L124** `chat` open, M: Apply stale-lock base_hash to every edit_note card, not only add-to-today. From acts-1108.md Left. Evidence: Source states; no later commit found
 - [ ] **L125** `chat` open, M: Save the F1 frame with a chat and fix the odd subject span. From fc1-1110.md Left. Evidence: chat_turn.py _framed_scope uses history frame; reopened chat persistence not found
-- [ ] **L126** `chat` open, M: Widen retrieval on regenerate (E62) and design the library bundle split (D22). From v1028-2.md Remaining. Evidence: E62 needs owner axes; D22 design first (a30g-1102.md:20)
+- [ ] **L126** `chat` open, M: Library bundle split (D22); E62 (widen on regenerate) already built: attempt goes to widen in routes_chat._search_notes, tests/test_regenerate_widens_e62.py. From v1028-2.md Remaining. Evidence: E62 needs owner axes; D22 design first (a30g-1102.md:20); D22 brief 2026-11-13: split the `library` lazy bundle (frontend/js/app.js:1640; documents.js 260 KB gz, library.js 201, documents-code.js 92, documents-prose.js 52, documents-cm* ~50) into library-list (library.js and list stand-ins) and library-editors (documents family) fetched on first document open; the lazy-entries stand-ins at app.js:1901 are the seam; measure PF4 typing cost before and after; keep tests/test_boot_budget.py green
 - [ ] **L127** `chat` open, M: Narrate lines for Guide, drafting and doc review and announce chat/agent turns. From OPEN.md:2514. Evidence: Placed into owning briefs (SESSION_BRIEFS.md:343); not built
 - [ ] **L128** `chat` open, M: Move remaining AI controls from aiIsOff() gating to model_ready (27 call sites). From OPEN.md:2734. Evidence: grep aiIsOff() finds 27 call sites in frontend/js
 - [ ] **L129** `chat` open, M: Fix avatars.js dashboard/Library timer forced layout and nameMarkBuddyKeepUp cost. From OPEN.md:4424; OPEN.md:4426; INBOX.md:1716. Evidence: No commit or CHANGELOG line names 1667l; timer not re-measured
