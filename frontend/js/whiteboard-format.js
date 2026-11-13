@@ -77,15 +77,15 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "fillstyle", "fillalpha", "gradient", "tip", "shapelabel", "ports"],
-  line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
+  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "fillstyle", "fillalpha", "gradient", "tip", "shapelabel", "ports"],
+  line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
-  arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "edgeshape", "textpath", "jumps", "caps", "label-t", "linklook", "props", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t"],
-  text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "rawstyle"],
-  image: ["alpha", "shadow", "shadowset", "radii", "imageborder", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props"],
-  frame: ["pad", "stack", "geometry", "props"],
-  table: ["alpha", "shadow", "shadowset", "radii", "tableheader", "stripes", "geometry", "props"],
+  arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "edgeshape", "textpath", "jumps", "caps", "label-t", "linklook", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t"],
+  text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "tags", "rawstyle"],
+  image: ["alpha", "shadow", "shadowset", "radii", "imageborder", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props", "tags"],
+  frame: ["pad", "stack", "collapse", "geometry", "props", "tags"],
+  table: ["alpha", "shadow", "shadowset", "radii", "tableheader", "stripes", "geometry", "props", "tags"],
   note: ["geometry", "angle"],
   //: A Mermaid diagram object: the fill and the line it draws with (INBOX 1486).
   diagram: ["fill", "fillalpha", "strokealpha"],

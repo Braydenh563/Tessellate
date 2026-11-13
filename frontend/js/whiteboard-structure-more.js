@@ -349,9 +349,7 @@
   }
 
   // --- The panel -------------------------------------------------------------------------------------------
-  //: The Data tab's tag row and the frame's Collapsed box; joined to the Format panel's field lists, which the panel reads.
-  for (const list of Object.values(WB_FMT_FIELDS)) if (list.includes("props") && !list.includes("tags")) list.push("tags");
-  WB_FMT_FIELDS.frame.push("collapse");
+  //: The Data tab's tag row and the frame's Collapsed box are in WB_FMT_FIELDS (whiteboard-format.js), which the panel reads.
 
   function sync(entries) {
     syncTags(entries);

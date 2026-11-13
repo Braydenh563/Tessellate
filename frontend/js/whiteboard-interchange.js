@@ -560,7 +560,8 @@ wbDrawioStyle.points = {
 //: path for, else a box (counted when its shape was something else).
 function wbDrawioShape(s) {
   //: cylinder3, cube, step, umlActor...: the JS-drawn kinds of whiteboard-shape-table.js, drawn again at any size.
-  const drawn = wbFmtState.shapeTable?.fromDrawio(s);
+  //: The shape table loads after this file and is absent where this half runs alone (node tests), so it is looked up, not assumed.
+  const drawn = (typeof wbFmtState === "undefined" ? {} : wbFmtState).shapeTable?.fromDrawio(s);
   if (drawn) return drawn;
   const kind = s.shape || s._kind || "";
   if (kind === "ellipse" || s.ellipse === "1") return "ellipse";
@@ -721,7 +722,7 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
     if (String(d.type || "").startsWith("link-")) { links.push([sk, d]); continue; }
     const closed = typeof d.d === "string" && /[Zz]\s*$/.test(d.d.trim());
     //: A table shape (cylinder, cube, step...) goes out under its draw.io `shape=` word, open sub-paths and all.
-    const drawn = d.shapeKind ? wbFmtState.shapeTable?.toDrawio(d.shapeKind) || "" : "";
+    const drawn = d.shapeKind ? (typeof wbFmtState === "undefined" ? {} : wbFmtState).shapeTable?.toDrawio(d.shapeKind) || "" : "";
     if (typeof d.d !== "string" || !(drawn || WB_DRAWIO_SHAPES_OUT[d.shape] || d.shape === "custom" || closed)) { skip("drawn lines"); continue; }
     const bb = bounds("sketch", sk);
     if (!bb) { skip("drawn lines"); continue; }
@@ -805,7 +806,7 @@ wbDrawioStyle.more = {
   },
   //: A shape's `sketch` data at `dx, dy`: its path (turned when it has a turn), its look, label and ports.
   shapeData(item, dx, dy, ink) {
-    const own = wbFmtState.shapeTable?.shapePathAt(item.shape, item.x + dx, item.y + dy, item.w, item.h);
+    const own = (typeof wbFmtState === "undefined" ? {} : wbFmtState).shapeTable?.shapePathAt(item.shape, item.x + dx, item.y + dy, item.w, item.h);
     const path = own || wbDrawioPath(item.shape, item.x + dx, item.y + dy, item.w, item.h);
     const data = {
       d: item.rotation ? wbDrawioStyle.more.turn(path, item.rotation, item.x + dx + item.w / 2, item.y + dy + item.h / 2) : path,

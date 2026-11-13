@@ -8613,55 +8613,55 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `wbBoardOutline` | frontend/js/whiteboard-interchange.js:220 |
-| `wbBoardRowsFromSvg` | frontend/js/whiteboard-interchange.js:1098 |
+| `wbBoardRowsFromSvg` | frontend/js/whiteboard-interchange.js:1099 |
 | `wbBoardSvgMetadata` | frontend/js/whiteboard-interchange.js:262 |
-| `wbBoardToDrawio` | frontend/js/whiteboard-interchange.js:665 |
+| `wbBoardToDrawio` | frontend/js/whiteboard-interchange.js:666 |
 | `wbBoardToMermaid` | frontend/js/whiteboard-interchange.js:36 |
-| `wbBuildDiagram` | frontend/js/whiteboard-interchange.js:1714 |
-| `wbCardTitleForExport` | frontend/js/whiteboard-interchange.js:1323 |
-| `wbDiagramDataUrl` | frontend/js/whiteboard-interchange.js:1709 |
-| `wbDiagramFillColour` | frontend/js/whiteboard-interchange.js:1697 |
-| `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1703 |
-| `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1686 |
-| `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1758 |
-| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1813 |
-| `wbDrawioBox` | frontend/js/whiteboard-interchange.js:1431 |
-| `wbDrawioCells` | frontend/js/whiteboard-interchange.js:1386 |
+| `wbBuildDiagram` | frontend/js/whiteboard-interchange.js:1715 |
+| `wbCardTitleForExport` | frontend/js/whiteboard-interchange.js:1324 |
+| `wbDiagramDataUrl` | frontend/js/whiteboard-interchange.js:1710 |
+| `wbDiagramFillColour` | frontend/js/whiteboard-interchange.js:1698 |
+| `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1704 |
+| `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1687 |
+| `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1759 |
+| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1814 |
+| `wbDrawioBox` | frontend/js/whiteboard-interchange.js:1432 |
+| `wbDrawioCells` | frontend/js/whiteboard-interchange.js:1387 |
 | `wbDrawioLook` | frontend/js/whiteboard-interchange.js:505 |
-| `wbDrawioModelCells` | frontend/js/whiteboard-interchange.js:1408 |
-| `wbDrawioPath` | frontend/js/whiteboard-interchange.js:769 |
-| `wbDrawioPlace` | frontend/js/whiteboard-interchange.js:1438 |
-| `wbDrawioPlan` | frontend/js/whiteboard-interchange.js:580 |
+| `wbDrawioModelCells` | frontend/js/whiteboard-interchange.js:1409 |
+| `wbDrawioPath` | frontend/js/whiteboard-interchange.js:770 |
+| `wbDrawioPlace` | frontend/js/whiteboard-interchange.js:1439 |
+| `wbDrawioPlan` | frontend/js/whiteboard-interchange.js:581 |
 | `wbDrawioShape` | frontend/js/whiteboard-interchange.js:561 |
 | `wbDrawioStyle` | frontend/js/whiteboard-interchange.js:464 |
 | `wbDrawioText` | frontend/js/whiteboard-interchange.js:483 |
-| `wbEditDiagram` | frontend/js/whiteboard-interchange.js:1780 |
-| `wbExportDrawio` | frontend/js/whiteboard-interchange.js:1352 |
-| `wbExportMermaid` | frontend/js/whiteboard-interchange.js:1342 |
-| `wbExportOutline` | frontend/js/whiteboard-interchange.js:1363 |
-| `wbExportRows` | frontend/js/whiteboard-interchange.js:1114 |
-| `wbImportBoardRows` | frontend/js/whiteboard-interchange.js:1147 |
-| `wbImportDrawio` | frontend/js/whiteboard-interchange.js:1488 |
-| `wbImportMermaid` | frontend/js/whiteboard-interchange.js:1185 |
-| `wbImportMermaidSequence` | frontend/js/whiteboard-interchange.js:1270 |
-| `wbImportText` | frontend/js/whiteboard-interchange.js:1536 |
-| `wbInsertDiagram` | frontend/js/whiteboard-interchange.js:1767 |
-| `wbMermaidCap` | frontend/js/whiteboard-interchange.js:1236 |
+| `wbEditDiagram` | frontend/js/whiteboard-interchange.js:1781 |
+| `wbExportDrawio` | frontend/js/whiteboard-interchange.js:1353 |
+| `wbExportMermaid` | frontend/js/whiteboard-interchange.js:1343 |
+| `wbExportOutline` | frontend/js/whiteboard-interchange.js:1364 |
+| `wbExportRows` | frontend/js/whiteboard-interchange.js:1115 |
+| `wbImportBoardRows` | frontend/js/whiteboard-interchange.js:1148 |
+| `wbImportDrawio` | frontend/js/whiteboard-interchange.js:1489 |
+| `wbImportMermaid` | frontend/js/whiteboard-interchange.js:1186 |
+| `wbImportMermaidSequence` | frontend/js/whiteboard-interchange.js:1271 |
+| `wbImportText` | frontend/js/whiteboard-interchange.js:1537 |
+| `wbInsertDiagram` | frontend/js/whiteboard-interchange.js:1768 |
+| `wbMermaidCap` | frontend/js/whiteboard-interchange.js:1237 |
 | `wbMermaidClassParse` | frontend/js/whiteboard-interchange.js:354 |
-| `wbMermaidFrameOf` | frontend/js/whiteboard-interchange.js:1330 |
+| `wbMermaidFrameOf` | frontend/js/whiteboard-interchange.js:1331 |
 | `wbMermaidKind` | frontend/js/whiteboard-interchange.js:270 |
 | `wbMermaidLayout` | frontend/js/whiteboard-interchange.js:106 |
 | `wbMermaidLines` | frontend/js/whiteboard-interchange.js:280 |
-| `wbMermaidPlaceNode` | frontend/js/whiteboard-interchange.js:1243 |
+| `wbMermaidPlaceNode` | frontend/js/whiteboard-interchange.js:1244 |
 | `wbMermaidSequenceParse` | frontend/js/whiteboard-interchange.js:414 |
 | `wbMermaidStateParse` | frontend/js/whiteboard-interchange.js:289 |
-| `wbOpenImportDialog` | frontend/js/whiteboard-interchange.js:1371 |
-| `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1723 |
-| `wbPdf` | frontend/js/whiteboard-interchange.js:1830 |
-| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1793 |
-| `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1604 |
-| `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1614 |
-| `wbThumbMark` | frontend/js/whiteboard-interchange.js:1608 |
+| `wbOpenImportDialog` | frontend/js/whiteboard-interchange.js:1372 |
+| `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1724 |
+| `wbPdf` | frontend/js/whiteboard-interchange.js:1831 |
+| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1794 |
+| `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1605 |
+| `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1615 |
+| `wbThumbMark` | frontend/js/whiteboard-interchange.js:1609 |
 
 ### frontend/js/whiteboard-keys.js (12)
 
@@ -9343,7 +9343,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `isFolded` | frontend/js/whiteboard-structure-more.js:124 |
 | `onDragMove` | frontend/js/whiteboard-structure-more.js:218 |
 | `openFilter` | frontend/js/whiteboard-structure-more.js:335 |
-| `paint` | frontend/js/whiteboard-structure-more.js:379 |
+| `paint` | frontend/js/whiteboard-structure-more.js:377 |
 | `paintFolds` | frontend/js/whiteboard-structure-more.js:188 |
 | `paintTags` | frontend/js/whiteboard-structure-more.js:89 |
 | `parseTags` | frontend/js/whiteboard-structure-more.js:22 |
@@ -9354,7 +9354,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setFilter` | frontend/js/whiteboard-structure-more.js:100 |
 | `setFolded` | frontend/js/whiteboard-structure-more.js:159 |
 | `setScope` | frontend/js/whiteboard-structure-more.js:284 |
-| `sync` | frontend/js/whiteboard-structure-more.js:356 |
+| `sync` | frontend/js/whiteboard-structure-more.js:354 |
 | `syncTags` | frontend/js/whiteboard-structure-more.js:54 |
 | `tagCounts` | frontend/js/whiteboard-structure-more.js:73 |
 | `taggable` | frontend/js/whiteboard-structure-more.js:35 |
@@ -18159,8 +18159,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2685 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2838 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2686 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2839 |
 
 ### src/tessellate/ai/help_words.py (3)
 

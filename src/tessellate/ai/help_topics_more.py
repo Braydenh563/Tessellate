@@ -1963,7 +1963,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-draw-io-keys", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-group-edit", "board-structure", "board-text-more", "board-drawn-shapes", "board-format-options", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-ink", "board-keyboard-create", "board-group-edit", "board-structure", "board-text-more", "board-drawn-shapes", "board-format-options", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2675,6 +2675,7 @@ TOPIC_META.update({
     "board-drawn-shapes": {"title": "Drawn shapes: cylinder, cube, step, actor", "path": "A board's Insert menu, Shape picker, or the Library tab, Drawn shapes"},
     "board-text-more": {"title": "Subscript, superscript and maths on a board", "path": "A text box or a shape's text, type H~2~O or x^2^"},
     "board-structure": {"title": "Tags, collapsing a frame and finding in one frame", "path": "A board's Format panel, Data tab"},
+    "board-ink": {"title": "Smoothed pen, Clean up, replay and GIF", "path": "A board's pen or marker; the Edit menu, Clean up the drawn shape or Replay the pen drawing"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},
     "mind-map-structure": {"title": "A structure per branch", "path": "A map topic's menu, Structure"},
     "mind-map-lines": {"title": "Map line style, line ends and topic shapes", "path": "A map, Layout, the line style picker"},

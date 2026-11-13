@@ -171,6 +171,7 @@ TOPIC_LEADS: dict[str, str] = {
     "board-group-edit": "Edit inside one group with the rest of the board dimmed, and save which panels are open.",
     "board-drawn-shapes": "Place a cylinder, cube, step, actor or folder, redrawn as you resize it.",
     "board-text-more": "Write H~2~O and x^2^ on a board and see small lowered and raised characters.",
+    "board-ink": "Draw smoothed pen strokes, tidy a rough shape, and replay the drawing or save it as a GIF.",
     "board-structure": "Tag items, dim the rest by tag, fold a frame, and find in one frame.",
     "board-keyboard-create":"Add stickies, text and frames to a board and write in them by keyboard.",
     "board-hand-drawn": "Make a board look sketched by hand, with rough strokes on every shape.",
