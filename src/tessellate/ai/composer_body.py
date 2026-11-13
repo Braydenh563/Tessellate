@@ -490,6 +490,11 @@ def _compare_lead(out: _Answer, sides: tuple[str, ...], counts: list[int]) -> No
     led = out.later_turn() and not again
     if led:
         out.t("compare_lead")
+    _compare_counts(out, sides, counts, again=again, led=led)
+
+
+def _compare_counts(out: _Answer, sides: tuple[str, ...], counts: list[int], *, again: bool, led: bool) -> None:
+    """Each side's count: "Tokyo comes up in two notes" when said again, else "Three notes mention Tokyo"."""
     for i, (label, n) in enumerate(zip(sides, counts)):
         if i:
             out.t("and")

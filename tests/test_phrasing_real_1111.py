@@ -101,7 +101,6 @@ XFAIL = {
     "calender says tomorrow is": DATE,
     "lunch with my friend at noon today": BARE_EVENT,
     "when is the meeting with my boss scheduled for": STRAY,
-    "when is that meeting with my boss": STRAY,
     "share my meeting schedule with me": STRAY,
     "do i have any meeting to go to today": STRAY,
     "how many vacation days do i have remaining, please": STRAY,

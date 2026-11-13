@@ -39,6 +39,6 @@ def switched_off_line(question: str) -> str | None:
         return None
     names = ", ".join(dict.fromkeys(name.replace("_", " ") for name in wanted))
     return (
-        f"The tools this needs are switched off in Settings, Tools ({names}), so I have not tried. "
+        f"The tools this needs are switched off in Settings, Tools it can use ({names}), so I have not tried. "
         "Turn them on there and ask again."
     )
