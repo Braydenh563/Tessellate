@@ -149,6 +149,8 @@ PHRASES: dict[str, str] = {
     "each_side": "Here is what each says.",
     "side_notes": " notes",
     "side_note": " note",
+    "comes_up_in": " comes up in ",
+    "side_in": " in ",
     "both": "Both together",
     "side_none": "Nothing found is about this one on its own.",
     # The close.
