@@ -22,8 +22,8 @@ def test_every_look_has_every_frame() -> None:
     # Intent moved (INBOX 1670, "very framey"): 12 walk and 24 idle frames, in-betweens of the old 6 and 12.
     # Intent moved (INBOX 1696 x): six wave frames (wave0..wave5), 50 to 56.
     # Intent moved (W31 E1, E2): five pictures of acts the desk lacked (`sprites.EXTRA_FRAMES`), 56 to 61.
-    # Intent moved (L-ui-modernisation-10): the sleeping hang and the flip by the feet, 61 to 63.
-    assert len(sprites.FRAME_NAMES) == 63 and len(sprites.WALK_FRAMES) == 12 and len(sprites.IDLE_FRAMES) == 24
+    # Intent moved (L-ui-modernisation-10): the sleeping hang and the flip by the feet, 61 to 63; (L-ui-modernisation-41) the side lean and the floater on its back, 63 to 65.
+    assert len(sprites.FRAME_NAMES) == 65 and len(sprites.WALK_FRAMES) == 12 and len(sprites.IDLE_FRAMES) == 24
 
 
 def test_frames_of_a_look_share_one_size_and_stay_small() -> None:

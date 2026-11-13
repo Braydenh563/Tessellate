@@ -136,7 +136,7 @@ class RoamMixin:
 
     def _low(self) -> bool:
         """Lying, sitting, napping or at a prop: a body that does not stand ready for the window to move."""
-        return self.state in ("sit", "sleep") or (self.state == "act" and self.act in (*extras.props.PROP_ACTS, *extras.props.SPELL_ACTS, "lie_down"))
+        return self.state in ("sit", "sleep") or (self.state == "act" and (self.act == "lie_down" or extras.props.spec_of(self.act) is not None))
 
     def _moved_fast(self, cur: Perch, now: float) -> tuple[float, float, float] | None:
         """The window's velocity (px/s) and its speed in logical px/s since the last scan, when that is a move fast enough

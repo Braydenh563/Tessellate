@@ -55,6 +55,11 @@ const FRAMES = [
   //: 7 s, the figure turned 176 degrees about the hips so the lower body is at the edge and the head hangs).
   { name: "hang_sloth", pose: "hang", classes: ["nmb-sleep"], at: 0.5, upright: true },
   { name: "hang_feet", pose: "hang", classes: ["nmb-act-feet"], at: 0.5 },
+  //: L-ui-modernisation-41: the app's side lean (`pos.lean`: the pose a figure takes against a side edge, the near arm up on it and
+  //: the lower body tilted into it) is the desk's side peek; `back_float` is the third drift variant (`nmb-act-drift`, `data-variant` 2:
+  //: the legs crossed, the hands behind the head) laid on its back in the air.
+  { name: "lean", pose: "lean", classes: [], data: { side: "left" } },
+  { name: "back_float", pose: "float", classes: ["nmb-act-drift"], data: { variant: "2" }, spin: -72 },
 ];
 //: The idle cycle (`idle0` to `idle23`, engine.IDLE_FRAMES): the rig's own standing
 //: motion sampled at fixed times, one full beat of the tail (`atlasTailBend` with
@@ -167,7 +172,7 @@ async function steadyShot(page, file, clip) {
       //: And its face: a page expression (hearts, a blush) came and went over four idle frames in a row.
       if (typeof setAtlasMood === "function") { setAtlasMood("calm", 0); window.setAtlasMood = () => {}; }
       new MutationObserver(() => {
-        for (const n of ["data-perch", "data-legs", "data-side"]) if (clone.hasAttribute(n)) clone.removeAttribute(n);
+        for (const n of ["data-perch", "data-legs", "data-side"]) if (clone.hasAttribute(n) && !(n === "data-side" && window.__keepSide)) clone.removeAttribute(n);
         if (clone.dataset.pose !== window.__want) clone.dataset.pose = window.__want;
       }).observe(clone, { attributes: true, attributeFilter: ["data-pose", "data-perch", "data-legs", "data-side"] });
       return { look: atlasLook(), rect: JSON.stringify(clone.getBoundingClientRect()) };
@@ -193,7 +198,10 @@ async function steadyShot(page, file, clip) {
         window.__setProp(b, "transform", window.__pin, "important");
         b.className = frame.classes.join(" ");
         window.__want = frame.pose;
+        window.__keepSide = Boolean(frame.data && frame.data.side);
         b.dataset.pose = frame.pose;
+        //: Extra `data-` attributes the pose reads (the lean's side, a drift's variant).
+        for (const [k, v] of Object.entries(frame.data || {})) b.dataset[k] = v;
         b.dataset.feel = "calm";
       }, f);
       await page.waitForTimeout(60);

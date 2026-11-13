@@ -111,6 +111,8 @@ class FramesMixin:
             return frame
         if self.peek_edge == "top":
             return "spin24" if self.peek_flip else "hang"
+        if self.peek_edge in ("left", "right") and "lean" in self.extra_frames:
+            return "lean"  # against the side edge (L-ui-modernisation-41), the arm up on it
         return "stand" if self.sink < self.sink_max * 0.5 or now - self.peek_started < 0.8 else "look"
 
     def _blink_step(self, now: float) -> tuple[int | None, float]:
