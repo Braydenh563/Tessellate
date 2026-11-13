@@ -6,10 +6,13 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+from pathlib import Path
 
 import pytest
 
 from tests._app_js import frontend_text
+
+VENDOR = Path(__file__).resolve().parent.parent / "frontend" / "vendor" / "perfect-freehand" / "perfect-freehand.min.js"
 
 #: The board's own helpers, lifted from whiteboard.js so the test uses the shipped inset, not a copy.
 _HELPERS = (
@@ -18,7 +21,7 @@ _HELPERS = (
 )
 
 
-def _node(body: str, files=("whiteboard-ink-more.js",)):
+def _node(body: str, files=("whiteboard-ink-more.js",), vendor=False):
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
@@ -29,7 +32,8 @@ def _node(body: str, files=("whiteboard-ink-more.js",)):
     helpers += "\n" + src[h0 : src.index("}", h0) + 1]
     s0 = src.index("function wbShaftEnd(")
     helpers += "\n" + src[s0 : src.index("\n}\n", s0) + 3]
-    script = "const wbFmtState = {};\n" + _HELPERS + helpers + "\n" + "\n".join(frontend_text(f) for f in files) + "\n" + body
+    lib = ("var window = {};\n" + VENDOR.read_text(encoding="utf-8") + "\n") if vendor else ""
+    script = "const wbFmtState = {};\n" + lib + _HELPERS + helpers + "\n" + "\n".join(frontend_text(f) for f in files) + "\n" + body
     return json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=30, check=True).stdout)
 
 
@@ -61,3 +65,68 @@ def test_the_board_trims_the_drawn_path_and_keeps_the_hit_band_whole():
     assert "hitboxData = parsed.d; pathData = trimmed;" in wb
     assert "wbFmtState.inkMore?.trimShaft(liveD" in wb
     assert "/js/whiteboard-ink-more.js" in frontend_text("lazy-entries.js")
+
+
+# --- Smoothed, pressure-aware ink (L-whiteboard-1, L-whiteboard-5) ------------------------------------------------
+
+
+def _thickness(pressure, pointer):
+    """The outline's height for a straight horizontal run of 40 points at one synthetic pressure."""
+    points = [[i * 4, 50, pressure] for i in range(40)]
+    return _node(
+        f"const d = wbFmtState.inkMore.outline({json.dumps(points)}, 'draw', 4, {json.dumps(pointer)}, true, window.perfectFreehand);"
+        "const ys = [...d.matchAll(/[ML] [-\\d.]+ ([-\\d.]+)/g)].map((m) => +m[1]);"
+        "console.log(JSON.stringify(Math.max(...ys) - Math.min(...ys)));",
+        vendor=True,
+    )
+
+
+def test_a_pen_stroke_is_wider_where_the_pen_presses_harder():
+    light, hard = _thickness(0.15, "pen"), _thickness(0.9, "pen")
+    assert 0 < light < hard
+    assert hard / light > 2
+
+
+def test_a_mouse_stroke_ignores_the_reported_pressure_and_is_still_a_stroke():
+    # A mouse reports a fixed 0.5 while pressed: simulated pressure (speed) decides, so the value barely moves the width
+    # (the pen's is above 2 times).
+    assert _thickness(0.9, "mouse") / _thickness(0.15, "mouse") < 1.5
+    assert _thickness(0.5, "mouse") > 1
+
+
+def test_the_outline_is_plain_move_and_line_points_with_no_close():
+    d = _node(
+        "console.log(JSON.stringify(wbFmtState.inkMore.outline([[0,0],[20,10],[40,0]], 'draw', 4, 'mouse', true, window.perfectFreehand)));",
+        vendor=True,
+    )
+    assert d.startswith("M ") and " L " in d
+    assert not set(d) - set("ML 0123456789.-")
+
+
+def test_one_point_is_a_dot_and_nothing_without_the_library():
+    dot = _node("console.log(JSON.stringify(wbFmtState.inkMore.outline([[5,5]], 'draw', 4, 'mouse', true, window.perfectFreehand)));", vendor=True)
+    assert dot.startswith("M ")
+    none = _node("console.log(JSON.stringify(wbFmtState.inkMore.outline([[5,5]], 'draw', 4, 'mouse', true, null)));")
+    assert none == ""
+
+
+def test_a_dashed_pen_keeps_the_plain_stroke_and_a_marker_does_not_thin():
+    out = _node(
+        "const m = wbFmtState.inkMore; console.log(JSON.stringify([m.takesInk('solid', {}), m.takesInk('dashed', {}), m.takesInk(undefined, {}), m.takesInk('solid', null), m.inkOptions('highlighter', 20, 'pen').thinning]));"
+    )
+    assert out == [True, False, True, False, 0]
+
+
+def test_the_library_is_vendored_with_its_licence_and_version():
+    folder = VENDOR.parent
+    assert (folder / "LICENSE").read_text(encoding="utf-8").startswith("MIT License")
+    assert (folder / "VERSION.txt").read_text(encoding="utf-8").startswith("perfect-freehand 1.2.3")
+    assert (folder / "build.sh").is_file()
+
+
+def test_the_board_draws_pen_and_marker_through_it():
+    wb = frontend_text("whiteboard.js")
+    assert "wbFmtState.inkMore.liveStyle(" in wb and "blob.ink = 1" in wb and "if (parsed.ink) {" in wb
+    assert "[x, y, e.pressure]" in wb
+    entries = frontend_text("lazy-entries.js")
+    assert entries.index("/vendor/perfect-freehand/perfect-freehand.min.js") < entries.index("/js/whiteboard-ink-more.js")

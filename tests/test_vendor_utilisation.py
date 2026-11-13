@@ -72,6 +72,8 @@ CALLED_FLOOR = {
     #: paths, getValue, setValue, insert, executeCommand, the keyboard policy, menuItems.
     "mathlive": 10,
     "docx": 12,
+    #: The whiteboard pen and marker: getStroke (whiteboard-ink-more.js).
+    "perfectfreehand": 1,
     #: Brief 83: the Translate worker, a download extra (its WASM engine is not vendored).
     "translate": 11,
 }

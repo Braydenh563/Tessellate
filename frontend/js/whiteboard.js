@@ -19462,7 +19462,7 @@ async function initWhiteboard() {
     isDrawing = true;
     const [x, y] = getLogicalMouse(e);
     
-    currentDrawData = [[x, y]];
+    currentDrawData = [[x, y, e.pressure]];
     currentDrawPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
     // Fill only applies to the four closed shapes, and only when "no fill"
     // isn't checked: asked for directly ("fill colour/transparency...
@@ -19498,10 +19498,23 @@ async function initWhiteboard() {
     const dashArray = wbDashArray(window.currentDashStyle, WB_STROKE_WIDTH);
     if (dashArray) currentDrawPath.setAttribute("stroke-dasharray", dashArray);
     currentDrawPath.setAttribute("d", `M ${x} ${y}`);
+    //: A solid pen or marker stroke is smoothed ink (whiteboard-ink-more.js): filled, its width following pressure.
+    if ((window.currentTool === "draw" || window.currentTool === "highlighter") && wbFmtState.inkMore?.takesInk(window.currentDashStyle)) {
+      currentDrawPath.__ink = { pointer: e.pointerType };
+      wbFmtState.inkMore.liveStyle(currentDrawPath, window.currentStrokeNone ? "none" : window.currentStrokeColor, window.currentTool === "highlighter" ? WB_HIGHLIGHTER_ALPHA : null);
+    }
     //: Over the cards while it is drawn: it lands on top (decision 43).
     document.getElementById("wb-overlay-zoom-group").appendChild(currentDrawPath);
   });
   
+  //: The live stroke's outline when it is smoothed ink, "" when it is a plain stroke.
+  function wbInkLiveD(last) {
+    const ink = currentDrawPath?.__ink;
+    if (!ink) return "";
+    const tool = window.currentTool;
+    const width = tool === "highlighter" ? wbHighlighterWidth(WB_STROKE_WIDTH) : WB_STROKE_WIDTH;
+    return wbFmtState.inkMore.outline(currentDrawData, tool, width, ink.pointer, last);
+  }
   containerEl.addEventListener("pointermove", (e) => {
     if (!isDrawing || !WB_BRUSH_TOOLS.has(window.currentTool)) return;
     e.stopPropagation();
@@ -19520,12 +19533,12 @@ async function initWhiteboard() {
       if (e.shiftKey) {
         const [sx0, sy0] = currentDrawData[0];
         currentDrawData.length = 1;
-        currentDrawData.push([x, y]);
-        currentDrawPath.setAttribute("d", `M ${sx0} ${sy0} L ${x} ${y}`);
+        currentDrawData.push([x, y, e.pressure]);
+        currentDrawPath.setAttribute("d", wbInkLiveD(false) || `M ${sx0} ${sy0} L ${x} ${y}`);
         return;
       }
-      currentDrawData.push([x, y]);
-      const d = currentDrawData.map((pt, i) => (i === 0 ? `M ${pt[0]} ${pt[1]}` : `L ${pt[0]} ${pt[1]}`)).join(" ");
+      currentDrawData.push([x, y, e.pressure]);
+      const d = wbInkLiveD(false) || currentDrawData.map((pt, i) => (i === 0 ? `M ${pt[0]} ${pt[1]}` : `L ${pt[0]} ${pt[1]}`)).join(" ");
       currentDrawPath.setAttribute("d", d);
     } else {
       // Shape tools: only start and current point matter
@@ -19603,7 +19616,10 @@ async function initWhiteboard() {
     // being discarded as "no shape to save".
     const isFreehand = window.currentTool === "draw" || window.currentTool === "highlighter";
     if (isFreehand && currentDrawData.length < 2) {
-      currentDrawPath.setAttribute("d", `M ${sx} ${sy} L ${sx} ${sy + 0.1}`);
+      currentDrawPath.setAttribute("d", wbInkLiveD(true) || `M ${sx} ${sy} L ${sx} ${sy + 0.1}`);
+    } else if (isFreehand) {
+      const settled = wbInkLiveD(true);
+      if (settled) currentDrawPath.setAttribute("d", settled);
     } else if (!isFreehand && Math.abs(x - sx) < 2 && Math.abs(y - sy) < 2) {
       // Shape tools (line/arrow/rect/circle) need an actual drag to have a
       // size: a zero-size shape isn't a reasonable click-to-draw default
@@ -19631,6 +19647,7 @@ async function initWhiteboard() {
       shape: more ? "custom" : window.currentTool,
     };
     if (more?.area) blob.label_area = more.area;
+    if (currentDrawPath.__ink) blob.ink = 1;
     //: The ends are stored by kind, so the bar and the Format panel read
     //: what was drawn rather than sniffing it out of the path.
     if (window.currentTool === "line" || window.currentTool === "arrow") Object.assign(blob, wbToolCaps());
@@ -23243,6 +23260,13 @@ function renderWhiteboard() {
           fillOpacity = parsed.fillOpacity != null ? parsed.fillOpacity : 1;
         }
         dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3, wbDashPatternOf(parsed.dashPattern));
+        //: Smoothed ink is the stroke's outline, filled with its colour (whiteboard-ink-more.js).
+        if (parsed.ink) {
+          fill = stroke;
+          fillOpacity = strokeOpacity;
+          stroke = "none";
+          dashArray = null;
+        }
       } else if (parsed.type && parsed.type.startsWith("link-")) {
         linkData = parsed;
         stroke = parsed.color || stroke;

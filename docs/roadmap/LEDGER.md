@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 1 | 0 | 0 | 0 | 16 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 25 | 4 | 0 | 11 | 59 |
+| whiteboard | 30 | 24 | 4 | 0 | 10 | 58 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 632 | 150 | 3 | 186 | 1335 |
+| all | 553 | 631 | 150 | 3 | 185 | 1334 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -297,7 +297,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L284** `whiteboard` partly, M: Finish frame rotate reset, emoji scale and resize dimension label/lag. From OPEN.md:3828. Evidence: 25e10059b frame upright stands up contents; dimension label while resizing not found
 - [ ] **L285** `whiteboard` partly, L: Finish templates, styles, align and distribute, find, copy as picture and shortcuts for the board. From OPEN.md:4531. Evidence: Smart alignment guides and find exist in whiteboard.js; templates/styles/copy-as-picture set not confirmed complete
 - [ ] **L286** `whiteboard` partly, L: Whiteboard: D24 names left, split whiteboard.js and whiteboard-map.js. From ledger-1112 O34; ledger-1112 O33.
-- [ ] **L-whiteboard-1** `whiteboard` open, M: Vendor perfect-freehand for smoothed, pressure-aware pen and marker strokes. From open-work sweep 2026-11-12, docs/ARCHITECTURE.md:1800. Evidence: perfect-freehand is a shortlisted vendor for smoothed, pressure-aware pen strokes. No code uses it, and no whiteboard plan, LEDGER or BACKLOG row tracks it. WHITEBOARD_PLAN section 7 notes only that p
 - [ ] **L-whiteboard-2** `whiteboard` open, M: Add a resizable PDF and document viewer object to the whiteboard. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:121. Evidence: BACKLOG claims it went to WHITEBOARD_PLAN, but no whiteboard plan item, LEDGER row or code exists for a resizable PDF or document viewer on the board
 - [ ] **L-whiteboard-3** `whiteboard` open, M: Turn rough ink strokes into clean shapes. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:293. Evidence: there is no shape recognition code in frontend/js; it exists only in this audit file, which BACKLOG points at only in general terms
 - [ ] **L-whiteboard-4** `whiteboard` open, M: Replay a board's ink strokes in drawing order. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:296. Evidence: no stroke replay exists in the code and no plan or LEDGER row covers it
@@ -1010,7 +1009,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-world-class-5** `world-class` blocked-hardware, S: Verify Tessellate --mcp from the packaged Windows exe with a real MCP client (hardware). From open-work sweep 2026-11-12, docs/INSTALL.md:297. Evidence: The packaged windowed exe's stdio MCP mode has not been checked on a real Windows build. L687 covers the HTTP transport, not this check.
 - [ ] **L-general-23** `general` blocked-hardware, L: Add LEDGER rows for the 0.9 public beta and 1.0 exit criteria. From open-work sweep 2026-11-12, docs/ROADMAP.md:184. Evidence: The 0.5 to 0.8 milestones point to briefs in the plans. The 0.9 and 1.0 exit criteria have no LEDGER rows: non-owner clean-machine installs, the iOS and Android QR flow, the 0.8 to 0.9 update path, te
 - [ ] **L-general-29** `general` blocked-hardware, L: Move the 0.9 and 1.0 release gates into BACKLOG or LEDGER rows. From open-work sweep 2026-11-12, docs/ROADMAP.md:171. Evidence: The 0.5 to 1.0 milestone exit criteria are open gates that exist only in ROADMAP's milestone table, with no LEDGER rows
-- [ ] **L-whiteboard-5** `whiteboard` blocked-hardware, M: Vary board ink width with pen pressure. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:299. Evidence: 0 pressure hits in the whiteboard code; WHITEBOARD_PLAN line 529 only says it is not verified and has no build item
 - [ ] **L-whiteboard-11** `whiteboard` blocked-hardware, M: Have the local model narrate what changed between board versions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:765. Evidence: the board time machine is built, but the local-model summary of what changed is not built or tracked
 - [ ] **L-documents-5** `documents` blocked-hardware, M: Have the local model summarise a document's revisions. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:847. Evidence: version history exists, but there is no model-written account of the revisions; lines 847 to 849 are untracked
 - [ ] **L-world-class-24** `world-class` blocked-hardware, S: Run the ten-minute browser memory check. From open-work sweep 2026-11-12, docs/roadmap/WORLD_CLASS_PLAN.md:4186. Evidence: Open line in the plan's prose a session could miss. Real-browser memory run not done.

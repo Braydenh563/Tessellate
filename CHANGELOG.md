@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: the pen and the marker draw smoothed ink (perfect-freehand): rough hand-drawn lines come out as one clean curve, and with a pen the stroke is thicker where you press harder; with a mouse or a finger the width follows how fast you draw. A dashed pen keeps the plain stroke.
 - Whiteboard: a free line or arrow with an outline diamond, circle or square end no longer draws its shaft through the shape; the line stops at the end's edge, as a connector does, and it still selects along its whole length.
 - Whiteboard: a new Drawn shapes set in the shape picker and the Library tab, 25 outlines (cylinder, tube, cube, callout, step, UML actor and lifeline, folder, note, tape, document, process, trapezoid, card, delay, cross and more) that are drawn again when resized so corners and tabs keep their size; draw.io files with shape=cylinder3, cube, step, umlActor and the rest import as them, and export writes them back.
 - Whiteboard: write $x^2 + \frac{a}{b}$ (a formula between dollar signs) in a shape's text and it is typeset on the board, like text boxes that show markdown already did; prices such as "$5 or $10" stay plain, and an export keeps the source words.

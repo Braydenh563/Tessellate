@@ -2328,6 +2328,21 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-ink",
+        "keywords": (
+            "pen", "marker", "smooth", "smoothed", "pressure", "stylus", "apple pencil", "freehand",
+            "ink", "draw a line", "wobbly pen", "thick and thin", "clean up", "replay", "gif",
+        ),
+        "body": (
+            "The pen and the marker draw smoothed ink: the line you make is evened out, "
+            "and with a pen or stylus it is thicker where you press harder. With a mouse or "
+            "a finger the width follows how fast you draw. A dashed pen keeps the plain "
+            "stroke. A free line or arrow with a hollow end (diamond, circle, square) stops "
+            "at the end's edge instead of running through it."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-hand-drawn",
         "keywords": (
             "hand-drawn", "hand drawn", "sketchy", "rough lines", "excalidraw look",

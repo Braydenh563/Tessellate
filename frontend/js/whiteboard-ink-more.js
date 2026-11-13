@@ -21,5 +21,38 @@
     return `M ${s.x} ${s.y} L ${e.x} ${e.y}` + d.slice(m[0].length);
   }
 
-  wbFmtState.inkMore = { trimShaft };
+  // --- Smoothed, pressure-aware strokes (L-whiteboard-1 and -5) -------------------------------------------------
+  //: **The pen and the marker draw through perfect-freehand** (MIT, vendored in frontend/vendor/perfect-freehand): the
+  //: points the hand made are smoothed and become the outline of a stroke whose width follows pressure. A pen
+  //: (`pointerType` "pen") reports real pressure; a mouse or a finger has none, so the library simulates it from speed.
+  //: The saved `d` is that outline as plain `M`/`L` points (no `Z`, so it is not a closed shape), drawn filled with the
+  //: stroke's colour (`ink: 1` in the data), which keeps move, scale, turn and export working on it unchanged.
+  const round1 = (n) => Math.round(n * 10) / 10;
+
+  //: Pure: the library's options for one kind of stroke at one pen width.
+  function inkOptions(kind, width, pointerType, last) {
+    if (kind === "highlighter") return { size: width, thinning: 0, smoothing: 0.6, streamline: 0.5, simulatePressure: false, last };
+    return { size: width * 1.4, thinning: 0.55, smoothing: 0.5, streamline: 0.45, simulatePressure: pointerType !== "pen", last };
+  }
+
+  //: The outline of `points` ([x, y, pressure?]) as a path, or "" without the library or without points.
+  function outline(points, kind, width, pointerType, last, lib = window.perfectFreehand) {
+    if (!lib || !points?.length) return "";
+    const ring = lib.getStroke(points, inkOptions(kind, width, pointerType, last));
+    if (!ring.length) return "";
+    return ring.map(([x, y], i) => `${i ? "L" : "M"} ${round1(x)} ${round1(y)}`).join(" ");
+  }
+
+  //: A solid pen or marker is ink; a dashed one keeps the plain stroke, which a fill cannot dash.
+  const takesInk = (dash, lib = window.perfectFreehand) => Boolean(lib) && (!dash || dash === "solid");
+
+  //: The live path while drawing: filled with the colour, no outline stroke.
+  function liveStyle(path, colour, opacity) {
+    path.setAttribute("fill", colour);
+    path.setAttribute("stroke", "none");
+    path.removeAttribute("stroke-dasharray");
+    if (opacity != null) path.setAttribute("fill-opacity", String(opacity));
+  }
+
+  wbFmtState.inkMore = { trimShaft, inkOptions, outline, takesInk, liveStyle };
 })();
