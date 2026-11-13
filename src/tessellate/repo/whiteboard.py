@@ -77,3 +77,9 @@ def board_cards(db: Session, board_id: int) -> list[tuple[WhiteboardNode, Entry 
     """A board's note cards with their notes (`None` for a note gone from the table)."""
     nodes = list(db.scalars(select(WhiteboardNode).where(WhiteboardNode.board_id == board_id)))
     return [(node, db.get(Entry, node.entry_id)) for node in nodes]
+
+
+def text_objects(db: Session, board_id: int, ids: list[int]) -> list[WhiteboardObject]:
+    """The text objects (stickies) among `ids` that sit on this board."""
+    where = (WhiteboardObject.board_id == board_id, WhiteboardObject.id.in_(set(ids)), WhiteboardObject.kind == "text")
+    return list(db.scalars(select(WhiteboardObject).where(*where)).all())

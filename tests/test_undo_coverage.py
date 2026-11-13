@@ -575,6 +575,7 @@ EXEMPT: dict[str, str] = {
     "gesture-kit.js:toggleDictation": "read: transcribes speech into the box being typed in",
     "documents.js:docImageUpload": "send: uploads the picked image; the embed it writes is in the document's own undo (Ctrl+Z takes it out)",
     "documents.js:docAiReview": "read: asks the model to check a document, shows a result",
+    "documents.js:claims": "read: asks which sentences the notes back (claim check), shows a result",
     "answer-kit.js:streamChatEvents": "send: streams the Ask box's answer; the question is kept in Ask history",
     "account-recovery.js:openResetLogs": "auth: sign-in, recovery or lock; no user data",
     "account-recovery.js:requestResetCode": "auth: sign-in, recovery or lock; no user data",

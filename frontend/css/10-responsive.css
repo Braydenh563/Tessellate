@@ -1782,7 +1782,7 @@ header#top-bar[data-scrolled="1"],
    604px canvas); a desktop board takes the same row for itself now. The
    map's gesture hint names two keys a phone does not have; there the +
    handles on a selected node are the gesture, and they are already 44px. */
-#tab-library:has(> #library-view-whiteboard:not(.hidden) > #wb-canvas-view:not(.hidden)) #library-subtabs {
+#tab-library > #library-subtabs:has(~ #library-view-whiteboard:not(.hidden) > #wb-canvas-view:not(.hidden)) {
   display: none;
 }
 @media (max-width: 599.98px) and (pointer: coarse) {

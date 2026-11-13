@@ -89,7 +89,6 @@ EXEMPT = {
     "manageCategoriesRedraw": "a redraw callback, not data",
     "wbMapNoteState": "the map's open note panel (UI, not data): closed on the next redraw when its object is gone (wbMapCloseNote)",
     "extractProposal": "the extract preview, closed with its dialog",
-    "docLastTranslateLanguage": "the language last typed in the Translate prompt, the person's own choice; no request fills it",
     "attachedWebPage": "a page the person fetched, not a space's row",
     "webEngineInfo": "the web search engine, per notebook",
     "featureAiTools": "feature list, per notebook",

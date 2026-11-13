@@ -12673,7 +12673,14 @@ const DOC_FIX_ALL_NEVER = new Set(["ai", "link-offer"]);
 function docFindingKind(finding) {
   if (finding.rule === "spelling") return "spelling";
   if (finding.rule === "grammar" || finding.rule === "confusion") return "grammar";
-  if (finding.rule === "ai") return "ai";
+  //: A claim check's verdict (MINDMAP_PLAN Phase G) rides the same finding: marked
+  //: when no note backs it or one says otherwise, quiet when a note supports it.
+  if (finding.rule === "ai") {
+    const claim = finding.aiItem?.claim;
+    if (!claim) return "ai";
+    if (claim.verdict === "supported") return "backed";
+    return "claim";
+  }
   if (DOC_ACCESS_RULES.has(finding.rule)) return "access";
   if (finding.rule === "repeat") return "repeat";
   if (finding.rule === "link-offer") return "link";
@@ -12737,6 +12744,7 @@ function docProseHeader() {
   const right = docProseDockSide() === "right";
   const more = kebabMenu([
     makeMenuItem("ph:sparkle Check with AI", "Read for what the rules can't catch", () => docAiReview()),
+    makeMenuItem("ph:seal-check Check claims against my notes", "Mark each sentence supported, contradicted or not found in your notes", () => docAiCheck.claims()),
     makeMenuItem(
       docProse.hidden ? "ph:eye Show suggestions" : "ph:eye-slash Hide all suggestions",
       docProse.hidden ? "Underline and list suggestions again" : "Hide every underline and the list until you show them again",
@@ -12956,6 +12964,9 @@ const DOC_FINDING_GROUPS = [
   ["style", "Style and spacing"],
   ["access", "Accessibility"],
   ["link", "Links to your notes"],
+  //: Claim check (Phase G): what the notebook does not back, then what it does.
+  ["claim", "Checked against your notes"],
+  ["backed", "Supported by your notes"],
   //: Last: a model's reading is the weakest claim in the panel, and it says
   //: so by where it sits.
   ["ai", "Checked with AI"],
@@ -13147,6 +13158,10 @@ function docProseGroupList(findings) {
       button.setAttribute("aria-label", title);
       return button;
     };
+    if (finding.aiItem?.claim?.note) {
+      const note = finding.aiItem.claim.note;
+      acts.appendChild(act("ph:note", `Open the note \u201c${note.title}\u201d`, () => openNoteEditor(note.id), "doc-prose-open-note"));
+    }
     if (finding.replacement !== null) {
       acts.appendChild(act("ph:check", `Change it to \u201c${finding.replacement}\u201d`, () => docProseFix(finding), "doc-prose-fix"));
     }
@@ -15712,7 +15727,36 @@ function docAiDiscussInChat() {
 //: `state` is idle, running, done, stopped, offline or failed; `items` are
 //: `{text, message, replacement, near}` as they arrived, located afresh on every
 //: pass (`docAiFindings`) because the writer may keep typing while it runs.
-const docAiCheck = { state: "idle", items: [], message: "", controller: null, docId: null };
+//: `mode` is "ai" or "claims" (Check claims against my notes, Phase G): the claim
+//: check puts its verdicts in the same `items`, each with a `claim` `{verdict, note}`.
+const docAiCheck = {
+  state: "idle", items: [], message: "", controller: null, docId: null, mode: "ai",
+  //: One request, no stream: the server writes nothing and answers every sentence.
+  async claims() {
+    if (docAiCheck.state === "running") return;
+    const box = docSurface();
+    const full = box?.text || "";
+    if (!full.trim()) return toast("Nothing to check yet.", "info");
+    const doc = currentDoc || (await ensureDocumentExists().catch(() => null));
+    if (!doc) return toast("Nothing to check yet.", "info");
+    Object.assign(docAiCheck, { state: "running", items: [], message: "", controller: null, docId: doc.id, mode: "claims" });
+    $("doc-prose-panel")?.classList.remove("hidden");
+    $("doc-prose")?.setAttribute("aria-expanded", "true");
+    renderDocProse();
+    try {
+      const got = await apiJson(`/documents/${doc.id}/claim-check`, { method: "POST", body: JSON.stringify({ text: full }), readOnly: true });
+      docAiCheck.items = got.claims.map((c) => ({
+        text: c.text, message: c.message, replacement: "", near: c.start, claim: { verdict: c.verdict, note: c.note },
+      }));
+      docAiCheck.state = "done";
+      docAiCheck.message = got.source === "words" ? "No AI model ran, so sentences were matched to notes by their words." : "";
+    } catch (error) {
+      docAiCheck.state = "failed";
+      docAiCheck.message = error.message || "The check did not finish.";
+    }
+    renderDocProse();
+  },
+};
 
 //: The streamed items as findings against the text as it is now. An item whose
 //: words are gone (applied, or edited away) is simply not drawn; one dismissed
@@ -15758,7 +15802,7 @@ async function docAiReview() {
   const selection = range.to > range.from ? full.slice(range.from, range.to) : "";
   const controller = new AbortController();
   Object.assign(docAiCheck, {
-    state: "running", items: [], message: "", controller, docId: doc.id,
+    state: "running", items: [], message: "", controller, docId: doc.id, mode: "ai",
   });
   //: The panel opens on the check, so the findings land where the writer
   //: can see them arrive.
@@ -15851,7 +15895,15 @@ function docAiCheckStatus() {
   } else {
     const line = document.createElement("span");
     line.className = "doc-prose-ai-line";
-    if (docAiCheck.state === "running") {
+    if (docAiCheck.mode === "claims") {
+      const marked = docAiCheck.items.filter((item) => item.claim.verdict !== "supported").length;
+      line.textContent = docAiCheck.state === "running"
+        ? "Checking sentences against your notes…"
+        : docAiCheck.state === "failed"
+          ? docAiCheck.message || "The check did not finish."
+          : `${nounCount(n, "sentence")} checked, ${marked} not backed by a note.${docAiCheck.message ? ` ${docAiCheck.message}` : ""}`;
+      if (docAiCheck.state === "failed") line.classList.add("error");
+    } else if (docAiCheck.state === "running") {
       line.textContent = n ? `Checking with AI, ${found} so far…` : "Checking with AI…";
     } else if (docAiCheck.state === "stopped") {
       line.textContent = `Stopped. ${n ? `${found} before it stopped.` : "Nothing found before it stopped."}`;

@@ -1612,73 +1612,17 @@ function docFillSig(name) {
   };
 }
 
-//: The shortcodes, GitHub's names. One string, `name=glyph,` per entry, parsed
-//: once: a table of a few hundred glyphs is data, and a string whose every edge
-//: is a letter or a comma is not a glyph standing where an icon belongs
-//: (`tests/test_no_glyph_icons.py` reads string edges).
-const DOC_EMOJI_SOURCE =
-  "smile=\u{1F604},grin=\u{1F601},joy=\u{1F602},rofl=\u{1F923},smiley=\u{1F603},laughing=\u{1F606}," +
-  "sweat_smile=\u{1F605},wink=\u{1F609},blush=\u{1F60A},innocent=\u{1F607},slightly_smiling_face=\u{1F642}," +
-  "upside_down_face=\u{1F643},heart_eyes=\u{1F60D},star_struck=\u{1F929},kissing_heart=\u{1F618},yum=\u{1F60B}," +
-  "stuck_out_tongue=\u{1F61B},zany_face=\u{1F92A},hugs=\u{1F917},thinking=\u{1F914},shushing_face=\u{1F92B}," +
-  "zipper_mouth_face=\u{1F910},raised_eyebrow=\u{1F928},neutral_face=\u{1F610},expressionless=\u{1F611}," +
-  "no_mouth=\u{1F636},smirk=\u{1F60F},unamused=\u{1F612},roll_eyes=\u{1F644},grimacing=\u{1F62C}," +
-  "relieved=\u{1F60C},pensive=\u{1F614},sleepy=\u{1F62A},sleeping=\u{1F634},mask=\u{1F637}," +
-  "nerd_face=\u{1F913},face_with_monocle=\u{1F9D0},sunglasses=\u{1F60E},partying_face=\u{1F973}," +
-  "cowboy_hat_face=\u{1F920},confused=\u{1F615},worried=\u{1F61F},slightly_frowning_face=\u{1F641}," +
-  "open_mouth=\u{1F62E},astonished=\u{1F632},flushed=\u{1F633},pleading_face=\u{1F97A},cry=\u{1F622}," +
-  "sob=\u{1F62D},scream=\u{1F631},exploding_head=\u{1F92F},cold_sweat=\u{1F630},hot_face=\u{1F975}," +
-  "cold_face=\u{1F976},woozy_face=\u{1F974},confounded=\u{1F616},tired_face=\u{1F62B},yawning_face=\u{1F971}," +
-  "triumph=\u{1F624},rage=\u{1F621},angry=\u{1F620},money_mouth_face=\u{1F911},skull=\u{1F480}," +
-  "poop=\u{1F4A9},clown_face=\u{1F921},ghost=\u{1F47B},alien=\u{1F47D},robot=\u{1F916}," +
-  "see_no_evil=\u{1F648},hear_no_evil=\u{1F649},speak_no_evil=\u{1F64A},wave=\u{1F44B},raised_hand=✋," +
-  "ok_hand=\u{1F44C},v=✌️,crossed_fingers=\u{1F91E},point_up=☝️,point_right=\u{1F449}," +
-  "point_left=\u{1F448},point_down=\u{1F447},thumbsup=\u{1F44D},+1=\u{1F44D},thumbsdown=\u{1F44E},-1=\u{1F44E}," +
-  "fist=\u{1F44A},clap=\u{1F44F},raised_hands=\u{1F64C},open_hands=\u{1F450},pray=\u{1F64F}," +
-  "handshake=\u{1F91D},muscle=\u{1F4AA},writing_hand=✍️,eyes=\u{1F440},brain=\u{1F9E0}," +
-  "heart=❤️,orange_heart=\u{1F9E1},yellow_heart=\u{1F49B},green_heart=\u{1F49A},blue_heart=\u{1F499}," +
-  "purple_heart=\u{1F49C},black_heart=\u{1F5A4},broken_heart=\u{1F494},sparkling_heart=\u{1F496}," +
-  "100=\u{1F4AF},boom=\u{1F4A5},sparkles=✨,star=⭐,star2=\u{1F31F},dizzy=\u{1F4AB},fire=\u{1F525}," + // unslop-ignore: :shortcode: data, not icons
-  "zap=⚡,rainbow=\u{1F308},sunny=☀️,cloud=☁️,umbrella=☂️,snowflake=❄️," + // unslop-ignore
-  "droplet=\u{1F4A7},ocean=\u{1F30A},earth_africa=\u{1F30D},seedling=\u{1F331},evergreen_tree=\u{1F332}," +
-  "deciduous_tree=\u{1F333},four_leaf_clover=\u{1F340},rose=\u{1F339},sunflower=\u{1F33B}," +
-  "cherry_blossom=\u{1F338},apple=\u{1F34E},banana=\u{1F34C},avocado=\u{1F951},pizza=\u{1F355}," +
-  "hamburger=\u{1F354},taco=\u{1F32E},cake=\u{1F370},birthday=\u{1F382},coffee=☕,tea=\u{1F375}," +
-  "beer=\u{1F37A},wine_glass=\u{1F377},tada=\u{1F389},confetti_ball=\u{1F38A},balloon=\u{1F388}," +
-  "gift=\u{1F381},trophy=\u{1F3C6},medal_sports=\u{1F3C5},soccer=⚽,basketball=\u{1F3C0},dart=\u{1F3AF}," +
-  "video_game=\u{1F3AE},musical_note=\u{1F3B5},headphones=\u{1F3A7},art=\u{1F3A8},camera=\u{1F4F7}," +
-  "movie_camera=\u{1F3A5},tv=\u{1F4FA},computer=\u{1F4BB},keyboard=⌨️,iphone=\u{1F4F1}," +
-  "phone=☎️,bulb=\u{1F4A1},flashlight=\u{1F526},book=\u{1F4D6},books=\u{1F4DA},notebook=\u{1F4D3}," +
-  "memo=\u{1F4DD},pencil2=✏️,pen=\u{1F58A}️,paperclip=\u{1F4CE},pushpin=\u{1F4CC}," +
-  "scissors=✂️,calendar=\u{1F4C5},clipboard=\u{1F4CB},file_folder=\u{1F4C1}," +
-  "chart_with_upwards_trend=\u{1F4C8},chart_with_downwards_trend=\u{1F4C9},bar_chart=\u{1F4CA}," +
-  "email=\u{1F4E7},envelope=✉️,inbox_tray=\u{1F4E5},outbox_tray=\u{1F4E4},package=\u{1F4E6}," +
-  "bell=\u{1F514},mega=\u{1F4E3},lock=\u{1F512},unlock=\u{1F513},key=\u{1F511},hammer=\u{1F528}," +
-  "wrench=\u{1F527},gear=⚙️,link=\u{1F517},mag=\u{1F50D},hourglass=⌛,alarm_clock=⏰," +
-  "watch=⌚,money_with_wings=\u{1F4B8},moneybag=\u{1F4B0},dollar=\u{1F4B5},credit_card=\u{1F4B3}," +
-  "rocket=\u{1F680},airplane=✈️,car=\u{1F697},bike=\u{1F6B2},train=\u{1F686},house=\u{1F3E0}," +
-  "office=\u{1F3E2},school=\u{1F3EB},hospital=\u{1F3E5},globe_with_meridians=\u{1F310}," +
-  "world_map=\u{1F5FA}️,round_pushpin=\u{1F4CD},warning=⚠️,no_entry=⛔,x=❌," + // unslop-ignore
-  "heavy_check_mark=✔️,white_check_mark=✅,ballot_box_with_check=☑️," + // unslop-ignore
-  "question=❓,exclamation=❗,bangbang=‼️,heavy_plus_sign=➕,heavy_minus_sign=➖," +
-  "arrow_right=➡️,arrow_left=⬅️,arrow_up=⬆️,arrow_down=⬇️," +
-  "recycle=♻️,red_circle=\u{1F534},green_circle=\u{1F7E2},yellow_circle=\u{1F7E1}," +
-  "blue_circle=\u{1F535},white_circle=⚪,black_circle=⚫,cat=\u{1F431},dog=\u{1F436}," +
-  "fox_face=\u{1F98A},bear=\u{1F43B},panda_face=\u{1F43C},unicorn=\u{1F984},bee=\u{1F41D}," +
-  "butterfly=\u{1F98B},turtle=\u{1F422},snake=\u{1F40D},octopus=\u{1F419},whale=\u{1F433}," +
-  "penguin=\u{1F427},owl=\u{1F989},bug=\u{1F41B},checkered_flag=\u{1F3C1},triangular_flag_on_post=\u{1F6A9},";
-
-let docEmojiTable = null;
-
-//: `[name, glyph]` pairs, parsed on first use.
+//: `[name, glyph]` pairs. They are the icon picker's (`window.iconShortcodes`,
+//: icon-picker.js, GitHub's names as aliases of its emoji), which is a lazy
+//: script that this one cannot assume: until it is in the list is empty and
+//: asking loads it, so the next keystroke finds the names. Not kept across
+//: that gap, so a list read too early is never remembered as empty.
 function docEmojiList() {
-  if (!docEmojiTable) {
-    docEmojiTable = DOC_EMOJI_SOURCE.split(",").filter(Boolean).map((pair) => {
-      const at = pair.indexOf("=");
-      return [pair.slice(0, at), pair.slice(at + 1)];
-    });
+  if (!docEmojiList.table) {
+    docEmojiList.table = window.iconShortcodes?.() || null;
+    if (!docEmojiList.table) ensureModule("iconPicker");
   }
-  return docEmojiTable;
+  return docEmojiList.table || [];
 }
 
 //: The shortcodes matching what was typed after the colon: names that start

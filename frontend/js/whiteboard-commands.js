@@ -66,6 +66,9 @@ const wbCommandNeeds = {
   polygon: () => Boolean(wbFmtState.shapeMore?.pointsTarget()),
   joinable: () => wbJoinableEntries().length >= 2,
   voteable: () => wbVoteTargets().length > 0,
+  topicset: () => wbMapLazy.boundaryTargets().length > 1,
+  stickered: () => wbMapLazy.stickerCopies().length > 1,
+  stickies: () => wbMapLazy.affinityTargets().length > 1,
   measurable: () => wbJoinableEntries().length >= 2 || wbCommandTextTarget()?.kind === "link",
   linkable: () => wbMultiSelection.size <= 1 && Boolean(wbSelectedItem) && wbTakesLink(wbSelectedItem.kind, wbFindItem(wbSelectedItem.kind, wbSelectedItem.id)),
   two: () => wbCommandSelectionCount() >= 2,
@@ -175,6 +178,7 @@ const WB_COMMANDS = [
   { id: "open-library", group: "Library", icon: "ph:shapes", label: "Open the library", menu: "Shapes, icons and frames…", keys: "", surface: "both", run: () => wbOpenSidebar("library") },
   { id: "save-selection", group: "Library", icon: "ph:bookmark-simple", label: "Save to the library…", keys: "Ctrl+Shift+S", surface: "board", needs: "selection", run: () => wbSaveSelectionToLibrary() },
   { id: "save-branch", group: "Library", icon: "ph:tree-structure", label: "Save this branch to the library…", keys: "Ctrl+Shift+S", surface: "map", needs: "topic", run: () => wbSaveBranchToLibrary() },
+  { id: "boundary-set", group: "Edit", icon: "ph:selection", label: "Draw a boundary round the selected topics", keys: "", surface: "map", needs: "topicset", run: () => wbMapLazy.boundaryDraw() },
   { id: "fold-level-1", group: "View", icon: "ph:list-dashes", label: "Show the trunks only", keys: "Alt+1", surface: "map", run: () => wbMapFoldToLevel(1) },
   { id: "fold-level-2", group: "View", icon: "ph:list-dashes", label: "Show two levels", keys: "Alt+2", surface: "map", run: () => wbMapFoldToLevel(2) },
   { id: "fold-level-3", group: "View", icon: "ph:list-dashes", label: "Show three levels", keys: "Alt+3", surface: "map", run: () => wbMapFoldToLevel(3) },
@@ -225,6 +229,11 @@ const WB_COMMANDS = [
   { id: "text-fit", group: "Edit", icon: "ph:arrows-in-simple", label: "Shrink the text to fit the shape (on or off)", keys: "", surface: "board", needs: "swappable", run: () => wbToggleLabelFit() },
   { id: "vote", group: "Edit", icon: "ph:circle", label: "Add a vote dot to the selected items", menu: "Add a vote dot", keys: "", surface: "board", needs: "voteable", run: () => wbVoteSelection(1) },
   { id: "unvote", group: "Edit", icon: "ph:circle-dashed", label: "Take a vote dot off the selected items", menu: "Take a vote dot off", keys: "", surface: "board", needs: "voteable", run: () => wbVoteSelection(-1) },
+  { id: "sticker-match", group: "Edit", icon: "ph:copy-simple", label: "Make every copy of this icon or emoji look like it", menu: "Match all copies", keys: "", surface: "board", needs: "stickered", run: () => wbMapLazy.stickerMatch() },
+  { id: "sticker-swap", group: "Edit", icon: "ph:swap", label: "Swap this icon or emoji for another everywhere it is placed", menu: "Swap everywhere", keys: "", surface: "board", needs: "stickered", run: () => wbMapLazy.stickerSwap() },
+  { id: "affinity-sort", group: "Edit", icon: "ph:squares-four", label: "Group the selected stickies into frames by theme", menu: "Group by theme…", keys: "", surface: "board", needs: "stickies", run: () => wbMapLazy.affinitySort() },
+  { id: "react", group: "Edit", icon: "ph:thumbs-up", label: "React to the selected items with a stamp", menu: "React with a stamp", keys: "", surface: "board", needs: "voteable", run: () => wbMapLazy.stampMenu() },
+  { id: "clear-stamps", group: "Edit", icon: "ph:eraser", label: "Clear every reaction stamp on this board", menu: "Clear all stamps", keys: "", surface: "board", run: () => wbMapLazy.clearStamps() },
   { id: "clear-votes", group: "Edit", icon: "ph:eraser", label: "Clear every vote dot on this board", menu: "Clear all vote dots", keys: "", surface: "board", run: () => wbClearVotes() },
   { id: "timer", group: "Edit", icon: "ph:timer", label: "Start a workshop timer…", menu: "Workshop timer…", keys: "", surface: "board", run: () => wbOpenTimerMenu() },
   { id: "item-link", group: "Edit", icon: "ph:link-simple", label: "Link to a note or a web page…", menu: "Link…", keys: "", surface: "board", needs: "linkable", run: () => wbEditItemLink() },
@@ -354,6 +363,8 @@ function wbRunCommand(id) {
       polygon: "Select one shape with straight sides first.",
       joinable: "Select two or more shapes, text boxes or notes first.",
       voteable: "Select a note, text box, picture or frame first.",
+      topicset: "Select two or more topics first.",
+      stickered: "Select a placed icon or emoji that has copies first.",
       measurable: "Select two or more shapes, or one connector, first.",
       linkable: "Select one shape, text box or picture first.",
       shape: "Select one closed shape or one connector first.",
@@ -582,6 +593,8 @@ function wbSyncMoreMenu(menu) {
   let shown = false;
   let rule = null;
   for (const child of menu.children) {
+    //: The filter field and its "no match" note are not rows.
+    if (child.classList.contains("list-filter") || child.classList.contains("list-filter-empty")) continue;
     if (child.classList.contains("menu-sep")) {
       child.hidden = true;
       if (shown) rule = child;
@@ -655,7 +668,35 @@ function wbInitMoreMenu() {
   opener.id = "wb-more-toggle";
   //: Capture, so the rows are right before `kebabMenu`'s own listener opens
   //: the menu or moves it into the sheet.
-  opener.addEventListener("click", () => wbSyncMoreMenu(menu), true);
+  //: **A map's sheet is 59 to 62 rows at 390** (L367), so it takes the app's
+  //: one filter field (`listFilter`, DESIGN.md's long-list recipe): shown past
+  //: twelve rows, empty on every open, its misses hidden with the `hidden`
+  //: attribute the sync also writes. A separator means nothing in a list that
+  //: is being narrowed, so they hide while there is a query and the sync
+  //: puts them back when it clears.
+  const filter = listFilter(menu, { label: "Filter commands", inside: true, rows: ":scope > .menu-item" });
+  const sync = () => {
+    filter.refresh();
+    if (filter.input.value) for (const rule of menu.querySelectorAll(":scope > .menu-sep")) rule.hidden = true;
+  };
+  opener.addEventListener("click", () => {
+    filter.input.value = "";
+    filter.refresh();
+    wbSyncMoreMenu(menu);
+    sync();
+  }, true);
+  filter.input.addEventListener("input", () => {
+    sync();
+    if (!filter.input.value) wbSyncMoreMenu(menu);
+  });
+  filter.input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      menu.querySelector(":scope > .menu-item:not([hidden])")?.click();
+    } else if (event.key === "Home" || event.key === "End") {
+      event.stopPropagation();
+    }
+  });
   bar.append(wrap);
 }
 

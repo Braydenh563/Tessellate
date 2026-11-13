@@ -836,9 +836,12 @@ function safeHref(url) {
 //: applies afterwards; the point of the check here is to leave anything else
 //: (an HTML tag, `<3`, a generic like `Array<T>`) exactly as it was.
 function expandAngleAutolinks(text) {
+  //: Not after `](`: `[text](<url>)` is CommonMark's angle destination, the
+  //: form the slash menu's Web link writes on a line of its own so the lone
+  //: link card rule (CHAT_PLAN decision 12) leaves it an inline link.
   return String(text || "").replace(
-    /<(https?:\/\/[^\s<>]{1,500})>/g,
-    (whole, url) => `[${url}](${url})`,
+    /(\]\()?<(https?:\/\/[^\s<>]{1,500})>/g,
+    (whole, dest, url) => (dest ? whole : `[${url}](${url})`),
   );
 }
 
@@ -988,6 +991,8 @@ function appendInlineRun(element, text, terms, compact, options) {
     } else {
       [, code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl, runSpec, runText] = match;
     }
+    //: `[text](<url>)`, the angle destination expandAngleAutolinks leaves alone.
+    if (linkUrl && /^<[^<>]+>$/.test(linkUrl)) linkUrl = linkUrl.slice(1, -1);
     // Images and links are their own element kinds, not a wrap-in-a-tag like
     // the four above: built and appended directly rather than falling
     // through to the generic `tag`/`node` shape below, since neither one

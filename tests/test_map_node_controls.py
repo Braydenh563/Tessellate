@@ -311,3 +311,32 @@ def test_a_fit_goes_into_the_canvas_the_person_can_see():
     assert "e.sourceEvent" in zoom and "wbFit.on = false" in zoom
     assert 'for (const id of ["whiteboard-container", "wb-sidebar", "wb-format", "wb-tools-panel"])' in js
     assert "setTimeout(wbRefitIfFitted, 200)" in js
+
+
+def test_a_levels_size_is_said_in_words_not_pixels():
+    """L366: Classic's levels are 17 and 22px; the level rows and the follow
+    sentence said "17px" beside a stepper that reads S, M, L, XL. On the level
+    scale a size is its word; off it, a number."""
+    import json
+    import shutil
+    import subprocess
+
+    if not shutil.which("node"):
+        return
+    src = (ROOT / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    rows = re.search(r"^const WB_MAP_LEVEL_ROWS = \[\n  \{ key: \"font_size\".*?\n", src, re.S | re.M).group(0).rstrip() + "\n];"
+    say = re.search(r"^wbMapSizeStepper\.say = function wbMapSay\(.*?^\};", src, re.S | re.M).group(0)
+    script = "const wbMapSizeStepper = {};\n" + rows + "\n" + say + "\nprocess.stdout.write(JSON.stringify([17, 22, 12, 28, 15].map(wbMapSizeStepper.say)));"
+    out = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+    assert out == ["L", "XL", "S", "XXL", "15px"]
+    assert "wbMapSizeStepper.say(said)" in src
+
+
+def test_a_size_off_the_strips_scale_gets_a_row_so_the_strip_rings_it():
+    """L369: Classic's main topics are 17px, which no strip row holds, so the
+    pick row rang nothing. The sync adds a one-off row named in pixels (the
+    level scale's word would collide with the strip's L) and removes it after."""
+    src = (ROOT / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    sync = src[src.index("function wbSyncMapStrip(") :]
+    assert "option[data-off-scale]" in sync and "extra.textContent = `${wantSize}px`" in sync
+    assert sync.index("option[data-off-scale]") < sync.index('setSelect("wb-map-text-size", wantSize)')

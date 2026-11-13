@@ -155,6 +155,7 @@
   async function spaceLeave() {
     if (typeof docDirty !== "undefined" && docDirty) await saveDocument({ silent: true }).catch(() => {});
     if (typeof wbFlushNudge === "function") await wbFlushNudge().catch(() => {});
+    if (typeof docLastTranslateLanguage !== "undefined") docLastTranslateLanguage = "";
     if (typeof currentDoc !== "undefined" && currentDoc) {
       docDirty = false;
       showNoDocument();

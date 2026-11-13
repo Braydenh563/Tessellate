@@ -7031,6 +7031,8 @@ Link to another note with [[its first few words]]."></textarea>
                 <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>
                 <button type="button" class="wb-menu-item" data-wb-cmd="shape-picker" data-wb-surface="board"><i class="ph ph-magnifying-glass ph-lead" aria-hidden="true"></i><span>Shape picker…</span></button>
                 <button type="button" class="wb-menu-item" data-wb-cmd="insert-sticker"><i class="ph ph-smiley-sticker ph-lead" aria-hidden="true"></i><span>Emoji and icons…</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="sticker-match" data-wb-surface="board"><i class="ph ph-copy-simple ph-lead" aria-hidden="true"></i><span>Match all copies</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="sticker-swap" data-wb-surface="board"><i class="ph ph-swap ph-lead" aria-hidden="true"></i><span>Swap everywhere</span></button>
               </div>
               <button type="button" class="wb-menu-item" data-wb-insert="image"><i class="ph ph-image ph-lead" aria-hidden="true"></i><span>Image from a file…</span><kbd>I</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="note"><i class="ph ph-note-pencil ph-lead" aria-hidden="true"></i><span>A note from the library</span></button>
@@ -7218,7 +7220,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" id="wb-map-theme-item" hidden><i class="ph ph-palette ph-lead" aria-hidden="true"></i><span>How this map looks</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-expand-all" hidden><i class="ph ph-arrows-out-line-vertical ph-lead" aria-hidden="true"></i><span>Open every folded branch</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-fold-all" hidden title="Show the trunks only (Alt+1)"><i class="ph ph-arrows-in-line-vertical ph-lead" aria-hidden="true"></i><span>Fold every branch</span></button>
-              <button type="button" class="wb-menu-item" id="wb-map-filter-item" data-wb-surface="map" hidden title="Dim every topic that does not carry one marker"><i class="ph ph-funnel ph-lead" aria-hidden="true"></i><span>Filter by marker…</span></button>
+              <button type="button" class="wb-menu-item" id="wb-map-filter-item" data-wb-surface="map" hidden title="Dim every topic that carries none of the markers or labels you pick"><i class="ph ph-funnel ph-lead" aria-hidden="true"></i><span>Filter by marker…</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-gantt-item" data-wb-surface="map" hidden title="A bar from start to due for each topic that has both"><i class="ph ph-chart-bar-horizontal ph-lead" aria-hidden="true"></i><span>Gantt chart…</span></button>
               <button type="button" class="wb-menu-item" id="wb-map-stats-item" hidden><i class="ph ph-chart-bar ph-lead" aria-hidden="true"></i><span>What this map is made of</span></button>
             </div>
@@ -7248,6 +7250,9 @@ Link to another note with [[its first few words]]."></textarea>
             <div class="wb-menu-section" data-wb-submenu="ph:users-three Workshop" data-wb-submenu-title="Vote dots and a timer" data-wb-surface="board">
               <button type="button" class="wb-menu-item" data-wb-cmd="vote"><i class="ph ph-circle ph-lead" aria-hidden="true"></i><span>Add a vote dot</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="clear-votes"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i><span>Clear all vote dots</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="affinity-sort"><i class="ph ph-squares-four ph-lead" aria-hidden="true"></i><span>Group by theme…</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="react"><i class="ph ph-thumbs-up ph-lead" aria-hidden="true"></i><span>React with a stamp</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="clear-stamps"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i><span>Clear all stamps</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="timer"><i class="ph ph-timer ph-lead" aria-hidden="true"></i><span>Workshop timer…</span></button>
             </div>
             <!-- **Plain icon rows, never a label with an action beside it**
@@ -7455,7 +7460,7 @@ Link to another note with [[its first few words]]."></textarea>
             topic (select several side by side to summarise them together);
             More, Topic, Comment… starts a thread on it. More, Look copies a
             topic's style, pastes it, or gives it to every topic at its level;
-            View, How this map looks sets the hierarchy and each level. View, Present
+            View, How this map looks sets the hierarchy and each level, and saves a look to apply to another map. View, Present
             branches shows the map one branch at a time; Esc ends it.
           </p>
           <p>
@@ -8241,7 +8246,7 @@ Link to another note with [[its first few words]]."></textarea>
            says which of its two kinds of connection it is talking about,
            everywhere it talks about one. This is the branch. -->
       <div class="wb-board-menu-wrap" data-wb-map-line>
-        <button type="button" class="ghost small wb-menu-toggle" data-wb-menu-toggle title="The branch line into this topic: how thick it is, whether it is dashed, its arrowhead and its shape" aria-label="Branch line: the line into this topic" aria-haspopup="true" aria-expanded="false" aria-controls="wb-map-line-menu"><span class="wb-menu-label">Branch line</span><i class="ph ph-caret-down wb-menu-caret" aria-hidden="true"></i></button>
+        <button type="button" class="ghost small wb-menu-toggle" data-wb-menu-toggle title="The branch line into this topic: how thick it is, whether it is dashed, its arrowhead, its shape and its label" aria-label="Branch line: the line into this topic" aria-haspopup="true" aria-expanded="false" aria-controls="wb-map-line-menu"><span class="wb-menu-label">Branch line</span><i class="ph ph-caret-down wb-menu-caret" aria-hidden="true"></i></button>
         <div id="wb-map-line-menu" class="wb-board-menu wb-map-strip-menu hidden" role="menu" aria-label="Branch line">
           <div class="wb-menu-section">
             <div class="wb-menu-row">
@@ -8270,6 +8275,26 @@ Link to another note with [[its first few words]]."></textarea>
               <span>Arrowhead</span>
               <span class="wb-menu-controls">
                 <button type="button" id="wb-map-edge-arrow" class="ghost small icon-only" title="Put an arrowhead on the line into this topic" aria-label="Put an arrowhead on the line into this topic" aria-pressed="false"><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
+              </span>
+            </div>
+            <div class="wb-menu-row">
+              <span>Label size</span>
+              <input type="number" id="wb-map-label-size" class="ghost small" min="8" max="72" step="1" placeholder="12" aria-label="Size of this line's label" title="Size of the label on the line into this topic">
+            </div>
+            <div class="wb-menu-row">
+              <span>Label colour</span>
+              <input type="color" id="wb-map-label-color" class="wb-color-picker" aria-label="Colour of this line's label" title="Colour of the label on the line into this topic">
+            </div>
+            <div class="wb-menu-row">
+              <span>Label bold</span>
+              <span class="wb-menu-controls">
+                <button type="button" id="wb-map-label-bold" class="ghost small icon-only" title="Bold the label on the line into this topic" aria-label="Bold the label on this line" aria-pressed="false"><i class="ph ph-text-b" aria-hidden="true"></i></button>
+              </span>
+            </div>
+            <div class="wb-menu-row">
+              <span>Label chip</span>
+              <span class="wb-menu-controls">
+                <button type="button" id="wb-map-label-chip" class="ghost small icon-only" title="Put a chip behind the label on the line into this topic" aria-label="Put a chip behind the label on this line" aria-pressed="false"><i class="ph ph-tag" aria-hidden="true"></i></button>
               </span>
             </div>
           </div>
