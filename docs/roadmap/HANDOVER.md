@@ -62,7 +62,7 @@
 
 # HANDOVER
 
-**Now (2026-11-12g, chat plan session, PR 230, head 75aacc7c):** batches 1 to 4 and the review 5883496750 fixes are pushed; L89 to L98 closed. In flight: batch 5 on agent/chatrows5-1112 (L122, L124, L106, L107, L126). Open chat rows: L101 onward (104 open, 44 partly). Next: merge batch 5 after the hub's "merged", then continue the chat rows in LEDGER order, one Sonnet agent at a time. Local-only work: none outside agent branches.
+**Now (2026-11-13a, chat plan session, PR 230):** batch 5 merged (L122, L124, L106, L107 done; L126 narrowed to D22 with its brief); L-chat-2, 15, 34, 35, 36 and L101 done; CI red on 75aacc7c (test_codeql_shapes 227 over 226) fixed in 3986e559. In flight: batch 6 on agent/chatrows6-1113 (L-chat-10, L186, L187, L189, L204, L205); L-chat-7 (writing-run stretch, app and desk) being committed. Asked the hub who builds L-chat-24 (whiteboard More sheet). Next: L-chat-21 degrade tests and L-chat-22 fixtures, then the chat rows in LEDGER order, one Sonnet agent at a time.
 
 **Now (2026-11-12e, PR 216, closing):** all 109 owner calls answered and on their rows; `scripts/open_scan.py` lists open-work lines outside BACKLOG; the eight plan briefs at the end of LEDGER end only when nothing open is left outside BACKLOG. In flight: workflow wf_812f9e7b-276 (open-work sweep, 8 finders plus verifiers) finds open work tracked nowhere. Next: add its verified items as LEDGER rows (`scripts/ledger.py add`), write a ninth closing-session brief (full `open_scan.py` run, LEDGER and INBOX at zero, only BACKLOG left), regenerate CODEMAP, push, wait for CI green, then the owner merges and starts the nine sessions.
 
