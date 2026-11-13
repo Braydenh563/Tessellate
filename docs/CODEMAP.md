@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10893, test files 2733, tests 22119, plan headings 689, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10894, test files 2734, tests 22123, plan headings 689, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8365)
 
@@ -13963,7 +13963,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10893)
+## Backend modules (10894)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18187,48 +18187,49 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `tokens` | src/tessellate/ai/lexical_filing.py:87 |
 | `topic_overlap` | src/tessellate/ai/lexical_filing.py:880 |
 
-### src/tessellate/ai/librarian.py (38)
+### src/tessellate/ai/librarian.py (39)
 
 | Name | File:line |
 |---|---|
-| `_app_help` | src/tessellate/ai/librarian.py:713 |
+| `_app_help` | src/tessellate/ai/librarian.py:729 |
 | `_dates_hint` | src/tessellate/ai/librarian.py:584 |
 | `_match_info_hint` | src/tessellate/ai/librarian.py:613 |
 | `_pictures_hint` | src/tessellate/ai/librarian.py:572 |
+| `_shown_hint` | src/tessellate/ai/librarian.py:637 |
 | `_tags_files_hint` | src/tessellate/ai/librarian.py:551 |
-| `_words_candidates` | src/tessellate/ai/librarian.py:1518 |
+| `_words_candidates` | src/tessellate/ai/librarian.py:1535 |
 | `_written_hint` | src/tessellate/ai/librarian.py:534 |
-| `answer` | src/tessellate/ai/librarian.py:840 |
+| `answer` | src/tessellate/ai/librarian.py:857 |
 | `build_conversational_messages` | src/tessellate/ai/librarian.py:438 |
 | `build_facts_messages` | src/tessellate/ai/librarian.py:497 |
-| `build_messages` | src/tessellate/ai/librarian.py:722 |
+| `build_messages` | src/tessellate/ai/librarian.py:738 |
 | `category_hint` | src/tessellate/ai/librarian.py:528 |
-| `clock_hint` | src/tessellate/ai/librarian.py:664 |
-| `converse` | src/tessellate/ai/librarian.py:940 |
-| `corrections_note` | src/tessellate/ai/librarian.py:1435 |
-| `draft_template` | src/tessellate/ai/librarian.py:1200 |
-| `evidence_note` | src/tessellate/ai/librarian.py:1484 |
-| `filing_corrections` | src/tessellate/ai/librarian.py:1394 |
-| `filing_prompt` | src/tessellate/ai/librarian.py:1531 |
-| `filing_style_note` | src/tessellate/ai/librarian.py:1472 |
+| `clock_hint` | src/tessellate/ai/librarian.py:680 |
+| `converse` | src/tessellate/ai/librarian.py:957 |
+| `corrections_note` | src/tessellate/ai/librarian.py:1452 |
+| `draft_template` | src/tessellate/ai/librarian.py:1217 |
+| `evidence_note` | src/tessellate/ai/librarian.py:1501 |
+| `filing_corrections` | src/tessellate/ai/librarian.py:1411 |
+| `filing_prompt` | src/tessellate/ai/librarian.py:1548 |
+| `filing_style_note` | src/tessellate/ai/librarian.py:1489 |
 | `fill_ai_name` | src/tessellate/ai/librarian.py:221 |
-| `generate_link_reason` | src/tessellate/ai/librarian.py:1080 |
-| `generate_title` | src/tessellate/ai/librarian.py:1053 |
+| `generate_link_reason` | src/tessellate/ai/librarian.py:1097 |
+| `generate_title` | src/tessellate/ai/librarian.py:1070 |
 | `history_dropped` | src/tessellate/ai/librarian.py:322 |
 | `history_messages` | src/tessellate/ai/librarian.py:334 |
-| `improve_writing` | src/tessellate/ai/librarian.py:1006 |
+| `improve_writing` | src/tessellate/ai/librarian.py:1023 |
 | `length_hint` | src/tessellate/ai/librarian.py:292 |
 | `model_error_message` | src/tessellate/ai/librarian.py:47 |
 | `note_for_prompt` | src/tessellate/ai/librarian.py:399 |
 | `offline_message` | src/tessellate/ai/librarian.py:37 |
-| `plan_budget` | src/tessellate/ai/librarian.py:686 |
+| `plan_budget` | src/tessellate/ai/librarian.py:702 |
 | `profile_context` | src/tessellate/ai/librarian.py:256 |
 | `profile_from_config` | src/tessellate/ai/librarian.py:277 |
-| `propose_map_outline` | src/tessellate/ai/librarian.py:1311 |
+| `propose_map_outline` | src/tessellate/ai/librarian.py:1328 |
 | `resolve_persona_prompt` | src/tessellate/ai/librarian.py:191 |
-| `suggest_tags` | src/tessellate/ai/librarian.py:1137 |
-| `suggest_thinking_words` | src/tessellate/ai/librarian.py:1244 |
-| `system_content` | src/tessellate/ai/librarian.py:637 |
+| `suggest_tags` | src/tessellate/ai/librarian.py:1154 |
+| `suggest_thinking_words` | src/tessellate/ai/librarian.py:1261 |
+| `system_content` | src/tessellate/ai/librarian.py:653 |
 
 ### src/tessellate/ai/links.py (3)
 
@@ -27910,7 +27911,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22119)
+## Tests (22123)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29565,6 +29566,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_model_manager_choice.py | 6 |
 | tests/test_model_menu.py | 4 |
 | tests/test_model_offer.py | 2 |
+| tests/test_model_sees_links_l101.py | 4 |
 | tests/test_model_sizes.py | 5 |
 | tests/test_model_specs.py | 17 |
 | tests/test_model_writes_facts_1027.py | 27 |

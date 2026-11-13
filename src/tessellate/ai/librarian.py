@@ -634,6 +634,22 @@ def _match_info_hint(match_info: dict | None) -> str:
     return ""
 
 
+def _shown_hint(note: dict, notes: list[dict]) -> str:
+    """" (why shown: Has the word “skye”) (linked to note 3: same trip)": why the
+    note was shown and which other notes in this prompt it links to, by their
+    numbers here (L101, INBOX 1310). `chat_pool._frame_matches` works both
+    out; the composer said them and the model was never told."""
+    numbers = {n.get("id"): i for i, n in enumerate(notes, start=1)}
+    why = str((note.get("match_info") or {}).get("why") or "").strip()
+    out = f" (why shown: {why})" if why else ""
+    reasons = note.get("link_reasons") or {}
+    for other in note.get("linked_to") or []:
+        if other in numbers and other != note.get("id"):
+            reason = reasons.get(other) or reasons.get(str(other))
+            out += f" (linked to note {numbers[other]}{': ' + reason if reason else ''})"
+    return out
+
+
 def system_content(
     style: str = "friendly",
     profile: str = "",
@@ -798,6 +814,7 @@ def build_messages(
         f"{' (attached by me)' if note.get('attached') else ''}"
         f"{' (not a match: linked to one of the above)' if note.get('connected') else ''}"
         f"{_match_info_hint(note.get('match_info'))}"
+        f"{_shown_hint(note, notes)}"
         f"{_tags_files_hint(note)} "
         # No tools on this path by definition, it is the plain librarian
         # prompt: so notes get the larger allowance and an honest marker.

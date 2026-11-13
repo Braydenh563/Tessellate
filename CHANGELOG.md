@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat row L101: the model's prompt now says why each note was shown and which other shown notes it links to, by number and with the person's reason ("(why shown: Has the word “skye”) (linked to note 3: same trip)"), the frame the composer already said (`librarian._shown_hint`).
 - Chat row L-chat-34: with no model, the Guide answers general and advice questions ("what should I use chat for?", "should I use categories or tags?", "how often should I back up?") with a recommendation first, then the help topics it stands on as chips (`ai/guide_advice.py`, 14 subjects; `tests/test_guide_advice_l34.py` pins 21 first sentences). A model, when running, still answers (decision 75).
 - Chat row L-chat-36: the Guide card carries one provenance mark (the "From the help" badge); its two views are "Answer" and "Help topic", and the head's line is "The app's own help" (measured 110 px in a 172 px column at 1440, where the old line was cut at 187).
 - Chat row L-chat-35: every Guide chip starts with a capital ("Tag the knife note with kitchen", a handed-over question); an act's example becomes a chip through `Act.chip`, and `tests/test_chip_sentence_case_l35.py` lints every literal chip list and every Guide reply.
