@@ -52,7 +52,8 @@ def test_an_unlabelled_link_writes_no_label_attribute(client):
     a = _node(client, board["id"], text="A")
     b = _node(client, board["id"], text="B")
     _cross_link(client, board["id"], a["id"], b["id"])
-    assert "_link_labels" not in client.get(f"/whiteboard/boards/{board['id']}/export?format=opml").text
+    opml = client.get(f"/whiteboard/boards/{board['id']}/export?format=opml").text
+    assert "_link_labels" not in opml
 
 
 def test_a_hostile_label_list_is_ignored_not_trusted(client):

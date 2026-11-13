@@ -1005,7 +1005,8 @@ def test_a_lines_label_offset_and_look_survive_a_save(client):
     got = client.put(f"/whiteboard/objects/{kid['id']}", json=body).json()["data"]
     assert {k: got[k] for k in look} == look
     body["data"] = {**body["data"], "edge_label_size": 200}
-    assert client.put(f"/whiteboard/objects/{kid['id']}", json=body).status_code == 422
+    refused = client.put(f"/whiteboard/objects/{kid['id']}", json=body)
+    assert refused.status_code == 422
 
 
 def test_the_bar_on_a_topics_edge_is_kept_and_is_a_closed_set(client):
@@ -2448,7 +2449,8 @@ def test_a_due_time_rides_beside_the_due_day_checked_kept_and_carried(client):
         assert '_due_time="09:30"' in text, fmt
         back = client.post("/whiteboard/boards/import", json={"format": fmt, "content": text, "name": fmt})
         assert _styles_by_text(client, back.json()["id"])["Book"].get("due_time") == "09:30", fmt
-    assert "09:30" not in client.get(f"/whiteboard/boards/{board['id']}/export?format=markdown").text
+    markdown = client.get(f"/whiteboard/boards/{board['id']}/export?format=markdown").text
+    assert "09:30" not in markdown
     client.post(f"/whiteboard/boards/{board['id']}/nodes/clear-style")
     assert _styles_by_text(client, board["id"])["Book"]["due_time"] == "09:30"
 

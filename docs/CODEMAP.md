@@ -1,6 +1,6 @@
 # Code map
 
-Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
 Counts: frontend functions 8402, frontend ids 2770, CSS sections 524, backend routes 707, backend modules 10841, test files 2724, tests 22048, plan headings 690, app scripts 29, boot scripts 38, script files 300.
 
@@ -13374,7 +13374,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/import` | POST | `import_board` | src/tessellate/api/wb_make.py:315 |
 | `/boards/propose` | POST | `propose_map` | src/tessellate/api/wb_make.py:123 |
 | `/boards/{board_id}` | PUT | `rename_board` | src/tessellate/api/wb_boards.py:523 |
-| `/boards/{board_id}/affinity` | POST | `affinity_sort` | src/tessellate/api/routes_board_affinity.py:197 |
+| `/boards/{board_id}/affinity` | POST | `affinity_sort` | src/tessellate/api/routes_board_affinity.py:195 |
 | `/boards/{board_id}/duplicate` | POST | `duplicate_board` | src/tessellate/api/wb_boards.py:357 |
 | `/boards/{board_id}/export` | GET | `export_board` | src/tessellate/api/wb_export.py:685 |
 | `/boards/{board_id}/nodes` | POST | `create_map_node` | src/tessellate/api/wb_map.py:98 |
@@ -21409,17 +21409,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `AffinityBody` | src/tessellate/api/routes_board_affinity.py:50 |
-| `_all_groups` | src/tessellate/api/routes_board_affinity.py:183 |
-| `_ask_model` | src/tessellate/api/routes_board_affinity.py:108 |
-| `_backing` | src/tessellate/api/routes_board_affinity.py:152 |
-| `_by_words` | src/tessellate/api/routes_board_affinity.py:58 |
-| `_model_groups` | src/tessellate/api/routes_board_affinity.py:130 |
-| `_stem` | src/tessellate/api/routes_board_affinity.py:148 |
-| `_sticky_rows` | src/tessellate/api/routes_board_affinity.py:167 |
-| `_words` | src/tessellate/api/routes_board_affinity.py:54 |
-| `affinity_sort` | src/tessellate/api/routes_board_affinity.py:198 |
-| `bounded_chat` | src/tessellate/api/routes_board_affinity.py:90 |
+| `AffinityBody` | src/tessellate/api/routes_board_affinity.py:49 |
+| `_all_groups` | src/tessellate/api/routes_board_affinity.py:181 |
+| `_ask_model` | src/tessellate/api/routes_board_affinity.py:106 |
+| `_backing` | src/tessellate/api/routes_board_affinity.py:150 |
+| `_by_words` | src/tessellate/api/routes_board_affinity.py:57 |
+| `_model_groups` | src/tessellate/api/routes_board_affinity.py:128 |
+| `_stem` | src/tessellate/api/routes_board_affinity.py:146 |
+| `_sticky_rows` | src/tessellate/api/routes_board_affinity.py:165 |
+| `_words` | src/tessellate/api/routes_board_affinity.py:53 |
+| `affinity_sort` | src/tessellate/api/routes_board_affinity.py:196 |
+| `bounded_chat` | src/tessellate/api/routes_board_affinity.py:88 |
 
 ### src/tessellate/api/routes_board_history.py (28)
 

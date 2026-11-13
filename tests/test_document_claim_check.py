@@ -50,7 +50,8 @@ def test_with_no_model_a_claim_a_note_holds_is_supported_and_the_rest_not_found(
     assert DOC[first["start"] : first["end"]].startswith("Tomatoes need pruning")
     assert got["claims"][2]["note"] is None
     # Headings, code fences and short lines are not claims; nothing is written.
-    assert client.get(f"/documents/{doc}").json()["content"] == DOC
+    kept = client.get(f"/documents/{doc}").json()["content"]
+    assert kept == DOC
 
 
 def test_the_model_can_mark_a_claim_contradicted_by_a_note_it_cites(ai_client, fake_ollama):

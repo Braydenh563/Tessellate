@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Group by theme and Check claims run their bounded model call on a listed `jobs.future` thread, not a private executor.
 - The affinity sort reads its stickies through `repo/whiteboard.py`; the router ORM cap drops to 686.
 - Claim check: a sentence keeps its own leading number (only a list marker is stripped), and "e.g." or "3.5" no longer split a sentence.
 - Map topic pictures: the downloaded bytes must match the picture type the server declared (PNG, JPEG, GIF, WebP, AVIF, BMP), or the link is refused.

@@ -53,7 +53,8 @@ def test_with_no_model_stickies_that_share_a_word_are_grouped_by_it(client):
     }
     assert sum(len(g["ids"]) for g in got["groups"]) == len(ids)
     # Writes nothing.
-    assert client.get("/whiteboard/", params={"board_id": bid}).json()["objects"] == before
+    after = client.get("/whiteboard/", params={"board_id": bid}).json()["objects"]
+    assert after == before
 
 
 def test_each_sticky_carries_the_notes_that_back_it(client):

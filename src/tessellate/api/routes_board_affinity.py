@@ -22,14 +22,13 @@ from __future__ import annotations
 import json
 import logging
 import re
-from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.api.routes_map_suggest import _candidates
-from tessellate.core import deps, egress
+from tessellate.core import deps, egress, jobs
 from tessellate.core.deps import get_session
 from tessellate.repo import whiteboard as whiteboard_repo
 
@@ -84,7 +83,6 @@ def _by_words(rows: list[tuple[int, str]]) -> list[tuple[str, list[int]]]:
 #: How long a board or document AI call may take before the words rule
 #: answers instead: a slow or wedged model must not hold the request open.
 MODEL_SECONDS = 45.0
-_MODEL_POOL = ThreadPoolExecutor(max_workers=4, thread_name_prefix="board-ai")
 
 
 def bounded_chat(label: str, messages: list[dict]) -> dict:
@@ -102,7 +100,7 @@ def bounded_chat(label: str, messages: list[dict]) -> dict:
         with egress.purpose(label):
             return provider.chat(model, messages)
 
-    return _MODEL_POOL.submit(call).result(timeout=MODEL_SECONDS)
+    return jobs.future("board-ai", call).result(timeout=MODEL_SECONDS)
 
 
 def _ask_model(rows: list[tuple[int, str]]) -> list[tuple[str, list[int]]]:
