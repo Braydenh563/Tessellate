@@ -981,6 +981,593 @@
     ],
     "links": []
    }
+  },
+  {
+   "key": "data-storage",
+   "kind": "element",
+   "name": "Data storage",
+   "tags": [
+    "flowchart",
+    "stored data",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 150,
+     "h": 90
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 15 0 L 150 0 C 133.43 0 135 20.15 135 45 C 135 69.85 133.43 90 150 90 L 15 90 C 6.72 90 0 69.85 0 45 C 0 20.15 6.72 0 15 0 Z",
+       "shape": "custom",
+       "shapeKind": "data-storage",
+       "label_area": {
+        "x": 0.1,
+        "y": 0,
+        "w": 0.75,
+        "h": 1
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "display",
+   "kind": "element",
+   "name": "Display",
+   "tags": [
+    "flowchart",
+    "screen",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 150,
+     "h": 90
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 45 L 22.5 0 L 127.5 0 C 139.93 0 150 20.15 150 45 C 150 69.85 139.93 90 127.5 90 L 22.5 90 Z",
+       "shape": "custom",
+       "shapeKind": "display",
+       "label_area": {
+        "x": 0.15,
+        "y": 0,
+        "w": 0.7,
+        "h": 1
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "corner",
+   "kind": "element",
+   "name": "Corner",
+   "tags": [
+    "l shape",
+    "wall",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 100,
+     "h": 100
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 100 0 L 100 20 L 20 20 L 20 100 L 0 100 Z",
+       "shape": "custom",
+       "shapeKind": "corner",
+       "label_area": {
+        "x": 0.2,
+        "y": 0.2,
+        "w": 0.8,
+        "h": 0.8
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "tee",
+   "kind": "element",
+   "name": "Tee",
+   "tags": [
+    "t shape",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 120,
+     "h": 100
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 120 0 L 120 25 L 72 25 L 72 100 L 48 100 L 48 25 L 0 25 Z",
+       "shape": "custom",
+       "shapeKind": "tee",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.25
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "single-arrow",
+   "kind": "element",
+   "name": "Arrow",
+   "tags": [
+    "arrow",
+    "direction",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 160,
+     "h": 80
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 24 L 112 24 L 112 0 L 160 40 L 112 80 L 112 56 L 0 56 Z",
+       "shape": "custom",
+       "shapeKind": "single-arrow",
+       "label_area": {
+        "x": 0,
+        "y": 0.3,
+        "w": 0.75,
+        "h": 0.4
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "double-arrow",
+   "kind": "element",
+   "name": "Double arrow",
+   "tags": [
+    "arrow",
+    "both ways",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 180,
+     "h": 80
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 40 L 45 0 L 45 24 L 135 24 L 135 0 L 180 40 L 135 80 L 135 56 L 45 56 L 45 80 Z",
+       "shape": "custom",
+       "shapeKind": "double-arrow",
+       "label_area": {
+        "x": 0.25,
+        "y": 0.3,
+        "w": 0.5,
+        "h": 0.4
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "xor",
+   "kind": "element",
+   "name": "Exclusive or",
+   "tags": [
+    "flowchart",
+    "logic gate",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 100,
+     "h": 80
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 C 50 0 80 16 100 40 C 80 64 50 80 0 80 C 20 56 20 24 0 0 Z",
+       "shape": "custom",
+       "shapeKind": "xor",
+       "label_area": {
+        "x": 0.3,
+        "y": 0.2,
+        "w": 0.5,
+        "h": 0.6
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "tape-data",
+   "kind": "element",
+   "name": "Tape data",
+   "tags": [
+    "flowchart",
+    "sequential data",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 100,
+     "h": 100
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 50 100 C 22.39 100 0 77.62 0 50 C 0 22.39 22.39 0 50 0 C 77.62 0 100 22.39 100 50 C 100 77.62 77.62 100 50 100 Z M 50 100 L 100 100",
+       "shape": "custom",
+       "shapeKind": "tape-data",
+       "label_area": {
+        "x": 0.15,
+        "y": 0.15,
+        "w": 0.7,
+        "h": 0.7
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "iso-rectangle",
+   "kind": "element",
+   "name": "Isometric square",
+   "tags": [
+    "isometric",
+    "tile",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 140,
+     "h": 80
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 70 0 L 140 40 L 70 80 L 0 40 Z",
+       "shape": "custom",
+       "shapeKind": "iso-rectangle",
+       "label_area": {
+        "x": 0.25,
+        "y": 0.25,
+        "w": 0.5,
+        "h": 0.5
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "iso-cube",
+   "kind": "element",
+   "name": "Isometric cube",
+   "tags": [
+    "isometric",
+    "box",
+    "3d",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 100,
+     "h": 115
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 50 0 L 100 28.75 L 100 86.25 L 50 115 L 0 86.25 L 0 28.75 Z M 0 28.75 L 50 57.5 L 100 28.75 M 50 57.5 L 50 115",
+       "shape": "custom",
+       "shapeKind": "iso-cube",
+       "label_area": {
+        "x": 0.1,
+        "y": 0.35,
+        "w": 0.8,
+        "h": 0.5
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "crossbar",
+   "kind": "element",
+   "name": "Crossbar",
+   "tags": [
+    "dimension",
+    "span",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 160,
+     "h": 40
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 2 0 L 2 40 L 0 40 Z M 0 20 L 160 20 M 158 0 L 160 0 L 160 40 L 158 40 Z",
+       "shape": "custom",
+       "shapeKind": "crossbar",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.4
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "curly-bracket",
+   "kind": "element",
+   "name": "Curly bracket",
+   "tags": [
+    "brace",
+    "group",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 30,
+     "h": 140
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 30 0 C 15 0 15 0 15 14 L 15 56 C 15 70 15 70 0 70 C 15 70 15 70 15 84 L 15 126 C 15 140 15 140 30 140 Z",
+       "shape": "custom",
+       "shapeKind": "curly-bracket",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "module",
+   "kind": "element",
+   "name": "Module",
+   "tags": [
+    "uml",
+    "component",
+    "package",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 150,
+     "h": 100
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 10 0 L 150 0 L 150 100 L 10 100 Z M 0 12 L 20 12 L 20 24 L 0 24 Z M 0 36 L 20 36 L 20 48 L 0 48 Z",
+       "shape": "custom",
+       "shapeKind": "module",
+       "label_area": {
+        "x": 0.15,
+        "y": 0,
+        "w": 0.85,
+        "h": 1
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "component",
+   "kind": "element",
+   "name": "Component",
+   "tags": [
+    "uml",
+    "module",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 150,
+     "h": 90
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 0 L 150 0 L 150 90 L 0 90 Z M 114 12 L 132 12 L 132 24 L 114 24 Z",
+       "shape": "custom",
+       "shapeKind": "component",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 0.8,
+        "h": 1
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
+  },
+  {
+   "key": "lollipop",
+   "kind": "element",
+   "name": "Provided interface",
+   "tags": [
+    "uml",
+    "interface",
+    "ball",
+    "drawn"
+   ],
+   "payload": {
+    "box": {
+     "w": 80,
+     "h": 40
+    },
+    "items": [
+     {
+      "key": "s",
+      "kind": "sketch",
+      "data": {
+       "d": "M 0 20 L 40 20 M 60 0 C 71.05 0 80 8.95 80 20 C 80 31.05 71.05 40 60 40 C 48.95 40 40 31.05 40 20 C 40 8.95 48.95 0 60 0 Z",
+       "shape": "custom",
+       "shapeKind": "lollipop",
+       "label_area": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+       },
+       "color": "ink",
+       "width": 2,
+       "fill": "ink",
+       "fillOpacity": 0.12
+      },
+      "z": 5
+     }
+    ],
+    "links": []
+   }
   }
  ]
 }

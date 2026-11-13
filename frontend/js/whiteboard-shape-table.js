@@ -127,6 +127,67 @@
       kind: "uml-frame", name: "UML frame", drawio: "umlFrame", tags: ["uml", "frame", "diagram"], size: [200, 140], area: { x: 0, y: 0.15, w: 1, h: 0.85 },
       d: (w, h) => { const tw = Math.min(w * 0.35, 90), th = Math.min(h * 0.15, 26), s = th / 3; return `${poly([[0, 0], [w, 0], [w, h], [0, h]])} M 0 ${r2(th)} L ${r2(tw - s)} ${r2(th)} L ${r2(tw)} ${r2(th - s)} L ${r2(tw)} 0`; },
     },
+    //: L-whiteboard-29: the last fifteen of the plan's forty, each a `Shapes.js` class (or its mxgraph stencil) by its draw.io name.
+    {
+      kind: "data-storage", name: "Data storage", drawio: "dataStorage", tags: ["flowchart", "stored data"], size: [150, 90], area: { x: 0.1, y: 0, w: 0.75, h: 1 },
+      d: (w, h) => { const a = Math.min(w * 0.1, 18); return `M ${r2(a)} 0 L ${r2(w)} 0 ${seg([w - a * 2 * K, 0], [w - a, h / 2 - (h / 2) * K], w - a, h / 2)} ${seg([w - a, h / 2 + (h / 2) * K], [w - a * 2 * K, h], w, h)} L ${r2(a)} ${r2(h)} ${seg([a - a * K, h], [0, h / 2 + (h / 2) * K], 0, h / 2)} ${seg([0, h / 2 - (h / 2) * K], [a - a * K, 0], a, 0)} Z`; },
+    },
+    {
+      kind: "display", name: "Display", drawio: "display", tags: ["flowchart", "screen"], size: [150, 90], area: { x: 0.15, y: 0, w: 0.7, h: 1 },
+      d: (w, h) => { const a = Math.min(w * 0.15, 30); return `M 0 ${r2(h / 2)} L ${r2(a)} 0 L ${r2(w - a)} 0 ${seg([w - a + a * K, 0], [w, h / 2 - (h / 2) * K], w, h / 2)} ${seg([w, h / 2 + (h / 2) * K], [w - a + a * K, h], w - a, h)} L ${r2(a)} ${r2(h)} Z`; },
+    },
+    {
+      kind: "corner", name: "Corner", drawio: "corner", tags: ["l shape", "wall"], size: [100, 100], area: { x: 0.2, y: 0.2, w: 0.8, h: 0.8 },
+      d: (w, h) => { const a = Math.min(w, h) * 0.2; return poly([[0, 0], [w, 0], [w, a], [a, a], [a, h], [0, h]]); },
+    },
+    {
+      kind: "tee", name: "Tee", drawio: "tee", tags: ["t shape"], size: [120, 100], area: { x: 0, y: 0, w: 1, h: 0.25 },
+      d: (w, h) => { const a = Math.min(h * 0.25, h), b = Math.min(w * 0.2, w), x1 = (w - b) / 2; return poly([[0, 0], [w, 0], [w, a], [x1 + b, a], [x1 + b, h], [x1, h], [x1, a], [0, a]]); },
+    },
+    {
+      kind: "single-arrow", name: "Arrow", drawio: "singleArrow", tags: ["arrow", "direction"], size: [160, 80], area: { x: 0, y: 0.3, w: 0.75, h: 0.4 },
+      d: (w, h) => { const hw = Math.min(w * 0.3, h), s = h * 0.3; return poly([[0, s], [w - hw, s], [w - hw, 0], [w, h / 2], [w - hw, h], [w - hw, h - s], [0, h - s]]); },
+    },
+    {
+      kind: "double-arrow", name: "Double arrow", drawio: "doubleArrow", tags: ["arrow", "both ways"], size: [180, 80], area: { x: 0.25, y: 0.3, w: 0.5, h: 0.4 },
+      d: (w, h) => { const hw = Math.min(w * 0.25, h), s = h * 0.3; return poly([[0, h / 2], [hw, 0], [hw, s], [w - hw, s], [w - hw, 0], [w, h / 2], [w - hw, h], [w - hw, h - s], [hw, h - s], [hw, h]]); },
+    },
+    {
+      kind: "xor", name: "Exclusive or", drawio: "xor", tags: ["flowchart", "logic gate"], size: [100, 80], area: { x: 0.3, y: 0.2, w: 0.5, h: 0.6 },
+      d: (w, h) => { const b = w * 0.1; return `M 0 0 ${seg([w * 0.5, 0], [w * 0.8, h * 0.2], w, h / 2)} ${seg([w * 0.8, h * 0.8], [w * 0.5, h], 0, h)} ${seg([b * 2, h * 0.7], [b * 2, h * 0.3], 0, 0)} Z`; },
+    },
+    {
+      kind: "tape-data", name: "Tape data", drawio: "tapeData", tags: ["flowchart", "sequential data"], size: [100, 100], area: { x: 0.15, y: 0.15, w: 0.7, h: 0.7 },
+      d: (w, h) => { const rx = w / 2, ry = h / 2; return `M ${r2(rx)} ${r2(h)} ${seg([rx - rx * K, h], [0, ry + ry * K], 0, ry)} ${seg([0, ry - ry * K], [rx - rx * K, 0], rx, 0)} ${seg([rx + rx * K, 0], [w, ry - ry * K], w, ry)} ${seg([w, ry + ry * K], [rx + rx * K, h], rx, h)} Z M ${r2(rx)} ${r2(h)} L ${r2(w)} ${r2(h)}`; },
+    },
+    {
+      kind: "iso-rectangle", name: "Isometric square", drawio: "isoRectangle", tags: ["isometric", "tile"], size: [140, 80], area: { x: 0.25, y: 0.25, w: 0.5, h: 0.5 },
+      d: (w, h) => poly([[w / 2, 0], [w, h / 2], [w / 2, h], [0, h / 2]]),
+    },
+    {
+      kind: "iso-cube", name: "Isometric cube", drawio: "isoCube2", tags: ["isometric", "box", "3d"], size: [100, 115], area: { x: 0.1, y: 0.35, w: 0.8, h: 0.5 },
+      d: (w, h) => { const a = Math.min(h * 0.25, w * 0.29); return `${poly([[w / 2, 0], [w, a], [w, h - a], [w / 2, h], [0, h - a], [0, a]])} M 0 ${r2(a)} L ${r2(w / 2)} ${r2(2 * a)} L ${r2(w)} ${r2(a)} M ${r2(w / 2)} ${r2(2 * a)} L ${r2(w / 2)} ${r2(h)}`; },
+    },
+    {
+      kind: "crossbar", name: "Crossbar", drawio: "crossbar", tags: ["dimension", "span"], size: [160, 40], area: { x: 0, y: 0, w: 1, h: 0.4 },
+      d: (w, h) => `${poly([[0, 0], [Math.min(2, w), 0], [Math.min(2, w), h], [0, h]])} M 0 ${r2(h / 2)} L ${r2(w)} ${r2(h / 2)} ${poly([[Math.max(w - 2, 0), 0], [w, 0], [w, h], [Math.max(w - 2, 0), h]])}`,
+    },
+    {
+      kind: "curly-bracket", name: "Curly bracket", drawio: "curlyBracket", tags: ["brace", "group"], size: [30, 140], area: { x: 0, y: 0, w: 1, h: 1 },
+      d: (w, h) => `M ${r2(w)} 0 ${seg([w / 2, 0], [w / 2, 0], w / 2, h * 0.1)} L ${r2(w / 2)} ${r2(h * 0.4)} ${seg([w / 2, h / 2], [w / 2, h / 2], 0, h / 2)} ${seg([w / 2, h / 2], [w / 2, h / 2], w / 2, h * 0.6)} L ${r2(w / 2)} ${r2(h * 0.9)} ${seg([w / 2, h], [w / 2, h], w, h)} Z`,
+    },
+    {
+      kind: "module", name: "Module", drawio: "module", tags: ["uml", "component", "package"], size: [150, 100], area: { x: 0.15, y: 0, w: 0.85, h: 1 },
+      d: (w, h) => { const a = Math.min(w * 0.2, 20), t = Math.min(h * 0.12, 12); return `${poly([[a / 2, 0], [w, 0], [w, h], [a / 2, h]])} ${poly([[0, t], [a, t], [a, 2 * t], [0, 2 * t]])} ${poly([[0, 3 * t], [a, 3 * t], [a, 4 * t], [0, 4 * t]])}`; },
+    },
+    {
+      kind: "component", name: "Component", drawio: "component", tags: ["uml", "module"], size: [150, 90], area: { x: 0, y: 0, w: 0.8, h: 1 },
+      d: (w, h) => { const a = Math.min(w * 0.12, 20), b = Math.min(h * 0.15, 12); return `${poly([[0, 0], [w, 0], [w, h], [0, h]])} ${poly([[w - 2 * a, b], [w - a, b], [w - a, 2 * b], [w - 2 * a, 2 * b]])}`; },
+    },
+    {
+      kind: "lollipop", name: "Provided interface", drawio: "lollipop", tags: ["uml", "interface", "ball"], size: [80, 40], area: { x: 0, y: 0, w: 1, h: 1 },
+      d: (w, h) => { const rx = Math.min(w / 2, h / 2); return `M 0 ${r2(h / 2)} L ${r2(w - 2 * rx)} ${r2(h / 2)} ${ellipse(w - 2 * rx, 0, 2 * rx, h)}`; },
+    },
   ];
 
   const byKind = new Map(T.map((t) => [t.kind, t]));

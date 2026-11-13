@@ -30,9 +30,9 @@ def _node(body: str):
     return json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=30, check=True).stdout)
 
 
-def test_the_table_holds_at_least_twenty_kinds_and_every_one_draws():
+def test_the_table_holds_the_plans_forty_kinds_and_every_one_draws():
     out = _node("const t = wbFmtState.shapeTable; console.log(JSON.stringify(t.kinds.map((k) => [k, t.shapePath(k, 160, 100)])));")
-    assert len(out) >= 20
+    assert len(out) == 40
     for kind, d in out:
         assert d and set(d.replace(".", "").replace("-", "")) <= set("MLCZ 0123456789"), kind
         assert "NaN" not in d, kind

@@ -2300,11 +2300,12 @@ MORE_TOPICS.extend([
         "keywords": (
             "cylinder", "cube", "database shape", "uml actor", "lifeline", "folder shape", "step shape", "chevron",
             "tape", "document shape", "process shape", "drawn shapes", "resize keeps corners", "shape picker",
+            "isometric cube", "curly bracket", "uml component", "double arrow", "data storage",
         ),
         "body": (
-            "Drawn shapes are a set of 25 outlines in the shape picker (Insert, Shape picker, or Ctrl+K and type the name) and in the "
+            "Drawn shapes are a set of 40 outlines in the shape picker (Insert, Shape picker, or Ctrl+K and type the name) and in the "
             "Library tab under Drawn shapes: cylinder, tube, cube, callout, step, UML actor and lifeline, folder, note, tape, document, "
-            "process and the flowchart set. Unlike a stretched picture, one is drawn again when you resize it, so a step keeps the size "
+            "process, the flowchart and UML sets, arrows, brackets and isometric tiles. Unlike a stretched picture, one is drawn again when you resize it, so a step keeps the size "
             "of its notch and a folder its tab. Edit a point or turn it and it is stretched like any other shape from then on. A draw.io "
             "file with shape=cylinder3, cube, step, umlActor and the rest brings them in as these shapes, and Export, draw.io writes them back."
         ),

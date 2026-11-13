@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: Drawn shapes has all 40 outlines: data storage, display, corner, tee, arrow, double arrow, exclusive or, tape data, isometric square and cube, crossbar, curly bracket, module, component and provided interface join the 25, each read from and written to draw.io by its own name (L-whiteboard-29).
 - Whiteboard: Replace with a shape draws a drawn shape's outline fresh for the box (corners and curves keep their size) instead of stretching the tile (L-whiteboard-28).
 - Whiteboard: the Text style menu on selected card text has Subscript and Superscript, which wrap the words in ~ ~ or ^ ^ (and take the marks off again), as one Undo step (L-whiteboard-27).
 - Whiteboard: the Format panel's width control and a turn now work on smoothed pen strokes: the outline is rebuilt from the stroke's own points at the new width, and a rotation turns the points with the outline, as one Undo step (L-whiteboard-31).
