@@ -193,6 +193,25 @@ function outline(n, name) {
     if (!["tree-left", "tree-both"].includes(layout)) {
       const drawn = await page.evaluate(() => [...document.querySelectorAll("#wb-zoom-group .wb-map-edges .wb-map-edge")].map((e) => e.getAttribute("d") || "").filter((d) => /^M/.test(d)).length);
       check(`${layout} draws a line to every topic but the centre`, drawn >= after.topics - 1, `${drawn} lines, ${after.topics} topics`);
+      if (layout === "fishbone") {
+        // L358: no rib runs behind a cause box (a drawn line sampled in board units).
+        const behind = await page.evaluate(() => {
+          const boxes = wbMapIndex().nodes.map((n) => ({ id: n.id, x: n.x, y: n.y, ...wbMapNodeSize(n) }));
+          let hits = 0;
+          const rootIds = new Set(wbMapIndex().roots.map((r) => r.id));
+          for (const path of document.querySelectorAll(".wb-map-edges path.wb-map-edge")) {
+            if (!rootIds.has(Number(path.dataset.parent))) continue; // ribs only; cause-to-cause lines are L-mindmap-12
+            const len = path.getTotalLength();
+            const ends = [Number(path.dataset.child), Number(path.dataset.parent)];
+            for (let i = 0; i <= 60; i++) {
+              const pt = path.getPointAtLength((len * i) / 60);
+              if (boxes.some((b) => !ends.includes(b.id) && pt.x > b.x + 2 && pt.x < b.x + b.w - 2 && pt.y > b.y + 2 && pt.y < b.y + b.h - 2)) { hits += 1; break; }
+            }
+          }
+          return hits;
+        });
+        check("fishbone ribs run behind no cause box", behind === 0, `${behind} lines cross another topic's box`);
+      }
       if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/layout-${layout}.png` });
       continue;
     }

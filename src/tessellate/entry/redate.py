@@ -29,7 +29,7 @@ logger = logging.getLogger("tessellate.redate")
 
 #: Raised when `timewords` learns to read something new; a notebook whose
 #: stored version is lower is read again.
-VERSION = 3
+VERSION = 4  # 4: a range's last day (`until`), which rows saved before the column lack
 DONE_KEY = "dates_read_version"
 CURSOR_KEY = "dates_read_cursor"
 CHUNK = 200
@@ -49,9 +49,13 @@ def _reread(session, entry: Entry) -> bool:
         return False
     #: The phrase and the day it meant: a weekday read as the coming one
     #: before `timewords` knew it said it happened is read again (INBOX 1668).
-    stored = {(phrase, at.date()) for phrase, at in session.execute(select(EntryDate.phrase, EntryDate.at).where(EntryDate.entry_id == entry.id))}
+    #: And a range's last day: a row saved before `until` existed has none.
+    stored = {
+        (phrase, at.date(), until.date() if until else None)
+        for phrase, at, until in session.execute(select(EntryDate.phrase, EntryDate.at, EntryDate.until).where(EntryDate.entry_id == entry.id))
+    }
     found = timewords.find(entry.content, entry.created_at)
-    if not any((mention.phrase[:60], mention.at) not in stored for mention in found):
+    if not any((mention.phrase[:60], mention.at, mention.until) not in stored for mention in found):
         return False
     manager.record_dates(session, entry, now=entry.created_at)
     return True

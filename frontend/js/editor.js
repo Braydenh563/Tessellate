@@ -434,6 +434,23 @@ function editorNotifyHost(textarea) {
   }
 }
 
+//: The slash menu's Web link (INBOX L-mindmap-7, the owner 2026-11-12: inline
+//: syntax). Inside a sentence it is `[text](url)`; on a line of its own that
+//: form is a Link card (CHAT_PLAN decision 12), so there it writes the
+//: CommonMark angle destination `[text](<url>)`, which the card rule skips.
+function editorWebLink(t) {
+  const { selectionStart: s, selectionEnd: e, value } = t;
+  const label = value.slice(s, e) || "link text";
+  const lineStart = value.lastIndexOf("\n", s - 1) + 1;
+  const nl = value.indexOf("\n", e);
+  const lineEnd = nl === -1 ? value.length : nl;
+  const alone = !(value.slice(lineStart, s) + value.slice(e, lineEnd)).trim();
+  const open = alone ? "(<" : "(";
+  const close = alone ? ">)" : ")";
+  const scheme = "https://";
+  editorSplice(t, s, e, `[${label}]${open}${scheme}${close}`, { from: label.length + 2 + open.length, to: label.length + 10 + open.length });
+}
+
 // Replace [start, end) with `text`, then place the caret. `select` picks which
 // slice of the inserted text ends up selected, so a placeholder can be typed
 // straight over: the behaviour wrapDocSelection() already establishes for the
@@ -981,7 +998,7 @@ function editorBlockRows(context) {
   //: text areas as well, like the / menu").
   add({ id: "bookmark-link", group: "Embeds", icon: "ph:bookmark-simple", label: "Bookmark link", about: "Pick a saved bookmark and link it here", keys: "[Title](url)", keywords: ["bookmark", "link", "reference", "url", "web", "saved", "source"], run: (t) => editorInsertBookmarkLink(t) });
   add({ id: "link-card", group: "Embeds", icon: "ph:cursor-click", label: "Link card", about: "A web link drawn as a card you press", keys: "[Title](url)", keywords: ["link", "card", "button", "bookmark", "url", "web", "preview"], run: (t) => editorBlock(t, "[", "Title", "](https://)") });
-  add({ id: "weblink", group: "Embeds", icon: "ph:globe", label: "Web link", about: "A link inside the sentence", keys: "[text](url)", keywords: ["url", "web", "href", "external", "link"], run: (t) => { const { selectionStart: s, selectionEnd: e, value } = t; const label = value.slice(s, e) || "link text"; editorSplice(t, s, e, `[${label}](https://)`, { from: label.length + 3, to: label.length + 11 }); } });
+  add({ id: "weblink", group: "Embeds", icon: "ph:globe", label: "Web link", about: "A link inside the sentence", keys: "[text](url)", keywords: ["url", "web", "href", "external", "link"], run: (t) => editorWebLink(t) });
   if (inDocument) {
     add({ id: "blockref", group: "Embeds", icon: "ph:link-simple", label: "Link to this block", about: "Copies [[Title#^id]] for this paragraph", keys: "#^", keywords: ["block", "reference", "anchor", "paragraph", "permalink", "copy link", "^"], run: (t) => editorApplyNamed(t, "blockref") });
   }

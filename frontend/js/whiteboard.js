@@ -894,6 +894,9 @@ const WB_INV_ZOOM_GRIPS = [
   ".wb-map-edge-handle",
   ".wb-map-resize-grip",
   ".wb-map-actions",
+  //: Their small-zoom and downward-flow placements (L360) read it too.
+  "#whiteboard-container[data-wb-zoom-far] .wb-map-actions",
+  "#whiteboard-container .wb-map-node[data-flow=down] .wb-map-actions",
   ".wb-map-collapse",
   ".wb-map-count",
   ".wb-sketch-rotate-handle",
@@ -1956,6 +1959,7 @@ function wbSvgVotes(obj) {
 }
 
 function wbPaintVotes(el, d) {
+  wbMapLazy.paintStamps(el, d);
   const n = d.data?.votes || 0;
   let badge = el.querySelector(":scope > .wb-votes");
   if (!n) {
@@ -4053,6 +4057,10 @@ function wbSearchItem(match) {
 }
 
 function wbApplySearchHighlight() {
+  //: No search and nothing marked: every render called this and walked every
+  //: object to toggle two classes off that were never on (about 7 ms of the
+  //: 108 ms Tab-to-editable at 390, 6x, 41 topics; L-mindmap-13).
+  if (!wbBoardSearch.matches.length && !document.querySelector(".wb-search-hit, .wb-search-current")) return;
   const wanted = new Set(wbBoardSearch.matches.map((m) => wbMultiKey(m.kind, m.id)));
   const current = wbBoardSearch.index >= 0 ? wbBoardSearch.matches[wbBoardSearch.index] : null;
   const currentKey = current ? wbMultiKey(current.kind, current.id) : null;
@@ -9725,6 +9733,7 @@ function wbBuildContextMenu(kind) {
       //: Markers (MINDMAP_PLAN decision 34): priority, progress, a flag, icons.
       sub(wbMapMarkerWords(wbMapMarkerParts(mapNode.data)) ? "Change the markers…" : "Markers…",
         "A priority, how far along it is, a flag and icons", () => wbMapOpenMarkers(mapNode.id));
+      for (const fix of wbMapLazy.grammarFixes(mapNode)) sub(fix.label, fix.title, fix.run);
       const comments = wbItemComments("object", mapNode).length;
       sub(comments ? `Comments (${comments})…` : "Comment…", "A thread on this topic, behind the mark on its corner", () =>
         wbOpenComments("object", mapNode.id)
@@ -9734,6 +9743,7 @@ function wbBuildContextMenu(kind) {
       if (!WB_MAP_REFERENCE_KINDS.has(mapNode.kind)) {
         sub(mapNode.data?.image ? "Change this topic's picture…" : "Put a picture in this topic…",
           "An image from this computer", () => wbMapEditPicture(mapNode));
+        sub("Put a picture from a link…", "An address; fetched here and kept with the board", () => wbMapLazy.imageFromLink(mapNode));
         if (mapNode.data?.image) {
           sub("Take the picture out of this topic", "The upload stays in the library", () =>
             wbMapRemovePicture(mapNode)
@@ -9825,6 +9835,11 @@ function wbBuildContextMenu(kind) {
       sub("Export this branch…", "A picture or PDF of this topic and everything under it", () =>
         wbMapExportBranch(mapNode.id)
       );
+      sub("Save this branch as Markdown", "A .md file of this topic and everything under it", () => wbMapLazy.saveBranch(mapNode));
+      sub("Copy this topic's shape", "Its look and branch layout, to paste onto another", () => wbMapLazy.copyShape(mapNode));
+      sub("Paste the copied shape here", "One Undo step", () => wbMapLazy.pasteShape(mapNode));
+      sub("Add a template branch…", "Pros and cons, SWOT, the five questions, a meeting agenda", () => wbMapLazy.pickTemplate(mapNode));
+      sub("Add a second central topic…", "Joined to this one by a link that can carry words", () => wbMapLazy.secondRoot(mapNode));
       if (!(rooted && wbMapLevels(index).get(mapNode.id) === 0)) sub("Move under…", "M: pick the topic to put this branch under", () =>
         wbMapMoveUnder(mapNode.id)
       );
@@ -9836,6 +9851,9 @@ function wbBuildContextMenu(kind) {
       );
       //: A boundary round the branch (MINDMAP_PLAN decision 19).
       const boundary = mapNode.data?.boundary;
+      if (!boundary && wbMapLazy.boundaryTargets().length > 1) {
+        sub("Draw a boundary round the selected topics", "One shape round just these topics, whichever branches they are on", () => wbMapLazy.boundaryDraw());
+      }
       if (!boundary) {
         sub("Draw a boundary round this branch", "A shaded shape round this topic and everything under it, in the branch colour", () =>
           wbMapSetStructure(mapNode, { boundary: "rounded" }, "Boundary drawn."));
@@ -9846,7 +9864,7 @@ function wbBuildContextMenu(kind) {
         sub(mapNode.data?.boundary_label ? "Change the boundary's label…" : "Label the boundary…", "Words over its top edge", () =>
           wbMapAskStructureWords(mapNode, "boundary_label", "What should the boundary say?", "Label it"));
         sub("Remove the boundary", "The topics stay; Ctrl+Z brings it back", () =>
-          wbMapSetStructure(mapNode, { boundary: null, boundary_label: null }, "Boundary removed."));
+          wbMapSetStructure(mapNode, { boundary: null, boundary_label: null, boundary_set: null }, "Boundary removed."));
       }
       //: A summary beside a run of siblings (decision 20); a root takes none.
       if (!rooted && mapNode.data?.summary) {
@@ -13528,12 +13546,15 @@ function wbSvgWrapLines(text, maxWidth, maxLines = 6, charWidth = 7) {
   return lines;
 }
 
-function wbSvgText(lines, x, y, { fontSize = 13, fill = "#1f2430", lineHeight, fontFamily = "sans-serif" } = {}) {
+function wbSvgText(lines, x, y, { fontSize = 13, fill = "#1f2430", lineHeight, fontFamily = "sans-serif", fontWeight, fontStyle } = {}) {
   const dy = lineHeight || fontSize + 3;
   const tspans = lines
     .map((l, i) => `<tspan x="${x}" dy="${i === 0 ? 0 : dy}">${wbSvgEscape(l)}</tspan>`)
     .join("");
-  return `<text x="${x}" y="${y}" font-family="${wbSvgEscape(fontFamily)}" font-size="${fontSize}" fill="${fill}">${tspans}</text>`;
+  return `<text x="${x}" y="${y}" font-family="${wbSvgEscape(fontFamily)}" font-size="${fontSize}"${Object.entries({
+    "font-weight": fontWeight && fontWeight !== "400" && fontWeight !== "normal" ? String(fontWeight) : "",
+    "font-style": fontStyle === "italic" ? "italic" : "",
+  }).filter(([, v]) => v).map(([k, v]) => ` ${k}="${wbSvgEscape(v)}"`).join("")} fill="${fill}">${tspans}</text>`;
 }
 
 
@@ -14082,10 +14103,31 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: the board's own export shadow, the glow as a ring and a blur in the
       //: branch colour, read off the drawn topic as the shape is.
       const fx = wbExportTopicEffect(topicEl, colour, rx, ry, size, parts);
-      parts.push(
-        `<rect width="${size.w}" height="${size.h}" rx="${Math.round(rx * 10) / 10}" ry="${Math.round(ry * 10) / 10}" fill="${topicPaint?.fill || "#ffffffee"}" ` +
-          `stroke="${wbSvgEscape(topicPaint?.edge || colour)}" stroke-width="1.5"${fx} />`
-      );
+      //: **The cut shapes are polygons, as the canvas clips them** (L365): a
+      //: diamond, hexagon or chevron paints its face on `::after` and its
+      //: rim on `::before`, with the topic's own background off, so the rect
+      //: path read "none" for all three and drew them as bare boxes. Same
+      //: outlines as library-lazy.css's clip-paths; a cloud keeps its ellipse.
+      const cut = topicEl?.dataset.shape;
+      const fill = topicPaint?.fill || "#ffffffee";
+      const edge = wbSvgEscape(topicPaint?.edge || colour);
+      const sw = size.w, sh = size.h;
+      const slant = Math.min(20, sw * 0.22);
+      const outline = cut === "diamond" ? `M ${sw / 2} 0 L ${sw} ${sh / 2} L ${sw / 2} ${sh} L 0 ${sh / 2} Z`
+        : cut === "hexagon" ? `M ${slant} 0 L ${sw - slant} 0 L ${sw} ${sh / 2} L ${sw - slant} ${sh} L ${slant} ${sh} L 0 ${sh / 2} Z`
+        : cut === "chevron" ? `M 0 0 L ${sw - slant} 0 L ${sw} ${sh / 2} L ${sw - slant} ${sh} L 0 ${sh} Z` : "";
+      if (outline) {
+        const face = wbExportColour(getComputedStyle(topicEl, "::after").backgroundColor) || fill;
+        const rim = wbExportColour(getComputedStyle(topicEl, "::before").backgroundColor) || colour;
+        parts.push(`<path d="${outline}" fill="${face}" stroke="${wbSvgEscape(rim)}" stroke-width="1.5"${fx} />`);
+      } else if (cut === "underline") {
+        parts.push(`<path d="M 0 ${sh} L ${sw} ${sh}" stroke="${wbSvgEscape(colour)}" stroke-width="2"${fx} />`);
+      } else if (cut !== "none") {
+        parts.push(
+          `<rect width="${sw}" height="${sh}" rx="${Math.round(rx * 10) / 10}" ry="${Math.round(ry * 10) / 10}" fill="${fill}" ` +
+            `stroke="${edge}" stroke-width="1.5"${fx} />`
+        );
+      }
       parts.push(
         `<rect width="4" height="${size.h}" rx="2" fill="${wbSvgEscape(colour)}" />`
       );
@@ -14121,6 +14163,32 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
         );
         labelTop = py + ph + 16;
       }
+      //: **A callout and labels travel as drawn** (L377; the export left both out): each is
+      //: placed from its live box inside the card, as the picture above is, and the words
+      //: move down to where the card really sets them when a callout sits over them.
+      const cardEl = objectEls.get(String(obj.id));
+      if (cardEl) {
+        const cardBox = cardEl.getBoundingClientRect();
+        const k = cardBox.width ? size.w / cardBox.width : 1;
+        const inCard = (el) => { const b = el.getBoundingClientRect(); return { x: (b.left - cardBox.left) * k, y: (b.top - cardBox.top) * k, w: b.width * k, h: b.height * k }; };
+        const callout = cardEl.querySelector(".wb-map-callout");
+        if (callout && !callout.hidden && callout.textContent.trim()) {
+          const c = inCard(callout);
+          parts.push(
+            `<rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="6" fill="${wbSvgEscape(wbExportColour(getComputedStyle(callout).backgroundColor) || "#eef1fb")}" stroke="${wbSvgEscape(colour)}" />` +
+            wbSvgText(wbSvgWrapLines(callout.textContent.trim(), c.w - 16, 4, 6.2), c.x + 8, c.y + 15, { fontSize: 12, fill: topicPaint?.ink || "#1f2430", lineHeight: 15 })
+          );
+          const words = cardEl.querySelector(".wb-map-text");
+          if (words) labelTop = inCard(words).y + 15;
+        }
+        for (const tag of cardEl.querySelectorAll(".wb-map-tags .wb-map-tag")) {
+          const t = inCard(tag);
+          parts.push(
+            `<rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="${t.h / 2}" fill="${wbSvgEscape(wbExportColour(getComputedStyle(tag).backgroundColor) || "#eef1fb")}" stroke="${wbSvgEscape(colour)}" />` +
+            wbSvgText([tag.textContent], t.x + t.w / 2, t.y + t.h / 2 + 4, { fontSize: 11, fill: topicPaint?.ink || "#1f2430" }).replace("<text ", '<text text-anchor="middle" ')
+          );
+        }
+      }
       //: A task's box travels as the ballot-box glyph (MINDMAP_PLAN.md
       //: decision 15): the icon font does not follow the topic into the file.
       const box = obj.data?.task === "done" ? "☑ " : obj.data?.task === "open" ? "☐ " : "";
@@ -14141,9 +14209,15 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: In the map's own face when it has one (§13e's remainder): the file is
       //: the second place a map's text is drawn, and a serif map exported in
       //: sans-serif is two pictures of one map.
+      //: **Its level's type**, read off the drawn label (L365): a main topic
+      //: is larger and bolder than a leaf, a core topic bolder again; the
+      //: export drew every topic at 14px regular. Line height follows.
+      const textStyle = topicEl ? getComputedStyle(topicEl.querySelector(".wb-map-text") || topicEl) : null;
+      const level = textStyle ? Math.min(40, Math.max(9, parseFloat(textStyle.fontSize) || 14)) : 14;
       parts.push(wbSvgText(lines, textLeft, labelTop, {
-        fontSize: 14, fill: topicPaint?.ink || "#1f2430", lineHeight: 17,
+        fontSize: level, fill: topicPaint?.ink || "#1f2430", lineHeight: Math.round(level * 1.2),
         fontFamily: wbMapFontStack() || "sans-serif",
+        fontWeight: textStyle?.fontWeight, fontStyle: textStyle?.fontStyle,
       }));
     } else if (obj.kind === "text" && obj.data.sticker) {
       //: A sticker exports as its glyph, centred, at the size it is drawn.
@@ -14176,6 +14250,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       parts.push(wbSvgTable(objectEls.get(String(obj.id)), obj));
     }
     if (obj.data?.votes) parts.push(wbSvgVotes(obj));
+    if (obj.data?.stamps) parts.push(wbMapLazy.svgStamps(obj));
     parts.push("</g>");
   };
   for (const e of stack) {
@@ -15769,6 +15844,22 @@ async function initWhiteboard() {
     await wbMapSetNodeStyle(node, { edge_dashed: wbMapToggleValue(node, "edge_dashed") });
     renderWhiteboardNow();
   });
+  //: The label's look on that line (the board connector's four: size, colour,
+  //: bold, chip), written beside `edge_label` and painted by `wbRenderMapEdges`.
+  const labelLook = async (patch) => {
+    const node = wbSelectedMapNode();
+    if (!node) return;
+    await wbMapSetNodeStyle(node, patch);
+    renderWhiteboardNow();
+  };
+  $("wb-map-label-size")?.addEventListener("change", (e) => {
+    const size = Math.max(8, Math.min(72, Math.round(Number(e.target.value) || 0)));
+    labelLook({ edge_label_size: size && size !== 12 ? size : null });
+  });
+  $("wb-map-label-color")?.addEventListener("change", (e) => labelLook({ edge_label_color: e.target.value }));
+  for (const [id, key] of [["wb-map-label-bold", "edge_label_bold"], ["wb-map-label-chip", "edge_label_chip"]]) {
+    $(id)?.addEventListener("click", (e) => labelLook({ [key]: e.currentTarget.getAttribute("aria-pressed") === "true" ? null : true }));
+  }
   $("wb-map-edge-arrow")?.addEventListener("click", async () => {
     const node = wbSelectedMapNode();
     if (!node) return;
@@ -24384,7 +24475,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     .attr("class", (d) => `wb-object wb-object-${d.kind}`)
     .attr("data-id", (d) => d.id)
     .style("transform", wbItemTransform)
-    .style("width", (d) => `${d.width}px`)
+    .style("width", (d) => `${(WB_MAP_KINDS.has(d.kind) && wbMapNodeSize.narrow(d)) || d.width}px`)
     .style("height", objectHeight)
     .style("z-index", (d) => stackRank.get(`object:${d.id}`))
     .call(objDrag)
@@ -24670,7 +24761,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
     if (this.classList.contains("wb-culled")) this.classList.remove("wb-culled");
     const el = d3.select(this);
     this.style.transform = wbItemTransform(d);
-    this.style.width = `${d.width}px`;
+    this.style.width = `${(WB_MAP_KINDS.has(d.kind) && wbMapNodeSize.narrow(d)) || d.width}px`;
     this.style.height = objectHeight(d);
     if (!WB_MAP_KINDS.has(d.kind)) {
       this.style.opacity = d.data?.alpha != null && d.data.alpha < 1 ? String(d.data.alpha) : "";
@@ -25425,14 +25516,9 @@ async function openWhiteboardBoard(boardId, opts = null) {
   wbRememberBoardView();
   //: `stay`: the caller has put `#library-view-whiteboard` where the board is wanted (a document's board panel, documents-board.js).
   if (!opts?.stay) {
+    openWhiteboardBoard.at = performance.now(); // read by boards-gallery.js `show`: its landing must not hide this board
     switchTab("library");
     document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]')?.click();
-    //: The sub-tab's press draws the boards landing once the gallery file is in (library.js), a step after this
-    //: call has shown the board, so the landing covered a board opened from a link or chip on the first Library visit
-    //: of a session. `show` (boards-gallery.js) lets that one landing go by; the flag lapses on its own if no press comes.
-    clearTimeout(openWhiteboardBoard.holdTimer);
-    openWhiteboardBoard.holdLanding = true;
-    openWhiteboardBoard.holdTimer = setTimeout(() => { openWhiteboardBoard.holdLanding = false; }, 4000);
   }
   wbShowCanvasView();
   const nudgeSaved = wbCancelBoardTimers();

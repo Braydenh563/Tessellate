@@ -4994,6 +4994,14 @@ html[data-chrome="native"] #top-bar #brand-logo {
 .doc-finding-dot-ai {
   background: color-mix(in srgb, var(--accent) 50%, transparent);
 }
+/* Claim check: the warning ink for a claim no note backs; one a note supports
+   gets a quiet one. */
+.doc-finding-dot-claim {
+  background: var(--warn);
+}
+.doc-finding-dot-backed {
+  background: var(--muted);
+}
 /* A link offer: the accent as a short bar, the thin underline's own shape. */
 .doc-finding-dot-link {
   border-radius: 0;

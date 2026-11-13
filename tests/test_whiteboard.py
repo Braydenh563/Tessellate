@@ -435,6 +435,12 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "icon": None,
         "link": None,
         "edge_label": None,
+        "edge_label_dx": None,
+        "edge_label_dy": None,
+        "edge_label_size": None,
+        "edge_label_bold": None,
+        "edge_label_color": None,
+        "edge_label_chip": None,
         "edge_style": None,
         "edge_dashed": None,
         # And with the hand-resized topic (MINDMAP_PLAN.md item 177).
@@ -451,6 +457,7 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         # And with a boundary and a summary (MINDMAP_PLAN decisions 19, 20).
         "boundary": None,
         "boundary_label": None,
+        "boundary_set": None,
         "summary": None,
         "summary_span": None,
         # And with a structure per branch (canvasdepth2, XMind's).
@@ -503,6 +510,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "library_ref": None,
         #: A map topic's due day (MINDMAP decision 37); None on a board text.
         "due": None,
+        # Added with a map topic's due time (L371); None until set.
+        "due_time": None,
         #: Its start day (the Gantt view) and its audio note (a recording id); None on a board text.
         "start": None,
         "recording": None,

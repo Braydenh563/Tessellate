@@ -1,6 +1,4 @@
-"""The design tokens sit in a cascade layer (L-ui-modernisation-1).
-
-Source text: "Adopt CSS cascade layers (@layer tokens, base, components,
+"""Source text: the design tokens sit in a cascade layer (L-ui-modernisation-1), from the row "Adopt CSS cascade layers (@layer tokens, base, components,
 surfaces, overrides) so 08-consistency.css stops winning by specificity."
 08-consistency.css has since been dissolved into the components; what is left
 of the ask is the token layer. Every unlayered rule beats a layered one

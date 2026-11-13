@@ -90,3 +90,20 @@ def test_an_open_row_never_reuses_a_closed_id():
     ledger = (Path(__file__).resolve().parent.parent / "docs" / "roadmap" / "LEDGER.md").read_text(encoding="utf-8")
     open_ids = set(re.findall(r"- \[ \] \*\*(L-[a-z-]+-\d+)\*\*", ledger))
     assert not open_ids & closed, sorted(open_ids & closed)
+
+def test_a_new_row_never_reuses_an_id_already_moved_to_history(tmp_path, monkeypatch):
+    """`ledger.py add` numbered from the LEDGER alone, so once every timeline row was done and
+    moved to HISTORY it handed out L-timeline-1 again (2026-11-13), an id code comments cite."""
+    import argparse
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("ledger_cli", ROOT / "scripts" / "ledger.py")
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    ledger, history = tmp_path / "LEDGER.md", tmp_path / "HISTORY.md"
+    ledger.write_text("## timeline\n\n", encoding="utf-8")
+    history.write_text("## Moved from the LEDGER\n- [x] **L-timeline-4** `timeline` open, S: old.\n", encoding="utf-8")
+    monkeypatch.setattr(cli, "LEDGER", ledger)
+    monkeypatch.setattr(cli, "HISTORY", history)
+    args = argparse.Namespace(plan="timeline", status="open", size="S", src="a test", evidence=None, title="New row")
+    assert cli.add(args) == "L-timeline-5"

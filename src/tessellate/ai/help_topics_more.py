@@ -2169,7 +2169,8 @@ MORE_TOPICS.extend([
         "keywords": (
             "structure of a branch", "branch structure", "branch layout", "org chart branch",
             "fishbone branch", "one branch as", "lay out one branch", "logic chart branch",
-            "different layout for a branch", "xmind structure",
+            "different layout for a branch", "xmind structure", "filter the more sheet",
+            "find a command on a map", "boundary round selected topics", "boundary round several topics",
         ),
         "body": (
             "A branch can have its own structure, as in XMind: a topic's menu, "
@@ -2177,7 +2178,8 @@ MORE_TOPICS.extend([
             "a tree table, a timeline, a fishbone, both sides, a tree to the right "
             "or left, or radial, while the rest of the map keeps its layout. The "
             "branch is laid out as one block, so nothing else overlaps it; Follow "
-            "the map's layout takes it back. Ctrl+Z undoes it in one step."
+            "the map's layout takes it back. Ctrl+Z undoes it in one step. To find any command of a board or map by name, "
+            "type in the filter field at the top of the More sheet. To box topics that are not one branch, select them (Ctrl-click or a box) and choose Draw a boundary round the selected topics in the topic's menu or Ctrl+K."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2210,7 +2212,8 @@ MORE_TOPICS.extend([
             "callout", "callout on a topic", "bubble over a topic", "speech bubble on a map",
             "add a callout", "remove the callout", "labels on a topic", "label a topic",
             "tags on a topic", "labels under a topic", "vote", "voting", "stamp",
-            "stamps", "reaction", "thumbs up a topic",
+            "stamps", "reaction", "thumbs up a topic", "grammar on a topic",
+            "agreement error in a label",
         ),
         "body": (
             "A callout is a few words in a bubble over a topic, as in XMind: a "
@@ -2225,7 +2228,9 @@ MORE_TOPICS.extend([
             "beside it): Remove one takes one off the count, Clear all takes "
             "the stamp off, and Undo brings either back. Clear the stamps, in "
             "the topic's menu, takes them all off. The map makes room for all three when it is "
-            "laid out, and the exports keep them."
+            "laid out, and the exports keep them. A label with a verb that does not "
+            "agree (He have a plan) gets a double line, and the topic's menu offers "
+            "the fix as one Undo step; it is checked on this computer."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },

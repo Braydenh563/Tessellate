@@ -107,3 +107,15 @@ def test_the_narrow_menu_uses_the_desktop_words_the_guide_names() -> None:
     for command, words in (("clear", "Clear everything on it"), ("export", "Export…"), ("add-to-note", "Add to a note…"), ("delete-board", "Delete this board")):
         assert table[command]["menu"] == words, command
     assert "Write this map as a document" not in (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+
+def test_the_more_sheet_takes_the_one_filter_field_and_keeps_rules_honest():
+    """L367: a map's More sheet is 59 to 62 rows at 390 px. It uses
+    `listFilter` (DESIGN.md's long-list recipe), clears it on every open, and
+    the separator sync skips the field and its empty note."""
+    body = COMMANDS[COMMANDS.index("function wbInitMoreMenu(") :]
+    body = body[: body.index("\n}\n")]
+    assert 'listFilter(menu, { label: "Filter commands", inside: true' in body
+    assert 'filter.input.value = "";' in body and "wbSyncMoreMenu(menu);" in body
+    sync = COMMANDS[COMMANDS.index("function wbSyncMoreMenu(") :]
+    sync = sync[: sync.index("\n}\n")]
+    assert '"list-filter"' in sync and '"list-filter-empty"' in sync

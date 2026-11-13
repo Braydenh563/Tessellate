@@ -789,10 +789,14 @@ def complete_reminder(
     in Auckland is Sunday evening in UTC. The answer keeps the time it was
     due, for the undo. `expected_due_at` is the occurrence the person saw: if
     the rule has moved on since (a double-click, a second tab) the answer is
-    409 and nothing rolls, so one occurrence is never skipped."""
+    409 and nothing rolls, so one occurrence is never skipped. The 409 carries
+    the reminder as it is now, so the caller can say where it went."""
     reminder = _writable(session, reminder_id)
     if expected_due_at and not _same_instant(expected_due_at, reminder.due_at):
-        raise HTTPException(status_code=409, detail="That reminder already moved on. Reload to see it.")
+        raise HTTPException(status_code=409, detail={
+            "message": "That reminder already moved on. Reload to see it.",
+            "reminder": _to_out(session, reminder),
+        })
     was = reminder.due_at.isoformat()
     reminder_repo.complete(session, reminder, tz_offset_minutes)
     session.commit()

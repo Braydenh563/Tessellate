@@ -156,3 +156,16 @@ def test_a_board_does_not_draw_a_card_for_a_binned_note(client):
     client.post(f"/entries/{gone}/restore")
     again = sorted(n["entry_id"] for n in client.get("/whiteboard/").json()["nodes"])
     assert again == sorted([kept, gone])
+
+
+def test_a_refused_complete_says_where_the_reminder_is_now(client):
+    """The bell row's Done sends the occurrence it was raised for; ticked elsewhere since, the 409
+    carries the reminder as it is now, so the row can say "Already done, next ..." (review on #222)."""
+    made = client.post("/reminders", json={"text": "Water plants", "due_at": "2030-01-25T12:30:00Z",
+                                           "recurring": "FREQ=DAILY"}).json()
+    client.post(f"/reminders/{made['id']}/complete", params={"expected_due_at": made["due_at"]})
+    late = client.post(f"/reminders/{made['id']}/complete", params={"expected_due_at": made["due_at"]})
+    assert late.status_code == 409
+    detail = late.json()["detail"]
+    assert detail["message"] == "That reminder already moved on. Reload to see it."
+    assert detail["reminder"]["id"] == made["id"] and detail["reminder"]["due_at"][:19] == "2030-01-26T12:30:00"

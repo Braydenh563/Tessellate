@@ -15,16 +15,17 @@ any other, and a clipped page is found by search by its words.
 
 from __future__ import annotations
 
+import io
 from urllib.parse import urlparse, urlunparse
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.api import routes_entries
+from tessellate.api import routes_entries, routes_files
 from tessellate.api.schemas import EntryCreate, EntryOut
-from tessellate.core import deps, webclip
+from tessellate.core import deps, webclip, webimage
 from tessellate.core.config import user_now
 from tessellate.core.database import Entry
 from tessellate.core.deps import get_session
@@ -35,6 +36,12 @@ router = APIRouter(prefix="/links", tags=["links"])
 WEB_OFF = (
     "Clipping a page needs the web, and the web is turned off. Allow it in "
     "Settings, Web search, then clip the page again."
+)
+
+
+IMAGE_WEB_OFF = (
+    "Fetching a picture needs the web, and the web is turned off. Allow it in "
+    "Settings, Web search, then add the picture again."
 )
 
 
@@ -74,6 +81,25 @@ def clip(body: ClipIn, session: Session = Depends(get_session)) -> EntryOut:
     manager.log_action(session, "web_clipped", "entry", note.id, detail=url[:120])
     session.commit()
     return note
+
+
+class ImageIn(BaseModel):
+    url: str = Field(min_length=1, max_length=2000)
+
+
+@router.post("/image", status_code=201)
+def fetch_topic_image(body: ImageIn, session: Session = Depends(get_session)) -> dict:
+    """A picture from a link for a map topic (MINDMAP gap 8): fetched through
+    the clipper's checked hops, behind the same web opt-in, then stored by the
+    one upload path as a board-only picture. Returns `/media/upload`'s answer."""
+    if not deps.get_config().get_preference("web_search_enabled", False):
+        raise HTTPException(status_code=403, detail=IMAGE_WEB_OFF)
+    try:
+        got = webimage.fetch_image(body.url)
+    except webclip.ClipRefused as exc:
+        raise HTTPException(status_code=exc.status, detail=str(exc)) from exc
+    upload = UploadFile(file=io.BytesIO(got["body"]), filename=f"link{got['suffix']}")
+    return routes_files.upload_media(upload, direct=False, board=True, session=session)
 
 
 # --- the page the browser sends (row 24, fully local) ------------------------

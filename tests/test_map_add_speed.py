@@ -76,3 +76,11 @@ def test_a_committed_name_returns_focus_to_the_canvas_and_is_announced():
     blur = MAP_JS[start:start + 3000]
     assert 'getElementById("whiteboard-container")?.focus(' in blur
     assert "wbAnnounce(" in blur
+
+
+def test_the_render_skips_the_search_highlight_walk_when_no_search_is_live():
+    # L-mindmap-13: every render walked every object to toggle two classes off.
+    body = _body(WB_JS, "function wbApplySearchHighlight(")
+    guard = body.index("document.querySelector(\".wb-search-hit, .wb-search-current\")")
+    assert "!wbBoardSearch.matches.length" in body[:guard + 120]
+    assert guard < body.index("querySelectorAll(")

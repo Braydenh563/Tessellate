@@ -611,6 +611,285 @@
   #entry-list > li .entry-actions > :not(.menu-wrap) {
     display: none;
   }
+  /* The 44px touch floor made the menu button taller than the meta line it
+     sits in, so it hung 21px below the card's corner (owner, "half off the
+     corner"). It is the line's own height here, as the table meatball is. */
+  #entry-list > li .menu-wrap > button {
+    min-height: 0;
+    height: var(--control-h);
+  }
+  /* The list is the page: the card that framed it on a desktop is a second
+     frame inside the window's own, and cost each row 33px of its width. */
+  #tab-notes #browse,
+  #tab-chat #chat-main {
+    padding-inline: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+  #tab-notes #browse {
+    padding-block: 0;
+  }
+  #tab-notes .layout > .tab-main {
+    /* Not 0: the cards stand on this edge, and their focus ring needs
+       `--ring-room` (08-consistency.css, "Ring room"; the margin there takes
+       it back out). */
+    padding-right: var(--ring-room);
+  }
+  /* The list ends above the floating New note, 53.6px of back-to-top
+     clearance being less than the fab's own height, offset and a step. Only
+     while scrolled (the clearance rule's own condition). */
+  body.scroll-top-visible #tab-notes .layout > .tab-main {
+    padding-bottom: max(var(--scroll-top-clearance), calc(var(--target-min) + var(--space-5) + var(--space-3)));
+  }
+}
+/* --- Phase 11 item 12: a dock's head is one row on a phone --------------------
+   A phone's navigation bar is one row: the way back or the drawer at the
+   leading edge, the title, and at most three icons at the trailing edge,
+   with the search field under it (the HIG's navigation bar, and what Mail,
+   Notes and Files draw). The docks here drew three rows (Notes, measured at
+   390: 166px for an opener, a title, a search box and three icons), because
+   the actions zone was sent to a row of its own and its hairline divider
+   was drawn at the start of every row it wrapped to. Now the actions share
+   the title's row and the find zone takes the second. No zone draws a
+   divider at any width now (INBOX 621); on a phone, where the zones stack,
+   the gap between them is the tighter `--space-4` the phone docks were
+   measured at. */
+@media (max-width: 599.98px) {
+  .dock {
+    column-gap: var(--space-4);
+  }
+  /* Never wider than the dock: a zone of many actions (the Writing room's,
+     515px of them) takes a row of its own and wraps inside it, right
+     aligned, rather than running off the window (errors.js at 390). */
+  .dock > .dock-actions {
+    flex: 0 1 auto;
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin-left: auto;
+  }
+  .dock > .dock-find {
+    order: 1;
+  }
+  /* Chat's title is the conversation's name over the model it runs on, the
+     way a phone's navigation bar puts a subtitle under its title, so the two
+     share the width the three actions leave rather than each wanting it. */
+  .chat-toolbar .chat-headline {
+    flex-direction: column;
+    align-items: flex-start;
+    row-gap: 0;
+  }
+  .chat-toolbar .chat-headline > :first-child,
+  .chat-toolbar #chat-title {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .chat-toolbar .chat-subline {
+    flex: 0 1 auto;
+    max-width: 100%;
+    font-size: var(--text-xs);
+    overflow: hidden;
+  }
+  /* The model and the turn count leave the head: both are the model's
+     business, and the model is named and chosen in the "How it answers"
+     sheet a phone opens from the gear (`dockChatTools`). Measured with them
+     stacked under the title, the head was 86px for a 24px title, since the
+     model's name is a button at the band's 44px floor. The "reading a
+     summary" pill stays, since it is about this conversation and shows only
+     when it is true. */
+  .chat-toolbar #chat-active-model,
+  .chat-toolbar #chat-turns {
+    display: none;
+  }
+  /* The lane the toolbar kept for the sidebar's own toggle: below 600 that
+     toggle is not on the page (the opener in the head stands for it), so the
+     lane was 42px of nothing before the opener. */
+  #tab-chat .chat-toolbar {
+    padding-left: var(--space-3);
+  }
+}
+/* **Nothing lands on the tab bar.** Measured at 390 (INBOX 392): a toast sat
+   at `bottom: status bar + 10px`, over the tab bar's captions and over the
+   floating +, and the agent activity panel, a bottom sheet here, was pinned
+   to `bottom: 0` over the whole bar, so the one way between tabs went while
+   an agent ran. The panel stands on the bar now.
+   A toast comes from the top below 1100, under the header, the way a
+   phone's own banners do. The foot of a narrow screen is where the thing
+   being worked with is: the tab bar, the floating +, and the chat composer,
+   whose Send and microphone a due-reminder toast covered at 390 once it had
+   been lifted clear of the bar (touch.js), and whose mode switch it covered
+   at 768 from the corner a desktop gives it. The top has only the head of a
+   list for the few seconds a toast lasts, and it takes the width, since a
+   340px card in a 390px window is the width anyway less a crooked gap. */
+@media (max-width: 1099.98px) {
+  #toast-box {
+    left: var(--space-4);
+    right: var(--space-4);
+    top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + var(--space-2));
+    bottom: auto;
+    align-items: center;
+  }
+}
+@media (max-width: 599.98px) {
+  /* **Over the sheets, which are drawn one layer above whatever opened them.**
+     `openSheet` (phone-shell.js) takes the opener's highest ancestor layer
+     plus one, so a sheet opened from a menu (the pointer menu host, 2600) is
+     at 2601 and the toast box at 1050 was behind it: what the sheet's own
+     action had just done was confirmed under the sheet that did it. Measured
+     at 390x844 (`scratchpad/ui-sweeps/toastsheet.js`, `elementFromPoint` at
+     the toast's centre): covered when the opener sat at 1050 or higher,
+     at 1050 and every layer above it. 2700 clears the highest opener and stays under the boot splash
+     (3000); `tests/test_toast_over_sheets.py` holds both ends. */
+  #toast-box {
+    z-index: 2700;
+    align-items: stretch;
+  }
+  #toast-box > .toast {
+    max-width: none;
+  }
+  /* Above the floating + too, not over it: measured at 390 on Notes, the
+     toast box stood on the tab bar (bottom 64px) and the New note button's
+     centre (y 752) answered the toast. The page's own fab sets the line:
+     its offset (07-whiteboard-misc.css's `.dock-fab`), its height, a step. */
+  /* The five pages that own a floating button; it floats only at 421px tall
+     and up (phone-shell.js PHONE_FAB), hence the height query. */
+  @media (min-height: 421px) {
+    body:is([data-tab=notes],[data-tab=graph],[data-tab=library],[data-tab=timeline],[data-tab=reminders]) #toast-box {
+      bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + var(--space-5) + env(safe-area-inset-bottom, 0px) + var(--target-min) + var(--space-2));
+    }
+  }
+  .agent-monitor {
+    bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + env(safe-area-inset-bottom, 0px));
+  }
+}
+/* **A board's menus say what they are at every width.** Below 56rem the
+   five menu toggles in the board's top bar drop their words (07's band, so
+   the bar stays one row), and each was left a bare caret: measured at 390,
+   four and then five identical "v" buttons in a row, which no one can tell
+   apart without opening each (INBOX 392's screenshot). Each carries an icon
+   now, drawn only where its word is not, so the wide bar is what it was. */
+.wb-topbar .wb-menu-icon {
+  display: none;
+}
+@media (max-width: 56rem) {
+  .wb-topbar .wb-menu-icon {
+    display: inline-block;
+  }
+}
+/* **An open board or map is a full editor, like a document: the Library's
+   sub-tab strip goes** (INBOX 476: "the library submenu bar shows on the
+   whiteboard and mindmap but not on the documents editor"). The document
+   editor is its own page and never showed the strip; a board lives inside the
+   Library, so the strip is hidden while the canvas view (not the list of
+   boards) is open, at every width. "Boards", the bar's own button, is the way
+   back, and it brings the strip with it. It was phone-only first (52px of a
+   604px canvas); a desktop board takes the same row for itself now. The
+   map's gesture hint names two keys a phone does not have; there the +
+   handles on a selected node are the gesture, and they are already 44px. */
+#tab-library > #library-subtabs:has(~ #library-view-whiteboard:not(.hidden) > #wb-canvas-view:not(.hidden)) {
+  display: none;
+}
+@media (max-width: 599.98px) and (pointer: coarse) {
+  #wb-gestures {
+    display: none;
+  }
+}
+/* The Library on a phone is for finding a thing and opening it (INBOX 392).
+   Measured at 390 before: the first card began at y=407, under the sub-tab
+   strip, a framed card holding the dock, a "22 words written" line and the
+   kind chips; and a card's preview ran eight lines, so two cards filled a
+   screen. The controls lose their frame (the page is the frame), the words
+   count goes (it is the dashboard's number, and on a phone this line is the
+   difference between a card on the first screen and none), and a preview
+   is three lines, enough to recognise a thing by, with the whole of it one
+   tap away. The first two hold on a tablet as well (below 1100, where the
+   first card began at y=371 of 768 in landscape); the clamp is the phone's,
+   where the cards are one column. */
+@media (max-width: 1099.98px) {
+  #tab-library .library-controls {
+    padding-inline: 0;
+    padding-top: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  #tab-library .library-overview {
+    display: none;
+  }
+  /* The kind chips are one sideways row, as they already are below 820
+     (07-whiteboard-misc.css): at 1024 thirteen of them wrapped to two rows,
+     48px of the first screen spent on a filter. */
+  #tab-library .library-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  #tab-library .library-filters > * {
+    flex: 0 0 auto;
+  }
+}
+/* A ⋯ menu as an action sheet below 600 (`openKebabSheet`, app.js): the menu
+   is moved into the sheet's card and sheds the popover it is elsewhere; its
+   rows take the card's width at the band's 44px floor, and its hairlines
+   between groups stay. */
+.action-menu-card > .action-menu {
+  position: static;
+  inset: auto;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow-y: auto;
+  transform: none;
+  animation: none;
+}
+.action-menu-card .action-menu .menu-item {
+  width: 100%;
+  min-height: var(--target-min);
+}
+/* Reminders below 1100: the list is the page, and the add form is the sheet
+   "New reminder" opens (`openReminderCompose`, app.js; the floating + below
+   600, the dock's filled button above). While the form is on the page it is
+   not shown in this band; in the sheet it sheds its card, since the sheet is
+   the card. */
+@media (max-width: 1099.98px) {
+  #tab-reminders > #reminder-compose {
+    display: none;
+  }
+}
+/* ...and from 1100 up, where the form is on the page, "New reminder" only
+   put the caret in it: a second filled "add" 200px under the form's own Add,
+   two primaries for one action on one screen (INBOX 437 (4)). */
+@media (min-width: 1100px) {
+  #reminders-new {
+    display: none;
+  }
+}
+.reminder-compose-card > #reminder-compose {
+  /* It scrolls (`overflow-y: auto` below, so `overflow-x` clips too): the
+     fields' 2px ring and its 2px gap need the ring-room doctrine's room, or
+     the first and last column lose 4px of ring (measured at 768: Reminder
+     text cut 4px each side, the Add button 4px on the left). The room is
+     padding, pulled back out by the same negative margin, so the form does
+     not move. */
+  margin: calc(-1 * var(--ring-room));
+  padding: var(--ring-room);
+  border: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow-y: auto;
 }
 /* The heading duplicates the sheet's own title. */
 .reminder-compose-card > #reminder-compose .reminders-head > h2 {
