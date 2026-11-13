@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline: the calendar head's Add button, the Show: reminders chip, the Month, Week and Day strip and the title share one height and one centre line (Add sat 4px below the strip, which was 4px taller).
+- Fixes from the review on PR 222: the span review reads only its own days from the database and stops waiting for the model after 8 seconds (the composed review instead); Done on a reminder in the bell names the time it was raised for, so one ticked elsewhere is not rolled twice, and the row then says where it is, with focus on that line; notes saved before a range's last day was kept are read again once, so the calendar runs them across their days.
 - Claim check reads a line of many tabs or full stops in linear time (CodeQL 2290): the list marker is matched after the indent, and the abbreviation check reads back one word, not the line.
 - Group by theme and Check claims run their bounded model call on a listed `jobs.future` thread, not a private executor.
 - Map: a render with no board search live no longer walks every object to clear search marks (no change measurable in the Tab-to-editable median, 104-117 ms at 6x; the rest is the focus flush itself).

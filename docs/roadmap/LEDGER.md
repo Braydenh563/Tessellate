@@ -529,7 +529,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## timeline
 
-
 ## world-class
 
 - [ ] **L497** `world-class` open, S: Keep the quick note reminder chip when saved through the outbox queue. From OPEN.md:1401; OPEN.md:3720. Evidence: No outbox/queued reminder handling found in quicknote code by grep
