@@ -11145,8 +11145,16 @@ function wbBulletTextLines() {
   wbScheduleRender();
 }
 
-function wbBeginTextEdit(contentEl, ownText) {
-  if (!contentEl || contentEl.isContentEditable) return;
+//: `early`: only the part that restyles (the attribute and the class), for a
+//: render to write before its measure read; the call that follows opens the editor.
+function wbBeginTextEdit(contentEl, ownText, early = false) {
+  if (!contentEl || (contentEl.isContentEditable && !contentEl._wbPreEdit)) return;
+  if (early) {
+    contentEl.setAttribute("contenteditable", "plaintext-only");
+    contentEl._wbPreEdit = true;
+    contentEl.closest(".wb-object")?.classList.add("wb-text-editing");
+    return;
+  }
   //: Back to the source while editing, whatever the rendered view showed.
   //: `ownText`: a frame's title or hint line is not the object's `content` (C17).
   const objectEl = contentEl.closest(".wb-object");
@@ -11155,8 +11163,9 @@ function wbBeginTextEdit(contentEl, ownText) {
     contentEl.textContent = ownText;
   } else if (item) {
     contentEl.classList.remove("wb-text-md");
-    contentEl.textContent = item.data.content || "";
+    if (contentEl.textContent !== (item.data.content || "")) contentEl.textContent = item.data.content || "";
   }
+  contentEl._wbPreEdit = false;
   //: **Plain text, so a line break stays a line break.** With
   //: `contenteditable="true"` Enter inserts a `<div>`, and the blur handlers
   //: read `textContent`, which has no line breaks for those: measured,
@@ -11164,8 +11173,10 @@ function wbBeginTextEdit(contentEl, ownText) {
   //: the box a run of text with real "\n"s (Chromium, WebView2 and WebKit
   //: all support it); where it is refused the attribute falls back to
   //: "true" and `wbEditedText` still reads the lines back correctly.
-  contentEl.setAttribute("contenteditable", "plaintext-only");
-  if (contentEl.contentEditable !== "plaintext-only") contentEl.setAttribute("contenteditable", "true");
+  if (contentEl.getAttribute("contenteditable") !== "plaintext-only") {
+    contentEl.setAttribute("contenteditable", "plaintext-only");
+    if (contentEl.contentEditable !== "plaintext-only") contentEl.setAttribute("contenteditable", "true");
+  }
   contentEl.closest(".wb-object")?.classList.add("wb-text-editing");
   wbAttachEditorMenu(contentEl);
   contentEl.focus({ preventScroll: true });
@@ -24780,6 +24791,17 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
         .style("width", turned ? `${pix.w}px` : null).style("height", turned ? `${pix.h}px` : null);
     } else if (WB_MAP_KINDS.has(d.kind)) {
       wbPaintMapNode(el, d, mapIndex, mapColors, mapFills);
+      //: The topic an add is about to type in is made editable here, before
+      //: the measure below reads, so the read is the one flush (`wbBeginTextEdit`).
+      const typing = wbAddGate.renderHold?.editId === d.id ? this.querySelector(".wb-map-text") : null;
+      if (typing) {
+        wbBeginTextEdit(typing, undefined, true);
+        //: And selected, the old selection let go, in the same pass: the
+        //: `selectWbItem` that follows then finds the classes already right.
+        for (const old of wbApplySelectionHighlight.marked || []) old.classList.remove("wb-selected", "wb-in-group");
+        this.classList.add("wb-selected");
+        (wbApplySelectionHighlight.marked ??= new Set()).add(this);
+      }
     } else if (d.kind === "frame") {
       const title = this.querySelector(".wb-frame-title");
       if (title && !title.isContentEditable) title.textContent = wbFrameTitle(d);
