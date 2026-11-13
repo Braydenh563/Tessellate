@@ -1686,8 +1686,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `hexToHsl` | frontend/js/settings.js:1861 |
 | `hexToRgbParts` | frontend/js/settings.js:2329 |
 | `hslToHex` | frontend/js/settings.js:1882 |
-| `jobDurationWords` | frontend/js/settings.js:3904 |
-| `jobRunLine` | frontend/js/settings.js:3915 |
+| `jobDurationWords` | frontend/js/settings.js:3905 |
+| `jobRunLine` | frontend/js/settings.js:3916 |
 | `lessTransparencyWanted` | frontend/js/settings.js:2480 |
 | `loadChangelog` | frontend/js/settings.js:527 |
 | `loadSamplingSettings` | frontend/js/settings.js:3603 |
@@ -1703,11 +1703,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noticePerfMode` | frontend/js/settings.js:3564 |
 | `openSettingsModal` | frontend/js/settings.js:309 |
 | `paintIntegrity` | frontend/js/settings.js:576 |
-| `paintJobLine` | frontend/js/settings.js:3947 |
+| `paintJobLine` | frontend/js/settings.js:3948 |
 | `perfModeOn` | frontend/js/settings.js:2486 |
 | `perfModeReason` | frontend/js/settings.js:2495 |
-| `placeFoldHelp` | frontend/js/settings.js:3846 |
-| `refreshJobRuns` | frontend/js/settings.js:3963 |
+| `placeFoldHelp` | frontend/js/settings.js:3847 |
+| `refreshJobRuns` | frontend/js/settings.js:3964 |
 | `renderActiveLogView` | frontend/js/settings.js:1076 |
 | `renderAppearance` | frontend/js/settings.js:2841 |
 | `renderBgMotionHint` | frontend/js/settings.js:2996 |
@@ -1716,7 +1716,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderCopyLogsLabel` | frontend/js/settings.js:1238 |
 | `renderCustomThemes` | frontend/js/settings.js:2233 |
 | `renderGlassRows` | frontend/js/settings.js:2828 |
-| `renderJobOverview` | frontend/js/settings.js:3994 |
+| `renderJobOverview` | frontend/js/settings.js:3995 |
 | `renderLogErrorBadge` | frontend/js/settings.js:1094 |
 | `renderLogGap` | frontend/js/settings.js:800 |
 | `renderLogList` | frontend/js/settings.js:983 |
@@ -1738,7 +1738,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `serverLogRecord` | frontend/js/settings.js:825 |
 | `setLogLive` | frontend/js/settings.js:1080 |
 | `setSettingsPeek` | frontend/js/settings.js:281 |
-| `settingsFoldState` | frontend/js/settings.js:3794 |
+| `settingsFoldState` | frontend/js/settings.js:3795 |
 | `settingsPeekIsOn` | frontend/js/settings.js:293 |
 | `settingsScroller` | frontend/js/settings.js:103 |
 | `settingsSectionText` | frontend/js/settings.js:630 |
@@ -1756,8 +1756,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toggleBgArt` | frontend/js/settings.js:3393 |
 | `toggleTheme` | frontend/js/settings.js:1353 |
 | `updatePeekAvailability` | frontend/js/settings.js:297 |
-| `wireFoldHelps` | frontend/js/settings.js:3859 |
-| `wireSettingsFolds` | frontend/js/settings.js:3803 |
+| `wireFoldHelps` | frontend/js/settings.js:3860 |
+| `wireSettingsFolds` | frontend/js/settings.js:3804 |
 
 ### frontend/js/account-recovery.js (20)
 
@@ -5720,32 +5720,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `askAtlas` | frontend/js/help-chat.js:791 |
-| `assistantHeadRow` | frontend/js/help-chat.js:953 |
-| `atlasStartersFor` | frontend/js/help-chat.js:938 |
-| `fillAskBox` | frontend/js/help-chat.js:769 |
+| `askAtlas` | frontend/js/help-chat.js:793 |
+| `assistantHeadRow` | frontend/js/help-chat.js:955 |
+| `atlasStartersFor` | frontend/js/help-chat.js:940 |
+| `fillAskBox` | frontend/js/help-chat.js:771 |
 | `guideFirstControl` | frontend/js/help-chat.js:134 |
 | `guideLand` | frontend/js/help-chat.js:139 |
 | `guideOnScreen` | frontend/js/help-chat.js:129 |
 | `guideShown` | frontend/js/help-chat.js:116 |
 | `helpChatAppendRow` | frontend/js/help-chat.js:69 |
-| `helpChatChips` | frontend/js/help-chat.js:745 |
+| `helpChatChips` | frontend/js/help-chat.js:747 |
 | `helpChatIsNearBottom` | frontend/js/help-chat.js:63 |
-| `helpChatNewChat` | frontend/js/help-chat.js:652 |
-| `helpChatOnScreenHelp` | frontend/js/help-chat.js:287 |
+| `helpChatNewChat` | frontend/js/help-chat.js:654 |
+| `helpChatOnScreenHelp` | frontend/js/help-chat.js:289 |
 | `helpChatOpenButton` | frontend/js/help-chat.js:88 |
-| `helpChatReveal` | frontend/js/help-chat.js:598 |
-| `helpChatSetBusy` | frontend/js/help-chat.js:325 |
-| `helpChatStop` | frontend/js/help-chat.js:346 |
-| `helpChatStreamTurn` | frontend/js/help-chat.js:480 |
-| `openHelpChat` | frontend/js/help-chat.js:830 |
-| `renderAtlasStarters` | frontend/js/help-chat.js:708 |
-| `renderHelpChatAsks` | frontend/js/help-chat.js:762 |
-| `renderHelpChatGreeting` | frontend/js/help-chat.js:741 |
-| `renderHelpChatMenu` | frontend/js/help-chat.js:669 |
+| `helpChatReveal` | frontend/js/help-chat.js:600 |
+| `helpChatSetBusy` | frontend/js/help-chat.js:327 |
+| `helpChatStop` | frontend/js/help-chat.js:348 |
+| `helpChatStreamTurn` | frontend/js/help-chat.js:482 |
+| `openHelpChat` | frontend/js/help-chat.js:832 |
+| `renderAtlasStarters` | frontend/js/help-chat.js:710 |
+| `renderHelpChatAsks` | frontend/js/help-chat.js:764 |
+| `renderHelpChatGreeting` | frontend/js/help-chat.js:743 |
+| `renderHelpChatMenu` | frontend/js/help-chat.js:671 |
 | `renderHelpChatMessage` | frontend/js/help-chat.js:166 |
-| `submitHelpChatQuestion` | frontend/js/help-chat.js:362 |
-| `toggleHelpChat` | frontend/js/help-chat.js:825 |
+| `submitHelpChatQuestion` | frontend/js/help-chat.js:364 |
+| `toggleHelpChat` | frontend/js/help-chat.js:827 |
 
 ### frontend/js/icon-picker.js (10)
 

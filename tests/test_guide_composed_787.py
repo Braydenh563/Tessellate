@@ -112,7 +112,8 @@ def test_the_client_draws_the_starters_under_a_greeting():
 
 def test_the_guide_topic_says_what_the_two_views_are():
     guide = next(t for t in help_chat.HELP_TOPICS if t["id"] == "guide")
-    assert "From the help" in guide["body"]
+    #: The second view is "Help topic" since L-chat-36 (one provenance mark: the badge says "From the help").
+    assert "Help topic tab" in guide["body"]
 
 
 # The Guide's gold questions (fixtures/composer/guide_1011.json): first topic right and first line answering, switch topics, sentence ends

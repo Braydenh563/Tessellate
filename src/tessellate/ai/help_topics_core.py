@@ -934,8 +934,8 @@ HELP_TOPICS: list[dict] = [
             "while smart model routing is on, on the chat model while that is "
             "off, and Settings, Models can give the guide a model of its "
             "own. With no model running it still answers from the help: "
-            "Atlas's answer is put together for your question, and the From "
-            "the help tab above it shows the topic word for word. "
+            "the answer is put together for your question, and the Help "
+            "topic tab above it shows the topic word for word. "
             "It cannot read your notes or documents (ask the "
             "Chat or Ask tab for those), and nothing said to it is saved: the "
             'conversation is gone on reload, and "New chat" clears it now. '

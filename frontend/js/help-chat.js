@@ -187,7 +187,9 @@ function renderHelpChatMessage(role, content, badges = [], sources = [], system 
     seg.className = "tabs-line popup-kinds help-chat-views";
     seg.setAttribute("role", "tablist");
     seg.setAttribute("aria-label", "Which answer to show");
-    for (const [key, label] of [["ai", `${GUIDE_NAME}'s answer`], ["help", "From the help"]]) {
+    //: Named for what they show, not who wrote it (L-chat-36): the byline
+    //: badge is the one mark saying where the words came from.
+    for (const [key, label] of [["ai", "Answer"], ["help", "Help topic"]]) {
       const tab = document.createElement("button");
       tab.type = "button";
       tab.setAttribute("role", "tab");

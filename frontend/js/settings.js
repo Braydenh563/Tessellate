@@ -3769,7 +3769,8 @@ const GUIDE_TITLE = `${GUIDE_NAME} guide`;
 //: 63px tall against the agent activity panel's 37. Thirty characters says
 //: the same thing and fits with room to spare; the CSS still ellipsises it,
 //: so a longer translation cannot put the second line back.
-const GUIDE_LINE = "Answers from the app's own help";
+//: Short enough for the head's 172 px at the default width (L-chat-36: the longer line ended in an ellipsis).
+const GUIDE_LINE = "The app's own help";
 
 //: The header's '?' became the status bar's Guide slot with INBOX 207;
 //: app.js binds that one, because the status bar is its markup and it can
