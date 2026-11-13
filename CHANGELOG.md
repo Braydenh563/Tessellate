@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: Translate this passage uses the offline translator when it is installed (L331).
+- Documents: comment replies take attachments and are drawn as markdown (L332).
+- Documents: the dead surface aliases are gone; decisions D11 and D12 recorded (L329).
 - Fix (Capture, Ask, Chat): the clear buttons show again. Their boxes are on surfaces built on first open, after field-clear.js loads, so the title and note x were never built and Clear all and Chat's x never woke; each spec now names its surface (`tests/test_field_clear.py`). Driven: Capture's three buttons 28x28 (were missing or hidden), Undo restores the note, Chat 36x36.
 - Boards: Suggest a name for a board or map from what is on it, also in the boards menu (L348).
 - Boards: Write as a document turns a board's frames and text into a document draft (L-documents-4).

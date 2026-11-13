@@ -152,3 +152,15 @@ def test_the_block_live_renderer_is_gone():
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     assert ".lp-" not in css
     assert "doc-live" not in css
+
+
+def test_surfaces_carry_no_dead_aliases():
+    # L329 (D47 "keep it"): the textarea fallback stays, only the aliases no
+    # caller reads are gone. `rect()` and `scrollLeft` had no reader on a
+    # surface (autocorrect and the caret mirror read the element itself).
+    body = DOCUMENTS_JS.read_text(encoding="utf-8")
+    span = _adapter_span(body)
+    inside = body[span[0] : span[1]]
+    assert not re.search(r"^\s*rect\(\)\s*\{", inside, re.M), "dead rect() alias is back"
+    assert "scrollLeft" not in inside, "dead scrollLeft alias is back"
+    assert "getBoundingClientRect() {" in inside, "menus.js still reads it"
