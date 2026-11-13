@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 95 | 44 | 2 | 59 | 315 |
+| chat | 176 | 94 | 44 | 2 | 59 | 314 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 546 | 134 | 3 | 186 | 1233 |
+| all | 553 | 545 | 134 | 3 | 186 | 1232 |
 
 ## graph
 
@@ -160,7 +160,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-19** `chat` open, L: Close the rest of the 2026-10-10 chat bug list. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:779. Evidence: Open line in the plan's prose a session could miss. Owner bug list; also token count after deleted turn, destination history clear, match kind label, jokes source, caption sentences.
 - [ ] **L-chat-20** `chat` open, M: Composer bubble fade, accessed links first and auto retry. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:890. Evidence: Open line in the plan's prose a session could miss. Design items from the owner list.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
-- [ ] **L-chat-37** `chat` open, M: Ask 'what else do my notes say about X' synthesises across the top records. From hub 2026-11-13 00:46Z, owner screenshots of Ask with no model. Evidence: Owner's 'What else do my notes say about university?' over five records: the answer led with [1]'s mid-argument 'however' sentence about what is missing, cited [1] only (also its Also line), ignored [2] to [5] (uni days Tue and Thu, the subjects, assignments, the uni friend), gave [1] the reason 'by the word "notes"' and offered 'Remind me the day before'. Fix: synthesise one fact per top record, each cited; strip or skip a leading connective; drop question stopwords from keyword reasons and scoring; no reminder chip on a summary. Test: the five-note fixture gives 3 to 4 sentences citing 3 or more records, with Tue/Thu and the subjects, no 'however' lead, no stopword reason; composer eval before and after.
 - [ ] **L-chat-38** `chat` open, M: Guide with no model answers any question through the composer, not only 14 advice subjects. From hub 2026-11-13 00:22Z send-back on L-chat-34. Evidence: guide_advice.py is 14 canned subjects. Needed: an unmatched question goes through the composer path grounded in help topics and the capability list; small talk and meta (hi, thanks, who are you, what can you do, I'm stuck) get a composed reply; a question about the user's own notes gets a short composer answer plus the hand-over to Chat; the eval grows to 30 or more questions, half outside the 14 subjects, first sentences pinned, 5 checked in the app.
 
 ## whiteboard
