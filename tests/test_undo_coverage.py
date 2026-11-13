@@ -667,6 +667,7 @@ EXEMPT: dict[str, str] = {
     "onboarding.js:maybeShowConsoleViewIntro": "settings: a setting with its own Reset or the settings history",
     "onboarding.js:renderOnboardingActions": "job: starts or stops work or a model; deletes no user data",
     "onboarding.js:renderPrefs": "settings: a setting with its own Reset or the settings history",
+    "onboarding.js:saveUpdateChoice": "settings: the first-run answer to update checks; Settings, Updates changes it back",
     "phone-shell.js:clearAppCache": "job: starts or stops work or a model; deletes no user data",
     "notifications.js:openExportsFromNotification": "job: starts or stops work or a model; deletes no user data",
     "phone-shell.js:quitApp": "auth: sign-in, recovery or lock; no user data",
