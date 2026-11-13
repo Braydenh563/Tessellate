@@ -54,10 +54,22 @@ _PATTERNS = re.compile(
     re.IGNORECASE,
 )
 _CONTRADICTIONS = re.compile(r"\b(?:contradict\w*|conflicting notes?|changed my mind|change of mind|disagree\w*)\b|\b(?:conflicts?|disagreements?) (?:in|between|among|across) (?:my |the |these )?notes\b"
-                             r"|\b(?:any (?:of )?(?:my |the )?notes?|(?:anything|something)\b[^?.]{0,30}\bnotes?)\b[^?.]{0,30}\b(?:inconsistent|contradictory|conflict(?:s|ing)?\b(?!\s+with\b(?!\s+(?:each|one|another|other))))", re.IGNORECASE)  # notes among themselves, never "conflicts with the dentist"
+                             r"|\binconsistenc(?:y|ies)\b|^\W*(?:please )?(?:check|look|search|scan|go through)(?: (?:through|over) )?(?: (?:my|the) notes)? for (?:any )?(?:contradictions?|conflicts?|clashes)\b|\b(?:any (?:of )?(?:my |the )?notes?|(?:anything|something)\b[^?.]{0,30}\bnotes?)\b[^?.]{0,30}\b(?:inconsistent|contradictory|conflict(?:s|ing)?\b(?!\s+with\b(?!\s+(?:each|one|another|other))))", re.IGNORECASE)  # notes among themselves, never "conflicts with the dentist"
 #: "What am I forgetting" is what is still open; "what have I forgotten" is the faded notes
 #: (second eye F13d), which the older readers list as titles.
 _FORGETTING = re.compile(r"\bwhat (?:am i|have i been|did i) forget\w*\b|\banything (?:i(?:'m| am)|i have) forgett\w+\b", re.IGNORECASE)
+
+
+def _changes_of_mind(session: Session, now: datetime) -> str:
+    """The insights reader's dated changes of mind, then each subject a newer
+    note replaced (`supersede.changes`, the pairing answers are read through), L-chat-8."""
+    from tessellate.ai import insights, supersede
+
+    lines = [i.text for i in insights.from_session(session, now.date(), limit=12) if i.rule in ("contrast", "drift")][:4]
+    lines += [supersede.changes_line(r, now.date()) for r in supersede.changes(_notes(session))[-4:]]
+    if not lines:
+        return "I found no change of mind in your dated notes. Notes that say different things about the same subject on different days would show here."
+    return "Each change of mind in your dated notes:\n\n" + "\n".join(f"- {line}" for line in lines)
 
 
 def notebook_events(session: Session, question: str, *, now: datetime) -> list[dict] | None:
@@ -75,9 +87,7 @@ def notebook_events(session: Session, question: str, *, now: datetime) -> list[d
             reply = composer_plan._left(ctx)  # noqa: SLF001
             said = reply.text if reply else ""
         elif _CONTRADICTIONS.search(text):
-            found = [i for i in insights.from_session(session, now.date(), limit=12) if i.rule in ("contrast", "drift")]
-            said = ("\n".join(f"- {i.text}" for i in found[:4]) if found else
-                    "I found no change of mind in your dated notes. Notes that say different things about the same subject on different days would show here.")
+            said = _changes_of_mind(session, now)
         elif _PATTERNS.search(text):
             found = insights.from_session(session, now.date(), limit=4)
             said = ("\n".join(f"- {line}" for line in insights.listed(found)) if found else
