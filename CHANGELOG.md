@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Map: a topic builds only the parts it shows; the task box, markers, icon, picture, number, progress, note and link marks, callout, labels, count, chevron and resize grip are made the first time a topic has something for them (a plain topic is 8 elements, was 25; the new topic's first style recalculation 9 elements, was 42; Tab to editable at 390 and 6x about 68 to 54 ms).
 - Map: Tab writes the new topic's selection and editing classes before its editable attribute, so the render restyles once, not twice (Tab-to-editable median at 390 and 6x about 67 to 60 ms).
 - Board stack order: an item still waiting for its id ties as the newest, so a new map topic no longer moves every sibling's z-index up by one and back on the server's answer (41 writes per Tab, now 0).
 - Map: a topic still waiting for its id colours as the newest branch, not the oldest, so Tab on a root no longer shifts every later branch one colour along until the server answers (41 of 41 topics repainted, now 1; Tab-to-editable median at 390 and 6x about 85 to 67 ms).

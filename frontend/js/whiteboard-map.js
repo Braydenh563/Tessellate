@@ -255,6 +255,133 @@ const wbMapCache = {
   },
 };
 
+//: **A topic's parts that start hidden, made on first use** (L-mindmap-13).
+//: `wbMapCache.part(node, name)` returns the part, creating it in its place
+//: when missing; `part(node, name, false)` only looks and may return null,
+//: which is what a reader or a "hide it" does. Order is the old build order,
+//: so a part made late lands where it always sat. Handlers read the id from
+//: the element at the press (a state fetch replaces the datum they were built
+//: with, `wbMapLiveDatum`). Buttons stop `pointerdown` so pressing one is not
+//: the first frame of a node drag; the picture does not (it is the body).
+wbMapCache.order = {
+  body: ["task", "markers", "icon", "picture", "number", "text", "progress", "note", "link"],
+  card: ["body", "callout", "tags", "count", "collapse", "grip", "actions"],
+};
+wbMapCache.cls = {
+  task: "wb-map-task", markers: "wb-map-markers", icon: "wb-map-node-icon", picture: "wb-map-node-picture",
+  number: "wb-map-number", text: "wb-map-text", progress: "wb-map-progress", note: "wb-map-note",
+  link: "wb-map-link", body: "wb-map-node-body", callout: "wb-map-callout", tags: "wb-map-tags",
+  count: "wb-map-count", collapse: "wb-map-collapse", grip: "wb-map-resize-grip", actions: "wb-map-actions",
+};
+wbMapCache.make = function (node, name) {
+  const id = () => Number(node.dataset.id);
+  const live = () => wbMapLiveDatum({ id: id() });
+  const stop = (event) => event.stopPropagation();
+  const add = (tag, extra) => {
+    const e = document.createElement(tag);
+    e.className = this.cls[name];
+    e.hidden = true;
+    for (const [k, v] of Object.entries(extra || {})) e.setAttribute(k, v);
+    return e;
+  };
+  const glyph = (e, ph) => {
+    const i = document.createElement("i");
+    i.className = `ph ph-${ph}`;
+    i.setAttribute("aria-hidden", "true");
+    e.append(i);
+    return e;
+  };
+  const button = (extra) => add("button", { type: "button", ...extra });
+  let e;
+  switch (name) {
+    case "task":
+      e = glyph(button({ role: "checkbox" }), "square");
+      e.addEventListener("pointerdown", stop);
+      e.addEventListener("dblclick", stop);
+      e.addEventListener("click", (event) => { event.stopPropagation(); wbMapToggleTaskDone(id()); });
+      return e;
+    case "markers": return add("span");
+    case "icon": return add("i", { "aria-hidden": "true" });
+    case "picture": return add("img", { alt: "", "aria-hidden": "true", draggable: "false" });
+    case "number": return add("span", { "aria-hidden": "true" });
+    case "progress": return add("span");
+    case "note":
+      e = glyph(button({ "aria-haspopup": "dialog", "aria-expanded": "false" }), "notepad");
+      e.addEventListener("pointerdown", stop);
+      e.addEventListener("dblclick", stop);
+      e.addEventListener("click", (event) => { event.stopPropagation(); wbMapOpenNote(id(), e); });
+      return e;
+    case "link":
+      e = glyph(button(), "link");
+      e.addEventListener("pointerdown", stop);
+      e.addEventListener("click", (event) => { event.stopPropagation(); wbMapOpenLink(live()); });
+      return e;
+    case "callout":
+      e = add("div");
+      e.addEventListener("dblclick", (event) => { event.stopPropagation(); wbMapEditCallout(live()); });
+      return e;
+    case "tags":
+      e = add("div");
+      e.addEventListener("pointerdown", (event) => {
+        if (event.target.closest(".wb-map-stamp-wrap")) event.stopPropagation();
+      });
+      e.addEventListener("click", (event) => {
+        const stamp = event.target.closest(".wb-map-stamp");
+        if (event.target.closest(".wb-map-stamp-wrap")) event.stopPropagation();
+        if (stamp) wbMapStampSet(live(), stamp.dataset.stamp, "toggle");
+      });
+      e.addEventListener("dblclick", (event) => {
+        event.stopPropagation();
+        if (!event.target.closest(".wb-map-stamp-wrap")) wbMapEditLabels(live());
+      });
+      return e;
+    case "count":
+      e = button();
+      e.addEventListener("pointerdown", stop);
+      e.addEventListener("click", (event) => { event.stopPropagation(); wbMapToggleCollapse(id()); });
+      return e;
+    case "collapse":
+      e = glyph(button(), "caret-down");
+      e.className = `ghost small icon-only ${this.cls.collapse}`;
+      e.addEventListener("pointerdown", stop);
+      e.addEventListener("click", (event) => { event.stopPropagation(); wbMapToggleCollapse(id()); });
+      return e;
+    default:
+      //: The one resize grip, on the topic's bottom right corner (INBOX 610);
+      //: shown by CSS on hover and selection, so it is made by those.
+      e = button({
+        title: "Drag to resize this topic. Hold Shift to scale its text with it",
+        "aria-label": "Resize this topic",
+      });
+      e.hidden = false;
+      e.addEventListener("pointerdown", (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        wbMapStartResizeDrag(e, event, live());
+      });
+      return e;
+  }
+};
+wbMapCache.part = function (node, name, create = true) {
+  if (!node) return null;
+  const inBody = this.order.body.includes(name);
+  const host = inBody ? node.querySelector(":scope > .wb-map-node-body") : node;
+  if (!host) return null;
+  const found = host.querySelector(`:scope > .${this.cls[name]}`);
+  if (found || !create) return found;
+  const e = this.make(node, name);
+  const list = inBody ? this.order.body : this.order.card;
+  for (let i = list.indexOf(name) + 1; i < list.length; i++) {
+    const next = host.querySelector(`:scope > .${this.cls[list[i]]}`);
+    if (next) {
+      host.insertBefore(e, next);
+      return e;
+    }
+  }
+  host.append(e);
+  return e;
+};
+
 //: **The level of every topic** (decision 38). The first root is the centre,
 //: as is any root with topics under it; a root with nothing under it is a
 //: floating topic and draws as a sub-topic. Its children are main branches;
@@ -1886,147 +2013,19 @@ function wbMapLiveDatum(d) {
 
 //: The static half of a map node, built once as the node enters the DOM.
 //:
-//: Everything that changes while a map is edited, text, colour, the chevron's
-//: direction, the count badge, lives in `wbPaintMapNode` instead, and the
-//: chevron and badge are created here *always* and hidden when they have
-//: nothing to say. Creating them on demand would mean the enter selection and
-//: the update selection each had to know how to build one, which is exactly
-//: how the same control ends up drawn two slightly different ways.
+//: **Only the parts every topic shows are built here** (L-mindmap-13): the
+//: body, the words and the two add buttons. Every part that starts hidden (the
+//: task box, markers, icon, picture, number, progress, note and link marks,
+//: callout, labels, count badge, chevron and resize grip) is made by
+//: `wbMapCache.part` the first time the paint pass or a hover has something
+//: for it, in its old slot, with its old listeners. A plain topic was 25
+//: elements of which 17 were hidden, and the first style recalculation of a
+//: new topic (the Tab to typing path) walked all of them.
 function wbBuildMapNode(el, d) {
   el.classed("wb-map-node", true);
-  const body = el.append("div").attr("class", "wb-map-node-body");
-  //: **A callout over the words** (XMind; canvasdepth2): a row of the card's
-  //: own flow, so a tidy measures it and nothing is laid over it. Built for
-  //: every topic and hidden while it has none, the icon's rule.
-  el.append("div").attr("class", "wb-map-callout").property("hidden", true)
-    .on("dblclick", (event) => {
-      event.stopPropagation();
-      wbMapEditCallout(wbMapLiveDatum(d));
-    });
-  //: And labels under them (XMind), the next row of the same flow.
-  //: Its stamps ride the same row; a press on one toggles yours (a vote, taken
-  //: back by a second press), and its menu takes a count down, none of it
-  //: starting a drag or the labels' double-click.
-  el.append("div").attr("class", "wb-map-tags").property("hidden", true)
-    .on("pointerdown", (event) => {
-      if (event.target.closest(".wb-map-stamp-wrap")) event.stopPropagation();
-    })
-    .on("click", (event) => {
-      const stamp = event.target.closest(".wb-map-stamp");
-      if (event.target.closest(".wb-map-stamp-wrap")) event.stopPropagation();
-      if (stamp) wbMapStampSet(wbMapLiveDatum(d), stamp.dataset.stamp, "toggle");
-    })
-    .on("dblclick", (event) => {
-      event.stopPropagation();
-      if (!event.target.closest(".wb-map-stamp-wrap")) wbMapEditLabels(wbMapLiveDatum(d));
-    });
-  //: **Built for every node, hidden when it has nothing to say**, the same
-  //: rule the chevron and the count badge already follow here and for the
-  //: same reason: a reference node's kind icon and a topic's own chosen icon
-  //: (§12.1 item 2) are one element, so the enter selection cannot build one
-  //: shape and `wbPaintMapNode` a slightly different one. The class is set in
-  //: the paint pass, which is the only place that knows what the node wears.
-  //: **A task's box** (MINDMAP_PLAN.md decision 15). Built for every node and
-  //: hidden on one that is not a task, the rule the icon beside it follows. A
-  //: real checkbox to a screen reader and a real button to the hand: a press
-  //: ticks it without starting a node drag or a rename, and the id is read at
-  //: the click rather than kept, because the datum this closure saw is
-  //: replaced by every state fetch.
-  body.append("button")
-    .attr("type", "button")
-    .attr("class", "wb-map-task")
-    .attr("role", "checkbox")
-    .property("hidden", true)
-    .on("pointerdown", (event) => event.stopPropagation())
-    .on("dblclick", (event) => event.stopPropagation())
-    .on("click", (event) => {
-      event.stopPropagation();
-      wbMapToggleTaskDone(d.id);
-    })
-    .append("i").attr("class", "ph ph-square").attr("aria-hidden", "true");
-  //: Markers (decision 34): a row before the icon and the label, filled by
-  //: the paint pass and hidden while the topic carries none.
-  body.append("span").attr("class", "wb-map-markers").property("hidden", true);
-  body.append("i").attr("class", "wb-map-node-icon").attr("aria-hidden", "true");
-  //: **A topic whose body is a picture** (MINDMAP_PLAN.md §12.1 item 2's
-  //: fourth, Coggle's text/link/image/icon). Built for every node and hidden
-  //: when there is nothing to show, the same rule the icon above and the
-  //: chevron below already follow, and for the same reason: one element built
-  //: one way, rather than the enter selection and the paint pass each knowing
-  //: how to make one.
-  //:
-  //: `alt` is deliberately empty and the element is `aria-hidden`: the topic's
-  //: own label is right beside it and says what this node is, so a screen
-  //: reader that also announced the picture would say the same thing twice.
-  //: A caption nobody wrote is not a description.
-  //: **`draggable="false"`, and deliberately no `pointerdown` guard.** The two
-  //: look interchangeable and are opposites here. The link button beside this
-  //: stops the press because it is a control: pressing it must not also start
-  //: a node drag. The picture is the node's *body*, the largest thing to take
-  //: hold of on a picture topic, so a stopped press would make the card
-  //: undraggable by the part of it anyone would grab. What does have to be
-  //: refused is the browser's own image drag, which would otherwise start an
-  //: HTML5 drag of the file over a canvas that has a `drop` handler for
-  //: exactly that, and that is what this attribute is for.
-  body.append("img")
-    .attr("class", "wb-map-node-picture")
-    .attr("alt", "")
-    .attr("aria-hidden", "true")
-    .attr("draggable", "false")
-    .property("hidden", true);
-  //: **The topic's place in the outline** (MINDMAP_PLAN.md decision 17),
-  //: "1.2", on a map that numbers its branches. Its own element before the
-  //: label rather than text inside it, so a rename never edits it and the
-  //: label's editor never sees it. Hidden on a map that does not number and
-  //: on a root, which is the map's subject rather than a place in it.
-  body.append("span").attr("class", "wb-map-number").attr("aria-hidden", "true").property("hidden", true);
-  //: **No `contenteditable="false"` at birth** (FEAT-02's 100ms gate): the
-  //: attribute is the default it states, and setting it forced a style
-  //: recalculation of the whole map in the middle of building one topic
-  //: (traced, `mmd2-1005-maptrace.js`: 28 to 49ms, 1,213 elements, on every
-  //: Tab at 301 topics). `wbBeginTextEdit` turns editing on and
-  //: `wbEndTextEdit` writes "false" back, which is a topic already drawn.
-  const text = body.append("div")
-    .attr("class", "wb-map-text");
-  //: How many of the tasks under this topic are done (decision 15), "2/5",
-  //: hidden on a topic with none under it. Quiet text after the label, not a
-  //: pill: a count is a fact about the branch, not a control.
-  body.append("span").attr("class", "wb-map-progress").property("hidden", true);
-  //: **The marker of a note behind this topic** (MINDMAP_PLAN.md decision
-  //: 18). Hidden until there is one, the link marker's rule. A press opens
-  //: the note in the help popover's shell, anchored here; the id is read at
-  //: the press, as the task box does, because this closure's datum is
-  //: replaced by every state fetch.
-  body.append("button")
-    .attr("type", "button")
-    .attr("class", "wb-map-note")
-    .attr("aria-haspopup", "dialog")
-    .attr("aria-expanded", "false")
-    .property("hidden", true)
-    .on("pointerdown", (event) => event.stopPropagation())
-    .on("dblclick", (event) => event.stopPropagation())
-    .on("click", function (event) {
-      event.stopPropagation();
-      wbMapOpenNote(d.id, this);
-    })
-    .append("i").attr("class", "ph ph-notepad").attr("aria-hidden", "true");
-  //: Where a topic points (§12.1 item 2's "link"). A real button, not a
-  //: decoration: the whole point of setting a link is opening it, and a
-  //: marker you have to go back to the strip to follow is a label. Hidden
-  //: until there is one. `pointerdown` is stopped so following the link is
-  //: not also the first frame of a node drag, the same guard the chevron and
-  //: the two add buttons below already carry.
-  body.append("button")
-    .attr("type", "button")
-    .attr("class", "wb-map-link")
-    .property("hidden", true)
-    .on("pointerdown", (event) => event.stopPropagation())
-    .on("click", (event) => {
-      event.stopPropagation();
-      wbMapOpenLink(wbMapLiveDatum(d));
-    })
-    .append("i").attr("class", "ph ph-link").attr("aria-hidden", "true");
-
+  el.append("div").attr("class", "wb-map-node-body")
+    .append("div").attr("class", "wb-map-text");
+  const text = el.select(".wb-map-text");
   if (d.kind === "topic") {
     // A topic is renamed in place, through the same two functions a text box
     // uses: one edit path for the board, not two. A reference node has no
@@ -2124,78 +2123,7 @@ function wbBuildMapNode(el, d) {
     });
   }
 
-  //: The count badge: how much a collapsed branch is holding. Without it a
-  //: collapsed node is indistinguishable from a leaf, which is the difference
-  //: between "folded away" and "not there".
-  //:
-  //: **A button, because §12.1 item 7 says it reopens on click.** It was a
-  //: `<span aria-hidden>` and read as a decoration: the number told you
-  //: something was folded away and the only way back was the chevron beside
-  //: it. As a button it also answers Space and Enter for free once focused,
-  //: which is the other half of the same item (and of §12.0's Space
-  //: decision).
-  el.append("button")
-    .attr("type", "button")
-    .attr("class", "wb-map-count")
-    .property("hidden", true)
-    .on("pointerdown", (event) => event.stopPropagation())
-    .on("click", (event) => {
-      event.stopPropagation();
-      wbMapToggleCollapse(d.id);
-    });
-
-  // The chevron (collapse) and the `+` (add a child) are the pointer half of
-  // the keyboard gestures: `.ghost.small.icon-only`, the app's own tonal
-  // icon-button recipe, not a shape invented for the canvas. Both stop
-  // `pointerdown` so grabbing one is not also the start of a node drag.
   const stopDrag = (event) => event.stopPropagation();
-  el.append("button")
-    .attr("type", "button")
-    .attr("class", "ghost small icon-only wb-map-collapse")
-    .property("hidden", true)
-    .on("pointerdown", stopDrag)
-    .on("click", (event) => {
-      event.stopPropagation();
-      wbMapToggleCollapse(d.id);
-    })
-    .append("i").attr("class", "ph ph-caret-down").attr("aria-hidden", "true");
-  //: **One resize grip, on the topic's own corner** (INBOX 610, the owner:
-  //: "utility and usability for the mindmap is unintuitive like with
-  //: resizing the mindmap nodes, resizing the text"). There were two 16px
-  //: glyphs floating above the topic's top left, "Aa" and an arrow pointing
-  //: down and right, each a drag: one for the box, one for the words, and the
-  //: words grew as the pointer went *down*. Measured in
-  //: `scratchpad/ui-sweeps/bm1005-nodetasks.js`: neither was on the corner it
-  //: resized from, and dragging "Aa" upwards made the text smaller.
-  //:
-  //: Now the board's own grip (DESIGN.md, "a grip you drag on a canvas"): a
-  //: small filled square on the bottom right corner, shown when the topic is
-  //: selected or pointed at, which grows the box the way a card on a board
-  //: grows. Held with Shift it scales the words with the box, which keeps
-  //: the old grip's "a little bigger than that" without a second control;
-  //: the four named sizes are on the topic's bar now, one press each.
-  //:
-  //: One corner, not the board's eight: the chevron and its count own the
-  //: middle of the edge the branch leaves from, and the add buttons hang off
-  //: the bottom left. The bottom right is the corner none of them reach on
-  //: either layout, measured by the same sweep. It writes width and height
-  //: and never x or y (`wbMapStartResizeDrag` says why).
-  //:
-  //: Plain pointer events with capture, not a d3 drag: `preventDefault` on
-  //: `pointerdown` suppresses the compatibility `mousedown` that `objDrag`
-  //: listens for, so grabbing the grip cannot also be the first frame of a
-  //: node drag. The class is in `objDrag`'s own filter as well.
-  el.append("button")
-    .attr("type", "button")
-    .attr("class", "wb-map-resize-grip")
-    .attr("title", "Drag to resize this topic. Hold Shift to scale its text with it")
-    .attr("aria-label", "Resize this topic")
-    .on("pointerdown", function (event) {
-      event.stopPropagation();
-      event.preventDefault();
-      wbMapStartResizeDrag(this, event, wbMapLiveDatum(d));
-    });
-
   //: **Two ways to grow the map, in one row.** `+` makes a topic; the second
   //: button makes a node that *points at* a real note, document, file or link
   //: (§5 item 11: the half §10.4 recorded as missing: "a reference node was
@@ -2212,7 +2140,7 @@ function wbBuildMapNode(el, d) {
   //: A flex row rather than two absolutely-positioned buttons: two of them
   //: hand-placed off the same corner is how they come to overlap by a few
   //: pixels that a screenshot does not show, which this file has already had
-  //: to fix twice for the count badge (see `.wb-map-count`'s own comment).
+  //: to fix twice for the count badge.
   const actions = el.append("div").attr("class", "wb-map-actions");
   actions.append("button")
     .attr("type", "button")
@@ -2357,7 +2285,7 @@ function wbPaintMapNode(el, d, index, colors, fills) {
 
   const children = index?.childrenOf.get(d.id) || [];
   const collapsed = Boolean(d.data?.collapsed);
-  const chevron = node.querySelector(".wb-map-collapse");
+  const chevron = wbMapCache.part(node, "collapse", children.length > 0);
   if (chevron) {
     chevron.hidden = children.length === 0;
     chevron.title = collapsed ? "Expand this branch" : "Collapse this branch";
@@ -2366,12 +2294,12 @@ function wbPaintMapNode(el, d, index, colors, fills) {
     const icon = chevron.querySelector("i");
     if (icon) icon.className = collapsed ? "ph ph-caret-right" : "ph ph-caret-down";
   }
-  const badge = node.querySelector(".wb-map-count");
+  // The whole subtree, not just the direct children: what the badge is
+  // answering is "how much is folded away here", and a branch three deep
+  // that reported "2" would be understating itself by an order of magnitude.
+  const buried = collapsed && index ? wbMapSubtree(index, d.id).length - 1 : 0;
+  const badge = wbMapCache.part(node, "count", buried > 0);
   if (badge) {
-    // The whole subtree, not just the direct children: what the badge is
-    // answering is "how much is folded away here", and a branch three deep
-    // that reported "2" would be understating itself by an order of magnitude.
-    const buried = collapsed && index ? wbMapSubtree(index, d.id).length - 1 : 0;
     badge.hidden = buried <= 0;
     badge.textContent = String(buried);
     const label = `Open the ${nounCount(buried, "topic")} folded in here`;
@@ -2407,15 +2335,15 @@ function wbPaintMapNode(el, d, index, colors, fills) {
     if (parent) mirrored = d.x + (d.width || WB_MAP_NODE_W) / 2 < parent.x + (parent.width || WB_MAP_NODE_W) / 2;
   }
   el.classed("wb-map-node-mirrored", Boolean(mirrored));
-  const number = node.querySelector(".wb-map-number");
+  const place = wbMapNumberOf(index, d.id);
+  const number = wbMapCache.part(node, "number", Boolean(place));
   if (number) {
-    const place = wbMapNumberOf(index, d.id);
     number.hidden = !place;
     number.textContent = place;
   }
-  const progress = node.querySelector(".wb-map-progress");
+  const tally = index ? wbMapTaskTally(index).get(d.id) : null;
+  const progress = wbMapCache.part(node, "progress", Boolean(tally));
   if (progress) {
-    const tally = index ? wbMapTaskTally(index).get(d.id) : null;
     progress.hidden = !tally;
     if (tally) {
       progress.textContent = `${tally.done}/${tally.total}`;
@@ -2732,7 +2660,7 @@ function wbPaintMapNodeStyle(node, d) {
   //: Read off the node's own data, never the theme's: a task is content.
   const task = d.data?.task === "open" || d.data?.task === "done" ? d.data.task : null;
   node.classList.toggle("wb-map-task-done", task === "done");
-  const box = node.querySelector(".wb-map-task");
+  const box = wbMapCache.part(node, "task", Boolean(task));
   if (box) {
     box.hidden = !task;
     if (task) {
@@ -2744,7 +2672,7 @@ function wbPaintMapNodeStyle(node, d) {
     }
   }
   //: Its markers (decision 34): content, read off the node's own data.
-  const markers = node.querySelector(".wb-map-markers");
+  const markers = wbMapCache.part(node, "markers", Boolean(wbMapMarkerWords(wbMapMarkerParts(d.data || {}))));
   if (markers) wbMapPaintMarkers(markers, d.data || {});
   // Px through CSSOM, which is what a text box's own `font_size` already
   // does (`renderWbObjects`): the value is per node and arbitrary, so it
@@ -2760,8 +2688,7 @@ function wbPaintMapNodeStyle(node, d) {
   if (data.sized && d.height) node.style.minHeight = `${d.height}px`;
   else node.style.removeProperty("min-height");
 
-  const icon = node.querySelector(".wb-map-node-icon");
-  if (icon) {
+  {
     // A topic wears what it was given; a reference node falls back to the
     // icon for its kind, which is what says "this is a note, not a topic".
     //: **A star before the label on a core idea** (INBOX 201, the fourth of the
@@ -2774,6 +2701,8 @@ function wbPaintMapNodeStyle(node, d) {
     const name = chosen || (WB_MAP_REFERENCE_KINDS.has(d.kind)
       ? (WB_MAP_ICONS[d.kind] || WB_MAP_ICONS.topic).replace(/^ph-/, "")
       : "");
+    const icon = wbMapCache.part(node, "icon", Boolean(name));
+    if (icon) {
     icon.hidden = !name;
     //: **An emoji is drawn as text** (MINDMAP_PLAN.md decision 45): one slot,
     //: a Phosphor name or one emoji, told apart by the name's own pattern.
@@ -2784,6 +2713,7 @@ function wbPaintMapNodeStyle(node, d) {
       if (icon.textContent) icon.textContent = "";
       icon.className = name ? `ph ph-${name} wb-map-node-icon` : "wb-map-node-icon";
     }
+    }
   }
 
   //: The picture, and the node shape that goes with it (§12.1 item 2's
@@ -2793,9 +2723,9 @@ function wbPaintMapNodeStyle(node, d) {
   //: drawn. The stylesheet turns the body from a row into a column on it, so a
   //: picture node is a second node *shape*, not a label with a thumbnail
   //: wedged in beside it.
-  const picture = node.querySelector(".wb-map-node-picture");
+  const url = typeof data.image === "string" ? data.image : "";
+  const picture = wbMapCache.part(node, "picture", Boolean(url));
   if (picture) {
-    const url = typeof data.image === "string" ? data.image : "";
     picture.hidden = !url;
     if (url) {
       // `mediaSrc`, never the raw url: media is served behind the unlock, so
@@ -2814,18 +2744,18 @@ function wbPaintMapNodeStyle(node, d) {
   wbMapLazy.paintAudio(node, d.data || {});
   wbMapLazy.paintGrammar(node, d);
   //: A note (decision 18): read off the topic's own data, never the theme's.
-  const noteMark = node.querySelector(".wb-map-note");
+  const note = typeof d.data?.note === "string" ? d.data.note.trim() : "";
+  const noteMark = wbMapCache.part(node, "note", Boolean(note));
   if (noteMark) {
-    const note = typeof d.data?.note === "string" ? d.data.note.trim() : "";
     noteMark.hidden = !note;
     if (note) {
       noteMark.title = `Note: ${noteNamePlain(note, 80)}`;
       noteMark.setAttribute("aria-label", "Open the note behind this topic");
     }
   }
-  const link = node.querySelector(".wb-map-link");
+  const href = typeof data.link === "string" ? data.link : "";
+  const link = wbMapCache.part(node, "link", Boolean(href));
   if (link) {
-    const href = typeof data.link === "string" ? data.link : "";
     link.hidden = !href;
     if (href) {
       link.title = `Open ${href}`;
@@ -8838,16 +8768,16 @@ async function wbMapStampSet(node, name, how) {
 //: card wraps (`data-extras`) only while it carries one, so every other topic
 //: keeps the one row it has always been.
 function wbMapPaintExtras(node, data) {
-  const callout = node.querySelector(".wb-map-callout");
   const words = typeof data.callout === "string" ? data.callout.trim() : "";
+  const callout = wbMapCache.part(node, "callout", Boolean(words));
   if (callout) {
     callout.hidden = !words;
     if (callout.textContent !== words) callout.textContent = words;
     callout.title = words ? "Callout: double-click to change it" : "";
   }
-  const tags = node.querySelector(".wb-map-tags");
   const labels = Array.isArray(data.labels) ? data.labels.filter((l) => typeof l === "string" && l.trim()) : [];
   const stamps = WB_MAP_STAMPS.filter(([name]) => data.stamps?.[name] > 0);
+  const tags = wbMapCache.part(node, "tags", labels.length > 0 || stamps.length > 0);
   if (tags) {
     tags.hidden = !labels.length && !stamps.length;
     const mine = Array.isArray(data.stamped) ? data.stamped : [];
