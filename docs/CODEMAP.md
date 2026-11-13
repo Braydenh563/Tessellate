@@ -19327,12 +19327,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_back` | src/tessellate/ai/recognise_windows.py:387 |
 | `_calendar_unit_span` | src/tessellate/ai/recognise_windows.py:402 |
 | `_date_phrase` | src/tessellate/ai/recognise_windows.py:254 |
-| `_dated_said` | src/tessellate/ai/recognise_windows.py:1204 |
+| `_dated_said` | src/tessellate/ai/recognise_windows.py:1207 |
 | `_day_of_month` | src/tessellate/ai/recognise_windows.py:354 |
-| `_end_of_range` | src/tessellate/ai/recognise_windows.py:594 |
-| `_hemisphere` | src/tessellate/ai/recognise_windows.py:1003 |
-| `_holiday_said` | src/tessellate/ai/recognise_windows.py:1261 |
-| `_in_locale` | src/tessellate/ai/recognise_windows.py:1010 |
+| `_end_of_range` | src/tessellate/ai/recognise_windows.py:597 |
+| `_hemisphere` | src/tessellate/ai/recognise_windows.py:1006 |
+| `_holiday_said` | src/tessellate/ai/recognise_windows.py:1264 |
+| `_in_locale` | src/tessellate/ai/recognise_windows.py:1013 |
 | `_month_day_span` | src/tessellate/ai/recognise_windows.py:439 |
 | `_month_end` | src/tessellate/ai/recognise_windows.py:328 |
 | `_month_span` | src/tessellate/ai/recognise_windows.py:375 |
@@ -19340,67 +19340,67 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_nearest` | src/tessellate/ai/recognise_windows.py:343 |
 | `_nth_in_month` | src/tessellate/ai/recognise_windows.py:461 |
 | `_nth_of_month` | src/tessellate/ai/recognise_windows.py:97 |
-| `_numbered_year` | src/tessellate/ai/recognise_windows.py:1079 |
+| `_numbered_year` | src/tessellate/ai/recognise_windows.py:1082 |
 | `_one_day` | src/tessellate/ai/recognise_windows.py:525 |
-| `_part_in` | src/tessellate/ai/recognise_windows.py:901 |
-| `_part_of_year` | src/tessellate/ai/recognise_windows.py:919 |
-| `_rolling_said` | src/tessellate/ai/recognise_windows.py:1196 |
-| `_season_cycles` | src/tessellate/ai/recognise_windows.py:1026 |
-| `_season_first_months` | src/tessellate/ai/recognise_windows.py:1020 |
-| `_season_pick` | src/tessellate/ai/recognise_windows.py:1033 |
-| `_shared_year` | src/tessellate/ai/recognise_windows.py:630 |
+| `_part_in` | src/tessellate/ai/recognise_windows.py:904 |
+| `_part_of_year` | src/tessellate/ai/recognise_windows.py:922 |
+| `_rolling_said` | src/tessellate/ai/recognise_windows.py:1199 |
+| `_season_cycles` | src/tessellate/ai/recognise_windows.py:1029 |
+| `_season_first_months` | src/tessellate/ai/recognise_windows.py:1023 |
+| `_season_pick` | src/tessellate/ai/recognise_windows.py:1036 |
+| `_shared_year` | src/tessellate/ai/recognise_windows.py:633 |
 | `_shift_months` | src/tessellate/ai/recognise_windows.py:333 |
-| `_span_ago` | src/tessellate/ai/recognise_windows.py:731 |
-| `_span_ahead` | src/tessellate/ai/recognise_windows.py:690 |
-| `_span_between` | src/tessellate/ai/recognise_windows.py:638 |
-| `_span_calendar_unit` | src/tessellate/ai/recognise_windows.py:657 |
-| `_span_day_and_month` | src/tessellate/ai/recognise_windows.py:795 |
-| `_span_day_run` | src/tessellate/ai/recognise_windows.py:608 |
+| `_span_ago` | src/tessellate/ai/recognise_windows.py:734 |
+| `_span_ahead` | src/tessellate/ai/recognise_windows.py:693 |
+| `_span_between` | src/tessellate/ai/recognise_windows.py:641 |
+| `_span_calendar_unit` | src/tessellate/ai/recognise_windows.py:660 |
+| `_span_day_and_month` | src/tessellate/ai/recognise_windows.py:798 |
+| `_span_day_run` | src/tessellate/ai/recognise_windows.py:611 |
 | `_span_edge` | src/tessellate/ai/recognise_windows.py:534 |
-| `_span_end_of` | src/tessellate/ai/recognise_windows.py:861 |
+| `_span_end_of` | src/tessellate/ai/recognise_windows.py:864 |
 | `_span_fixed` | src/tessellate/ai/recognise_windows.py:558 |
-| `_span_holiday` | src/tessellate/ai/recognise_windows.py:876 |
-| `_span_in` | src/tessellate/ai/recognise_windows.py:739 |
-| `_span_iso` | src/tessellate/ai/recognise_windows.py:781 |
-| `_span_lately` | src/tessellate/ai/recognise_windows.py:590 |
-| `_span_month` | src/tessellate/ai/recognise_windows.py:868 |
-| `_span_month_day` | src/tessellate/ai/recognise_windows.py:791 |
-| `_span_nth` | src/tessellate/ai/recognise_windows.py:754 |
-| `_span_ordinal` | src/tessellate/ai/recognise_windows.py:819 |
-| `_span_other_day` | src/tessellate/ai/recognise_windows.py:719 |
-| `_span_part_of_month` | src/tessellate/ai/recognise_windows.py:830 |
-| `_span_part_of_period` | src/tessellate/ai/recognise_windows.py:930 |
-| `_span_recent` | src/tessellate/ai/recognise_windows.py:670 |
-| `_span_same_day` | src/tessellate/ai/recognise_windows.py:726 |
-| `_span_season` | src/tessellate/ai/recognise_windows.py:1053 |
-| `_span_to_date` | src/tessellate/ai/recognise_windows.py:709 |
+| `_span_holiday` | src/tessellate/ai/recognise_windows.py:879 |
+| `_span_in` | src/tessellate/ai/recognise_windows.py:742 |
+| `_span_iso` | src/tessellate/ai/recognise_windows.py:784 |
+| `_span_lately` | src/tessellate/ai/recognise_windows.py:593 |
+| `_span_month` | src/tessellate/ai/recognise_windows.py:871 |
+| `_span_month_day` | src/tessellate/ai/recognise_windows.py:794 |
+| `_span_nth` | src/tessellate/ai/recognise_windows.py:757 |
+| `_span_ordinal` | src/tessellate/ai/recognise_windows.py:822 |
+| `_span_other_day` | src/tessellate/ai/recognise_windows.py:722 |
+| `_span_part_of_month` | src/tessellate/ai/recognise_windows.py:833 |
+| `_span_part_of_period` | src/tessellate/ai/recognise_windows.py:933 |
+| `_span_recent` | src/tessellate/ai/recognise_windows.py:673 |
+| `_span_same_day` | src/tessellate/ai/recognise_windows.py:729 |
+| `_span_season` | src/tessellate/ai/recognise_windows.py:1056 |
+| `_span_to_date` | src/tessellate/ai/recognise_windows.py:712 |
 | `_span_week_before_last` | src/tessellate/ai/recognise_windows.py:564 |
-| `_span_weekday` | src/tessellate/ai/recognise_windows.py:774 |
-| `_span_weekend` | src/tessellate/ai/recognise_windows.py:697 |
-| `_span_year` | src/tessellate/ai/recognise_windows.py:581 |
+| `_span_weekday` | src/tessellate/ai/recognise_windows.py:777 |
+| `_span_weekend` | src/tessellate/ai/recognise_windows.py:700 |
+| `_span_year` | src/tessellate/ai/recognise_windows.py:584 |
 | `_valid_day` | src/tessellate/ai/recognise_windows.py:108 |
 | `_week_of` | src/tessellate/ai/recognise_windows.py:338 |
-| `_weekday_named` | src/tessellate/ai/recognise_windows.py:762 |
-| `_window_words` | src/tessellate/ai/recognise_windows.py:1125 |
-| `a_topic_phrase` | src/tessellate/ai/recognise_windows.py:1233 |
-| `adverbial` | src/tessellate/ai/recognise_windows.py:1274 |
+| `_weekday_named` | src/tessellate/ai/recognise_windows.py:765 |
+| `_window_words` | src/tessellate/ai/recognise_windows.py:1128 |
+| `a_topic_phrase` | src/tessellate/ai/recognise_windows.py:1236 |
+| `adverbial` | src/tessellate/ai/recognise_windows.py:1277 |
 | `ahead_window` | src/tessellate/ai/recognise_windows.py:490 |
-| `configure_date_order` | src/tessellate/ai/recognise_windows.py:992 |
-| `configure_hemisphere` | src/tessellate/ai/recognise_windows.py:979 |
+| `configure_date_order` | src/tessellate/ai/recognise_windows.py:995 |
+| `configure_hemisphere` | src/tessellate/ai/recognise_windows.py:982 |
 | `count_of` | src/tessellate/ai/recognise_windows.py:320 |
-| `find` | src/tessellate/ai/recognise_windows.py:1310 |
-| `hemisphere_of` | src/tessellate/ai/recognise_windows.py:961 |
-| `looks_dated` | src/tessellate/ai/recognise_windows.py:1154 |
-| `mid_sentence` | src/tessellate/ai/recognise_windows.py:1304 |
-| `names_a_day` | src/tessellate/ai/recognise_windows.py:1163 |
-| `note_locale` | src/tessellate/ai/recognise_windows.py:996 |
-| `proper_days` | src/tessellate/ai/recognise_windows.py:1295 |
-| `says_a_recent_day` | src/tessellate/ai/recognise_windows.py:1179 |
-| `span` | src/tessellate/ai/recognise_windows.py:1098 |
-| `window` | src/tessellate/ai/recognise_windows.py:1323 |
-| `with_holiday_year` | src/tessellate/ai/recognise_windows.py:1268 |
+| `find` | src/tessellate/ai/recognise_windows.py:1313 |
+| `hemisphere_of` | src/tessellate/ai/recognise_windows.py:964 |
+| `looks_dated` | src/tessellate/ai/recognise_windows.py:1157 |
+| `mid_sentence` | src/tessellate/ai/recognise_windows.py:1307 |
+| `names_a_day` | src/tessellate/ai/recognise_windows.py:1166 |
+| `note_locale` | src/tessellate/ai/recognise_windows.py:999 |
+| `proper_days` | src/tessellate/ai/recognise_windows.py:1298 |
+| `says_a_recent_day` | src/tessellate/ai/recognise_windows.py:1182 |
+| `span` | src/tessellate/ai/recognise_windows.py:1101 |
+| `window` | src/tessellate/ai/recognise_windows.py:1326 |
+| `with_holiday_year` | src/tessellate/ai/recognise_windows.py:1271 |
 | `without_ahead_words` | src/tessellate/ai/recognise_windows.py:497 |
-| `without_windows` | src/tessellate/ai/recognise_windows.py:1149 |
+| `without_windows` | src/tessellate/ai/recognise_windows.py:1152 |
 
 ### src/tessellate/ai/records.py (24)
 
@@ -31133,14 +31133,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:729 |
+| Needs hardware | docs/roadmap/LEDGER.md:728 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:721 |
+| Owner calls | docs/roadmap/LEDGER.md:720 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31321,7 +31321,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1852 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:920 |
+| Plan session briefs | docs/roadmap/LEDGER.md:919 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31375,25 +31375,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:936 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1020 |
-| documents | docs/roadmap/LEDGER.md:206 |
-| documents | docs/roadmap/LEDGER.md:960 |
-| general | docs/roadmap/LEDGER.md:680 |
+| chat | docs/roadmap/LEDGER.md:935 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1019 |
+| documents | docs/roadmap/LEDGER.md:205 |
+| documents | docs/roadmap/LEDGER.md:959 |
+| general | docs/roadmap/LEDGER.md:679 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:924 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1032 |
+| graph | docs/roadmap/LEDGER.md:923 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1031 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:286 |
-| mindmap | docs/roadmap/LEDGER.md:972 |
-| timeline | docs/roadmap/LEDGER.md:441 |
-| timeline | docs/roadmap/LEDGER.md:996 |
-| ui-modernisation | docs/roadmap/LEDGER.md:323 |
-| ui-modernisation | docs/roadmap/LEDGER.md:984 |
-| whiteboard | docs/roadmap/LEDGER.md:159 |
-| whiteboard | docs/roadmap/LEDGER.md:948 |
-| world-class | docs/roadmap/LEDGER.md:444 |
-| world-class | docs/roadmap/LEDGER.md:1008 |
+| mindmap | docs/roadmap/LEDGER.md:285 |
+| mindmap | docs/roadmap/LEDGER.md:971 |
+| timeline | docs/roadmap/LEDGER.md:440 |
+| timeline | docs/roadmap/LEDGER.md:995 |
+| ui-modernisation | docs/roadmap/LEDGER.md:322 |
+| ui-modernisation | docs/roadmap/LEDGER.md:983 |
+| whiteboard | docs/roadmap/LEDGER.md:158 |
+| whiteboard | docs/roadmap/LEDGER.md:947 |
+| world-class | docs/roadmap/LEDGER.md:443 |
+| world-class | docs/roadmap/LEDGER.md:1007 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

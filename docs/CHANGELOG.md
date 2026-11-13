@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat row L-chat-22 (windows): "the weekend before last" is read as the Saturday and Sunday two weekends back (`recognise_windows._BEFORE_LAST`), found by the new `windows_1010.json` set.
 - Chat row L101: the model's prompt now says why each note was shown and which other shown notes it links to, by number and with the person's reason ("(why shown: Has the word “skye”) (linked to note 3: same trip)"), the frame the composer already said (`librarian._shown_hint`).
 - CI fix: the tools-off line names Settings, Tools it can use; a phrasing spec that passes alone loses its xfail marker; the validate cases follow the L-chat-21 fallback.
 - Guide row L-chat-38: with no model the Guide answers any question in a line or two: "are you an AI?", sums ("2 + 2 is 4."), deleting a note, disk space and the search keys answer first, and the world's questions (weather, jokes, "how do I cook rice?") get one line saying they are outside the app, with no menu of unrelated topics (`ai/guide_outside.py`, 36 pinned questions).

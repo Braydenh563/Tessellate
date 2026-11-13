@@ -181,7 +181,7 @@ _PART_OF_DAY = (
 #: days back from today, and the answer says so (`LATELY_DAYS`).
 LATELY_DAYS = 14
 _LATELY = r"(?:very )?(?:recently|lately|of late)"
-_BEFORE_LAST = r"(?:the )?(?:week|month|year) before last"
+_BEFORE_LAST = r"(?:the )?(?:week|weekend|month|year) before last"
 _QUARTER = r"(?:the )?(?:last|this|next|previous|coming) quarter"
 _PREVIOUS_UNIT = r"the previous (?:week|weekend|month|year|quarter)"
 #: "from Monday to Wednesday", "between March and May", "between 1 and 5
@@ -569,6 +569,9 @@ def _span_week_before_last(text: str, a: date, tense: str | None) -> Any:
     if unit == "week":
         first, last = _week_of(a - timedelta(days=14))
         return first, last, "week"
+    if unit == "weekend":
+        #: The weekend just gone, one week earlier (the same weekday a week back has the same "last weekend").
+        return _calendar_unit_span("last", "weekend", a - timedelta(days=7))
     if unit == "month":
         first = _shift_months(a.replace(day=1), -2)
         return first, _month_end(first), "month"
