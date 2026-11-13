@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 1 | 0 | 0 | 0 | 16 |
-| chat | 176 | 98 | 44 | 2 | 59 | 318 |
+| chat | 176 | 97 | 44 | 2 | 59 | 317 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 549 | 134 | 3 | 186 | 1236 |
+| all | 553 | 548 | 134 | 3 | 186 | 1235 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -139,7 +139,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L254** `chat` partly, L: Chart maker and answer shapes (only ask-chart.js exists); goals and lists have no surface at all. From ledger-1112 P15.
 - [ ] **L255** `chat` partly, L: Hold still, carry over, tail pull, toss up, pointer chase and drag skid need new desk frames and a human rater (the catalogue refuses one-sided acts; engine.py and engine_input.py are at their line caps, so a desk hook lives in extras.py). Catch mid-air is built (05b51746d, `caught` both sides). From ledger-1112 I21.
 - [ ] **L-chat-1** `chat` open, M: Close the Guide answer gap so a question about the app gets an answer. From INBOX 904 B86 (W22). Evidence: the owner's Guide question went unanswered
-- [ ] **L-chat-2** `chat` open, S: Stop at the turn start with a plain sentence when a tool group the request needs is switched off in Settings, instead of a ToolError after the model tried. From ANALYSIS.md:4354. Evidence: ANALYSIS names CHAT_PLAN 'deterministic foundation' as home; grep 'turn contract' in plans returns nothing
 - [ ] **L-chat-7** `chat` open, S: Companion stretches (app and desk) when a long writing run ends. From Brief 88 N9; review 2026-11-12. Evidence: companion-menu.js:713 typing_burst plays a nod after 30 s, not a stretch after a minute
 - [ ] **L-chat-8** `chat` open, M: Contradiction answer: wire supersede.py in or record that the insights reader replaces it; the PAR1 imperative remainder. From ledger-1112 PAR1; review 2026-11-12. Evidence: chat_extra.py:57 contradiction asks reach the insights contrast reader; supersede.py feeds composer_select and composer_digest only; composer_suggest.py:52 _IMPERATIVE unchanged
 - [ ] **L737** `chat` open, S: Decide whether plain Ask answers from notes by default at 3B and below (decision 75). From INBOX.md:1779. Evidence: Decision 75 kept for PR 216; figures in CHAT_PLAN 'Open from Phase 6' for the owner to overrule Owner decided 2026-11-12: A Settings choice (Add a setting to pick who answers Ask; default stays the model). Build: Settings, Models gains a choice of who answers plain Ask (model or notes answerer), default the model; help, Guide topic and manual parity move with it.
