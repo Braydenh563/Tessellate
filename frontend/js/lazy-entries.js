@@ -32,6 +32,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-text-more.js", //: Subscript, superscript and `$...$` maths in board words; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
     "/vendor/perfect-freehand/perfect-freehand.min.js", //: Before whiteboard-ink-more.js: it sets `window.perfectFreehand` (MIT, 5 KB).
     "/js/whiteboard-ink-more.js", //: Free-line hollow ends, smoothed pen strokes, shape clean-up, replay and the GIF; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
+    "/js/whiteboard-ink-recognise.js", //: Turns a rough stroke into a clean shape; pure, joins `wbFmtState` and runs after whiteboard-ink-more.js.
     "/js/whiteboard-shape-table.js", //: The table of JS-drawn shapes (cylinder, cube, step...): the picker rows, resize and draw.io words; joins `wbFmtState`.
     "/js/whiteboard-library-more.js", //: The shape picker and Replace with a library shape; names whiteboard.js and whiteboard-library.js at run time only.
     "/js/whiteboard-interchange.js",

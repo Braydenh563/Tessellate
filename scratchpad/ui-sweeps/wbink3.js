@@ -82,6 +82,60 @@ const { openFresh, checker } = require("./cdlib.js");
   await page.evaluate(() => wbUndo());
   await page.waitForTimeout(400);
 
+
+  // --- Clean up: a rough box becomes a rectangle, one Undo step ---------------------------------------------
+  await tool("draw");
+  const corners = [[-150, -120], [50, -125], [55, -20], [-145, -15], [-150, -118]];
+  const [bx, by] = at(corners[0][0], corners[0][1]);
+  await page.mouse.move(bx, by);
+  await page.mouse.down();
+  for (let k = 1; k < corners.length; k++) {
+    const [ax, ay] = corners[k - 1], [cx, cy] = corners[k];
+    for (let i = 1; i <= 14; i++) { const [x, y] = at(ax + ((cx - ax) * i) / 14, ay + ((cy - ay) * i) / 14); await page.mouse.move(x + Math.sin(i) * 2, y + Math.cos(i * 2) * 2); }
+  }
+  await page.mouse.up();
+  await page.waitForTimeout(700);
+  const rough = await lastParsed();
+  check("clean up: the rough box was saved as ink that kept its points", rough.ink === 1 && rough.pts.length > 40 && rough.pbox.length === 4, { pts: rough.pts?.length, pbox: rough.pbox });
+  const roughId = await page.evaluate(() => wbState.sketches[wbState.sketches.length - 1].id);
+  await tool("select");
+  await page.evaluate((id) => selectWbItem("sketch", id), roughId);
+  await page.waitForTimeout(300);
+  const offered = await page.evaluate(() => { const c = WB_COMMAND_BY_ID.get("cleanup-ink"); return { has: Boolean(c), applies: Boolean(c && wbCommandNeeds[c.needs]()) }; });
+  check("clean up: the Edit command is offered for a selected pen stroke", offered.has && offered.applies, offered);
+  const menuRow = await page.evaluate(() => Boolean(document.querySelector('[data-wb-cmd="cleanup-ink"]')));
+  check("clean up: the command is in the board's menus", menuRow);
+  //: Move it first, so the points have to follow the stroke.
+  const movedBy = 120;
+  await page.evaluate(async ([id, dx]) => { const sk = wbState.sketches.find((x) => x.id === id); const p = wbSketchParsedData(sk); await wbSaveSketchD(sk, wbTransformPathD(p.d, { dx })); wbScheduleRender(); }, [roughId, movedBy]);
+  await page.waitForTimeout(300);
+  const boxBefore = await page.evaluate((id) => wbPathBBox(wbSketchParsedData(wbState.sketches.find((x) => x.id === id)).d), roughId);
+  const undoBefore = await page.evaluate(() => wbUndoStack?.length ?? null);
+  await page.evaluate(() => WB_COMMAND_BY_ID.get("cleanup-ink").run());
+  await page.waitForTimeout(700);
+  const cleaned = await page.evaluate((id) => { const sk = wbState.sketches.find((x) => x.id === id); const p = wbSketchParsedData(sk); return { shape: p.shape, ink: p.ink, pts: p.pts, d: p.d, box: wbPathBBox(p.d) }; }, roughId);
+  check("clean up: it is now a rectangle (h and v moves, closed), not ink", cleaned.shape === "rect" && !cleaned.ink && !cleaned.pts && /^M [\d. -]+ h [\d. -]+ v [\d. -]+ h [\d. -]+ Z$/.test(cleaned.d), cleaned);
+  check("clean up: the clean rectangle sits where the moved stroke was (within 8 units of its box)", Math.abs(cleaned.box.minX - boxBefore.minX) < 8 && Math.abs(cleaned.box.maxX - boxBefore.maxX) < 8, { cleaned: cleaned.box, boxBefore });
+  const undoAfter = await page.evaluate(() => wbUndoStack?.length ?? null);
+  check("clean up: exactly one Undo step", undoBefore === null || undoAfter === undoBefore + 1, { undoBefore, undoAfter });
+  await page.evaluate(() => wbUndo());
+  await page.waitForTimeout(600);
+  const back = await page.evaluate((id) => { const p = wbSketchParsedData(wbState.sketches.find((x) => x.id === id)); return { ink: p.ink, shape: p.shape }; }, roughId);
+  check("clean up: Undo brings the ink stroke back", back.ink === 1 && back.shape === "draw", back);
+  //: A scribble is told no.
+  await tool("draw");
+  const [sx0, sy0] = at(-100, 150);
+  await page.mouse.move(sx0, sy0);
+  await page.mouse.down();
+  for (let i = 1; i <= 40; i++) await page.mouse.move(sx0 + ((i * 37) % 90), sy0 + ((i * 53) % 80));
+  await page.mouse.up();
+  await page.waitForTimeout(600);
+  const scribbleId = await page.evaluate(() => wbState.sketches[wbState.sketches.length - 1].id);
+  await tool("select");
+  await page.evaluate((id) => selectWbItem("sketch", id), scribbleId);
+  const said = await page.evaluate(async () => { const ok = await WB_COMMAND_BY_ID.get("cleanup-ink").run(); return ok; });
+  const scribble = await page.evaluate((id) => wbSketchParsedData(wbState.sketches.find((x) => x.id === id)).ink, scribbleId);
+  check("clean up: a scribble stays ink", scribble === 1);
   check("no page errors", errors.length === 0, errors.slice(0, 3));
   await browser.close();
   process.exit(summary() ? 0 : 1);

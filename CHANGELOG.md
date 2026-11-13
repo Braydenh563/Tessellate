@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: select a pen stroke and choose Edit, Clean up the drawn shape (also in the command palette) to turn a rough line, arrow, rectangle, ellipse, triangle or diamond into the clean shape, in the same colour and width, as one Undo step; a scribble is left alone.
 - Whiteboard: the pen and the marker draw smoothed ink (perfect-freehand): rough hand-drawn lines come out as one clean curve, and with a pen the stroke is thicker where you press harder; with a mouse or a finger the width follows how fast you draw. A dashed pen keeps the plain stroke.
 - Whiteboard: a free line or arrow with an outline diamond, circle or square end no longer draws its shaft through the shape; the line stops at the end's edge, as a connector does, and it still selects along its whole length.
 - Whiteboard: a new Drawn shapes set in the shape picker and the Library tab, 25 outlines (cylinder, tube, cube, callout, step, UML actor and lifeline, folder, note, tape, document, process, trapezoid, card, delay, cross and more) that are drawn again when resized so corners and tabs keep their size; draw.io files with shape=cylinder3, cube, step, umlActor and the rest import as them, and export writes them back.

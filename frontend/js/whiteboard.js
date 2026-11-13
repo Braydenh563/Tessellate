@@ -19647,7 +19647,7 @@ async function initWhiteboard() {
       shape: more ? "custom" : window.currentTool,
     };
     if (more?.area) blob.label_area = more.area;
-    if (currentDrawPath.__ink) blob.ink = 1;
+    if (currentDrawPath.__ink) Object.assign(blob, { ink: 1 }, wbFmtState.inkMore.keepPoints(currentDrawData, wbPathBBox(d)));
     //: The ends are stored by kind, so the bar and the Format panel read
     //: what was drawn rather than sniffing it out of the path.
     if (window.currentTool === "line" || window.currentTool === "arrow") Object.assign(blob, wbToolCaps());

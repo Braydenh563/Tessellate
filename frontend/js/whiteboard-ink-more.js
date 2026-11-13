@@ -54,5 +54,31 @@
     if (opacity != null) path.setAttribute("fill-opacity", String(opacity));
   }
 
-  wbFmtState.inkMore = { trimShaft, inkOptions, outline, takesInk, liveStyle };
+  //: What a saved ink stroke keeps of the hand's own points, for Clean up (whiteboard-ink-recognise.js) and Replay: the
+  //: points thinned to one every 2 units (at most 600), flat as x, y, x, y, and the outline's box when they were taken, so
+  //: a stroke that was moved or resized later maps its points onto where it is now.
+  function keepPoints(points, bbox) {
+    const flat = [];
+    let last = null;
+    const step = Math.max(1, Math.ceil(points.length / 600));
+    points.forEach((p, i) => {
+      if (i % step && i !== points.length - 1) return;
+      if (last && Math.hypot(p[0] - last[0], p[1] - last[1]) < 2 && i !== points.length - 1) return;
+      flat.push(round1(p[0]), round1(p[1]));
+      last = p;
+    });
+    const pbox = bbox ? [round1(bbox.minX), round1(bbox.minY), round1(bbox.width), round1(bbox.height)] : null;
+    return pbox ? { pts: flat, pbox } : {};
+  }
+
+  //: The kept points [x, y] where the stroke is now: `pbox` (then) mapped onto `bbox` (now), moved and scaled per axis.
+  function placePoints(flat, pbox, bbox) {
+    if (!Array.isArray(flat) || !Array.isArray(pbox) || !bbox) return [];
+    const sx = pbox[2] > 0.5 ? bbox.width / pbox[2] : 1, sy = pbox[3] > 0.5 ? bbox.height / pbox[3] : 1;
+    const out = [];
+    for (let i = 0; i + 1 < flat.length; i += 2) out.push([bbox.minX + (flat[i] - pbox[0]) * sx, bbox.minY + (flat[i + 1] - pbox[1]) * sy]);
+    return out;
+  }
+
+  wbFmtState.inkMore = { trimShaft, inkOptions, outline, takesInk, liveStyle, keepPoints, placePoints };
 })();

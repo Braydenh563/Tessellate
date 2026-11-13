@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 1 | 0 | 0 | 0 | 16 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 24 | 4 | 0 | 10 | 58 |
+| whiteboard | 30 | 23 | 4 | 0 | 10 | 57 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 631 | 150 | 3 | 185 | 1334 |
+| all | 553 | 630 | 150 | 3 | 185 | 1333 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -298,7 +298,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L285** `whiteboard` partly, L: Finish templates, styles, align and distribute, find, copy as picture and shortcuts for the board. From OPEN.md:4531. Evidence: Smart alignment guides and find exist in whiteboard.js; templates/styles/copy-as-picture set not confirmed complete
 - [ ] **L286** `whiteboard` partly, L: Whiteboard: D24 names left, split whiteboard.js and whiteboard-map.js. From ledger-1112 O34; ledger-1112 O33.
 - [ ] **L-whiteboard-2** `whiteboard` open, M: Add a resizable PDF and document viewer object to the whiteboard. From open-work sweep 2026-11-12, docs/roadmap/INBOX.md:121. Evidence: BACKLOG claims it went to WHITEBOARD_PLAN, but no whiteboard plan item, LEDGER row or code exists for a resizable PDF or document viewer on the board
-- [ ] **L-whiteboard-3** `whiteboard` open, M: Turn rough ink strokes into clean shapes. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:293. Evidence: there is no shape recognition code in frontend/js; it exists only in this audit file, which BACKLOG points at only in general terms
 - [ ] **L-whiteboard-4** `whiteboard` open, M: Replay a board's ink strokes in drawing order. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:296. Evidence: no stroke replay exists in the code and no plan or LEDGER row covers it
 - [ ] **L-whiteboard-12** `whiteboard` open, L: Bind board cards to note properties through their frame. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:768. Evidence: no shape that stays bound to live notebook content exists; lines 768 to 772 are untracked
 - [ ] **L-whiteboard-15** `whiteboard` open, S: Measure board idle and drag cost at 500 objects and with the companion on. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1405. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census leaves two measurements unmeasured, with no row.

@@ -126,7 +126,7 @@ def test_the_library_is_vendored_with_its_licence_and_version():
 
 def test_the_board_draws_pen_and_marker_through_it():
     wb = frontend_text("whiteboard.js")
-    assert "wbFmtState.inkMore.liveStyle(" in wb and "blob.ink = 1" in wb and "if (parsed.ink) {" in wb
+    assert "wbFmtState.inkMore.liveStyle(" in wb and "Object.assign(blob, { ink: 1 }" in wb and "if (parsed.ink) {" in wb
     assert "[x, y, e.pressure]" in wb
     entries = frontend_text("lazy-entries.js")
     assert entries.index("/vendor/perfect-freehand/perfect-freehand.min.js") < entries.index("/js/whiteboard-ink-more.js")

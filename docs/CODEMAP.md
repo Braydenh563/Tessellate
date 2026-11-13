@@ -2,9 +2,9 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8551, frontend ids 2798, CSS sections 525, backend routes 704, backend modules 10818, test files 2724, tests 22165, plan headings 690, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8564, frontend ids 2798, CSS sections 525, backend routes 704, backend modules 10818, test files 2725, tests 22173, plan headings 690, app scripts 29, boot scripts 38, script files 310.
 
-## Frontend functions (8551)
+## Frontend functions (8564)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -103,18 +103,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:223 |
-| `charactersLost` | frontend/js/lazy-entries.js:232 |
-| `emblemHead` | frontend/js/lazy-entries.js:240 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:269 |
-| `lazyLoadFailed` | frontend/js/lazy-entries.js:302 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:263 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:290 |
-| `onDomReady` | frontend/js/lazy-entries.js:313 |
-| `plainHead` | frontend/js/lazy-entries.js:246 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:254 |
-| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:325 |
-| `warmOnFirst` | frontend/js/lazy-entries.js:344 |
+| `afterCharacters` | frontend/js/lazy-entries.js:224 |
+| `charactersLost` | frontend/js/lazy-entries.js:233 |
+| `emblemHead` | frontend/js/lazy-entries.js:241 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:270 |
+| `lazyLoadFailed` | frontend/js/lazy-entries.js:303 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:264 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:291 |
+| `onDomReady` | frontend/js/lazy-entries.js:314 |
+| `plainHead` | frontend/js/lazy-entries.js:247 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:255 |
+| `warmLibraryAfterInput` | frontend/js/lazy-entries.js:326 |
+| `warmOnFirst` | frontend/js/lazy-entries.js:345 |
 
 ### frontend/js/att-chip.js (7)
 
@@ -8284,74 +8284,74 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `renderWbShortcutSheet` | frontend/js/whiteboard-commands.js:502 |
-| `wbBoardToClient` | frontend/js/whiteboard-commands.js:1281 |
-| `wbClickId` | frontend/js/whiteboard-commands.js:127 |
-| `wbCloseHelpSheet` | frontend/js/whiteboard-commands.js:873 |
-| `wbCommandApplies` | frontend/js/whiteboard-commands.js:363 |
-| `wbCommandMenuRow` | frontend/js/whiteboard-commands.js:418 |
+| `renderWbShortcutSheet` | frontend/js/whiteboard-commands.js:505 |
+| `wbBoardToClient` | frontend/js/whiteboard-commands.js:1284 |
+| `wbClickId` | frontend/js/whiteboard-commands.js:129 |
+| `wbCloseHelpSheet` | frontend/js/whiteboard-commands.js:876 |
+| `wbCommandApplies` | frontend/js/whiteboard-commands.js:366 |
+| `wbCommandMenuRow` | frontend/js/whiteboard-commands.js:421 |
 | `wbCommandOneSketch` | frontend/js/whiteboard-commands.js:37 |
 | `wbCommandSelectionCount` | frontend/js/whiteboard-commands.js:32 |
 | `wbCommandTextTarget` | frontend/js/whiteboard-commands.js:43 |
-| `wbCommandsLive` | frontend/js/whiteboard-commands.js:426 |
-| `wbFacingAnchors` | frontend/js/whiteboard-commands.js:935 |
-| `wbHelpRows` | frontend/js/whiteboard-commands.js:791 |
-| `wbHelpSections` | frontend/js/whiteboard-commands.js:803 |
-| `wbInitMoreMenu` | frontend/js/whiteboard-commands.js:672 |
-| `wbJoinPlan` | frontend/js/whiteboard-commands.js:942 |
-| `wbJoinSelection` | frontend/js/whiteboard-commands.js:954 |
-| `wbJoinableEntries` | frontend/js/whiteboard-commands.js:919 |
-| `wbJoinedPairs` | frontend/js/whiteboard-commands.js:925 |
-| `wbMapPasteMake` | frontend/js/whiteboard-commands.js:1518 |
-| `wbMapPasteReading` | frontend/js/whiteboard-commands.js:1260 |
-| `wbMapPasteSpecial` | frontend/js/whiteboard-commands.js:1536 |
-| `wbMapPasteWithChip` | frontend/js/whiteboard-commands.js:1524 |
-| `wbMeasureSelection` | frontend/js/whiteboard-commands.js:994 |
-| `wbOpenHelpSheet` | frontend/js/whiteboard-commands.js:858 |
-| `wbPaletteActRow` | frontend/js/whiteboard-commands.js:460 |
-| `wbPaletteCommands` | frontend/js/whiteboard-commands.js:440 |
-| `wbPasteAnchor` | frontend/js/whiteboard-commands.js:1426 |
-| `wbPasteBranchItems` | frontend/js/whiteboard-commands.js:1199 |
-| `wbPasteBuild` | frontend/js/whiteboard-commands.js:1224 |
-| `wbPasteBulletShape` | frontend/js/whiteboard-commands.js:1155 |
-| `wbPasteChipChoose` | frontend/js/whiteboard-commands.js:1313 |
-| `wbPasteChipClose` | frontend/js/whiteboard-commands.js:1286 |
-| `wbPasteChipKey` | frontend/js/whiteboard-commands.js:1342 |
-| `wbPasteChipMenu` | frontend/js/whiteboard-commands.js:1327 |
-| `wbPasteChipOffer` | frontend/js/whiteboard-commands.js:1365 |
-| `wbPasteChipPlace` | frontend/js/whiteboard-commands.js:1297 |
-| `wbPasteImageSize` | frontend/js/whiteboard-commands.js:1251 |
-| `wbPasteIntoShape` | frontend/js/whiteboard-commands.js:1482 |
-| `wbPasteLinkLabel` | frontend/js/whiteboard-commands.js:1114 |
-| `wbPasteLook` | frontend/js/whiteboard-commands.js:1275 |
-| `wbPasteMake` | frontend/js/whiteboard-commands.js:1398 |
-| `wbPasteMenuOpen` | frontend/js/whiteboard-commands.js:1335 |
-| `wbPasteObject` | frontend/js/whiteboard-commands.js:1106 |
-| `wbPastePlan` | frontend/js/whiteboard-commands.js:1072 |
-| `wbPasteReadClipboard` | frontend/js/whiteboard-commands.js:1449 |
-| `wbPasteSketch` | frontend/js/whiteboard-commands.js:1110 |
-| `wbPasteSpecialApply` | frontend/js/whiteboard-commands.js:1459 |
-| `wbPasteSpecialMenu` | frontend/js/whiteboard-commands.js:1500 |
-| `wbPasteStickyItems` | frontend/js/whiteboard-commands.js:1130 |
-| `wbPasteTableItem` | frontend/js/whiteboard-commands.js:1145 |
-| `wbPasteText` | frontend/js/whiteboard-commands.js:1434 |
-| `wbPasteTextBoxItem` | frontend/js/whiteboard-commands.js:1123 |
-| `wbPasteTree` | frontend/js/whiteboard-commands.js:1168 |
-| `wbPasteTreeRows` | frontend/js/whiteboard-commands.js:1183 |
-| `wbPasteVariantList` | frontend/js/whiteboard-commands.js:1392 |
-| `wbPasteVariants` | frontend/js/whiteboard-commands.js:1085 |
-| `wbPastedLines` | frontend/js/whiteboard-commands.js:1065 |
-| `wbPhoneCarries` | frontend/js/whiteboard-commands.js:593 |
-| `wbPhoneReachable` | frontend/js/whiteboard-commands.js:577 |
-| `wbRenderHelpSheet` | frontend/js/whiteboard-commands.js:809 |
-| `wbRunBoardAct` | frontend/js/whiteboard-commands.js:482 |
-| `wbRunCommand` | frontend/js/whiteboard-commands.js:373 |
-| `wbSelectMade` | frontend/js/whiteboard-commands.js:1415 |
-| `wbSetSelectValue` | frontend/js/whiteboard-commands.js:566 |
-| `wbSyncCommandRows` | frontend/js/whiteboard-commands.js:536 |
-| `wbSyncMoreMapRows` | frontend/js/whiteboard-commands.js:638 |
-| `wbSyncMoreMenu` | frontend/js/whiteboard-commands.js:607 |
-| `wbTool` | frontend/js/whiteboard-commands.js:128 |
+| `wbCommandsLive` | frontend/js/whiteboard-commands.js:429 |
+| `wbFacingAnchors` | frontend/js/whiteboard-commands.js:938 |
+| `wbHelpRows` | frontend/js/whiteboard-commands.js:794 |
+| `wbHelpSections` | frontend/js/whiteboard-commands.js:806 |
+| `wbInitMoreMenu` | frontend/js/whiteboard-commands.js:675 |
+| `wbJoinPlan` | frontend/js/whiteboard-commands.js:945 |
+| `wbJoinSelection` | frontend/js/whiteboard-commands.js:957 |
+| `wbJoinableEntries` | frontend/js/whiteboard-commands.js:922 |
+| `wbJoinedPairs` | frontend/js/whiteboard-commands.js:928 |
+| `wbMapPasteMake` | frontend/js/whiteboard-commands.js:1521 |
+| `wbMapPasteReading` | frontend/js/whiteboard-commands.js:1263 |
+| `wbMapPasteSpecial` | frontend/js/whiteboard-commands.js:1539 |
+| `wbMapPasteWithChip` | frontend/js/whiteboard-commands.js:1527 |
+| `wbMeasureSelection` | frontend/js/whiteboard-commands.js:997 |
+| `wbOpenHelpSheet` | frontend/js/whiteboard-commands.js:861 |
+| `wbPaletteActRow` | frontend/js/whiteboard-commands.js:463 |
+| `wbPaletteCommands` | frontend/js/whiteboard-commands.js:443 |
+| `wbPasteAnchor` | frontend/js/whiteboard-commands.js:1429 |
+| `wbPasteBranchItems` | frontend/js/whiteboard-commands.js:1202 |
+| `wbPasteBuild` | frontend/js/whiteboard-commands.js:1227 |
+| `wbPasteBulletShape` | frontend/js/whiteboard-commands.js:1158 |
+| `wbPasteChipChoose` | frontend/js/whiteboard-commands.js:1316 |
+| `wbPasteChipClose` | frontend/js/whiteboard-commands.js:1289 |
+| `wbPasteChipKey` | frontend/js/whiteboard-commands.js:1345 |
+| `wbPasteChipMenu` | frontend/js/whiteboard-commands.js:1330 |
+| `wbPasteChipOffer` | frontend/js/whiteboard-commands.js:1368 |
+| `wbPasteChipPlace` | frontend/js/whiteboard-commands.js:1300 |
+| `wbPasteImageSize` | frontend/js/whiteboard-commands.js:1254 |
+| `wbPasteIntoShape` | frontend/js/whiteboard-commands.js:1485 |
+| `wbPasteLinkLabel` | frontend/js/whiteboard-commands.js:1117 |
+| `wbPasteLook` | frontend/js/whiteboard-commands.js:1278 |
+| `wbPasteMake` | frontend/js/whiteboard-commands.js:1401 |
+| `wbPasteMenuOpen` | frontend/js/whiteboard-commands.js:1338 |
+| `wbPasteObject` | frontend/js/whiteboard-commands.js:1109 |
+| `wbPastePlan` | frontend/js/whiteboard-commands.js:1075 |
+| `wbPasteReadClipboard` | frontend/js/whiteboard-commands.js:1452 |
+| `wbPasteSketch` | frontend/js/whiteboard-commands.js:1113 |
+| `wbPasteSpecialApply` | frontend/js/whiteboard-commands.js:1462 |
+| `wbPasteSpecialMenu` | frontend/js/whiteboard-commands.js:1503 |
+| `wbPasteStickyItems` | frontend/js/whiteboard-commands.js:1133 |
+| `wbPasteTableItem` | frontend/js/whiteboard-commands.js:1148 |
+| `wbPasteText` | frontend/js/whiteboard-commands.js:1437 |
+| `wbPasteTextBoxItem` | frontend/js/whiteboard-commands.js:1126 |
+| `wbPasteTree` | frontend/js/whiteboard-commands.js:1171 |
+| `wbPasteTreeRows` | frontend/js/whiteboard-commands.js:1186 |
+| `wbPasteVariantList` | frontend/js/whiteboard-commands.js:1395 |
+| `wbPasteVariants` | frontend/js/whiteboard-commands.js:1088 |
+| `wbPastedLines` | frontend/js/whiteboard-commands.js:1068 |
+| `wbPhoneCarries` | frontend/js/whiteboard-commands.js:596 |
+| `wbPhoneReachable` | frontend/js/whiteboard-commands.js:580 |
+| `wbRenderHelpSheet` | frontend/js/whiteboard-commands.js:812 |
+| `wbRunBoardAct` | frontend/js/whiteboard-commands.js:485 |
+| `wbRunCommand` | frontend/js/whiteboard-commands.js:376 |
+| `wbSelectMade` | frontend/js/whiteboard-commands.js:1418 |
+| `wbSetSelectValue` | frontend/js/whiteboard-commands.js:569 |
+| `wbSyncCommandRows` | frontend/js/whiteboard-commands.js:539 |
+| `wbSyncMoreMapRows` | frontend/js/whiteboard-commands.js:641 |
+| `wbSyncMoreMenu` | frontend/js/whiteboard-commands.js:610 |
+| `wbTool` | frontend/js/whiteboard-commands.js:130 |
 
 ### frontend/js/whiteboard-draw-more.js (42)
 
@@ -8552,16 +8552,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbSnapshotRow` | frontend/js/whiteboard-history.js:483 |
 | `wbTakeChangeFromElsewhere` | frontend/js/whiteboard-history.js:361 |
 
-### frontend/js/whiteboard-ink-more.js (6)
+### frontend/js/whiteboard-ink-more.js (8)
 
 | Name | File:line |
 |---|---|
 | `inkOptions` | frontend/js/whiteboard-ink-more.js:33 |
+| `keepPoints` | frontend/js/whiteboard-ink-more.js:60 |
 | `liveStyle` | frontend/js/whiteboard-ink-more.js:50 |
 | `outline` | frontend/js/whiteboard-ink-more.js:39 |
+| `placePoints` | frontend/js/whiteboard-ink-more.js:75 |
 | `round1` | frontend/js/whiteboard-ink-more.js:30 |
 | `takesInk` | frontend/js/whiteboard-ink-more.js:47 |
 | `trimShaft` | frontend/js/whiteboard-ink-more.js:13 |
+
+### frontend/js/whiteboard-ink-recognise.js (11)
+
+| Name | File:line |
+|---|---|
+| `angleAt` | frontend/js/whiteboard-ink-recognise.js:51 |
+| `cleanup` | frontend/js/whiteboard-ink-recognise.js:152 |
+| `closedShape` | frontend/js/whiteboard-ink-recognise.js:87 |
+| `corners` | frontend/js/whiteboard-ink-recognise.js:30 |
+| `dist` | frontend/js/whiteboard-ink-recognise.js:7 |
+| `offLine` | frontend/js/whiteboard-ink-recognise.js:11 |
+| `openShape` | frontend/js/whiteboard-ink-recognise.js:58 |
+| `r1` | frontend/js/whiteboard-ink-recognise.js:8 |
+| `recognise` | frontend/js/whiteboard-ink-recognise.js:125 |
+| `simplifyRange` | frontend/js/whiteboard-ink-recognise.js:18 |
+| `target` | frontend/js/whiteboard-ink-recognise.js:143 |
 
 ### frontend/js/whiteboard-interchange.js (50)
 
@@ -18113,8 +18131,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2677 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2830 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2681 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2834 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -28047,7 +28065,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22165)
+## Tests (22173)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30631,6 +30649,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_help_sheet.py | 5 |
 | tests/test_wb_hover_after_frame_1111.py | 2 |
 | tests/test_wb_ink_more.py | 11 |
+| tests/test_wb_ink_recognise.py | 8 |
 | tests/test_wb_inline_format_k24.py | 6 |
 | tests/test_wb_interchange.py | 10 |
 | tests/test_wb_keep_ratio.py | 3 |
@@ -31196,14 +31215,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4403 |
-| Needs hardware | docs/roadmap/LEDGER.md:837 |
+| Needs hardware | docs/roadmap/LEDGER.md:836 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:829 |
+| Owner calls | docs/roadmap/LEDGER.md:828 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4276 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31384,7 +31403,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1027 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1026 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2652 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31439,25 +31458,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1274 |
 | chat | docs/roadmap/LEDGER.md:25 |
-| chat | docs/roadmap/LEDGER.md:1043 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1127 |
-| documents | docs/roadmap/LEDGER.md:313 |
-| documents | docs/roadmap/LEDGER.md:1067 |
-| general | docs/roadmap/LEDGER.md:788 |
+| chat | docs/roadmap/LEDGER.md:1042 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1126 |
+| documents | docs/roadmap/LEDGER.md:312 |
+| documents | docs/roadmap/LEDGER.md:1066 |
+| general | docs/roadmap/LEDGER.md:787 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:1031 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1139 |
+| graph | docs/roadmap/LEDGER.md:1030 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1138 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4412 |
-| mindmap | docs/roadmap/LEDGER.md:393 |
-| mindmap | docs/roadmap/LEDGER.md:1079 |
-| timeline | docs/roadmap/LEDGER.md:549 |
-| timeline | docs/roadmap/LEDGER.md:1103 |
-| ui-modernisation | docs/roadmap/LEDGER.md:431 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1091 |
+| mindmap | docs/roadmap/LEDGER.md:392 |
+| mindmap | docs/roadmap/LEDGER.md:1078 |
+| timeline | docs/roadmap/LEDGER.md:548 |
+| timeline | docs/roadmap/LEDGER.md:1102 |
+| ui-modernisation | docs/roadmap/LEDGER.md:430 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1090 |
 | whiteboard | docs/roadmap/LEDGER.md:282 |
-| whiteboard | docs/roadmap/LEDGER.md:1055 |
-| world-class | docs/roadmap/LEDGER.md:552 |
-| world-class | docs/roadmap/LEDGER.md:1115 |
+| whiteboard | docs/roadmap/LEDGER.md:1054 |
+| world-class | docs/roadmap/LEDGER.md:551 |
+| world-class | docs/roadmap/LEDGER.md:1114 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2822 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2873 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2980 |

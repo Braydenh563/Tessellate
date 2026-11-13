@@ -2338,7 +2338,11 @@ MORE_TOPICS.extend([
             "and with a pen or stylus it is thicker where you press harder. With a mouse or "
             "a finger the width follows how fast you draw. A dashed pen keeps the plain "
             "stroke. A free line or arrow with a hollow end (diamond, circle, square) stops "
-            "at the end's edge instead of running through it."
+            "at the end's edge instead of running through it. To tidy a rough shape, select the "
+            "pen stroke and choose Edit, Clean up the drawn shape (or find it in the command "
+            "palette): a stroke drawn as a line, arrow, rectangle, ellipse, triangle or diamond "
+            "becomes that shape in the same colour and width, as one Undo step. A scribble that "
+            "is none of them stays as it is."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
