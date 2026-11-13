@@ -10,16 +10,16 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
+| whiteboard | 30 | 38 | 4 | 0 | 11 | 72 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 615 | 145 | 2 | 181 | 1313 |
-| all | 553 | 615 | 145 | 2 | 181 | 1313 |
-| all | 553 | 615 | 145 | 2 | 181 | 1313 |
+| all | 553 | 614 | 145 | 2 | 181 | 1312 |
+| all | 553 | 614 | 145 | 2 | 181 | 1312 |
+| all | 553 | 614 | 145 | 2 | 181 | 1312 |
 
 ## graph
 
@@ -292,7 +292,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L264** `whiteboard` open, S: Fix wb-tool-section-label text overflowing its box by 49-56px. From OPEN.md:1118; OPEN.md:3697. Evidence: Selector still styled in 08-consistency.css:3067 and whiteboard-map.js; no overflow fix commit found
 - [ ] **L265** `whiteboard` open, S: Remove search/navigator toggles that duplicate View switches; add wbcontextphone.js sweep. From OPEN.md:3068. Evidence: UI_MODERNISATION Phase 8; wbcontextphone.js sweep not added
 - [ ] **L266** `whiteboard` open, S: Resolve .wb-shape-caret pointer-events none leaving the closest branch dead. From OPEN.md:3554. Evidence: 06-timeline-dialogs.css:2910 and whiteboard.js:16834 both present; product choice left, branch still dead.
-- [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Stale sweep not re-checked.
 - [ ] **L268** `whiteboard` open, S: Fix stale comment at whiteboard.js:22313 on next edit. From v1028-2.md Remaining. Evidence: Trivial; waits on next whiteboard.js edit
 - [ ] **L269** `whiteboard` open, M: Cut board toolbar tab stops from 33 with a roving tabindex. From OPEN.md:4266. Evidence: Ledger row 261 marked new, M; no roving-tabindex fix found.
 - [ ] **L270** `whiteboard` open, M: Build native multi-page PDF export instead of the browser print window, and verify it. From OPEN.md:4441; OPEN.md:1235; OPEN.md:3408. Evidence: whiteboard.js:14793 still builds a print window for pdf; no page size or multi-page export

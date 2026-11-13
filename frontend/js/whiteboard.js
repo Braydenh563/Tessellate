@@ -15082,12 +15082,15 @@ function wbExportBoard() {
   //: The whole board when nothing is selected (audit 1028 U48): "On screen" put "(view)" in a first export's
   //: file name and cut off what was past the edge; it stays one press away.
   let scope = hasSelection ? "selection" : "whole";
+  //: A map branch's menu row says "Export this branch" and hands that title over for this one opening (L267).
+  const title = wbExportBoard.title || "Export this board";
+  wbExportBoard.title = null;
 
   const overlay = document.createElement("div");
   overlay.className = "modal-overlay confirm-overlay wb-export-overlay";
   overlay.setAttribute("role", "dialog");
   overlay.setAttribute("aria-modal", "true");
-  overlay.setAttribute("aria-label", "Export this board");
+  overlay.setAttribute("aria-label", title);
 
   const card = document.createElement("div");
   card.className = "card modal-card confirm-card wb-export-card";
@@ -15222,7 +15225,7 @@ function wbExportBoard() {
   const exportBtn = smallButton("Export", "Export", go, false);
   exportBtn.id = "wb-export-go";
   row.append(smallButton("Cancel", "Cancel", close), exportBtn);
-  card.append(dialogHead("Export this board", close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, clearRow, libraryRow, note, warning, row);
+  card.append(dialogHead(title, close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, clearRow, libraryRow, note, warning, row);
   overlay.appendChild(card);
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);

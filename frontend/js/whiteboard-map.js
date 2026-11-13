@@ -5191,6 +5191,7 @@ function wbMapExportBranch(id) {
   for (const o of branch) wbMultiSelection.add(wbMultiKey("object", o.id));
   wbApplySelectionHighlight();
   wbUpdateSelectionBar();
+  wbExportBoard.title = "Export this branch";
   wbExportBoard();
 }
 
