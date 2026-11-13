@@ -65,6 +65,14 @@ function wbThumbShapePart(shape, cx, cy, w, h) {
     const tip = Math.min(2.5, w / 4);
     return { tag: "path", a: { d: `M ${R(x)} ${R(y)} L ${R(x + w - tip)} ${R(y)} L ${R(x + w)} ${R(cy)} L ${R(x + w - tip)} ${R(y + h)} L ${R(x)} ${R(y + h)} Z` } };
   }
+  //: A diamond or hexagon is a closed polygon the card fill covers, so a
+  //: connector behind it never draws a shaft through its hollow (L356).
+  if (shape === "diamond") return { tag: "path", a: { d: `M ${R(cx)} ${R(y)} L ${R(x + w)} ${R(cy)} L ${R(cx)} ${R(y + h)} L ${R(x)} ${R(cy)} Z` } };
+  if (shape === "hexagon") {
+    const k = Math.min(2, w / 4);
+    return { tag: "path", a: { d: `M ${R(x + k)} ${R(y)} L ${R(x + w - k)} ${R(y)} L ${R(x + w)} ${R(cy)} L ${R(x + w - k)} ${R(y + h)} L ${R(x + k)} ${R(y + h)} L ${R(x)} ${R(cy)} Z` } };
+  }
+  if (shape === "circle" || shape === "cloud") return { tag: "ellipse", a: { cx: R(cx), cy: R(cy), rx: R(Math.min(w, h * 1.6) / 2), ry: R(h / 2) } };
   if (shape === "underline") return { tag: "rect", a: { x: R(x), y: R(y + h - 1.2), width: R(w), height: 1.2, rx: 0.6 } };
   if (shape === "none") return { tag: "circle", a: { cx: R(cx), cy: R(cy), r: 1.5 } };
   const rx = shape === "pill" ? h / 2 : shape === "rect" ? 0 : Math.min(2, h / 2);

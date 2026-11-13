@@ -191,14 +191,31 @@ MAX_IMPORT_LINKS_PER_NODE = 64
 
 
 def _import_link_targets(element, tag: str, attribute: str) -> list[str]:
-    out: list[str] = []
+    return [target for target, _label in _import_links(element, tag, attribute)]
+
+
+def _import_links(element, tag: str, attribute: str) -> list[tuple[str, str]]:
+    """`(target, label)` per link; FreeMind's label is `MIDDLE_LABEL`."""
+    out: list[tuple[str, str]] = []
     for link in element.findall(tag):
         target = (link.get(attribute) or "").strip()
         if target:
-            out.append(target)
+            out.append((target, (link.get("MIDDLE_LABEL") or "").strip()[:MAX_OBJECT_TEXT_CHARS]))
         if len(out) >= MAX_IMPORT_LINKS_PER_NODE:
             break
     return out
+
+
+def _opml_link_labels(raw: str | None, count: int) -> list[str]:
+    """`_link_labels` is JSON this app wrote; anything else in the attribute
+    (a file somebody edited) is no labels rather than an error."""
+    try:
+        labels = json.loads(raw or "[]")
+    except ValueError:
+        return []
+    if not isinstance(labels, list):
+        return []
+    return [str(x).strip()[:MAX_OBJECT_TEXT_CHARS] for x in labels[:count]]
 
 
 def _parse_freemind(content: str) -> tuple[str, list[dict]]:
@@ -242,6 +259,7 @@ def _parse_freemind(content: str) -> tuple[str, list[dict]]:
                     #: import resolves them once every node has been placed.
                     "ref": (child.get("ID") or "").strip(),
                     "links": _import_link_targets(child, "arrowlink", "DESTINATION"),
+                    "link_labels": [label for _t, label in _import_links(child, "arrowlink", "DESTINATION")],
                     "children": walk(child, depth + 1),
                 }
             )
@@ -309,6 +327,7 @@ def _parse_opml(content: str) -> tuple[str, list[dict]]:
                     "style": _opml_style(child),
                     "ref": (child.get("_id") or "").strip(),
                     "links": (child.get("_links") or "").split(),
+                    "link_labels": _opml_link_labels(child.get("_link_labels"), len((child.get("_links") or "").split())),
                     "numbered": bool((child.get("_number") or "").strip()),
                     "children": walk(child, depth + 1),
                 }
@@ -642,22 +661,24 @@ def _restore_import_links(
             by_file_id[ref] = obj
     made = 0
     for node, obj in zip(flat, created):
-        for target in node.get("links") or []:
+        labels = node.get("link_labels") or []
+        for at, target in enumerate(node.get("links") or []):
             far = by_file_id.get(str(target))
             if far is None or far.id == obj.id:
                 continue
+            link_data = {
+                "type": "link-straight",
+                "sourceId": obj.id,
+                "sourceKind": "object",
+                "targetId": far.id,
+                "targetKind": "object",
+            }
+            if at < len(labels) and labels[at]:
+                link_data["label"] = labels[at]
             db.add(
                 WhiteboardSketch(
                     board_id=board_id,
-                    data=json.dumps(
-                        {
-                            "type": "link-straight",
-                            "sourceId": obj.id,
-                            "sourceKind": "object",
-                            "targetId": far.id,
-                            "targetKind": "object",
-                        }
-                    ),
+                    data=json.dumps(link_data),
                     x=0.0,
                     y=0.0,
                     z=1,

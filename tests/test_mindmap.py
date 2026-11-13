@@ -992,6 +992,23 @@ def test_a_lines_thickness_and_arrowhead_are_kept_per_branch(client):
     assert put({"edge_arrow": "maybe"}).status_code == 422
 
 
+def test_a_lines_label_offset_and_look_survive_a_save(client):
+    """L-mindmap-11: the label's size, bold, colour and chip, and the dragged
+    offset (which the model used to drop), come back from the server."""
+    board = _map(client, name="Label look")
+    kid = _node(client, board["id"], text="Kid")
+    look = {
+        "edge_label": "because", "edge_label_dx": 12.0, "edge_label_dy": -8.0, "edge_label_size": 20,
+        "edge_label_bold": True, "edge_label_color": "#aa0000", "edge_label_chip": True,
+    }
+    body = {"kind": kid["kind"], "board_id": board["id"], "data": {**kid["data"], **look}, "x": kid["x"], "y": kid["y"], "z": kid["z"]}
+    got = client.put(f"/whiteboard/objects/{kid['id']}", json=body).json()["data"]
+    assert {k: got[k] for k in look} == look
+    body["data"] = {**body["data"], "edge_label_size": 200}
+    refused = client.put(f"/whiteboard/objects/{kid['id']}", json=body)
+    assert refused.status_code == 422
+
+
 def test_the_bar_on_a_topics_edge_is_kept_and_is_a_closed_set(client):
     """MINDMAP_PLAN.md item 177: "per-node left edge: solid, dashed or none".
 
@@ -2413,3 +2430,57 @@ def test_a_hand_written_text_outline_imports_by_indentation(client):
         {"text": "Book", "children": [{"text": "flights", "children": []}]},
         {"text": "Pack", "children": []},
     ]}]
+
+
+def test_a_due_time_rides_beside_the_due_day_checked_kept_and_carried(client):
+    """LEDGER L371: the Due row's picker also sets a time of day. Decision 37
+    keeps `due` a calendar day; the time is its own optional `due_time`
+    ("HH:MM", a wall-clock time like the day), content, private `_due_time`."""
+    board = _map(client, name="Due time")
+    root = _node(client, board["id"], text="Plan")
+    node = _node(client, board["id"], parent_id=root["id"], text="Book")
+    for bad in ("9:30", "24:00", "09:60", "9am", "09:30:00"):
+        assert _set_data(client, board, node, {"due": "2026-10-12", "due_time": bad}).status_code == 422, bad
+    assert _set_data(client, board, node, {"due": "2026-10-12", "due_time": "09:30"}).status_code == 200
+    got = _styles_by_text(client, board["id"])["Book"]
+    assert (got["due"], got["due_time"]) == ("2026-10-12", "09:30")
+    for fmt in ("opml", "freemind"):
+        text = client.get(f"/whiteboard/boards/{board['id']}/export?format={fmt}").text
+        assert '_due_time="09:30"' in text, fmt
+        back = client.post("/whiteboard/boards/import", json={"format": fmt, "content": text, "name": fmt})
+        assert _styles_by_text(client, back.json()["id"])["Book"].get("due_time") == "09:30", fmt
+    markdown = client.get(f"/whiteboard/boards/{board['id']}/export?format=markdown").text
+    assert "09:30" not in markdown
+    client.post(f"/whiteboard/boards/{board['id']}/nodes/clear-style")
+    assert _styles_by_text(client, board["id"])["Book"]["due_time"] == "09:30"
+
+
+def test_a_freemind_authored_arrowlink_imports_and_comes_back_out(client):
+    """L368: the importer had only met this app's own spelling of a link. A
+    file FreeMind wrote carries its own ids (`Freemind_Link_...`), the arrow's
+    colour, inclinations and an `ID`, and the link starts on one node and
+    names another that is later in the file."""
+    content = (
+        '<map version="1.0.1">'
+        '<node CREATED="1500000000000" ID="ID_1000" MODIFIED="1500000000001" TEXT="Plan">'
+        '<node CREATED="1500000000002" ID="Freemind_Link_1111" MODIFIED="1500000000003" POSITION="right" TEXT="Design">'
+        '<arrowlink COLOR="#b0b0b0" DESTINATION="Freemind_Link_2222" ENDARROW="Default" '
+        'ENDINCLINATION="45;-20" ID="Freemind_Arrow_Link_9" STARTARROW="None" STARTINCLINATION="45;20"/>'
+        "</node>"
+        '<node CREATED="1500000000004" ID="Freemind_Link_2222" MODIFIED="1500000000005" POSITION="left" TEXT="Build"/>'
+        "</node></map>"
+    )
+    imported = client.post(
+        "/whiteboard/boards/import", json={"format": "freemind", "content": content, "name": "FM"}
+    )
+    assert imported.status_code == 201, imported.text
+    board_id = imported.json()["id"]
+    tree = client.get(f"/whiteboard/boards/{board_id}/tree").json()
+    names = {node["id"]: node["text"] for node in tree["roots"][0]["children"]}
+    assert sorted(names.values()) == ["Build", "Design"]
+    assert len(tree["cross_links"]) == 1
+    link = tree["cross_links"][0]
+    assert (names[link["from_id"]], names[link["to_id"]]) == ("Design", "Build")
+    # And out again, in the spelling this app writes, to the right node.
+    text = client.get(f"/whiteboard/boards/{board_id}/export?format=freemind").text
+    assert f'DESTINATION="ID_{link["to_id"]}"' in text

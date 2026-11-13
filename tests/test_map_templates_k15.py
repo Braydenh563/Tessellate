@@ -110,3 +110,17 @@ def test_a_new_map_is_not_fitted_again_after_it_is_framed():
     tail = text[start : start + 400]
     fit = tail.index("wbZoomToFit({ animate: false })")
     assert 'board.type !== "map"' in tail[:fit], tail
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_a_diamond_topic_is_a_closed_polygon_not_a_box():
+    """L356: the library picture drew a diamond topic as a rounded box; it is
+    now a four-point path the card fill covers, so no connector shaft shows."""
+    source = (ROOT / "frontend" / "js" / "whiteboard-templates.js").read_text(encoding="utf-8")
+    body = re.search(r"^function wbThumbShapePart\(.*?^\}", source, re.S | re.M).group(0)
+    rnd = re.search(r"^function wbThumbRound\(.*?^\}", source, re.S | re.M).group(0)
+    script = rnd + "\n" + body + "\nprocess.stdout.write(JSON.stringify(['diamond','hexagon','circle'].map((s) => wbThumbShapePart(s, 10, 10, 8, 5))));"
+    out = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+    assert out[0]["tag"] == "path" and out[0]["a"]["d"].count("L") == 3 and out[0]["a"]["d"].endswith("Z")
+    assert out[1]["a"]["d"].count("L") == 5
+    assert out[2]["tag"] == "ellipse"
