@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Chat row L101: the model's prompt now says why each note was shown and which other shown notes it links to, by number and with the person's reason ("(why shown: Has the word “skye”) (linked to note 3: same trip)"), the frame the composer already said (`librarian._shown_hint`).
+- Chat row L-chat-2: in Agent mode, a request whose every matching tool group is switched off in Settings, Tools is answered at the turn start with one plain sentence naming the tools, before any model call (`ai/tools/tool_off.py`; `tests/test_tool_off_turn_start_l2.py`).
 - Chat row L-chat-15: Notes, Ask with no model shows one empty state: the "Ask your own notes a question" card steps aside while the no-model notice shows (measured at 390: two stacked states at y=440 and 715 before, one after; `tests/test_ask_one_empty_state_l15.py`).
 - Chat row L-chat-34: with no model, the Guide answers general and advice questions ("what should I use chat for?", "should I use categories or tags?", "how often should I back up?") with a recommendation first, then the help topics it stands on as chips (`ai/guide_advice.py`, 14 subjects; `tests/test_guide_advice_l34.py` pins 21 first sentences). A model, when running, still answers (decision 75).
 - Chat row L-chat-36: the Guide card carries one provenance mark (the "From the help" badge); its two views are "Answer" and "Help topic", and the head's line is "The app's own help" (measured 110 px in a 172 px column at 1440, where the old line was cut at 187).
