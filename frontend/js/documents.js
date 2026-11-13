@@ -1890,6 +1890,11 @@ function renderDocNotes() {
       setLabel(open, "ph:lock (private note)");
     } else {
       renderInlineMarkdown(open, note.preview, [], true);
+      //: The note icon Linked from gives a note, so these words start where its do (L421).
+      const icon = document.createElement("i");
+      icon.className = "ph ph-note ph-lead";
+      icon.setAttribute("aria-hidden", "true");
+      open.prepend(icon);
     }
     open.title = "Show this note";
     open.addEventListener("click", () => {
