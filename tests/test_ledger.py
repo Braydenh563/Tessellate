@@ -81,3 +81,17 @@ def test_ready_to_merge_only_with_no_open_rows():
     named = [p for p in ledger.PLANS if f"`{p}`" in line] or list(ledger.PLANS)
     left = [rid for rid, plan, status in ledger.rows(TEXT) if plan in named and status in ("open", "partly")]
     assert not left, f"Now says ready to merge, but LEDGER still has {len(left)} open rows ({left[:5]})"
+
+
+def test_add_never_hands_out_an_id_a_closed_row_still_holds(tmp_path, monkeypatch):
+    """A closed row moves to HISTORY with its id; `add` read only LEDGER, so L-chat-25 went out twice."""
+    import argparse
+
+    led, hist = tmp_path / "LEDGER.md", tmp_path / "HISTORY.md"
+    led.write_text("| plan | a | b | c | d | e | f |\n\n## chat\n\n- [ ] **L-chat-2** `chat` open, S: Two. From x.\n", encoding="utf-8")
+    hist.write_text("## Moved from the LEDGER\n- [x] **L-chat-7** `chat` open, S: Seven. From x.\n", encoding="utf-8")
+    monkeypatch.setattr(ledger, "LEDGER", led)
+    monkeypatch.setattr(ledger, "HISTORY", hist)
+    monkeypatch.setattr(ledger, "recount", lambda text: text)
+    args = argparse.Namespace(plan="chat", status="open", size="S", src="test", evidence="", title="Eight")
+    assert ledger.add(args) == "L-chat-8"
