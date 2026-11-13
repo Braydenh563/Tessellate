@@ -1583,6 +1583,8 @@ MORE_TOPICS: list[dict] = [
             "nothing selected it takes the whole editor you were in. It needs "
             "Translate offline, a 27 MB download in Settings, Packages "
             "(Languages); until then the row says so and opens that page. "
+            "In a document, a flagged word's Translate this passage uses it "
+            "too once installed, and asks your model in the chat before. "
             "Other languages: the Writing room translates with your model."
         ),
         "badge": {"label": "Packages", "section": "extras"},

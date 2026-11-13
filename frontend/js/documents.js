@@ -15317,12 +15317,10 @@ function docSuggestAnswers(finding, opts = {}) {
     });
     actions.appendChild(askAi);
 
-    //: **Translation, through the chat rather than behind it.** There is no
-    //: offline translator in this app and inventing one would be a lie; what
-    //: there *is* is a local model that can translate, and the honest way to
-    //: offer that is to hand the passage to it with the question already
-    //: written, where the answer is visible and correctable, not to silently
-    //: rewrite the document with something nobody checked.
+    //: **Translation: the offline translator when it is installed, else the chat.**
+    //: Without the package the honest offer is the local model, with the question
+    //: already written, where the answer is visible and correctable, not a silent
+    //: rewrite of the document with something nobody checked.
     const translate = document.createElement("button");
     translate.type = "button";
     translate.className = "doc-suggest-item";
@@ -15567,9 +15565,15 @@ window.addEventListener("resize", docSuggestFollowAnchor);
 //: event does not bubble.
 window.addEventListener("scroll", docSuggestFollowAnchor, true);
 
-//: A passage, a language, and the local model, asked in the chat so the
-//: answer is somewhere you can read, keep or ignore.
+//: A passage, translated by the offline translator (the "Translate this" sheet) when its package is
+//: installed; otherwise a language and the local model, asked in the chat so the answer is somewhere
+//: you can read, keep or ignore.
 async function docTranslatePassage(text) {
+  const status = await apiJson("/translate/status", { silent: true }).catch(() => null);
+  if (status?.installed && status.pairs?.length) {
+    await ensureModule("translate");
+    return translateCaught({ selection: text });
+  }
   const language = await promptDialog(
     "Translate this passage into which language?",
     docLastTranslateLanguage || "French"
