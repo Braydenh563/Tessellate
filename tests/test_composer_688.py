@@ -236,12 +236,9 @@ def test_a_list_of_plain_phrases_reads_in_sentence_case():
 def test_compare_draws_two_sides_with_measured_counts():
     result = ask("Compare Lisbon and Porto")
     text = result["text"]
-    assert text.startswith(
-        tuple(
-            f"{lead}one mentions Lisbon and one mentions Porto.\n\n**Lisbon**\n"
-            for lead in composer_phrases.phrase_options("of_found") + composer_phrases.phrase_options("across_found")
-        )
-    ), text
+    #: Intent unchanged (the lead names only what follows); the "Of the notes found," opener is gone: the counts open it (L205, D20).
+    assert text.startswith("One note mentions Lisbon and one mentions Porto.\n\n**Lisbon**\n"), text
+    assert not any(text.startswith(lead) for lead in composer_phrases.phrase_options("of_found") + composer_phrases.phrase_options("across_found")), text
     #: The lead names only what follows (probe P15, ledger row 443): no
     #: sentence promising the sides before the sides, under 14 words.
     assert len(text.split("\n", 1)[0].split()) <= 14, text

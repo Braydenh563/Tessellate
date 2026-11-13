@@ -474,16 +474,26 @@ def _only_lead(out: _Answer, sides: tuple[str, ...], counts: list[int]) -> None:
         out.asked(label)
 
 
+def _capital(word: str) -> str:
+    return word[:1].upper() + word[1:]
+
+
 def _compare_lead(out: _Answer, sides: tuple[str, ...], counts: list[int]) -> None:
     sides = tuple(_cased(out, label) for label in sides)
     if 0 in counts and any(counts):
         _only_lead(out, sides, counts)
         return
-    out.t(_unlike_before(out, ["of_found", "across_found"])[0])
+    #: No "Of the notes found," before it: the counts are the opener (L205, D20). Said twice running the same way,
+    #: the second opens on the first name instead ("Tokyo comes up in two notes and Lisbon in three notes").
+    again = bool(re.match(r"\w+ notes? mention", out.previous or ""))
     for i, (label, n) in enumerate(zip(sides, counts)):
         if i:
             out.t("and")
-        out.m(out.count(n)).t("mentions_one" if n == 1 else "mention_many").asked(label)
+        if again:
+            out.asked(label).t("side_in" if i else "comes_up_in").m(out.count(n)).t("side_note" if n == 1 else "side_notes")
+            continue
+        out.m(_capital(out.count(n)) if not i else out.count(n))
+        out.t(*((("side_note" if n == 1 else "side_notes"),) if not i else ())).t("mentions_one" if n == 1 else "mention_many").asked(label)
 
 
 _LENGTH_ASK = lazy_compile(r"\b(?:longer|shorter|bigger|smaller)\b", re.I)

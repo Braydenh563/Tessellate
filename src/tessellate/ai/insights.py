@@ -114,7 +114,7 @@ def _week(day: date) -> tuple[int, int]:
 
 
 #: "want to see Kyoto and Nara" is a verb phrase; "no later note picks up want to see ..." reads broken (audit 1030 Z7).
-_PLAN_LEAD = re.compile(r"^(?:(?:i|we)(?:'m|'re| am| are)?\s+)?(?:(?:want|wants|wanted|plan|plans|planned|hope|hopes|hoped|intend|intends)\s+to|(?:am |are |is )?going to)\s+(?=\S)", re.I)
+_PLAN_LEAD = re.compile(r"^(?:(?:i|we)(?:'m|'re| am| are)?\s+)?(?:(?:want|wants|wanted|plan|plans|planned|planning|hope|hopes|hoped|hoping|intend|intends|need|needs|needed|have|has)\s+to|(?:should|must)|(?:am |are |is )?going to)\s+(?=\S)", re.I)
 
 
 def _plan_phrase(plan: str, shown: str) -> str:

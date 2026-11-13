@@ -65,7 +65,8 @@ _INSTRUCTION_STEMS = frozenset(
     summary list top first second third biggest largest smallest cheapest priciest
     gist overview story stuff style preferred prefer relationship give quick rough general overall kind sort type
     recorded outgoing mean meaning refer referring exact
-    number figure amount value count tally mark fit archive finish show tell pin flag""".split()
+    number figure amount value count tally mark fit archive finish show tell pin flag
+    find display fetch dig pull out bring grab locate retrieve""".split()
 )
 
 

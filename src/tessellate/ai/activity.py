@@ -460,6 +460,10 @@ _NOTE_ID = re.compile(r"\(#/notes/(\d+)\)")
 
 
 def _first_sentence(text: str) -> str:
+    #: A note of several lines is one sentence a line, never "Phone 020 7946 0011 Dentist check-up" run together (L189).
+    lines = [" ".join(line.split()) for line in text.splitlines() if line.strip()]
+    if len(lines) > 1:
+        return realise.cut_title(". ".join(line.rstrip(".") if i + 1 == len(lines) else line.rstrip(".!?") for i, line in enumerate(lines)), 140)
     return realise.cut_title(re.split(r"(?<=[.!?])\s", " ".join(text.split()), maxsplit=1)[0], 140)
 
 
