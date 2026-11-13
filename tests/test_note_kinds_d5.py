@@ -88,8 +88,8 @@ def test_a_note_type_made_before_the_list_was_read_keeps_its_id_through_delete_a
     """A type made by POST /note-types before the types list was ever read
     keeps its id through delete and Undo. The list's first read seeds the
     built-in types, so the list holds them too; only the two made here are
-    pinned. Still open (integ-1005.md): when the deleted type was the only
-    one and the list is read before the Undo, the seed takes its id."""
+    pinned. The only type deleted and the list read before the Undo is
+    tests/test_note_type_undo_613.py."""
     first = client.post("/note-types", json={"name": "Meeting log"}).json()
     second = client.post("/note-types", json={"name": "Reading list"}).json()
     gone = client.delete(f"/note-types/{first['id']}").json()

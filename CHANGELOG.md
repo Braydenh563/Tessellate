@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Note types: a type deleted and brought back with Undo keeps its own id, even after the list was read (L613).
 - OCR workspace: Ctrl+Z now undoes Delete this reading from inside the workspace (L543).
 - Boot scripts 185 bytes lighter: two helpers moved beside their only lazy caller (L610, L611).
 - Night shift: one progress bar across its phases, and the pairing phase scored in one go: 12.6 to 1.9 s at 1,000 notes with the same findings (L614).
