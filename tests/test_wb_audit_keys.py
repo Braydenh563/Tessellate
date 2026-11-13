@@ -259,3 +259,15 @@ def test_nothing_outside_the_boards_setup_calls_its_private_tool_picker():
     code = re.sub(r"(?m)^\s*//.*$", "", WB)
     inside = len(re.findall(r"\bselectWbTool\(", re.sub(r"(?m)^\s*//.*$", "", init)))
     assert len(re.findall(r"\bselectWbTool\(", code)) == inside
+
+
+def test_select_all_and_the_tab_walk_take_connectors():
+    """L-whiteboard-21: Select all and the Tab walk skipped connectors (`wbLinkCandidates` leaves link sketches out).
+    A board connector (`wbLinkSelectionBox`, never a map's cross-link) is selectable, boxed by its ends and bends,
+    and spoken as a connector."""
+    items = _function_body(WB, "wbSelectableItems")
+    assert "wbIsLinkSketch(sk) && wbLinkSelectionBox(sk)" in items
+    walk = _function_body(WB, "wbWalkItems")
+    assert "wbItemBBox(kind, item) || (kind === \"sketch\" ? wbLinkSelectionBox(item) : null)" in walk
+    spoken = _function_body(WB, "wbItemSpokenName")
+    assert "wbIsLinkSketch(item)" in spoken and "\"Connector\"" in spoken

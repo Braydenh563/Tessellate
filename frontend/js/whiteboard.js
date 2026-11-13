@@ -6980,7 +6980,7 @@ function selectWbItem(kind, id) {
 }
 
 //: Select everything on the board (Edit → Select all, Ctrl+A on the
-//: canvas). Links are left out: they follow what they join.
+//: canvas), connectors too (L-whiteboard-21).
 function wbSelectAllItems() {
   wbSelectExactly(wbSelectableItems());
 }
@@ -7046,6 +7046,8 @@ function wbSelectSimilar() {
 function wbSelectableItems() {
   const out = wbLinkCandidates();
   for (const o of wbState.objects || []) if (o.kind === "image" || o.kind === "frame" || o.kind === "diagram") out.push(["object", o]);
+  //: A board's connectors (L-whiteboard-21: Select all and the Tab walk skipped them); a map's cross-link has no box of its own.
+  for (const sk of wbState.sketches || []) if (wbIsLinkSketch(sk) && wbLinkSelectionBox(sk)) out.push(["sketch", sk]);
   //: A locked item is out of reach until it is unlocked (decision 15): not
   //: in Select all, not in the Tab walk.
   return out.filter(([kind, item]) => !wbIsLocked(kind, item) && !wbHiddenOnBoard(kind, item) && !wbFmtState.isolate?.outside(kind, item) /* L-whiteboard-7: dimmed outside an open group */);
@@ -7066,6 +7068,15 @@ const WB_SHAPE_NAMES = {
 };
 
 function wbItemSpokenName(kind, item) {
+  if (kind === "sketch" && wbIsLinkSketch(item)) {
+    let label = "";
+    try {
+      label = String(JSON.parse(item.data)?.label || "").slice(0, 60);
+    } catch {
+      /* a damaged connector is still a connector */
+    }
+    return label ? `Connector: ${label}` : "Connector";
+  }
   if (kind === "sketch") {
     const parsed = wbSketchParsedData(item);
     return WB_SHAPE_NAMES[parsed?.shape] || "Drawing";
@@ -7100,7 +7111,7 @@ function wbAnnounce(text) {
 function wbWalkItems(dir) {
   const rowOf = (box) => Math.round(box.minY / 60);
   const items = wbSelectableItems()
-    .map(([kind, item]) => ({ kind, item, box: wbItemBBox(kind, item) }))
+    .map(([kind, item]) => ({ kind, item, box: wbItemBBox(kind, item) || (kind === "sketch" ? wbLinkSelectionBox(item) : null) }))
     .filter((e) => e.box)
     .sort((a, b) => rowOf(a.box) - rowOf(b.box) || a.box.minX - b.box.minX || a.box.minY - b.box.minY);
   if (!items.length) return false;
