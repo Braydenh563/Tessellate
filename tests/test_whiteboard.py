@@ -542,6 +542,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "contrast": None,
         # And with a board item's voting dots (INBOX 1313, plan row 14).
         "votes": None,
+        # And with tags, a frame's folded height (structure batch) and a lane's Stack (layouts batch).
+        "tags": None, "fold_h": None, "stack": None,
     }
 
     moved = board_client.put(

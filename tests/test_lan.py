@@ -105,6 +105,29 @@ def test_no_network_at_all_is_its_own_closed_state():
     assert lantrust.evaluate(loose, None, online=True) == (True, "any_network")
 
 
+def test_one_missed_router_read_does_not_shut_an_allowed_network(tmp_path, monkeypatch):
+    # The router's hardware address comes from the ARP table, which drops a
+    # quiet gateway's entry now and then; while the route is still there
+    # (online), a missed read keeps the last network for a few reads rather
+    # than shut the port and drop every phone mid-request (CI, ca77baf3).
+    lantrust.reset_for_tests()
+    lantrust.save(tmp_path, _state(networks=[{"key": HOME.key, "label": "home"}]))
+    reads = iter([HOME] + [None] * lantrust.MISSED_READS_KEPT + [None, HOME])
+    monkeypatch.setattr(lantrust.netid, "read", lambda: next(reads))
+    monkeypatch.setattr(lantrust, "_online", lambda: True)
+    assert lantrust.refresh(tmp_path)["open"] is True
+    for _ in range(lantrust.MISSED_READS_KEPT):
+        assert lantrust.refresh(tmp_path)["reason"] == "allowed"
+    # Missed for longer than that, the network really is unknown: closed.
+    assert lantrust.refresh(tmp_path)["reason"] == "unknown_network"
+    # A good read counts again from nothing.
+    assert lantrust.refresh(tmp_path)["reason"] == "allowed"
+    # Off the network altogether (no route), it closes at once.
+    monkeypatch.setattr(lantrust.netid, "read", lambda: None)
+    monkeypatch.setattr(lantrust, "_online", lambda: False)
+    assert lantrust.refresh(tmp_path)["reason"] == "no_network"
+
+
 def test_a_network_the_port_stayed_closed_on_is_listed_to_trust_later(tmp_path):
     lantrust.reset_for_tests()
     lantrust.save(tmp_path, _state(networks=[{"key": HOME.key, "label": "home"}]))
