@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8369, frontend ids 2778, CSS sections 524, backend routes 710, backend modules 10940, test files 2747, tests 22130, plan headings 688, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8369, frontend ids 2778, CSS sections 524, backend routes 710, backend modules 10940, test files 2748, tests 22131, plan headings 688, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8369)
 
@@ -7251,30 +7251,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `addPersona` | frontend/js/settings-controls.js:1470 |
 | `addSkill` | frontend/js/settings-controls.js:2108 |
 | `addTemplate` | frontend/js/settings-controls.js:1660 |
-| `appendToolRow` | frontend/js/settings-controls.js:3887 |
+| `appendToolRow` | frontend/js/settings-controls.js:3889 |
 | `applyBackendChoice` | frontend/js/settings-controls.js:1402 |
 | `applyChatModel` | frontend/js/settings-controls.js:1584 |
-| `applyContrast` | frontend/js/settings-controls.js:5311 |
-| `applyEmbeddingBackend` | frontend/js/settings-controls.js:5214 |
-| `applyHarmony` | frontend/js/settings-controls.js:5258 |
+| `applyContrast` | frontend/js/settings-controls.js:5313 |
+| `applyEmbeddingBackend` | frontend/js/settings-controls.js:5216 |
+| `applyHarmony` | frontend/js/settings-controls.js:5260 |
 | `applyOcrModel` | frontend/js/settings-controls.js:1600 |
-| `applyToolFilter` | frontend/js/settings-controls.js:3951 |
+| `applyToolFilter` | frontend/js/settings-controls.js:3953 |
 | `applyUtilityModel` | frontend/js/settings-controls.js:1619 |
 | `applyVisionModel` | frontend/js/settings-controls.js:1638 |
 | `changePassword` | frontend/js/settings-controls.js:195 |
 | `chosenSkillTools` | frontend/js/settings-controls.js:2170 |
 | `chosenSkillVerify` | frontend/js/settings-controls.js:2149 |
-| `clearEmbeddingBackendLatch` | frontend/js/settings-controls.js:5337 |
-| `clearManualOverrides` | frontend/js/settings-controls.js:5302 |
-| `copyLogs` | frontend/js/settings-controls.js:5288 |
+| `clearEmbeddingBackendLatch` | frontend/js/settings-controls.js:5339 |
+| `clearManualOverrides` | frontend/js/settings-controls.js:5304 |
+| `copyLogs` | frontend/js/settings-controls.js:5290 |
 | `decorateThemeCards` | frontend/js/settings-controls.js:3310 |
 | `deleteProfile` | frontend/js/settings-controls.js:2063 |
-| `ensureAppearancePopOut` | frontend/js/settings-controls.js:3504 |
-| `ensurePaneTabs` | frontend/js/settings-controls.js:3474 |
-| `ensureSettingsFoldAll` | frontend/js/settings-controls.js:3432 |
+| `ensureAppearancePopOut` | frontend/js/settings-controls.js:3506 |
+| `ensurePaneTabs` | frontend/js/settings-controls.js:3476 |
+| `ensureSettingsFoldAll` | frontend/js/settings-controls.js:3434 |
 | `exportFullBackup` | frontend/js/settings-controls.js:2051 |
 | `findDuplicates` | frontend/js/settings-controls.js:1817 |
-| `glassWake` | frontend/js/settings-controls.js:4070 |
+| `glassWake` | frontend/js/settings-controls.js:4072 |
 | `lanAllowHere` | frontend/js/settings-controls.js:2674 |
 | `lanCall` | frontend/js/settings-controls.js:2520 |
 | `lanEmptyRow` | frontend/js/settings-controls.js:2513 |
@@ -7282,67 +7282,67 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lanNetworkRows` | frontend/js/settings-controls.js:2584 |
 | `lanSwitch` | frontend/js/settings-controls.js:82 |
 | `lanTrustNetwork` | frontend/js/settings-controls.js:2621 |
-| `learnedBulk` | frontend/js/settings-controls.js:4649 |
-| `learnedCheckLine` | frontend/js/settings-controls.js:5087 |
-| `learnedCheckMark` | frontend/js/settings-controls.js:5119 |
-| `learnedCheckPutBack` | frontend/js/settings-controls.js:5167 |
-| `learnedCheckRefresh` | frontend/js/settings-controls.js:5130 |
-| `learnedCheckRun` | frontend/js/settings-controls.js:5138 |
-| `learnedCheckSentence` | frontend/js/settings-controls.js:5082 |
-| `learnedCheckShow` | frontend/js/settings-controls.js:5101 |
-| `learnedDelete` | frontend/js/settings-controls.js:4859 |
-| `learnedEdit` | frontend/js/settings-controls.js:4812 |
-| `learnedExport` | frontend/js/settings-controls.js:4901 |
-| `learnedForget` | frontend/js/settings-controls.js:4881 |
-| `learnedFromYouText` | frontend/js/settings-controls.js:4999 |
-| `learnedKindLabel` | frontend/js/settings-controls.js:4503 |
-| `learnedReset` | frontend/js/settings-controls.js:4838 |
-| `learnedRow` | frontend/js/settings-controls.js:4695 |
-| `learnedRunNow` | frontend/js/settings-controls.js:4920 |
-| `learnedSetSwitch` | frontend/js/settings-controls.js:4610 |
-| `looksLikeEmbeddingModel` | frontend/js/settings-controls.js:5347 |
+| `learnedBulk` | frontend/js/settings-controls.js:4651 |
+| `learnedCheckLine` | frontend/js/settings-controls.js:5089 |
+| `learnedCheckMark` | frontend/js/settings-controls.js:5121 |
+| `learnedCheckPutBack` | frontend/js/settings-controls.js:5169 |
+| `learnedCheckRefresh` | frontend/js/settings-controls.js:5132 |
+| `learnedCheckRun` | frontend/js/settings-controls.js:5140 |
+| `learnedCheckSentence` | frontend/js/settings-controls.js:5084 |
+| `learnedCheckShow` | frontend/js/settings-controls.js:5103 |
+| `learnedDelete` | frontend/js/settings-controls.js:4861 |
+| `learnedEdit` | frontend/js/settings-controls.js:4814 |
+| `learnedExport` | frontend/js/settings-controls.js:4903 |
+| `learnedForget` | frontend/js/settings-controls.js:4883 |
+| `learnedFromYouText` | frontend/js/settings-controls.js:5001 |
+| `learnedKindLabel` | frontend/js/settings-controls.js:4505 |
+| `learnedReset` | frontend/js/settings-controls.js:4840 |
+| `learnedRow` | frontend/js/settings-controls.js:4697 |
+| `learnedRunNow` | frontend/js/settings-controls.js:4922 |
+| `learnedSetSwitch` | frontend/js/settings-controls.js:4612 |
+| `looksLikeEmbeddingModel` | frontend/js/settings-controls.js:5349 |
 | `maintenanceDoctorRow` | frontend/js/settings-controls.js:3072 |
 | `maintenanceSay` | frontend/js/settings-controls.js:3048 |
 | `makeMaintenanceShortcut` | frontend/js/settings-controls.js:3145 |
 | `mergeDuplicateGroup` | frontend/js/settings-controls.js:1953 |
 | `mergeNamedPrompts` | frontend/js/settings-controls.js:2076 |
-| `nearLogBottom` | frontend/js/settings-controls.js:5327 |
+| `nearLogBottom` | frontend/js/settings-controls.js:5329 |
 | `openMaintenanceFolder` | frontend/js/settings-controls.js:3136 |
-| `openTaskLog` | frontend/js/settings-controls.js:3356 |
+| `openTaskLog` | frontend/js/settings-controls.js:3358 |
 | `openUninstallSteps` | frontend/js/settings-controls.js:3156 |
 | `pickJsonFile` | frontend/js/settings-controls.js:2760 |
 | `previewTheme` | frontend/js/settings-controls.js:3236 |
 | `refreshSearxngHost` | frontend/js/settings-controls.js:1288 |
 | `releaseThemeHold` | frontend/js/settings-controls.js:3243 |
-| `renderAccount` | frontend/js/settings-controls.js:3618 |
+| `renderAccount` | frontend/js/settings-controls.js:3620 |
 | `renderAddressNames` | frontend/js/settings-controls.js:2698 |
-| `renderAutoChoices` | frontend/js/settings-controls.js:3384 |
-| `renderAutonomousReview` | frontend/js/settings-controls.js:3702 |
+| `renderAutoChoices` | frontend/js/settings-controls.js:3386 |
+| `renderAutonomousReview` | frontend/js/settings-controls.js:3704 |
 | `renderDuplicateGroups` | frontend/js/settings-controls.js:1895 |
-| `renderFeatureModelRows` | frontend/js/settings-controls.js:3520 |
+| `renderFeatureModelRows` | frontend/js/settings-controls.js:3522 |
 | `renderLanAccess` | frontend/js/settings-controls.js:2750 |
 | `renderLanAddresses` | frontend/js/settings-controls.js:2415 |
 | `renderLanFirewall` | frontend/js/settings-controls.js:2477 |
 | `renderLanState` | frontend/js/settings-controls.js:2322 |
 | `renderLanTrust` | frontend/js/settings-controls.js:2529 |
-| `renderLearned` | frontend/js/settings-controls.js:5020 |
-| `renderLearnedFromYou` | frontend/js/settings-controls.js:5011 |
-| `renderLearnedList` | frontend/js/settings-controls.js:4772 |
-| `renderLearnedSwitches` | frontend/js/settings-controls.js:4507 |
+| `renderLearned` | frontend/js/settings-controls.js:5022 |
+| `renderLearnedFromYou` | frontend/js/settings-controls.js:5013 |
+| `renderLearnedList` | frontend/js/settings-controls.js:4774 |
+| `renderLearnedSwitches` | frontend/js/settings-controls.js:4509 |
 | `renderMaintenance` | frontend/js/settings-controls.js:3052 |
 | `renderMcpSnippet` | frontend/js/settings-controls.js:2298 |
 | `renderMemorySettings` | frontend/js/settings-controls.js:2817 |
-| `renderPinSettings` | frontend/js/settings-controls.js:3673 |
-| `renderRunBudget` | frontend/js/settings-controls.js:3805 |
-| `renderSkillFolderLine` | frontend/js/settings-controls.js:5428 |
-| `renderSkillSettings` | frontend/js/settings-controls.js:5410 |
-| `renderSmallModelAuto` | frontend/js/settings-controls.js:3409 |
-| `renderSmallModelMode` | frontend/js/settings-controls.js:3793 |
+| `renderPinSettings` | frontend/js/settings-controls.js:3675 |
+| `renderRunBudget` | frontend/js/settings-controls.js:3807 |
+| `renderSkillFolderLine` | frontend/js/settings-controls.js:5430 |
+| `renderSkillSettings` | frontend/js/settings-controls.js:5412 |
+| `renderSmallModelAuto` | frontend/js/settings-controls.js:3411 |
+| `renderSmallModelMode` | frontend/js/settings-controls.js:3795 |
 | `renderStatusBarSettings` | frontend/js/settings-controls.js:2235 |
-| `renderToolFocus` | frontend/js/settings-controls.js:3767 |
-| `renderToolSettings` | frontend/js/settings-controls.js:3718 |
+| `renderToolFocus` | frontend/js/settings-controls.js:3769 |
+| `renderToolSettings` | frontend/js/settings-controls.js:3720 |
 | `resetAllFeatureModels` | frontend/js/settings-controls.js:1567 |
-| `resetThemeOnly` | frontend/js/settings-controls.js:5320 |
+| `resetThemeOnly` | frontend/js/settings-controls.js:5322 |
 | `restartMemoryMap` | frontend/js/settings-controls.js:1768 |
 | `restoreFullBackup` | frontend/js/settings-controls.js:2014 |
 | `runEmbeddingFallback` | frontend/js/settings-controls.js:1503 |
@@ -7351,24 +7351,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `saveExportSaveDir` | frontend/js/settings-controls.js:1842 |
 | `saveModelContextWindow` | frontend/js/settings-controls.js:1437 |
 | `saveRunBudget` | frontend/js/settings-controls.js:1698 |
-| `saveToolGroup` | frontend/js/settings-controls.js:3856 |
-| `saveToolSwitch` | frontend/js/settings-controls.js:3816 |
+| `saveToolGroup` | frontend/js/settings-controls.js:3858 |
+| `saveToolSwitch` | frontend/js/settings-controls.js:3818 |
 | `saveWebSearchSettings` | frontend/js/settings-controls.js:1735 |
-| `setCustomAccent` | frontend/js/settings-controls.js:4171 |
+| `setCustomAccent` | frontend/js/settings-controls.js:4173 |
 | `setLanOption` | frontend/js/settings-controls.js:2644 |
 | `setMaintenanceReinstall` | frontend/js/settings-controls.js:3123 |
 | `showLanQr` | frontend/js/settings-controls.js:2379 |
 | `showVoiceSample` | frontend/js/settings-controls.js:690 |
-| `skillRow` | frontend/js/settings-controls.js:5354 |
-| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4637 |
+| `skillRow` | frontend/js/settings-controls.js:5356 |
+| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4639 |
 | `textToInputs` | frontend/js/settings-controls.js:2791 |
 | `textToSteps` | frontend/js/settings-controls.js:2784 |
 | `themeEyeButton` | frontend/js/settings-controls.js:3283 |
 | `themePreviewNotice` | frontend/js/settings-controls.js:3256 |
-| `toolGroupAllPaint` | frontend/js/settings-controls.js:3845 |
-| `toolGroupBoxes` | frontend/js/settings-controls.js:3836 |
+| `toolGroupAllPaint` | frontend/js/settings-controls.js:3847 |
+| `toolGroupBoxes` | frontend/js/settings-controls.js:3838 |
 | `waitForRestart` | frontend/js/settings-controls.js:1794 |
-| `wireLearnedSection` | frontend/js/settings-controls.js:4954 |
+| `wireLearnedSection` | frontend/js/settings-controls.js:4956 |
 
 ### frontend/js/settings-data.js (52)
 
@@ -27972,7 +27972,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22130)
+## Tests (22131)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30210,6 +30210,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_row_bar.py | 7 |
 | tests/test_settings_row_heads.py | 2 |
 | tests/test_settings_rows.py | 13 |
+| tests/test_settings_section_wrap.py | 1 |
 | tests/test_settings_skeletons.py | 4 |
 | tests/test_settings_switch_divider.py | 2 |
 | tests/test_settings_weight.py | 3 |
