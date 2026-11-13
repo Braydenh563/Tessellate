@@ -27,7 +27,9 @@ from tessellate.core.database import WhiteboardObject
 #: `upload_media` produces (a uuid4 hex plus a short suffix) closes it at the
 #: door; the purge (`manager`) checks containment again.
 MEDIA_URL_RE = re.compile(r"^/media/[A-Za-z0-9][A-Za-z0-9._-]{0,119}$")
-_APP_ROUTE_LINK = re.compile(r"^#/[a-z][a-z-]{0,30}(?:/[A-Za-z0-9_.%-]{1,120}){0,4}$")
+#: One rendered page of an uploaded PDF (`GET /media/pdf-page/{name}/{n}`), the picture a PDF placed as pages shows.
+PDF_PAGE_URL_RE = re.compile(r"^/media/pdf-page/[A-Za-z0-9][A-Za-z0-9._-]{0,115}\.pdf/\d{1,3}$")
+_APP_ROUTE_LINK =re.compile(r"^#/[a-z][a-z-]{0,30}(?:/[A-Za-z0-9_.%-]{1,120}){0,4}$")
 
 #: A sketch is a path list, not an image. Big enough for a page of scribble,
 #: small enough that a runaway client can't fill the disk one PUT at a time.
@@ -500,6 +502,10 @@ class WhiteboardObjectData(BaseModel):
     stripes: bool | None = None
     #: A frame marked as a lane keeps what it holds in a column (`stack`; whiteboard-layouts-more.js).
     stack: bool | None = None
+    #: **A PDF on the board** (L-whiteboard-2): the uploaded file an image object's page (or a card) opens, written
+    #: `/media/<name>.pdf` so the media sweep (`media_gc.referenced_names`) sees the file is in use.
+    pdf: str | None = Field(default=None, pattern=r"^/media/[A-Za-z0-9][A-Za-z0-9._-]{0,115}\.pdf$")
+    pdf_name: str | None = Field(default=None, max_length=200)
     #: **Edit data** (draw.io's custom properties; canvasdepth2): up to 30
     #: named values on an item, edited in the Format panel's Data tab.
     props: dict[
@@ -1050,7 +1056,7 @@ def _require_table_merges(data: WhiteboardObjectData) -> None:
 
 def _require_object_data(body: WhiteboardObjectBase) -> None:
     if body.kind == "image":
-        if not body.data.url or not MEDIA_URL_RE.match(body.data.url):
+        if not body.data.url or not (MEDIA_URL_RE.match(body.data.url) or PDF_PAGE_URL_RE.match(body.data.url)):
             raise HTTPException(
                 status_code=422,
                 detail="An image has to be one that was uploaded to Tessellate first.",

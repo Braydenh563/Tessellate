@@ -19355,6 +19355,7 @@ async function initWhiteboard() {
   }
 
   async function wbPlaceUploadedImage(file, x, y) {
+    if (wbFmtState.pdf?.isPdf(file)) return wbFmtState.pdf.place(file, x, y);
     if (!file || !file.type?.startsWith("image/")) return;
     if (file.size > wbPictureCap) return wbPictureTooBig();
     try {
