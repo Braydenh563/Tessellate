@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 22 | 1 | 0 | 19 | 119 |
+| ui-modernisation | 96 | 21 | 1 | 0 | 19 | 118 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 534 | 151 | 3 | 184 | 1238 |
+| all | 553 | 533 | 151 | 3 | 184 | 1237 |
 
 ## graph
 
@@ -453,7 +453,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-1** `ui-modernisation` open, M: Adopt CSS cascade layers (@layer tokens, base, components, surfaces, overrides) so 08-consistency.css stops winning by specificity. From ANALYSIS.md:3680. Evidence: grep @layer frontend/css returns 0; UI_MODERNISATION_PLAN item 18 dissolves 08 into components but never names layers or the 'only shrinks' lint
 - [ ] **L-ui-modernisation-28** `ui-modernisation` open, S: Measure the stuck-ground recipe on the timeline table head and empty its freeze. From open-work sweep 2026-11-12, tests/test_nested_surfaces_1489.py:34. Evidence: This freeze ratchet holds one known offender, and the comment states the intent to remove it once the stuck-ground recipe is measured on table cells. No LEDGER row or plan item names it.
 - [ ] **L-ui-modernisation-3** `ui-modernisation` open, M: Sweep every toolbar onto the control height tokens and drain the literal heights ratchet. From open-work sweep 2026-11-12, docs/DESIGN.md:1584. Evidence: The doc admits toolbars that do not use --control-h yet and calls them gaps. No row lists or tracks the sweep to find and convert them.
-- [ ] **L-ui-modernisation-6** `ui-modernisation` open, S: Quiet the Activity count beside Everything 0 on a new Library. From open-work sweep 2026-11-12, scratchpad/first-run-472.md:37. Evidence: library.js:419 and 580 still count the Activity chip separately from Everything; no tracking row
 - [ ] **L-ui-modernisation-10** `ui-modernisation` open, M: Draw the missing desk frames: hang by feet, sloth, chair, lean, tail-curl pot. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. compalive-1109.md (git history) still lists missing desk frames with no LEDGER row: hang_by_feet, sloth, chair, lean, back_float, the pot in the tail curl, and a card box for the card nap. dangle and kick were built in W31.
 - [ ] **L-ui-modernisation-11** `ui-modernisation` open, S: Bring desk note and search reactions to app parity: glasses, shy hands, bubble. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. The events feed is built, but compalive-1109 says the desk reactions fall short of the app: no reading glasses, no hands over the eyes, no remark bubble. There is no row.
 - [ ] **L-ui-modernisation-12** `ui-modernisation` open, S: Close the px spacing-literal escape in test_style_scale. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1004. Evidence: Open line in the plan's prose a session could miss. A 13.1 table judgement with no numbered decision, so the 13a list does not carry it.

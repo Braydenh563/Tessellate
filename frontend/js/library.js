@@ -544,17 +544,18 @@ function renderLibraryFilters() {
   const box = $("library-filters");
   if (!box) return;
   box.replaceChildren();
+  // Not `libraryItems.length`: activity is unconditionally excluded from
+  // the "Everything" view itself (see renderLibrary()'s own comment on
+  // why: it would be 93%+ log on a real notebook), so a count that
+  // included it disagreed with what pressing the chip actually shows.
+  const everything = Object.entries(libraryCounts).reduce(
+    (sum, [key, n]) => sum + (key === "activity" || key === "draft" || key === "highlight" ? 0 : n),
+    0,
+  );
   for (const kind of LIBRARY_KINDS) {
-    // Not `libraryItems.length`: activity is unconditionally excluded from
-    // the "Everything" view itself (see renderLibrary()'s own comment on
-    // why: it would be 93%+ log on a real notebook), so a count that
-    // included it disagreed with what pressing the chip actually shows.
     const count =
       kind.key === "all"
-        ? Object.entries(libraryCounts).reduce(
-            (sum, [key, n]) => sum + (key === "activity" || key === "draft" || key === "highlight" ? 0 : n),
-            0,
-          )
+        ? everything
         : kind.key === "meeting"
           ? libraryItems.filter((i) => i.kind === "note" && (i.tags || []).includes("meeting")).length
           : libraryCounts[kind.key] || 0;
@@ -602,7 +603,9 @@ function renderLibraryFilters() {
     //: and whichever chip is selected always show.
     button.classList.toggle(
       "is-empty",
-      (count === 0 || kind.subtab) && kind.key !== "all" && libraryKind !== kind.key,
+      //: Nor is a record of what was done beside nothing made: "Activity 2"
+      //: by "Everything 0" on a new notebook (L-ui-modernisation-6).
+      (count === 0 || kind.subtab || (kind.key === "activity" && !everything)) && kind.key !== "all" && libraryKind !== kind.key,
     );
     button.addEventListener("click", () => {
       libraryKind = kind.key;

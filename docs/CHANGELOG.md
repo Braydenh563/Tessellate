@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- A new Library no longer shows an Activity count beside Everything 0 (L-ui-modernisation-6).
+
 - The welcome card's last footer stays on one row on a phone down to 360 (L-ui-modernisation-5).
 
 - The lock screen's setup note is two short lines, not five, and its button reads Set password and start (L-ui-modernisation-4).
