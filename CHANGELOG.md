@@ -8,6 +8,7 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - Whiteboard: Select all (Ctrl+A) and the Tab walk take connectors too, and a connector is read out as "Connector" with its label (L-whiteboard-21).
 - Whiteboard: Alt+Shift+L, T and N edit a selected item's link, tooltip and comment, and Alt+Shift+K its tags, as in draw.io; Ctrl+K stays the command palette (L-whiteboard-22).
+- Whiteboard: resizing with Shift or Alt shows the size readout too (L284).
 - Whiteboard: a box too small on screen for its resize grips (a 500-box board at the fit zoom) drags when pressed instead of catching a grip; 500 boxes measured at rest and in a drag with the companion off and on, no long tasks and no frame gaps (L-whiteboard-15).
 - Whiteboard: Drawn shapes has all 40 outlines: data storage, display, corner, tee, arrow, double arrow, exclusive or, tape data, isometric square and cube, crossbar, curly bracket, module, component and provided interface join the 25, each read from and written to draw.io by its own name (L-whiteboard-29).
 - Board tool rail: each section is one tab stop (arrows, Home and End walk its tools); the rail fell from 17 tab stops to 7 and the whole board from 37 to 27.

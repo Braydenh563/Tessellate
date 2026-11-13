@@ -24657,6 +24657,11 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
           ({ width: newWidth, height: newHeight } = wbGuidedResize("object", d, handle, start, newWidth, newHeight, { off: false }));
           newX = handle.includes("w") ? start.x + start.w - newWidth : start.x;
           newY = handle.includes("n") ? start.y + start.h - newHeight : start.y;
+        } else {
+          //: Shift (keep the ratio) and Alt (no guides) skip the guided
+          //: resize, which is what draws the size readout; it shows anyway.
+          wbShowAlignmentGuides([]);
+          wbShowSizeReadout({ x: newX, y: newY, w: newWidth, h: newHeight });
         }
         d.x = newX;
         d.y = newY;
