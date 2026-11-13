@@ -760,13 +760,18 @@ mark.text-highlight-grey { background: rgba(148, 163, 184, 0.25); }
   outline-offset: 2px;
 }
 /* --- rebindable shortcuts ----------------------------------------------------- */
+/* The keys drop under their action when the row cannot hold both: at 320 the
+   name was squeezed to its longest word and ran 48px out of the Shortcuts
+   pane (L-ui-modernisation-26). A 10rem basis keeps one row wherever the
+   pane is wider than about 320px. */
 .shortcut-list li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
 .shortcut-list li>span {
-  flex: 1 1 auto;
+  flex: 1 1 10rem;
 }
 /* The row's buttons are fixed hit targets: shrinking with the row cut a
    label at 390 (devibe.js: 55px of text in a 53px button). */

@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Settings, Shortcuts no longer runs off the side of a narrow phone: the keys drop under their action (L-ui-modernisation-26).
+
 - A test now pins the AI status pill's Can't reach Tessellate state, checked in the app with the status route refused (L-ui-modernisation-27).
 
 - Four phone and touch rules take their 44px target from --target-min instead of a literal (L-ui-modernisation-15).
