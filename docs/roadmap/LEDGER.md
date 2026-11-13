@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 1 | 0 | 0 | 0 | 16 |
-| chat | 176 | 104 | 44 | 2 | 59 | 324 |
+| chat | 176 | 103 | 44 | 2 | 59 | 323 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 555 | 134 | 3 | 186 | 1242 |
+| all | 553 | 554 | 134 | 3 | 186 | 1241 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -29,7 +29,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L84** `chat` open, S: Throw must not scroll the page (Playwright test). From OPEN.md:4350. Evidence: No scrollY throw test found; ledger open.
 - [ ] **L85** `chat` open, S: Atlas look row landed under Settings head at 390 in one of four runs. From OPEN.md:1067. Evidence: Intermittent 390 layout flake; no fix commit found
 - [ ] **L86** `chat` open, S: Face sheet: crowns spill 6 px past card top. From OPEN.md:1092. Evidence: facesheet.js removed 2026-10-12; spill not rechecked; needs a fresh sheet run
-- [ ] **L101** `chat` open, M: Hand the model linked_to and why. From OPEN.md:3845. Evidence: No linked_to in ai/librarian.py
 - [ ] **L102** `chat` open, M: Derive themes beyond shared tags and links. From OPEN.md:3846. Evidence: composer_frame.themes unchanged
 - [ ] **L103** `chat` open, M: Answer who/status questions over list notes instead of returning a quote. From OPEN.md:3847. Evidence: composer.py select not changed
 - [ ] **L106** `chat` open, M: Fix R3-2 lead dropping label, R3-18 dentist time, E23 repeated provenance, E17 'when did I last run' seed. From composer-r4-1108.md Still open. Evidence: No tests naming R3-2/R3-18/E23 found; E17 has tests but probe-seed source unresolved
