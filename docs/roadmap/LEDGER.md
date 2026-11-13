@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 95 | 44 | 2 | 59 | 315 |
+| chat | 176 | 94 | 44 | 2 | 59 | 314 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 545 | 134 | 3 | 186 | 1232 |
+| all | 553 | 544 | 134 | 3 | 186 | 1231 |
 
 ## graph
 
@@ -157,7 +157,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-10** `chat` open, S: Stop a quotation from skipping a sentence inside its own marks (round 1 D8). From open-work sweep 2026-11-12, tests/test_composer_r1_dates_1107.py:65. Evidence: This strict xfail is an unbuilt spec. CHANGELOG line 915 says it is "still open, pinned by a strict xfail". No LEDGER row or CHAT_PLAN item names it. L91 covers gluing whole notes with commas and elli
 - [ ] **L-chat-13** `chat` open, L: Make the agent activity monitor movable and let the agent drive the interface. From open-work sweep 2026-11-12, IDEAS.md:100. Evidence: Listed as partly built, with no LEDGER row or plan item for the remainder
 - [ ] **L-chat-16** `chat` open, M: Starters as verb-plus-slot chips. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:558. Evidence: Open line in the plan's prose a session could miss. Open sub-points.
-- [ ] **L-chat-18** `chat` open, S: Reconcile and build the decision 72 voice presets. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1317. Evidence: Open line in the plan's prose a session could miss. Conflicts with decision 72's Playful preset at 1811; needs reconciling.
 - [ ] **L-chat-19** `chat` open, L: Close the rest of the 2026-10-10 chat bug list. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:779. Evidence: Open line in the plan's prose a session could miss. Owner bug list; also token count after deleted turn, destination history clear, match kind label, jokes source, caption sentences.
 - [ ] **L-chat-20** `chat` open, M: Composer bubble fade, accessed links first and auto retry. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:890. Evidence: Open line in the plan's prose a session could miss. Design items from the owner list.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
