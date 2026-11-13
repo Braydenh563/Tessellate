@@ -7563,14 +7563,17 @@ function wbSyncMapStrip(node) {
   const data = wbMapThemedData(node);
   wbMapStripSyncing = true;
   try {
-    for (const [id, on] of [
+    for (const [id, on, ...glyphs] of [
       ["wb-map-bold", data.bold], ["wb-map-italic", data.italic],
-      ["wb-map-core", data.core],
+      ["wb-map-core", data.core, "ph ph-crown", "ph ph-crown-simple"],
     ]) {
       const button = document.getElementById(id);
       if (!button) continue;
       button.classList.toggle("active", Boolean(on));
       button.setAttribute("aria-pressed", on ? "true" : "false");
+      //: An icon toggle swaps its glyph as well as its fill (L457, owner B58).
+      const glyph = glyphs.length && button.querySelector("i");
+      if (glyph) glyph.className = on ? glyphs[0] : glyphs[1];
     }
     //: **The blank option says what it does on a themed map** (§13e). Every
     //: select here stores the app's own default as no value at all, so the
@@ -7693,6 +7696,8 @@ function wbSyncMapStrip(node) {
         const on = Boolean(data.edge_dashed);
         dash.classList.toggle("active", on);
         dash.setAttribute("aria-pressed", on ? "true" : "false");
+        const glyph = dash.querySelector("i");
+        if (glyph) glyph.className = on ? "ph ph-rectangle-dashed" : "ph ph-line-segment";
         dash.title = on ? "Draw the line into this topic solid again" : "Dash the line into this topic";
       }
       const arrow = document.getElementById("wb-map-edge-arrow");
@@ -7704,6 +7709,8 @@ function wbSyncMapStrip(node) {
         const on = wbMapEdgeHasArrow(node);
         arrow.classList.toggle("active", on);
         arrow.setAttribute("aria-pressed", on ? "true" : "false");
+        const glyph = arrow.querySelector("i");
+        if (glyph) glyph.className = on ? "ph ph-arrow-right" : "ph ph-minus";
         arrow.title = on
           ? "Take the arrowhead off the line into this topic"
           : "Put an arrowhead on the line into this topic";

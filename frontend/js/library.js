@@ -6635,7 +6635,12 @@ function ocrKeepCentre(apply) {
 //: says what pressing it does from here: 100%, or back to the fitted page.
 function ocrSyncZoomButtons() {
   const fit = $("ocr-zoom-fit");
-  if (fit) fit.setAttribute("aria-pressed", String(ocrZoom === null));
+  if (fit) {
+    fit.setAttribute("aria-pressed", String(ocrZoom === null));
+    //: The glyph swaps with the state (L457): drawn in while fitted, out while zoomed.
+    const glyph = fit.querySelector("i");
+    if (glyph) glyph.className = ocrZoom === null ? "ph ph-arrows-in" : "ph ph-arrows-out";
+  }
   const level = $("ocr-zoom-level");
   if (level) {
     level.title = ocrZoom === 1 ? "Fit the whole page (0)" : "Show the page at 100%, its own size on paper";

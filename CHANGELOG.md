@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Icon toggles on maps, Ask's time travel and the OCR fit button now change their glyph as well as their fill (L457). The dashboard overflow sweep found nothing to fix (L458).
+
 - Brief 56 measures recorded at 1024 and 820 dark: no visible unlabelled controls, no contrast failures (L455).
 
 - Chat: a live answer shows its time at the end of its meta line again; the line moved into the answer's foot bar before the time was looked for (L456).

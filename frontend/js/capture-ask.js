@@ -1378,7 +1378,11 @@ function showAskAsOf(on) {
   const box = $("ask-as-of");
   if (!row || !box) return;
   row.classList.toggle("hidden", !on);
-  $("ask-time-travel")?.setAttribute("aria-pressed", on ? "true" : "false");
+  const travel = $("ask-time-travel");
+  travel?.setAttribute("aria-pressed", on ? "true" : "false");
+  //: The glyph says the state too (L457): a calendar while a day is picked.
+  const glyph = travel?.querySelector("i");
+  if (glyph) glyph.className = on ? "ph ph-calendar-check" : "ph ph-clock-counter-clockwise";
   if (on) {
     //: Nothing after today: the future has no notes to read.
     const today = new Date();
