@@ -74,7 +74,7 @@
   }
 
   async function place(file, x, y) {
-    if (file.size > CAP) return toast("That PDF is larger than 50 MB.", true);
+    if (file.size > CAP) return toast("That PDF is over 50 MB, the most the notebook keeps.", "info");
     try {
       const info = await upload(file);
       const pages = await pageCount(info.stored);
@@ -87,7 +87,7 @@
         } else await placeOne(info, pages, x, y);
       });
     } catch (err) {
-      toast(err.message || "Could not add that PDF.", true);
+      toast(err.message || "Could not add that PDF.", "info");
     }
   }
 

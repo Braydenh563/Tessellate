@@ -153,6 +153,7 @@ TOPIC_LEADS: dict[str, str] = {
     "board-draw-io-keys": "Extra board shortcuts for editing data, turning, resizing and copying sizes.",
     "board-workshop": "Run a workshop on a board with vote dots and a countdown clock.",
     "board-paste": "Choose how text pasted onto a board lands, as stickies, a list or a table.",
+    "board-pdf": "Drop a PDF on a board as one picture per page, or as one object that opens it.",
     "make-a-diagram": "Make a mind map or a flowchart by typing, even with no model running.",
     "mind-maps": "Lay out ideas as branches round a central topic, or build a map from a note.",
     "mind-map-controls": "Build and rearrange a mind map from the keyboard, one topic at a time.",
