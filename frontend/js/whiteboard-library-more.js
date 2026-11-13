@@ -26,12 +26,15 @@
   //: Pure: the data a shape has after it takes `data`'s outline, stretched over its own box. `box` is the shape's box and
   //: `own` the outline's, both `{minX, minY, width, height}`; `transform` is the board's path transform. The words, colours,
   //: line and fill stay; the outline, its kind and its label area come from the entry.
-  function replaceData(parsed, data, box, own, transform) {
+  function replaceData(parsed, data, box, own, transform, table = wbFmtState.shapeTable) {
     const sx = Math.max(box.width, 1) / Math.max(own.width, 1);
     const sy = Math.max(box.height, 1) / Math.max(own.height, 1);
+    //: A drawn shape (`shapeKind`, whiteboard-shape-table.js) is drawn again for the box, so its corners and curves keep their
+    //: size (L-whiteboard-28); a tile stretched to a long box would stretch them.
+    const fresh = data.shapeKind ? table?.shapePathAt?.(data.shapeKind, box.minX, box.minY, Math.max(box.width, 1), Math.max(box.height, 1)) : null;
     const next = {
       ...parsed,
-      d: transform(data.d, { dx: box.minX - own.minX, dy: box.minY - own.minY, sx, sy, anchorX: own.minX, anchorY: own.minY }),
+      d: fresh || transform(data.d, { dx: box.minX - own.minX, dy: box.minY - own.minY, sx, sy, anchorX: own.minX, anchorY: own.minY }),
       shape: data.shape || "custom",
     };
     delete next.label_area;

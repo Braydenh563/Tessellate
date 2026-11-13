@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 1 | 0 | 0 | 0 | 16 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 21 | 4 | 0 | 10 | 55 |
+| whiteboard | 30 | 20 | 4 | 0 | 10 | 54 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 628 | 150 | 3 | 185 | 1331 |
+| all | 553 | 627 | 150 | 3 | 185 | 1330 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -304,7 +304,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-21** `whiteboard` open, S: Include connectors in Select all and the board Tab walk. From wbgroupedit sweep 2026-11-12. Evidence: frontend/js/whiteboard.js wbSelectableItems takes wbLinkCandidates, which leaves out link sketches, so Select all and the Tab walk skip connectors
 - [ ] **L-whiteboard-22** `whiteboard` open, S: Keys still unbound: Ctrl+K tags (app palette key, needs a choice), Ctrl+. and Ctrl+, super/subscript (app keys; text batch), Alt+Shift+L, T, N link/tooltip/note. From WHITEBOARD_PLAN section 11 keys, 2026-11-12. Evidence: docs/roadmap/WHITEBOARD_PLAN.md shortcut table rows Ctrl+K, Ctrl+. Ctrl+, Ctrl+{ Ctrl+}, Alt+Shift+L T N
 - [ ] **L-whiteboard-26** `whiteboard` open, S: Layers tab: a child of a folded frame shows as folded (not hidden) and its eye says Expand the frame. From structure batch report, whiteboard-structure-more.js. Evidence: Layers tab lists a folded frame's children as hidden; its eye sets hidden=false with no visible change while the frame is folded
-- [ ] **L-whiteboard-28** `whiteboard` open, S: Drawn shapes: Replace with a shape and Change shape kind should draw the table outline for the box, not stretch the tile. From wbtext3 agent, 2026-11-13. Evidence: frontend/js/whiteboard-library-more.js replaceData stretches the new outline, so a drawn shape (shapeKind) swapped in at a non-tile size is only regenerated after the next point edit-free resize check fails; whiteboard-shape-table.js afterResize needs the old path to equal the table's
 - [ ] **L-whiteboard-29** `whiteboard` partly, M: Drawn shape table: the remaining 15 parametric shapes (to the plan's 40), with draw.io names. From WHITEBOARD_PLAN JS-drawn shape classes row, 2026-11-13. Evidence: frontend/js/whiteboard-shape-table.js holds 25 of the planned 40 (commit edba1a2f); tests/test_wb_shape_table.py
 
 ## documents
