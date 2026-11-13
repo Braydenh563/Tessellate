@@ -138,3 +138,13 @@
 .notif-start-step.is-done .ph-lead {
   color: var(--ok);
 }
+
+/* The welcome card (onboarding.js, which fetches this file when it opens).
+   Its last slide's footer is three named buttons, "Skip the tour", "Back"
+   and "Start the tour", 302px with their gaps; the overlay's 24px sides left
+   284 at 360, so Skip took a row of its own (L-ui-modernisation-5). */
+@media (max-width: 599.98px) {
+  #onboarding-overlay {
+    padding-inline: var(--space-2);
+  }
+}

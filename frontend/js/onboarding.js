@@ -526,6 +526,7 @@ function openOnboarding() {
 }
 
 function showOnboarding() {
+  lazyScript("/css/first-run-lazy.css");
   onboardingRun.index = 0;
   overlayReturnFocus = document.activeElement;
   renderOnboardingSlide();

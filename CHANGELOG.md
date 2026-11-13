@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The welcome card's last footer stays on one row on a phone down to 360 (L-ui-modernisation-5).
+
 - The lock screen's setup note is two short lines, not five, and its button reads Set password and start (L-ui-modernisation-4).
 
 - A lint now fails a top-bar control with no name or no Find anything row (L465).
