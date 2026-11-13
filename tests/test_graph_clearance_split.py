@@ -1,4 +1,6 @@
-"""L-graph-5, the owner 2026-11-12: "a coarser push if measured dot and label
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+L-graph-5, the owner 2026-11-12: "a coarser push if measured dot and label
 overlaps stay 0". `clearanceForce` was 28 ms a call at 2,000 notes (66 ms on
 this box under load), most of it the hits along long lines. A line longer than
 `CLEAR_SPLIT_CELLS` cells now pushes on every second tick at twice the gain.

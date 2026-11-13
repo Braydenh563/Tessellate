@@ -1,4 +1,6 @@
-"""L-general-50: the Library reader on a phone is the whole screen.
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+L-general-50: the Library reader on a phone is the whole screen.
 
 `library-lazy.css` loads after the boot CSS, so `.ocr-card`'s width and height
 (96vw by 92vh) beat the `page` variant's `.sheet-card-page` at equal weight: the

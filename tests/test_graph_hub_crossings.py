@@ -1,4 +1,6 @@
-"""INBOX 1306 and W34 "Hub crossings": the owner's default 40-note graph had a hub
+"""Source text: part of this reads the shipped CSS, markup or script, whose effect needs a browser this suite does not run; what was measured in the app is below.
+
+INBOX 1306 and W34 "Hub crossings": the owner's default 40-note graph had a hub
 whose lines crossed everything. The check the plan names: 36-note seeds with
 two hubs, counted with the shipped worker under node (no browser), crossings
 on the hubs' lines down by at least a third with no two notes overlapping.

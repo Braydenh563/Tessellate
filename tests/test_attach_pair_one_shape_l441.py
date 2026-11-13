@@ -14,6 +14,6 @@ CSS = Path(__file__).resolve().parent.parent / "frontend" / "css" / "04-chat-doc
 
 def test_the_moved_note_picker_button_takes_the_dock_pill():
     css = re.sub(r"/\*.*?\*/", "", CSS.read_text(encoding="utf-8"), flags=re.S)
-    rule = next(m for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", css) if "border-radius: var(--radius-pill)" in m.group(2) and ".chat-dock-controls>.chat-tool-group>button" in m.group(1))
+    rule = next(m for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css) if "border-radius: var(--radius-pill)" in m.group(2) and ".chat-dock-controls>.chat-tool-group>button" in m.group(1))
     selectors = [s.strip() for s in rule.group(1).split(",")]
     assert ".chat-dock-controls .note-picker>button" in selectors
