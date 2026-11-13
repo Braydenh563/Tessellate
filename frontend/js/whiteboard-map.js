@@ -1701,10 +1701,15 @@ function wbMapColors(index) {
   //: of the palette, shifting every branch after it. The server's
   //: `_map_branch_colors` orders a root's children the same way.
   const oldest = new Map();
+  //: A topic still waiting for its id holds a negative one (`wbMapAddChild`),
+  //: and is the newest on the map, not the oldest: by its own number Tab on a
+  //: root moved every later branch one colour along until the server answered
+  //: (L-mindmap-13: 41 of 41 topics repainted).
+  const idAge = (id) => (id < 0 ? Number.MAX_SAFE_INTEGER / 2 - id : id);
   const ageOf = (node) => {
     if (oldest.has(node.id)) return oldest.get(node.id);
-    oldest.set(node.id, node.id);
-    let min = node.id;
+    oldest.set(node.id, idAge(node.id));
+    let min = idAge(node.id);
     for (const child of index.childrenOf.get(node.id) || []) min = Math.min(min, ageOf(child));
     oldest.set(node.id, min);
     return min;
@@ -1718,7 +1723,7 @@ function wbMapColors(index) {
     //: Creation order, not sibling order: a branch keeps its colour when it
     //: is moved up or down (INBOX 445), and the Library's thumbnail, which
     //: hands out `MAP_BRANCH_PALETTE` by id on the server, keeps agreeing.
-    const kids = [...(index.childrenOf.get(node.id) || [])].sort((a, b) => ageOf(a) - ageOf(b) || a.id - b.id);
+    const kids = [...(index.childrenOf.get(node.id) || [])].sort((a, b) => ageOf(a) - ageOf(b) || idAge(a.id) - idAge(b.id));
     kids.forEach((child, at) => {
       // `inherited == null` is true for exactly one generation, the roots'
       // own children, which *are* the first-level topics. Starting the colours
@@ -1729,7 +1734,7 @@ function wbMapColors(index) {
       walk(child, next, at, depth + 1);
     });
   };
-  for (const root of [...index.roots].sort((a, b) => a.id - b.id)) walk(root, null);
+  for (const root of [...index.roots].sort((a, b) => idAge(a.id) - idAge(b.id))) walk(root, null);
   return colors;
 }
 
