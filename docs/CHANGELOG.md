@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The lock screen's setup note is two short lines, not five, and its button reads Set password and start (L-ui-modernisation-4).
+
 - A lint now fails a top-bar control with no name or no Find anything row (L465).
 
 - The tab strip's room beside the header groups no longer charges the hidden h1 a flex gap (7.2px at 844x390); the Versions Named only filter was already built (L466).

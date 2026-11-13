@@ -341,8 +341,10 @@
            where somebody deciding whether to trust an app is looking.
 
            Shown only while setting up, hidden on the ordinary unlock, where it
-           would be furniture. -->
-      <p id="lock-setup-note" class="muted lock-setup-note hidden">Choose a password, at least eight characters; a few unrelated words are best. The app asks for it when it opens, unless you turn that off in Settings. Ordinary notes are not encrypted and survive a reset, but anything you later mark private is locked with this password and cannot be recovered without it.</p>
+           would be furniture. Two lines since L-ui-modernisation-4 (it was 58
+           words, five lines at 1440): the rule and what the password locks;
+           what a reset costs is on the Forgot your password card. -->
+      <p id="lock-setup-note" class="muted lock-setup-note hidden">At least eight characters; a few unrelated words are best. Private notes are locked with it.</p>
       <button id="lock-submit">Unlock</button>
       <!-- Shown only when the card is asking for the password for one action
            (unlocking private notes, turning sign-in off), never on the lock

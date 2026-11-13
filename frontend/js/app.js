@@ -720,7 +720,7 @@ function showLockScreen(setupMode) {
     if (setupMode) note.textContent = note.dataset.text;
     note.classList.toggle("hidden", !setupMode);
   }
-  $("lock-submit").textContent = setupMode ? "Set password & start" : "Unlock";
+  $("lock-submit").textContent = setupMode ? "Set password and start" : "Unlock";
   $("lock-overlay").dataset.mode = setupMode ? "setup" : "unlock";
   lockFieldForPin(setupMode ? false : pinHere);
   // One field in two modes (no separate setup form), autocomplete has to

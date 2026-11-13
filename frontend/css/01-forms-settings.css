@@ -2288,13 +2288,12 @@ button:not(.ghost) > .spinner {
 }
 /* The setup note (index.html, `#lock-setup-note`): the length rule, what the
    password unlocks and what a reset costs, said before the field is filled.
-   Left-aligned inside a centred card on purpose, it is three lines of prose
-   rather than a caption, and centred prose is read a word at a time. Smaller
+   Two short lines since L-ui-modernisation-4, so it sits centred like the line
+   above it. Smaller
    and quieter than the line above it, which is the promise; this is the
    detail under the promise. */
 .lock-setup-note {
   margin-top: var(--space-3);
-  text-align: left;
   font-size: var(--text-sm);
   line-height: 1.5;
 }
