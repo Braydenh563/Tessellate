@@ -20,6 +20,10 @@
    its own here: Chromium still drew the popup with this app's own
    (light, inherited-from-`select`) text colour, so `option`/`optgroup`
    get their background/text set directly below too, belt and suspenders. */
+/* The tokens are a cascade layer (L-ui-modernisation-1): an unlayered rule
+   that sets one wins by being unlayered, not by specificity. Custom
+   properties and `color-scheme` only (`tests/test_css_token_layer_ui1.py`). */
+@layer tokens;
 /* **The board's grid tokens do not inherit** (INBOX 392 and 312: "really
    slow to pan and move around", on maps and plain boards alike). They are
    rewritten on `#whiteboard-container` on every pan and zoom frame, and an
@@ -46,6 +50,7 @@
   inherits: false;
   initial-value: 0px;
 }
+@layer tokens {
 :root {
   color-scheme: light;
 }
@@ -88,11 +93,13 @@
     --accent-text: oklch(from var(--accent) max(l, 0.8) min(c, 0.12) h);
   }
 }
+}
 select option,
 select optgroup {
   background-color: var(--modal-bg);
   color: var(--ink);
 }
+@layer tokens {
 :root {
   /* --- the spacing scale (§35L) --------------------------------------------
      Extracted, not invented. This file had 667 margin/padding/gap
@@ -854,6 +861,7 @@ select optgroup {
   --ui-exit: 0s;
   --ui-step: 0s;
 }
+}
 /* Base application of Appearance settings.
    **`file` and `hidden` are excluded, and this rule is why a borderless
    control can grow a 3px border out of nowhere.** `border: none`, whether
@@ -887,6 +895,7 @@ select,
 .sidebar {
   border-style: var(--border-style) !important;
 }
+@layer tokens {
 /* Dark palette. CSS has no variables-for-variables, so the block
    appears twice: once for the manual toggle, once for the OS default. */
 :root[data-mode="dark"] {
@@ -1041,6 +1050,7 @@ select,
     --surface-3: rgba(255, 255, 255, 0.09);
     --divider: rgba(255, 255, 255, 0.08);
   }
+}
 }
 * {
   box-sizing: border-box;

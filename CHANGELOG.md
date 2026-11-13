@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The design tokens are a cascade layer: a palette, theme or component that sets a token wins by being unlayered, not by specificity (L-ui-modernisation-1).
 - The timeline table head is bare at rest and opaque only while rows pass under it, the same recipe as the other sticky heads (L-ui-modernisation-28).
 - Settings, Shortcuts no longer runs off the side of a narrow phone: the keys drop under their action (L-ui-modernisation-26).
 
