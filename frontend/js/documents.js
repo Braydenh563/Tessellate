@@ -238,6 +238,9 @@ function syncDocFileType({ prose = true } = {}) {
   //: stays: a code file prints its own listing (`docCodePrintFill`).
   for (const id of ["doc-export-zip", "doc-export-docx", "doc-map-headings"]) $(id)?.classList.toggle("hidden", docIsCodeFile());
   $("doc-export-slides")?.classList.toggle("hidden", docIsCodeFile());
+  //: Grid is the csv and tsv document's (documents-csvgrid.js); a grid left open on another file closes.
+  for (const grid of document.querySelectorAll("#doc-csv-grid, [data-click-proxy=doc-csv-grid]")) grid.classList.toggle("hidden", type.ext !== "csv");
+  if (docViewState.csvGrid?.isOpen() && (type.ext !== "csv" || docViewState.csvGrid.forDoc() !== (currentDoc?.id ?? null))) docViewState.csvGrid.close();
   $("doc-code-run")?.classList.toggle("hidden", !docRunnable(type));
   docRunSyncAvailability(type);
   //: Wrapping and whitespace are about a file that does not wrap by itself:
@@ -10236,6 +10239,7 @@ $("doc-ai").addEventListener("click", () => docAiLazy("openDocAiPanel"));
 //: whole file (`docFormatCode`). The press takes the focus from the editor,
 //: so it is handed back: formatting is a step in the middle of typing.
 $("doc-code-run")?.addEventListener("click", () => docRunCode());
+$("doc-csv-grid")?.addEventListener("click", () => ensureModule("docCsvGrid").then(() => docViewState.csvGrid?.toggle()));
 //: DOCUMENTS_PLAN 25 row 2: Run on a .py document with no Python yet is
 //: disabled, and this line beside it is the way to the install.
 $("doc-code-run-why")?.addEventListener("click", () => docRunOpenPythonExtra());

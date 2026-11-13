@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Documents, CSV: a Grid button turns a .csv or .tsv file into a table of cells you edit in place (Tab, Enter and the arrow keys move; add or delete a row or column); each edit is one change to the text, quoted as needed, so the editor's undo and save see it (L328, D42).
 - Documents, Debug: the stepper now lowers class fields and static blocks, destructuring (declarations, parameters, for-of, swaps), rest parameters and spread in lists, calls and objects, with a test per construct; async, generators, private members and getters stay named (L334).
 - Documents: Kinds of suggestion in the writing sheet turn off style, punctuation, capital-letter and word-choice suggestions from the grammar checker (L333).
 - Settings, Read aloud: a Browser voice picker chooses the voice for chat and document read-aloud (L333).

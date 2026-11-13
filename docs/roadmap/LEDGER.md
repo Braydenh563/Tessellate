@@ -11,65 +11,65 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
+| documents | 70 | 16 | 1 | 0 | 20 | 87 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
-| all | 553 | 598 | 134 | 3 | 188 | 1285 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
+| all | 553 | 599 | 134 | 3 | 188 | 1286 |
 
 ## graph
 
@@ -381,7 +381,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L308** `documents` open, M: Consolidate scattered document styles across frontend/css 00-10 (09-editor.css is 1143 lines). From OPEN.md:4215. Evidence: frontend/css 00-10 still split; 09-editor.css is 1143 lines. Analysis 2026-11-12 (docsG): "doc" selector lines per file: 00:35, 01:50, 02:86, 03:41, 04:353, 05:451, 06:33, 07:475, 08:319, 09:173, 10:277. Moving them into 09-editor.css reorders the cascade against 08-consistency and 10-responsive (later files override earlier ones at equal specificity), so a move needs a computed-style diff sweep per surface first; too wide to land safely in one step.
 - [ ] **L314** `documents` open, M: Debug test files with a harness instead of as plain scripts. From OPEN.md:2827. Evidence: Verified open 2026-11-10. Looked at 2026-11-12 (docsD): Python debug already runs a test file through the harness (run-core.js py.debug, tests:); JS and TS debug run it as a plain script because the harness (run-tests.js runTestHarness) is modern JS and the debug worker is ES5 JS-Interpreter, so it needs an ES5 harness plus a bridge for test rows
 - [ ] **L327** `documents` open, L: Split documents.js, documents-code.js and run_sandbox.py into lazy chunks (Opus design step) and fix listener imbalance. From OPEN.md:4468; OPEN.md:4482; OPEN.md:4485; OPEN.md:4493. Evidence: documents.js 16,598 lines now; lazy-chunk split needs Opus design step, not done
-- [ ] **L328** `documents` open, L: Build spreadsheet grid view for csv/tsv documents. From OPEN.md:4476. Evidence: Deferred L grid view for csv/tsv; not built
 - [ ] **L330** `documents` open, L: Code editor: multi-file tabs, split panes and inner palette. From OPEN.md:4481. Evidence: Deferred L; not built
 - [ ] **L335** `documents` open, L: Brief 45 part 2: split whiteboard.js/initWhiteboard and documents.js, fold 133 duplicate blocks. From SESSION_BRIEFS.md:176. Evidence: whiteboard.js still holds initWhiteboard (E19: 26,159 lines); no split commit found
 - [ ] **L342** `documents` partly, M: Meet the 4x typing gate (rest in a29i-1102.md). From OPEN.md:4489. Evidence: a29i-1102.md holds the rest; 4x typing gate stays open Analysis 2026-11-12 (docsG): the 4x CPU typing gate (p95 under 50 ms, no long task over 50 ms) needs a quiet machine; this shared four-core box runs agents and servers at once, so a figure here would be noise. Check: run the typing sweep with CDP Emulation.setCPUThrottlingRate 4 on an idle machine.
@@ -394,6 +393,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-36** `documents` open, M: Debug: lower async/await and generators (needs a promise queue and a resumable stepper; refused today). From L334.
 - [ ] **L-documents-37** `documents` open, S: Debug: lower private class members (#x) and class getters/setters (getter/setter pairs need one defineProperty; privacy needs a WeakMap). From L334.
 - [ ] **L-documents-38** `documents` open, S: Debug: arrow functions whose parameter is a pattern with a default (lezer recovers with an error node), spread in new X(...xs), tagged templates. From L334.
+- [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
+- [ ] **L-documents-40** `documents` open, S: Grid: phone touch targets and the one-row bar were set in CSS but not confirmed under a coarse pointer in the sweep (cell height measured 27px at 390). From L328.
 
 ## mindmap
 
