@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: a PDF dropped, pasted or chosen on a board asks "Place as pages" (one picture per page, side by side, the first 20) or "Attach as one object" (page 1, double-click opens the file); one Undo step either way (L-whiteboard-2).
 - Whiteboard: Select all (Ctrl+A) and the Tab walk take connectors too, and a connector is read out as "Connector" with its label (L-whiteboard-21).
 - Whiteboard: Alt+Shift+L, T and N edit a selected item's link, tooltip and comment, and Alt+Shift+K its tags, as in draw.io; Ctrl+K stays the command palette (L-whiteboard-22).
 - Whiteboard: resizing with Shift or Alt shows the size readout too (L284).

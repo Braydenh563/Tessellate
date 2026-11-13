@@ -1858,6 +1858,7 @@ TOPIC_META: dict[str, dict] = {
     "board-workshop": {"title": "Voting dots and a workshop timer", "path": "A board, Board menu, Workshop"},
     "board-diagram-tools": {"title": "Diagram tools: zoom to the selection, Home, tidy as a tree, change a shape, link a shape, shrink text to fit, clear labels", "path": "A board, Arrange, View, or a selection's More"},
     "board-paste": {"title": "Paste on a board or map: options and Paste special", "path": "A board, Edit, Paste in other ways, Paste special"},
+    "board-pdf": {"title": "Put a PDF on a board", "path": "A board, drop a PDF, or the Image button"},
     "mind-map-controls": {"title": "Mind map keys and controls", "path": "Library tab, Boards & maps"},
     "documents-controls": {"title": "Document editor keys and controls", "path": "Library tab, Documents"},
     "documents-replace": {"title": "Replace in every document", "path": "Library tab, Documents, document menu"},
@@ -1961,7 +1962,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
-        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-draw-io-keys", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
+        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-draw-io-keys", "board-workshop", "board-paste", "board-pdf", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
         "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-ink", "board-keyboard-create", "board-group-edit", "board-structure", "board-text-more", "board-drawn-shapes", "board-format-options", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),

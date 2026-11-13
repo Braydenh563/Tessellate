@@ -35,6 +35,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-ink-more.js", //: Free-line hollow ends, smoothed pen strokes, shape clean-up, replay and the GIF; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
     "/js/whiteboard-ink-recognise.js", //: Turns a rough stroke into a clean shape; pure, joins `wbFmtState` and runs after whiteboard-ink-more.js.
     "/js/whiteboard-ink-replay.js", //: Replay ink and its GIF; joins `wbFmtState`, names whiteboard.js at run time only.
+    "/js/whiteboard-pdf.js", //: A PDF dropped on a board, placed as pages or kept as one object; joins `wbFmtState`, names whiteboard.js at run time only.
     "/js/whiteboard-gif.js", //: The animated-GIF writer; pure, joins `wbFmtState`.
     "/js/whiteboard-shape-table.js", //: The table of JS-drawn shapes (cylinder, cube, step...): the picker rows, resize and draw.io words; joins `wbFmtState`.
     "/js/whiteboard-library-more.js", //: The shape picker and Replace with a library shape; names whiteboard.js and whiteboard-library.js at run time only.

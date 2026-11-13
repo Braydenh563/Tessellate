@@ -720,6 +720,26 @@ TAIL_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "board-pdf",
+            "keywords": (
+                "pdf on a board",
+                "put a pdf on a whiteboard",
+                "place pdf pages",
+                "attach a pdf to a board",
+                "document on a board",
+                "print out a pdf",
+            ),
+            "body": (
+                "Drop a PDF on a board, paste it, or choose it with the Image button on the tool rail, and the "
+                "board asks once. Place as pages puts each page on the board as its own picture, side by side "
+                "(the first 20 pages of a longer file), as one Undo step. Attach as one object puts the first "
+                "page on the board as one picture; double-click it to open the whole file. Either way the "
+                "pictures resize and move like any other. Escape places nothing. Without the PDF page reader "
+                "(Settings, Packages, Read scanned PDFs) the file becomes a card with its name that still opens."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "mind-map-controls",
             "keywords": (
                 "cross-link",
