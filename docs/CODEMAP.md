@@ -1,8 +1,8 @@
 # Code map
 
-Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8415, frontend ids 2772, CSS sections 524, backend routes 709, backend modules 10830, test files 2744, tests 22101, plan headings 689, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8415, frontend ids 2772, CSS sections 524, backend routes 709, backend modules 10830, test files 2744, tests 22102, plan headings 689, app scripts 29, boot scripts 38, script files 301.
 
 ## Frontend functions (8415)
 
@@ -5126,12 +5126,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `fieldClearBoxes` | frontend/js/field-clear.js:66 |
-| `fieldClearRun` | frontend/js/field-clear.js:86 |
-| `fieldClearSync` | frontend/js/field-clear.js:70 |
-| `fieldClearSyncAll` | frontend/js/field-clear.js:167 |
-| `fieldClearWatchValue` | frontend/js/field-clear.js:138 |
-| `fieldClearWrite` | frontend/js/field-clear.js:80 |
+| `fieldClearBoxes` | frontend/js/field-clear.js:71 |
+| `fieldClearRun` | frontend/js/field-clear.js:91 |
+| `fieldClearSync` | frontend/js/field-clear.js:75 |
+| `fieldClearSyncAll` | frontend/js/field-clear.js:172 |
+| `fieldClearWatchValue` | frontend/js/field-clear.js:143 |
+| `fieldClearWrite` | frontend/js/field-clear.js:85 |
 
 ### frontend/js/file-drop.js (10)
 
@@ -27861,7 +27861,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22101)
+## Tests (22102)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28974,7 +28974,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_feature_instead_class_1026.py | 3 |
 | tests/test_feature_models.py | 40 |
 | tests/test_fence_scrub.py | 4 |
-| tests/test_field_clear.py | 8 |
+| tests/test_field_clear.py | 9 |
 | tests/test_file_drop.py | 9 |
 | tests/test_file_editing.py | 20 |
 | tests/test_file_read_tasks.py | 6 |
