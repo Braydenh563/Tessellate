@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10889, test files 2732, tests 22113, plan headings 689, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10893, test files 2733, tests 22119, plan headings 689, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8365)
 
@@ -13963,7 +13963,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10889)
+## Backend modules (10893)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17813,6 +17813,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `split_sentences` | src/tessellate/ai/grounding.py:353 |
 | `support` | src/tessellate/ai/grounding.py:657 |
 
+### src/tessellate/ai/guide_advice.py (4)
+
+| Name | File:line |
+|---|---|
+| `Advice` | src/tessellate/ai/guide_advice.py:35 |
+| `_rx` | src/tessellate/ai/guide_advice.py:45 |
+| `match` | src/tessellate/ai/guide_advice.py:170 |
+| `reply` | src/tessellate/ai/guide_advice.py:180 |
+
 ### src/tessellate/ai/guide_aliases.py (3)
 
 | Name | File:line |
@@ -17831,7 +17840,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read` | src/tessellate/ai/guide_intent.py:151 |
 | `reply` | src/tessellate/ai/guide_intent.py:216 |
 | `surface` | src/tessellate/ai/guide_intent.py:169 |
-| `topics` | src/tessellate/ai/guide_intent.py:261 |
+| `topics` | src/tessellate/ai/guide_intent.py:264 |
 
 ### src/tessellate/ai/guide_lead.py (21)
 
@@ -27901,7 +27910,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22113)
+## Tests (22119)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29197,6 +29206,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_grounding.py | 28 |
 | tests/test_grounding_1323.py | 4 |
 | tests/test_grounding_fixtures.py | 10 |
+| tests/test_guide_advice_l34.py | 6 |
 | tests/test_guide_aliases.py | 9 |
 | tests/test_guide_composed_787.py | 18 |
 | tests/test_guide_gaps.py | 3 |
