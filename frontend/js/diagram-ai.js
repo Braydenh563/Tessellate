@@ -312,7 +312,7 @@
     icon.setAttribute("aria-hidden", "true");
     A.input = el("input", "search-field-input");
     //: The pane is narrow beside the picture (224 px at 1440): the example is the title, the placeholder two words.
-    Object.assign(A.input, { type: "text", maxLength: 300, autocomplete: "off", placeholder: "Ask for a change", title: "For example: add Refund after In stock? No, or rename Warehouse to Fulfilment" });
+    Object.assign(A.input, { type: "text", maxLength: 300, autocomplete: "off", placeholder: "Ask for a change", title: `For example: ${{ mindmap: "add Rent under Budget, or rename Hiring to Recruiting", timeline: "add event Launch under 2024, or add section Plans", sequence: "add participant Bank, or add message Pay from Shop to Bank" }[S.k?.name] || "add Refund after In stock? No, or rename Warehouse to Fulfilment"}` });
     A.input.setAttribute("aria-label", "Ask for a change to the diagram");
     const send = A.send = smallButton("ph:paper-plane-right", "Ask (Enter)", () => {}, false);
     send.type = "submit";
@@ -346,8 +346,6 @@
       A.toggle.setAttribute("aria-expanded", String(open));
       A.lints.classList.toggle("hidden", !open);
     });
-    //: The other kinds get Suggestions only (L-documents-21); the Ask box reads the flowchart's blocks and arrows.
-    if (S.k) form.classList.add("hidden");
     box.append(form, A.preview, A.toggle, A.lints);
     S.pane.prepend(box);
     (S.fig.onpaint ||= []).push(() => lint(A));
@@ -359,6 +357,7 @@
     const { S } = A;
     const words = A.input.value.trim();
     if (!words) return A.h.say(S, "Write what to change first.");
+    if (S.k) return askKind(A, words);
     const model = { nodes: S.m.nodes.map((n) => ({ id: n.id, text: String(n.text).slice(0, 200), shape: n.shape, group: n.group ?? null })), edges: S.m.edges.map((e) => ({ from: e.from, to: e.to, label: String(e.label || "").slice(0, 200) })), subgraphs: S.m.subgraphs.map((g) => ({ id: g.id, title: String(g.title || "").slice(0, 200), parent: g.parent ?? null })) };
     setBusy(A.send, true);
     let reply;
@@ -371,6 +370,20 @@
     }
     const by = reply.by === "model" ? "Written by the model." : "Read by rule, no model needed.";
     show(A, reply.ops || [], [reply.said, by].filter(Boolean).join(" "));
+  }
+
+  //: A mind map, timeline or sequence (L-documents-35): the lazy sibling flattens the blocks, asks, and plays the ops on a copy.
+  async function askKind(A, words) {
+    const { S } = A;
+    setBusy(A.send, true);
+    try {
+      if (!(await ensureModule("diagramAiKinds"))) return A.h.say(S, "The ask for this kind did not load.");
+      const got = await diagramModel.aiKinds.ask(S, words);
+      if (got.say) return A.h.say(S, got.say);
+      showKind(A, got.next, got.lines, got.said, `AI: ${got.lines[0]}`.slice(0, 120));
+    } finally {
+      setBusy(A.send, false);
+    }
   }
 
   //: The preview (F7): the ops on a copy, the picture of both, the lines, Apply or Discard.
@@ -397,7 +410,7 @@
     A.ops = A.next = A.name = null;
     A.preview.classList.add("hidden");
     A.h.say(A.S, "Discarded. The diagram is as it was.");
-    (A.S.k ? A.toggle : A.input).focus();
+    A.input.focus();
   }
 
   async function applyPreview(A) {
@@ -420,17 +433,16 @@
   }
 
   //: A suggestion on another kind: the removal on a copy, the kind's own printer for the picture, then Apply or Discard as for a flowchart.
-  function showKind(A, f) {
+  function showKind(A, next, lines, said, name) {
     const { S } = A;
-    const next = diagramAiPure.kindDrop(S.m, f.drop);
     A.ops = [];
     A.next = next;
-    A.name = `AI: ${f.act.charAt(0).toLowerCase()}${f.act.slice(1)}`.slice(0, 120);
-    A.list.replaceChildren(el("li", "", f.act));
-    A.said.textContent = "1 block removed.";
+    A.name = name;
+    A.list.replaceChildren(...lines.map((line) => el("li", "", line)));
+    A.said.textContent = said;
     A.preview.classList.remove("hidden");
     draw(A.fig, S.k.print(next));
-    A.h.say(S, `Proposed: ${f.act.toLowerCase()}. Apply or Discard.`);
+    A.h.say(S, `Proposed: ${lines.join("; ").toLowerCase()}. Apply or Discard.`);
     A.preview.querySelector(".dgm-ai-foot button")?.focus();
   }
 
@@ -443,7 +455,7 @@
     A.lints.replaceChildren(...found.map((f) => {
       const li = el("li", "dgm-ai-lint");
       const words = el("span", "dgm-ai-lint-text", f.text);
-      li.append(words, rowActions([{ label: f.act, title: `${f.act}: preview the change`, run: () => (S.k ? showKind(A, f) : show(A, f.ops, "A suggestion, by rule.")) }], "Suggestion"));
+      li.append(words, rowActions([{ label: f.act, title: `${f.act}: preview the change`, run: () => (S.k ? showKind(A, diagramAiPure.kindDrop(S.m, f.drop), [f.act], "1 block removed.", `AI: ${f.act.charAt(0).toLowerCase()}${f.act.slice(1)}`.slice(0, 120)) : show(A, f.ops, "A suggestion, by rule.")) }], "Suggestion"));
       return li;
     }));
   }

@@ -2,9 +2,9 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8449, frontend ids 2775, CSS sections 524, backend routes 709, backend modules 10850, test files 2748, tests 22140, plan headings 689, app scripts 29, boot scripts 38, script files 302.
+Counts: frontend functions 8454, frontend ids 2775, CSS sections 524, backend routes 709, backend modules 10850, test files 2749, tests 22149, plan headings 689, app scripts 29, boot scripts 38, script files 303.
 
-## Frontend functions (8449)
+## Frontend functions (8454)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3165,14 +3165,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
 
-### frontend/js/diagram-ai.js (33)
+### frontend/js/diagram-ai-kinds.js (4)
 
 | Name | File:line |
 |---|---|
-| `applyPreview` | frontend/js/diagram-ai.js:403 |
-| `ask` | frontend/js/diagram-ai.js:358 |
+| `ask` | frontend/js/diagram-ai-kinds.js:75 |
+| `dakApply` | frontend/js/diagram-ai-kinds.js:31 |
+| `dakFlatten` | frontend/js/diagram-ai-kinds.js:16 |
+| `dakSlug` | frontend/js/diagram-ai-kinds.js:13 |
+
+### frontend/js/diagram-ai.js (34)
+
+| Name | File:line |
+|---|---|
+| `applyPreview` | frontend/js/diagram-ai.js:416 |
+| `ask` | frontend/js/diagram-ai.js:356 |
+| `askKind` | frontend/js/diagram-ai.js:376 |
 | `build` | frontend/js/diagram-ai.js:306 |
-| `compareThem` | frontend/js/diagram-ai.js:513 |
+| `compareThem` | frontend/js/diagram-ai.js:525 |
 | `copyOf` | frontend/js/diagram-ai.js:277 |
 | `counts` | frontend/js/diagram-ai.js:297 |
 | `dgaAdd` | frontend/js/diagram-ai.js:45 |
@@ -3192,16 +3202,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgaText` | frontend/js/diagram-ai.js:18 |
 | `dgaUnused` | frontend/js/diagram-ai.js:35 |
 | `dgaWords` | frontend/js/diagram-ai.js:152 |
-| `discard` | frontend/js/diagram-ai.js:396 |
+| `discard` | frontend/js/diagram-ai.js:409 |
 | `docOf` | frontend/js/diagram-ai.js:289 |
 | `draw` | frontend/js/diagram-ai.js:291 |
 | `el` | frontend/js/diagram-ai.js:281 |
 | `hues` | frontend/js/diagram-ai.js:278 |
-| `lint` | frontend/js/diagram-ai.js:437 |
-| `show` | frontend/js/diagram-ai.js:377 |
-| `showKind` | frontend/js/diagram-ai.js:423 |
-| `versions` | frontend/js/diagram-ai.js:452 |
-| `wire` | frontend/js/diagram-ai.js:535 |
+| `lint` | frontend/js/diagram-ai.js:449 |
+| `show` | frontend/js/diagram-ai.js:390 |
+| `showKind` | frontend/js/diagram-ai.js:436 |
+| `versions` | frontend/js/diagram-ai.js:464 |
+| `wire` | frontend/js/diagram-ai.js:547 |
 
 ### frontend/js/diagram-bar.js (9)
 
@@ -27929,7 +27939,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22140)
+## Tests (22149)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28740,6 +28750,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_ai_kinds_1112.py | 4 |
 | tests/test_diagram_ask.py | 15 |
 | tests/test_diagram_ask_kinds.py | 12 |
+| tests/test_diagram_ask_kinds_ui.py | 9 |
 | tests/test_diagram_behaviour_1108.py | 7 |
 | tests/test_diagram_bg1.py | 2 |
 | tests/test_diagram_blind_1108.py | 10 |
@@ -31102,14 +31113,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:839 |
+| Needs hardware | docs/roadmap/LEDGER.md:838 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:831 |
+| Owner calls | docs/roadmap/LEDGER.md:830 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31290,7 +31301,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1032 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1031 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31344,25 +31355,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:76 |
-| chat | docs/roadmap/LEDGER.md:1048 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1132 |
+| chat | docs/roadmap/LEDGER.md:1047 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1131 |
 | documents | docs/roadmap/LEDGER.md:379 |
-| documents | docs/roadmap/LEDGER.md:1072 |
-| general | docs/roadmap/LEDGER.md:790 |
+| documents | docs/roadmap/LEDGER.md:1071 |
+| general | docs/roadmap/LEDGER.md:789 |
 | graph | docs/roadmap/LEDGER.md:74 |
-| graph | docs/roadmap/LEDGER.md:1036 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1144 |
+| graph | docs/roadmap/LEDGER.md:1035 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1143 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:397 |
-| mindmap | docs/roadmap/LEDGER.md:1084 |
-| timeline | docs/roadmap/LEDGER.md:551 |
-| timeline | docs/roadmap/LEDGER.md:1108 |
-| ui-modernisation | docs/roadmap/LEDGER.md:434 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1096 |
+| mindmap | docs/roadmap/LEDGER.md:396 |
+| mindmap | docs/roadmap/LEDGER.md:1083 |
+| timeline | docs/roadmap/LEDGER.md:550 |
+| timeline | docs/roadmap/LEDGER.md:1107 |
+| ui-modernisation | docs/roadmap/LEDGER.md:433 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1095 |
 | whiteboard | docs/roadmap/LEDGER.md:333 |
-| whiteboard | docs/roadmap/LEDGER.md:1060 |
-| world-class | docs/roadmap/LEDGER.md:554 |
-| world-class | docs/roadmap/LEDGER.md:1120 |
+| whiteboard | docs/roadmap/LEDGER.md:1059 |
+| world-class | docs/roadmap/LEDGER.md:553 |
+| world-class | docs/roadmap/LEDGER.md:1119 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

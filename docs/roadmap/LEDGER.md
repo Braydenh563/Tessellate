@@ -11,65 +11,65 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
-| documents | 70 | 14 | 1 | 0 | 20 | 85 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
+| documents | 70 | 13 | 1 | 0 | 20 | 84 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
-| all | 553 | 597 | 134 | 3 | 188 | 1284 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
+| all | 553 | 596 | 134 | 3 | 188 | 1283 |
 
 ## graph
 
@@ -386,7 +386,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L342** `documents` partly, M: Meet the 4x typing gate (rest in a29i-1102.md). From OPEN.md:4489. Evidence: a29i-1102.md holds the rest; 4x typing gate stays open Analysis 2026-11-12 (docsG): the 4x CPU typing gate (p95 under 50 ms, no long task over 50 ms) needs a quiet machine; this shared four-core box runs agents and servers at once, so a figure here would be noise. Check: run the typing sweep with CDP Emulation.setCPUThrottlingRate 4 on an idle machine. Measured 2026-11-13 (docsK, doctype.js THROTTLE=4 AT_TOP=1, 20k-word document, three runs, load 1.7, 2.1, 2.2 on four cores shared with other agents so noisy): Live keydown and input event durations p95 64, 64, 64 ms (p50 40; 88 of 88 events over 16 ms; max 88, 80, 64); Source p95 80, 88, 80. Gate (p95 under 50, no long task over 50) not met in any run; a long-task count was not recorded by this sweep (the 40-key trace on a 120-paragraph document saw 1 to 2 long tasks, max 84 to 130 ms, mean 41 to 46, p95 53 to 72).
 - [ ] **L-documents-11** `documents` open, L: Per-instance whiteboard for boards inside documents. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:1502. Evidence: Open line in the plan's prose a session could miss. Waits on a whiteboard per-instance refactor (also 1319).
 - [ ] **L-documents-26** `documents` open, M: Per-key cost in the document editor is about twice a bare CodeMirror (native part, not script): find which style invalidation per key (doc-block-handle and drop class writes, caret and complete-list writes) costs it. From L323. Evidence: /tmp/docsF-s/key323.js: live view 35 to 43 ms a key at 4x CPU against 19 for a bare CodeMirror and 17 for a bare contenteditable; trace EventDispatch 56 against 25 bare, FunctionCall 20 against 10, JS self time under 6 ms a key, so the rest is native editing and style Measured 2026-11-13 (docsK, 40 keys, 4x CPU, CDP trace with invalidation tracking, load 0.6 to 2.2; sweep in the agent scratch dir): live 7.4 recalcs a key, 3 elements each, 6.9 ms, 3.05 layouts 4.9 ms, mean keydown to frame 42 ms; bare CodeMirror from the app bundle 4.2 recalcs, 2 elements, 2.8 ms, 1.0 layout 1.1 ms, mean 23 ms. No class writes (doc-block-handle, drop) on the key path; invalidations are the engine's own style writes (cm-content, cursor layer, cursor), the cursor blink animation (3.5 a key), the doc-caret text write (2 schedules, 1 layout dirty) and the page's emblem animations (5 a key vs 2 bare, frames). Profiler (inclusive per key): CM update 12 ms against about 4 bare, lag-watch wrapper 5, docLinkOfferAsk fetch 2, renderDocProse 1.8. Extra layouts are 2 frame layouts plus 1 forced by the engine's scrollIntoView coordsAt. Built 'c749c784': selectionBarHide and selectionBarElement used `$`, which falls back to surfaceFind and walks every unbuilt surface when the bar is missing (2.0 ms a key in the profile); lookups now read the document, test in test_selection_context.py. Wall effect not visible: mean 42.4 (4 runs after) against 42.6 (3 runs before), within noise. Tried: caret readout moved to one rAF: no change in layouts (3.0) and recalcs rose to 8.7, dropped. Left: where the engine update spends 8 ms more than bare (live-view decorations and update listeners) needs a per-plugin profile; the cursor-blink animation and emblem animations could pause while typing.
-- [ ] **L-documents-35** `documents` open, M: Diagram Ask UI for mind map, timeline and sequence: lazy sibling to diagram-ai.js that flattens S.m, posts kind and kind_model, previews and applies the returned ops with the kind's own model functions, and un-hides the Ask form. From L-documents-27. Evidence: diagram-ai.js:350 hides the Ask form when S.k is set; POST /drafts/diagram-ask now takes kind + kind_model (flat uid/type/text/parent/id/from/to blocks) and returns add/rename/move/delete ops by uid. diagram-builder.js is at its gzip cap
 - [ ] **L-documents-34** `documents` open, M: Tracked-change author and date shown on the suggestion menu and list: needs a stored form (CriticMarkup comment {>>name, date<<}) read by docSuggestParse, written by docSuggestEdit, kept by the Word export. From L333. Evidence: documents-prose.js docSuggestParse: CriticMarkup {++x++} carries no author or date; the mark menu is documents-prose.js docSuggestMenu (~1135)
 - [ ] **L-documents-36** `documents` open, M: Debug: lower async/await and generators (needs a promise queue and a resumable stepper; refused today). From L334.
 - [ ] **L-documents-37** `documents` open, S: Debug: lower private class members (#x) and class getters/setters (getter/setter pairs need one defineProperty; privacy needs a WeakMap). From L334.
