@@ -125,6 +125,7 @@ REACTIONS: dict[str, Reaction] = {
     "morning_hello": Reaction("morning_wave", "smile", 2.6, "happy", 3000.0),
     "fullscreen_app": Reaction("peek_back", "curious", 1.8, "", 30.0),
     "typing_burst": Reaction("nod_done", "smile", 1.6, "happy", 300.0),
+    "writing_stretch": Reaction("dusk_stretch", "content", 3.0, "happy", 300.0),
     # what the app's server notes (W31, `core.companion_events`, read on the screen poll): the in-app companion's reactions
     # to its own page, with the in-app cooldowns. Each plays a pose the desk already ships (look, stand, wave).
     "graph_laid": Reaction("glance_screen", "curious", 2.4, "", 60.0),
