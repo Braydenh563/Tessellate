@@ -35,3 +35,9 @@ def preview_stamps(db: Session, entries: list) -> dict[int | None, list]:
             if board in wanted:
                 out[board][slot] = (count, str(newest))
     return out
+
+
+def text_objects(db: Session, board_id: int, ids: list[int]) -> list[WhiteboardObject]:
+    """The text objects (stickies) among `ids` that sit on this board."""
+    where = (WhiteboardObject.board_id == board_id, WhiteboardObject.id.in_(set(ids)), WhiteboardObject.kind == "text")
+    return list(db.scalars(select(WhiteboardObject).where(*where)).all())

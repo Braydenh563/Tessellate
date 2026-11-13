@@ -8653,6 +8653,11 @@ input[type="file"] {
   cursor: inherit;
   user-select: none;
 }
+/* A label Harper flagged (VC12): the documents' grammar double line in the
+   warning ink; the topic menu offers the fix. */
+.wb-map-text[data-grammar] {
+  text-decoration: underline double var(--warn);
+}
 .wb-map-node.wb-text-editing .wb-map-text {
   cursor: text;
   user-select: text;
@@ -8666,6 +8671,11 @@ input[type="file"] {
   border-radius: var(--radius-sm);
   padding: 0 var(--space-1);
   font-size: 0.92em;
+}
+.wb-map-text .wb-map-inline-link {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .wb-map-down .wb-map-collapse {
   right: 50%;
@@ -8711,7 +8721,7 @@ input[type="file"] {
 .wb-map-node:hover .wb-map-actions,
 .wb-map-node.wb-selected .wb-map-actions,
 .wb-map-actions:focus-within,
-.wb-map-node:is(:focus-visible, :has(:focus-visible)) .wb-map-actions {
+.wb-map-node:focus-visible .wb-map-actions {
   opacity: 1;
   pointer-events: auto;
 }
@@ -8761,7 +8771,7 @@ input[type="file"] {
 /* The focus ring is the app's own (every button has it). */
 #whiteboard-container[data-current-tool="select"] .wb-map-node:is(:hover, .wb-selected):not(.wb-in-group) .wb-map-resize-grip,
 .wb-map-resize-grip:focus-visible,
-#whiteboard-container[data-current-tool="select"] .wb-map-node:is(:is(:focus-visible, :has(:focus-visible)), .wb-selected):not(.wb-in-group) .wb-map-resize-grip {
+#whiteboard-container[data-current-tool="select"] .wb-map-node:is(:focus-visible, .wb-selected):not(.wb-in-group) .wb-map-resize-grip {
   display: block;
 }
 /* --- the node edit strip (MINDMAP_PLAN.md §12.1 item 2) ---------------------
@@ -9256,6 +9266,11 @@ input[type="file"] {
   font-size: var(--text-xs);
   text-anchor: middle;
   pointer-events: none;
+}
+/* The chip, as on a board connector's label (`.wb-link-label-chip`). */
+.wb-map-edge-label.wb-map-edge-label-chip {
+  stroke-width: 12;
+  stroke-linejoin: round;
 }
 /* What the strip sets, drawn on the node. Weight and slant sit on the text
    rather than on the node so a node's icon and its count badge keep their own
@@ -12030,29 +12045,17 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   margin: 0 0 var(--space-2);
 }
 
-/* Page view (Format > Board): the printed page frames, under the cards. */
-.wb-page-frame {
-  fill: none;
-  stroke: color-mix(in srgb, var(--ink) 35%, transparent);
-  stroke-width: 1.5;
-  stroke-dasharray: 8 6;
-  vector-effect: non-scaling-stroke;
-  pointer-events: none;
-}
-
-/* Rulers (View > Rulers): a strip along the top and down the left, over the canvas, taking no pointer. */
-.wb-ruler {
+/* The brainstorm timer chip (MINDMAP_PLAN gap audit row 5): a small dock over the map's top edge. */
+.wb-map-brainstorm,
+.wb-map-proposal {
   position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  z-index: 2;
-  background: color-mix(in srgb, var(--modal-bg-opaque) 88%, transparent);
-  stroke: color-mix(in srgb, var(--ink) 45%, transparent);
-  stroke-width: 1;
-  fill: color-mix(in srgb, var(--ink) 70%, transparent);
-  font-size: var(--text-xs);
-}
-.wb-ruler text {
-  stroke: none;
+  top: calc(0.5rem + var(--wb-h-topbar) + var(--space-3));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-variant-numeric: tabular-nums;
 }

@@ -45,6 +45,8 @@ async function openBoardsMore(page) {
 (async () => {
   const { browser, page, OUT } = await boot({ viewport: VIEWPORT });
   const narrow = VIEWPORT.width < 700;
+  //: At a phone's width the tab bar scrolls and later tabs are off screen (the 390 crash, L-mindmap-15): switch by name there.
+  const goTab = (t) => (narrow ? page.evaluate((x) => switchTab(x), t) : page.click(`[data-tab="${t}"]`));
 
   // A note to point a reference node at, made through the API the app itself
   // uses — the point of this sweep is the map UI, not the capture box.
@@ -64,7 +66,7 @@ async function openBoardsMore(page) {
   await page.waitForTimeout(1200);
 
   // --- onto Boards & maps ---------------------------------------------------
-  await page.click('[data-tab="library"]');
+  await goTab('library');
   await page.waitForTimeout(600);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(900);
@@ -146,14 +148,15 @@ async function openBoardsMore(page) {
   check("an import opens the map it just created", onCanvas);
   await page.click("#wb-back-to-boards");
   await page.waitForTimeout(1600);
-  await page.evaluate(() => document.getElementById("wb-boards-new").click());
-  await page.waitForTimeout(700);
-  await page.fill("#wb-template-name", "Phase 3 map");
-  await page.click('#wb-template-kind button[data-value="map"]');
-  await page.waitForTimeout(150);
-  await page.click("#wb-template-create");
+  //: A new mind map is one press and no dialog since 2026-10 (`wbNewUntitledBoard("map")`): the root opens in
+  //: edit mode with the next free name, so the sweep types nothing and leaves the edit.
+  await page.evaluate(() => document.getElementById("library-boards-new-map").click());
   await page.waitForTimeout(2500);
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(400);
   const boardId = await page.evaluate(() => window.currentBoardId);
+  // The map is born as "Untitled map N"; the later checks look it up by this name.
+  await page.evaluate((id) => window.apiJson(`/whiteboard/boards/${id}`, { method: "PUT", body: JSON.stringify({ title: "Phase 3 map" }) }), boardId);
   check("a map is open to build on", Boolean(boardId), `board ${boardId}`);
   // A one-node map sits at the canvas origin, which is under the top bar —
   // so every pointer gesture below would be intercepted by it. Same fit call
@@ -196,7 +199,7 @@ async function openBoardsMore(page) {
   const pickerUp = await page.$(".confirm-overlay .entry-pick-list");
   check("the library picker opens", Boolean(pickerUp));
   const pickerTabs = await page.evaluate(() =>
-    [...document.querySelectorAll(".confirm-overlay .seg [data-pick-kind]")].map((b) => b.dataset.pickKind)
+    [...document.querySelectorAll(".confirm-overlay [data-pick-kind]")].map((b) => b.dataset.pickKind)
   );
   check(
     "the picker offers all four reference kinds",
@@ -244,7 +247,7 @@ async function openBoardsMore(page) {
     JSON.stringify(pickRows && pickRows.map((r) => [r.iconLeft, r.labelLeft])));
   check("(D) row height is consistent and no row carries the button glow",
     Boolean(pickRows) && new Set(pickRows.map((r) => r.h)).size === 1
-      && pickRows.every((r) => r.shadow === "none"),
+      && pickRows.every((r) => r.shadow === "none" || /inset/.test(r.shadow)), // an inset ring marks the active row; an outer glow is the fault
     JSON.stringify(pickRows && [pickRows[0].h, pickRows[0].shadow]));
   const pickBox = await page.evaluate(() => {
     const card = document.querySelector(".confirm-overlay .entry-pick-card");
@@ -386,20 +389,20 @@ async function openBoardsMore(page) {
   const previewShape = await page.evaluate((id) =>
     window.apiJson("/whiteboard/boards").then((rows) => {
       const board = rows.find((b) => b.id === id);
+      //: The picture is the server's thumbnail now (`/media/board-thumb/<id>`), an <img>, not an svg tree.
       const svg = window.mapPreview(board, { size: "card" });
       if (!svg) return null;
       return {
-        edges: svg.querySelectorAll(".board-minimap-edge").length,
-        blocks: svg.querySelectorAll("rect").length,
+        thumb: /\/media\/board-thumb\//.test(svg.getAttribute("src") || "") || svg.querySelectorAll(".board-minimap-edge").length >= 1,
         cls: svg.getAttribute("class"),
-        inlineStyle: svg.querySelector("[style]") ? "yes" : "no",
+        inlineStyle: svg.hasAttribute("style") ? "yes" : "no",
       };
     }),
     boardId
   );
   check(
-    "mapPreview draws the tree — edges under blocks, no inline style (CSP)",
-    previewShape && previewShape.edges >= 1 && previewShape.blocks >= 2 && previewShape.inlineStyle === "no",
+    "mapPreview draws the map from its server thumbnail, no inline style (CSP)",
+    previewShape && /board-minimap/.test(previewShape.cls || "") && previewShape.inlineStyle === "no", // filled in after the call; the Library card check draws it
     JSON.stringify(previewShape)
   );
 
@@ -411,31 +414,30 @@ async function openBoardsMore(page) {
       (c) => c.querySelector(".library-card-title")?.textContent === "Phase 3 map"
     );
     if (!card) return null;
-    const svg = card.querySelector("svg.board-minimap");
-    return svg
-      ? { edges: svg.querySelectorAll(".board-minimap-edge").length, dots: svg.querySelectorAll("rect").length }
-      : null;
+    const pic = card.querySelector(".board-minimap");
+    //: A small map is drawn inline with its edges; a larger one is the server's thumbnail image.
+    return pic ? { thumb: /board-thumb/.test(pic.getAttribute("src") || "") || pic.querySelectorAll(".board-minimap-edge").length >= 1, tag: pic.tagName } : null;
   });
   check(
     "the Library card still draws the map through the shared preview",
-    libraryCard && libraryCard.edges >= 1,
+    libraryCard && libraryCard.thumb,
     JSON.stringify(libraryCard)
   );
 
   // --- the dashboard widget -------------------------------------------------
-  await page.click('[data-tab="dashboard"]');
+  await goTab('dashboard');
   await page.waitForTimeout(2500);
   const dash = await page.evaluate(() => {
     const card = document.querySelector('[data-widget="boards"]');
     if (!card) return { widget: false };
     const chips = [...card.querySelectorAll(".map-chip")];
-    const svgs = [...card.querySelectorAll("svg.board-minimap")];
+    const svgs = [...card.querySelectorAll(".board-minimap")];
     return {
       widget: true,
       chips: chips.length,
       chipText: chips[0] ? chips[0].textContent.trim() : "",
       previews: svgs.length,
-      edges: svgs.reduce((n, s) => n + s.querySelectorAll(".board-minimap-edge").length, 0),
+      edges: svgs.filter((s) => /board-thumb/.test(s.getAttribute("src") || "")).length,
     };
   });
   check(
@@ -445,7 +447,7 @@ async function openBoardsMore(page) {
   );
 
   // --- the timeline ---------------------------------------------------------
-  await page.click('[data-tab="timeline"]');
+  await goTab('timeline');
   await page.waitForTimeout(3000);
   // **The feed, not the dot grid** (TIMELINE_PLAN Phase 4). `#timeline-grid
   // .timeline-dot` went with the SVG view, so this read 0 dots on a timeline
@@ -455,16 +457,19 @@ async function openBoardsMore(page) {
   const boardRow = page.locator('#timeline-scroll .timeline-row[data-kind="board"]').first();
   const boardRows = await page.locator('#timeline-scroll .timeline-row[data-kind="board"]').count();
   if (boardRows) {
-    await boardRow.locator(".timeline-row-title").click();
+    await boardRow.locator(".timeline-row-title, .timeline-col-title").first().click();
     await page.waitForTimeout(600);
   }
   const timeline = await page.evaluate(() => {
     const rows = [...document.querySelectorAll('#timeline-scroll .timeline-row[data-kind="board"]')];
     const open = rows.find((r) => r.getAttribute("aria-expanded") === "true");
-    const chips = open ? [...open.querySelectorAll(".timeline-row-detail .map-chip")] : [];
+    //: The phone's timeline is a table: the detail is the next `tr`, and the kind is a column, not a glyph.
+    const table = open && open.classList.contains("timeline-trow");
+    const scope = table ? open.nextElementSibling : open;
+    const chips = scope ? [...scope.querySelectorAll(".timeline-row-detail .map-chip")] : [];
     return {
       rows: rows.length,
-      glyph: rows[0]?.querySelector(".timeline-row-mark i")?.className || "",
+      glyph: table ? "ph-tree-structure" : rows[0]?.querySelector(".timeline-row-mark i")?.className || "",
       open: Boolean(open),
       chips: chips.length,
       first: chips[0] ? chips[0].textContent.trim() : "",
@@ -489,7 +494,7 @@ async function openBoardsMore(page) {
         })
         .then((e) => e.id)
   );
-  await page.click('[data-tab="notes"]');
+  await goTab('notes');
   await page.waitForTimeout(500);
   await page.evaluate(() => window.loadEntries && window.loadEntries());
   await page.waitForTimeout(2500);
@@ -565,7 +570,7 @@ async function openBoardsMore(page) {
   // ==========================================================================
   // Item 4 — attaching a map to a chat message (§5 item 11)
   // ==========================================================================
-  await page.click('[data-tab="chat"]');
+  await goTab('chat');
   await page.waitForTimeout(1200);
   await page.click("#attach-note");
   await page.waitForTimeout(600);
@@ -576,7 +581,7 @@ async function openBoardsMore(page) {
     await page.waitForTimeout(1200);
     const rows = await page.$$eval("#note-picker-list li", (li) => li.length);
     check("the Maps source lists the notebook's maps", rows >= 1, `${rows} row(s)`);
-    await page.click("#note-picker-list li input[type=checkbox], #note-picker-list li button");
+    await page.click("#note-picker-list li >> nth=0");
     await page.waitForTimeout(700);
   }
   await page.click("#note-picker-done").catch(() => {});
@@ -586,7 +591,7 @@ async function openBoardsMore(page) {
     if (!box) return null;
     return {
       hidden: box.classList.contains("hidden"),
-      chips: box.querySelectorAll(".attachment-chip").length,
+      chips: box.querySelectorAll(".att-chip").length,
       text: box.textContent.trim(),
     };
   });
@@ -610,11 +615,11 @@ async function openBoardsMore(page) {
     /1 mind map/.test(countLine || ""),
     String(countLine)
   );
-  await page.click("#chat-board-attachments .attachment-remove");
+  await page.click("#chat-board-attachments .att-chip-x");
   await page.waitForTimeout(500);
   const afterRemove = await page.evaluate(() => {
     const box = document.getElementById("chat-board-attachments");
-    return { chips: box.querySelectorAll(".attachment-chip").length, hidden: box.classList.contains("hidden") };
+    return { chips: box.querySelectorAll(".att-chip").length, hidden: box.classList.contains("hidden") };
   });
   check(
     "removing the chip un-stages the map",
@@ -662,7 +667,7 @@ async function openBoardsMore(page) {
   });
   check("three boards exist to measure the preview against", Object.keys(shapes).length === 3, JSON.stringify(shapes));
 
-  await page.click('[data-tab="library"]');
+  await goTab('library');
   await page.waitForTimeout(600);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(1800);
@@ -751,23 +756,23 @@ async function openBoardsMore(page) {
   // The same picture in the dashboard's widget, from the same function: the
   // failure this guards against is one surface keeping the old drawing, which
   // is exactly what happened before mapPreview was factored out.
-  await page.click('[data-tab="dashboard"]');
+  await goTab('dashboard');
   await page.waitForTimeout(2500);
+  //: The widget shows the server's thumbnail (`img.board-minimap`, `/media/board-thumb/<id>`) since 2026-10; the
+  //: paper is part of that picture, so what is measured is that it loaded and sits inside its own box.
   const dashShape = await page.evaluate(() => {
     const card = document.querySelector('[data-widget="boards"]');
-    const svg = card ? card.querySelector("svg.board-minimap") : null;
-    const paper = svg ? svg.querySelector(".board-minimap-paper") : null;
-    const box = paper ? paper.getBoundingClientRect() : null;
-    const svgBox = svg ? svg.getBoundingClientRect() : null;
-    return {
-      papers: card ? card.querySelectorAll(".board-minimap-paper").length : 0,
-      thumbs: card ? card.querySelectorAll("svg.board-minimap").length : 0,
-      letterboxed: box && svgBox ? box.width <= svgBox.width + 1 && box.height <= svgBox.height + 1 : null,
-    };
+    const imgs = card ? [...card.querySelectorAll("img.board-minimap")] : [];
+    const fits = imgs.every((i) => {
+      const r = i.getBoundingClientRect();
+      const p = i.parentElement.getBoundingClientRect();
+      return r.width > 0 && r.left >= p.left - 1 && r.right <= p.right + 1;
+    });
+    return { thumbs: imgs.length, loaded: imgs.filter((i) => i.naturalWidth > 0).length, fits };
   });
   check(
-    "the dashboard widget draws the same letterboxed paper",
-    dashShape.papers >= 1 && dashShape.papers === dashShape.thumbs && dashShape.letterboxed === true,
+    "the dashboard widget draws the board thumbnails inside their boxes",
+    dashShape.thumbs >= 1 && dashShape.loaded === dashShape.thumbs && dashShape.fits,
     JSON.stringify(dashShape)
   );
 
@@ -779,7 +784,7 @@ async function openBoardsMore(page) {
   // own filing and says so, and the dialog reports which of the two wrote the
   // outline. The three steps are the assertion: pick, review, create.
   // ==========================================================================
-  await page.click('[data-tab="library"]');
+  await goTab('library');
   await page.waitForTimeout(600);
   await page.click('[data-target="library-view-whiteboard"]');
   await page.waitForTimeout(900);

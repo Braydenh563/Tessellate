@@ -87,7 +87,7 @@
         } else await placeOne(info, pages, x, y);
       });
     } catch (err) {
-      toast(err.message || "Could not add that PDF.", "info");
+      toast(err.message || "Couldn't add that PDF.", "info");
     }
   }
 

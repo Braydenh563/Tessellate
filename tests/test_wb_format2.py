@@ -378,7 +378,7 @@ def test_the_rulers_are_a_view_switch_drawn_on_every_view_change_and_the_fields_
     assert "wbFmtState.opts?.drawRulers(t);" in js  # the zoom and pan callback redraws them
     fmt = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
     assert "wbFmtState.opts?.show(" in fmt and "wbFmtState.opts?.read(" in fmt
-    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert ".wb-ruler" in css
 
 

@@ -672,12 +672,22 @@ TAIL_TOPICS.extend(
                 "timebox",
                 "retro",
                 "brainstorm",
+                "reaction stamps on a note",
+                "react with a stamp",
+                "affinity sort",
+                "group stickies by theme",
+                "group by theme",
             ),
             "body": (
                 "Voting dots and a timer, for a workshop. Select notes, text boxes, pictures or frames and "
                 "choose Board, Workshop, Add a vote dot: each takes a dot, drawn as a count on its top-right "
                 "corner, and each press adds one (up to 99). Ctrl+K, Take a vote dot off, removes one; "
-                "Clear all vote dots empties the board; one Undo takes back a press. Workshop timer… opens "
+                "Clear all vote dots empties the board; one Undo takes back a press. React with a stamp adds "
+                "a thumb, heart, star, tick, question or flame chip under the item (a press on it takes yours "
+                "back), as on a mind map topic. Group by theme… sorts the selected stickies into named themes and shows "
+                "each sticky with the notes in your notebook that back it; tick the themes to keep, rename them if "
+                "you like, and each becomes a frame holding its stickies, in one Undo step. With no model running "
+                "the stickies are grouped by the words they share. Workshop timer… opens "
                 "1, 3, 5, 10, 15 or 30 minutes: a clock under the board's top bar counts down and says "
                 "when time is up; its X stops it. The timer is for this window only and is not saved."
             ),
@@ -911,21 +921,28 @@ TAIL_TOPICS.extend(
                 "audio note",
                 "audio on a topic",
                 "recording on a topic",
+                "brainstorm timer",
+                "copy the shape of a branch",
+                "topic template",
+                "picture from a link",
+                "second central topic",
+                "save a branch as markdown",
+                "proposed map",
             ),
             "body": (
                 "The layout picker: tree, radial, logic chart, "
                 "timeline, fishbone, tree table or free; Tidy lays every unpinned topic out again. "
                 "View sets Colour by (branch, category, age, note) and opens every "
                 "folded branch (Alt+1: fold every branch); Present branches shows it branch by branch. A topic's menu, "
-                "Content, Markers sets a priority (1 to 5), how far along it is, a "
-                "flag, a start day, a due day and up to six icons; View, Gantt chart draws "
-                "a bar from start to due for each topic with both, and a dragged bar moves its dates; "
-                "a topic's menu, Audio note attaches a recording from Recordings, its mic mark plays it; "
+                "Content, Markers sets a priority (1 to 5), progress, a "
+                "flag, a start day, a due day (and time) and up to six icons; View, Gantt chart draws "
+                "a bar from start to due for each topic with both; "
+                "a topic's menu, Audio note attaches a recording, its mic mark plays it; "
                 "View, Filter by marker dims every topic "
-                "without the one you pick, and View, Dim all but the selected branch "
+                "without the markers or labels you press, and View, Dim all but the selected branch "
                 "dims everything outside the selected branch and its path to "
                 "the centre, following the selection. The sidebar's Outline tab (View, "
-                "Outline) lists the map as an indented outline: F2 renames, "
+                "Outline) lists the map as an indented outline with each topic's markers: F2 renames, "
                 "Shift+Enter adds a topic, Tab and Shift+Tab move it in and out a level. "
                 "A topic's menu makes "
                 "it a task: press its box to tick it, and every topic above "
@@ -965,6 +982,9 @@ TAIL_TOPICS.extend(
                 "export a branch",
             ),
             "body": (
+                "A topic's menu also has Put a picture from a link, Copy this topic's shape with Paste the copied shape here, "
+                "Add a template branch, Add a second central topic (joined by a link with words) and Save this branch as Markdown; "
+                "the palette starts a five minute brainstorm timer. "
                 "Start from a "
                 "template, import an OPML, FreeMind, XMind, Markdown or text outline "
                 "(it opens as a tree), paste an indented "

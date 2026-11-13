@@ -89,3 +89,21 @@ def test_a_new_row_never_reuses_an_id_already_moved_to_history():
     taken = ledger.taken_ids("whiteboard", "", "- [x] **L-whiteboard-17** `whiteboard` open, S: done.\n")
     assert 17 in taken
     assert ledger.next_id("whiteboard", "- [ ] **L-whiteboard-3** x\n", "- [x] **L-whiteboard-17** x\n") == "L-whiteboard-18"
+
+
+def test_add_numbers_past_the_ids_in_history(tmp_path, monkeypatch):
+    """`ledger.py add` numbered from the LEDGER alone, so once every timeline row was done and
+    moved to HISTORY it handed out L-timeline-1 again (2026-11-13), an id code comments cite."""
+    import argparse
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("ledger_cli", ROOT / "scripts" / "ledger.py")
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    ledger, history = tmp_path / "LEDGER.md", tmp_path / "HISTORY.md"
+    ledger.write_text("## timeline\n\n", encoding="utf-8")
+    history.write_text("## Moved from the LEDGER\n- [x] **L-timeline-4** `timeline` open, S: old.\n", encoding="utf-8")
+    monkeypatch.setattr(cli, "LEDGER", ledger)
+    monkeypatch.setattr(cli, "HISTORY", history)
+    args = argparse.Namespace(plan="timeline", status="open", size="S", src="a test", evidence=None, title="New row")
+    assert cli.add(args) == "L-timeline-5"
