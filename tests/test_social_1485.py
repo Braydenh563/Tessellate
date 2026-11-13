@@ -290,3 +290,20 @@ def test_with_a_model_a_social_line_is_not_searched(ai_client, fake_ollama, note
         assert not _quoted(prompt) and not _quoted(out["text"]), said
         assert "hitest" not in prompt and "errrmmm" not in prompt, said
     assert no_web == []
+
+
+@pytest.mark.parametrize(("said", "kind"), [
+    ("that worked", "glad"), ("awesome, it works", "glad"), ("ugh, wrong again", "frustrated"), ("still wrong", "frustrated"),
+    ("you're brilliant", "compliment"),
+])
+def test_a_thing_working_is_gladness_and_wrong_again_is_frustration(said, kind):
+    """Social eval set (L-chat-22): these were read as a bare acknowledgement."""
+    assert question_noise.social_kind(said) == kind
+
+
+def test_briefly_alone_is_a_wish_for_a_shorter_answer():
+    from tessellate.ai import composer_dialogue
+
+    turn = [{"question": "what do my notes say about running", "answer": "You ran twice."}]
+    got = composer_dialogue.follow_on("briefly", turn)
+    assert got is not None and got.kind == "length" and got.question.startswith("briefly,")

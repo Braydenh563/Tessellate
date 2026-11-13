@@ -1967,6 +1967,10 @@ SOCIAL_PHRASES.update({
     "for god's sake": "frustrated", "for gods sake": "frustrated", "this is useless": "frustrated",
     "this sucks": "frustrated", "this is shit": "frustrated", "this is rubbish": "frustrated",
     "this is annoying": "frustrated", "so annoying": "frustrated", "not working": "frustrated",
+    #: Added 2026-11-13 (social eval set, L-chat-22): a thing working is gladness, a thing wrong again is frustration, "brilliant" is praise.
+    "that worked": "glad", "it worked": "glad", "it works": "glad", "awesome it works": "glad", "great it works": "glad",
+    "ugh wrong again": "frustrated", "still wrong": "frustrated", "you're brilliant": "compliment", "you are brilliant": "compliment",
+    "ur brilliant": "compliment", "you're a genius": "compliment", "you are a genius": "compliment",
     "you suck": "insult", "you're great": "compliment", "you are great": "compliment",
     "ur great": "compliment", "nice work": "compliment", "great job": "compliment",
     "great work": "compliment", "love it": "compliment", "feeling down": "emotion",

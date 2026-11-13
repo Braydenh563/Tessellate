@@ -208,7 +208,7 @@ _CORRECTION = lazy_compile(
 
 #: "shorter", "in more detail": the turn before again, at another length.
 _LENGTH = lazy_compile(
-    r"^\s*(?:shorter|briefer|less|in short|tl;?dr|summari[sz]e that|longer|more detail|in (?:more )?detail|"
+    r"^\s*(?:shorter|briefer|briefly|less|in short|tl;?dr|summari[sz]e that|longer|more detail|in (?:more )?detail|"
     r"(?:make it|say it|be|can you be) (?:shorter|briefer|longer|more detailed))(?:\s+please)?[\s.?!]*$",
     re.I,
 )
@@ -418,7 +418,7 @@ def _follow_correction(text: str, previous: str, last: dict, turns: list[dict]) 
 def _follow_length(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     if not _LENGTH.match(text):
         return _NOT_THIS
-    shorter = text.lstrip().lower().startswith(("shorter", "briefer", "in short", "tl;dr", "tldr", "summarise that", "summarize that", "less"))
+    shorter = text.lstrip().lower().startswith(("shorter", "briefer", "briefly", "in short", "tl;dr", "tldr", "summarise that", "summarize that", "less"))
     base = _without_length(previous)
     return FollowOn(f"briefly, {base}" if shorter else f"{base.rstrip('?.!')} in detail?", previous, "", "length", str(last.get("prefer") or ""))
 
