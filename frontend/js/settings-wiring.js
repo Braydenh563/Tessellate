@@ -1582,26 +1582,6 @@ document.addEventListener("keydown", (e) => {
 // fired a backend embedding-compare request per character typed.
 let noteSearchDebounceTimeout;
 onSurface("notes", () => {
-  //: **The query grammar in the box** (L-ui-modernisation-16): focused and
-  //: empty, the placeholder is the longest example that fits the field in its
-  //: own font (94px at 820, 299 at 1100); the whole list is behind the `?`.
-  const box = $("note-search");
-  const rest = box.placeholder;
-  const tries = [
-    "Try tag:work, is:favourite or before:2026-09",
-    "Try tag:work or is:favourite",
-    "Try tag:work",
-  ];
-  box.addEventListener("focus", () => {
-    const style = getComputedStyle(box);
-    const pen = document.createElement("canvas").getContext("2d");
-    pen.font = style.font;
-    const room = box.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-    box.placeholder = tries.find((text) => pen.measureText(text).width <= room) || rest;
-  });
-  box.addEventListener("blur", () => {
-    box.placeholder = rest;
-  });
   $("note-search").addEventListener("input", (e) => {
     noteSearch = e.target.value.trim();
     // Nothing to save when the box is empty; the button appears when it isn't.

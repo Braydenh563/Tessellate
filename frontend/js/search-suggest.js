@@ -549,5 +549,31 @@
     if (event.target.matches?.("input[data-search-scope]")) searchSuggestRemember(event.target, 3);
   });
 
+  //: **The query grammar in the notes box** (L-ui-modernisation-16): focused, its
+  //: placeholder is the longest example that fits the field in its own font (room
+  //: 94px at 820, 299 at 1100); blurred, "Filter notes" again; the whole list is
+  //: the `?`. Here, not in boot code: this file loads on the box's first focus.
+  const noteBox = $("note-search");
+  if (noteBox) {
+    const rest = noteBox.placeholder;
+    const tries = [
+      "Try tag:work, is:favourite or before:2026-09",
+      "Try tag:work or is:favourite",
+      "Try tag:work",
+    ];
+    const fit = () => {
+      const style = getComputedStyle(noteBox);
+      const pen = document.createElement("canvas").getContext("2d");
+      pen.font = style.font;
+      const room = noteBox.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      noteBox.placeholder = tries.find((text) => pen.measureText(text).width <= room) || rest;
+    };
+    noteBox.addEventListener("focus", fit);
+    noteBox.addEventListener("blur", () => {
+      noteBox.placeholder = rest;
+    });
+    if (document.activeElement === noteBox) fit();
+  }
+
   Object.assign(window, { SEARCH_RECENT_PREFIX, clearRecentSearches, fillSearchSuggest, openSearchSuggest, searchRecent, searchSuggestHold });
 })();
