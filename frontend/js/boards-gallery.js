@@ -316,7 +316,7 @@ function drawLibraryBoardsGallery(listed) {
     // create_board in routes_whiteboard.py) can.
     if (board.id !== null) {
       //: One rename path for Rename and Suggest a name: undoable, and the gallery redrawn.
-      const renameBoard = async (next) => {
+      const renameBoardWithUndo = async (next) => {
         const named = (title) => apiJson(`/whiteboard/boards/${board.id}`, {
           method: "PUT",
           body: JSON.stringify({ title }),
@@ -342,12 +342,12 @@ function drawLibraryBoardsGallery(listed) {
           ),
           makeMenuItem("ph:pencil-simple Rename", "Rename this board", async () => {
             const next = await promptDialog("Rename this board", board.title);
-            if (next) await renameBoard(next);
+            if (next) await renameBoardWithUndo(next);
           }),
           //: L348: the model names it from what is on it, else its first words do; renamed through Rename's undoable path.
           makeMenuItem("ph:sparkle Suggest a name", "A name from what is on this board", async () => {
             const got = await apiJson(`/whiteboard/boards/${board.id}/suggest-title`, { method: "POST" }).catch((e) => toast(e.message, true));
-            if (got?.title && got.title !== board.title) await renameBoard(got.title);
+            if (got?.title && got.title !== board.title) await renameBoardWithUndo(got.title);
           }),
           // ROADMAP.md item 8: creating, listing and renaming a map all
           // worked; duplicating did not exist, and it is the one that makes a

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix (boards, links): the Library board Suggest a name passes the undo and router lints (its rename is the undoable helper, the queries are in repo/whiteboard.py); the Guide says "Rename a board" again; a saved link's answer is read before its icon fetch starts, so it no longer races it.
 - Documents: Translate this passage uses the offline translator when it is installed (L331).
 - Documents: comment replies take attachments and are drawn as markdown (L332).
 - Documents: the dead surface aliases are gone; decisions D11 and D12 recorded (L329).

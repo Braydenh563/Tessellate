@@ -137,9 +137,9 @@ TAIL_TOPICS.extend(
                 "proportions, Alt resizes from the centre; a move, resize or box drawn out shows guides "
                 "and its size (Alt: none); [ and ] move one step back or forward, Ctrl+[ and Ctrl+] to "
                 "the back or front, Ctrl+G groups, Ctrl+Shift+G ungroups, Ctrl+Alt+C and Ctrl+Alt+V copy "
-                "and paste a style, Delete (or a bin drop) removes, Esc cancels a drag."
+                "and paste a style, Delete or a bin drop removes, Esc cancels a drag."
                 " Double-click empty board for a text box, double-click a closed shape (or select "
-                "it and press Enter) to write in it, right-click (or hold) for the menu, double-"
+                "it and press Enter) to write in it, right-click or hold for the menu, double-"
                 "click a line to bend it, select a connector and press Label (or Enter) to"
                 " label it. A frame's title drags it and what is inside it, its top handle turns both; a click on a panel's body or a frame's edge selects it; its "
                 "menu exports it or fits it to its contents, and a double-click on a resize "
@@ -148,7 +148,7 @@ TAIL_TOPICS.extend(
                 "Comment…, starts a thread. View, Present frames: one frame at a "
                 "time, the bar lists pages; ? shows every key; Ctrl+K finds a board action. Menus: Insert, Edit, "
                 "Arrange opens as submenus: Order, Align, Distribute, Tidy, Group, View (panels, background, grid, "
-                "snap, zoom) and Board (new, export). Rename: Board, Rename or Suggest a name."
+                "snap, zoom) and Board (new, export). Rename a board: Board, Rename or Suggest a name."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

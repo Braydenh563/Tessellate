@@ -11,11 +11,12 @@ import logging
 
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException
-from tessellate.core.database import Entry, WhiteboardNode, WhiteboardObject
+from tessellate.core.database import Entry, WhiteboardObject
 from sqlalchemy.orm import Session
 from tessellate.core import deps, events
 from tessellate.core.deps import get_session
 from sqlalchemy import select
+from tessellate.repo import whiteboard as wb_repo
 from tessellate.api.wb_board import BoardOut, _store_board_numbered, _store_board_settings
 from tessellate.api.wb_model import DEFAULT_MAP_LAYOUT
 from tessellate.core.events import object_state as _object_state
@@ -254,37 +255,6 @@ BOARD_NAME_ITEMS = 40
 BOARD_NAME_CHARS = 1500
 
 
-def _board_words(db: Session, board_id: int) -> list[str]:
-    """What is written on a board, one line each: a map's topics and a board's
-    stickies and text (an object's `content`), then the titles of the note cards
-    on it. A private or deleted note's title is left out, as everywhere the
-    model could read it."""
-    import json
-
-    from tessellate.entry import manager_text
-
-    lines: list[str] = []
-    for obj in db.scalars(
-        select(WhiteboardObject).where(WhiteboardObject.board_id == board_id).order_by(WhiteboardObject.id)
-    ):
-        try:
-            data = json.loads(obj.data or "{}")
-        except ValueError:
-            continue
-        text = " ".join(str(data.get("content") or data.get("text") or "").split()) if isinstance(data, dict) else ""
-        if text:
-            lines.append(text[:120])
-    cards = db.scalars(select(Entry).join(WhiteboardNode, WhiteboardNode.entry_id == Entry.id).where(WhiteboardNode.board_id == board_id))
-    for entry in cards:
-        if entry.is_deleted or entry.is_private:
-            continue
-        text = manager_text.readable_content(entry)
-        title = manager_text.extract_title(text) or text.strip().split("\n")[0]
-        if title.strip():
-            lines.append(title.strip()[:120])
-    return lines[:BOARD_NAME_ITEMS]
-
-
 @router.post("/boards/{board_id}/suggest-title")
 def suggest_board_title(board_id: int, db: Session = Depends(get_session)) -> dict:
     """A name for this board or map, on request (L348), saving nothing: the
@@ -296,7 +266,7 @@ def suggest_board_title(board_id: int, db: Session = Depends(get_session)) -> di
     from tessellate.api.wb_board import _board_entry
 
     _board_entry(db, board_id)
-    text = "\n".join(_board_words(db, board_id))[:BOARD_NAME_CHARS].strip()
+    text = "\n".join(wb_repo.board_words(db, board_id, BOARD_NAME_ITEMS))[:BOARD_NAME_CHARS].strip()
     if not text:
         raise HTTPException(status_code=422, detail="There is nothing on this board to name it from yet.")
     if deps.get_ollama().is_running():
@@ -322,7 +292,7 @@ def _draft_objects(db: Session, board_id: int) -> tuple[list[_Box], list[_Box]]:
 
     frames: list[_Box] = []
     items: list[_Box] = []
-    for obj in db.scalars(select(WhiteboardObject).where(WhiteboardObject.board_id == board_id)):
+    for obj in wb_repo.board_objects(db, board_id):
         if obj.kind not in ("frame", "text"):
             continue
         try:
@@ -341,8 +311,7 @@ def _draft_cards(db: Session, board_id: int) -> list[_Box]:
     from tessellate.entry import manager_text
 
     cards: list[_Box] = []
-    for node in db.scalars(select(WhiteboardNode).where(WhiteboardNode.board_id == board_id)):
-        entry = db.get(Entry, node.entry_id)
+    for node, entry in wb_repo.board_cards(db, board_id):
         if entry is None or entry.is_deleted or entry.is_private:
             continue
         text = manager_text.readable_content(entry)

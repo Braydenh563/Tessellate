@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8416, frontend ids 2772, CSS sections 524, backend routes 709, backend modules 10830, test files 2745, tests 22106, plan headings 689, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8416, frontend ids 2772, CSS sections 524, backend routes 709, backend modules 10832, test files 2745, tests 22106, plan headings 689, app scripts 29, boot scripts 38, script files 301.
 
 ## Frontend functions (8416)
 
@@ -13391,11 +13391,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/board-library/{item_id}/restore` | POST | `restore_library_item` | src/tessellate/api/routes_board_library.py:691 |
 | `/boards` | GET | `list_boards` | src/tessellate/api/wb_boards.py:129 |
 | `/boards` | POST | `create_board` | src/tessellate/api/wb_boards.py:315 |
-| `/boards/generate` | POST | `generate_map` | src/tessellate/api/wb_make.py:394 |
-| `/boards/import` | POST | `import_board` | src/tessellate/api/wb_make.py:457 |
-| `/boards/propose` | POST | `propose_map` | src/tessellate/api/wb_make.py:123 |
+| `/boards/generate` | POST | `generate_map` | src/tessellate/api/wb_make.py:363 |
+| `/boards/import` | POST | `import_board` | src/tessellate/api/wb_make.py:426 |
+| `/boards/propose` | POST | `propose_map` | src/tessellate/api/wb_make.py:124 |
 | `/boards/{board_id}` | PUT | `rename_board` | src/tessellate/api/wb_boards.py:523 |
-| `/boards/{board_id}/draft` | POST | `draft_board_document` | src/tessellate/api/wb_make.py:376 |
+| `/boards/{board_id}/draft` | POST | `draft_board_document` | src/tessellate/api/wb_make.py:345 |
 | `/boards/{board_id}/duplicate` | POST | `duplicate_board` | src/tessellate/api/wb_boards.py:357 |
 | `/boards/{board_id}/export` | GET | `export_board` | src/tessellate/api/wb_export.py:679 |
 | `/boards/{board_id}/nodes` | POST | `create_map_node` | src/tessellate/api/wb_map.py:98 |
@@ -13407,7 +13407,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/{board_id}/nodes/{node_id}/move` | PUT | `move_map_node` | src/tessellate/api/wb_map.py:269 |
 | `/boards/{board_id}/nodes/{node_id}/suggest` | POST | `suggest_branches` | src/tessellate/api/routes_map_suggest.py:185 |
 | `/boards/{board_id}/nodes/{node_id}/summary` | POST | `summarise_branch` | src/tessellate/api/routes_map_suggest.py:428 |
-| `/boards/{board_id}/suggest-title` | POST | `suggest_board_title` | src/tessellate/api/wb_make.py:288 |
+| `/boards/{board_id}/suggest-title` | POST | `suggest_board_title` | src/tessellate/api/wb_make.py:258 |
 | `/boards/{board_id}/thumbnail` | PUT | `put_thumbnail` | src/tessellate/api/wb_preview.py:913 |
 | `/boards/{board_id}/thumbnail/state` | GET | `thumbnail_state` | src/tessellate/api/wb_preview.py:902 |
 | `/boards/{board_id}/tree` | GET | `board_tree` | src/tessellate/api/wb_map.py:31 |
@@ -13900,11 +13900,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/when` | POST | `read_when` | src/tessellate/api/routes_reminders.py:586 |
 | `/whiteboard/boards/{board_id}/paste` | POST | `paste_board_items` | src/tessellate/api/routes_board_library.py:1343 |
 | `/whiteboard/boards/{board_id}/place` | POST | `place_library_item` | src/tessellate/api/routes_board_library.py:1226 |
-| `/{bookmark_id}` | DELETE | `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:284 |
-| `/{bookmark_id}` | PUT | `update_bookmark` | src/tessellate/api/routes_bookmarks.py:208 |
-| `/{bookmark_id}/icon` | GET | `bookmark_icon` | src/tessellate/api/routes_bookmarks.py:248 |
-| `/{bookmark_id}/refresh` | POST | `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:226 |
-| `/{bookmark_id}/text` | GET | `bookmark_text` | src/tessellate/api/routes_bookmarks.py:278 |
+| `/{bookmark_id}` | DELETE | `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:287 |
+| `/{bookmark_id}` | PUT | `update_bookmark` | src/tessellate/api/routes_bookmarks.py:210 |
+| `/{bookmark_id}/icon` | GET | `bookmark_icon` | src/tessellate/api/routes_bookmarks.py:251 |
+| `/{bookmark_id}/refresh` | POST | `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:229 |
+| `/{bookmark_id}/text` | GET | `bookmark_text` | src/tessellate/api/routes_bookmarks.py:281 |
 | `/{category_id}` | DELETE | `delete_category` | src/tessellate/api/routes_categories.py:338 |
 | `/{category_id}` | PUT | `rename_category` | src/tessellate/api/routes_categories.py:327 |
 | `/{category_id}/colour` | PUT | `set_category_colour` | src/tessellate/api/routes_categories.py:316 |
@@ -14023,7 +14023,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10830)
+## Backend modules (10832)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21558,15 +21558,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_refresh_later` | src/tessellate/api/routes_bookmarks.py:190 |
 | `_to_out` | src/tessellate/api/routes_bookmarks.py:57 |
 | `_web_on` | src/tessellate/api/routes_bookmarks.py:137 |
-| `bookmark_icon` | src/tessellate/api/routes_bookmarks.py:249 |
-| `bookmark_text` | src/tessellate/api/routes_bookmarks.py:279 |
+| `bookmark_icon` | src/tessellate/api/routes_bookmarks.py:252 |
+| `bookmark_text` | src/tessellate/api/routes_bookmarks.py:282 |
 | `create_bookmark` | src/tessellate/api/routes_bookmarks.py:196 |
-| `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:285 |
+| `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:288 |
 | `export_bookmarks` | src/tessellate/api/routes_bookmarks.py:112 |
 | `import_bookmarks` | src/tessellate/api/routes_bookmarks.py:126 |
 | `list_bookmarks` | src/tessellate/api/routes_bookmarks.py:91 |
-| `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:227 |
-| `update_bookmark` | src/tessellate/api/routes_bookmarks.py:209 |
+| `refresh_bookmark` | src/tessellate/api/routes_bookmarks.py:230 |
+| `update_bookmark` | src/tessellate/api/routes_bookmarks.py:211 |
 
 ### src/tessellate/api/routes_capabilities.py (3)
 
@@ -23694,26 +23694,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `update_object` | src/tessellate/api/wb_items.py:287 |
 | `update_sketch` | src/tessellate/api/wb_items.py:171 |
 
-### src/tessellate/api/wb_make.py (16)
+### src/tessellate/api/wb_make.py (15)
 
 | Name | File:line |
 |---|---|
-| `MapGenerate` | src/tessellate/api/wb_make.py:192 |
-| `MapProposal` | src/tessellate/api/wb_make.py:38 |
-| `_board_words` | src/tessellate/api/wb_make.py:257 |
-| `_draft_blocks` | src/tessellate/api/wb_make.py:355 |
-| `_draft_cards` | src/tessellate/api/wb_make.py:338 |
-| `_draft_objects` | src/tessellate/api/wb_make.py:319 |
-| `_note_titles` | src/tessellate/api/wb_make.py:65 |
-| `_outline_covering` | src/tessellate/api/wb_make.py:105 |
-| `_outline_from_filing` | src/tessellate/api/wb_make.py:80 |
-| `_proposal_notes` | src/tessellate/api/wb_make.py:46 |
-| `_record_map_creation` | src/tessellate/api/wb_make.py:205 |
-| `draft_board_document` | src/tessellate/api/wb_make.py:377 |
-| `generate_map` | src/tessellate/api/wb_make.py:395 |
-| `import_board` | src/tessellate/api/wb_make.py:458 |
-| `propose_map` | src/tessellate/api/wb_make.py:124 |
-| `suggest_board_title` | src/tessellate/api/wb_make.py:289 |
+| `MapGenerate` | src/tessellate/api/wb_make.py:193 |
+| `MapProposal` | src/tessellate/api/wb_make.py:39 |
+| `_draft_blocks` | src/tessellate/api/wb_make.py:324 |
+| `_draft_cards` | src/tessellate/api/wb_make.py:308 |
+| `_draft_objects` | src/tessellate/api/wb_make.py:289 |
+| `_note_titles` | src/tessellate/api/wb_make.py:66 |
+| `_outline_covering` | src/tessellate/api/wb_make.py:106 |
+| `_outline_from_filing` | src/tessellate/api/wb_make.py:81 |
+| `_proposal_notes` | src/tessellate/api/wb_make.py:47 |
+| `_record_map_creation` | src/tessellate/api/wb_make.py:206 |
+| `draft_board_document` | src/tessellate/api/wb_make.py:346 |
+| `generate_map` | src/tessellate/api/wb_make.py:364 |
+| `import_board` | src/tessellate/api/wb_make.py:427 |
+| `propose_map` | src/tessellate/api/wb_make.py:125 |
+| `suggest_board_title` | src/tessellate/api/wb_make.py:259 |
 
 ### src/tessellate/api/wb_map.py (17)
 
@@ -27450,10 +27449,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `recent` | src/tessellate/repo/voice.py:37 |
 | `this_day_before` | src/tessellate/repo/voice.py:41 |
 
-### src/tessellate/repo/whiteboard.py (1)
+### src/tessellate/repo/whiteboard.py (4)
 
 | Name | File:line |
 |---|---|
+| `board_cards` | src/tessellate/repo/whiteboard.py:76 |
+| `board_objects` | src/tessellate/repo/whiteboard.py:71 |
+| `board_words` | src/tessellate/repo/whiteboard.py:40 |
 | `preview_stamps` | src/tessellate/repo/whiteboard.py:15 |
 
 ### src/tessellate/search/chunks.py (18)

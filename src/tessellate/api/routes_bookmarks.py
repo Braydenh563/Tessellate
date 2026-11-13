@@ -177,7 +177,7 @@ def _refresh_after_save(bookmark_id: int) -> None:
     notebook never makes a request it was not asked to."""
     session = deps.get_db().session()
     try:
-        bookmark = session.get(bookmarks.Bookmark, bookmark_id)
+        bookmark = bookmarks.find(session, bookmark_id)
         if bookmark is None or urlparse(bookmark.url).scheme not in ("http", "https"):
             return
         _fetch_for(session, bookmark)
@@ -200,9 +200,11 @@ def create_bookmark(
     fetch = fields.pop("fetch")
     bookmark, twin = bookmarks.create(session, **fields)
     session.commit()
+    #: The answer is read before the background fetch starts, so it never races the fetch's own write.
+    out = _to_out(bookmark, duplicate_of=twin)
     if fetch and twin is None and _web_on():
         _refresh_later(bookmark.id)
-    return _to_out(bookmark, duplicate_of=twin)
+    return out
 
 
 @router.put("/{bookmark_id}")
@@ -214,9 +216,10 @@ def update_bookmark(
     fetch = fields.pop("fetch")
     bookmark = bookmarks.update(session, bookmark_id, **fields)
     session.commit()
+    out = _to_out(bookmark)
     if fetch and bookmark.url != before and _web_on():
         _refresh_later(bookmark.id)
-    return _to_out(bookmark)
+    return out
 
 
 MOVED = "The link's address changed while its page was being fetched, so nothing was kept. Fetch it again."

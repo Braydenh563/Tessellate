@@ -35,3 +35,45 @@ def preview_stamps(db: Session, entries: list) -> dict[int | None, list]:
             if board in wanted:
                 out[board][slot] = (count, str(newest))
     return out
+
+
+def board_words(db: Session, board_id: int, limit: int) -> list[str]:
+    """What is written on a board, one line each: a map's topics and a board's
+    stickies and text (an object's `content`), then the titles of the note cards
+    on it. A private or deleted note's title is left out, as everywhere the
+    model could read it."""
+    import json
+
+    from tessellate.entry import manager_text
+
+    lines: list[str] = []
+    for obj in db.scalars(
+        select(WhiteboardObject).where(WhiteboardObject.board_id == board_id).order_by(WhiteboardObject.id)
+    ):
+        try:
+            data = json.loads(obj.data or "{}")
+        except ValueError:
+            continue
+        text = " ".join(str(data.get("content") or data.get("text") or "").split()) if isinstance(data, dict) else ""
+        if text:
+            lines.append(text[:120])
+    cards = db.scalars(select(Entry).join(WhiteboardNode, WhiteboardNode.entry_id == Entry.id).where(WhiteboardNode.board_id == board_id))
+    for entry in cards:
+        if entry.is_deleted or entry.is_private:
+            continue
+        text = manager_text.readable_content(entry)
+        title = manager_text.extract_title(text) or text.strip().split("\n")[0]
+        if title.strip():
+            lines.append(title.strip()[:120])
+    return lines[:limit]
+
+
+def board_objects(db: Session, board_id: int) -> list[WhiteboardObject]:
+    """A board's objects (frames, text, stickies, shapes), in no set order."""
+    return list(db.scalars(select(WhiteboardObject).where(WhiteboardObject.board_id == board_id)))
+
+
+def board_cards(db: Session, board_id: int) -> list[tuple[WhiteboardNode, Entry | None]]:
+    """A board's note cards with their notes (`None` for a note gone from the table)."""
+    nodes = list(db.scalars(select(WhiteboardNode).where(WhiteboardNode.board_id == board_id)))
+    return [(node, db.get(Entry, node.entry_id)) for node in nodes]
