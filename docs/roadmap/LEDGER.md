@@ -8,7 +8,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
-| graph | 15 | 1 | 0 | 0 | 0 | 16 |
+| graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 195 | 63 | 2 | 59 | 434 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
@@ -17,10 +17,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 547 | 154 | 3 | 184 | 1254 |
+| all | 553 | 546 | 154 | 3 | 184 | 1253 |
 
 ## graph
-- [ ] **L-graph-19** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
 
 ## chat
 
