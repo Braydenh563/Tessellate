@@ -305,18 +305,18 @@ const WB_COMMANDS = [
   { id: "back-to-boards", group: "Board", icon: "ph:arrow-left", label: "Back to the board list", keys: "", surface: "both", run: wbClickId("wb-back-to-boards") },
   { id: "switch-board", group: "Board", icon: "ph:swap", label: "Which board or map to show", menu: "Open another board or map…", keys: "", surface: "both", run: () => document.getElementById("wb-board-select")?.closest(".select-shell")?.querySelector(".select-opener")?.click() },
   //: And the Board menu's rows that had none (row 9).
-  { id: "add-to-note", group: "Board", icon: "ph:note-pencil", label: "Put this board in a note as an object", keys: "", surface: "both", run: wbClickId("wb-add-to-note") },
+  { id: "add-to-note", group: "Board", icon: "ph:note-pencil", label: "Put this board in a note as an object", menu: "Add to a note…", keys: "", surface: "both", run: wbClickId("wb-add-to-note") },
   { id: "copy-link", group: "Board", icon: "ph:link", label: "Copy this board's or mind map's address to open it in the app", menu: "Copy app link", keys: "", surface: "both", run: wbClickId("wb-copy-link") },
-  { id: "delete-board", group: "Board", icon: "ph:trash", label: "Delete this board and everything on it", keys: "", surface: "both", run: wbClickId("wb-delete-board") },
+  { id: "delete-board", group: "Board", icon: "ph:trash", label: "Delete this board and everything on it", menu: "Delete this board", keys: "", surface: "both", run: wbClickId("wb-delete-board") },
   { id: "keys", group: "Board", icon: "ph:keyboard", label: "Every key and gesture on a board", menu: "Keys and controls", keys: "?", surface: "both", run: wbClickId("wb-help-btn") },
   { id: "show-hints", group: "Board", icon: "ph:lightbulb", label: "Show the card of first steps on this board again", menu: "Show hints", keys: "", surface: "board", run: wbClickId("wb-show-hints") },
-  { id: "export", group: "Board", icon: "ph:download-simple", label: "Export this board", keys: "", surface: "both", run: wbClickId("wb-export") },
+  { id: "export", group: "Board", icon: "ph:download-simple", label: "Export this board", menu: "Export…", keys: "", surface: "both", run: wbClickId("wb-export") },
   { id: "copy-image", group: "Board", icon: "ph:copy", label: "Copy as an image", keys: "", surface: "both", run: () => wbCopyAsImage() },
   { id: "copy-svg", group: "Board", icon: "ph:code", label: "Copy as SVG", keys: "", surface: "both", run: () => wbCopyAsSvg() },
   { id: "rename", group: "Board", icon: "ph:pencil-simple", label: "Rename this board", keys: "", surface: "both", run: wbClickId("wb-rename-board") },
   { id: "new-board", group: "Board", icon: "ph:plus", label: "New board", keys: "", surface: "both", run: wbClickId("wb-new-board") },
   { id: "switch-kind", group: "Board", icon: "ph:tree-structure", label: "Switch between a whiteboard and a mind map", keys: "", surface: "both", run: wbClickId("wb-board-kind") },
-  { id: "clear", group: "Board", icon: "ph:eraser", label: "Clear this board", keys: "", surface: "both", run: wbClickId("wb-clear-board") },
+  { id: "clear", group: "Board", icon: "ph:eraser", label: "Clear this board", menu: "Clear everything on it", keys: "", surface: "both", run: wbClickId("wb-clear-board") },
   { id: "snapshots", group: "Board", icon: "ph:camera", label: "Snapshots: named versions of this board", menu: "Snapshots…", keys: "", surface: "both", run: () => wbOpenSnapshots() },
   { id: "history", group: "Board", icon: "ph:clock-counter-clockwise", label: "History: see the board as it was, and put it back", menu: "History…", keys: "", surface: "both", run: () => wbOpenHistory() },
 ];
@@ -404,7 +404,7 @@ function wbPaletteCommands() {
   const later = (fn) => () => setTimeout(fn);
   return WB_COMMANDS.filter((command) => wbCommandApplies(command)).map((command) => ({
     group: wbIsMap() ? "This map" : "This board",
-    label: `${command.icon} ${command.label}`,
+    label: `${command.icon} ${command.menu || command.label}`,
     keys: command.keys,
     run: later(() => command.run()),
   }));
@@ -636,7 +636,7 @@ function wbInitMoreMenu() {
   if (!bar || document.getElementById("wb-more-toggle") || typeof kebabMenu !== "function") return;
   const wrap = kebabMenu(
     WB_COMMANDS.map((command) => ({
-      label: `${command.icon} ${command.label}`,
+      label: `${command.icon} ${command.menu || command.label}`,
       title: command.keys ? `${command.label} (${command.keys})` : command.label,
       group: command.group,
       run: () => wbRunCommand(command.id),
