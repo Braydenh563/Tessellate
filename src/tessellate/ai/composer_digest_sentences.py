@@ -639,7 +639,7 @@ _ASKS = {
     "left": re.compile(r"\bwhat do i (?:still )?(?:need|have|want|plan|hope) to\b|\bwhat would i like to\b|\bwhat(?:'s| is) (?:left|outstanding|still to do)\b|\bto buy\b", re.I),
     "overview": re.compile(
         r"\bwhat (?:have|did) i (?:saved|save|written|write|noted|got|kept)\b|\bwhat(?:'s| is) there\b|\bwhat do i have\b|"
-        r"\bwhat \w+(?: \w+)? (?:have|did) i (?:saved|save|written|write|kept|got|noted)\b|\bwhat (?:do|does|did) (?:my|the) (?:notes|entries) (?:say|tell me|have|mention|know|cover)\b|\btell me about\b|\beverything (?:about|on)\b|\bsummari[sz]e\b|\bwhat(?:'s| is) the plan\b|"
+        r"\bwhat \w+(?: \w+)? (?:have|did) i (?:saved|save|written|write|kept|got|noted)\b|\bwhat (?:else )?(?:do|does|did) (?:my|the) (?:notes|entries) (?:say|tell me|have|mention|know|cover)\b|\btell me about\b|\beverything (?:about|on)\b|\bsummari[sz]e\b|\bwhat(?:'s| is) the plan\b|"
         r"\bplans? for\b|^\s*how(?:'s| is| are) (?:my |the )?.+ going\b|\bwhat have i (?:learned|learnt)\b|^\s*how many (?:of my )?(?:notes|entries)\b|"
         #: "what about social connections" asks for the lot (INBOX 1420).
         r"^\s*(?:and |so )?what about (?:my |the )?\w+(?: \w+)?\s*\??\s*$|\bwhat do i know (?:about|on)\b|"

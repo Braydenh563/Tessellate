@@ -126,8 +126,21 @@ def _rows_chips(shown: list[dict]) -> list[str]:
     return out + ([f"What does “{titles[1]}” say?"] if named and titles[1] else [])
 
 
+#: A summary ask ("what (else) do my notes say about uni", "tell me about uni"): its answer
+#: spans notes, so a coming day in one of them is not what the person asked to be reminded of
+#: (L-chat-37: "Remind me about Core Concepts the day before" under a summary of five notes).
+_SUMMARY_ASK = re.compile(
+    r"\bwhat (?:else )?(?:do|does|did) (?:my|the) (?:notes|entries) (?:say|tell me|have|mention|know|cover)\b"
+    r"|\bwhat (?:else )?do i know (?:about|on)\b|\btell me about\b|\beverything (?:about|on)\b|\bsummari[sz]e\b",
+    re.I,
+)
+
+
 def _day_chips(frame: dict, title: str, today: str) -> list[str]:
-    """A reminder for a coming day, naming what it is for; a day already past is not reminded of."""
+    """A reminder for a coming day, naming what it is for; a day already past is not reminded of,
+    and a summary ask is not offered one."""
+    if _SUMMARY_ASK.search(str(frame.get("ask") or "")):
+        return []
     coming = any(d > today for d in frame.get("dates") or [])
     return [f"Remind me about {title} the day before" if title else "Remind me the day before"] if coming else []
 

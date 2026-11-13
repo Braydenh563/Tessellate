@@ -164,7 +164,11 @@ _SCAFFOLD = lazy_compile(
     r"i|have|has|had|did|do|does|was|were|been|get|got|save[ds]?|written|wrote|"
     # Connectives that a lifted phrase can leave stranded mid-sentence:
     # "anything from this month about the garden" → "from  about the garden".
-    r"from|in|on|at|for|of|with"
+    r"from|in|on|at|for|of|with|"
+    # "what else do my notes say about uni": "else" and the saying verb are
+    # the question's frame, never its subject (L-chat-37: the reason "by the
+    # word notes").
+    r"else|says?|said"
     r")\b[\s,]*",
     re.IGNORECASE,
 )

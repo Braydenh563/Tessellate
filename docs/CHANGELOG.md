@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Chat row L101: the model's prompt now says why each note was shown and which other shown notes it links to, by number and with the person's reason ("(why shown: Has the word “skye”) (linked to note 3: same trip)"), the frame the composer already said (`librarian._shown_hint`).
+- Chat row L-chat-37: "what else do my notes say about X" is read as an overview that quotes one line from each record found, including the ones close by meaning; "else" and "say" are no longer search words, and a summary offers no reminder chip.
 - Chat row L-chat-21: a model that refuses, times out, dies mid-answer, returns nothing or writes text the notes do not back now falls back to the composed answer with a note, and the turn stats say fallback.
 - Chat row L-chat-7 (Brief 88 N9): a writing run of a minute or more that comes to rest ends in a stretch on both companions (`writing_stretch`: the in-app `stretch` act, the desk's `dusk_stretch`); half a minute to a minute stays the nod (`tests/test_writing_stretch_l7.py`).
 - Chat row L-chat-2: in Agent mode, a request whose every matching tool group is switched off in Settings, Tools is answered at the turn start with one plain sentence naming the tools, before any model call (`ai/tools/tool_off.py`; `tests/test_tool_off_turn_start_l2.py`).
