@@ -2116,9 +2116,6 @@ header#top-bar select,
 }
 
 @media (hover: none) {
-  .entry-list li .entry-actions {
-    opacity: 1;
-  }
 
   /* touch has no hover */
 }

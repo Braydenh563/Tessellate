@@ -4289,7 +4289,7 @@ span > .chip {
    `.doc-toolbar` in 05-sidebars-themes.css for why these are no longer the
    same class. */
 .doc-dock {
-  /* **Declared here, not inherited.** `--control-h` is scoped to
+  /* **Declared on .doc-dock (the later rule further down), not inherited.** `--control-h` is scoped to
      `.library-toolbar` and `.library-controls`, it is not a global token , 
      so the height rules below resolved to an invalid value and did nothing
      at all, silently, which is why the first attempt at this measured four
@@ -4301,7 +4301,6 @@ span > .chip {
   /* The control-height family's large step, same as the top bar, the
      Library head and the whiteboard top bar, measured 38px here beside
      36px everywhere else. */
-  --control-h: var(--control-h-lg);
   gap: var(--space-2);
   flex-wrap: wrap;
   align-items: center;
