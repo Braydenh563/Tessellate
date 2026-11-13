@@ -734,8 +734,8 @@ TAIL_TOPICS.extend(
                 "board asks once. Place as pages puts each page on the board as its own picture, side by side "
                 "(the first 20 pages of a longer file), as one Undo step. Attach as one object puts the first "
                 "page on the board as one picture; double-click it to open the whole file. Either way the "
-                "pictures resize and move like any other. Escape places nothing. Without the PDF page reader "
-                "(Settings, Packages, Read scanned PDFs) the file becomes a card with its name that still opens."
+                "pictures resize and move like any other. Escape places nothing. Without the Read scanned PDFs "
+                "extra (Settings, Packages) the file becomes a card with its name that still opens."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
