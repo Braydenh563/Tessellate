@@ -1040,7 +1040,6 @@ details.tool-chip[open] > .tool-chip-body {
      y=264, content height, vertically centred, with the map 192px of it.
      Stretching it explicitly is what makes `inset` mean what it reads as. */
   align-self: stretch;
-  height: auto;
   justify-self: stretch;
 }
 /* **The app chrome goes with it** (INBOX 29: "the top bar stays"). The card

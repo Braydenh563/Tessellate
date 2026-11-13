@@ -1086,6 +1086,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
    the operating system's grey. */
 .chat-dock-controls select,
 .chat-dock-controls>.chat-tool-group>button,
+.chat-dock-controls .note-picker>button,
 .chat-dock-controls .chat-dock-more>button,
 .chat-dock-controls .seg {
   border-radius: var(--radius-pill);

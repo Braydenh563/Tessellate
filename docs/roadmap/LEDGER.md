@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 45 | 4 | 0 | 18 | 145 |
+| ui-modernisation | 96 | 39 | 4 | 0 | 19 | 139 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 558 | 154 | 3 | 183 | 1265 |
+| all | 553 | 552 | 154 | 3 | 184 | 1259 |
 
 ## graph
 - [ ] **L-graph-19** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -450,17 +450,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## ui-modernisation
 
-- [ ] **L427** `ui-modernisation` open, S: Count title-only icon buttons outside the Notes list (other tabs, Settings). From OPEN.md:3610. Evidence: Measurement gap; no later count found
-- [ ] **L428** `ui-modernisation` open, S: Reproduce the pill bottom cut-off at DPR 1.25/dark; measure Pace pill. From OPEN.md:3652. Evidence: Try DPR 1.25 and dark; skills.js pill unmeasured; no repro
-- [ ] **L430** `ui-modernisation` open, S: Raise output grip above touch floor and fix entry-meta overflow at 320/390. From a30c-1102.md Still open small. Evidence: No fix commit found by grep; needs a 390 px measure
-- [ ] **L431** `ui-modernisation` open, S: Measure findings 5-12 in dark, 390 on a real device and the one-column gap at 900. From a30k-1103.md Left. Evidence: Source says unmeasured; no later sweep record found
 - [ ] **L436** `ui-modernisation` open, S: Ring sweep flags fixed-sheet control at viewport edge as scroll clip. From OPEN.md:740. Evidence: Sweep-lint false positive for phone Writing room textarea; no exemption found
 - [ ] **L437** `ui-modernisation` open, S: Ring sweep skips end-of-scroller controls; fixed-height text cut unseen. From OPEN.md:1946; OPEN.md:3505. Evidence: Sweep limitation, no change recorded
 - [ ] **L439** `ui-modernisation` open, M: Finish help audit: press-drawn menus, JS popovers, Find/dock at 1440, list/outline/find at 390 and 1024, dark. From OPEN.md:975; OPEN.md:3205; OPEN.md:3889. Evidence: Source-level checks exist; a driven browser audit of '/' menu, message menu, board menus not done (needs sweep)
 - [ ] **L440** `ui-modernisation` open, M: Record Radix/shadcn/APG element comparison (Brief 92b). From SESSION_BRIEFS.md:291. Evidence: No Radix block in HISTORY; E19 W20
-- [ ] **L441** `ui-modernisation` open, M: Unify #attach-image 999px radius with #attach-note at 390 px. From OPEN.md:803; OPEN.md:2236. Evidence: 07-whiteboard-misc.css:3634 comment on spread; 04-chat-dock-appearance.css:2852 only has-attachments; radius equality unverified
 - [ ] **L444** `ui-modernisation` open, M: Align opened row first line with the chevron (2.6px offset, use 1lh line box). From OPEN.md:1951; OPEN.md:3546. Evidence: 2.6px offset, no fix recorded
-- [ ] **L445** `ui-modernisation` open, M: Fix entry-meta.note-meta and entry-list li overflow at 320/390. From OPEN.md:3698. Evidence: 08-consistency.css:2724 .entry-meta.note-meta; no fix commit found
 - [ ] **L446** `ui-modernisation` open, M: Drive the phone More-sheet paths (agent, Guide, timeline, reminders) at 390. From OPEN.md:746; OPEN.md:3573. Evidence: Touch phone walkthrough; headless drive left toggleAgentPalette hidden at 390
 - [ ] **L448** `ui-modernisation` open, M: Rework Band 3 (600-820) header, two rows and 128px at 819. From OPEN.md:1451. Evidence: No change to the band design found in CHANGELOG/HISTORY; design call recorded in row
 - [ ] **L449** `ui-modernisation` open, M: Give the 110 controls with no keyboard focus change a visible focus state (a11yname.js, status-item, ghost.small). From OPEN.md:1815; OPEN.md:1833; OPEN.md:2917. Evidence: No HISTORY/test closing it found by grep; repeats row 1833 (1430). Not re-run
@@ -952,6 +946,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
 - [ ] **L-ui-modernisation-32** `ui-modernisation` blocked-hardware, S: Check Tidy's 'Tags Atlas added' review against tags a real model wrote. From L392. Evidence: No GGUF or llama-server in the cloud container (scratchpad/llama-dev.sh needs a fetched model); the review is covered by fake-transport tests only
+- [ ] **L-ui-modernisation-34** `ui-modernisation` blocked-hardware, S: Check unslop findings 5 to 12 on a real phone in dark. From L431. Evidence: Emulated 390 measured clean 2026-11-13; no phone in the container
 
 ## Plan session briefs
 

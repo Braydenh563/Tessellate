@@ -1985,8 +1985,7 @@ input.md-task-inline:disabled,
 /* A click on it opens its menu (INBOX 432, 447): a `.chip-interactive`,
    so it tones under the pointer (the veil over its own fill) and stays a
    pill at rest. */
-.entry-meta.note-meta > .chip-interactive.category:hover,
-.entry-meta.note-meta > .chip-interactive.category:is(:focus-visible, :has(:focus-visible)) {
+.entry-meta.note-meta > .chip-interactive.category:is(:hover, :focus-visible, :has(:focus-visible)) {
   background: linear-gradient(var(--hover-veil), var(--hover-veil)) var(--chip-bg);
 }
 

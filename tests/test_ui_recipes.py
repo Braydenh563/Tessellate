@@ -3135,6 +3135,7 @@ PILL_CONTROLS = {
     ".dock-fab": "the floating action button",
     ".chat-dock-controls select": "the chat composer's row is pills (the radius table)",
     ".chat-dock-controls>.chat-tool-group>button": "the chat composer's row is pills",
+    ".chat-dock-controls .note-picker>button": "the note picker moved into that row at 390 (phone-shell.js), beside #attach-image (L441)",
     ".chat-dock-controls .chat-dock-more>button": "the chat composer's row is pills",
     ".chat-dock-controls .seg": "the chat composer's row is pills",
     ".chat-dock-controls .seg button": "the chat composer's row is pills",
