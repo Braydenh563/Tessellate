@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Brief 56 measures recorded at 1024 and 820 dark: no visible unlabelled controls, no contrast failures (L455).
+
 - Chat: a live answer shows its time at the end of its meta line again; the line moved into the answer's foot bar before the time was looked for (L456).
 - First run: the welcome's preferences card asks whether to check for a newer version, so the separate update question no longer follows it; a new install takes two acts (welcome, recovery key) before the dashboard, not three (L451).
 - Panels pad 12px and a sidebar sits 8px from its content, as UI plan Phase 12 decision 1 set (L450); the Notes dock stays one row from 820 to 1640.
