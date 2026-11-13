@@ -58,6 +58,13 @@ _LEAD = re.compile(r"^(?:back in [a-z]+|in [a-z]+|on \d{1,2} [a-z]+|(?:[a-z]+ (?
 #: A quote that says "today" (or yesterday, tonight) means the day it was written, not the day it is read.
 _QUOTED_RELATIVE = re.compile(r"“[^”]*\b(?:today|tonight|yesterday|tomorrow|this (?:morning|afternoon|evening)|last night)\b[^”]*”", re.I)
 _REPORT = re.compile(r"^you (?:mentioned|said|noted|recorded|put down|jotted down) that ", re.I)
+#: "This note pulls together ..." (L-chat-39): the note's own subject is its title.
+_THIS_NOTE = re.compile(r"^(?:this|the) note\s+(?=[a-z])", re.I)
+#: The digest's provenance tail: the story cites the note instead.
+_FROM_NOTE = re.compile(r",? from your [^,.]{1,60} note$")
+#: "your uni days ... are Tuesday": the person's own line in the present ("My uni days ..."), under a
+#: time opener, is what was noted then; "your Guide is in four phases" describes the note and stays.
+_PRESENT = re.compile(r"^your\b(?:\s+[^\s,.]+){0,8}?\s+(?:are|is)\b", re.I)
 #: Typed without its apostrophe: said back flat ("You didnt lock in") it reads as the app's typo, so it is quoted.
 _RAW = re.compile(r"\b(?:didnt|dont|cant|wont|couldnt|wouldnt|isnt|im|ive)\b", re.I)
 _DEFINES = re.compile(r"^(?P<term>[^.]{2,60}?) (?:is|are|means|refers to) (?P<what>(?:the|a|an|when|how|any)\b.+)$", re.I | re.S)
@@ -222,7 +229,11 @@ def _clause(line: str, title: str, quote: str) -> str:
         #: "You mentioned that you ..." keeps its clause; "that uni is done" has no "you" to lead and is quoted.
         body = body[reported.end():] if re.match(r"you\b", body[reported.end():], re.I) else "-"
     #: One sentence a unit: the claim is the first, and a second would be uncited.
-    body = re.split(r"(?<=[a-z0-9])\.\s+(?=[A-Z])", body, maxsplit=1)[0]
+    body = _FROM_NOTE.sub("", re.split(r"(?<=[a-z0-9])\.\s+(?=[A-Z])", body, maxsplit=1)[0])
+    if title and (this := _THIS_NOTE.match(body)):
+        return _caps_days(f"your “{_clean_quote(title)}” note {_short_quotes(body[this.end():])}")
+    if _PRESENT.match(body) and re.match(r"(?:my|i)\b", quote, re.I):
+        return _caps_days(f"you noted that {_lower(_short_quotes(body))}")
     if re.match(r"(?:you|your)\b", body, re.I):
         return _caps_days(_lower(_short_quotes(body)))
     said = _clean_quote(title) if title and len(title.split()) <= 6 else clipped(quote)

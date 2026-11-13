@@ -11,8 +11,10 @@ from __future__ import annotations
 import re
 from datetime import date
 
-#: "what (else) do my notes say about uni", "what do I know about uni".
-_SAY_ABOUT = re.compile(r"\bwhat (?:else )?(?:do|does|did) (?:my|the) (?:notes|entries) (?:say|tell me|have|mention|know|cover)\b|\bwhat (?:else )?do i know (?:about|on)\b", re.I)
+#: "what (else) do my notes say about uni": the records. Not "what do I know about uni", which asks for
+#: what is known and leads with the note that defines it (`test_composer_social_1420`): the search's
+#: looser matches there are other subjects (the uni days note for cloud computing).
+_SAY_ABOUT = re.compile(r"\bwhat (?:else )?(?:do|does|did) (?:my|the) (?:notes|entries) (?:say|tell me|have|mention|know|cover)\b", re.I)
 
 
 def close_by_meaning(kind: str, question: str, views: list, members: list) -> list:

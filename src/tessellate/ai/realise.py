@@ -137,12 +137,22 @@ def _with_you(match: re.Match) -> str:
     return f"you and {match.group(1)}"
 
 
+#: "ran into a uni friend and we caught the next one": one companion, named
+#: before "we" in the same sentence, is "the two of you" (L-chat-39); "we" alone
+#: or with a group ("her kids") keeps its own word.
+_WE_TWO = lazy_compile(
+    r"\b((?:a|an|my|your|the) (?:[\w-]+ )?(?:friend|mate|partner|colleague|classmate|flatmate|housemate|mum|dad|"
+    r"brother|sister|neighbour)\b(?:(?! and (?:his|her|their)\b)[^.!?;])*?)\bwe\b"
+)
+
+
 def _shift_words(text: str) -> str:
     text = _AND_I.sub(_with_you, text)
     text = _AND_WAS.sub(lambda m: f"I{m.group(1)} were{m.group(2) or ''}", text)
     for pattern, said in _PHRASE_RES:
         text = pattern.sub(said, text)
-    return _WORD_RE.sub(lambda m: _case_like(m.group(1), _WORDS[m.group(1).lower()]), text)
+    text = _WORD_RE.sub(lambda m: _case_like(m.group(1), _WORDS[m.group(1).lower()]), text)
+    return _WE_TWO.sub(lambda m: f"{m.group(1)}the two of you", text)
 
 
 def _shift_part(text: str) -> str:
