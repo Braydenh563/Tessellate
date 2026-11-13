@@ -100,3 +100,19 @@ def test_no_reason_is_a_question_word(client, session):
 def test_a_summary_offers_no_reminder(client, session):
     out, _ = _answer(client, session)
     assert "Remind me" not in repr({k: v for k, v in out.items() if k not in ("text",)})
+
+
+def test_a_meaning_match_below_the_old_bar_is_read():
+    """The built-in model scored the subjects note 0.52 in the app (2026-11-13), under the 0.75
+    the first fix asked for: the search's own floors are the bar, so it is read; a linked note
+    the search did not match (no score) is not."""
+    from types import SimpleNamespace as V
+
+    from tessellate.ai import composer_close
+
+    lead = V(id=1, note={"match_info": {"type": "hybrid", "score": 0.62}}, written=None, rank=0)
+    subjects = V(id=3, note={"match_info": {"type": "semantic", "score": 0.52}}, written=None, rank=2)
+    linked = V(id=9, note={}, written=None, rank=3)
+    got = composer_close.close_by_meaning("overview", QUESTION, [lead, subjects, linked], [lead])
+    assert [v.id for v in got] == [1, 3]
+    assert composer_close.close_by_meaning("overview", "Tell me about university", [lead, subjects], [lead]) == [lead]
