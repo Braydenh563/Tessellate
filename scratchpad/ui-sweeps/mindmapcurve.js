@@ -16,11 +16,9 @@
 //   - and the stored pair is read back off the server, since two `data` fields
 //     on the child is the whole storage design.
 //
-// At VIEWPORT=390x844 the click no longer times out (the add row used to
-// cover the topic's label there, an app fault now fixed and measured by
-// mapaddcover.js), but 3 of 14 checks still fail: the map is laid out past a
-// phone's width, so the hover reveal and the straight-line kink point at
-// handles that are off screen. That is the probe's layout, not the app.
+// At VIEWPORT=390x844 all 14 pass (L-mindmap-15: the map is zoomed to fit; a
+// click on the dot no longer reaches the canvas, which had cleared the
+// selection and stood the `+` over the dot between a double-click's clicks).
 //
 //   BASE=http://127.0.0.1:8793 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers \
 //   timeout 110 node scratchpad/ui-sweeps/mindmapcurve.js
@@ -33,6 +31,9 @@ const VIEWPORT = (() => {
   return { width: w || 1440, height: h || 900 };
 })();
 
+//: A point on the canvas that is neither a line nor a topic, kept inside the viewport (1380,860 is off screen at 390).
+//: Above the phone's tab bar: at 390x844 the old corner was its More button.
+const EMPTY = VIEWPORT.width < 700 ? { x: 12, y: VIEWPORT.height - 140 } : { x: Math.min(1380, VIEWPORT.width - 12), y: Math.min(860, VIEWPORT.height - 12) };
 const results = [];
 function check(label, ok, detail) {
   results.push({ label, ok: Boolean(ok) });
@@ -55,8 +56,8 @@ const READ = `(childId) => {
     const cy = +grip.getAttribute("cy");
     const total = hit.getTotalLength();
     let best = Infinity;
-    for (let i = 0; i <= 600; i++) {
-      const p = hit.getPointAtLength((total * i) / 600);
+    for (let i = 0; i <= 4000; i++) {
+      const p = hit.getPointAtLength((total * i) / 4000);
       best = Math.min(best, Math.hypot(p.x - cx, p.y - cy));
     }
     onLine = +best.toFixed(3);
@@ -86,8 +87,8 @@ const READ = `(childId) => {
     plusGap = +Math.hypot(px - +grip.getAttribute("cx"), py - +grip.getAttribute("cy")).toFixed(2);
     const total = hit.getTotalLength();
     let best = Infinity;
-    for (let i = 0; i <= 600; i++) {
-      const q = hit.getPointAtLength((total * i) / 600);
+    for (let i = 0; i <= 4000; i++) {
+      const q = hit.getPointAtLength((total * i) / 4000);
       best = Math.min(best, Math.hypot(q.x - px, q.y - py));
     }
     plusOffLine = +best.toFixed(3);
@@ -108,7 +109,7 @@ const READ = `(childId) => {
     box: box ? { w: +box.width.toFixed(1), h: +box.height.toFixed(1), x: +(box.x + box.width / 2).toFixed(1), y: +(box.y + box.height / 2).toFixed(1) } : null,
     plusGap,
     plusOffLine,
-    quarterAt: along(0.2),
+    quarterAt: along(window.innerWidth < 700 ? 0.4 : 0.2), // zoomed out, 0.2 along sits under the trunk topic
     onTop: box ? (() => {
       const top = document.elementFromPoint(box.x, box.y);
       return top ? top.tagName + "." + (top.getAttribute("class") || "").split(" ")[0] : null;
@@ -118,7 +119,9 @@ const READ = `(childId) => {
 
 (async () => {
   const { page, browser } = await boot({ viewport: VIEWPORT });
-  await page.click('[data-tab="library"]');
+  //: At a phone's width Library is behind More, and its sheet then sits over every click.
+  if (VIEWPORT.width < 700) await page.evaluate(() => switchTab("library"));
+  else await page.click('[data-tab="library"]');
   await page.waitForTimeout(800);
   await page.click('#library-subtabs [data-target="library-view-whiteboard"]');
   await page.waitForTimeout(1500);
@@ -171,6 +174,12 @@ const READ = `(childId) => {
     return { board: board.id, root: root.id, curved: curved.id, elbow: elbow.id, straight: straight.id };
   });
 
+  //: At a phone's width the 800-unit map is wider than the screen, so its handles sat off screen (the old 11 of 14).
+  //: Fitting the map to the view puts every handle on screen; drags are in client pixels so they still reshape.
+  if (VIEWPORT.width < 700) {
+    await page.evaluate(() => window.wbZoomToFit && window.wbZoomToFit({ animate: false }));
+    await page.waitForTimeout(700);
+  }
   const read = (id) => page.evaluate(`(${READ})(${id})`);
   const select = async (id) => {
     await page.click(`.wb-object[data-id="${id}"] .wb-map-text`, { position: { x: 8, y: 8 } });
@@ -179,7 +188,7 @@ const READ = `(childId) => {
   const park = async () => {
     // Somewhere that is neither a line nor a topic, so a "resting" reading is
     // a resting reading.
-    await page.mouse.move(1380, 860);
+    await page.mouse.move(EMPTY.x, EMPTY.y);
     await page.waitForTimeout(200);
   };
   // Point at the line first, then at the dot on it: that is the gesture, and
@@ -189,12 +198,15 @@ const READ = `(childId) => {
     const at = await read(id);
     await page.mouse.move(at.quarterAt.x, at.quarterAt.y);
     await page.waitForTimeout(150);
+    //: What pointing at the line alone does, before the pointer goes on to the dot: zoomed out (a phone) the mid-line
+    //: `+` is 24px wide and covers the dot, so the pointer leaves the line on the way and only a selection reaches it.
+    const byLine = await read(id);
     await page.mouse.move(at.box.x, at.box.y);
     await page.waitForTimeout(150);
     // Read again, with the pointer on it: the first reading is what the line
     // looks like at rest, and the point of this helper is what it looks like
     // once it has been pointed at.
-    return read(id);
+    return { ...(await read(id)), byLine };
   };
   const dragHandle = async (id, dx, dy, { selected = false } = {}) => {
     const before = selected ? await read(id) : await grab(id);
@@ -218,7 +230,7 @@ const READ = `(childId) => {
   const woken = await read(built.curved);
 
   const curve = await dragHandle(built.curved, 0, -110, { selected: true });
-  await page.mouse.click(1380, 860);
+  await page.mouse.click(EMPTY.x, EMPTY.y);
   await page.waitForTimeout(300);
   const straight = await dragHandle(built.straight, 0, 120);
   const elbow = await dragHandle(built.elbow, 95, 0);
@@ -235,7 +247,8 @@ const READ = `(childId) => {
   }, built);
 
   // And back to the line it was, from the handle's own double-click.
-  const gripAt = await grab(built.curved);
+  //: Zoomed out the `+` covers the dot unless the topic is selected (which stands it aside), so a phone selects first.
+  const gripAt = VIEWPORT.width < 700 ? (await select(built.curved), await read(built.curved)) : await grab(built.curved);
   await page.mouse.dblclick(gripAt.box.x, gripAt.box.y);
   await page.waitForTimeout(900);
   const straightened = await read(built.curved);
@@ -246,7 +259,7 @@ const READ = `(childId) => {
     resting.opacity === 0 && resting.pointer === "none" && resting.cx !== null,
     `opacity ${resting.opacity}, pointer-events ${resting.pointer}, at ${resting.cx},${resting.cy}`);
   check("pointing at the line reveals it, with nothing selected",
-    hovered.opacity === 1 && hovered.pointer === "auto" && hovered.box.w > 8,
+    hovered.byLine.opacity === 1 && hovered.byLine.pointer === "auto" && hovered.box.w > 8,
     `opacity ${hovered.opacity}, ${hovered.box.w}x${hovered.box.h}px at ${hovered.box.x},${hovered.box.y}, top element ${hovered.onTop}`);
   check("selecting the topic reveals it too",
     woken.opacity === 1 && woken.pointer === "auto",

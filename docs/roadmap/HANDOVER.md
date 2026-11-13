@@ -62,6 +62,8 @@
 
 # HANDOVER
 
+**Now (2026-11-13a, mindmap-plan, PR 229, head 9df3a562 pushed, bb3adf2c local):** L-mindmap-14 and 15 closed; base merged (#228). Left: L-mindmap-13 (Tab = `wbMapAddChild` 104-117 ms at 390 and 6x, target 50; the profile shows the whole-board re-render with its forced flush in the `renderWbObjects` measure loop; agent mapfocus3 is skipping unchanged edge writes and batching the flushes), L267 (waits for #223), and the device or real-model checks L895, L896, L-mindmap-3, 4 and 10 (code side done; they go to BACKLOG). Next: land mapfocus3, the BACKLOG moves, then `open_scan.py --plan mindmap` at zero.
+
 **Now (2026-11-12e, PR 216, closing):** all 109 owner calls answered and on their rows; `scripts/open_scan.py` lists open-work lines outside BACKLOG; the eight plan briefs at the end of LEDGER end only when nothing open is left outside BACKLOG. In flight: workflow wf_812f9e7b-276 (open-work sweep, 8 finders plus verifiers) finds open work tracked nowhere. Next: add its verified items as LEDGER rows (`scripts/ledger.py add`), write a ninth closing-session brief (full `open_scan.py` run, LEDGER and INBOX at zero, only BACKLOG left), regenerate CODEMAP, push, wait for CI green, then the owner merges and starts the nine sessions.
 
 **Graph-plan session (2026-11-12g, PR 228, stopped at the 85% usage line):** graph plan closed (open_scan --plan graph clean); merged 73226a7b; one LEDGER row left: the py3.13 leg 2 failure on 5bb36335, cause not yet read. Next session on PR 228: read that job's log, fix, push once, send the hub "green".

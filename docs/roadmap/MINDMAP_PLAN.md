@@ -235,7 +235,7 @@ extended with the numbers named.
 ### 12.0 Decisions made (do not remake)
 
 - **A whole-map tidy frames the map again, and only when it has to**
-  (decided 2026-09-13, the option the seventh run left open). Auto-arrange
+  (decided 2026-09-13, the option the seventh run had not settled). Auto-arrange
   is a command and not a constant, so nothing frames on its own; but a
   command that leaves the trunk off the canvas has not finished. Measured
   at 390x844 before this: after a tidy the root's box sat at x=-95 and
@@ -271,7 +271,7 @@ extended with the numbers named.
   can override the map's layout; auto-arrange is a command, not a
   constant, so a hand-placed node stays put until asked.
 - Everything the map shows is in the tree endpoint and the FreeMind and
-  OPML exports round-trip; a feature that cannot round-trip is not built.
+  OPML exports round-trip; a feature that cannot round-trip is refused.
   (Audit 2026-10-05 found FreeMind dropped a one-root map's centre; fixed
   the same day, decision 22.)
 - **The last topic cannot be deleted; clearing the map is offered
@@ -303,7 +303,7 @@ extended with the numbers named.
   it, so it would be a decoration that vanishes on the first export.
 
 - **Space keeps the pan; `C` folds a branch; Space works on the fold
-  control itself** (left open by the previous run, decided here). Held space
+  control itself** (unsettled by the previous run, decided here). Held space
   is this canvas's pan gesture from every tool (`wbZoomFilter`) and a map
   node is selected nearly all the time once someone is editing, so binding
   Space to collapse would take the pan away exactly when it is most used and
@@ -392,8 +392,8 @@ Closed 2026-10-05 (op5): moved whole to HISTORY.md ("Moved from the plans,
 
 1. **Boundaries** and 2. **Summaries**: built (decisions 19 and 20;
    HISTORY.md, "Moved from the plans, 2026-10-05 (boundaries and
-   summaries)"). A boundary round a lasso'd set that is not one branch is
-   not built.
+   summaries)"). A boundary round a lasso'd set that is not one branch:
+   built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 3. **Relationships**: built (§13c, the cross-link; HISTORY.md, op5's
    §12.1 record).
 4. **Markers and task info**: priority 1 to 5, progress 0 to 100, flags,
@@ -404,7 +404,8 @@ Closed 2026-10-05 (op5): moved whole to HISTORY.md ("Moved from the plans,
    the filter are built (decision 34; HISTORY.md, "Moved from the plans,
    2026-10-05 (markers)"); due dates with a reminder are built (decision
    37; HISTORY.md, "Moved from the plans, 2026-10-05 (due dates, op5)");
-   tags on a topic are open.
+   tags on a topic are built as the `labels` field (HISTORY.md, "Moved from
+   the plans, 2026-11-12 (mindmap-plan)", decision 34 extended).
 5. **Notes on nodes**: a node that is a notebook note shows the note's
    own text here, editable both ways. The text note behind a topic is
    built (decision 18; HISTORY.md, "Moved from the plans, 2026-10-04").
@@ -436,9 +437,9 @@ export that claims it.
    HISTORY.md, "Moved from the plans, 2026-10-18 (mindmap-1018)".)
 3. **From a question**: "Make a map of..." in chat proposes a map
    (exists, Phase 4) and now opens it in the map editor with the
-   proposal as floating topics to accept or discard. (Chat's Make a mind map
+   proposal as floating topics to accept or discard. **Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)")**: it opens with a Keep or Discard bar. (Chat's Make a mind map
    of an answer or a whole chat is built, 2026-10-18 fixes7: no model, the
-   text's headings and lists; the floating-topics proposal is still open.)
+   text's headings and lists; the proposal opens with the Keep or Discard bar above.)
 4. ~~**Graph sync**~~ **Built** (HISTORY.md, "Moved from the plans, 2026-10-05
    (docs hygiene before 0.4.0: MINDMAP_PLAN)"): a map is a node in the graph
    with an edge of kind `map` to each note on it (`_add_map_edges`,
@@ -450,10 +451,11 @@ export that claims it.
 Gate: each AI action grounded (its sources listed) and faked in tests;
 the study mode measured on a 40-node map.
 
-### 12.4 Not built until asked
+### 12.4 Out of the map's scope (decided)
 
-Real-time collaboration, cloud sync, voice-to-map, AI image generation
-in nodes.
+Real-time collaboration, cloud sync, voice-to-map and AI image generation
+in nodes are outside an offline, local map; a request for one is a BACKLOG
+row, not plan work.
 
 ### 12.5 One place per action (INBOX 200 and 201, the owner, 2026-09-13 night)
 
@@ -975,8 +977,9 @@ topic: a control that wide has nowhere to go.
    carries it as `- [ ]` / `- [x]`, the one thing a node wears that Markdown
    has a word for (decision 12's reasoning about that file holds: every
    reader draws those as boxes), and reads it back; OPML and FreeMind carry
-   `_task`. No key: Space is the hand tool's hold. Priority, progress
-   percentages, flags and due dates (the rest of item 4) stay open.
+   `_task`. No key: Space is the hand tool's hold. The rest of item 4 is
+   built (decisions 34 and 37; HISTORY.md, "Moved from the plans,
+   2026-10-05 (markers)" and "(due dates, op5)").
 16. **The board's Insert and Arrange menus stay in the markup** (taken
    2026-10-04, §13f's remainder). Read as dead markup on a map; measured, it
    is the board's own: one top bar serves both kinds and a board uses all 20
@@ -1175,8 +1178,11 @@ topic: a control that wide has nowhere to go.
    not at all (decision 12's rule). View, Filter by marker lists the markers
    in use with their counts and dims (never hides) every topic without the
    chosen one, for this visit, with a bar in the focus bar's shell to end
-   it. Not built: due dates, tags, several filters at once, markers as the
-   outline's columns.
+   it. Extended 2026-11-12: the filter takes several at once (a topic stays
+   lit when it carries any of them) and the topic's labels, which are its tags
+   (canvasdepth2; no second field, so `_labels` already rides in OPML and
+   FreeMind); the outline draws each topic's markers, due day and labels as
+   cells under its words. Due dates are decision 37.
 35. **A document maps its own headings, one way** (taken 2026-10-05, the
    audit's M5 second half). The document's menu, Map the headings (and the
    palette's row) makes a new map through the Markdown import, so it opens
@@ -1187,8 +1193,9 @@ topic: a control that wide has nowhere to go.
    a skipped level hangs one level down, never two. The way back is a
    document topic under the centre pointing at the document (it opens it, as
    any document topic does), so it travels with the map into every export
-   that keeps references. A twin kept in step both ways is the audit's idea,
-   not built.
+   that keeps references. Decision not taken: a twin kept in step both ways
+   (the audit's idea); the document topic is the only link, and a headings
+   map is made once.
 36. **Studying a map is presenting with each branch hidden until recalled**
    (taken 2026-10-05, §12.3 item 5, under standing order 3; op5). The board
    menu's Study the map (maps only; the View menu is at its 450px ceiling)
@@ -1200,19 +1207,26 @@ topic: a control that wide has nowhere to go.
    and moves on; the end says how many were recalled. The marks are kept
    per map on this device (`wbStudy:<id>` in local storage: a study record
    is the person's, not the map's), and a branch missed last time says so
-   in its step. Not built: a note behind the topic as the answer (the
-   plan's "the note's own text"), a spaced order.
+   in its step. The note behind a topic as the answer is built (item 5: a
+   topic with a note asks for it after the branches). Extended 2026-11-12:
+   from the second run the order is spaced (`wbMapStudyQuestions(index,
+   marks, now)`): a branch missed last time first, then those due again (a
+   streak of knowing it waits 0, 1, 3, 7, 14, 30 days), then new ones in map
+   order, then those not due yet; a mark keeps its `streak` and `at`; the
+   palette's Study the map in map order asks in the map's order.
 37. **A topic's due date is a day, a marker, and a reminder only when asked**
    (taken 2026-10-05, §12.2 item 4, under standing order 3; op5).
    `data.due` is a calendar day (`YYYY-MM-DD`, no time: a topic is due on a
    day wherever the map is opened), content like decision 34's markers (a
    look reset keeps it; OPML and FreeMind carry `_due`; Markdown does not).
-   Set in the Markers popover's Due row (the browser's date field, Clear),
-   drawn in the marker row as words ("14 Mar") in the ink, a day gone in the
+   Set in the Markers popover's Due row (the date-field picker, Clear, and
+   an optional time: `data.due_time`, `HH:MM`, a wall-clock time like the day,
+   kept only beside a day and carried as `_due_time`; the day stays a day),
+   drawn in the marker row as words ("14 Mar", "14 Mar, 9:30 am" with a time,
+   gone only once that time has) in the ink, a day gone in the
    error ink and read "was due"; View, Filter by marker lists "With a due
-   date". Remind me makes an ordinary reminder at 9:00 that day; a day gone
-   makes none and says why. No reminder is made by setting a date. Tags on a
-   topic stay open.
+   date". Remind me makes an ordinary reminder at the due time, or 9:00 with none; a day gone
+   makes none and says why. No reminder is made by setting a date.
 
 ### Phases, each with the gate it is finished against
 
@@ -1253,24 +1267,7 @@ topic: a control that wide has nowhere to go.
   and a dragged branch's lines no longer trail it by a frame (77 of 81 frames
   up to 12px behind, now 0, `mapedgelag.js`).
 
-- **13g. The middle-button pan on the owner's own machine.** He reports, with
-  13.1's own gesture: "the whiteboard and mindmap goes haywire and moves to
-  the left when I try to move around by pushing down my mouse scroll wheel
-  and moving the mouse to the edges of the screen, no matter which
-  direction." **Not reproduced here**, and the two things that would explain
-  it were each tested: `mapmidpan.js` drives a real middle-button drag in all
-  four directions at 50 and 500 topics and the board goes the way the hand
-  goes every time, and a pan whose release never arrives (window blurred
-  mid-gesture) leaves the board still rather than following the pointer.
-  What cannot be tested here is the remaining explanation and the likeliest
-  one: **Chromium's middle-button autoscroll is a windowed-browser
-  behaviour**, a headless run has none, so the `mousedown` guard that exists
-  for it (INBOX 183, reasoned and never observed) is not exercised by any
-  gate in this repository. Gate: this needs the owner, not a sweep. What to
-  ask him for is which platform and whether the four-way autoscroll cursor
-  appears when he presses the wheel; if it does, the guard is not reaching
-  the event on his machine and the next thing to read is whether
-  `#library-view-whiteboard` is really an ancestor of what he pressed on.
+- ~~**13g. The middle-button pan on the owner's own machine.**~~ Not reproduced headless or headed; the owner's check is in BACKLOG.md ("Device and owner checks from the mindmap plan", L759), the full text in HISTORY.md ("Moved from the plans, 2026-11-12 (mindmap-plan)").
 - ~~**13b. The strip is sized like a topic.**~~ **Built 2026-09-21**, and the
   record is in HISTORY.md ("Moved from the plans, 2026-09-21", "From
   MINDMAP_PLAN.md section 13b: the topic strip is sized like a topic"). The
@@ -1435,9 +1432,9 @@ Built; moved whole to HISTORY.md ("Moved from the plans, 2026-10-03", "From MIND
      (verified live in Chromium against a real palette search and a real
      mind map), no feature code changed; regression tests added
      (`tests/test_palette_contract.py`, `tests/test_export_paint.py`).
-     Left, from the same report: (b)'s discoverability (the owner asked
-     without knowing they exist, so the controls need better labels/help,
-     placed below as its own item) and companion motion. (c) companion
+     (b)'s discoverability was built 2026-11-12 (palette rows
+     `Topic fill colour` and `Map background colour`; see HISTORY). Left,
+     from the same report: companion motion. (c) companion
      motion first (transitions, glide, secondary motion on hair, tails and
      nebula), then new states and props, the subtle feminine chest, the
      test pages, per-feature toggles, cost: the two Opus agents on atlas.js
@@ -1522,10 +1519,10 @@ Built; moved whole to HISTORY.md ("Moved from the plans, 2026-10-03", "From MIND
      Same day, also open: the graph's default layout "looks messy and is
      distributed wierdly"; the slash menu's Link card and Web link render the
      same on a line of their own (a lone link is a card, CHAT_PLAN decision
-     12; recommendation: Web link on an empty line inserts inline syntax the
-     card rule skips, owner to confirm); a toggle in the note edit form's
-     preview reportedly exits preview (not reproduced in Chromium, capture's
-     half fixed in 31d5460).
+     12; the owner took the inline syntax 2026-11-12, built: HISTORY.md
+     "Moved from the LEDGER", L-mindmap-7); a toggle in the note edit form's
+     preview reportedly exits preview (not reproduced, closed: HISTORY.md
+     "Moved from the plans", L-mindmap-8).
      Done the same day (commits 3d493ac to 2b721bd): capture preview and
      gutter, spinner under reduced motion, one-tab picker strip, unread-dot
      gap, popup agent "(no answer)" reasons and waiting line, Ask waiting
@@ -1560,12 +1557,8 @@ transport for its tests and the no-model fallback measured in a sweep:
 - ~~**Ghost topics on the canvas**~~ built 2026-10-18 (HISTORY.md, "Moved from the plans, 2026-10-18 (fixes7-1018)").
 - ~~**Expand from my notes**~~ built 2026-10-18 (HISTORY.md, "Moved from the
   plans, 2026-10-18 (mindmap-1018)").
-- **The affinity sort** (a board, WHITEBOARD_PLAN's territory): thirty
-  stickies grouped into named frames by theme, each placement shown with the
-  notes that back it, accepted per frame, one Undo step.
-- **The claim check** (DOCUMENTS_PLAN's territory): a document's sentences
-  checked against the notebook, each marked supported, contradicted or not
-  found, with the note.
+- ~~**The affinity sort**~~ built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+- ~~**The claim check**~~ built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 
 
 ## 14. Core nodes, levels and the icon library (INBOX 641, 642; mc1, 2026-10-05)
@@ -1591,10 +1584,7 @@ Moved to HISTORY.md ("Moved from the plans, 2026-10-05 (MINDMAP_PLAN §14, mc1)"
 | Photoshop | Copy and Paste layer style; the Glyphs panel: search, recent, insert into text | Copy and paste a topic's style (decision 42); the picker's search and Recent row (decision 43) |
 | Miro | Copy style and Paste style (Ctrl+Alt+C, V); an icon and emoji panel dragged onto the board; reactions | Paste style reaches topics; drag from the picker onto the canvas |
 
-Not taken now, kept open under INBOX 641: Illustrator's linked symbol
-instances (edit one, every placed copy follows), Photoshop's layer effects
-(shadow, glow, stroke per topic), Miro's reaction stamps and voting, and the
-whiteboard half of 641's research (beyond stickers).
+Once "not taken now" under INBOX 641 (linked symbols, layer effects, reactions): all built, see 14.4 and HISTORY.md.
 
 ### 14.3 Decisions made (do not remake)
 
@@ -1684,17 +1674,9 @@ whiteboard half of 641's research (beyond stickers).
 Phases 14a to 14e are built (HISTORY.md, "Moved from the plans, 2026-10-05
 (MINDMAP_PLAN §14, mc1)"). Open, from INBOX 641 and §14.2's "not taken now":
 
-- **Linked stickers** (Illustrator's symbols): edit one placed icon or emoji
-  and every copy follows. Needs a `library_ref` that is followed, which
-  decision 25 of WHITEBOARD_PLAN keeps as "kept, never followed".
-- ~~Topic effects~~ built 2026-10-10: HISTORY.md ("Moved from the plans, 2026-10-10 (boardmap-1010)"); not yet in the PNG or SVG picture.
-- Reaction stamps and voting: on a topic, built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"); on a board card, open.
-- **The whiteboard half of 641's research**, beyond stickers.
-- The exported picture draws each topic's shape since 2026-10-10 (boardmap-1010); a
-  topic's effect and a Phosphor icon still do not reach PNG or SVG (an emoji icon does, as text).
-- The document editor's `:shortcode:` completion keeps its own 248-entry table
-  (`DOC_EMOJI_SOURCE`); fold it into `ICON_EMOJI_SOURCE` when the completion
-  can wait on the picker's script.
+- **Linked stickers** (Illustrator's symbols): built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)"). Left open: swapping an icon for another icon everywhere (L-mindmap-14).
+- Reaction stamps and voting: on a topic, built 2026-10-11 (HISTORY "Moved from the plans, 2026-10-11 (canvasdepth2)"); on a board card, built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+- ~~**The whiteboard half of 641's research**~~ named nothing beyond stickers; recorded in HISTORY.md ("Moved from the plans, 2026-11-12 (mindmap-plan)").
 
 ## Placed from the owner's list, 2026-10-10
 
@@ -1744,7 +1726,7 @@ Zen mode, pitch mode, and every topic act one undo step.
 
 The owner: "make sure all the vendored repositories are made full use of. I want maximum utility." Ranked by the utility to the surface; `scratchpad/vendor_use.py` prints the counts ("available N, called M") and `tests/test_vendor_utilisation.py` ratchets them, so a row that lands raises its floor in the same commit. Each is a lead from a lower-bound count: grep the call site before building (CLAUDE.md section 1).
 
-- **VC12, Harper on node labels** (S, rank 12). The mind map's labels are prose that no checker reads; the worker already exists and takes any string. Measure: a label with a seeded agreement error is flagged and its suggestion applies as one undo step; no lint call on a drag.
+- **VC12, Harper on node labels:** built (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 
 ## Placed from Brief 60, 2026-10-10 (the measured census)
 
@@ -1769,21 +1751,7 @@ and F2) is built; what is open:
 
 ## Placed from INBOX, 2026-10-11 (the topic's tools)
 
-Owner: the mapfix agent (Sonnet).
-
-- **The owner, 2026-10-11, verbatim.** "also when I change stuff in the
-  tools for a mindmap node, I cant actually see what the difference is
-  until I click off it 😅" (screenshot: a topic's Shape popover, rows Core
-  idea, Box, Edge bar, Fill, Effect; selected options drawn three ways
-  (accent fill, a bordered box, a grey fill) and the resets in two
-  colours). Placed: the Sonnet mapfix agent: a change paints the topic
-  at once while it stays selected, the popover never covers the topic it
-  edits, and one selected look and one reset look in the popover.
-- INBOX 816, the owner 2026-10-11, verbatim: "should thes ebuttons be that big??" (screenshot: a zoomed-out dark map; the selected topic "test" is about 60 px wide and its + and link buttons are each about 50 px squares under it, larger than the topic). Read: no. The topic's action buttons are drawn at a fixed screen size while the map is zoomed out. Target: they scale with the topic and are clamped between 20 and 28 px, sit beside the topic without covering a neighbour, and below 50% zoom only the + shows.
-- INBOX 817, the owner 2026-10-11, verbatim: "also that popup edit bar for when I try editing text doesn follow the selected text with scroll or zoom, and the panels and buttons kinda get in the way of me trying to edit the text in them" (screenshots: editing "Goal": the format bar, bold through comment, stays where it opened while the map pans, and in the second it sits across the topic; the + and link buttons and the fold toggle overlap the text box). Target: the format bar is anchored to the selection and re-placed on pan, zoom and scroll (one rAF per frame), above the topic, or below when there is no room, never over the text being edited; while a topic's text is edited its + and link buttons, fold toggle and resize grip are hidden.
-- INBOX 818, the owner 2026-10-11, verbatim: "labels on mind map links dont move with the links". Target: a link's label is placed on the link's path (the midpoint of the drawn curve, `getPointAtLength`) and re-placed in the same frame as the link on a topic drag, a layout change, a fold and a pan or zoom; measured: label centre within 2 px of the path midpoint after a 200 px topic drag.
-- INBOX 819, the owner 2026-10-11, verbatim: "also i dont think there is a way to label links on a whiteboard. also can link labels be customisable??" (screenshot: a selected board connector, its ends and midpoint handles, no label control). Read: a board connector takes a label today only by Enter on the selected link (`wbLinkTakesLabel`, decision 13), with nothing on screen saying so. Target: (1) the selected connector's context bar has "Label" (the tag icon), and a double-click on the line starts one at the click; (2) a label's look in the same bar: size, bold, text colour, a background chip on or off, and position along the line (start, middle, end, or dragged, kept as `t`); mind map link labels share the same controls and recipe; help moves with it (the Guide's board-connectors topic).
-  Decided 2026-10-11 (mapfix found the clash): a double-click on a line stays "add a bend", as the owner asked earlier; a label starts from the visible Label button (built 2026-10-11, mapfix) or Enter, and a double-click on the label itself edits it. Open: (2), the label look controls, owner: the cards agent with 825.
+Built: INBOX 814, 816, 817, 818, 819 (1) (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)"). Open: 819 (2) for mind map link labels is LEDGER L-mindmap-11.
 
 ## Placed from INBOX, 2026-10-19 (INBOX 1308: the gap audit)
 
@@ -1793,22 +1761,21 @@ Read from the code against XMind, MindManager and Miro mind maps. Sizes S, M, L;
 2. Import a .xmind file (the map already reads OPML, FreeMind and Markdown) - M.
 3. ~~A Gantt view of the topics that have dates (XMind) - L.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 4").
 4. ~~Audio notes on a topic, recorded and kept with the board - M.~~ Built 2026-11-10 as a link to an existing recording, not raw audio (HISTORY.md, "s9c-1110 part 4").
-5. A brainstorm timer on the map bar (XMind "Brainstorming") - S.
-6. Copy the shape of a branch (layout and look together) to another branch - S.
-7. Topic templates for one topic (a pros and cons topic from the topic's menu) - S.
-8. Topic image from a link, fetched and kept - M.
-9. Export a branch only, as PNG, PDF or Markdown - S.
+5. ~~A brainstorm timer on the map bar (XMind "Brainstorming") - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+6. ~~Copy the shape of a branch (layout and look together) to another branch - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+7. ~~Topic templates for one topic (a pros and cons topic from the topic's menu) - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+8. ~~Topic image from a link, fetched and kept - M.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+9. ~~Export a branch only, as PNG, PDF or Markdown - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 10. ~~Rainbow branches as a theme option for every branch, not only first level - S.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 3").
 11. ~~A legend for markers and colours, drawn on the map - M.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 3").
-12. A second root on one map, joined by a labelled link (floating topics exist; named roots do not) - M.
-13. Search inside topics' notes from the map's find bar - S.
-14. Fisheye and focus dimming of everything but the selected branch - S.
-15. Real-time presenter pointer in the present mode - L.
+12. ~~A second root on one map, joined by a labelled link (floating topics exist; named roots do not) - M.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+13. ~~Search inside topics' notes from the map's find bar - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+14. ~~Fisheye and focus dimming of everything but the selected branch - S.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
+15. ~~Real-time presenter pointer in the present mode - L.~~ Built 2026-11-12 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan)").
 
-## Placed from INBOX, 2026-10-19 (edge sides; next PR)
+## Placed from INBOX, 2026-10-19 (edge sides)
 
-1342. **The owner, 2026-10-19, verbatim.** "also the mindmap links will always connect only to the top or bottom of nodes, never the sides, should they?"
-     Measured by code reading: `wbMapEdgeAnchors` (whiteboard-map.js:3224) uses the sides for tree-right, tree-left, tree-both and logic-right, and top and bottom for tree-down and org. For radial and free it picks the axis per edge, comparing top-left corners; a check of that rule shows a child beside its parent already gets a side edge, so the corner comparison is not the cause. Reproduce on the owner's map first (layout, `child._bl` branch layouts, and whether `wbMapEdgePathD` honours `horizontal`).
+Checked, not a bug: INBOX 1342 (HISTORY.md, "Moved from the plans, 2026-11-12 (mindmap-plan: mapquick)").
 
 ## Gap audit against XMind and MindNode, 2026-10-25 (wb2)
 

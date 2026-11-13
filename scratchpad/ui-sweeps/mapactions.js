@@ -1,5 +1,5 @@
 // INBOX 816: a selected topic's + and link buttons scale with the topic
-// (20 to 28px), sit clear of a neighbour, and below 50% zoom only + shows.
+// (20 to 35px (INBOX 1450 lets it grow)), sit clear of a neighbour, and below 50% zoom only + shows.
 //   BASE=... WT=$PWD node scratchpad/ui-sweeps/mapactions.js
 const { boot, openBoardsTab } = require("./lib.js");
 (async () => {
@@ -17,6 +17,7 @@ const { boot, openBoardsTab } = require("./lib.js");
       await wbMapTidy({ quiet: true });
       await new Promise((r) => setTimeout(r, 600));
     });
+    if (process.env.LAYOUT) { await page.evaluate((l) => wbMapSetLayout(l), process.env.LAYOUT); await page.waitForTimeout(1500); }
     for (const k of [0.25, 0.5, 1, 2]) {
       const r = await page.evaluate(async (k) => {
         const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -37,12 +38,12 @@ const { boot, openBoardsTab } = require("./lib.js");
         const others = [...document.querySelectorAll(".wb-object.wb-map-node")].filter((o) => o !== el()).map((o) => o.getBoundingClientRect());
         const hit = (x) => x.shown && others.some((o) => !(o.left >= x.r || o.right <= x.l || o.top >= x.b || o.bottom <= x.t));
         const onTopic = (x) => x.shown && !(T.left >= x.r || T.right <= x.l || T.top >= x.b || T.bottom <= x.t);
-        const near = others.filter((o) => !(o.left >= a.r || o.right <= a.l || o.top >= a.b || o.bottom <= a.t)).map((o) => [o.left, o.top, o.right, o.bottom].map(Math.round)); const AT = [a.l, a.t, a.r, a.b, l.l, l.t, l.r, l.b].map(Math.round); return { near, AT, T: [T.left, T.top, T.right, T.bottom].map(Math.round), k, topic: [Math.round(T.width), Math.round(T.height)], add: [a.w, a.shown, hit(a)], ref: [l.w, l.shown, hit(l)], addOnTopic: onTopic(a) };
+        const near = others.filter((o) => !(o.left >= a.r - 2.5 || o.right <= a.l + 2.5 || o.top >= a.b || o.bottom <= a.t)).map((o) => [o.left, o.top, o.right, o.bottom].map(Math.round)); const AT = [a.l, a.t, a.r, a.b, l.l, l.t, l.r, l.b].map(Math.round); return { near, AT, T: [T.left, T.top, T.right, T.bottom].map(Math.round), k, topic: [Math.round(T.width), Math.round(T.height)], add: [a.w, a.shown, hit(a)], ref: [l.w, l.shown, hit(l)], addOnTopic: onTopic(a) };
       }, k);
       console.log(`${W} k=${k}`, JSON.stringify(r));
       const ok = r.k >= 0.5 ? true : !r.ref[1];
-      const addOk = r.add[1] && r.add[0] >= 19.5 && r.add[0] <= (touch ? 44.5 : 28.5) && (!r.add[2] || r.k < 0.5);
-      const refOk = r.k < 0.5 ? !r.ref[1] : (r.ref[1] && r.ref[0] >= 19.5 && r.ref[0] <= (touch ? 44.5 : 28.5) && !r.ref[2]);
+      const addOk = r.add[1] && r.add[0] >= 19.5 && r.add[0] <= (touch ? 44.5 : 35.5) && (!r.add[2] || r.k < 0.5) && !r.near.length;
+      const refOk = r.k < 0.5 ? !r.ref[1] : (r.ref[1] && r.ref[0] >= 19.5 && r.ref[0] <= (touch ? 44.5 : 35.5) && !r.ref[2]);
       if (!addOk || !refOk) { fails++; console.log("  FAIL", JSON.stringify({ addOk, refOk })); }
     }
     await browser.close();
