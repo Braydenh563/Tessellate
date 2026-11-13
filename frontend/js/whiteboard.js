@@ -14134,7 +14134,7 @@ function wbExportLook() {
   };
 }
 
-function wbBuildExportSvg(scope, { transparent = false, pad = 0 } = {}) {
+function wbBuildExportSvg(scope, { transparent = false, pad = 0, skipSketches = null } = {}) {
   //: A selection export is the selection plus 24px, not the bar's 40.
   const bounds = scope === "selection" ? wbSelectionBounds(24)
     : scope === "visible" ? wbVisibleBounds() : wbBoardBounds();
@@ -14193,7 +14193,7 @@ function wbBuildExportSvg(scope, { transparent = false, pad = 0 } = {}) {
   // reinterpreted, so a stroke's colour/width/opacity (including the
   // highlighter's own translucency) survives into the export untouched.
   const drawSketch = (sketch) => {
-    if ((onlyKeys && !onlyKeys.has(wbMultiKey("sketch", sketch.id))) || wbSketchHiddenOnBoard(sketch)) return;
+    if ((onlyKeys && !onlyKeys.has(wbMultiKey("sketch", sketch.id))) || wbSketchHiddenOnBoard(sketch) || skipSketches?.has(sketch.id)) return;
     const markup = look.sketch(sketch);
     if (markup) parts.push(markup);
   };
@@ -15049,6 +15049,12 @@ const WB_EXPORT_FORMATS = [
     value: "library", label: "Image library", scopes: ["selection", "visible", "whole"], picture: true,
     note: "Straight into the gallery, with no file saved to disk.",
     run: (scope) => wbSaveToLibrary(scope),
+  },
+  {
+    //: The pen strokes drawn back in order, one frame per step (whiteboard-ink-replay.js; the writer is whiteboard-gif.js).
+    value: "gif", label: "GIF", scopes: ["selection", "whole"], board: true,
+    note: "An animated picture of the pen drawing, stroke by stroke.",
+    run: (scope) => wbFmtState.inkReplay.exportGif(scope),
   },
   {
     //: One file for anyone with a browser: the board's SVG in a page that pans and zooms (whiteboard-export-more.js).
@@ -19462,7 +19468,7 @@ async function initWhiteboard() {
     isDrawing = true;
     const [x, y] = getLogicalMouse(e);
     
-    currentDrawData = [[x, y]];
+    currentDrawData = [[x, y, e.pressure]];
     currentDrawPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
     // Fill only applies to the four closed shapes, and only when "no fill"
     // isn't checked: asked for directly ("fill colour/transparency...
@@ -19498,10 +19504,23 @@ async function initWhiteboard() {
     const dashArray = wbDashArray(window.currentDashStyle, WB_STROKE_WIDTH);
     if (dashArray) currentDrawPath.setAttribute("stroke-dasharray", dashArray);
     currentDrawPath.setAttribute("d", `M ${x} ${y}`);
+    //: A solid pen or marker stroke is smoothed ink (whiteboard-ink-more.js): filled, its width following pressure.
+    if ((window.currentTool === "draw" || window.currentTool === "highlighter") && wbFmtState.inkMore?.takesInk(window.currentDashStyle)) {
+      currentDrawPath.__ink = { pointer: e.pointerType };
+      wbFmtState.inkMore.liveStyle(currentDrawPath, window.currentStrokeNone ? "none" : window.currentStrokeColor, window.currentTool === "highlighter" ? WB_HIGHLIGHTER_ALPHA : null);
+    }
     //: Over the cards while it is drawn: it lands on top (decision 43).
     document.getElementById("wb-overlay-zoom-group").appendChild(currentDrawPath);
   });
   
+  //: The live stroke's outline when it is smoothed ink, "" when it is a plain stroke.
+  function wbInkLiveD(last) {
+    const ink = currentDrawPath?.__ink;
+    if (!ink) return "";
+    const tool = window.currentTool;
+    const width = tool === "highlighter" ? wbHighlighterWidth(WB_STROKE_WIDTH) : WB_STROKE_WIDTH;
+    return wbFmtState.inkMore.outline(currentDrawData, tool, width, ink.pointer, last);
+  }
   containerEl.addEventListener("pointermove", (e) => {
     if (!isDrawing || !WB_BRUSH_TOOLS.has(window.currentTool)) return;
     e.stopPropagation();
@@ -19520,12 +19539,12 @@ async function initWhiteboard() {
       if (e.shiftKey) {
         const [sx0, sy0] = currentDrawData[0];
         currentDrawData.length = 1;
-        currentDrawData.push([x, y]);
-        currentDrawPath.setAttribute("d", `M ${sx0} ${sy0} L ${x} ${y}`);
+        currentDrawData.push([x, y, e.pressure]);
+        currentDrawPath.setAttribute("d", wbInkLiveD(false) || `M ${sx0} ${sy0} L ${x} ${y}`);
         return;
       }
-      currentDrawData.push([x, y]);
-      const d = currentDrawData.map((pt, i) => (i === 0 ? `M ${pt[0]} ${pt[1]}` : `L ${pt[0]} ${pt[1]}`)).join(" ");
+      currentDrawData.push([x, y, e.pressure]);
+      const d = wbInkLiveD(false) || currentDrawData.map((pt, i) => (i === 0 ? `M ${pt[0]} ${pt[1]}` : `L ${pt[0]} ${pt[1]}`)).join(" ");
       currentDrawPath.setAttribute("d", d);
     } else {
       // Shape tools: only start and current point matter
@@ -19544,7 +19563,9 @@ async function initWhiteboard() {
         // on `currentLineEndStyle`/`currentArrowEndStyle` in `initWhiteboard`.
         const caps = wbToolCaps();
         const [ex, ey] = e.shiftKey ? wbSnap45(sx, sy, x, y) : [x, y];
-        currentDrawPath.setAttribute("d", wbRegenerateShapeCaps(`M ${sx} ${sy} L ${ex} ${ey}`, caps.startCap, caps.endCap, WB_STROKE_WIDTH * 4 + 6));
+        const liveHead = WB_STROKE_WIDTH * 4 + 6;
+        const liveD = wbRegenerateShapeCaps(`M ${sx} ${sy} L ${ex} ${ey}`, caps.startCap, caps.endCap, liveHead);
+        currentDrawPath.setAttribute("d", wbFmtState.inkMore?.trimShaft(liveD, caps.startCap, caps.endCap, liveHead, null, wbShaftEnd) || liveD);
       } else if (window.currentTool === "circle") {
         currentDrawPath.setAttribute("d", wbEllipseDrawD(sx, sy, x, y, e));
       } else {
@@ -19601,7 +19622,10 @@ async function initWhiteboard() {
     // being discarded as "no shape to save".
     const isFreehand = window.currentTool === "draw" || window.currentTool === "highlighter";
     if (isFreehand && currentDrawData.length < 2) {
-      currentDrawPath.setAttribute("d", `M ${sx} ${sy} L ${sx} ${sy + 0.1}`);
+      currentDrawPath.setAttribute("d", wbInkLiveD(true) || `M ${sx} ${sy} L ${sx} ${sy + 0.1}`);
+    } else if (isFreehand) {
+      const settled = wbInkLiveD(true);
+      if (settled) currentDrawPath.setAttribute("d", settled);
     } else if (!isFreehand && Math.abs(x - sx) < 2 && Math.abs(y - sy) < 2) {
       // Shape tools (line/arrow/rect/circle) need an actual drag to have a
       // size: a zero-size shape isn't a reasonable click-to-draw default
@@ -19629,6 +19653,7 @@ async function initWhiteboard() {
       shape: more ? "custom" : window.currentTool,
     };
     if (more?.area) blob.label_area = more.area;
+    if (currentDrawPath.__ink) Object.assign(blob, { ink: 1 }, wbFmtState.inkMore.keepPoints(currentDrawData, wbPathBBox(d)));
     //: The ends are stored by kind, so the bar and the Format panel read
     //: what was drawn rather than sniffing it out of the path.
     if (window.currentTool === "line" || window.currentTool === "arrow") Object.assign(blob, wbToolCaps());
@@ -23215,6 +23240,12 @@ function renderWhiteboard() {
       if (parsed.d) {
         shapeData = parsed;
         pathData = parsed.d;
+        //: A hollow end (outline diamond, circle, square) stops the drawn shaft at its edge, as a link's does; the hit band keeps the whole line.
+        if (wbSketchTakesCaps(parsed)) {
+          const caps = wbSketchCaps(parsed);
+          const trimmed = wbFmtState.inkMore?.trimShaft(parsed.d, caps.startCap, caps.endCap, (parsed.width || 3) * 4 + 6, caps, wbShaftEnd);
+          if (trimmed && trimmed !== parsed.d) { hitboxData = parsed.d; pathData = trimmed; }
+        }
         // `shape` names the tool that drew it, which is what says "highlighter"
         // rather than "a stroke that happens to carry an opacity": a pen
         // stroke restyled through the context bar could have one too.
@@ -23235,6 +23266,13 @@ function renderWhiteboard() {
           fillOpacity = parsed.fillOpacity != null ? parsed.fillOpacity : 1;
         }
         dashArray = wbDashArray(parsed.dash || "solid", parsed.width || 3, wbDashPatternOf(parsed.dashPattern));
+        //: Smoothed ink is the stroke's outline, filled with its colour (whiteboard-ink-more.js).
+        if (parsed.ink) {
+          fill = stroke;
+          fillOpacity = strokeOpacity;
+          stroke = "none";
+          dashArray = null;
+        }
       } else if (parsed.type && parsed.type.startsWith("link-")) {
         linkData = parsed;
         stroke = parsed.color || stroke;

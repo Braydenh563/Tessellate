@@ -2328,6 +2328,28 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-ink",
+        "keywords": (
+            "pen", "marker", "smooth", "smoothed", "pressure", "stylus", "apple pencil", "freehand",
+            "ink", "draw a line", "wobbly pen", "thick and thin", "clean up", "replay", "gif",
+        ),
+        "body": (
+            "The pen and the marker draw smoothed ink: the line you make is evened out, "
+            "and with a pen or stylus it is thicker where you press harder. With a mouse or "
+            "a finger the width follows how fast you draw. A dashed pen keeps the plain "
+            "stroke. A free line or arrow with a hollow end (diamond, circle, square) stops "
+            "at the end's edge instead of running through it. To tidy a rough shape, select the "
+            "pen stroke and choose Edit, Clean up the drawn shape (or find it in the command "
+            "palette): a stroke drawn as a line, arrow, rectangle, ellipse, triangle or diamond "
+            "becomes that shape in the same colour and width, as one Undo step. A scribble that "
+            "is none of them stays as it is. To watch a board being drawn, choose Edit, Replay "
+            "the pen drawing: the pen strokes disappear and come back one by one in the order "
+            "you drew them (with reduced motion on, it skips to the finished board). Export, "
+            "GIF saves the same thing as an animated picture."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-hand-drawn",
         "keywords": (
             "hand-drawn", "hand drawn", "sketchy", "rough lines", "excalidraw look",

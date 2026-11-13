@@ -1054,7 +1054,7 @@ clash is listed so the choice is made once.
 
 | Format | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| GIF | JPG and WebP yes (`WB_EXPORT_FORMATS`, whiteboard.js:14828); GIF open | `exportAnimatedGif` (diagramly/Menus.js 1181) | no animated source on a board yet: waits for the ink replay (L-whiteboard-4), which gives it frames to write | S |
+| GIF | JPG, WebP and GIF yes (`WB_EXPORT_FORMATS`) | `exportAnimatedGif` (diagramly/Menus.js 1181) | built: the ink replay's steps, written by `whiteboard-gif.js` | done |
 | SVG (re-editable, with the model embedded) | yes (`wbExportSvg`; `<metadata>` carries the board, `wbBoardSvgMetadata`) | `exportSvg` (diagramly/Menus.js 1101) with `content=` attribute | done | none |
 | PDF | yes (`wbExportPdf`) | `exportPdf` (692), server side | done (print path) | none |
 | VSDX import and export, Gliffy, Lucidchart | dropped 2026-11-12 (the owner's line here, "drop VSDX and Lucid"; Gliffy with them, "revisit on request", the not-doing list near line 1114) | `vsdx/importer.js`, `exportVsdx`, `importFrom` | not built; reopen only on request | none |
