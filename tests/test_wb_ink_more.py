@@ -194,3 +194,23 @@ def test_the_width_control_and_every_path_change_reach_the_ink_helpers():
     for name in ("function wbSketchSetD", "function wbSketchSetProps", "async function wbSaveSketchProps"):
         body = board[board.index(name) :][:900]
         assert "inkMore?.follow(" in body, name
+
+
+def test_a_pens_pressure_is_kept_and_a_width_rebuild_uses_it_l_whiteboard_32():
+    out = _node(
+        _BBOX +
+        "const m = wbFmtState.inkMore; const hand = []; for (let i = 0; i <= 30; i++) hand.push([100 + i * 8, 100 + Math.sin(i / 4) * 30, i < 15 ? 0.2 : 0.9]);\n"
+        "const d0 = m.outline(hand, 'draw', 3, 'pen', true, window.perfectFreehand);\n"
+        "const kept = m.keepPoints(hand, bbox(d0)); const parsed = { d: d0, ink: 1, width: 3, shape: 'draw', ...kept };\n"
+        "const flat = m.keepPoints(hand.map(([x, y]) => [x, y, 0.5]), bbox(d0));\n"
+        "const r = m.rebuild(parsed, 3, bbox, window.perfectFreehand);\n"
+        "const placed = m.placePoints(parsed.pts, parsed.pbox, bbox(d0), parsed.prs);\n"
+        "const sim = m.outline(placed.map(([x, y]) => [x, y]), 'draw', 3, 'mouse', true, window.perfectFreehand);\n"
+        "console.log(JSON.stringify({ aligned: kept.prs.length * 2 === kept.pts.length, first: kept.prs[0], last: kept.prs[kept.prs.length - 1], flat: 'prs' in flat, same: r.d === m.outline(placed, 'draw', 3, 'pen', true, window.perfectFreehand), notSim: r.d !== sim, p3: placed[0].length, old: m.rebuild({ d: d0, ink: 1, pts: kept.pts, pbox: kept.pbox }, 3, bbox, window.perfectFreehand).d === sim }));",
+        vendor=True,
+    )
+    assert out["aligned"] and out["first"] == 0.2 and out["last"] == 0.9
+    assert not out["flat"]  # a mouse's constant pressure is not kept
+    assert out["same"] and out["notSim"]  # rebuilding uses the kept pressure, not a simulation
+    assert out["p3"] == 3
+    assert out["old"]  # a stroke saved before pressure was kept still rebuilds, from speed

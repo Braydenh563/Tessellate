@@ -2947,6 +2947,14 @@
 .wb-shape-caret {
   margin-left: -2px;
 }
+/* A finger needs 44px, not the 10px glyph (L259): the padding grows the caret's own box to the touch minimum (the toggle
+   grows with it) and a press anywhere in it opens the list. Fine pointers keep the small caret, so the desktop rail does not move. */
+@media (pointer: coarse) {
+  .wb-shape-caret {
+    box-sizing: content-box;
+    padding: calc((var(--target-min) - 10px) / 2);
+  }
+}
 .wb-shape-menu {
   position: absolute;
   bottom: calc(100% + 0.5rem);

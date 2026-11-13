@@ -21,6 +21,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-options.js", //: The Format panel's Board section; reads `wbSetBackground` and `onSurface` at run time only.
     "/js/whiteboard-export-more.js", //: PNG resolution and embedded board, the HTML page; pure, joins `wbFmtState` (whiteboard-format.js).
     "/js/whiteboard-keys.js",
+    "/js/whiteboard-toolbar.js", //: One tab stop per section of the tool rail, arrows inside it; needs `onSurface` and `wbFmtState`.
     "/js/whiteboard-workspace.js", //: Edit inside a group and saved panel layouts; names whiteboard.js, whiteboard-library.js and whiteboard-format.js at run time only.
     "/js/whiteboard-layers-more.js",
     "/js/whiteboard-draw-more.js",

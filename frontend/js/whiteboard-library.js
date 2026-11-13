@@ -2059,7 +2059,10 @@ function wbRenderLayers() {
     li.dataset.key = key;
     li.dataset.kind = row.kind;
     li.dataset.id = String(row.item.id);
-    const hidden = wbItemHidden(row.kind, row.item);
+    //: Out of sight only because a folded frame holds it (L-whiteboard-26): the row says folded, not hidden, and the eye
+    //: points at the frame, since showing the item would change nothing while the frame is folded.
+    const hidden = wbItemHidden(row.kind, row.item, { ignoreFold: true });
+    const foldFrame = hidden ? null : wbFmtState.structure?.foldFrame(row.kind, row.item);
     const locked = wbIsLocked(row.kind, row.item);
     li.draggable = true;
     li.setAttribute("aria-selected", selected.has(key) ? "true" : "false");
@@ -2067,10 +2070,12 @@ function wbRenderLayers() {
     const hideLayer = wbLayerOwning(row.kind, row.item, "hidden");
     const lockLayer = wbLayerOwning(row.kind, row.item, "locked");
     const eye = wbLayerButton("wb-layer-eye", hidden ? "ph-eye-slash" : "ph-eye",
-      hideLayer ? `Hidden by its layer, ${hideLayer.name}. Show the layer to see it.` : hidden ? "Show it (H)" : "Hide it (H)");
+      hideLayer ? `Hidden by its layer, ${hideLayer.name}. Show the layer to see it.`
+        : foldFrame ? `Folded inside ${wbLayerName("object", foldFrame)}. Expand the frame to see it.` : hidden ? "Show it (H)" : "Hide it (H)");
     const lock = wbLayerButton("wb-layer-lock", locked ? "ph-lock-simple" : "ph-lock-simple-open",
       lockLayer ? `Locked by its layer, ${lockLayer.name}. Unlock the layer to edit it.` : locked ? "Unlock it (L)" : "Lock it (L)");
-    eye.classList.toggle("is-by-layer", Boolean(hideLayer));
+    eye.classList.toggle("is-by-layer", Boolean(hideLayer || foldFrame));
+    li.classList.toggle("is-folded", Boolean(foldFrame));
     lock.classList.toggle("is-by-layer", Boolean(lockLayer));
     li.classList.toggle("is-hidden", hidden);
     li.classList.toggle("is-locked", locked);
@@ -2089,7 +2094,7 @@ function wbRenderLayers() {
       li.append(icon, name, eye, lock);
     }
     li.classList.toggle("is-held", Boolean(row.held));
-    li.setAttribute("aria-label", `${row.name}${row.holds ? `, holds ${row.holds}` : ""}${hidden ? ", hidden" : ""}${locked ? ", locked" : ""}`);
+    li.setAttribute("aria-label", `${row.name}${row.holds ? `, holds ${row.holds}` : ""}${hidden ? ", hidden" : ""}${foldFrame ? ", folded in a frame" : ""}${locked ? ", locked" : ""}`);
     tree.append(li);
   }
   const items = [...tree.querySelectorAll("[role='treeitem']")];
@@ -2169,6 +2174,8 @@ async function wbLayerToggleHidden(li) {
   const [kind, item] = entry;
   const hideLayer = wbLayerOwning(kind, item, "hidden");
   if (hideLayer) return wbLayerSaysOwner(`${wbLayerName(kind, item)} is hidden by its layer, ${hideLayer.name}. Show the layer to see it.`);
+  const foldFrame = !wbItemHidden(kind, item, { ignoreFold: true }) && wbFmtState.structure?.foldFrame(kind, item);
+  if (foldFrame) return wbLayerSaysOwner(`${wbLayerName(kind, item)} is folded inside ${wbLayerName("object", foldFrame)}. Expand the frame to see it.`);
   const on = !wbItemHidden(kind, item);
   if (on && wbSelectedItem?.kind === kind && wbSelectedItem.id === item.id) clearWbSelection();
   await wbSetHidden([[kind, item]], on);

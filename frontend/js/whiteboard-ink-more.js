@@ -57,26 +57,36 @@
   //: What a saved ink stroke keeps of the hand's own points, for Clean up (whiteboard-ink-recognise.js) and Replay: the
   //: points thinned to one every 2 units (at most 600), flat as x, y, x, y, and the outline's box when they were taken, so
   //: a stroke that was moved or resized later maps its points onto where it is now.
+  //: A pen's real pressure is kept too (`prs`, one 0 to 1 number per kept point, 2 decimals), so a width change rebuilds
+  //: the stroke with the pressure the hand gave and not a simulated one (L-whiteboard-32). A mouse or a finger reports a
+  //: flat value, which is not kept (the library simulates from speed); old strokes have no `prs` and load as before.
   function keepPoints(points, bbox) {
-    const flat = [];
+    const flat = [], prs = [];
     let last = null;
     const step = Math.max(1, Math.ceil(points.length / 600));
     points.forEach((p, i) => {
       if (i % step && i !== points.length - 1) return;
       if (last && Math.hypot(p[0] - last[0], p[1] - last[1]) < 2 && i !== points.length - 1) return;
       flat.push(round1(p[0]), round1(p[1]));
+      prs.push(Number.isFinite(p[2]) ? Math.round(p[2] * 100) / 100 : null);
       last = p;
     });
     const pbox = bbox ? [round1(bbox.minX), round1(bbox.minY), round1(bbox.width), round1(bbox.height)] : null;
-    return pbox ? { pts: flat, pbox } : {};
+    if (!pbox) return {};
+    const real = prs.every((v) => v != null) && Math.max(...prs) - Math.min(...prs) >= 0.02;
+    return real ? { pts: flat, pbox, prs } : { pts: flat, pbox };
   }
 
   //: The kept points [x, y] where the stroke is now: `pbox` (then) mapped onto `bbox` (now), moved and scaled per axis.
-  function placePoints(flat, pbox, bbox) {
+  function placePoints(flat, pbox, bbox, prs) {
     if (!Array.isArray(flat) || !Array.isArray(pbox) || !bbox) return [];
     const sx = pbox[2] > 0.5 ? bbox.width / pbox[2] : 1, sy = pbox[3] > 0.5 ? bbox.height / pbox[3] : 1;
     const out = [];
-    for (let i = 0; i + 1 < flat.length; i += 2) out.push([bbox.minX + (flat[i] - pbox[0]) * sx, bbox.minY + (flat[i + 1] - pbox[1]) * sy]);
+    const kept = Array.isArray(prs) && prs.length * 2 === flat.length;
+    for (let i = 0; i + 1 < flat.length; i += 2) {
+      const at = [bbox.minX + (flat[i] - pbox[0]) * sx, bbox.minY + (flat[i + 1] - pbox[1]) * sy];
+      out.push(kept ? [...at, prs[i / 2]] : at);
+    }
     return out;
   }
 
@@ -87,8 +97,8 @@
   function rebuild(parsed, width, bboxOf, lib = window.perfectFreehand) {
     if (!parsed?.ink || !Array.isArray(parsed.pts) || !lib) return {};
     const now = bboxOf(parsed.d);
-    const pts = placePoints(parsed.pts, parsed.pbox, now);
-    const d = outline(pts, parsed.opacity != null ? "highlighter" : "pen", width, "mouse", true, lib);
+    const pts = placePoints(parsed.pts, parsed.pbox, now, parsed.prs);
+    const d = outline(pts, parsed.opacity != null ? "highlighter" : "pen", width, pts[0]?.length > 2 ? "pen" : "mouse", true, lib);
     const box = d && bboxOf(d);
     return box ? { d, ...keepPoints(pts, box) } : {};
   }
@@ -99,7 +109,7 @@
   //: points are then in the new outline's frame. `{}` when the map is only a move or a stretch (the box mapping already
   //: holds) or the two paths do not correspond.
   const coordsOf = (d) => (String(d).match(/-?\d*\.?\d+(?:[eE]-?\d+)?/g) || []).map(Number);
-  function carry(oldD, newD, flat, pbox, bboxOf) {
+  function carry(oldD, newD, flat, pbox, bboxOf, prs) {
     const a = coordsOf(oldD), b = coordsOf(newD);
     if (a.length !== b.length || a.length < 12 || !Array.isArray(flat) || !Array.isArray(pbox)) return {};
     const n = a.length / 2;
@@ -124,7 +134,11 @@
     const box = bboxOf(newD);
     if (!box) return {};
     const out = [];
-    for (let i = 0; i + 1 < flat.length; i += 2) out.push([m00 * flat[i] + m01 * flat[i + 1] + tx, m10 * flat[i] + m11 * flat[i + 1] + ty]);
+    const kept = Array.isArray(prs) && prs.length * 2 === flat.length;
+    for (let i = 0; i + 1 < flat.length; i += 2) {
+      const at = [m00 * flat[i] + m01 * flat[i + 1] + tx, m10 * flat[i] + m11 * flat[i + 1] + ty];
+      out.push(kept ? [...at, prs[i / 2]] : at);
+    }
     return keepPoints(out, box);
   }
 
@@ -134,7 +148,7 @@
   function follow(parsed, newD, bboxOf) {
     if (!parsed?.ink || !Array.isArray(parsed.pts) || typeof newD !== "string" || newD === parsed.d) return;
     const here = Array.isArray(parsed.pbox) && bboxOf(parsed.d) ? placePoints(parsed.pts, parsed.pbox, bboxOf(parsed.d)).flat() : parsed.pts;
-    const turned = carry(parsed.d, newD, here, parsed.pbox, bboxOf);
+    const turned = carry(parsed.d, newD, here, parsed.pbox, bboxOf, parsed.prs);
     if (turned.pts) Object.assign(parsed, turned);
   }
 

@@ -124,7 +124,7 @@ const { check, summary } = checker();
     // Layout two: Format closed, sidebar closed, search open.
     if (open("wb-format")) wbFormatToggle();
     wbCloseSidebar();
-    if (!open("wb-search-bar")) document.getElementById("wb-search-toggle")?.click();
+    if (!open("wb-search-bar")) (wbOpenBoardSearch());
     const two = state();
     await W.save("Layout two");
     const list = W.saved().map((w) => w.name);

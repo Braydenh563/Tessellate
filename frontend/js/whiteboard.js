@@ -3786,13 +3786,11 @@ function wbNavigatorDragEnd(event) {
 
 function wbToggleNavigator(force) {
   const panel = document.getElementById("wb-navigator");
-  const button = document.getElementById("wb-navigator-toggle");
   if (!panel) return;
   const open = force === undefined ? panel.classList.contains("hidden") : force;
   // Shift+N mid-drag: the drag ends with the panel, not with a later pointer.
   if (!open && wbNavState.drag) wbNavigatorDragEnd();
   panel.classList.toggle("hidden", !open);
-  if (button) button.setAttribute("aria-expanded", open ? "true" : "false");
   try {
     prefs.set("wb-navigator-open", open ? "1" : "0");
   } catch {
@@ -8164,12 +8162,12 @@ function wbZOrderStepPeers(kind, item) {
 
 //: Whether an item is hidden from the board (the Layers tab's eye). A card
 //: has no data blob, so its flag is a field of its own.
-function wbItemHidden(kind, item) {
+function wbItemHidden(kind, item, { ignoreFold = false } = {}) {
   if (!item) return false;
   if (kind === "node") return Boolean(item.hidden);
   const data = kind === "sketch" ? wbSketchData(item) : item.data;
   //: Out of sight inside a folded frame too (whiteboard-structure-more.js), so export, present and Select all skip it.
-  return Boolean(data && (data.hidden || wbNamedLayerFlag(data.layer, "hidden"))) || Boolean(typeof wbFmtState !== "undefined" && wbFmtState.structure?.folded(kind, item));
+  return Boolean(data && (data.hidden || wbNamedLayerFlag(data.layer, "hidden"))) || (!ignoreFold && Boolean(typeof wbFmtState !== "undefined" && wbFmtState.structure?.folded(kind, item)));
 }
 
 //: A named layer's flag (canvasdepth): an item on a hidden layer is hidden,
@@ -15636,7 +15634,6 @@ async function initWhiteboard() {
   document.getElementById("wb-fullscreen")?.addEventListener("click", () => toggleWhiteboardFullscreen());
 
   // --- Navigator ----------------------------------------------------------
-  document.getElementById("wb-navigator-toggle")?.addEventListener("click", () => wbToggleNavigator());
   document.getElementById("wb-navigator-close")?.addEventListener("click", () => wbToggleNavigator(false));
   document.getElementById("wb-navigator-fit")?.addEventListener("click", () => wbZoomToFit());
   const navMap = document.getElementById("wb-navigator-map");
@@ -15658,11 +15655,6 @@ async function initWhiteboard() {
   }
 
   // --- Find a card on this board ------------------------------------------
-  document.getElementById("wb-search-toggle")?.addEventListener("click", () => {
-    const bar = document.getElementById("wb-search-bar");
-    if (bar && !bar.classList.contains("hidden")) wbCloseBoardSearch();
-    else wbOpenBoardSearch();
-  });
   document.getElementById("wb-search-close")?.addEventListener("click", wbCloseBoardSearch);
   document.getElementById("wb-search-prev")?.addEventListener("click", () => wbBoardSearchGo(-1));
   document.getElementById("wb-search-next")?.addEventListener("click", () => wbBoardSearchGo(1));
@@ -17482,9 +17474,10 @@ async function initWhiteboard() {
     applyPropsPref(propsPref.checked);
   });
   const panelSwitches = [
-    ["wb-panel-overview", "wb-navigator", "wb-navigator-toggle"],
-    ["wb-panel-library", "wb-sidebar-panel", "wb-add-note"],
-    ["wb-panel-search", "wb-search-bar", "wb-search-toggle"],
+    ["wb-panel-overview", "wb-navigator", () => wbToggleNavigator()],
+    ["wb-panel-library", "wb-sidebar-panel", () => document.getElementById("wb-add-note")?.click()],
+    //: The View menu's switch is the only control for Find now (the top bar's duplicate icon went, L265).
+    ["wb-panel-search", "wb-search-bar", () => (document.getElementById("wb-search-bar")?.classList.contains("hidden") ? wbOpenBoardSearch() : wbCloseBoardSearch())],
   ];
   function syncPanelSwitches() {
     for (const [switchId, panelId] of panelSwitches) {
@@ -17493,9 +17486,9 @@ async function initWhiteboard() {
       if (sw && panel) sw.checked = !panel.classList.contains("hidden");
     }
   }
-  for (const [switchId, , toggleId] of panelSwitches) {
+  for (const [switchId, , toggle] of panelSwitches) {
     document.getElementById(switchId)?.addEventListener("change", () => {
-      document.getElementById(toggleId)?.click();
+      toggle();
       syncPanelSwitches();
     });
   }
@@ -23944,10 +23937,13 @@ function wbCardFitHeight(el) {
 
 //: **Each grip says what its double-click does on this kind** (OPEN.md: the
 //: title said "fits the text" on a picture, which has none). A frame fits
-//: what it holds, a picture has nothing to fit, the rest fit their words.
+//: what it holds, a picture has nothing to fit, a table or diagram fits its
+//: content, the rest fit their words.
 function wbResizeHandleTitle(kind) {
   if (kind === "frame") return "Drag to resize, double-click to fit this edge to what is inside";
   if (kind === "image") return "Drag to resize: Shift keeps the proportions, double-click fits the picture";
+  //: A table or a diagram has no words to fit: the double-click takes the height its content needs (L261).
+  if (kind === "table" || kind === "diagram") return "Drag to resize: Shift keeps the proportions, double-click fits the height to what is inside";
   return "Drag to resize: Shift keeps the proportions, double-click fits the text";
 }
 

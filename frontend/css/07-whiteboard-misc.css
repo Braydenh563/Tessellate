@@ -7110,10 +7110,10 @@ button.connection-row:is(:hover, :focus-visible) {
 }
 .whiteboard-floating-panel.bottom-center .wb-tool-section-label {
   position: absolute;
-  width: 1px;
   height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
+  /* Hidden by clipping everything, not by a 1px box with overflow: the word keeps its own width, so it does not
+     "overflow" its box by 18 to 50px (L264) and a screen reader still reads it. */
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 .whiteboard-floating-panel.bottom-center .wb-tool-section {
@@ -7695,13 +7695,6 @@ button.connection-row:is(:hover, :focus-visible) {
   display: none;
 }
 @media (max-width: 819.98px) {
-  /* Search and Overview are also switches in the View menu; the two icons
-     and their divider are what pushed the bar onto a third row. */
-  .wb-topbar #wb-search-toggle,
-  .wb-topbar #wb-navigator-toggle,
-  .wb-topbar #wb-navigator-toggle + .wb-topbar-divider {
-    display: none;
-  }
   /* **Two more leave on a phone, and neither is lost.** Measured at 320 with
      the 44px touch floor on: the right half needs 5 menu toggles, a divider
      and the Library button at 44px each in 260px of content box, which is
@@ -11932,6 +11925,11 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   color: var(--muted);
   text-decoration: line-through;
 }
+/* Out of sight only because a folded frame holds it: quiet, not struck through. */
+.wb-layer-row.is-folded .wb-layer-name {
+  color: var(--muted);
+  font-style: italic;
+}
 .wb-layer-row:hover .wb-layer-eye,
 .wb-layer-row:hover .wb-layer-lock,
 .wb-layer-row:focus-within .wb-layer-eye,
@@ -11939,6 +11937,7 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
 .wb-layer-row:focus .wb-layer-eye,
 .wb-layer-row:focus .wb-layer-lock,
 .wb-layer-row.is-hidden .wb-layer-eye,
+.wb-layer-row.is-folded .wb-layer-eye,
 .wb-layer-row.is-locked .wb-layer-lock {
   opacity: 1;
 }

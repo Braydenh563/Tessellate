@@ -24,7 +24,6 @@ const mkEl = (id, hidden) => { const el = { id, hidden, classList: {
 }, click() { log.clicks.push(id); el.hidden = !el.hidden; }, dispatchEvent() { log.clicks.push(id + ":change"); } }; return el; };
 const els = { "library-view-whiteboard": mkEl("library-view-whiteboard", false), "wb-navigator": mkEl("wb-navigator", true),
   "wb-search-bar": mkEl("wb-search-bar", false), "wb-format": mkEl("wb-format", true), "wb-sidebar-panel": mkEl("wb-sidebar-panel", false),
-  "wb-navigator-toggle": mkEl("wb-navigator-toggle", false), "wb-search-toggle": mkEl("wb-search-toggle", false),
   "wb-panel-props": Object.assign(mkEl("wb-panel-props", false), { checked: true }) };
 const items = %(items)s;
 const itemEls = {};
@@ -52,6 +51,9 @@ let sideTab = "layers";
 const wbSideState = () => ({ tab: sideTab });
 const wbOpenSidebar = (tab) => { log.opened.push(tab); els["wb-sidebar-panel"].hidden = false; };
 const wbCloseSidebar = () => { log.closed += 1; els["wb-sidebar-panel"].hidden = true; };
+const wbToggleNavigator = () => { log.clicks.push("navigator"); els["wb-navigator"].hidden = !els["wb-navigator"].hidden; };
+const wbOpenBoardSearch = () => { log.clicks.push("search"); els["wb-search-bar"].hidden = false; };
+const wbCloseBoardSearch = () => { log.clicks.push("search"); els["wb-search-bar"].hidden = true; };
 const wbFormatToggle = () => { log.formatToggles += 1; els["wb-format"].hidden = !els["wb-format"].hidden; };
 const promptDialog = async () => %(prompt)s;
 const onSurface = () => {};
@@ -125,7 +127,7 @@ def test_saving_names_the_panels_and_switching_presses_only_what_differs():
             "wbFmtState.workspaces.use('Draw'); " + EMIT)
     got = _run(body)
     assert json.loads(got["store"]["wb-workspaces"]) == [{"name": "Draw", "panels": {"props": True, "overview": False, "search": True, "format": False, "side": "layers"}}]
-    assert got["clicks"] == ["wb-navigator-toggle", "wb-search-toggle"] and got["formatToggles"] == 1 and got["opened"] == ["layers"]
+    assert got["clicks"] == ["navigator", "search"] and got["formatToggles"] == 1 and got["opened"] == ["layers"]
 
 
 def test_a_workspace_saved_under_a_name_in_use_is_replaced_and_the_list_is_capped():
@@ -177,3 +179,9 @@ def test_a_connector_between_two_members_stays_undimmed_and_in_reach_inside_a_gr
     )
     assert got["dimmed"] == [".s3", ".s4", ".s6", ".s7"]
     assert got["out"] == [False, True, True]
+
+
+def test_find_and_overview_are_only_view_switches_now_l265():
+    html = INDEX.read_text(encoding="utf-8")
+    assert "wb-search-toggle" not in html and "wb-navigator-toggle" not in html
+    assert 'id="wb-panel-search"' in html and 'id="wb-panel-overview"' in html

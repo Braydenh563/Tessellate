@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 19 | 3 | 0 | 10 | 52 |
+| whiteboard | 30 | 12 | 3 | 0 | 10 | 45 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 625 | 149 | 3 | 185 | 1327 |
+| all | 553 | 618 | 149 | 3 | 185 | 1320 |
 
 ## graph
 
@@ -281,13 +281,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## whiteboard
 
 - [ ] **L257** `whiteboard` open, S: Stop board preview labels (mapPreview) running over the next shape. From OPEN.md:1239. Evidence: note-cards.js:38 mapPreview draws via mapPreviewDraw; no label-clipping fix found.
-- [ ] **L259** `whiteboard` open, S: Enlarge the shape flyout trigger beyond the 10px caret for finger use. From OPEN.md:659; OPEN.md:2913. Evidence: Flyout built (c9712e1ab) but phone-size target not enlarged; no fix commit
-- [ ] **L261** `whiteboard` open, S: Fix wb-resize-handle title on non-frame objects and remove the dead .wb-map-actions coarse rule. From OPEN.md:1208; OPEN.md:2532. Evidence: whiteboard.js:23549 title text unchanged; .wb-map-actions rules live and pinned by tests/test_map_node_controls.py:126,235.
 - [ ] **L263** `whiteboard` open, S: Compare converter stroke width (2 board px per stencil unit) against draw.io strokewidth=inherit. From OPEN.md:1323. Evidence: Row says not compared against draw.io strokewidth=inherit; no later comparison found.
-- [ ] **L264** `whiteboard` open, S: Fix wb-tool-section-label text overflowing its box by 49-56px. From OPEN.md:1118; OPEN.md:3697. Evidence: Selector still styled in 08-consistency.css:3067 and whiteboard-map.js; no overflow fix commit found
-- [ ] **L265** `whiteboard` open, S: Remove search/navigator toggles that duplicate View switches; add wbcontextphone.js sweep. From OPEN.md:3068. Evidence: UI_MODERNISATION Phase 8; wbcontextphone.js sweep not added
 - [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Built here: wbExportBoard({ branch: true }) titles the dialog "Export this branch" (tests/test_wb_export_pdf.py, wbexport-pdf.js). Left: whiteboard-map.js:5072 in wbMapExportBranch must call wbExportBoard({ branch: true }) (file owned by another session). The mmd2 sweeps do not touch export; wbexport-pdf.js covers the dialog.
-- [ ] **L269** `whiteboard` open, M: Cut board toolbar tab stops from 33 with a roving tabindex. From OPEN.md:4266. Evidence: Ledger row 261 marked new, M; no roving-tabindex fix found.
 - [ ] **L271** `whiteboard` open, M: Unify the four overlapping drag and pointer-capture mechanisms in whiteboard.js. From OPEN.md:4442. Evidence: whiteboard.js still has mixed pointer capture and mouse handlers (27 matches); not unified
 - [ ] **L278** `whiteboard` open, M: Audit board frames/present flow, connector re-routing, touch eraser, image paste limits, PDF export. From audit-1031-board.md. Evidence: No later board audit found
 - [ ] **L279** `whiteboard` open, M: Close or record U19 U20 U23 U30 U31 U36 U37 U39 U41 U45 U49 across map, board, documents, code editor. From bs-1111.md. Evidence: Other agents' surfaces; no closing record found
@@ -300,8 +295,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-whiteboard-12** `whiteboard` open, L: Bind board cards to note properties through their frame. From open-work sweep 2026-11-12, scratchpad/audit1005/features.md:768. Evidence: no shape that stays bound to live notebook content exists; lines 768 to 772 are untracked
 - [ ] **L-whiteboard-15** `whiteboard` open, S: Measure board idle and drag cost at 500 objects and with the companion on. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1405. Evidence: Open line in the plan's prose a session could miss. The Brief 60 census leaves two measurements unmeasured, with no row.
 - [ ] **L-whiteboard-16** `whiteboard` open, S: Run the blind-tester timing for transparency and hex entry. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:1583. Evidence: Open line in the plan's prose a session could miss. INBOX 1685's acceptance (find transparency and enter a hex in under 20 s) was never run.
-- [ ] **L-whiteboard-26** `whiteboard` open, S: Layers tab: a child of a folded frame shows as folded (not hidden) and its eye says Expand the frame. From structure batch report, whiteboard-structure-more.js. Evidence: Layers tab lists a folded frame's children as hidden; its eye sets hidden=false with no visible change while the frame is folded
-- [ ] **L-whiteboard-32** `whiteboard` open, S: Smoothed ink: keep each point's pen pressure so a width change rebuilds the stroke with its real pressure. From follow-ups agent, 2026-11-13. Evidence: frontend/js/whiteboard-ink-more.js keepPoints stores x and y only, so a width rebuild re-simulates pressure
 
 ## documents
 
