@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 96 | 38 | 0 | 18 | 264 |
+| world-class | 130 | 95 | 38 | 0 | 18 | 263 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 565 | 130 | 3 | 132 | 1248 |
+| all | 553 | 564 | 130 | 3 | 132 | 1247 |
 
 ## graph
 
@@ -609,7 +609,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L594** `world-class` open, M: Count words written including edits to older notes (per-edit word delta). From OPEN.md:1928; OPEN.md:2814. Evidence: No per-edit word delta stored, per row
 - [ ] **L595** `world-class` open, M: Wire the 'Not used lately' list to the weekly offer. From OPEN.md:2812. Evidence: Verified open 2026-11-10
 - [ ] **L596** `world-class` open, M: Move Names and Link types inbox rows to the Links grid shape if owner wants kinds to match. From OPEN.md:3901. Evidence: suggestions-inbox.js:245 inboxMergeRow and :284 inboxTypeRow still the old shape; also owner-optional ("if owner wants kinds to match").
-- [ ] **L597** `world-class` open, M: Trace Settings > Models long tasks and pointerdown lag and cut its 15,191 elements. From OPEN.md:4267; OPEN.md:4284; bs-1111.md. Evidence: Needs a performance trace; same as HR18, no fix recorded.
 - [ ] **L598** `world-class` open, M: Notes tab-switch pointerup 312 ms and dashboard timer frames (1643b). From OPEN.md:4330. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L599** `world-class` open, M: Settings backdrop click 880 ms and card pointerout 312-344 ms (1620lag). From OPEN.md:4333. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L600** `world-class` open, M: Remove sub-16 ms forced layout per press (tab, Settings, pointerenter, atlas.js step). From OPEN.md:4423. Evidence: w34-unv2-1111.md marks true; no number under 16 ms recorded for all four paths

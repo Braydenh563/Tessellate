@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings > Models measured lean: 6,317 elements with the model menu open, no long tasks (L597).
 - Meeting recorder card is built when first opened, not at every boot (L621).
 - Note types: a type deleted and brought back with Undo keeps its own id, even after the list was read (L613).
 - OCR workspace: Ctrl+Z now undoes Delete this reading from inside the workspace (L543).
