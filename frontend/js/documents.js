@@ -14443,6 +14443,17 @@ $("doc-spelling-variant")?.addEventListener("change", async (event) => {
   docGrammarCache = { text: null, findings: [] };
   renderDocProse();
 });
+//: Kinds of suggestion (L333): a ticked box is a kind shown; the ones left unticked are
+//: saved as `prose_kinds_off` and sent with every grammar ask, so the worker drops them.
+$("doc-prose-groups")?.addEventListener("change", async (event) => {
+  const off = [...event.currentTarget.querySelectorAll("[data-prose-group]")].filter((box) => !box.checked).map((box) => box.dataset.proseGroup);
+  prefsCache = await apiJson("/preferences", {
+    method: "PUT",
+    body: JSON.stringify({ prose_kinds_off: off }),
+  }).catch(() => prefsCache);
+  docGrammarCache = { text: null, findings: [] };
+  renderDocProse();
+});
 $("doc-link-offers")?.addEventListener("change", async (event) => {
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
@@ -15886,6 +15897,10 @@ async function openDocDictionary() {
         : "Grammar and style rules, checked on this computer by Harper"
     );
   }
+  const kindsOff = (prefsCache && prefsCache.prose_kinds_off) || [];
+  $("doc-prose-groups")?.querySelectorAll("[data-prose-group]").forEach((box) => {
+    box.checked = !kindsOff.includes(box.dataset.proseGroup);
+  });
   const smart = $("doc-smart-punctuation");
   if (smart) smart.checked = !!(prefsCache && prefsCache.smart_punctuation === true);
   const linkOffers = $("doc-link-offers");

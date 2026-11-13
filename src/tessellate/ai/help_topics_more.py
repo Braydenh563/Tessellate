@@ -499,7 +499,8 @@ MORE_TOPICS: list[dict] = [
             "of days (0 keeps every chat; pinned chats are never deleted). "
             "Notifications: mute everything except reminders. Writing: smart "
             "quotes and dashes in documents, Check link text (spelling and grammar skip the words "
-            "of a link unless it is on), and offers to turn a named note or document into a link "
+            "of a link unless it is on), Kinds of suggestion in a document's writing sheet (switch off style, "
+            "punctuation, capital letters or word choice), and offers to turn a named note or document into a link "
             "(switch them off there, or press Never offer a link to this name on one offer; Offer them "
             "again brings every kept name back). Answer style moved to Settings, "
             "Personas, and Search relevance to Settings, Search and index."
@@ -1521,7 +1522,9 @@ MORE_TOPICS: list[dict] = [
             "notes are never read. Stop ends it and keeps nothing. It needs the Natural voice package (Settings, "
             "Packages: an engine and a 64 MB voice, fetched once, then everything runs on this computer). With it "
             "installed, Settings, General, Read aloud, Voice can switch an answer's Read aloud from this browser's "
-            "voices to the natural one; the speaking speed applies to the browser's voices only."
+            "voices to the natural one; the speaking speed applies to the browser's voices only. "
+            "Browser voice, in the same place, picks which of this computer's own voices speaks, in chat and in "
+            "documents (Automatic follows the page's language)."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },
