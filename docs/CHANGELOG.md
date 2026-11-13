@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Chat row L101: the model's prompt now says why each note was shown and which other shown notes it links to, by number and with the person's reason ("(why shown: Has the word “skye”) (linked to note 3: same trip)"), the frame the composer already said (`librarian._shown_hint`).
+- Ask: a what-do-my-notes-say overview reads every record the search kept by meaning; the dated story tells a 'This note' line by its title and the person's present line as noted; a compare asked again varies its lead; an opener names only the first note (L-chat-37, L-chat-39).
 - Chat rows L-chat-10, L186, L187, L189, L204, L205: a quote never skips a sentence across notes; plans with need or should read as a plan; retrieval verbs are not missing terms; multi-line notes read as sentences in a day list; a one-word note is said once; a compare opens on its counts.
 - Chat row L-chat-37: "what else do my notes say about X" is read as an overview that quotes one line from each record found, including the ones close by meaning; "else" and "say" are no longer search words, and a summary offers no reminder chip.
 - Chat row L-chat-21: a model that refuses, times out, dies mid-answer, returns nothing or writes text the notes do not back now falls back to the composed answer with a note, and the turn stats say fallback.
