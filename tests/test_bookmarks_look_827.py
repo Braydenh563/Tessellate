@@ -150,5 +150,6 @@ def test_a_page_that_will_not_load_leaves_the_saved_link_alone(client, app_state
 def test_the_text_of_a_link_that_is_not_there_is_refused(client):
     #: A plain id variable, the shape tests/test_routes_named.py reads.
     bid = 987654
-    assert client.get(f"/bookmarks/{bid}/text").status_code == 404
-    assert client.post(f"/bookmarks/{bid}/refresh").status_code == 404
+    text = client.get(f"/bookmarks/{bid}/text").status_code
+    refresh = client.post(f"/bookmarks/{bid}/refresh").status_code
+    assert (text, refresh) == (404, 404)

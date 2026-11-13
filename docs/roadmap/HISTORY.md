@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-13 (documents-plan: section 1121 row 7)
+
+- 7 | redesign | The list row: the Actions button beside the title, not over it (8 overlaps at 1440). Decided: the overlay stays (INBOX 722) (the owner, 2026-10-06: the ⋮ overlays the row and never reserves a column; held by `test_a_rail_rows_title_takes_the_full_width_and_its_menu_overlays_it`); the title already fades under the ⋮ while it shows. Recommendation: keep the overlay and count a row's own ⋮ as no overlap in `deepen72a.js` | overlap 8 to 0; the title's right edge left of the button | 7, 11 Built 2026-11-13: `scratchpad/ui-sweeps/deepen72a.js` counts a rail row's own ⋮ (`.doc-item-menu`, `.entry-actions`, `.category-actions`) as no overlap within its row; measured at 1440 on the sweep's fixtures, Documents 5 to 0 and code 5 to 0 overlaps.
+
 ## Moved from the plans, 2026-11-12 (documents-plan: VC13, VC6, L295, L302)
 
 - **Built, VC13:** fold all, unfold all and the Problems tab were already in the palette with keys (Brief 42); added Toggle fold at the caret (`Ctrl+Alt+.`, `CM.language.toggleFold`), `CM.lint.lintKeymap` (F8, and `Mod-Shift-m` as the fallback behind the Problems tab's own chord) and "List every problem in this file, inside the editor" (`CM.lint.openLintPanel`). `tests/test_code_editor_vc13.py`. L316 closed with it: the prose document's list of Harper findings is the Writing suggestions panel (`renderDocProsePanel`).
