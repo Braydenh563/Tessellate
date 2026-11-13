@@ -10216,8 +10216,9 @@ input[type="file"] {
    dress a control one way in place and another way escaped. Inside a door,
    the board menus' own row styling applies, wherever the door is. */
 .wb-map-strip > button.icon-only {
-  height: 1.75rem;
-  width: 1.75rem;
+  /* Width follows the touch floor too, or Reset measured 28 by 44 at 390. */
+  height: var(--control-h-dense);
+  width: max(var(--control-h-dense), var(--target-min));
   min-width: 0;
   border-radius: var(--radius-pill);
 }
@@ -10283,7 +10284,7 @@ input[type="file"] {
    rather than as a button that does something), brought to the strip's own
    1.75rem control height so it sits on the same line as the colour well. */
 .wb-map-strip .wb-menu-toggle {
-  height: 1.75rem;
+  height: var(--control-h-dense);
   /* `button.small`'s floor (32px) beat the height above, so the three doors
      stood 4px taller than the well and the steppers (INBOX 1354 item 5);
      the touch floor still lifts all of them to 44 under 820. */

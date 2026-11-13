@@ -3173,8 +3173,8 @@
    own groups are in 07-whiteboard-misc.css under `.wb-context`. Their reasons
    are in HISTORY.md with the INBOX items that asked for them (52, 64, 65). */
 .wb-tool-group button {
-  width: 36px;
-  height: 36px;
+  width: var(--control-h-body);
+  height: var(--control-h-body);
   padding: 0;
   display: flex;
   align-items: center;
