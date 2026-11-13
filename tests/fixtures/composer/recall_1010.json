@@ -1,0 +1,1015 @@
+{
+ "about": "Recall questions over a row's own notebook (CHAT_PLAN section 4): the note ids the answer lists in order and the measured count, worked out in scripts/composer_fixtures_1113.py from the notes' own dates and text. Notes are newest first; the clock is 10:00 on `now`.",
+ "rows": [
+  {
+   "id": "recall-01",
+   "kind": "time",
+   "question": "what did I write yesterday",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 1,
+     "content": "# Boiler\n\nThe boiler pressure dropped to one bar.",
+     "created_at": "2026-10-05"
+    },
+    {
+     "id": 12,
+     "content": "# Gym 12\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-10-03"
+    },
+    {
+     "id": 10,
+     "content": "# Errands 10\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-09-27"
+    },
+    {
+     "id": 11,
+     "content": "# Soup 11\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-16"
+    }
+   ],
+   "expect_ids": [
+    1
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-02",
+   "kind": "time",
+   "question": "what did I write last week",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 20,
+     "content": "# Errands 20\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-05"
+    },
+    {
+     "id": 4,
+     "content": "# Rent\n\nPay the rent on time.",
+     "created_at": "2026-10-04"
+    },
+    {
+     "id": 3,
+     "content": "# Pottery\n\nPottery class, a blue bowl.",
+     "created_at": "2026-10-02"
+    },
+    {
+     "id": 2,
+     "content": "# Chess\n\nChess club on the weekend, lost twice.",
+     "created_at": "2026-09-29"
+    },
+    {
+     "id": 21,
+     "content": "# Soup 21\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-06"
+    }
+   ],
+   "expect_ids": [
+    4,
+    3,
+    2
+   ],
+   "expect_count": 3,
+   "empty": false
+  },
+  {
+   "id": "recall-03",
+   "kind": "time",
+   "question": "what did I write in March",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 32,
+     "content": "# Gym 32\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-10-01"
+    },
+    {
+     "id": 31,
+     "content": "# Soup 31\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-04-02"
+    },
+    {
+     "id": 6,
+     "content": "# Seeds\n\nOrder the bean seeds.",
+     "created_at": "2026-03-22"
+    },
+    {
+     "id": 5,
+     "content": "# Spring plan\n\nRepaint the shed fence.",
+     "created_at": "2026-03-04"
+    },
+    {
+     "id": 30,
+     "content": "# Errands 30\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-02-27"
+    }
+   ],
+   "expect_ids": [
+    6,
+    5
+   ],
+   "expect_count": 2,
+   "empty": false
+  },
+  {
+   "id": "recall-04",
+   "kind": "time",
+   "question": "what did I write last month",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 41,
+     "content": "# Soup 41\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-10-02"
+    },
+    {
+     "id": 7,
+     "content": "# Dentist\n\nCheck-up went well.",
+     "created_at": "2026-09-10"
+    },
+    {
+     "id": 40,
+     "content": "# Errands 40\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-08-31"
+    }
+   ],
+   "expect_ids": [
+    7
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-05",
+   "kind": "time",
+   "question": "what did I write on Friday",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 51,
+     "content": "# Soup 51\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-10-03"
+    },
+    {
+     "id": 8,
+     "content": "# Plumber\n\nThe plumber fixed the tap.",
+     "created_at": "2026-10-02"
+    },
+    {
+     "id": 50,
+     "content": "# Errands 50\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-01"
+    }
+   ],
+   "expect_ids": [
+    8
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-06",
+   "kind": "time",
+   "question": "what did I write this week",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 9,
+     "content": "# Budget\n\nBudget review found three cuts.",
+     "created_at": "2026-10-06"
+    },
+    {
+     "id": 11,
+     "content": "# Garden\n\nCompost bags for the beds.",
+     "created_at": "2026-10-05"
+    },
+    {
+     "id": 60,
+     "content": "# Errands 60\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-09-28"
+    },
+    {
+     "id": 61,
+     "content": "# Soup 61\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-24"
+    }
+   ],
+   "expect_ids": [
+    9,
+    11
+   ],
+   "expect_count": 2,
+   "empty": false
+  },
+  {
+   "id": "recall-07",
+   "kind": "time",
+   "question": "what did I write in July",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 72,
+     "content": "# Gym 72\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-10-05"
+    },
+    {
+     "id": 71,
+     "content": "# Soup 71\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-08-02"
+    },
+    {
+     "id": 70,
+     "content": "# Errands 70\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-06-28"
+    }
+   ],
+   "expect_ids": [],
+   "expect_count": 0,
+   "empty": true
+  },
+  {
+   "id": "recall-08",
+   "kind": "time",
+   "question": "what did I write last year",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 81,
+     "content": "# Soup 81\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-10-04"
+    },
+    {
+     "id": 82,
+     "content": "# Gym 82\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-08-27"
+    },
+    {
+     "id": 80,
+     "content": "# Errands 80\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-01-05"
+    }
+   ],
+   "expect_ids": [],
+   "expect_count": 0,
+   "empty": true
+  },
+  {
+   "id": "recall-09",
+   "kind": "person",
+   "question": "what do I know about Priya",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 100,
+     "content": "# Catch up 0\n\nLunch with Priya on the harbour, she is moving to Leeds.",
+     "created_at": "2026-10-03"
+    },
+    {
+     "id": 110,
+     "content": "# Errands 110\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-09-30"
+    },
+    {
+     "id": 111,
+     "content": "# Soup 111\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-21"
+    },
+    {
+     "id": 112,
+     "content": "# Gym 112\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-09-11"
+    }
+   ],
+   "expect_ids": [
+    100
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-10",
+   "kind": "person",
+   "question": "what do I know about Tomas",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 101,
+     "content": "# Catch up 1\n\nTomas lent me his drill for the shelf.",
+     "created_at": "2026-10-02"
+    },
+    {
+     "id": 120,
+     "content": "# Errands 120\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-09-30"
+    },
+    {
+     "id": 121,
+     "content": "# Soup 121\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-21"
+    },
+    {
+     "id": 122,
+     "content": "# Gym 122\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-09-11"
+    }
+   ],
+   "expect_ids": [
+    101
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-11",
+   "kind": "person",
+   "question": "what do I know about Jess",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 102,
+     "content": "# Catch up 2\n\nJess is moving to Melbourne in January.",
+     "created_at": "2026-10-01"
+    },
+    {
+     "id": 130,
+     "content": "# Errands 130\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-09-30"
+    },
+    {
+     "id": 131,
+     "content": "# Soup 131\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-21"
+    },
+    {
+     "id": 132,
+     "content": "# Gym 132\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-09-11"
+    }
+   ],
+   "expect_ids": [
+    102
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-12",
+   "kind": "person",
+   "question": "what do I know about Marta",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 103,
+     "content": "# Catch up 3\n\nMarta recommended the pottery class.",
+     "created_at": "2026-09-30"
+    },
+    {
+     "id": 140,
+     "content": "# Errands 140\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-09-30"
+    },
+    {
+     "id": 141,
+     "content": "# Soup 141\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-21"
+    },
+    {
+     "id": 142,
+     "content": "# Gym 142\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-09-11"
+    }
+   ],
+   "expect_ids": [
+    103
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-13",
+   "kind": "place",
+   "question": "what did I write about Lisbon",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 210,
+     "content": "# Errands 210\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-02"
+    },
+    {
+     "id": 200,
+     "content": "# Trip 0\n\nBooked the flat in Lisbon for May, near Alfama.",
+     "created_at": "2026-09-26"
+    },
+    {
+     "id": 211,
+     "content": "# Soup 211\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-18"
+    },
+    {
+     "id": 212,
+     "content": "# Gym 212\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-09-03"
+    }
+   ],
+   "expect_ids": [
+    200
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-14",
+   "kind": "place",
+   "question": "what did I write about Perth",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 220,
+     "content": "# Errands 220\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-02"
+    },
+    {
+     "id": 201,
+     "content": "# Trip 1\n\nThe Perth market opens at eight on Saturdays.",
+     "created_at": "2026-09-25"
+    },
+    {
+     "id": 221,
+     "content": "# Soup 221\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-18"
+    },
+    {
+     "id": 222,
+     "content": "# Gym 222\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-09-03"
+    }
+   ],
+   "expect_ids": [
+    201
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-15",
+   "kind": "place",
+   "question": "what did I write about Kyoto",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 230,
+     "content": "# Errands 230\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-02"
+    },
+    {
+     "id": 202,
+     "content": "# Trip 2\n\nKyoto in autumn: temples and the paper shop.",
+     "created_at": "2026-09-24"
+    },
+    {
+     "id": 231,
+     "content": "# Soup 231\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-18"
+    },
+    {
+     "id": 232,
+     "content": "# Gym 232\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-09-03"
+    }
+   ],
+   "expect_ids": [
+    202
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-16",
+   "kind": "changed",
+   "question": "what is new",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 300,
+     "content": "# Soup\n\nLentil soup with cumin.",
+     "created_at": "2026-10-05"
+    },
+    {
+     "id": 301,
+     "content": "# Bike\n\nFixed the rear brake.",
+     "created_at": "2026-10-03"
+    },
+    {
+     "id": 310,
+     "content": "# Errands 310\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-09-16"
+    },
+    {
+     "id": 311,
+     "content": "# Soup 311\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-08-22"
+    }
+   ],
+   "expect_ids": [
+    300,
+    301
+   ],
+   "expect_count": 2,
+   "empty": false
+  },
+  {
+   "id": "recall-17",
+   "kind": "changed",
+   "question": "what changed this week",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 320,
+     "content": "# Roof\n\nThe roof leak is back.",
+     "created_at": "2026-10-06"
+    },
+    {
+     "id": 321,
+     "content": "# Piano\n\nScales in D, then a new piece.",
+     "created_at": "2026-10-05"
+    },
+    {
+     "id": 330,
+     "content": "# Errands 330\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-02"
+    },
+    {
+     "id": 331,
+     "content": "# Soup 331\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-11"
+    }
+   ],
+   "expect_ids": [
+    320,
+    321
+   ],
+   "expect_count": 2,
+   "empty": false
+  },
+  {
+   "id": "recall-18",
+   "kind": "changed",
+   "question": "what changed since last week",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 340,
+     "content": "# Tax\n\nGather the receipts.",
+     "created_at": "2026-10-05"
+    },
+    {
+     "id": 341,
+     "content": "# Sketch\n\nHands, three pages.",
+     "created_at": "2026-10-01"
+    },
+    {
+     "id": 342,
+     "content": "# Cafe\n\nTry the new cafe.",
+     "created_at": "2026-09-29"
+    },
+    {
+     "id": 350,
+     "content": "# Errands 350\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-09-26"
+    },
+    {
+     "id": 351,
+     "content": "# Soup 351\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-08-27"
+    }
+   ],
+   "expect_ids": [
+    340,
+    341,
+    342
+   ],
+   "expect_count": 3,
+   "empty": false
+  },
+  {
+   "id": "recall-19",
+   "kind": "changed",
+   "question": "what have I added this week",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 360,
+     "content": "# Guests\n\nTwelve guests on Saturday.",
+     "created_at": "2026-10-05"
+    },
+    {
+     "id": 370,
+     "content": "# Errands 370\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-09-24"
+    },
+    {
+     "id": 371,
+     "content": "# Soup 371\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-06"
+    },
+    {
+     "id": 372,
+     "content": "# Gym 372\n\nSquats and a short run on the treadmill.",
+     "created_at": "2026-08-07"
+    }
+   ],
+   "expect_ids": [
+    360
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-20",
+   "kind": "changed",
+   "question": "what did I edit this week",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 381,
+     "content": "# Fresh note\n\nWritten today, never edited.",
+     "created_at": "2026-10-06"
+    },
+    {
+     "id": 390,
+     "content": "# Errands 390\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-09-22"
+    },
+    {
+     "id": 391,
+     "content": "# Soup 391\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-08-17"
+    },
+    {
+     "id": 380,
+     "content": "# Old recipe\n\nBread with a slow rise.",
+     "created_at": "2026-08-07",
+     "edited_at": "2026-10-05"
+    }
+   ],
+   "expect_ids": [
+    380
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-21",
+   "kind": "due",
+   "question": "what's due this week",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 410,
+     "content": "# Errands 410\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-03"
+    },
+    {
+     "id": 402,
+     "content": "# Trip\n\nFlights leave on 14 October.",
+     "created_at": "2026-09-30"
+    },
+    {
+     "id": 401,
+     "content": "# Forms\n\nReturn the forms on 8 October.",
+     "created_at": "2026-09-28"
+    },
+    {
+     "id": 400,
+     "content": "# Rent\n\nPay the rent by 9 October.",
+     "created_at": "2026-09-26"
+    },
+    {
+     "id": 403,
+     "content": "# Old\n\nThe invoice was due on 30 September.",
+     "created_at": "2026-09-16"
+    }
+   ],
+   "expect_ids": [
+    401,
+    400
+   ],
+   "expect_count": 2,
+   "empty": false
+  },
+  {
+   "id": "recall-22",
+   "kind": "due",
+   "question": "what is due this month",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 430,
+     "content": "# Errands 430\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-04"
+    },
+    {
+     "id": 423,
+     "content": "# Move\n\nMovers come on 2 November.",
+     "created_at": "2026-10-02"
+    },
+    {
+     "id": 421,
+     "content": "# Library\n\nReturn the books on 9 October.",
+     "created_at": "2026-10-01"
+    },
+    {
+     "id": 422,
+     "content": "# Party\n\nThe party is on 20 October.",
+     "created_at": "2026-09-27"
+    },
+    {
+     "id": 420,
+     "content": "# Tax\n\nFile the tax return by 31 October.",
+     "created_at": "2026-09-06"
+    }
+   ],
+   "expect_ids": [
+    421,
+    422,
+    420
+   ],
+   "expect_count": 3,
+   "empty": false
+  },
+  {
+   "id": "recall-23",
+   "kind": "due",
+   "question": "what is due",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 450,
+     "content": "# Errands 450\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-03"
+    },
+    {
+     "id": 441,
+     "content": "# Class\n\nPottery class on 17 October.",
+     "created_at": "2026-09-29"
+    },
+    {
+     "id": 440,
+     "content": "# Dentist\n\nDentist on 12 October at 9am.",
+     "created_at": "2026-09-25"
+    },
+    {
+     "id": 442,
+     "content": "# Visa\n\nThe visa runs out on 24 October.",
+     "created_at": "2026-09-06"
+    }
+   ],
+   "expect_ids": [
+    440,
+    441
+   ],
+   "expect_count": 2,
+   "empty": false
+  },
+  {
+   "id": "recall-24",
+   "kind": "due",
+   "question": "what's due next week",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 470,
+     "content": "# Errands 470\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-05"
+    },
+    {
+     "id": 462,
+     "content": "# Fence\n\nPaint the fence on 9 October.",
+     "created_at": "2026-10-01"
+    },
+    {
+     "id": 461,
+     "content": "# Gym\n\nGym induction on 15 October.",
+     "created_at": "2026-09-28"
+    },
+    {
+     "id": 460,
+     "content": "# Exam\n\nThe exam is on 13 October.",
+     "created_at": "2026-09-16"
+    },
+    {
+     "id": 463,
+     "content": "# Wedding\n\nWedding on 20 October.",
+     "created_at": "2026-08-27"
+    }
+   ],
+   "expect_ids": [
+    460,
+    461
+   ],
+   "expect_count": 2,
+   "empty": false
+  },
+  {
+   "id": "recall-25",
+   "kind": "open",
+   "question": "what is still open",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 510,
+     "content": "# Errands 510\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-05"
+    },
+    {
+     "id": 500,
+     "content": "# Camping\n\n- [ ] tent\n- [x] stove\n- [ ] torch",
+     "created_at": "2026-10-04"
+    },
+    {
+     "id": 501,
+     "content": "# Garden jobs\n\n- [ ] buy compost\n- [ ] fix the gate",
+     "created_at": "2026-09-30"
+    },
+    {
+     "id": 502,
+     "content": "# Done list\n\n- [x] call the bank\n- [x] post the letter",
+     "created_at": "2026-09-27"
+    }
+   ],
+   "expect_ids": [
+    500,
+    501
+   ],
+   "expect_count": 4,
+   "empty": false
+  },
+  {
+   "id": "recall-26",
+   "kind": "open",
+   "question": "what's left",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 530,
+     "content": "# Errands 530\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-03"
+    },
+    {
+     "id": 520,
+     "content": "# Packing\n\n- [x] passport\n- [ ] charger\n- [ ] sunscreen",
+     "created_at": "2026-10-02"
+    },
+    {
+     "id": 531,
+     "content": "# Soup 531\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-10-01"
+    },
+    {
+     "id": 521,
+     "content": "# Shopping\n\n- [ ] milk",
+     "created_at": "2026-09-29"
+    }
+   ],
+   "expect_ids": [
+    520,
+    521
+   ],
+   "expect_count": 3,
+   "empty": false
+  },
+  {
+   "id": "recall-27",
+   "kind": "open",
+   "question": "what's still open in Garden jobs",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 550,
+     "content": "# Errands 550\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-05"
+    },
+    {
+     "id": 541,
+     "content": "# Camping\n\n- [ ] tent",
+     "created_at": "2026-10-04"
+    },
+    {
+     "id": 540,
+     "content": "# Garden jobs\n\n- [x] mow the lawn\n- [ ] buy compost\n- [ ] fix the gate\n- [ ] prune the pear",
+     "created_at": "2026-09-30"
+    }
+   ],
+   "expect_ids": [
+    540
+   ],
+   "expect_count": 3,
+   "empty": false
+  },
+  {
+   "id": "recall-28",
+   "kind": "contradicts",
+   "question": "do my notes contradict each other",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 700,
+     "content": "# Errands 700\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-03"
+    },
+    {
+     "id": 601,
+     "content": "# Update 0\n\nI hate the early train now.",
+     "created_at": "2026-09-27"
+    },
+    {
+     "id": 701,
+     "content": "# Soup 701\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-06"
+    },
+    {
+     "id": 600,
+     "content": "# Commute 0\n\nI love the early train.",
+     "created_at": "2026-07-28"
+    }
+   ],
+   "expect_ids": [
+    600,
+    601
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-29",
+   "kind": "contradicts",
+   "question": "do my notes contradict each other",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 710,
+     "content": "# Errands 710\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-03"
+    },
+    {
+     "id": 611,
+     "content": "# Update 1\n\nI don't like the standing desk any more.",
+     "created_at": "2026-09-26"
+    },
+    {
+     "id": 711,
+     "content": "# Soup 711\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-06"
+    },
+    {
+     "id": 610,
+     "content": "# Commute 1\n\nI like the standing desk.",
+     "created_at": "2026-07-29"
+    }
+   ],
+   "expect_ids": [
+    610,
+    611
+   ],
+   "expect_count": 1,
+   "empty": false
+  },
+  {
+   "id": "recall-30",
+   "kind": "contradicts",
+   "question": "do my notes contradict each other",
+   "now": "2026-10-06",
+   "notes": [
+    {
+     "id": 720,
+     "content": "# Errands 720\n\nPick up the parcel and post the letter.",
+     "created_at": "2026-10-03"
+    },
+    {
+     "id": 621,
+     "content": "# Update 2\n\nI can't stand the open plan office.",
+     "created_at": "2026-09-25"
+    },
+    {
+     "id": 721,
+     "content": "# Soup 721\n\nSimmer the lentils for forty minutes.",
+     "created_at": "2026-09-06"
+    },
+    {
+     "id": 620,
+     "content": "# Commute 2\n\nI like the open plan office.",
+     "created_at": "2026-07-30"
+    }
+   ],
+   "expect_ids": [
+    620,
+    621
+   ],
+   "expect_count": 1,
+   "empty": false
+  }
+ ]
+}

@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 89 | 34 | 2 | 59 | 299 |
+| chat | 176 | 91 | 34 | 2 | 59 | 301 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 540 | 124 | 3 | 186 | 1217 |
+| all | 553 | 542 | 124 | 3 | 186 | 1219 |
 
 ## graph
 
@@ -146,6 +146,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-19** `chat` open, L: Close the rest of the 2026-10-10 chat bug list. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:779. Evidence: Open line in the plan's prose a session could miss. Owner bug list; also token count after deleted turn, destination history clear, match kind label, jokes source, caption sentences.
 - [ ] **L-chat-20** `chat` open, M: Composer bubble fade, accessed links first and auto retry. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:890. Evidence: Open line in the plan's prose a session could miss. Design items from the owner list.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
+- [ ] **L-chat-40** `chat` open, M: Out-of-domain answers: the plain no-answer, a capability line and the closest label (plan step 11). From docs/roadmap/CHAT_PLAN.md:1480 (step 11), eval set tests/fixtures/composer/ood_1010.json. Evidence: Measured on 30 out-of-domain questions: plain no-answer 27 of 30 (0.90, floor 1.0), a line on what the app can do 1 of 30 (0.033, floor 1.0), a shown note called the closest 20 of 30 (0.667, floor 1.0): 10 questions answer with a decoy note sharing a word ("who wrote Hamlet", "call my mum", "order me a pizza"). Grounded 30 of 30.
+- [ ] **L-chat-41** `chat` open, M: Guide with no model: lead with the topic's first-step sentence (40-question eval at 0.55, floor 0.90). From tests/fixtures/composer/help_1010.json, ai/guide_lead.py. Evidence: Measured on 40 how-to questions: the Guide with no model opens on the topic's first-step sentence for 22 of 40 (0.55, floor 0.90); every control named exists (1.0). Misses: it leads with a later sentence of the right topic (updates, undo, history, spaces, tags, reminders), and two route wrongly: "how do I do a sum" says it has no help, "is there a tour of the app" reads the keyboard shortcuts.
 
 ## whiteboard
 
