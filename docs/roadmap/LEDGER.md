@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 1 | 0 | 0 | 0 | 16 |
-| chat | 176 | 107 | 44 | 2 | 59 | 327 |
+| chat | 176 | 106 | 44 | 2 | 59 | 326 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 558 | 134 | 3 | 186 | 1245 |
+| all | 553 | 557 | 134 | 3 | 186 | 1244 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -173,7 +173,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
 - [ ] **L-chat-24** `chat` open, S: Group the arrange commands in the phone More sheet. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1888. Evidence: Open line in the plan's prose a session could miss. Handed to the whiteboard plan, no row there.
 - [ ] **L-chat-34** `chat` open, L: Guide answers general and advice questions through the composer with no model: direct answer first, then help links, honest provenance; eval of 15+ questions with pinned first sentences ('what should I use chat for' answers what Chat is for). From owner via hub 2026-11-13 (3 screenshots, Guide panel, dark, no model). Evidence: Owner: 'the guide should be able to respond like a chatbot with the composer when an ai model isnt there so if I ask general questions or advice then it can provide'
-- [ ] **L-chat-35** `chat` open, S: Guide suggestion chips in sentence case, with a lint over every help-topic example and chip source. From owner via hub 2026-11-13 (3 screenshots, Guide panel, dark, no model). Evidence: Owner: 'the suggested buttons dont start with a capital letter' ('tag the knife note with kitchen')
 - [ ] **L-chat-36** `chat` open, S: Guide card: one provenance mark, not two; header text fits at the panel's default width. From owner via hub 2026-11-13 (3 screenshots, Guide panel, dark, no model). Evidence: Card shows a 'From the help' pill and 'Atlas's answer | From the help' tabs; header 'Answers from the app's own ...' truncated at default width
 
 ## whiteboard
