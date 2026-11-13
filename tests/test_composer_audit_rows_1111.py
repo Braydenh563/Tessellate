@@ -51,3 +51,40 @@ def test_l187_a_retrieval_verb_is_not_named_as_missing(client, session, monkeypa
     session.commit()
     said, _ = seed_c.asker(client, monkeypatch)(question)
     assert "mention" not in said and "nothing in these notes" not in said and "find anything about" not in said and "say nothing about" not in said, said
+
+
+def test_l189_each_line_of_a_note_is_its_own_sentence_in_a_dated_listing(client, session, monkeypatch):
+    """L189 (E16): "Phone 020 7946 0011" and "Dentist check-up" ran together as one line."""
+    import tests._seed_1031c as seed_c
+    from tessellate.entry import manager
+
+    entry = manager.create_entry(session, "Dentist\nPhone 020 7946 0011\nDentist check-up on 11 November.")
+    entry.created_at = entry.updated_at = seed_c.NOW
+    session.commit()
+    said, _ = seed_c.asker(client, monkeypatch)("what did I do on " + f"{seed_c.NOW.day} {seed_c.NOW:%B}")
+    assert "0011. Dentist check-up" in said, said
+
+
+def test_l204_a_dated_list_does_not_restate_a_note_that_is_only_its_name(client, session, monkeypatch):
+    """L204 (E18): "what did I write about in October" listed “milk” (27 October): Milk."""
+    import tests._seed_1031c as seed_c
+    from tessellate.entry import manager
+
+    for content in ("milk", "Dentist check-up on 11 November."):
+        entry = manager.create_entry(session, content)
+        entry.created_at = entry.updated_at = seed_c.NOW
+    session.commit()
+    said, _ = seed_c.asker(client, monkeypatch)(f"what did I write about in {seed_c.NOW:%B}")
+    assert "“milk”" in said and "Milk." not in said and "milk”: " not in said, said
+
+
+def test_l205_a_compare_opens_on_its_counts_and_cites_each_note_once():
+    """L205 (D20): "Of the notes found, ..." opened a comparison and a note's mark could come twice."""
+    import re
+
+    from tests import _seed_r2_1107 as seed
+
+    text = seed.ask("compare Tokyo and Lisbon")
+    assert text.startswith("Two notes mention Tokyo and three mention Lisbon."), text
+    marks = re.findall(r"\(\*\*([^*]+)\*\*\)", text)
+    assert marks and len(marks) == len(set(marks)), text
