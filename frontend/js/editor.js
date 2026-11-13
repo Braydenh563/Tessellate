@@ -2006,7 +2006,7 @@ const SELECTION_BAR_ACTIONS = [
 const selectionBarState = { textarea: null };
 
 function selectionBarElement() {
-  let bar = $("selection-bar");
+  let bar = document.getElementById("selection-bar");
   if (bar) return bar;
   //: Built once, lazily, rather than sitting in index.html: it belongs to this
   //: file's behaviour, and a hidden bar in the markup would be one more thing
@@ -2088,7 +2088,7 @@ function selectionBarElement() {
 
 function selectionBarHide() {
   selectionBarState.textarea = null;
-  $("selection-bar")?.classList.add("hidden");
+  document.getElementById("selection-bar")?.classList.add("hidden");
 }
 
 function selectionBarShow(textarea) {
