@@ -11,28 +11,28 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 28 | 5 | 0 | 4 | 48 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 14 | 3 | 0 | 20 | 87 |
-| documents | 70 | 14 | 3 | 0 | 20 | 87 |
-| documents | 70 | 14 | 3 | 0 | 20 | 87 |
-| documents | 70 | 14 | 3 | 0 | 20 | 87 |
-| documents | 70 | 14 | 3 | 0 | 20 | 87 |
-| documents | 70 | 14 | 3 | 0 | 20 | 87 |
+| documents | 70 | 13 | 3 | 0 | 20 | 86 |
+| documents | 70 | 13 | 3 | 0 | 20 | 86 |
+| documents | 70 | 13 | 3 | 0 | 20 | 86 |
+| documents | 70 | 13 | 3 | 0 | 20 | 86 |
+| documents | 70 | 13 | 3 | 0 | 20 | 86 |
+| documents | 70 | 13 | 3 | 0 | 20 | 86 |
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 625 | 141 | 3 | 192 | 1319 |
-| all | 553 | 625 | 141 | 3 | 192 | 1319 |
-| all | 553 | 625 | 141 | 3 | 192 | 1319 |
+| all | 553 | 624 | 141 | 3 | 192 | 1318 |
+| all | 553 | 624 | 141 | 3 | 192 | 1318 |
+| all | 553 | 624 | 141 | 3 | 192 | 1318 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 625 | 141 | 3 | 192 | 1319 |
+| all | 553 | 624 | 141 | 3 | 192 | 1318 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 625 | 141 | 3 | 192 | 1319 |
-| all | 553 | 625 | 141 | 3 | 192 | 1319 |
-| all | 553 | 625 | 141 | 3 | 192 | 1319 |
+| all | 553 | 624 | 141 | 3 | 192 | 1318 |
+| all | 553 | 624 | 141 | 3 | 192 | 1318 |
+| all | 553 | 624 | 141 | 3 | 192 | 1318 |
 
 ## graph
 
@@ -381,7 +381,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L328** `documents` open, L: Build spreadsheet grid view for csv/tsv documents. From OPEN.md:4476. Evidence: Deferred L grid view for csv/tsv; not built
 - [ ] **L330** `documents` open, L: Code editor: multi-file tabs, split panes and inner palette. From OPEN.md:4481. Evidence: Deferred L; not built
 - [ ] **L331** `documents` open, L: Route document 'Translate this passage' to the offline engine instead of chat. From OPEN.md:817; OPEN.md:2750. Evidence: documents.js:15247 and 15492 still prompt for language then chat; no engine route
-- [ ] **L332** `documents` open, L: Decide and build document comments with the board's thread shape (Reply, Edit, Resolve, Attach). From OPEN.md:1202; OPEN.md:1258; OPEN.md:2414; OPEN.md:3677. Evidence: documents-comments.js models ==words== %%remark%% only; no wbCommentRow-style thread in documents*.js. Same as row 855, decision first.
 - [ ] **L333** `documents` open, L: Prose tools: per-kind Harper lint config UI, suggestion author/date, voice picker. From OPEN.md:1934; OPEN.md:3129. Evidence: setLintConfig exists in worker only; no per-kind UI found
 - [ ] **L334** `documents` open, L: Lower more JS constructs for the stepper (class fields, destructuring, spread, async). From OPEN.md:1767; OPEN.md:2826. Evidence: run-debug.js:97 lowers classes; RUN_DEBUG_REFUSED (:23-26) still names class fields, static blocks, private members etc.
 - [ ] **L335** `documents` open, L: Brief 45 part 2: split whiteboard.js/initWhiteboard and documents.js, fold 133 duplicate blocks. From SESSION_BRIEFS.md:176. Evidence: whiteboard.js still holds initWhiteboard (E19: 26,159 lines); no split commit found

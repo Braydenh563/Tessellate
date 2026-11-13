@@ -555,7 +555,8 @@
       }
       const said = document.createElement("p");
       said.className = "doc-comment-body";
-      said.textContent = reply.text;
+      //: A reply may carry an attached link or `[[note]]`, so it is drawn as markdown.
+      renderMarkdown(said, reply.text);
       //: Edit and Delete sit on the byline, icon only, like the head row's actions.
       const edit = smallButton("ph:pencil-simple", "Edit this reply", () => {
         docCommentEditing = `${thread.id}:${index}`;
@@ -574,6 +575,19 @@
   //: One line and Enter to post, Escape to cancel: a reply is a sentence. The
   //: field is the app's plain text input, not a second editor.
   //: With an `index` it rewords that reply instead of adding one.
+  //: What the picker handed back, as the markdown a reply draws: a link as `[label](url)`, a note
+  //: or document as `[[title]]`, a board as `[[board:id|title]]` (the board's own shapes).
+  function docReplyAttachMarkdown(chosen) {
+    const row = chosen.row || {};
+    const label = String(chosen.label || row.title || "").replace(/[[\]|]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120);
+    if (chosen.kind === "link") {
+      const url = String(row.url || "").replace(/ /g, "%20").replace(/\)/g, "%29");
+      return url ? `[${label || url}](${url})` : "";
+    }
+    if (chosen.kind === "board") return `[[${row.type === "board" ? "board" : "map"}:${chosen.id ?? row.id}|${label || "Board"}]]`;
+    return label ? `[[${label}]]` : "";
+  }
+
   function docCommentReplyForm(thread, index = -1) {
     const editing = index >= 0;
     const form = document.createElement("form");
@@ -594,7 +608,19 @@
     });
     const post = smallButton(editing ? "Save" : "Post", editing ? "Save the reply" : "Post the reply", () => {}, false);
     post.type = "submit";
-    form.append(input, post);
+    //: Attach, as on the board's comments: the app's one-thing picker, written into the field as markdown.
+    const attach = smallButton("ph:paperclip", "Attach a bookmark, note, document or board", async () => {
+      const chosen = await pickLibraryItemDialog("Attach to this reply", { sources: ["link", "note", "document", "board"] });
+      const piece = chosen ? docReplyAttachMarkdown(chosen) : "";
+      if (!piece) return;
+      const at = input.selectionStart ?? input.value.length;
+      const before = input.value.slice(0, at);
+      const lead = before && !/\s$/.test(before) ? " " : "";
+      input.value = `${before}${lead}${piece} ${input.value.slice(input.selectionEnd ?? at)}`.slice(0, input.maxLength);
+      input.focus({ preventScroll: true });
+    });
+    attach.classList.add("doc-comment-action");
+    form.append(input, attach, post);
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       if (editing) docEditReply(thread, index, input.value);

@@ -2,9 +2,9 @@
 
 Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8379, frontend ids 2772, CSS sections 524, backend routes 704, backend modules 10788, test files 2722, tests 22021, plan headings 688, app scripts 29, boot scripts 38, script files 301.
+Counts: frontend functions 8380, frontend ids 2772, CSS sections 524, backend routes 704, backend modules 10788, test files 2722, tests 22022, plan headings 688, app scripts 29, boot scripts 38, script files 301.
 
-## Frontend functions (8379)
+## Frontend functions (8380)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3985,29 +3985,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docColumnsBlocks` | frontend/js/documents-columns.js:63 |
 | `docColumnsField` | frontend/js/documents-columns.js:154 |
 
-### frontend/js/documents-comments.js (34)
+### frontend/js/documents-comments.js (35)
 
 | Name | File:line |
 |---|---|
-| `docAnnotateSelection` | frontend/js/documents-comments.js:892 |
+| `docAnnotateSelection` | frontend/js/documents-comments.js:918 |
 | `docCommentContext` | frontend/js/documents-comments.js:530 |
 | `docCommentFootnotes` | frontend/js/documents-comments.js:208 |
-| `docCommentReplyForm` | frontend/js/documents-comments.js:577 |
+| `docCommentReplyForm` | frontend/js/documents-comments.js:591 |
 | `docCommentResolveEdit` | frontend/js/documents-comments.js:160 |
-| `docCommentRow` | frontend/js/documents-comments.js:606 |
+| `docCommentRow` | frontend/js/documents-comments.js:632 |
 | `docCommentSkipMask` | frontend/js/documents-comments.js:73 |
 | `docCommentStrip` | frontend/js/documents-comments.js:187 |
 | `docComments` | frontend/js/documents-comments.js:523 |
 | `docCommentsParse` | frontend/js/documents-comments.js:110 |
-| `docCommentsShell` | frontend/js/documents-comments.js:716 |
-| `docDeleteReply` | frontend/js/documents-comments.js:865 |
-| `docEditReply` | frontend/js/documents-comments.js:855 |
-| `docGoToComment` | frontend/js/documents-comments.js:785 |
-| `docReopenComment` | frontend/js/documents-comments.js:842 |
-| `docReplyToComment` | frontend/js/documents-comments.js:878 |
-| `docResolveComment` | frontend/js/documents-comments.js:819 |
-| `docResolvedRow` | frontend/js/documents-comments.js:683 |
-| `docShowComment` | frontend/js/documents-comments.js:803 |
+| `docCommentsShell` | frontend/js/documents-comments.js:742 |
+| `docDeleteReply` | frontend/js/documents-comments.js:891 |
+| `docEditReply` | frontend/js/documents-comments.js:881 |
+| `docGoToComment` | frontend/js/documents-comments.js:811 |
+| `docReopenComment` | frontend/js/documents-comments.js:868 |
+| `docReplyAttachMarkdown` | frontend/js/documents-comments.js:580 |
+| `docReplyToComment` | frontend/js/documents-comments.js:904 |
+| `docResolveComment` | frontend/js/documents-comments.js:845 |
+| `docResolvedRow` | frontend/js/documents-comments.js:709 |
+| `docShowComment` | frontend/js/documents-comments.js:829 |
 | `docThreadAuthor` | frontend/js/documents-comments.js:480 |
 | `docThreadDeleteReply` | frontend/js/documents-comments.js:375 |
 | `docThreadEditReply` | frontend/js/documents-comments.js:367 |
@@ -4022,7 +4023,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docThreadsForSave` | frontend/js/documents-comments.js:519 |
 | `docThreadsReconcile` | frontend/js/documents-comments.js:278 |
 | `docThreadsSync` | frontend/js/documents-comments.js:492 |
-| `renderDocComments` | frontend/js/documents-comments.js:741 |
+| `renderDocComments` | frontend/js/documents-comments.js:767 |
 
 ### frontend/js/documents-embeds.js (14)
 
@@ -27763,7 +27764,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22021)
+## Tests (22022)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28753,7 +28754,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_document_rephrase.py | 9 |
 | tests/test_document_revisions.py | 14 |
 | tests/test_document_suggest_name_904.py | 5 |
-| tests/test_document_thread_model.py | 3 |
+| tests/test_document_thread_model.py | 4 |
 | tests/test_document_threads.py | 23 |
 | tests/test_document_tools.py | 6 |
 | tests/test_document_untitled_names.py | 9 |
@@ -30908,14 +30909,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4393 |
-| Needs hardware | docs/roadmap/LEDGER.md:838 |
+| Needs hardware | docs/roadmap/LEDGER.md:837 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:830 |
+| Owner calls | docs/roadmap/LEDGER.md:829 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4266 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31096,7 +31097,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:597 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:1035 |
+| Plan session briefs | docs/roadmap/LEDGER.md:1034 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2642 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31151,25 +31152,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:73 |
-| chat | docs/roadmap/LEDGER.md:1051 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1135 |
+| chat | docs/roadmap/LEDGER.md:1050 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1134 |
 | documents | docs/roadmap/LEDGER.md:376 |
-| documents | docs/roadmap/LEDGER.md:1075 |
-| general | docs/roadmap/LEDGER.md:789 |
+| documents | docs/roadmap/LEDGER.md:1074 |
+| general | docs/roadmap/LEDGER.md:788 |
 | graph | docs/roadmap/LEDGER.md:37 |
-| graph | docs/roadmap/LEDGER.md:1039 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1147 |
+| graph | docs/roadmap/LEDGER.md:1038 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1146 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4402 |
-| mindmap | docs/roadmap/LEDGER.md:396 |
-| mindmap | docs/roadmap/LEDGER.md:1087 |
-| timeline | docs/roadmap/LEDGER.md:550 |
-| timeline | docs/roadmap/LEDGER.md:1111 |
-| ui-modernisation | docs/roadmap/LEDGER.md:433 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1099 |
+| mindmap | docs/roadmap/LEDGER.md:395 |
+| mindmap | docs/roadmap/LEDGER.md:1086 |
+| timeline | docs/roadmap/LEDGER.md:549 |
+| timeline | docs/roadmap/LEDGER.md:1110 |
+| ui-modernisation | docs/roadmap/LEDGER.md:432 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1098 |
 | whiteboard | docs/roadmap/LEDGER.md:330 |
-| whiteboard | docs/roadmap/LEDGER.md:1063 |
-| world-class | docs/roadmap/LEDGER.md:553 |
-| world-class | docs/roadmap/LEDGER.md:1123 |
+| whiteboard | docs/roadmap/LEDGER.md:1062 |
+| world-class | docs/roadmap/LEDGER.md:552 |
+| world-class | docs/roadmap/LEDGER.md:1122 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2812 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2863 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2970 |

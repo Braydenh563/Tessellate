@@ -224,3 +224,14 @@ def test_reply_edit_delete_and_resolved_reply_are_wired_into_the_panel() -> None
     assert 'smallButton("ph:trash", "Delete this reply"' in text
     resolved = text.split("function docResolvedRow(")[1].split("function docCommentsShell")[0]
     assert "docCommentReplyForm(thread)" in resolved and '"Reply to this comment"' in resolved
+
+
+def test_reply_form_offers_attach_and_replies_draw_markdown() -> None:
+    """L332: the board's Attach, on a document reply (the picker's pick written as markdown)."""
+    text = JS.read_text(encoding="utf-8")
+    form = text.split("function docCommentReplyForm(")[1].split("function docCommentRow")[0]
+    assert 'smallButton("ph:paperclip", "Attach a bookmark, note, document or board"' in form
+    assert "pickLibraryItemDialog(" in form and "docReplyAttachMarkdown(chosen)" in form
+    assert "function docReplyAttachMarkdown(" in text
+    replies = text.split("function docThreadReplies(")[1].split("function docCommentReplyForm")[0]
+    assert "renderMarkdown(said, reply.text)" in replies
