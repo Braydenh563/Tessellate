@@ -1,8 +1,8 @@
 # Code map
 
-Generated 2026-11-12 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10889, test files 2731, tests 22108, plan headings 689, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10890, test files 2732, tests 22109, plan headings 689, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8365)
 
@@ -13963,7 +13963,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10889)
+## Backend modules (10890)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21202,50 +21202,51 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `acts_on_listed_task` | src/tessellate/api/chat_said.py:963 |
 | `reply_panel` | src/tessellate/api/chat_said.py:457 |
 
-### src/tessellate/api/chat_turn.py (40)
+### src/tessellate/api/chat_turn.py (41)
 
 | Name | File:line |
 |---|---|
-| `_asks_change` | src/tessellate/api/chat_turn.py:556 |
+| `_asks_change` | src/tessellate/api/chat_turn.py:558 |
 | `_chat_reply` | src/tessellate/api/chat_turn.py:92 |
-| `_checks_grounding` | src/tessellate/api/chat_turn.py:403 |
-| `_cited_scope` | src/tessellate/api/chat_turn.py:303 |
-| `_composed_support` | src/tessellate/api/chat_turn.py:366 |
+| `_checks_grounding` | src/tessellate/api/chat_turn.py:405 |
+| `_cited_scope` | src/tessellate/api/chat_turn.py:305 |
+| `_composed_support` | src/tessellate/api/chat_turn.py:368 |
 | `_composes_offline` | src/tessellate/api/chat_turn.py:139 |
 | `_detect_intent` | src/tessellate/api/chat_turn.py:41 |
-| `_engine_answers` | src/tessellate/api/chat_turn.py:413 |
-| `_facts_turn` | src/tessellate/api/chat_turn.py:476 |
-| `_fold_event` | src/tessellate/api/chat_turn.py:602 |
-| `_frame_events` | src/tessellate/api/chat_turn.py:391 |
-| `_framed_scope` | src/tessellate/api/chat_turn.py:319 |
+| `_engine_answers` | src/tessellate/api/chat_turn.py:415 |
+| `_facts_turn` | src/tessellate/api/chat_turn.py:478 |
+| `_fold_break` | src/tessellate/api/chat_turn.py:604 |
+| `_fold_event` | src/tessellate/api/chat_turn.py:613 |
+| `_frame_events` | src/tessellate/api/chat_turn.py:393 |
+| `_framed_scope` | src/tessellate/api/chat_turn.py:321 |
 | `_insight_level` | src/tessellate/api/chat_turn.py:151 |
-| `_insight_memory` | src/tessellate/api/chat_turn.py:282 |
-| `_is_composing` | src/tessellate/api/chat_turn.py:428 |
-| `_live_grounder` | src/tessellate/api/chat_turn.py:626 |
+| `_insight_memory` | src/tessellate/api/chat_turn.py:284 |
+| `_is_composing` | src/tessellate/api/chat_turn.py:430 |
+| `_live_grounder` | src/tessellate/api/chat_turn.py:637 |
 | `_log_question` | src/tessellate/api/chat_turn.py:62 |
-| `_may_digest` | src/tessellate/api/chat_turn.py:296 |
+| `_may_digest` | src/tessellate/api/chat_turn.py:298 |
 | `_meaning_loading` | src/tessellate/api/chat_turn.py:161 |
 | `_model_stream_events` | src/tessellate/api/chat_turn.py:208 |
-| `_names_a_note_word` | src/tessellate/api/chat_turn.py:735 |
-| `_not_again` | src/tessellate/api/chat_turn.py:371 |
-| `_note_kind` | src/tessellate/api/chat_turn.py:591 |
-| `_note_with_hint` | src/tessellate/api/chat_turn.py:704 |
-| `_notes_first` | src/tessellate/api/chat_turn.py:752 |
+| `_names_a_note_word` | src/tessellate/api/chat_turn.py:746 |
+| `_not_again` | src/tessellate/api/chat_turn.py:373 |
+| `_note_kind` | src/tessellate/api/chat_turn.py:593 |
+| `_note_with_hint` | src/tessellate/api/chat_turn.py:715 |
+| `_notes_first` | src/tessellate/api/chat_turn.py:763 |
 | `_notes_messages` | src/tessellate/api/chat_turn.py:178 |
-| `_own_words` | src/tessellate/api/chat_turn.py:349 |
-| `_relay_events` | src/tessellate/api/chat_turn.py:640 |
-| `_said_plainly_instead` | src/tessellate/api/chat_turn.py:340 |
-| `_searched_question` | src/tessellate/api/chat_turn.py:395 |
-| `_slot_cue` | src/tessellate/api/chat_turn.py:354 |
-| `_social_line` | src/tessellate/api/chat_turn.py:745 |
-| `_trim_answer` | src/tessellate/api/chat_turn.py:686 |
-| `_uncut` | src/tessellate/api/chat_turn.py:472 |
-| `_verdicts` | src/tessellate/api/chat_turn.py:270 |
-| `_visible_elsewhere` | src/tessellate/api/chat_turn.py:360 |
-| `_why` | src/tessellate/api/chat_turn.py:710 |
-| `_will_answer` | src/tessellate/api/chat_turn.py:442 |
-| `_with_frame` | src/tessellate/api/chat_turn.py:381 |
-| `model_chips` | src/tessellate/api/chat_turn.py:455 |
+| `_own_words` | src/tessellate/api/chat_turn.py:351 |
+| `_relay_events` | src/tessellate/api/chat_turn.py:651 |
+| `_said_plainly_instead` | src/tessellate/api/chat_turn.py:342 |
+| `_searched_question` | src/tessellate/api/chat_turn.py:397 |
+| `_slot_cue` | src/tessellate/api/chat_turn.py:356 |
+| `_social_line` | src/tessellate/api/chat_turn.py:756 |
+| `_trim_answer` | src/tessellate/api/chat_turn.py:697 |
+| `_uncut` | src/tessellate/api/chat_turn.py:474 |
+| `_verdicts` | src/tessellate/api/chat_turn.py:272 |
+| `_visible_elsewhere` | src/tessellate/api/chat_turn.py:362 |
+| `_why` | src/tessellate/api/chat_turn.py:721 |
+| `_will_answer` | src/tessellate/api/chat_turn.py:444 |
+| `_with_frame` | src/tessellate/api/chat_turn.py:383 |
+| `model_chips` | src/tessellate/api/chat_turn.py:457 |
 
 ### src/tessellate/api/chat_web.py (13)
 
@@ -27901,7 +27902,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22108)
+## Tests (22109)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29539,6 +29540,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_mic_row_fits_c21.py | 2 |
 | tests/test_middleware_disconnect.py | 3 |
 | tests/test_middleware_table_1031.py | 5 |
+| tests/test_midstream_composed_fallback.py | 1 |
 | tests/test_mindmap.py | 117 |
 | tests/test_mindmap_colour_discoverability.py | 5 |
 | tests/test_mindmap_dashed_bar.py | 1 |
