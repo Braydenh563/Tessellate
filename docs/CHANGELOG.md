@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Tidy: a review switched on to run by itself now runs after a note filed on the save, not only after one filed in the background, so with no model it never ran at all (L392); the broom's count measured 8.01:1 dark and 5.9:1 light. Measured and closed: the map's off-screen topics at 390 (lowest 7.33:1, L381), the topic bar's two rows (one row needs 389px of a 340px strip at 44px targets, L388), Tidy's and chat's pattern lines at 360 and 390 (L390).
 - Settings headings: the disclosure headings' size rule that the card eyebrow always outranked is gone; a sweep of every titled card heading found no other clash (L418). Activity panel measured opaque at 390 in both themes; the import Report button was already built (L417).
 - CI: the Ask tab sweep waits for Stop to go before reading the numbering (it read mid-answer, when the box drops `is-streaming` between phases), and its stand-in model skips every bracketed group on a note's header line, not the first.
 - Progress motion: "Still" now makes the status bar's working ring breathe instead of turn, as reduced motion does; "Auto" measured: it breathes under the OS reduced-motion setting and turns otherwise (L415).

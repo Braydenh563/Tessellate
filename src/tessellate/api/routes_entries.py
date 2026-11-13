@@ -935,6 +935,13 @@ def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -
     # content may already be encrypted at rest, and this is the plaintext
     # that was actually just submitted, before that happens.
     _process_committed_media(session, body.content)
+    # Filed on the request: Tidy's switched-on reviews run here, as the
+    # background pass runs them for a deferred note (L392: only that pass
+    # called them, so a note filed with no model never did). Never raises.
+    if not defer:
+        from tessellate.entry import tidy
+
+        tidy.run_automatic(session)
 
 
 def _starts_sealed(session: Session, body: EntryCreate) -> tuple[bool, bool]:

@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 49 | 4 | 0 | 17 | 149 |
+| ui-modernisation | 96 | 47 | 4 | 0 | 18 | 147 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 590 | 159 | 3 | 186 | 1302 |
+| all | 553 | 588 | 159 | 3 | 187 | 1300 |
 
 ## graph
 
@@ -484,8 +484,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## ui-modernisation
 
-- [ ] **L390** `ui-modernisation` open, S: Measure 390 px layout of Tidy Patterns rows and Chat pattern line. From OPEN.md:3730. Evidence: Never measured at 390; no recorded sweep
-- [ ] **L392** `ui-modernisation` open, S: Measure broom accent contrast and run the automatic contrast pass in a browser; check Tags Atlas review with a real model. From OPEN.md:624; OPEN.md:3562. Evidence: contrast.js measurement and browser run not recorded; pytest only
 - [ ] **L421** `ui-modernisation` open, S: Restyle sidebar Comments, Linked from and Notes rows. From OPEN.md:2694. Evidence: Verified open 2026-11-10
 - [ ] **L425** `ui-modernisation` open, S: Verify CSS blank-line tests, picker and 390 layout. From OPEN.md:3810. Evidence: No recorded follow-up sweep
 - [ ] **L427** `ui-modernisation` open, S: Count title-only icon buttons outside the Notes list (other tabs, Settings). From OPEN.md:3610. Evidence: Measurement gap; no later count found
@@ -993,6 +991,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-18** `ui-modernisation` blocked-hardware, S: Verify phone tab scroll-to-top under reduced motion on a device. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1250. Evidence: Open line in the plan's prose a session could miss. L906 covers safe-area insets only. The reduced-motion scroll-to-top on a device has no row.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
+- [ ] **L-ui-modernisation-32** `ui-modernisation` blocked-hardware, S: Check Tidy's 'Tags Atlas added' review against tags a real model wrote. From L392. Evidence: No GGUF or llama-server in the cloud container (scratchpad/llama-dev.sh needs a fetched model); the review is covered by fake-transport tests only
 
 ## Plan session briefs
 
