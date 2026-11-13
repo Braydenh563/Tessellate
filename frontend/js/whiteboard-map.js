@@ -3488,6 +3488,13 @@ wbMapNodeSize.measured = (d) => {
   return { w: d.width || WB_MAP_NODE_W, h: d.height || WB_MAP_NODE_H };
 };
 
+//: A cache missing topics (a pointerup empties it) filled in one walk before
+//: a layout reads every topic, not one lookup and one layout read each
+//: (L-mindmap-13: 3 to 6 ms of a 41-topic Tab at 6x).
+wbMapNodeSize.fill = (nodes) => {
+  if (nodes.some((o) => !o._block && !wbMapNodeSizeCache?.has(o.id))) wbIndexMapNodeElements();
+};
+
 function wbClearMapNodeSizeCache() {
   wbMapNodeSizeCache = null;
 }
@@ -6568,6 +6575,7 @@ function wbMapLayoutPositions(index, layout) {
   // sideways, widths for one that grows downward. Radial spreads siblings
   // around a ring, so its breadth is a width too, arc length, before it is
   // turned into an angle.
+  wbMapNodeSize.fill?.(index.nodes);
   const sizes = new Map(index.nodes.map((o) => [o.id, wbMapNodeSize(o)]));
   //: **Radial measures breadth in angle, not in pixels**, and that is not a
   //: refinement: it is what makes the layout correct near the middle. The
