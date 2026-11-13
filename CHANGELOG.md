@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sweeps: errors.js and touch.js wait for the lock to hide instead of a fixed 2.5 s (errors.js at 390: 0 errors, 0 findings; touch.js 390: no timeout), touch.js answers the first-run search offer and adds the Search and index and Tools sections; opening Search and index no longer throws `loadCurrencyRates is not a function` after the Settings controls load (touch.js findings 10 to 1) (L605, L606).
 - Filing: decide re-measured at 6.8 ms a call on 5,000 notes, under the old 8 to 17 ms tally; the 34 ms figure was stale (L535).
 - Code: one rule for a link to the app's own files (ownFileLinks in att-chip.js), read by the Library thumbnail, the graph panel and answer pictures (L544).
 - Models: a finished download reads as still downloading until the runner lists it, so Downloaded never shows beside a list without the model (L-world-class-33).

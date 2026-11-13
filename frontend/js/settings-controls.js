@@ -3334,6 +3334,8 @@
       if (settingsControlState.themeHold && name !== currentSettingsSection) releaseThemeHold();
       return show(name);
     };
+    //: settings.js hangs helpers on the function (`showSettingsSection.loadCurrencyRates`) and calls them through the global name, which is now this wrapper: copy them over or opening Search and index throws.
+    Object.assign(showSettingsSection, show);
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && settingsControlState.themeHold) releaseThemeHold();
     });
