@@ -4057,6 +4057,10 @@ function wbSearchItem(match) {
 }
 
 function wbApplySearchHighlight() {
+  //: No search and nothing marked: every render called this and walked every
+  //: object to toggle two classes off that were never on (about 7 ms of the
+  //: 108 ms Tab-to-editable at 390, 6x, 41 topics; L-mindmap-13).
+  if (!wbBoardSearch.matches.length && !document.querySelector(".wb-search-hit, .wb-search-current")) return;
   const wanted = new Set(wbBoardSearch.matches.map((m) => wbMultiKey(m.kind, m.id)));
   const current = wbBoardSearch.index >= 0 ? wbBoardSearch.matches[wbBoardSearch.index] : null;
   const currentKey = current ? wbMultiKey(current.kind, current.id) : null;
