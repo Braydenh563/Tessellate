@@ -3245,6 +3245,17 @@ const DOC_COMMANDS = [
     prose: true, run: () => docCmView && window.CM6.search.gotoLine(docCmView) },
   { id: "find-next", icon: "ph:arrow-down", label: "Find the next match", keys: "F3",
     prose: true, run: () => docCmView && window.CM6.search.findNext(docCmView) },
+  //: The listener near `docFindingKeyBox` takes the keys; these rows put them
+  //: in the palette and the shortcut sheet (L-ui-modernisation-14).
+  { id: "finding-next", icon: "ph:arrow-circle-down", label: "Go to the next writing suggestion", keys: "F8",
+    prose: true, run: () => docGoToFinding(docFindingStep(docActiveBox() || docSurface(), false)) },
+  { id: "finding-previous", icon: "ph:arrow-circle-up", label: "Go to the previous writing suggestion", keys: "Shift+F8",
+    prose: true, run: () => docGoToFinding(docFindingStep(docActiveBox() || docSurface(), true)) },
+  { id: "finding-here", icon: "ph:lightbulb", label: "Suggestions for the word at the caret", keys: "Alt+Enter",
+    prose: true, run: () => {
+      const finding = docFindingAtOffset(docOffsetOf(docActiveBox() || docSurface()) ?? -1);
+      if (finding) docOpenSuggestFor(finding, true);
+    } },
   { id: "find-documents", icon: "ph:magnifying-glass", label: "Find in every document", keys: "Ctrl+Shift+F",
     run: () => docFindInDocuments() },
   { id: "replace-documents", icon: "ph:swap", label: "Replace in every document", keys: "none",

@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 15 | 1 | 0 | 19 | 112 |
+| ui-modernisation | 96 | 14 | 1 | 0 | 19 | 111 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 527 | 151 | 3 | 184 | 1231 |
+| all | 553 | 526 | 151 | 3 | 184 | 1230 |
 
 ## graph
 
@@ -452,7 +452,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L469** `ui-modernisation` partly, L: Finish the uipolish-0924 surface-by-surface pass (item D). From OPEN.md:1914; OPEN.md:2314. Evidence: Icon-only floor done (iconfloor.js); the per-surface pass not recorded done
 - [ ] **L-ui-modernisation-10** `ui-modernisation` open, M: Draw the missing desk frames: hang by feet, sloth, chair, lean, tail-curl pot. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. compalive-1109.md (git history) still lists missing desk frames with no LEDGER row: hang_by_feet, sloth, chair, lean, back_float, the pot in the tail curl, and a card box for the card nap. dangle and kick were built in W31.
 - [ ] **L-ui-modernisation-11** `ui-modernisation` open, S: Bring desk note and search reactions to app parity: glasses, shy hands, bubble. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. The events feed is built, but compalive-1109 says the desk reactions fall short of the app: no reading glasses, no hands over the eyes, no remark bubble. There is no row.
-- [ ] **L-ui-modernisation-14** `ui-modernisation` open, M: Bring hidden key handlers into the shortcut table and palette. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1008. Evidence: Open line in the plan's prose a session could miss. A 13.1 recognition-over-recall finding with no decision or row.
 - [ ] **L-ui-modernisation-16** `ui-modernisation` open, M: Show query help in the notes search box and fold editor bars into two. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1025. Evidence: Open line in the plan's prose a session could miss. 13c lists only some 13.2 rows. The Notes list query help and the editor's four-surfaces-to-two are not in it.
 - [ ] **L-ui-modernisation-17** `ui-modernisation` open, L: Split filterLibraryImagesGallery along its seams. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1033. Evidence: Open line in the plan's prose a session could miss. A 13.2 Library row not in 13c, with no LEDGER row.
 - [ ] **L-ui-modernisation-19** `ui-modernisation` open, M: Finish the Appearance panel leftovers: deep links, door, search, peek. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1262. Evidence: Open line in the plan's prose a session could miss. The deleted list holds six untracked leftovers: deep links while popped out, a visible theme-button door, Settings search while popped out, peek dimming, panel height, a committed sweep.
