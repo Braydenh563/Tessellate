@@ -95,6 +95,24 @@
     return (` ${text}`).replace(/[^a-z0-9À-￿]+/g, " ").includes(` ${query}`) ? 1 : -1;
   }
 
+  //: **And what means it** (L199, Brief 86): "trash" finds the "bin" tag,
+  //: "todo" a "tasks" category, after everything that starts with the words.
+  //: The words are meaning.js's (`meaningAlts`, loaded with this bundle), never
+  //: a copy; three letters at least, or every word one slip from a known one
+  //: would suggest something.
+  function searchSuggestMeant(query) {
+    if (query.length < 3 || /\s/.test(query) || typeof meaningAlts !== "function") return [];
+    const words = meaningAlts(query).flat().map((w) => String(w).toLowerCase());
+    return [...new Set(words)].filter((w) => w.length > 2 && w !== query);
+  }
+
+  //: `searchSuggestRank`, with a label one of `meant` starts ranked 2.
+  function searchSuggestRankMeant(label, query, meant) {
+    const rank = searchSuggestRank(label, query);
+    if (rank >= 0 || !meant.length) return rank;
+    return meant.some((w) => searchSuggestRank(label, w) >= 0) ? 2 : -1;
+  }
+
   //: The last word of the box and what stands before it, with the operator the
   //: Notes filter reads (`#tag`, `tag:`, `cat:`) split off so a completion keeps it.
   function searchSuggestToken(value) {
@@ -174,8 +192,9 @@
     const wholeSingle = !/\s/.test(query);
     //: Titles complete the whole box; a typed operator means a tag or category was meant.
     if (!op) {
+      const meantAll = searchSuggestMeant(query);
       const titled = words.titles
-        .map((title) => ({ title, rank: searchSuggestRank(title, query) }))
+        .map((title) => ({ title, rank: searchSuggestRankMeant(title, query, meantAll) }))
         .filter((hit) => hit.rank >= 0 && !seen.has(hit.title.toLowerCase()))
         .sort((a, b) => a.rank - b.rank)
         .slice(0, SEARCH_SUGGEST_LIMITS.title);
@@ -186,10 +205,11 @@
     }
     const wantsTags = !op || op === "#" || /^tag:/i.test(op);
     const wantsCategories = !op || /^(cat|category):/i.test(op);
+    const meant = searchSuggestMeant(wanted);
     if (wantsTags && wanted && (wholeSingle || op || word)) {
       const hits = [...words.tags.entries()]
-        .filter(([tag]) => searchSuggestRank(tag, wanted) >= 0 && tag.toLowerCase() !== wanted)
-        .sort((a, b) => searchSuggestRank(a[0], wanted) - searchSuggestRank(b[0], wanted) || b[1] - a[1])
+        .filter(([tag]) => searchSuggestRankMeant(tag, wanted, meant) >= 0 && tag.toLowerCase() !== wanted)
+        .sort((a, b) => searchSuggestRankMeant(a[0], wanted, meant) - searchSuggestRankMeant(b[0], wanted, meant) || b[1] - a[1])
         .slice(0, SEARCH_SUGGEST_LIMITS.tag);
       for (const [tag, count] of hits) {
         items.push({ kind: "tag", label: tag, value: `${head}${op}${tag}`, about: `Tag, ${nounCount(count, "note")}` });
@@ -197,8 +217,8 @@
     }
     if (wantsCategories && wanted) {
       const hits = [...words.categories.entries()]
-        .filter(([name]) => searchSuggestRank(name, wanted) >= 0 && name.toLowerCase() !== wanted)
-        .sort((a, b) => searchSuggestRank(a[0], wanted) - searchSuggestRank(b[0], wanted) || b[1] - a[1])
+        .filter(([name]) => searchSuggestRankMeant(name, wanted, meant) >= 0 && name.toLowerCase() !== wanted)
+        .sort((a, b) => searchSuggestRankMeant(a[0], wanted, meant) - searchSuggestRankMeant(b[0], wanted, meant) || b[1] - a[1])
         .slice(0, SEARCH_SUGGEST_LIMITS.category);
       for (const [name, count] of hits) {
         const written = op && /\s/.test(name) ? `"${name}"` : name;

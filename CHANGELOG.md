@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Chat row L101: the model's prompt now says why each note was shown and which other shown notes it links to, by number and with the person's reason ("(why shown: Has the word “skye”) (linked to note 3: same trip)"), the frame the composer already said (`librarian._shown_hint`).
+- Search L199: every search box's suggestions also offer the titles, tags and categories that mean the typed word ("trash" suggests the note "Old drafts to bin"), from meaning.js's `meaningAlts`, after the ones that start with it.
 - Reminders L193: the edit row's due, priority, repeat and alert fields take the touch floor the buttons beside them do (44px below 820px; the due field was 32px); "tonight around 7pm" pinned at 19:00.
 - Chat rows L192 and L197: rechecked built; the web-down reply keeps the address and port and says each line once (`tests/test_web_down_a9_l197.py`).
 - Chat L-chat-16: the popup agent's verb-plus-slot starters and its three recents, ahead of the twelve, are pinned by a test (`tests/test_agent_starters_l_chat_16.py`).

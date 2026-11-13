@@ -1543,7 +1543,8 @@ const LAZY_MODULES = {
   settingsData: ["/js/settings-data.js"],
   settingsUi: ["/js/meaning.js", "/js/settings-find.js", "/js/settings-models.js"],
   tagSuggest: ["/js/tag-suggest.js"],
-  searchSuggest: ["/js/search-suggest.js"],
+  //: meaning.js first: the suggestions take its words for what was typed (L199, Brief 86).
+  searchSuggest: ["/js/meaning.js", "/js/search-suggest.js"],
   //: The writing desk's model passes (compose, title, save as note); see writing-desk.js.
   writingDesk: ["/css/writing-desk-lazy.css", "/js/writing-desk.js"],
   //: An attachment card's click (INBOX 440 (2)): attachment-actions.js.

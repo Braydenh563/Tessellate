@@ -2,9 +2,9 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10927, test files 2750, tests 22189, plan headings 689, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8367, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10927, test files 2751, tests 22191, plan headings 689, app scripts 29, boot scripts 38, script files 300.
 
-## Frontend functions (8365)
+## Frontend functions (8367)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:556 |
 | `confirmDialog` | frontend/js/app.js:1272 |
 | `confirmVerb` | frontend/js/app.js:1263 |
-| `ensureModule` | frontend/js/app.js:1737 |
+| `ensureModule` | frontend/js/app.js:1738 |
 | `enterWithoutPassword` | frontend/js/app.js:635 |
 | `hide` | frontend/js/app.js:163 |
 | `hideBootSplash` | frontend/js/app.js:842 |
 | `initAuth` | frontend/js/app.js:855 |
-| `installStandIns` | frontend/js/app.js:1908 |
-| `lazyAssetStamp` | frontend/js/app.js:1694 |
-| `lazyScript` | frontend/js/app.js:1716 |
+| `installStandIns` | frontend/js/app.js:1909 |
+| `lazyAssetStamp` | frontend/js/app.js:1695 |
+| `lazyScript` | frontend/js/app.js:1717 |
 | `lockFieldForPin` | frontend/js/app.js:751 |
 | `lockNow` | frontend/js/app.js:814 |
 | `mediaSrc` | frontend/js/app.js:234 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1761 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1762 |
 | `promptDialog` | frontend/js/app.js:1376 |
 | `purgeLockedContent` | frontend/js/app.js:793 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -78,7 +78,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stagedImageByUrl` | frontend/js/app.js:195 |
 | `startApp` | frontend/js/app.js:904 |
 | `startWithoutPassword` | frontend/js/app.js:620 |
-| `whenScriptsLoaded` | frontend/js/app.js:1675 |
+| `whenScriptsLoaded` | frontend/js/app.js:1676 |
 | `wireBackdropClose` | frontend/js/app.js:1492 |
 
 ### frontend/js/prefs.js (6)
@@ -7169,30 +7169,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `scrollRowArrows` | frontend/js/scroll-row.js:9 |
 
-### frontend/js/search-suggest.js (20)
+### frontend/js/search-suggest.js (22)
 
 | Name | File:line |
 |---|---|
-| `clearRecentSearches` | frontend/js/search-suggest.js:397 |
-| `clearSearchSuggestRecents` | frontend/js/search-suggest.js:412 |
-| `closeSearchSuggest` | frontend/js/search-suggest.js:214 |
-| `fillSearchSuggest` | frontend/js/search-suggest.js:285 |
-| `openSearchSuggest` | frontend/js/search-suggest.js:429 |
-| `placeSearchGhost` | frontend/js/search-suggest.js:256 |
-| `placeSearchSuggest` | frontend/js/search-suggest.js:231 |
-| `placeSearchSuggestSoon` | frontend/js/search-suggest.js:362 |
-| `removeSearchSuggest` | frontend/js/search-suggest.js:384 |
+| `clearRecentSearches` | frontend/js/search-suggest.js:417 |
+| `clearSearchSuggestRecents` | frontend/js/search-suggest.js:432 |
+| `closeSearchSuggest` | frontend/js/search-suggest.js:234 |
+| `fillSearchSuggest` | frontend/js/search-suggest.js:305 |
+| `openSearchSuggest` | frontend/js/search-suggest.js:449 |
+| `placeSearchGhost` | frontend/js/search-suggest.js:276 |
+| `placeSearchSuggest` | frontend/js/search-suggest.js:251 |
+| `placeSearchSuggestSoon` | frontend/js/search-suggest.js:382 |
+| `removeSearchSuggest` | frontend/js/search-suggest.js:404 |
 | `searchSuggestEnabled` | frontend/js/search-suggest.js:64 |
 | `searchSuggestHold` | frontend/js/search-suggest.js:58 |
-| `searchSuggestItems` | frontend/js/search-suggest.js:147 |
-| `searchSuggestListTitles` | frontend/js/search-suggest.js:122 |
+| `searchSuggestItems` | frontend/js/search-suggest.js:165 |
+| `searchSuggestListTitles` | frontend/js/search-suggest.js:140 |
+| `searchSuggestMeant` | frontend/js/search-suggest.js:103 |
 | `searchSuggestRank` | frontend/js/search-suggest.js:92 |
-| `searchSuggestRemember` | frontend/js/search-suggest.js:421 |
+| `searchSuggestRankMeant` | frontend/js/search-suggest.js:110 |
+| `searchSuggestRemember` | frontend/js/search-suggest.js:441 |
 | `searchSuggestScopeOf` | frontend/js/search-suggest.js:68 |
-| `searchSuggestTitleHits` | frontend/js/search-suggest.js:137 |
-| `searchSuggestToken` | frontend/js/search-suggest.js:100 |
+| `searchSuggestTitleHits` | frontend/js/search-suggest.js:155 |
+| `searchSuggestToken` | frontend/js/search-suggest.js:118 |
 | `searchSuggestWords` | frontend/js/search-suggest.js:74 |
-| `takeSearchSuggest` | frontend/js/search-suggest.js:369 |
+| `takeSearchSuggest` | frontend/js/search-suggest.js:389 |
 
 ### frontend/js/search.js (29)
 
@@ -27969,7 +27971,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22189)
+## Tests (22191)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30162,6 +30164,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_search_spaces.py | 2 |
 | tests/test_search_suggest_close.py | 4 |
 | tests/test_search_suggest_lists.py | 9 |
+| tests/test_search_suggest_meaning_l199.py | 2 |
 | tests/test_search_surfaces.py | 15 |
 | tests/test_searxng_card_1734.py | 7 |
 | tests/test_searxng_down_1490.py | 9 |
@@ -31144,14 +31147,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:722 |
+| Needs hardware | docs/roadmap/LEDGER.md:721 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:714 |
+| Owner calls | docs/roadmap/LEDGER.md:713 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31332,7 +31335,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1852 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:913 |
+| Plan session briefs | docs/roadmap/LEDGER.md:912 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31386,25 +31389,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:929 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1013 |
-| documents | docs/roadmap/LEDGER.md:199 |
-| documents | docs/roadmap/LEDGER.md:953 |
-| general | docs/roadmap/LEDGER.md:673 |
+| chat | docs/roadmap/LEDGER.md:928 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1012 |
+| documents | docs/roadmap/LEDGER.md:198 |
+| documents | docs/roadmap/LEDGER.md:952 |
+| general | docs/roadmap/LEDGER.md:672 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:917 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1025 |
+| graph | docs/roadmap/LEDGER.md:916 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1024 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:279 |
-| mindmap | docs/roadmap/LEDGER.md:965 |
-| timeline | docs/roadmap/LEDGER.md:434 |
-| timeline | docs/roadmap/LEDGER.md:989 |
-| ui-modernisation | docs/roadmap/LEDGER.md:316 |
-| ui-modernisation | docs/roadmap/LEDGER.md:977 |
-| whiteboard | docs/roadmap/LEDGER.md:152 |
-| whiteboard | docs/roadmap/LEDGER.md:941 |
-| world-class | docs/roadmap/LEDGER.md:437 |
-| world-class | docs/roadmap/LEDGER.md:1001 |
+| mindmap | docs/roadmap/LEDGER.md:278 |
+| mindmap | docs/roadmap/LEDGER.md:964 |
+| timeline | docs/roadmap/LEDGER.md:433 |
+| timeline | docs/roadmap/LEDGER.md:988 |
+| ui-modernisation | docs/roadmap/LEDGER.md:315 |
+| ui-modernisation | docs/roadmap/LEDGER.md:976 |
+| whiteboard | docs/roadmap/LEDGER.md:151 |
+| whiteboard | docs/roadmap/LEDGER.md:940 |
+| world-class | docs/roadmap/LEDGER.md:436 |
+| world-class | docs/roadmap/LEDGER.md:1000 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
