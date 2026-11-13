@@ -960,8 +960,8 @@ solid and strokes one device pixel so only geometry is compared; PNGs in
 Not measured: that the board draws them (they are not in `index.json`, so
 no set loads them yet; `frontend/board-library/*.json` is globbed
 non-recursively by `routes_board_library.py`, which is why they sit one
-folder down), stroke width fidelity (draw.io's `strokewidth` is in shape
-units; the converter writes 2 board pixels per unit), and the Atlassian
+folder down). Stroke width fidelity is measured (L263, tests/test_wb_stencil_width.py: inherit is width 2, draw.io's default 1 on the import's x2 scale; `strokewidth` is in shape
+units; the converter writes 2 board pixels per unit). Not checked: the Atlassian
 restriction in upstream's `stencils/LICENSE` (Tessellate is not an Atlassian
 product; the NOTICE says so).
 
