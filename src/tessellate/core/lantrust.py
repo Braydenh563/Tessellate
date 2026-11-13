@@ -277,11 +277,12 @@ def _read_network(online: bool | None, *, fresh: bool = False) -> tuple[netid.Ne
     network = netid.read()
     if online is None:
         online = network is not None or _online()
-    keep = not fresh and _gate["network"] is not None and _missed["count"] < MISSED_READS_KEPT
-    if network is None and online and keep:
-        _missed["count"] += 1
-        return _gate["network"], online
-    _missed["count"] = 0
+    with _lock:  # the accept loop and a listener start both refresh
+        keep = not fresh and _gate["network"] is not None and _missed["count"] < MISSED_READS_KEPT
+        if network is None and online and keep:
+            _missed["count"] += 1
+            return _gate["network"], online
+        _missed["count"] = 0
     return network, online
 
 
