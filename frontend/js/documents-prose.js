@@ -98,7 +98,7 @@ async function docGrammarWhy() {
 //: One lint of `text`, or null when there is no checker. `ignored` is the grammar
 //: findings put away in this document (the worker keeps them dismissed, `ignore_lints`).
 function docGrammarAsk(text) {
-  const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text) });
+  const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text), groupsOff: (prefsCache && prefsCache.prose_kinds_off) || [] });
   //: LanguageTool, when installed (documents-languagetool.js), adds its findings.
   return asked.then((lints) => docSpell.languageTool(lints, text));
 }
@@ -1306,6 +1306,10 @@ function docReadAloudVoice(lang) {
   if (!window.speechSynthesis) return null;
   const voices = window.speechSynthesis.getVoices() || [];
   const local = voices.filter((voice) => voice.localService !== false);
+  //: The voice named in Settings, Read aloud (L333) wins when this browser still has it.
+  const named = typeof prefs === "object" && prefs ? prefs.get("read-aloud-voice-name", "") : "";
+  const chosen = named && local.find((voice) => voice.name === named);
+  if (chosen) return chosen;
   const prefix = String(lang || "en").slice(0, 2).toLowerCase();
   return (
     local.find((voice) => voice.default && voice.lang.toLowerCase().startsWith(prefix)) ||

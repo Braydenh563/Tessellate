@@ -11,6 +11,7 @@ would be worse than losing one.
 from __future__ import annotations
 
 import json
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -196,9 +197,29 @@ class DiagramModelIn(BaseModel):
     subgraphs: list[DiagramGroupIn] = Field(default_factory=list, max_length=60)
 
 
+class KindBlockIn(BaseModel):
+    """One block of a mind map, timeline or sequence as the builder flattens it (`diagram_ask_kinds`)."""
+
+    model_config = {"populate_by_name": True}
+    uid: str = Field(min_length=1, max_length=60)
+    type: str = Field(max_length=2)
+    text: str = Field(default="", max_length=200)
+    parent: str | None = Field(default=None, max_length=60)
+    id: str | None = Field(default=None, max_length=60)
+    source: str | None = Field(default=None, alias="from", max_length=60)
+    to: str | None = Field(default=None, max_length=60)
+
+
+class KindModelIn(BaseModel):
+    nodes: list[KindBlockIn] = Field(default_factory=list, max_length=diagram_ask.MAX_BLOCKS)
+
+
 class DiagramAskBody(BaseModel):
     ask: str = Field(max_length=diagram_ask.ASK_CHARS)
     model: DiagramModelIn = Field(default_factory=DiagramModelIn)
+    #: The other kinds (L-documents-27): the kind and its flat blocks; absent is the flowchart.
+    kind: Literal["flowchart", "mindmap", "timeline", "sequence"] = "flowchart"
+    kind_model: KindModelIn = Field(default_factory=KindModelIn)
 
 
 @router.post("/diagram-ask")
@@ -207,8 +228,15 @@ def diagram_ask_ops(body: DiagramAskBody) -> dict:
     the model when it runs, the same five verbs either way and every op checked against the model."""
     if not body.ask.strip():
         raise HTTPException(status_code=400, detail="Write what to change first.")
-    model = body.model.model_dump(by_alias=True)
     ollama = deps.get_ollama()
+    if body.kind != "flowchart":
+        from tessellate.ai import diagram_ask_kinds  # lazy: the flowchart's ask does not pay for it
+
+        blocks = body.kind_model.model_dump(by_alias=True, exclude_none=True)
+        if not ollama.is_running():
+            return diagram_ask_kinds.by_rule(body.kind, body.ask, blocks)
+        return diagram_ask_kinds.with_model(body.kind, body.ask, blocks, deps.get_model_manager().for_feature("writing").chat_model(), ollama)
+    model = body.model.model_dump(by_alias=True)
     if not ollama.is_running():
         return diagram_ask.by_rule(body.ask, model)
     return diagram_ask.with_model(body.ask, model, deps.get_model_manager().for_feature("writing").chat_model(), ollama)

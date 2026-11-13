@@ -10069,6 +10069,11 @@ Link to another note with [[its first few words]]."></textarea>
         spelling follows this computer's language.
       </p>
       <p>
+        Kinds of suggestion turns whole groups of Harper's grammar suggestions off
+        (style and readability, punctuation, capital letters, word choice). Spelling
+        and plain mistakes such as a repeated word stay on.
+      </p>
+      <p>
         In a document, autocorrect and word suggestions are per document, in
         the editor's ⋯ menu; in notes, chat and titles autocorrect is one
         switch in Settings, General, Writing. Import takes a .txt file with one word per line and
@@ -10108,6 +10113,25 @@ Link to another note with [[its first few words]]."></textarea>
         <small class="muted">In documents and notes, on this computer (Harper).</small>
       </span>
     </label>
+    <fieldset id="doc-prose-groups" class="doc-prose-groups">
+      <legend>Kinds of suggestion</legend>
+      <label class="setting-check">
+        <input type="checkbox" data-prose-group="style" checked>
+        <span>Style and readability<small class="muted">Wordy or hard-to-read phrasing.</small></span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" data-prose-group="punctuation" checked>
+        <span>Punctuation</span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" data-prose-group="capitalization" checked>
+        <span>Capital letters</span>
+      </label>
+      <label class="setting-check">
+        <input type="checkbox" data-prose-group="wording" checked>
+        <span>Word choice<small class="muted">Wrong or non-standard words and usage.</small></span>
+      </label>
+    </fieldset>
     <label class="setting-check">
       <input type="checkbox" id="doc-check-link-text">
       <span>
@@ -13232,6 +13256,12 @@ Link to another note with [[its first few words]]."></textarea>
                 </select>
               </div>
               <div class="row space-between setting-row">
+                <label for="pref-read-aloud-voice-name">Browser voice</label>
+                <select id="pref-read-aloud-voice-name" class="small-select">
+                  <option value="">Automatic</option>
+                </select>
+              </div>
+              <div class="row space-between setting-row">
                 <label for="pref-read-aloud-rate">Speaking speed</label>
                 <select id="pref-read-aloud-rate" class="small-select">
                   <option value="0.75">Slower (0.75x)</option>
@@ -13246,7 +13276,9 @@ Link to another note with [[its first few words]]."></textarea>
                   it again, now Stop reading, to stop. The speed is remembered on this
                   device. The natural voice is a package you install in Settings,
                   Packages: it reads on this computer, a sentence or two behind the
-                  press, and the speed above applies to the browser's voices only.
+                  press, and the speed above applies to the browser's voices only. Browser
+                  voice picks which of this computer's voices speaks, in chat and in
+                  documents; Automatic follows the page's language.
                 </p>
               </div>
             </div>

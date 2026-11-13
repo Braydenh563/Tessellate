@@ -6,6 +6,10 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: Kinds of suggestion in the writing sheet turn off style, punctuation, capital-letter and word-choice suggestions from the grammar checker (L333).
+- Settings, Read aloud: a Browser voice picker chooses the voice for chat and document read-aloud (L333).
+- Diagram Ask: the ask route understands mind maps, timelines and sequence diagrams (rules and model, checked ops); the builder UI follows (L-documents-27, L-documents-35).
+- Code documents: every language with a snippet has a run path, checked after snippet drag (L351); the DC1 and DC2 rows re-verified (L352).
 - Fix (boards, links): the Library board Suggest a name passes the undo and router lints (its rename is the undoable helper, the queries are in repo/whiteboard.py); the Guide says "Rename a board" again; a saved link's answer is read before its icon fetch starts, so it no longer races it.
 - Documents: Translate this passage uses the offline translator when it is installed (L331).
 - Documents: comment replies take attachments and are drawn as markdown (L332).
