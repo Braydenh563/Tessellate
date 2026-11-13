@@ -23,11 +23,12 @@ from tessellate.ai import composer_dialogue
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.grounding import SentenceGrounder, composed_support
 from tessellate.ai.ollama_client import OllamaError
+from tessellate.api import chat_degrade
 from tessellate.api.chat_agent import _starter_read
 from tessellate.api.chat_pool import _Found
 from tessellate.api.chat_extra import _turn_label
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _event, _in_full
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_capability, _cited_titles, _first_cited_has_list, _in_notes
+from tessellate.api.chat_said import _app_answers, _asks_capability, _cited_titles, _first_cited_has_list, _in_notes
 from tessellate.core import deps, private_turn
 from tessellate.core.config import user_now
 from tessellate.core.database import Entry
@@ -224,16 +225,23 @@ def _model_stream_events(req: _StreamRequest, prepared: dict, messages: list) ->
         #: saving is a number on every turn rather than a claim.
         composition_tokens["notes_brief"] = prepared["brief"]
     streamed_any = False
+    said: list[str] = []
+    stats = None
     try:
         for piece in req.ollama.chat_stream(req.model_manager.chat_model(), messages, req.mode):
             if "thinking_delta" in piece:
                 yield {"type": "thinking", "delta": piece["thinking_delta"]}
             elif "stats" in piece:
-                # Token counts + timings for the message metadata line.
-                yield {"type": "stats", **piece["stats"], "composition": composition_tokens}
+                #: Token counts + timings for the message metadata line, held to the end so a fallback can mark them.
+                stats = piece["stats"]
             else:
                 streamed_any = True
+                said.append(piece["content_delta"])
                 yield {"type": "answer", "delta": piece["content_delta"]}
+        if chat_degrade.falls_back("".join(said), prepared, req.question or ""):
+            yield from chat_degrade.fallback_events(prepared, stats, composition_tokens, streamed_any)
+        elif stats is not None:
+            yield {"type": "stats", **stats, "composition": composition_tokens}
     except OllamaError as exc:
         # The model died mid-answer, tell the user, keep the results.
         # By construction this is reached only after the not-running
@@ -258,8 +266,7 @@ def _model_stream_events(req: _StreamRequest, prepared: dict, messages: list) ->
             #: already drew as a draft is sent as the answer, under one line
             #: saying the model stopped. After some words (L122) it replaces
             #: them (`answer_final`) rather than following half a sentence.
-            said = f"{preview['text']}\n\n{MODEL_STOPPED_NOTE}"
-            yield {"type": "answer_final", "text": said} if streamed_any else {"type": "answer", "delta": said}
+            yield from chat_degrade.fallback_events(prepared, stats, composition_tokens, streamed_any)
             return
         prefix = "\n\n" if streamed_any else ""
         yield {
