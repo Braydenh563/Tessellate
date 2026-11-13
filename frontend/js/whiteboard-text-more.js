@@ -22,6 +22,21 @@
     if (cursor < source.length) out.push({ text: source.slice(cursor), kind: "" });
     return out;
   }
+  //: **The Text style menu's Subscript and Superscript** (L-whiteboard-27): the selected words wrapped in the mark, or
+  //: taken out of it when they already sit inside one. Pure: `{ text, from, to }` around the same words, or null when the
+  //: result would not draw as a script (the scanner above takes 1 to 20 characters with no space or mark).
+  function wrapScript(text, from, to, mark) {
+    const source = String(text ?? "");
+    const picked = source.slice(from, to);
+    if (!picked || (mark !== "~" && mark !== "^")) return null;
+    if (source[from - 1] === mark && source[to] === mark && source[from - 2] !== mark && source[to + 1] !== mark && !/[\s~^]/.test(picked)) {
+      return { text: source.slice(0, from - 1) + picked + source.slice(to + 1), from: from - 1, to: to - 1 };
+    }
+    if (/[\s~^]/.test(picked) || picked.length > 20) return null;
+    const out = source.slice(0, from) + mark + picked + mark + source.slice(to);
+    if (!splitScripts(out).some((piece) => piece.kind && piece.text === picked)) return null;
+    return { text: out, from: from + 1, to: to + 1 };
+  }
   const hasScripts = (text) => new RegExp(SCRIPT.source).test(String(text ?? ""));
 
   //: A text box's rendered words: every text node outside code turned into text, <sub> and <sup>.
@@ -153,5 +168,5 @@
     label.style.opacity = "0";
   }
 
-  wbFmtState.textMore = { splitScripts, hasScripts, paintScripts, scriptSpans, markScripts, mathPieces, hasMath, mathLabel };
+  wbFmtState.textMore = { splitScripts, wrapScript, hasScripts, paintScripts, scriptSpans, markScripts, mathPieces, hasMath, mathLabel };
 })();

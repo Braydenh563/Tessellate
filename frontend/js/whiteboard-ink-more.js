@@ -80,5 +80,63 @@
     return out;
   }
 
-  wbFmtState.inkMore = { trimShaft, inkOptions, outline, takesInk, liveStyle, keepPoints, placePoints };
+  //: **The width control rebuilds the outline** (L-whiteboard-31): a smoothed stroke is a fixed filled outline, so a new
+  //: width has to come from the hand's own points again. The kept points (where the stroke is now) go back through the
+  //: library at the new size; the saved points and their box follow the new outline. Pure; `{}` for a stroke that kept no
+  //: points (drawn before they were kept), which keeps its outline and only changes the number.
+  function rebuild(parsed, width, bboxOf, lib = window.perfectFreehand) {
+    if (!parsed?.ink || !Array.isArray(parsed.pts) || !lib) return {};
+    const now = bboxOf(parsed.d);
+    const pts = placePoints(parsed.pts, parsed.pbox, now);
+    const d = outline(pts, parsed.opacity != null ? "highlighter" : "pen", width, "mouse", true, lib);
+    const box = d && bboxOf(d);
+    return box ? { d, ...keepPoints(pts, box) } : {};
+  }
+
+  //: **A turn or a flip turns the kept points too.** `placePoints` maps the points by the outline's box, which is right for a
+  //: move or a resize and wrong for a turn. The outline's points keep their order through any transform, so the one
+  //: (affine) map from the old outline to the new one is read off three of them and applied to the kept points; the new
+  //: points are then in the new outline's frame. `{}` when the map is only a move or a stretch (the box mapping already
+  //: holds) or the two paths do not correspond.
+  const coordsOf = (d) => (String(d).match(/-?\d*\.?\d+(?:[eE]-?\d+)?/g) || []).map(Number);
+  function carry(oldD, newD, flat, pbox, bboxOf) {
+    const a = coordsOf(oldD), b = coordsOf(newD);
+    if (a.length !== b.length || a.length < 12 || !Array.isArray(flat) || !Array.isArray(pbox)) return {};
+    const n = a.length / 2;
+    const at = (c, i) => [c[i * 2], c[i * 2 + 1]];
+    let best = null;
+    for (const [i, j, k] of [[0, Math.floor(n / 3), Math.floor((2 * n) / 3)], [0, Math.floor(n / 2), n - 1], [0, 1, n - 1]]) {
+      const [p, q, r] = [at(a, i), at(a, j), at(a, k)];
+      const area = Math.abs((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]));
+      if (!best || area > best.area) best = { area, ids: [i, j, k] };
+    }
+    if (best.area < 1e-6) return {};
+    const [P, Q, R] = best.ids.map((i) => at(a, i)), [P2, Q2, R2] = best.ids.map((i) => at(b, i));
+    const det = (Q[0] - P[0]) * (R[1] - P[1]) - (R[0] - P[0]) * (Q[1] - P[1]);
+    const solve = (u, v, w) => {
+      const gx = ((v - u) * (R[1] - P[1]) - (w - u) * (Q[1] - P[1])) / det;
+      const gy = ((w - u) * (Q[0] - P[0]) - (v - u) * (R[0] - P[0])) / det;
+      return [gx, gy, u - gx * P[0] - gy * P[1]];
+    };
+    const [m00, m01, tx] = solve(P2[0], Q2[0], R2[0]);
+    const [m10, m11, ty] = solve(P2[1], Q2[1], R2[1]);
+    if (Math.abs(m01) < 1e-3 && Math.abs(m10) < 1e-3 && m00 > 0 && m11 > 0) return {};
+    const box = bboxOf(newD);
+    if (!box) return {};
+    const out = [];
+    for (let i = 0; i + 1 < flat.length; i += 2) out.push([m00 * flat[i] + m01 * flat[i + 1] + tx, m10 * flat[i] + m11 * flat[i + 1] + ty]);
+    return keepPoints(out, box);
+  }
+
+  //: Called as a sketch's path is replaced (`wbSketchSetD`, `wbSketchSetProps`, `wbSaveSketchProps`): a smoothed stroke's kept
+  //: points follow a turn or a flip. The old points are first put where the stroke is (box to box) so a move before the
+  //: turn is not lost.
+  function follow(parsed, newD, bboxOf) {
+    if (!parsed?.ink || !Array.isArray(parsed.pts) || typeof newD !== "string" || newD === parsed.d) return;
+    const here = Array.isArray(parsed.pbox) && bboxOf(parsed.d) ? placePoints(parsed.pts, parsed.pbox, bboxOf(parsed.d)).flat() : parsed.pts;
+    const turned = carry(parsed.d, newD, here, parsed.pbox, bboxOf);
+    if (turned.pts) Object.assign(parsed, turned);
+  }
+
+  wbFmtState.inkMore = { trimShaft, inkOptions, outline, takesInk, liveStyle, keepPoints, placePoints, rebuild, carry, follow };
 })();

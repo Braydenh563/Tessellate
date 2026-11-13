@@ -6,6 +6,10 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard: Replace with a shape draws a drawn shape's outline fresh for the box (corners and curves keep their size) instead of stretching the tile (L-whiteboard-28).
+- Whiteboard: the Text style menu on selected card text has Subscript and Superscript, which wrap the words in ~ ~ or ^ ^ (and take the marks off again), as one Undo step (L-whiteboard-27).
+- Whiteboard: the Format panel's width control and a turn now work on smoothed pen strokes: the outline is rebuilt from the stroke's own points at the new width, and a rotation turns the points with the outline, as one Undo step (L-whiteboard-31).
+- Whiteboard on a phone: the More sheet groups the Arrange commands into the desktop menu's submenus (Order, Align, Distribute, Layout, Tidy and connect, Group and lock), each opening as its own level with a back row, instead of 24 flat rows.
 - Other devices: a router that briefly drops out of this computer's address table no longer shuts the network port and cuts every phone off mid-request; the last network is kept for two missed reads while the route is still there.
 - Whiteboard: Edit, Replay the pen drawing plays the pen strokes back in the order they were drawn (skipped to the end with reduced motion), and Export, GIF saves the same as an animated picture, written by a small offline GIF encoder (L-whiteboard-4).
 - Whiteboard: select a pen stroke and choose Edit, Clean up the drawn shape (also in the command palette) to turn a rough line, arrow, rectangle, ellipse, triangle or diamond into the clean shape, in the same colour and width, as one Undo step; a scribble is left alone.

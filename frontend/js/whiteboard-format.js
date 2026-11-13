@@ -998,7 +998,8 @@ onSurface("board", () => {
   on("wb-fmt-stroke", "change", (e) => wbFmtApply("stroke", (entry) => (entry.kind === "sketch" ? { color: e.target.value } : { border_color: e.target.value }), "Line colour changed."));
   on("wb-fmt-width", "change", (e) => {
     const width = Math.max(1, Math.min(40, Number(e.target.value) || 3));
-    wbFmtApply("width", () => ({ width }), `Line width ${width}.`);
+    //: A smoothed stroke is an outline, so its new width is drawn again from its points (L-whiteboard-31).
+    wbFmtApply("width", (entry) => ({ width, ...(entry.kind === "sketch" ? wbFmtState.inkMore.rebuild(wbSketchParsedData(entry.item), width, wbPathBBox) : {}) }), `Line width ${width}.`);
   });
   on("wb-fmt-pattern", "change", (e) => {
     const typed = e.target.value.trim();

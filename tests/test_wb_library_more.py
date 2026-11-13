@@ -76,6 +76,24 @@ def test_an_entry_without_a_label_area_or_kind_leaves_none_behind():
     assert json.loads(got["d"])["sx"] == 1 and json.loads(got["d"])["sy"] == 1
 
 
+def test_a_drawn_table_shape_is_drawn_again_for_the_box_not_stretched_l_whiteboard_28():
+    shape_table = frontend_text("whiteboard-shape-table.js")
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    body = (
+        "const m = wbFmtState.libraryMore, t = wbFmtState.shapeTable, calls = [];"
+        "const tile = t.shapePath('cylinder', 100, 100);"
+        "const data = { d: tile, shape: 'custom', shapeKind: 'cylinder' };"
+        "const box = { minX: 300, minY: 50, width: 240, height: 90 };"
+        "const next = m.replaceData({ d: 'M 0 0 L 9 0 L 9 9 Z', shape: 'triangle' }, data, box, { minX: 0, minY: 0, width: 100, height: 100 }, (d, o) => { calls.push(o); return 'T'; });"
+        "console.log(JSON.stringify([calls.length, next.d === t.shapePathAt('cylinder', 300, 50, 240, 90), next.shapeKind]));"
+    )
+    script = STAND_INS + shape_table + "\n" + frontend_text("whiteboard-library-more.js") + "\n(async () => {" + body + "})();"
+    out = json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=30, check=True).stdout)
+    assert out == [0, True, "cylinder"]  # the board's stretch is never called: the table's own outline for 240 by 90
+
+
 def test_the_search_puts_a_name_that_starts_with_the_words_first_then_the_name_then_a_tag():
     got = _run(
         "const rows = [{ name: 'Gateway, decision', tags: [], set: 'BPMN' }, { name: 'Diamond', tags: ['decision'], set: 'General' },"

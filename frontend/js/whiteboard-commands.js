@@ -620,6 +620,12 @@ function wbSyncMoreMenu(menu) {
     row.classList.toggle("menu-item-unavailable", !applies);
     row.setAttribute("aria-disabled", applies ? "false" : "true");
   }
+  //: A group with no row left to show is no row either; a hidden member leaves the group's arrow keys.
+  for (const group of menu.querySelectorAll(":scope > .menu-group")) {
+    const rows = [...group.querySelectorAll("[data-wb-cmd]")];
+    group.hidden = rows.every((row) => row.hidden);
+    for (const row of rows) row.setAttribute("role", row.hidden ? "none" : "menuitem");
+  }
   let shown = false;
   let rule = null;
   for (const child of menu.children) {
@@ -675,6 +681,35 @@ function wbSyncMoreMapRows(menu, map) {
 }
 
 function wbInitMoreMenu() {
+  //: **The Arrange rows in the sheet are the desktop's submenus** (L-whiteboard-30): 24 flat rows
+  //: were a long scroll under a thumb. Same labels as the Arrange menu's `data-wb-submenu`
+  //: sections (`tests/test_wb_more_arrange_groups.py` holds the two together); a command in
+  //: none of them (the shape edits) stays a plain row.
+  const WB_MORE_ARRANGE_GROUPS = [
+    { label: "ph:stack Order", ids: ["order-forward", "order-backward", "order-front", "order-back"] },
+    { label: "ph:align-left Align", ids: ["align-left", "align-hcenter", "align-right", "align-top", "align-vcenter", "align-bottom", "key-object"] },
+    { label: "ph:columns Distribute, size and flip", ids: ["distribute-h", "distribute-v", "same-width", "same-height", "flip-h", "flip-v", "flip-layout-h", "flip-layout-v", "turn-90"] },
+    { label: "ph:graph Layout", ids: ["layout-flow-h", "layout-flow-v", "layout-radial", "layout-org", "layout-organic", "layout-circle"] },
+    { label: "ph:tree-structure Tidy and connect", ids: ["tidy-down", "tidy-right", "join-chain", "join-fan", "measure", "parallel-edges"] },
+    { label: "ph:link Group and lock", ids: ["group", "ungroup", "remove-from-group", "lock", "unlock-all"] },
+  ];
+
+  //: Moves each group's rows (they keep their `data-wb-cmd`, so the sync above still reaches
+  //: them) into one `buildMenuGroupButton` row at the first member's place: a flyout on a wide
+  //: screen, a nested level with a back row in the phone's sheet.
+  function foldArrange(menu) {
+    if (typeof buildMenuGroupButton !== "function") return;
+    for (const { label, ids } of WB_MORE_ARRANGE_GROUPS) {
+      const rows = ids.map((id) => menu.querySelector(`:scope > [data-wb-cmd="${id}"]`)).filter(Boolean);
+      if (!rows.length) continue;
+      const marker = document.createComment("");
+      menu.insertBefore(marker, rows[0]);
+      const group = buildMenuGroupButton(label, rows);
+      group.dataset.wbMoreGroup = label;
+      marker.replaceWith(group);
+    }
+  }
+
   const bar = document.querySelector("#wb-topbar .wb-topbar-right");
   if (!bar || document.getElementById("wb-more-toggle") || typeof kebabMenu !== "function") return;
   const wrap = kebabMenu(
@@ -692,6 +727,7 @@ function wbInitMoreMenu() {
   menu.querySelectorAll(".menu-item").forEach((row, i) => {
     row.dataset.wbCmd = WB_COMMANDS[i].id;
   });
+  foldArrange(menu);
   const opener = wrap.querySelector(".kebab-opener");
   opener.id = "wb-more-toggle";
   //: Capture, so the rows are right before `kebabMenu`'s own listener opens
