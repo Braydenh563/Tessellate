@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 29 | 5 | 1 | 5 | 67 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 100 | 38 | 0 | 18 | 268 |
+| world-class | 130 | 98 | 38 | 0 | 18 | 266 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 569 | 130 | 3 | 132 | 1252 |
+| all | 553 | 567 | 130 | 3 | 132 | 1250 |
 
 ## graph
 
@@ -613,8 +613,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L595** `world-class` open, M: Wire the 'Not used lately' list to the weekly offer. From OPEN.md:2812. Evidence: Verified open 2026-11-10
 - [ ] **L596** `world-class` open, M: Move Names and Link types inbox rows to the Links grid shape if owner wants kinds to match. From OPEN.md:3901. Evidence: suggestions-inbox.js:245 inboxMergeRow and :284 inboxTypeRow still the old shape; also owner-optional ("if owner wants kinds to match").
 - [ ] **L597** `world-class` open, M: Trace Settings > Models long tasks and pointerdown lag and cut its 15,191 elements. From OPEN.md:4267; OPEN.md:4284; bs-1111.md. Evidence: Needs a performance trace; same as HR18, no fix recorded.
-- [ ] **L598** `world-class` open, M: Notes tab-switch pointerup 312 ms and dashboard timer frames (1643b). From OPEN.md:4330. Evidence: W34 true-deferred, w34-fix2-1111.md.
-- [ ] **L599** `world-class` open, M: Settings backdrop click 880 ms and card pointerout 312-344 ms (1620lag). From OPEN.md:4333. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L603** `world-class` open, M: Cut first interaction 4.4 s, re-measure 5,000-note list/search, add budgets UI. From OPEN.md:650; OPEN.md:2653. Evidence: No budgets UI in Settings found; re-measure not recorded
 - [ ] **L607** `world-class` open, M: Exercise real log stream under load. From OPEN.md:1484. Evidence: Needs sustained load run; only seeded 275-record check recorded
 - [ ] **L608** `world-class` open, M: Sweep not reaching right-click menus, keyboard acts, pickers, library delete. From OPEN.md:1836; OPEN.md:3695. Evidence: Coverage gap; no sweep added found
