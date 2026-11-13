@@ -11186,9 +11186,21 @@ async function wbOpenRunMenu(button) {
     b.title = title;
     b.textContent = words;
     if (face) b.style.fontFamily = MD_RUN_FONTS[face];
-    b.addEventListener("click", () => apply(patch));
+    b.addEventListener("click", () => (patch instanceof Function ? patch() : apply(patch)));
     return b;
   };
+  //: Subscript and superscript (L-whiteboard-27): the pandoc marks round the selected words, or off them again.
+  const wrap = (mark) => () => {
+    closeActionMenus();
+    surface.el.focus({ preventScroll: true });
+    const before = surface.text;
+    const out = wbFmtState.textMore?.wrapScript(before, state.from, state.to, mark);
+    if (!out) return toast("Pick up to 20 characters with no spaces to lower or raise them.");
+    surface.el.dataset.wbFormatted = "1";
+    wbSpliceEditable(surface, before, out.text);
+    surface.setSelectionRange(out.from, out.to);
+  };
+  const scripts = [choice("Subscript", "Lower the selected words: H~2~O", wrap("~")), choice("Superscript", "Raise the selected words: x^2^", wrap("^"))];
   const sizes = WB_RUN_SIZES.map((px) => choice(String(px), `Size ${px} for the selected words`, { size: px }));
   sizes.push(choice("Default", "The box's own size for the selected words", { size: null }));
   const fonts = Object.entries({ serif: "Serif", mono: "Mono", wide: "Wide", hand: "Hand" }).map(([key, words]) =>
@@ -11211,6 +11223,7 @@ async function wbOpenRunMenu(button) {
     wbColourHeading("Font"), row("Font", fonts),
     wbColourHeading("Text colour"), colours("Text colour", "ink", "Default"),
     wbColourHeading("Highlight"), colours("Highlight colour", "hl", "None"),
+    wbColourHeading("Script"), row("Script", scripts),
     whole
   );
   closeActionMenus();
@@ -21327,6 +21340,7 @@ async function wbSaveSketchProps(sketch, partial) {
     parsed = null;
   }
   if (!parsed) return;
+  wbFmtState.inkMore?.follow(parsed, partial.d, wbPathBBox);
   Object.assign(parsed, partial);
   sketch.data = JSON.stringify(parsed);
   try {
@@ -21340,7 +21354,6 @@ async function wbSaveSketchProps(sketch, partial) {
     Object.assign(sketch, saved);
   } catch {
     recordBrowserLog("WARN", [`[Whiteboard] sketch ${sketch.id} is stale: reloading the board`]);
-  wbFmtState.inkMore?.follow(parsed, partial.d, wbPathBBox);
     await fetchWhiteboardState();
     wbScheduleRender();
   }
@@ -24165,6 +24178,7 @@ function wbSaveRow(kind, item) {
 function wbSketchSetD(sketch, d) {
   const parsed = wbSketchParsedData(sketch);
   if (!parsed) return;
+  wbFmtState.inkMore?.follow(parsed, d, wbPathBBox);
   parsed.d = d;
   sketch.data = JSON.stringify(parsed);
 }
@@ -24178,9 +24192,9 @@ function wbSketchSetProps(sketch, partial) {
     if (candidate && (typeof candidate.d === "string" || (candidate.type || "").startsWith("link-"))) parsed = candidate;
   } catch {
     parsed = null;
-  wbFmtState.inkMore?.follow(parsed, d, wbPathBBox);
   }
   if (!parsed) return false;
+  wbFmtState.inkMore?.follow(parsed, partial.d, wbPathBBox);
   Object.assign(parsed, partial);
   sketch.data = JSON.stringify(parsed);
   return true;
@@ -24194,7 +24208,6 @@ function wbTakeMoveRun(pending) {
   return n > 1 ? pending.splice(0, n) : [];
 }
 
-  wbFmtState.inkMore?.follow(parsed, partial.d, wbPathBBox);
 async function wbApplyMoveRun(run) {
   const rows = [];
   const reverse = [];

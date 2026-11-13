@@ -85,6 +85,46 @@ const { openFresh, checker } = require("./cdlib.js");
   check("L31: width after the turn keeps it turned (still taller than wide) and fatter", turnedFat.h > turnedFat.w * 2 && turnedFat.w > turned.w + 5, [turned.w, turned.h, turnedFat.w, turnedFat.h]);
   await p.evaluate(() => wbUndo());
   await p.waitForTimeout(400);
+  // L28: a drawn shape swapped in at a non-tile size is drawn fresh for the box, not stretched.
+  const l28 = await p.evaluate(() => {
+    const T = wbFmtState.shapeTable; const kind = T.kinds[0];
+    const box = { minX: 10, minY: 20, width: 500, height: 40 };
+    const out = wbFmtState.libraryMore.replaceData({}, { d: T.shapePath(kind), shapeKind: kind }, box, { minX: 0, minY: 0, width: 100, height: 100 }, wbTransformPathD);
+    return { same: out.d === T.shapePathAt(kind, 10, 20, 500, 40), kind: out.shapeKind === kind };
+  });
+  check("L28: a replaced drawn shape equals the table outline for the box", l28.same && l28.kind, l28);
+
+  // L27: the Text style menu wraps the selected words in ~ ~ and takes them out again.
+  const tid = await p.evaluate(async () => {
+    const o = await apiJson("/whiteboard/objects", { method: "POST", body: JSON.stringify({ board_id: window.currentBoardId ?? null, kind: "text", x: 200, y: 200, width: 360, height: 120, data: { content: "H2O" } }) });
+    await fetchWhiteboardState(); renderWhiteboardNow(); selectWbItem("object", o.id); return o.id;
+  });
+  await p.waitForTimeout(600);
+  const tsel = `#wb-html-layer .wb-object[data-id="${tid}"] .wb-text-content`;
+  await p.dblclick(tsel); await p.waitForTimeout(400);
+  const pickRange = (a, b) => p.evaluate(([s, a, b]) => { const el = document.querySelector(s); el.focus(); el.wbEditorSurface.setSelectionRange(a, b); document.dispatchEvent(new Event("selectionchange")); }, [tsel, a, b]);
+  await pickRange(1, 2); await p.waitForTimeout(500);
+  const press = async (label) => {
+    await p.evaluate(() => document.querySelector("#selection-bar [data-board-run]").dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true })));
+    await p.waitForSelector("#wb-colour-menu:not(.hidden)");
+    await p.click(`#wb-colour-menu >> text="${label}"`, { timeout: 4000 });
+    await p.waitForTimeout(300);
+  };
+  const surf = () => p.evaluate((s) => document.querySelector(s).wbEditorSurface.text, tsel);
+  await press("Subscript");
+  const sub = await surf();
+  check("L27: Subscript wraps the selected 2 as H~2~O", sub === "H~2~O", sub);
+  await pickRange(2, 3); await p.waitForTimeout(300);
+  await press("Subscript");
+  const unsub = await surf();
+  check("L27: pressing it on the wrapped 2 takes the marks out again", unsub === "H2O", unsub);
+  await pickRange(1, 2); await p.waitForTimeout(300);
+  await press("Superscript");
+  const sup = await surf();
+  check("L27: Superscript wraps it as H^2^O", sup === "H^2^O", sup);
+  const ov = await p.evaluate(() => { const m = document.getElementById("wb-colour-menu"); return { sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }; });
+  check("L27: no horizontal overflow", ov.sw <= ov.cw, ov);
+
   await wide.browser.close();
   summary(errors.concat(wide.errors));
 })();

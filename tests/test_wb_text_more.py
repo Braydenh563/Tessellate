@@ -73,3 +73,25 @@ def test_the_label_math_overlay_is_called_laid_out_and_dropped_from_the_export()
     assert "wbFmtState.textMore?.mathLabel(groupEl, label, area, fontSize)" in wb
     assert '":scope > .sketch-label-math"' in wb
     assert "innerHTML" not in frontend_text("whiteboard-text-more.js")
+
+
+def _wrap(text, start, end, mark):
+    return _node(f"console.log(JSON.stringify(wbFmtState.textMore.wrapScript({json.dumps(text)}, {start}, {end}, {json.dumps(mark)})));")
+
+
+def test_the_selection_is_wrapped_in_tildes_or_carets_l_whiteboard_27():
+    assert _wrap("H2O", 1, 2, "~") == {"text": "H~2~O", "from": 2, "to": 3}
+    assert _wrap("x2", 1, 2, "^") == {"text": "x^2^", "from": 2, "to": 3}
+
+
+def test_a_wrapped_selection_unwraps_and_a_choice_that_would_not_draw_is_refused():
+    assert _wrap("H~2~O", 2, 3, "~") == {"text": "H2O", "from": 1, "to": 2}
+    # spaces, a line break, a mark inside, nothing selected, more than 20 characters and a doubled mark all draw as plain text
+    for text, a, b in (("two words", 0, 9), ("a\nb", 0, 3), ("a~b", 0, 3), ("abc", 1, 1), ("x" * 21, 0, 21), ("~~gone~~", 2, 6)):
+        assert _wrap(text, a, b, "~") is None, text
+
+
+def test_the_text_style_menu_has_the_script_row():
+    js = frontend_text("whiteboard.js")
+    menu = js[js.index("async function wbOpenRunMenu") : js.index("function wbBulletTextLines")]
+    assert 'wbColourHeading("Script")' in menu and "wrapScript(" in menu

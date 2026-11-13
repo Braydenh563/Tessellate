@@ -2288,7 +2288,7 @@ MORE_TOPICS.extend([
         "body": (
             "Subscript and superscript on a board, in a text box that shows its markdown and in a shape's text: "
             "write H~2~O for a lowered 2 and x^2^ for a raised one (no spaces between the marks; a doubled ~~ is still "
-            "strikethrough). While you type you see the marks; when you finish they turn into small raised or lowered "
+            "strikethrough). To add them without typing the marks, select the words and choose Text style, then Subscript or Superscript. While you type you see the marks; when you finish they turn into small raised or lowered "
             "characters, and an SVG or PNG export keeps them. Maths: put a formula between dollar signs, like $x^2 + \\frac{a}{b}$, in a "
             "text box or a shape's text and it is typeset on the board (no space just inside the dollars, so \"$5 or $10\" stays plain); "
             "an export carries the source words instead."
