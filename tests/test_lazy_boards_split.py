@@ -29,7 +29,7 @@ JS = FRONTEND / "js"
 
 BOARD_FILES = [
     "whiteboard-map.js", "whiteboard-map-more.js", "whiteboard.js", "whiteboard-commands.js",
-    "whiteboard-library.js", "whiteboard-templates.js", "whiteboard-format.js", "whiteboard-label.js", "whiteboard-hints.js", "whiteboard-options.js", "whiteboard-export-more.js", "whiteboard-keys.js", "whiteboard-workspace.js", "whiteboard-layers-more.js", "whiteboard-draw-more.js", "whiteboard-arrange-more.js", "whiteboard-layouts-more.js", "whiteboard-structure-more.js", "whiteboard-shape-more.js", "whiteboard-shapes-js.js", "whiteboard-text-more.js", "whiteboard-shape-table.js", "whiteboard-library-more.js",
+    "whiteboard-library.js", "whiteboard-templates.js", "whiteboard-format.js", "whiteboard-label.js", "whiteboard-hints.js", "whiteboard-options.js", "whiteboard-export-more.js", "whiteboard-keys.js", "whiteboard-workspace.js", "whiteboard-layers-more.js", "whiteboard-draw-more.js", "whiteboard-arrange-more.js", "whiteboard-layouts-more.js", "whiteboard-structure-more.js", "whiteboard-shape-more.js", "whiteboard-shapes-js.js", "whiteboard-text-more.js", "whiteboard-ink-more.js", "whiteboard-shape-table.js", "whiteboard-library-more.js",
     "whiteboard-interchange.js", "whiteboard-history.js",
 ]
 

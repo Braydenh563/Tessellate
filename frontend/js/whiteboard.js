@@ -19544,7 +19544,9 @@ async function initWhiteboard() {
         // on `currentLineEndStyle`/`currentArrowEndStyle` in `initWhiteboard`.
         const caps = wbToolCaps();
         const [ex, ey] = e.shiftKey ? wbSnap45(sx, sy, x, y) : [x, y];
-        currentDrawPath.setAttribute("d", wbRegenerateShapeCaps(`M ${sx} ${sy} L ${ex} ${ey}`, caps.startCap, caps.endCap, WB_STROKE_WIDTH * 4 + 6));
+        const liveHead = WB_STROKE_WIDTH * 4 + 6;
+        const liveD = wbRegenerateShapeCaps(`M ${sx} ${sy} L ${ex} ${ey}`, caps.startCap, caps.endCap, liveHead);
+        currentDrawPath.setAttribute("d", wbFmtState.inkMore?.trimShaft(liveD, caps.startCap, caps.endCap, liveHead, null, wbShaftEnd) || liveD);
       } else if (window.currentTool === "circle") {
         currentDrawPath.setAttribute("d", wbEllipseDrawD(sx, sy, x, y, e));
       } else {
@@ -23215,6 +23217,12 @@ function renderWhiteboard() {
       if (parsed.d) {
         shapeData = parsed;
         pathData = parsed.d;
+        //: A hollow end (outline diamond, circle, square) stops the drawn shaft at its edge, as a link's does; the hit band keeps the whole line.
+        if (wbSketchTakesCaps(parsed)) {
+          const caps = wbSketchCaps(parsed);
+          const trimmed = wbFmtState.inkMore?.trimShaft(parsed.d, caps.startCap, caps.endCap, (parsed.width || 3) * 4 + 6, caps, wbShaftEnd);
+          if (trimmed && trimmed !== parsed.d) { hitboxData = parsed.d; pathData = trimmed; }
+        }
         // `shape` names the tool that drew it, which is what says "highlighter"
         // rather than "a stroke that happens to carry an opacity": a pen
         // stroke restyled through the context bar could have one too.

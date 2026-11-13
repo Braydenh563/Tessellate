@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 1 | 0 | 0 | 0 | 16 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 30 | 26 | 4 | 0 | 11 | 60 |
+| whiteboard | 30 | 25 | 4 | 0 | 11 | 59 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
 | ui-modernisation | 96 | 111 | 4 | 0 | 17 | 211 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 633 | 150 | 3 | 186 | 1336 |
+| all | 553 | 632 | 150 | 3 | 186 | 1335 |
 
 ## graph
 - [ ] **L-graph-1** `graph` open, S: Read and fix the py3.13 leg 2 failure on PR 228, then send the hub green. From PR 228 CI on 5bb36335. Evidence: Tests py3.13 leg 2 (job 131453868567) failed, cause not read (stopped at the 85% usage line); py3.12 leg 1 was the as-of 1s timing, same on base and head locally (0.8s), runner load
@@ -290,7 +290,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L267** `whiteboard` open, S: Make export dialog say 'Export this branch' on a branch; re-check stale mmd2 sweep. From OPEN.md:3907. Evidence: whiteboard.js:14995 and :15130 hard-code "Export this board" though a branch menu item "Export this branch" exists (:9825). Built here: wbExportBoard({ branch: true }) titles the dialog "Export this branch" (tests/test_wb_export_pdf.py, wbexport-pdf.js). Left: whiteboard-map.js:5072 in wbMapExportBranch must call wbExportBoard({ branch: true }) (file owned by another session). The mmd2 sweeps do not touch export; wbexport-pdf.js covers the dialog.
 - [ ] **L269** `whiteboard` open, M: Cut board toolbar tab stops from 33 with a roving tabindex. From OPEN.md:4266. Evidence: Ledger row 261 marked new, M; no roving-tabindex fix found.
 - [ ] **L271** `whiteboard` open, M: Unify the four overlapping drag and pointer-capture mechanisms in whiteboard.js. From OPEN.md:4442. Evidence: whiteboard.js still has mixed pointer capture and mouse handlers (27 matches); not unified
-- [ ] **L277** `whiteboard` open, M: Stop free lines and arrows drawing the shaft through hollow ends. From OPEN.md:1675; OPEN.md:2607. Evidence: whiteboard.js:2358-2365 wbHollowInset trims links only; free lines re-read path as endpoints (row's reason stands)
 - [ ] **L278** `whiteboard` open, M: Audit board frames/present flow, connector re-routing, touch eraser, image paste limits, PDF export. From audit-1031-board.md. Evidence: No later board audit found
 - [ ] **L279** `whiteboard` open, M: Close or record U19 U20 U23 U30 U31 U36 U37 U39 U41 U45 U49 across map, board, documents, code editor. From bs-1111.md. Evidence: Other agents' surfaces; no closing record found
 - [ ] **L280** `whiteboard` open, M: Add AI rename for boards and maps; drop weak meaning-only matches. From w34-gap3-1111.md Found. Evidence: Only documents have suggest-title (fe169b9d8); no board/map equivalent

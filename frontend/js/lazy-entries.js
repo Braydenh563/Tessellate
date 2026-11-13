@@ -30,6 +30,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-shape-more.js", //: A table's row ports and the shape's points; names whiteboard.js and whiteboard-format.js at run time only.
     "/js/whiteboard-shapes-js.js", //: Insert, Polygon and the JS-drawn shape classes; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
     "/js/whiteboard-text-more.js", //: Subscript, superscript and `$...$` maths in board words; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
+    "/js/whiteboard-ink-more.js", //: Free-line hollow ends, smoothed pen strokes, shape clean-up, replay and the GIF; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
     "/js/whiteboard-shape-table.js", //: The table of JS-drawn shapes (cylinder, cube, step...): the picker rows, resize and draw.io words; joins `wbFmtState`.
     "/js/whiteboard-library-more.js", //: The shape picker and Replace with a library shape; names whiteboard.js and whiteboard-library.js at run time only.
     "/js/whiteboard-interchange.js",
