@@ -1617,7 +1617,9 @@ input.md-task-inline:disabled,
   min-width: 0;
 }
 .entry-list.is-rows .entry-meta {
+  /* Room for a --target-min button in the 24px line, which clips (L464). */
   margin: 0;
+  padding-block: 2px;
   flex-wrap: nowrap;
   /* The cap that keeps a note's metadata from crowding out the note's own
      text now lives on the *track* (`fit-content(26rem)` in the

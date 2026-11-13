@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The Notes rows view no longer clips the edges of its row buttons' hover and focus ring (L464).
+
 - A note moved to the bin from the Notes list fades out before the list redraws (L462).
 
 - Dashboard text over the Wander and Drift backgrounds measured: all of it meets AA in both themes (L460).
