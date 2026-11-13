@@ -128,10 +128,10 @@ REACTIONS: dict[str, Reaction] = {
     # what the app's server notes (W31, `core.companion_events`, read on the screen poll): the in-app companion's reactions
     # to its own page, with the in-app cooldowns. Each plays a pose the desk already ships (look, stand, wave).
     "graph_laid": Reaction("glance_screen", "curious", 2.4, "", 60.0),
-    "long_note": Reaction("peek_back", "curious", 5.0, "", 180.0),
+    "long_note": Reaction("read_glasses", "curious", 5.0, "", 180.0),
     "note_binned": Reaction("wince", "worried", 1.4, "", 30.0),
     "private_note": Reaction("cover_eyes", "shy", 2.4, "", 45.0),
-    "remark": Reaction("poke_curious", "smile", 2.4, "", 600.0),
+    "remark": Reaction("remark_say", "smile", 2.4, "", 600.0),
     "reminder_bell": Reaction("bell_ring", "surprised", 2.6, "", 5.0),
     "search_nothing": Reaction("puzzle_tilt", "confused", 2.0, "", 45.0),
     "search_found": Reaction("nod_done", "smile", 1.4, "", 45.0),
@@ -173,6 +173,8 @@ REACT_ACTS: dict[str, bh.Activity] = {
     "boop_sneeze": bh.Activity("stand", (0.8, 1.4), _k((0, 1, 1, 0), (0.25, 1, 1.05, -0.1), (0.45, 1, 1.07, -0.12), (0.55, 1.03, 0.9, 0.08), (0.75, 1, 0.98, 0.02), (1, 1, 1, 0)), (), where="react"),
     "dusk_stretch": bh.Activity("stand", (2.8, 3.4), _k((0, 1, 1, 0), (0.2, 1.03, 0.94, 0), (0.5, 0.96, 1.1, 0), (0.7, 0.97, 1.08, 0.03), (0.85, 1.01, 0.97, 0), (1, 1, 1, 0)), (("rest", -0.1),), where="react"),
     "morning_wave": bh.Activity(((0, "wave"), (0.6, "blink"), (0.9, "stand")), (2.4, 3.0), _k((0, 1, 1, 0), (0.2, 1, 1.02, 0.02), (0.55, 1, 1.02, 0.02), (0.75, 0.98, 1.06, 0), (1, 1, 1, 0)), (("play", -0.1),), where="react"),
+    "read_glasses": bh.Activity("look", (4.6, 5.4), _k((0, 1, 1, 0), (0.2, 0.95, 1.04, 0.12), (0.75, 0.95, 1.04, 0.12), (1, 1, 1, 0)), (("curiosity", -0.1),), where="react"),
+    "remark_say": bh.Activity("stand", (2.2, 2.6), _k((0, 1, 1, 0), (0.15, 1.01, 0.97, 0.02), (0.8, 1.01, 0.97, 0.02), (1, 1, 1, 0)), (), where="react"),
     "peek_back": bh.Activity("look", (1.6, 2.0), _k((0, 1, 1, 0), (0.2, 0.95, 1.04, 0.12), (0.6, 0.95, 1.04, 0.12), (0.8, 0.98, 1.02, -0.03), (1, 1, 1, 0)), (("curiosity", -0.1),), where="react"),
     "nod_done": bh.Activity("stand", (1.4, 1.8), _k((0, 1, 1, 0), (0.2, 1.01, 0.95, 0.02), (0.4, 1, 1, 0), (0.6, 1.01, 0.95, 0.02), (0.8, 1, 1.01, 0), (1, 1, 1, 0)), (), where="react"),
     # a reminder falls due: the wave pose, a short shake at its top (the bell it rings is the app's; the card carries the other)

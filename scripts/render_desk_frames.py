@@ -2,7 +2,7 @@
 
     PYTHONPATH=src BASE=http://127.0.0.1:8828 .venv/bin/python scripts/render_desk_frames.py
 
-`DESK_ADD=1` captures only the optional extra frames and adds them to the shipped set, registered to its canvas.
+`DESK_ADD=1` captures only the optional extra frames (`DESK_ADD=a,b`: only those named) and adds them to the shipped set, registered to its canvas.
 
 Boots nothing itself: `BASE` is a running app (`bash scratchpad/ui-sweeps/serve.sh
 8828 <dir>`). `scripts/render_desk_frames.js` captures every frame of Atlas, both
@@ -161,6 +161,37 @@ def best_offset(captured: Image.Image, shipped: Image.Image, ox: int, oy: int, r
     return best[1], best[2]
 
 
+#: The hang frames drawn from a capture, not patched into the shipped hang: which of the hang's hands each one holds the edge with.
+HANG_HELD = {"hang_sloth": "left", "hang_feet": "both"}
+
+
+def grip_x(im: Image.Image, side: str) -> float:
+    """The mean column of the opaque pixels in the topmost rows of a hang frame (the hands at the edge): `left` takes the left half only."""
+    solid = im.getchannel("A").point(lambda a: 255 if a >= 230 else 0)
+    top = solid.getbbox()[1]
+    rows = solid.crop((0, top, solid.width, top + 8))
+    cols = [x for x in range(rows.width) for y in range(rows.height) if rows.getpixel((x, y))]
+    if side == "left":
+        cols = [x for x in cols if x <= min(cols) + (max(cols) - min(cols)) // 2]
+    return sum(cols) / len(cols)
+
+
+def hung_from_the_edge(im: Image.Image, hang: Image.Image, side: str) -> Image.Image:
+    """`im` moved so its grip is where the shipped hang's is: the same top row (the engine places a hang by it) and the same column
+    (a hang is drawn about the grip, so a swap between two hang pictures does not jump)."""
+    dy = drawn(hang)[1] - drawn(im)[1]
+    dx = round(grip_x(hang, "left" if side == "left" else "both") - grip_x(im, side))
+    moved = Image.new("RGBA", im.size)
+    moved.paste(im, (dx, dy))
+    return moved
+
+
+def added_names() -> tuple[str, ...]:
+    """The extra frames `DESK_ADD` names (`1`: all of `sprites.EXTRA_FRAMES`), so a new frame leaves the shipped ones' bytes alone."""
+    want = os.environ.get("DESK_ADD", "")
+    return tuple(n for n in sprites.EXTRA_FRAMES if want == "1" or n in want.split(","))
+
+
 def add_extras(raw: str) -> int:
     """`DESK_ADD=1`: capture only `sprites.EXTRA_FRAMES` (and the stand and the hang, to register them) and write them beside
     the shipped frames, cropped to the SAME canvas as the shipped `stand` (found by matching the stand's opaque body), so
@@ -170,19 +201,21 @@ def add_extras(raw: str) -> int:
     let go would pop."""
     out = ROOT / "frontend" / "img" / "desk"
     for look in sprites.LOOKS:
-        names = ["stand", "hang", *sprites.EXTRA_FRAMES]
+        names = ["stand", "hang", *added_names()]
         captured = {n: Image.open(Path(raw) / look / f"{n}.png").convert("RGBA") for n in names}
         nebs = {n: Image.open(Path(raw) / look / f"{n}.neb.png").convert("RGBA") for n in names}
         shipped = Image.open(out / look / "stand.png").convert("RGBA")
         sb, hb = solid_box(with_stream(captured["stand"], nebs["stand"])), solid_box(shipped)
         ox, oy = best_offset(with_stream(captured["stand"], nebs["stand"]), shipped, sb[0] - hb[0], sb[1] - hb[1])
         box = (ox, oy, ox + shipped.width, oy + shipped.height)
-        for n in sprites.EXTRA_FRAMES:
+        for n in added_names():
             if touches_edge(captured[n]):
                 raise SystemExit(f"{look}/{n}: the capture touches the clip edge; widen BOX in render_desk_frames.js")
             im = with_stream(captured[n], nebs[n]).crop(box)
             if n == "hang_one":
                 im = patched_hang(look, captured, nebs, out)
+            if n in HANG_HELD:
+                im = hung_from_the_edge(im, Image.open(out / look / "hang.png").convert("RGBA"), HANG_HELD[n])
             d = drawn(im)
             if d[0] <= 0 or d[1] <= 0 or d[2] >= im.width or d[3] >= im.height:
                 raise SystemExit(f"{look}/{n}: drawn pixels {d} reach the shipped canvas {im.size}; the frame would be cut")
@@ -215,7 +248,7 @@ def main() -> int:
         env = {**os.environ, "BASE": os.environ.get("BASE", "http://127.0.0.1:8828"), "SCRATCH": raw}
         env.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/pw-browsers")
         if os.environ.get("DESK_ADD"):
-            env["ONLY"] = ",".join(["stand", "hang", *sprites.EXTRA_FRAMES])
+            env["ONLY"] = ",".join(["stand", "hang", *added_names()])
         if not os.environ.get("DESK_RAW"):  # DESK_RAW: reuse the captures of an earlier run (a folder of <look>/<frame>.png and .neb.png)
             subprocess.run(["node", str(ROOT / "scripts" / "render_desk_frames.js"), raw], check=True, env=env, cwd=ROOT)
         raw = os.environ.get("DESK_RAW") or raw

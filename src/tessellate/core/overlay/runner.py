@@ -62,7 +62,7 @@ BLEND_S = 0.12
 BLEND_LOOK_S = 0.24
 BLEND_STEPS = 7
 BLEND_TICK_MS = 16
-BLENDED = ("stand", "walk", "idle", "look", "sit", "sleep", "wave", "land", "hang", "hang_one", "dangle", "kick", "meditate")
+BLENDED = ("stand", "walk", "idle", "look", "sit", "sleep", "wave", "land", "hang", "hang_one", "hang_sloth", "hang_feet", "dangle", "kick", "meditate")
 BUSY_EVERY = 2.0
 #: A flight or a fall holds the periodic reads back this long at most (s): longer than any throw is in the air, so it is a
 #: bound, not a pace (`OverlayRunner._aloft`).

@@ -11,6 +11,8 @@ below). Versioning is `0.x` while the app stabilises.
 - A phone held sideways keeps the top bar on one row (L-ui-modernisation-37).
 - Focusing the notes filter shows an example of the query grammar that fits the box (L-ui-modernisation-16).
 - F8, Shift+F8 and Alt+Enter in a document's text are listed in the command palette and the shortcut sheet (L-ui-modernisation-14).
+- The desk's reactions wear what the app's do: reading glasses on a long note, both hands over the eyes on a private one, and a wordless speech bubble on a remark (L-ui-modernisation-11).
+- The desk draws two more hanging tricks, the sleeping hang (`hang_sloth`) and the flip by the feet (`hang_feet`), now and then inside a long hang beside the one-handed hold; frames added to both looks, 63 in all (L-ui-modernisation-10).
 - Board menus, the floating panel's select, the help toggles and the lightbox arrows read the control height tokens; the literal heights ceiling drops from 296 to 264 (L-ui-modernisation-3).
 - The design tokens are a cascade layer: a palette, theme or component that sets a token wins by being unlayered, not by specificity (L-ui-modernisation-1).
 - The timeline table head is bare at rest and opaque only while rows pass under it, the same recipe as the other sticky heads (L-ui-modernisation-28).

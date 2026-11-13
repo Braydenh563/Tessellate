@@ -421,7 +421,7 @@ class Engine(RoamMixin, FlightMixin, InputMixin, FramesMixin, DeskActsMixin, Tou
         """How far a frame is drawn below the window's rest line so its lowest drawn row is on
         the floor: every frame is registered to one box, and the margin below the feet varies by
         pose (INBOX 1670). A hang is held by its hands, not stood on; a tumble keeps a held pose's."""
-        if not self.metrics or frame in ("hang", "hang_one"):
+        if not self.metrics or frame.startswith("hang"):
             return 0.0
         if frame in SIT_REGISTERED:  # a dangle sits on the line with its hem below it; a meditation is the sit
             frame = "sit"
