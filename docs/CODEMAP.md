@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8449, frontend ids 2775, CSS sections 524, backend routes 709, backend modules 10850, test files 2748, tests 22139, plan headings 689, app scripts 29, boot scripts 38, script files 302.
+Counts: frontend functions 8449, frontend ids 2775, CSS sections 524, backend routes 709, backend modules 10850, test files 2748, tests 22140, plan headings 689, app scripts 29, boot scripts 38, script files 302.
 
 ## Frontend functions (8449)
 
@@ -27929,7 +27929,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22139)
+## Tests (22140)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30135,7 +30135,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_select_focus_delegates.py | 1 |
 | tests/test_select_score_paths.py | 1 |
 | tests/test_selection_actions_row30.py | 6 |
-| tests/test_selection_context.py | 7 |
+| tests/test_selection_context.py | 8 |
 | tests/test_selection_menu.py | 13 |
 | tests/test_semantic_auto_install.py | 15 |
 | tests/test_semantic_consent_1027.py | 14 |
