@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10927, test files 2748, tests 22185, plan headings 689, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10927, test files 2750, tests 22189, plan headings 689, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8365)
 
@@ -7025,7 +7025,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `buildSelect` | frontend/js/reminder-edit.js:9 |
 | `reminderEditForm` | frontend/js/reminder-edit.js:22 |
-| `snoozeReminderTo` | frontend/js/reminder-edit.js:134 |
+| `snoozeReminderTo` | frontend/js/reminder-edit.js:136 |
 
 ### frontend/js/reminder-notify.js (4)
 
@@ -27969,7 +27969,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22185)
+## Tests (22189)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30069,6 +30069,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reminder_dupes_1102.py | 6 |
 | tests/test_reminder_duplicate_flag.py | 2 |
 | tests/test_reminder_edit_form_alert.py | 4 |
+| tests/test_reminder_edit_heights_l193.py | 2 |
 | tests/test_reminder_edit_save.py | 8 |
 | tests/test_reminder_feedback_dog1.py | 3 |
 | tests/test_reminder_form_1028b.py | 3 |
@@ -30662,6 +30663,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_zorder_step.py | 9 |
 | tests/test_wcag_pass.py | 1 |
 | tests/test_web_analyse_2210.py | 5 |
+| tests/test_web_down_a9_l197.py | 2 |
 | tests/test_web_engine_memory.py | 2 |
 | tests/test_web_reader_site_builders.py | 4 |
 | tests/test_web_reply_meta_1550.py | 1 |
@@ -31142,14 +31144,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1268 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:726 |
+| Needs hardware | docs/roadmap/LEDGER.md:722 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:718 |
+| Owner calls | docs/roadmap/LEDGER.md:714 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31330,7 +31332,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1852 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:917 |
+| Plan session briefs | docs/roadmap/LEDGER.md:913 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31384,25 +31386,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:933 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1017 |
-| documents | docs/roadmap/LEDGER.md:203 |
-| documents | docs/roadmap/LEDGER.md:957 |
-| general | docs/roadmap/LEDGER.md:677 |
+| chat | docs/roadmap/LEDGER.md:929 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1013 |
+| documents | docs/roadmap/LEDGER.md:199 |
+| documents | docs/roadmap/LEDGER.md:953 |
+| general | docs/roadmap/LEDGER.md:673 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:921 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1029 |
+| graph | docs/roadmap/LEDGER.md:917 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1025 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:283 |
-| mindmap | docs/roadmap/LEDGER.md:969 |
-| timeline | docs/roadmap/LEDGER.md:438 |
-| timeline | docs/roadmap/LEDGER.md:993 |
-| ui-modernisation | docs/roadmap/LEDGER.md:320 |
-| ui-modernisation | docs/roadmap/LEDGER.md:981 |
-| whiteboard | docs/roadmap/LEDGER.md:156 |
-| whiteboard | docs/roadmap/LEDGER.md:945 |
-| world-class | docs/roadmap/LEDGER.md:441 |
-| world-class | docs/roadmap/LEDGER.md:1005 |
+| mindmap | docs/roadmap/LEDGER.md:279 |
+| mindmap | docs/roadmap/LEDGER.md:965 |
+| timeline | docs/roadmap/LEDGER.md:434 |
+| timeline | docs/roadmap/LEDGER.md:989 |
+| ui-modernisation | docs/roadmap/LEDGER.md:316 |
+| ui-modernisation | docs/roadmap/LEDGER.md:977 |
+| whiteboard | docs/roadmap/LEDGER.md:152 |
+| whiteboard | docs/roadmap/LEDGER.md:941 |
+| world-class | docs/roadmap/LEDGER.md:437 |
+| world-class | docs/roadmap/LEDGER.md:1001 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
