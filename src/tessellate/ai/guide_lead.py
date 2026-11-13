@@ -160,6 +160,11 @@ def _opening_lead(question: str, topics: list[dict], by_id: dict[str, dict]) -> 
     return None
 
 
+def _bare(words: str) -> str:
+    """A phrase without its articles, as `subject_of` gives it ("choose model")."""
+    return " ".join(w for w in words.lower().split() if w not in ("a", "an", "the"))
+
+
 def _subject_lead(subject: str, topics: list[dict], by_id: dict[str, dict], title_of) -> Led | None:  # noqa: ANN001
     """"what is X": the topic titled X, else the sentence about X, else a
     miss when the ranked topics do not name X at all."""
@@ -171,6 +176,12 @@ def _subject_lead(subject: str, topics: list[dict], by_id: dict[str, dict], titl
     found = _subject_sentence(subject, everything)
     if found is not None:
         return Led(_fronted(found[0], topics), found[1])
+    #: "what is note history": X is a topic's own keyword, after a sentence that says what X is (L-chat-1, INBOX 904 B86).
+    asked = _bare(subject)
+    topic = next((t for t in everything if asked in (_bare(k) for k in t.get("keywords") or ())), None)
+    if topic is not None:
+        first = _sentences(topic)
+        return Led(_fronted(topic, topics), _first_clause(first[0]) if first else "")
     named = _has_phrase(subject, topics[:2]) or set(_stems(subject)) <= set(_stems(title_of(topics[0])))
     #: "the document views": every word is the top topic's own (title or body), so it is about it.
     named = named or set(_stems(subject)) <= set(_stems(title_of(topics[0]) + " " + str(topics[0].get("body") or "")))

@@ -1175,7 +1175,8 @@ def _read_as(question: str) -> tuple[str, str]:
 
     fixed: list = []
     repaired = question_noise.repair(question_noise.tidy(" ".join(question.split())), fixed=fixed) if question else question
-    if not fixed:
+    #: A repair that breaks one of the help's own phrases is no repair: "note history" is not "not history" (L-chat-1).
+    if not fixed or any(_keyword_in(k, question.lower()) and not _keyword_in(k, repaired.lower()) for k in _KEYWORD_TOPICS):
         return question, ""
     said = "".join(part[1] for part in composer_ack.acknowledge(repaired, voice="natural", seed=question))
     return repaired, said
