@@ -154,6 +154,59 @@
     });
   }
 
+  //: The Overdue heading's bulk choices (L-general-12), pressed from `loadReminders.overdueTriage`
+  //: (shell-reminders.js). A property, not a global (the scope ratchet).
+  loadReminders.overdueRun = function (choice, items) {
+    const rows = items.map((r) => ({ id: r.id, due_at: r.due_at, done: r.done }));
+    const putAll = (bodyOf) => async () => {
+      await Promise.all(rows.map((r) => apiJson(`/reminders/${r.id}`, { method: "PUT", body: JSON.stringify({ ...bodyOf(r), restore: true }) })));
+      loadReminders();
+    };
+    const back = putAll((r) => ({ due_at: r.due_at, done: r.done }));
+    const n = `${rows.length} overdue reminders`;
+    const run = async (label, forward, done) => {
+      await forward();
+      const action = pushUndo(label, back, forward);
+      toastAction(done, "Undo", async () => {
+        settleUndoFromToast(action);
+        await back().catch((e) => toast(e.message, true));
+      });
+    };
+    const moveTo = (dateOf, words) => () => {
+      const due = dateOf().toISOString();
+      return run(`Moved ${n}`, putAll(() => ({ due_at: due, done: false })), `Moved ${n} to ${words}.`);
+    };
+    const nextMonday = () => {
+      const d = presetDate("tomorrow");
+      d.setDate(d.getDate() + ((8 - d.getDay()) % 7));
+      return d;
+    };
+    const binAll = async () => {
+      if (!(await confirmDialog(`Move ${n} to the bin?`, { confirmLabel: "Delete", danger: true }))) return;
+      const drop = async () => {
+        await Promise.all(rows.map((r) => apiJson(`/reminders/${r.id}`, { method: "DELETE" })));
+        loadReminders();
+      };
+      const restore = async () => {
+        await Promise.all(rows.map((r) => apiJson(`/reminders/${r.id}/restore`, { method: "POST" })));
+        loadReminders();
+      };
+      await drop();
+      const action = pushUndo(`Moved ${n} to the bin`, restore, drop);
+      toastAction(`Moved ${n} to the bin.`, "Undo", async () => {
+        settleUndoFromToast(action);
+        await restore().catch((e) => toast(e.message, true));
+      });
+    };
+    const choices = {
+      tomorrow: moveTo(() => presetDate("tomorrow"), "tomorrow 9am"),
+      monday: moveTo(nextMonday, "next Monday 9am"),
+      done: () => run(`Completed ${n}`, putAll(() => ({ done: true })), `Marked ${n} done.`),
+      bin: binAll,
+    };
+    return choices[choice]();
+  };
+
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   Object.assign(window, { reminderEditForm, snoozeReminderTo });
 })();

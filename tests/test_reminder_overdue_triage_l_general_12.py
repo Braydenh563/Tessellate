@@ -1,5 +1,5 @@
 """Source text: the overdue triage menu is a heading kebab in shell-reminders.js
-whose bulk moves need a browser to press; the source pins its shape (L-general-12).
+(handlers in the lazy reminder-edit.js) whose bulk moves need a browser to press; the source pins its shape (L-general-12).
 
 Overdue reminders pile up; the Overdue heading carries one menu that moves
 them all on (tomorrow, next week), ticks them all off or bins them, each with
@@ -12,9 +12,14 @@ from tests._app_js import frontend_text
 
 
 def _triage() -> str:
+    # The menu is built at boot (shell-reminders.js); its handlers moved to the
+    # lazy reminder-edit.js for the boot gzip ratchet, so the shape spans both.
     source = frontend_text("shell-reminders.js")
     start = source.index("loadReminders.overdueTriage = function (items) {")
-    return source[start : source.index("\n};\n", start)]
+    menu = source[start : source.index("\n};\n", start)]
+    lazy = frontend_text("reminder-edit.js")
+    start = lazy.index("loadReminders.overdueRun = function (choice, items) {")
+    return menu + lazy[start : lazy.index("return choices[choice]();", start)]
 
 
 def test_the_overdue_heading_carries_a_triage_menu():
