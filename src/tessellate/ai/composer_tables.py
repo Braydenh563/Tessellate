@@ -149,6 +149,13 @@ _FAMILIES: dict[str, dict[str, list[str]]] = {
         "natural": ["Among the notes found, ", "Looking at the notes found, "],
         "professional": ["Of the notes retrieved, ", "Among the notes retrieved, "],
     },
+    #: A compare asked again in one chat (L205 left its counts as the only opener: one way over twenty turns).
+    "compare_lead": {
+        "natural": ["Side by side, ", "By the count, ", "Counting the notes, ", "Put side by side, ", "Going by your notes, ",
+                    "To compare, ", "In numbers, ", "Laid side by side, ", "Weighing them up, "],
+        "professional": ["In comparison, ", "By count, ", "Comparing the records, ", "Set side by side, ", "On the record, ",
+                         "For comparison, ", "In terms of number, ", "Measured by notes, ", "Taken together, "],
+    },
     "across_found": {
         "natural": ["Looking across the notes found, ", "Taking the notes found together, "],
         "professional": ["Across the notes retrieved, ", "Taken together, the notes retrieved show that "],

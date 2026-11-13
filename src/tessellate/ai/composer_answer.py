@@ -105,6 +105,11 @@ class _Answer:
         lead = text.strip() or text
         return any(said.startswith(lead) for said in (self.recent or [self.previous]) if said)
 
+    def later_turn(self) -> bool:
+        """Whether this answer follows another in the chat: a previous answer, or a turn past the first."""
+        turn = _SESSION.get().rpartition(":")[2]
+        return bool(self.previous) or (turn.isdigit() and int(turn) > 1)
+
     def voiced(self, name: str) -> str:
         """The `PHRASES` key that says what `name` says in this answer's
         voice: one of its variants, chosen by the question so the same
@@ -222,8 +227,9 @@ class _Answer:
 
     def _opener_names_the_note(self) -> bool:
         """Whether the opener already says whose words these are ("The day in your note: "), so "From your Dentist
-        note." after the quote would say the same twice (E23)."""
-        return any(p[0] == "template" and _OWNS_IT.search(p[1]) for p in self.parts)
+        note." after the quote would say the same twice (E23). Only the first note the answer names: the opener
+        speaks for it, and a second note's line still needs its own source."""
+        return len(self.named) == 1 and any(p[0] == "template" and _OWNS_IT.search(p[1]) for p in self.parts)
 
     def _said_before(self, title: str) -> bool:
         """Whether an earlier answer in this chat already named the note."""

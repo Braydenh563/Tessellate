@@ -392,7 +392,8 @@ def variety(results: list[dict]) -> dict:
     return {
         "openers": len({opener(r["parts"]) for r in results}),
         "wordings": len({wording(r["parts"]) for r in results}),
-        "facts": len({protected(r["parts"]) for r in results}),
+        #: Which note said it is not a fact: an opener that names the note stands in for its title (E23).
+        "facts": len({tuple(p for p in protected(r["parts"]) if p[0] != "title") for r in results}),
     }
 
 

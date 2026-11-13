@@ -43,3 +43,12 @@ def test_e17_the_real_route_reads_a_yearless_log_date_against_the_edit(ask, sess
     said = ask("when did I last run")["text"]
     assert "29 October 2026" in said or "2025" not in said, said
     assert "a year ago" not in said, said
+
+
+def test_the_opener_speaks_for_the_first_note_only():
+    """E23 dropped every note's source after "The number you noted:", so a second note's line
+    ("Beta testers did not know Harbor works offline.") came with no note named (found 2026-11-13)."""
+    from tests import test_realise as T
+
+    for text in (r["text"] for r in T._chat("How many beta testers are active?", "natural")):
+        assert "Offline as the headline" in text, text

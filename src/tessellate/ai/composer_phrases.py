@@ -150,6 +150,7 @@ PHRASES: dict[str, str] = {
     "side_notes": " notes",
     "side_note": " note",
     "comes_up_in": " comes up in ",
+    "compare_lead": "Side by side, ",
     "side_in": " in ",
     "both": "Both together",
     "side_none": "Nothing found is about this one on its own.",
