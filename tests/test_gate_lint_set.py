@@ -45,5 +45,5 @@ def test_a_hung_test_fails_by_name_rather_than_by_the_shell_timeout():
     text = (ROOT / "scripts" / "gate.sh").read_text(encoding="utf-8")
     assert 'import pytest_timeout" 2>/dev/null && TIMEOUT=(--timeout=' in text
     for step in ("step changed-tests", "step full-suite"):
-        line = next(l for l in text.splitlines() if step in l and "pytest" in l)
+        line = next(ln for ln in text.splitlines() if step in ln and "pytest" in ln)
         assert '"${TIMEOUT[@]}"' in line, f"{step} runs without the per-test limit"
