@@ -849,7 +849,7 @@ MORE_TOPICS: list[dict] = [
             "markdown files or a folder (Obsidian frontmatter is understood; a "
             "preview lists the files first, so you can untick any), "
             "or a PDF, Word file or slide deck, one note per chapter or slide "
-            "(shown once the Import documents package is installed). "
+            "(once installed). "
             "The four import groups (Import markdown, Import a document, Import "
             "from another app, Web clipper) are folded: press a heading to open "
             "it, and the ? beside it opens it too. "

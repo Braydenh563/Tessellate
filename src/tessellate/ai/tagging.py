@@ -37,6 +37,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import lexical_filing
 from tessellate.ai.lexical_filing import clean, tokens
+from tessellate.ai.tag_stem import stem
 
 #: At most this many tags offered on a note (decision 5).
 TAG_LIMIT = 3
@@ -67,20 +68,6 @@ DAMPED = 0.3
 #: Where "Offer again" keeps the count a tag was forgiven at.
 PREF_OFFERED_AGAIN = "tags_offered_again"
 
-#: The abbreviations a student's notes use for a subject, folded as `tokens`
-#: folds them ("stats" is "stat"). A spelling map, not a classifier: it only
-#: lets a tag the person already uses be found under its short name.
-ABBREVIATIONS = {
-    "stat": "statistic",
-    "uni": "university",
-    "bio": "biology",
-    "chem": "chemistry",
-    "math": "mathematic",
-    "psych": "psychology",
-    "econ": "economic",
-    "phys": "physic",
-}
-
 def lead(content: str) -> str:
     """The title and first line of a cleaned note: where it says what it is."""
     lines = [line.strip().lstrip("#").strip() for line in content.splitlines() if line.strip()]
@@ -89,19 +76,6 @@ def lead(content: str) -> str:
     if (content.lstrip().startswith("#") or len(lines[0]) < 60) and len(lines) > 1:
         return f"{lines[0]} {lines[1]}"
     return lines[0]
-
-
-def stem(word: str) -> str:
-    """A word's matching key: `tokens`' plural fold, then a light ending fold
-    ("running" and "run", "gaming" and "game"), then the abbreviations."""
-    word = ABBREVIATIONS.get(word, word)
-    for ending in ("ing", "ed"):
-        if len(word) > len(ending) + 2 and word.endswith(ending):
-            word = word[: -len(ending)]
-            if len(word) > 2 and word[-1] == word[-2] and word[-1] not in "aeiouls":
-                word = word[:-1]
-            break
-    return word[:-1] if len(word) > 3 and word.endswith("e") else word
 
 
 def stems(words: list[str]) -> set[str]:

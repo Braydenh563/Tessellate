@@ -368,9 +368,9 @@ def _proposed(content: str, questions_on: bool, templates: set[str]) -> list[Can
     ]
 
 
-def _read_note(session: Session, entry: Entry, content: str, questions_on: bool, templates: set[str]) -> list[Candidate]:
+def _read_note(found: facts_kinds.Lookups, entry: Entry, content: str, questions_on: bool, templates: set[str]) -> list[Candidate]:
     """Everything one note proposes: its claims and questions and the facts a rule reads exactly (`facts_kinds`)."""
-    exact = [Candidate(*found) for found in facts_kinds.exact(session, entry, content)]
+    exact = [Candidate(*found) for found in facts_kinds.exact(found, entry, content)]
     return _in_context(entry, _proposed(content, questions_on, templates) + exact)
 
 
@@ -712,6 +712,7 @@ def run(
             known_by_entry.setdefault(row.entry_id, set()).add(fingerprint_of(row))
         to_read = _entries_to_read(session, force)
         templates = _template_questions(session)
+        found = facts_kinds.lookups(session, to_read)
         #: What the Background tasks row shows (INBOX 1006): notes read of the
         #: notes this run will reach, which the token budget may cut short.
         progress = jobruns.current("night-shift")
@@ -731,7 +732,7 @@ def run(
             progress.step(scanned, reachable)
             if scanned % 25 == 0:
                 progress.say(f"Read {scanned} of {reachable} notes, {derived} fact{'' if derived == 1 else 's'} found so far.")
-            proposed = _read_note(session, entry, content, questions_on, templates)
+            proposed = _read_note(found, entry, content, questions_on, templates)
             if not proposed:
                 continue
 

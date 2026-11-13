@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- After the base merge: the night pass reads entity mentions and duplicates once per pass, not twice per note (107 statements over 45 notes back to flat); AI-change redo moves to core/events_redo.py; tag stemming moves to ai/tag_stem.py so filing and tagging no longer import each other; the import help names the documents package in fewer words so 'import notes' still finds Import & export
 - Sweeps re-run on a fresh server: Quick add 60/60 (L532), the phone bar recede check seeds notes first (L547), Library-only sweeps finish (L548)
 - Seven JS test harnesses learn the 12 or 24 hour clock setting the base brought in; errors.js runs clean in dark and under faults (L539)
 - The lists the limit lint could not see (graph, suggestions, link suggestions, outline, live query) now name what bounds them (L-world-class-11)

@@ -531,10 +531,10 @@ def _name_said(name_words: tuple[str, ...], wanted) -> bool:
         return False
     if all(word in wanted for word in name_words):
         return True
-    from tessellate.ai import tagging
+    from tessellate.ai.tag_stem import stem
 
-    folded = {tagging.stem(word) for word in wanted}
-    return all(tagging.stem(word) in folded for word in name_words)
+    folded = {stem(word) for word in wanted}
+    return all(stem(word) in folded for word in name_words)
 
 
 def holds_sensitive(content: str, category: str | None = None) -> str | None:

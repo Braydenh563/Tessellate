@@ -22,7 +22,7 @@ import json
 
 from sqlalchemy import select
 
-from tessellate.core import events
+from tessellate.core import events, events_redo
 from tessellate.core.database import AuditLog, Entry
 from tessellate.entry import manager
 
@@ -287,18 +287,18 @@ def test_a_redo_puts_the_ais_change_back_and_a_second_undo_works_l805(session):
     assert len(done["restored"]) == 1
     assert manager.category_name_for(session, entry) == "Garden"
 
-    plan = events.redo(session, done["restored"], apply=False)
+    plan = events_redo.redo(session, done["restored"], apply=False)
     assert [item["status"] for item in plan["items"]] == ["redo"]
     assert manager.category_name_for(session, entry) == "Garden"  # a dry run writes nothing
 
-    back = events.redo(session, done["restored"], apply=True)
+    back = events_redo.redo(session, done["restored"], apply=True)
     session.commit()
     session.refresh(entry)
     assert back["redone"] == 1
     assert manager.category_name_for(session, entry) == "Hobbies"
     assert json.loads(entry.tags) == ["pond"]
 
-    twice = events.redo(session, done["restored"], apply=True)
+    twice = events_redo.redo(session, done["restored"], apply=True)
     assert [item["status"] for item in twice["items"]] == ["already redone"]
 
     # The redo made the AI's events live again: the same undo runs once more,
@@ -317,7 +317,7 @@ def test_a_redo_leaves_a_note_the_person_changed_since_l805(session):
     done = events.undo(session, AI, since_id=mark, apply=True)
     manager.update_entry(session, entry, content="Mine now")
     session.commit()
-    back = events.redo(session, done["restored"], apply=True)
+    back = events_redo.redo(session, done["restored"], apply=True)
     assert [item["status"] for item in back["items"]] == ["changed since"]
     assert back["redone"] == 0
 

@@ -29,7 +29,7 @@ from tessellate import __version__
 from tessellate.ai import budget as run_budget
 from tessellate.ai import backend_hint, librarian, memory, presets, skill_composer, skills
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
-from tessellate.core import backup, deps, events, logbuffer, security
+from tessellate.core import backup, deps, events, events_redo, logbuffer, security
 from tessellate.core.config import default_preferences
 from tessellate.core.database import AuditLog, Entry, utcnow
 from tessellate.core.deps import get_session
@@ -2096,7 +2096,7 @@ def redo_undo(body: RedoBody, session: Session = Depends(get_session)) -> dict:
     """Take an AI-change undo back (`events.redo`): the server re-applies the
     events that undo reversed, so those undos join the normal undo stack with
     Redo (owner decision, L805)."""
-    result = events.redo(session, body.restored, apply=not body.dry_run, force=body.force)
+    result = events_redo.redo(session, body.restored, apply=not body.dry_run, force=body.force)
     if not body.dry_run:
         session.commit()
     return result
