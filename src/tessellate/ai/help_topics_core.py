@@ -97,7 +97,7 @@ HELP_TOPICS: list[dict] = [
             "A note's "
             "... menu, under AI actions, has Explain this note: read aloud, then what it links to "
             "and why. Agent mode "
-            "(a toggle in Chat) lets the assistant use its tools to search, link, "
+            "(a toggle in Chat) needs a model, and lets the assistant use its tools to search, link, "
             "tag, organise and create; changing or removing asks first, "
             "and after it reads a web page or a clipped or imported note, so "
             "does every change and web request. "

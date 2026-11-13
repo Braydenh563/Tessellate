@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10892, test files 2733, tests 22111, plan headings 689, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8365, frontend ids 2773, CSS sections 524, backend routes 704, backend modules 10895, test files 2735, tests 22117, plan headings 689, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8365)
 
@@ -13963,7 +13963,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10892)
+## Backend modules (10895)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14831,11 +14831,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_Answer` | src/tessellate/ai/composer_answer.py:33 |
-| `_count_word` | src/tessellate/ai/composer_answer.py:371 |
-| `_due` | src/tessellate/ai/composer_answer.py:357 |
-| `asks_now` | src/tessellate/ai/composer_answer.py:392 |
-| `figures_of` | src/tessellate/ai/composer_answer.py:382 |
+| `_Answer` | src/tessellate/ai/composer_answer.py:37 |
+| `_count_word` | src/tessellate/ai/composer_answer.py:380 |
+| `_due` | src/tessellate/ai/composer_answer.py:366 |
+| `asks_now` | src/tessellate/ai/composer_answer.py:401 |
+| `figures_of` | src/tessellate/ai/composer_answer.py:391 |
 
 ### src/tessellate/ai/composer_ask.py (41)
 
@@ -16188,6 +16188,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `outline` | src/tessellate/ai/composer_notes.py:269 |
 | `recent` | src/tessellate/ai/composer_notes.py:222 |
 
+### src/tessellate/ai/composer_notime.py (2)
+
+| Name | File:line |
+|---|---|
+| `missing_time` | src/tessellate/ai/composer_notime.py:17 |
+| `say_noted` | src/tessellate/ai/composer_notime.py:24 |
+
 ### src/tessellate/ai/composer_nth.py (6)
 
 | Name | File:line |
@@ -17537,30 +17544,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `said_counts` | src/tessellate/ai/fact_check.py:416 |
 | `says_nothing_found` | src/tessellate/ai/fact_check.py:709 |
 
-### src/tessellate/ai/factgraph.py (20)
+### src/tessellate/ai/factgraph.py (21)
 
 | Name | File:line |
 |---|---|
-| `Fact` | src/tessellate/ai/factgraph.py:48 |
-| `_SentenceReader` | src/tessellate/ai/factgraph.py:360 |
-| `_after_object` | src/tessellate/ai/factgraph.py:354 |
-| `_anchor` | src/tessellate/ai/factgraph.py:214 |
-| `_date_value` | src/tessellate/ai/factgraph.py:330 |
-| `_inside` | src/tessellate/ai/factgraph.py:287 |
-| `_line_units` | src/tessellate/ai/factgraph.py:228 |
-| `_mode` | src/tessellate/ai/factgraph.py:291 |
-| `_note_facts` | src/tessellate/ai/factgraph.py:604 |
-| `_object` | src/tessellate/ai/factgraph.py:307 |
-| `_past_forms` | src/tessellate/ai/factgraph.py:112 |
-| `_quoted_spans` | src/tessellate/ai/factgraph.py:272 |
-| `_revision` | src/tessellate/ai/factgraph.py:637 |
-| `_sentence_tense` | src/tessellate/ai/factgraph.py:339 |
-| `_tables` | src/tessellate/ai/factgraph.py:137 |
-| `_topics` | src/tessellate/ai/factgraph.py:622 |
-| `_units` | src/tessellate/ai/factgraph.py:247 |
-| `_written` | src/tessellate/ai/factgraph.py:204 |
-| `facts` | src/tessellate/ai/factgraph.py:644 |
-| `of_kind` | src/tessellate/ai/factgraph.py:658 |
+| `Fact` | src/tessellate/ai/factgraph.py:49 |
+| `_SentenceReader` | src/tessellate/ai/factgraph.py:374 |
+| `_after_object` | src/tessellate/ai/factgraph.py:368 |
+| `_anchor` | src/tessellate/ai/factgraph.py:215 |
+| `_date_value` | src/tessellate/ai/factgraph.py:344 |
+| `_edited_in_words` | src/tessellate/ai/factgraph.py:232 |
+| `_inside` | src/tessellate/ai/factgraph.py:301 |
+| `_line_units` | src/tessellate/ai/factgraph.py:242 |
+| `_mode` | src/tessellate/ai/factgraph.py:305 |
+| `_note_facts` | src/tessellate/ai/factgraph.py:618 |
+| `_object` | src/tessellate/ai/factgraph.py:321 |
+| `_past_forms` | src/tessellate/ai/factgraph.py:113 |
+| `_quoted_spans` | src/tessellate/ai/factgraph.py:286 |
+| `_revision` | src/tessellate/ai/factgraph.py:651 |
+| `_sentence_tense` | src/tessellate/ai/factgraph.py:353 |
+| `_tables` | src/tessellate/ai/factgraph.py:138 |
+| `_topics` | src/tessellate/ai/factgraph.py:636 |
+| `_units` | src/tessellate/ai/factgraph.py:261 |
+| `_written` | src/tessellate/ai/factgraph.py:205 |
+| `facts` | src/tessellate/ai/factgraph.py:658 |
+| `of_kind` | src/tessellate/ai/factgraph.py:672 |
 
 ### src/tessellate/ai/facts.py (83)
 
@@ -27904,7 +27912,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22111)
+## Tests (22117)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28447,6 +28455,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_hobbies_1512.py | 10 |
 | tests/test_composer_informal_1030.py | 5 |
 | tests/test_composer_interesting_1561.py | 3 |
+| tests/test_composer_l106_1112.py | 4 |
 | tests/test_composer_labels_1018.py | 2 |
 | tests/test_composer_learn_z59.py | 2 |
 | tests/test_composer_leftovers_1029c.py | 13 |
@@ -29227,6 +29236,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_hello_ui.py | 6 |
 | tests/test_hello_unlock.py | 28 |
 | tests/test_hello_webauthn.py | 10 |
+| tests/test_help_ask_chat_1112.py | 2 |
 | tests/test_help_chat.py | 55 |
 | tests/test_help_chat_reading.py | 5 |
 | tests/test_help_controls.py | 19 |

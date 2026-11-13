@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat row L107: the Guide's ask-chat topic now says Agent mode needs a model (the topic is 1,867 of the 1,900 characters its reply budget allows; the row's 1,916 was a stale count).
 - Chat row L124: every confirm card that rewrites a note's text (rename, add to the end, add or tick a todo line) is locked to the text it read (`base_hash`, `act_steps.locked_edit`), so a note edited after the card was made is refused, not overwritten; before, only add-to-today was.
 - Chat row L122: a model that fails after some words now leaves the answer composed from the notes (under the one-line stopped note) in place of the half sentence and an error; the server sends it as `answer_final`.
 - Review 5883496750: "delete the X document" in Chat moves it to the recycle bin (`delete_document`, Undo is the new `restore_document` of the same row) and never matches a private document; an anchored reminder ("an hour before the gym") reads only public, non-board notes with a time still ahead (limit 500) and matches whole words; `/chat` captions an attached picture once; the on-disk undo log is written 0600 to a temp file and swapped in (RLock); the reading pick takes only a bare number.
