@@ -131,7 +131,7 @@
  "src/tessellate/api/routes_entries.py": 3313,
  "src/tessellate/api/routes_files.py": 2497,
  "src/tessellate/api/routes_files_ocr.py": 1514,
- "src/tessellate/api/routes_graph.py": 2224,
+ "src/tessellate/api/routes_graph.py": 2210,
  "src/tessellate/api/routes_insights.py": 1088,
  "src/tessellate/api/routes_library.py": 1223,
  "src/tessellate/api/routes_models.py": 1565,
