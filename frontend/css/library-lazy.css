@@ -9337,3 +9337,9 @@ input[type="color"].wb-mixed {
   outline-offset: 2px;
   background: var(--accent-soft);
 }
+
+/* Insert, Polygon: the cursor while corners are being placed (whiteboard-shapes-js.js). */
+.whiteboard-container.wb-polygon-on,
+.whiteboard-container.wb-polygon-on * {
+  cursor: crosshair;
+}

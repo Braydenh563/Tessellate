@@ -282,6 +282,8 @@ const WB_COMMANDS = [
   { id: "insert-frame", group: "Insert", icon: "ph:frame-corners", label: "Frame", keys: "F", surface: "board", run: wbTool("frame") },
   //: canvasdepth2: draw.io's table, rows and columns of text cells.
   { id: "insert-table", group: "Insert", icon: "ph:table", label: "Table", keys: "", surface: "board", run: () => wbInsertTable() },
+  //: draw.io's Insert, Polygon: click the corners, double-click or Enter closes, Escape cancels (whiteboard-shapes-js.js).
+  { id: "insert-polygon", group: "Insert", icon: "ph:polygon", label: "Polygon: click each corner, double-click or press Enter to close", menu: "Polygon", keys: "", surface: "board", run: () => wbFmtState.shapesJs?.polygonStart() },
   { id: "insert-diagram", group: "Insert", icon: "ph:flow-arrow", label: "Diagram builder", menu: "Diagram builder…", keys: "", surface: "both", run: () => wbEditDiagram() },
   //: draw.io's Edit data (Ctrl+M): the Format panel's Data tab.
   { id: "edit-data", group: "Edit", icon: "ph:database", label: "Edit data", keys: "Ctrl+M", surface: "board", needs: "selection", run: () => wbFormatOpen("data") },

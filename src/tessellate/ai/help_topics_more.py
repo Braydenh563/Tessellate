@@ -2346,8 +2346,10 @@ MORE_TOPICS.extend([
         "keywords": (
             "edit shape points", "edit polygon points", "move a corner of a shape", "add a corner to a shape",
             "take a corner out", "reshape a polygon", "change the corners of a shape", "edit points",
+            "draw a polygon", "insert polygon", "polygon tool", "click the corners of a shape",
         ),
         "body": (
+            "Insert, Polygon draws a new one: click each corner, double-click or press Enter to close it (Backspace takes the last corner back, Escape cancels). It is one Undo step and its corners are connection points. "
             "Edit shape points, in a straight-sided shape's More, the right-click Arrange and Ctrl+K, shows a square "
             "handle on each corner. Drag a handle to move that corner (it snaps to the grid when the grid is on), "
             "press the outline to add a corner there and drag it, press a corner without moving to take it out "

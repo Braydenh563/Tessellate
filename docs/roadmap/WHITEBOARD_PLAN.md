@@ -1070,7 +1070,6 @@ clash is listed so the choice is made once.
 
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
-| Insert menu: polygon | yes except polygon (table built: `insert-table`) | diagramly/Menus.js 4516 to 4574 | add "Polygon" (click points, double-click to close) writing a closed `d` | S |
 | Text to diagram (Mermaid, PlantUML, "from text", "generate") | partly: Mermaid import; the AI's `generate_diagram` (HISTORY section 61) | `fromText`, `generate` (diagramly/Menus.js 1393) AI action | done by the assistant, which already places a diagram | none |
 | Freehand | yes (pen, highlighter) | `insertFreehand`, `mxFreehand.js` | done | none |
 
