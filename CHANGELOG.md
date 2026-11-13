@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The desk draws two more hanging tricks, the sleeping hang (`hang_sloth`) and the flip by the feet (`hang_feet`), now and then inside a long hang beside the one-handed hold; frames added to both looks, 63 in all (L-ui-modernisation-10).
 - Board menus, the floating panel's select, the help toggles and the lightbox arrows read the control height tokens; the literal heights ceiling drops from 296 to 264 (L-ui-modernisation-3).
 - The design tokens are a cascade layer: a palette, theme or component that sets a token wins by being unlayered, not by specificity (L-ui-modernisation-1).
 - The timeline table head is bare at rest and opaque only while rows pass under it, the same recipe as the other sticky heads (L-ui-modernisation-28).

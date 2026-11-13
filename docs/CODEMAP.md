@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8365, frontend ids 2776, CSS sections 525, backend routes 706, backend modules 10828, test files 2765, tests 22100, plan headings 685, app scripts 29, boot scripts 38, script files 300.
+Counts: frontend functions 8365, frontend ids 2776, CSS sections 525, backend routes 706, backend modules 10828, test files 2766, tests 22104, plan headings 685, app scripts 29, boot scripts 38, script files 300.
 
 ## Frontend functions (8365)
 
@@ -25205,39 +25205,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:179 |
-| `Chain` | src/tessellate/core/overlay/behaviour.py:420 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:900 |
-| `Mind` | src/tessellate/core/overlay/behaviour.py:467 |
+| `Chain` | src/tessellate/core/overlay/behaviour.py:423 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:903 |
+| `Mind` | src/tessellate/core/overlay/behaviour.py:470 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:53 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:64 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:831 |
-| `Trail` | src/tessellate/core/overlay/behaviour.py:620 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:834 |
+| `Trail` | src/tessellate/core/overlay/behaviour.py:623 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:134 |
-| `_amplitude` | src/tessellate/core/overlay/behaviour.py:685 |
-| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:893 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:887 |
-| `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:308 |
+| `_amplitude` | src/tessellate/core/overlay/behaviour.py:688 |
+| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:896 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:890 |
+| `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:311 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:196 |
-| `activity_frame` | src/tessellate/core/overlay/behaviour.py:607 |
-| `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:341 |
+| `activity_frame` | src/tessellate/core/overlay/behaviour.py:610 |
+| `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:344 |
 | `cell` | src/tessellate/core/overlay/behaviour.py:103 |
-| `curve` | src/tessellate/core/overlay/behaviour.py:450 |
-| `idle_tier` | src/tessellate/core/overlay/behaviour.py:406 |
-| `mood_of` | src/tessellate/core/overlay/behaviour.py:373 |
-| `phase_of` | src/tessellate/core/overlay/behaviour.py:333 |
+| `curve` | src/tessellate/core/overlay/behaviour.py:453 |
+| `idle_tier` | src/tessellate/core/overlay/behaviour.py:409 |
+| `mood_of` | src/tessellate/core/overlay/behaviour.py:376 |
+| `phase_of` | src/tessellate/core/overlay/behaviour.py:336 |
 | `quantise` | src/tessellate/core/overlay/behaviour.py:92 |
 | `quantised` | src/tessellate/core/overlay/behaviour.py:109 |
 | `sample` | src/tessellate/core/overlay/behaviour.py:172 |
 | `sample3` | src/tessellate/core/overlay/behaviour.py:155 |
 | `scaled` | src/tessellate/core/overlay/behaviour.py:147 |
-| `shift_every` | src/tessellate/core/overlay/behaviour.py:356 |
+| `shift_every` | src/tessellate/core/overlay/behaviour.py:359 |
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:124 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:114 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:119 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:810 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:818 |
-| `tier_factor` | src/tessellate/core/overlay/behaviour.py:411 |
-| `utility` | src/tessellate/core/overlay/behaviour.py:456 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:813 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:821 |
+| `tier_factor` | src/tessellate/core/overlay/behaviour.py:414 |
+| `utility` | src/tessellate/core/overlay/behaviour.py:459 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:142 |
 
 ### src/tessellate/core/overlay/capture.py (14)
@@ -25294,7 +25294,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `DeskActsMixin` | src/tessellate/core/overlay/engine_deskacts.py:22 |
+| `DeskActsMixin` | src/tessellate/core/overlay/engine_deskacts.py:24 |
 
 ### src/tessellate/core/overlay/engine_flight.py (1)
 
@@ -25488,31 +25488,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Frame` | src/tessellate/core/overlay/sprites.py:111 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:254 |
-| `_draw_fx` | src/tessellate/core/overlay/sprites.py:941 |
-| `_drawn_box` | src/tessellate/core/overlay/sprites.py:217 |
-| `_feather_mask` | src/tessellate/core/overlay/sprites.py:870 |
-| `_glint` | src/tessellate/core/overlay/sprites.py:829 |
-| `_glint_tables` | src/tessellate/core/overlay/sprites.py:818 |
-| `_smooth` | src/tessellate/core/overlay/sprites.py:781 |
-| `_star` | src/tessellate/core/overlay/sprites.py:935 |
-| `_tail_shift` | src/tessellate/core/overlay/sprites.py:889 |
-| `capped_pose` | src/tessellate/core/overlay/sprites.py:145 |
-| `captured_root` | src/tessellate/core/overlay/sprites.py:182 |
-| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:206 |
-| `clipped` | src/tessellate/core/overlay/sprites.py:126 |
-| `effect` | src/tessellate/core/overlay/sprites.py:1008 |
-| `flow_offsets` | src/tessellate/core/overlay/sprites.py:786 |
-| `frames_dir` | src/tessellate/core/overlay/sprites.py:190 |
-| `fx_margin` | src/tessellate/core/overlay/sprites.py:928 |
-| `graded` | src/tessellate/core/overlay/sprites.py:238 |
-| `look_for` | src/tessellate/core/overlay/sprites.py:197 |
-| `mix` | src/tessellate/core/overlay/sprites.py:909 |
-| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:223 |
-| `squashed` | src/tessellate/core/overlay/sprites.py:985 |
-| `tail_source` | src/tessellate/core/overlay/sprites.py:865 |
-| `tapered` | src/tessellate/core/overlay/sprites.py:161 |
+| `Frame` | src/tessellate/core/overlay/sprites.py:112 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:255 |
+| `_draw_fx` | src/tessellate/core/overlay/sprites.py:942 |
+| `_drawn_box` | src/tessellate/core/overlay/sprites.py:218 |
+| `_feather_mask` | src/tessellate/core/overlay/sprites.py:871 |
+| `_glint` | src/tessellate/core/overlay/sprites.py:830 |
+| `_glint_tables` | src/tessellate/core/overlay/sprites.py:819 |
+| `_smooth` | src/tessellate/core/overlay/sprites.py:782 |
+| `_star` | src/tessellate/core/overlay/sprites.py:936 |
+| `_tail_shift` | src/tessellate/core/overlay/sprites.py:890 |
+| `capped_pose` | src/tessellate/core/overlay/sprites.py:146 |
+| `captured_root` | src/tessellate/core/overlay/sprites.py:183 |
+| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:207 |
+| `clipped` | src/tessellate/core/overlay/sprites.py:127 |
+| `effect` | src/tessellate/core/overlay/sprites.py:1009 |
+| `flow_offsets` | src/tessellate/core/overlay/sprites.py:787 |
+| `frames_dir` | src/tessellate/core/overlay/sprites.py:191 |
+| `fx_margin` | src/tessellate/core/overlay/sprites.py:929 |
+| `graded` | src/tessellate/core/overlay/sprites.py:239 |
+| `look_for` | src/tessellate/core/overlay/sprites.py:198 |
+| `mix` | src/tessellate/core/overlay/sprites.py:910 |
+| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:224 |
+| `squashed` | src/tessellate/core/overlay/sprites.py:986 |
+| `tail_source` | src/tessellate/core/overlay/sprites.py:866 |
+| `tapered` | src/tessellate/core/overlay/sprites.py:162 |
 
 ### src/tessellate/core/overlay/standing.py (1)
 
@@ -27816,7 +27816,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22100)
+## Tests (22104)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29672,6 +29672,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_hang_spots_1683.py | 4 |
 | tests/test_overlay_hang_throw_1670.py | 3 |
 | tests/test_overlay_hang_top_1696.py | 2 |
+| tests/test_overlay_hang_tricks_ui10.py | 4 |
 | tests/test_overlay_hops_1109.py | 3 |
 | tests/test_overlay_host.py | 26 |
 | tests/test_overlay_idle.py | 9 |
@@ -31008,13 +31009,13 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | In-app browser with MCP tools (IDEAS, parked 2026-11-12, L-general-41) | docs/roadmap/BACKLOG.md:4424 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4391 |
-| Needs hardware | docs/roadmap/LEDGER.md:734 |
+| Needs hardware | docs/roadmap/LEDGER.md:735 |
 | Next up: retired queues, now the ledger and HANDOVER | docs/ROADMAP.md:214 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:726 |
+| Owner calls | docs/roadmap/LEDGER.md:727 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4264 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:601 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31190,7 +31191,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:923 |
+| Plan session briefs | docs/roadmap/LEDGER.md:924 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2641 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31244,25 +31245,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1757 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1411 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:939 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1023 |
+| chat | docs/roadmap/LEDGER.md:940 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1024 |
 | documents | docs/roadmap/LEDGER.md:332 |
-| documents | docs/roadmap/LEDGER.md:963 |
-| general | docs/roadmap/LEDGER.md:708 |
+| documents | docs/roadmap/LEDGER.md:964 |
+| general | docs/roadmap/LEDGER.md:709 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:927 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1035 |
+| graph | docs/roadmap/LEDGER.md:928 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1036 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4400 |
 | mindmap | docs/roadmap/LEDGER.md:412 |
-| mindmap | docs/roadmap/LEDGER.md:975 |
-| timeline | docs/roadmap/LEDGER.md:469 |
-| timeline | docs/roadmap/LEDGER.md:999 |
+| mindmap | docs/roadmap/LEDGER.md:976 |
+| timeline | docs/roadmap/LEDGER.md:470 |
+| timeline | docs/roadmap/LEDGER.md:1000 |
 | ui-modernisation | docs/roadmap/LEDGER.md:450 |
-| ui-modernisation | docs/roadmap/LEDGER.md:987 |
+| ui-modernisation | docs/roadmap/LEDGER.md:988 |
 | whiteboard | docs/roadmap/LEDGER.md:285 |
-| whiteboard | docs/roadmap/LEDGER.md:951 |
-| world-class | docs/roadmap/LEDGER.md:472 |
-| world-class | docs/roadmap/LEDGER.md:1011 |
+| whiteboard | docs/roadmap/LEDGER.md:952 |
+| world-class | docs/roadmap/LEDGER.md:473 |
+| world-class | docs/roadmap/LEDGER.md:1012 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2811 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2862 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2969 |

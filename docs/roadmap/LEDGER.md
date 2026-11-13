@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 60 | 17 | 0 | 18 | 147 |
 | mindmap | 33 | 30 | 5 | 1 | 5 | 68 |
-| ui-modernisation | 96 | 15 | 1 | 0 | 19 | 112 |
+| ui-modernisation | 96 | 16 | 1 | 0 | 19 | 113 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 12 | 3 | 0 | 0 | 15 |
-| all | 553 | 527 | 151 | 3 | 184 | 1231 |
+| all | 553 | 528 | 151 | 3 | 184 | 1232 |
 
 ## graph
 
@@ -450,7 +450,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## ui-modernisation
 
 - [ ] **L469** `ui-modernisation` partly, L: Finish the uipolish-0924 surface-by-surface pass (item D). From OPEN.md:1914; OPEN.md:2314. Evidence: Icon-only floor done (iconfloor.js); the per-surface pass not recorded done
-- [ ] **L-ui-modernisation-10** `ui-modernisation` open, M: Draw the missing desk frames: hang by feet, sloth, chair, lean, tail-curl pot. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. compalive-1109.md (git history) still lists missing desk frames with no LEDGER row: hang_by_feet, sloth, chair, lean, back_float, the pot in the tail curl, and a card box for the card nap. dangle and kick were built in W31.
 - [ ] **L-ui-modernisation-11** `ui-modernisation` open, S: Bring desk note and search reactions to app parity: glasses, shy hands, bubble. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:873. Evidence: Open line in the plan's prose a session could miss. The events feed is built, but compalive-1109 says the desk reactions fall short of the app: no reading glasses, no hands over the eyes, no remark bubble. There is no row.
 - [ ] **L-ui-modernisation-14** `ui-modernisation` open, M: Bring hidden key handlers into the shortcut table and palette. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1008. Evidence: Open line in the plan's prose a session could miss. A 13.1 recognition-over-recall finding with no decision or row.
 - [ ] **L-ui-modernisation-16** `ui-modernisation` open, M: Show query help in the notes search box and fold editor bars into two. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1025. Evidence: Open line in the plan's prose a session could miss. 13c lists only some 13.2 rows. The Notes list query help and the editor's four-surfaces-to-two are not in it.
@@ -465,6 +464,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-36** `ui-modernisation` open, S: Measure the document AI panel at 1024 and 820 dark (labels, focus, contrast); not rendered in the Brief 56 census. From L455 census.
 - [ ] **L-ui-modernisation-37** `ui-modernisation` open, M: Sideways phone: tab strip wraps by 4.1px at 844x390. From L466. Evidence: 844x390 touch: tabs need 413.8px, room 409.7 after the h1 gap fix, so the strip wraps and the header is 108 of 390 tall; the doc preview pane is then 37px. 4.1px to find without a 480 height step; candidates: the space switcher word (63px), the nav history cluster (100px). Door dialog repeat: source text lost with ledger-1112.
 - [ ] **L-ui-modernisation-38** `ui-modernisation` open, S: Put the map strip, table menu and drawing bar controls on the control height tokens, measured at 390 touch. From L-ui-modernisation-3. Evidence: Left by L-ui-modernisation-3: .wb-map-strip > button.icon-only and .wb-map-strip .wb-menu-toggle (07-whiteboard-misc.css) and .cm-md-table-menu (library-lazy.css) are 1.75rem; --control-h-dense becomes 40px under 820 or a coarse pointer, so the swap needs a map at 390 touch measured first (width too, or the icon button turns oval). .wb-tool-group button (06) is 36px, a px literal under a rem token.
+- [ ] **L-ui-modernisation-39** `ui-modernisation` open, M: Draw the remaining desk frames: lean, back_float, chair prop; each needs a spec in render_desk_frames.js, an EXTRA_FRAMES entry and an act that draws it. From L-ui-modernisation-10. Evidence: frontend/companion-catalogue.json: act.chair, pos.lean, pos.back_float, lower.drift, move.afield still desk missing; frames hang_sloth and hang_feet built, same route (scripts/render_desk_frames.js spec, sprites.EXTRA_FRAMES, an engine act)
+- [ ] **L-ui-modernisation-40** `ui-modernisation` open, S: Draw the pot in the tail curl and a card box for the desk card nap. From L-ui-modernisation-10. Evidence: tail curl: the card nap and the pot in the tail curl need a prop drawn into the frame (card0 and card1 come from scripts/render_card_frames.py, Pillow)
 
 ## timeline
 

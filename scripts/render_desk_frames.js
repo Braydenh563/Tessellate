@@ -50,6 +50,11 @@ const FRAMES = [
   //: W31 E1: the long sit with the eyes shut and the hands on the knees (`nmb-act-meditate`). Lounge and rest head
   //: stay the keyed `sit` (the rig draws them as a 2 to 7 degree lean of it: no picture of their own is worth its bytes).
   { name: "meditate", pose: "sit", classes: ["nmb-act-meditate"], at: 1.0 },
+  //: L-ui-modernisation-10: the app's two other hanging tricks. `hang_sloth` is the sleeping hang (`nmb-sleep` on the hang
+  //: pose: one hand let go, the lids shut, the head lolled); `hang_feet` is the flip (`nmb-act-feet` frozen at 0.5 of its
+  //: 7 s, the figure turned 176 degrees about the hips so the lower body is at the edge and the head hangs).
+  { name: "hang_sloth", pose: "hang", classes: ["nmb-sleep"], at: 0.5, upright: true },
+  { name: "hang_feet", pose: "hang", classes: ["nmb-act-feet"], at: 0.5 },
 ];
 //: The idle cycle (`idle0` to `idle23`, engine.IDLE_FRAMES): the rig's own standing
 //: motion sampled at fixed times, one full beat of the tail (`atlasTailBend` with
@@ -241,7 +246,8 @@ async function steadyShot(page, file, clip) {
           const w = (frame.idle || 0) * 2 * Math.PI;
           const box = [...b.querySelectorAll("*")].find((el) => el.atlasTail);
           if (!box && frame.idle !== undefined) throw new Error("no live tail to sample");
-          if (box) {
+          //: atlas-life.js is an IIFE now (its tail drawing is no longer a global): without it the tail is left as the page has it, and the idle frames cannot be re-sampled.
+          if (box && typeof atlasTailDraw === "function") {
           const tail = box.atlasTail;
           //: Stop the live loop and the compositor sway so nothing redraws over the sample.
           clearTimeout(tail.raf); cancelAnimationFrame(tail.raf); tail.raf = 0;

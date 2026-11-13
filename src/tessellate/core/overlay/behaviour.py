@@ -282,6 +282,9 @@ ACTIVITIES.update({
         _k((0, 1, 1, 0), (0.2, 1, 1.02, 0.02), (0.5, 1, 1.02, -0.02), (0.8, 1, 1.02, 0.02), (1, 1, 1, 0)), (("play", -0.25),), likes="happy", where="perch",
     ),
     "hang_one_hand": Activity("hang_one", (4.2, 8.0), _k((0, 1, 1, 0), (1, 1, 1, 0)), (("play", -0.1),), likes="proud", where="hang"),
+    #: L-ui-modernisation-10: the app's sleeping hang and its flip by the feet, played inside a hang as the one-handed hold is.
+    "sloth": Activity("hang_sloth", (9.0, 20.0), _k((0, 1, 1, 0), (1, 1, 1, 0)), (("rest", -0.1),), likes="sleepy", where="hang"),
+    "hang_by_feet": Activity("hang_feet", (7.0, 12.0), _k((0, 1, 1, 0), (1, 1, 1, 0)), (("play", -0.15),), likes="happy", where="hang"),
 })
 YIELD_TO_SIT = frozenset({"meditate", "lounge", "rest_head"})
 #: The ones that only make sense in place: all of them (a trip is a different table).

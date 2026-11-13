@@ -37,10 +37,10 @@ HOURS, SEEDS = (9, 14, 20, 23), (1, 2, 3)
 BUILT_FLOOR = {"app": 31, "desk": 29}
 
 #: One-sided entries (built on one side only). Build the other side, then delete the id here and lower the cap: these only
-#: shrink (W31 E1, E2: dangle, kick_legs, hang_one_hand, cross_legged and edge_dangle have desk frames, 27 to 22). The design backlog (built on neither side) is capped too; its build order is
+#: shrink (W31 E1, E2: dangle, kick_legs, hang_one_hand, cross_legged and edge_dangle have desk frames, 27 to 22; L-ui-modernisation-10: sloth and hang_by_feet, 22 to 20). The design backlog (built on neither side) is capped too; its build order is
 #: `docs/roadmap/agent-remaining/atlascat-1108.md`.
 APP_ONLY = frozenset({
-    "act.chair", "act.hang_by_feet", "act.sloth", "lower.drift",
+    "act.chair", "lower.drift",
     "move.afield", "pos.back_float", "pos.lean", "pos.lounge",
     "trans.back_float>upright",
     "trans.cross_legged>sit", "trans.curl>sit", "trans.edge_dangle>sit", "trans.lounge>sit", "trans.sit>cross_legged",
@@ -49,7 +49,7 @@ APP_ONLY = frozenset({
 })
 #: What is left has no browser meaning (INBOX 1710): a page is never told its window opened, closed or was dragged.
 DESK_ONLY = frozenset({"react.window_closed", "react.window_dragged", "react.window_opened"})
-APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 22, 3, 80
+APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 20, 3, 80
 
 
 @lru_cache(maxsize=1)
