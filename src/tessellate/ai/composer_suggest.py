@@ -144,10 +144,12 @@ def closest(question: str, embed=None, limit: int = 3) -> list[Option]:  # noqa:
     rows = _catalogue()
     #: A narrower act ("delete_document") shares its verb with the broad one
     #: ("delete"); without its own noun asked it is not the closer act, however
-    #: short its word list ("delete the boiler note" is a note's delete).
+    #: short its word list ("delete the boiler note" is a note's delete). The broad act is found by
+    #: the intent's first word or by the verb ("board_remove" says "delete").
     broad = {act.intent: words for act, words, _ in rows}
+    verb = {intent: a.verb for intent, a in act_registry.ACTS.items()}
     scores = [
-        0.0 if (parent := broad.get(act.intent.split("_")[0])) is not None and act.intent != act.intent.split("_")[0] and not (asked & words) - parent
+        0.0 if (parent := broad.get(act.intent.split("_")[0]) or broad.get(verb[act.intent])) is not None and act.intent not in (act.intent.split("_")[0], verb[act.intent]) and not (asked & words) - parent
         else len(asked & words) / math.sqrt(max(len(words), 1))
         for act, words, _ in rows
     ]

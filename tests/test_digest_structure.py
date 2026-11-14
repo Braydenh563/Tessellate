@@ -180,7 +180,8 @@ def test_digest_streams_in_chunks(ai_client, fake_ollama):
 def test_digest_stream_handles_an_empty_week(ai_client):
     events = _ndjson(ai_client.post("/insights/digest/stream"))
     answer = "".join(e["delta"] for e in events if e["type"] == "answer")
-    assert "Nothing was saved" in answer
+    # L-chat-270: the line is composed in the chat voice now, so the test reads the fact (nothing saved, a week), not one wording.
+    assert "saved" in answer.lower() and ("7 days" in answer or "week" in answer.lower() or "seven days" in answer)
     assert events[-1]["cacheable"] is True
 
 

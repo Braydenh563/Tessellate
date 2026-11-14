@@ -228,6 +228,20 @@ def frame(ability: str, mood: Mood, **facts: object) -> str:
     return _fill((chosen or pool[0]).text, facts)
 
 
+def said_plain(ability: str, asked: str = "", voice: str | None = None, **facts: object) -> str:
+    """A fixed line of the chat (a "none", a "did you mean") composed in the voice
+    of the Settings choice, or of `voice` (L-chat-270). The seed is the ability and
+    the words asked, so the same ask is said the same way."""
+    if voice is None:
+        try:
+            from tessellate.core import deps
+
+            voice = str(deps.get_config().get_preference("composer_voice", "natural") or "natural")
+        except Exception:  # noqa: BLE001  # no preference is the default voice
+            voice = "natural"
+    return frame(ability, mood_of(asked, voice=voice, seed=f"{ability}|{asked}", intent="none"), **facts)
+
+
 def _fill(text: str, facts: dict) -> str:
     """`text` with `facts` in it. A day word a span opens with ("Tomorrow,
     Friday 30 October") is capital only where the frame starts with it

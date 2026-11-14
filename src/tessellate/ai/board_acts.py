@@ -20,6 +20,14 @@ INTENTS = frozenset({
     "board_shape", "board_library", "board_link", "board_move", "board_words", "board_remove", "map_node", "map_link",
     "make_diagram", "make_document", "make_skill", "check_learned",
 })
+def words() -> frozenset[str]:
+    """The words of these acts' own phrases ("card", "node", "mind", "learned"): a real word one slip from one is read as it
+    ("the Trips mid map", "connect the cad to"), as `parity_acts.words` does for its acts."""
+    from tessellate.ai import act_registry
+
+    return frozenset(w for a in act_registry.ACTS.values() if a.intent in INTENTS for w in re.findall(r"[a-z]{4,}", f"{a.verb} {a.label} {a.example}".lower()))
+
+
 #: The steps `run_step` runs itself: the Undo of a link, a map node and a check of what it learned.
 OWN_STEPS = frozenset({"drop_board_link", "drop_map_node", "undo_learned_check"})
 

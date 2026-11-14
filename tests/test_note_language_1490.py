@@ -144,7 +144,8 @@ def test_each_language_finds_its_own_note(client, notebook, web, tools):
 def test_a_language_none_of_the_notes_is_in_says_so_and_offers_the_web_only_as_a_chip(client, notebook, web, tools):
     for said, language in (("korean note", "korean"), ("notes in russian", "russian"), ("my arabic notes", "arabic")):
         out = _ask(client, said, use_tools=tools)
-        assert "None of your notes look" in out["text"] and "](#/notes/" not in out["text"], (said, out["text"])
+        # L-chat-270: the line is composed in the chat voice, so the test reads the fact (the language named), not one wording.
+        assert language in out["text"].lower() and "](#/notes/" not in out["text"], (said, out["text"])
         assert _asks(out) == [f"Search the web for {language}"], (said, out)
     assert web == []
 
@@ -154,7 +155,7 @@ def test_with_web_off_no_web_chip(client, notebook, web):
     out = _ask(client, "korean note", use_tools=True)
     # INBOX 1729 (a): every composed answer ends with Next chips; with the
     # web off none of them may offer the web.
-    assert "None of your notes look Korean" in out["text"], out["text"]
+    assert "korean" in out["text"].lower(), out["text"]  # L-chat-270: composed, the language is the fact kept
     assert not any("web" in a.lower() for a in _asks(out)), _asks(out)
 
 

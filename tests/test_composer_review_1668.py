@@ -113,7 +113,11 @@ def test_the_same_asks_with_a_model_running(ai_client, fake_ollama, notebook, sa
     "said", ["put a reminder in for me tomorrow at 5pm to call mum", "schedule a reminder to pay rent on Friday at 9am"],
 )
 def test_an_ask_with_what_and_when_still_sets_it(client, notebook, said):
-    assert confirmed(client, _ask(client, said))["text"].startswith("Done. I will remind you"), said
+    # The confirmation is composed in the chat voice (act_card frames, L-chat-229/230), so its opener varies ("Done.", "Right,",
+    # "Sure,"): the intent here is that the ask is set and says what and when, not one opener.
+    text = confirmed(client, _ask(client, said))["text"]
+    assert "I will remind you" in text or "I shall remind you" in text, said
+    assert ("call mum" in text and "5pm" in text) or ("pay rent" in text and "9" in text), text
 
 
 @pytest.mark.parametrize("said", ["I need to be reminded of the dentist", "I set a reminder yesterday", "what reminders do I have", "I was reminded of Sam"])

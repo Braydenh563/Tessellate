@@ -9,6 +9,10 @@ below). Versioning is `0.x` while the app stabilises.
 
 - Chat: the brief marks the sentences it chose with ids, the model is asked after the question to write one back, and the turn grounds on the ids it wrote, never showing them (L-chat-59; 10 of 12 real-model answers cite).
 - CI fixes after the agent merges: ask-chart slice classes read as a built family (unused CSS 201 to 195), one silent empty-list catch removed, the boards acts Guide lead stands alone, "what is the table number" asks the notes, the formal welcome says days running, every no-tool line names the model.
+- Tests: the reminder confirmation and the chart label test read the fact, not one opener or call shape.
+- Fixed: a one-letter slip in a board, mind map or "check what you have learned" phrase routes as the clean phrase, and "delete the boiler note" is a note delete when the embedder is down.
+- Tests: act_registry._BOARD_INTENTS is pinned equal to board_acts.INTENTS (no drift found).
+- Chat: the no-more-charts, notes-or-web, no-notes-in-a-language, closed-card and empty-week lines are composed in the chat voice (L-chat-270).
 - Skills: Find loose ends is paged and cue-matched by the runner, the matches read in full, and a small model's answer closes with any it left out (L-chat-62).
 - Composer: the one-claim cosine line is measured on the real embedder (0.86), the topic line confirmed at 0.55 (L-chat-63).
 - Parity tests for chat acts: boards, maps, tag and preference sentences run on the composer path and as a model's own tool call, with Confirm and Undo (L114, tests/test_driven_parity_1114.py).

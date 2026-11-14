@@ -111,7 +111,9 @@ def test_every_chart_shows_its_values_and_fits_its_labels():
     js = (ROOT / "frontend" / "js" / "ask-chart.js").read_text(encoding="utf-8")
     draw = js.split("function drawAskChart", 1)[1].split("\n  }\n", 1)[0]
     assert "interactive: true" in draw
-    assert "askChartFit(askChartLabel(chart, row.label), slot * every" in js
+    # The scatter kind (L-chat-229) got its own fixed room, so the call is a ternary now; the intent (an x label is cut
+    # to the slot it owns, `slot * every`) is unchanged.
+    assert "askChartFit(askChartLabel(chart, row.label), chart.kind === \"scatter\" ? 80 : slot * every" in js
     css = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
     assert ".ask-chart-tip {" in css and ".ask-chart-hit {" in css
 
