@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- The "Tight fit" and "Too big here" chips read clearly in light: the words take the ink and the warning icon keeps its colour (4.29 to over 4.5).
 - CI red after the base merge fixed at the cause: one Alt+Enter row, the dock declares its own control height, Settings builds its body before reading a control, an empty board query removed.
 - Boot scripts back under their cap: a file paste or drop, a reminder's bin, repeat and outcome load on the press.
 - CSS (L-ui-modernisation-29): the last 64 component rules left `10-responsive.css` (1,079 to 515 lines; it keeps only the shell: the tab strip, the phone dock and More sheet, the status bar bands) for the component files that draw them (01, 04, 06, 07, 09); each conflicting pair was resolved at its cause, not by order, and a same-DOM computed-style A/B (19 surfaces at 390, 700, 900 and 1280) found no difference. Boot CSS gzip 163,785 to 163,438 bytes.

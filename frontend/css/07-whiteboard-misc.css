@@ -4525,8 +4525,14 @@ input[type="url"]:hover:not(:focus) {
   color: var(--ink);
 }
 
+/* The warn ink on its own tint measured 4.29:1 in light ("Tight fit", contrast.js, 2026-11-14):
+   the words take the ink as `.is-ok` does, and the icon keeps the warning colour. */
 :is(.entry-meta, .skill-card-header, .sampling-row, body) .chip.item-label.is-warn {
   background: color-mix(in srgb, var(--warn) 14%, transparent);
+  color: var(--ink);
+}
+
+:is(.entry-meta, .skill-card-header, .sampling-row, body) .chip.item-label.is-warn > i.ph {
   color: var(--warn);
 }
 
