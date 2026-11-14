@@ -582,7 +582,7 @@ EXEMPT: dict[str, str] = {
     "settings-controls.js:restoreFullBackup": "job: a confirmed restore that snapshots the current notebook first; the snapshot is the way back",
     "meetings.js:meetingTakeFlush": "job: uploads the audio chunks of a take in progress; Discard is the take's own undo",
     "gesture-kit.js:toggleDictation": "read: transcribes speech into the box being typed in",
-    "documents.js:docImageUpload": "send: uploads the picked image; the embed it writes is in the document's own undo (Ctrl+Z takes it out)",
+    "documents-md-actions.js:docImageUpload": "send: uploads the picked image; the embed it writes is in the document's own undo (Ctrl+Z takes it out)",
     "documents-suggest.js:docAiReview": "read: asks the model to check a document, shows a result",
     "documents-history.js:docHistoryStory": "read: asks for an account of the newest versions' changes (readOnly); nothing is written",
     "documents-check-ai.js:claims": "read: asks which sentences the notes back (claim check), shows a result",

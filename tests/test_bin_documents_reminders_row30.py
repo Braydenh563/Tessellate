@@ -13,6 +13,9 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 
+from tests._app_js import documents_text
+
+
 def _soon() -> str:
     return (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
 
@@ -100,7 +103,7 @@ def test_the_frontend_restores_rather_than_recreating():
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1] / "frontend" / "js"
-    documents = (root / "documents.js").read_text(encoding="utf-8")
+    documents = documents_text()
     undo = documents.split("async function deleteDocumentWithUndo(", 1)[1].split("\n}\n", 1)[0]
     assert "/restore" in undo and 'method: "POST",\n      body' not in undo
     reminders = (root / "shell-reminders.js").read_text(encoding="utf-8")

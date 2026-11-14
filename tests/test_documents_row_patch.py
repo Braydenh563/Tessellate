@@ -10,10 +10,12 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 import pytest
 
 JS = Path(__file__).resolve().parent.parent / "frontend" / "js" / "documents.js"
-SOURCE = JS.read_text(encoding="utf-8")
+SOURCE = documents_text()
 
 
 def _function(head: str) -> str:

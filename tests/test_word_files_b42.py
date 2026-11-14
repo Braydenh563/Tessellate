@@ -20,6 +20,8 @@ from pathlib import Path
 
 from tests import _js_scope
 
+from tests._app_js import documents_text
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 VENDOR = ROOT / "frontend" / "vendor"
@@ -47,7 +49,7 @@ def test_they_load_only_when_a_word_file_is_used() -> None:
 
 
 def test_export_and_import_go_through_the_browser_path() -> None:
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     export = _function(docs, "exportDocumentDocx")
     assert 'lazyScript("/js/documents-word.js")' in export and "docWordExport()" in export
     assert "export.docx" not in export
