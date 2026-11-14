@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11066, test files 2883, tests 22744, plan headings 691, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11066, test files 2883, tests 22745, plan headings 691, app scripts 29, boot scripts 38, script files 305.
 
 ## Frontend functions (8508)
 
@@ -28338,7 +28338,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22744)
+## Tests (22745)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29454,7 +29454,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_engine_phase6_spec.py | 43 |
 | tests/test_engine_plan.py | 24 |
 | tests/test_engine_probe_step0.py | 12 |
-| tests/test_engine_routing_1114.py | 9 |
+| tests/test_engine_routing_1114.py | 10 |
 | tests/test_engine_sources.py | 6 |
 | tests/test_engine_web.py | 5 |
 | tests/test_entities.py | 7 |
@@ -31836,7 +31836,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1849 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:891 |
+| Plan session briefs | docs/roadmap/LEDGER.md:890 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31890,25 +31890,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:907 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:991 |
+| chat | docs/roadmap/LEDGER.md:906 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:990 |
 | documents | docs/roadmap/LEDGER.md:272 |
-| documents | docs/roadmap/LEDGER.md:931 |
+| documents | docs/roadmap/LEDGER.md:930 |
 | general | docs/roadmap/LEDGER.md:647 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:895 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1003 |
+| graph | docs/roadmap/LEDGER.md:894 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1002 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4415 |
 | mindmap | docs/roadmap/LEDGER.md:288 |
-| mindmap | docs/roadmap/LEDGER.md:943 |
+| mindmap | docs/roadmap/LEDGER.md:942 |
 | timeline | docs/roadmap/LEDGER.md:409 |
-| timeline | docs/roadmap/LEDGER.md:967 |
+| timeline | docs/roadmap/LEDGER.md:966 |
 | ui-modernisation | docs/roadmap/LEDGER.md:292 |
-| ui-modernisation | docs/roadmap/LEDGER.md:955 |
+| ui-modernisation | docs/roadmap/LEDGER.md:954 |
 | whiteboard | docs/roadmap/LEDGER.md:225 |
-| whiteboard | docs/roadmap/LEDGER.md:919 |
+| whiteboard | docs/roadmap/LEDGER.md:918 |
 | world-class | docs/roadmap/LEDGER.md:411 |
-| world-class | docs/roadmap/LEDGER.md:979 |
+| world-class | docs/roadmap/LEDGER.md:978 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |
