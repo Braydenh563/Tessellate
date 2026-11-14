@@ -23,7 +23,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _archive() -> bytes:
-    return _zip({src: b"PK-jar" for src, _name in languagetool_files.MEMBERS})
+    files = {src: b"PK-jar" for src, _name in languagetool_files.MEMBERS}
+    files[languagetool_files.PREFIX + "org/languagetool/language-x/Lang.class"] = b"c"
+    files[languagetool_files.PREFIX + "org/languagetool/language-x/Inner$1.class"] = b"c"
+    files[languagetool_files.PREFIX + "META-INF/org/languagetool/language-module.properties"] = b"p"
+    return _zip(files)
 
 
 def test_the_entry_is_pinned_and_keeps_only_jars_and_the_licence():
@@ -64,8 +68,50 @@ def test_install_unpacks_flat_jars_then_the_check_is_available(client, monkeypat
     assert extras.current().outcome == "completed", extras.current().step
     folder = extra_downloads.folder(extras.EXTRAS_BY_ID["languagetool"])
     assert (folder / "languagetool-server.jar").is_file()
-    assert all(p.parent == folder for p in folder.rglob("*") if p.is_file())
+    #: The language modules are folders on the class path, kept with their paths (measured
+    #: 2026-11-14: with the jars alone the real server died at start).
+    assert (folder / "org/languagetool/language-x/Inner$1.class").is_file()
+    assert (folder / "META-INF/org/languagetool/language-module.properties").is_file()
+    assert all(p.parent == folder for p in folder.glob("*") if p.is_file())
     assert languagetool.available()
+
+
+def test_a_tree_path_that_climbs_out_is_refused(tmp_path):
+    import zipfile
+
+    from tessellate.core.extra_downloads import DownloadFailed, _unpack_tree
+
+    path = tmp_path / "a.zip"
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("P/org/../../evil.txt", b"x")
+    staging = tmp_path / "s"
+    staging.mkdir()
+    with zipfile.ZipFile(path) as archive:
+        try:
+            _unpack_tree(archive, "P/org/", "org", staging)
+        except DownloadFailed:
+            pass
+        else:
+            raise AssertionError("a `..` part was kept")
+    assert not (tmp_path / "evil.txt").exists()
+
+
+def test_the_server_is_started_with_the_folder_on_its_class_path(monkeypatch, tmp_path):
+    seen = {}
+
+    def fake_popen(command, **_kw):
+        seen["command"] = command
+        raise OSError("stop here")
+
+    monkeypatch.setattr(languagetool, "installed_folder", lambda: tmp_path)
+    monkeypatch.setattr(languagetool, "java_path", lambda: "/usr/bin/java")
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    try:
+        languagetool._start()
+    except OSError:
+        pass
+    classpath = seen["command"][seen["command"].index("-cp") + 1]
+    assert str(tmp_path) in classpath.split(languagetool.os.pathsep)
 
 
 class _Fake(http.server.BaseHTTPRequestHandler):

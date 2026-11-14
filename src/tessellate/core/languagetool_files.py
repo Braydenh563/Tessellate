@@ -56,6 +56,13 @@ MEMBERS: tuple[tuple[str, str], ...] = (
     *((PREFIX + "libs/" + name, name) for name in _LIBS),
 )
 
+#: The language modules are not jars: the archive unpacks them as folders
+#: (`org/languagetool/...`, `META-INF/...`) beside the jars, and the server
+#: finds them on its class path through the folder itself. Without these it
+#: stops at start ("'es' is not a language code known"; measured 2026-11-14
+#: with the jars alone), so the grammar pass answered "unavailable" forever.
+TREES: tuple[tuple[str, str], ...] = ((PREFIX + "org/", "org"), (PREFIX + "META-INF/", "META-INF"))
+
 
 #: Java is found here, not in `languagetool.py`, so `extras.py` can ask for the reason without
 #: importing the module that imports it (CodeQL 2137, 2138: a cyclic import).

@@ -690,7 +690,7 @@ EXTRAS: tuple[Extra, ...] = (
         "is only started while you are writing.",
         packages=("LanguageTool 6.6",),
         module="",
-        size="~252 MB download, ~190 MB on disk",
+        size="~252 MB download, ~410 MB on disk",
         caveat="Needs Java 17 or newer already installed (java on the path); "
         "this app does not install it. Off until you install it here.",
         kind="download",
@@ -703,6 +703,7 @@ EXTRAS: tuple[Extra, ...] = (
                 size=251998221,
                 unpack="zip",
                 members=languagetool_files.MEMBERS,
+                trees=languagetool_files.TREES,
             ),
         ),
     ),
