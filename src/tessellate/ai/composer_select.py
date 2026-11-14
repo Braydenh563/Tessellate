@@ -270,6 +270,47 @@ def _was_said(s: Sentence, said: str) -> bool:
     return len(words) >= 4 and sum(w in heard for w in words) / len(words) >= 0.85
 
 
+def _everyday(stem: str) -> bool:
+    from tessellate.ai.common_words import WORDS
+
+    return stem in WORDS
+
+
+def stray_match(terms: list[str], views: list[NoteView]) -> list[str]:
+    """The question's words no note holds, when they are what the question
+    is about and the notes share only everyday words with it; else nothing.
+
+    "how many vacation days do I have left" over notes that say "Day trip to
+    Nara" and "Water every second day": no note holds "vacation", and the
+    notes meet the question only on "day", a word any note may use. The
+    nearest note is a stray then, never an answer (CHAT_PLAN, placed
+    2026-10-30, item 3). A note holding more than `NOTE_COVERAGE` of the
+    words, or a shared word that is not everyday (a name, "dentist",
+    "Harbor"), is a half answer, which `_missing` already says."""
+    asked = [t for t in dict.fromkeys(terms) if len(t) >= 3]
+    stems = list(dict.fromkeys(map(_stem, asked)))
+    held = [v.words | v.title_words | v.filed_words for v in views]
+    if len(stems) < 2 or any(_covers_literally(stems, words) for words in held):
+        return []
+    found = _held(stems, held, _holds)
+    if not found or len(found) == len(stems) or not all(map(_everyday, found)):
+        return []
+    #: Said as missing: the words no note holds as written ("vacation", met only by "trip").
+    literal = _held(stems, held, lambda t, words: t in words)
+    return [t for t in asked if _stem(t) not in literal]
+
+
+def _held(stems: list[str], held: list[set[str]], holds) -> set[str]:  # noqa: ANN001
+    return {t for t in stems if any(holds(t, words) for words in held)}
+
+
+def _covers_literally(stems: list[str], words: set[str]) -> bool:
+    """More than `NOTE_COVERAGE` of the words, in the person's own words, not
+    by a synonym: "Day trip to Nara" holds "trip" for "vacation", which is
+    not a leave balance."""
+    return sum(1 for t in stems if t in words) / len(stems) > NOTE_COVERAGE
+
+
 def _jaccard(a: list[str], b: list[str]) -> float:
     sa, sb = set(a), set(b)
     return len(sa & sb) / len(sa | sb) if sa and sb else 0.0

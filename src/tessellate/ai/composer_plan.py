@@ -940,8 +940,9 @@ def answer(ctx: Ctx) -> Reply | None:
         return None
     if day := composer_event_verdict.day_question(text):
         #: "are we meeting on Tuesday" asks of the day: its list, led by Yes or by what is missing.
-        reply = _answer_text(ctx, day)
-        return reply and Reply(f"{composer_event_verdict.lead(text, reply.text)} {reply.text}", reply.offer, reply.asks)
+        #: Nothing dated in the window is the answer too: never a meeting note from another day (CHAT_PLAN, placed 2026-10-30, item 3).
+        reply = _answer_text(ctx, day) or Reply("")
+        return Reply(f"{composer_event_verdict.lead(text, reply.text)} {reply.text}".strip(), reply.offer, reply.asks)
     #: As typed first; then with the casual wrapper and text-speak off ("whats on tmrw", R9-8, R9-14).
     return _answer_text(ctx, text) or (_answer_text(ctx, spelled) if (spelled := rephrase(text)) and spelled != text else None)
 

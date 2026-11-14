@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: with no model, a question the notes meet only on an everyday word ("how many vacation days do I have left" over a note that says "Day trip") is said to be missing from the notes instead of answered with the nearest note, and "do I have any meeting to go to today" says no meeting is written for today; 19 real-phrasing xfails pass, "what alarms do I have set" among them (2026-11-14).
 - Tests: the recovery-key throttle test runs on a fixed clock; on the real one a slow runner sent the sixth guess past the first 1 s wait and got a 401 (2026-11-14).
 - Tests: the data folder self-check test counts its work (at most 5 queries, 2 directory listings, no file check per attachment) instead of timing it (a 50 ms bound failed at 140.6 ms on CI, 2026-11-14).
 - Tests: the background warm-up test checks order, not time: the load is held open by an event until the request has returned (a 50 ms bound failed at 74 ms on CI, 2026-11-14).
