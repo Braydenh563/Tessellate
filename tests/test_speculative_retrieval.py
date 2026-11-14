@@ -4,6 +4,7 @@ embedding model."""
 
 from __future__ import annotations
 
+import threading
 import time
 from pathlib import Path
 
@@ -88,17 +89,19 @@ def test_a_model_not_yet_loaded_starts_loading_in_the_background(session, monkey
         def embed_text(self, text):
             order.append("embed")
             self.calls.append(text)
-            time.sleep(0.05)
+            release.wait(5)
+            finished.set()
             return None
 
+    # The load is held open until the request has returned, so "returns at
+    # once" is an ordering, not a wall-clock bound (a 50 ms bound failed on
+    # a slow CI runner at 74 ms, 2026-11-14).
+    release, finished = threading.Event(), threading.Event()
     cold = Cold()
-    began = time.perf_counter()
     assert search_manager.warm(session, "", cold) is False
-    assert time.perf_counter() - began < 0.05
-    for _ in range(100):
-        if cold.calls:
-            break
-        time.sleep(0.01)
+    assert not finished.is_set()
+    release.set()
+    assert finished.wait(5)
     assert cold.calls == ["warm up"]
     assert order == [f"quiet {search_manager.LOAD_LATER_MAX_WAIT_SECONDS}", "embed"]
 
