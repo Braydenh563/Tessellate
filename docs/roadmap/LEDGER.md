@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 32 | 1 | 0 | 2 | 33 |
+| documents | 0 | 33 | 1 | 0 | 2 | 34 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 483 | 587 | 129 | 2 | 165 | 1199 |
+| all | 483 | 588 | 129 | 2 | 165 | 1200 |
 
 ## graph
 
@@ -356,9 +356,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-83** `documents` open, M: Documents cold open at 1440 still over 800 ms: cut the Library bundle's 35 scripts or start the list earlier. From perf1114 L-documents-47 re-measure. Evidence: docscold47.js: 1440 median about 1,060 ms; library bundle 420-470 ms, list 150, open 250-400 (HISTORY perf1114)
 - [ ] **L-documents-84** `documents` open, S: Export and print styling for the base block's board and calendar views. From L-documents-52 follow-up. Evidence: documents-export.js ~101-110 styles only .db-scroll and .db-label
 - [ ] **L-documents-85** `documents` open, S: Base table refreshes on doc-saved, and drive the Read-view board drag. From L-documents-52 follow-up. Evidence: board drag write driven in Live only; Read view drag not driven
-- [ ] **L-documents-86** `documents` open, M: Diagram Ask box and Suggestions for Gantt, pie, state, class and ER blocks. From dgm1229 agent report 2026-11-14.
 - [ ] **L-documents-88** `documents` open, M: Diagram templates for Gantt, pie, state, class and ER. From dgm1229 agent report 2026-11-14.
 - [ ] **L-documents-89** `documents` open, M: Diagram pan input-to-paint at 390 touch is 41 ms p95 at 4x CPU, over the 16 ms goal. From dgm1229 agent report 2026-11-14.
+- [ ] **L-documents-90** `documents` open, S: Real-model check of the Ask box on Gantt, pie, state, class and ER blocks: llama-server is not installed here, so only the fake transport and the by-rule path ran. From dgm1305 agent 2026-11-14.
+- [ ] **L-documents-91** `documents` open, M: Diagram Describe it (composer) for Gantt, pie, state, class and ER: its rule path makes only flowchart, timeline and mindmap and want is empty for the five. From dgm1305 agent 2026-11-14.
 
 ## mindmap
 

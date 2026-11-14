@@ -480,6 +480,16 @@
         n.name = next;
       }
     },
+    //: A class that goes takes the relations that end in it, so none is left naming what is no longer there.
+    onRemove(m, node) {
+      if (node.type !== "c") return 0;
+      let gone = 0;
+      for (let i = m.items.length - 1; i >= 0; i--) {
+        const x = m.items[i];
+        if (x.type === "r" && (x.from === node.name || x.to === node.name)) (m.items.splice(i, 1), gone++);
+      }
+      return gone;
+    },
     joinWords: ["relation", "relations"],
     made: ["class", "classes"],
     refs: kmClassNames,
@@ -546,6 +556,16 @@
         for (const x of m ? m.items : []) if (x.type === "r") for (const f of ["from", "to"]) x[f] === n.name && (x[f] = next, delete x.raw);
         n.name = next;
       }
+    },
+    //: A entity that goes takes the relations that end in it, so none is left naming what is no longer there.
+    onRemove(m, node) {
+      if (node.type !== "e") return 0;
+      let gone = 0;
+      for (let i = m.items.length - 1; i >= 0; i--) {
+        const x = m.items[i];
+        if (x.type === "r" && (x.from === node.name || x.to === node.name)) (m.items.splice(i, 1), gone++);
+      }
+      return gone;
     },
     joinWords: ["relationship", "relationships"],
     made: ["entity", "entities"],

@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8600, frontend ids 2785, CSS sections 524, backend routes 713, backend modules 10888, test files 2792, tests 22399, plan headings 689, app scripts 29, boot scripts 38, script files 310.
+Counts: frontend functions 8604, frontend ids 2785, CSS sections 524, backend routes 713, backend modules 10899, test files 2793, tests 22408, plan headings 689, app scripts 29, boot scripts 38, script files 310.
 
-## Frontend functions (8600)
+## Frontend functions (8604)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3165,34 +3165,38 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
 
-### frontend/js/diagram-ai-kinds.js (4)
+### frontend/js/diagram-ai-kinds.js (7)
 
 | Name | File:line |
 |---|---|
-| `ask` | frontend/js/diagram-ai-kinds.js:75 |
-| `dakApply` | frontend/js/diagram-ai-kinds.js:31 |
-| `dakFlatten` | frontend/js/diagram-ai-kinds.js:16 |
-| `dakSlug` | frontend/js/diagram-ai-kinds.js:13 |
+| `ask` | frontend/js/diagram-ai-kinds.js:120 |
+| `dakApply` | frontend/js/diagram-ai-kinds.js:69 |
+| `dakEnds` | frontend/js/diagram-ai-kinds.js:62 |
+| `dakFields` | frontend/js/diagram-ai-kinds.js:44 |
+| `dakFlatten` | frontend/js/diagram-ai-kinds.js:28 |
+| `dakFresh` | frontend/js/diagram-ai-kinds.js:22 |
+| `dakSlug` | frontend/js/diagram-ai-kinds.js:25 |
 
-### frontend/js/diagram-ai.js (34)
+### frontend/js/diagram-ai.js (35)
 
 | Name | File:line |
 |---|---|
-| `applyPreview` | frontend/js/diagram-ai.js:416 |
-| `ask` | frontend/js/diagram-ai.js:356 |
-| `askKind` | frontend/js/diagram-ai.js:376 |
-| `build` | frontend/js/diagram-ai.js:306 |
-| `compareThem` | frontend/js/diagram-ai.js:525 |
-| `copyOf` | frontend/js/diagram-ai.js:277 |
-| `counts` | frontend/js/diagram-ai.js:297 |
+| `applyPreview` | frontend/js/diagram-ai.js:443 |
+| `ask` | frontend/js/diagram-ai.js:383 |
+| `askKind` | frontend/js/diagram-ai.js:403 |
+| `build` | frontend/js/diagram-ai.js:333 |
+| `compareThem` | frontend/js/diagram-ai.js:552 |
+| `copyOf` | frontend/js/diagram-ai.js:304 |
+| `counts` | frontend/js/diagram-ai.js:324 |
 | `dgaAdd` | frontend/js/diagram-ai.js:45 |
 | `dgaApply` | frontend/js/diagram-ai.js:93 |
 | `dgaArrow` | frontend/js/diagram-ai.js:31 |
+| `dgaChartLint` | frontend/js/diagram-ai.js:265 |
 | `dgaDiff` | frontend/js/diagram-ai.js:102 |
 | `dgaFind` | frontend/js/diagram-ai.js:21 |
 | `dgaFold` | frontend/js/diagram-ai.js:17 |
 | `dgaKids` | frontend/js/diagram-ai.js:232 |
-| `dgaKindDrop` | frontend/js/diagram-ai.js:264 |
+| `dgaKindDrop` | frontend/js/diagram-ai.js:291 |
 | `dgaKindLint` | frontend/js/diagram-ai.js:233 |
 | `dgaLint` | frontend/js/diagram-ai.js:179 |
 | `dgaMarked` | frontend/js/diagram-ai.js:123 |
@@ -3202,16 +3206,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgaText` | frontend/js/diagram-ai.js:18 |
 | `dgaUnused` | frontend/js/diagram-ai.js:35 |
 | `dgaWords` | frontend/js/diagram-ai.js:152 |
-| `discard` | frontend/js/diagram-ai.js:409 |
-| `docOf` | frontend/js/diagram-ai.js:289 |
-| `draw` | frontend/js/diagram-ai.js:291 |
-| `el` | frontend/js/diagram-ai.js:281 |
-| `hues` | frontend/js/diagram-ai.js:278 |
-| `lint` | frontend/js/diagram-ai.js:449 |
-| `show` | frontend/js/diagram-ai.js:390 |
-| `showKind` | frontend/js/diagram-ai.js:436 |
-| `versions` | frontend/js/diagram-ai.js:464 |
-| `wire` | frontend/js/diagram-ai.js:547 |
+| `discard` | frontend/js/diagram-ai.js:436 |
+| `docOf` | frontend/js/diagram-ai.js:316 |
+| `draw` | frontend/js/diagram-ai.js:318 |
+| `el` | frontend/js/diagram-ai.js:308 |
+| `hues` | frontend/js/diagram-ai.js:305 |
+| `lint` | frontend/js/diagram-ai.js:476 |
+| `show` | frontend/js/diagram-ai.js:417 |
+| `showKind` | frontend/js/diagram-ai.js:463 |
+| `versions` | frontend/js/diagram-ai.js:491 |
+| `wire` | frontend/js/diagram-ai.js:574 |
 
 ### frontend/js/diagram-bar.js (9)
 
@@ -13702,7 +13706,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/desktop/fullscreen` | GET | `desktop_fullscreen_state` | src/tessellate/api/routes_tasks.py:845 |
 | `/desktop/fullscreen` | POST | `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:860 |
 | `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
-| `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:225 |
+| `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:227 |
 | `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:927 |
 | `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:949 |
 | `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:876 |
@@ -14106,7 +14110,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/tidy-proposals` | GET | `tidy_proposals` | src/tessellate/api/routes_vision.py:197 |
 | `/tidy-proposals/dismiss` | POST | `dismiss_tidy` | src/tessellate/api/routes_vision.py:251 |
 | `/tidy-proposals/undismiss` | POST | `undismiss_tidy` | src/tessellate/api/routes_vision.py:263 |
-| `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:245 |
+| `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:247 |
 | `/today-line` | GET | `today_line` | src/tessellate/api/routes_insights.py:486 |
 | `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat.py:2400 |
 | `/tools/execute` | POST | `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2433 |
@@ -14270,7 +14274,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10888)
+## Backend modules (10899)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17602,23 +17606,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read_reply` | src/tessellate/ai/diagram_ask.py:376 |
 | `with_model` | src/tessellate/ai/diagram_ask.py:391 |
 
-### src/tessellate/ai/diagram_ask_kinds.py (13)
+### src/tessellate/ai/diagram_ask_kinds.py (24)
 
 | Name | File:line |
 |---|---|
-| `_Sim` | src/tessellate/ai/diagram_ask_kinds.py:42 |
-| `_add` | src/tessellate/ai/diagram_ask_kinds.py:101 |
-| `_add_sequence` | src/tessellate/ai/diagram_ask_kinds.py:87 |
-| `_delete` | src/tessellate/ai/diagram_ask_kinds.py:143 |
-| `_move` | src/tessellate/ai/diagram_ask_kinds.py:131 |
-| `_parent_uid` | src/tessellate/ai/diagram_ask_kinds.py:69 |
-| `_rename` | src/tessellate/ai/diagram_ask_kinds.py:123 |
-| `_type_of` | src/tessellate/ai/diagram_ask_kinds.py:78 |
-| `by_rule` | src/tessellate/ai/diagram_ask_kinds.py:199 |
-| `checked` | src/tessellate/ai/diagram_ask_kinds.py:157 |
-| `described` | src/tessellate/ai/diagram_ask_kinds.py:222 |
-| `prompt` | src/tessellate/ai/diagram_ask_kinds.py:38 |
-| `with_model` | src/tessellate/ai/diagram_ask_kinds.py:240 |
+| `_Sim` | src/tessellate/ai/diagram_ask_kinds.py:64 |
+| `_add` | src/tessellate/ai/diagram_ask_kinds.py:201 |
+| `_add_chart` | src/tessellate/ai/diagram_ask_kinds.py:177 |
+| `_add_relation` | src/tessellate/ai/diagram_ask_kinds.py:141 |
+| `_add_sequence` | src/tessellate/ai/diagram_ask_kinds.py:111 |
+| `_add_value` | src/tessellate/ai/diagram_ask_kinds.py:150 |
+| `_chart_name` | src/tessellate/ai/diagram_ask_kinds.py:169 |
+| `_chart_parent` | src/tessellate/ai/diagram_ask_kinds.py:158 |
+| `_delete` | src/tessellate/ai/diagram_ask_kinds.py:254 |
+| `_end` | src/tessellate/ai/diagram_ask_kinds.py:133 |
+| `_joined` | src/tessellate/ai/diagram_ask_kinds.py:246 |
+| `_move` | src/tessellate/ai/diagram_ask_kinds.py:225 |
+| `_parent_uid` | src/tessellate/ai/diagram_ask_kinds.py:91 |
+| `_place` | src/tessellate/ai/diagram_ask_kinds.py:187 |
+| `_relation` | src/tessellate/ai/diagram_ask_kinds.py:291 |
+| `_rename` | src/tessellate/ai/diagram_ask_kinds.py:217 |
+| `_set` | src/tessellate/ai/diagram_ask_kinds.py:237 |
+| `_type_of` | src/tessellate/ai/diagram_ask_kinds.py:100 |
+| `_value` | src/tessellate/ai/diagram_ask_kinds.py:125 |
+| `by_rule` | src/tessellate/ai/diagram_ask_kinds.py:348 |
+| `checked` | src/tessellate/ai/diagram_ask_kinds.py:269 |
+| `described` | src/tessellate/ai/diagram_ask_kinds.py:371 |
+| `prompt` | src/tessellate/ai/diagram_ask_kinds.py:60 |
+| `with_model` | src/tessellate/ai/diagram_ask_kinds.py:389 |
 
 ### src/tessellate/ai/diarize.py (11)
 
@@ -18184,8 +18199,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2607 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2760 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2610 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2763 |
 
 ### src/tessellate/ai/help_words.py (3)
 
@@ -22221,20 +22236,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `ComposeBody` | src/tessellate/api/routes_drafts.py:34 |
-| `DiagramAskBody` | src/tessellate/api/routes_drafts.py:217 |
+| `DiagramAskBody` | src/tessellate/api/routes_drafts.py:219 |
 | `DiagramEdgeIn` | src/tessellate/api/routes_drafts.py:179 |
 | `DiagramGroupIn` | src/tessellate/api/routes_drafts.py:186 |
 | `DiagramModelIn` | src/tessellate/api/routes_drafts.py:192 |
 | `DiagramNodeIn` | src/tessellate/api/routes_drafts.py:172 |
 | `KindBlockIn` | src/tessellate/api/routes_drafts.py:200 |
-| `KindModelIn` | src/tessellate/api/routes_drafts.py:213 |
+| `KindModelIn` | src/tessellate/api/routes_drafts.py:215 |
 | `TitleBody` | src/tessellate/api/routes_drafts.py:75 |
 | `_sources` | src/tessellate/api/routes_drafts.py:53 |
 | `_with_diagram` | src/tessellate/api/routes_drafts.py:79 |
 | `compose_draft` | src/tessellate/api/routes_drafts.py:94 |
 | `compose_draft_stream` | src/tessellate/api/routes_drafts.py:136 |
-| `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:226 |
-| `draft_title` | src/tessellate/api/routes_drafts.py:246 |
+| `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:228 |
+| `draft_title` | src/tessellate/api/routes_drafts.py:248 |
 
 ### src/tessellate/api/routes_duplicates.py (7)
 
@@ -28187,7 +28202,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22399)
+## Tests (22408)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29000,6 +29015,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_ai.py | 5 |
 | tests/test_diagram_ai_kinds_1112.py | 4 |
 | tests/test_diagram_ask.py | 15 |
+| tests/test_diagram_ask_charts_l_documents_86.py | 9 |
 | tests/test_diagram_ask_kinds.py | 12 |
 | tests/test_diagram_ask_kinds_ui.py | 9 |
 | tests/test_diagram_behaviour_1108.py | 7 |

@@ -120,7 +120,7 @@ def test_the_route_caps_a_kind_model_and_refuses_a_bad_kind(client):
         client.post("/drafts/diagram-ask", json=body).status_code
         for body in (
             {"ask": "add x", "kind": "mindmap", "kind_model": many},
-            {"ask": "add x", "kind": "pie", "kind_model": MIND},
+            {"ask": "add x", "kind": "venn", "kind_model": MIND},
         )
     ]
     assert codes == [422, 422]

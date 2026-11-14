@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder: the Ask box and Suggestions now work on Gantt, pie, state, class and ER blocks (rule path with no model, model path checked like the other kinds); deleting a class or entity also removes the relations that end in it (L-documents-86).
 - Diagram builder: a Gantt chart's title and date format and a pie chart's title are blocks you rename in the pane, and a source you have not touched prints back byte for byte (L-documents-87).
 - CI on ce0f7082: failure copy says "Couldn't" (unslop 25), the Today handler is shorter, and the docux and map-audio tests read the video picker and the video/webm type that L-documents-68 added.
 - Diagram: a per-edge label position is not built by decision (INBOX 1811); the source stays plain Mermaid.
