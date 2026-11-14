@@ -146,10 +146,10 @@ column and the one wording.
 | --- | --- | --- | --- | --- | --- |
 | Note, Notes card ⋯ | the card | yes | yes | yes | yes |
 | Note, Library card ⋯ | Open in Notes | yes | yes | yes | yes |
-| Document, Library card ⋯ | the card | yes | yes | yes | no |
-| Board or map, Boards card ⋯ | the card | yes | no | yes | no |
-| Reminder, row ⋯ | Open its note, document, board or map | yes | no | n/a | no |
-| File, Library card ⋯ | the card | yes (2026-09-23) | no | no | no |
+| Document, Library card ⋯ | the card | yes | yes | yes | yes (2026-11-14) |
+| Board or map, Boards card ⋯ | the card | yes | yes (2026-11-14) | yes | n/a: notes join a board by being placed on it |
+| Reminder, row ⋯ | Open its note, document, board or map | yes | n/a: a reminder is not a graph node, Open reaches its target | n/a | n/a: it already points at one thing |
+| File, Library card ⋯ | the card | yes (2026-09-23) | n/a: a file is not a graph node | yes (2026-11-14) | n/a: a file holds no text to link from |
 
 The open rows named here on 2026-09-23 (Remind me on a document and a
 board, Show in graph for a document, the Library note card's Remind me and
@@ -298,7 +298,7 @@ toggle; the widgets dialog keeps only add/remove. Gate: recipe count on
 Dashboard ≤ 8 (audit script), all 24 widgets in the frame, 390px chrome ratio
 < 35%.
 
-**State 2026-10-05:** (b) every widget renders into one frame (`render(body)` over the `DASH_WIDGETS` table); drag-to-reorder on the grid itself is built (Edit layout makes each card `draggable`, `dashDragOverCard` moves it live, the drop saves the order; dashboard.js, found 2026-10-05, HISTORY.md "Moved from the plans, 2026-10-05 (nbf1005)"). The recipe-count gate re-run: LEDGER L-world-class-62.
+**State 2026-10-05:** (b) every widget renders into one frame (`render(body)` over the `DASH_WIDGETS` table); drag-to-reorder on the grid itself is built (Edit layout makes each card `draggable`, `dashDragOverCard` moves it live, the drop saves the order; dashboard.js, found 2026-10-05, HISTORY.md "Moved from the plans, 2026-10-05 (nbf1005)"). The recipe-count gate re-run 2026-11-14 (`scratchpad/audit/recipes.js`, 1440): Dashboard 5, Chat 12 (the busiest), Library 6; to 8 on Chat: LEDGER L-world-class-250.
 
 **The first screen, INBOX 436 (2026-10-03):** built; the diagnosis, the target and the before and after numbers are in HISTORY.md ("Moved from the plans, 2026-10-03").
 
@@ -423,7 +423,7 @@ danger actions in a separate red-edged group at the bottom of their
 section. Gate: no paragraph over 120 characters outside a popover; one
 toggle-row recipe; the section list is a tablist with arrow keys.
 
-**State 2026-09-24:** (d) absorbed: the two-pane shell with a section list (`#settings-nav`, back and forward) and the '?' popovers are built by UI_MODERNISATION and Brief 4; the prose metric re-run is LEDGER L-world-class-64.
+**State 2026-09-24:** (d) absorbed: the two-pane shell with a section list (`#settings-nav`, back and forward) and the '?' popovers are built by UI_MODERNISATION and Brief 4; the prose metric re-run 2026-11-14: 0 paragraphs over 120 characters on the seven tabs, 3 in Settings (two persona prompts, one path), `tests/test_prose_120_64.py`.
 
 ### D14 Help, onboarding and the command palette (S, Sonnet)
 
@@ -693,10 +693,10 @@ updated per session):
 
 | Metric | Script | Today | Target |
 | --- | --- | --- | --- |
-| Distinct control recipes on the busiest screen | `scratchpad/audit/recipes.js` | 22 (Chat) | ≤ 8 |
+| Distinct control recipes on the busiest screen | `scratchpad/audit/recipes.js` | 12 (Chat, 2026-11-14) | ≤ 8 |
 | Control heights per bar | `docks.js` | 1 to 4 | 1 |
 | Chrome ratio at 390 | `audit/chrome.js` | 76% | < 35% |
-| Paragraphs > 120 chars outside popovers | `audit/prose.js` | ~60 | 0 |
+| Paragraphs > 120 chars outside popovers | `audit/prose.js` | 3 (2026-11-14) | 0 |
 | Em-dashes in `frontend/` + `src/` | `test_no_em_dashes.py` | ~9,000 | 0 |
 | Contrast failures, both themes | `contrast.js` | 0 after fix | 0 |
 | Console errors across all tabs at 3 widths | `errors.js` | 0 | 0 |
@@ -1989,11 +1989,7 @@ mobile first, as the owner's web design class teaches. Measured with
    both, and the status bar folding into the top bar under 680px. Gate: 4
    note cards and the first dashboard widget above the fold at 1093x614. M,
    Opus. LEDGER L-world-class-95.
-3. **Tabs lose their names on a laptop.** Under about 1100px the tab strip
-   is icons only with the active tab labelled, so six of seven tabs are
-   guesses. Target: short labels kept down to 1024px (the strip has room once
-   the spaces picker shrinks to an icon), tooltips with the shortcut below
-   it, and the strip centred (INBOX 430). LEDGER L-world-class-96.
+3. ~~**Tabs lose their names on a laptop.**~~ Built 2026-11-14: the captions hold from 820px up (measured at 1024, 1100 and 1280: every label 34 to 83px wide), and every tab's tooltip names its chord (`t then n`, from `TAB_JUMP_KEYS`; `tests/test_tab_tooltips_96.py`).
 4. **Leaving with unsaved work.** Built 2026-09-27 for the note edit form,
    the Capture box and a document mid-autosave, the three surfaces with a
    plain dirty flag (HISTORY.md, "Moved from the plans, 2026-09-27"), and a

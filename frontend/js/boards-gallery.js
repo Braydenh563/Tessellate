@@ -341,6 +341,10 @@ function drawLibraryBoardsGallery(listed) {
           ),
           //: A board is an `Entry`, so its reminder is an `entry_id` one; the
           //: row in Reminders opens the board (WORLD_CLASS_PLAN 1.3, row 15).
+          //: The graph draws a board or map as a node while its Maps switch is on.
+          makeMenuItem("ph:graph Show in graph", "Open the graph centred on this board or map", () =>
+            showNoteInGraph(board.id, { maps: true })
+          ),
           makeMenuItem("ph:alarm Remind me", "Set a reminder about this board or map", () =>
             remindAbout({ title: board.title, entryId: board.id })
           ),

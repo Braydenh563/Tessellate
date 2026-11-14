@@ -254,7 +254,7 @@ async function renderStorageBreakdown() {
 //: `backup.BACKUP_EVERY_HOURS`), so the words come from `/jobs/last-runs` and
 //: the due time is the newest backup plus a day.
 function backupScheduleWords(run, newest) {
-  const parts = [run?.schedule || "Once a day, at the first start of the day."];
+  const parts = [];
   const day = (iso) =>
     parseServerTime(iso)?.toLocaleString(undefined, { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit", ...clockOptions() }) || "";
   if (run?.ran && run.status === "failed") {
@@ -267,7 +267,7 @@ function backupScheduleWords(run, newest) {
   const at = newest ? parseServerTime(newest.created_at) : null;
   if (at) {
     const due = new Date(at.getTime() + 24 * 3600 * 1000);
-    parts.push(due.getTime() <= Date.now() ? "Due at the next start." : `Next due ${day(due.toISOString())}, at the first start after that.`);
+    parts.push(due.getTime() <= Date.now() ? "Due at the next start." : `Next due ${day(due.toISOString())}.`);
   }
   return parts.join(" ");
 }
