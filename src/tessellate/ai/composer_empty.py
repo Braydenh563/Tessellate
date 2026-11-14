@@ -16,13 +16,12 @@ from datetime import date
 from tessellate.ai import composer_compose, composer_lines, composer_tables, grounding, recognise as rec, recognise_windows
 from tessellate.ai.composer_answer import _Answer, _SESSION
 from tessellate.ai.composer_ask import _holds, _stem, user_today
-from tessellate.ai.composer_help import _feature_instead
 from tessellate.ai.composer_intent import _ACT_VERBS, _RECALL_VERBS, Plan
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_quote import _pick
 from tessellate.ai.composer_read import NoteView
-from tessellate.ai.composer_select import stray_match
-from tessellate.ai.composer_unfound import _MISSING_MIN, topic_word
+from tessellate.ai.composer_select import NOTE_COVERAGE
+from tessellate.ai.composer_unfound import _MISSING_MIN, _NOT_A_NOUN, _seen, topic_word
 
 
 #: The chat's own voice (natural, professional, playful or plain, a persona's
@@ -306,6 +305,60 @@ def _act_verb(word: str) -> bool:
     return bool(bases & _ACT_VERBS.keys())
 
 
+def _says(stem: str, term: str, words: set[str]) -> bool:
+    """The word as the person wrote it, in any ending ("agreed" for "agree"), not by a synonym."""
+    return stem in words or _seen(term, words)
+
+
+def stray_match(terms: list[str], views: list[NoteView]) -> list[str]:
+    """The question's words no note holds, when the notes meet it only on an
+    everyday word they use for something else; else nothing.
+
+    "how many vacation days do I have left" over notes that say "Day trip to
+    Nara" and "Water every second day": no note holds "vacation", and the
+    notes meet the question only on "day" in passing. The nearest note is a
+    stray then, never an answer (CHAT_PLAN, placed 2026-10-30, item 3). Not a
+    stray: a note holding more than `NOTE_COVERAGE` of the words as written,
+    a shared word that is not everyday ("dentist", "Harbor", "jr"), or one a
+    note is about, in its name, tags or category ("the car repair" and the
+    note called Car service; "the meeting" and Meeting with Priya)."""
+    asked = [(_stem(t), t) for t in dict.fromkeys(terms) if len(t) >= 2]
+    held = [v.words | v.title_words | v.filed_words for v in views]
+    if len({s for s, _ in asked}) < 2 or any(_covers(asked, words) for words in held):
+        return []
+    found = [(s, t) for s, t in asked if any(_holds(s, words) for words in held)]
+    heads = [v.title_words | v.filed_words | _leads(v) for v in views]
+    if not found or len(found) == len(asked) or not all(_in_passing(s, t, heads) for s, t in found):
+        return []
+    return [t for s, t in asked if not any(_says(s, t, words) for words in held)]
+
+
+def _covers(asked: list[tuple[str, str]], words: set[str]) -> bool:
+    return sum(_says(s, t, words) for s, t in asked) / len(asked) > NOTE_COVERAGE
+
+
+def _leads(view) -> set[str]:
+    """The names of a note's ledger rows: "Phone 30." in a budget is about the phone.
+    Only a name and an amount; "Day trip to Nara" opening on "day" is not about days off."""
+    return {_stem(s.words[0]) for s in view.sentences if 2 <= len(s.words) <= 3 and s.words[-1][:1].isdigit()}
+
+
+def _in_passing(stem: str, term: str, heads: list[set[str]]) -> bool:
+    """An everyday word no note is about (its name, tags or category)."""
+    from tessellate.ai.common_words import WORDS
+
+    return stem in WORDS and not any(_says(stem, term, h) for h in heads)
+
+
+def _named(stray: list[str]) -> list[str]:
+    """The missing words worth naming: not an everyday word ("time", "change",
+    "agree") and not a verb's ending ("approved"); none, and the reply names
+    nothing."""
+    from tessellate.ai.common_words import WORDS
+
+    return [w for w in stray if w.lower() not in WORDS and _stem(w) not in WORDS and not _NOT_A_NOUN.search(w)]
+
+
 def _modifies(word: str, question: str, terms: list[str]) -> bool:
     """One word no note holds, set just before a word one does ("the spare
     key"), says which of it: a half answer, not a stray."""
@@ -325,5 +378,5 @@ def stray_reply(out: _Answer, question: str, shape: str, terms: list[str], views
     stray = [w for w in stray_match(terms, views) if topic_word(w) and w.lower() not in _RECALL_VERBS and not _act_verb(w)]
     if not stray or (len(stray) == 1 and _modifies(stray[0], question, terms)):
         return None
-    absent = _as_phrase([_as_typed(w, question) for w in stray], question)
-    return _feature_instead(question, absent) or _nothing(shape, unsure, voice, absent, out)
+    #: Each word quoted on its own ("boss", never "boss scheduled"), and no feature's help: the question is about the person's own things.
+    return _nothing(shape, unsure, voice, [_as_typed(w, question) for w in _named(stray)], out)
