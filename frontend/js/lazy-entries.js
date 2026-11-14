@@ -16,6 +16,9 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-frames.js", //: After whiteboard.js: frame creation, painting and turning; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-comments.js", //: After whiteboard.js: item comments and links; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-locks.js", //: After whiteboard.js: locks, hidden items and keep-ratio; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-search.js", //: After whiteboard.js: the find-a-card bar; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-connectors.js", //: After whiteboard.js: anchors, link routing and the connector panel; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-arrange.js", //: After whiteboard.js: align, distribute, nudge and size commands; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-commands.js",
     "/js/whiteboard-library.js",
     //: The New board dialog and every template's picture (INBOX 715).

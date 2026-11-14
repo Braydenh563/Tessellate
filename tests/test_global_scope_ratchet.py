@@ -88,7 +88,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-11 D24 scope-wrap-1111b, second group: meetings.js, bg-art.js, settings-controls.js, settings-find.js, settings-models.js, atlas-life.js, companion-menu.js and companion-throw.js wrapped whole. Measured 7,406.
 #: 2026-11-14 L286 (D24): whiteboard-export.js carved out of whiteboard.js and wrapped whole, 18 exports for 43 names. Measured 7,381.
 #: 2026-11-14 L286 (D24): present, frames, comments and locks carved out of whiteboard.js and wrapped whole. Measured 7,353.
-GLOBAL_NAMES_CAP = 7353
+#: 2026-11-14 L286 (D24): search, connectors and arrange carved out of whiteboard.js and wrapped whole. Measured 7,303.
+GLOBAL_NAMES_CAP = 7303
 
 
 @functools.lru_cache(maxsize=None)

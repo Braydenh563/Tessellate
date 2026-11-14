@@ -1,6 +1,6 @@
 """W30: a board render does not repeat reads whose answer cannot have changed."""
 
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, script_file_text
 import json
 import shutil
 import subprocess
@@ -168,7 +168,7 @@ def test_a_boards_connector_batch_measures_only_the_objects_its_ends_are_on():
 
 
 def test_an_objects_z_index_is_kept_on_its_element_not_read_back_from_style():
-    body = WB[WB.index("function renderWbObjects(") :]
+    body = script_file_text("whiteboard.js")[script_file_text("whiteboard.js").index("function renderWbObjects(") :]
     assert "if (this._wbRank !== rank) {" in body and "this.style.zIndex = String(rank);" in body
     #: The only writers of an object's z-index are the enter and this pass; a new one must go through the cache.
     assert body.count(".style.zIndex") == 1
