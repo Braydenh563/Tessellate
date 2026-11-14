@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: undo and redo now fire a board instance's onChange callbacks, as a recorded edit does (L-whiteboard-64).
 - Boards: an embed made before the board's first open waits for it, so its handlers are bound and it edits at once (L-whiteboard-63).
 - Boards: the map-editor check in boot code reads the active board's html layer, not the page's by id (L-whiteboard-59).
 - Boards: each board instance keeps its own undo history key, so Ctrl+Z in an embedded board takes back its own step and the page board keeps its own (found driving L-whiteboard-54).

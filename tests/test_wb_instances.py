@@ -807,3 +807,45 @@ process.exit(0);
 """)
     assert out["afterCreate"] == {"inited": True, "bound": ["pointerdown", "wheel"]}, out
     assert out["second"]["bound"] == ["wheel"]
+
+
+def test_undo_and_redo_fire_the_instance_on_change_callbacks():
+    """L-whiteboard-64: a push fires onChange (wbPushUndo), and so do undo and redo."""
+    te = (JS / "whiteboard-textedit.js").read_text(encoding="utf-8")
+    body = ""
+    for name in ("wbUndo", "wbRedo"):
+        at = te.index(f"  async function {name}() {{")
+        body += te[at : te.index("\n  }\n", at) + 5]
+    out = _run(body + """
+const wbDeleting = { settled: async () => {} };
+let wbUndoParents = [];
+function wbHistoryFor() {}
+function wbCommitOpenEdit() {}
+let applies = true;
+async function wbApplyHistoryEntry() { return applies; }
+function toast() {}
+function wbIsMap() { return false; }
+function voiceLine() { return ""; }
+(async () => {
+const emb = I.mount(fakeEl("div", "box"), 5);
+const fired = { page: 0, emb: 0 };
+I.page.changeFns.add(() => fired.page++);
+emb.changeFns.add(() => fired.emb++);
+await wbUndo();
+await wbRedo();
+out.page = { ...fired };
+I.activate(emb);
+await wbUndo();
+out.emb = { ...fired };
+applies = false;
+await wbUndo();
+await wbRedo();
+out.refused = { ...fired };
+process.stdout.write(JSON.stringify(out));
+process.exit(0);
+})();
+""")
+    assert out["page"] == {"page": 2, "emb": 0}
+    assert out["emb"] == {"page": 2, "emb": 1}
+    #: A step that was not applied changed nothing, so nothing is announced.
+    assert out["refused"] == out["emb"]
