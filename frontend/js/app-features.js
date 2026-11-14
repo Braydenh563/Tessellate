@@ -155,6 +155,7 @@ function featureCatalog() {
       { name: "Rediscover", desc: "Three faded notes a day, with the reason each one surfaced.", reveal: "widget-rediscover" },
       { name: "Loose ends", desc: "How much of the notebook is connected, and the oldest notes that are not.", reveal: "widget-orphans" },
       { name: "Unfinished", desc: "Notes with checklist items still waiting to be ticked.", reveal: "widget-unfinished" },
+      { name: "Category mix", desc: "What share of your notes each category holds, as a pie.", reveal: "widget-mix" },
       { name: "Writing pace", desc: "How many words you have written each day this fortnight.", reveal: "widget-pace" },
       { name: "Activity heatmap", desc: "A year of capture activity at a glance.", reveal: "widget-heatmap" },
       { name: "The manual", desc: "Every help topic on one page, to search or print.", reveal: "manual" },

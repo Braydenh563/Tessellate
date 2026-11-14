@@ -489,6 +489,7 @@ const REVEAL_TARGETS = {
   "widget-rediscover": { open: () => revealDashWidget("random"), sel: '[data-widget="random"]', built: "renderDashboard" },
   "widget-orphans": { open: () => revealDashWidget("orphans"), sel: '[data-widget="orphans"]', built: "renderDashboard" },
   "widget-unfinished": { open: () => revealDashWidget("unfinished"), sel: '[data-widget="unfinished"]', built: "renderDashboard" },
+  "widget-mix": { open: () => revealDashWidget("mix"), sel: '[data-widget="mix"]', built: "renderDashboard" },
   "widget-pace": { open: () => revealDashWidget("pace"), sel: '[data-widget="pace"]', built: "renderDashboard" },
   "widget-week": { open: () => revealDashWidget("week"), sel: '[data-widget="week"]', built: "renderDashboard" },
   statistics: { open: () => openStatistics(), sel: ".stats-card", built: "openStatistics", flash: false },
