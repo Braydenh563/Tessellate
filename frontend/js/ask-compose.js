@@ -89,6 +89,7 @@ function wireAskUseAi() {
   if (offline) watch.observe(offline, { attributes: true, attributeFilter: ["class"], childList: true });
   const pill = $("ai-status");
   if (pill) watch.observe(pill, { attributes: true, attributeFilter: ["data-level"] });
+  document.addEventListener("ask-answerer-changed", renderAskUseAi);
   renderAskUseAi();
 }
 
@@ -1288,6 +1289,7 @@ async function askQuestion(preset) {
     progress?.remove();
     setBusy($("retry-btn"), false);
     askController = null;
+    matchReasonBadge.reveal();
     setAsking(false);
     // The question used to be cleared here, which left an answer on screen with
     // nothing saying what it answered (user-reported). It stays in the box, 
@@ -1305,9 +1307,9 @@ function renderChatMeta(meta) {
   //: the quote style the composer's lead is drawn in (`.answer-composed`).
   $("ai-answer").classList.toggle("answer-composed", !!meta.composed);
   //: "Atlas" heads the answer; the chip says where it came from (CHAT_PLAN
-  //: decision 36): "From your notes" with no model, the model's name with one.
-  if (meta.composed) setAnsweredBy("From your notes", "Atlas answered from your notes, with no model: every sentence comes from a note");
-  else if (meta.answered_by) setAnsweredBy(meta.answered_by, `Answered by ${meta.answered_by}`);
+  //: decision 36): "Atlas's assistant, from your notes" with no model, "Atlas, <model>" with one.
+  if (meta.composed) setAnsweredBy("Atlas's assistant, from your notes", "Atlas's assistant answered from your notes, with no model: every sentence comes from a note");
+  else if (meta.answered_by) setAnsweredBy(`Atlas, ${meta.answered_by}`, `Atlas answered with ${meta.answered_by}`);
   else if (meta.ollama_running === false) {
     setAnsweredBy("chat model offline", "The chat model is not running, so nothing answered this");
   } else setAnsweredBy("", "");
@@ -1381,7 +1383,8 @@ function renderChatMeta(meta) {
   //: note list uses, pointed at this list: one implementation, and a second
   //: one is how the two would come to disagree about what "linked by" counts.
   ensureCardCounts(rawList, _entriesLoadGeneration);
-  ensureModule("replyKit").then(() => replyRecordCards(rawList, meta.raw_results, matchInfo, scored)).catch(() => {});
+  matchReasonBadge.hold(rawList);
+  ensureModule("replyKit").then(() => replyRecordCards(rawList, meta.raw_results, matchInfo, scored)).then(() => matchReasonBadge.hold(rawList)).catch(() => {});
   $("chat-results").classList.remove("hidden");
   $("ask-idle")?.classList.add("hidden");
 }

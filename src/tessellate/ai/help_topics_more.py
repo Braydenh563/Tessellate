@@ -1976,7 +1976,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "filing-settings", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "chat-typos", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "chat-typos", "answers-from-notes", "ask-answerer", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "answer-offers", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-menu", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (

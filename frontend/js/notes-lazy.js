@@ -99,7 +99,7 @@ function toggleRowExpanded(id) {
 
 //: Only with a model running (`modelStatus` is the status poll's, status.js).
 function reviewNudgeWanted() {
-  return typeof modelStatus !== "undefined" && modelStatus?.ollama_running === true;
+  return typeof modelStatus !== "undefined" && modelStatus?.model_ready === true;
 }
 
 //: The bell says so once a week, past a handful, as it does for untagged.

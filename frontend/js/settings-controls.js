@@ -1969,7 +1969,7 @@
       aiBox.type = "checkbox";
       aiBox.id = `merge-ai-${group.entries[0].id}`;
       // Only offer the AI when it can actually do the job.
-      const aiReady = !modelStatus || modelStatus.ollama_running !== false;
+      const aiReady = !aiIsOff(true);
       aiBox.checked = aiReady;
       aiBox.disabled = !aiReady;
       useAi.append(aiBox, document.createTextNode(

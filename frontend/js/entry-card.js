@@ -739,7 +739,7 @@ function entryItem(entry, options = {}) {
     //: span, and an offer that cannot be honoured is worse than none.
     //: Not on a private note: the route refuses it (sweep 1004 item 7), so the
     //: chip's only answer would be a refusal toast.
-    if (options.actions && !entry.is_private && (!modelStatus || modelStatus.ollama_running !== false)) {
+    if (options.actions && !entry.is_private && !aiIsOff(true)) {
       const askAtlas = chip("ph:sparkle Tag with Atlas", "untagged-ai", (event) => {
         event.stopPropagation();
         reevaluateEntry(entry);

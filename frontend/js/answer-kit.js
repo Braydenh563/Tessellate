@@ -998,6 +998,28 @@ function matchReasonBadge(info, scored = true) {
   return badge;
 }
 
+//: **No match numbers while an answer is being written** (L736, the owner, 2026-11-12: "Hide them while thinking"). Found
+//: notes show without a percentage until the turn is done; the number stays in the hover text, and `.reveal`
+//: puts it back when the stream ends. Hung on `matchReasonBadge` and block-scoped, so no name joins the shared scope.
+{
+  const held = new Map();
+  const percent = /\b(\d+)% (similar|match)\b/;
+  matchReasonBadge.hold = (root) => {
+    if (!chatController && !askController) return;
+    for (const el of root.querySelectorAll(".result-reason-chip, .record-score")) {
+      for (const node of [...el.childNodes].filter((n) => n.nodeType === 3 && percent.test(n.textContent))) {
+        const word = percent.exec(node.textContent)[2];
+        held.set(node, node.textContent);
+        node.textContent = node.textContent.replace(percent, word[0].toUpperCase() + word.slice(1));
+      }
+    }
+  };
+  matchReasonBadge.reveal = () => {
+    for (const [node, text] of held) node.textContent = text;
+    held.clear();
+  };
+}
+
 //: **The one place the phase vocabulary meets the stream** (INBOX 649). A
 //: caller that passes `progress` (a `progressLine`) gets its words and shape
 //: driven from the events that really arrive: the request leaving is "Reaching
@@ -2573,6 +2595,12 @@ function chatSourcesPanel(input) {
   body.className = "chat-sources-body";
   const grid = document.createElement("div");
   grid.className = row ? "chat-sources-list" : "chat-sources-grid";
+  //: Scrolls past a screenful (decision 37, L730), so a keyboard reaches it too.
+  if (!row) {
+    grid.tabIndex = 0;
+    grid.setAttribute("role", "region");
+    grid.setAttribute("aria-label", "Sources");
+  }
   const icons = Object.fromEntries(CHAT_SOURCE_GROUPS.map((g) => [g.key, g.icon]));
   sources.forEach((source, index) => {
     if (row) return grid.appendChild(row(source, icons, numbering.indexOf(source) + 1));
