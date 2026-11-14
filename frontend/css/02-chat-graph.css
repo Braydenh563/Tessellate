@@ -5296,11 +5296,3 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
   left: 0;
   right: auto;
 }
-
-/* The chart maker's values box (L171): full width, monospace so columns line up. */
-.chart-maker-box {
-  width: 100%;
-  font-family: var(--mono, ui-monospace, monospace);
-  font-size: var(--text-sm);
-  margin-block: var(--space-2);
-}

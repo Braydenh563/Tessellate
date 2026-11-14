@@ -477,7 +477,7 @@
     tail.act = act;
     tail.state = state;
     const calm = !base.ms && atlasTailCalm(tail, tail.box);
-    tail.until = now + (base.ms || (calm ? (5000 + Math.random() * 4000) : 4000 + Math.random() * 5000));
+    tail.until = now + (base.ms || (calm ? 5000 + Math.random() * 4000 : 4000 + Math.random() * 5000));
     tail.settle = now + ATLAS_TAIL_SETTLE_MS;
   }
   //: **A frame budget** (audit AI1, 2026-10-31: at 4x CPU the companion at
