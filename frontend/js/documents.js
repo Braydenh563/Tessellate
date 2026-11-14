@@ -1156,6 +1156,8 @@ async function loadDocumentsNow(selectId) {
   surfaceRecovered(document.getElementById("doc-empty"));
   docs = loaded;
   renderDocList();
+  //: Block embeds drawn before this list existed redraw now (documents-embeds.js `docEmbedFill`).
+  document.dispatchEvent(new Event("docs-landed"));
   //: The loader's own opens count as settled, so only a person's request moves it.
   const asked = docOpenSeq !== docLoadSeen.seq;
   const opened = selectId ? selectId : !currentDoc && docs.length && !asked ? docs[0].id : null;
