@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 119 | 29 | 0 | 0 | 148 |
+| world-class | 0 | 118 | 29 | 0 | 0 | 147 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 508 | 100 | 2 | 111 | 980 |
+| all | 372 | 507 | 100 | 2 | 111 | 979 |
 
 ## graph
 
@@ -464,7 +464,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 ## world-class
 
 - [ ] **L499** `world-class` open, S: Refresh README palette.png which still shows notes, a document, a board. From OPEN.md:1248. Evidence: palette.png last committed 97ba7d73b 2026-10-12; no later retake in git log.
-- [ ] **L510** `world-class` open, S: Trace how 'conversation' is derived as a topic for a gym note. From OPEN.md:4332. Evidence: Ledger open; needs the owner's note to trace topic derivation.
 - [ ] **L529** `world-class` open, S: Drive code IDE, OCR workspace, phone More sheet, lock screen, board tools and Present. From OPEN.md:587. Evidence: Drivable with Playwright; no later sweep cited for all surfaces (phone More row measured HISTORY:3268)
 - [ ] **L531** `world-class` open, S: Cold boot measure: add service worker, warm cache and phone width. From OPEN.md:796. Evidence: Measurement caveat; no phone-width cold boot run found
 - [ ] **L533** `world-class` open, S: 13.0 gate every-offence counts for decisions 9-17 are plan counts, not sweep. From OPEN.md:1341. Evidence: Row says counts are stylesheet counts from the plan paragraph; no sweep recount recorded.

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A gym note's "#conversation" topic is traced and pinned (L510): topics are link clusters named by the terms their notes share (`entry/topics.py` `build`), so a lone gym note is in none, and one linked into notes about conversation takes theirs; reproduced in the scratch app (note linked to two conversation notes: topic "conversation", size 3), not a stopword gap; `tests/test_topics_kg6.py`.
 - Back after closing Settings no longer reopens it: each pane visited inside Settings is a history entry, and the close now steps off all of them, not one (sweep `backtabs.js` 4 failing to 0 of 26 checks; L-world-class-356, wc-109). CodeQL: three asserts with side effects in the window teardown test are split.
 - CI leg 1 fixes: the reading bin routes move to routes_reading_bin.py (routes_files_readings.py 827 to 751 lines, cap 800); the not-installed search line stays one sentence (L-world-class-64) and its cache test reads the download it names.
 - Phone tab bar: below 480px the Dashboard caption reads Home (62.6 px to 33.9 px in a 64 px column at 320; every caption now has 23 px or more to spare at 320, 360 and 390); the name, tooltip and the text other code reads stay Dashboard; the phone help topic says so (INBOX 1859, L-world-class-83).
