@@ -1,4 +1,4 @@
-"""A blink, a glance or a turn is not handed over (L-ui-modernisation-62).
+"""Source text: the hand-over's cost is a layout timing measured in a browser at 4x CPU (buddylag.js), which pytest cannot time, so this reads the branch that skips it. A blink, a glance or a turn is not handed over (L-ui-modernisation-62).
 
 With Atlas on at 4x CPU, the act hand-over after a tab switch forced 24 to 46
 ms of layout (buddylag.js). Per act (a probe of each act, 4x, Atlas): a hand-over

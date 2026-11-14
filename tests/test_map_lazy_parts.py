@@ -1,4 +1,4 @@
-"""A topic's hidden parts are made on first use (L-mindmap-13).
+"""Source text: the accessor's source is lifted out of whiteboard-map.js to run it in a page, so the file is read as text first. A topic's hidden parts are made on first use (L-mindmap-13).
 
 A plain topic was 25 elements, 17 of them hidden, and the first style
 recalculation of a new topic walked all of them. `wbMapCache.part` makes a

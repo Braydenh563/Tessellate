@@ -1328,7 +1328,11 @@ def test_an_act_is_eased_into_as_well_as_out_of():
     # (lag 1111: `data-variant` is written first thing in `into`, so the page settles once after the hand-over's reads.)
     assert "const into = () => {\n    if (variant) buddy.dataset.variant = variant;\n    else delete buddy.dataset.variant;\n    buddy.classList.add(`nmb-act-${act}`, " in AVATARS
     # (INBOX 1634: the leave and the enter are one hand-over, the leave written inside the enter's change.)
-    assert 'if (act === "land" && nmb.afterLand) {' in AVATARS and "into();\n  } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_BLEND_IN_MS);" in AVATARS
+    # (L-ui-modernisation-62: a lids-only act, a blink, glance or turn, eased
+    # nothing in every probed run yet paid the hand-over's reads, so it changes
+    # straight; every other act is still eased in.)
+    assert 'if (act === "land" && nmb.afterLand) {' in AVATARS
+    assert "const change = joined ? () => (leave(), into()) : into;\n    if (lidsOnly) change();\n    else nameMarkBuddyBlend(buddy, change, NMB_BLEND_IN_MS);" in AVATARS
     assert "const leave = () => {\n    if (easeOut) nameMarkBuddyEase(buddy, 1800);\n    buddy.classList.remove(`nmb-act-${was}`);" in AVATARS
     ms = int(re.search(r"const NMB_BLEND_IN_MS = (\d+);", AVATARS).group(1))
     assert 250 <= ms <= 500

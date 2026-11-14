@@ -1,4 +1,4 @@
-"""The interact sweep has an Atlas reading for a pet (L-ui-modernisation-96).
+"""Source text: the sweep is a node script run against a live server, outside pytest, so this reads its check as text. The interact sweep has an Atlas reading for a pet (L-ui-modernisation-96).
 
 KIND=atlas companioninteract.js failed its pet check on `data-expr`, which
 only a face drawn from a name carries: Atlas's face is its mood, and
