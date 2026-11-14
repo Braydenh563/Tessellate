@@ -1858,15 +1858,15 @@ HELP_TOPICS.extend(
             #: (documents-code.js); the chords are checked against the first.
             "body": (
                 "A document can be code: give it the extension (fix.py, index.html). "
-                "You get syntax colours, error underlines listed in the Problems "
+                "You get syntax colours (PHP loads on first open), error underlines listed in the Problems "
                 "panel, hover notes, colour swatches, indent guides and brackets "
                 "that close themselves. Spelling covers comments and strings only. Completions and snippets open as you type "
                 "(the Code completions topic). HTML and CSS have Emmet: type ! or ul>li*3 "
                 "and press Enter or Tab; the command palette (Ctrl+K) has Emmet "
                 "wrap and balance inward or outward. Keys: Shift+Alt+F formats, "
                 "Ctrl+/ toggles a line comment, Shift+Alt+A a block comment, Alt+Z "
-                "wraps long lines, Ctrl+G goes to a line (on a phone the bar at the foot "
-                "has Tab, Undo and the brackets), F8 and Shift+F8 step through problems, "
+                "wraps long lines, Ctrl+G goes to a line (on a phone a bar has Tab, "
+                "Undo and the brackets), F8 and Shift+F8 step through problems, "
                 "Alt+Enter offers quick fixes, F12 goes to a definition, Shift+F12 "
                 "lists every use, Ctrl+Shift+F finds in every document, and Go to "
                 "a symbol is in the palette. Ctrl+Shift+Enter runs the file (the "
@@ -1883,8 +1883,8 @@ HELP_TOPICS.extend(
                 "Problems, Ctrl+Shift+Y the Console, Ctrl+Shift+D Debug; "
                 "Ctrl+Shift+P or F1 runs a command by name (words that match none offer Search notes for), Ctrl+\\ splits the "
                 "editor, Ctrl+K Ctrl+S lists the keys here, and Outline follows the "
-                "caret. Minimap (Editor and layout, "
-                "off at first) maps the whole file; Compare with a saved version or another document "
+                "caret. Minimap (Editor and layout) "
+                "maps the whole file; Compare with a saved version or another document "
                 "(palette) shows changes inline; Reject undoes a hunk."
             ),
             "badge": {"label": "Library", "tab": "library"},

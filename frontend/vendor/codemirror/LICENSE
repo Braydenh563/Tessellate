@@ -60,3 +60,8 @@ Separate file, vim.min.js (loaded only when the Vim keymap is on), MIT, the same
 terms as above:
   @replit/codemirror-vim 6.4.0
   @replit/codemirror-vim-core 0.1.0
+
+Separate file, php.min.js (loaded only when a .php document opens), MIT, the same
+terms as above:
+  @codemirror/lang-php 6.0.2
+  @lezer/php 1.0.6

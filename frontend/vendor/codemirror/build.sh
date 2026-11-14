@@ -18,9 +18,11 @@ set -euo pipefail
 cd "$(dirname "$0")"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-cp package.json entry.js entry-vim.js vim-build.mjs "$work"/
+cp package.json entry.js entry-vim.js entry-php.js vim-build.mjs "$work"/
 cd "$work"
-npm install --no-audit --no-fund --silent
+# `--before` pins the unpinned transitive packages (@lezer/common, lr) to the day this bundle was last
+# verified byte-identical on a rebuild, so the committed file can be reproduced.
+npm install --no-audit --no-fund --silent --before=2026-10-14
 src=node_modules/style-mod/src/style-mod.js
 grep -q 'if (!root.head && root.adoptedStyleSheets && win.CSSStyleSheet) {' "$src" \
   || { echo "style-mod changed: the adopted-stylesheet patch no longer applies" >&2; exit 1; }
@@ -29,13 +31,19 @@ npx esbuild entry.js --bundle --format=iife --global-name=CM6 --minify \
   --target=es2020 --legal-comments=none --outfile=codemirror.min.js
 # The Vim keymap is its own file so the editor bundle does not grow for a
 # preference that is off by default (vim-build.mjs maps its @codemirror/*
-# imports onto the bundle's CM6 global).
+# imports onto the bundle's CM6 global). PHP is the same: its own file, fetched
+# when a .php document first opens, with lang-html mapped onto CM6.html.
 node vim-build.mjs
 {
   echo "/*! @replit/codemirror-vim 6.4.0, MIT licence, see LICENSE beside this file. Needs codemirror.min.js first. Built by build.sh. */"
   cat vim.min.js
   echo ";Object.assign(window.CM6,{vim:CM6Vim.vim,Vim:CM6Vim.Vim,getCM:CM6Vim.getCM});"
 } > "$OLDPWD/vim.min.js"
+{
+  echo "/*! @codemirror/lang-php 6.0.2 and @lezer/php 1.0.6, MIT licence, see LICENSE beside this file. Needs codemirror.min.js first. Built by build.sh. */"
+  cat php.min.js
+  echo ";Object.assign(window.CM6,{php:CM6Php});"
+} > "$OLDPWD/php.min.js"
 {
   echo "/*! CodeMirror 6, MIT licence, see LICENSE beside this file. Built by build.sh from package.json. */"
   cat codemirror.min.js

@@ -260,6 +260,7 @@ FAULTS = {
         '"The Word writer could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The history could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Couldn\'t open that document. The one on screen is unchanged."': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
+        '"The PHP highlighter could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Replace in every document could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The export could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
