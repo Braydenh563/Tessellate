@@ -292,3 +292,16 @@ console.log(JSON.stringify({
     assert (got["floating"], got["calm"], got["moody"]) == ("float", "idle", "happy"), "a float after every mood and act"
     assert all(g > 6 for g in got["feminine"] + got["masculine"]), got
     assert got["tables"] == [True, True] and got["flow"] and got["rests"]
+
+
+def test_hands_and_feet_are_part_of_each_limb_outline_and_atl_hand_is_only_an_anchor_l174():
+    """L174 (decided: one path per limb, hand and foot included; the rig keeps an empty hand anchor). Measured in the app
+    (1x, both looks): each arm group draws one skin path plus its rim shade (the hand is that path's tip, y 40 to 61 with the
+    wrist at 54) and its `atl-hand` holds no shape of its own at rest; Atlas has no separate leg shapes (the lower body
+    is the dress or the trail), and the leg tables take a foot in the same stem."""
+    atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
+    for name, tip in (("ATLAS_ARM_R", "atlasHand"), ("ATLAS_HOLD_R", "atlasHand"), ("ATLAS_LEG_L", "atlasFoot"), ("ATLAS_LEG_R", "atlasFoot")):
+        assert re.search(rf"^const {name} = atlasStem\(.*tip: {tip}\(", atlas, re.M), name
+    assert "hand: atlasHand(thumbL, k)" in atlas and "atlasArmPath(spec.armRig[side], 0, 0)" in atlas
+    assert 'const hand = atlasMake("g", { class: "atl-hand" }, arm);' in atlas
+    assert 'atlasMake("g", { class: "atl-hand" }, arm);\n        arms[side] = hand;' in atlas, "the anchor is made empty and handed to the props"
