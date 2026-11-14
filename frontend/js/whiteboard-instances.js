@@ -11,7 +11,7 @@
   //: globals out to the outgoing instance and in from the incoming one, so the
   //: full-page board is just the default instance and nothing it does changed.
   //: The container and its layers are found through the active instance
-  //: (`container()`, `layer(id)`): the page board resolves them by id as before,
+  //: (`wbInstances.container()`, `.layer(id)`): the page board resolves them by id as before,
   //: a mounted one inside its own element by `data-wb-layer`, since an id can
   //: appear once on a page.
   const PAGE_CONTAINER = "whiteboard-container";
@@ -22,7 +22,7 @@
   const list = [];
   let active = null;
 
-  function create(container, boardId) {
+  function newInstance(container, boardId) {
     return {
       container, boardId: boardId ?? null, state: { nodes: [], sketches: [], objects: [] },
       selectedItem: null, multiSelection: new Set(), undoStack: [], redoStack: [], zoom: null,
@@ -34,21 +34,21 @@
   //: transform lives on its own element (d3 keeps it there) and its listeners
   //: run the board's one handler with that instance live: a pan in a document
   //: never moves the page board.
-  function zoomFor(inst) {
+  function instanceZoom(inst) {
     const zoom = d3.zoom();
     const base = wbInstances.page.zoom;
     for (const key of ZOOM_SETTINGS) zoom[key](base[key]());
     for (const name of ZOOM_EVENTS) {
       const handler = base.on(name);
       if (handler) zoom.on(name, function (event) {
-        if (active !== inst) activate(inst);
+        if (active !== inst) activateInstance(inst);
         return handler.call(this, event);
       });
     }
     return zoom;
   }
 
-  function save(inst) {
+  function stashGlobals(inst) {
     inst.state = wbState;
     inst.boardId = window.currentBoardId ?? null;
     inst.selectedItem = wbSelectedItem;
@@ -59,7 +59,7 @@
     inst.mapState = window.wbMapState ?? null;
   }
 
-  function load(inst) {
+  function restoreGlobals(inst) {
     wbState = inst.state;
     window.currentBoardId = inst.boardId;
     wbSelectedItem = inst.selectedItem;
@@ -74,7 +74,7 @@
 
   //: The same caches openWhiteboardBoard drops on a board switch: each answers
   //: for elements of the board that was live, and the next one has others.
-  function dropCaches() {
+  function dropBoardCaches() {
     wbItemElCache.clear();
     wbItemElIndex.count = -1;
     wbClearMapNodeSizeCache();
@@ -85,17 +85,17 @@
 
   //: Returns the outgoing board's nudge save (wbCancelBoardTimers), called while
   //: its globals are still live; nothing when `inst` is already active.
-  function activate(inst) {
+  function activateInstance(inst) {
     if (!inst || inst === active) return undefined;
     //: A render queued for the outgoing board is called off with its timers and
     //: queued again when that board is active once more.
     const pending = wbRenderQueued || Boolean(wbRenderFrame);
     const flushed = wbCancelBoardTimers();
-    save(active);
+    stashGlobals(active);
     active.renderPending = pending;
     active = inst;
-    load(inst);
-    dropCaches();
+    restoreGlobals(inst);
+    dropBoardCaches();
     wbUpdateUndoRedoButtons();
     if (inst.renderPending) {
       inst.renderPending = false;
@@ -106,32 +106,32 @@
 
   //: A board inside `container`, on `boardId`, with its own state and zoom.
   //: Not activated: the first gesture on it, or the caller, does that.
-  function mount(container, boardId) {
-    const inst = create(container, boardId);
-    inst.zoom = zoomFor(inst);
+  function mountInstance(container, boardId) {
+    const inst = newInstance(container, boardId);
+    inst.zoom = instanceZoom(inst);
     d3.select(container).call(inst.zoom).on("dblclick.zoom", null);
     list.push(inst);
     return inst;
   }
 
-  function unmount(inst) {
+  function unmountInstance(inst) {
     if (inst === wbInstances.page) throw new Error("the page board is never unmounted");
-    if (active === inst) activate(wbInstances.page);
+    if (active === inst) activateInstance(wbInstances.page);
     d3.select(inst.container).on(".zoom", null);
     const at = list.indexOf(inst);
     if (at >= 0) list.splice(at, 1);
   }
 
-  function container() {
+  function activeContainer() {
     return active.container || document.getElementById(PAGE_CONTAINER);
   }
 
-  function layer(id) {
+  function activeLayer(id) {
     return active.container ? active.container.querySelector(`[data-wb-layer="${id}"]`) : document.getElementById(id);
   }
 
   //: After each recorded edit (wbPushUndo): the active board's `onChange` listeners.
-  function changed() {
+  function notifyChanged() {
     for (const fn of [...active.changeFns]) {
       try {
         fn();
@@ -143,7 +143,7 @@
 
   //: **An embed's own DOM**: the page board's three layers, found by
   //: `data-wb-layer` inside its container instead of by id.
-  function skeleton(box) {
+  function embedSkeleton(box) {
     const svg = (layerId, cls) => {
       const el = document.createElementNS("http://www.w3.org/2000/svg", cls ? "svg" : "g");
       if (cls) el.setAttribute("class", cls);
@@ -164,8 +164,8 @@
 
   //: The page board becomes active again when it is touched or focused; bound
   //: while any embed exists and removed with the last one.
-  const pageWake = () => activate(wbInstances.page);
-  function pageListeners(on) {
+  const pageWake = () => activateInstance(wbInstances.page);
+  function pageWakeListeners(on) {
     const el = document.getElementById(PAGE_CONTAINER);
     if (!el) return;
     for (const type of ["pointerdown", "focusin", "wheel"]) {
@@ -177,13 +177,13 @@
   //: Draws `inst` with its globals live, then gives them back. The board's one
   //: render also writes page-wide chrome (the empty hint, the count), so the page
   //: board is drawn again on the next frame once it has been opened.
-  function draw(inst) {
+  function drawEmbed(inst) {
     const was = active;
-    activate(inst);
+    activateInstance(inst);
     try {
       renderWhiteboardNow();
     } finally {
-      activate(was);
+      activateInstance(was);
     }
     if (was !== inst && wbInitialized) wbScheduleRender();
   }
@@ -197,16 +197,16 @@
     box.setAttribute("role", "application");
     box.setAttribute("aria-roledescription", "canvas");
     box.setAttribute("aria-label", "Board");
-    skeleton(box);
+    embedSkeleton(box);
     host.append(box);
-    if (list.length === 1) pageListeners(true);
-    const inst = mount(box, boardId);
+    if (list.length === 1) pageWakeListeners(true);
+    const inst = mountInstance(box, boardId);
     inst.editable = opts.editable === true;
     inst.destroyed = false;
-    const wake = () => activate(inst);
+    const wake = () => activateInstance(inst);
     for (const type of ["pointerdown", "focusin"]) box.addEventListener(type, wake, { capture: true, passive: true });
 
-    async function reload() {
+    async function reloadEmbed() {
       const url = boardId ? `/whiteboard/?board_id=${boardId}` : "/whiteboard/";
       const [state, mapState] = await Promise.all([apiJson(url), wbRefreshMapState(boardId ?? null)]);
       if (inst.destroyed) return;
@@ -217,29 +217,29 @@
         inst.state = state;
         inst.mapState = mapState;
       }
-      draw(inst);
+      drawEmbed(inst);
     }
 
-    function destroy() {
+    function destroyEmbed() {
       if (inst.destroyed) return;
       inst.destroyed = true;
       for (const type of ["pointerdown", "focusin"]) box.removeEventListener(type, wake, { capture: true });
-      unmount(inst);
+      unmountInstance(inst);
       inst.changeFns.clear();
       box.remove();
-      if (list.length === 1) pageListeners(false);
+      if (list.length === 1) pageWakeListeners(false);
     }
 
     try {
-      await reload();
+      await reloadEmbed();
     } catch (err) {
-      destroy();
+      destroyEmbed();
       throw err;
     }
     return {
       instance: inst,
-      destroy,
-      reload,
+      destroy: destroyEmbed,
+      reload: reloadEmbed,
       focus: () => box.focus(),
       onChange(fn) {
         inst.changeFns.add(fn);
@@ -248,13 +248,13 @@
     };
   }
 
-  const page = create(null, null);
+  const page = newInstance(null, null);
   page.zoom = wbZoom;
   list.push(page);
   active = page;
 
   const wbInstances = {
-    page, list, mount, unmount, activate, container, layer, changed,
+    page, list, mount: mountInstance, unmount: unmountInstance, activate: activateInstance, container: activeContainer, layer: activeLayer, changed: notifyChanged,
     get active() { return active; },
   };
 

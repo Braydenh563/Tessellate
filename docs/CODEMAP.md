@@ -8989,22 +8989,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activate` | frontend/js/whiteboard-instances.js:88 |
-| `changed` | frontend/js/whiteboard-instances.js:134 |
-| `container` | frontend/js/whiteboard-instances.js:125 |
-| `create` | frontend/js/whiteboard-instances.js:25 |
+| `activateInstance` | frontend/js/whiteboard-instances.js:88 |
+| `activeContainer` | frontend/js/whiteboard-instances.js:125 |
+| `activeLayer` | frontend/js/whiteboard-instances.js:129 |
 | `createEmbed` | frontend/js/whiteboard-instances.js:193 |
-| `draw` | frontend/js/whiteboard-instances.js:180 |
-| `dropCaches` | frontend/js/whiteboard-instances.js:77 |
-| `layer` | frontend/js/whiteboard-instances.js:129 |
-| `load` | frontend/js/whiteboard-instances.js:62 |
-| `mount` | frontend/js/whiteboard-instances.js:109 |
-| `pageListeners` | frontend/js/whiteboard-instances.js:168 |
+| `drawEmbed` | frontend/js/whiteboard-instances.js:180 |
+| `dropBoardCaches` | frontend/js/whiteboard-instances.js:77 |
+| `embedSkeleton` | frontend/js/whiteboard-instances.js:146 |
+| `instanceZoom` | frontend/js/whiteboard-instances.js:37 |
+| `mountInstance` | frontend/js/whiteboard-instances.js:109 |
+| `newInstance` | frontend/js/whiteboard-instances.js:25 |
+| `notifyChanged` | frontend/js/whiteboard-instances.js:134 |
 | `pageWake` | frontend/js/whiteboard-instances.js:167 |
-| `save` | frontend/js/whiteboard-instances.js:51 |
-| `skeleton` | frontend/js/whiteboard-instances.js:146 |
-| `unmount` | frontend/js/whiteboard-instances.js:117 |
-| `zoomFor` | frontend/js/whiteboard-instances.js:37 |
+| `pageWakeListeners` | frontend/js/whiteboard-instances.js:168 |
+| `restoreGlobals` | frontend/js/whiteboard-instances.js:62 |
+| `stashGlobals` | frontend/js/whiteboard-instances.js:51 |
+| `unmountInstance` | frontend/js/whiteboard-instances.js:117 |
 
 ### frontend/js/whiteboard-interchange.js (50)
 
