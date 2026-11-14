@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11321, test files 2958, tests 23108, plan headings 692, app scripts 29, boot scripts 38, script files 307.
+Counts: frontend functions 8535, frontend ids 2802, CSS sections 524, backend routes 722, backend modules 11321, test files 2959, tests 23109, plan headings 692, app scripts 29, boot scripts 38, script files 307.
 
 ## Frontend functions (8535)
 
@@ -2106,12 +2106,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:910 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:904 |
 | `atlasFrameBudget` | frontend/js/atlas-life.js:494 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:816 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:844 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1461 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1436 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1462 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1437 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:21 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:383 |
 | `atlasTailBend` | frontend/js/atlas-life.js:134 |
@@ -28766,7 +28766,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (23108)
+## Tests (23109)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28878,7 +28878,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_access.py | 6 |
 | tests/test_atlas_acts_1589.py | 6 |
 | tests/test_atlas_blink_both_eyes_1644.py | 3 |
-| tests/test_atlas_breath_687.py | 8 |
+| tests/test_atlas_breath_687.py | 7 |
 | tests/test_atlas_carry_and_holds_1589.py | 3 |
 | tests/test_atlas_composite_1101.py | 5 |
 | tests/test_atlas_cost_live_1114.py | 3 |
@@ -28894,6 +28894,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_fem_1696.py | 4 |
 | tests/test_atlas_frame_reads.py | 10 |
 | tests/test_atlas_idle_cost_1031.py | 6 |
+| tests/test_atlas_idle_writes_1114.py | 2 |
 | tests/test_atlas_lids_1301.py | 7 |
 | tests/test_atlas_lite_mood_1565.py | 1 |
 | tests/test_atlas_main_thread_loops_1114.py | 3 |
