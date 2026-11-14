@@ -14198,6 +14198,8 @@ function wbExportLook() {
           copy.setAttribute("paint-order", "stroke");
         }
       });
+      //: A rich label (whiteboard-label-rich.js) becomes real SVG text, so the picture shows its words as drawn.
+      wbFmtState.richLabel?.exportInto(el, clone);
       return clone.outerHTML;
     },
     //: A note card's measured size and paint. `h` is `el.offsetHeight`, the live

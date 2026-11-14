@@ -21,43 +21,51 @@
     return SAFE_LINK.test(probe) ? value : "";
   }
 
-  //: Pure (node-tested): the depth of each list item in the markdown, in order, outside code fences. `renderMarkdown` draws
-  //: an indented item flat inside its list, so the label carries the depth itself: a deeper indent than the item
+  //: Pure (node-tested): each list item in the markdown, in order, outside code fences, as `{ line, depth }`. `renderMarkdown`
+  //: draws an indented item flat inside its list, so the label carries the depth itself: a deeper indent than the item
   //: above opens a level, a shallower one closes back to the level it matches (a tab counts as four spaces).
-  function listDepths(text) {
+  function listEntries(text) {
     const out = [];
     const stack = [];
     let fenced = false;
-    for (const line of String(text ?? "").split("\n")) {
+    String(text ?? "").split("\n").forEach((line, at) => {
       if (/^\s*(```|~~~)/.test(line)) {
         fenced = !fenced;
-        continue;
+        return;
       }
       const hit = !fenced && /^([ \t]*)([-*+]|\d{1,9}[.)])\s+\S/.exec(line);
       if (!hit) {
-        if (!fenced && !line.trim()) continue;
-        if (!fenced && !/^\s/.test(line)) stack.length = 0;
-        continue;
+        if (!fenced && line.trim() && !/^\s/.test(line)) stack.length = 0;
+        return;
       }
       const width = hit[1].replace(/\t/g, "    ").length;
       while (stack.length && stack[stack.length - 1] > width) stack.pop();
       if (!stack.length || stack[stack.length - 1] < width) stack.push(width);
-      out.push(stack.length - 1);
-    }
+      out.push({ line: at, depth: stack.length - 1 });
+    });
     return out;
   }
 
-  //: Puts each item's depth on the rendered list as a left margin (set through the style object: the CSP refuses a style attribute).
+  const listDepths = (text) => listEntries(text).map((entry) => entry.depth);
+
+  //: Puts each item's depth on the rendered list as a left margin (set through the style object: the CSP refuses a style
+  //: attribute). Each list is matched to the items from its own source line (`data-src-line`), so a list the renderer
+  //: draws differently (inside a quote, say) never shifts the depths of the lists around it.
   function indentItems(box, text) {
-    const depths = listDepths(text);
-    const items = [...box.querySelectorAll("li")];
-    if (!depths.some(Boolean) || depths.length !== items.length) return;
-    items.forEach((li, i) => {
-      if (depths[i]) {
-        li.dataset.depth = String(depths[i]);
-        li.style.marginLeft = `${depths[i] * 1.2}em`;
-      }
-    });
+    const entries = listEntries(text);
+    if (!entries.some((entry) => entry.depth)) return;
+    for (const list of box.querySelectorAll("ul, ol")) {
+      const from = entries.findIndex((entry) => entry.line === Number(list.dataset.srcLine));
+      const items = [...list.children].filter((child) => child.localName === "li");
+      if (from < 0 || from + items.length > entries.length) continue;
+      items.forEach((li, i) => {
+        const depth = entries[from + i].depth;
+        if (depth) {
+          li.dataset.depth = String(depth);
+          li.style.marginLeft = `${depth * 1.2}em`;
+        }
+      });
+    }
   }
 
   const isRich = (parsed) => parsed?.[KEY] === true;
@@ -138,6 +146,88 @@
     label.style.opacity = "0";
   }
 
+  //: The rendered label as lines for a picture: `{ depth, mark, runs: [{ t, b, i }] }`. A block is one line; a list
+  //: item carries its bullet or number and its depth; a link is its words. Reads the DOM the board shows.
+  function linesOf(box) {
+    const lines = [];
+    const runs = (node, flags, into) => {
+      for (const child of node.childNodes) {
+        if (child.nodeType === 3) {
+          if (child.textContent) into.push({ t: child.textContent.replace(/\s+/g, " "), b: flags.b, i: flags.i });
+        } else if (child.nodeType === 1) {
+          const tag = child.localName;
+          if (tag === "br") into.push({ br: true });
+          else runs(child, { b: flags.b || /^(strong|b|h[1-6]|th)$/.test(tag), i: flags.i || /^(em|i)$/.test(tag) }, into);
+        }
+      }
+    };
+    const push = (node, extra) => {
+      const into = [];
+      runs(node, { b: /^h[1-6]$/.test(node.localName), i: false }, into);
+      let line = { ...extra, runs: [] };
+      for (const run of into) {
+        if (run.br) {
+          lines.push(line);
+          line = { depth: extra.depth, mark: "", runs: [] };
+        } else line.runs.push(run);
+      }
+      if (line.runs.some((run) => run.t.trim()) || line.mark) lines.push(line);
+    };
+    for (const block of box.children) {
+      if (/^(ul|ol)$/.test(block.localName)) {
+        let n = Number(block.getAttribute("start")) || 1;
+        for (const li of block.children) {
+          if (li.localName === "li") push(li, { depth: Number(li.dataset.depth) || 0, mark: block.localName === "ol" ? `${n++}. ` : "• " });
+        }
+      } else push(block, { depth: 0, mark: "" });
+    }
+    return lines;
+  }
+
+  //: The picture clone of a shape: its rich label becomes SVG text in the same box (a foreignObject does not travel into
+  //: an SVG, PNG or PDF), so the picture shows the lists, bold, italic and link words, not the markdown source.
+  function exportInto(el, clone) {
+    const fo = el.querySelector(":scope > .sketch-label-rich");
+    const copy = clone.querySelector(":scope > .sketch-label-rich");
+    const label = el.querySelector(":scope > .sketch-label");
+    const box = fo?.firstElementChild;
+    if (!copy || !label || !box) return;
+    const look = getComputedStyle(label);
+    const size = parseFloat(box.style.fontSize) || parseFloat(look.fontSize) || 14;
+    const lh = size * 1.3;
+    const x0 = Number(fo.getAttribute("x"));
+    const y0 = Number(fo.getAttribute("y"));
+    const w = Number(fo.getAttribute("width"));
+    const h = Number(fo.getAttribute("height"));
+    const align = box.style.textAlign || "center";
+    const lines = linesOf(box);
+    const top = y0 + (box.dataset.valign === "top" ? 0 : box.dataset.valign === "bottom" ? h - lines.length * lh : (h - lines.length * lh) / 2);
+    const text = document.createElementNS(NS, "text");
+    text.setAttribute("fill", box.style.color || look.fill);
+    text.setAttribute("font-size", String(size));
+    text.setAttribute("font-family", look.fontFamily);
+    text.setAttribute("dominant-baseline", "central");
+    text.setAttribute("text-anchor", align === "left" || align === "start" ? "start" : align === "right" || align === "end" ? "end" : "middle");
+    const x = align === "left" || align === "start" ? x0 : align === "right" || align === "end" ? x0 + w : x0 + w / 2;
+    lines.forEach((line, row) => {
+      const indent = line.depth * 1.2 * size;
+      const lead = document.createElementNS(NS, "tspan");
+      lead.setAttribute("x", String(x + (text.getAttribute("text-anchor") === "start" ? indent : text.getAttribute("text-anchor") === "middle" ? indent / 2 : 0)));
+      lead.setAttribute("y", String(top + (row + 0.5) * lh));
+      lead.textContent = line.mark;
+      text.append(lead);
+      for (const run of line.runs) {
+        const span = document.createElementNS(NS, "tspan");
+        if (run.b) span.setAttribute("font-weight", "700");
+        if (run.i) span.setAttribute("font-style", "italic");
+        span.textContent = run.t;
+        text.append(span);
+      }
+    });
+    clone.querySelectorAll(":scope > .sketch-label").forEach((node) => node.remove());
+    copy.replaceWith(text);
+  }
+
   //: The Format panel's Rich text tick, from the selected shapes (Mixed when they differ).
   function sync(shapes) {
     const box = document.getElementById("wb-fmt-lmd");
@@ -159,5 +249,5 @@
   WB_SKETCH_RESET_KEYS.push(KEY);
   onSurface("board", bind);
 
-  wbFmtState.richLabel = { cleanHref, isRich, listDepths, indentItems, inert, mark, paint, sync, KEY };
+  wbFmtState.richLabel = { cleanHref, isRich, listDepths, indentItems, inert, mark, paint, sync, linesOf, exportInto, KEY };
 })();
