@@ -378,3 +378,20 @@ def test_every_note_the_page_creates_is_filed_in_the_background():
                 continue
             missing.append(f"{path.name}:{text[: match.start()].count(chr(10)) + 1}")
     assert not missing, f"POST /entries without defer_filing: {missing}"
+
+
+def test_the_new_note_box_has_live_source_read_with_live_by_default():
+    """L-documents-53: the capture strip's three-way switch; Read is not remembered; the edit box keeps Source only."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    seg = html[html.index('id="entry-view-seg"') : html.index('id="entry-content"')]
+    assert [seg.count(f'data-note-view="{v}"') for v in ("live", "source", "read")] == [1, 1, 1]
+    assert 'data-note-view="live" aria-label="Live" aria-pressed="true"' in seg, "Live is the default"
+    assert 'id="entry-read"' in html
+    wiring = _read("wiring.js")
+    body = _function(wiring, "setNoteSource")
+    assert 'on === "read"' in body and 'renderNoteText(pane, $("entry-content").value, [])' in body
+    assert 'prefs.set("note-source-view"' in body and body.index("if (!reading) try") < body.index("prefs.set")
+    clone = _function(_read("note-edit-panels.js"), "noteEditToolbar")
+    assert 'viewSeg?.replaceWith(viewSeg.querySelector("#entry-preview-toggle"))' in clone
+    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    assert ".note-composer.is-reading :is(.note-surface, #entry-content)" in css and ":not(#entry-view-seg)" in css

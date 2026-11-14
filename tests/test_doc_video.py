@@ -76,5 +76,5 @@ def test_a_note_card_drawn_before_the_bundle_loads_still_gets_a_player():
     js = (ROOT / "frontend" / "js" / "notes-list.js").read_text(encoding="utf-8")
     at = js.index("!window.imageLayout && /\\.(?:mp4|webm)")
     block = js[at : at + 500]
-    assert 'createElement("video")' in block and 'early.preload = "metadata"' in block
-    assert "early.controls = true" in block
+    assert 'createElement("video")' in block and 'preload: "metadata"' in block
+    assert "controls: true" in block

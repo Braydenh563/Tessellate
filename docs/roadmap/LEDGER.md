@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 42 | 1 | 0 | 3 | 63 |
+| documents | 20 | 41 | 1 | 0 | 3 | 62 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 597 | 129 | 2 | 166 | 1229 |
+| all | 503 | 596 | 129 | 2 | 166 | 1228 |
 
 ## graph
 
@@ -345,7 +345,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-49** `documents` open, L: Labelled and linked sections with an embedded local graph (24 row 10). From DOCUMENTS_PLAN.md:1120, audit 2026-11-14. Evidence: documents-graph.js is the y=f(x) block, not section labels
 - [ ] **L-documents-50** `documents` open, M: Code linters: ruff-wasm and a JS linter (25 row 4). From DOCUMENTS_PLAN.md:1157, audit 2026-11-14. Evidence: no ruff or eslint in frontend/vendor; only in-house docCodeScan documents-code.js:4951
 - [ ] **L-documents-52** `documents` open, M: Board and calendar views of the base block (1308 item 6). From DOCUMENTS_PLAN.md:1274, audit 2026-11-14. Evidence: documents-base.js:4 says board and calendar views are not built
-- [ ] **L-documents-53** `documents` open, M: Note capture Live, Source, Read switch, Live by default (1308 item 17). From DOCUMENTS_PLAN.md:1285, audit 2026-11-14. Evidence: no view switch near #entry-content (index.html:1735); no record of notecap
 - [ ] **L-documents-54** `documents` open, M: Page-shaped card in the Library Documents list (INBOX 1325). From DOCUMENTS_PLAN.md:1290, audit 2026-11-14. Evidence: no cover or page-card code in library.js; only routes_documents._preview
 - [ ] **L-documents-55** `documents` open, M: Diagram blocks: classDef styling, click links, icons (1679 gap 1b). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: documents-mermaid.js:54 DGM_KEPT keeps style, classDef, class, linkStyle, click as locked lines
 - [ ] **L-documents-56** `documents` open, M: Sequence diagram autonumber, box, create/destroy, rect colour (1679 gap 2). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: diagram-kinds.js:218 returns null for box, create, destroy; autonumber and rect open in Source

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes: the new-note box has a Live, Source and Read switch (L-documents-53): Live by default and remembered with Source, Read draws the finished note in the editor's place and is not remembered; the edit box keeps its Source button. Typing latency p50 25.9 ms before, 25.4 and 26.2 after (80 keys, two frames each).
 - Documents: Sass (indented, `.sass`) and Stylus (`.styl`) are code types of their own, with Emmet's `sass` and `stylus` forms (`df` is `display: flex` and `display flex`); no highlighter for either is bundled, so they edit as plain text with Emmet (L-documents-76).
 - Documents: a video in a note card drawn before the library bundle loads is a `<video controls preload="metadata">`, not a broken img (L-documents-75).
 - Documents: the diagram shelf sweep drives a touch hold-and-drag of a tile onto the picture with CDP touch events (L-documents-72): 3 to 4 blocks in a flowchart and a mind map at 390.

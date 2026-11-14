@@ -793,13 +793,10 @@ onSurface("chat", () => {
     }
   });
 });
-//: **Live or Source, never a separate Preview** (INBOX 430, the owner: "note
-//: forms use the live view with a source toggle, no Preview"). The note box
-//: already renders as you type (documents.js, the note surface's Live
-//: rendering), so a Preview pane was a second copy of what the box shows, in
-//: a box you could not type in. The strip's toggle is Source now: the
-//: markdown as typed, without the live formatting, and back. One choice for
+//: **Live or Source, never a separate Preview** (INBOX 430, the owner: "note forms use the live view with a source
+//: toggle, no Preview"): the box already renders as you type; Source shows the markdown as typed. One choice for
 //: every note box, remembered (`noteSourceWanted`).
+//: **Read, in the new-note box only** (L-documents-53): the finished note, the editor hidden, not remembered.
 function noteSourceOn() {
   try {
     return prefs.get("note-source-view", null) === "1";
@@ -808,29 +805,41 @@ function noteSourceOn() {
   }
 }
 
-function syncNoteSourceButtons() {
-  for (const button of document.querySelectorAll("#entry-preview-toggle, [data-note-preview]")) {
-    button.setAttribute("aria-pressed", noteSourceOn());
-    button.classList.toggle("is-active", noteSourceOn());
+function syncNoteSourceButtons(reading = false) {
+  const now = reading ? "read" : noteSourceOn() ? "source" : "live";
+  for (const button of document.querySelectorAll("#entry-preview-toggle, [data-note-preview], #entry-view-seg [data-note-view]")) {
+    const on = (button.dataset.noteView || "source") === now;
+    button.setAttribute("aria-pressed", on);
+    button.classList.toggle("is-active", on);
   }
 }
 
+//: `on`: true is Source, false Live, "read" the finished view.
 function setNoteSource(on) {
-  try {
+  const reading = on === "read";
+  if (!reading) try {
     prefs.set("note-source-view", on ? "1" : "0");
   } catch {
     /* storage blocked: this box only */
   }
+  const pane = $("entry-read");
+  if (pane) {
+    pane.classList.toggle("hidden", !reading);
+    pane.parentNode.classList.toggle("is-reading", reading);
+    if (reading) renderNoteText(pane, $("entry-content").value, []);
+  }
   //: A box not mounted yet reads the choice when it mounts.
   for (const id of ["entry-content", "entry-edit-content"]) {
     const host = $(id);
-    if (host && typeof setNoteSurfaceSource === "function") setNoteSurfaceSource(host, on);
+    if (host && typeof setNoteSurfaceSource === "function") setNoteSurfaceSource(host, reading ? noteSourceOn() : on);
   }
-  syncNoteSourceButtons();
+  syncNoteSourceButtons(reading);
 }
 
 onSurface("notes", () => {
-  $("entry-preview-toggle")?.addEventListener("click", () => setNoteSource(!noteSourceOn()));
+  for (const button of document.querySelectorAll("#entry-view-seg [data-note-view]")) {
+    button.addEventListener("click", () => setNoteSource({ live: false, source: true, read: "read" }[button.dataset.noteView]));
+  }
 });
 syncNoteSourceButtons();
 

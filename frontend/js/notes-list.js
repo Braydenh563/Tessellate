@@ -1008,11 +1008,7 @@ function appendInlineRun(element, text, terms, compact, options) {
         appendPictureBox(element, window.imageLayout.video(imageUrl, imageAlt));
       } else if (isRenderableUrl(imageUrl) && !window.imageLayout && /\.(?:mp4|webm)(?:[?#]|$)/i.test(imageUrl)) {
         //: Drawn before the library bundle (image-layout.js) has loaded: a bare player, never a broken <img> (L-documents-75).
-        const early = document.createElement("video");
-        early.controls = true;
-        early.preload = "metadata";
-        early.src = mediaSrc(imageUrl);
-        element.appendChild(early);
+        element.appendChild(Object.assign(document.createElement("video"), { controls: true, preload: "metadata", src: mediaSrc(imageUrl) }));
       } else if (isRenderableUrl(imageUrl)) {
         const img = document.createElement("img");
         img.src = mediaSrc(imageUrl);
