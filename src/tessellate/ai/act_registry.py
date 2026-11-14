@@ -329,7 +329,7 @@ def guide_topic_boards() -> dict:
         "keywords": ("draw a shape by sentence", "connect two cards", "move a card on the board", "add a node to a mind map", "write a document in chat",
                      "save a skill in chat", "check what it learned", "board acts"),
         "badge": {"label": "Chat", "tab": "chat"},
-        "body": "These work from one sentence, with no model, and each waits for Confirm and has Undo: " + "; ".join(lines) + ".",
+        "body": "Say one sentence and a board, map or document changes with no model, and each waits for Confirm and has Undo: " + "; ".join(lines) + ".",
     }
 
 
