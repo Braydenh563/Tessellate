@@ -586,3 +586,4 @@ def _any_address() -> bool:
 
 
 lantrust.online_probe = _any_address
+lantrust.addresses_probe = lambda: lan_addresses(include_v6=True)

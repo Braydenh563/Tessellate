@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 143 | 29 | 3 | 10 | 172 |
+| world-class | 0 | 144 | 29 | 3 | 10 | 173 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 534 | 100 | 5 | 121 | 1039 |
+| all | 405 | 535 | 100 | 5 | 121 | 1040 |
 
 ## graph
 
@@ -626,6 +626,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-160** `world-class` open, S: Verify the saved-search row menu and finder open at 5,000 notes with a correct selector. From L933 agent run 2026-11-14. Evidence: 5,000 notes, saved-search sidebar rendered 3 rows; kebab menu geometry (selector hit a wrong menu, w=0) and click-to-results (15.2 s timeout, selector guessed) not verified
 - [ ] **L-world-class-161** `world-class` open, M: GET /entries at a 5,000 page: tag reasons cache smaller than the page, clean() per note. From L-world-class-20 agent run 2026-11-14. Evidence: GET /entries?limit=5000 2.1 s warm (6.3 MB): _tag_reasons lru_cache maxsize 1024 thrashes; clean() ~0.4 ms/note cold; default page 1000 is 412 ms cold, 116 ms warm
 - [ ] **L-world-class-150** `world-class` open, M: Cut app import from 2.1 s toward 1.5 s: load route modules and sqlalchemy models lazily. From L-world-class-51 measurement. Evidence: importtime: fastapi 224 ms, sqlalchemy 120 ms, core.database 105 ms, api route modules (routes_learned, routes_entries, routes_settings, routes_auth) 40 to 95 ms each self; starlette route compile 36 ms (632 patterns); app import median 2.14 s
+- [ ] **L-world-class-240** `world-class` open, M: LAN mode: a second HTTPS request from a device whose sign-in is held open can be cut at the handshake under load; reproduce (20 serial runs, 4 busy loops) and fix the cause. From hub 2026-11-14 13:40Z, CI 86918627 py3.13 leg 1. Evidence: tests/test_lan.py:1015 SSLEOFError on a LAN /auth/lan-watch request while a LAN /auth/unlock is held open; passes 3/3 alone
 
 ## general
 

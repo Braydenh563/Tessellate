@@ -278,13 +278,33 @@ def _online() -> bool:
         return False
 
 
+#: This computer's addresses now; netbind sets it, as with `online_probe`.
+addresses_probe = None
+
+
+def _held_reading() -> netid.Network | None:
+    """The last reading, when a fresh one found nothing but this computer
+    still has the address it had on that network (L-world-class-240). A
+    router mid-ARP (`/proc/net/arp` flags 0x0) reads as no network for a
+    moment; taking that for an unknown network closed the port and dropped
+    every open connection, a phone's included. A changed address is a
+    different network, or none, and is not held."""
+    last = _gate["network"]
+    if last is None or not last.address or addresses_probe is None:
+        return None
+    try:
+        return last if last.address in addresses_probe() else None
+    except OSError:
+        return None
+
+
 _UNREAD = object()
 
 
 def refresh(data_dir: Path, network=_UNREAD, *, online: bool | None = None) -> dict:  # noqa: ANN001  # a netid.Network, None, or unread
     """Read the network again and decide whether the LAN port may be open."""
     if network is _UNREAD:
-        network = netid.read()
+        network = netid.read() or _held_reading()
     if online is None:
         online = network is not None or _online()
     adopt(data_dir)  # the requests a restart interrupted come back with the LAN listener

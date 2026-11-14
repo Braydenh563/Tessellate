@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8508, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11025, test files 2839, tests 22549, plan headings 685, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8508, frontend ids 2793, CSS sections 524, backend routes 720, backend modules 11026, test files 2840, tests 22552, plan headings 685, app scripts 29, boot scripts 38, script files 309.
 
 ## Frontend functions (8508)
 
@@ -14183,7 +14183,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11025)
+## Backend modules (11026)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -25296,66 +25296,67 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `trust_page_open` | src/tessellate/core/lanserve.py:100 |
 | `trust_response` | src/tessellate/core/lanserve.py:147 |
 
-### src/tessellate/core/lantrust.py (57)
+### src/tessellate/core/lantrust.py (58)
 
 | Name | File:line |
 |---|---|
 | `_bump` | src/tessellate/core/lantrust.py:80 |
 | `_entry` | src/tessellate/core/lantrust.py:230 |
-| `_expire` | src/tessellate/core/lantrust.py:703 |
-| `_group_of` | src/tessellate/core/lantrust.py:382 |
-| `_listed_row` | src/tessellate/core/lantrust.py:406 |
-| `_move_to_trusted` | src/tessellate/core/lantrust.py:446 |
-| `_named` | src/tessellate/core/lantrust.py:390 |
-| `_network_groups` | src/tessellate/core/lantrust.py:394 |
+| `_expire` | src/tessellate/core/lantrust.py:723 |
+| `_group_of` | src/tessellate/core/lantrust.py:402 |
+| `_held_reading` | src/tessellate/core/lantrust.py:285 |
+| `_listed_row` | src/tessellate/core/lantrust.py:426 |
+| `_move_to_trusted` | src/tessellate/core/lantrust.py:466 |
+| `_named` | src/tessellate/core/lantrust.py:410 |
+| `_network_groups` | src/tessellate/core/lantrust.py:414 |
 | `_note_untrusted` | src/tessellate/core/lantrust.py:254 |
 | `_now_text` | src/tessellate/core/lantrust.py:183 |
-| `_one_network` | src/tessellate/core/lantrust.py:369 |
+| `_one_network` | src/tessellate/core/lantrust.py:389 |
 | `_online` | src/tessellate/core/lantrust.py:270 |
 | `_path` | src/tessellate/core/lantrust.py:114 |
 | `_remember` | src/tessellate/core/lantrust.py:242 |
 | `_same` | src/tessellate/core/lantrust.py:222 |
 | `_stopped_trusting` | src/tessellate/core/lantrust.py:190 |
-| `_write_pending` | src/tessellate/core/lantrust.py:654 |
-| `adopt` | src/tessellate/core/lantrust.py:674 |
-| `allow_current` | src/tessellate/core/lantrust.py:355 |
-| `clear_switched_off` | src/tessellate/core/lantrust.py:554 |
-| `current_network` | src/tessellate/core/lantrust.py:316 |
-| `decide` | src/tessellate/core/lantrust.py:744 |
-| `device_hash` | src/tessellate/core/lantrust.py:583 |
-| `device_known` | src/tessellate/core/lantrust.py:589 |
-| `device_name` | src/tessellate/core/lantrust.py:631 |
-| `devices` | src/tessellate/core/lantrust.py:792 |
+| `_write_pending` | src/tessellate/core/lantrust.py:674 |
+| `adopt` | src/tessellate/core/lantrust.py:694 |
+| `allow_current` | src/tessellate/core/lantrust.py:375 |
+| `clear_switched_off` | src/tessellate/core/lantrust.py:574 |
+| `current_network` | src/tessellate/core/lantrust.py:336 |
+| `decide` | src/tessellate/core/lantrust.py:764 |
+| `device_hash` | src/tessellate/core/lantrust.py:603 |
+| `device_known` | src/tessellate/core/lantrust.py:609 |
+| `device_name` | src/tessellate/core/lantrust.py:651 |
+| `devices` | src/tessellate/core/lantrust.py:812 |
 | `evaluate` | src/tessellate/core/lantrust.py:197 |
-| `forget_device` | src/tessellate/core/lantrust.py:799 |
-| `forget_network` | src/tessellate/core/lantrust.py:430 |
-| `hold` | src/tessellate/core/lantrust.py:711 |
-| `is_open` | src/tessellate/core/lantrust.py:312 |
-| `listed` | src/tessellate/core/lantrust.py:422 |
+| `forget_device` | src/tessellate/core/lantrust.py:819 |
+| `forget_network` | src/tessellate/core/lantrust.py:450 |
+| `hold` | src/tessellate/core/lantrust.py:731 |
+| `is_open` | src/tessellate/core/lantrust.py:332 |
+| `listed` | src/tessellate/core/lantrust.py:442 |
 | `load` | src/tessellate/core/lantrust.py:118 |
-| `mark_switched_off` | src/tessellate/core/lantrust.py:546 |
-| `mark_turned_on` | src/tessellate/core/lantrust.py:531 |
-| `network_for_display` | src/tessellate/core/lantrust.py:323 |
-| `note_used` | src/tessellate/core/lantrust.py:514 |
-| `pending` | src/tessellate/core/lantrust.py:734 |
-| `persist_use` | src/tessellate/core/lantrust.py:520 |
-| `plain_address` | src/tessellate/core/lantrust.py:594 |
+| `mark_switched_off` | src/tessellate/core/lantrust.py:566 |
+| `mark_turned_on` | src/tessellate/core/lantrust.py:551 |
+| `network_for_display` | src/tessellate/core/lantrust.py:343 |
+| `note_used` | src/tessellate/core/lantrust.py:534 |
+| `pending` | src/tessellate/core/lantrust.py:754 |
+| `persist_use` | src/tessellate/core/lantrust.py:540 |
+| `plain_address` | src/tessellate/core/lantrust.py:614 |
 | `plain_http_on` | src/tessellate/core/lantrust.py:163 |
-| `refresh` | src/tessellate/core/lantrust.py:284 |
-| `remember_current` | src/tessellate/core/lantrust.py:340 |
-| `remember_device` | src/tessellate/core/lantrust.py:613 |
-| `reset_for_tests` | src/tessellate/core/lantrust.py:813 |
+| `refresh` | src/tessellate/core/lantrust.py:304 |
+| `remember_current` | src/tessellate/core/lantrust.py:360 |
+| `remember_device` | src/tessellate/core/lantrust.py:633 |
+| `reset_for_tests` | src/tessellate/core/lantrust.py:833 |
 | `save` | src/tessellate/core/lantrust.py:170 |
-| `set_flag` | src/tessellate/core/lantrust.py:570 |
-| `settle` | src/tessellate/core/lantrust.py:784 |
-| `status` | src/tessellate/core/lantrust.py:331 |
-| `touch_device` | src/tessellate/core/lantrust.py:600 |
-| `touch_version` | src/tessellate/core/lantrust.py:563 |
-| `trust_network` | src/tessellate/core/lantrust.py:463 |
-| `untrust_network` | src/tessellate/core/lantrust.py:481 |
-| `unused_since` | src/tessellate/core/lantrust.py:542 |
+| `set_flag` | src/tessellate/core/lantrust.py:590 |
+| `settle` | src/tessellate/core/lantrust.py:804 |
+| `status` | src/tessellate/core/lantrust.py:351 |
+| `touch_device` | src/tessellate/core/lantrust.py:620 |
+| `touch_version` | src/tessellate/core/lantrust.py:583 |
+| `trust_network` | src/tessellate/core/lantrust.py:483 |
+| `untrust_network` | src/tessellate/core/lantrust.py:501 |
+| `unused_since` | src/tessellate/core/lantrust.py:562 |
 | `version` | src/tessellate/core/lantrust.py:107 |
-| `wait_decision` | src/tessellate/core/lantrust.py:766 |
+| `wait_decision` | src/tessellate/core/lantrust.py:786 |
 | `wait_version_change` | src/tessellate/core/lantrust.py:89 |
 
 ### src/tessellate/core/launch_status.py (7)
@@ -28292,7 +28293,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22549)
+## Tests (22552)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29778,6 +29779,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_timer_named_1741.py | 4 |
 | tests/test_lag_wblib_1726.py | 2 |
 | tests/test_lan.py | 131 |
+| tests/test_lan_gate_arp_flicker.py | 3 |
 | tests/test_lan_trust_page.py | 7 |
 | tests/test_languagetool_1731.py | 9 |
 | tests/test_last_week_is_monday_to_sunday.py | 2 |
@@ -31553,14 +31555,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:878 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:680 |
+| Needs hardware | docs/roadmap/LEDGER.md:681 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1297 |
-| Owner calls | docs/roadmap/LEDGER.md:670 |
+| Owner calls | docs/roadmap/LEDGER.md:671 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31740,7 +31742,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:3175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:817 |
+| Plan session briefs | docs/roadmap/LEDGER.md:818 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31794,25 +31796,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:833 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:917 |
+| chat | docs/roadmap/LEDGER.md:834 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:918 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:857 |
-| general | docs/roadmap/LEDGER.md:630 |
+| documents | docs/roadmap/LEDGER.md:858 |
+| general | docs/roadmap/LEDGER.md:631 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:821 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:929 |
+| graph | docs/roadmap/LEDGER.md:822 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:930 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:869 |
+| mindmap | docs/roadmap/LEDGER.md:870 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:893 |
+| timeline | docs/roadmap/LEDGER.md:894 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:881 |
+| ui-modernisation | docs/roadmap/LEDGER.md:882 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:845 |
+| whiteboard | docs/roadmap/LEDGER.md:846 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:905 |
+| world-class | docs/roadmap/LEDGER.md:906 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
