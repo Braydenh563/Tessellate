@@ -1008,7 +1008,7 @@ function pushDraftUndo() {
   );
   draftUndoStack.push(point);
   if (draftUndoStack.length > MAX_DRAFT_UNDO) draftUndoStack.shift();
-  updateDraftUndoButton();
+  paintDraftStepBack();
 }
 
 function putDraftBack(point) {
@@ -1018,11 +1018,11 @@ function putDraftBack(point) {
   foldedThoughts = "";
   $("draft-text").value = point.draft;
   updateDraftCount();
-  updateDraftUndoButton();
+  paintDraftStepBack();
   saveDraftLocally();
 }
 
-function updateDraftUndoButton() {
+function paintDraftStepBack() {
   const button = $("draft-undo");
   // `draftController` as well as the stack: the undo point for a pass is
   // pushed at its first token, not before the call, so without this the

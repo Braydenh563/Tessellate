@@ -332,7 +332,7 @@ async function toggleThenAndNow(entry, thenText, row, button) {
 //: AI's actors and the event ids its writes fall between
 //: (`skill_runner._undo_span`), which `POST /events/undo` takes as one. The
 //: Recent activity widget's "Undo what Atlas did" grammar, the same plan
-//: sentence (`activityUndoPlanText`): always the dry run first, shown in the
+//: sentence (`activityPlanText`): always the dry run first, shown in the
 //: confirm, then that plan applied. A board item stays "can't be undone",
 //: said in the plan rather than skipped silently. Lives here, beside the
 //: note's own History, because both are about putting a note back; reached
@@ -357,7 +357,7 @@ async function undoSkillRun(span, button, onDone) {
     return;
   }
   const byId = new Map((allEntries || []).map((entry) => [entry.id, entry]));
-  const ok = await confirmDialog(`Undo this run?\n\n${activityUndoPlanText(plan, byId, "this run")}`, {
+  const ok = await confirmDialog(`Undo this run?\n\n${activityPlanText(plan, byId, "this run")}`, {
     confirmLabel: "Undo",
     danger: false,
   });

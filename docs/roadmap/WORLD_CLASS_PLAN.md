@@ -219,7 +219,7 @@ the editors' histories and the board history module, unless it calls
 `pushUndo`; the six implementations of 2026-10-10 (`offerCategoryUndo`,
 `chatDeleteUndo`, `undoDraft`, `pushDocAiUndo`, `activityUndoControl`,
 `inlineAiUndo`) are the ratchet's starting list and fold into `pushUndo`
-in Brief 51 (the last seven: LEDGER L-world-class-61).
+in Brief 51 (folded: LEDGER L-world-class-61, ratchet empty).
 
 ## 2. Competitors: what they have that Tessellate does not (checked, not
 assumed)
@@ -526,7 +526,7 @@ on 2026-09-14 (INBOX 220) so they survive its archiving.
 
 **Built 2026-10-04 for the pool's kinds.** Moved to HISTORY.md, "Moved from the plans, 2026-10-04 (B2 durable jobs)": the `jobs` table, leases with a heartbeat, resume after a kill (a real SIGKILL in `tests/test_jobstore.py`), `GET /jobs`, `GET /jobs/stream`, cancel of a queued job.
 
-**Open, LEDGER L-world-class-66:** a running job cannot be cancelled, only a queued one (`core/jobstore.py:356`, "a running job is not interrupted"; cooperative stop per handler). M, Opus. The other kinds on the table and the activity panel on `/jobs/stream` are built (table row 3 of section 8, HISTORY; `ai-tools.js:19`).
+**Stop on a running job built (L-world-class-66):** `jobs.check_stop()` at each handler's safe boundary, `Pool.stop_running`, the row ends `cancelled` (`core/jobstore.py` `cancel`; `tests/test_jobstore.py`, `tests/test_job_stop_handlers.py`). A one-step kind (`file-entry`) says so instead. The other kinds on the table and the activity panel on `/jobs/stream` are built (table row 3 of section 8, HISTORY; `ai-tools.js:19`).
 
 ### B3 The retrieval engine: one index, three signals, explained
 
@@ -857,8 +857,8 @@ in `docks.js`).
   (`tests/test_flaw_class_lints.py`). 2026-10-05: the re-index (a `batch`
   lane of its own) and the model capability probe moved onto the pool, the
   ratchet lowered by two (HISTORY.md, "Moved from the plans, 2026-10-05
-  (F7, F10)"). Left: the model downloads, the embedding warm-up (kept apart on
-  purpose, see its comment), the scheduler, the searxng and update threads: LEDGER L-world-class-79.
+  (F7, F10)"). Built 2026-11-14 (L-world-class-79): the model downloads, the scheduler,
+  the searxng and update threads all start through `jobs.thread`; the ratchet holds two modules.
 - F10 built 2026-10-05 as a view: `readings`, `GET /files/readings`, every kind indexed (HISTORY.md, "Moved from the plans, 2026-10-05 (F7, F10)"). One renderer in the Files card reading the route: LEDGER L-world-class-80.
 - F11 (d) GRAPH_PLAN section 3 owns it.
 - F12 (b) 2026-10-05: `store.js` and its first slice, `notes` (HISTORY.md, "Moved from the plans, 2026-10-05 (F1, F5, F12)"). 2026-11-14 the second slice, `reminders` (HISTORY.md, L-world-class-81). Left: the current note, each surface subscribing in place of its own copy: LEDGER L-world-class-357.
