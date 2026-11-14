@@ -13467,7 +13467,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `state` | src/tessellate/api/routes_bench.py:241 |
 |  | GET | `suggestions` | src/tessellate/api/routes_inbox.py:122 |
 |  | GET | `tidy_summary` | src/tessellate/api/routes_tidy.py:50 |
-|  | GET | `timeline` | src/tessellate/api/routes_timeline.py:363 |
+|  | GET | `timeline` | src/tessellate/api/routes_timeline.py:361 |
 |  | GET | `today` | src/tessellate/api/routes_resurface.py:106 |
 |  | POST | `chat` | src/tessellate/api/routes_chat.py:416 |
 |  | POST | `count` | src/tessellate/api/routes_usage.py:30 |
@@ -13592,7 +13592,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/desktop/fullscreen` | POST | `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:860 |
 | `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
 | `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:225 |
-| `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:827 |
+| `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:825 |
 | `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:949 |
 | `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:876 |
 | `/dismiss` | POST | `dismiss_insight` | src/tessellate/api/routes_insights.py:549 |
@@ -23638,37 +23638,37 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_MeetingAt` | src/tessellate/api/routes_timeline.py:270 |
-| `_add_source_density` | src/tessellate/api/routes_timeline.py:579 |
-| `_also_on` | src/tessellate/api/routes_timeline.py:260 |
-| `_bucket_start` | src/tessellate/api/routes_timeline.py:156 |
-| `_check_params` | src/tessellate/api/routes_timeline.py:493 |
-| `_cut_page` | src/tessellate/api/routes_timeline.py:634 |
-| `_dates_of` | src/tessellate/api/routes_timeline.py:594 |
-| `_decode_cursor` | src/tessellate/api/routes_timeline.py:70 |
-| `_decode_marks` | src/tessellate/api/routes_timeline.py:126 |
-| `_density` | src/tessellate/api/routes_timeline.py:742 |
-| `_encode_marks` | src/tessellate/api/routes_timeline.py:109 |
-| `_entries_in_window` | src/tessellate/api/routes_timeline.py:712 |
-| `_first_line` | src/tessellate/api/routes_timeline.py:657 |
-| `_in_range` | src/tessellate/api/routes_timeline.py:525 |
-| `_meeting_dates` | src/tessellate/api/routes_timeline.py:281 |
-| `_naive` | src/tessellate/api/routes_timeline.py:668 |
-| `_older_than` | src/tessellate/api/routes_timeline.py:148 |
-| `_page_of` | src/tessellate/api/routes_timeline.py:540 |
-| `_place_documents` | src/tessellate/api/routes_timeline.py:291 |
-| `_place_notes` | src/tessellate/api/routes_timeline.py:167 |
-| `_place_reminders` | src/tessellate/api/routes_timeline.py:327 |
-| `_placed_rows` | src/tessellate/api/routes_timeline.py:611 |
-| `_ranged_entries` | src/tessellate/api/routes_timeline.py:699 |
-| `_requested_kinds` | src/tessellate/api/routes_timeline.py:88 |
-| `_source_pages` | src/tessellate/api/routes_timeline.py:557 |
-| `_span_said_by_model` | src/tessellate/api/routes_timeline.py:785 |
-| `_span_said_in_time` | src/tessellate/api/routes_timeline.py:810 |
-| `_window` | src/tessellate/api/routes_timeline.py:507 |
-| `_with_placement` | src/tessellate/api/routes_timeline.py:676 |
-| `span_digest` | src/tessellate/api/routes_timeline.py:828 |
-| `timeline` | src/tessellate/api/routes_timeline.py:364 |
+| `_MeetingAt` | src/tessellate/api/routes_timeline.py:268 |
+| `_add_source_density` | src/tessellate/api/routes_timeline.py:577 |
+| `_also_on` | src/tessellate/api/routes_timeline.py:258 |
+| `_bucket_start` | src/tessellate/api/routes_timeline.py:154 |
+| `_check_params` | src/tessellate/api/routes_timeline.py:491 |
+| `_cut_page` | src/tessellate/api/routes_timeline.py:632 |
+| `_dates_of` | src/tessellate/api/routes_timeline.py:592 |
+| `_decode_cursor` | src/tessellate/api/routes_timeline.py:68 |
+| `_decode_marks` | src/tessellate/api/routes_timeline.py:124 |
+| `_density` | src/tessellate/api/routes_timeline.py:740 |
+| `_encode_marks` | src/tessellate/api/routes_timeline.py:107 |
+| `_entries_in_window` | src/tessellate/api/routes_timeline.py:710 |
+| `_first_line` | src/tessellate/api/routes_timeline.py:655 |
+| `_in_range` | src/tessellate/api/routes_timeline.py:523 |
+| `_meeting_dates` | src/tessellate/api/routes_timeline.py:279 |
+| `_naive` | src/tessellate/api/routes_timeline.py:666 |
+| `_older_than` | src/tessellate/api/routes_timeline.py:146 |
+| `_page_of` | src/tessellate/api/routes_timeline.py:538 |
+| `_place_documents` | src/tessellate/api/routes_timeline.py:289 |
+| `_place_notes` | src/tessellate/api/routes_timeline.py:165 |
+| `_place_reminders` | src/tessellate/api/routes_timeline.py:325 |
+| `_placed_rows` | src/tessellate/api/routes_timeline.py:609 |
+| `_ranged_entries` | src/tessellate/api/routes_timeline.py:697 |
+| `_requested_kinds` | src/tessellate/api/routes_timeline.py:86 |
+| `_source_pages` | src/tessellate/api/routes_timeline.py:555 |
+| `_span_said_by_model` | src/tessellate/api/routes_timeline.py:783 |
+| `_span_said_in_time` | src/tessellate/api/routes_timeline.py:808 |
+| `_window` | src/tessellate/api/routes_timeline.py:505 |
+| `_with_placement` | src/tessellate/api/routes_timeline.py:674 |
+| `span_digest` | src/tessellate/api/routes_timeline.py:826 |
+| `timeline` | src/tessellate/api/routes_timeline.py:362 |
 
 ### src/tessellate/api/routes_translate.py (2)
 

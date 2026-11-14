@@ -42,9 +42,7 @@ from tessellate.entry import manager
 from tessellate.entry import manager_text
 from tessellate.entry import properties as note_properties
 
-from tessellate.api.timeline_bands import (  # noqa: F401  # re-exported: the lanes live beside it
-    MAX_BANDS, OTHER_BAND, PREVIEW_CHARS, THREAD_BAND, _bands, _clip,
-)
+from tessellate.api.timeline_bands import _bands, _clip
 
 router = APIRouter(prefix="/timeline", tags=["timeline"])
 
