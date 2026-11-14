@@ -1859,7 +1859,7 @@ async function loadMostUsed() {
     //: A picture's markdown is not words: cut at 25 characters it showed as a
     //: raw `![Sketch...` (dog3-1026 row 15).
     const flat = stripFrontmatter(entry.content)
-      .replace(/!\[[^\]\n]*\]\([^)\n]*\)/g, "")
+      .replace(/!\[[^\]\n]{0,99}\]\([^)\n]{0,999}\)/g, "")
       .replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "")
       .trim() || "Picture";
     const { text: sliced, truncated } = safeMdSlice(flat, 25);

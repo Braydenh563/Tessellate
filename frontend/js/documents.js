@@ -12017,7 +12017,7 @@ const DOC_PROSE_SKIP = [
   /\]\([^)\n]*\)/g, // a markdown link's destination
   /^\[[^\]\n]+\]:\s*\S+/gm, // a reference link's definition
   /<\/?[A-Za-z][^>\n]*>/g, // an html tag
-  /\[\[[^\]\n]*\]\]/g, // a note link: the title is a name, not prose
+  /\[\[[^\]\n]{0,99}\]\]/g, // a note link, not prose
   //: A callout's own marker. `> [!note]` is syntax, and the space before its
   //: "!" was being reported as a space before punctuation on every callout in
   //: every document.

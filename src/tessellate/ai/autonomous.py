@@ -45,11 +45,15 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select, text
 
-from tessellate.ai import agent
+from tessellate.ai.lazy import LazyModule
 from tessellate.core import deps, events, jobruns
 from tessellate.core.database import Conversation
 
 logger = logging.getLogger("tessellate.autonomous")
+
+#: `ai.agent` loads on first use (L678): it pulls the model stack.
+agent = LazyModule("tessellate.ai.agent")
+
 
 #: How long a run may take before the loop stops waiting on it at shutdown.
 _JOIN_TIMEOUT = 5.0

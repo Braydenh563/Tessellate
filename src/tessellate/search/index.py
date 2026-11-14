@@ -924,6 +924,8 @@ def _attachment_row(att) -> Row | None:  # noqa: ANN001
     owner = object_session(att)
     if owner is not None and getattr(owner.get(Entry, att.entry_id), "is_private", False):
         return None
+    if _in_private_space(att):
+        return None
     return Row(
         title=att.filename or "",
         # Every reading, pages included (F10, `core/readings.text_of`).
@@ -936,7 +938,7 @@ def _attachment_row(att) -> Row | None:  # noqa: ANN001
 
 def _media_row(media) -> Row | None:  # noqa: ANN001
     #: A picture only a board uses is not searchable until Save to Library (K18).
-    if media is None or getattr(media, "board_only", False):
+    if media is None or getattr(media, "board_only", False) or _in_private_space(media):
         return None
     from tessellate.core import readings
 
@@ -951,7 +953,7 @@ def _media_row(media) -> Row | None:  # noqa: ANN001
 
 
 def _bookmark_row(mark) -> Row | None:  # noqa: ANN001
-    if mark is None:
+    if mark is None or _in_private_space(mark):
         return None
     flags = ["pinned"] if getattr(mark, "pinned", False) else []
     return Row(
@@ -965,7 +967,7 @@ def _bookmark_row(mark) -> Row | None:  # noqa: ANN001
 
 
 def _in_private_space(obj) -> bool:  # noqa: ANN001
-    """A chat, an Ask turn or a reminder of a private space is sealed
+    """A chat, an Ask turn, a reminder, a link, a recording or a file of a private space is sealed
     (INBOX 1727) and so never indexed, like a private note. Raw SQL on the
     flush's own connection: this runs inside a flush."""
     from sqlalchemy import text
@@ -1044,7 +1046,7 @@ def _recording_row(rec) -> Row | None:  # noqa: ANN001
     A take still being made (`state` "recording") and one in the bin are out,
     as a binned document is; the transcript lines are joined without their
     timings, which a search has no use for (the recording's own sheet seeks)."""
-    if rec is None or getattr(rec, "deleted_at", None) is not None or rec.state != "saved":
+    if rec is None or getattr(rec, "deleted_at", None) is not None or rec.state != "saved" or _in_private_space(rec):
         return None
     from tessellate.core import transcript
 

@@ -28,6 +28,10 @@ from tessellate.core.database import (
     DocumentRevision,
     Entry,
     Reminder,
+    Recording,
+    Bookmark,
+    MediaUpload,
+    Attachment,
     Space,
     WhiteboardObject,
     WhiteboardSketch,
@@ -224,13 +228,17 @@ def _members(session: Session, space_id: str) -> tuple[list[Entry], list[Documen
     return entries, documents
 
 
+#: What a private space owns outright (`database._SPACE_SEALED`, L697).
+SPACE_OWNED = (Conversation, AskTurn, Reminder, Bookmark, Recording, MediaUpload, Attachment)
+
+
 def _owned_rows(session: Session, space_id: str) -> list:
-    """The chats, Ask box turns and reminders the space holds: sealed while
+    """The chats, Ask box turns, reminders, links, recordings and files the space holds: sealed while
     it is private (`database._SPACE_SEALED`), whatever their own fields say."""
     from tessellate.core.database import impersonate_workspace
 
     with impersonate_workspace(session, ""):
-        return [row for model in (Conversation, AskTurn, Reminder) for row in session.scalars(select(model).where(model.workspace_id == space_id))]
+        return [row for model in SPACE_OWNED for row in session.scalars(select(model).where(model.workspace_id == space_id))]
 
 
 #: At most this many of a private space's notes go to one chat turn.

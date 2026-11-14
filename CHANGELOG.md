@@ -17,6 +17,11 @@ below). Versioning is `0.x` while the app stabilises.
 - What it learned: a flagged row has Keep it (the flag goes and no later check raises it), and a Settings switch turns the scheduled check off (L584).
 - Settings import: tests pin that skills, personas and templates merge by name and never replace (L588).
 - Dashboard: a Backups card (off by default, add it from Edit layout) shows the last backup, the next due and a failed last try, with a button to Settings (L591).
+- JS link and picture scanners (status, documents, note picker) are bounded so a long unclosed run of brackets no longer freezes the page; a node timing test and a hand-written oracle pin them (L568).
+- MCP: tests pin that an outside agent never runs a destructive tool, with writes on or off, and that a note survives a delete_note sent by name (L-world-class-12).
+- Private spaces: links, recordings (title and transcript) and the text read from files and pictures are sealed with the space and kept out of search, and deleting a locked space asks for the password instead of stopping at an error (L697).
+- Library: Read again on an uploaded PDF reads its text layer, or its pages with OCR when it is a scan, instead of refusing with 415; without the PDF viewer extra it says so (L631).
+- Start-up: the agent module loads on first use instead of at import, so a cold import no longer pulls the chat agent stack; wall import time is unchanged at about 2.2 s, the rest is the composer regex tables (L678).
 - Dashboard: the This week card offers one feature you have not used lately, a different one each week (L595).
 - Measured: Settings prose longer than 120 characters outside popovers is 8 paragraphs across 21 panes (20 raw candidates, 12 of them cards, containers or data), against about 60 at the plan's baseline (L-world-class-9).
 - Measured: footnotes and Mermaid render in note cards (shared renderMarkdown: footnote section and ref present, Mermaid image 168x144 loaded); rich paste in Capture and Quick note is plain text only (L-world-class-7).
