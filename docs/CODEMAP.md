@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 11002, test files 2819, tests 22515, plan headings 690, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 11003, test files 2819, tests 22515, plan headings 690, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -14132,7 +14132,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11002)
+## Backend modules (11003)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16400,14 +16400,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `named` | src/tessellate/ai/composer_oneword.py:19 |
 | `say` | src/tessellate/ai/composer_oneword.py:33 |
 
-### src/tessellate/ai/composer_ood.py (5)
+### src/tessellate/ai/composer_ood.py (6)
 
 | Name | File:line |
 |---|---|
+| `_about_the_world` | src/tessellate/ai/composer_ood.py:88 |
 | `_names` | src/tessellate/ai/composer_ood.py:64 |
 | `_shown_text` | src/tessellate/ai/composer_ood.py:58 |
 | `_verb_unsaid` | src/tessellate/ai/composer_ood.py:69 |
-| `framed` | src/tessellate/ai/composer_ood.py:97 |
+| `framed` | src/tessellate/ai/composer_ood.py:99 |
 | `kind` | src/tessellate/ai/composer_ood.py:78 |
 
 ### src/tessellate/ai/composer_open.py (13)
