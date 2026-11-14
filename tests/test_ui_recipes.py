@@ -4348,7 +4348,7 @@ def test_a_maps_boundaries_and_summaries_are_drawn_in_one_pass() -> None:
     the topic's one undo step; both reach the image export; neither takes the
     pointer; and a theme reset keeps them."""
     wb = frontend_text("whiteboard.js")
-    wm = frontend_text("whiteboard-map.js")
+    wm = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     css = "\n".join((ROOT / "frontend" / "css" / name).read_text(encoding="utf-8") for name in ("07-whiteboard-misc.css", "library-lazy.css"))
     render = wb[wb.index("function renderWhiteboard()") :]
     assert render.index("wbRenderMapStructure();") > render.index("wbRenderMapEdges();")
@@ -4366,7 +4366,7 @@ def test_a_topics_markers_are_one_row_from_one_icon_set() -> None:
     by one function into one row from the paint pass, the icons come from a
     fixed Phosphor set with no emoji in it, every change is the topic's one
     undo step, and the markers are content (a branch copy keeps them)."""
-    wm = frontend_text("whiteboard-map.js")
+    wm = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
     paint = wm[wm.index("function wbPaintMapNodeStyle(") :][:6000]
     assert "wbMapPaintMarkers(markers, d.data || {});" in paint
     painter = wm[wm.index("function wbMapPaintMarkers(") :]

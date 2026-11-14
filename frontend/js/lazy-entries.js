@@ -15,6 +15,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-map-edges.js", //: After whiteboard-map.js: line geometry, ribbons and edge paint; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-notes.js", //: After whiteboard-map.js: map note topics and folding; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-look.js", //: After whiteboard-map.js: topic fill, focus and look helpers; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-record.js", //: After whiteboard-map.js: the Undo-recorded map commands, bound through `wbRecorded` (defined there); wrapped, names the other board files at run time only.
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
     "/js/whiteboard.js",
     "/js/whiteboard-export.js", //: After whiteboard.js: the export dialog, SVG/PNG/PDF writers and the outline import; wrapped, names whiteboard.js at run time only.

@@ -72,7 +72,7 @@ def test_escape_leaves_a_text_box_selected_rather_than_typing_on():
     assert 'selectWbItem("object", d.id)' in esc
 
 
-MAP = frontend_text("whiteboard-map.js")
+MAP = frontend_text("whiteboard-map.js") + frontend_text("whiteboard-map-record.js")  # L-whiteboard-49: the Undo-recorded commands moved to whiteboard-map-record.js
 
 
 def test_siblings_sort_by_their_order_key_and_colours_by_creation():

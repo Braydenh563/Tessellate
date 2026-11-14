@@ -44,6 +44,8 @@ SEEDS = {
     "docUndo", "wbUndo", "wbPushUndo", "wbPushDragUndo", "wbPushMoveBatch", "wbPushCall",
     #: Records the board rows before and after its callback and pushes the diff (whiteboard.js).
     "wbRecordGesture",
+    #: Binds a command to `wbRecordGesture` once, wherever it is called from (whiteboard-map.js, L-whiteboard-49).
+    "wbRecorded",
     #: Chat loads its helpers (chat-undo.js) on the first write and names one.
     "chatWriteRecord",
     #: Takes an act and its inverse and puts the step on the stack (skills.js).
@@ -570,7 +572,6 @@ EXEMPT: dict[str, str] = {
     "graph.js:graphPinSave": "inverse: the one door for pin writes; each caller pushes its pin step (graphPinStep) and graphSetPin replays it for Undo and Redo",
     "whiteboard.js:wbRestoreLinks": "inverse: draws a deleted item's links again for the board history's own Undo",
     "whiteboard-map.js:wbMapRestoreRows": "inverse: puts back a deleted branch for the board history's own Undo and Redo",
-    "whiteboard-map.js:wbMapAdoptProvisional": "board: gives a topic already on the board's history (its create step is remapped to the server id)",
     #: The note's create step is now pushed before the staged files go (INBOX e2e "Undo takes a new note back"), so the
     #: pictures uploaded first sit inside the step and the files attached after it are the exempt send.
     "settings-wiring.js:uploadStagedFiles": "send: attaches the staged files to the note just saved; the save is the step (Undo bins the note with them)",

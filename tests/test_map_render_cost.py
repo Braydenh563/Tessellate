@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parent.parent
 #: whiteboard-map.js verbatim on 2026-09-24, and the renderer and the
 #: gestures that call into it stayed in whiteboard.js.
 WB = "\n".join(
-    frontend_text(n) for n in ("whiteboard.js", "whiteboard-map.js")
+    frontend_text(n) for n in ("whiteboard.js", "whiteboard-map.js", "whiteboard-map-record.js")
 )
 
 

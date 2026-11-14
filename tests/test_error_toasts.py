@@ -195,9 +195,12 @@ EXPECTED = {
         '"A topic\'s link has to be an http, https or mailto address."',
         '"That file is not a picture."',
     ],
-    'whiteboard-map.js': [
+    #: Moved with their commands out of whiteboard-map.js (L-whiteboard-49).
+    'whiteboard-map-record.js': [
         '`That branch has ${nounCount(subtree.length, "topic")}: copying stops at ${WB_MAP_COPY_MAX}.`',
         '`"${wbMapLabel(source)}" is already under "${wbMapLabel(target)}": turn the cross-link around first.`',
+    ],
+    'whiteboard-map.js': [
         '"A summary covers topics side by side under one parent."',
     ],
     'whiteboard-comments.js': [
