@@ -10,6 +10,8 @@ below). Versioning is `0.x` while the app stabilises.
 - Timeline: the journal strip's head says how many days in a row you have written a daily note, from two days up.
 - Timeline: reopening a span review reuses the model call still running for it and keeps its answer, so one call runs per span until a note is added; after Done in the bell, focus still lands if the panel fails to reload.
 - Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).
+- Tests: the recovery-key throttle test runs on a fixed clock; on the real one a slow runner sent the sixth guess past the first 1 s wait and got a 401 (2026-11-14).
+- Tests: the sweep of tests/test_[n-z]*, the rest of tests/ and tests-e2e leaves no open-work hit but two strict xfails, each on a LEDGER row naming its line (L150, L-timeline-9); a note type deleted then restored keeps its id even when the list was first read in between (L571) (2026-11-14).
 - Tests: the margin reader's model-down check proves no model wait by what is called (one probe, no chat) instead of a 1.5 s wall-clock bound that a loaded runner broke at 3.39 s.
 - Plans: LEDGER's graph and timeline plan-open counts read 0 (they kept 15 and 3 after both plans closed); a test now holds a plan with nothing open to 0, and GRAPH_PLAN's last INBOX blocks (798, 799, 802, 1306, 1400) moved to HISTORY.
 - Diagram builder: Ask now works on a mind map, timeline and sequence diagram (add, rename, move and delete by words), previewed first and applied as one Undo step (L-documents-35).
