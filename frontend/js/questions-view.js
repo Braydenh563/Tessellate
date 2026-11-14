@@ -186,6 +186,8 @@
     ask.title = counts.open ? "Ask about the questions you have not answered yet" : "No open questions to ask about";
     const lead = $("questions-lead");
     lead.replaceChildren();
+    //: I9: the questions Atlas found live in What it learned, kept to questions.
+    lead.append(openSettingsModal.learnedLink("question"));
     if (!reply.total && !questionsView.entry) list.appendChild(questionsEmpty(questionsView.state));
     //: Kept to one note (its card's count): said, with the way back to all.
     if (questionsView.entry) {
@@ -194,7 +196,7 @@
       all.className = "ghost small";
       setLabel(all, "ph:x Show every note's");
       all.addEventListener("click", () => questionsForNote(null));
-      lead.replaceChildren(`Only the questions in “${questionsView.entry.title}”. ${reply.total ? "" : "None here. "}`, all);
+      lead.replaceChildren(`Only the questions in “${questionsView.entry.title}”. ${reply.total ? "" : "None here. "}`, all, openSettingsModal.learnedLink("question"));
     }
   }
 

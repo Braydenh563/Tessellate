@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 142 | 29 | 3 | 10 | 171 |
+| world-class | 0 | 141 | 29 | 3 | 10 | 170 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 533 | 100 | 5 | 121 | 1038 |
+| all | 405 | 532 | 100 | 5 | 121 | 1037 |
 
 ## graph
 
@@ -563,7 +563,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-85** `world-class` open, S: Trace dismissed link pairs and accepted neighbourhoods into the learning loop. From WORLD_CLASS_PLAN.md:1020. Evidence: WORLD_CLASS_PLAN.md:1020 'dismissed link pairs and accepted neighbourhoods were not traced'
 - [ ] **L-world-class-86** `world-class` open, S: Measure the margin reader's typing latency in Chromium. From WORLD_CLASS_PLAN.md:1124. Evidence: WORLD_CLASS_PLAN.md:1124 and :1847 'typing latency measured in Chromium' left
 - [ ] **L-world-class-87** `world-class` open, M: Filing eval: accuracy up 10 points after 20 synthetic corrections (I7 gate). From WORLD_CLASS_PLAN.md:1228. Evidence: the plan cites L-world-class-28, which HISTORY.md:55711 holds as a different, closed row; needs a real model
-- [ ] **L-world-class-88** `world-class` open, S: A 'Learned: manage' link on each invention's own surface (I9). From WORLD_CLASS_PLAN.md:1236. Evidence: no 'Learned: manage' link in frontend/js (grep 0 hits)
 - [ ] **L-world-class-89** `world-class` open, S: Print and PDF of a document with its citations. From WORLD_CLASS_PLAN.md:1814. Evidence: WORLD_CLASS_PLAN.md:1814 'citations in it were not checked'
 - [ ] **L-world-class-90** `world-class` open, S: Measure first paint against the 300 ms line. From WORLD_CLASS_PLAN.md:1823. Evidence: WORLD_CLASS_PLAN.md:1823 'first paint under 300 ms ... not measured'
 - [ ] **L-world-class-91** `world-class` open, S: Time travel: a date slider for as-of answers (H8). From WORLD_CLASS_PLAN.md:1847. Evidence: WORLD_CLASS_PLAN.md:1847: a day picker is built, no slider

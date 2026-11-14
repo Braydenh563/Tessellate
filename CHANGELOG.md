@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas's own cards (While you were away, the open-questions line, margin cards, the Questions list, Rediscover) carry a small Learned: manage link into Settings, What it learned, kept to questions where they are the subject (L-world-class-88).
 - CI: the e2e job runs scratchpad/ui-sweeps/boottime.js on a fresh notebook and fails on a page error; the numbers go to the job summary (L-world-class-92).
 - Pull request template: the checklist reads as what an author confirms in the description, so no open checkbox stays in the repository (L-world-class-54).
 - Composer, study, link offers and page analysis: the bracket-link scanners are bounded (text 300, address 1000), so a 20,000-character unclosed run no longer takes 5 to 11 s (L-world-class-53).

@@ -148,6 +148,8 @@
       if (key) marginDismissed.add(key);
       box.remove();
     });
+    //: I9: the way into Settings, What it learned, from the card itself.
+    actions.append(openSettingsModal.learnedLink(""));
     box.append(head, text);
     if (card.reason) box.append(reason);
     box.append(actions);
