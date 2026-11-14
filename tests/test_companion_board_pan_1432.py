@@ -2,10 +2,11 @@
 as well". While the companion is held, nothing pans the board, and a pan that
 tries is logged with its source so the owner's next log names the path."""
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 JS_DIR = Path(__file__).resolve().parents[1] / "frontend" / "js"
-JS = (JS_DIR / "avatars.js").read_text(encoding="utf-8") + "\n" + (JS_DIR / "whiteboard.js").read_text(encoding="utf-8")
+JS = (JS_DIR / "avatars.js").read_text(encoding="utf-8") + "\n" + frontend_text("whiteboard.js")
 
 
 def _body(name: str) -> str:

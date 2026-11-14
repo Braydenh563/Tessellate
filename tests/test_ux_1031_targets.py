@@ -8,6 +8,7 @@ reach 24 px; board grips take a 24 px box on a coarse pointer."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -62,5 +63,5 @@ def test_a_suggested_tags_controls_are_buttons_not_spans_with_a_role():
 def test_a_library_or_board_card_is_named_by_its_visible_words_first():
     lib = (JS / "library.js").read_text(encoding="utf-8")
     assert "`${title.textContent}, ${kindWord.toLowerCase()}" in lib
-    board = "".join((JS / n).read_text(encoding="utf-8") for n in ("whiteboard.js", "boards-gallery.js"))  # the gallery split out (INBOX 1772)
+    board = "".join(frontend_text(n) for n in ("whiteboard.js", "boards-gallery.js"))  # the gallery split out (INBOX 1772)
     assert '`${board.title}, ${isMapCard ? "map" : "board"}`' in board

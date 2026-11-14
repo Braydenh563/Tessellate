@@ -8,10 +8,11 @@ adds to the image library only when the dialog says so."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-JS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+JS = frontend_text("whiteboard.js")
 CMDS = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 

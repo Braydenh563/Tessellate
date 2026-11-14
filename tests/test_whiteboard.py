@@ -8,6 +8,7 @@ failure it caught rather than the method it calls, a test called
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import pytest
 from fastapi.testclient import TestClient
 
@@ -712,12 +713,11 @@ def test_moving_a_card_keeps_it_on_its_board(ai_client, session):
 
 def test_the_frontend_sends_the_board_when_it_moves_a_card():
     """The guard for the half of that bug that lives in the browser."""
-    from tessellate.api.app import FRONTEND_DIR
 
     # The whiteboard subsystem moved out of app.js into its own file, loaded
     # by a second <script> tag, see index.html, so this comment now lives
     # in whiteboard.js, not app.js.
-    whiteboard_js = (FRONTEND_DIR / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    whiteboard_js = frontend_text("whiteboard.js")
     save = whiteboard_js[whiteboard_js.index("// Sync back to API.") :][:900]
     assert "board_id" in save, "the coordinate save must carry the card's board"
 

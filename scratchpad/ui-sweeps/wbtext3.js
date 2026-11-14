@@ -19,7 +19,7 @@ const { openFresh, checker } = require("./cdlib.js");
   const [lx, ly] = at(-60, 90);
   await page.mouse.dblclick(lx, ly);
   await page.waitForTimeout(600);
-  const made = await page.evaluate(() => { const s = wbState.sketches[wbState.sketches.length - 1]; const p = wbSketchParsedData(s); return { n: wbState.sketches.length, d: p.d, ports: wbPortsForPath(p.d, true)?.length, sel: wbSelectedItem?.id === s.id }; });
+  const made = await page.evaluate(() => { const s = wbState.sketches[wbState.sketches.length - 1]; const p = wbSketchParsedData(s); return { n: wbState.sketches.length, d: p.d, ports: wbAnchorPositions("sketch", s).length, sel: wbSelectedItem?.id === s.id }; });
   check("a double-click closes four corners into one closed path, selected", made.n === 1 && /^M (\S+ \S+ L ){3}\S+ \S+ Z$/.test(made.d) && made.sel, made);
   check("the closed path has corner and side-middle ports", made.ports === 8, made.ports);
   await page.evaluate(() => wbUndo());

@@ -4,10 +4,10 @@ placing the topic strip cost 30 ms a frame (rects, offsets and the strip's
 controls refilled); held, 0.15 ms (a Playwright page.evaluate loop over
 `wbUpdateSelectionBar(panning)` with one topic selected)."""
 
+from tests._app_js import frontend_text
 import re
-from pathlib import Path
 
-JS = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+JS = frontend_text("whiteboard.js")
 
 
 def test_the_pan_frame_places_the_bar_from_held_measurements():

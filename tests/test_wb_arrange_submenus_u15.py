@@ -9,6 +9,7 @@ section's rows into the menu recipe's own `buildMenuGroupButton` at boot.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -16,7 +17,7 @@ from tests._help_text import help_core_text
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 HELP = help_core_text()
 DESIGN = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
 

@@ -7,6 +7,7 @@ the box did not move. The cull pass, which already walks every item once a
 pan or zoom frame with the zoom in hand, marks such an item `wb-tiny`, and
 the grips are absent on it.
 """
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -14,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _cull_body() -> str:
-    src = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    src = frontend_text("whiteboard.js")
     start = src.index("function wbCullNow(")
     return src[start:src.index("\n}\n", start)]
 

@@ -6,6 +6,7 @@ heights and a real drag, measured) is `scratchpad/ui-sweeps/wbtablemerge.js`."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -15,7 +16,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 INTERCHANGE = (ROOT / "frontend" / "js" / "whiteboard-interchange.js").read_text(encoding="utf-8")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")

@@ -2,11 +2,12 @@
 notebook's own text opens in the topic note shell, is saved with a PUT to the
 note and one Undo step, and the map re-reads its labels."""
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
+WB = frontend_text("whiteboard.js")
 
 
 def _body(src, head):

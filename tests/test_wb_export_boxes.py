@@ -5,6 +5,7 @@ exported as bare words (SVG, PNG and PDF all read the same SVG): the board's
 background rect was the only `<rect>`, and the table was not in the file at all.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -13,7 +14,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 
 

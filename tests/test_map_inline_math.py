@@ -8,10 +8,11 @@ both" stayed plain text."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAP_JS = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP_JS = frontend_text("whiteboard-map.js")
 
 
 def _fn() -> str:

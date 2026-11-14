@@ -3,6 +3,7 @@ highlight on a frame, and find limited to one frame (`scratchpad/ui-sweeps/wbstr
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -20,7 +21,7 @@ JS = ROOT / "frontend" / "js"
 STRUCT = (JS / "whiteboard-structure-more.js").read_text(encoding="utf-8")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 CMDS = (JS / "whiteboard-commands.js").read_text(encoding="utf-8")
 
 

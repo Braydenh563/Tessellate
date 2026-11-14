@@ -5,9 +5,9 @@ point at which the link line connects to it changes vertically" (INBOX 740,
 arrows, each left where the box was after a drag, a resize or a turn, and
 two links off a resized box's outline by 14.7 and 48 units), 58/58 after."""
 
-from pathlib import Path
+from tests._app_js import frontend_text
 
-WB = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _fn(name: str) -> str:

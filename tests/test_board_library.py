@@ -13,6 +13,7 @@ ids; media cleanup counts what the library holds. The browser half is
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 from pathlib import Path
 
@@ -405,7 +406,7 @@ def test_a_library_tile_draws_what_placing_it_makes():
     if not node:
         pytest.skip("node is not installed")
     templates = (ROOT / "frontend" / "js" / "whiteboard-templates.js").read_text(encoding="utf-8")
-    board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
 
     def fn(src: str, name: str) -> str:
         start = src.index(f"function {name}(")

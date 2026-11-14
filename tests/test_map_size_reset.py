@@ -14,12 +14,13 @@ pinned here with real requests, and the frontend's side is pinned as text.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _topic(client):
@@ -96,7 +97,7 @@ def test_the_reset_sends_the_natural_height_never_null() -> None:
 
 
 def test_the_floor_the_reset_uses_is_the_servers_own() -> None:
-    assert "const WB_MAP_HEIGHT_FLOOR = 20;" in (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    assert "const WB_MAP_HEIGHT_FLOOR = 20;" in frontend_text("whiteboard-map.js")
 
 
 def test_the_reset_redraws_the_branch_line_and_can_be_undone() -> None:

@@ -236,7 +236,7 @@ def test_a_pasted_or_reimported_image_row_with_an_svg_address_is_refused(ai_clie
 
 
 def test_an_export_inlines_pictures_for_the_file_only():
-    src = _js("whiteboard.js")
+    src = _js("whiteboard-export.js")  # L286 moved the export writers here
     assert '.filter((u) => !u.startsWith("data:"))' in _between(src, "async function wbInlineSvgImages", "async function wbRasterizeSvg")
 
 
@@ -247,6 +247,7 @@ def test_the_one_svg_drawn_on_a_board_is_the_diagram_object_made_from_mermaid_so
     assert "data:image/svg+xml;charset=utf-8,${encodeURIComponent(known.svg)}" in _between(src, "function wbDiagramDataUrl", "function wbBuildDiagram")
 
 
-@pytest.mark.parametrize("name", ["whiteboard-effects.js", "whiteboard-format.js", "whiteboard-map.js", "whiteboard-pdf.js"])
+#: whiteboard-map-strip.js since L286 carved the map's picture topic out of whiteboard-map.js.
+@pytest.mark.parametrize("name", ["whiteboard-effects.js", "whiteboard-format.js", "whiteboard-map-strip.js", "whiteboard-pdf.js"])
 def test_every_other_picture_uploader_goes_through_the_upload_route(name):
     assert '"/media/upload"' in _js(name)

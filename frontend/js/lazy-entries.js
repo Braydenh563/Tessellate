@@ -9,8 +9,29 @@ Object.assign(LAZY_MODULES, {
     ...LAZY_MODULES.library,
     "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
     "/js/whiteboard-map.js",
+    "/js/whiteboard-map-strip.js", //: After whiteboard-map.js: the topic strip and radial ring; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-waypoints.js", //: After whiteboard-map.js: map line waypoints and link handles; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-marks.js", //: After whiteboard-map.js: markers, dim and filter views, summaries; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-edges.js", //: After whiteboard-map.js: line geometry, ribbons and edge paint; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-notes.js", //: After whiteboard-map.js: map note topics and folding; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-look.js", //: After whiteboard-map.js: topic fill, focus and look helpers; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
     "/js/whiteboard.js",
+    "/js/whiteboard-export.js", //: After whiteboard.js: the export dialog, SVG/PNG/PDF writers and the outline import; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-present.js", //: After whiteboard.js: presenting frames in order; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-frames.js", //: After whiteboard.js: frame creation, painting and turning; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-comments.js", //: After whiteboard.js: item comments and links; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-locks.js", //: After whiteboard.js: locks, hidden items and keep-ratio; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-search.js", //: After whiteboard.js: the find-a-card bar; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-connectors.js", //: After whiteboard.js: anchors, link routing and the connector panel; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-arrange.js", //: After whiteboard.js: align, distribute, nudge and size commands; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-navigator.js", //: After whiteboard.js: the live minimap; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-sketch-text.js", //: After whiteboard.js: text in shapes and connector labels; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-textedit.js", //: After whiteboard.js: the text box and sticky editor; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-ctxmenu.js", //: After whiteboard.js: the right-click menu for a selection; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-place.js", //: After whiteboard.js: paste, placement and clone-and-connect; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-stacking.js", //: After whiteboard.js: stacking order, layer order and bulk move; wrapped, names whiteboard.js at run time only.
+    "/js/whiteboard-bar.js", //: After whiteboard.js: the selection bar and context strip; wrapped, names whiteboard.js at run time only.
     "/js/whiteboard-commands.js",
     "/js/whiteboard-library.js",
     //: The New board dialog and every template's picture (INBOX 715).

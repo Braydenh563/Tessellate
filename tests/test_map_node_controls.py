@@ -233,14 +233,14 @@ def test_a_topics_add_buttons_are_surfaces_at_the_target_floor():
     # touch holds 44) because a target under 24px fails WCAG 2.5.8 (audit 1028 U5).
     # INBOX 1450 lets them grow with the board to 1.25x past 100% (the cap was 1x).
     assert re.search(r"\.wb-map-actions \{\s*transform: scale\(clamp\(calc\(24 / 28 \* var\(--wb-inv-zoom\)\), 1, calc\(1\.25 \* var\(--wb-inv-zoom\)\)\)\)", lazy)
-    js = (_REPO / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard-map.js")
     assert '"ph ph-link-simple"' in js and "bookmarks-simple" not in js
-    wb = (_REPO / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     assert '".wb-map-actions"' in wb
 
 
 def test_the_board_layers_are_rasterised_again_when_a_zoom_settles():
-    wb = (_REPO / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    wb = frontend_text("whiteboard.js")
     refresh = wb[wb.index("function wbRefreshRaster") :][:600]
     assert 'style.willChange = "auto"' in refresh and 'style.willChange = ""' in refresh
     publish = wb[wb.index("function wbPublishInvZoom") :][:200]
@@ -256,7 +256,7 @@ def test_outline_rows_read_until_asked_to_be_edited():
     the sidebar unless i like double click on them or press an edit button".
     A row is read-only; a double click, F2, Enter or its pencil opens it, Enter
     saves and Escape puts the old name back."""
-    js = (_REPO / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard-map.js")
     row = _slice(js, "wbOutlineRowEl", 2200)
     assert "field.readOnly = true;" in row and "wb-outline-edit" in row
     assert "readOnly = false" in _slice(js, "wbOutlineEdit")
@@ -277,7 +277,7 @@ def test_this_map_tab_is_tiles_actions_and_a_help_popover():
     number-over-label tiles two across (one builder with the stats dialog),
     the actions are one group of quiet buttons, and the Library hint is the
     help popover recipe."""
-    js = (_REPO / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard-map.js")
     lib = (_REPO / "frontend" / "js" / "whiteboard-library.js").read_text(encoding="utf-8")
     assert "wbMapStatsList(wbMapStats(wbMapIndex()), { tiles: true })" in lib
     assert "function wbMapStatsList(stats, { tiles = false } = {})" in js
@@ -299,7 +299,7 @@ def test_a_fit_goes_into_the_canvas_the_person_can_see():
     sidebar and Format panel, each off the side it sits on), and a view still
     where the last fit put it is fitted again when a panel opens, closes or
     the window changes size; a pan or a zoom of the person's own ends that."""
-    js = (_REPO / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     assert 'const WB_FIT_OCCLUDERS = ["#wb-topbar", "#wb-tools-panel", "#wb-sidebar", "#wb-format"];' in js
     fit = _slice(js, "wbZoomToFit", 1800)
     assert "wbFreeArea(container)" in fit and "container.getBoundingClientRect()" not in fit
@@ -323,7 +323,7 @@ def test_a_levels_size_is_said_in_words_not_pixels():
 
     if not shutil.which("node"):
         return
-    src = (ROOT / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    src = frontend_text("whiteboard-map.js")
     rows = re.search(r"^const WB_MAP_LEVEL_ROWS = \[\n  \{ key: \"font_size\".*?\n", src, re.S | re.M).group(0).rstrip() + "\n];"
     say = re.search(r"^wbMapSizeStepper\.say = function wbMapSay\(.*?^\};", src, re.S | re.M).group(0)
     script = "const wbMapSizeStepper = {};\n" + rows + "\n" + say + "\nprocess.stdout.write(JSON.stringify([17, 22, 12, 28, 15].map(wbMapSizeStepper.say)));"
@@ -336,7 +336,7 @@ def test_a_size_off_the_strips_scale_gets_a_row_so_the_strip_rings_it():
     """L369: Classic's main topics are 17px, which no strip row holds, so the
     pick row rang nothing. The sync adds a one-off row named in pixels (the
     level scale's word would collide with the strip's L) and removes it after."""
-    src = (ROOT / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    src = frontend_text("whiteboard-map.js")
     sync = src[src.index("function wbSyncMapStrip(") :]
     assert "option[data-off-scale]" in sync and "extra.textContent = `${wantSize}px`" in sync
     assert sync.index("option[data-off-scale]") < sync.index('setSelect("wb-map-text-size", wantSize)')

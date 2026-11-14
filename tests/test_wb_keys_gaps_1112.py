@@ -7,6 +7,7 @@ chord, and every chord an app shortcut also owns is one the board is meant to ta
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -14,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 COMMANDS = (JS / "whiteboard-commands.js").read_text(encoding="utf-8")
 KEYS = (JS / "whiteboard-keys.js").read_text(encoding="utf-8")
-BOARD = (JS / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 WIRING = (JS / "settings-wiring.js").read_text(encoding="utf-8")
 
 NEW_KEYS = {

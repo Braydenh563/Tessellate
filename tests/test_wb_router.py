@@ -102,6 +102,6 @@ def test_no_path_or_too_large_a_grid_answers_null():
 
 
 def test_wblinkpathd_uses_the_router_and_keeps_the_classic_route_as_fallback():
-    src = frontend_text("whiteboard.js")
+    src = frontend_text("whiteboard-connectors.js")
     body = src[src.index('if (shape?.route === "elbow") {') :][:1100]
     assert "wbFmtState.router?.route" in body and "wbElbowRoute(" in body

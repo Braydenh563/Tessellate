@@ -152,7 +152,7 @@ def test_the_menu_rows_switch_save_and_delete():
 def test_the_wiring_is_in_the_source():
     src = script_file_text("whiteboard-workspace.js")
     assert _js_scope.is_wrapped(src) and _js_scope.global_names(src) == set()
-    board = script_file_text("whiteboard.js")
+    board = frontend_text("whiteboard.js")
     for needle in ("wbFmtState.isolate?.depth()", "wbFmtState.isolate?.enter(chain.slice(0, depth))", "wbFmtState.isolate?.paint()", "!wbFmtState.isolate?.outside(kind, item)"):
         assert needle in board, needle
     assert board.count('wbFmtState.isolate?.outside("node", node)') == 2 and board.count('wbFmtState.isolate?.outside("sketch", sketch)') == 2

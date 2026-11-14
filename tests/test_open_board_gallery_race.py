@@ -10,11 +10,11 @@ canvas is up.
 
 from __future__ import annotations
 
-from tests._app_js import JS_DIR
+from tests._app_js import JS_DIR, frontend_text
 
 
 def _text(name: str) -> str:
-    return (JS_DIR / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") else (JS_DIR / name).read_text(encoding="utf-8")
 
 
 def test_the_opener_stamps_its_time_before_pressing_the_sub_tab() -> None:

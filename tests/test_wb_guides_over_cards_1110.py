@@ -4,10 +4,11 @@ so the guides go in the overlay SVG that index.html places after the card layer.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 

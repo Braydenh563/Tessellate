@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from tests._app_js import frontend_text, script_file_text
+from tests._app_js import frontend_text
 
 INDEX = Path(__file__).resolve().parent.parent / "frontend" / "index.html"
 
@@ -57,4 +57,4 @@ def test_every_tool_button_has_a_hint_in_plain_copy():
 
 
 def test_the_tool_switch_asks_for_the_hint():
-    assert "wbFmtState.hints?.toolHint(tool)" in script_file_text("whiteboard.js")
+    assert "wbFmtState.hints?.toolHint(tool)" in frontend_text("whiteboard.js")
