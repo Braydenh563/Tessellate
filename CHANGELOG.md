@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Map (review on #233): an audio topic no longer builds a hidden link button; an unknown topic part is nothing, not a resize grip; a new topic the editor never opened is not left typeable.
+- Mind map plan closed: L-mindmap-13 (Tab to an editable new topic) closed at the measured median with its restyle profile recorded; the plan's last stale "left open" line (L-mindmap-14, built) corrected.
 - Map: a branch's Export opens the export dialog headed "Export this branch", not "Export this board" (L267).
 - Map: the tidy measures every topic in one walk when its size cache is cold, not one query and layout read per topic (3 to 6 ms of a 41-topic Tab at 6x, now about 2.5).
 - Map: a topic builds only the parts it shows; the task box, markers, icon, picture, number, progress, note and link marks, callout, labels, count, chevron and resize grip are made the first time a topic has something for them (a plain topic is 8 elements, was 25; the new topic's first style recalculation 9 elements, was 42; Tab to editable at 390 and 6x about 68 to 54 ms).
