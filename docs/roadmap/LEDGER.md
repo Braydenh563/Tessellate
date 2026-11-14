@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 77 | 31 | 0 | 5 | 238 |
+| world-class | 130 | 76 | 31 | 0 | 5 | 237 |
 | general | 0 | 38 | 2 | 0 | 4 | 40 |
-| all | 553 | 471 | 102 | 2 | 116 | 1126 |
+| all | 553 | 470 | 102 | 2 | 116 | 1125 |
 
 ## graph
 
@@ -706,7 +706,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L915** `world-class` open, S: Verify printed manual output, real-model answers and iOS zoom on the 13.6px name field. From OPEN.md:591; OPEN.md:2601. Evidence: Needs real model and iOS device Reopened 2026-11-14 (hardware audit): the printed manual (headless print to PDF) and the real-model answers (llama-dev.sh) run here; only the iOS zoom check needs a device and stays as one BACKLOG row.
 - [ ] **L916** `world-class` open, M: Add README tour shots: empty chat (no model) and page reader. From OPEN.md:972; OPEN.md:2965. Evidence: Retaking the chat shot needs a machine with Ollama and a real model Reopened 2026-11-14 (hardware audit): the no-model chat state and the page reader run headless here; neither shot needs a model.
 - [ ] **L917** `world-class` open, S: Replace README OCR shot, still the 0.3.2 dark capture. From OPEN.md:1617. Evidence: Retake needs a Tesseract binary absent from this sandbox (seed-ocr.js removed) Reopened 2026-11-14 (hardware audit): tesseract installs from the apt mirror (package registries are allowed).
-- [ ] **L924** `world-class` open, M: Build and test the Docker image on a machine with a daemon. From OPEN.md:721. Evidence: docker/Dockerfile and compose.yaml exist; no docker daemon in this environment Reopened 2026-11-14 (hardware audit): dockerd starts in this sandbox (docker info: Server Version 29.9.2).
 - [ ] **L933** `world-class` open, S: Measure hybrid ranking at 5,000 notes with a real embedder and the saved-search menu. From OPEN.md:635. Evidence: Needs real embedding model Reopened 2026-11-14 (hardware audit): a real 384-dim embedder is cached here (fastembed, Qdrant/all-MiniLM-L6-v2-onnx; onnxruntime imports).
 - [ ] **L950** `world-class` blocked-hardware, L: Packaged captions helper: per-platform download pin and supervisor. From OPEN.md:2763. Evidence: Needs release assets, real whisper-server, Windows desktop
 - [ ] **L965** `world-class` open, S: Split _start_tray menu building from start-up and test on Windows. From OPEN.md:363. Evidence: _start_tray still in __main__.py unsplit; needs Windows desktop test Reopened 2026-11-14 (hardware audit): the split itself is code and is testable here; only the Windows look stays as one BACKLOG row.
