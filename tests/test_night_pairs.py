@@ -43,7 +43,7 @@ class Judge:
         self.answer = answer
         self.asked: list[str] = []
 
-    def chat(self, model, messages):
+    def chat(self, model, messages, mode=None):
         system = messages[0]["content"]
         self.asked.append(system[:20])
         if "disagree" in system:
