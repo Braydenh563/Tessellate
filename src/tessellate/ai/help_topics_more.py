@@ -2845,7 +2845,7 @@ MORE_TOPICS.append({
 TOPIC_META["document-graph"] = {"title": "Graph a function in a document", "path": "A document, the / menu, Graph"}
 
 
-#: DOCUMENTS_PLAN gap row 6: the base block (documents-base.js), a read-only table of notes by property.
+#: DOCUMENTS_PLAN gap row 6: the base block (documents-base.js), a table, board or calendar of notes by property.
 MORE_TOPICS.append({
     "id": "document-base",
     "keywords": (
@@ -2857,13 +2857,14 @@ MORE_TOPICS.append({
         "type: Book lists the notes whose properties say type: Book. where: status = read narrows it (any number of "
         "these, all must hold; a list property matches any of its values). columns: author, rating chooses what to show, "
         "sort: rating desc orders it (numbers and dates sort as such), and limit: 50 caps the rows at 300. "
-        "The first column is the note's name: press it to open the note. The table is read-only: a value is changed in "
-        "the note's own properties, and the refresh button reads the notes again. Private notes never appear. "
-        "It is a table only; boards and calendars are not built."
+        "The first column is the note's name: press it to open the note. Table, Board and Calendar on the block "
+        "switch the view and are kept in a view: line. A board groups by group: status (a select or a list such as tags); drag "
+        "a card to another column, or use its menu, to change that property in the note. A calendar places notes by date: due. "
+        "Private notes never appear."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["document-base"] = {"title": "A table of notes in a document", "path": "A document, the / menu, Notes table"}
+TOPIC_META["document-base"] = {"title": "A table, board or calendar of notes", "path": "A document, the / menu, Notes table"}
 
 
 #: OPEN W18 (s9-1110): the diagram's line shape, spacing and page menu.

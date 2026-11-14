@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a ```base block has Table, Board and Calendar views (L-documents-52). The switch is stored as a `view:` line in the block (in Live and in Read); `group:` names the board's property (a select or a list such as tags) and `date:` the calendar's. A card moves by drag or by its menu and writes that one property through the note's properties route; the calendar places notes on a six-week month grid and a title opens the note. Driven at 1440: a drag and a menu move both changed the note (done 3, todo 1), 42 calendar cells, no page overflow; `tests/test_doc_base.py`.
 - Documents plan: the plan-file open cell is 0, every item a LEDGER row (L-documents-79 added for the Brief 60 frame measurement), pinned by tests/test_documents_plan_recount.py.
 - Documents: a failed look-up for today's document says so instead of starting a second copy, and a JSON schema that cannot be read says the keys were not checked (CI cap on silent empty loads).
 - Writing room: after a Draft, the status line names any time, number or [placeholder] that the thoughts, the notes and the old draft do not hold, so an invented detail is checked before it is sent (L-documents-77).

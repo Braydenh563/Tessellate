@@ -139,3 +139,125 @@
     overflow-wrap: anywhere;
   }
 }
+
+/* Board and calendar views (L-documents-52). The view switch is the one `.seg`; the board scrolls sideways inside its own
+   box and the calendar is a seven-column grid, so neither ever scrolls the page. */
+.db-views {
+  margin-inline-start: auto;
+}
+
+.db-choose {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.db-board {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding-block-end: var(--space-1);
+}
+
+.db-col {
+  flex: 0 0 14rem;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.db-col.db-over {
+  border-color: var(--accent);
+}
+
+.db-col-head {
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.db-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.db-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: var(--text-sm);
+  cursor: grab;
+}
+
+.db-month {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-end: var(--space-2);
+}
+
+.db-cal {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  overflow: hidden;
+}
+
+.db-dow {
+  padding: var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-align: center;
+}
+
+.db-day {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-block-size: 4.5rem;
+  min-inline-size: 0;
+  padding: var(--space-1);
+  border-block-start: 1px solid var(--border);
+  border-inline-start: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.db-day-out {
+  opacity: 0.5;
+}
+
+.db-daynum {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.db-day .db-open {
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media print {
+  .db-views,
+  .db-choose {
+    display: none;
+  }
+
+  .db-board {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}

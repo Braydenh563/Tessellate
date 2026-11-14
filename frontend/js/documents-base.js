@@ -1,25 +1,31 @@
 // documents-base.js: the ```base block (DOCUMENTS_PLAN gap row 6, the Obsidian "Bases" ask): a fence of lines is drawn as
 // a table of the notes whose properties match. Read-only by decision: the table shows the `---` blocks the notes already
 // have (`GET /property-table`, repo/properties.py `table`), and a note's block is changed in the note, so there is one
-// place a value is written. The first column opens the note. Only a table: board and calendar views are LEDGER L-documents-52.
+// place a value is written. The first column opens the note. Three views (L-documents-52): a table, a board that groups the
+// rows by a property (a card moves by drag or by its menu, which writes the one property through `PUT /entries/{id}/properties`,
+// the route the note's own sheet uses) and a month calendar placed by a date property.
 //
 //   type: Book                one `type:` property
 //   where: status = read      any number of these, all must hold (a list property matches any of its values)
 //   columns: author, rating   the properties to show, in order
 //   sort: rating desc         one property, asc or desc (numbers and dates sort as such)
 //   limit: 50                 rows, at most 300
+//   view: board               table (the default), board or calendar; the switch on the block rewrites this line
+//   group: status             the board's column property (a select or a list such as tags); it is read with `columns`
+//   date: due                 the calendar's date property (YYYY-MM-DD)
 //
 // Lazy: `LAZY_MODULES.docBase`, registered in lazy-entries.js; documents-math.js draws Read and Live and calls
 // `docMathRender.base.fill`. Everything is a property of `docMathRender.base`, so the file adds no global name.
 (() => {
   // DOC-BASE-BEGIN (tests/test_doc_base.py runs this region in node)
-  const KEYS = new Set(["type", "where", "columns", "sort", "limit"]);
+  const KEYS = new Set(["type", "where", "columns", "sort", "limit", "view", "group", "date"]);
+  const VIEWS = ["table", "board", "calendar"];
   const MAX_ROWS = 300;
 
   //: **`parse(source)`**: `{ type, where: [[key, value]], columns, sort, desc, limit, errors }`, the reasons a line was
   //: not understood being sentences for under the table.
   function parse(source) {
-    const model = { type: "", where: [], columns: [], sort: "", desc: false, limit: 100, errors: [] };
+    const model = { type: "", where: [], columns: [], sort: "", desc: false, limit: 100, view: "table", group: "", date: "", errors: [] };
     for (const raw of String(source || "").split("\n")) {
       const line = raw.trim();
       if (!line) continue;
@@ -27,7 +33,7 @@
       const key = at > 0 ? line.slice(0, at).trim().toLowerCase() : "";
       const value = at > 0 ? line.slice(at + 1).trim() : "";
       if (!KEYS.has(key)) {
-        model.errors.push(`"${line.slice(0, 40)}" is not a line a base reads. Use type, where, columns, sort or limit.`);
+        model.errors.push(`"${line.slice(0, 40)}" is not a line a base reads. Use type, where, columns, sort, limit, view, group or date.`);
       } else if (key === "type") {
         model.type = value;
       } else if (key === "where") {
@@ -40,6 +46,11 @@
         const m = /^(.*?)(?:\s+(asc|desc))?$/i.exec(value);
         model.sort = (m && m[1] ? m[1] : value).trim();
         model.desc = Boolean(m && m[2] && m[2].toLowerCase() === "desc");
+      } else if (key === "view") {
+        if (VIEWS.includes(value.toLowerCase())) model.view = value.toLowerCase();
+        else model.errors.push(`"view: ${value.slice(0, 20)}" should be table, board or calendar.`);
+      } else if (key === "group" || key === "date") {
+        model[key] = value;
       } else {
         const n = Number.parseInt(value, 10);
         if (n >= 1) model.limit = Math.min(n, MAX_ROWS);
@@ -54,11 +65,69 @@
     const params = new URLSearchParams();
     if (model.type) params.set("type", model.type);
     for (const [k, v] of model.where) params.append("where", `${k}=${v}`);
-    if (model.columns.length) params.set("columns", model.columns.join(","));
+    //: The board's and the calendar's property is fetched even when `columns` leaves it out.
+    const names = [...new Set([...model.columns, model.group, model.date].filter(Boolean))].slice(0, 12);
+    if (names.length) params.set("columns", names.join(","));
     if (model.sort) params.set("sort", model.sort);
     if (model.desc) params.set("desc", "true");
     params.set("limit", String(model.limit));
     return `/property-table?${params}`;
+  }
+
+  //: **`setLine(source, key, value)`**: the fence's text with that one line set (an empty value removes it), so the view
+  //: switch is stored in the block itself.
+  function setLine(source, key, value) {
+    const lines = String(source || "").split("\n");
+    const at = lines.findIndex((l) => l.slice(0, Math.max(l.indexOf(":"), 0)).trim().toLowerCase() === key);
+    if (!value) return at < 0 ? lines.join("\n") : lines.filter((_, i) => i !== at).join("\n");
+    const line = `${key}: ${value}`;
+    if (at >= 0) lines[at] = line;
+    else lines.push(line);
+    return lines.join("\n");
+  }
+
+  //: **`groupRows(rows, key)`**: `[{ name, rows }]`, a card under each value it holds (a list property such as tags is in
+  //: several), the rows with none last under an empty name.
+  function groupRows(rows, key) {
+    const by = new Map();
+    for (const row of rows) {
+      const values = (row.values[key] || []).filter((v) => String(v).trim());
+      for (const v of values.length ? values : [""]) {
+        if (!by.has(v)) by.set(v, []);
+        by.get(v).push(row);
+      }
+    }
+    const names = [...by.keys()].sort((a, b) => (a === "") - (b === "") || String(a).localeCompare(String(b)));
+    return names.map((name) => ({ name, rows: by.get(name) }));
+  }
+
+  //: **`moveValue(value, from, to)`**: a property's new value when a card leaves column `from` for `to`: a list swaps the
+  //: one entry, anything else becomes `to`; `null` means the property is cleared.
+  function moveValue(value, from, to) {
+    if (Array.isArray(value)) {
+      const kept = value.filter((v) => String(v) !== String(from));
+      if (to && !kept.some((v) => String(v) === String(to))) kept.push(to);
+      return kept.length ? kept : null;
+    }
+    return to ? String(to) : null;
+  }
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  //: **`dateOf(row, key)`**: the row's `YYYY-MM-DD`, or "" when it holds none.
+  function dateOf(row, key) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String((row.values[key] || [])[0] || ""));
+    return m ? `${m[1]}-${m[2]}-${m[3]}` : "";
+  }
+
+  //: **`monthGrid(year, month)`**: six Monday-first weeks of `{ iso, day, inMonth }` (`month` is 0 to 11).
+  function monthGrid(year, month) {
+    const first = new Date(Date.UTC(year, month, 1));
+    const start = Date.UTC(year, month, 1 - ((first.getUTCDay() + 6) % 7));
+    return Array.from({ length: 42 }, (_, i) => {
+      const d = new Date(start + i * 86400000);
+      return { iso: `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`, day: d.getUTCDate(), inMonth: d.getUTCMonth() === month };
+    });
   }
   // DOC-BASE-END
 
@@ -69,16 +138,19 @@
     return node;
   };
 
-  function draw(body, model, data) {
-    body.replaceChildren();
-    if (!data.rows.length) {
-      body.append(el("p", "db-empty", "No notes match."));
-      return;
-    }
+  const open = (row) => {
+    const button = el("button", "db-open link-button", row.title);
+    button.type = "button";
+    button.addEventListener("click", () => flashEntry(row.id));
+    return button;
+  };
+
+  function drawTable(body, model, data) {
+    const columns = model.columns.length ? model.columns : data.columns;
     const wrap = el("div", "db-scroll");
     const table = el("table", "db-table");
     const head = el("tr");
-    for (const name of ["Note", ...data.columns]) head.append(el("th", "", name));
+    for (const name of ["Note", ...columns]) head.append(el("th", "", name));
     const thead = el("thead");
     thead.append(head);
     table.append(thead);
@@ -86,23 +158,144 @@
     for (const row of data.rows) {
       const tr = el("tr");
       const first = el("td", "db-title");
-      const open = el("button", "db-open link-button", row.title);
-      open.type = "button";
-      open.addEventListener("click", () => flashEntry(row.id));
-      first.append(open);
+      first.append(open(row));
       tr.append(first);
-      for (const column of data.columns) tr.append(el("td", "", (row.values[column] || []).join(", ")));
+      for (const column of columns) tr.append(el("td", "", (row.values[column] || []).join(", ")));
       rows.append(tr);
     }
     table.append(rows);
     wrap.append(table);
     body.append(wrap);
+  }
+
+  //: The board writes the one property through the route the note's own Properties sheet uses, then draws again from the
+  //: rows it holds; a refusal puts the card back.
+  async function moveCard(row, key, from, to) {
+    const before = await fullEntry(row.id);
+    const found = await apiJson(`/entries/${row.id}/properties`);
+    const props = { ...found.properties };
+    const name = Object.keys(props).find((k) => k.toLowerCase() === key.toLowerCase()) || key;
+    const next = moveValue(props[name], from, to);
+    if (next === null) delete props[name];
+    else props[name] = next;
+    const done = await apiJson(`/entries/${row.id}/properties`, { method: "PUT", body: JSON.stringify({ properties: props, base_hash: before.content_hash || null }) });
+    if (!before.content_truncated && typeof before.content === "string" && done.content !== before.content) {
+      pushEntryPutUndo(row.id, "Moved a card", { content: before.content }, { content: done.content });
+    }
+    row.values[key] = next === null ? [] : [].concat(next).map(String);
+  }
+
+  function drawBoard(body, model, data, redraw) {
+    const key = model.group;
+    if (!key) {
+      body.append(el("p", "db-empty", "Name the property to group by, from the menu above or with a line such as group: status."));
+      return;
+    }
+    const groups = groupRows(data.rows, key);
+    const move = (row, from, to) =>
+      moveCard(row, key, from, to)
+        .then(() => redraw())
+        .catch((error) => {
+          toast(error.message || "The note could not be moved.", true);
+          redraw();
+        });
+    const lane = el("div", "db-board");
+    for (const group of groups) {
+      const column = el("section", "db-col");
+      column.setAttribute("aria-label", `${group.name || "No value"}, ${nounCount(group.rows.length, "note")}`);
+      column.append(el("h4", "db-col-head", `${group.name || "No value"} (${group.rows.length})`));
+      const list = el("div", "db-cards");
+      column.addEventListener("dragover", (event) => {
+        if (event.dataTransfer?.types.includes("text/x-db-card")) {
+          event.preventDefault();
+          column.classList.add("db-over");
+        }
+      });
+      column.addEventListener("dragleave", () => column.classList.remove("db-over"));
+      column.addEventListener("drop", (event) => {
+        column.classList.remove("db-over");
+        const [id, from] = (event.dataTransfer?.getData("text/x-db-card") || "").split("\n");
+        const row = data.rows.find((r) => String(r.id) === id);
+        event.preventDefault();
+        if (row && from !== group.name) move(row, from, group.name);
+      });
+      for (const row of group.rows) {
+        const card = el("div", "db-card");
+        card.draggable = true;
+        card.addEventListener("dragstart", (event) => event.dataTransfer?.setData("text/x-db-card", `${row.id}\n${group.name}`));
+        const targets = groups.filter((g) => g.name !== group.name).map((g) => g.name);
+        const items = targets.map((name) => ({ label: `Move to ${name || "no value"}`, run: () => move(row, group.name, name) }));
+        card.append(open(row));
+        if (items.length) card.append(kebabMenu(items, `Move ${row.title}`));
+        list.append(card);
+      }
+      column.append(list);
+      lane.append(column);
+    }
+    body.append(lane);
+  }
+
+  function drawCalendar(body, model, data, state, redraw) {
+    const key = model.date;
+    if (!key) {
+      body.append(el("p", "db-empty", "Name the date property, from the menu above or with a line such as date: due."));
+      return;
+    }
+    if (state.year === undefined) {
+      const first = data.rows.map((r) => dateOf(r, key)).find(Boolean) || new Date().toISOString();
+      state.year = Number(first.slice(0, 4));
+      state.month = Number(first.slice(5, 7)) - 1;
+    }
+    const step = (by) => {
+      const d = new Date(Date.UTC(state.year, state.month + by, 1));
+      state.year = d.getUTCFullYear();
+      state.month = d.getUTCMonth();
+      redraw();
+    };
+    const nav = el("div", "db-month");
+    const prev = smallButton("ph:caret-left", "Previous month", () => step(-1));
+    const next = smallButton("ph:caret-right", "Next month", () => step(1));
+    prev.classList.add("icon-only");
+    next.classList.add("icon-only");
+    const title = new Date(Date.UTC(state.year, state.month, 1)).toLocaleString(undefined, { month: "long", year: "numeric", timeZone: "UTC" });
+    nav.append(prev, el("strong", "db-month-name", title), next);
+    const byDay = new Map();
+    let dated = 0;
+    for (const row of data.rows) {
+      const iso = dateOf(row, key);
+      if (!iso) continue;
+      dated += 1;
+      if (!byDay.has(iso)) byDay.set(iso, []);
+      byDay.get(iso).push(row);
+    }
+    const grid = el("div", "db-cal");
+    for (const name of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) grid.append(el("div", "db-dow", name));
+    for (const cell of monthGrid(state.year, state.month)) {
+      const day = el("div", cell.inMonth ? "db-day" : "db-day db-day-out");
+      day.append(el("span", "db-daynum", String(cell.day)));
+      for (const row of byDay.get(cell.iso) || []) day.append(open(row));
+      grid.append(day);
+    }
+    body.append(nav, grid);
+    if (dated < data.rows.length) body.append(el("p", "db-count", `${nounCount(data.rows.length - dated, "note")} without a date in ${key}.`));
+  }
+
+  function draw(body, model, data, state, redraw) {
+    body.replaceChildren();
+    if (!data.rows.length) {
+      body.append(el("p", "db-empty", "No notes match."));
+      return;
+    }
+    if (model.view === "board") drawBoard(body, model, data, redraw);
+    else if (model.view === "calendar") drawCalendar(body, model, data, state, redraw);
+    else drawTable(body, model, data);
     if (data.total > data.rows.length) body.append(el("p", "db-count", `${data.rows.length} of ${nounCount(data.total, "note")}.`));
   }
 
-  //: **`fill(figure, source)`**: reads the notes and draws the table into `figure`; false (the reasons left in the figure)
-  //: when the fence names nothing to look for, so Read keeps it as code.
-  function fill(figure, source) {
+  //: **`fill(figure, source, write)`**: reads the notes and draws them into `figure`; false (the reasons left in the figure)
+  //: when the fence names nothing to look for, so Read keeps it as code. `write(text)` puts a changed fence back into the
+  //: document (the view switch, the chosen property); without it the choice lasts only while the figure does.
+  function fill(figure, source, write) {
     const model = parse(source);
     figure.replaceChildren();
     const issues = el("ul", "db-issues");
@@ -116,26 +309,64 @@
     const label = el("span", "db-label", model.type ? `Notes of type ${model.type}` : "Notes");
     const refresh = smallButton("ph:arrow-clockwise", "Refresh the table", () => load());
     refresh.classList.add("icon-only");
-    bar.append(refresh, label);
+    const seg = el("div", "seg seg-compact db-views");
+    seg.setAttribute("role", "group");
+    seg.setAttribute("aria-label", "View");
+    const choose = el("span", "db-choose");
+    bar.append(refresh, label, seg, choose);
     const body = el("div", "db-body");
     body.setAttribute("aria-live", "polite");
     figure.append(bar, body);
     if (model.errors.length) figure.append(issues);
+    const state = {};
+    let current = null;
+    //: A line of the fence changed: kept in the document when there is one, and always applied to the figure at once.
+    const setKey = (key, value, reload) => {
+      source = setLine(source, key, value);
+      model[key] = value || (key === "view" ? "table" : "");
+      if (write) write(source);
+      if (reload) load();
+      else paint();
+    };
+    function paint() {
+      seg.replaceChildren();
+      for (const [id, name] of [["table", "Table"], ["board", "Board"], ["calendar", "Calendar"]]) {
+        const button = el("button", model.view === id ? "active" : "", name);
+        button.type = "button";
+        button.setAttribute("aria-pressed", model.view === id ? "true" : "false");
+        button.addEventListener("click", () => setKey("view", id === "table" ? "" : id, false));
+        seg.append(button);
+      }
+      choose.replaceChildren();
+      const pickKey = model.view === "board" ? "group" : model.view === "calendar" ? "date" : "";
+      const names = current ? current.columns : [];
+      if (pickKey && names.length) {
+        const items = names.map((name) => ({ label: name, current: name === model[pickKey], run: () => setKey(pickKey, name, false) }));
+        choose.append(el("span", "db-label", pickKey === "group" ? "Group by" : "Date in"), kebabMenu(items, pickKey === "group" ? "Group by property" : "Date property"));
+      }
+      if (current) draw(body, model, current, state, paint);
+    }
     let token = 0;
     function load() {
       const mine = ++token;
       body.replaceChildren(el("p", "db-empty", "Reading the notes"));
       apiJson(query(model), { silent: true })
         .then((data) => {
-          if (mine === token && figure.isConnected) draw(body, model, data);
+          if (mine !== token || !figure.isConnected) return;
+          current = data;
+          //: The first listed property stands in until the fence names one.
+          if (!model.group && data.columns[0]) model.group = data.columns[0];
+          if (!model.date && data.columns[0]) model.date = data.columns.find((c) => data.rows.some((r) => dateOf(r, c))) || "";
+          paint();
         })
         .catch(() => {
           if (mine === token) body.replaceChildren(el("p", "db-empty", "The notes could not be read just now."));
         });
     }
+    paint();
     load();
     return true;
   }
 
-  Object.assign(docMathRender, { base: { parse, query, fill } });
+  Object.assign(docMathRender, { base: { parse, query, fill, setLine, groupRows, moveValue, monthGrid, dateOf } });
 })();

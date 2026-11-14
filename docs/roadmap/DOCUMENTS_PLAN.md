@@ -1255,7 +1255,7 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 3. Built (found by grep, checked 2026-11-10): the / menu's "Link to this block" copies `[[Title#^id]]`; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
 4. Built 2026-10-26 (docs5-1026): see HISTORY.md, "Moved from the plans, 2026-10-26 (docs5-1026)".
 5. Built 2026-11-11 (F1 run 2): the block lives in its source document, an embed edits it in place (DOCUMENTS_PLAN 26, decision 82); HISTORY.md, "F1 run 2".
-6. Table built 2026-11-11 (F1 run 2): a ```base block, read-only (HISTORY.md, "F1 run 2"). Board and calendar views stay open - M.
+6. Table built 2026-11-11 (F1 run 2): a ```base block, read-only (HISTORY.md, "F1 run 2"). Board and calendar views built 2026-11-14 (HISTORY.md, "Moved from the plans", L-documents-52).
 7. Built 2026-11-10 (s9c-1110): the / menu's "Remind me about this"; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
 8. ~~Page cover and icon picker parity with Notion's gallery - S.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 5").
 9. Built 2026-11-11 (F1 run): see HISTORY.md, "Moved from the plans, 2026-11-11 (F1 graph block, DOCUMENTS_PLAN 16)".

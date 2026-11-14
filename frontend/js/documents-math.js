@@ -596,10 +596,21 @@
   //: clicks and drags are the figure's: the pencil on its corner puts the caret in the text.
   const FENCES = {
     graph: { module: "docGraph", cls: "md-graph", wrap: "cm-md-graph-wrap", pending: "md-graph-pending", edit: "dg-edit", height: 420, fill: (figure, source) => docMathRender.graph.fill(figure, source) },
-    base: { module: "docBase", cls: "md-base", wrap: "cm-md-base-wrap", pending: "md-base-pending", edit: "db-edit", height: 180, fill: (figure, source) => docMathRender.base.fill(figure, source) },
+    base: { module: "docBase", cls: "md-base", wrap: "cm-md-base-wrap", pending: "md-base-pending", edit: "db-edit", height: 180, fill: (figure, source, write) => docMathRender.base.fill(figure, source, write) },
   };
   const fenceBlocks = (lang) => (text) =>
     [...text.matchAll(new RegExp("^```[ \\t]*" + lang + "\\b[^\\n]*\\n([\\s\\S]*?)\\n```[ \\t]*$", "gm"))].map((m) => ({ from: m.index, to: m.index + m[0].length, source: m[1] }));
+  //: A changed fence goes back into the document: the Live view's own editor when `view` is given, else Read's surface (the one
+  //: a ticked task writes through). `pick` names the block among the document's fences of that language.
+  const fenceWrite = (lang, pick, next, view) => {
+    const surface = view || window.docSurface?.();
+    const text = view ? view.state.doc.toString() : surface?.text;
+    const block = text == null ? null : pick(fenceBlocks(lang)(text));
+    if (!block) return;
+    const from = block.from + text.slice(block.from).indexOf("\n") + 1;
+    if (view) view.dispatch({ changes: { from, to: from + block.source.length, insert: next } });
+    else surface.replaceRange(from, from + block.source.length, next);
+  };
   const fenceIn = (lang) => (container) => {
     const spec = FENCES[lang];
     const codes = [...container.querySelectorAll(`.code-block code[data-lang="${lang}"]`)];
@@ -611,7 +622,8 @@
         const figure = document.createElement("figure");
         figure.className = spec.cls;
         //: A fence that draws nothing stays the code it is, with the reasons under it.
-        if (spec.fill(figure, code.textContent)) block.replaceWith(figure);
+        const n = codes.indexOf(code);
+        if (spec.fill(figure, code.textContent, (next) => fenceWrite(lang, (blocks) => (blocks[n]?.source.trim() === code.textContent.trim() ? blocks[n] : null), next))) block.replaceWith(figure);
         else block.after(figure);
       }
     });
@@ -651,7 +663,7 @@
         ensureModule(spec.module).then((ok) => {
           if (!ok) return;
           figure.classList.remove(spec.pending);
-          spec.fill(figure, this.source);
+          spec.fill(figure, this.source, (next) => fenceWrite(lang, (blocks) => blocks.find((b) => b.from === view.posAtDOM(wrap)), next, view));
           view.requestMeasure();
         });
         return wrap;
