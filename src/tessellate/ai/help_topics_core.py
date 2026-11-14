@@ -1480,7 +1480,7 @@ HELP_TOPICS.extend(
                 "Find anything (Ctrl+P, or the search box on the dashboard) looks "
                 "through notes, documents, boards, mind maps, files, links, reminders, "
                 "chats and recordings (by title and by what was said) at once, by your words and by meaning; each result wears "
-                "its kind, and the chips narrow it to one. Operators: tag:work, "
+                "its kind, and the chips narrow it to one. A question (\"when does my passport expire?\") gets a one-line answer from your notes above the results, with a button to open the note. Operators: tag:work, "
                 "in:work for a space or category, cat:work (or -cat:work), tags:<2 for how many tags, kind:chat, before:tuesday, after:2025-06-30, "
                 "has:image, is:pinned, title:budget for titles only, is:deleted to look in the bin "
                 '(otherwise left out), a "quoted phrase", and -word or -tag:work (also -kind:, -is:, -title:) to leave something '

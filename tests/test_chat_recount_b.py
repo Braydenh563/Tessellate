@@ -77,3 +77,23 @@ def test_settings_are_explained_in_sentences_l161():
         reply = help_chat.offline_answer(question, None)
         assert reply["sources"], question
         assert "I don't have help on that" not in reply["content"], question
+
+
+def test_find_anything_answers_a_question_with_one_line_l170(client, session):
+    from tessellate.core.database import Entry
+
+    note = Entry(content="Passport renewal\nThe passport expires on 4 March 2027 and the renewal form is in the blue folder.")
+    session.add(note)
+    session.commit()
+    got = client.get("/read/answer", params={"q": "when does my passport expire?", "now": "2026-11-14T09:00:00+00:00"}).json()
+    assert got["answer"] and "passport" in got["answer"]["text"].lower() and note.id in got["answer"]["sources"]
+    assert client.get("/read/answer", params={"q": "passport"}).json() == {"answer": None}
+
+
+def test_finder_draws_the_answer_line_above_the_results_l170():
+    from tests._app_js import app_js_text
+
+    js = app_js_text()
+    body = js[js.index("async function finderAnswerLine") : js.index("async function finderSearch")]
+    assert "/read/answer?q=" in body and "run !== finderState.run" in body and "FINDER_OPEN.note" in body
+    assert "finderAnswerLine(query, run);" in js
