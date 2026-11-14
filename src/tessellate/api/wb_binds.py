@@ -9,8 +9,9 @@ edited elsewhere moves its card the next time the board is looked at."""
 from __future__ import annotations
 
 import json
+import logging
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from tessellate.repo import whiteboard as whiteboard_repo
 from sqlalchemy.orm import Session
 
@@ -18,11 +19,12 @@ from tessellate.core import events
 from tessellate.core.database import WhiteboardNode, WhiteboardObject
 from tessellate.core.deps import get_session
 from tessellate.core.events import node_state
-from tessellate.entry import manager_text
+from tessellate.entry import manager, manager_text
 from tessellate.entry import properties as note_properties
 from tessellate.repo.content import BOARDS
 
 router = APIRouter()
+log = logging.getLogger(__name__)
 
 #: Where a card lands in a frame it is moved into: under the title, then a
 #: step down for each card already moved there in the same sync.
@@ -59,36 +61,70 @@ def _held(found: dict[str, list[str]], prop: str) -> str:
     return ", ".join(found.get(prop) or [])
 
 
-def _value(db: Session, entry_id: int, prop: str) -> str:
-    entry = whiteboard_repo.entry(db, entry_id)
-    if entry is None:
-        return ""
-    found, _ = note_properties.split(manager_text.readable_content(entry))
-    return _held(found, prop)
+def _readable(entry) -> str | None:  # noqa: ANN001
+    """The note's text, or None while it is a locked private note: its
+    readable text is then a placeholder, which must never be written back."""
+    if entry is None or manager.note_is_sealed(entry.is_private):
+        return None
+    return manager_text.readable_content(entry)
+
+
+def _value(entry, prop: str) -> str | None:  # noqa: ANN001
+    """The note's value for `prop`; None when the note cannot be read."""
+    text = _readable(entry)
+    return None if text is None else _held(note_properties.split(text)[0], prop)
 
 
 def write_binding(db: Session, entry_id: int, binds: dict) -> bool:
-    """Write the frame's value to the card's note; False when it already holds it."""
+    """Write the frame's value to the card's note; False when it already holds
+    it, is locked, or changed under this write (the version is passed, so an
+    edit made meanwhile is kept and this card is skipped, never overwritten)."""
     from tessellate.api import routes_entries
+    from tessellate.api.edit_conflicts import content_hash
     from tessellate.api.schemas import EntryUpdate
 
     entry = whiteboard_repo.entry(db, entry_id)
-    if entry is None:
+    text = _readable(entry)
+    if text is None:
         return False
-    found, _ = note_properties.split(manager_text.readable_content(entry))
+    found, _ = note_properties.split(text)
     if _held(found, binds["property"]) == binds["value"]:
         return False
     found[binds["property"]] = binds["value"]
-    text = note_properties.write(manager_text.readable_content(entry), found)
-    routes_entries.update_entry(entry_id, EntryUpdate(content=text), response=Response(), session=db, if_match=None)
+    update = EntryUpdate(content=note_properties.write(text, found), base_hash=content_hash(text))
+    try:
+        routes_entries.update_entry(entry_id, update, response=Response(), session=db, if_match=None)
+    except HTTPException as err:
+        db.rollback()
+        log.info("frame binding skipped note %s: %s", entry_id, err.status_code)
+        return False
     return True
 
 
 def apply_card_binding(db: Session, node: WhiteboardNode) -> None:
     """After a card moved: its note takes the value of the bound frame it is in."""
     binds = frame_at(bound_frames(db, node.board_id), node.x or 0.0, node.y or 0.0)
-    if binds:
+    if not binds:
+        return
+    #: The card's own save is already committed: a binding that fails is logged
+    #: and skipped, it never turns that save into an error.
+    try:
         write_binding(db, node.entry_id, binds)
+    except Exception:  # noqa: BLE001
+        db.rollback()
+        log.warning("frame binding failed for note %s", node.entry_id, exc_info=True)
+
+
+def _target(frames: list[tuple[WhiteboardObject, dict]], node: WhiteboardNode, entry) -> WhiteboardObject | None:  # noqa: ANN001
+    """The bound frame this card's note now names, when it sits in another one."""
+    #: Only a card on the kanban moves: one loose on the board was put there.
+    here = frame_at(frames, node.x or 0.0, node.y or 0.0)
+    if here is None:
+        return None
+    held = _value(entry, here["property"])
+    if held is None or held == here["value"]:
+        return None
+    return next((frame for frame, binds in frames if binds["property"] == here["property"] and binds["value"] == held), None)
 
 
 @router.post("/boards/{board_id}/binds/sync")
@@ -102,15 +138,10 @@ def sync_board_binds(board_id: int, db: Session = Depends(get_session)) -> dict:
     if not frames:
         return {"moved": moved}
     landed: dict[int, int] = {}
-    for node in whiteboard_repo.board_nodes(db, board_id):
-        #: Only a card on the kanban moves: one loose on the board was put there.
-        here = frame_at(frames, node.x or 0.0, node.y or 0.0)
-        if here is None:
-            continue
-        held = _value(db, node.entry_id, here["property"])
-        if held == here["value"]:
-            continue
-        target = next((frame for frame, binds in frames if binds["property"] == here["property"] and binds["value"] == held), None)
+    nodes = whiteboard_repo.board_nodes(db, board_id)
+    notes = {entry.id: entry for entry in whiteboard_repo.entries(db, [node.entry_id for node in nodes])}
+    for node in nodes:
+        target = _target(frames, node, notes.get(node.entry_id))
         if target is None:
             continue
         before = node_state(node)

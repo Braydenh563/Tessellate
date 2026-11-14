@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8730, frontend ids 2809, CSS sections 525, backend routes 714, backend modules 10908, test files 2799, tests 22541, plan headings 691, app scripts 29, boot scripts 38, script files 317.
+Counts: frontend functions 8730, frontend ids 2809, CSS sections 525, backend routes 714, backend modules 10910, test files 2799, tests 22547, plan headings 691, app scripts 29, boot scripts 38, script files 317.
 
 ## Frontend functions (8730)
 
@@ -2618,7 +2618,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `redrawLibraryBoardsGallery` | frontend/js/boards-gallery.js:153 |
 | `renderBoardTypeFilter` | frontend/js/boards-gallery.js:114 |
 | `renderLibraryBoardsGallery` | frontend/js/boards-gallery.js:158 |
-| `wbNewMenuMount` | frontend/js/boards-gallery.js:419 |
+| `wbNewMenuMount` | frontend/js/boards-gallery.js:403 |
 
 ### frontend/js/captions.js (15)
 
@@ -13702,7 +13702,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 9705 |
+| frontend/css/library-lazy.css | 9707 |
 | frontend/css/lightbox-lazy.css | 449 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
@@ -13829,7 +13829,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/propose` | POST | `propose_map` | src/tessellate/api/wb_make.py:124 |
 | `/boards/{board_id}` | PUT | `rename_board` | src/tessellate/api/wb_boards.py:523 |
 | `/boards/{board_id}/affinity` | POST | `affinity_sort` | src/tessellate/api/routes_board_affinity.py:195 |
-| `/boards/{board_id}/binds/sync` | POST | `sync_board_binds` | src/tessellate/api/wb_binds.py:94 |
+| `/boards/{board_id}/binds/sync` | POST | `sync_board_binds` | src/tessellate/api/wb_binds.py:130 |
 | `/boards/{board_id}/draft` | POST | `draft_board_document` | src/tessellate/api/wb_make.py:345 |
 | `/boards/{board_id}/duplicate` | POST | `duplicate_board` | src/tessellate/api/wb_boards.py:357 |
 | `/boards/{board_id}/export` | GET | `export_board` | src/tessellate/api/wb_export.py:685 |
@@ -13842,7 +13842,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/boards/{board_id}/nodes/{node_id}/move` | PUT | `move_map_node` | src/tessellate/api/wb_map.py:269 |
 | `/boards/{board_id}/nodes/{node_id}/suggest` | POST | `suggest_branches` | src/tessellate/api/routes_map_suggest.py:185 |
 | `/boards/{board_id}/nodes/{node_id}/summary` | POST | `summarise_branch` | src/tessellate/api/routes_map_suggest.py:428 |
-| `/boards/{board_id}/suggest-title` | POST | `suggest_board_title` | src/tessellate/api/wb_boards.py:644 |
+| `/boards/{board_id}/suggest-title` | POST | `suggest_board_title` | src/tessellate/api/wb_boards.py:651 |
 | `/boards/{board_id}/suggest-title` | POST | `suggest_board_title` | src/tessellate/api/wb_make.py:258 |
 | `/boards/{board_id}/thumbnail` | PUT | `put_thumbnail` | src/tessellate/api/wb_preview.py:913 |
 | `/boards/{board_id}/thumbnail/state` | GET | `thumbnail_state` | src/tessellate/api/wb_preview.py:902 |
@@ -14461,7 +14461,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10908)
+## Backend modules (10910)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24066,18 +24066,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `ApiVersionMiddleware` | src/tessellate/api/versioning.py:36 |
 | `is_versioned` | src/tessellate/api/versioning.py:72 |
 
-### src/tessellate/api/wb_binds.py (8)
+### src/tessellate/api/wb_binds.py (10)
 
 | Name | File:line |
 |---|---|
-| `_held` | src/tessellate/api/wb_binds.py:57 |
-| `_inside` | src/tessellate/api/wb_binds.py:46 |
-| `_value` | src/tessellate/api/wb_binds.py:62 |
-| `apply_card_binding` | src/tessellate/api/wb_binds.py:87 |
-| `bound_frames` | src/tessellate/api/wb_binds.py:32 |
-| `frame_at` | src/tessellate/api/wb_binds.py:51 |
-| `sync_board_binds` | src/tessellate/api/wb_binds.py:95 |
-| `write_binding` | src/tessellate/api/wb_binds.py:70 |
+| `_held` | src/tessellate/api/wb_binds.py:59 |
+| `_inside` | src/tessellate/api/wb_binds.py:48 |
+| `_readable` | src/tessellate/api/wb_binds.py:64 |
+| `_target` | src/tessellate/api/wb_binds.py:118 |
+| `_value` | src/tessellate/api/wb_binds.py:72 |
+| `apply_card_binding` | src/tessellate/api/wb_binds.py:104 |
+| `bound_frames` | src/tessellate/api/wb_binds.py:34 |
+| `frame_at` | src/tessellate/api/wb_binds.py:53 |
+| `sync_board_binds` | src/tessellate/api/wb_binds.py:131 |
+| `write_binding` | src/tessellate/api/wb_binds.py:78 |
 
 ### src/tessellate/api/wb_board.py (33)
 
@@ -24132,7 +24134,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `list_boards` | src/tessellate/api/wb_boards.py:130 |
 | `list_images` | src/tessellate/api/wb_boards.py:248 |
 | `rename_board` | src/tessellate/api/wb_boards.py:524 |
-| `suggest_board_title` | src/tessellate/api/wb_boards.py:645 |
+| `suggest_board_title` | src/tessellate/api/wb_boards.py:652 |
 
 ### src/tessellate/api/wb_export.py (17)
 
@@ -24254,18 +24256,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `FrameBinds` | src/tessellate/api/wb_model.py:465 |
+| `FrameBinds` | src/tessellate/api/wb_model.py:468 |
 | `TableMerge` | src/tessellate/api/wb_model.py:456 |
 | `WhiteboardComment` | src/tessellate/api/wb_model.py:260 |
 | `WhiteboardNodeBase` | src/tessellate/api/wb_model.py:313 |
 | `WhiteboardNodeOut` | src/tessellate/api/wb_model.py:336 |
-| `WhiteboardObjectBase` | src/tessellate/api/wb_model.py:974 |
-| `WhiteboardObjectData` | src/tessellate/api/wb_model.py:473 |
-| `WhiteboardObjectOut` | src/tessellate/api/wb_model.py:997 |
+| `WhiteboardObjectBase` | src/tessellate/api/wb_model.py:988 |
+| `WhiteboardObjectData` | src/tessellate/api/wb_model.py:487 |
+| `WhiteboardObjectOut` | src/tessellate/api/wb_model.py:1011 |
 | `WhiteboardSketchBase` | src/tessellate/api/wb_model.py:345 |
 | `WhiteboardSketchIn` | src/tessellate/api/wb_model.py:437 |
 | `WhiteboardSketchOut` | src/tessellate/api/wb_model.py:447 |
-| `WhiteboardStateOut` | src/tessellate/api/wb_model.py:1113 |
+| `WhiteboardStateOut` | src/tessellate/api/wb_model.py:1127 |
 | `_bad_port` | src/tessellate/api/wb_model.py:384 |
 | `_bad_ports` | src/tessellate/api/wb_model.py:397 |
 | `_bad_sketch_field` | src/tessellate/api/wb_model.py:401 |
@@ -24273,10 +24275,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_clamp` | src/tessellate/api/wb_model.py:296 |
 | `_is_one_emoji` | src/tessellate/api/wb_model.py:213 |
 | `_number` | src/tessellate/api/wb_model.py:380 |
-| `_object_to_out` | src/tessellate/api/wb_model.py:1044 |
-| `_require_object_data` | src/tessellate/api/wb_model.py:1084 |
-| `_require_table_cells` | src/tessellate/api/wb_model.py:1061 |
-| `_require_table_merges` | src/tessellate/api/wb_model.py:1071 |
+| `_object_to_out` | src/tessellate/api/wb_model.py:1058 |
+| `_require_object_data` | src/tessellate/api/wb_model.py:1098 |
+| `_require_table_cells` | src/tessellate/api/wb_model.py:1075 |
+| `_require_table_merges` | src/tessellate/api/wb_model.py:1085 |
 | `check_sketch_data` | src/tessellate/api/wb_model.py:417 |
 
 ### src/tessellate/api/wb_preview.py (28)
@@ -28403,7 +28405,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22541)
+## Tests (22547)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28625,7 +28627,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_board_sidebar_596.py | 6 |
 | tests/test_board_stamps.py | 3 |
 | tests/test_board_suggest_name.py | 5 |
-| tests/test_board_suggest_title.py | 4 |
+| tests/test_board_suggest_title.py | 6 |
 | tests/test_board_swimlanes.py | 2 |
 | tests/test_board_templates_715.py | 12 |
 | tests/test_board_thumbnail.py | 9 |
@@ -31035,7 +31037,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_format.py | 13 |
 | tests/test_wb_format2.py | 24 |
 | tests/test_wb_format_button.py | 3 |
-| tests/test_wb_frame_binds.py | 5 |
+| tests/test_wb_frame_binds.py | 9 |
 | tests/test_wb_frame_link.py | 6 |
 | tests/test_wb_frame_margins.py | 9 |
 | tests/test_wb_frame_pad.py | 3 |

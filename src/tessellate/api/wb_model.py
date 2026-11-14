@@ -462,12 +462,26 @@ class TableMerge(BaseModel):
     cs: StrictInt = Field(ge=1, le=MAX_TABLE_COLS)
 
 
+_RESERVED_BINDS = frozenset({"title", "tags", "id"})
+
+
 class FrameBinds(BaseModel):
     """A frame bound to one note property (L-whiteboard-12): a card dropped
     inside writes `value` to its note's `property`; one field per frame."""
 
-    property: str = Field(min_length=1, max_length=60, pattern=r"^[^:\n]+$")
-    value: str = Field(min_length=1, max_length=300, pattern=r"^[^\n]+$")
+    #: A name the properties block can hold as a key: a letter first, then
+    #: letters, digits, spaces, `_` or `-`, one line.
+    property: str = Field(min_length=1, max_length=60, pattern=r"^[A-Za-z][A-Za-z0-9 _-]*$")
+    value: str = Field(min_length=1, max_length=300, pattern=r"^[^\r\n]+$")
+
+    @field_validator("property")
+    @classmethod
+    def _not_reserved(cls, name: str) -> str:
+        """`title` is lifted into the note's first line (`properties.lift_title`)
+        and `tags` is the note's tag list: a frame must not rewrite either."""
+        if name.strip().lower() in _RESERVED_BINDS:
+            raise ValueError(f"A frame cannot bind {name}; pick another property.")
+        return name.strip()
 
 
 class WhiteboardObjectData(BaseModel):

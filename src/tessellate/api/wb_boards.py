@@ -623,7 +623,8 @@ _NAMED_KINDS = ("topic", "frame", "text", "sticky")
 
 def _board_words(db: Session, board_id: int) -> str:
     """What is written on a board, a map's centre topic first: the text a name
-    is taken from. Pinned cards add their notes' titles."""
+    is taken from. Pinned cards add their notes' titles; a private note's
+    never (its words, title included, stay out of a name the model sees)."""
     rows = whiteboard_repo.objects_of_kinds(db, board_id, _NAMED_KINDS)
     rows = sorted(rows, key=lambda o: (o.parent_id is not None, o.kind != "topic", o.kind != "frame", o.z or 0, o.id))
     lines = []
@@ -635,10 +636,16 @@ def _board_words(db: Session, board_id: int) -> str:
         if isinstance(content, str) and content.strip():
             lines.append(content.strip())
     for entry in whiteboard_repo.entries(db, [node.entry_id for node in whiteboard_repo.board_nodes(db, board_id)]):
+        if entry.is_private:
+            continue
         title = extract_title(entry.content or "")
         if title:
             lines.append(title)
     return "\n".join(lines)
+
+
+#: How long a board name waits for the model before the board's own words are cut instead.
+_TITLE_SECONDS = 20.0
 
 
 @router.post("/boards/{board_id}/suggest-title")
@@ -655,9 +662,12 @@ def suggest_board_title(board_id: int, db: Session = Depends(get_session)) -> di
     if not text:
         raise HTTPException(status_code=422, detail="There is nothing on this board to name it from yet.")
     if deps.get_ollama().is_running():
+        from tessellate.core import jobs
+
+        flight = jobs.future("board title", librarian.generate_title, text[:4000], deps.get_model_manager(), deps.get_ollama())
         try:
-            title = librarian.generate_title(text[:4000], deps.get_model_manager(), deps.get_ollama())
-        except OllamaError:
+            title = flight.result(timeout=_TITLE_SECONDS)
+        except (OllamaError, TimeoutError):
             title = ""
         if title:
             return {"title": title, "by": "model"}

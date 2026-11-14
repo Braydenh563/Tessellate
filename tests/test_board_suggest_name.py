@@ -57,5 +57,8 @@ def test_an_empty_board_has_nothing_to_name_it_from(client):
 
 def test_the_gallery_menu_offers_it_and_renames_with_undo():
     js = (ROOT / "frontend" / "js" / "boards-gallery.js").read_text(encoding="utf-8")
-    item = js[js.index('"ph:sparkle Suggest a name"'):][:900]
-    assert "/suggest-title" in item and "pushUndo(" in item
+    # One item (two branches each added one), renamed through the helper Rename uses, which pushes the Undo.
+    assert js.count('"ph:sparkle Suggest a name"') == 1
+    item = js[js.index('"ph:sparkle Suggest a name"'):][:600]
+    helper = js[js.index("const renameBoardWithUndo"):][:600]
+    assert "/suggest-title" in item and "renameBoardWithUndo(" in item and "pushUndo(" in helper

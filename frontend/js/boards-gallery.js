@@ -348,26 +348,10 @@ function drawLibraryBoardsGallery(listed) {
             const next = await promptDialog("Rename this board", board.title);
             if (next) await renameBoardWithUndo(next);
           }),
-          //: L348: the model names it from what is on it, else its first words do; renamed through Rename's undoable path.
+          //: L348, L280: the model names it from what is on it, else its first words do; renamed through Rename's undoable path.
           makeMenuItem("ph:sparkle Suggest a name", "A name from what is on this board", async () => {
             const got = await apiJson(`/whiteboard/boards/${board.id}/suggest-title`, { method: "POST" }).catch((e) => toast(e.message, true));
             if (got?.title && got.title !== board.title) await renameBoardWithUndo(got.title);
-          }),
-          //: L280: named from what is on it, as a document is (INBOX 904
-          //: B17); renamed through Rename's undoable PUT.
-          makeMenuItem("ph:sparkle Suggest a name", "A name from what the board or map says", async () => {
-            const named = (title) => apiJson(`/whiteboard/boards/${board.id}`, {
-              method: "PUT",
-              body: JSON.stringify({ title }),
-            }).then(() => renderLibraryBoardsGallery());
-            try {
-              const got = await apiJson(`/whiteboard/boards/${board.id}/suggest-title`, { method: "POST" });
-              if (!got?.title || got.title === board.title) return;
-              await named(got.title);
-              pushUndo(`Renamed "${board.title}"`, () => named(board.title), () => named(got.title));
-            } catch (e) {
-              toast(e.message, true);
-            }
           }),
           // ROADMAP.md item 8: creating, listing and renaming a map all
           // worked; duplicating did not exist, and it is the one that makes a

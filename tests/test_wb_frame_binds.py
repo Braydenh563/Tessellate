@@ -95,3 +95,79 @@ def test_the_board_syncs_on_open_and_the_frame_menu_binds():
     js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
     assert "/binds/sync" in js
     assert "Bind to a property" in js
+
+
+PASSPHRASE = "test-passphrase"
+
+
+def test_a_locked_private_note_is_never_written_or_moved(client, session):
+    """Review 5899364438 item 1: a locked note reads as a placeholder; writing
+    the binding wrote that placeholder over the note's sealed words."""
+    from tessellate.core import vault
+    from tessellate.core.database import Entry
+
+    vault.close()
+    vault.create(session, PASSPHRASE)
+    session.commit()
+    bid = _board(client)
+    _frame(client, bid, "Done", 400, {"property": "status", "value": "Done"})
+    eid = _note(client, "# Secret plan\nstatus: Doing\n\nThe words.")
+    made_private = client.post(f"/entries/{eid}/privacy", json={"private": True})
+    assert made_private.status_code == 200
+    node = client.post("/whiteboard/nodes", json={"entry_id": eid, "board_id": bid, "x": 900, "y": 50}).json()
+    vault.close()
+    session.expire_all()
+    sealed = session.get(Entry, eid).content
+    _move(client, node, 450, 50)
+    synced = client.post(f"/whiteboard/boards/{bid}/binds/sync").json()
+    assert synced["moved"] == []
+    session.expire_all()
+    assert session.get(Entry, eid).content == sealed
+    vault.open_with(session, PASSPHRASE)
+    opened = client.get(f"/entries/{eid}").json()
+    assert "The words." in opened["content"]
+    vault.close()
+
+
+def test_a_note_edited_meanwhile_keeps_its_edit_and_the_save_goes_on(client, monkeypatch):
+    """Item 2: the write names the version it read, so an edit landing between
+    the read and the write is refused (kept), and the save carries on."""
+    from tessellate.api import routes_entries, wb_binds
+
+    bid = _board(client)
+    _frame(client, bid, "Done", 400, {"property": "status", "value": "Done"})
+    eid = _note(client)
+    node = client.post("/whiteboard/nodes", json={"entry_id": eid, "board_id": bid, "x": 900, "y": 50}).json()
+    real = routes_entries.update_entry
+
+    def edited_meanwhile(entry_id, body, **kw):
+        assert body.base_hash, "the binding write must name the version it read"
+        real(entry_id, routes_entries.EntryUpdate(content="# Ship the release\nRewritten elsewhere."), response=kw["response"], session=kw["session"], if_match=None)
+        return real(entry_id, body, **kw)
+
+    monkeypatch.setattr(routes_entries, "update_entry", edited_meanwhile)
+    moved = _move(client, node, 450, 50)
+    assert moved["x"] == 450
+    monkeypatch.setattr(routes_entries, "update_entry", real)
+    kept = client.get(f"/entries/{eid}").json()
+    assert "Rewritten elsewhere." in kept["content"]
+    assert "status" not in _props(client, eid)
+    assert wb_binds.write_binding  # the bulk save takes the same path
+
+
+def test_a_binding_must_be_a_property_name_and_one_line(client):
+    """Item 3: one line, a property-name pattern, and not title, tags or id."""
+    bid = _board(client)
+    for binds in ({"property": "title", "value": "x"}, {"property": "Tags", "value": "x"}, {"property": "1st", "value": "x"},
+                  {"property": "status", "value": "two\nlines"}, {"property": "status", "value": "cr\rline"}, {"property": "a\nb", "value": "x"}):
+        body = {"kind": "frame", "data": {"content": "X", "binds": binds}, "board_id": bid, "x": 0, "y": 0, "width": 100, "height": 100}
+        refused = client.post("/whiteboard/objects", json=body)
+        assert refused.status_code == 422, binds
+    _frame(client, bid, "Ok", 0, {"property": "due date", "value": "Friday"})
+
+
+def test_the_sync_loads_every_note_in_one_call():
+    """Item 5: the cards' notes come in one query, not one per card."""
+    src = (ROOT / "src" / "tessellate" / "api" / "wb_binds.py").read_text(encoding="utf-8")
+    body = src[src.index("def sync_board_binds"):]
+    assert "whiteboard_repo.entries(" in body and "whiteboard_repo.entry(" not in body
