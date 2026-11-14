@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents, Writing room: the Earlier drafts row is one fixed line and the thoughts footer grows with it side by side, so the second pass no longer takes 42 px from the draft box alone (285.2 to 242.8 beside 294.8; L879, L888, scratchpad/ui-sweeps/docsverify-write.js).
 - Documents: the flagged-word menu opened by a long press has 44 px rows under a coarse pointer (they measured 28 px at 390; L881, scratchpad/ui-sweeps/docsverify-suggest.js).
 - Documents, Debug: the breakpoint lane under a finger is the 44 px touch floor wide (it measured 14 px at 390: the coarse 1.5rem lost to the editor theme 0.875rem on specificity); a tap sets the breakpoint (L886, scratchpad/ui-sweeps/docsverify-lane.js).
 - Documents, Debug: class getters and setters and private members (#x fields, methods and accessors) are now lowered for the stepper, each stepped against node's output; an object literal's accessor and `#x in o` are still named (L-documents-37). The claim-check linear-time test proves linearity by growth ratio, not a wall bound (L-documents-45).

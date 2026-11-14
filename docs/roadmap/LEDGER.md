@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 46 | 1 | 0 | 3 | 67 |
+| documents | 20 | 44 | 1 | 0 | 4 | 65 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 601 | 129 | 2 | 166 | 1233 |
+| all | 503 | 599 | 129 | 2 | 167 | 1231 |
 
 ## graph
 
@@ -358,12 +358,10 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-60** `documents` open, S: Flowchart sub-direction inside a subgraph (1679 gap 6). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: direction is a kept line, documents-mermaid.js:54
 - [ ] **L-documents-61** `documents` open, M: Diagram pan with momentum and measured input-to-paint (1679 l). From DOCUMENTS_PLAN.md:1433, audit 2026-11-14. Evidence: no momentum or inertia in diagram-view.js or diagram-touch.js; input-to-paint under 16 ms unmeasured
 - [ ] **L-documents-62** `documents` open, L: Split docLivePlugin by responsibility (audit 160 D23). From DOCUMENTS_PLAN.md:1429, audit 2026-11-14. Evidence: documents-cm.js:27 to :1933 is one 1,906-line function
-- [ ] **L879** `documents` open, S: Measure Write with AI with a model on; Draft it disabled. From OPEN.md:3418. Evidence: Needs a real model run (standing caveat, CLAUDE.md s4); only fake transport tested. Doable here: a stub-transport run drives the Draft it path here; only answer quality needs a real model, which scratchpad/llama-dev.sh can serve.
 - [ ] **L880** `documents` open, M: Brief 69 checks on desktop webview, dark panel rows, large SQL result and touch (hardware). From OPEN.md:608; OPEN.md:2912. Evidence: Desktop webview and touch hardware. Device-only remainder: the real desktop webview and real touch; dark panel rows, the large SQL result and emulated touch run here.
 - [ ] **L882** `documents` open, M: Verify .docx in Word, Format on large file, list chords on non-US layout, docx extra removal. From OPEN.md:632; OPEN.md:3684. Evidence: Needs Word and non-US keyboard. Doable here: docx export and the format and chord paths run here; Word itself and a non-US layout stay unchecked.
 - [ ] **L883** `documents` open, S: Verify autocorrect with IME on a real phone keyboard. From OPEN.md:639. Evidence: Real phone keyboard; W34 unverifiable. Device-only remainder: a real phone keyboard IME; composition events can be emulated here.
 - [ ] **L885** `documents` open, L: Verify IME composition in editor engine and the blocked-request fallback (real IME). From OPEN.md:825; OPEN.md:3404. Evidence: Needs a real IME and a genuinely blocked request. Doable here: composition events and a blocked-request fallback can be scripted here (CDP composition, a route abort).
-- [ ] **L888** `documents` open, M: Measure Write with AI Draft it box heights with a real model. From OPEN.md:1821. Evidence: Needs a real model for the Draft it box heights (CLAUDE.md section 4). Doable here: measure box heights here with a stub reply of realistic length.
 - [ ] **L889** `documents` open, M: Verify writing desk Stop mid-pass, real thinking and draft prompts with a slow real backend. From OPEN.md:1933; OPEN.md:3083. Evidence: Needs slow real backend; stand-in answers in 150ms. Doable here: Stop mid-pass runs here against a delayed stub backend.
 - [ ] **L890** `documents` open, S: Verify real-clipboard Ctrl+V from Word and phone touch. From OPEN.md:3859. Evidence: Needs real clipboard source and phone. Device-only remainder: a real Word clipboard source and a phone; synthetic paste events run here.
 - [ ] **L891** `documents` open, M: Docs audit needing real print dialog, clipboard image paste, phone IME, Safari/Firefox, screen reader, harper cost. From audit-1102-docs.md 6. Evidence: Needs real browsers/devices and a human. Device-only remainder: real print dialog, Safari, screen reader, phone IME; Firefox, harper cost and image paste run here.
@@ -951,6 +949,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
 - [ ] **L-documents-63** `documents` blocked-hardware, S: On a real touch device at 390, hold a diagram shelf tile a moment and drag it onto the picture (obj-drag hold); emulated sizes, hidden tiles and the caret menu are measured (docsverify-shelf.js). From L892 remainder.
+- [ ] **L-documents-64** `documents` blocked-hardware, S: With a real model (scratchpad/llama-dev.sh serve), run Writing room Draft and judge the answer quality, and re-read the two box heights with its real reply (docsverify-write.js measured them with the stand-in and a 1250-word stub). From L879 and L888 remainder.
 
 ## Plan session briefs
 
