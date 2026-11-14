@@ -10,7 +10,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 PORT = int(sys.argv[1])
 THINK = float(sys.argv[2]) if len(sys.argv) > 2 else 3.0
 GAP = float(sys.argv[3]) if len(sys.argv) > 3 else 0.25
-LOG = open(f"/tmp/stub_llm_{PORT}.log", "a")
+LOG_PATH = f"/tmp/stub_llm_{PORT}.log"
+
+
+def log(event):
+    with open(LOG_PATH, "a") as f:
+        f.write(f"{time.time():.2f} {event}\n")
 
 
 class H(BaseHTTPRequestHandler):
@@ -34,7 +39,7 @@ class H(BaseHTTPRequestHandler):
         n = int(self.headers.get("Content-Length") or 0)
         body = json.loads(self.rfile.read(n) or b"{}")
         if not body.get("stream"):
-            return self._send(
+            self._send(
                 200,
                 {
                     "id": "x",
@@ -48,6 +53,7 @@ class H(BaseHTTPRequestHandler):
                     ],
                 },
             )
+            return
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Transfer-Encoding", "chunked")
@@ -64,8 +70,7 @@ class H(BaseHTTPRequestHandler):
             self.wfile.flush()
 
         try:
-            LOG.write(f"{time.time():.2f} start\n")
-            LOG.flush()
+            log("start")
             t0 = time.time()
             i = 0
             while time.time() - t0 < THINK:
@@ -82,11 +87,10 @@ class H(BaseHTTPRequestHandler):
             chunk({}, "stop")
             self.wfile.write(b"0\r\n\r\n")
             self.wfile.flush()
-            LOG.write(f"{time.time():.2f} finished\n")
-            LOG.flush()
+            log("finished")
         except (BrokenPipeError, ConnectionResetError):
-            LOG.write(f"{time.time():.2f} client_closed\n")
-            LOG.flush()
+            log("client_closed")
+        return
 
 
 ThreadingHTTPServer(("127.0.0.1", PORT), H).serve_forever()
