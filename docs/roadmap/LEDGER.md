@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 57 | 25 | 0 | 0 | 82 |
+| chat | 0 | 55 | 25 | 0 | 0 | 80 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 429 | 94 | 0 | 124 | 849 |
+| all | 326 | 427 | 94 | 0 | 124 | 847 |
 
 ## graph
 
@@ -73,8 +73,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-240** `chat` partly, S: Date and time wording in fact_check: design open; needs real-model evals. From CHAT_PLAN.md:1881. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/fact_check.py:555 _moments (nearest unit, year rule)
 - [ ] **L-chat-246** `chat` open, S: Atlas props contrast: measure the rendered props' contrast ratio in both themes and fix any under 3:1. From L148 split. Evidence: restitution built 2026-11-14; contrast not measured
 - [ ] **L-chat-252** `chat` open, M: Chart maker kinds past bar and line: area, pie, scatter, histogram and table (Brief 97 decision a); the composer answers a pie ask with bars and says so (composer_graph._PIE). From INBOX 1847, Brief 97 (a). Evidence: frontend/js/ask-chart.js:427, chartMaker.parse reads kind bar or line only
-- [ ] **L-chat-256** `chat` open, S: Answer 'what can the reminders tab do' from Help, not the reminders state. From verify-c 2026-11-14. Evidence: Asked in Chat: the reminders state reader answers instead of Help (ai/help_surface.py)
-- [ ] **L-chat-257** `chat` open, S: Answer 'what is the bin' with what the bin is, not its contents. From verify-c 2026-11-14. Evidence: Asked in Chat: the bin state reader answers 'The bin is empty'
 
 ## whiteboard
 
