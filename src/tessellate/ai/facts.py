@@ -62,7 +62,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import question_cues
+from tessellate.ai import presets, question_cues
 from tessellate.core import jobruns, model_gate, undo_bin
 from tessellate.core.database import DerivedFact, Entry, EntryLink, utcnow
 from tessellate.core.logbuffer import safe_value
@@ -486,6 +486,7 @@ def _narrow(provider, model: str, content: str, proposed: list[Candidate]) -> se
         reply = provider.chat(
             model,
             [{"role": "system", "content": system}, {"role": "user", "content": listed}],
+            mode=presets.BACKGROUND_MODE,
         )
     except Exception as exc:  # noqa: BLE001  # a background pass, any provider
         logger.info("night pass: the model could not be asked (%s)", exc)
@@ -848,6 +849,7 @@ def _judge(provider, model: str, system: str, first: str, second: str) -> tuple[
                 {"role": "system", "content": system},
                 {"role": "user", "content": f"1. {first}\n2. {second}"},
             ],
+            mode=presets.BACKGROUND_MODE,
         )
     except Exception as exc:  # noqa: BLE001  # a background pass, any provider
         logger.info("night pass: the model could not judge a pair (%s)", exc)

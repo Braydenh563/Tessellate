@@ -354,7 +354,8 @@ class Repair:
 
 
 NO_MATCH = "I could not read that as a question or something to do."
-MODEL_STOPPED = "The model stopped. The answer above is the one the app worked out itself."
+#: The one line for the ladder's "error" step, read by chat (`chat_said.MODEL_STOPPED_NOTE`) and by `repair`.
+MODEL_STOPPED = "The model stopped before it could answer, so this is Atlas's answer from your notes."
 
 
 def repair(reading: Reading | None, *, error: str | None = None, composed: str | None = None,

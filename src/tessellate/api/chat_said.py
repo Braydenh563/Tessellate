@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import capability, composer, composer_aware, composer_lists, composer_open, composer_plan, composer_social, fact_check, filed_name, intent, phrasing, realise
 from tessellate.ai import composer_digest_sentences
 from tessellate.ai import acts, composer_dialogue, task_acts
-from tessellate.ai import composer_frame, composer_read
+from tessellate.ai import composer_frame, composer_read, reading
 from tessellate.ai import composer_jokebook, composer_smalltalk, composer_talk
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.entry import manager
@@ -171,7 +171,7 @@ def _related_elsewhere(session: Session, question: str) -> list[dict]:
 
 
 #: Under an answer composed from the notes because the model stopped mid-turn.
-MODEL_STOPPED_NOTE = "The model stopped before it could answer, so this is Atlas's answer from your notes."
+MODEL_STOPPED_NOTE = reading.MODEL_STOPPED
 #: The model finished, but no sentence of its answer was backed by the notes (review 5899348594).
 MODEL_UNBACKED_NOTE = "The model's answer said things your notes do not, so this is Atlas's answer from your notes."
 
@@ -290,6 +290,12 @@ def _said_events(lead: str, rest: str = "", counts: dict | None = None) -> list[
 def _filed_or_counted_events(req: _StreamRequest, asked: str, now: datetime) -> list[dict]:
     """A filed listing or a count of notes, said from the tool's figures;
     empty when the sentence is neither."""
+    from tessellate.ai import kind_find
+
+    #: Documents, boards or files asked for by subject or time (CHAT_PLAN section 8 row 3).
+    if found := kind_find.read(asked, now.date()):
+        lead, rest, counts = kind_find.answer(req.session, found)
+        return _said_events(lead, rest, counts)
     lead, rest, counts = _filed_said(req, asked, now)
     if lead:
         return _said_events(lead, rest, counts)

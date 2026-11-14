@@ -514,7 +514,7 @@
     try {
       text = ((await navigator.clipboard.readText()) || "").trim();
     } catch {
-      toast("Couldn't read the clipboard here. Paste into Capture instead.", "info");
+      toast(voiceLine("failed", "read the clipboard here. Paste into Capture instead"), "info");
       return;
     }
     if (!text) return toast("There is no text on the clipboard to save.", "info");
@@ -572,7 +572,7 @@
         openDocument(doc.id);
       }, { go: { open: "doc", id: doc.id } });
     } catch (error) {
-      toast(error.message || "Couldn't save that document.", true);
+      toast(error.message || voiceLine("failed", "save that document"), true);
     }
   }
 
@@ -596,7 +596,7 @@
       await openWhiteboardBoard(board.id);
       chatProposalBar(board);
     } catch (error) {
-      toast(error.message || "Couldn't make a mind map from this chat.", true);
+      toast(error.message || voiceLine("failed", "make a mind map from this chat"), true);
     }
   }
 
@@ -661,7 +661,7 @@
       // already calls this with no such guard, for the same reason.
       loadEntries();
     } catch (error) {
-      toast(error.message || "Couldn't save that note.", true);
+      toast(error.message || voiceLine("failed", "save that note"), true);
     }
   }
 
@@ -694,7 +694,7 @@
         return flashReminder(reminder.id);
       }, { go: { open: "reminder", id: reminder.id } });
     } catch (error) {
-      toast(error.message || "Couldn't set a reminder.", true);
+      toast(error.message || voiceLine("failed", "set a reminder"), true);
     }
   }
 

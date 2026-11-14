@@ -43,7 +43,7 @@ def test_the_browser_says_it_the_same():
     table = src[src.index("const VOICE = {"):src.index("};", src.index("const VOICE = {")) + 2]
     start = src.index("function voiceLine(")
     fn = src[start:src.index("\n}\n", start) + 2]
-    script = table + "\n" + fn + '\nconsole.log(JSON.stringify([voiceLine("failed", {what: "open that document"}), voiceLine("failed", {what: "save", why: "the disk is full"})]));'
+    script = table + "\n" + fn + '\nconsole.log(JSON.stringify([voiceLine("failed", "open that document"), voiceLine("failed", "save", "the disk is full")]));'
     out = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=60, check=True)
     assert json.loads(out.stdout) == ["Couldn't open that document.", "Couldn't save: the disk is full"]
 
@@ -68,3 +68,28 @@ def test_no_toast_in_the_app_says_oops_or_shouts():
                 if "Oops" in said or re.search(r"!(?=\s|$)", said):
                     found.append(f"{path.name}:{number}: {said}")
     assert not found, found
+
+
+def test_every_lazy_failure_toast_goes_through_the_voice():
+    """L-chat-205 and 211 (decision 55): no toast or toast action in a lazily
+    loaded script spells out "Couldn't ..." or "Could not ..." itself; each says
+    it through `voiceLine("failed", what, why)` (about 150 literal failures moved
+    on 2026-11-14). The 29 boot scripts keep their literals: the table call
+    cost about 100 bytes gzipped there, over the boot cap
+    (`test_static_compression`), which is never raised."""
+    from tests._app_js import app_js_files
+
+    boot = {path.name for path in app_js_files()}
+    loose = []
+    calls = 0
+    for path in sorted(JS.glob("*.js")):
+        if path.name in boot:
+            continue
+        for number, line in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
+            if line.lstrip().startswith("//"):
+                continue
+            calls += line.count('voiceLine("failed"')
+            if re.search(r"toast(?:Action)?\(", line) and re.search(r"[\"`']Could(?:n't| not) ", line):
+                loose.append(f"{path.name}:{number}: {line.strip()[:90]}")
+    assert not loose, loose
+    assert calls >= 200

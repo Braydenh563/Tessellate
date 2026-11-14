@@ -68,7 +68,7 @@
           toast("Linked as disagreeing");
         } catch (error) {
           keep.disabled = false;
-          toast(error.message || "Couldn't link those notes.", true);
+          toast(error.message || voiceLine("failed", "link those notes"), true);
         }
       });
       actions.append(keep);
@@ -95,7 +95,7 @@
         onGone();
       } catch (error) {
         dismiss.disabled = false;
-        toast(error.message || "Couldn't dismiss that.", true);
+        toast(error.message || voiceLine("failed", "dismiss that"), true);
       }
     });
     actions.append(open, dismiss);
@@ -138,7 +138,7 @@
         offset += (reply.items || []).length;
         more.classList.toggle("hidden", offset >= (reply.total || 0));
       } catch (error) {
-        toast(error.message || "Couldn't read that list.", true);
+        toast(error.message || voiceLine("failed", "read that list"), true);
       } finally {
         more.disabled = false;
       }

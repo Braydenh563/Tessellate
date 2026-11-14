@@ -3878,7 +3878,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
   try {
     plan = await apiJson("/events/undo", { method: "POST", body: JSON.stringify({ actor, since }) });
   } catch (error) {
-    toast(error.message || "Couldn't read what would be undone.", true);
+    toast(error.message || voiceLine("failed", "read what would be undone"), true);
     return;
   }
   const undoable = plan.items.filter((item) => item.status === "undo").length;
@@ -3901,7 +3901,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
     await loadEntries().catch(() => {});
     rerender();
   } catch (error) {
-    toast(error.message || `Couldn't undo what ${name} changed.`, true);
+    toast(error.message || voiceLine("failed", `undo what ${name} changed`), true);
   }
 }
 
@@ -4169,7 +4169,7 @@ function dashTensionRow(tension, onGone) {
       onGone();
     } catch (error) {
       pressed.disabled = false;
-      toast(error.message || "Couldn't save that decision.", true);
+      toast(error.message || voiceLine("failed", "save that decision"), true);
     }
   };
   actions.append(

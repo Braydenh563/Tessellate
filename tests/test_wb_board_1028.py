@@ -51,7 +51,7 @@ def test_a_failed_delete_drops_the_entry_keeps_redo_and_tells_the_person():
 def test_a_failed_delete_behaves_as_if_nothing_happened():
     script = (
         "let wbUndoStack=[], wbRedoStack=['r1'], toasts=[];"
-        "const toast=(m,e)=>toasts.push([m,e]); const voiceLine=(k,o)=>`failed ${o.what}`;"
+        "const toast=(m,e)=>toasts.push([m,e]); const voiceLine=(k,w)=>`failed ${w}`;"
         "const wbUpdateUndoRedoButtons=()=>{}; console.error=()=>{};"
         + _function(WB, "wbDropUndoEntry")
         + _function(WB, "wbDeleteFailed")

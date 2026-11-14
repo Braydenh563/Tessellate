@@ -50,7 +50,7 @@
         chip.remove();
       } catch (error) {
         chip.disabled = false;
-        toast(error.message || "Couldn't make that reminder.", true);
+        toast(error.message || voiceLine("failed", "make that reminder"), true);
       }
     });
     bubble.appendChild(chip);

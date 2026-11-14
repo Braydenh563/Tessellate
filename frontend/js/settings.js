@@ -1261,7 +1261,7 @@ async function clearLogs() {
     const cleared = await api("/logs", { method: "DELETE" }).then(
       () => true,
       (error) => {
-        toast(error.message || "Couldn't clear the server log.", true);
+        toast(error.message || voiceLine("failed", "clear the server log"), true);
         return false;
       }
     );
@@ -1287,7 +1287,7 @@ async function downloadSupportBundle() {
     await saveFile("tessellate-support-bundle.zip", await response.blob());
     toast("Support bundle saved. Have a look inside before you send it.");
   } catch (error) {
-    toast(error.message || "Couldn't build the support bundle.", true);
+    toast(error.message || voiceLine("failed", "build the support bundle"), true);
   } finally {
     setBusy(button, false);
   }
