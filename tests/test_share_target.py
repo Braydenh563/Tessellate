@@ -74,3 +74,32 @@ def test_the_app_reads_exactly_the_names_the_manifest_sends():
 
 def test_the_manifest_has_no_em_dash():
     assert "\u2014" not in MANIFEST.read_text(encoding="utf-8")
+
+
+def test_one_bad_file_name_keeps_the_other_shared_files():
+    """Source text: review (shared-intake.js sharedFiles): a name that would not
+    decode threw inside the loop and the catch returned no files at all; each
+    name decodes on its own now, falling back to `shared-<index>`."""
+    import shutil
+    import subprocess
+
+    import pytest
+
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    src = (ROOT / "frontend/js/shared-intake.js").read_text()
+    start = src.index("  async function sharedFiles(count) {")
+    fn = src[start : src.index("\n  }\n", start) + 4]
+    script = (
+        'const SHARE_CACHE = "x";\n'
+        "class File { constructor(parts, name) { this.name = name; } }\n"
+        "const names = ['a%20b.png', 'bad%E0%A4%A.png', 'c.png'];\n"
+        "const hit = (n) => ({ headers: { get: (h) => (h === 'X-Share-Name' ? n : '') }, blob: async () => '' });\n"
+        "globalThis.window = { caches: true };\n"
+        "globalThis.caches = { open: async () => ({ match: async (u) => hit(names[+u.split('/').pop()]) }),"
+        " delete: async () => {} };\n"
+        f"{fn}\n"
+        "sharedFiles(3).then((f) => console.log(JSON.stringify(f.map((x) => x.name))));\n"
+    )
+    out = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True).stdout
+    assert json.loads(out) == ["a b.png", "shared-1", "c.png"]

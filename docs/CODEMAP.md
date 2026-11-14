@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2845, tests 22453, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2845, tests 22454, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -7706,7 +7706,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `sharedCaptureText` | frontend/js/shared-intake.js:25 |
 | `sharedFiles` | frontend/js/shared-intake.js:37 |
-| `takeSharedIntake` | frontend/js/shared-intake.js:56 |
+| `takeSharedIntake` | frontend/js/shared-intake.js:60 |
 
 ### frontend/js/sketch-pad.js (143)
 
@@ -28085,7 +28085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22453)
+## Tests (22454)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30404,7 +30404,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_skeletons.py | 4 |
 | tests/test_settings_switch_divider.py | 2 |
 | tests/test_settings_weight.py | 3 |
-| tests/test_share_target.py | 4 |
+| tests/test_share_target.py | 5 |
 | tests/test_sheet_modeless_resize.py | 2 |
 | tests/test_sheet_rows_1661.py | 1 |
 | tests/test_shell_fixes.py | 8 |

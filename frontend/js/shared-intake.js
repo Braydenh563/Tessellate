@@ -42,7 +42,11 @@
       for (let index = 0; index < count; index += 1) {
         const hit = await cache.match(`/share-inbox/${index}`);
         if (!hit) continue;
-        const name = decodeURIComponent(hit.headers.get("X-Share-Name") || `shared-${index}`);
+        //: Each name on its own: one that will not decode threw to the catch below and lost every file.
+        let name = `shared-${index}`;
+        try {
+          name = decodeURIComponent(hit.headers.get("X-Share-Name") || name);
+        } catch {}
         files.push(new File([await hit.blob()], name, { type: hit.headers.get("Content-Type") || "" }));
       }
       return files;
