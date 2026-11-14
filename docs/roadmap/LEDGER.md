@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 38 | 1 | 0 | 2 | 39 |
+| documents | 0 | 35 | 1 | 0 | 2 | 36 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 483 | 593 | 129 | 2 | 165 | 1205 |
+| all | 483 | 590 | 129 | 2 | 165 | 1202 |
 
 ## graph
 
@@ -339,7 +339,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
 - [ ] **L-documents-43** `documents` open, M: Query block: a fenced block that renders a saved search live (SilverBullet-style). From owner research via hub 2026-11-14. Evidence: check the existing saved-search code first
 - [ ] **L-documents-44** `documents` open, L: Sub-pages (documents.parent_id) on AppFlowy's page-tree pattern. From owner research via hub 2026-11-14. Evidence: INBOX decision with a recommendation, then taken (standing order 3)
-- [ ] **L-documents-47** `documents` open, M: Documents cold open under 800 ms at 1440 and 390 (24 row 5). From DOCUMENTS_PLAN.md:1115, audit 2026-11-14. Evidence: documents.js:15482 warm-on-idle skips under 720px; no re-measurement in HISTORY
 - [ ] **L-documents-48** `documents` open, M: Long-form choice at first run (24 row 8). From DOCUMENTS_PLAN.md:1118, audit 2026-11-14. Evidence: no first-run note-style choice in onboarding.js or settings.js
 - [ ] **L-documents-49** `documents` open, L: Labelled and linked sections with an embedded local graph (24 row 10). From DOCUMENTS_PLAN.md:1120, audit 2026-11-14. Evidence: documents-graph.js is the y=f(x) block, not section labels
 - [ ] **L-documents-50** `documents` open, M: Code linters: ruff-wasm and a JS linter (25 row 4). From DOCUMENTS_PLAN.md:1157, audit 2026-11-14. Evidence: no ruff or eslint in frontend/vendor; only in-house docCodeScan documents-code.js:4951
@@ -362,8 +361,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-23** `documents` open, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent. Doable here: install the Pyodide extra here and run code-run.js.
 - [ ] **L-documents-28** `documents` open, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold). Doable here: install the Pyodide extra here and time the runs.
 - [ ] **L-documents-78** `documents` open, M: Diagram: the :::class shorthand, icons (@{ icon }, needs an offline icon pack) and clicking a linked node on the picture. From L-documents-55 remainder. Evidence: documents-mermaid.js DGM_UNREAD_SHAPE keeps :::name and @{ icon } as kept lines; mermaid-frame.js:97 securityLevel strict draws an img, so a click on a node in a document's picture cannot follow n.href
-- [ ] **L-documents-79** `documents` open, M: Frame measurement of the document editor: scroll and typing frames against the 14 rAF, 7 scroll, 3 RO and 4 MO wake sources (Brief 60). From DOCUMENTS_PLAN.md:1239 Brief 60, audit 2026-11-14. Evidence: documents.js 14 rAF, 7 scroll, 3 ResizeObserver, 4 MutationObserver sites; no frame sweep in scratchpad/ui-sweeps for the editor
-- [ ] **L-documents-80** `documents` open, S: Library Documents page card: the document's first embedded image as the page's cover. From L-documents-54 remainder, agent docs7446 2026-11-14. Evidence: the plan's recommendation names a cover from the first image; .doc-list-page draws title and preview text only
 - [ ] **L-documents-81** `documents` open, M: Documents cold open at 1440 still over 800 ms: cut the Library bundle's 35 scripts or start the list earlier. From perf1114 L-documents-47 re-measure. Evidence: docscold47.js: 1440 median about 1,060 ms; library bundle 420-470 ms, list 150, open 250-400 (HISTORY perf1114)
 
 ## mindmap
