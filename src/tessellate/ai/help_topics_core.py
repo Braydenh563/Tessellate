@@ -80,8 +80,7 @@ HELP_TOPICS: list[dict] = [
         "body": (
             '"Ask your notebook" (Notes tab) and the Chat tab both answer from '
             "saved notes, with the raw notes beside the answer, each saying why "
-            "it is there; in Ask, "
-            "the answer's ... menu keeps it as a note, a document, a mind map or flashcards, or sets a reminder to come back to it, each with Undo; "
+            "it is there; "
             "Enter asks and Escape clears the question, and the clock button "
             "answers from your notes as they were on a day you pick. Its AI switch "
             "picks who answers: off, the answer is marked Atlas's assistant, from your notes, quoted from your "
@@ -283,7 +282,7 @@ HELP_TOPICS: list[dict] = [
             "in the title moves to the body. The Library list's ... menu has Suggest a name. Code "
             "files get line numbers, Tab/Shift+Tab indenting and Ctrl+/ "
             "commenting, in a monospace face. Insert opens the / menu (Image opens a "
-            'file picker; its Edit group tightens or summarises the selected words and continues a list, with no model, and Undo puts the original back). Unsaved words are kept per document for two weeks. "Check with AI" reviews a document for wording issues '
+            'file picker). Unsaved words are kept per document for two weeks. "Check with AI" reviews a document for wording issues '
             "a spellchecker can't catch. The menu's Map the headings turns its "
             'headings into a new mind map. A mermaid code block (the "/" menu\'s '
             "Flowchart, or any Mermaid diagram: sequence, class, state, entity relationship, Gantt, pie, "
@@ -1481,7 +1480,7 @@ HELP_TOPICS.extend(
                 "Find anything (Ctrl+P, or the search box on the dashboard) looks "
                 "through notes, documents, boards, mind maps, files, links, reminders, "
                 "chats and recordings (by title and by what was said) at once, by your words and by meaning; each result wears "
-                "its kind, and the chips narrow it to one. A question (\"when does my passport expire?\") gets a one-line answer from your notes above the results, with a button to open the note. Operators: tag:work, "
+                "its kind, and the chips narrow it to one. Operators: tag:work, "
                 "in:work for a space or category, cat:work (or -cat:work), tags:<2 for how many tags, kind:chat, before:tuesday, after:2025-06-30, "
                 "has:image, is:pinned, title:budget for titles only, is:deleted to look in the bin "
                 '(otherwise left out), a "quoted phrase", and -word or -tag:work (also -kind:, -is:, -title:) to leave something '

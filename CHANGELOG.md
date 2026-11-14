@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat recount batch 2: Ask answers can be rated good or not good into a local answer_gold.jsonl with a weekly gallery, the search ghost text counts its accept rate, document edits (tighten, summarise, continue a list) work without a model with Undo, toasts name the note or file, and a reminder notification says which note it is from.
+
 - An Ask answer can become flashcards or a reminder. A long note's card opens with a one-line gist. Find anything shows a one-line answer from your notes above the results when the query is a question; a reminder notification says which note it is about; the light rewrite spells out "b4" and similar shorthand.
 
 - Chat recount batch 1: digest counts link to their notes, no repeated sentences in a row, remark bubbles wait while you type and open their source, and the command palette previews a typed act.

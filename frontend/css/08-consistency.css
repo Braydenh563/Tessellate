@@ -4790,18 +4790,6 @@ body .chip.item-label,
 .finder-summary {
   margin-bottom: var(--space-2);
 }
-.entry-gist {
-  margin: 0 0 var(--space-1);
-}
-.finder-answer {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  margin: 0 0 var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--surface-2);
-}
 /* --- Chat: the user's bubble as a quiet surface, not an accent slab --- */
 /* The owner, twice: "the user message bubbles in the chat still look too,
    and unprofessional much compared to the assistant bubbles ... maybe it's

@@ -61,6 +61,17 @@
     return true;
   }
 
+  //: Counts kept on this device only, in prefs, so the accept rate can be read back (`searchSuggestAcceptRate`).
+  function searchSuggestTally(name) {
+    prefs.set(`searchSuggest:${name}`, String((Number(prefs.get(`searchSuggest:${name}`, "0")) || 0) + 1));
+  }
+
+  function searchSuggestAcceptRate() {
+    const offered = Number(prefs.get("searchSuggest:ghostOffered", "0")) || 0;
+    const taken = Number(prefs.get("searchSuggest:ghostTaken", "0")) || 0;
+    return { offered, taken, rate: offered ? taken / offered : 0 };
+  }
+
   function searchSuggestEnabled() {
     return prefs.get(SEARCH_SUGGEST_PREF, "on") !== "off";
   }
@@ -360,6 +371,11 @@
     //: The best completion: the first suggestion whose text continues what is typed.
     const typed = input.value.toLowerCase();
     state.ghostItem = typed ? items.find((item) => item.value.length > typed.length && item.value.toLowerCase().startsWith(typed)) || null : null;
+    //: Accept rate (CHAT_PLAN B20): a completion counts as offered once per distinct text, and as taken when it is.
+    if (state.ghostItem && state.ghostItem.value !== state.ghostCounted) {
+      state.ghostCounted = state.ghostItem.value;
+      searchSuggestTally("ghostOffered");
+    }
     const hasRecent = items.some((item) => item.kind === "recent");
     foot.classList.toggle("hidden", !hasRecent);
     state.box.classList.toggle("hidden", !items.length);
@@ -391,6 +407,7 @@
     if (!state) return;
     const { input } = state;
     state.accepting = true;
+    if (item === state.ghostItem) searchSuggestTally("ghostTaken");
     input.value = item.value;
     input.dispatchEvent(new Event("input", { bubbles: true }));
     input.setSelectionRange(input.value.length, input.value.length);

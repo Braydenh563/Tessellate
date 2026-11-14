@@ -456,6 +456,7 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "editor.js:editorNoModelEdit": "read: asks the route for a tighter or shorter version of the selected words from the route; nothing is stored, the edit goes in as typed text and the browser Undo puts the original back",
     "answer-kit.js:send": "job: remembers how a card was answered (Confirm, Cancel, Undo); the card has its own Undo and no note is changed",
     "settings-rows.js:syncPair": "job: pairs with another computer; Unpair undoes it and no note is changed",
     "settings-rows.js:syncUnpair": "job: forgets the pairing; Pair again restores it and no note is changed",

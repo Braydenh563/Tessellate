@@ -8,7 +8,9 @@ unlock like every route, and at `/api/v1/read` for an outside client.
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
@@ -244,3 +246,60 @@ def edit_selection(body: EditBody) -> dict:
     work = {"tighten": composer_edit.tighten, "summarise": composer_edit.summarise, "continue": composer_edit.continue_list}[body.op]
     made = work(body.text)
     return {"text": made, "same": not made.strip() or (body.op != "continue" and made.strip() == body.text.strip())}
+
+
+class RateBody(BaseModel):
+    question: str = Field("", max_length=500)
+    answer: str = Field(..., max_length=8000)
+    good: bool = True
+
+
+def _gold_path():
+    return Path(get_config().data_dir) / "answer_gold.jsonl"
+
+
+@router.post("/read/rate")
+def rate_answer(body: RateBody) -> dict:
+    """Rate an answer (CHAT_PLAN B40): a good one joins the local gold set, a line
+    in `answer_gold.jsonl` that never leaves the folder; a bad one is logged the
+    same way with `good` false, so the weekly gallery shows both."""
+    row = {"at": utcnow().isoformat(), "question": body.question.strip(), "answer": body.answer.strip(), "good": body.good}
+    path = _gold_path()
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+    return {"ok": True, "at": row["at"]}
+
+
+@router.delete("/read/rate")
+def unrate_answer(at: str = Query(..., max_length=64)) -> dict:
+    """Undo one rating by its timestamp."""
+    path = _gold_path()
+    if not path.exists():
+        return {"ok": True}
+    kept = [line for line in path.read_text(encoding="utf-8").splitlines() if f'"at": {json.dumps(at)}' not in line]
+    path.write_text("".join(line + "\n" for line in kept), encoding="utf-8")
+    return {"ok": True}
+
+
+@router.get("/read/gallery")
+def answer_gallery(days: int = Query(7, ge=1, le=90)) -> dict:
+    """The rated answers of the last `days` days as one markdown page, newest
+    first, for the weekly look at what the notebook answered well and badly."""
+    path = _gold_path()
+    cutoff = (utcnow() - timedelta(days=days)).isoformat()
+    rows = []
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            try:
+                row = json.loads(line)
+            except ValueError:
+                continue
+            if row.get("at", "") >= cutoff:
+                rows.append(row)
+    rows.sort(key=lambda r: r["at"], reverse=True)
+    parts = [f"# Answer gallery, last {days} days", ""]
+    for row in rows:
+        parts += [f"## {'Good' if row.get('good') else 'Not good'}: {row.get('question') or 'Answer'}", "", row.get("answer", ""), ""]
+    if not rows:
+        parts.append("No answers rated yet.")
+    return {"count": len(rows), "text": "\n".join(parts).strip() + "\n"}

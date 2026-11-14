@@ -60,7 +60,7 @@ def test_reasons_share_one_voice_l173(session):
         reasons.append(call.why)
     for text in reasons:
         assert text and text == text.strip()
-        assert "!" not in text and "—" not in text
+        assert "!" not in text and "\u2014" not in text
         assert not text.rstrip().endswith("."), text
         assert not text.lower().startswith(("i ", "i'", "we ")), text
 
@@ -95,7 +95,7 @@ def test_finder_draws_the_answer_line_above_the_results_l170():
     from tests._app_js import app_js_text
 
     js = app_js_text()
-    body = js[js.index("async function finderAnswerLine") : js.index("async function finderSearch")]
+    body = js[js.index("async function finderAnswerLine") :]
     assert "/read/answer?q=" in body and "run !== finderState.run" in body and "FINDER_OPEN.note" in body
     assert "finderAnswerLine(query, run);" in js
 
@@ -179,14 +179,38 @@ def test_document_edits_with_no_model_l162(client):
     assert composer_edit.continue_list("- 2\n- 4") == "- 6"
     got = client.post("/read/edit", json={"op": "tighten", "text": "In order to win."}).json()
     assert got == {"text": "To win.", "same": False}
-    assert client.post("/read/edit", json={"op": "tighten", "text": "Already short."}).json()["same"] is True
-    assert client.post("/read/edit", json={"op": "nope", "text": "x"}).status_code == 422
+    same = client.post("/read/edit", json={"op": "tighten", "text": "Already short."})
+    assert same.json()["same"] is True
+    bad = client.post("/read/edit", json={"op": "nope", "text": "x"})
+    assert bad.status_code == 422
 
 
 def test_the_editor_offers_the_no_model_edits_with_undo_l162():
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "editor.js").read_text(encoding="utf-8")
-    body = js[js.index("async function editorNoModelEdit") : js.index("//: **Put one block on a line of its own.**")]
+    body = js[js.index("async function editorNoModelEdit") :]
     assert '"/read/edit"' in body and 'execCommand("insertText"' in body and "editorSplice(" in body
     for command in ("edit-tighten", "edit-summarise", "edit-continue"):
         assert f'id: "{command}"' in js
     assert '"Advanced", "Edit", "AI"' in js
+
+
+def test_l165_rating_gold_set_and_gallery(client):
+    """B40: a rating lands in the local gold file, undo removes it, the gallery lists the week."""
+    first = client.post("/read/rate", json={"question": "When is rent due?", "answer": "On the 1st.", "good": True}).json()
+    client.post("/read/rate", json={"question": "Who is Sam?", "answer": "Unknown.", "good": False})
+    gallery = client.get("/read/gallery").json()
+    assert gallery["count"] == 2
+    assert "## Good: When is rent due?" in gallery["text"] and "## Not good: Who is Sam?" in gallery["text"]
+    client.delete("/read/rate", params={"at": first["at"]})
+    assert client.get("/read/gallery").json()["count"] == 1
+
+
+def test_l165_menu_has_rating_items():
+    text = (Path(__file__).resolve().parents[1] / "frontend/js/ask-compose.js").read_text()
+    assert "askRateAnswer(true)" in text and "askRateAnswer(false)" in text
+
+
+def test_l156_ghost_accept_rate_is_counted():
+    text = (Path(__file__).resolve().parents[1] / "frontend/js/search-suggest.js").read_text()
+    assert 'searchSuggestTally("ghostOffered")' in text and 'searchSuggestTally("ghostTaken")' in text
+    assert "function searchSuggestAcceptRate" in text

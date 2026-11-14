@@ -1149,7 +1149,9 @@ TAIL_TOPICS.extend(
                 "off first. Select text and press the swap button on the selection "
                 "bar, press Turn into on a phone's formatting bar, or choose Turn "
                 "into in the palette (Ctrl+K). One Ctrl+Z puts the block back. A "
-                "caret inside a code block is left alone."
+                "caret inside a code block is left alone. The / menu's Edit group tightens or "
+                "summarises the selected words and continues a list, with no model; "
+                "Ctrl+Z puts the original back."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

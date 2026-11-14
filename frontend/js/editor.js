@@ -582,31 +582,6 @@ function editorApplyNamed(textarea, kind) {
   editorApplyAction(textarea, (typeof MD_ACTIONS === "object" && MD_ACTIONS[kind]) || {});
 }
 
-//: **Edits with no model** (CHAT_PLAN B26): tighten or summarise the selection, or
-//: continue the list the caret ends. The route (`POST /read/edit`) only takes from
-//: the text it is given. A textarea takes the result as typed text, so the browser's
-//: own Undo puts the original back in one step; CodeMirror gets a transaction.
-async function editorNoModelEdit(textarea, op) {
-  const from = textarea.selectionStart;
-  const to = textarea.selectionEnd;
-  const value = String(textarea.value || "");
-  const source = op === "continue" ? value.slice(Math.max(0, from - 2000), from) : value.slice(from, to);
-  if (!source.trim()) return toast(op === "continue" ? "Put the caret at the end of a list first." : "Select some text first.", "info");
-  const got = await apiJson("/read/edit", { method: "POST", body: JSON.stringify({ op, text: source }) }).catch((e) => toast(e.message, true));
-  if (!got) return;
-  const nothing = { tighten: "Nothing to tighten in that.", summarise: "There is no sentence there to summarise.", continue: "The caret is not at the end of a list." }[op];
-  if (got.same) return toast(nothing, "info");
-  const text = op === "continue" ? `\n${got.text}` : got.text;
-  if (textarea.kind === "codemirror" || typeof textarea.setRangeText !== "function") {
-    editorSplice(textarea, from, op === "continue" ? from : to, text, null);
-    return;
-  }
-  textarea.focus();
-  textarea.setSelectionRange(from, op === "continue" ? from : to);
-  if (!document.execCommand("insertText", false, text)) editorSplice(textarea, from, op === "continue" ? from : to, text, null);
-  editorNotifyHost(textarea);
-}
-
 //: **Put one block on a line of its own.**
 //:
 //: A board object is a block construct: `renderNoteText` and `renderMarkdown`
@@ -930,6 +905,31 @@ function editorCodeLanguageRows() {
 }
 
 function editorBlockRows(context) {
+  //: **Edits with no model** (CHAT_PLAN B26): tighten or summarise the selection, or
+  //: continue the list the caret ends. The route (`POST /read/edit`) only takes from
+  //: the text it is given. A textarea takes the result as typed text, so the browser's
+  //: own Undo puts the original back in one step; CodeMirror gets a transaction.
+  async function editorNoModelEdit(textarea, op) {
+    const from = textarea.selectionStart;
+    const to = textarea.selectionEnd;
+    const value = String(textarea.value || "");
+    const source = op === "continue" ? value.slice(Math.max(0, from - 2000), from) : value.slice(from, to);
+    if (!source.trim()) return toast(op === "continue" ? "Put the caret at the end of a list first." : "Select some text first.", "info");
+    const got = await apiJson("/read/edit", { method: "POST", body: JSON.stringify({ op, text: source }) }).catch((e) => toast(e.message, true));
+    if (!got) return;
+    const nothing = { tighten: "Nothing to tighten in that.", summarise: "There is no sentence there to summarise.", continue: "The caret is not at the end of a list." }[op];
+    if (got.same) return toast(nothing, "info");
+    const text = op === "continue" ? `\n${got.text}` : got.text;
+    if (textarea.kind === "codemirror" || typeof textarea.setRangeText !== "function") {
+      editorSplice(textarea, from, op === "continue" ? from : to, text, null);
+      return;
+    }
+    textarea.focus();
+    textarea.setSelectionRange(from, op === "continue" ? from : to);
+    if (!document.execCommand("insertText", false, text)) editorSplice(textarea, from, op === "continue" ? from : to, text, null);
+    editorNotifyHost(textarea);
+  }
+
   const inDocument = context === "document";
   const rows = [];
   const add = (row) => rows.push(row);

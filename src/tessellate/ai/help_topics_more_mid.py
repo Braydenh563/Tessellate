@@ -789,7 +789,10 @@ MID_TOPICS.extend(
                 "takes it back. Editing your own question clears the replies after "
                 "it; in a saved chat with later replies, Keep the earlier version as "
                 "a copy (on by default) first saves the whole chat as a copy named "
-                "after it, \"before the edit\"."
+                "after it, \"before the edit\". In Ask, the same menu keeps the answer as a "
+                "note, a document, a mind map or flashcards, or sets a reminder to come back "
+                "to it, and rates it good or not good (kept in answer_gold.jsonl in your data "
+                "folder, never sent anywhere), each with Undo."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
