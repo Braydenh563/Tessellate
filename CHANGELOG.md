@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: a board card has Show live, which draws the board in a read-only window of its own in the document (decision 83, L-documents-11): its own zoom and pan through the diagram view's corner bar, Refresh, and a redraw when Edit here closes; two windows and the Library's board keep their own state (measured: A 4 to 5 items, B at 1.56 zoom and 2 items, the Library's board 1 item at k 1, 633, 352 before and after, 0 console errors at 1440 and 390, light and dark). Help: csv-grid gets its Guide group and title.
 - CI leg 1 on ce0f7082: the Today look-up failure speaks through voiceLine, and the diagram-styling help names bold and italic in words, not stored marks.
 - CI on ce0f7082: failure copy says "Couldn't" (unslop 25), the Today handler is shorter, and the docux and map-audio tests read the video picker and the video/webm type that L-documents-68 added.
 - Documents: a paste from Word no longer logs a CSP error (its `<style>` block is cut before parsing); `hw890.js` pastes Word-shaped HTML (headings, mso-list bullets and numbers, a table, o:p noise, a script) at 1440 and at 390 with touch (L890).

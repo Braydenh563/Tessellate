@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 1 | 0 | 0 | 0 | 31 |
-| documents | 0 | 26 | 1 | 0 | 7 | 27 |
+| documents | 0 | 28 | 1 | 0 | 7 | 29 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 465 | 543 | 125 | 2 | 159 | 1133 |
+| all | 465 | 545 | 125 | 2 | 159 | 1135 |
 
 ## graph
 
@@ -311,6 +311,8 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-96** `documents` open, M: Sweep other sync-generator streaming routes for the disconnect leak, and explain the 500000-char formatted-file save refusal. From L889. Evidence: sync-generator StreamingResponse bodies are not closed on disconnect under Starlette 1.10; a file over 500000 chars is refused on save with a 422
 - [ ] **L-documents-97** `documents` open, S: History summary: tell the reader when the model timed out, and let a slow local model have longer than 45 seconds for it. From L-documents-5 real-model check. Evidence: Cold first call to the 1.5B model passed bounded_chat's 45 s limit (MODEL_SECONDS) and fell back to the counts; warm it answered in about 30 s.
 - [ ] **L-documents-98** `documents` open, S: Base block board and calendar HTML export: check for dead drag and month controls in the static file. From L-documents-84 export check. Evidence: Board cards in the exported HTML keep draggable=true and the calendar its month navigation; not checked whether either does anything in a static file.
+- [ ] **L-documents-99** `documents` open, L: Board editable in place inside a document's text flow, per instance (needs the whiteboard state made per instance; the whiteboard owner's refactor). From docs/roadmap/DOCUMENTS_PLAN.md decision 83. Evidence: wbState 299 uses in 40 files, currentBoardId 109, wbSelectedItem 159, wbMultiSelection 155, wbUndoStack 50, d3 zoom on #whiteboard-container; Show live is read-only meanwhile
+- [ ] **L-documents-100** `documents` open, S: Boot JS gzip 239 bytes over the ratchet after the documents and whiteboard-split merge: win the bytes back. From merge 91c8ad036 (agent/d11-1340). Evidence: tests/test_static_compression.py::test_the_app_scripts_stay_under_the_ratchet: 250689 gzip bytes against 250450 after merging claude/documents-plan-2 with the whiteboard L286 split (5a2b73aef); lazy-entries.js boards list grew 3696 to 3936 gzip bytes; each side was under the cap alone; L-documents-11 adds 0 boot bytes
 
 ## mindmap
 

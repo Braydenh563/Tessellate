@@ -8,14 +8,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import pytest
-
 from tests._help_text import help_more_text
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "frontend" / "js"
-
-pytestmark = pytest.mark.xfail(strict=True, reason="L-documents-11: the live window is not built yet")
 
 
 def read(name: str) -> str:
@@ -61,6 +57,6 @@ def test_the_window_has_a_height_and_stays_out_of_print() -> None:
 
 def test_the_guide_says_show_live() -> None:
     body = help_more_text()
-    start = body.index('"document-board"')
+    start = body.index('"id": "document-board"')
     topic = body[start:start + 2400]
     assert "Show live" in topic and "Refresh" in topic

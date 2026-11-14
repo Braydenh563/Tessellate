@@ -1837,6 +1837,7 @@ TOPIC_META: dict[str, dict] = {
     "translate": {"title": "Translating", "path": "Notes tab, Writing room"},
     "tags-categories": {"title": "Tags and categories", "path": "A note's own row, or Capture's Filing menu"},
     "code-files": {"title": "Code documents", "path": "Library tab, Documents"},
+    "csv-grid": {"title": "A CSV file as a grid", "path": "A .csv or .tsv document, Grid"},
     "json-schema": {"title": "JSON schema checks", "path": "Library tab, Documents"},
     "code-completions": {"title": "Completions and snippets in code", "path": "A code document, as you type"},
     "code-tabs": {"title": "Tabs for open code files", "path": "A code document, the strip above the editor"},
@@ -1972,7 +1973,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-query", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-query", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "csv-grid", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -3141,7 +3142,7 @@ MORE_TOPICS.append({
     "id": "document-board",
     "keywords": (
         "board in a document", "embed a board", "edit a board here", "whiteboard in a document", "mind map in a document",
-        "![[board", "![[map", "edit here", "canvas block",
+        "![[board", "![[map", "edit here", "canvas block", "show live", "board window",
     ),
     "body": (
         "A whiteboard or a mind map can sit in a document as a card: choose Board or mind map in the / menu, or write "
@@ -3151,12 +3152,15 @@ MORE_TOPICS.append({
         "Escape when the board has nothing of its own to cancel (a menu, a selection, full screen), to close the panel: "
         "the card shows the board as it now is and the Edit here button has the focus again. The Library keeps one board "
         "window, so while the panel is open the board is in it and not in the Library; closing puts the Library back as it "
-        "was, on the board it had open or on its list of boards. The other way: a board's Board menu, Write as a document, "
+        "was, on the board it had open or on its list of boards. Show live, beside Edit here, draws the board in the "
+        "document itself, to read: zoom and pan it with the corner buttons, Ctrl and the wheel or plus and minus, and press "
+        "Refresh to read it again. Each card has its own window, so two boards side by side keep their own zoom, and a "
+        "window changes nothing; closing Edit here redraws the windows on that board. The other way: a board's Board menu, Write as a document, "
         "makes a draft with a heading for each frame and a paragraph for each sticky, text box or note card in it."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })
-TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here"}
+TOPIC_META["document-board"] = {"title": "A board shown in a document", "path": "A document, a board card, Edit here or Show live"}
 
 #: WHITEBOARD_PLAN, wbformat2: the board's own format options, one topic that grows with each row.
 MORE_TOPICS.append({

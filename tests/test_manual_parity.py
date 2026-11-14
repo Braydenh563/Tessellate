@@ -775,3 +775,14 @@ def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
     html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
     for word in ("Sort the file", "Filters adds a box", "Header row says", "Drag the edge of a column", "Pasting text with tabs"):
         assert word in html, word
+
+
+def test_a_board_window_in_a_document_is_in_the_guide_in_its_buttons_words() -> None:
+    """L-documents-11 (decision 83): Show live, Refresh and the window's zoom are named in the Guide as the buttons say them."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "document-board"))
+    js = (FRONTEND / "js" / "documents-embeds.js").read_text(encoding="utf-8") + (FRONTEND / "js" / "documents-board.js").read_text(encoding="utf-8")
+    for label in ("Show live", "Refresh", "Edit here"):
+        assert f"{label}" in js and label in body, label
+    assert "zoom and pan" in body and "plus and minus" in body

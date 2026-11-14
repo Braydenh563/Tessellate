@@ -629,6 +629,69 @@ textarea.has-gutter {
   visibility: hidden;
 }
 
+/* Show live (decision 83): a board card's own read-only window, drawn by documents-board.js and zoomed by the diagram view.
+   Two classes, because diagram-lazy.css arrives later and makes `.dgm` its parent's height. */
+.doc-embed-board-live {
+  margin-block-start: var(--space-2);
+  margin-inline-start: var(--space-2);
+}
+.doc-board-live.dgm {
+  display: flex;
+  height: min(28rem, 70dvh);
+  gap: var(--space-2);
+  margin-block: var(--space-2);
+}
+/* In Live the card is a 320 px inline box (documents-cm-theme.js); with its window open it takes the line's width. */
+.cm-editor .cm-md-embed:has(.doc-board-live) {
+  display: block;
+}
+.cm-editor .cm-md-embed .doc-embed-map:has(> .doc-board-live) {
+  width: 100%;
+}
+.doc-board-live > .dgm-stage {
+  flex: 1 1 auto;
+}
+.doc-board-live-head {
+  display: flex;
+  justify-content: flex-end;
+}
+.doc-board-svg {
+  overflow: visible;
+}
+.doc-board-shape {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.doc-board-frame .doc-board-shape {
+  fill: none;
+  stroke-dasharray: 6 4;
+}
+/* A sticky's paper in the theme's warm tint, so its words keep the theme's ink. */
+.doc-board-sticky .doc-board-shape {
+  fill: var(--warn-soft);
+  stroke: none;
+}
+.doc-board-words {
+  fill: var(--text);
+  font-family: inherit;
+}
+.doc-board-frame .doc-board-words {
+  fill: var(--muted);
+}
+.doc-board-line {
+  fill: none;
+  stroke: var(--muted);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media print {
+  .doc-embed-board-live,
+  .doc-board-live {
+    display: none;
+  }
+}
+
 /* A video in a document (`![name](/media/x.mp4)`, image-layout.js `imageLayout.video`): the browser's own controls, no wider
    than the column. The name line is for paper and exports (09-editor.css), not the screen. */
 .doc-video {
