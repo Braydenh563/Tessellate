@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8510, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11080, test files 2893, tests 22790, plan headings 691, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8510, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11080, test files 2893, tests 22794, plan headings 691, app scripts 29, boot scripts 38, script files 305.
 
 ## Frontend functions (8510)
 
@@ -2092,8 +2092,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasFrameBudget` | frontend/js/atlas-life.js:494 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:816 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:844 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1455 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1430 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1461 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1436 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:21 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:383 |
 | `atlasTailBend` | frontend/js/atlas-life.js:134 |
@@ -2111,14 +2111,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasMicroCast` | frontend/js/atlas-micro.js:130 |
-| `atlasMicroDo` | frontend/js/atlas-micro.js:216 |
-| `atlasMicroGap` | frontend/js/atlas-micro.js:47 |
-| `atlasMicroMay` | frontend/js/atlas-micro.js:87 |
-| `atlasMicroPick` | frontend/js/atlas-micro.js:51 |
-| `atlasMicroPlay` | frontend/js/atlas-micro.js:99 |
-| `atlasMicroStart` | frontend/js/atlas-micro.js:297 |
-| `atlasMicroTick` | frontend/js/atlas-micro.js:278 |
+| `atlasMicroCast` | frontend/js/atlas-micro.js:133 |
+| `atlasMicroDo` | frontend/js/atlas-micro.js:219 |
+| `atlasMicroGap` | frontend/js/atlas-micro.js:50 |
+| `atlasMicroMay` | frontend/js/atlas-micro.js:90 |
+| `atlasMicroPick` | frontend/js/atlas-micro.js:54 |
+| `atlasMicroPlay` | frontend/js/atlas-micro.js:102 |
+| `atlasMicroStart` | frontend/js/atlas-micro.js:300 |
+| `atlasMicroTick` | frontend/js/atlas-micro.js:281 |
 
 ### frontend/js/atlas-motion.js (18)
 
@@ -2129,121 +2129,121 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasBlinkStart` | frontend/js/atlas-motion.js:111 |
 | `atlasBlinkTick` | frontend/js/atlas-motion.js:48 |
 | `atlasLowerState` | frontend/js/atlas-motion.js:147 |
-| `atlasMotionOK` | frontend/js/atlas-motion.js:173 |
-| `atlasProbeWatch` | frontend/js/atlas-motion.js:223 |
-| `atlasRigAttach` | frontend/js/atlas-motion.js:181 |
-| `atlasRigFrame` | frontend/js/atlas-motion.js:570 |
-| `atlasRigGesture` | frontend/js/atlas-motion.js:274 |
-| `atlasRigRead` | frontend/js/atlas-motion.js:239 |
-| `atlasRigSpring` | frontend/js/atlas-motion.js:299 |
-| `atlasRigWake` | frontend/js/atlas-motion.js:319 |
-| `atlasStarsFade` | frontend/js/atlas-motion.js:484 |
-| `atlasTossAt` | frontend/js/atlas-motion.js:376 |
-| `atlasTossBob` | frontend/js/atlas-motion.js:390 |
-| `atlasTossDraw` | frontend/js/atlas-motion.js:453 |
-| `atlasTossState` | frontend/js/atlas-motion.js:398 |
+| `atlasMotionOK` | frontend/js/atlas-motion.js:174 |
+| `atlasProbeWatch` | frontend/js/atlas-motion.js:224 |
+| `atlasRigAttach` | frontend/js/atlas-motion.js:182 |
+| `atlasRigFrame` | frontend/js/atlas-motion.js:571 |
+| `atlasRigGesture` | frontend/js/atlas-motion.js:275 |
+| `atlasRigRead` | frontend/js/atlas-motion.js:240 |
+| `atlasRigSpring` | frontend/js/atlas-motion.js:300 |
+| `atlasRigWake` | frontend/js/atlas-motion.js:320 |
+| `atlasStarsFade` | frontend/js/atlas-motion.js:485 |
+| `atlasTossAt` | frontend/js/atlas-motion.js:377 |
+| `atlasTossBob` | frontend/js/atlas-motion.js:391 |
+| `atlasTossDraw` | frontend/js/atlas-motion.js:454 |
+| `atlasTossState` | frontend/js/atlas-motion.js:399 |
 
 ### frontend/js/atlas.js (97)
 
 | Name | File:line |
 |---|---|
-| `atlasAlmond` | frontend/js/atlas.js:1582 |
-| `atlasApply` | frontend/js/atlas.js:3627 |
-| `atlasArmHand` | frontend/js/atlas.js:1023 |
-| `atlasArmPath` | frontend/js/atlas.js:1018 |
-| `atlasArmSegs` | frontend/js/atlas.js:1009 |
-| `atlasAuraAt` | frontend/js/atlas.js:3081 |
-| `atlasAvatar` | frontend/js/atlas.js:3508 |
-| `atlasBand` | frontend/js/atlas.js:1929 |
-| `atlasBandPaths` | frontend/js/atlas.js:1506 |
-| `atlasBandSplit` | frontend/js/atlas.js:1528 |
-| `atlasBody` | frontend/js/atlas.js:2470 |
-| `atlasBookProp` | frontend/js/atlas.js:1987 |
-| `atlasBuild` | frontend/js/atlas.js:1106 |
-| `atlasBuildDefs` | frontend/js/atlas.js:2816 |
-| `atlasClassicFigure` | frontend/js/atlas.js:3784 |
-| `atlasClassicMark` | frontend/js/atlas.js:3663 |
-| `atlasCoilProp` | frontend/js/atlas.js:2020 |
-| `atlasCue` | frontend/js/atlas.js:2333 |
-| `atlasDefs` | frontend/js/atlas.js:2799 |
-| `atlasDraw` | frontend/js/atlas.js:3449 |
-| `atlasDrawFigure` | frontend/js/atlas.js:3104 |
-| `atlasDressMarks` | frontend/js/atlas.js:3512 |
-| `atlasDrift` | frontend/js/atlas.js:4034 |
-| `atlasDrop` | frontend/js/atlas.js:1572 |
-| `atlasEars` | frontend/js/atlas.js:1843 |
-| `atlasExtras` | frontend/js/atlas.js:1684 |
-| `atlasEye` | frontend/js/atlas.js:1598 |
-| `atlasFigure` | frontend/js/atlas.js:3558 |
+| `atlasAlmond` | frontend/js/atlas.js:1588 |
+| `atlasApply` | frontend/js/atlas.js:3633 |
+| `atlasArmHand` | frontend/js/atlas.js:1029 |
+| `atlasArmPath` | frontend/js/atlas.js:1024 |
+| `atlasArmSegs` | frontend/js/atlas.js:1015 |
+| `atlasAuraAt` | frontend/js/atlas.js:3087 |
+| `atlasAvatar` | frontend/js/atlas.js:3514 |
+| `atlasBand` | frontend/js/atlas.js:1935 |
+| `atlasBandPaths` | frontend/js/atlas.js:1512 |
+| `atlasBandSplit` | frontend/js/atlas.js:1534 |
+| `atlasBody` | frontend/js/atlas.js:2476 |
+| `atlasBookProp` | frontend/js/atlas.js:1993 |
+| `atlasBuild` | frontend/js/atlas.js:1112 |
+| `atlasBuildDefs` | frontend/js/atlas.js:2822 |
+| `atlasClassicFigure` | frontend/js/atlas.js:3790 |
+| `atlasClassicMark` | frontend/js/atlas.js:3669 |
+| `atlasCoilProp` | frontend/js/atlas.js:2026 |
+| `atlasCue` | frontend/js/atlas.js:2339 |
+| `atlasDefs` | frontend/js/atlas.js:2805 |
+| `atlasDraw` | frontend/js/atlas.js:3455 |
+| `atlasDrawFigure` | frontend/js/atlas.js:3110 |
+| `atlasDressMarks` | frontend/js/atlas.js:3518 |
+| `atlasDrift` | frontend/js/atlas.js:4044 |
+| `atlasDrop` | frontend/js/atlas.js:1578 |
+| `atlasEars` | frontend/js/atlas.js:1849 |
+| `atlasExtras` | frontend/js/atlas.js:1690 |
+| `atlasEye` | frontend/js/atlas.js:1604 |
+| `atlasFigure` | frontend/js/atlas.js:3564 |
 | `atlasFix` | frontend/js/atlas.js:214 |
 | `atlasFoot` | frontend/js/atlas.js:394 |
 | `atlasGroup` | frontend/js/atlas.js:172 |
-| `atlasHairCap` | frontend/js/atlas.js:1780 |
+| `atlasHairCap` | frontend/js/atlas.js:1786 |
 | `atlasHand` | frontend/js/atlas.js:393 |
-| `atlasHandProps` | frontend/js/atlas.js:2087 |
-| `atlasHead` | frontend/js/atlas.js:2348 |
-| `atlasHeadProps` | frontend/js/atlas.js:1959 |
-| `atlasHeart` | frontend/js/atlas.js:1565 |
-| `atlasHelixAt` | frontend/js/atlas.js:1446 |
-| `atlasHelixSegs` | frontend/js/atlas.js:1459 |
-| `atlasHelixSpan` | frontend/js/atlas.js:1495 |
-| `atlasHelixWidth` | frontend/js/atlas.js:1485 |
-| `atlasHemTip` | frontend/js/atlas.js:1034 |
-| `atlasHiddenSync` | frontend/js/atlas.js:3606 |
-| `atlasLevelFor` | frontend/js/atlas.js:3057 |
-| `atlasLids` | frontend/js/atlas.js:3417 |
+| `atlasHandProps` | frontend/js/atlas.js:2093 |
+| `atlasHead` | frontend/js/atlas.js:2354 |
+| `atlasHeadProps` | frontend/js/atlas.js:1965 |
+| `atlasHeart` | frontend/js/atlas.js:1571 |
+| `atlasHelixAt` | frontend/js/atlas.js:1452 |
+| `atlasHelixSegs` | frontend/js/atlas.js:1465 |
+| `atlasHelixSpan` | frontend/js/atlas.js:1501 |
+| `atlasHelixWidth` | frontend/js/atlas.js:1491 |
+| `atlasHemTip` | frontend/js/atlas.js:1040 |
+| `atlasHiddenSync` | frontend/js/atlas.js:3612 |
+| `atlasLevelFor` | frontend/js/atlas.js:3063 |
+| `atlasLids` | frontend/js/atlas.js:3423 |
 | `atlasLimbShaped` | frontend/js/atlas.js:402 |
 | `atlasLimbTo` | frontend/js/atlas.js:397 |
-| `atlasLimbWidth` | frontend/js/atlas.js:929 |
-| `atlasLook` | frontend/js/atlas.js:881 |
-| `atlasLookReason` | frontend/js/atlas.js:885 |
+| `atlasLimbWidth` | frontend/js/atlas.js:935 |
+| `atlasLook` | frontend/js/atlas.js:887 |
+| `atlasLookReason` | frontend/js/atlas.js:891 |
 | `atlasMake` | frontend/js/atlas.js:154 |
-| `atlasMane` | frontend/js/atlas.js:1729 |
-| `atlasMapProp` | frontend/js/atlas.js:2069 |
-| `atlasMiniCap` | frontend/js/atlas.js:1816 |
-| `atlasMiniShoulders` | frontend/js/atlas.js:1830 |
-| `atlasMirror` | frontend/js/atlas.js:905 |
+| `atlasMane` | frontend/js/atlas.js:1735 |
+| `atlasMapProp` | frontend/js/atlas.js:2075 |
+| `atlasMiniCap` | frontend/js/atlas.js:1822 |
+| `atlasMiniShoulders` | frontend/js/atlas.js:1836 |
+| `atlasMirror` | frontend/js/atlas.js:911 |
 | `atlasMirrorPoints` | frontend/js/atlas.js:392 |
-| `atlasNightcap` | frontend/js/atlas.js:1673 |
-| `atlasOn` | frontend/js/atlas.js:3982 |
-| `atlasOrbits` | frontend/js/atlas.js:3287 |
-| `atlasPaw` | frontend/js/atlas.js:918 |
+| `atlasNightcap` | frontend/js/atlas.js:1679 |
+| `atlasOn` | frontend/js/atlas.js:3988 |
+| `atlasOrbits` | frontend/js/atlas.js:3293 |
+| `atlasPaw` | frontend/js/atlas.js:924 |
 | `atlasPivot` | frontend/js/atlas.js:166 |
-| `atlasPlay` | frontend/js/atlas.js:3965 |
-| `atlasRepaint` | frontend/js/atlas.js:3809 |
-| `atlasRestingMood` | frontend/js/atlas.js:3861 |
-| `atlasRetune` | frontend/js/atlas.js:1402 |
-| `atlasRing` | frontend/js/atlas.js:2419 |
-| `atlasRings` | frontend/js/atlas.js:3356 |
+| `atlasPlay` | frontend/js/atlas.js:3971 |
+| `atlasRepaint` | frontend/js/atlas.js:3815 |
+| `atlasRestingMood` | frontend/js/atlas.js:3867 |
+| `atlasRetune` | frontend/js/atlas.js:1408 |
+| `atlasRing` | frontend/js/atlas.js:2425 |
+| `atlasRings` | frontend/js/atlas.js:3362 |
 | `atlasScalePath` | frontend/js/atlas.js:491 |
-| `atlasScalePathX` | frontend/js/atlas.js:1395 |
+| `atlasScalePathX` | frontend/js/atlas.js:1401 |
 | `atlasSegsAt` | frontend/js/atlas.js:219 |
 | `atlasSegsCut` | frontend/js/atlas.js:231 |
-| `atlasSheet` | frontend/js/atlas.js:2342 |
+| `atlasSheet` | frontend/js/atlas.js:2348 |
 | `atlasSmooth` | frontend/js/atlas.js:265 |
-| `atlasSpark` | frontend/js/atlas.js:1558 |
+| `atlasSpark` | frontend/js/atlas.js:1564 |
 | `atlasSpecks` | frontend/js/atlas.js:414 |
-| `atlasStarsProp` | frontend/js/atlas.js:2004 |
+| `atlasStarsProp` | frontend/js/atlas.js:2010 |
 | `atlasStem` | frontend/js/atlas.js:285 |
 | `atlasStemEdge` | frontend/js/atlas.js:406 |
 | `atlasStemSides` | frontend/js/atlas.js:187 |
-| `atlasStreak` | frontend/js/atlas.js:4057 |
-| `atlasStyle` | frontend/js/atlas.js:3659 |
-| `atlasTail` | frontend/js/atlas.js:1891 |
-| `atlasTailMasks` | frontend/js/atlas.js:2765 |
-| `atlasTailWake` | frontend/js/atlas.js:3522 |
+| `atlasStreak` | frontend/js/atlas.js:4067 |
+| `atlasStyle` | frontend/js/atlas.js:3665 |
+| `atlasTail` | frontend/js/atlas.js:1897 |
+| `atlasTailMasks` | frontend/js/atlas.js:2771 |
+| `atlasTailWake` | frontend/js/atlas.js:3528 |
 | `atlasTaper` | frontend/js/atlas.js:424 |
 | `atlasTipShape` | frontend/js/atlas.js:327 |
-| `atlasTorsoEdge` | frontend/js/atlas.js:981 |
-| `atlasTune` | frontend/js/atlas.js:1074 |
-| `atlasTuneSegs` | frontend/js/atlas.js:1089 |
-| `atlasTuneStyle` | frontend/js/atlas.js:3065 |
-| `atlasTurnAbout` | frontend/js/atlas.js:1004 |
-| `atlasWake` | frontend/js/atlas.js:4090 |
-| `atlasWatchFigure` | frontend/js/atlas.js:3593 |
-| `atlasWhenShown` | frontend/js/atlas.js:3538 |
-| `charactersArrived` | frontend/js/atlas.js:4187 |
-| `setAtlasMood` | frontend/js/atlas.js:3883 |
+| `atlasTorsoEdge` | frontend/js/atlas.js:987 |
+| `atlasTune` | frontend/js/atlas.js:1080 |
+| `atlasTuneSegs` | frontend/js/atlas.js:1095 |
+| `atlasTuneStyle` | frontend/js/atlas.js:3071 |
+| `atlasTurnAbout` | frontend/js/atlas.js:1010 |
+| `atlasWake` | frontend/js/atlas.js:4100 |
+| `atlasWatchFigure` | frontend/js/atlas.js:3599 |
+| `atlasWhenShown` | frontend/js/atlas.js:3544 |
+| `charactersArrived` | frontend/js/atlas.js:4197 |
+| `setAtlasMood` | frontend/js/atlas.js:3889 |
 
 ### frontend/js/attach-to.js (4)
 
@@ -28354,7 +28354,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22790)
+## Tests (22794)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28465,7 +28465,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_crest_1696.py | 2 |
 | tests/test_atlas_daylife_1719.py | 2 |
 | tests/test_atlas_desk_acts_1696.py | 14 |
-| tests/test_atlas_draw_rows.py | 14 |
+| tests/test_atlas_draw_rows.py | 18 |
 | tests/test_atlas_e3_1111.py | 3 |
 | tests/test_atlas_face_inherit_1591.py | 4 |
 | tests/test_atlas_fade_1107.py | 5 |
@@ -31674,14 +31674,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4406 |
-| Needs hardware | docs/roadmap/LEDGER.md:698 |
+| Needs hardware | docs/roadmap/LEDGER.md:697 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1351 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:683 |
+| Owner calls | docs/roadmap/LEDGER.md:682 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4279 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31862,7 +31862,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1849 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:885 |
+| Plan session briefs | docs/roadmap/LEDGER.md:884 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31916,25 +31916,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1742 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:901 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:985 |
-| documents | docs/roadmap/LEDGER.md:268 |
-| documents | docs/roadmap/LEDGER.md:925 |
-| general | docs/roadmap/LEDGER.md:642 |
+| chat | docs/roadmap/LEDGER.md:900 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:984 |
+| documents | docs/roadmap/LEDGER.md:267 |
+| documents | docs/roadmap/LEDGER.md:924 |
+| general | docs/roadmap/LEDGER.md:641 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:889 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:997 |
+| graph | docs/roadmap/LEDGER.md:888 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:996 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4415 |
-| mindmap | docs/roadmap/LEDGER.md:284 |
-| mindmap | docs/roadmap/LEDGER.md:937 |
-| timeline | docs/roadmap/LEDGER.md:404 |
-| timeline | docs/roadmap/LEDGER.md:961 |
-| ui-modernisation | docs/roadmap/LEDGER.md:287 |
-| ui-modernisation | docs/roadmap/LEDGER.md:949 |
-| whiteboard | docs/roadmap/LEDGER.md:222 |
-| whiteboard | docs/roadmap/LEDGER.md:913 |
-| world-class | docs/roadmap/LEDGER.md:406 |
-| world-class | docs/roadmap/LEDGER.md:973 |
+| mindmap | docs/roadmap/LEDGER.md:283 |
+| mindmap | docs/roadmap/LEDGER.md:936 |
+| timeline | docs/roadmap/LEDGER.md:403 |
+| timeline | docs/roadmap/LEDGER.md:960 |
+| ui-modernisation | docs/roadmap/LEDGER.md:286 |
+| ui-modernisation | docs/roadmap/LEDGER.md:948 |
+| whiteboard | docs/roadmap/LEDGER.md:221 |
+| whiteboard | docs/roadmap/LEDGER.md:912 |
+| world-class | docs/roadmap/LEDGER.md:405 |
+| world-class | docs/roadmap/LEDGER.md:972 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |

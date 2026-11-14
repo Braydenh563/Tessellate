@@ -609,6 +609,12 @@ const ATLAS_LOOKS = {
       glints: [[0.49, -0.16, 0.8], [0.72, 0.2, 0.6]],
       motes: [[-3.4, 2.6, 0.3], [2.8, 3.4, 0.2], [-6.2, -1.2, 0.24], [5.4, -0.6, 0.16], [0.6, 5, 0.18], [-1.6, 4.6, 0.55, 1], [6.6, 2.4, 0.42, 1]],
     },
+    //: **Back wisps** (L742, owner 2026-11-12: wisps wrap behind the body): a pair of ribbons that flank the trail and run wholly
+    //: behind it (`back: [[0, 1]]`), low so they take the cloak's pose; they are the layer under the body, dimmer and softer.
+    wisps: [
+      { low: true, seg: [[28, 58, 20.6, 63.4, 18.4, 72, 22.4, 80], [22.4, 80, 26, 87, 22.6, 93, 17.6, 96.4]], back: [[0, 1]], sparkles: [0.3, 0.55, 0.78] },
+      { low: true, seg: [[34, 60, 41.4, 66, 43.6, 74.6, 39.6, 82.4], [39.6, 82.4, 36, 89, 39.6, 94.4, 44.6, 97.6]], back: [[0, 1]], sparkles: [0.26, 0.5, 0.74] },
+    ],
     lowers: [
       { main: true, seg: [[31, 56, 31, 63.5, 26, 68, 26.4, 75], [26.4, 75, 26.8, 82, 35.6, 83, 35.8, 90], [35.8, 90, 36, 95, 32.4, 98.2, 30.2, 96.2]], w: 8, hip: 10, specks: [[0.3, 0.34], [0.52, 0.3], [0.7, 0.32], [0.86, 0.26]] },
       { side: -1, seg: [[26.4, 71, 25.4, 77.4, 22.6, 82.6, 18.6, 84.4]], w: 3.2, specks: [[0.45, 0.24], [0.8, 0.2]] },
@@ -2952,7 +2958,7 @@ function atlasBuildDefs(svg, id) {
       atlasMake("rect", { x: -30, y: -30, width: 124, height: 150, fill: "white" }, mask);
       return mask;
     });
-    ATLAS_LOOKS.feminine.wisps.forEach(({ seg, back = [] }, i) => {
+    lookSpec.wisps.forEach(({ seg, back = [] }, i) => {
       const [x0, y0] = seg[0];
       const [x1, y1] = seg.at(-1).slice(6, 8);
       const grad = atlasMake("linearGradient", { id: `${id}-wisp${i}`, gradientUnits: "userSpaceOnUse", x1: x0, y1: y0, x2: x1, y2: y1 }, defs);
@@ -4030,11 +4036,15 @@ const ATLAS_DRIFT_POOL = {
   night: [["sleepy", 2], ["curious", 1.5], ["happy", 1], ["shy", 1], ["love", 0.5]],
 };
 atlasDriftState.pace = { morning: 0.85, afternoon: 1, evening: 1.15, night: 1.3 };
+//: L180: a drift every 20 to 40 s (it was 35 to 75) and 8 s of calm after a face change (it was 20), so with the small
+//: expressions (atlas-micro.js) a still figure changes its face 3 or more times a minute.
+atlasDriftState.gap = (phase) => (20000 + Math.random() * 20000) * atlasDriftState.pace[phase];
+atlasDriftState.coolMs = 8000;
 atlasDriftState.phase = (hour) => (hour >= 22 || hour < 6 ? "night" : hour < 11 ? "morning" : hour < 17 ? "afternoon" : "evening");
 function atlasDrift() {
   const phase = atlasDriftState.phase(new Date().getHours());
-  atlasDriftState.timer = setTimeout(atlasDrift, (35000 + Math.random() * 40000) * atlasDriftState.pace[phase]);
-  if (document.documentElement.hasAttribute("data-atlas-hidden") || atlasMoodNow !== "calm" || Date.now() - atlasDriftState.changedAt < 20000) return;
+  atlasDriftState.timer = setTimeout(atlasDrift, atlasDriftState.gap(phase));
+  if (document.documentElement.hasAttribute("data-atlas-hidden") || atlasMoodNow !== "calm" || Date.now() - atlasDriftState.changedAt < atlasDriftState.coolMs) return;
   //: Not at rest (owner decision Q10): a mood is two face changes, 40 layouts; the next input ends the rest (`atlasTailCalm.rest`).
   if (globalThis.atlasTailCalm?.rest.on) return;
   if (!document.querySelector(".nm-atlas")) return;

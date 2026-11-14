@@ -241,3 +241,123 @@ def test_the_bust_carries_the_mood_cue_so_close_moods_read_apart_l135():
     median pair 29.8), at 28 px curious and thinking by 0.59: the bust drew no cue (only the head and tiny levels did)."""
     atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
     assert re.search(r'if \(tiny \|\| level === "head" \|\| level === "bust"\) atlasCue\(sway, tiny\);', atlas)
+
+
+def test_masculine_trail_has_a_back_wisp_pair_behind_the_body_l742():
+    """L742: his trail gets two wisps drawn wholly behind the body (`back: [[0, 1]]`, low so they take the cloak's pose),
+    the gradients read the look's own list, and the layer list builds the wisp layers for any look with wisps."""
+    atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
+    male = atlas.split("  masculine: {", 1)[1].split("  feminine: {", 1)[0]
+    block = male.split("    wisps: [", 1)[1].split("\n    ],", 1)[0]
+    assert block.count("back: [[0, 1]]") == 2 and block.count("low: true") == 2
+    assert "ATLAS_LOOKS.feminine.wisps" not in atlas and "lookSpec.wisps.forEach" in atlas
+
+
+@needs_node
+def test_float_has_a_lower_state_and_float_and_lean_differ_from_idle_by_6px_l173():
+    """L173: measured in the app (1x, getBoundingClientRect of the lower layer's paths) a float and a stand were the same
+    37 by 38 (feminine), a lean 38 by 36. The dress box is modelled as the rig poses it (`atlasRigLower`: a shear of (skew - turn) x the state's
+    shear gain and a stretch of (length - 1) x its stretch gain, from the measured standing box of each look); every float and lean row differs from every
+    idle row by more than 6 px in width or in length."""
+    from tests._js_scope import unwrapped_copy
+
+    fn = re.search(r"^function atlasLowerState\(.*?^\}", MOTION, re.S | re.M).group(0)
+    acts = re.search(r"^atlasLowerState\.acts = .*;$", MOTION, re.M).group(0)
+    life = str(unwrapped_copy(ROOT / "frontend/js/atlas-life.js"))
+    script = fn + acts + r"""
+const fs = require("fs"), vm = require("vm");
+const ctx = { atlasFix: (v) => v, console, Math, Map, Set, Object, Array, Number, performance, document: {}, window: {}, setTimeout, clearTimeout };
+vm.createContext(ctx);
+vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + "\n;this.__x = { L: ATLAS_LOWER_STATES, H: ATLAS_HAIR_STATES, N: ATLAS_NEB_STATES, flow: atlasRigLower.flowByState, rests: atlasRigLower.rests };", ctx);
+const x = ctx.__x;
+const make = (classes, pose) => ({ classList: { contains: (c) => classes.includes(c) }, dataset: { pose, travel: "" } });
+const box = (state, row, [w0, h0]) => {
+  const [shear, stretch] = x.L[state].dress || [0.4, 0.5], h = h0 * (1 + (row[2] - 1) * stretch);
+  return [w0 + h * Math.tan(Math.abs(row[3] - row[0]) * shear * Math.PI / 180), h];
+};
+const gap = (state, base) => Math.min(...x.L[state].v.flatMap((a) => x.L.idle.v.map((b) => {
+  const [aw, ah] = box(state, a, base), [bw, bh] = box("idle", b, base);
+  return Math.max(Math.abs(aw - bw), Math.abs(ah - bh));
+})));
+console.log(JSON.stringify({
+  floating: atlasLowerState(make([], "float"), { dataset: {} }), calm: atlasLowerState(make([], "stand"), { dataset: {} }),
+  moody: atlasLowerState(make([], "float"), { dataset: { atlasMood: "happy" } }),
+  feminine: ["float", "lean"].map((s) => gap(s, [37, 38])), masculine: ["float", "lean"].map((s) => gap(s, [25, 39])),
+  tables: ["H", "N"].map((t) => !!x[t].float), flow: x.flow.float, rests: x.rests.has("float"),
+}));
+"""
+    run = subprocess.run(["node", "-e", script, life], capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr[-1500:]
+    got = json.loads(run.stdout)
+    assert (got["floating"], got["calm"], got["moody"]) == ("float", "idle", "happy"), "a float after every mood and act"
+    assert all(g > 6 for g in got["feminine"] + got["masculine"]), got
+    assert got["tables"] == [True, True] and got["flow"] and got["rests"]
+
+
+def test_hands_and_feet_are_part_of_each_limb_outline_and_atl_hand_is_only_an_anchor_l174():
+    """L174 (decided: one path per limb, hand and foot included; the rig keeps an empty hand anchor). Measured in the app
+    (1x, both looks): each arm group draws one skin path plus its rim shade (the hand is that path's tip, y 40 to 61 with the
+    wrist at 54) and its `atl-hand` holds no shape of its own at rest; Atlas has no separate leg shapes (the lower body
+    is the dress or the trail), and the leg tables take a foot in the same stem."""
+    atlas = (ROOT / "frontend/js/atlas.js").read_text(encoding="utf-8")
+    for name, tip in (("ATLAS_ARM_R", "atlasHand"), ("ATLAS_HOLD_R", "atlasHand"), ("ATLAS_LEG_L", "atlasFoot"), ("ATLAS_LEG_R", "atlasFoot")):
+        assert re.search(rf"^const {name} = atlasStem\(.*tip: {tip}\(", atlas, re.M), name
+    assert "hand: atlasHand(thumbL, k)" in atlas and "atlasArmPath(spec.armRig[side], 0, 0)" in atlas
+    assert 'const hand = atlasMake("g", { class: "atl-hand" }, arm);' in atlas
+    assert 'atlasMake("g", { class: "atl-hand" }, arm);\n        arms[side] = hand;' in atlas, "the anchor is made empty and handed to the props"
+
+
+MOOD_SIM = r"""
+const fs = require("fs"), vm = require("vm");
+const micro = fs.readFileSync(process.argv[1], "utf8"), atlas = fs.readFileSync(process.argv[2], "utf8");
+const grab = (re) => atlas.match(re)[0];
+const pick = (seed) => { let s = seed; return () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; }; };
+const out = {};
+for (const [name, hour] of [["morning", 8], ["afternoon", 14], ["evening", 19], ["night", 23]]) {
+  const rates = [];
+  for (let seed = 1; seed <= 6; seed++) {
+    const ctx = { console, Math: Object.create(Math), Date, globalThis: {}, document: {}, nmb: {} };
+    ctx.Math.random = pick(seed * 7919);
+    vm.createContext(ctx);
+    vm.runInContext(micro + "\n" + grab(/^const atlasDriftState = .*;$/m).replace("changedAt: 0", "changedAt: 0") + "\n" + grab(/^atlasDriftState\.pace = .*;$/m) + "\n" + grab(/^atlasDriftState\.gap = .*;$/m) + "\n" + grab(/^atlasDriftState\.coolMs = .*;$/m) + "\n;this.__x = { gap: atlasMicroGap, pick: atlasMicroPick, MOOD: ATLAS_MICRO_MOOD, drift: atlasDriftState };", ctx);
+    const x = ctx.__x, R = ctx.Math.random;
+    const END = 20 * 60000;
+    let mood = "calm", changed = 0, since = 9, starts = 0, last = "", until = 0, tick = 2500 + R() * 2500, drift = 30000;
+    for (let t = 0; t < END; t += 100) {
+      if (mood !== "calm" && t >= until) { mood = "calm"; changed = t; }
+      if (t >= drift) {
+        drift = t + x.drift.gap(name);
+        if (mood === "calm" && t - changed >= x.drift.coolMs) { mood = "drift"; changed = t; until = t + 4000 + R() * 4000; starts++; }
+      }
+      if (t >= tick) {
+        tick = t + x.gap();
+        since++;
+        const kind = x.pick({ typing: false, idle: 120000, hour, phase: name, mood, look: "masculine", sinceCast: 1e9, now: t, rareAt: {}, rareOff: false, pointer: false }, last);
+        last = kind;
+        if (x.MOOD[kind] && mood === "calm" && since >= 2 && t - changed >= 3000) {
+          since = 0; mood = kind; changed = t; until = t + (kind === "surprised" ? 1400 : 1800 + R() * 1600); starts++;
+        }
+      }
+    }
+    rates.push(starts / 20);
+  }
+  out[name] = { min: Math.min(...rates), mean: rates.reduce((a, b) => a + b) / rates.length };
+}
+console.log(JSON.stringify(out));
+"""
+
+
+@needs_node
+def test_a_figure_at_rest_changes_its_face_three_or_more_times_a_minute_l180():
+    """L180 (decided order: the mood rate first): measured in the app on 60 s of idle, 2 changes (a determined at 8.1 s, back to
+    calm at 10.6 s). The same clocks, simulated for 20 minutes on six seeds in each part of the day with nobody typing,
+    gave 1.75 to 2.3 a minute before (the old gates and weights), 3.3 to 4.1 now, and must never give under 3 on any seed."""
+    micro = ROOT / "frontend/js/atlas-micro.js"
+    run = subprocess.run(["node", "-e", MOOD_SIM, str(micro), str(ROOT / "frontend/js/atlas.js")], capture_output=True, text=True)
+    assert run.returncode == 0, run.stderr[-1500:]
+    got = json.loads(run.stdout)
+    print(got)
+    for part, row in got.items():
+        assert row["min"] >= 3, (part, got)
+    # The simulation restates the face gate; the source must still carry exactly that gate, or the rate above is for nothing.
+    assert 'atlasMoodNow !== "calm" || atlasMicroState.sinceMood < 2 || Date.now() - atlasDriftState.changedAt < 3000' in micro.read_text(encoding="utf-8")

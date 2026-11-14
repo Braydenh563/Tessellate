@@ -11,6 +11,8 @@ below). Versioning is `0.x` while the app stabilises.
 - Chat ledger: hardware audit of 32 rows, five marked genuine and 27 emulable with the step; L819 closed on a real 1.5B run, tablet and 390px widths measured with no overflow (2026-11-14).
 
 - Chat acts: "Remember that I prefer ..." is a suggest-a-preference card, "Make a board called X" an empty board card, and "Delete the tag X" with no tags no longer says rename (L114, 2026-11-14).
+- Atlas moods: passing moods come at least 3 a minute at rest (was 2 in 60 s), on a seeded 10-minute simulation test; rub, flip and the Show-companion notice were already built (L180).
+- Atlas lower body: a float has its own state (the dress 48 to 50 px tall against 36 to 38 standing) and a lean sweeps 9 to 15 px wider than idle in both looks (L173); the masculine trail gets a back-wisp pair (L742, 2026-11-14).
 - L-chat-242 reopened and fixed: the background search-model load is guarded by one locked flag, not a job key (2026-11-14).
 - Chat plan: tag my gym notes #fitness and save the summary as a note are read as acts; X and C probes close eight rows (2026-11-14).
 - Chat plan: Answering probes A1 to A23 added; eleven rows closed on them, the rest carry their measured failure (2026-11-14).
