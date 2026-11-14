@@ -3878,7 +3878,7 @@ async function renderActivityWidget(body) {
     ul.appendChild(li);
   }
   body.appendChild(ul);
-  const undo = activityUndoControl(items, byId, () => {
+  const undo = activityActorRow(items, byId, () => {
     //: The undo wrote a `restored` event per note; the feed reads it on the
     //: next render through its cursor, so a fresh read shows it at once.
     body.replaceChildren();
@@ -3901,7 +3901,7 @@ function activityActorName(actor) {
   return historyActorLabel(actor) || actor;
 }
 
-function activityUndoPlanText(plan, byId, name) {
+function activityPlanText(plan, byId, name) {
   const undo = plan.items.filter((item) => item.status === "undo");
   const titled = undo.slice(0, 3).map((item) => {
     const entry = byId.get(item.entity_id);
@@ -3935,7 +3935,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
     return;
   }
   const ok = await confirmDialog(
-    `Undo what ${name} changed?\n\n${activityUndoPlanText(plan, byId, name)}`,
+    `Undo what ${name} changed?\n\n${activityPlanText(plan, byId, name)}`,
     { confirmLabel: "Undo", danger: false }
   );
   if (!ok) return;
@@ -3975,7 +3975,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
 //: did in the list goes back. A `restored` event in the feed names the events
 //: it reversed (`undid`), and those are skipped, so the row goes once an undo
 //: has put everything back instead of staying to say "Already undone".
-function activityUndoStarts(items) {
+function activityActorStarts(items) {
   const undone = new Set();
   //: A redo names the undo it took back (`redid`): that undo no longer counts.
   const redone = new Set(items.flatMap((item) => (item.action === "redone" && Array.isArray(item.redid) ? item.redid : [])));
@@ -3992,8 +3992,8 @@ function activityUndoStarts(items) {
   return from;
 }
 
-function activityUndoControl(items, byId, rerender) {
-  const from = activityUndoStarts(items);
+function activityActorRow(items, byId, rerender) {
+  const from = activityActorStarts(items);
   if (!from.size) return null;
   const row = document.createElement("div");
   row.className = "row activity-undo";

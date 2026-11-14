@@ -4736,7 +4736,7 @@ button.answer-figure-open {
   max-width: 100%;
 }
 
-/* Recent activity's "Undo what Atlas did" under its list (activityUndoControl,
+/* Recent activity's "Undo what Atlas did" under its list (activityActorRow,
    dashboard.js): a quiet row, separated from the rows it acts on. */
 .activity-undo {
   margin-top: var(--space-2);

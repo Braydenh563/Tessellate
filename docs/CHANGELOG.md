@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Undo contract (L-world-class-61): the last four helpers named for an undo (`updateDraftUndoButton`, `activityUndoPlanText`, `activityUndoStarts`, `activityUndoControl`) are renamed for what they do, since the undos they serve already go through `pushUndo`; `UNFOLDED` in test_undo_contract.py is empty and may not grow.
 - LAN port: the accept loop asks the non-blocking socket directly every 50 ms instead of a `sock_accept` cancelled by a 0.5 s timeout, which could drop a connection accepted in the same loop turn (the client saw a reset in its handshake, the server logged nothing; CI 3c57303c, test_lan_mode_end_to_end; L-world-class-240). No task is left pending, so the background registry stays as it was.
 - Dashboard stats: the note count and the oldest day come from one statement, so `/insights/stats` is back inside its budget of 6 (CI 5753bea0, test_perf_budget; L-world-class-352's slider field kept).
 - Settings search: the first-focus warm listens for `focusin` on the document, so it works when the Settings body is parsed after settings-find.js loads (CI 5753bea0, test_help_emphasis).

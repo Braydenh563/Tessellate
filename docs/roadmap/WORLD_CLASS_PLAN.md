@@ -219,7 +219,7 @@ the editors' histories and the board history module, unless it calls
 `pushUndo`; the six implementations of 2026-10-10 (`offerCategoryUndo`,
 `chatDeleteUndo`, `undoDraft`, `pushDocAiUndo`, `activityUndoControl`,
 `inlineAiUndo`) are the ratchet's starting list and fold into `pushUndo`
-in Brief 51 (the last seven: LEDGER L-world-class-61).
+in Brief 51 (folded: LEDGER L-world-class-61, ratchet empty).
 
 ## 2. Competitors: what they have that Tessellate does not (checked, not
 assumed)

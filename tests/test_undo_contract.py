@@ -32,14 +32,10 @@ OWNERS = {
 #: autocorrect putting back the word just typed (the text box's own Ctrl+Z, not a notebook change).
 EDITOR_HISTORY = re.compile(r"^(docUndo|autocorrectUndo)")
 
-#: Starting list 2026-10-10 (Brief 51), each with why it is not folded yet.
-#: Remove a name when it goes through the contract; never add one.
-UNFOLDED: dict[str, str] = {
-    "chat-agent.js:updateDraftUndoButton": "paints that button",
-    "dashboard.js:activityUndoPlanText": "words for the activity undo's confirm",
-    "dashboard.js:activityUndoStarts": "finds where that undo starts",
-    "dashboard.js:activityUndoControl": "draws that undo's button",
-}
+#: Empty since L-world-class-61: the last four were helpers of undoActorFrom and undoDraft
+#: (which push through pushUndo), renamed so they are not named for an undo they do not make.
+#: Never add one.
+UNFOLDED: dict[str, str] = {}
 
 
 def _undo_functions():
@@ -70,7 +66,7 @@ def test_the_ratchet_only_shrinks():
     seen = dict(_undo_functions())
     stale = sorted(key for key in UNFOLDED if key not in seen or seen[key])
     assert not stale, f"folded or gone, take it off UNFOLDED: {stale}"
-    assert len(UNFOLDED) <= 7
+    assert len(UNFOLDED) == 0
 
 
 def test_putting_a_version_back_is_one_undo_not_a_confirm():
