@@ -7,6 +7,11 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - CI leg 1 fixes: the reading bin routes move to routes_reading_bin.py (routes_files_readings.py 827 to 751 lines, cap 800); the not-installed search line stays one sentence (L-world-class-64) and its cache test reads the download it names.
+- Phone tab bar: below 480px the Dashboard caption reads Home (62.6 px to 33.9 px in a 64 px column at 320; every caption now has 23 px or more to spare at 320, 360 and 390); the name, tooltip and the text other code reads stay Dashboard; the phone help topic says so (INBOX 1859, L-world-class-83).
+- The Windows package check records the frozen app's startup: seconds to the first 200 from /health, printed to the job summary by `packaging/startup_time.py`, with no failing threshold yet (L-world-class-72).
+- Capture survives a server crash between the commit and the answer: a test raises after the commit, and the client's retry with the same key returns the one note, in the same process and after a restart (L-world-class-116).
+- Restart now goes through the launcher: on a Windows source install it starts `start.bat --desktop --restart-after PID` (venv check, repair and update included) instead of `python -m tessellate`; start.bat forwards the pid to the app (L968).
+- Desktop restart: WebView2's "Failed to unregister class Chrome_WidgetWin_0. Error = 1411" at window teardown is non-fatal (`core/window_teardown.py`), and a restarted copy that hits it starts its window again instead of leaving nothing running (L-world-class-117).
 - World-class owner and hardware rows re-read: eight (100, 134, L950, L971, L976, L982, 109, 112) moved to BACKLOG, each with its check and a recommendation; 72, 83, 116, 117 and L968 are built here next.
 - Documents: the Ctrl+Shift+X toolbar key is one page listener at load, not inside the mount; no render adds a page listener now (perf_1031 baseline at none).
 - CI leg 2 fixes: the note edit form keeps one page key listener however often it renders (was one more per render); the first run backup copy names Settings, Import & export (there is no Data pane); a space switch forgets the held way back for large settings changes.
