@@ -428,7 +428,7 @@ const FEATURE_MODEL_SELECTS = [
 ];
 
 function syncFeatureModelSelects() {
-  syncFeatureModelSelects.pills();
+  syncFeatureModelSelects.pills?.();
   for (const [id, key] of FEATURE_MODEL_SELECTS) {
     const select = document.getElementById(id);
     if (!select) continue;
@@ -488,26 +488,9 @@ function syncFeatureModelSelects() {
   }
 }
 
-//: The dock pills (the owner, 2026-11-12: "Yes, a dock pill"): the feature's
-//: resolved model (its own pick, else its role's) as the `#chat-active-model`
-//: recipe, hidden while no model server answers, as that pill is.
-//: A property, not a global (tests/test_global_scope_ratchet.py).
-syncFeatureModelSelects.pills = function syncFeatureModelPills() {
-  for (const pill of document.querySelectorAll("[data-feature-pill]")) {
-    const row = featureModelRow(pill.dataset.featurePill);
-    const off = !row || modelStatus?.ollama_running === false;
-    pill.hidden = off;
-    if (off) continue;
-    pill.textContent = shortModelName(row.model);
-    pill.title = `${row.label} runs on ${row.model}${row.overridden ? "" : ", inherited"}: click to change it`;
-  }
-};
-//: The dock lives in a lazy surface: filled the moment it is built, not only on the next poll.
-for (const surface of ["notes", "documents"]) onSurface(surface, () => syncFeatureModelSelects.pills());
-document.addEventListener("click", (event) => {
-  const pill = event.target.closest?.("[data-feature-pill]");
-  if (pill) openFeatureModelSheet(pill.dataset.featurePill);
-});
+//: The dock pills (the owner, 2026-11-12: "Yes, a dock pill") are painted and wired by feature-model-sheet.js,
+//: fetched when either surface is built (the pills live in those lazy surfaces).
+for (const surface of ["notes", "documents"]) onSurface(surface, () => ensureModule("featureModelSheet"));
 
 function wireFeatureModelSelects() {
   for (const [id, key] of FEATURE_MODEL_SELECTS) {

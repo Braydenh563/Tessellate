@@ -147,12 +147,12 @@ clockOptions.choice = () => {
 };
 
 clockOptions.formatter = (options) => {
-  let made = null;
-  let madeFor = "";
+  let made;
+  let madeFor;
   return {
     format(date) {
       const choice = clockOptions.choice();
-      if (!made || madeFor !== choice) {
+      if (madeFor !== choice) {
         made = new Intl.DateTimeFormat(undefined, { ...options, ...clockOptions() });
         madeFor = choice;
       }
@@ -256,7 +256,7 @@ const secondTick = {
       try {
         paint();
       } catch (err) {
-        console.error("A one-second display failed to paint", err);
+        console.error(err);
       }
     }), 1000);
   },

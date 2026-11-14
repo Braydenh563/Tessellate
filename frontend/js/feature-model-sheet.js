@@ -85,6 +85,27 @@
     });
   }
 
+  //: The dock pills (the owner, 2026-11-12: "Yes, a dock pill"): the feature's resolved model (its own pick,
+  //: else its role's) as the `#chat-active-model` recipe, hidden while no model server answers, as that pill is.
+  //: Moved here from ai-tools.js (L624): ai-tools.js fetches this file when the notes or documents surface is
+  //: built, and calls `syncFeatureModelSelects.pills?.()` on every poll. A property, not a global.
+  function syncFeatureModelPills() {
+    for (const pill of document.querySelectorAll("[data-feature-pill]")) {
+      const row = featureModelRow(pill.dataset.featurePill);
+      const off = !row || modelStatus?.ollama_running === false;
+      pill.hidden = off;
+      if (off) continue;
+      pill.textContent = shortModelName(row.model);
+      pill.title = `${row.label} runs on ${row.model}${row.overridden ? "" : ", inherited"}: click to change it`;
+    }
+  }
+  syncFeatureModelSelects.pills = syncFeatureModelPills;
+  syncFeatureModelPills();
+  document.addEventListener("click", (event) => {
+    const pill = event.target.closest?.("[data-feature-pill]");
+    if (pill) openFeatureModelSheet(pill.dataset.featurePill);
+  });
+
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
   Object.assign(window, { openFeatureModelSheet });
 })();
