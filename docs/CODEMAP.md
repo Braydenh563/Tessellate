@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8980, frontend ids 2833, CSS sections 527, backend routes 720, backend modules 11018, test files 2851, tests 22951, plan headings 690, app scripts 29, boot scripts 38, script files 368.
+Counts: frontend functions 8980, frontend ids 2833, CSS sections 527, backend routes 720, backend modules 11018, test files 2851, tests 22953, plan headings 690, app scripts 29, boot scripts 38, script files 368.
 
 ## Frontend functions (8980)
 
@@ -29080,7 +29080,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22951)
+## Tests (22953)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30093,7 +30093,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doctor_offline.py | 4 |
 | tests/test_document_archive.py | 5 |
 | tests/test_document_bookmarks.py | 7 |
-| tests/test_document_claim_check.py | 10 |
+| tests/test_document_claim_check.py | 11 |
 | tests/test_document_diff.py | 3 |
 | tests/test_document_export_html.py | 7 |
 | tests/test_document_import.py | 12 |
@@ -30108,7 +30108,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_document_tools.py | 6 |
 | tests/test_document_untitled_names.py | 9 |
 | tests/test_documents_api.py | 50 |
-| tests/test_documents_board_instance.py | 10 |
+| tests/test_documents_board_instance.py | 11 |
 | tests/test_documents_closeout_1112.py | 7 |
 | tests/test_documents_cold_open.py | 6 |
 | tests/test_documents_help.py | 4 |

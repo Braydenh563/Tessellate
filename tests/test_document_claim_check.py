@@ -9,6 +9,8 @@ misses, so a note counts only when it shares a word with the claim.
 """
 
 from __future__ import annotations
+
+import re
 from tests._app_js import frontend_text
 
 import pytest
@@ -167,26 +169,52 @@ def test_a_slow_model_times_out_and_the_words_rule_answers(ai_client, fake_ollam
     ],
     ids=[f"hostile{i}" for i in range(5)],
 )
-def test_a_line_of_many_tabs_or_stops_is_read_in_linear_time(hostile):
+def test_a_line_of_many_tabs_or_stops_is_read_in_linear_time(hostile, monkeypatch):
     """CodeQL 2290: the list-marker pattern ran slow on many tabs; the
     abbreviation check re-read the line before every full stop.
 
-    Linear is proved by growth, not by a wall bound (a loaded CI runner took
-    2.55 s on hostile4, LEDGER L-documents-45): four times the input may take
-    at most eight times as long, where a quadratic read would take sixteen.
-    Best of three per size, plus 20 ms for fixed costs on near-instant cases."""
-    import time
+    Counted, not timed (the house pattern, 73fc0241): a loaded CI runner took
+    2.55 s and then 2.76 s on hostile4 (L-documents-45; #222 ae427a9b, 2026-11-14)
+    while a quiet one reads it in 0.05 s, linear at n, 2n and 4n. The work is
+    the characters handed to a regex: doubling the line at most doubles it (a
+    re-read before every stop would quadruple it), and no pattern can backtrack
+    over the run (its structure is checked below)."""
+    from tessellate.api import routes_document_claims as claims
 
-    from tessellate.api.routes_document_claims import _claims
+    read = [0]
 
-    def best(n):
-        text = hostile(n) + "\n"
-        runs = []
-        for _ in range(3):
-            started = time.perf_counter()
-            _claims(text)
-            runs.append(time.perf_counter() - started)
-        return min(runs)
+    class Counted:
+        def __init__(self, real):
+            self.real = real
 
-    small, large = best(12_500), best(50_000)
-    assert large < 8 * small + 0.02, (small, large)
+        def __getattr__(self, name):
+            fn = getattr(self.real, name)
+            if name not in ("match", "search", "finditer", "findall", "fullmatch"):
+                return fn
+
+            def call(*args, **kwargs):
+                # `re.finditer(pattern, string)`, or `compiled.match(string, pos)`.
+                text, pos = (args[1], 0) if self.real is re else (args[0], args[1] if len(args) > 1 else 0)
+                read[0] += len(text) - pos
+                return fn(*args, **kwargs)
+
+            return call
+
+    monkeypatch.setattr(claims, "re", Counted(re))
+    monkeypatch.setattr(claims, "_LIST_MARKER", Counted(claims._LIST_MARKER))
+
+    def work(n):
+        read[0] = 0
+        claims._claims(hostile(n) + "\n")
+        return read[0]
+
+    small, large = work(12_500), work(25_000)
+    assert large <= 2 * small + 64, (small, large)
+
+
+def test_the_list_marker_cannot_backtrack_over_a_run():
+    """The structural half of the test above: no unbounded repeat sits next to
+    another that can match the same character (CodeQL 2290's `[ \t]*` lead)."""
+    from tessellate.api.routes_document_claims import _LIST_MARKER
+
+    assert _LIST_MARKER.pattern == r"(?:[-*+>]|\d{1,3}[.)])[ \t]+"
