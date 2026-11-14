@@ -1401,6 +1401,9 @@ def _kind_if_mine(asked: str) -> str | None:
     note would say one side and drop the other."""
     if not asked or composer.asks_written_when(asked):
         return None  # a note's own day is the composer's, not a digest of its words (E6)
+    #: "walked compared to ran" is two sums and a subtraction, not two words to list side by side (L-chat-234).
+    if composer_money.sums_a_measure(asked):
+        return "fact"
     kind = kind_of(asked)
     return None if kind != "compare" and composer.compare_sides(asked) else kind
 

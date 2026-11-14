@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 48 | 21 | 0 | 0 | 69 |
+| chat | 0 | 48 | 20 | 0 | 0 | 68 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 420 | 90 | 0 | 124 | 836 |
+| all | 326 | 420 | 89 | 0 | 124 | 835 |
 
 ## graph
 
@@ -60,7 +60,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-231** `chat` partly, S: composer6-1026 (3) welcome messages rebuilt on the clause grammar: not verified. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/greeting_compose.py
 - [ ] **L-chat-232** `chat` partly, S: composer6-1026 (4) needle under composer control: composer picks tool call not verified. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): needle_control.py, needle_provider.py exist
 - [ ] **L-chat-233** `chat` partly, S: composer6-1026 (5) composer reach into fixed-text surfaces: fixed text still present elsewhere. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_empty.py
-- [ ] **L-chat-234** `chat` partly, S: Quantity engine replaces composer_money: open tail: compare_sides order, goal with no doing, unknown dimension. From CHAT_PLAN.md:1853. Evidence: Recount 2026-11-14 (audit, verify in code first): HISTORY 2026-10-30 (quantity engine built) Built 2026-11-14: a difference between two doings ("how much more did I walk than run", `_versus_asked`) and a goal that names its own doing ("how close am I to my 10k goal" counts the runs, `_goal_forms`); tests/test_quantity_tails_1114.py. Left: "walked compared to ran" and "my walks versus my runs" are read by composer.compare_sides as a word comparison before the quantity engine sees them (order), and a difference of an unknown dimension ("how much more did I read than write") still falls to a notes list.
 - [ ] **L-chat-236** `chat` open, S: 1564 D30 language packs, per-document language, UK and US variants: packs, variants. From CHAT_PLAN.md:1870. Evidence: Recount 2026-11-14 (audit, verify in code first): no language pack code (grep src, frontend) Sized 2026-11-14: size L, unbuilt. Next steps in order: (1) a per-document language field and the `lang` attribute on the editor; (2) pack download and storage under the data folder (optional per-language downloads, never vendored, owner decision 1 of 2026-11-11); (3) UK and US English as the first pack pair, wired into spelling.py's english(); (4) Japanese and Chinese through the downloadable path with no spaces-based word split.
 - [ ] **L-chat-237** `chat` partly, S: 1691 background tasks run in Quick mode (BACKGROUND_MODE): meeting_summary.py:162 has no mode; real-model before and after not run. From CHAT_PLAN.md:1874. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/presets.py:145-192; reminder_parser.py:153, speakers.py:78, skill_runner.py:679, entities.py:90, drafter.py:537, captioning.py:150, passive_capture.py:203, tensions.py:238
 - [ ] **L-chat-238** `chat` open, S: Negative-claim check before no-notes reply: refuse unfounded find claims. From CHAT_PLAN.md:1879. Evidence: Recount 2026-11-14 (audit, verify in code first): no reader found (grep)
