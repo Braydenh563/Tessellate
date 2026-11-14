@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 49 | 1 | 0 | 2 | 70 |
+| documents | 20 | 48 | 1 | 0 | 2 | 69 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 604 | 129 | 2 | 165 | 1236 |
+| all | 503 | 603 | 129 | 2 | 165 | 1235 |
 
 ## graph
 
@@ -364,7 +364,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L882** `documents` open, M: Verify .docx in Word, Format on large file, list chords on non-US layout, docx extra removal. From OPEN.md:632; OPEN.md:3684. Evidence: Needs Word and non-US keyboard. Doable here: docx export and the format and chord paths run here; Word itself and a non-US layout stay unchecked.
 - [ ] **L883** `documents` open, S: Verify autocorrect with IME on a real phone keyboard. From OPEN.md:639. Evidence: Real phone keyboard; W34 unverifiable. Device-only remainder: a real phone keyboard IME; composition events can be emulated here.
 - [ ] **L885** `documents` open, L: Verify IME composition in editor engine and the blocked-request fallback (real IME). From OPEN.md:825; OPEN.md:3404. Evidence: Needs a real IME and a genuinely blocked request. Doable here: composition events and a blocked-request fallback can be scripted here (CDP composition, a route abort).
-- [ ] **L886** `documents` open, S: Measure breakpoint lane tap size on touch hardware. From OPEN.md:1464; OPEN.md:2831. Evidence: Needs real touch hardware to check tap size on 0.875rem/1.5rem lane. Doable here: getBoundingClientRect on the lane at 390 with hasTouch emulation gives the tap size here.
 - [ ] **L888** `documents` open, M: Measure Write with AI Draft it box heights with a real model. From OPEN.md:1821. Evidence: Needs a real model for the Draft it box heights (CLAUDE.md section 4). Doable here: measure box heights here with a stub reply of realistic length.
 - [ ] **L889** `documents` open, M: Verify writing desk Stop mid-pass, real thinking and draft prompts with a slow real backend. From OPEN.md:1933; OPEN.md:3083. Evidence: Needs slow real backend; stand-in answers in 150ms. Doable here: Stop mid-pass runs here against a delayed stub backend.
 - [ ] **L890** `documents` open, S: Verify real-clipboard Ctrl+V from Word and phone touch. From OPEN.md:3859. Evidence: Needs real clipboard source and phone. Device-only remainder: a real Word clipboard source and a phone; synthetic paste events run here.
