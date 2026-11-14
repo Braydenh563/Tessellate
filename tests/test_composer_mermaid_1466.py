@@ -319,3 +319,35 @@ def test_the_line_readers_are_linear_on_long_tab_runs():
     small, big = min(took(20000) for _ in range(3)), min(took(40000) for _ in range(3))
     assert big < small * 3 + 0.01, (small, big)
     assert big < 0.5, big
+
+
+def test_no_line_pattern_has_nested_or_adjacent_unbounded_repeats():
+    """CodeQL (PR 234): a repeat inside a repeat, or two unbounded repeats that can match the same
+    characters side by side, backtrack polynomially. Read off the patterns' own source."""
+    import re
+
+    from tessellate.ai import composer_mermaid
+
+    unbounded = r"(?:\\s|\.|\[[^\]]*\]|\\S|\\w)[*+]"
+    adjacent = re.compile(rf"{unbounded}\)?\??{unbounded}")
+    nested = re.compile(r"\((?:[^()]|\([^()]*\))*[*+]\)[*+]")
+    for name in ("_HEADING", "_ITEM", "_TASK", "_THEN", "_STEP_WORD"):
+        source = getattr(composer_mermaid, name).pattern
+        assert not adjacent.search(source), (name, source)
+        assert not nested.search(source), (name, source)
+
+
+def test_a_50k_adversarial_note_is_read_quickly():
+    """Every reader on 50,000 characters built to backtrack: tabs, spaces and list marks with no word."""
+    import time
+
+    from tessellate.ai import composer_mermaid
+
+    texts = ["\t" * 50_000 + "x", "* " + " \t" * 25_000, "- [ ]" + " " * 50_000 + "!", "#" + " " * 50_000, "a," + " then" * 10_000]
+    start = time.perf_counter()
+    for t in texts:
+        composer_mermaid.steps(t)
+        composer_mermaid.dated(t)
+        composer_mermaid.tree(t)
+    assert time.perf_counter() - start < 2.0
+    assert composer_mermaid.INPUT_CHARS == 50_000

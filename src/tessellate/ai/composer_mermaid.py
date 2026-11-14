@@ -27,6 +27,8 @@ from dataclasses import dataclass
 from datetime import date
 
 MAX_NODES = 16
+#: The most of a note the line readers look at: a diagram shows 16 boxes, and the cap bounds every pattern's work (CodeQL, PR 234).
+INPUT_CHARS = 50_000
 #: A note's name in a box: the composer's own naming, cut shorter.
 NAME_CHARS = 40
 LABEL_CHARS = 60
@@ -151,7 +153,7 @@ def _lines(text: str) -> list[tuple[str, int, bool, str]]:
     """(kind, depth, numbered, words) per line: "heading", "item", "line"."""
     out = []
     indents: list[int] = []  # the open list levels' indents, outermost first
-    for raw in (text or "").replace("\r\n", "\n").split("\n"):
+    for raw in (text or "")[:INPUT_CHARS].replace("\r\n", "\n").split("\n"):
         raw = raw.rstrip()
         if not raw.strip() or raw.strip().startswith("```"):
             continue
@@ -192,7 +194,7 @@ def _listed_steps(lines: list) -> list[str]:
 def _checklist(text: str) -> list[str]:
     """The top-level items of a checklist, in order, when there are at least
     two: tasks are done one after another, so they read as steps."""
-    rows = [m for m in (_TASK.match(raw.rstrip()) for raw in (text or "").replace("\r\n", "\n").split("\n")) if m]
+    rows = [m for m in (_TASK.match(raw.rstrip()) for raw in (text or "")[:INPUT_CHARS].replace("\r\n", "\n").split("\n")) if m]
     if not rows:
         return []
     top = min(len(m.group(1).expandtabs(4)) for m in rows)
