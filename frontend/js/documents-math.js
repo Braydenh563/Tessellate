@@ -598,6 +598,21 @@
     graph: { module: "docGraph", cls: "md-graph", wrap: "cm-md-graph-wrap", pending: "md-graph-pending", edit: "dg-edit", height: 420, fill: (figure, source) => docMathRender.graph.fill(figure, source) },
     base: { module: "docBase", cls: "md-base", wrap: "cm-md-base-wrap", pending: "md-base-pending", edit: "db-edit", height: 180, fill: (figure, source, write) => docMathRender.base.fill(figure, source, write) },
     query: { module: "docBase", cls: "md-query md-base", wrap: "cm-md-query-wrap", pending: "md-base-pending", edit: "db-edit", height: 120, fill: (figure, source) => docMathRender.base.queryFill(figure, source) },
+    //: The document's own labelled sections and their links (documents-sections.js, L-documents-49). It draws from the whole
+    //: text, so Live's figure is drawn again when a label or a link line changes (`key`), not only its own fence.
+    sections: { module: "docSections", cls: "md-sections", wrap: "cm-md-sections-wrap", pending: "md-graph-pending", edit: "dg-edit", height: 320, fill: (figure, source) => docMathRender.sections.fill(figure, source),
+      key: (text) => text.split("\n").filter((l) => /\[\[#\^| \^[\w-]+\s*$/.test(l)).join("\n") },
+  };
+  //: The Outline tab's Section links list, asked on every facts pass (documents-commands.js `renderDocOutline`): the module
+  //: is fetched only once a `[[#^name]]` is written, and draws the list itself from then on.
+  //: Registered here, not in lazy-entries.js: that file is a boot script under the gzip total, and nothing but this file asks.
+  LAZY_MODULES.docSections = ["/css/doc-graph-lazy.css", "/js/documents-sections.js"];
+  docMathRender.sections = {
+    links(text) {
+      const s = docMathRender.sections;
+      if (s.renderLinks) s.renderLinks(text);
+      else if (text.includes("[[#^")) ensureModule("docSections").then((ok) => ok && s.renderLinks(docText()));
+    },
   };
   const fenceBlocks = (lang) => (text) =>
     [...text.matchAll(new RegExp("^```[ \\t]*" + lang + "\\b[^\\n]*\\n([\\s\\S]*?)\\n```[ \\t]*$", "gm"))].map((m) => ({ from: m.index, to: m.index + m[0].length, source: m[1] }));
@@ -634,13 +649,14 @@
     const { StateField } = CM.state;
     const { Decoration, EditorView, WidgetType } = CM.view;
     class DocFenceWidget extends WidgetType {
-      constructor(source) {
+      constructor(source, key) {
         super();
         this.source = source;
+        this.key = key;
       }
-      //: The source alone: a key typed above a block must not draw it again and lose its sliders.
+      //: The source alone (and the spec's `key`): a key typed above a block must not draw it again and lose its sliders.
       eq(other) {
-        return other.source === this.source;
+        return other.source === this.source && other.key === this.key;
       }
       get estimatedHeight() {
         return spec.height;
@@ -677,11 +693,12 @@
         //: Through the Documents file's cached reader where it is loaded (a long text read twice per keystroke is the cost it avoids).
         const text = window.docStr ? window.docStr(state.doc) : state.doc.sliceString(0);
         blocks = new RegExp("```[ \\t]*" + lang).test(text) ? find(text) : [];
+        if (blocks.length && spec.key) blocks.key = spec.key(text);
         blocksOf.set(state.doc, blocks);
       }
       const ranges = blocks
         .filter((block) => !docLiveSpanTouched.anchorIn(state.selection.ranges, block.from, block.to))
-        .map((block) => Decoration.replace({ widget: new DocFenceWidget(block.source), block: true }).range(block.from, block.to));
+        .map((block) => Decoration.replace({ widget: new DocFenceWidget(block.source, blocks.key || ""), block: true }).range(block.from, block.to));
       return ranges.length ? Decoration.set(ranges, true) : Decoration.none;
     };
     fenceFieldCache[lang] = StateField.define({
@@ -701,5 +718,7 @@
     queryBlocks: fenceBlocks("query"),
     queryIn: fenceIn("query"),
     queryField: fenceField("query"),
+    sectionsIn: fenceIn("sections"),
+    sectionsField: fenceField("sections"),
   });
 })();

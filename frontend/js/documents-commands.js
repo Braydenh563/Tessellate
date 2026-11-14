@@ -61,6 +61,8 @@
       run: () => applyMarkdown("symbol") },
     { id: "insert-equation", icon: "ph:function", label: "Insert an equation", keys: "Alt+=", prose: true,
       run: () => applyMarkdown("equation") },
+    { id: "insert-sections", icon: "ph:graph", label: "Insert a graph of this document's linked sections", keys: "none", prose: true,
+      run: () => applyMarkdown("sections") },
     { id: "insert-calculator", icon: "ph:calculator", label: "Open the calculator", keys: "Ctrl+Shift+'",
       run: () => applyMarkdown("calculator") },
     { id: "view-edit", icon: "ph:pencil-simple", label: "Edit this document", keys: "none",
@@ -571,6 +573,8 @@
     let headings = [];
     if (fileType.previewable) headings = docScanHeadings(text);
     else if (docCmView && window.CM6) headings = docCodeSymbols(window.CM6, docCmView.state, fileType.ext);
+    //: Section links (L-documents-49): the `[[#^name|why]]` links between labelled sections, listed under Comments.
+    docMathRender.sections.links(fileType.previewable ? text : "");
 
     //: **The tasks in each section, counted.** DOCUMENTS_PLAN Phase 3 item 2
     //: asks for "task lists with progress in the outline", and the outline is
