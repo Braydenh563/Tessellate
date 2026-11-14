@@ -281,7 +281,7 @@
       const p = at.get(node.id);
       const name = cut(node.label, 22);
       const width = Math.max(48, Math.min(160, name.length * 7 + 20));
-      const g = svgEl("g", { class: `dsec-node dsec-${node.kind}`, tabindex: 0, role: "button", "data-section": node.id }, nodeLayer);
+      const g = svgEl("g", { class: node.kind === "paragraph" ? "dsec-node dsec-paragraph" : "dsec-node", tabindex: 0, role: "button", "data-section": node.id }, nodeLayer);
       g.setAttribute("aria-label", `Go to ${node.label}`);
       svgEl("rect", { x: p.x - width / 2, y: p.y - 14, width, height: 28, rx: 8 }, g);
       const text = svgEl("text", { x: p.x, y: p.y + 4, "text-anchor": "middle" }, g);

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Section graph nodes name their paragraph class literally, so the unused-class lint sees it; three HISTORY lines quote a fence name as code so the archive link check pairs fences correctly.
 - Boot CSS back under its cap (a duplicate `height: auto` in the fullscreen graph card removed); three documents tests follow the lazy sections module, the `none` chord and the shared ink selector list.
 - Tests: the claim check's hostile-line test counts the characters handed to each regex at n and 2n instead of timing them (#222 ae427a9b took 2.76 s on hostile4 on a loaded runner; locally it is linear, 0.019, 0.023 and 0.047 s at n, 2n and 4n), and pins the list marker's pattern so it cannot backtrack over a run of tabs.
 - Grip drags work again: the L335 fold called `trackSeparatorValue.drag` (diagram split, prose panel, code run panel) and never defined it, so each press threw; it is defined beside `trackSeparatorValue` in `sheets-selects.js`, cleans up on release and cancel, and `test_lag_diagram_reads_1766` checks it. The diagram chart title is named through `composer_frame.note_title` (F13), the spellcheck unit mask verdict follows its file to `documents-prose-check.js`, and `test_map_add_speed` runs the search file's own `searchLive` line (whiteboard 2c88afd9).
