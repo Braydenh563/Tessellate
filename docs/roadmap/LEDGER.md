@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 94 | 34 | 2 | 59 | 304 |
+| chat | 176 | 93 | 34 | 2 | 59 | 303 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 468 | 103 | 2 | 183 | 1124 |
+| all | 553 | 467 | 103 | 2 | 183 | 1123 |
 
 ## graph
 
@@ -146,7 +146,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-19** `chat` open, L: Close the rest of the 2026-10-10 chat bug list. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:779. Evidence: Open line in the plan's prose a session could miss. Owner bug list; also token count after deleted turn, destination history clear, match kind label, jokes source, caption sentences.
 - [ ] **L-chat-20** `chat` open, M: Composer bubble fade, accessed links first and auto retry. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:890. Evidence: Open line in the plan's prose a session could miss. Design items from the owner list.
 - [ ] **L-chat-22** `chat` open, M: Build the missing composer eval fixtures. From open-work sweep 2026-11-12, docs/roadmap/CHAT_PLAN.md:1435. Evidence: Open line in the plan's prose a session could miss. Fixtures listed, not built.
-- [ ] **L-chat-41** `chat` open, M: Guide with no model: lead with the topic's first-step sentence (40-question eval at 0.55, floor 0.90). From tests/fixtures/composer/help_1010.json, ai/guide_lead.py. Evidence: Measured on 40 how-to questions: the Guide with no model opens on the topic's first-step sentence for 22 of 40 (0.55, floor 0.90); every control named exists (1.0). Misses: it leads with a later sentence of the right topic (updates, undo, history, spaces, tags, reminders), and two route wrongly: "how do I do a sum" says it has no help, "is there a tour of the app" reads the keyboard shortcuts.
 - [ ] **L-chat-42** `chat` open, M: Measure Cactus mirage vision (.cact 21.6 MB, Apache-2.0) against the OCR and caption path on 20 fixture images as an optional vision extra; adopt only if it wins, real-model quality to BACKLOG. From owner research via hub 2026-11-14.
 - [ ] **L-chat-43** `chat` open, M: Check whether needle3 structured-extraction and embedding modes (ai/needle_provider.py) can replace a prompt path, measured with evals. From owner research via hub 2026-11-14.
 - [ ] **L-chat-44** `chat` open, M: Evaluate cactus_needle 3.0.1 wheel to the 4.0.0 engine (core/extras.py:715) with the platform table and a serial test run; together with the whistle row. From owner research via hub 2026-11-14.

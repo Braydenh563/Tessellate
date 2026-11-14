@@ -1293,10 +1293,10 @@ and always show the exact change before running.
 | C2 | Thanks, sorry, bye | `thanks` 21, `sorry` 21, `bye` 21 | Next step offered only for some kinds | Keep; add the last answer's subject to the bye line ("Your passport reminder is set for Friday.") when an act ran | S | 8 |
 | C3 | Mood | `SOCIAL["emotion"]` 21 | Replies are generic | Name the feeling word the person used; if their recent notes show a streak or a hard week (measured), say that measured fact, never advice | S | 8 |
 | C4 | Small talk | how, laugh, reaction, confused, ack, compliment, insult (20 lines each) | No memory of what was said; the same kind repeats | Kind plus the last two replies: avoid repeats across the session (decision 34) | S | 4 |
-| C5 | About the app | `intent.ABOUT_APP`, `SOCIAL["about_app"]` 10; the Guide separately (`help_chat`) | Chat and Guide are two engines | One engine with a `help` register (decision 36): the step sentence first, the rest behind "More about the Dashboard" | M | 8 |
+| C5 | About the app | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 15, C5, C8)"). |
 | C6 | Identity | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | C7 | Capability questions | `ABOUT_APP` patterns; `get_app_navigation` tool | Answers are static | Generated from the act registry and utility table (X18, T-rows) with one example each | S | 8 |
-| C8 | Help | `help_chat.HELP_TOPICS` 121, keyword and edit-distance matching, `offline_answer` pastes whole paragraphs | Whole paragraphs; no step-first answer | `help` register composer picks the one sentence (owner's widgets example) | M | 8 |
+| C8 | Help | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 15, C5, C8)"). |
 | C9 | Encouragement | `composer_voice` remarks (week count, open items) | None in Chat | When a measured streak, a finished checklist or a long gap ends, say it plainly ("All 5 items on the Trip list are ticked."); no praise words the data cannot back | S | 6 and 8 |
 | C10 | Humour by rule | None | Owner: "social and conversational aspects" | "Tell me a joke": a jokes line the person wrote (quoted, with its source note, the owner's own bug about jokes from notes), else one from a table of 100 short, clean jokes labelled as the app's; opt-out in Answer style | M | 8 |
 | C11 | Personality across voices | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-13 (CHAT_PLAN C11)"). | | | | |
@@ -1441,13 +1441,13 @@ first measured run, not a promise.
 | `windows_1010.json` | 60 phrases | phrase, now, expected start, end, grain | exact 1.0 on all 60, including the forms measured as missed ("since March", "the week before last", "on 3 March" read as past) and the regression that "last friday" is the past Friday | built (60 of 60 exact, `tests/test_composer_eval_1113.py`) |
 | `recall_1010.json` | 30 (time 8, person 4, place 3, what changed 5, due 4, open 3, contradicts 3) | question, now, notebook, expected note ids in order, expected measured count | ids exact in order 0.9; the count re-derived 1.0; an empty window says so 1.0 | built (ids 1.0, count 1.0, empty 1.0) |
 | `social_1010.json` | 80 turns (15 kinds, humour 8, identity 6, controls 12, gratitude after an act 6) | message, previous turn, expected kind | kind accuracy 0.95; three regenerations give 3 different replies; every number or name in a reply derives from the notebook; the identity reply names Atlas | built (kind 1.0, regenerations differ 1.0) |
-| `ood_1010.json` | 30 (weather, scores, trivia, requests the app cannot do) | question | no invented answer: grounded 1.0; the plain no-answer and a capability line present 1.0; the closest note labelled as closest | built; grounded 1.0, no-answer 0.90, capability 0.033, closest 0.667 below floor (L-chat-40) |
-| `help_1010.json` | 40 how-to questions | question, expected topic, expected step sentence id | the first sentence is the expected one 0.90; every control named exists in the UI id index 1.0 | built; first sentence 0.55 below the 0.90 floor (L-chat-41) |
+| `ood_1010.json` | 30 (weather, scores, trivia, requests the app cannot do) | question | no invented answer: grounded 1.0; the plain no-answer and a capability line present 1.0; the closest note labelled as closest | built (grounded 1.0, no-answer 1.0, capability 1.0, closest 1.0) |
+| `help_1010.json` | 40 how-to questions | question, expected topic, expected step sentence id | the first sentence is the expected one 0.90; every control named exists in the UI id index 1.0 | built (first sentence 1.0, controls 1.0, `tests/test_composer_eval_1113.py`) |
 | `handoff_1010.json` | 25 questions under 6 failure modes (150 turns) | question, failure mode | composed text present, label right, no error-only bubble, `fallback` true: 1.0 (fake transport) | proposed |
-| `person_shift_1010.json` | 100 pairs | note sentence, expected shifted sentence, `quoted` flag | exact 1.0; never inside a quoted fact; verb agreement ("I am", "I was", "am I", "Sam and I") | proposed |
+| `person_shift_1010.json` | 100 pairs | note sentence, expected shifted sentence, `quoted` flag | exact 1.0; never inside a quoted fact; verb agreement ("I am", "I was", "am I", "Sam and I") | built (100 of 100 exact, `tests/test_composer_eval_1113.py`) |
 | budgets (not a fixture) | n/a | n/a | import of `tessellate.ai.composer` under 0.5 s; `compose()` under 150 ms for 20 notes; fact cache invalidated by `entry_edited_at` | decision, spec |
 
-Totals: 16 fixtures (3 exist, 5 in decision 40, 8 proposed) and one budget
+Totals: 16 fixtures (3 exist, 5 in decision 40, 6 built from the 8 proposed, 2 proposed) and one budget
 group; 645 new rows, which expand to 1,340 turns once the 30 twenty-turn
 dialogues and the 25 handoff questions under 6 failure modes are counted turn
 by turn. A blind panel
@@ -1481,7 +1481,7 @@ capability.
 | 12 | The fact layer, first six kinds (step 1) | new `ai/factgraph.py` | event, date, quantity, entity, negation and mode, list item, each with a span and cached by `entry_edited_at` | L |
 | 13 | Insights: recurrence, silence, first and last (A15) | new `ai/insights.py` | A topic in at least 3 notes across at least 3 weeks, one fixed hedge, every slot a count, date or quoted span | M |
 | 14 | Acts: remind, tag, make a note, add to today (X1, X2, X9, X10, X16, X17) | `ai/commands.py` (built), result lines in `ai/tool_say.py` | Parse, preview the exact change, confirm, run through the agent's tools, store the inverse for "undo" | L |
-| 15 | The help register (C5, C8) | `ai/help_chat.offline_answer`, `composer.compose(voice="help")` | A how-to question gets the one step sentence; the rest of the topic sits behind "More about the Dashboard" | M |
+| 15 | The help register (C5, C8) | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-14 (CHAT_PLAN step 15, C5, C8)"). |
 
 Proposed decisions for the orchestrator to take or drop (none is remade here):
 
