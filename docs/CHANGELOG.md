@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Plans: LEDGER's graph and timeline plan-open counts read 0 (they kept 15 and 3 after both plans closed); a test now holds a plan with nothing open to 0, and GRAPH_PLAN's last INBOX blocks (798, 799, 802, 1306, 1400) moved to HISTORY.
 - Diagram builder: Ask now works on a mind map, timeline and sequence diagram (add, rename, move and delete by words), previewed first and applied as one Undo step (L-documents-35).
 - Csv and tsv Grid: cells and the row-number column are 44 px touch targets under a coarse pointer (cells were 27 px; L-documents-40); the Grid now hides the preview pane it meant to.
 - Documents: the selection bar's per-key element lookup no longer walks unbuilt surfaces (about 2 ms a key at 4x CPU in the profile; wall time within noise; L-documents-26 stays open with the measured breakdown).
