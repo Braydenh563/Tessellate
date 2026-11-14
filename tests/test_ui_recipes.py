@@ -7895,3 +7895,10 @@ def test_a_sticky_commit_foot_holds_one_line_and_never_hides_the_focus() -> None
     lazy = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
     foot = re.search(r"#capture > :not\(\.capture-commit-row\) :is\([^)]*\) \{([^}]*)\}", lazy)
     assert foot and "scroll-margin-bottom: calc(var(--control-h) + 2 * var(--space-2))" in foot.group(1)
+
+
+def test_a_show_all_button_repeated_down_a_picker_is_the_quiet_text_action() -> None:
+    """INBOX 1566 sweep (L-documents-46): four bordered ghosts down the icon picker at 390 became `ghost quiet`
+    (border transparent, accent text, the edge back under [data-contrast="on"]); the Reminders filter chips
+    and the widget dialog's rows were already borderless."""
+    assert 'more.classList.add("icon-picker-more", "quiet")' in frontend_text("icon-picker.js")
