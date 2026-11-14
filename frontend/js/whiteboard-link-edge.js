@@ -169,5 +169,108 @@
     }
   }
 
-  wbFmtState.linkEdge = { edgeOf, pinned, pointOn, hitAt, hangsOn, dependents, follow, beforeDelete, afterDelete, reattach, ENDS };
+  //: The hover cue while an end is dragged: the connector it would attach to is lit in the accent (a wider stroke under
+  //: its own line) with a dot where the end would sit, the way a port is lit for a shape (`wbShowAnchorHints`). `at` is
+  //: the board point under the pointer, or null to take the cue away; `skipId` is the connector being re-ended.
+  //: Returns the hit, so a caller can tell whether the cue is showing.
+  function cue(at, skipId = null) {
+    const NS = "http://www.w3.org/2000/svg";
+    let layer = document.getElementById("wb-edge-cue");
+    const hit = at ? hitAt(at[0], at[1], skipId) : null;
+    if (!hit) {
+      layer?.remove();
+      return null;
+    }
+    const zoomGroup = document.getElementById("wb-overlay-zoom-group");
+    if (!zoomGroup) return hit;
+    if (!layer) {
+      layer = document.createElementNS(NS, "g");
+      layer.setAttribute("id", "wb-edge-cue");
+      layer.setAttribute("pointer-events", "none");
+      const line = document.createElementNS(NS, "path");
+      line.setAttribute("fill", "none");
+      line.setAttribute("stroke", "var(--accent)");
+      line.setAttribute("stroke-opacity", "0.35");
+      line.setAttribute("stroke-width", "8");
+      line.setAttribute("stroke-linecap", "round");
+      const dot = document.createElementNS(NS, "circle");
+      dot.setAttribute("r", "6");
+      dot.setAttribute("fill", "var(--accent)");
+      dot.setAttribute("stroke", "var(--accent)");
+      layer.append(line, dot);
+      zoomGroup.appendChild(layer);
+    }
+    const parsed = wbParsedLink(wbLinkItem("sketch", hit.id));
+    const d = parsed ? lineD(parsed) : null;
+    layer.firstElementChild.setAttribute("d", d || "");
+    layer.lastElementChild.setAttribute("cx", String(hit.x));
+    layer.lastElementChild.setAttribute("cy", String(hit.y));
+    return hit;
+  }
+
+  //: Pure (node-tested): the rows of an export narrowed to a selection. `rows` are `wbExportRows` rows (links carry
+  //: `link: true` and their data as JSON in `payload.data`). A connector stays when each end is joined to a kept item,
+  //: hangs on a kept connector, or is a free end, and at least one end is joined or hangs; a chain of connectors on
+  //: connectors is settled by passing over the rows until nothing changes.
+  function keptRows(rows) {
+    const keys = new Set(rows.filter((r) => !r.link).map((r) => `${r.kind}:${r.id}`));
+    const links = rows.filter((r) => r.link).map((r) => ({ row: r, data: JSON.parse(r.payload.data) }));
+    const kept = new Set();
+    for (let pass = 0; pass <= MAX_DEPTH; pass += 1) {
+      let grew = false;
+      for (const { row, data } of links) {
+        if (kept.has(row.id)) continue;
+        let joined = false;
+        const ok = ENDS.every((end) => {
+          if (data[`${end}Id`] != null) {
+            joined = true;
+            return keys.has(`${data[`${end}Kind`] || "node"}:${data[`${end}Id`]}`);
+          }
+          const edge = edgeOf(data, end);
+          if (edge) {
+            joined = true;
+            return kept.has(edge.id);
+          }
+          return Boolean(data[`${end}Point`]);
+        });
+        if (ok && joined) {
+          kept.add(row.id);
+          grew = true;
+        }
+      }
+      if (!grew) break;
+    }
+    return rows.filter((r) => !r.link || kept.has(r.id));
+  }
+
+  //: Pure (node-tested): a connector's data as an import places it, or null when an end cannot be rejoined yet.
+  //: `remap` maps `kind:oldId` to the new id; a connector made by this import is put there as `sketch:oldId`, so one
+  //: that hangs on it finds it. Free ends and the last points move with the paste by `(dx, dy)`.
+  function place(data, remap, dx, dy) {
+    const out = { ...data };
+    let joined = false;
+    for (const end of ENDS) {
+      if (out[`${end}Id`] != null) {
+        const id = remap.get(`${out[`${end}Kind`] || "node"}:${out[`${end}Id`]}`);
+        if (id == null) return null;
+        out[`${end}Id`] = id;
+        joined = true;
+        continue;
+      }
+      const edge = edgeOf(out, end);
+      if (edge) {
+        const id = remap.get(`sketch:${edge.id}`);
+        if (id == null) return null;
+        out[`${end}Edge`] = { id, t: edge.t };
+        joined = true;
+      } else if (!out[`${end}Point`]) return null;
+      const at = out[`${end}Point`];
+      if (at) out[`${end}Point`] = { x: at.x + dx, y: at.y + dy };
+    }
+    if (!joined) return null;
+    if (Array.isArray(out.points)) out.points = out.points.map((p) => ({ x: p.x + dx, y: p.y + dy }));
+    return out;
+  }
+
+  wbFmtState.linkEdge = { edgeOf, pinned, pointOn, hitAt, hangsOn, dependents, follow, beforeDelete, afterDelete, reattach, keptRows, place, cue, ENDS };
 })();

@@ -775,7 +775,9 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
       `${shape};whiteSpace=wrap;html=0;${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}${hex(d.fill) ? `fillColor=${hex(d.fill)};` : "fillColor=none;"}${opacityKeys(d)}${paintKeys(d)}strokeWidth=${width};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}${wbDrawioStyle.points.write(d.ports)}${font(d.label_size, d.label_bold, d.label_italic, d.label_underline, d.label_color)}`,
       d.label || "", { x: bb.minX, y: bb.minY, w: bb.maxX - bb.minX, h: bb.maxY - bb.minY });
   }
-  for (const [sk, d] of links) {
+  for (const [sk, stored] of links) {
+    //: draw.io has no end on an edge's line, so an end on a connector goes out as the free point it resolves to now.
+    const d = (typeof wbFmtState === "undefined" ? null : wbFmtState.linkEdge)?.pinned(stored) ?? stored;
     const ref = (side) => {
       const id = ids.get(`${d[`${side}Kind`] || "node"}:${d[`${side}Id`]}`);
       return id ? ` ${side}="${id}"` : "";
@@ -1174,12 +1176,7 @@ function wbExportRows(scope) {
     }
   }
   if (onlyKeys) {
-    const kept = new Set(rows.filter((r) => !r.link).map((r) => `${r.kind}:${r.id}`));
-    return rows.filter((r) => {
-      if (!r.link) return true;
-      const d = JSON.parse(r.payload.data);
-      return kept.has(`${d.sourceKind || "node"}:${d.sourceId}`) && kept.has(`${d.targetKind || "node"}:${d.targetId}`);
-    });
+    return wbFmtState.linkEdge.keptRows(rows);
   }
   return rows;
 }
@@ -1206,15 +1203,22 @@ async function wbImportBoardRows(rows, at = wbViewCentre()) {
       remap.set(`${row.kind}:${row.id}`, created.id);
       made += 1;
     }
-    for (const row of rows.filter((r) => r.link)) {
-      const data = JSON.parse(row.payload.data);
-      const s = remap.get(`${data.sourceKind || "node"}:${data.sourceId}`), t = remap.get(`${data.targetKind || "node"}:${data.targetId}`);
-      if (s == null || t == null) continue;
-      data.sourceId = s;
-      data.targetId = t;
-      if (Array.isArray(data.points)) data.points = data.points.map((p) => ({ x: p.x + dx, y: p.y + dy }));
-      const link = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
-      wbState.sketches.push(link);
+    //: Connectors rejoin in passes, so one that hangs on another connector (whiteboard-link-edge.js) finds it made.
+    let waiting = rows.filter((r) => r.link);
+    for (let pass = 0; pass < 5 && waiting.length; pass += 1) {
+      const later = [];
+      for (const row of waiting) {
+        const data = wbFmtState.linkEdge.place(JSON.parse(row.payload.data), remap, dx, dy);
+        if (!data) {
+          later.push(row);
+          continue;
+        }
+        const link = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
+        wbState.sketches.push(link);
+        remap.set(`sketch:${row.id}`, link.id);
+      }
+      if (later.length === waiting.length) break;
+      waiting = later;
     }
   });
   renderWhiteboardNow();
