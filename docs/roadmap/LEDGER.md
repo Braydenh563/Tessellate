@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 61 | 29 | 10 | 59 | 266 |
+| chat | 176 | 60 | 29 | 10 | 59 | 265 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 435 | 98 | 10 | 183 | 1086 |
+| all | 553 | 434 | 98 | 10 | 183 | 1085 |
 
 ## graph
 
@@ -34,7 +34,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L127** `chat` open, M: Narrate lines for Guide, drafting and doc review and announce chat/agent turns. From OPEN.md:2514. Evidence: Placed into owning briefs (SESSION_BRIEFS.md:343); not built Remaining 2026-11-14: built already are the Guide phase line (help-chat.js setPhase), the writing desk's "Drafting" status (writing-desk.js:35) and the chat turn's spoken finish (chat-turn.js, audit 1028 E35). Not found: a phase line for the document assistant (documents-codekit.js docAssistAsk writes none while it waits); that file is outside the chat-ui scope.
 - [ ] **L131** `chat` open, M: Click in Atlas large view costs 22-44 ms in setAtlasMood. From OPEN.md:1083. Evidence: setAtlasMood still in atlas.js; no optimisation commit found
 - [ ] **L132** `chat` open, M: Atlas tail script-drawn 15 draws a second at rest; verify subtle animations cheap. From OPEN.md:1087; OPEN.md:1091. Evidence: atlas-life.js:542 atlasTailRest compositor rest for held states; tail still script-drawn in live acts
-- [ ] **L135** `chat` open, M: Atlas faces at 104/28/20 px do not read as different moods; add cue on figure. From OPEN.md:1070; OPEN.md:1088; OPEN.md:2872; OPEN.md:3764. Evidence: Needs a design/human-rater read of the face sheet; no fix commit found Progress 2026-11-14: not started, a design read. Exact step: render each mood at 104, 28 and 20 px (scratchpad/ui-sweeps/lib.js, THEME=dark and light), measure the eye and brow box height per mood with getBoundingClientRect, and give any two moods whose boxes differ by under 1 px at 28 px a figure cue (a brow tilt or mouth line) in atlas.js; a rater must confirm they read apart.
 - [ ] **L136** `chat` open, M: Chest breath writes torso scale 2.5x/s; settle cost in rest and large view. From OPEN.md:1069; OPEN.md:2869; OPEN.md:1247. Evidence: atlas-life.js atlasBreathFrame still runs on the resting beat (:547); composited rewrite not found
 - [ ] **L137** `chat` open, M: Large view whole-body moves (nmb-hop) move head 2.2x faster than rest; slow them. From OPEN.md:1242; OPEN.md:3492. Evidence: Row says decision needed on slowing; nmb-hop animations unchanged (08-consistency.css:6192).
 - [ ] **L138** `chat` open, M: Atlas idle cost: avatars.js timers, 670 recalcs/min, one 200 ms grid, nm-buddy layer stop under hint. From OPEN.md:2865; a30p-1103.md Found, not fixed; OPEN.md:2884. Evidence: Behaviour picker and perch checks not yet profiled; no later fix found
