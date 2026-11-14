@@ -227,9 +227,9 @@ FAULTS = {
         '"Couldn\'t open the sketch pad."': 'the pad\'s lazy script or stylesheet failed to load: a broken asset',
     },
     'statistics.js': {
-        '"Couldn\'t open that."': 'opening what a chart point or tile counts failed',
-        '"Couldn\'t change the range."': 'the growth chart request for a new range failed',
-        '"Couldn\'t answer that."': 'the Statistics Ask request failed',
+        'voiceLine("failed", { what: "open that" })': 'opening what a chart point or tile counts failed',
+        'voiceLine("failed", { what: "change the range" })': 'the growth chart request for a new range failed',
+        'voiceLine("failed", { what: "answer that" })': 'the Statistics Ask request failed',
     },
     'app.js': {
         '"Can\'t reach the Tessellate server. Is it running?"': 'network failure: the server cannot be reached',
@@ -459,7 +459,7 @@ def test_report_this_has_one_home_and_the_helper_gates_it():
 #: Logs, where the why is written), because no retry or alternative fits the
 #: call site yet. A ratchet: it only shrinks. Every other literal fault passes
 #: `{ action: [label, fn] }` of its own.
-LOGS_ACTION_CAP = 24
+LOGS_ACTION_CAP = 20
 
 
 def test_every_error_toast_offers_one_action():
@@ -476,7 +476,7 @@ def test_a_literal_fault_carries_its_own_action_or_is_counted():
     for name, line, args in _all_calls():
         if _flag(args) != "true" or re.search(r"\b(?:e|err|error)\.message\b", args[0]):
             continue
-        if len(args) > 2 and "action:" in args[2]:
+        if len(args) > 2 and re.search(r"\b(?:action|retry):", args[2]):
             continue
         defaulted.append(f"{name}:{line}")
     assert len(defaulted) <= LOGS_ACTION_CAP, (
@@ -491,3 +491,27 @@ def test_api_retries_a_network_failure_of_a_read_before_saying_so():
     assert "attempt < 2 && networkErr instanceof TypeError" in body
     assert "/^(GET|HEAD)$/.test(fetchOptions.method" in body, "a write must never be resent"
     assert "api.retries++" in body
+
+
+def test_toast_retry_is_the_try_again_action():
+    """L633: `{ retry: fn }` is `{ action: ["Try again", fn] }` for a failed read or reload;
+    an explicit action wins, and a plain toast ignores it."""
+    status = (JS / "status.js").read_text(encoding="utf-8")
+    body = status[status.index("function toast(") : status.index("\n}\n", status.index("function toast(")) + 3]
+    assert 'retry, action = retry && ["Try again", retry] }' in body
+
+
+def test_retry_sites_are_reads_or_reloads():
+    """A retry re-runs the call: never beside a write (POST, PUT, PATCH, DELETE) in the same try."""
+    found = 0
+    for name, line, args in _all_calls():
+        if len(args) > 2 and re.search(r"\bretry:", args[2]):
+            found += 1
+            lines = (JS / name).read_text(encoding="utf-8").split("\n")
+            window = "\n".join(lines[max(0, line - 12) : line])
+            tail = window[window.rfind("try {") :] if "try {" in window else window
+            #: shell-reminders.js retries only the rows that failed (`left`), never the whole batch.
+            if name == "shell-reminders.js":
+                continue
+            assert not re.search(r'method: "(POST|PUT|PATCH|DELETE)"', tail), f"{name}:{line}: a retry beside a write"
+    assert found >= 7, found

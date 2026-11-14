@@ -79,7 +79,7 @@
     try {
       await go();
     } catch {
-      toast("Couldn't open that.", true, { action: ["Try again", () => statsGo(go)] });
+      toast(voiceLine("failed", { what: "open that" }), true, { action: ["Try again", () => statsGo(go)] });
     }
   }
 
@@ -229,7 +229,7 @@
         const data = await apiJson(`/statistics?growth=${encodeURIComponent(select.value)}`, { silent: true });
         holder.replaceChildren(statsGrowthChart(data.notebook));
       } catch {
-        toast("Couldn't change the range.", true, { action: ["Try again", () => select.dispatchEvent(new Event("change"))] });
+        toast(voiceLine("failed", { what: "change the range" }), true, { action: ["Try again", () => select.dispatchEvent(new Event("change"))] });
       }
     });
     label.append(text, select);
@@ -371,7 +371,7 @@
         answer.classList.remove("hidden");
         clear.hidden = false;
       } catch {
-        toast("Couldn't answer that.", true, { action: ["Try again", () => ask(text)] });
+        toast(voiceLine("failed", { what: "answer that" }), true, { action: ["Try again", () => ask(text)] });
       } finally {
         send.disabled = false;
       }

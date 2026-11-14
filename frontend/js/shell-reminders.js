@@ -1074,7 +1074,7 @@ async function clearDoneReminders() {
   //: To the end, or this clears the first page's done rows and reports that
   //: count as if it were all of them.
   const all = await apiPagedList("/reminders", 200).catch(() => null);
-  if (!all) return toast("Couldn't load your reminders. Try again.", true, { action: ["Try again", clearDoneReminders] });
+  if (!all) return toast("Couldn't load your reminders. Try again.", true, { retry: clearDoneReminders });
   const done = all.filter((r) => r.done);
   if (!done.length) return;
   if (!(await confirmDialog(`Delete ${done.length} completed reminder${done.length === 1 ? "" : "s"}?`))) {
@@ -1090,7 +1090,7 @@ async function clearDoneReminders() {
       rows.map((r) => api(`/reminders/${r.id}`, { method: "DELETE" }).then(() => true, () => false))
     );
     const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(`Couldn't delete ${left.length} of the reminders.`, true, { action: ["Try again", () => drop(left)] });
+    if (left.length) toast(`Couldn't delete ${left.length} of the reminders.`, true, { retry: () => drop(left) });
     loadReminders();
   };
   const remake = async (rows = done) => {
@@ -1098,7 +1098,7 @@ async function clearDoneReminders() {
       rows.map((r) => api(`/reminders/${r.id}/restore`, { method: "POST" }).then(() => true, () => false))
     );
     const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(`Couldn't bring back ${left.length} of the reminders.`, true, { action: ["Try again", () => remake(left)] });
+    if (left.length) toast(`Couldn't bring back ${left.length} of the reminders.`, true, { retry: () => remake(left) });
     loadReminders();
   };
   await drop();

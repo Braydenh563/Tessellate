@@ -1960,7 +1960,7 @@ async function attachBookmarkToDocument() {
   try {
     all = await apiJson("/bookmarks");
   } catch (error) {
-    toast(error.message, true);
+    toast(error.message, true, { retry: attachBookmarkToDocument });
     return;
   }
   if (!all.length) {

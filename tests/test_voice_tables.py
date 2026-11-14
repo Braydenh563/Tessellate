@@ -19,7 +19,7 @@ from tessellate.ai import realise
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend/js"
-MOVED = ("library.js", "whiteboard.js", "whiteboard-map.js")
+MOVED = ("library.js", "whiteboard.js", "whiteboard-map.js", "statistics.js", "space-swap.js", "chat-edit.js")
 
 
 def _js_voice() -> dict:
@@ -57,7 +57,7 @@ def test_the_moved_surfaces_fail_in_the_voice():
             if "toast(" in line:
                 assert not re.search(r'["`]Could not ', line), f"{name}: {line.strip()}"
                 assert not re.search(r'"Couldn\'t [^"$`]*"', line), f"{name}: a failure not through the voice: {line.strip()}"
-    assert calls >= 66  # 67 until whiteboard-map.js lost "put it back" to the shared undo
+    assert calls >= 72  # 67 until whiteboard-map.js lost "put it back" to the shared undo
 
 
 def test_no_toast_in_the_app_says_oops_or_shouts():

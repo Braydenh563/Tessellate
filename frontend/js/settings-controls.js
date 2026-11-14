@@ -4439,7 +4439,7 @@
       if (Object.keys(was).length) pushRequestUndo("Reset the sampling settings", "/models/sampling", "PUT", { overrides: was }, { overrides: {} }, loadSamplingSettings);
       toast("Back to what each model recommends.");
     } catch {
-      toast("Couldn't reset those settings.", true);
+      toast("Couldn't reset those settings.", true, { action: ["Reload them", loadSamplingSettings] });
     }
     await loadSamplingSettings();
   });
