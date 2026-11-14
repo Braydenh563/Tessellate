@@ -122,9 +122,9 @@ _PERCENT = lazy_compile(r"^(?:what(?:'s| is)\s+|whats\s+|how much is\s+|work out
 #: device can count between, so never the web or the notes.
 _BETWEEN = lazy_compile(r"^(?:how many\s+)?(days|weeks)\s+(?:are there\s+)?(?:between|from)\s+(\S.*?)\s+(?:and|to|until|till)\s+(\S.*)$", re.I)
 _WEEKDAY_OF = lazy_compile(r"^what day(?: of the week)? (?:is|was|will be|falls on) (\S.*)$", re.I)
-_DIE = lazy_compile(r"^(?:roll|throw)\s+(?:a\s+|one\s+|the\s+)?(?:die|dice|d6)$|^roll\s+(\d{1,2})?d(\d{1,3})$", re.I)
+_DIE = lazy_compile(r"^(?:roll|throw)\s+(?:a\s+|one\s+|the\s+)?(?:die|dice|d6)$|^roll\s+(?:an?\s+)?(\d{1,2})?d(\d{1,3})$", re.I)
 _COIN = lazy_compile(r"^(?:flip|toss)\s+a\s+coin$|^heads or tails$", re.I)
-_PICK = lazy_compile(r"^(?:pick|choose|give me)\s+a\s+(?:random\s+)?number\s+(?:between|from)\s+(-?\d{1,6})\s+(?:and|to)\s+(-?\d{1,6})$", re.I)
+_PICK = lazy_compile(r"^(?:(?:pick|choose|give me)\s+a\s+(?:random\s+)?|(?:a\s+)?random\s+)number\s+(?:between|from)\s+(-?\d{1,6})\s+(?:and|to)\s+(-?\d{1,6})$", re.I)
 _WEATHER = lazy_compile(r"\b(?:weather|forecast|temperature outside|going to (?:rain|snow)|will it (?:rain|snow)|need an umbrella|(?:hot|cold|warm) is it outside)\b", re.I)
 _TRANSLATE = lazy_compile(r"^(?:translate|say) \S.* (?:in|into|to) (?:french|spanish|german|italian|portuguese|dutch|japanese|chinese|korean|arabic|russian|hindi|greek|swedish|polish|turkish)$", re.I)
 #: **Generative asks** (audit 1028 E24): a model writes these, the composer
@@ -757,13 +757,13 @@ def _clock(text: str, now: datetime) -> list[tuple]:
         place = match.group("place").strip()
         several = SEVERAL_ZONES.get(" ".join(place.replace(".", "").lower().split()))
         if several:
-            base = now if now.tzinfo else datetime.now(timezone.utc)
+            base = now.astimezone(timezone.utc)
             times = ", ".join(f"{_hm(base.astimezone(ZoneInfo(z)), twelve)} in {city}" for city, z in several)
             return [("computed", f"{_place_said(place)} has several time zones. It is {times}."),
                     ("computed", "\nRead from this computer's clock; name a state or city for one of them.")]
         place = place_name_for(place) or place
         zone = zone_for(place)
-        there = (now if now.tzinfo else datetime.now(timezone.utc)).astimezone(ZoneInfo(zone))
+        there = now.astimezone(ZoneInfo(zone))
         return [("computed", f"It's {_hm(there, twelve)}{_other_day(there, now)} in {_where(place, zone)} ({_zone_said(there)})."),
                 ("computed", f"\nRead as {zone}, from this computer's clock.")]
     if _CLOCK.match(text):

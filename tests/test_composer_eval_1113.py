@@ -91,3 +91,25 @@ def test_a_note_sentence_is_said_back_to_its_writer_exactly():
     assert got["exact"] == 1.0, got["missed"]
     #: Verb agreement ("I am", "I was", "am I", "Sam and I"), idioms, numerals, quoted facts, "we".
     assert {"be", "and_i", "quote_inner", "quoted", "idiom", "none", "we", "question"} <= got["kinds"]
+
+
+def test_utilities_are_exact_say_how_they_were_read_and_stay_in_range():
+    """`utilities_1010.json`: 120 questions at a fixed clock, every value, unit and "Read as" worked out by hand."""
+    got = _composer_eval.utilities_summary(_composer_eval.run_utilities())
+    assert got["rows"] == 120
+    assert got["families"] == {"calculator": 30, "units": 30, "dates": 25, "text": 15, "random": 10, "currency": 10}, got["families"]
+    assert got["value"] == 1.0, got["missed"]
+    assert got["read_as"] == 1.0, got["missed"]
+    #: Only a sum typed in symbols may have no "Read as" line (tests/test_engine_plan.py).
+    assert len(got["exempt"]) == 15 and all(any(c in q for c in "+*/%^") for q in got["exempt"]), got["exempt"]
+    #: Random: the same salt gives the same answer, and the salts do not all give one.
+    assert not got["unstable"], got["unstable"]
+    assert not got["flat"], got["flat"]
+
+
+def test_hostile_expressions_are_refused_within_fifty_milliseconds():
+    out = _composer_eval.hostile_utilities()
+    assert len(out) == 20
+    #: Refused is no answer or a refusal phrase, never a computed value.
+    assert [o["input"] for o in out if any(kind == "computed" for kind, _ in o["got"] or [])] == []
+    assert [(o["input"], o["ms"]) for o in out if o["ms"] > 50] == []

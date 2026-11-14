@@ -1295,3 +1295,97 @@ def person_shift_summary(rows: list[dict]) -> dict:
         "missed": [(r["text"], r["expected"], r["got"]) for r in rows if not r["exact"]],
         "kinds": kinds,
     }
+
+
+def _bounded(value: str, unit: str) -> "re.Pattern[str]":
+    """`value unit` as its own token run: not inside a longer number ("31" in "131", "7.4" in "7.45")."""
+    return re.compile(r"(?<![\w.,:-])" + re.escape(f"{value} {unit}".strip()) + r"(?![\w:]|[.,]\d)")
+
+
+def _dice_ok(row: dict, head: str) -> bool:
+    """A roll, toss or pick is in range, and its in-all total is the sum of its rolls."""
+    if row["rand"] == "coin":
+        return head in ("Heads.", "Tails.")
+    numbers = [int(n) for n in re.findall(r"\d+", head.split(":")[0])]
+    if row["rand"] == "pick":
+        return len(numbers) == 1 and row["low"] <= numbers[0] <= row["high"]
+    total = re.search(r": (\d+) in all", head)
+    ok = len(numbers) == row["count"] and all(row["low"] <= n <= row["high"] for n in numbers)
+    return ok and (total is None) == (row["count"] == 1) and (total is None or int(total.group(1)) == sum(numbers))
+
+
+def _said(parts: list) -> tuple[str, str]:
+    head, _, read = "".join(t for _, t in parts).partition("\nRead as ")
+    return head, read
+
+
+def run_utilities() -> list[dict]:
+    """`utilities_1010.json`: each question answered at its own fixed clock. A random row is asked under
+    12 salts: the same salt twice must agree, and the salts must not all agree."""
+    import os
+    import time
+    from datetime import datetime
+
+    from tessellate.ai import utilities
+
+    #: A naive `now` is this computer's local time; pin it so the rows read the same anywhere.
+    zone = os.environ.get("TZ")
+    os.environ["TZ"] = "UTC"
+    time.tzset()
+    try:
+        return _run_utilities(utilities, datetime)
+    finally:
+        os.environ.pop("TZ") if zone is None else os.environ.__setitem__("TZ", zone)
+        time.tzset()
+
+
+def _run_utilities(utilities, datetime) -> list[dict]:
+    rows = []
+    for row in _fixture("utilities_1010.json")["rows"]:
+        now = datetime.fromisoformat(row["now"])
+        head, read = _said(utilities.answer(row["input"], now=now, salt="s") or [])
+        stable = varies = True
+        if "rand" in row:
+            asked = [utilities.answer(row["input"], now=now, salt=f"salt{i}") or [] for i in range(12)]
+            heads = [_said(p)[0] for p in asked]
+            stable = asked == [utilities.answer(row["input"], now=now, salt=f"salt{i}") or [] for i in range(12)]
+            varies = len(set(heads)) > 1
+            value_ok = all(_dice_ok(row, h) for h in [head, *heads])
+        else:
+            value_ok = bool(_bounded(row["value"], row["unit"]).search(head))
+        read_ok = row["read_as"] is None or read == row["read_as"] + "."
+        rows.append({**row, "text": f"{head}\nRead as {read}", "value_ok": value_ok, "read_ok": read_ok, "stable": stable, "varies": varies})
+    return rows
+
+
+def hostile_utilities() -> list[dict]:
+    """Each hostile expression, asked after one warm-up call (the first compiles patterns lazily), with its time."""
+    import time
+    from datetime import datetime
+
+    from tessellate.ai import utilities
+
+    now = datetime(2026, 10, 11, 10, 0)
+    utilities.answer("what is 1 + 1", now=now)
+    out = []
+    for text in _fixture("utilities_1010.json")["hostile"]:
+        start = time.perf_counter()
+        got = utilities.answer(text, now=now, salt="s")
+        out.append({"input": text, "got": got, "ms": (time.perf_counter() - start) * 1000})
+    return out
+
+
+def utilities_summary(rows: list[dict]) -> dict:
+    families: dict[str, int] = {}
+    for r in rows:
+        families[r["family"]] = families.get(r["family"], 0) + 1
+    return {
+        "rows": len(rows),
+        "families": families,
+        "value": sum(r["value_ok"] for r in rows) / max(len(rows), 1),
+        "read_as": sum(r["read_ok"] for r in rows) / max(len(rows), 1),
+        "missed": [(r["input"], r["value"], r["text"]) for r in rows if not (r["value_ok"] and r["read_ok"])],
+        "exempt": [r["input"] for r in rows if r["read_as"] is None],
+        "unstable": [r["input"] for r in rows if not r["stable"]],
+        "flat": [r["input"] for r in rows if not r["varies"]],
+    }
