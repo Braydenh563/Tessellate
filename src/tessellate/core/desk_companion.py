@@ -2158,6 +2158,39 @@ def tray_menu_item(pystray: Any) -> Any:
 
     return pystray.MenuItem("Show desktop companion", _toggle, checked=lambda item: enabled())
 
+#: A message id of the app's own on the tray's window (WM_APP + 0x51; pystray uses WM_USER + 10 and 11).
+WM_TRAY_MENU = 0x8000 + 0x51
+
+
+def tray_marshal(icon: Any, post: "Callable[..., Any] | None" = None) -> "Callable[[], Any] | None":
+    """The tray's `update_menu`, called where the backend wants it.
+
+    pystray's win32 backend rebuilds the menu (DestroyMenu, then a new one) on
+    whatever thread calls it, which raced the tray thread showing that menu
+    (review 5899359161); there the call is posted to the tray's own window and
+    runs in its message loop. GTK and AppIndicator already hop to their main
+    loop, Xorg has no menu, so those are called as they are.
+    """
+    update = getattr(icon, "update_menu", None)
+    if update is None:
+        return None
+    handlers = getattr(icon, "_message_handlers", None)
+    if not isinstance(handlers, dict):
+        return update
+    handlers[WM_TRAY_MENU] = lambda wparam, lparam: update()
+    if post is None:
+        from pystray._util import win32  # noqa: PLC0415 - Windows only, pystray is optional
+
+        post = win32.PostMessage
+
+    def refresh() -> None:
+        #: None until the tray runs; its first menu is built then anyway.
+        if getattr(icon, "_hwnd", None):
+            post(icon._hwnd, WM_TRAY_MENU, 0, 0)
+
+    return refresh
+
+
 #: The tray icon's `update_menu`: a backend without dynamic menus redraws the snooze line only when told.
 _tray_refresh: "Callable[[], Any] | None" = None
 

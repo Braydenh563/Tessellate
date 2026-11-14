@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10906, test files 2845, tests 22445, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10907, test files 2845, tests 22448, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -14138,7 +14138,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (10906)
+## Backend modules (10907)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24324,7 +24324,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_app_state` | src/tessellate/core/deps.py:269 |
 | `store_quietly` | src/tessellate/core/deps.py:658 |
 
-### src/tessellate/core/desk_companion.py (51)
+### src/tessellate/core/desk_companion.py (52)
 
 | Name | File:line |
 |---|---|
@@ -24332,7 +24332,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `DeskCompanion` | src/tessellate/core/desk_companion.py:948 |
 | `_SnoozeTimer` | src/tessellate/core/desk_companion.py:842 |
 | `_await_loaded` | src/tessellate/core/desk_companion.py:2118 |
-| `_clock_text` | src/tessellate/core/desk_companion.py:2180 |
+| `_clock_text` | src/tessellate/core/desk_companion.py:2213 |
 | `_config` | src/tessellate/core/desk_companion.py:220 |
 | `_default_overlay_factory` | src/tessellate/core/desk_companion.py:2010 |
 | `_figure_unsettled` | src/tessellate/core/desk_companion.py:284 |
@@ -24347,7 +24347,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_motion_of` | src/tessellate/core/desk_companion.py:265 |
 | `_pref` | src/tessellate/core/desk_companion.py:233 |
 | `_read_back` | src/tessellate/core/desk_companion.py:764 |
-| `_refresh_tray` | src/tessellate/core/desk_companion.py:2170 |
+| `_refresh_tray` | src/tessellate/core/desk_companion.py:2203 |
 | `_screen_area` | src/tessellate/core/desk_companion.py:475 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:245 |
 | `_system_dpi` | src/tessellate/core/desk_companion.py:361 |
@@ -24372,11 +24372,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `place_physical` | src/tessellate/core/desk_companion.py:733 |
 | `press_outside` | src/tessellate/core/desk_companion.py:631 |
 | `raise_on_desktop` | src/tessellate/core/desk_companion.py:647 |
-| `set_tray_refresh` | src/tessellate/core/desk_companion.py:2165 |
+| `set_tray_refresh` | src/tessellate/core/desk_companion.py:2198 |
 | `shutdown` | src/tessellate/core/desk_companion.py:2134 |
 | `to_logical` | src/tessellate/core/desk_companion.py:342 |
+| `tray_marshal` | src/tessellate/core/desk_companion.py:2165 |
 | `tray_menu_item` | src/tessellate/core/desk_companion.py:2142 |
-| `tray_snooze_item` | src/tessellate/core/desk_companion.py:2185 |
+| `tray_snooze_item` | src/tessellate/core/desk_companion.py:2218 |
 | `window_handle` | src/tessellate/core/desk_companion.py:587 |
 | `work_area` | src/tessellate/core/desk_companion.py:393 |
 
@@ -28083,7 +28084,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22445)
+## Tests (22448)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28896,7 +28897,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_desk_overlay_wiring.py | 51 |
 | tests/test_desk_own_companion_1684.py | 16 |
 | tests/test_desk_search_enter_inflight_1111.py | 3 |
-| tests/test_desk_snooze_tray_ui44.py | 3 |
+| tests/test_desk_snooze_tray_ui44.py | 6 |
 | tests/test_desk_wave_visible.py | 2 |
 | tests/test_desktop_fullscreen.py | 5 |
 | tests/test_desktop_launcher.py | 17 |

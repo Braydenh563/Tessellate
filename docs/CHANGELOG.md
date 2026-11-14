@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- On Windows the tray menu is rebuilt on the tray's own thread, so a snooze ending while the menu is open cannot pull it away (review 5899359161).
 - Boot CSS is back under its cap: duplicate declarations the merge brought are gone and 48 Library-only rules load with the Library (L-ui-modernisation-47).
 - A board opened from a link keeps one guard against the boards landing, not two (merge of the base).
 - The theme button's tooltip says a right-click opens the Appearance panel (L-ui-modernisation-40).

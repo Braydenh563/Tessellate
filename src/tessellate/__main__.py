@@ -1968,7 +1968,7 @@ def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
         window,
         _open_main,
         lambda: f"http://{window_host(PORT)}:{PORT}/desktop-companion.html",
-        on_change=getattr(tray_icon, "update_menu", None),
+        on_change=desk_companion.tray_marshal(tray_icon),
     )
 
 
@@ -2353,7 +2353,7 @@ def _start_tray(
         "Tessellate",
         pystray.Menu(*menu_items),
     )
-    desk_companion.set_tray_refresh(icon.update_menu)
+    desk_companion.set_tray_refresh(desk_companion.tray_marshal(icon))
     threading.Thread(target=_run_tray_loop, args=(icon,), daemon=True).start()
     return icon
 

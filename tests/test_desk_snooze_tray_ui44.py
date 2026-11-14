@@ -57,4 +57,47 @@ def test_the_launcher_lists_the_snooze_line_and_wires_the_redraw() -> None:
 
     main = (FRONTEND_DIR.parent / "src/tessellate/__main__.py").read_text()
     assert "desk_companion.tray_snooze_item(pystray)" in main
-    assert "desk_companion.set_tray_refresh(icon.update_menu)" in main
+    #: Through the marshal (review 5899359161): the win32 rebuild runs on the tray thread.
+    assert "desk_companion.set_tray_refresh(desk_companion.tray_marshal(icon))" in main
+    assert "on_change=desk_companion.tray_marshal(tray_icon)" in main
+
+
+class _WinIcon:
+    """pystray's win32 Icon as far as the marshal reads it."""
+
+    def __init__(self):
+        self._message_handlers = {}
+        self._hwnd = 7
+        self.rebuilt = 0
+
+    def update_menu(self):
+        self.rebuilt += 1
+
+
+def test_a_win32_tray_rebuilds_its_menu_on_its_own_loop():
+    # Review 5899359161 (4): pystray's win32 `update_menu` destroys and rebuilds the menu handle on the
+    # calling thread, which raced the tray thread showing it; the refresh now posts to the tray's window.
+    icon, posted = _WinIcon(), []
+    refresh = dc.tray_marshal(icon, post=lambda *a: posted.append(a))
+    refresh()
+    assert icon.rebuilt == 0 and posted == [(7, dc.WM_TRAY_MENU, 0, 0)]
+    icon._message_handlers[dc.WM_TRAY_MENU](0, 0)
+    assert icon.rebuilt == 1
+
+
+def test_a_tray_not_yet_running_is_not_posted_to():
+    icon, posted = _WinIcon(), []
+    icon._hwnd = None
+    dc.tray_marshal(icon, post=lambda *a: posted.append(a))()
+    assert posted == [] and icon.rebuilt == 0
+
+
+def test_a_backend_that_marshals_itself_is_called_directly():
+    # GTK and AppIndicator wrap `_update_menu` in their own main-loop call; Xorg has no menu.
+    class Gtk:
+        def update_menu(self):
+            pass
+
+    icon = Gtk()
+    assert dc.tray_marshal(icon) == icon.update_menu
+    assert dc.tray_marshal(None) is None
