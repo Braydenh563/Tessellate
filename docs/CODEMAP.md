@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2851, tests 22469, plan headings 687, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2851, tests 22472, plan headings 687, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -28085,7 +28085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22469)
+## Tests (22472)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -29962,7 +29962,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_open_context_b10.py | 13 |
 | tests/test_open_document_failure_d35.py | 1 |
 | tests/test_open_note_lag_1667.py | 4 |
-| tests/test_open_scan.py | 4 |
+| tests/test_open_scan.py | 7 |
 | tests/test_openapi_gate.py | 3 |
 | tests/test_opener_toggles.py | 3 |
 | tests/test_optional_sign_in.py | 22 |
