@@ -855,9 +855,11 @@ inside a 4,000px section.
    card like the others, with the same progress and Cancel. `/models/pull`
    refuses what the check refuses. Only ollama.com and Hugging Face names are
    accepted; a name carrying another registry's address is refused.
-10. **Carried by L-ui-modernisation-52:** the Tools and Appearance panes are long
-    (4,247px and 1,296px at desktop width) and are indexed rather than
-    split. (The Installed models list is model cards now, and the
+10. **The Tools and Appearance panes stay one pane each, indexed** (the owner, L771:
+    keep one pane, add the jump row). Measured 2026-11-14 (scratchpad/ui-sweeps/settingslong.js):
+    Tools 5,850px with 5 heads, Appearance 1,267px with 8, every head one index press away and
+    landing 58px down (under the 50px title); Tools' one long stretch is the 51-tool list
+    (4,434px), whose filter brings a match into one screen ("web": 3 rows, 189px). (The Installed models list is model cards now, and the
     background-job "duplicate" was two settings, the utility model and the
     autonomous pass's own override, whose default now names the model it
     falls back to: HISTORY.md, "Moved from the plans, 2026-10-05 (444
