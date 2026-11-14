@@ -1270,6 +1270,19 @@ EXTRA_SYNONYM_GROUPS = EXTRA_SYNONYM_GROUPS + tuple(tuple(g) for g in [['laptop'
  ['change', 'modify', 'alter', 'adjust', 'adapt', 'transform', 'update'],
  ['use', 'utilize', 'employ', 'apply', 'operate', 'consume']])
 
+#: A concept word and the members a note may name instead: "sport" is a note that says only "swimming".
+#: Read by `composer._fit_terms`, for scoring only (the answer never prints the member as if it were typed).
+CONCEPTS: dict[str, tuple[str, ...]] = {
+    "sport": ("swimming", "swam", "running", "ran", "football", "tennis", "cycling", "cycled", "gym", "yoga", "climbing", "hiking", "badminton", "rugby", "cricket", "golf"),
+    "exercise": ("swimming", "swam", "running", "ran", "gym", "yoga", "cycling", "hiking", "climbing", "workout"),
+    "gym": ("swimming", "swam", "running", "ran", "yoga", "workout", "lifting", "weights"),
+    "food": ("dinner", "lunch", "breakfast", "recipe", "pasta", "pizza", "soup", "curry", "salad", "cooked", "restaurant"),
+    "meal": ("dinner", "lunch", "breakfast", "supper", "brunch"),
+    "travel": ("flight", "hotel", "airport", "train", "itinerary", "passport", "trip", "holiday"),
+    "pet": ("dog", "cat", "puppy", "kitten", "hamster", "rabbit"),
+    "drink": ("coffee", "tea", "wine", "beer", "juice", "water"),
+}
+
 #: The verb a person asks with and the noun a note is written with ("when do I
 #: fly" is the "Flight to Lisbon" note; audit 1029 C21). `fly` and `flight`,
 #: `travel` and `trip`, `depart` and `departure`, `arrive` and `arrival`,

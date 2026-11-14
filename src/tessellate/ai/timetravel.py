@@ -158,8 +158,9 @@ def as_of_in(question: str, now: datetime) -> date | None:
     if not _SAID.search(question or ""):
         return None
     today = now.date()
+    #: One time word ("Christmas") reads as a day but is the topic; "last month", "in March" and "3 weeks ago" are two or more.
     for found in recognise.recognise(question, now=now, tense="past"):
-        if found.rank or found.kind not in ("date", "range"):
+        if found.rank or found.kind not in ("date", "range") or len((found.text or "").split()) < 2:
             continue
         last = found.value[1] if found.kind == "range" else found.value
         if isinstance(last, date) and last < today:

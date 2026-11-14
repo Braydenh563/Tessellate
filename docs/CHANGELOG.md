@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: a concept word ("sport", "food", "travel") finds a note that names only a member of it (2026-11-14).
 - Chat stats: a count answer exposes its numbers as `Measure(kind, value, derived_from)` (2026-11-14).
 - Chat: "every Monday list what is open" sets a weekly reminder carrying that phrasing (2026-11-14).
 - Templates: `ai/template_fill.fill` writes {date}, {weekday}, {week}, {title} and {n} by rule (2026-11-14).

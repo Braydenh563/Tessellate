@@ -200,7 +200,7 @@ def _yesno(note: str, question: str = "did I go to the gym") -> str:
 
 def test_u14_a_negated_sentence_opens_as_not_that_i_can_see():
     said = _yesno("I did not go to the gym on Monday.")
-    assert said.startswith("Not that I can see, but a note says:"), said
+    assert said.startswith("Not that I can see; the nearest thing is:"), said
 
 
 def test_u14_a_hypothetical_sentence_opens_as_only_a_plan():
@@ -277,3 +277,14 @@ def test_u8_the_frame_of_an_answer_carries_its_place():
     note = {"id": 1, "content": "# Holiday\n\nWe flew to Lisbon on 14 March.", "created_at": "2026-03-20"}
     frame = composer_dialogue.turn_frame("where did I go on holiday", {"text": "We flew to Lisbon on 14 March.", "grounding": [{"note_id": 1}]}, [note], TODAY)
     assert frame["place"] == "Lisbon", frame
+
+
+# --- U3: a concept word finds a note that says only a member of it ------------------------------------
+
+def test_u3_a_concept_word_finds_a_note_that_names_a_member():
+    from tessellate.ai import composer
+
+    notes = [_note(1, "# Fitness log\n\nSwam forty lengths at the pool on Tuesday.", 5), _note(2, "# Garden\n\nThe roses need pruning.", 6)]
+    result = composer.compose("what sport do I do", notes, today=TODAY)
+    assert result["grounding"] and result["grounding"][0]["note_id"] == 1, result["text"]
+    assert "sport" in result["text"].lower() or "swam" in result["text"].lower()
