@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2845, tests 22456, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8495, frontend ids 2789, CSS sections 527, backend routes 714, backend modules 10908, test files 2845, tests 22457, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8495)
 
@@ -12830,7 +12830,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/07-whiteboard-misc.css:20171 |
 | A row is a pointer target (INBOX 719) | frontend/css/07-whiteboard-misc.css:20027 |
 | Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2980 |
-| Atlas's life: loops while the mark is on screen and motion is on | frontend/css/characters-lazy.css:2675 |
+| Atlas's life: loops while the mark is on screen and motion is on | frontend/css/characters-lazy.css:2680 |
 | Atlas, the app's guide (INBOX 224) | frontend/css/07-whiteboard-misc.css:16764 |
 | Atlas, the assistant's own character (atlas.js) | frontend/css/05-sidebars-themes.css:6196 |
 | BOARD NAVIGATOR AND BOARD SEARCH | frontend/css/07-whiteboard-misc.css:7575 |
@@ -13354,7 +13354,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/atlas-lazy.css | 1228 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 207 |
-| frontend/css/characters-lazy.css | 3101 |
+| frontend/css/characters-lazy.css | 3106 |
 | frontend/css/chat-private-lazy.css | 18 |
 | frontend/css/chip-bar-lazy.css | 22 |
 | frontend/css/chord-guide-lazy.css | 158 |
@@ -28085,7 +28085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22456)
+## Tests (22457)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28492,7 +28492,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_hangwalk_1698.py | 2 |
 | tests/test_companion_i21_1112.py | 5 |
 | tests/test_companion_idle_1107.py | 3 |
-| tests/test_companion_inappdive_1107.py | 9 |
+| tests/test_companion_inappdive_1107.py | 10 |
 | tests/test_companion_land_1402.py | 8 |
 | tests/test_companion_landing_1683k.py | 4 |
 | tests/test_companion_lively_1107.py | 6 |

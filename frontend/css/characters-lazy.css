@@ -885,8 +885,13 @@
 /* Tucked behind the bottom bar (the last resort in a small window): only
    its eyes over the edge, ducking out of sight when the pointer is near. */
 #nm-buddy[data-legs="peek"] .nm-buddy-face {
-  /* The top is the head, not the handle's air above it (the char sits at --nmb-edge - 34, rising to - 44 when it emerges). */
-  clip-path: inset(calc(var(--nmb-edge) - 44px) -80px calc(92px - var(--nmb-edge)) -80px);
+  /* Cut only at the bar's edge (L-ui-modernisation-48): a top cut sliced the drawing as it sank and Atlas's art at rest. */
+  clip-path: inset(-80px -80px calc(92px - var(--nmb-edge)) -80px);
+}
+
+/* The handle is the head, not the air above it (the char sits at --nmb-edge - 34, rising to - 44 when it emerges). */
+#nm-buddy[data-legs="peek"] .nm-buddy-face::after {
+  top: calc(var(--nmb-edge) - 44px);
 }
 
 #nm-buddy[data-legs="peek"] .nm-buddy-char {

@@ -22,12 +22,23 @@ def _rule(selector: str) -> str:
 def test_the_peek_handle_is_the_head_it_draws() -> None:
     # 390x844, Notes: the handle hit-tested from y 710 to 784 while the head is drawn from y 752
     # (the char is translated by --nmb-edge - 34), so 38px of empty air over New note took its taps.
+    # The handle is the face's ::after, so its top is cut there, not by the paint clip
+    # (L-ui-modernisation-48: cutting the paint sliced the drawing, below).
+    handle = re.search(r"top: (.*);", _rule('#nm-buddy[data-legs="peek"] .nm-buddy-face::after'))
+    assert handle, "the tucked-behind-the-bar handle"
+    #: Leaves the emerge's 10px rise (edge - 44) uncut, and no more than that.
+    assert handle.group(1) == "calc(var(--nmb-edge) - 44px)", handle.group(1)
+
+
+def test_a_tucked_companion_is_cut_only_at_the_bar() -> None:
+    """Source text: L-ui-modernisation-48, the owner: the in-app companion was clipped about
+    2/3 up while it tucked behind the status bar. Measured per frame at 480x560 (Atlas, Notes):
+    the paint clip's top (edge - 44, y 458) cut the drawing as it sank from y 430 and at rest
+    sliced Atlas's art (drawn from y 456, 12px over the char's box); its bottom was the
+    status bar's top (y 502 against 502.4). Now only the bar's edge cuts it."""
     clip = re.search(r"clip-path: inset\((.*)\);", _rule('#nm-buddy[data-legs="peek"] .nm-buddy-face'))
     assert clip, "the tucked-behind-the-bar clip"
-    top = clip.group(1).split(" -80px")[0]
-    #: Leaves the emerge's 10px rise (edge - 44) uncut, and no more than that.
-    assert top == "calc(var(--nmb-edge) - 44px)", top
-
+    assert clip.group(1) == "-80px -80px calc(92px - var(--nmb-edge)) -80px", clip.group(1)
 
 
 def test_a_bar_or_hang_that_changes_tab_looks_again_for_a_clear_perch() -> None:
