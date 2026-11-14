@@ -232,7 +232,7 @@ def test_a_request_with_no_token_never_borrows_a_granted_key(app):
 
 
 def test_a_request_never_reads_a_key_nobody_was_granted(app_state):
-    """The window the rule above left open (review, 2026-09-26). "The rule
+    """The window the rule above missed (review, 2026-09-26). "The rule
     starts with the first grant" made a loaded key with an empty grant set
     everyone's: `unlock` loads the key and grants its caller a few lines
     later, `change-password` and `rotate-vault-key` clear every grant and

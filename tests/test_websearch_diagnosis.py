@@ -134,7 +134,7 @@ def test_the_query_itself_is_never_logged(monkeypatch, caplog):
 
 
 def test_the_reader_collects_the_articles_links_but_not_the_chrome():
-    """Links come back [{text, url}] so an agent can cite and follow up
+    """Links come back [{text, url}] so an agent can cite and open
     without a second search, from the article only, cleaned the same way
     every reader URL is: absolute, tracking-stripped, http(s) or nothing."""
     page = (

@@ -1,5 +1,5 @@
 """Conversation (CHAT_PLAN decision 59, step 3; decision 58's context
-column; Brief 84): a spoken follow-up ("and delete it", "same for Tuesday",
+column; Brief 84): a spoken follow-on ("and delete it", "same for Tuesday",
 "same again", "the gym note too", "the other one") is read, with no model,
 as the sentence it stands for over the chat's last five turns. The 200
 lines are `tests/fixtures/composer/spoken_1010.json`.
