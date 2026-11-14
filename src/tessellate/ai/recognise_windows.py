@@ -1348,3 +1348,28 @@ __all__ = [
     "_WEEKDAY",
     "_COMPUTED",
 ]
+
+
+# --- numbers spoken in words, one to ninety-nine ("twenty-one"), for the dates utility ---
+_NW_UNITS = (
+    "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen"
+).split()
+_NW_TENS = "twenty thirty forty fifty sixty seventy eighty ninety".split()
+_NW_ONES = _NW_UNITS[:9]
+
+#: The regex source for one such number, longest forms first ("twenty-one" before "twenty").
+NUMBER_WORD_PATTERN = rf"(?:(?:{'|'.join(_NW_TENS)})(?:[- ](?:{'|'.join(_NW_ONES)}))?|{'|'.join(reversed(_NW_UNITS))})"
+
+_NW_VALUE = {w: i + 1 for i, w in enumerate(_NW_UNITS)} | {w: 20 + 10 * i for i, w in enumerate(_NW_TENS)}
+
+
+def number_word_value(said: str) -> int | None:
+    """The number `said` spells ("twenty-one" is 21), or None when it is no such number."""
+    parts = said.lower().replace("-", " ").split()
+    if not parts or not all(p in _NW_VALUE for p in parts):
+        return None
+    if len(parts) == 1:
+        return _NW_VALUE[parts[0]]
+    if len(parts) == 2 and _NW_VALUE[parts[0]] >= 20 and _NW_VALUE[parts[0]] % 10 == 0 and _NW_VALUE[parts[1]] < 10:
+        return _NW_VALUE[parts[0]] + _NW_VALUE[parts[1]]
+    return None

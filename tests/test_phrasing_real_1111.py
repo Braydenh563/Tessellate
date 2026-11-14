@@ -76,21 +76,11 @@ def test_the_phrasings_name_nobody_and_carry_no_digits():
             assert 2 <= len(phrase.split()) <= 14 and "\n" not in phrase, (name, phrase)
 
 
-JOKE_ABOUT = "A joke about a named subject cannot be made with no model: the canned jokes are not about it, and the sentence falls through to a search of the notes for the subject."
-DATE = "A number spelt in words, and the misspelt 'calender' lead-in, are not read by the dates utility."
 SUBJECT_WORD = "The word the notes share is what a note is about (the Meeting with Priya; a note on a book), and nothing in the notes says whether Priya is the boss or that 'book' means to reserve, so the nearest note is still quoted."
-BARE_EVENT = "A bare statement of an event has no verb to say what to do with it: it is neither a reminder nor a question."
 
 #: Phrase (lower case) -> why the composer cannot honestly answer it yet. Strict: the marker comes off when the phrase passes.
-#: Filed as open work in CHAT_PLAN "Placed from the owner, 2026-10-30" item 3 (the 11 xfails).
+#: Filed as open work in CHAT_PLAN "Placed from the owner, 2026-10-30" item 3 (the 4 xfails).
 XFAIL = {
-    "tell me something funny about politics": JOKE_ABOUT,
-    "tell me a joke about cows": JOKE_ABOUT,
-    "tell me a joke about cats": JOKE_ABOUT,
-    "tell me something funny about cats": JOKE_ABOUT,
-    "what day is it gonna be in twenty-one days": DATE,
-    "calender says tomorrow is": DATE,
-    "lunch with my friend at noon today": BARE_EVENT,
     "i want to book tickets for an event.": SUBJECT_WORD,
     "when is the meeting with my boss scheduled for": SUBJECT_WORD,
     "when is that meeting with my boss": SUBJECT_WORD,
