@@ -1985,7 +1985,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "chart-maker", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2453,6 +2453,19 @@ MORE_TOPICS.extend([
         "badge": {"label": "Documents", "tab": "documents"},
     },
     {
+        "id": "chart-maker",
+        "keywords": (
+            "chart maker", "make a chart", "bar chart", "line chart", "chart block", "paste values chart",
+            "chart from csv", "save chart as svg", "save chart as png", "slash chart",
+        ),
+        "body": (
+            "The \"/\" menu's Chart takes pasted values (a label and a number a line, or CSV), draws a bar or line chart, "
+            "and adds it to the note as a chart block that draws in the note view. Press a drawn chart to change its values or "
+            "its kind. Save as SVG, PNG or CSV is under the chart."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
         "id": "diagram-kinds",
         "keywords": (
             "mind map blocks", "timeline blocks", "sequence diagram blocks", "mermaid mind map",
@@ -2599,6 +2612,7 @@ TOPIC_META.update({
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
     "diagram-reading": {"title": "Reading a diagram: list order, fit and direction", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
+    "chart-maker": {"title": "Make a chart", "path": "A note, the / menu, Chart"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
     "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A diagram's blocks list, Ask; the ... menu, Versions..."},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},

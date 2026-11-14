@@ -37,7 +37,7 @@ def _filed(session: Session, name: str, how: str) -> list[Entry]:
         named = [c.id for c in session.scalars(select(Category)) if c.name.lower() in variants]
         clauses.append(Entry.category_id.in_(named))
     if key in filed_name.KEPT_WORDS:  # L254: a note headed "Goals" or "Shopping list" is one too
-        clauses.append(func.lower(Entry.content).like(f"%{key}%"))  # narrowed by title below
+        clauses.append(func.lower(Entry.content).like(f"%{like_escape(key)}%", escape=LIKE_ESCAPE))  # narrowed by title below
     found = session.scalars(select(Entry).where(*_live(), or_(*clauses)).order_by(Entry.created_at.desc()).limit(LIST_LIMIT * 4))
     keep = (lambda e: _tagged(e, variants) or filed_name.titled(key, str(e.content or "").strip().split("\n")[0])) if key in filed_name.KEPT_WORDS else (lambda e: True)
     return [e for e in found if keep(e)][:LIST_LIMIT]

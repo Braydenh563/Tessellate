@@ -35,7 +35,11 @@ const panel = {
 const win = { innerWidth: 1000, innerHeight: 800, matchMedia: () => ({ matches: false }), addEventListener: (t, f) => { listeners["win" + t] = f; } };
 const ctx = {
   window: win, $: () => panel,
-  localStorage: { getItem: (k) => store[k] ?? null, setItem: (k, v) => { store[k] = v; }, removeItem: (k) => { delete store[k]; } },
+  prefs: {
+    json: (k, d) => (k in store ? JSON.parse(store[k]) : d),
+    setJSON: (k, v) => { store[k] = JSON.stringify(v); },
+    remove: (k) => { delete store[k]; },
+  },
 };
 if (process.argv[3]) store.activityMonitorPos = process.argv[3];
 vm.runInNewContext(fs.readFileSync(process.argv[1], "utf8"), ctx);

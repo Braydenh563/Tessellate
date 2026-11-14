@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 66 | 27 | 10 | 59 | 269 |
+| chat | 176 | 65 | 27 | 10 | 59 | 268 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 13 | 1 | 0 | 20 | 84 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 441 | 96 | 10 | 183 | 1090 |
+| all | 553 | 440 | 96 | 10 | 183 | 1089 |
 
 ## graph
 
@@ -114,7 +114,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L749** `chat` open, S: Determined brow is weakest mood; bolder eye shape; atlasrest1402 sweep fails in setup. From atlasf1696-1108c.md. Evidence: Source: non-scowling determined brow is an owner call; sweep CASE=moods line 93 null element not fixed Owner decided 2026-11-12: Keep the flame cue (No face change; the flame beside the head says determined. The broken mood sweep is fixed). Build: fix scratchpad/ui-sweeps/atlasrest1402.js CASE=moods null element at line 93; no art change.
 - [ ] **L741** `chat` open, S: Atlas CSS loops under reduce-motion cost 1,579 recalcs a minute. From OPEN.md:1089. Evidence: Earlier decision (INBOX 772, 08-consistency.css) keeps loops under reduce; changing it is the owner's call Owner decided 2026-11-12: Let calm loops run again. Build: under the system reduce-motion hint, Atlas's gentle sway and glow loops run again (reverses the full stop of INBOX 772); measure restyles a minute and keep under budget; update the reduce-motion test to the new intent.
 - [ ] **L731** `chat` open, S: Decide light rewrite rules: tense, number agreement, comma capitalisation, Oxford comma, quotes (decision 33). From OPEN.md:2067. Evidence: Row tagged W34 owner-call tracked in plans (w34-L1-1111.md) Owner decided 2026-11-12: Keep, add tests. Build: tests only: decision 33 tables for past_plan, count_noun, join_items, after_comma, cut_title in tests/test_engine_phase6_spec.py.
-- [ ] **L-chat-13** `chat` open, L: Make the agent activity monitor movable and let the agent drive the interface. From open-work sweep 2026-11-12, IDEAS.md:100. Evidence: Listed as partly built, with no LEDGER row or plan item for the remainder Remaining 2026-11-14: needs an owner design call, not written on the row, in HANDOVER or CHAT_PLAN: where the monitor may be dragged and which interface actions the agent may take unasked. Recommendation taken 2026-11-14 (standing order 3): Drag the header anywhere on screen (clamped to the window), position kept in localStorage, double-click resets; the agent may move about (open links, tabs) but every edit, removal and send parks for Confirm, pinned by test.
 - [ ] **L-chat-44** `chat` open, M: Evaluate cactus_needle 3.0.1 wheel to the 4.0.0 engine (core/extras.py:715) with the platform table and a serial test run; together with the whistle row. From owner research via hub 2026-11-14.
 
 ## whiteboard

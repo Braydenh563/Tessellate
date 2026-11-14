@@ -6,7 +6,7 @@
 // reader can drag it by the header to somewhere else. Three rules:
 //  - It stays inside the window: the saved spot is clamped on every drag, on
 //    every resize and on load, so a smaller window never strands it off screen.
-//  - The spot is kept in localStorage (`activityMonitorPos`) and comes back on
+//  - The spot is kept in this browser's saved settings (`activityMonitorPos`, via prefs) and comes back on
 //    the next visit; a double-click on the header clears it and puts the panel
 //    home.
 //  - On a phone the panel is a full-width sheet (CSS, under 600px), so there is
@@ -27,12 +27,8 @@
   }
 
   function saved() {
-    try {
-      const pos = JSON.parse(localStorage.getItem(KEY));
-      return Number.isFinite(pos?.x) && Number.isFinite(pos?.y) ? pos : null;
-    } catch {
-      return null;
-    }
+    const pos = prefs.json(KEY, {});
+    return Number.isFinite(pos.x) && Number.isFinite(pos.y) ? pos : null;
   }
 
   function place(pos) {
@@ -45,7 +41,7 @@
   }
 
   function reset() {
-    localStorage.removeItem(KEY);
+    prefs.remove(KEY);
     place(null);
   }
 
@@ -65,7 +61,7 @@
     grab = null;
     panel.classList.remove("is-dragging");
     const box = panel.getBoundingClientRect();
-    localStorage.setItem(KEY, JSON.stringify({ x: Math.round(box.left), y: Math.round(box.top) }));
+    prefs.setJSON(KEY, { x: Math.round(box.left), y: Math.round(box.top) });
   };
   head.addEventListener("pointerup", drop);
   head.addEventListener("pointercancel", drop);
@@ -75,5 +71,4 @@
   window.addEventListener("resize", () => place(saved()));
 
   place(saved());
-  window.activityDrag = { clampPos, reset };
 })();

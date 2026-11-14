@@ -2690,8 +2690,8 @@ function assistantMessageActions({ bubble, text, question, onEdit, message }) {
       let made = await post();
       bubble.dataset.notRight = "1";
       //: Said once (L225): what is kept, where, and how to clear it.
-      const first = !localStorage.getItem("notRightNoted");
-      localStorage.setItem("notRightNoted", "1");
+      const first = !prefs.has("notRightNoted");
+      prefs.set("notRightNoted", "1");
       offerUndo(
         "Marked an answer not right",
         first ? "Stored only on this device. Clear it in Settings, Learned." : "Marked not right. Those notes come last for a question like this.",
