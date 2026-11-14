@@ -32,12 +32,13 @@ before.
 
 from __future__ import annotations
 
+import contextvars
 import difflib
 import json
 import re
 from collections import Counter
 from dataclasses import dataclass, field
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.orm import Session, aliased
@@ -258,12 +259,12 @@ def by_order(message: str, session: Session) -> StatAnswer | None:
     return None if placed is None else StatAnswer("note-order", note_order.say(session, placed)[0])
 
 
-def answer_chat(message: str, session: Session, as_of: date | None = None) -> StatAnswer | None:
+def answer_chat(message: str, session: Session, as_of: date | None = None, now: datetime | None = None) -> StatAnswer | None:
     """What the Chat counts: an ordinal question first, then the shape of the notebook.
     With `as_of` (time travel) only the overview is answered, as that day's notebook (R3-32)."""
     if as_of is not None:
         return _coverage_as_of(message, session, as_of)
-    return by_order(message, session) or answer(message, session)
+    return by_order(message, session) or answer(message, session, now)
 
 
 def _coverage_as_of(message: str, session: Session, day: date) -> StatAnswer | None:
@@ -278,8 +279,25 @@ def _coverage_as_of(message: str, session: Session, day: date) -> StatAnswer | N
     return StatAnswer("coverage-as-of", f"On {when} you had {_plural(len(made), 'note')}{_span_words(made)}.", [{"label": "notes", "count": len(made)}])
 
 
-def answer(message: str, session: Session) -> StatAnswer | None:
+#: The clock one answer reads (`answer(now=...)`), so a window like "this week" is the caller's day, not the real one.
+_NOW: contextvars.ContextVar = contextvars.ContextVar("stats_now", default=None)
+
+
+def _now() -> datetime:
+    given = _NOW.get()
+    return utcnow() if given is None else (given if given.tzinfo else given.astimezone()).astimezone(timezone.utc)
+
+
+def answer(message: str, session: Session, now: datetime | None = None) -> StatAnswer | None:
     """The computed answer to this question, or None to fall through to search."""
+    token = _NOW.set(now)
+    try:
+        return _answer(message, session)
+    finally:
+        _NOW.reset(token)
+
+
+def _answer(message: str, session: Session) -> StatAnswer | None:
     #: Spelling is fixed once, here, and every matcher below sees the corrected
     #: text: including `_recent_count`, which reads the string itself.
     text = _despell((message or "").strip().lower())
@@ -332,7 +350,7 @@ def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
     #: said the notebook's total, with the subject dropped (round 1 D4).
     if holding := _held_word(text, message):
         return _mention_of(holding, session)
-    tasks = None if _SUBJECT_AFTER.search(text) else notebook_tasks.answer(text, session, utcnow(), _visible, recognise.ahead_window(text))
+    tasks = None if _SUBJECT_AFTER.search(text) else notebook_tasks.answer(text, session, _now(), _visible, recognise.ahead_window(text))
     if tasks is not None:
         return StatAnswer(*tasks[:2], tasks[2])
     if re.search(r"\bnotes?\b|\b(?:pinned|archived|checklists?)\b", text):
@@ -721,7 +739,7 @@ def _window(text: str) -> tuple[datetime, datetime, str] | None:
     names, on the UTC calendar the notes are stamped with; None for none."""
     from tessellate.ai import recognise
 
-    now = utcnow()
+    now = _now()
     for found in recognise.recognise(text, now=now, tense="past"):
         if found.rank or found.kind not in ("date", "range"):
             continue
@@ -745,7 +763,7 @@ def _recent_count(session: Session, window: tuple[datetime, datetime, str]) -> S
     )
     #: A window that ended before today is over, so it is "You wrote", not "You
     #: have written" (audit 1031 Z8: "You have written no notes last week").
-    over = end.date() < utcnow().date()
+    over = end.date() < _now().date()
     return StatAnswer(
         "recent-count",
         f"You {'wrote' if over else 'have written'} {_plural(total, 'note')} {words}.",
@@ -913,7 +931,7 @@ def _stale_notes(session: Session) -> StatAnswer:
     last week is not forgotten, and the question being asked is about attention,
     not age.
     """
-    since = utcnow() - timedelta(days=_STALE_DAYS)
+    since = _now() - timedelta(days=_STALE_DAYS)
     rows = session.execute(
         _visible(select(Entry.id, Entry.content, Entry.updated_at))
         .where(Entry.updated_at < since)

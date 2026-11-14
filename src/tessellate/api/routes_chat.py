@@ -262,7 +262,7 @@ def _computed_answer(session: Session, question: str, detected: str, as_of, atta
     stats = _activity(session, question) if as_of is None and not attached else None
     if stats is not None:
         return intent.NOTES, stats
-    stats = notebook_stats.answer_chat(question, session, as_of) if detected == intent.NOTES else None
+    stats = notebook_stats.answer_chat(question, session, as_of, user_now(deps.get_config())) if detected == intent.NOTES else None
     if detected == intent.UTILITY:
         detected, stats = _worked_out(question)
     if stats is None and as_of is None and not attached:
