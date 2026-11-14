@@ -1678,6 +1678,8 @@ const LAZY_MODULES = {
     "/js/documents-save.js",
     "/js/documents-scroll-status.js",
     "/js/documents-toolbar.js",
+    "/js/documents-ai-edit.js",
+    "/js/documents-check-ai.js",
     "/js/documents.js",
     "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
     "/js/documents-live-table.js", //: After documents.js: its top level writes `docViewState.tableFilter`.

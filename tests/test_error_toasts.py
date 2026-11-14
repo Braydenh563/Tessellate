@@ -271,14 +271,18 @@ FAULTS = {
     },
     'documents.js': {
         '"The Word writer could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"The history could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Couldn\'t open that document. The one on screen is unchanged."': 'fetching a document failed (audit 1028 D35); the editor keeps the one it had',
         '"Replace in every document could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"The export could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
-        '"The dictionary could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Couldn\'t upload that picture. Add its address by hand."': 'the picture upload to the media store failed (audit 1028 U10)',
         '"The code panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-ai-edit.js': {
+        '"The history could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+        '"The Atlas panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
+    },
+    'documents-check-ai.js': {
+        '"The dictionary could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
     },
     'documents-cm-load.js': {
         '"The PHP highlighter could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
