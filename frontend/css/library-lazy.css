@@ -6395,13 +6395,6 @@ button.ghost.doc-template-choice.wb-template-choice {
     height: var(--target-min);
   }
 }
-.cm-run-row.is-input {
-  color: var(--muted);
-}
-.cm-run-row.is-result .cm-run-mark {
-  color: var(--muted);
-  margin-right: var(--space-2);
-}
 
 /* Split (Ctrl+\): the two editors side by side, each half the width, the
    second parted by a hairline. Its own caret and scroll. */

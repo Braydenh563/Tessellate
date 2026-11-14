@@ -647,33 +647,6 @@
     display: none;
   }
 }
-/* A tree label sits *beside* its node rather than under it, so it needs a
-   thinner halo: a 3px stroke on text that starts 7px from the circle eats
-   into the node itself. The anchor is set in JS as an inline style, because
-   `.graph-node text` sets `text-anchor: middle` and a stylesheet rule beats
-   the presentation attribute it would otherwise be. */
-.graph-node text.graph-label-tree {
-  font-size: var(--text-sm);
-  /* A tree label lies *along* the edge running to its children, so the halo
-     is doing real work here: it has to be wide enough to cover the line in
-     the gaps between glyphs, and opaque. `--card` is 55% white: the dashes
-     of a thread edge showed straight through it and the label came out
-     looking struck through. */
-  stroke: var(--modal-bg);
-  stroke-width: 5px;
-}
-/* Category headings label the branch they open, so they carry the weight, 
-   and now a colour of their own, so they read as a different kind of label
-   at a glance rather than just a bigger/bolder note preview (user request:
-   bold alone wasn't enough to tell a category from a note in the arc view). */
-.graph-node text.graph-label-group {
-  font-size: var(--text-base);
-  font-weight: 600;
-  fill: var(--accent);
-}
-:root[data-mode="dark"] .graph-node text.graph-label-group {
-  fill: var(--accent);
-}
 /* The notes a document draws on, beside its outline. The row is the note plus
    a detach button, so the two can't run into each other on a long preview. */
 #doc-notes li {

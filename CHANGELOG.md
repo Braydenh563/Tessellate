@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- CSS (L-ui-modernisation-30): of the 196 class names the unused-names test flags, 180 are built by template at a live call site (Atlas parts, moods, plan steps, heat cells, ...) and stay; 16 had no builder and went with their 8 rules and 3 selector parts (the old SVG graph's edge, node and label variants, `.cm-run-row.is-input`/`.is-result`, `.nm-foot-l`/`-r`, `.nm-tentacle-late`; 143 lines). Boot CSS gzip 163,438 to 163,239 bytes; the cap in `test_css_unused_names.py` 196 to 180.
 - CI red after the base merge fixed at the cause: one Alt+Enter row, the dock declares its own control height, Settings builds its body before reading a control, an empty board query removed.
 - Boot scripts back under their cap: a file paste or drop, a reminder's bin, repeat and outcome load on the press.
 - CSS (L-ui-modernisation-29): the last 64 component rules left `10-responsive.css` (1,079 to 515 lines; it keeps only the shell: the tab strip, the phone dock and More sheet, the status bar bands) for the component files that draw them (01, 04, 06, 07, 09); each conflicting pair was resolved at its cause, not by order, and a same-DOM computed-style A/B (19 surfaces at 390, 700, 900 and 1280) found no difference. Boot CSS gzip 163,785 to 163,438 bytes.
