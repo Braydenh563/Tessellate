@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 195 | 60 | 2 | 59 | 431 |
-| whiteboard | 0 | 9 | 0 | 0 | 0 | 9 |
+| whiteboard | 0 | 8 | 0 | 0 | 0 | 8 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 472 | 536 | 125 | 2 | 172 | 1133 |
+| all | 472 | 535 | 125 | 2 | 172 | 1132 |
 
 ## graph
 
@@ -281,7 +281,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 ## whiteboard
 - [ ] **L-whiteboard-52** `whiteboard` open, M: Carve the whiteboard.js history/undo block into a wrapped file: first give wbRecordDepth and wbUndoStack a get/set surface (a small object on window) so wbRecorded, wbRecordedDepth and the other files read it without a shared let; then move wbRecordGesture and the wbHistory* functions. The 10,000-line onDomReady body still holds one function. From L-whiteboard-49 remainder. Evidence: whiteboard.js 15,917 lines; wbRecordDepth is a top-level let that wbRecorded and wbRecordedDepth mutate; the history/undo block (wbBoardRows, wbHistoryFromRows, wbRecordGesture, wbPushUndo) is called by 40+ files and shares that let and wbUndoStack
-- [ ] **L-whiteboard-59** `whiteboard` open, S: Resolve settings-wiring.js html layer lookup through wbInstances.layer. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: settings-wiring.js:967 queries #wb-html-layer document-wide
 - [ ] **L-whiteboard-60** `whiteboard` open, M: Give an embedded board its own rulers and map radial menu, or hide them there. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: rulers and .wb-map-radial are drawn for the page board only
 - [ ] **L-whiteboard-61** `whiteboard` open, M: Keep the active tool and cursor per board instance. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: tool and cursor are globals shared by every instance
 - [ ] **L-whiteboard-62** `whiteboard` open, M: Route window-level board listeners to the instance the event belongs to. From L-whiteboard-54 to 58 agent report, 2026-11-14. Evidence: window-level listeners act on the active board, not the one under the pointer

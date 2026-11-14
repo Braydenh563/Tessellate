@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards: the map-editor check in boot code reads the active board's html layer, not the page's by id (L-whiteboard-59).
 - Boards: each board instance keeps its own undo history key, so Ctrl+Z in an embedded board takes back its own step and the page board keeps its own (found driving L-whiteboard-54).
 - Boards: an embedded board's draw leaves the page board's empty hint, count, navigator and outline alone, and no longer redraws the page after itself (L-whiteboard-58).
 - Boards: a multi-row save keeps the board it began on, so a board embed going live mid-save no longer takes its later rows or its stale reload (L-whiteboard-57).

@@ -762,3 +762,21 @@ out.page = wbUndoStack.map((e) => e.id);
     assert out["embed"] == [51], out
     #: The page's first read started its board's history afresh (the stub's step 10 was no board's).
     assert out["page"] == [11], out
+
+
+def test_settings_wiring_finds_the_html_layer_through_the_active_board():
+    """L-whiteboard-59: boot code asked the document for `#wb-html-layer`, which
+    is the page board's even while an embed is live. `wbInstances.query` searches
+    the active board's container and reads the id as its own layer; with the lazy
+    bundle not loaded no board, so no map editor, is open."""
+    text = (JS / "settings-wiring.js").read_text(encoding="utf-8")
+    assert 'window.wbInstances?.query("#wb-html-layer .wb-map-text' in text
+    assert 'document.querySelector("#wb-html-layer .wb-map-text' not in text
+    out = _run("""
+const emb = I.mount(fakeEl("div", "box"), 5);
+emb.container.append(Object.assign(fakeEl("div", "html"), { attrs: { "data-wb-layer": "wb-html-layer" } }));
+out.page = I.query("#wb-html-layer .wb-map-text");
+I.activate(emb);
+out.embed = I.query("#wb-html-layer .wb-map-text").name;
+""")
+    assert out["page"] == {"sel": "#wb-html-layer .wb-map-text", "in": "page"} and out["embed"] == "html"
