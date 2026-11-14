@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
-| ui-modernisation | 0 | 5 | 4 | 0 | 0 | 9 |
+| ui-modernisation | 0 | 6 | 4 | 0 | 0 | 10 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 0 | 0 | 0 | 0 | 0 |
-| all | 406 | 426 | 130 | 2 | 162 | 962 |
+| all | 406 | 427 | 130 | 2 | 162 | 963 |
 
 ## graph
 
@@ -357,6 +357,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-99** `ui-modernisation` partly, M: Desk companion activity variety: presence spells fill 81% of the hour and the sit frame 75%. From L-ui-modernisation-59. Evidence: Seeded engine hour with the person about (make(), float and walk, seeds 2 to 4): 28 to 32 acts an hour, 12 to 20 distinct, yet presence spells fill it (seed 2: read_book 36%, write_journal 33%, water_plant 12%) and the sit frame is drawn 73 to 78% of the hour, stand 9 to 14%; the picture changes 38 to 78 times a minute inside a spell (longest hold 2.2 s), so it is small motion, not none. Recommendation (taken): spells 60 to 150 s (now 100 to 480), a non-spell activity or a seen move between two spells, and a visible beat in a spell (look up, page turn, stretch) every 20 to 40 s; measured by no frame over 40% and no activity over 20% of a seeded hour. Partly 2026-11-14 (INBOX 1832, 1834): built, a visible beat every 20 to 40 s inside each spell (look up, or a few seconds with its eyes shut; `engine._spell_beat_due`, `SPELL_BEATS`), a wake only inside the spell's act. Held: shorter spells and a gap between two, which put INBOX 1692's measures out (standing 19.4 min an hour over 18, evening share 0.49 under 0.5, walker away 0.81 over 0.25); best seeded half hour reached sit 33 to 42% and top spell 14 to 25%. Strict-xfail specs in tests/test_overlay_spell_beats_l_ui_99.py; the long sleep is L-ui-modernisation-103.
 - [ ] **L-ui-modernisation-103** `ui-modernisation` open, S: The desk companion's follow-through clamp (FLOW_MAX 6 px) bends the lower streams to 7.2 to 7.7 degrees, over the 4 degree cap. From INBOX 1833. Evidence: Measured 2026-11-14 in a seeded hour (scratchpad angle100.py): bare flow 2.33 and 2.50 degrees at FLOW_TIP 3.5, with follow-through 5.34 and 5.74; with the FLOW_MAX 6 px clamp reached, 7.17 and 7.67 degrees whatever FLOW_TIP is. Recommendation: clamp the follow-through by angle (a 4 degree cap at the tips), not by px, so a fast turn still lags but never bends the streams past the posed worst.
 - [ ] **L-ui-modernisation-104** `ui-modernisation` open, M: The desk companion sleeps 40 to 68% of a seeded hour with the person about (float seed 2, walk seed 4). From L-ui-modernisation-99. Evidence: Seeded desk hour with the person about (scratchpad hour99.py: make(), the pointer moved and last_active refreshed every 10 to 30 s): float seed 2 slept 40% of the hour and walk seed 4 68% before the row 99 work; the sleep state holds state_until inf and only a touch or nap_until ends it. Not seen in seeded half hours once spells were 60 to 150 s with a gap (INBOX 1834), so it may follow the spell pacing; cause not found. Recommendation: trace which path enters sleep with the person about (SLEEP_AFTER idle against a refreshed last_active) and pin it with that seed.
+- [ ] **L-ui-modernisation-105** `ui-modernisation` open, S: Fishbone map: after a full tidy, 4 rib lines cross another topic's box (maplayouts.js). From maplayouts.js on 5bc72e6e, 2026-11-14. Evidence: On 5bc72e6e, twice: 'fishbone ribs run behind no cause box: 4 lines cross another topic's box'. On c3af889e (before the wbApplyBulkMove fix) that check passed while tidy threw, so a full tidy now leaves fishbone ribs over cause boxes
 
 ## timeline
 
