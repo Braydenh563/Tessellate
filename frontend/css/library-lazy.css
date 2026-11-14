@@ -9489,6 +9489,8 @@ input[type="color"].wb-mixed {
 .whiteboard-container.wb-polygon-on,
 .whiteboard-container.wb-polygon-on * {
   cursor: crosshair;
+}
+
 /* Links: a look per link and folder, folders, the card view (library-links.js, INBOX 827 L3 to L6).
    The colour is a palette key the script sets as `--swatch` (library-links.js `LOOKS`), never a free colour. */
 /* A chosen colour shows in every look, the flat ones too (their rule above clears the mark). */
