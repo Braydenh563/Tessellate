@@ -444,9 +444,10 @@ def _mark_cancellable(tasks: list[dict]) -> None:
             # A running pass that has a step to stop at (INBOX 713).
             or (task["kind"] == "job-pass" and not task.get("queued") and passes.kind_for_label(task.get("name", "")) in passes.STOPPABLE)
             or task["kind"] in FILING_KINDS
-            # A queued job the `jobs` table holds: cancelling its row is a
-            # real stop (`jobstore.cancel`). A running one is not offered.
-            or bool(task.get("queued") and task.get("job_id"))
+            # A job the `jobs` table holds: cancelling its row stops a queued
+            # one, and asks a running one to stop at its next safe step
+            # (`jobstore.cancel`); a one-step kind is not offered.
+            or bool(task.get("job_id") and task["kind"] != "job-file-entry")
         )
 
 
@@ -752,7 +753,10 @@ def cancel_task(body: CancelTaskBody) -> dict:
         count = jobstore.cancel_queued(kind[len("job-"):], body.name.strip())
         if count:
             return {"status": "ok", "stopped": True, "detail": f"Stopped {count} waiting job{'' if count == 1 else 's'}."}
-        return {"status": "ok", "stopped": False, "detail": "It is already running and will finish."}
+        #: Not waiting: a running one is asked to stop at its next safe step
+        #: (`jobs.check_stop`), or told it has none (L-world-class-66).
+        stopped, detail = bgpool.stop_running(kind[len("job-"):], body.name.strip())
+        return {"status": "ok", "stopped": stopped, "detail": detail}
     if body.kind.strip() in FILING_KINDS:
         try:
             stopped, detail = _stop_filing()

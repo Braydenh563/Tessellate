@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import binascii
 import logging
+import mimetypes
 import os
 import re
 import shutil
@@ -19,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, Form, Header, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
@@ -27,6 +28,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import captioning, docreader, vision_ocr
 from tessellate.api import bounds, paging
+from tessellate.api.downloads import sealed_aware, unsealed
 from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
 from tessellate.api.routes_entries import _existing_entry, _to_out
 from tessellate.api.schemas import EntryOut
@@ -42,6 +44,7 @@ from tessellate.core import (
     paths,
     pdfpages,
     reading_bin,
+    sealed_files,
     undo_bin,
 )
 from tessellate.core.database import Attachment, Entry, MediaUpload
@@ -104,6 +107,25 @@ ATTACHMENT_SUFFIXES = frozenset(
 )
 
 
+def _write_upload(file: UploadFile, destination: Path, sealed: bool) -> int:
+    """Stream an upload to disk, at most 50 MB; sealed as it lands when it is
+    a private space's (L-world-class-52), so its bytes are never plain on disk."""
+    size = 0
+    with diskspace.partial_write(destination):
+        destination.write_bytes(b"")
+        while chunk := file.file.read(sealed_files.FRAME):
+            size += len(chunk)
+            if size > MAX_FILE_BYTES:
+                destination.unlink(missing_ok=True)
+                raise HTTPException(status_code=413, detail="That file is larger than 50 MB.")
+            try:
+                sealed_files.append(destination, chunk, sealed=sealed)
+            except sealed_files.LooksSealed as exc:
+                destination.unlink(missing_ok=True)
+                raise HTTPException(status_code=415, detail=sealed_files.LOOKS_SEALED_DETAIL) from exc
+    return size
+
+
 @router.post("/entries/{entry_id}/files", response_model=EntryOut, status_code=201)
 def upload_file(
     entry_id: int, file: UploadFile, session: Session = Depends(get_session)
@@ -138,16 +160,7 @@ def upload_file(
     #: nothing would ever remove. On a disk with 30 MB left and a 40 MB file
     #: that is 30 MB of orphan, and the person is further from being able to
     #: save anything than before they started.
-    size = 0
-    with diskspace.partial_write(destination):
-        with destination.open("wb") as out:
-            while chunk := file.file.read(1024 * 1024):
-                size += len(chunk)
-                if size > MAX_FILE_BYTES:
-                    out.close()
-                    destination.unlink(missing_ok=True)
-                    raise HTTPException(status_code=413, detail="That file is larger than 50 MB.")
-                out.write(chunk)
+    size = _write_upload(file, destination, sealed_files.wanted(session, entry.workspace_id))
 
     attachment = manager_purge.add_attachment(
         session,
@@ -198,7 +211,9 @@ def _existing_upload(session: Session, upload_id: int) -> MediaUpload:
 
 
 @media_router.get("/files/{attachment_id}")
-def download_file(attachment_id: int, session: Session = Depends(get_session)) -> FileResponse:
+def download_file(
+    attachment_id: int, session: Session = Depends(get_session), range: str | None = Header(default=None)  # noqa: A002
+) -> Response:
     attachment = _existing_attachment(session, attachment_id)
     path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
@@ -217,7 +232,7 @@ def download_file(attachment_id: int, session: Session = Depends(get_session)) -
     headers = {"Cross-Origin-Resource-Policy": "same-origin"}
     if mime != "application/pdf":
         headers["Content-Security-Policy"] = "sandbox; default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"
-    return FileResponse(path, filename=attachment.filename, media_type=mime, headers=headers)
+    return sealed_aware(path, media_type=mime, headers=headers, filename=attachment.filename, request_range=range)
 
 
 class AttachmentGalleryOut(BaseModel):
@@ -652,6 +667,14 @@ def analyse_attachment(
         return _store_typed_reading(session, attachment, body)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
+    with unsealed(path) as plain:
+        return _analyse(session, attachment, plain, body, is_image, suffix)
+
+
+def _analyse(
+    session: Session, attachment: Attachment, path: Path, body: AttachmentAnalyseBody, is_image: bool, suffix: str
+) -> AttachmentGalleryOut:
+    """`analyse_attachment` once the file is a path its readers can open."""
     if body.kind == "ocr":
         return _read_locally(session, attachment, path, body, is_image)
     if body.kind == "caption" and not is_image:
@@ -733,8 +756,9 @@ def attached_file_text(
     # any work for a PDF with no text layer, and only when the pdfpages extra
     # and a vision model are both present; every other file returns before it
     # is consulted.
-    viewed = docview.extract(path, vision_reader=vision_ocr.pdf_reader_or_none())
-    editable, edit_message = docview.editability(path, viewed)
+    with unsealed(path) as path:
+        viewed = docview.extract(path, vision_reader=vision_ocr.pdf_reader_or_none())
+        editable, edit_message = docview.editability(path, viewed)
     return AttachedFileTextOut(
         filename=attachment.filename,
         kind=viewed.kind,
@@ -775,26 +799,27 @@ def save_attached_file_text(
     have been replaced between the two calls.
     """
     attachment = _refuse_while_sealed(session, FILES.writable(session, attachment_id))
-    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
-    viewed = docview.extract(path)
-    editable, edit_message = docview.editability(path, viewed)
-    if not editable:
-        raise HTTPException(status_code=409, detail=edit_message)
-    refuse_if_stale(
-        base_hash=payload.base_hash,
-        current_text=viewed.text,
-        new_text=payload.text,
-        current=lambda: {"content": viewed.text, "content_hash": content_hash(viewed.text)},
-        noun="file",
-    )
-    docview.write_text_file(path, payload.text)
-    #: The row's `size` is what the Library shows beside the name, so it has to
-    #: follow the file rather than stay at whatever was uploaded. Nothing here
-    #: touches the semantic index: that indexes *notes*, and a file's text has
-    #: never been in it, `search_files` reads the file itself.
-    attachment.size = path.stat().st_size
+    stored = _within(deps.get_config().uploads_dir, attachment.stored_name)
+    with unsealed(stored, write=True) as path:
+        viewed = docview.extract(path)
+        editable, edit_message = docview.editability(path, viewed)
+        if not editable:
+            raise HTTPException(status_code=409, detail=edit_message)
+        refuse_if_stale(
+            base_hash=payload.base_hash,
+            current_text=viewed.text,
+            new_text=payload.text,
+            current=lambda: {"content": viewed.text, "content_hash": content_hash(viewed.text)},
+            noun="file",
+        )
+        docview.write_text_file(path, payload.text)
+        #: The row's `size` is what the Library shows beside the name, so it has to
+        #: follow the file rather than stay at whatever was uploaded. Nothing here
+        #: touches the semantic index: that indexes *notes*, and a file's text has
+        #: never been in it, `search_files` reads the file itself.
+        attachment.size = path.stat().st_size
+        saved = docview.extract(path)
     session.commit()
-    saved = docview.extract(path)
     return AttachedFileTextOut(
         filename=attachment.filename,
         kind=saved.kind,
@@ -845,7 +870,8 @@ def attached_file_pdf_info(attachment_id: int, session: Session = Depends(get_se
                 "“Read scanned PDFs” in Settings, Packages."
             ),
         )
-    count = pdfpages.page_count(path)
+    with unsealed(path) as plain:
+        count = pdfpages.page_count(plain)
     if count == 0:
         return PdfInfoOut(
             available=False,
@@ -873,7 +899,8 @@ def attached_file_pdf_page(
     path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    png = pdfpages.render_page(path, index, thumb=thumb)
+    with unsealed(path) as path:
+        png = pdfpages.render_page(path, index, thumb=thumb)
     if png is None:
         raise HTTPException(status_code=404, detail="That page doesn't exist.")
     return Response(content=png, media_type="image/png", headers={"Cache-Control": "private, max-age=3600"})
@@ -945,7 +972,8 @@ def attached_file_html_preview(
     path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-    viewed = docview.extract(path)
+    with unsealed(path) as plain:
+        viewed = docview.extract(plain)
     return Response(
         content=viewed.text,
         media_type="text/html; charset=utf-8",
@@ -1338,20 +1366,10 @@ def upload_media(
     destination = media_dir / stored_name
 
     #: Same guard, same measured reason as the attachment upload above.
-    size = 0
-    with diskspace.partial_write(destination):
-        with destination.open("wb") as out:
-            while chunk := file.file.read(1024 * 1024):
-                size += len(chunk)
-                if size > MAX_FILE_BYTES:
-                    out.close()
-                    destination.unlink(missing_ok=True)
-                    raise HTTPException(status_code=413, detail="That file is larger than 50 MB.")
-                out.write(chunk)
+    size = _write_upload(file, destination, sealed_files.wanted(session, None))
 
     try:
-        with destination.open("rb") as written:
-            bounds.check_image_upload(written.read(64), size, suffix)
+        bounds.check_image_upload(sealed_files.read_range(destination, 0, 63), size, suffix)
     except HTTPException:
         destination.unlink(missing_ok=True)
         raise
@@ -1719,8 +1737,9 @@ def media_text(filename: str, session: Session = Depends(get_session)) -> Attach
     # work for a PDF with no text layer, and only when the pdfpages extra and
     # a vision model are both present; every other file returns before it is
     # consulted.
-    viewed = docview.extract(path, vision_reader=vision_ocr.pdf_reader_or_none())
-    editable, edit_message = docview.editability(path, viewed)
+    with unsealed(path) as path:
+        viewed = docview.extract(path, vision_reader=vision_ocr.pdf_reader_or_none())
+        editable, edit_message = docview.editability(path, viewed)
     return AttachedFileTextOut(
         filename=upload.original_name,
         kind=viewed.kind,
@@ -1770,7 +1789,8 @@ def media_pdf_info(filename: str, session: Session = Depends(get_session)) -> Pd
                 "“Read scanned PDFs” in Settings, Packages."
             ),
         )
-    count = pdfpages.page_count(path)
+    with unsealed(path) as plain:
+        count = pdfpages.page_count(plain)
     if count == 0:
         return PdfInfoOut(
             available=False,
@@ -1806,7 +1826,8 @@ def media_pdf_page(
     if Path(filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=404, detail="Not a PDF.")
     _upload, path = _media_upload_path(session, filename)
-    png = pdfpages.render_page(path, index, thumb=thumb)
+    with unsealed(path) as path:
+        png = pdfpages.render_page(path, index, thumb=thumb)
     if png is None:
         raise HTTPException(status_code=404, detail="That page doesn't exist.")
     # Kept in memory by `pdfpages` (a bounded LRU keyed by the file's mtime and
@@ -2070,7 +2091,7 @@ def caption_media(
                 raise HTTPException(status_code=409, detail="The AI model isn't running.")
             media_dir = deps.get_config().data_dir / "media"
             path = _within(media_dir, upload.filename)
-            readable = (upload.ocr_text or "").strip() or (docview.extract(path).text or "").strip()
+            readable = (upload.ocr_text or "").strip() or _extracted_text(path)
             if not readable:
                 raise HTTPException(
                     status_code=415,
@@ -2093,7 +2114,8 @@ def caption_media(
                 "pick one in Settings, Models.",
             )
         media_dir = deps.get_config().data_dir / "media"
-        captioning.caption_and_store(upload.id, media_dir / upload.filename, force=body.force)
+        with unsealed(media_dir / upload.filename) as plain:
+            captioning.caption_and_store(upload.id, plain, force=body.force)
         session.refresh(upload)
     return MediaUploadOut(
         id=upload.id,
@@ -2106,6 +2128,12 @@ def caption_media(
         vision_ocr_text=upload.vision_ocr_text or "",
         vision_ocr_model=upload.vision_ocr_model or "",
     )
+
+
+def _extracted_text(path: Path) -> str:
+    """A stored file's own text, sealed or not."""
+    with unsealed(path) as plain:
+        return (docview.extract(plain).text or "").strip()
 
 
 class OcrBody(BaseModel):
@@ -2170,7 +2198,8 @@ def ocr_media(
         #: background pass after an upload and wrong here: with a reading on
         #: the row, or a model running, "Read again" did nothing at all.
         read = _local_pdf_text if is_pdf else _local_text
-        text = read(media_dir / upload.filename, choice)
+        with unsealed(media_dir / upload.filename) as plain:
+            text = read(plain, choice)
         if text:
             upload.ocr_text = text
             session.commit()
@@ -2190,7 +2219,9 @@ def ocr_media(
 
 
 @media_router.get("/media/{filename}")
-def get_media(filename: str, session: Session = Depends(get_session)) -> FileResponse:
+def get_media(
+    filename: str, session: Session = Depends(get_session), range: str | None = Header(default=None)  # noqa: A002
+) -> Response:
     """Serve generic uploaded media.
 
     The suffix is checked again on the way out, not only on the way in. Upload
@@ -2211,8 +2242,15 @@ def get_media(filename: str, session: Session = Depends(get_session)) -> FileRes
     # decides whether a PDF opens in the page or downloads, and an inline PDF
     # viewer is a script host. Nothing here needs to render in-place: markdown
     # embeds images with <img>, which ignores Content-Disposition.
-    return FileResponse(
-        path, headers={"Content-Disposition": f'inline; filename="{name}"'}
+    # L-world-class-52: sealed bytes are a private space's, served only while
+    # its row is in this request's reads (the space is open).
+    if sealed_files.is_sealed(path) and session.scalar(select(MediaUpload.id).where(MediaUpload.filename == name)) is None:
+        raise HTTPException(status_code=423, detail=sealed_files.LOCKED_DETAIL)
+    return sealed_aware(
+        path,
+        media_type=mimetypes.guess_type(name)[0],
+        headers={"Content-Disposition": f'inline; filename="{name}"'},
+        request_range=range,
     )
 
 

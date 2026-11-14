@@ -284,7 +284,7 @@ function agentOpenSubject() {
   if (openBoardId && wbView && !wbView.classList.contains("hidden") && showing("library")) {
     return asBoard(openBoardId) || { kind: "board", id: openBoardId, label: `board ${openBoardId}` };
   }
-  const noteId = editingId || lastOpenedEntryId;
+  const noteId = appState.get("note") || lastOpenedEntryId;
   if (!noteId) return null;
   const board = asBoard(noteId);
   if (board) return board;

@@ -28,7 +28,7 @@ from tessellate.ai import captioning, composer_digest_sentences, composer_talk, 
 from tessellate.api import bounds
 from tessellate.api.chat_attach import _attached_boards, _attached_documents, _attached_notes
 from tessellate.api.schemas import EntryOut, TurnFrame
-from tessellate.core import activity, deps
+from tessellate.core import activity, deps, sealed_files
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
 from tessellate.repo import categories as categories_repo
 from tessellate.search import query as search_query
@@ -601,8 +601,8 @@ def _resolve_chat_images(session: Session, media_ids: list[int]) -> list[tuple[M
         if upload is None:
             continue
         try:
-            data = (media_dir / upload.filename).read_bytes()
-        except OSError:
+            data = sealed_files.read(media_dir / upload.filename)
+        except (OSError, sealed_files.SealedError):
             continue
         if len(data) > MAX_CHAT_IMAGE_BYTES:
             continue
@@ -625,6 +625,16 @@ def _chat_model_sees_images(model_manager, ollama) -> bool:
     if not callable(supports):
         return False
     return supports(model_manager.chat_model(), "vision") is True
+
+
+def _caption_of(upload, media_dir) -> str | None:  # noqa: ANN001
+    """A picture's caption, read from a plain copy when it is sealed; none
+    when its space is locked or the file is damaged."""
+    try:
+        with sealed_files.readable(media_dir / upload.filename) as plain:
+            return captioning.caption_and_store(upload.id, plain)
+    except sealed_files.SealedError:
+        return None
 
 
 def _image_caption_context(
@@ -653,9 +663,7 @@ def _image_caption_context(
     media_dir = deps.get_config().data_dir / "media"
     lines = []
     for upload, _uri in images:
-        caption = upload.caption or captioning.caption_and_store(
-            upload.id, media_dir / upload.filename
-        )
+        caption = upload.caption or _caption_of(upload, media_dir)
         if caption:
             lines.append(f"- {caption}")
     if not lines:

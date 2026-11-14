@@ -69,18 +69,8 @@ function fillModelSelect(select, names, extraFirst, savedValue) {
   select.dataset.sig = signature;
   const previous = select.value; // preserve a live selection across a rebuild
   select.replaceChildren();
-  for (const extra of extras) {
-    const option = document.createElement("option");
-    option.value = extra.value;
-    option.textContent = extra.label;
-    select.appendChild(option);
-  }
-  for (const name of names) {
-    const option = document.createElement("option");
-    option.value = name;
-    option.textContent = name;
-    select.appendChild(option);
-  }
+  for (const extra of extras) select.append(new Option(extra.label, extra.value));
+  for (const name of names) select.append(new Option(name, name));
   // Prefer the value already showing; else the saved preference.
   const values = [...select.options].map((o) => o.value);
   const match =

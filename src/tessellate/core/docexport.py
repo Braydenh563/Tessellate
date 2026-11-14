@@ -26,6 +26,8 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
+from tessellate.core import sealed_files
+
 #: Where a `%%…%%` is not a comment: inside a fence or inline code it is an
 #: example of the syntax, and in frontmatter it is a property's value. Same
 #: three as `DOC_COMMENT_SKIP` in documents.js.
@@ -243,8 +245,8 @@ def bundle(title: str, text: str, media_dir: Path, names: set[str]) -> tuple[byt
         if not inside or not path.is_file():
             continue
         try:
-            files.append((name, path.read_bytes()))
-        except OSError:
+            files.append((name, sealed_files.read(path)))
+        except (OSError, sealed_files.SealedError):
             continue
         carried.append(name)
     body = with_title(citations_to_footnotes(comments_to_footnotes(text or "")), title)

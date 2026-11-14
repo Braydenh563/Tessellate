@@ -26,7 +26,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from tessellate.core import jobs, paths
+from tessellate.core import jobs, paths, sealed_files
 
 logger = logging.getLogger("tessellate.docreader")
 
@@ -70,7 +70,9 @@ def read_document_and_store(attachment_id: int) -> str | None:
         except paths.OutsideFolder:
             logger.warning("refusing to read an attachment outside the uploads directory")
             return None
-        if not path.is_file():
+        # A background pass has no vault key: a private space's sealed file
+        # is read in the viewer, not here (L-world-class-52).
+        if not sealed_files.plain_file(path):
             return None
 
         if not row.ocr_text:
@@ -91,6 +93,7 @@ def read_document_and_store(attachment_id: int) -> str | None:
         readable = (row.ocr_text or "").strip()
         if not readable:
             return None
+        jobs.check_stop()  # Stop pressed after the text was kept, before the model call
         ollama = deps.get_ollama()
         if not ollama.is_running():
             # Not a failure worth logging on every upload: a notebook with no

@@ -15,10 +15,12 @@ _HEAD_BYTES = 262_144
 
 
 def image_size(path: Path) -> tuple[int, int] | None:
+    from tessellate.core import sealed_files
+
     try:
-        with path.open("rb") as handle:
-            head = handle.read(_HEAD_BYTES)
-    except OSError:
+        #: A private space's picture is sealed on disk (L-world-class-52).
+        head = sealed_files.read_range(path, 0, _HEAD_BYTES - 1)
+    except (OSError, sealed_files.SealedError):
         return None
     try:
         size = _size(head)

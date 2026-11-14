@@ -20,5 +20,5 @@ def test_entry_item_hands_back_the_open_edit_row():
     assert "focusBodyAfterRender !== entry.id" in body
     assert "focusTagsAfterRender !== entry.id" in body
     # A closed form is forgotten, so a later open builds a new one.
-    assert "if (editingId !== entry.id) entryItem.live = null" in body
+    assert 'if (appState.get("note") !== entry.id) entryItem.live = null' in body
     assert "entryItem.live = li;" in js

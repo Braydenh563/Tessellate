@@ -12,8 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from tessellate.api import routes_recordings
-from tessellate.core import recordings
+from tessellate.core import recordings, sealed_files
 from tessellate.core.database import Recording
 
 WEBM_HEAD = b"\x1a\x45\xdf\xa3" + b"\x00" * 60
@@ -47,14 +46,15 @@ def test_a_write_cut_short_is_cut_back(tmp_path):
     target = tmp_path / "take.webm"
     target.write_bytes(b"a" * 10)
 
-    class Full:
-        def __init__(self):
-            self.calls = 0
+    calls = []
 
-        def open(self, mode):
-            self.calls += 1
-            handle = target.open(mode)
-            if self.calls == 1:
+    class Full(type(target)):
+        """The chunk append moved to `sealed_files.append` (L-world-class-52); same cut-back."""
+
+        def open(self, mode="r", *args, **kwargs):
+            calls.append(mode)
+            handle = Path(self).open(mode, *args, **kwargs)
+            if len(calls) == 1:
                 real = handle.write
 
                 def write(data):
@@ -66,7 +66,7 @@ def test_a_write_cut_short_is_cut_back(tmp_path):
             return handle
 
     with pytest.raises(OSError):
-        routes_recordings._append(Full(), b"b" * 8, 10)
+        sealed_files.append(Full(target), b"b" * 8, sealed=False)
     assert target.read_bytes() == b"a" * 10
 
 

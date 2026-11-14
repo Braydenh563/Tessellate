@@ -8070,7 +8070,7 @@ input[type="color"].wb-mixed {
   #doc-ai,
   #doc-format-show,
   #doc-code-snippets-open {
-    flex: 0 0 var(--target-min);
+    flex: 0 0 max(var(--control-h), var(--target-min));
     justify-content: center;
     padding-inline: 0;
   }
@@ -8156,7 +8156,7 @@ input[type="color"].wb-mixed {
   }
   #doc-code-snippets-open,
   #tab-documents.doc-is-code :is(#doc-code-assist-open, #doc-code-format) {
-    flex: 0 0 var(--target-min);
+    flex: 0 0 max(var(--control-h), var(--target-min));
     justify-content: center;
     padding-inline: 0;
   }
@@ -8188,7 +8188,7 @@ input[type="color"].wb-mixed {
   display: none;
 }
 #tab-documents.doc-is-code .doc-dock.doc-run-why :is(#doc-code-snippets-open, #doc-code-assist-open, #doc-code-format) {
-  flex: 0 0 var(--target-min);
+  flex: 0 0 max(var(--control-h), var(--target-min));
   justify-content: center;
   padding-inline: 0;
 }

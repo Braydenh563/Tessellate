@@ -726,6 +726,7 @@ def _startup_maintenance() -> None:
         steps = (
             ("_check_notebook_file", "Check the notebook file"),
             ("_check_data_folder", "Check the data folder"),
+            ("_sweep_sealed_leftovers", "Clear temporary copies of private files"),
             ("_mend_category_names", "Mend category names saved with a broken bar"),
             ("_purge_expired_bin_entries", "Clear expired notes from the bin"),
             ("_compact_event_log", "Tidy the edit history"),
@@ -785,6 +786,15 @@ def _check_notebook_file() -> None:
     a damaged file is never copied over a good backup, because the daily
     backup checks its own copy (`backup.verify_copy`) and refuses it."""
     backup.check_at_boot(deps.get_config().db_path)
+
+
+def _sweep_sealed_leftovers() -> None:
+    """Plain temp copies of a private space's files and half-written
+    rewrites a crash left behind (L-world-class-52, `core/sealed_files.py`)."""
+    from tessellate.core import sealed_files
+
+    cfg = deps.get_config()
+    sealed_files.sweep_leftovers(cfg.data_dir, (cfg.uploads_dir,))
 
 
 def _check_data_folder() -> None:
