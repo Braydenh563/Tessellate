@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
-| documents | 0 | 21 | 1 | 0 | 7 | 22 |
+| documents | 0 | 18 | 1 | 0 | 7 | 19 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 402 | 537 | 125 | 2 | 159 | 1064 |
+| all | 402 | 534 | 125 | 2 | 159 | 1061 |
 
 ## graph
 
@@ -293,9 +293,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L891** `documents` open, M: Docs audit needing real print dialog, clipboard image paste, phone IME, Safari/Firefox, screen reader, harper cost. From audit-1102-docs.md 6. Evidence: Needs real browsers/devices and a human. Device-only remainder: real print dialog, Safari, screen reader, phone IME; Firefox, harper cost and image paste run here.
 - [ ] **L893** `documents` open, M: Verify diagram with real inference, touch, light 390, >10 blocks perf, Windows, screen reader, print/PDF. From diagram-fable-1679.md 4. Evidence: Source Not verified: needs real model/touch/Windows/human. Device-only remainder: real inference, Windows, screen reader; >10 block perf, light 390, touch emulation and print to PDF run here.
 - [ ] **L894** `documents` open, S: CodeMirror 12 ms per key; ClearType greyscale. From OPEN.md:3053. Evidence: Needs a Windows display; rest is CodeMirror cost. Device-only remainder: a Windows display for ClearType; the 12 ms per key CodeMirror cost is measured here.
-- [ ] **L-documents-6** `documents` open, S: Verify the LanguageTool download with the real program. From open-work sweep 2026-11-12, docs/roadmap/DOCUMENTS_PLAN.md:310. Evidence: Open line in the plan's prose a session could miss. Real-model and real-binary checks open. Doable here: a LanguageTool server can be installed and run here if its download host is allowed.
-- [ ] **L-documents-23** `documents` open, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent. Doable here: install the Pyodide extra here and run code-run.js.
-- [ ] **L-documents-28** `documents` open, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold). Doable here: install the Pyodide extra here and time the runs.
 - [ ] **L-documents-83** `documents` open, M: Documents cold open at 1440 still over 800 ms: cut the Library bundle's 35 scripts or start the list earlier. From perf1114 L-documents-47 re-measure. Evidence: docscold47.js: 1440 median about 1,060 ms; library bundle 420-470 ms, list 150, open 250-400 (HISTORY perf1114)
 - [ ] **L-documents-98** `documents` open, S: Base block board and calendar HTML export: check for dead drag and month controls in the static file. From L-documents-84 export check. Evidence: Board cards in the exported HTML keep draggable=true and the calendar its month navigation; not checked whether either does anything in a static file.
 - [ ] **L-documents-99** `documents` open, M: Debug generators and async: run finally blocks on generator return and for-of break, support async generators and for await, top-level await, arguments inside async or generator bodies, and name resumed frames after their function. From agent code1229. Evidence: Gaps left by the generator and async build.
