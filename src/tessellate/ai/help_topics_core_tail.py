@@ -137,18 +137,18 @@ TAIL_TOPICS.extend(
                 "proportions, Alt resizes from the centre; a move, resize or box drawn out shows guides "
                 "and its size (Alt: none); [ and ] move one step back or forward, Ctrl+[ and Ctrl+] to "
                 "the back or front, Ctrl+G groups, Ctrl+Shift+G ungroups, Ctrl+Alt+C and Ctrl+Alt+V copy "
-                "and paste a style, Delete (or a bin drop) removes, Esc cancels a drag."
+                "and paste a style, Delete or a bin drop removes, Esc cancels a drag."
                 " Double-click empty board for a text box, double-click a closed shape (or select "
-                "it and press Enter) to write in it, right-click (or hold) for the menu, double-"
+                "it and press Enter) to write in it, right-click or hold for the menu, double-"
                 "click a line to bend it, select a connector and press Label (or Enter) to"
                 " label it. A frame's title drags it and what is inside it, its top handle turns both; a click on a panel's body or a frame's edge selects it; its "
                 "menu exports it or fits it to its contents, and a double-click on a resize "
                 "handle fits that edge to what it holds; a note, text box or picture fits its content. Ctrl+Shift+L "
                 "locks the selection. Right-click an item, "
                 "Comment…, starts a thread. View, Present frames: one frame at a "
-                "time, the bar lists pages; ? shows every key; Ctrl+K finds any board action by name. Menus: Insert, Edit, "
+                "time, the bar lists pages; ? shows every key; Ctrl+K finds a board action. Menus: Insert, Edit, "
                 "Arrange opens as submenus: Order, Align, Distribute, Tidy, Group, View (panels, background, grid, "
-                "snap, zoom) and Board (new, export). Rename a board: Board, Rename."
+                "snap, zoom) and Board (new, export). Rename a board: Board, Rename or Suggest a name."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1087,7 +1087,8 @@ TAIL_TOPICS.extend(
                 "buttons picks the style: dots, circles, squares or dashes, and 1., 1), a. or i. "
                 "The marker is kept in the text, so every view and the export read it, and Enter at the end of an a., i. or dash item starts the next one. "
                 "A bullet pasted from elsewhere becomes a list item. In a markdown "
-                "document, typing # and a letter offers the tags you have used."
+                "document, typing # and a letter offers the tags you have used, and "
+                "in Read a #tag is a chip: press it to find the documents that have it."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1214,6 +1215,8 @@ TAIL_TOPICS.extend(
                 "remark",
                 "remarks",
                 "reply to a remark",
+                "edit a reply",
+                "delete a reply",
                 "resolve a remark",
                 "resolved remarks",
                 "reopen a remark",
@@ -1227,6 +1230,8 @@ TAIL_TOPICS.extend(
                 "The sidebar's Outline lists every remark with the words it is "
                 "about, who wrote it (your name from Settings, Profile) and when. "
                 "Reply on a row adds a line under it; Enter posts, Esc cancels. "
+                "A reply has a pencil to reword it and a bin to delete it (Undo "
+                "brings it back); the paperclip in a reply attaches a bookmark, note, document or board. A resolved remark can still be replied to. "
                 "Resolve takes the remark out of the text and keeps the thread: "
                 "Show resolved lists it, and Reopen puts the remark back on its "
                 "words (Ctrl+Z right after a resolve does the same). Replies and "
@@ -1256,6 +1261,28 @@ TAIL_TOPICS.extend(
                 "bar, press Turn into on a phone's formatting bar, or choose Turn "
                 "into in the palette (Ctrl+K). One Ctrl+Z puts the block back. A "
                 "caret inside a code block is left alone."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "documents-to-note",
+            "keywords": (
+                "selection to a note",
+                "new note from selection",
+                "add to note",
+                "append to a note",
+                "turn a selection into a note",
+                "highlight text and make a note",
+                "send text to a note",
+            ),
+            "body": (
+                "Select text in a document or a code file and choose New note from "
+                "selection to start a note from it, or Add to note to pick an "
+                "existing note and append it. Both are on the selection bar (the "
+                "note button) and in the right-click menu. The text lands as a "
+                "quote, or as a code block in a code file, with a From [[Title]] "
+                "line under it that links back to the document. Undo on the "
+                "notice, or Ctrl+Z, takes it back."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -1319,6 +1346,21 @@ TAIL_TOPICS.extend(
                 "and pictures, its tracked changes as suggestions; other downloads "
                 "are .md, .html, a .zip "
                 "with images, and print or save as PDF."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        #: L-documents-2: its own entry, the documents entry is at the reply cap.
+        {
+            "id": "writing-streak",
+            "keywords": ("daily goal", "daily word goal", "writing streak", "streak", "words today"),
+            "body": (
+                "Right-click the counts in a document's status bar (or press the menu key on them) "
+                "for the daily word goal: 250, 500, 1,000 or 2,000 words, or none. The bar then adds "
+                "how far today is, such as 120 of 500 today. Only words you add to a text document "
+                "count, a paste does not, and the tally starts again each day. A day that reaches the goal "
+                "adds to your streak; a missed day starts it again from one. The menu's first row "
+                "says today's words and the streak. It is counted on this device only. "
+                "The per-document word goal beside the counts is separate."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

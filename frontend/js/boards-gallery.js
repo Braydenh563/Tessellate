@@ -319,6 +319,19 @@ function drawLibraryBoardsGallery(listed) {
     // renamed or deleted the way a real board (a plain Entry: see
     // create_board in routes_whiteboard.py) can.
     if (board.id !== null) {
+      //: One rename path for Rename and Suggest a name: undoable, and the gallery redrawn.
+      const renameBoardWithUndo = async (next) => {
+        const named = (title) => apiJson(`/whiteboard/boards/${board.id}`, {
+          method: "PUT",
+          body: JSON.stringify({ title }),
+        }).then(() => renderLibraryBoardsGallery());
+        try {
+          await named(next);
+          pushUndo(`Renamed "${board.title}"`, () => named(board.title), () => named(next));
+        } catch (e) {
+          toast(e.message, true);
+        }
+      };
       const menu = kebabMenu(
         [
           //: The shared "act on this" row (INBOX 393): a board or a map can
@@ -333,17 +346,12 @@ function drawLibraryBoardsGallery(listed) {
           ),
           makeMenuItem("ph:pencil-simple Rename", "Rename this board", async () => {
             const next = await promptDialog("Rename this board", board.title);
-            if (!next) return;
-            const named = (title) => apiJson(`/whiteboard/boards/${board.id}`, {
-              method: "PUT",
-              body: JSON.stringify({ title }),
-            }).then(() => renderLibraryBoardsGallery());
-            try {
-              await named(next);
-              pushUndo(`Renamed "${board.title}"`, () => named(board.title), () => named(next));
-            } catch (e) {
-              toast(e.message, true);
-            }
+            if (next) await renameBoardWithUndo(next);
+          }),
+          //: L348: the model names it from what is on it, else its first words do; renamed through Rename's undoable path.
+          makeMenuItem("ph:sparkle Suggest a name", "A name from what is on this board", async () => {
+            const got = await apiJson(`/whiteboard/boards/${board.id}/suggest-title`, { method: "POST" }).catch((e) => toast(e.message, true));
+            if (got?.title && got.title !== board.title) await renameBoardWithUndo(got.title);
           }),
           //: L280: named from what is on it, as a document is (INBOX 904
           //: B17); renamed through Rename's undoable PUT.

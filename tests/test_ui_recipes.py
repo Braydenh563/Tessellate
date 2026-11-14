@@ -5914,7 +5914,8 @@ def test_file_reading_text_fits_up_to_a_page():
     """The owner: the extracted text in a Files row was quite short."""
     css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text()
     m = re.search(r"\.library-file-reading-text \{([^}]*)\}", css)
-    assert m and "max-height: min(28rem, 55vh)" in m.group(1)
+    #: INBOX 827 L1: the owner's reading column is up to half the window (was 55vh).
+    assert m and "max-height: min(28rem, 50vh)" in m.group(1)
     shell = (ROOT / "frontend" / "css" / "00-tokens-shell.css").read_text()
     assert re.search(r"\.library-image-card-fold > \.library-image-reading-body \{\s*max-height: 11rem", shell)
 #: DESIGN.md, "A control that acts on the computer Tessellate runs on". Every

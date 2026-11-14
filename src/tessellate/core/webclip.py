@@ -29,6 +29,7 @@ It lives in `core` rather than beside the web reader so the privacy receipt
 
 from __future__ import annotations
 
+import base64
 import html
 import logging
 import re
@@ -82,7 +83,7 @@ def clean_url(url: str) -> str:
     return strip_tracking((url or "").strip())
 
 
-def _clip_hop(session, url: str):  # noqa: ANN001
+def _clip_hop(session, url: str, timeout: float = CLIP_SOCKET_TIMEOUT):  # noqa: ANN001
     """One request of the walk: the address checked, the connection pinned to it."""
     try:
         addresses = public_addresses(url)
@@ -100,7 +101,7 @@ def _clip_hop(session, url: str):  # noqa: ANN001
         return session.get(
             pinned,
             headers={"Host": host_header},
-            timeout=CLIP_SOCKET_TIMEOUT,
+            timeout=timeout,
             stream=True,
             allow_redirects=False,
         )
@@ -175,6 +176,65 @@ def fetch_page(url: str) -> dict:
             encoding = response.encoding or "utf-8"
             return {"url": url, "html": body.decode(encoding, errors="replace")}
         raise ClipRefused("That page redirected too many times.", 502)
+    finally:
+        session.close()
+
+
+# --- a page's icon (bookmark cards) -----------------------------------------------
+
+#: The largest icon kept. A favicon is a few KB; anything bigger is a picture, not an icon.
+ICON_MAX_BYTES = 40_000
+#: An icon is a nicety: it gets a short deadline of its own, not a page's (PR 226 review).
+ICON_DEADLINE_SECONDS = 3.0
+_ICON_TYPES = {"image/png", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml", "image/gif", "image/jpeg", "image/webp"}
+_LINK_TAG = re.compile(r"<link\b[^>]*>", re.IGNORECASE)
+_ATTR = re.compile(r"""([a-zA-Z-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))""")
+
+
+def page_icon_href(page: str, url: str) -> str:
+    """Where a page says its icon is (`<link rel="icon">`, the shortcut and touch-icon spellings),
+    made absolute; the site's `/favicon.ico` when it names none. Only the head is read."""
+    head = page[:200_000]
+    found = ""
+    for tag in _LINK_TAG.findall(head):
+        attrs = {m.group(1).lower(): (m.group(2) or m.group(3) or m.group(4) or "") for m in _ATTR.finditer(tag)}
+        rel = attrs.get("rel", "").lower().split()
+        if "icon" in rel and attrs.get("href"):
+            found = attrs["href"].strip()
+            break
+        if "apple-touch-icon" in rel and attrs.get("href") and not found:
+            found = attrs["href"].strip()
+    target = urljoin(url, found or "/favicon.ico")
+    return target if urlparse(target).scheme in ("http", "https") else ""
+
+
+@egress.labelled(lambda url, *a, **k: f"Fetching a site's icon: {egress.short(url, 80)}")
+def fetch_icon(url: str) -> str:
+    """The icon at `url` as a `data:` address (so a card shows it with no request to the site),
+    or "" when it is not a small image. Every hop is checked like a page's."""
+    url = clean_url(url)
+    deadline = time.monotonic() + ICON_DEADLINE_SECONDS
+    session = _new_session()
+    try:
+        for _ in range(CLIP_MAX_REDIRECTS + 1):
+            response = _clip_hop(session, url, timeout=ICON_DEADLINE_SECONDS)
+            if response.is_redirect or getattr(response, "is_permanent_redirect", False):
+                url = _redirect_url(response, url, deadline)
+                continue
+            kind = response.headers.get("content-type", "").split(";")[0].strip().lower()
+            declared = response.headers.get("content-length", "")
+            too_big = declared.isdigit() and int(declared) > ICON_MAX_BYTES
+            if response.status_code >= 400 or kind not in _ICON_TYPES or too_big:
+                response.close()
+                return ""
+            body = bytearray()
+            for chunk in response.iter_content(8192):
+                body.extend(chunk)
+                if len(body) > ICON_MAX_BYTES or time.monotonic() > deadline:
+                    response.close()
+                    return ""
+            return f"data:{kind};base64,{base64.b64encode(bytes(body)).decode('ascii')}" if body else ""
+        return ""
     finally:
         session.close()
 

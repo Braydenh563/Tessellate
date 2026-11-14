@@ -11,7 +11,9 @@ import json
 
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import StaleDataError
 from tessellate.core.database import WhiteboardNode, WhiteboardObject, WhiteboardSketch
 from tessellate.repo import documents as documents_repo
 from tessellate.core import deps, events
@@ -291,9 +293,17 @@ def update_object(
     _require_board(db, body.board_id)
     _require_object_data(body)
     _require_diagram_row(db, body)
-    _save_object(db, obj, body)
-    db.commit()
-    db.refresh(obj)
+    #: **A delete can land between the read above and the write** (an undo of a
+    #: just-added map topic against its own late PUT): the UPDATE then matches no
+    #: row, or the refresh finds none. That is "no such item", the same 404 an
+    #: unknown id gets, not a 500 (L-whiteboard-18).
+    try:
+        _save_object(db, obj, body)
+        db.commit()
+        db.refresh(obj)
+    except (StaleDataError, InvalidRequestError):
+        db.rollback()
+        raise HTTPException(status_code=404, detail="That item could not be found.")
     return _object_to_out(obj)
 
 
@@ -379,9 +389,13 @@ def save_items(body: ItemsSaveMany, db: Session = Depends(get_session)) -> dict:
         _save_node(db, nodes[item.id], item)
     for item in body.sketches:
         _save_sketch(db, sketches[item.id], item)
-    for item in body.objects:
-        _save_object(db, objects[item.id], item)
-    db.commit()
+    try:
+        for item in body.objects:
+            _save_object(db, objects[item.id], item)
+        db.commit()
+    except StaleDataError:
+        db.rollback()
+        raise HTTPException(status_code=404, detail="That item could not be found.")
     for node in nodes.values():
         wb_binds.apply_card_binding(db, node)
     return {"saved": len(nodes) + len(sketches) + len(objects)}

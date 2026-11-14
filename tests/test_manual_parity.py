@@ -756,3 +756,15 @@ def test_the_format_panels_connection_point_rows_are_in_the_guide_in_the_control
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     for words in ("Connection point", "On outline", "Add a connection point", "Remove the chosen connection point", "Nudge"):
         assert words in html, words
+
+
+def test_the_csv_grid_is_in_the_guide_in_the_controls_words() -> None:
+    """L328: Grid, its keys and the four row and column buttons are named where the Run help lives."""
+    from tessellate.ai import help_topics_more_mid as topics
+
+    text = " ".join(str(topic) for topic in vars(topics).values() if isinstance(topic, (list, dict, str)))
+    for word in ("Grid edits a CSV or TSV as cells", "Add and Delete row and column", "Ctrl+Z undoes"):
+        assert word in text, word
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents-csvgrid.js").read_text(encoding="utf-8")
+    for label in ("Add row", "Add column", "Delete row", "Delete column"):
+        assert f'"{label}"' in js, label

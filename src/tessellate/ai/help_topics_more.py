@@ -499,7 +499,8 @@ MORE_TOPICS: list[dict] = [
             "of days (0 keeps every chat; pinned chats are never deleted). "
             "Notifications: mute everything except reminders. Writing: smart "
             "quotes and dashes in documents, Check link text (spelling and grammar skip the words "
-            "of a link unless it is on), and offers to turn a named note or document into a link "
+            "of a link unless it is on), Kinds of suggestion in a document's writing sheet (switch off style, "
+            "punctuation, capital letters or word choice), and offers to turn a named note or document into a link "
             "(switch them off there, or press Never offer a link to this name on one offer; Offer them "
             "again brings every kept name back). Answer style moved to Settings, "
             "Personas, and Search relevance to Settings, Search and index."
@@ -1521,7 +1522,9 @@ MORE_TOPICS: list[dict] = [
             "notes are never read. Stop ends it and keeps nothing. It needs the Natural voice package (Settings, "
             "Packages: an engine and a 64 MB voice, fetched once, then everything runs on this computer). With it "
             "installed, Settings, General, Read aloud, Voice can switch an answer's Read aloud from this browser's "
-            "voices to the natural one; the speaking speed applies to the browser's voices only."
+            "voices to the natural one; the speaking speed applies to the browser's voices only. "
+            "Browser voice, in the same place, picks which of this computer's own voices speaks, in chat and in "
+            "documents (Automatic follows the page's language)."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },
@@ -1583,6 +1586,8 @@ MORE_TOPICS: list[dict] = [
             "nothing selected it takes the whole editor you were in. It needs "
             "Translate offline, a 27 MB download in Settings, Packages "
             "(Languages); until then the row says so and opens that page. "
+            "In a document, a flagged word's Translate this passage uses it "
+            "too once installed, and asks your model in the chat before. "
             "Other languages: the Writing room translates with your model."
         ),
         "badge": {"label": "Packages", "section": "extras"},
@@ -1836,7 +1841,7 @@ TOPIC_META: dict[str, dict] = {
         "Open a code document (.js, .ts, .sql, .py, .html, .css, .svg).",
         "Press Run, or Ctrl+Shift+Enter.",
         "Read the Output panel under the editor; Line N goes to the line.",
-        "Ctrl+Shift+Y opens the Console tab: type a line and press Enter.")},
+        "Ctrl+Shift+Y opens the Console tab: type a line and press Enter. It runs in its own worker, apart from any page the file shows. A line still running after 10 seconds is stopped, and the console says so; the output above stays.", "On a CSV document, Query as SQL opens a new SQL document that selects its first 50 rows as a table, and runs it.")},
     "code-panel": {"title": "The code panel: assistant, snippets and text sections", "path": "A code document, Assistant or Snippets (beside Run); a text document, Sections"},
     "debugger": {"title": "Debugging code", "path": "A code document, the gutter beside a line number, F5", "steps": (
         "Open a JavaScript, TypeScript or Python document.",
@@ -1866,9 +1871,11 @@ TOPIC_META: dict[str, dict] = {
     "documents-replace": {"title": "Replace in every document", "path": "Library tab, Documents, document menu"},
     "live-view-marks": {"title": "Markdown marks in Live view", "path": "Library tab, Documents, Edit, Live"},
     "documents-features": {"title": "Document editor features", "path": "Library tab, Documents"},
+    "writing-streak": {"title": "Daily word goal and writing streak", "path": "Library tab, Documents, right-click the status bar counts"},
     "documents-list-styles": {"title": "List styles: dots, circles, squares, dashes and numbering", "path": "Library tab, Documents, List and Numbered buttons"},
     "documents-paste": {"title": "Paste options and Paste special", "path": "Library tab, Documents, document menu"},
     "documents-comments": {"title": "Comments in a document", "path": "Library tab, Documents, sidebar Outline, Comments"},
+    "documents-to-note": {"title": "Selection to a note: start a note or add to one", "path": "Library tab, Documents, select text, note button or right-click"},
     "documents-turn-into": {"title": "Turn into: change a block to a heading, list, quote or code", "path": "Library tab, Documents, select text, Turn into"},
     "mind-map-features": {"title": "Mind map features", "path": "Library tab, Boards & maps"},
     "mind-map-import-export": {"title": "Mind map templates, import and export", "path": "Library tab, Boards & maps"},
@@ -1960,7 +1967,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2443,7 +2450,7 @@ MORE_TOPICS.extend([
             "box instead of a picture. Turn into shapes, in the editor's ... menu, replaces "
             "a flowchart, state, class or sequence diagram with shapes and connectors "
             "you can move one by one (Ctrl+Z puts the diagram back). Insert, Diagram, Mermaid, "
-            "draw.io or board SVG brings a diagram in as shapes straight away."
+            "draw.io or board SVG brings a diagram in as shapes straight away; a Mermaid style line's fill and stroke colour the shape, a linkStyle stroke its connector."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2455,7 +2462,7 @@ MORE_TOPICS.extend([
         ),
         "body": (
             "The Diagram builder makes a flowchart, mind map, timeline or sequence diagram from "
-            "blocks. Mermaid is only its file format (.mmd). Every door is the same row, "
+            "blocks. Mermaid is only its file format. Every door is the same row, "
             "Diagram builder, with the same icon; in Documents and the Library's document list it is the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
             "and features and Quick access list it too. Over a note, a document or a Chat box, "
             "Insert (or / then diagram) opens the builder and Done saves a diagram file and writes a link to it, "
@@ -2464,7 +2471,7 @@ MORE_TOPICS.extend([
             "opens the builder empty, and Done saves it as a new diagram file; Open an existing diagram there lists yours. Cancel changes nothing. "
             "On a flowchart, the picture outlines the block you point at and the ones picked. "
             "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
-            "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag pans). "
+            "drag a block on the picture to move it, and drag on empty space to pick the blocks you touch (Shift adds, Shift+click toggles, Space and drag, or right-drag, pans). "
             "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
             "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects; Escape cancels). "
             "Double-click a block, an arrow or a group's border or title to rename it in place; click a group's border or title to pick it. Right-click any of them (long press on a phone) for a menu; a picked arrow takes Enter to change its words and Delete, and a dot at either end drags to another block. A connector row's words (or Enter) go to its block; its ... opens the menu."
@@ -2485,18 +2492,18 @@ MORE_TOPICS.extend([
             "Source and Split show text; Ctrl+Z undoes "
             "either. Add shows the last shape you used: press it to add one, or press its arrow "
             "for every shape and its key. Connect to... on a block draws an "
-            "arrow: pick a block, or type a new name to make it; a decision's arrows ask for yes or no. Drag a block: "
+            "arrow: pick a block, or type a new name to make it. Drag a block: "
             "another's top or bottom puts it before or after, its middle joins "
-            "them, a group's body takes it inside. Under a block, "
-            "a connector reads Start to Next and its label. "
+            "them, a group's body takes it inside. A block's "
+            "connector reads Start to Next and its label. "
             "The shape swatch picks it. A divider sizes the blocks and the picture (drag or "
-            "arrows; Shift for more). Direction (a menu) turns the flow. An empty one lists "
+            "arrows; Shift for more). Direction (a menu) turns the flow (... on a phone). An empty one lists "
             "three steps: Add a shape, Name it, Connect it. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel and a pinch; "
             "its percentage is typeable and 100% is the drawing's own size; Shift+arrow keys pan. "
             "Shift+click picks a range, Ctrl+click adds one; Escape lets go of the pick; a bar offers Delete, "
             "Duplicate, Box them, Select all, Clear; any picked grip moves all. "
-            "Press or drag a block from the shelf onto the picture to join the nearest box (touch: hold); long press a block for its menu. "
+            "Press or drag a block from the shelf onto the picture to join the nearest box (touch: hold); long press one for its menu. "
             "Keys "
             "on a block: arrows walk, Enter renames, N adds a Box, 1 to 9 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
             "K colours, ? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts. "
@@ -2504,7 +2511,7 @@ MORE_TOPICS.extend([
             "Templates (then Use this template), "
             "From my notes "
             "and Describe it (a model; dimmed with none). A blank diagram becomes "
-            "the suggestion; otherwise blocks arrive as ghosts: "
+            "the suggestion; else blocks arrive as ghosts: "
             "Tab takes one, Shift+Tab lets it go, Enter adds those taken and "
             "Escape drops them; Ctrl+Z undoes the whole addition. "
             "Kind asks before it clears blocks. More: next topic."
@@ -2572,21 +2579,22 @@ MORE_TOPICS.extend([
             "a diagram has an Edit as blocks button on its corner (always there on a touch screen): "
             "it opens the editor in a window you can move and size, and Done puts the changes back "
             "between that diagram's own fence marks and nothing else. Cancel, Escape and the X "
-            "ask before they drop changes. On a board, double-click a diagram object. In Chat or Ask, "
-            "a diagram in a reply has Open as a diagram under it, which makes it a diagram document. "
-            "Type ![[name]] in a note or a document to draw that diagram document there, with a "
-            "line that opens it, and Back there returns to it. The ... menu in the editor's bar has Save as SVG, Save as PNG, "
+            "ask before dropping changes. On a board, double-click a diagram object. In Chat or Ask, "
+            "a reply's diagram has Open as a diagram under it. "
+            "Type ![[name]] in a note or a document to draw that diagram there, with a "
+            "line that opens it. The ... menu in the editor's bar has Save as SVG, Save as PNG, "
             "Copy as picture, Copy as Mermaid and Copy as SVG. A diagram's Library card "
             "has the same pictures in its menu; its page has Export in its head, and Download .mmd, in the ... menu, saves the text. Source, beside Cancel, shows "
             "the text with the picture; a diagram the blocks cannot draw, or one over 120 blocks, opens there. "
-            "The New diagram window opens on a three-box starter; Clear, in the ... menu, empties it. "
+            "/diagram and a board's Insert list your diagrams, then New diagram: an empty builder whose Done embeds that file. "
+            "The palette's New diagram window opens on a three-box starter; Clear, in the ... menu, empties it. "
             "On the last box, Tab adds a joined box; on any other, Tab moves on. Shift+Tab selects its source, F6 leaves the blocks and Ctrl+Enter keeps the diagram. "
             "The Keys button in its foot, or ? outside a text field, lists every key. "
-            "On a phone, and in Sequence, Mind map and Timeline, the shapes are one Add button that opens a sheet of them; pinch the picture to "
-            "zoom, drag it to move, and double tap to fit it again. Save to Library, in the ... menu "
+            "On a phone, and in Sequence, Mind map and Timeline, the shapes are one Add button that opens a sheet of them; pinch to "
+            "zoom, drag to move, double tap to fit. Save to Library, in the ... menu "
             "and on a diagram's corner beside Edit as blocks, keeps a copy as a diagram in the Library; "
-            "a notice then offers to replace the fence with a link, or to link a board's diagram to it, "
-            "and nothing changes until you press that. Attach a Library diagram to Chat and the model "
+            "a notice offers to replace the fence with a link, or to link a board's diagram to it; "
+            "nothing changes until you press it. Attach a Library diagram to Chat and the model "
             "reads its source; its card opens it."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
@@ -2606,9 +2614,10 @@ MORE_TOPICS.extend([
             "and changed in amber. Apply makes it (Ctrl+Z undoes it in one step); Discard leaves the diagram as it was. "
             "Suggestions, under Ask, opens like a fold (its arrow turns) and lists what looks wrong: an arrow out of a decision with no words, a decision with "
             "one way out, a block with no way out or joined to nothing, blocks with the same words (one row numbers them), a group "
-            "holding one block. Each row's button shows its fix the same way. On a diagram document every Apply is "
+            "holding one block. Each row's button shows its fix the same way. A mind map, timeline or sequence has Ask too (add Rent under Budget, add event Launch under 2024, add message Pay from Shop to Bank; rename, move and remove work too), and Suggestions: a topic repeated, a period with no events, a participant that never sends. On a diagram document every Apply is "
             "a named version (AI: added Refund). Versions..., in the ... menu, lists them: tick two to Compare, or "
-            "one to compare it with now, and Restore puts one back."
+            "one to compare it with now, and Restore puts one back; Named only hides the plain saves. "
+            "Suggest, Templates, on a diagram with blocks, offers Add its blocks (as ghosts) or Replace the diagram, which Ctrl+Z undoes."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -2677,7 +2686,7 @@ TOPIC_META.update({
     "diagram-reading": {"title": "Reading a diagram: list order, fit and direction", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
-    "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A flowchart's blocks list, Ask; the ... menu, Versions..."},
+    "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A diagram's blocks list, Ask; the ... menu, Versions..."},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-group-edit": {"title": "Edit inside a group, and workspaces", "path": "A board's View menu, Panels, Workspaces"},
@@ -2981,7 +2990,7 @@ MORE_TOPICS.append({
         "A flowchart's ... menu sets how arrows are drawn (Straight lines, Curved lines, "
         "Stepped lines, Usual lines) and how far apart the blocks sit (Compact, Roomy, "
         "Normal spacing). Both are kept in the diagram's own text as front matter and Undo "
-        "takes them back; the picture is then drawn by the dagre layout. A diagram's page "
+        "takes them back; the picture is then drawn by the dagre layout. Wrap long lines, in the ... menu or by the Wrap button beside Source, folds long Source lines onto the next row and hides their numbers. A diagram's page "
         "menu keeps Download or print, Connections and History, and leaves out the "
         "writing switches, Read aloud and Extract notes. Export, beside Picture, List and "
         "Source, saves it as a PNG or an SVG, or copies it as a picture, as Mermaid or as SVG. "
@@ -3076,7 +3085,8 @@ MORE_TOPICS.append({
         "Escape when the board has nothing of its own to cancel (a menu, a selection, full screen), to close the panel: "
         "the card shows the board as it now is and the Edit here button has the focus again. The Library keeps one board "
         "window, so while the panel is open the board is in it and not in the Library; closing puts the Library back as it "
-        "was, on the board it had open or on its list of boards."
+        "was, on the board it had open or on its list of boards. The other way: a board's Board menu, Write as a document, "
+        "makes a draft with a heading for each frame and a paragraph for each sticky, text box or note card in it."
     ),
     "badge": {"label": "Documents", "tab": "documents"},
 })

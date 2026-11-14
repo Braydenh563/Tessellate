@@ -215,6 +215,35 @@ function wbMermaidLayout(graph, { w = 160, h = 70, gapX = 220, gapY = 140, pad =
   return at;
 }
 
+//: The colours a Mermaid source asks for, by node id and by connector index (L-documents-17). A `style Id fill:#..,stroke:#..`
+//: line (the model keeps it as a line it cannot place) gives a block its fill and its stroke, 3 or 6 hex digits; the builder's
+//: own hue (`n.fill`) is the stroke with a light fill; `linkStyle N stroke:#..` colours that connector. A named colour or any
+//: other property is ignored: the board draws what it can read exactly and the rest as it always did.
+wbMermaidLayout.look = (graph) => {
+  const hex = (v) => {
+    const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(v || "").trim());
+    return m ? "#" + (m[1].length === 3 ? [...m[1]].map((c) => c + c).join("") : m[1]).toLowerCase() : "";
+  };
+  const prop = (text, name) => hex(new RegExp(`(?:^|[,\\s])${name}:([^,\\s]+)`).exec(text)?.[1]);
+  const nodes = new Map(), edges = new Map();
+  graph.edges.forEach((e, i) => hex(e.colour) && edges.set(String(i), hex(e.colour)));
+  for (const n of graph.nodes) if (hex(n.fill)) nodes.set(n.id, { color: hex(n.fill), fill: hex(n.fill), fillOpacity: 0.2 });
+  for (const k of graph.kept || []) {
+    const style = /^style\s+([\w-]+)\s+(.*)$/.exec(k.line || "");
+    if (style) {
+      const look = { ...nodes.get(style[1]) };
+      const fill = prop(style[2], "fill"), stroke = prop(style[2], "stroke");
+      if (fill) Object.assign(look, { fill, fillOpacity: 1 });
+      if (stroke) look.color = stroke;
+      if (fill || stroke) nodes.set(style[1], look);
+      continue;
+    }
+    const link = /^linkStyle\s+(\d+)\s+(.*)$/.exec(k.line || "");
+    if (link && prop(link[2], "stroke")) edges.set(link[1], prop(link[2], "stroke"));
+  }
+  return { nodes, edges };
+};
+
 //: A free board as Markdown: each frame (in presentation order) as a
 //: heading over what lies in it in reading order, then what lies in none.
 function wbBoardOutline(state, { frames, title = "Board", cardTitle = (node) => `Note ${node.entry_id}` } = {}) {
@@ -1192,6 +1221,7 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
     return 0;
   }
   const place = wbMermaidLayout(graph);
+  const look = wbMermaidLayout.look(graph);
   const ink = window.currentStrokeColor && /^#[0-9a-f]{6}$/i.test(window.currentStrokeColor) ? window.currentStrokeColor : "#335599";
   const ids = new Map();
   const frameIds = new Map();
@@ -1204,16 +1234,16 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
     }
     for (const n of graph.nodes) {
       const c = place.get(n.id);
-      const made = await wbMermaidPlaceNode(n, at[0] + c.x, at[1] + c.y, ink);
+      const made = await wbMermaidPlaceNode(n, at[0] + c.x, at[1] + c.y, ink, look.nodes.get(n.id));
       wbState.sketches.push(made);
       ids.set(n.id, made.id);
     }
-    for (const e of graph.edges) {
+    for (const [index, e] of graph.edges.entries()) {
       //: An end that names a subgraph joins its frame.
       const s = ids.get(e.from) ?? frameIds.get(e.from), t = ids.get(e.to) ?? frameIds.get(e.to);
       if (s == null || t == null || (s === t && ids.has(e.from) === ids.has(e.to))) continue;
       const sKind = ids.has(e.from) ? "sketch" : "object", tKind = ids.has(e.to) ? "sketch" : "object";
-      const data = { type: "link-straight", route: "elbow", sourceId: s, sourceKind: sKind, targetId: t, targetKind: tKind, color: ink, width: 2 };
+      const data = { type: "link-straight", route: "elbow", sourceId: s, sourceKind: sKind, targetId: t, targetKind: tKind, color: look.edges.get(String(index)) || ink, width: 2 };
       if (e.endCap || e.arrow) data.endCap = wbMermaidCap(e.endCap || "arrow");
       if (e.startCap) data.startCap = wbMermaidCap(e.startCap);
       if (e.dashed || e.style === "dotted") data.dash = "dashed";
@@ -1241,7 +1271,7 @@ function wbMermaidCap(kind) {
 //: One node as a shape centred on (cx, cy): a diamond, a circle, a rounded
 //: box (a state), a start or end dot (a state diagram's `[*]`), or a box as
 //: tall as its text (a class with its members).
-async function wbMermaidPlaceNode(n, cx, cy, ink) {
+async function wbMermaidPlaceNode(n, cx, cy, ink, look = null) {
   const dot = n.shape === "start" || n.shape === "end";
   const w = dot ? 28 : 160, h = dot ? 28 : n.h || 70;
   const x = cx - w / 2, y = cy - h / 2;
@@ -1256,6 +1286,7 @@ async function wbMermaidPlaceNode(n, cx, cy, ink) {
   const data = { d, shape: n.shape === "diamond" ? "diamond" : n.shape === "circle" || dot ? "circle" : n.shape === "rounded" ? "custom" : "rect", color: ink, width: 2 };
   if (n.text) data.label = n.text;
   if (dot) Object.assign(data, { fill: ink, fillOpacity: 1 });
+  if (look && !dot) Object.assign(data, look);
   if (n.shape === "end") data.width = 4;
   return apiJson("/whiteboard/sketches", {
     method: "POST",
@@ -1765,10 +1796,10 @@ async function wbDiagramSize(source) {
   return { width: Math.round(w), height: Math.round(Math.max(40, w / ratio)) };
 }
 
-async function wbInsertDiagram(source) {
+async function wbInsertDiagram(source, diagramId = null) {
   const [cx, cy] = wbViewCentre();
   const { width, height } = await wbDiagramSize(source);
-  const made = await wbCreateObject("diagram", { mermaid: source }, cx - width / 2, cy - height / 2, width, height);
+  const made = await wbCreateObject("diagram", { mermaid: source, ...(diagramId ? { diagram_id: diagramId } : {}) }, cx - width / 2, cy - height / 2, width, height);
   if (!made) return null;
   clearWbSelection();
   wbHandleItemClick("object", made.id, { shiftKey: false });
@@ -1778,9 +1809,18 @@ async function wbInsertDiagram(source) {
 
 //: Insert opens the builder on a sample; a double-click opens it on an item (1546 D6: the one block
 //: editor, in a dialog; the textarea dialog this was is gone). Done saves, Cancel changes nothing.
-function wbEditDiagram(d = null) {
+async function wbEditDiagram(d = null) {
+  //: Insert asks first (R12, owner 2026-11-12): a diagram already made lands linked to its document at once, "New diagram" opens the empty builder.
+  if (!d) {
+    const pick = await chooseDiagram({ verb: "Insert" });
+    if (!pick) return;
+    if (pick !== true) {
+      const row = await apiJson(`/documents/${pick.id}`).catch(() => null);
+      return row ? wbInsertDiagram(String(row.content || "").trim(), pick.id) : toast("That diagram did not open. Try again.", "info");
+    }
+  }
   openDiagramBuilder({
-    source: d?.data?.mermaid || diagramModel.starter,
+    source: d?.data?.mermaid || "",
     title: d ? "Edit diagram" : "Diagram builder",
     draft: d ? `board:${d.id}` : "board-new",
     shapes: d ? (source) => (wbMermaidKind(source) ? wbDiagramToShapes(d, source) : toast("Shapes cover flowchart, state, class and sequence diagrams.")) : null,

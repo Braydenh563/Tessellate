@@ -52,7 +52,7 @@ def test_the_dialog_seg_is_picture_list_source_too():
 def test_done_from_the_door_inside_an_editor_makes_a_row_and_inserts_a_link():
     door = MERMAID[MERMAID.index("async function diagramDoor(") :]
     door = door[: door.index("diagramModel.starter =")]
-    tail = door[door.rindex("return openDiagramBuilder({\n      source: diagramModel.starter") :]
+    tail = door[door.rindex("return openDiagramBuilder({\n      source: \"\"") :]
     assert 'file_type: "mmd"' in tail and "![[" in tail
     # The slash menu's starter fence is untouched.
     assert "```mermaid" not in tail

@@ -64,7 +64,8 @@ def test_the_expanded_builder_does_not_make_the_offer_it_is_already_the_whole_sc
 
 def test_both_toolbars_carry_the_expand_button_made_in_the_kind_bar():
     kindbar = _js("diagram-kindbar.js")
-    assert "expand, KINDS" in kindbar.split("diagramModel.kindbar = {")[1]
+    #: The export also carries fold (e768ad94); what is pinned is that expand is exported.
+    assert "expand," in kindbar.split("diagramModel.kindbar = {")[1].split("}", 1)[0]
     assert '"ph:arrows-out"' in kindbar and '"ph:arrows-in"' in kindbar
     assert 'out ? "Expand" : "Collapse"' in kindbar and "dgm-expand" in kindbar
     # A builder that is a dialog of its own (a board's, the door's) has no Expand, and only a live one a Collapse.

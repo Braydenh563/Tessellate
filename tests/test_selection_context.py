@@ -159,3 +159,19 @@ def test_applying_a_marker_tells_the_box_it_changed():
         "the inline doc-content-only ending is what caused the bug; it must "
         "not come back"
     )
+
+
+def test_selection_bar_lookup_skips_the_surface_fallback():
+    """L-documents-26: `selectionBarHide` runs on every key of every editor.
+
+    `$` falls back to `surfaceFind` when the id is missing, and the bar is built
+    lazily on `document.body`, so before its first show every key walked each
+    unbuilt surface (about 2 ms a key at 4x CPU in the document editor). The bar
+    never lives in a surface, so both lookups read the document directly.
+    """
+    src = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "editor.js").read_text(encoding="utf-8")
+    start = src.index("function selectionBarElement()")
+    end = src.index("function selectionBarShow(")
+    block = src[start:end]
+    assert '$("selection-bar")' not in block
+    assert block.count('document.getElementById("selection-bar")') == 2
