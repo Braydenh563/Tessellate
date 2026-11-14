@@ -1693,7 +1693,12 @@
   let docProseTimer = null;
   let docVocabTimer = null;
   function docToolsOnInput(box) {
-    renderDocCaret();
+    //: **The caret readout waits for a pause in the typing** (L-documents-26): written inside the key,
+    //: its text change dirtied the status bar's layout and style in the key's own frame (one of 3.05
+    //: layouts a key, and a repaint), and the crumbs and toolbar marks it redraws cost 2 ms a key at
+    //: 4x CPU. A caret move with no edit still draws it at once (`docCmUpdate`).
+    clearTimeout(docToolsOnInput.caret);
+    docToolsOnInput.caret = setTimeout(renderDocCaret, Math.max(120, Math.min(400, 1.5 * (docToolsOnInput.gap || 0))));
     renderDocComplete(box);
     //: Debounced, both of them: the prose pass walks the whole document and the
     //: vocabulary re-splits it, and neither is worth doing between two

@@ -290,6 +290,26 @@
     }
     return text;
   }
+  //: **Whether a text holds no match for a one-line pattern, carried across an edit** (L-documents-26):
+  //: the columns, fence, mermaid and suggestion decorations each scanned the whole 130,000-character
+  //: text on every key to learn it held none of their markers. A match can only appear on a line the
+  //: edit touched, so a text known to lack one, edited, is asked about those lines alone. `change` is
+  //: the transaction or view update that made `state` (`startState`, `changes`, `docChanged`).
+  const docLacksCache = new WeakMap();
+  docStr.lacks = (state, pattern, change) => {
+    const doc = state.doc;
+    let known = docLacksCache.get(doc);
+    if (!known) docLacksCache.set(doc, (known = new Map()));
+    if (known.has(pattern.source)) return known.get(pattern.source);
+    let lacks = true;
+    if (change?.docChanged && docLacksCache.get(change.startState.doc)?.get(pattern.source) === true) {
+      change.changes.iterChangedRanges((fromA, toA, fromB, toB) => {
+        if (lacks) lacks = !pattern.test(doc.sliceString(doc.lineAt(fromB).from, doc.lineAt(toB).to));
+      });
+    } else lacks = !pattern.test(docStr(doc));
+    known.set(pattern.source, lacks);
+    return lacks;
+  };
 
   //: The document's text: the single most-read thing in this file.
   function docText() {

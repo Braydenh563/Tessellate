@@ -703,6 +703,8 @@ function docSuggestCodeMask(text) {
 //: mark, `{>>name, 2026-11-14T09:30:00Z<<}`: part of the span (so accepting or
 //: rejecting takes it away), never of the body, and only read as a stamp when it
 //: ends in an ISO date, so a reviewer's `{>>why this?<<}` stays their comment.
+//: `opener`: the two marks it looks for first, as one line pattern for `docStr.lacks`.
+docSuggestParse.opener = /\{\+\+|\{--/;
 function docSuggestParse(text) {
   const src = String(text == null ? "" : text);
   //: Most documents hold no mark: two scans for the opener, not the code mask
@@ -1113,11 +1115,13 @@ function docSuggestExtensions(CM) {
     };
   });
 
-  function build(view) {
+  function build(view, update) {
     const marks = [];
     const hidden = [];
     const hide = docView === "live";
-    for (const mark of docSuggestParse(docStr(view.state.doc))) {
+    //: An edit to a text with no opener asks only the lines it touched (`docStr.lacks`, L-documents-26).
+    const none = docStr.lacks(view.state, docSuggestParse.opener, update);
+    for (const mark of none ? [] : docSuggestParse(docStr(view.state.doc))) {
       const cls = mark.kind === "ins" ? "cm-suggest-ins" : "cm-suggest-del";
       const by = docSuggestParse.whoText(mark);
       const title = `Suggested ${mark.kind === "ins" ? "insertion" : "deletion"}${by ? ` by ${by}` : ""}: click to accept or reject`;
@@ -1146,7 +1150,7 @@ function docSuggestExtensions(CM) {
       update(update) {
         const told = update.transactions.some((tr) => tr.effects.length);
         if (update.docChanged || told) {
-          Object.assign(this, build(update.view));
+          Object.assign(this, build(update.view, update));
           renderDocSuggestState(true);
         }
       }
@@ -1250,7 +1254,7 @@ function docSuggestNext() {
 //: structural change in the status bar that the `:has()` rules re-check).
 function renderDocSuggestState(typed = false) {
   const on = docSuggestActive();
-  const count = docCmView ? docSuggestParse(docStr(docCmView.state.doc)).length : 0;
+  const count = docCmView && !docStr.lacks(docCmView.state, docSuggestParse.opener) ? docSuggestParse(docStr(docCmView.state.doc)).length : 0;
   const key = `${on}|${count}|${currentDoc?.id}|${docFileType().previewable}`;
   if (typed === true && key === renderDocSuggestState.key) return;
   renderDocSuggestState.key = key;

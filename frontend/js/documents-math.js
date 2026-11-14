@@ -687,12 +687,14 @@
     //: The fences once per text, as the mermaid field does: a caret move rescanned the whole document.
     const blocksOf = new WeakMap();
     const find = fenceBlocks(lang);
-    const build = (state) => {
+    const opener = new RegExp("```[ \\t]*" + lang);
+    const build = (state, tr) => {
       let blocks = blocksOf.get(state.doc);
       if (!blocks) {
-        //: Through the Documents file's cached reader where it is loaded (a long text read twice per keystroke is the cost it avoids).
-        const text = window.docStr ? window.docStr(state.doc) : state.doc.sliceString(0);
-        blocks = new RegExp("```[ \\t]*" + lang).test(text) ? find(text) : [];
+        //: Through the Documents file's cached reader where it is loaded (a long text read twice per keystroke is the cost it avoids);
+        //: an edit to a text with no opener asks only the lines it touched (`docStr.lacks`, L-documents-26).
+        const text = window.docStr?.lacks?.(state, opener, tr) ? "" : window.docStr ? window.docStr(state.doc) : state.doc.sliceString(0);
+        blocks = text && opener.test(text) ? find(text) : [];
         if (blocks.length && spec.key) blocks.key = spec.key(text);
         blocksOf.set(state.doc, blocks);
       }
@@ -703,7 +705,7 @@
     };
     fenceFieldCache[lang] = StateField.define({
       create: (state) => build(state),
-      update: (value, tr) => (tr.docChanged || tr.selection ? build(tr.state) : value),
+      update: (value, tr) => (tr.docChanged || tr.selection ? build(tr.state, tr) : value),
       provide: (field) => EditorView.decorations.from(field),
     });
     return fenceFieldCache[lang];
