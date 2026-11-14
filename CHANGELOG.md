@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Maps: a linked branch drag moves each link by one group transform and writes its path once at the drop, and the pick-up no longer tokenises 300 links (pick-up frame 117 to 50ms at 50 topics; L-ui-modernisation-61).
 - uipolish-0924 item D closed (L469): the per-surface pass measured with no finding at 1440 and 390, light and dark: 22 surfaces, 0 horizontal scroll, 0 off-screen or clipped text, 0 console errors, touch floor 0 under (28 and 44px), 0 dead or covered buttons, contrast ok (L469).
 - Removed 157 lines of dead SVG-graph CSS (`.graph-node`, `.graph-edge`, `.graph-core`, `.graph-label`) left from before the canvas map (L-ui-modernisation-93).
 - Maps: opening a map reads the accent before the render writes, so it no longer restyles the whole board twice (180ms of a 500-topic open; L-ui-modernisation-61).
