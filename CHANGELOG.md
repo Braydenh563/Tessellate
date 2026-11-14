@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Windows High Contrast: a focused search field, the chat box and a Library card title show a ring again (it was a shadow, which that mode drops).
 - The "Tight fit" and "Too big here" chips read clearly in light: the words take the ink and the warning icon keeps its colour (4.29 to over 4.5).
 - CI red after the base merge fixed at the cause: one Alt+Enter row, the dock declares its own control height, Settings builds its body before reading a control, an empty board query removed.
 - Boot scripts back under their cap: a file paste or drop, a reminder's bin, repeat and outcome load on the press.

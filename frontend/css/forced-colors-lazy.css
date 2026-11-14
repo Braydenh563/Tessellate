@@ -22,6 +22,17 @@
     outline: 1px solid CanvasText;
     outline-offset: -1px;
   }
+  /* Focus is outlined: the search fields, the chat input and the Library card
+     titles drew their ring with box-shadow, which this mode drops (forcedzoom.js). */
+  :is(input, textarea, select, [contenteditable="true"], a, button, [role="button"], [tabindex]):focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+  /* A field whose box is its wrapper rings the wrapper (the chat composer, a search field). */
+  :is(.search-field, .chat-composer):focus-within {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
   :disabled, [aria-disabled="true"] {
     color: GrayText;
   }
