@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 95 | 38 | 0 | 18 | 263 |
+| world-class | 130 | 94 | 38 | 0 | 18 | 262 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 487 | 109 | 2 | 129 | 1149 |
+| all | 553 | 486 | 109 | 2 | 129 | 1148 |
 
 ## graph
 
@@ -596,7 +596,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
 - [ ] **L-world-class-31** `world-class` open, M: Undo for preference writes made outside Settings (26 EXEMPT lines). From tests/test_undo_coverage.py EXEMPT. Evidence: 26 of 59 settings-class EXEMPT lines are outside settings*.js (setChatMode, toggleWebSearch, savePersonaList, saveSkillList, saveTemplateList, persistSavedFinds, ...); they write /preferences with Settings closed, so Recent changes never sees them
 - [ ] **L-world-class-32** `world-class` open, M: Settings sweep: two avatar look pickers and the web search switch do not undo. From scratchpad/ui-sweeps/undo.js ONLY=settings 2026-11-12. Evidence: profile-look-look and profile-look-mood (companion-settings.js:146 markPrefsDirty) and pref-web-search stay NOT UNDONE in the sweep; the first two keep the style in memory, so a later autosave re-sends it
-- [ ] **L-world-class-35** `world-class` open, M: Finder chip row: a scroll-row arrow covers a chip's centre at 390 (touch.js). From touch.js 390 Find anything. Evidence: scratchpad/ui-sweeps/touch.js: button.library-chip.finder-chip at 208,178 is covered by button.scroll-row-arrow (1 covered finding at 390)
 - [ ] **L-world-class-36** `world-class` open, M: Overlap sweep left real overflows: doc-statusbar, Settings xn-localllm button, note-meta-more chip, reminder date at 320. From overlap.js 2026-11-13 after L606. Evidence: scratchpad/ui-sweeps/overlap-a: 390 o23 c1, 1440 o18; #doc-statusbar 80px at 320-820, #xn-localllm button 21px at 320/390, .chip.note-meta-more 10px at 390, #reminder-groups entry-date 2px at 320
 
 ## general

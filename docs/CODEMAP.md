@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8503, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11012, test files 2816, tests 22449, plan headings 689, app scripts 29, boot scripts 38, script files 306.
+Counts: frontend functions 8503, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11012, test files 2816, tests 22450, plan headings 689, app scripts 29, boot scripts 38, script files 306.
 
 ## Frontend functions (8503)
 
@@ -13011,7 +13011,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | [[wiki links]] | frontend/css/05-sidebars-themes.css:773 |
 | `.seg-multi`'s word, and the width that decides it | frontend/css/10-responsive.css:591 |
 | `.seg-multi`: one well, independent toggles | frontend/css/03-dashboard-widgets.css:414 |
-| `.selectbar`: the bar stays with you while the selection does | frontend/css/00-tokens-shell.css:1944 |
+| `.selectbar`: the bar stays with you while the selection does | frontend/css/00-tokens-shell.css:1951 |
 | a Files row's facts line, one register (INBOX 421 f) | frontend/css/08-consistency.css:4022 |
 | a board or a map as an object in a note (INBOX 309) | frontend/css/05-sidebars-themes.css:1662 |
 | a callout that folds (REDESIGN.md §R7.3 item 3) | frontend/css/05-sidebars-themes.css:1325 |
@@ -13056,7 +13056,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | assistant message layout | frontend/css/05-sidebars-themes.css:4340 |
 | attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2845 |
 | audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:8798 |
-| back / forward through pages | frontend/css/00-tokens-shell.css:4129 |
+| back / forward through pages | frontend/css/00-tokens-shell.css:4136 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2664 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:85 |
 | band 2: 820-1100, iPad landscape and small laptops | frontend/css/07-whiteboard-misc.css:9952 |
@@ -13067,7 +13067,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | band 4: below 600, the phone | frontend/css/07-whiteboard-misc.css:10231 |
 | band 4: five columns, and the fifth is a sheet | frontend/css/10-responsive.css:653 |
 | band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:972 |
-| boot splash | frontend/css/00-tokens-shell.css:4151 |
+| boot splash | frontend/css/00-tokens-shell.css:4158 |
 | callouts ("specialised boxes and frames") | frontend/css/05-sidebars-themes.css:1250 |
 | category rename / delete | frontend/css/04-chat-dock-appearance.css:2733 |
 | chat dock density pass (§37C) | frontend/css/04-chat-dock-appearance.css:1286 |
@@ -13159,8 +13159,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/08-consistency.css:9335 |
 | one size for every dropdown | frontend/css/01-forms-settings.css:4871 |
 | one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2158 |
-| one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4307 |
-| optional extras (Settings) | frontend/css/00-tokens-shell.css:1702 |
+| one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4314 |
+| optional extras (Settings) | frontend/css/00-tokens-shell.css:1709 |
 | page margins (Appearance > Page Margins) | frontend/css/07-whiteboard-misc.css:2825 |
 | previews on the Library's document and board cards | frontend/css/library-lazy.css:1599 |
 | radio groups as choices, not as a list of dots (§35L) | frontend/css/06-timeline-dialogs.css:1296 |
@@ -13172,7 +13172,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | resizable sidebars | frontend/css/05-sidebars-themes.css:1815 |
 | results: the list-row recipe | frontend/css/03-dashboard-widgets.css:1240 |
 | rich markdown blocks (tables, quotes, rules, task lists) | frontend/css/01-forms-settings.css:1239 |
-| rows instead of cards | frontend/css/00-tokens-shell.css:2331 |
+| rows instead of cards | frontend/css/00-tokens-shell.css:2338 |
 | rules recovered from inline style attributes (audit of §40) | frontend/css/07-whiteboard-misc.css:1169 |
 | saved filters | frontend/css/05-sidebars-themes.css:666 |
 | screen-reader-only announcements | frontend/css/04-chat-dock-appearance.css:2717 |
@@ -13189,13 +13189,13 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | space switcher (top bar) | frontend/css/07-whiteboard-misc.css:2504 |
 | spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1962 |
 | status and foot | frontend/css/sketch-pad.css:519 |
-| tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3549 |
+| tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3556 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:845 |
 | the "?" head row and its help body | frontend/css/01-forms-settings.css:5432 |
 | the 464 round: Settings groups, switch rows, the phone's chrome | frontend/css/08-consistency.css:10025 |
 | the AI skills dock: one row where it fits (INBOX 450, 599) | frontend/css/08-consistency.css:9539 |
-| the AI status dot | frontend/css/00-tokens-shell.css:1565 |
+| the AI status dot | frontend/css/00-tokens-shell.css:1572 |
 | the Ask box explaining itself (§35A) | frontend/css/06-timeline-dialogs.css:1275 |
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3199 |
 | the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:5360 |
@@ -13205,7 +13205,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/10-responsive.css:2417 |
 | the Graph dock's second row, and the nine pixels that cause it | frontend/css/08-consistency.css:2399 |
 | the HUD: a momentary readout, not a notification | frontend/css/07-whiteboard-misc.css:7845 |
-| the Library (§4, §36F) | frontend/css/00-tokens-shell.css:1851 |
+| the Library (§4, §36F) | frontend/css/00-tokens-shell.css:1858 |
 | the Library on a phone (BACKLOG §116.1 item 3) | frontend/css/07-whiteboard-misc.css:9379 |
 | the Library tab's floating action is not the whiteboard's | frontend/css/07-whiteboard-misc.css:10880 |
 | the Library's Activity rows (library.js, `library-${item.kind}`) | frontend/css/library-lazy.css:3431 |
@@ -13224,7 +13224,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4959 |
 | the assistant's three verbs (INBOX 192) | frontend/css/09-editor.css:743 |
 | the attachment card (INBOX 440 (2), DESIGN.md "A file attached to a | frontend/css/05-sidebars-themes.css:425 |
-| the bar's three zones | frontend/css/00-tokens-shell.css:3295 |
+| the bar's three zones | frontend/css/00-tokens-shell.css:3302 |
 | the bar: colours, size and style, the sheet | frontend/css/sketch-pad.css:114 |
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:1055 |
 | the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:5149 |
@@ -13269,7 +13269,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the flat looks carry no glow on a button | frontend/css/08-consistency.css:3778 |
 | the flat looks: a selected tab is a place, not an action | frontend/css/08-consistency.css:2927 |
 | the formatting strip says what the caret is already in | frontend/css/09-editor.css:1034 |
-| the glass card | frontend/css/00-tokens-shell.css:3822 |
+| the glass card | frontend/css/00-tokens-shell.css:3829 |
 | the graph node panel becomes a sheet (GRAPH_PLAN Phase 6) | frontend/css/07-whiteboard-misc.css:10251 |
 | the graph's floating controls clear its New note (INBOX 430) | frontend/css/10-responsive.css:2297 |
 | the graph's legend: one container, not a pill in a box | frontend/css/08-consistency.css:3140 |
@@ -13293,10 +13293,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the one map chip (MINDMAP_PLAN.md §5 item 12) | frontend/css/05-sidebars-themes.css:794 |
 | the one popover shell (UI_MODERNISATION_PLAN.md, Phase 2) | frontend/css/07-whiteboard-misc.css:8030 |
 | the orphan-row pattern, everywhere else it appears (§36B) | frontend/css/06-timeline-dialogs.css:1704 |
-| the overview strip | frontend/css/00-tokens-shell.css:1913 |
+| the overview strip | frontend/css/00-tokens-shell.css:1920 |
 | the pad | frontend/css/sketch-pad.css:42 |
 | the page scrollers scroll on the compositor | frontend/css/08-consistency.css:4378 |
-| the page shell (§35L) | frontend/css/00-tokens-shell.css:3639 |
+| the page shell (§35L) | frontend/css/00-tokens-shell.css:3646 |
 | the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2576 |
 | the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5823 |
 | the picker itself | frontend/css/05-sidebars-themes.css:3711 |
@@ -13311,16 +13311,16 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the selection tick, in the app's own language | frontend/css/07-whiteboard-misc.css:4404 |
 | the settings jump list | frontend/css/07-whiteboard-misc.css:10634 |
 | the settings sheet takes the touch floor | frontend/css/01-forms-settings.css:5565 |
-| the spine | frontend/css/00-tokens-shell.css:2281 |
+| the spine | frontend/css/00-tokens-shell.css:2288 |
 | the spine on the other edge (MINDMAP_PLAN.md §13e) | frontend/css/07-whiteboard-misc.css:8583 |
-| the status bar (§36D) | frontend/css/00-tokens-shell.css:3213 |
+| the status bar (§36D) | frontend/css/00-tokens-shell.css:3220 |
 | the status bar from 820 to 959: one item fewer | frontend/css/10-responsive.css:1240 |
-| the status bar on a small phone | frontend/css/00-tokens-shell.css:3522 |
+| the status bar on a small phone | frontend/css/00-tokens-shell.css:3529 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
 | the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1138 |
 | the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4227 |
 | the strip's three doors (MINDMAP_PLAN.md §13b) | frontend/css/07-whiteboard-misc.css:8876 |
-| the strips that appear only when they apply | frontend/css/00-tokens-shell.css:1928 |
+| the strips that appear only when they apply | frontend/css/00-tokens-shell.css:1935 |
 | the structural blocks (INBOX 421 b) | frontend/css/05-sidebars-themes.css:1434 |
 | the suggestion menu, the dictionary, and the goal | frontend/css/05-sidebars-themes.css:5112 |
 | the switch's hit target (MODERNISATION_AUDIT.md Brief 8) | frontend/css/07-whiteboard-misc.css:8175 |
@@ -13345,7 +13345,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:10876 |
 | user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1931 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:974 |
-| what a wide screen is for | frontend/css/00-tokens-shell.css:3649 |
+| what a wide screen is for | frontend/css/00-tokens-shell.css:3656 |
 | what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5623 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2081 |
 | what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:5503 |
@@ -13359,7 +13359,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 
 | File | Lines |
 |---|---|
-| frontend/css/00-tokens-shell.css | 4337 |
+| frontend/css/00-tokens-shell.css | 4344 |
 | frontend/css/01-forms-settings.css | 6336 |
 | frontend/css/02-chat-graph.css | 5312 |
 | frontend/css/03-dashboard-widgets.css | 4931 |
@@ -13467,7 +13467,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `state` | src/tessellate/api/routes_bench.py:241 |
 |  | GET | `suggestions` | src/tessellate/api/routes_inbox.py:122 |
 |  | GET | `tidy_summary` | src/tessellate/api/routes_tidy.py:50 |
-|  | GET | `timeline` | src/tessellate/api/routes_timeline.py:361 |
+|  | GET | `timeline` | src/tessellate/api/routes_timeline.py:363 |
 |  | GET | `today` | src/tessellate/api/routes_resurface.py:106 |
 |  | POST | `chat` | src/tessellate/api/routes_chat.py:416 |
 |  | POST | `count` | src/tessellate/api/routes_usage.py:30 |
@@ -13592,7 +13592,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/desktop/fullscreen` | POST | `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:860 |
 | `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
 | `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:225 |
-| `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:825 |
+| `/digest` | GET | `span_digest` | src/tessellate/api/routes_timeline.py:828 |
 | `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:949 |
 | `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:876 |
 | `/dismiss` | POST | `dismiss_insight` | src/tessellate/api/routes_insights.py:549 |
@@ -23638,37 +23638,37 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_MeetingAt` | src/tessellate/api/routes_timeline.py:268 |
-| `_add_source_density` | src/tessellate/api/routes_timeline.py:577 |
-| `_also_on` | src/tessellate/api/routes_timeline.py:258 |
-| `_bucket_start` | src/tessellate/api/routes_timeline.py:154 |
-| `_check_params` | src/tessellate/api/routes_timeline.py:491 |
-| `_cut_page` | src/tessellate/api/routes_timeline.py:632 |
-| `_dates_of` | src/tessellate/api/routes_timeline.py:592 |
-| `_decode_cursor` | src/tessellate/api/routes_timeline.py:68 |
-| `_decode_marks` | src/tessellate/api/routes_timeline.py:124 |
-| `_density` | src/tessellate/api/routes_timeline.py:740 |
-| `_encode_marks` | src/tessellate/api/routes_timeline.py:107 |
-| `_entries_in_window` | src/tessellate/api/routes_timeline.py:710 |
-| `_first_line` | src/tessellate/api/routes_timeline.py:655 |
-| `_in_range` | src/tessellate/api/routes_timeline.py:523 |
-| `_meeting_dates` | src/tessellate/api/routes_timeline.py:279 |
-| `_naive` | src/tessellate/api/routes_timeline.py:666 |
-| `_older_than` | src/tessellate/api/routes_timeline.py:146 |
-| `_page_of` | src/tessellate/api/routes_timeline.py:538 |
-| `_place_documents` | src/tessellate/api/routes_timeline.py:289 |
-| `_place_notes` | src/tessellate/api/routes_timeline.py:165 |
-| `_place_reminders` | src/tessellate/api/routes_timeline.py:325 |
-| `_placed_rows` | src/tessellate/api/routes_timeline.py:609 |
-| `_ranged_entries` | src/tessellate/api/routes_timeline.py:697 |
-| `_requested_kinds` | src/tessellate/api/routes_timeline.py:86 |
-| `_source_pages` | src/tessellate/api/routes_timeline.py:555 |
-| `_span_said_by_model` | src/tessellate/api/routes_timeline.py:783 |
-| `_span_said_in_time` | src/tessellate/api/routes_timeline.py:808 |
-| `_window` | src/tessellate/api/routes_timeline.py:505 |
-| `_with_placement` | src/tessellate/api/routes_timeline.py:674 |
-| `span_digest` | src/tessellate/api/routes_timeline.py:826 |
-| `timeline` | src/tessellate/api/routes_timeline.py:362 |
+| `_MeetingAt` | src/tessellate/api/routes_timeline.py:270 |
+| `_add_source_density` | src/tessellate/api/routes_timeline.py:579 |
+| `_also_on` | src/tessellate/api/routes_timeline.py:260 |
+| `_bucket_start` | src/tessellate/api/routes_timeline.py:156 |
+| `_check_params` | src/tessellate/api/routes_timeline.py:493 |
+| `_cut_page` | src/tessellate/api/routes_timeline.py:634 |
+| `_dates_of` | src/tessellate/api/routes_timeline.py:594 |
+| `_decode_cursor` | src/tessellate/api/routes_timeline.py:70 |
+| `_decode_marks` | src/tessellate/api/routes_timeline.py:126 |
+| `_density` | src/tessellate/api/routes_timeline.py:742 |
+| `_encode_marks` | src/tessellate/api/routes_timeline.py:109 |
+| `_entries_in_window` | src/tessellate/api/routes_timeline.py:712 |
+| `_first_line` | src/tessellate/api/routes_timeline.py:657 |
+| `_in_range` | src/tessellate/api/routes_timeline.py:525 |
+| `_meeting_dates` | src/tessellate/api/routes_timeline.py:281 |
+| `_naive` | src/tessellate/api/routes_timeline.py:668 |
+| `_older_than` | src/tessellate/api/routes_timeline.py:148 |
+| `_page_of` | src/tessellate/api/routes_timeline.py:540 |
+| `_place_documents` | src/tessellate/api/routes_timeline.py:291 |
+| `_place_notes` | src/tessellate/api/routes_timeline.py:167 |
+| `_place_reminders` | src/tessellate/api/routes_timeline.py:327 |
+| `_placed_rows` | src/tessellate/api/routes_timeline.py:611 |
+| `_ranged_entries` | src/tessellate/api/routes_timeline.py:699 |
+| `_requested_kinds` | src/tessellate/api/routes_timeline.py:88 |
+| `_source_pages` | src/tessellate/api/routes_timeline.py:557 |
+| `_span_said_by_model` | src/tessellate/api/routes_timeline.py:785 |
+| `_span_said_in_time` | src/tessellate/api/routes_timeline.py:810 |
+| `_window` | src/tessellate/api/routes_timeline.py:507 |
+| `_with_placement` | src/tessellate/api/routes_timeline.py:676 |
+| `span_digest` | src/tessellate/api/routes_timeline.py:829 |
+| `timeline` | src/tessellate/api/routes_timeline.py:364 |
 
 ### src/tessellate/api/routes_translate.py (2)
 
@@ -28255,7 +28255,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22449)
+## Tests (22450)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30801,7 +30801,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 295 |
+| tests/test_ui_recipes.py | 296 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |
@@ -31496,14 +31496,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3025 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:650 |
+| Needs hardware | docs/roadmap/LEDGER.md:649 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1335 |
-| Owner calls | docs/roadmap/LEDGER.md:643 |
+| Owner calls | docs/roadmap/LEDGER.md:642 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31684,7 +31684,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4010 |
-| Plan session briefs | docs/roadmap/LEDGER.md:784 |
+| Plan session briefs | docs/roadmap/LEDGER.md:783 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31738,25 +31738,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:800 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:884 |
+| chat | docs/roadmap/LEDGER.md:799 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:883 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:824 |
-| general | docs/roadmap/LEDGER.md:602 |
+| documents | docs/roadmap/LEDGER.md:823 |
+| general | docs/roadmap/LEDGER.md:601 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:788 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:896 |
+| graph | docs/roadmap/LEDGER.md:787 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:895 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
 | mindmap | docs/roadmap/LEDGER.md:343 |
-| mindmap | docs/roadmap/LEDGER.md:836 |
+| mindmap | docs/roadmap/LEDGER.md:835 |
 | timeline | docs/roadmap/LEDGER.md:464 |
-| timeline | docs/roadmap/LEDGER.md:860 |
+| timeline | docs/roadmap/LEDGER.md:859 |
 | ui-modernisation | docs/roadmap/LEDGER.md:347 |
-| ui-modernisation | docs/roadmap/LEDGER.md:848 |
+| ui-modernisation | docs/roadmap/LEDGER.md:847 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:812 |
+| whiteboard | docs/roadmap/LEDGER.md:811 |
 | world-class | docs/roadmap/LEDGER.md:466 |
-| world-class | docs/roadmap/LEDGER.md:872 |
+| world-class | docs/roadmap/LEDGER.md:871 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |

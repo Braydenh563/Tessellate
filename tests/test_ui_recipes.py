@@ -7903,3 +7903,10 @@ def test_a_confirmations_decline_is_the_quiet_text_action_not_a_bordered_ghost()
     body = m.group(1)
     assert re.search(r"border:\s*0", body) and "background: transparent" in body and "color: var(--accent-text)" in body
     assert re.search(r"\.tool-confirm \.row > button\.ghost:is\(:hover, :focus-visible\):not\(:disabled\) \{\s*background: var\(--hover-veil\)", css)
+
+
+def test_a_scroll_rows_arrows_are_for_a_pointer_not_touch() -> None:
+    """On touch the swipe is the control: an arrow sat over the last chip that shows and covered
+    its middle at 390 (L-world-class-35, touch.js), so `hover: none` hides the arrows."""
+    shell = (ROOT / "frontend/css/00-tokens-shell.css").read_text(encoding="utf-8")
+    assert re.search(r"@media \(hover: none\) \{\s*button\.scroll-row-arrow\.icon-only \{\s*display: none;", shell)
