@@ -157,6 +157,8 @@ const SPY = () => {
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
 
   // L131/L147: a click on Atlas in the large view, at RATE x CPU: the call's own cost and the main thread after it.
+  // The updates question can arrive after boot and sit over the figure (seen: every click blocked).
+  await page.evaluate(() => { if (document.getElementById('confirm-name-1')) [...document.querySelectorAll('button')].find((b) => /Don.t check/.test(b.innerText))?.click(); });
   await page.evaluate(() => openNameMarkViewer('Atlas'));
   // The viewer is open when its figure is laid out, not after a fixed sleep a loaded machine can miss.
   await page.waitForFunction(() => { const f = document.querySelector('.nm-viewer .nm-viewer-figure'); return f && f.getBoundingClientRect().width > 0; }, null, { timeout: 30000 });
@@ -173,7 +175,7 @@ const SPY = () => {
     let head = null;
     for (let tries = 0; tries < 10 && !head; tries += 1) {
       head = await page.evaluate(() => { const f = document.querySelector('.nm-viewer .nm-viewer-figure'); if (!f) return null; const r = f.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height * (0.25 + (Math.random() * 0.2)); const top = document.elementFromPoint(x, y); if (f.contains(top) || top?.closest?.('.nm-viewer-figure')) return [x, y]; window.__blocked = (top ? [top, top.parentElement, top.parentElement?.parentElement].map((e) => e ? e.tagName + '#' + e.id + '.' + String(e.className).slice(0, 40) : '').join(' < ') + ' text=' + (top.textContent || '').slice(0, 30) : 'none') + ' @' + Math.round(x) + ',' + Math.round(y) + ' fig ' + Math.round(r.width) + 'x' + Math.round(r.height); return null; });
-      if (!head) await sleep(300);
+      if (!head) { await page.evaluate(() => { if (document.getElementById('confirm-name-1')) [...document.querySelectorAll('button')].find((b) => /Don.t check/.test(b.innerText))?.click(); }); await sleep(300); }
     }
     if (head) { landed += 1; await page.mouse.click(head[0], head[1]); }
     await sleep(1700);
