@@ -142,7 +142,8 @@
       mirror.scrollTop = input.scrollTop;
       mirror.scrollLeft = input.scrollLeft;
     });
-    if (window.ResizeObserver) new ResizeObserver(() => state.findings.length && place()).observe(input);
+    //: The box grows on input (paint re-places it); a window resize is the only other change of width.
+    window.addEventListener("resize", () => state.findings.length && place());
     input.addEventListener("click", (event) => {
       const caret = input.selectionStart;
       if (caret !== input.selectionEnd || !state.findings.length) return;
