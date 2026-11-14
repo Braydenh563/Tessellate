@@ -222,8 +222,8 @@ edge, and no board in the centrality pass or the path index. The switch is
 labelled Boards rather than Mind maps, because a whiteboard is a board too and
 a switch that hides one and not the other is the same confusion one step over.
 
-`/graph/local` has no such switch (focus mode and the local pane walk boards
-as notes): parked in BACKLOG.md §9, 2026-11-12.
+`/graph/local` takes the same switch (L-graph-8, built 2026-11-12:
+`include_maps`, sent by `graphLocalQuery`; `tests/test_graph_local_boards.py`).
 
 ## Decision changed, 2026-09-09: a drag places, Shift pins
 
