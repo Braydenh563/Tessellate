@@ -14180,6 +14180,7 @@ function wbExportLook() {
         if (!copy) return;
         copy.removeAttribute("class");
         copy.removeAttribute("style");
+        wbFmtState.effects?.keepShadow(label, copy);
         copy.removeAttribute("data-kind");
         copy.setAttribute("fill", wbExportColour(look.fill) || "#1f2430");
         copy.setAttribute("font-size", look.fontSize);

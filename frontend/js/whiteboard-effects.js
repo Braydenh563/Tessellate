@@ -14,6 +14,11 @@
     if (!on) return { textShadow: "", filter: "" };
     return svg ? { textShadow: "", filter: "drop-shadow(1px 1px 1px rgb(0 0 0 / 0.5))" } : { textShadow: "1px 1px 2px rgb(0 0 0 / 0.5)", filter: "" };
   }
+  //: An export strips a label's inline style; this puts back the one property that is the shadow, and nothing else.
+  function keepShadow(label, copy) {
+    const filter = label?.style?.filter;
+    if (filter && copy) copy.style.filter = filter;
+  }
   function paintTextShadow(el, on) {
     if (!el?.style) return;
     const style = textShadowStyle(Boolean(el.namespaceURI?.endsWith("/svg")), on === true);
@@ -256,5 +261,5 @@
   }
   onSurface("board", wire);
 
-  wbFmtState.effects = { textShadowStyle, paintTextShadow, paintShape, paintObject, flipWord, mirrorShift, flipObjects, statusParts, refreshStatus, value, sync };
+  wbFmtState.effects = { keepShadow, textShadowStyle, paintTextShadow, paintShape, paintObject, flipWord, mirrorShift, flipObjects, statusParts, refreshStatus, value, sync };
 })();

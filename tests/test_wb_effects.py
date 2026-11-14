@@ -150,3 +150,15 @@ def test_the_status_bar_is_a_plain_dock_off_by_default_behind_a_view_toggle():
 
 def test_the_file_is_in_the_boards_bundle():
     assert "/js/whiteboard-effects.js" in frontend_text("lazy-entries.js")
+
+
+def test_an_exported_label_keeps_its_shadow_and_loses_the_rest_of_its_style():
+    out = _node(
+        "const mk = (style) => ({ style: { filter: style } });"
+        "const on = mk('drop-shadow(1px 1px 1px rgb(0 0 0 / 0.5))'), off = mk('');"
+        "wbFmtState.effects.keepShadow(on, on); wbFmtState.effects.keepShadow(off, off);"
+        "const c1 = mk(''), c2 = mk(''); wbFmtState.effects.keepShadow(on, c1); wbFmtState.effects.keepShadow(off, c2); console.log(JSON.stringify([c1.style, c2.style]));"
+    )
+    assert out[0] == {"filter": "drop-shadow(1px 1px 1px rgb(0 0 0 / 0.5))"} and out[1] == {"filter": ""}
+    board = frontend_text("whiteboard.js")
+    assert board.index('copy.removeAttribute("style");') < board.index("wbFmtState.effects?.keepShadow(label, copy)")
