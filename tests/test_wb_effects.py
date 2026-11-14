@@ -125,7 +125,9 @@ def test_flip_is_on_notes_pictures_and_frames_and_a_frame_takes_opacity():
 
 
 def test_a_flipped_note_turns_the_card_not_the_words():
-    css = frontend_text("library-lazy.css") if False else open("frontend/css/library-lazy.css", encoding="utf-8").read()
+    from pathlib import Path
+
+    css = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert '.wb-object-text.wb-sticky[data-flip~="x"]::after' in css
     # Nothing in the paint touches the text's own transform.
     src = frontend_text("whiteboard-effects.js")
