@@ -1627,7 +1627,7 @@ TAIL_TOPICS.extend(
             "id": "chat-context",
             "keywords": (
                 "context window", "context pill", "oldest messages", "oldest exchanges", "long chat",
-                "model forgot", "forget the start", "forgets earlier", "forgot earlier", "did not see", "no longer fit", "too long to fit",
+                "model forgot", "documents about", "boards from", "files named", "forget the start", "forgets earlier", "forgot earlier", "did not see", "no longer fit", "too long to fit",
             ),
             "body": (
                 "The context pill in the chat header shows how full the model's "
@@ -1635,7 +1635,9 @@ TAIL_TOPICS.extend(
                 "the window, the oldest exchanges are left out of what the model "
                 "reads, and a line under the reply says how many. Compress in the "
                 "header summarises the earlier messages so the gist stays in view; "
-                "a new chat (Ctrl+Shift+O) starts empty."
+                "a new chat (Ctrl+Shift+O) starts empty. Ask about your other things "
+                "the same way as notes: documents about the harbor, boards from "
+                "June, files named invoice, which documents mention the quay."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },

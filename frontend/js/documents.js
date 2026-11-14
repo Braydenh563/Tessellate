@@ -1353,7 +1353,7 @@ async function openDocument(id) {
   //: A fetch that failed says so (audit 1028 D35): the editor stays on the
   //: document it had, and the list goes back to marking that one.
   if (!doc) {
-    toast("Couldn't open that document. The one on screen is unchanged.", true, { action: ["Try again", () => openDocument(id)] });
+    toast(voiceLine("failed", "open that document. The one on screen is unchanged"), true, { action: ["Try again", () => openDocument(id)] });
     renderDocList();
     return;
   }
@@ -2763,7 +2763,7 @@ async function docSaveOnce(silent) {
     //: retrying every pause must not stack a toast each time.
     if (!docSaveFailedSaid) {
       docSaveFailedSaid = true;
-      toast(voiceLine("failed", { what: "save the document", why: `${String(error.message || "no answer").replace(/\.$/, "")}. The text is kept on this device.` }), true, {
+      toast(voiceLine("failed", "save the document", `${String(error.message || "no answer").replace(/\.$/, "")}. The text is kept on this device.`), true, {
         action: ["Try again", () => saveDocument({ silent: false })],
       });
     }
@@ -7282,7 +7282,7 @@ async function docImageUpload(box, boxId, file, said = "") {
       }
       docImageUpload(box, boxId, file, said);
     };
-    toast("Couldn't upload that picture. Add its address by hand.", true, { action: ["Try again", retry] });
+    toast(voiceLine("failed", "upload that picture. Add its address by hand"), true, { action: ["Try again", retry] });
   }
 }
 
@@ -8169,7 +8169,7 @@ async function openDocAiHistory() {
           toast("Reverted.");
           dialog.close();
         } catch (error) {
-          toast(error.message || "Couldn't revert that.", true);
+          toast(error.message || voiceLine("failed", "revert that"), true);
         } finally {
           revertBtn.disabled = false;
         }

@@ -1166,10 +1166,10 @@ function toastName(text, fallback = "it", limit = 48) {
   return `“${flat.length > limit ? `${flat.slice(0, limit - 1).trimEnd()}…` : flat}”`;
 }
 
-function voiceLine(key, slots = {}) {
-  const why = slots.why ? String(slots.why).trim() : "";
-  const shape = VOICE[key === "failed" && why ? "failed_why" : key] || "";
-  return shape.replace(/\{(\w+)\}/g, (_, name) => (name === "why" ? why : String(slots[name] ?? "")));
+function voiceLine(key, what = "", why = "") {
+  //: `voiceLine("failed", "open that", why)`: the sentence the realiser's table says, "Couldn't open that: why".
+  why = String(why || "").trim();
+  return (VOICE[key === "failed" && why ? "failed_why" : key] || "").replace(/\{(\w+)\}/g, (_, name) => (name === "why" ? why : what));
 }
 
 function toast(message, isError = false, { exempt = false, action = null } = {}) {

@@ -38,6 +38,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import facts
+from tessellate.ai import presets
 from tessellate.ai.fence import FENCE_RULE, fence
 from tessellate.core.database import DerivedFact, Entry
 from tessellate.core.logbuffer import safe_value
@@ -166,7 +167,7 @@ def _judge(provider, model: str, paragraph: str, source: str) -> tuple[str, str]
         reply = provider.chat(model, [
             {"role": "system", "content": f"{JUDGE_SYSTEM} {FENCE_RULE}"},
             {"role": "user", "content": f"First: {fence('paragraph', paragraph[:1200])}\n\nSecond: {fence('note', source[:600])}"},
-        ])
+        ], mode=presets.BACKGROUND_MODE)
     except Exception as exc:  # noqa: BLE001  # a model that fails leaves the local reading
         logger.info("margin: the model could not judge (%s)", safe_value(str(exc), 160))
         return None

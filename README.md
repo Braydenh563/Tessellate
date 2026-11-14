@@ -415,7 +415,21 @@ later; until then search uses keywords. To avoid the download, pull
 - **To run it:** the Windows installer and the Linux tarball need nothing else.
   From source you need Python 3.11 or newer (CI runs 3.11 to 3.13).
 - **For the AI:** [Ollama](https://ollama.com) or any OpenAI-compatible server.
-  The app is useful without one.
+  The app is useful without one. Each way in is run against a fake transport
+  by the test suite; a real model is run only when you point
+  `TESSELLATE_EVALS_URL` at one (`pytest -m evals`), and the table says which.
+
+| Server | Dialect | Tool calling | Streaming | Fake transport last run | Real model last run |
+| --- | --- | --- | --- | --- | --- |
+| Ollama | native | probed per model | yes | 2026-11-14 | the author's own setup |
+| Ollama, OpenAI-compatible | `/v1` | probed per model | yes | 2026-11-14 | not run |
+| LM Studio | `/v1` | probed per model | yes | 2026-11-14 | not run |
+| llama.cpp `llama-server` | `/v1` | probed per model | yes | 2026-11-14 | not run |
+| Any other OpenAI-compatible server | `/v1` | probed per model | yes | 2026-11-14 | not run |
+| No model | none | not needed | not needed | 2026-11-14 | not needed |
+
+A model that cannot call tools is probed once and then asked in plain
+questions and answers, and the app says so in one line.
 - **Optional extras.** Settings, Packages installs each one from inside the
   app, with no terminal. None is needed for the core.
 
@@ -533,7 +547,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: the
 one rule is that every feature must work with no cloud service. In short:
 
 ```
-pytest -n auto                  # 22,000+ tests, fully offline, every AI call faked
+pytest -n auto                  # 23,000+ tests, fully offline, every AI call faked
 bash scripts/gate.sh --changed  # lints, node --check, ruff, and the tests that name your files
 ruff check .                    # what CI lints with
 ```

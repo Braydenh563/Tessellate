@@ -1942,7 +1942,7 @@ $("binned-restore").addEventListener("click", async () => {
     pushBinPairUndo("Restored a note from the bin", `/entries/${id}`, `/entries/${id}/restore`, true, () => Promise.all([refreshEntries([id]), loadLibrary()]));
     toast("Restored.");
   } catch (error) {
-    toast(voiceLine("failed", { what: "restore that note", why: error.message }), true);
+    toast(voiceLine("failed", "restore that note", error.message), true);
     return;
   }
   closeBinnedReader();
@@ -1961,7 +1961,7 @@ $("binned-purge").addEventListener("click", async () => {
     undoStoreClear.purged("note", id);
     toast("Deleted for good.");
   } catch (error) {
-    toast(voiceLine("failed", { what: "delete that note", why: error.message }), true);
+    toast(voiceLine("failed", "delete that note", error.message), true);
     return;
   }
   closeBinnedReader();
@@ -3485,7 +3485,7 @@ async function importLibraryDocuments(files) {
         });
       made.push(document_);
     } catch (error) {
-      toast(`Couldn't import “${file.name}”: ${error.message || "the file could not be read."}`, true);
+      toast(voiceLine("failed", `import “${file.name}”`, error.message || "the file could not be read."), true);
     }
   }
   if (!made.length) return;
@@ -3783,7 +3783,7 @@ async function renderLibraryDocuments() {
           try {
             full = await apiJson(`/documents/${doc.id}`);
           } catch (error) {
-            toast(error.message || voiceLine("failed", { what: "open that document" }), true);
+            toast(error.message || voiceLine("failed", "open that document"), true);
             return;
           }
           openLightbox(
@@ -4519,7 +4519,7 @@ function ocrRenderOtherReadings(body) {
       try {
         await ocrCleanLoops(image);
       } catch (error) {
-        toast(error.message || voiceLine("failed", { what: "clean up that reading" }), true);
+        toast(error.message || voiceLine("failed", "clean up that reading"), true);
       } finally {
         button.disabled = false;
       }
@@ -4542,7 +4542,7 @@ function ocrRenderOtherReadings(body) {
         ocrOfferBinUndo(image, `Delete a reading (${reading.label})`, "Reading moved to the bin.", binnedId, again);
         await ocrLoadPage(image, ocrWorkspacePage);
       } catch (error) {
-        toast(error.message || voiceLine("failed", { what: "delete that reading" }), true);
+        toast(error.message || voiceLine("failed", "delete that reading"), true);
       } finally {
         button.disabled = false;
       }
@@ -5036,7 +5036,7 @@ function ocrRenderRegions(body) {
           await ocrLoadPage(image, ocrWorkspacePage);
         } catch (error) {
           remove.disabled = false;
-          toast(error.message || voiceLine("failed", { what: "delete that reading" }), true);
+          toast(error.message || voiceLine("failed", "delete that reading"), true);
         }
       });
       head.appendChild(remove);
@@ -8318,7 +8318,7 @@ onSurface("ocr", () => {
       //: same gap; one `catch` now covers both.)
       $("ocr-message").textContent = error.message || "Couldn't describe that.";
       $("ocr-message").classList.remove("hidden");
-      toast(error.message || voiceLine("failed", { what: "describe that" }), true);
+      toast(error.message || voiceLine("failed", "describe that"), true);
     } finally {
       button.disabled = false;
     }
@@ -8362,7 +8362,7 @@ onSurface("ocr", () => {
       ocrOfferBinUndo(image, `Delete the reading of ${what}`, "Reading moved to the bin.", binnedId, remove);
       await ocrLoadPage(image, ocrWorkspacePage);
     } catch (error) {
-      toast(error.message || voiceLine("failed", { what: "delete that reading" }), true);
+      toast(error.message || voiceLine("failed", "delete that reading"), true);
     } finally {
       button.disabled = false;
     }
@@ -8382,7 +8382,7 @@ onSurface("ocr", () => {
     try {
       await ocrCleanLoops(image);
     } catch (error) {
-      toast(error.message || voiceLine("failed", { what: "clean up that reading" }), true);
+      toast(error.message || voiceLine("failed", "clean up that reading"), true);
     } finally {
       button.disabled = false;
     }
@@ -8490,7 +8490,7 @@ onSurface("ocr", () => {
       ocrOfferTextUndo(image, kind, "Edit the reading", "Saved your changes.", before, after, true);
       await ocrLoadPage(image, ocrWorkspacePage);
     } catch (error) {
-      toast(error.message || voiceLine("failed", { what: "save that" }), true);
+      toast(error.message || voiceLine("failed", "save that"), true);
     } finally {
       setBusy(button, false);
     }
@@ -8530,7 +8530,7 @@ onSurface("ocr", () => {
       announceSavedNote(created, "", { message: "Saved as a note.", undoLabel: "Saved a picture's text as a note" });
       flashEntry(created.id);
     } catch (error) {
-      toast(error.message || voiceLine("failed", { what: "save that note" }), true);
+      toast(error.message || voiceLine("failed", "save that note"), true);
     }
   });
 });
@@ -9754,7 +9754,7 @@ function filterLibraryImagesGallery() {
           });
         } catch (error) {
           setCaptionState(image.caption);
-          toast(error.message || voiceLine("failed", { what: "save that caption" }), true);
+          toast(error.message || voiceLine("failed", "save that caption"), true);
         }
       };
       box.addEventListener("keydown", (keyEvent) => {
@@ -9819,7 +9819,7 @@ function filterLibraryImagesGallery() {
       } catch (error) {
         captionText.textContent = previousCaptionText;
         syncProvenance();
-        toast(error.message || voiceLine("failed", { what: "generate a caption" }), true);
+        toast(error.message || voiceLine("failed", "generate a caption"), true);
       } finally {
         captionBtn.disabled = false;
       }
@@ -9910,7 +9910,7 @@ function filterLibraryImagesGallery() {
           setOcrState(updated.ocr_text);
         } catch (error) {
           setOcrState(image.ocr_text);
-          toast(error.message || voiceLine("failed", { what: "save that text" }), true);
+          toast(error.message || voiceLine("failed", "save that text"), true);
         }
       };
       box.addEventListener("keydown", (keyEvent) => {
@@ -9953,7 +9953,7 @@ function filterLibraryImagesGallery() {
         setOcrState(updated.ocr_text);
       } catch (error) {
         ocrText.textContent = previousOcrText;
-        toast(error.message || voiceLine("failed", { what: "read the text in that image" }), true);
+        toast(error.message || voiceLine("failed", "read the text in that image"), true);
       } finally {
         ocrBtn.disabled = modelStatus && modelStatus.tesseract_available === false;
       }
@@ -10098,7 +10098,7 @@ function filterLibraryImagesGallery() {
           setVisionOcrState(updated.vision_ocr_text, updated.vision_ocr_model);
         } catch (error) {
           setVisionOcrState(previousText, previousModel);
-          toast(error.message || voiceLine("failed", { what: "save that text" }), true);
+          toast(error.message || voiceLine("failed", "save that text"), true);
         }
       };
       box.addEventListener("keydown", (keyEvent) => {
@@ -10136,7 +10136,7 @@ function filterLibraryImagesGallery() {
         // re-hiding the box if this was the first-ever attempt and it
         // failed, rather than leaving an empty line visible forever.
         setVisionOcrState(image.vision_ocr_text, image.vision_ocr_model);
-        toast(error.message || voiceLine("failed", { what: "read the text in that image" }), true);
+        toast(error.message || voiceLine("failed", "read the text in that image"), true);
       } finally {
         visionOcrBtn.disabled = false;
       }
@@ -11514,7 +11514,7 @@ renderBookmarks.file = {
       if (!response.ok) throw new Error(`The server answered ${response.status}`);
       await saveFile("tessellate-bookmarks.html", await response.blob());
     } catch (e) {
-      toast(`Couldn't export your bookmarks: ${e.message}.`, true, { action: ["Try again", () => renderBookmarks.file.save()] });
+      toast(voiceLine("failed", "export your bookmarks", e.message), true, { action: ["Try again", () => renderBookmarks.file.save()] });
     }
   },
 };
@@ -11688,7 +11688,7 @@ async function renameBookmarkGroup(from, to) {
       written.push({ id: bookmark.id, before: { group_name: from }, after: { group_name: to } });
       moved++;
     } catch (error) {
-      toast(error.message || voiceLine("failed", { what: "move that bookmark" }), true);
+      toast(error.message || voiceLine("failed", "move that bookmark"), true);
     }
   }
   const empties = emptyBookmarkGroups().filter((g) => g !== from);
@@ -12304,7 +12304,7 @@ function bookmarkRow(bookmark) {
         if (url !== bookmark.url) LinkShelf.afterSave();
       } catch (error) {
         save.disabled = false;
-        toast(error.message || voiceLine("failed", { what: "save that bookmark" }), true);
+        toast(error.message || voiceLine("failed", "save that bookmark"), true);
       }
     });
 

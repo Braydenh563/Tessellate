@@ -122,7 +122,6 @@ _PERCENT = lazy_compile(r"^(?:what(?:'s| is)\s+|whats\s+|how much is\s+|work out
 #: "how many days between 1 March and 2 April" (INBOX 1550): two days the
 #: device can count between, so never the web or the notes.
 _BETWEEN = lazy_compile(r"^(?:how many\s+)?(days|weeks)\s+(?:are there\s+)?(?:between|from)\s+(\S.*?)\s+(?:and|to|until|till)\s+(\S.*)$", re.I)
-_AGE_OF = lazy_compile(r"^how (?:old|long ago) (?:is|was) (?:the date |the day )?(\S.*\b\d{4})$", re.I)
 _WEEKDAY_OF = lazy_compile(r"^what day(?: of the week)? (?:is|was|will be|falls on) (\S.*)$", re.I)
 _DIE = lazy_compile(r"^(?:roll|throw)\s+(?:a\s+|one\s+|the\s+)?(?:die|dice|d6)$|^roll\s+(?:an?\s+)?(\d{1,2})?d(\d{1,3})$", re.I)
 _COIN = lazy_compile(r"^(?:flip|toss)\s+a\s+coin$|^heads or tails$", re.I)
@@ -326,16 +325,16 @@ def _span_words(start: date, end: date) -> str:
     return " and ".join([", ".join(said[:-1]), said[-1]] if len(said) > 1 else said) or "0 days"
 
 
-def _age_of(match: re.Match, today: date) -> list[tuple] | None:
+def _age_of(phrase: str, today: date) -> list[tuple] | None:
     """T4: "how old is 3 March 1990" as years, months and days, from the date to today."""
-    found = when_words.span(match.group(1), today, "past")
+    found = when_words.span(phrase, today, "past")
     if found is None or found[2] != "day":
         return None
     day = found[0]
     first, last = sorted((day, today))
     ago = "ago" if day <= today else "from today"
     return [("computed", f"{_day_words(day)} is {_span_words(first, last)} {ago}." if day != today else "That is today."),
-            ("computed", f"\nRead as the time from {match.group(1)} to today.")]
+            ("computed", f"\nRead as the time from {phrase} to today.")]
 
 
 def _dates(text: str, now: datetime) -> list[tuple] | None:
@@ -349,8 +348,8 @@ def _dates(text: str, now: datetime) -> list[tuple] | None:
     match = _WEEKDAY_OF.match(text)
     if match:
         return _weekday_of(match, today)
-    match = _AGE_OF.match(text)
-    return _age_of(match, today) if match else None
+    phrase = recognise_questions.age_question(text)
+    return _age_of(phrase, today) if phrase else None
 
 
 def _between(text: str, today: date) -> tuple[str, tuple[date, date]] | None:
@@ -605,7 +604,8 @@ def _date_kind(text: str) -> str | None:
         return "dates"
     if recognise_questions.offset_question(text) or (_WEEKDAY_OF.match(text) and when_words.span(_WEEKDAY_OF.match(text).group(1), now_day(), "future")):
         return "dates"
-    if _AGE_OF.match(text) and when_words.span(_AGE_OF.match(text).group(1), now_day(), "past"):
+    aged = recognise_questions.age_question(text)
+    if aged and when_words.span(aged, now_day(), "past"):
         return "dates"
     return None
 

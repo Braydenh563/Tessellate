@@ -17,10 +17,10 @@ from sqlalchemy import func, select
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import address, backend_hint, greeting_compose, librarian
+from tessellate.ai import address, backend_hint, greeting_compose, librarian, presets
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.api import paging
+from tessellate.api import chat_turn, paging
 from tessellate.core import companion_events, deps, jobs
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import Entry, utcnow
@@ -434,7 +434,7 @@ def heatmap(session: Session = Depends(get_session)) -> dict:
 
 
 @router.get("/day")
-def day_digest_lines(now: str = "", session: Session = Depends(get_session)) -> dict:
+def day_digest_lines(now: str = "", refine: bool = False, session: Session = Depends(get_session)) -> dict:
     """The dashboard's day digest (`ai/day_digest.py`): each line a count or
     a quoted span, with no model. `now` (ISO 8601 with an offset) fixes the
     clock for a test; one that does not parse is ignored."""
@@ -447,7 +447,13 @@ def day_digest_lines(now: str = "", session: Session = Depends(get_session)) -> 
         given = None
     if given is not None and given.tzinfo is not None:
         clock = given
-    return day_digest.compose(session, clock)
+    got = day_digest.compose(session, clock)
+    if refine and chat_turn.model_may_run():
+        #: One short call, never on a quote; Save power and a stopped model skip it.
+        provider = deps.get_ollama()
+        model = deps.get_model_manager().chat_model()
+        got["lines"] = day_digest.refine(got["lines"], lambda prompt: (provider.chat(model, [{"role": "user", "content": prompt}], mode=presets.BACKGROUND_MODE).get("content") or ""))
+    return got
 
 
 @router.get("/patterns")

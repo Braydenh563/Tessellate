@@ -12,6 +12,8 @@ source; `tests/test_day_digest.py` checks every one.
 
 from __future__ import annotations
 
+import re
+from collections.abc import Callable
 from datetime import datetime, time, timedelta, timezone
 
 from sqlalchemy import func, select
@@ -178,6 +180,39 @@ def compose(session: Session, now: datetime) -> dict:
     empty-day line when there is nothing to say."""
     lines = _due(session, now) + _questions(session) + _changed(session, now) + _quiet(session, now)
     return {"lines": lines, "empty": _empty(session, now) if not lines else ""}
+
+
+#: A refined line is one sentence, so a rambling reply is refused by length.
+REFINE_CHARS = 160
+REFINE_PROMPT = (
+    "Reword this one dashboard line so it reads warmly, as one short sentence. "
+    "Keep every number and every word of it that names a thing; add no number, no fact. Reply with the sentence only.\n\n"
+)
+
+
+def _digits(text: str) -> list[str]:
+    return sorted(re.findall(r"\d+", text))
+
+
+def refine(lines: list[dict], say: Callable[[str], str]) -> list[dict]:
+    """The count lines reworded by a model, each only when the reworded one keeps
+    the engine's numbers exactly and every phrase the dashboard links
+    (CHAT_PLAN decision 53: the model proposes, the engine decides). A quote is
+    never sent. A model that fails, or a line that does not pass, leaves the
+    engine's line; a taken one carries `engine_text` so the page can show both."""
+    out = []
+    for line in lines:
+        if line.get("kind") != "count" or not line.get("text"):
+            out.append(line)
+            continue
+        try:
+            reply = " ".join((say(REFINE_PROMPT + line["text"]) or "").split())
+        except Exception:  # noqa: BLE001  # no model, a failed one: the engine's own line stands
+            out.append(line)
+            continue
+        kept = bool(reply) and len(reply) <= REFINE_CHARS and _digits(reply) == _digits(line["text"]) and all(link.lower() in reply.lower() for link in line.get("links") or [])
+        out.append({**line, "text": reply, "engine_text": line["text"]} if kept else line)
+    return out
 
 
 def _empty(session: Session, now: datetime) -> str:

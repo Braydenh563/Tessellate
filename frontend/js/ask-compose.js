@@ -699,7 +699,7 @@ function askAnswerMenu() {
         openDocument(doc.id);
       }, { go: { open: "doc", id: doc.id } });
     } catch (error) {
-      toast(error.message || "Couldn't make the flashcards.", true);
+      toast(error.message || voiceLine("failed", "make the flashcards"), true);
     }
   }
 
@@ -717,7 +717,7 @@ function askAnswerMenu() {
       loadReminders();
       toast(`Reminder set for tomorrow at 9: ${askKeptTitle()}.`);
     } catch (error) {
-      toast(error.message || "Couldn't make that reminder.", true);
+      toast(error.message || voiceLine("failed", "make that reminder"), true);
     }
   }
 
@@ -735,7 +735,7 @@ function askAnswerMenu() {
       );
       toast(good ? "Added to your good answers." : "Marked as not good.");
     } catch (error) {
-      toast(error.message || "Couldn't save that rating.", true);
+      toast(error.message || voiceLine("failed", "save that rating"), true);
     }
   }
 
@@ -808,7 +808,7 @@ async function askKeepAsDocument() {
       openDocument(doc.id);
     }, { go: { open: "doc", id: doc.id } });
   } catch (error) {
-    toast(error.message || "Couldn't save that document.", true);
+    toast(error.message || voiceLine("failed", "save that document"), true);
   }
 }
 
@@ -819,7 +819,7 @@ async function askKeepAsMap() {
   const board = await apiJson("/whiteboard/maps/from-notes", {
     method: "POST",
     body: JSON.stringify({ name, note_ids: ids }),
-  }).catch((error) => toast(error.message || "Couldn't make the map.", true));
+  }).catch((error) => toast(error.message || voiceLine("failed", "make the map"), true));
   if (!board?.id) return;
   pushUndo(
     "Made a mind map from an answer",

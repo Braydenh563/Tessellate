@@ -221,7 +221,7 @@ HELP_TOPICS: list[dict] = [
             "Most opened this month and Filings to check. The Digest widget is your day "
             "with no AI: what is due, open questions, what changed since "
             "yesterday and topics gone quiet, each line a count or a quote that "
-            "opens its note. The Digest's week, on request, is written by Atlas or, with no model, composed from your notes: what you made, edited and binned, what is overdue and coming. Customise, beside the search box, has Edit "
+            "opens its note. With a model running and Save power off, it rewords the counted lines once the page has shown, and only where every number and link stays the same; quotes are never reworded. The Digest's week, on request, is written by Atlas or, with no model, composed from your notes: what you made, edited and binned, what is overdue and coming. Customise, beside the search box, has Edit "
             "layout and Widgets to show, hide and rearrange them; the layout is "
             "remembered per user."
         ),
