@@ -8,7 +8,7 @@
 // self-time functions from a CPU profile of the phase.
 // Env: BASE, KINDS (me,atlas), TAB (notes), RATE (4), RUNS (3), PROFILE, OUT.
 const fs = require('fs');
-const { boot, routeBefore } = require('./lib.js');
+const { boot, routeBefore, setBuddy } = require('./lib.js');
 const KINDS = (process.env.KINDS || 'me,atlas').split(',');
 const TAB = process.env.TAB || 'notes';
 const RATE = Number(process.env.RATE || 4);
@@ -42,7 +42,7 @@ const perFrame = (a, b, frames) => {
   if (PROFILE) await cdp.send('Profiler.enable');
   const result = {};
   for (const kind of KINDS) {
-    await page.evaluate((k) => { localStorage.removeItem('nm-buddy-spots'); const b = document.getElementById('avatar-buddy'); b.value = k; b.dispatchEvent(new Event('change', { bubbles: true })); }, kind);
+    await setBuddy(page, kind);
     await page.evaluate((tab) => revealTab(tab), TAB);
     await page.waitForTimeout(3500);
     await page.evaluate(() => {
