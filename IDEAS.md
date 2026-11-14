@@ -12,7 +12,7 @@ they live, because their wording is what a future session will search for.
 
 - [Built](#built)
 - [Partly built](#partly-built)
-- [Still open](#still-open)
+- [Filed as LEDGER rows](#filed-as-ledger-rows)
 - [From the audits](#from-the-audits)
 
 ## Built
@@ -105,32 +105,10 @@ they live, because their wording is what a future session will search for.
 - **Better agentic web search through chat.** `web_search` and `read_url` exist,
   with a SearXNG option. A research mode that plans several searches does not.
 
-## Still open
+## Filed as LEDGER rows
 
-- Manually group notes together, separate from the main sorting.
-- A note with more than one category.
-- Compress notes and data on disk.
-- Gravity and spread have no effect on the graph's other layouts.
-- A visual timeline drawn as a branching line with off-shoots.
-- Settings pages cannot be reached on a narrow phone view (check for other pages
-  with the same problem).
-- No Markdown rendering in some of the dashboard's widgets.
-- Pie charts for the dashboard (it has bar and line chart widgets).
-- Different ways to sort chats, and grouping chats, with an agent tool and a skill
-  to manage them.
-- An agent permission flow shown as a dialogue in chat and documents, with the
-  agent's edit proposed as a suggestion you can accept.
-- An in-built browser with MCP tool abilities beside web search. (A stdio MCP
-  server over the app's own tools exists, `python -m tessellate.mcp_server`; this
-  is the other direction.)
-- A VS Code extension.
-- The status dot's "X" state in the top bar: it was never seen, and the AI status
-  now lives in the status bar. Check that its error state can be reached.
-- Streamline, enhance and optimise the backend and every AI interaction (ongoing).
-- "I wrote 'ai is cool' as a note and it was filed under sketches": check that
-  filing against the notebook's categories.
-- Check `docs/index.html`'s own text against the README, so the documentation site
-  and the README say the same.
+These sixteen ideas are LEDGER rows L-world-class-172 to L-world-class-187
+(`docs/roadmap/LEDGER.md`), where they are sized and worked in order.
 
 ## From the audits
 

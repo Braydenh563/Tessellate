@@ -70,12 +70,12 @@ def _linked_labels(answer: str) -> list[str]:
 class ChatTurn(BaseModel):
     question: str = Field(max_length=bounds.TURN_TEXT_MAX)
     answer: str = Field(max_length=bounds.TURN_TEXT_MAX)
-    #: The notes the answer named, by title, for a spoken follow-up such as
+    #: The notes the answer named, by title, for a spoken follow-on such as
     #: "delete the other one" (`reading.follow`, decision 57). Optional, and
     #: dropped from the dump when absent, so a turn without it is unchanged.
     objects: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=8)
     #: The label of an act's card this turn left waiting for Confirm, sent by
-    #: the page only while the card is still open, so "cancel" can drop it
+    #: the page only while the card is showing, so "cancel" can drop it
     #: (`composer_cancel`, CHAT_PLAN X17).
     pending_act: str | None = Field(default=None, max_length=300)
     #: The frame the answer was sent with, echoed back; absent from an older page.
@@ -149,7 +149,7 @@ class ChatRequest(BaseModel):
     #: The browser's locale (`navigator.language`), so a bare "3/4" in a
     #: question reads in the asker's date order.
     locale: str | None = Field(default=None, max_length=35)
-    # Prior turns for follow-up context (Round 1); the server clips this.
+    # Prior turns for follow-on context (Round 1); the server clips this.
     history: list[ChatTurn] = Field(default_factory=list, max_length=bounds.HISTORY_MAX_TURNS)
     # Persona name; None → the active persona preference.
     persona: str | None = Field(default=None, max_length=bounds.LABEL_MAX)
@@ -278,7 +278,7 @@ class ChatRequest(BaseModel):
     # was already doing that, plus however many unrelated notes the
     # instruction text itself happened to match.
     attached_notes_only: bool = False
-    #: "questions": answer from the notes that still hold an open question
+    #: "questions": answer from the notes that hold a question with no answer yet
     #: (WORLD_CLASS_PLAN I3, row 7: "what am I still undecided about?"), and
     #: only from them. Resolved into `note_ids` and `attached_notes_only` by
     #: `_apply_scope` before anything reads either.
@@ -346,7 +346,7 @@ def _check_refs(session: Session, body: ChatRequest) -> None:
 def _apply_scope(session: Session, body: ChatRequest) -> None:
     """Turn a scope into the closed set of notes it means.
 
-    With no open question anywhere the turn falls back to ordinary
+    With no unanswered question anywhere the turn falls back to ordinary
     retrieval: an Ask over an empty set would answer from nothing, and the
     Ask box says beforehand that there are none (`askScopeQuestions`).
     """

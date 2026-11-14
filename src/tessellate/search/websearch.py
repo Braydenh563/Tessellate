@@ -949,7 +949,7 @@ def _page_links(page: str, base_url: str, limit: int = 40) -> list[dict]:
     """The article's outgoing links: [{text, url}], absolute and cleaned.
 
     So an agent that has read a page can cite where its statements lead and
-    follow up without a second search. Only http(s) targets survive: 
+    ask on without a second search. Only http(s) targets survive: 
     javascript:, data: and mailto: are dropped by the same check every
     reader URL passes: and following one still goes through the full
     address check and pinning in fetch_readable; nothing here is fetched.

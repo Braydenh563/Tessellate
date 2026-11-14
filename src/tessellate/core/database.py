@@ -559,7 +559,7 @@ class Entry(Base, WorkspaceMixin):
     #: filed before its POST returned.
     filing_state: Mapped[str] = mapped_column(String(10), default="done")
     #: The note this one turned out to be a near-duplicate of, found by the
-    #: same background pass that files it. Only ever set on a deferred save:
+    #: same background pass that files it. Only ever set on a save filed in the background:
     #: a synchronous one still returns its `similar` in the create response,
     #: because it has already paid for the search by then. NULL is the
     #: overwhelmingly common case and means "no duplicate, or not looked for
@@ -1348,7 +1348,7 @@ class AskTurn(Base, WorkspaceMixin):
     like the notes it's about, not just re-asked from a five-item chip row.
 
     Deliberately not a Conversation: the Ask box is single-shot, notes-only
-    Q&A (§35A) with no follow-up thread, so a flat row per question beats a
+    Q&A (§35A) with no follow-on thread, so a flat row per question beats a
     JSON message list a saved chat needs. `raw_result_ids` records which
     notes answered it at the time, resolved back to live entries on read
     (routes_ask_history.py), so an edited or deleted note since then shows
@@ -1436,11 +1436,11 @@ class Bookmark(Base, WorkspaceMixin):
     #: What the last fetch found (L3, and the stale-icon bug): the site's own icon as a `data:` address (nothing
     #: is requested from the site to draw it), a two-line excerpt and the page's text. Written only by
     #: `POST /bookmarks/{id}/refresh`, which needs the web switch; "" until then.
-    #: Deferred (PR 226 review): an icon is up to 60 KB and the text 20 KB, so a list of links loads
+    #: Loaded on demand (PR 226 review): an icon is up to 60 KB and the text 20 KB, so a list of links loads
     #: neither; the list reads the two flags below, worked out in SQL, and the icon has its own route.
-    favicon: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    favicon: Mapped[str] = mapped_column(Text, default="", deferred_group="favicon")
     excerpt: Mapped[str] = mapped_column(String(400), default="")
-    page_text: Mapped[str] = mapped_column(Text, default="", deferred=True)
+    page_text: Mapped[str] = mapped_column(Text, default="", deferred_group="page_text")
     has_icon: Mapped[bool] = column_property(func.length(func.coalesce(favicon, "")) > 0)
     has_text: Mapped[bool] = column_property(func.length(func.coalesce(page_text, "")) > 0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -2388,7 +2388,7 @@ class DurableJob(Base):
     (WORLD_CLASS_PLAN B2). Written only through `core/jobstore.py`.
 
     **One row per job, unlike `JobRun`'s one per kind**: the question here
-    is "what was still to do when the app closed", which is a row per thing
+    is "what was left to do when the app closed", which is a row per thing
     to do. Finished rows are pruned at launch (`jobstore.prune`), so the
     table holds the work in hand plus a short tail of what ended.
 

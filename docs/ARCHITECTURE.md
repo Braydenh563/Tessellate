@@ -1001,7 +1001,7 @@ SQLite via SQLAlchemy 2.0 (`core/database.py`). Main tables:
   hands off), timestamps, and soft-delete (`is_deleted` / `deleted_at`).
   Also on an entry: `suggested_tags` and `discarded_tags` (JSON lists):
   the tags filing offered, shown on the card as "+ tag", and the ones a
-  person refused so no later pass offers them again on that note (`_keep_suggestions`
+  person refused so no pass after it offers them again on that note (`_keep_suggestions`
   in `routes_entries.py` fills the first at filing: the model's tag pass when
   the model filed the note, otherwise `ai/lexical_filing.suggest_tags`, which
   only ever offers tags the person already uses); and `edited_at`, which moves only when a person changes the
@@ -1748,7 +1748,7 @@ not an import string, and uvicorn cannot fork that); running `uvicorn` against
 the factory directly can, and is the case the check exists for.
 
 More workers is also not the lever for speed here. The slow paths are Ollama
-and embedding. A deferred filing (`defer_filing`) runs both off the request
+and embedding. A background filing (`defer_filing`) runs both off the request
 thread; a plain save and an edit still embed on the request (corrected
 2026-10-05, audit ARCH-02: this line said both were always off it).
 

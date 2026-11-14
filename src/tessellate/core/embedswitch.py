@@ -270,10 +270,10 @@ def _stage(db, target, target_id: str) -> None:  # noqa: ANN001
         _state.phase = "stage"
         _state.total = len(ids)
         _state.done = sum(1 for entry_id in ids if entry_id in have)
-        todo = [entry_id for entry_id in ids if entry_id not in have]
-        for start in range(0, len(todo), BATCH):
+        missing = [entry_id for entry_id in ids if entry_id not in have]
+        for start in range(0, len(missing), BATCH):
             _check_stop()
-            entries = list(session.scalars(select(Entry).where(Entry.id.in_(todo[start : start + BATCH]))))
+            entries = list(session.scalars(select(Entry).where(Entry.id.in_(missing[start : start + BATCH]))))
             vectors = target.embed_many([embedding_text(session, entry) for entry in entries])
             for entry, vector in zip(entries, vectors):
                 if vector is None:

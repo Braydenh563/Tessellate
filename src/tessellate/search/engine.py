@@ -1105,7 +1105,7 @@ def _has_attachment_ids(session: Session, entry_ids: list[int]) -> set[int]:
 
 
 #: What each `has:` word is answered from (the decision the retrieval brief
-#: left open: "decide each one's source ... and answer them over the
+#: left undecided: "decide each one's source ... and answer them over the
 #: candidates, never with a join on every save"). `file` and `image` read the
 #: attachment table, `link` a connection either way round, `reminder` a
 #: reminder pointing at the note, and `highlight` the text itself (the marks
