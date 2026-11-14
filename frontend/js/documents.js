@@ -8847,11 +8847,7 @@ function noteSurfaceExtensions(CM, host, options) {
   //: `readOnly` only refuses the person's input.
   host.noteReadOnlyExtensions = (on) => (on ? [CM.state.EditorState.readOnly.of(true), CM.view.EditorView.editable.of(false)] : []);
   host.noteReadOnlySlot = new CM.state.Compartment();
-  //: **Find and replace inside a note** (L-world-class-127): the edit form's
-  //: box and the graph's note popup carry the document's own search panel, so
-  //: Ctrl+F finds in the note being written rather than the page around it,
-  //: and Ctrl+H opens on the replace field (the document's chord). A capture
-  //: box is a line or two and keeps the page find.
+  //: Note find and replace (L-world-class-127); a capture box keeps the page find.
   const finds = host.id === "entry-edit-content" || host.id === "graph-popup-content";
   const findKeys = finds
     ? [
@@ -8938,8 +8934,7 @@ function noteSurfaceName(host) {
 //: helpers underneath all take a box id or a surface already, so this is the
 //: same four actions with this box named. Ctrl+S is deliberately absent:
 //: saving a note is the form's business, which the app's own global chord
-//: already handles. Ctrl+F is the search panel's, on the boxes that carry one
-//: (`noteSurfaceExtensions`).
+//: already handles.
 function noteSurfaceKeymap(host) {
   const surface = () => noteSurfaceFor(host) || textareaSurface(host);
   return [

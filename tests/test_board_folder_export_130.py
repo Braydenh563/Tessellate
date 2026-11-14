@@ -48,9 +48,12 @@ def test_a_board_with_no_notes_is_still_a_folder(client):
 
 
 def test_bad_input_is_refused(client):
-    assert client.post("/export/board-folder", json={"name": "x", "svg": "<p>not svg</p>", "ids": []}).status_code == 422
-    assert client.post("/export/board-folder", json={"name": "x", "svg": SVG, "png": "!!notbase64", "ids": []}).status_code == 422
-    assert client.post("/export/board-folder", json={"name": "x", "svg": SVG, "png": base64.b64encode(b"GIF89a").decode(), "ids": []}).status_code == 422
+    r0 = client.post("/export/board-folder", json={"name": "x", "svg": "<p>not svg</p>", "ids": []})
+    assert r0.status_code == 422
+    r1 = client.post("/export/board-folder", json={"name": "x", "svg": SVG, "png": "!!notbase64", "ids": []})
+    assert r1.status_code == 422
+    r2 = client.post("/export/board-folder", json={"name": "x", "svg": SVG, "png": base64.b64encode(b"GIF89a").decode(), "ids": []})
+    assert r2.status_code == 422
 
 
 def test_the_export_dialog_offers_it():

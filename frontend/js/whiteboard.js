@@ -14997,7 +14997,7 @@ const WB_EXPORT_FORMATS = [
     //: not grow; the server only packs what the browser drew.
     value: "folder", label: "Folder with notes", scopes: ["selection", "whole"], picture: true,
     note: "A zip: the picture as SVG and PNG, with every note on it as Markdown.",
-    run: async (scope) => {
+    run: async function wbExportBoardFolder(scope) {
       const { scale, transparent } = wbExportPngPrefs();
       const { svg, width, height } = wbBuildExportSvg(scope, { transparent });
       const png = await wbRasterizeSvg(svg, width * scale, height * scale, "image/png").catch(() => null);

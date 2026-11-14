@@ -1113,37 +1113,6 @@ async function batchPublish() {
 function fillBatchMore(hostId = "batch-more-host") {
   const host = $(hostId);
   if (!host || host.childElementCount) return;
-  //: **One property on every selected note** (WORLD_CLASS_PLAN decision 65,
-  //: L-world-class-128): "status: done" sets it, "status:" with nothing after
-  //: takes it off. Each note keeps its other properties; one Undo puts every
-  //: note's block back as it was. Nested so the shared scope does not grow.
-  const setProperty = async () => {
-    const ids = batchSelection();
-    if (!ids.length) return;
-    const typed = await promptDialog(`A property for ${batchNoun(ids)}, as name: value (leave the value empty to remove it)`, "", { confirmLabel: "Set" });
-    const cut = typeof typed === "string" ? typed.indexOf(":") : -1;
-    const name = cut > 0 ? typed.slice(0, cut).trim() : "";
-    if (!name) {
-      if (typed) toast("Write it as name: value, for example status: done.", true);
-      return;
-    }
-    const value = typed.slice(cut + 1).trim();
-    const before = new Map();
-    const put = (id, properties) => apiJson(`/entries/${id}/properties`, { method: "PUT", body: JSON.stringify({ properties }) });
-    await batchEach(
-      value ? `Set ${name} on ${batchNoun(ids)}` : `Removed ${name} from ${batchNoun(ids)}`,
-      ids,
-      async (id) => {
-        const had = before.get(id) || (await apiJson(`/entries/${id}/properties`)).properties || {};
-        before.set(id, had);
-        const next = { ...had };
-        if (value) next[name] = value;
-        else delete next[name];
-        await put(id, next);
-      },
-      (id) => put(id, before.get(id) || {})
-    );
-  };
   host.appendChild(
     kebabMenu(
       [
@@ -1151,7 +1120,7 @@ function fillBatchMore(hostId = "batch-more-host") {
         { label: "ph:star-half Remove from Favourites", run: () => batchFavourite(false), group: "mark" },
         { label: "ph:paper-plane-tilt Publish drafts", run: batchPublish, group: "state" },
         { label: "ph:archive Archive", run: batchArchive, group: "state" },
-        { label: "ph:list-dashes Set a property…", run: setProperty, group: "edit" },
+        { label: "ph:list-dashes Set a property…", run: () => openBulkProperty(batchSelection()), group: "edit" },
         { label: "ph:stack Move to space…", run: batchMoveToSpace, group: "move" },
         { label: "ph:download-simple Export as Markdown", run: batchExport, group: "move" },
       ],

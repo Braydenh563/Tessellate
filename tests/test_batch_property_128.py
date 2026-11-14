@@ -5,9 +5,11 @@ the move, tags, archive and delete those bars already had."""
 
 from __future__ import annotations
 
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 JS = app_js_text()
+#: The work is lazy, beside the bulk tag dialog, to keep the boot scripts under their gzip cap.
+TAGS = frontend_text("tag-manager.js")
 
 
 def _body(name: str) -> str:
@@ -16,11 +18,12 @@ def _body(name: str) -> str:
 
 
 def test_more_menu_sets_a_property_through_one_undo():
-    body = _body("fillBatchMore")
-    assert '"ph:list-dashes Set a property…", run: setProperty' in body
+    assert '"ph:list-dashes Set a property…", run: () => openBulkProperty(batchSelection())' in _body("fillBatchMore")
+    start = TAGS.index("async function openBulkProperty(ids)")
+    body = TAGS[start : TAGS.index("\n}\n", start)]
     assert "await batchEach(" in body, "one toast, one Undo, the shape every batch act has"
     assert "/entries/${id}/properties" in body
-    assert "delete next[name]" in body, "an empty value removes the property"
+    assert "const { [name]: _, ...next } = had" in body, "an empty value removes the property"
     assert "before.set(id, had)" in body, "the undo restores each note's own block"
 
 

@@ -228,14 +228,6 @@ function tagMenuItems(name) {
 // loads this module first (`openManageCategories`); a second file loaded by
 // both would declare these twice.
 
-//: The sorts, in the select's order. Recently used reads the notes already
-//: in memory: the newest edit of a note that carries the name.
-const MANAGE_SORTS = [
-  ["name", "Name"],
-  ["count", "Most notes"],
-  ["recent", "Recently used"],
-];
-
 //: **The tidy suggestions and the list scroll together** (INBOX 1620: "this
 //: split in stuff half way is annoying", a row cut through under the box).
 //: The box was a fixed band above a list that shrank to whatever was left (65px
@@ -289,7 +281,9 @@ function manageListControls({ sortKey, state, rareLabel, rareTitle, redraw }) {
   select.className = "manage-cat-sort";
   select.setAttribute("aria-label", "Sort by");
   select.title = "Sort by";
-  for (const [value, label] of MANAGE_SORTS) {
+  //: The sorts, in the select's order. Recently used reads the notes already
+  //: in memory: the newest edit of a note that carries the name.
+  for (const [value, label] of [["name", "Name"], ["count", "Most notes"], ["recent", "Recently used"]]) {
     const option = document.createElement("option");
     option.value = value;
     option.textContent = label;
@@ -719,6 +713,22 @@ function drawTagFooter(footer, state, redraw) {
     redraw();
   }, false);
   footer.append(label, clear, remove, merge);
+}
+
+//: One property on every selected note, one Undo (L-world-class-128): the
+//: selection bar's "Set a property", lazy beside the bulk tag dialog.
+async function openBulkProperty(ids) {
+  const typed = ids.length && await promptDialog(`name: value for ${batchNoun(ids)} (no value removes it)`, "", { confirmLabel: "Set" });
+  const [name, value] = String(typed || "").split(/:(.*)/s).map((s) => (s || "").trim());
+  if (!typed || !name || !typed.includes(":")) return typed && toast("Write it as name: value.", "info");
+  const before = new Map();
+  const props = (id, body) => apiJson(`/entries/${id}/properties`, body && { method: "PUT", body: JSON.stringify({ properties: body }) });
+  await batchEach(`${value ? "Set" : "Cleared"} ${name} on ${batchNoun(ids)}`, ids, async (id) => {
+    const had = before.get(id) || (await props(id)).properties || {};
+    before.set(id, had);
+    const { [name]: _, ...next } = had;
+    await props(id, value ? { ...next, [name]: value } : next);
+  }, (id) => props(id, before.get(id) || {}));
 }
 
 //: **Tags for the selected notes** (INBOX 447 (4)): one dialog, one action.

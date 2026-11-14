@@ -328,8 +328,7 @@ HELP_TOPICS: list[dict] = [
             "appear in the Library's Images sub-tab. A board's background colour "
             "and image are kept with the board. Board, Share and save, Export saves a PNG (1x, 2x "
             "or 3x, with a transparent background if you like), JPG, WebP, SVG or PDF named "
-            "after the board, or Folder with notes (one zip: the picture as SVG and PNG and every note on "
-            "the board as Markdown), or Copy image puts the picture on the clipboard (also Copy as an image in Ctrl+K), or Copy as SVG in Ctrl+K puts the SVG on the clipboard as text (right-click a selection for Export selection, Copy as image and Copy as SVG). Paste text from another app onto a board: a link "
+            "after the board, a zip with its notes, or Copy image puts the picture on the clipboard (also Copy as an image in Ctrl+K), or Copy as SVG in Ctrl+K puts the SVG on the clipboard as text (right-click a selection for Export selection, Copy as image and Copy as SVG). Paste text from another app onto a board: a link "
             "becomes a link box, one line a text box, a list a grid of stickies. "
             "In the command palette over a board, say what to do with the "
             'selection (or the whole board): "arrange as a grid of 3", '
@@ -396,8 +395,7 @@ HELP_TOPICS: list[dict] = [
             "the strip under the bar opens or starts one, and its head steps to the day before and after; "
             "after two days running with a daily note, the strip's head says how many days in a row. "
             "A week or more with nothing written shows a line between the dates; its What happened here? "
-            "starts a page for the first empty day. "
-            "A note that continues another branches off the line beside it, and its Continues button goes to the note it follows."
+            "starts a page for the first empty day. A follow-on note branches off the line."
         ),
         "badge": {"label": "Timeline", "tab": "timeline"},
     },

@@ -1633,11 +1633,7 @@ function timelineRowElement(row, density) {
 
   // A row that continues another says so and goes there (decision 5's one
   // surviving thread affordance). Only where there is room to say it.
-  //: **An off-shoot, not a second list** (L-world-class-176): a row that
-  //: continues a loaded note branches off the spine, so a thread reads as a
-  //: line with its shoots. Every density, because the shape needs no room.
-  //: The map is keyed by row key ("note:5"), not by id: looked up by the bare
-  //: id, the "Continues" link below never found its parent.
+  //: A continuing row branches off the spine (L-world-class-176); the map is keyed "note:5".
   const parent = row.parentId ? timelineById.get(`note:${row.parentId}`) : null;
   if (parent) li.dataset.branch = "1";
   if (density === "full" && parent) {
