@@ -570,7 +570,7 @@ def test_the_tonal_button_keeps_its_edge_and_its_lift() -> None:
 
     Third pass on one report. "control elements and buttons feel more like
     just shapes with text in them, rather than proper official buttons" was
-    answered once with a border and a shadow; a later pass took both off and
+    answered once with a border and a shadow; a pass after took both off and
     raised the fill instead, on a measurement taken in a *toolbar*; the
     report then came back a third time as "all the buttons need to actually
     look like buttons with affordance, not just shapes with text in them".
@@ -1314,7 +1314,7 @@ def test_a_list_row_answers_in_place_rather_than_opening_a_popover() -> None:
     over the 297px panel that asked for it, 70% of the window's height spent on
     one misspelled word, with the sentence being discussed behind both.
 
-    Three halves of the fix, each one a thing a later session could undo
+    Three halves of the fix, each one a thing any session after could undo
     without noticing:
 
     1. the panel's row builder must not reach for the floating menu again;
@@ -1479,7 +1479,7 @@ def test_a_viewport_popup_leaves_the_surfaces_that_can_blur() -> None:
     322` and drew at `1245..1485, 399`, 45px past the right edge of the window
     and 53px from its word.
 
-    Two halves, either of which a later session could drop without seeing
+    Two halves, either of which any session after could drop without seeing
     anything move on a machine with the art switched off:
 
     1. the popup leaves the card while it is open and goes back on the way out;
@@ -2143,7 +2143,7 @@ def test_typing_in_the_lit_control_is_not_a_tour_key() -> None:
 def test_the_tour_is_switched_on_and_its_doors_are_live() -> None:
     """The owner switched the tour off on 2026-09-21 until it was fixed; it is
     on again, and every door reads the one flag rather than being disabled on
-    its own (the About button was the door that got left open last time)."""
+    its own (the About button was the door that was missed last time)."""
     js = TOUR_JS.read_text(encoding="utf-8")
     assert re.search(r"^const TOUR_ENABLED = true;$", js, re.M), "TOUR_ENABLED must be true"
     app = app_js_text()
@@ -3445,7 +3445,7 @@ def test_a_picker_row_never_shrinks_and_its_sources_span_the_dialog() -> None:
     assert "noteLabel(row, 70)" not in _function_body(source, "libraryPickLabel")
 
 
-#: Script-built dialogs that still open on the confirm alert's `confirm-head`
+#: Script-built dialogs that open on the confirm alert's `confirm-head`
 #: (a question and its answers, which DESIGN.md exempts): may only fall. A
 #: dialog that is not a question takes `dialogHead` (selection.js; INBOX 548).
 CONFIRM_HEAD_DIALOGS = {"app.js": 1}
@@ -4740,7 +4740,7 @@ def test_the_ai_skills_dock_holds_one_row() -> None:
     """INBOX 599, the owner, with the AI skills dock in two rows: "can you
     clean up and redesign this top docks??". Measured with `settingsheads.js`:
     90px and two rows at 1100 and 820 before, one row (50px) at 1440, 1280 and
-    1100 after. Three parts, any of which a later session could undo:
+    1100 after. Three parts, any of which any session after could undo:
 
     1. the sort is an icon-and-caret picker (`data-select-icon`) and an icon
        picker in a dock is not held to a worded select's 9rem floor;

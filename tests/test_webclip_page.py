@@ -126,7 +126,7 @@ def test_the_bookmark_is_a_dragged_link_on_its_recipe():
     assert "location.origin" in js and "preventDefault" in js
 
 
-# A follow-up about the page carries the page's text (owner 2026-10-10).
+# A further question about the page carries the page's text (owner 2026-10-10).
 
 
 def test_a_follow_up_about_the_page_carries_the_page():
