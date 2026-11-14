@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 0 | 1 | 0 | 0 | 0 | 1 |
-| documents | 0 | 10 | 1 | 0 | 1 | 11 |
+| documents | 0 | 9 | 2 | 0 | 1 | 11 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 402 | 526 | 125 | 2 | 153 | 1053 |
+| all | 402 | 525 | 126 | 2 | 153 | 1053 |
 
 ## graph
 
