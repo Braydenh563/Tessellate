@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Dashboard: the This week card offers one feature you have not used lately, a different one each week (L595).
+- Measured: footnotes and Mermaid render in note cards (shared renderMarkdown: footnote section and ref present, Mermaid image 168x144 loaded); rich paste in Capture and Quick note is plain text only (L-world-class-7).
 - Whiteboard: the View menu's background colour reset and image buttons are touch-sized on a phone; the five top-bar menus pass a new sweep, wbmenus5.js (66 of 66 checks at 1440 and 390; L-world-class-13).
 - Settings: undoing the avatar look puts the old look back in memory too, so the next autosave no longer re-sends the undone one (test_settings_recent_changes; L-world-class-32).
 - Documents: the title row at 320 wide and the sidebar tab strip at 820 no longer overflow their boxes (overlap.js documents: 2 overflows to 0 at all five widths; L-world-class-39).
