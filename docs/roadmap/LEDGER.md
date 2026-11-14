@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 65 | 68 | 0 | 0 | 133 |
+| chat | 0 | 61 | 68 | 0 | 0 | 129 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 437 | 137 | 0 | 124 | 900 |
+| all | 326 | 433 | 137 | 0 | 124 | 896 |
 
 ## graph
 
@@ -590,10 +590,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 
 Rows only the owner can decide. A recommendation is taken per standing order 3 unless the row says it remakes a decision.
 
-- [ ] **L-chat-50** `chat` open, M: Build the skill Prepare for a meeting: notes on the people and topic, open reminders, a short agenda drafted into a new note. From L735 draft 2026-11-14. Evidence: skills.py BUILTIN_SKILLS has 22 skills; none prepares a meeting Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
-- [ ] **L-chat-51** `chat` open, M: Build the skill Monthly look back: what was written, spent and finished, as one note with the numbers cited. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Summarise my week; no month view over money or reminders Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
-- [ ] **L-chat-52** `chat` open, S: Build the skill Archive stale notes: lists untouched notes past a span the person names, archives only the ones ticked. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Find notes worth combining; nothing about stale notes Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
-- [ ] **L-chat-53** `chat` open, M: Build the skill Everything about a person: their entity page, linked notes and open reminders in one reading note. From L735 draft 2026-11-14. Evidence: BUILTIN_SKILLS has Catch up on a topic; none gathers a person Owner call taken under standing order 3, 2026-11-14 (the hub, for the owner): build as drafted.
 
 ## Needs hardware
 
