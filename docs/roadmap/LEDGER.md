@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 95 | 132 | 2 | 32 | 227 |
+| chat | 0 | 95 | 131 | 2 | 32 | 226 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 467 | 201 | 2 | 156 | 994 |
+| all | 326 | 467 | 200 | 2 | 156 | 993 |
 
 ## graph
 
@@ -43,7 +43,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L183** `chat` partly, L: Brief 34: the 1.5 s debounce, one curve table and the idle rule. The reaction budget is built (26092ac88, `NMB_REACT_BUDGET`, four a minute; browser-measured 0 snaps in 600 s, 21 distinct motions, 35 to 44 ms latency). From OPEN.md:3766; SESSION_BRIEFS.md:154; ledger-1112 P6; OPEN.md:2876. Evidence: Latency bar conflicts with the owner's debounce request.
 - [ ] **L184** `chat` open, L: Atlas motion measured leftovers: laughing end, blend, tail under 1 ms a minute, 390 fps, arm rig. From OPEN.md:1074; OPEN.md:3188; OPEN.md:3763. Evidence: Hand-stepped blend measurements outstanding; needs visual/human review of motion Progress 2026-11-14: tail cost measured (companionperf.js is fixed: it set the buddy through a removed select; scratchpad/tailcost.js profiles one idle stretch). 20 s of idle with the feminine Atlas, mains setting: 1,853 ms of script and 2,403 layouts a minute against 18 ms and 3 with the companion off (scratchpad/ui-sweeps/companionperf.js IDLE=1); the tail's own functions 46.7 ms a minute (a 30 s CPU profile). With Motion at rest set to still (the setting that rests it): tail functions 17.6 ms a minute, not under 1 (what is left is the 400 ms rest beat that the breath and the props ride, `ATLAS_TAIL_REST_BEAT_MS`), and the lower body's morph draw 418 ms a minute on the mains setting (atlasRigLower, the pose-following lower body, L173). The arm rig's speed cap is tested (L83). Exact step: a beat that stops while resting and wakes on input (the breath then needs its compositor loop), then re-run tailcost.js with REST=still for under 1 ms a minute; the laughing end's blend needs a hand-stepped 30 fps review by a person. Progress 2026-11-14b: not started in code (atlas-3 stopped at the risk line): the rest beat in atlasTailFrame (atlas-life.js, the two `ATLAS_TAIL_REST_BEAT_MS` timeouts) also carries atlasBreathFrame, the nap pace and the loops sync, so stopping it needs the breath on a compositor loop and a wake hook on input first; next step as above.
 - [ ] **L185** `chat` open, L: Slow idle; non-Atlas walks, runs, climbs, crouches, sits, lies. From OPEN.md:4419. Evidence: w34-unv2-1111.md marks true; generated-companion behaviour set not complete
-- [ ] **L228** `chat` partly, M: Redesign Ask at half width and make replies differ across notes. From OPEN.md:356. Evidence: 67ef381 fixed open-note reply (composer_open.py); half-width Ask redesign not built Remaining: half-width Ask redesign needs a UI session with measured sweeps at 390 and 640 px; not started here.
 - [ ] **L231** `chat` partly, M: Cut Atlas idle cost (670 recalcs and 130 layouts a minute). From OPEN.md:1068. Evidence: Commits 7da5ea424 (no :has on #nm-buddy), 661204da1 Atlas at rest off every bar; remaining cost not re-measured 2026-11-14 (companion2): re-measured headless, in-app on mains 2,500 to 4,100 restyles a minute against 670 first reported; on battery or Motion at rest 'still' the rest rule stops it (test_companion_rest_w14). Left: owner call on decision 55 (mains rest), then the same CDP run on battery.
 - [ ] **L232** `chat` partly, M: Mood blend read costs 75-280 ms per mood change; gcResize first draw 400 ms. From a31b-1103.md Found, not fixed. Evidence: Band moved under html 36ecedeb1; avatars.js:5794 settle comment; gcResize deferral refused 2026-11-14 (companion2): not reached; needs the Windows numbers the row names. Left: CDP trace of a mood change at 4x on a throttled CPU.
 - [ ] **L233** `chat` partly, M: Class/data-* change on #nm-buddy restyles 1,244 elements. From a31c-1103.md Left, with numbers. Evidence: 36ecedeb1 reduced it; Windows numbers never taken (Not verified block) 2026-11-14 (companion2): not reached; Windows numbers never taken. Left: count restyled elements per class change on #nm-buddy with CDP on hardware.
