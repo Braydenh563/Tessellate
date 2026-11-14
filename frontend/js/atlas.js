@@ -417,6 +417,9 @@ function atlasSpecks(parent, list, cls = "atl-speck") {
   return atlasMake("path", { class: cls, d }, parent);
 }
 
+//: The lower body's weave (L742): 18 small specks along the dress and the trail, [t, across, r] like `dust`, in rows that never line up.
+atlasSpecks.weave = () => Array.from({ length: 18 }, (_, i) => [0.28 + i * 0.037, ((i * 0.37) % 1 - 0.5) * 0.7, 0.07 + (i % 3) * 0.02]);
+
 //: A width that eases from `a` at the root to `b` at the tip.
 const atlasTaper = (a, b) => (t) => a + (b - a) * (t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t));
 
@@ -1235,7 +1238,7 @@ function atlasBuild() {
             fill: join("fill"),
             sheen: sweep(0.3, 0.72, -0.3, 0.22, 0.3) + sweep(0.55, 0.92, 0.26, -0.18, 0.2),
             rim: atlasStem(m.seg.slice(1), (t) => (0.08 + m.width(0.25 + 0.75 * t) * 0.08) * Math.sin(Math.PI * t) ** 0.7, { samples: 16, round: true, shift: (t) => -m.width(0.25 + 0.75 * t) * 0.42 }),
-            dust: c.dust.map(([t, a, r]) => [...at(t, a), r]),
+            dust: [...c.dust, ...atlasSpecks.weave()].map(([t, a, r]) => [...at(t, a), r]),
             glints: c.glints.map(([t, a, k]) => [...at(t, a), k]),
             motes: c.motes.map(([x, y, r, g]) => [atlasFix(tx + x), atlasFix(ty + y), r, g]),
             glow: parts.map((p, i) => atlasStem(p.seg, (t) => p.width(t) + 1.3, { samples: 14, cap: true, tip: spec.lowers[i].main ? atlasHemTip : null })).join(""),
@@ -1309,7 +1312,7 @@ function atlasBuild() {
           //: A rim light on the outer side only (a stem's negative shift is
           //: the side away from its bend), thin at both ends.
           rim: atlasStem(seg, (t) => (0.08 + width(t) * 0.09) * Math.sin(Math.PI * t) ** 0.7, { samples: 18, round: true, shift: (t) => -width(t) * 0.42 }),
-          dust: dust.map(([t, a, r]) => [...at(t, a), r]),
+          dust: [...dust, ...atlasSpecks.weave()].map(([t, a, r]) => [...at(t, a), r]),
           glints: glints.map(([t, a, k]) => [...at(t, a), k]),
           motes,
           width,
@@ -2397,7 +2400,7 @@ function atlasHead(parent, id, level, look, hairAt = null) {
     }
   }
   if (!tiny) atlasExtras(sway);
-  if (tiny || level === "head") atlasCue(sway, tiny);
+  if (tiny || level === "head" || level === "bust") atlasCue(sway, tiny);
   //: Thinking, a hand at the chin (the reference sheet): drawn here, over
   //: the head, because the body's own arm is drawn under it; the CSS shows
   //: it and hides the resting right arm while Atlas thinks.

@@ -50,6 +50,9 @@ const FRAMES = [
   //: W31 E1: the long sit with the eyes shut and the hands on the knees (`nmb-act-meditate`). Lounge and rest head
   //: stay the keyed `sit` (the rig draws them as a 2 to 7 degree lean of it: no picture of their own is worth its bytes).
   { name: "meditate", pose: "sit", classes: ["nmb-act-meditate"], at: 1.0 },
+  //: A throw's mid-spin: the startled pose turned about its middle (the rig has no tumble of its own). The
+  //: squash into #216 dropped this entry and kept its handler, so the renderer could not finish.
+  { name: "tumble", pose: "stand", classes: ["nmb-act-startle"], at: 0.25, spin: 115 },
 ];
 //: The idle cycle (`idle0` to `idle23`, engine.IDLE_FRAMES): the rig's own standing
 //: motion sampled at fixed times, one full beat of the tail (`atlasTailBend` with
@@ -134,6 +137,10 @@ async function steadyShot(page, file, clip) {
         "#nm-buddy :is(.atl-aura, .atl-orbits, .atl-rings, .atl-ring-frame, .nmp-bubble) { display: none !important; }",
         "#nm-buddy::before, #nm-buddy::after, #nm-buddy .nm-buddy-face::before, #nm-buddy .nm-buddy-face::after { display: none !important; }",
         "#nm-buddy :is(.atl-layer-back, .atl-layer-front, .atl-layer-body, .atl-layer-tail) { opacity: 1 !important; }",
+        //: The app fits its figure to the room round it (`nmb-fitting`, avatars.js) and eased it to 0.75 in about half the
+        //: takes of a run (the figure box 48 by 69 for 64 by 92, the head 37 by 48 for 51 by 65): a frame shot then was a
+        //: smaller figure than the rest and an idle cycle seamed on it (L150). The desk set is always the full size.
+        "#nm-buddy .nm-buddy-face { scale: 1 !important; transition: none !important; }",
       ]) sheet.insertRule(rule, sheet.cssRules.length);
       put(document.documentElement, { background: "transparent" });
       put(document.body, { background: "transparent" });
@@ -218,6 +225,9 @@ async function steadyShot(page, file, clip) {
             continue;
           }
           if (a.animationName && !/^nmb-/.test(a.animationName)) { a.currentTime = 0; continue; }
+          //: The rings' own turns (WAAPI, no animation name) sit at their start in every frame: left where the page's clock had
+          //: them, the ring and what rode it were at another angle in each idle frame (L150, the seam at the wrap).
+          if (!a.animationName && a.effect?.target?.closest?.(".atl-orbits")) { a.currentTime = 0; continue; }
           if (!a.animationName || (frame.phase === undefined && frame.at === undefined)) continue;
           const t = a.effect.getComputedTiming();
           const cycle = (t.duration || 0) * (String(t.direction).startsWith("alternate") ? 2 : 1);
@@ -250,16 +260,14 @@ async function steadyShot(page, file, clip) {
           //: The page's own loop redraws the tail between the sample and the shot (INBOX 1683 e: four of the
           //: 24 idle frames carried a tail from another moment, a seam of 5x an ordinary step at the wrap): its
           //: draws are dropped while a frame is held, only this one's pass through.
-          const draw = window.__tailDraw || (window.__tailDraw = atlasTailDraw);
-          window.atlasTailDraw = (t, ...a) => (t === tail && window.__tailSample ? draw(t, ...a) : undefined);
-          window.__tailSample = false;
-          const p = Object.fromEntries(Object.entries(ATLAS_TAIL_ACTS.sway).map(([k, v]) => [k, v]));
-          window.__tailSample = true;
-          draw(tail, (s) => atlasTailBend(s, p, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
-          window.__tailSample = false;
+          const kit = atlasTailFrame.kit;
+          const p = Object.fromEntries(Object.entries(kit.acts.sway).map(([k, v]) => [k, v]));
+          kit.hold = null;
+          kit.draw(tail, (s) => kit.bend(s, p, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
+          kit.hold = tail;
           { // the breath and the lower wisp too: stand sat 5 px below idle with only the tail pinned
           const k = (1 - Math.cos(w)) / 2;
-          for (const el of box.querySelectorAll(".atl-layer-body .nmb-torso")) el.style.setProperty("scale", `${(1 + ATLAS_BREATH_SWELL[0] * k).toFixed(4)} ${(1 + ATLAS_BREATH_SWELL[1] * k).toFixed(4)}`);
+          for (const el of box.querySelectorAll(".atl-layer-body .nmb-torso")) el.style.setProperty("scale", `${(1 + atlasTailFrame.kit.swell[0] * k).toFixed(4)} ${(1 + atlasTailFrame.kit.swell[1] * k).toFixed(4)}`);
           const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
           for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(3 * Math.sin(w - 1.5)).toFixed(2)}deg)`, "50% 55%");
           }
