@@ -124,7 +124,7 @@ def starter_leads(session: Session, now: datetime) -> list[str]:
     return leads
 
 
-def _early_events(session: Session, typed: str, history: list[dict], now: datetime) -> list[dict] | None:
+def _early_events(session: Session, typed: str, history: list[dict], now: datetime, *, note_open: bool = False) -> list[dict] | None:
     """The readers that go before any note is read. Each reads what was typed, not the rewritten
     question: a follow-up rewrites that ("no cancel it" became a question about a note)."""
     #: "cancel" while a card waits drops that card (CHAT_PLAN X17); the card waiting is not a topic.
@@ -137,6 +137,9 @@ def _early_events(session: Session, typed: str, history: list[dict], now: dateti
     #: A follow-on that reads the turn before ("any other diagrams", "what are those tags", INBOX 1729 b).
     if (talked := composer_talk.reply(session, typed, history, now.date())) is not None:
         return talked
+    #: With a note open, "what am I forgetting" is that note's own list (L228), not the notebook's.
+    if note_open and _FORGETTING.search(typed):
+        return None
     return notebook_events(session, typed, now=now)
 
 
@@ -144,7 +147,7 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
            follow_kind: str = "", said: str = "", asked: str = "", ask: bool = False, voice: str = "natural") -> list[dict] | None:
     """The answer events for a question this module reads, else None. A
     failure is logged and leaves the question to the older readers."""
-    if (early := _early_events(session, asked or question, history, now)) is not None:
+    if (early := _early_events(session, asked or question, history, now, note_open=bool(open_ids))) is not None:
         return early
     if _summary_goes_elsewhere(session, question):
         return None

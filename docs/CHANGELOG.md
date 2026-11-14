@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ask: below 600px the composer stacks with a full-width Ask, the answer head wraps with the model badge on its own line (copy, read aloud and more no longer leave a 390px window: scroll width 497 to 358), and Matching records is one closed row (569px to 44px); with a note open, a question with no subject of its own ("what should I know", "anything I am forgetting") answers from that note, so three notes give three replies (INBOX 1843, L228).
+- Companion: L180 closed; the enlarged view and framed Atlas clip are pinned by a test (INBOX 1840).
 
 - Chat acts: a model reply that claims an act ("I've created a new board") with no tool call, to a sentence the act registry reads, is replaced by that act's Confirm card (L114, tests/test_act_claim_guard_1114.py).
 - Composer: ten two-turn follow-ups keep the subject; "and the other one" with no list to pick from asks the question before again for something new instead of searching the bare words (L-chat-249, 2026-11-14).

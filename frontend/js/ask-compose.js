@@ -1325,6 +1325,13 @@ function renderChatMeta(meta) {
     return;
   }
   document.querySelector(".chat-half:last-child")?.classList.remove("hidden");
+  //: Under 600px Matching records is one closed row (INBOX 1843, 10-responsive.css).
+  const fold = $("ask-records-fold");
+  $("ask-records-count").textContent = String(meta.raw_results.length);
+  if (!fold.dataset.wired) {
+    fold.dataset.wired = "1";
+    fold.addEventListener("click", () => fold.setAttribute("aria-expanded", String(fold.getAttribute("aria-expanded") !== "true")));
+  }
   if (meta.search_mode === "outside_range" && meta.raw_results.length) {
     // Matched what was asked about, not when it was asked about, the note
     // is real, the stated time was just wrong (reported directly: a joke

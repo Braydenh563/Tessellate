@@ -62,7 +62,9 @@ _KINDS: tuple[tuple[str, re.Pattern], ...] = (
         r"\bwhat\s+(?:do|should)\s+i\s+do\b|\bwhat\s+(?:is\s+)?still\s+outstanding\b|"
         #: "what is not finished yet", "how many are left", "what's unpacked" (audit 1030 Z33).
         r"\bwhat(?:'s| is| are)\s+(?:not\s+(?:done|finished|ticked|checked|packed|complete\w*)|un(?:done|ticked|checked|packed|finished|complete\w*))\b|"
-        r"\bhow\s+many\b[^?]*\b(?:left|remaining|open|to\s+go)\b", re.I)),
+        r"\bhow\s+many\b[^?]*\b(?:left|remaining|open|to\s+go)\b|"
+        #: "what am I forgetting" with a note open is about that note (L228).
+        r"\bwhat\s+(?:am i|have i been|did i)\s+forget\w*\b|\banything\s+(?:i(?:'m| am)|i have)\s+forgett\w+\b", re.I)),
     ("done", lazy_compile(
         r"\bwhat(?:'s| is| have i| has been)?\s+(?:i\s+)?(?:done|finished|ticked(?: off)?|checked(?: off)?|packed|completed)\b|"
         r"\bwhat\s+have\s+i\s+(?:done|finished|ticked|packed|completed)\b|\bhow\s+many\b[^?]*\b(?:done|ticked|checked|packed|finished|complete\w*)\b", re.I)),
@@ -82,7 +84,7 @@ _GENERIC = frozenset(
     "here there left remaining outstanding still next step steps todo todos action actions item items task tasks need needs have has "
     "to of in on at for by deadline deadlines due date day time main key point points idea takeaway takeaways important matters "
     "gist involved mentioned named people person me my i you we be get about any all open done packed ticked checked finished "
-    "complete completed not yet un total many much dates days deadlines mention mentions mentioning include includes included contain contains contained given".split()
+    "anything forget forgetting forgot forgotten complete completed not yet un total many much dates days deadlines mention mentions mentioning include includes included contain contains contained given".split()
 )
 
 #: A to-do says it is owed ("need to", "must", "don't forget") wherever it
@@ -122,6 +124,22 @@ def kind(question: str) -> str:
 def _terms(question: str) -> list[str]:
     words = re.findall(r"[a-z0-9]+", (question or "").lower().replace("'", ""))
     return [w for w in words if w not in _GENERIC and len(w) > 2]
+
+
+#: Words that only ask "give me this note" ("what should I know", "anything I am forgetting").
+_FILLER = _GENERIC | frozenset("anything something everything else know knew forget forgetting forgot remember missing miss miss important notable worth noting note notes tell say says read see look think thing things".split())
+
+
+def subjectless(question: str) -> bool:
+    """A question with no subject of its own that is not one of the kinds
+    above ("what should I know", "anything I am forgetting"): with a note
+    open it asks about that note, not the notebook (L228: every note gave
+    the same reply)."""
+    q = " ".join((question or "").split())
+    if kind(q) or not q.endswith("?") and len(q.split()) > 6:
+        return False
+    words = re.findall(r"[a-z0-9]+", q.lower().replace("'", ""))
+    return bool(words) and all(w in _FILLER or len(w) <= 2 for w in words) and any(w in _FILLER for w in words)
 
 
 def reads_note(question: str, note: dict) -> bool:

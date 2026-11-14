@@ -2424,6 +2424,10 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
             <div class="chat-half">
+              <!-- Under 600px the records are one closed row (INBOX 1843): the heading below
+                   hides and this row, `askRecordsFold` (ask-compose.js), opens the list. -->
+              <button type="button" id="ask-records-fold" class="ghost disclosure-row ask-records-fold"
+                aria-expanded="false" aria-controls="raw-results">Matching records <span id="ask-records-count" class="chip item-label"></span></button>
               <h3 class="panel-head">
                 <i class="ph ph-cards ph-lead" aria-hidden="true"></i>
                 Matching records <span id="search-mode" class="chip item-label"></span>
