@@ -53,7 +53,7 @@ from collections.abc import Iterator
 from tessellate import SUPPORT_EMAIL
 from tessellate.ai import AI_NAME
 from tessellate.ai.provider import ProviderError
-from tessellate.ai import act_registry, guide_lead, help_words, presets, variants
+from tessellate.ai import act_registry, guide_lead, guide_titles, help_words, presets, variants
 from tessellate.ai.guide_lead import help_sentences  # the sentence cutter, a leaf with the lead rules (G5)
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
 from tessellate.ai import guide_outside
@@ -697,7 +697,7 @@ def topics_for(question: str, tab: str | None = None) -> list[dict]:
     of its own ("the person asking has the notes tab open"), which is the part
     of the context that was worth having.
     """
-    about_guide = _about_the_guide(question)
+    about_guide = _about_the_guide(question) or guide_titles.topic(question, HELP_TOPICS)
     if about_guide:
         return about_guide
     if social_reply(question):

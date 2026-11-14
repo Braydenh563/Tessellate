@@ -31,6 +31,16 @@ below). Versioning is `0.x` while the app stabilises.
 - Atlas: the hide act shuts its lids over the arms' own 3.6 seconds (33% to 67%), not 2.4 (L175, part)
 - Atlas: the walk's arm swing is one function (`atlasWalkSwing`), measured 4.6 to 21.4 degrees from hanging and never across the body (L82); the moods sweep sets its look through prefs again (L749).
 - Companion: generic faces' wave, scratch and hide keep under the Atlas rig's arm speed (a wave's lift was 408 degrees a second, now 125; hide 352 to 128), the viewer's wave and leap, glide and float arm frames likewise (L83); a Settings deep link to a control clipped above its scroller now scrolls to it (L85).
+- Chat: a regenerate or an edit and resend keeps every version of the answer (a 1 of N pager under it), and Regenerate with answers once with the same model, another installed one or none (L165)
+- Chat and notes: a Chart row in the / menu makes a bar or line chart from pasted values, saves it as a chart block that draws in the note and exports as SVG, PNG or CSV (L171); "what are my goals" and "show my lists" answer from the notes tagged or headed so, with no model (L254)
+- Chat: a web search that cannot run offers a "Search my notes instead" chip beside Start SearXNG, and a question that fits notes and web asks "Did you mean your notes or the web?" first (L217)
+- Chat: the first "not right" on an answer says it is stored only on this device, and Settings, Learned has a Clear answers marked not right row (L225)
+- Activity: the panel moves by its head (kept on screen, remembered, double-click puts it back), and a test pins that the agent never edits, removes or sends without a Confirm (L-chat-13)
+- Agent tools: a test pins snake_case verb-first names, no two tools opening with the same sentence and a 12-word lead; the 37 long leads and 5 noun-first names are named, and only shrink (L168)
+- Guide: a question that names a topic's title ("what is Meeting notes", "tell me about Skills") now reaches that topic first, 51 misrouted titles fixed, and about ten topic openers were rewritten to state the thing before the detail (L195).
+- Guide and Magic Add: "how do I record a meeting" leads with "Press Record in the recorder" instead of a dangling "there"; a clock window ("between 8 and 10", "from 8 to 10pm") makes a reminder due when it opens, not at 09:00; a poke line is never repeated twice running (L252).
+- Guide: a bare how-to no longer leads with a 61-word opening inventory; "How do I change the widgets?" leads with the Widgets and Edit layout step (L229)
+- Ask: a map or board whose words hold the question joins the answer's records as a map or board source card with an open link (L112)
 - Chat: joke and list helpers moved to ai/composer_jokes.py and composer_lists.open_lists, keeping composer_digest under its complexity and line caps; Cactus whistle, mirage and needle3 embed and extraction measured and not adopted (L-chat-42, 43, 45).
 Frontend: one NDJSON reader, api.ndjson, serves Ask, Chat, the Guide, the digest and the writing desk, and chatSendTurn is pinned at its 29-line driver (L169, L170)
 Guide: "call me Sam" and "what you call me" reach Profile, which says telling Atlas sets the name; the Who answers plain Ask topic gains its title and lead (L241)

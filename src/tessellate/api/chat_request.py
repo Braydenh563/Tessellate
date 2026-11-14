@@ -151,6 +151,11 @@ class ChatRequest(BaseModel):
     locale: str | None = Field(default=None, max_length=35)
     # Prior turns for follow-up context (Round 1); the server clips this.
     history: list[ChatTurn] = Field(default_factory=list, max_length=bounds.HISTORY_MAX_TURNS)
+    #: Answer this one turn with this installed model, the regenerate-with menu (L165).
+    #: Not stored: the next turn goes back to the chosen model.
+    model: str | None = Field(default=None, max_length=bounds.LABEL_MAX)
+    #: Answer this one turn from the notebook alone, as if no model ran (L165).
+    composer_only: bool = False
     # Persona name; None → the active persona preference.
     persona: str | None = Field(default=None, max_length=bounds.LABEL_MAX)
     # Agent mode: may the model call tools to change things?

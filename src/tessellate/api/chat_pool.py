@@ -476,7 +476,7 @@ def _stats_out(stats) -> dict | None:  # noqa: ANN001
     return {"kind": stats.kind, "text": stats.text, "facts": stats.facts, "offer": stats.offer}
 
 
-def _raw_results(session: Session, found: _Found) -> list:
+def _raw_results(session: Session, found: _Found, notes: list[dict] | None = None) -> list:
     from tessellate.api.routes_entries import _to_out_bulk  # avoids a route-module cycle
 
     rows = []
@@ -486,7 +486,20 @@ def _raw_results(session: Session, found: _Found) -> list:
         if entry.id in found.as_of_then:
             out = out.model_copy(update={"content": found.as_of_then[entry.id].text})
         rows.append(out)
-    return rows
+    return rows + _source_boards(session, found, notes or [])
+
+
+def _source_boards(session: Session, found: _Found, notes: list[dict]) -> list:
+    """The maps and boards the answer read, as rows of `raw_results` so Ask draws
+    each as a map or board card with an open link (L112, the owner's taken
+    recommendation). Only the ones `_with_sources` brought in: attached ones are
+    the person's own pick and keep their own chip."""
+    from tessellate.api.routes_entries import _to_out_bulk  # avoids a route-module cycle
+
+    have = {e.id for e in found.entries}
+    ids = [n["id"] for n in notes if n.get("kind") in ("map", "board") and not n.get("attached") and n["id"] not in have]
+    boards = [e for e in (session.get(Entry, i) for i in dict.fromkeys(ids)) if e is not None and not e.is_deleted and not e.is_private]
+    return list(_to_out_bulk(session, boards)) if boards else []
 
 
 def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as_of) -> dict:  # noqa: ANN001
@@ -503,7 +516,7 @@ def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as
         #: matched, said with the answer.
         "meaning_loading": found.meaning_loading,
         "meaning_off": found.meaning_off,
-        "raw_results": _raw_results(session, found),
+        "raw_results": _raw_results(session, found, notes),
         #: The day asked about and, per note, the revision its text came from
         #: (None for a note that read the same then as now).
         "as_of": as_of.isoformat() if as_of is not None else None,

@@ -337,8 +337,7 @@ MORE_TOPICS: list[dict] = [
             "cut that reply short", "model size", "does atlas do sums",
         ),
         "body": (
-            "Settings, Tools it can use also has Use these tools from another "
-            "app: a snippet to paste into an MCP client such as Claude Desktop, "
+            "Settings, Tools it can use lets another app use these tools: a snippet to paste into an MCP client such as Claude Desktop, "
             "with a Copy button; that client can also read your notes (never "
             "a private one) and use your skills as prompts. It reads only until "
             "you tick Let that app add and change notes. "
@@ -420,7 +419,9 @@ MORE_TOPICS: list[dict] = [
             "everything learned act on all of it and never touch your notes. "
             "The Learned from you line under the title counts your corrections "
             "and gives filing accuracy, the share of the notes Atlas filed that "
-            "you left where it put them, older half of the last 200 against newer."
+            "you left where it put them, older half of the last 200 against newer. "
+            "Under it, Clear answers marked not right forgets every answer you marked not right "
+            "in Chat; those marks are kept only on this device."
         ),
         "badge": {"label": "What it learned", "section": "learned"},
     },
@@ -489,7 +490,7 @@ MORE_TOPICS: list[dict] = [
             "my birthday", "on my birthday", "date order", "day first", "month first", "before:", "first run preferences",
         ),
         "body": (
-            "Settings, General. Calendar: First day of the week, and Seasons, which half of the year "
+            "Settings, General sets how the calendar and dates read: First day of the week, and Seasons, which half of the year "
             "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
             "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February), "
             "and Dates like 3/4 mean (day first or month first; automatic follows your region), "
@@ -735,7 +736,7 @@ MORE_TOPICS: list[dict] = [
             "it ended, how long it took and when, with its lines. While anything runs, the status bar's job slot says how "
             "many and names the newest. Open Activity from it, its agent runs count, the chat's ⋯ menu (Activity and past runs), or the "
             "palette (Activity). Its two tabs carry a glyph and a count, and each part is a card "
-            "headed by a glyph and a title. Its Agent runs tab lists each run this session "
+            "headed by a glyph and a title. Drag its head to move the panel; it stays on screen, remembers where you left it, and a double-click on the head puts it back. Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "
             "menu and in Settings, Models, stops any answer "
             "and unloads the model from memory (Ollama drops it at once; the chat's Stop reaches the model too); a server "
@@ -1983,7 +1984,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "chart-maker", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "code-completions", "code-tabs", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2451,6 +2452,19 @@ MORE_TOPICS.extend([
         "badge": {"label": "Documents", "tab": "documents"},
     },
     {
+        "id": "chart-maker",
+        "keywords": (
+            "chart maker", "make a chart", "bar chart", "line chart", "chart block", "paste values chart",
+            "chart from csv", "save chart as svg", "save chart as png", "slash chart",
+        ),
+        "body": (
+            "The \"/\" menu's Chart takes pasted values (a label and a number a line, or CSV), draws a bar or line chart, "
+            "and adds it to the note as a chart block that draws in the note view. Press a drawn chart to change its values or "
+            "its kind. Save as SVG, PNG or CSV is under the chart."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
         "id": "diagram-kinds",
         "keywords": (
             "mind map blocks", "timeline blocks", "sequence diagram blocks", "mermaid mind map",
@@ -2597,6 +2611,7 @@ TOPIC_META.update({
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
     "diagram-reading": {"title": "Reading a diagram: list order, fit and direction", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
+    "chart-maker": {"title": "Make a chart", "path": "A note, the / menu, Chart"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
     "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A diagram's blocks list, Ask; the ... menu, Versions..."},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},

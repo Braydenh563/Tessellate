@@ -173,6 +173,13 @@
    protect: still `position: absolute`, so there is no gap when unhovered and
    nothing shifts when the pointer arrives; still per-role, aligned to the
    edge its own bubble is anchored to. */
+.answer-version-pager {
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+}
+
 .msg-actions {
   position: absolute;
   /* **Over its own bubble's foot, not the next message's head.** Hung 2px
@@ -5288,4 +5295,12 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
 .action-menu.action-menu-start {
   left: 0;
   right: auto;
+}
+
+/* The chart maker's values box (L171): full width, monospace so columns line up. */
+.chart-maker-box {
+  width: 100%;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: var(--text-sm);
+  margin-block: var(--space-2);
 }

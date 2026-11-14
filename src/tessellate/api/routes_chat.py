@@ -82,7 +82,7 @@ from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGE
 from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
 from tessellate.api.chat_agent import _agent_events, consent_events, run_card_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _capability_answer, _miss_events, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _older_dates, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
-from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
+from tessellate.api.chat_turn import _composed_support, _frame_events, _not_again, _with_frame, _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, one_turn_models, one_turn_provider, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, model_chips, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -524,8 +524,8 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
     #: A view over the same manager, so everything downstream, the agent
     #: loop included, goes on asking for `chat_model()` and gets this
     #: surface's answer without knowing features exist.
-    model_manager = deps.get_model_manager().for_feature(_feature_for(body))
-    ollama = deps.get_ollama()
+    model_manager = one_turn_models(body, _feature_for(body))
+    ollama = one_turn_provider(body)
     ollama_running = ollama.is_running()
     #: Captioned once: the capability check below reuses these rather than asking the model again.
     seen = _chat_images(session, body, model_manager, ollama)
@@ -2160,12 +2160,12 @@ def _address(question: str, session: Session, skill: dict | None) -> tuple:
 def _stream_request(body: ChatRequest, session: Session, seen: tuple | None = None) -> _StreamRequest:
     """What one chat turn settles before it answers: the same for the stream and
     for the non-streaming route when no model runs."""
-    ollama = deps.get_ollama()
+    ollama = one_turn_provider(body)
     #: This surface's own model, if one is set (model_manager.FEATURES).
     #: A view over the same manager, so everything downstream, the agent
     #: loop included, goes on asking for `chat_model()` and gets this
     #: surface's answer without knowing features exist.
-    model_manager = deps.get_model_manager().for_feature(_feature_for(body))
+    model_manager = one_turn_models(body, _feature_for(body))
     history = [turn.model_dump(exclude_none=True) for turn in body.history]
     persona_prompt = _resolve_persona(body.persona, session)
     mode = _resolve_mode(body.mode)

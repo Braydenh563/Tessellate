@@ -1131,6 +1131,7 @@ async function streamChatEvents({
   peek,
   attempt,
   isPrivate,
+  oneModel,
 }) {
   //: Fetched now, so a composed reply's reveal (`finishReply`) never waits on it.
   ensureModule("replyKit").catch(() => {});
@@ -1139,6 +1140,9 @@ async function streamChatEvents({
   if (attempt) body.attempt = attempt;
   if (isPrivate) body.private = true;
   if (persona) body.persona = persona;
+  //: Regenerate with (L165): a model name for this answer, or "composer" for the app's own words.
+  if (oneModel === "composer") body.composer_only = true;
+  else if (oneModel) body.model = oneModel;
   // Per-turn, not a setting: one quick answer shouldn't change the default
   // for every answer after it.
   if (mode) body.mode = mode;

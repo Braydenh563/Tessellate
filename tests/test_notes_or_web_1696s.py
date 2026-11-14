@@ -66,14 +66,14 @@ def _chips(out):
 def test_the_stream_asks_with_two_chips_when_web_is_on(client, notebook):
     deps.get_config().set_preference("web_search_enabled", True)
     out = _ask(client, "what is a sourdough starter")
-    assert out["text"].strip() == "Your notes or the web?"
+    assert out["text"].strip() == "Did you mean your notes or the web?"
     assert _chips(out) == ["Search my notes for sourdough starter", "Search the web for sourdough starter"]
 
 
 def test_the_stream_does_not_ask_with_web_off(client, notebook):
     deps.get_config().set_preference("web_search_enabled", False)
     out = _ask(client, "what is a sourdough starter")
-    assert "Your notes or the web?" not in out["text"]
+    assert "Did you mean your notes or the web?" not in out["text"]
     assert not any("Search the web" in c for c in _chips(out))
 
 

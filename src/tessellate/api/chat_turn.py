@@ -137,13 +137,40 @@ def _chat_reply(  # noqa: ANN001
     return ai_response, ai_thinking
 
 
+class _NoModel:
+    """The provider as one turn sees it when the person chose Without a model
+    (L165): not running, so every later check composes the answer from the
+    notebook, and everything else is the real provider's."""
+
+    def __init__(self, real) -> None:  # noqa: ANN001
+        self._real = real
+
+    def is_running(self) -> bool:
+        return False
+
+    def __getattr__(self, name: str):  # noqa: ANN204
+        return getattr(self._real, name)
+
+
+def one_turn_provider(body: ChatRequest):  # noqa: ANN201
+    """The provider this turn talks to: the real one, or none for `composer_only`."""
+    real = deps.get_ollama()
+    return _NoModel(real) if body.composer_only else real
+
+
+def one_turn_models(body: ChatRequest, feature: str):  # noqa: ANN201
+    """The model view this turn answers with: its surface's, or the one named."""
+    manager = deps.get_model_manager().for_feature(feature)
+    return manager.for_model(body.model) if body.model else manager
+
+
 def _composes_offline(body: ChatRequest) -> bool:
     """A turn about the notes is composed from them when no model runs; a hello
     or a question about the app is not, it keeps the plain offline greeting
     ("No model is no reason to answer a hello with an error": a hello was
     getting "this comes from your notes alone" over a welcome). A turn with
     pictures, or with a model running, goes the model's way."""
-    if body.image_media_ids or deps.get_ollama().is_running():
+    if body.image_media_ids or (deps.get_ollama().is_running() and not body.composer_only):
         return False
     kind = _detect_intent(body.question, False, body.note_ids, body.document_ids, body.file_ids, body.media_file_ids, body.board_ids)
     return kind not in (intent.SMALLTALK, intent.ABOUT_APP)

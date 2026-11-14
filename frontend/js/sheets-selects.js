@@ -2245,6 +2245,7 @@ async function openConversation(id, turn = null) {
         bubble: handles.bubble,
         text: message.content,
         question: lastQuestionText,
+        message,
         onEdit: () => editChatAnswer(handles, turnIndex, message.content),
       });
       if (lastQuestionText !== null) {

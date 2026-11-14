@@ -688,14 +688,14 @@ HELP_TOPICS: list[dict] = [
             "Web results fold under the answer; press a title to read one there, "
             "as text, or the arrow to open it outside. "
             "Paste a link and ask to read it: with web search on and no model "
-            "the page is fetched and told back as its main points, key terms "
-            "and sections; with it off you are told so and given the setting. "
+            "the page comes back as its main points, key terms "
+            "and sections; with it off you are told and given the setting. "
             "If a web search cannot run because SearXNG is down, the reply and the Web panel offer "
             '"Start SearXNG" ("Install SearXNG" when absent; the reply also has "Set it up in '
-            'Settings", "Open the web panel" and "Use another provider"), and the panel '
+            'Settings", "Open the web panel", "Use another provider" and "Search my notes instead"), and the panel '
             "searches again once it answers; where this app cannot start it, it says why "
-            "and links Web search settings. Banter, slang or a single word is never sent to the web: "
-            "you are asked, with a chip for your notes and one for the web (also for a question both fit). To start it "
+            "and links Web search settings. Banter, slang, a single word or a question both fit "
+            "is never sent to the web unasked: Did you mean your notes or the web?, a chip for each. To start it "
             "yourself with Docker, run: docker run -d --name searxng -p 8888:8080 "
             "-v searxng:/etc/searxng searxng/searxng, then press Auto-detect there. "
             "With SearXNG chosen and no address saved, the reply says it is not "
@@ -851,7 +851,7 @@ HELP_TOPICS: list[dict] = [
             'who (a title like "Sync with Ana friday 2pm" fills When and '
             "Who from its chips), then opens the meeting as a note with Agenda, Notes, Decisions "
             "and Action items; Start and open recorder does the same and opens the "
-            'recorder, writing into its Notes; press Record there (Ctrl+Shift+R opens it too). Write an action item as "- [ ] Send the deck '
+            'recorder, writing into its Notes; press Record in the recorder (Ctrl+Shift+R opens it too). Write an action item as "- [ ] Send the deck '
             '@Sam by Friday": @Name is its owner, the plain words its due. '
             "The meeting chip on the note (or its ... menu, Meeting) opens the "
             "meeting sheet: Remind me makes an action item a reminder, asking "
@@ -1386,7 +1386,7 @@ HELP_TOPICS.extend(
                 "make it formal",
             ),
             "body": (
-                "Notes tab, Writing room: pick what to write (draft a note, "
+                "The Writing room (Notes tab) drafts, rewrites and translates: pick what to write (draft a note, "
                 "continue or rewrite the draft, bullets to prose, prose to bullets, "
                 "a diagram, or translate), add notes as sources if you want it grounded in "
                 "them (a note dropped or pasted from the Tray into Your thoughts is added "

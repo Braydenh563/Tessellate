@@ -111,6 +111,7 @@ TOPIC_LEADS: dict[str, str] = {
     "diagram-blocks": "Add shapes and connect them in a diagram's block list, with the picture beside it.",
     "diagram-reading": "How the block list orders a diagram so it reads the way the chart flows.",
     "diagram-kinds": "Switch a diagram to another kind and build it from that kind's own blocks.",
+    "chart-maker": "Paste values in the / menu's Chart and get a bar or line chart in the note.",
     "diagram-elsewhere": "Edit a diagram as blocks wherever it is drawn, and save it as a picture.",
     "diagram-ai": "Change a diagram by asking in words, take its suggestions, and compare its versions.",
     "diagram-lines": "Shape a diagram's arrows and spacing, export it, and move a picture too big for its pane.",

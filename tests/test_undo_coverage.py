@@ -468,6 +468,7 @@ EXEMPT: dict[str, str] = {
     "answer-kit.js:toolChip": "send: Fetch again refreshes the kept copy of a web page from the web; nothing the person wrote changes",
     "answer-kit.js:keptPagesRow": "read: asks how old the kept web pages are; its Fetch again refreshes a kept copy, nothing the person wrote changes",
     "settings-controls.js:(anonymous /websearch/stored)": "send: clears the cache of fetched web pages; each fetches again when next asked, nothing the person wrote is lost",
+    "settings-controls.js:renderLearnedFromYou": "send: forgets the answers marked not right, kept only on this device; nothing the person wrote is lost and the button names it",
     "whiteboard-format.js:(anonymous /media/${meta.id}/library)": "send: files a board picture into the Library on request (K18); deleting it from the Library takes it out again, the board keeps it",
     "extra-notice.js:extraNoticeInstall": "job: installs an optional package; the notice turns to Undo, which stops or removes it",
     "extra-notice.js:extraNoticeUndo": "inverse: the Undo of extraNoticeInstall, stops the download or removes the package it installed",

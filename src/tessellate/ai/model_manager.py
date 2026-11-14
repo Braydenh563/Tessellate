@@ -427,8 +427,11 @@ def known_feature(feature: str) -> Feature:
 class ModelManager:
     """Reads/writes the active-model preferences."""
 
-    def __init__(self, config: ConfigManager, feature: str | None = None) -> None:
+    def __init__(self, config: ConfigManager, feature: str | None = None, once: str = "") -> None:
         self._config = config
+        #: One turn's model, named by the person's regenerate-with choice (L165);
+        #: wins over the feature's own override and the app's chat model.
+        self._once = once
         #: Which feature's work this manager is answering for, or None for the
         #: app's own preferences. A *view*, not a mode: `for_feature` hands
         #: back a second manager over the same config rather than setting a
@@ -441,10 +444,14 @@ class ModelManager:
         #: it the view for its own surface and the right model arrives.
         self._feature = feature
 
+    def for_model(self, name: str) -> "ModelManager":
+        """This view, answering with `name` for the one turn that asked."""
+        return ModelManager(self._config, self._feature, (name or "").strip())
+
     def for_feature(self, feature: str) -> "ModelManager":
         """This manager, answering as one feature (decision 1)."""
         known_feature(feature)
-        return ModelManager(self._config, feature)
+        return ModelManager(self._config, feature, self._once)
 
     def _override_for_role(self, role: str) -> str:
         """This view's override, if it replaces *this* role.
@@ -561,7 +568,7 @@ class ModelManager:
         return rows
 
     def chat_model(self) -> str:
-        return self._override_for_role("chat") or self._config.get_preference(
+        return self._once or self._override_for_role("chat") or self._config.get_preference(
             "chat_model", "llama3.2"
         )
 

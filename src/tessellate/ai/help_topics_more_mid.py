@@ -778,7 +778,11 @@ MID_TOPICS.extend(
                 "reads more notes (5, then 10, 15, up to 20) and ignores a category the "
                 "question named, so a note the first read missed can come in. Regenerate "
                 "as lists your personas: the same question answered as one of them, for "
-                "this answer only, and the persona picker stays as it was. This answer "
+                "this answer only, and the persona picker stays as it was. Regenerate "
+                "with answers once with the same model, another installed one, or "
+                "without a model, from your notes alone. Every regenerate or edit and "
+                "resend keeps the earlier answer: a pager reading 1 of 2 under the "
+                "answer steps between versions, and the latest shows first. This answer "
                 "is wrong marks the whole answer wrong: the notes it cited come last for a "
                 "question like it, and are left out once you say so twice. It shows "
                 "only where the answer cites a note, never in a private chat, and Undo "
@@ -881,7 +885,7 @@ MID_TOPICS.extend(
                 "installed models", "remove a model", "uninstall a model", "free disk space",
             ),
             "body": (
-                "Settings, Models, Suggested downloads: cards grouped by purpose "
+                "Settings, Models, Suggested downloads lists models to download as cards grouped by purpose "
                 "(chat and filing, bigger machines, search, images, reading "
                 "text), each with its size on disk, the memory it asks for, what "
                 "it is good at and whether it fits this computer, and one "
