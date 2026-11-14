@@ -205,7 +205,8 @@ def test_first_run_surfaces_go_in_a_fixed_order():
     key, console question, update question, one at a time; no overlap but the
     tour's own Settings step."""
     onboarding = frontend_text("onboarding.js")
-    assert 'const FIRST_RUN_ORDER = ["welcome", "recovery", "console", "updates"];' in onboarding
+    #: First run gained the second backup folder slot (L-world-class-101); the order is still fixed.
+    assert 'const FIRST_RUN_ORDER = ["welcome", "recovery", "console", "backup", "updates"];' in onboarding
     assert 'firstRunTurn(showOnboardingTurn, "welcome")' in onboarding
     console_intro = onboarding.split("async function maybeShowConsoleViewIntro()")[1].split("\n}\n")[0]
     assert "await firstRunTurn(() => confirmDialog(" in console_intro and '"console")' in console_intro
