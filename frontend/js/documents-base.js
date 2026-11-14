@@ -129,6 +129,36 @@
       return { iso: `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`, day: d.getUTCDate(), inMonth: d.getUTCMonth() === month };
     });
   }
+
+  //: **`queryParse(source)`**: the ```query block (L-documents-43): `{ name, text, limit, errors }`. A line `saved: Reading list`
+  //: names a saved search (the finder's, then the Notes filter's), `search: tag:work` is a query typed in place, a bare line is
+  //: read as a saved name and, when none is called that, as the query itself, and `limit: 20` caps the list (50 at most).
+  function queryParse(source) {
+    const model = { name: "", text: "", limit: 10, errors: [] };
+    for (const raw of String(source || "").split("\n")) {
+      const line = raw.trim();
+      const m = /^(saved|search|limit)\s*:\s*(.*)$/i.exec(line);
+      if (!line) continue;
+      const key = m ? m[1].toLowerCase() : "";
+      if (key === "limit") {
+        const n = Number.parseInt(m[2], 10);
+        if (n >= 1) model.limit = Math.min(n, 50);
+        else model.errors.push(`"${line.slice(0, 30)}" should be a number of results.`);
+      } else if (key === "search") model.text = m[2].trim();
+      else if (key === "saved") model.name = m[2].trim();
+      else if (!model.name && !model.text) model.name = line;
+    }
+    return model;
+  }
+
+  //: **`queryAddress(model, saved)`**: `{ q, path, label }` where `saved` is `[{ name, query }]`; `q` is "" when the block names
+  //: nothing to look for.
+  function queryAddress(model, saved) {
+    const hit = model.name && saved.find((s) => s.name.toLowerCase() === model.name.toLowerCase());
+    const q = hit ? hit.query : model.text || model.name;
+    const params = new URLSearchParams({ q, kind: "note,document", limit: String(model.limit) });
+    return { q, path: `/search?${params}`, label: hit ? hit.name : q };
+  }
   // DOC-BASE-END
 
   const el = (tag, cls, text) => {
@@ -368,5 +398,61 @@
     return true;
   }
 
-  Object.assign(docMathRender, { base: { parse, query, fill, setLine, groupRows, moveValue, monthGrid, dateOf } });
+  //: **`queryFill(figure, source)`**: the saved search's results as a list, read again after each save of the document; a title
+  //: opens the note or document. False when the block names nothing, so Read keeps it as code.
+  function queryFill(figure, source) {
+    const model = queryParse(source);
+    figure.replaceChildren();
+    const saved = [...(prefsCache?.saved_finds || []), ...(prefsCache?.saved_searches || [])];
+    const at = queryAddress(model, saved);
+    if (!at.q) {
+      figure.append(el("p", "db-empty", "Nothing to look for yet. Write the name of a saved search, or search: and some words."));
+      return false;
+    }
+    const bar = el("div", "db-bar");
+    const refresh = smallButton("ph:arrow-clockwise", "Refresh the results", () => load());
+    refresh.classList.add("icon-only");
+    bar.append(refresh, el("span", "db-label", `Search: ${at.label}`));
+    const body = el("div", "db-body");
+    body.setAttribute("aria-live", "polite");
+    figure.append(bar, body);
+    for (const line of model.errors) figure.append(el("p", "db-count", line));
+    let token = 0;
+    function load() {
+      const mine = ++token;
+      body.replaceChildren(el("p", "db-empty", "Reading the notes"));
+      apiJson(at.path, { silent: true })
+        .then((data) => {
+          if (mine !== token || !figure.isConnected) return;
+          body.replaceChildren();
+          const hits = (data.hits || []).filter((h) => h.kind === "note" || h.kind === "document");
+          if (!hits.length) return body.append(el("p", "db-empty", "Nothing matches."));
+          const list = el("ul", "db-hits");
+          for (const hit of hits) {
+            const item = el("li", "db-hit");
+            const open = el("button", "db-open link-button", hit.title || "Untitled");
+            open.type = "button";
+            open.addEventListener("click", () => {
+              if (hit.kind === "document") {
+                switchTab("documents");
+                openDocument(hit.id);
+              } else flashEntry(hit.id);
+            });
+            item.append(open, el("span", "db-kind", hit.kind === "document" ? "Document" : "Note"));
+            list.append(item);
+          }
+          body.append(list);
+        })
+        .catch(() => {
+          if (mine === token) body.replaceChildren(el("p", "db-empty", "The results could not be read just now."));
+        });
+    }
+    //: A save of the document may have changed what matches; the listener leaves with the figure.
+    const again = () => (figure.isConnected ? load() : document.removeEventListener("doc-saved", again));
+    document.addEventListener("doc-saved", again);
+    load();
+    return true;
+  }
+
+  Object.assign(docMathRender, { base: { parse, query, fill, setLine, groupRows, moveValue, monthGrid, dateOf, queryParse, queryAddress, queryFill } });
 })();

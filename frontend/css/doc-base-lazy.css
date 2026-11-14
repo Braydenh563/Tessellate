@@ -76,7 +76,8 @@
 }
 
 /* The Live figure's pencil: on the corner, put the caret in the text. */
-.cm-md-base-wrap {
+.cm-md-base-wrap,
+.cm-md-query-wrap {
   position: relative;
 }
 
@@ -87,7 +88,7 @@
   opacity: 0;
 }
 
-.cm-md-base-wrap:is(:hover, :focus-within) .db-edit {
+:is(.cm-md-base-wrap, .cm-md-query-wrap):is(:hover, :focus-within) .db-edit {
   opacity: 1;
 }
 
@@ -248,6 +249,34 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* The ```query block's list (L-documents-43). */
+.db-hits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.db-hit {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-block-end: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.db-hit:last-child {
+  border-block-end: 0;
+}
+
+.db-kind {
+  color: var(--muted);
 }
 
 @media print {

@@ -1964,7 +1964,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-query", "document-synced", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2865,6 +2865,24 @@ MORE_TOPICS.append({
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["document-base"] = {"title": "A table, board or calendar of notes", "path": "A document, the / menu, Notes table"}
+
+
+#: L-documents-43: the query block (documents-base.js), a saved search kept live in a document.
+MORE_TOPICS.append({
+    "id": "document-query",
+    "keywords": (
+        "query block", "saved search in a document", "live search", "search results in a document", "```query",
+        "saved search block", "live list of notes",
+    ),
+    "body": (
+        "Type /saved search in a document, or write a code block marked query, to keep a search's results as a list "
+        "in the page. Write the name of one of your saved searches (saved: Reading list), or search: and the words or "
+        "operators to look for, and limit: 20 to show more or fewer (50 at most). The list shows notes and documents; "
+        "press a title to open it. It reads again each time the document saves, and the refresh button reads it on demand."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-query"] = {"title": "A saved search in a document", "path": "A document, the / menu, Saved search"}
 
 
 #: OPEN W18 (s9-1110): the diagram's line shape, spacing and page menu.

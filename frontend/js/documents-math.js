@@ -597,6 +597,7 @@
   const FENCES = {
     graph: { module: "docGraph", cls: "md-graph", wrap: "cm-md-graph-wrap", pending: "md-graph-pending", edit: "dg-edit", height: 420, fill: (figure, source) => docMathRender.graph.fill(figure, source) },
     base: { module: "docBase", cls: "md-base", wrap: "cm-md-base-wrap", pending: "md-base-pending", edit: "db-edit", height: 180, fill: (figure, source, write) => docMathRender.base.fill(figure, source, write) },
+    query: { module: "docBase", cls: "md-query md-base", wrap: "cm-md-query-wrap", pending: "md-base-pending", edit: "db-edit", height: 120, fill: (figure, source) => docMathRender.base.queryFill(figure, source) },
   };
   const fenceBlocks = (lang) => (text) =>
     [...text.matchAll(new RegExp("^```[ \\t]*" + lang + "\\b[^\\n]*\\n([\\s\\S]*?)\\n```[ \\t]*$", "gm"))].map((m) => ({ from: m.index, to: m.index + m[0].length, source: m[1] }));
@@ -699,5 +700,8 @@
     baseBlocks: fenceBlocks("base"),
     baseIn: fenceIn("base"),
     baseField: fenceField("base"),
+    queryBlocks: fenceBlocks("query"),
+    queryIn: fenceIn("query"),
+    queryField: fenceField("query"),
   });
 })();

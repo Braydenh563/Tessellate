@@ -23,7 +23,7 @@ node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not inst
 def _run(body: str) -> object:
     text = (JS / "documents-base.js").read_text(encoding="utf-8")
     region = text[text.index("// DOC-BASE-BEGIN") : text.index("// DOC-BASE-END")]
-    script = "var window = {};\n(() => {\n" + region + "\nwindow.b = { parse, query, setLine, groupRows, moveValue, monthGrid, dateOf };\n})();\nconst b = window.b;\n" + body
+    script = "var window = {};\n(() => {\n" + region + "\nwindow.b = { parse, query, setLine, groupRows, moveValue, monthGrid, dateOf, queryParse, queryAddress };\n})();\nconst b = window.b;\n" + body
     out = subprocess.run(["node", "-"], input=script, capture_output=True, text=True, timeout=60)
     assert out.returncode == 0, out.stderr[-600:]
     return json.loads(out.stdout.strip().splitlines()[-1])
@@ -113,3 +113,26 @@ def test_the_views_are_wired_to_the_recipes() -> None:
     assert 'method: "PUT"' in source and "/properties" in source
     assert 'draggable = true' in source and "Move to " in source
     assert "fenceWrite(lang" in math and "fill: (figure, source, write)" in math
+
+
+@node
+def test_a_query_block_names_a_saved_search_or_holds_the_words() -> None:
+    got = _run(
+        "const saved = [{ name: 'Reading list', query: 'tag:book is:unread' }];"
+        "const a = b.queryParse('Reading list\\nlimit: 500'); const c = b.queryParse('search: tag:work\\nlimit: x');"
+        "const d = b.queryParse('saved: reading LIST'); const e = b.queryParse('plain words');"
+        "console.log(JSON.stringify({ a, c, ra: b.queryAddress(a, saved), rc: b.queryAddress(c, saved),"
+        " rd: b.queryAddress(d, saved).q, re: b.queryAddress(e, saved).q, none: b.queryAddress(b.queryParse(''), saved).q }));"
+    )
+    assert got["a"]["name"] == "Reading list" and got["a"]["limit"] == 50
+    assert got["ra"]["q"] == "tag:book is:unread" and "kind=note%2Cdocument" in got["ra"]["path"] and got["ra"]["label"] == "Reading list"
+    assert got["c"]["text"] == "tag:work" and len(got["c"]["errors"]) == 1 and got["rc"]["q"] == "tag:work"
+    assert got["rd"] == "tag:book is:unread" and got["re"] == "plain words" and got["none"] == ""
+
+
+def test_the_query_block_is_wired_in_read_live_the_menu_and_the_save() -> None:
+    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    assert "docMathRender.queryIn(preview)" in docs and "docMathRender.queryField(CM)" in docs
+    assert 'new CustomEvent("doc-saved")' in docs
+    assert '"doc-saved"' in (JS / "documents-base.js").read_text(encoding="utf-8")
+    assert '{ id: "query"' in (JS / "editor.js").read_text(encoding="utf-8")
