@@ -146,7 +146,7 @@
       if (kind === "sketch") {
         const parsed = wbSketchParsedData(item);
         if (!parsed) continue;
-        const path = document.querySelector(`.sketch-group[data-id="${item.id}"] .sketch-path`);
+        const path = wbInstances.query(`.sketch-group[data-id="${item.id}"] .sketch-path`);
         try {
           const b = path?.getBBox();
           if (b && (b.width || b.height)) box = { minX: b.x, minY: b.y, maxX: b.x + b.width, maxY: b.y + b.height };

@@ -180,7 +180,8 @@ def test_a_link_finds_its_two_paths_once_per_gesture() -> None:
     the document a second, for elements a keyed render does not replace."""
     body = _code("wbUpdateLinkedSketches")
     assert "entry.el.isConnected" in body
-    assert body.count("document.querySelector") == 1
+    #: The active board's lookup since L-whiteboard-55; still one.
+    assert body.count("document.querySelector") + body.count("wbInstances.query") == 1
 
 
 def test_a_synchronous_render_calls_off_the_queued_one() -> None:

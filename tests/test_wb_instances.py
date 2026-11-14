@@ -546,3 +546,48 @@ def test_init_whiteboard_binds_container_listeners_through_the_instances():
     assert "wbInstances.embedFor(document.activeElement)" in cmds
     css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     assert ".wb-embed-readonly > [data-wb-layer] {\n  pointer-events: none;" in css
+
+
+def test_board_selectors_search_the_active_board_only():
+    """L-whiteboard-55: `#wb-html-layer .wb-object` and the other board lookups are
+    searched in the active board's container; an embed's layer ids read as its
+    `data-wb-layer`, and the page board's selector is the one it always was."""
+    out = _run("""
+const el = node("embed");
+el.querySelectorAll = (sel) => [{ sel, in: "embed" }];
+PAGE_EL.querySelectorAll = (sel) => [{ sel, in: "page" }];
+out.page = [I.query("#wb-html-layer .wb-object"), I.queryAll("#wb-zoom-group > g.sketch-group, #wb-html-layer > svg")];
+const B = I.mount(el, 7);
+I.activate(B);
+out.embed = [
+  I.query('#wb-html-layer .wb-object[data-id="3"]'),
+  I.queryAll("#wb-zoom-group > .wb-sketch-handle-group, #wb-overlay-zoom-group > .wb-sketch-handle-group"),
+  I.query('.sketch-group[data-id="4"]'),
+  I.query("#wb-html-layer-x, #wb-sidebar"),
+];
+""")
+    assert out["page"] == [
+        {"sel": "#wb-html-layer .wb-object", "in": "page"},
+        [{"sel": "#wb-zoom-group > g.sketch-group, #wb-html-layer > svg", "in": "page"}],
+    ]
+    assert out["embed"] == [
+        {"sel": '[data-wb-layer="wb-html-layer"] .wb-object[data-id="3"]', "in": "embed"},
+        [{"sel": '[data-wb-layer="wb-zoom-group"] > .wb-sketch-handle-group, [data-wb-layer="wb-overlay-zoom-group"] > .wb-sketch-handle-group', "in": "embed"}],
+        {"sel": '.sketch-group[data-id="4"]', "in": "embed"},
+        #: Only the board's own layer ids are rewritten.
+        {"sel": "#wb-html-layer-x, #wb-sidebar", "in": "embed"},
+    ]
+
+
+def test_no_board_file_looks_up_a_layer_or_an_item_document_wide():
+    layer = r"#wb-(?:svg-layer|zoom-group|shapes-group|lines-group|strokes-group|html-layer|overlay-layer|overlay-zoom-group)"
+    wide = re.compile(r"document\.querySelector(?:All)?\(\s*[`\"'](?:" + layer + r"|\.wb-object|\.sketch-group\[|\.node-card|\.wb-map-node|\.wb-map-edges|\[data-id)")
+    found = {}
+    for path in sorted(JS.glob("whiteboard*.js")):
+        hits = len(wide.findall(path.read_text(encoding="utf-8")))
+        if hits:
+            found[path.name] = hits
+    assert found == {}, found
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    assert 'd3.select(wbInstances.query(outlineOnly ? "#wb-zoom-group" : "#wb-overlay-zoom-group"))' in wb
+    assert "d3.select(wbInstances.query(layer))" in wb

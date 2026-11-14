@@ -510,7 +510,7 @@
       return false;
     }
     row.id = made.id;
-    const el = document.querySelector(`.wb-object[data-id="${tempId}"]`);
+    const el = wbInstances.query(`.wb-object[data-id="${tempId}"]`);
     if (el) el.dataset.id = String(made.id);
     if (wbSelectedItem?.kind === "object" && wbSelectedItem.id === tempId) wbSelectedItem.id = made.id;
     const size = wbMapNodeSizeCache?.get(tempId);
@@ -823,7 +823,7 @@
     if (!container) return false;
     const box = container.getBoundingClientRect();
     let spilled = false;
-    for (const el of document.querySelectorAll("#wb-html-layer .wb-object")) {
+    for (const el of wbInstances.queryAll("#wb-html-layer .wb-object")) {
       const r = el.getBoundingClientRect();
       if (r.width === 0 && r.height === 0) continue;
       if (r.left < box.left || r.top < box.top || r.right > box.right || r.bottom > box.bottom) {
@@ -851,7 +851,7 @@
     //: document-wide query each (93ms of a Tab at 301 topics, profiled).
     if (origin.size) {
       const byId = new Map();
-      for (const el of document.querySelectorAll("#wb-html-layer .wb-object[data-id]")) byId.set(el.dataset.id, el);
+      for (const el of wbInstances.queryAll("#wb-html-layer .wb-object[data-id]")) byId.set(el.dataset.id, el);
       for (const entry of origin.values()) entry.el = byId.get(String(entry.id)) || null;
     }
     return origin;

@@ -58,7 +58,7 @@
   function wbWrapTextSelection(marker) {
     const item = wbSelectedTextObjectOrNull();
     if (!item) return;
-    const el = document.querySelector(`.wb-object[data-id="${item.id}"] .wb-text-content`);
+    const el = wbInstances.query(`.wb-object[data-id="${item.id}"] .wb-text-content`);
     const surf = el && el.isContentEditable ? el.wbEditorSurface : null;
     if (surf) {
       const value = surf.text;
@@ -728,7 +728,7 @@
 
   //: A shape's drawn group, path and hit path, for a drag to write to.
   function wbSketchLiveEls(id) {
-    const g = document.querySelector(`.sketch-group[data-id="${id}"]`);
+    const g = wbInstances.query(`.sketch-group[data-id="${id}"]`);
     return { g, path: g?.querySelector(".sketch-path"), hit: g?.querySelector(".sketch-hitbox") };
   }
 
@@ -1016,7 +1016,7 @@
   //: Undo never runs under an open editor that saves into the board afterwards.
   function wbCommitOpenEdit() {
     const active = document.activeElement;
-    if (active?.isContentEditable && active.closest("#wb-html-layer")) active.blur();
+    if (active?.isContentEditable && wbInstances.layer("wb-html-layer")?.contains(active)) active.blur();
   }
 
   //: **A box still being typed in is saved when the page goes** (boardfix-1108):
@@ -1156,7 +1156,7 @@
     }
     const lone = wbSelectedItem?.kind === "object" && wbMultiSelection.size <= 1 ? wbFindItem("object", wbSelectedItem.id) : null;
     if (!lone || lone.kind !== "text" || lone.data?.sticker || wbIsLocked("object", lone)) return false;
-    const words = document.querySelector(`.wb-object[data-id="${lone.id}"] .wb-text-content`);
+    const words = wbInstances.query(`.wb-object[data-id="${lone.id}"] .wb-text-content`);
     if (!words) return false;
     wbBeginTextEdit(words);
     const range = document.createRange();
@@ -1178,7 +1178,7 @@
     if (!created) return;
     wbSelectToolRef?.("select");
     requestAnimationFrame(() => {
-      const el = document.querySelector(`.wb-object[data-id="${created.id}"] .wb-text-content`);
+      const el = wbInstances.query(`.wb-object[data-id="${created.id}"] .wb-text-content`);
       if (el) wbBeginTextEdit(el);
     });
   }
@@ -1252,7 +1252,7 @@
     // into. wbScheduleRender() just rebuilt the DOM, so the element has to be
     // looked up fresh rather than kept from before the render.
     requestAnimationFrame(() => {
-      const el = document.querySelector(`.wb-object[data-id="${created.id}"] .wb-text-content`);
+      const el = wbInstances.query(`.wb-object[data-id="${created.id}"] .wb-text-content`);
       if (el) wbBeginTextEdit(el);
     });
   }

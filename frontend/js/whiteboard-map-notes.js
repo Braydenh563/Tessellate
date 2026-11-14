@@ -62,7 +62,7 @@
       });
     }
     if (restoreFocus) {
-      const mark = document.querySelector(`.wb-object[data-id="${state.id}"] .wb-map-note`);
+      const mark = wbInstances.query(`.wb-object[data-id="${state.id}"] .wb-map-note`);
       if (mark && !mark.hidden) mark.focus({ preventScroll: true });
       else wbInstances.container()?.focus({ preventScroll: true });
     }

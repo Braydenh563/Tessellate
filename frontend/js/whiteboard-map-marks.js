@@ -162,7 +162,7 @@
       return;
     }
     wbMapCloseMarkers();
-    const target = anchor?.isConnected ? anchor : document.querySelector(`.wb-object[data-id="${id}"]`);
+    const target = anchor?.isConnected ? anchor : wbInstances.query(`.wb-object[data-id="${id}"]`);
     if (!target) return;
     const panel = document.createElement("div");
     panel.className = "help-popover wb-map-markers-pop";

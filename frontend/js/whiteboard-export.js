@@ -238,7 +238,7 @@
     //: kind builds the index; the first element with an id wins, as the lookups did.
     const idIndex = (selector) => {
       const found = new Map();
-      for (const el of document.querySelectorAll(selector)) if (!found.has(el.dataset.id)) found.set(el.dataset.id, el);
+      for (const el of wbInstances.queryAll(selector)) if (!found.has(el.dataset.id)) found.set(el.dataset.id, el);
       return found;
     };
     const objectEls = idIndex("#wb-html-layer .wb-object");
@@ -249,8 +249,8 @@
     //: paint of one that is, which is the theme's own card look. The last topic
     //: in the layer rather than the first, because the first is usually the
     //: trunk, which wears its branch colour as a fill.
-    const cardFallback = wbExportPaint(document.querySelector("#wb-html-layer .node-card"));
-    const topics = document.querySelectorAll("#wb-html-layer .wb-object.wb-map-node");
+    const cardFallback = wbExportPaint(wbInstances.query("#wb-html-layer .node-card"));
+    const topics = wbInstances.queryAll("#wb-html-layer .wb-object.wb-map-node");
     const lastTopic = topics[topics.length - 1];
     const topicFallback = wbExportPaint(lastTopic, lastTopic?.querySelector(".wb-map-text"));
     const elOf = (obj) => objectEls.get(String(obj.id));
@@ -313,7 +313,7 @@
       //: property do not survive the clone, so the computed paint goes on as attributes.
       mapEdges() {
         const out = [];
-        for (const edge of document.querySelectorAll(".wb-map-edges .wb-map-edge")) {
+        for (const edge of wbInstances.queryAll(".wb-map-edges .wb-map-edge")) {
           const clone = edge.cloneNode(true);
           clone.removeAttribute("class");
           const look = getComputedStyle(edge);
@@ -1519,7 +1519,7 @@
     let clipped = 0;
     for (const node of wbState.nodes) {
       if (onlyKeys && !onlyKeys.has(wbMultiKey("node", node.id))) continue;
-      const content = document.querySelector(
+      const content = wbInstances.query(
         `.node-card[data-id="${node.id}"] .wb-card-content`
       );
       if (!content || !content.classList.contains("wb-card-content-clamped")) continue;

@@ -368,7 +368,7 @@
   //: When none is clear it takes the one that covers least. The topic's own
   //: buttons (+ and link) count as the topic, since they hang off it.
   function wbMapStripMenuOffTopic(menu, toggle) {
-    const el = wbMapStripNodeId != null && document.querySelector(`.wb-object[data-id="${wbMapStripNodeId}"]`);
+    const el = wbMapStripNodeId != null && wbInstances.query(`.wb-object[data-id="${wbMapStripNodeId}"]`);
     if (!el) return;
     //: Back to its natural place first when an earlier frame moved it, so the
     //: door follows the bar on a pan and the answer is never stale.
@@ -463,7 +463,7 @@
   //: the strip is what was asked for. One rect read, and not during a drag
   //: (`held`), where nothing about the line changes against the bar.
   function wbMapStripClearOfHandle(node, { left, y, w, h, hostRect, gapBelow, bottom, minY, maxY }) {
-    const handle = node && document.querySelector(`.wb-map-edges .wb-map-edge-handle[data-child="${node.id}"]`);
+    const handle = node && wbInstances.query(`.wb-map-edges .wb-map-edge-handle[data-child="${node.id}"]`);
     if (!handle) return [left, y];
     const hb = handle.getBoundingClientRect();
     if (!hb.width) return [left, y];

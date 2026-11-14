@@ -176,6 +176,19 @@
     return active.container ? active.container.querySelector(`[data-wb-layer="${id}"]`) : document.getElementById(id);
   }
 
+  //: **A board selector, inside the active board** (L-whiteboard-55): searched in
+  //: its container, the layer ids it names read as an embed's `data-wb-layer`.
+  //: The page board's selector is unchanged and searched in the page container,
+  //: so an embed's cards (same ids, same classes) are never found for the page.
+  const LAYER_IDS = /#(wb-(?:svg-layer|zoom-group|shapes-group|lines-group|strokes-group|html-layer|overlay-layer|overlay-zoom-group))(?![\w-])/g;
+  const scoped = (selector) => (active.container ? selector.replace(LAYER_IDS, '[data-wb-layer="$1"]') : selector);
+  function query(selector) {
+    return container()?.querySelector(scoped(selector)) ?? null;
+  }
+  function queryAll(selector) {
+    return container()?.querySelectorAll(scoped(selector)) ?? [];
+  }
+
   //: After each recorded edit (wbPushUndo): the active board's `onChange` listeners.
   function changed() {
     for (const fn of [...active.changeFns]) {
@@ -300,7 +313,7 @@
   active = page;
 
   const wbInstances = {
-    page, list, mount, unmount, activate, container, layer, changed, on, embedFor,
+    page, list, mount, unmount, activate, container, layer, query, queryAll, changed, on, embedFor,
     get active() { return active; },
   };
 

@@ -1943,7 +1943,7 @@ function wbMapOpenNote(id, anchor) {
   wbMapCloseNote();
   const target = anchor && anchor.isConnected && !anchor.hidden
     ? anchor
-    : document.querySelector(`.wb-object[data-id="${id}"]`);
+    : wbInstances.query(`.wb-object[data-id="${id}"]`);
   if (!target) return;
   const panel = document.createElement("div");
   panel.className = "help-popover wb-map-note-peek";
@@ -2130,14 +2130,14 @@ function wbMapShowDropTarget(id) {
   if (wbMapDropTargetId === id) return;
   wbMapClearDropTarget();
   if (id == null) return;
-  document.querySelector(`.wb-object[data-id="${id}"]`)?.classList.add("wb-map-drop-target");
+  wbInstances.query(`.wb-object[data-id="${id}"]`)?.classList.add("wb-map-drop-target");
   wbMapDropTargetId = id;
 }
 
 function wbMapClearDropTarget() {
   wbMapShowSlotCue(null);
   if (wbMapDropTargetId == null) return;
-  document.querySelector(`.wb-object[data-id="${wbMapDropTargetId}"]`)
+  wbInstances.query(`.wb-object[data-id="${wbMapDropTargetId}"]`)
     ?.classList.remove("wb-map-drop-target");
   wbMapDropTargetId = null;
 }
@@ -2374,7 +2374,7 @@ function wbMapLinkCue(source, target) {
   const kind = plan ? "branch" : "cross-link";
   if (wbMapLinkCueState?.id === target.id && wbMapLinkCueState.kind === kind) return kind;
   wbMapClearLinkCue();
-  const el = document.querySelector(`.wb-object[data-id="${target.id}"]`);
+  const el = wbInstances.query(`.wb-object[data-id="${target.id}"]`);
   el?.classList.add(plan ? "wb-map-link-cue-branch" : "wb-map-link-cue-cross");
   wbMapLinkCueState = { id: target.id, kind };
   const name = (node) => `"${(wbMapLabel(node) || "Untitled").slice(0, 40)}"`;
@@ -2386,7 +2386,7 @@ function wbMapLinkCue(source, target) {
 
 function wbMapClearLinkCue() {
   if (!wbMapLinkCueState) return;
-  document.querySelector(`.wb-object[data-id="${wbMapLinkCueState.id}"]`)
+  wbInstances.query(`.wb-object[data-id="${wbMapLinkCueState.id}"]`)
     ?.classList.remove("wb-map-link-cue-branch", "wb-map-link-cue-cross");
   wbMapLinkCueState = null;
 }
@@ -2483,7 +2483,7 @@ wbMapNodeSize.measured = (d) => {
   if (d._block) return d._block;
   const cached = wbMapNodeSizeCache?.get(d.id);
   if (cached) return cached;
-  const el = document.querySelector(`.wb-object[data-id="${d.id}"]`);
+  const el = wbInstances.query(`.wb-object[data-id="${d.id}"]`);
   if (el && el.offsetHeight) {
     const size = { w: el.offsetWidth, h: el.offsetHeight };
     if (!wbMapNodeSizeCache) wbMapNodeSizeCache = new Map();
@@ -2540,7 +2540,7 @@ function wbIndexMapNodeElements(linkEndsOnly = false) {
     }
     return byId;
   }
-  for (const el of document.querySelectorAll(".wb-object[data-id]")) {
+  for (const el of wbInstances.queryAll(".wb-object[data-id]")) {
     const id = Number(el.dataset.id);
     if (byId.has(id)) continue;
     byId.set(id, el);
@@ -3216,7 +3216,7 @@ function mapPaletteCommands() {
     row("This topic", "ph:file-md Save this branch as Markdown", () => wbMapLazy.saveBranch(node));
     row("This topic", "ph:flow-arrow Add a second central topic joined to this one…", () => wbMapLazy.secondRoot(node));
     if (node.data?.recording) {
-      row("This topic", "ph:play Play the audio note", () => wbMapLazy.playAudio(node.id, document.querySelector(`.wb-object[data-id="${node.id}"] .wb-map-audio`) || wbInstances.container()));
+      row("This topic", "ph:play Play the audio note", () => wbMapLazy.playAudio(node.id, wbInstances.query(`.wb-object[data-id="${node.id}"] .wb-map-audio`) || wbInstances.container()));
       row("This topic", "ph:microphone-slash Remove the audio note", () => wbMapLazy.removeAudio(node));
     }
     row("This topic", "ph:eyedropper Copy this topic's style", () => wbCopySelectedStyle(), "Ctrl+Alt+C");
@@ -3455,7 +3455,7 @@ function wbRectEscapes(node, view) {
 //: against the canvas the board's own chrome leaves free, not the whole
 //: container, so a topic under the top bar or the dock counts as hidden.
 function wbMapRevealTopic(item) {
-  const el = document.querySelector(`.wb-object[data-id="${item.id}"]`);
+  const el = wbInstances.query(`.wb-object[data-id="${item.id}"]`);
   const container = wbInstances.container();
   if (!el || !container) return false;
   const free = typeof wbVisibleCanvasRect === "function" ? wbVisibleCanvasRect() : container.getBoundingClientRect();
@@ -3530,7 +3530,7 @@ function wbMapEditNode(id, { now = false } = {}) {
     const typed = wbMapTypeahead?.text || "";
     const commit = Boolean(wbMapTypeahead?.commit);
     wbMapTypeahead = null;
-    const el = document.querySelector(`.wb-object[data-id="${id}"] .wb-map-text`);
+    const el = wbInstances.query(`.wb-object[data-id="${id}"] .wb-map-text`);
     if (!el) return;
     wbBeginTextEdit(el);
     // Select the whole label so the first keystroke replaces it: a new node
@@ -5047,7 +5047,7 @@ function wbMapEdgeShown(handle, on) {
 //: the ones to show are found by their ends, and the ones to hide are the
 //: ones showing now.
 function wbSyncMapEdgeHandles() {
-  const group = document.querySelector("#wb-zoom-group .wb-map-edges");
+  const group = wbInstances.query("#wb-zoom-group .wb-map-edges");
   if (!group) return;
   const selected = wbIsMap() && wbMultiSelection.size <= 1 ? wbSelectedMapNode() : null;
   const id = selected ? String(selected.id) : null;
@@ -5086,7 +5086,7 @@ function wbSyncMapEdgeHandles() {
   //: the waypoint handle (`deepen72a.js`, 4 overlaps at 1440, 8 at 390), so a
   //: press there was a guess between three controls. Hover still finds it
   //: on every other line.
-  const layer = document.querySelector("#wb-html-layer .wb-map-plus-layer");
+  const layer = wbInstances.query("#wb-html-layer .wb-map-plus-layer");
   if (!layer) return;
   const aside = new Set(id ? layer.querySelectorAll(`.wb-map-edge-plus[data-parent="${id}"], .wb-map-edge-plus[data-child="${id}"]`) : []);
   for (const plus of layer.querySelectorAll(".wb-map-edge-plus.is-aside")) {
@@ -5098,7 +5098,7 @@ function wbSyncMapEdgeHandles() {
 function wbSyncMapChrome() {
   wbApplyMapFont();
   //: A note open on the board being left goes with it (decision 18).
-  if (wbMapNoteState && !document.querySelector(`.wb-object[data-id="${wbMapNoteState.id}"]`)) wbMapCloseNote();
+  if (wbMapNoteState && !wbInstances.query(`.wb-object[data-id="${wbMapNoteState.id}"]`)) wbMapCloseNote();
   //: The map's line style can change here, and the cross-link tool draws it.
   if (wbIsMap()) wbSyncConnectWords(true);
   const isMap = wbIsMap();
@@ -5660,7 +5660,7 @@ const wbMapBuild = {
     }
   },
   unring() {
-    for (const el of document.querySelectorAll(".wb-object.flash-target")) el.classList.remove("flash-target", "flash");
+    for (const el of wbInstances.queryAll(".wb-object.flash-target")) el.classList.remove("flash-target", "flash");
   },
   //: Called by `wbStopPresenting`: the map draws whole again.
   end() {
@@ -6073,7 +6073,7 @@ function wbOutlineFocus(node, { caret = null, select = false } = {}) {
 //: The name on the canvas as it is typed, without a render: the label's own
 //: inline drawing, the one a rename on the canvas ends with.
 function wbOutlineMirror(node, text) {
-  const el = document.querySelector(`.wb-object[data-id="${node.id}"] .wb-map-text`);
+  const el = wbInstances.query(`.wb-object[data-id="${node.id}"] .wb-map-text`);
   if (el && el !== document.activeElement) wbMapInlineText(el, text);
 }
 

@@ -875,7 +875,7 @@
     //: for absolutely everything".
     if (undo) wbPushUndo({ action: "move", kind: "object", id: node.id, before: WB_KIND_INFO.object.payload(node) });
     node.data = { ...node.data, ...patch };
-    const el = document.querySelector(`.wb-object[data-id="${node.id}"]`);
+    const el = wbInstances.query(`.wb-object[data-id="${node.id}"]`);
     if (el) {
       wbPaintMapNodeStyle(el, node);
       //: Painted outside the render, so the render's paint key (`_wbPaintKey`)
@@ -1366,11 +1366,11 @@
   //: ring's eight slots and sit inside the ring's circle. Two buttons for one
   //: action, one of them under the ring, is the clutter the report was about.
   function wbMarkMapRadialNode(id) {
-    for (const el of document.querySelectorAll(".wb-object.wb-radial-open")) {
+    for (const el of wbInstances.queryAll(".wb-object.wb-radial-open")) {
       el.classList.remove("wb-radial-open");
     }
     if (id == null) return;
-    document.querySelector(`.wb-object[data-id="${id}"]`)?.classList.add("wb-radial-open");
+    wbInstances.query(`.wb-object[data-id="${id}"]`)?.classList.add("wb-radial-open");
   }
 
   function wbCloseMapRadial() {

@@ -37,7 +37,7 @@ const ctx = {
   wbState: { objects: [] },
 };
 //: The page board, the default instance (L-whiteboard-53).
-ctx.wbInstances = { container: () => ctx.document.getElementById("whiteboard-container"), layer: (id) => ctx.document.getElementById(id) };
+ctx.wbInstances = { container: () => ctx.document.getElementById("whiteboard-container"), layer: (id) => ctx.document.getElementById(id), query: (s) => ctx.document.querySelector(s), queryAll: (s) => ctx.document.querySelectorAll(s) };
 ctx.window = ctx;
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(process.argv[2], "utf8"), ctx, { filename: "whiteboard-map.js" });

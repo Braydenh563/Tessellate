@@ -339,7 +339,7 @@ function wbSaveExpandedNodes() {
 //: when it stands taller than that (`wbCardMoreNeeded`, node-tested).
 function wbSyncCardClamps() {
   const wanted = [];
-  for (const card of document.querySelectorAll(".node-card")) {
+  for (const card of wbInstances.queryAll(".node-card")) {
     //: A culled card keeps the toggle it had: asking its content for a
     //: height would lay out the very subtree the cull is there to skip.
     if (card.classList.contains("wb-culled")) continue;
@@ -802,7 +802,7 @@ function wbCullNow(transform, size) {
   //: A map's tree lines, by the box of their two ends: a line with one end on
   //: screen is on screen. `display: none` is right for these: nothing ever
   //: measures a line's element, only its ends.
-  const edges = document.querySelector("#wb-zoom-group .wb-map-edges");
+  const edges = wbInstances.query("#wb-zoom-group .wb-map-edges");
   const cache = edges?._wbMapEdges;
   if (cache instanceof Map && cache.size) {
     const byId = new Map((wbState.objects || []).map((o) => [o.id, o]));
@@ -1099,7 +1099,7 @@ wbGuideBoxes.walls = (frame, ins) => {
 //: the two. A frame whose title hangs above its edge has no header inside.
 //: Null when the frame is not drawn.
 wbGuideBoxes.insets = (frame) => {
-  const node = document.querySelector(`.wb-object[data-id="${frame.id}"]`);
+  const node = wbInstances.query(`.wb-object[data-id="${frame.id}"]`);
   if (!node) return null;
   const probe = document.createElement("div");
   probe.style.position = "absolute";
@@ -1823,7 +1823,7 @@ function wbRefreshHighlighterBlend() {
   for (const path of document.querySelectorAll(".sketch-path")) {
     if (path.style.mixBlendMode) path.style.mixBlendMode = blend;
   }
-  const drawing = document.querySelector("#wb-overlay-zoom-group > path.wb-live-highlighter");
+  const drawing = wbInstances.query("#wb-overlay-zoom-group > path.wb-live-highlighter");
   if (drawing) drawing.style.mixBlendMode = blend;
 }
 
@@ -1964,7 +1964,7 @@ async function wbClearVotes() {
 //: The dots in an export: the same pill, at the corner the board draws it,
 //: in the colours the live badge shows.
 function wbSvgVotes(obj) {
-  const badge = document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"] > .wb-votes`);
+  const badge = wbInstances.query(`#wb-html-layer .wb-object[data-id="${obj.id}"] > .wb-votes`);
   const fill = badge ? wbExportColour(getComputedStyle(badge).backgroundColor) : "#2f5bd3";
   const ink = badge ? wbExportColour(getComputedStyle(badge).color) : "#ffffff";
   const w = Math.max(16, 8 + String(obj.data.votes).length * 7);
@@ -4187,7 +4187,7 @@ function wbEditNodeText(nodeId, firstKey = "", whole = null) {
   wbAddGate.cardRetypeId = null;
   const node = wbState.nodes.find((n) => n.id === nodeId);
   if (!node) return;
-  const card = document.querySelector(`.node-card[data-id="${nodeId}"]`);
+  const card = wbInstances.query(`.node-card[data-id="${nodeId}"]`);
   const content = card?.querySelector(".wb-card-content");
   if (!content) return;
   const entry = whole || allEntries.find((e) => e.id === node.entry_id);
@@ -4649,7 +4649,7 @@ async function wbTrashDelete(keys) {
 //: it, on screen only: nothing was saved yet, so nothing needs unsaving.
 function wbRestoreMove(kind, d) {
   if (kind === "sketch") {
-    const el = document.querySelector(`.sketch-group[data-id="${d.id}"]`);
+    const el = wbInstances.query(`.sketch-group[data-id="${d.id}"]`);
     if (d._dragOriginalD != null) {
       el?.querySelector(".sketch-path")?.setAttribute("d", d._dragOriginalD);
       el?.querySelector(".sketch-hitbox")?.setAttribute("d", d._dragOriginalD);
@@ -8390,7 +8390,7 @@ async function initWhiteboard() {
       //: keyboard, and it is why nothing in the node's menu is pointer-only.
       if (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) {
         e.preventDefault();
-        const el = document.querySelector(`.wb-object[data-id="${mapNode.id}"]`);
+        const el = wbInstances.query(`.wb-object[data-id="${mapNode.id}"]`);
         const box = el?.getBoundingClientRect();
         wbCloseMapRadial();
         wbOpenMapNodeMenu(mapNode, box ? box.left + box.width / 2 : 0, box ? box.bottom + 4 : 0);
@@ -10646,7 +10646,7 @@ async function wbNewUntitledBoard(kind = "board") {
   if (!root) return;
   wbMapEditNode(root.id);
   requestAnimationFrame(() => {
-    const label = document.querySelector(`.wb-object[data-id="${root.id}"] .wb-map-text`);
+    const label = wbInstances.query(`.wb-object[data-id="${root.id}"] .wb-map-text`);
     label?.addEventListener("blur", () => setTimeout(async () => {
       const typed = (label.textContent || "").trim();
       if (!typed || typed === name || window.currentBoardId !== boardId) return;
@@ -11258,7 +11258,7 @@ function wbSketchCaps(parsed) {
 // reintroduce the same gap quietly.
 function wbClearSketchHandles() {
   for (const layer of ["#wb-zoom-group", "#wb-overlay-zoom-group"]) {
-    d3.select(layer).selectAll(".wb-sketch-handle-group").remove();
+    d3.select(wbInstances.query(layer)).selectAll(".wb-sketch-handle-group").remove();
   }
 }
 
@@ -11271,8 +11271,8 @@ function wbClearSketchHandles() {
 //: The press is handed to the link's own hit stroke at the same point, which
 //: is exactly the right-click that already works a little way along the line.
 function wbForwardGripContextMenu(event, sketchId) {
-  const hit = document.querySelector(`.sketch-group[data-id="${sketchId}"] .sketch-hitbox`)
-    || document.querySelector(`.sketch-group[data-id="${sketchId}"]`);
+  const hit = wbInstances.query(`.sketch-group[data-id="${sketchId}"] .sketch-hitbox`)
+    || wbInstances.query(`.sketch-group[data-id="${sketchId}"]`);
   if (!hit) return;
   event.preventDefault();
   event.stopPropagation();
@@ -11311,11 +11311,11 @@ function wbRenderLinkEndpointHandles(sketch, parsed) {
   else {
     const mid = { x: (endpoints.source.x + endpoints.target.x) / 2, y: (endpoints.source.y + endpoints.target.y) / 2 };
     const bendLive = { x: parsed.bend?.x || 0, y: parsed.bend?.y || 0 };
-    const paths = () => [".sketch-path", ".sketch-hitbox"].map((c) => document.querySelector(`.sketch-group[data-id="${sketch.id}"] ${c}`));
+    const paths = () => [".sketch-path", ".sketch-hitbox"].map((c) => wbInstances.query(`.sketch-group[data-id="${sketch.id}"] ${c}`));
     const repaint = () => {
       const d = wbLinkPathD(parsed.type, endpoints.source, endpoints.target, wbLinkCaps(parsed), parsed.width, bendLive);
       for (const el of paths()) el?.setAttribute("d", d);
-      wbLayoutLinkLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+      wbLayoutLinkLabel(wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`));
       //: A map's ribbon is a filled outline; mid-bend the path is an open
       //: curve, which a fill would close into a wedge. Stroke it in the same
       //: colour until the render after the gesture redraws it properly.
@@ -11392,9 +11392,9 @@ function wbRenderLinkEndpointHandles(sketch, parsed) {
             d3.select(this).attr("cx", live.x).attr("cy", live.y);
             const previewPts = end === "source" ? [live, endpoints[other]] : [endpoints[other], live];
             const previewD = wbLinkPathD(parsed.type, previewPts[0], previewPts[1], wbLinkCaps(parsed), parsed.width, parsed.bend, wbLinkShape(parsed));
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", previewD);
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", previewD);
-            wbLayoutLinkLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", previewD);
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", previewD);
+            wbLayoutLinkLabel(wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`));
 
             const hit = hoveredItemAt(live.x, live.y);
             if (hit) wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], live.x, live.y));
@@ -11444,7 +11444,7 @@ function wbRenderWaypointHandles(group, sketch, parsed, endpoints) {
   if (["er", "iso", "loop"].includes(wbLinkShape(parsed)?.route)) return;
   const elbow = parsed.route === "elbow";
   const points = wbLinkWaypoints(parsed, endpoints).map((p) => ({ x: p.x, y: p.y }));
-  const groupEl = () => document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+  const groupEl = () => wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`);
   const live = () => ({ ...parsed, points, bend: undefined });
   const ends = () => wbResolveLinkEndpoints(live()) || endpoints;
   const repaint = () => {
@@ -11767,7 +11767,7 @@ function wbMultiLiveLinks(rows) {
 }
 
 function wbMultiMemberOutline(id) {
-  return document.querySelector(`#wb-zoom-group .wb-sketch-handle-group[data-sketch-id="${id}"]`);
+  return wbInstances.query(`#wb-zoom-group .wb-sketch-handle-group[data-sketch-id="${id}"]`);
 }
 
 function wbFollowMultiOutline(id, liveD) {
@@ -12188,7 +12188,7 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
   //: A lone selection's grips go in the overlay, above the HTML objects that
   //: can lie over the shape (3 of 8 grips were under a text box: measured
   //: with `elementFromPoint`); a multi member's bare outline stays under.
-  const group = d3.select(outlineOnly ? "#wb-zoom-group" : "#wb-overlay-zoom-group")
+  const group = d3.select(wbInstances.query(outlineOnly ? "#wb-zoom-group" : "#wb-overlay-zoom-group"))
     .append("g")
     .attr("class", "wb-sketch-handle-group")
     .attr("data-sketch-id", sketch.id);
@@ -12265,9 +12265,9 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
             sketch._resizeUndoBefore = WB_KIND_INFO.sketch.payload(sketch);
             sketch._gesture = wbBeginGesture(() => {
               delete sketch._liveD;
-              document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", parsed.d);
-              document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", parsed.d);
-              wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+              wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", parsed.d);
+              wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", parsed.d);
+              wbLayoutShapeLabel(wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`));
             });
           })
           .on("drag", (event) => {
@@ -12284,9 +12284,9 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
             rawDY += event.dy;
             const t = wbSketchResizeTransform(bbox, handle, rawDX, rawDY, event.sourceEvent.shiftKey || wbKeepsRatio("sketch", sketch), event.sourceEvent.altKey);
             const newD = (wbFmtState.shapeTable?.resized(parsed.d, t, parsed.shapeKind, wbTransformPathD, wbPathBBox) ?? wbTransformPathD(parsed.d, t));
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", newD);
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", newD);
-            wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", newD);
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", newD);
+            wbLayoutShapeLabel(wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`));
             sketch._liveD = newD; // read at drag end, without waiting for a full render
             wbFollowLiveShape(sketch, newD);
             const live = wbPathBBox(newD);
@@ -12360,9 +12360,9 @@ function wbDrawSketchHandles(sketch, { outlineOnly = false } = {}) {
           sketch._gesture = wbBeginGesture(() => {
             rotateLiveD = null;
             group.attr("transform", null);
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", parsed.d);
-            document.querySelector(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", parsed.d);
-            wbLayoutShapeLabel(document.querySelector(`.sketch-group[data-id="${sketch.id}"]`));
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-path`)?.setAttribute("d", parsed.d);
+            wbInstances.query(`.sketch-group[data-id="${sketch.id}"] .sketch-hitbox`)?.setAttribute("d", parsed.d);
+            wbLayoutShapeLabel(wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`));
           });
         })
         .on("drag", (event) => {
@@ -12637,7 +12637,7 @@ function renderWhiteboard() {
   const svgGroup = d3.select(wbInstances.layer("wb-zoom-group"));
   //: Every stroke's group wherever its band put it (decision 43); a new one
   //: is made in the base layer and `wbPlaceSketchBands` moves it.
-  const sketchSelection = svgGroup.selectAll(() => document.querySelectorAll("#wb-zoom-group > g.sketch-group, #wb-html-layer > svg.wb-sketch-band > g.sketch-group"))
+  const sketchSelection = svgGroup.selectAll(() => wbInstances.queryAll("#wb-zoom-group > g.sketch-group, #wb-html-layer > svg.wb-sketch-band > g.sketch-group"))
     .data((wbState.sketches || []).filter(wbSketchIsDrawable), d => d.id);
     
 
@@ -12744,7 +12744,7 @@ function renderWhiteboard() {
       }
       const newD = wbTransformPathD(d._dragOriginalD, { dx, dy });
       d._dragLiveD = newD;
-      const el = document.querySelector(`.sketch-group[data-id="${d.id}"]`);
+      const el = wbInstances.query(`.sketch-group[data-id="${d.id}"]`);
       el?.querySelector(".sketch-path")?.setAttribute("d", newD);
       el?.querySelector(".sketch-hitbox")?.setAttribute("d", newD);
       wbNudgeShapeLabel(el, dx, dy);
@@ -13182,7 +13182,7 @@ function renderWhiteboard() {
         d._resizeUndoBefore = WB_KIND_INFO.node.payload(d);
         d._linkedSketches = wbLinkedSketchesFor(d.id, "node");
         //: Measured once, at the press: the height the text needs.
-        const card = document.querySelector(`.node-card[data-id="${d.id}"]`);
+        const card = wbInstances.query(`.node-card[data-id="${d.id}"]`);
         d._fitH = card && !wbExpandedNodes.has(d.id) ? wbCardFitHeight(card) : null;
         d._gesture = wbBeginGesture(() => wbRestoreBox("node", d, d._resizeUndoBefore));
       })
@@ -13209,7 +13209,7 @@ function renderWhiteboard() {
         d.height = height;
         d.x = x;
         d.y = y;
-        const el = document.querySelector(`.node-card[data-id="${d.id}"]`);
+        const el = wbInstances.query(`.node-card[data-id="${d.id}"]`);
         if (el) {
           el.style.width = `${width}px`;
           el.style.height = `${height}px`;
@@ -13267,7 +13267,7 @@ function renderWhiteboard() {
       })
       .on("drag", (event, d) => {
         if (d._gesture?.cancelled) return;
-        const el = document.querySelector(`.node-card[data-id="${d.id}"]`);
+        const el = wbInstances.query(`.node-card[data-id="${d.id}"]`);
         if (!el) return;
         const rect = el.getBoundingClientRect();
         d.rotation = wbAngleFromCenterDeg(
@@ -14468,7 +14468,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
       })
       .on("drag", (event, d) => {
         if (d._gesture?.cancelled) return;
-        const el = document.querySelector(`.wb-object[data-id="${d.id}"]`);
+        const el = wbInstances.query(`.wb-object[data-id="${d.id}"]`);
         if (!el) return;
         const rect = el.getBoundingClientRect();
         d.rotation = wbAngleFromCenterDeg(
@@ -15125,7 +15125,7 @@ function wbUpdateLinkedSketches(nodeId, precomputed) {
     //: from the document and has to be looked for again rather than written
     //: to invisibly for ever.
     if (!entry.el || !entry.el.isConnected) {
-      entry.el = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+      entry.el = wbInstances.query(`.sketch-group[data-id="${sketch.id}"]`);
       entry.path = entry.el?.querySelector(".sketch-path") || null;
       entry.hitbox = entry.el?.querySelector(".sketch-hitbox") || null;
     }
@@ -15711,7 +15711,7 @@ function renderWbGestureHints() {
   }
   const cards = (wbState && wbState.nodes ? wbState.nodes.length : 0);
   const card = !wbIsMap() && wbMultiSelection.size === 0 && wbSelectedItem?.kind === "node"
-    ? document.querySelector(`.node-card[data-id="${wbSelectedItem.id}"]`)
+    ? wbInstances.query(`.node-card[data-id="${wbSelectedItem.id}"]`)
     : null;
   const wanted = Boolean(card) && !wbGesturesDismissed && cards <= WB_GESTURE_CARD_LIMIT;
   strip.classList.toggle("hidden", !wanted);

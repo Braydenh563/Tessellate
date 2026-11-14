@@ -447,7 +447,7 @@
     //: on a 61-topic branch drag, 47ms of `querySelectorAll` in 40 moves.
     let groups = origin?.chromeGroups;
     if (!groups || groups.some((group) => !group.isConnected)) {
-      groups = [...document.querySelectorAll(
+      groups = [...wbInstances.queryAll(
         "#wb-zoom-group > .wb-sketch-handle-group, #wb-overlay-zoom-group > .wb-sketch-handle-group"
       )];
       if (origin) origin.chromeGroups = groups;
