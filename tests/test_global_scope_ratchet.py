@@ -96,7 +96,7 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-14 L286 (D24): map strip, waypoints and marks carved out of whiteboard-map.js and wrapped whole. Measured 7,203.
 #: 2026-11-14 L286 (D24): map edges, notes and look carved out of whiteboard-map.js and wrapped whole. Measured 7,180 (WB_MAP_FONTS is read at load by whiteboard-sketch-text.js).
 #: 2026-11-14 L335 (D24): twelve whole sections carved out of documents.js and wrapped (documents-prose-check, -suggest-panel, -commands, -templates, -cm-load, -tablemenu, -preview, -edit-keys, -richpaste, -block-ids, -links-panels, -save). Measured 7,028.
-GLOBAL_NAMES_CAP = 6993  # the format strip, AI edit doors and Check with AI wrapped out of documents.js (L-documents-116); was 7012
+GLOBAL_NAMES_CAP = 6987  # file kind wrapped out of documents.js (L-documents-117); was 6993; earlier: the format strip, AI edit doors and Check with AI wrapped out of documents.js (L-documents-116); was 7012
 
 
 @functools.lru_cache(maxsize=None)
