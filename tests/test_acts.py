@@ -12,7 +12,7 @@ import pytest
 from sqlalchemy import select
 
 from tessellate.ai import acts, commands, help_chat
-from tessellate.core.database import Document, Entry, EntryLink, Reminder, WhiteboardNode
+from tessellate.core.database import Document, Entry, EntryLink, Reminder, UserPreference, WhiteboardNode
 from tessellate.entry import manager
 
 NOW = datetime(2026, 10, 10, 12, 0)
@@ -56,6 +56,8 @@ def _state(session, categories: bool = False, by_name: bool = False) -> tuple:
         #: By name: Undo saves the skill again with its defaults filled in.
         tuple(sorted(str(s.get("name")) for s in deps.get_config().get_preference("skills", []))),
         tuple(sorted(n.entry_id for n in session.scalars(select(WhiteboardNode)))),
+        #: A suggested preference (remember, L114) is a row that waits for an answer; its Undo drops it.
+        tuple(sorted(p.content for p in session.scalars(select(UserPreference)))),
     )
     return notes, links, reminders, deps.get_config().get_preference("display_name", ""), made, surfaces
 

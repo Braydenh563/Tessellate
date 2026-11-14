@@ -47,7 +47,7 @@ from tessellate.ai.filed_name import filed_listing
 VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rename", "restore", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
 #: The intents `read` gives, each with its verb.
 _VERB_OF = {
-    "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "create_category": "create", "delete_category": "delete", "merge_categories": "rename", "delete_tag": "delete", "edit_text": "rename", "to_reminders": "remind", "run_skill": "open", "delete_document": "delete", "delete_skill": "delete", "board_card": "add", "make_map": "create", "restore": "restore", "pin": "pin",
+    "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "create_category": "create", "delete_category": "delete", "merge_categories": "rename", "delete_tag": "delete", "edit_text": "rename", "to_reminders": "remind", "run_skill": "open", "delete_document": "delete", "delete_skill": "delete", "board_card": "add", "make_map": "create", "remember": "add", "restore": "restore", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
     "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "set_name": "rename", "set_theme": "change", "summarise": "summarise", "find": "find", "similar": "find", "open": "open", "navigate": "open",
 }
@@ -75,7 +75,7 @@ def __getattr__(name: str) -> str:
 RUNNABLE = frozenset(
     {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "move_notes",
      "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder", "set_display_name",
-     "delete_document", "restore_document", "create_document", "delete_skill", "save_skill", "add_whiteboard_card", "delete_board_item", "restore_board_item", "map_from_note", "create_mindmap", "set_theme"}
+     "delete_document", "restore_document", "create_document", "delete_skill", "save_skill", "add_whiteboard_card", "delete_board_item", "restore_board_item", "map_from_note", "create_mindmap", "set_theme", "save_user_preference", "drop_preference"}
 )
 
 _MAX_TEXT = 300
@@ -1442,6 +1442,7 @@ _OBJECT_KEY = {
     "navigate": "surface", "rename_tag": "old", "rename_category": "old", "merge_categories": "from", "to_reminders": "source",
     **dict.fromkeys(("new_note", "append"), "content"),
     **dict.fromkeys(("set_name", "create_category", "delete_category", "delete_tag", "run_skill", "delete_document", "delete_skill"), "name"),
+    "remember": "preference",
 }
 
 
@@ -2329,6 +2330,8 @@ def _step_undo(name: str, args: dict, result: dict):  # noqa: ANN202
         step_undo = {"tool": "bin_reminder", "arguments": {"reminder_id": result["id"]}}
     if name == "complete_reminder":
         step_undo = task_acts.undo_step(name, args)
+    if name == "save_user_preference" and (result.get("proposal") or {}).get("id") is not None:
+        step_undo = {"tool": "drop_preference", "arguments": {"id": result["proposal"]["id"]}}
     if name == "link_notes" and not step_undo:
         step_undo = {"tool": "unlink_notes", "arguments": {"note_id": args.get("note_id"), "other_note_id": args.get("other_note_id")}}
     return step_undo
@@ -2349,7 +2352,7 @@ def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: A
         return _bin_reminder(session, args)
     if name in task_acts.OWN_STEPS:
         return task_acts.run_step(session, name, args)
-    if name in ("set_theme", "restore_document"):
+    if name in ("set_theme", "restore_document", "drop_preference"):
         return surface_acts.run_step(session, name, args)
     if name == "set_display_name":
         from tessellate.core import deps

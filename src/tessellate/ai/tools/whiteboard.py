@@ -870,11 +870,19 @@ def _create_mindmap(session: Session, args: dict) -> dict:
     if not title:
         raise ToolError("title is required: what is this map about?")
     root_text = str(args.get("root_text") or "").strip() or title
+    plain = args.get("kind") == "board"
 
     entry = Entry(content=f"# {title}", is_board=True)
     # "tree-right", not the API's own "free" default: every position this
     # module computes is a tree-right ladder (`_next_position`), so telling
     # the client anything else would be describing a map it isn't.
+    if plain:
+        #: "make a board called Launch": an empty free board, nothing on it yet (L114).
+        _store_board_settings(entry, "board", "free")
+        _new_board(session, entry, title, "board", "free")
+        session.commit()
+        session.refresh(entry)
+        return {"board_id": entry.id, "title": title, "label": f"ph:chalkboard Created the board “{_clip(title, 40)}”", "undo": board_note_binned(entry.id)}
     _store_board_settings(entry, "map", "tree-right")
     # Two events, on two entities, the same pair a person creating this map
     # by hand records (`POST /boards` then `POST /boards/{id}/nodes`): the
