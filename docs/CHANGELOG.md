@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A note can embed a recording with `![[Name]]` and link it with `[[Name]]`, by the name the Library shows; the recorder's file answers both, so the boot files only name it (L579)
 - A recorder transcript is saved as timed lines (`[m:ss] Speaker: text`) instead of one run of words (L578)
 - Emptying a reading in a gallery card moves it to the bin, with Undo, instead of clearing it for good (L581)
 - On a touch screen a sideways chip row has no arrows: the swipe moves it, and an arrow covered the last chip that shows (L-world-class-35).

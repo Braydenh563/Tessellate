@@ -2417,7 +2417,7 @@ async function offerToCreateWikiTarget(name) {
   //: A board reference keeps its bar (it is read just below); any other link
   //: offers to create the note its target names, not `Target|Shown`.
   const wanted = String(wikiLinkTarget(name) || "").trim();
-  if (!wanted) return;
+  if (!wanted || (await noteRecording(0, wanted))) return;
 
   //: **A board reference is not a name that can be created** (INBOX 309).
   //: `[[board:12|House jobs]]` addresses one board by id, and the only

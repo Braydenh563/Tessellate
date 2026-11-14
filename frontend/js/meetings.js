@@ -2822,6 +2822,40 @@
     if (event.target.matches("select.mic-device")) nameMeetingMic();
   });
 
+  // --- a note names a recording (L579) -----------------------------------------
+  //
+  // `![[Sync call]]` and `[[Sync call]]` in a note, by the name the Library
+  // shows. The boot files only call these through their stand-ins, so the
+  // Library's recordings are fetched here, when a name is not a note, a board
+  // or a document.
+
+  async function noteRecordingByName(name) {
+    const wanted = String(typeof wikiLinkTarget === "function" ? wikiLinkTarget(name) : name || "").trim().toLowerCase();
+    if (!wanted) return null;
+    const body = await apiJson(`/recordings?q=${encodeURIComponent(wanted)}&limit=50`, { silent: true }).catch(() => null);
+    return (body?.recordings || []).find((row) => String(row.title || "").trim().toLowerCase() === wanted) || null;
+  }
+
+  //: A note's `![[Name]]` (a host to fill) or `[[Name]]` (no host): the take's player where the embed's "Nothing called
+  //: that yet" stood, or the take opened in Library, Recordings. False when the name is no recording, so a link
+  //: goes on to offer a note. One export, because the shared scope's names are counted.
+  async function noteRecording(host, name) {
+    const take = await noteRecordingByName(name);
+    if (!take) return false;
+    if (!host) {
+      await openRecordings(take.id);
+      return true;
+    }
+    if (!host.isConnected) return false;
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.preload = "none";
+    audio.src = `/media/recordings/${take.id}`;
+    audio.setAttribute("aria-label", `Recording: ${take.title || name}`);
+    host.replaceChildren(audio);
+    return true;
+  }
+
   //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
-  Object.assign(window, { closeMeetingRecorder, meetingRecordingLive, micControlsInto, noteRecoveredRecordings, openMeetingRecorder, openMeetingSheet, openNewMeeting, openRecordings, openVoiceNote, renderRecordings });
+  Object.assign(window, { closeMeetingRecorder, meetingRecordingLive, micControlsInto, noteRecording, noteRecoveredRecordings, openMeetingRecorder, openMeetingSheet, openNewMeeting, openRecordings, openVoiceNote, renderRecordings });
 })();

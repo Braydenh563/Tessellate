@@ -2954,10 +2954,6 @@ async function setChatMode(mode) {
   }).catch(() => {});
 }
 
-function backendLabel(status) {
-  return status?.provider === "openai" ? "The model server" : "Ollama";
-}
-
 // True while the user is mid-edit, so a status poll doesn't overwrite the
 // address they are halfway through typing. The polling that keeps this screen
 // live is the reason: without it, a five-second refresh eats every third
@@ -2994,7 +2990,7 @@ function renderSettings() {
   // Name the backend that actually answered. Saying "Ollama not detected"
   // when the app was pointed at LM Studio sends people to install the wrong
   // thing (§6).
-  const backend = backendLabel(status);
+  const backend = status?.provider === "openai" ? "The model server" : "Ollama";
   //: The dot is the line's class, as on the search engine line under it,
   //: not a typed "●"/"○" beside a CSS dot: two alphabets for one signal.
   //: Section 21 row 12: an address the person typed that nothing answers is
