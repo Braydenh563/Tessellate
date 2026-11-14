@@ -7196,6 +7196,7 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
               <label class="wb-menu-row wb-snap-label" title="Snap items to the grid while dragging"><span><i class="ph ph-magnet ph-lead" aria-hidden="true"></i>Snap to grid</span><input type="checkbox" id="wb-snap-toggle"></label>
               <label class="wb-menu-row wb-snap-label" title="Show a ruler along the top and down the left, in this board's unit (Format, Board)"><span><i class="ph ph-ruler ph-lead" aria-hidden="true"></i>Rulers</span><input type="checkbox" id="wb-view-rulers"></label>
+              <label class="wb-menu-row wb-snap-label" title="Show a small bar with the zoom, the tool in hand and how much is selected"><span><i class="ph ph-info ph-lead" aria-hidden="true"></i>Status bar</span><input type="checkbox" id="wb-view-status"></label>
               <label class="wb-menu-row wb-snap-label" title="Show the four arrows round a selected shape that copy it and join the copy"><span><i class="ph ph-arrows-out-cardinal ph-lead" aria-hidden="true"></i>Connection arrows</span><input type="checkbox" id="wb-view-grips" checked></label>
               <label class="wb-menu-row wb-snap-label" title="Show the dots where a line can join a shape while you draw one; joining still snaps to them when hidden"><span><i class="ph ph-crosshair-simple ph-lead" aria-hidden="true"></i>Connection points</span><input type="checkbox" id="wb-view-ports" checked></label>
               <label class="wb-menu-row wb-snap-label" data-wb-surface="board" title="Draw the bottom corner of this board's sticky notes folded over; a note's Format panel can differ"><span><i class="ph ph-note ph-lead" aria-hidden="true"></i>Folded sticky corners</span><input type="checkbox" id="wb-sticky-fold" checked></label>
@@ -7751,6 +7752,12 @@ Link to another note with [[its first few words]]."></textarea>
       <button type="button" id="wb-study-knew" class="ghost small hidden" title="You recalled it: on to the next branch">Knew it</button>
       <button type="button" id="wb-study-missed" class="ghost small hidden" title="Marked for next time: on to the next branch">Not yet</button>
       <button type="button" id="wb-present-end" class="ghost small icon-only" title="End the presentation (Esc)" aria-label="End the presentation"><i class="ph ph-x" aria-hidden="true"></i></button>
+    </div>
+
+    <div id="wb-status-bar" class="dock wb-status-bar hidden" role="status" aria-label="Board status">
+      <span id="wb-status-zoom" class="dock-chip" title="Zoom"></span>
+      <span id="wb-status-tool" class="dock-chip" title="The tool in hand"></span>
+      <span id="wb-status-count" class="dock-chip" title="What is selected"></span>
     </div>
 
     <div class="whiteboard-floating-panel bottom-right card glass" data-panel-id="zoom">
@@ -8538,6 +8545,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Fill opacity</b>: how solid the fill is, 0 clear to 100 solid; the line keeps its own.</p>
               <p><b>Fill style</b>: solid, or hatching, dots or dashes in the fill's colour.</p>
               <p><b>Gradient</b>: the colour the fill fades to, and which way it fades.</p>
+              <p><b>Picture fill</b>: a picture from your computer fills the shape, cut to its outline; the fill colour is hidden while it is there, and the x removes it.</p>
             </div>
             <div class="wb-fmt-row" data-fmt="fill"><span class="wb-fmt-label">Fill</span>
               <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Filled"><input type="checkbox" id="wb-fmt-fill-on" aria-label="Filled"></label><input type="color" id="wb-fmt-fill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour"></span>
@@ -8556,6 +8564,13 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="zigzag">Zigzag</option>
               </select>
             </label>
+            <div class="wb-fmt-row" data-fmt="fillimg"><span class="wb-fmt-label">Picture fill</span>
+              <span class="wb-fmt-buttons">
+                <button type="button" id="wb-fmt-fillimg" class="ghost small" aria-label="Fill the shape with a picture" title="Pick a picture to fill the shape; it is cut to the shape's outline"><i class="ph ph-image-square ph-lead" aria-hidden="true"></i>Choose picture</button>
+                <button type="button" id="wb-fmt-fillimg-clear" class="ghost small icon-only" aria-label="Remove the picture fill" title="Remove the picture fill"><i class="ph ph-x" aria-hidden="true"></i></button>
+                <input type="file" id="wb-fmt-fillimg-file" accept="image/*" class="hidden" aria-label="Choose the picture that fills the shape" tabindex="-1">
+              </span>
+            </div>
             <div class="wb-fmt-row" data-fmt="gradient"><span class="wb-fmt-label">Gradient</span>
               <span class="wb-fmt-buttons"><input type="color" id="wb-fmt-gradient" class="wb-color-picker" aria-label="Gradient second colour" title="The colour the fill fades to"><select id="wb-fmt-gradient-dir" aria-label="Gradient direction" title="Fade the fill into a second colour">
                 <option value="none">None</option>
@@ -8607,6 +8622,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Opacity</b>: how see-through the whole item is.</p>
               <p><b>Folded corner</b>: a sticky note's bottom corner drawn turned over.</p>
               <p><b>Shadow, Shadow offset</b>: a soft shadow under it, how far it sits across and down, and its blur, in pixels.</p>
+              <p><b>Glass</b>: a glossy sheen over the top half of a shape, on top of its fill and line; it never takes a click.</p>
               <p><b>Hand-drawn</b>: rough lines, as if sketched; the View menu sets it for the whole board.</p>
             </div>
             <label class="wb-fmt-row" data-fmt="alpha"><span class="wb-fmt-label">Opacity</span>
@@ -8623,6 +8639,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <label class="wb-fmt-num"><span class="wb-fmt-label">Blur</span><input type="number" id="wb-fmt-shb" min="0" max="60" step="1" placeholder="4" aria-label="Shadow blur, in pixels" title="How soft the shadow's edge is; 0 is sharp"></label>
               </span>
             </div>
+            <div class="wb-fmt-row" data-fmt="glass"><span class="wb-fmt-label">Glass</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="A glossy sheen over the top half of the shape, as in draw.io"><input type="checkbox" id="wb-fmt-glass" aria-label="Glass"></label></span></div>
             <div class="wb-fmt-row" data-fmt="rough"><span class="wb-fmt-label">Hand-drawn</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Draw its lines rough, as by hand; the View menu sets it for the whole board"><input type="checkbox" id="wb-fmt-rough" aria-label="Hand-drawn"></label></span></div>
           </div>
           <div class="wb-fmt-group" data-fmt-group="box">
@@ -8829,6 +8846,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Align, Vertical</b>: where the words sit across and down the box.</p>
               <p><b>Direction</b>: left to right, right to left, or set vertically.</p>
               <p><b>Text opacity</b>: how solid the words are; the box keeps its own.</p>
+              <p><b>Text shadow</b>: a soft shadow under the words only; the box keeps its own Shadow.</p>
             </div>
             <div class="wb-fmt-row" data-fmt="fit"><span class="wb-fmt-label">Fit</span>
               <span class="wb-fmt-buttons">
@@ -8859,6 +8877,7 @@ Link to another note with [[its first few words]]."></textarea>
               </select>
             </label>
             <label class="wb-fmt-row" data-fmt="text" data-unit="%"><span class="wb-fmt-label">Text opacity</span><input type="number" id="wb-fmt-inkalpha" min="10" max="100" step="5" aria-label="Text opacity, in percent" title="How solid the words are; 100 is solid"></label>
+            <div class="wb-fmt-row" data-fmt="tshadow"><span class="wb-fmt-label">Text shadow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="A soft shadow under the words, not the box"><input type="checkbox" id="wb-fmt-tshadow" aria-label="Text shadow"></label></span></div>
           </div>
           <div class="wb-fmt-group" data-fmt-group="shapelabel">
             <h4 class="wb-fmt-head"><i class="ph ph-selection-background" aria-hidden="true"></i><span>Label</span><button type="button" class="icon-only ghost small graph-help-toggle" data-help-for="wb-fmt-help-shapelabel" aria-controls="wb-fmt-help-shapelabel" aria-expanded="false" title="About the label" aria-label="About the label"><i class="ph ph-question" aria-hidden="true"></i></button></h4>
@@ -8904,7 +8923,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Size</b>: width and height; the chain between them keeps the proportions, on for a shape it stays on.</p>
               <p><b>Aspect</b>: sets the height from the width to a common ratio.</p>
               <p><b>Angle</b>: turns it about its centre, in degrees.</p>
-              <p><b>Flip</b>: mirrors it left to right or top to bottom.</p>
+              <p><b>Flip</b>: mirrors it left to right or top to bottom. A picture flips its pixels, a sticky note turns its folded corner (the words stay readable), and a frame mirrors what it holds about its middle.</p>
               <p><b>Connection points</b> (one shape): the points a connector can join. Pick one to hold it on the outline when the shape is resized, or nudge it by pixels; add one by pressing the outline, or remove the chosen one. Each change is one Undo step, and draw.io files keep them.</p>
             </div>
             <div class="wb-fmt-row" data-fmt="geometry" data-unit="px" role="group" aria-label="Position"><span class="wb-fmt-label">Position</span>

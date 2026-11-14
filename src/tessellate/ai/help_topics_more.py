@@ -1973,7 +1973,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-drawio", "board-diagram-tools", "board-draw-io-keys", "board-workshop", "board-paste", "board-pdf", "board-frame-binds", "board-suggest-name", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-ink", "board-keyboard-create", "board-group-edit", "board-structure", "board-text-more", "board-drawn-shapes", "board-format-options", "board-hand-drawn", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-ink", "board-keyboard-create", "board-group-edit", "board-structure", "board-text-more", "board-drawn-shapes", "board-format-options", "board-hand-drawn", "board-effects", "board-tables", "board-shape-points", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2382,6 +2382,23 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-effects",
+        "keywords": (
+            "text shadow", "glass", "gloss", "picture fill", "image fill", "flip", "mirror",
+            "frame opacity", "status bar", "board zoom", "selection count",
+        ),
+        "body": (
+            "Finishing touches on a board, in the Format panel. Text shadow puts a soft shadow "
+            "behind the words of a shape or a text box. Glass adds a glossy sheen to a drawn "
+            "shape, next to Shadow. Picture fill pours an image you choose into a drawn shape, "
+            "cut to its outline; Clear takes it out. Flip mirrors a sticky, a picture or a "
+            "frame left to right or top to bottom, and a sticky's words stay readable. A frame "
+            "has an Opacity slider. The View menu's Status bar shows the zoom, the tool and "
+            "how many items are selected; it is off until you switch it on."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-tables",
         "keywords": (
             "table", "tables", "add a table", "table on a board", "rows and columns",
@@ -2687,6 +2704,7 @@ TOPIC_META.update({
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
     "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A diagram's blocks list, Ask; the ... menu, Versions..."},
+    "board-effects": {"title": "Text shadow, glass, picture fill, flip, frame opacity and the status bar", "path": "A board's Format panel, Style tab; the View menu, Status bar"},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-group-edit": {"title": "Edit inside a group, and workspaces", "path": "A board's View menu, Panels, Workspaces"},

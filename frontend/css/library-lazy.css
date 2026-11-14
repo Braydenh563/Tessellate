@@ -9705,3 +9705,41 @@ input[type="color"].wb-mixed {
 .wb-ruler text {
   stroke: none;
 }
+
+/* A flipped sticky note (whiteboard-effects.js, L-whiteboard-47): only the empty fold corner is mirrored, in place with
+   `scale`, and moved to the mirrored edge; the words are never mirrored, so the note still reads. */
+.wb-object-text.wb-sticky[data-flip~="x"]::after {
+  right: auto;
+  left: 0;
+  scale: -1 1;
+}
+.wb-object-text.wb-sticky[data-flip~="y"]::after {
+  bottom: auto;
+  top: 0;
+  scale: 1 -1;
+}
+.wb-object-text.wb-sticky[data-flip="xy"]::after {
+  scale: -1 -1;
+}
+
+/* The board's status bar (whiteboard-effects.js, View, Status bar): a plain corner `.dock` like the diagram builder's
+   zoom bar, off by default, no blur. It sits bottom left, clear of the zoom cluster at the right. */
+.wb-status-bar {
+  position: absolute;
+  inset-block-end: var(--space-5);
+  inset-inline-start: var(--space-5);
+  z-index: 2;
+  flex-wrap: nowrap;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
+}
+@media (max-width: 819.98px) {
+  .wb-status-bar {
+    display: none;
+  }
+}

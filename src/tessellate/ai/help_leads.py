@@ -180,6 +180,7 @@ TOPIC_LEADS: dict[str, str] = {
     "board-structure": "Tag items, dim the rest by tag, fold a frame, and find in one frame.",
     "board-keyboard-create":"Add stickies, text and frames to a board and write in them by keyboard.",
     "board-hand-drawn": "Make a board look sketched by hand, with rough strokes on every shape.",
+    "board-effects": "Add a text shadow, glass, a picture fill or a flip, and show a status bar on a board.",
     "board-tables": "Put a table on a board and type in its cells.",
     "board-shape-points": "Draw a polygon, then drag, add and take out the corners of a shape.",
     "board-mermaid": "Place a Mermaid diagram on a board and keep editing it as blocks.",

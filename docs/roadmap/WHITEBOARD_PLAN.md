@@ -811,7 +811,7 @@ the same three tabs (Style, Text, Arrange); fields per kind in
 | Corner rounding of a rectangle | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `rounded=1` with `arcSize`; `toggleRounded` (Actions.js 1661) | `data.round` read by the rectangle path builder; the stencil `roundrect` op already uses it | S |
 | Opacity | yes (`wb-fmt-alpha`) | `createRelativeOption` `opacity` (Format.js 6385) | done | none |
 | Shadow | yes (`wb-fmt-shadow`) | `addEffects` (Format.js 7939) `shadow` | done | none |
-| Glass | no | `glass` effect (Format.js 7939) | reopened 2026-11-14: the drop rested on reasoning only; LEDGER L-whiteboard-37 | none here |
+| Glass | yes (`wb-fmt-glass`, `paintGlass` in whiteboard-effects.js) | `glass` effect (Format.js 7939) | done (L-whiteboard-37) | none here |
 | Sketch (hand-drawn) | yes (`wb-fmt-rough`; the View menu for the whole board) | `sketch` effect (Format.js 8004), rough.js | done: `wbDrawsRough`, `data.rough`, `background.rough` | none |
 | Flow animation on a connector | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `flowAnimation` effect (Format.js 7939) | `data.flow` adds a CSS class that animates `stroke-dashoffset`; export writes it static | S |
 | Edit style (raw string) | yes, 2026-11-10 (s9c-1110; HISTORY) | `editStyle` (Actions.js 1717), Ctrl+E | see section 3: the board's equivalent is "Edit data", a JSON view of `data` | M |
@@ -837,7 +837,7 @@ are `size`, `ink`, `bold`, `italic`, `align`.
 | Vertical align (top, middle, bottom) | yes, 2026-10-10 (HISTORY) | `STYLE_VERTICAL_ALIGN` | `label_valign`; the SVG label block is positioned by it; Brief 36 carries it | S |
 | Font colour | yes (`wb-fmt-ink`) | `fontColor...` (Actions.js 1525) | done | none |
 | Text opacity | yes, 2026-11-01 (board-1101; HISTORY), `label_alpha`, `text_alpha` | `textOpacity` | `label_alpha` | S |
-| Text shadow | no | `textShadow` | reopened 2026-11-14: LEDGER L-whiteboard-38 | none here |
+| Text shadow | yes (`wb-fmt-tshadow`, `textShadowStyle`, `paintTextShadow`) | `textShadow` | done (L-whiteboard-38) | none here |
 | Text direction, vertical text | yes, 2026-11-01 (board-1101; HISTORY), `label_dir`, `text_dir` (rtl, vertical) | `textDirection`, `horizontal=0` (`vertical` action, Actions.js 1584) | `label_dir` (rtl, vertical-rl) applied as SVG `writing-mode` | S |
 | Line height | yes (`wb-fmt-lh`) | `lineheight` in the text panel | `label_lh` | S |
 | Auto-size to text, fit text to shape | yes, 2026-10-18 (whiteboard-1018; HISTORY) | `autosize` action (Actions.js 1001), `autosizeText`, `fitTextToShape` | one command `autosize` in `WB_COMMANDS`: measure the label with `getBBox`, resize the shape's box; grows only | S |
@@ -1047,7 +1047,7 @@ clash is listed so the choice is made once.
 | Feature | Tessellate has it | How draw.io does it | How Tessellate would | Cost |
 | --- | --- | --- | --- | --- |
 | Insert an image (file, URL, drag, paste), embedded data URI | yes (`insert-image`, I; media rows) | `image...` (Actions.js 1998), `shape=image;image=data:...` | done | none |
-| Image as a shape fill (`image` style on any shape) | no | `STYLE_IMAGE`, `shape=image` | reopened 2026-11-14: LEDGER L-whiteboard-40 | none here |
+| Image as a shape fill (`image` style on any shape) | yes (`wb-fmt-fillimg`, `paintFillImage`) | `STYLE_IMAGE`, `shape=image` | done (L-whiteboard-40) | none here |
 | Hyperlinks on shapes, to a URL, a page, or a note | yes for objects; links to a note are the app's own | `editLink`, `link=` | add to sketches; targets: note, frame, URL | S |
 | Embedded notes | yes, as comments (`comment` command, Alt+Shift+N) | `editNote` | done | none |
 | Edit data and placeholders | yes (section 3: `data.props`, `%key%`, Ctrl+M) | section 3 | done | none |

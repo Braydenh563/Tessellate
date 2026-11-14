@@ -694,6 +694,7 @@ function wbShowZoomLevel(k) {
     },
   });
   zl.field.set(pct);
+  wbFmtState.effects?.refreshStatus();
 }
 
 //: Run a queued zoom frame now rather than on the next one: for a transform
@@ -6172,9 +6173,9 @@ async function wbPasteCopiedStyle() {
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
   "color", "width", "dash", "fill", "fillOpacity", "opacity", "noStroke", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "rough", "jumps", "round", "curve", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd", "arrowBody", "arrowHead",
-  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_lh", "label_ls", "label_dir", "label_alpha",
+  "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_lh", "label_ls", "label_shadow", "glass", "fill_image", "label_dir", "label_alpha",
 ];
-const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "text_dir", "text_alpha", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "radii", "pad", "fold"];
+const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "text_shadow", "text_dir", "text_alpha", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "radii", "pad", "fold"];
 
 //: The reset fields for one sketch, or null for a drawing with nothing to
 //: reset (a highlighter's look is its tool). A line whose ends are drawn in
@@ -6385,6 +6386,7 @@ function wbUpdateContextBar() {
   const bar = document.getElementById("wb-context");
   if (!bar) return;
   wbFormatSyncSoon();
+  wbFmtState.effects?.refreshStatus();
   if (wbFillContextBar() === "rail") wbParkContextOnRail(true);
   else wbUpdateSelectionBar();
 }
@@ -17081,6 +17083,7 @@ async function initWhiteboard() {
     wbToolsOpenerSyncRef?.();
     updateWbCursor();
     wbFmtState.hints?.toolHint(tool);
+    wbFmtState.effects?.refreshStatus();
     // The properties panel now also carries the style a drawing tool will
     // use, so a tool switch has to reopen/close it, see its own comment.
     wbUpdateContextBar();
@@ -23565,6 +23568,7 @@ function renderWhiteboard() {
     wbSyncSketchTip(this, look);
     // After the path, which the label is laid out from (decision 12).
     wbPaintShapeLabel(this, shapeData, d);
+    wbFmtState.effects?.paintShape(this, shapeData, pathData, d.id); // glass, picture fill, label shadow (whiteboard-effects.js)
     wbPaintLinkLabel(this, d, linkData);
     this._wbStrokeKey = strokeKey;
     this._wbStrokeD = strokeKey ? pathData : null;
@@ -25319,6 +25323,7 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
       wbPaintTextDir(textEl.node(), d.data.text_dir, d.data.text_alpha);
       if (document.activeElement !== textEl.node()) wbPaintTextContent(textEl.node(), d);
     }
+    wbFmtState.effects?.paintObject(this, d); // a sticky's flip side and its words' shadow (whiteboard-effects.js)
   });
 
   objectSelection.exit()

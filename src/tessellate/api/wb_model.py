@@ -398,11 +398,22 @@ def _bad_ports(ports: object) -> bool:
     return not isinstance(ports, list) or len(ports) > _MAX_PORTS or any(_bad_port(p) for p in ports)
 
 
+def _bad_effect(parsed: dict) -> str | None:
+    """The first of a sketch's finishing effects that is not a value the page can draw: a picture fill is a saved media
+    address and nothing else (an image object's rule), glass and the label's shadow are plain on or off."""
+    fill_image = parsed.get("fill_image")
+    if fill_image is not None and not (isinstance(fill_image, str) and MEDIA_URL_RE.match(fill_image)):
+        return "fill_image"
+    return next((key for key in ("glass", "label_shadow") if key in parsed and not isinstance(parsed[key], bool)), None)
+
+
 def _bad_sketch_field(parsed: dict) -> str | None:
     """The first field of a sketch's JSON that is not a value the page can draw."""
     path = parsed.get("d")
     if path is not None and not (isinstance(path, str) and _PATH_RE.match(path)):
         return "d"
+    if bad := _bad_effect(parsed):
+        return bad
     for key in _SKETCH_COLOURS:
         value = parsed.get(key)
         if value is not None and not (isinstance(value, str) and _COLOUR_RE.match(value) and "url(" not in value.lower()):
@@ -606,6 +617,9 @@ class WhiteboardObjectData(BaseModel):
     #: tab; INBOX 1510(a)). Absent is left to right and solid.
     text_dir: str | None = Field(default=None, pattern="^(rtl|vertical)$")
     text_alpha: float | None = Field(default=None, ge=0.1, le=1)
+    #: A soft shadow under the words alone (the Format panel's Text shadow; a shape keeps its own as `label_shadow` in
+    #: its sketch JSON). Stored only when on.
+    text_shadow: bool | None = None
     md: bool | None = None
     #: The Format panel's box rows (WHITEBOARD_PLAN 1355, wb5): each corner's
     #: radius in pixels as top-left, top-right, bottom-right, bottom-left; the

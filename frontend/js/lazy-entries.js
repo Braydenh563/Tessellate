@@ -31,6 +31,7 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-shape-more.js", //: A table's row ports and the shape's points; names whiteboard.js and whiteboard-format.js at run time only.
     "/js/whiteboard-shapes-js.js", //: Insert, Polygon and the JS-drawn shape classes; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
     "/js/whiteboard-text-more.js", //: Subscript, superscript and `$...$` maths in board words; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
+    "/js/whiteboard-effects.js", //: Text shadow, glass, a picture fill, mirroring and the status bar; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
     "/vendor/perfect-freehand/perfect-freehand.min.js", //: Before whiteboard-ink-more.js: it sets `window.perfectFreehand` (MIT, 5 KB).
     "/js/whiteboard-ink-more.js", //: Free-line hollow ends, smoothed pen strokes, shape clean-up, replay and the GIF; joins `wbFmtState` (whiteboard-format.js), names whiteboard.js at run time only.
     "/js/whiteboard-ink-recognise.js", //: Turns a rough stroke into a clean shape; pure, joins `wbFmtState` and runs after whiteboard-ink-more.js.

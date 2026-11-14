@@ -77,14 +77,14 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "fillstyle", "fillalpha", "gradient", "tip", "shapelabel", "ports"],
+  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "fillstyle", "fillalpha", "gradient", "tip", "shapelabel", "ports", "glass", "fillimg", "tshadow"],
   line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "edgeshape", "arrowbody", "arrowhead", "waypoints", "textpath", "jumps", "caps", "label-t", "linklook", "props", "tags", "rawstyle", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip", "loop", "label2", "label2-t"],
-  text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props", "tags", "rawstyle"],
-  image: ["alpha", "shadow", "shadowset", "radii", "imageborder", "crop", "trim", "cropbox", "pixels", "replace", "geometry", "angle", "props", "tags"],
-  frame: ["pad", "stack", "collapse", "geometry", "props", "tags"],
+  text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "tshadow", "flip", "geometry", "angle", "style-lib", "props", "tags", "rawstyle"],
+  image: ["alpha", "shadow", "shadowset", "radii", "imageborder", "crop", "trim", "cropbox", "pixels", "replace", "flip", "geometry", "angle", "props", "tags"],
+  frame: ["alpha", "pad", "stack", "collapse", "flip", "geometry", "props", "tags"],
   table: ["alpha", "shadow", "shadowset", "radii", "tableheader", "stripes", "geometry", "props", "tags"],
   note: ["geometry", "angle"],
   //: A Mermaid diagram object: the fill and the line it draws with (INBOX 1486).
@@ -164,6 +164,7 @@ function wbFmtValue(entry, field) {
     case "fill": return s ? s.fill || "#3355ff" : kind === "diagram" ? wbDiagramFillColour(o) : (o.bg && o.bg !== "transparent" ? o.bg : "#ffffff");
     case "alpha": return Math.round(((s ? s.alpha : o?.alpha) ?? 1) * 100);
     case "shadow": return Boolean(s ? s.shadow : o?.shadow);
+    case "tshadow": case "glass": case "fillimg": return wbFmtState.effects?.value(entry, field) ?? null;
     //: Empty (not 0) when the item set none, so the field shows the default as a placeholder.
     case "shx": return (s || o)?.shadow_x ?? "";
     case "shy": return (s || o)?.shadow_y ?? "";
@@ -428,10 +429,13 @@ async function wbFmtAngle(value) {
   await wbFmtApply("angle", () => ({ row: { rotation: angle || null } }), `Angle ${angle} degrees.`);
 }
 
-//: A flip mirrors a drawn path about its own centre.
+//: A flip mirrors a drawn path about its own centre. A picture or a sticky note flips itself and a frame mirrors what
+//: it holds (`wbFmtState.effects.flipObjects`, whiteboard-effects.js), in the same one gesture.
 async function wbFmtFlip(axis) {
-  const entries = wbFmtEntries().filter((e) => e.kind === "sketch" && !wbIsLocked(e.kind, e.item));
-  if (!entries.length) return;
+  const open = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
+  const entries = open.filter((e) => e.kind === "sketch");
+  const objects = open.filter((e) => e.kind === "object");
+  if (!entries.length && !objects.length) return;
   await wbRecordGesture(async () => {
     const rows = [];
     for (const e of entries) {
@@ -445,6 +449,7 @@ async function wbFmtFlip(axis) {
       }));
       rows.push({ kind: "sketch", item: e.item });
     }
+    rows.push(...(wbFmtState.effects?.flipObjects(axis, objects) ?? []));
     await wbSaveMany(rows);
   });
   wbScheduleRender();
@@ -764,6 +769,7 @@ function wbFormatSync() {
     }
   }
   wbFmtState.label?.sync(takes, sharing);
+  wbFmtState.effects?.sync(takes, sharing);
   wbFmtState.drawMore?.syncLoopRow(takes, sharing);
   wbFmtState.drawMore?.syncPortsRow(takes, sharing);
   if (takes.has("text")) {
@@ -1469,8 +1475,8 @@ onSurface("board", () => {
 //: text box is one step on the stack and an item with no text of its own is
 //: skipped.
 const WB_TEXT_LOOK_KEYS = {
-  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_fit", "label_lh", "label_ls", "label_dir", "label_alpha"],
-  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "text_dir", "text_alpha"],
+  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_fit", "label_lh", "label_ls", "label_shadow", "label_dir", "label_alpha"],
+  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "text_shadow", "text_dir", "text_alpha"],
 };
 
 //: Shrink to fit, on or off for every selected shape as one step: on unless
