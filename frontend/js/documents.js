@@ -10732,15 +10732,6 @@ function mountDocToolbarControls() {
     setDocToolbarCollapsed(!docToolbarCollapsed())
   );
   $("doc-format-show")?.addEventListener("click", () => toggleDocToolbar());
-  //: Ctrl+Shift+X anywhere on the Documents tab, not only inside the text
-  //: (the editor's own keymap has it too): with the strip hidden, the focus
-  //: is as likely to be on the dock as in the page.
-  document.addEventListener("keydown", (event) => {
-    if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.altKey || event.key.toLowerCase() !== "x") return;
-    if (event.defaultPrevented || $("tab-documents")?.classList.contains("hidden") || !currentDoc) return;
-    event.preventDefault();
-    toggleDocToolbar();
-  });
   // The capture box gets its gutter here, once, with the strip that toggles it.
   mountGutterFor($("entry-content"));
   for (const bar of document.querySelectorAll(".doc-toolbar")) mountDocToolbarControlsFor(bar);
@@ -11051,6 +11042,16 @@ function fitDocToolbars() {
 //: toggle would read as the setting not having been saved.
 applyDocToolbarMode(docToolbarMode());
 mountDocToolbarControls();
+//: Ctrl+Shift+X anywhere on the Documents tab, not only inside the text
+//: (the editor's own keymap has it too): with the strip hidden, the focus
+//: is as likely to be on the dock as in the page. Module level, beside the
+//: mount, so no render adds a page listener (tests/test_perf_1031.py).
+document.addEventListener("keydown", (event) => {
+  if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.altKey || event.key.toLowerCase() !== "x") return;
+  if (event.defaultPrevented || $("tab-documents")?.classList.contains("hidden") || !currentDoc) return;
+  event.preventDefault();
+  toggleDocToolbar();
+});
 
 // =============================================================================
 // The editor's own instruments: counts, completion, prose checks, autocorrect

@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 120 | 29 | 3 | 10 | 149 |
+| world-class | 0 | 119 | 29 | 3 | 10 | 148 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 509 | 100 | 5 | 121 | 981 |
+| all | 372 | 508 | 100 | 5 | 121 | 980 |
 
 ## graph
 
@@ -600,7 +600,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-320** `world-class` open, M: Pin the optional pip extras and the embedding weights: a version bound and --require-hashes for each pip extra, a sha256 for each weights file, refused on mismatch like the download extras. From SECURITY.md, Threat model T23 (L-world-class-18). Evidence: src/tessellate/core/extras.py:478-575 hands pip bare names (pypdfium2, faster-whisper, markitdown[pdf,docx,pptx], pytesseract, rapidocr_onnxruntime, pywebview, pystray, Pillow) with no version bound and no hash; only fastembed is bounded (requirements.txt:58, via the -c constraints copy, extras.py:1670). Embedding weights are checked against a size floor only (core/embedmodels.py:620-623, 30% of the stated size), no digest.
 - [ ] **L-world-class-321** `world-class` open, L: Parse untrusted files in a child process with a time and memory limit, so a parser bug in a crafted PDF, Word file or picture cannot run with the notebook's rights. From SECURITY.md, Threat model T19 (L-world-class-18). Evidence: A crafted PDF, Word file or picture is parsed inside the server process: pypdfium2 (core/pdfpages.py), markitdown (entry/importer.py), Pillow and the OCR readers. The guards are size caps only (core/docview.py:334, entry/app_import.py:55, api/wb_import.py:404, BodyCapMiddleware core/security.py:211); no child process, no time limit, no memory limit, so a parser bug runs with the notebook's rights.
 - [ ] **L-world-class-322** `world-class` open, S: Library card reading fold reads GET /files/readings, as the lightbox does. From L-world-class-80 follow-on (batch S2). Evidence: frontend/js/library.js:4561 lists readings from the row columns; GET /files/readings (src/tessellate/api) now serves them
-- [ ] **L-world-class-323** `world-class` open, S: mountDocToolbarControls: one module-level page listener, perf_1031 baseline ratcheted to []. From hub 2026-11-14, CI fix on 58268ac9. Evidence: tests/test_perf_1031.py:131 pins documents.js:mountDocToolbarControls as the one render that adds a page listener
 
 ## general
 

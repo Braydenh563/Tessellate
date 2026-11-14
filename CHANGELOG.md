@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: the Ctrl+Shift+X toolbar key is one page listener at load, not inside the mount; no render adds a page listener now (perf_1031 baseline at none).
 - CI leg 2 fixes: the note edit form keeps one page key listener however often it renders (was one more per render); the first run backup copy names Settings, Import & export (there is no Data pane); the not-installed search message points to Reinstall again; a space switch forgets the held way back for large settings changes.
 - Security: SECURITY.md has a threat model: the assets, eight trust boundaries, the attackers and 27 threats, each with the code or test that stops it; the three gaps are rows (parsers run in the server process L-world-class-321, unpinned pip extras and embedding weights L-world-class-320, CI actions not pinned L-general-2) (L-world-class-18).
 - Chat: the strip's Ask | Agent segments are chips of the strip's own pill family (one ground, one 1px edge; the chosen one keeps its sliding fill) and the Ask Atlas offer rests on the chip ground and lifts to the chip accent; `scratchpad/audit/recipes.js` reads the largest corner, so a split button's caret is no recipe of its own. Chat 12 to 8 control recipes at 1440 in light and dark, every other tab unchanged (L-world-class-250).
