@@ -36,3 +36,28 @@ def test_c3_a_feeling_word_is_named_back_and_no_advice_is_given(say):
 def test_c4_small_talk_does_not_repeat_a_reply_across_the_session(say):
     replies = [say("how are you") for _ in range(3)]
     assert len(set(replies)) == 3
+
+
+def test_c9_a_finished_list_is_remarked_on_and_an_unfinished_one_is_counted(say, session):
+    from datetime import datetime
+
+    from tessellate.entry import manager
+
+    said = say("I finished everything on my list")
+    assert "4 of the 5 items on the **Todo** list are still open" in said, said
+    made = manager.create_entry(session, "# Garden jobs\n\n- [x] Mow\n- [X] Water\n- [x] Prune", category_name="Garden", tags=[])
+    made.created_at = made.updated_at = datetime(2026, 10, 31, 9, 0)
+    session.commit()
+    assert "All 3 items on the **Garden jobs** list are ticked." in say("I finished everything on my list")
+    assert "All 3 items on the **Garden jobs** list" in say("I've done all the items on the garden jobs list")
+
+
+def test_c9_the_tick_that_finishes_a_list_is_remarked_on(client, session, monkeypatch):
+    seed.seed(session)
+    go = seed.asker(client, monkeypatch, chat=True)
+    for item in ("sunscreen", "walking shoes", "power adapter", "charger"):
+        _, events = go(f"tick off {item}")
+        card = next(e for e in events if e.get("type") == "act")
+        done = client.post("/chat/command/run", json={"steps": card["steps"], "skipped": [], "consent_id": card["consent_id"]}).json()
+        assert done["ok"], done
+    assert "All 5 items on **Lisbon packing list** are ticked." in done["summary"], done["summary"]

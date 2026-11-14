@@ -282,10 +282,10 @@ def name_events(session: Session, question: str) -> list[dict] | None:
 def figures_events(session: Session, typed: str, history: list[dict], today, open_ids: tuple = ()) -> list[dict] | None:  # noqa: ANN001  # a date
     """A comparison, count or sum over the figures the last answers showed (`ai/composer_figures`, F6),
     or the links of the note "it" is (`ai/composer_openlinks`, F13 j)."""
-    from tessellate.ai import composer_figures, composer_openlinks
+    from tessellate.ai import composer_checklist, composer_figures, composer_openlinks
 
     try:
-        said = composer_figures.answer(session, typed, history, today) or composer_openlinks.answer(session, typed, history, list(open_ids))
+        said = composer_figures.answer(session, typed, history, today) or composer_openlinks.answer(session, typed, history, list(open_ids)) or composer_checklist.finished(session, typed)
     except Exception:  # noqa: BLE001  # the ordinary readers answer
         log.exception("chat: the figures reader failed")
         return None

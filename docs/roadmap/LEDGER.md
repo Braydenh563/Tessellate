@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 75 | 133 | 2 | 59 | 208 |
+| chat | 0 | 75 | 132 | 2 | 59 | 207 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 359 | 449 | 202 | 2 | 183 | 1010 |
+| all | 359 | 449 | 201 | 2 | 183 | 1009 |
 
 ## graph
 
@@ -89,7 +89,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-106** `chat` open, S: X15: scheduled act phrasing (guess). From CHAT_PLAN.md:1282. Evidence: Recount 2026-11-14 (audit, verify in code first): none found Measured 2026-11-14: 'every Monday list what is open' answers a notes search on 'Monday list open' (four unrelated notes), not an act; no recurring-act reader exists. Remaining step: a commands.py reader for 'every <weekday|day> <act phrase>' that makes a weekly reminder whose note carries the phrasing, one proactive line a day (decision 28).
 - [ ] **L-chat-107** `chat` partly, S: X16: generic undo in chat unverified. From CHAT_PLAN.md:1283. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/act_steps.py undo steps Measured 2026-11-14: 'undo that' in Chat answers the help line about the Undo bar, and after a pending reminder card says 'I found no reminder named call mum'. Remaining step: read undo/undo that as a conversation control (C13) and replay the inverse steps stored on the last confirmed card's result.
 - [ ] **L-chat-109** `chat` partly, S: C2: act subject in bye line unverified. From CHAT_PLAN.md:1292. Evidence: Recount 2026-11-14 (audit, verify in code first): composer_social.py SOCIAL lines Measured 2026-11-14: 'bye' after a reminder card that was only proposed says 'Catch you later.'; the bye line does not name an act that ran. Remaining step: after a confirmed act, pass its label into the bye line in composer_social and test with a confirmed card.
-- [ ] **L-chat-112** `chat` partly, S: C9: Chat remark unverified. From CHAT_PLAN.md:1299. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_voice.py remarks Measured 2026-11-14: 'I finished everything on my list' is read as a search ('You have four notes about list'); no remark fires when a checklist is fully ticked. Remaining step: a composer_voice remark 'All N items on the X list are ticked.' on a checklist finishing, wired into the Chat turn.
 - [ ] **L-chat-113** `chat` partly, S: C10: rule-based jokes unverified. From CHAT_PLAN.md:1300. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_jokes.py
 - [ ] **L-chat-114** `chat` partly, S: C12: greeting use unverified. From CHAT_PLAN.md:1302. Evidence: Recount 2026-11-14 (audit, verify in code first): act_registry.py and agent_turn.py "call me"
 - [ ] **L-chat-115** `chat` partly, S: C13: conversation controls table unverified. From CHAT_PLAN.md:1303. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_chat.py

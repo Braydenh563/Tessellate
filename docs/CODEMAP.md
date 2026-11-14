@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11067, test files 2881, tests 22738, plan headings 691, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11071, test files 2881, tests 22740, plan headings 691, app scripts 29, boot scripts 38, script files 305.
 
 ## Frontend functions (8508)
 
@@ -14153,7 +14153,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (11067)
+## Backend modules (11071)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14348,21 +14348,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_align_slots` | src/tessellate/ai/acts.py:203 |
-| `_distribute_slots` | src/tessellate/ai/acts.py:208 |
-| `_grid_slots` | src/tessellate/ai/acts.py:193 |
-| `_same_size_slots` | src/tessellate/ai/acts.py:213 |
-| `board_label` | src/tessellate/ai/acts.py:240 |
-| `board_parse` | src/tessellate/ai/acts.py:221 |
+| `_align_slots` | src/tessellate/ai/acts.py:206 |
+| `_distribute_slots` | src/tessellate/ai/acts.py:211 |
+| `_grid_slots` | src/tessellate/ai/acts.py:196 |
+| `_same_size_slots` | src/tessellate/ai/acts.py:216 |
+| `board_label` | src/tessellate/ai/acts.py:243 |
+| `board_parse` | src/tessellate/ai/acts.py:224 |
 | `done_line` | src/tessellate/ai/acts.py:95 |
-| `inverse` | src/tessellate/ai/acts.py:133 |
+| `inverse` | src/tessellate/ai/acts.py:136 |
 | `missing` | src/tessellate/ai/acts.py:59 |
 | `parse` | src/tessellate/ai/acts.py:51 |
 | `plain_say` | src/tessellate/ai/acts.py:87 |
 | `preview` | src/tessellate/ai/acts.py:65 |
-| `propose` | src/tessellate/ai/acts.py:142 |
+| `propose` | src/tessellate/ai/acts.py:145 |
 | `run` | src/tessellate/ai/acts.py:71 |
-| `run_confirmed` | src/tessellate/ai/acts.py:120 |
+| `run_confirmed` | src/tessellate/ai/acts.py:123 |
 | `run_said` | src/tessellate/ai/acts.py:104 |
 | `ticked_line` | src/tessellate/ai/acts.py:77 |
 
@@ -15287,6 +15287,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reaction` | src/tessellate/ai/composer_chat.py:429 |
 | `reply` | src/tessellate/ai/composer_chat.py:424 |
 | `social` | src/tessellate/ai/composer_chat.py:280 |
+
+### src/tessellate/ai/composer_checklist.py (4)
+
+| Name | File:line |
+|---|---|
+| `_list_of` | src/tessellate/ai/composer_checklist.py:26 |
+| `_named` | src/tessellate/ai/composer_checklist.py:43 |
+| `finished` | src/tessellate/ai/composer_checklist.py:48 |
+| `remark` | src/tessellate/ai/composer_checklist.py:35 |
 
 ### src/tessellate/ai/composer_chip_subject.py (8)
 
@@ -28339,7 +28348,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22738)
+## Tests (22740)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30941,7 +30950,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_pairs_l222.py | 3 |
 | tests/test_typo_routing.py | 4 |
 | tests/test_uax_probes_a_1114.py | 15 |
-| tests/test_uax_probes_c_1114.py | 3 |
+| tests/test_uax_probes_c_1114.py | 5 |
 | tests/test_uax_probes_u_1114.py | 19 |
 | tests/test_uax_probes_x_1114.py | 2 |
 | tests/test_ui_1017b.py | 7 |
