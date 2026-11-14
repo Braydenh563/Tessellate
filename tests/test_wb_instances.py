@@ -89,6 +89,7 @@ let wbSelectedItem = { kind: "object", id: 10 };
 const wbMultiSelection = new Set(["object:10", "node:1"]);
 let wbUndoStack = [{ action: "create", kind: "object", id: 10 }];
 let wbRedoStack = [];
+let wbHistoryBoard = null;
 window.currentBoardId = 1;
 let wbRenderQueued = false, wbRenderFrame = 0, wbInitialized = true;
 const renders = [];
@@ -728,3 +729,34 @@ out.embed = calls.splice(0);
     draw = SRC[SRC.index("  function draw(inst) {") :]
     draw = draw[: draw.index("\n  }\n")]
     assert "wbScheduleRender" not in draw
+
+
+def test_each_board_keeps_its_own_history_across_activations():
+    """Found driving L-whiteboard-54 in the app: `wbHistoryFor` keeps each board's
+    stacks by board id against one `wbHistoryBoard`, and every activation reaches
+    it (wbUpdateUndoRedoButtons), so with that global left on the outgoing board
+    the incoming embed's stacks were filed under the page's board and the page
+    got them back: Ctrl+Z in the embed popped its step and sent nothing. The key
+    is an instance's, swapped with its stacks."""
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    hist = wb[wb.index("const wbHistoryByBoard = new Map();") :]
+    hist = hist[: hist.index("function wbHistoryRestore(")].replace("let wbHistoryBoard = null;", "")
+    out = _run(hist + """
+function wbHistoryRestore(key) {}
+wbUpdateUndoRedoButtons = () => wbHistoryFor();
+wbHistoryFor();
+const inst = I.mount(fakeEl("div", "box"), 5);
+I.activate(inst);
+wbUndoStack.push({ action: "create", kind: "object", id: 51 });
+I.activate(I.page);
+wbUndoStack.push({ action: "create", kind: "object", id: 11 });
+I.activate(inst);
+wbHistoryFor();
+out.embed = wbUndoStack.map((e) => e.id);
+I.activate(I.page);
+wbHistoryFor();
+out.page = wbUndoStack.map((e) => e.id);
+""")
+    assert out["embed"] == [51], out
+    #: The page's first read started its board's history afresh (the stub's step 10 was no board's).
+    assert out["page"] == [11], out

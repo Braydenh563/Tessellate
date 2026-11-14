@@ -29,6 +29,9 @@
       selectedItem: null, multiSelection: new Set(), undoStack: [], redoStack: [], zoom: null,
       mapState: null, renderPending: false, changeFns: new Set(), editable: true, listeners: [],
       invZoom: "1", invTimer: 0, key: ++made,
+      //: `wbHistoryBoard`, the board whose stacks `wbHistoryFor` holds live: an
+      //: instance's own, so its first read keeps the stacks it has.
+      historyBoard: String(boardId ?? "default"),
     };
   }
 
@@ -67,6 +70,7 @@
     inst.redoStack = wbRedoStack;
     inst.zoom = wbZoom;
     inst.mapState = window.wbMapState ?? null;
+    inst.historyBoard = wbHistoryBoard;
   }
 
   function load(inst) {
@@ -80,6 +84,7 @@
     wbRedoStack = inst.redoStack;
     wbZoom = inst.zoom;
     window.wbMapState = inst.mapState;
+    wbHistoryBoard = inst.historyBoard;
   }
 
   //: The same caches openWhiteboardBoard drops on a board switch: each answers
