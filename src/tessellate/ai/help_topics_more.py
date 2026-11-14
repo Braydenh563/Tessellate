@@ -834,12 +834,15 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "A document is checked as English unless its properties set a "
-            "language (a lang key, such as fr). For French, German and Spanish, "
+            "language (a lang key, such as fr); the Dictionary sheet's This "
+            "document's language row writes it, and en-GB or en-US picks British or "
+            "American spelling for that document alone. For French, German and Spanish, "
             "Settings, Packages offers a spelling pack each (about 340 KB, "
             "kept on this computer); the Suggestions panel of such a document "
             "also has an Install button. Once installed, spelling is checked in "
             "that language and grammar stays English. Add a word to the "
-            "dictionary as usual to stop it being flagged."
+            "dictionary as usual to stop it being flagged. Japanese and Chinese "
+            "are not checked: they are not written in words split by spaces."
         ),
         "badge": {"label": "Packages", "section": "extras"},
     },

@@ -98,7 +98,7 @@ async function docGrammarWhy() {
 //: One lint of `text`, or null when there is no checker. `ignored` is the grammar
 //: findings put away in this document (the worker keeps them dismissed, `ignore_lints`).
 function docGrammarAsk(text) {
-  const asked = docGrammarSend({ text, dialect: docSpellingVariant(), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text), groupsOff: (prefsCache && prefsCache.prose_kinds_off) || [] });
+  const asked = docGrammarSend({ text, dialect: docSpellingVariant(text), ignored: docProseDismissed().filter((row) => row.rule === "grammar").map((row) => row.text), groupsOff: (prefsCache && prefsCache.prose_kinds_off) || [] });
   //: LanguageTool, when installed (documents-languagetool.js), adds its findings.
   return asked.then((lints) => docSpell.languageTool(lints, text));
 }

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Documents: a language row in the Dictionary sheet writes the document's lang property (en-GB and en-US pick British or American spelling for that document alone; French, German, Spanish, Japanese, Chinese), the editor carries the lang attribute, English comes as a British and an American list (variants.english(variant)), and Japanese and Chinese are never split on spaces or flagged (L-chat-236).
 - Chat: the chat box and the Ask box underline grammar slips as you pause (a double line over the field, the documents' own Harper lint and fix popover reused, composer-lint.js); typing at 4x CPU throttle stays at 2.85 ms median in the input handler, 4.97 ms at the 95th (L-chat-227).
 - Voice: the 29 boot scripts' failure and info toasts and 80 verb-first success toasts now say it through voiceLine (a new "done" line, "{what}.", twinned in ai/realise.py); focusFirstIn moved to notifications.js, its one caller, so the boot gzip total fell 250,318 to 250,344 with the cap untouched (L-chat-255, tests/test_voice_tables.py).
 - Ghost text: the quick note and the capture card's body complete a word in grey like the chat box; the ghost sits inside the dialog or card, since a modal's top layer hid it on the body (L-chat-156, tests/test_chat_ghost_l141.py).
