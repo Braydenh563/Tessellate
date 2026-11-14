@@ -8,6 +8,8 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 - CI on ce0f7082: failure copy says "Couldn't" (unslop 25), the Today handler is shorter, and the docux and map-audio tests read the video picker and the video/webm type that L-documents-68 added.
 - Diagram: a per-edge label position is not built by decision (INBOX 1811); the source stays plain Mermaid.
+- Diagram pan: measured input-to-paint at 4x CPU (pan, release; 1440 mouse p50 13 and p95 21 ms, 390 touch p50 31 and p95 41 ms) and the existing release glide checked in the app, with a test that reduced motion stops dead (L-documents-61).
+- Diagram builder: Gantt, pie, state, class and ER are block kinds (kind bar entry with a starter, add and rename as blocks, printed back byte-identical on a round trip, the picture drawn by Mermaid), in a lazy `diagram-kinds-more.js`; a source the blocks cannot read still opens in Source (L-documents-57).
 - open_scan: text in quotes in .js and .py is copy, not a work marker; comments, docstrings and strict xfail stay hits (owner ruling on INBOX 1810); documents scope hits 11 to 0, unfiltered 2056 to 1628.
 - Drafter: compose_stream back under the complexity cap (the unsourced check is its own helper); the diagram layout test reads a group direction as the group's own (L-documents-82).
 - Library Documents: a document's first embedded picture (`![alt](/media/name)`) is the page card's cover in the same 3:4 box, named by a `cover` field on the list summary so there is no request per row, lazy-loaded, and dropped if it fails (L-documents-80); the Library help says so.

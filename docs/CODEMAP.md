@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8564, frontend ids 2785, CSS sections 524, backend routes 713, backend modules 10888, test files 2791, tests 22388, plan headings 689, app scripts 29, boot scripts 38, script files 309.
+Counts: frontend functions 8598, frontend ids 2785, CSS sections 524, backend routes 713, backend modules 10888, test files 2792, tests 22398, plan headings 689, app scripts 29, boot scripts 38, script files 310.
 
-## Frontend functions (8564)
+## Frontend functions (8598)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3362,37 +3362,75 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `blankOf` | frontend/js/diagram-kindbar.js:48 |
-| `choose` | frontend/js/diagram-kindbar.js:132 |
-| `decorate` | frontend/js/diagram-kindbar.js:94 |
-| `expand` | frontend/js/diagram-kindbar.js:159 |
-| `fold` | frontend/js/diagram-kindbar.js:174 |
-| `fresh` | frontend/js/diagram-kindbar.js:19 |
-| `historyKey` | frontend/js/diagram-kindbar.js:148 |
-| `lost` | frontend/js/diagram-kindbar.js:122 |
-| `mount` | frontend/js/diagram-kindbar.js:51 |
-| `open` | frontend/js/diagram-kindbar.js:79 |
-| `sample` | frontend/js/diagram-kindbar.js:36 |
-| `untouched` | frontend/js/diagram-kindbar.js:119 |
+| `blankOf` | frontend/js/diagram-kindbar.js:66 |
+| `choose` | frontend/js/diagram-kindbar.js:150 |
+| `decorate` | frontend/js/diagram-kindbar.js:112 |
+| `expand` | frontend/js/diagram-kindbar.js:177 |
+| `fold` | frontend/js/diagram-kindbar.js:192 |
+| `fresh` | frontend/js/diagram-kindbar.js:32 |
+| `historyKey` | frontend/js/diagram-kindbar.js:166 |
+| `lost` | frontend/js/diagram-kindbar.js:140 |
+| `mount` | frontend/js/diagram-kindbar.js:69 |
+| `open` | frontend/js/diagram-kindbar.js:97 |
+| `sample` | frontend/js/diagram-kindbar.js:54 |
+| `untouched` | frontend/js/diagram-kindbar.js:137 |
 
-### frontend/js/diagram-kinds.js (65)
+### frontend/js/diagram-kinds-more.js (33)
 
 | Name | File:line |
 |---|---|
-| `addTile` | frontend/js/diagram-kinds.js:900 |
-| `buildBlock` | frontend/js/diagram-kinds.js:748 |
-| `buildPalette` | frontend/js/diagram-kinds.js:1099 |
-| `buildRow` | frontend/js/diagram-kinds.js:758 |
-| `dropApply` | frontend/js/diagram-kinds.js:1056 |
-| `dropAt` | frontend/js/diagram-kinds.js:1027 |
-| `fieldsOf` | frontend/js/diagram-kinds.js:741 |
+| `kmAll` | frontend/js/diagram-kinds-more.js:35 |
+| `kmBase` | frontend/js/diagram-kinds-more.js:31 |
+| `kmClassNames` | frontend/js/diagram-kinds-more.js:205 |
+| `kmClassParse` | frontend/js/diagram-kinds-more.js:174 |
+| `kmClassPrint` | frontend/js/diagram-kinds-more.js:195 |
+| `kmClean` | frontend/js/diagram-kinds-more.js:13 |
+| `kmEnds` | frontend/js/diagram-kinds-more.js:259 |
+| `kmErNames` | frontend/js/diagram-kinds-more.js:251 |
+| `kmErParse` | frontend/js/diagram-kinds-more.js:218 |
+| `kmErPrint` | frontend/js/diagram-kinds-more.js:242 |
+| `kmErShow` | frontend/js/diagram-kinds-more.js:216 |
+| `kmErToken` | frontend/js/diagram-kinds-more.js:217 |
+| `kmFlag` | frontend/js/diagram-kinds-more.js:91 |
+| `kmFlags` | frontend/js/diagram-kinds-more.js:89 |
+| `kmFresh` | frontend/js/diagram-kinds-more.js:36 |
+| `kmGanttParse` | frontend/js/diagram-kinds-more.js:60 |
+| `kmGanttPrint` | frontend/js/diagram-kinds-more.js:83 |
+| `kmGanttSpec` | frontend/js/diagram-kinds-more.js:103 |
+| `kmKeep` | frontend/js/diagram-kinds-more.js:12 |
+| `kmLast` | frontend/js/diagram-kinds-more.js:14 |
+| `kmLine` | frontend/js/diagram-kinds-more.js:33 |
+| `kmMake` | frontend/js/diagram-kinds-more.js:11 |
+| `kmPair` | frontend/js/diagram-kinds-more.js:261 |
+| `kmPieParse` | frontend/js/diagram-kinds-more.js:41 |
+| `kmPiePrint` | frontend/js/diagram-kinds-more.js:52 |
+| `kmPieSum` | frontend/js/diagram-kinds-more.js:55 |
+| `kmRead` | frontend/js/diagram-kinds-more.js:17 |
+| `kmStItems` | frontend/js/diagram-kinds-more.js:151 |
+| `kmStMake` | frontend/js/diagram-kinds-more.js:341 |
+| `kmStateParse` | frontend/js/diagram-kinds-more.js:114 |
+| `kmStatePrint` | frontend/js/diagram-kinds-more.js:136 |
+| `kmStateRefs` | frontend/js/diagram-kinds-more.js:153 |
+| `kmStateRename` | frontend/js/diagram-kinds-more.js:164 |
+
+### frontend/js/diagram-kinds.js (66)
+
+| Name | File:line |
+|---|---|
+| `addTile` | frontend/js/diagram-kinds.js:906 |
+| `buildBlock` | frontend/js/diagram-kinds.js:751 |
+| `buildPalette` | frontend/js/diagram-kinds.js:1105 |
+| `buildRow` | frontend/js/diagram-kinds.js:761 |
+| `dropApply` | frontend/js/diagram-kinds.js:1062 |
+| `dropAt` | frontend/js/diagram-kinds.js:1033 |
+| `fieldsOf` | frontend/js/diagram-kinds.js:744 |
 | `find` | frontend/js/diagram-kinds.js:666 |
-| `ghostSpec` | frontend/js/diagram-kinds.js:1214 |
+| `ghostSpec` | frontend/js/diagram-kinds.js:1220 |
 | `glyph` | frontend/js/diagram-kinds.js:673 |
 | `icon` | frontend/js/diagram-kinds.js:661 |
-| `itemsFor` | frontend/js/diagram-kinds.js:825 |
-| `keptWords` | frontend/js/diagram-kinds.js:702 |
-| `keysOf` | frontend/js/diagram-kinds.js:710 |
+| `itemsFor` | frontend/js/diagram-kinds.js:830 |
+| `keptWords` | frontend/js/diagram-kinds.js:704 |
+| `keysOf` | frontend/js/diagram-kinds.js:713 |
 | `kxAdd` | frontend/js/diagram-kinds.js:359 |
 | `kxAddWho` | frontend/js/diagram-kinds.js:539 |
 | `kxCount` | frontend/js/diagram-kinds.js:310 |
@@ -3426,24 +3464,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `kxUid` | frontend/js/diagram-kinds.js:30 |
 | `kxWalk` | frontend/js/diagram-kinds.js:304 |
 | `kxWithin` | frontend/js/diagram-kinds.js:324 |
-| `menuAt` | frontend/js/diagram-kinds.js:997 |
-| `mount` | frontend/js/diagram-kinds.js:1128 |
+| `load` | frontend/js/diagram-kinds.js:1278 |
+| `menuAt` | frontend/js/diagram-kinds.js:1003 |
+| `mount` | frontend/js/diagram-kinds.js:1134 |
 | `nameOf` | frontend/js/diagram-kinds.js:669 |
-| `nestBlock` | frontend/js/diagram-kinds.js:943 |
-| `onKey` | frontend/js/diagram-kinds.js:962 |
+| `nestBlock` | frontend/js/diagram-kinds.js:949 |
+| `onKey` | frontend/js/diagram-kinds.js:968 |
 | `pick` | frontend/js/diagram-kinds.js:668 |
-| `pickWho` | frontend/js/diagram-kinds.js:811 |
-| `pictureDrop` | frontend/js/diagram-kinds.js:1021 |
-| `relabel` | frontend/js/diagram-kinds.js:886 |
-| `removeBlock` | frontend/js/diagram-kinds.js:949 |
-| `render` | frontend/js/diagram-kinds.js:714 |
-| `seedBlock` | frontend/js/diagram-kinds.js:1004 |
-| `show` | frontend/js/diagram-kinds.js:1237 |
-| `stepBlock` | frontend/js/diagram-kinds.js:937 |
-| `sync` | frontend/js/diagram-kinds.js:1190 |
+| `pickWho` | frontend/js/diagram-kinds.js:814 |
+| `pictureDrop` | frontend/js/diagram-kinds.js:1027 |
+| `relabel` | frontend/js/diagram-kinds.js:892 |
+| `removeBlock` | frontend/js/diagram-kinds.js:955 |
+| `render` | frontend/js/diagram-kinds.js:717 |
+| `seedBlock` | frontend/js/diagram-kinds.js:1010 |
+| `show` | frontend/js/diagram-kinds.js:1243 |
+| `stepBlock` | frontend/js/diagram-kinds.js:943 |
+| `sync` | frontend/js/diagram-kinds.js:1196 |
 | `whoLabel` | frontend/js/diagram-kinds.js:670 |
-| `withinNode` | frontend/js/diagram-kinds.js:1050 |
-| `words` | frontend/js/diagram-kinds.js:689 |
+| `withinNode` | frontend/js/diagram-kinds.js:1056 |
+| `words` | frontend/js/diagram-kinds.js:690 |
 
 ### frontend/js/diagram-letgo.js (1)
 
@@ -3458,11 +3497,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `build` | frontend/js/diagram-library.js:64 |
 | `compact` | frontend/js/diagram-library.js:13 |
 | `flow` | frontend/js/diagram-library.js:32 |
-| `hist` | frontend/js/diagram-library.js:232 |
+| `hist` | frontend/js/diagram-library.js:237 |
 | `idleLine` | frontend/js/diagram-library.js:14 |
-| `lazyKebab` | frontend/js/diagram-library.js:202 |
+| `lazyKebab` | frontend/js/diagram-library.js:207 |
 | `make` | frontend/js/diagram-library.js:24 |
-| `shelf` | frontend/js/diagram-library.js:106 |
+| `shelf` | frontend/js/diagram-library.js:111 |
 | `tileOf` | frontend/js/diagram-library.js:50 |
 
 ### frontend/js/diagram-minimap.js (2)
@@ -3626,25 +3665,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `choose` | frontend/js/diagram-suggest.js:487 |
-| `compose` | frontend/js/diagram-suggest.js:442 |
+| `choose` | frontend/js/diagram-suggest.js:488 |
+| `compose` | frontend/js/diagram-suggest.js:443 |
 | `count` | frontend/js/diagram-suggest.js:72 |
-| `describe` | frontend/js/diagram-suggest.js:470 |
+| `describe` | frontend/js/diagram-suggest.js:471 |
 | `dgsMerge` | frontend/js/diagram-suggest.js:25 |
 | `dgsSubtree` | frontend/js/diagram-suggest.js:62 |
-| `el` | frontend/js/diagram-suggest.js:476 |
+| `el` | frontend/js/diagram-suggest.js:477 |
 | `firstKey` | frontend/js/diagram-suggest.js:82 |
-| `flowSpec` | frontend/js/diagram-suggest.js:154 |
-| `ghosts` | frontend/js/diagram-suggest.js:187 |
+| `flowSpec` | frontend/js/diagram-suggest.js:155 |
+| `ghosts` | frontend/js/diagram-suggest.js:188 |
 | `isEmpty` | frontend/js/diagram-suggest.js:77 |
-| `items` | frontend/js/diagram-suggest.js:287 |
-| `loadTemplates` | frontend/js/diagram-suggest.js:308 |
-| `notes` | frontend/js/diagram-suggest.js:457 |
-| `outlineOf` | frontend/js/diagram-suggest.js:430 |
+| `items` | frontend/js/diagram-suggest.js:288 |
+| `loadTemplates` | frontend/js/diagram-suggest.js:309 |
+| `notes` | frontend/js/diagram-suggest.js:458 |
+| `outlineOf` | frontend/js/diagram-suggest.js:431 |
 | `paneBlank` | frontend/js/diagram-suggest.js:79 |
-| `reason` | frontend/js/diagram-suggest.js:144 |
+| `reason` | frontend/js/diagram-suggest.js:145 |
 | `receive` | frontend/js/diagram-suggest.js:98 |
-| `templates` | frontend/js/diagram-suggest.js:319 |
+| `templates` | frontend/js/diagram-suggest.js:320 |
 
 ### frontend/js/diagram-touch.js (3)
 
@@ -28146,7 +28185,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22388)
+## Tests (22398)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28995,6 +29034,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_head_export_1110.py | 4 |
 | tests/test_diagram_head_menu.py | 2 |
 | tests/test_diagram_kinds.py | 33 |
+| tests/test_diagram_kinds_more.py | 9 |
 | tests/test_diagram_let_go_1696.py | 3 |
 | tests/test_diagram_library_1594.py | 8 |
 | tests/test_diagram_links_1771.py | 5 |
@@ -29007,7 +29047,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_outline_1679.py | 8 |
 | tests/test_diagram_page_1679.py | 7 |
 | tests/test_diagram_panel.py | 8 |
-| tests/test_diagram_panzoom.py | 8 |
+| tests/test_diagram_panzoom.py | 9 |
 | tests/test_diagram_phone_targets_l15.py | 2 |
 | tests/test_diagram_r10.py | 6 |
 | tests/test_diagram_r12_1112.py | 6 |
@@ -31363,14 +31403,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1222 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4402 |
-| Needs hardware | docs/roadmap/LEDGER.md:769 |
+| Needs hardware | docs/roadmap/LEDGER.md:771 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:762 |
+| Owner calls | docs/roadmap/LEDGER.md:764 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4275 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31550,7 +31590,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:590 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1867 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:939 |
+| Plan session briefs | docs/roadmap/LEDGER.md:941 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2651 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31604,25 +31644,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:955 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1039 |
+| chat | docs/roadmap/LEDGER.md:957 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:1041 |
 | documents | docs/roadmap/LEDGER.md:327 |
-| documents | docs/roadmap/LEDGER.md:979 |
-| general | docs/roadmap/LEDGER.md:721 |
+| documents | docs/roadmap/LEDGER.md:981 |
+| general | docs/roadmap/LEDGER.md:723 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:943 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1051 |
+| graph | docs/roadmap/LEDGER.md:945 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1053 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4411 |
-| mindmap | docs/roadmap/LEDGER.md:362 |
-| mindmap | docs/roadmap/LEDGER.md:991 |
-| timeline | docs/roadmap/LEDGER.md:483 |
-| timeline | docs/roadmap/LEDGER.md:1015 |
-| ui-modernisation | docs/roadmap/LEDGER.md:366 |
-| ui-modernisation | docs/roadmap/LEDGER.md:1003 |
+| mindmap | docs/roadmap/LEDGER.md:364 |
+| mindmap | docs/roadmap/LEDGER.md:993 |
+| timeline | docs/roadmap/LEDGER.md:485 |
+| timeline | docs/roadmap/LEDGER.md:1017 |
+| ui-modernisation | docs/roadmap/LEDGER.md:368 |
+| ui-modernisation | docs/roadmap/LEDGER.md:1005 |
 | whiteboard | docs/roadmap/LEDGER.md:281 |
-| whiteboard | docs/roadmap/LEDGER.md:967 |
-| world-class | docs/roadmap/LEDGER.md:485 |
-| world-class | docs/roadmap/LEDGER.md:1027 |
+| whiteboard | docs/roadmap/LEDGER.md:969 |
+| world-class | docs/roadmap/LEDGER.md:487 |
+| world-class | docs/roadmap/LEDGER.md:1029 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2821 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2872 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2979 |
