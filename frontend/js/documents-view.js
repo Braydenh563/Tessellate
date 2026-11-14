@@ -217,8 +217,11 @@ function docIdeCall(name, ...args) {
 lazyScript("/js/documents.js").then(() => lazyScript("/js/documents-ide.js")).then(() => {
   const CM = window.CM6;
   //: Here, not at the IDE script's top level: that script can run before documents.js has declared `docToolPref` (page error "docToolPref is not defined").
-  if (typeof docToolPref === "function" && $("doc-minimap")) $("doc-minimap").checked = docToolPref("codeMinimap", false);
-  if (typeof docCmView !== "undefined" && docCmView && CM && docCmParts.code && !docFileType().previewable) {
+  if (typeof docToolPref === "function") {
+    if ($("doc-minimap")) $("doc-minimap").checked = docToolPref("codeMinimap", false);
+    if ($("doc-vim")) $("doc-vim").checked = docToolPref("vimKeys", false);
+  }
+  if (typeof docCmView !== "undefined" && docCmView && CM && docCmParts.code) {
     docCmView.dispatch({ effects: docCmParts.code.reconfigure(docCodeTools(CM)) });
   }
 });

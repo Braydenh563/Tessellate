@@ -18,7 +18,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-cp package.json entry.js "$work"/
+cp package.json entry.js entry-vim.js vim-build.mjs "$work"/
 cd "$work"
 npm install --no-audit --no-fund --silent
 src=node_modules/style-mod/src/style-mod.js
@@ -27,6 +27,15 @@ grep -q 'if (!root.head && root.adoptedStyleSheets && win.CSSStyleSheet) {' "$sr
 sed -i 's/if (!root.head && root.adoptedStyleSheets && win.CSSStyleSheet) {/if (root.adoptedStyleSheets \&\& win.CSSStyleSheet) {/' "$src"
 npx esbuild entry.js --bundle --format=iife --global-name=CM6 --minify \
   --target=es2020 --legal-comments=none --outfile=codemirror.min.js
+# The Vim keymap is its own file so the editor bundle does not grow for a
+# preference that is off by default (vim-build.mjs maps its @codemirror/*
+# imports onto the bundle's CM6 global).
+node vim-build.mjs
+{
+  echo "/*! @replit/codemirror-vim 6.4.0, MIT licence, see LICENSE beside this file. Needs codemirror.min.js first. Built by build.sh. */"
+  cat vim.min.js
+  echo ";Object.assign(window.CM6,{vim:CM6Vim.vim,Vim:CM6Vim.Vim,getCM:CM6Vim.getCM});"
+} > "$OLDPWD/vim.min.js"
 {
   echo "/*! CodeMirror 6, MIT licence, see LICENSE beside this file. Built by build.sh from package.json. */"
   cat codemirror.min.js

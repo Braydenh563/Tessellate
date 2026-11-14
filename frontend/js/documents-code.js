@@ -871,7 +871,7 @@ function docCodeTools(CM) {
     //: `#tag` list (`docPairInput.tagSource`), which answers null unless a `#word` is
     //: being typed, so the rest of the typing is as before.
     //: A CSV keeps the output panel, which is where its table is shown.
-    return [CM.autocomplete.autocompletion({ override: type.ext === "md" ? [docPairInput.tagSource(CM), docPairInput.refSource(CM), docPairInput.fenceSource(CM)] : [], activateOnTyping: type.ext === "md" }), type.ext === "csv" ? docRunExtension(CM) : []];
+    return [CM.autocomplete.autocompletion({ override: type.ext === "md" ? [docPairInput.tagSource(CM), docPairInput.refSource(CM), docPairInput.fenceSource(CM)] : [], activateOnTyping: type.ext === "md" }), type.ext === "csv" ? docRunExtension(CM) : [], (window.docIdeExtensions?.(CM, type, true) ?? [])];
   }
   const native = ["js", "ts", "py", "css", "html"].includes(type.ext);
   return [

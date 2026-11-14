@@ -1913,6 +1913,28 @@ HELP_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "vim-keys",
+            "keywords": (
+                "vim",
+                "vim keys",
+                "vim mode",
+                "vi keys",
+                "modal editing",
+                "normal mode",
+                "insert mode",
+                "visual mode",
+                "dd",
+            ),
+            #: Written from `documents-ide.js` (L-documents-41).
+            "body": (
+                "Vim keys, in the document's ... menu, gives the editor Vim's modes and keys in "
+                "code and in documents. It is off until you turn it on, and the choice is kept in "
+                "this browser. Esc goes to Normal, i inserts, v selects, dd deletes a line, u undoes, "
+                ":w saves. The bar shows the mode while it is on: NORMAL, INSERT or VISUAL."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "code-completions",
             "keywords": (
                 "completion",
