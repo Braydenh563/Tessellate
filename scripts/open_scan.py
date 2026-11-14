@@ -43,10 +43,6 @@ SIGNAL = re.compile(
 
 #: A reminder's default text ("Follow up: <note>") is app copy, not work.
 COPY = re.compile(r"`Follow up: \$\{")
-#: A double-quoted string in app code is copy a user reads (a checkbox's "Not
-#: done", a template's "## Still open", the `todo` callout), never a work
-#: marker; a work marker lives in a comment, outside the quotes.
-JS_STRING = re.compile(r'"(?:[^"\\\n]|\\.)*"')
 #: Which plan session owns a path (anything else goes to the closing session).
 OWNERS = {
     "graph": ("docs/roadmap/GRAPH_PLAN.md", "frontend/js/graph"),
@@ -76,8 +72,7 @@ def hits(paths: list[str]) -> list[tuple[str, int, str]]:
         for i, line in enumerate(lines, 1):
             if in_done_row and line.startswith("- [x]"):
                 continue
-            seen = JS_STRING.sub('""', line) if f.endswith(".js") else line
-            if SIGNAL.search(seen) and not COPY.search(seen):
+            if SIGNAL.search(line) and not COPY.search(line):
                 found.append((f, i, line.strip()[:200]))
     return found
 
