@@ -45,7 +45,7 @@ def _step(a, b) -> float:
     [
         "masculine",
         pytest.param("feminine", marks=pytest.mark.xfail(strict=True, reason="the feminine idle's hair and ring jump at three of its steps (wrap step 4x the median); "
-                                                                                "see docs/roadmap/agent-remaining/deskframes-1108.md")),
+                                                                                "LEDGER L150 (chat)")),
     ],
 )
 def test_the_idle_cycle_wraps_like_any_other_step(look: str) -> None:

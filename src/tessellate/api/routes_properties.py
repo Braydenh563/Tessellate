@@ -154,6 +154,10 @@ def create_note_type(body: NoteTypeIn, session: Session = Depends(get_session)) 
         row.id = body.id
     session.add(row)
     session.commit()
+    # Seeded now, after the person's own type (a hand-made "Book" stays as
+    # made), so a later first read of the list cannot seed a built-in into
+    # the id of a type deleted meanwhile, which Undo restores (L571).
+    note_properties.ensure_builtin_types(session, deps.get_config())
     return _type_row(row)
 
 
