@@ -125,7 +125,7 @@ _WEEKDAY_OF = lazy_compile(r"^what day(?: of the week)? (?:is|was|will be|falls 
 _DIE = lazy_compile(r"^(?:roll|throw)\s+(?:a\s+|one\s+|the\s+)?(?:die|dice|d6)$|^roll\s+(\d{1,2})?d(\d{1,3})$", re.I)
 _COIN = lazy_compile(r"^(?:flip|toss)\s+a\s+coin$|^heads or tails$", re.I)
 _PICK = lazy_compile(r"^(?:pick|choose|give me)\s+a\s+(?:random\s+)?number\s+(?:between|from)\s+(-?\d{1,6})\s+(?:and|to)\s+(-?\d{1,6})$", re.I)
-_WEATHER = lazy_compile(r"\b(?:weather|forecast|temperature outside|going to rain|will it rain)\b", re.I)
+_WEATHER = lazy_compile(r"\b(?:weather|forecast|temperature outside|going to (?:rain|snow)|will it (?:rain|snow)|need an umbrella|(?:hot|cold|warm) is it outside)\b", re.I)
 _TRANSLATE = lazy_compile(r"^(?:translate|say) \S.* (?:in|into|to) (?:french|spanish|german|italian|portuguese|dutch|japanese|chinese|korean|arabic|russian|hindi|greek|swedish|polish|turkish)$", re.I)
 #: **Generative asks** (audit 1028 E24): a model writes these, the composer
 #: only quotes. One list of verbs and one of things made; a note, a reminder or

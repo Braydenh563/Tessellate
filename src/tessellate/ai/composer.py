@@ -84,7 +84,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_dialogue, composer_retry, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
+from tessellate.ai import act_registry, composer_ack, composer_ood, composer_dialogue, composer_retry, composer_brief, composer_links, composer_names, composer_numbers, composer_overview, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, typo_context, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asked_whole, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
@@ -356,6 +356,8 @@ def compose(
         helped = _help_result(asked, salt=salt, turn=turn, dialogue=None, previous=previous)
         if helped:
             result = helped
+    #: Out of domain (step 11): the plain no-answer, the closest note, what the app can do.
+    result = composer_ood.framed(asked, result, notes, plan(question, today or user_today()).terms)
     if dialogue is not None:
         dialogue.record(asked, result)
     return result

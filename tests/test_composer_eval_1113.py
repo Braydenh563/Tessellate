@@ -7,6 +7,8 @@ the measured number as a ratchet that only goes up."""
 
 from __future__ import annotations
 
+from datetime import date
+
 from tests import _composer_eval
 
 
@@ -48,12 +50,11 @@ def test_out_of_domain_questions_are_answered_plainly_and_never_invented():
     got = _composer_eval.ood_summary(_composer_eval.run_ood())
     assert got["rows"] == 30
     assert got["grounded"] == 1.0
-    #: Ratchets, not floors: the plan's floor is 1.0 on each. The misses are LEDGER row L-chat-40
-    #: (plan step 11): 3 questions show a note with no no-answer, 29 say nothing of what the app can do,
-    #: 10 show a note without calling it the closest. Raise these as that row lands.
-    assert got["plain_no_answer"] >= 0.9, got["missed"]
-    assert got["capability_line"] >= 0.033
-    assert got["closest_labelled"] >= 0.667
+    #: The plan's floors (step 11, L-chat-40): every one says plainly there is no answer, says what the
+    #: app can do, and calls a note it shows the closest.
+    assert got["plain_no_answer"] == 1.0, got["missed"]
+    assert got["capability_line"] == 1.0, got["missed"]
+    assert got["closest_labelled"] == 1.0, got["missed"]
 
 
 def test_how_to_questions_open_on_the_first_step_and_name_real_controls():
@@ -63,3 +64,23 @@ def test_how_to_questions_open_on_the_first_step_and_name_real_controls():
     #: A ratchet, not the plan's 0.90 floor: LEDGER row L-chat-41 holds the 18 questions that open on a
     #: later sentence or route to the wrong topic. Raise it as that row lands.
     assert got["first_sentence"] >= 0.55, got["missed"]
+
+
+def test_an_in_domain_answer_is_not_framed_as_out_of_domain():
+    """The out-of-domain frame is for questions the notes and the app cannot answer: a question the
+    notes answer whole, or one said in the person's own words, keeps its answer as it was."""
+    from tessellate.ai import composer
+
+    notes = [{"id": 1, "content": "Dentist on Tuesday at 3pm with Dr Patel.", "written": "2026-10-01"},
+             {"id": 2, "content": "Sam said the budget is 400 for the trip.", "written": "2026-10-02"}]
+    for question in ("when is the dentist", "what did Sam say about the budget", "who is Sam"):
+        text = composer.compose(question, notes, today=date(2026, 10, 6))["text"]
+        assert "closest" not in text.lower() and "I answer from your notes" not in text, (question, text)
+
+
+def test_no_registered_act_is_called_one_the_app_cannot_do():
+    """`composer_ood.NOT_AN_ACT` lists a phone assistant's verbs; none may be an act the registry runs."""
+    from tessellate.ai import act_registry, composer_ood
+
+    for act in act_registry.ACTS.values():
+        assert not composer_ood.NOT_AN_ACT.match(act.example), act.example

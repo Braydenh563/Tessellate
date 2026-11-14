@@ -202,6 +202,13 @@ def capability_line() -> str:
     )
 
 
+def capability_short() -> str:
+    """One line for an out-of-domain answer (CHAT_PLAN step 11): three of the
+    registry's acts, the utilities, and the reminder's example to try."""
+    said = ", ".join(ACTS[i].label for i in ("reminder", "new_note", "tag"))
+    return f"I answer from your notes, and I can also {said}, work out sums and convert units. Try asking \u201c{ACTS['reminder'].example}\u201d."
+
+
 #: Verbs only the app's own menus do (decision 42: archiving stays a UI
 #: action). A sentence that opens with one is an act said to the wrong place,
 #: so it is answered "done in the app", never searched (audit 1029 C45).
