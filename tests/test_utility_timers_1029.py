@@ -48,6 +48,9 @@ const sandbox = {
     remove: (k) => store.delete(k),
   },
   setInterval: (fn) => { const id = nextTimer++; timers.set(id, fn); return id; },
+  //: The chip rides the page's one shared second tick (prefs.js, L-world-class-93);
+  //: the stand-in keeps one wake source per painter, as the real one does.
+  secondTick: { add: (fn) => timers.set(fn, fn), remove: (fn) => timers.delete(fn) },
   clearInterval: (id) => timers.delete(id),
   //: The one-shot wake at the soonest end (audit 1030 Y6); the test drives
   //: the clock itself, so it never fires.
