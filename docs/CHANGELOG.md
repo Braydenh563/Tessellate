@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents, Debug: class getters and setters and private members (#x fields, methods and accessors) are now lowered for the stepper, each stepped against node's output; an object literal's accessor and `#x in o` are still named (L-documents-37). The claim-check linear-time test proves linearity by growth ratio, not a wall bound (L-documents-45).
 - Documents: the dictionary sheet, the links panel's rows, the word popup with Translate, Discuss in chat and the AI review, and Copy link to block are four lazy pieces (documents.js 16,769 to 16,199 lines, 261,826 to 254,407 gzipped bytes); the attach-a-bookmark picker no longer leaves an Escape listener on the page each time it is reopened (L327).
 - Documents: Format for code files (js-beautify's loader, the re-indent, the HTML and JSON formatters) and the candidate rows of a finding's answers are two more lazy pieces, `documents-code-format.js` and `documents-suggest.js`, fetched on the first Format and the first opened row (L327): documents-code.js 6,547 to 5,965 lines (92,704 to 86,117 gzipped bytes), documents.js 16,199 to 16,037 (254,407 to 252,197).
 - Diagram builder: Ask now works on a mind map, timeline and sequence diagram (add, rename, move and delete by words), previewed first and applied as one Undo step (L-documents-35).

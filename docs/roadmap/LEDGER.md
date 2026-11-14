@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 70 | 15 | 1 | 0 | 20 | 86 |
+| documents | 70 | 14 | 1 | 0 | 20 | 85 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 570 | 129 | 2 | 183 | 1252 |
+| all | 553 | 569 | 129 | 2 | 183 | 1251 |
 
 ## graph
 
@@ -335,7 +335,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-26** `documents` open, M: Per-key cost in the document editor is about twice a bare CodeMirror (native part, not script): find which style invalidation per key (doc-block-handle and drop class writes, caret and complete-list writes) costs it. From L323. Evidence: /tmp/docsF-s/key323.js: live view 35 to 43 ms a key at 4x CPU against 19 for a bare CodeMirror and 17 for a bare contenteditable; trace EventDispatch 56 against 25 bare, FunctionCall 20 against 10, JS self time under 6 ms a key, so the rest is native editing and style Measured 2026-11-13 (docsK, 40 keys, 4x CPU, CDP trace with invalidation tracking, load 0.6 to 2.2; sweep in the agent scratch dir): live 7.4 recalcs a key, 3 elements each, 6.9 ms, 3.05 layouts 4.9 ms, mean keydown to frame 42 ms; bare CodeMirror from the app bundle 4.2 recalcs, 2 elements, 2.8 ms, 1.0 layout 1.1 ms, mean 23 ms. No class writes (doc-block-handle, drop) on the key path; invalidations are the engine's own style writes (cm-content, cursor layer, cursor), the cursor blink animation (3.5 a key), the doc-caret text write (2 schedules, 1 layout dirty) and the page's emblem animations (5 a key vs 2 bare, frames). Profiler (inclusive per key): CM update 12 ms against about 4 bare, lag-watch wrapper 5, docLinkOfferAsk fetch 2, renderDocProse 1.8. Extra layouts are 2 frame layouts plus 1 forced by the engine's scrollIntoView coordsAt. Built 'c749c784': selectionBarHide and selectionBarElement used `$`, which falls back to surfaceFind and walks every unbuilt surface when the bar is missing (2.0 ms a key in the profile); lookups now read the document, test in test_selection_context.py. Wall effect not visible: mean 42.4 (4 runs after) against 42.6 (3 runs before), within noise. Tried: caret readout moved to one rAF: no change in layouts (3.0) and recalcs rose to 8.7, dropped. Left: where the engine update spends 8 ms more than bare (live-view decorations and update listeners) needs a per-plugin profile; the cursor-blink animation and emblem animations could pause while typing.
 - [ ] **L-documents-34** `documents` open, M: Tracked-change author and date shown on the suggestion menu and list: needs a stored form (CriticMarkup comment {>>name, date<<}) read by docSuggestParse, written by docSuggestEdit, kept by the Word export. From L333. Evidence: documents-prose.js docSuggestParse: CriticMarkup {++x++} carries no author or date; the mark menu is documents-prose.js docSuggestMenu (~1135)
 - [ ] **L-documents-36** `documents` open, M: Debug: lower async/await and generators (needs a promise queue and a resumable stepper; refused today). From L334.
-- [ ] **L-documents-37** `documents` open, S: Debug: lower private class members (#x) and class getters/setters (getter/setter pairs need one defineProperty; privacy needs a WeakMap). From L334.
 - [ ] **L-documents-38** `documents` open, S: Debug: arrow functions whose parameter is a pattern with a default (lezer recovers with an error node), spread in new X(...xs), tagged templates. From L334.
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
 - [ ] **L-documents-41** `documents` open, M: Opt-in Vim keymap: @replit/codemirror-vim in the vendored CM6 entry.js and rebuilt, a persisted keymap setting (off by default), the mode shown in the dock, Help and manual parity in the same commit. From owner research via hub 2026-11-14. Evidence: @replit/codemirror-vim MIT 6.4.0 (hub licence check)

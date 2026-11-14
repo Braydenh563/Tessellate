@@ -98,8 +98,9 @@ def test_the_pass_lowers_es2015_and_keeps_every_line():
 
 def test_what_the_pass_cannot_lower_is_named_with_its_line():
     out = _node({
-        "getter": ["lower", "var a = 1;\nclass A {\n  get x() { return 1; }\n}\n"],
-        "private": ["lower", "class A {\n  #x = 1;\n}"],
+        "getter": ["lower", "var a = 1;\nvar o = {\n  get x() { return 1; }\n};\n"],
+        "private": ["lower", "class A {\n  #x = 1;\n  has(o) { return #x in o; }\n}"],
+        "undeclared": ["lower", "class A {\n  m() { return this.#y; }\n}"],
         "computed": ["lower", "class A { [k]() {} }"],
         "newspread": ["lower", "\n\nnew A(...b);"],
         "callspread": ["lower", "f()(...b);"],
@@ -110,7 +111,10 @@ def test_what_the_pass_cannot_lower_is_named_with_its_line():
         "arrowpattern": ["lower", "var h = ([a] = [1]) => a;"],
     })
     assert out["getter"] == {"error": "Debug cannot step getters and setters yet (line 3): Run runs this file as it is.", "line": 3}
-    assert "private class members" in out["private"]["error"]
+    # Class accessors and private members are lowered (L-documents-37); an
+    # object literal's accessor and a brand check are still named.
+    assert out["private"] == {"error": "Debug cannot step private brand checks (#x in o) yet (line 3): Run runs this file as it is.", "line": 3}
+    assert "private name no enclosing class declares" in out["undeclared"]["error"]
     assert "computed or quoted names" in out["computed"]["error"]
     assert out["newspread"]["line"] == 3 and "spread and rest" in out["newspread"]["error"]
     assert "spread in a call to something other" in out["callspread"]["error"]
@@ -272,6 +276,21 @@ _CONSTRUCTS = {
         "const merged = { ...{ p: 1, q: 2 }, q: 3, ...null, r: 4 };\n"
         "console.log(all.join(','), add(...xs, 5), add(1, ...xs), o.sum(...xs), Math.max(...all), 'hi'.length);\n"
         "console.log(Object.keys(merged).join(','), merged.q, [...'ab'].join('-'));\n"
+    ),
+    "accessors": (
+        "class T {\n  constructor() { this.c = 20; }\n  get f() { return this.c * 9 / 5 + 32; }\n"
+        "  set f(v) { this.c = (v - 32) * 5 / 9; }\n  static get unit() { return 'C'; }\n}\n"
+        "class U extends T { get label() { return this.f + 'F'; } }\n"
+        "const t = new T();\nconsole.log(t.f, T.unit);\nt.f = 212;\nconsole.log(t.c, new U().label);\n"
+        "console.log(Object.keys(t).join(','), Object.keys(T.prototype).length);\n"
+    ),
+    "private": (
+        "class Counter {\n  #n = 0;\n  static #made = 0;\n  constructor() { Counter.#made++; }\n"
+        "  #step() { return 2; }\n  get #twice() { return this.#n * 2; }\n"
+        "  bump() { this.#n += this.#step(); return this.#twice; }\n  static made() { return Counter.#made; }\n}\n"
+        "class Sub extends Counter {\n  #n = 100;\n  own() { return this.#n; }\n}\n"
+        "const c = new Counter();\nc.bump();\nconsole.log(c.bump(), new Sub().own(), new Sub().bump(), Counter.made());\n"
+        "console.log(Object.keys(c).length, JSON.stringify(c));\n"
     ),
 }
 

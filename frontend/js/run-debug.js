@@ -21,8 +21,13 @@
 // parameters, `for (const [k, v] of xs)` and `[a, b] = [b, a]`, rest parameters,
 // and spread in a list, a call and an object. Patterns and spreads read an
 // array or a string only (the stepper has no iterators), defaults must be
-// plain values, and async, await, generators, private members and getters stay
-// named. TypeScript reaches here after sucrase has taken its types.
+// plain values. Also lowered (L-documents-37): class getters and setters as
+// `Object.defineProperty` (one call per accessor; a later one keeps the
+// other half), and private members (`#x` fields, methods and accessors) as
+// hidden properties named for their class (`__A_x`, not enumerable), so the
+// program steps the same though the names are not private while debugging.
+// Async, await, generators and `#x in o` stay named. TypeScript reaches here
+// after sucrase has taken its types.
 
 //: The constructs the pass does not lower, by the parse tree's node name,
 //: as the panel names them. A pattern or a spread in a place the pass has no
@@ -30,7 +35,6 @@
 //: lowered in `ctx.handled`).
 (() => {
   const RUN_DEBUG_REFUSED = {
-    PrivatePropertyDefinition: "private class members",
     get: "getters and setters",
     set: "getters and setters",
     AwaitExpression: "async functions and await",
@@ -380,6 +384,10 @@
     const body = kids.find((c) => c.name === "ClassBody");
     if (!body) refuse("this class", node.from);
     const members = runDebugKids(body).filter((c) => c.name !== "{" && c.name !== "}" && c.name !== ";");
+    //: Private names declared here; `this.#x` inside is renamed by the walk.
+    const privates = new Set(members.map((m) => runDebugKids(m).find((c) => c.name === "PrivatePropertyDefinition"))
+      .filter(Boolean).map((d) => source.slice(d.from + 1, d.to)));
+    const hidden = (bare) => `__${name}_${bare}`;
     const hasCtor = members.some((m) => m.name === "MethodDeclaration" && !runDebugKids(m).some((c) => c.name === "static")
       && source.slice(runDebugKids(m).find((c) => c.name === "PropertyDefinition")?.from ?? 0, runDebugKids(m).find((c) => c.name === "PropertyDefinition")?.to ?? 0) === "constructor");
     //: Instance fields run as hidden methods (`__f1`, in the class's body, so
@@ -402,17 +410,27 @@
       }
       if (member.name === "PropertyDeclaration") {
         const parts = runDebugKids(member);
-        const def = parts.find((c) => c.name === "PropertyDefinition");
-        if (!def) refuse("private class members", member.from);
-        const field = source.slice(def.from, def.to);
+        const def = parts.find((c) => c.name === "PropertyDefinition" || c.name === "PrivatePropertyDefinition");
+        if (!def) refuse("class members with computed or quoted names", member.from);
+        const isPrivate = def.name === "PrivatePropertyDefinition";
+        const field = isPrivate ? hidden(source.slice(def.from + 1, def.to)) : source.slice(def.from, def.to);
         if (!/^[A-Za-z_$][\w$]*$/.test(field)) refuse("class members with computed or quoted names", member.from);
         const eq = parts.find((c) => c.name === "Equals");
         const value = eq ? parts[parts.indexOf(eq) + 1] : null;
         const hasValue = value && value.name !== ";";
         const end = hasValue ? value.to : def.to;
+        //: A private field is an own property nobody lists, as a real one is.
+        const own = (target) => `Object.defineProperty(${target}, "${field}", { writable: true, configurable: true, value:${hasValue ? "" : " void 0"}`;
         if (parts[0].name === "static") {
           if (hasValue && /\bthis\b/.test(source.slice(value.from, value.to))) refuse("static fields that use this", value.from);
-          runDebugEdit(edits, parts[0].from, hasValue ? eq.to : def.to, `${name}.${field} =${hasValue ? "" : " void 0"}`, 0);
+          if (isPrivate) {
+            runDebugEdit(edits, parts[0].from, hasValue ? eq.to : def.to, own(name), 0);
+            runDebugEdit(edits, end, end, " })", -1);
+          } else runDebugEdit(edits, parts[0].from, hasValue ? eq.to : def.to, `${name}.${field} =${hasValue ? "" : " void 0"}`, 0);
+        } else if (isPrivate) {
+          const id = fields.find((f) => f.m === member).id;
+          runDebugEdit(edits, def.from, hasValue ? eq.to : def.to, `Object.defineProperty(${name}.prototype, "__f${id}", { value: function () { ${own("this")}`, 0);
+          runDebugEdit(edits, end, end, " }); } });", -1);
         } else {
           const id = fields.find((f) => f.m === member).id;
           runDebugEdit(edits, def.from, hasValue ? eq.to : def.to, `Object.defineProperty(${name}.prototype, "__f${id}", { value: function () { this.${field} =${hasValue ? "" : " void 0"}`, 0);
@@ -422,15 +440,24 @@
       }
       if (member.name !== "MethodDeclaration") refuse(RUN_DEBUG_REFUSED[member.name] || "this class member", member.from);
       const parts = runDebugKids(member);
-      const def = parts.find((c) => c.name === "PropertyDefinition");
+      const def = parts.find((c) => c.name === "PropertyDefinition" || c.name === "PrivatePropertyDefinition");
       const isStatic = parts.some((c) => c.name === "static");
       const block = parts[parts.length - 1];
       const first = parts[0];
-      if (!def || !/^[A-Za-z_$][\w$]*$/.test(source.slice(def.from, def.to)) || parts.some((c) => c.name === "[")) {
+      const isPrivate = def?.name === "PrivatePropertyDefinition";
+      const method = def ? (isPrivate ? hidden(source.slice(def.from + 1, def.to)) : source.slice(def.from, def.to)) : "";
+      if (!def || !/^[A-Za-z_$][\w$]*$/.test(method) || parts.some((c) => c.name === "[")) {
         refuse("class members with computed or quoted names", member.from);
       }
-      const method = source.slice(def.from, def.to);
-      if (method === "constructor" && !isStatic) {
+      const accessor = parts.find((c) => c.name === "get" || c.name === "set");
+      if (accessor) {
+        //: As a class's own accessors are: on the prototype (or the class),
+        //: not enumerable, configurable so the other half can join it.
+        ctx.handled.add(accessor.from);
+        const kind = source.slice(accessor.from, accessor.to);
+        runDebugEdit(edits, first.from, def.to, `Object.defineProperty(${name}${isStatic ? "" : ".prototype"}, "${method}", { configurable: true, ${kind}: function`, 0);
+        runDebugEdit(edits, block.to, block.to, " });", 0);
+      } else if (method === "constructor" && !isStatic) {
         runDebugEdit(edits, def.from, def.to, `function ${name}`, 0);
       } else {
         const start = isStatic ? first.from : def.from;
@@ -451,7 +478,7 @@
         }
       }
     }
-    return { name, superName };
+    return { name, superName, privates, hidden };
   }
 
   //: `super(a)` is `B.call(this, a)`; `super.m(a)` is `B.prototype.m.call(this, a)`
@@ -514,7 +541,7 @@
         //: The parser recovers from what it cannot read (an arrow whose parameter
         //: is a pattern with a default); lowering that tree would write garbage.
         if (ref.type.isError) refuse("syntax the editor's parser could not read here (an arrow parameter that is a pattern with a default value?)", ref.from);
-        if (Object.prototype.hasOwnProperty.call(RUN_DEBUG_REFUSED, name)) refuse(RUN_DEBUG_REFUSED[name], ref.from);
+        if (Object.prototype.hasOwnProperty.call(RUN_DEBUG_REFUSED, name) && !ctx.handled.has(ref.from)) refuse(RUN_DEBUG_REFUSED[name], ref.from);
         if (name === "Spread" && !ctx.handled.has(ref.from)) refuse("spread and rest (...) here", ref.from);
         if ((name === "ObjectPattern" || name === "ArrayPattern") && !ctx.handled.has(ref.from)) refuse("destructuring here", ref.from);
         if (name === "VariableDeclaration") runDebugDeclaration(ctx, ref.node, depth);
@@ -639,6 +666,13 @@
         }
         if (name === "ClassDeclaration" || name === "ClassExpression") {
           classes.push(runDebugClass(ctx, ref.node, name === "ClassDeclaration"));
+        }
+        if (name === "PrivatePropertyName") {
+          const bare = text().slice(1);
+          const cls = classes.slice().reverse().find((c) => c.privates.has(bare));
+          if (ref.node.parent?.name === "BinaryExpression" && ref.node.nextSibling?.name === "in") refuse("private brand checks (#x in o)", ref.from);
+          if (!cls) refuse("a private name no enclosing class declares", ref.from);
+          runDebugEdit(edits, ref.from, ref.to, cls.hidden(bare), 0);
         }
         if (name === "CallExpression" && classes.length) runDebugSuperCall(ref.node, source, edits, refuse, classes[classes.length - 1]);
         if (name === "MemberExpression" && classes.length && ref.node.firstChild?.name === "super") {
