@@ -1767,8 +1767,7 @@ function recordingLive() {
 window.addEventListener("beforeunload", (event) => {
   //: A private chat is gone with its tab (chat-private.js).
   const privateChat = chatConv.private && chatConv.turns.length;
-  //: A board item held in the pointer is written on release (whiteboard.js, `wbMidDrag`).
-  if (!hasUnsavedWork() && !chatMidStream() && !recordingLive() && !privateChat && window.wbMidDrag?.() !== true) return;
+  if (!hasUnsavedWork() && !chatMidStream() && !recordingLive() && !privateChat) return;
   event.preventDefault();
   event.returnValue = "";
 });

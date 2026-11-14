@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ctrl+S now saves an open note edit form (it said "Nothing to save yet." and wrote nothing) and an open reminder edit form (L-world-class-102).
+- The status bar's Offline and Saver on chips say what they mean on a click as well as on hover; the AI dot's amber ! already did (L-world-class-104).
 - Reloading or closing the window with a board item held in the pointer now asks first (L-world-class-97).
 - Escape closes the note edit form when the caret is on the page, not in the form; the lightbox, graph popup and reminders add form were measured to close already (L-world-class-94).
 Voice: the last literal template failure toasts (21 in 14 files) now speak through voiceLine; the lint also bans backtick Couldn't in the moved files, and the floor is 281 (L-world-class-140).

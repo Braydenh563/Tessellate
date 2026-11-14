@@ -507,10 +507,17 @@ function renderEditForm(li, entry) {
   //: handing focus to <body>) the key never reaches the form; the page
   //: takes it for as long as this form is the one on screen.
   const escapeFromBody = (event) => {
-    if (!li.isConnected) return document.removeEventListener("keydown", escapeFromBody);
-    if (event.target === document.body && !document.querySelector("dialog[open], .modal-overlay:not(.hidden), .lock-overlay:not(.hidden)")) escapeForm(event);
+    if (!li.isConnected) return document.removeEventListener("keydown", escapeFromBody, true);
+    if (document.querySelector("dialog[open], .modal-overlay:not(.hidden), .lock-overlay:not(.hidden)")) return;
+    if (event.target === document.body) escapeForm(event);
+    //: Ctrl+S saves this form (L-world-class-102). Capture phase, so the chord is taken before the page's own, which finds nothing to save here.
+    if (event.key.toLowerCase() === "s" && (event.ctrlKey || event.metaKey) && (event.target === document.body || li.contains(event.target))) {
+      event.preventDefault();
+      event.stopPropagation();
+      saveButton.click();
+    }
   };
-  document.addEventListener("keydown", escapeFromBody);
+  document.addEventListener("keydown", escapeFromBody, true);
   row.append(
     smallButton("Cancel", "Discard changes", async () => {
       if (await noteFormMayClose()) closeNoteForm();

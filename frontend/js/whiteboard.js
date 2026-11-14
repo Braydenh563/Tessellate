@@ -8428,8 +8428,8 @@ function wbBeginGesture(restore, move = false) {
   return wbGesture;
 }
 
-//: A card, box or shape in the pointer is written only on release, so the page asks before a reload or a close takes it (navigation.js, `beforeunload`; L-world-class-97). A window property: the file loads lazily and a name here would be a new global.
-window.wbMidDrag = () => Boolean(wbGesture?.move && !wbGesture.cancelled);
+//: A card, box or shape in the pointer is written only on release, so the page asks before a reload or a close takes it (L-world-class-97). A listener here, not a call in navigation.js: that file is boot, and this one loads lazily.
+window.addEventListener("beforeunload", (event) => wbGesture?.move && !wbGesture.cancelled && event.preventDefault());
 
 function wbEndGesture(gesture) {
   if (gesture && wbGesture === gesture) wbGesture = null;

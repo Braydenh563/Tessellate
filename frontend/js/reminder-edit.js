@@ -122,8 +122,10 @@
         event.preventDefault();
         event.stopPropagation();
         row.querySelectorAll("button")[1]?.click();
-      } else if (event.key === "Enter" && event.target.tagName === "INPUT") {
+      } else if ((event.key === "Enter" && event.target.tagName === "INPUT") || (event.key.toLowerCase() === "s" && (event.ctrlKey || event.metaKey))) {
+        //: Ctrl+S saves the form too (L-world-class-102), before the global chord says "nothing here".
         event.preventDefault();
+        event.stopPropagation();
         row.querySelector("button")?.click();
       }
     });
