@@ -275,3 +275,44 @@ const ensureModule = async () => true;
     assert got["back"] == '{"look":"a"}'
     assert got["cleared"] == "{}", "an avatar that had no saved look goes back to none"
     assert got["repainted"] == 2
+
+
+def test_a_look_change_reaches_the_history_and_its_undo_leaves_the_next_change_alone() -> None:
+    """L-world-class-49: the `ui_state` mirror is the only way a look change (Font,
+    density) is noted, so it must not opt out with `noHistory` (the Font select
+    had no Undo at all). An Undo of a look writes its own mirror at once, marked
+    `noHistory`, instead of holding `settingsHistoryBusy` for 2.5 s: that window
+    swallowed whatever the person changed next."""
+    tools = (JS / "ai-tools.js").read_text(encoding="utf-8")
+    mirror = _slice(tools, "function saveUiState() {", "// Mirror every write to a watched key")
+    assert 'apiJson("/preferences"' in mirror and "noHistory" not in mirror
+    apply_fn = _slice(DATA, "async function settingsHistoryApply", "async function settingsHistoryUndo")
+    assert "settingsHistoryBusy = false), " not in apply_fn, "no time window: the Undo's own write is marked"
+    out = _node(
+        """
+const sent = [], timers = [];
+let busy = false, uiStateSaveTimer = 7, uiStateOnServer = "", uiStateSeeded = true, synced = null;
+const settingsHistoryBigKept = new Map();
+const settingsHistoryFind = () => null, settingsHistoryLoad = () => [], settingsHistorySave = () => {};
+const renderSettingsHistory = () => {}, settingsModalOpen = () => false;
+const store = {};
+const prefs = { set: (k, v) => { store[k] = v; }, remove: (k) => { delete store[k]; }, get: (k, d) => store[k] ?? d };
+const applyThemeChoice = () => {}, applyAppearance = () => {}, bgArtOn = () => false, stopBgArt = () => {}, renderAppearance = () => {};
+const setTimeout = (fn, ms) => timers.push(ms), clearTimeout = (id) => { if (id === uiStateSaveTimer) uiStateSaveTimer = null; };
+const uiStatePayload = () => ({ font: store.font });
+const uiStateRememberSynced = (s) => { synced = s; };
+const apiJson = async (path, o) => { sent.push({ path, busy, noHistory: o.noHistory === true, body: JSON.parse(o.body) }); return {}; };
+"""
+        + apply_fn.replace("settingsHistoryBusy", "busy")
+        + """
+(async () => {
+  await settingsHistoryApply({ id: 1, kind: "look", changes: [{ key: "font", old: "serif", new: "system" }] }, "old");
+  console.log(JSON.stringify({ sent, busy, timers, pending: uiStateSaveTimer, onServer: uiStateOnServer, synced }));
+})();
+"""
+    )
+    got = json.loads(out)
+    assert got["sent"] == [{"path": "/preferences", "busy": True, "noHistory": True, "body": {"ui_state": {"font": "serif"}}}]
+    assert got["busy"] is False and got["timers"] == [], "the next change is noted at once"
+    assert got["pending"] is None, "the debounced mirror would have sent the Undo again"
+    assert got["onServer"] == '{"font":"serif"}' and got["synced"] == {"font": "serif"}

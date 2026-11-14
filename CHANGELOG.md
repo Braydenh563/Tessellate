@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Undo: a look change (Font, density) is on the undo stack again; its Undo writes its own notebook copy at once instead of a 2.5 s busy window that swallowed the next change, and the Settings undo sweep no longer counts the reminder clock or the Library view defaults as changes (L-world-class-49).
 - Pull request template: the checklist reads as what an author confirms in the description, so no open checkbox stays in the repository (L-world-class-54).
 - Start-up: the OCR workspace's own styles load with the Library bundle instead of at boot (boot CSS gzip 181,064 to 180,504 bytes); the first document open does not reproduce slow without a large library (L-world-class-71, L-world-class-40).
 - Start-up: the Guide's word index is built at the first question, not at import; the rest of the 2.1 s app import is 632 FastAPI route builds and third-party code (L-world-class-150).

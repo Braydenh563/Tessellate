@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 136 | 29 | 3 | 10 | 165 |
+| world-class | 0 | 135 | 29 | 3 | 10 | 164 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 527 | 100 | 5 | 121 | 1032 |
+| all | 405 | 526 | 100 | 5 | 121 | 1031 |
 
 ## graph
 
@@ -534,7 +534,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-26** `world-class` partly, M: I5 time travel: the model's judgement over then and now claim pairs, re-embedding past texts for as-of retrieval, and an as-of answer's cards grouped by month (H8). From WORLD_CLASS_PLAN.md I5. Evidence: ai/timetravel.py:179 then_and_now pairs claims by shared words; claims_as_of route (72ce2bca) resolves revisions at a day
 - [ ] **L-world-class-27** `world-class` open, L: I1 night shift pass 2: dates, duplicates and entities as derived_facts rows, with accept of a date (a reminder) and of a duplicate (the merge). From WORLD_CLASS_PLAN.md I1 and H1. Evidence: ai/facts.py:109 KINDS = claim, question, tension, answered; no date, duplicate or entity kinds
 - [ ] **L-world-class-40** `world-class` open, S: Cold first document open and first Library tab open: warm what they parse before the press. From m1.js probe 8799, 2026-11-14. Evidence: documents.js openDocument first call 486 ms (long tasks 80+137 ms, script 158 ms), second 54 ms; 2,000 notes, 1440 wide; library tab first open handler 116 ms, long tasks 135/80/69/50. 2026-11-14 attempt (probe 8801, small data, noisy): two warms tried and not kept, no gain. Hover on the Library tab starting the paced warm at 150 ms gaps: first open median 457 ms without, 455 with. Mounting the CodeMirror view in idle after loadCodeMirror: 220/214/225 ms without, 204/290/246 with. After 5 s idle the first open is ~220 ms against ~100 for the second, so what remains is first-call compile and IC warm-up, not a bundle or the view mount
-- [ ] **L-world-class-49** `world-class` open, M: Settings undo sweep is order or timing dependent: a different control fails each run. From scratchpad/ui-sweeps/undo.js ONLY=settings 2026-11-14. Evidence: four runs on one head: NOT UNDONE set differs each time (learned-pause-all, pref-web-search, pref-web-store, check_learned, pref-date-order, font-seg); each undoes alone
 - [ ] **L-world-class-50** `world-class` open, M: Rich paste (HTML to markdown) in the note composers, as documents have. From L-world-class-7 measurement 2026-11-14. Evidence: frontend/js/capture-stage.js:35 paste takes files only; documents.js:5634 docRichPasteEvent converts HTML to markdown in documents only; pasting a list, heading and link as text/html into #entry-content and #quick-note-text inserts nothing converted (default plain text)
 - [ ] **L-world-class-52** `world-class` open, L: Seal the bytes of recordings, library uploads and attachments in a private space. From L697. Evidence: L697 sealed the database columns only; the audio, upload and attachment bytes on disk (data/recordings, media, uploads) of a private space are still plain files
 - [ ] **L-world-class-60** `world-class` open, S: Settle 1.3's remaining 'no' cells in the object menu table: each built or marked n/a with its reason. From WORLD_CLASS_PLAN.md:158. Evidence: WORLD_CLASS_PLAN.md:158 says the 'no' cells are 'not planned'; no owner decision found in HANDOVER or ARCHITECTURE
