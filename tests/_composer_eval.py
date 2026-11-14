@@ -1272,3 +1272,24 @@ if __name__ == "__main__":  # pragma: no cover - the report's table
                 print(f"- {row['message']!r}: {row['got']} (expected {row['expect']})")
         print(json.dumps(conversation_summary(conversation), indent=1))
         print(json.dumps(run_did_you_mean(), indent=1))
+
+
+def run_person_shift() -> list[dict]:
+    """`person_shift_1010.json`: each note sentence said back to its writer."""
+    from tessellate.ai import realise
+
+    rows = []
+    for row in _fixture("person_shift_1010.json")["rows"]:
+        got = realise.shift_person(row["text"], quoted=row["quoted"])
+        rows.append({**row, "got": got, "exact": got == row["expected"]})
+    return rows
+
+
+def person_shift_summary(rows: list[dict]) -> dict:
+    kinds = {r["kind"] for r in rows}
+    return {
+        "rows": len(rows),
+        "exact": sum(r["exact"] for r in rows) / max(len(rows), 1),
+        "missed": [(r["text"], r["expected"], r["got"]) for r in rows if not r["exact"]],
+        "kinds": kinds,
+    }

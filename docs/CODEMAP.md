@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 11003, test files 2819, tests 22515, plan headings 690, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2786, CSS sections 524, backend routes 712, backend modules 11003, test files 2819, tests 22516, plan headings 690, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -19299,53 +19299,53 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_case_like` | src/tessellate/ai/realise.py:101 |
-| `_cell` | src/tessellate/ai/realise.py:449 |
-| `_clip_spaceless` | src/tessellate/ai/realise.py:319 |
-| `_first_five` | src/tessellate/ai/realise.py:545 |
-| `_named` | src/tessellate/ai/realise.py:497 |
-| `_rows_form` | src/tessellate/ai/realise.py:435 |
-| `_say_count` | src/tessellate/ai/realise.py:537 |
-| `_say_found` | src/tessellate/ai/realise.py:598 |
-| `_say_listed` | src/tessellate/ai/realise.py:572 |
-| `_say_named` | src/tessellate/ai/realise.py:528 |
-| `_say_overview` | src/tessellate/ai/realise.py:549 |
-| `_say_reminders` | src/tessellate/ai/realise.py:561 |
-| `_say_structure` | src/tessellate/ai/realise.py:555 |
-| `_say_time` | src/tessellate/ai/realise.py:614 |
-| `_say_worked` | src/tessellate/ai/realise.py:619 |
-| `_shift_part` | src/tessellate/ai/realise.py:158 |
-| `_shift_words` | src/tessellate/ai/realise.py:149 |
-| `_title_and_line` | src/tessellate/ai/realise.py:588 |
-| `_when` | src/tessellate/ai/realise.py:501 |
-| `_with_you` | src/tessellate/ai/realise.py:127 |
-| `after_comma` | src/tessellate/ai/realise.py:298 |
-| `bullets` | src/tessellate/ai/realise.py:463 |
-| `card` | src/tessellate/ai/realise.py:467 |
-| `chart` | src/tessellate/ai/realise.py:474 |
-| `count_noun` | src/tessellate/ai/realise.py:266 |
-| `count_word` | src/tessellate/ai/realise.py:220 |
-| `counted` | src/tessellate/ai/realise.py:224 |
-| `cut_title` | src/tessellate/ai/realise.py:330 |
-| `drop_dangling` | src/tessellate/ai/realise.py:344 |
-| `first_person` | src/tessellate/ai/realise.py:184 |
-| `form_of` | src/tessellate/ai/realise.py:422 |
-| `join_items` | src/tessellate/ai/realise.py:276 |
-| `mend_stops` | src/tessellate/ai/realise.py:356 |
-| `named_lead` | src/tessellate/ai/realise.py:517 |
-| `opener` | src/tessellate/ai/realise.py:382 |
-| `past_plan` | src/tessellate/ai/realise.py:206 |
-| `protected` | src/tessellate/ai/realise.py:376 |
-| `relative_day` | src/tessellate/ai/realise.py:238 |
-| `render` | src/tessellate/ai/realise.py:481 |
+| `_case_like` | src/tessellate/ai/realise.py:102 |
+| `_cell` | src/tessellate/ai/realise.py:452 |
+| `_clip_spaceless` | src/tessellate/ai/realise.py:322 |
+| `_first_five` | src/tessellate/ai/realise.py:548 |
+| `_named` | src/tessellate/ai/realise.py:500 |
+| `_rows_form` | src/tessellate/ai/realise.py:438 |
+| `_say_count` | src/tessellate/ai/realise.py:540 |
+| `_say_found` | src/tessellate/ai/realise.py:601 |
+| `_say_listed` | src/tessellate/ai/realise.py:575 |
+| `_say_named` | src/tessellate/ai/realise.py:531 |
+| `_say_overview` | src/tessellate/ai/realise.py:552 |
+| `_say_reminders` | src/tessellate/ai/realise.py:564 |
+| `_say_structure` | src/tessellate/ai/realise.py:558 |
+| `_say_time` | src/tessellate/ai/realise.py:617 |
+| `_say_worked` | src/tessellate/ai/realise.py:622 |
+| `_shift_part` | src/tessellate/ai/realise.py:161 |
+| `_shift_words` | src/tessellate/ai/realise.py:150 |
+| `_title_and_line` | src/tessellate/ai/realise.py:591 |
+| `_when` | src/tessellate/ai/realise.py:504 |
+| `_with_you` | src/tessellate/ai/realise.py:128 |
+| `after_comma` | src/tessellate/ai/realise.py:301 |
+| `bullets` | src/tessellate/ai/realise.py:466 |
+| `card` | src/tessellate/ai/realise.py:470 |
+| `chart` | src/tessellate/ai/realise.py:477 |
+| `count_noun` | src/tessellate/ai/realise.py:269 |
+| `count_word` | src/tessellate/ai/realise.py:223 |
+| `counted` | src/tessellate/ai/realise.py:227 |
+| `cut_title` | src/tessellate/ai/realise.py:333 |
+| `drop_dangling` | src/tessellate/ai/realise.py:347 |
+| `first_person` | src/tessellate/ai/realise.py:187 |
+| `form_of` | src/tessellate/ai/realise.py:425 |
+| `join_items` | src/tessellate/ai/realise.py:279 |
+| `mend_stops` | src/tessellate/ai/realise.py:359 |
+| `named_lead` | src/tessellate/ai/realise.py:520 |
+| `opener` | src/tessellate/ai/realise.py:385 |
+| `past_plan` | src/tessellate/ai/realise.py:209 |
+| `protected` | src/tessellate/ai/realise.py:379 |
+| `relative_day` | src/tessellate/ai/realise.py:241 |
+| `render` | src/tessellate/ai/realise.py:484 |
 | `say` | src/tessellate/ai/realise.py:56 |
-| `shift_person` | src/tessellate/ai/realise.py:169 |
-| `table` | src/tessellate/ai/realise.py:454 |
-| `todo_titled` | src/tessellate/ai/realise.py:648 |
-| `tool_answer` | src/tessellate/ai/realise.py:633 |
-| `variety` | src/tessellate/ai/realise.py:399 |
-| `weeks_gone` | src/tessellate/ai/realise.py:230 |
-| `wording` | src/tessellate/ai/realise.py:393 |
+| `shift_person` | src/tessellate/ai/realise.py:172 |
+| `table` | src/tessellate/ai/realise.py:457 |
+| `todo_titled` | src/tessellate/ai/realise.py:651 |
+| `tool_answer` | src/tessellate/ai/realise.py:636 |
+| `variety` | src/tessellate/ai/realise.py:402 |
+| `weeks_gone` | src/tessellate/ai/realise.py:233 |
+| `wording` | src/tessellate/ai/realise.py:396 |
 
 ### src/tessellate/ai/recognise.py (105)
 
@@ -28239,7 +28239,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22515)
+## Tests (22516)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28772,7 +28772,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_done_later_overview_f15.py | 3 |
 | tests/test_composer_due_window_z27.py | 2 |
 | tests/test_composer_each_subject_1109.py | 4 |
-| tests/test_composer_eval_1113.py | 7 |
+| tests/test_composer_eval_1113.py | 8 |
 | tests/test_composer_eval_725.py | 6 |
 | tests/test_composer_eval_741.py | 6 |
 | tests/test_composer_fable_1030.py | 18 |

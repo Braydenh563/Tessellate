@@ -84,3 +84,11 @@ def test_no_registered_act_is_called_one_the_app_cannot_do():
 
     for act in act_registry.ACTS.values():
         assert not composer_ood.NOT_AN_ACT.match(act.example), act.example
+
+
+def test_a_note_sentence_is_said_back_to_its_writer_exactly():
+    got = _composer_eval.person_shift_summary(_composer_eval.run_person_shift())
+    assert got["rows"] == 100
+    assert got["exact"] == 1.0, got["missed"]
+    #: Verb agreement ("I am", "I was", "am I", "Sam and I"), idioms, numerals, quoted facts, "we".
+    assert {"be", "and_i", "quote_inner", "quoted", "idiom", "none", "we", "question"} <= got["kinds"]

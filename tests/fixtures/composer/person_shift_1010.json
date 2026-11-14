@@ -1,0 +1,605 @@
+{
+ "about": "CHAT_PLAN Phase 10 person_shift_1010: a note sentence said back to its writer (realise.shift_person). Sentence case is the caller's, so a leading \"I\" gives \"you\"; \"we\" stays unless one companion is named.",
+ "rows": [
+  {
+   "text": "I am tired after the run.",
+   "expected": "you are tired after the run.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "I was late to the standup.",
+   "expected": "you were late to the standup.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "I'm going to the gym on Friday.",
+   "expected": "you're going to the gym on Friday.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "Am I meant to bring the slides?",
+   "expected": "Are you meant to bring the slides?",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "Was I supposed to call the bank?",
+   "expected": "Were you supposed to call the bank?",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "I am not sure about the quote.",
+   "expected": "you are not sure about the quote.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "I was so happy with the result.",
+   "expected": "you were so happy with the result.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "Today I am working from home.",
+   "expected": "Today you are working from home.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "I'm not coming to the party.",
+   "expected": "you're not coming to the party.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "I was never told about the change.",
+   "expected": "you were never told about the change.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "If I am free, I will help Sam move.",
+   "expected": "If you are free, you will help Sam move.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "I wasn't at the meeting.",
+   "expected": "you weren't at the meeting.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "Yesterday I was in Leeds for work.",
+   "expected": "Yesterday you were in Leeds for work.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "I am the one who booked the table.",
+   "expected": "you are the one who booked the table.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "I was at the dentist at 3pm.",
+   "expected": "you were at the dentist at 3pm.",
+   "quoted": false,
+   "kind": "be"
+  },
+  {
+   "text": "I have a cold.",
+   "expected": "you have a cold.",
+   "quoted": false,
+   "kind": "have"
+  },
+  {
+   "text": "I've finished the report.",
+   "expected": "you have finished the report.",
+   "quoted": false,
+   "kind": "have"
+  },
+  {
+   "text": "I'd like to try the new cafe.",
+   "expected": "you'd like to try the new cafe.",
+   "quoted": false,
+   "kind": "have"
+  },
+  {
+   "text": "I'll send the invoice on Monday.",
+   "expected": "you will send the invoice on Monday.",
+   "quoted": false,
+   "kind": "have"
+  },
+  {
+   "text": "I had lunch with Priya.",
+   "expected": "you had lunch with Priya.",
+   "quoted": false,
+   "kind": "have"
+  },
+  {
+   "text": "I haven't paid the rent yet.",
+   "expected": "you haven't paid the rent yet.",
+   "quoted": false,
+   "kind": "have"
+  },
+  {
+   "text": "I've been running every morning.",
+   "expected": "you have been running every morning.",
+   "quoted": false,
+   "kind": "have"
+  },
+  {
+   "text": "I should call the plumber.",
+   "expected": "you should call the plumber.",
+   "quoted": false,
+   "kind": "have"
+  },
+  {
+   "text": "I can't find my passport.",
+   "expected": "you can't find your passport.",
+   "quoted": false,
+   "kind": "have"
+  },
+  {
+   "text": "I need to renew my licence.",
+   "expected": "you need to renew your licence.",
+   "quoted": false,
+   "kind": "have"
+  },
+  {
+   "text": "My car needs a service.",
+   "expected": "Your car needs a service.",
+   "quoted": false,
+   "kind": "own"
+  },
+  {
+   "text": "Sam lent me his drill.",
+   "expected": "Sam lent you his drill.",
+   "quoted": false,
+   "kind": "own"
+  },
+  {
+   "text": "The keys are mine.",
+   "expected": "The keys are yours.",
+   "quoted": false,
+   "kind": "own"
+  },
+  {
+   "text": "I hurt myself at football.",
+   "expected": "you hurt yourself at football.",
+   "quoted": false,
+   "kind": "own"
+  },
+  {
+   "text": "Mum called me about my birthday.",
+   "expected": "Mum called you about your birthday.",
+   "quoted": false,
+   "kind": "own"
+  },
+  {
+   "text": "My sister and my mum are visiting.",
+   "expected": "Your sister and your mum are visiting.",
+   "quoted": false,
+   "kind": "own"
+  },
+  {
+   "text": "Priya sent me the slides for my talk.",
+   "expected": "Priya sent you the slides for your talk.",
+   "quoted": false,
+   "kind": "own"
+  },
+  {
+   "text": "The plan is mine to finish.",
+   "expected": "The plan is yours to finish.",
+   "quoted": false,
+   "kind": "own"
+  },
+  {
+   "text": "I wrote this note to myself.",
+   "expected": "you wrote this note to yourself.",
+   "quoted": false,
+   "kind": "own"
+  },
+  {
+   "text": "We are flying to Rome in May.",
+   "expected": "We are flying to Rome in May.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "Our flat needs painting.",
+   "expected": "Our flat needs painting.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "Sam told us about the delay.",
+   "expected": "Sam told us about the delay.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "We were stuck in traffic.",
+   "expected": "We were stuck in traffic.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "The house is ours from June.",
+   "expected": "The house is ours from June.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "We've booked the hotel.",
+   "expected": "We've booked the hotel.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "Our team won the quiz.",
+   "expected": "Our team won the quiz.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "We'll meet at the station.",
+   "expected": "We'll meet at the station.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "We had pizza after the match.",
+   "expected": "We had pizza after the match.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "Sam and I went to the cinema.",
+   "expected": "you and Sam went to the cinema.",
+   "quoted": false,
+   "kind": "and_i"
+  },
+  {
+   "text": "Priya and I are planning the trip.",
+   "expected": "you and Priya are planning the trip.",
+   "quoted": false,
+   "kind": "and_i"
+  },
+  {
+   "text": "Mum and I were at the market.",
+   "expected": "you and Mum were at the market.",
+   "quoted": false,
+   "kind": "and_i"
+  },
+  {
+   "text": "Tom and I have a call at 10.",
+   "expected": "you and Tom have a call at 10.",
+   "quoted": false,
+   "kind": "and_i"
+  },
+  {
+   "text": "Jo and I will cook on Sunday.",
+   "expected": "you and Jo will cook on Sunday.",
+   "quoted": false,
+   "kind": "and_i"
+  },
+  {
+   "text": "I live in Perth and I work at the cafe.",
+   "expected": "you live in Perth and you work at the cafe.",
+   "quoted": false,
+   "kind": "and_i"
+  },
+  {
+   "text": "Sam and I was late again.",
+   "expected": "you and Sam were late again.",
+   "quoted": false,
+   "kind": "and_i"
+  },
+  {
+   "text": "The meeting moved to Tuesday.",
+   "expected": "The meeting moved to Tuesday.",
+   "quoted": false,
+   "kind": "none"
+  },
+  {
+   "text": "Sam is bringing the cake.",
+   "expected": "Sam is bringing the cake.",
+   "quoted": false,
+   "kind": "none"
+  },
+  {
+   "text": "Read Part I of the book.",
+   "expected": "Read Part I of the book.",
+   "quoted": false,
+   "kind": "none"
+  },
+  {
+   "text": "World War I ended in 1918.",
+   "expected": "World War I ended in 1918.",
+   "quoted": false,
+   "kind": "none"
+  },
+  {
+   "text": "The I/O board needs a new fuse.",
+   "expected": "The I/O board needs a new fuse.",
+   "quoted": false,
+   "kind": "none"
+  },
+  {
+   "text": "Henry I was king of England.",
+   "expected": "Henry I was king of England.",
+   "quoted": false,
+   "kind": "none"
+  },
+  {
+   "text": "Buy milk, eggs and bread.",
+   "expected": "Buy milk, eggs and bread.",
+   "quoted": false,
+   "kind": "none"
+  },
+  {
+   "text": "Dentist at 9:30 on 4 November.",
+   "expected": "Dentist at 9:30 on 4 November.",
+   "quoted": false,
+   "kind": "none"
+  },
+  {
+   "text": "The plumber comes next week.",
+   "expected": "The plumber comes next week.",
+   "quoted": false,
+   "kind": "none"
+  },
+  {
+   "text": "Chapter I is the best one.",
+   "expected": "Chapter I is the best one.",
+   "quoted": false,
+   "kind": "none"
+  },
+  {
+   "text": "Let me know if the parcel comes.",
+   "expected": "Let me know if the parcel comes.",
+   "quoted": false,
+   "kind": "idiom"
+  },
+  {
+   "text": "Oh my, the garden is a mess.",
+   "expected": "Oh my, the garden is a mess.",
+   "quoted": false,
+   "kind": "idiom"
+  },
+  {
+   "text": "My bad, the date was wrong.",
+   "expected": "My bad, the date was wrong.",
+   "quoted": false,
+   "kind": "idiom"
+  },
+  {
+   "text": "Trust me, the shortcut is faster.",
+   "expected": "Trust me, the shortcut is faster.",
+   "quoted": false,
+   "kind": "idiom"
+  },
+  {
+   "text": "Excuse me for the late reply.",
+   "expected": "Excuse me for the late reply.",
+   "quoted": false,
+   "kind": "idiom"
+  },
+  {
+   "text": "Sam said \"I am done with the draft\".",
+   "expected": "Sam said \"I am done with the draft\".",
+   "quoted": false,
+   "kind": "quote_inner"
+  },
+  {
+   "text": "The card read \"my door is always open\".",
+   "expected": "The card read \"my door is always open\".",
+   "quoted": false,
+   "kind": "quote_inner"
+  },
+  {
+   "text": "I told him \"we can wait\".",
+   "expected": "you told him \"we can wait\".",
+   "quoted": false,
+   "kind": "quote_inner"
+  },
+  {
+   "text": "Mum wrote “I miss you” on the card.",
+   "expected": "Mum wrote “I miss you” on the card.",
+   "quoted": false,
+   "kind": "quote_inner"
+  },
+  {
+   "text": "I underlined \"I was wrong\" in the book.",
+   "expected": "you underlined \"I was wrong\" in the book.",
+   "quoted": false,
+   "kind": "quote_inner"
+  },
+  {
+   "text": "I am the walrus.",
+   "expected": "I am the walrus.",
+   "quoted": true,
+   "kind": "quoted"
+  },
+  {
+   "text": "We shall fight on the beaches.",
+   "expected": "We shall fight on the beaches.",
+   "quoted": true,
+   "kind": "quoted"
+  },
+  {
+   "text": "I think, therefore I am.",
+   "expected": "I think, therefore I am.",
+   "quoted": true,
+   "kind": "quoted"
+  },
+  {
+   "text": "My kingdom for a horse.",
+   "expected": "My kingdom for a horse.",
+   "quoted": true,
+   "kind": "quoted"
+  },
+  {
+   "text": "I have a dream.",
+   "expected": "I have a dream.",
+   "quoted": true,
+   "kind": "quoted"
+  },
+  {
+   "text": "Did I lock the door?",
+   "expected": "Did you lock the door?",
+   "quoted": false,
+   "kind": "question"
+  },
+  {
+   "text": "Where did I put my keys?",
+   "expected": "Where did you put your keys?",
+   "quoted": false,
+   "kind": "question"
+  },
+  {
+   "text": "Should I take the train?",
+   "expected": "Should you take the train?",
+   "quoted": false,
+   "kind": "question"
+  },
+  {
+   "text": "Have I paid the gas bill?",
+   "expected": "Have you paid the gas bill?",
+   "quoted": false,
+   "kind": "question"
+  },
+  {
+   "text": "Can I bring Sam to dinner?",
+   "expected": "Can you bring Sam to dinner?",
+   "quoted": false,
+   "kind": "question"
+  },
+  {
+   "text": "Why am I always late?",
+   "expected": "Why are you always late?",
+   "quoted": false,
+   "kind": "question"
+  },
+  {
+   "text": "Were we meant to tip?",
+   "expected": "Were we meant to tip?",
+   "quoted": false,
+   "kind": "question"
+  },
+  {
+   "text": "Do I need a visa for Japan?",
+   "expected": "Do you need a visa for Japan?",
+   "quoted": false,
+   "kind": "question"
+  },
+  {
+   "text": "I MUST renew my passport.",
+   "expected": "you MUST renew your passport.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "Note to self: I owe Sam 20.",
+   "expected": "Note to self: you owe Sam 20.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "When I am in Rome, I want gelato.",
+   "expected": "When you are in Rome, you want gelato.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "I think I left my umbrella at work.",
+   "expected": "you think you left your umbrella at work.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "I'm sure I was right about the date.",
+   "expected": "you're sure you were right about the date.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "Sam thinks I am too busy.",
+   "expected": "Sam thinks you are too busy.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "I asked if I was on the list.",
+   "expected": "you asked if you were on the list.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "Me and Sam fixed the bike.",
+   "expected": "You and Sam fixed the bike.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "I and my brother painted the fence.",
+   "expected": "you and your brother painted the fence.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "It was me who left the gate open.",
+   "expected": "It was you who left the gate open.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "Between you and me, the plan is late.",
+   "expected": "Between you and me, the plan is late.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "I myself checked the figures.",
+   "expected": "you yourself checked the figures.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "I wish I was taller.",
+   "expected": "you wish you were taller.",
+   "quoted": false,
+   "kind": "mixed"
+  },
+  {
+   "text": "Ran into a uni friend and we caught the next train.",
+   "expected": "Ran into a uni friend and the two of you caught the next train.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "My sister came over and we baked bread.",
+   "expected": "Your sister came over and the two of you baked bread.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "Met the kids and their dad and we went to the park.",
+   "expected": "Met the kids and their dad and we went to the park.",
+   "quoted": false,
+   "kind": "we"
+  },
+  {
+   "text": "Then Sam and I left early.",
+   "expected": "Then you and Sam left early.",
+   "quoted": false,
+   "kind": "and_i"
+  }
+ ]
+}
