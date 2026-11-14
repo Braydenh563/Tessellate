@@ -204,6 +204,10 @@ class EntryUpdate(BaseModel):
     #: than silently overwriting it (api/edit_conflicts.py). Optional: a
     #: writer that sends none is not checked.
     base_hash: str | None = Field(default=None, max_length=64)
+    #: The tags this edit started from, for a writer that edits tags from a
+    #: copy it read earlier (the graph): refused (409) when the note's tags
+    #: have since changed to something else than what this save sets.
+    base_tags: list[str] | None = Field(default=None, max_length=200)
     #: The text includes an Atlas suggestion the person applied before saving
     #: (Improve writing in the form): the edit is recorded as theirs and
     #: Atlas's together, so the history can say so (INBOX 446).

@@ -68,6 +68,27 @@ def refuse_if_stale(
         _refuse(409, current, noun)
 
 
+def refuse_if_tags_stale(
+    *,
+    base_tags: list[str] | None,
+    current_tags: list[str],
+    new_tags: list[str] | None,
+    current: Callable[[], Any],
+    noun: str,
+) -> None:
+    """Raise 409 when a tag edit started from tags that are no longer there.
+
+    The same refusal as a stale text (the graph's "tag these notes" sets the
+    whole list from the node it drew). Order does not matter; saving the tags
+    that are already there is not a conflict.
+    """
+    if base_tags is None or new_tags is None:
+        return
+    if set(current_tags) == set(base_tags) or set(current_tags) == set(new_tags):
+        return
+    _refuse(409, current, noun)
+
+
 def _text_is_stale(base_hash: str | None, current_text: str | None, new_text: str | None) -> bool:
     if not base_hash or new_text is None:
         return False

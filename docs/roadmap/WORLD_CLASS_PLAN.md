@@ -1999,11 +1999,7 @@ mobile first, as the owner's web design class teaches. Measured with
    plain dirty flag (HISTORY.md, "Moved from the plans, 2026-09-27"), and a
    chat mid-stream (2026-10-11, `chatMidStream`). Left: a board mid-drag, which
    has no such flag yet: LEDGER L-world-class-97.
-5. **Two windows, one note.** Built 2026-09-27 for the note edit form and
-   the document editor (HISTORY.md, "Moved from the plans, 2026-09-27").
-   Left: the other note writers (a card's checkbox, the graph's tag edit,
-   the lightbox caption) send no `base_hash` yet and stay unchecked. S,
-   Sonnet. LEDGER L-world-class-98.
+5. ~~**Two windows, one note.**~~ Built 2026-09-27 for the note form and the document editor, and 2026-11-14 for the lightbox file text, the graph's tag edit and the card's Remove image (HISTORY.md, "Moved from the plans, 2026-11-14 (22.1 items 5, 6, 8)").
 6. **The server can go away.** Built 2026-09-27: a persistent banner
    ("Can't reach MemoryMap. Retrying...") with a Retry action, raised by
    `api()`'s own network-error catch and cleared by the next successful

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Two windows, one note now covers the lightbox file-text save (409 with keep mine or take theirs), the graph's tag edit (`base_tags`, merged and sent again) and the card's Remove image; card task boxes are disabled, so there is no write there (L-world-class-98).
 Voice: the last literal template failure toasts (21 in 14 files) now speak through voiceLine; the lint also bans backtick Couldn't in the moved files, and the floor is 281 (L-world-class-140).
 - The toast-action sweep now opens the lazy Library and board code first: 6 of 6 surfaces carry their own action; exporting a board library offers Try again (L-world-class-44).
 - Tag chips on note cards say in their hover how many notes carry the tag, counted from the notes already loaded (L-world-class-47).
