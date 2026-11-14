@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 0 | 23 | 1 | 0 | 7 | 24 |
+| documents | 0 | 24 | 1 | 0 | 7 | 25 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 465 | 578 | 129 | 2 | 170 | 1172 |
+| all | 465 | 579 | 129 | 2 | 170 | 1173 |
 
 ## graph
 
@@ -350,6 +350,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-97** `documents` open, S: History summary: tell the reader when the model timed out, and let a slow local model have longer than 45 seconds for it. From L-documents-5 real-model check. Evidence: Cold first call to the 1.5B model passed bounded_chat's 45 s limit (MODEL_SECONDS) and fell back to the counts; warm it answered in about 30 s.
 - [ ] **L-documents-98** `documents` open, S: Base block board and calendar HTML export: check for dead drag and month controls in the static file. From L-documents-84 export check. Evidence: Board cards in the exported HTML keep draggable=true and the calendar its month navigation; not checked whether either does anything in a static file.
 - [ ] **L-documents-99** `documents` open, M: Debug generators and async: run finally blocks on generator return and for-of break, support async generators and for await, top-level await, arguments inside async or generator bodies, and name resumed frames after their function. From agent code1229. Evidence: Gaps left by the generator and async build.
+- [ ] **L-documents-100** `documents` open, M: L-documents-83 remainder: 1440 cold open still about 1,145 ms median; the warm file overlaps the fetches, what is left is the bundle's script run (documents.js, library.js 50 to 70 ms each) and CodeMirror's 140 ms evaluate; next: one served concatenation of the bundle, and a quiet box to measure. From agent cold83-1410. Evidence: frontend/js/documents-warm.js; waterfall after: bundle arrives about 330 ms, its 35 scripts run until about 600 ms (main thread, load 4 to 12), editor then mounts about 1,100 ms
 
 ## mindmap
 

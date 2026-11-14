@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: opening the Documents tab cold now asks for the list, the file-type table, the first document and the editor engine while the Library bundle is still arriving (new first file `documents-warm.js`; `api` hands each answer to its caller once). Measured 1440 cold, same box back to back: median 1,175 to 1,145 ms (load 12, runs 929 to 1,366 vs 999 to 1,655), waterfall: list and file types start 300 ms sooner, the document 310 ms sooner; 390 median 742 to 635 ms. Under 800 ms at 1440 is not met (L-documents-83 remainder).
 - Chat: the file picker offers Stylus files (.styl), which import already reads (L-documents-76 added the type on one side only).
 - Documents list: the page card's cover is found by a linear scan instead of a pattern that slowed to quadratic time on a long run of "![" (CodeQL 2305); a test counts the characters scanned.
 - CI leg 1 on ce0f7082: the Today look-up failure speaks through voiceLine, and the diagram-styling help names bold and italic in words, not stored marks.
