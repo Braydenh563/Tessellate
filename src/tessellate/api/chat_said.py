@@ -909,8 +909,11 @@ def _diagram_events(req: _StreamRequest, prepared: dict) -> list | None:
     model (INBOX 1466): a ```mermaid fence the page draws, written by rule
     (`ai/composer_mermaid.py`) from the notes found, the open note, the text
     after a colon, or the answer before."""
-    from tessellate.ai import composer_mermaid
+    from tessellate.ai import composer_graph, composer_mermaid
 
+    #: "Chart my notes on running": the measure they share (L158, INBOX 1847).
+    if charted := composer_graph.from_notes(req.question or "", prepared["notes"]):
+        return [{"type": "answer", "delta": charted["text"]}]
     if not composer_mermaid.asks(req.question or ""):
         return None
     opened = next((str(n.get("content") or "") for n in prepared["notes"] if req.body.open_note_id and n.get("id") == req.body.open_note_id), "")

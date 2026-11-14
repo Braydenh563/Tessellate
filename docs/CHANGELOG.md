@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: the graph maker in Chat and Ask. "chart this: Mon 3, Tue 5" (pasted values, a table, or the answer before) and "chart my notes on running" (the measure those notes share, one point a note) answer with the chart maker's ```chart block, drawn with Save as SVG and CSV; notes with no shared measure are a mind map (L158, INBOX 1847, tests/test_composer_graph_l158.py).
+- Companion: L180 closed; the enlarged view and framed Atlas clip are pinned by a test (INBOX 1840).
 
 - Chat acts: a model reply that claims an act ("I've created a new board") with no tool call, to a sentence the act registry reads, is replaced by that act's Confirm card (L114, tests/test_act_claim_guard_1114.py).
 - Composer: ten two-turn follow-ups keep the subject; "and the other one" with no list to pick from asks the question before again for something new instead of searching the bare words (L-chat-249, 2026-11-14).
