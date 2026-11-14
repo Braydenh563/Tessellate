@@ -12,6 +12,9 @@ Object.assign(LAZY_MODULES, {
     "/js/whiteboard-map-strip.js", //: After whiteboard-map.js: the topic strip and radial ring; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-waypoints.js", //: After whiteboard-map.js: map line waypoints and link handles; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-marks.js", //: After whiteboard-map.js: markers, dim and filter views, summaries; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-edges.js", //: After whiteboard-map.js: line geometry, ribbons and edge paint; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-notes.js", //: After whiteboard-map.js: map note topics and folding; wrapped, names the other board files at run time only.
+    "/js/whiteboard-map-look.js", //: After whiteboard-map.js: topic fill, focus and look helpers; wrapped, names the other board files at run time only.
     "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
     "/js/whiteboard.js",
     "/js/whiteboard-export.js", //: After whiteboard.js: the export dialog, SVG/PNG/PDF writers and the outline import; wrapped, names whiteboard.js at run time only.

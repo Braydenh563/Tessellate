@@ -93,7 +93,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-14 L286 (D24): textedit and ctxmenu carved out of whiteboard.js and wrapped whole. Measured 7,262.
 #: 2026-11-14 L286 (D24): place, stacking and bar carved out of whiteboard.js and wrapped whole. Measured 7,234.
 #: 2026-11-14 L286 (D24): map strip, waypoints and marks carved out of whiteboard-map.js and wrapped whole. Measured 7,203.
-GLOBAL_NAMES_CAP = 7203
+#: 2026-11-14 L286 (D24): map edges, notes and look carved out of whiteboard-map.js and wrapped whole. Measured 7,180 (WB_MAP_FONTS is read at load by whiteboard-sketch-text.js).
+GLOBAL_NAMES_CAP = 7180
 
 
 @functools.lru_cache(maxsize=None)
@@ -156,7 +157,7 @@ def _named_in(code: dict[str, str]) -> dict[str, set[str]]:
     for file, text in code.items():
         for m in _TOKEN.finditer(text):
             start = m.start()
-            if start and text[start - 1] == "." and text[max(0, start - 7) : start] != "window.":
+            if start and text[start - 1] == "." and text[max(0, start - 7) : start] != "window." and text[max(0, start - 3) : start] != "...":  #: a spread (`...NAME`) names the identifier; a member (`x.NAME`) does not
                 continue
             named[m.group()].add(file)
     return named

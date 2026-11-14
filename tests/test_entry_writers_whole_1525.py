@@ -30,7 +30,7 @@ _NEW = "a new note from text typed, heard, read or answered here, never from a r
 ALLOWED = {
     #: A map's note node (wbMapOpenNote.save): `before` and the box were filled by wbMapOpenNote.load's whole
     #: `/entries/{id}` read, and the box stays read-only until that read lands, so `after` is the whole note edited.
-    "whiteboard-map.js:<top>": "wbMapOpenNote.save writes the box wbMapOpenNote.load filled from the whole note, read-only until it lands",
+    "whiteboard-map-notes.js:<top>": "wbMapOpenNote.save writes the box wbMapOpenNote.load filled from the whole note, read-only until it lands",
     #: The writers' own plumbing: what they store is checked at every caller.
     "status.js:pushEntryPutUndo": "the undo store itself replays the bodies its callers gave it",
     "undo-kit.js:putEach": "pushEntriesPutUndo replays the bodies its callers gave it",
