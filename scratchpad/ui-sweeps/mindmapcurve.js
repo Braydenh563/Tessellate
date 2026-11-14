@@ -1,5 +1,5 @@
 // MINDMAP_PLAN.md §12.1 item 5's third: **the control points on a curve drag
-// to reshape it**, which the plan left open because a tree edge is derived
+// to reshape it**, which the plan held back because a tree edge is derived
 // from `parent_id` and has no row of its own to store a control point on.
 //
 // What is worth measuring here is not that a dot appeared. It is that the dot

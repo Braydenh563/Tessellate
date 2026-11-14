@@ -1,6 +1,6 @@
 // Every way a note is made, measured end to end (INBOX 434): keystrokes or
 // clicks from anywhere to saved, ms from the save to the note in the list
-// (`allEntries`), ms to filed with no model (the deferred lexical filer), and
+// (`allEntries`), ms to filed with no model (the postponed lexical filer), and
 // what happens when the server is gone mid-save (the text kept? a retry?).
 // Prints one line per path. Read-only apart from the notes it makes.
 //

@@ -49,7 +49,7 @@ STYLE = os.environ.get("FAKE_STYLE") or "plain"
 #: it echoes note sentences back in a row, which proves the citations and
 #: reads like nothing a model would write. With this set, a request carrying
 #: the app's notes context ("My notes:") is answered with the file's text
-#: instead, and the follow-up prompt with the lines of `FAKE_FOLLOWUPS_FILE`.
+#: instead, and the follow-on question prompt with the lines of `FAKE_FOLLOWUPS_FILE`.
 #: The answer still has to earn its citations: grounding scores it against
 #: the retrieved notes like any other answer, so it is written in their words.
 ANSWER_FILE = os.environ.get("FAKE_ANSWER_FILE") or ""

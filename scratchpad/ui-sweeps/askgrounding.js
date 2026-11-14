@@ -59,7 +59,7 @@ const NOTES = [
     window.__ground = [];
     // Who rebuilds the answer element after the markers are in it. A
     // MutationObserver says *when* they vanished, never *who*, and the whole
-    // question here is which later pass throws them away.
+    // question here is which second pass throws them away.
     window.__rebuilds = [];
     const rm = window.renderMarkdown;
     window.renderMarkdown = function (el, text) {

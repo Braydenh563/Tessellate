@@ -10,7 +10,7 @@
 //
 // Deliberately not a claim about latency. Chromium dispatches coalesced input
 // at the start of a frame and runs requestAnimationFrame later in that same
-// frame, so for input on that path the deferred write was already painting in
+// frame, so for input on that path the delayed write was already painting in
 // the right frame. What is asserted here is only what can be asserted here.
 //
 //   BASE=http://127.0.0.1:8803 SCRATCH=/tmp/mm-map9 \

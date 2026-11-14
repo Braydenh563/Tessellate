@@ -82,7 +82,7 @@ async function pressAll(page, route, out) {
     let clicked = true;
     let why = "";
     await target.click({ timeout: 3000 }).catch(async () => {
-      // Something left open by the last press: start the surface again.
+      // Something kept open by the last press: start the surface again.
       await go();
       handle = (await find()).asElement();
       await (handle ? handle.click({ timeout: 3000 }) : Promise.reject(new Error("gone after reload"))).catch((e) => { clicked = false; why = String(e.message).split("\n").slice(0, 3).join(" ").slice(0, 200); });

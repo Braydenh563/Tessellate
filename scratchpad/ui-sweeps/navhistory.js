@@ -18,7 +18,7 @@ const ok = (n, c, d) => {
 
 (async () => {
   const { browser, page } = await boot();
-  //: Give every deferred initialiser its chance to run. The fault is a boot
+  //: Give every postponed initialiser its chance to run. The fault is a boot
   //: step, so a probe that reads too early would miss it.
   await page.waitForTimeout(3000);
 

@@ -134,7 +134,7 @@ const CONTENT = [
   console.log("fix from the panel -> " + JSON.stringify(fixed));
   if (!fixed.changed) fails.push("pressing a candidate in the panel changed nothing");
 
-  // The floating menu still belongs to the text. A row is left open as well, so
+  // The floating menu still belongs to the text. A row is kept open as well, so
   // the contrast pass below sees both row states and the menu at once.
   const fromText = await page.evaluate(async () => {
     const rows = [...document.querySelectorAll("#doc-prose-panel .doc-prose-jump")];

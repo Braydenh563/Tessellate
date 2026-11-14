@@ -1,4 +1,4 @@
-// WCAG 2.2 pass over the surfaces this PR changed (INBOX 904 follow-up): per
+// WCAG 2.2 pass over the surfaces this PR changed (INBOX 904 follow-on): per
 // surface, every visible control's accessible name, its target size against the
 // floor (24 CSS px on a pointer, 44 on a coarse one), whether it is reachable
 // by Tab, text contrast, and for each dialog or menu: focus moves in, Tab stays

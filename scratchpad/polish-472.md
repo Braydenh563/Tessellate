@@ -4,8 +4,8 @@ Base f261111. Server on :8855, data /tmp/mm-a855, seeded notebook (13 notes, 1 b
 
 ## Method
 
-- grep of `frontend/index.html` and `frontend/js/*.js` for TODO, coming soon, not implemented, lorem, foo, demo, beta, placeholder emails and URLs, console.log/debug/info, "!" and em-dash escapes in strings, and every place a failed response becomes a message.
-- Playwright walk (`lib.js` boot): every tab (dashboard, notes with its four sub-tabs, library with all seven sub-tabs, chat, graph, timeline, reminders, documents, whiteboard), the welcome overlay, and every Settings section (21). For each surface the visible text, `title`, `aria-label`, `placeholder` and input values were scanned for `undefined|null|NaN|[object|ISO timestamp|TODO|coming soon|lorem|Oops|!|em-dash|HTTP nnn|JSON|API|endpoint|localhost|demo|beta`, then a second pass for `Invalid Date`, bad pluralisation (`1 notes`), `None/True/False`, `${`, `{{`, doubled words. Browser console was captured for log/info/warning.
+- grep of `frontend/index.html` and `frontend/js/*.js` for to-do markers, coming soon, not implemented, lorem, foo, demo, beta, placeholder emails and URLs, console.log/debug/info, "!" and em-dash escapes in strings, and every place a failed response becomes a message.
+- Playwright walk (`lib.js` boot): every tab (dashboard, notes with its four sub-tabs, library with all seven sub-tabs, chat, graph, timeline, reminders, documents, whiteboard), the welcome overlay, and every Settings section (21). For each surface the visible text, `title`, `aria-label`, `placeholder` and input values were scanned for `undefined|null|NaN|[object|ISO timestamp|to-do markers|coming soon|lorem|Oops|!|em-dash|HTTP nnn|JSON|API|endpoint|localhost|demo|beta`, then a second pass for `Invalid Date`, bad pluralisation (`1 notes`), `None/True/False`, `${`, `{{`, doubled words. Browser console was captured for log/info/warning.
 - A browser probe of `apiJson` against real 422, 404, 405 and a refused connection, before and after.
 
 ## Fixed (3 commits)
@@ -28,7 +28,7 @@ Base f261111. Server on :8855, data /tmp/mm-a855, seeded notebook (13 notes, 1 b
 - `console.log/debug/info`: none in app code (only inside the vendored harper and codemirror bundles, and a code-snippet string in `documents-code.js:529` that the editor offers as a completion).
 - Browser console during the walk: no log, info or warning lines.
 - `console.warn/error` that remain (tour.js, whiteboard.js, documents.js, settings-panes.js, settings-wiring.js, attachment-actions.js) are deliberate diagnostics that `recordBrowserLog` mirrors into Settings > Logs.
-- TODO / coming soon / not implemented / foo / lorem / demo / beta: none in user copy. `lorem` is a typed expansion in the document editor (a feature), "To do" is a note kind, "beta" is the Greek letter picker.
+- To-do markers / coming soon / not implemented / foo / lorem / demo / beta: none in user copy. `lorem` is a typed expansion in the document editor (a feature), "To do" is a note kind, "beta" is the Greek letter picker.
 - `<title>`, manifest name and description are product copy.
 
 ## Open (not fixed)

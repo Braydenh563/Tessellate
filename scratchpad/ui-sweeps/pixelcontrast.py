@@ -1,6 +1,6 @@
 """Contrast from the pixels a screenshot actually holds.
 
-Why this is not done in the page, where every other sweep does it: on a
+Why this is left out of the page, where every other sweep does it: on a
 picture card every surface up the tree is translucent over the page's own
 background art, so a composite walked up the DOM is a guess, and both ways of
 guessing are wrong in a way that costs a session. `contrast.js` gives up at
