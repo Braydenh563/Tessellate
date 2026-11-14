@@ -39,6 +39,9 @@ const FRAMES = [
   { name: "hop", pose: "stand", classes: ["nmb-act-hop"], at: 0.3 },
   //: The rig's own hanging pose: both arms raised to an edge above it.
   { name: "hang", pose: "hang", classes: [] },
+  //: A throw's mid-spin: the startled pose turned about its middle (the rig has
+  //: no tumble of its own, so this one is a transform of an existing pose).
+  { name: "tumble", pose: "stand", classes: ["nmb-act-startle"], at: 0.25, spin: 115 },
   //: INBOX 1710 (W31 E2), the app's three acts the desk had no picture of: the lower wisp let down over an
   //: edge and swung (`act.dangle`, `kick0` and `kick1` for `act.kick_legs`: the hem thrown forward and back,
   //: the app's `atl-lower-flick`), and the hang with one hand let go (`act.hang_one_hand`, `nmb-act-onehand`:
@@ -160,7 +163,10 @@ async function steadyShot(page, file, clip) {
       const realSet = CSSStyleDeclaration.prototype.setProperty;
       window.__setProp = (el, k, v, pr) => realSet.call(el.style, k, v, pr);
       Object.defineProperty(clone.style, "transform", { get: () => window.__pin, set: () => {}, configurable: true });
-      clone.style.setProperty = function (k, v, pr) { if (k !== "transform") realSet.call(this, k, v, pr); };
+      //: And its size: the page shrinks it to fit a tight perch (`spot.fit`, `--nmb-scale` 0.75), so a capture came out at
+      //: 0.75 or 1 by where the page last perched it (masculine stand 139 to 192 px tall over four runs, L-ui-modernisation-57).
+      realSet.call(clone.style, "--nmb-scale", "1", "important");
+      clone.style.setProperty = function (k, v, pr) { if (k !== "transform" && k !== "--nmb-scale") realSet.call(this, k, v, pr); };
       clone.style.removeProperty = function (k) { return k === "transform" ? "" : CSSStyleDeclaration.prototype.removeProperty.call(this, k); };
       //: The companion in the app may be tucked behind a bar (`data-legs="peek"`
       //: clips it): keep only the gait, and set the pose per frame.
@@ -171,6 +177,20 @@ async function steadyShot(page, file, clip) {
       window.__want = "stand";
       //: And its face: a page expression (hearts, a blush) came and went over four idle frames in a row.
       if (typeof setAtlasMood === "function") { setAtlasMood("calm", 0); window.setAtlasMood = () => {}; }
+      //: The lower body, wisps, tail, hair and nebula take their pose's own arrangement, the same every run (L-ui-modernisation-57,
+      //: UI_MODERNISATION_PLAN.md decision 7): the rig runs its still path (reduced motion's: the state's first authored row, no
+      //: drift path). Live it picked a variant at random per capture and froze its drift at any moment (3,900 to 7,800 px apart
+      //: below the waist between two captures of one frame). The variation inside a pose is the desk's own (`behaviour.Flow`).
+      if (typeof atlasRigLower === "function") {
+        const real = atlasRigLower;
+        window.atlasRigLower = Object.assign((rig, now, live, buddy) => real(rig, now, false, buddy), real);
+        const rig = [...clone.querySelectorAll("*")].map((el) => el.atlasRig).find((r) => r && r.lower);
+        if (rig) { rig.lower.state = ""; rig.lower.last = {}; }
+        //: The streams' own redraw (`atlasRigLower.morph`, INBOX 1709) bends every path from a clock that starts at random: held at
+        //: the drawn shapes, or two captures of one frame differ by 1,800 to 4,400 px below the waist. The desk bends them itself.
+        const m = rig && rig.lower.morph;
+        if (m) { clearTimeout(m.timer); m.timer = 0; if (typeof atlasTailCalm === "function" && atlasTailCalm.rest) atlasTailCalm.rest.wake.delete(m.wake); real.morph.rest(rig.lower); }
+      }
       new MutationObserver(() => {
         for (const n of ["data-perch", "data-legs", "data-side"]) if (clone.hasAttribute(n) && !(n === "data-side" && window.__keepSide)) clone.removeAttribute(n);
         if (clone.dataset.pose !== window.__want) clone.dataset.pose = window.__want;

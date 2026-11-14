@@ -711,12 +711,17 @@ FLOW_RISE = 1.75
 FLOW_EDGE = 1.0
 FLOW_MID = 0.35
 #: Follow-through: each strand is a spring with its own stiffness, thrown by the body's acceleration and leaning
-#: back with its speed (a stream trails what moves it), `FLOW_MAX` px at most.
+#: back with its speed (a stream trails what moves it), `FLOW_MAX` px at most a spring. What it adds to the view is capped
+#: by angle (L-ui-modernisation-103: the 6 px clamp bent the streams to 7.2 to 7.7 degrees): a strand's steepest chord off
+#: the waist, the larger of its tip and its first lead (`4 * mid - tip`, the warp's quadratic), stays under `FLOW_LEAN`
+#: degrees at `FLOW_LEAN_DEG` degrees a px (the stand frame, feminine worst: measured at most 0.533).
 FLOW_STIFF = (34.0, 62.0)
 FLOW_DAMP = 0.4
 FLOW_KICK = 0.18
 FLOW_STREAM = 0.012
 FLOW_MAX = 6.0
+FLOW_LEAN = 4.0
+FLOW_LEAN_DEG = 0.54
 #: Reduced motion: a slow drift only, this share of the sway at this multiple of the periods.
 FLOW_CALM_AMP = 0.5
 FLOW_CALM_SLOW = 2.6
@@ -1023,6 +1028,18 @@ class Flow:
             return 0.0
         return FLOW_BREATH * reach * (FLOW_CALM_AMP if calm else 1.0) * wisps.lift(breath, FLOW_BREATH_LAG * i / (FLOW_BANDS - 1))
 
+    @staticmethod
+    def _lean_share(tip: float, lead: float, fx: float) -> float:
+        """The share of the follow-through `fx` a strand takes (0..1) so its steepest chord (`tip`, `lead`; `fx` moves
+        both by itself) stays under `FLOW_LEAN` degrees, or under the pose's own when that is larger: a fast move
+        still lags, never bending the streams past the posed worst."""
+        cap = max(FLOW_LEAN / FLOW_LEAN_DEG, abs(tip), abs(lead))
+        share = 1.0
+        for g in (tip, lead):
+            if abs(g + fx) > cap:
+                share = min(share, (math.copysign(cap, fx) - g) / fx)
+        return max(0.0, share)
+
     def settled(self) -> bool:
         return all(abs(p[0]) < 0.3 and abs(p[1]) < 0.3 and abs(v[0]) < 2.0 and abs(v[1]) < 2.0 for p, v in zip(self.pos, self.vel))
 
@@ -1040,8 +1057,10 @@ class Flow:
             fx, fy = self.pos[i]
             ax, ay = self.arrangement(i, t) if frame else (0.0, 0.0)
             ax, ay = ax * reach * FLOW_ARR_TIP * (FLOW_CALM_AMP if calm else 1.0) + (self.k_tip if frame else 0.0), ay * reach * FLOW_ARR_RISE * (FLOW_CALM_AMP if calm else 1.0) + (self.k_rise if frame else 0.0)
-            tip = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) + ax + fx))
-            mid = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t - 0.9, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) * (1 - FLOW_MID) + ax * 0.6 + fx * 0.5))
+            tip = self.sway(i, t, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) + ax
+            mid = self.sway(i, t - 0.9, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) * (1 - FLOW_MID) + ax * 0.6
+            fx *= self._lean_share(tip, 4 * mid - tip, fx)
+            tip, mid = tip + fx, mid + fx * 0.5
             drop = self.rise(i, t, calm) * reach + ay + fy
             drop += self.breath_drop(i, breath if frame else None, reach, calm)
             w = math.tau * t / (self.glint_periods[i] * (FLOW_CALM_SLOW if calm else 1.0)) + i * 1.3

@@ -213,6 +213,23 @@ survive its archiving; the numbering is that file's.
    rather than a same-session, same-commit add. The second pass is built:
    countjs 1+1 to 0 (HISTORY.md, briefs-1011, 2026-10-11).
 
+7. **The desk frames bake one arrangement per pose, the app's first
+   authored row (L-ui-modernisation-57, judge rung, 2026-11-14):** each
+   frame carries its pose's lower body, wisps, tail box, hair and nebula
+   as the app draws them under reduced motion (`atlasRigLower` not live:
+   row 0 of the state, no drift path), the streams' redraw held at its
+   drawn shapes and `--nmb-scale` held at 1, so two runs of a frame agree
+   on all 51 lower, wisp, nebula and hair elements. No frame per variant:
+   the asset budget has about 39 KB left against 11 to 13 KB a frame, and
+   six rows a pose would need 300 or more frames. No lower-layer variant
+   files: the engine (outside this row) would have to pick and cross-fade
+   them, and per-frame streams blinked (INBOX 1670). The variation inside
+   a pose stays live on `behaviour.Flow` (5 to 9 s holds eased over 2.4 s,
+   FLOW_POSE and FLOW_LOWER, within 4 degrees of the torso, row 103).
+   Measured numbers are on the row; shipping the frames is
+   L-ui-modernisation-152 (a full render fails 39 tests). The frames are per
+   look, not themed: one capture per look serves both themes.
+
 ## Phases 0 to 6: built
 
 Moved whole to HISTORY.md ("Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: UI_MODERNISATION_PLAN)"): a plan holds open work only.
