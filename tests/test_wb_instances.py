@@ -688,3 +688,43 @@ process.exit(0);
     assert node_put["body"]["board_id"] == 1, out["puts"]
     #: The failed batch belonged to the page board; the embed now live is not reloaded in its place.
     assert out["batchOk"] is False and out["reloads"] == [], out["reloads"]
+
+
+def test_an_embed_draw_leaves_the_page_board_chrome_alone():
+    """L-whiteboard-58: the board's one render also writes page-wide chrome (the
+    empty hint and cue, the board picker's count, the navigator, the outline).
+    An embed's draw writes none of it, and so no longer redraws the page board
+    after itself to put that chrome back."""
+    wb = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    marks = (JS / "whiteboard-map-marks.js").read_text(encoding="utf-8")
+    now = wb[wb.index("function renderWhiteboardNow() {") :]
+    now = now[: now.index("\n}\n") + 3]
+    after = marks[marks.index("  function wbMapAfterRender() {") :]
+    after = after[: after.index("\n  }\n") + 5]
+    out = _run(now + after + """
+const calls = [];
+for (const name of ["renderWhiteboard", "wbUpdateSelectionBar", "wbApplySearchHighlight", "wbRenderNavigator", "wbSyncBoardCount", "wbOutlineSync", "wbMapPaintMarkerFilter"]) {
+  globalThis[name] = () => calls.push([name, window.currentBoardId]);
+}
+const wbMarkerUi = { filters: new Set(["x"]) }, wbMapDim = { on: false };
+const inst = I.mount(fakeEl("div", "box"), 5);
+renderWhiteboardNow();
+out.page = calls.splice(0);
+I.activate(inst);
+renderWhiteboardNow();
+out.embed = calls.splice(0);
+""")
+    page_names = [c[0] for c in out["page"]]
+    embed_names = [c[0] for c in out["embed"]]
+    assert {"wbRenderNavigator", "wbSyncBoardCount", "wbOutlineSync"} <= set(page_names), page_names
+    #: The embed's own board is drawn, highlighted and filtered; the page's panels are not touched.
+    assert embed_names == ["renderWhiteboard", "wbApplySearchHighlight", "wbMapPaintMarkerFilter"], embed_names
+    assert all(c[1] == 5 for c in out["embed"])
+    #: The empty hint and cue are the page board's: an embed's render leaves them be.
+    render = wb[wb.index("function renderWhiteboard() {") :]
+    hint = render[: render.index('document.getElementById("wb-empty-cue")')]
+    assert "if (!wbInstances.active.container) {" in hint[hint.rindex("const wbHintHidden") :]
+    #: And draw() puts nothing back, so it schedules no page render after itself.
+    draw = SRC[SRC.index("  function draw(inst) {") :]
+    draw = draw[: draw.index("\n  }\n")]
+    assert "wbScheduleRender" not in draw

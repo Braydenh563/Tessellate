@@ -24,6 +24,7 @@ def _run(tool: str, selected: dict | None, focus_id: str | None = "whiteboard-co
         f"const focus = {json.dumps(focus_id)} === null ? {{ id: 'wb-undo' }} : {{ id: {json.dumps(focus_id)} }};"
         "const words = {};"
         "global.document = { body: {}, activeElement: focus, querySelector: () => words, createRange: () => ({ selectNodeContents() {}, collapse() {} }) };"
+        "const wbInstances = { query: (sel) => document.querySelector(sel), layer: () => null };"
         "const wbCreateTextBox = (x, y) => calls.push(['text', x, y]);"
         "const wbCreateSticky = (x, y) => calls.push(['sticky', x, y]);"
         "const wbCreateFrame = (x, y) => calls.push(['frame', x, y]);"

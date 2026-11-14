@@ -12511,8 +12511,12 @@ function renderWhiteboardNow() {
   // with them and the navigator's item rectangles are stale. Both re-apply
   // from state rather than being re-derived by their own callers.
   wbApplySearchHighlight();
-  wbRenderNavigator();
-  wbSyncBoardCount();
+  //: The navigator and the picker's count are the page board's chrome: an
+  //: embed's draw (wbInstances' `draw`) leaves them be (L-whiteboard-58).
+  if (!wbInstances.active.container) {
+    wbRenderNavigator();
+    wbSyncBoardCount();
+  }
   wbMapAfterRender();
 }
 
@@ -12641,9 +12645,12 @@ function renderWhiteboard() {
   // own help, and on an emptied map it was pens, shapes and the eraser
   // sitting over a surface none of them apply to.
   const wbHintHidden = !wbHintForcedOpen && (wbIsMap() || wbBoardHolds > 0 || prefs.get("wbEmptyHintDismissed", null) === "1");
-  document.getElementById("wb-empty-hint")?.classList.toggle("hidden", wbHintHidden);
-  //: A card turned off still leaves one line on an empty board (audit 1028 B34).
-  document.getElementById("wb-empty-cue")?.classList.toggle("hidden", !(wbHintHidden && !wbIsMap() && wbBoardHolds === 0));
+  //: Both are the page board's: an embedded board's render leaves them be (L-whiteboard-58).
+  if (!wbInstances.active.container) {
+    document.getElementById("wb-empty-hint")?.classList.toggle("hidden", wbHintHidden);
+    //: A card turned off still leaves one line on an empty board (audit 1028 B34).
+    document.getElementById("wb-empty-cue")?.classList.toggle("hidden", !(wbHintHidden && !wbIsMap() && wbBoardHolds === 0));
+  }
 
   // Render Sketches (SVG)
   const svgGroup = d3.select(wbInstances.layer("wb-zoom-group"));

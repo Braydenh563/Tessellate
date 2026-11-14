@@ -236,9 +236,9 @@
     }
   }
 
-  //: Draws `inst` with its globals live, then gives them back. The board's one
-  //: render also writes page-wide chrome (the empty hint, the count), so the page
-  //: board is drawn again on the next frame once it has been opened.
+  //: Draws `inst` with its globals live, then gives them back. The render's
+  //: page-wide chrome (the empty hint, the count, the navigator, the outline) is
+  //: written for the page board only, so the page needs no redraw after it.
   function draw(inst) {
     const was = active;
     activate(inst);
@@ -247,7 +247,6 @@
     } finally {
       activate(was);
     }
-    if (was !== inst && wbInitialized) wbScheduleRender();
   }
 
   //: **The mount API** (L-documents-104): a board inside `host`, an empty element
