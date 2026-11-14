@@ -1676,6 +1676,7 @@ const LAZY_MODULES = {
     "/js/documents-block-ids.js",
     "/js/documents-links-panels.js",
     "/js/documents-save.js",
+    "/js/documents-scroll-status.js",
     "/js/documents.js",
     "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
     "/js/documents-tabs.js", //: After documents.js: the open code files as a strip; documents.js calls it only once a document opens.
