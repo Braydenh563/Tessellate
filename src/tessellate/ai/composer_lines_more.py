@@ -34,7 +34,7 @@ MORE: dict[str, tuple[tuple[str, str, str], ...]] = {
         ("The newest page in the notebook is {last}.", "p", ""), ("Fresh ink: {last}.", "p", ""),
     ),
     "w_streak": (
-        ("You have a {streak} writing streak going.", "w", ""), ("Notes {streak} in a row now.", "w", ""), ("Notes on {streak} running, keep it up.", "w", ""), ("{streak} in a row so far.", "w", ""),
+        ("Your writing streak is at {streak} running.", "w", ""), ("Notes on {streak} running now.", "w", ""), ("Notes on {streak} running, keep it up.", "w", ""), ("{streak} running so far.", "w", ""),
         ("Run: {streak}.", "t", ""), ("{streak} and counting.", "t", ""), ("Written {streak} running.", "t", ""),
         ("You have written notes on {streak} in succession.", "f", ""), ("Your streak currently stands at {streak}.", "f", ""), ("A streak of {streak} is on record.", "f", ""),
         ("{streak} without a gap, the notebook is impressed.", "p", ""), ("The pen has not rested for {streak}.", "p", ""),
@@ -145,8 +145,8 @@ MORE: dict[str, tuple[tuple[str, str, str], ...]] = {
     ),
     "act_none": (
         ("I cannot do that without a model. I can search, count, list and set reminders.", "w", ""), ("That needs a model. What I can do offline is search, count, list and remind.", "w", ""),
-        ("A model is needed for that. Offline: search, count, list, remind.", "t", ""), ("Not offline. I can search, count, list and remind.", "t", ""), ("No. Search, count, list, remind only.", "t", ""),
-        ("That request requires a model. Offline I can search, count, list and set reminders.", "f", ""), ("This is beyond my offline abilities, which are searching, counting, listing and reminders.", "f", ""),
+        ("A model is needed for that. Offline: search, count, list, remind.", "t", ""), ("Not with no model. I can search, count, list and remind.", "t", ""), ("No model, so search, count, list, remind only.", "t", ""),
+        ("That request requires a model. Offline I can search, count, list and set reminders.", "f", ""), ("This is beyond what I can do with no model, which is searching, counting, listing and reminders.", "f", ""),
         ("Beyond me without a model. Searching, counting, listing and reminders are not.", "p", ""), ("That takes a model, and I am flying solo. Search, count, list and remind, though.", "p", ""),
         ("Not possible with no model; searching, counting, listing and reminders are.", "t", ""), ("I would need a model for that, so I will stick to searching, counting, listing and reminders.", "f", ""),
         ("I cannot do that here with no model. Searching, counting, listing and reminders I can.", "w", ""), ("A model would be needed. Without one I can search, count, list and remind.", "w", ""),

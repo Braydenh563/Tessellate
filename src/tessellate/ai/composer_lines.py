@@ -457,7 +457,7 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("That is not something I can do from here with no model. I can search, count, list and set reminders.", "w"),
         c("I cannot do that without a model, but I can search, count, list and set reminders.", "w"),
         c("Not without a model. I can search, count, list and set reminders.", "t"),
-        c("Outside what I can do offline. Search, count, list, remind: yes.", "t"),
+        c("Outside what I can do with no model. Search, count, list, remind: yes.", "t"),
         c("That request needs a model. Without one I can search, count, list and set reminders.", "f"),
         c("That one needs a language model. Offline, I can search, count, list and set reminders.", "f"),
         c("That one is beyond me without a model. Search, count, list and remind, though, I can do.", "p"),
