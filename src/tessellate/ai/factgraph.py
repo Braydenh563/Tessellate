@@ -318,8 +318,15 @@ def _mode(sentence: str, local_start: int, quoted: list) -> str:
     return "asserted"
 
 
+#: A negated factive verb: "did not know Harbor works offline" still says Harbor works offline.
+_FACTIVE_NOT = lazy_compile(
+    r"\b(?:did|do|does)(?:\s+not|n't)\s+(?:know|realis|realiz|notice|remember)\w*\s+(?:that\s+)?(\S+\s+\S+.*)$", re.I)
+
+
 def sentence_mode(sentence: str) -> str:
     """The assertion mode of a whole sentence, for a reader that answers yes or no from it."""
+    if factive := _FACTIVE_NOT.search(sentence):
+        return sentence_mode(factive.group(1))
     if any(w.strip(",.") in _NEGATORS for w in sentence.lower().split()):
         return "negated"
     return "conditional" if _IF.search(sentence) else "hypothetical" if _HEDGES.search(sentence) else "asserted"

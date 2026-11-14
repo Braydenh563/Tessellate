@@ -1205,6 +1205,8 @@ def run_help() -> list[dict]:
         topic, number = row["sentence_id"].split("#")
         expected = _read_flat(help_sentences(bodies[row["topic"]])[int(number)])[:48]
         answer = _read_flat(help_chat.offline_answer(row["question"]).get("content", ""))
+        #: A switch topic says its state once, first (audit 1030 A8); the first step follows it.
+        answer = re.sub(r"^[^.]{1,40} is (on|off) now\. ", "", answer)
         #: A topic with numbered steps opens on step 1 (ledger L108), the first step said as a step.
         first = answer.startswith(expected) or bool(row.get("steps")) and answer.startswith(_read_flat(row["steps"]))
         out.append({**row, "first": first, "controls_exist": all(c in ids for c in row["controls"]), "opening": answer[:80]})

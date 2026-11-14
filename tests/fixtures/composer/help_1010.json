@@ -73,8 +73,8 @@
    "id": "help-08",
    "question": "how do I turn on web search",
    "topic": "websearch",
-   "sentence_id": "websearch#0",
-   "cue": "Web search is opt-in",
+   "sentence_id": "websearch#1",
+   "cue": "Turn it on in Settings",
    "controls": [
     "web-search-toggle"
    ]

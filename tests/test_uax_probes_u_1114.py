@@ -221,6 +221,10 @@ def test_u14_factgraph_modes_are_read_by_the_composer():
     assert factgraph.sentence_mode("If it rains I would go.") == "conditional"
     assert factgraph.sentence_mode("I might go.") == "hypothetical"
     assert factgraph.sentence_mode("I went to the gym.") == "asserted"
+    #: A factive verb ("know", "realise") presupposes its clause: the not is on the knowing, so the
+    #: clause stands (test_realise's "Does Harbor work offline?" was answered "Not that I can see").
+    assert factgraph.sentence_mode("Beta testers did not know Harbor works offline.") == "asserted"
+    assert factgraph.sentence_mode("I didn't realise that the shop does not open on Sunday.") == "negated"
 
 
 # --- U11 and A7: comparisons over time and the busiest period -----------------------------------------
