@@ -846,7 +846,7 @@ in `docks.js`).
 
 **State 2026-09-24:** the rows left:
 
-- F1 built 2026-10-05: `prefs.js`, every read through it but the three scripts that run before it (HISTORY.md, "Moved from the plans, 2026-10-05 (F1, F5, F12)"). The writes (`localStorage.setItem`) through `prefs.set`: LEDGER L-world-class-78.
+- F1 built 2026-10-05: `prefs.js`, every read through it but the three scripts that run before it (HISTORY.md, "Moved from the plans, 2026-10-05 (F1, F5, F12)"). The writes through `prefs.set` too, bar the origin-bridge page (test_prefs_writes_ratchet.py).
 - F2 (b) every list takes `limit` (`tests/test_list_limits.py`); cursors on
   every paged list built 2026-10-05 (row 16), and the notes list follows
   them. The other lists' renderers paging on scroll by cursor: LEDGER L-world-class-68.

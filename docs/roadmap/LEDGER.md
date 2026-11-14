@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 143 | 29 | 3 | 10 | 172 |
+| world-class | 0 | 142 | 29 | 3 | 10 | 171 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 405 | 534 | 100 | 5 | 121 | 1039 |
+| all | 405 | 533 | 100 | 5 | 121 | 1038 |
 
 ## graph
 
@@ -557,7 +557,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-75** `world-class` open, S: Drive Back with a sheet over Settings at 390 (and on a real phone when one is at hand). From WORLD_CLASS_PLAN.md:802. Evidence: WORLD_CLASS_PLAN.md:802 'not driven: Back with a sheet over Settings on a phone'
 - [ ] **L-world-class-76** `world-class` open, S: Decide app-wide undo across a reload (recommendation: keep it session-only and say so in Help). From WORLD_CLASS_PLAN.md:802. Evidence: undo-store.js persists boards and documents only; 'by design' at :802 has no owner decision
 - [ ] **L-world-class-77** `world-class` open, S: Re-measure A8's other three items from the 2026-09-13 audit. From WORLD_CLASS_PLAN.md:764. Evidence: WORLD_CLASS_PLAN.md:764 'the other three A8 items were not re-measured'; HISTORY.md:6447
-- [ ] **L-world-class-78** `world-class` open, S: Route the last localStorage.setItem writes through prefs.set (F1). From WORLD_CLASS_PLAN.md:851. Evidence: 3 localStorage.setItem calls left in 2 frontend/js files (grep)
 - [ ] **L-world-class-79** `world-class` open, M: Move the model downloads, the scheduler, SearXNG and update threads onto the pool (F7). From WORLD_CLASS_PLAN.md:862. Evidence: tests/test_flaw_class_lints.py ratchet; 26 thread sites at :3775
 - [ ] **L-world-class-80** `world-class` open, S: One renderer in the Files card reading GET /files/readings (F10). From WORLD_CLASS_PLAN.md:864. Evidence: GET /files/readings exists (F10 view); the Files card does not read it (:864)
 - [ ] **L-world-class-81** `world-class` open, L: store.js: the next slices (reminders, the current note), each surface subscribing in place of its own copy (F12). From WORLD_CLASS_PLAN.md:866. Evidence: store.js has one slice, notes (:866)
