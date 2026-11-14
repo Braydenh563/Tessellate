@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 122 | 29 | 3 | 10 | 151 |
+| world-class | 0 | 120 | 29 | 3 | 10 | 149 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 511 | 100 | 5 | 121 | 983 |
+| all | 372 | 509 | 100 | 5 | 121 | 981 |
 
 ## graph
 
@@ -545,7 +545,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-85** `world-class` open, S: Trace dismissed link pairs and accepted neighbourhoods into the learning loop. From WORLD_CLASS_PLAN.md:1020. Evidence: WORLD_CLASS_PLAN.md:1020 'dismissed link pairs and accepted neighbourhoods were not traced'
 - [ ] **L-world-class-86** `world-class` open, S: Measure the margin reader's typing latency in Chromium. From WORLD_CLASS_PLAN.md:1124. Evidence: WORLD_CLASS_PLAN.md:1124 and :1847 'typing latency measured in Chromium' left
 - [ ] **L-world-class-87** `world-class` open, M: Filing eval: accuracy up 10 points after 20 synthetic corrections (I7 gate). From WORLD_CLASS_PLAN.md:1228. Evidence: the plan cites L-world-class-28, which HISTORY.md:55711 holds as a different, closed row; needs a real model
-- [ ] **L-world-class-89** `world-class` open, S: Print and PDF of a document with its citations. From WORLD_CLASS_PLAN.md:1814. Evidence: WORLD_CLASS_PLAN.md:1814 'citations in it were not checked'
 - [ ] **L-world-class-90** `world-class` open, S: Measure first paint against the 300 ms line. From WORLD_CLASS_PLAN.md:1823. Evidence: WORLD_CLASS_PLAN.md:1823 'first paint under 300 ms ... not measured'
 - [ ] **L-world-class-91** `world-class` open, S: Time travel: a date slider for as-of answers (H8). From WORLD_CLASS_PLAN.md:1847. Evidence: WORLD_CLASS_PLAN.md:1847: a day picker is built, no slider
 - [ ] **L-world-class-95** `world-class` open, M: Laptop chrome: height-aware density, sub-tabs merged into the list toolbar, status bar folded under 680px (22.1.2). From WORLD_CLASS_PLAN.md:2245. Evidence: 36% of 1093x614 is chrome, 2.3 note cards shown (:2245)
@@ -554,7 +553,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-106** `world-class` open, L: Run the devibecode programme surface by surface (22.4's seven steps, its order). From WORLD_CLASS_PLAN.md:2296. Evidence: no surface's pass recorded in HISTORY (grep 'devibecode' 1 hit, the owner's words)
 - [ ] **L-world-class-107** `world-class` open, S: Connection pill x inset, and a sweep of every menu for width, padding and row alignment (403). From WORLD_CLASS_PLAN.md:2397. Evidence: WORLD_CLASS_PLAN.md:2397 names the pill x inset and the menu sweep
 - [ ] **L-world-class-108** `world-class` open, S: Verify 391's agent items: mind maps in Find anything, digest filler, activity panel alignment, image filter, a closed panel's finished answer. From WORLD_CLASS_PLAN.md:2415. Evidence: WORLD_CLASS_PLAN.md:2415 lists them as 'agents running', with no result recorded
-- [ ] **L-world-class-110** `world-class` open, S: Word export: a TOC field, a shaded callout box and real columns (423 b). From WORLD_CLASS_PLAN.md:2589. Evidence: no w:cols or w:shd in src/tessellate (grep: docview.py reads fldSimple on import only)
 - [ ] **L-world-class-111** `world-class` open, M: Background art: Constellation and Microbes under 2 ms loaded, no canvas garbage, pause on blur sooner, the dark mesh texture, 4x numbers re-run (425 o). From WORLD_CLASS_PLAN.md:2832. Evidence: WORLD_CLASS_PLAN.md:2832: just over the 2 ms budget, 0.3 to 1 MB/s canvas garbage; no @keyframes bg- left in frontend/css (that part done)
 - [ ] **L-world-class-113** `world-class` open, M: Dock audit 479 leftovers: Graph View into the gear, one New in Boards and maps, one zoom order, '?' on Library sub-tabs, one Add per Reminders card, the documents dock on the recipe. From WORLD_CLASS_PLAN.md:2939. Evidence: WORLD_CLASS_PLAN.md:2939 'found and not fixed'; scratchpad/dock-audit-479.md
 - [ ] **L-world-class-114** `world-class` open, M: Help accordion: name its thirteen details, move them to the recipe family, lint that every id has a Guide topic. From WORLD_CLASS_PLAN.md:2952. Evidence: no accordion-to-Guide lint in tests (grep 'accordion' hits only settings tests)
