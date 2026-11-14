@@ -142,6 +142,31 @@ function markSaidSentences(targets, sentences) {
 //: a rename, a move or a tag waits for them) or, once it ran (a reminder, a
 //: new note, a pin), what was done and Undo. Confirm and Undo both post the
 //: steps to `/chat/command/run`, which runs only the tools an act may use.
+const ACT_ITEMS_SHOWN = 5;
+
+//: The notes a bulk act names (X14): the first five, then "Show all N" for the rest; null when there are none.
+function actItemList(items) {
+  if (!items || !items.length) return null;
+  const list = document.createElement("ul");
+  list.className = "act-items";
+  items.forEach((title, at) => {
+    const row = document.createElement("li");
+    row.textContent = title;
+    if (at >= ACT_ITEMS_SHOWN) row.hidden = true;
+    list.appendChild(row);
+  });
+  if (items.length > ACT_ITEMS_SHOWN) {
+    const more = document.createElement("li");
+    const button = smallButton(`Show all ${items.length}`, "List every note this changes", () => {
+      for (const row of list.children) row.hidden = false;
+      more.remove();
+    });
+    more.appendChild(button);
+    list.appendChild(more);
+  }
+  return list;
+}
+
 function renderActCard(holder, event) {
   //: The theme is a preference of this page (`applyThemeChoice`), so the server's `set_theme` step only
   //: acknowledges it: the page applies it here, and the step that undoes it names the theme that was showing.
@@ -242,6 +267,7 @@ function renderActCard(holder, event) {
     notice.textContent = event.notice;
     const row = document.createElement("div");
     row.className = "row";
+    const itemList = actItemList(event.items);
     row.append(
       smallButton("Confirm", "Do this", () =>
         run(event.steps, (result) => {
@@ -258,8 +284,8 @@ function renderActCard(holder, event) {
     if (event.label_said) {
       card.setAttribute("role", "group");
       card.setAttribute("aria-label", event.label);
-      card.replaceChildren(notice, row);
-    } else line(`ph:warning ${event.label}`, notice, row);
+      card.replaceChildren(notice, ...(itemList ? [itemList] : []), row);
+    } else line(`ph:warning ${event.label}`, notice, ...(itemList ? [itemList] : []), row);
     if (event.state === "expired") {
       for (const button of row.querySelectorAll("button")) button.disabled = true;
       return void holder.appendChild(card);

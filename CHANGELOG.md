@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- - Chat: a bulk act's card lists the first five notes it changes with a Show all control; the cap stays 50 and a partial run ends with the Done line then what was left and why (L-chat-61).
 - Companion: remarks on real signals (CHAT_PLAN P1 to P5, P8 to P11): a reminder due within the hour or overdue, one back note a day, a checklist item unticked over 30 days, a new tension said once with both sentences, a dated plan in 7 days with no reminder plus a Set a reminder chip, a new note answering an open question; patterns need 3 mentions across 3 weeks; at most 3 a day, none within 20 s of a key press, a fact once a week; the dashboard line says this day every other draw; the no-model digest is captioned Your notes, no AI (L-chat-54, 55, 56, 57).
 - Ask: the chart a no-model answer makes (a window's counts, a graph ask) is drawn in the chart box above the answer, as Chat does (L-chat-60).
 - Ask: below 600px the composer stacks with a full-width Ask, the answer head wraps with the model badge on its own line (copy, read aloud and more no longer leave a 390px window: scroll width 497 to 358), and Matching records is one closed row (569px to 44px); with a note open, a question with no subject of its own ("what should I know", "anything I am forgetting") answers from that note, so three notes give three replies (INBOX 1843, L228).
