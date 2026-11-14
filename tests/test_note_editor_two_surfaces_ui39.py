@@ -1,4 +1,4 @@
-"""The note editor is two surfaces, the bar and the slash menu (L-ui-modernisation-39).
+"""Source text: which surface carries each action is a fact of the wiring, asserted in the markup and scripts; the in-app check is scratchpad/ui-sweeps/notesurface.js. The note editor is two surfaces, the bar and the slash menu (L-ui-modernisation-39).
 
 UI_MODERNISATION_PLAN 13.2, the Note editor row: "the editor's bar, the
 selection bar, the inline AI and the slash menu are four surfaces for one
