@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8510, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11077, test files 2892, tests 22777, plan headings 691, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8510, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11077, test files 2892, tests 22778, plan headings 691, app scripts 29, boot scripts 38, script files 305.
 
 ## Frontend functions (8510)
 
@@ -25821,7 +25821,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `FlightMixin` | src/tessellate/core/overlay/engine_flight.py:45 |
+| `FlightMixin` | src/tessellate/core/overlay/engine_flight.py:47 |
 
 ### src/tessellate/core/overlay/engine_frames.py (1)
 
@@ -28351,7 +28351,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22777)
+## Tests (22778)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30289,7 +30289,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_air_reads_1696a.py | 5 |
 | tests/test_overlay_alive_1670.py | 12 |
 | tests/test_overlay_bob_1670.py | 3 |
-| tests/test_overlay_bounce_variety_l148.py | 2 |
+| tests/test_overlay_bounce_variety_l148.py | 3 |
 | tests/test_overlay_capture_pixels.py | 2 |
 | tests/test_overlay_catalogue_1108.py | 9 |
 | tests/test_overlay_clip_1699.py | 1 |
