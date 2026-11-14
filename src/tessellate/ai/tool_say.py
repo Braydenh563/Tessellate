@@ -674,6 +674,14 @@ def _pinned(result: dict, args: dict) -> Said:
     return lead, "", _chips(("Open it", at))
 
 
+def _archived(result: dict, args: dict) -> Said:
+    ids = [i for i in result.get("archived") or [] if _number(i)]
+    on = result.get("now_archived", args.get("archived", True))
+    lead = f"{'Archived' if on else 'Brought back'} {count_noun(len(ids), 'note')}" + ("." if on else " from the Archive.")
+    body = "\n".join(f"- {link(f'Note {i}', note_at(i))}" for i in ids[:10])
+    return lead, body, _chips(("Open the first one", note_at(ids[0])) if ids else ("Open your notes", NOTES))
+
+
 def _linked(result: dict, args: dict) -> Said:
     ids = [i for i in result.get("linked") or result.get("unlinked") or [] if _number(i)]
     joined = " and ".join(link(f"note {i}", note_at(i)) for i in ids[:2])
@@ -869,7 +877,7 @@ SAYERS: dict[str, Callable[[dict, dict], Said]] = {
     "search_chat_history": _chat_history, "search_files": _files, "read_file": _read_file, "read_text": _read_text,
     "read_whiteboard": _whiteboard, "search_whiteboard": _search_board, "read_mindmap": _mindmap,
     "list_library": _library, "check_answer": _check, "propose_act": _propose, "web_search": _web, "read_url": _read_url,
-    "create_note": _created_note, "edit_note": _edited_note, "tag_note": _tagged, "pin_note": _pinned,
+    "create_note": _created_note, "edit_note": _edited_note, "tag_note": _tagged, "pin_note": _pinned, "archive_note": _archived,
     "link_notes": _linked, "unlink_notes": _linked, "audit_link_reasons": _audit, "check_learned": _learned_checked,
     "create_category": _category, "rename_category": _category, "merge_categories": _category, "delete_category": _category,
     "rename_tag": _tag, "delete_tag": _tag, "create_document": _created_document, "delete_document": _deleted_document,

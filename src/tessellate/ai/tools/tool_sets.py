@@ -20,7 +20,7 @@ WRITE_TOOLS = {
     "create_note",
     "edit_note",
     "tag_note",
-    "pin_note",
+    "pin_note", "archive_note",
     "link_notes",
     "unlink_notes",
     # `find_similar_notes` is NOT here, though it was added to this set once.
@@ -88,7 +88,7 @@ CHANGE_TOOLS = frozenset({
 ADD_TOOLS = frozenset({
     "create_note",
     "tag_note",
-    "pin_note",
+    "pin_note", "archive_note",
     "link_notes",
     "restore_note",
     "set_reminder",
@@ -243,11 +243,11 @@ TOOL_GROUPS: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
         ),
     ),
     (
-        ("edit_note", "pin_note"),
+        ("edit_note", "pin_note", "archive_note"),
         (
             "edit", "change", "update", "rewrite", "fix", "correct", "amend",
             "append",
-            "pin", "unpin", "reword", "shorten", "expand",
+            "pin", "unpin", "archive", "unarchive", "reword", "shorten", "expand",
             # Filing one note is `edit_note`'s `category`, not a category
             # tool (H4, Qwen2.5-3B): "File the dentist note under Health" was
             # offered only the category tree's four tools and called

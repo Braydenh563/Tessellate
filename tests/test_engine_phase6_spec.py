@@ -484,11 +484,13 @@ def test_delete_requires_confirmation():
     assert cmd.verb == "delete" and cmd.confirm is True
 
 
-def test_archive_is_not_a_verb():
+def test_archive_is_read_as_a_filing_not_a_verb_of_its_own():
+    """L-chat-46 (the owner, 2026-11-14) moved archive from the app's menus into Chat: it is read, as a filing."""
     from tessellate.ai import commands
 
     assert "archive" not in commands.VERBS
-    assert commands.parse("archive the gym note", NOW) is None
+    cmd = commands.parse("archive the gym note", NOW)
+    assert cmd is not None and cmd.verb == "file" and cmd.confirm is True
 
 
 _VERB_SENTENCES = {

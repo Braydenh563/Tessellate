@@ -674,7 +674,7 @@ job is not a task, and a screen that accumulates them is the Logs screen.
 `ai/tools/` (a package now: `__init__.py` plus `categories.py`,
 `documents.py`, `files.py`, `whiteboard.py`, `_common.py`, split out once the
 registry outgrew one file) defines a registry the chat model can call:
-**73 tools**. Read-only tools run inline; the **destructive** ones (marked
+**74 tools**. Read-only tools run inline; the **destructive** ones (marked
 ⚠️ below) emit a confirmation event to the UI instead of executing. The
 registry's `destructive` flag is the one list: a change after a turn has read
 text from outside (a web page, a clipped or imported note) waits for the same
@@ -691,7 +691,7 @@ decision, a date that moved
 uploads, photos, scans and attachments, by name, caption or the text read
 out of them, which notes never contain
 
-*Writing:* `create_note` · `edit_note` · `tag_note` · `pin_note` · `link_notes` ·
+*Writing:* `create_note` · `edit_note` · `tag_note` · `pin_note` · `archive_note` · `link_notes` ·
 `unlink_notes` · `restore_note` · `rename_tag` · `delete_note` ⚠️ ·
 `delete_tag` ⚠️ · `audit_link_reasons`
 

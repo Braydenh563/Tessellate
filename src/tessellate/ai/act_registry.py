@@ -71,7 +71,7 @@ def propose(session, text: str, now, note_ids: list[int] | None = None) -> dict 
 #: (the owner, 2026-11-10, "any and all actions need the user's consent"). A
 #: typed yes confirms the card that waits (`ai/consent.py`), a typed no drops it.
 CONFIRM_INTENTS = frozenset({
-    "reminder", "complete", "uncomplete", "cancel", "snooze", "new_note", "meeting", "pin", "unpin",
+    "reminder", "complete", "uncomplete", "cancel", "snooze", "reschedule", "archive", "unarchive", "tag_many", "make_board", "new_note", "meeting", "pin", "unpin",
     "delete", "rename", "rename_tag", "rename_category", "create_category", "delete_category", "merge_categories", "delete_tag", "edit_text", "to_reminders", "restore", "move", "tag", "untag", "link", "unlink", "append", "set_name",
     "delete_document", "delete_skill", "board_card", "make_map", "set_theme", "remember", "counter",
 })
@@ -119,8 +119,16 @@ _ACTS = (
         "cancel the dentist task", (), "restore_reminder", stem="Cancel the task "),
     Act("snooze", "snooze", "snooze a reminder", "Names a reminder and a new time; it moves after you confirm. Only reminders have a time, so a checklist line cannot be snoozed.",
         "snooze the dentist task until Friday", ("due_at",), "snooze_reminder", stem="Snooze the task "),
+    Act("reschedule", "snooze", "move a reminder to a new time", "Names a reminder and the new time; it moves after you confirm, the card says the old time too, and Undo puts the old time back.",
+        "move the dentist reminder to Friday at 9", ("due_at",), "snooze_reminder", stem="Move the reminder "),
     Act("tag", "tag", "tag notes", "Name the notes and the tags; the change waits for Confirm.",
         "tag the knife note with kitchen", ("tags",), "edit_note", stem="Tag the note about "),
+    Act("tag_many", "tag", "tag every note from a month", "Names a month, a week or a category and the tags; the card says how many notes it reaches before anything changes, and one Undo takes the tags off them all.",
+        "tag everything from March with spring", ("tags",), "edit_note", stem="Tag everything from "),
+    Act("archive", "archive", "archive notes", "Names the notes; they leave the lists after you confirm and stay in the Archive, and Undo brings them back. Several at once are counted on the card first.",
+        "archive the old trip notes", (), "archive_note", stem="Archive the note about "),
+    Act("unarchive", "unarchive", "bring notes back from the archive", "Names notes that are in the Archive; they come back after you confirm, and Undo archives them again.",
+        "unarchive the trip notes", (), "archive_note", stem="Unarchive the note about "),
     Act("untag", "untag", "take a tag off", "Name the tag and the notes; waits for Confirm.",
         "remove the tag urgent from the boiler note", ("tags",), "edit_note"),
     Act("move", "file", "move notes to a category", "Name the notes and the category; waits for Confirm.",
@@ -179,6 +187,8 @@ _ACTS = (
         "add 1 to coffee", ("name", "n"), "delete_note", stem="Add 1 to "),
     Act("remember", "add", "remember a preference", "Say remember that I prefer, like or want something; it is suggested after you confirm, and stays off until you accept it in Settings.",
         "remember that I prefer short answers", ("preference",), "drop_preference", stem="Remember that "),
+    Act("make_board", "create", "start a board", "Names the board; an empty board is made after you confirm and read back to you, and Undo bins it.",
+        "start a board for the kitchen", ("title",), "delete_note", stem="Start a board for "),
     Act("find", "find", "find a note", "Lists the notes that match.", "find my note about the passport", (), writes=False),
     Act("similar", "find", "find similar notes", "Lists the notes closest in meaning to the one named, from the notes.", "find notes similar to the boiler note", (), writes=False),
     Act("open", "open", "open a note", "Opens the one note named.", "open the note about the boiler", (), writes=False),
@@ -213,12 +223,11 @@ def capability_short() -> str:
     return f"I answer from your notes, and I can also {said}, work out sums and convert units. Try asking \u201c{ACTS['reminder'].example}\u201d."
 
 
-#: Verbs only the app's own menus do (decision 42: archiving stays a UI
-#: action). A sentence that opens with one is an act said to the wrong place,
+#: Verbs only the app's own menus do (archive and unarchive moved to Chat, L-chat-46). A sentence that opens with one is an act said to the wrong place,
 #: so it is answered "done in the app", never searched (audit 1029 C45).
 _APP_VERB = lazy_compile(
     r"^(?:(?:and|then|please|can you|could you|would you|just)\s+)*"
-    r"(?P<verb>archive|unarchive|restore|split|merge|duplicate|clone|combine)\s+(?:the|my|a|an|this|that|these|those|all|both|every|\w+)\b",
+    r"(?P<verb>restore|split|merge|duplicate|clone|combine)\s+(?:the|my|a|an|this|that|these|those|all|both|every|\w+)\b",
     re.IGNORECASE,
 )
 
@@ -239,8 +248,6 @@ def app_verb_line(verb: str) -> str:
     if verb == "clear":
         return composer_calendar.CLEAR_LINE
     where = {
-        "archive": "open the note and use Archive in its menu",
-        "unarchive": "open the Archive and use Restore on the note",
         "restore": "open the Bin, or the Archive, and use Restore on the note",
         "split": "open the note and use Split in its menu",
         "merge": "select the notes in the Notes tab and use Merge",
@@ -288,7 +295,7 @@ def guide_topic() -> dict:
 #: its tool as well as its intent. "navigate" opens a part of the app and
 #: runs no tool.
 ACT_TOOLS: dict[str, str] = {
-    "reminder": "set_reminder", "complete": "complete_reminder", "uncomplete": "complete_reminder", "cancel": "bin_reminder", "snooze": "snooze_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
+    "reminder": "set_reminder", "complete": "complete_reminder", "uncomplete": "complete_reminder", "cancel": "bin_reminder", "snooze": "snooze_reminder", "reschedule": "snooze_reminder", "archive": "archive_note", "unarchive": "archive_note", "tag_many": "tag_note", "make_board": "create_mindmap", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
     "new_note": "create_note", "meeting": "create_note", "pin": "pin_note", "unpin": "pin_note",
     "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "rename_tag": "rename_tag", "rename_category": "rename_category", "create_category": "create_category", "delete_category": "delete_category", "merge_categories": "merge_categories", "delete_tag": "delete_tag", "edit_text": "edit_note", "to_reminders": "set_reminder", "run_skill": "run_skill", "restore": "restore_note", "append": "edit_note",
     "delete_document": "delete_document", "delete_skill": "delete_skill", "board_card": "add_whiteboard_card", "make_map": "map_from_note", "remember": "save_user_preference", "counter": "create_note",
@@ -409,7 +416,7 @@ NO_MODEL_READS = frozenset({
 #: how-to that reads as one of these acts keeps its topic first, the act's
 #: own line next; one whose words reached another topic gets the act first.
 ACT_HELP_TOPICS: dict[str, tuple[str, ...]] = {
-    "reminder": ("reminders", "reminders-controls"), "complete": ("tasks",), "uncomplete": ("tasks",), "cancel": ("tasks",), "snooze": ("tasks",), "meeting": ("meetings", "voice"), "link": ("links",),
+    "reminder": ("reminders", "reminders-controls"), "complete": ("tasks",), "uncomplete": ("tasks",), "cancel": ("tasks",), "snooze": ("tasks",), "reschedule": ("reminders", "tasks"), "archive": ("archive",), "unarchive": ("archive",), "tag_many": ("tags-categories",), "make_board": ("whiteboard",), "meeting": ("meetings", "voice"), "link": ("links",),
     "unlink": ("links",), "tag": ("tags-categories", "tag-manager", "suggested-tags"),
     "untag": ("tags-categories", "tag-manager"), "move": ("tags-categories",), "delete": ("undo-bin",), "restore": ("undo-bin",),
     "rename_tag": ("tags-categories", "tag-manager"), "rename_category": ("tags-categories",), "create_category": ("tags-categories",), "delete_category": ("tags-categories",), "merge_categories": ("tags-categories",), "delete_tag": ("tags-categories", "tag-manager"), "edit_text": ("undo-bin",), "to_reminders": ("reminders",),

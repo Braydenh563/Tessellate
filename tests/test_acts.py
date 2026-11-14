@@ -36,7 +36,7 @@ def _state(session, categories: bool = False, by_name: bool = False) -> tuple:
     name: a rename keeps the id, so the id alone cannot see rename_category change anything."""
     session.expire_all()
     notes = tuple(
-        (e.id, e.content, None if by_name else e.category_id, manager.category_name_for(session, e), e.tags, e.pinned, e.deleted_at is None)
+        (e.id, e.content, None if by_name else e.category_id, manager.category_name_for(session, e), e.tags, e.pinned, e.deleted_at is None, e.archived_at is not None)
         for e in session.scalars(select(Entry).order_by(Entry.id))
         if e.deleted_at is None
     )
@@ -80,6 +80,8 @@ _BEFORE = {
     #: Parity acts (1110): the category, the tag, the two categories a merge needs.
     "delete_category": ("move the gym note to Hobbies",), "delete_tag": ("tag the gym note with harbor",),
     "merge_categories": ("move the gym note to Work", "move the running note to Job"),
+    #: Notes come out of the Archive only once they are in it (L-chat-46).
+    "unarchive": ("archive the trip notes",),
 }
 _PAGE_SIDE = frozenset({"set_theme"})
 #: A category row is made again by Undo with a new id, so these compare the categories by name.
@@ -87,7 +89,7 @@ _BY_NAME = frozenset({"delete_category", "merge_categories"})
 
 
 @pytest.mark.parametrize("act", WRITES, ids=[a.intent for a in WRITES])
-def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, session, act):
+def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, session, act, monkeypatch):
     _seed(session)
     if act.intent == "delete_document":
         session.add(Document(title="Harbor report", content="Findings for the harbor."))
@@ -102,6 +104,16 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
     if act.intent == "edit_text":
         manager.create_entry(session, "# Wifi\n\nNetwork is Bluegum-5G.")
         session.commit()
+    if act.intent in ("archive", "unarchive"):
+        manager.create_entry(session, "# Lisbon trip\n\nBook the flights.")
+        manager.create_entry(session, "# Trip packing\n\nPassport, charger.")
+        session.commit()
+    if act.intent == "tag_many":
+        #: A fixed clock and fixed dates: "March" is March 2026 as of NOW, whenever the suite runs.
+        monkeypatch.setattr(commands, "_now_for_plan", lambda: NOW)
+        for entry in session.scalars(select(Entry)):
+            entry.created_at = datetime(2026, 3, 12, 9, 0)
+        session.commit()
     if act.intent == "to_reminders":
         manager.create_entry(session, "# Action items\n\n- [ ] book the venue\n- [ ] email the caterer\n")
         session.commit()
@@ -112,7 +124,7 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
     if act.intent == "uncomplete":
         session.add(Reminder(text="Buy milk", due_at=datetime(2030, 1, 1, 9), done=True))
         session.commit()
-    if act.intent in ("complete", "cancel", "snooze"):
+    if act.intent in ("complete", "cancel", "snooze", "reschedule"):
         #: A task is completed, cancelled or snoozed only once one is open;
         #: seeded directly, as the store refuses a reminder due before the
         #: real clock.
@@ -122,7 +134,7 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
     # The store refuses a reminder due in the past by the real clock, so a
     # fixed NOW turns "on Friday" into a past date once that week is over
     # (a snooze too: its plan refuses a time already passed on the real clock).
-    now = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0) if act.intent in ("reminder", "snooze", "to_reminders") else NOW
+    now = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0) if act.intent in ("reminder", "snooze", "reschedule", "to_reminders") else NOW
     planned = acts.preview(session, acts.parse(act.example, now))
     card = planned["card"]
     assert card["steps"], act.intent

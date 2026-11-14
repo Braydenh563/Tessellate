@@ -62,6 +62,7 @@ With default settings the server offers **28 tools**, all of them reads (of 73 i
 | `link_map_nodes` | write | Draw a cross-link between two existing nodes on one mindmap, what a tree can't express ('this depends on that'); read_mindmap gives their ids. |
 | `link_notes` | write | Connect a note to one or more related notes. |
 | `map_from_note` | write | Make a mind map from one note in one call, for 'turn this note into a map': its title is the centre, its headings and lists the branches. |
+| `archive_note` | write | Archive notes, or bring them back (archived false). Archived notes are kept, never deleted. |
 | `pin_note` | write | Add a note to Favourites (or remove it). |
 | `place_library_item` | write | Place a library item (a ref from list_library) on a board, centred at x, y. |
 | `rename_category` | write | Rename a category; merges if the new name is already taken. |

@@ -2377,6 +2377,34 @@
      "message": "Checked 3, retired 0 and flagged 0."
     }
    }
+  ],
+  "archive_note": [
+   {
+    "args": {
+     "note_ids": [
+      3,
+      4
+     ]
+    },
+    "result": {
+     "archived": [
+      3,
+      4
+     ],
+     "now_archived": true,
+     "label": "ph:archive Archived: #3, #4",
+     "undo": {
+      "tool": "archive_note",
+      "arguments": {
+       "note_ids": [
+        3,
+        4
+       ],
+       "archived": false
+      }
+     }
+    }
+   }
   ]
  }
 }

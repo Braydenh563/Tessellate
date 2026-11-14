@@ -43,7 +43,7 @@ def _lead(spec) -> str:
 
 
 VERBS = {
-    "add", "ask", "audit", "calculate", "check", "complete", "compress", "count", "create", "delete", "edit",
+    "add", "archive", "ask", "audit", "calculate", "check", "complete", "compress", "count", "create", "delete", "edit",
     "find", "generate", "get", "link", "list", "make", "map", "merge", "move", "pin", "place", "propose",
     "read", "rename", "restore", "run", "save", "search", "set", "summarize", "tag", "unlink",
 }
