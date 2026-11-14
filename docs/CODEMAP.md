@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11076, test files 2881, tests 22745, plan headings 691, app scripts 29, boot scripts 38, script files 305.
+Counts: frontend functions 8508, frontend ids 2789, CSS sections 524, backend routes 714, backend modules 11076, test files 2881, tests 22746, plan headings 691, app scripts 29, boot scripts 38, script files 305.
 
 ## Frontend functions (8508)
 
@@ -18885,77 +18885,77 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `StatAnswer` | src/tessellate/ai/notebook_stats.py:57 |
 | `_answer` | src/tessellate/ai/notebook_stats.py:300 |
 | `_asks` | src/tessellate/ai/notebook_stats.py:228 |
-| `_board_count` | src/tessellate/ai/notebook_stats.py:618 |
-| `_busiest` | src/tessellate/ai/notebook_stats.py:699 |
+| `_board_count` | src/tessellate/ai/notebook_stats.py:615 |
+| `_busiest` | src/tessellate/ai/notebook_stats.py:696 |
 | `_category_count` | src/tessellate/ai/notebook_stats.py:494 |
-| `_common_words` | src/tessellate/ai/notebook_stats.py:1020 |
+| `_common_words` | src/tessellate/ai/notebook_stats.py:1017 |
 | `_counted` | src/tessellate/ai/notebook_stats.py:344 |
-| `_coverage` | src/tessellate/ai/notebook_stats.py:1041 |
+| `_coverage` | src/tessellate/ai/notebook_stats.py:1038 |
 | `_coverage_as_of` | src/tessellate/ai/notebook_stats.py:270 |
-| `_coverage_parts` | src/tessellate/ai/notebook_stats.py:1028 |
+| `_coverage_parts` | src/tessellate/ai/notebook_stats.py:1025 |
 | `_despell` | src/tessellate/ai/notebook_stats.py:179 |
-| `_document_count` | src/tessellate/ai/notebook_stats.py:632 |
-| `_duplicates` | src/tessellate/ai/notebook_stats.py:848 |
-| `_empty` | src/tessellate/ai/notebook_stats.py:834 |
-| `_general_stats` | src/tessellate/ai/notebook_stats.py:1072 |
-| `_growth_keys` | src/tessellate/ai/notebook_stats.py:1163 |
-| `_has_title` | src/tessellate/ai/notebook_stats.py:807 |
-| `_held_word` | src/tessellate/ai/notebook_stats.py:587 |
-| `_left_out` | src/tessellate/ai/notebook_stats.py:1174 |
-| `_longest_notes` | src/tessellate/ai/notebook_stats.py:863 |
-| `_mention_count` | src/tessellate/ai/notebook_stats.py:557 |
-| `_mention_of` | src/tessellate/ai/notebook_stats.py:601 |
-| `_month_keys` | src/tessellate/ai/notebook_stats.py:1148 |
-| `_most_linked` | src/tessellate/ai/notebook_stats.py:641 |
+| `_document_count` | src/tessellate/ai/notebook_stats.py:629 |
+| `_duplicates` | src/tessellate/ai/notebook_stats.py:845 |
+| `_empty` | src/tessellate/ai/notebook_stats.py:831 |
+| `_general_stats` | src/tessellate/ai/notebook_stats.py:1069 |
+| `_growth_keys` | src/tessellate/ai/notebook_stats.py:1160 |
+| `_has_title` | src/tessellate/ai/notebook_stats.py:804 |
+| `_held_word` | src/tessellate/ai/notebook_stats.py:584 |
+| `_left_out` | src/tessellate/ai/notebook_stats.py:1171 |
+| `_longest_notes` | src/tessellate/ai/notebook_stats.py:860 |
+| `_mention_count` | src/tessellate/ai/notebook_stats.py:554 |
+| `_mention_of` | src/tessellate/ai/notebook_stats.py:598 |
+| `_month_keys` | src/tessellate/ai/notebook_stats.py:1145 |
+| `_most_linked` | src/tessellate/ai/notebook_stats.py:638 |
 | `_named_count` | src/tessellate/ai/notebook_stats.py:521 |
-| `_names_a_thing` | src/tessellate/ai/notebook_stats.py:1436 |
+| `_names_a_thing` | src/tessellate/ai/notebook_stats.py:1433 |
 | `_narrowed_count` | src/tessellate/ai/notebook_stats.py:363 |
 | `_no_repeats` | src/tessellate/ai/notebook_stats.py:397 |
-| `_note_count` | src/tessellate/ai/notebook_stats.py:609 |
-| `_note_pass` | src/tessellate/ai/notebook_stats.py:1213 |
-| `_notebook_block` | src/tessellate/ai/notebook_stats.py:1234 |
-| `_notes_fingerprint` | src/tessellate/ai/notebook_stats.py:1197 |
+| `_note_count` | src/tessellate/ai/notebook_stats.py:606 |
+| `_note_pass` | src/tessellate/ai/notebook_stats.py:1210 |
+| `_notebook_block` | src/tessellate/ai/notebook_stats.py:1231 |
+| `_notes_fingerprint` | src/tessellate/ai/notebook_stats.py:1194 |
 | `_notes_per_category` | src/tessellate/ai/notebook_stats.py:503 |
 | `_now` | src/tessellate/ai/notebook_stats.py:286 |
-| `_orphans` | src/tessellate/ai/notebook_stats.py:675 |
+| `_orphans` | src/tessellate/ai/notebook_stats.py:672 |
 | `_plural` | src/tessellate/ai/notebook_stats.py:96 |
-| `_recent_count` | src/tessellate/ai/notebook_stats.py:756 |
-| `_reminder_block` | src/tessellate/ai/notebook_stats.py:1272 |
-| `_same_text` | src/tessellate/ai/notebook_stats.py:844 |
-| `_shortest_notes` | src/tessellate/ai/notebook_stats.py:895 |
-| `_span_words` | src/tessellate/ai/notebook_stats.py:1122 |
-| `_stale_notes` | src/tessellate/ai/notebook_stats.py:927 |
+| `_recent_count` | src/tessellate/ai/notebook_stats.py:753 |
+| `_reminder_block` | src/tessellate/ai/notebook_stats.py:1269 |
+| `_same_text` | src/tessellate/ai/notebook_stats.py:841 |
+| `_shortest_notes` | src/tessellate/ai/notebook_stats.py:892 |
+| `_span_words` | src/tessellate/ai/notebook_stats.py:1119 |
+| `_stale_notes` | src/tessellate/ai/notebook_stats.py:924 |
 | `_tag_count` | src/tessellate/ai/notebook_stats.py:484 |
-| `_tag_pairs` | src/tessellate/ai/notebook_stats.py:967 |
+| `_tag_pairs` | src/tessellate/ai/notebook_stats.py:964 |
 | `_tag_subjects` | src/tessellate/ai/notebook_stats.py:404 |
 | `_tags_of` | src/tessellate/ai/notebook_stats.py:88 |
-| `_title_only` | src/tessellate/ai/notebook_stats.py:828 |
+| `_title_only` | src/tessellate/ai/notebook_stats.py:825 |
 | `_top_categories` | src/tessellate/ai/notebook_stats.py:450 |
 | `_top_subjects` | src/tessellate/ai/notebook_stats.py:424 |
 | `_top_tags` | src/tessellate/ai/notebook_stats.py:435 |
 | `_total_or_window_count` | src/tessellate/ai/notebook_stats.py:325 |
 | `_transposition_of` | src/tessellate/ai/notebook_stats.py:161 |
 | `_untagged` | src/tessellate/ai/notebook_stats.py:468 |
-| `_untitled` | src/tessellate/ai/notebook_stats.py:817 |
+| `_untitled` | src/tessellate/ai/notebook_stats.py:814 |
 | `_visible` | src/tessellate/ai/notebook_stats.py:73 |
-| `_week_counts` | src/tessellate/ai/notebook_stats.py:1332 |
-| `_week_daily` | src/tessellate/ai/notebook_stats.py:1350 |
+| `_week_counts` | src/tessellate/ai/notebook_stats.py:1329 |
+| `_week_daily` | src/tessellate/ai/notebook_stats.py:1347 |
 | `_whole_notebook` | src/tessellate/ai/notebook_stats.py:374 |
-| `_window` | src/tessellate/ai/notebook_stats.py:737 |
-| `_window_words` | src/tessellate/ai/notebook_stats.py:719 |
-| `_word_count` | src/tessellate/ai/notebook_stats.py:785 |
+| `_window` | src/tessellate/ai/notebook_stats.py:734 |
+| `_window_words` | src/tessellate/ai/notebook_stats.py:716 |
+| `_word_count` | src/tessellate/ai/notebook_stats.py:782 |
 | `_word_subjects` | src/tessellate/ai/notebook_stats.py:413 |
-| `_words` | src/tessellate/ai/notebook_stats.py:1144 |
-| `_words_added_by_edits` | src/tessellate/ai/notebook_stats.py:1294 |
+| `_words` | src/tessellate/ai/notebook_stats.py:1141 |
+| `_words_added_by_edits` | src/tessellate/ai/notebook_stats.py:1291 |
 | `answer` | src/tessellate/ai/notebook_stats.py:291 |
 | `answer_chat` | src/tessellate/ai/notebook_stats.py:262 |
 | `by_order` | src/tessellate/ai/notebook_stats.py:253 |
-| `categories_in_use` | src/tessellate/ai/notebook_stats.py:1067 |
+| `categories_in_use` | src/tessellate/ai/notebook_stats.py:1064 |
 | `looks_like_a_question_about_the_notebook` | src/tessellate/ai/notebook_stats.py:232 |
-| `page` | src/tessellate/ai/notebook_stats.py:1390 |
+| `page` | src/tessellate/ai/notebook_stats.py:1387 |
 | `stats_is_subject` | src/tessellate/ai/notebook_stats.py:224 |
-| `week_review` | src/tessellate/ai/notebook_stats.py:1376 |
-| `week_start` | src/tessellate/ai/notebook_stats.py:1287 |
+| `week_review` | src/tessellate/ai/notebook_stats.py:1373 |
+| `week_start` | src/tessellate/ai/notebook_stats.py:1284 |
 
 ### src/tessellate/ai/notebook_tasks.py (6)
 
@@ -28358,7 +28358,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22745)
+## Tests (22746)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30959,7 +30959,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_context_1745.py | 8 |
 | tests/test_typo_pairs_l222.py | 3 |
 | tests/test_typo_routing.py | 4 |
-| tests/test_uax_probes_a_1114.py | 17 |
+| tests/test_uax_probes_a_1114.py | 18 |
 | tests/test_uax_probes_c_1114.py | 8 |
 | tests/test_uax_probes_u_1114.py | 19 |
 | tests/test_uax_probes_x_1114.py | 2 |
@@ -31666,14 +31666,14 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1254 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3114 |
 | Morning briefings, scheduled and stored (owner idea, 2026-11-11; backlog, "dont do that in this pr, add it to the backlog") | docs/roadmap/BACKLOG.md:4406 |
-| Needs hardware | docs/roadmap/LEDGER.md:701 |
+| Needs hardware | docs/roadmap/LEDGER.md:700 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:341 |
 | Not in this plan | docs/roadmap/UI_MODERNISATION_PLAN.md:511 |
 | Not verified, and to be taken first by whoever opens this | docs/roadmap/MINDMAP_PLAN.md:1348 |
 | Open items | docs/roadmap/INBOX.md:36 |
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1366 |
-| Owner calls | docs/roadmap/LEDGER.md:686 |
+| Owner calls | docs/roadmap/LEDGER.md:685 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4279 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:603 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:516 |
@@ -31854,7 +31854,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from the owner, 2026-10-11: a tessellation view (built) | docs/roadmap/GRAPH_PLAN.md:585 |
 | Placed from the owner, 2026-10-30 (quantities and real phrasings) | docs/roadmap/CHAT_PLAN.md:1849 |
 | Placed from the settings agent, 2026-10-11 (a decision taken by standing order 3) | docs/roadmap/WORLD_CLASS_PLAN.md:4175 |
-| Plan session briefs | docs/roadmap/LEDGER.md:889 |
+| Plan session briefs | docs/roadmap/LEDGER.md:888 |
 | Policies (taken 2026-10-10) | docs/ROADMAP.md:49 |
 | Related, and cheap: finish the rendering story | docs/roadmap/BACKLOG.md:2655 |
 | Rules for the whole plan | docs/roadmap/UI_MODERNISATION_PLAN.md:50 |
@@ -31908,25 +31908,25 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/MINDMAP_PLAN.md:1739 |
 | canvasdepth, ranked by how often a person meets the gap (2026-10-10) | docs/roadmap/WHITEBOARD_PLAN.md:1413 |
 | chat | docs/roadmap/LEDGER.md:24 |
-| chat | docs/roadmap/LEDGER.md:905 |
-| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:989 |
-| documents | docs/roadmap/LEDGER.md:270 |
-| documents | docs/roadmap/LEDGER.md:929 |
-| general | docs/roadmap/LEDGER.md:645 |
+| chat | docs/roadmap/LEDGER.md:904 |
+| closing (start only after the eight plan sessions are merged) | docs/roadmap/LEDGER.md:988 |
+| documents | docs/roadmap/LEDGER.md:269 |
+| documents | docs/roadmap/LEDGER.md:928 |
+| general | docs/roadmap/LEDGER.md:644 |
 | graph | docs/roadmap/LEDGER.md:22 |
-| graph | docs/roadmap/LEDGER.md:893 |
-| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1001 |
+| graph | docs/roadmap/LEDGER.md:892 |
+| hub (the orchestrator session that starts and runs the others) | docs/roadmap/LEDGER.md:1000 |
 | llama.cpp, one click (owner, 2026-11-11; "maybe for later pr at end of backlog") | docs/roadmap/BACKLOG.md:4415 |
-| mindmap | docs/roadmap/LEDGER.md:286 |
-| mindmap | docs/roadmap/LEDGER.md:941 |
-| timeline | docs/roadmap/LEDGER.md:407 |
-| timeline | docs/roadmap/LEDGER.md:965 |
-| ui-modernisation | docs/roadmap/LEDGER.md:290 |
-| ui-modernisation | docs/roadmap/LEDGER.md:953 |
-| whiteboard | docs/roadmap/LEDGER.md:223 |
-| whiteboard | docs/roadmap/LEDGER.md:917 |
-| world-class | docs/roadmap/LEDGER.md:409 |
-| world-class | docs/roadmap/LEDGER.md:977 |
+| mindmap | docs/roadmap/LEDGER.md:285 |
+| mindmap | docs/roadmap/LEDGER.md:940 |
+| timeline | docs/roadmap/LEDGER.md:406 |
+| timeline | docs/roadmap/LEDGER.md:964 |
+| ui-modernisation | docs/roadmap/LEDGER.md:289 |
+| ui-modernisation | docs/roadmap/LEDGER.md:952 |
+| whiteboard | docs/roadmap/LEDGER.md:222 |
+| whiteboard | docs/roadmap/LEDGER.md:916 |
+| world-class | docs/roadmap/LEDGER.md:408 |
+| world-class | docs/roadmap/LEDGER.md:976 |
 | §101: the knowledge graph should be second nature to the AI, everywhere | docs/roadmap/BACKLOG.md:2825 |
 | §102: a live competitor read (Kortex, Granola, Mem.ai), audited before logging | docs/roadmap/BACKLOG.md:2876 |
 | §103, reported live this session, and a batch of feature asks, logged, none built yet | docs/roadmap/BACKLOG.md:2983 |

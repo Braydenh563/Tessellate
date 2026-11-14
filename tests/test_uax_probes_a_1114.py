@@ -107,3 +107,16 @@ def test_a17_then_and_now_quotes_the_old_claim_and_the_current_one(client, sessi
     said = seed.asker(client, monkeypatch)("what did I say about the Austria trip then and now")[0]
     assert "by train" in said and "by plane" in said and "Then" in said and "Now" in said, said
     assert "three notes mention" not in said
+
+
+def test_a18_a_topic_count_inside_a_window_counts_the_window(client, session):
+    from datetime import datetime, timezone
+
+    from tessellate.ai import notebook_stats
+
+    seed.seed(session)
+    now = datetime(2026, 10, 31, 11, 30, tzinfo=timezone.utc)
+    this_month = notebook_stats.answer("how many gym notes this month", session, now=now)
+    assert this_month.text == "1 note is tagged gym this month.", this_month.text
+    assert notebook_stats.answer("how many gym notes", session, now=now).text == "2 notes are tagged gym."
+    assert "Health" in notebook_stats.answer("how many health notes in September", session, now=now).text

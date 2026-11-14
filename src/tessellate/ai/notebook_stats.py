@@ -520,25 +520,22 @@ def _notes_per_category(session: Session) -> StatAnswer:
 
 def _named_count(text: str, session: Session) -> StatAnswer | None:
     """"How many travel notes" / "how many notes are in Work": the count for
-    one category or tag the question names, or None when it names neither."""
+    one category or tag the question names, or None when it names neither.
+    A window in the question ("gym notes this month") counts only the notes
+    written in it."""
+    window = _window(text)
+    in_window = (lambda q: q.where(Entry.created_at >= window[0], Entry.created_at <= window[1])) if window else (lambda q: q)
+    said = f" {window[2]}" if window else ""
     names = session.execute(
-        _visible(
-            select(Category.name, func.count(Entry.id))
-            .join(Category, Category.id == Entry.category_id)
-            .group_by(Category.name)
-        )
+        _visible(in_window(select(Category.name, func.count(Entry.id)).join(Category, Category.id == Entry.category_id).group_by(Category.name)))
     ).all()
     for name, n in sorted(names, key=lambda r: -len(r[0])):
         if re.search(rf"(?<!\w){re.escape(name.lower())}(?!\w)", text):
-            return StatAnswer(
-                "category-count",
-                f"You have {_plural(n, 'note')} in {name}.",
-                [{"label": name, "count": n}],
-            )
-    counts = Counter(tag.lower() for raw in session.scalars(_visible(select(Entry.tags))).all() for tag in _tags_of(raw))
+            return StatAnswer("category-count", f"You have {_plural(n, 'note')} in {name}{said}.", [{"label": name, "count": n}])
+    counts = Counter(tag.lower() for raw in session.scalars(_visible(in_window(select(Entry.tags)))).all() for tag in _tags_of(raw))
     for tag, n in sorted(counts.items(), key=lambda r: -len(r[0])):
         if re.search(rf"(?<!\w){re.escape(tag)}(?!\w)", text):
-            return StatAnswer("tag-count", f"{_plural(n, 'note')} are tagged {tag}.".replace("1 notes are", "1 note is"), [{"label": tag, "count": n}])
+            return StatAnswer("tag-count", f"{_plural(n, 'note')} {'is' if n == 1 else 'are'} tagged {tag}{said}.", [{"label": tag, "count": n}])
     return None
 
 
