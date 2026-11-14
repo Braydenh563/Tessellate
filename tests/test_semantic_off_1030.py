@@ -1,5 +1,5 @@
 """Audit 1030 Y2: search by meaning that was never allowed to download (the
-one-time question still open, or answered no) showed as an error in three
+one-time question unanswered, or answered no) showed as an error in three
 places: a red "Search AI didn't load" chip, a "not working" toast and a bell
 row. It is a choice, not a fault: the server says `semantic_off` and the
 chip, toast and bell read it. An install that was allowed and failed is

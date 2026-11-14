@@ -35,7 +35,7 @@ def _snapshot(session):
 
 
 def _fixture(client, session):
-    """Four pairs, one per source and state: a scan finding left open, a scan
+    """Four pairs, one per source and state: a scan finding unresolved, a scan
     finding dismissed, a night finding, and a link made by hand."""
     a = _note(client, session, "The launch is in May.", 90)
     b = _note(client, session, "The launch slipped to August.", 10)

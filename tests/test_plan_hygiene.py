@@ -87,7 +87,7 @@ def test_handover_is_the_current_state_only() -> None:
 
 def test_inbox_holds_open_reports_only() -> None:
     """A resolved report (fixed, not reproduced, checked) moves to HISTORY.md's
-    "INBOX resolved" with its number; INBOX is what is still open."""
+    "INBOX resolved" with its number; INBOX holds only unresolved reports."""
     text = (ROADMAP / "INBOX.md").read_text(encoding="utf-8")
     resolved = [
         line for line in text.splitlines()

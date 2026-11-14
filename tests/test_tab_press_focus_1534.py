@@ -24,9 +24,9 @@ def test_the_chat_press_focuses_the_composer_after_the_first_paint():
     body = _body("switchTab")
     chat = body[body.index('if (name === "chat")'):body.index('if (name === "dashboard")')]
     focus = chat.index('$("chat-input").focus(')
-    deferred = chat.rfind("requestAnimationFrame(() => setTimeout(", 0, focus)
-    assert deferred != -1, "the composer's focus runs inside the press"
-    assert "activeTab" in chat[deferred:focus], "a press elsewhere in the gap would lose its own focus"
+    held = chat.rfind("requestAnimationFrame(() => setTimeout(", 0, focus)
+    assert held != -1, "the composer's focus runs inside the press"
+    assert "activeTab" in chat[held:focus], "a press elsewhere in the gap would lose its own focus"
 
 
 def test_the_accent_colour_is_kept_until_the_root_changes():

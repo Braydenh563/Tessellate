@@ -166,7 +166,7 @@ def test_selection_bar_lookup_skips_the_surface_fallback():
 
     `$` falls back to `surfaceFind` when the id is missing, and the bar is built
     lazily on `document.body`, so before its first show every key walked each
-    unbuilt surface (about 2 ms a key at 4x CPU in the document editor). The bar
+    surface not yet made (about 2 ms a key at 4x CPU in the document editor). The bar
     never lives in a surface, so both lookups read the document directly.
     """
     src = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "editor.js").read_text(encoding="utf-8")

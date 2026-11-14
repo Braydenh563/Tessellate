@@ -385,7 +385,7 @@ def test_a_step_that_expects_a_tool_call_is_re_prompted_not_skipped(
     ai_client, fake_ollama, app_state
 ):
     """The heart of the reform. The model answers in prose and calls nothing;
-    the step is not done, so it is asked again, literally, by name."""
+    the step is unfinished, so it is asked again, literally, by name."""
     _save(CONTRACT_SKILL)
     events = _events(ai_client, "run", skill="Tag audit")
     steps = [e for e in events if e["type"] == "step" and e["index"] == 0]

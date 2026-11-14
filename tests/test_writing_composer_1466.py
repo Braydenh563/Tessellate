@@ -239,7 +239,7 @@ def test_the_writing_room_composes_with_no_model(ai_client, fake_ollama, body, h
     fake_ollama.running = False
     done = ai_client.post("/drafts/compose", json=body).json()
     assert has in done["draft"]
-    assert done["by"] == "composer" and done["said"] and not done["message"]
+    assert done["by"] == "composer" and done["said"] and done["message"] in (None, "")
     events = _stream(ai_client.post("/drafts/compose/stream", json=body))
     assert [e["type"] for e in events] == ["done"] and events[0]["by"] == "composer" and has in events[0]["draft"]
     assert not fake_ollama.chat_calls

@@ -3,7 +3,7 @@
 The owner: "it's already been downloaded so why is it a toggle?". On disk, the
 preference no longer downloads anything; it only lets a model with missing
 files be fetched again (`embeddings._fetch_again`). The row says so. A model the
-app cannot fetch itself (Gemma's terms, nomic not built in) was chipped "Runs
+app cannot fetch itself (Gemma's terms, nomic not bundled) was chipped "Runs
 in the app" though its row said to use it through Ollama.
 `scratchpad/ui-sweeps/semswitch1533.js` measured both in Settings."""
 

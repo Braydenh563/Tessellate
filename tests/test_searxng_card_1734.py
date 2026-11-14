@@ -87,7 +87,7 @@ def test_the_run_it_yourself_disclosure_lives_inside_the_searxng_card():
     summary = INDEX.index("Prefer to run it yourself?")
     end = INDEX.index("</section>", start)
     assert start < summary < end
-    # The card is still open when the disclosure starts (one div more opened
+    # The card is still expanded when the disclosure starts (one div more opened
     # than closed since the card's own tag).
     between = INDEX[start:summary]
     assert between.count("<div") == between.count("</div>") + 1

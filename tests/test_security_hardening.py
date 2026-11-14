@@ -136,7 +136,7 @@ def test_the_search_path_refuses_the_same_addresses_as_the_probe():
 def test_the_embedding_modules_do_not_import_each_other_in_a_circle():
     """`ai.embeddings` → `ai.model_manager` is one-way, and `core.deps` is not
     imported back from either. A cycle here is currently only survivable
-    because of a deferred import, which is a workaround, not a shape."""
+    because of an import inside a function, which is a workaround, not a shape."""
     import ast
 
     def module_level_imports(path: str) -> set[str]:

@@ -15,7 +15,7 @@ things that should line up nearly do.
 
 **This test is the part that makes the fix hold.** Extracting a scale and
 converting the file is a one-off; without something that fails, the next tab
-built in the next session reaches for whatever looks right at the time and the
+built in any session after reaches for whatever looks right at the time and the
 drift starts again. §35L calls this out explicitly: "a lint that fails on a raw
 px margin or padding outside the token block, so tab seven cannot reintroduce
 the problem. This is the step that makes it stick; without it this section will
