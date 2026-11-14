@@ -3090,7 +3090,7 @@ function renderSettings() {
   if (typeof renderEmbeddingPicker === "function") renderEmbeddingPicker(status);
   //: Always, not only while a backend answers: the rows come from saved
   //: settings, and a person with the server down still needs to see and clear
-  //: an override (WORLD_CLASS_PLAN 20, "Still open").
+  //: an override (WORLD_CLASS_PLAN 20, built).
   renderFeatureModels(status);
   settingsReadouts.smallModel?.();
   if (status.ollama_running) {

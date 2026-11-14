@@ -65,7 +65,7 @@ for (const level of ["log", "info", "warn", "error"]) {
   };
 }
 //: "ResizeObserver loop completed with undelivered notifications" is the
-//: browser saying it deferred a resize callback one frame, not an
+//: browser saying it delayed a resize callback one frame, not an
 //: exception (no `e.error`, nothing thrown): logged as ERROR it filled the
 //: owner's console from the Library's Files view (release, 2026-09-27).
 //: The observer behind it is in the carry-over list; this only stops the

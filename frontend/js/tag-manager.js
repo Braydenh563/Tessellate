@@ -312,7 +312,7 @@ function manageListControls({ sortKey, state, rareLabel, rareTitle, redraw }) {
 
 //: **Names that are probably one name**: the same once case, spaces,
 //: hyphens and underscores are set aside and a plural is made singular
-//: ("Idea", "ideas", "to-do", "todo"). Each group keeps the name with the
+//: ("Idea", "ideas", "to-do", "to_do"). Each group keeps the name with the
 //: most notes first, which is the one the others would merge into.
 function manageLookAlikeKey(name) {
   let key = String(name).toLowerCase().replace(/[\s_\-.]+/g, "");

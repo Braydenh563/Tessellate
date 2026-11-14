@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Open-work sweep of the shared files: IDEAS.md's list checked against the app (all built or in BACKLOG), stale "still open" notes in the docs, frontend and sweeps written as built, and `open_scan` reads an HTML attribute value as data.
 - Library: the selection bar's More menu sets tags, a category or a property on the notes ticked, with the Notes bar's own dialogs and Undo (L-world-class-392).
 - The timeline draws a thread as a branching line: a note that continues another branches off beside it, and its Continues button, which never appeared before, now does (L-world-class-176).
 - A board or map exports as a folder with its notes: one zip holding the picture as SVG and PNG and every note on it as Markdown (L-world-class-130).
