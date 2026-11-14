@@ -937,7 +937,7 @@ MORE_TOPICS: list[dict] = [
             "palette's actions too, so \"dark\" finds Toggle light/dark, after the "
             "notes and files. The command palette (Ctrl+K) sends what you type "
             "here: its last row, Search everything for, opens this box with "
-            "the words already searched. As you type it suggests your recent searches, "
+            "the words already searched. Typing a note, a meeting or a search in plain words (note: buy clay, new meeting with Sam) adds a matching Do it row. As you type it suggests your recent searches, "
             "then note titles, tags and categories, with the best match in grey: Tab or "
             "Right takes it, and Settings, General, Search turns it off."
         ),

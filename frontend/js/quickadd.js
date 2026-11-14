@@ -589,6 +589,34 @@
         run: () => qaPaletteRemind(query.trim(), slots),
       };
     }
+    //: The other acts the reading names get a row each (L656): a note, a
+    //: meeting, and the search a "find ..." sentence asks for, so the sentence
+    //: is one Enter from what it says.
+    const read = state.reading.slots || {};
+    if (qaIntent(state.reading, "new_note") && read.content) {
+      return {
+        group: "Do it",
+        label: `ph:note-pencil Save as a note: ${String(read.content).slice(0, 60)}`,
+        about: "Opens Quick note with these words, ready to save.",
+        run: () => { openQuickNote(); setTimeout(() => { const box = $("quick-note-text"); box.value = String(read.content); box.dispatchEvent(new Event("input", { bubbles: true })); box.focus(); }, 60); },
+      };
+    }
+    if (qaIntent(state.reading, "meeting") && read.title) {
+      return {
+        group: "Do it",
+        label: `ph:users-three New meeting: ${String(read.title).slice(0, 60)}`,
+        about: "Opens the new meeting sheet with this title.",
+        run: () => openNewMeeting({ title: String(read.title) }),
+      };
+    }
+    if (qaIntent(state.reading, "find") && read.about) {
+      return {
+        group: "Do it",
+        label: `ph:magnifying-glass Search notes for: ${String(read.about).slice(0, 60)}`,
+        about: "Find anything, narrowed to notes.",
+        run: () => openFinder(String(read.about), { kind: "note" }),
+      };
+    }
     return null;
   }
 

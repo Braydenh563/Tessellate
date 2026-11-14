@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Palette: a typed sentence that is a note, a meeting or a search gets its own row (Save as a note, New meeting, Search notes for) beside the reminder row (L656).
 - Palette: Browse boards and maps, recordings, skills and contents rows; Open notifications says how many are unread; a note in hand gets Ask Atlas about this note and Tag and file with Atlas; New sketch answers to draw and keep (L693).
 - Dashboard: the This week card offers one feature you have not used lately, a different one each week (L595).
 - Image viewer gives the focus back to what opened it when it closes, and Back closes the graph's note panel instead of leaving it open on the hidden map (L593).

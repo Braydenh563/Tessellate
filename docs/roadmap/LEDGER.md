@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 64 | 34 | 0 | 19 | 228 |
+| world-class | 130 | 64 | 33 | 0 | 19 | 227 |
 | general | 0 | 38 | 2 | 0 | 4 | 40 |
-| all | 553 | 458 | 105 | 2 | 130 | 1116 |
+| all | 553 | 458 | 104 | 2 | 130 | 1115 |
 
 ## graph
 
@@ -512,7 +512,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L638** `world-class` open, L: Frontend audit leftovers FE-09/10/11/13/14. From OPEN.md:3267. Evidence: No coverage-driven CSS deletion or Settings lazy markup found
 - [ ] **L639** `world-class` open, L: Brief 59: split index.html, status.js, chat.js, phone-shell.js, notes-list.js. From SESSION_BRIEFS.md:200. Evidence: All still present (E19: index.html 16,043 lines, status.js 3,283); no HISTORY block
 - [ ] **L643** `world-class` partly, S: Left: `aiIsOff()` (status.js:2122, already reading `model_ready`) is still called from 14 files; move those controls to read `model_ready` directly. From OPEN.md:1924.
-- [ ] **L656** `world-class` partly, M: Left: per-act note and meeting rows and the search chip in the palette. `/read/acts` rows are drawn (palette.js:177-187); no note, meeting or search-chip row found. From OPEN.md:3721.
 - [ ] **L659** `world-class` partly, M: Add an egress lint that makes each outbound call site name its purpose and confirm remaining trust-contract rules. From OPEN.md:2023; OPEN.md:2513. Evidence: 72a/72b/73/74 landed (HISTORY 'Moved from the plans' Brief 72b); leftover rules unconfirmed, egress lint absent
 - [ ] **L660** `world-class` partly, M: Fix remaining Brief 101b/101c rows: installer progress and default-model warm. From SESSION_BRIEFS.md:335. Evidence: Files-missing row embed-choices.js:74 built; backend W5 rows re-verified built (ddd087984); installer progress and janitor warm not found
 - [ ] **L662** `world-class` partly, M: Left: a meeting card preview of when, who and open actions. Meeting cards get actions only (entry-card.js:999, note-cards.js:324). From OPEN.md:3563.
