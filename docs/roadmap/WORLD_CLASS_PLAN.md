@@ -298,7 +298,7 @@ toggle; the widgets dialog keeps only add/remove. Gate: recipe count on
 Dashboard ≤ 8 (audit script), all 24 widgets in the frame, 390px chrome ratio
 < 35%.
 
-**State 2026-10-05:** (b) every widget renders into one frame (`render(body)` over the `DASH_WIDGETS` table); drag-to-reorder on the grid itself is built (Edit layout makes each card `draggable`, `dashDragOverCard` moves it live, the drop saves the order; dashboard.js, found 2026-10-05, HISTORY.md "Moved from the plans, 2026-10-05 (nbf1005)"). The recipe-count gate re-run: LEDGER L-world-class-62.
+**State 2026-10-05:** (b) every widget renders into one frame (`render(body)` over the `DASH_WIDGETS` table); drag-to-reorder on the grid itself is built (Edit layout makes each card `draggable`, `dashDragOverCard` moves it live, the drop saves the order; dashboard.js, found 2026-10-05, HISTORY.md "Moved from the plans, 2026-10-05 (nbf1005)"). The recipe-count gate re-run 2026-11-14 (`scratchpad/audit/recipes.js`, 1440): Dashboard 5, Chat 12 (the busiest), Library 6; to 8 on Chat: LEDGER L-world-class-250.
 
 **The first screen, INBOX 436 (2026-10-03):** built; the diagnosis, the target and the before and after numbers are in HISTORY.md ("Moved from the plans, 2026-10-03").
 
@@ -693,7 +693,7 @@ updated per session):
 
 | Metric | Script | Today | Target |
 | --- | --- | --- | --- |
-| Distinct control recipes on the busiest screen | `scratchpad/audit/recipes.js` | 22 (Chat) | ≤ 8 |
+| Distinct control recipes on the busiest screen | `scratchpad/audit/recipes.js` | 12 (Chat, 2026-11-14) | ≤ 8 |
 | Control heights per bar | `docks.js` | 1 to 4 | 1 |
 | Chrome ratio at 390 | `audit/chrome.js` | 76% | < 35% |
 | Paragraphs > 120 chars outside popovers | `audit/prose.js` | 3 (2026-11-14) | 0 |
