@@ -2758,7 +2758,7 @@ MORE_TOPICS.append({
     ),
     "body": (
         "Patterns are what your notes keep coming back to, counted from the notes "
-        "themselves with no AI: a subject that came up again and again (\"university "
+        "themselves with no AI. Each is a subject that came up again and again (\"university "
         "came up 4 times since 16 July\"), one written about every week, a plan "
         "still open, a decision you went back on, or a busy week. They change as you write, "
         "since each is counted again whenever the dashboard draws. Press the "
