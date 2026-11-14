@@ -2719,7 +2719,9 @@ MORE_TOPICS.append({
         "lists) and what the last answer was about, so \"notes form last week\" is from and \"fill in the form\" "
         "stays form. When two readings stay close it answers the likelier and offers the other as a Did you mean "
         "chip; press it to ask again with that word. A word that is one of your own titles or tags is left as it is. "
-        "A numeric date like 11/09 follows your locale, and a fraction is a rating only beside a rating word."
+        "A numeric date like 11/09 follows your locale, and a fraction is a rating only beside a rating word. "
+        "The chat box and the Ask box underline a grammar slip as you pause (a double line); click it for the fix "
+        "or Ignore this one. The Grammar check switch in a document's writing panel turns it off."
     ),
 })
 TOPIC_META["chat-typos"] = {"title": "How Chat reads a slip", "path": "Chat tab"}

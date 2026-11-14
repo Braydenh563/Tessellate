@@ -602,13 +602,21 @@ function noteGrammarPlugin(CM) {
 //: reason `docProseFix` gives.
 function noteGrammarMenu(view, plugin, finding, x, y) {
   if (typeof openMenuAtPoint !== "function") return;
+  //: A note box is a CodeMirror view; the chat box and the Ask box (composer-lint.js) hand a `noteHost`
+  //: of the same three moves instead, so one popover serves a textarea as well as the editor.
+  const host = view.noteHost || {
+    text: () => docStr(view.state.doc),
+    replace: (option) => {
+      view.dispatch({ changes: { from: finding.start, to: finding.end, insert: option } });
+      view.focus();
+    },
+    refresh: () => view.dispatch({ effects: noteGrammarEffect.of(null) }),
+  };
   const apply = (option) => {
-    const text = docStr(view.state.doc);
-    if (text.slice(finding.start, finding.end) !== finding.text) {
+    if (host.text().slice(finding.start, finding.end) !== finding.text) {
       return toast("That text has changed since it was checked.", "info");
     }
-    view.dispatch({ changes: { from: finding.start, to: finding.end, insert: option } });
-    view.focus();
+    host.replace(option, finding);
   };
   const items = finding.alternatives.slice(0, DOC_SUGGEST_MAX).map((option) => ({
     group: "fix",
@@ -631,7 +639,7 @@ function noteGrammarMenu(view, plugin, finding, x, y) {
       title: add.title,
       run: () => {
         plugin.findings = plugin.findings.filter((other) => other.text.toLowerCase() !== finding.text.toLowerCase());
-        view.dispatch({ effects: noteGrammarEffect.of(null) });
+        host.refresh();
         add.run();
       },
     });
@@ -641,7 +649,7 @@ function noteGrammarMenu(view, plugin, finding, x, y) {
     label: "ph:eye-slash Ignore this one",
     run: () => {
       plugin.findings = plugin.findings.filter((other) => other !== finding);
-      view.dispatch({ effects: noteGrammarEffect.of(null) });
+      host.refresh();
     },
   });
   openMenuAtPoint(items, finding.message, x, y);

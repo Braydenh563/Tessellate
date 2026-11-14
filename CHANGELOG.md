@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Chat: the chat box and the Ask box underline grammar slips as you pause (a double line over the field, the documents' own Harper lint and fix popover reused, composer-lint.js); typing at 4x CPU throttle stays at 2.85 ms median in the input handler, 4.97 ms at the 95th (L-chat-227).
 - Voice: the 29 boot scripts' failure and info toasts and 80 verb-first success toasts now say it through voiceLine (a new "done" line, "{what}.", twinned in ai/realise.py); focusFirstIn moved to notifications.js, its one caller, so the boot gzip total fell 250,318 to 250,344 with the cap untouched (L-chat-255, tests/test_voice_tables.py).
 - Ghost text: the quick note and the capture card's body complete a word in grey like the chat box; the ghost sits inside the dialog or card, since a modal's top layer hid it on the body (L-chat-156, tests/test_chat_ghost_l141.py).
 - Skills: a skill that needs a model no longer runs from the dashboard chip, Library card or nudge while no model is connected (it says why); five gating tests, one per state (L-chat-184, tests/test_skill_gating_lchat184.py).

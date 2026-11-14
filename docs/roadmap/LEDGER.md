@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 47 | 18 | 0 | 0 | 65 |
+| chat | 0 | 46 | 18 | 0 | 0 | 64 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 418 | 87 | 0 | 124 | 831 |
+| all | 326 | 417 | 87 | 0 | 124 | 830 |
 
 ## graph
 
@@ -52,7 +52,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-64** `chat` open, M: Composer libraries: holidays, inflect, rapidfuzz, textstat (MIT, licence lines in THIRD_PARTY), wordfreq data licence checked first. From CHAT_PLAN.md:564. Evidence: Owner 2026-11-10 recommendation taken; none of holidays, inflect, rapidfuzz, textstat in pyproject.toml (grep 2026-11-14) Licences read 2026-11-14 from the wheels' metadata: holidays 0.108, inflect 7.6.0, rapidfuzz 3.14.6 and textstat 0.7.13 are all MIT (AGPL-compatible). Remaining step: add them to pyproject.toml with a docs/THIRD_PARTY.md line each in the same commit as the first use (holidays in the dates reader so 'last Christmas' gets its year, composer_empty.py:83; inflect for a/an and plurals; rapidfuzz for follow-on binding); an unused dependency is not added. wordfreq data licence still to check first.
 - [ ] **L-chat-167** `chat` partly, S: 413 chat stutter (ResizeObserver loop): owner confirmation on next run; no row. From CHAT_PLAN.md:618. Evidence: Recount 2026-11-14 (audit, verify in code first): fit deferred one frame, 500 ms flip limit, per plan (o-webpanel.js); owner run not done Owner step: on the next real run confirm the chat stutter and the ResizeObserver loop errors are gone; the loop guard in chat.js is in code and tested (tests/test_chat_recount_l144.py), so this stays open until confirmed.
 - [ ] **L-chat-176** `chat` partly, S: 27 notes mix: short jottings and long writing weighted equally: equal weighting not verified. From CHAT_PLAN.md:756. Evidence: Recount 2026-11-14 (audit, verify in code first): tests/test_eval_numbers_l30.py counts Remaining step: a test that short jottings and long writing weigh equally in the notes mix (decision 27).
-- [ ] **L-chat-227** `chat` open, S: VC1 Harper on composer and Ask box: composer and Ask underline. From CHAT_PLAN.md:1684. Evidence: Recount 2026-11-14 (audit, verify in code first): Harper only in documents, whiteboard, spell files (frontend/js grep) Measured 2026-11-14: the composer and Ask box are plain textareas; Harper runs only in documents-prose.js, harper-worker.js, documents-spell.js, spell-second.js, documents-languagetool.js and whiteboard*.js. Next step (size L): a mirror overlay behind the textarea that paints the underlines, fed by a debounced harper-worker lint, inside decision 54's interaction budget (measure typing lag at 4x CPU before and after); the click-to-fix popover is the documents one reused.
 - [ ] **L-chat-231** `chat` partly, S: composer6-1026 (3) welcome messages rebuilt on the clause grammar: not verified. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/greeting_compose.py
 - [ ] **L-chat-232** `chat` partly, S: composer6-1026 (4) needle under composer control: composer picks tool call not verified. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): needle_control.py, needle_provider.py exist
 - [ ] **L-chat-233** `chat` partly, S: composer6-1026 (5) composer reach into fixed-text surfaces: fixed text still present elsewhere. From CHAT_PLAN.md:1847. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_empty.py
