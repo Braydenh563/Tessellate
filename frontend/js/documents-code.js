@@ -361,7 +361,11 @@ function docCodeLintSource(CM) {
     };
     if (ext === "json") {
       found = docJsonDiagnostics(state.doc);
-      if (found.length) {
+      //: A valid file with a "$schema" key (a cheap gate; the piece reads the tree to be sure) is checked against that library schema (documents-json-schema.js, lazy).
+      if (!found.length && /"\$schema"\s*:/.test(text) && (await lazyScript("/js/documents-json-schema.js"))) {
+        found = await DOC_LINT_CONFIG.jsonSchema.diagnostics(CM, state).catch(() => []);
+      }
+      if (found.length && found[0].source !== "Schema") {
         const fixes = docJsonFixes(text, docJsonErrorAt(text), unit);
         found = found.map((d) => ({
           ...d,
@@ -812,7 +816,8 @@ let docCodeCompletionCache = null;
 
 function docCodeCompletionSource(CM) {
   if (docCodeCompletionCache) return docCodeCompletionCache;
-  docCodeCompletionCache = (context) => {
+  //: The names, keywords and snippets of the open file.
+  const plain = (context) => {
     const word = context.matchBefore(/[A-Za-z_$][\w$]*/);
     if (!word || (word.from === word.to && !context.explicit)) return null;
     const ext = docFileType().ext;
@@ -831,6 +836,13 @@ function docCodeCompletionSource(CM) {
       options.push({ label: name, type: "variable" });
     }
     return CM.autocomplete.completeFromList(options)(context);
+  };
+  docCodeCompletionCache = (context) => {
+    //: Key completion from a "$schema" in the library (documents-json-schema.js, loaded on the first ask).
+    if (docFileType().ext === "json" && /"\$schema"\s*:/.test(docStr(context.state.doc))) {
+      return lazyScript("/js/documents-json-schema.js").then((ok) => (ok && DOC_LINT_CONFIG.jsonSchema.complete(CM, context).catch(() => null)) || plain(context));
+    }
+    return plain(context);
   };
   return docCodeCompletionCache;
 }

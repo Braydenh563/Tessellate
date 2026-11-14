@@ -1294,5 +1294,19 @@ MID_TOPICS.extend(
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
+        #: L-documents-42: documents-json-schema.js.
+        {
+            "id": "json-schema",
+            "keywords": ("json schema", "$schema", "schema lint", "key completion", "validate json", "json keys"),
+            "body": (
+                "A .json file whose top-level object has a \"$schema\" naming another "
+                "JSON document in the Library (its title or file name) is checked "
+                "against it: a wrong type, a missing or unknown key, or a value "
+                "outside the list or range is underlined, and a quote where a key "
+                "goes (or Ctrl+Space) lists the schema's keys with their descriptions. "
+                "Nothing is fetched from the web; a schema not in the Library is one note."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
     ]
 )

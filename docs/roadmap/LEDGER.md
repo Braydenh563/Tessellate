@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 57 | 1 | 0 | 2 | 78 |
+| documents | 20 | 56 | 1 | 0 | 2 | 77 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 612 | 129 | 2 | 165 | 1244 |
+| all | 503 | 611 | 129 | 2 | 165 | 1243 |
 
 ## graph
 
@@ -337,7 +337,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-36** `documents` open, M: Debug: lower async/await and generators (needs a promise queue and a resumable stepper; refused today). From L334.
 - [ ] **L-documents-38** `documents` open, S: Debug: arrow functions whose parameter is a pattern with a default (lezer recovers with an error node), spread in new X(...xs), tagged templates. From L334.
 - [ ] **L-documents-39** `documents` open, S: Grid: sort and filter by column, header-row toggle, column resize and paste of a block of cells (the first cut edits, adds and deletes only). From L328.
-- [ ] **L-documents-42** `documents` open, M: JSON files with a $schema get lint and key completion from a small in-house validator. From owner research via hub 2026-11-14. Evidence: no new dependency; study codemirror-json-schema pointer-to-node mapping
 - [ ] **L-documents-43** `documents` open, M: Query block: a fenced block that renders a saved search live (SilverBullet-style). From owner research via hub 2026-11-14. Evidence: check the existing saved-search code first
 - [ ] **L-documents-44** `documents` open, L: Sub-pages (documents.parent_id) on AppFlowy's page-tree pattern. From owner research via hub 2026-11-14. Evidence: INBOX decision with a recommendation, then taken (standing order 3)
 - [ ] **L-documents-46** `documents` open, S: Finish the 1566 bordered-ghost sweep: Reminders filter chips, icon pickers, add-widget tiles, dark, 390, high contrast. From DOCUMENTS_PLAN.md:303, audit 2026-11-14. Evidence: no closing record: grep 'bordered ghost' in HISTORY and CHANGELOG finds nothing
