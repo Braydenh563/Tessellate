@@ -22,7 +22,10 @@ def _body(name: str, text: str = JS) -> str:
 def test_a_link_into_appearance_lands_in_the_panel_before_the_window_opens() -> None:
     body = _body("async function openSettingsModal(")
     popped = body.index('classList.contains("appearance-popped-out")')
-    assert popped < body.index("surfaceBuild(\"settings\")")
+    # Before the window opens, not before the body is built: the control lookup reads the
+    # lazy body, so `surfaceBuild("settings")` comes first (327e9480, the settings build order).
+    assert body.index('surfaceBuild("settings")') < popped
+    assert popped < body.index('$("settings-modal").classList.remove("hidden")')
     assert "openSettingRow({ el: found, section })" in body[popped:]
 
 
