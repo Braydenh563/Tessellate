@@ -294,6 +294,12 @@
       });
       return;
     }
+    //: **A block embed drawn before the document list lands** resolves to nothing (its document is found in `docs`), so it
+    //: stays a chip for good: the list never redraws a widget. One listener per widget, gone after it fires, no polling
+    //: (`loadDocumentsNow` fires `docs-landed`); an empty `docs` is the only state that waits.
+    if (!target && !docs.length && docBlockRefSplit(wikiLinkTarget(name)).blockId) {
+      document.addEventListener("docs-landed", () => host.isConnected && docEmbedFill(host, name, options), { once: true });
+    }
     //: `keep` is the Read view asking: it already drew its own "Nothing called that yet" box and only wants it
     //: swapped if the name turns out to be a file or a recording once they have loaded.
     if (!options?.keep) host.replaceChildren(docEmbedChip(name, target));

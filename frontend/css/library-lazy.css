@@ -1632,6 +1632,54 @@ body.printing-doc #doc-preview p,
   line-height: 1.5;
 }
 
+/* A document's page (INBOX 1325, L-documents-54; DESIGN.md "A document in a list"): the heading and the opening lines on a
+   3:4 leaf, laid out 12rem wide and scaled down to 3.5rem (0.2917 is the one over the other; plain lengths, not tokens), so it
+   reads as a page of text rather than a line of grey. Decoration: the row's own words say the same in full. */
+.doc-list-page {
+  flex: 0 0 auto;
+  inline-size: 3.5rem;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--page);
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+}
+.doc-list-page-leaf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  inline-size: 12rem;
+  aspect-ratio: 3 / 4;
+  padding: var(--space-5);
+  transform: scale(0.2917);
+  transform-origin: top left;
+  line-height: 1.4;
+  text-align: left;
+}
+.doc-list-page-head {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  color: var(--text);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.doc-list-page-lines {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 9;
+  line-clamp: 9;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+
 .wb-map-legend-title {
   color: var(--muted);
   font-size: var(--text-base);

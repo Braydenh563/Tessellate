@@ -29,7 +29,7 @@ class El {
   setAttribute(k, v) { this.attrs[k] = v; }
   addEventListener() {}
 }
-const document = { createElement: (t) => new El(t) };
+const document = { createElement: (t) => new El(t), addEventListener() {} };
 const window = {};
 const docs = [];
 const wikiLinkTarget = (n) => n;
