@@ -1211,7 +1211,7 @@ TAIL_TOPICS.extend(
                 "off, inserts today's date or the time, and copies the page or the "
                 "selection as formatted text to paste into Word or email. "
                 "Text size (Ctrl+wheel too) and spacing: document menu. The document's menus hold History "
-                "(every version, and a way back to any), Connections, Extract "
+                "(every version, a way back, a summary), Connections, Extract "
                 "notes, AI edit, a word goal, typewriter scrolling, dim all but "
                 "this paragraph, serif for reading and full width. With no model "
                 "connected, AI edit says why when pressed and "
