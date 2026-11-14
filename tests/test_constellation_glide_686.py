@@ -39,7 +39,7 @@ def _const(name: str) -> int:
 
 
 def _node(body: str):
-    script = "\n".join(_fn(n) for n in ("artEaseOut", "artLineFade", "artRetarget")) + "\n" + body
+    script = "\n".join(_fn(n) for n in ("artEaseOut", "artEaseSoft", "artLineFade", "artRetarget")) + "\n" + body
     out = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout
     return json.loads(out)
 
@@ -187,3 +187,17 @@ def test_the_constellation_keeps_its_shape_and_its_height_across_a_theme_change(
     assert "const artClock = { epoch: performance.now() };" in js
     assert "p.millis() * 0.0003" not in js
     assert js.count("artDriftMs() * 0.0003") == 3  # draw, saveSettled, the repaint after a resize (1620)
+
+
+@needs_node
+def test_a_second_regenerate_leaves_at_rest_not_at_the_peak_speed() -> None:
+    """L146. An interrupted glide restarted at the ease-out's peak: a star's fastest step was 13 to 16 px against 7 before. The interrupting glide eases in and out: its fastest frame is half the ease-out's."""
+    ms, fps = _const("ART_GLIDE_MS"), _const("ART_GLIDE_FPS")
+    out = _node(
+        f"const n = Math.ceil({ms} / (1000 / {fps})); const peak = (f) => Math.max(...Array.from({{ length: n }}, (_, i) => f((i + 1) / n) - f(i / n)));"
+        "process.stdout.write(JSON.stringify({ out: peak(artEaseOut), soft: peak(artEaseSoft), start: artEaseSoft(0.01) / artEaseOut(0.01), end: artEaseSoft(1) }));"
+    )
+    assert out["soft"] <= 0.55 * out["out"], out
+    assert out["soft"] <= 1 / 16 and out["end"] == 1
+    assert out["start"] < 0.1, "it leaves at rest"
+    assert "soft: u < 1 && !!glide" in SOURCE and "glide?.soft ? artEaseSoft(u) : artEaseOut(u)" in SOURCE

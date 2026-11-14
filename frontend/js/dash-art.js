@@ -240,6 +240,13 @@
     return 1 - k * k * k;
   }
 
+  //: The ease of a glide that interrupts another: it leaves at rest, so a second Regenerate has no kick
+  //: (the ease-out's first step is 3 times the average, 13 to 16 px against 7; this one peaks at 1.5 times).
+  function artEaseSoft(u) {
+    const k = Math.min(1, Math.max(0, u));
+    return k * k * (3 - 2 * k);
+  }
+
   //: The lines' strength through a glide: from wherever they were (a glide
   //: interrupted while they were half gone starts from half), out by a third
   //: of the way, held out while the stars cross, back in over the last half.
@@ -537,7 +544,7 @@
           glide.last = now;
         }
         const u = glide && !settled ? Math.min(1, glide.elapsed / ART_GLIDE_MS) : 1;
-        const e = artEaseOut(u);
+        const e = glide?.soft ? artEaseSoft(u) : artEaseOut(u);
         //: The drift goes on under the glide: a star eases from where it was
         //: drawn towards its new place as that place drifts, so it arrives on
         //: the moving point rather than on a still one and then lurching.
@@ -591,7 +598,7 @@
         const u = glide ? Math.min(1, glide.elapsed / ART_GLIDE_MS) : 1;
         const lineFrom = glide && u < 1 ? artLineFade(glide.lineFrom, u) : 1;
         const leaving = artRetarget(particles, glide && u < 1 ? glide.leaving : [], next);
-        glide = { elapsed: 0, last: null, lineFrom, leaving };
+        glide = { elapsed: 0, last: null, lineFrom, leaving, soft: u < 1 && !!glide };
         particles = next;
         p.frameRate(ART_GLIDE_FPS);
       };
