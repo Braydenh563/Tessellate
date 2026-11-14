@@ -13,6 +13,7 @@ import difflib
 import json
 import re
 from dataclasses import dataclass
+from datetime import datetime
 
 from sqlalchemy import literal, select
 from sqlalchemy.orm import Session
@@ -174,6 +175,26 @@ def _keeps(narrowed: Narrowed, row: tuple, categories: dict, linked: set[int]) -
     )
 
 
+def source(narrowed: Narrowed) -> str:
+    """The narrowing as a recountable query (`notebook_recount`, L-chat-93)."""
+    window = [narrowed.window[0].isoformat(), narrowed.window[1].isoformat(), narrowed.window[2]] if narrowed.window else None
+    return "filter:" + json.dumps({"linked": narrowed.linked, "any_tag": narrowed.any_tag, "tag": narrowed.tag, "category": narrowed.category,
+                                   "state": narrowed.state, "window": window}, sort_keys=True)
+
+
+def parse(raw: str) -> Narrowed:
+    """The `Narrowed` a `source` line names."""
+    body = json.loads(raw.removeprefix("filter:"))
+    window = body.pop("window")
+    return Narrowed(window=(datetime.fromisoformat(window[0]), datetime.fromisoformat(window[1]), window[2]) if window else None, **body)
+
+
+def _facts(narrowed: Narrowed, kept: int, total: int) -> list[dict]:
+    """The two stated numbers, each with the query that recounts it; the total of an archived view is a label only."""
+    return [{"label": "notes", "count": kept, "source": source(narrowed)},
+            {"label": "total", "count": total, "source": "label:total" if narrowed.state == "archived" else "notes"}]
+
+
 def count(session: Session, narrowed: Narrowed, visible) -> tuple[str, list[dict]] | None:  # noqa: ANN001
     """The sentence and facts for a narrowed count, or None when nothing
     narrows it. `visible` is the live-notes filter of `notebook_stats`, which leaves
@@ -194,4 +215,4 @@ def count(session: Session, narrowed: Narrowed, visible) -> tuple[str, list[dict
     kept = [row for row in rows if _keeps(narrowed, tuple(row), categories, linked)]
     shown_tag = next((t for t in tag_names if t.lower() == narrowed.tag.lower()), narrowed.tag)
     shown_category = next((n for n in names if n.lower() == narrowed.category.lower()), narrowed.category)
-    return _phrase(len(kept), narrowed, shown_category, shown_tag), [{"label": "notes", "count": len(kept)}, {"label": "total", "count": len(rows)}]
+    return _phrase(len(kept), narrowed, shown_category, shown_tag), _facts(narrowed, len(kept), len(rows))

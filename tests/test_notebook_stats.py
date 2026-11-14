@@ -384,4 +384,37 @@ def test_a16_a_count_answer_carries_a_measure_that_names_where_it_came_from(clie
     assert said is not None
     measure = said.measures()[0]
     assert isinstance(measure, notebook_stats.Measure)
-    assert (measure.kind, measure.value, measure.derived_from) == (said.kind, 2, "notes"), said.facts
+    #: L-chat-93 moved the intent: `derived_from` is the recountable query (it was the fact's label, "notes").
+    assert (measure.kind, measure.value) == (said.kind, 2) and measure.derived_from.startswith("filter:") and '"tag": "gym"' in measure.derived_from, said.facts
+
+
+def test_a16_every_stated_count_recounts_from_its_derived_from_query(client):
+    """L-chat-93: `derived_from` is a query the eval runs again, not the fact's label."""
+    from datetime import datetime
+
+    from tessellate.ai import notebook_recount
+
+    session = _session()
+    _note(session, "alpha beta", tags=["gym"])
+    _note(session, "beta gamma", tags=["gym", "food"])
+    _note(session, "delta")
+    session.commit()
+    now = datetime(2026, 11, 14, 12, 0)
+    asked = {
+        "how many notes do I have": "notes", "how many notes are tagged gym": "filter:", "how many gym notes": "tag:gym",
+        "beta comes up in how many notes": "mention:beta", "how many untagged notes": "untagged", "how many words have I written": "words",
+        "how many tags do I have": "tags", "how many notes did I write today": "created@", "how many notes are unlinked": "filter:",
+    }
+    seen = {}
+    for question, prefix in asked.items():
+        said = notebook_stats.answer(question, session, now=now)
+        assert said is not None and said.measures(), question
+        for measure in said.measures():
+            seen[question] = measure
+            assert not measure.derived_from.startswith("label:") or measure.derived_from == "label:total", (question, measure)
+            assert notebook_recount.recount(session, measure) == measure.value, (question, measure)
+        assert said.measures()[0].derived_from.startswith(prefix), (question, said.measures())
+    assert seen["how many gym notes"].value == 2
+    #: A wrong value is caught: the eval recount is not a copy of the stated number.
+    wrong = notebook_stats.Measure("tag-count", 99, "tag:gym")
+    assert notebook_recount.recount(session, wrong) == 2

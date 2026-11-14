@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 0 | 91 | 118 | 0 | 0 | 209 |
+| chat | 0 | 89 | 114 | 0 | 0 | 203 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 326 | 463 | 187 | 0 | 124 | 976 |
+| all | 326 | 461 | 183 | 0 | 124 | 970 |
 
 ## graph
 
@@ -60,12 +60,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-62** `chat` open, M: Phase 4 skills gate: Find loose ends 8 of 8 and 80% of built-in skills with no invalid call on a local 1.5 to 3B model. From CHAT_PLAN.md:363. Evidence: Phase 4 gate unmet: 3B found 2 of 8 (2026-10-05), 1.5B 2 of 8, skills 1/9 pass (2026-11-11); runnable headless on llama-server
 - [ ] **L-chat-63** `chat` open, M: Phase 5 (b): run the 25-question composer eval with the real embedder and set the cosine thresholds from it. From CHAT_PLAN.md:367. Evidence: Decision 19 cosine thresholds are reasoned, not measured; bge-small is runnable here (L-chat-43 measured it)
 - [ ] **L-chat-64** `chat` open, M: Composer libraries: holidays, inflect, rapidfuzz, textstat (MIT, licence lines in THIRD_PARTY), wordfreq data licence checked first. From CHAT_PLAN.md:564. Evidence: Owner 2026-11-10 recommendation taken; none of holidays, inflect, rapidfuzz, textstat in pyproject.toml (grep 2026-11-14)
-- [ ] **L-chat-66** `chat` partly, S: U3: taxonomy concept sets not verified. From CHAT_PLAN.md:1213. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_tables.py:801, :1294 VERB_NOUN_PAIRS Measured 2026-11-14: verb-noun pairs and repair are covered by the U1/U3 probes (tests/test_uax_probes_u_1114.py); the concept sets (sport, food, travel as one term) are not: 'gym' does not find a note that says only 'swimming'. Built 2026-11-14: composer_tables.CONCEPTS read by composer._concept_member in _fit_terms (test_u3 concept in tests/test_uax_probes_u_1114.py). Remaining step: grow the table (eight concepts today) from measured misses, and the tag and title paths do not read it.
-- [ ] **L-chat-92** `chat` partly, S: A15: six rules not all verified. From CHAT_PLAN.md:1248. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_voice.py:481 _patterns Measured 2026-11-14: recurrence (tests/test_uax_probes_a_1114.py::test_a15) is built and dated; streak, drift, contrast, load, time of day, first and last mention, co-occurrence and silence are not asked of the composer. Remaining step: one reader per rule in composer_voice._patterns, each with a measured dated line.
-- [ ] **L-chat-93** `chat` partly, S: A16: one Measure shape not found. From CHAT_PLAN.md:1249. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/notebook_stats.py Measured 2026-11-14: counts print as lines (test_a16) but no Measure(kind, value, derived_from) type exists; notebook_stats.StatAnswer.facts is the nearest. Built 2026-11-14: notebook_stats.Measure(kind, value, derived_from) and StatAnswer.measures() over facts (test_a16 in tests/test_notebook_stats.py). Remaining step: derived_from is the fact label today, not a recountable query; have the handlers set a recountable source and the eval recount from it.
-- [ ] **L-chat-99** `chat` open, S: A23: entity card aggregate (guess from absence). From CHAT_PLAN.md:1256. Evidence: Recount 2026-11-14 (audit, verify in code first): none found Measured 2026-11-14: 'tell me about Priya' gives the three sentences that name her and the note count (A10), but no first and last mention date and no related entities by co-occurrence. Remaining step: an entity-card block in composer_notes (first and last dated mention, count, top 2 sentences, co-occurring names).
-- [ ] **L-chat-105** `chat` partly, S: X13: variables and quick-adds unverified. From CHAT_PLAN.md:1280. Evidence: Recount 2026-11-14 (audit, verify in code first): template variables not verified Measured 2026-11-14: no {date} {weekday} {week} {title} {n} filler exists in the template path and no saved-phrasing chip. Built 2026-11-14: src/tessellate/ai/template_fill.py (fill, slots), test_x13 in tests/test_uax_probes_x_1114.py. Remaining step: call fill from the four built-in templates in frontend/js/note-templates.js (a route or a JS twin; not wired yet) and the saved phrasing with slots as a chip.
-- [ ] **L-chat-106** `chat` open, S: X15: scheduled act phrasing (guess). From CHAT_PLAN.md:1282. Evidence: Recount 2026-11-14 (audit, verify in code first): none found Measured 2026-11-14: 'every Monday list what is open' answers a notes search on 'Monday list open' (four unrelated notes), not an act; no recurring-act reader exists. Built 2026-11-14: commands._every_act reads 'every <weekday> <list|show|summarise|find|check|review ...>' as a weekly reminder (test_x15). Remaining step: 'every day' phrasing, and the one proactive line a day when the reminder fires (decision 28).
 - [ ] **L-chat-113** `chat` partly, S: C10: rule-based jokes unverified. From CHAT_PLAN.md:1300. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_jokes.py
 - [ ] **L-chat-114** `chat` partly, S: C12: greeting use unverified. From CHAT_PLAN.md:1302. Evidence: Recount 2026-11-14 (audit, verify in code first): act_registry.py and agent_turn.py "call me"
 - [ ] **L-chat-115** `chat` partly, S: C13: conversation controls table unverified. From CHAT_PLAN.md:1303. Evidence: Recount 2026-11-14 (audit, verify in code first): src/tessellate/ai/composer_chat.py

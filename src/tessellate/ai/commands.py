@@ -1365,7 +1365,7 @@ _TO_THE_BIN = re.compile(r"^(?:move|put|send|throw|chuck) (\S+(?: \S+)*?) (?:in|
 
 
 #: "every Monday list what is open": the act phrase is a weekly reminder whose note carries the phrasing (X15).
-_EVERY_ACT = re.compile(rf"^every\s+(?P<day>{recognise.WEEKDAY_WORD.pattern})\s+(?P<act>(?:list|show|summari[sz]e|tell me|find|check|review|send me)\b.+)$", re.I)
+_EVERY_ACT = re.compile(rf"^every\s+(?P<day>{recognise.WEEKDAY_WORD.pattern}|day|morning|evening|night|weekday)\s+(?P<act>(?:list|show|summari[sz]e|tell me|find|check|review|send me)\b.+)$", re.I)
 
 
 def _every_act(command: str, now: datetime, locale: str | None) -> dict | None:

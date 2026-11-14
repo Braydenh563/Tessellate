@@ -1010,14 +1010,15 @@ def _person(asked: str, lead: dict) -> str:
 
 #: "flew to Lisbon", "stayed in Porto": a motion or stay verb, or in/at/near, then the name; the fact graph
 #: types "to X" as a person, so the verb is what tells a place from "talked to Anna".
-_PLACE_CUE = lazy_compile(r"\b(?:flew|went|drove|travell?ed|moved|visited|trip|walked|sailed|stayed|lived|in|at|near)\s+(?:(?:out |back )?to\s+|in\s+|at\s+)?(?:the\s+)?$", re.I)
+_PLACE_CUE = lazy_compile(r"\b(?:flew|flights?|flying|went|drove|travell?ed|moved|visited|trip|walked|sailed|stayed|lived|in|at|near)\s+(?:(?:out |back )?to\s+|in\s+|at\s+)?(?:the\s+)?$", re.I)
 
 
 def _place(text: str, today) -> str:  # noqa: ANN001  # a date
     """The first place the answer's lead names ("We flew to Lisbon"), read by the fact graph."""
     from tessellate.ai import factgraph
 
-    lead = text.strip().split("\n\n", 1)[0]
+    #: The whole answer, not its lead: "You have three notes about the Lisbon trip." names it only in a later line ("flights to Lisbon").
+    lead = text.strip()
     found = factgraph.of_kind({"id": 0, "content": lead, "created_at": today.isoformat()}, "entity")
     return next((str(f.attrs.get("name") or "") for f in found if f.attrs.get("type") == "place" or (f.attrs.get("type") in ("person", "unknown") and _PLACE_CUE.search(lead[: f.start]))), "")[:60]
 
