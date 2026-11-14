@@ -11,6 +11,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -80,5 +82,5 @@ def test_a_plain_missing_name_or_a_loaded_list_waits_for_nothing() -> None:
 
 
 def test_the_list_loader_announces_itself() -> None:
-    text = (JS / "documents.js").read_text(encoding="utf-8")
+    text = documents_text()
     assert text.count('document.dispatchEvent(new Event("docs-landed"))') == 1

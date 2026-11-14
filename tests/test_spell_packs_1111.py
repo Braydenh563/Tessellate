@@ -274,7 +274,7 @@ globalThis.self = {
   postMessage: (message) => replies.push(message),
 };
 await import(pathToFileURL(`${root}/frontend/js/harper-worker.js`).href);
-const documents = await readFile(`${root}/frontend/js/documents.js`, "utf8");
+const documents = (await readFile(`${root}/frontend/js/documents-instruments.js`, "utf8")).replace(/^  /gm, "");
 const cut = (name) => new RegExp(`^function ${name}\\b[\\s\\S]*?^\\}`, "m").exec(documents)[0];
 const source = await readFile(`${root}/frontend/js/documents-spell.js`, "utf8");
 let renders = 0;

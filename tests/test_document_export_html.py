@@ -23,6 +23,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -114,7 +116,7 @@ def test_the_export_strips_what_only_works_inside_the_app() -> None:
     for. A removal from this list is a deliberate decision (an icon font gets
     inlined, say) and should fail here until the plan says so.
     """
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    text = documents_text()
     strip = re.search(r'const DOC_EXPORT_STRIP = "([^"]+)"', text)
     assert strip, "DOC_EXPORT_STRIP is gone; the export ships the app's controls"
     selectors = strip.group(1)
@@ -150,7 +152,7 @@ def test_the_menu_offers_it_where_the_other_exports_are() -> None:
 def test_a_graph_and_a_table_of_notes_export_as_figures_not_as_screen_controls() -> None:
     """Found driving the export (F1 run 2): the plot had no lines styled, the key's swatch was a style the clean-up drops, a base
     block was saved as its "Reading the notes" line, and its row names (buttons) were removed with the other controls."""
-    docs = DOCUMENTS_JS.read_text(encoding="utf-8")
+    docs = documents_text()
     export = EXPORT_JS.read_text(encoding="utf-8")
     figures = docs[docs.index("docExportClean.figures = ") :][:1400]
     assert all(name in figures for name in (".dg-tools", ".dg-params", ".dg-edit", ".db-edit", ".db-bar button", ".dg-swatch")), figures
@@ -181,7 +183,7 @@ def test_a_saved_board_and_calendar_carry_no_dead_controls() -> None:
     draggable="true" and picked up a ghost that dropped nowhere, the view switch and the Group by and Date in pickers were
     empty shells (a bare "Group by" label, empty .menu-wrap spans), and the month arrows were already gone with the other
     buttons, so the calendar's title stays as plain text for the month it was exported in."""
-    docs = DOCUMENTS_JS.read_text(encoding="utf-8")
+    docs = documents_text()
     rest = docs[docs.index("docExportClean.rest = ") :][:3500]
     for gone in (".db-choose", ".db-views", ".db-body .menu-wrap", 'removeAttribute("draggable")'):
         assert gone in rest, gone

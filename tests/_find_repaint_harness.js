@@ -20,7 +20,7 @@ function unwrapped(src) {
   return [...lines.slice(0, first), ...body, ...lines.slice(last + 1)].join("\n");
 }
 
-const SOURCE = ["documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js", "documents-view.js"]
+const SOURCE = ["documents.js", "documents-prose-check.js", "documents-suggest-panel.js", "documents-commands.js", "documents-templates.js", "documents-cm-load.js", "documents-tablemenu.js", "documents-preview.js", "documents-edit-keys.js", "documents-richpaste.js", "documents-block-ids.js", "documents-links-panels.js", "documents-save.js", "documents-instruments.js", "documents-view.js"]
   .map((f) => unwrapped(fs.readFileSync(path.join(root, "frontend", "js", f), "utf8")))
   .join("\n");
 

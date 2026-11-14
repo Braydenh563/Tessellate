@@ -12,6 +12,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests._app_js import documents_text
+
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 
 #: The lightbox's Save follows a URL it already has, and leaves `download`
@@ -38,6 +40,6 @@ def test_the_helper_is_the_browser_half_of_save_file():
 
 
 def test_the_markdown_export_is_the_shared_export():
-    text = (JS / "documents.js").read_text(encoding="utf-8")
+    text = documents_text()
     body = text[text.index("function exportDocumentMarkdown()") :][:200]
     assert 'downloadDocumentExport("export.md", "document.md")' in body

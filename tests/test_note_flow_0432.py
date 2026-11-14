@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 
 from tessellate.api import routes_entries
-from tests._app_js import with_pieces
+from tests._app_js import documents_text, with_pieces
 from tests import _js_scope
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -69,7 +69,7 @@ def test_a_note_filed_by_the_person_says_user(client):
 
 
 def test_ctrl_enter_reaches_the_box_under_the_editor():
-    keymap = _function(_read("documents.js"), "noteSurfaceKeymap")
+    keymap = _function(documents_text(), "noteSurfaceKeymap")
     assert '"Mod-Enter"' in keymap
     assert "host.dispatchEvent" in keymap and "defaultPrevented" in keymap
     # The capture listener claims the chord (or the editor inserts a line too)
@@ -293,7 +293,7 @@ def test_note_boxes_are_live_with_a_source_switch_not_a_preview():
     """INBOX 430, the owner: "note forms use the live view with a source
     toggle, no Preview". Measured: Live hides `**` and `[[`, Source shows the
     markdown as typed, the same text and caret either way."""
-    docs = _read("documents.js")
+    docs = documents_text()
     ext = _function(docs, "noteSurfaceExtensions")
     #: INBOX 447: the Source choice only applies where the toggle is.
     assert "host.noteLiveSlot.of(noteSourceWanted() && NOTE_SOURCE_HOSTS.has(host.id) ? [] : live)" in ext

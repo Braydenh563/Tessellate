@@ -15,7 +15,7 @@ panel (notes-list.js, `routes_categories.py`).
 
 from __future__ import annotations
 
-from tests._app_js import frontend_text
+from tests._app_js import frontend_text, documents_text
 from tests._help_text import help_chat_text, help_more_text
 
 import json
@@ -383,7 +383,7 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
     builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
     for key in ("Insert", "Delete", "Backspace", "ContextMenu"):
         assert key in builder, key
-    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    docs = documents_text()
     assert "Picture" in docs and "A diagram has Picture, List, Split and Source." in docs
 
 
