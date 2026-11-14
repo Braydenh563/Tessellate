@@ -6,10 +6,11 @@ board list already carry it, and null clears it."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-JS = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+JS = frontend_text("whiteboard.js")
 FMT = (ROOT / "frontend" / "js" / "whiteboard-format.js").read_text(encoding="utf-8")
 CMD = (ROOT / "frontend" / "js" / "whiteboard-commands.js").read_text(encoding="utf-8")
 

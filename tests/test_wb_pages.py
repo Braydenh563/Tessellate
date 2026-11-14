@@ -7,6 +7,7 @@ the first press says how to unlock it; right-click on it unlocks that one.
 The browser half is `scratchpad/ui-sweeps/wb1005-pages.js`.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -15,7 +16,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 LIBRARY = (ROOT / "frontend" / "js" / "whiteboard-library.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 

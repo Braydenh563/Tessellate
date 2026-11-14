@@ -84,7 +84,16 @@
     }));
     edit.classList.add("doc-embed-board-edit");
     edit.dataset.boardId = String(id);
-    return edit;
+    //: Show live draws the board in a window of its own after the button, read-only (decision 83): documents-board.js mounts it.
+    const live = smallButton("ph:eye Show live", "Show this board here, to zoom and pan; Edit here changes it", () => ensureModule("docBoard").then(() => {
+      live.dispatchEvent(new CustomEvent("board-live", { bubbles: true, detail: { id } }));
+    }));
+    live.classList.add("doc-embed-board-live");
+    live.setAttribute("aria-pressed", "false");
+    live.dataset.boardId = String(id);
+    const both = document.createDocumentFragment();
+    both.append(edit, live);
+    return both;
   }
   docEmbedFill.editButtons = (root) => {
     for (const card of root.querySelectorAll(".board-embed[data-board-ref]")) {

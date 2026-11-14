@@ -24,7 +24,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from pathlib import Path
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 APP = Path(__file__).resolve().parents[1] / "frontend" / "js" / "app.js"
 WHITEBOARD = Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js"
@@ -105,7 +105,7 @@ def _source() -> str:
     combined = (
         app_js_text()
         + "\n"
-        + WHITEBOARD.read_text(encoding="utf-8")
+        + frontend_text("whiteboard.js")
         + "\n"
         + GRAPH.read_text(encoding="utf-8")
         + "\n"
@@ -133,7 +133,7 @@ def _source() -> str:
         + "\n"
         + DOCUMENTS_PROSE.read_text(encoding="utf-8")
         + "\n"
-        + WHITEBOARD_MAP.read_text(encoding="utf-8")
+        + frontend_text("whiteboard-map.js")
         + "\n"
         #: The board's command table and its sidebar (2026-10-05), in the
         #: Library bundle after whiteboard.js.

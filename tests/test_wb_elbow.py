@@ -8,6 +8,7 @@ their shapes, the two boxes, and any waypoints, to a polyline. Run in node
 against the source; the browser half is `scratchpad/ui-sweeps/wb1005-elbow.js`.
 """
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -17,7 +18,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+SOURCE = frontend_text("whiteboard.js")
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 ROUTE_FUNCTIONS = ("wbElbowSide", "wbElbowCrosses", "wbElbowLeg", "wbElbowDetour", "wbElbowRoute", "wbElbowFloat", "wbElbowEnds", "wbPolylineAt")
 

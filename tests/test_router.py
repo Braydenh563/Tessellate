@@ -18,7 +18,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 ROOT = Path(__file__).resolve().parent.parent
 ROUTER = ROOT / "frontend" / "js" / "router.js"
@@ -198,7 +198,7 @@ COPY_LINK_SITES = [
 
 @pytest.mark.parametrize(("name", "needle"), COPY_LINK_SITES)
 def test_every_object_menu_offers_copy_app_link(name, needle):
-    source = (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
+    source = frontend_text(name)
     assert needle in source, f"{name} lost its Copy app link row"
 
 
@@ -214,7 +214,7 @@ def test_the_app_link_row_is_one_recipe_and_the_wiki_row_is_named_apart():
     assert '"ph:link Copy app link"' in router
     # Where a wiki link is copied the two rows must be told apart (INBOX 483).
     for name in ("entry-menu.js", "library.js"):
-        source = (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
+        source = frontend_text(name)
         assert "Copy wiki link" in source and "Copy [[link]]" not in source
 
 

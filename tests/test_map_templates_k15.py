@@ -10,6 +10,7 @@ to the preview's shape word.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import re
 import shutil
@@ -105,7 +106,7 @@ def test_a_new_map_is_not_fitted_again_after_it_is_framed():
     `wbFrameMapOnOpen`'s fallback for a map too wide to read: Career plan
     opened at 17% on a phone (measured 390x844, 12 topics, words 2px high)
     instead of at 1:1 on its root. A map frames itself; only a board is fitted."""
-    text = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    text = frontend_text("whiteboard.js")
     start = text.index('if (board.type === "map") await wbMapTidyFresh();')
     tail = text[start : start + 400]
     fit = tail.index("wbZoomToFit({ animate: false })")

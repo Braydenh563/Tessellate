@@ -94,6 +94,9 @@ ATTACHMENT_SUFFIXES = frozenset(
         ".rs", ".rb", ".php", ".sh", ".sql", ".swift", ".kt",
         # Archives
         ".zip",
+        #: An EMF is kept as the original of a board import (L-whiteboard-48): nothing draws it, so it is only
+        #: ever a download (the route below serves every non-picture as an octet stream, attachment, sandboxed).
+        ".emf",
     }
     #: Everything the chat's file picker offers (`docview.VIEWABLE_SUFFIXES`),
     #: so the Quick capture card, which takes the same files and attaches them
@@ -211,9 +214,10 @@ def download_file(attachment_id: int, session: Session = Depends(get_session)) -
     #: keeps the app's own policy, since Chrome's viewer will not open in a
     #: sandboxed response and a PDF runs no script in the page anyway.
     mime = (attachment.mime or "").split(";", 1)[0].strip().lower()
-    if not (mime.startswith("image/") or mime == "application/pdf"):
+    #: An EMF says `image/emf` but no browser draws one: it is a download, whatever the uploader declared.
+    if Path(attachment.filename).suffix.lower() == ".emf" or not (mime.startswith("image/") or mime == "application/pdf"):
         mime = "application/octet-stream"
-    headers = {"Cross-Origin-Resource-Policy": "same-origin"}
+    headers = {"Cross-Origin-Resource-Policy": "same-origin", "X-Content-Type-Options": "nosniff"}
     if mime != "application/pdf":
         headers["Content-Security-Policy"] = "sandbox; default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"
     return FileResponse(path, filename=attachment.filename, media_type=mime, headers=headers)

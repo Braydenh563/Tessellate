@@ -6,14 +6,14 @@ showing only its top-left corner: any overlap with the content counted as
 kept. These run the real `wbViewShowsContent` under node.
 """
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
-from pathlib import Path
 
 import pytest
 
-WB = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _function(name: str) -> str:

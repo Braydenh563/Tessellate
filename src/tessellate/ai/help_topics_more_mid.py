@@ -1344,7 +1344,7 @@ MID_TOPICS.extend(
                 "underlined, with Ruff's own fix in the hover card where it has one. "
                 "It runs on this computer and works offline."
             ),
-            "badge": {"label": "Settings", "tab": "settings"},
+            "badge": {"label": "Library", "tab": "library"},
         },
     ]
 )

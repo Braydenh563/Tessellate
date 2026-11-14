@@ -18,7 +18,7 @@ from collections import Counter
 from pathlib import Path
 
 from tests._css_paths import css_text
-from tests._app_js import app_js_text
+from tests._app_js import app_js_text, frontend_text
 
 INDEX = Path(__file__).resolve().parents[1] / "frontend" / "index.html"
 
@@ -99,7 +99,7 @@ def _frontend_js() -> str:
     files' own $("...") lookups.
     """
     app = app_js_text()
-    whiteboard = (INDEX.parent / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    whiteboard = frontend_text("whiteboard.js")
     graph = (INDEX.parent / "js" / "graph.js").read_text(encoding="utf-8")
     documents = (INDEX.parent / "js" / "documents.js").read_text(encoding="utf-8")
     library = (INDEX.parent / "js" / "library.js").read_text(encoding="utf-8")
@@ -111,7 +111,7 @@ def _frontend_js() -> str:
     avatars += "\n" + (INDEX.parent / "js" / "atlas.js").read_text(encoding="utf-8")
     documents_code = (INDEX.parent / "js" / "documents-code.js").read_text(encoding="utf-8")
     documents_prose = (INDEX.parent / "js" / "documents-prose.js").read_text(encoding="utf-8")
-    whiteboard_map = (INDEX.parent / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    whiteboard_map = frontend_text("whiteboard-map.js")
     #: The board's command table and its sidebar (2026-10-05).
     whiteboard_extras = "\n".join(
         (INDEX.parent / "js" / name).read_text(encoding="utf-8")

@@ -3,6 +3,7 @@
 Each test names the measurement it pins (docs/roadmap/agent-remaining/polish5-1031.md).
 """
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,7 +11,7 @@ JS = ROOT / "frontend" / "js"
 
 
 def _src(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") else (JS / name).read_text(encoding="utf-8")
 
 
 def test_back_to_top_clears_the_floating_new_button_on_a_phone():

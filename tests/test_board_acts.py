@@ -6,6 +6,7 @@ reading the words itself."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 from pathlib import Path
 
@@ -45,7 +46,7 @@ def test_the_palette_runs_it_through_the_boards_commands():
     js = (ROOT / "frontend/js/whiteboard-commands.js").read_text(encoding="utf-8")
     assert '"/read/board' in js
     assert "wbArrangeGridSelection(" in js
-    board = (ROOT / "frontend/js/whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     assert "async function wbArrangeGridSelection(columns)" in board
     palette = _js_scope.unwrapped((ROOT / "frontend/js/app-palette.js").read_text(encoding="utf-8"))
     assert "wbPaletteActRow(query)" in palette
@@ -64,5 +65,5 @@ def test_a_stickys_day_is_read_for_its_chip(client):
 
 
 def test_the_board_paints_the_chip_from_the_route():
-    board = (ROOT / "frontend/js/whiteboard.js").read_text(encoding="utf-8")
+    board = frontend_text("whiteboard.js")
     assert '"/read/dates"' in board and "wbScheduleStickyDates();" in board

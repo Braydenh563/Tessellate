@@ -10,13 +10,14 @@ fixed places, never on the rail or the top bar; 1440 keeps the floating bar.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
 def test_a_selection_under_the_top_band_gets_the_foot() -> None:
-    js = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    js = frontend_text("whiteboard.js")
     start = js.index("const pinned = active === bar && WB_PHONE.matches;")
     block = js[start : js.index("} else {", start)]
     assert 'getElementById("wb-tool-group")' in block, "the foot is measured against the rail"

@@ -5,10 +5,11 @@ marquee's canvas; they now draw a ghost of the kind in the card layer, in
 board units (`scratchpad/ui-sweeps/wbplaceghost.js`: 3/9 at 1440 before, a
 marquee and no ghost for all three; 30/30 at 1440 and 1024 after)."""
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 LAZY = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
 
 
@@ -17,7 +18,9 @@ def test_a_placing_drag_draws_a_ghost_not_the_marquee():
     body = WB[WB.index("function wbBeginPlaceGhost("):]
     body = body[:body.index("\n  }\n")]
     assert 'getElementById("wb-html-layer")' in body
-    assert "setPointerCapture" in body
+    #: The capture goes through the one helper (L271), which calls setPointerCapture.
+    assert "wbBoardState.capture(containerEl, pointerId)" in body
+    assert "el.setPointerCapture(pointerId)" in WB
 
 
 def test_each_kind_has_its_look():

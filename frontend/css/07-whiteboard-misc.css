@@ -16,22 +16,6 @@
 /* A picture fills its box and keeps its aspect (K16/K19): without this it drew
    at its natural size, so a pasted image shrunk to the view overflowed a
    smaller selection box and a resize changed the box but not the picture. */
-/* K18: a saved picture's caption, one muted line under it (Show captions). */
-.wb-object-caption {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: var(--space-1);
-  font-size: var(--text-xs);
-  line-height: 1.3;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0.75;
-  pointer-events: none;
-}
 .wb-object-image > img {
   display: block;
   width: 100%;
@@ -349,6 +333,12 @@
   transition:
     opacity var(--motion-fast) var(--ease-out),
     display var(--motion-fast) linear allow-discrete;
+}
+/* Too small on screen to hold its grips: none, so a press drags the box
+   (L-whiteboard-15; the cull pass sets `wb-tiny`). Two ids, so it outranks
+   every reveal rule below. */
+#whiteboard-container #wb-html-layer > .wb-tiny .wb-resize-handle {
+  display: none;
 }
 /* Interactive (and visible) only in the Select tool, `:hover` alone fires
    for *any* tool the instant the cursor crosses the card, so without this
@@ -7110,10 +7100,10 @@ button.connection-row:is(:hover, :focus-visible) {
 }
 .whiteboard-floating-panel.bottom-center .wb-tool-section-label {
   position: absolute;
-  width: 1px;
   height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
+  /* Hidden by clipping everything, not by a 1px box with overflow: the word keeps its own width, so it does not
+     "overflow" its box by 18 to 50px (L264) and a screen reader still reads it. */
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 .whiteboard-floating-panel.bottom-center .wb-tool-section {
@@ -7695,13 +7685,6 @@ button.connection-row:is(:hover, :focus-visible) {
   display: none;
 }
 @media (max-width: 819.98px) {
-  /* Search and Overview are also switches in the View menu; the two icons
-     and their divider are what pushed the bar onto a third row. */
-  .wb-topbar #wb-search-toggle,
-  .wb-topbar #wb-navigator-toggle,
-  .wb-topbar #wb-navigator-toggle + .wb-topbar-divider {
-    display: none;
-  }
   /* **Two more leave on a phone, and neither is lost.** Measured at 320 with
      the 44px touch floor on: the right half needs 5 menu toggles, a divider
      and the Library button at 44px each in 260px of content box, which is
@@ -12047,7 +12030,7 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   top: calc(0.5rem + var(--wb-h-topbar) + var(--space-3));
   left: 50%;
   transform: translateX(-50%);
-    display: flex;
+  display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);

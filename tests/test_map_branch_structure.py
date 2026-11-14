@@ -6,11 +6,12 @@ boundary. The browser half, overlap and lines measured, is
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAP = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+MAP = frontend_text("whiteboard-map.js")
+WB = frontend_text("whiteboard.js")
 
 
 def _body(src: str, name: str) -> str:

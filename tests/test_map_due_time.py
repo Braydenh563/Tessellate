@@ -5,6 +5,7 @@ functions run in node under a fixed clock (12 Nov 2026, 10:00)."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -13,7 +14,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-MAP_JS = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+MAP_JS = frontend_text("whiteboard-map.js")
 CLOCK = (
     "const RealDate = Date; globalThis.Date = class extends RealDate {"
     " constructor(...a) { if (a.length) super(...a); else super(2026, 10, 12, 10, 0, 0); } };\n"

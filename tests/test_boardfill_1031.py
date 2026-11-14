@@ -5,6 +5,7 @@ the server owns; the measured Playwright numbers are in the commit message."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from tests._help_text import help_chat_text, help_more_text
 
 import json
@@ -22,7 +23,7 @@ LAZY_CSS = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="
 
 
 def _wb_js() -> str:
-    return (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    return frontend_text("whiteboard.js")
 
 
 # --- opacity of the fill and of the line ----------------------------------------

@@ -7,6 +7,7 @@ messages; the colour maths is run in node here."""
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 from tests._help_text import help_chat_text, help_more_text
 
 import json
@@ -23,7 +24,7 @@ JS = ROOT / "frontend" / "js"
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 FORMAT_JS = (JS / "whiteboard-format.js").read_text(encoding="utf-8")
 INTER = (JS / "whiteboard-interchange.js").read_text(encoding="utf-8")
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 DRAW = JS / "mermaid-draw.js"
 SOURCE = "sequenceDiagram\n  A->>B: hi"
 

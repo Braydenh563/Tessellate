@@ -1,5 +1,6 @@
 """A board's selection never outlives its items (wbdog-1026: Export > Selection threw after an undone paste)."""
 
+from tests._app_js import frontend_text
 import json
 import shutil
 import subprocess
@@ -8,7 +9,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-WB = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 
 
 def _run(state: dict, lone, multi: list[str]):

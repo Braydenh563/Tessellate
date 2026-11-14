@@ -9,13 +9,14 @@ relies on and the two rules that keep it safe.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 STORE = (JS / "undo-store.js").read_text(encoding="utf-8")
 APP = (JS / "app.js").read_text(encoding="utf-8")
-WB = (JS / "whiteboard.js").read_text(encoding="utf-8")
+WB = frontend_text("whiteboard.js")
 DOCS = (JS / "documents.js").read_text(encoding="utf-8")
 
 

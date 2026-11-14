@@ -16,11 +16,11 @@ from __future__ import annotations
 
 import re
 
-from tests._app_js import JS_DIR, lazy_modules_source
+from tests._app_js import JS_DIR, lazy_modules_source, frontend_text
 
 
 def _text(name: str) -> str:
-    return (JS_DIR / name).read_text(encoding="utf-8")
+    return frontend_text(name) if name.startswith("whiteboard") else (JS_DIR / name).read_text(encoding="utf-8")
 
 
 def _press_branch() -> str:

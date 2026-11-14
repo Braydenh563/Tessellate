@@ -1,4 +1,4 @@
-"""The board's Arrange menu is five submenus, not 25 rows (INBOX 1564, U15).
+"""The board's Arrange menu is six submenus, not 25 rows (INBOX 1564, U15).
 
 The owner, 2026-11-03: "I think it is a good idea to make it subsectioned
 yeah". The rows stay in the markup under `data-wb-submenu` sections (every
@@ -9,6 +9,7 @@ section's rows into the menu recipe's own `buildMenuGroupButton` at boot.
 
 from __future__ import annotations
 
+from tests._app_js import frontend_text
 import re
 from pathlib import Path
 
@@ -16,7 +17,7 @@ from tests._help_text import help_core_text
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-BOARD = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+BOARD = frontend_text("whiteboard.js")
 HELP = help_core_text()
 DESIGN = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
 
@@ -26,11 +27,12 @@ def _arrange() -> str:
     return block[: block.index('<div class="wb-board-menu-wrap">')]
 
 
-def test_arrange_is_five_named_submenus_holding_every_row() -> None:
+def test_arrange_is_six_named_submenus_holding_every_row() -> None:
     block = _arrange()
     sections = re.findall(r'<div class="wb-menu-section" data-wb-submenu="ph:([a-z-]+) ([^"]+)"', block)
-    assert [name for _, name in sections] == ["Order", "Align", "Distribute, size and flip", "Tidy and connect", "Group and lock"]
-    assert len(re.findall(r'data-wb-cmd="', block)) == 28
+    assert [name for _, name in sections] == ["Order", "Align", "Distribute, size and flip", "Layout", "Tidy and connect", "Group and lock"]
+    #: 35 since L-whiteboard-48 added Rack to the Layout submenu (a new row, so the count's intent moved).
+    assert len(re.findall(r'data-wb-cmd="', block)) == 35
     assert "wb-panel-group-label" not in block, "the trigger names the group; a label over it says it twice"
 
 

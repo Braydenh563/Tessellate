@@ -293,3 +293,18 @@ def test_an_empty_board_has_nothing_to_snapshot(client):
     board = _board(client, "Empty snapshot")
     out = client.post("/whiteboard/history/snapshots", json={"board_id": board["id"]})
     assert out.status_code == 409
+
+
+def test_a_change_from_elsewhere_drops_only_the_steps_on_the_same_items():
+    """L274: Undo must not clobber the agent's or another tab's work (decision 17); steps on other items stay."""
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard-history.js").read_text()
+    assert "function wbEntryKeys(" in js and "function wbDropStaleSteps(" in js
+    take = js[js.index("async function wbTakeChangeFromElsewhere") :]
+    assert "const rowsBefore = wbBoardRows();" in take
+    assert "wbDropStaleSteps(rowsBefore, wbBoardRows(), entry)" in take
+    assert "left the history" in take
+    drop = js[js.index("function wbDropStaleSteps(") : js.index("async function wbTakeChangeFromElsewhere")]
+    assert "if (stack[i] === keep) continue;" in drop  # the external step itself stays
+    assert "![...keys].some((key) => touched.has(key))" in drop  # only a step on a touched item goes
