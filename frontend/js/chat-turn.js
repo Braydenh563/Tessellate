@@ -951,9 +951,9 @@ chatSendTurn.stage = {
         // thing that saw the whole turn: the server reports per-round timings,
         // and an agent turn is several rounds plus the tool calls between them.
         elapsed_ms: elapsedMs,
-        prior_versions: opts.priorVersions?.length ? opts.priorVersions : null,
         //: For a reload (W1).
         stopped: t.stopped,
+        prior_versions: opts.priorVersions?.length ? opts.priorVersions : null,
         wrote: bubble.dataset.wrote,
         // The "N matching notes" disclosure's own data. Reported: "semantic
         // search results in chat messages keep disappearing" - true on every

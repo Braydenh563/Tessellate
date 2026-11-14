@@ -19587,20 +19587,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_add_months` | src/tessellate/ai/recognise_reminders.py:77 |
 | `_day_fits` | src/tessellate/ai/recognise_reminders.py:67 |
-| `_is_time_words` | src/tessellate/ai/recognise_reminders.py:287 |
+| `_is_time_words` | src/tessellate/ai/recognise_reminders.py:290 |
 | `_keep_due_day` | src/tessellate/ai/recognise_reminders.py:183 |
 | `_known_day` | src/tessellate/ai/recognise_reminders.py:125 |
-| `_names_a_topic` | src/tessellate/ai/recognise_reminders.py:275 |
-| `_only_topics` | src/tessellate/ai/recognise_reminders.py:281 |
+| `_names_a_topic` | src/tessellate/ai/recognise_reminders.py:278 |
+| `_only_topics` | src/tessellate/ai/recognise_reminders.py:284 |
 | `_reminder_instant` | src/tessellate/ai/recognise_reminders.py:146 |
 | `_reminder_words` | src/tessellate/ai/recognise_reminders.py:162 |
-| `_repeat_and_alert` | src/tessellate/ai/recognise_reminders.py:302 |
+| `_repeat_and_alert` | src/tessellate/ai/recognise_reminders.py:305 |
 | `_rule_parts` | src/tessellate/ai/recognise_reminders.py:61 |
 | `_spoken_instant` | src/tessellate/ai/recognise_reminders.py:131 |
-| `_trim_dangling` | src/tessellate/ai/recognise_reminders.py:254 |
+| `_trim_dangling` | src/tessellate/ai/recognise_reminders.py:257 |
 | `first_of` | src/tessellate/ai/recognise_reminders.py:111 |
 | `next_occurrence` | src/tessellate/ai/recognise_reminders.py:92 |
-| `parse_reminder_text` | src/tessellate/ai/recognise_reminders.py:223 |
+| `parse_reminder_text` | src/tessellate/ai/recognise_reminders.py:226 |
 | `stored_repeat` | src/tessellate/ai/recognise_reminders.py:45 |
 | `window_start` | src/tessellate/ai/recognise_reminders.py:205 |
 

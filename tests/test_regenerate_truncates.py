@@ -59,6 +59,8 @@ const toast = () => {{}};
 const apiJson = async (url, opts) => {{ calls.push([url, JSON.parse(opts.body)]); }};
 const confirmDialog = async () => {{ confirms++; return {str(confirm).lower()}; }};
 const sendChatMessage = (q, o) => {{ sent = [q, o]; }};
+//: The regenerate reads the answer's earlier versions (chat-turn.js `assistantMessageActions.versionsOf`).
+const assistantMessageActions = {{ versionsOf: () => [] }};
 {code}
 const target = host.children.filter((n) => n.role === "assistant")[{regen_index}];
 if ({str(ran_write).lower()}) target.dataset.wrote = "1";

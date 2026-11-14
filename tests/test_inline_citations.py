@@ -130,8 +130,9 @@ def test_a_chat_turn_hands_over_all_of_its_prose_blocks(app_js):
     assert 'querySelector(".bubble-answer")' not in app_js
     #: Seven: the three citation sites, the live one that numbers sources while
     #: the answer streams (`placeLiveCitations`), the two that place figures
-    #: (INBOX 526) and the digest offer's.
-    assert app_js.count('querySelectorAll(".bubble-answer")') == 7
+    #: (INBOX 526), the digest offer's and the version pager's (L165: it
+    #: redraws the final answer block, the last of all of them).
+    assert app_js.count('querySelectorAll(".bubble-answer")') == 8
 
 
 def test_the_live_renderer_is_stopped_before_the_markers_go_in(app_js):

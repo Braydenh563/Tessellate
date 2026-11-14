@@ -212,7 +212,10 @@ def window_start(text: str) -> str:
     if found is None:
         return text
     hour, minute, half, end_hour, end_half = found.group(1), found.group(2), found.group(3), found.group(4), found.group(5)
-    if not (half or end_half or minute) and not _WINDOW_ENDS.match(text, found.end()):
+    bare = not (half or end_half or minute)
+    #: "read pages from 3 to 5 tomorrow" is pages, not a time: a bare "from"
+    #: window is never a clock (as `commands._clock_window` reads it, L207).
+    if bare and (found[0].lower().startswith("from") or not _WINDOW_ENDS.match(text, found.end())):
         return text
     if not half and end_half:
         half = end_half if int(hour) <= int(end_hour) or int(hour) == 12 else ("am" if end_half.lower() == "pm" else "pm")
