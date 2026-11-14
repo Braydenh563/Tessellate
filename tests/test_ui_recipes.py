@@ -5693,7 +5693,7 @@ FIRST_LINE_NOT_A_NAME = {
     "documents-code.js": 3,  # parser messages and a search seed from code
     "documents-codekit.js": 2,  # a snippet's first line of code
     "documents-prose.js": 1,  # a prose-check option's text
-    "documents.js": 1,  # a placeholder
+    "documents-wiring.js": 1,  # a placeholder (note surfaces, moved out of documents.js, L-documents-117)
     "documents-replace.js": 1,  # the editor selection that seeds the find field (moved out of documents.js, DC13)
     "editor.js": 2,  # the link target a [[wiki link]] resolves by (stored words, brackets stripped)
     "quick-note.js": 1,  # the quick-note field's own typed title

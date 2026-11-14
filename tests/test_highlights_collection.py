@@ -5,6 +5,8 @@ search operators and a Highlights kind in the Library. The marks are
 from __future__ import annotations
 
 import re
+
+from tests._app_js import documents_text
 from pathlib import Path
 
 from tessellate.entry import highlights, manager
@@ -78,7 +80,7 @@ def test_private_binned_and_draft_notes_give_no_passages(client, session):
 def test_the_colour_words_are_the_toolbars():
     """The same list the editors write: a colour the toolbar adds must be one
     this reader strips, or a passage would start with its own colour name."""
-    source = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    source = documents_text()
     match = re.search(r"const MD_COLOURS = \[(.*?)\];", source, re.S)
     assert match, "MD_COLOURS not found: has the toolbar moved?"
     assert tuple(re.findall(r'"([a-z]+)"', match.group(1))) == highlights.COLOURS
