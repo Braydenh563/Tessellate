@@ -581,7 +581,7 @@
   //: through openMeetingRecorder, a stand-in in LAZY_ENTRY_POINTS.meetings.
   // --- meeting notes (§17) -------------------------------------------------------------
   //
-  // The backlog's own "highest-value single addition still unbuilt": the quick
+  // The backlog's own "highest-value single addition" (now built): the quick
   // microphone button above is sized for a spoken note (server caps it at 25MB,
   // `routes_voice.py`'s own comment says "a spoken note, not a podcast"), a
   // meeting or a lecture needs a separate flow with its own recording cap, a

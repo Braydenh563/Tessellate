@@ -57,7 +57,7 @@ const SURFACES = Object.assign(new Map(), {
     return entry.frag;
   },
 
-  //: Whether the unbuilt surface holds the id: its parsed fragment when it has one, else the ids named in
+  //: Whether the surface that does not exist yet holds the id: its parsed fragment when it has one, else the ids named in
   //: its raw text, listed once (a pass over 700 KB at the first miss, then a lookup).
   holds(name, entry, id) {
     if (entry.frag || entry.tpl.content) return !!SURFACES.fragment(name, entry).getElementById(id);

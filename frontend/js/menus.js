@@ -931,7 +931,7 @@ function wireEscapedActionMenu(wrap) {
     //: which is what an element inside a `display: none` or
     //: not-yet-laid-out ancestor reports) the arithmetic below resolves to
     //: the margin in both axes and the menu lands at 8,4: the top corner,
-    //: exactly as described. A later pass then places it properly, which
+    //: exactly as described. A second pass then places it properly, which
     //: is the "and then it appears in the right place" half.
     //:
     //: So: one retry on the next frame, the same shape `clampToolbarMenu`

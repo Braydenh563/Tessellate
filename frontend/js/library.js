@@ -31,7 +31,7 @@
 //    list, filters, sort, selection, cards, bulk actions' helpers, and
 //    "reading a binned note in full" (§36G, openBinnedNote/closeBinnedReader
 //    and the #binned-overlay reader). The binned-note reader is included
-//    deliberately, resolving this split's own open question: it is called
+//    deliberately, resolving this split's own unsettled question: it is called
 //    from nowhere but this file's own openLibraryItem(), and its overlay
 //    exists only to serve the Library's Bin filter chip, it is Library's
 //    own code that happened to get its own §-number and its own "---"
@@ -650,7 +650,7 @@ function librarySorted(items) {
 // Meaning-matched note ids for the Library's current query, or null when the
 // Semantic toggle is off (or the query is empty, or the search failed).
 //
-// **The design question this answers, which is why it was not built sooner.**
+// **The design question this answers, which is why it came late.**
 // The Library mixes notes, documents, chats, images and skills, and only
 // *notes* have embeddings: nothing in this app has ever embedded a PDF, a
 // conversation or an image. So "semantic search over the Library" has no
@@ -2333,7 +2333,7 @@ const LIBRARY_CREATE_BY_KIND = {
     },
   },
   //: The Diagram builder's Library door (INBOX 1588): the one opener (`diagramModel.door`, documents-mermaid.js), asked for a document
-  //: so a board left open under the Boards sub-tab does not take the diagram.
+  //: so a board kept open under the Boards sub-tab does not take the diagram.
   diagram: {
     label: "ph:flow-arrow New diagram",
     run: async () => {
@@ -2370,7 +2370,7 @@ const LIBRARY_CREATE_BY_KIND = {
   // "New board" on a tab called Whiteboards, which is why they reported it
   // missing.
   //
-  // It also answers the deferred half of the ask, "maybe with a way to
+  // It also answers the second half of the ask, "maybe with a way to
   // export that into a visual diagram on the whiteboard", by construction:
   // the map *is* a whiteboard, so it exports through the export button that
   // is already there.
@@ -6015,7 +6015,7 @@ function closeOcrWorkspace() {
   const overlay = $("ocr-workspace");
   if (!overlay) return;
   overlay.classList.add("hidden");
-  //: A popover left open would be open again on the next visit, over a
+  //: A popover kept open would be open again on the next visit, over a
   //: different file.
   for (const open of overlay.querySelectorAll("details[open]")) open.open = false;
   closeHelpPopovers();

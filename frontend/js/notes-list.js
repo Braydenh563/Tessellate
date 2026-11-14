@@ -2218,7 +2218,7 @@ onSurface("notes", () => {
 setTimeout(() => navigator.connection?.saveData || ensureModule("captureCard"), 4000);
 //: **One bar, two places** (INBOX 1592): the Notes tab's bar is in index.html and is wired below; the
 //: dashboard's Quick capture card wires a copy of its row (made in the lazy dashboard.js, off the boot budget). Either way the bar opens the one
-//: composer (capture-card.js) and saves the one way. A card left open by a redraw is handed to the new bar.
+//: composer (capture-card.js) and saves the one way. A card kept open by a redraw is handed to the new bar.
 function captureBar(bar) {
   for (const type of ["focusin", "click", "input", "keydown"]) {
     bar.querySelector(".capture-bar-row").addEventListener(type, (event) => {

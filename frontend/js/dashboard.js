@@ -2677,7 +2677,7 @@ async function renderQuestionsWidget(body) {
   body.appendChild(box);
 }
 
-// Weekly digest caching (Wave J follow-up). The AI digest is expensive,
+// Weekly digest caching (Wave J follow-on). The AI digest is expensive,
 // so once it's generated it STAYS until you regenerate, and it resets
 // itself each day. Generation is a module-level promise, so switching
 // away from the dashboard never cancels it, whenever it finishes, the

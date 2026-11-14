@@ -1004,7 +1004,7 @@ function maybeShowOnboarding() {
   });
 }
 
-//: The third door into the tour, and it was the one left open (the owner,
+//: The third door into the tour, and it was the one missed (the owner,
 //: 2026-09-21: "the take the tour again button in the about settings page
 //: isnt disabled"). Same flag, same words as the replay strip's buttons.
 //: **After the page has loaded, not now.** `TOUR_ENABLED` is a `const` in
@@ -1772,7 +1772,7 @@ onSurface("notes", () => {
     if (!box.draftTimer) return;
     clearTimeout(box.draftTimer);
     box.draftTimer = 0;
-    //: Whitespace alone is not a draft (INBOX 431 follow-up: the box came
+    //: Whitespace alone is not a draft (INBOX 431 follow-on: the box came
     //: back holding three blank lines after a reload, which hid the empty
     //: placeholder). Newlines left behind by a removed image or a stray Enter
     //: must not be kept and restored as if they were writing.

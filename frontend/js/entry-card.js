@@ -23,7 +23,7 @@ function tagAddChipKind(entry, options) {
 //: **A meeting card shows what the meeting settled, not its raw headings**
 //: (libr-1011 row 1238: `## Agenda` and `## Notes` printed as text). The four
 //: sections of `entry/meetings.py` read for one line each: the first agenda
-//: item, the decisions, and the action items still open. Null for anything
+//: item, the decisions, and the action items not yet ticked. Null for anything
 //: that is not a meeting, so every other card is unchanged.
 const MEETING_GLANCE_SECTIONS = {
   agenda: "agenda", notes: "notes", discussion: "notes", transcript: "notes",
@@ -521,7 +521,7 @@ function entryItem(entry, options = {}) {
   //: note card: `.entry-meta` alone is also the chip row of the skills, the
   //: personas and the extras in Settings, which that styling flattened.
   meta.className = "entry-meta note-meta";
-  // A note saved with filing deferred is in its holding category, not its
+  // A note saved with filing postponed is in its holding category, not its
   // real one, and saying "Uncategorised" for the second or two before the
   // background pass lands reads as the AI having failed. Say what is
   // actually happening instead.

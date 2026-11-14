@@ -326,7 +326,7 @@
         ...(nameMarkBuddyMade("me") ? [] : [{ label: "ph:user-circle-plus Create your avatar", run: () => nameMarkBuddyMakeIt("me") }]),
       ],
     });
-    //: The saved look, not the select's value: Settings' body is not built until it opens (INBOX 1501).
+    //: The saved look, not the select's value: Settings' body does not exist until it opens (INBOX 1501).
     const look = appearancePref("atlas-look");
     items.push({
       group: "who",

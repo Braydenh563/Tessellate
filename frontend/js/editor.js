@@ -133,7 +133,7 @@ function editorSurfaceFor(box) {
 //: Fetch the bundle that carries the surface adapters, once, and pick the
 //: interrupted work back up when it lands.
 //:
-//: `retry` is what makes a fast typist's first "/" still open a menu: the
+//: `retry` is what makes a fast typist's first "/" open a menu: the
 //: keystroke that found no adapter is replayed against the surface once there
 //: is one, so the menu opens a moment late rather than not at all. Without it
 //: the first "/" of a session would always be the one that did nothing, which
@@ -1238,7 +1238,7 @@ function editorCloseMenu(reason = "") {
   editorMenuState.items = [];
   $("editor-menu")?.classList.add("hidden");
   editorHomeMenu(null);
-  //: **A code fence is never left open.** The language step starts from a
+  //: **A code fence is never left unclosed.** The language step starts from a
   //: written "```", and an unclosed fence turns the rest of the page into
   //: code in every view. Closed any way but by choosing (Escape, a click
   //: elsewhere), the block is finished with whatever language was typed.
@@ -1882,7 +1882,7 @@ document.addEventListener(
       //: the bundle lands after the first focus: a "/" typed in that gap
       //: opened the menu on the textarea, and every key after the mount came
       //: from the engine and was ignored here (measured: Tab wrote two
-      //: spaces into the note with the menu still open). Same id, same box:
+      //: spaces into the note with the menu showing). Same id, same box:
       //: the menu follows it.
       if (!surface || !editorMenuState.textarea || !surface.id || surface.id !== editorMenuState.textarea.id) return;
       editorMenuState.textarea = surface;

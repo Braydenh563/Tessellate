@@ -1362,7 +1362,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   let lightboxPreviewSource = null;
 
   // **The AI/manage actions: gated on a media id, and only ever visible
-  // when one is present.** Reported directly, and left open on purpose the
+  // when one is present.** Reported directly, and held back on purpose the
   // first time this bar was built: rename, describe with AI, read text (two
   // ways) and delete all need a real `MediaUpload` row, and of nine
   // `openLightbox` callers only the Library's own gallery has one to pass.

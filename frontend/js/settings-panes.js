@@ -410,7 +410,7 @@ function initComposerResize() {
   // the drag set it again, the observer fired again (reported: "it just
   // spasms and fails"). While the pointer is down on the grabber nothing
   // fights the drag; the final height is recorded once on release. The
-  // deferred frame stays: a synchronous autoGrow inside the callback is
+  // delayed frame stays: a synchronous autoGrow inside the callback is
   // the "ResizeObserver loop" console error.
   //: `pressed` is a pointer down on the box. Only a pointer resizes a textarea
   //: by hand, so a size change without one (the app's Ctrl +/- zoom, the

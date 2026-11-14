@@ -879,7 +879,7 @@ $("status-task").addEventListener("click", () => window.openActivity?.("running"
 $("status-command").addEventListener("click", () => openPalette());
 $("status-agent")?.addEventListener("click", () => toggleAgentPalette());
 //: settings.js owns the Guide sheet and loads after this file, so the lookup
-//: is deferred to the click rather than taken now. The same shape the phone's
+//: is postponed to the click rather than taken now. The same shape the phone's
 //: More sheet already uses for the same function.
 $("status-guide")?.addEventListener("click", () => {
   toggleHelpChat();
