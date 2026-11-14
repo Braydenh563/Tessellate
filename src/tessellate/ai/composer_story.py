@@ -438,3 +438,17 @@ def themed(dated) -> list[list[int]]:  # noqa: ANN001
     """The positions (oldest first) of the notes that go together, by a tag they share or a link, one list a theme."""
     place = {v.id: i for i, v in enumerate(dated)}
     return [sorted(place[i] for i in g.ids) for g in composer_frame.themes([v.note for v in dated]) if len(g.ids) > 1]
+
+
+def threads(dated) -> list[dict]:  # noqa: ANN001
+    """The themes as chips for the Matching records column (L-chat-58): `{label, note_ids}`, the ids as the cards carry them."""
+    out: list[dict] = []
+    seen: dict[str, int] = {}
+    for g in composer_frame.themes([v.note for v in dated]):
+        if len(g.ids) < 2:
+            continue
+        base = (g.name or "Linked notes")[:36]
+        seen[base] = seen.get(base, 0) + 1
+        ids = [v.note.get("source_id", v.id) for v in dated if v.id in g.ids]
+        out.append({"label": base if seen[base] == 1 else f"{base} {seen[base]}", "note_ids": ids})
+    return out

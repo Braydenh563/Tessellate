@@ -2248,7 +2248,7 @@ def _result(out: _Out, kind: str, question: str) -> dict:
         #: `digest` and `offer` ride on the support too: it is what the Ask
         #: box hands its grounding renderer, which then draws one mark a line
         #: and no chips or count under the answer.
-        "support": {"supported": n, "sentences": n, "unsupported": [], "digest": True, "offer": out.offer, "shape": kind, "more": _more(out),
+        "support": {"supported": n, "sentences": n, "unsupported": [], "digest": True, "offer": out.offer, "shape": kind, "more": _more(out), "threads": list(out.threads),
                     "figure": _lead_figure(out.lines[0]) if kind == "count" and out.lines else None},
         "shape": f"digest:{kind}",
         "parts": [("template", text)],

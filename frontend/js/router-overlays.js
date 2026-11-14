@@ -15,7 +15,7 @@ const OVERLAY_TABS = { Manual: 1, Statistics: 1 };
 //: They read as `#/Manual` and `#/Statistics` while open (B43), and a pasted one
 //: opens them at load: both are routes in router.js (`ROUTE_TABS`, `routeEntry`,
 //: `routerRestore`), so they hold in the first seconds, before this file loads.
-const routerBack = { swallow: 0, timer: 0 };
+const routerBack = { swallow: 0, timer: 0, browse: null };
 
 //: The top overlay, closed the way its own Escape closes it. True when one was
 //: open. Topmost first: a sheet or a dialog sits over the palettes. Settings is
@@ -107,6 +107,8 @@ function routerBackHook(event) {
   if (typeof settingsModalOpen === "function" && settingsModalOpen()) return false;
   //: The manual and Statistics have entries of their own, as Settings does.
   if (OVERLAY_TABS[tabHistory.stack[tabHistory.index]?.tab]) return false;
+  //: Ask's trail (ask-browser.js, L-chat-58): a step back off a thread or a note opened around.
+  if (routerBack.browse?.(event.state)) return true;
   const navId = event.state && event.state.navId;
   const to = navId ? tabHistory.stack.findIndex((entry) => entry.navId === navId) : -1;
   const delta = to - tabHistory.index;
