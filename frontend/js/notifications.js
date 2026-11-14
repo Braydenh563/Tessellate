@@ -119,7 +119,7 @@ function reminderDoneButton(item) {
         meta.tabIndex = -1;
         meta.focus();
       } else $("notif-close")?.focus();
-    });
+    }).catch(() => $("notif-close")?.focus());
   };
   button.addEventListener("click", async (event) => {
     event.stopPropagation();
