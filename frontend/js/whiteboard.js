@@ -8470,7 +8470,7 @@ function wbApplyBulkMove(origin, dx, dy) {
     // this, only the card the pointer is actually on kept its edges live
     // during a multi-select drag.
     const moved = entry.movedLinks || entry.linked;
-    if (moved.length) wbUpdateLinkedSketches(entry.id, moved);
+    if (moved?.length) wbUpdateLinkedSketches(entry.id, moved);
     // Same for a map's tree edges, which are not sketches at all: a marquee
     // drag of half a branch left every one of its curves behind.
     if (entry.mapEdges?.length) wbUpdateMapEdges(entry.mapEdges);

@@ -311,3 +311,14 @@ def test_a_tree_line_inside_the_moved_branch_is_translated_not_recomputed() -> N
     assert "origin.rigidEdges" in capture and "rigidEdge(edge)" in capture
     apply = _code("wbApplyBulkMove")
     assert "origin.rigidEdges" in apply and "_wbMoved = true" in apply
+
+
+def test_a_tidy_entry_without_a_link_list_does_not_stop_the_bulk_move() -> None:
+    """Source text: wbApplyBulkMove against wbMapTidyOrigin (L-ui-modernisation-102).
+
+    A tidy hands the bulk move entries of `{kind, id, item, x, y}` with no
+    `linked` or `movedLinks`; reading `.length` of that threw on every tidy
+    (mapstripcover.js and maplabels.js both died in `wbMapTidy`).
+    """
+    assert "linked" not in _code("wbMapTidyOrigin")
+    assert re.search(r"if \(moved\?\.length\) wbUpdateLinkedSketches\(", _code("wbApplyBulkMove"))

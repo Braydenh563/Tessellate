@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
-| ui-modernisation | 0 | 9 | 3 | 0 | 0 | 12 |
+| ui-modernisation | 0 | 8 | 3 | 0 | 0 | 11 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 0 | 0 | 0 | 0 | 0 |
-| all | 406 | 430 | 129 | 2 | 162 | 965 |
+| all | 406 | 429 | 129 | 2 | 162 | 964 |
 
 ## graph
 
@@ -359,7 +359,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-ui-modernisation-98** `ui-modernisation` open, S: Companion interact sweep on Atlas: eyes-off and toss checks fail 2 runs in 5. From L-ui-modernisation-96. Evidence: scratchpad/ui-sweeps/companioninteract.js KIND=atlas, 5 runs after the float put: pet 5 of 5, whole sweep 3 of 5; one run 'eyes with the setting off: true,false', one toss landed at x 244 (needs over 300, far 194). KIND=me 2 of 2
 - [ ] **L-ui-modernisation-99** `ui-modernisation` open, M: Desk companion activity variety: presence spells fill 81% of the hour and the sit frame 75%. From L-ui-modernisation-59. Evidence: Seeded engine hour with the person about (make(), float and walk, seeds 2 to 4): 28 to 32 acts an hour, 12 to 20 distinct, yet presence spells fill it (seed 2: read_book 36%, write_journal 33%, water_plant 12%) and the sit frame is drawn 73 to 78% of the hour, stand 9 to 14%; the picture changes 38 to 78 times a minute inside a spell (longest hold 2.2 s), so it is small motion, not none. Recommendation (taken): spells 60 to 150 s (now 100 to 480), a non-spell activity or a seen move between two spells, and a visible beat in a spell (look up, page turn, stretch) every 20 to 40 s; measured by no frame over 40% and no activity over 20% of a seeded hour.
 - [ ] **L-ui-modernisation-100** `ui-modernisation` open, M: Atlas lower-body wisp and ribbon sway is 4 px: too small to see on the desk. From L-ui-modernisation-59. Evidence: Measured at size 192 (frame 275x298, scale 1.0): the ambient tip sway is 2.9 to 4.0 px peak to peak over 60 s (1.4% of the figure's height) and the flow ticks every 170 ms; the worst lower-body angle is 1.52 degrees against the 4 degree cap (INBOX 615, 619), FLOW_TIP 3.0 gives 2.29, 4.0 gives 2.99. Recommendation (taken): FLOW_TIP 3.5 (about 2.6 degrees) with FLOW_RISE in proportion, the angle test widened to the pose (kick 1.7) and arrival worst cases, still under 4; a faster flow tick only inside the calm budget (test_flow_1683); the look is confirmed on Windows by L-ui-modernisation-56.
-- [ ] **L-ui-modernisation-102** `ui-modernisation` open, S: Map sweeps mapstripcover.js and maplabels.js fail on the current head: find the cause, fix it or the sweep, rerun both green. From L-ui-61 edges agent report 2026-11-14. Evidence: mapstripcover.js and maplabels.js fail the same way on d3e375dd and 07a1b3ac, so before the lazy grips
 
 ## timeline
 
