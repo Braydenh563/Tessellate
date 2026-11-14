@@ -1228,56 +1228,12 @@ async function streamChatEvents({
     signal,
   });
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffered = "";
-  while (true) {
-    // **No timeout on the stream** (reported: "the AI fails to respond
-    // while still saying it is writing"). The backend's own read against
-    // Ollama times out and turns into a real "offline" line on the wire, 
-    // but only for a hang *inside that one socket call*. Anything that
-    // stalls the backend before or between chunks (retrieval, a stuck
-    // lock, a dead process) has nothing to catch it, and `reader.read()`
-    // then waits forever with no sign of life. `STREAM_IDLE_TIMEOUT_MS` is
-    // comfortably longer than the backend's own 120s per-chunk timeout, so
-    // a real recovery message from *that* always wins the race; this is
-    // only for the case where nothing, not even an error, ever arrives.
-    const chunk = await Promise.race([
-      reader.read(),
-      new Promise((_, reject) =>
-        setTimeout(
-          () => reject(new Error("stream_idle_timeout")),
-          STREAM_IDLE_TIMEOUT_MS
-        )
-      ),
-    ]).catch((err) => {
-      if (err.message === "stream_idle_timeout") {
-        reader.cancel().catch(() => {}); // stop the underlying fetch too
-        throw new Error(
-          "The model stopped responding. It may still be loading a large " +
-            "model, or Ollama may have stalled, try again, or check " +
-            "Settings, Models."
-        );
-      }
-      throw err;
-    });
-    const { done, value } = chunk;
-    if (done) break;
-    buffered += decoder.decode(value, { stream: true });
-    const lines = buffered.split("\n");
-    buffered = lines.pop(); // last piece may be a partial line
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      let event;
-      // One malformed line must not abort a whole answer. Before this, a
-      // single bad frame threw out of the read loop and the user saw a
-      // half-written reply with no error.
-      try {
-        event = JSON.parse(line);
-      } catch (parseErr) {
-        recordBrowserLog("WARN", [`[Chat stream] Unparseable line: ${line.slice(0, 80)}`]);
-        continue;
-      }
+  //: **No timeout on the stream** (reported: "the AI fails to respond while still saying it is
+  //: writing"). The backend's own read against Ollama times out into a real "offline" line, but
+  //: only for a hang inside that one socket call; anything that stalls it before or between chunks
+  //: has nothing to catch it. `STREAM_IDLE_TIMEOUT_MS` is longer than the backend's own 120s per
+  //: chunk, so a real recovery message from it always wins; this is for when nothing ever arrives.
+  await api.ndjson(response, (event) => {
       if (event.type === "meta") onMeta(event);
       //: The first byte the server flushes, before retrieval (routes_chat.py,
       //: `_stream_lines`); it was ignored here until the phase line used it.
@@ -1352,8 +1308,11 @@ async function streamChatEvents({
           `[Agent tool error] ${event.label || event.name || "?"}: ${event.error || "unknown error"}`,
         ]);
       }
-    }
-  }
+  }, {
+    idleMs: STREAM_IDLE_TIMEOUT_MS,
+    label: "Chat stream",
+    idleMessage: "The model stopped responding. It may still be loading a large model, or Ollama may have stalled, try again, or check Settings, Models.",
+  });
 }
 
 //: The id of the note offer the last composed answer ended with, while its button is unpressed.

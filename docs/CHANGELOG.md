@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Frontend: one NDJSON reader, api.ndjson, serves Ask, Chat, the Guide, the digest and the writing desk, and chatSendTurn is pinned at its 29-line driver (L169, L170)
 Guide: "call me Sam" and "what you call me" reach Profile, which says telling Atlas sets the name; the Who answers plain Ask topic gains its title and lead (L241)
 Learning: the five filing reads are timed on 3,000 notes and 3,000 corrections, the slowest 78 ms (L133)
 Chat: the help-popover sweep opens a closed fold and waits out the smooth scroll (146 popovers, 0 findings); the money meta payload is pinned (400 rows, 425 KB for 450 notes) (L134, L248)
