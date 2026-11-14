@@ -393,9 +393,11 @@ INBOX 443 (1) (the owner: "the graph shape could look nicer"), measured with
   the nearest linked note, in the cluster's own median spacings: 3.0 to 1.8.
 - **Links wear a category.** Same colour at both ends takes that colour;
   a bridge stays neutral; a reasoned link is 1.9px at 0.62; curved by default
-  (a note that never touched the switch is on). Tapered strokes were decided against:
-  a taper is one polygon per link, and the batched stroke per colour is what
-  keeps a 2,000-link map inside a frame.
+  (a note that never touched the switch is on). Tapered strokes: moot by measurement
+  (2026-11-14, headless Chromium, 1440x900 at 2x, 2,000 curved links in 8
+  colours, 80 frames): one batched stroke per colour 68.0 to 68.7 ms median,
+  tapered polygons batched into one fill per colour 85.1 to 88.6 ms, so a
+  taper adds 25 to 30% to the link pass that holds the 2,000-link frame.
 - **One size scale, 5 to 15**, and a glow at roughly two thirds of its old
   strength.
 - **Not changed, on purpose:** the fit (`fitGraphToView` pads each dot by its
