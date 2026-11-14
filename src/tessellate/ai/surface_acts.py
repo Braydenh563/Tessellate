@@ -14,7 +14,7 @@ import re
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-INTENTS = frozenset({"delete_document", "delete_skill", "board_card", "make_map", "set_theme"})
+INTENTS = frozenset({"delete_document", "delete_skill", "board_card", "make_map", "set_theme", "remember"})
 
 #: The theme is a preference of the page, not of the server (`prefs`, settings.js `applyThemeChoice`): the step is
 #: the card's Confirm, the page applies it, and patches the undo with the theme that was showing.
@@ -35,6 +35,10 @@ _BOARD = re.compile(
 _MAP_OF = re.compile(
     rf"{_LEAD}(?:make|create|build|draw|start)\s+(?:me\s+)?(?:a |the )?mind ?map\s+(?:of|from|for|about|on)\s+(?:the |my )?(?P<t>.+)$", re.I)
 _MAP_INTO = re.compile(rf"{_LEAD}(?:turn|make|convert)\s+(?:the |my )?(?P<t>.+?)\s+(?:in)?to\s+(?:a |the )?mind ?map$", re.I)
+_NEW_BOARD = re.compile(
+    rf"{_LEAD}(?:make|create|start|build|add)\s+(?:me\s+)?(?:a |the )?(?:new |blank |empty )?(?:white)?board\s+(?:called|named|titled|for|about)\s+(?P<t>.+)$", re.I)
+#: The sentence the tool cue `save_user_preference` names (act_registry `TOOL_CUES`): a preference of the person's, never a note.
+_REMEMBER = re.compile(rf"{_LEAD}remember that\s+(?P<t>i(?:['’]m)?\s+(?:prefer|like|want)\b.+)$", re.I)
 _THEME = (
     re.compile(rf"{_LEAD}(?:switch|change|go|turn|set|use|put|enable|activate|swap)(?: (?:it|the app|this|everything|me|over))*(?: (?:to|on|into))?\s+(?:the |my )?(?P<t>dark|light|system)\s+(?:mode|theme)(?:\s+(?:on|please))?$", re.I),
     re.compile(rf"{_LEAD}(?:switch|go|change|swap)\s+(?:over\s+)?to\s+(?:the )?(?P<t>dark|light)$", re.I),
@@ -70,6 +74,12 @@ def read(text: str, one_target) -> dict | None:  # noqa: ANN001
         return {"intent": "delete_document", "name": name}
     if name := _named(_SKILL, text):
         return {"intent": "delete_skill", "name": name}
+    if found := _REMEMBER.match(text):
+        said = _name(found.group("t"))
+        return {"intent": "remember", "preference": said[:1].upper() + said[1:]} if said and len(said) <= 200 else None
+    if found := _NEW_BOARD.match(text):
+        name = _name(found.group("t"))
+        return {"intent": "make_map", "title": name, "kind": "board"} if name and name.lower() not in _NO_NAME else None
     if found := _BOARD.match(text):
         target = one_target(_name(found.group("t")), bare=False)
         return {"intent": "board_card", **target, "single": True} if target and target.get("single", True) else None
@@ -151,6 +161,12 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None, c: dict) ->
         return _delete_document(session, parsed, c)
     if intent == "delete_skill":
         return _delete_skill(parsed, c)
+    if intent == "remember":
+        label = f"Suggest remembering that {parsed['preference'][:1].lower()}{parsed['preference'][1:]}"
+        return {"line": c["confirm"](label), "card": c["card"](label, [{"name": "save_user_preference", "arguments": {"preference": parsed["preference"]}}])}
+    if intent == "make_map" and parsed.get("kind") == "board":
+        label = f"Make a board called “{parsed['title']}”"
+        return {"line": c["confirm"](label), "card": c["card"](label, [{"name": "create_mindmap", "arguments": {"title": parsed["title"], "kind": "board"}}])}
     if intent == "make_map" and parsed.get("title"):
         label = f"Start a mind map called “{parsed['title']}”"
         return {"line": c["confirm"](label), "card": c["card"](label, [{"name": "create_mindmap", "arguments": {"title": parsed["title"]}}])}
@@ -182,10 +198,24 @@ def restore_document(session: Session, args: dict) -> dict:
     return {"label": f"Restored the document “{document.title[:60]}” from the bin", "undo": {"tool": "delete_document", "arguments": {"document_id": document.id}}}
 
 
+def drop_preference(session: Session, args: dict) -> dict:
+    """The Undo of a suggested preference: the row goes while it still waits for an answer (an accepted one is the person's, left to Settings)."""
+    from tessellate.core.database import UserPreference
+
+    row = session.get(UserPreference, int(args.get("id") or 0))
+    if row is None or not row.proposed:
+        return {"label": "That suggestion has been answered already, so it stays as you left it"}
+    session.delete(row)
+    session.commit()
+    return {"label": "Dropped the suggestion"}
+
+
 def run_step(session: Session, name: str, args: dict) -> dict:
     """The theme step (the page applies it; the undo carries "system" until the page patches in the theme it replaced), or `restore_document`."""
     if name == "restore_document":
         return restore_document(session, args)
+    if name == "drop_preference":
+        return drop_preference(session, args)
     theme = str(args.get("theme") or "")
     if theme not in THEMES:
         return {"error": "That theme is not one I know: light, dark or system."}

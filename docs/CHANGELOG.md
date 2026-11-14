@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+
+- Chat acts: "Remember that I prefer ..." is a suggest-a-preference card, "Make a board called X" an empty board card, and "Delete the tag X" with no tags no longer says rename (L114, 2026-11-14).
 - L-chat-242 reopened and fixed: the background search-model load is guarded by one locked flag, not a job key (2026-11-14).
 - Chat plan: tag my gym notes #fitness and save the summary as a note are read as acts; X and C probes close eight rows (2026-11-14).
 - Chat plan: Answering probes A1 to A23 added; eleven rows closed on them, the rest carry their measured failure (2026-11-14).

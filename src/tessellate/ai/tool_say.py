@@ -733,6 +733,8 @@ def _deleted_document(result: dict, args: dict) -> Said:
 
 def _mindmap_made(result: dict, args: dict) -> Said:
     at = board_at(result.get("board_id"))
+    if args.get("kind") == "board":
+        return f"Made the board {link(result.get('title') or args.get('title') or 'Untitled', at)}.", "", _chips(("Open the board", at))
     return f"Made the mind map {link(result.get('title') or args.get('title') or 'Untitled', at)}" + (f", starting from “{args['root_text']}”." if args.get("root_text") else "."), "", _chips(("Open the map", at))
 
 

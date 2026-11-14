@@ -641,6 +641,7 @@ TOOLS: dict[str, ToolSpec] = {
                 "type": "object",
                 "properties": {
                     "title": {"type": "string", "description": "What the map is called"},
+                    "kind": {"type": "string", "enum": ["map", "board"], "description": "board: an empty whiteboard, no root"},
                     "root_text": {
                         "type": "string",
                         "description": "The centre node's text (defaults to the title)",

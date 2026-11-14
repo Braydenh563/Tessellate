@@ -105,6 +105,8 @@ def _diagram_placed(session: Session, args: dict, result: dict) -> str | None:
 def _mindmap_created(session: Session, args: dict, result: dict) -> str | None:
     if _row(session, Entry, result.get("board_id")) is None:
         return f"map {result.get('board_id')} was not saved"
+    if result.get("root_id") is None:
+        return None  # a plain board (kind "board") starts with nothing on it
     root = _row(session, WhiteboardObject, result.get("root_id"))
     if root is None or root.board_id != result.get("board_id"):
         return f"the map's root topic {result.get('root_id')} is not on it"

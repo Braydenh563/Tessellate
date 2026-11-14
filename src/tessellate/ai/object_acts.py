@@ -219,10 +219,10 @@ def _close(wanted: str, names: list[str]) -> list[str]:
     return [by_key[k] for k in near[:3]]
 
 
-def _unknown(kind: str, wanted: str, names: list[str]) -> str:
+def _unknown(kind: str, wanted: str, names: list[str], verb: str = "rename") -> str:
     """"I found no tag called “gimm”. Close: “gym”." or a few of the ones there are."""
     if not names:
-        return f"You have no {kind}s yet, so there is nothing to rename."
+        return f"You have no {kind}s yet, so there is nothing to {verb}."
     near = _close(wanted, names)
     if near:
         return f"I found no {kind} called “{wanted}”. Close: " + ", ".join(f"“{n}”" for n in near) + "."
