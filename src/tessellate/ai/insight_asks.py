@@ -20,7 +20,7 @@ _TIME = re.compile(r"\bafter work\b|\bin the (?:morning|evening)s?\b|\bmorning o
 _SPAN = re.compile(r"\bhow long have i been (?:writing|noting|keeping notes)\b|\bsince when (?:do|did|have) i\b|\bfirst and last (?:time|mention)\b", re.I)
 _TOGETHER = re.compile(r"\bwhat (?:goes|comes up|do i (?:write|mention)) (?:with|alongside|next to)\b|\bwhat (?:else )?(?:goes|comes up) with\b|\bco-?occur", re.I)
 _SILENCE = re.compile(
-    r"\bwhat (?:have i|haven'?t i|did i) (?:stopped|stop|not|n'?t)? ?(?:writ\w+|mention\w*|note\w*)\b[^?]*\b(?:lately|recently|for a while|any ?more)\b|\bwhat have i stopped\b"
+    r"\bwhat (?:have i (?:stopped |not )|haven'?t i |did i (?:stop |not )|didn'?t i )(?:writ\w+|mention\w*|note\w*)\b[^?]*\b(?:lately|recently|for a while|any ?more)\b|\bwhat have i stopped\b"
     r"|\b(?:gone|went) quiet\b(?! plans?)|\bnothing (?:new )?about\b[^?]*\bsince\b|\bhave i (?:written|mentioned) (?:about )?[^?]* (?:lately|recently)\b", re.I)
 _DRIFT = re.compile(r"\bplans?\b[^?]*\b(?:gone quiet|let slide|slipped|dropped|not (?:followed|picked)|never (?:followed|picked)|still open)\b", re.I)
 _NO_SUBJECT = {"my notes", "notes", "the notebook", "my notebook", "it", "them", "lately", "recently", "all"}

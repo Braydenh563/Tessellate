@@ -3,7 +3,7 @@ wide screen and stacks below 600px. Measured in the app: 142px a row before, 63p
 import re
 from pathlib import Path
 
-CSS = (Path(__file__).resolve().parent.parent / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")
+CSS = (Path(__file__).resolve().parent.parent / "frontend" / "css" / "settings-controls-lazy.css").read_text(encoding="utf-8")  # moved with the Settings bundle
 
 
 def test_the_row_is_a_grid_of_head_text_actions_with_a_narrow_stack():
