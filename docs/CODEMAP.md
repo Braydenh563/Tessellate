@@ -2079,8 +2079,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasFrameBudget` | frontend/js/atlas-life.js:494 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:846 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:874 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1485 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1460 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1487 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1462 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:21 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:383 |
 | `atlasTailBend` | frontend/js/atlas-life.js:134 |
@@ -2116,19 +2116,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasBlinkStart` | frontend/js/atlas-motion.js:111 |
 | `atlasBlinkTick` | frontend/js/atlas-motion.js:48 |
 | `atlasLowerState` | frontend/js/atlas-motion.js:147 |
-| `atlasMotionOK` | frontend/js/atlas-motion.js:173 |
-| `atlasProbeWatch` | frontend/js/atlas-motion.js:222 |
-| `atlasRigAttach` | frontend/js/atlas-motion.js:181 |
-| `atlasRigFrame` | frontend/js/atlas-motion.js:538 |
-| `atlasRigGesture` | frontend/js/atlas-motion.js:273 |
-| `atlasRigRead` | frontend/js/atlas-motion.js:238 |
-| `atlasRigSpring` | frontend/js/atlas-motion.js:298 |
-| `atlasRigWake` | frontend/js/atlas-motion.js:318 |
-| `atlasStarsFade` | frontend/js/atlas-motion.js:483 |
-| `atlasTossAt` | frontend/js/atlas-motion.js:375 |
-| `atlasTossBob` | frontend/js/atlas-motion.js:389 |
-| `atlasTossDraw` | frontend/js/atlas-motion.js:452 |
-| `atlasTossState` | frontend/js/atlas-motion.js:397 |
+| `atlasMotionOK` | frontend/js/atlas-motion.js:176 |
+| `atlasProbeWatch` | frontend/js/atlas-motion.js:225 |
+| `atlasRigAttach` | frontend/js/atlas-motion.js:184 |
+| `atlasRigFrame` | frontend/js/atlas-motion.js:541 |
+| `atlasRigGesture` | frontend/js/atlas-motion.js:276 |
+| `atlasRigRead` | frontend/js/atlas-motion.js:241 |
+| `atlasRigSpring` | frontend/js/atlas-motion.js:301 |
+| `atlasRigWake` | frontend/js/atlas-motion.js:321 |
+| `atlasStarsFade` | frontend/js/atlas-motion.js:486 |
+| `atlasTossAt` | frontend/js/atlas-motion.js:378 |
+| `atlasTossBob` | frontend/js/atlas-motion.js:392 |
+| `atlasTossDraw` | frontend/js/atlas-motion.js:455 |
+| `atlasTossState` | frontend/js/atlas-motion.js:400 |
 
 ### frontend/js/atlas.js (97)
 

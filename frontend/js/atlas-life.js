@@ -1043,7 +1043,9 @@
     //: cross-legged, a slow ripple root to hem in a calm spell, a quick flutter when excited, spread flat after a
     //: long sit, a playful kick of the hem when glad, a spiral that unwinds after a twirl, and heavy when tired.
     billow: { ms: 380, ease: "cubic-bezier(0.25, 1.7, 0.5, 1)", v: [[-3, 0.92, 1.1, 9, -30], [-2, 0.9, 1.14, 11, -38], [-3.5, 0.94, 1.08, 7, -26]] },
-    coil: { ms: 800, ease: "cubic-bezier(0.34, 1.15, 0.6, 1)", v: [[2, 1.14, 0.7, -2, 20], [-2, 1.16, 0.68, 2, -18], [1.5, 1.12, 0.72, -3, 26]] },
+    //: The first row keeps the tail up off the seat: reduced motion and the desk's meditate frame draw it, and a tail turned
+    //: down 20 degrees hung 5 to 9 px under the floor the figure sits on (L-ui-modernisation-152).
+    coil: { ms: 800, ease: "cubic-bezier(0.34, 1.15, 0.6, 1)", v: [[-2, 1.16, 0.68, 2, -18], [2, 1.14, 0.7, -2, 20], [1.5, 1.12, 0.72, -3, 26]] },
     ripple_calm: { ms: 1400, ease: "cubic-bezier(0.45, 0, 0.55, 1)", v: [[1.5, 1, 1.03, -3, 8], [-2, 1.02, 1.01, 3, -10], [2.5, 1, 1.04, -2, 12]] },
     flutter: { ms: 300, ease: "cubic-bezier(0.25, 1.8, 0.5, 1)", v: [[-3, 1.03, 0.97, 6, -16], [3, 1.03, 0.96, -6, 18], [-2, 1.04, 0.97, 4, -12]] },
     pool: { ms: 1200, ease: "cubic-bezier(0.4, 1.1, 0.6, 1)", v: [[3, 1.18, 0.62, -3, 30], [-3, 1.2, 0.6, 3, -28], [2, 1.16, 0.64, -2, 24]] },

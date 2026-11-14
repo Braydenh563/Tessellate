@@ -202,6 +202,10 @@ async function steadyShot(page, clip) {
       const root = document.documentElement;
       root.removeAttribute("data-atlas-lite");
       new MutationObserver(() => root.hasAttribute("data-atlas-lite") && root.removeAttribute("data-atlas-lite")).observe(root, { attributes: true, attributeFilter: ["data-atlas-lite"] });
+      //: And the pacer's beat (`nmbTempo`, avatars.js): it steps every paused act on its own clock at the manner's rate, so
+      //: a feminine look's head read 1062 ms against the 1100 set and the frame took two arrangements (row 151). It holds
+      //: no animations while the desk captures.
+      if (typeof nmbTempo === "object") { clearTimeout(nmbTempo.timer); Object.defineProperty(nmbTempo, "anims", { get: () => [], set: () => {} }); }
       window.__actAt = (a, frame) => {
         const t = a.effect.getComputedTiming();
         const cycle = (t.duration || 0) * (String(t.direction).startsWith("alternate") ? 2 : 1);
@@ -230,6 +234,10 @@ async function steadyShot(page, clip) {
         window.atlasRigLower = Object.assign((rig, now, live, buddy) => real(rig, now, false, buddy), real);
         const rig = [...clone.querySelectorAll("*")].map((el) => el.atlasRig).find((r) => r && r.lower);
         if (rig) { rig.lower.state = ""; rig.lower.last = {}; }
+        //: And the spell's clock (`atlasRigLower.spell.of`): an idle held 24 to 32 s ripples and a sit held 40 s pools, so a
+        //: run's later frames took another arrangement (idle10, 13 and 14 and walk5 to walk11 apart run to run, row 151, and the
+        //: idle wrap 16 against a median step of 2). Each frame takes its state as it is entered.
+        if (real.spell && real.spell.of) { const of = real.spell.of; real.spell.of = (base, _held, mood, buddy) => of(base, 0, mood, buddy); }
         //: The streams' own redraw (`atlasRigLower.morph`, INBOX 1709) bends every path from a clock that starts at random: held at
         //: the drawn shapes, or two captures of one frame differ by 1,800 to 4,400 px below the waist. The desk bends them itself.
         const m = rig && rig.lower.morph;

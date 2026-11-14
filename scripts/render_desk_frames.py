@@ -260,6 +260,11 @@ def main() -> int:
             nebs = {name: Image.open(Path(raw) / look / f"{name}.neb.png").convert("RGBA") for name in captured}
             shared = shared_stream(captured, nebs, [n for n in STREAM_SHARED if n in captured])
             images = {name: with_stream(im, nebs[name], shared if name in STREAM_SHARED else None) for name, im in captured.items()}
+            #: The hang's tricks hang from its grip here too, not only when added (`DESK_ADD`): a full render shipped the sloth
+            #: 3 px under the hang's top row, where the rig's sleeping hang drew it (L-ui-modernisation-152).
+            for name, side in HANG_HELD.items():
+                if name in images and "hang" in images:
+                    images[name] = hung_from_the_edge(images[name], images["hang"], side)
             #: A capture can come out blank (seen once on a cold page: eight idle frames
             #: of one look): refuse to ship it rather than a figure that vanishes.
             blank = [n for n, im in captured.items() if sum(im.getchannel("A").histogram()[128:]) < 1000]

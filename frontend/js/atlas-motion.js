@@ -151,7 +151,10 @@ function atlasLowerState(buddy, box) {
   if (has("nmb-act-startle") || mood === "surprised") return "startle";
   if (/^(lie|curl)/.test(pose) || has("nmb-sleep") || has("nmb-act-nap") || has("nmb-act-lie") || has("nmb-act-blanket")) return "lie";
   if (has("nmb-falling")) return "fall";
-  if (has("nmb-walking") || has("nm-buddy-dragging") || buddy?.dataset.travel) return "walk";
+  //: Held up by a hand it hangs from the grip, not a walk's lean into its travel (L-ui-modernisation-170: the walk's rows
+  //: shear the lower body 6 degrees off the torso, past the join's 4, and the desk's held frame baked it).
+  if (has("nm-buddy-dragging")) return "hang";
+  if (has("nmb-walking") || buddy?.dataset.travel) return "walk";
   const posed = atlasLowerState.acts.find((act) => has(`nmb-act-${act}`)) || (pose === "hang" ? "hang" : "");
   if (posed) return posed;
   if (pose === "lean") return "lean";

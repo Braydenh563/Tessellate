@@ -90,7 +90,7 @@ SPUN_KEEP = 6
 #: Asleep the eyes are already shut. `LID_EYES` is each look's two eyes as one box in shipped px on `stand`;
 #: the sit is a few px off it, found by matching the box.
 LID_FRAME = "sitblink"
-LID_EYES = {"masculine": (110, 109, 155, 125), "feminine": (112, 110, 157, 126)}
+LID_EYES = {"masculine": (107, 110, 152, 126), "feminine": (108, 110, 153, 126)}
 LID_REACH = 6
 LID_INK = (44, 42, 112)
 DERIVED_FRAMES = (*SPIN_FRAMES, LID_FRAME)
