@@ -6916,7 +6916,7 @@ body .chip.item-label,
 /* UX3: after 20 s without input (`nmbClock.setCalm`, avatars.js) the endless loops hold: the rings, hair, tail,
    hem, nebula and lower wisps; by part, so an act started while calm still plays. */
 .atl-figure-box.atl-off .atl-orbits *, :root[data-atlas-hidden] .atl-orbits *,
-:root.is-calm :is(.atl-orbits *, .atl-lw-hair, .atl-lw-tail, .atl-lw-lower, .atl-lw-body, .atl-lw-breathe, .atl-lw-neb, .atl-lw-neb-front, .atl-layer-front, .atl-layer-lower, .atl-layer-neb, .atl-layer-neb-front, [class*="atl-lw-pose-"], [class*="atl-lw-pose-"] > svg) { animation-play-state: paused !important; }
+:root.is-calm :is(.atl-orbits *, .atl-lw-hair, .atl-lw-tail, .atl-lw-lower, .atl-lw-body, .atl-lw-breathe, .atl-lw-neb, .atl-lw-neb-front, .atl-lw-wisps, .atl-lw-wisps-back, .atl-lw-glint-a, .atl-lw-glint-b, .atl-layer-front, .atl-layer-lower, .atl-layer-neb, .atl-layer-neb-front, [class*="atl-lw-pose-"], [class*="atl-lw-pose-"] > svg) { animation-play-state: paused !important; }
 /* And no loop is made under the entrance fade (atlas.js, `atlasWhenShown` adds atl-lit): the
    compositor refuses for good an animation created while #nm-buddy is opacity 0. One rule, one !important. */
 .atl-figure-box:not(.atl-lit), .atl-figure-box:not(.atl-lit) *,

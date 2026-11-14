@@ -158,3 +158,14 @@ def test_atlas_lids_hide_runs_with_the_arms_l175():
     arm_keys = re.search(r"@keyframes nmb-hide-l \{\s*([\d%, ]+) \{", css).group(1)
     lid_keys = re.search(r"@keyframes atl-lids-hide \{.*?\n\s*([\d%, ]+) \{ opacity: 1", css, re.S).group(1)
     assert arm_keys.replace(" ", "") == lid_keys.replace(" ", "") == "33%,67%"
+
+
+def test_every_endless_atlas_loop_holds_at_rest_l742():
+    """L742 (owner: motion still pauses at rest): `.atl-lw-wisps`, `-wisps-back` and the two glints loop
+    forever (atl-wisp-drift) but were missing from the is-calm hold, so her wisps drifted on at rest."""
+    css = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+    hold = re.search(r":root\.is-calm :is\((.*?)\) \{ animation-play-state: paused !important; \}", css, re.S).group(1)
+    looped = set(re.findall(r"& :is\(([^)]*)\) \{ animation: atl-wisp-drift", css)[0].replace(" ", "").split(","))
+    looped |= {".atl-lw-wisps"}
+    for sel in looped:
+        assert sel in hold.replace(" ", ""), f"{sel} loops endlessly and is not held at rest"
