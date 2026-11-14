@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- CI fixes: the composer lint mirror re-places on window resize (no new ResizeObserver), the no-model line names reminders again, the composer imports cold in 0.075 s (help_chat loads on first help question; was 0.113 s), one assert-with-request rewritten (cap 226 held).
 
 - Settings, Personas: "Lines written from your notes" (on by default); off, the dashboard greeting is a plain hello, the line under it shows the counts and the companion says nothing about the notes (L-chat-17, CHAT_PLAN item 11).
 - Chat: the brief marks the sentences it chose with ids, the model is asked after the question to write one back, and the turn grounds on the ids it wrote, never showing them (L-chat-59; 10 of 12 real-model answers cite).
