@@ -102,7 +102,7 @@ def test_every_blurred_surface_is_on_the_glass_off_list_or_in_a_named_family() -
 # Hand-built menus per file, frozen. `kebabMenu()` in app.js is the recipe;
 # the two canvases draw their own because they float over a canvas that has
 # no DOM under the pointer.
-HAND_BUILT_MENUS = {"app.js": 4, "graph-canvas.js": 1, "whiteboard.js": 1}
+HAND_BUILT_MENUS = {"app.js": 4, "graph-canvas.js": 1, "whiteboard-ctxmenu.js": 1}
 
 
 def test_hand_built_menus_do_not_multiply() -> None:

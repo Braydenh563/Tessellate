@@ -90,7 +90,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: 2026-11-14 L286 (D24): present, frames, comments and locks carved out of whiteboard.js and wrapped whole. Measured 7,353.
 #: 2026-11-14 L286 (D24): search, connectors and arrange carved out of whiteboard.js and wrapped whole. Measured 7,303.
 #: 2026-11-14 L286 (D24): navigator and sketch-text carved out of whiteboard.js and wrapped whole. Measured 7,279.
-GLOBAL_NAMES_CAP = 7279
+#: 2026-11-14 L286 (D24): textedit and ctxmenu carved out of whiteboard.js and wrapped whole. Measured 7,262.
+GLOBAL_NAMES_CAP = 7262
 
 
 @functools.lru_cache(maxsize=None)

@@ -306,13 +306,15 @@ FAULTS = {
     'update-dialogs.js': {
         'text.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
     },
+    'whiteboard-textedit.js': {
+        'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',
+        'voiceLine("failed", { what: "redo that" })': 'redo threw an exception',
+    },
     'whiteboard-export.js': {
         'voiceLine("failed", { what: "read that file" })': 'reading the chosen file threw',
     },
     'whiteboard.js': {
         'voiceLine("failed", { what: "save the move", why: "the item went back where it was" })': "the move's save request failed (offline or the item is gone); it offers Reload the board",
-        'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',
-        'voiceLine("failed", { what: "redo that" })': 'redo threw an exception',
         'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
         'voiceLine("failed", { what: "add that note to the board", why: why })': 'creating the node on the server failed',
     },
