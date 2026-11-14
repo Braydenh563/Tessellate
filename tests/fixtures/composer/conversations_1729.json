@@ -18,7 +18,7 @@
       {"ask": "any other diagrams you can show me?", "has": ["Here are your notes per tag"], "chart": "tag", "uses": "Notes per week"},
       {"ask": "and another one?", "has": ["Here are your notes per category"], "chart": "category", "uses": "Show notes per category"},
       {"ask": "another", "has": ["Here are your notes per weekday"], "chart": "weekday", "uses": "Show notes per weekday"},
-      {"ask": "any more?", "has": ["every chart I can draw"], "uses": "weekday"}
+      {"ask": "any more?", "has": ["Statistics"], "uses": "weekday"}
     ]},
     {"name": "statistics, then its tags", "turns": [
       {"ask": "statistics", "has": ["You have 9 notes in 4 categories"], "chips_have": ["Which tags do I use most?"]},
