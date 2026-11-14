@@ -35,6 +35,8 @@ with its owner named in the entry.
 
 ## Open items
 
+1811. **UI modernisation session, 2026-11-14 (decision asked for, not the owner's words; owner call):** two `open_scan.py` changes, built and then reverted at the hub's word because the owner approved only 66c596bf. (a) a quoted CSS string is copy, as in JS and Python: the one ui-modernisation hit is the `todo` callout's selector `[class*="-todo"]` (05-sidebars-themes.css:1435); (b) TODO, FIXME, XXX and HACK count only in capitals, so a lowercase `todo` (callout kind, `data-mode="todo"`, a queue variable) is a name: 23 of 84 frontend and scratchpad hits. Measured: whole-repo hits 1376 to 1305 with both. Recommendation: allow both (tests were written: a CSS comment and an uppercase TODO stay hits). Until then the selector is a hit that cannot be reworded without changing the callout's class.
+
 ## Placed (last 20, newest first)
 - 2026-11-12: L-ui-modernisation-64 (group notes by hand): recommendation taken under standing order 3, not built: a hand-made group is a tag (or a space, or Favourites), the sidebar's tags and `tag:` filter are the grouped view, and section headings in the windowed, threaded list would be a second ordering beside the sort.
 - 2026-11-12: L-ui-modernisation-65 (more than one category): recommendation taken, not built: a category stays single (filing picks one, the graph and the dashboard pie colour by one); tags are the many-labels mechanism.

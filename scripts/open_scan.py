@@ -34,7 +34,7 @@ TEXT = re.compile(r"\.(md|txt|py|js|css|html|json|ya?ml|toml|sh|cfg|ini)$")
 
 SIGNAL = re.compile(
     r"^\s*[-*] \[ \]"
-    r"|(?-i:\b(TODO|FIXME|XXX|HACK|Todo|Fixme)\b)"
+    r"|\b(TODO|FIXME|XXX|HACK)\b"
     r"|\bstill open\b|\bnot (yet )?built\b|\bunbuilt\b|\bnot done\b|\bleft open\b"
     r"|\bfollow[- ]?up\b|\bdeferred\b|\bnext session\b|\blater (PR|session|pass)\b"
     r"|\bowner[- ]call\b|\bneeds (the )?owner\b|\bopen question\b|\bneeds hardware\b|\bblocked-hardware\b"
@@ -140,7 +140,7 @@ def hits(paths: list[str]) -> list[tuple[str, int, str]]:
         except (UnicodeDecodeError, FileNotFoundError):
             continue
         lines = text.splitlines()
-        seen = _js_quoted(lines) if f.endswith((".js", ".css")) else _py_quoted(text, lines) if f.endswith(".py") else lines
+        seen = _js_quoted(lines) if f.endswith(".js") else _py_quoted(text, lines) if f.endswith(".py") else lines
         in_done_row = f == "docs/roadmap/LEDGER.md"
         for i, line in enumerate(lines, 1):
             if in_done_row and line.startswith("- [x]"):
