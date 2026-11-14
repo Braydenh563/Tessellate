@@ -88,8 +88,7 @@ def test_a_note_type_made_before_the_list_was_read_keeps_its_id_through_delete_a
     """A type made by POST /note-types before the types list was ever read
     keeps its id through delete and Undo. The list's first read seeds the
     built-in types, so the list holds them too; only the two made here are
-    pinned. Still open (integ-1005.md): when the deleted type was the only
-    one and the list is read before the Undo, the seed takes its id."""
+    pinned. The last case (integ-1005, L571) has its own test below."""
     first = client.post("/note-types", json={"name": "Meeting log"}).json()
     second = client.post("/note-types", json={"name": "Reading list"}).json()
     gone = client.delete(f"/note-types/{first['id']}").json()
@@ -98,3 +97,15 @@ def test_a_note_type_made_before_the_list_was_read_keeps_its_id_through_delete_a
     assert back.json()["id"] == first["id"]
     ids = {t["id"] for t in client.get("/note-types").json()}
     assert {first["id"], second["id"]} <= ids
+
+
+def test_the_only_type_deleted_then_the_list_read_still_gets_its_id_back(client):
+    """L571 (integ-1005): the only type made, deleted, then the list read
+    before Undo. The list's first read seeded the built-ins into the freed
+    id, so Undo gave the type a new one; the seed now runs on create too."""
+    only = client.post("/note-types", json={"name": "Meeting log"}).json()
+    gone = client.delete(f"/note-types/{only['id']}").json()
+    assert client.get("/note-types").status_code == 200
+    back = client.post("/note-types", json={**gone["type"], "restore": True})
+    assert back.status_code == 201, back.text
+    assert back.json()["id"] == only["id"]

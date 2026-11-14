@@ -101,6 +101,10 @@ def test_a_model_not_yet_loaded_starts_loading_in_the_background(session, monkey
             release.wait(30)
             return None
 
+    # The load is held open until the request has returned, so "returns at
+    # once" is an ordering, not a wall-clock bound (a 50 ms bound failed on
+    # a slow CI runner at 74 ms, 2026-11-14).
+    release, finished = threading.Event(), threading.Event()
     cold = Cold()
     try:
         assert search_manager.warm(session, "", cold) is False

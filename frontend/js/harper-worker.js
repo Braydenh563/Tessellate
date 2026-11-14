@@ -86,7 +86,7 @@ function keepIgnored(linter, source, ignored) {
 //: document written the way the app writes, four of the six suggestions on
 //: the README's focus-mode shot. Every other rule keeps Harper's default,
 //: except the classes below (INBOX 1357, `tests/test_grammar_classes_1026.py`,
-//: measured on `tests/grammar_fixture_1026.json`):
+//: measured on `tests/fixtures/grammar/grammar_fixture_1026.json`):
 //:   - `NumericRangeEnDash`: "10-20 min" and "pp. 34-51" are written with a
 //:     hyphen in every note; 8 of 77 clean fixture lines were underlined.
 //:   - `OxfordComma`: a house style rather than an error; it put a mark on

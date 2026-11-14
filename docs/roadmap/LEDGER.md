@@ -9,13 +9,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 0 | 0 | 0 | 0 | 0 | 0 |
-| chat | 176 | 195 | 63 | 2 | 59 | 434 |
+| chat | 176 | 196 | 63 | 2 | 59 | 435 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 0 | 5 | 4 | 0 | 0 | 9 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 130 | 175 | 58 | 0 | 72 | 363 |
+| world-class | 130 | 174 | 58 | 0 | 72 | 362 |
 | general | 0 | 0 | 0 | 0 | 0 | 0 |
 | all | 406 | 426 | 130 | 2 | 162 | 962 |
 
@@ -151,7 +151,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L147** `chat` open, M: Click in Atlas large view costs 22-44 ms in setAtlasMood. From OPEN.md:3493. Evidence: setAtlasMood still in atlas.js; atlas669 clickcost sweep not found; no optimisation commit.
 - [ ] **L148** `chat` open, M: Atlas props contrast, throw restitution/friction variety (Brief 88). From SESSION_BRIEFS.md:251. Evidence: avatars.js:6618 throw squash on landing; no per-throw restitution/spin; props contrast unmeasured
 - [ ] **L149** `chat` open, M: atlasSmooth/atlasStem string building per drawn frame 3-5 ms at 4x. From a30v-1103.md Found, not fixed. Evidence: Source recommends coarser stem samples; no commit found
-- [ ] **L150** `chat` open, M: Feminine idle seams at steps 11-12, 17-18, 23-0 (strict xfail); blush ring on masculine faces. From deskframes-1108.md Left. Evidence: Source lists as not fixed; no later commit found
+- [ ] **L150** `chat` open, M: Feminine idle seams at steps 11-12, 17-18, 23-0 (strict xfail); blush ring on masculine faces. From deskframes-1108.md Left. Evidence: Source lists as not fixed; no later commit found Strict xfail: tests/test_overlay_seams_1683e.py:47.
 - [ ] **L151** `chat` open, M: Non-Atlas companions in the desk overlay (picker rows disabled). From overlay-1104.md Remaining. Evidence: INBOX 1656 item 3 'not done' in source; no later commit found
 - [ ] **L152** `chat` open, M: D5 edge spots/perch spells, A2 far-move sweep, A4 in-app presence spells, warps counts. From presence-desk-1108.md Left. Evidence: Source lists as not built; no later commit found
 - [ ] **L153** `chat` open, M: Vertical follow-through on landing/hop; settle exhale after startle (STARTLE_FOR). From life-1109.md Remaining. Evidence: No STARTLE_FOR in core/overlay/engine.py; follow-through not found
@@ -281,6 +281,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-chat-26** `chat` partly, M: Choose the model by task complexity, not only by caller. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Partly built: routing is by caller. Verify in code first.
 - [ ] **L-chat-27** `chat` partly, M: Add a research mode that plans several web searches. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Partly built: web_search and read_url exist, with SearXNG. Verify in code first.
 - [ ] **L-chat-28** `chat` open, M: Group saved chats (by model or folder), with an agent tool and skill to manage them. From IDEAS.md (retired 2026-11-12). Evidence: IDEAS.md Still open; sorting is built (sortConversations), grouping is not. Verify in code first.
+- [ ] **L-timeline-9** `chat` open, L: Make the 26 real-phrasing strict xfails pass. From CHAT_PLAN.md 'Placed from the owner, 2026-10-30' item 3. Evidence: 26 strict xfails at tests/test_phrasing_real_1111.py:125 (XFAIL dict: coverage gate on the nearest-note answer, jokes about a subject, alarm questions, number-word dates)
 
 ## whiteboard
 
@@ -436,7 +437,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L568** `world-class` open, M: Audit other [^\]\n] scanners for ReDoS and add a JS link-stripping oracle test. From OPEN.md:1249; OPEN.md:3543. Evidence: Python oracles exist (tests/test_doc_graph.py:136, test_file_editing.py:252); JS link stripping has no oracle.
 - [ ] **L569** `world-class` open, M: Add a migration for FK and filtered-column indexes with EXPLAIN at 5,000 notes. From OPEN.md:1506; OPEN.md:3784. Evidence: core/database_indexes.py:261-262 adds entity_mentions indexes; document_bookmarks/entry_bookmarks and filtered columns not confirmed
 - [ ] **L570** `world-class` open, M: Key lexical_filing stamps on edited_at instead of updated_at. From OPEN.md:1699. Evidence: lexical_filing.py:1009,1060,1217 still key stamps on updated_at; edited_at (database.py:581) not used there
-- [ ] **L571** `world-class` open, M: Preserve the note type id on Undo after POST /note-types then delete. From OPEN.md:1771. Evidence: routes_properties.py:145 POST /note-types; no id-preserving restore found; not reproduced here
 - [ ] **L572** `world-class` open, M: Add redo for /events/undo AI-change undo so it folds into pushUndo. From OPEN.md:1775. Evidence: note-history.js:340 undoSkillRun and dashboard activityUndoControl still use /events/undo; no server redo found
 - [ ] **L573** `world-class` open, M: Build wiki-link hover preview, tag counts on chips, empty-state recipe, icons and card styles. From OPEN.md:4240; bs-1111.md. Evidence: New feature (M); citation-peek.js and attachment-peek.js are the recipe; no wiki-link peek file.
 - [ ] **L574** `world-class` open, M: Measure note editor offers on the Edit form in a sweep. From OPEN.md:868; OPEN.md:3744. Evidence: note-edit-panels offers wired; no Edit-form measurement recorded

@@ -187,7 +187,7 @@ def test_the_stream_is_behind_the_unlock_gate(client):
 
 
 def test_the_stream_hands_back_rather_than_living_forever():
-    """A connection held open for a tab left open all week is a resource
+    """A connection held open for a tab kept up all week is a resource
     nothing ever reclaims; the client reconnects with its cursor, so the
     handover costs no records."""
     assert routes_settings_logs.LOG_STREAM_SECONDS <= 30 * 60

@@ -304,7 +304,7 @@ def test_a_small_model_s_toolbox_holds_preferences_only_when_asked(monkeypatch, 
 
 
 def test_a_note_made_with_tags_was_tagged(monkeypatch, app_state):
-    """H4, Qwen2.5-3B: `create_note` with `tags`, then "tagged as todo", got
+    """H4, Qwen2.5-3B: `create_note` with `tags`, then "tagged as" plus the tag, got
     "Heads up: I said I tagged a note, but I didn't actually run the tool"."""
     monkeypatch.setattr(agent.tools, "execute_tool", lambda *a, **k: {"id": 5, "title": "buy oat milk"})
     events = list(agent.run_agent(_Session(), "Make a note: buy oat milk", [], _Named("m"), _CreateWithTags()))

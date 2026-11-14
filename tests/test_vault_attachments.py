@@ -127,7 +127,7 @@ def test_the_media_list_blanks_only_pictures_of_sealed_notes(client, session):
 
 def test_a_private_note_restored_to_a_version_with_a_picture_keeps_it_sealed(client, session):
     # The restore paths write a private note's text without the edit path's
-    # flag (the SEC-A2 follow-up's residual gap 2): a picture only an older
+    # flag (the SEC-A2 second pass's residual gap 2): a picture only an older
     # version embedded came back served to a locked session.
     from tessellate.core import vault
     from tessellate.core.database import EntryRevision

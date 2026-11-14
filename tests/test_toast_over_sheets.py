@@ -1,5 +1,5 @@
-"""A toast fired from a phone sheet is drawn over it (GRAPH_PLAN, "Still open
-after KG1 to KG9").
+"""A toast fired from a phone sheet is drawn over it (GRAPH_PLAN, built after
+KG1 to KG9).
 
 `openSheet` puts a sheet one layer above whatever it was opened from, so a
 sheet opened from a menu (2550) or the table view (2400) is drawn at 2551 or
