@@ -10049,6 +10049,8 @@ Link to another note with [[its first few words]]."></textarea>
        pointer or focus; the two checks and smart punctuation are standard
        settings rows (`.setting-check`, `.doc-dictionary-setting`) with a line
        each; and the list goes in and out as a .txt file. -->
+  <!-- Built on its first open (openDocDictionary, surfaceBuild), not parsed at boot. -->
+  <script type="text/x-surface" data-surface="docDictionary">
   <dialog id="doc-dictionary-dialog" class="card space-dialog doc-dictionary-dialog"
     aria-labelledby="doc-dictionary-title">
     <div class="row space-between doc-dictionary-head dialog-head">
@@ -10189,6 +10191,7 @@ Link to another note with [[its first few words]]."></textarea>
       </span>
     </label>
   </dialog>
+  </script>
 
   <div id="extract-panel" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Extract notes">

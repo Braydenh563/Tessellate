@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The documents dictionary dialog is built on its first open, not parsed at boot: the boot page is back under its element cap after the base merge.
 - The first Settings open no longer lays its window out to draw your face: the face is drawn on idle (L-world-class-37).
 - Restore drain tests no longer time the wall clock: a zero wait proves a stream or long poll does not hold a restore (L-world-class-38).
 - Redo of an AI change: one at a time, never on a binned or private note, one query for later edits; a card id alone is refused once its card is gone (review 5899353774).

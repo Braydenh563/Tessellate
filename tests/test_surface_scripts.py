@@ -44,10 +44,10 @@ def test_every_inline_script_in_the_page_is_a_surface():
     assert all('data-surface="' in tag for tag in inline), inline
 
 
-def test_the_fourteen_top_level_surfaces_are_scripts_and_no_template_is_left_at_the_top():
+def test_the_fifteen_top_level_surfaces_are_scripts_and_no_template_is_left_at_the_top():
     names = [re.search(r'data-surface="(\w+)"', m.group(1)).group(1) for m in SCRIPTS]
     assert sorted(names) == sorted(
-        "atlasChat palette quickNote notes chat timeline graph documents reminders library ocr settings shortcuts meeting".split()
+        "atlasChat palette quickNote notes chat timeline graph documents reminders library ocr settings shortcuts meeting docDictionary".split()
     )
     outside = re.sub(r'<script type="text/x-surface".*?</script>', "", RAW, flags=re.S)
     assert "<template data-surface" not in outside, "a surface is a template at the top again: it is parsed at boot"
