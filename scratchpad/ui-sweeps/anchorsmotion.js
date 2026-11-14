@@ -71,7 +71,7 @@ const OPEN = {
     const at = await page.evaluate(() => {
       const cards = [...document.querySelectorAll('#library-grid .library-card')].filter((c) => c.getClientRects().length);
       //: The lowest card on screen, so the menu has to flip or escape.
-      const card = cards.filter((c) => c.getBoundingClientRect().bottom < innerHeight - 40).pop();
+      const card = cards.filter((c) => c.getBoundingClientRect().bottom < innerHeight - 40)[0];
       const opener = card?.querySelector('.library-card-menu > button');
       if (!opener) return null;
       const r = opener.getBoundingClientRect();
@@ -114,8 +114,17 @@ const OPEN = {
   async rowmenu(page) {
     await page.evaluate(() => switchTab('library'));
     await page.waitForTimeout(1200);
+    //: The grid fills in batches: "the last card in view" was a different card in each motion run
+    //: (y 668 and 783 at 1440x900), so the two placements were 110px apart for no motion reason; the first
+    //: card in view, after the grid settles, is the same card in both.
+    await page.waitForFunction(() => {
+      const n = document.querySelectorAll('#library-grid .library-card').length;
+      const w = window.__amGrid || (window.__amGrid = { n: -1, at: 0 });
+      if (n !== w.n) { w.n = n; w.at = performance.now(); return false; }
+      return n > 0 && performance.now() - w.at > 800;
+    }, null, { polling: 100, timeout: 15000 }).catch(() => {});
     const at = await page.evaluate(() => {
-      const card = [...document.querySelectorAll('#library-grid .library-card')].filter((c) => c.getClientRects().length && c.getBoundingClientRect().bottom < innerHeight - 40).pop();
+      const card = [...document.querySelectorAll('#library-grid .library-card')].filter((c) => c.getClientRects().length && c.getBoundingClientRect().bottom < innerHeight - 40)[0];
       if (!card) return null;
       const r = card.getBoundingClientRect();
       return [Math.round(r.left + 30), Math.round(r.top + r.height / 2)];
@@ -128,11 +137,18 @@ const OPEN = {
     await page.evaluate(() => switchTab('graph'));
     await page.waitForTimeout(3500);
     const at = await page.evaluate(async () => {
-      const node = (typeof graphNodesRef !== 'undefined' && graphNodesRef || [])[0];
-      if (!node) return null;
+      //: Pressed on the node itself: an undragged popup stands beside its own node (INBOX 1413,
+      //: `graphPopupFollowSpot`), so a press at a fixed point away from it measured the distance
+      //: to that point, not to the anchor (L-general-56: 135px).
+      const s = typeof gcTab !== 'undefined' ? gcTab : null;
       const box = document.getElementById('graph-box').getBoundingClientRect();
-      const x = Math.round(box.left + box.width * 0.4);
-      const y = Math.round(box.top + box.height * 0.55);
+      const c = s?.canvas?.getBoundingClientRect();
+      const t = s?.transform;
+      const at = (n) => [c.left + n.x * t.k + t.x, c.top + n.y * t.k + t.y];
+      const inside = ([x, y]) => x > box.left + box.width * 0.2 && x < box.left + box.width * 0.7 && y > box.top + box.height * 0.2 && y < box.bottom - box.height * 0.2;
+      const node = c && t ? [...(s.byId?.values() || [])].find((n) => Number.isFinite(n.x) && inside(at(n))) : null;
+      if (!node) return null;
+      const [x, y] = at(node).map(Math.round);
       await openGraphPopup({ clientX: x, clientY: y, stopPropagation() {}, preventDefault() {} }, node);
       return [x, y];
     });

@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Right-click menus open 4px from the pointer, not 14px: the 1px anchor is a block at the host corner (L-general-56).
 - The map's View menu is 427px, not 587px: numbering, dimming, folding, the filter, the Gantt chart and the map's make-up sit behind one Branches and reports row.
 - The map theme dialog fits a 900px window: its four groups sit in two columns from 1100px (1002px to 669px tall).
 - Windows High Contrast: a focused search field, the chat box and a Library card title show a ring again (it was a shadow, which that mode drops).
