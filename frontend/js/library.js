@@ -3776,6 +3776,21 @@ async function renderLibraryDocuments() {
     //: with its own "# Title" line, so the snippet began with the title the
     //: row prints in bold one line up (`libraryTitleAndPreview`).
     const docPreview = libraryTitleAndPreview(doc.title || "", doc.preview || "", false).preview;
+    //: **A page, not a line of grey text** (INBOX 1325, L-documents-54): the heading and the opening lines on a small page,
+    //: drawn from the summary the list already has (nothing stored, nothing fetched); `.doc-list-page` in library-lazy.css.
+    const page = document.createElement("span");
+    page.className = "doc-list-page";
+    page.setAttribute("aria-hidden", "true");
+    const leaf = document.createElement("span");
+    leaf.className = "doc-list-page-leaf";
+    const leafHead = document.createElement("span");
+    leafHead.className = "doc-list-page-head";
+    leafHead.textContent = doc.title || "Untitled";
+    const leafLines = document.createElement("span");
+    leafLines.className = "doc-list-page-lines";
+    leafLines.textContent = docPreview;
+    leaf.append(leafHead, leafLines);
+    page.append(leaf);
     if (docPreview) {
       const preview = document.createElement("span");
       preview.className = "doc-list-preview";
@@ -3868,7 +3883,7 @@ async function renderLibraryDocuments() {
     // so there is no call here: wiring it twice installs two
     // MutationObservers on one menu, which do the same reparent twice.
 
-    open.append(top, body, menu);
+    open.append(top, page, body, menu);
     item.appendChild(open);
     list.appendChild(item);
   }

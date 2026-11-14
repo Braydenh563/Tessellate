@@ -7902,3 +7902,19 @@ def test_a_show_all_button_repeated_down_a_picker_is_the_quiet_text_action() -> 
     (border transparent, accent text, the edge back under [data-contrast="on"]); the Reminders filter chips
     and the widget dialog's rows were already borderless."""
     assert 'more.classList.add("icon-picker-more", "quiet")' in frontend_text("icon-picker.js")
+
+
+def test_a_document_in_a_list_is_a_page_not_a_line_of_grey() -> None:
+    """INBOX 1325 / L-documents-54: the Library Documents row draws `.doc-list-page` (DESIGN.md "A document in a
+    list"): 3:4, tokens only, decoration (aria-hidden), text through `textContent`, between the tick and the words."""
+    css = (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
+    rules = {sel: body for sel, body in _rules(css) if sel.startswith(".doc-list-page")}
+    page, leaf = rules[".doc-list-page"], rules[".doc-list-page-leaf"]
+    assert "aspect-ratio: 3 / 4" in page and "overflow: hidden" in page
+    for token in ("var(--page)", "var(--border)", "var(--radius-sm)", "var(--shadow-sm)"):
+        assert token in page, token
+    assert "aspect-ratio: 3 / 4" in leaf and "scale(" in leaf
+    assert not re.search(r"#[0-9a-fA-F]{3,8}\b|rgba?\(", "".join(rules.values()))
+    js = frontend_text("library.js")
+    assert 'page.setAttribute("aria-hidden", "true")' in js and "open.append(top, page, body, menu)" in js
+    assert "innerHTML" not in js[js.index('page.className = "doc-list-page"') :][:900]

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Library Documents: each row draws a small page (the title and the opening lines on a 3:4 sheet, `.doc-list-page`) from the summary the list already has (L-documents-54, INBOX 1325): 56 x 74.7px at 1440 and 390, light and dark, aria-hidden; 200 documents render in a median 50-75 ms against 61 before (+800 nodes); recipe row in DESIGN.md with its lint; the Library help line and the card help say so.
 - Icon picker: the four "Show all N" buttons down the picker are `ghost quiet` (L-documents-46, the 1566 sweep's last stragglers): border 1px rgba(31,36,48,0.52) to transparent at 390 and 1440, light and dark, the edge back under high contrast; the Reminders filter chips (3) and the widget dialog's 70 buttons were already borderless, 0 bordered besides the lone Done and the picker's own.
 - Documents: a block embed (`![[Doc#^id]]`) drawn before the document list has loaded redraws when it lands (L-documents-74): one `docs-landed` listener per waiting widget, none when the list is loaded; reproduced as a chip with `docs` emptied, a block after the event. The recording-embed test harness gained the `document.addEventListener` the synced-block listener needs.
 - Documents: the diagram shelf sweep drives a touch hold-and-drag of a tile onto the picture with CDP touch events (L-documents-72): 3 to 4 blocks in a flowchart and a mind map at 390.

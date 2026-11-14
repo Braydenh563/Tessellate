@@ -1272,8 +1272,7 @@ Reopened 2026-11-14 by the hub (no owner decision behind it): LEDGER L-documents
 
 ## Placed from INBOX, 2026-10-19
 
-- INBOX 1325. **The owner, 2026-10-19, verbatim.** "should thumbnails be stores for documents in the document editor as well for the library page??"
-     Recommendation (taken): no stored raster for documents. A board is a drawing, so only a picture tells boards apart; a document is text, and its Library row already shows a live 240-character opening (`routes_documents._preview`) that is current on every save, theme-correct and costs no writes. Instead: a page-shaped card (heading, first lines, first embedded image as the cover) drawn from data the list already has. Next: build the page-shaped card in the Library Documents list.
+- INBOX 1325. Built (L-documents-54); the owner's words, the recommendation taken and the measurements moved to HISTORY.md, "Moved from the plans, 2026-11-14 (1566 and 1325)".
 
 
 ## Placed from INBOX, 2026-10-27
