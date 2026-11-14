@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Sweeps: touch.js clears passing toasts before it measures a surface (a due reminder's alert read as a covered control); L-general-47, 49 and 53 closed.
 - Settings: the "let that app add and change notes" switch and Skip silence show what the notebook holds after a reload (L-general-54).
 - Right-click menus open 4px from the pointer, not 14px: the 1px anchor is a block at the host corner (L-general-56).
 - The map's View menu is 427px, not 587px: numbering, dimming, folding, the filter, the Gantt chart and the map's make-up sit behind one Branches and reports row.

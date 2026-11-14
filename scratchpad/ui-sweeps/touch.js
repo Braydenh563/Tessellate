@@ -182,6 +182,9 @@ const SURFACES = [
     // loaded machine against the 600ms above, which read "did not open" for
     // the Graph and Library rows in dark, then light, at random (uxfix3 item 3).
     await page.waitForSelector(surface.sel, { state: 'visible', timeout: 6000 }).catch(() => {});
+    //: A due reminder in the notebook (the seeded "Send the weekly summary") raises its alert toast
+    //: whenever it falls due; a toast is passing, so it is cleared before each surface is measured.
+    await page.evaluate(() => document.querySelectorAll('#toast-stack .toast, .toast').forEach((t) => t.remove()));
     const result = await page.evaluate(({ sel, MIN, extra }) => {
       const root = document.querySelector(sel);
       if (!root) return { missing: true };
