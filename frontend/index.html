@@ -5117,6 +5117,7 @@ Link to another note with [[its first few words]]."></textarea>
                  belongs next to the file's name. -->
             <span class="doc-dock-status">
               <span id="doc-saved" class="muted doc-saved" role="status"></span>
+              <span id="doc-vim-mode" class="dock-chip hidden" role="status" title="The Vim mode"></span>
             </span>
             <!-- Same divider the formatting toolbar below uses to separate
                  its own button groups, status facts (word count, save
@@ -5262,12 +5263,13 @@ Link to another note with [[its first few words]]."></textarea>
                 Focus hides everything but the page (F11).</p>
               <p>A .csv or .tsv file adds Grid: the file as a table of cells you type in. Tab and the arrow keys move between cells, Enter moves down, and Alt+Enter breaks a line inside a cell. Add row, Add column, Delete row and Delete column act on the cell you are in. Every edit is a change to the text, so Ctrl+Z undoes it, and Escape goes back to the text.</p>
               <p>A diagram (.mmd) opens the builder: blocks on one side, the picture on the other. Picture gives the drawing the room, List gives the blocks list the room, and Source is the text. Add puts a block in, Connect to… draws an arrow, and a drag on the picture reorders the blocks because the picture lays itself out. Shift, Ctrl or Cmd and click picks several blocks; Shift and drag on empty space picks the ones it touches; a press on empty space or Escape lets go of them. Expand, at the end of the diagram's toolbar, opens the diagram full screen with the same saving; Collapse or Escape returns to the document where you left it. Save as SVG or PNG, Copy as picture and Copy as Mermaid are under More for this diagram. In another document, type /diagram, or write a diagram's title in double square brackets after an exclamation mark to show one you already have.</p>
+              <p>Vim keys, in the ⋯ menu, gives the editor Vim's modes and keys in code and in documents: Esc for Normal, i to insert, v to select, dd to delete a line, and : commands such as :w. It is off until you turn it on, and the bar shows the mode (NORMAL, INSERT or VISUAL) while it is on.</p>
               <p>Find and replace (Ctrl+F, the magnifier) opens the editor's search: every match is marked, Enter goes to the next and Shift+Enter to the previous, Replace all is one undo step, and Esc closes it. To change a word across every document, use Replace in every document in the ⋯ menu.</p>
               <p>The type button in the foot (Markdown, Python and so on) opens the list of file types, Documents, Data and Code, with a filter field; Markdown is the rich text editor. The ⋯ menu holds Connections, History, Replace in
                 every document, Copy app link, Paste special, Model for this feature, Extract
                 notes and Map the headings; the downloads (.md, .html, slides (each heading starts one), with images,
                 .docx, PDF; a diagram adds .svg, .png and Copy as picture); the page width, text size, line spacing, toolbar row and code switches (wrap,
-                whitespace, minimap); Dim all but this paragraph, Keep this line
+                whitespace, minimap, Vim keys); Dim all but this paragraph, Keep this line
                 centred, Margin reader and Serif for reading; Autocorrect, Suggest
                 words and Suggest changes (with Review the next change, Accept all
                 changes and Reject all changes once there are some); Read aloud;
@@ -5410,6 +5412,11 @@ Link to another note with [[its first few words]]."></textarea>
                   title="Show a narrow map of the whole file beside a code file's scrollbar">
                   <i class="ph ph-sidebar-simple ph-lead" aria-hidden="true"></i> <span>Minimap</span>
                   <input type="checkbox" id="doc-minimap">
+                </label>
+                <label id="doc-vim-row" class="menu-item doc-dock-menu-item doc-dock-menu-check checkbox-label"
+                  title="Edit with Vim's modes and keys, in code and in documents. The mode shows in the bar">
+                  <i class="ph ph-keyboard ph-lead" aria-hidden="true"></i> <span>Vim keys</span>
+                  <input type="checkbox" id="doc-vim">
                 </label>
                 <!-- **What should be in front of you while you write**
                      (DOCUMENTS_PLAN Phase 5 item 4, PLAN D9). Three

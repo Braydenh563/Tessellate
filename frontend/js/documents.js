@@ -13452,6 +13452,8 @@ const DOC_TOOL_KEYS = {
   whitespace: "doc-whitespace",
   //: Brief 42: a name missing here was stored under the key "undefined".
   codeMinimap: "doc-minimap",
+  //: L-documents-41: the opt-in Vim keymap, off by default.
+  vimKeys: "doc-vim",
   //: Brief 69 (D6): Preview live in the run panel.
   runLive: "doc-run-live",
 };

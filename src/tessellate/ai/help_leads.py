@@ -135,6 +135,7 @@ TOPIC_LEADS: dict[str, str] = {
     "code-files": "Write code in a document with colours, error checks and closing brackets.",
     "code-completions": "Save typing in code with suggestions and short words that expand into blocks.",
     "code-tabs": "Keep several code files open as tabs and switch between them.",
+    "vim-keys": "Turn on Vim's modes and keys in code and documents.",
     "code-run": "Run a code document safely and see what it prints, away from the network.",
     "debugger": "Stop code at a line and look at its variables to find what goes wrong.",
     "code-panel": "Have code explained, fixed or tested, and keep snippets to reuse.",
