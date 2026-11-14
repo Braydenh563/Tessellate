@@ -239,9 +239,13 @@ def test_a_re_key_without_a_recovery_key_makes_none(client):
     assert rotated.json()["recovery_key"] is None
 
 
-def test_wrong_keys_earn_the_same_waits_as_wrong_passwords(client):
+def test_wrong_keys_earn_the_same_waits_as_wrong_passwords(client, monkeypatch):
     _note, key = _notebook(client)
     local = _local(client)
+    # A fixed clock: the first wait is 1 s, and on the real clock a slow
+    # runner's sixth guess landed past it and got a 401 (CI, 2026-11-14).
+    now = routes_auth.time.time()
+    monkeypatch.setattr(routes_auth.time, "time", lambda: now)
     for _ in range(routes_auth._FAILURE_ALLOWANCE):
         assert _recover(local, crypto.new_recovery_key()).status_code == 401
     assert _recover(local, crypto.new_recovery_key()).status_code == 429

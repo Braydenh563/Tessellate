@@ -3762,3 +3762,21 @@ aside[data-resizable="1"] {
   opacity: 0.35;
 }
 
+
+/* The journal streak (L495): quiet text at the end of the strip's head. */
+.timeline-streak {
+  margin-inline-start: var(--space-2);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+/* On a phone the head's arrows, month and year already filled 358px of a
+   330px strip; the head wraps there and the streak takes its own line. */
+@media (max-width: 599.98px) {
+  .timeline-daystrip-head {
+    flex-wrap: wrap;
+  }
+  .timeline-streak {
+    flex-basis: 100%;
+    margin-inline-start: 0;
+  }
+}
