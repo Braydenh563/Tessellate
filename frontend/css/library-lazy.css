@@ -10581,6 +10581,15 @@ input[type="color"].wb-mixed {
   pointer-events: auto;
   cursor: move;
 }
+/* The grips are built on the first hover (`wbMapEdgeElement.grips`), and a
+   new element takes its first style without a transition, so this is where
+   the fade starts from, as it did when the grips were always there. */
+@starting-style {
+  .wb-map-edge-group:hover .wb-map-edge-handle,
+  .wb-map-edge-group:hover .wb-map-edge-end {
+    opacity: 0;
+  }
+}
 
 /* A circle is the ellipse held square: as tall as it is wide unless its
    words need more, centred, its label kept to the square inside it. */

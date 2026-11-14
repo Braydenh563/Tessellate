@@ -260,3 +260,31 @@ def test_the_accent_is_read_before_the_render_writes() -> None:
     render = _code("renderWbObjects")
     asked = render.find("if (mapIndex) wbMapAccentInk();")
     assert 0 <= asked < render.find(".data(objectData")
+
+
+def test_a_line_builds_its_grips_only_when_they_can_show() -> None:
+    """Source text: wbMapEdgeElement, wbSyncMapEdgeHandles and wbRenderMapEdges
+    in whiteboard-map.js, plus library-lazy.css. L-ui-modernisation-61: each
+    line drew eight elements (group, two paths, a waypoint grip and two end
+    grips with a title each), so a 500-topic map wrote about 4,000 SVG
+    elements that the first layout read restyled though none could be seen.
+    The grips are built on the first hover or focus of the line, or when its
+    topic is selected; until then a line is its group and two paths."""
+    element = _code("wbMapEdgeElement")
+    made = element.split("wbMapEdgeElement.grips")[0]
+    assert "wb-map-edge-handle" not in made and "wb-map-edge-end" not in made
+    assert "wbMapEdgeElement.grips = " in WB
+    grips = WB.split("wbMapEdgeElement.grips = ")[1].split("\n};")[0]
+    assert "wbWireMapEdgeHandle(" in grips and "wbWireMapEdgeEnd(" in grips
+    assert "wbMapEdgeHandlePoint(" in grips and "wbMapEdgeEndPoints(" in grips
+    # Kept on the path, so a drag frame (`wbUpdateMapEdges`) moves them.
+    assert "path._wbHandle = " in grips and "path._wbEnds = " in grips
+    # Selection is the route that needs no pointer.
+    assert "wbMapEdgeElement.grips(held.wrap)" in _code("wbSyncMapEdgeHandles")
+    # Hover and focus, delegated once on the group rather than per line.
+    render = _code("wbRenderMapEdges")
+    assert '"pointerover"' in render and '"focusin"' in render
+    # A grip built under the pointer still fades in, as one that was there did.
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    start = lazy.split("@starting-style")
+    assert any(".wb-map-edge-group:hover .wb-map-edge-handle" in part.split("}")[0] for part in start[1:])

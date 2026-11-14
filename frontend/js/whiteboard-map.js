@@ -4269,6 +4269,16 @@ function wbRenderMapEdges({ only = null } = {}) {
     group.setAttribute("class", "wb-map-edges");
     group.setAttribute("aria-hidden", "true");
     zoomGroup.insertBefore(group, zoomGroup.firstChild);
+    //: A line's grips are built the first time it is pointed at or focused
+    //: (`wbMapEdgeElement.grips`): one listener each on the group, not three
+    //: per line. `pointerover` is dispatched before the hover style is
+    //: worked out, so the grips are there when `:hover` first matches them.
+    const grips = (event) => {
+      const wrap = event.target.closest?.(".wb-map-edge-group");
+      if (wrap && !wrap.querySelector(".wb-map-edge-handle")) wbMapEdgeElement.grips(wrap);
+    };
+    group.addEventListener("pointerover", grips);
+    group.addEventListener("focusin", grips);
   }
   const index = wbMapIndex();
   const colors = wbMapNodeColors(index);
@@ -4450,6 +4460,38 @@ function wbMapEdgeElement(parentId, childId) {
   hit.setAttribute("data-parent", String(parentId));
   hit.setAttribute("data-child", String(childId));
   wrap.appendChild(hit);
+  //: The two ends as given, for the grips built later (`.grips` below):
+  //: the dataset holds them as strings, and a press looks a topic up by id.
+  wrap._wbIds = [parentId, childId];
+  //: On the group, not on the hit stroke: a right-click and a hold belong to
+  //: the *line*, and the line now has two targets in it. Wired on the stroke
+  //: alone, the ring stopped opening wherever the handle was, since the
+  //: handle is a sibling of the stroke and the event never reached it
+  //: (measured by `mapstrip.js`, which caught it the moment the handle
+  //: landed: "right-click on a line opens the line's own ring" came back
+  //: `open: false`). This is the same fault the mid-line `+` already carries
+  //: its own forwarding for, and the same fix one level up: every part of the
+  //: line answers the line's own gestures.
+  wbWireMapEdgeGestures(wrap, childId);
+  return wrap;
+}
+
+//: **A line's grips are built when they can first show**
+//: (L-ui-modernisation-61): the waypoint and the two end grips, each with its
+//: title, were six of a line's eight elements, so a 500-topic map wrote some
+//: 3,000 SVG elements nobody could see, and the first layout read after the
+//: render restyled every one of them (102 to 140ms of 8,503 elements). They
+//: show only on hover, focus or the topic being selected, so they are built
+//: on the first of those (`wbRenderMapEdges`' delegated listeners,
+//: `wbSyncMapEdgeHandles`) and kept, placed from the topics as they are now.
+//: Returns the waypoint handle; a second call returns the one already built.
+wbMapEdgeElement.grips = (wrap) => {
+  const NS = "http://www.w3.org/2000/svg";
+  const path = wrap.querySelector("path.wb-map-edge");
+  if (!path || !wrap._wbIds) return null;
+  if (path._wbHandle?.isConnected) return path._wbHandle;
+  const [parentId, childId] = wrap._wbIds;
+  const label = wrap.querySelector(".wb-map-edge-label");
   //: **The waypoint handle** (§12.1 item 5's third): the third target on a
   //: line, after the visible stroke and the invisible one you can point at. A
   //: circle rather than a button because it has to sit *on* the line at a
@@ -4457,8 +4499,8 @@ function wbMapEdgeElement(parentId, childId) {
   //: already is; the mid-line `+` is HTML for the opposite reason (it is a
   //: button from the app's own ramp).
   //:
-  //: Drawn for every line and shown only for the selected topic's own
-  //: (`wbSyncMapEdgeHandles`), so a map of two hundred lines is not a map of
+  //: Built when first wanted and shown only on hover or for the selected
+  //: topic's own lines (`wbSyncMapEdgeHandles`), so a map of two hundred lines is not a map of
   //: two hundred grab dots, which is the same rule the `+` follows.
   const handle = document.createElementNS(NS, "circle");
   handle.setAttribute("class", "wb-map-edge-handle");
@@ -4472,7 +4514,7 @@ function wbMapEdgeElement(parentId, childId) {
   gripTitle.textContent = "Drag to bend this line · double-click to straighten";
   handle.appendChild(gripTitle);
   wbWireMapEdgeHandle(handle, parentId, childId);
-  wrap.appendChild(handle);
+  wrap.insertBefore(handle, label);
   //: **The line's two ends** (K31): shown with the waypoint, dragged round a
   //: topic to pin the side the line leaves or enters, double-clicked to put
   //: that end back on Auto. Kept on the path so a drag frame moves them with
@@ -4488,21 +4530,26 @@ function wbMapEdgeElement(parentId, childId) {
       : "Drag round this topic to choose the side this line enters · double-click for Auto";
     grip.appendChild(tip);
     wbWireMapEdgeEnd(grip, parentId, childId, end);
-    wrap.appendChild(grip);
+    wrap.insertBefore(grip, label);
     return grip;
   });
-  //: On the group, not on the hit stroke: a right-click and a hold belong to
-  //: the *line*, and the line now has two targets in it. Wired on the stroke
-  //: alone, the ring stopped opening wherever the handle was, since the
-  //: handle is a sibling of the stroke and the event never reached it
-  //: (measured by `mapstrip.js`, which caught it the moment the handle
-  //: landed: "right-click on a line opens the line's own ring" came back
-  //: `open: false`). This is the same fault the mid-line `+` already carries
-  //: its own forwarding for, and the same fix one level up: every part of the
-  //: line answers the line's own gestures.
-  wbWireMapEdgeGestures(wrap, childId);
-  return wrap;
-}
+  path._wbHandle = handle;
+  const index = wbMapIndex();
+  const parent = index.byId.get(parentId);
+  const child = index.byId.get(childId);
+  if (parent && child) {
+    const layout = wbMapLayout();
+    const point = wbMapEdgeHandlePoint(parent, child, layout);
+    handle.setAttribute("cx", String(point.x));
+    handle.setAttribute("cy", String(point.y));
+    wbMapPlaceEdgeEnds(path, wbMapEdgeEndPoints(parent, child, layout));
+  }
+  //: The branch colour the line already carries (`wbMapEdgeApply`).
+  const colour = path.style.getPropertyValue("--wb-map-edge-colour");
+  if (colour) for (const grip of [handle, ...path._wbEnds]) grip.style.setProperty("--wb-map-edge-colour", colour);
+  if (wrap.classList.contains("is-shown")) handle.classList.add("is-shown");
+  return handle;
+};
 
 //: One edge's geometry written onto the elements it already has.
 //:
@@ -4579,16 +4626,18 @@ function wbMapEdgeApply(wrap, geom) {
   else path.style.removeProperty("--wb-map-edge-colour");
   const hit = wrap.querySelector(".wb-map-edge-hit");
   hit.setAttribute("d", geom.line);
+  //: The grips only once built (`wbMapEdgeElement.grips`), which places them
+  //: itself from the topics as they are then.
   const handle = wrap.querySelector(".wb-map-edge-handle");
-  handle.setAttribute("cx", String(geom.grip.x));
-  handle.setAttribute("cy", String(geom.grip.y));
-  wbMapPlaceEdgeEnds(path, geom.ends);
-  for (const grip of path._wbEnds || []) {
-    if (geom.colour) grip.style.setProperty("--wb-map-edge-colour", geom.colour);
-    else grip.style.removeProperty("--wb-map-edge-colour");
+  if (handle) {
+    handle.setAttribute("cx", String(geom.grip.x));
+    handle.setAttribute("cy", String(geom.grip.y));
+    wbMapPlaceEdgeEnds(path, geom.ends);
+    for (const grip of [handle, ...(path._wbEnds || [])]) {
+      if (geom.colour) grip.style.setProperty("--wb-map-edge-colour", geom.colour);
+      else grip.style.removeProperty("--wb-map-edge-colour");
+    }
   }
-  if (geom.colour) handle.style.setProperty("--wb-map-edge-colour", geom.colour);
-  else handle.style.removeProperty("--wb-map-edge-colour");
   let text = wrap.querySelector(".wb-map-edge-label");
   if (!geom.label) {
     text?.remove();
@@ -9176,7 +9225,7 @@ function wbSyncMapEdgeHandles() {
     for (const [key, held] of cache) {
       const cut = key.indexOf(":");
       if (key.slice(0, cut) !== id && key.slice(cut + 1) !== id) continue;
-      const handle = held.wrap.querySelector(".wb-map-edge-handle");
+      const handle = held.wrap.querySelector(".wb-map-edge-handle") || wbMapEdgeElement.grips(held.wrap);
       if (handle) want.add(handle);
     }
   }
