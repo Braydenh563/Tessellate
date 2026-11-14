@@ -1030,8 +1030,8 @@ MORE_TOPICS: list[dict] = [
             "phone menu", "app menu",
         ),
         "body": (
-            "On a phone the tabs are a bar along the bottom: Dashboard, Notes, "
-            "Chat, Library and More, last. More opens a sheet: Graph, Timeline "
+            "On a phone the tabs are a bar along the bottom: Dashboard (captioned Home "
+            "under 480 pixels wide), Notes, Chat, Library and More, last. More opens a sheet: Graph, Timeline "
             "and Reminders first, then Ask the agent, Commands, Guide, Agent "
             "activity while the agent runs, and Settings. More is lit while one "
             "of its pages is showing, and carries the count of reminders due. "

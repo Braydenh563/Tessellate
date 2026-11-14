@@ -10061,6 +10061,16 @@ header#top-bar {
    beside it. Seven icons at 45.7px is the better trade at that width, and 320 is
    the width the shell is held to rather than the width it is used at. */
 @media (max-width: 359.98px) {
+  /* INBOX 1859: the Dashboard caption reads "Home" below 480: 62.6px of
+     "Dashboard" in a 64px column at 320, 33.9px of "Home". CSS, so the text
+     other code reads stays "Dashboard". */
+  #tab-btn-dashboard .tab-label {
+    font-size: 0;
+  }
+  #tab-btn-dashboard .tab-label::after {
+    content: attr(data-short);
+    font-size: var(--text-xs);
+  }
   .tab-label {
     display: none;
   }
@@ -10088,6 +10098,16 @@ header#top-bar {
   }
 }
 @media (min-width: 360px) and (max-width: 479.98px) {
+  /* INBOX 1859: the Dashboard caption reads "Home" below 480: 62.6px of
+     "Dashboard" in a 64px column at 320, 33.9px of "Home". CSS, so the text
+     other code reads stays "Dashboard". */
+  #tab-btn-dashboard .tab-label {
+    font-size: 0;
+  }
+  #tab-btn-dashboard .tab-label::after {
+    content: attr(data-short);
+    font-size: var(--text-xs);
+  }
   #tab-bar button:not(.active) .tab-label {
     display: none;
   }

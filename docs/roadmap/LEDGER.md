@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 0 | 0 | 0 | 0 | 0 | 0 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 0 | 0 | 0 | 0 | 0 | 0 |
-| world-class | 0 | 119 | 29 | 1 | 0 | 148 |
+| world-class | 0 | 119 | 29 | 0 | 0 | 148 |
 | general | 0 | 35 | 2 | 0 | 4 | 37 |
-| all | 372 | 508 | 100 | 3 | 111 | 980 |
+| all | 372 | 508 | 100 | 2 | 111 | 980 |
 
 ## graph
 
@@ -647,7 +647,6 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 
 - [ ] **L744** `chat` owner-call, M: Desk companion lightweight: live drawing within CPU budget (idle <1%, moving <3%). From OPEN.md:4376; OPEN.md:4396; OPEN.md:4401. Evidence: No row-sized check; a CPU budget the owner judges on the desk (see N14, 1692p-budget) Owner decided 2026-11-12: I will send CPU numbers.
 - [ ] **L745** `chat` owner-call, S: Patting over Atlas's head must not lift it 30 px. From OPEN.md:4370. Evidence: a31q-1103.md:12: not reproduced in the enlarged viewer; waits on owner recording/window size (OPEN I30) Owner decided 2026-11-12: Send a recording later.
-- [ ] **L-world-class-83** `world-class` owner-call, S: Short tab captions below 480px: the owner's copy call. From WORLD_CLASS_PLAN.md:938. Evidence: WORLD_CLASS_PLAN.md:938 'short tab captions below 480 are a copy decision for the owner'
 
 ## Needs hardware
 

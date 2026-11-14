@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Phone tab bar: below 480px the Dashboard caption reads Home (62.6 px to 33.9 px in a 64 px column at 320; every caption now has 23 px or more to spare at 320, 360 and 390); the name, tooltip and the text other code reads stay Dashboard; the phone help topic says so (INBOX 1859, L-world-class-83).
 - The Windows package check records the frozen app's startup: seconds to the first 200 from /health, printed to the job summary by `packaging/startup_time.py`, with no failing threshold yet (L-world-class-72).
 - Capture survives a server crash between the commit and the answer: a test raises after the commit, and the client's retry with the same key returns the one note, in the same process and after a restart (L-world-class-116).
 - Restart now goes through the launcher: on a Windows source install it starts `start.bat --desktop --restart-after PID` (venv check, repair and update included) instead of `python -m tessellate`; start.bat forwards the pid to the app (L968).
