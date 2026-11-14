@@ -2208,7 +2208,7 @@ $("library-bulk-restore").addEventListener("click", async () => {
   }
   if (restored) toast(`Restored ${nounCount(restored, "item")}.`);
   const failed = chosen.length - restored;
-  if (failed) toast(`${nounCount(failed, "item")} couldn't be restored.`, true);
+  if (failed) toast(`${nounCount(failed, "item")} couldn't be restored.`, true, { action: ["Reload the list", loadLibrary] });
   loadLibrary();
   loadEntries();
   loadReminders();
@@ -2281,7 +2281,7 @@ $("library-bulk-delete").addEventListener("click", async () => {
   }
   if (deleted) toast(`Deleted ${nounCount(deleted, "item")}.`);
   const failed = chosen.length - deleted;
-  if (failed) toast(`${nounCount(failed, "item")} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "item")} couldn't be deleted.`, true, { action: ["Reload the list", loadLibrary] });
   loadLibrary();
   loadEntries();
 });
@@ -3899,7 +3899,7 @@ $("library-docs-bulk-delete")?.addEventListener("click", async () => {
   libraryDocsSelection.clear();
   if (deleted) toast(`Deleted ${nounCount(deleted, "document")}.`);
   const failed = ids.length - deleted;
-  if (failed) toast(`${nounCount(failed, "document")} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "document")} couldn't be deleted.`, true, { action: ["Reload the list", renderLibraryDocuments] });
   renderLibraryDocuments();
 });
 
@@ -5411,7 +5411,7 @@ async function ocrRunRegion(mode) {
   const blob = await ocrRegionCrop();
   if (!blob) {
     buttons.forEach((b) => b && (b.disabled = false));
-    toast("That region couldn't be cut out of the page.", true);
+    toast("That region couldn't be cut out of the page.", true, { action: ["Try again", () => ocrRunRegion(mode)] });
     return;
   }
   const form = new FormData();
@@ -11368,7 +11368,7 @@ async function bulkDeleteLibraryBoards() {
     });
   }
   const failed = boards.length - deleted;
-  if (failed) toast(`${nounCount(failed, "board")} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "board")} couldn't be deleted.`, true, { action: ["Reload the list", loadLibrary] });
   if (typeof renderLibraryBoardsGallery === "function") renderLibraryBoardsGallery();
 }
 
@@ -11557,7 +11557,7 @@ async function deleteBookmarksWithUndo(links) {
   }
   libraryLinksSelection.clear();
   const failed = links.length - deleted;
-  if (failed) toast(`${nounCount(failed, "bookmark")} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "bookmark")} couldn't be deleted.`, true, { action: ["Reload the list", renderBookmarks] });
   await renderBookmarks();
   if (!deleted) return;
   const restore = async () => {

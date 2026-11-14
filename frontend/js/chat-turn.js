@@ -1036,7 +1036,7 @@ chatSendTurn.stage = {
       for (const send of bubble.saving.splice(0)) send();
       loadConversationList();
     } catch {
-      toast("Couldn't save this chat turn.", true);
+      toast("Couldn't save this chat turn.", true, { action: ["Copy the answer", () => copyToClipboard(answerRaw)] });
     }
   },
   afterAnswer(t) {
@@ -2795,7 +2795,7 @@ async function deleteChatTurn(assistantBubble) {
         return restoreFocusTo($("chat-input"));
       }
     } catch {
-      toast("Couldn't delete that message.", true);
+      toast("Couldn't delete that message.", true, { action: ["Try again", () => deleteChatTurn(assistantBubble)] });
       return;
     }
   }

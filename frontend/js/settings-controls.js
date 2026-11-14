@@ -472,7 +472,7 @@
       // button stuck disabled over a real network error someone can just
       // retry once they're back online.
       button.disabled = false;
-      toast((status && status.textContent) || "Couldn't apply the update.", true);
+      toast((status && status.textContent) || "Couldn't apply the update.", true, { action: ["Try again", () => button.click()] });
     }
   });
 
@@ -554,7 +554,7 @@
     if (!ok) {
       button.disabled = false;
       select.disabled = false;
-      toast(status.textContent || "Couldn't install that version.", true);
+      toast(status.textContent || "Couldn't install that version.", true, { action: ["Try again", () => button.click()] });
     }
   });
 

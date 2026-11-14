@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Errors: the last 19 failure toasts that offered only Open the logs now offer a fix of their own (Try again, Copy the answer, Reload the list); the cap is 0 (L-world-class-43).
 - Docker: the image is built and run once (560 MB, runs as mm, the notebook in /data) (L924).
 - Notes: hovering or focusing a [[link]] previews the note it opens, in the citation peek (L573).
 - Meeting cards open with when and who, then agenda, decisions and open actions (L662).

@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 67 | 29 | 0 | 5 | 226 |
+| world-class | 130 | 66 | 29 | 0 | 5 | 225 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 459 | 100 | 2 | 116 | 1112 |
+| all | 553 | 458 | 100 | 2 | 116 | 1111 |
 
 ## graph
 
@@ -541,7 +541,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-world-class-48** `world-class` open, S: meetingGlance counts empty list placeholders as decisions and actions. From agent L662. Evidence: meetingGlance in entry-card.js counts empty placeholder lines like '- ' and '- [ ] ' as decisions and open actions
 - [ ] **L-world-class-40** `world-class` open, S: Cold first document open and first Library tab open: warm what they parse before the press. From m1.js probe 8799, 2026-11-14. Evidence: documents.js openDocument first call 486 ms (long tasks 80+137 ms, script 158 ms), second 54 ms; 2,000 notes, 1440 wide; library tab first open handler 116 ms, long tasks 135/80/69/50. 2026-11-14 attempt (probe 8801, small data, noisy): two warms tried and not kept, no gain. Hover on the Library tab starting the paced warm at 150 ms gaps: first open median 457 ms without, 455 with. Mounting the CodeMirror view in idle after loadCodeMirror: 220/214/225 ms without, 204/290/246 with. After 5 s idle the first open is ~220 ms against ~100 for the second, so what remains is first-call compile and IC warm-up, not a bundle or the view mount
 - [ ] **L-world-class-42** `world-class` open, M: Voice: move failure toasts in the remaining JS files onto voiceLine, surface by surface. From L558. Evidence: frontend/js: statistics, shell-reminders, space-swap, chat-edit, meetings moved; the rest still hold literal copy
-- [ ] **L-world-class-43** `world-class` open, M: Give the last 17 literal toast(...,true) faults a what-to-do action (cap 24 to 17). From L583. Evidence: tests/test_error_toasts.py LOGS_ACTION_CAP 17: bulk partial-delete toasts (library.js), chat turn save, graph pins, update steps, lightbox save, whiteboard undo/redo still default to Open the logs
 - [ ] **L-world-class-44** `world-class` open, M: Extend toastactions.js to lazy-loaded surfaces (library, whiteboard, documents) after opening them. From L616. Evidence: scratchpad/ui-sweeps/toastactions.js drives 3 of 3 eager surfaces; wbLibExport, wbOpenHistory, attachBookmarkToDocument are lazy-loaded and not yet driven
 - [ ] **L-world-class-49** `world-class` open, M: Settings undo sweep is order or timing dependent: a different control fails each run. From scratchpad/ui-sweeps/undo.js ONLY=settings 2026-11-14. Evidence: four runs on one head: NOT UNDONE set differs each time (learned-pause-all, pref-web-search, pref-web-store, check_learned, pref-date-order, font-seg); each undoes alone
 - [ ] **L-world-class-50** `world-class` open, M: Rich paste (HTML to markdown) in the note composers, as documents have. From L-world-class-7 measurement 2026-11-14. Evidence: frontend/js/capture-stage.js:35 paste takes files only; documents.js:5634 docRichPasteEvent converts HTML to markdown in documents only; pasting a list, heading and link as text/html into #entry-content and #quick-note-text inserts nothing converted (default plain text)

@@ -1088,7 +1088,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
 
   // Save the original file. `download` needs a same-origin href to name the
   // file, which `mediaSrc()` gives us: it is this app's own /media route.
-  actionBtn("ph:download-simple", "Download this file", async () => {
+  const saveFileNow = async () => {
     try {
       const current = items[index];
       const href = await current.getUrl();
@@ -1109,9 +1109,10 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       a.click();
       a.remove();
     } catch {
-      toast("Couldn't save that file.", true);
+      toast("Couldn't save that file.", true, { action: ["Try again", saveFileNow] });
     }
-  }, topActions);
+  };
+  actionBtn("ph:download-simple", "Download this file", saveFileNow, topActions);
   //: "Open in": the browser's own viewer, in a tab of its own, for a file
   //: with a url (a native document has none: its url is a download).
   const openTabBtn = actionBtn("ph:arrow-square-out", "Open in a new tab", async () => {

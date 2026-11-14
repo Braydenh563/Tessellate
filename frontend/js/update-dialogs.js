@@ -195,7 +195,7 @@ async function showUpdateBar(result) {
     // success the app exits itself shortly after (routes_update.py).
     if (!ok) {
       update.disabled = false;
-      toast(text.textContent || "Couldn't apply the update.", true);
+      toast(text.textContent || "Couldn't apply the update.", true, { action: ["Try again", () => update.click()] });
     }
   }, false);
   // Closable notice recipe (DESIGN.md): the icon-only ghost button is the last child.

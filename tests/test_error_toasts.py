@@ -459,7 +459,7 @@ def test_report_this_has_one_home_and_the_helper_gates_it():
 #: Logs, where the why is written), because no retry or alternative fits the
 #: call site yet. A ratchet: it only shrinks. Every other literal fault passes
 #: `{ action: [label, fn] }` of its own.
-LOGS_ACTION_CAP = 20
+LOGS_ACTION_CAP = 0
 
 
 def test_every_error_toast_offers_one_action():

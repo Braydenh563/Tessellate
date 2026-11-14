@@ -92,7 +92,7 @@ async function openSketch(options = {}) {
   overlayReturnFocus = document.activeElement;
   const loaded = await Promise.all([lazyScript("/css/sketch-pad.css"), lazyScript("/js/sketch-pad.js")]);
   if (!loaded.every(Boolean) || !window.SketchPad) {
-    toast("Couldn't open the sketch pad.", true);
+    toast("Couldn't open the sketch pad.", true, { action: ["Try again", () => openSketch(options)] });
     return;
   }
   $("sketch-overlay").classList.remove("hidden");
