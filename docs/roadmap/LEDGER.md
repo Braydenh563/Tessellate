@@ -15,9 +15,9 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
-| world-class | 130 | 86 | 36 | 0 | 18 | 252 |
+| world-class | 130 | 85 | 36 | 0 | 18 | 251 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 478 | 107 | 2 | 129 | 1138 |
+| all | 553 | 477 | 107 | 2 | 129 | 1137 |
 
 ## graph
 
@@ -502,7 +502,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L591** `world-class` open, M: Show backup schedule with last success beyond Settings, About and Health (e.g. dashboard). From OPEN.md:1776; OPEN.md:3797. Evidence: settings-data.js:333 'Last backup ...' line and settings-health.js:101 last_backup exist; not shown elsewhere (dashboard)
 - [ ] **L592** `world-class` open, M: Add a search field to the Notes sidebar (Brief 47). From OPEN.md:3739. Evidence: Routes built are no-match button and saved-search rows; field not added
 - [ ] **L593** `world-class` open, M: Drive lightbox Escape, reminders add form and graph node panel back. From OPEN.md:3876. Evidence: Not driven; chat undo not reproduced
-- [ ] **L594** `world-class` open, M: Count words written including edits to older notes (per-edit word delta). From OPEN.md:1928; OPEN.md:2814. Evidence: No per-edit word delta stored, per row
 - [ ] **L596** `world-class` open, M: Move Names and Link types inbox rows to the Links grid shape if owner wants kinds to match. From OPEN.md:3901. Evidence: suggestions-inbox.js:245 inboxMergeRow and :284 inboxTypeRow still the old shape; also owner-optional ("if owner wants kinds to match").
 - [ ] **L598** `world-class` open, M: Notes tab-switch pointerup 312 ms and dashboard timer frames (1643b). From OPEN.md:4330. Evidence: W34 true-deferred, w34-fix2-1111.md.
 - [ ] **L599** `world-class` open, M: Settings backdrop click 880 ms and card pointerout 312-344 ms (1620lag). From OPEN.md:4333. Evidence: W34 true-deferred, w34-fix2-1111.md.
