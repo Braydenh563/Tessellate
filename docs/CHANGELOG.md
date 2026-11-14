@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram pan: a drag sums its moves and writes the scroll once a frame with no layout read in the handler, and the overview frame moves by a transform instead of re-measuring on every scroll; at 4x CPU the 390 touch pan is p50 5 to 6 ms, p95 8 to 10 ms (was p50 7 to 9, p95 11 to 28) (L-documents-89).
 - Diagram templates: Launch plan (Gantt), Where the time goes (pie), Order states, Shop classes and Shop data, one starter for each chart kind, in Suggest, Templates (L-documents-88).
 - Diagram builder: the Ask box and Suggestions now work on Gantt, pie, state, class and ER blocks (rule path with no model, model path checked like the other kinds); deleting a class or entity also removes the relations that end in it (L-documents-86).
 - Diagram builder: a Gantt chart's title and date format and a pie chart's title are blocks you rename in the pane, and a source you have not touched prints back byte for byte (L-documents-87).
