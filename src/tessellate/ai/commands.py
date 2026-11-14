@@ -36,7 +36,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import address, anchor_acts, find_topic, note_recency, object_acts, parity_acts, reminder_parser, surface_acts, task_acts, when
-from tessellate.ai import act_registry, act_steps
+from tessellate.ai import act_registry, act_steps, recognise
 from tessellate.ai import composer_calendar
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.act_registry import CONFIRM_INTENTS
@@ -1364,6 +1364,15 @@ def _time_of(words: str, now: datetime, locale: str | None) -> datetime | None:
 _TO_THE_BIN = re.compile(r"^(?:move|put|send|throw|chuck) (\S+(?: \S+)*?) (?:in|into|to) the (?:bin|trash|rubbish|recycle bin|rubbish bin|trash can)$", re.I)
 
 
+#: "every Monday list what is open": the act phrase is a weekly reminder whose note carries the phrasing (X15).
+_EVERY_ACT = re.compile(rf"^every\s+(?P<day>{recognise.WEEKDAY_WORD.pattern})\s+(?P<act>(?:list|show|summari[sz]e|tell me|find|check|review|send me)\b.+)$", re.I)
+
+
+def _every_act(command: str, now: datetime, locale: str | None) -> dict | None:
+    found = _EVERY_ACT.match(" ".join(command.split()).rstrip(".!?"))
+    return _reminder(f"remind me every {found.group('day')} to {found.group('act')}", now, locale) if found else None
+
+
 def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     """The command `text` is, as {"intent", ...arguments}, or None. `locale`
     orders a numeric date in a reminder ("3/4"); none reads day first."""
@@ -1378,7 +1387,7 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     if re.match(r"(?i)archive\b", command):
         #: Decision 42: archiving stays a UI action; no act archives.
         return None
-    found = _read_folded(command, question, polite, urgent, now, locale)
+    found = _every_act(command, now, locale) or _read_folded(command, question, polite, urgent, now, locale)
     lead = next((w for w in _CASUAL if command.lower().startswith(w)), None)
     if found is None and lead:
         found = _read_folded(command[len(lead):].lstrip(" ,"), question, True, urgent, now, locale)

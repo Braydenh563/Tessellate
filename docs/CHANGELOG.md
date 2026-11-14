@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: "every Monday list what is open" sets a weekly reminder carrying that phrasing (2026-11-14).
 - Templates: `ai/template_fill.fill` writes {date}, {weekday}, {week}, {title} and {n} by rule (2026-11-14).
 - Chat: "what did I do there" and "what did I do then" carry the place and the day the answer before named (2026-11-14).
 - Chat stats: "compare this month with last month", "more than last month" and "which month did I write the most" give both counts or the busiest period (2026-11-14).
