@@ -3,11 +3,12 @@
 The tools no longer wrap; narrow sidebars shed the New word, then fold help, template and diagram
 into the head's own kebab. The pixel numbers are checked by driving the app; these pin the parts."""
 from pathlib import Path
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parent.parent
 LAZY = (ROOT / "frontend/css/library-lazy.css").read_text()
 DOCK = (ROOT / "frontend/css/04-chat-dock-appearance.css").read_text()
-DOCS_JS = (ROOT / "frontend/js/documents.js").read_text()
+DOCS_JS = documents_text()  # the code moved into the documents pieces (L-documents-117)
 HTML = (ROOT / "frontend/index.html").read_text()
 
 

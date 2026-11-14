@@ -6,6 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+from tests._app_js import documents_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -34,7 +35,7 @@ def test_new_follows_the_choice_except_the_notes_own_button() -> None:
 
 
 def test_the_page_style_follows_the_choice_until_the_person_picks_one() -> None:
-    docs = _text("frontend", "js", "documents.js")
+    docs = documents_text()  # moved into the documents pieces (L-documents-117)
     assert 'prefsCache?.writing_style === "documents"' in docs
 
 
