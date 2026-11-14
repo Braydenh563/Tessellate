@@ -1186,6 +1186,14 @@ async function settingsHistoryApply(change, side) {
       }
       if (unset.length) body.unset = unset;
       prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify(body) });
+      //: The avatar look is also held in memory, and every later autosave sends
+      //: that copy: left stale, the next unrelated change put the undone look back.
+      if ("avatar_style" in body || unset.includes("avatar_style")) {
+        await ensureModule("characters");
+        await ensureModule("companionSettings");
+        setOwnNameMarkStyle(body.avatar_style || {});
+        repaintOwnFace();
+      }
     } else if (kept.kind === "look") {
       for (const c of kept.changes) {
         if (c[side] == null) prefs.remove(c.key);

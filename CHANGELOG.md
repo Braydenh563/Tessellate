@@ -14,6 +14,11 @@ below). Versioning is `0.x` while the app stabilises.
 - Palette: Browse boards and maps, recordings, skills and contents rows; Open notifications says how many are unread; a note in hand gets Ask Atlas about this note and Tag and file with Atlas; New sketch answers to draw and keep (L693).
 - Errors: a failed toast takes `{ retry: fn }` (Try again) and about a dozen read and reload sites use it; eight literal faults gained their own action; failure copy on Statistics, Reminders, Meetings, Spaces and Chat edit speaks in the shared voice table (L633, L583, L558, L616).
 - Dashboard: the This week card offers one feature you have not used lately, a different one each week (L595).
+- Measured: Settings prose longer than 120 characters outside popovers is 8 paragraphs across 21 panes (20 raw candidates, 12 of them cards, containers or data), against about 60 at the plan's baseline (L-world-class-9).
+- Measured: footnotes and Mermaid render in note cards (shared renderMarkdown: footnote section and ref present, Mermaid image 168x144 loaded); rich paste in Capture and Quick note is plain text only (L-world-class-7).
+- Whiteboard: the View menu's background colour reset and image buttons are touch-sized on a phone; the five top-bar menus pass a new sweep, wbmenus5.js (66 of 66 checks at 1440 and 390; L-world-class-13).
+- Settings: undoing the avatar look puts the old look back in memory too, so the next autosave no longer re-sends the undone one (test_settings_recent_changes; L-world-class-32).
+- Documents: the title row at 320 wide and the sidebar tab strip at 820 no longer overflow their boxes (overlap.js documents: 2 overflows to 0 at all five widths; L-world-class-39).
 - Image viewer gives the focus back to what opened it when it closes, and Back closes the graph's note panel instead of leaving it open on the hidden map (L593).
 - Activity: a chat or job that fails on a file shows the reason, not the file's path and errno (L505).
 - Filing: a note saved without defer_filing gives its database connection back while the model thinks (L690).
