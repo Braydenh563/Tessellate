@@ -809,12 +809,16 @@ def other_in_frames(text: str, turns: list[dict]) -> bool:
 
 
 def _follow_other(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
-    if not _OTHER_ONE.match(text.strip()) or len(turns) < 2:
+    if not _OTHER_ONE.match(text.strip()):
         return _NOT_THIS
-    listed, picked = _frame_of(turns[-2]), _frame_of(last).get("note_ids") or []
+    listed, picked = _frame_of(turns[-2]) if len(turns) >= 2 else {}, _frame_of(last).get("note_ids") or []
     left = [i for i in listed.get("note_ids") or [] if isinstance(i, int) and i not in picked[:1]]
-    if not left:
+    if not left and last.get("objects"):
         return _NOT_THIS
+    if not left:
+        #: No list was picked from: "the other one" is the question before again, quoting what it did not
+        #: (L-chat-249: it was searched as the bare words and answered with any note).
+        return _follow_more("more", previous, last, turns)
     return FollowOn(str(listed.get("ask") or previous), previous, "", "bound", note_ids=(left[0],))
 
 
