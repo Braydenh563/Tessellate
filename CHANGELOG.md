@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Ask: a map or board whose words hold the question joins the answer's records as a map or board source card with an open link (L112)
 - Chat: joke and list helpers moved to ai/composer_jokes.py and composer_lists.open_lists, keeping composer_digest under its complexity and line caps; Cactus whistle, mirage and needle3 embed and extraction measured and not adopted (L-chat-42, 43, 45).
 Frontend: one NDJSON reader, api.ndjson, serves Ask, Chat, the Guide, the digest and the writing desk, and chatSendTurn is pinned at its 29-line driver (L169, L170)
 Guide: "call me Sam" and "what you call me" reach Profile, which says telling Atlas sets the name; the Who answers plain Ask topic gains its title and lead (L241)

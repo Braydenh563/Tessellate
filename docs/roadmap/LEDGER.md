@@ -9,7 +9,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | Plan | Plan file open | LEDGER open | LEDGER partly | Owner calls | Needs hardware | Total for the session |
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
-| chat | 176 | 69 | 30 | 10 | 59 | 275 |
+| chat | 176 | 68 | 30 | 10 | 59 | 274 |
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
@@ -17,7 +17,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 553 | 443 | 99 | 10 | 183 | 1095 |
+| all | 553 | 442 | 99 | 10 | 183 | 1094 |
 
 ## graph
 
@@ -31,7 +31,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L102** `chat` open, M: Derive themes beyond shared tags and links. From OPEN.md:3846. Evidence: composer_frame.themes unchanged; tried 2026-11-13: joining loose notes by shared category, then by a shared title word, broke 44 composer tests because both mostly restate the question's own subject ('all mention sara', 'all filed under Fun' for a Fun-category question); needs the question's subject and category passed into themes() and excluded as keys
 - [ ] **L103** `chat` open, M: Answer who/status questions over list notes instead of returning a quote. From OPEN.md:3847. Evidence: composer.py select not changed
 - [ ] **L110** `chat` open, M: Give model turns composer next chips and add no-model contradictions and list_bin tool. From OPEN.md:4519; parity-1110.md Remaining. Evidence: Needs composer result frame (chat_chips.continue_chips); a model turn has none
-- [ ] **L112** `chat` open, M: Ask cannot show a relevant map as a map; add maps to ChatResponse if owner agrees. From OPEN.md:840; OPEN.md:3584. Evidence: Decision taken: retrieval notes only; owner reply pending in row Remaining 2026-11-14: the owner's reply on adding maps to ChatResponse is not written on the row, in HANDOVER's owner notes or in CHAT_PLAN section 4 (Decisions made); nothing to build until it is.
 - [ ] **L114** `chat` open, M: Drive parity tools (boards/maps, rename_tag/delete_tag by sentence, save_user_preference) beyond fake transport. From OPEN.md:4379. Evidence: Only fake-transport tests (tests/test_acts.py:70, test_agent_tools_api.py:50); no driven parity run for boards/maps tools found Remaining 2026-11-14: fake-transport tests exist (tests/test_acts.py, test_agent_tools_api.py, test_engine_phase6_spec.py decision 38 now pins verbs, confirmations and inverses). The driven run needs a real model: `scratchpad/llama-dev.sh serve` (llama-server and a GGUF are missing on this machine), then `pytest -m evals` with the boards, maps, rename_tag, delete_tag and save_user_preference prompts.
 - [ ] **L121** `chat` open, M: Mention other matching records in answers (INBOX 744 b, c). From OPEN.md:3655. Evidence: Composer and grounding work (composer*.py, renderAnswerGrounding); no fix commit found
 - [ ] **L125** `chat` open, M: Save the F1 frame with a chat and fix the odd subject span. From fc1-1110.md Left. Evidence: chat_turn.py _framed_scope uses history frame; reopened chat persistence not found
