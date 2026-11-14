@@ -1,4 +1,4 @@
-"""A deferred note always settles, even when the app closed mid-filing.
+"""A background-filed note always settles, even when the app closed mid-filing.
 
 Owner, 0.3.31: "even if the filing already happened it still looks like it is
 endlessly filing". The filing job lives in this process's queue, so a note

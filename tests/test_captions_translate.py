@@ -1,5 +1,5 @@
 """Translate under the live captions (ledger libr-1011 row 1222: "Live
-translated captions not built").
+translated captions", now built).
 
 The dock translates each *finished* line through the offline translator's
 worker, in order, one at a time, and shows the last two under the running

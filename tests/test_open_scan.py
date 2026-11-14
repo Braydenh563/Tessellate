@@ -27,6 +27,14 @@ def test_the_signals_catch_open_work_and_pass_history():
         assert not open_scan.SIGNAL.search(line), line
 
 
+def test_a_pr_forms_boxes_and_an_api_keyword_are_not_work():
+    """The closing sweep, 2026-11-14: the PR template's checklist is a form
+    ticked per PR, and SQLAlchemy's `deferred=True` is an API keyword."""
+    assert ".github/PULL_REQUEST_TEMPLATE.md" not in open_scan.files()
+    assert open_scan.API_WORD.search('icon: Mapped[str] = mapped_column(Text, default="", deferred=True)')
+    assert not open_scan.API_WORD.search("# deferred to a later PR")
+
+
 def test_every_plan_session_owns_its_plan_file():
     for plan, owned in open_scan.OWNERS.items():
         assert any(o.startswith("docs/roadmap/") and o.endswith("_PLAN.md") for o in owned), plan

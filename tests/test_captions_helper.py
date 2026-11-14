@@ -226,7 +226,7 @@ def test_the_helper_exits_when_the_app_closes_its_stdin(tmp_path):
 def test_without_the_engine_it_says_so_and_exits(tmp_path):
     model = tmp_path / "m.bin"
     model.write_bytes(b"x")
-    done = _run("--model", str(model))
-    assert done.returncode != 0 and not done.stdout.strip().isdigit()
-    if "pywhispercpp is not installed" in done.stderr:
-        assert done.returncode == 3
+    proc = _run("--model", str(model))
+    assert proc.returncode != 0 and not proc.stdout.strip().isdigit()
+    if "pywhispercpp is not installed" in proc.stderr:
+        assert proc.returncode == 3
