@@ -192,7 +192,7 @@
     input.addEventListener("change", () => (input.checked ? enrol(input) : forget(input)));
   }
 
-  async function renderSettings(facts) {
+  async function renderHelloSettings(facts) {
     if (!facts || !$("account-pin-group")) return;
     mountSettings();
     const ok = await supported();
@@ -281,7 +281,7 @@
   function hello(where, arg) {
     if (where === "lock") return offerLock(arg);
     if (where === "space") return offerSpace(arg);
-    if (where === "settings") return renderSettings(arg);
+    if (where === "settings") return renderHelloSettings(arg);
   }
 
   Object.assign(privateSpaces.actions, { hello });

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: the settings skeleton test read whichever `renderSettings` its machine listed first (hello-unlock.js had a second one); the inner one is now `renderHelloSettings` and the helper fails on a name defined twice (2026-11-14).
 - Timeline: the journal strip's head says how many days in a row you have written a daily note, from two days up.
 - Timeline: reopening a span review reuses the model call still running for it and keeps its answer, so one call runs per span until a note is added; after Done in the bell, focus still lands if the panel fails to reload.
 - Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).

@@ -21,12 +21,14 @@ JS = ROOT / "frontend" / "js"
 
 
 def _function(name: str) -> str:
-    for path in JS.glob("*.js"):
+    # Every file is read, in a fixed order: `glob` order differs between
+    # machines, so a name defined twice gave CI a different body (4ae8312f).
+    found = []
+    for path in sorted(JS.glob("*.js")):
         text = unwrapped(path.read_text(encoding="utf-8"))
-        match = re.search(rf"^(?:async )?function {name}\(.*?^}}$", text, re.S | re.M)
-        if match:
-            return match.group(0)
-    raise AssertionError(f"function {name} not found")
+        found += [m.group(0) for m in re.finditer(rf"^(?:async )?function {name}\(.*?^}}$", text, re.S | re.M)]
+    assert len(found) == 1, f"function {name} defined {len(found)} times"
+    return found[0]
 
 
 def test_what_it_remembers_shows_skeletons_while_the_memory_loads():
