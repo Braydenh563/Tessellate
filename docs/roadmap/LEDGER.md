@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 49 | 1 | 0 | 4 | 70 |
+| documents | 20 | 48 | 1 | 0 | 4 | 69 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 604 | 129 | 2 | 167 | 1236 |
+| all | 503 | 603 | 129 | 2 | 167 | 1235 |
 
 ## graph
 
@@ -371,7 +371,6 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-28** `documents` open, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold). Doable here: install the Pyodide extra here and time the runs.
 - [ ] **L-documents-63** `documents` open, M: PHP mode for code files, lazy-loaded (lang-php is +28.6 KB gzip; boot budget test must not move). From DOCUMENTS_PLAN.md:399, hub 2026-11-14: session-decided unbuilt, reopened.
 - [ ] **L-documents-65** `documents` open, M: Code bar with Copy on fenced code in Live view (s15 kept it to Read for the caret trap and the 8 px row: solve both). From DOCUMENTS_PLAN.md:700, hub 2026-11-14: session-decided unbuilt, reopened.
-- [ ] **L-documents-67** `documents` open, S: A how far through figure for long documents (s17d). From DOCUMENTS_PLAN.md:812, hub 2026-11-14: session-decided unbuilt, reopened.
 - [ ] **L-documents-68** `documents` open, M: Video in a document: an embed with a player (attachments allowlist and a player). From DOCUMENTS_PLAN.md:1269, hub 2026-11-14: session-decided unbuilt, reopened.
 - [ ] **L-documents-69** `documents` open, L: Synced blocks: a copy that stays in step in both places (decision 82 a). From DOCUMENTS_PLAN.md:1453, hub 2026-11-14: session-decided unbuilt, reopened.
 - [ ] **L-documents-70** `documents` open, S: Synced blocks: a pencil on the block in its own document (decision 82 b). From DOCUMENTS_PLAN.md:1453, hub 2026-11-14: session-decided unbuilt, reopened.
