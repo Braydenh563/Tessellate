@@ -5659,7 +5659,7 @@ select {
   margin: 0;
   font-size: var(--text-sm);
 }
-@media (max-width: 600px) {
+@media (max-width: 599.98px) {
   .learned-row {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "head" "text" "meta" "acts";

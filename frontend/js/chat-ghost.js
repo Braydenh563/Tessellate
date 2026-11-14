@@ -107,5 +107,10 @@
     chatGhostPlace();
   }
 
-  Object.assign(window, { chatGhostRest, openChatGhost });
+  //: No exports: the module opens itself on the box's focus (capture-ask.js only loads it).
+  document.addEventListener("focusin", (event) => {
+    if (event.target.id === "chat-input") openChatGhost(event.target);
+  });
+  if (document.activeElement?.id === "chat-input") openChatGhost(document.activeElement);
+  if (typeof window.__chatGhostTest === "object") window.__chatGhostTest.rest = chatGhostRest;
 })();

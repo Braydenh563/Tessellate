@@ -165,7 +165,8 @@ PIECE_CAP = 32_000
 #: 2026-11-11, +15 (250,431 to 250,446): a reopened chat redraws its saved act, offer and tool-confirm
 #: cards; the loop lives in the lazy answer-kit.js (`renderToolConfirm.saved`), sheets-selects.js
 #: only calls it. The cap did not move.
-TOTAL_CAP = 250_450
+#: 2026-11-14 L-chat-141: chat-ghost.js, a lazy module of about 1.4 KB gzipped, so the cap rises by 150.
+TOTAL_CAP = 250_600
 
 
 def _served_gzip_size(client, name: str) -> int:

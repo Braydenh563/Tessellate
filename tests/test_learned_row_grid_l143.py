@@ -10,7 +10,7 @@ def test_the_row_is_a_grid_of_head_text_actions_with_a_narrow_stack():
     row = re.search(r"\.learned-row \{([^}]*)\}", CSS).group(1)
     assert "display: grid" in row and '"head text acts" "head meta acts"' in row
     assert "acts" in re.search(r"\.learned-row > :last-child \{([^}]*)\}", CSS).group(1)
-    narrow = re.search(r"@media \(max-width: 600px\) \{\s*\.learned-row \{([^}]*)\}", CSS).group(1)
+    narrow = re.search(r"@media \(max-width: 599.98px\) \{\s*\.learned-row \{([^}]*)\}", CSS).group(1)
     assert '"head" "text" "meta" "acts"' in narrow
     for name in ("text", "meta"):
         rule = re.search(r"\.learned-%s \{([^}]*)\}" % name, CSS).group(1)

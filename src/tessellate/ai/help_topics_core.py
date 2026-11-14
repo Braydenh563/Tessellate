@@ -1490,7 +1490,7 @@ HELP_TOPICS.extend(
                 "notes list, use Filter notes on the Your notes tab. Every search box "
                 "suggests as you type: your recent searches first, then note titles, "
                 "tags and categories that start with your words (a Library list's box: "
-                "that list's own titles), with the best match in grey (Tab or Right takes it, Down and Up walk the list; Esc or a click outside closes it). The chat box does the same for the last word of a one-line message, from your tags, titles and recent searches, with no model; the same switch turns both off. "
+                "that list's own titles), with the best match in grey (Tab or Right takes it, Down and Up walk the list; Esc or a click outside closes it). "
                 'Chat answers "notes mentioning test" or "notes with test in them" from every note the search finds, one line each with a link, '
                 'and says the same count the greeting offers. A language named as a property of a note ("japanese note", "notes written in French") '
                 "finds notes by their script or everyday words, with no web search. "

@@ -11,9 +11,9 @@ SRC = (JS / "chat-ghost.js").read_text(encoding="utf-8")
 
 def _rest(text, pool):
     script = (
-        "const w={};global.window=w;global.prefs={set(){},get:()=>'on'};"
+        "const w={__chatGhostTest:{}};global.window=w;global.document={addEventListener(){},activeElement:null};global.prefs={set(){},get:()=>'on'};"
         + SRC
-        + f";console.log(JSON.stringify(w.chatGhostRest({json.dumps(text)},{json.dumps(pool)})))"
+        + f";console.log(JSON.stringify(w.__chatGhostTest.rest({json.dumps(text)},{json.dumps(pool)})))"
     )
     out = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout
     return json.loads(out)
@@ -38,6 +38,6 @@ def test_it_is_lazy_one_switch_and_accept_rate_kept():
     app = (JS / "app.js").read_text(encoding="utf-8")
     assert 'chatGhost: ["/js/chat-ghost.js"]' in app
     ask = (JS / "capture-ask.js").read_text(encoding="utf-8")
-    assert 'ensureModule("chatGhost").then(() => openChatGhost(box))' in ask
+    assert 'ensureModule("chatGhost")' in ask
     assert 'prefs.get("searchSuggest", "on") !== "off"' in SRC
     assert "chatGhostTally" in SRC and '"Tab"' in SRC and '"Escape"' in SRC
