@@ -143,9 +143,9 @@
   //: (Ctrl+R reloads, Ctrl+Shift+Plus zooms) goes on to that meaning unless the command applies.
   const BOUND = ["edit-data", "select-shapes", "turn-90",
     "copy-image", "copy-svg", "copy-size", "paste-size", "copy-data", "paste-data", "clear-waypoints", "enter-group", "font-bigger", "font-smaller",
-    "item-link", "edit-tooltip", "comment", "edit-tags"];
+    "item-link", "edit-tooltip", "comment", "edit-tags", "collapse-frame", "expand-frame", "view-grips", "view-ports", "edit-ports"];
   const ALSO = { ungroup: "Ctrl+Shift+U", "leave-group": "Ctrl+Shift+Home" };
-  const PASS_WHEN_IDLE = new Set(["turn-90", "font-bigger", "font-smaller", "enter-group", "leave-group", "ungroup"]);
+  const PASS_WHEN_IDLE = new Set(["turn-90", "font-bigger", "font-smaller", "enter-group", "leave-group", "ungroup", "collapse-frame", "expand-frame", "edit-ports"]);
   //: Words in a chord that name a key's code: the rest is a letter.
   const CODES = { Plus: ["Equal", "NumpadAdd"], Minus: ["Minus", "NumpadSubtract"], Home: ["Home"], End: ["End"] };
 

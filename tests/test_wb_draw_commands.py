@@ -28,7 +28,6 @@ ROWS = {
     "remove-from-group": ("Arrange", "wbRemoveFromGroup"),
     "copy-size": ("Edit", "wbCopySize"),
     "paste-size": ("Edit", "wbPasteSize"),
-    "swap-size": ("Edit", "wbSwapSize"),
     "auto-size": ("Edit", "wbAutoSizeSelection"),
     "reverse": ("Item", "wbReverseSelection"),
 }
@@ -53,7 +52,7 @@ def test_the_needs_tests_exist():
 
 
 def test_each_change_is_one_undo_step():
-    for fn in ("wbTurnSelection", "wbRemoveFromGroup", "wbPasteSize", "wbSwapSize", "wbAutoSizeSelection", "wbReverseSelection"):
+    for fn in ("wbTurnSelection", "wbRemoveFromGroup", "wbPasteSize", "wbAutoSizeSelection", "wbReverseSelection"):
         src = FMT if f"function {fn}(" in FMT else WB
         body = src[src.index(f"function {fn}("):][:2500]
         assert "wbRecordGesture(" in body, fn
@@ -132,3 +131,11 @@ console.log(JSON.stringify([
     assert out[1] == {"sx": 1, "sy": 1.5}
     assert out[2] == {"sx": 1.5, "sy": 1}
     assert out[3] == {"sx": 1, "sy": 1}
+
+
+def test_swap_size_is_a_row_on_the_format_state_and_one_undo_step():
+    """Not a global function: the shared scope has a ratchet (test_global_scope_ratchet)."""
+    row = next(line for line in CMD.splitlines() if '{ id: "swap-size"' in line)
+    assert 'group: "Edit"' in row and 'needs: "two"' in row and "wbFmtState.swapSize()" in row
+    body = FMT[FMT.index("wbFmtState.swapSize = function"):][:1500]
+    assert "wbRecordGesture(" in body and "wbSizeItemTo(" in body

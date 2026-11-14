@@ -37,6 +37,13 @@ NEW_KEYS = {
     "edit-tooltip": "Alt+Shift+T",
     "comment": "Alt+Shift+N",
     "edit-tags": "Alt+Shift+K",
+    #: 2026-11-14 (WHITEBOARD_PLAN section 11): collapse and expand a frame (draw.io's Ctrl+Home and Ctrl+End), the two View
+    #: switches for the connection arrows and points (Alt+Shift+A, O) and edit connection points (Alt+Shift+Q).
+    "collapse-frame": "Ctrl+Home",
+    "expand-frame": "Ctrl+End",
+    "view-grips": "Alt+Shift+A",
+    "view-ports": "Alt+Shift+O",
+    "edit-ports": "Alt+Shift+Q",
 }
 
 
@@ -90,7 +97,7 @@ def test_no_new_board_key_takes_an_app_shortcut() -> None:
 
 def test_a_key_with_a_browser_meaning_goes_on_unless_the_command_applies() -> None:
     idle = re.search(r"const PASS_WHEN_IDLE = new Set\(\[(.*?)\]\)", KEYS, re.S).group(1)
-    for command in ("turn-90", "font-bigger", "font-smaller"):
+    for command in ("turn-90", "font-bigger", "font-smaller", "collapse-frame", "expand-frame"):
         assert f'"{command}"' in idle, command
 
 

@@ -4452,3 +4452,8 @@ Each row is the one step that needs the owner's own machine, a device or a real 
   - L878: Verify real OS clipboard, spreadsheet copy and touch paste. From OPEN.md:3908. Evidence: Sweep used synthetic ClipboardEvents; needs real OS clipboard, a real spreadsheet and touch.
   - L282: Trackpad pinch rate per gesture in the lightbox needs a real trackpad (preset dropdowns and present page counter are driven and pass). From ledger-1112 I25.
   - L-whiteboard-14: Verify the rail long-press flyout and marker pen pressure on a tablet. From open-work sweep 2026-11-12, docs/roadmap/WHITEBOARD_PLAN.md:529. Evidence: Open line in the plan's prose a session could miss. Touch and pen behaviour is listed as unverified, with no hardware row.
+
+## Whiteboard, parked 2026-11-14
+
+- **The Escape and conventions pass on documents, notes, chat and the Library** (WHITEBOARD_PLAN, "Placed from INBOX, 2026-09-23"). The board and map half is built (`canvasconventions.js` 54/54, `wbmarqueeescape.js` 8/8); the other four surfaces belong to the documents, chat and library plans and are larger than one pass (four surfaces, each with its own editor and key owner). Next step: one measured checklist per surface, as `mapux2.md` was for the board.
+- **The board's Arrange menu and the popup tool menu's ⋯ button (INBOX 419, the owner, 2026-09-24).** Not reproduced in headless Chromium in 87/87 and 48/48 samples (`wbmenuroom.js`, `wbmoreflicker.js`). Needs the owner: the desktop window size, whether the top bar was dragged, and a screen recording of the ⋯ case.
