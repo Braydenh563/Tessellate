@@ -217,4 +217,19 @@
   for (const [name, get, set] of [
     ["docPastePlain", () => docPastePlain, (value) => { docPastePlain = value; }],
   ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  //: **A pasted block starts its own line** (DX3, audit 1102). `## Heading` or a
+  //: fence written after "please" is not a heading or a fence, it is text with
+  //: marks in it. One rule for every block kind (heading, list, fence, table,
+  //: quote, rule, or more than one paragraph): when words come before the caret
+  //: on its line a blank line goes first, and when words follow the selection
+  //: on its line one goes after. Inline pastes (bold, a link) are left alone.
+  docRichPasteEvent.fit = (markdown, before, after) => {
+    const block = /^(#{1,6} |[-*+] |\d+[.)] |```|\||>|---)/.test(markdown) || markdown.includes("\n\n");
+    if (!block) return markdown;
+    return `${before.trim() ? "\n\n" : ""}${markdown}${after.trim() ? "\n\n" : ""}`;
+  };
+
+
+  // Frontmatter and the properties panel: documents-props.js (DC13 remainder).
 })();

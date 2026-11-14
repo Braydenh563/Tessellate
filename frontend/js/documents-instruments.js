@@ -534,7 +534,7 @@
   // this file. See its header.
 
   //: The file's surface: what other files call (L-documents-117).
-  Object.assign(window, { docActiveBox, docMirrorPoint, docCaretPoint, DOC_PROSE_RULES, DOC_AUTOCORRECT, DOC_LONG_SENTENCE_WORDS, docWordlistReady, docLoadWordlist, docSpellable, docSpellNameKind, docWordKnown, DOC_EDIT_SWAP, DOC_EDIT_DROP, docEditsOnce, docSpellRoot, docSpellGuesses });
+  Object.assign(window, { docActiveBox, docMirrorPoint, docCaretPoint, DOC_PROSE_RULES, DOC_AUTOCORRECT, DOC_LONG_SENTENCE_WORDS, docWordlistReady, docLoadWordlist, docSpellable, docSpellNameKind, docWordKnown, DOC_EDIT_SWAP, DOC_EDIT_DROP, docEditsOnce, docSpellRoot, docSpellGuesses, renderDocStats });
 
   //: These lets keep their bare names for the other files as window accessors, so one store answers every reader and writer (L-documents-118).
   for (const [name, get, set] of [
@@ -542,4 +542,376 @@
     ["docSpellCache", () => docSpellCache, (value) => { docSpellCache = value; }],
     ["docKnownWordsCache", () => docKnownWordsCache, (value) => { docKnownWordsCache = value; }],
   ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  // A target word count, set per document and kept client-side, it's a
+  // writing aid, not notebook data, so it doesn't need a column or to survive
+  // a restore onto another machine the way the document's own content does.
+  function docWordGoalKey(id) {
+    return `docWordGoal:${id}`;
+  }
+
+  function getDocWordGoal(id) {
+    if (!id) return 0;
+    return Number(prefs.get(docWordGoalKey(id), null)) || 0;
+  }
+
+  function setDocWordGoal(id, goal) {
+    if (!id) return;
+    if (goal > 0) {
+      prefs.set(docWordGoalKey(id), String(goal));
+    } else {
+      prefs.remove(docWordGoalKey(id));
+    }
+  }
+
+  //: **The goal, and only the goal.** The word count, the reading time and the
+  //: character count moved to the editor's own status bar (`renderDocStatusBar`)
+  //: when the top dock was rebuilt, reported as "redesign, rearrange, fix, and
+  //: update the section with the word count, word goal etc elements". Facts
+  //: about the text belong beside the text; what is left here is the *target*,
+  //: which is a thing you set rather than a thing you read, and it is drawn as
+  //: its own control on the same bar.
+  //:
+  //: Kept as a separate function from the status bar's because it is called from
+  //: four places that mean "the document changed", and because a goal is
+  //: per-document state while the counts are pure arithmetic over the box.
+  function renderDocStats() {
+    const button = $("doc-word-goal");
+    const label = $("doc-goal-label");
+    if (!button || !label) return;
+    //: A word-count goal is for writing: a code file has no use for one, so it
+    //: also skips the word count (a whole-document pass: about 200 ms a pause
+    //: on a 7,000-line file at 4x CPU, audit 1031 row 23 CE3).
+    const code = docIsCodeFile();
+    button.classList.toggle("hidden", code);
+    if (code) return;
+    const { words } = docPlainText.counts(docCommentStrip(docText()));
+    const goal = currentDoc ? getDocWordGoal(currentDoc.id) : 0;
+    button.setAttribute("aria-pressed", String(goal > 0));
+    button.classList.toggle("has-findings", goal > 0 && words >= goal);
+    if (!goal) {
+      label.textContent = "Set a goal";
+      button.title = "Set a word-count goal for this document";
+      //: The progress ring is meaningless without a target, so it is not drawn
+      //: rather than drawn empty, an empty meter reads as "you have written
+      //: nothing", which is a different and usually false claim.
+      button.style.removeProperty("--doc-goal-pct");
+      button.classList.remove("has-goal");
+      return;
+    }
+    const pct = Math.min(100, Math.round((words / goal) * 100));
+    label.textContent = `${words.toLocaleString()} / ${goal.toLocaleString()} · ${pct}%`;
+    button.title = `Goal: ${goal.toLocaleString()} words: click to change it`;
+    //: A custom property rather than an inline `style` attribute, which this
+    //: app's CSP refuses. Same rule the Loose ends meter follows.
+    button.style.setProperty("--doc-goal-pct", `${pct}%`);
+    button.classList.add("has-goal");
+  }
+
+  function promptDocWordGoal() {
+    if (!currentDoc) return;
+    const current = getDocWordGoal(currentDoc.id);
+    $("doc-word-goal-input").value = current || "";
+    $("doc-word-goal-dialog").showModal();
+    $("doc-word-goal-input").focus();
+  }
+
+  $("doc-word-goal").addEventListener("click", promptDocWordGoal);
+
+  $("doc-counts")?.addEventListener("click", () => docRunTextTool("stats"));
+
+  $("doc-counts")?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    docRunTextTool("stats");
+  });
+
+  //: **A button with no width is not a place to stand** (audit 1102 DX21): at 390
+  //: the counts give way entirely (an ellipsis in a 0px box), still visible to
+  //: the tab key as a focus stop nobody can see. It leaves the tab order while it
+  //: has no room and comes back when it has; the same statistics are one press
+  //: away in the document menu. Watched by `docGutterObserver`, whose callback
+  //: knows this one element.
+  watchDocGutter($("doc-counts"));
+
+  //: **A word goal for the day, and a streak** (L-documents-2). Words added to prose documents are counted per local day in
+  //: prefs (`docWriting`); a day that reaches the goal extends the streak, and a missed day starts it again. A jump of
+  //: more than WB words in one count is a paste or a load, not writing, and is not credited. Set from the word count's
+  //: menu (right-click, or the menu key); everything stays on this device. Fed by `renderDocCounts` with a `doc:counted` event.
+  // writing-streak:begin
+  (() => {
+    const counts = $("doc-counts");
+    if (!counts) return;
+    const KEY = "docWriting";
+    const GOALS = [250, 500, 1000, 2000];
+    const PASTE = 200;
+    let seen = { id: null, words: 0 };
+    const dayOf = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+    const today = () => dayOf(new Date());
+    const yesterday = () => {
+      const date = new Date();
+      date.setDate(date.getDate() - 1);
+      return dayOf(date);
+    };
+    const read = () => {
+      let state = {};
+      try {
+        state = JSON.parse(prefs.get(KEY, "{}")) || {};
+      } catch {
+        state = {};
+      }
+      const day = today();
+      return { goal: Number(state.goal) || 0, day, words: state.day === day ? Number(state.words) || 0 : 0, streak: Number(state.streak) || 0, last: state.last || "" };
+    };
+    const write = (state) => prefs.set(KEY, JSON.stringify(state));
+    //: A streak that was last extended before yesterday has ended, whatever it was.
+    const live = (state) => (state.last === state.day || state.last === yesterday() ? state.streak : 0);
+    const line = (state) => {
+      const days = live(state);
+      const streak = days ? `, ${days}-day streak` : "";
+      return state.goal ? `${state.words.toLocaleString()} of ${state.goal.toLocaleString()} words today${streak}` : `${state.words.toLocaleString()} words added today`;
+    };
+    counts.addEventListener("doc:counted", (event) => {
+      const { id, words } = event.detail;
+      const before = seen.id === id ? seen.words : null;
+      seen = { id, words };
+      const state = read();
+      const delta = before === null ? 0 : words - before;
+      if (delta > 0 && delta <= PASTE) {
+        state.words += delta;
+        if (state.goal && state.words >= state.goal && state.last !== state.day) {
+          state.streak = state.last === yesterday() ? state.streak + 1 : 1;
+          state.last = state.day;
+        }
+        write(state);
+      }
+      if (state.goal) counts.textContent += ` · ${state.words.toLocaleString()} of ${state.goal.toLocaleString()} today`;
+      counts.title = `${DOC_COUNTS_TITLE_PROSE}. Right-click for the daily word goal`;
+    });
+    const openMenu = (x, y) => {
+      if (docIsCodeFile()) return false;
+      const state = read();
+      const set = (goal) => () => write({ ...state, goal });
+      const items = [{ group: "Today", label: "ph:pencil-simple-line " + line(state), disabled: true, run: () => {} }];
+      for (const goal of GOALS) {
+        items.push({ group: "Daily word goal", label: `${state.goal === goal ? "ph:check" : "ph:flag"} ${goal.toLocaleString()} words`, run: set(goal) });
+      }
+      items.push({ group: "Daily word goal", label: "ph:x No daily goal", run: set(0) });
+      openMenuAtPoint(items, "Daily word goal", x, y, counts);
+      return true;
+    };
+    counts.addEventListener("contextmenu", (event) => {
+      const box = counts.getBoundingClientRect();
+      if (openMenu(event.clientX || box.left, event.clientY || box.top)) event.preventDefault();
+    });
+    //: A finger's twin of the right-click (a hold on the counts).
+    wireLongPress(counts, (event, point) => openMenu(point.x, point.y));
+  })();
+
+  // writing-streak:end
+  $("doc-word-goal-submit").addEventListener("click", () => {
+    if (!currentDoc) return;
+    //: The field's own limits say what is wrong (1031 DC9: a negative goal
+    //: closed the dialog with no goal and no word), the way the form does.
+    if (!$("doc-word-goal-input").reportValidity()) return;
+    const goal = Math.max(0, Math.round(Number($("doc-word-goal-input").value)) || 0);
+    setDocWordGoal(currentDoc.id, goal);
+    renderDocStats();
+    $("doc-word-goal-dialog").close();
+  });
+
+  //: **A second door onto the line numbers, in the menu that is already about
+  //: how the document is shown.** The owner: "if I select a txt document,
+  //: and/or other code file document, and these can have line numbers as well."
+  //: They could, and the only control that said so lived on the formatting
+  //: strip, which PLAN.md D1 collapsed by default for good reasons that had
+  //: nothing to do with this. A preference nobody can find is a preference the
+  //: app does not have.
+  //:
+  //: The same `setDocGutter`, so this and the strip's button are two views of
+  //: one remembered choice rather than two settings; `applyDocGutter` writes
+  //: both their pressed states back.
+  //: The two draw switches show the stored choice (their change handlers are in documents-view.js).
+  if ($("doc-code-wrap")) $("doc-code-wrap").checked = docToolPref("codeWrap", false);
+
+  if ($("doc-whitespace")) $("doc-whitespace").checked = docToolPref("whitespace", false);
+
+  //: **A misspelling's row names its nearest word** (audit 1102 DX19): "libary"
+  //: and "tomorow" showed only "not in the dictionary" until the row was opened.
+  //: One edit only (`quick`), cached on the finding, for the rows drawn; the menu
+  //: still offers every candidate. Empty when the dictionary was sure (the row
+  //: then has its own answer) or one edit finds nothing.
+  docSpellGuesses.hint = (finding) => {
+    if (finding.rule !== "spelling" || finding.replacement !== null) return "";
+    finding.hint ??= docMatchCase(finding.text, docSpellGuesses(finding.text, 1, true)[0] || "");
+    return finding.hint;
+  };
+
+  $("doc-dictionary-close")?.addEventListener("click", () => $("doc-dictionary-dialog")?.close());
+
+  $("doc-spelling-variant")?.addEventListener("change", async (event) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ spelling_variant: event.currentTarget.value }),
+    }).catch(() => prefsCache);
+    //: The variant decides which half of the pair table is a finding, so the
+    //: lookup has to be rebuilt before the next pass reads it.
+    docVariantFor = null;
+    //: And the grammar checker's dialect with it (British or American rules).
+    docGrammarCache = { text: null, findings: [] };
+    renderDocProse();
+  });
+
+  //: Kinds of suggestion (L333): a ticked box is a kind shown; the ones left unticked are
+  //: saved as `prose_kinds_off` and sent with every grammar ask, so the worker drops them.
+  $("doc-prose-groups")?.addEventListener("change", async (event) => {
+    const off = [...event.currentTarget.querySelectorAll("[data-prose-group]")].filter((box) => !box.checked).map((box) => box.dataset.proseGroup);
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ prose_kinds_off: off }),
+    }).catch(() => prefsCache);
+    docGrammarCache = { text: null, findings: [] };
+    renderDocProse();
+  });
+
+  $("doc-link-offers")?.addEventListener("change", async (event) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ link_offers: event.currentTarget.checked }),
+    }).catch(() => prefsCache);
+    DOC_LINK_OFFERS.text = null;
+    DOC_LINK_OFFERS.findings = [];
+    renderDocProse();
+  });
+
+  //: Link text (K11): the same preference as Settings, Writing. The grammar
+  //: answer is thrown away because what it keeps depends on the switch.
+  $("doc-check-link-text")?.addEventListener("change", async (event) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ check_link_text: event.currentTarget.checked }),
+    }).catch(() => prefsCache);
+    docGrammarCache = { text: null, findings: [] };
+    renderDocProse();
+  });
+
+  $("doc-grammar-check")?.addEventListener("change", async (event) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ grammar_check: event.currentTarget.checked }),
+    }).catch(() => prefsCache);
+    docGrammarCache = { text: null, findings: [] };
+    renderDocProse();
+  });
+
+  //: The same preference Settings, Preferences sets (`smart_punctuation`), here
+  //: beside the other writing checks; saved on the change, as the two above are.
+  $("doc-smart-punctuation")?.addEventListener("change", async (event) => {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ smart_punctuation: event.currentTarget.checked }),
+    }).catch(() => prefsCache);
+  });
+
+  for (const [name, id] of Object.entries(DOC_TOOL_KEYS)) {
+    const input = $(id);
+    if (!input) continue;
+    //: `complete` defaults on and `autocorrect` defaults off, which is the
+    //: difference between *offering* something and *doing* it to your text.
+    input.checked = docToolPref(name, name === "complete");
+    input.addEventListener("change", () => {
+      docSaveToolPref(name, input.checked);
+      if (name === "complete" && !input.checked) hideDocComplete();
+    });
+  }
+  // =============================================================================
+  // The dictionary, the spelling variant, and the popup you get from a flagged word
+  // =============================================================================
+  //
+  // Asked for: *"the auto correct and grammar checker needs to be improved
+  // because I cant click on the flagged word or phrase and see a popup for
+  // suggested fixes or other options like adding to dictionary (a way to manage
+  // that dictionary), auto correct spelling (us, uk spelling etc), language
+  // translation etc. integrate all the usability that these features need and how
+  // the user would expect to use them."*
+  //
+  // The check itself was already right; what it had no shape for was *disagreeing
+  // with it*. A checker you cannot argue with is one you turn off, because the
+  // third time it flags your project's name you have no way to say "this is a
+  // word". So: every finding is a control, and the control's menu carries the
+  // four answers a person actually has, fix it, this is a word, not this time,
+  // and (for a spelling) always correct it for me.
+  //
+  // **The dictionary lives on the server** (`writing_dictionary`, routes_settings)
+  // rather than in `localStorage`, and the reason is the same as the spelling
+  // variant's: a word list you have to rebuild after clearing browser data is a
+  // list nobody adds to, and a variant that differs between the desktop shell and
+  // a browser tab is a checker that contradicts itself.
+
+
+  //: The setting's five values (VC6) read the one table: Australian and Indian
+  //: spell as the British column does for every pair here; Canadian is the
+  //: mixed one (`DOC_CA_KEEPS_UK`). The label is what a finding says.
+
+
+
+
+
+  // --- ranking the suggestions (DOCUMENTS_PLAN Phase 0 item 2) ------------------
+  //
+  // **Where a suggestion can honestly come from in an app with no dictionary
+  // file.** This checker knows a fixed list of unambiguous typos and a UK/US
+  // pair table, and that is the whole of its certainty. For a word it simply
+  // does not recognise it had nothing to offer at all, and a menu whose only
+  // row is "ignore this" is a menu that teaches you to stop opening it.
+  //
+  // So the order is by how much the app actually knows, strongest first:
+  //
+  //   1. the rule's own answer, where a rule was sure enough to have one;
+  //   2. the other spelling of a UK/US pair, so a document set to UK still sees
+  //      the US form offered rather than pretended out of existence;
+  //   3. the nearest words by edit distance in the words this app can claim to
+  //      know: your own dictionary, plus both halves of the pair table and the
+  //      corrections in the typo list;
+  //   4. the nearest words in your own writing, which is the only place your
+  //      project names, your people and your jargon exist.
+  //
+  // Nothing here is a guess dressed as an answer: every row is a real word from
+  // a list you could go and look at, and 3 and 4 are ordered by a distance the
+  // reader can feel (one letter out sorts above two).
+
+
+
+
+  //: The answers to a finding (rows as data, and the buttons drawn from them): documents-suggest.js, fetched on first
+  //: use. Each is a stand-in the piece's function of the same name replaces on load, so a caller awaits it.
+
+
+  //: **The popup, the translate hand-off, Discuss in chat and the AI review** are
+  //: documents-suggest.js, fetched on first use. Each name here is a stand-in: the
+  //: piece's own function of the same name replaces it on load, so calling the name
+  //: again after the fetch reaches the real one. Nothing reads their return.
+
+  //: Last line, deliberately: everything above has to exist before the first
+  //: paint. See `renderDocTools`.
+  renderDocTools();
+
+  // =============================================================================
+  // The engine: CodeMirror 6 under the documents editor (DOCUMENTS_PLAN Phase 2)
+  // =============================================================================
+  //
+  // **Loaded when the first document is opened, never at boot.** The bundle is
+  // 772 KB (269 KB gzipped) and most sessions in this app never touch the
+  // Documents tab at all, so paying for it on every cold start would be a
+  // second of nothing in exchange for a feature that may not be used. INBOX 48
+  // argued the same shape for the graph's own vendored library. `?v=` is not
+  // applied: vendor URLs are exempt from the cache stamp
+  // (tests/test_asset_cache_busting.py) because the version lives in the pin in
+  // `frontend/vendor/codemirror/package.json`, not in the app's release number.
+  //
+  // **The textarea stays.** If the script fails to load, or the browser refuses
+  // it, `docSurface()` keeps answering with `#doc-content` and the editor keeps
+  // working exactly as it did. That is the whole reason the fallback is still
+  // in the markup, and it is why every call site had to go through the adapter
+  // first: this file must never be able to tell which one it is talking to.
 })();

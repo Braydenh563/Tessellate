@@ -188,4 +188,30 @@
   for (const [name, get, set] of [
     ["docAiController", () => docAiController, (value) => { docAiController = value; }],
   ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  $("doc-ai").addEventListener("click", () => docAiLazy("openDocAiPanel"));
+
+  $("doc-ai-close").addEventListener("click", closeDocAiPanel);
+
+  $("doc-ai-cancel").addEventListener("click", closeDocAiPanel);
+
+  $("doc-ai-run").addEventListener("click", () => docAiLazy("runDocAiEdit"));
+
+  $("doc-ai-cancel-run").addEventListener("click", () => docAiController?.abort());
+
+  $("doc-ai-accept").addEventListener("click", () => docAiLazy("acceptDocAiEdit"));
+
+  $("doc-ai-instruction").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); docAiLazy("runDocAiEdit"); }
+  });
+
+  for (const radio of document.querySelectorAll('input[name="doc-ai-verb"]')) {
+    radio.addEventListener("change", () => docAiLazy("docAiVerbChanged"));
+  }
+
+  $("doc-ai-history").addEventListener("click", openDocAiHistory);
+
+  $("doc-extract").addEventListener("click", openDocExtractPreview);
+
+  initDocSidebarTabs();
 })();

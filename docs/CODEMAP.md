@@ -4545,7 +4545,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docIdeVimChip` | frontend/js/documents-ide.js:42 |
 | `formatDocHistoryWhen` | frontend/js/documents-ide.js:206 |
 
-### frontend/js/documents-instruments.js (11)
+### frontend/js/documents-instruments.js (16)
 
 | Name | File:line |
 |---|---|
@@ -4558,8 +4558,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docSpellNameKind` | frontend/js/documents-instruments.js:395 |
 | `docSpellRoot` | frontend/js/documents-instruments.js:460 |
 | `docSpellable` | frontend/js/documents-instruments.js:343 |
+| `docWordGoalKey` | frontend/js/documents-instruments.js:549 |
 | `docWordKnown` | frontend/js/documents-instruments.js:413 |
 | `docWordlistReady` | frontend/js/documents-instruments.js:288 |
+| `getDocWordGoal` | frontend/js/documents-instruments.js:553 |
+| `promptDocWordGoal` | frontend/js/documents-instruments.js:611 |
+| `renderDocStats` | frontend/js/documents-instruments.js:578 |
+| `setDocWordGoal` | frontend/js/documents-instruments.js:558 |
 
 ### frontend/js/documents-json-schema.js (14)
 
@@ -4698,18 +4703,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docCaretLine` | frontend/js/documents-outline.js:150 |
-| `docCrumbsEl` | frontend/js/documents-outline.js:67 |
-| `docHeadingTrail` | frontend/js/documents-outline.js:44 |
-| `docOutlineFilterText` | frontend/js/documents-outline.js:224 |
-| `docOutlineFoldKey` | frontend/js/documents-outline.js:220 |
-| `docOutlineFoldStore` | frontend/js/documents-outline.js:188 |
-| `docOutlineFolds` | frontend/js/documents-outline.js:196 |
-| `docOutlineSetFolds` | frontend/js/documents-outline.js:209 |
-| `docOutlineVisibility` | frontend/js/documents-outline.js:237 |
-| `docScanHeadings` | frontend/js/documents-outline.js:268 |
-| `docSectionRange` | frontend/js/documents-outline.js:313 |
-| `renderDocCrumbs` | frontend/js/documents-outline.js:86 |
+| `docCaretLine` | frontend/js/documents-outline.js:165 |
+| `docCrumbsEl` | frontend/js/documents-outline.js:82 |
+| `docHeadingTrail` | frontend/js/documents-outline.js:59 |
+| `docOutlineFilterText` | frontend/js/documents-outline.js:239 |
+| `docOutlineFoldKey` | frontend/js/documents-outline.js:235 |
+| `docOutlineFoldStore` | frontend/js/documents-outline.js:203 |
+| `docOutlineFolds` | frontend/js/documents-outline.js:211 |
+| `docOutlineSetFolds` | frontend/js/documents-outline.js:224 |
+| `docOutlineVisibility` | frontend/js/documents-outline.js:252 |
+| `docScanHeadings` | frontend/js/documents-outline.js:283 |
+| `docSectionRange` | frontend/js/documents-outline.js:328 |
+| `renderDocCrumbs` | frontend/js/documents-outline.js:101 |
 
 ### frontend/js/documents-preview.js (22)
 
@@ -5245,20 +5250,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `read` | frontend/js/documents-tabs.js:18 |
 | `write` | frontend/js/documents-tabs.js:19 |
 
-### frontend/js/documents-templates.js (10)
+### frontend/js/documents-templates.js (14)
 
 | Name | File:line |
 |---|---|
-| `chooseDocTemplate` | frontend/js/documents-templates.js:414 |
-| `createDocument` | frontend/js/documents-templates.js:390 |
-| `docDropIfUntouched` | frontend/js/documents-templates.js:357 |
-| `docIsUntouched` | frontend/js/documents-templates.js:349 |
-| `docNextName` | frontend/js/documents-templates.js:353 |
-| `docTemplateFill` | frontend/js/documents-templates.js:306 |
-| `docUntitledName` | frontend/js/documents-templates.js:339 |
-| `slugify` | frontend/js/documents-templates.js:201 |
-| `startBlankDocument` | frontend/js/documents-templates.js:374 |
-| `useDocTemplate` | frontend/js/documents-templates.js:427 |
+| `chooseDocTemplate` | frontend/js/documents-templates.js:417 |
+| `createDocument` | frontend/js/documents-templates.js:393 |
+| `docDropIfUntouched` | frontend/js/documents-templates.js:360 |
+| `docIsUntouched` | frontend/js/documents-templates.js:352 |
+| `docNextName` | frontend/js/documents-templates.js:356 |
+| `docTemplateFill` | frontend/js/documents-templates.js:309 |
+| `docTemplateListKeys` | frontend/js/documents-templates.js:448 |
+| `docUntitledName` | frontend/js/documents-templates.js:342 |
+| `ensureDocumentExists` | frontend/js/documents-templates.js:541 |
+| `openDocTemplateDialog` | frontend/js/documents-templates.js:468 |
+| `showDocTemplatePreview` | frontend/js/documents-templates.js:521 |
+| `slugify` | frontend/js/documents-templates.js:204 |
+| `startBlankDocument` | frontend/js/documents-templates.js:377 |
+| `useDocTemplate` | frontend/js/documents-templates.js:430 |
 
 ### frontend/js/documents-toolbar.js (22)
 
@@ -5388,27 +5397,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docWordToc` | frontend/js/documents-word.js:451 |
 | `docWordUploadPicture` | frontend/js/documents-word.js:62 |
 
-### frontend/js/documents.js (17)
+### frontend/js/documents.js (8)
 
 | Name | File:line |
 |---|---|
-| `calloutMenuItems` | frontend/js/documents.js:1536 |
+| `calloutMenuItems` | frontend/js/documents.js:560 |
 | `docDefaultView` | frontend/js/documents.js:122 |
-| `docOpenReplace` | frontend/js/documents.js:422 |
+| `docOpenReplace` | frontend/js/documents.js:220 |
 | `docPreviewShowing` | frontend/js/documents.js:137 |
-| `docRunControl` | frontend/js/documents.js:501 |
-| `docTemplateListKeys` | frontend/js/documents.js:171 |
+| `docRunControl` | frontend/js/documents.js:286 |
 | `docViewMigrate` | frontend/js/documents.js:114 |
-| `docWordGoalKey` | frontend/js/documents.js:347 |
-| `ensureDocumentExists` | frontend/js/documents.js:267 |
-| `expandNoteIntoDocument` | frontend/js/documents.js:303 |
-| `getDocWordGoal` | frontend/js/documents.js:351 |
-| `openDocTemplateDialog` | frontend/js/documents.js:191 |
-| `promptDocWordGoal` | frontend/js/documents.js:409 |
-| `renderDocStats` | frontend/js/documents.js:376 |
-| `setDocWordGoal` | frontend/js/documents.js:356 |
-| `showDocTemplatePreview` | frontend/js/documents.js:244 |
-| `toggleDocFindBar` | frontend/js/documents.js:428 |
+| `expandNoteIntoDocument` | frontend/js/documents.js:173 |
+| `toggleDocFindBar` | frontend/js/documents.js:226 |
 
 ### frontend/js/drag-edge.js (3)
 

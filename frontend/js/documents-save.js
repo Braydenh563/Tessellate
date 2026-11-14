@@ -205,4 +205,8 @@
   for (const [name, get, set] of [
     ["docSaveTimer", () => docSaveTimer, (value) => { docSaveTimer = value; }],
   ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  $("doc-title").addEventListener("input", () => { markDocDirty(); scheduleDocPreview(); });
+
+  $("doc-title").addEventListener("blur", () => { if (docFillBlankTitle()) markDocDirty(); });
 })();

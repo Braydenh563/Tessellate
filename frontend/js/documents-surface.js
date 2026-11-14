@@ -1027,4 +1027,67 @@
     ["docPlaceholderText", () => docPlaceholderText, (value) => { docPlaceholderText = value; }],
     ["docConflictPending", () => docConflictPending, (value) => { docConflictPending = value; }],
   ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  // Searching and sorting every document lives in the Library now (§36G), with
+  // the notes, chats and files beside them. This is the way there, said out loud
+  //, a list that silently stops at eight is a list that has lost your writing.
+  $("doc-browse-all").addEventListener("click", () => {
+    switchTab("library");
+    libraryKind = "document";
+    renderLibraryOverview();
+    renderLibraryFilters();
+    renderLibrary();
+  });
+
+  // Used to be an open-by-default <details> in the sidebar; its body was tall
+  // enough to push the document list down, so it is a dialog now. The Close
+  // button and Escape both close it, Close via the generic [data-close-dialog]
+  // delegation set up below, Escape for free from <dialog>.showModal().
+  $("doc-storage-toggle").addEventListener("click", () => $("doc-storage-dialog").showModal());
+
+  //: **Enter in the title starts the body** (audit 2026-10-05, UX-05), the way
+  //: Notion, Apple Notes and Obsidian behave: "Trip plan", Enter, "Day one..."
+  //: used to type on into the title and save it as one long name over an empty
+  //: body. ArrowDown at the end of the title goes there too. Not mid-IME.
+  $("doc-title").addEventListener("keydown", (event) => {
+    if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const title = event.currentTarget;
+    const atEnd = title.selectionStart === title.value.length && title.selectionEnd === title.value.length;
+    if (event.key !== "Enter" && !(event.key === "ArrowDown" && atEnd)) return;
+    event.preventDefault();
+    //: Read view (a phone opens a document in it) has no body to type in, so
+    //: Enter goes back to the editing view last used, as the Edit button does.
+    if (docView === "rendered") setDocView(lastEditView || "live");
+    if (docCmView && docCmView.dom.isConnected && docCmView.dom.offsetParent !== null) {
+      docCmView.dispatch({ selection: { anchor: 0 }, scrollIntoView: true });
+      docCmView.focus();
+      return;
+    }
+    //: Through the adapter (tests/test_doc_surface.py): the fallback box is
+    //: only reached here when CodeMirror is not on screen.
+    if (docBoxEl()?.offsetParent !== null && docBoxEl()) {
+      const surface = docSurface();
+      surface.focus();
+      surface.setSelection(0);
+    }
+  });
+
+  //: The dock's breadcrumb (INBOX 424 p): back to the Library's Documents list,
+  //: the place a document is opened from.
+  $("doc-back")?.addEventListener("click", () => {
+    const crumb = $("doc-back");
+    if (crumb.dataset.from) return openDocument(Number(crumb.dataset.from));
+    switchTab("library");
+    document.getElementById("library-subtab-docs")?.click();
+  });
+
+  for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-diagram-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
+    // The unmodified title is stashed before syncDocFileType ever overwrites it
+    // with the "no rendered form" explanation, so switching back to a markdown
+    // document restores the real one rather than leaving the disabled text.
+    button.dataset.docTitle = button.title;
+    button.addEventListener("click", () =>
+      setDocView(button.dataset.docViewGroup === "edit" ? lastEditView : button.dataset.docView)
+    );
+  }
 })();

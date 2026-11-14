@@ -511,4 +511,24 @@
     ["docCmBroken", () => docCmBroken, (value) => { docCmBroken = value; }],
     ["docHistoryOwner", () => docHistoryOwner, (value) => { docHistoryOwner = value; }],
   ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  //: **The lock screen has to empty the engine too, and it cannot know how.**
+  //:
+  //: `purgeLockedContent` (app.js) is this app's only privacy boundary on the
+  //: client: it clears every element that holds the notebook's own words, and
+  //: `#doc-content.value` was one of them. With CodeMirror mounted that value is
+  //: a stale fallback and the document itself lives in the view's state, which
+  //: `replaceChildren` on a list of ids cannot reach. Locking the notebook would
+  //: have left the whole open document readable behind the overlay: exactly the
+  //: finding that audit was written up for, reintroduced by a change nowhere
+  //: near it.
+  //:
+  //: Watched rather than called, because the purge belongs to app.js and the
+  //: engine belongs here. The overlay losing `hidden` is the one signal both
+  //: routes into locking share (the Lock button, and the 401 that re-shows it),
+  //: so it is the honest thing to observe.
+  docWatchLock();
+
+  // ---- from editor.js (search-boot-1005): calloutMenuItems ----
+  // Moved whole. Every use is in this file, so it is not needed before this file loads.
 })();

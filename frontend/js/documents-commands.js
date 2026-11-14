@@ -929,4 +929,105 @@
 
   //: The file's surface: what other files call (L335).
   Object.assign(window, { DOC_COMMANDS, docPaletteCommands, renderDocShortcutSheet, docBlockMoveEdit, docBlockMoveRun, renderDocOutline, docVisibleTopLine });
+
+  //: The filter box's own wiring, once. `input` rather than a debounce: the
+  //: work behind it is a pass over the headings this file already holds, not a
+  //: request, and a debounce on a list that redraws in under a millisecond is
+  //: latency bought for nothing.
+  //:
+  //: Escape clears it rather than closing anything, which is what Escape means
+  //: in every other search box in this app, and it is the only way back to the
+  //: whole outline that does not involve selecting the text first.
+  onDomReady(() => {
+    const box = $("doc-outline-filter");
+    if (!box) return;
+    box.addEventListener("input", () => renderDocOutline());
+    box.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || !box.value) return;
+      event.stopPropagation();
+      box.value = "";
+      renderDocOutline();
+    });
+  });
+
+
+
+
+  // --- the code editor: line numbers, indent, comment toggle ---------------------
+  //
+  // Asked for directly: a code file should have "code lines as well as language
+  // detection and ctrl + / commenting or equivalent as well as indenting and
+  // dedenting". All three are keystroke-level, which is why the file-type table
+  // is fetched and cached rather than queried, see `loadDocFileTypes`.
+  //
+  // Built on the existing textarea rather than on a third-party code editor.
+  // This app has no build step (`frontend/js/app.js` is served as-is), so a real
+  // editor component would mean either a vendored bundle or a CDN, and the
+  // three behaviours that were actually asked for are a few dozen lines each
+  // against a textarea. What is genuinely lost by not using one is syntax
+  // *colouring*, which needs a tokeniser per language; that is a separate
+  // decision with a real dependency behind it, and pretending otherwise by
+  // half-highlighting a few keywords would look worse than plain monospace.
+
+
+
+
+  // --- Live preview: the same editor, with decorations on -----------------------
+  //
+  // ROADMAP item 0, asked for again directly: "the notion/obsidian live md
+  // rendering after typing hybrid kind of md". The model both of those use, and
+  // the one implemented here: **the document renders in place, and the markdown
+  // markers hide themselves until the caret enters the thing they mark.** So
+  // `**bold**` is bold while you read it and `**bold**` while you edit it, and
+  // you never lose sight of the syntax you are actually typing.
+  //
+  // **What this replaces, and why it had to.** Until Phase 2 the Live view was a
+  // second editor: one `<textarea>` per paragraph, the rest of the document
+  // rendered to HTML beside them, the whole pane rebuilt whenever the prose
+  // check ran. It worked, and it was honest about its own limits, but the cost
+  // was structural. Measured in Chromium on the plan's own 20k-word document
+  // (`scratchpad/ui-sweeps/doctype.js`): a single keystroke in Live produced
+  // 1,178 markdown renders and a keydown p50 of 160 ms against a 30 ms gate,
+  // because every debounced prose pass tore down and rebuilt every block in the
+  // document. There is no tuning that fixes that shape; the pane has to stop
+  // being a thousand elements.
+  //
+  // Decorations are the fix and they are also the better editor. One document,
+  // one caret, one selection, one undo history, no block boundaries to fall
+  // between, and only the *visible* lines are ever decorated
+  // (`view.visibleRanges`), so the work per keystroke is a screenful rather than
+  // a document. It is Obsidian's own architecture, which is what was asked for.
+  //
+  // **What was lost, said plainly:** the Notion-style block handle, its drag to
+  // reorder and its move/duplicate/delete menu went with the block DOM. The
+  // drag is back (`docLiveExtensions.dragHandle`, DX29), a gutter grip over the
+  // one document that reuses the Alt+Up and Alt+Down move; the menu is still
+  // DOCUMENTS_PLAN Phase 3's.
+
+  // -----------------------------------------------------------------------------
+  // The table commands: what the editor does with the model above
+  // -----------------------------------------------------------------------------
+  //
+  // Everything here reads the caret, asks the model for a list of edits and
+  // dispatches them. There is no second copy of a table anywhere in it, which is
+  // what keeps Live and Source the same document rather than two renderings of
+  // one.
+
+
+  // --- rich paste: HTML from a web page, Word or Google Docs, as Markdown -------
+  //
+  // **A paste keeps its headings, emphasis, lists and links** (audit FEAT-04,
+  // 2026-10-05). The only HTML paste handler was the table's, so copying from a
+  // web page, Word or Google Docs (the commonest way text arrives in a writing
+  // app) put plain text in: headings, bold, lists and every link's address
+  // were gone. This walks the clipboard's HTML through `DOMParser` (which runs
+  // no script and loads nothing) over an allowlist, and writes Markdown, the
+  // document's own format, so what lands is ordinary text the editor already
+  // draws. Anything not on the list contributes its text and nothing else.
+  // Ctrl+Shift+V pastes plain text, as everywhere else.
+  //
+  // It takes the paste only when the HTML carries something plain text cannot
+  // (a heading, emphasis, a list, a link, a quote, code, a picture, a table):
+  // a code editor's copy is coloured spans and divs, and turning those into
+  // paragraphs would break the code it was copying.
 })();

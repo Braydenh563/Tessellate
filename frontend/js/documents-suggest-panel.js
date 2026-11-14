@@ -608,4 +608,10 @@
     ["docSuggestOpenFor", () => docSuggestOpenFor, (value) => { docSuggestOpenFor = value; }],
     ["docSuggestAnchor", () => docSuggestAnchor, (value) => { docSuggestAnchor = value; }],
   ]) Object.defineProperty(window, name, { get, set, configurable: true });
+
+  window.addEventListener("resize", docSuggestFollowAnchor);
+
+  //: Capture, because the scroll that matters is the editor's own and a scroll
+  //: event does not bubble.
+  window.addEventListener("scroll", docSuggestFollowAnchor, true);
 })();
