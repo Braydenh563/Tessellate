@@ -24605,6 +24605,8 @@ function renderWbObjects(canvas, stackRank = wbStackRanks()) {
   // node: `wbMapColors` walks the whole tree by design (see its own comment),
   // and calling it from inside a per-node callback would walk it once per node.
   const mapIndex = wbIsMap() ? wbMapIndex() : null;
+  //: The accent's ink, read while the page is still clean (`wbMapAccentInk`).
+  if (mapIndex) wbMapAccentInk();
   //: Each topic's level (MINDMAP_PLAN.md decision 38), before anything is
   //: painted or measured: its look, and so its size, depend on it.
   if (mapIndex) wbMapLevels(mapIndex);
