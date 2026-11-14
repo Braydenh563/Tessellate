@@ -1,6 +1,9 @@
 // documents-edit-keys.js: indent, comment toggle and table keys in the plain editor.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: The lines a selection touches, as [firstLine, lastLine] and the character
+  //: offsets that bracket them. Indent, dedent and comment-toggle all work on
+  //: whole lines, and all three need exactly this.
   function docSelectedLines(box) {
     const value = box.value;
     const start = value.lastIndexOf("\n", box.selectionStart - 1) + 1;
@@ -13,6 +16,10 @@
     }
     return { start, end, text: value.slice(start, end) };
   }
+  //: Replace a run of the textarea through the browser's own edit pipeline, so
+  //: the native undo stack keeps working. Assigning `.value` wipes it, which
+  //: would make Ctrl+Z stop working in exactly the editor where people press it
+  //: most: the single most important detail in this whole section.
   function docReplaceRange(box, start, end, text) {
     //: CodeMirror has its own history and its own transaction pipeline, so the
     //: `execCommand` dance below is not only unnecessary there, it is wrong:
@@ -32,12 +39,29 @@
       box.value = value.slice(0, start) + text + value.slice(end);
     }
   }
+  //: Reads the arming *and* clears it, so one Escape buys one Tab: an armed
+  //: flag left standing would make the next Tab after any Escape, minutes and
+  //: paragraphs later, throw the writer out of the editor.
   function docTakeTabEscape() {
     const armed = docTabEscapes;
     docTabEscapes = false;
     return armed;
   }
+  //: Shift+Tab has something to do only when there is indentation under the
+  //: selection (or a selection at all, which re-indents its lines). Otherwise
+  //: it is the browser's, which is what keeps a flush-left caret from being a
+  //: keyboard trap.
+  //: A markdown list item, at whatever depth. Tab and Shift+Tab treat one of
+  //: these as a *block* rather than as a run of characters: pressing Tab with
+  //: the caret in the middle of "- alpha" indents the bullet, it does not push
+  //: two spaces into the middle of the word, which is what every editor a
+  //: writer has used does and what this one did not (measured, 2026-09-12:
+  //: "- al|pha" plus Tab gave "- al  pha").
   const DOC_LIST_LINE = /^([ \t]*)([-*+]|\d+[.)])(\s)/;
+  //: The number an ordered item at `indent` columns should carry, from the
+  //: lines above `start`: its previous sibling's plus one, or 1 when a shallower
+  //: line (the parent) or a break in the list comes first. Deeper lines are the
+  //: sibling's children and are skipped over.
   function docOrderedNumberAt(value, start, indent) {
     const above = value.slice(0, Math.max(0, start - 1)).split("\n");
     for (let i = above.length - 1; i >= 0; i--) {
@@ -200,6 +224,18 @@
     markDocDirty();
     renderDocGutter();
   }
+  //: **A code document comments by the language at the caret** (INBOX 402),
+  //: as VS Code does: one HTML file is three languages, so a line inside its
+  //: `<script>` takes `//`, inside `<style>` `/* */`, and the markup
+  //: `<!-- -->`; a JSX child takes `{/* */}`. The file-type table above has one
+  //: marker per file and cannot know that; CodeMirror's own command reads the
+  //: `commentTokens` of the grammar at the cursor. It keeps this function's
+  //: rules (uncomment only when every non-blank line is commented, the marker
+  //: after the indentation, a round trip exact; `tests/test_code_vscode.py`),
+  //: with one difference, VS Code's: a block of lines takes its marker at the
+  //: block's own indent, so the block keeps its shape. A grammar with no tokens
+  //: falls through to the file-type marker; prose, Plain and the textarea
+  //: fallback never come here.
   function docCodeCommentRun(CM, target, block) {
     return block ? CM.commands.toggleBlockComment(target) : CM.commands.toggleComment(target);
   }
@@ -213,6 +249,7 @@
     markDocDirty();
     return true;
   }
+  //: The table the caret is in, with the cell it is in, or null.
   function docTableContext(box = null) {
     const surface = box || docSurface();
     if (!surface) return null;
@@ -222,6 +259,8 @@
     if (!table) return null;
     return { surface, text, table, cell: docTableCellAt(table, at) || { row: 0, col: 0 } };
   }
+  //: One transaction for a whole operation, so Ctrl+Z takes back "insert a
+  //: column" rather than the seven cell edits it was made of.
   function docTableDispatch(context, edits) {
     if (!edits || !edits.length) return false;
     const surface = context.surface;
@@ -238,6 +277,14 @@
     finishMarkdownEdit(surface, "doc-content");
     return true;
   }
+  //: Run an operation and put the caret in a named cell, with that cell's text
+  //: selected so the next keystroke replaces it, which is what Tab does in every
+  //: table editor the plan names.
+  //:
+  //: The selection is worked out *after* the edits have landed rather than
+  //: predicted from the edits themselves: an insertion earlier in the table
+  //: moves every offset after it, and a caret computed in the old coordinates is
+  //: the classic way a table editor drops the caret a column to the left.
   function docTableGo(context, edits, row, col) {
     docTableDispatch(context, edits);
     const surface = context.surface;
@@ -268,6 +315,12 @@
     surface.setSelectionRange(span.from + lead, Math.max(span.from + lead, span.to - tail));
     return true;
   }
+  //: Tab moves to the next cell and Shift+Tab to the previous one, which is the
+  //: one gesture every editor in the plan's competitor table shares. Tab in the
+  //: last cell adds a row, for the same reason: a table you have to reach for a
+  //: menu to extend is a table people stop extending. The keydown listener at
+  //: the end of this file is what calls it (`docTableTab`), because that
+  //: listener already covers both surfaces.
   function docTableTabStep(backwards, from = null) {
     const context = from || docTableContext();
     if (!context) return false;
@@ -277,6 +330,10 @@
     const rows = context.table.rows.length;
     return docTableGo(context, docTableAddRowEdits(context.table, rows - 1), rows, 0);
   }
+  //: The caret at the end of a cell's words, for the gestures that move rather
+  //: than select (Enter and the arrows): Tab selects the cell it lands in so
+  //: typing replaces it, and an arrow that did the same would turn the next
+  //: keystroke into a deletion.
   function docTableCaretTo(context, row, col) {
     const surface = context.surface;
     let table = context.table;
@@ -294,6 +351,7 @@
     surface.setSelectionRange(at, at);
     return true;
   }
+  //: Leave a table downwards through `docTableExitEdit`, the way out as data.
   function docTableExit(view, table, dropLast) {
     const out = docTableExitEdit(table, docStr(view.state.doc), dropLast);
     view.dispatch({ changes: out.changes, selection: { anchor: out.anchor }, scrollIntoView: true, userEvent: "input" });
@@ -304,6 +362,22 @@
     if (!context || context.surface.kind !== "codemirror" || context.surface.view !== view) return false;
     return docTableExit(view, context.table, false);
   }
+  //: **Enter and the arrows in a Live table** (INBOX 425 i: "tables are still
+  //: really annoying to use and edit in the documents live view"). Measured
+  //: before this in `scratchpad/ui-sweeps/doctablework.js`: ArrowDown from the
+  //: third column landed in the fourth and ArrowUp into the header a column
+  //: off, because the editor moves by pixels over cells a grid has laid out;
+  //: Enter in the last row made a row but sent the caret to its first column;
+  //: and a table that ended the document (or began it) could not be left by
+  //: the arrows at all, so the only way to write under it was Source view.
+  //:
+  //: Now, in Live, the arrows keep the column from row to row (a cell whose
+  //: words wrap over several lines is walked through first, as any paragraph
+  //: is), Enter goes to the same column one row down and adds the row at the
+  //: end, and past the table's edge the arrows leave it, making the blank line
+  //: markdown needs when there is nothing on that side yet. Source keeps the
+  //: plain editor's keys: there the rows are text, and moving by column over
+  //: unaligned pipes would be the surprise.
   function docTableKeyMove(view, key) {
     if (docView !== "live") return false;
     const sel = view.state.selection.main;
@@ -345,6 +419,12 @@
     }
     return true;
   }
+  //: A paste that is a spreadsheet's rows. Into a table, it fills cells from
+  //: the caret's (`docTablePasteEdits`); anywhere else in a markdown document,
+  //: it becomes a table of its own when the clipboard also carries an HTML
+  //: table (which every spreadsheet puts there) and the rows are a rectangle
+  //: of at least two by two, so tab-indented text pasted from a code editor is
+  //: still pasted as the text it was. Never in a code file.
   function docTablePasteEvent(event, view) {
     if (view.dom.classList.contains("doc-content-code")) return false;
     const data = event.clipboardData;

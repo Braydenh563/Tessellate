@@ -1,6 +1,25 @@
 // documents-preview.js: the Read view's render, the line numbers gutter and the caret helpers.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: **The caret's line, but only while the caret is on screen.**
+  //:
+  //: Reported (OPEN.md, doc-sidebar.md): typing in a section below the one at
+  //: the top of the view marked the wrong heading until the view scrolled.
+  //: Measured on a twelve-section document in a 512px box before this existed:
+  //: the caret in Section 3 with the view still at `scrollTop` 0, the outline
+  //: marked Section 1.
+  //:
+  //: **Which wins when the two disagree**, the question the next step had not answered:
+  //: the caret does, while it is visible. A caret you can see is where you are
+  //: writing, and every editor this is measured against (Obsidian, Typora)
+  //: follows it. Scroll far enough that the caret leaves the box and it is no
+  //: longer where you are looking, so the top of the view takes over again: that
+  //: is reading, not writing, and the same rule covers the Read pane, where
+  //: there is no caret to see at all.
+  //:
+  //: Null rather than a line number when there is nothing to say, so the caller
+  //: reads as the rule: "the caret's line if it is visible, otherwise the top of
+  //: the view".
   function docCaretVisibleLine() {
     const box = docSurface();
     if (!box || box.kind !== "codemirror") {
@@ -25,12 +44,24 @@
     if (coords.top < frame.top || coords.bottom > frame.bottom) return null;
     return view.state.doc.lineAt(view.state.selection.main.head).number - 1;
   }
+  //: **The line the breadcrumb is about**: the caret's while it is on screen,
+  //: the top of the view otherwise, which is the rule the outline's mark has
+  //: always used (`markDocOutline`) and now the trail follows it too. Measured
+  //: (`doccrumbview.js`) in a 21k-word document scrolled to 60% with the caret
+  //: left on line 1: the outline marked the section in view and the trail above
+  //: the writing still said `Top > Annual report`, two rows that both answer
+  //: "where am I" giving two answers. The textarea fallback keeps the caret, its
+  //: only honest answer (it has no line-to-pixel map).
   function docWhereLine() {
     const box = docSurface();
     if (!box || box.kind !== "codemirror") return docCaretLine();
     const caret = docCaretVisibleLine();
     return caret === null ? docVisibleTopLine() : caret;
   }
+  //: The marked row, kept inside whichever box in the sidebar actually scrolls.
+  //: Bounded by `#doc-sidebar` on purpose: `scrollIntoView` walks every
+  //: scrolling ancestor, and the page is one of them, so the tidy one-liner
+  //: would yank the whole tab under the person's caret while they typed.
   function keepOutlineRowInView(el) {
     const limit = $("doc-sidebar");
     if (!limit) return;
@@ -44,6 +75,9 @@
     if (row.top < frame.top) box.scrollTop -= frame.top - row.top + 8;
     else if (row.bottom > frame.bottom) box.scrollTop += row.bottom - frame.bottom + 8;
   }
+  //: `known` is `docWhereLine()` read by a caller before it wrote anything; a
+  //: render passes it, and the row is then brought into view after the frame's
+  //: layout rather than measured against rows it has just built.
   function markDocOutline(known) {
     if (!docOutlineRows.length) return;
     //: The caret's section while the caret is on screen, the top of the view
@@ -93,6 +127,8 @@
     if (known === undefined) keepOutlineRowInView(button);
     else afterFrames(() => setTimeout(() => button.isConnected && keepOutlineRowInView(button)), 1);
   }
+  //: One mark per frame. A scroll fires far faster than anything needs to be
+  //: repainted, and the work behind it is a hit test plus a class swap.
   function scheduleDocOutlineSpy() {
     //: **Read in the engine's own measure pass** (DX1): asked from a frame of
     //: its own, `coordsAtPos` laid the editor out a second time per key (357 ms
@@ -107,6 +143,10 @@
       markDocOutline();
     });
   }
+  // Put the caret at the start of a line and scroll it into view. Done by
+  // character offset because that is the one coordinate both surfaces share: a
+  // textarea has no anchors, and CodeMirror's own `scrollIntoView` is reached
+  // through `setSelection` below rather than by arithmetic.
   function jumpToDocLine(lineIndex) {
     const box = docSurface();
     if (!box) return;
@@ -119,6 +159,7 @@
     const ratio = lineIndex / Math.max(1, lines.length);
     box.scrollTop = Math.max(0, ratio * box.scrollHeight - box.clientHeight / 3);
   }
+  // Answers "where is this actually kept?" with the real path, once.
   let storageInfo = null;
   async function renderDocStorage() {
     const el = $("doc-storage-path");
@@ -128,6 +169,15 @@
     }
     el.textContent = storageInfo ? storageInfo.database : "(couldn't read the path)";
   }
+  // PLAN.md P4. With the preview open (Split/Rendered) every keystroke used to
+  // re-parse and re-render the whole document: measured on a 20k-word document
+  // with scratchpad/ui-sweeps/doctype.js, 44 keystrokes → 44 full renders,
+  // keydown p50 176ms / p95 272ms, the caret visibly lagged the typing. The
+  // preview is display, not state, so it can wait for the typing to pause:
+  // a 120ms trailing debounce, then an idle callback (with a ceiling, so a
+  // busy tab still repaints within a third of a second). Anything that needs
+  // the preview *now*, a view switch, a load, still calls renderDocPreview
+  // directly.
   let docPreviewTimer = null;
   function scheduleDocPreview() {
     const preview = $("doc-preview");
@@ -236,6 +286,12 @@
     docEmbedFill.tagChips(preview);
     docWireReadTasks(preview, text);
   }
+  //: **Tick a task in the Read view.** The renderer draws every task box
+  //: disabled (it is shared with notes and chat, which have no source to write
+  //: back to). Here the document is open, so the Nth box is matched to the Nth
+  //: task line of the text, outside the properties and any code fence, and
+  //: switched on only when the counts agree: a box that cannot be traced to its
+  //: line stays as it was rather than ticking the wrong one.
   const DOC_READ_TASK = /^(\s*[-*+]\s+)\[([ xX])\](\s)/;
   function docTaskLines(text) {
     const lines = String(text).split("\n");
@@ -311,6 +367,13 @@
       box.setAttribute("aria-label", box.checked ? "Done" : "Not done");
     });
   }
+  //: **The document, rendered, with its columns side by side.** `renderMarkdown`
+  //: is the app's one markdown renderer and knows nothing about `:::columns`;
+  //: teaching it would put a documents-editor construct into the renderer every
+  //: note card and every chat message uses. So the text is split here, at the
+  //: blocks the model finds, and each column is rendered by that same renderer
+  //: into its own element. The result is one pass over the document either way,
+  //: and a document with no columns in it takes exactly the path it always did.
   function docRenderBody(container, raw) {
     //: Footnotes over the whole document, before it is cut into pieces (audit
     //: FEAT-03): a note defined at the foot is cited from every piece above it,
@@ -367,8 +430,31 @@
       if (labels) labels.held = false;
     }
   }
+  //: `![[Document#^an-id]]` on its own line (DOCUMENTS_PLAN Phase 4 item 2).
+  //: The id shape is the model's, so a `#^` that is not a block reference stays
+  //: an ordinary embed and goes to the app's renderer as before.
   const DOC_BLOCK_EMBED_LINE =
     /^[ \t]*!\[\[([^[\]\n]{1,120}#\^[A-Za-z0-9][A-Za-z0-9-]{0,31})\]\][ \t]*$/;
+  //: A run of markdown with its block embeds drawn by `docEmbedNode` rather
+  //: than by `renderMarkdown`.
+  //:
+  //: The app's one markdown renderer resolves an `![[name]]` through
+  //: `resolveWikiTarget`, which knows notes, boards and documents and cannot
+  //: know about a block: a block reference is written into a document's own
+  //: text by this editor, and `Doc#^abc123` is not a name anything can look up.
+  //: Left to it, a block embed rendered as "Nothing called that yet" in Read
+  //: view while the same line drew the block in Live, which is the two panes
+  //: disagreeing about what the document says. Split out here and handed to the
+  //: same filler the Live view's widget uses, so they cannot.
+  //:
+  //: `lineBase` is the line this piece starts on in the whole rendered text.
+  //: **Every block's `data-src-line` is a line of the whole text, not of its
+  //: piece.** `renderMarkdown` counts from the start of the string it is given,
+  //: and this renders the page in pieces (around block embeds and columns), so
+  //: every block after the first piece carried a line counted from the wrong
+  //: zero: the split view's anchors dropped them (`docScrollAnchors` skips a
+  //: line that goes backwards) and the block bar could not find them in the
+  //: text at all (INBOX 421 b's "change it from the rendered block").
   function docRenderFlow(container, text, lineBase = 0) {
     const lines = String(text == null ? "" : text).split("\n");
     let buffer = [];
@@ -394,6 +480,10 @@
     });
     flush();
   }
+  //: `renderMarkdown` replaces its container's children, so a second call into
+  //: the same one would take the first's work away. Rendered into a spare
+  //: element and moved across, which is also what keeps every piece in document
+  //: order.
   function docAppendRendered(container, text, lineBase = 0) {
     const spare = document.createElement("div");
     renderMarkdown(spare, text);
@@ -404,6 +494,9 @@
     }
     while (spare.firstChild) container.appendChild(spare.firstChild);
   }
+  //: The properties as they read rather than as they are edited: the same rows,
+  //: without the fields. Read view has no editing surface at all, so a panel of
+  //: inputs there would be a form that saves into a document you are not in.
   function docPropsReadNode(fm) {
     const box = document.createElement("div");
     box.className = "doc-props doc-props-read";
@@ -430,6 +523,15 @@
     }
     return box;
   }
+  // [[Document title]] as clickable links in the preview, the same idea as a
+  // note's [[wiki link]] (renderNoteText) but resolving against `docs` by
+  // title instead of by content prefix, documents have real titles. A
+  // post-process over renderMarkdown's already-built DOM rather than a change
+  // to the parser itself: renderMarkdown is a hand-rolled block parser shared
+  // with notes/chat/dashboard, and layering a second concern into its inline
+  // pass is exactly the kind of touch that's cheap to get subtly wrong for
+  // every other caller. Skips text inside <code>/<pre> so a literal "[[x]]" in
+  // a fenced snippet isn't turned into a button.
   function layerDocWikiLinks(container) {
     const targets = [];
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
@@ -485,6 +587,16 @@
       textNode.parentNode.replaceChild(frag, textNode);
     }
   }
+  // The PDF export needs the rendered pane on screen for the duration of the
+  // print, whatever view the user was in, and puts them back afterwards. It is
+  // the only remaining caller of anything toggle-shaped, the Preview tickbox
+  // itself became the four-way #doc-view-seg (see setDocView), because with four
+  // modes a tickbox could not say which one you were in.
+  //
+  // It borrows "rendered" rather than "split": what gets printed is the preview
+  // pane, and at full width it lays out the way the PDF will. If the user is
+  // already in a mode showing the preview, leave them there, reflowing a pane
+  // mid-print is how a page break lands in the wrong place.
   function withDocPreviewShown(fn) {
     const previous = docView;
     const restoring = !docPreviewShowing(previous);
@@ -494,6 +606,12 @@
       if (restoring) setDocView(previous);
     });
   }
+  //: Every gutter in the document, paired with the textarea it numbers. The
+  //: documents editor's gutter is the original (`#doc-gutter` beside
+  //: `#doc-content`); the note capture box and the note edit form get one each
+  //: from `mountGutterFor`, which records the pairing in `data-for`
+  //: (UI_MODERNISATION_PLAN Phase 7 item 2: "one toggle, remembered, working
+  //: for any file type, in all three").
   function docGutters() {
     return [...document.querySelectorAll(".doc-gutter")]
       .map((gutter) => ({ gutter, box: gutter.dataset.for ? $(gutter.dataset.for) : docBoxEl() }))
@@ -503,8 +621,44 @@
       //: all, so it drops out of the list rather than numbering a hidden box.
       .filter((pair) => pair.box && !(docCmView && pair.box === docBoxEl()));
   }
+  //: Everything that decides where a *row* sits. The stylesheet carries a static
+  //: copy of these so the column is not unstyled before this runs, but the
+  //: static copy is what went wrong: it said `padding-top: 0.5rem` while the
+  //: textarea's own padding is `--space-4`, which is `calc(0.6rem *
+  //: var(--density))`. Measured, at density 1, every number sat 1.59px above its
+  //: line, and the density setting could widen that at will. A number beside the
+  //: wrong line is not a small cosmetic error: it is the one thing a gutter is
+  //: for.
+  //:
+  //: Only what places a row (INBOX 590): the figures are smaller than the text
+  //: and set in the stylesheet, and a line box of the text's own height in px
+  //: centres each one on its row whatever size it is drawn at.
   const DOC_GUTTER_PROPS = ["lineHeight", "paddingTop", "paddingBottom"];
   const DOC_GUTTER_BASELINE = 0.43;
+  //: **The gutter is clipped to the textarea, not to the row it sits in.**
+  //: Reported with a screenshot: numbers 1 to 18 continuing below a textarea
+  //: that ended at 11. Both wrappers (`.doc-source-wrap` and `.gutter-wrap`) are
+  //: `align-items: stretch` flex rows, so the gutter took the row's height while
+  //: the textarea took its own; dragging `#doc-content`'s native resize handle
+  //: shorter left the column running on down the card. Measured before this: a
+  //: 260px textarea beside a 585px gutter, 325.4px of numbers past the end of
+  //: the box they number, and even untouched the gutter was 9.6px too tall.
+  //:
+  //: The height is also what makes the scroll lock-step possible at all. A
+  //: gutter that is taller than its textarea has a *shorter* scrollable range,
+  //: so `gutter.scrollTop = box.scrollTop` silently clamps: measured, the box at
+  //: 200 and the gutter stuck at 139, which is two and a half lines of drift
+  //: that grows the further down you scroll. Same height, same content height,
+  //: same range, and the assignment is then exact.
+  //: **Every read, then every write** (OPEN 1076, perfpolish): a write and a
+  //: layout read per gutter forced one layout per gutter; read all of them
+  //: first and the writes cost one layout after.
+  //:
+  //: **`only` is one box or a list of them** (lag trace, 2026-11-11): the observer below
+  //: hands over every box that resized in one delivery. A call per box put the
+  //: second box's reads after the first box's writes, a style and layout pass of
+  //: the whole page each (two numbered boxes beside 30k nodes, 4x CPU: 141ms over
+  //: a 20-frame drag); one call per delivery reads all of them, then writes.
   function syncDocGutterMetrics(only = null) {
     const jobs = [];
     const wanted = only && (Array.isArray(only) ? only : [only]);
@@ -538,6 +692,11 @@
       gutter.style.height = `${height}px`;
     }
   }
+  //: **The box changes height for reasons no event reports.** Dragging
+  //: `#doc-content`'s own `resize: vertical` handle, opening or closing the chat
+  //: dock, switching to Split, a note's textarea growing as it is typed into: a
+  //: `window.resize` listener sees none of them, and the height is exactly what
+  //: was wrong. One observer, every numbered box.
   let docGutterObserver = null;
   function watchDocGutter(box) {
     if (!box || typeof ResizeObserver !== "function") return;
@@ -590,6 +749,12 @@
       gutter.scrollTop = tops[index];
     }
   }
+  //: Give a plain textarea a line-number gutter: wrap it, put the gutter
+  //: before it, and keep the two in step on input and scroll. The gutter copies
+  //: the textarea's own type metrics and top padding through the CSSOM (an
+  //: inline `style=` would be refused by the CSP), that, not a shared class,
+  //: is what makes "1" sit exactly beside the first line whatever font the box
+  //: uses. Idempotent, so the note edit form can call it on every open.
   function mountGutterFor(textarea) {
     if (!textarea || !textarea.id || textarea.parentElement?.classList.contains("gutter-wrap")) {
       return textarea?.previousElementSibling || null;

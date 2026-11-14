@@ -6594,7 +6594,7 @@ def test_a_live_view_mark_reveals_per_span() -> None:
     assert "| A markdown mark in Live view" in design and "`docLiveSpanTouched(ranges, from, to)`" in design
     js = ROOT / "frontend" / "js"
     defined = [p.name for p in js.glob("*.js") if "function docLiveSpanTouched(" in p.read_text(encoding="utf-8")]
-    assert defined == ["documents.js"], f"the span rule is defined in {defined}; one recipe, one place"
+    assert defined == ["documents-live-table.js"], f"the span rule is defined in {defined}; one recipe, one place"
     documents = documents_text()
     assert documents.count("touched(doc.lineAt(from).from, doc.lineAt(to).to)") == 1, (
         "an inline span reveals by its line again; the line-wide rule is only `blockRevealed`"

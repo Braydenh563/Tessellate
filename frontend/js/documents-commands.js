@@ -1,6 +1,10 @@
 // documents-commands.js: the command list, the outline, and moving a section or block.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: The table. `keys` is the chord the editor already listens for, or "" where
+  //: the action has no chord: the shortcut sheet draws the rows that have one
+  //: and the palette draws all of them, which is the division the plan asks for
+  //: ("every editor action with its shortcut").
   // DOC-COMMANDS-BEGIN
   const DOC_COMMANDS = [
     { id: "save", icon: "ph:floppy-disk", label: "Save this document", keys: "Ctrl+S",
@@ -267,6 +271,15 @@
     { id: "compare-stop", icon: "ph:x", label: "Stop comparing with a saved version", keys: "none",
       code: true, run: () => docIdeCall("docIdeStopCompare") },
   ];
+  //: **Only while a document is open and on screen.** The palette is reachable
+  //: from every tab, and "Bold" run from the Notes tab would wrap a selection in
+  //: a document nobody is looking at. `activeTab` is where the app keeps which
+  //: tab is showing (navigation.js's `switchTab` writes it), so this asks the same
+  //: question the tab bar answers.
+  //:
+  //: A row with no `run` is a keyboard-only move (Tab, Alt with an arrow): it
+  //: belongs in the shortcut sheet, which is a list of what the keys do, and not
+  //: in a palette, which is a list of things a press can perform.
   // DOC-COMMANDS-END
   function docPaletteCommands() {
     let tab = "";
@@ -285,6 +298,10 @@
       run: command.run,
     }));
   }
+  //: The `?` sheet's editor section, from the same table, so the two cannot
+  //: disagree. Called by `openShortcuts` (settings-wiring.js) rather than wired here,
+  //: because this file is in the Library's lazy bundle and the dialog can be
+  //: opened before it has ever loaded: the section then simply says so.
   function renderDocShortcutSheet(list) {
     if (!list) return;
     list.replaceChildren();
@@ -309,6 +326,21 @@
       list.appendChild(li);
     }
   }
+  //: **Reordering the document from its outline** (DOCUMENTS_PLAN Phase 4 item
+  //: 3, PLAN D6). Dragging a row moves the *section*, the heading and everything
+  //: under it down to the next heading at the same level or shallower, which is
+  //: what a reader means by "move Results above Method".
+  //:
+  //: **The lines are re-scanned at the moment of the drop, never taken from the
+  //: outline's own rows.** The outline is rebuilt on a pause in typing, so a row
+  //: dragged a keystroke after an edit carries line numbers from the document as
+  //: it was, and moving that run would cut the wrong paragraphs out of the
+  //: middle of the text. `docScanHeadings` costs one pass over a string this
+  //: file already holds.
+  //:
+  //: The write goes through the surface's own `text` setter, which diffs prefix
+  //: and suffix and dispatches the smallest change that gets there, so a move is
+  //: one undo step rather than a whole-document replacement.
   function docOutlineMoveSection(fromIndex, toIndex, after) {
     const box = docSurface();
     if (!box) return false;
@@ -343,6 +375,9 @@
     announce(`\u201c${headings[fromIndex].text}\u201d moved.`);
     return true;
   }
+  //: Which side of a row the pointer is on. The midpoint, which is the rule
+  //: every list with a drop line uses, and the only one that lets a reader
+  //: place a section at the very end of a document.
   function docOutlineDropAfter(row, clientY) {
     const box = row.getBoundingClientRect();
     return clientY > box.top + box.height / 2;
@@ -352,6 +387,16 @@
       row.classList.remove("is-drop-before", "is-drop-after");
     }
   }
+  //: **The keyboard half, which a drag can never be.** Alt with an arrow moves
+  //: the focused row's section past its neighbour, which is the same move the
+  //: drag makes and the only one this panel can offer somebody who is not using
+  //: a pointer. Alt because a bare arrow moves between rows and Ctrl+arrow is
+  //: the browser's own word jump; the same chord Notion and Obsidian use for
+  //: moving a block.
+  //:
+  //: Past its *neighbour in the outline*, not its sibling at the same level: the
+  //: rows are what the reader can see, and a rule that skipped rows would move
+  //: a section past things it looked like it was next to.
   function docOutlineNudge(index, direction) {
     const headings = docScanHeadings(docText());
     const to = index + direction;
@@ -369,6 +414,23 @@
     docOutlineFocusKey = docOutlineFoldKey(headings[index]);
     return docOutlineMoveSection(index, to, direction > 0);
   }
+  //: **Alt+Up and Alt+Down in a markdown document move a block** (INBOX 904 B20,
+  //: the owner's "manage mode for lined documents", taken as the keyboard half
+  //: the owner's recommendation names). The editor's own line move is right for
+  //: code and wrong for prose: it swaps a line with the *blank line* beside it,
+  //: so `beta` moved up from under `alpha` lands between them and the next press
+  //: welds the two paragraphs. The unit here is what a reader sees as one thing:
+  //: a paragraph or quote or table (a run of lines), a fenced block (its blank
+  //: lines included), a list item with everything nested under it, a heading's
+  //: whole section. It swaps with the neighbour of the same kind and leaves the
+  //: blank lines between them where they were, so a move is one edit and moving
+  //: back is byte-exact.
+  //:
+  //: Pure: the text, the caret offset and a direction in; `{from, to, insert,
+  //: caret}` out, `{noop: true}` for "there is nothing to swap with" (swallowed,
+  //: so the default move cannot weld what this one refused), or null for "not
+  //: mine" (a blank line, the frontmatter), which leaves the key to the default.
+  //: Numbered items swap their *text* and keep their numbers.
   function docBlockMoveEdit(text, offset, delta) {
     const source = String(text == null ? "" : text);
     const lines = source.split("\n");
@@ -536,6 +598,10 @@
     if (!other) return noop;
     return delta < 0 ? swap(other, blocks[at], false, false) : swap(blocks[at], other, false, false);
   }
+  //: The key's half: only a markdown document (a code file keeps the editor's
+  //: own line move, which is what code wants), only a caret rather than a
+  //: selection (a selection of lines moves as lines, as it always did), and a
+  //: decline hands the key back so the default still answers it.
   function docBlockMoveRun(view, delta) {
     if (!docFileType().previewable) return false;
     const selection = view.state.selection;
@@ -551,6 +617,8 @@
     });
     return true;
   }
+  //: The palette's door to the same move: focus is in the palette, so it aims at
+  //: the editor and says what to do when the caret is not in a block.
   function docBlockMoveCommand(delta) {
     if (!docCmView) return;
     docCmView.focus();
@@ -827,8 +895,22 @@
     renderDocCrumbs(where);
   }
   let docOutlineKey = "";
+  //: The row a move asked to keep the focus ring on, as a fold key (level and
+  //: text), because that is the one name for a heading that survives the
+  //: document being rewritten around it.
   let docOutlineFocusKey = "";
   let docOutlineDragIndex = -1;
+  //: The first line of the document that is on screen, zero-based.
+  //:
+  //: CodeMirror is asked where the top-left of its own scroller lands, which is
+  //: exact and costs one hit test. `posAtCoords` with `precise` false never
+  //: returns null, so a coordinate above the first line or below the last still
+  //: answers with the nearest position rather than with nothing.
+  //:
+  //: The textarea fallback has no line-to-pixel map at all, so it estimates
+  //: from the scroll fraction. That is honestly approximate, and it is the
+  //: surface nobody has when the engine loads; saying so here is cheaper than a
+  //: reader wondering why one branch is exact and the other is not.
   function docVisibleTopLine() {
     const box = docSurface();
     if (!box) return 0;

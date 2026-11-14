@@ -1,6 +1,11 @@
 // documents-templates.js: the new-document templates and the dialog that picks one.
 // Moved out of documents.js whole (L335) and wrapped: only what other files call goes on `window`; nothing here runs at load.
 (() => {
+  //: **Templates: a starting shape for the five documents people make most.**
+  //: Plain markdown with two placeholders; the whole feature is these strings,
+  //: the dialog in index.html and `createDocument(template)` below. Kept as
+  //: data rather than a server resource because a template is nothing but
+  //: text, and text that lives in one file is text a fresh session can read.
   const DOC_TEMPLATES = [
     {
       id: "blank", title: "Blank", hint: "An empty page.", content: "",
@@ -330,6 +335,9 @@ print(f"mean {mean:.2f}, largest {max(numbers)}")
   }
   // DOC-UNTITLED-END
   const docNextName = () => docUntitledName(docs.map((d) => d.title));
+  //: Leaving a document that was made and never written in (a keystroke in the
+  //: title, then undone; New, then another document) bins it, so the list does
+  //: not fill with "Untitled document N". Anything with a word in it stays.
   async function docDropIfUntouched(nextId = null, { titled = false } = {}) {
     const doc = currentDoc;
     //: `titled`: a template is about to be made from the title the person typed, so
@@ -343,6 +351,10 @@ print(f"mean {mean:.2f}, largest {max(numbers)}")
     await apiJson(`/documents/${doc.id}`, { method: "DELETE" }).catch(() => { docs = [doc, ...docs]; });
     renderDocList();
   }
+  //: **A blank document is not made until it is written in** (dog1-1025 item
+  //: 16, decided): the editor opens empty and the first keystroke in the title
+  //: or the text creates the row (`ensureDocumentExists`), so cancelling or
+  //: walking away leaves nothing behind. A template has content, so it posts.
   async function startBlankDocument(fileType = null) {
     const seq = ++docOpenSeq;
     docRememberPositionNow();
