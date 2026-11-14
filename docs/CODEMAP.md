@@ -21903,16 +21903,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_agent_events` | src/tessellate/api/chat_agent.py:32 |
-| `_close_quietly` | src/tessellate/api/chat_agent.py:170 |
+| `_close_quietly` | src/tessellate/api/chat_agent.py:175 |
 | `_first_agent_event` | src/tessellate/api/chat_agent.py:89 |
-| `_refuse_failed` | src/tessellate/api/chat_agent.py:193 |
-| `_refuse_if_off` | src/tessellate/api/chat_agent.py:185 |
+| `_refuse_failed` | src/tessellate/api/chat_agent.py:198 |
+| `_refuse_if_off` | src/tessellate/api/chat_agent.py:190 |
 | `_starter_read` | src/tessellate/api/chat_agent.py:24 |
-| `_stoppable` | src/tessellate/api/chat_agent.py:179 |
-| `_typed_tool_events` | src/tessellate/api/chat_agent.py:225 |
-| `_undo_steps` | src/tessellate/api/chat_agent.py:208 |
-| `consent_events` | src/tessellate/api/chat_agent.py:242 |
-| `run_card_events` | src/tessellate/api/chat_agent.py:214 |
+| `_stoppable` | src/tessellate/api/chat_agent.py:184 |
+| `_typed_tool_events` | src/tessellate/api/chat_agent.py:230 |
+| `_undo_steps` | src/tessellate/api/chat_agent.py:213 |
+| `consent_events` | src/tessellate/api/chat_agent.py:247 |
+| `run_card_events` | src/tessellate/api/chat_agent.py:219 |
 | `stop_when_gone` | src/tessellate/api/chat_agent.py:127 |
 
 ### src/tessellate/api/chat_attach.py (20)

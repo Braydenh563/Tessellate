@@ -9,6 +9,8 @@ started here (real checking is unverified).
 
 from __future__ import annotations
 
+import pytest
+
 import http.server
 import json
 import subprocess
@@ -106,10 +108,8 @@ def test_the_server_is_started_with_the_folder_on_its_class_path(monkeypatch, tm
     monkeypatch.setattr(languagetool, "installed_folder", lambda: tmp_path)
     monkeypatch.setattr(languagetool, "java_path", lambda: "/usr/bin/java")
     monkeypatch.setattr(subprocess, "Popen", fake_popen)
-    try:
+    with pytest.raises(OSError, match="stop here"):  # the fake Popen stops the start once the command is seen
         languagetool._start()
-    except OSError:
-        pass
     classpath = seen["command"][seen["command"].index("-cp") + 1]
     assert str(tmp_path) in classpath.split(languagetool.os.pathsep)
 

@@ -145,6 +145,11 @@ async def stop_when_gone(stop, lines):  # noqa: ANN001
     def step():  # noqa: ANN202
         return next(source, done)
 
+    def close_after(finished) -> None:  # noqa: ANN001 - the step's future
+        if not finished.cancelled():
+            finished.exception()  # read, so asyncio does not log it as never retrieved
+        _close_quietly(source)
+
     task = None
     try:
         while True:
@@ -164,7 +169,7 @@ async def stop_when_gone(stop, lines):  # noqa: ANN001
         if task is None or task.done():
             _close_quietly(source)
         else:
-            task.add_done_callback(lambda t: (t.cancelled() or t.exception(), _close_quietly(source)))
+            task.add_done_callback(close_after)
 
 
 def _close_quietly(source) -> None:  # noqa: ANN001
