@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8497, frontend ids 2789, CSS sections 526, backend routes 714, backend modules 10909, test files 2867, tests 22541, plan headings 686, app scripts 29, boot scripts 38, script files 303.
+Counts: frontend functions 8497, frontend ids 2789, CSS sections 526, backend routes 714, backend modules 10909, test files 2868, tests 22545, plan headings 686, app scripts 29, boot scripts 38, script files 303.
 
 ## Frontend functions (8497)
 
@@ -28092,7 +28092,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22541)
+## Tests (22545)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -28898,6 +28898,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_desk_companion.py | 63 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desk_fit_set_size_1107.py | 2 |
+| tests/test_desk_frames_pose_arrangement_l_ui_57.py | 4 |
 | tests/test_desk_handle_cursor_1107.py | 3 |
 | tests/test_desk_look_1107.py | 11 |
 | tests/test_desk_look_locked_1670.py | 5 |
