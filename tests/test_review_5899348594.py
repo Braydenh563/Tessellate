@@ -66,7 +66,7 @@ def test_an_unbacked_answer_gets_its_own_note_and_a_stopped_one_keeps_its_own():
     stopped = list(chat_degrade.fallback_events(prepared, None, {}, True))
     assert rejected[0]["text"].endswith(MODEL_UNBACKED_NOTE) and MODEL_STOPPED_NOTE not in rejected[0]["text"]
     assert stopped[0]["text"].endswith(MODEL_STOPPED_NOTE)
-    assert MODEL_UNBACKED_NOTE != MODEL_STOPPED_NOTE and "—" not in MODEL_UNBACKED_NOTE
+    assert MODEL_UNBACKED_NOTE != MODEL_STOPPED_NOTE and "\u2014" not in MODEL_UNBACKED_NOTE
 
 
 # --- 4. a question that matches no tool group is never told its tools are off ---------------------

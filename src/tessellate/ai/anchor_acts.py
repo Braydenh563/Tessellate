@@ -15,6 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import recognise
+from tessellate.core.database import LIKE_ESCAPE, like_escape
 
 _LEAD = r"^(?:(?:please|pls|can you|could you|would you)\s+)*(?:remind me|set a reminder|add a reminder)\s+"
 _AMOUNT = recognise.amount_before()
@@ -56,13 +57,13 @@ def settle(session: Session, parsed: dict, now: datetime) -> dict:
     #: One convention: `EntryDate.at` is the writer's wall clock with no zone
     #: (`entry/manager.py`), so `now` and each row are read that way before they meet.
     now = now.replace(tzinfo=None)
-    #: The name narrows in SQL before the cap (a coarse substring, `\` escaping
+    #: The name narrows in SQL before the cap (a coarse substring, `like_escape` guarding
     #: `%` and `_`); the word-boundary check below then reads what is left.
-    like = "%" + what.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+    like = "%" + like_escape(what) + "%"
     #: A private note and a board never anchor a reminder (Chat does not read them), and only a time still ahead is read.
     rows = session.execute(
         select(EntryDate.at, Entry.content).join(Entry, Entry.id == EntryDate.entry_id)
-        .where(EntryDate.precision == "minute", Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.is_board.is_(False), EntryDate.at > now + offset, Entry.content.ilike(like, escape="\\"))
+        .where(EntryDate.precision == "minute", Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.is_board.is_(False), EntryDate.at > now + offset, Entry.content.ilike(like, escape=LIKE_ESCAPE))
         .order_by(EntryDate.at).limit(_LOOKED_AT)
     ).all()
     named = re.compile(rf"(?<!\w){re.escape(what)}(?!\w)")
