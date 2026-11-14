@@ -2427,10 +2427,6 @@ button:not(.ghost) > .spinner {
    the reported "Links sub-tab filter and search aren't aligned", and an ID
    selector is why the toolbar's own `margin: 0` could not win. The row's
    `gap` provides the spacing this margin used to. */
-.bookmark-attach-picker {
-  width: auto;
-  max-width: 16rem;
-}
 .bookmark-group-chips {
   flex-wrap: wrap;
   gap: var(--space-2);
