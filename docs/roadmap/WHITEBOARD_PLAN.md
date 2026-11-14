@@ -819,7 +819,7 @@ the same three tabs (Style, Text, Arrange); fields per kind in
 | Set as default style, default for new connectors | yes, 2026-11-10 (s9c-1110; HISTORY) | `setAsDefaultStyle` (Actions.js 1749), `setAsDefaultForNewConnections` (1763), Ctrl+Shift+D | `board.defaults {shape, link, text}` in the board's settings row, read by the tools when they create an item; Ctrl+Shift+D writes it from the selection | M |
 | Named styles | yes (`save-style`, `wb-fmt-save-style`, library kind `style`) | style presets in the sidebar and `DiagramStylePanel.addGraphStyles` (Format.js 8383) | done for items; the whole-board presets are the next row | none |
 | Board-wide style presets (twelve colour schemes applied to every shape) | yes, 2026-11-10 (s9c-1110; HISTORY) | `DiagramStylePanel` (Format.js 8252 to 8858) | a "Board style" row in the Format panel's no-selection state, writing fill, stroke and text colour across the board in one undo step | M |
-| SVG image styles and CSS variables | no | `addSvgStyles`, `addSvgVars` (Format.js 6442, 6594) | reopened 2026-11-14: LEDGER L-whiteboard-39 | none here |
+| SVG image styles and CSS variables | no | `addSvgStyles`, `addSvgVars` (Format.js 6442, 6594) | moot by fact: no SVG image reaches a board (`/media` refuses .svg, stored XSS, `MEDIA_SUFFIXES` in routes_files.py; draw.io import turns SVG into PNG); the Mermaid SVG has fill and line controls | none |
 
 ### 2. Format panel, Text tab, and the Arrange tab
 
@@ -1395,7 +1395,7 @@ Read against draw.io's Style, Text and Arrange tabs; the rows in "The draw.io pr
 7. Built 2026-11-11, HISTORY "f2-1111".
 8. Built 2026-11-10, HISTORY "s9c-1110 F2".
 9. Built 2026-11-10, HISTORY "s9c-1110 F2".
-Glass, text shadow and SVG image styles are LEDGER L-whiteboard-37 to 39 (owner decides). Subscript and superscript are on the Text style menu (L-whiteboard-27).
+Glass and text shadow are built (`whiteboard-effects.js`); SVG image styles are moot (row above). Subscript and superscript are on the Text style menu (L-whiteboard-27).
 
 - INBOX 1563: built 2026-11-03, see HISTORY.md "Moved from the plans, 2026-11-03 (a31d-1103)".
 

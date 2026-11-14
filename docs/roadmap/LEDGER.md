@@ -10,14 +10,14 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | --- | --- | --- | --- | --- | --- | --- |
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
-| whiteboard | 0 | 7 | 1 | 0 | 0 | 8 |
+| whiteboard | 0 | 6 | 1 | 0 | 0 | 7 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 523 | 535 | 126 | 2 | 172 | 1184 |
+| all | 523 | 534 | 126 | 2 | 172 | 1183 |
 
 ## graph
 
@@ -704,7 +704,6 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 
 - [ ] **L744** `chat` owner-call, M: Desk companion lightweight: live drawing within CPU budget (idle <1%, moving <3%). From OPEN.md:4376; OPEN.md:4396; OPEN.md:4401. Evidence: No row-sized check; a CPU budget the owner judges on the desk (see N14, 1692p-budget) Owner decided 2026-11-12: I will send CPU numbers.
 - [ ] **L745** `chat` owner-call, S: Patting over Atlas's head must not lift it 30 px. From OPEN.md:4370. Evidence: a31q-1103.md:12: not reproduced in the enlarged viewer; waits on owner recording/window size (OPEN I30) Owner decided 2026-11-12: Send a recording later.
-- [ ] **L-whiteboard-39** `whiteboard` open, L: SVG image styles and CSS variables on an embedded SVG (addSvgStyles). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 1 SVG image styles row Blocked 2026-11-14: `/media/` refuses .svg by design (stored-XSS; MEDIA_SUFFIXES in routes_files.py), the draw.io importer converts SVG to PNG, and the only SVG on a board is the Mermaid diagram object, which already has fill and line controls, so there is nothing to recolour. Owner call: allow a sanitised SVG upload, or close.
 - [ ] **L-whiteboard-41** `whiteboard` open, L: PlantUML in and out (needs a local renderer). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 14 Mermaid row; PlantUML needs a renderer
 - [ ] **L-whiteboard-42** `whiteboard` open, M: Rack layout (draw.io rackLayout). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 12 child layouts row; no rack in whiteboard-layouts-more.js
 - [ ] **L-whiteboard-43** `whiteboard` open, M: A connector that joins another connector (edge to edge). Hub 2026-11-14 (SO3, the owner's nothing-skipped call): build it. From WHITEBOARD_PLAN re-ground 2026-11-14. Evidence: WHITEBOARD_PLAN.md section 4 source and target row: edge to edge
