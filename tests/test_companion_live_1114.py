@@ -56,7 +56,11 @@ def live(tmp_path_factory: pytest.TempPathFactory):
         if "Executable doesn't exist" in run.stderr or "Cannot find module" in run.stderr:
             pytest.skip("needs playwright and its browser")
         assert run.returncode == 0, run.stderr[-2000:]
-        return json.loads(run.stdout.strip().splitlines()[-1])
+        result = json.loads(run.stdout.strip().splitlines()[-1])
+        calm = subprocess.run(["node", str(ROOT / "tests" / "_companion_calm.js")], capture_output=True, text=True, env=node_env, timeout=120)
+        assert calm.returncode == 0, calm.stderr[-2000:]
+        result["calm"] = json.loads(calm.stdout.strip().splitlines()[-1])
+        return result
     finally:
         server.terminate()
         server.wait(timeout=20)
@@ -96,3 +100,15 @@ def test_a_click_in_the_large_view_costs_setatlasmood_under_22ms_at_4x(live: dic
     click = live["click"]
     assert click["calls"] >= 2 and click["rate"] == 4
     assert click["medianMs"] < 22
+
+
+def test_under_the_system_reduce_hint_the_calm_loops_run_and_cost_next_to_nothing(live: dict) -> None:
+    """L741. The owner: let the gentle sway and glow loops run again under the system's hint (the hop, the giggle and the rig stay stopped). Measured on this branch, an idle Atlas under the hint, one 25 s window each: 253 restyles a minute with every loop stopped, 270 with the calm ones, 1,485 with all of them (`Companion movement: always`); the budget is 400, the stopped count plus a margin.
+    """
+    calm = live["calm"]
+    assert calm["motion"] == "reduced" and calm["calm"] == "on"
+    assert calm["body"].startswith("atl-idle-sway"), "the body sways"
+    assert calm["breath"].startswith("atl-breathe"), "the breath loop is declared"
+    assert calm["anims"] >= 3, "the sway, breath and glow loops exist (the app's own rest rule may hold them)"
+    assert calm["mood"] not in ("delighted", "laughing"), "a mood loop would make the count meaningless"
+    assert calm["recalcPerMin"] < 400
