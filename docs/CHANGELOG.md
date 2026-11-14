@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- A fishbone map no longer draws a rib behind a cause box after a full tidy: causes hang from their column's right edge and a rib leaves the spine within half an indent of its own corner, so maplayouts.js goes 39/40 to 40/40 on a 200-topic map (L-ui-modernisation-105)
 - The desk companion looks up, or settles with its eyes shut, every 20 to 40 seconds while it reads, writes or knits, instead of holding one picture for minutes (L-ui-modernisation-99, partly)
 - The desk companion's lower wisps and nebula streams sway further at rest, about 2.4 degrees at their tips (were 1.5), and a posed lean stays under 4 degrees (L-ui-modernisation-100)
 - The companion keeps to a sliding panel instead of trailing it by a frame: it leads by the panel's measured speed up to the slide's end, and a slide that starts slow is found at once (L-ui-modernisation-94).
