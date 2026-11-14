@@ -1605,11 +1605,6 @@
                 title="What can I type in a note?" aria-label="What can I type in a note?">
                 <i class="ph ph-question" aria-hidden="true"></i>
               </button>
-              <!-- A button that opens the picker (`openNoteTemplateDialog`),
-                   not a select that fills the box on every name it passes
-                   (INBOX 410: choosing is not making). -->
-              <button id="entry-template" class="ghost small" type="button" aria-haspopup="dialog"
-                title="Start from a template"><i class="ph ph-layout ph-lead" aria-hidden="true"></i> Template</button>
             </span>
           </div>
           <!-- Syntax that exists is useless if nobody knows it does. Every
@@ -1630,10 +1625,14 @@
               <li><code>**bold**</code>, <code>*italic*</code>,
                 <code>`code`</code>, <code>~~struck~~</code>, <code>==highlight==</code>
                 (or <code>==green|highlight==</code>, also blue, pink,
-                purple, orange; or select the words and use the
-                <i class="ph ph-dots-three" aria-hidden="true"></i> button),
+                purple, orange; or select the words and pick a colour on
+                the formatting bar under the box),
                 <code>[text](url)</code> and <code>$x^2$</code> all render
                 on the saved note.</li>
+              <li>The formatting bar under the box opens when you write in
+                it: select words, then Turn into makes the lines a heading,
+                list, quote or callout, and Ask Atlas asks about just those
+                words in the chat.</li>
               <li><code>#word</code> anywhere in the text tags the note
                 with that word when it is saved (<code>#project/garden</code>
                 nests). The tags field below takes them too, comma
@@ -1681,6 +1680,9 @@
             <input id="entry-title" data-autocorrect type="text" maxlength="200"
               placeholder="Optional title"
               aria-label="Optional title: becomes the note's leading heading">
+            <textarea id="entry-content" data-autocorrect rows="3" class="autogrow" aria-label="New note"
+              placeholder="Type anything: a joke, a shopping list, a race result…
+Link to another note with [[its first few words]]."></textarea>
             <!-- Asked for directly: "can you add like a toolbar like in the
                  documents but for notes and stuff as well". Deliberately the
                  same `.doc-toolbar` markup and the same `data-md` contract as
@@ -1689,7 +1691,9 @@
                  two editors cannot drift into behaving differently. Shorter
                  than the document one on purpose: a note is a short thing, so
                  headings, tables and code blocks are left to the document
-                 editor rather than crowding a three-row box. -->
+                 editor rather than crowding a three-row box. Under the text, not
+                 over it (UI_MODERNISATION 13.2: the capture box shows the text
+                 first), folded to its word until the box has the focus. -->
             <div class="doc-toolbar note-toolbar is-collapsed" id="note-toolbar" role="toolbar"
               aria-label="Formatting" data-md-target="entry-content">
               <!-- Icons, not typed letters (INBOX 616: "one quiet icon-only
@@ -1724,6 +1728,11 @@
               <button type="button" class="icon-only" data-md="emoji" title="Emoji or icon" aria-label="Emoji or icon"><i class="ph ph-smiley" aria-hidden="true"></i></button>
               <button type="button" class="icon-only" data-md="symbol" title="Symbol" aria-label="Symbol"><i class="ph ph-pi" aria-hidden="true"></i></button>
               <button type="button" class="icon-only" data-md="equation" title="Equation (Alt+=)" aria-label="Equation"><i class="ph ph-function" aria-hidden="true"></i></button>
+              <!-- The two the selection bar carried and the strip did not (L-ui-modernisation-39):
+                   Turn into (Heading and Quote are its rows) and Ask, after a rule, as on that bar. -->
+              <button type="button" class="icon-only" data-turn="1" title="Turn into a heading, list, quote or callout" aria-label="Turn into"><i class="ph ph-swap" aria-hidden="true"></i></button>
+              <span class="doc-toolbar-sep" aria-hidden="true"></span>
+              <button type="button" class="icon-only" data-ask="1" title="Ask Atlas about this selection" aria-label="Ask Atlas about this selection"><i class="ph ph-chat-teardrop-text" aria-hidden="true"></i></button>
               <span class="doc-toolbar-sep" aria-hidden="true"></span>
               <!-- Live or Source (INBOX 430): the box renders as you type; this
                    shows the markdown as typed instead (wiring.js setNoteSource). -->
@@ -1733,9 +1742,6 @@
                 <i class="ph ph-code ph-lead" aria-hidden="true"></i> <span class="toolbar-word">Source</span>
               </button>
             </div>
-            <textarea id="entry-content" data-autocorrect rows="3" class="autogrow" aria-label="New note"
-              placeholder="Type anything: a joke, a shopping list, a race result…
-Link to another note with [[its first few words]]."></textarea>
             <!-- The box's own foot: Clear all (field-clear.js, INBOX 466) at the left, the count at the right; the title and the note have their own x (INBOX 1567). -->
             <div class="note-composer-foot">
               <button type="button" id="capture-clear" class="ghost icon-only small field-clear hidden" title="Clear all" aria-label="Clear all"><i class="ph ph-eraser" aria-hidden="true"></i></button>
@@ -1780,6 +1786,12 @@ Link to another note with [[its first few words]]."></textarea>
                  These two attach files rather than filing the note, which is
                  the same "attach a thing to this note" family as the document
                  picker on this row, not the "commit the note" family below. -->
+            <!-- A button that opens the picker (`openNoteTemplateDialog`),
+                 not a select that fills the box on every name it passes
+                 (INBOX 410: choosing is not making). With the other adders,
+                 not above the text (UI_MODERNISATION 13.2). -->
+            <button id="entry-template" class="ghost" type="button" aria-haspopup="dialog"
+              title="Start from a template"><i class="ph ph-layout ph-lead" aria-hidden="true"></i> Template</button>
             <button id="entry-attach-file" class="ghost" type="button"
               title="Attach an image or file" aria-label="Attach an image or file"><i class="ph ph-paperclip ph-lead" aria-hidden="true"></i> Attach</button>
             <input id="entry-attach-file-input" aria-label="Attach a file to this note" title="Attach a file to this note" type="file" multiple class="hidden">

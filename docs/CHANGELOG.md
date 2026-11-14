@@ -11,6 +11,8 @@ below). Versioning is `0.x` while the app stabilises.
 - Home: the first-steps card shares the widget column's edge (3px off before); the density census gains alignment and near-miss columns (L-ui-modernisation-53).
 - Settings: the long Tools and Appearance panes measured against their index and filter (settingslong.js); they stay one pane each (L-ui-modernisation-52).
 - Companion: tempo pacer, aim writes and transition keep-up measured gone at 4x CPU (L704, L706, L707); the Home perch read is L-ui-modernisation-62.
+- Notes: the note editor is two surfaces, the formatting bar and the slash menu; the bar sits under the text and holds Turn into and Ask Atlas, a note box with its own bar draws no selection bar, and Template joins the adders (text 44px higher at 1440, 56px at 390; L-ui-modernisation-39).
+- Companion: tempo pacer, aim writes and transition keep-up measured gone at 4x CPU (L704, L706, L707); the Home perch read is L-general-67.
 - Plans: the UI plan's open items are LEDGER rows L-ui-modernisation-52 to 59 (plan open 9 to 0); signal-word false positives in DESIGN.md and CSS comments reworded.
 - Background art: aurora, microbes and mycelium draw 15 frames a second at the same on-screen speed, about a third less CPU each (L-ui-modernisation-20).
 - Sweeps: touch.js clears passing toasts before it measures a surface (a due reminder's alert read as a covered control); L-general-47, 49 and 53 closed.

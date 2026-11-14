@@ -8627,9 +8627,20 @@ function wireMarkdownToolbar(bar) {
   bar.addEventListener("mousedown", (event) => {
     // Keeps the caret in the textarea: a click moves focus first and the
     // selection the action is about to act on is already gone.
-    if (event.target.closest("button[data-md]")) event.preventDefault();
+    if (event.target.closest("button[data-md], button[data-turn], button[data-ask]")) event.preventDefault();
   });
   bar.addEventListener("click", (event) => {
+    //: The two a note's selection bar used to carry (L-ui-modernisation-39):
+    //: the same functions it called, for the box this strip names.
+    const turn = event.target.closest("button[data-turn]");
+    if (turn && bar.contains(turn)) return docTurnIntoMenu(boxId, turn);
+    const ask = event.target.closest("button[data-ask]");
+    if (ask && bar.contains(ask)) {
+      const box = docSurfaceById(boxId);
+      if (box && box.selectionStart !== box.selectionEnd) askAboutSelection(box);
+      else toast("Select some words first, then ask Atlas about them.");
+      return;
+    }
     const button = event.target.closest("button[data-md]");
     if (!button || !bar.contains(button)) return;
     applyMarkdown(button.dataset.md, boxId);
