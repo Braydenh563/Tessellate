@@ -110,7 +110,7 @@ function routerBackHook(event) {
     window.clearTimeout(routerBack.timer);
     return true;
   }
-  if (typeof settingsModalOpen === "function" && settingsModalOpen()) return false;
+  //: Settings has an entry of its own and is not in the closer table, so an overlay over it (a sheet, a dialog) takes this Back first and Settings stays (L-world-class-75: it used to close under the sheet).
   //: The manual and Statistics have entries of their own, as Settings does.
   if (OVERLAY_TABS[tabHistory.stack[tabHistory.index]?.tab]) return false;
   const navId = event.state && event.state.navId;

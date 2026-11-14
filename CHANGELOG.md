@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Back with a sheet open over Settings at 390 (phone emulation): Back closed Settings and left the sheet open over the Library (hash `#/library`, sheet still shown); the sheet, the shortcuts overlay or a dialog now takes that Back and Settings stays, the next Back closes Settings (`router-overlays.js` `routerBackHook`, `tests/test_router_overlays.py`); the real-phone check is a BACKLOG row (L-world-class-75).
 - Event log measured (19.5): there is no pub/sub bus, `core/events.py` is a synchronous append; one INSERT per event, no per-event read, constant at 500 rows, one row per write scope, zero subscribers so no back-pressure; pinned by counted statements in `tests/test_event_log_cost.py` (L-world-class-73).
 - Start-up: the palette row helpers (`paletteAbouts`, `paletteRowParts`) moved into the lazy app-features.js beside their only callers; boot scripts 250,517 to 250,254 bytes gzipped, under the 250,450 cap.
 - Pull request template: the checklist reads as what an author confirms in the description, so no open checkbox stays in the repository (L-world-class-54).
