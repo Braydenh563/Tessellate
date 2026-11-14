@@ -231,6 +231,7 @@
     docMathRender.graphIn(preview);
     docMathRender.baseIn(preview);
     docMathRender.queryIn(preview);
+    docMathRender.sectionsIn(preview);
     docEmbedFill.editButtons(preview);
     docEmbedFill.tagChips(preview);
     docWireReadTasks(preview, text);

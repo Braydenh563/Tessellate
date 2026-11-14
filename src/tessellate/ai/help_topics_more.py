@@ -1973,7 +1973,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "diagram-chart-kinds", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-base", "document-query", "document-synced", "document-subpages", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run", "csv-grid",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "diagram-styling", "diagram-chart-kinds", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "writing-streak", "documents-paste", "documents-comments", "documents-turn-into", "documents-to-note", "callouts", "equation-editor", "equation-numbers", "document-graph", "document-sections", "document-base", "document-query", "document-synced", "document-subpages", "document-board", "document-history", "writing-checks", "code-files", "json-schema", "code-completions", "code-tabs", "vim-keys", "code-run", "csv-grid",
         "debugger", "code-panel", "code-lint", "margin-reader",
     )),
     ("Boards and maps", (
@@ -2999,6 +2999,27 @@ MORE_TOPICS.append({
     "badge": {"label": "Documents", "tab": "documents"},
 })
 TOPIC_META["document-graph"] = {"title": "Graph a function in a document", "path": "A document, the / menu, Graph"}
+
+
+#: L-documents-49: labelled and linked sections, and the sections block (documents-sections.js).
+MORE_TOPICS.append({
+    "id": "document-sections",
+    "keywords": (
+        "label a section", "link sections", "section links", "linked ideas", "local graph of a document",
+        "section graph", "connect ideas", "topics in a document", "```sections", "link with a reason",
+    ),
+    "body": (
+        "Label a section by ending its heading or paragraph with ^ and a name, such as # Method ^method "
+        "(or use Link to this block in the / menu, which adds one). Link to it from another labelled section with "
+        "[[#^method|the numbers come from it]]: the words after the bar are the reason, and are what the link shows. "
+        "Press the link to go to that section. The Outline tab's Section links lists every link with its reason; press a row "
+        "to select both sections. Type /section graph, or write a code block marked sections, to draw the labelled "
+        "sections as boxes and the links as arrows with their reasons; press a box to go to it. A title: line in the "
+        "block is its caption. A link to a name that is not in the document is listed and not drawn."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["document-sections"] = {"title": "Label, link and graph a document's sections", "path": "A document, the / menu, Section graph"}
 
 
 #: DOCUMENTS_PLAN gap row 6: the base block (documents-base.js), a table, board or calendar of notes by property.

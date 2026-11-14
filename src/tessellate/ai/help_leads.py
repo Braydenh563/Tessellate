@@ -121,6 +121,7 @@ TOPIC_LEADS: dict[str, str] = {
     "document-synced": "Show one paragraph of another document inside this one, and edit it from either place.",
     "document-subpages": "Put a document under another one and find it again in the Library's tree.",
     "document-board": "Show a whiteboard or a mind map in a document, live to read or in a panel to edit.",
+    "document-sections": "Label a document's sections, link them with reasons and draw the links as a graph.",
     "document-graph": "Plot y = f(x) in a document, with sliders you can move and a plot you can pan and zoom.",
     "documents-replace": "Find and replace words across all your documents in one go, with one Undo.",
     "live-view-marks": "Formatting stays drawn as you write, showing its markdown only where you edit.",

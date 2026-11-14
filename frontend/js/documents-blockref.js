@@ -75,6 +75,8 @@
     }
     const surface = docSurface();
     if (!surface) return false;
+    //: Read view has no caret to put on it (a node of the ```sections graph, L-documents-49): the comments' choice.
+    if (docView === "rendered") setDocView("live");
     surface.focus();
     //: The selection is the reveal: `setSelectionRange` on this surface already
     //: scrolls to what it selects, and selecting the block is both "here it is"

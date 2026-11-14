@@ -2916,7 +2916,7 @@ docLiveSpanTouched.anchorIn = (ranges, from, to) => ranges.some((range) => range
 //: widget and the arrow keys that step into it belong to Live exactly as the
 //: markdown decorations do.
 function docLiveExtensions(CM) {
-  return [docLivePlugin(CM), docTableGripsPlugin(CM), docColumnsField(CM), docColumnsArrowKeymap(CM), docMermaidField(CM), docMathRender.graphField(CM), docMathRender.baseField(CM), docMathRender.queryField(CM), docLiveExtensions.dragHandle(CM)];
+  return [docLivePlugin(CM), docTableGripsPlugin(CM), docColumnsField(CM), docColumnsArrowKeymap(CM), docMermaidField(CM), docMathRender.graphField(CM), docMathRender.baseField(CM), docMathRender.queryField(CM), docMathRender.sectionsField(CM), docLiveExtensions.dragHandle(CM)];
 }
 
 //: **A drag handle for a Live block** (audit 1102 DX29; Notion's grip). Beside
@@ -3357,6 +3357,8 @@ const MD_ACTIONS = {
   quote: { line: "> " },
   link: { custom: "link" },
   codeblock: { block: "```\n", suffix: "\n```", placeholder: "your code" },
+  //: The graph of the document's labelled sections (documents-sections.js, L-documents-49); the one line is its caption.
+  sections: { block: "```sections\ntitle: ", suffix: "\n```", placeholder: "Linked ideas" },
   //: **Three columns, and the caret in the first header cell.** The "/" menu
   //: has always said "3 columns" and this table had two, which is the kind of
   //: disagreement nobody reports and everybody notices. `custom`, because the
