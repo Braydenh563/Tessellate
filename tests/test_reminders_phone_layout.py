@@ -55,3 +55,6 @@ def test_a_reminder_row_in_the_bell_can_be_completed():
     # Focus lands on the row's new line (the button is gone) and the live region says it.
     assert "announce(detail)" in body and "meta.focus()" in body
     assert "land(said)" in body and "land(detail)" in body
+    # Review 5899369381: a failed reload of the panel still puts focus somewhere.
+    landing = body.split("const land = (detail) => {", 1)[1].split("\n  };\n", 1)[0]
+    assert '.catch(() => $("notif-close")?.focus())' in landing

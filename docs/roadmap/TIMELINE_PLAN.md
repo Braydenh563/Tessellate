@@ -249,10 +249,12 @@ disagree.
     written); a note naming a clock sits on its hour in the week and the
     day. Numeric `3/4/2026` is not read: its order is the reader's locale.
     A document has no date of its own and stays on the day it was started.
-22. **No streak count, and no backfill of `done_at`** (tline-1011): the dock
-    is at its grammar and `.dock-chip-row` is held at zero uses, so a streak
-    has no surface; a reminder ticked before `done_at` existed has no known
-    moment, so it stays in no week rather than in an invented one.
+22. **No backfill of `done_at`** (tline-1011; moot by fact): a reminder
+    ticked before `done_at` existed has no known moment, so it stays in no
+    week rather than in an invented one. The streak half was reopened
+    2026-11-14 (it had only a session reason) and built as L495: a quiet
+    "N days in a row" in the journal strip's head, outside the dock
+    (`renderTimelineDayStrip`, `tests/test_daily_strip.py`).
 23. **A note naming two dates sits on the first and is "also on" the rest**
     (decision 2 holds: one row per note, so the feed, the table and the
     calendar cannot disagree about what a row is). `/timeline` rows carry
@@ -272,9 +274,10 @@ disagree.
     hovers and run logs) is gone and a test keeps it gone. 12 or 24 hours follows
     the locale; an app-level override would cost boot code for a setting every
     operating system already has.
-26. **No d3 time scale for the Timeline** (VC2): the labels are
-    `Intl.DateTimeFormat`, and loading the 280 KB d3 bundle to draw them would
-    undo the boot diet; the row stays a vendor-use lead, not a build.
+26. **The d3 time scale is lazy, never at boot** (VC2; superseded by fact):
+    the strip's labels were built on `d3.scaleTime` in `timeline-ticks.js`,
+    fetched with the first strip, so the boot diet holds (HISTORY.md, row 6,
+    `tests/test_timeline_ticks.py`).
 27. **No `events` table** (BACKLOG "Events as bands"): what an events table
     would hold is already on the grid as meetings (a note typed Meeting with a
     `date:`), reminders (at their time) and notes by the dates they name
@@ -297,7 +300,7 @@ with a coarse pointer (`isMobile`, `hasTouch`; `(pointer: coarse)` and
 `draggable` (125 by 24 px); the dragstart, dragover and drop path moves it one
 day (Fri 13 to Sat 14, time kept, toast "Moved ... to Sat, Nov 14, 3:30 PM").
 The browser's own long-press-to-drag is the one step emulation cannot press;
-that is LEDGER L910.
+that is BACKLOG L910 (a real tablet).
 
 ### Vendored capabilities to use, 2026-10-10 (Brief 75)
 
