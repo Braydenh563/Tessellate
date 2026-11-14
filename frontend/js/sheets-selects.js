@@ -331,6 +331,23 @@ function trackSeparatorValue(handle, panel, min, max, axis = "width") {
   }
 }
 
+//: One grip drag (the diagram split, the prose panel, the code run panel):
+//: `move` takes each pointermove, `after` runs once on release. A property of
+//: the function, so the shared scope gains no name.
+trackSeparatorValue.drag = (move, after) => {
+  document.body.classList.add("resizing-sidebar");
+  const stop = () => {
+    document.body.classList.remove("resizing-sidebar");
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", stop);
+    window.removeEventListener("pointercancel", stop);
+    after?.();
+  };
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", stop);
+  window.addEventListener("pointercancel", stop);
+};
+
 function makeSidebarResizable(aside) {
   if (!aside || aside.dataset.resizable) return;
   aside.dataset.resizable = "1";

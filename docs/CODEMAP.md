@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8980, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11018, test files 2851, tests 22947, plan headings 690, app scripts 29, boot scripts 38, script files 368.
+Counts: frontend functions 8980, frontend ids 2832, CSS sections 527, backend routes 720, backend modules 11018, test files 2851, tests 22948, plan headings 690, app scripts 29, boot scripts 38, script files 368.
 
 ## Frontend functions (8980)
 
@@ -568,59 +568,59 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2358 |
-| `annotateSliders` | frontend/js/sheets-selects.js:1073 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2375 |
+| `annotateSliders` | frontend/js/sheets-selects.js:1090 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:215 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:96 |
-| `applyWebPanelWidth` | frontend/js/sheets-selects.js:528 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2457 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2407 |
-| `clampToolbarMenu` | frontend/js/sheets-selects.js:1567 |
-| `dateFieldFace` | frontend/js/sheets-selects.js:1103 |
+| `applyWebPanelWidth` | frontend/js/sheets-selects.js:545 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2474 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2424 |
+| `clampToolbarMenu` | frontend/js/sheets-selects.js:1584 |
+| `dateFieldFace` | frontend/js/sheets-selects.js:1120 |
 | `eachSidebar` | frontend/js/sheets-selects.js:192 |
-| `editedMarker` | frontend/js/sheets-selects.js:2066 |
-| `enhanceAllSelects` | frontend/js/sheets-selects.js:1084 |
-| `enhanceDateField` | frontend/js/sheets-selects.js:1113 |
-| `enhanceSelect` | frontend/js/sheets-selects.js:735 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2483 |
-| `focusFirstIn` | frontend/js/sheets-selects.js:2495 |
-| `focusSelect` | frontend/js/sheets-selects.js:1176 |
-| `formatTokens` | frontend/js/sheets-selects.js:1795 |
-| `initResizableSidebars` | frontend/js/sheets-selects.js:473 |
+| `editedMarker` | frontend/js/sheets-selects.js:2083 |
+| `enhanceAllSelects` | frontend/js/sheets-selects.js:1101 |
+| `enhanceDateField` | frontend/js/sheets-selects.js:1130 |
+| `enhanceSelect` | frontend/js/sheets-selects.js:752 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2500 |
+| `focusFirstIn` | frontend/js/sheets-selects.js:2512 |
+| `focusSelect` | frontend/js/sheets-selects.js:1193 |
+| `formatTokens` | frontend/js/sheets-selects.js:1812 |
+| `initResizableSidebars` | frontend/js/sheets-selects.js:490 |
 | `initSidebarSheetDismissal` | frontend/js/sheets-selects.js:278 |
-| `kebabMenu` | frontend/js/sheets-selects.js:1471 |
-| `labelledMenu` | frontend/js/sheets-selects.js:642 |
+| `kebabMenu` | frontend/js/sheets-selects.js:1488 |
+| `labelledMenu` | frontend/js/sheets-selects.js:659 |
 | `layoutIsStacked` | frontend/js/sheets-selects.js:42 |
-| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1766 |
-| `listFilter` | frontend/js/sheets-selects.js:1309 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2285 |
-| `loadConversationList` | frontend/js/sheets-selects.js:1871 |
-| `makeMenuItem` | frontend/js/sheets-selects.js:622 |
-| `makeSidebarResizable` | frontend/js/sheets-selects.js:334 |
-| `makeWebPanelResizable` | frontend/js/sheets-selects.js:565 |
-| `menuRowFits` | frontend/js/sheets-selects.js:1376 |
-| `openConversation` | frontend/js/sheets-selects.js:2074 |
-| `openKebabSheet` | frontend/js/sheets-selects.js:1224 |
-| `parseServerTime` | frontend/js/sheets-selects.js:1804 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2364 |
-| `relativeTime` | frontend/js/sheets-selects.js:1814 |
-| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1675 |
-| `resetWebPanelWidth` | frontend/js/sheets-selects.js:546 |
-| `rowActions` | frontend/js/sheets-selects.js:1284 |
-| `selectFaceText` | frontend/js/sheets-selects.js:726 |
+| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1783 |
+| `listFilter` | frontend/js/sheets-selects.js:1326 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2302 |
+| `loadConversationList` | frontend/js/sheets-selects.js:1888 |
+| `makeMenuItem` | frontend/js/sheets-selects.js:639 |
+| `makeSidebarResizable` | frontend/js/sheets-selects.js:351 |
+| `makeWebPanelResizable` | frontend/js/sheets-selects.js:582 |
+| `menuRowFits` | frontend/js/sheets-selects.js:1393 |
+| `openConversation` | frontend/js/sheets-selects.js:2091 |
+| `openKebabSheet` | frontend/js/sheets-selects.js:1241 |
+| `parseServerTime` | frontend/js/sheets-selects.js:1821 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2381 |
+| `relativeTime` | frontend/js/sheets-selects.js:1831 |
+| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1692 |
+| `resetWebPanelWidth` | frontend/js/sheets-selects.js:563 |
+| `rowActions` | frontend/js/sheets-selects.js:1301 |
+| `selectFaceText` | frontend/js/sheets-selects.js:743 |
 | `setSidebarSheet` | frontend/js/sheets-selects.js:209 |
-| `shortModelName` | frontend/js/sheets-selects.js:1721 |
+| `shortModelName` | frontend/js/sheets-selects.js:1738 |
 | `sidebarDefault` | frontend/js/sheets-selects.js:23 |
 | `sidebarFittedWidth` | frontend/js/sheets-selects.js:82 |
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
-| `sortConversations` | frontend/js/sheets-selects.js:1851 |
+| `sortConversations` | frontend/js/sheets-selects.js:1868 |
 | `syncSidebarInert` | frontend/js/sheets-selects.js:205 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2423 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2440 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:313 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2444 |
-| `watchForSelects` | frontend/js/sheets-selects.js:1188 |
-| `webPanelIsNarrow` | frontend/js/sheets-selects.js:512 |
-| `webPanelMaxWidth` | frontend/js/sheets-selects.js:522 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2461 |
+| `watchForSelects` | frontend/js/sheets-selects.js:1205 |
+| `webPanelIsNarrow` | frontend/js/sheets-selects.js:529 |
+| `webPanelMaxWidth` | frontend/js/sheets-selects.js:539 |
 | `wireInPlaceSheetDismissal` | frontend/js/sheets-selects.js:260 |
 
 ### frontend/js/skills.js (49)
@@ -17065,20 +17065,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
+| `_chart_name` | src/tessellate/ai/composer_mermaid_kinds.py:44 |
 | `_ident` | src/tessellate/ai/composer_mermaid_kinds.py:38 |
-| `_items` | src/tessellate/ai/composer_mermaid_kinds.py:53 |
-| `_linked` | src/tessellate/ai/composer_mermaid_kinds.py:130 |
-| `_member` | src/tessellate/ai/composer_mermaid_kinds.py:138 |
-| `_norm` | src/tessellate/ai/composer_mermaid_kinds.py:173 |
+| `_items` | src/tessellate/ai/composer_mermaid_kinds.py:57 |
+| `_linked` | src/tessellate/ai/composer_mermaid_kinds.py:134 |
+| `_member` | src/tessellate/ai/composer_mermaid_kinds.py:142 |
+| `_norm` | src/tessellate/ai/composer_mermaid_kinds.py:177 |
 | `_plain` | src/tessellate/ai/composer_mermaid_kinds.py:32 |
-| `_sections` | src/tessellate/ai/composer_mermaid_kinds.py:111 |
-| `_title` | src/tessellate/ai/composer_mermaid_kinds.py:44 |
-| `_type_of` | src/tessellate/ai/composer_mermaid_kinds.py:160 |
-| `er` | src/tessellate/ai/composer_mermaid_kinds.py:177 |
-| `gantt` | src/tessellate/ai/composer_mermaid_kinds.py:57 |
-| `klass` | src/tessellate/ai/composer_mermaid_kinds.py:144 |
-| `pie` | src/tessellate/ai/composer_mermaid_kinds.py:78 |
-| `state` | src/tessellate/ai/composer_mermaid_kinds.py:100 |
+| `_sections` | src/tessellate/ai/composer_mermaid_kinds.py:115 |
+| `_type_of` | src/tessellate/ai/composer_mermaid_kinds.py:164 |
+| `er` | src/tessellate/ai/composer_mermaid_kinds.py:181 |
+| `gantt` | src/tessellate/ai/composer_mermaid_kinds.py:61 |
+| `klass` | src/tessellate/ai/composer_mermaid_kinds.py:148 |
+| `pie` | src/tessellate/ai/composer_mermaid_kinds.py:82 |
+| `state` | src/tessellate/ai/composer_mermaid_kinds.py:104 |
 
 ### src/tessellate/ai/composer_money.py (92)
 
@@ -29079,7 +29079,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `enabled` | src/tessellate/search/webstore.py:26 |
 | `remember` | src/tessellate/search/webstore.py:31 |
 
-## Tests (22947)
+## Tests (22948)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -30550,7 +30550,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_companion_1778.py | 7 |
 | tests/test_lag_companion_forced_1110.py | 4 |
 | tests/test_lag_dash_spans_1741.py | 3 |
-| tests/test_lag_diagram_reads_1766.py | 9 |
+| tests/test_lag_diagram_reads_1766.py | 10 |
 | tests/test_lag_follow_announce_1591.py | 2 |
 | tests/test_lag_follow_idle_1741.py | 4 |
 | tests/test_lag_forced_layout_1560.py | 6 |

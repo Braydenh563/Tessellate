@@ -44,8 +44,9 @@ def test_a_drag_move_and_an_arrow_key_read_no_box() -> None:
     assert "size.pane = px;" in apply, "and the next step starts from the column just set"
     move = _code(_block(SPLIT, 'handle.addEventListener("pointerdown"'))
     # The press measures once; the move it installs reads nothing.
-    assert move.count("measure();") == 1 and move.index("measure();") < move.index("const move =")
-    assert not READS.search(move[move.index("const move =") :]), "a pointermove of the drag reads no box"
+    # The loop moved to the shared grip drag (L335); what each move runs is the callback.
+    assert move.count("measure();") == 1 and move.index("measure();") < move.index("trackSeparatorValue.drag(")
+    assert not READS.search(move[move.index("trackSeparatorValue.drag(") :]), "a pointermove of the drag reads no box"
     keys = _code(_block(SPLIT, 'handle.addEventListener("keydown"'))
     assert not READS.search(keys) and "const now = size.pane;" in keys
 
@@ -134,3 +135,14 @@ def test_the_edges_settle_follows_the_overlay_draw_and_the_ring_follows_its_boxe
     assert "(S.fig.afterpaint ||= []).push(ring);" in MULTI and "(S.fig.onpaint ||= []).push(ring)" not in MULTI
     ring = _code(_block(MULTI, "const ring = () =>"))
     assert not READS.search(ring) and "scrollIntoView" not in ring, "the ring only toggles a class"
+
+
+def test_the_shared_grip_drag_is_defined_and_reads_no_box() -> None:
+    """L335 folded three drag loops into `trackSeparatorValue.drag` and left it
+    undefined: every grip drag threw on press. The helper exists, cleans up on
+    release and cancel, and reads no box itself."""
+    sheets = (JS / "sheets-selects.js").read_text(encoding="utf-8")
+    drag = _code(_block(sheets, "trackSeparatorValue.drag = (move, after) =>"))
+    assert not READS.search(drag)
+    for kind in ("pointermove", "pointerup", "pointercancel"):
+        assert f'window.removeEventListener("{kind}"' in drag

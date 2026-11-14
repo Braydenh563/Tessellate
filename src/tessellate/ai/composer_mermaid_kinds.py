@@ -41,13 +41,17 @@ def _ident(text: str) -> str:
     return word if word and not word[0].isdigit() else ("N" + word if word else "")
 
 
-def _title(rows: list[tuple[str, int, bool, str]]) -> str:
-    """The first heading, else a short first line that stands above the list ("Launch plan")."""
-    head = next((_plain(w, 60) for k, _d, _n, w in rows if k == "heading"), "")
+def _chart_name(rows: list[tuple[str, int, bool, str]]) -> str:
+    """The chart's title: the first heading, else a short first line that stands above the
+    list ("Launch plan"). Which line is the diagram's choice; the words are named by the one
+    reader (`composer_frame.note_title`, F13), then made safe for a Mermaid label."""
+    from tessellate.ai.composer_frame import note_title
+
+    head = next((w for k, _d, _n, w in rows if k == "heading"), "")
     first = rows[0] if rows else None
     if not head and first and first[0] == "line" and len(first[3]) <= 60 and len(rows) > 1 and not first[3].endswith((".", "?", "!")):
-        head = _plain(first[3], 60)
-    return head
+        head = first[3]
+    return _plain(note_title(head, size=60), 60) if head else ""
 
 
 def _items(lines: list, steps: list[str]) -> list[str]:
@@ -64,8 +68,8 @@ def gantt(text: str, lines: list, steps: list[str], today: date) -> str | None:
     except ValueError:
         start = today
     out = ["gantt", "    dateFormat YYYY-MM-DD"]
-    if _title(lines):
-        out.insert(1, f"    title {_title(lines)}")
+    if _chart_name(lines):
+        out.insert(1, f"    title {_chart_name(lines)}")
     for n, item in enumerate(items[:MAX_ROWS], 1):
         span = _DURATION.search(item)
         days = (int(span.group(1)) * (7 if span.group(2).lower().startswith("w") else 1)) if span else 1
@@ -93,7 +97,7 @@ def pie(text: str, lines: list, steps: list[str]) -> str | None:
             slices.append((name, value))
     if len(slices) < 2:
         return None
-    head = f"pie title {_title(lines)}" if _title(lines) else "pie"
+    head = f"pie title {_chart_name(lines)}" if _chart_name(lines) else "pie"
     return "\n".join([head, *(f'    "{name}" : {value}' for name, value in slices[:MAX_ROWS])]) + "\n"
 
 
