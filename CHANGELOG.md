@@ -10,6 +10,7 @@ below). Versioning is `0.x` while the app stabilises.
 - Timeline: reopening a span review reuses the model call still running for it and keeps its answer, so one call runs per span until a note is added; after Done in the bell, focus still lands if the panel fails to reload.
 - Fix flake: test_model_deadline_1029 waits on events set by the hanging model, not a 3 s poll (2026-11-14).
 - Tests: the recovery-key throttle test runs on a fixed clock; on the real one a slow runner sent the sixth guess past the first 1 s wait and got a 401 (2026-11-14).
+- Tests: the board affinity timeout test holds the model on an event until the answer is back, so the words rule can only come from the timeout (a 0.9 s bound failed at 2.1 s on CI, 2026-11-14).
 - Tests: the sweep of tests/test_[n-z]*, the rest of tests/ and tests-e2e leaves no open-work hit but two strict xfails, each on a LEDGER row naming its line (L150, L-timeline-9); a note type deleted then restored keeps its id even when the list was first read in between (L571) (2026-11-14).
 - Map (review on #233): an audio topic no longer builds a hidden link button; an unknown topic part is nothing, not a resize grip; a new topic the editor never opened is not left typeable.
 - Mind map: Topics from a recording (a topic's menu) turns a transcribed recording into topics under it, one per transcript line, as one Undo step; voice-to-map was reopened from the plan's out-of-scope list, which now cites its sources.
