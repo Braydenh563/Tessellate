@@ -11,13 +11,13 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | graph | 15 | 0 | 0 | 0 | 0 | 15 |
 | chat | 176 | 194 | 60 | 2 | 59 | 430 |
 | whiteboard | 30 | 39 | 4 | 0 | 11 | 73 |
-| documents | 20 | 44 | 1 | 0 | 3 | 65 |
+| documents | 20 | 45 | 1 | 0 | 2 | 66 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
 | ui-modernisation | 96 | 110 | 4 | 0 | 17 | 210 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 36 | 2 | 0 | 4 | 38 |
-| all | 503 | 599 | 129 | 2 | 166 | 1231 |
+| all | 503 | 600 | 129 | 2 | 165 | 1232 |
 
 ## graph
 
@@ -371,6 +371,7 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L-documents-76** `documents` open, S: Sass (indented) and Stylus as their own code types, with Emmet's sass and stylus output. From agent docsvid 2026-11-14, L-documents-51. Evidence: core/filetypes.py aliases sass to css, so a .sass file gets CSS punctuation; the vendored Emmet has sass and stylus output forms; no stylus file type
 - [ ] **L-documents-74** `documents` open, S: A block embed drawn before the document list has loaded stays a chip: redraw it when the list lands. From agent docssync 2026-11-14. Evidence: docEmbedTarget (documents-embeds.js) cannot resolve a title before the document list loads; seen in a second window
 - [ ] **L-documents-75** `documents` open, S: A video in a note card before the library bundle loads shows a player, not a broken img. From agent docsvid 2026-11-14, L-documents-68. Evidence: a note card drawn before the library bundle (image-layout.js) loads falls back to an img for a video
+- [ ] **L-documents-77** `documents` open, S: Writing room: after a Draft, mark times, dates and numbers the thoughts and notes do not contain, so an invented specific is seen before sending. From L-documents-73 real-model run 2026-11-14. Evidence: Qwen2.5-1.5B Draft wrote 'meet at the lake at 9 AM' from thoughts that held no time; drafter.py:62 already forbids invented details
 
 ## mindmap
 
@@ -948,7 +949,6 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 - [ ] **L-ui-modernisation-18** `ui-modernisation` blocked-hardware, S: Verify phone tab scroll-to-top under reduced motion on a device. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1250. Evidence: Open line in the plan's prose a session could miss. L906 covers safe-area insets only. The reduced-motion scroll-to-top on a device has no row.
 - [ ] **L-ui-modernisation-21** `ui-modernisation` blocked-hardware, S: Verify paused background art and freed GPU memory on a minimised Windows window. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1264. Evidence: Open line in the plan's prose a session could miss. A hardware check from the deleted leftover list, with no row.
 - [ ] **L-ui-modernisation-23** `ui-modernisation` blocked-hardware, S: Verify the desktop pet on-top, transparency and DPI on Windows and macOS. From open-work sweep 2026-11-12, docs/roadmap/UI_MODERNISATION_PLAN.md:1325. Evidence: Open line in the plan's prose a session could miss. Q34's real-desktop checks have no hardware row.
-- [ ] **L-documents-73** `documents` blocked-hardware, S: With a real model (scratchpad/llama-dev.sh serve), run Writing room Draft and judge the answer quality, and re-read the two box heights with its real reply (docsverify-write.js measured them with the stand-in and a 1250-word stub). From L879 and L888 remainder.
 
 ## Plan session briefs
 
