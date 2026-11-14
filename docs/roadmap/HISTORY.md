@@ -55680,3 +55680,49 @@ ANALYSIS.md was removed (INBOX 1784). Its open items are rows in LEDGER.md, its 
   **Fixed/closed (ownbugs):** select.focus() now reaches the opener: enhanceSelect sets select.focus = opener.focus (sheets-selects.js), measured on port 8794 (note-sort: activeElement is BUTTON.select-opener; before, body). A keydown bound to the native select still never fires (the key goes to the opener); tests/test_select_focus.py keeps new code off that, tests/test_select_focus_delegates.py pins the forward.
 ## Moved from the plans, 2026-11-12 (TIMELINE spans)
 - **Date ranges as spans (TIMELINE_PLAN decision 13, L-timeline-4; the hub's review of PR 225).** `timewords` reads "3 to 7 March", "3-7 March", "March 3 to 7", "28 July until 2 August" and a range across a year end (forwards, at most 366 days); `EntryDate.until` stores the last day; `/timeline` serves `until` and a window inside the span holds the note. The feed and table label the row "3 Mar to 7 Mar"; the calendar draws a non-draggable "continues" ghost (`timelineCalSpanKeys`) on each later day. Measured at 1440: a note "Conference 10 to 13 November 2026" gave 1 chip and 3 ghosts, feed "To Nov 13". Tests: test_timeline_spans.py (13), test_timeline_spans_view.py (5). The BACKLOG row is removed.
+
+## Moved from the plans, 2026-11-14 (documents-plan audit: found built)
+
+- **DOCUMENTS_PLAN 21, the code editor against VS Code (INBOX 646), found built by audit 2026-11-14.** Text as it stood:
+  >
+  > Placed 2026-10-05. Exists: CodeMirror 6 vendored
+  > (`frontend/vendor/codemirror`, `CM6`), with Lezer grammars for JS, Python,
+  > CSS, HTML, JSON, YAML and Markdown and legacy modes for C, C++, C#, Java,
+  > Kotlin, Go, Rust, Ruby, Swift, R, SQL, shell, TOML, XML, diff, Dockerfile and
+  > INI; Emmet (`frontend/vendor/emmet`); Harper grammar in a worker
+  > (`harper-worker.js`); `documents-code.js` (4,400 lines). Open, for one Opus
+  > agent that audits what renders first (section 1 of CLAUDE.md) and then builds:
+  >
+  > - Languages missing (Visual Basic built, HISTORY 2026-11-12): p5.js (JS
+  >   plus p5 completions from the vendored `p5.min.js`), PHP stays out (section
+  >   above, the size).
+  > - Per-language completions and snippets: CSS property values for the property
+  >   under the cursor, Python, JS, Java, C#, C, C++ keywords and common forms;
+  >   bracket and tag auto-close, indent guides, fold, multi-cursor, go to line,
+  >   format selection, comment toggle, a keybindings sheet in Help.
+  > - Where each is used: every code surface (documents, code blocks in notes,
+  >   chat code, board code blocks) shares one engine and one set of options;
+  >   every prose surface gets the grammar check.
+  > - Help moves with it (standing order 13). Measure with a Playwright sweep per
+  >   language; no new required dependency (CLAUDE.md, the owner's offline rule).
+  >
+  Evidence: p5.js names `documents-code.js:606`; CSS values `:976`; snippets `:452`; `closeBrackets` `:5723`; `autoCloseTags` `:1961`; fold `:5741`; format selection `:5915`; keybindings sheet `documents-ide.js:539`; multiple cursors (Ctrl+D) measured in section 25. PHP stays out (decided).
+- **Diagram AI left (dgai-1110 remaining list), found built by audit 2026-11-14:** (dgai-1110 remaining list; w17-1110 built the phone Ask button and the Versions grouping): mind maps, timelines and sequence diagrams get Versions but no Ask or Suggestions; real-model output and Ask inside the dialog (a Live figure, a board diagram) unverified.
+  Evidence: `frontend/js/diagram-ai-kinds.js` (Ask for mind map, timeline, sequence; L-documents-35) and `diagram-suggest.js:74` (suggestions for every kind). Real-model output and Ask inside the dialog stay unverified: LEDGER L893.
+- **DOCUMENTS_PLAN 10, "Found while doing this, not fixed", found built by audit 2026-11-14:**
+  > - The checker still reads only the shape of a sentence. Its/it's, agreement
+  >   and tense are behind "Check with AI", which is a button press rather than
+  >   a pass, for the reason `docProseHeader` records.
+  >
+  Evidence: Harper grammar is vendored and runs in a worker (`frontend/vendor/harper`, `documents-prose.js:24`).
+- **INBOX 788 (code templates, a snippets library, an assistant panel), found built by audit 2026-11-14:** INBOX 788, the owner: "can you add code templates as document templates as well??", "maybe even add a code modules library like with the whiteboard and mindmap??" and "a way to better interact with the ai as a coding asistant like in vs code??" Owner: an Opus brief after the running ones: code templates in New document, a code snippets library on the whiteboard and mind map library pattern, and an assistant panel beside the code editor (explain, fix, write tests, apply as a diff with undo; Needle or the deterministic tools with no model).
+  Evidence: code templates `documents.js:1940`; `documents-codekit.js:2` (the code panel and its snippets library).
+- **VC4, CodeMirror's merge view against a chosen version** (M, rank 4). `@codemirror/merge` is not in `codemirror/package.json`; the version diff is hand-built (`docDiffLcs` to `docDiffHunks`, `documents.js` lines 11260 to 11400). With autosave a diff against "the last save" is moments old, so the use is the chosen version: accept or reject one hunk in the editor. Measure: the bytes `codemirror.min.js` grows by (795,151 now), and rejecting one hunk restores exactly that hunk's lines (a node test on a three-hunk fixture).
+  Found built by audit 2026-11-14: `@codemirror/merge` is vendored (`entry.js:47`) and `documents-ide.js:66` draws `unifiedMergeView` with `mergeControls` against a chosen version.
+- DOCUMENTS_PLAN 24 row 6 (found built by audit 2026-11-14): | 6 | fix | A save that fails says why and retries itself; a draft survives a reload and a crash | `test_never_lose.py` documents rows green; keystroke to saved under 1 s | 3, 4 |
+  Evidence: `documents.js:1524` `keepDocEditLocally`, the 8 s retry and the "It will try again" status at `:2449` to `:2464`.
+- **Diagram builder opens with about 251 row listeners (M; perfdgm-1108:4).** Each row attaches about 3 (shape, connect, chip) in diagram-builder.js `show` (:656); the mermaid fetch already starts first. First step: delegate them to one listener on `S.tree`, then idle-slice rows past 40 blocks. Check: listeners on open 251 to under 20; the blind-tester on keyboard row selection. The audit's 2,500 listeners and 766 / 1,128 ms relabel long tasks did not reproduce (host loaded): re-measure first.
+  Found built by audit 2026-11-14: `diagram-builder.js:583` to `:595` puts keydown, click, dblclick and contextmenu on `S.tree` once (the file has 13 `addEventListener` calls in all, none per row).
+- DOCUMENTS_PLAN 1546 P4, the sentence that stayed: "Left: 1.7 KB of diagram-builder.js over its 12 KB target (`a30u-1103.md` (git history), a30y-1103.md); the touch pan and zoom, the phone palette sheet and D3 closed in a30y-1103." Found built by audit 2026-11-14: `diagram-builder.js` gzips to 11,995 bytes (under the 12 KB target).
+- DOCUMENTS_PLAN 22 R9a, the sentence that stayed: "Left: a diagram has no tray "Open" row (no `ROUTE_OBJECTS` row: the 260,620 byte script cap had no room); the tray offers Attach to the chat." Found built by audit 2026-11-14: `router.js:30` has `diagram` in `ROUTE_OBJECTS` (the tray's Open row and Copy app link).
+- DOCUMENTS_PLAN 20 decision 3, the closing sentence (found built by audit 2026-11-14): "BACKLOG, Diagrams: mermaid as the interchange format, steps 9 to 13 stay open." The editor, boards both ways and export are the diagram builder (section 22, R1 to R10; PNG, SVG and .mmd in `diagram-embed.js`).

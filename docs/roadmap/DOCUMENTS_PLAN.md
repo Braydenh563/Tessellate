@@ -273,26 +273,7 @@ under `tests/test_documents_*.py`, `scratchpad/ui-sweeps/editor.js`.
 
 ## 21. The code editor against VS Code, and writing checks everywhere (INBOX 646)
 
-Placed 2026-10-05. Exists: CodeMirror 6 vendored
-(`frontend/vendor/codemirror`, `CM6`), with Lezer grammars for JS, Python,
-CSS, HTML, JSON, YAML and Markdown and legacy modes for C, C++, C#, Java,
-Kotlin, Go, Rust, Ruby, Swift, R, SQL, shell, TOML, XML, diff, Dockerfile and
-INI; Emmet (`frontend/vendor/emmet`); Harper grammar in a worker
-(`harper-worker.js`); `documents-code.js` (4,400 lines). Open, for one Opus
-agent that audits what renders first (section 1 of CLAUDE.md) and then builds:
-
-- Languages missing (Visual Basic built, HISTORY 2026-11-12): p5.js (JS
-  plus p5 completions from the vendored `p5.min.js`), PHP stays out (section
-  above, the size).
-- Per-language completions and snippets: CSS property values for the property
-  under the cursor, Python, JS, Java, C#, C, C++ keywords and common forms;
-  bracket and tag auto-close, indent guides, fold, multi-cursor, go to line,
-  format selection, comment toggle, a keybindings sheet in Help.
-- Where each is used: every code surface (documents, code blocks in notes,
-  chat code, board code blocks) shares one engine and one set of options;
-  every prose surface gets the grammar check.
-- Help moves with it (standing order 13). Measure with a Playwright sweep per
-  language; no new required dependency (CLAUDE.md, the owner's offline rule).
+Built (found by audit 2026-11-14), moved to HISTORY.md ("Moved from the plans, 2026-11-14 (documents-plan audit: found built)"). PHP stays out (its size, section 9 decision).
 
 ## Built, Phases 0 to 2 (the chrome, the engine, the editor), 2026-09-09
 Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md): a plan holds open work only.
@@ -307,7 +288,7 @@ Moved to HISTORY.md ("From DOCUMENTS_PLAN.md Phase 3", two entries) on
 
 - Group selection row (screenshot of a flowchart with "Customer" and "Warehouse" groups): built 2026-11-10 (dgroup-1110). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (dgroup-1110: group selection)".
 - Owner, 2026-11-10, diagram builder ("have you integrated the ai into the diagram builder yet??"): built 2026-11-10 (dgai-1110). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (dgai-1110: the AI in the diagram builder)".
-- Diagram AI left (dgai-1110 remaining list; w17-1110 built the phone Ask button and the Versions grouping): mind maps, timelines and sequence diagrams get Versions but no Ask or Suggestions; real-model output and Ask inside the dialog (a Live figure, a board diagram) unverified.
+- Diagram AI left: built (Ask and Suggestions for every kind), see HISTORY.md, "Moved from the plans, 2026-11-14 (documents-plan audit: found built)". Real-model output stays unverified (LEDGER L893).
 - INBOX 1731 (spelling second opinion): built 2026-11-10 (spell-1110), (a) to (e). Moved to HISTORY.md "Moved from the plans, 2026-11-10 (spell-1110: the spelling second opinion)". (f) LanguageTool as an optional download: built 2026-11-10 (lag1726-1110), CHANGELOG line; the real program is unverified.
 - INBOX 1728 (selection to a note): built 2026-11-12 (notesel-1112). Moved to HISTORY.md "Moved from the plans, 2026-11-12 (documents-plan: selection to a note, INBOX 1728)".
 
@@ -346,7 +327,7 @@ Built and moved: 1542 to 1545 (insert panels: first-frame place, the minimise pi
 - **1546 P1, the model and two-way sync (flowchart).** Built 2026-11-02 (a30a-1102). Moved to HISTORY.md "Moved from the plans, 2026-11-02 (a30a-1102: 1546 P1, the diagram model)".
 - **1546 P2, the block pane.** Built 2026-11-03 (a30l-1103, 7122184 and f89ae3e). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30l-1103: 1546 P2, the block pane)". The touch pan and zoom and the phone palette sheet closed in a30y-1103 (HISTORY.md, same heading as P5).
 - **1546 P3, templates and from my notes.** Built 2026-11-03 (a30o-1103). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30o-1103: 1546 P3, templates and from my notes)". Left, both closed by P4: mind maps and timelines landing as source plus picture, and a non-flowchart suggestion that could not merge into a non-blank diagram (`a30o-1103.md` (git history)).
-- **1546 P4, the other kinds.** Built 2026-11-03 (a30u-1103). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30u-1103: 1546 P4, the other kinds)". Left: 1.7 KB of diagram-builder.js over its 12 KB target (`a30u-1103.md` (git history), a30y-1103.md); the touch pan and zoom, the phone palette sheet and D3 closed in a30y-1103.
+- **1546 P4, the other kinds.** Built 2026-11-03 (a30u-1103). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30u-1103: 1546 P4, the other kinds)". The 12 KB size target is met (11,995 bytes gzipped).
 - **1546 P5, everywhere Mermaid draws.** Built 2026-11-03 (a30y-1103). Moved to HISTORY.md "Moved from the plans, 2026-11-03 (a30y-1103: 1546 P5, the P2 leftovers and D3)". Left: the dock is two rows at 390, not one (`a30y-1103.md` (git history)).
 - **Risks.** (1) A small edit can reshuffle Mermaid's layout (it reads declaration order); the pane is the stable view, and no row measures the picture's positions. (2) The picture's hit boxes depend on Mermaid's internal ids: pinned by a test on the vendored 12.2.0, and dropped quietly (no select from the picture) when absent. (3) Canonical printing rewrites hand spacing and trailing `%%` comments the first time a block changes; said once ("Tidied the source"). (4) A model's fence can be long or wrong: the 20,000-character cap and the frame's one-line reason bound it. (5) `mmd` as previewable touches every `previewable` check (documents.js:195 to 231); P1 lists each and gives `mmd` its answer. (6) The model grows documents-mermaid.js; if a size lint objects, the model moves to its own file in the Library bundle and wins back its app.js bytes in that commit. **Not verified:** Mermaid 12.2.0's node ids and reading a transform through `DOMParser` are from the library's conventions, not measured.
 
@@ -513,10 +494,7 @@ cold, 0.9ms warm, against a 300ms keystroke-to-underline budget. The
 candidate list is computed when the menu opens, not during the pass: doing
 it per unknown word per pass measured 29ms on a 276-character document.
 
-**Found while doing this, not fixed.**
-- The checker still reads only the shape of a sentence. Its/it's, agreement
-  and tense are behind "Check with AI", which is a button press rather than
-  a pass, for the reason `docProseHeader` records.
+**Found while doing this, not fixed:** built, the grammar check is Harper (HISTORY.md, "Moved from the plans, 2026-11-14 (documents-plan audit: found built)").
 
 ## 11. Phase 4 decisions, made 2026-09-12
 
@@ -881,8 +859,7 @@ open; the decisions stay.
    lazy-loaded inside a hidden same-origin frame (`/mermaid-frame`, a route
    whose response carries its own policy, so the app's `style-src 'self'` is
    unchanged); every kind draws in Read, Live, a print, the HTML export, chat
-   and Ask, as an image of the finished SVG. BACKLOG, "Diagrams: mermaid as
-   the interchange format", steps 9 to 13 stay open.
+   and Ask, as an image of the finished SVG. The BACKLOG's diagram steps 9 to 11 are the diagram builder (section 22), built.
 4. **A hidden formatting toolbar always shows its way back** (INBOX 574,
    2026-10-05): the dock's Formatting button while it is hidden (not on a
    phone, which formats from the thumb bar), Ctrl+Shift+X, the ⋯ row and
@@ -1136,7 +1113,7 @@ links, Typora for the live view (section 17).
 | 3 | fix | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): AI edit and Extract notes are `aria-disabled` with no model and a press opens why and Set up a model (`data-model-offer`) | no-model probe: 2 dead controls to 0 | 12, 4, 6 |
 | 4 | redesign | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): named versions, a Named filter, Changes side by side, restore as one undo step without a confirm | `dochistory76.js`: restore then Ctrl+Z byte-equal at 1440 and 390 | 1, 3 |
 | 5 | optimisation | Cold open 1,743 ms at 1440 and 3,013 ms at 390: fetch the documents bundle on idle after unlock and paint the first screen before the outline and checks | click to painted editor under 800 ms at both widths (25g budget, Brief 53) | 13 |
-| 6 | fix | A save that fails says why and retries itself; a draft survives a reload and a crash | `test_never_lose.py` documents rows green; keystroke to saved under 1 s | 3, 4 |
+| 6 | fix | Built (found by audit 2026-11-14): a failed save says why, retries and keeps the words locally (HISTORY.md, "Moved from the plans, 2026-11-14 (documents-plan audit: found built)") | | 3, 4 |
 | 7 | redesign | Built 2026-11-13 (the recommendation taken): see HISTORY.md, "Moved from the plans, 2026-11-13 (documents-plan: section 1121 row 7)". | | |
 | 8 | expansion | Comments, highlights on pages, link cards with a viewer, the long-form choice at first run (Brief 42 items) | Brief 42's numbers | 6, 13 |
 | 9 | expansion | Built 2026-10-10 (HISTORY "DOCUMENTS 24 and 25, Brief 76"): Replace in every document (palette), plain or regex, case, through `POST /documents/contents`, one undo step | `docreplace76.js`: 50 documents, 1 step, one Ctrl+Z restores 50 of 50 | 1, 2 |
@@ -1267,7 +1244,7 @@ Entries are the owner's words, then the recommendation. Bugs come first.
 
 The owner: "make sure all the vendored repositories are made full use of. I want maximum utility." Ranked by the utility to the surface; `scratchpad/vendor_use.py` prints the counts ("available N, called M") and `tests/test_vendor_utilisation.py` ratchets them, so a row that lands raises its floor in the same commit. Each is a lead from a lower-bound count: grep the call site before building (CLAUDE.md section 1).
 
-- **VC4, CodeMirror's merge view against a chosen version** (M, rank 4). `@codemirror/merge` is not in `codemirror/package.json`; the version diff is hand-built (`docDiffLcs` to `docDiffHunks`, `documents.js` lines 11260 to 11400). With autosave a diff against "the last save" is moments old, so the use is the chosen version: accept or reject one hunk in the editor. Measure: the bytes `codemirror.min.js` grows by (795,151 now), and rejecting one hunk restores exactly that hunk's lines (a node test on a three-hunk fixture).
+- **VC4, CodeMirror's merge view against a chosen version**: built (`documents-ide.js:66`), see HISTORY.md, "Moved from the plans, 2026-11-14 (documents-plan audit: found built)".
 - **VC5, FlashText link offers** (rank 5): built 2026-10-18, see HISTORY.md "OPEN.md rows closed, 2026-10-18 (open-1018)". Tag offers were not built (a document has no tags).
 - **VC6, Harper's own dictionary and the other three dialects**: built 2026-11-12, see HISTORY.md "Moved from the plans, 2026-11-12 (documents-plan: VC13, VC6, L295, L302)".
 - **VC13, the lint panel and fold-all in the palette**: built 2026-11-12, see HISTORY.md "Moved from the plans, 2026-11-12 (documents-plan: VC13, VC6, L295, L302)".
@@ -1279,7 +1256,7 @@ The owner: "make sure all the vendored repositories are made full use of. I want
 
 ## Placed from INBOX, 2026-10-10 (code as documents)
 
-- INBOX 788, the owner: "can you add code templates as document templates as well??", "maybe even add a code modules library like with the whiteboard and mindmap??" and "a way to better interact with the ai as a coding asistant like in vs code??" Owner: an Opus brief after the running ones: code templates in New document, a code snippets library on the whiteboard and mind map library pattern, and an assistant panel beside the code editor (explain, fix, write tests, apply as a diff with undo; Needle or the deterministic tools with no model).
+- INBOX 788 (code templates, snippets library, assistant panel): built, see HISTORY.md, "Moved from the plans, 2026-11-14 (documents-plan audit: found built)".
 
 ## Placed from INBOX, 2026-10-11 (Files, Recordings and Links; libraryup)
 
@@ -1409,7 +1386,7 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 - **R8a (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R8a)").
 - **R8b (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R8b)").
 - **R8c (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R8c)").
-- **R9a (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R9a)"). Left: a diagram has no tray "Open" row (no `ROUTE_OBJECTS` row: the 260,620 byte script cap had no room); the tray offers Attach to the chat.
+- **R9a (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R9a)").
 - **R9b (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R9b)").
 - **R9c (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R9c)").
 - **R10 (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R10)").
@@ -1469,9 +1446,6 @@ Block `docLists`, documents-cm.js. Scout of the bundled CodeMirror:
 - Row L3 was already built (the markdown grammar folds list items), see HISTORY.
 - Row L4 built, see HISTORY. Row L5 built, see HISTORY.
 
-## Placed from W34, 2026-11-11 (gap5: the diagram builder's open cost)
-
-- **Diagram builder opens with about 251 row listeners (M; perfdgm-1108:4).** Each row attaches about 3 (shape, connect, chip) in diagram-builder.js `show` (:656); the mermaid fetch already starts first. First step: delegate them to one listener on `S.tree`, then idle-slice rows past 40 blocks. Check: listeners on open 251 to under 20; the blind-tester on keyboard row selection. The audit's 2,500 listeners and 766 / 1,128 ms relabel long tasks did not reproduce (host loaded): re-measure first.
 
 ## 26. Synced blocks, decision 82 (row 5, F1 run 2, 2026-11-11)
 **Decision 82 (taken on the recommendation).** A block exists once, in the document it was written in (it carries `^id`). Every other place is a window onto it: `![[Doc#^id]]` shows the block, and its pencil edits the text there. Save reads the source afresh, rewrites that one block (the `^id` stays, so every link and embed still resolves) and saves the document through `PUT /documents/{id}` with the document's own `base_hash`, so the change has a revision and an edit of the same document elsewhere stays.
