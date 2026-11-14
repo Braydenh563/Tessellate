@@ -5112,6 +5112,11 @@ body .chip.item-label,
   pointer-events: none;
   box-shadow: var(--shadow-md);
 }
+/* A remark from the notes is a way in to its note (composer row 1). */
+.nm-say.nm-say-source {
+  pointer-events: auto;
+  cursor: pointer;
+}
 /* In the large view the card clips anything above it, so the line is said
    from the face's upper corner instead. */
 .nm-viewer-stage .nm-say {

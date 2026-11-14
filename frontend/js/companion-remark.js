@@ -20,6 +20,10 @@
     } catch (e) {
       return;
     }
+    //: Quiet while the person types (CHAT_PLAN composer row 1): the same four
+    //: seconds the rest of the companion waits (`nameMarkBuddyCalmAllows`), and
+    //: nothing is marked said, so the next tick still has the line.
+    if (Date.now() - (nmb.keyAt || 0) < 4000) return;
     const seen = prefs.json(NMB_REMARK_SEEN, []);
     const next = (body.remarks || []).find((r) => r.text && !seen.includes(r.key));
     const buddy = document.getElementById("nm-buddy");
@@ -32,6 +36,18 @@
       if (!buddy.isConnected || nameMarkBuddyStill() || document.hidden) return;
       nameMarkBuddyExpress("happy", 2400);
       nameMarkSay(buddy, next.text, Math.min(12000, 2500 + 60 * next.text.length));
+      //: Its source one tap away: the bubble opens the first note it names.
+      const source = (next.sources || []).find((id) => Number.isInteger(id));
+      const bubble = buddy.querySelector(".nm-say");
+      if (source && bubble) {
+        bubble.classList.add("nm-say-source");
+        bubble.title = "Open the note this is from";
+        bubble.addEventListener("click", (event) => {
+          event.stopPropagation();
+          bubble.remove();
+          switchTab("notes").then(() => flashEntry(source));
+        });
+      }
     });
   }
 

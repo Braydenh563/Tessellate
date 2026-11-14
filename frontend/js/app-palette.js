@@ -379,7 +379,7 @@
   //: `memo`: the last words ranked and what they ranked (`paletteMatches`); opening the palette, the meaning
   //: tables and the usage counts drop it, as anything that can change the order. `words`: a row's words for
   //: the nearest-word scan, split once per distinct text.
-  const paletteGen = { acts: null, actsAsked: false, settings: false, settingsAsked: false, near: null, nearAsked: "", memo: { q: "", at: 0, pool: null, commands: [] }, words: new Map() };
+  const paletteGen = { acts: null, actsAsked: false, settings: false, settingsAsked: false, near: null, nearAsked: "", typed: { q: "", act: null, timer: 0 }, memo: { q: "", at: 0, pool: null, commands: [] }, words: new Map() };
 
   //: Other words for a row, by where it lands: the words people type that the
   //: row's own name does not use. A key is a reveal target, `tab:<tab>` or
@@ -420,7 +420,7 @@
   //: Everything typed text can reach: the hand-written rows and the three
   //: generated sets.
   function palettePool(base, lowered) {
-    return [...base, ...paletteFeatureRows(base), ...paletteActRows(), ...paletteSettingRows(lowered)];
+    return [...base, ...paletteFeatureRows(base), ...paletteActRows(), ...paletteTypedActRows(lowered), ...paletteSettingRows(lowered)];
   }
 
   //: Where a row lands, the key `PALETTE_ALIASES` is read by.
@@ -478,6 +478,51 @@
       keywords: act.example,
       run: () => paletteStartAct(act.stem || `${String(act.example || "").split(" ")[0]} `),
     }));
+  }
+
+  //: **What the typed sentence would do** (CHAT_PLAN B24: "remind me Tuesday 9am
+  //: lecture" acts from the palette): the server reads it as Chat would
+  //: (`GET /read/act`, no model, nothing written) and the row says the exact
+  //: act. Enter sends the sentence to Chat, where the card still waits for
+  //: Confirm, so the preview is never the act. Asked 250ms after the last key,
+  //: for three words or more; a sentence that is not an act shows no row.
+  function paletteTypedActRows(query) {
+    const typed = paletteGen.typed;
+    //: As typed, capitals and all: the act's words are the person's own.
+    const text = ($("palette-input")?.value || query).trim();
+    if (text.split(/\s+/).length < 3) {
+      typed.q = "";
+      typed.act = null;
+      return [];
+    }
+    if (typed.q !== text) {
+      typed.q = text;
+      typed.act = null;
+      clearTimeout(typed.timer);
+      typed.timer = setTimeout(() => {
+        apiJson(`/read/act?q=${encodeURIComponent(text)}&tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { silent: true })
+          .then((got) => {
+            if (typed.q !== text) return;
+            typed.act = got.act || null;
+            if (typed.act) paletteRefresh();
+          })
+          .catch(() => {});
+      }, 250);
+    }
+    const act = typed.q === text ? typed.act : null;
+    if (!act) return [];
+    return [
+      {
+        group: "Say it in Chat",
+        label: `ph:lightning ${act.label || act.line}`,
+        about: "Preview only: Enter sends it to Chat, where the card waits for your Confirm.",
+        keywords: text,
+        run: async () => {
+          await switchTab("chat");
+          sendChatMessage(text);
+        },
+      },
+    ];
   }
 
   //: Chat, with the act's opening words typed and the caret after them. After

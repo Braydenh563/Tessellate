@@ -96,7 +96,7 @@ def _due(session: Session, now: datetime) -> list[dict]:
     if late:
         parts.append(f"{realise.count_word(late)} overdue")
     lines = [{"part": "due", "kind": "count", "text": " and ".join(parts).capitalize() + ".",
-              "counts": [n for n in (today, late) if n]}]
+              "counts": [n for n in (today, late) if n], "links": parts}]
     lines.extend({"part": "due", "kind": "quote", "quote": _cut(row.text), "source": {"reminder_id": row.id},
                   "text": f"“{_cut(row.text)}”"} for row in rows[:QUOTES])
     return lines
@@ -108,7 +108,7 @@ def _questions(session: Session) -> list[dict]:
     if not total:
         return []
     verb = "is" if total == 1 else "are"
-    lines = [{"part": "questions", "kind": "count", "counts": [total],
+    lines = [{"part": "questions", "kind": "count", "counts": [total], "links": [realise.count_noun(total, "question")],
               "text": f"{realise.count_noun(total, 'question').capitalize()} in your notes {verb} still open."}]
     for item in page["items"]:
         said = _cut(item["display"] or item["text"])
@@ -132,7 +132,7 @@ def _changed(session: Session, now: datetime) -> list[dict]:
         said.append(f"{realise.count_noun(len(made), 'note')} written")
     if edited:
         said.append(f"{realise.count_noun(len(edited), 'note')} edited")
-    lines = [{"part": "changed", "kind": "count", "counts": [n for n in (len(made), len(edited)) if n],
+    lines = [{"part": "changed", "kind": "count", "counts": [n for n in (len(made), len(edited)) if n], "links": said,
               "text": (" and ".join(said) + " since this time yesterday.").capitalize()}]
     shown = 0
     for entry in (made + edited)[:QUOTES]:
@@ -144,7 +144,9 @@ def _changed(session: Session, now: datetime) -> list[dict]:
     #: The list agrees with its count: what the quotes leave out is said (INBOX 1569).
     rest = len(made) + len(edited) - shown
     if rest > 0:
-        lines.append({"part": "changed", "kind": "more", "counts": [rest], "text": f"And {realise.count_word(rest)} more note{'' if rest == 1 else 's'}."})
+        lines.append({"part": "changed", "kind": "more", "counts": [rest],
+                      "links": [f"{realise.count_word(rest)} more note{'' if rest == 1 else 's'}"],
+                      "text": f"And {realise.count_word(rest)} more note{'' if rest == 1 else 's'}."})
     return lines
 
 
@@ -164,7 +166,7 @@ def _quiet(session: Session, now: datetime) -> list[dict]:
         days = (_naive(now).date() - _naive(last).date()).days
         if days < QUIET_DAYS:
             continue
-        lines.append({"part": "quiet", "kind": "count", "counts": [days, count], "category": name,
+        lines.append({"part": "quiet", "kind": "count", "counts": [days, count], "category": name, "links": [name, realise.count_noun(days, "day"), f"{count} notes"],
                       "text": f"{name}: no new note in {realise.count_noun(days, 'day')} ({count} notes in all)."})
         if len(lines) >= QUOTES:
             break
