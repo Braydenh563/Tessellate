@@ -181,7 +181,7 @@ async function openNotifications({ keepWatermark = false } = {}) {
   // centre honest about time it was not running for: the event log can only
   // know what happened while a tab was open, and the reminders table knows
   // what is due regardless.
-  const all = await apiJson("/reminders", { silent: true }).catch(() => null);
+  const all = await openReminders().catch(() => null);
   for (const reminder of all || []) {
     if (reminder.done) continue;
     if (new Date(reminder.due_at).getTime() > Date.now()) continue;

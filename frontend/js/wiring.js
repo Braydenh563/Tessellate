@@ -1429,7 +1429,7 @@ onSurface("reminders", () => {
   });
   $("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
   $("reminders-new")?.addEventListener("click", openReminderCompose);
-  $("reminder-clear-done").addEventListener("click", clearDoneReminders);
+  $("reminder-clear-done").addEventListener("click", () => lazyScript("/js/reminder-edit.js").then((ok) => ok && clearDoneReminders()));
   for (const button of document.querySelectorAll("#reminder-filter button")) {
     button.addEventListener("click", () => {
       reminderFilter = button.dataset.filter;

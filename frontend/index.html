@@ -4816,10 +4816,10 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
         </div>
         <div id="graph-zoom" class="graph-zoom" role="group" aria-label="Zoom the map">
-          <button id="graph-zoom-in" class="icon-only graph-zoom-btn" title="Zoom in" aria-label="Zoom in"><i class="ph ph-plus" aria-hidden="true"></i></button>
-          <button id="graph-zoom-out" class="icon-only graph-zoom-btn" title="Zoom out" aria-label="Zoom out"><i class="ph ph-minus" aria-hidden="true"></i></button>
-          <button id="graph-zoom-fit" class="icon-only graph-zoom-btn" title="Fit the whole map to view" aria-label="Fit map to view"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
-          <button id="graph-fullscreen" class="icon-only graph-zoom-btn" title="Full screen" aria-label="Full screen" aria-pressed="false"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
+          <button id="graph-zoom-out" class="icon-only graph-zoom-btn" title="Zoom out (Ctrl+-)" aria-label="Zoom out"><i class="ph ph-minus" aria-hidden="true"></i></button>
+          <button id="graph-zoom-in" class="icon-only graph-zoom-btn" title="Zoom in (Ctrl+=)" aria-label="Zoom in"><i class="ph ph-plus" aria-hidden="true"></i></button>
+          <button id="graph-zoom-fit" class="icon-only graph-zoom-btn" title="Fit to screen (Ctrl+0)" aria-label="Fit to screen"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
+          <button id="graph-fullscreen" class="icon-only graph-zoom-btn" title="Full screen (Esc to leave)" aria-label="Full screen" aria-pressed="false"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
         </div>
         <div id="graph-empty" class="empty-state hidden">
           <!-- The app's own mark, the slot EMBLEM_SLOTS (app.js) has named
@@ -5088,13 +5088,13 @@ Link to another note with [[its first few words]]."></textarea>
              · **Fewer things.** The two exports and the delete moved into one
                kebab. They are the three least-used controls here and they
                were taking a third of the bar. -->
-        <div class="row space-between doc-dock">
+        <div class="row space-between dock doc-dock">
           <!-- Name and type together, because they are the same statement
                about the document: what it is called and what it is. Moved
                off the action row, which is about what you can *do*, and
                which was 20px too wide to fit on one line with the select
                still in it, measured rather than guessed at. -->
-          <span class="doc-dock-identity">
+          <span class="dock-identity doc-dock-identity">
             <!-- The way back (INBOX 424 p): the editor has no tab of its own,
                  you arrive from the Library's Documents list and the tab bar
                  lights Library, so the dock starts with the place you came
@@ -5112,7 +5112,7 @@ Link to another note with [[its first few words]]."></textarea>
                  wait for a round trip, and a second copy here would be a
                  second thing to update. -->
           </span>
-          <span class="row doc-actions">
+          <span class="row dock-actions doc-actions">
             <!-- **The counts moved out of here.** Reported: "redesign,
                  rearrange, fix, and update the section with the word count,
                  word goal etc elements. I think the whole top dock in the
@@ -5131,11 +5131,6 @@ Link to another note with [[its first few words]]."></textarea>
             <span class="doc-dock-status">
               <span id="doc-saved" class="muted doc-saved" role="status"></span>
             </span>
-            <!-- Same divider the formatting toolbar below uses to separate
-                 its own button groups, status facts (word count, save
-                 state) read as one thing and the actions on the document as
-                 another, instead of eight items in a row with no seam. -->
-            <span class="doc-toolbar-sep" aria-hidden="true"></span>
 
             <!-- Four ways to look at the same document, as four named options
                  rather than one Preview tickbox. The tickbox stated one mode
@@ -7325,7 +7320,6 @@ Link to another note with [[its first few words]]."></textarea>
         <span class="wb-topbar-divider" aria-hidden="true"></span>
         <button id="wb-add-note" class="ghost small wb-panel-primary" title="The sidebar: shapes, icons and frames, your notes, and the layers" aria-controls="wb-sidebar-panel"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span class="wb-menu-label"> Sidebar</span></button>
         <button id="wb-format-btn" type="button" class="ghost small wb-panel-primary" aria-pressed="false" aria-controls="wb-format" title="Format panel: style, text, arrange and data for what is selected (Ctrl+Shift+P)"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span class="wb-menu-label"> Format</span></button>
-        <button id="wb-fullscreen" class="ghost small icon-button" title="Full screen (Esc to leave)" aria-label="Toggle full screen"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
       </div>
     </div>
     <div class="whiteboard-floating-panel wb-rail bottom-center card glass" data-panel-id="tools" id="wb-tools-panel" data-dock="bottom">
@@ -7748,6 +7742,9 @@ Link to another note with [[its first few words]]."></textarea>
       <span id="wb-zoom-level" class="wb-zoom-level" title="Zoom level: type a number, or pick one. Ctrl+1 is 100%"></span>
       <button id="wb-zoom-in" class="ghost small icon-only" title="Zoom in (Ctrl+=)" aria-label="Zoom in"><i class="ph ph-plus" aria-hidden="true"></i></button>
       <button id="wb-zoom-fit" class="ghost small icon-only" title="Fit to screen (Ctrl+0)" aria-label="Fit to screen"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
+      <!-- One zoom order on every canvas (L-world-class-351): Zoom out, the
+           level, Zoom in, Fit, Full screen, the same as the graph's strip. -->
+      <button id="wb-fullscreen" class="ghost small icon-only" title="Full screen (Esc to leave)" aria-label="Full screen"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
     </div>
 
     <!-- **The context bar** (WHITEBOARD_PLAN.md decision 2): one surface in

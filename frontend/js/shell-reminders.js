@@ -924,6 +924,14 @@ let reminderFilter = "open"; // open | all | done
 //: thousands of ticked-off reminders no longer fetches and draws them all.
 const remindersDone = { page: 50, cursor: null, token: 0 };
 
+//: The tab badge and the due timer follow the reminders slice (store.js), so
+//: any read of it repaints them: a reminder just made or moved is the soonest
+//: one, and the due timer follows.
+appState.subscribe("reminders", (rows) => {
+  armReminderTimer(rows);
+  updateReminderBadge(rows);
+});
+
 async function loadReminders() {
   //: A sentinel, not `[]`: "you have no reminders" and "the reminders could
   //: not be read" are different facts and only one of them is about the
@@ -939,17 +947,15 @@ async function loadReminders() {
   const token = ++remindersDone.token;
   const wantDone = reminderFilter !== "open";
   const [openRows, donePage] = await Promise.all([
-    apiPagedList("/reminders?include_done=false", 200).catch(() => null),
+    openReminders(0).catch(() => null),
     api(`/reminders?only_done=true&limit=${wantDone ? remindersDone.page : 1}`)
       .then(async (r) => ({ rows: await r.json(), total: Number(r.headers.get("X-Total-Count")) || 0, cursor: r.headers.get("X-Next-Cursor") }))
       .catch(() => null),
   ]);
   if (token !== remindersDone.token) return;
-  //: A reminder just made or moved is the soonest one: the due timer follows.
   clearSkeletons($("reminder-groups"));
   if (!openRows || !donePage) return surfaceFailed($("reminders-empty"), "your reminders", loadReminders);
   loadReminders.loaded = true;
-  armReminderTimer(openRows);
   surfaceRecovered($("reminders-empty"));
   remindersDone.cursor = wantDone ? donePage.cursor : null;
   reminderCountsCache.clear();
@@ -959,7 +965,6 @@ async function loadReminders() {
   const everything = openRows.length + donePage.total;
   $("reminders-empty").classList.toggle("hidden", everything > 0);
   $("reminder-clear-done").classList.toggle("hidden", !donePage.total);
-  updateReminderBadge(openRows);
 
   const now = new Date();
   const endOfToday = new Date(now);
@@ -1072,44 +1077,6 @@ function updateReminderBadge(reminders) {
   }
   badge.textContent = ` ${due}`;
   badge.title = `${nounCount(due, "reminder")} due`;
-}
-
-async function clearDoneReminders() {
-  //: To the end, or this clears the first page's done rows and reports that
-  //: count as if it were all of them.
-  const done = await apiPagedList("/reminders?only_done=true", 200).catch(() => null);
-  if (!done) return toast(voiceLine("failed", { what: "load your reminders" }), true, { retry: clearDoneReminders });
-  if (!done.length) return;
-  if (!(await confirmDialog(`Delete ${done.length} completed reminder${done.length === 1 ? "" : "s"}?`))) {
-    return;
-  }
-  //: One Undo for the lot (INBOX 537): they go to the recycle bin and come
-  //: back from it (WORLD_CLASS_PLAN 5 item 10).
-  //: Every delete is tried; how many failed is said once (audit 2026-10-05,
-  //: FE-12), where a silent catch let them come back unexplained, with a Try
-  //: again for just those rows.
-  const drop = async (rows = done) => {
-    const results = await Promise.all(
-      rows.map((r) => api(`/reminders/${r.id}`, { method: "DELETE" }).then(() => true, () => false))
-    );
-    const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(voiceLine("failed", { what: `delete ${left.length} of the reminders` }), true, { retry: () => drop(left) });
-    loadReminders();
-  };
-  const remake = async (rows = done) => {
-    const results = await Promise.all(
-      rows.map((r) => api(`/reminders/${r.id}/restore`, { method: "POST" }).then(() => true, () => false))
-    );
-    const left = rows.filter((_, i) => !results[i]);
-    if (left.length) toast(voiceLine("failed", { what: `bring back ${left.length} of the reminders` }), true, { retry: () => remake(left) });
-    loadReminders();
-  };
-  await drop();
-  const action = pushUndo(`Cleared ${done.length} completed reminders`, remake, drop);
-  toastAction(`Cleared ${done.length} completed reminder${done.length === 1 ? "" : "s"}.`, "Undo", async () => {
-    settleUndoFromToast(action);
-    await remake().catch((e) => toast(e.message, true));
-  });
 }
 
 let editingReminderId = null;

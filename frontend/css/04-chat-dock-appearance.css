@@ -4373,6 +4373,14 @@ span > .chip {
   padding-block: 0;
 }
 
+/* The view chevron sits one level deeper than the recipe's
+   `.dock > * > details > summary` reaches (inside `.doc-view-cluster`), so it
+   takes the dock's control size here: measured 14.72px beside 13.6 on every
+   other control (L-world-class-351). */
+.dock .doc-view-cluster > details > summary {
+  font-size: var(--text-md);
+}
+
 /* **The title gets its own line, and the controls get the whole width.**
    Measured at 1400px with the document sidebar open: the dock is about
    1018px wide, and a title sharing that row on `flex: 1 1 12rem` took half
@@ -4551,6 +4559,14 @@ span > .chip {
   font-weight: 600;
   border: 1px solid transparent;
   background: none;
+}
+
+/* The title keeps its heading size inside the dock recipe, whose field rule
+   (`.dock input:not(...)`, 07-whiteboard-misc.css) sets every input to the
+   control size: the name of the document is the dock's identity, not a field
+   among the controls (L-world-class-351). */
+.dock #doc-title {
+  font-size: var(--text-h3);
 }
 
 .doc-title-input:focus {

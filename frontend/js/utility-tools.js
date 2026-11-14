@@ -262,7 +262,7 @@ const utilityOps = (() => {
 
   //: The switch was just changed in Settings: read the reminders once now, or forget them.
   function lockRefresh() {
-    if (noticesOn()) apiJson("/reminders?include_done=false", { silent: true }).then(lockSave).catch(() => {});
+    if (noticesOn()) openReminders().then(lockSave).catch(() => {});
     else lockSave([]);
     utilitySave();
   }

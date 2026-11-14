@@ -71,8 +71,8 @@
     dashboard() {
       dashStatsInflight = null;
       dashGraphInflight = null;
-      dashRemindersInflight = null;
-      dashStatsAt = dashGraphAt = dashRemindersAt = 0;
+      remindersRead.inflight = null;
+      dashStatsAt = dashGraphAt = 0;
     },
     chat() {
       attachedNoteIds = [];

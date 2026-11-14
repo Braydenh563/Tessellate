@@ -7983,3 +7983,29 @@ def test_ask_as_of_slider_is_one_value_with_the_day():
     assert '$("ask-as-of-slider").addEventListener("input"' in wiring
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "| A day picked on a slider" in design
+
+
+def test_every_canvas_has_one_zoom_order():
+    """L-world-class-351: the graph stacked In, Out, Fit, Full screen in a
+    column with Fit drawn as arrows-out and Full screen as frame-corners, while
+    the board's pill read Out, level, In, Fit with the same two glyphs swapped
+    and Full screen up in the top bar. One order, one shape, one set of keys."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    graph = html.split('id="graph-zoom"', 1)[1].split("</div>", 1)[0]
+    ids = re.findall(r'<button id="([\w-]+)"', graph)
+    assert ids == ["graph-zoom-out", "graph-zoom-in", "graph-zoom-fit", "graph-fullscreen"], ids
+    board = html.split('data-panel-id="zoom"', 1)[1].split("</div>", 1)[0]
+    ids = re.findall(r'<button id="([\w-]+)"', board)
+    assert ids[-2:] == ["wb-zoom-fit", "wb-fullscreen"], ids
+    assert ids.index("wb-zoom-out") < ids.index("wb-zoom-in") < ids.index("wb-zoom-fit"), ids
+    for strip in (graph, board):
+        assert re.search(r'zoom-fit"[^>]*>\s*<i class="ph ph-frame-corners"', strip)
+        assert re.search(r'fullscreen"[^>]*>\s*<i class="ph ph-arrows-out"', strip)
+        assert "(Ctrl+-)" in strip and "(Ctrl+=)" in strip and "(Ctrl+0)" in strip
+    widgets = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
+    assert re.search(r"\.graph-zoom \{[^}]*flex-direction: row", widgets)
+    graph_js = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
+    keys = graph_js.split('graphZoomRoving($("graph-zoom"));', 1)[1][:1200]
+    assert "event.ctrlKey || event.metaKey" in keys
+    assert all(code in keys for code in ("Equal:", "Minus:", "Digit0:"))
+    assert 'strip.setAttribute("aria-orientation", "horizontal")' in graph_js

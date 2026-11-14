@@ -3485,9 +3485,11 @@ button.answer-figure-open {
 }
 
 /* Zoom controls as one floating pill. */
+/* A row, the board's pill and order (L-world-class-351): one zoom control on
+   every canvas, not a stack here and a pill there. */
 .graph-zoom {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   /* The padding, gap and overflow are set below, with the reason. */
   /* The floating-control recipe (see `.scroll-top`): card fill, glass edge,
      glass shadow, the button radius. The buttons inside are plain, the

@@ -2307,6 +2307,13 @@ header#top-bar[data-scrolled="1"],
   #tab-graph:has(.dock-fab) .graph-zoom {
     bottom: calc(var(--target-min) + var(--space-5));
   }
+  /* The zoom strip is a row now (L-world-class-351) and takes most of a
+     phone's width, so the legend stands on a line of its own above it, the
+     strip's height (a target, two `--space-1` and its edge) and a step up. */
+  #tab-graph:has(.dock-fab) .graph-legend-row {
+    bottom: calc(var(--target-min) * 2 + var(--space-5) + var(--space-1) * 2 + 2px + var(--space-2));
+    max-width: calc(100% - var(--space-3) * 2);
+  }
 }
 /* --- the Documents editor on a phone (INBOX 430) -----------------------------
    "On phone, the Documents editor's lower half is blank or cut off; rework
@@ -2331,10 +2338,15 @@ header#top-bar[data-scrolled="1"],
     flex: 1 1 0;
     min-width: 0;
   }
+  /* The dock recipe's bar (L-world-class-351) keeps one step of inset on a
+     phone, not its desktop three and four: measured at 390, its padding took
+     the title from 85px to 57 and the row from 44 to 62. */
+  #tab-documents .dock.doc-dock {
+    padding: var(--space-1);
+  }
   #tab-documents .doc-back-label,
   #tab-documents .doc-ai-label,
   #tab-documents .doc-dock-status,
-  #tab-documents .doc-actions > .doc-toolbar-sep,
   #tab-documents .doc-hint,
   #tab-documents #doc-caret {
     display: none;

@@ -30,15 +30,15 @@ graphZoomRoving(strip);
 const stops = () => buttons.filter((b) => b.tabIndex === 0).map((b) => b.name);
 const out = { initial: stops(), role: attrs.role, orientation: attrs["aria-orientation"] };
 const key = (name, from) => { let prevented = false; fire("keydown", { key: name, target: from, preventDefault() { prevented = true; } }); return prevented; };
-key("ArrowDown", buttons[0]);
+key("ArrowRight", buttons[0]);
 out.down = stops();
 key("ArrowDown", buttons[1]);
 out.down2 = stops();
-key("ArrowUp", buttons[2]);
+key("ArrowLeft", buttons[2]);
 out.up = stops();
 key("End", buttons[1]);
 out.end = stops();
-out.pastEnd = key("ArrowDown", buttons[3]);
+out.pastEnd = key("ArrowRight", buttons[3]);
 key("Home", buttons[3]);
 out.home = stops();
 out.other = key("a", buttons[0]);
@@ -47,7 +47,9 @@ console.log(JSON.stringify(out));
     )
     done = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True)
     out = json.loads(done.stdout)
-    assert out["initial"] == ["in"] and out["role"] == "toolbar" and out["orientation"] == "vertical"
+    # A row since L-world-class-351 (the board's pill and order), so Left and
+    # Right are its arrows; Up and Down still move as they did in the column.
+    assert out["initial"] == ["in"] and out["role"] == "toolbar" and out["orientation"] == "horizontal"
     assert out["down"] == ["out"] and out["down2"] == ["fit"] and out["up"] == ["out"]
     assert out["end"] == ["full"] and out["pastEnd"] is False and out["home"] == ["in"] and out["other"] is False
 

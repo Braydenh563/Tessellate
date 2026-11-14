@@ -295,7 +295,7 @@ FAULTS = {
         'voiceLine("failed", { what: "save that setting" })': 'saving a setting failed',
         'voiceLine("failed", { what: "reset that setting" })': 'resetting a setting failed',
     },
-    'shell-reminders.js': {
+    'reminder-edit.js': {
         'voiceLine("failed", { what: "load your reminders" })': 'the reminders request failed before clearing the done ones',
         "voiceLine(\"failed\", { what: `delete ${left.length} of the reminders` })": 'a bulk delete partly failed',
         "voiceLine(\"failed\", { what: `bring back ${left.length} of the reminders` })": 'a bulk restore partly failed',
@@ -510,8 +510,8 @@ def test_retry_sites_are_reads_or_reloads():
             lines = (JS / name).read_text(encoding="utf-8").split("\n")
             window = "\n".join(lines[max(0, line - 12) : line])
             tail = window[window.rfind("try {") :] if "try {" in window else window
-            #: shell-reminders.js retries only the rows that failed (`left`), never the whole batch.
-            if name == "shell-reminders.js":
+            #: reminder-edit.js's Clear completed (moved from shell-reminders.js) retries only the rows that failed (`left`), never the whole batch.
+            if name == "reminder-edit.js":
                 continue
             assert not re.search(r'method: "(POST|PUT|PATCH|DELETE)"', tail), f"{name}:{line}: a retry beside a write"
     assert found >= 7, found

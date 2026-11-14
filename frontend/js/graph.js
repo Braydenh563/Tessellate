@@ -5125,7 +5125,7 @@ function graphZoomRoving(strip) {
   const buttons = [...strip.querySelectorAll("button")];
   const rove = (to) => buttons.forEach((button) => { button.tabIndex = button === to ? 0 : -1; });
   strip.setAttribute("role", "toolbar");
-  strip.setAttribute("aria-orientation", "vertical");
+  strip.setAttribute("aria-orientation", "horizontal");
   rove(buttons[0]);
   strip.addEventListener("focusin", (event) => {
     if (buttons.includes(event.target)) rove(event.target);
@@ -5139,6 +5139,19 @@ function graphZoomRoving(strip) {
   });
 }
 graphZoomRoving($("graph-zoom"));
+//: **The same keys as the board** (L-world-class-351, `WB_ZOOM_KEYS`): Ctrl or
+//: Cmd with + or = zooms in, with - out, with 0 fits, while the map is the tab
+//: in view and nothing is being typed; the bare + - 0 on the focused map stay.
+//: Capture phase, so the app zoom does not take the same key as well.
+window.addEventListener("keydown", (event) => {
+  if (!(event.ctrlKey || event.metaKey) || event.altKey || document.body.dataset.tab !== "graph") return;
+  const run = { Equal: () => graphZoomBy(1.3), NumpadAdd: () => graphZoomBy(1.3), Minus: () => graphZoomBy(1 / 1.3), NumpadSubtract: () => graphZoomBy(1 / 1.3), Digit0: () => $("graph-zoom-fit").click(), Numpad0: () => $("graph-zoom-fit").click() }[event.code];
+  const typing = event.target?.closest?.("input, textarea, select, [contenteditable=true], dialog[open]");
+  if (!run || typing || document.querySelector("dialog[open]")) return;
+  event.preventDefault();
+  event.stopPropagation();
+  run();
+}, true);
 $("graph-zoom-in").addEventListener("click", () => graphZoomBy(1.3));
 $("graph-zoom-out").addEventListener("click", () => graphZoomBy(1 / 1.3));
 $("graph-zoom-fit").addEventListener("click", () => {
@@ -5170,11 +5183,11 @@ function toggleGraphFullscreen() {
     // now says which of its two jobs it will do next.
     const fsBtn = $("graph-fullscreen");
     if (fsBtn) {
-      fsBtn.title = isFull ? "Exit full screen" : "Full screen";
-      fsBtn.setAttribute("aria-label", fsBtn.title);
+      fsBtn.title = isFull ? "Leave full screen (Esc)" : "Full screen (Esc to leave)";
+      fsBtn.setAttribute("aria-label", isFull ? "Leave full screen" : "Full screen");
       fsBtn.setAttribute("aria-pressed", String(isFull));
       const icon = fsBtn.querySelector("i");
-      if (icon) icon.className = isFull ? "ph ph-arrows-in" : "ph ph-frame-corners";
+      if (icon) icon.className = isFull ? "ph ph-arrows-in" : "ph ph-arrows-out";
     }
     window.dispatchEvent(new Event('resize'));
     if (graphNodesRef && graphNodesRef.length) {

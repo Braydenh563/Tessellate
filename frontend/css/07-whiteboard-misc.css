@@ -7275,8 +7275,8 @@ button.connection-row:is(:hover, :focus-visible) {
      284px of demand, and the bar ran 75px past itself with the last two
      controls unreachable. Both of the two that go are already somewhere a
      finger can reach:
-     Full screen is View › Zoom › Full screen, and on a phone there is no
-     browser chrome for it to hide in the first place.
+     Full screen is the last button of the zoom pill (L-world-class-351), as
+     on the graph.
      Arrange is the twelve alignment, distribution and order actions, every
      one of which is on the **context bar** above a selection (WHITEBOARD_PLAN
      decision 3, INBOX 12), which is the only time any of them can do
@@ -7285,7 +7285,6 @@ button.connection-row:is(:hover, :focus-visible) {
      bar in front of it already.
      Insert, Edit and View stay, because each of those is the only way to
      what it holds; Board leaves below 600 (the rule after this block). */
-  .wb-topbar #wb-fullscreen,
   .wb-topbar .wb-board-menu-wrap:has([aria-controls="wb-arrange-menu"]) {
     display: none;
   }

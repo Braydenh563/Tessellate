@@ -61,7 +61,7 @@ def test_the_hero_carries_an_action_and_a_glance():
 
 def test_the_glance_reads_what_the_dashboard_already_fetched():
     render = _function(DASH, "renderDashGlance")
-    for source in ("dashReminders()", "fetchDashStats()", "dashEntries()"):
+    for source in ("openReminders()", "fetchDashStats()", "dashEntries()"):
         assert source in render, source
     # No new endpoint, no model: the glance is arithmetic over those three.
     assert "apiJson(" not in render and "/insights/" not in render
