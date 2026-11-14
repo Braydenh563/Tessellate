@@ -1579,7 +1579,7 @@ const LAZY_MODULES = {
   attachTo: ["/js/pick-row.js", "/js/attach-to.js"],
   vault: ["/js/vault-unlock.js"],
   //: The one icon and emoji picker, on first use (MINDMAP_PLAN decision 43): see icon-picker.js.
-  iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js"],
+  iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js", "/js/icon-picker-icons.js"],
   vf: ["/css/value-field.css", "/js/value-field.js"],
   //: Settings groups, each file's header says which (WORLD_CLASS_PLAN rows 21 to 27).
   modelBench: ["/js/model-bench.js"],
@@ -1659,6 +1659,7 @@ const LAZY_MODULES = {
     "/js/documents-mermaid.js",
     "/js/documents-math.js",
     "/js/documents-comments.js",
+    "/js/documents-threads.js",
     "/js/documents-embeds.js",
     "/js/documents-tables.js",
     "/js/documents-columns.js",

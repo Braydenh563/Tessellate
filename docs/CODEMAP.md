@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8499, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11011, test files 2815, tests 22443, plan headings 689, app scripts 29, boot scripts 38, script files 304.
+Counts: frontend functions 8500, frontend ids 2791, CSS sections 524, backend routes 718, backend modules 11011, test files 2815, tests 22443, plan headings 689, app scripts 29, boot scripts 38, script files 306.
 
-## Frontend functions (8499)
+## Frontend functions (8500)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:556 |
 | `confirmDialog` | frontend/js/app.js:1272 |
 | `confirmVerb` | frontend/js/app.js:1263 |
-| `ensureModule` | frontend/js/app.js:1737 |
+| `ensureModule` | frontend/js/app.js:1738 |
 | `enterWithoutPassword` | frontend/js/app.js:635 |
 | `hide` | frontend/js/app.js:163 |
 | `hideBootSplash` | frontend/js/app.js:842 |
 | `initAuth` | frontend/js/app.js:855 |
-| `installStandIns` | frontend/js/app.js:1908 |
-| `lazyAssetStamp` | frontend/js/app.js:1694 |
-| `lazyScript` | frontend/js/app.js:1716 |
+| `installStandIns` | frontend/js/app.js:1909 |
+| `lazyAssetStamp` | frontend/js/app.js:1695 |
+| `lazyScript` | frontend/js/app.js:1717 |
 | `lockFieldForPin` | frontend/js/app.js:751 |
 | `lockNow` | frontend/js/app.js:814 |
 | `mediaSrc` | frontend/js/app.js:234 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1761 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1762 |
 | `promptDialog` | frontend/js/app.js:1376 |
 | `purgeLockedContent` | frontend/js/app.js:793 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -78,7 +78,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stagedImageByUrl` | frontend/js/app.js:195 |
 | `startApp` | frontend/js/app.js:904 |
 | `startWithoutPassword` | frontend/js/app.js:620 |
-| `whenScriptsLoaded` | frontend/js/app.js:1675 |
+| `whenScriptsLoaded` | frontend/js/app.js:1676 |
 | `wireBackdropClose` | frontend/js/app.js:1492 |
 
 ### frontend/js/prefs.js (7)
@@ -3997,45 +3997,36 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docColumnsBlocks` | frontend/js/documents-columns.js:63 |
 | `docColumnsField` | frontend/js/documents-columns.js:154 |
 
-### frontend/js/documents-comments.js (35)
+### frontend/js/documents-comments.js (26)
 
 | Name | File:line |
 |---|---|
-| `docAnnotateSelection` | frontend/js/documents-comments.js:918 |
-| `docCommentContext` | frontend/js/documents-comments.js:530 |
+| `docAnnotateSelection` | frontend/js/documents-comments.js:718 |
+| `docCommentContext` | frontend/js/documents-comments.js:330 |
 | `docCommentFootnotes` | frontend/js/documents-comments.js:208 |
-| `docCommentReplyForm` | frontend/js/documents-comments.js:591 |
+| `docCommentReplyForm` | frontend/js/documents-comments.js:391 |
 | `docCommentResolveEdit` | frontend/js/documents-comments.js:160 |
-| `docCommentRow` | frontend/js/documents-comments.js:632 |
+| `docCommentRow` | frontend/js/documents-comments.js:432 |
 | `docCommentSkipMask` | frontend/js/documents-comments.js:73 |
 | `docCommentStrip` | frontend/js/documents-comments.js:187 |
-| `docComments` | frontend/js/documents-comments.js:523 |
+| `docComments` | frontend/js/documents-comments.js:323 |
 | `docCommentsParse` | frontend/js/documents-comments.js:110 |
-| `docCommentsShell` | frontend/js/documents-comments.js:742 |
-| `docDeleteReply` | frontend/js/documents-comments.js:891 |
-| `docEditReply` | frontend/js/documents-comments.js:881 |
-| `docGoToComment` | frontend/js/documents-comments.js:811 |
-| `docReopenComment` | frontend/js/documents-comments.js:868 |
-| `docReplyAttachMarkdown` | frontend/js/documents-comments.js:580 |
-| `docReplyToComment` | frontend/js/documents-comments.js:904 |
-| `docResolveComment` | frontend/js/documents-comments.js:845 |
-| `docResolvedRow` | frontend/js/documents-comments.js:709 |
-| `docShowComment` | frontend/js/documents-comments.js:829 |
-| `docThreadAuthor` | frontend/js/documents-comments.js:480 |
-| `docThreadDeleteReply` | frontend/js/documents-comments.js:375 |
-| `docThreadEditReply` | frontend/js/documents-comments.js:367 |
-| `docThreadHash` | frontend/js/documents-comments.js:247 |
-| `docThreadKeys` | frontend/js/documents-comments.js:256 |
-| `docThreadReopen` | frontend/js/documents-comments.js:398 |
-| `docThreadReopenEdit` | frontend/js/documents-comments.js:408 |
-| `docThreadReplies` | frontend/js/documents-comments.js:542 |
-| `docThreadReply` | frontend/js/documents-comments.js:359 |
-| `docThreadResolve` | frontend/js/documents-comments.js:386 |
-| `docThreadWho` | frontend/js/documents-comments.js:484 |
-| `docThreadsForSave` | frontend/js/documents-comments.js:519 |
-| `docThreadsReconcile` | frontend/js/documents-comments.js:278 |
-| `docThreadsSync` | frontend/js/documents-comments.js:492 |
-| `renderDocComments` | frontend/js/documents-comments.js:767 |
+| `docCommentsShell` | frontend/js/documents-comments.js:542 |
+| `docDeleteReply` | frontend/js/documents-comments.js:691 |
+| `docEditReply` | frontend/js/documents-comments.js:681 |
+| `docGoToComment` | frontend/js/documents-comments.js:611 |
+| `docReopenComment` | frontend/js/documents-comments.js:668 |
+| `docReplyAttachMarkdown` | frontend/js/documents-comments.js:380 |
+| `docReplyToComment` | frontend/js/documents-comments.js:704 |
+| `docResolveComment` | frontend/js/documents-comments.js:645 |
+| `docResolvedRow` | frontend/js/documents-comments.js:509 |
+| `docShowComment` | frontend/js/documents-comments.js:629 |
+| `docThreadAuthor` | frontend/js/documents-comments.js:280 |
+| `docThreadReplies` | frontend/js/documents-comments.js:342 |
+| `docThreadWho` | frontend/js/documents-comments.js:284 |
+| `docThreadsForSave` | frontend/js/documents-comments.js:319 |
+| `docThreadsSync` | frontend/js/documents-comments.js:292 |
+| `renderDocComments` | frontend/js/documents-comments.js:567 |
 
 ### frontend/js/documents-csvgrid.js (24)
 
@@ -4547,6 +4538,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `onStripKey` | frontend/js/documents-tabs.js:97 |
 | `read` | frontend/js/documents-tabs.js:18 |
 | `write` | frontend/js/documents-tabs.js:19 |
+
+### frontend/js/documents-threads.js (10)
+
+| Name | File:line |
+|---|---|
+| `docCommentResolveEdit` | frontend/js/documents-threads.js:4 |
+| `docThreadDeleteReply` | frontend/js/documents-threads.js:151 |
+| `docThreadEditReply` | frontend/js/documents-threads.js:143 |
+| `docThreadHash` | frontend/js/documents-threads.js:23 |
+| `docThreadKeys` | frontend/js/documents-threads.js:32 |
+| `docThreadReopen` | frontend/js/documents-threads.js:174 |
+| `docThreadReopenEdit` | frontend/js/documents-threads.js:184 |
+| `docThreadReply` | frontend/js/documents-threads.js:135 |
+| `docThreadResolve` | frontend/js/documents-threads.js:162 |
+| `docThreadsReconcile` | frontend/js/documents-threads.js:54 |
 
 ### frontend/js/documents-view.js (30)
 
@@ -5808,20 +5814,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `submitHelpChatQuestion` | frontend/js/help-chat.js:362 |
 | `toggleHelpChat` | frontend/js/help-chat.js:825 |
 
-### frontend/js/icon-picker.js (10)
+### frontend/js/icon-picker-icons.js (2)
 
 | Name | File:line |
 |---|---|
-| `closeIconPicker` | frontend/js/icon-picker.js:603 |
+| `iconGroups` | frontend/js/icon-picker-icons.js:37 |
+| `iconPickerPhosphorNames` | frontend/js/icon-picker-icons.js:19 |
+
+### frontend/js/icon-picker.js (8)
+
+| Name | File:line |
+|---|---|
+| `closeIconPicker` | frontend/js/icon-picker.js:557 |
 | `iconPickerEmojiGroups` | frontend/js/icon-picker.js:473 |
-| `iconPickerGlyph` | frontend/js/icon-picker.js:587 |
+| `iconPickerGlyph` | frontend/js/icon-picker.js:541 |
 | `iconPickerHay` | frontend/js/icon-picker.js:468 |
-| `iconPickerIconGroups` | frontend/js/icon-picker.js:526 |
-| `iconPickerPhosphorNames` | frontend/js/icon-picker.js:508 |
-| `iconPickerRecent` | frontend/js/icon-picker.js:543 |
-| `iconPickerRemember` | frontend/js/icon-picker.js:548 |
-| `iconPickerText` | frontend/js/icon-picker.js:582 |
-| `openIconPicker` | frontend/js/icon-picker.js:612 |
+| `iconPickerRecent` | frontend/js/icon-picker.js:497 |
+| `iconPickerRemember` | frontend/js/icon-picker.js:502 |
+| `iconPickerText` | frontend/js/icon-picker.js:536 |
+| `openIconPicker` | frontend/js/icon-picker.js:566 |
 
 ### frontend/js/image-layout.js (14)
 
