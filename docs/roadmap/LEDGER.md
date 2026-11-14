@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
-| ui-modernisation | 12 | 7 | 1 | 0 | 19 | 20 |
+| ui-modernisation | 9 | 7 | 1 | 0 | 19 | 17 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 11 | 3 | 0 | 0 | 14 |
-| all | 469 | 441 | 130 | 2 | 181 | 1040 |
+| all | 466 | 441 | 130 | 2 | 181 | 1037 |
 
 ## graph
 
