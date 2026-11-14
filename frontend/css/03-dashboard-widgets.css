@@ -2313,8 +2313,8 @@ header#top-bar select,
   margin-top: var(--space-4);
 }
 
-/* **Where a follow-up came from** (INBOX 490, `followupTrail`): one muted
-   line above the question, "Follow-up of" and each earlier question as a
+/* **Where a follow-on question came from** (INBOX 490, `followupTrail`): one muted
+   line above the question, the trail's label and each earlier question as a
    link, a caret between them. A question is clipped to one line with its
    whole text on the title, so a long chain wraps by crumbs, not by words. */
 .chat-trail {
@@ -2487,7 +2487,7 @@ button.chat-trail-link {
 }
 
 /* The Ask tab's answer foot (CHAT_PLAN.md Phase 3): "Elsewhere in your
-   notebook", the sources disclosure and the follow-up chips as one stack under
+   notebook", the sources disclosure and the follow-on chips as one stack under
    the answer, each in its own container so that one renderer clearing its own
    box can never take another's row with it (which is exactly what used to
    happen, see index.html). Each row already carries its own `margin-top`, so

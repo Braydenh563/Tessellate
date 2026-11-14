@@ -12262,8 +12262,8 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    tab and drops the other six, citing the HIG's own tab-bar guidance, because a
    bar that says where you are is worth more than a bar that names everywhere you
    could go. The same shape, at the other end of the scale, costs one rule and no
-   copy decision (the "Dashboard" to "Home" question the note above defers is
-   still deferred, and still the better answer).
+   copy decision (the "Dashboard" to "Home" question the note above sets aside
+   is settled as no rename: the tab keeps "Dashboard", the better answer here).
    The selected tab takes its own content width and the other six share what is
    left. Measured after, at 320, 360 and 390: the strip fits on one row with no
    sideways scroll at all three, and the caption on the selected tab is whole. */
@@ -14310,7 +14310,7 @@ body .chip.item-label,
    `flex-wrap` with a basis on the field rather than a width query, so a narrow
    window puts them back in two bands without a second rule deciding where
    narrow starts. */
-/* **Two rows again, decided by the owner (INBOX 425 follow-up, 2026-09-24):**
+/* **Two rows again, decided by the owner (INBOX 425, second pass, 2026-09-24):**
    "the hero section row is ugly and needs improvement and I dont agree with
    the search bar being on the same line and changing width depending on how
    long the welcome message is." The one-row head of INBOX 296 made the

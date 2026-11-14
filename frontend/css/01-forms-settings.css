@@ -4446,7 +4446,7 @@ html.modal-open body {
    longer rules above: `.is-streaming > :last-child::after` is (0,2,1) against
    `.is-streaming > :last-child:not(:is(ul, ol, blockquote))::after` at
    (0,2,2). So the commonest case of all, an answer ending in a paragraph,
-   blinked straight through `prefers-reduced-motion`, and a later pass
+   blinked straight through `prefers-reduced-motion`, and a second change
    extending the caret down into lists is what quietly broke it. Measured
    before the fix (`scratchpad/ui-sweeps/chatphase2.js`): computed
    animation-name `answer-caret` on the caret with the platform asking for

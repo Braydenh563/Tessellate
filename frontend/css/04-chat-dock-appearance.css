@@ -677,7 +677,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
      `overflow-y` alone leaves `overflow-x` at `visible`, and CSS refuses that
      combination: a `visible` axis paired with a scrolling one is computed to
      `auto`. So the column silently gained a horizontal scrollbar the moment
-     anything inside it was a pixel too wide, which for a row of follow-up
+     anything inside it was a pixel too wide, which for a row of follow-on
      chips or a pasted URL is most turns.
 
      Clipping here is safe because the things that genuinely need the room
@@ -1450,7 +1450,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 /* Reported live: a long persona prompt (up to 2000 chars, Settings'
    `#persona-prompt` textarea's own limit) grew this panel, then inline in
    the dock's normal flow: without bound, pushing the whole strip down and
-   overlapping the Length/Persona popup still open above it. Moved inside
+   overlapping the Length/Persona popup, open above it. Moved inside
    that popup and capped with its own scroll instead of the popup's. */
 #persona-peek-panel {
   max-height: min(16rem, 50vh);
@@ -5457,7 +5457,7 @@ span > .chip {
    before anyone had touched anything, because `switchTab` focuses
    `#chat-input` so you can arrive typing. That is a good thing for the caret
    to do and a bad thing for the ring to do: a focus ring is feedback on what
-   the reader just did, and on arrival the reader has not done anything yet.
+   the reader just did, and on arrival the reader has done nothing.
 
    `switchTab` sets this marker and any key, any press inside the dock, or
    focus leaving it takes it off again (`chatDockReleaseRing`, app.js), so a

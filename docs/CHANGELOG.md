@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Plans: the UI plan's open items are LEDGER rows L-ui-modernisation-52 to 59 (plan open 9 to 0); signal-word false positives in DESIGN.md and CSS comments reworded.
 - Background art: aurora, microbes and mycelium draw 15 frames a second at the same on-screen speed, about a third less CPU each (L-ui-modernisation-20).
 - Sweeps: touch.js clears passing toasts before it measures a surface (a due reminder's alert read as a covered control); L-general-47, 49 and 53 closed.
 - Settings: the "let that app add and change notes" switch and Skip silence show what the notebook holds after a reload (L-general-54).

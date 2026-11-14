@@ -13,11 +13,11 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 | whiteboard | 30 | 40 | 4 | 0 | 11 | 74 |
 | documents | 70 | 12 | 1 | 0 | 20 | 83 |
 | mindmap | 33 | 1 | 0 | 0 | 0 | 34 |
-| ui-modernisation | 9 | 2 | 1 | 0 | 19 | 12 |
+| ui-modernisation | 0 | 8 | 1 | 1 | 20 | 9 |
 | timeline | 3 | 0 | 0 | 0 | 0 | 3 |
 | world-class | 130 | 175 | 58 | 0 | 72 | 363 |
 | general | 0 | 6 | 2 | 0 | 0 | 8 |
-| all | 466 | 432 | 129 | 2 | 181 | 1027 |
+| all | 457 | 438 | 129 | 3 | 182 | 1024 |
 
 ## graph
 - [ ] **L-graph-19** `graph` open, S: Delete the dead SVG-graph CSS (.graph-node, .graph-edge, .graph-core, .graph-label rules) with the tests that pin them. From L-ui-modernisation-30. Evidence: frontend/css/02-chat-graph.css, 04-chat-dock-appearance.css, 07-whiteboard-misc.css, graph-lazy.css hold about 30 rules for .graph-node, .graph-edge, .graph-core and .graph-label; the graph is a canvas (graph-canvas.js) and no JS creates those elements (grep: only comments and graph-edge-hover on the canvas). The unused-names test passes them because comments name the tokens. Rules are dead but tests/test_graph_hover_fade.py, test_motion_tokens.py and test_svg_paint_attributes.py read some.
@@ -355,6 +355,12 @@ Statuses: open, partly (some of it is built: verify in code first), owner-call (
 - [ ] **L469** `ui-modernisation` partly, L: Finish the uipolish-0924 surface-by-surface pass (item D). From OPEN.md:1914; OPEN.md:2314. Evidence: Icon-only floor done (iconfloor.js); the per-surface pass not recorded done
 - [ ] **L-ui-modernisation-39** `ui-modernisation` open, L: Fold the note editor's four surfaces (bar, selection bar, inline AI, slash menu) into two, bar and slash, and show the capture text first. From L-ui-modernisation-16. Evidence: Left by L-ui-modernisation-16 (plan 13.2 table, Note editor row): a design change across editor-toolbar, the selection bar and inline AI; needs a design pass (judge rung), not available on the pro tier.
 - [ ] **L-ui-modernisation-51** `ui-modernisation` open, M: Move the 231 cascade-blocked Library-only boot rules to library-lazy.css (L-ui-modernisation-31 remainder). From L-ui-modernisation-31. Evidence: L-ui-modernisation-31 moved 148 of 385 Library-only boot rules (A/B 0 diffs). 231 stay because a later boot rule, another lazy sheet or an already-moved region writes the same properties at equal specificity (moving flips the cascade): e.g. .contents-subtree vs .contents-list, :disabled colour from forced-colors-lazy, .ev-foot:has(...). 6 more stay in 00-tokens-shell.css because they carry a literal height or colour that the ratchets count only outside 00. Method: scratchpad lazymove.py (not tracked); each blocker needs its sibling rule moved with it or its specificity made explicit.
+- [ ] **L-ui-modernisation-52** `ui-modernisation` open, M: Split the long Settings Tools and Appearance panes, or show why the index is enough, measured. From docs/roadmap/UI_MODERNISATION_PLAN.md:858. Evidence: Plan item 10 'Not done, left open': Tools 4,247px and Appearance 1,296px at desktop width, indexed rather than split.
+- [ ] **L-ui-modernisation-53** `ui-modernisation` open, M: Run the density census over every surface and tidy the worst one ('very messy'). From docs/roadmap/UI_MODERNISATION_PLAN.md:920. Evidence: Owner design request 'very messy', surface unnamed; recommendation taken: the Brief 41 density census finds the worst surface.
+- [ ] **L-ui-modernisation-54** `ui-modernisation` open, S: Tab lag budgets: Graph input under 100 ms on first and repeat visits (tablag.js), the dashboard's 1030 ms frame and two fetches (1696), and the owner's Windows lag lines (Timeline first load 1180 ms, status.js build 1295 ms). From docs/roadmap/UI_MODERNISATION_PLAN.md:1249. Evidence: Item (6): tablag.js, loaded machine 2026-11-14: every tab under 100 ms input on a repeat visit except Graph 88 to 104 ms, first Graph visit 184 ms.
+- [ ] **L-ui-modernisation-57** `ui-modernisation` open, L: Render the pose-keyed lower-body and nebula variants into the desk companion's frames (1683 B1, B3, B5, B6). From docs/roadmap/UI_MODERNISATION_PLAN.md:1297. Evidence: Still open in 1683: the desk half of B1, B3, B5, B6, pose-keyed lower-body and nebula variants rendered into the frames (OPEN 1683b).
+- [ ] **L-ui-modernisation-58** `ui-modernisation` open, M: Companion life: the rest of the life-1109 ranked list, and the composer audit round (1719 b, c). From docs/roadmap/UI_MODERNISATION_PLAN.md:1302. Evidence: 1719 (b) part built (life-1109); remains the ranked list in life-1109.md: vertical follow-through, settle after a startle, micro-saccades, the stand loop's drift, media. (c) the composer deep-audit round.
+- [ ] **L-ui-modernisation-59** `ui-modernisation` open, L: Companion activity variety and visible lower-body and ribbon motion (1721 d, e). From docs/roadmap/UI_MODERNISATION_PLAN.md:1303. Evidence: 1721 (d) activity variety and (e) visible lower-body and ribbon motion stay with an Opus design pass; (a) to (c) built (test_overlay_deskfix_1110).
 
 ## timeline
 
@@ -611,6 +617,7 @@ Rows only the owner can decide. A recommendation is taken per standing order 3 u
 
 - [ ] **L744** `chat` owner-call, M: Desk companion lightweight: live drawing within CPU budget (idle <1%, moving <3%). From OPEN.md:4376; OPEN.md:4396; OPEN.md:4401. Evidence: No row-sized check; a CPU budget the owner judges on the desk (see N14, 1692p-budget) Owner decided 2026-11-12: I will send CPU numbers.
 - [ ] **L745** `chat` owner-call, S: Patting over Atlas's head must not lift it 30 px. From OPEN.md:4370. Evidence: a31q-1103.md:12: not reproduced in the enlarged viewer; waits on owner recording/window size (OPEN I30) Owner decided 2026-11-12: Send a recording later.
+- [ ] **L-ui-modernisation-55** `ui-modernisation` owner-call, S: Pat over Atlas's head in the viewer lifts it 30 px (1606): needs the owner's window size and pose, or a recording. From docs/roadmap/UI_MODERNISATION_PLAN.md:1290. Evidence: Not reproduced headless: about 8 variations (fast, slow, jitter, 1440 and 2560 wide, float and stand), the figure's top moved at most 9.7 px, the buddy box 0.
 
 ## Needs hardware
 
@@ -798,6 +805,7 @@ Rows that cannot close on this machine's fake transport or headless Chromium.
 
 - [ ] **L-documents-23** `documents` blocked-hardware, S: Run code-run.js with the Pyodide extra installed (Settings, Packages, Python) and read the python rows. From L319. Evidence: scratchpad/ui-sweeps/code-run.js skips python runs when the Pyodide extra is absent
 - [ ] **L-documents-28** `documents` blocked-hardware, S: Time the Python runtime across documents with the extra installed. From L309. Evidence: Needs the Pyodide extra. Open a .py document, wait for warm, open a second .py document, press Run: first Run should not reload the runtime (under 1 s to first output vs 5.9 to 7.0 s cold)
+- [ ] **L-ui-modernisation-56** `ui-modernisation` blocked-hardware, M: Real Windows check of the desk companion fixes (1670, 1683, 1696, 1719, 1721; W15). From docs/roadmap/UI_MODERNISATION_PLAN.md:1291. Evidence: W15: the desk ride, perch gap, idle life, hops and 1696/1719 desk fixes are built and measured on FakeWin32 and Xvfb; none has run on real Windows.
 
 ## Plan session briefs
 
